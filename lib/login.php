@@ -107,15 +107,17 @@
             return $message;
         }
         
-        function LeagueManagerLoader()
-        {
-            $this->__construct();
-        }
+//        function LeagueManagerLoader()
+//        {
+//            $this->__construct();
+//        }
         
         function disable_dashboard() {
             if (current_user_can('subscriber') && is_admin()) {
-                wp_redirect(home_url());
-                exit;
+                if ( !DOING_AJAX ) {
+                    wp_redirect(home_url());
+                    exit;
+                }
             }
         }
         

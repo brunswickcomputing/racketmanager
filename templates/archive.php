@@ -27,9 +27,12 @@ wp_enqueue_style('datatables');
 wp_enqueue_script('datatables');
 ?>
 <script type='text/javascript'>
+    var tab = <?php echo $tab ?>;
+    var hash = window.location.hash.substr(1);
+if (hash == 'teams') tab = 3;
 	jQuery(function() {
 		jQuery(".jquery-ui-tabs").tabs({
-			active: <?php echo $tab ?>
+			active: tab
 		});
 	});
 	jQuery(document).ready(function(){

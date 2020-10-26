@@ -150,7 +150,7 @@
 							<td>
 								<select size="1" name="settings[entryType]" id="entryType">
                                 <?php foreach ( $this->getentryTypes() AS $id => $entryType )  { ?>
-									<option value="<?php echo $id ?>"<?php selected( $id, $competition->entryType ) ?>><?php echo $entryType ?></option>
+<option value="<?php echo $id ?>"<?php selected( $id, isset($competition->entryType) ? $competition->entryType : '' ) ?>><?php echo $entryType ?></option>
                                 <?php } ?>
 								</select>
 							</td>

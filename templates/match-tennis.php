@@ -9,89 +9,11 @@ The following variables are usable:
 	You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
 */
 ?>
-<?php if ( $match ) { ?>
-
-    <div class="match" id="match-<?php echo $match->id ?>">
-        <h3 class="header"><?php _e( 'Match', 'leaguemanager' ) ?></h3>
-	
-        <div class="match-content">
-            <h4><?php echo $leaguemanager->getMatchTitle($match->id, false) ?></h4>
-		
-            <?php if ( isset($match->num_rubbers) ) { ?>
-                <table>
-                    <thead>
-                        <tr>
-                            <th colspan="2">Home Players</th>
-                            <th colspan="3">Sets</th>
-                            <th colspan="2">Away Players</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($match->rubbers as $rubber) { ?>
-                            <tr>
-                                <td><?php echo $rubber->home_player_1_name ?></td>
-                                <td><?php echo $rubber->home_player_2_name ?></td>
-                                <?php foreach ($rubber->sets as $set) { ?>
-                                    <?php if ( ($set['player1'] !== '') && ( $set['player2'] !== '' )) { ?>
-                                        <td><?php echo $set['player1']?> : <?php echo $set['player2']?></td>
-                                    <?php } else { ?>
-                                        <td></td>
-                                    <?php } ?>
-                                <?php } ?>
-                                <td><?php echo $rubber->away_player_1_name ?></td>
-                                <td><?php echo $rubber->away_player_2_name ?></td>
-                            </tr>
-                        <?php } ?>
-                    </tbody>
-                </table>
-            <?php } ?>
-
-            <?php if ( $match->score == '0:0' ) { ?>
-                <p class="matchdate"><?php echo $match->date." ".$match->start_time." ".$match->location ?></p>
-            <?php } else { ?>
-                <p class="score">
-                    <span class="home_logo"><img src="<?php echo $match->homeLogo ?>" alt="" /></span>
-                    <?php echo $match->score ?>
-                    <span class="away_logo"><img src="<?php echo $match->awayLogo ?>" alt="" /></span>
-                </p>
-            <?php } ?>
-
-            <?php if ( !empty($match->match_day) ) { ?>
-                <p class='match_day'><?php printf(__("<strong>%d.</strong> Match Day", 'leaguemanager'), $match->match_day) ?></p>
-            <?php } ?>
-		
-            <p class='date'><?php echo mysql2date(get_option('date_format'), $match->date) ?>, <span class='time'><?php echo $match->time ?></span></p>
-            <p class='location'><?php echo $match->location ?></p>
-            
-            <?php if ( $match->post_id != 0 ) { ?>
-                <p class='report'><a href='<?php the_permalink($match->post_id) ?>'><?php _e( 'Report', 'leaguemanager' ) ?></a></p>
-            <?php } ?>
-
-			<?php if ( isset($match->hasStats) && $match->hasStats ) {?>
-				<div class="match-stats">
-					<?php foreach ( $lmStats->get($match->league_id) AS $stat ) { ?>
-						<h4><?php echo $stat->name ?></h4>
-
-						<table>
-							<tr>
-								<?php foreach ( (array)maybe_unserialize($stat->fields) AS $field ) { ?>
-									<th scope="col"><?php echo $field['name'] ?></th>
-								<?php } ?>
-							</tr>
-							<?php if ( isset($match->{sanitize_title($stat->name)}) ) { ?>
-								<?php foreach ( (array)$match->{sanitize_title($stat->name)} AS $i => $data ) { ?>
-									<tr>
-										<?php foreach ( (array)maybe_unserialize($stat->fields) AS $field ) { ?>
-											<td><?php echo $data[sanitize_title($field['name'])] ?></td>
-										<?php } ?>
-									</tr>
-								<?php } ?>
-							<?php } ?>
-						</table>
-					<?php } ?>
-				</div>
-			<?php } ?>
-        </div>
-    </div>
-
-<?php } ?>
+<script type="text/javascript">
+jQuery(document).ready(function($) {
+                       Leaguemanager.showRubbers(<?php echo $match->id ?>);
+                       });
+</script>
+<a href="<?php echo $_SERVER['HTTP_REFERER'] ?>">&#60; Back to Matches</a>
+<div id="showMatchRubbers">
+</div>

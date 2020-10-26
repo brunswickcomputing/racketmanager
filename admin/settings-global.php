@@ -32,11 +32,48 @@
 		<input type="hidden" class="active-tab" name="active-tab" value="<?php echo $tab ?>" ?>
 		
 		<ul id="tablist" style="display: none;">
+            <li><a href="#match-results"><?php _e( 'Match Results', 'leaguemanager' ) ?></a></li>
 			<li><a href="#logos"><?php _e( 'Logos', 'leaguemanager' ) ?></a></li>
 			<li><a href="#colors"><?php _e( 'Color Scheme', 'leaguemanager' ) ?></a></li>
 			<li><a href="#dashboard-widget"><?php _e( 'Dashboard Widget Support News', 'leaguemanager' ) ?></a></li>
 		</ul>
 		
+		<div id="match-results" class="settings-block-container">
+			<h2><?php _e('Match Results', 'leaguemanager') ?></h2>
+			<div class="settings-block">
+				<table class='lm-form-table'>
+				<tr valign='top'>
+					<th scope='row'><label for='matchCapability'><?php _e( 'Minimum level to update results', 'leaguemanager' ) ?></label></th>
+                    <td>
+                        <select id="role" name="matchCapability">
+                            <option value="captain" <?php if (isset($options['matchCapability']) && $options['matchCapability'] == "captain") echo 'selected="selected"'?>><?php _e('Captain', 'leaguemanager') ?></option>
+                        <option value="roster" <?php if (isset($options['matchCapability']) && $options['matchCapability'] == "roster") echo 'selected="selected"'?>><?php _e('Roster', 'leaguemanager') ?></option>
+                        <option value="none" <?php if (isset($options['matchCapability']) && $options['matchCapability'] == "none") echo 'selected="selected"'?>><?php _e('None', 'leaguemanager') ?></option>
+                        </select>
+                    </td>
+				</tr>
+				<tr valign='top'>
+					<th scope='row'><label for='resultEntry'><?php _e( 'Result Entry', 'leaguemanager' ) ?></label></th>
+                    <td>
+                        <select id="role" name="resultEntry">
+                            <option value="home" <?php if (isset($options['resultEntry']) && $options['resultEntry'] == "home") echo 'selected="selected"'?>><?php _e('Home', 'leaguemanager') ?></option>
+                        <option value="either" <?php if (isset($options['resultEntry']) && $options['resultEntry'] == "either") echo 'selected="selected"'?>><?php _e('Either', 'leaguemanager') ?></option>
+                        </select>
+                    </td>
+				</tr>
+				<tr valign='top'>
+					<th scope='row'><label for='resultConfirmation'><?php _e( 'Result Confirmation', 'leaguemanager' ) ?></label></th>
+                    <td>
+                        <select id="role" name="resultConfirmation">
+                            <option value="auto" <?php if (isset($options['resultConfirmation']) && $options['resultConfirmation'] == "admin") echo 'selected="selected"'?>><?php _e('Automatic', 'leaguemanager') ?></option>
+                        <option value="none" <?php if (isset($options['resultConfirmation']) && $options['resultConfirmation'] == "none") echo 'selected="selected"'?>><?php _e('None', 'leaguemanager') ?></option>
+                        </select>
+                    </td>
+				</tr>
+				</table>
+			</div>
+		</div>
+
 		<div id="logos" class="settings-block-container">
 			<h2><?php _e( 'Logos', 'leaguemanager' ) ?></h2>
 			<div class="settings-block">

@@ -938,6 +938,68 @@ class LeagueManager
      * @param string $output OBJECT | ARRAY
      * @return array database results
      */
+    function getTeamsList( $affiliatedclub = false, $players = false)
+    {
+        global $wpdb;
+
+        $search_terms = array();
+        if ( $affiliatedclub ) {
+            $search_terms[] = $wpdb->prepare("`affiliatedclub` = '%d'", intval($affiliatedclub));
+        }
+        if ( !$players ) {
+            $search_terms[] = "`status` != 'P'";
+        }
+        $search = "";
+        if (count($search_terms) > 0) {
+            $search = " WHERE ";
+            $search .= implode(" AND ", $search_terms);
+        }
+        
+        $sql = "SELECT `id`, `title`, `affiliatedclub`, `stadium`, `logo`, `home`, `roster`, `profile` FROM {$wpdb->leaguemanager_teams} $search ORDER BY `title`";
+        
+        $cachekey = md5($sql);
+        // use cached object
+        if ( isset($this->teamslist[$cachekey]) ) {
+            return $this->teamslist[$cachekey];
+        }
+        $teamlist = $wpdb->get_results( $sql );
+        $teams = array(); $i = 0; $class = '';
+        $logo_sizes = array( 'tiny', 'thumb', 'large' );
+        foreach ( $teamlist AS $team ) {
+            $class = ( 'alternate' == $class ) ? '' : 'alternate';
+            $teamlist[$i]->logo = ( !empty($team->logo) ) ? $this->getImageUrl(basename($team->logo)) : false;
+            if ( $team->logo ) {
+                foreach ( $logo_sizes AS $logo_size ) {
+                    $teamlist[$i]->logos[$logo_size] = $this->getImageUrl( basename($team->logo), false, $logo_size );
+                }
+            }
+            $teamlist[$i]->roster = maybe_unserialize($team->roster);
+            $teamlist[$i]->title = htmlspecialchars(stripslashes($team->title), ENT_QUOTES);
+            $teamlist[$i]->affiliatedclub = stripslashes($team->affiliatedclub);
+            if ( is_plugin_active('wp-clubs/wp-clubs.php') ) {
+                $teamlist[$i]->affiliatedclubname = getClubName($team->affiliatedclub);
+            } else {
+                $teamlist[$i]->affiliatedclubname = '';
+            }
+            
+            $teamlist[$i]->stadium = stripslashes($team->stadium);
+            $teamlist[$i]->class = $class;
+            
+            $i++;
+        }
+        
+        $this->teamslist[$cachekey] = $teamlist;
+        
+        return $this->teamslist[$cachekey];
+    }
+    
+   /**
+     * get teams from database
+     *
+     * @param array $args
+     * @param string $output OBJECT | ARRAY
+     * @return array database results
+     */
     function getTeams( $args = array(), $output = 'OBJECT' )
     {
         global $wpdb;
@@ -1082,9 +1144,7 @@ class LeagueManager
 		$defaults = array( 'competition_id' => false, 'league_id' => false, 'season' => false, 'group' => false, 'rank' => false, 'orderby' => array("rank" => "ASC", "title" => "ASC"), "home" => false, "cache" => true, 'affiliatedclub' => false );
 		$args = array_merge($defaults, $args);
 		extract($args, EXTR_SKIP);
-		
-			//$cachekey = md5(implode(array_map(function($entry) { if(is_array($entry)) { return implode($entry); } else { return $entry; } }, $args)) . $output);
-		
+				
 		$search_terms = array();
 		if ( $competition_id ) {
 			$search_terms[] = $wpdb->prepare("C.`competition_id` = '%d'", intval($competition_id));
@@ -1325,7 +1385,7 @@ class LeagueManager
             $team = (object) ['title' => 'Bye'];
             $team->captain = $team->contactno = $team->contactemail = $team->affiliatedclub = $team->stadium = $team->roster = $team->logo = '';
         } else {
-            $team = $wpdb->get_results( $wpdb->prepare("SELECT A.`title`, B.`captain`, A.`affiliatedclub`, B.`match_day`, B.`match_time`, A.`stadium`, A.`logo`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status` FROM {$wpdb->leaguemanager_teams} A, {$wpdb->leaguemanager_team_competition} B WHERE A.`id` = '%d' AND A.`id` = B.`team_id` and B.`competition_id` IN (select `competition_id` FROM {$wpdb->leaguemanager} WHERE `id` = '%d')", intval($team_id), intval($league_id)) );
+            $team = $wpdb->get_results( $wpdb->prepare("SELECT A.`title`, B.`captain`, A.`affiliatedclub`, B.`match_day`, B.`match_time`, A.`stadium`, A.`logo`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status` FROM {$wpdb->leaguemanager_teams} A LEFT JOIN {$wpdb->leaguemanager_team_competition} B ON A.`id` = B.`team_id` and B.`competition_id` IN (select `competition_id` FROM {$wpdb->leaguemanager} WHERE `id` = '%d') WHERE A.`id` = '%d'", intval($league_id), intval($team_id)) );
             
             if (!isset($team[0])) return false;
             
@@ -1808,7 +1868,7 @@ class LeagueManager
 	function getMatches( $args, $output = 'OBJECT' )
 	{
 	 	global $wpdb;
-		$defaults = array( 'league_id' => false, 'count' => false, 'season' => false, 'group' => false, 'final' => false, 'match_day' => false, 'time' => false, 'home_only' => false, 'winner_id' => false, 'loser_id' => false, 'team_id' => false, 'home_team' => false, 'away_team' => false, 'home_points' => false, 'away_points' => false, 'limit' => true, 'orderby' => array("date" => "ASC", "id" => "ASC"), 'standingstable' => false, 'cache' => true, 'logos' => true, 'competition_id' => false);
+		$defaults = array( 'league_id' => false, 'count' => false, 'season' => false, 'group' => false, 'final' => false, 'match_day' => false, 'time' => false, 'home_only' => false, 'winner_id' => false, 'loser_id' => false, 'team_id' => false, 'home_team' => false, 'away_team' => false, 'home_points' => false, 'away_points' => false, 'limit' => true, 'orderby' => array("date" => "ASC", "id" => "ASC"), 'standingstable' => false, 'cache' => true, 'logos' => true, 'competition_id' => false, 'confirmed' => false );
 		$args = array_merge($defaults, (array)$args);
 		extract($args, EXTR_SKIP);
 		
@@ -1892,6 +1952,10 @@ class LeagueManager
 			$search_terms[] = "DATEDIFF(NOW(), `date`) = 0";
 		elseif ( $time == 'day' )
 			$search_terms[] = "DATEDIFF('". htmlspecialchars(strip_tags($match_date))."', `date`) = 0";
+        
+        if ( $confirmed ) {
+            $search_terms[] = "`confirmed` in ('P','A','C')";
+        }
 	
 		$search = "";
 		if (count($search_terms) > 0) {
@@ -1941,7 +2005,7 @@ class LeagueManager
 			$this->num_matches2[$cachekey] = $wpdb->get_var($sql);
 			return $this->num_matches2[$cachekey];
 		}
-		$sql = "SELECT `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(`date`, '%e') AS day, DATE_FORMAT(`date`, '%c') AS month, DATE_FORMAT(`date`, '%Y') AS year, DATE_FORMAT(`date`, '%H') AS `hour`, DATE_FORMAT(`date`, '%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom` FROM {$wpdb->leaguemanager_matches}";
+		$sql = "SELECT `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(`date`, '%e') AS day, DATE_FORMAT(`date`, '%c') AS month, DATE_FORMAT(`date`, '%Y') AS year, DATE_FORMAT(`date`, '%H') AS `hour`, DATE_FORMAT(`date`, '%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `confirmed`, `home_captain`, `away_captain` FROM {$wpdb->leaguemanager_matches}";
 		if ( $search != "") $sql .= " WHERE $search";
 		$sql .= " ORDER BY $order";
 		if ( $limit && intval($num_matches_per_page) > 0 ) $sql .= " LIMIT ".$offset.",".intval($num_matches_per_page)."";
@@ -2023,7 +2087,7 @@ class LeagueManager
 		if ( isset($this->match[$match_id]) && $cache )
 			return $this->match[$match_id];
 		
-		$match = $wpdb->get_results("SELECT `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(`date`, '%e') AS day, DATE_FORMAT(`date`, '%c') AS month, DATE_FORMAT(`date`, '%Y') AS year, DATE_FORMAT(`date`, '%H') AS `hour`, DATE_FORMAT(`date`, '%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `final` ,`custom` FROM {$wpdb->leaguemanager_matches} WHERE `id` = '".intval($match_id)."'");
+		$match = $wpdb->get_results("SELECT `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(`date`, '%e') AS day, DATE_FORMAT(`date`, '%c') AS month, DATE_FORMAT(`date`, '%Y') AS year, DATE_FORMAT(`date`, '%H') AS `hour`, DATE_FORMAT(`date`, '%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `final` ,`custom`, `updated`, `updated_user`, `confirmed`, `home_captain`, `away_captain`  FROM {$wpdb->leaguemanager_matches} WHERE `id` = '".intval($match_id)."'");
 		
 		if ( !$match ) return false;
 		
@@ -2041,6 +2105,41 @@ class LeagueManager
 	}
 	
 	
+    /**
+     * get single match by tite
+     *
+     * @param int $league_id
+     * @param int $season
+     * @param int $home_id
+     * @param int $away_id
+     * @param boolean $cache
+     * @return object
+     */
+    function getMatchbyTitle( $league_id, $season, $home, $away, $cache = true )
+    {
+        global $wpdb;
+        
+        // use cached object
+//        if ( isset($this->match[$match_id]) && $cache )
+//            return $this->match[$match_id];
+        
+        $match = $wpdb->get_results("SELECT `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(`date`, '%e') AS day, DATE_FORMAT(`date`, '%c') AS month, DATE_FORMAT(`date`, '%Y') AS year, DATE_FORMAT(`date`, '%H') AS `hour`, DATE_FORMAT(`date`, '%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `final` ,`custom` FROM {$wpdb->leaguemanager_matches} WHERE `league_id` = '".intval($match_id)."' AND `season` = '".$season."' AND `home_team` = `".intval($home)."' AND `away_team` = '".intval($away)."'");
+        
+        if ( !$match ) return false;
+        
+        $match = $match[0];
+        
+        $match->match_title = $this->getMatchTitle($match->id, $logos, $match);
+        $match->location = stripslashes($match->location);
+        $match->custom = stripslashes_deep(maybe_unserialize($match->custom));
+        $match = (object)array_merge((array)$match, (array)$match->custom);
+        $match->time = ( '00:00' == $match->hour.":".$match->minutes ) ? '' : mysql2date(get_option('time_format'), $match->date);
+        //unset($match->custom);
+        
+        $this->match[0] = $match;
+        return $this->match[0];
+    }
+    
 	/**
 	 * get match title
 	 *
@@ -2272,7 +2371,7 @@ class LeagueManager
 	{
 	 	global $wpdb;
 	
-        $defaults = array( 'league_id' => false, 'count' => false, 'season' => false, 'team' => false, 'club' => false, 'player' => false, 'gender' => false, 'inactive' => false, 'cache' => true, 'orderby' => array("display_name" => "ASC" ));
+        $defaults = array( 'count' => false, 'team' => false, 'club' => false, 'player' => false, 'gender' => false, 'inactive' => false, 'cache' => true, 'orderby' => array("display_name" => "ASC" ));
 		$args = array_merge($defaults, (array)$args);
 		extract($args, EXTR_SKIP);
 		
@@ -2296,7 +2395,7 @@ class LeagueManager
         }
         
         if ($inactive) {
-            $search_terms[] = "A.`removed_date` IS NULL";
+            $search_terms[] = "`removed_date` IS NULL";
         }
         
 		$search = "";
@@ -2520,12 +2619,6 @@ class LeagueManager
         //        if ( isset($this->player[$player_id]) && $cache )
         //            return $this->player[$player_id];
         
-        $sql = "SELECT `firstname`, `surname`, `gender`, `id`, `btm`, `removed_date` FROM {$wpdb->leaguemanager_players}";
-        if ( $search != "") $sql .= " WHERE $search";
-        if ( $order != "") $sql .= " ORDER BY $order";
-        
-        $cachekey = md5($sql);
-        
         $players = get_users( 'orderby=displayname' );
         if ( !$players ) return false;
         
@@ -2544,8 +2637,7 @@ class LeagueManager
             $i++;
         }
         
-        $this->players[$cachekey] = $players;
-        return $this->players[$cachekey];
+        return $players;
     }
     
 	/**
@@ -2584,6 +2676,22 @@ class LeagueManager
 		return $this->player[$player->id];
 	}
 
+    /**
+     * get player name
+     *
+     * @param int $player_id
+     * @return string
+     */
+    function getPlayerName( $playerId )
+    {
+        global $wpdb;
+        
+        $player = get_userdata( $playerId );
+        if ( !$player ) return false;
+        
+        return $player->display_name;
+    }
+    
 	/**
 	 * get player stats
 	 *
@@ -2990,5 +3098,33 @@ class LeagueManager
 			$wpdb->query($wpdb->prepare( "UPDATE {$wpdb->leaguemanager_matches} SET `custom` = '%s' WHERE `id` = '%d'", maybe_serialize($match->custom), $match->id ));
 		}
 	}
+    function getMatchUpdateAllowed($homeTeam, $awayTeam) {
+        
+        global $leaguemanager;
+        $options = $leaguemanager->getOptions();
+        $userid = get_current_user_id();
+        $userCanUpdate = false;
+        if ( !current_user_can( 'manage_leaguemanager' ) ) {
+            if ( $options['matchCapability'] == 'roster' ) {
+                $homeRoster = $leaguemanager->getRoster( array( 'count' => true, 'club' => $homeTeam->affiliatedclub, 'player' => $userid, 'inactive' => true ) );
+                if ( $homeRoster != 0 ) {
+                    $userCanUpdate = true;
+                } elseif ( $options['resultEntry'] == 'either' ) {
+                    $awayRoster = $leaguemanager->getRoster( array( 'count' => true, 'club' => $awayTeam->affiliatedclub, 'player' => $userid, 'inactive' => true ) );
+                    if ( $awayRoster != 0 ) {
+                        $userCanUpdate = true;
+                    }
+                }
+            } elseif ( $options['matchCapability'] == 'captain' ) {
+                if ( $userid == $homeTeam->captainId || ( $options['resultEntry'] == 'either' && $userid == $awayTeam->captainId ) ) {
+                    $userCanUpdate = true;
+                }
+            }
+        } else {
+            $userCanUpdate = true;
+        }
+        return $userCanUpdate;
+    }
+
 }
 ?>

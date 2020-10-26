@@ -177,15 +177,19 @@ class LeagueManagerTennis extends LeagueManager
 		foreach ( $teams AS $key => $team ) {
             $team_sets_won = isset($team->sets_won) ? $team->sets_won : 0;
             $team_sets_allowed = isset($team->sets_allowed) ? $team->sets_allowed : 0;
+            if ( !is_numeric($team_sets_won) ) $team_sets_won = 0;
+            if ( !is_numeric($team_sets_allowed) ) $team_sets_allowed = 0;
             $team_games_won = isset($team->games_won) ? $team->games_won : 0;
             $team_games_allowed = isset($team->games_allowed) ? $team->games_allowed : 0;
+            if ( !is_numeric($team_games_won) ) $team_games_won = 0;
+            if ( !is_numeric($team_games_allowed) ) $team_games_allowed = 0;
 			$points[$key] = $team->points['plus']+$team->add_points;
 			$sets_diff[$key] = $team_sets_won - $team_sets_allowed;
 			$sets_won[$key] = $team_sets_won;
             $sets_allowed[$key] = $team_sets_allowed;
 			$games_diff[$key] = $team_games_won - $team_games_allowed;
             $games_won[$key] = $team_games_won;
-			$games_allowed[$key] = $teamgames_allowed;
+			$games_allowed[$key] = $team_games_allowed;
             $title[$key] = $team->title;
 		}
 		array_multisort( $points, SORT_DESC, $sets_diff, SORT_DESC, $sets_won, SORT_DESC, $sets_allowed, SORT_ASC, $games_won, SORT_DESC, $games_allowed, SORT_ASC, $title, SORT_ASC, $teams );
@@ -669,11 +673,15 @@ class LeagueManagerTennis extends LeagueManager
 			$leaguemanager->printMessage();
 			echo '<td></td>';
         } elseif ( isset($league->num_rubbers) && $league->num_rubbers > 0 ) {
-			$base_height = 155;
-			$rubber_height = $league->num_rubbers * 145;
-			$height = $base_height + $rubber_height;
-            $link = '#TB_inline?&inlineId=showMatchRubbers&width=650&height='.$height;
-            echo '<td><a href="'.$link.'" class="thickbox button button-primary" id="'.$match->id.'" onclick="Leaguemanager.showRubbers(this)">View Rubbers</a></td>';
+            if ( !is_numeric($match->home_team) || !is_numeric($match->away_team) ) {
+                echo '<td></td>';
+            } else {
+                $base_height = 155;
+                $rubber_height = $league->num_rubbers * 145;
+                $height = $base_height + $rubber_height;
+                $link = '#TB_inline?&inlineId=showMatchRubbers&width=650&height='.$height;
+                echo '<td><a href="'.$link.'" class="thickbox button button-primary" id="'.$match->id.'" onclick="Leaguemanager.showRubbers(this)">View Rubbers</a></td>';
+            }
 		} else {
 			for ( $i = 1; $i <= $league->num_sets; $i++ ) {
 				if ( !isset($match->sets[$i]) ) {

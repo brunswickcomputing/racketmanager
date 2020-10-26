@@ -242,6 +242,8 @@ Leaguemanager.updateRubbers = function(link) {
 	}
 	var $match = document.getElementById('current_match_id');
 	var $matchId = $match.value;
+    var $league = document.getElementById('current_league_id');
+    var $leagueId = $league.value;
     var $form = jQuery('#match-rubbers').serialize();
     $form += "&action=leaguemanager_update_rubbers";
     
@@ -250,32 +252,56 @@ Leaguemanager.updateRubbers = function(link) {
                 type: "POST",
                 data: $form,
                 success: function(response) {
-                var $response = jQuery.parseJSON(response);
-                var $message = $response[0];
-                jQuery("#UpdateResponse").text($message);
-                var $homepoints = $response[1];
-				var $matchhome = 0;
-				var $matchaway = 0;
-                for ( var i in $homepoints) {
-                var $formfield = "#home_points\\["+i+"\\]";
-                var $fieldval = $homepoints[i];
-                jQuery($formfield).val($fieldval);
-				$matchhome  = +$matchhome + +$homepoints[i];
-                }
-                var $awaypoints = $response[2];
-                for ( var i in $awaypoints) {
-                var $formfield = "#away_points\\["+i+"\\]";
-                var $fieldval = $awaypoints[i];
-                jQuery($formfield).val($fieldval);
-				$matchaway  = +$matchaway + +$awaypoints[i];
-                }
-				var $formfield = "#home_points\\["+$matchId+"\\]";
-				jQuery($formfield).val($matchhome);
-				var $formfield = "#away_points\\["+$matchId+"\\]";
-				jQuery($formfield).val($matchaway);
-                },
+                    var $response = jQuery.parseJSON(response);
+                    var $message = $response[0];
+                    jQuery("#UpdateResponse").text($message);
+                    var $homepoints = $response[1];
+                    var $matchhome = 0;
+                    var $matchaway = 0;
+                    for ( var i in $homepoints) {
+                        var $formfield = "#home_points\\["+i+"\\]";
+                        var $fieldval = $homepoints[i];
+                        jQuery($formfield).val($fieldval);
+                        $matchhome  = +$matchhome + +$homepoints[i];
+                    }
+                    var $awaypoints = $response[2];
+                    for ( var i in $awaypoints) {
+                        var $formfield = "#away_points\\["+i+"\\]";
+                        var $fieldval = $awaypoints[i];
+                        jQuery($formfield).val($fieldval);
+                        $matchaway  = +$matchaway + +$awaypoints[i];
+                    }
+                    var $formfield = "#home_points\\["+$matchId+"\\]";
+                    var $formfield1 = "#home_points\\["+$leagueId+"\\]\\["+$matchId+"\\]";
+                    jQuery($formfield).val($matchhome);
+                    jQuery($formfield1).val($matchhome);
+                    var $formfield = "#away_points\\["+$matchId+"\\]";
+                    var $formfield1 = "#away_points\\["+$leagueId+"\\]\\["+$matchId+"\\]";
+                    jQuery($formfield).val($matchaway);
+                    jQuery($formfield1).val($matchaway);
+                    },
                 error: function() {
-                alert("Ajax error on updating rubbers");
+                    alert("Ajax error on updating rubbers");
                 }
                 }) ;
+};
+Leaguemanager.confirmResults = function() {
+    
+    var $form = jQuery('#match-results').serialize();
+    $form += "&action=leaguemanager_confirm_results";
+    
+    jQuery.ajax({
+                url:LeagueManagerAjaxL10n.requestUrl,
+                type: "POST",
+                data: $form,
+                success: function(response) {
+                    var $response = jQuery.parseJSON(response);
+                    jQuery("#MatchUpdateResponse").text($response);
+                jQuery("#message").addClass("updated")
+                },
+                error: function() {
+                    alert("Ajax error on updating results");
+                }
+                }) ;
+    return false;
 };

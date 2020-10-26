@@ -3,7 +3,7 @@
 	echo '<p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p>';
 
 	} else {
-	$error = $is_finals = $finalkey = $cup = false;
+	$error = $is_finals = $finalkey = $cup = $singleCupGame = false;
 	$group = ( isset($_GET['group']) ? htmlspecialchars($_GET['group']) : '');
 	$class = 'alternate';
 	$bulk = false;
@@ -33,8 +33,9 @@
 
 		$id = intval($_GET['edit']);
 		$match = $leaguemanager->getMatch($id);
-        if ( isset($match->final) ) {
+        if ( isset($match->final) && $match->final != '' ) {
             $cup = true;
+            $singleCupGame = true;
         }
 		$league_id = $match->league_id;
 		$matches[0] = $match;
@@ -135,8 +136,21 @@
 	}
 
 	$season = $leaguemanager->getSeason( $league );
-
-	if ( $is_finals ) {
+        
+    if ( $singleCupGame ) {
+        $final = $championship->getFinals($finalkey);
+        $finalTeams = $championship->getFinalTeams($final, 'ARRAY');
+            if ( is_numeric($match->home_team) ) {
+                $home_title = $leaguemanager->getTeam($match->home_team)->title;
+            } else {
+                $home_title = $finalTeams[$match->home_team];
+            }
+            if ( is_numeric($match->away_team) ) {
+                $away_title = $leaguemanager->getTeam($match->away_team)->title;
+            } else {
+                $away_title = $finalTeams[$match->away_team];
+            }
+    } elseif ( $is_finals ) {
 		/*if ( is_numeric($matches[0]->home_team) && is_numeric($matches[0]->away_team) ) {
 			$team_args = array("league_id" => $league->id, "season" => $season['name'], "orderby" => array("title" => "ASC"));
 			$teams = $leaguemanager->getTeams( $team_args );
@@ -223,6 +237,10 @@
 <?php } ?>
 <!-- Home team pop up, only shows teams in a Group if set for 'Championship' -->
 					<td>
+<?php if ( $singleCupGame ) { ?>
+                            <input type="text" name="home_team_title[<?php echo $i ?>]" id="home_team_title_<?php echo $i ?>" value="<?php echo $home_title ?>" />
+                            <input type="hidden" name="home_team[<?php echo $i ?>]" id="home_team_<?php echo $i ?>" value="<?php echo $matches[$i]->home_team ?>" />
+<?php } else { ?>
                             <select size="1" name="home_team[<?php echo $i ?>]" id="home_team_<?php echo $i ?>" <?php if ( !$finalkey ) echo 'onChange="Leaguemanager.insertHomeStadium(this.value'.$i.')"'; ?>>
 						<?php $myTeam = 0; ?>
 <?php foreach ( $teams AS $team ) { ?>
@@ -231,9 +249,14 @@
     						<?php $myTeam++; ?>
 <?php } ?>
 						</select>
+<?php } ?>
 					</td>
 <!-- Away team pop up, shows all teams in the league only if 'Allow non-group' check is set, otherwise only show teams in group, if set for 'Championship' -->
 					<td>
+<?php if ( $singleCupGame ) { ?>
+                            <input type="text" disabled name="away_team_title[<?php echo $i ?>]" id="away_team_title_<?php echo $i ?>" value="<?php echo $away_title ?>" />
+                            <input type="hidden" name="away_team[<?php echo $i ?>]" id="away_team_<?php echo $i ?>" value="<?php echo $matches[$i]->away_team ?>" />
+<?php } else { ?>
 
                         <?php if ( 1 == $non_group ) {  ?>
 
@@ -259,6 +282,7 @@
                             </select>
                         <?php } ?>
 
+<?php } ?>
 					</td>
 					<td><input type="text" name="location[<?php echo $i ?>]" id="location[<?php echo $i ?>]" size="20" value="<?php if(isset($matches[$i]->location)) echo $matches[$i]->location ?>" size="30" /></td>
 <?php if ( isset($league->entryType) && $league->entryType == 'player' ) {
@@ -279,7 +303,7 @@
 						</select>
 						</td>
 <?php } ?>
-					<?php do_action('edit_matches_columns_'.$league->sport, (isset($matches[$i]) ? $matches[$i] : ''), $league, $season, $teams, $i) ?>
+<?php do_action('edit_matches_columns_'.$league->sport, (isset($matches[$i]) ? $matches[$i] : ''), $league, $season, (isset($teams) ? $teams : ''), $i) ?>
 				</tr>
 				<input type="hidden" name="match[<?php echo $i ?>]" value="<?php if (isset($matches[$i]->id)) echo $matches[$i]->id; else echo ""; ?>" />
 <?php } ?>

@@ -12,7 +12,7 @@ The following variables are usable:
 	You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
 */
 ?>
-<?php if (isset($_GET['match]) ) { ?>
+<?php if (isset($_GET['match']) ) { ?>
 	<?php leaguemanager_match(intval($_GET['match'])); ?>
 <?php } else { ?>
 

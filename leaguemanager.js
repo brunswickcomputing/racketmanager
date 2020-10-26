@@ -123,3 +123,76 @@ Leaguemanager.printScoreCard = function(e, link) {
 				}
 				}) ;
 };
+Leaguemanager.showRubbers = function(matchId) {
+    
+    jQuery("#showMatchRubbers").empty();
+    jQuery("#showMatchRubbers").addClass("spinnerMatch");
+
+    jQuery.ajax({
+                url:LeagueManagerAjaxL10n.requestUrl,
+                type: "POST",
+                data: {"matchId": matchId,
+                "action": "leaguemanager_show_rubbers"},
+                success: function(response) {
+                jQuery("#showMatchRubbers").empty();
+                jQuery("#showMatchRubbers").removeClass("spinnerMatch");
+                jQuery("#showMatchRubbers").html(response);
+                },
+                error: function() {
+                alert("Ajax error on getting rubbers");
+                }
+                }) ;
+};
+Leaguemanager.disableRubberUpdate = function() {
+    
+    jQuery("select").prop("disabled", "true");
+    jQuery("input").prop("readonly", "true");
+    jQuery("#updateRubber").val("confirm");
+};
+Leaguemanager.updateRubbers = function(link) {
+    
+    var selects = document.getElementById('match-rubbers').getElementsByTagName('select');
+    var values = [];
+    for(i=0;i<selects.length;i++) {
+        var select = selects[i];
+        
+    }
+    var $match = document.getElementById('current_match_id');
+    var $matchId = $match.value;
+    var $form = jQuery('#match-rubbers').serialize();
+    $form += "&action=leaguemanager_update_rubbers";
+    jQuery("#updateRubberResults").prop("disabled", "true");
+    jQuery("#updateRubberResults").addClass("disabled");
+
+    jQuery.ajax({
+                url:LeagueManagerAjaxL10n.requestUrl,
+                type: "POST",
+                data: $form,
+                success: function(response) {
+                    var $response = jQuery.parseJSON(response);
+                    var $message = $response[0];
+                    jQuery("#UpdateResponse").text($message);
+                    var $homepoints = $response[1];
+                    var $matchhome = 0;
+                    var $matchaway = 0;
+                    for ( var i in $homepoints) {
+                        var $formfield = "#home_points\\["+i+"\\]";
+                        var $fieldval = $homepoints[i];
+                        jQuery($formfield).val($fieldval);
+                        $matchhome  = +$matchhome + +$homepoints[i];
+                    }
+                    var $awaypoints = $response[2];
+                    for ( var i in $awaypoints) {
+                        var $formfield = "#away_points\\["+i+"\\]";
+                        var $fieldval = $awaypoints[i];
+                        jQuery($formfield).val($fieldval);
+                        $matchaway  = +$matchaway + +$awaypoints[i];
+                    }
+                },
+                error: function() {
+                    alert("Ajax error on updating rubbers");
+                }
+                }) ;
+    jQuery("#updateRubberResults").removeProp("disabled");
+    jQuery("#updateRubberResults").removeClass("disabled");
+};

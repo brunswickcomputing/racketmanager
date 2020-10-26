@@ -38,7 +38,7 @@ class LeagueManagerLoader
 	 *
 	 * @var string
 	 */
-	var $version = '5.3.1';
+	var $version = '5.3.4';
 
 
 	/**
@@ -46,7 +46,7 @@ class LeagueManagerLoader
 	 *
 	 * @var string
 	 */
-	var $dbversion = '5.3.3';
+	var $dbversion = '5.3.4';
 
 
 	/**
@@ -407,12 +407,9 @@ class LeagueManagerLoader
 		$wpdb->leaguemanager_matches = $wpdb->prefix . 'leaguemanager_matches';
         $wpdb->leaguemanager_rubbers = $wpdb->prefix . 'leaguemanager_rubbers';
 		$wpdb->leaguemanager_stats = $wpdb->prefix . 'leaguemanager_stats';
-		$wpdb->leaguemanager_players = $wpdb->prefix . 'leaguemanager_players';
 		$wpdb->leaguemanager_roster = $wpdb->prefix . 'leaguemanager_roster';
 		$wpdb->leaguemanager_competitions = $wpdb->prefix . 'leaguemanager_competitions';
         $wpdb->leaguemanager_team_competition = $wpdb->prefix . 'leaguemanager_team_competition';
-        $wpdb->leaguemanager_users = $wpdb->prefix . 'users';
-        $wpdb->leaguemanager_usermeta = $wpdb->prefix . 'usermeta';
 	}
 
 
@@ -834,22 +831,12 @@ class LeagueManagerLoader
 						PRIMARY KEY ( `id` )) $charset_collate;";
 		maybe_create_table( $wpdb->leaguemanager_stats, $create_stats_sql );
 		
-		$create_players_sql = "CREATE TABLE {$wpdb->leaguemanager_players} (
-		`id` int( 11 ) NOT NULL AUTO_INCREMENT,
-		`firstname` varchar( 255 ) NOT NULL default '',
-		`surname` varchar( 255 ) NOT NULL default '',
-		`gender` varchar( 1 ) NOT NULL default '',
-		`btm` int ( 11 ) NULL default NULL,
-		`removed_date` date NULL,
-        `system_record` varchar( 1 ) NULL default NULL,
-		PRIMARY KEY ( `id` )) $charset_collate;";
-		maybe_create_table( $wpdb->leaguemanager_players, $create_players_sql );
-		
 		$create_roster_sql = "CREATE TABLE {$wpdb->leaguemanager_roster} (
 		`id` int( 11 ) NOT NULL AUTO_INCREMENT,
 		`affiliatedclub` int( 11 ) NOT NULL default 0,
 		`player_id` int( 11 ) NOT NULL default 0,
 		`removed_date` date NULL,
+        `system_record` VARCHAR(1) NULL DEFAULT NULL,
 		PRIMARY KEY ( `id` )) $charset_collate;";
 		maybe_create_table( $wpdb->leaguemanager_roster, $create_roster_sql );
 
@@ -934,7 +921,6 @@ class LeagueManagerLoader
 		global $wpdb, $leaguemanager;
 
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager_roster}" );
-		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager_players}" );
         $wpdb->query( "DROP TABLE {$wpdb->leaguemanager_rubbers}" );
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager_matches}" );
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager_table}" );

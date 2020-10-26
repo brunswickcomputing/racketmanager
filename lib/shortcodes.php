@@ -461,11 +461,37 @@ class LeagueManagerShortcodes extends LeagueManager
 	{
 		global $leaguemanager, $lmStats;
 		extract(shortcode_atts(array(
-			'id' => 0,
+			'match_id' => 0,
 			'template' => '',
 		), $atts ));
 
-		$match = $leaguemanager->getMatch(intval($id));
+        // Get Match by Name
+        $match_name = get_query_var('match_name');
+        
+        //        if ( !$league_name == '' ) {
+        //            header( 'Location: '.get_option( 'home' ).'leagues'.str_replace(" ", "-", $league_name).'/' );
+        //        }
+        
+        if (!empty($match_name)) {
+            $league_name = get_query_var('league_id');
+            $season = get_query_var('season');
+            if (!empty($league_name)) {
+                $league = $leaguemanager->getLeague( $league_name );
+                $curr_league = $league;
+                $league_id = $league->id;
+                $matchTeams = explode($match_name,'vs');
+                $homeTeam = $leaguemanager->getTeamID($matchTeams[0]);
+                $awayTeam = $leaguemanager->getTeamID($matchTeams[1]);
+                $match = $leaguemanager->getMatchbyTitle( $league_id, $season, $homeTeam, $awayTeam );
+                $match_id = $match->id;
+            }
+        }
+        
+        // Get Match ID from shortcode or $_GET
+        if ( !$match_id ) {
+            $match_id = ( isset($_GET['match_id']) && !empty($_GET['match_id']) ) ? $_GET['match_id'] : false;
+        }
+		$match = $leaguemanager->getMatch($match_id);
 		
 		$filename = '';
 		if ( $match ) {
@@ -476,7 +502,7 @@ class LeagueManagerShortcodes extends LeagueManager
             $match->num_sets = ( isset($league->num_sets) ? $league->num_sets : NULL );
             
             if ( isset($match->num_rubbers) ) {
-                $rubbers = $leaguemanager->getRubbers( array("match_id" => intval($id)));
+                $rubbers = $leaguemanager->getRubbers( array("match_id" => intval($match_id)));
                 $r=1;
                 foreach ($rubbers as $rubber) {
 					$rubber->home_player_1_name = $rubber->home_player_2_name = $rubber->away_player_1_name = $rubber->away_player_2_name = '';
@@ -527,14 +553,12 @@ class LeagueManagerShortcodes extends LeagueManager
 			}
 			
 		}		
-		
         if ( empty($template) && $this->checkTemplate('match-'.$league->sport) )
             $filename = 'match-'.$league->sport;
         elseif ($this->checkTemplate('match-'.$template.'-'.$league->sport) )
             $filename = 'match-'.$template.'-'.$league->sport;
         else
             $filename = ( !empty($template) ) ? 'matches-'.$template : 'matches';
-
 		$out = $this->loadTemplate( $filename, array('match' => $match) );
 
 		return $out;
@@ -603,7 +627,6 @@ class LeagueManagerShortcodes extends LeagueManager
 				if ( $match ) {
 					$class = ( !isset($class) || 'alternate' == $class ) ? '' : 'alternate';
 					$match->class = $class;
-				
 					if ( is_numeric($match->home_team) ) {
                         if ( $match->home_team == -1 ) {
                             $home_title = 'Bye';

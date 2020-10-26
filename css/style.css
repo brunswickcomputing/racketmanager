@@ -805,7 +805,7 @@ div.teamlist .header .ui-icon {
 }
 
 #matchrubbers select {
-	width:	100px;
+	width:	80%;
 }
 
 #matchrubbers .centered {
@@ -1168,4 +1168,40 @@ p.message-error {
 }
 form#signupform {
     height: 300px;
+}
+div.tm-team-content dl.team dt.contact-login-msg {
+    width: 400px;
+    text-align: center;
+    padding: 20px;
+}
+.playerselect {
+    width: 25%;
+}
+#content .playerselect {
+    border: none;
+    border-right: 1px solid #333;
+}
+#wpfooter {
+    position: relative;
+}
+
+.spinnerMatch {
+    border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #00964b; /* Blue */
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.right {
+    float: right;
+}
+.left {
+    float: left;
+}
 }

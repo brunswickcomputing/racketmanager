@@ -10,7 +10,7 @@ if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POS
 		$group = isset($_POST['group']) ? htmlspecialchars(strip_tags($_POST['group'])) : '';
         if ( 'Add' == $_POST['action'] ) {
             if ( '' == $_POST['team_id'] ) {
-                $team_id = $this->addTeam( htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['captainId']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']), htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), htmlspecialchars($_POST['stadium']), $home, $roster, $profile, $custom, htmlspecialchars($_POST['logo_db']),htmlspecialchars($_POST['league_id']) );
+                $team_id = $this->addTeam( htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['affiliatedclub']), htmlspecialchars($_POST['stadium']), htmlspecialchars($_POST['captainId']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), $home, $roster, $profile, $custom, htmlspecialchars($_POST['logo_db']),htmlspecialchars($_POST['league_id']) );
                 $this->addTableEntry( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
             } else {
                 $del_logo = isset( $_POST['del_logo'] ) ? true : false;
@@ -237,9 +237,10 @@ if ( isset($_GET['standingstable']) ) {
 	}
 	$teams = $leaguemanager->getStandings( $teams, $match_day, $mode );
 }
-/*$tmp = $leaguemanager->getTeams( array('league_id' => $league->id) );
-foreach ( $tmp AS $t )
-	$this->delTeamFromLeague($t->id);*/
+    
+    if (isset($_GET['match_day']) ) {
+        $tab = 2;
+    }
 
 	if ( !wp_mkdir_p( $leaguemanager->getImagePath() ) ) { ?>
   <div class="error"><p><?php printf( __( 'Unable to create directory %s. Is its parent directory writeable by the server?' ), $leaguemanager->getImagePath() ) ?></p></div>

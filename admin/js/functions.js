@@ -71,7 +71,7 @@ jQuery(document).ready(function($) {
                                                              datatype: 'json',
                                                              url: LeagueManagerAjaxL10n.requestUrl,
                                                              data: {"name": name,
-                                                             "action": "leaguemanager_getPlayerName"},
+                                                             "action": "leaguemanager_getPlayerDetails"},
                                                              success: function(data) {
                                                              response(JSON.parse(data));
                                                              }
@@ -112,7 +112,7 @@ jQuery(document).ready(function($) {
                                                              datatype: 'json',
                                                              url: LeagueManagerAjaxL10n.requestUrl,
                                                              data: {"name": name,
-                                                             "action": "leaguemanager_getPlayerName"},
+                                                             "action": "leaguemanager_getPlayerDetails"},
                                                              success: function(data) {
                                                              response(JSON.parse(data));
                                                              }

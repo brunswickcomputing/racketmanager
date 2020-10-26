@@ -2,7 +2,7 @@
 // check for rights
 if(!current_user_can('edit_posts')) die;
 
-global $wpdb;
+global $wpdb, $championship;
 
 ?>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -108,6 +108,7 @@ global $wpdb;
 		<?php
 			$matches = $wpdb->get_results("SELECT * FROM {$wpdb->leaguemanager_matches} ORDER BY `id` DESC");
 			$teams_sql = $wpdb->get_results("SELECT * FROM {$wpdb->leaguemanager_teams} ORDER BY `id` DESC");			
+            $teams2 = $championship->getFinalTeams($final, 'ARRAY');
 			if( $matches ) {
 				if ( $teams_sql ) {
 					$teams = array();

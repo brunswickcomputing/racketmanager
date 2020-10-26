@@ -1,5 +1,5 @@
 <?php
-    global $wp_query;
+    global $wp_query, $leaguemanager;
     $postID = isset($wp_query->post->ID) ? $wp_query->post->ID : "";
 ?>
             <table class='leaguemanager matchtable' summary='' title='<?php echo __( 'Match Plan', 'leaguemanager' )." ".$league->title ?>'>
@@ -14,8 +14,9 @@
             </thead>
             <tbody>
             <?php $matchday = isset($_GET['match_day']) ? $_GET['match_day'] : $leaguemanager->getMatchDay(); ?>
-            <?php foreach ( $matches AS $no => $match ) { ?>
-                <?php if ( $league->mode == 'default' && $matchday != $match->match_day ) { ?>
+            <?php foreach ( $matches AS $no => $match ) {
+                $userCanUpdate = $leaguemanager->getMatchUpdateAllowed($match->homeTeam, $match->awayTeam);
+                if ( $league->mode == 'default' && $matchday != $match->match_day ) { ?>
                 <tr class='match-day-row'>
                     <th colspan="3" class='match']>Week <?php echo $match->match_day; ?></th>
                 </tr>
@@ -35,7 +36,14 @@
                                 <td class='angledir'><i class='fa fa-angle-down'></i></td>
                             <?php } ?>
                         <?php } else { ?>
-                            <td><a href="#" class='fa fa-print ' id="<?php echo $match->id ?>" onclick="Leaguemanager.printScoreCard(event, this)"></a></td>
+                            <td>
+                                <a href="#" class='fa fa-print ' id="<?php echo $match->id ?>" onclick="Leaguemanager.printScoreCard(event, this)"></a>
+                            <?php if ( $userCanUpdate == true && ( !isset($match->confirmed) || $match->confirmed = "P" ) ) {
+                                if ( is_numeric($match->home_team) && is_numeric($match->away_team) ) {?>
+                                <a href="/leagues/match?match_id=<?php echo $match->id ?>" class="fa fa-pencil"</a>
+                                <?php } ?>
+                            <?php } ?>
+                            </td>
                         <?php } ?>
                     <?php } else { ?>
                         <td class='angledir'></td>

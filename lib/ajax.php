@@ -17,7 +17,7 @@ class LeagueManagerAJAX
 	function __construct()
 	{
         add_action( 'wp_ajax_leaguemanager_getCaptainName', array(&$this, 'getCaptainName') );
-        add_action( 'wp_ajax_leaguemanager_getPlayerName', array(&$this, 'getPlayerName') );
+        add_action( 'wp_ajax_leaguemanager_getPlayerDetails', array(&$this, 'getPlayerDetails') );
 		add_action( 'wp_ajax_leaguemanager_add_team_from_db', array(&$this, 'addTeamFromDB') );
         add_action( 'wp_ajax_leaguemanager_add_teamplayer_from_db', array(&$this, 'addTeamPlayerFromDB') );
 		add_action( 'wp_ajax_leaguemanager_set_team_roster_groups', array(&$this, 'setTeamRosterGroups') );
@@ -32,11 +32,13 @@ class LeagueManagerAJAX
 		add_action( 'wp_ajax_nopriv_leaguemanager_get_match_box', array(&$this, 'getMatchBox') );
 
 		add_action( 'wp_ajax_leaguemanager_show_rubbers', array(&$this, 'showRubbers') );
+        add_action( 'wp_ajax_nopriv_leaguemanager_show_rubbers', array(&$this, 'showRubbers') );
 
 		add_action( 'wp_ajax_leaguemanager_view_rubbers', array(&$this, 'viewRubbers') );
 		add_action( 'wp_ajax_nopriv_leaguemanager_view_rubbers', array(&$this, 'viewRubbers') );
 
 		add_action( 'wp_ajax_leaguemanager_update_rubbers', array(&$this, 'updateRubbers') );
+        add_action( 'wp_ajax_leaguemanager_confirm_results', array(&$this, 'confirmResults') );
 	}
 	function LeagueManagerAJAX()
 	{
@@ -90,7 +92,7 @@ class LeagueManagerAJAX
 		});");
 	}
 
-    function getPlayerName() {
+    function getPlayerDetails() {
         global $wpdb, $leaguemanager;
         $name = $wpdb->esc_like(stripslashes($_POST['name']['term'])).'%';
         
@@ -357,7 +359,7 @@ class LeagueManagerAJAX
 		global $leaguemanager, $championship;
 		$matchId = $_POST['matchId'];
 		$match = $leaguemanager->getMatch($matchId);
-		$league = $leaguemanager->getCurrentLeague();
+		$league = $leaguemanager->getLeague($match->league_id);
 		$num_sets = $league->num_sets;
         $pointsspan = 2 + intval($num_sets);
 		$num_rubbers = $league->num_rubbers;
@@ -531,13 +533,17 @@ class LeagueManagerAJAX
 	<div id="matchheader">
 		<div class="leaguetitle"><?php echo $league->title ?></div>
 		<div class="matchdate"><?php echo substr($match->date,0,10) ?></div>
+<?php if ( isset($match->match_day) && $match->match_day > 0 ) { ?>
 		<div class="matchday">Week <?php echo $match->match_day ?></div>
+<?php } ?>
 		<div class="matchtitle"><?php echo $match->match_title ?></div>
 	</div>
     <form id="match-rubbers" action="#" method="post" onsubmit="return checkSelect(this)">
         <?php wp_nonce_field( 'rubbers-match' ) ?>
 
+        <input type="hidden" name="current_league_id" id="current_league_id" value="<?php echo $match->league_id ?>" />
         <input type="hidden" name="current_match_id" id="current_match_id" value="<?php echo $matchId ?>" />
+        <input type="hidden" name="current_season" id="current_season" value="<?php echo $match->season ?>" />
         <input type="hidden" name="num_rubbers" value="<?php echo $num_rubbers ?>" />
         <input type="hidden" name="home_team" value="<?php echo $match->home_team ?>" />
         <input type="hidden" name="away_team" value="<?php echo $match->away_team ?>" />
@@ -559,12 +565,12 @@ class LeagueManagerAJAX
         
         foreach ($rubbers as $rubber) {
     ?>
-                <tr class="rtr '.$class.'">
+                <tr class="rtr <?php echo $class ?>">
                     <input type="hidden" name="id[<?php echo $r ?>]" value="<?php echo $rubber->id ?>" </>
 					<td rowspan="3" class="rtd centered">
 						<?php echo (isset($rubber->rubber_number) ? $rubber->rubber_number : '') ?>
 					</td>
-					<td class="rtd">
+					<td class="rtd playerselect">
 <?php $tabindex = $tabbase + 1; ?>
 						<select tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer1[<?php echo $r ?>]" id="homeplayer1_<?php echo $r ?>">
 							<option><?php _e( 'Select Player', 'leaguemanager' ) ?></option>
@@ -590,7 +596,7 @@ class LeagueManagerAJAX
                         </td>
                     <?php } ?>
 
-                    <td class="rtd">
+                    <td class="rtd playerselect">
 <?php $tabindex = $tabbase + 3; ?>
 						<select tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer1[<?php echo $r ?>]" id="awayplayer1_<?php echo $r ?>">
 							<option><?php _e( 'Select Player', 'leaguemanager' ) ?></option>
@@ -604,7 +610,7 @@ class LeagueManagerAJAX
                     </td>
                 </tr>
                 <tr>
-                    <td class="rtd">
+                    <td class="rtd playerselect">
 <?php $tabindex = $tabbase + 2; ?>
 						<select tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer2[<?php echo $r ?>]" id="homeplayer2_<?php echo $r ?>">
 							<option><?php _e( 'Select Player', 'leaguemanager' ) ?></option>
@@ -616,7 +622,7 @@ class LeagueManagerAJAX
 <?php } ?>
 						</select>
                     </td>
-                    <td class="rtd">
+                    <td class="rtd playerselect">
 <?php $tabindex = $tabbase + 4; ?>
 						<select tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer2[<?php echo $r ?>]" id="awayplayer2_<?php echo $r ?>">
 							<option><?php _e( 'Select Player', 'leaguemanager' ) ?></option>
@@ -641,11 +647,57 @@ class LeagueManagerAJAX
         $r ++;
         }
     ?>
+<?php if ( isset($match->home_captain) || isset($match->away_captain) ) { ?>
+                <tr>
+					<td class="rtd centered">
+					</td>
+                    <td class="rtd" id="homeCaptain">
+<?php if ( isset($match->home_captain) ) {
+    echo $leaguemanager->getPlayerName($match->home_captain);
+} else { ?>
+    <?php if ( !current_user_can( 'manage_leaguemanager' ) && $match->confirmed == 'P' ) { ?>
+<div class="radio-list">
+                        <label class="left"><input type="radio" name="resultConfirm" value="confirm" required />Confirm</label>
+                        <label class="right"><input type="radio" name="resultConfirm" value="challenge" required />Challenge</label>
+</div>
+    <?php } ?>
+<?php } ?>
+                    </td>
+                    <td colspan="<?php echo intval($num_sets) ?>" class="rtd">
+                    </td>
+                    <td class="rtd" id="awayCaptain">
+<?php if ( isset($match->away_captain) ) {
+    echo $leaguemanager->getPlayerName($match->away_captain);
+} else { ?>
+    <?php if ( !current_user_can( 'manage_leaguemanager' ) && $match->confirmed == 'P' ) { ?>
+<div class="radio-list">
+                        <label class="left"><input type="radio" name="resultConfirm" value="confirm" required />Confirm</label>
+                        <label class="right"><input type="radio" name="resultConfirm" value="challenge" required />Challenge</label>
+</div>
+    <?php } ?>
+<?php } ?>
+                    </td>
+                </tr>
+<?php } ?>
             </tbody>
         </table>
-        <input type="hidden" name="updateRubber" value="results" />
+<p>
+<?php if ( isset($match->updated_user) ) echo 'Updated By:'.$leaguemanager->getPlayerName($match->updated_user) ?>
+<?php if ( isset($match->updated) ) echo ' On:'.$match->updated ?>
+</p>
+<?php if ( current_user_can( 'manage_leaguemanager' ) || $match->confirmed == 'P' || $match->confirmed == NULL ) { ?>
+
+        <input type="hidden" name="updateRubber" id="updateRubber" value="results" />
         <button tabindex="500" class="button button-primary" type="button" id="updateRubberResults" onclick="Leaguemanager.updateRubbers(this)">Update Results</button>
+    <?php } ?>
         <p id="UpdateResponse"></p>
+<?php if ( $match->confirmed == 'P' ) { ?>
+        <script type="text/javascript">
+            jQuery(document).ready(function($) {
+                       Leaguemanager.disableRubberUpdate();
+                       });
+        </script>
+<?php } ?>
     </form>
 </div>
 <?php
@@ -654,24 +706,23 @@ class LeagueManagerAJAX
     
     function updateRubbers()
     {
-        global $wpdb, $leaguemanager;
-        
+        global $wpdb, $lmLoader, $leaguemanager;
+        $admin = $lmLoader->getAdminPanel();
         if ( isset($_POST['updateRubber'])) {
             check_admin_referer('rubbers-match');
-            
-            if ( 'results' == $_POST['updateRubber'] ) {
-
-                $homepoints = isset($_POST['home_points']) ? $_POST['home_points'] : array();
-                $awaypoints = isset( $_POST['away_points']) ? $_POST['away_points'] : array();
-                $num_rubbers = $_POST['num_rubbers'];
-                $home_team = $_POST['home_team'];
-                $away_team = $_POST['away_team'];
-                $homepoints = array();
-                $awaypoints = array();
-                $return = array();
+            $homepoints = array();
+            $awaypoints = array();
+            $return = array();
+            $updates = false;
+            $matchId = $_POST['current_match_id'];
+            $homepoints = isset($_POST['home_points']) ? $_POST['home_points'] : array();
+            $awaypoints = isset( $_POST['away_points']) ? $_POST['away_points'] : array();
+            $num_rubbers = $_POST['num_rubbers'];
+            $home_team = $_POST['home_team'];
+            $away_team = $_POST['away_team'];
+            if ( $_POST['updateRubber'] == 'results' ) {
                 
                 for ($ix = 0; $ix < $num_rubbers; $ix++) {
-                    
                     $rubberId       = $_POST['id'][$ix];
                     $homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : NULL;
                     $homeplayer2    = isset($_POST['homeplayer2'][$ix]) ? $_POST['homeplayer2'][$ix] : NULL;
@@ -679,14 +730,11 @@ class LeagueManagerAJAX
                     $awayplayer2    = isset($_POST['awayplayer2'][$ix]) ? $_POST['awayplayer2'][$ix] : NULL;
                     $custom         = isset($_POST['custom'][$ix]) ? $_POST['custom'][$ix] : "";
                     $winner         = $loser = '';
-                    $homescore      = '0';
-                    $awayscore      = '0';
+                    $homescore      = $awayscore = '0';
                     $sets           = $custom['sets'];
                     
                     foreach ( $sets as $set ) {
-                        
                         if ( $set['player1'] !== NULL && $set['player2'] !== NULL ) {
-                            
                             if ( $set['player1'] > $set['player2']) {
                                 $homescore += 1;
                             } elseif ( $set['player1'] < $set['player2']) {
@@ -716,17 +764,70 @@ class LeagueManagerAJAX
                     }
                     
                     if (isset($homeplayer1) || isset($homeplayer2) || isset($awayplayer1) || isset($awayplayer2) || empty($homescore) || empty($awayscore) ) {
-                        $homescore = !empty($homescore) ? $homescore : "0";
-                        $awayscore = !empty($awayscore) ? $awayscore : "0";
+                        $homescore = !empty($homescore) ? $homescore : 0;
+                        $awayscore = !empty($awayscore) ? $awayscore : 0;
                         $homepoints[$ix] = $homescore;
                         $awaypoints[$ix] = $awayscore;
 
-                        $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_rubbers} SET `home_points` = '%s',`away_points` = '%s',`home_player_1` = '%s',`home_player_2` = '%s',`away_player_1` = '%s',`away_player_2` = '%s',`winner_id` = '%d',`loser_id` = '%d',`custom` = '%s' WHERE `id` = '%d'", $homescore, $awayscore, $homeplayer1, $homeplayer2, $awayplayer1, $awayplayer2, $winner, $loser, maybe_serialize($custom), $rubberId));
-                        $msg = 'Results Updated';
-                    } else {
-                        $msg = 'Nothing to update';
+//                        $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_rubbers} SET `home_points` = '%s',`away_points` = '%s',`home_player_1` = '%s',`home_player_2` = '%s',`away_player_1` = '%s',`away_player_2` = '%s',`winner_id` = '%d',`loser_id` = '%d',`custom` = '%s' WHERE `id` = '%d'", $homescore, $awayscore, $homeplayer1, $homeplayer2, $awayplayer1, $awayplayer2, $winner, $loser, maybe_serialize($custom), $rubberId));
+                        $matchConfirmed = 'P';
+                        $matchMessage = 'Result Saved';
+                        $updates = true;
                     }
                 }
+            } elseif ( $_POST['updateRubber'] == 'confirm' ) {
+                switch ( $_POST['resultConfirm'] ) {
+                    case "confirm":
+                        $matchConfirmed = 'A';
+                        $matchMessage = 'Result Approved';
+                        $updates = true;
+                        break;
+                    case "challenge":
+                        $matchConfirmed = 'C';
+                        $matchMessage = 'Result Challenged';
+                        $updates = true;
+                        break;
+                    default:
+                        $matchConfirmed = '';
+                }
+            }
+            
+            if ( $updates ) {
+                $userid = get_current_user_id();
+                $homeRoster = $leaguemanager->getRoster(array("count" => true, "team" => $home_team, "player" => $userid, "inactive" => true));
+                if ( $homeRoster > 0 ) {
+                    $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `home_captain` = %d WHERE `id` = '%d'", $userid, $matchConfirmed, $userid, $matchId));
+                } else {
+                    $awayRoster = $leaguemanager->getRoster(array("count" => true, "team" => $away_team, "player" => $userid, "inactive" => true));
+                    if ( $awayRoster > 0 ) {
+                        $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `away_captain` = %d WHERE `id` = '%d'", $userid, $matchConfirmed, $userid, $matchId));
+                    } else {
+                        $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s' WHERE `id` = '%d'", get_current_user_id(), $matchConfirmed, $matchId));
+                    }
+                }
+                $msg = sprintf(__('%s','leaguemanager'), $matchMessage);
+                if ( $matchConfirmed == 'A' ) {
+                    $options = $leaguemanager->getOptions();
+                    if ( $options['resultConfirmation'] == 'auto' ) {
+                        $leagueId = $_POST['current_league_id'];
+                        $matchId = $_POST['current_match_id'];
+                        $matches[$matchId] = $matchId;
+                        $home_points[$matchId] = array_sum($homepoints);
+                        $away_points[$matchId] = array_sum($awaypoints);
+                        $home_team[$matchId] = $home_team;
+                        $away_team[$matchId] = $away_team;
+                        $custom[$matchId] = array();
+                        $season = $_POST['current_season'];
+                        $matchCount = $admin->updateResults( $leagueId, $matches, $home_points, $away_points, $home_team, $away_team, $custom, $season );
+                        if ( $matchCount > 0 ) {
+                            $msg = sprintf(__('Saved Results of %d matches','leaguemanager'), $matchCount);
+                        } else {
+                            $msg = __('No matches to save','leaguemanager');
+                        }
+                    }
+                }
+            } else {
+                $msg = __('No results to save','leaguemanager');
             }
             
             array_push($return,$msg,$homepoints,$awaypoints);
@@ -735,6 +836,30 @@ class LeagueManagerAJAX
 		} else {
 			die(0);
 		}
+    }
+    function confirmResults()
+    {
+        global $lmLoader, $leaguemanager;
+        $admin = $lmLoader->getAdminPanel();
+        $updateCount = 0;
+        $return ='';
+        $custom = array();
+        check_admin_referer('results-update');
+        
+        foreach ( $_POST['league'] as $league_id ) {
+            
+            $matchCount = $admin->updateResults( $league_id, $_POST['matches'][$league_id], $_POST['home_points'][$league_id], $_POST['away_points'][$league_id], $_POST['home_team'][$league_id], $_POST['away_team'][$league_id], $custom, $_POST['season'][$league_id] );
+            $updateCount += $matchCount;
+            
+        }
+        if ( $updateCount == 0 ) {
+            $return = __('No results to update','leaguemanager');
+        } else {
+            $return = sprintf(__('Updated Results of %d matches','leaguemanager'), $updateCount);
+        }
+ 
+        die(json_encode($return));
+
     }
 }
 ?>

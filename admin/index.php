@@ -36,9 +36,24 @@
 		}
 		$this->printMessage();
 		$tab = 1;
+    } elseif ( isset($_POST['addTeam']) ) {
+        check_admin_referer('leaguemanager_add-team');
+        $this->addTeam( htmlspecialchars(strip_tags($_POST['teamName'])), htmlspecialchars(strip_tags($_POST['affiliatedClub'])), htmlspecialchars(strip_tags($_POST['stadium'])));
+        $this->printMessage();
+        $tab = 3;
+    } elseif ( isset($_POST['doteamdel']) && $_POST['action'] == 'delete' ) {
+        check_admin_referer('teams-bulk');
+        foreach ( $_POST['team'] AS $team_id ) {
+            $this->delTeam( intval($team_id) );
+        }
+        $this->printMessage();
+        $tab = 3;
 	} elseif ( isset($_GET['view']) && $_GET['view'] == 'roster' ) {
         if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
 		$tab = 1;
+    } elseif ( isset($_GET['view']) && $_GET['view'] == 'teams' ) {
+        if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
+        $tab = 3;
 	}
 ?>
 <script type='text/javascript'>
@@ -57,6 +72,8 @@ jQuery(function() {
 			<li><a href="#competitions-table"><?php _e( 'Competitions', 'leaguemanager' ) ?></a></li>
 			<li><a href="#roster-table"><?php _e( 'Rosters', 'leaguemanager' ) ?></a></li>
 			<li><a href="#player-table"><?php _e( 'Players', 'leaguemanager' ) ?></a></li>
+            <li><a href="#teams-table"><?php _e( 'Teams', 'leaguemanager' ) ?></a></li>
+			<li><a href="#results-table"><?php _e( 'Results', 'leaguemanager' ) ?></a></li>
 		</ul>
 
 		<div id="competitions-table" class="league-block-container">
@@ -70,6 +87,14 @@ jQuery(function() {
 		<div id="player-table" class="league-block-container">
 			<h2 class="header"><?php _e( 'Players', 'leaguemanager' ) ?></h2>
 			<?php include('players.php'); ?>
+		</div>
+		<div id="teams-table" class="league-block-container">
+			<h2 class="header"><?php _e( 'Teams', 'leaguemanager' ) ?></h2>
+			<?php include('teams.php'); ?>
+		</div>
+		<div id="results-table" class="league-block-container">
+			<h2 class="header"><?php _e( 'Results', 'leaguemanager' ) ?></h2>
+			<?php include('results.php'); ?>
 		</div>
 	</div>
 </div>

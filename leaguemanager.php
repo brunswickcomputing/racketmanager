@@ -3,7 +3,7 @@
 Plugin Name: LeagueManager
 Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
 Description: Manage and present sports league results.
-Version: 5.6.3
+Version: 5.6.4
 Author: Paul Moffat, Kolja Schleich, LaMonte Forthun
 
 Copyright 2008-2020  Paul Moffat (email: paul@paarcs.com)
@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 * @author LaMonte Forthun
 * @author Paul Moffat
 * @package LeagueManager
-* @version 5.6.3
+* @version 5.6.4
 * @copyright 2008-2020
 * @license GPL-3
 */
@@ -49,7 +49,7 @@ class LeagueManager {
 	 *
 	 * @var string
 	 */
-	private $version = '5.6.3';
+	private $version = '5.6.4';
 
 	/**
 	 * database version
@@ -1695,36 +1695,36 @@ class LeagueManager {
      * @param string $column
      * @return boolean
      */
-	public function databaseColumnExists($table, $column) {
-		global $wpdb;
+	 public function databaseColumnExists($table, $column) {
+		 global $wpdb;
 
-		if ($table == "teams")
-			$table = $wpdb->leaguemanager_teams;
-		elseif ($table == "table")
-            $table = $wpdb->leaguemanager_table;
-		elseif ($table == "matches")
+		 if ($table == "teams")
+		 	$table = $wpdb->leaguemanager_teams;
+		 elseif ($table == "table")
+	        $table = $wpdb->leaguemanager_table;
+		 elseif ($table == "matches")
 			$table = $wpdb->leaguemanager_matches;
-		elseif ($table == "roster")
+		 elseif ($table == "roster")
 			$table = $wpdb->leaguemanager_roster;
-		elseif ($table == "leagues")
+		 elseif ($table == "leagues")
 			$table = $wpdb->leaguemanager;
-        elseif ($table == "seasons")
-            $table = $wpdb->leaguemanager_seasons;
-        elseif ($table == "competititons")
-            $table = $wpdb->leaguemanager_competititons;
+		 elseif ($table == "seasons")
+	        $table = $wpdb->leaguemanager_seasons;
+		 elseif ($table == "competititons")
+	        $table = $wpdb->leaguemanager_competititons;
 		else
 			return false;
 
-        $sql = $wpdb->prepare("SHOW COLUMNS FROM {$table} LIKE %s", $column);
+		$sql = $wpdb->prepare("SHOW COLUMNS FROM {$table} LIKE %s", $column);
 
-        $res = wp_cache_get( md5($sql), 'leaguemanager' );
+		$res = wp_cache_get( md5($sql), 'leaguemanager' );
 
-        if ( !$res ) {
-            $res = $wpdb->query( $sql );
-            wp_cache_add( md5($sql), $res, 'leaguemanager' );
-        }
-        $res = ( $res == 1 ) ? true : false;
-        return $res;
+		if ( !$res ) {
+			$res = $wpdb->query( $sql );
+		    wp_cache_add( md5($sql), $res, 'leaguemanager' );
+		}
+	    $res = ( $res == 1 ) ? true : false;
+	    return $res;
 	}
 
     /**

@@ -51,6 +51,14 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 
 == Changelog ==
 
+= 5.6.4 =
+* BUGFIX: handle missing round in championship admin
+* BUGFIX: handle no matches in template tags
+* BUGFIX: delete competition cache after season changes
+* BUGFIX: ensure team name calcuation ignores player teams
+* UPDATE: restructure admin area
+* UPDATE: add club name to partner on tournament entry form
+
 = 5.6.3 =
 * UPDATE: change tournament entry order display
 * UPDATE: add documentation for tournaments

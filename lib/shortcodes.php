@@ -21,7 +21,7 @@ class LeagueManagerShortcodes extends LeagueManager {
 	 */
 	public function __construct() {
 		add_shortcode( 'standings', array(&$this, 'showStandings') );
-    add_shortcode( 'dailymatches', array(&$this, 'showDailyMatches') );
+    	add_shortcode( 'dailymatches', array(&$this, 'showDailyMatches') );
 		add_shortcode( 'matches', array(&$this, 'showMatches') );
 		add_shortcode( 'match', array(&$this, 'showMatch') );
 		add_shortcode( 'championship', array(&$this, 'showChampionship') );
@@ -32,9 +32,9 @@ class LeagueManagerShortcodes extends LeagueManager {
 		add_shortcode( 'league', array(&$this, 'showLeague') );
 		add_shortcode( 'competition', array(&$this, 'showCompetition') );
 		add_shortcode( 'players', array(&$this, 'showPlayers') );
-    add_shortcode( 'clubs', array(&$this, 'showClubs') );
-    add_shortcode( 'club', array(&$this, 'showClub') );
-    add_shortcode( 'tournament-entry', array(&$this, 'showTournamentEntry') );
+    	add_shortcode( 'clubs', array(&$this, 'showClubs') );
+    	add_shortcode( 'club', array(&$this, 'showClub') );
+    	add_shortcode( 'tournament-entry', array(&$this, 'showTournamentEntry') );
 	}
 
     /**

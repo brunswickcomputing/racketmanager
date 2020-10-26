@@ -2,7 +2,7 @@
     /**
      * Template tags
      */
-    
+
     /**
      * get league ID
      *
@@ -21,7 +21,7 @@
     function the_league_id() {
         echo get_league_id();
     }
-    
+
     /**
      * get league title
      *
@@ -41,7 +41,7 @@
     function the_league_title() {
         echo get_league_title();
     }
-    
+
     /**
      * get current season
      *
@@ -60,7 +60,7 @@
     function the_current_season() {
         echo get_current_season();
     }
-    
+
     /**
      * get current match day
      *
@@ -82,7 +82,7 @@
         global $league;
         return $league->num_match_days;
     }
-    
+
     /**
      * get specific template
      *
@@ -92,13 +92,13 @@
      */
     function get_league_template($template = "" ) {
         global $league;
-        
+
         if (!empty($template) && isset($league->templates[$template]))
             return $league->templates[$template];
-        
+
         return "";
     }
-    
+
     /**
      * print current match day
      *
@@ -107,7 +107,7 @@
     function the_current_match_day() {
         echo get_current_match_day();
     }
-    
+
     /**
      * check if a specific standings columns is activated for display
      *
@@ -120,10 +120,10 @@
 
         if (isset($league->standings[$key]) && $league->standings[$key] == 1)
             return true;
-        
+
         return false;
     }
-    
+
     /**
      * get League point rule
      *
@@ -134,7 +134,7 @@
         global $league;
         return $league->point_rule;
     }
-    
+
     /**
      * get total number of teams
      *
@@ -145,7 +145,7 @@
         global $league;
         return $league->num_teams_total;
     }
-    
+
     /**
      * display standings header
      *
@@ -164,7 +164,7 @@
         global $league, $team;
         $league->displayStandingsColumns($team, get_league_pointrule());
     }
-    
+
     /**
      * test whether league has teams or we are in the loop
      *
@@ -179,7 +179,7 @@
             // End of Loop
             $league->current_team = -1;
         }
-        
+
         $league->in_the_team_loop = false;
         return false;
     }
@@ -189,9 +189,9 @@
      */
     function the_team() {
         global $league, $team;
-        
+
         $league->in_the_team_loop = true;
-        
+
         // Loop start
         if ( $league->current_team == -1 ) {
         }
@@ -199,7 +199,7 @@
         $league->current_team++;
         $team = $league->teams[$league->current_team];
     }
-    
+
     /**
      * get team ID
      *
@@ -218,7 +218,7 @@
     function the_team_id() {
         echo get_team_id();
     }
-    
+
     /**
      * get team name
      *
@@ -237,7 +237,7 @@
     function the_team_name() {
         echo get_team_name();
     }
-    
+
     /**
      * print team name URL
      *
@@ -246,13 +246,13 @@
      */
     function the_team_name_url($url = true) {
         global $team;
-        
+
         if ( $url )
             echo '<a href="'.get_team_url().'">'.get_team_name().'</a>';
         else
             the_team_name();
     }
-    
+
     /**
      * print team CSS class
      *
@@ -263,7 +263,7 @@
 
         echo $team->class;
     }
-    
+
     /**
      * get team URL
      *
@@ -282,7 +282,7 @@
     function the_team_url() {
         echo get_team_url();
     }
-    
+
     /**
      * get team rank
      *
@@ -302,7 +302,7 @@
     function the_team_rank() {
         echo get_team_rank();
     }
-    
+
     /**
      * print team status
      *
@@ -312,7 +312,7 @@
         global $team;
         echo $team->status;
     }
-    
+
     /**
      * print formatted team points
      *
@@ -323,7 +323,7 @@
         global $team;
         echo $team->pointsFormatted[$ind];
     }
-    
+
     /**
      * print adjusted team points
      *
@@ -333,7 +333,7 @@
         global $team;
         echo $team->add_points;
     }
-    
+
     /**
      * print number of done matches of team
      *
@@ -379,7 +379,7 @@
         global $team;
         echo $team->winPercent;
     }
-    
+
     /**
      * check if team has a next match
      *
@@ -390,10 +390,10 @@
         global $team, $match;
 
         $match = $team->getNextMatch();
-        
+
         if ($match)
             return true;
-        
+
         return false;
     }
     /**
@@ -404,15 +404,15 @@
      */
     function has_prev_match() {
         global $team, $match;
-        
+
         $match = $team->getPrevMatch();
-        
+
         if ($match)
             return true;
-        
+
         return false;
     }
-    
+
     /**
      * print last5 matches column for team
      *
@@ -423,7 +423,7 @@
 
         echo $team->last5($url);
     }
-    
+
     /**
      * check if match is selected
      *
@@ -434,7 +434,7 @@
         global $league;
         return $league->is_selected_match;
     }
-    
+
     /**
      * test whether league has matches or we are in the loop
      *
@@ -451,7 +451,7 @@
             // End of Loop
             $league->current_match = -1;
         }
-        
+
         $league->in_the_match_loop = false;
         return false;
     }
@@ -461,19 +461,19 @@
      */
     function the_match() {
         global $league, $match;
-        
+
         $league->in_the_match_loop = true;
-        
+
         // Loop start
         if ( $league->current_match == -1 ) {
-            
+
         }
-        
+
         // Increment dataset count
         $league->current_match++;
         $match = $league->matches[$league->current_match];
     }
-    
+
     /**
      * display single match
      *
@@ -483,7 +483,7 @@
         global $league;
         echo do_shortcode("[match id='".$league->current_match."' template='".$template."']");
     }
-    
+
     /**
      * print matches pagination
      *
@@ -493,11 +493,11 @@
      */
     function the_matches_pagination($start_el = "<p class='leaguemanager-pagination page-numbers'>", $end_el = "</p>") {
         global $league;
-        
+
         if ( !empty($league->pagination_matches) )
             echo $start_el . $league->pagination_matches . $end_el;
     }
-    
+
     /**
      * print Match CSS class
      *
@@ -507,7 +507,7 @@
         global $match;
         echo $match->class;
     }
-    
+
     /**
      * print Match title
      *
@@ -516,10 +516,10 @@
      */
     function the_match_title($show_logo = true) {
         global $match;
-        
+
         echo $match->getTitle($show_logo);
     }
-    
+
     /**
      * get Match day
      *
@@ -538,7 +538,7 @@
     function the_match_day() {
         echo get_match_day();
     }
-    
+
     /**
      * print Match date
      *
@@ -547,13 +547,13 @@
      */
     function the_match_date($format = '') {
         global $match;
-        
+
         if ($format == '')
             echo $match->match_date;
         else
             echo mysql2date($format, $match->date);
     }
-    
+
     /**
      * print Match time
      *
@@ -563,7 +563,7 @@
         global $match;
         echo $match->start_time;
     }
-    
+
     /**
      * print Match location
      *
@@ -573,7 +573,7 @@
         global $match;
         echo $match->location;
     }
-    
+
     /**
      * get Match score
      *
@@ -592,7 +592,7 @@
     function the_match_score() {
         echo get_match_score();
     }
-    
+
     /**
      * print Match URL
      *
@@ -602,7 +602,7 @@
         global $match;
         echo $match->pageURL;
     }
-    
+
     /**
      * check if match has report
      *
@@ -611,10 +611,10 @@
      */
     function match_has_report() {
         global $match;
-        
+
         if ($match->post_id != 0)
             return true;
-        
+
         return false;
     }
     /**
@@ -626,7 +626,7 @@
         global $match;
         echo $match->report;
     }
-    
+
     /**
      * get match template type
      *
@@ -637,7 +637,7 @@
         global $league;
         return $league->matches_template_type;
     }
-    
+
     /**
      * print match CSS class for list
      *
@@ -678,7 +678,7 @@
         if (in_array(get_match_template_type(), array('tabs', 'accordion')))
             echo 'match-content';
     }
-    
+
     /**
      * print crosstable field
      *
@@ -687,14 +687,14 @@
      */
     function the_crosstable_field($i) {
         global $league, $team;
-        
+
         echo $league->getCrosstableField($team->id, $league->teams[$i-1]->id, $team->home);
     }
-    
+
     /**
     * wrapper tags
     */
-    
+
     /**
     * display one club
     *
@@ -750,7 +750,7 @@
         $defaults = array( 'season' => false, 'template' => '', 'group' => false, 'home' => 0 );
         $args = array_merge($defaults, $args);
         $args['league_id'] = $league_id;
-        
+
         $shortcode = "[standings";
         foreach ($args AS $key => $value)
             $shortcode .= " ".$key."='".$value."'";
@@ -771,7 +771,7 @@
         $defaults = array('season' => false, 'group' => '', 'template' => '', 'mode' => '');
         $args = array_merge($defaults, $args);
         $args['league_id'] = $league_id;
-        
+
         $shortcode = "[crosstable";
         foreach ($args AS $key => $value)
             $shortcode .= " ".$key."='".$value."'";
@@ -792,12 +792,12 @@
         $defaults = array('season' => '', 'template' => '', 'mode' => '', 'limit' => 'true', 'match_day' => -1, 'group' => false, 'roster' => false, 'order' => false, 'show_match_day_selection' => '', 'show_team_selection' => '', 'time' => '', 'team' => 0, 'home_only' => 'false', 'match_date' => false, 'dateformat' => '', 'timeformat' => '');
         $args = array_merge($defaults, $args);
         $args['league_id'] = $league_id;
-        
+
         $shortcode = "[matches";
         foreach ($args AS $key => $value)
             $shortcode .= " ".$key."='".$value."'";
         $shortcode .= "]";
-        
+
         echo do_shortcode($shortcode);
     }
 
@@ -811,7 +811,7 @@
         $defaults = array('template' => '');
         $args = array_merge($defaults, $args);
         $args['id'] = $match_id;
-        
+
         $shortcode = "[match";
         foreach ($args AS $key => $value)
             $shortcode .= " ".$key."='".$value."'";
@@ -851,7 +851,7 @@
         $defaults = array('template' => '');
         $args = array_merge($defaults, $args);
         $args['id'] = $team_id;
-        
+
         $shortcode = "[team";
         foreach ($args AS $key => $value)
             $shortcode .= " ".$key."='".$value."'";
@@ -868,11 +868,11 @@
     */
     function leaguemanager_championship( $league_id, $args = array() ) {
         global $league;
-        
+
         $defaults = array('template' => '', 'season' => false);
         $args = array_merge($defaults, $args);
         $args['league_id'] = $league_id;
-        
+
         $shortcode = "[championship";
         foreach ($args AS $key => $value)
             $shortcode .= " ".$key."='".$value."'";
@@ -891,7 +891,7 @@
         $defaults = array('template' => '');
         $args = array_merge($defaults, $args);
         $args['league_id'] = $league_id;
-        
+
         $shortcode = "[leaguearchive";
         foreach ($args AS $key => $value)
             $shortcode .= " ".$key."='".$value."'";
@@ -910,7 +910,7 @@
         $defaults = array('season' => false, 'template' => '');
         $args = array_merge($defaults, $args);
         $args['league_id'] = $league_id;
-        
+
         $shortcode = "[league";
         foreach ($args AS $key => $value)
             $shortcode .= " ".$key."='".$value."'";

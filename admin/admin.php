@@ -483,7 +483,7 @@ final class LeagueManagerAdmin extends LeagueManager
                 $league = get_league($league_id);
                 $league_title = $league->title;
             } elseif ( isset($_POST['saveSeason']) || isset($_GET['editseason'])) {
-                    $tab = 2;
+                $tab = 2;
                 if ( !empty($_POST['season']) ) {
                     if ( empty($_POST['season_id']) ) {
                         $this->addSeasonToCompetition( htmlspecialchars($_POST['season']), intval($_POST['num_match_days']), intval($_POST['competition_id']) );
@@ -831,7 +831,7 @@ final class LeagueManagerAdmin extends LeagueManager
                 $entryType = '';
             }
             $season = isset($_GET['season']) ? htmlspecialchars(strip_tags($_GET['season'])) : '';
-            include_once( dirname(__FILE__) . '/teamslist.php' );
+            include_once( dirname(__FILE__) . '/includes/teamslist.php' );
         }
     }
 
@@ -863,7 +863,7 @@ final class LeagueManagerAdmin extends LeagueManager
                 $club = (object)array( 'name' => '', 'type' => '', 'id' => '', 'website' => '', 'matchsecretary' => '', 'matchSecretaryName' => '', 'contactno' => '', 'matchSecretaryContactNo' => '', 'matchSecretaryEmail' => '', 'shortcode' => '', 'founded' => '', 'facilities' => '', 'address' => '', 'latitude' => '', 'longitude' => '' );
             }
 
-            include_once( dirname(__FILE__) . '/club.php' );
+            include_once( dirname(__FILE__) . '/includes/club.php' );
         }
     }
 
@@ -894,7 +894,7 @@ final class LeagueManagerAdmin extends LeagueManager
             }
 
             $clubs = $leaguemanager->getClubs( );
-            include_once( dirname(__FILE__) . '/tournament.php' );
+            include_once( dirname(__FILE__) . '/includes/tournament.php' );
         }
     }
 
@@ -912,7 +912,7 @@ final class LeagueManagerAdmin extends LeagueManager
                 $season = $_GET['season'];
                 $season = $leaguemanager->getSeasonDB( array( 'name' => $season) );
             }
-            include_once( dirname(__FILE__) . '/competitions-list.php' );
+            include_once( dirname(__FILE__) . '/includes/competitions-list.php' );
         }
     }
 
@@ -968,7 +968,7 @@ final class LeagueManagerAdmin extends LeagueManager
             }
             $clubs = $leaguemanager->getClubs( );
 
-            require_once( dirname(__FILE__) . '/'. $file );
+            require_once( dirname(__FILE__) . '/includes/teams/'. $file );
         }
     }
 
@@ -1144,7 +1144,7 @@ final class LeagueManagerAdmin extends LeagueManager
                 $this->printMessage();
             }
             global $leaguemanager;
-            include_once( dirname(__FILE__) . '/import.php' );
+            include_once( LEAGUEMANAGER_PATH . '/admin/tools/import.php' );
         }
     }
 
@@ -1175,7 +1175,7 @@ final class LeagueManagerAdmin extends LeagueManager
             $options['exportkey'] = uniqid(rand(), true);
             update_option('leaguemanager', $options);
 
-            include_once( dirname(__FILE__) . '/export.php' );
+            include_once( LEAGUEMANAGER_PATH . '/admin/tools/export.php' );
         }
     }
 
@@ -1518,7 +1518,7 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return boolean
 	 */
 	private function addSeasonToCompetition( $season, $num_match_days, $competition_id ) {
-		global $leaguemanager, $wpdb;
+		global $leaguemanager, $wpdb, $competition;
 
         if ( !current_user_can('edit_seasons') ) {
             $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
@@ -1547,7 +1547,7 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return boolean
 	 */
 	private function editSeason( $season_id, $season, $num_match_days, $competition_id ) {
-		global $leaguemanager, $wpdb;
+		global $leaguemanager, $wpdb, $competition;
 
         if ( !current_user_can('edit_seasons') ) {
             $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
@@ -1636,6 +1636,8 @@ final class LeagueManagerAdmin extends LeagueManager
         }
 
 		$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_competitions} SET `seasons` = '%s' WHERE `id` = '%d'", maybe_serialize($seasons), $competition_id) );
+
+		wp_cache_delete($competition_id, 'competitions');
 
         return true;
 	}
@@ -1860,7 +1862,7 @@ final class LeagueManagerAdmin extends LeagueManager
             return false;
         }
 
-        $sql = $wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->leaguemanager_teams} WHERE `affiliatedclub` = %d AND `type` = '%s'",$affiliatedclub, $team_type);
+        $sql = $wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->leaguemanager_teams} WHERE `affiliatedclub` = %d AND `type` = '%s' AND `status` != 'P'",$affiliatedclub, $team_type);
         $count = $wpdb->get_var($sql);
         $count ++;
 

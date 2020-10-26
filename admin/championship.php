@@ -32,20 +32,20 @@
 			<li><a href="#finals"><?php _e( 'Finals', 'leaguemanager' ) ?></a></li>
 			<li><a href="#preliminary"><?php _e( 'Preliminary Rounds', 'leaguemanager' ) ?></a></li>
 		</ul>
-		
+
 		<div id="finalresults" class="championship-block-container">
             <h2><?php _e( 'Final Results', 'leaguemanager' ) ?></h2>
-            <?php include('championship-finalresults.php'); ?>
+            <?php include('championship/finalresults.php'); ?>
 		</div>
 
 		<div id="finals" class="championship-block-container">
 			<h2><?php printf(__( 'Finals &#8211; %s', 'leaguemanager' ), $league->championship->getFinalName()) ?></h2>
-            <?php include('championship-finals.php'); ?>
+            <?php include('championship/finals.php'); ?>
 		</div>
-		
+
         <div id="preliminary" class="championship-block-container">
             <h2><?php _e( 'Team Ranking', 'leaguemanager' ) ?></h2>
-            <?php include('championship-preliminary.php'); ?>
+            <?php include('championship/preliminary.php'); ?>
         </div>
 	</div>
 </div>

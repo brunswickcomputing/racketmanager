@@ -28,44 +28,44 @@ jQuery(function() {
 
 		<div id="competitions-table" class="league-block-container">
 			<h2 class="header"><?php _e( 'Competitions', 'leaguemanager' ) ?></h2>
-			<?php include('competitions.php'); ?>
+			<?php include('main/competitions.php'); ?>
 		</div>
         <div id="seasons-table" class="league-block-container">
             <h2 class="header"><?php _e( 'Seasons', 'leaguemanager' ) ?></h2>
-            <?php include('seasons.php'); ?>
+            <?php include('main/seasons.php'); ?>
         </div>
 		<div id="roster-table" class="league-block-container">
 			<h2 class="header"><?php _e( 'Rosters', 'leaguemanager' ) ?></h2>
-			<?php include('rosters.php'); ?>
+			<?php include('main/rosters.php'); ?>
 		</div>
         <div id="rosterrequest-table" class="league-block-container">
             <h2 class="header"><?php _e( 'Roster Request', 'leaguemanager' ) ?></h2>
-            <?php include('roster-requests.php'); ?>
+            <?php include('main/roster-requests.php'); ?>
         </div>
 		<div id="player-table" class="league-block-container">
 			<h2 class="header"><?php _e( 'Players', 'leaguemanager' ) ?></h2>
-			<?php include('players.php'); ?>
+			<?php include('main/players.php'); ?>
 		</div>
 		<div id="teams-table" class="league-block-container">
 			<h2 class="header"><?php _e( 'Teams', 'leaguemanager' ) ?></h2>
-			<?php include('teams.php'); ?>
+			<?php include('main/teams.php'); ?>
 		</div>
         <div id="clubs-table" class="league-block-container">
             <h2 class="header"><?php _e( 'Clubs', 'leaguemanager' ) ?></h2>
-            <?php include('clubs.php'); ?>
+            <?php include('main/clubs.php'); ?>
         </div>
 		<div id="results-table" class="league-block-container">
 			<h2 class="header"><?php _e( 'Results', 'leaguemanager' ) ?></h2>
-			<?php include('results.php'); ?>
+			<?php include('main/results.php'); ?>
 		</div>
         <div id="results-checker-table" class="league-block-container">
             <h2 class="header"><?php _e( 'Results Checker', 'leaguemanager' ) ?></h2>
-            <?php include('results-checker.php'); ?>
+            <?php include('main/results-checker.php'); ?>
         </div>
         <div id="tournament-table" class="league-block-container">
             <h2 class="header"><?php _e( 'Tournaments', 'leaguemanager' ) ?></h2>
-            <?php include('tournaments.php'); ?>
+            <?php include('main/tournaments.php'); ?>
         </div>
-        <?php include('match-modal.php'); ?>
+        <?php include(LEAGUEMANAGER_PATH . '/admin/includes/match-modal.php'); ?>
 	</div>
 </div>

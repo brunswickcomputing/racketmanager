@@ -3,7 +3,7 @@
 Template page to display a tournament entry form
 
 The following variables are usable:
- 
+
     $tournament: tournament object
 	$competitions: competitions object
     $player: player object
@@ -71,7 +71,7 @@ The following variables are usable:
                             <select size="1" name="partner[<?php echo $competition->id ?>]" id="partner[<?php echo $competition->id ?>]" >
                                 <option value="0"><?php _e( 'Select partner' , 'leaguemanager') ?></option>
                                 <?php foreach ( $partnerList AS $roster ) { ?>
-                                <option value="<?php echo $roster->roster_id ?>"><?php echo $roster->fullname ?></option>
+                                <option value="<?php echo $roster->roster_id ?>"><?php echo $roster->fullname." - ".get_club($roster->affiliatedclub)->name ?></option>
                                 <?php } ?>
                             </select>
                         <?php } ?>

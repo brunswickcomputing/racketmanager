@@ -1,6 +1,6 @@
 <form id="seasons-filter" action="" method="post">
 	<?php wp_nonce_field( 'seasons-bulk' ) ?>
-	
+
 	<input type="hidden" name="competition_id" value="<?php echo $competition_id ?>" />
     <div class="tablenav">
 		<!-- Bulk Actions -->

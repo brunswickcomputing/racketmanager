@@ -23,20 +23,20 @@ jQuery(function() {
 
 		<div id="leagues-table" class="league-block-container">
 			<h2 class="header"><?php _e( 'Leagues', 'leaguemanager' ) ?></h2>
-			<?php include('competition-leagues.php'); ?>
+			<?php include('competition/leagues.php'); ?>
 		</div>
 		<div id="player-stats" class="league-block-container">
 			<h2 class="header"><?php _e( 'Players Stats', 'leaguemanager' ) ?></h2>
-			<?php include('player-stats.php'); ?>
+			<?php include(LEAGUEMANAGER_PATH . '/admin/includes/player-stats.php'); ?>
 		</div>
 		<div id="seasons-table" class="league-block-container">
 			<h2 class="header"><?php _e( 'Seasons', 'leaguemanager' ) ?></h2>
-			<?php include('competition-seasons.php'); ?>
+			<?php include('competition/seasons.php'); ?>
 		</div>
 
 		<div id="settings" class="league-block-container">
 			<h2 class="settings"><?php _e( 'Settings', 'leaguemanager' ) ?></h2>
-			<?php include('competition-settings.php'); ?>
+			<?php include('competition/settings.php'); ?>
 		</div>
 
 	</div>

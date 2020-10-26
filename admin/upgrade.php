@@ -135,7 +135,7 @@ function leaguemanager_upgrade() {
         $wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_matches} ADD `away_captain` int(11) NULL  AFTER `home_captain`;" );
         $wpdb->query( "UPDATE {$wpdb->leaguemanager_matches} SET `confirmed` = 'Y' WHERE `winner_id` != 0;" );
     }
-
+ 
     /*
 	* Update version and dbversion
 	*/

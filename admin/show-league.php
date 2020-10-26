@@ -107,6 +107,11 @@ if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POS
 			
 		$tab = 2;
 	}
+} elseif ( isset($_POST['action']) && $_POST['action'] == 'addTeamsToLeague' ) {
+    foreach ( $_POST['team'] AS $i => $team_id ) {
+        $this->addTableEntry( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
+        $this->setTeamCompetition( $team_id, $_POST['competition_id'] );
+    }
 }
 
 // rank teams manually

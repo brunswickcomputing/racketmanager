@@ -185,6 +185,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 		$league_mode = (isset($league->mode) ? ($league->mode) : '' );
 		
 		$menu = array();
+        $menu['teams'] = array( 'title' => __('Add Teams', 'leaguemanager'), 'file' => dirname(__FILE__) . '/teamslist.php', 'show' => true );
 		$menu['team'] = array( 'title' => __('Add Team', 'leaguemanager'), 'file' => dirname(__FILE__) . '/team.php', 'show' => true );
 		$menu['match'] = array( 'title' => __('Add Matches', 'leaguemanager'), 'file' => dirname(__FILE__) . '/match.php', 'show' => true );
 		$menu = apply_filters('league_menu_'.$sport, $menu, $league_id, $season);
@@ -927,30 +928,29 @@ class LeagueManagerAdminPanel extends LeagueManager
 	 * @param boolean $message (optional)
 	 * @return void
 	 */
-	function addTableEntry( $league_id, $team_id, $season , $custom = array(), $message = true )
+	function addTableEntry( $leagueId, $teamId, $season , $custom = array(), $message = true )
 	{
 		global $wpdb, $leaguemanager;
 
         $insert = true;
         
         if ( $message ) {
-            $tabledtls = $this->checkTableEntry( $league_id, $team_id, $season );
-            if ( $tabledtls ) {
-                $table_id = $tabledtls[0]->id;
+            $tableId = $this->checkTableEntry( $leagueId, $teamId, $season );
+            if ( $tableId ) {
                 $messageText = 'Team already in table';
                 $insert = false;
             }
         }
         if ( $insert ) {
             $sql = "INSERT INTO {$wpdb->leaguemanager_table} (`team_id`, `season`, `custom`, `league_id`) VALUES ('%d', '%s', '%s', '%d')";
-            $wpdb->query( $wpdb->prepare ( $sql, $team_id, $season, maybe_serialize($custom), $league_id) );
-            $table_id = $wpdb->insert_id;
+            $wpdb->query( $wpdb->prepare ( $sql, $teamId, $season, maybe_serialize($custom), $leagueId) );
+            $tableId = $wpdb->insert_id;
             $messageText = 'Table entry added';
         }
 		if ( $message )
 			$leaguemanager->setMessage( __($messageText,'leaguemanager') );
 
-		return $table_id;
+		return $tableId;
 	}
 
 	function checkTableEntry( $league_id, $team_id, $season )
@@ -1003,7 +1003,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 		return $team_id;
 	}
 
-    function addTeamCompetition( $team_id, $competition_id, $captain, $contactno, $contactemail, $matchday = '', $matchtime = NULL )
+    function addTeamCompetition( $team_id, $competition_id, $captain = NULL, $contactno = NULL, $contactemail = NULL, $matchday = '', $matchtime = NULL )
     {
         global $wpdb;
 
@@ -1076,27 +1076,7 @@ class LeagueManagerAdminPanel extends LeagueManager
         $league = $leaguemanager->getLeague($league_id);
 
 		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `stadium` = '%s', `logo` = '%s', `home` = '%d', `roster`= '%s', `profile` = '%d', `custom` = '%s' WHERE `id` = %d", $title, $affiliatedclub, $stadium, basename($logo), $home, maybe_serialize($roster), $profile, maybe_serialize($custom), $team_id ) );
-        $team_competition = $wpdb->get_results( $wpdb->prepare("SELECT `id` FROM {$wpdb->leaguemanager_team_competition} WHERE `team_id` = '%d' AND `competition_id` = '%d'", $team_id, $league->competition_id) );
-        if (!isset($team_competition[0])) {
-            $this->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail, $matchday, $matchtime );
-        } else {
-            $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_team_competition} SET `captain` = '%s', `match_day` = '%s', `match_time` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captain, $matchday, $matchtime, $team_id, $league->competition_id ) );
-            $currentContactNo = get_user_meta( $captain, 'contactno', true);
-            $currentContactEmail = get_userdata($captain)->user_email;
-            if ($currentContactNo != $contactno ) {
-                update_user_meta( $captain, 'contactno', $contactno );
-            }
-            if ($currentContactEmail != $contactemail ) {
-                $userdata = array();
-                $userdata['ID'] = $captain;
-                $userdata['user_email'] = $contactemail;
-                $user_id = wp_update_user( $userdata );
-                if ( is_wp_error($user_id) ) {
-                    $error_msg = $user_id->get_error_message();
-                    error_log('Unable to update user email '.$captain.' - '.$contactemail.' - '.$error_msg);
-                }
-            }
-        }
+        $this->setTeamCompetition($team_id, $league->competition_id, $captain, $contactno, $contactemail, $matchday, $matchtime);
 
 		// Delete Image if options is checked
 		if ($del_logo || $overwrite_image) {
@@ -1159,6 +1139,42 @@ class LeagueManagerAdminPanel extends LeagueManager
         $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_table} WHERE `team_id` = '%d' AND `league_id` = '%d' and `season` = '%s'", $team_id, $league_id, $season) );
 	}
 
+    /**
+    * set Team Competition
+    *
+    * @param int $teamId
+    * @param int $competitionId
+    * @return void
+    */
+    function setTeamCompetition( $teamId, $competitionId, $captain = NULL, $contactNo = NULL, $contactEmail = NULL , $matchDay = NULL, $matchTime = NULL) {
+        
+        global $wpdb;
+        
+        $team_competition = $wpdb->get_results( $wpdb->prepare("SELECT `id` FROM {$wpdb->leaguemanager_team_competition} WHERE `team_id` = '%d' AND `competition_id` = '%d'", $teamId, $competitionId) );
+        if (!isset($team_competition[0])) {
+            $this->addTeamCompetition( $teamId, $competitionId, $captain, $contactNo, $contactEmail, $matchDay, $matchTime );
+        } else {
+            if ( isset($captain) ) {
+                $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_team_competition} SET `captain` = '%s', `match_day` = '%s', `match_time` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captain, $matchDay, $matchTime, $teamId, $competitionId ) );
+                $currentContactNo = get_user_meta( $captain, 'contactno', true);
+                $currentContactEmail = get_userdata($captain)->user_email;
+                if ($currentContactNo != $contactNo ) {
+                    update_user_meta( $captain, 'contactno', $contactNo );
+                }
+                if ($currentContactEmail != $contactEmail ) {
+                    $userdata = array();
+                    $userdata['ID'] = $captain;
+                    $userdata['user_email'] = $contactEmail;
+                    $userId = wp_update_user( $userdata );
+                    if ( is_wp_error($userId) ) {
+                        $error_msg = $userId->get_error_message();
+                        error_log('Unable to update user email '.$captain.' - '.$contactEmail.' - '.$error_msg);
+                    }
+                }
+            }
+        }
+    }
+            
 	/**
 	 * add new Player team
 	 *

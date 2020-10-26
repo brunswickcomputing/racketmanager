@@ -938,7 +938,7 @@ class LeagueManager
      * @param string $output OBJECT | ARRAY
      * @return array database results
      */
-    function getTeamsList( $affiliatedclub = false, $players = false)
+    function getTeamsList( $affiliatedclub = false, $players = false, $type = false )
     {
         global $wpdb;
 
@@ -948,6 +948,9 @@ class LeagueManager
         }
         if ( !$players ) {
             $search_terms[] = "`status` != 'P'";
+        }
+        if ( $type ) {
+            $search_terms[] = $wpdb->prepare("`title` like '%s'", '%'.$wpdb->esc_like($type).'%');
         }
         $search = "";
         if (count($search_terms) > 0) {

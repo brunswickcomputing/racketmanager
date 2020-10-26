@@ -6,24 +6,23 @@ Leaguemanager.reInit();
         echo '<p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p>';
 	} else {
 		$edit = false;
+        $league_id = intval($_GET['league_id']);
+        $league = $leaguemanager->getLeague( $league_id );
+        $season = isset($_GET['season']) ? htmlspecialchars(strip_tags($_GET['season'])) : '';
+        $matchdays = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
+        
 		if ( isset( $_GET['edit'] ) ) {
 			$edit = true;
 			$team = $leaguemanager->getTeamDtls(intval($_GET['edit']),intval($_GET['league_id']));
 			if ( !isset($team->roster) ) $team->roster = array();
 			
-			$league_id = intval($_GET['league_id']);
 			$form_title = __( 'Edit Team', 'leaguemanager' );
 			$form_action = __( 'Update', 'leaguemanager' );
 		} else {
 			$form_title = __( 'Add Team', 'leaguemanager' );
 			$form_action = __( 'Add', 'leaguemanager' );
-			$league_id = intval($_GET['league_id']);
 			$team = (object)array( 'title' => '', 'home' => 0, 'id' => '', 'logo' => '', 'website' => '', 'captain' => '', 'captainId' => '', 'contactno' => '', 'contactemail' => '', 'stadium' => '', 'match_day' => '', 'match_time' => '', 'roster' => array('id' => '', 'cat_id' => '' ) );
 		}
-		$league = $leaguemanager->getLeague( $league_id );
-		$season = isset($_GET['season']) ? htmlspecialchars(strip_tags($_GET['season'])) : '';
-		$matchdays = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
-		
 		if ( is_plugin_active('wp-clubs/wp-clubs.php') ) {
 			$clubs = getClubs();
 		} else {
@@ -116,7 +115,7 @@ Leaguemanager.reInit();
 			<tr valign="top">
 				<th scope="row" style="width: 225px;"><label for="team"><?php _e( 'Team', 'leaguemanager' ) ?></label></th>
 				<td>
-					<input type="text" id="team" name="team" value="<?php echo $team->title ?>" size="30" />
+					<input type="text" id="team" name="team" value="<?php echo $team->title ?>" size="30" readonly placeholder="<?php _e( 'Add Team from Database', 'leaguemanager' ) ?>""/>
 <?php if ( !$edit ) { ?>
 
 					<div id="teams_db" style="display: none; overflow: auto; width: 300px; height: 80px;"><div>

@@ -15,7 +15,11 @@
             <tbody>
             <?php $matchday = isset($_GET['match_day']) ? $_GET['match_day'] : $leaguemanager->getMatchDay(); ?>
             <?php foreach ( $matches AS $no => $match ) {
-                $userCanUpdate = $leaguemanager->getMatchUpdateAllowed($match->homeTeam, $match->awayTeam);
+                if ( isset($match->homeTeam) && isset($match->awayTeam) ) {
+                    $userCanUpdate = $leaguemanager->getMatchUpdateAllowed($match->homeTeam, $match->awayTeam);
+                } else {
+                    $userCanUpdate = false;
+                }
                 if ( $league->mode == 'default' && $matchday != $match->match_day ) { ?>
                 <tr class='match-day-row'>
                     <th colspan="3" class='match']>Week <?php echo $match->match_day; ?></th>

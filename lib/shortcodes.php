@@ -62,6 +62,8 @@ class LeagueManagerShortcodes extends LeagueManager {
 		), $atts ));
 
         $league = $this->getleague($league_id);
+        
+        if ( !$league ) return;
 
         $league->setTemplate('standingstable', $template);
         $league->setSeason($season);
@@ -121,6 +123,8 @@ class LeagueManagerShortcodes extends LeagueManager {
         }
 
         $matches = $leaguemanager->getMatches( array('match_date' => $match_date, 'competition_type' => $competition_type) );
+        
+        if ( !$matches ) return;
         
         $filename = ( !empty($template) ) ? 'matches-'.$template : 'matches';
 
@@ -183,7 +187,7 @@ class LeagueManagerShortcodes extends LeagueManager {
         $league->setMatchDay($match_day);
         $league->matches_template_type = $template_type;
 
-        $mtaches = false;
+        $matches = false;
         $match_args = array("final" => '');
 
         // get matches of specific team
@@ -211,6 +215,8 @@ class LeagueManagerShortcodes extends LeagueManager {
 		// get matches
         $matches = $league->getMatches( $match_args );
         $league->setNumMatches();
+        
+        if ( !$matches ) return;
 
 		foreach ( $matches AS $i => $match ) {
             
@@ -295,7 +301,8 @@ class LeagueManagerShortcodes extends LeagueManager {
                 }
             }
 		
-		}		
+		}
+        
         if ( empty($template) && $this->checkTemplate('match-'.$league->sport) )
             $filename = 'match-'.$league->sport;
         elseif ($this->checkTemplate('match-'.$template.'-'.$league->sport) )
@@ -307,12 +314,18 @@ class LeagueManagerShortcodes extends LeagueManager {
 		return $out;
 	}
 
+    /**
+     * get Player name
+     *
+     * @param int $roster_id
+     * @return string $playerName
+     */
 	function getPlayerNamefromRoster( $roster_id ) {
 		global $leaguemanager;
 		
 		$roster_dtls = $leaguemanager->getRosterEntry( intval($roster_id));
-        $playername = $roster_dtls->fullname;
-		return $playername;
+        $playerName = $roster_dtls->fullname;
+		return $playerName;
 	}
 	
     /**
@@ -339,6 +352,7 @@ class LeagueManagerShortcodes extends LeagueManager {
 
 
         $league = $this->getleague($league_id);
+        if ( !$league ) return;
 
         $teams = $league->getLeagueTeams( array() );
         $competition = get_competition($league->competition_id);
@@ -500,6 +514,9 @@ class LeagueManagerShortcodes extends LeagueManager {
         $club_name = str_replace('-',' ',$club_name);
 
         $club = get_Club( $club_name, 'shortcode' );
+        
+        if ( !$club ) return;
+        
         $rosters = $club->getRoster( array( 'inactive' => "Y", 'type' => 'real', 'cache' => false ) );
         $rosterRequests = $club->getRosterRequests();
 
@@ -547,8 +564,7 @@ class LeagueManagerShortcodes extends LeagueManager {
         $team_args = array( "orderby" => array('rank' => 'ASC') );
         if ( $group ) $team_args["group"] = $group;
         $teams = $league->getLeagueTeams( $team_args );
-//		$teams = $competition->getTeamsInfo( array("league_id" => $league->id, "season" => $season, "orderby" => array("title" => "ASC")) );
-
+        
 		if ( empty($template) && $this->checkTemplate('teams-'.$league->sport) )
 			$filename = 'teams-'.$league->sport;
 		else
@@ -620,6 +636,8 @@ class LeagueManagerShortcodes extends LeagueManager {
 		), $atts ));
 
         $league = $this->getleague($league_id);
+        
+        if ( !$league ) return;
 
         $league->setTemplate('crosstable', $template);
         $league->setSeason($season);
@@ -669,6 +687,8 @@ class LeagueManagerShortcodes extends LeagueManager {
 		), $atts ));
 		
 		$league = get_league( $id );
+        
+        if ( !$league ) return;
         $league->setSeason($season);
         $league->setTab();
 		$league->templates = array( 'standingstable' => $standingstable, 'crosstable' => $crosstable, 'matches' => $matches, 'teams' => $teams );
@@ -705,10 +725,9 @@ class LeagueManagerShortcodes extends LeagueManager {
                                    'teams' => 'list'
                                    ), $atts ));
         $competition = get_competition( $id );
+        
+        if ( !$competition ) return;
 
-	/*
-	* set season
-	*/
         $seasons = $competition->seasons;
         $leagues = $competition->getLeagues( array('competition' => $id, 'orderby' => array("title" => "ASC")));
             
@@ -767,6 +786,9 @@ class LeagueManagerShortcodes extends LeagueManager {
         
 		// get all leagues, needed for dropdown
 		$competition = get_competition( $competition_id);
+        
+        if ( !$competition ) return;
+        
 		$seasons = $competition->seasons;
 		$leagues = $competition->getLeagues( array('competition' => $competition_id, 'orderby' => array("title" => "ASC")));
 
@@ -815,6 +837,8 @@ class LeagueManagerShortcodes extends LeagueManager {
 		), $atts ));
 
         $league = $this->getleague($league_id);
+        
+        if ( !$league ) return;
 
         $competition = get_competition($league->competition_id);
         $league->setSeason($season);

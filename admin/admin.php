@@ -591,6 +591,8 @@ final class LeagueManagerAdmin extends LeagueManager
                             foreach ( $_POST['match'] AS $i => $match_id ) {
                                 if ( isset($_POST['add_match'][$i]) || $_POST['away_team'][$i] != $_POST['home_team'][$i]  ) {
                                     $index = ( isset($_POST['mydatepicker'][$i]) ) ? $i : 0;
+									if (!isset($_POST['begin_hour'][$i])) $_POST['begin_hour'][$i] = 0;
+									if (!isset($_POST['begin_minutes'][$i])) $_POST['begin_minutes'][$i] = 0;
                                     $date = $_POST['mydatepicker'][$index].' '.intval($_POST['begin_hour'][$i]).':'.intval($_POST['begin_minutes'][$i]).':00';
                                     $match_day = ( isset($_POST['match_day'][$i]) ? $_POST['match_day'][$i] : (!empty($_POST['match_day']) ? intval($_POST['match_day']) : '' )) ;
                                     $custom = isset($_POST['custom']) ? $_POST['custom'][$i] : array();

@@ -283,14 +283,14 @@ class League {
 	 *
 	 * @var array
 	 */
-	private $team_query_args = array( 'limit' => false, 'group' => '', 'season' => '', 'rank' => 0, 'orderby' => array("rank" => "ASC"), "home" => false, 'ids' => array(), 'cache' => true );
+	private $team_query_args = array( 'limit' => false, 'group' => '', 'season' => '', 'rank' => 0, 'orderby' => array("rank" => "ASC"), "home" => false, 'ids' => array(), 'cache' => true, 'reset_query_args' => false );
 
 	/**
 	 * team query argument types
 	 *
 	 * @var array
 	 */
-	private $team_query_args_types = array( 'limit' => 'numeric', 'group' => 'string', 'season' => 'string', 'rank' => 'numeric', 'orderby' => 'array', 'home' => 'boolean', 'ids' => 'array_numeric', 'cache' => 'boolean' );
+	private $team_query_args_types = array( 'limit' => 'numeric', 'group' => 'string', 'season' => 'string', 'rank' => 'numeric', 'orderby' => 'array', 'home' => 'boolean', 'ids' => 'array_numeric', 'cache' => 'boolean', 'reset_query_args' => 'boolean' );
 
 	/**
 	 * match query arguments
@@ -1023,10 +1023,10 @@ class League {
          $sql .= " ORDER BY ".$orderby;
          $sql = $wpdb->prepare($sql, $args);
 
-         $teams = wp_cache_get( $this->id, 'leaguetable' );
+         $teams = wp_cache_get( $sql, 'leaguetable' );
          if ( !$teams ) {
              $teams = $wpdb->get_results( $sql );
-             wp_cache_set( $this->id, $teams, 'leaguetable' );
+             wp_cache_set( $sql, $teams, 'leaguetable' );
          }
 
          $class = '';
@@ -1060,6 +1060,15 @@ class League {
          $this->team_index = $team_index;
 
          $this->setNumTeams();
+
+		 // reset team query args
+         if ($reset_query_args === true) {
+             //$this->team_query_args = $old_query_args;
+             foreach ($old_query_args AS $key => $query_arg)
+                 $this->setTeamQueryArg($key, $query_arg, true);
+
+             $this->setTeamQueryArg('reset_query_args', false);
+         }
 
          return $teams;
      }
@@ -2250,7 +2259,7 @@ class League {
 
         // general secondary points calculated from sum of primary points, e.g. soccer, handball, basketball
         if ( isset($this->fields_team['points2']) ) {
-            if (!$matches) $matches =  $this->getMatches( array("team_id" => $team->id, "match_day" => -1, "limit" => false, "cache" => false) );
+            if (!$matches) $matches =  $this->getMatches( array("team_id" => $team->id, "match_day" => -1, "limit" => false, "cache" => false, "reset_query_args" => true) );
             if ( $matches ) {
                 foreach ( $matches AS $match ) {
                     $custom = maybe_unserialize($match->custom);

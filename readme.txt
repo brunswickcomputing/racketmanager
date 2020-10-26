@@ -51,6 +51,14 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 
 == Changelog ==
 
+= 5.6.8 =
+* BUGFIX: do not exit when no matches for daily match check
+* BUGFIX: pull details from correct table in getRosterEntry
+* BUGFIX: make addTeamCompetition function public
+* BUGFIX: use correct path for match.php in admin.php
+* BUGFIX: handle no time in match edit
+* BUGFIX: allow reset of teamqueryarg
+
 = 5.6.7 =
 * UPDATE: do not check results for system records
 * BUGFIX: check result on played rounds when in relevant timeframe

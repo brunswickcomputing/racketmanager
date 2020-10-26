@@ -151,14 +151,14 @@ final class League_Championship extends LeagueManager {
      * @var array
      */
     public $final_teams = array();
-    
+
     /**
      * image of cup icon
      *
      * @var string
      */
     public $cup_icon = '';
-    
+
 	/**
 	 * initialize Championship Mode
 	 *
@@ -188,12 +188,12 @@ final class League_Championship extends LeagueManager {
             }
             $this->num_teams = $num_teams;
         }
-        
+
         $num_teams = 2;
         $i = $this->num_rounds;
         while ( $num_teams <= $this->num_teams_first_round ) {
             $finalkey = $this->getFinalKey($num_teams);
-            
+
             $num_matches = $num_teams/2;
             $is_final = ( $finalkey == 'final' ) ? true : false;
             $this->finals[$finalkey] = array(
@@ -226,7 +226,7 @@ final class League_Championship extends LeagueManager {
         }
         $this->setCurrentFinal();
         $this->setFinalTeams();
-        
+
         $this->cup_icon = '<img style="vertical-align: middle;" src="'.LEAGUEMANAGER_URL . '/admin/icons/cup.png" />';
     }
 
@@ -249,7 +249,7 @@ final class League_Championship extends LeagueManager {
         if ( $round ) {
             if ( isset($this->keys[$round]) )
                 return $this->keys[$round];
-                
+
             return false;
         }
 
@@ -265,7 +265,7 @@ final class League_Championship extends LeagueManager {
 	public function getFinals( $key = false ) {
         if ( $key == 'current' )
             $key = $this->current_final;
-        
+
         if ( $key )
             return $this->finals[$key];
 
@@ -280,7 +280,7 @@ final class League_Championship extends LeagueManager {
 	 */
 	public function getFinalName( $key = false ) {
         if ( empty($key) ) $key = $this->current_final;
-        
+
 		if (!empty($key)) {
 			if ( 'final' == $key )
 				return __( 'Final', 'leaguemanager' );
@@ -326,11 +326,11 @@ final class League_Championship extends LeagueManager {
             $key = htmlspecialchars($final);
         else
             $key = $this->getFinalKeys(1);
-        
+
         $this->current_final =  $key;
     }
-    
-    
+
+
     /**
      * get current final key
      *
@@ -339,7 +339,7 @@ final class League_Championship extends LeagueManager {
     public function getCurrentFinalKey() {
         return $this->current_final;
     }
-    
+
     /**
      * get number of matches for specific final
      *
@@ -349,10 +349,10 @@ final class League_Championship extends LeagueManager {
     public function getNumMatches( $finalkey ) {
         if ( isset($this->finals[$finalkey]) )
             return $this->finals[$finalkey]['num_matches'];
-        
+
         return 0;
     }
-    
+
 	/**
 	 * set general names for final rounds
 	 *
@@ -365,7 +365,7 @@ final class League_Championship extends LeagueManager {
             if ($data['round'] > 1) {
                 // get data of previous round
                 $final = $this->getFinals( $this->getFinalKeys($data['round']-1) );
-                    
+
                 for ( $x = 1; $x <= $final['num_matches']; $x++ ) {
                     if ( $k == 'third' ) {
                         $title = sprintf(__('Looser %s %d', 'leaguemanager'), $final['name'], $x);
@@ -404,7 +404,7 @@ final class League_Championship extends LeagueManager {
     public function getFinalTeams( $final ) {
         return $this->final_teams[$final];
     }
-        
+
 	/**
 	 * update final rounds results
 	 *
@@ -436,28 +436,28 @@ final class League_Championship extends LeagueManager {
 	public function startFinalRounds() {
         if ( is_admin() && current_user_can( 'update_results' ) ) {
             global $wpdb;
-            
+
             $league = get_league();
-            
+
             $matches = $league->getMatches( array("final" => $this->getFinalKeys(1), "limit" => false, "match_day" => -1, "reset_query_args" => true) );
             foreach ( $matches AS $match ) {
                 $update = true;
-                
+
                 if ($match->home_team == -1) {
                     $home['team'] = -1;
                 } else {
                     $home = explode("_", $match->home_team);
                     $home = array( 'rank' => $home[0], 'group' => $home[1] );
-                    $home_team = $league->getLeagueTeams( array("rank" => $home['rank'], "group" => $home['group']) );
+                    $home_team = $league->getLeagueTeams( array("rank" => $home['rank'], "group" => $home['group'], "reset_query_args" => true) );
                     if ( $home_team ) $home['team'] = $home_team[0]->id;
                 }
-                
+
                 if ($match->away_team == -1) {
                     $away['team'] = -1;
                 } else {
                     $away = explode("_", $match->away_team);
                     $away = array( 'rank' => $away[0], 'group' => $away[1] );
-                    $away_team = $league->getLeagueTeams( array("rank" => $away['rank'], "group" => $away['group']) );
+                    $away_team = $league->getLeagueTeams( array("rank" => $away['rank'], "group" => $away['group'], "reset_query_args" => true) );
                     if ( $away_team ) $away['team'] = $away_team[0]->id;
                 }
 
@@ -471,7 +471,7 @@ final class League_Championship extends LeagueManager {
             }
         }
 	}
-	
+
 	/**
 	 * proceed to next final round
 	 *
@@ -544,7 +544,7 @@ final class League_Championship extends LeagueManager {
 			}
 		}
 	}
-        
+
     /**
      * display administration panel
      *
@@ -569,10 +569,10 @@ final class League_Championship extends LeagueManager {
                 }
                 $this->printMessage();
             }
-            
+
             $class = 'alternate';
             if (count($this->groups) > 0) $league->setGroup($this->groups[0]);
-            
+
             $tab = 0;
             if (isset($_GET['jquery-ui-tab'])) $tab = intval($_GET['jquery-ui-tab']);
             if (isset($_POST['jquery-ui-tab'])) $tab = intval($_POST['jquery-ui-tab']);

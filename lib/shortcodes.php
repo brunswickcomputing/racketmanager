@@ -230,7 +230,6 @@ class LeagueManagerShortcodes extends LeagueManager
             $match_date = $_GET['match_date'];
         elseif ( !get_query_var('match_date') == "" )
             $match_date = get_query_var('match_date');
-        
         if ( !empty($time) ) {
             if ( empty($match_date) ){
                 $match_date = date("Y-m-d");

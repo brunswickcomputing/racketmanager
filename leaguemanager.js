@@ -69,6 +69,13 @@ jQuery(document).ready(function($) {
 
 								return false;  // Prevent default button behaviour
 								});
+	jQuery('#leaguemanager_daily_matches').submit(function() {
+								var matchDate = jQuery('#match_date').val();
+								var cleanUrl = window.location.protocol + '//' + window.location.host + '/leagues/daily-matches/' + matchDate + '/';
+								window.location = cleanUrl;
+
+								return false;  // Prevent default button behaviour
+								});
 
 });
 

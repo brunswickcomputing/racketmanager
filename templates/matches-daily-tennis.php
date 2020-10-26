@@ -28,19 +28,26 @@ jQuery(document).ready(function($) {
                                                     });
                        });
 </script>
-<?php if (isset($_GET['match']) ) { ?>
-	<?php leaguemanager_match(intval($_GET['match'])); ?>
-<?php } else { ?>
-    <?php if (isset($_GET['match_date']))
+<?php
+    if (isset($_GET['match']) ) {
+        leaguemanager_match(intval($_GET['match']));
+    } else {
+        $match_date = get_query_var('match_date');
+        if ( $match_date == '' ) {
+            if (isset($_GET['match_date'])) {
                 $match_date = $_GET['match_date'];
-        else $match_date = date("Y-m-d");
+            }
+        }
+        if ( $match_date == '' ) {
+            $match_date = date("Y-m-d");
+        }
     ?>
 
 <div id="leaguemanager_match_selections" class="">
-    <form method="get" action="<?php echo get_permalink($postID); ?>" id="leaguemanager_matches">
+    <form method="get" action="<?php echo get_permalink($postID); ?>" id="leaguemanager_daily_matches">
     <input type="hidden" name="page_id" value="<?php echo $postID ?>" />
 
-        <input type="text" name="match_date" class="form-control date_picker" value="<?php echo($match_date) ?>" />
+        <input type="text" name="match_date" id="match_date" class="form-control date_picker" value="<?php echo($match_date) ?>" />
     <input type="submit" class="submit" value="<?php _e( 'Show' ) ?>" />
     </form>
 </div>

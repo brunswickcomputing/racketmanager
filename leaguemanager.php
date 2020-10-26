@@ -38,7 +38,7 @@ class LeagueManagerLoader
 	 *
 	 * @var string
 	 */
-	var $version = '5.4.2';
+	var $version = '5.4.3';
 
 
 	/**

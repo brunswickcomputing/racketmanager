@@ -435,6 +435,7 @@ function leaguemanager_match( $match_id, $args = array() ) {
         add_rewrite_tag('%match_day%','([0-9]{1,2})');
         add_rewrite_tag('%team%','(.+?)');
         add_rewrite_tag('%club_name%','(.+?)');
+        add_rewrite_tag('%match_date%','(.+?)');
     }
     add_action('init', 'create_new_url_querystring');
     function leaguemanager_calendar_download() {

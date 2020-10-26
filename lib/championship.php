@@ -524,5 +524,34 @@ class LeagueManagerChampionship extends LeagueManager
 			}
 		}
 	}
+    /**
+     * proceed to next final round
+     *
+     * @param string|false $last
+     * @param string $current
+     * @return void
+     */
+    function winners( $season, $competitionType, $seasonType )
+    {
+        global $leaguemanager, $wpdb;
+        //    SELECT l.`title`
+        //    ,wt.`title`
+        //    ,lt.`title`
+        //    FROM `wp_leaguemanager_matches` m
+        //    , `wp_leaguemanager_leagues` l
+        //    , `wp_leaguemanager_competitions` c
+        //
+        //    , `wp_leaguemanager_teams` wt
+        //    , `wp_leaguemanager_teams` lt
+        //    WHERE `league_id` = l.`id`
+        //    and l.`competition_id` = c.`id`
+        //    and c.`competitiontype` = 'tournament'
+        //    and c.`name` like 'Summer%'
+        //    AND m.`final` = 'FINAL'
+        //    and m.`season` = 2018
+        //    AND m.`winner_id` = wt.`id`
+        //    and m.`loser_id` = lt.`id`
+        //    order by 1
+    }
 }
 ?>

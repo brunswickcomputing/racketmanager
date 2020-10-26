@@ -1202,9 +1202,9 @@ class LeagueManagerShortcodes extends LeagueManager
 			
 		}
 		
-		$playerstats = array_msort($playerstats, array('won'=>SORT_DESC, 'winpct'=>SORT_DESC, 'setsDiff'=>SORT_DESC, 'gamesDiff'=>SORT_DESC,  'playername'=>SORT_ASC));
-		
-		if ( empty($template) && $this->checkTemplate('players-'.$league->sport) ) {
+        $playerstats = array_msort($playerstats, array('won'=>SORT_DESC, 'winpct'=>SORT_DESC, 'setsDiff'=>SORT_DESC, 'gamesDiff'=>SORT_DESC,  'playername'=>SORT_ASC));
+        
+        if ( empty($template) && $this->checkTemplate('players-'.$league->sport) ) {
 			$filename = 'players-'.$league->sport;
 		} else {
 			$filename = ( !empty($template) ) ? 'players-'.$template : 'players';

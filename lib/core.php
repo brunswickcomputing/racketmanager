@@ -2748,7 +2748,7 @@ class LeagueManager
 		$order3 = "m.`season`, m.`match_day` ";
 		
 		$sql1 = "SELECT p.ID AS `player_id`, p.`display_name` AS `fullname`, ro.`id` AS `roster_id`,  ro.`affiliatedclub` FROM {$wpdb->leaguemanager_roster} AS ro, {$wpdb->users} AS p WHERE ro.`player_id` = p.`ID`";
-		$sql2 = "FROM {$wpdb->leaguemanager_teams} AS t, {$wpdb->leaguemanager_rubbers} AS r, {$wpdb->leaguemanager_matches} AS m, {$wpdb->leaguemanager_roster} as ro WHERE r.`winner_id` != 0 AND (r.`home_player_1` = ro.`id` OR r.`home_player_2` = ro.`id` OR r.`away_player_1` = ro.`id` OR r.`away_player_2` = ro.`id`) AND( m.`home_team` = t.`id` OR m.`away_team` = t.`id`) AND ro.`affiliatedclub` = t.`affiliatedclub` AND r.`match_id` = m.`id` ";
+		$sql2 = "FROM {$wpdb->leaguemanager_teams} AS t, {$wpdb->leaguemanager_rubbers} AS r, {$wpdb->leaguemanager_matches} AS m, {$wpdb->leaguemanager_roster} as ro WHERE r.`winner_id` != 0 AND (((r.`home_player_1` = ro.`id` OR r.`home_player_2` = ro.`id`) AND  m.`home_team` = t.`id`) OR ((r.`away_player_1` = ro.`id` OR r.`away_player_2` = ro.`id`) AND m.`away_team` = t.`id`)) AND ro.`affiliatedclub` = t.`affiliatedclub` AND r.`match_id` = m.`id` ";
 
 		if ( $search1 != "") $sql1 .= " AND $search1";
 		if ( $search2 != "") $sql2 .= " AND $search2";
@@ -2789,7 +2789,7 @@ class LeagueManager
 			$i++;
 		}
 
-		$this->playerstats[$cachekey] = $playerstats;
+        $this->playerstats[$cachekey] = $playerstats;
 		return $this->playerstats[$cachekey];
 	}
 	

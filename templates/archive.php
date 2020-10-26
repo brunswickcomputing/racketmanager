@@ -41,7 +41,7 @@ if (hash == 'teams') tab = 3;
                                                             { "visible": false, "targets": 7 },
                                                             { "visible": false, "targets": 10 }
                                                             ],
-															order: [[ 3, 'desc' ], [ 11, 'desc' ], [ 7, 'desc' ], [ 5, 'desc' ], [ 10, 'desc' ], [ 8, 'desc' ], [ 0, 'asc' ]],
+                                                            order: [[ 3, 'desc' ], [ 11, 'desc' ], [ 7, 'desc' ], [ 5, 'desc' ], [ 10, 'desc' ], [ 8, 'desc' ], [ 0, 'asc' ]],
 															fixedHeader: {
 															header: true,
 															footer: true

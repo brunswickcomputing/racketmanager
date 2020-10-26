@@ -799,23 +799,11 @@ final class LeagueManagerAdmin extends LeagueManager
         } else {
             $league_id = intval($_GET['league_id']);
             $league = get_league( $league_id );
-            switch ($league->type) {
-                case 'MD':
-                    $leagueType = ' Mens ';
-                    break;
-                case 'WD':
-                    $leagueType = ' Ladies ';
-                    break;
-                case 'XD':
-                case 'LD':
-                    $leagueType = ' Mixed ';
-                    break;
-                default:
-                    $leagueType = '';
-            }
+            $leagueType = $league->type;
+            if ( $leagueType == 'LD' ) $leagueType = 'XD';
+            
             if ( $league->entryType == 'player' ) {
                 $entryType = 'player';
-                $leagueType = '';
             } else {
                 $entryType = '';
             }

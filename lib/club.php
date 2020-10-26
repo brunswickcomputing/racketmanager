@@ -97,8 +97,8 @@ final class Club {
             $sql .= " AND `status` = 'P'";
         }
         if ( $type ) {
-            $sql .= " AND `title` like '%s'";
-            $args[] = '%'.$wpdb->esc_like($type).'%';
+            $sql .= " AND `type` = '%s'";
+            $args[] = $type;
         }
         
         $sql .= " ORDER BY `title`";

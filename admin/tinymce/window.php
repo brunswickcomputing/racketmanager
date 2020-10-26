@@ -27,6 +27,7 @@ global $wpdb;
 			<li id="teams_tab"><span><a href="javascript:mcTabs.displayTab('teams_tab', 'teams_panel');" onmouseover="return false;"><?php _e( "Teams", 'leaguemanager' ); ?></a></span></li>
 			<li id="team_tab"><span><a href="javascript:mcTabs.displayTab('team_tab', 'team_panel');" onmouseover="return false;"><?php _e( "Team", 'leaguemanager' ); ?></a></span></li>
 			<li id="archive_tab"><span><a href="javascript:mcTabs.displayTab('archive_tab', 'archive_panel');" onmouseover="return false;"><?php _e( "Archive", 'leaguemanager' ); ?></a></span></li>
+			<li id="competition_tab"><span><a href="javascript:mcTabs.displayTab('competition_tab', 'competition_panel');" onmouseover="return false;"><?php _e( "Competition", 'leaguemanager' ); ?></a></span></li>
 		</ul>
 	</div>
 
@@ -156,7 +157,7 @@ global $wpdb;
 		<select id="team_tag" name="team_tag" style="width: 200px">
         	<option value="0"><?php _e("No Team", 'leaguemanager'); ?></option>
 		<?php
-			$teams = $wpdb->get_results("SELECT * FROM {$wpdb->leaguemanager_teams} ORDER BY `title` ASC");	
+            $teams = $wpdb->get_results("SELECT * FROM {$wpdb->leaguemanager_teams} AS lmTeam, {$wpdb->leaguemanager_table} AS lmTable WHERE lmTeam.`id` = lmTable.`team_id` ORDER BY `title` ASC");
 			if( $teams ) {
 				foreach ( $teams AS $team ) {
 					$league = $wpdb->get_results( "SELECT `title` FROM {$wpdb->leaguemanager} WHERE `id` = {$team->league_id}" );
@@ -219,6 +220,27 @@ global $wpdb;
 	</table>
 	</div>
 	
+	<!-- competition panel -->
+	<div id="competition_panel" class="panel"><br/>
+	<table  style="border: 0;" cellpadding="5">
+	<tr>
+		<td><label for="competition_tag"><?php _e("Competition", 'leaguemanager'); ?></label></td>
+		<td>
+		<select id="competition_tag" name="competition_tag" style="width: 200px">
+        	<option value="0"><?php _e("No competition", 'leaguemanager'); ?></option>
+		<?php
+			$competitions = $wpdb->get_results("SELECT * FROM {$wpdb->leaguemanager_competitions} ORDER BY `name` ASC");
+			if( $competitions ) {
+			foreach( $competitions AS $competition )
+				echo '<option value="'.$competition->id.'" >'.$competition->name.'</option>'."\n";
+			}
+		?>
+        	</select>
+		</td>
+	</tr>
+	</table>
+	</div>
+
 	</div>
 	
 	<div class="mceActionPanel">

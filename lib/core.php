@@ -1087,7 +1087,7 @@ class LeagueManager
 		
 		$search_terms = array();
 		if ( $competition_id ) {
-			$search_terms[] = $wpdb->prepare("`id` IN (SELECT `team_id` FROM $wpdb->leaguemanager_table T, {$wpdb->leaguemanager} L WHERE L.`competition_id` = '%d' AND T.`league_id` = L.`id`)", intval($competition_id));
+			$search_terms[] = $wpdb->prepare("C.`competition_id` = '%d'", intval($competition_id));
 		}
 		if ( $league_id ) {
 			if ($league_id == "any")
@@ -1126,7 +1126,7 @@ class LeagueManager
 		}
 		$orderby = $orderby_string;
 		
-        $sql = "SELECT B.`id`, B.`title`, C.`captain`, C.`contactno`, C.`contactemail`, B.`affiliatedclub`, B.`stadium`, B.`logo`, B.`home`, B.`roster`, B.`profile`, C.`match_day`, C.`match_time` FROM {$wpdb->leaguemanager_teams} B, {$wpdb->leaguemanager_table} A, {$wpdb->leaguemanager_team_competition} C WHERE B.id = A.team_id AND A.team_id = C.team_id and C.competition_id in (select `competition_id` from {$wpdb->leaguemanager} WHERE `id` = A.league_id) $search ORDER BY $orderby";
+        $sql = "SELECT DISTINCT B.`id`, B.`title`, C.`captain`, C.`contactno`, C.`contactemail`, B.`affiliatedclub`, B.`stadium`, B.`logo`, B.`home`, B.`roster`, B.`profile`, C.`match_day`, C.`match_time` FROM {$wpdb->leaguemanager_teams} B, {$wpdb->leaguemanager_table} A, {$wpdb->leaguemanager_team_competition} C WHERE B.id = A.team_id AND A.team_id = C.team_id and C.competition_id in (select `competition_id` from {$wpdb->leaguemanager} WHERE `id` = A.league_id) $search ORDER BY $orderby";
 		
 		$cachekey = md5($sql.$output);
 			// use cached object
@@ -1336,7 +1336,10 @@ class LeagueManager
                 $i = 1;
                 foreach ($team->roster AS $player) {
                     $teamplayer = $this->getRosterEntry($player);
-                    $team->player[$i] = $teamplayer->firstname.' '.$teamplayer->surname;
+                    $firstname = isset($teamplayer->firstname) ? $teamplayer->firstname : '';
+                    $surname = isset($teamplayer->surname) ? $teamplayer->surname : '';
+                    $team->player[$i] =  $firstname.' '.$surname;
+
                     $team->playerId[$i] = $player;
                     $i++;
                 };

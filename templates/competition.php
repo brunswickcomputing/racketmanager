@@ -11,7 +11,7 @@ The following variables are usable:
 	You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
 */
 global $wp_query;
-$postID = $wp_query->post->ID;
+$postID = isset($wp_query->post->ID) ? $wp_query->post->ID : "";
 wp_enqueue_style('datatables');
 wp_enqueue_script('datatables');
 ?>

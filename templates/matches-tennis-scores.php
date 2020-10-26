@@ -1,6 +1,6 @@
 <?php
     global $wp_query;
-    $postID = $wp_query->post->ID;
+    $postID = isset($wp_query->post->ID) ? $wp_query->post->ID : "";
 ?>
             <table class='leaguemanager matchtable' summary='' title='<?php echo __( 'Match Plan', 'leaguemanager' )." ".$league->title ?>'>
             <thead>

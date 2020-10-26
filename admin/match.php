@@ -223,7 +223,7 @@
 <?php } ?>
 <!-- Home team pop up, only shows teams in a Group if set for 'Championship' -->
 					<td>
-<select size="1" name="home_team[<?php echo $i ?>]" id="home_team_<?php echo $i ?>" <?php if ( !isset($match->final) ) echo 'onChange="Leaguemanager.insertHomeStadium(this.value'.$i.')"'; ?>>
+                            <select size="1" name="home_team[<?php echo $i ?>]" id="home_team_<?php echo $i ?>" <?php if ( !$finalkey ) echo 'onChange="Leaguemanager.insertHomeStadium(this.value'.$i.')"'; ?>>
 						<?php $myTeam = 0; ?>
 <?php foreach ( $teams AS $team ) { ?>
 							<option value="<?php echo $team->id ?>"<?php if(isset($matches[$i]->home_team)) selected($team->id, $matches[$i]->home_team ) ?>><?php echo $team->title ?></option>
@@ -237,7 +237,8 @@
 
                         <?php if ( 1 == $non_group ) {  ?>
 
-                            <select size="1" name="away_team[<?php echo $i ?>]" id="away_team_<?php echo $i ?>" onChange="Leaguemanager.insertHomeStadium(document.getElementById('home_team_<?php echo $i ?>').value, <?php echo $i ?>);">
+                            <select size="1" name="away_team[<?php echo $i ?>]" id="away_team_<?php echo $i ?>" <?php if ( !$finalkey ) { echo 'onChange="Leaguemanager.insertHomeStadium(document.getElementById(\'home_team_'.$i.'\').value, '.$i.');"'; } ?>>
+
 <?php foreach ( $teamsHome AS $team ) { ?>
                                 <?php if ( isset($matches[$i]->away_team) ) { ?>
                                     <option value="<?php echo $team->id ?>"<?php if(isset($matches[$i]->away_team)) selected( $team->id, $matches[$i]->away_team ) ?>><?php echo $team->title ?></option>
@@ -251,9 +252,9 @@
 									} ?>
                             </select>
                         <?php } else { ?>
-                            <select size="1" name="away_team[<?php echo $i ?>]" id="away_team_<?php echo $i ?>" onChange="Leaguemanager.insertHomeStadium(document.getElementById('home_team_<?php echo $i ?>').value, <?php echo $i ?>);">
+                            <select size="1" name="away_team[<?php echo $i ?>]" id="away_team_<?php echo $i ?>" <?php if ( !$finalkey ) { echo 'onChange="Leaguemanager.insertHomeStadium(document.getElementById(\'home_team_'.$i.'\').value, '.$i.');"'; } ?>>
 <?php foreach ( $teams AS $team ) { ?>
-                                <option value="<?php echo $team->id ?>"<?php if(isset($matches[$i]->away_team)) selected( $team->id, $matches[$i]->away_team ) ?>><?php echo $team->title ?></option>
+                                <option value="<?php echo $team->id ?>"<?php if(isset($matches[$i]->away_team)) selected( $team->id, $matches[$i]->away_team ) ?>><?php echo  $team->title ?></option>
 <?php } ?>
                             </select>
                         <?php } ?>

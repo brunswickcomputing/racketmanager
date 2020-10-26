@@ -31,6 +31,7 @@ function insertLeagueManagerLink() {
 	var teams = document.getElementById('teams_panel');
 	var team = document.getElementById('team_panel');
 	var archive = document.getElementById('archive_panel');
+    var competition = document.getElementById('competition_panel');
 
 	// who is active?
 	if (table.className.indexOf('current') != -1) {
@@ -103,6 +104,15 @@ function insertLeagueManagerLink() {
 			tinyMCEPopup.close();
 	}
 	
+    if (competition.className.indexOf('current') != -1) {
+        var competitionId = document.getElementById('competition_tag').value;
+        
+        if (competitionId != 0)
+            tagtext = "[competition id=" + competitionId + "]";
+        else
+            tinyMCEPopup.close();
+    }
+    
 	if(window.tinyMCE) {
 		/* get the TinyMCE version to account for API diffs */
 		var tmce_ver=window.tinyMCE.majorVersion;

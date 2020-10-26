@@ -28,16 +28,18 @@ $season = end($league->seasons)['name'];
 <?php if ( !empty($team->captain) ) { ?>
 			<dt><?php _e( 'Captain', 'leaguemanager' ) ?></dt><dd><?php echo $team->captain ?></dd>
 <?php } ?>
-<?php if ( !empty($team->contactno) ) { ?>
+<?php if ( is_user_logged_in() ) { ?>
+    <?php if ( !empty($team->contactno) ) { ?>
 			<dt><?php _e( 'Contact Number', 'leaguemanager' ) ?></dt><dd><?php echo $team->contactno ?></dd>
-<?php } ?>
-<?php if ( !empty($team->contactemail) ) { ?>
+    <?php } ?>
+    <?php if ( !empty($team->contactemail) ) { ?>
 			<dt><?php _e( 'Contact Email', 'leaguemanager' ) ?></dt><dd><?php echo $team->contactemail ?></dd>
+    <?php } ?>
 <?php } ?>
 <?php if ( !empty($team->match_day) ) { ?>
 			<dt><?php _e( 'Match Day', 'leaguemanager' ) ?></dt><dd><?php echo $team->match_day ?></dd>
 <?php } ?>
-<?php if ( !empty($team->match_time) ) { ?>
+<?php if ( !empty($team->match_time) && $team->match_time > "00:00:00" ) { ?>
 			<dt><?php _e( 'Match Time', 'leaguemanager' ) ?></dt><dd><?php echo $team->match_time ?></dd>
 <?php } ?>        </dl>
 

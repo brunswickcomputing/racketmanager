@@ -566,6 +566,9 @@ div.teamlist .header .ui-icon {
 /*	background-image: none;*/
 }
 
+.club-teams dl.team {
+    width: 60%;
+}
 .tablist a {
 	border: 0;
 }
@@ -1049,7 +1052,7 @@ td input.player {
     text-align:center;
     font-weight:bold;
     font-size:1.2em;
-    width: 220px;
+    width: 210px;
     display:inline-block;
 }
 /*

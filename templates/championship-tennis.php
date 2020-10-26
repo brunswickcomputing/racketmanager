@@ -35,18 +35,18 @@ The following variables are usable:
                     <ul class="round">
                         <li class="spacer">&nbsp;</li>
                     <?php foreach ( (array)$final->matches AS $no => $match ) { ?>
-<li class="game game-top <?php if ( $match->homeTeam && $match->home_team == $match->winner_id ) { echo 'winner'; if ( $final->name == 'Final' ) { $champion=$match->homeTeam->title; }} ?>"><?php if ( $match->homeTeam && $match->home_team != -1 ) echo $match->homeTeam->title; else echo '&nbsp;'; ?></li>
+                        <li class="game game-top <?php if ( $match->homeTeam && $match->home_team == $match->winner_id ) { echo 'winner'; if ( $final->name == 'Final' ) { $champion=$match->homeTeam->title; }} ?>"><?php if ( $match->homeTeam && $match->home_team != -1 ) echo str_replace('/','<br/>',$match->homeTeam->title); else echo '&nbsp;'; ?></li>
                         <li class="game game-spacer"><?php if ( $match->score != '-:-' ) echo $match->score ?></li>
-<li class="game game-bottom <?php if ( $match->awayTeam && $match->away_team == $match->winner_id ) { echo 'winner';if ( $final->name == 'Final' ) { $champion=$match->awayTeam->title; }} ?>"><?php if ( $match->awayTeam && $match->away_team != -1 ) echo $match->awayTeam->title; else echo '&nbsp;'; ?></li>
+                        <li class="game game-bottom <?php if ( $match->awayTeam && $match->away_team == $match->winner_id ) { echo 'winner';if ( $final->name == 'Final' ) { $champion=$match->awayTeam->title; }} ?>"><?php if ( $match->awayTeam && $match->away_team != -1 ) echo str_replace('/','<br/>',$match->awayTeam->title); else echo '&nbsp;'; ?></li>
                         <li class="spacer">&nbsp;</li>
                     <?php } ?>
                     </ul>
 <?php if ( isset($champion) ) { ?>
-          <ul class="round">
-          <li class="spacer">&nbsp;</li>
-          <li class="game game-top winner"><?php echo $champion ?></li>
-<li class="spacer">&nbsp;</li>
-</ul>
+                    <ul class="round">
+                        <li class="spacer">&nbsp;</li>
+                        <li class="game game-top winner"><?php echo str_replace('/','<br/>',$champion) ?></li>
+                        <li class="spacer">&nbsp;</li>
+                    </ul>
 <?php } ?>
 
                 <?php } ?>
@@ -81,7 +81,3 @@ The following variables are usable:
 			</div>
 <?php } ?>
         </div>
-
-
-
-

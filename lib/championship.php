@@ -354,24 +354,24 @@ class LeagueManagerChampionship extends LeagueManager
 				}
 			}
 		} else {
-            $groups = isset($this->league->groups) ? $this->league->groups : array("");
-            if ( !isset($this->league->groups) ) {
-                foreach ( $groups AS $group ) {
-                    for ( $a = 1; $a <= $leaguemanager->getSeason($this->league)['num_match_days']; $a++ ) {
-                        $title = sprintf(__('Team Rank %d', 'leaguemanager'), $a);
-                        if( $output == 'ARRAY' ) {
-                            $teams[$a.'_'.$group] =	$title;
-                        } else {
-                            $data = array( 'id' => $a.'_'.$group, 'title' => $title );
-                            $teams[] = (object) $data;
-                        }
-                    }
-                    if ( $output == 'ARRAY' ) {
-                        $teams['0_'.$group] = 'Bye';
+            $groups = isset($this->league->groups) ? $this->league->groups : '';
+            $groups = explode(";", $groups);
+
+            foreach ( $groups AS $group ) {
+                for ( $a = 1; $a <= $leaguemanager->getSeason($this->league)['num_match_days']; $a++ ) {
+                    $title = sprintf(__('Team Rank %d', 'leaguemanager'), $a);
+                    if( $output == 'ARRAY' ) {
+                        $teams[$a.'_'.$group] =	$title;
                     } else {
-                        $data = array( 'id' => '0_'.$group, 'title' => 'Bye' );
+                        $data = array( 'id' => $a.'_'.$group, 'title' => $title );
                         $teams[] = (object) $data;
                     }
+                }
+                if ( $output == 'ARRAY' ) {
+                    $teams['0_'.$group] = 'Bye';
+                } else {
+                    $data = array( 'id' => '0_'.$group, 'title' => 'Bye' );
+                    $teams[] = (object) $data;
                 }
             }
 		}
@@ -423,8 +423,14 @@ class LeagueManagerChampionship extends LeagueManager
 			$home = explode("_", $match->home_team);
 			
 			$home = array( 'rank' => $home[0], 'group' => $home[1] );
-            $home_team = $leaguemanager->getTeams(array_merge($match_args, array("rank" => $home['rank'], "group" => $home['group'])));
-
+            if ( $home['rank'] == 0 ) {
+                $home_team = 'bye';
+                $home['team'] = -1;
+            } else {
+                $home_team = $leaguemanager->getTeams(array_merge($match_args, array("rank" => $home['rank'], "group" => $home['group'])));
+                if ( $home_team ) $home['team'] = $home_team[0]->id;
+            }
+            
             $away = explode("_", $match->away_team);
             $away = array( 'rank' => $away[0], 'group' => $away[1] );
             if ( $away['rank'] == 0 ) {
@@ -436,7 +442,6 @@ class LeagueManagerChampionship extends LeagueManager
             }
 
 			if ( $home_team && $away_team ) {
-				$home['team'] = $home_team[0]->id;
 			} else {
 				$update = false;
 			}

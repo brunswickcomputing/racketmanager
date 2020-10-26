@@ -1,950 +1,205 @@
 <?php
-if ( !current_user_can( 'league_manager' ) ) : 
-	echo '<p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p>';
-else :
+/**
+ * LeagueManager Documentation
+ *
+ */
+
+    if ( !current_user_can( 'league_manager' ) ) {
+    echo '<p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p>';
+    } else {
 ?>
 
 <div class="wrap leaguemanager_documentation">
-	<h1 id="top"><?php _e( 'LeagueManager Documentation', 'leaguemanager' ) ?></h1>
+    <h1 id="top"><?php _e( 'LeagueManager Documentation', 'leaguemanager' ) ?></h1>
 
-	<div id="tabs">
-		<ul>
-			<li><a href="#shortcodes"><?php _e( 'Shortcodes', 'leaguemanager' ) ?></a></li>
-			<li><a href="#templates"><?php _e( 'Templates', 'leaguemanager' ) ?></a></li>
-			<li><a href="#import"><?php _e( 'Data Import', 'leaguemanager' ) ?></a></li>
-			<li><a href="#slideshows"><?php _e( 'Slideshows', 'leaguemanager' ) ?></a></li>
-			<li><a href="#roster_profiles"><?php _e( 'Team Roster & Profiles', 'leaguemanager' ) ?></a></li>
-			<li><a href="#template_tags"><?php _e( 'Template Tags', 'leaguemanager' ) ?></a></li>
-			<li><a href="#settings"><?php _e( 'League Settings', 'leaguemanager' ) ?></a></li>
-			<li><a href="#customization"><?php _e( 'Customization', 'leaguemanager' ) ?></a></li>
-			<li>
-				<a href="#howto_intro"><?php _e( 'Howto', 'leaguemanager' ) ?></a>
-				<!--<ul style="margin-left: 2em;">
-					<li><a href="#championship"><?php _e( 'Championship', 'leaguemanager' ) ?></a></li>
-					<li><a href="#team_roster"><?php _e( 'Team Roster', 'leaguemanager' ) ?></a></li>
-					<li><a href="#match_statistics"><?php _e( 'Match Statistics', 'leaguemanager' ) ?></a></li>
+    <div class="documentation-blocks jquery-ui-accordion" id="tabs">
+        
+        <ul id="tablist" style="display: none;">
+            <li><a href="#competitions-table"><?php _e( 'Competitions', 'leaguemanager' ) ?></a></li>
+            <li><a href="#seasons-table"><?php _e( 'Seasons', 'leaguemanager' ) ?></a></li>
+            <li><a href="#roster-table"><?php _e( 'Rosters', 'leaguemanager' ) ?></a></li>
+            <li><a href="#player-table"><?php _e( 'Players', 'leaguemanager' ) ?></a></li>
+            <li><a href="#rosterrequest-table"><?php _e( 'Roster Request', 'leaguemanager' ) ?></a></li>
+            <li><a href="#teams-table"><?php _e( 'Teams', 'leaguemanager' ) ?></a></li>
+            <li><a href="#clubs-table"><?php _e( 'Clubs', 'leaguemanager' ) ?></a></li>
+            <li><a href="#results-table"><?php _e( 'Results', 'leaguemanager' ) ?></a></li>
+            <li><a href="#results-checker-table"><?php _e( 'Results Checker', 'leaguemanager' ) ?></a></li>
+        </ul>
+    
+        <div id="competitions-table" class="league-block-container">
+            <h2 class="header"><?php _e( 'Competitions', 'leaguemanager' ) ?></h2>
+            <div class="documentation-block content">
+                <a href="#top" class="alignright top-link"><?php _e( 'Top', 'leaguemanager' ) ?></a>
+                <p>The main page of Leaguemanager shows an overview of the competitions in the database together with a few statistics on the number of seasons, leagues and format. At the beginning it is necessary to add at least one season for which the number of match days is also specified. Furthermore the competition preferences need to be set. You can chose the sport type and point rules.</p>
+                <h3 id="Types"><?php _e( 'Competition Types', 'leaguemanager' ) ?></h3>
+                <p>There are three types of competitions available.</p>
+                <h4 id="Cups"><?php _e( 'Cups', 'leaguemanager' ) ?></h4>
+                <p>A cup competition has a mode of Championship and an entry team of Team.</p>
+                <h4 id="Leagues"><?php _e( 'Leagues', 'leaguemanager' ) ?></h4>
+                <p>A league competition has a mode of default (entry type is not required but equates to Team).</p>
+                <h4 id="Tournaments"><?php _e( 'Tournaments', 'leaguemanager' ) ?></h4>
+                <p>A tournament competition has a mode of Championship and an entry team of Player.</p>
+                <h3 id="Leagues"><?php _e( 'Leagues', 'leaguemanager' ) ?></h3>
+                <p>The leagues page of Leaguemanager show an overview of the leagues for a competition together with a few statistics on the number of teams and matches for the latest season.</p>
+                <p>Player statistics are also available to view which show which players have played in the league on each match day.</p>
+                <p>Clicking the league title takes the user to the individual league page. Here there are three tabs and options to add multiple teams, a single team  and matches. The "Add Teams" button should be used to add existing teams to the league. The "Add Team" button should only be used to add a new team to "Tournaments".</p>
+                <h4 id="Standings"><?php _e( 'Standings', 'leaguemanager' ) ?></h4>
+                <p>Clicking the team name allows captain details to be entered for the team along with home match day and start time. The captain details are automatically pulled from teh club roster as the captain name is typed. Selecting the captain allows the contact details to be updated and saved.</p>
+                <p>Points can be adjusted by entering a value in the "+/- points" field. This the cumulative total of point adjustments.</p>
+                <p>The "Update Ranking" button applies the latest shows the updated rankings.</p>
+                <h4 id="Crosstable"><?php _e( 'Crosstable', 'leaguemanager' ) ?></h4>
+                <p>This tab shows the scores or future date and time for matches between teams in the league.</p>
+                <h4 id="Match Plan"><?php _e( 'Match Plan', 'leaguemanager' ) ?></h4>
+                <p>This tab by default shows the matches for the latest match day. Other match days can be selected from the filter.</p>
+                <p>If the matches consist of multiple rubbers, clicking the "View Rubbers" button will display the rubbers. These can then be completed and the match result saved. This automatically calculated the points and stores these, updating the standings table as well.</p>
+                            <h3 id="Cups/Tournaments"><?php _e( 'Cups/Tournaments', 'leaguemanager' ) ?></h3>
+                <p>For leagues in these types of competitions, the tabs are different from a standard league. The "Add Matches" button should not be used for these competitions.</p>
+                <h4 id="Final Results"><?php _e( 'Final Results', 'leaguemanager' ) ?></h4>
+                <p>This tab shows the matches for each round along with scores.<p>
+                <h4 id="Final"><?php _e( 'Final', 'leaguemanager' ) ?></h4>
+                <p>This tab is where the matches are created. Each round show be created starting with the first and ending with the final. The first round matches will consist of "Team Rank x" names along with "Bye". The "Team Rank" refers to the teams in the "Prelimary Rounds" tab.</p>
+                <p>For subsequent rounds the teams will be "Winner of <em>round</em> x".</p>
+                <h5>Match Results</h5>
+                <p>If the competition has rubbers then the "View Rubbers" button should be pressed to enter the rubber players and scores. However, it is possible to just enter the match scores for these matches.<p>
+                <p>Where no rubbers are involved the set scores are entered directly into the relevant fields.</p>
+                <p>There is usually no need to enter match scores as these will be automatically calculated from the rubber result or set scores.</p>
+                <p>Matches with a "Bye" for a team do not need a score to be entered.</p>
+                <p>If there is a walkover for a match the score should be entered as 2-0.</p>
+                <p>Pressing the "Save Results" button will update the matches and automatically advance the winner team to the next round.</p>
+                <p>Once matches have both teams advanced, clicking on the match name will allow the "Location" to be updated to indicate the "Home" team</p>
+                <h4 id="Preliminary"><?php _e( 'Preliminary Rounds', 'leaguemanager' ) ?></h4>
+                <p>This tab is where the teams are entered. For <em>existing</em> teams, the "Add Teams" button should be used to enable multiple teams to be selected and added to the league. For "Tournaments" only, the "Add Team" button should be used to create a <em>new</em> team. Once the teams have been added to the league, they can arranged manually using "drag and drop" and clicking "Save Ranking" or automatically by clicking "Random Ranking".</p>
+                <p>Once the matches have been created and the administrator is happy with the ranking, the "Proceed to Final Rounds" button should be pressed. On the first round matches, this will replace "Team Ranking x" with the name of the team in that position in the ranking.</p>
+                <p>Further changes to rankings after "Proceed to Final Rounds" has been pressed will have no affect on the matches. If changes are required the matches will need to be updated to have "Team Ranking x" before proceeding again.</p>
+            </div>
+        </div>
+        <div id="seasons-table" class="league-block-container">
+            <h2 class="header"><?php _e( 'Seasons', 'leaguemanager' ) ?></h2>
+            <div class="documentation-block content">
+                <a href="#top" class="alignright top-link"><?php _e( 'Top', 'leaguemanager' ) ?></a>
+                <p>The seasons page of Leaguemanager lists all current seasons and allows new seasons to be defined.</p>
+                <p>To add a new season, all the is required is the season name.</p>
+                <h4 id="Existing Season"><?php _e( 'Existing Seasons', 'leaguemanager' ) ?></h4>
+                <p>For each season, it is possible to add this season to multiple competitions in one easy way. Clicking on the "Add Competitions" button dispays a list of competitions (grouped into "Cups", "Leagues" and "Tournaments"). Firstly, the number of matchdays must be entered at the top of the screen. Clicking on the "checkbox" next to the competition name and pressing "Apply" will add the selected season to each competition. If the checkbox is not present, then the selected season is already added to the competition.</p>
+            </div>
+        </div>
+        <div id="roster-table" class="league-block-container">
+            <h2 class="header"><?php _e( 'Rosters', 'leaguemanager' ) ?></h2>
+            <div class="documentation-block content">
+                <a href="#top" class="alignright top-link"><?php _e( 'Top', 'leaguemanager' ) ?></a>
+                <p>The rosters page of Leaguemanager allows the players registered for a particular club to be viewed. The club is selected from the dropdown list and the "View Roster" button is pressed.</p>
+                <h4 id="Adding players"><?php _e( 'Adding players', 'leaguemanager' ) ?></h4>
+                <p>A player to be added to a club roster on this page. The player is selected from the dropdown list of existing players, the club for who the player to be added in selected and the "Add Roster" button is pressed.</p>
+                <h4 id="Removing players"><?php _e( 'Removing players', 'leaguemanager' ) ?></h4>
+                <p>From the list of registered players, individuals can be removed from the club records by clicking the checkbox and then selecting "Delete" from the "Bulk Actions" dropdown. Pressing the "Apply" button will remove the selected player from the club roster. Any player who was previously on the club roster who has subsequently been removed is also listed but there is no checkbox available. Additionally, the date that the player was removed from the roster is shown, along with the user who actioned the removal request.<p>
+                <p>It is possible to add and remove a player from a roster multiple times.</p>
+            </div>
+        </div>
+        <div id="rosterrequest-table" class="league-block-container">
+            <h2 class="header"><?php _e( 'Roster Request', 'leaguemanager' ) ?></h2>
+            <div class="documentation-block content">
+                <a href="#top" class="alignright top-link"><?php _e( 'Top', 'leaguemanager' ) ?></a>
+                <p>The roster request page of Leaguemanager shows requests to add players to clubs.</p>
+                <p>These requests are generated from the club screen by match secretaries.</p>
+                <p>The page lists the club, player, match secretary and date requested along with any completed date and user who completed the request.</p>
+                <p>The <a href="<?php echo get_admin_url() ?>admin.php?page=leaguemanager-settings">Roster Confirmation setting</a> on the "Rosters" tab can be set to either "none" or "automatic". If an email address is set on this screen, an email notification will be sent to this address whenever a roster request is made.</p>
+                <h4 id="Automatic"><?php _e( 'Automatic Confirmation', 'leaguemanager' ) ?></h4>
+                <p>With this set, the player will be automatically added to the club roster (and added to the list of players if a new player).</p>
+                <h3 id="Updates"><?php _e( 'Approval/Deletion', 'leaguemanager' ) ?></h3>
+                <p>Roster requests can be approved individually by selecting the checkbox next to the request.</p>
+                <p>Additionally, bulk approvals can be performed by selecting the checkbox in the header.</p>
+                <p>Roster requests can also be deleted. If these have been actioned then deleting the request has no impact on the club roster.<p>
+            </div>
+        </div>
+        <div id="player-table" class="league-block-container">
+            <h2 class="header"><?php _e( 'Players', 'leaguemanager' ) ?></h2>
+            <div class="documentation-block content">
+                <a href="#top" class="alignright top-link"><?php _e( 'Top', 'leaguemanager' ) ?></a>
+                <p>The player page of Leaguemanager allows a new player to be added to the system. Required fields are <ul><li>First name</li><li>Surname</li><li>Gender<li></ul>
+                <p>Optionally, the BTM (British Tennis Membership) number can be provided.</p>
+                <p>The page also lists all existing players registered.</p>
+            </div>
+        </div>
+        <div id="teams-table" class="league-block-container">
+            <h2 class="header"><?php _e( 'Teams', 'leaguemanager' ) ?></h2>
+            <div class="documentation-block content">
+                <a href="#top" class="alignright top-link"><?php _e( 'Top', 'leaguemanager' ) ?></a>
+                <p>The teams page of Leaguemanager lists all the teams that are linked to clubs. It is possible to view only the teams for an individual club using the filter at the top of the screen.</p>
+                <h4 id="Deleting teams"><?php _e( 'Deleting teams', 'leaguemanager' ) ?></h4>
+                <p>Teams can also be deleted from this page. However, if the team is in a league, the team is prevented from deletion.</p>
+                <h4 id="Adding teams"><?php _e( 'Adding teams', 'leaguemanager' ) ?></h4>
+                <p>New teams can also be created on this screen. Selecting the club and type of team (singles/doubles, ladies/mens/mixed) and pressing the "Add team" button will create the team.</p>
+                <p>The name is automatically generated from the club short code, team type and the next sequence number based on existing teams for the club.</p>
+            </div>
+        </div>
+        <div id="clubs-table" class="league-block-container">
+            <h2 class="header"><?php _e( 'Clubs', 'leaguemanager' ) ?></h2>
+            <div class="documentation-block content">
+                <a href="#top" class="alignright top-link"><?php _e( 'Top', 'leaguemanager' ) ?></a>
+                <p>The clubs page of Leaguemanager lists all the registered clubs. The match secretary for each club is shown on the main screen.</p>
+                <p>There are links to view the rosters and teams of each club.</p>
+                <h4 id="Deleting clubs"><?php _e( 'Deleting clubs', 'leaguemanager' ) ?></h4>
+                <p>Clubs can also be deleted from this page. However, if the club still has teams attached, the club is prevented from deletion.</p>
+                <h4 id="Adding clubs"><?php _e( 'Adding clubs', 'leaguemanager' ) ?></h4>
+                <p>Clicking the "Add Club" button takes the user to a screen where the new club details can be entered. The required fields are <ul><li>Name</li><li>Type (currently only affiliated is available)</li><li>Shortcode (used in team names)</li><li>Facilites</li><li>Address (which can be entered or selected from a map view)</li></p>
+                <p>Additionally, the following information may be entered<ul><li>Contact Number</li><li>Website</li><li>Year Founded</li><ul>
+                <h4 id="Editing club details"><?php _e( 'Editing club details', 'leaguemanager' ) ?></h4>
+                <p>Clicking on the club name in the list of clubs displays the edit screen.</p>
+                <p>In addition to the fields available when adding a club, the match secretary can be entered or amended.</p>
+                <p>Typing in the match secretary name will automatically populate a list of players registered with the club.</p<p>Clicking on the player name will automatically populate the match secretary name along with any contact number and email address associated with the player.</p>
+                <p>Entering or amending these details will update the associated player record when the "Update" button is pressed.</p>
+            </div>
+        </div>
+        <div id="results-table" class="league-block-container">
+            <h2 class="header"><?php _e( 'Results', 'leaguemanager' ) ?></h2>
+            <div class="documentation-block content">
+                <a href="#top" class="alignright top-link"><?php _e( 'Top', 'leaguemanager' ) ?></a>
+                <p>The results page of Leaguemanager shows any results that have been entered by users that need administration approval.</p>
+                <p>The ability for users to enter match results themselves is controlled by the <a href="<?php echo get_admin_url() ?>admin.php?page=leaguemanager-settings">settings</a> on the "Match Results" tab.</p>
+                <p>If an email address is set on this screen, an email notification will be sent to this address whenever a match result is entered by users.</p>
+                <h3 id="level"><?php _e( 'Minimum level to update results', 'leaguemanager' ) ?></h4>
+                <p>There are three options that control who can enter results:</p>
+                <h4 id="None"><?php _e( 'None', 'leaguemanager' ) ?></h4>
+                <p>Results are not able to be entered by users.</p>
+                <h4 id="Captain"><?php _e( 'Captain', 'leaguemanager' ) ?></h4>
+                <p>Captains of the team involved in the match are able to enter the results.</p>
+                <h4 id="Roster"><?php _e( 'Roster', 'leaguemanager' ) ?></h4>
+                <p>Any player registered with the club of the team involved in the match are able to enter the results.</p>
+                <h3 id="entry"><?php _e( 'Result Entry', 'leaguemanager' ) ?></h4>
+                <p>There are two options that control who can enter results:</p>
+                <h4 id="Home"><?php _e( 'Home', 'leaguemanager' ) ?></h4>
+                <p>Results must be entered by the home team with approval by the away team.</p>
+                <h4 id="Either"><?php _e( 'Either', 'leaguemanager' ) ?></h4>
+                <p>Results can be entered by either the home or away team. Approval is required by the alternative team.</p>
+                <h3 id="confirmation"><?php _e( 'Result Confirmation', 'leaguemanager' ) ?></h4>
+                <p>There are two options that control how match result confirmation is handled:</p>
+                <h4 id="None"><?php _e( 'None', 'leaguemanager' ) ?></h4>
+                <p>Match results must be confirmed by the league administrator. Rubber results are available to view as these have already been entered.</p>
+                <h4 id="Automatic"><?php _e( 'Automatic', 'leaguemanager' ) ?></h4>
+                <p>Match results are automatically updated from the result entry on the frontend.</p>
+                <p>If this value is set, the only matches that are shown on this screen are where the opposing sides disagree with the result.</p>
+            </div>
+        </div>
+        <div id="results-checker-table" class="league-block-container">
+            <h2 class="header"><?php _e( 'Results Checker', 'leaguemanager' ) ?></h2>
+            <div class="documentation-block content">
+                <a href="#top" class="alignright top-link"><?php _e( 'Top', 'leaguemanager' ) ?></a>
+                <p>The results checker page of Leaguemanager shows any player checks that have been failed whenever a match result is input.</p>
+                <p>For any of these checks to be applied, the relevant <a href="<?php echo get_admin_url() ?>admin.php?page=leaguemanager-settings">setting</a> must be entered on the "Player Checks" tab.</p>
+                <h4 id="Roster lead time"><?php _e( 'Roster lead time', 'leaguemanager' ) ?></h4>
+                <p>This checks how long a player must be registered before they are eligible to play.</p>
+                <h4 id="End of season eligibility"><?php _e( 'End of season eligibility', 'leaguemanager' ) ?></h4>
+                <p>This checks how many rounds at the end of the season do not allow new players to be registered.</p>
+                <h4 id="Locked players"><?php _e( 'Locked players', 'leaguemanager' ) ?></h4>
+                <p>This checks how many matches a player may play for a higher team before they are locked to that team.</p>
+                <h3 id="Updates"><?php _e( 'Approval/Deletion', 'leaguemanager' ) ?></h3>
+                <p>Each check can be either marked as approved or can be deleted.</p>
+                <p>If the match result is updated, any records for the match and player are regenerated.</p>
+                <p>However, if a player is swapped for another player in the match result, the original player entry will remain in the list of result checks. It can then be deleted if required.</p>
+            </div>
+        </div>
 
-				</ul>-->
-			</li>
-			<li><a href="#racing"><?php _e( 'Setup Racing Sports', 'leaguemanager' ) ?></a></li>
-		</ul>
-	
-		<div id='shortcodes'>
-			<a href="#top" class="alignright top-link"><?php _e( 'Top', 'leaguemanager' ) ?></a>
-			<h2><?php _e( 'Shortcodes', 'leaguemanager' ) ?></h2>
-
-			<!-- Shortcode for Standings table -->
-			<p><?php _e( 'The standings table of a league is displayed with', 'leaguemanager' ) ?></p>
-			<blockquote><p>[standings league_id=ID]</p></blockquote>
-			<table class="widefat">
-			<thead>
-			<tr>
-					<th scope="col"><?php _e( 'Parameter', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Description', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Possible Values', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Default', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Optional', 'leaguemanager' ) ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr class="" valign="top">
-					<td>league_id</td>
-					<td><?php _e( 'ID of League', 'leaguemanager' ) ?></td>
-					<td><em>integer</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'No', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>league_name</td>
-					<td><?php _e( 'get league by name instead of ID (cannot be used together with attribute league_id)', 'leaguemanager' ) ?></td>
-					<td><em>string</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="" valign="top">
-					<td>season</td>
-					<td><?php _e( 'display standings of specific season (default is last season)', 'leaguemanager' ) ?></td>
-					<td><em>string</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="" valign="top">
-					<td>template</td>
-					<td><?php _e( 'specifies template to use', 'leaguemanager' ) ?></td>
-					<td><?php _e( 'name of template file without extension, whereas the name has to be standings-X', 'leaguemanager' ) ?></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>group</td>
-					<td><?php _e( 'specific group', 'leaguemanager' ) ?></td>
-					<td><em>string</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-			</tbody>
-			</table>
-
-			<!-- Shortcode for Matches table -->
-			<p><?php _e( 'The matches table of a league is displayed with', 'leaguemanager' ) ?></p>
-			<blockquote><p>[matches league_id=ID]</p></blockquote>
-			<table class="widefat">
-			<thead>
-			<tr>
-					<th scope="col"><?php _e( 'Parameter', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Description', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Possible Values', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Default', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Optional', 'leaguemanager' ) ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr class="" valign="top">
-					<td>league_id</td>
-					<td><?php _e( 'ID of League', 'leaguemanager' ) ?></td>
-					<td><em>integer</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'No', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>league_name</td>
-					<td><?php _e( 'get league by name instead of ID (cannot be used together with attribute league_id)', 'leaguemanager' ) ?></td>
-					<td><em>string</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="" valign="top">
-					<td>season</td>
-					<td><?php _e( 'display standings of specific season (default is last season)', 'leaguemanager' ) ?></td>
-					<td><em>string</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>team</td>
-					<td><?php _e( 'display only matche of given Team ID', 'leaguemanager' ) ?></td>
-					<td><em>integer</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="" valign="top">
-					<td>template</td>
-					<td><?php _e( 'specifies template to use', 'leaguemanager' ) ?></td>
-					<td><?php _e( 'name of template file without extension, whereas the name has to be matches-X', 'leaguemanager' ) ?></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>mode</td>
-					<td><?php _e( 'control which matches to display', 'leaguemanager' ) ?></td>
-					<td><em>all</em>, <em>home</em>, <em>racing</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="" valign="top">
-					<td>roster</td>
-					<td><?php _e( 'Only works with Racing. Display race results for given racer. Can be either ID or name, but ID is recommended.', 'leaguemanager' ) ?></td>
-					<td><em>integer</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>match_day</td>
-					<td><?php _e( 'display matches of given match day. Alternatively use <em>next</em>, <em>last</em> or <em>current/latest</em>', 'leaguemanager' ) ?></td>
-					<td><em>integer</em> or <em>string</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="" valign="top">
-					<td>group</td>
-					<td><?php _e( 'get matches of specific group', 'leaguemanager' ) ?></td>
-					<td><em>string</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>time</td>
-					<td><?php _e( 'use this to get either upcoming (next) or previous (prev) matches', 'leaguemanager' ) ?></td>
-					<td><em>next</em>, <em>prev</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="" valign="top">
-					<td>show_match_day_selection</td>
-					<td><?php _e( 'force showing or hiding dropdown for match days', 'leaguemanager' ) ?></td>
-					<td><em>true</em>, <em>false</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>show_team_selection</td>
-					<td><?php _e( 'force showing or hiding dropdown for teams', 'leaguemanager' ) ?></td>
-					<td><em>true</em>, <em>false</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-			</tbody>
-			</table>
-
-			<!-- Shortcode for Crosstable -->
-			<p><?php _e( 'The crosstable of a league is displayed with', 'leaguemanager' ) ?></p>
-			<blockquote><p>[crosstable league_id=ID]</p></blockquote>
-			<table class="widefat">
-			<thead>
-			<tr>
-					<th scope="col"><?php _e( 'Parameter', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Description', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Possible Values', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Default', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Optional', 'leaguemanager' ) ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr class="" valign="top">
-					<td>league_id</td>
-					<td><?php _e( 'ID of League', 'leaguemanager' ) ?></td>
-					<td><em>integer</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'No', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>league_name</td>
-					<td><?php _e( 'get league by name instead of ID (cannot be used together with attribute league_id)', 'leaguemanager' ) ?></td>
-					<td><em>string</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="" valign="top">
-					<td>season</td>
-					<td><?php _e( 'display standings of specific season (default is last season)', 'leaguemanager' ) ?></td>
-					<td><em>string</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>mode</td>
-					<td><?php _e( 'embed table in page or display a link to open it in a thickbox popup window', 'leaguemanager' ) ?></td>
-					<td><?php _e( '<em>embed</em> or <em>popup</em>', 'leaguemanager' ) ?></td>
-					<td></td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="" valign="top">
-					<td>template</td>
-					<td><?php _e( 'specifies template to use', 'leaguemanager' ) ?></td>
-					<td><?php _e( 'name of template file without extension, whereas the name has to be crosstable-X', 'leaguemanager' ) ?></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-			</tbody>
-			</table>
-
-			<!-- Shortcode for single match -->
-			<p><?php _e( 'A single match is displayed with', 'leaguemanager' ) ?></p>
-			<blockquote><p>[match id=ID template=X]</p></blockquote>
-			<table class="widefat">
-			<thead>
-			<tr>
-					<th scope="col"><?php _e( 'Parameter', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Description', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Possible Values', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Default', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Optional', 'leaguemanager' ) ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr class="" valign="top">
-					<td>id</td>
-					<td><?php _e( 'ID of match', 'leaguemanager' ) ?></td>
-					<td><em>integer</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'No', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>template</td>
-					<td><?php _e( 'specifies template to use', 'leaguemanager' ) ?></td>
-					<td><?php _e( 'name of template file without extension, whereas the name has to be match-X', 'leaguemanager' ) ?></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-			</tbody>
-			</table>
-
-			<!-- Shortcode for teams -->
-			<p><?php _e( 'A teams list of a league is displayed with', 'leaguemanager' ) ?></p>
-			<blockquote><p>[teams league_id=ID]</p></blockquote>
-			<table class="widefat">
-			<thead>
-			<tr>
-					<th scope="col"><?php _e( 'Parameter', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Description', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Possible Values', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Default', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Optional', 'leaguemanager' ) ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr class="" valign="top">
-					<td>league_id</td>
-					<td><?php _e( 'ID of League', 'leaguemanager' ) ?></td>
-					<td><em>integer</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'No', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>season</td>
-					<td><?php _e( 'display standings of specific season (default is last season)', 'leaguemanager' ) ?></td>
-					<td><em>string</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="" valign="top">
-					<td>template</td>
-					<td><?php _e( 'specifies template to use', 'leaguemanager' ) ?></td>
-					<td><?php _e( 'name of template file without extension, whereas the name has to be teams-X', 'leaguemanager' ) ?></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-			</tbody>
-			</table>
-
-			<!-- Shortcode for single team -->
-			<p><?php _e( 'A single team is displayed with', 'leaguemanager' ) ?></p>
-			<blockquote><p>[team id=ID template=X]</p></blockquote>
-			<table class="widefat">
-			<thead>
-			<tr>
-					<th scope="col"><?php _e( 'Parameter', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Description', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Possible Values', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Default', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Optional', 'leaguemanager' ) ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr class="" valign="top">
-					<td>id</td>
-					<td><?php _e( 'ID of team', 'leaguemanager' ) ?></td>
-					<td><em>integer</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'No', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>template</td>
-					<td><?php _e( 'specifies template to use', 'leaguemanager' ) ?></td>
-					<td><?php _e( 'name of template file without extension, whereas the name has to be team-X', 'leaguemanager' ) ?></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-			</tbody>
-			</table>
-
-			<!-- Shortcode for Championship -->
-			<p><?php _e( 'A championship league is displayed with', 'leaguemanager' ) ?></p>
-			<blockquote><p>[championship league_id=ID]</p></blockquote>
-			<table class="widefat">
-			<thead>
-			<tr>
-					<th scope="col"><?php _e( 'Parameter', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Description', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Possible Values', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Default', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Optional', 'leaguemanager' ) ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr class="" valign="top">
-					<td>league_id</td>
-					<td><?php _e( 'ID of League', 'leaguemanager' ) ?></td>
-					<td><em>integer</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'No', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>league_name</td>
-					<td><?php _e( 'get league by name instead of ID (cannot be used together with attribute league_id)', 'leaguemanager' ) ?></td>
-					<td><em>string</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="" valign="top">
-					<td>season</td>
-					<td><?php _e( 'display standings of specific season (default is last season)', 'leaguemanager' ) ?></td>
-					<td><em>string</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>template</td>
-					<td><?php _e( 'specifies template to use', 'leaguemanager' ) ?></td>
-					<td><?php _e( 'name of template file without extension, whereas the name has to be championship-X', 'leaguemanager' ) ?></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-			</tbody>
-			</table>
-
-			<!-- Shortcode for Archive -->
-			<p><?php _e( 'An archive of a league is displayed with', 'leaguemanager' ) ?></p>
-			<blockquote><p>[leaguearchive league_id=ID]</p></blockquote>
-			<table class="widefat">
-			<thead>
-			<tr>
-					<th scope="col"><?php _e( 'Parameter', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Description', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Possible Values', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Default', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Optional', 'leaguemanager' ) ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr class="" valign="top">
-					<td>league_id</td>
-					<td><?php _e( 'ID of League', 'leaguemanager' ) ?></td>
-					<td><em>integer</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'No', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>league_name</td>
-					<td><?php _e( 'get league by name instead of ID (cannot be used together with attribute league_id)', 'leaguemanager' ) ?></td>
-					<td><em>string</em></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="" valign="top">
-					<td>template</td>
-					<td><?php _e( 'specifies template to use', 'leaguemanager' ) ?></td>
-					<td><?php _e( 'name of template file without extension, whereas the name has to be leaguearchive-X', 'leaguemanager' ) ?></td>
-					<td>&#160;</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
-			</tbody>
-			</table>
-		</div>
-
-		<div id="templates">
-			<a href="#top" class="alignright top-link"><?php _e( 'Top', 'leaguemanager' ) ?></a>
-			<h2><?php _e( 'Templates', 'leaguemanager' ) ?></h2>
-			<p><?php _e( 'Templates are special files that are used to display plugin data in the website frontend. They reside in the following directory', 'leaguemanager' ) ?></p>
-			<blockquote><p>WP_PLUGIN_DIR/leaguemanager/templates/</p></blockquote>
-			<p><?php _e( 'The following table lists all available default templates', 'leaguemanager' ) ?></p>
-			<table class="widefat">
-			<thead>
-				<tr>
-					<th scope="col"><?php _e( 'Template', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Description', 'leaguemanager' ) ?></th>
-				</tr>
-				</thead>
-				<tbody>
-				<tr class="" valign="top">
-					<td>archive.php</td>
-					<td><?php _e( 'Display an archive of LeagueManager.', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>championship.php</td>
-					<td><?php _e( 'Championship display', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="" valign="top">
-					<td>crosstable.php</td>
-					<td><?php _e( 'Crosstable', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>matches.php</td>
-					<td><?php _e( 'Matches output. There exist multiple templates in the format matches-X.php. You can also design custom templates in this form and load them with the attribute template=X in the shortcode. If X is the sport type, this template is loaded automatically without the template attribute', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="" valign="top">
-					<td>match.php</td>
-					<td><?php _e( 'Individual match. There exist multiple templates in the format match-X.php. You can also design custom templates in this form and load them with the attribute template=X in the shortcode', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>teams.php</td>
-					<td><?php _e( 'List of teams', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="" valign="top">
-					<td>team.php</td>
-					<td><?php _e( 'Individual team', 'leaguemanager' ) ?></td>
-				</tr>
-				<tr class="alternate" valign="top">
-					<td>standings.php</td>
-					<td><?php _e( 'Standings table. There exist multiple templates in the format standings-X.php. You can also design custom templates in this form and load them with the attribute template=X in the shortcode', 'leaguemanager' ) ?></td>
-				</tr>
-			</tbody>
-			</table>
-			<h3><?php _e('Customization of template files', 'leaguemanager') ?></h3>
-			<p><?php _e( 'If you want to modify existing templates copy it to', 'leaguemanager' ) ?></p>
-			<blockquote><p>your_theme_dir/leaguemanager/</p></blockquote>
-			<p><?php _e( 'The plugin will then first look in your theme directory. Further it is possible to design own templates, e.g. multiple standings templates. Assume you create a template called <strong>standings-sample1.php</strong>. To load this template use the following code.', 'leaguemanager' ) ?></p>
-			<blockquote><p>[standings league_id=ID template=<strong>sample1</strong>]</p></blockquote>
-
-			<h3><?php _e('Customization of sport files', 'leaguemanager') ?></h3>
-			<p><?php _e( 'If you want to modify existing sports copy it to', 'leaguemanager' ) ?></p>
-			<blockquote><p>your_theme_dir/sports/</p></blockquote>
-
-		</div>
-			
-		<div id='import'>
-			<a href="#top" class="alignright top-link"><?php _e( 'Top', 'projectmanager' ) ?></a>
-			<h2><?php _e( 'Data Import', 'leaguemanager' ) ?></h2>
-			<h3><?php _e( 'Teams', 'leaguemanager' ) ?></h3>
-			<p><?php _e( 'Teams and Matches can be imported from tab or csv-separated files, which can be easily created using Excel', 'leaguemanager' ) ?></p>
-			<p><?php _e( 'The file to import Teams has the following structure. Read from left-to-right and line-by-line.', 'leaguemanager' ) ?></p>
-			<ul class="doc-import-structure">
-				<li><?php _e('Season','leaguemanager') ?></li>
-				<li><?php _e( 'Team Name', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Website', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Coach', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Stadium', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Home (0 or 1)', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Group', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Played Matches', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Won Matches', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Tie Matches', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Lost Matches', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Secondary Points', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Points', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Roster', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Custom Fields', 'leaguemanager' ) ?> ...</li>
-			</ul>
-			<p><?php _e( "Only <strong>season</strong> and <strong>team name</strong> are <strong>mandatory</strong>. Although the match statistics and points can be included they are not required and would be overwritten by new match results. The last column can be optionally the team roster, which are the project ID and category ID in the format <em>projectID_catID</em> for <a href='%s'>ProjectManager</a>.", 'leaguemanager' ) ?></p>
-			<p><?php _e( 'After the team roster any number of custom fields depending on the sports type can be included. In this case all the above columns have to be present', 'leaguemanager' ) ?></p>
-
-			<h4><?php _e( 'Baseball', 'leaguemanager' ) ?></h4>
-			<ul class="doc-import-structure">
-				<li><?php _e( 'Runs For', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Runs Against', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Games Behind', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Shutouts', 'leaguemanager' ) ?></li>
-			</ul>
-			
-			<h4><?php _e( 'Gymnastics', 'leaguemanager' ) ?></h4>
-			<ul class="doc-import-structure">
-				<li><?php _e( 'Floor', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Pommelhorse', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Rings', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Vault', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Parallel bars', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'High bars', 'leaguemanager' ) ?></li>
-			</ul>
-			
-			<h4><?php _e( 'Pool', 'leaguemanager' ) ?></h4>
-			<ul class="doc-import-structure">
-				<li><?php _e( 'For Score', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Against Score', 'leaguemanager' ) ?></li>
-			</ul>
-			
-			<h4><?php _e( 'Rugby', 'leaguemanager' ) ?></h4>
-			<ul class="doc-import-structure">
-				<li><?php _e( 'Gamepoints', 'leaguemanager' ) ?> (%d:%d)</li>
-			</ul>
-			
-			<h4><?php _e( 'Tennis', 'leaguemanager' ) ?></h4>
-			<ul class="doc-import-structure">
-				<li><?php _e( 'Straight Set Win', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Split Set Win', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Straight Set Lost', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Split Set Lost', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Games Allowed', 'leaguemanager' ) ?></li>
-			</ul>
-			
-			<h4><?php _e( 'Volleyball', 'leaguemanager' ) ?></h4>
-			<ul class="doc-import-structure">
-				<li><?php _e( 'Sets', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Ballpoints', 'leaguemanager' ) ?> (%d:%d)</li>
-			</ul>
-			
-			
-			<h3><?php _e( 'Matches', 'leaguemanager' ) ?></h3>
-			<p><?php _e( 'The file to import matches has the following structure Read from left-to-right and line-by-line.', 'leaguemanager' ) ?></p>
-			<ul class="doc-import-structure">
-				<li><?php _e('Date','leaguemanager') ?></li>
-				<li><?php _e('Season','leaguemanager') ?></li>
-				<li><?php _e('Match Day','leaguemanager') ?></li>
-				<li><?php _e('Home Team','leaguemanager') ?></li>
-				<li><?php _e('Guest Team','leaguemanager') ?></li>
-				<li><?php _e('Location','leaguemanager') ?></li>
-				<li><?php _e('Begin Time','leaguemanager') ?> (%d:%d)</li>
-				<li><?php _e('Group','leaguemanager') ?></li>
-				<li><?php _e('Score','leaguemanager') ?> (%d:%d)</li>
-				<li><?php _e('Custom Fields','leaguemanager') ?> ...</li>
-			</ul>
-			<p><?php _e( 'For matches all columns, except the custom fields have to be present. Any number of custom fields depending on the sports type can be included at the end', 'leaguemanager' ) ?></p>
-			
-			<h4><?php _e( 'Baseball', 'leaguemanager' ) ?></h4>
-			<ul class="doc-import-structure">
-				<li><?php _e( 'Runs For', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Runs Against', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Shutouts', 'leaguemanager' ) ?> (%d:%d)</li>
-			</ul>
-			
-			<h4><?php _e( 'Basketball', 'leaguemanager' ) ?></h4>
-			<ul class="doc-import-structure">
-				<li><?php _e( 'Quarter 1', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Quarter 2', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Quarter 3', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Quarter 4', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Overtime', 'leaguemanager' ) ?> (%d:%d)</li>
-			</ul>
-			
-			<h4><?php _e( 'Gymnastics', 'leaguemanager' ) ?></h4>
-			<ul class="doc-import-structure">
-				<li><?php _e( 'Floor', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Pommelhorse', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Rings', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Vault', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Parallel bars', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'High bars', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Apparatus Points', 'leaguemanager' ) ?> (%d:%d)</li>
-			</ul>
-			
-			<h4><?php _e( 'Hockey', 'leaguemanager' ) ?></h4>
-			<ul class="doc-import-structure">
-				<li><?php _e( 'Third 1', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Third 2', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Third 3', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Overtime', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Penalty', 'leaguemanager' ) ?> (%d:%d)</li>
-			</ul>
-			
-			<h4><?php _e( 'Irish Gaelic Football', 'leaguemanager' ) ?></h4>
-			<ul class="doc-import-structure">
-				<li><?php _e( 'Goals', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Points', 'leaguemanager' ) ?> (%d:%d)</li>
-			</ul>
-			
-			<h4><?php _e( 'Pool', 'leaguemanager' ) ?></h4>
-			<ul class="doc-import-structure">
-				<li><?php _e( 'For Score', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Against Score', 'leaguemanager' ) ?></li>
-			</ul>
-			
-			<h4><?php _e( 'Racing', 'leaguemanager' ) ?></h4>
-			<ul class="doc-import-structure">
-				<li><?php _e( 'Racing Type', 'leaguemanager' ) ?></li>
-			</ul>
-			
-			<h4><?php _e( 'Rugby', 'leaguemanager' ) ?></h4>
-			<ul class="doc-import-structure">
-				<li><?php _e( 'Tries', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Conversions', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Penalties', 'leaguemanager' ) ?> (%d:%d)</li>
-			</ul>
-			
-			<h4><?php _e( 'Soccer', 'leaguemanager' ) ?> / <?php _e( 'Handball', 'leaguemanager' ) ?></h4>
-			<ul class="doc-import-structure">
-				<li><?php _e( 'Halftime', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Overtime', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Penalty', 'leaguemanager' ) ?> (%d:%d)</li>
-			</ul>
-			
-			<h4><?php _e( 'Tennis', 'leaguemanager' ) ?></h4>
-			<ul class="doc-import-structure">
-				<li><?php _e( 'Set 1', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Set 2', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Set 3', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li>...</li>
-			</ul>
-			
-			<h4><?php _e( 'Volleyball', 'leaguemanager' ) ?></h4>
-			<ul class="doc-import-structure">
-				<li><?php _e( 'Set 1', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Set 2', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Set 3', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Set 4', 'leaguemanager' ) ?> (%d:%d)</li>
-				<li><?php _e( 'Set 5', 'leaguemanager' ) ?> (%d:%d)</li>
-			</ul>
-		</div>
-		
-		<div id='slideshows'>
-			<a href="#top" class="alignright top-link"><?php _e( 'Top', 'projectmanager' ) ?></a>
-			<h2><?php _e( 'Slideshows', 'leaguemanager' ) ?></h2>
-			<p><?php printf(__( "Fancy slideshows of previous or upcoming matches can be easily created in combination with the <a href='%s' target='_blank'>Fancy Slideshows Plugin</a>. There are some limitations and specic requirements as listed below", 'leaguemanager' ), 'https://wordpress.org/plugins/sponsors-slideshow-widget/') ?></p>
-			<ul style="list-style: disc; margin-left: 1em;">
-				<li><?php _e( 'You should set a height for the slideshow as there is no main image to display. Otherwise each slide might have different heights and some content could be not displayed', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'You should set the slide overlay to show title & description. The title contains the match title, while the description contains the date, location and score of the match', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Slide overlay animations are not possible so you have to disable them.', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'The slide overlay style has to be set to <em>LeagueManager</em>', 'leaguemanager' ) ?></li>
-			</ul>
-		</div>
-		
-		<div id='roster_profiles'>
-			<a href="#top" class="alignright top-link"><?php _e( 'Top', 'projectmanager' ) ?></a>
-			<h2><?php _e( 'Team Roster & Profiles', 'leaguemanager' ) ?></h2>
-			<p><?php printf(__( "Team Roster and additional Profiles can be generated using the <a href='%s' target='_blank'>ProjectManager Plugin</a>. This plugin has been specifically developed to manage athlete portraits. If you have ProjectManager installed, each team can be assigned a team roster, i.e. project and possibly category, in the team edit page. Team Profiles can be also extended using ProjectManager. Simply set the project and maybe category in the league settings page. Afterwards you can assign a team profile, i.e. dataset, to each team in the team edit page.", 'leaguemanager' ), 'https://wordpress.org/plugins/projectmanager') ?></p>
-		</div>
-		
-		<div id="template_tags">
-			<a href="#top" class="alignright top-link"><?php _e( 'Top', 'leaguemanager' ) ?></a>
-			<h2><?php _e( 'Template Tags', 'leaguemanager' ) ?></h2>
-			<p><?php _e( 'Template Tags are functions that can be used in your Wordpress Theme to display the plugin data. Here is a brief listing of available tags. For details see file functions.php', 'leaguemanager' ) ?><p>
-			<dl class="leaguemanager">
-				<dt><pre>&lt;?php leaguemanager_standings( $league_id, $args ) ?&gt;</pre></dt><dd><?php _e( 'display standings of given league with $league_id', 'leaguemanager' ) ?></dd>
-				<dt><pre>&lt;?php leaguemanager_crosstable( $league_id, $args ) ?&gt;</pre></dt><dd><?php _e( 'display crosstable of given league with $league_id', 'leaguemanager' ) ?></dd>
-				<dt><pre>&lt;?php leaguemanager_matches( $league_id, $args ) ?&gt;</pre></dt><dd><?php _e( 'display matches of given league with $league_id', 'leaguemanager' ) ?></dd>
-				<dt><pre>&lt;?php leaguemanager_match( $match_id, $args ) ?&gt;</pre></dt><dd><?php _e( 'display match with given $match_id', 'leaguemanager' ) ?></dd>
-				<dt><pre>&lt;?php leaguemanager_teams( $league_id, $args ) ?&gt;</pre></dt><dd><?php _e( 'display teams of given league with $league_id', 'leaguemanager' ) ?></dd>
-				<dt><pre>&lt;?php leaguemanager_team( $team_id, $args ) ?&gt;</pre></dt><dd><?php _e( 'display team with given $team_id', 'leaguemanager' ) ?></dd>
-				<dt><pre>&lt;?php leaguemanager_championship( $league_id, $args ) ?&gt;</pre></dt><dd><?php _e( 'display championship', 'leaguemanager' ) ?></dd>
-				<dt><pre>&lt;?php leaguemanager_display_widget( $number, $instance ) ?&gt;</pre></dt><dd><?php _e( 'Display widget. <em>$number</em> is the widget number and <em>$instance</em> is an assoziative array of widget settings. See lib/widget.php function widget for details.', 'leaguemanager' ) ?></dd>
-				<dt><pre>&lt;?php leaguemanager_display_next_match_box( $number, $instance ) ?&gt;</pre></dt><dd><?php _e( 'display box of next matches. <em>$number</em> is the widget number and <em>$instance</em> is an assoziative array of widget settings. See lib/widget.php function widget for details.', 'leaguemanager' ) ?></dd>
-				<dt><pre>&lt;?php leaguemanager_display_prev_match_box( $number, $instance ) ?&gt;</pre></dt><dd><?php _e( 'display box of previous matches. <em>$number</em> is the widget number and <em>$instance</em> is an assoziative array of widget settings. See lib/widget.php function widget for details.', 'leaguemanager' ) ?></dd>
-			</dl>
-			<p><?php _e( 'The variable <em>$args</em> is always an assoziative array of additional arguments with keys being the same as the shortcode attributes.', 'leaguemanager' ) ?></p>
-		</div>
-		
-		<div id="settings">
-			<a href="#top" class="alignright top-link"><?php _e( 'Top', 'leaguemanager' ) ?></a>
-			<h2><?php _e( 'League Settings', 'leaguemanager' ) ?></h2>
-
-			<h3><?php _e( 'Sport', 'leaguemanager' ) ?></h3>
-			<p><?php _e( "The sport type is important to enable certain rules. Gymnastics leagues have apparatus points which other leagues don't, Soccer has Halftime results, while Hocky is played in Thirds and Basketball in Quarters.", 'leaguemanager' ) ?></p>
-			<?php do_action( 'leaguemanager_doc_sports' ) ?>
-
-			<h3><?php _e( 'Point Rules', 'leaguemanager' ) ?></h3>
-			<p><?php _e( 'The second important option is the point rule, which automatically sets the number of points teams get for won matches, draw matches or lost matches. Some league types have specific rules. See the sections below for details.', 'leaguemanager') ?></p>
-				
-			<h5><?php _e( 'One-Point-Rule', 'leaguemanager' ) ?></h5>
-			<p><?php _e( 'The One-Point-Rule simply counts the number of won matches. This point system is used, e.g. in the MLB, NBA and NFL.', 'leaguemanager' ) ?></p>
-				
-			<h5><?php _e( 'Two-Point-Rule and Three-Point-Rule', 'leaguemanager' ) ?></h5>
-			<p><?php _e( 'The Two- and Three-Point-Rules are the most common ones. Teams get two or three points for won matches respectively and one point for draw.', 'leaguemanager' ) ?></p>
-
-			<h5><?php _e( '<em>Score</em> Point-Rule', 'leaguemanager' ) ?></h5>
-			<p><?php _e( 'Teams get one point for each goal scored during a game.', 'leaguemanager' ) ?></p>
-
-			<h5><?php _e( 'User defined', 'leaguemanager' ) ?></h5>
-			<p><?php _e( 'User defined points for won, tie and lost matches. Overtime win/loss points does not work with all sport types!', 'leaguemanager' ) ?></p>
-
-			<?php do_action( 'leaguemanager_doc_point_rules' ) ?>
-
-			<h3><?php _e( 'Point Format', 'leaguemanager' ) ?></h3>
-			<p><?php _e( 'The point format controls how the points are displayed. Most sports would choose some %d variation which treats the points as integer. Only if a user defined point rule with half points is used, a %f variation has to be used to display the points as floating number.', 'leaguemanager' ) ?></p>
-		</div>
-		
-		<div id="customization">
-			<a href="#top" class="alignright top-link"><?php _e( 'Top', 'leaguemanager' ) ?></a>
-			<h2><?php _e( 'Customization', 'leaguemanager' ) ?></h2>
-			<p><?php _e( 'The Plugin is built in a modular way with several Wordpress hooks to make customization as easy as possible. The filters are needed to implement rules for new sport types. I here provide a list of available hooks with a short description. For examples on usage see sports files in the sports subdirectory', 'leaguemanager' ) ?></p>
-
-			<h3><?php _e( 'List of Wordpress Filters', 'leaguemanager' ) ?></h3>
-			<table class="widefat">
-			<thead>
-			<tr>
-					<th scope="col"><?php _e( 'Filter', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Description', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Location', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Comments', 'leaguemanager' ) ?></th>
-				</tr>
-			</thead>
-			<tbody>
-			<tr class="" valign="top">
-				<td>leaguemanager_sports</td>
-				<td><?php _e( 'add a new sport type to the settings selection menu', 'leaguemanager' ) ?></td>
-				<td>lib/core.php: function getLeagueTypes()</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="alternate" valign="top">
-				<td>rank_teams_<em>$sport</em></td>
-				<td><?php _e( 'Change Team Ranking based on sport specific rules', 'leaguemanager' ) ?></td>
-				<td>lib/core.php: function rankTeams()</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="" valign="top">
-				<td>leaguemanager_cards</td>
-				<td><?php _e( 'manipulate card types (yellow, red, yellow-red)', 'leaguemanager' ) ?></td>
-				<td>lib/core.php: function getCards()</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="alternate" valign="top">
-				<td>league_menu_<em>$sport</em> and league_menu_<em>$mode</em></td>
-				<td><?php _e( 'manipulate league menu based on current sport type and mode', 'leaguemanager' ) ?></td>
-				<td>admin/admin.php: function getMenu()</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="" valign="top">
-				<td>leaguemanager_modes</td>
-				<td><?php _e( 'manipulate available modes', 'leaguemanager' ) ?></td>
-				<td>admin/admin.php: function getModes()</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="alternate" valign="top">
-				<td>leaguemanager_point_rule_list</td>
-				<td><?php _e( 'manipulate List of available point rules', 'leaguemanager' ) ?></td>
-				<td>admin/admin.php: function getPointRules()</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="" valign="top">
-				<td>leaguemanager_point_rules</td>
-				<td><?php _e( 'manipulate point rules', 'leaguemanager' ) ?></td>
-				<td>admin/admin.php: function getPointRule()</td>
-			</tr>
-			<tr class="alternate" valign="top">
-				<td>leaguemanager_point_formats</td>
-				<td><?php _e( 'manipulate available point formats', 'leaguemanager' ) ?></td>
-				<td>admin/admin.php: function getPointFormats()</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="" valign="top">
-				<td>team_points2_<em>$sport</em></td>
-				<td><?php _e( 'calculate secondary points for team based on current sport type', 'leaguemanager' ) ?></td>
-				<td>admin/admin.php: function saveStandings()</td>
-				<td><?php _e( 'input naming structure name="custom[$team_id][points2][plus]" and name="custom[$team_id][points2][minus]" for manual saving of standing table.', 'leaguemanager' ) ?></td>
-			</tr>
-			<tr class="alternate" valign="top">
-				<td>team_points_<em>$sport</em></td>
-				<td><?php _e( 'manipulate team points based on current sport rules', 'leaguemanager' ) ?></td>
-				<td>admin/admin.php: function calculatePoints()</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="" valign="top">
-				<td>leaguemanager_import_teams_<em>$sport</em></td>
-				<td><?php _e( 'filter custom data for team', 'leaguemanager' ) ?></td>
-				<td>admin/admin.php: function importTeams()</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="alternate" valign="top">
-				<td>leaguemanager_import_matches_<em>$sport</em></td>
-				<td><?php _e( 'filter custom data for match', 'leaguemanager' ) ?></td>
-				<td>admin/admin.php: function importMatches()</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="" valign="top">
-				<td>leaguemanager_export_teams_header_<em>$sport</em></td>
-				<td><?php _e( 'append custom header data for team export', 'leaguemanager' ) ?></td>
-				<td>admin/admin.php: function exportTeams()</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="alternate" valign="top">
-				<td>leaguemanager_export_teams_data_<em>$sport</em></td>
-				<td><?php _e( 'append custom data for team export', 'leaguemanager' ) ?></td>
-				<td>admin/admin.php: function exportTeams()</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="" valign="top">
-				<td>leaguemanager_export_matches_header_<em>$sport</em></td>
-				<td><?php _e( 'append custom header data for match export', 'leaguemanager' ) ?></td>
-				<td>admin/admin.php: function exportMatches()</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="alternate" valign="top">
-				<td>leaguemanager_export_matches_data_<em>$sport</em></td>
-				<td><?php _e( 'append custom data for match export', 'leaguemanager' ) ?></td>
-				<td>admin/admin.php: function exportMatches()</td>
-				<td>&#160;</td>
-			</tbody>
-			</table>
-
-			<h3><?php _e( 'List of Wordpress Actions', 'leaguemanager' ) ?></h3>
-			<table class="widefat">
-			<thead>
-			<tr>
-					<th scope="col"><?php _e( 'Action', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Description', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Location', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Comments', 'leaguemanager' ) ?></th>
-				</tr>
-			</thead>
-			<tbody>
-			<tr class="" valign="top">
-				<td>leaguemanager_save_standings_<em>$sport</em></td>
-				<td><?php _e( 'called when standings are saved for each team in automatic mode', 'leaguemanager' ) ?></td>
-				<td>admin/admin.php: function saveStandings()</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="alternate" valign="top">
-				<td>leaguemanager_update_results_<em>$sport</em></td>
-				<td><?php _e( 'called when results for each match are saved', 'leaguemanager' ) ?></td>
-				<td>admin/admin.php: function updateResults()</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="" valign="top">
-				<td>leaguemanager_standings_header_<em>$sport</em></td>
-				<td><?php _e( 'add additional columns to standings table header', 'leaguemanager' ) ?></td>
-				<td>admin/show-league.php, templates/standings-extend.php</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="alternate" valign="top">
-				<td>leaguemanager_standings_columns_<em>$sport</em></td>
-				<td><?php _e( 'add additional columns to standings table', 'leaguemanager' ) ?></td>
-				<td>admin/show-league.php, templates/standings-extend.php</td>
-				<td><?php _e( 'input naming structure name="custom[$team_id][points2][plus]" and name="custom[$team_id][points2][minus]" for secondary points. Otherwise name="custom[<em>name</em>]". Access via <em>$team->name</em>.</td> ', 'leaguemanager' ) ?></td>
-			</tr>
-			<tr class="" valign="top">
-				<td>matchtable_header_<em>$sport</em></td>
-				<td><?php _e( 'add additional columns to match table header', 'leaguemanager' ) ?></td>
-				<td>admin/show-league.php</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="alternate" valign="top">
-				<td>matchtable_columns_<em>$sport</em></td>
-				<td><?php _e( 'add additional columns to match table table', 'leaguemanager' ) ?></td>
-				<td>admin/show-league.php</td>
-				<td><?php _e ( 'input naming structure name="custom[$match_id][<em>name</em>]". Access via <em>$match->name</em>', 'leaguemanager' ) ?></td>
-			</tr>
-			<tr class="" valign="top">
-				<td>leaguemanager_edit_match_<em>$sport</em></td>
-				<td><?php _e( 'substitute match edit form with custom form', 'leaguemanager' ) ?></td>
-				<td>admin/match.php</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="alternate" valign="top">
-				<td>league_settings, league_settings_<em>$sport</em>, league_settings_<em>$mode</em></td>
-				<td><?php _e( 'add custom settings for league dependent on chosen sport or league mode', 'leaguemanager' ) ?></td>
-				<td>admin/competition-settings.php</td>
-				<td><?php _e( 'name structure of input fields is name="settings[<em>name</em>]". access of values is <em>$league->name</em>', 'leaguemanager' ) ?></td>
-			</tr>
-			<tr class="" valign="top">
-				<td>team_edit_form, team_edit_form_<em>$sport</em></td>
-				<td><?php _e( 'add custom fields for team; used to add hidden input fields based on sport type', 'leaguemanager' ) ?></td>
-				<td>admin/team.php</td>
-				<td><?php _e( 'input name structure is name="custom[<em>name</em>]". access of values is <em>$team->name</em>', 'leaguemanager' ) ?></td>
-			</tr>
-			<tr class="alternate" valign="top">
-				<td>leaguemanager_doc_sports</td>
-				<td><?php _e( 'add documentation on specific sport type', 'leaguemanager' ) ?></td>
-				<td>admin/documentation.php</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="" valign="top">
-				<td>leaguemanager_doc_point_rules</td>
-				<td><?php _e( 'add documentation on point rules', 'leaguemanager' ) ?></td>
-				<td>admin/documentation.php</td>
-				<td>&#160;</td>
-			</tr>
-			<tr class="alternate" valign="top">
-				<td>leaguemanager_widget_next_match, leaguemanager_widget_prev_match</td>
-				<td><?php _e( 'call next or previous match, respectiveley', 'leaguemanager' ) ?></td>
-				<td>lib/widget.php</td>
-				<td><?php _e( 'remove action before hooking own function by remove_all_actions("leaguemanager_widget_next_match") or remove_all_action("leaguemanager_widget_prev_match")', 'leaguemanager' ) ?></td>
-			</tr>
-			<tr class="" valign="top">
-				<td>leaguemanager_team_page</td>
-				<td><?php _e( 'display infopage of single team', 'leaguemanager' ) ?></td>
-				<td>templates/teams.php</td>
-				<td>&#160;</td>
-			</tbody>
-			</table>
-		</div>
-		
-		<div id="howto_intro">
-			<a href="#top" class="alignright top-link"><?php _e( 'Top', 'leaguemanager' ) ?></a>
-			<h2><?php _e( 'HowTo', 'leaguemanager' ) ?></h2>
-			<p><?php printf( __( 'The main page of LeagueManager shows an <a href="%s" class="thickbox" rel="howto">overview of leagues</a> in the database together with a few statistics on number of seasons, teams and matches. At the beginning it is necessary to add at least one season for which the number of match days is also specified. Furthermore the <a href="%s" class="thickbox" rel="howto">league preferences</a> need to be set. One can choose from numerous sport types, which implement different extensions, point rules, point formats, team ranking and different other options. Afterwards <a href="%s" class="thickbox" rel="howto">teams</a> and <a href="%s" class="thickbox" rel="howto">matches</a> can be added to database. Data from LeagueManager can be inserted in a page or post using the cup <a href="%s" class="thickbox" rel="howto">TinyMCE Button</a> or directly shortcodes introduced above. Furthermore matches and standings can be displayed in the sidebar with a <a href="%s" class="thickbox" rel="howto">widget</a>. A page or post can be also marked as <a href="%s" class="thickbox" rel="howto">match report</a> with easy-to-use dropdown menus from which the match can be selected.', 'leaguemanager' ), LEAGUEMANAGER_URL.'/admin/doc/overview.png', LEAGUEMANAGER_URL.'/admin/doc/settings.png', LEAGUEMANAGER_URL.'/admin/doc/add_team.png', LEAGUEMANAGER_URL.'/admin/doc/add_matches.png', LEAGUEMANAGER_URL.'/admin/doc/page.png', LEAGUEMANAGER_URL.'/admin/doc/widget.png', LEAGUEMANAGER_URL.'/admin/doc/match_report.png' ) ?></p>
-
-			<h3 id="championship"><?php _e( 'Championship', 'leaguemanager' ) ?></h3>
-			<p><?php printf( __( 'The Championship mode is designed for soccer championships and may not work with other types. When changing the league mode, additional preferences could appear after saving. For championship mode two new settings will appear. <em>Groups</em> defines the group names which are available. <em>Teams Advance</em> is the number of teams which advance from the preliminary round to the final rounds. The number of final rounds is automatically calculated from the number of groups and the number of advancing teams. In championship mode, each team has be assigned to a group. The <a href="%s" class="thickbox" rel="howto-championship">preliminary rounds</a> are displayed on the bottom of the league overview page. Before adding matches a group needs to be selected, either from the group dropdown on the top of the page or in the preliminary section. <a href="%s" class="thickbox" rel="howto-championship">Final round matches</a> are added by using the <em>Actions</em> dropdown in the Finals section. Final round matches are added in a symbolic way before the championship starts. The plugin will automatically advance from the preliminary rounds to the final rounds as soon as all preliminary round matches in all groups are finished (have results). This is also the case for advancing from one final round to the next.', 'leaguemanager' ), LEAGUEMANAGER_URL.'/admin/doc/championship2.png', LEAGUEMANAGER_URL.'/admin/doc/championship1.png' ) ?></p>
-
-			<h3 id="team_roster"><?php _e( 'Team Roster', 'leaguemanager' ) ?></h3>
-			<p><?php printf( __( 'LeagueManager itself cannot manage team rosters, but has to be done together with the plugin <a href="%s" target="_blank">ProjectManager</a>. This plugin is specifically designed for team rosters. It allows the easy generation of custom input forms through the administration panel. Further datasets can be grouped into different categories using the wordpress category system. A template system allows a high degree of customization for displaying datasets in the output. It comes with two default templates to display datasets in a table list or show them as photo gallery, which is especially useful for team roster.', 'leaguemanager' ), "http://wordpress.org/extend/plugins/projectmanager/" ) ?></p>
-			<p><?php printf( __( 'A project in ProjectManager can then be used as team roster and <a href="%s" class="thickbox" rel="howto-roster">linked to a specific team</a> in the team edit page. The team roster will be displayed in a list on an individual team page, e.g. by using the shortcode [team id=ID].', 'leaguemanager' ), LEAGUEMANAGER_URL.'/admin/doc/team_roster.png' ) ?></p>
-
-		</div>
-		
-		<div id="racing">
-			<a href="#top" class="alignright top-link"><?php _e( 'Top', 'leaguemanager' ) ?></a>
-			<h2><?php _e( 'Setup Racing Sports', 'leaguemanager' ) ?></h2>
-			<p><?php printf(__('Racing mode has a special setup and strictly requires my other plugin %s to manage individual racer. After installing the plugin ProjectManager setup different cateogies for each racing team and setup individual profiles for each racer (Name is enough). Having setup the profiles for individual racer, add teams in LeagueManager and choose as team roster the respective project and category. Then add matches as normal only that for each racing event an individual title is used. The results are not required, I think, but the table for each team needs to be updated manually. By clicking on the results page you can insert results for each individual racer.', 'leaguemanager'), '<a href="https://wordpress.org/plugins/projectmanager/" target="_blank" title="Link to Projectmanager">ProjectManager</a>'); ?></p>
-		</div>
-	</div>
+    </div>
 </div>
 
-<?php endif; ?>
+<?php } ?>

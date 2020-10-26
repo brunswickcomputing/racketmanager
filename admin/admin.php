@@ -48,24 +48,36 @@ final class LeagueManagerAdmin extends LeagueManager
 	public function menu() {
 		$plugin = 'leaguemanager/leaguemanager.php';
 
-			//Main menu link
-		$capability = 'league_manager';
-		add_dashboard_page(__('LeagueManager Overview','leaguemanager'), __('LeagueManager','leaguemanager'), $capability, 'leaguemanager', array($this, 'display'));
-		
-		$capability = 'manage_leaguemanager';
-			//Settings links
-		$page = add_options_page(__('Settings', 'leaguemanager'), __('Leaguemanager Settings','leaguemanager'),$capability, 'leaguemanager-settings', array( $this, 'display' ));
-		add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
-			//Tool links
-		add_management_page(__('Import'), __('Import Leaguemanager Data'),'import_leagues', 'leaguemanager-import', array( $this, 'display' ));
-		add_management_page(__('Export'), __('Export Leaguemanager Data'),'export_leagues', 'leaguemanager-export', array( $this, 'display' ));
-        add_management_page(__('Documentation'), __('Leaguemanager Documentation'),'view_leagues', 'leaguemanager-doc', array( $this, 'display' ));
+        // keep capabilities here for next update
+        $page = add_menu_page(__('LeagueManager','leaguemanager'), __('LeagueManager','leaguemanager'), 'league_manager', 'leaguemanager', array(&$this, 'display'), LEAGUEMANAGER_URL.'/admin/icons/cup_sw.png', 2);
+        add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+        add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
 
-		add_filter( 'plugin_action_links_' . $plugin, array( &$this, 'pluginActions' ) );
+        $page = add_submenu_page('leaguemanager', __('LeagueManager', 'leaguemanager'), __('Overview','leaguemanager'),'league_manager', 'leaguemanager', array(&$this, 'display'));
+        add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+        add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+        
+        $page = add_submenu_page('leaguemanager', __('Settings', 'leaguemanager'), __('Settings','leaguemanager'),'leaguemanager_settings', 'leaguemanager-settings', array( $this, 'display' ));
+        add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+        add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+                    
+        $page = add_submenu_page('leaguemanager', __('Import'), __('Import'),'import_leagues', 'leaguemanager-import', array( $this, 'display' ));
+        add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+        add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+        
+        $page = add_submenu_page('leaguemanager', __('Export'), __('Export'),'export_leagues', 'leaguemanager-export', array( $this, 'display' ));
+        add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+        add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+        
+        $page = add_submenu_page('leaguemanager', __('Documentation', 'leaguemanager'), __('Documentation','leaguemanager'), 'view_leagues', 'leaguemanager-doc', array( $this, 'display' ));
+        add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+        add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+
+        add_filter( 'plugin_action_links_' . $plugin, array( &$this, 'pluginActions' ) );
 	}
 
     /**
-     * adds scrool to top icon to the admin interface
+     * adds scroll to top icon to the admin interface
      */
     public function scroll_top() {
         ?>
@@ -2391,6 +2403,7 @@ final class LeagueManagerAdmin extends LeagueManager
                 $options['rosterConfirmationEmail'] = htmlspecialchars($_POST['rosterConfirmationEmail']);
                 $options['rosterLeadTime'] = htmlspecialchars($_POST['rosterLeadTime']);
                 $options['playedRounds'] = htmlspecialchars($_POST['playedRounds']);
+                $options['playerLocked'] = htmlspecialchars($_POST['playerLocked']);
                 $options['matchCapability'] = htmlspecialchars($_POST['matchCapability']);
                 $options['resultConfirmation'] = htmlspecialchars($_POST['resultConfirmation']);
                 $options['resultEntry'] = htmlspecialchars($_POST['resultEntry']);

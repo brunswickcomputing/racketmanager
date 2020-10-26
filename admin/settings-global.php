@@ -53,12 +53,15 @@
 			<h2><?php _e('Player Checks', 'leaguemanager') ?></h2>
 			<div class="settings-block">
 				<table class='lm-form-table'>
-                        <tr valign='top'>
-                            <th scope='row'><label for='rosterLeadTime'><?php _e( 'Roster Lead Time (days)', 'leaguemanager' ) ?></label></th><td><input type="number"  name='rosterLeadTime' id='rosterLeadTime' value='<?php echo isset($options['rosterLeadTime']) ? $options['rosterLeadTime'] : '' ?>' /></td>
-                        </tr>
-                        <tr valign='top'>
-                            <th scope='row'><label for='playedRounds'><?php _e( 'End of season eligibility (Match Days)', 'leaguemanager' ) ?></label></th><td><input type="number"  name='playedRounds' id='playedRounds' value='<?php echo isset($options['playedRounds']) ? $options['playedRounds'] : '' ?>' /></td>
-                        </tr>
+                    <tr valign='top'>
+                        <th scope='row'><label for='rosterLeadTime'><?php _e( 'Roster Lead Time (days)', 'leaguemanager' ) ?></label></th><td><input type="number"  name='rosterLeadTime' id='rosterLeadTime' value='<?php echo isset($options['rosterLeadTime']) ? $options['rosterLeadTime'] : '' ?>' /></td>
+                    </tr>
+                    <tr valign='top'>
+                        <th scope='row'><label for='playedRounds'><?php _e( 'End of season eligibility (Match Days)', 'leaguemanager' ) ?></label></th><td><input type="number"  name='playedRounds' id='playedRounds' value='<?php echo isset($options['playedRounds']) ? $options['playedRounds'] : '' ?>' /></td>
+                    </tr>
+                    <tr valign='top'>
+                        <th scope='row'><label for='playerLocked'><?php _e( 'How many matches lock a player', 'leaguemanager' ) ?></label></th><td><input type="number"  name='playerLocked' id='playerLocked' value='<?php echo isset($options['playerLocked']) ? $options['playerLocked'] : '' ?>' /></td>
+                    </tr>
 				</table>
 			</div>
 		</div>
@@ -67,37 +70,37 @@
 			<h2><?php _e('Match Results', 'leaguemanager') ?></h2>
 			<div class="settings-block">
 				<table class='lm-form-table'>
-                        <tr valign='top'>
-                            <th scope='row'><label for='matchCapability'><?php _e( 'Minimum level to update results', 'leaguemanager' ) ?></label></th>
-                            <td>
-                                <select id="role" name="matchCapability">
-                                    <option value="captain" <?php if (isset($options['matchCapability']) && $options['matchCapability'] == "captain") echo 'selected="selected"'?>><?php _e('Captain', 'leaguemanager') ?></option>
-                                <option value="roster" <?php if (isset($options['matchCapability']) && $options['matchCapability'] == "roster") echo 'selected="selected"'?>><?php _e('Roster', 'leaguemanager') ?></option>
-                                <option value="none" <?php if (isset($options['matchCapability']) && $options['matchCapability'] == "none") echo 'selected="selected"'?>><?php _e('None', 'leaguemanager') ?></option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr valign='top'>
-                            <th scope='row'><label for='resultEntry'><?php _e( 'Result Entry', 'leaguemanager' ) ?></label></th>
-                            <td>
-                                <select id="resultEntry" name="resultEntry">
-                                    <option value="home" <?php if (isset($options['resultEntry']) && $options['resultEntry'] == "home") echo 'selected="selected"'?>><?php _e('Home', 'leaguemanager') ?></option>
-                                <option value="either" <?php if (isset($options['resultEntry']) && $options['resultEntry'] == "either") echo 'selected="selected"'?>><?php _e('Either', 'leaguemanager') ?></option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr valign='top'>
-                            <th scope='row'><label for='resultConfirmation'><?php _e( 'Result Confirmation', 'leaguemanager' ) ?></label></th>
-                            <td>
-                                <select id="resultConfirmation" name="resultConfirmation">
-                                    <option value="auto" <?php if (isset($options['resultConfirmation']) && $options['resultConfirmation'] == "admin") echo 'selected="selected"'?>><?php _e('Automatic', 'leaguemanager') ?></option>
-                                <option value="none" <?php if (isset($options['resultConfirmation']) && $options['resultConfirmation'] == "none") echo 'selected="selected"'?>><?php _e('None', 'leaguemanager') ?></option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr valign='top'>
-                            <th scope='row'><label for='resultConfirmationEmail'><?php _e( 'Notification Email Address', 'leaguemanager' ) ?></label></th><td><input type="email"  name='resultConfirmationEmail' id='resultConfirmationEmail' value='<?php echo isset($options['resultConfirmationEmail']) ? $options['resultConfirmationEmail'] : '' ?>' /></td>
-                        </tr>
+                    <tr valign='top'>
+                        <th scope='row'><label for='matchCapability'><?php _e( 'Minimum level to update results', 'leaguemanager' ) ?></label></th>
+                        <td>
+                            <select id="role" name="matchCapability">
+                                <option value="captain" <?php if (isset($options['matchCapability']) && $options['matchCapability'] == "captain") echo 'selected="selected"'?>><?php _e('Captain', 'leaguemanager') ?></option>
+                            <option value="roster" <?php if (isset($options['matchCapability']) && $options['matchCapability'] == "roster") echo 'selected="selected"'?>><?php _e('Roster', 'leaguemanager') ?></option>
+                            <option value="none" <?php if (isset($options['matchCapability']) && $options['matchCapability'] == "none") echo 'selected="selected"'?>><?php _e('None', 'leaguemanager') ?></option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr valign='top'>
+                        <th scope='row'><label for='resultEntry'><?php _e( 'Result Entry', 'leaguemanager' ) ?></label></th>
+                        <td>
+                            <select id="resultEntry" name="resultEntry">
+                                <option value="home" <?php if (isset($options['resultEntry']) && $options['resultEntry'] == "home") echo 'selected="selected"'?>><?php _e('Home', 'leaguemanager') ?></option>
+                            <option value="either" <?php if (isset($options['resultEntry']) && $options['resultEntry'] == "either") echo 'selected="selected"'?>><?php _e('Either', 'leaguemanager') ?></option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr valign='top'>
+                        <th scope='row'><label for='resultConfirmation'><?php _e( 'Result Confirmation', 'leaguemanager' ) ?></label></th>
+                        <td>
+                            <select id="resultConfirmation" name="resultConfirmation">
+                                <option value="auto" <?php if (isset($options['resultConfirmation']) && $options['resultConfirmation'] == "admin") echo 'selected="selected"'?>><?php _e('Automatic', 'leaguemanager') ?></option>
+                            <option value="none" <?php if (isset($options['resultConfirmation']) && $options['resultConfirmation'] == "none") echo 'selected="selected"'?>><?php _e('None', 'leaguemanager') ?></option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr valign='top'>
+                        <th scope='row'><label for='resultConfirmationEmail'><?php _e( 'Notification Email Address', 'leaguemanager' ) ?></label></th><td><input type="email"  name='resultConfirmationEmail' id='resultConfirmationEmail' value='<?php echo isset($options['resultConfirmationEmail']) ? $options['resultConfirmationEmail'] : '' ?>' /></td>
+                    </tr>
 				</table>
 			</div>
 		</div>

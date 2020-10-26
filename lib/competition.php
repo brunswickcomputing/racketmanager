@@ -421,7 +421,7 @@ class Competition {
     public function getPlayerStats( $args ) {
         global $wpdb;
         
-        $defaults = array( 'season' => false, 'cache' => true, 'club' => false, 'league_id' => false, 'system' => false );
+        $defaults = array( 'season' => false, 'cache' => true, 'club' => false, 'league_id' => false, 'system' => false, 'roster' => false );
         $args = array_merge($defaults, (array)$args);
         extract($args, EXTR_SKIP);
         
@@ -439,10 +439,13 @@ class Competition {
             $sql2 .= " AND m.`league_id` = '%d'";
             $search_terms2[] = intval($league_id);
         }
-        
         if ($club) {
             $sql2 .= " AND ro.`affiliatedclub` = '%d'";
             $search_terms2[] = intval($club);
+        }
+        if ($roster) {
+            $sql2 .= " AND ro.`id` = '%d'";
+            $search_terms2[] = intval($roster);
         }
         if (!$system) {
             $sql2 .= " AND ro.`system_record` IS NULL";

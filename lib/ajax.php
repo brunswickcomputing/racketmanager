@@ -871,6 +871,8 @@ class LeagueManagerAJAX extends LeagueManager {
         global $wpdb, $leaguemanager;
         
         $player = $leaguemanager->getRosterEntry($rosterId, $team);
+        $teamName = get_team($team)->title;
+        $currTeamNum = substr($teamName,-1);
 
         $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_results_checker} WHERE `player_id` = %d AND `match_id` = %d", $player->player_id, $match->id) );
 
@@ -905,6 +907,30 @@ class LeagueManagerAJAX extends LeagueManager {
                 if ( $count == 0 ) {
                     $error = sprintf(__('player has not played before the final %d match days','leaguemanager'), $options['playedRounds']);
                     $leaguemanager->addResultCheck($match, $team, $player->player_id, $error );
+                }
+            }
+            if ( isset($options['playerLocked']) ) {
+                $competition = get_competition($match->league->competition_id);
+                $playerStats = $competition->getPlayerStats(array('season' => $match->season, 'roster' => $rosterId));
+                $prevTeamNum = $playdowncount = $prevMatchDay = 0;
+                $teamplay = array();
+                foreach ( $playerStats AS $playerStat ) {
+                    foreach ( $playerStat->matchdays AS $m => $matchDay) {
+                        if ( $prevMatchDay != $matchDay->match_day ) {
+                            $i = 0;
+                        }
+                        $teamNum = substr($matchDay->team_title,-1) ;
+                        if (isset($teamplay[$teamNum])) $teamplay[$teamNum] ++;
+                        else $teamplay[$teamNum] = 1;
+                    }
+                    foreach ( $teamplay AS $teamNum => $played) {
+                        if ($teamNum < $currTeamNum) {
+                            if ($played > 2) {
+                                $error = sprintf(__('player is locked to team %d','leaguemanager'), $teamNum);
+                                $leaguemanager->addResultCheck($match, $team, $player->player_id, $error );
+                            }
+                        }
+                    }
                 }
             }
         }

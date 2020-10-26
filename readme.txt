@@ -2,9 +2,9 @@
 Contributors: Paul Moffat, Kolja Schleich, LaMonte Forthun
 Donate link: 
 Tags: league management, sport, widget, basketball, football, hockey, league, soccer, volleyball, gymnastics, tennis, baseball, rugby
-Requires at least: 4.5
-Tested up to: 4.4.2
-Stable tag: 4.1.1
+Requires at least: 5.4
+Tested up to: 5.4.2
+Stable tag: 5.4.2
 License: LGPLv2.1 or later
 
 Plugin to manage and present Sports Leagues
@@ -28,19 +28,8 @@ This Plugin is designed to manage sports leagues and display them on your blog.
 * dynamic match statistics
 * Championship mode with preliminary and k/o rounds
 
-
 **Translations**
 
-* German
-* Dutch
-* Swedish
-* Polish
-* Spanish
-* French by Mamadou Dogue
-* Czech
-* Italian
-* Arabian
-* Hebrew by Bar Shai
 
 == Installation ==
 
@@ -84,11 +73,16 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 * TO-DO - Updating the translation code to remove the deprecated code has broken some translations due to a change in how WordPress handles multiple options. The translations files need some attention, so do the sport files...
 * Coming soon - Players, pagination for leagues, teams, matches, and players. New admin dashboard. New sport files.
 
+= 5.5.8 =
+* NEW: how to documentation for administrators
+* UPDATE: make leaguemanager section on admin menu
+* NEW: add player locked to team check
+
 = 5.5.7 =
 * UPDATE: change member account update to highlight specific errors
 
 = 5.5.6 =
-* UPDATE: match result validation for administrators
+* NEW: match result validation for administrators
 * UPDATE: automatically generate team name from club and type
 
 = 5.5.5 =

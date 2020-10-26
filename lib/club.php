@@ -389,4 +389,3 @@ function get_club( $club = null, $queryTerm = "id" ) {
     return $_club;
 }
 ?>
-

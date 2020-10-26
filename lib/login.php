@@ -167,7 +167,7 @@
                 
                 // Check if user just logged out
                 $vars['logged_out'] = isset( $_REQUEST['logged_out'] ) && $_REQUEST['logged_out'] == true;
-                
+
                 // Render the login form using an external template
                 return $leaguemanager_shortcodes->loadTemplate( 'form-login', $vars );
             }
@@ -179,7 +179,8 @@
         public function redirect_to_custom_login() {
             if ( $_SERVER['REQUEST_METHOD'] == 'GET' ) {
                 $redirect_to = isset( $_REQUEST['redirect_to'] ) ? $_REQUEST['redirect_to'] : null;
-                
+ 
+
                 if ( is_user_logged_in() ) {
                     $this->redirect_logged_in_user( $redirect_to );
                     exit;
@@ -326,8 +327,12 @@
                     $redirect_url = $requested_redirect_to;
                 }
             } else {
-                // Non-admin users always go to their account page after login
-                $redirect_url = home_url();
+                // Use the redirect_to parameter if one is set, otherwise redirect to homepage.
+                if ( $requested_redirect_to == '' ) {
+                    $redirect_url = home_url();
+                } else {
+                    $redirect_url = $requested_redirect_to;
+                }
             }
             
             return wp_validate_redirect( $redirect_url, home_url() );

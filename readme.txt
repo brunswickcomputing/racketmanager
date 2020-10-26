@@ -73,6 +73,14 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 * TO-DO - Updating the translation code to remove the deprecated code has broken some translations due to a change in how WordPress handles multiple options. The translations files need some attention, so do the sport files...
 * Coming soon - Players, pagination for leagues, teams, matches, and players. New admin dashboard. New sport files.
 
+= 5.6.0 =
+* NEW: allow payers to enter tournaments online
+* BUGFIX: fix table import
+
+= 5.5.12 =
+* UPDATE: update the way error messages are displayed
+* BUGFIX: redirect on login if required for non-admin users
+
 = 5.5.11 =
 * UPDATE: change player team template
 * UPDATE: add front end form validation 

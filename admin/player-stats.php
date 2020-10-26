@@ -5,7 +5,8 @@
         if (isset($competition->primary_league)) {
             $primaryLeague = get_league($competition->primary_league);
         } else {
-            $leagues = $competition->getLeagues(array());
+            $leagues = $competition->getLeagues(array( 'competition' => $competition->id));
+            debug_to_console($leagues);
             $primaryLeague = get_league(array_key_first($competition->league_index));
         }
         $numCols = $primaryLeague->championship->num_rounds;

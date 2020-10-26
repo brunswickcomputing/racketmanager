@@ -184,6 +184,24 @@ jQuery(document).ready(function($) {
                                   input.attr('type', 'password');
                             });
                        
+    jQuery(":checkbox").click(function (event) {
+                               var $target = event.target;
+
+                               // If a checkbox with aria-controls, handle click
+                               var isCheckbox = $target.getAttribute('type') === 'checkbox';
+                               var hasAriaControls = $target.getAttribute('aria-controls');
+                               if (isCheckbox && hasAriaControls) {
+                                     var $target2 = this.parentNode.parentNode.querySelector('#' + $target.getAttribute('aria-controls'));
+
+                                     if ($target2 && $target2.classList.contains('form-checkboxes__conditional')) {
+                                       var inputIsChecked = $target.checked;
+
+                                       $target2.setAttribute('aria-expanded', inputIsChecked);
+                                       $target2.classList.toggle('form-checkboxes__conditional--hidden', !inputIsChecked);
+                                     }
+                               }
+                       });
+
 });
 
 var Leaguemanager = new Object();
@@ -384,7 +402,7 @@ Leaguemanager.rosterRemove = function(link) {
                 }
                 }) ;
 };
-Leaguemanager.teamCaptainUpdate = function(link) {
+Leaguemanager.teamUpdate = function(link) {
     
     var formId = '#'.concat(link.form.id);
     var $form = jQuery(formId).serialize();
@@ -392,7 +410,7 @@ Leaguemanager.teamCaptainUpdate = function(link) {
     var team = link.form[2].value;
     var updateResponse = "#updateTeamResponse-".concat(competition,"-",team);
     var submitButton = "#teamUpdateSubmit-".concat(competition,"-",team);
-    $form += "&action=leaguemanager_team_captain_update";
+    $form += "&action=leaguemanager_team_update";
     jQuery(updateResponse).val("");
     jQuery(submitButton).hide();
 
@@ -407,7 +425,7 @@ Leaguemanager.teamCaptainUpdate = function(link) {
                     jQuery(updateResponse).html($message);
                 },
                 error: function() {
-                    alert("Ajax error on captain update");
+                    alert("Ajax error on team update");
                 }
                 }) ;
     jQuery(submitButton).show();
@@ -438,4 +456,46 @@ Leaguemanager.updateClub = function(link) {
                     jQuery(submitButton).show();
                 }
                 }) ;
+};
+Leaguemanager.tournamentEntryRequest = function(link) {
+    
+    var $form = jQuery('#form-tournamententry').serialize();
+    $form += "&action=leaguemanager_tournament_entry";
+    jQuery("#tournamEntentryResponse").val("");
+    jQuery("#tournamentEntrySubmit").hide();
+    jQuery("#tournamentEntrySubmit").addClass("disabled");
+    jQuery("#tournamentEntryResponse").removeClass('message-error');
+    jQuery("#tournamentEntryResponse").removeClass('message-success');
+
+    jQuery.ajax({
+                url:LeagueManagerAjaxL10n.requestUrl,
+                async: false,
+                type: "POST",
+                data: $form,
+                success: function(response) {
+                    var $response = jQuery.parseJSON(response);
+                    var $message = $response[0];
+                    var $error = $response[1];
+                    var $errorMsg = $response[2];
+                    var $errorField = $response[3];
+                    if ($error === true) {
+                        jQuery("#tournamentEntryResponse").addClass('message-error');
+                        for ( var errorMsg of $response[2] ) {
+                            $message += '<br />' + errorMsg;
+                        }
+                        for ( var errorField of $response[3] ) {
+                            var $id = '#'.concat(errorField);
+                            jQuery($id).parents('.form-group').addClass('field-error');
+                        }
+                        jQuery("#tournamentEntryResponse").html($message);
+                    } else {
+                        jQuery("#tournamentEntryResponse").addClass('message-success');
+                        jQuery("#tournamentEntryResponse").html($message);
+                    }
+                },
+                error: function() {
+                    alert("Ajax error on tournament entry");
+                }
+                }) ;
+    jQuery("#tournamentEntrySubmit").show();
 };

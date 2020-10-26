@@ -243,6 +243,9 @@ final class LeagueManagerAdmin extends LeagueManager
                         case 'team':
                             $this->displayTeamPage();
                             break;
+                        case 'tournament':
+                            $this->displayTournamentPage();
+                            break;
 						default:
                             $this->league_id = intval($_GET['league_id']);
                             $league = get_league($this->league_id);
@@ -411,6 +414,24 @@ final class LeagueManagerAdmin extends LeagueManager
                 }
                 $this->printMessage();
                 $tab = 8;
+            } elseif ( isset($_POST['addTournament']) ) {
+                check_admin_referer('leaguemanager_add-tournament');
+                $this->addTournament( htmlspecialchars($_POST['tournament']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['venue']),  htmlspecialchars($_POST['date']), htmlspecialchars($_POST['closingdate']), htmlspecialchars($_POST['tournamentSecretaryName']), htmlspecialchars($_POST['tournamentSecretary']), htmlspecialchars($_POST['tournamentSecretaryContactNo']), htmlspecialchars($_POST['tournamentSecretaryEmail']) );
+                $this->printMessage();
+                $tab = 9;
+            } elseif ( isset($_POST['editTournament']) ) {
+                check_admin_referer('leaguemanager_manage-tournament');
+                $this->editTournament( intval($_POST['tournament_id']), htmlspecialchars($_POST['tournament']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['venue']),  htmlspecialchars($_POST['date']), htmlspecialchars($_POST['closingdate']), htmlspecialchars($_POST['tournamentSecretaryName']), htmlspecialchars($_POST['tournamentSecretary']), htmlspecialchars($_POST['tournamentSecretaryContactNo']), htmlspecialchars($_POST['tournamentSecretaryEmail']) );
+                $this->printMessage();
+                $tab = 9;
+            } elseif ( isset($_POST['doTournamentDel']) && $_POST['action'] == 'delete' ) {
+                check_admin_referer('tournaments-bulk');
+                foreach ( $_POST['tournament'] AS $tournament_id ) {
+                    $this->delTournament( intval($tournament_id) );
+                }
+                $club_id = 0;
+                $this->printMessage();
+                $tab = 9;
             } elseif ( isset($_GET['view']) && $_GET['view'] == 'roster' ) {
                 if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
                 $tab = 2;
@@ -423,6 +444,8 @@ final class LeagueManagerAdmin extends LeagueManager
                 $tab = 6;
             } elseif ( isset($_GET['view']) && $_GET['view'] == 'results' ) {
                 $tab = 7;
+            } elseif ( isset($_GET['view']) && $_GET['view'] == 'tournament' ) {
+                $tab = 9;
             }
             include_once( dirname(__FILE__) . '/index.php' );
         }
@@ -841,6 +864,37 @@ final class LeagueManagerAdmin extends LeagueManager
             }
         
             include_once( dirname(__FILE__) . '/club.php' );
+        }
+    }
+    
+    /**
+     * display tournament page
+     *
+     */
+    private function displayTournamentPage() {
+        global $leaguemanager;
+        
+        if ( !current_user_can( 'edit_teams' ) ) {
+            echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+        } else {
+            $edit = false;
+
+            if ( isset( $_GET['tournament_id'] ) ) {
+                $tournamentId = $_GET['tournament_id'];
+                $edit = true;
+                $tournament = $leaguemanager->getTournament( $tournamentId );
+                
+                $form_title = __( 'Edit Tournament', 'leaguemanager' );
+                $form_action = __( 'Update', 'leaguemanager' );
+            } else {
+                $tournamentId = '';
+                $form_title = __( 'Add Tournament', 'leaguemanager' );
+                $form_action = __( 'Add', 'leaguemanager' );
+                $tournament = (object)array( 'name' => '', 'type' => '', 'id' => '', 'tournamentSecretary' => '', 'tournamentSecretaryName' => '', 'venue' => '', 'tournamentSecretaryContactNo' => '', 'tournamentSecretaryEmail' => '', 'date' => '', 'closingdate' => '' );
+            }
+        
+            $clubs = $leaguemanager->getClubs( );
+            include_once( dirname(__FILE__) . '/tournament.php' );
         }
     }
     
@@ -1779,46 +1833,17 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return int | false
 	 */
 	private function addTableEntry( $leagueId, $teamId, $season , $custom = array(), $message = true ) {
-		global $wpdb;
+		global $wpdb, $leaguemanager;
 
         if ( !current_user_can('edit_teams') ) {
             $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
             return false;
         }
         
-        $insert = true;
-        
-        $tableId = $this->checkTableEntry( $leagueId, $teamId, $season );
-        if ( $tableId ) {
-            $messageText = 'Team already in table';
-        } else {
-            $sql = "INSERT INTO {$wpdb->leaguemanager_table} (`team_id`, `season`, `custom`, `league_id`) VALUES ('%d', '%s', '%s', '%d')";
-            $wpdb->query( $wpdb->prepare ( $sql, $teamId, $season, maybe_serialize($custom), $leagueId) );
-            $tableId = $wpdb->insert_id;
-            $messageText = 'Table entry added';
-        }
-		if ( $message )
-			$this->setMessage( __($messageText,'leaguemanager') );
+        $tableId = $leaguemanager->addTeamtoTable( $leagueId, $teamId, $season , $custom = array(), $message = true );
+        return $tableId;
+    }
 
-		return $tableId;
-	}
-
-    /**
-     * check for table entry
-     *
-     * @param int $league_id
-     * @param string $team_id
-     * @param string $season
-      * @return $num_teams
-     */
-	private function checkTableEntry( $league_id, $team_id, $season ) {
-		global $wpdb;
-        
-		$query = $wpdb->prepare ( "SELECT `id` FROM {$wpdb->leaguemanager_table} WHERE `team_id` = '%d' AND `season` = '%s' AND `league_id` = '%d'", $team_id, $season, $league_id);
-		$num_teams = $wpdb->get_var( $query );
-		return $num_teams;
-	}
-			
 	/**
 	 * add new team
 	 *
@@ -1878,7 +1903,7 @@ final class LeagueManagerAdmin extends LeagueManager
      * @return int | false
      */
     private function addTeamToLeague( $affiliatedclub, $team_type, $captain = false, $contactno = false, $contactemail = false, $matchday = false, $matchtime = false, $home = '', $roster = '', $profile = '', $custom = '', $league_id = false, $message = true ) {
-        global $wpdb;
+        global $wpdb, $leaguemanager;
 
         if ( !current_user_can('edit_teams') ) {
             $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
@@ -1889,7 +1914,7 @@ final class LeagueManagerAdmin extends LeagueManager
         
         if ( $league_id ) {
             $league = get_league($league_id);
-            $team_competition_id = $this->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail, $matchday, $matchtime );
+            $team_competition_id = $leaguemanager->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail, $matchday, $matchtime );
         }
 
         if ( $message )
@@ -1898,45 +1923,6 @@ final class LeagueManagerAdmin extends LeagueManager
         return $team_id;
     }
 
-    /**
-     * add team to competition
-     *
-     * @param int $league_id
-     * @param int $competition_id
-     * @param string $title
-     * @param string $captain
-     * @param string $contactno
-     * @param string $contactemail
-     * @param int $matchday
-     * @param int $matchtime
-     * @return $team_competition_id
-     */
-    private function addTeamCompetition( $team_id, $competition_id, $captain = NULL, $contactno = NULL, $contactemail = NULL, $matchday = '', $matchtime = NULL ) {
-        global $wpdb;
-
-        $sql = "INSERT INTO {$wpdb->leaguemanager_team_competition} (`team_id`, `competition_id`, `captain`, `match_day`, `match_time`) VALUES ('%d', '%d', '%d', '%s', '%s')";
-        $wpdb->query( $wpdb->prepare ( $sql, $team_id, $competition_id, $captain, $matchday, $matchtime ) );
-        $team_competition_id = $wpdb->insert_id;
-        if ( isset($captain) && $captain != '' ) {
-            $currentContactNo = get_user_meta( $captain, 'contactno', true);
-            $currentContactEmail = get_userdata($captain)->user_email;
-            if ($currentContactNo != $contactno ) {
-                update_user_meta( $captain, 'contactno', $contactno );
-            }
-            if ($currentContactEmail != $contactemail ) {
-                $userdata = array();
-                $userdata['ID'] = $captain;
-                $userdata['user_email'] = $contactemail;
-                $user_id = wp_update_user( $userdata );
-                if ( is_wp_error($user_id) ) {
-                    error_log('Unable to update user email '.$captain.' - '.$contactemail);
-                }
-            }
-        }
-
-        return $team_competition_id;
-    }
-            
 	/**
 	 * edit team
 	 *
@@ -2042,7 +2028,7 @@ final class LeagueManagerAdmin extends LeagueManager
     * @return boolean
     */
     private function setTeamCompetition( $teamId, $competitionId, $captain = NULL, $contactNo = NULL, $contactEmail = NULL , $matchDay = NULL, $matchTime = NULL) {
-        global $wpdb;
+        global $wpdb, $leaguemanager;
         
         if ( !current_user_can('edit_teams') ) {
             $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
@@ -2051,11 +2037,11 @@ final class LeagueManagerAdmin extends LeagueManager
         
         $team_competition = $wpdb->get_results( $wpdb->prepare("SELECT `id` FROM {$wpdb->leaguemanager_team_competition} WHERE `team_id` = '%d' AND `competition_id` = '%d'", $teamId, $competitionId) );
         if (!isset($team_competition[0])) {
-            $this->addTeamCompetition( $teamId, $competitionId, $captain, $contactNo, $contactEmail, $matchDay, $matchTime );
+            $leaguemanager->addTeamCompetition( $teamId, $competitionId, $captain, $contactNo, $contactEmail, $matchDay, $matchTime );
         } else {
             if ( isset($captain) ) {
                 $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_team_competition} SET `captain` = '%s', `match_day` = '%s', `match_time` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captain, $matchDay, $matchTime, $teamId, $competitionId ) );
-                $this->updatePlayerDetails($captain,$contactNo,$contactEmail);
+                $leaguemanager->updatePlayerDetails($captain,$contactNo,$contactEmail);
             }
         }
         
@@ -2112,23 +2098,7 @@ final class LeagueManagerAdmin extends LeagueManager
             return false;
         }
         
-        $league = get_league($league_id);
-        $type = $league->type;
-        if ( $type == 'LD' ) $type = 'XD';
-        $status = "P";
-        if ( $player2Id == 0 ) {
-            $title = $player1;
-            $roster = array($player1Id);
-        } else {
-            $title = $player1.' / '.$player2;
-            $roster = array($player1Id, $player2Id);
-        }
-		$sql = "INSERT INTO {$wpdb->leaguemanager_teams} (`title`, `affiliatedclub`, `roster`, `status`, `type` ) VALUES ('%s', '%d', '%s', '%s', '%s')";
-		$wpdb->query( $wpdb->prepare ( $sql, $title, $affiliatedclub, maybe_serialize($roster), $status, $type ) );
-		$team_id = $wpdb->insert_id;
-        $captain = $leaguemanager->getRosterEntry($player1Id)->player_id;
-        $team_competition_id = $this->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail );
-
+        $team_id = $leaguemanager->addPlayerTeam( $player1, $player1Id, $player2, $player2Id, $contactno, $contactemail, $affiliatedclub, $league_id );
 		if ( $message )
 			$this->setMessage( __('Player Team added','leaguemanager') );
 
@@ -2172,7 +2142,7 @@ final class LeagueManagerAdmin extends LeagueManager
         $team_competition = $wpdb->get_results( $wpdb->prepare("SELECT `id` FROM {$wpdb->leaguemanager_team_competition} WHERE `team_id` = '%d' AND `competition_id` = '%d'", $team_id, $league->competition_id) );
         $captain = $leaguemanager->getRosterEntry($player1Id)->player_id;
         if (!isset($team_competition[0])) {
-            $this->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail );
+            $leaguemanager->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail );
         } else {
             $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_team_competition} SET `captain` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captain, $team_id, $league->competition_id ) );
             if ( isset($captain) && $captain != '' ) {
@@ -2198,7 +2168,109 @@ final class LeagueManagerAdmin extends LeagueManager
         
         return true;
 	}
+
+/************
+*
+*   TOURNAMENT SECTION
+*
+*
+*/
 	/**
+	 * add tournament
+	 *
+	 * @param string $name
+	 * @param string $type
+	 * @param int $venue
+     * @param int $tournamentSecretary
+     * @param string $tournamentSecretaryContactNo
+	 * @param string $tournamentSecretaryEmail
+	 * @param string $date
+	 * @param string $closingdate
+	 * @return boolean
+	 */
+	private function addTournament( $name, $type, $venue, $date, $closingdate, $tournamentSecretaryContactName, $tournamentSecretary, $tournamentSecretaryContactNo, $tournamentSecretaryEmail ) {
+		global $wpdb, $leaguemanager;
+
+        if ( !current_user_can('edit_teams') ) {
+            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            return false;
+        }
+        
+		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->leaguemanager_tournaments} (`name`, `type`, `venue`, `tournamentsecretary`, `date`, `closingdate` ) VALUES ('%s', '%s', '%d', '%d', '%s', '%s' )", $name, $type, $venue, $tournamentSecretary, $date, $closingdate ) );
+        
+		$this->setMessage( __('Tournament added','leaguemanager') );
+        
+        return true;
+	}
+
+	/**
+	 * edit tournament
+	 *
+	 * @param int $club_id
+	 * @param string $name
+     * @param int $venue
+     * @param int $tournamentSecretary
+     * @param string $tournamentSecretaryContactNo
+     * @param string $tournamentSecretaryEmail
+     * @param string $date
+     * @param string $closingdate
+	 * @return boolean
+	 */
+	private function editTournament( $tournament_id, $name, $type, $venue, $date, $closingdate, $tournamentSecretaryContactName, $tournamentSecretary, $tournamentSecretaryContactNo, $tournamentSecretaryEmail ) {
+        global $wpdb;
+
+        if ( !current_user_can('edit_teams') ) {
+            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            return false;
+        }
+        
+        $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_tournaments} SET `name` = '%s', `type` = '%s', `venue` = '%d',`tournamentsecretary` = '%d', `date` = '%s', `closingdate` = '%s' WHERE `id` = %d", $name, $type, $venue, $tournamentSecretary, $date, $closingdate, $tournament_id ) );
+        
+        if ( $tournamentSecretary != '') {
+            $currentContactNo = get_user_meta( $tournamentSecretary, 'contactno', true);
+            $currentContactEmail = get_userdata($tournamentSecretary)->user_email;
+            if ($currentContactNo != $tournamentSecretaryContactNo ) {
+                update_user_meta( $tournamentSecretary, 'contactno', $tournamentSecretaryContactNo );
+            }
+            if ($currentContactEmail != $tournamentSecretaryEmail ) {
+                $userdata = array();
+                $userdata['ID'] = $tournamentSecretary;
+                $userdata['user_email'] = $tournamentSecretaryEmail;
+                $userId = wp_update_user( $userdata );
+                if ( is_wp_error($userId) ) {
+                    $error_msg = $userId->get_error_message();
+                    error_log('Unable to update user email '.$tournamentSecretary.' - '.$tournamentSecretaryEmail.' - '.$error_msg);
+                }
+            }
+        }
+
+        $this->setMessage( __('Tournament updated','leaguemanager') );
+        
+        return true;
+	}
+
+	/**
+	 * delete Tournament
+	 *
+	 * @param int $club_id
+	 * @return boolean
+	 */
+	private function delTournament( $tournament_id ) {
+		global $wpdb;
+
+        if ( !current_user_can('del_teams') ) {
+            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            return false;
+        }
+
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_tournaments} WHERE `id` = '%d'", $tournament_id) );
+        $this->setMessage( __('Tournament Deleted','leaguemanager') );
+        
+        return true;
+	}
+
+
+    /**
 	 * display dropdon menu of teams (cleaned from double entries)
 	 *
 	 */
@@ -2648,7 +2720,7 @@ final class LeagueManagerAdmin extends LeagueManager
 			$league = get_league( $this->league_id );
 			if ( "TAB" == $delimiter ) $delimiter = "\t"; // correct tabular delimiter
 
-			$teams = $points_plus = $points_minus = $points2_plus = $points2_minus = $pld = $won = $draw = $lost = $custom = array();
+			$teams = $points_plus = $points_minus = $points2_plus = $points2_minus = $pld = $won = $draw = $lost = $custom = $add_points = array();
 
 			$i = $x = 0;
 			while (!feof($handle)) {
@@ -2727,6 +2799,7 @@ final class LeagueManagerAdmin extends LeagueManager
                         $points_plus[$team_id] = $points[0];
                         $points_minus[$team_id] = $points[1];
                         $custom[$team_id]['points2'] = array( 'plus' => $points2[0], 'minus' => $points2[1] );
+                        $add_points[$team_id] = 0;
 
                         $x++;
                     }
@@ -2734,7 +2807,7 @@ final class LeagueManagerAdmin extends LeagueManager
 				$i++;
 			}
 
-			$league->saveStandingsManually($teams, $points_plus, $points_minus, $pld, $won, $draw, $lost, 0, $custom);
+			$league->saveStandingsManually($teams, $points_plus, $points_minus, $pld, $won, $draw, $lost, $add_points, $custom);
 
 			fclose($handle);
 
@@ -2762,7 +2835,7 @@ final class LeagueManagerAdmin extends LeagueManager
 			$league = get_league( $this->league_id );
 			if ( "TAB" == $delimiter ) $delimiter = "\t"; // correct tabular delimiter
 
-			$teams = $points_plus = $points_minus = $points2_plus = $points2_minus = $pld = $won = $draw = $lost = $custom = array();
+			$teams = $points_plus = $points_minus = $points2_plus = $points2_minus = $pld = $won = $draw = $lost = $custom = $add_points = array();
 
 			$i = $x = 0;
 			while (!feof($handle)) {
@@ -2779,7 +2852,7 @@ final class LeagueManagerAdmin extends LeagueManager
 						$tabledtls = $this->checkTableEntry( $this->league_id, $team_id, $season );
 						if ( $tabledtls == 0 ) {
 													 
-							$custom = apply_filters( 'leaguemanager_import_teams_'.$league->sport, $custom, $line );
+//							$custom = apply_filters( 'leaguemanager_import_teams_'.$league->sport, $custom, $line );
 							$table_id = $this->addTableEntry( $this->league_id, $team_id, $season, $custom, false );
 
 							$teams[$team_id] = $team_id;
@@ -2811,6 +2884,8 @@ final class LeagueManagerAdmin extends LeagueManager
 							$points_plus[$team_id] = $points[0];
 							$points_minus[$team_id] = $points[1];
 							$custom[$team_id]['points2'] = array( 'plus' => $points2[0], 'minus' => $points2[1] );
+                            $add_points[$team_id] = 0;
+
 							$x++;
 						 }
 													 
@@ -2820,7 +2895,7 @@ final class LeagueManagerAdmin extends LeagueManager
 				$i++;
 			}
 
-			$league->saveStandingsManually($teams, $points_plus, $points_minus, $pld, $won, $draw, $lost, 0, $custom);
+			$league->saveStandingsManually($teams, $points_plus, $points_minus, $pld, $won, $draw, $lost, $add_points, $custom);
 
 			fclose($handle);
 

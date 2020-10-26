@@ -23,6 +23,7 @@ jQuery(function() {
             <li><a href="#clubs-table"><?php _e( 'Clubs', 'leaguemanager' ) ?></a></li>
             <li><a href="#results-table"><?php _e( 'Results', 'leaguemanager' ) ?></a></li>
             <li><a href="#results-checker-table"><?php _e( 'Results Checker', 'leaguemanager' ) ?></a></li>
+            <li><a href="#tournament-table"><?php _e( 'Tournaments', 'leaguemanager' ) ?></a></li>
 		</ul>
 
 		<div id="competitions-table" class="league-block-container">
@@ -60,6 +61,10 @@ jQuery(function() {
         <div id="results-checker-table" class="league-block-container">
             <h2 class="header"><?php _e( 'Results Checker', 'leaguemanager' ) ?></h2>
             <?php include('results-checker.php'); ?>
+        </div>
+        <div id="tournament-table" class="league-block-container">
+            <h2 class="header"><?php _e( 'Tournaments', 'leaguemanager' ) ?></h2>
+            <?php include('tournaments.php'); ?>
         </div>
         <?php include('match-modal.php'); ?>
 	</div>

@@ -270,6 +270,7 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                 <div id="club-teams" class="team">
                     <?php $shortCode = $club->shortcode;
                         $competitions = $leaguemanager->getCompetitions(array('type'=>'league'));
+                        $matchdays = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
                         if ( $competitions ) { ?>
                             <h2 class="teams-header"><?php _e( 'Teams', 'leaguemanager') ?></h2>
                             <div class="competition-list jquery-ui-accordion">
@@ -285,11 +286,11 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                                             <li><a href="#club-players"><?php _e( 'Players', 'leaguemanager') ?></a></li>
                                         </ul>
                                         <div id="club-teams" class="jquery-ui-tab">
-                                        <?php foreach ($teams AS $team ) { ?>
+                                            <?php foreach ($teams AS $team ) { ?>
                                             <div class="team" id="<?php echo $team->title ?>">
                                                 <h4 class="title"><?php echo $team->title ?></h4>
-                                                <form id="team-captain-update-<?php echo $competition->id ?>-<?php echo $team->id ?>-Frm" action="" method="post">
-                                                <?php wp_nonce_field( 'team-captain-update' ) ?>
+                                                <form id="team-update-<?php echo $competition->id ?>-<?php echo $team->id ?>-Frm" action="" method="post">
+                                                <?php wp_nonce_field( 'team-update' ) ?>
                                                 <input type="hidden" id="team_id" name="team_id" value="<?php echo $team->id ?>" />
                                                 <input type="hidden" id="competition_id" name="competition_id" value="<?php echo $competition->id ?>" />
                                                 <?php if ( !empty($team->captain) || $userCanUpdateClub ) { ?>
@@ -319,8 +320,33 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                                                             </div>
                                                     <?php } ?>
                                                 <?php } ?>
+                                                <?php if ( !empty($team->match_day) ) { ?>
+                                                        <div class="form-group">
+                                                            <label for "match_day-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Match Day', 'leaguemanager' ) ?></label>
+                                                            <div class="input">
+                                                                <?php if ( $userCanUpdateClub ) { ?>
+                                                                <select size="1" name="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" id="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" >
+                                                                    <option><?php _e( 'Select match day' , 'leaguemanager') ?></option>
+                                                                    <?php foreach ( $matchdays AS $matchday ) { ?>
+                                                                    <option value="<?php echo $matchday ?>"<?php if(isset($team->match_day)) selected($matchday, $team->match_day ) ?> <?php disabled($userCanUpdateClub, false) ?>><?php echo $matchday ?></option>
+                                                                    <?php } ?>
+                                                                </select>
+                                                                <?php } else { ?>
+                                                                <input type="text" class="form-control" id="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->match_day ?>" <?php disabled($userCanUpdateClub, false) ?> />
+                                                                <?php } ?>
+                                                            </div>
+                                                        </div>
+                                                <?php } ?>
+                                                <?php if ( !empty($team->match_time) || $userCanUpdateClub ) { ?>
+                                                        <div class="form-group match-time">
+                                                            <label for "matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Match Time', 'leaguemanager' ) ?></label>
+                                                            <div class="input">
+                                                                <input type="time" class="form-control" id="matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->match_time ?>" size="30" <?php disabled($userCanUpdateClub, false) ?> />
+                                                            </div>
+                                                        </div>
+                                                <?php } ?>
                                                 <?php if ( $userCanUpdateClub ) { ?>
-                                                <button class="btn" type="button" id="teamUpdateSubmit-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="teamUpdateSubmit-<?php echo $competition->id ?>-<?php echo $team->id ?>" onclick="Leaguemanager.teamCaptainUpdate(this)">Update details</button>
+                                                <button class="btn" type="button" id="teamUpdateSubmit-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="teamUpdateSubmit-<?php echo $competition->id ?>-<?php echo $team->id ?>" onclick="Leaguemanager.teamUpdate(this)">Update details</button>
                                                 <div class="updateResponse" id="updateTeamResponse-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="updateTeamResponse-<?php echo $competition->id ?>-<?php echo $team->id ?>"></div>
                                                 <?php } ?>
                                                 </form>

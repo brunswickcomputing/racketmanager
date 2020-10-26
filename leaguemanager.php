@@ -3,7 +3,7 @@
 Plugin Name: LeagueManager
 Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
 Description: Manage and present sports league results.
-Version: 5.5.11
+Version: 5.6.0
 Author: Paul Moffat, Kolja Schleich, LaMonte Forthun
 
 Copyright 2008-2020  Paul Moffat (email: paul@paarcs.com)
@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 * @author LaMonte Forthun
 * @author Paul Moffat
 * @package LeagueManager
-* @version 5.5.11
+* @version 5.6.0
 * @copyright 2008-2020
 * @license GPL-3
 */
@@ -49,14 +49,14 @@ class LeagueManager {
 	 *
 	 * @var string
 	 */
-	private $version = '5.5.11';
+	private $version = '5.6.0';
 
 	/**
 	 * database version
 	 *
 	 * @var string
 	 */
-	private $dbversion = '5.5.7';
+	private $dbversion = '5.6.0';
 
 	/**
 	 * constructor
@@ -216,6 +216,7 @@ class LeagueManager {
         $wpdb->leaguemanager_seasons = $wpdb->prefix . 'leaguemanager_seasons';
         $wpdb->leaguemanager_competitions_seasons = $wpdb->prefix . 'leaguemanager_competitions_seasons';
         $wpdb->leaguemanager_results_checker = $wpdb->prefix . 'leaguemanager_results_checker';
+        $wpdb->leaguemanager_tournaments = $wpdb->prefix . 'leaguemanager_tournaments';
 	}
 
 	/**
@@ -796,6 +797,17 @@ class LeagueManager {
                         `updated_date` datetime NULL,
                         PRIMARY KEY ( `id` )) $charset_collate;";
         maybe_create_table( $wpdb->leaguemanager_results_checker, $create_results_checker_sql );
+        $create_tournaments_sql = "CREATE TABLE {$wpdb->leaguemanager_tournaments} (
+                        `id` int( 11 ) NOT NULL AUTO_INCREMENT,
+                        `name` varchar( 100 ) NOT NULL default '',
+                        `type` varchar( 100 ) NOT NULL default '',
+                        `venue` int( 11 ) NULL,
+                        `date` date NULL,
+                        `closingdate` date NOT NULL,
+                        `tournamentsecretary` int( 11 ) NULL,
+                        PRIMARY KEY ( `id` )) $charset_collate;";
+        maybe_create_table( $wpdb->leaguemanager_tournaments, $create_tournaments_sql );
+
 }
 
 
@@ -966,6 +978,139 @@ class LeagueManager {
     }
 
     /**
+     * get tournaments from database
+     *
+     * @param none
+     * @param string $search
+     * @return array
+     */
+    public function getTournaments( $offset=0, $limit=99999999 ) {
+        global $wpdb;
+        
+        $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} ORDER BY `id` ASC LIMIT %d, %d",  intval($offset), intval($limit) );
+
+        $tournaments = wp_cache_get( md5($sql), 'leaguemanager' );
+        if ( !$tournaments ) {
+            $tournaments = $wpdb->get_results( $sql );
+            wp_cache_add( md5($sql), $tournaments, 'leaguemanager' );
+        }
+
+        $i = 0;
+        foreach ( $tournaments AS $i => $tournament ) {
+
+            if ( $tournament->date == "0000-00-00" ) $tournament->date = '';
+            if ( $tournament->venue == 0 ) {
+                $tournament->venue = '';
+                $tournament->venueName = '';
+            } else {
+                $tournament->venueName = get_club($tournament->venue)->name;
+            }
+            if ( $tournament->tournamentsecretary != '0' ) {
+                $tournamentSecretaryDtls = get_userdata($tournament->tournamentsecretary);
+                $tournament->tournamentSecretaryName = $tournamentSecretaryDtls->display_name;
+                $tournament->tournamentSecretaryEmail = $tournamentSecretaryDtls->user_email;
+                $tournament->tournamentSecretaryContactNo = get_user_meta($tournament->tournamentsecretary, 'contactno', true);
+            } else {
+                $tournament->tournamentSecretaryName = '';
+                $tournament->tournamentSecretaryEmail = '';
+                $tournament->tournamentSecretaryContactNo = '';
+            }
+
+            $tournaments[$i] = $tournament;
+        }
+        
+        return $tournaments;
+    }
+
+    /**
+     * get tournament from database
+     *
+     * @param int $tournament_id
+     * @return array
+     */
+    public function getTournament( $tournament_id ) {
+        global $wpdb;
+        
+        $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} WHERE `id` = '%d'",  intval($tournament_id) );
+
+        $tournament = wp_cache_get( md5($sql), 'leaguemanager' );
+        if ( !$tournament ) {
+            $tournament = $wpdb->get_row( $sql );
+            wp_cache_add( md5($sql), $tournament, 'leaguemanager' );
+        }
+
+        if ( $tournament->date == "0000-00-00" ) $tournament->date = '';
+        if ( $tournament->venue == 0 ) {
+            $tournament->venue = '';
+            $tournament->venueName = '';
+        } else {
+            $tournament->venueName = get_club($tournament->venue)->name;
+        }
+
+        if ( $tournament->tournamentsecretary != '0' ) {
+            $tournamentSecretaryDtls = get_userdata($tournament->tournamentsecretary);
+            $tournament->tournamentSecretaryName = $tournamentSecretaryDtls->display_name;
+            $tournament->tournamentSecretaryEmail = $tournamentSecretaryDtls->user_email;
+            $tournament->tournamentSecretaryContactNo = get_user_meta($tournament->tournamentsecretary, 'contactno', true);
+        } else {
+            $tournament->tournamentSecretaryName = '';
+            $tournament->tournamentSecretaryEmail = '';
+            $tournament->tournamentSecretaryContactNo = '';
+        }
+
+        return $tournament;
+    }
+
+    /**
+     * get open tournaments from database
+     *
+     * @param none
+     * @param string $search
+     * @return array
+     */
+    public function getOpenTournaments( $type ) {
+        global $wpdb;
+        
+        $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`closingdate`, '%%Y-%%m-%%d') AS closingdate, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} WHERE `type` = '%s' AND `closingdate` >= CURDATE() ORDER BY `id` ASC ",  $type );
+
+        $tournaments = wp_cache_get( md5($sql), 'leaguemanager' );
+        if ( !$tournaments ) {
+            $tournaments = $wpdb->get_results( $sql );
+            wp_cache_add( md5($sql), $tournaments, 'leaguemanager' );
+        }
+
+        if ($date_format == '') $date_format = get_option('date_format');
+        $i = 0;
+        foreach ( $tournaments AS $i => $tournament ) {
+
+            $tournament->date = ( substr($tournament->date, 0, 10) == '0000-00-00' ) ? 'TBC' : mysql2date($date_format, $tournament->date);
+            $tournament->closingdate = ( substr($tournament->closingdate, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date($date_format, $tournament->closingdate);
+
+            if ( $tournament->date == "0000-00-00" ) $tournament->date = '';
+            if ( $tournament->venue == 0 ) {
+                $tournament->venue = '';
+                $tournament->venueName = '';
+            } else {
+                $tournament->venueName = get_club($tournament->venue)->name;
+            }
+            if ( $tournament->tournamentsecretary != '0' ) {
+                $tournamentSecretaryDtls = get_userdata($tournament->tournamentsecretary);
+                $tournament->tournamentSecretaryName = $tournamentSecretaryDtls->display_name;
+                $tournament->tournamentSecretaryEmail = $tournamentSecretaryDtls->user_email;
+                $tournament->tournamentSecretaryContactNo = get_user_meta($tournament->tournamentsecretary, 'contactno', true);
+            } else {
+                $tournament->tournamentSecretaryName = '';
+                $tournament->tournamentSecretaryEmail = '';
+                $tournament->tournamentSecretaryContactNo = '';
+            }
+
+            $tournaments[$i] = $tournament;
+        }
+        
+        return $tournaments;
+    }
+
+    /**
      * get clubs from database
      *
      * @param none
@@ -1003,11 +1148,16 @@ class LeagueManager {
     public function getCompetitions( $args = array() ) {
         global $wpdb;
 
-        $defaults = array( 'offset' => 0, 'limit' => 99999999, 'type' => false, 'orderby' => array("name" => "ASC") );
+        $defaults = array( 'offset' => 0, 'limit' => 99999999, 'type' => false, 'name' => false, 'season' => false, 'orderby' => array("name" => "ASC") );
         $args = array_merge($defaults, $args);
         extract($args, EXTR_SKIP);
 
         $search_terms = array();
+        if ( $name ) {
+            $name = $wpdb->esc_like(stripslashes($name)).'%';
+            $search_terms[] = $wpdb->prepare("`name` like '%s'", $name);
+        }
+        
         if ( $type ) {
             $search_terms[] = $wpdb->prepare("`competitiontype` = '%s'", $type);
         }
@@ -1040,7 +1190,15 @@ class LeagueManager {
 
             $competition = (object)array_merge((array)$competition, $competition->settings);
 
-            $competitions[$i] = $competition;
+            if ( $season ) {
+                if ( array_search($season,array_column($competition->seasons, 'name') ,true) ) {
+                    $competitions[$i] = $competition;
+                } else {
+                    unset($competitions[$i]);
+                }
+            } else {
+                $competitions[$i] = $competition;
+            }
         }
         return $competitions;
     }
@@ -1060,7 +1218,122 @@ class LeagueManager {
         else return $team[0]->id;
     }
     
-	/**
+    /**
+     * add Team to Table
+     *
+     * @param string $title
+     * @return int
+     */
+    public function addTeamtoTable( $leagueId, $teamId, $season , $custom = array(), $message = true) {
+        global $wpdb, $leaguemanager;
+
+        $tableId = $this->checkTableEntry( $leagueId, $teamId, $season );
+        if ( $tableId ) {
+            $messageText = 'Team already in table';
+        } else {
+            $sql = "INSERT INTO {$wpdb->leaguemanager_table} (`team_id`, `season`, `custom`, `league_id`) VALUES ('%d', '%s', '%s', '%d')";
+            $wpdb->query( $wpdb->prepare ( $sql, $teamId, $season, maybe_serialize($custom), $leagueId) );
+            $tableId = $wpdb->insert_id;
+            $messageText = 'Table entry added';
+        }
+        if ( $message )
+            $this->setMessage( __($messageText,'leaguemanager') );
+
+        return $tableId;
+    }
+
+    /**
+     * check for table entry
+     *
+     * @param int $league_id
+     * @param string $team_id
+     * @param string $season
+      * @return $num_teams
+     */
+	public function checkTableEntry( $league_id, $team_id, $season ) {
+		global $wpdb;
+        
+		$query = $wpdb->prepare ( "SELECT `id` FROM {$wpdb->leaguemanager_table} WHERE `team_id` = '%d' AND `season` = '%s' AND `league_id` = '%d'", $team_id, $season, $league_id);
+		$num_teams = $wpdb->get_var( $query );
+		return $num_teams;
+	}
+			
+    /**
+     * add player team
+     *
+     * @param int $player1Id
+     * @param string $player1
+     * @param int $player2Id
+     * @param string $player2
+     * @param string $contactno
+     * @param string $contactemail
+     * @param string $affiliatedclub
+     * @param int $league_id
+     * @return $team_id
+     */
+    public function addPlayerTeam( $player1, $player1Id, $player2, $player2Id, $contactno, $contactemail, $affiliatedclub, $league_id ) {
+        global $wpdb, $leaguemanager;
+
+        $league = get_league($league_id);
+        $type = $league->type;
+        if ( $type == 'LD' ) $type = 'XD';
+        $status = "P";
+        if ( $player2Id == 0 ) {
+            $title = $player1;
+            $roster = array($player1Id);
+        } else {
+            $title = $player1.' / '.$player2;
+            $roster = array($player1Id, $player2Id);
+        }
+        $sql = "INSERT INTO {$wpdb->leaguemanager_teams} (`title`, `affiliatedclub`, `roster`, `status`, `type` ) VALUES ('%s', '%d', '%s', '%s', '%s')";
+        $wpdb->query( $wpdb->prepare ( $sql, $title, $affiliatedclub, maybe_serialize($roster), $status, $type ) );
+        $team_id = $wpdb->insert_id;
+        $captain = $leaguemanager->getRosterEntry($player1Id)->player_id;
+        $team_competition_id = $this->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail );
+
+        return $team_id;
+    }
+
+    /**
+     * add team to competition
+     *
+     * @param int $league_id
+     * @param int $competition_id
+     * @param string $title
+     * @param string $captain
+     * @param string $contactno
+     * @param string $contactemail
+     * @param int $matchday
+     * @param int $matchtime
+     * @return $team_competition_id
+     */
+    private function addTeamCompetition( $team_id, $competition_id, $captain = NULL, $contactno = NULL, $contactemail = NULL, $matchday = '', $matchtime = NULL ) {
+        global $wpdb;
+
+        $sql = "INSERT INTO {$wpdb->leaguemanager_team_competition} (`team_id`, `competition_id`, `captain`, `match_day`, `match_time`) VALUES ('%d', '%d', '%d', '%s', '%s')";
+        $wpdb->query( $wpdb->prepare ( $sql, $team_id, $competition_id, $captain, $matchday, $matchtime ) );
+        $team_competition_id = $wpdb->insert_id;
+        if ( isset($captain) && $captain != '' ) {
+            $currentContactNo = get_user_meta( $captain, 'contactno', true);
+            $currentContactEmail = get_userdata($captain)->user_email;
+            if ($currentContactNo != $contactno ) {
+                update_user_meta( $captain, 'contactno', $contactno );
+            }
+            if ($currentContactEmail != $contactemail ) {
+                $userdata = array();
+                $userdata['ID'] = $captain;
+                $userdata['user_email'] = $contactemail;
+                $user_id = wp_update_user( $userdata );
+                if ( is_wp_error($user_id) ) {
+                    error_log('Unable to update user email '.$captain.' - '.$contactemail);
+                }
+            }
+        }
+
+        return $team_competition_id;
+    }
+            
+    /**
 	 * gets roster from database
 	 *
      * @param array $query_args
@@ -1145,6 +1418,7 @@ class LeagueManager {
 						
 			$rosters[$i] = (object)(array)$roster;
 		
+            $rosters[$i]->affiliatedclub = $roster->affiliatedclub;
 			$rosters[$i]->roster_id = $roster->roster_id;
 			$rosters[$i]->player_id = $roster->player_id;
 			$rosters[$i]->fullname = $roster->fullname;
@@ -1293,16 +1567,16 @@ class LeagueManager {
 		$defaults = array( 'player_id' => false, 'fullname' => false, 'cache' => true );
 		$args = array_merge($defaults, (array)$args);
 		extract($args, EXTR_SKIP);
-		
-		$search_terms = array();
+
+        $search_terms = array();
 		if ($player_id) {
-            $player = get_userdata( $player_id );
+            $player = get_user_by( 'id', $player_id );
 		}
 		
         if ($fullname) {
             $player = get_user_by( 'slug', sanitize_title($fullname) );
         }
-        
+
 		if ( !$player ) return false;
 		
 		$player = (object)(array)$player;

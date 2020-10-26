@@ -229,6 +229,41 @@ jQuery(document).ready(function($) {
                                                   }
                                                   }
                                                   });
+                       $('#tournamentSecretaryName').autocomplete({
+                                                  minLength: 2,
+                                                  source: function(name, response) {
+                                                  $.ajax({
+                                                         type: 'POST',
+                                                         datatype: 'json',
+                                                         url: LeagueManagerAjaxL10n.requestUrl,
+                                                         data: {"name": name,
+                                                         "action": "leaguemanager_getPlayerDetails"},
+                                                         success: function(data) {
+                                                         response(JSON.parse(data));
+                                                         }
+                                                         });
+                                                  },
+                                                  select: function(event, ui) {
+                                                  $("#tournamentSecretaryName").val(ui.item.value);
+                                                  $("#tournamentSecretary").val(ui.item.playerId);
+                                                  $("#tournamentSecretaryContactNo").val(ui.item.contactno);
+                                                  $("#tournamentSecretaryEmail").val(ui.item.user_email);
+                                                  },
+                                                  change: function(event, ui) {
+                                                  if (ui.item === null) {
+                                                      $(this).val('');
+                                                      $("#tournamentSecretaryName").val('');
+                                                      $("#tournamentSecretary").val('');
+                                                      $("#tournamentSecretaryContactNo").val('');
+                                                      $("#tournamentSecretaryEmail").val('');
+                                                  } else {
+                                                      $("#tournamentSecretaryName").val(ui.item.value);
+                                                      $("#tournamentSecretary").val(ui.item.playerId);
+                                                      $("#tournamentSecretaryContactNo").val(ui.item.contactno);
+                                                      $("#tournamentSecretaryEmail").val(ui.item.user_email);
+                                                  }
+                                                  }
+                                                  });
 
     $("#teamPlayerFrm").submit(function( event ) {
                                var $error = false;

@@ -385,7 +385,121 @@ div.tm-team-content div.team {
 .form-group .form-control input {
     font-size: 1.1em;
 }
-input[type="text"]:disabled, input[type="email"]:disabled, input[type="tel"]:disabled, input[type="url"]:disabled, input[type="number"]:disabled {
+.form-group select[size] {
+    height: 50px;
+    width: 25%;
+}
+.match-time {
+    width: 25%;
+}
+.width-one-quarter {
+    width: 25%;
+}
+.width-one-half {
+    width: 50%;
+}
+.form-checkboxes__item {
+    font-family: "GDS Transport",arial,sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-weight: 400;
+    font-size: 16px;
+    font-size: 1rem;
+    line-height: 1.25;
+    display: block;
+    position: relative;
+    min-height: 40px;
+    margin-bottom: 10px;
+    padding-left: 40px;
+    clear: left
+}
+.form-checkboxes__input {
+    cursor: pointer;
+    position: absolute;
+    z-index: 1;
+    top: -2px;
+    left: -2px;
+    width: 44px;
+    height: 44px;
+    margin: 0;
+    opacity: 0;
+}
+
+.form-checkboxes__label {
+    display: inline-block;
+    margin-bottom: 0;
+    padding: 8px 15px 5px;
+    cursor: pointer;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation
+}
+
+.form-checkboxes__label:before {
+    content: "";
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40px;
+    height: 40px;
+    border: 2px solid currentColor;
+    background: transparent
+}
+
+.form-checkboxes__label:after {
+    content: "";
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    position: absolute;
+    top: 11px;
+    left: 9px;
+    width: 23px;
+    height: 12px;
+    -webkit-transform: rotate(-45deg);
+    -ms-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+    border: solid;
+    border-width: 0 0 5px 5px;
+    border-top-color: transparent;
+    opacity: 0;
+    background: transparent
+}
+.form-checkboxes__input:focus+.form-checkboxes__label:before {
+    border-width: 4px;
+    -webkit-box-shadow: 0 0 0 3px #fd0;
+    box-shadow: 0 0 0 3px #fd0
+}
+
+.form-checkboxes__input:checked+.form-checkboxes__label:after {
+    opacity: 1
+}
+
+.form-checkboxes__input:disabled,.form-checkboxes__input:disabled+.form-checkboxes__label {
+    cursor: default
+}
+
+.form-checkboxes__input:disabled+.form-checkboxes__label {
+    opacity: .5
+}
+
+.form-label.form-checkboxes__label {
+    font-size: 1.5rem;
+}
+.form-label {
+    display: block;
+    font-size: .85em;
+}
+.form-checkboxes__conditional {
+    margin-bottom: 15px;
+    margin-left: 18px;
+    padding-left: 33px;
+    border-left: 4px solid #b1b4b6;
+}
+.form-checkboxes__conditional--hidden {
+    display: none
+}
+input[type="text"]:disabled, input[type="email"]:disabled, input[type="tel"]:disabled, input[type="url"]:disabled, input[type="number"]:disabled, input[type="time"]:disabled {
     border: none;
     background: none;
 }
@@ -729,21 +843,20 @@ form#rosterRequestFrm input[type="text"], form#rosterRequestFrm input[type="numb
     transform: rotate(90deg);
 }
 .form-group.field_error {
-    background-color: #FFDFDF;
-    border: 1px dotted #C89797;
+    border-left: 5px solid red;
+    margin-left: -10px;
     margin-bottom: 6px !important;
-    padding: 6px !important;
+    padding-left: 6px !important;
 }
 span.form-error {
     margin-top: 10px;
     padding-top: 5px;
-    border-top: 1px dotted #c89797;
-    font-size: 100%;
+    font-weight: 700;
     margin-left: 0;
-    font-style: italic;
+    color: red;
 }
 #profile-message {
-    padding-top: 32px;
+    padding: 32px;
     font-weight: bold;
 }
 .login-form-container {
@@ -817,24 +930,18 @@ div#password-lost-form {
 #login i.passwordShow, #password-reset i.passwordShow {
     top: .75em;
 }
-p.message-error {
+.message-error {
     color: red;
-    padding: 6px 9px;
-    margin: 0 auto 25px;
     display: block;
     width: 100%;
     box-sizing: border-box;
-    background: #ffebe8;
-    border: 1px solid #C00;
+    border: 5px solid red;
 }
-p.message-success {
-    padding: 6px 9px;
-    margin: 0 auto 25px;
+.message-success {
     display: block;
     width: 100%;
     box-sizing: border-box;
-    background: #e7f7d3;
-    border: 1px solid #6c3;
+    border: 5px solid #6c3;
 }
 @media only screen and (max-width: 640px) {
     .login-form-container {
@@ -891,6 +998,12 @@ form#signupform {
 }
 @media only screen and (max-width: 480px) {
     
+    .form-group select[size] {
+        width: 50%;
+    }
+    .match-time {
+        width: 50%;
+    }
 }
 @media only screen and (max-width: 320px) {
     

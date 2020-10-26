@@ -2004,12 +2004,12 @@ class League {
             if ( !is_numeric($points2_minus) ) $points2_minus = 0;
             $diff = $points2_plus - $points2_minus;
 
-            $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `points_plus` = '%d', `points_minus` = '%d', `points2_plus` = '%d', `points2_minus` = '%d', `done_matches` = '%d', `won_matches` = '%d', `draw_matches` = '%d', `lost_matches` = '%d', `diff` = '%d', `add_points` = '%d' WHERE `team_id` = '%d' and `league_id` = '%d' AND `season` = '%s'", $points_plus[$id], $points_minus[$id], $points2_plus, $points2_minus, $num_done_matches[$id], $num_won_matches[$id], $num_draw_matches[$id], $num_lost_matches[$id], $diff[$id], $add_points[$id], $id, $league->id, $season ) );
+            $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `points_plus` = '%d', `points_minus` = '%d', `points2_plus` = '%d', `points2_minus` = '%d', `done_matches` = '%d', `won_matches` = '%d', `draw_matches` = '%d', `lost_matches` = '%d', `diff` = '%d', `add_points` = '%d' WHERE `team_id` = '%d' and `league_id` = '%d' AND `season` = '%s'", $points_plus[$id], $points_minus[$id], $points2_plus, $points2_minus, $num_done_matches[$id], $num_won_matches[$id], $num_draw_matches[$id], $num_lost_matches[$id], $diff, $add_points[$id], $id, $this->id, $season ) );
         }
 
         // Update Teams Rank and Status if not set to manual ranking
         if ($this->team_ranking != 'manual')
-            $this->_rankTeams( $league->id );
+            $this->_rankTeams( $this->id );
     }
 
     /**

@@ -210,6 +210,17 @@ function leaguemanager_upgrade() {
         $wpdb->query( "UPDATE {$wpdb->leaguemanager_teams} SET `type` = 'MD' WHERE `title` like '% Mens %'" );
         $wpdb->query( "UPDATE {$wpdb->leaguemanager_teams} SET `type` = 'XD' WHERE `title` like '% Mixed %'" );
     }
+    if (version_compare($installed, '5.6.0', '<')) {
+        echo __('starting 5.6.0 upgrade', 'leaguemanager') . "<br />\n";
+        $charset_collate = '';
+        if ( $wpdb->has_cap( 'collation' ) ) {
+            if ( ! empty($wpdb->charset) )
+                $charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
+            if ( ! empty($wpdb->collate) )
+                $charset_collate .= " COLLATE $wpdb->collate";
+        }
+        $wpdb->query( "CREATE TABLE {$wpdb->leaguemanager_tournaments} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `name` varchar( 100 ) NOT NULL default '', `type` varchar( 100 ) NOT NULL default '', `venue` int( 11 ) NULL, `date` date NULL, `closingdate` date NOT NULL, `tournamentsecretary` int( 11 ) NULL, PRIMARY KEY ( `id` )) $charset_collate;" );
+    }
     /*
 	* Update version and dbversion
 	*/

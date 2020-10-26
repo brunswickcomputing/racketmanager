@@ -34,6 +34,7 @@ class LeagueManagerShortcodes extends LeagueManager {
 		add_shortcode( 'players', array(&$this, 'showPlayers') );
         add_shortcode( 'clubs', array(&$this, 'showClubs') );
         add_shortcode( 'club', array(&$this, 'showClub') );
+        add_shortcode( 'tournament-entry', array(&$this, 'showTournamentEntry') );
 	}
 
     /**
@@ -909,6 +910,61 @@ class LeagueManagerShortcodes extends LeagueManager {
 		$out = $this->loadTemplate( $filename, array('league' => $league, 'playerstats' => $playerstats) );
 		return $out;
 	}
+
+    /**
+     * Function to display Tournament Entry Page
+     *
+     *    [tournament-entry id=ID template=X]
+     *
+     * @param array $atts
+     * @return the content
+     */
+    public function showTournamentEntry( $atts ) {
+        global $leaguemanager;
+        extract(shortcode_atts(array(
+            'type' => '',
+            'season' => false,
+            'template' => '',
+        ), $atts ));
+
+        // get season
+        if ($season != "") {
+            $season = $season;
+        } elseif ( isset($_GET['season']) && !empty($_GET['season']) ) {
+            $season = htmlspecialchars(strip_tags($_GET['season']));
+        } elseif ( isset($wp->query_vars['season']) ) {
+            $season = get_query_var('season');
+        }
+        if ( !$season ) return;
+        
+        // get competition list
+        if ($type != "") {
+            $type = $type;
+        } elseif ( isset($_GET['type']) && !empty($_GET['type']) ) {
+            $type = htmlspecialchars(strip_tags($_GET['type']));
+        } elseif ( isset($wp->query_vars['type']) ) {
+            $type = get_query_var('type');
+        }
+        if ( !$type ) return;
+        
+        $competitions = $leaguemanager->getCompetitions( array('type' => 'tournament', 'name' => $type, 'season' => $season) );
+        $tournaments = $leaguemanager->getOpenTournaments( $type );
+        if ( !$tournaments ) return;
+        $tournament = $tournaments[0];
+
+        $player = wp_get_current_user();
+        $player->contactno = get_user_meta( $player->ID, 'contactno', true);
+        $player->gender = get_user_meta( $player->ID, 'gender', true);
+        $rosters = $leaguemanager->getRoster( array('player' => $player->ID, 'inactive' => true) );
+        $malePartners = $leaguemanager->getRoster( array('gender' => 'M', 'inactive' => true, 'type' => true) );
+        $femalePartners = $leaguemanager->getRoster( array('gender' => 'F', 'inactive' => true, 'type' => true) );
+
+        $filename = ( !empty($template) ) ? 'tournamententry-'.$template : 'tournamententry';
+
+        $out = $this->loadTemplate( $filename, array( 'tournament' => $tournament, 'competitions' => $competitions, 'player' => $player, 'rosters' => $rosters, 'season' => $season, 'type' => $type, 'malePartners' => $malePartners, 'femalePartners' => $femalePartners ) );
+
+        return $out;
+    }
 
 	/**
 	 * Load template for user display. First the current theme directory is checked for a template

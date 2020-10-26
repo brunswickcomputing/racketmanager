@@ -57,6 +57,10 @@ function championship_settingsPage( $competition ) {
         <th scope="row"><label for="non_group"><?php _e('Allow Non-Group Games', 'leaguemanager' ) ?></label></th>
         <td><input type="checkbox" id="non_group" name="settings[non_group]" value="1" <?php echo (isset($competition->non_group) && 1 == $competition->non_group ) ? ' checked="checked"' : ''; ?> /></td>
     </tr>
+    <tr valign="top">
+        <th scope="row"><label for="entry_open"><?php _e('Open for entries', 'leaguemanager' ) ?></label></th>
+        <td><input type="checkbox" id="entry_open" name="settings[entry_open]" value="1" <?php echo (isset($competition->entry_open) && 1 == $competition->entry_open ) ? ' checked="checked"' : ''; ?> /></td>
+    </tr>
 <?php
 }
 add_action( 'competition_settings_championship', 'championship_settingsPage' );

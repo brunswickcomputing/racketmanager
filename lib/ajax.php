@@ -46,9 +46,10 @@ class LeagueManagerAJAX extends LeagueManager {
         add_action( 'wp_ajax_leaguemanager_roster_request', array(&$this, 'rosterRequest') );
         add_action( 'wp_ajax_leaguemanager_roster_remove', array(&$this, 'rosterRemove') );
         
-        add_action( 'wp_ajax_leaguemanager_team_captain_update', array(&$this, 'updateTeamCaptain') );
+        add_action( 'wp_ajax_leaguemanager_team_update', array(&$this, 'updateTeam') );
         add_action( 'wp_ajax_leaguemanager_update_club', array(&$this, 'clubUpdate') );
 
+        add_action( 'wp_ajax_leaguemanager_tournament_entry', array(&$this, 'tournamentEntryRequest') );
 	}
 
 	/**
@@ -1070,17 +1071,17 @@ class LeagueManagerAJAX extends LeagueManager {
     }
 
     /**
-     * update Team Captain
+     * update Team
      *
      * @see templates/club.php
      */
-    public function updateTeamCaptain() {
+    public function updateTeam() {
         global $wpdb, $leaguemanager, $competition;
       
         $updates = false;
         $return = array();
         $msg = '';
-        check_admin_referer('team-captain-update');
+        check_admin_referer('team-update');
         $competitionId = $_POST['competition_id'];
         $teamId = $_POST['team_id'];
 
@@ -1088,12 +1089,14 @@ class LeagueManagerAJAX extends LeagueManager {
         $captainId = $_POST['captainId-'.$competitionId.'-'.$teamId];
         $contactno = $_POST['contactno-'.$competitionId.'-'.$teamId];
         $contactemail = $_POST['contactemail-'.$competitionId.'-'.$teamId];
+        $matchday = $_POST['matchday-'.$competitionId.'-'.$teamId];
+        $matchtime = $_POST['matchtime-'.$competitionId.'-'.$teamId];
 
         $competition = get_competition($competitionId);
         $team = $competition->getTeamInfo($teamId);
         
-        if ( $team->captainId != $captainId ) {
-            $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_team_competition} SET `captain` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captainId, $teamId, $competitionId ) );
+        if ( $team->captainId != $captainId || $team->match_day != $matchday || $team->match_time != $matchtime ) {
+            $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_team_competition} SET `captain` = '%s', `match_day` = '%s', `match_time` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captainId, $matchday, $matchtime, $teamId, $competitionId ) );
             $updates = true;
         }
         if ( $team->contactno != $contactno || $team->contactemail != $contactemail ) {
@@ -1102,12 +1105,12 @@ class LeagueManagerAJAX extends LeagueManager {
                 $updates = true;
             } else {
                 $updates = false;
-                $msg = "error updating captain";
+                $msg = "error updating team";
             }
         }
         
         if ( $updates ) {
-            $msg = "Captain updated";
+            $msg = "Team updated";
         } elseif ( empty($msg) ) {
             $msg = "nothing to update";
         }
@@ -1163,6 +1166,130 @@ class LeagueManagerAJAX extends LeagueManager {
         }
          
         array_push($return, $msg);
+        die(json_encode($return));
+
+    }
+
+    /**
+     * tournament entry request
+     *
+     * @see templates/tournamententry.php
+     */
+    public function tournamentEntryRequest() {
+        global $wpdb, $leaguemanager;
+        
+        $return = array();
+        $msg = '';
+        $error = false;
+        $errorField = array();
+        $errorMsg = array();
+        $errorId = 0;
+
+        check_admin_referer('tournament-entry');
+       
+        $season = $_POST['season'];
+        $tournamentSeason = $_POST['tournamentSeason'];
+        $tournamentSecretaryEmail = $_POST['tournamentSecretaryEmail'];
+        $playerId = $_POST['playerId'];
+        $contactNo = isset($_POST['contactno']) ? $_POST['contactno'] : '';
+        $contactEmail = isset($_POST['contactemail']) ? $_POST['contactemail'] : '';
+        if ( $contactEmail == '' ) {
+            $error = true;
+            $errorField[$errorId] = 'contactEmail';
+            $errorMsg[$errorId] = __('Email address required', 'leaguemanager');
+            $errorId ++;
+        }
+        $affiliatedclub = isset($_POST['affiliatedclub']) ? $_POST['affiliatedclub'] : 0;
+        if ($affiliatedclub == 0) {
+            $error = true;
+            $errorField[$errorId] = 'affiliatedclub';
+            $errorMsg[$errorId] = __('Select the club you are a member of', 'leaguemanager');
+            $errorId ++;
+        } else {
+            $playerName = $leaguemanager->getPlayerName($playerId);
+            $playerRoster = $leaguemanager->getRoster(array('club' => $affiliatedclub, 'player' => $playerId));
+            $playerRosterId = $playerRoster[0]->roster_id;
+        }
+        $competitions = isset($_POST['competition']) ? $_POST['competition'] : array();
+        if ( empty($competitions) ) {
+            $error = true;
+            $errorField[$errorId] = 'competition';
+            $errorMsg[$errorId] = __('You must select a competition to enter', 'leaguemanager');
+            $errorId ++;
+        } else {
+            $partners = isset($_POST['partner']) ? $_POST['partner'] : array();
+            foreach ($competitions AS $competition) {
+                $competition = get_competition($competition);
+                if ( substr($competition->type,1,1) == 'D' ) {
+                    $partnerId = isset($partners[$competition->id]) ? $partners[$competition->id] : 0;
+
+                    if ( empty($partnerId) ) {
+                        $error = true;
+                        $errorField[$errorId] = 'partner['.$competition->id.']';
+                        $errorMsg[$errorId] = sprintf(__('Partner not selected for %s', '$leaguemanager'), $competition->name);
+                        $errorId ++;
+                    }
+                }
+            }
+        }
+        $acceptance = isset($_POST['acceptance']) ? $_POST['acceptance'] : '';
+        if ( empty($acceptance) ) {
+            $error = true;
+            $errorField[$errorId] = 'acceptance';
+            $errorMsg[$errorId] = __('You must agree to the rules', 'leaguemanager');
+            $errorId ++;
+        }
+
+        if ( !$error ) {
+            $emailTo = $tournamentSecretaryEmail;
+            $emailSubject = get_option('blogname')." ".ucfirst($tournamentSeason)." ".$season." Tournament Entry";
+            $emailMessage = "<p>There is a new tournament entry.</p><ul><li>".$playerName."</li><li>".$contactNo."</li><li>".$contactEmail."</li></ul><p>The following events have been entered:</p><ul>";
+            foreach ($competitions AS $competition) {
+                $partner = '';
+                $partnerName = '';
+                $newTeam = false;
+                $competition = get_competition($competition);
+                $emailMessage .= "<li>".$competition->name;
+                if (isset($competition->primary_league)) {
+                    $league = $competition->primary_league;
+                } else {
+                    $leagues = $competition->getLeagues(array( 'competition' => $competition->id ));
+                    $league = get_league(array_key_first($competition->league_index))->id;
+                }
+                $team = $playerName;
+                if ( substr($competition->type,1,1) == 'D' ) {
+                    $partnerId = isset($partners[$competition->id]) ? $partners[$competition->id] : 0;
+                    $partner = $leaguemanager->getRosterEntry($partnerId);
+                    $partnerName = $partner->fullname;
+                    $team .= ' / '.$partnerName;
+                    $emailMessage .= " with partner ".$partnerName;
+                }
+                $teamId = $leaguemanager->getTeamId($team);
+                if (!$teamId) {
+                    if ( $partnerName != '' ) {
+                        $team2 = $partnerName.' / '.$playerName;
+                        $teamId = $leaguemanager->getTeamId($team2);
+                        if (!$teamId) {
+                            $newTeam = true;
+                        }
+                    } else {
+                        $newTeam = true;
+                    }
+                }
+                if ($newTeam) {
+                    $teamId = $leaguemanager->addPlayerTeam( $playerName, $playerRosterId, $partnerName, $partnerId, $contactNo, $contactEmail, $affiliatedclub, $league );
+                }
+                $leaguemanager->addTeamtoTable($league, $teamId, $season);
+                $emailMessage .= "</li>";
+            }
+            $emailMessage .= "</ul><p>The teams have been added to the relevant competitions.";
+            wp_mail($emailTo, $emailSubject, $emailMessage);
+            $msg = __('Tournament entry complete', 'leaguemanager');
+        } else {
+            $msg = __('Errors in tournament entry form', 'leaguemanager');
+        }
+         
+        array_push($return, $msg, $error, $errorMsg, $errorField);
         die(json_encode($return));
 
     }

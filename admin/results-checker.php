@@ -50,7 +50,8 @@
             <td><?php echo $resultsChecker->status ?></td>
             <td><?php echo $resultsChecker->updated_date ?></td>
             <td><?php echo $resultsChecker->updated_user_name ?></td>
-            <?php do_action( 'matchtable_columns_'.(isset($resultsChecker->league->sport) ? $resultsChecker->league->sport : '' ), $resultsChecker->match ) ?>
+            <?php do_action( 'matchtable_columns_'.$resultsChecker->league->sport, $resultsChecker->match ) ?>
+
         </tr>
     <?php } ?>
 		</tbody>

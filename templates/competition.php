@@ -31,13 +31,25 @@ wp_enqueue_script('datatables');
         </form>
     </div>
 
+<?php if ( $competition->mode == 'default' ) { ?>
     <div id="leagues">
-	<?php foreach ( $leagues AS $league ) : ?>
+	<?php foreach ( $leagues AS $league ) { ?>
 			<!-- Standings Table -->
 			<div id="standings-archive" class="jquery-ui-tab">
 				<h4 class="header"><a href="/leagues/<?php echo str_replace(' ', '-', $league->title) ?>/<?php echo $curr_season ?>"><?php echo $league->title ?></a></h4>
 				<?php leaguemanager_standings( $league->id, array( 'season' => $curr_season, 'template' => 'nolink', 'logo' => false ) ) ?>
 			</div>
-	<?php endforeach ?>
+    <?php } ?>
 	</div>
+<?php } else { ?>
+    <div id="cups">
+    <?php foreach ( $leagues AS $league ) { ?>
+			<!-- Brackets -->
+			<div id="brackets" class="jquery-ui-tab">
+				<h4 class="header"><?php echo $league->title ?></h4>
+				<?php leaguemanager_championship( $league->id, array( 'season' => $curr_season, 'template' => '', 'logo' => false ) ) ?>
+			</div>
+    <?php } ?>
+    </div>
+<?php } ?>
 </div>

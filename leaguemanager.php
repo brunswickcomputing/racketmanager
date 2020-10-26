@@ -3,7 +3,7 @@
 Plugin Name: LeagueManager
 Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
 Description: Manage and present sports league results.
-Version: 5.1.6
+Version: 5.2.1
 Author: Kolja Schleich, LaMonte Forthun
 
 Copyright 2008-2016  Kolja Schleich  (email : kolja.schleich@googlemail.com)
@@ -38,7 +38,7 @@ class LeagueManagerLoader
 	 *
 	 * @var string
 	 */
-	var $version = '5.1.8';
+	var $version = '5.2.1';
 
 
 	/**
@@ -46,7 +46,7 @@ class LeagueManagerLoader
 	 *
 	 * @var string
 	 */
-	var $dbversion = '5.1.8';
+	var $dbversion = '5.2.0';
 
 
 	/**
@@ -109,7 +109,7 @@ class LeagueManagerLoader
 		add_filter( 'projectmanager_template_paths', array(&$this, 'addProjectmangerTemplatePath') );
 		
 		$leaguemanager = new LeagueManager( $this->bridge );
-			//		$championship = new LeagueManagerChampionship();
+        $championship = new LeagueManagerChampionship();
 		$lmStats = new LeagueManagerStats();
 
 		if ( is_admin() )
@@ -504,6 +504,7 @@ class LeagueManagerLoader
 		wp_register_style('jquery-ui', LEAGUEMANAGER_URL . "/css/jquery/jquery-ui.min.css", false, '1.11.4', 'all');
 		wp_register_style('jquery-ui-structure', LEAGUEMANAGER_URL . "/css/jquery/jquery-ui.structure.min.css", array('jquery-ui'), '1.11.4', 'all');
 		wp_register_style('jquery-ui-theme', LEAGUEMANAGER_URL . "/css/jquery/jquery-ui.theme.min.css", array('jquery-ui', 'jquery-ui-structure'), '1.11.4', 'all');
+        wp_register_style('jquery-ui-autocomplete', LEAGUEMANAGER_URL . "/css/jquery/jquery-ui.autocomplete.min.css", array('jquery-ui', 'jquery-ui-autocomplete'), '1.11.4', 'all');
 		wp_register_style('datatables', LEAGUEMANAGER_URL . "/css/datatables.css", array('jquery-ui'), '1.11.4', 'all');
 		
 		wp_enqueue_style('jquery-ui-structure');
@@ -640,8 +641,8 @@ class LeagueManagerLoader
 						`id` int( 11 ) NOT NULL AUTO_INCREMENT ,
 						`group` varchar( 30 ) NOT NULL default '',
 						`date` datetime NOT NULL,
-						`home_team` int( 11 ) NOT NULL default 0,
-						`away_team` int( 11 ) NOT NULL default 0,
+						`home_team` varchar( 255 ) NOT NULL default 0,
+						`away_team` varchar( 255 ) NOT NULL default 0,
 						`match_day` tinyint( 4 ) NOT NULL default '0',
 						`location` varchar( 100 ) NOT NULL default '',
 						`league_id` int( 11 ) NOT NULL default '0',
@@ -717,6 +718,7 @@ class LeagueManagerLoader
 		`type` varchar( 2 ) NOT NULL default '',
 		`settings` longtext NOT NULL,
 		`seasons` longtext NOT NULL,
+        `competitiontype` varchar( 255 ) NOT NULL default '',
 		PRIMARY KEY ( `id` )) $charset_collate;";
 		maybe_create_table( $wpdb->leaguemanager_competitions, $create_competitions_sql );
 		

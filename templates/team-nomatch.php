@@ -3,7 +3,7 @@
 Template page to display single team
 
 The following variables are usable:
- 
+	
 	$league: league object
 	$team: team object
 	$next_match: next match object
@@ -34,18 +34,13 @@ $season = end($league->seasons)['name'];
 <?php if ( !empty($team->contactemail) ) { ?>
 			<dt><?php _e( 'Contact Email', 'leaguemanager' ) ?></dt><dd><?php echo $team->contactemail ?></dd>
 <?php } ?>
-<?php if ( !empty($team->match_day) ) { ?>
-			<dt><?php _e( 'Match Day', 'leaguemanager' ) ?></dt><dd><?php echo $team->match_day ?></dd>
-<?php } ?>
-<?php if ( !empty($team->match_time) ) { ?>
-			<dt><?php _e( 'Match Time', 'leaguemanager' ) ?></dt><dd><?php echo $team->match_time ?></dd>
-<?php } ?>        </dl>
+		</dl>
 
 		<?php if ( !empty($team->logo) ) : ?>
 		<p class="teamlogo alignright"><img src="<?php echo $leaguemanager->getImageUrl($team->logo, false, 'thumb') ?>" alt="<?php _e( 'Logo', 'leaguemanager' ) ?>" /></p>
 		<?php endif; ?>
 <?php if ( $league->mode != 'championship' ) { ?>
-		<div class="matches">
+		<div class="matches">			
 <?php if ( $team->next_match ) { ?>
 			<div class="matches-container">
 			<div class="next_match">
@@ -76,5 +71,5 @@ $season = end($league->seasons)['name'];
 		</div>
 <?php } ?>
 	</div>
-
+	
 </div>

@@ -16,7 +16,9 @@ class LeagueManagerAJAX
 	 */
 	function __construct()
 	{
+        add_action( 'wp_ajax_leaguemanager_getPlayerName', array(&$this, 'getPlayerName') );
 		add_action( 'wp_ajax_leaguemanager_add_team_from_db', array(&$this, 'addTeamFromDB') );
+        add_action( 'wp_ajax_leaguemanager_add_teamplayer_from_db', array(&$this, 'addTeamPlayerFromDB') );
 		add_action( 'wp_ajax_leaguemanager_set_team_roster_groups', array(&$this, 'setTeamRosterGroups') );
 		add_action( 'wp_ajax_leaguemanager_save_team_standings', array(&$this, 'saveTeamStandings') );
 		add_action( 'wp_ajax_leaguemanager_save_add_points', array(&$this, 'saveAddPoints') );
@@ -87,7 +89,26 @@ class LeagueManagerAJAX
 		});");
 	}
 
-
+    function getPlayerName() {
+        global $wpdb, $leaguemanager;
+        $name = $wpdb->esc_like(stripslashes($_POST['name']['term'])).'%';
+        
+        $sql = "SELECT  P.`firstname`, P.`surname`,C.`post_title` as club, R.`id` as rosterId, C.`id` as clubId  FROM $wpdb->leaguemanager_roster R, $wpdb->leaguemanager_players P, $wpdb->posts C WHERE R.`player_id` = P.`id` AND R.`removed_date` IS NULL AND C.`post_type` = 'wpclubs' AND C.`id` = R.`affiliatedclub` AND `fullname` like '%s' ORDER BY 1,2,3";
+        $sql = $wpdb->prepare($sql, $name);
+        $results = $wpdb->get_results($sql);
+        $players = array();
+        $player = array();
+        foreach( $results AS $r) {
+            $player['label'] = addslashes($r->firstname).' '.addslashes($r->surname).' - '.$r->club;
+            $player['value'] = addslashes($r->firstname).' '.addslashes($r->surname);
+            $player['id'] = $r->rosterId;
+            $player['clubId'] = $r->clubId;
+            $player['club'] = $r->club;
+            array_push($players, $player);
+        }
+        die(json_encode($players));
+    }
+    
 	/**
 	 * SACK response to manually set team ranking
 	 *
@@ -148,44 +169,13 @@ class LeagueManagerAJAX
 		$team = $leaguemanager->getTeam( $team_id );
 
 		$roster = '';
-		if ( $leaguemanager->hasBridge() ) {
-			global $projectmanager;
-			$html = '<select size="1" name="roster" id="roster" onChange="Leaguemanager.toggleTeamRosterGroups(this.value);return false;"><option value="">'.__('None','leaguemanager').'</option>';
-			foreach ( $projectmanager->getProjects() AS $dataset ) {
-				$selected = ( $dataset->id == $team->roster['id'] ) ? ' selected="selected"' : '';
-				$html .= '<option value="'.$dataset->id.'"'.$selected.'>'.$dataset->title.'</option>';
-			}
-			$html .= '</select>';
-			$roster = "jQuery('span#rosterbox').fadeOut('fast', function() {
-					jQuery('span#rosterbox').html('".addslashes_gpc($html)."').fadeIn('fast')
-				   });";
 
-			if ( isset($team->roster['cat_id']) ) {
-				$project = $projectmanager->getProject($team->roster['id']);
-				$category = $project->category;
-
-				if ( !empty($category) ) {
-					$html = wp_dropdown_categories(array('hide_empty' => 0, 'name' => 'roster_group', 'orderby' => 'name', 'echo' => 0, 'show_option_none' => __('Select Group (Optional)', 'leaguemanager'), 'child_of' => $category, 'selected' => $team->roster['cat_id'] ));
-					$html = str_replace("\n", "", $html);
-				} else {
-					$html = "";
-				}
-				$roster .= "jQuery('span#team_roster_groups').fadeOut('fast', function () {
-						jQuery('span#team_roster_groups').html('".addslashes_gpc($html)."').fadeIn('fast');
-					   });";
-			} else {
-				$roster .= "jQuery('span#team_roster_groups').fadeOut('fast');";
-			}
-		}
-
-		$home = ( isset($team->home) && $team->home == 1 ) ? "document.getElementById('home').checked = true;" : "document.getElementById('home').checked = false;";
+		$home = '';
 
 		$logo = ( !empty($team->logo) ) ? "<img src='".$team->logo."' />" : "";
 		die("
+            document.getElementById('team_id').value = '".$team_id."';
 			document.getElementById('team').value = '".$team->title."';
-			document.getElementById('captain').value = '".$team->captain."';
-			document.getElementById('contactno').value = '".$team->contactno."';
-            document.getElementById('contactemail').value = '".$team->contactemail."';
             document.getElementById('affiliatedclub').value = '".$team->affiliatedclub."';
 			document.getElementById('stadium').value = '".$team->stadium."';
 			document.getElementById('logo_db').value = '".$team->logo."';
@@ -195,6 +185,25 @@ class LeagueManagerAJAX
 		");
 	}
 
+	/**
+	 * SACK response to get team player data from database and insert into team edit form
+	 *
+	 * @since 2.9
+	 */
+	function addTeamPlayerFromDB() {
+		global $leaguemanager;
+
+		$team_id = (int)$_POST['team_id'];
+		$team = $leaguemanager->getTeam( $team_id );
+            $return = "document.getElementById('team_id').value = ".$team_id.";document.getElementById('team').value = '".$team->title."';document.getElementById('affiliatedclub').value = ".$team->affiliatedclub.";document.getElementById('teamPlayer1').value = '".$team->player[1]."';document.getElementById('teamPlayerId1').value = ".$team->playerId[1].";";
+            if ( isset($team->player[2]) ) {
+                $return .= "document.getElementById('teamPlayer2').value = '".$team->player[2]."';document.getElementById('teamPlayerId2').value = ".$team->playerId[2].";";
+            }
+
+		$home = '';
+
+		die($return);
+	}
 
 	/**
 	 * SACK response to display respective ProjectManager Groups as Team Roster
@@ -318,7 +327,7 @@ class LeagueManagerAJAX
 	 * @rturn void
 	 */
 	function viewRubbers() {
-		global $leaguemanager;
+		global $leaguemanager, $championship;
 		$matchId = $_POST['matchId'];
 		$match = $leaguemanager->getMatch($matchId);
 		$league = $leaguemanager->getCurrentLeague();
@@ -332,7 +341,13 @@ class LeagueManagerAJAX
 	<div id="matchheader">
 		<div class="leaguetitle"><?php echo $league->title ?></div>
 		<div class="matchdate"><?php echo substr($match->date,0,10) ?></div>
-		<div class="matchday">Week <?php echo $match->match_day ?></div>
+		<div class="matchday">
+<?php if ( $league->mode = 'Championship' ) {
+    echo $championship->getFinalName($match->final);
+} else {
+    echo 'Week'.$match->match_day;
+}?>
+        </div>
 		<div class="matchtitle"><?php echo $match->match_title ?></div>
 	</div>
     <form id="match-rubbers" action="#" method="post" onsubmit="return checkSelect(this)">
@@ -578,8 +593,11 @@ class LeagueManagerAJAX
 <?php $tabindex = $tabbase + 4; ?>
 						<select tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer2[<?php echo $r ?>]" id="awayplayer2_<?php echo $r ?>">
 							<option><?php _e( 'Select Player', 'leaguemanager' ) ?></option>
-<?php foreach ( $awayRoster[$r][2] AS $roster ) { ?>
-							<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->away_player_2)) selected($roster->roster_id, $rubber->away_player_2 ) ?>><?php echo $roster->firstname ?> <?php echo $roster->surname ?></option>
+<?php foreach ( $awayRoster[$r][2] AS $roster ) {
+    isset($roster->removed_date) ? $disabled = 'disabled' : $disabled = ''; ?>
+							<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->away_player_2)) selected($roster->roster_id, $rubber->away_player_2 ); echo $disabled; ?>>
+							<?php echo $roster->firstname ?> <?php echo $roster->surname ?>
+                            </option>
 <?php } ?>
 						</select>
                     </td>
@@ -634,20 +652,23 @@ class LeagueManagerAJAX
                     $awayplayer2    = isset($_POST['awayplayer2'][$ix]) ? $_POST['awayplayer2'][$ix] : NULL;
                     $custom         = isset($_POST['custom'][$ix]) ? $_POST['custom'][$ix] : "";
                     $winner         = $loser = '';
-                    $homescore      = '';
-                    $awayscore      = '';
+                    $homescore      = '0';
+                    $awayscore      = '0';
                     $sets           = $custom['sets'];
                     
                     foreach ( $sets as $set ) {
                         
-                        if ( $set['player1'] > $set['player2']) {
-                            $homescore += 1;
-                        } elseif ( $set['player1'] < $set['player2']) {
-                            $awayscore += 1;
-						} elseif ( $set['player1'] == 'S' ){
-							$homescore += 0.5;
-							$awayscore += 0.5;
-						}
+                        if ( $set['player1'] !== NULL && $set['player2'] !== NULL ) {
+                            
+                            if ( $set['player1'] > $set['player2']) {
+                                $homescore += 1;
+                            } elseif ( $set['player1'] < $set['player2']) {
+                                $awayscore += 1;
+                            } elseif ( $set['player1'] == 'S' ){
+                                $homescore += 0.5;
+                                $awayscore += 0.5;
+                            }
+                        }
                     }
 					
                     if ( $homescore > $awayscore) {

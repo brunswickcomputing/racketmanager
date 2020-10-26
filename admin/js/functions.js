@@ -62,6 +62,64 @@ jQuery(document).ready(function($) {
 	jQuery("input.rank-input").prop('disabled', 'true');
 	// Set js-active value to 1
 	jQuery("#teams-filter>input.js-active").val(1);
+                       
+                       $('#teamPlayer1').autocomplete({
+                                                      minLength: 2,
+                                                      source: function(name, response) {
+                                                      $.ajax({
+                                                             type: 'POST',
+                                                             datatype: 'json',
+                                                             url: LeagueManagerAjaxL10n.requestUrl,
+                                                             data: {"name": name,
+                                                             "action": "leaguemanager_getPlayerName"},
+                                                             success: function(data) {
+                                                             console.log(JSON.parse(data));
+                                                             response(JSON.parse(data));
+                                                             }
+                                                             });
+                                                      },
+                                                      select: function(event, ui) {
+                                                      $("#teamPlayerId1").val(ui.item.id);
+                                                      $("#affiliatedclub").val(ui.item.clubId);
+                                                      },
+                                                      change: function(event, ui) {
+                                                      if (ui.item === null) {
+                                                        $(this).val('');
+                                                        $("#teamPlayerId1").val('');
+                                                        $("#affiliatedclub").val('');
+                                                      } else {
+                                                        $("#teamPlayerId1").val(ui.item.id);
+                                                        $("#affiliatedclub").val(ui.item.clubId);
+                                                      }
+                                                      }
+                                                      });
+                       $('#teamPlayer2').autocomplete({
+                                                      minLength: 2,
+                                                      source: function(name, response) {
+                                                      $.ajax({
+                                                             type: 'POST',
+                                                             datatype: 'json',
+                                                             url: LeagueManagerAjaxL10n.requestUrl,
+                                                             data: {"name": name,
+                                                             "action": "leaguemanager_getPlayerName"},
+                                                             success: function(data) {
+                                                             console.log(JSON.parse(data));
+                                                             response(JSON.parse(data));
+                                                             }
+                                                             });
+                                                      },
+                                                      select: function(event, ui) {
+                                                      $("#teamPlayerId2").val(ui.item.id);
+                                                      },
+                                                      change: function(event, ui) {
+                                                      if (ui.item === null) {
+                                                      $(this).val('');
+                                                      $("#teamPlayerId2").val('');
+                                                      } else {
+                                                      $("#teamPlayerId2").val(ui.item.id);
+                                                      }
+                                                      }
+                                                      });
 });
 
 

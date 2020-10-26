@@ -93,11 +93,10 @@ class LeagueManagerChampionship extends LeagueManager
 			$groups = ( isset($league->groups) ? $league->groups : '');
 			$this->groups = explode(";", $groups);
 			$num_groups = (isset($this->groups) ? count($this->groups) : 0 );
-			$num_advance = (isset($league->num_advance) ? $league->num_advance : 0);
+			$num_advance = $leaguemanager->getSeason($league)['num_match_days'];
 			$this->num_teams_first_round = $num_groups * $num_advance;
-			$num_rounds = log($this->num_teams_first_round, 2);
+			$num_rounds = ceil(log($this->num_teams_first_round, 2));
             $num_teams = 2;
-
             $i = $num_rounds;
             while ( $num_teams <= $this->num_teams_first_round ) {
                 $finalkey = $this->getFinalKey($num_teams);
@@ -165,7 +164,7 @@ class LeagueManagerChampionship extends LeagueManager
 	 */
 	function getFinals( $key = false )
 	{
-		if ( $key )
+        if ( $key )
 			return $this->finals[$key];
 
 		return $this->finals;
@@ -257,7 +256,7 @@ class LeagueManagerChampionship extends LeagueManager
 				return __( 'Quarter Final', 'leaguemanager' );
 			else {
 				$tmp = explode("-", $key);
-				return sprintf(__( 'Last-%d', 'leaguemanager'), $tmp[1]);
+				return sprintf(__( 'Round of %d', 'leaguemanager'), $tmp[1]);
 			}
 		}
 	}
@@ -302,7 +301,26 @@ class LeagueManagerChampionship extends LeagueManager
 		}
 	}
 
-
+    function getChampionshipMatchTitle( $match, $teams, $teams2) {
+        $title = 'N/A';
+        if ( $match->home_team == -1 ) {
+            $homeTeamTitle = 'Bye';
+        } elseif ( is_numeric($match->home_team) ) {
+            $homeTeamTitle = $teams[$match->home_team]['title'];
+        } else {
+            $homeTeamTitle = $teams2[$match->home_team];
+        }
+        if ( $match->away_team == -1 ) {
+            $awayTeamTitle = 'Bye';
+        } elseif ( is_numeric($match->away_team) ) {
+            $awayTeamTitle = $teams[$match->away_team]['title'];
+        } else {
+            $awayTeamTitle = $teams2[$match->away_team];
+        }
+        $title = sprintf("%s &#8211; %s", $homeTeamTitle, $awayTeamTitle);
+        return $title;
+    }
+    
 	/**
 	 * get array of teams for finals
 	 *
@@ -314,32 +332,9 @@ class LeagueManagerChampionship extends LeagueManager
 	function getFinalTeams( $final, $output = 'OBJECT' )
 	{
 		global $leaguemanager;
-		
 		$current = $final;
 		// Set previous final or false if first round
 		$final = ( isset($final['round']) && $final['round'] > 1 ) ? $this->getFinals($this->getFinalKeys($final['round']-1)) : false;
-		
-		/*$matches = $leaguemanager->getMatches(array("league_id" => $leaguemanager->getLeagueID(), "final" => $final['key']));
-		if ($matches) {
-			$teams = array();
-			foreach ( $matches AS $match ) {
-				$home_team = $leaguemanager->getTeam( $match->home_team );
-				$away_team = $leaguemanager->getTeam( $match->away_team );
-				if ( $home_team && $away_team ) {
-					if ( $output == 'ARRAY' ) {
-						$teams[$home_team->id] = (array)$home_team;
-						$teams[$away_team->id] = (array)$away_team;
-					} else {
-						$teams[] = $home_team;
-						$teams[] = $away_team;
-					}
-				}
-			}
-			
-			if ( count($teams) > 0 )
-				return $teams;
-		}*/
-		
 		$teams = array();
 		if ( $final ) {
 			for ( $x = 1; $x <= $final['num_matches']; $x++ ) {
@@ -359,19 +354,26 @@ class LeagueManagerChampionship extends LeagueManager
 				}
 			}
 		} else {
-			if(isset($this->league->groups)) {
-				foreach ( (array)explode(";",$this->league->groups) AS $group ) {
-					for ( $a = 1; $a <= $this->league->num_advance; $a++ ) {
-						$title = sprintf(__('%d Group %s', 'leaguemanager'), $a, $group);
-						if( $output == 'ARRAY' ) {
-							$teams[$a.'_'.$group] =	$title;
-						} else {
-							$data = array( 'id' => $a.'_'.$group, 'title' => $title );
-							$teams[] = (object) $data;
-						}
-					}
-				}
-			}
+            $groups = isset($this->league->groups) ? $this->league->groups : array("");
+            if ( !isset($this->league->groups) ) {
+                foreach ( $groups AS $group ) {
+                    for ( $a = 1; $a <= $leaguemanager->getSeason($this->league)['num_match_days']; $a++ ) {
+                        $title = sprintf(__('Team Rank %d', 'leaguemanager'), $a);
+                        if( $output == 'ARRAY' ) {
+                            $teams[$a.'_'.$group] =	$title;
+                        } else {
+                            $data = array( 'id' => $a.'_'.$group, 'title' => $title );
+                            $teams[] = (object) $data;
+                        }
+                    }
+                    if ( $output == 'ARRAY' ) {
+                        $teams['0_'.$group] = 'Bye';
+                    } else {
+                        $data = array( 'id' => '0_'.$group, 'title' => 'Bye' );
+                        $teams[] = (object) $data;
+                    }
+                }
+            }
 		}
 		return $teams;
 	}
@@ -389,12 +391,11 @@ class LeagueManagerChampionship extends LeagueManager
 	 * @param array $custom
 	 * @param int $round
 	 */
-	function updateResults( $league_id, $matches, $home_points, $away_points, $home_team, $away_team, $custom, $round )
+    function updateResults( $league_id, $matches, $home_points, $away_points, $home_team, $away_team, $custom, $round, $season )
 	{
 		global $lmLoader, $leaguemanager;
 		$admin = $lmLoader->getAdminPanel();
-		$admin->updateResults($league_id, $matches, $home_points, $away_points, $home_team, $away_team, $custom, true);
-
+		$admin->updateResults($league_id, $matches, $home_points, $away_points, $home_team, $away_team, $custom, $season, true);
 		if ( $round < $this->getNumRounds() )
 			$this->proceed($this->getFinalKeys($round), $this->getFinalKeys($round+1),$league_id);
 
@@ -420,17 +421,22 @@ class LeagueManagerChampionship extends LeagueManager
 		foreach ( $matches AS $match ) {
 			$update = true;
 			$home = explode("_", $match->home_team);
-			$away = explode("_", $match->away_team);
 			
 			$home = array( 'rank' => $home[0], 'group' => $home[1] );
-			$away = array( 'rank' => $away[0], 'group' => $away[1] );
-			
-			$home_team = $leaguemanager->getTeams(array_merge($match_args, array("rank" => $home['rank'], "group" => $home['group'])));
-			$away_team = $leaguemanager->getTeams(array_merge($match_args, array("rank" => $away['rank'], "group" => $away['group'])));
+            $home_team = $leaguemanager->getTeams(array_merge($match_args, array("rank" => $home['rank'], "group" => $home['group'])));
+
+            $away = explode("_", $match->away_team);
+            $away = array( 'rank' => $away[0], 'group' => $away[1] );
+            if ( $away['rank'] == 0 ) {
+                $away_team = 'bye';
+                $away['team'] = -1;
+            } else {
+                $away_team = $leaguemanager->getTeams(array_merge($match_args, array("rank" => $away['rank'], "group" => $away['group'])));
+                if ( $away_team ) $away['team'] = $away_team[0]->id;
+            }
 
 			if ( $home_team && $away_team ) {
 				$home['team'] = $home_team[0]->id;
-				$away['team'] = $away_team[0]->id;
 			} else {
 				$update = false;
 			}
@@ -463,38 +469,56 @@ class LeagueManagerChampionship extends LeagueManager
 
 		$league = $leaguemanager->getLeague( $league_id );
 		$season = $leaguemanager->getSeason( $league );
-
 		$match_args = array("league_id" => $league->id, "season" => $season['name']);
 		$matches = $leaguemanager->getMatches( array_merge($match_args, array("final" => $current)) );
 		foreach ( $matches AS $match ) {
 			$update = true;
 			$home = explode("_", $match->home_team);
 			$away = explode("_", $match->away_team);
+
 			if ( is_array($home) && is_array($away) ) {
-				if ( isset($home[1]) && isset($away[1]) ) {
-					$col = ( $home[0] == 1 ) ? 'winner_id' : 'loser_id';
-					$home = array( 'col' => $col, 'finalkey' => $home[1], 'no' => $home[2] );
+                if ( isset($home[1]) ) {
+                    $col = ( $home[0] == 1 ) ? 'winner_id' : 'loser_id';
+                    $home = array( 'col' => $col, 'finalkey' => $home[1], 'no' => $home[2] );
+                } else {
+                    $home['no'] = 0;
+                }
+                if ( isset($away[1]) ) {
 					$col = ( $away[0] == 1 ) ? 'winner_id' : 'loser_id';
 					$away = array( 'col' => $col, 'finalkey' => $away[1], 'no' => $away[2] );
 				} else {
-					$home['no'] = $away['no'] = 0;
+					$away['no'] = 0;
 				}
-				
 				// get matches of previous round
-				$prev = $leaguemanager->getMatches( array_merge($match_args, array("final" => $last)) );
-				if ( isset($prev[$home['no']-1]) && isset($prev[$away['no']-1]) ) {
-					$prev_home = $prev[$home['no']-1];
-					$prev_away = $prev[$away['no']-1];
 
-					$home['team'] = $prev_home->{$home['col']};
+				$prev = $leaguemanager->getMatches( array_merge($match_args, array("final" => $last)) );
+
+                $home['team'] = 0;
+                $away['team'] = 0;
+                if ( isset($prev[$home['no']-1]) ) {
+                    $prev_home = $prev[$home['no']-1];
+                    $home['team'] = $prev_home->{$home['col']};
+
+                }
+                if ( isset($prev[$away['no']-1]) ) {
+					$prev_away = $prev[$away['no']-1];
 					$away['team'] = $prev_away->{$away['col']};
-				} else {
-					$update = false;
+
 				}
+                if ( $home['team'] == 0 && $away['team'] == 0 ) {
+                    $update = false;
+                }
+
 
 			//	$update = false;
 				if ( $update ) {
-					$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_matches} SET `home_team` = %d, `away_team` = %d WHERE `id` = %d", $home['team'], $away['team'], $match->id ) );
+                    if ( $home['team'] != 0 && $away['team'] != 0 ) {
+                        $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_matches} SET `home_team` = %d, `away_team` = %d WHERE `id` = %d", $home['team'], $away['team'], $match->id ) );
+                    } elseif ( $home['team'] != 0 && $away['team'] == 0 ) {
+                        $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_matches} SET `home_team` = %d WHERE `id` = %d", $home['team'], $match->id ) );
+                    } elseif ( $home['team'] == 0 && $away['team'] != 0 ) {
+                        $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_matches} SET `away_team` = %d WHERE `id` = %d", $away['team'], $match->id ) );
+                    }
 					// Set winners on final
 					if ( $current == 'third' ) {
 						$match = $leaguemanager->getMatches( array_merge($match_args, array("final" => "final")) );

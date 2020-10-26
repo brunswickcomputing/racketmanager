@@ -585,7 +585,6 @@ class LeagueManagerShortcodes extends LeagueManager
 		$league_id = $this->league_id = $league->id;
 
 		$championship->initialize($league->id);
-
 		$finals = array();
 		foreach ( $championship->getFinals() AS $final ) {
 			$class = 'alternate';
@@ -637,8 +636,6 @@ class LeagueManagerShortcodes extends LeagueManager
 						$data['isFinal'] = false;
 					}
 					
-					$match->time = ( '00:00' == $match->hour.":".$match->minutes ) ? 'N/A' : mysql2date(get_option('time_format'), $match->date);
-					$match->date = ( substr($match->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date(get_option('date_format'), $match->date);
 					if ( empty($match->location) ) $match->location = 'N/A';
 
 					$matches[$i] = $match;
@@ -735,8 +732,6 @@ class LeagueManagerShortcodes extends LeagueManager
 			$teams[$i]->prev_match = $prev_match;
 			
 			$teams[$i]->projects_tabs = false;
-			if ( $team->roster['id'] > 0 && $team->profile > 0 )
-				$teams[$i]->projects_tabs = true;
 		}
 		if ( empty($template) && $this->checkTemplate('teams-'.$league->sport) )
 			$filename = 'teams-'.$league->sport;
@@ -810,8 +805,6 @@ class LeagueManagerShortcodes extends LeagueManager
 		$team->next_match = $next_match;
 		
 		$team->projects_tabs = false;
-		if ( $team->roster['id'] > 0 && $team->profile > 0 )
-			$team->projects_tabs = true;
 			
 		$team->single = true;
 		

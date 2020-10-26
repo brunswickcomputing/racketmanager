@@ -14,22 +14,23 @@ The following variables are usable:
 
 <h3><?php _e( 'Final Results', 'leaguemanager' ) ?></h3>
 <table class="widefat leaguemanager_finals">
-<thead>
-<tr>
-	<th scope="col"><?php _e( 'Round', 'leaguemanger' ) ?></th>
-	<th scope="col" colspan="<?php echo $finals[0]->colspan; ?>" style="text-align: center;"><?php _e( 'Matches', 'leaguemanager' ) ?></th>
-</tr>
+    <thead>
+    <tr>
+        <th scope="col"><?php _e( 'Round', 'leaguemanger' ) ?></th>
+        <th scope="col" colspan="<?php echo $finals[0]->colspan; ?>" style="text-align: center;"><?php _e( 'Matches', 'leaguemanager' ) ?></th>
+    </tr>
+</thead>
 <tbody id="the-list-finals" class="lm-form-table">
-<?php foreach ( $finals AS $final ) : ?>
+<?php foreach ( $finals AS $final ) { ?>
 <tr class="">
 	<th scope="row"><strong><?php echo $final->name ?></strong></th>
-	<?php foreach ( (array)$final->matches AS $no => $match ) : ?>
+	<?php foreach ( (array)$final->matches AS $no => $match ) { ?>
 	<td colspan="<?php echo $final->colspan ?>" style="text-align: center;">
-		<?php if ( $final->isFinal ) : ?>
+<?php if ( $final->isFinal ) { ?>
 		<p><span id="final_home" style="margin-right: 0.5em;"></span><?php echo $match->title ?><span id="final_away" style="margin-left: 0.5em;"></span></p>
-		<?php else : ?>
+<?php } else { ?>
 		<p><?php echo $match->title ?></p>
-		<?php endif; ?>
+<?php } ?>
 
 		<?php if ( $match->home_points != NULL && $match->away_points != NULL && $final->isFinal ) : ?>
 		<?php $img = '<img style="vertical-align: middle;" src="'.LEAGUEMANAGER_URL . '/admin/icons/cup.png" />'; ?>
@@ -40,13 +41,13 @@ The following variables are usable:
 
 		<p><strong><?php echo $match->score ?></strong></p>
 	</td>
-	<?php if ( $no%4 == 0 && $no < $final->num_matches ) : ?>
+	<?php if ( $no%4 == 0 && $no < $final->num_matches ) { ?>
 	</tr><tr class="<?php echo $final->class ?>"><th>&#160;</th>
-	<?php endif; ?>
+    <?php } ?>
 
-	<?php endforeach; ?>
+    <?php } ?>
 </tr>
-<?php endforeach ?>
+<?php } ?>
 </tbody>
 </table>
 

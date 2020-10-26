@@ -146,6 +146,16 @@
 							</td>
 						</tr>
 						<tr valign="top">
+							<th scope="row"><label for="entryType"><?php _e( 'Entry Type', 'leaguemanager' ) ?></label></th>
+							<td>
+								<select size="1" name="settings[entryType]" id="entryType">
+<?php foreach ( $this->getentryTypes() AS $id => $entryType ) $competition->entryType = isset($competition->entryType) ? $competition->entryType : ''; { ?>
+									<option value="<?php echo $id ?>"<?php selected( $id, $competition->entryType ) ?>><?php echo $entryType ?></option>
+                                <?php } ?>
+								</select>
+							</td>
+						</tr>
+						<tr valign="top">
 							<th scope="row"><label for="default_start_time"><?php _e( 'Default Match Start Time', 'leaguemanager' ) ?></label></th>
 							<td>
 								<select size="1" name="settings[default_match_start_time][hour]">

@@ -140,7 +140,7 @@ class LeagueManagerShortcodes extends LeagueManager
 				$url = add_query_arg( $key, htmlspecialchars(strip_tags($value)), $url );
 			}
 
-			$teams[$i]->pageURL = $url;
+			$teams[$i]->URL = $url;
 			//if ( $league->team_ranking == 'auto' ) $teams[$i]->rank = $i+1;
 			$teams[$i]->class = implode(' ', $class);
 			$teams[$i]->logoURL = $leaguemanager->getThumbnailUrl($team->logo, false, 'full');
@@ -585,23 +585,22 @@ class LeagueManagerShortcodes extends LeagueManager
 		$league_id = $this->league_id = $league->id;
 
 		$championship->initialize($league->id);
-
 		$finals = array();
-		foreach ( $championship->getFinals() AS $final ) {
+		foreach ( array_reverse($championship->getFinals()) AS $final ) {
 			$class = 'alternate';
 			$data['key'] = $final['key'];
 			$data['name'] = $final['name'];
 			$data['num_matches'] = $final['num_matches'];
-			$data['colspan'] = ( $championship->getNumTeamsFirstRound()/2 >= 4 ) ? ceil(4/$final['num_matches']) : ceil(($championship->getNumTeamsFirstRound()/2)/$final['num_matches']);
+			$data['rowspan'] = ( $championship->getNumTeamsFirstRound()/2 >= 4 ) ? ceil(4/$final['num_matches']) : ceil(($championship->getNumTeamsFirstRound()/2)/$final['num_matches']);
 
 			$matches_raw = $leaguemanager->getMatches( array("league_id" => $league->id, "season" => $season, "final" => $final['key'], "orderby" => array("id" => "ASC")) );
 			$team_args = array("league_id" => $league->id, "season" => $season, "orderby" => array("id" => "ASC"));
-			$teams = $leaguemanager->getTeams( $team_args, 'ARRAY' );
+			$teams = $leaguemanager->getTeamsInfo( $team_args, 'ARRAY' );
 			$teams2 = $championship->getFinalTeams($final, 'ARRAY');
 
 			$matches = array();
 			for ( $i = 1; $i <= $final['num_matches']; $i++ ) {
-				$match = $matches_raw[$i-1];
+                $match = isset($matches_raw[$i-1]) ? $matches_raw[$i-1] : NULL;
 				
 				if ( $match ) {
 					$class = ( !isset($class) || 'alternate' == $class ) ? '' : 'alternate';
@@ -618,6 +617,23 @@ class LeagueManagerShortcodes extends LeagueManager
 					$match->hadPenalty = $match->hadPenalty = ( isset($match->penalty) && $match->penalty['home'] != '' && $match->penalty['away'] != '' ) ? true : false;
 					$match->hadOvertime = $match->hadOvertime = ( isset($match->overtime) && $match->overtime['home'] != '' && $match->overtime['away'] != '' ) ? true : false;
 
+                    $match->num_rubbers = ( isset($league->num_rubbers) ? $league->num_rubbers : NULL );
+                    $match->num_sets = ( isset($league->num_sets) ? $league->num_sets : NULL );
+                    
+                    if ( isset($match->num_rubbers) && $match->num_rubbers > 0 ) {
+                        $rubbers = $leaguemanager->getRubbers( array("match_id" => intval($match->id)));
+                        $r=1;
+                        foreach ($rubbers as $rubber) {
+                            $rubber->home_player_1_name = $rubber->home_player_2_name = $rubber->away_player_1_name = $rubber->away_player_2_name = '';
+                            if ( isset($rubber->home_player_1) ) $rubber->home_player_1_name = $this->getPlayerNamefromRoster($rubber->home_player_1);
+                            if ( isset($rubber->home_player_2) ) $rubber->home_player_2_name = $this->getPlayerNamefromRoster($rubber->home_player_2);
+                            if ( isset($rubber->away_player_1) ) $rubber->away_player_1_name = $this->getPlayerNamefromRoster($rubber->away_player_1);
+                            if ( isset($rubber->away_player_2) ) $rubber->away_player_2_name = $this->getPlayerNamefromRoster($rubber->away_player_2);
+                            $match->rubbers[$r] = $rubber;
+                            $r ++;
+                        }
+                    }
+                    
 					if ( $match->home_points != NULL && $match->away_points != NULL ) {
 						if ( $match->hadPenalty )
 							$match->score = sprintf("%s:%s", $match->penalty['home'], $match->penalty['away'])." ".__( 'o.P.', 'leaguemanager' );
@@ -625,7 +641,17 @@ class LeagueManagerShortcodes extends LeagueManager
 							$match->score = sprintf("%s:%s", $match->overtime['home'], $match->overtime['away'])." ".__( 'AET', 'leaguemanager' );
 							//$match->score = sprintf("%s:%s", $match->home_points, $match->away_points);
 						else
-							$match->score = sprintf("%s:%s", $match->home_points, $match->away_points);
+                            if ( isset($match->num_rubbers) && $match->num_rubbers > 0 ) {
+                                $match->score = sprintf("%s:%s", $match->home_points, $match->away_points);
+                            } else {
+                                $match->score = '';
+                                $sets = $match->custom['sets'];
+                                foreach ( $sets AS $set ) {
+                                    if ( $set['player1'] != null && $set['player2'] != null )  {
+                                        $match->score .= $set['player1'].'-'.$set['player2'].' ';
+                                    }
+                                }
+                            }
 					} else {
 						$match->score = "-:-";
 					}
@@ -637,8 +663,6 @@ class LeagueManagerShortcodes extends LeagueManager
 						$data['isFinal'] = false;
 					}
 					
-					$match->time = ( '00:00' == $match->hour.":".$match->minutes ) ? 'N/A' : mysql2date(get_option('time_format'), $match->date);
-					$match->date = ( substr($match->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date(get_option('date_format'), $match->date);
 					if ( empty($match->location) ) $match->location = 'N/A';
 
 					$matches[$i] = $match;
@@ -735,8 +759,6 @@ class LeagueManagerShortcodes extends LeagueManager
 			$teams[$i]->prev_match = $prev_match;
 			
 			$teams[$i]->projects_tabs = false;
-			if ( $team->roster['id'] > 0 && $team->profile > 0 )
-				$teams[$i]->projects_tabs = true;
 		}
 		if ( empty($template) && $this->checkTemplate('teams-'.$league->sport) )
 			$filename = 'teams-'.$league->sport;
@@ -810,8 +832,6 @@ class LeagueManagerShortcodes extends LeagueManager
 		$team->next_match = $next_match;
 		
 		$team->projects_tabs = false;
-		if ( $team->roster['id'] > 0 && $team->profile > 0 )
-			$team->projects_tabs = true;
 			
 		$team->single = true;
 		

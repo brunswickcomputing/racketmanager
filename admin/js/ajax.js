@@ -89,6 +89,21 @@ Leaguemanager.getTeamFromDatabase = function() {
 	tb_remove();
 };
 
+Leaguemanager.getTeamPlayerFromDatabase = function() {
+    var team_id = document.getElementById('team_db_select').value;
+    
+    var ajax = new sack(LeagueManagerAjaxL10n.requestUrl);
+    ajax.execute = 1;
+    ajax.method = 'POST';
+    ajax.setVar( 'action', 'leaguemanager_add_teamplayer_from_db' );
+    ajax.setVar( 'team_id', team_id );
+    ajax.onError = function() { alert('Ajax error while getting teams'); };
+    ajax.onCompletion = function() { return true; };
+    ajax.runAJAX();
+    
+    tb_remove();
+};
+
 Leaguemanager.getSeasonDropdown = function(league_id){
 	var ajax = new sack(LeagueManagerAjaxL10n.requestUrl);
 	ajax.execute = 1;
@@ -217,26 +232,24 @@ Leaguemanager.updateRubbers = function(link) {
 	var values = [];
 	for(i=0;i<selects.length;i++) {
 		var select = selects[i];
-		if(values.indexOf(select.value)>-1) {
-			jQuery("#UpdateResponse").text('Results not updated - duplicate player selected');
-			return false;
-		}
-		else
-			values.push(select.value);
+//		if(values.indexOf(select.value)>-1) {
+//			jQuery("#UpdateResponse").text('Results not updated - duplicate player selected');
+//			return false;
+//		}
+//		else
+//			values.push(select.value);
 
 	}
 	var $match = document.getElementById('current_match_id');
 	var $matchId = $match.value;
     var $form = jQuery('#match-rubbers').serialize();
     $form += "&action=leaguemanager_update_rubbers";
-    console.log($form);
     
     jQuery.ajax({
                 url:LeagueManagerAjaxL10n.requestUrl,
                 type: "POST",
                 data: $form,
                 success: function(response) {
-                console.log(response);
                 var $response = jQuery.parseJSON(response);
                 var $message = $response[0];
                 jQuery("#UpdateResponse").text($message);

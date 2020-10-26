@@ -3,7 +3,7 @@
 	$club_id = isset($_GET['club_id']) ? $_GET['club_id'] : 0;
 	if ( isset($_POST['addCompetition']) ) {
 		check_admin_referer('leaguemanager_add-competition');
-		$this->addCompetition( $_POST['competition_name'], $_POST['num_rubbers'], $_POST['num_sets'], $_POST['competition_type'] );
+		$this->addCompetition( htmlspecialchars(strip_tags($_POST['competition_name'])), $_POST['num_rubbers'], $_POST['num_sets'], $_POST['competition_type'], $_POST['mode'], $_POST['entryType'] );
 		$this->printMessage();
 	} elseif ( isset($_POST['docompdel']) && $_POST['action'] == 'delete' ) {
 		check_admin_referer('competitions-bulk');
@@ -24,7 +24,7 @@
 		$tab = 2;
 	} elseif ( isset($_POST['addPlayer']) ) {
 		check_admin_referer('leaguemanager_add-player');
-		$this->addPlayer( $_POST['firstname'], $_POST['surname'], $_POST['gender'], $_POST['btm'], 'true');
+		$this->addPlayer( htmlspecialchars(strip_tags($_POST['firstname'])), htmlspecialchars(strip_tags($_POST['surname'])), $_POST['gender'], htmlspecialchars(strip_tags($_POST['btm'])), 'true');
 		$this->printMessage();
 		$tab = 2;
 	} elseif ( isset($_POST['addRoster']) ) {

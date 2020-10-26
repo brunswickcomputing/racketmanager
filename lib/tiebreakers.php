@@ -38,6 +38,7 @@ function updateRanking( $league_id, $season, $group, $teams, $teamsTmp, $update=
             } else {
                 $status = '&#8226;';
             }
+            debug_to_console($team);
             $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `rank` = '%d', `status` = '%s' WHERE `id` = '%d'", $rank, $status, $team->table_id ) );
 
         }

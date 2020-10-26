@@ -8,14 +8,37 @@ if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POS
 		$roster = ( isset($_POST['roster_group']) && isset($_POST['roster']) ) ? array('id' => intval($_POST['roster']), 'cat_id' => intval($_POST['roster_group'])) : array( 'id' => '', 'cat_id' => false );
 		$profile = isset($_POST['profile']) ? intval($_POST['profile']) : 0;
 		$group = isset($_POST['group']) ? htmlspecialchars(strip_tags($_POST['group'])) : '';
-		if ( '' == $_POST['team_id'] ) {
-			$team_id = $this->addTeam( htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['captain']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']), htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), htmlspecialchars($_POST['stadium']), $home, $roster, $profile, $custom, htmlspecialchars($_POST['logo_db']),htmlspecialchars($_POST['league_id']) );
-			$this->addTableEntry( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
-		} else {
+        if ( 'Add' == $_POST['action'] ) {
+            if ( '' == $_POST['team_id'] ) {
+                $team_id = $this->addTeam( htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['captain']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']), htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), htmlspecialchars($_POST['stadium']), $home, $roster, $profile, $custom, htmlspecialchars($_POST['logo_db']),htmlspecialchars($_POST['league_id']) );
+                $this->addTableEntry( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
+            } else {
+                $del_logo = isset( $_POST['del_logo'] ) ? true : false;
+                $overwrite_image = isset( $_POST['overwrite_image'] ) ? true: false;
+                $this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['captain']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']),  htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), htmlspecialchars($_POST['stadium']), $home, $group, $roster, $profile, $custom, htmlspecialchars($_POST['logo_db']), intval($_POST['league_id']), $del_logo, $overwrite_image );
+                $this->addTableEntry( htmlspecialchars($_POST['league_id']), intval($_POST['team_id']), htmlspecialchars($_POST['season']) );
+            }
+        } else {
 			$del_logo = isset( $_POST['del_logo'] ) ? true : false;
 			$overwrite_image = isset( $_POST['overwrite_image'] ) ? true: false;
             $this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['captain']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']),  htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), htmlspecialchars($_POST['stadium']), $home, $group, $roster, $profile, $custom, htmlspecialchars($_POST['logo_db']), intval($_POST['league_id']), $del_logo, $overwrite_image );
 		}
+    } elseif ( 'teamPlayer' == $_POST['updateLeague'] ) {
+        check_admin_referer('leaguemanager_manage-teams');
+        $teamPlayer2 = isset($_POST['teamPlayer2']) ? htmlspecialchars(strip_tags($_POST['teamPlayer2'])) : '';
+        $teamPlayer2Id = isset($_POST['teamPlayerId2']) ? $_POST['teamPlayerId2'] : 0;
+
+        if ( 'Add' == $_POST['action'] ) {
+            if ( '' == $_POST['team_id'] ) {
+                $team_id = $this->addTeamPlayer( htmlspecialchars(strip_tags($_POST['teamPlayer1'])), $_POST['teamPlayer1Id1'], $teamPlayer2, $teamPlayer2Id, htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']), htmlspecialchars($_POST['league_id']) );
+                $this->addTableEntry( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
+            } else {
+                $this->editTeamPlayer( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['teamPlayer1'])), $_POST['teamPlayerId1'], $teamPlayer2, $teamPlayer2Id, htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']),  intval($_POST['league_id']) );
+                $this->addTableEntry( htmlspecialchars($_POST['league_id']), intval($_POST['team_id']), htmlspecialchars($_POST['season']) );
+            }
+        } else {
+            $this->editTeamPlayer( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['teamPlayer1'])), $_POST['teamPlayerId1'], $teamPlayer2, $teamPlayer2Id, htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']), intval($_POST['league_id']) );
+        }
 	} elseif ( 'match' == $_POST['updateLeague'] ) {
 		check_admin_referer('leaguemanager_manage-matches');
 
@@ -39,12 +62,14 @@ if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POS
 			$num_matches = count($_POST['match']);
 			$post_match = $this->htmlspecialchars_array($_POST['match']);
 			foreach ( $post_match AS $i => $match_id ) {
+                $begin_hour = isset($_POST['begin_hour'][$i]) ? intval($_POST['begin_hour'][$i]) : "00";
+                $begin_minutes = isset($_POST['begin_minutes'][$i]) ? intval($_POST['begin_minutes'][$i]) : "00";
 				if( isset($_POST['mydatepicker'][$i]) ) {
 					$index = ( isset($_POST['mydatepicker'][$i]) ) ? $i : 0;
-					$date = htmlspecialchars(strip_tags($_POST['mydatepicker'][$index])).' '.intval($_POST['begin_hour'][$i]).':'.intval($_POST['begin_minutes'][$i]).':00';
+					$date = htmlspecialchars(strip_tags($_POST['mydatepicker'][$index])).' '.$begin_hour.':'.$begin_minutes.':00';
 				} else {
 					$index = ( isset($_POST['year'][$i]) && isset($_POST['month'][$i]) && isset($_POST['day'][$i]) ) ? $i : 0;
-					$date = intval($_POST['year'][$index]).'-'.intval($_POST['month'][$index]).'-'.intval($_POST['day'][$index]).' '.intval($_POST['begin_hour'][$i]).':'.intval($_POST['begin_minutes'][$i]).':00';
+					$date = intval($_POST['year'][$index]).'-'.intval($_POST['month'][$index]).'-'.intval($_POST['day'][$index]).' '.$begin_hour.':'.$begin_minutes.':00';
 				}
 				$match_day = (isset($_POST['match_day']) && is_array($_POST['match_day'])) ? intval($_POST['match_day'][$i]) : (isset($_POST['match_day']) && !empty($_POST['match_day']) ? intval($_POST['match_day']) : '' ) ;
 				$custom = isset($_POST['custom']) ? $_POST['custom'][$i] : array();
@@ -99,7 +124,7 @@ if (isset($_POST['saveRanking'])) {
 			$rank = intval($_POST['rank'][$team_id]);
 		}
 		
-		$team = $leaguemanager->getTeam($team_id);
+		$team = $leaguemanager->getTable($team_id, $league->id, $season['name']);
 		$team_ranks[$rank-1] = $team;
 	}
 	ksort($team_ranks);

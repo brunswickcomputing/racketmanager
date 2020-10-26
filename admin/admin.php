@@ -58,6 +58,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 			//Tool links
 		add_management_page(__('Import'), __('Import Leaguemanager Data'),$capability, 'leaguemanager-import', array( $this, 'leaguemanagerImportPage' ));
 		add_management_page(__('Export'), __('Export Leaguemanager Data'),$capability, 'leaguemanager-export', array( $this, 'leaguemanagerExportPage' ));
+        add_management_page(__('Documentation'), __('Leaguemanager Documentation'),$capability, 'leaguemanager-doc', array( $this, 'leaguemanagerDocumentationPage' ));
 
 		add_filter( 'plugin_action_links_' . $plugin, array( &$this, 'pluginActions' ) );
 	}
@@ -153,6 +154,9 @@ class LeagueManagerAdminPanel extends LeagueManager
 			case 'leaguemanager-export':
 				include_once( dirname(__FILE__) . '/export.php' );
 				break;
+            case 'leaguemanager-documentation':
+                include_once( dirname(__FILE__) . '/documentation.php' );
+                break;
 			case 'leaguemanager':
 			default:
 				if ( isset($_GET['subpage']) ) {
@@ -203,6 +207,16 @@ class LeagueManagerAdminPanel extends LeagueManager
 		
 	}
 	
+    /**
+     * show Documentation Page
+     *
+     * @return void
+     */
+    function leaguemanagerDocumentationPage() {
+        
+        include_once( dirname(__FILE__) . '/documentation.php' );
+        
+    }
 
 	/**
 	 * display link to settings page in plugin table
@@ -227,12 +241,12 @@ class LeagueManagerAdminPanel extends LeagueManager
 	 */
 	function loadScriptsPage()
 	{
-		wp_register_script( 'leaguemanager-functions', plugins_url('/admin/js/functions.js', dirname(__FILE__)), array( 'thickbox', 'jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'jquery-ui-tabs', 'jquery-ui-accordion', 'jquery-ui-sortable', 'jquery-ui-tooltip', 'jquery-effects-core', 'jquery-effects-slide', 'jquery-effects-explode', 'scriptaculous-dragdrop', 'iris' ), LEAGUEMANAGER_VERSION );
+		wp_register_script( 'leaguemanager-functions', plugins_url('/admin/js/functions.js', dirname(__FILE__)), array( 'thickbox', 'jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'jquery-ui-tabs', 'jquery-ui-accordion', 'jquery-ui-sortable', 'jquery-ui-tooltip', 'jquery-effects-core', 'jquery-effects-slide', 'jquery-effects-explode', 'jquery-ui-autocomplete', 'scriptaculous-dragdrop', 'iris' ), LEAGUEMANAGER_VERSION );
 		wp_enqueue_script('leaguemanager-functions');
 	}
 	function loadScripts()
 	{
-		wp_register_script( 'leaguemanager-functions', plugins_url('/admin/js/functions.js', dirname(__FILE__)), array( 'thickbox', 'jquery', 'jquery-ui-datepicker', 'jquery-ui-tabs', 'jquery-ui-accordion', 'jquery-ui-sortable', 'jquery-ui-tooltip', 'jquery-effects-core', 'jquery-effects-slide', 'jquery-effects-explode', 'iris' ), LEAGUEMANAGER_VERSION );
+		wp_register_script( 'leaguemanager-functions', plugins_url('/admin/js/functions.js', dirname(__FILE__)), array( 'thickbox', 'jquery', 'jquery-ui-datepicker', 'jquery-ui-tabs', 'jquery-ui-accordion', 'jquery-ui-sortable', 'jquery-ui-tooltip', 'jquery-effects-core', 'jquery-effects-slide', 'jquery-effects-explode', 'jquery-ui-autocomplete', 'iris' ), LEAGUEMANAGER_VERSION );
 		wp_enqueue_script('leaguemanager-functions');
 		wp_register_script( 'leaguemanager-ajax', plugins_url('/admin/js/ajax.js', dirname(__FILE__)), array('sack'), LEAGUEMANAGER_VERSION );
 		wp_enqueue_script('leaguemanager-ajax');
@@ -316,6 +330,17 @@ class LeagueManagerAdminPanel extends LeagueManager
 		return $modes;
 	}
 
+	/**
+	 * get available entry types
+	 *
+	 * @param none
+	 * @return array
+	 */
+	function getentryTypes()
+	{
+		$entryTypes = array( 'team' => __('Team', 'leaguemanager'), 'player' => __('Player', 'leaguemanager') );
+		return $entryTypes;
+	}
 
 	/**
 	 * savePointsManually() - update points manually
@@ -550,26 +575,40 @@ class LeagueManagerAdminPanel extends LeagueManager
 		 * @param string $type
 		 * @return void
 		 */
-		function addCompetition( $name, $num_rubbers, $num_sets, $type )
+		function addCompetition( $name, $num_rubbers, $num_sets, $type, $mode, $entryType )
 		{
 			global $wpdb;
+            if ( $mode == 'championship' ) {
+                $ranking = "manual";
+                $standings = array( 'pld' => 1, 'won' => 1, 'tie' => 1, 'lost' => 1 );
+                if ( $entryType == 'player' ) {
+                    $competitionType = 'tournament';
+                } else {
+                    $competitionType = 'cup';
+                }
+            } else {
+                $ranking = "auto";
+                $standings = array( 'pld' => 0, 'won' => 0, 'tie' => 0, 'lost' => 0 );
+                $competitionType = 'league';
+            }
 			$settings = array(
 							  "sport" => "tennis",
 							  "point_rule" => "tennis",
 							  "point_format" => "%s",
 							  "point_format2" => "%s",
-							  "team_ranking" => "auto",
-							  "mode" => "default",
+							  "team_ranking" => $ranking,
+                              "mode" => $mode,
+                              "entryType" => $entryType,
 							  "default_match_start_time" => array("hour" => 19, "minutes" => 30),
-							  "standings" => array( 'pld' => 1, 'won' => 1, 'tie' => 1, 'lost' => 1 ),
+							  "standings" => $standings,
 							  "num_ascend" => "",
 							  "num_descend" => "",
 							  "num_relegation" => "",
 							  "num_matches_per_page" => 10,
-							  "use_stats" => 1,
+							  "use_stats" => 0,
 							  );
 
-			$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->leaguemanager_competitions} (`name`, `num_rubbers`, `num_sets`, `type`, `settings`) VALUES ('%s', '%d', '%d', '%s', '%s')", $name, $num_rubbers, $num_sets, $type, maybe_serialize($settings) ) );
+			$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->leaguemanager_competitions} (`name`, `num_rubbers`, `num_sets`, `type`, `settings`, `competitiontype`) VALUES ('%s', '%d', '%d', '%s', '%s', '%s')", $name, $num_rubbers, $num_sets, $type, maybe_serialize($settings), $competitionType ) );
 			parent::setMessage( __('Competition added', 'leaguemanager') );
 		}
 		
@@ -637,8 +676,10 @@ class LeagueManagerAdminPanel extends LeagueManager
 	function addSeason( $season, $num_match_days, $competition_id )
 	{
 		global $leaguemanager, $wpdb;
-
 		$competition = $leaguemanager->getCompetition($competition_id);
+        if ( $competition->seasons == '' ) {
+            $competition->seasons = array();
+        }
 		$competition->seasons[$season] = array( 'name' => $season, 'num_match_days' => $num_match_days );
 		ksort($competition->seasons);
 		$this->saveCompetitionSeasons($competition->seasons, $competition->id);
@@ -662,8 +703,8 @@ class LeagueManagerAdminPanel extends LeagueManager
 		$competition = $leaguemanager->getCompetition($competition_id);
 		$season_id = htmlspecialchars($season_id);
 		if ( $teams = $leaguemanager->getTeams( array("season" => $season_id, "competition_id" => $competition->id) ) ) {
-            foreach ( $teams AS $eam ) {
-				$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_table} SET `season` = '%s' WHERE `team_id` = '%d'", $season, $team->id) );
+            foreach ( $teams AS $team ) {
+				$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_table} SET `season` = '%s' WHERE `id` = '%d'", $season, $team->table_id) );
 			}
 		}
 		if ( $matches = $leaguemanager->getMatches( array("season" => $season_id, "competition_id" => $competition->id, "limit" => false) ) ) {
@@ -690,23 +731,26 @@ class LeagueManagerAdminPanel extends LeagueManager
 	 * @param int $league_id
 	 * @return array of new options
 	 */
-	function delCompetitionSeason( $season, $competition_id )
+	function delCompetitionSeason( $seasons, $competition_id )
 	{
-		global $leaguemanager;
+		global $leaguemanager, $wpdb;
 
         $competition = $leaguemanager->getCompetition($competition_id);
-        foreach ( parent::getLeagues( array("competition" => $competition_id )) AS $league ) {
+
+        foreach ( $seasons AS $season ) {
             
-            $league_id = $league->id;
-            
-            // remove tables
-            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_table} WHERE `league_id` = '%d' AND `season` = '%s'", $league_id, $season) );
-            // remove matches and rubbers
-            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_rubbers} WHERE `match_id` IN ( SELECT `id` from {$wpdb->leaguemanager_matches} WHERE `league_id` = '%d' AND `season` = '%s')", $league_id, $season) );
-            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_matches} WHERE `league_id` = '%d' AND `season` = '%s'", $league_id, $season) );
-            
+            foreach ( parent::getLeagues( array("competition" => $competition_id )) AS $league ) {
+                
+                $league_id = $league->id;
+                // remove tables
+                $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_table} WHERE `league_id` = '%d' AND `season` = '%s'", $league_id, $season) );
+                // remove matches and rubbers
+                $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_rubbers} WHERE `match_id` IN ( SELECT `id` from {$wpdb->leaguemanager_matches} WHERE `league_id` = '%d' AND `season` = '%s')", $league_id, $season) );
+                $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_matches} WHERE `league_id` = '%d' AND `season` = '%s'", $league_id, $season) );
+                
+            }
+            unset($competition->seasons[$season]);
         }
-        unset($competition->seasons[$season]);
         $this->saveCompetitionSeasons($competition->seasons, $competition->id);
 	}
 
@@ -806,12 +850,24 @@ class LeagueManagerAdminPanel extends LeagueManager
 	{
 		global $wpdb, $leaguemanager;
 
-		$sql = "INSERT INTO {$wpdb->leaguemanager_table} (`team_id`, `season`, `custom`, `league_id`) VALUES ('%d', '%s', '%s', '%d')";
-		$wpdb->query( $wpdb->prepare ( $sql, $team_id, $season, maybe_serialize($custom), $league_id) );
-		$table_id = $wpdb->insert_id;
-
+        $insert = true;
+        
+        if ( $message ) {
+            $tabledtls = $this->checkTableEntry( $league_id, $team_id, $season );
+            if ( $tabledtls ) {
+                $table_id = $tabledtls[0]->id;
+                $messageText = 'Team already in table';
+                $insert = false;
+            }
+        }
+        if ( $insert ) {
+            $sql = "INSERT INTO {$wpdb->leaguemanager_table} (`team_id`, `season`, `custom`, `league_id`) VALUES ('%d', '%s', '%s', '%d')";
+            $wpdb->query( $wpdb->prepare ( $sql, $team_id, $season, maybe_serialize($custom), $league_id) );
+            $table_id = $wpdb->insert_id;
+            $messageText = 'Table entry added';
+        }
 		if ( $message )
-			$leaguemanager->setMessage( __('Table Entry added','leaguemanager') );
+			$leaguemanager->setMessage( __($messageText,'leaguemanager') );
 
 		return $table_id;
 	}
@@ -819,7 +875,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 	function checkTableEntry( $league_id, $team_id, $season )
 	{
 		global $wpdb, $leaguemanager;
-		$query = $wpdb->prepare ( "SELECT COUNT(ID) FROM {$wpdb->leaguemanager_table} WHERE `team_id` = '%d' AND `season` = '%s' AND `league_id` = '%d'", $team_id, $season, $league_id);
+		$query = $wpdb->prepare ( "SELECT `id` FROM {$wpdb->leaguemanager_table} WHERE `team_id` = '%d' AND `season` = '%s' AND `league_id` = '%d'", $team_id, $season, $league_id);
 		$num_teams = $wpdb->get_var( $query );
 		return $num_teams;
 	}
@@ -849,9 +905,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 		$wpdb->query( $wpdb->prepare ( $sql, $title, $stadium, $home, maybe_serialize($roster), $profile, maybe_serialize($custom), basename($logo), $affiliatedclub) );
 		$team_id = $wpdb->insert_id;
 
-        $sql = "INSERT INTO {$wpdb->leaguemanager_team_competition} (`team_id`, `competition_id`, `captain`, `contactno`, `contactemail`, `match_day`, `match_time`) VALUES ('%d', '%d', '%s', '%s', '%s', '%s', '%s')";
-        $wpdb->query( $wpdb->prepare ( $sql, $team_id, $league->competition_id, $captain, $contactno, $contactemail, $matchday, $matchtime ) );
-        $team_competition_id = $wpdb->insert_id;
+        $team_competition_id = $this->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail, $matchday, $matchtime );
 
         if ( isset($_FILES['logo']) && $_FILES['logo']['name'] != '' )
 			$this->uploadLogo($team_id, $_FILES['logo']);
@@ -864,10 +918,20 @@ class LeagueManagerAdminPanel extends LeagueManager
 		if ( $message )
 			$leaguemanager->setMessage( __('Team added','leaguemanager') );
 
-		return $team_competition_id;
+		return $team_id;
 	}
 
+    function addTeamCompetition( $team_id, $competition_id, $captain, $contactno, $contactemail, $matchday = '', $matchtime = NULL )
+    {
+        global $wpdb;
 
+        $sql = "INSERT INTO {$wpdb->leaguemanager_team_competition} (`team_id`, `competition_id`, `captain`, `contactno`, `contactemail`, `match_day`, `match_time`) VALUES ('%d', '%d', '%s', '%s', '%s', '%s', '%s')";
+        $wpdb->query( $wpdb->prepare ( $sql, $team_id, $competition_id, $captain, $contactno, $contactemail, $matchday, $matchtime ) );
+        $team_competition_id = $wpdb->insert_id;
+
+        return $team_competition_id;
+    }
+            
 	/**
 	 * add new team with data from existing team
 	 *
@@ -914,7 +978,11 @@ class LeagueManagerAdminPanel extends LeagueManager
         $league = $leaguemanager->getLeague($league_id);
 
 		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `stadium` = '%s', `logo` = '%s', `home` = '%d', `roster`= '%s', `profile` = '%d', `custom` = '%s' WHERE `id` = %d", $title, $affiliatedclub, $stadium, basename($logo), $home, maybe_serialize($roster), $profile, maybe_serialize($custom), $team_id ) );
-        $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_team_competition} SET `captain` = '%s', `contactno` = '%s', `contactemail` = '%s', `match_day` = '%s', `match_time` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captain, $contactno, $contactemail, $matchday, $matchtime, $team_id, $league->competition_id ) );
+        $team_competition = $wpdb->get_results( $wpdb->prepare("SELECT `id` FROM {$wpdb->leaguemanager_team_competition} WHERE `team_id` = '%d' AND `competition_id` = '%d'", $team_id, $league->competition_id) );
+        if (!isset($team_competition[0]))
+            $this->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail, $matchday, $matchtime );
+        else
+            $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_team_competition} SET `captain` = '%s', `contactno` = '%s', `contactemail` = '%s', `match_day` = '%s', `match_time` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captain, $contactno, $contactemail, $matchday, $matchtime, $team_id, $league->competition_id ) );
 
 		// Delete Image if options is checked
 		if ($del_logo || $overwrite_image) {
@@ -971,6 +1039,81 @@ class LeagueManagerAdminPanel extends LeagueManager
 	}
 
 	/**
+	 * add new Player team
+	 *
+	 * @param string $player1
+	 * @param string $player1Id
+     * @param string $player2
+     * @param string $player2Id
+	 * @param string $contactno
+     * @param string $contactemail
+	 * @param int $affiliatedclub
+	 * @param boolean $message (optional)
+	 * @return void
+	 */
+	function addTeamPlayer( $player1, $player1Id, $player2, $player2Id, $contactno, $contactemail, $affiliatedclub, $league_id, $message = true )
+	{
+		global $wpdb, $leaguemanager;
+        $league = $leaguemanager->getLeague($league_id);
+        $status = "P";
+        if ( $player2Id == 0 ) {
+            $title = $player1;
+            $roster = array($player1Id);
+        } else {
+            $title = $player1.' / '.$player2;
+            $roster = array($player1Id, $player2Id);
+        }
+		$sql = "INSERT INTO {$wpdb->leaguemanager_teams} (`title`, `affiliatedclub`, `roster`, `status` ) VALUES ('%s', '%d', '%s', '%s')";
+		$wpdb->query( $wpdb->prepare ( $sql, $title, $affiliatedclub, maybe_serialize($roster), $status ) );
+		$team_id = $wpdb->insert_id;
+
+        $team_competition_id = $this->addTeamCompetition( $team_id, $league->competition_id, '', $contactno, $contactemail );
+
+		if ( $message )
+			$leaguemanager->setMessage( __('Player Team added','leaguemanager') );
+
+		return $team_id;
+	}
+
+	/**
+	 * edit team Player
+	 *
+	 * @param int $team_id
+	 * @param string $player1
+     * @param int $player1Id
+     * @param string $player2
+     * @param int $player2Id
+	 * @param string $contactno
+     * @param string $contactemail
+     * @param int $affiliatedclub
+     * @param int $league_id
+	 * @return void
+	 */
+	function editTeamPlayer( $team_id, $player1, $player1Id, $player2, $player2Id, $contactno, $contactemail, $affiliatedclub, $league_id )
+	{
+		global $wpdb, $leaguemanager;
+        $league = $leaguemanager->getLeague($league_id);
+
+        if ( $player2Id == 0 ) {
+            $title = $player1;
+            $roster = array($player1Id);
+        } else {
+            $title = $player1.' / '.$player2;
+            $roster = array($player1Id, $player2Id);
+        }
+
+        $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `roster` = '%s' WHERE `id` = %d", $title, $affiliatedclub, maybe_serialize($roster), $team_id ) );
+        
+        $team_competition = $wpdb->get_results( $wpdb->prepare("SELECT `id` FROM {$wpdb->leaguemanager_team_competition} WHERE `team_id` = '%d' AND `competition_id` = '%d'", $team_id, $league->competition_id) );
+        if (!isset($team_competition[0])) {
+            $this->addTeamCompetition( $team_id, $league->competition_id, '', $contactno, $contactemail );
+        } else {
+            $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_team_competition} SET `contactno` = '%s', `contactemail` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $contactno, $contactemail, $team_id, $league->competition_id ) );
+        }
+
+		$leaguemanager->setMessage( __('Team updated','leaguemanager') );
+	}
+	/**
 	 * display dropdon menu of teams (cleaned from double entries)
 	 *
 	 * @param none
@@ -980,6 +1123,25 @@ class LeagueManagerAdminPanel extends LeagueManager
 	{
 		global $wpdb;
 		$all_teams = $wpdb->get_results( "SELECT `title`, `id` FROM {$wpdb->leaguemanager_teams} ORDER BY `title` ASC" );
+		$teams = array();
+		foreach ( $all_teams AS $team ) {
+			if ( !in_array($team->title, $teams) )
+				$teams[$team->id] = htmlspecialchars(stripslashes($team->title), ENT_QUOTES);
+		}
+		foreach ( $teams AS $team_id => $name )
+			echo "<option value='".$team_id."'>".$name."</option>";
+	}
+
+	/**
+	 * display dropdon menu of team players (cleaned from double entries)
+	 *
+	 * @param none
+	 * @return void
+	 */
+	function teamPlayersDropdownCleaned()
+	{
+		global $wpdb;
+		$all_teams = $wpdb->get_results( "SELECT `title`, `id` FROM {$wpdb->leaguemanager_teams} WHERE `status` = 'P' ORDER BY `title` ASC" );
 		$teams = array();
 		foreach ( $all_teams AS $team ) {
 			if ( !in_array($team->title, $teams) )
@@ -1411,7 +1573,6 @@ class LeagueManagerAdminPanel extends LeagueManager
 	function updateResults( $league_id, $matches, $home_points, $away_points, $home_team, $away_team, $custom, $season, $final = false, $message = true )
 	{
 		global $wpdb, $leaguemanager;
-
 		$this->league_id = $league_id;
 		$league = $leaguemanager->getLeague($this->league_id);
 		$season = $leaguemanager->getSeason($league, $season);
@@ -1421,19 +1582,18 @@ class LeagueManagerAdminPanel extends LeagueManager
 		if ( !empty($matches) ) {
 			while ( list($match_id) = each($matches) ) {
 
-				$home_points[$match_id] = ( '' === $home_points[$match_id] ) ? 'NULL' : $home_points[$match_id];
-				$away_points[$match_id] = ( '' === $away_points[$match_id] ) ? 'NULL' : $away_points[$match_id];
-
-				// Support for penalty and overtime hardcoded to determine winner of match
-				if ( isset($custom[$match_id]['penalty']) && !empty($custom[$match_id]['penalty']['home']) && !empty($custom[$match_id]['penalty']['home']) )
-					$points = array( 'home' => $custom[$match_id]['penalty']['home'], 'away' => $custom[$match_id]['penalty']['away'] );
-				elseif ( isset($custom[$match_id]['overtime']) && !empty($custom[$match_id]['overtime']['home']) && !empty($custom[$match_id]['overtime']['away']) )
-					$points = array( 'home' => $custom[$match_id]['overtime']['home'], 'away' => $custom[$match_id]['overtime']['away'] );
-				else
-					$points = array( 'home' => $home_points[$match_id], 'away' => $away_points[$match_id] );
-
-				if ( ( $home_points[$match_id] == 'NULL' ) && ( $away_points[$match_id]) == 'NULL' ) {
+                $score = apply_filters('leaguemanager_get_scores_'.$league->sport, $match_id, $custom[$match_id]['sets']);
+                if ( isset($score['home']) && isset($score['guest']) ) {
+                    $home_points[$match_id] = $score['home'];
+                    $away_points[$match_id] = $score['guest'];
+                } else {
+                    $home_points[$match_id] = ( '' === $home_points[$match_id] ) ? 'NULL' : $home_points[$match_id];
+                    $away_points[$match_id] = ( '' === $away_points[$match_id] ) ? 'NULL' : $away_points[$match_id];
+                }
+                
+				if ( ( $home_points[$match_id] == 'NULL' ) && ( $away_points[$match_id]) == 'NULL' && ( $home_team[$match_id] != -1 ) && ( $away_team[$match_id] != -1 ) ) {
 				} else {
+                    $points = array( 'home' => $home_points[$match_id], 'away' => $away_points[$match_id] );
 					$winner = $this->getMatchResult( $points['home'], $points['away'], $home_team[$match_id], $away_team[$match_id], 'winner' );
 					$loser = $this->getMatchResult($points['home'], $points['away'], $home_team[$match_id], $away_team[$match_id], 'loser' );
 
@@ -1485,6 +1645,12 @@ class LeagueManagerAdminPanel extends LeagueManager
 		if ( $home_points > $away_points ) {
 			$match['winner'] = $home_team;
 			$match['loser'] = $away_team;
+        } elseif ( $home_team == -1 ) {
+            $match['winner'] = $away_team;
+            $match['loser'] = 0;
+        } elseif ( $away_team == -1 ) {
+            $match['winner'] = $home_team;
+            $match['loser'] = 0;
 		} elseif ( $home_points < $away_points ) {
 			$match['winner'] = $away_team;
 			$match['loser'] = $home_team;
@@ -1836,10 +2002,11 @@ class LeagueManagerAdminPanel extends LeagueManager
 	{
 		global $wpdb, $leaguemanager;
 
+        $fullname = $firstname.' '.$surname;
 		if ( $btm == '' ) {
-			$wpdb->query( $wpdb->prepare("INSERT INTO {$wpdb->leaguemanager_players} (`firstname`, `surname`, `gender`) VALUES ('%s', '%s', '%s')", $firstname, $surname, $gender) );
+			$wpdb->query( $wpdb->prepare("INSERT INTO {$wpdb->leaguemanager_players} (`firstname`, `surname`, `fullname`, `gender`) VALUES ('%s', '%s', '%s', '%s')", $firstname, $surname, $fullname, $gender) );
 		} else {
-			$wpdb->query( $wpdb->prepare("INSERT INTO {$wpdb->leaguemanager_players} (`firstname`, `surname`, `gender`, `btm`) VALUES ('%s', '%s', '%s', '%d')", $firstname, $surname, $gender, $btm) );
+			$wpdb->query( $wpdb->prepare("INSERT INTO {$wpdb->leaguemanager_players} (`firstname`, `surname`, `fullname`, `gender`, `btm`) VALUES ('%s', '%s', '%s', '%s', '%d')", $firstname, $surname, $fullname, $gender, $btm) );
 		}
 		$player_id = $wpdb->insert_id;
 

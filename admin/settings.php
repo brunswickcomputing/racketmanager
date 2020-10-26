@@ -70,7 +70,7 @@
 			</ul>
 			
 			<div id='general' class='settings-block-container'>
-				<h2><?php _e( 'General', 'projectmanager' ) ?></h2>
+				<h2><?php _e( 'General', 'leaguemanager' ) ?></h2>
 				<div class="settings-block">
 					<table class="lm-form-table">
 						<tr valign="top">

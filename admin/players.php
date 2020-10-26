@@ -1,7 +1,7 @@
 <!-- Add Player -->
 <form action="" method="post">
 	<?php wp_nonce_field( 'leaguemanager_add-player' ) ?>
-	<table class="form-table">
+	<table class="lm-form-table">
 		<tr valign="top">
 			<th scope="row"><label for="firstname"><?php _e( 'First Name', 'leaguemanager' ) ?></label></th>
 			<td><input required="required" placeholder="<?php _e( 'Enter first name', 'leaguemanager') ?>" type="text" name="firstname" id="firstname" value="" size="30" style="margin-bottom: 1em;" /></td>

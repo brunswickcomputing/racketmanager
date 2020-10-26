@@ -69,7 +69,7 @@
 				<th style="text-align: center;"><?php _e( 'Score', 'leaguemanager' ) ?></th>
 			</tr>
 		</thead>
-		<tbody id="the-list-matches-<?php echo $group ?>" class="form-table">
+		<tbody id="the-list-matches-<?php echo $group ?>" class="lm-form-table">
 <?php if ( $matches ) { $class = ''; ?>
 	<?php foreach ( $matches AS $match ) { $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 				<tr class="<?php echo $class ?>">

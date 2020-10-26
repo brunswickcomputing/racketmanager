@@ -81,7 +81,6 @@ class LeagueManagerShortcodes extends LeagueManager
 	function showStandings( $atts, $widget = false )
 	{
 		global $wpdb, $leaguemanager;
-
 		extract(shortcode_atts(array(
 			'league_id' => 0,
 			'league_name' => '',
@@ -316,7 +315,7 @@ class LeagueManagerShortcodes extends LeagueManager
 		
 		$team_name = str_replace('-', ' ', get_query_var('team'));
 		if ( !$team_name == null ) {
-			$team_id = $leaguemanager->getTeamID($team_name, $league_id, $season);
+			$team_id = $leaguemanager->getTeamID($team_name);
 		}
 		if ( !empty($team) || (isset($_GET['team_id']) && !empty($_GET['team_id'])) )
 			$team_id = !empty($team) ? $team : (int)$_GET['team_id'];
@@ -692,7 +691,7 @@ class LeagueManagerShortcodes extends LeagueManager
 
 		foreach ( $teams AS $i => $team ) {
 			// Get next match
-			$next_matches = $leaguemanager->getMatches(array("team_id" => $team->id, "time" => "next"));
+			$next_matches = $leaguemanager->getMatches(array("team_id" => $team->id, "time" => "next", "league_id" => $team->league_id));
 			$next_match = isset($next_matches[0]) ? $next_matches[0] : false;
 			if ( $next_match ) {
 				if ( $next_match->home_team == $team->id ) {
@@ -706,7 +705,7 @@ class LeagueManagerShortcodes extends LeagueManager
 			}
 
 			// Get last match
-			$prev_matches = $leaguemanager->getMatches(array("team_id" => $team->id, "time" => "prev", "limit" => 1, "orderby" => array("date" => "DESC")));
+			$prev_matches = $leaguemanager->getMatches(array("team_id" => $team->id, "time" => "prev", "limit" => 1, "orderby" => array("date" => "DESC"), "league_id" => $team->league_id));
 			$prev_match = isset($prev_matches[0]) ? $prev_matches[0] : false;
 			if ( $prev_match ) {
 				if ( $prev_match->home_team == $team->id ) {
@@ -771,7 +770,7 @@ class LeagueManagerShortcodes extends LeagueManager
 		$league = $leaguemanager->getLeague( $team->league_id );
 
 		// Get next match
-		$next_matches = $leaguemanager->getMatches(array("team_id" => $team->id, "time" => "next"));
+		$next_matches = $leaguemanager->getMatches(array("team_id" => $team->id, "time" => "next", "league_id" => $team->league_id));
 		$next_match = isset($next_matches[0]) ? $next_matches[0] : false;
 		if ( $next_match ) {
 			if ( $next_match->home_team == $team->id ) {
@@ -784,7 +783,7 @@ class LeagueManagerShortcodes extends LeagueManager
 		}
 
 		// Get last match
-		$prev_matches = $leaguemanager->getMatches(array("team_id" => $team->id, "time" => "prev", "limit" => 1, "orderby" => array("date" => "DESC")));
+		$prev_matches = $leaguemanager->getMatches(array("team_id" => $team->id, "time" => "prev", "limit" => 1, "orderby" => array("date" => "DESC"), "league_id" => $team->league_id));
 		$prev_match = $prev_matches[0];
 		if ( $prev_match ) {
 			if ( $prev_match->home_team == $team->id ) {
@@ -1124,11 +1123,12 @@ class LeagueManagerShortcodes extends LeagueManager
 				}
 			}
 
-			$playerstats[$p]		= array('playername' => $playername, 'team' => $team, 'played' => $played, 'won' => $won, 'lost' => $lost, 'setsWon' => $setsWon, 'setsConceded' => $setsConceded, 'gamesWon' => $gamesWon, 'gamesConceded' => $gamesConceded );
+			$winpct = $won*100/$played;
+			$playerstats[$p]		= array('playername' => $playername, 'team' => $team, 'played' => $played, 'won' => $won, 'lost' => $lost, 'setsWon' => $setsWon, 'setsConceded' => $setsConceded, 'gamesWon' => $gamesWon, 'gamesConceded' => $gamesConceded, 'winpct' => $winpct );
 			
 		}
 		
-		$playerstats = array_msort($playerstats, array('won'=>SORT_DESC, 'playername'=>SORT_ASC));
+		$playerstats = array_msort($playerstats, array('won'=>SORT_DESC, 'winpct'=>SORT_DESC, 'setsWon'=>SORT_DESC, 'gamesWon'=>SORT_DESC, 'playername'=>SORT_ASC));
 		
 		if ( empty($template) && $this->checkTemplate('players-'.$league->sport) ) {
 			$filename = 'players-'.$league->sport;
@@ -1149,14 +1149,14 @@ class LeagueManagerShortcodes extends LeagueManager
 	 * @param int $home
 	 * @return string
 	 */
-	function getCrosstableField($curr_team_id, $opponent_id, $home)
+	function getCrosstableField($curr_team_id, $opponent_id, $home, $league_id)
 	{
 		global $wpdb, $leaguemanager;
-		$match = $leaguemanager->getMatches( array("home_team" => $curr_team_id, "away_team" => $opponent_id) );
+		$match = $leaguemanager->getMatches( array("home_team" => $curr_team_id, "away_team" => $opponent_id, "league_id" => $league_id) );
         if ($match) {
 			$score = $this->getScore($curr_team_id, $opponent_id, $match[0], $home);
 		} else {
-			$score = "";
+			$score = "<td>n/a</td>";
 		}
 		
 		return $score;

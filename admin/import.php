@@ -18,13 +18,14 @@ if ( isset($_POST['import']) ) {
 	<form action="" method="post" enctype="multipart/form-data">
 		<?php wp_nonce_field( 'leaguemanager_import-datasets' ) ?>
 		
-		<table class="form-table">
+		<table class="lm-form-table">
 			<tr>
 				<th><label for="mode"><?php _e('Data', 'leaguemanager'); ?></label></th>
 				<td>
 					<select size="1" name="mode" id="mode">
 						<option><?php _e( 'Select', 'leaguemanager') ?></option>
 						<option value="teams"><?php _e( 'Teams', 'leaguemanager' ) ?></option>
+						<option value="table"><?php _e( 'Table', 'leaguemanager' ) ?></option>
 						<option value="fixtures"><?php _e( 'Fixtures', 'leaguemanager') ?></option>
 						<option value="players"><?php _e( 'Players', 'leaguemanager') ?></option>
 						<option value="roster"><?php _e( 'Roster', 'leaguemanger') ?></option>

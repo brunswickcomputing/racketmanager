@@ -104,7 +104,8 @@ class LeagueManagerTennis extends LeagueManager
 	 */
 	function getPointRules( $rules )
 	{
-		$rules[$this->key] = array( 'forwin' => 3, 'fordraw' => 0, 'forloss' => 0, 'forwin_split' => 2, 'forloss_split' => 1 );
+/*		$rules[$this->key] = array( 'forwin' => 3, 'fordraw' => 0, 'forloss' => 0, 'forwin_split' => 2, 'forloss_split' => 1 ); */
+		$rules[$this->key] = array( 'forwin' => 1, 'fordraw' => 0, 'forloss' => 0, 'forwin_split' => 0, 'forloss_split' => 0, 'forshare' => 0.5 );
 
 		return $rules;
 	}
@@ -155,8 +156,8 @@ class LeagueManagerTennis extends LeagueManager
 
 		extract($rule);
 		$data = $this->getStandingsData($team_id);
-		$points['plus'] = $data['straight_set']['win'] * $forwin + $data['split_set']['win'] * $forwin_split + $data['split_set']['lost'] * $forloss_split;
-		$points['minus'] = $data['straight_set']['lost'] * $forwin + $data['split_set']['win'] * $forloss_split + $data['split_set']['lost'] * $forwin_split;
+		$points['plus'] = $data['sets_won'] + $data['straight_set']['win'] * $forwin + $data['split_set']['win'] * $forwin_split + $data['split_set']['lost'] * $forloss_split + $data['sets_shared'] * $forshare;
+		$points['minus'] = $data['sets_allowed'] + $data['straight_set']['lost'] * $forwin + $data['split_set']['win'] * $forloss_split + $data['split_set']['lost'] * $forwin_split + $data['sets_shared'] * $forshare;
 		return $points;
 	}
 
@@ -294,12 +295,12 @@ class LeagueManagerTennis extends LeagueManager
 	{
 		global $wpdb, $leaguemanager;
 
-		$team = $wpdb->get_results( "SELECT `custom` FROM {$wpdb->leaguemanager_teams} WHERE `id` = {$team_id}" );
+		$team = $wpdb->get_results( "SELECT `custom` FROM {$wpdb->leaguemanager_table} WHERE `id` = {$team_id}" );
 		$team = $team[0];
 		$custom = isset($team->custom) ? maybe_unserialize($team->custom) : '';
 		$custom = $this->getStandingsData($team_id, $custom);
 
-		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_teams} SET `custom` = '%s' WHERE `id` = '%d'", maybe_serialize($custom), $team_id ) );
+		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `custom` = '%s' WHERE `id` = '%d'", maybe_serialize($custom), $team_id ) );
 	}
 
 
@@ -340,6 +341,7 @@ class LeagueManagerTennis extends LeagueManager
         $data['games_won'] = 0;
         $data['sets_won'] = 0;
         $data['sets_allowed'] = 0;
+		$data['sets_shared'] = 0;
 
 		$league = $leaguemanager->getCurrentLeague();
 		$season = $leaguemanager->getSeason($league);
@@ -360,32 +362,42 @@ class LeagueManagerTennis extends LeagueManager
                         if ($rubber->winner_id == $team_id) {               //home winner
                             if ($match->home_team == $team_id)  {           //home team
 
-                                if ($rubber->away_points > "0" ) {          //away team got a set
-                                    $data['split_set']['win'] +=1;
-                                } else {                                    //away team got no set
-                                    $data['straight_set']['win'] +=1;
-                                }
-                                $data['sets_won'] += $rubber->home_points;
-                                $data['sets_allowed'] += $rubber->away_points;
-                                for ( $j = 1; $j <= $league->num_sets-1; $j++  ) {
+                                for ( $j = 1; $j <= $league->num_sets; $j++  ) {
                                     $data['games_allowed'] += $rubber->sets[$j]['player2'];
                                     $data['games_won'] += $rubber->sets[$j]['player1'];
+									if ( $rubber->sets[$j]['player1'] > $rubber->sets[$j]['player2'] ) {
+										$data['sets_won'] += 1;
+									} elseif ( $rubber->sets[$j]['player1'] < $rubber->sets[$j]['player2'] ) {
+										$data['sets_allowed'] += 1;
+									} elseif ( $rubber->sets[$j]['player1'] == 'S' ) {
+										$data['sets_shared'] += 1;
+									}
                                 }
-
+								if ($rubber->away_points > "0" ) {          //away team got a set
+									$data['split_set']['win'] +=1;
+								} else {                                    //away team got no set
+									$data['straight_set']['win'] +=1;
+								}
+								
                             } else {                                        //away team
-                                if ($rubber->home_points > "0" ) {          //home team got a set
-                                    $data['split_set']['win'] +=1;
-                                } else {                                    //home team got no set
-                                    $data['straight_set']['win'] +=1;
-                                }
-                                $data['sets_won'] += $rubber->away_points;
-                                $data['sets_allowed'] += $rubber->home_points;
-                                for ( $j = 1; $j <= $league->num_sets-1; $j++  ) {
+                                for ( $j = 1; $j <= $league->num_sets; $j++  ) {
                                     $data['games_allowed'] += $rubber->sets[$j]['player1'];
                                     $data['games_won'] += $rubber->sets[$j]['player2'];
+									if ( $rubber->sets[$j]['player2'] > $rubber->sets[$j]['player1'] ) {
+										$data['sets_won'] += 1;
+									} elseif ( $rubber->sets[$j]['player2'] < $rubber->sets[$j]['player1'] ) {
+										$data['sets_allowed'] += 1;
+									} elseif ( $rubber->sets[$j]['player1'] == 'S' ) {
+										$data['sets_shared'] += 1;
+									}
                                 }
+								if ($rubber->home_points > "0" ) {          //home team got a set
+									$data['split_set']['win'] +=1;
+								} else {                                    //home team got no set
+									$data['straight_set']['win'] +=1;
+								}
                             }
-                        
+							
                         } elseif ($rubber->loser_id == $team_id) {          //away winner
                             if ($match->home_team == $team_id) {            //home team
                                 if ($rubber->home_points > "0") {           //home team got a set
@@ -393,11 +405,16 @@ class LeagueManagerTennis extends LeagueManager
                                 } else {                                    //home team got no set
                                     $data['straight_set']['lost'] +=1;
                                 }
-                                $data['sets_won'] += $rubber->home_points;
-                                $data['sets_allowed'] += $rubber->away_points;
-                                for ( $j = 1; $j <= $league->num_sets-1; $j++  ) {
-                                    $data['games_allowed'] += $rubber->sets[$j]['player1'];
-                                    $data['games_won'] += $rubber->sets[$j]['player2'];
+                                for ( $j = 1; $j <= $league->num_sets; $j++  ) {
+                                    $data['games_allowed'] += $rubber->sets[$j]['player2'];
+                                    $data['games_won'] += $rubber->sets[$j]['player1'];
+									if ( $rubber->sets[$j]['player1'] > $rubber->sets[$j]['player2'] ) {
+										$data['sets_won'] += 1;
+									} elseif ( $rubber->sets[$j]['player1'] < $rubber->sets[$j]['player2'] ) {
+										$data['sets_allowed'] += 1;
+									} elseif ( $rubber->sets[$j]['player1'] == 'S' ) {
+										$data['sets_shared'] += 1;
+									}
                                 }
                             } else {                                        //away team
                                 if ($rubber->away_points > "0") {           //away team got a set
@@ -405,16 +422,60 @@ class LeagueManagerTennis extends LeagueManager
                                 } else {                                    //away team got no set
                                     $data['straight_set']['lost'] +=1;
                                 }
-                                $data['sets_won'] += $rubber->away_points;
-                                $data['sets_allowed'] += $rubber->home_points;
-                                for ( $j = 1; $j <= $league->num_sets-1; $j++  ) {
-                                    $data['games_allowed'] += $rubber->sets[$j]['player2'];
-                                    $data['games_won'] += $rubber->sets[$j]['player1'];
+                                for ( $j = 1; $j <= $league->num_sets; $j++  ) {
+                                    $data['games_allowed'] += $rubber->sets[$j]['player1'];
+                                    $data['games_won'] += $rubber->sets[$j]['player2'];
+									if ( $rubber->sets[$j]['player2'] > $rubber->sets[$j]['player1'] ) {
+										$data['sets_won'] += 1;
+									} elseif ( $rubber->sets[$j]['player2'] < $rubber->sets[$j]['player1'] ) {
+										$data['sets_allowed'] += 1;
+									} elseif ( $rubber->sets[$j]['player1'] == 'S' ) {
+										$data['sets_shared'] += 1;
+									}
                                 }
                             }
                         
-                        }
-                            
+						} elseif ( $rubber->winner_id == -1 ) {										//drawn rubber
+							if ($match->home_team == $team_id)  {           //home team
+								
+								for ( $j = 1; $j <= $league->num_sets; $j++  ) {
+									$data['games_allowed'] += $rubber->sets[$j]['player2'];
+									$data['games_won'] += $rubber->sets[$j]['player1'];
+									if ( $rubber->sets[$j]['player1'] > $rubber->sets[$j]['player2'] ) {
+										$data['sets_won'] += 1;
+									} elseif ( $rubber->sets[$j]['player1'] < $rubber->sets[$j]['player2'] ) {
+										$data['sets_allowed'] += 1;
+									} elseif ( $rubber->sets[$j]['player1'] == 'S' ) {
+										$data['sets_shared'] += 1;
+									}
+								}
+								if ($rubber->away_points > "0" ) {          //away team got a set
+									$data['split_set']['win'] +=1;
+								} else {                                    //away team got no set
+									$data['straight_set']['win'] +=1;
+								}
+								
+							} else {                                        //away team
+								for ( $j = 1; $j <= $league->num_sets; $j++  ) {
+									$data['games_allowed'] += $rubber->sets[$j]['player1'];
+									$data['games_won'] += $rubber->sets[$j]['player2'];
+									if ( $rubber->sets[$j]['player2'] > $rubber->sets[$j]['player1'] ) {
+										$data['sets_won'] += 1;
+									} elseif ( $rubber->sets[$j]['player2'] < $rubber->sets[$j]['player1'] ) {
+										$data['sets_allowed'] += 1;
+									} elseif ( $rubber->sets[$j]['player1'] == 'S' ) {
+										$data['sets_shared'] += 1;
+									}
+								}
+								if ($rubber->home_points > "0" ) {          //home team got a set
+									$data['split_set']['win'] +=1;
+								} else {                                    //home team got no set
+									$data['straight_set']['win'] +=1;
+								}
+							}
+							
+						}
+						
                     }
                 } else {
                     // First check for Split Set, else it's straight set
@@ -785,10 +846,10 @@ class LeagueManagerTennis extends LeagueManager
 	 */
 	function importTeams( $custom, $line )
 	{
-        $custom['sets_won'] = isset($line[17]) ? $line[17] : '';
-        $custom['sets_allowed'] = isset($line[18]) ? $line[18] : '';
-		$custom['games_won'] = isset($line[19])? $line[19] : '';
-        $custom['games_allowed'] = isset($line[20])? $line[20] : '';
+        $custom['sets_won'] = isset($line[8]) ? $line[8] : '';
+        $custom['sets_allowed'] = isset($line[9]) ? $line[9] : '';
+		$custom['games_won'] = isset($line[10])? $line[10] : '';
+        $custom['games_allowed'] = isset($line[11])? $line[11] : '';
 
 		return $custom;
 	}

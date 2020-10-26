@@ -44,7 +44,7 @@
 					<th class="num"><?php _e( '+/- Points', 'leaguemanager' ) ?></th>
 				</tr>
 			</thead>
-			<tbody id="<?php echo ( $league->mode == 'championship' ) ? "the-list-standings-".$group : "the-list-standings" ?>" class="form-table standings-table <?php if ($league->team_ranking == 'manual') echo 'sortable' ?>">
+			<tbody id="<?php echo ( $league->mode == 'championship' ) ? "the-list-standings-".$group : "the-list-standings" ?>" class="lm-form-table standings-table <?php if ($league->team_ranking == 'manual') echo 'sortable' ?>">
 			<?php $class = ''; ?>
 <?php foreach( $teams AS $i => $team ) { $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 				<tr class="<?php echo $class ?>" id="team_<?php echo $team->id ?>">

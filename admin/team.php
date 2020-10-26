@@ -18,7 +18,7 @@ Leaguemanager.reInit();
 			$form_title = __( 'Add Team', 'leaguemanager' );
 			$form_action = __( 'Add', 'leaguemanager' );
 			$league_id = intval($_GET['league_id']);
-			$team = (object)array( 'title' => '', 'home' => 0, 'id' => '', 'logo' => '', 'website' => '', 'captain' => '', 'contactno' => '', 'contactemail' => '', 'stadium' => '', 'roster' => array('id' => '', 'cat_id' => '') );
+			$team = (object)array( 'title' => '', 'home' => 0, 'id' => '', 'logo' => '', 'website' => '', 'captain' => '', 'contactno' => '', 'contactemail' => '', 'stadium' => '', 'match_day' => '', 'match_time' => '', 'roster' => array('id' => '', 'cat_id' => '' ) );
 		}
 		$league = $leaguemanager->getLeague( $league_id );
 		$season = isset($_GET['season']) ? htmlspecialchars(strip_tags($_GET['season'])) : '';
@@ -43,7 +43,7 @@ Leaguemanager.reInit();
 		
 			<?php wp_nonce_field( 'leaguemanager_manage-teams' ) ?>
 
-			<table class="form-table">
+			<table class="lm-form-table">
 			<tr valign="top">
 				<th scope="row" style="width: 225px;"><label for="team"><?php _e( 'Team', 'leaguemanager' ) ?></label></th>
 				<td>

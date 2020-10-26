@@ -44,7 +44,7 @@
 	<?php wp_nonce_field( 'leaguemanager_add-league' ) ?>
 	<input type="hidden" name="competition_id" value="<?php echo $competition_id ?>" />
 	<input type="hidden" name="league_id" value="<?php echo $league_id ?>" />
-	<table class="form-table">
+	<table class="lm-form-table">
 		<tr valign="top">
 			<th scope="row"><label for="league_title"><?php _e( 'League', 'leaguemanager' ) ?></label></th>
 			<td><input type="text" required="required" placeholder="<?php _e( 'Enter new league name', 'leaguemanager') ?>"name="league_title" id="league_title" value="<?php echo $league_title ?>" size="30" /></td>

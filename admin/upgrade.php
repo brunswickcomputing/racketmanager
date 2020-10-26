@@ -15,6 +15,25 @@ function leaguemanager_upgrade() {
 
 	$lmLoader->install();
 
+	if (version_compare($installed, '5.1.0', '<')) {
+
+		$wpdb->query( "INSERT INTO {$wpdb->leaguemanager_table} (`team_id`, `league_id`, `season`, `points_plus`, `points_minus`, `points2_plus`, `points2_minus`, `add_points`, `done_matches`, `won_matches`, `draw_matches`, `lost_matches`, `diff`, `group`, `rank`, `profile`, `status`, `custom`) ( SELECT `id`, `league_id`, `season`, `points_plus`, `points_minus`, `points2_plus`, `points2_minus`, `add_points`, `done_matches`, `won_matches`, `draw_matches`, `lost_matches`, `diff`, `group`, `rank`, `profile`, `status`, `custom` FROM wp_leaguemanager_teams )" );
+		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `league_id` ");
+		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `season` ");
+		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `points_plus` ");
+		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `points_minus` ");
+		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `points2_plus` ");
+		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `points2_minus` ");
+		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `add_points` ");
+		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `done_matches` ");
+		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `won_matches` ");
+		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `draw_matches` ");
+		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `lost_matches` ");
+		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `diff` ");
+		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `group` ");
+		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `rank` ");
+
+	}
 	/*
 	* Update version and dbversion
 	*/
@@ -95,7 +114,7 @@ function leaguemanager_upgrade_292() {
 <h2><?php _e( 'Upgrade to Version 2.9.2', 'leaguemanager' ) ?></h2>
 
 <form action="" method="post">
-<table class="form-table">
+<table class="lm-form-table">
 <tr>
 	<th scope="row"><label for="league"><?php _e( 'League', 'leaguemanager' ) ?></label></th>
 	<td>

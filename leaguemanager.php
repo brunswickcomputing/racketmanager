@@ -38,7 +38,7 @@ class LeagueManagerLoader
 	 *
 	 * @var string
 	 */
-	var $version = '5.0.1';
+	var $version = '5.1.0';
 
 
 	/**
@@ -46,7 +46,7 @@ class LeagueManagerLoader
 	 *
 	 * @var string
 	 */
-	var $dbversion = '5.0.0';
+	var $dbversion = '5.1.0';
 
 
 	/**
@@ -312,6 +312,7 @@ class LeagueManagerLoader
 	{
 		global $wpdb;
 		$wpdb->leaguemanager = $wpdb->prefix . 'leaguemanager_leagues';
+		$wpdb->leaguemanager_table = $wpdb->prefix . 'leaguemanager_table';
 		$wpdb->leaguemanager_teams = $wpdb->prefix . 'leaguemanager_teams';
 		$wpdb->leaguemanager_matches = $wpdb->prefix . 'leaguemanager_matches';
         $wpdb->leaguemanager_rubbers = $wpdb->prefix . 'leaguemanager_rubbers';
@@ -350,16 +351,6 @@ class LeagueManagerLoader
 		}
 
 		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-		// define bridge to ProjectManager
-		if ( file_exists(WP_PLUGIN_DIR . '/projectmanager/projectmanager.php') && is_plugin_active("projectmanager/projectmanager.php") ) {
-			$p = get_option('projectmanager');
-			if (version_compare($p['version'], '2.4.7', '>=')) {
-				global $lmBridge;
-				require_once(dirname (__FILE__) . '/lib/bridge.php');
-				$lmBridge = new LeagueManagerBridge();
-				$this->bridge = true;
-			}
-		}
 		
 		$lmShortcodes = new LeagueManagerShortcodes($this->bridge);
 	}
@@ -471,6 +462,7 @@ class LeagueManagerLoader
 	 */
 	function loadScripts()
 	{
+		wp_register_script( 'datatables', LEAGUEMANAGER_URL.'/js/datatables.js', array('jquery', 'jquery-ui-core', 'jquery-ui-accordion', 'jquery-ui-tabs', 'jquery-effects-core', 'jquery-effects-slide') );
 		wp_register_script( 'leaguemanager', LEAGUEMANAGER_URL.'/leaguemanager.js', array('jquery', 'jquery-ui-core', 'jquery-ui-accordion', 'jquery-ui-tabs', 'jquery-effects-core', 'jquery-effects-slide', 'sack', 'thickbox'), LEAGUEMANAGER_VERSION );
 		wp_enqueue_script('leaguemanager');
 		?>
@@ -505,11 +497,12 @@ class LeagueManagerLoader
 	function loadStyles()
 	{
 		wp_enqueue_style('thickbox');
-		wp_enqueue_style('leaguemanager', LEAGUEMANAGER_URL . "/style.css", false, '1.0', 'all');
+		wp_enqueue_style('leaguemanager', LEAGUEMANAGER_URL . "/css/style.css", false, '1.0', 'all');
 		
 		wp_register_style('jquery-ui', LEAGUEMANAGER_URL . "/css/jquery/jquery-ui.min.css", false, '1.11.4', 'all');
 		wp_register_style('jquery-ui-structure', LEAGUEMANAGER_URL . "/css/jquery/jquery-ui.structure.min.css", array('jquery-ui'), '1.11.4', 'all');
 		wp_register_style('jquery-ui-theme', LEAGUEMANAGER_URL . "/css/jquery/jquery-ui.theme.min.css", array('jquery-ui', 'jquery-ui-structure'), '1.11.4', 'all');
+		wp_register_style('datatables', LEAGUEMANAGER_URL . "/css/datatables.css", array('jquery-ui'), '1.11.4', 'all');
 		
 		wp_enqueue_style('jquery-ui-structure');
 		wp_enqueue_style('jquery-ui-theme');
@@ -643,39 +636,6 @@ class LeagueManagerLoader
 						PRIMARY KEY ( `id` )) $charset_collate;";
 		maybe_create_table( $wpdb->leaguemanager, $create_leagues_sql );
 
-		$create_teams_sql = "CREATE TABLE {$wpdb->leaguemanager_teams} (
-						`id` int( 11 ) NOT NULL AUTO_INCREMENT ,
-						`status` varchar( 50 ) NOT NULL default '&#8226;',
-						`title` varchar( 100 ) NOT NULL default '',
-						`logo` varchar( 150 ) NOT NULL default '',
-						`captain` varchar( 255 ) NOT NULL default '',
-						`contactno` varchar( 255 ) NOT NULL default '',
-                        `contactemail` varchar( 255 ) NOT NULL default '',
-                        `affiliatedclub` int( 11 ) NOT NULL default 0,
-						`match_day` varchar( 25 ) NOT NULL default '',
-						`match_time` time NULL,
-						`stadium` varchar( 150 ) NOT NULL default '',
-						`home` tinyint( 1 ) NOT NULL default '0',
-						`points_plus` float NOT NULL default '0',
-						`points_minus` float NOT NULL default '0',
-						`points2_plus` int( 11 ) NOT NULL default '0',
-						`points2_minus` int( 11 ) NOT NULL default '0',
-						`add_points` int( 11 ) NOT NULL default '0',
-						`done_matches` int( 11 ) NOT NULL default '0',
-						`won_matches` int( 11 ) NOT NULL default '0',
-						`draw_matches` int( 11 ) NOT NULL default '0',
-						`lost_matches` int( 11 ) NOT NULL default '0',
-						`diff` int( 11 ) NOT NULL default '0',
-						`group` varchar( 30 ) NOT NULL default '',
-						`league_id` int( 11 ) NOT NULL,
-						`season` varchar( 255 ) NOT NULL default '',
-						`rank` int( 11 ) NOT NULL default '0',
-						`roster` longtext NOT NULL default '',
-						`profile` int( 11 ) NOT NULL default '0',
-						`custom` longtext NOT NULL,
-						PRIMARY KEY ( `id` )) $charset_collate;";
-		maybe_create_table( $wpdb->leaguemanager_teams, $create_teams_sql );
-
 		$create_matches_sql = "CREATE TABLE {$wpdb->leaguemanager_matches} (
 						`id` int( 11 ) NOT NULL AUTO_INCREMENT ,
 						`group` varchar( 30 ) NOT NULL default '',
@@ -752,6 +712,48 @@ class LeagueManagerLoader
 		`seasons` longtext NOT NULL,
 		PRIMARY KEY ( `id` )) $charset_collate;";
 		maybe_create_table( $wpdb->leaguemanager_competitions, $create_competitions_sql );
+		
+		$create_table_sql = "CREATE TABLE {$wpdb->leaguemanager_table} (
+		`id` int( 11 ) NOT NULL AUTO_INCREMENT ,
+		`team_id` int( 11 ) NOT NULL,
+		`league_id` int( 11 ) NOT NULL,
+		`season` varchar( 255 ) NOT NULL default '',
+		`points_plus` float NOT NULL default '0',
+		`points_minus` float NOT NULL default '0',
+		`points2_plus` int( 11 ) NOT NULL default '0',
+		`points2_minus` int( 11 ) NOT NULL default '0',
+		`add_points` int( 11 ) NOT NULL default '0',
+		`done_matches` int( 11 ) NOT NULL default '0',
+		`won_matches` int( 11 ) NOT NULL default '0',
+		`draw_matches` int( 11 ) NOT NULL default '0',
+		`lost_matches` int( 11 ) NOT NULL default '0',
+		`diff` int( 11 ) NOT NULL default '0',
+		`group` varchar( 30 ) NOT NULL default '',
+		`rank` int( 11 ) NOT NULL default '0',
+		`profile` int( 11 ) NOT NULL default '0',
+		`status` varchar( 50 ) NOT NULL default '&#8226;',
+		`custom` longtext NOT NULL,
+		PRIMARY KEY ( `id` )) $charset_collate;";
+		maybe_create_table( $wpdb->leaguemanager_table, $create_table_sql );
+		
+		$create_teams_sql = "CREATE TABLE {$wpdb->leaguemanager_teams} (
+		`id` int( 11 ) NOT NULL AUTO_INCREMENT ,
+		`title` varchar( 100 ) NOT NULL default '',
+		`logo` varchar( 150 ) NOT NULL default '',
+		`captain` varchar( 255 ) NOT NULL default '',
+		`contactno` varchar( 255 ) NOT NULL default '',
+		`contactemail` varchar( 255 ) NOT NULL default '',
+		`affiliatedclub` int( 11 ) NOT NULL default 0,
+		`match_day` varchar( 25 ) NOT NULL default '',
+		`match_time` time NULL,
+		`stadium` varchar( 150 ) NOT NULL default '',
+		`home` tinyint( 1 ) NOT NULL default '0',
+		`roster` longtext NOT NULL default '',
+		`profile` int( 11 ) NOT NULL default '0',
+		`custom` longtext NOT NULL,
+		PRIMARY KEY ( `id` )) $charset_collate;";
+		maybe_create_table( $wpdb->leaguemanager_teams, $create_teams_sql );
+		
 }
 
 
@@ -768,6 +770,7 @@ class LeagueManagerLoader
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager_players}" );
         $wpdb->query( "DROP TABLE {$wpdb->leaguemanager_rubbers}" );
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager_matches}" );
+		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager_table}" );
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager_teams}" );
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager_stats}" );
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager}" );
@@ -806,29 +809,6 @@ class LeagueManagerLoader
 		return $this->adminPanel;
 	}
 }
-
-/**
- * Checks if a particular user has a role.
- * Returns true if a match was found.
- *
- * @param string $role Role name.
- * @param int $user_id (Optional) The ID of a user. Defaults to the current user.
- * @return boolean
- *
- * Put together by AppThemes (http://docs.appthemes.com/tutorials/wordpress-check-user-role-function/)
- */
-/*function leaguemanager_check_user_role( $role, $user_id = null ) {
-
-    if ( is_numeric( $user_id ) )
-		$user = get_userdata( $user_id );
-    else
-        $user = wp_get_current_user();
-
-    if ( empty( $user ) )
-		return false;
-
-    return in_array( $role, (array) $user->roles );
-}*/
 
 // Run the Plugin
 global $lmLoader;

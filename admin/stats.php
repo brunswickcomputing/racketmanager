@@ -79,7 +79,7 @@ if ( isset($_GET['match_id']) ) {
 			<th scope="col">&#160;</th>
 			</tr>
 		</thead>
-		<tbody id="stat_<?php echo sanitize_title($stat->name) ?>" class="form-table">
+		<tbody id="stat_<?php echo sanitize_title($stat->name) ?>" class="lm-form-table">
 		<?php $class = ''; ?>
 		<?php $stat->key = sanitize_title($stat->name); $data = (isset($match->{$stat->key})) ? $match->{$stat->key} : ''; ?>
 		<?php foreach ( (array)$data AS $i => $values ) : ?>
@@ -166,7 +166,7 @@ if ( isset($_GET['match_id']) ) {
 </h2>
 
 <form action="" method="post">
-<table class="form-table">
+<table class="lm-form-table">
 <thead>
 	<tr>
 		<th scope="row"><label for="stat_name"><?php _e( 'Name', 'leaguemanager' ) ?></label></th>

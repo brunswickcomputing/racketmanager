@@ -40,7 +40,7 @@
 		<div id="logos" class="settings-block-container">
 			<h2><?php _e( 'Logos', 'leaguemanager' ) ?></h2>
 			<div class="settings-block">
-				<table class="form-table">
+				<table class="lm-form-table">
 					<tr valign="top">
 						<th scope="row">
 							<label for="thumb_size"><?php _e( 'Tiny size', 'leaguemanager' ) ?></label>
@@ -104,7 +104,7 @@
 		<div id="colors" class="settings-block-container">
 			<h2><?php _e( 'Color Scheme', 'leaguemanager' ) ?></h2>
 			<div class="settings-block">
-				<table class='form-table'>
+				<table class='lm-form-table'>
 				<tr valign='top'>
 					<th scope='row'><label for='color_headers'><?php _e( 'Table Headers', 'leaguemanager' ) ?></label></th><td><input type='text' name='color_headers' id='color_headers' value='<?php echo ( isset($options['colors']['headers']) ? ($options['colors']['headers']) : '' ) ?>' size='7' class="leaguemanager-colorpicker color" /><span class="colorbox" style="background-color: <?php echo $options['colors']['headers'] ?>"></span></td>
 				</tr>
@@ -137,7 +137,7 @@
 		<div id="dashboard-widget" class="settings-block-container">
 			<h2><?php _e('Dashboard Widget Support News', 'leaguemanager') ?></h2>
 			<div class="settings-block">
-				<table class='form-table'>
+				<table class='lm-form-table'>
 				<tr valign='top'>
 					<th scope='row'><label for='dashboard_num_items'><?php _e( 'Number of Support Threads', 'leaguemanager' ) ?></label></th><td><input type="number" step="1" min="0" class="small-text" name='dashboard[num_items]' id='dashboard_num_items' value='<?php echo $options['dashboard_widget']['num_items'] ?>' size='2' /></td>
 				</tr>

@@ -19,7 +19,7 @@ The following variables are usable:
 	<th scope="col"><?php _e( 'Round', 'leaguemanger' ) ?></th>
 	<th scope="col" colspan="<?php echo $finals[0]->colspan; ?>" style="text-align: center;"><?php _e( 'Matches', 'leaguemanager' ) ?></th>
 </tr>
-<tbody id="the-list-finals" class="form-table">
+<tbody id="the-list-finals" class="lm-form-table">
 <?php foreach ( $finals AS $final ) : ?>
 <tr class="">
 	<th scope="row"><strong><?php echo $final->name ?></strong></th>
@@ -73,7 +73,7 @@ The following variables are usable:
 			<th><?php _e( 'Score', 'leaguemanager' ) ?></th>
 		</tr>
 		</thead>
-		<tbody id="the-list-<?php echo $final->key ?>" class="form-table">
+		<tbody id="the-list-<?php echo $final->key ?>" class="lm-form-table">
 		<?php foreach ( (array)$final->matches AS $no => $match ) : ?>
 		<tr class="<?php echo $match->class ?>">
 			<td><?php echo $no ?></td>

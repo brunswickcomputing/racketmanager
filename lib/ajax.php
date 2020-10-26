@@ -112,7 +112,7 @@ class LeagueManagerAJAX
 				$status = '&#8226;';
 			}
 
-			$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_teams} SET `rank` = '%d', `status` = '%s' WHERE `id` = '%d'", $rank, $status, $team_id ) );
+			$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `rank` = '%d', `status` = '%s' WHERE `team_id` = '%d'", $rank, $status, $team_id ) );
 		}
 	}
 
@@ -126,7 +126,7 @@ class LeagueManagerAJAX
 		global $wpdb, $leaguemanager;
 		$team_id = intval($_POST['team_id']);
 		$points = $_POST['points'];
-		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_teams} SET `add_points` = '%s' WHERE `id` = '%d'", $points, $team_id ) );
+		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `add_points` = '%s' WHERE `team_id` = '%d'", $points, $team_id ) );
 		$leaguemanager->rankTeams(1);
 
 		die("Leaguemanager.doneLoading('loading_".$team_id."')");
@@ -613,15 +613,27 @@ class LeagueManagerAJAX
                             $homescore += 1;
                         } elseif ( $set['player1'] < $set['player2']) {
                             $awayscore += 1;
-                        }
+						} elseif ( $set['player1'] == 'S' ){
+							$homescore += 0.5;
+							$awayscore += 0.5;
+						}
                     }
-                    
+					
                     if ( $homescore > $awayscore) {
                         $winner = $home_team;
                         $loser = $away_team;
-                    } elseif ( $homescore< $awayscore) {
+                    } elseif ( $homescore < $awayscore) {
                         $winner = $away_team;
                         $loser = $home_team;
+					} elseif ( 'NULL' === $homescore && 'NULL' === $awayscore ) {
+						$winner = 0;
+						$loser = 0;
+					} elseif ( '' == $homescore && '' == $awayscore ) {
+						$winner = 0;
+						$loser = 0;
+					} else {
+						$winner = -1;
+						$loser = -1;
                     }
                     
                     if (isset($homeplayer1) || isset($homeplayer2) || isset($awayplayer1) || isset($awayplayer2) || empty($homescore) || empty($awayscore) ) {

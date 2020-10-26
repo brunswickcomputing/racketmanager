@@ -1,7 +1,7 @@
 <!-- Add Roster -->
 <form action="" method="post">
 	<?php wp_nonce_field( 'leaguemanager_add-roster' ) ?>
-	<div class="form-table">
+	<div class="lm-form-table">
 <?php if ( $players = $leaguemanager->getPlayers( array() ) ) { ?>
 		<select size="1" name="player_id" id="player_id">
 			<option><?php _e( 'Select player', 'leaguemanager' ) ?></option>
@@ -26,7 +26,7 @@
 <form action="admin.php?page=leaguemanager" method="get">
 	<input type="hidden" name="page" value="leaguemanager" />
 	<input type="hidden" name="view" value="roster" />
-	<div class="form-table">
+	<div class="lm-form-table">
 <?php if ( $clubs = getClubs() ) { ?>
 		<select size="1" name="club_id" id="club_id">
 			<option><?php _e( 'Select affiliated club', 'leaguemanager' ) ?></option>

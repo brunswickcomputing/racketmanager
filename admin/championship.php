@@ -75,7 +75,7 @@ if (isset($_POST['jquery-ui-tab'])) $tab = intval($_POST['jquery-ui-tab']);
 					<th scope="col"><?php _e( 'Round', 'leaguemanager' ) ?></th>
 					<th scope="col" colspan="<?php echo ($num_first_round > 4) ? 4 : $num_first_round; ?>" style="text-align: center;"><?php _e( 'Matches', 'leaguemanager' ) ?></th>
 				</tr>
-				<tbody id="the-list-finals" class="form-table">
+				<tbody id="the-list-finals" class="lm-form-table">
 				<?php foreach ( $championship->getFinals() AS $final ) : $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 				<?php
 					if ( $matches = $leaguemanager->getMatches( array("league_id" => $league->id, "season" => $season['name'], "final" => $final['key'], "orderby" => array("id" => "ASC"))) ) {
@@ -210,7 +210,7 @@ if (isset($_POST['jquery-ui-tab'])) $tab = intval($_POST['jquery-ui-tab']);
 					<?php do_action( 'matchtable_header_'.$league->sport ); ?>
 				</tr>
 				</thead>
-				<tbody id="the-list-<?php echo $final['key'] ?>" class="form-table">
+				<tbody id="the-list-<?php echo $final['key'] ?>" class="lm-form-table">
 				<?php for ( $i = 1; $i <= ( isset($final['num_matches']) ? $final['num_matches'] : 0 ); $i++ ) : ( isset($matches[0]) ) ? $match = $matches[$i-1] : 0; ?>
 					<?php 
 					$class = ( 'alternate' == $class ) ? '' : 'alternate';

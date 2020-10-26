@@ -52,7 +52,7 @@ case 'XD': _e( 'Mixed Doubles', 'leaguemanager' ); break;
 <!-- Add New Competition -->
 <form action="" method="post">
 	<?php wp_nonce_field( 'leaguemanager_add-competition' ) ?>
-	<table class="form-table">
+	<table class="lm-form-table">
 		<tr valign="top">
 			<th scope="row"><label for="competition_name"><?php _e( 'Competition', 'leaguemanager' ) ?></label></th>
 			<td><input required="required" placeholder="<?php _e( 'Enter name for new competition', 'leaguemanager') ?>" type="text" name="competition_name" id="competition_name" value="" size="30" style="margin-bottom: 1em;" /></td>

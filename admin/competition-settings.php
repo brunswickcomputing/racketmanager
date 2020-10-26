@@ -70,7 +70,7 @@
 			<div id='general' class='settings-block-container'>
 				<h2><?php _e( 'General', 'leaguemanager' ) ?></h2>
 				<div class="settings-block">
-					<table class="form-table">
+					<table class="lm-form-table">
 						<tr valign="top">
 							<th scope="row"><label for="competition_title"><?php _e( 'Title', 'leaguemanager' ) ?></label></th>
 							<td><input type="text" name="competition_title" id="competition_title" value="<?php echo $competition->name ?>" size="30" /></td>
@@ -173,7 +173,7 @@
 			<div id='standings' class='settings-block-container'>
 				<h2><?php _e( 'Standings Table', 'leaguemanager' ) ?></h2>
 				<div class="settings-block">
-					<table class="form-table">
+					<table class="lm-form-table">
 						<tr valign="top">
 							<th scope="row"><label for="standings_table"><?php _e( 'Standings Table Display', 'leaguemanager' ) ?></label></th>
 							<td>
@@ -202,7 +202,7 @@
 			<div id='advanced' class="settings-block-container">
 				<h2><?php _e( 'Advanced', 'leaguemanager' ) ?></h2>
 				<div class="settings-block">
-					<table class="form-table">
+					<table class="lm-form-table">
 						<?php do_action( 'league_settings_'.$competition->sport, $competition ); ?>
 						<?php do_action( 'league_settings_'.$competition->mode, $competition ); ?>
 						<?php do_action( 'league_settings', $competition ); ?>

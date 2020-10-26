@@ -28,7 +28,7 @@ update_option('leaguemanager', $options);
 		<input type="hidden" name="exportkey" value="<?php echo $options['exportkey'] ?>" />
 		<?php wp_nonce_field( 'leaguemanager_export-datasets' ) ?>
 		<h3><?php _e('Options'); ?></h3>
-		<table class="form-table">
+		<table class="lm-form-table">
 		<tr>
 			<th><label for="league_id"><?php _e('League', 'leaguemanager'); ?></label></th>
 			<td>

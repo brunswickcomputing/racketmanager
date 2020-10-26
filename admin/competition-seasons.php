@@ -38,7 +38,7 @@
 <form action="admin.php?page=leaguemanager&amp;subpage=show-competition&competition_id=<?php echo $competition_id ?>" method="post"  style="margin-top: 3em;">
 	<?php wp_nonce_field( 'leaguemanager_add-season' ) ?>
 	<input type="hidden" name="competition_id" value="<?php echo $competition_id ?>" />
-	<table class="form-table">
+	<table class="lm-form-table">
 		<tr valign="top">
 			<th scope="row"><label for="season"><?php _e( 'Season', 'leaguemanager' ) ?></label></th>
 			<td>

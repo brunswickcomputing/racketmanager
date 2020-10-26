@@ -23,6 +23,8 @@ if ( isset($_GET['match_day']) || isset($_GET['team_id']) )
 	$tab = 2;
 if ( !$match_day == '' )
 	$tab = 2;
+wp_enqueue_style('datatables');
+wp_enqueue_script('datatables');
 ?>
 <script type='text/javascript'>
 	jQuery(function() {
@@ -30,6 +32,18 @@ if ( !$match_day == '' )
 			active: <?php echo $tab ?>
 		});
 	});
+	jQuery(document).ready(function(){
+						   jQuery('#playerstats').DataTable( {
+															order: [[ 3, 'desc' ], [ 9, 'desc' ], [ 5, 'desc' ], [ 7, 'desc' ],[ 0, 'asc' ]],
+															fixedHeader: {
+															header: true,
+															footer: true
+															},
+															"pageLength":25,
+															"lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
+															"autoWidth": false
+															});
+						   });
 </script>
 <h2><?php printf("%s &mdash; %s %s", $curr_league->title, __('Season', 'leaguemanager'), $curr_league->season); ?></h2>
 <div id="leaguemanager_archive_selections" class="">

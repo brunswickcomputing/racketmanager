@@ -3,7 +3,7 @@
 Plugin Name: LeagueManager
 Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
 Description: Manage and present sports league results.
-Version: 5.6.1
+Version: 5.6.2
 Author: Paul Moffat, Kolja Schleich, LaMonte Forthun
 
 Copyright 2008-2020  Paul Moffat (email: paul@paarcs.com)
@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 * @author LaMonte Forthun
 * @author Paul Moffat
 * @package LeagueManager
-* @version 5.6.0
+* @version 5.6.2
 * @copyright 2008-2020
 * @license GPL-3
 */
@@ -49,7 +49,7 @@ class LeagueManager {
 	 *
 	 * @var string
 	 */
-	private $version = '5.6.1';
+	private $version = '5.6.2';
 
 	/**
 	 * database version
@@ -66,7 +66,7 @@ class LeagueManager {
 	 */
 	public function __construct() {
         global $wpdb;
-        
+
 		$wpdb->show_errors();
 		$this->loadOptions();
 		$this->defineConstants();
@@ -80,16 +80,16 @@ class LeagueManager {
 			register_uninstall_hook(__FILE__, array('LeagueManagerLoader', 'uninstall'));
 
         add_action( 'widgets_init', array(&$this, 'registerWidget') );
-		
+
 		add_action('wp_enqueue_scripts', array(&$this, 'loadStyles'), 5 );
 		add_action('wp_enqueue_scripts', array(&$this, 'loadScripts') );
-		
+
 		// Add TinyMCE Button
 		add_action( 'init', array(&$this, 'addTinyMCEButton') );
 
         // register AJAX action to show TinyMCE Window
 		add_action( 'wp_ajax_leaguemanager_tinymce_window', array(&$this, 'showTinyMCEWindow') );
-		
+
         add_action( 'wp_loaded', array(&$this, 'add_my_templates') );
 
         add_filter( 'wp_privacy_personal_data_exporters', array(&$this, 'register_privacy_data_exporter') );
@@ -106,13 +106,13 @@ class LeagueManager {
         }
         return $template;
     }
-    
+
     public function filter_admin_page_templates( $templates ) {
         $templates['templates/template_notitle.php'] = __('No Title');
         $templates['templates/template_member_account.php'] = __('Member Account');
         return $templates;
     }
-    
+
     public function add_my_templates() {
         if( is_admin() ) {
             add_filter( 'theme_page_templates', array(&$this, 'filter_admin_page_templates') );
@@ -121,13 +121,13 @@ class LeagueManager {
             add_filter( 'page_template', array(&$this, 'get_my_template') );
         }
     }
-    
+
     public function leaguemanager_privacy_exporter( $email_address, $page = 1 ) {
         $number = 500; // Limit us to avoid timing out
         $page = (int) $page;
-        
+
         $data_to_export = array();
-        
+
         $user = get_user_by( 'email', $email_address );
         if ( ! $user ) {
             return array(
@@ -135,21 +135,21 @@ class LeagueManager {
                          'done' => true,
                          );
         }
-        
+
         $user_meta = get_user_meta( $user->ID );
-        
+
         $user_prop_to_export = array(
                                      'gender'           => __( 'User Gender' ),
                                      'BTM'              => __( 'User BTM' ),
                                      'remove_date'      => __( 'User Removed Date' ),
                                      'contactno'        => __( 'User Contact Number' ),
                                      );
-        
+
         $user_data_to_export = array();
-        
+
         foreach ( $user_prop_to_export as $key => $name ) {
             $value = '';
-            
+
             switch ( $key ) {
                 case 'gender':
                 case 'BTM':
@@ -158,7 +158,7 @@ class LeagueManager {
                     $value = isset($user_meta[ $key ][0]) ? $user_meta[ $key ][0] : '';
                     break;
             }
-            
+
             if ( ! empty( $value ) ) {
                 $user_data_to_export[] = array(
                                                'name'  => $name,
@@ -166,7 +166,7 @@ class LeagueManager {
                                                );
             }
         }
-        
+
         $data_to_export[] = array(
                                   'group_id'    => 'user',
                                   'group_label' => __( 'User' ),
@@ -178,7 +178,7 @@ class LeagueManager {
                      'done' => true,
                      );
     }
-    
+
     /**
 	 * register Widget
 	 */
@@ -225,7 +225,7 @@ class LeagueManager {
 	 */
 	private function loadLibraries() {
         global $leaguemanager_shortcodes, $leaguemanager_login;
-        
+
         // Objects
         require_once (dirname (__FILE__) . '/lib/club.php');
         require_once (dirname (__FILE__) . '/lib/championship.php');
@@ -241,7 +241,7 @@ class LeagueManager {
          */
         // First read files in leaguemanager sports directory, then overwrite with sports files in user stylesheet directory
         $files = array_merge($this->readDirectory(LEAGUEMANAGER_PATH."/sports"), $this->readDirectory(get_stylesheet_directory() . "/sports"));
-        
+
         // load files
         foreach ( $files AS $file ) {
             require_once($file);
@@ -260,7 +260,7 @@ class LeagueManager {
         $leaguemanager_ajax = new LeagueManagerAJAX();
 
 		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
-		
+
 		$leaguemanager_shortcodes = new LeagueManagerShortcodes();
         $leaguemanager_login = new LeagueManagerLogin();
 	}
@@ -281,7 +281,7 @@ class LeagueManager {
             'winPercent' => __( 'Win Percentage', 'leaguemanager' ),
             'last5' => __( 'Last 5 Matches', 'leaguemanager' )
         );
-        
+
         /**
          * Fires when standings options are generated
          *
@@ -293,7 +293,7 @@ class LeagueManager {
 
         return $options;
     }
-    
+
     /**
      * read files in directory
      *
@@ -302,7 +302,7 @@ class LeagueManager {
      */
     public function readDirectory($dir) {
         $files = array();
-        
+
         if ( file_exists($dir) ) {
             if ( $handle = opendir($dir) ) {
                 while ( false !== ($file = readdir($handle)) ) {
@@ -314,10 +314,10 @@ class LeagueManager {
                 }
             }
         }
-        
+
         return $files;
     }
-    
+
 	/**
 	 * load options
 	 *
@@ -334,7 +334,7 @@ class LeagueManager {
 	public function getOptions($index = false) {
 		if ( $index )
 			return $this->options[$index];
-		
+
 		return $this->options;
 	}
 
@@ -357,7 +357,7 @@ class LeagueManager {
 				return true;
 			}
 		}
-		
+
 		load_plugin_textdomain( 'leaguemanager', false, 'leaguemanager/languages' );
 	}
 
@@ -400,21 +400,21 @@ class LeagueManager {
         wp_enqueue_style('leaguemanager-print', LEAGUEMANAGER_URL . "/css/print.css", false, LEAGUEMANAGER_VERSION, 'print');
         wp_enqueue_style('leaguemanager-modal', LEAGUEMANAGER_URL . "/css/modal.css", false, LEAGUEMANAGER_VERSION, 'screen');
 		wp_enqueue_style('leaguemanager', LEAGUEMANAGER_URL . "/css/style.css", false, LEAGUEMANAGER_VERSION, 'screen');
-		
+
 		wp_register_style('jquery-ui', LEAGUEMANAGER_URL . "/css/jquery/jquery-ui.min.css", false, '1.11.4', 'all');
 		wp_register_style('jquery-ui-structure', LEAGUEMANAGER_URL . "/css/jquery/jquery-ui.structure.min.css", array('jquery-ui'), '1.11.4', 'all');
 		wp_register_style('jquery-ui-theme', LEAGUEMANAGER_URL . "/css/jquery/jquery-ui.theme.min.css", array('jquery-ui', 'jquery-ui-structure'), '1.11.4', 'all');
         wp_register_style('jquery-ui-autocomplete', LEAGUEMANAGER_URL . "/css/jquery/jquery-ui.autocomplete.min.css", array('jquery-ui', 'jquery-ui-autocomplete'), '1.11.4', 'all');
 		wp_register_style('datatables', LEAGUEMANAGER_URL . "/css/datatables.css", array('jquery-ui'), '1.11.4', 'all');
-		
+
 		wp_enqueue_style('jquery-ui-structure');
 		wp_enqueue_style('jquery-ui-theme');
-		
+
 		ob_start();
 		require_once(LEAGUEMANAGER_PATH.'/css/colors.css.php');
 		$css = ob_get_contents();
 		ob_end_clean();
-		
+
 		wp_add_inline_style( 'leaguemanager', $css );
 	}
 
@@ -468,7 +468,7 @@ class LeagueManager {
 		require_once( LEAGUEMANAGER_PATH . '/admin/tinymce/window.php' );
 		exit;
 	}
-	
+
     /**
      * get upload directory
      *
@@ -477,14 +477,14 @@ class LeagueManager {
      */
     public function getFilePath( $file = false ) {
         $base = WP_CONTENT_DIR.'/uploads/leagues';
-            
+
         if ( $file ) {
             return $base .'/'. basename($file);
         } else {
             return $base;
         }
     }
-    
+
 	/**
 	 * Activate plugin
 	 */
@@ -522,12 +522,12 @@ class LeagueManager {
             $role->add_cap('export_leagues');
             $role->add_cap('import_leagues');
             $role->add_cap('manage_leaguemanager');
-            
+
             // old rules
             $role->add_cap('leaguemanager');
             $role->add_cap('league_manager');
 	}
-		
+
 		$role = get_role('editor');
 		if ( $role !== null ) {
 			$role->add_cap('league_manager');
@@ -536,7 +536,7 @@ class LeagueManager {
 
 		$this->install();
     }
-            
+
     /**
      * Create login pages
      */
@@ -564,7 +564,7 @@ class LeagueManager {
                                                                    'content' => '[custom-password-reset-form]'
                                                                    )
                                   );
-        
+
         foreach ( $page_definitions as $slug => $page ) {
             // Check that the page doesn't exist already
             $query = new WP_Query( 'pagename=' . $slug );
@@ -660,7 +660,7 @@ class LeagueManager {
                         INDEX( `away_player_2` ),
                         INDEX( `match_id` )) $charset_collate;";
         maybe_create_table( $wpdb->leaguemanager_rubbers, $create_rubbers_sql );
-        
+
 		$create_roster_sql = "CREATE TABLE {$wpdb->leaguemanager_roster} (
                         `id` int( 11 ) NOT NULL AUTO_INCREMENT,
                         `affiliatedclub` int( 11 ) NOT NULL default 0,
@@ -685,7 +685,7 @@ class LeagueManager {
                         `competitiontype` varchar( 255 ) NOT NULL default '',
                         PRIMARY KEY ( `id` )) $charset_collate;";
 		maybe_create_table( $wpdb->leaguemanager_competitions, $create_competitions_sql );
-		
+
 		$create_table_sql = "CREATE TABLE {$wpdb->leaguemanager_table} (
                         `id` int( 11 ) NOT NULL AUTO_INCREMENT ,
                         `team_id` int( 11 ) NOT NULL,
@@ -708,7 +708,7 @@ class LeagueManager {
                         `custom` longtext NOT NULL,
                         PRIMARY KEY ( `id` )) $charset_collate;";
 		maybe_create_table( $wpdb->leaguemanager_table, $create_table_sql );
-		
+
 		$create_teams_sql = "CREATE TABLE {$wpdb->leaguemanager_teams} (
                         `id` int( 11 ) NOT NULL AUTO_INCREMENT ,
                         `title` varchar( 100 ) NOT NULL default '',
@@ -726,7 +726,7 @@ class LeagueManager {
                         `type` varchar( 2 ) NOT NULL default '',
                         PRIMARY KEY ( `id` )) $charset_collate;";
 		maybe_create_table( $wpdb->leaguemanager_teams, $create_teams_sql );
-		
+
         $create_team_competition_sql = "CREATE TABLE {$wpdb->leaguemanager_team_competition} (
                         `id` int( 11 ) NOT NULL AUTO_INCREMENT ,
                         `team_id` int( 11 ) NOT NULL default 0,
@@ -831,7 +831,7 @@ class LeagueManager {
         $wpdb->query( "DROP TABLE {$wpdb->leaguemanager_competitions}" );
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager_seasons}" );
         $wpdb->query( "DROP TABLE {$wpdb->leaguemanager_clubs}" );
-        
+
 		delete_option( 'leaguemanager_widget' );
 		delete_option( 'leaguemanager' );
 
@@ -855,21 +855,21 @@ class LeagueManager {
             $role->remove_cap('export_leagues');
             $role->remove_cap('import_leagues');
             $role->remove_cap('manage_leaguemanager');
-            
+
             // old rules
             $role->remove_cap('leaguemanager');
             $role->remove_cap('league_manager'); // temporary rule
         }
-        
+
         $role = get_role('editor');
         if ( $role !== null ) {
             $role->remove_cap('view_leagues');
-            
+
             // old rules
             $role->remove_cap('leaguemanager');
         }
 	}
-	
+
     /**
      * set message
      *
@@ -880,7 +880,7 @@ class LeagueManager {
         $this->error = $error;
         $this->message = $message;
     }
-    
+
     /**
      * print formatted message
      */
@@ -914,7 +914,7 @@ class LeagueManager {
 
         return $types;
     }
-    
+
     /**
      * get seasons
      *
@@ -962,9 +962,9 @@ class LeagueManager {
             $search = " WHERE ";
             $search .= implode(" AND ", $search_terms);
         }
-        
+
         $sql = "SELECT `id`, `name` FROM {$wpdb->leaguemanager_seasons} $search ORDER BY `name`";
-        
+
         $season = wp_cache_get( md5($sql), 'leaguemanager' );
         if ( !$season ) {
             $season = $wpdb->get_results( $sql );
@@ -972,7 +972,7 @@ class LeagueManager {
         }
 
         if (!isset($season[0])) return false;
-        
+
         $season = $season[0];
 
         return $season;
@@ -987,7 +987,7 @@ class LeagueManager {
      */
     public function getTournaments( $offset=0, $limit=99999999 ) {
         global $wpdb;
-        
+
         $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} ORDER BY `id` ASC LIMIT %d, %d",  intval($offset), intval($limit) );
 
         $tournaments = wp_cache_get( md5($sql), 'leaguemanager' );
@@ -1019,7 +1019,7 @@ class LeagueManager {
 
             $tournaments[$i] = $tournament;
         }
-        
+
         return $tournaments;
     }
 
@@ -1031,7 +1031,7 @@ class LeagueManager {
      */
     public function getTournament( $tournament_id ) {
         global $wpdb;
-        
+
         $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} WHERE `id` = '%d'",  intval($tournament_id) );
 
         $tournament = wp_cache_get( md5($sql), 'leaguemanager' );
@@ -1071,8 +1071,8 @@ class LeagueManager {
      */
     public function getOpenTournaments( $type ) {
         global $wpdb;
-        
-        $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`,`venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`closingdate`, '%%Y-%%m-%%d') AS closingdate, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} WHERE `type` = '%s' AND `closingdate` >= CURDATE() ORDER BY `id` ASC ",  $type );
+
+        $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`closingdate`, '%%Y-%%m-%%d') AS closingdate, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} WHERE `type` = '%s' AND `closingdate` >= CURDATE() ORDER BY `id` ASC ",  $type );
 
         $tournaments = wp_cache_get( md5($sql), 'leaguemanager' );
         if ( !$tournaments ) {
@@ -1107,7 +1107,7 @@ class LeagueManager {
 
             $tournaments[$i] = $tournament;
         }
-        
+
         return $tournaments;
     }
 
@@ -1120,7 +1120,7 @@ class LeagueManager {
      */
     public function getClubs( $offset=0, $limit=99999999 ) {
         global $wpdb;
-        
+
         $sql = $wpdb->prepare( "SELECT `id`, `name`, `website`, `type`, `address`, `latitude`, `longitude`, `contactno`, `founded`, `facilities`, `shortcode`, `matchsecretary` FROM {$wpdb->leaguemanager_clubs} ORDER BY `name` ASC LIMIT %d, %d",  intval($offset), intval($limit) );
 
         $clubs = wp_cache_get( md5($sql), 'leaguemanager' );
@@ -1135,7 +1135,7 @@ class LeagueManager {
 
             $clubs[$i] = $club;
         }
-        
+
         return $clubs;
     }
 
@@ -1158,17 +1158,17 @@ class LeagueManager {
             $name = $wpdb->esc_like(stripslashes($name)).'%';
             $search_terms[] = $wpdb->prepare("`name` like '%s'", $name);
         }
-        
+
         if ( $type ) {
             $search_terms[] = $wpdb->prepare("`competitiontype` = '%s'", $type);
         }
-        
+
         $search = "";
         if (count($search_terms) > 0) {
             $search = " WHERE ";
             $search .= implode(" AND ", $search_terms);
         }
-        
+
         $orderby_string = ""; $i = 0;
         foreach ($orderby AS $order => $direction) {
             if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) $direction = "ASC";
@@ -1177,7 +1177,7 @@ class LeagueManager {
             $i++;
         }
         $orderby = $orderby_string;
-        
+
         $competitions = $wpdb->get_results($wpdb->prepare( "SELECT `name`, `id`, `num_sets`, `num_rubbers`, `type`, `settings`, `seasons`, `competitiontype` FROM {$wpdb->leaguemanager_competitions} $search ORDER BY $orderby LIMIT %d, %d", intval($offset), intval($limit) ));
         $i = 0;
         foreach ( $competitions AS $i => $competition ) {
@@ -1212,13 +1212,13 @@ class LeagueManager {
      */
     public function getTeamID( $title ) {
         global $wpdb;
-        
+
         $team = $wpdb->get_results( $wpdb->prepare("SELECT `id` FROM {$wpdb->leaguemanager_teams} WHERE `title` = '%s'", $title) );
         if (!isset($team[0]))
             return 0;
         else return $team[0]->id;
     }
-    
+
     /**
      * add Team to Table
      *
@@ -1253,12 +1253,12 @@ class LeagueManager {
      */
 	public function checkTableEntry( $league_id, $team_id, $season ) {
 		global $wpdb;
-        
+
 		$query = $wpdb->prepare ( "SELECT `id` FROM {$wpdb->leaguemanager_table} WHERE `team_id` = '%d' AND `season` = '%s' AND `league_id` = '%d'", $team_id, $season, $league_id);
 		$num_teams = $wpdb->get_var( $query );
 		return $num_teams;
 	}
-			
+
     /**
      * add player team
      *
@@ -1333,7 +1333,7 @@ class LeagueManager {
 
         return $team_competition_id;
     }
-            
+
     /**
 	 * gets roster from database
 	 *
@@ -1342,13 +1342,13 @@ class LeagueManager {
 	 */
 	public function getRoster( $args, $output = 'OBJECT' ) {
 	 	global $wpdb;
-	
+
         $defaults = array( 'count' => false, 'team' => false, 'club' => false, 'player' => false, 'gender' => false, 'inactive' => false, 'cache' => true, 'type' => false, 'orderby' => array("display_name" => "ASC" ));
 		$args = array_merge($defaults, (array)$args);
 		extract($args, EXTR_SKIP);
-		
+
 		//$cachekey = md5(implode(array_map(function($entry) { if(is_array($entry)) { return implode($entry); } else { return $entry; } }, $args)) . $output);
-		
+
 		$search_terms = array();
 		if ($team) {
 			$search_terms[] = $wpdb->prepare("`affiliatedclub` in (select `affiliatedclub` from {$wpdb->leaguemanager_teams} where `id` = '%d')", intval($team));
@@ -1357,15 +1357,15 @@ class LeagueManager {
 		if ($club) {
 			$search_terms[] = $wpdb->prepare("`affiliatedclub` = '%d'", intval($club));
 		}
-		
+
 		if ($player) {
 			$search_terms[] = $wpdb->prepare("`player_id` = '%d'", intval($player));
 		}
-		
+
         if ($gender) {
 //            $search_terms[] = $wpdb->prepare("`gender` = '%s'", htmlspecialchars(strip_tags($gender)));
         }
-        
+
         if ($type) {
             $search_terms[] = "`system_record` IS NULL";
         }
@@ -1373,12 +1373,12 @@ class LeagueManager {
         if ($inactive) {
             $search_terms[] = "`removed_date` IS NULL";
         }
-        
+
 		$search = "";
 		if (count($search_terms) > 0) {
 			$search = implode(" AND ", $search_terms);
 		}
-		
+
 		$orderby_string = ""; $i = 0;
 		foreach ($orderby AS $order => $direction) {
 			if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) $direction = "ASC";
@@ -1387,24 +1387,24 @@ class LeagueManager {
 			$i++;
 		}
 		$order = $orderby_string;
-		
+
 		$offset = 0;
-		
+
 		if ( $count ) {
 			$sql = "SELECT COUNT(ID) FROM {$wpdb->leaguemanager_roster}";
 			if ( $search != "") $sql .= " WHERE $search";
 			$cachekey = md5($sql);
 			if ( isset($this->num_players[$cachekey]) && $cache && $count )
 				return intval($this->num_players[$cachekey]);
-			
+
 			$this->num_players[$cachekey] = $wpdb->get_var($sql);
 			return $this->num_players[$cachekey];
 		}
-        
+
         $sql = "SELECT A.`id` as `roster_id`, B.`ID` as `player_id`, `display_name` as fullname, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->leaguemanager_roster} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID`" ;
         if ( $search != "") $sql .= " WHERE $search";
         if ( $order != "") $sql .= " ORDER BY $order";
-        
+
         $rosters = wp_cache_get( md5($sql), 'leaguemanager' );
         if ( !$rosters ) {
             $rosters = $wpdb->get_results( $sql );
@@ -1416,9 +1416,9 @@ class LeagueManager {
 		foreach ( $rosters AS $roster ) {
 			$class = ( 'alternate' == $class ) ? '' : 'alternate';
 			$rosters[$i]->class = $class;
-						
+
 			$rosters[$i] = (object)(array)$roster;
-		
+
             $rosters[$i]->affiliatedclub = $roster->affiliatedclub;
 			$rosters[$i]->roster_id = $roster->roster_id;
 			$rosters[$i]->player_id = $roster->player_id;
@@ -1443,13 +1443,13 @@ class LeagueManager {
             if ( $gender && $gender != $rosters[$i]->gender ) {
                 unset($rosters[$i]);
             }
-			            
+
 			$i++;
 		}
-		
+
 		return $rosters;
 	}
-	
+
 	/**
 	 * gets single roster entry from database
 	 *
@@ -1460,7 +1460,7 @@ class LeagueManager {
 		global $wpdb;
 
         $sql = "SELECT B.`ID` as `player_id`, B.`display_name` AS `fullname`, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->leaguemanager_roster} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID` WHERE A.`id`= '".intval($roster_id)."'";
-		
+
         $roster = wp_cache_get( md5($sql), 'rosterentry' );
         if ( !$roster ) {
             $roster = $wpdb->get_row( $sql );
@@ -1469,7 +1469,7 @@ class LeagueManager {
 
 		return $roster;
 	}
-	
+
     /**
      * delete Roster
      *
@@ -1482,7 +1482,7 @@ class LeagueManager {
         $userid = get_current_user_id();
         $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_roster} SET `removed_date` = NOW(), `removed_user` = %d WHERE `id` = '%d'", $userid, $roster_id) );
         $this->setMessage( __('Roster deleted', 'leaguemanager') );
-        
+
         return true;
     }
 
@@ -1501,24 +1501,24 @@ class LeagueManager {
         if ($player_id) {
             $search_terms[] = $wpdb->prepare("`player_id` = '%d'", intval($player_id));
         }
-        
+
         if ($btm) {
             $search_terms[] = $wpdb->prepare("`btm` = '%d'", intval($btm));
         }
-        
+
         if ($firstname) {
             $search_terms[] = $wpdb->prepare("`firstname` = '%s'", htmlspecialchars(strip_tags($firstname)));
         }
-        
+
         if ($surname) {
             $search_terms[] = $wpdb->prepare("`surname` = '%s'", htmlspecialchars(strip_tags($surname)));
         }
-        
+
         $search = "";
         if (count($search_terms) > 0) {
             $search = implode(" AND ", $search_terms);
         }
-        
+
         $orderby_string = ""; $i = 0;
         foreach ($orderby AS $order => $direction) {
             if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) $direction = "ASC";
@@ -1529,18 +1529,18 @@ class LeagueManager {
             $i++;
         }
         $order = $orderby_string;
-        
+
         // use cached object
         if ( isset($this->players[$cachekey]) && $cache ) {
             return $this->players[$cachekey];
         }
-        
+
         $players = get_users( 'orderby=displayname' );
         if ( !$players ) return false;
-        
+
         $i = 0;
         foreach ( $players AS $player ) {
-            
+
             $players[$i] = (object)(array)$player;
             $players[$i]->id = $player->ID;
             $players[$i]->fullname = $player->display_name;
@@ -1553,11 +1553,11 @@ class LeagueManager {
 
             $i++;
         }
-        
+
         $this->players[$cachekey] = $players;
         return $this->players[$cachekey];
     }
-    
+
 	/**
 	 * get single player
 	 *
@@ -1573,13 +1573,13 @@ class LeagueManager {
 		if ($player_id) {
             $player = get_user_by( 'id', $player_id );
 		}
-		
+
         if ($fullname) {
             $player = get_user_by( 'slug', sanitize_title($fullname) );
         }
 
 		if ( !$player ) return false;
-		
+
 		$player = (object)(array)$player;
 
 		$this->player[$player->ID] = $player;
@@ -1595,10 +1595,10 @@ class LeagueManager {
     public function getPlayerName( $playerId ) {
         $player = get_userdata( $playerId );
         if ( !$player ) return false;
-        
+
         return $player->display_name;
     }
-    
+
     /**
      * add new player
      *
@@ -1615,7 +1615,7 @@ class LeagueManager {
             $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
             return false;
         }
-        
+
         $userdata = array();
         $userdata['first_name'] = $firstname;
         $userdata['last_name'] = $surname;
@@ -1630,7 +1630,7 @@ class LeagueManager {
                 update_user_meta($user_id, 'btm', $btm);
             }
         }
-            
+
         if ( $message )
             $this->setMessage( __('Player added', 'leaguemanager') );
 
@@ -1645,46 +1645,46 @@ class LeagueManager {
      */
     public function getMatches( $match_args ) {
         global $wpdb;
-        
+
         $defaults = array( 'league_id' => false, 'season' => false, 'orderby' => array("date" => "ASC", "id" => "ASC"), 'competition_id' => false, 'confirmed' => false, 'match_date' => false, 'competition_type' => false );
         $match_args = array_merge($defaults, (array)$match_args);
         extract($match_args, EXTR_SKIP);
 
         $sql = "SELECT `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(`date`, '%e') AS day, DATE_FORMAT(`date`, '%c') AS month, DATE_FORMAT(`date`, '%Y') AS year, DATE_FORMAT(`date`, '%H') AS `hour`, DATE_FORMAT(`date`, '%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `confirmed`, `home_captain`, `away_captain` FROM {$wpdb->leaguemanager_matches} WHERE 1 = 1";
-        
+
         if ( $match_date ) {
             $sql .= " AND DATEDIFF('". htmlspecialchars(strip_tags($match_date))."', `date`) = 0";
         }
         if ( $competition_type ) {
             $sql .= " AND `league_id` in (select `id` from {$wpdb->leaguemanager} WHERE `competition_id` in (SELECT `id` FROM {$wpdb->leaguemanager_competitions} WHERE `competitiontype` = '".$competition_type."'))";
         }
-        
+
         if ( $competition_id ) {
             $sql .= " AND `league_id` in (select `id` from {$wpdb->leaguemanager} WHERE `competition_id` = '".$competition_id."')";
         }
-        
+
         if ( $league_id ) {
             $sql .= " AND `league_id`  = '".$league_id."'";
         }
-        
+
         if ( $confirmed ) {
             $sql .= " AND `confirmed` in ('P','A','C')";
         }
-        
+
         $sql .= " ORDER BY `league_id` ASC";
-        
+
         // get matches
         $matches = $wpdb->get_results($sql);
         $class = '';
-        
+
         foreach ( $matches AS $i => $match ) {
-            
+
             $class = ( 'alternate' == $class ) ? '' : 'alternate';
             $match = get_match($match);
             $match->class = $class;
             $matches[$i] = $match;
         }
-        
+
         return $matches;
     }
 
@@ -1697,7 +1697,7 @@ class LeagueManager {
      */
 	public function databaseColumnExists($table, $column) {
 		global $wpdb;
-		
+
 		if ($table == "teams")
 			$table = $wpdb->leaguemanager_teams;
 		elseif ($table == "table")
@@ -1714,11 +1714,11 @@ class LeagueManager {
             $table = $wpdb->leaguemanager_competititons;
 		else
 			return false;
-		
+
         $sql = $wpdb->prepare("SHOW COLUMNS FROM {$table} LIKE %s", $column);
-        
+
         $res = wp_cache_get( md5($sql), 'leaguemanager' );
-        
+
         if ( !$res ) {
             $res = $wpdb->query( $sql );
             wp_cache_add( md5($sql), $res, 'leaguemanager' );
@@ -1726,7 +1726,7 @@ class LeagueManager {
         $res = ( $res == 1 ) ? true : false;
         return $res;
 	}
-    
+
     /**
      * update player contact details
      *
@@ -1778,7 +1778,7 @@ class LeagueManager {
         global $wpdb;
 
         $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_clubs} SET `name` = '%s', `type` = '%s', `shortcode` = '%s',`matchsecretary` = '%d', `contactno` = '%s', `website` = '%s', `founded`= '%s', `facilities` = '%s', `address` = '%s', `latitude` = '%s', `longitude` = '%s' WHERE `id` = %d", $name, $type, $shortcode, $matchsecretary, $contactno, $website, $founded, $facilities, $address, $latitude, $longitude, $club_id ) );
-        
+
         if ( $matchsecretary != '') {
             $currentContactNo = get_user_meta( $matchsecretary, 'contactno', true);
             $currentContactEmail = get_userdata($matchsecretary)->user_email;
@@ -1809,9 +1809,9 @@ class LeagueManager {
      */
     public function addResultCheck( $match, $team, $player, $error ) {
         global $wpdb;
-        
+
         $wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->leaguemanager_results_checker} (`league_id`, `match_id`, `team_id`, `player_id`, `description`) values ( %d, %d, %d, %d, '%s') ", $match->league_id, $match->id, $team, $player, $error ) );
-        
+
     }
 
     /**

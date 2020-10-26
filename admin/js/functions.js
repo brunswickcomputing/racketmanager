@@ -1,17 +1,5 @@
 jQuery(document).ready(function($) {
-	/* jQuery UI tooltips */
-	/*jQuery( ".tooltip").tooltip({
-		track: true,
-		show: {
-			effect: "slideDown",
-			delay: 250
-		},
-		hide: {
-			effect: "slideUp",
-			delay: 250
-		}
-	});*/
-	
+
 	// Tabs
 	$('#tabs').tabs({
 		collapsible: true,
@@ -20,24 +8,24 @@ jQuery(document).ready(function($) {
 	jQuery(".settings-block-container>h2").css("display", "none");
 
 	jQuery(".import-block-container>h2").css("display", "none");
-	
+
 	/* Add event listener to get active tab */
 	jQuery( "#tabs.form").on('tabsactivate', function(event, ui) {
 		var index = ui.newTab.index();
 		jQuery("#tabs.form>.active-tab").val(index);
 	});
-	
-	/* jQuery UI accordion list */	
+
+	/* jQuery UI accordion list */
 	/*jQuery( ".league-blocks" ).accordion({
 		header: "h2",
 		collapsible: true,
 		heightStyle: "content"
 	});
 	*/
-	
+
 	/* hide top-links in documentation */
 	jQuery(".top-link").css("display", "none");
-	
+
 	// Datepicker
 	$('.mydatepicker').datepicker({
 		numberOfMonths: 3,
@@ -70,12 +58,12 @@ jQuery(document).ready(function($) {
 		axis: "y"
 	});
 	jQuery(".sortable").css("cursor", "move");
-	
+
 	// disable rank input fields
 	jQuery("input.rank-input").prop('disabled', 'true');
 	// Set js-active value to 1
 	jQuery("#teams-filter>input.js-active").val(1);
-                       
+
                        $('#teamPlayer1').autocomplete({
                                                       minLength: 2,
                                                       source: function(name, response) {
@@ -335,7 +323,7 @@ Leaguemanager.checkAll = function(form) {
 //Leaguemanager.checkPointRule = function( forwin, forwin_overtime, fordraw, forloss, forloss_overtime ) {
 Leaguemanager.checkPointRule = function( rule ) {
 //	var rule = document.getElementById('point_rule').value;
-	
+
 	// manual rule selected
 	if ( rule == 'user' ) {
 		new_element_contents = "";
@@ -348,7 +336,7 @@ Leaguemanager.checkPointRule = function( rule ) {
 		new_element_id = "point_rule_manual_content";
 		new_element = document.createElement('div');
 		new_element.id = new_element_id;
-		
+
 		document.getElementById("point_rule_manual").appendChild(new_element);
 		document.getElementById(new_element_id).innerHTML = new_element_contents;
 	} else {
@@ -357,9 +345,9 @@ Leaguemanager.checkPointRule = function( rule ) {
 			target_element = document.getElementById("point_rule_manual_content");
 			document.getElementById("point_rule_manual").removeChild(target_element);
 		}
-  		
+
 	}
-	
+
 	return false;
 }
 
@@ -382,32 +370,3 @@ Leaguemanager.removeField = function(id, parent_id) {
 Leaguemanager.reInit = function() {
 	tb_init('a.thickbox, area.thickbox, input.thickbox');
 }
-
-/*
-*  Color Picker
-*/
-/*
-function PopupWindow_setSize(width,height) {
-	this.width = 360;
-	this.height = 210;
-}
-
-function syncColor(id, inputID, color) {
-	var link = document.getElementById(id);
-	if (color == '')
-		color='white';
-		
-	link.style.background = color;
-	link.style.color = color;
-}
-
-function pickColor(color) {
-	if (ColorPicker_targetInput==null) {
-		alert("Target Input is null, which means you either didn't use the 'select' function or you have no defined your own 'pickColor' function to handle the picked color!");
-		return;
-	}
-	ColorPicker_targetInput.value = color;
-	syncColor("pick_" + ColorPicker_targetInput.id, ColorPicker_targetInput.id, color);
-}
-var cp = new ColorPicker('window'); // Popup window
-*/

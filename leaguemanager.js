@@ -1,12 +1,13 @@
+var $mathCardWindow;
 jQuery(document).ready(function($) {
-	/* jQuery UI accordion list */	
+	/* jQuery UI accordion list */
 	jQuery( ".jquery-ui-accordion" ).accordion({
 		header: "h3.header",
 		collapsible: true,
 		heightStyle: "content",
         active: "false"
 	});
-	
+
 	/*
 	 * Make sure that jQuery UI Tab content containers have correct IDs based on tablist links
 	 */
@@ -20,11 +21,11 @@ jQuery(document).ready(function($) {
 		var tab = jQuery('.jquery-ui-tabs .tab-content').eq(i);
 		// set ID of tab container
 		tab.attr('id', tab_id);
-		
+
 		// increment item count
 		i = i + 1;
 	});
-	
+
 	/*
 	 * Acivate Tabs
 	 */
@@ -183,7 +184,7 @@ jQuery(document).ready(function($) {
                                   var input=jQuery(this).parent().find('.password');
                                   input.attr('type', 'password');
                             });
-                       
+
     jQuery(":checkbox").click(function (event) {
                                var $target = event.target;
 
@@ -227,28 +228,39 @@ Leaguemanager.setMatchBox = function( requestURL, curr_index, operation, element
 }
 
 Leaguemanager.printScoreCard = function(e, link) {
-	
+
 	e.preventDefault();
 	var matchId = jQuery(link).attr('id');
 	var $hreflink = jQuery(link).attr('href');
 	var $title = jQuery(link).attr('name');
-	
+	var styleSheetList = document.styleSheets;
+	var $head = '<html><head><title>Match Card</title>';
+	for (var item of styleSheetList) {
+		if (item.url != 'null') $head += '<link rel="stylesheet" type="text/css" href="' + item.href + '" media="all">';
+	};
+	$head += '</head>';
+	var $foot = '</body></html>';
+	var $content = '';
+
 	jQuery.ajax({
 				url:LeagueManagerAjaxL10n.requestUrl,
 				type: "POST",
 				data: {"matchId": matchId,
 					"action": "leaguemanager_view_rubbers"},
-				success: function(response) {
-					var printOne = response;
-					var styleSheetList = document.styleSheets;
-					var w = window.open("","","width=800,height=660");
-					w.document.write('<html><head><title>Match Card</title>');
-					for (var item of styleSheetList) {
-						if (item.url != 'null') w.document.write('<link rel="stylesheet" type="text/css" href="' + item.href + '" media="all">');
-					};
-					w.document.write('</head>');
-					w.document.write('<body>' + printOne  + '</body></html>');
-					w.document.close();
+				success: function($response) {
+					var printOne = $response;
+					if (!$mathCardWindow || $mathCardWindow.closed) {
+						$mathCardWindow = window.open("about:blank","_blank","width=800,height=660");
+						if (!$mathCardWindow) {
+							alert("Match Card not available - turn off pop blocker and retry");
+						} else {
+							$mathCardWindow.document.write($head + $response + $foot);
+						}
+		    	} else {
+		        // window still exists from last time and has not been closed.
+		        $mathCardWindow.document.body.innerHTML = $response;
+						$mathCardWindow.focus()
+		    	}
 				},
 				error: function() {
 					alert("Ajax error on getting rubbers");
@@ -259,7 +271,7 @@ Leaguemanager.closeMatchModal = function(link) {
     jQuery("#modalMatch").hide();
 };
 Leaguemanager.showRubbers = function(matchId) {
-    
+
     jQuery("#showMatchRubbers").empty();
     jQuery("#modalMatch").show();
     jQuery("#viewMatchRubbers").show();
@@ -283,18 +295,18 @@ Leaguemanager.showRubbers = function(matchId) {
                 }) ;
 };
 Leaguemanager.disableRubberUpdate = function() {
-    
+
     jQuery("select").prop("disabled", "true");
     jQuery("input").prop("readonly", "true");
     jQuery("#updateRubber").val("confirm");
 };
 Leaguemanager.updateRubbers = function(link) {
-    
+
     var selects = document.getElementById('match-rubbers').getElementsByTagName('select');
     var values = [];
     for(i=0;i<selects.length;i++) {
         var select = selects[i];
-        
+
     }
     var $match = document.getElementById('current_match_id');
     var $matchId = $match.value;
@@ -305,7 +317,7 @@ Leaguemanager.updateRubbers = function(link) {
     jQuery("#splash").css('opacity', 1);
     jQuery("#splash").show();
     jQuery("#showMatchRubbers").hide();
-    
+
     jQuery.ajax({
                 url:LeagueManagerAjaxL10n.requestUrl,
                 type: "POST",
@@ -342,7 +354,7 @@ Leaguemanager.updateRubbers = function(link) {
     jQuery("#updateRubberResults").removeClass("disabled");
 };
 Leaguemanager.rosterRequest = function(link) {
-    
+
     var $affiliatedClub = document.getElementById('affiliatedClub').value;
     var $form = jQuery('#rosterRequestFrm').serialize();
     $form += "&action=leaguemanager_roster_request";
@@ -380,7 +392,7 @@ Leaguemanager.rosterRequest = function(link) {
     jQuery("#rosterUpdateSubmit").show();
 };
 Leaguemanager.rosterRemove = function(link) {
-    
+
     var $form = jQuery(link).serialize();
     $form += "&action=leaguemanager_roster_remove";
 
@@ -403,7 +415,7 @@ Leaguemanager.rosterRemove = function(link) {
                 }) ;
 };
 Leaguemanager.teamUpdate = function(link) {
-    
+
     var formId = '#'.concat(link.form.id);
     var $form = jQuery(formId).serialize();
     var competition = link.form[3].value;
@@ -431,7 +443,7 @@ Leaguemanager.teamUpdate = function(link) {
     jQuery(submitButton).show();
 };
 Leaguemanager.updateClub = function(link) {
-    
+
     var formId = '#'.concat(link.form.id);
     var $form = jQuery(formId).serialize();
     var updateResponse = "#updateClub";
@@ -458,7 +470,7 @@ Leaguemanager.updateClub = function(link) {
                 }) ;
 };
 Leaguemanager.tournamentEntryRequest = function(link) {
-    
+
     var $form = jQuery('#form-tournamententry').serialize();
     $form += "&action=leaguemanager_tournament_entry";
     jQuery("#tournamEntentryResponse").val("");

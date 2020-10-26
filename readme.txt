@@ -1,6 +1,6 @@
 === LeagueManager ===
 Contributors: Paul Moffat, Kolja Schleich, LaMonte Forthun
-Donate link: 
+Donate link:
 Tags: league management, sport, widget, basketball, football, hockey, league, soccer, volleyball, gymnastics, tennis, baseball, rugby
 Requires at least: 5.4
 Tested up to: 5.4.2
@@ -30,29 +30,12 @@ This Plugin is designed to manage sports leagues and display them on your blog.
 
 **Translations**
 
-
 == Installation ==
 
 To install the plugin to the following steps
 
 1. Unzip the zip-file and upload the content to your Wordpress Plugin directory.
 2. Activiate the plugin via the admin plugin page.
-
-
-== Frequently Asked Questions ==
-**I want to implement player registration. Is that possible?**
-
-Yes it is, however not with this plugin, but with [ProjectManager](http://wordpress.org/extend/plugins/projectmanager/). It is designed to manage any recurrent datasets, such as player profiles. It is also possible to set a hook in the user profile. Any user with the capability *project_user_profile* is able to use this feature. You would also need the [Role Manager](http://www.im-web-gefunden.de/wordpress-plugins/role-manager/) for access control. Further the plugin has a template engine implemented that makes it easy to design your own templates.
-
-
-**How can I display the widget statically**
-
-Put the following code where you want to display the widget
-
-`<?php leaguemanager_display_widget( league_ID ); ?>`
-
-Replace *league_ID* with the ID of the league you want to display. This will display the widget in a list with css class *leaguemanager_widget*.
-
 
 == Screenshots ==
 1. Main page for selected League
@@ -68,13 +51,14 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 
 == Changelog ==
 
-* TO-DO - There are a few fixes left with LeagueManager's Championship mode. As the plugins documentation mentions, it was written for soccer (football) and has some limitations. It's being worked on and will be updated gradually with some new features and fixes.
-* TO-DO - The Match Day (Fixtures) filter on the admin standings page isn't currently working. I'm aware of the issue and importances to those using the Match Day filter to get around the PHP variable limit. I hope to have this resolved shortly.
-* TO-DO - Updating the translation code to remove the deprecated code has broken some translations due to a change in how WordPress handles multiple options. The translations files need some attention, so do the sport files...
-* Coming soon - Players, pagination for leagues, teams, matches, and players. New admin dashboard. New sport files.
+= 5.6.2 =
+* BUGFIX: stop conflict with elementor plugin
+* BUGFIX: fix match card popup error
+* BUGFIX: handle popup blocker for matchcard print
+* BUGFIX: ensure current match day is correctly set
 
 = 5.6.1 =
-* UPDATE: get seasom from tournament details
+* UPDATE: get season from tournament details
 
 = 5.6.0 =
 * NEW: allow payers to enter tournaments online
@@ -86,7 +70,7 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 
 = 5.5.11 =
 * UPDATE: change player team template
-* UPDATE: add front end form validation 
+* UPDATE: add front end form validation
 * UPDATE: make ajax frontend call synchronous
 
 = 5.5.10 =
@@ -374,7 +358,7 @@ This is release contains major restructuring on the technical level to improve p
 = 3.9.0.5 =
 * BUGFIX: small fixes
 
-= 3.9.0.4 = 
+= 3.9.0.4 =
 * BUGFIX: fix colorpicker in global settings page
 * BUGFIX: fix default match day to -1 (all matches) in matches shortcode
 
@@ -382,7 +366,7 @@ This is release contains major restructuring on the technical level to improve p
 * BUGFIX: fix match day issue in shortcode
 
 = 3.9.0.2 =
-* BUGFIX: show all matches in admin panel due to problems 
+* BUGFIX: show all matches in admin panel due to problems
 * BUGFIX: team edit save button not showing
 
 = 3.9.0.1 =

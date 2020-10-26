@@ -663,6 +663,42 @@ class LeagueManager
 			return $data;
 	}
 
+    /**
+     * get current season
+     *
+     * @param object $league
+     * @param mixed $season
+     * @return array
+     */
+    function getSeasonCompetition( $competition, $season = false, $index = false )
+    {
+        
+        if ( isset($_GET['season']) && !empty($_GET['season']) ) {
+            $key = htmlspecialchars(strip_tags($_GET['season']));
+            if (!isset($competition->seasons[$key]))
+                return false;
+            
+            $data = $competition->seasons[$key];
+        } elseif ( isset($_GET['season_'.$competition->id]) ) {
+            $key = htmlspecialchars(strip_tags($_GET['season_'.$competition->id]));
+            if (!isset($competition->seasons[$key]))
+                return false;
+            
+            $data = $competition->seasons[$key];
+        } elseif ( $season ) {
+            $data = $competition->seasons[$season];
+        } elseif ( !empty($competition->seasons) ) {
+            $data = end($competition->seasons);
+        } else {
+            return false;
+        }
+        
+        if ( $index )
+            return $data[$index];
+        else
+            return $data;
+    }
+    
 
 	/**
 	 * get competitions from database
@@ -1055,7 +1091,7 @@ class LeagueManager
 		
 		$search_terms = array();
 		if ( $competition_id ) {
-			$search_terms[] = $wpdb->prepare("A.`league_id` IN (SELECT `id` FROM {$wpdb->leaguemanager} WHERE `competition_id` = '%d')", intval($competition_id));
+			$search_terms[] = $wpdb->prepare("`id` IN (SELECT `team_id` FROM $wpdb->leaguemanager_table T, {$wpdb->leaguemanager} L WHERE L.`competition_id` = '%d' AND T.`league_id` = L.`id`)", intval($competition_id));
 		}
 		if ( $league_id ) {
 			if ($league_id == "any")
@@ -2391,7 +2427,7 @@ class LeagueManager
 	{
 		global $wpdb;
 		
-		$defaults = array( 'player_id' => false, 'competition' => false, 'season' => false, 'cache' => true, 'club' => false, 'league_id' => false );
+		$defaults = array( 'player_id' => false, 'competition' => false, 'season' => false, 'cache' => true, 'club' => false, 'league_id' => false, 'system' => false );
 		$args = array_merge($defaults, (array)$args);
 		extract($args, EXTR_SKIP);
 		
@@ -2415,6 +2451,9 @@ class LeagueManager
 			$search_terms1[] = $wpdb->prepare("ro.`affiliatedclub` = '%d'", intval($club));
 		}
 		
+        if (!$system) {
+            $search_terms1[] = "p.`system_record` IS NULL";
+        }
 		$search1 = "";
 		if (count($search_terms1) > 0) {
 			$search1 = implode(" AND ", $search_terms1);

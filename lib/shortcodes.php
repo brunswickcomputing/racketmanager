@@ -1129,11 +1129,10 @@ class LeagueManagerShortcodes extends LeagueManager
 
 				$sets				= $match->custom['sets'];
 				$setCount			= count($sets);
-				
 				for ( $s = 1; $s <= $setCount; $s++  ) {
 					
-					$gamesWon		+= $sets[$s][$setPlayer];
-					$gamesConceded	+= $sets[$s][$setOpponent];
+					if ( is_numeric($sets[$s][$setPlayer]) ) $gamesWon		+= $sets[$s][$setPlayer];
+					if ( is_numeric($sets[$s][$setOpponent]) ) $gamesConceded	+= $sets[$s][$setOpponent];
 					if ( $sets[$s][$setPlayer] > $sets[$s][$setOpponent] ) {
 						$setsWon ++;
 					} elseif ( $sets[$s][$setPlayer] < $sets[$s][$setOpponent] ) {

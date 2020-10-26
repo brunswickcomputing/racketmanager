@@ -1,5 +1,5 @@
 <?php
-	$season = $leaguemanager->getSeason($competition);
+	$season = $leaguemanager->getSeasonCompetition($competition);
 	$clubs = getClubs();
 	if ( !empty($competition->seasons) ) { ?>
 		<!-- Season Dropdown -->

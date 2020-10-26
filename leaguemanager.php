@@ -38,7 +38,7 @@ class LeagueManagerLoader
 	 *
 	 * @var string
 	 */
-	var $version = '5.1.6';
+	var $version = '5.1.7';
 
 
 	/**
@@ -46,7 +46,7 @@ class LeagueManagerLoader
 	 *
 	 * @var string
 	 */
-	var $dbversion = '5.1.0';
+	var $dbversion = '5.1.7';
 
 
 	/**
@@ -613,8 +613,6 @@ class LeagueManagerLoader
 		$this->install();
 	}
 
-
-
 	function install()
 	{
 		global $wpdb;
@@ -654,7 +652,8 @@ class LeagueManagerLoader
 						`post_id` int( 11 ) NOT NULL default '0',
 						`final` varchar( 150 ) NOT NULL default '',
 						`custom` longtext NOT NULL,
-						PRIMARY KEY ( `id` )) $charset_collate;";
+						PRIMARY KEY ( `id` ),
+                        INDEX( `league_id` )) $charset_collate;";
 		maybe_create_table( $wpdb->leaguemanager_matches, $create_matches_sql );
 
         $create_rubbers_sql = "CREATE TABLE {$wpdb->leaguemanager_rubbers} (
@@ -663,10 +662,10 @@ class LeagueManagerLoader
                         `date` datetime NOT NULL,
                         `match_id` int( 11 ) NOT NULL default '0',
 						`rubber_number` int( 1 ) NOT NULL default 0,
-                        `home_player_1` varchar( 255 ) NULL default NULL,
-                        `home_player_2` varchar( 255 ) NULL default NULL,
-                        `away_player_1` varchar( 255 ) NULL default NULL,
-                        `away_player_2` varchar( 255 ) NULL default NULL,
+                        `home_player_1` int( 11 ) NULL default NULL,
+                        `home_player_2` int( 11 ) NULL default NULL,
+                        `away_player_1` int( 11 ) NULL default NULL,
+                        `away_player_2` int( 11 ) NULL default NULL,
                         `home_points` varchar( 30 ) NULL default NULL,
                         `away_points` varchar( 30 ) NULL default NULL,
                         `winner_id` int( 11 ) NOT NULL default '0',
@@ -674,7 +673,12 @@ class LeagueManagerLoader
                         `post_id` int( 11 ) NOT NULL default '0',
                         `final` varchar( 150 ) NOT NULL default '',
                         `custom` longtext NOT NULL,
-                        PRIMARY KEY ( `id` )) $charset_collate;";
+                        PRIMARY KEY ( `id` ),
+                        INDEX( `home_player_1` ),
+                        INDEX( `home_player_2` ),
+                        INDEX( `away_player_1` ),
+                        INDEX( `away_player_2` ),
+                        INDEX( `match_id` )) $charset_collate;";
         maybe_create_table( $wpdb->leaguemanager_rubbers, $create_rubbers_sql );
         
 		$create_stats_sql = "CREATE TABLE {$wpdb->leaguemanager_stats} (
@@ -692,6 +696,7 @@ class LeagueManagerLoader
 		`gender` varchar( 1 ) NOT NULL default '',
 		`btm` int ( 11 ) NULL default NULL,
 		`removed_date` date NULL,
+        `system_record` varchar( 1 ) NULL default NULL,
 		PRIMARY KEY ( `id` )) $charset_collate;";
 		maybe_create_table( $wpdb->leaguemanager_players, $create_players_sql );
 		

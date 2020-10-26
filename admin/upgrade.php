@@ -15,25 +15,11 @@ function leaguemanager_upgrade() {
 
 	$lmLoader->install();
 
-	if (version_compare($installed, '5.1.0', '<')) {
+	if (version_compare($installed, '5.1.7', '<')) {
 
-		$wpdb->query( "INSERT INTO {$wpdb->leaguemanager_table} (`team_id`, `league_id`, `season`, `points_plus`, `points_minus`, `points2_plus`, `points2_minus`, `add_points`, `done_matches`, `won_matches`, `draw_matches`, `lost_matches`, `diff`, `group`, `rank`, `profile`, `status`, `custom`) ( SELECT `id`, `league_id`, `season`, `points_plus`, `points_minus`, `points2_plus`, `points2_minus`, `add_points`, `done_matches`, `won_matches`, `draw_matches`, `lost_matches`, `diff`, `group`, `rank`, `profile`, `status`, `custom` FROM wp_leaguemanager_teams )" );
-		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `league_id` ");
-		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `season` ");
-		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `points_plus` ");
-		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `points_minus` ");
-		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `points2_plus` ");
-		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `points2_minus` ");
-		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `add_points` ");
-		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `done_matches` ");
-		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `won_matches` ");
-		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `draw_matches` ");
-		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `lost_matches` ");
-		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `diff` ");
-		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `group` ");
-		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} DROP `rank` ");
-
-	}
+		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} ADD `system_record` VARCHAR(1) NULL DEFAULT NULL AFTER `removed_date` ");
+	
+    }
 	/*
 	* Update version and dbversion
 	*/

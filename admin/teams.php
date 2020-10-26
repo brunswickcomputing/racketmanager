@@ -4,11 +4,11 @@
 	<input type="hidden" name="page" value="leaguemanager" />
 	<input type="hidden" name="view" value="teams" />
 	<div class="lm-form-table">
-<?php if ( $clubs = getClubs() ) { ?>
+<?php if ( $clubs = $leaguemanager->getClubs( ) ) { ?>
 		<select size="1" name="club_id" id="club_id">
 			<option><?php _e( 'Select affiliated club', 'leaguemanager' ) ?></option>
 <?php foreach ( $clubs AS $club ) { ?>
-			<option value="<?php echo $club['id'] ?>" <?php echo ($club['id'] == $club_id ?  'selected' :  '') ?>><?php echo $club['name'] ?></option>
+			<option value="<?php echo $club->id ?>" <?php echo ($club->id == $club_id ?  'selected' :  '') ?>><?php echo $club->name ?></option>
 	<?php } ?>
 		</select>
 <?php } ?>
@@ -76,7 +76,7 @@
                 <select size="1" name="affiliatedClub" id="affiliatedClub" >
                     <option><?php _e( 'Select club' , 'leaguemanager') ?></option>
 <?php foreach ( $clubs AS $club ) { ?>
-                    <option value="<?php echo $club['id'] ?>"<?php if(isset($affiliatedClub)) selected($club['id'], $affiliatedClub ) ?>><?php echo $club['name'] ?></option>
+                    <option value="<?php echo $club->id ?>"<?php if(isset($affiliatedClub)) selected($club->id, $affiliatedClub ) ?>><?php echo $club->name ?></option>
                     <?php } ?>
                 </select>
             </td>

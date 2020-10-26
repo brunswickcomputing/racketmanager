@@ -21,8 +21,8 @@ if ( isset($_POST['startFinals']) ) {
 }
 
 if ( isset($_POST['updateFinalResults']) ) {
-		$custom = isset($_POST['custom']) ? $_POST['custom'] : false;
-		$championship->updateResults(intval($_POST['league_id']), $_POST['matches'], $_POST['home_points'], $_POST['away_points'], $_POST['home_team'], $_POST['away_team'], $custom, $_POST['round'], $_POST['season']);
+    $custom = isset($_POST['custom']) ? $_POST['custom'] : false;
+    $championship->updateResults(intval($_POST['league_id']), $_POST['matches'], $_POST['home_points'], $_POST['away_points'], $_POST['home_team'], $_POST['away_team'], $custom, $_POST['round'], $_POST['season']);
 }
 $tab = 0;
 if (isset($_GET['jquery-ui-tab'])) $tab = intval($_GET['jquery-ui-tab']);

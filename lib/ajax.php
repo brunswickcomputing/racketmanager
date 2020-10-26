@@ -39,6 +39,8 @@ class LeagueManagerAJAX
 
 		add_action( 'wp_ajax_leaguemanager_update_rubbers', array(&$this, 'updateRubbers') );
         add_action( 'wp_ajax_leaguemanager_confirm_results', array(&$this, 'confirmResults') );
+
+        add_action( 'wp_ajax_leaguemanager_roster_request', array(&$this, 'rosterRequest') );
 	}
 	function LeagueManagerAJAX()
 	{
@@ -96,7 +98,7 @@ class LeagueManagerAJAX
         global $wpdb, $leaguemanager;
         $name = $wpdb->esc_like(stripslashes($_POST['name']['term'])).'%';
         
-        $sql = "SELECT  P.`display_name` AS `fullname`, C.`post_title` as club, R.`id` as rosterId, C.`id` as clubId, P.`id` as playerId, P.`user_email` FROM $wpdb->leaguemanager_roster R, $wpdb->users P, $wpdb->posts C WHERE R.`player_id` = P.`ID` AND R.`removed_date` IS NULL AND C.`post_type` = 'wpclubs' AND C.`id` = R.`affiliatedclub` AND `display_name` like '%s' ORDER BY 1,2,3";
+        $sql = "SELECT  P.`display_name` AS `fullname`, C.`name` as club, R.`id` as rosterId, C.`id` as clubId, P.`id` as playerId, P.`user_email` FROM $wpdb->leaguemanager_roster R, $wpdb->users P, $wpdb->leaguemanager_clubs C WHERE R.`player_id` = P.`ID` AND R.`removed_date` IS NULL AND C.`id` = R.`affiliatedclub` AND `display_name` like '%s' ORDER BY 1,2,3";
         $sql = $wpdb->prepare($sql, $name);
         $results = $wpdb->get_results($sql);
         $players = array();
@@ -120,7 +122,7 @@ class LeagueManagerAJAX
         $name = $wpdb->esc_like(stripslashes($_POST['name']['term'])).'%';
         $affiliatedClub = isset($_POST['affiliatedClub']) ? $_POST['affiliatedClub'] : '';
 
-        $sql = "SELECT P.`display_name` AS `fullname`, C.`post_title` as club, R.`id` as rosterId, C.`id` as clubId, P.`id` AS `playerId`, P.`user_email` FROM $wpdb->leaguemanager_roster R, $wpdb->users P, $wpdb->posts C WHERE R.`player_id` = P.`ID` AND R.`removed_date` IS NULL AND C.`post_type` = 'wpclubs' AND C.`id` = R.`affiliatedclub` AND C.`id` = '%s' AND `display_name` like '%s' ORDER BY 1,2,3";
+        $sql = "SELECT P.`display_name` AS `fullname`, C.`name` as club, R.`id` as rosterId, C.`id` as clubId, P.`id` AS `playerId`, P.`user_email` FROM $wpdb->leaguemanager_roster R, $wpdb->users P, $wpdb->leaguemanager_clubs C WHERE R.`player_id` = P.`ID` AND R.`removed_date` IS NULL AND  C.`id` = R.`affiliatedclub` AND C.`id` = '%s' AND `display_name` like '%s' ORDER BY 1,2,3";
         $sql = $wpdb->prepare($sql, $affiliatedClub, $name);
         $results = $wpdb->get_results($sql);
         $captains = array();
@@ -879,6 +881,90 @@ class LeagueManagerAJAX
             $return = sprintf(__('Updated Results of %d matches','leaguemanager'), $updateCount);
         }
  
+        die(json_encode($return));
+
+    }
+    function rosterRequest()
+    {
+        global $wpdb, $lmLoader, $leaguemanager;
+        $admin = $lmLoader->getAdminPanel();
+        $return = array();
+        $msg = '';
+        $error = false;
+        $errorField = array();
+        $errorId = 0;
+        $rosterFound = false;
+        $custom = array();
+        check_admin_referer('roster-request');
+        $affiliatedClub = $_POST['affiliatedClub'];
+        if ( $_POST['firstName'] == '' ) {
+            $error = true;
+            $errorField[$errorId] = "First name required";
+            $errorId ++;
+        } else {
+            $firstName = $_POST['firstName'];
+        }
+        if ( $_POST['surname'] == '' ) {
+            $error = true;
+            $errorField[$errorId] = "Surname required";
+            $errorId ++;
+        } else {
+            $surname = $_POST['surname'];
+        }
+        if ( !isset($_POST['gender']) || $_POST['gender'] == '' ) {
+            $error = true;
+            $errorField[$errorId] = "Gender required";
+            $errorId ++;
+        } else {
+            $gender = $_POST['gender'];
+        }
+        if ( !isset($_POST['btm']) || $_POST['btm'] == '' ) {
+            $btmSupplied = false;
+            $btm = '';
+        } else {
+            $btmSupplied = true;
+            $btm = $_POST['btm'];
+        }
+            
+        if ( !$error ) {
+            $fullName = $firstName . ' ' . $surname;
+            $player = $leaguemanager->getPlayer(array('fullname' => $fullName));
+            if ( !$player ) {
+                $playerId = $admin->addPlayer( $firstName, $surname, $gender, $btm);
+                $rosterFound = false;
+            } else {
+                $playerId = $player->ID;
+                $rosterCount = $leaguemanager->getRoster(array('club' => $affiliatedClub, 'player' => $playerId, 'inactive' => true, 'count' => true));
+                if ( $rosterCount == 0 ) {
+                    $rosterFound = false;
+                } else {
+                    $rosterFound = true;
+                }
+            }
+            if ( $rosterFound == false ) {
+                $userid = get_current_user_id();
+                if ( $btmSupplied  ) {
+                    $wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->leaguemanager_roster_requests} (`affiliatedClub`, `first_name`, `surname`, `gender`, `btm`, `player_id`, `requested_date`, `requested_user`) values (%d, '%s', '%s', '%s', %d, %d, now(), %d) ", $affiliatedClub, $firstName, $surname, $gender, $btm, $playerId, $userid ) );
+                } else {
+                    $wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->leaguemanager_roster_requests} (`affiliatedClub`, `first_name`, `surname`, `gender`, `player_id`, `requested_date`, `requested_user`) values (%d, '%s', '%s', '%s', %d, now(), %d)", $affiliatedClub, $firstName, $surname, $gender, $playerId, $userid ) );
+                }
+                $rosterRequestId = $wpdb->insert_id;
+                $options = $leaguemanager->getOptions();
+                if ( $options['rosterConfirmation'] == 'auto' ) {
+                    $admin->approveRosterRequest( $rosterRequestId );
+                    $msg = __('Player added to club','leaguemanager');
+                } else {
+                    $msg = __('Player request submitted','leaguemanager');
+                }
+
+            } else {
+                $msg = __('Player already registered with club','leaguemanager');
+            }
+        } else {
+            $msg = __('No player to add','leaguemanager');
+        }
+ 
+        array_push($return, $msg, $error, $errorField);
         die(json_encode($return));
 
     }

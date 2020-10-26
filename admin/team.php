@@ -35,11 +35,12 @@ Leaguemanager.reInit();
 			$form_action = __( 'Add', 'leaguemanager' );
 			$team = (object)array( 'title' => '', 'home' => 0, 'id' => '', 'logo' => '', 'website' => '', 'captain' => '', 'captainId' => '', 'contactno' => '', 'contactemail' => '', 'stadium' => '', 'match_day' => '', 'match_time' => '', 'roster' => array('id' => '', 'cat_id' => '' ) );
 		}
-		if ( is_plugin_active('wp-clubs/wp-clubs.php') ) {
-			$clubs = getClubs();
-		} else {
-			$clubs = array();
-		}
+        $clubs = $leaguemanager->getClubs( );
+//		if ( is_plugin_active('wp-clubs/wp-clubs.php') ) {
+//			$clubs = getClubs();
+//		} else {
+//			$clubs = array();
+//		}
 	
 		if ( !wp_mkdir_p( $leaguemanager->getImagePath() ) ) {
 			echo "<div class='error'><p>".sprintf( __( 'Unable to create directory %s. Is its parent directory writable by the server?' ), $leaguemanager->getImagePath() )."</p></div>";
@@ -182,7 +183,7 @@ Leaguemanager.reInit();
                     <select size="1" name="affiliatedclub" id="affiliatedclub" >
 						<option><?php _e( 'Select club' , 'leaguemanager') ?></option>
 <?php foreach ( $clubs AS $club ) { ?>
-                        <option value="<?php echo $club['id'] ?>"<?php if(isset($team->affiliatedclub)) selected($club['id'], $team->affiliatedclub ) ?>><?php echo $club['name'] ?></option>
+                        <option value="<?php echo $club->id ?>"<?php if(isset($team->affiliatedclub)) selected($club->id, $team->affiliatedclub ) ?>><?php echo $club->name ?></option>
                         <?php } ?>
                     </select>
                 </td>
@@ -223,7 +224,9 @@ Leaguemanager.reInit();
 			<input type="hidden" name="league_id" value="<?php echo $league_id ?>" />
 			<input type="hidden" name="updateLeague" value="team" />
 			<input type="hidden" name="season" value="<?php echo $season ?>" />
+<?php if ( isset($clubId) ) { ?>
             <input type="hidden" name="clubId" value="<?php echo $clubId ?>" />
+<?php } ?>
 <?php if ( $edit ) { ?>
             <input type="hidden" name="editTeam" value="team" />
 <?php } ?>

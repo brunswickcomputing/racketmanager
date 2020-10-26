@@ -1,6 +1,15 @@
 /*
 * @section: Backend
 */
+.entry-content {
+    padding-bottom: 2em;
+}
+button[readonly], html input[readonly] {
+    cursor: default;
+}
+#club-location-picker {
+    height: 320px;
+}
 #lm_admin {
 	width:92%;
 	margin-top:10px;
@@ -590,28 +599,6 @@ div.teamlist .header .ui-icon {
 	width: 100%;
 	margin-left: auto;
 	margin-right: auto;
-	}
-.leaguemanager_widget h4 {
-	position: relative;
-	border-bottom: 1px solid;
-	text-align: center;
-	margin: 0.5em 0 0.5em 0;
-	padding-bottom: 0.3em;
-	font-size: 1em;
-	}
-.leaguemanager_widget h4 .next {
-	position: absolute;
-	right: 0;
-	}
-.leaguemanager_widget h4 .prev {
-	position: absolute;
-	left: 0;
-	}
-.leaguemanager_widget h4 .standings {
-	margin-top: 1.5em;
-	}
-.leaguemanager_widget h4 a {
-	text-decoration: none;
 	}
 .leaguemanager_widget img {
 	border: 0;
@@ -1207,3 +1194,121 @@ div.tm-team-content dl.team dt.contact-login-msg {
     float: left;
 }
 }
+/*---------------------Club Style-------------------------- */
+
+#club-info {
+    float: left;
+    text-align: left;
+    width: 100%;
+}
+#club-roster {
+    clear: both;
+    text-align: left;
+}
+h2.roster-header {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+dl.roster {
+    margin-bottom: 0;
+}
+#team-info {
+    clear: both;
+    text-align: left;
+}
+h2.teams-header {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+#team-info li {
+    list-style-type: none;
+}
+#clubdesc {
+    padding: 10px;
+}
+.club-thumb {
+    float:  left;
+}
+.roll-club.carousel .club-item {
+    padding: 0 25px;
+}
+.club-item {
+          margin-bottom: 30px;
+}
+.roll-club .club-inner {
+    padding: 4px;
+    background-color: #fff;
+    position: relative;
+    text-align: center;
+}
+.roll-club .club-content {
+    text-align: center;
+}
+.roll-club .club-content .name {
+    font-family: "Raleway", sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 12px 0 2px;
+}
+.roll-club .club-content .pos {
+    padding-bottom: 12px;
+    color: #443f3f;
+}
+.archive .club-item:nth-of-type(3n+1) {
+    clear: left;
+}
+form#rosterRequestFrm label {
+    font-size: .85em;
+}
+form#rosterRequestFrm input[type="text"], form#rosterRequestFrm input[type="number"] {
+    height: 2.25em;
+}
+#updateResponse {
+    padding: 1em;
+}
+/*  START OF MEDIA QUERIES */
+
+@media only screen and (max-width: 800px) {
+    .embed-container {
+        position: relative;
+        padding-bottom: 52.25%; /* 16/9 ratio */
+        padding-top: 30px; /* IE6 workaround*/
+        height: 0;
+        overflow: hidden;
+    }
+    
+    .embed-container iframe,
+    .embed-container object,
+    .embed-container embed {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    
+    img {
+        max-width:100%;
+        height:auto;
+    }
+    
+    img {
+        -ms-interpolation-mode:bicubic;
+    }
+    
+}
+@media only screen and (max-width: 640px) {
+    
+    .wp_clubwrapper .fours-column, .wp_clubwrapper .threes-column, .wp_clubwrapper .twos-column {
+        width: 100%;
+    }
+    
+}
+@media only screen and (max-width: 480px) {
+    
+}
+@media only screen and (max-width: 320px) {
+    
+}
+
+/*  END OF MEDIA QUERIES */

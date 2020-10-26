@@ -304,6 +304,22 @@ function leaguemanager_match( $match_id, $args = array() ) {
     }
 
 /**
+* display one club manually
+*
+* @param int $team_id
+* @param array $args additional arguments as associative array (optional)
+* @return void
+*/
+   function leaguemanager_club( $club_id, $args = array() ) {
+       global $lmShortcodes;
+       $defaults = array('template' => '');
+       $args = array_merge($defaults, $args);
+       extract($args, EXTR_SKIP);
+
+       echo $lmShortcodes->showClub( array('id' => intval($club_id), 'template' => $template) );
+   }
+
+/**
  * helper function to allocate matches and teams of a league to a season and maybe other league
  *
  * @param int $league_id ID of current league
@@ -408,16 +424,17 @@ function leaguemanager_match( $match_id, $args = array() ) {
                        'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[1]-$matches[2]&league_id=$matches[1]%20$matches[2]%20$matches[3]',
                        'top'
                        );
-        add_rewrite_rule(
-                       '^leagues/(.+?)-(.+?)-([0-9]{1})/([0-9]{4})?$',
-                       'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[1]-$matches[2]&league_id=$matches[1]%20$matches[2]%20$matches[3]&season=$matches[4]',
+        add_rewrite_rule('^leagues/(.+?)-(.+?)-([0-9]{1})/([0-9]{4})?$',
+                         'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[1]-$matches[2]&league_id=$matches[1]%20$matches[2]%20$matches[3]&season=$matches[4]',
                        'top'
                        );
+        add_rewrite_rule( '^club/(.+?)/?$','index.php?pagename=club&club_name=$matches[1]','top');
 
         add_rewrite_tag('%league_id%','([^/]*)');
         add_rewrite_tag('%season%','([0-9]{4})');
         add_rewrite_tag('%match_day%','([0-9]{1,2})');
         add_rewrite_tag('%team%','(.+?)');
+        add_rewrite_tag('%club_name%','(.+?)');
     }
     add_action('init', 'create_new_url_querystring');
     function leaguemanager_calendar_download() {

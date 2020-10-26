@@ -59,6 +59,8 @@ class LeagueManagerShortcodes extends LeagueManager
 		add_shortcode( 'league', array(&$this, 'showLeague') );
 		add_shortcode( 'competition', array(&$this, 'showCompetition') );
 		add_shortcode( 'players', array(&$this, 'showPlayers') );
+        add_shortcode( 'clubs', array(&$this, 'showClubs') );
+        add_shortcode( 'club', array(&$this, 'showClub') );
 
 		add_action( 'leaguemanager_teampage', array(&$this, 'showTeam') );
 	}
@@ -727,6 +729,70 @@ class LeagueManagerShortcodes extends LeagueManager
 		return $out;
 	}
 
+
+    /**
+     * Function to display Clubs Info Page
+     *
+     *    [clubs template=X]
+     *
+     * @param array $atts
+     * @return the content
+     */
+    function showClubs( $atts )
+    {
+        global $leaguemanager;
+        extract(shortcode_atts(array(
+            'type' => '',
+            'template' => '',
+            'echo' => 0,
+        ), $atts ));
+
+        $clubs = $leaguemanager->getClubs();
+
+        $filename = ( !empty($template) ) ? 'clubs-'.$template : 'clubs';
+
+        $out = $this->loadTemplate( $filename, array( 'clubs' => $clubs) );
+
+        if ( $echo )
+            echo $out;
+        else
+            return $out;
+    }
+
+    /**
+     * Function to display Club Info Page
+     *
+     *    [club id=ID template=X]
+     *
+     * @param array $atts
+     * @return the content
+     */
+    function showClub( $atts )
+    {
+        global $leaguemanager;
+        extract(shortcode_atts(array(
+            'id' => 0,
+            'template' => '',
+            'echo' => 0,
+        ), $atts ));
+
+        // Get League by Name
+        $club_name = get_query_var('club_name');
+        $club_name = str_replace('-',' ',$club_name);
+
+        $club = $leaguemanager->getClub( array( "name" => $club_name ) );
+
+        $club->single = true;
+        
+        $filename = ( !empty($template) ) ? 'club-'.$template : 'club';
+
+        $out = $this->loadTemplate( $filename, array( 'club' => $club) );
+
+        if ( $echo )
+            echo $out;
+        else
+            return $out;
+    }
 
 	/**
 	 * Function to display Team list

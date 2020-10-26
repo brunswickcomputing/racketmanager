@@ -1,6 +1,7 @@
 <?php
 	$season = $leaguemanager->getSeasonCompetition($competition);
-	$clubs = getClubs();
+//	$clubs = getClubs();
+    $clubs = $leaguemanager->getClubs( );
 	if ( !empty($competition->seasons) ) { ?>
 		<!-- Season Dropdown -->
 <div class="alignright" style="clear: both;">
@@ -11,7 +12,7 @@
 		<label for="club_id"><?php _e('Affiliated Club', 'leaguemanager') ?></label>		<select size="1" name="club_id" id="club_id">
 			<option><?php _e( 'Select club', 'leaguemanager' ) ?></option>
 <?php foreach ( $clubs AS $club ) { ?>
-			<option value="<?php echo $club['id'] ?>" <?php echo ($club['id'] == $club_id ?  'selected' :  '') ?>><?php echo $club['name'] ?></option>
+			<option value="<?php echo $club->id ?>" <?php echo ($club->id == $club_id ?  'selected' :  '') ?>><?php echo $club->name ?></option>
 <?php } ?>
 		</select>
 		<label for="season" style="vertical-align: middle;"><?php _e( 'Season', 'leaguemanager' ) ?></label>

@@ -169,6 +169,19 @@ function leaguemanager_upgrade() {
              update_user_meta($playerId, 'leaguemanager_type', 'system' );
          }
     }
+    if (version_compare($installed, '5.4.0', '<')) {
+        echo __('starting 5.4.0 upgrade', 'leaguemanager') . "<br />\n";
+        $wpdb->query( "CREATE TABLE {$wpdb->leaguemanager_roster_requests} (`id` int( 11 ) NOT NULL AUTO_INCREMENT, `affiliatedclub` int( 11 ) NOT NULL default 0, first_name` varchar( 255 ) NOT NULL default '', `surname` varchar( 255 ) NOT NULL default '', `gender` varchar( 1 ) NOT NULL default '', `btm` int( 11 ) NULL , `player_id` int ( 11 )`, `requested_date` date NULL, `requested_user` int(11) NOT NULL, `completed_date` date NULL, `completed_user` int(11) NULL, PRIMARY KEY ( `id` ))" );
+    }
+    if (version_compare($installed, '5.4.1', '<')) {
+        echo __('starting 5.4.1 upgrade', 'leaguemanager') . "<br />\n";
+        $wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_roster} ADD `created_date` date NULL AFTER `system_record` ");
+        $wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_roster} ADD `created_user` int( 11 ) NULL AFTER `created_date` ");
+    }
+    if (version_compare($installed, '5.4.2', '<')) {
+        echo __('starting 5.4.2 upgrade', 'leaguemanager') . "<br />\n";
+        $wpdb->query( "CREATE TABLE {$wpdb->leaguemanager_clubs} (`id` int( 11 ) NOT NULL AUTO_INCREMENT, `name` varchar( 100 ) NOT NULL default '', `website` varchar( 100 ) NOT NULL default '', `type` varchar( 20 ) NOT NULL default '', `address` varchar( 255 ) NOT NULL default '', `latitude` varchar( 20 ) NOT NULL default '', `longitude` varchar( 20 ) NOT NULL default '', `contactno` varchar( 20 ) NOT NULL default '', `founded` int( 4 ) NULL, `facilities` varchar( 255 ) NOT NULL default '', `shortcode` varchar( 20 ) NOT NULL default '', `matchsecretary` int( 11 ) NULL, PRIMARY KEY ( `id` ))" );
+    }
     /*
 	* Update version and dbversion
 	*/

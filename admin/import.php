@@ -56,7 +56,8 @@ if ( isset($_POST['import']) ) {
 			<tr>
 				<th scope="row"><label for="league_id"><?php _e( 'Affiliated Club', 'leaguemanager' ) ?></label></th>
 				<td>
-<?php if ( $clubs = getClubs() ) { ?>
+<?php if ( $clubs = $leaguemanager->getClubs( ) ) { ?>
+//<?php if ( $clubs = getClubs() ) { ?>
 					<select size="1" name="club_id" id="club_id">
 						<option><?php _e( 'Select affiliated club', 'leaguemanager' ) ?></option>
 	<?php foreach ( $clubs AS $club ) { ?>

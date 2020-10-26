@@ -771,7 +771,6 @@
             $vars['user-contactno'] = get_user_meta($current_user->ID,'contactno',true);
             $vars['user-gender'] = get_user_meta($current_user->ID,'gender',true);
             $vars['user-btm'] = get_user_meta($current_user->ID,'btm',true);
-            
             // Error messages
             $messages = array();
             if ( isset( $_REQUEST['error'] ) ) {

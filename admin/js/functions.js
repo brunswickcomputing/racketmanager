@@ -166,6 +166,42 @@ jQuery(document).ready(function($) {
                                                   }
                                                   }
                                                   });
+                       $('#matchSecretaryName').autocomplete({
+                                                  minLength: 2,
+                                                  source: function(name, response) {
+                                                  $.ajax({
+                                                         type: 'POST',
+                                                         datatype: 'json',
+                                                         url: LeagueManagerAjaxL10n.requestUrl,
+                                                         data: {"name": name,
+                                                         "affiliatedClub": $("#club_id").val(),
+                                                         "action": "leaguemanager_getCaptainName"},
+                                                         success: function(data) {
+                                                         response(JSON.parse(data));
+                                                         }
+                                                         });
+                                                  },
+                                                  select: function(event, ui) {
+                                                  $("#matchsecretaryName").val(ui.item.value);
+                                                  $("#matchsecretary").val(ui.item.id);
+                                                  $("#matchSecretaryContactno").val(ui.item.contactno);
+                                                  $("#matchSecretaryEmail").val(ui.item.user_email);
+                                                  },
+                                                  change: function(event, ui) {
+                                                  if (ui.item === null) {
+                                                      $(this).val('');
+                                                      $("#matchsecretaryName").val('');
+                                                      $("#matchsecretary").val('');
+                                                      $("#matchSecretaryContactno").val('');
+                                                      $("#matchSecretaryEmail").val('');
+                                                  } else {
+                                                      $("#matchsecretaryName").val(ui.item.value);
+                                                      $("#matchsecretary").val(ui.item.id);
+                                                      $("#matchSecretaryContactno").val(ui.item.contactno);
+                                                      $("#matchSecretaryEmail").val(ui.item.user_email);
+                                                  }
+                                                  }
+                                                  });
 
 });
 

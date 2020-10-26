@@ -247,6 +247,9 @@ class LeagueManagerAdminPanel extends LeagueManager
                         case 'team':
                             include_once( dirname(__FILE__) . '/team.php' );
                             break;
+                        case 'club':
+                            include_once( dirname(__FILE__) . '/club.php' );
+                            break;
 						default:
 							$menu = $this->getMenu();
 							$page = htmlspecialchars($_GET['subpage']);
@@ -911,6 +914,106 @@ class LeagueManagerAdminPanel extends LeagueManager
 		$leaguemanager->setLeagueID($league_id);
 		// Try deleting league subfolder
 		@unlink($leaguemanager->getImagePath());
+	}
+
+/************
+*
+*   CLUB SECTION
+*
+*
+*/
+	/**
+	 * add club
+	 *
+	 * @param string $name
+	 * @param string $type
+	 * @param string $shortcode
+     * @param int $matchsecretary
+     * @param string $matchSecretaryContactno
+	 * @param string $matchSecretaryEmail
+	 * @param string $contactno
+	 * @param string $website
+	 * @param string $founded
+	 * @param string $facilities
+	 * @param string $address
+     * @param string $latitude
+     * @param string $longitude
+	 * @return void
+	 */
+	function addClub( $name, $type, $shortcode, $contactno, $website, $founded, $facilities, $address, $latitude, $longitude )
+	{
+		global $wpdb, $leaguemanager;
+
+		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->leaguemanager_clubs} (`name`, `type`, `shortcode`, `contactno`, `website`, `founded`, `facilities`, `address`, `latitude`, `longitude`) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s','%s' )", $name, $type, $shortcode, $contactno, $website, $founded, $facilities, $address, $latitude, $longitude ) );
+        
+		$this->setMessage( __('Club added','leaguemanager') );
+	}
+
+	/**
+	 * edit club
+	 *
+	 * @param int $club_id
+	 * @param string $name
+	 * @param string $type
+	 * @param string $shortcode
+     * @param int $matchsecretary
+     * @param string $matchSecretaryContactno
+	 * @param string $matchSecretaryEmail
+	 * @param string $contactno
+	 * @param string $website
+	 * @param string $founded
+	 * @param string $facilities
+	 * @param string $address
+     * @param string $latitude
+     * @param string $longitude
+	 * @return void
+	 */
+	function editClub( $club_id, $name, $type, $shortcode, $matchsecretary, $matchSecretaryContactno, $matchSecretaryEmail, $contactno, $website, $founded, $facilities, $address, $latitude, $longitude )
+	{
+		global $wpdb, $leaguemanager;
+
+		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_clubs} SET `name` = '%s', `type` = '%s', `shortcode` = '%s',`matchsecretary` = '%d', `contactno` = '%s', `website` = '%s', `founded`= '%s', `facilities` = '%s', `address` = '%s', `latitude` = '%s', `longitude` = '%s' WHERE `id` = %d", $name, $type, $shortcode, $matchsecretary, $contactno, $website, $founded, $facilities, $address, $latitude, $longitude, $club_id ) );
+        
+        if ( $matchsecretary != '') {
+            $currentContactNo = get_user_meta( $matchsecretary, 'contactno', true);
+            $currentContactEmail = get_userdata($matchsecretary)->user_email;
+            if ($currentContactNo != $matchSecretaryContactno ) {
+                update_user_meta( $matchsecretary, 'contactno', $contactNo );
+            }
+            if ($currentContactEmail != $matchSecretaryEmail ) {
+                $userdata = array();
+                $userdata['ID'] = $matchsecretary;
+                $userdata['user_email'] = $matchSecretaryEmail;
+                $userId = wp_update_user( $userdata );
+                if ( is_wp_error($userId) ) {
+                    $error_msg = $userId->get_error_message();
+                    error_log('Unable to update user email '.$matchsecretary.' - '.$matchSecretaryEmail.' - '.$error_msg);
+                }
+            }
+        }
+
+		$this->setMessage( __('Club updated','leaguemanager') );
+	}
+
+	/**
+	 * delete Club
+	 *
+	 * @param int $club_id
+	 * @return void
+	 */
+	function delClub( $club_id )
+	{
+		global $wpdb, $leaguemanager;
+
+        $teams = $leaguemanager->getTeams( array( 'affiliatedclub' => $club_id, 'count' => true ) );
+        if ( $teams > 0 ) {
+            $this->setMessage( __('Unable to delete club','leaguemanager') );
+        } else {
+            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_roster_requests} WHERE `affiliatedclub` = '%d'", $club_id) );
+            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_roster} WHERE `affiliatedclub` = '%d'", $club_id) );
+            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_clubs} WHERE `id` = '%d'", $club_id) );
+            $this->setMessage( __('Club Deleted','leaguemanager') );
+        }
 	}
 
 /************
@@ -1878,6 +1981,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 		$tab = 0;
 		if ( isset($_POST['updateLeagueManager']) ) {
 			check_admin_referer('leaguemanager_manage-global-league-options');
+            $options['rosterConfirmation'] = htmlspecialchars($_POST['rosterConfirmation']);
             $options['matchCapability'] = htmlspecialchars($_POST['matchCapability']);
             $options['resultConfirmation'] = htmlspecialchars($_POST['resultConfirmation']);
             $options['resultEntry'] = htmlspecialchars($_POST['resultEntry']);
@@ -2224,8 +2328,9 @@ class LeagueManagerAdminPanel extends LeagueManager
 	{
 		global $wpdb, $leaguemanager;
 
-		$sql = "INSERT INTO {$wpdb->leaguemanager_roster} (`affiliatedclub`, `player_id`) VALUES ('%d', '%d')";
-		$wpdb->query( $wpdb->prepare ( $sql, $affiliatedclub, $player_id ) );
+        $userid = get_current_user_id();
+		$sql = "INSERT INTO {$wpdb->leaguemanager_roster} (`affiliatedclub`, `player_id`, `created_date`, `created_user` ) VALUES ('%d', '%d', now(), %d)";
+		$wpdb->query( $wpdb->prepare ( $sql, $affiliatedclub, $player_id, $userid ) );
 		$roster_id = $wpdb->insert_id;
 
 		parent::setMessage( __('Roster added', 'leaguemanager') );
@@ -2243,7 +2348,37 @@ class LeagueManagerAdminPanel extends LeagueManager
 	{
 		global $wpdb;
 		$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_roster} SET `removed_date` = NOW() WHERE `id` = '%d'", $roster_id) );
+        parent::setMessage( __('Roster deleted', 'leaguemanager') );
 	}
+
+    /**
+     * approve Roster Request
+     *
+     * @param int $rosterRequst_id
+     * @return void
+     */
+    function approveRosterRequest( $rosterRequestId )
+    {
+        global $wpdb, $leaguemanager;
+        
+        $rosterRequest = $leaguemanager->getRosterRequest($rosterRequestId);
+        $rosterId = $this->addRoster( $rosterRequest->affiliatedclub, $rosterRequest->player_id, false);
+        $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_roster_requests} SET `completed_date` = now(), `completed_user` = %d WHERE `id` = %d ", get_current_user_id(), $rosterRequestId ) );
+        parent::setMessage( __('Roster added', 'leaguemanager') );
+    }
+
+    /**
+     * delete Roster Request
+     *
+     * @param int $rosterRequst_id
+     * @return void
+     */
+    function deleteRosterRequest( $rosterRequest_id )
+    {
+        global $wpdb;
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_roster_requests} WHERE `id` = %d", $rosterRequest_id) );
+        parent::setMessage( __('Roster request deleted', 'leaguemanager') );
+    }
 
 	/**
 	 * import teams from CSV file
@@ -2279,11 +2414,12 @@ class LeagueManagerAdminPanel extends LeagueManager
 					$contactemail       = isset($line[4]) ? utf8_encode($line[4]) : '';
                     $affiliatedclubname = isset($line[5]) ? utf8_encode($line[5]) : '';
                     if (!$affiliatedclubname == '') {
-                        if ( is_plugin_active('wp-clubs/wp-clubs.php') ) {
-                            $affiliatedclub = getClubId($affiliatedclubname);
-                        } else {
-                            $affiliatedclub = 0;
-                        }
+                        $affiliatedclub = $leaguemanager->getClub(array('name' => $affiliatedclubname))->id;
+//                        if ( is_plugin_active('wp-clubs/wp-clubs.php') ) {
+//                            $affiliatedclub = getClubId($affiliatedclubname);
+//                        } else {
+//                            $affiliatedclub = 0;
+//                        }
                     }
 					$stadium = isset($line[6]) ? utf8_encode($line[6]) : '';
 					$matchday = isset($line[7]) ? utf8_encode($line[7]) : '';
@@ -2855,12 +2991,13 @@ class LeagueManagerAdminPanel extends LeagueManager
             __('Logo','leaguemanager')."\t";
 
 			foreach ( $teams AS $team ) {
-                
-                if ( is_plugin_active('wp-clubs/wp-clubs.php') ) {
-                    $affiliatedclub = getClubName($team->affiliatedclub);
-                } else {
-                    $affiliatedclub = '';
-                }
+                $affiliatedclub = $leaguemanager->getClub(array('id' => $team->affiliatedclub))->name;
+
+//                if ( is_plugin_active('wp-clubs/wp-clubs.php') ) {
+//                    $affiliatedclub = getClubName($team->affiliatedclub);
+//                } else {
+//                    $affiliatedclub = '';
+//                }
                                             
 				$home = ( $team->home == 1 ) ? 1 : 0;
 				$contents .= "\n".utf8_decode($season)."\t"

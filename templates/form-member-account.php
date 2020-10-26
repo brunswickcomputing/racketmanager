@@ -16,7 +16,7 @@
             <h4><?php _e( 'Personal Information', 'leaguemanager' ) ?></h4>
             <p>
                 <label for="username"><?php _e( 'Username', 'leaguemanager' ) ?></label>
-                <input type="email" required="required" placeholder="<?php _e( 'Email Address', 'leaguemanager' ) ?>" name="username" id="username" class="input" value="<?php echo $vars['user-name'] ?>" <?php if (isset($vars['user-name']) && $vars['user-name'] != '' ) echo 'disabled' ?> />
+                <input type="email" required="required" placeholder="<?php _e( 'Email Address', 'leaguemanager' ) ?>" name="username" id="username" class="input" value="<?php echo $vars['user-name'] ?>" <?php if (isset($vars['user-name']) && $vars['user-name'] != '' ) echo 'readonly' ?> />
             </p>
             <p>
                 <label for="firstname"><?php _e( 'First Name', 'leaguemanager' ) ?></label>

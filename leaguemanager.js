@@ -196,3 +196,41 @@ Leaguemanager.updateRubbers = function(link) {
     jQuery("#updateRubberResults").removeProp("disabled");
     jQuery("#updateRubberResults").removeClass("disabled");
 };
+Leaguemanager.rosterRequest = function(link) {
+    
+    var $affiliatedClub = document.getElementById('affiliatedClub').value;
+    var $form = jQuery('#rosterRequestFrm').serialize();
+    $form += "&action=leaguemanager_roster_request";
+    jQuery("#updateResponse").val("");
+    jQuery("#rosterUpdateSubmit").prop("disabled", "true");
+    jQuery("#rosterUpdateSubmit").addClass("disabled");
+
+    jQuery.ajax({
+                url:LeagueManagerAjaxL10n.requestUrl,
+                type: "POST",
+                data: $form,
+                success: function(response) {
+                    var $response = jQuery.parseJSON(response);
+                    var $message = $response[0];
+                    var $error = $response[1];
+                    if ($error === true) {
+                        for ( var errorField of $response[2] ) {
+                            $message += '<br />' + errorField;
+                        }
+                        jQuery("#updateResponse").html($message);
+                    } else {
+                        jQuery("#firstName").val("");
+                        jQuery("#surname").val("");
+                        jQuery("#genderMale").prop('checked', false);
+                        jQuery("#genderFemale").prop('checked', false);
+                        jQuery("#btm").val("");
+                        jQuery("#updateResponse").html($message);
+                    }
+                },
+                error: function() {
+                    alert("Ajax error on roster request");
+                }
+                }) ;
+    jQuery("#rosterUpdateSubmit").removeProp("disabled");
+    jQuery("#rosterUpdateSubmit").removeClass("disabled");
+};

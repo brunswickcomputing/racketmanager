@@ -27,11 +27,11 @@
 	<input type="hidden" name="page" value="leaguemanager" />
 	<input type="hidden" name="view" value="roster" />
 	<div class="lm-form-table">
-<?php if ( $clubs = getClubs() ) { ?>
+<?php if ( $clubs = $leaguemanager->getClubs( ) ) { ?>
 		<select size="1" name="club_id" id="club_id">
 			<option><?php _e( 'Select affiliated club', 'leaguemanager' ) ?></option>
 <?php foreach ( $clubs AS $club ) { ?>
-			<option value="<?php echo $club['id'] ?>" <?php echo ($club['id'] == $club_id ?  'selected' :  '') ?>><?php echo $club['name'] ?></option>
+			<option value="<?php echo $club->id ?>" <?php echo ($club->id == $club_id ?  'selected' :  '') ?>><?php echo $club->name ?></option>
 	<?php } ?>
 		</select>
 <?php } ?>
@@ -62,6 +62,8 @@
 			<th scope="col"><?php _e( 'Gender', 'leaguemanager' ) ?></th>
 			<th scope="col"><?php _e( 'BTM', 'leaguemanager' ) ?></th>
 			<th scope="col"><?php _e( 'Removed', 'leaguemanager') ?></th>
+            <th scope="col"><?php _e( 'Created On', 'leaguemanager') ?></th>
+            <th scope="col"><?php _e( 'Created By', 'leaguemanager') ?></th>
 		</tr>
 <?php if ( !$club_id == 0 ) { ?>
 		<tbody id="the-list">
@@ -80,6 +82,8 @@
 				<td><?php echo $roster->gender ?></td>
 				<td><?php echo $roster->btm ?></td>
 				<td><?php if ( isset($roster->removed_date) ) { echo $roster->removed_date; } ?></td>
+                <td><?php echo $roster->created_date ?></td>
+                <td><?php echo $roster->createdUserName ?></td>
 			</tr>
 		<?php } ?>
 	<?php } ?>

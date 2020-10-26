@@ -38,7 +38,7 @@ class LeagueManagerLoader
 	 *
 	 * @var string
 	 */
-	var $version = '5.4.0';
+	var $version = '5.4.2';
 
 
 	/**
@@ -46,7 +46,7 @@ class LeagueManagerLoader
 	 *
 	 * @var string
 	 */
-	var $dbversion = '5.3.6';
+	var $dbversion = '5.4.2';
 
 
 	/**
@@ -86,7 +86,7 @@ class LeagueManagerLoader
 		if (function_exists('register_uninstall_hook'))
 			register_uninstall_hook(__FILE__, array('LeagueManagerLoader', 'uninstall'));
 
-			//		add_action( 'widgets_init', array(&$this, 'registerWidget') );
+        add_action( 'widgets_init', array(&$this, 'registerWidget') );
 		
 		add_action('wp_enqueue_scripts', array(&$this, 'loadStyles'), 5 );
 		add_action('wp_enqueue_scripts', array(&$this, 'loadScripts') );
@@ -410,6 +410,8 @@ class LeagueManagerLoader
 		$wpdb->leaguemanager_roster = $wpdb->prefix . 'leaguemanager_roster';
 		$wpdb->leaguemanager_competitions = $wpdb->prefix . 'leaguemanager_competitions';
         $wpdb->leaguemanager_team_competition = $wpdb->prefix . 'leaguemanager_team_competition';
+        $wpdb->leaguemanager_roster_requests = $wpdb->prefix . 'leaguemanager_roster_requests';
+        $wpdb->leaguemanager_clubs = $wpdb->prefix . 'leaguemanager_clubs';
 	}
 
 
@@ -429,7 +431,7 @@ class LeagueManagerLoader
 		require_once (dirname (__FILE__) . '/lib/stats.php');
 		require_once (dirname (__FILE__) . '/lib/shortcodes.php');
         require_once (dirname (__FILE__) . '/lib/login.php');
-			//		require_once (dirname (__FILE__) . '/lib/widget.php');
+        require_once (dirname (__FILE__) . '/lib/widget.php');
 		require_once (dirname (__FILE__) . '/functions.php');
 		require_once (dirname (__FILE__) . '/lib/championship.php');
 		require_once (dirname (__FILE__) . '/lib/tiebreakers.php');
@@ -836,7 +838,10 @@ class LeagueManagerLoader
 		`affiliatedclub` int( 11 ) NOT NULL default 0,
 		`player_id` int( 11 ) NOT NULL default 0,
 		`removed_date` date NULL,
+        `updated` int( 1 ) NOT NULL,
         `system_record` VARCHAR(1) NULL DEFAULT NULL,
+        `created_date` date NULL,
+        `created_user` int( 11 ) NULL,
 		PRIMARY KEY ( `id` )) $charset_collate;";
 		maybe_create_table( $wpdb->leaguemanager_roster, $create_roster_sql );
 
@@ -907,7 +912,38 @@ class LeagueManagerLoader
         INDEX( `competition_id` )
         ) $charset_collate;";
         maybe_create_table( $wpdb->leaguemanager_team_competition, $create_team_competition_sql );
-        
+
+        $create_roster_requests_sql = "CREATE TABLE {$wpdb->leaguemanager_roster_requests} (
+        `id` int( 11 ) NOT NULL AUTO_INCREMENT,
+        `affiliatedclub` int( 11 ) NOT NULL default 0,
+        `first_name` varchar( 255 ) NOT NULL default '',
+        `surname` varchar( 255 ) NOT NULL default '',
+        `gender` varchar( 1 ) NOT NULL default '',
+        `btm` int( 11 ) NULL ,
+        `player_id` int( 11 ) NOT NULL default 0,
+        `requested_date` date NULL,
+        `requested_user` int( 11 ),
+        `completed_date` date NULL,
+        `comppleted_user` int( 11 ) NULL,
+        PRIMARY KEY ( `id` )) $charset_collate;";
+        maybe_create_table( $wpdb->leaguemanager_roster_requests, $create_roster_requests_sql );
+
+        $create_clubs_sql = "CREATE TABLE {$wpdb->leaguemanager_clubs} (
+                        `id` int( 11 ) NOT NULL AUTO_INCREMENT,
+                        `name` varchar( 100 ) NOT NULL default '',
+                        `website` varchar( 100 ) NOT NULL default '',
+                        `type` varchar( 20 ) NOT NULL default '',
+                        `address` varchar( 255 ) NOT NULL default '',
+                        `latitude` varchar( 20 ) NOT NULL default '',
+                        `longitude` varchar( 20 ) NOT NULL default '',
+                        `contactno` varchar( 20 ) NOT NULL default '',
+                        `founded` int( 4 ) NULL,
+                        `facilities` varchar( 255 ) NOT NULL default '',
+                        `shortcode` varchar( 20 ) NOT NULL default '',
+                        `matchsecretary` int( 11 ) NULL,
+                        PRIMARY KEY ( `id` )) $charset_collate;";
+        maybe_create_table( $wpdb->leaguemanager_clubs, $create_clubs_sql );
+
 }
 
 
@@ -920,6 +956,7 @@ class LeagueManagerLoader
 	{
 		global $wpdb, $leaguemanager;
 
+        $wpdb->query( "DROP TABLE {$wpdb->leaguemanager_roster_requests}" );
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager_roster}" );
         $wpdb->query( "DROP TABLE {$wpdb->leaguemanager_rubbers}" );
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager_matches}" );
@@ -929,7 +966,8 @@ class LeagueManagerLoader
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager_stats}" );
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager}" );
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager_competitions}" );
-
+        $wpdb->query( "DROP TABLE {$wpdb->leaguemanager_clubs}" );
+        
 		delete_option( 'leaguemanager_widget' );
 		delete_option( 'leaguemanager' );
 

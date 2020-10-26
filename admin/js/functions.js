@@ -99,23 +99,32 @@ jQuery(document).ready(function($) {
                                                       $("#contactemail").val(ui.item.user_email);
                                                       },
                                                       change: function(event, ui) {
-                                                      if (ui.item === null) {
-                                                        $(this).val('');
-                                                        $("#teamPlayerId1").val('');
-                                                        $("#affiliatedclub").val('');
-                                                        $("#captain").val('');
-                                                        $("#captainId").val('');
-                                                        $("#contactno").val('');
-                                                        $("#contactemail").val('');
-                                                      } else {
-                                                        $("#teamPlayerId1").val(ui.item.id);
-                                                        $("#captain").val(ui.item.value);
-                                                        $("#captainId").val(ui.item.playerId);
-                                                        $("#affiliatedclub").val(ui.item.clubId);
-                                                        $("#contactno").val(ui.item.contactno);
-                                                        $("#contactemail").val(ui.item.user_email);
-                                                      }
-                                                      }
+                                                          if (ui.item === null) {
+                                                            $(this).val('');
+                                                            $("#teamPlayerId1").val('');
+                                                            $("#affiliatedclub").val('');
+                                                            $("#captain").val('');
+                                                            $("#captainId").val('');
+                                                            $("#contactno").val('');
+                                                            $("#contactemail").val('');
+                                                            $("#team").val('');
+                                                          } else {
+                                                            $("#teamPlayerId1").val(ui.item.id);
+                                                            $("#captain").val(ui.item.value);
+                                                            $("#captainId").val(ui.item.playerId);
+                                                            $("#affiliatedclub").val(ui.item.clubId);
+                                                            $("#contactno").val(ui.item.contactno);
+                                                            $("#contactemail").val(ui.item.user_email);
+                                                            $team1 = $("#teamPlayer1").val();
+                                                            if ( $("#teamPlayer2").val() == '' ) {
+                                                                $team2 = $("#teamPlayer2").val();
+                                                                $team = $team1 + ' \/ ' + $team2;
+                                                            } else {
+                                                                $team = $team1;
+                                                            }
+                                                            $("#team").val($team);
+                                                          }
+                                                        }
                                                       });
                        $('#teamPlayer2').autocomplete({
                                                       minLength: 2,
@@ -135,12 +144,17 @@ jQuery(document).ready(function($) {
                                                       $("#teamPlayerId2").val(ui.item.id);
                                                       },
                                                       change: function(event, ui) {
-                                                      if (ui.item === null) {
-                                                        $(this).val('');
-                                                        $("#teamPlayerId2").val('');
-                                                      } else {
-                                                        $("#teamPlayerId2").val(ui.item.id);
-                                                      }
+                                                          if (ui.item === null) {
+                                                            $(this).val('');
+                                                            $("#teamPlayerId2").val('');
+                                                            $("#team").val('');
+                                                          } else {
+                                                            $("#teamPlayerId2").val(ui.item.id);
+                                                            $team1 = $("#teamPlayer1").val();
+                                                            $team2 = $("#teamPlayer2").val();
+                                                            $team = $team1 + ' \/ ' + $team2;
+                                                            $("#team").val($team);
+                                                          }
                                                       }
                                                       });
                        $('#captain').autocomplete({
@@ -216,6 +230,52 @@ jQuery(document).ready(function($) {
                                                   }
                                                   });
 
+    $("#teamPlayerFrm").submit(function( event ) {
+                               var $error = false;
+                               var $msg = '';
+                               if ( $("#team").val() == '' ) {
+                                    $error = true;
+                                    $msg += 'Team name not set\n';
+                               } else {
+                                   $.ajax({
+                                          type: 'POST',
+                                          datatype: 'json',
+                                          url: LeagueManagerAjaxL10n.requestUrl,
+                                          async: false,
+                                          data: {"name": $("#team").val(),
+                                          "action": "leaguemanager_checkTeamExists"},
+                                          success: function(response) {
+                                              if ( response == true ) {
+                                                    $error = true;
+                                                    $msg += 'Team already exists\n';
+                                              }
+                                          },
+                                          error: function() {
+                                                $error = true;
+                                                $msg += 'Error with team name check\n';
+                                          }
+                                          });
+                               }
+                               if ( $("#teamPlayerId1").val() == '' ) {
+                                    $error = true;
+                                    $msg += 'Player 1 not set\n';
+                               }
+                               if ($("#teamPlayerId2").length){
+                                   if ( $("#teamPlayerId2").val() == '' ) {
+                                        $error = true;
+                                        $msg += 'Player 2 not set\n';
+                                   }
+                               }
+                               if ( $("#affiliatedclub").val() == '' ) {
+                                    $error = true;
+                                    $msg += 'Club not set\n';
+                               }
+                               if ($error) {
+                                    $("#errorMsg").show();
+                                    $("#errorMsg").text($msg);
+                                    event.preventDefault();
+                               }
+    });
 });
 
 

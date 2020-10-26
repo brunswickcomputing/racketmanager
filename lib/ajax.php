@@ -25,7 +25,8 @@ class LeagueManagerAJAX extends LeagueManager {
 		add_action( 'wp_ajax_leaguemanager_insert_home_stadium', array(&$this, 'insertHomeStadium') );
 		add_action( 'wp_ajax_leaguemanager_set_match_day_popup', array(&$this, 'setMatchDayPopUp') );
 		add_action( 'wp_ajax_leaguemanager_set_match_date', array(&$this, 'setMatchDate') );
-		
+        add_action( 'wp_ajax_leaguemanager_checkTeamExists', array(&$this, 'checkTeamExists') );
+
         // admin/admin.php
         add_action( 'wp_ajax_leaguemanager_get_season_dropdown', array(&$this, 'setSeasonDropdown') );
         add_action( 'wp_ajax_leaguemanager_get_match_dropdown', array(&$this, 'setMatchesDropdown') );
@@ -295,6 +296,23 @@ class LeagueManagerAJAX extends LeagueManager {
         $html = $league->getMatchDropdown();
         
         die($html);
+    }
+    
+    /**
+     * Ajax Response to get check if Team Exists
+     *
+     */
+    public function checkTeamExists() {
+        global $leaguemanager;
+        
+        $name = stripslashes($_POST['name']);
+        $team = $leaguemanager->getTeamId($name);
+        if ($team) {
+            $found = true;
+        } else {
+            $found = false;
+        }
+        die($found);
     }
     
 	/**

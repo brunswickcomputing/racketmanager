@@ -2113,6 +2113,8 @@ final class LeagueManagerAdmin extends LeagueManager
         }
         
         $league = get_league($league_id);
+        $type = $league->type;
+        if ( $type == 'LD' ) $type = 'XD';
         $status = "P";
         if ( $player2Id == 0 ) {
             $title = $player1;
@@ -2121,8 +2123,8 @@ final class LeagueManagerAdmin extends LeagueManager
             $title = $player1.' / '.$player2;
             $roster = array($player1Id, $player2Id);
         }
-		$sql = "INSERT INTO {$wpdb->leaguemanager_teams} (`title`, `affiliatedclub`, `roster`, `status` ) VALUES ('%s', '%d', '%s', '%s')";
-		$wpdb->query( $wpdb->prepare ( $sql, $title, $affiliatedclub, maybe_serialize($roster), $status ) );
+		$sql = "INSERT INTO {$wpdb->leaguemanager_teams} (`title`, `affiliatedclub`, `roster`, `status`, `type` ) VALUES ('%s', '%d', '%s', '%s', '%s')";
+		$wpdb->query( $wpdb->prepare ( $sql, $title, $affiliatedclub, maybe_serialize($roster), $status, $type ) );
 		$team_id = $wpdb->insert_id;
         $captain = $leaguemanager->getRosterEntry($player1Id)->player_id;
         $team_competition_id = $this->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail );

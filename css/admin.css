@@ -562,3 +562,9 @@ td.matchday.playmulti {
     position: relative;
 }
 
+div#errorMsg {
+    white-space: pre;
+    font-weight: 700;
+    color: #ff0000;
+    font-size: 1.2em;
+}

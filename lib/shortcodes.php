@@ -368,7 +368,7 @@ class LeagueManagerShortcodes extends LeagueManager {
 			$data['key'] = $final['key'];
 			$data['name'] = $final['name'];
 			$data['num_matches'] = $final['num_matches'];
-			$data['rowspan'] = ( $league->championship->num_teams_first_round/2 >= 4 ) ? ceil(4/$final['num_matches']) : ceil(($league->championship->getNumTeamsFirstRound()/2)/$final['num_matches']);
+			$data['rowspan'] = ( $league->championship->num_teams_first_round/2 >= 4 ) ? ceil(4/$final['num_matches']) : ceil(($league->championship->num_teams_first_round/2)/$final['num_matches']);
 
 			$matches_raw = $league->getMatches( array("final" => $final['key'], "orderby" => array("id" => "ASC")) );
 

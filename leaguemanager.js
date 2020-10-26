@@ -334,6 +334,7 @@ Leaguemanager.rosterRequest = function(link) {
 
     jQuery.ajax({
                 url:LeagueManagerAjaxL10n.requestUrl,
+                async: false,
                 type: "POST",
                 data: $form,
                 success: function(response) {
@@ -398,6 +399,7 @@ Leaguemanager.teamCaptainUpdate = function(link) {
     jQuery.ajax({
                 url:LeagueManagerAjaxL10n.requestUrl,
                 type: "POST",
+                async: false,
                 data: $form,
                 success: function(response) {
                     var $response = jQuery.parseJSON(response);
@@ -424,6 +426,7 @@ Leaguemanager.updateClub = function(link) {
                 url:LeagueManagerAjaxL10n.requestUrl,
                 type: "POST",
                 data: $form,
+                async: false,
                 success: function(response) {
                     var $response = jQuery.parseJSON(response);
                     var $message = $response[0];

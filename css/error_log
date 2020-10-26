@@ -1,0 +1,16 @@
+[04-Aug-2020 17:14:23 UTC] PHP Fatal error:  Uncaught Error: Using $this when not in object context in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/css/colors.css.php:1
+Stack trace:
+#0 {main}
+  thrown in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/css/colors.css.php on line 1
+[15-Aug-2020 20:47:34 UTC] PHP Fatal error:  Uncaught Error: Using $this when not in object context in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/css/colors.css.php:1
+Stack trace:
+#0 {main}
+  thrown in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/css/colors.css.php on line 1
+[19-Aug-2020 10:26:30 UTC] PHP Fatal error:  Uncaught Error: Using $this when not in object context in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/css/colors.css.php:1
+Stack trace:
+#0 {main}
+  thrown in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/css/colors.css.php on line 1
+[06-Sep-2020 02:49:19 UTC] PHP Fatal error:  Uncaught Error: Using $this when not in object context in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/css/colors.css.php:1
+Stack trace:
+#0 {main}
+  thrown in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/css/colors.css.php on line 1

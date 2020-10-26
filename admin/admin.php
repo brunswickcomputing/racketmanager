@@ -2479,7 +2479,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 		$x = 0;
 		
 		if (!$affiliatedclub == 0 && !$player_id == 0 ) {
-			$rosterchk = parent::getRoster( array('club' =>$affiliatedclub, 'player' =>$player_id) );
+			$rosterchk = parent::getRoster( array('club' =>$affiliatedclub, 'player' =>$player_id, 'inactive' =>true) );
 			if (!$rosterchk) {
 				$roster_id	= $this->addRoster( $affiliatedclub, $player_id, false );
 				$roster[$roster_id] = $roster_id;

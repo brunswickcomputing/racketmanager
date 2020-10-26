@@ -3,7 +3,8 @@ jQuery(document).ready(function($) {
 	jQuery( ".jquery-ui-accordion" ).accordion({
 		header: "h3.header",
 		collapsible: true,
-		heightStyle: "content"
+		heightStyle: "content",
+        active: "false"
 	});
 	
 	/*
@@ -93,7 +94,7 @@ Leaguemanager.setMatchBox = function( requestURL, curr_index, operation, element
 	ajax.runAJAX();
 }
 
-Leaguemanager.showRubbers = function(e, link) {
+Leaguemanager.printScoreCard = function(e, link) {
 	
 	e.preventDefault();
 	var matchId = jQuery(link).attr('id');

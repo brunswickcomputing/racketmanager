@@ -10,20 +10,26 @@
                 </tr>
             </thead>
             <tbody>
+            <?php $matchday = isset($_GET['match_day']) ? $_GET['match_day'] : $leaguemanager->getMatchDay(); ?>
             <?php foreach ( $matches AS $match ) { ?>
+                <?php if ( $matchday != $match->match_day ) { ?>
+                <tr class='match-day-row'>
+                    <th colspan="3" class='match']>Week <?php echo $match->match_day; ?></th>
+                </tr>
+                <?php $matchday = $match->match_day; } ?>
 
                 <tr class='match-row rubber-view <?php echo $match->class ?>'>
                     <?php if ( isset($match->num_rubbers) ) {
                         if ($match->winner_id != 0) { ?>
-                            <td class="angledir"><i class="fa fa-angle-down"></i></td>
+                            <td class='angledir'><i class='fa fa-angle-down'></i></td>
                         <?php } else { ?>
-                            <td><a href="#" class="fa fa-print " id="<?php echo $match->id ?>" onclick="Leaguemanager.showRubbers(event, this)"></a></td>
+                            <td><a href="#" class='fa fa-print ' id="<?php echo $match->id ?>" onclick="Leaguemanager.printScoreCard(event, this)"></a></td>
                         <?php } ?>
                     <?php } else { ?>
-                        <td class="angledir"></td>
+                        <td class='angledir'></td>
                     <?php } ?>
                     <td class='match'>
-                        <?php echo $match->match_date." ".$match->start_time." ".$match->location ?><br /><?php echo $match->title ?> <?php echo $match->report ?>
+                        <?php echo mysql2date('l, j F Y', $match->date)." ".$match->start_time." ".$match->location ?><br /><?php echo $match->title ?> <?php echo $match->report ?>
                     </td>
                     <td class='score'>
                         <?php if (isset($league->num_rubbers)) {
@@ -77,9 +83,9 @@
             </tbody>
         </table>
 
-        <div class="tablenav">
-            <div class="tablenav-pages">
+        <div class='tablenav'>
+            <div class='tablenav-pages'>
                 <?php echo $league->pagination ?>
             </div>
         </div>
-        <div id="showMatchRubbers" style="display:none"></div>
+        <div id='showMatchRubbers' style='display:none'></div>

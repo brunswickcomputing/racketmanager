@@ -2169,7 +2169,7 @@ class LeagueManager
 	{
 	 	global $wpdb;
 	
-		$defaults = array( 'league_id' => false, 'count' => false, 'season' => false, 'team' => false, 'club' => false, 'player' => false, 'gender' => false, 'cache' => true, 'orderby' => array("firstname" => "ASC", "surname" => "ASC" ));
+		$defaults = array( 'league_id' => false, 'count' => false, 'season' => false, 'team' => false, 'club' => false, 'player' => false, 'gender' => false, 'inactive' => false, 'cache' => true, 'orderby' => array("firstname" => "ASC", "surname" => "ASC" ));
 		$args = array_merge($defaults, (array)$args);
 		extract($args, EXTR_SKIP);
 		
@@ -2190,6 +2190,10 @@ class LeagueManager
 		
         if ($gender) {
             $search_terms[] = $wpdb->prepare("`gender` = '%s'", htmlspecialchars(strip_tags($gender)));
+        }
+        
+        if ($inactive) {
+            $search_terms[] = "A.`removed_date` IS NULL";
         }
         
 		$search = "";

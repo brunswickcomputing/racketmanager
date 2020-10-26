@@ -11,6 +11,7 @@ The following variables are usable:
 
 	You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
 */
+$season = end($league->seasons)['name'];
 ?>
 
 <div class="teampage">
@@ -18,6 +19,9 @@ The following variables are usable:
 	<h3 class="header"><?php echo $team->title ?></h3>
 
 	<div class="tm-team-content">
+        <div style='float: right; margin-top: 1em;'>
+            <a href="/index.php?league_id=<?php echo $league->id ?>&team_id=<?php echo $team->id ?>&season=<?php echo $season ?>&leaguemanager_export=calendarFile" class="roll-button" >Add Matches to Calendar</a>
+        </div>
 		<dl class="team">
 			<dt><?php _e( 'Rank', 'leaguemanager' ) ?></dt><dd><?php echo $team->rank ?></dd>
 			<dt><?php _e( 'Matches', 'leaguemanager' ) ?></dt><dd><?php echo $team->done_matches ?></dd>

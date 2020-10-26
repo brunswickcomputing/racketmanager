@@ -510,6 +510,7 @@ div.tm-team-content dl.team dt {
 	clear: both;
 	padding: 0.3em 0;
 	font-size: 1.1em;
+    width: 225px;
 }
 .alternate {
     background-color: #f9f9f9;

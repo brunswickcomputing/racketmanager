@@ -38,9 +38,8 @@ function leaguemanager_upgrade() {
     if (version_compare($installed, '5.3.0', '<')) {
         echo __('starting 5.3.0 upgrade', 'leaguemanager') . "<br />\n";
         $prev_player_id = 0;
-        $rosters = $wpdb->get_results(" SELECT `id`, `player_id`, `affiliatedclub`, `removed_date` FROM {$wpdb->leaguemanager_roster} WHERE `updated` = 0 ORDER BY `player_id`;");
+        $rosters = $wpdb->get_results(" SELECT `id`, `player_id`, `affiliatedclub`, `removed_date` FROM {$wpdb->leaguemanager_roster} ORDER BY `player_id`;");
         foreach ($rosters AS $roster) {
-                    echo $roster->player_id . "<br />\n";
             if ($roster->player_id != $prev_player_id) {
                 $player = $wpdb->get_results( $wpdb->prepare(" SELECT `firstname`, `surname`, `gender`, `btm` FROM {$wpdb->leaguemanager_players} WHERE `id` = %d", $roster->player_id) );
                 if ( !$player ) {
@@ -70,7 +69,7 @@ function leaguemanager_upgrade() {
                 }
             }
             $prev_player_id = $roster->player_id;
-            $wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->leaguemanager_roster} SET `player_id` = %d, `updated` = 1 WHERE `id` = %d", $user_id, $roster->id ) );
+            $wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->leaguemanager_roster} SET `player_id` = %d WHERE `id` = %d", $user_id, $roster->id ) );
         }
     }
     if (version_compare($installed, '5.3.1', '<')) {
@@ -119,6 +118,11 @@ function leaguemanager_upgrade() {
             }
         }
         $wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_team_competition} DROP `contactno`, DROP `contactemail`;" );
+    }
+    if (version_compare($installed, '5.3.3', '<')) {
+        echo __('starting 5.3.3 upgrade', 'leaguemanager') . "<br />\n";
+        $wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_roster} ADD `system_record` VARCHAR(1) NULL DEFAULT NULL AFTER `updated`;" );
+        $wpdb->query( "UPDATE {$wpdb->leaguemanager_roster} SET `system_record` = 'Y' WHERE `player_id` BETWEEN 1479 AND 1514;" );
    }
 
     /*

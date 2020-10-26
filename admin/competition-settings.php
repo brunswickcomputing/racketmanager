@@ -149,7 +149,7 @@
 							<th scope="row"><label for="entryType"><?php _e( 'Entry Type', 'leaguemanager' ) ?></label></th>
 							<td>
 								<select size="1" name="settings[entryType]" id="entryType">
-<?php foreach ( $this->getentryTypes() AS $id => $entryType ) $competition->entryType = isset($competition->entryType) ? $competition->entryType : ''; { ?>
+                                <?php foreach ( $this->getentryTypes() AS $id => $entryType )  { ?>
 									<option value="<?php echo $id ?>"<?php selected( $id, $competition->entryType ) ?>><?php echo $entryType ?></option>
                                 <?php } ?>
 								</select>

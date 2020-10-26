@@ -57,17 +57,27 @@
 			$prevTeamNum = $playdowncount = 0;
 			$prevMatchDay = $i = 0;
 
+            for ( $t = 1; $t < 10; $t++ ) {
+                $teamplay[$t] = 0;
+            }
+            
 			foreach ( $playerstat->matchdays AS $matches) {
 
 				if ( !$prevMatchDay == $matches->match_day ) {
 					$i = 0;
 				}
 				$teamNum = substr($matches->team_title,-1) ;
+                $teamplay[$teamNum] ++;
+                
 				if ( $prevTeamNum == 0) {
 					$playdir = '';
 				} elseif ( $teamNum > $prevTeamNum ) {
-					$playdowncount ++;
-					$playdir = 'playdown';
+                    if ( $teamplay[$prevTeamNum] > 2 ) {
+                        $playdir = 'playdownerr';
+                    } else {
+                    $playdir = 'playdown';
+                    }
+                    $playdowncount ++;
 				} else {
 					$playdir = '';
 				}

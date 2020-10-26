@@ -970,13 +970,19 @@ div.teamlist .header .ui-icon {
 
 td.matchday.playup {
 	background-color: greenyellow;
+    color: white;
 }
 td.matchday.playdown {
     background-color: blue;
     color: white;
 }
+td.matchday.playdownerr {
+    background-color: red;
+    color: white;
+}
 td.matchday.playmulti {
 	background-color: red;
+    color: white;
 }
 td.angledir {
 	width: 5%;

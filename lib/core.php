@@ -1990,9 +1990,13 @@ class LeagueManager
 				$matches[$i]->score = sprintf("%s:%s", $matches[$i]->homeScore, $matches[$i]->awayScore);
 			}
 
-			$matches[$i]->homeTeam = $this->getTeamDtls($match->home_team, $match->league_id);
-			$matches[$i]->awayTeam = $this->getTeamDtls($match->away_team, $match->league_id);
-			
+            if ( is_numeric($match->home_team) ) {
+                $matches[$i]->homeTeam = $this->getTeamDtls($match->home_team, $match->league_id);
+            }
+            if ( is_numeric($match->away_team) ) {
+                $matches[$i]->awayTeam = $this->getTeamDtls($match->away_team, $match->league_id);
+            }
+
 			$matches[$i]->report = ( $match->post_id != 0 ) ? '(<a href="'.get_permalink($match->post_id).'">'.__('Report', 'leaguemanager').'</a>)' : '';
 			
 			$i++;
@@ -2383,96 +2387,6 @@ class LeagueManager
 		return $this->roster[$roster_id];
 	}
 	
-    /**
-     * gets roster from database
-     *
-     * @param array $args
-     * @param string $output (optional)
-     * @return array
-     */
-    function getOldRoster( $args, $output = 'OBJECT' )
-    {
-        global $wpdb;
-        
-        $defaults = array( 'league_id' => false, 'count' => false, 'season' => false, 'team' => false, 'club' => false, 'player' => false, 'gender' => false, 'inactive' => false, 'cache' => true, 'orderby' => array("roster_id" => "ASC" ));
-        $args = array_merge($defaults, (array)$args);
-        extract($args, EXTR_SKIP);
-        
-        //$cachekey = md5(implode(array_map(function($entry) { if(is_array($entry)) { return implode($entry); } else { return $entry; } }, $args)) . $output);
-        
-        $search_terms = array();
-        if ($team) {
-            $search_terms[] = $wpdb->prepare("`affiliatedclub` in (select `affiliatedclub` from {$wpdb->leaguemanager_teams} where `id` = '%d')", intval($team));
-        }
-        
-        if ($club) {
-            $search_terms[] = $wpdb->prepare("`affiliatedclub` = '%d'", intval($club));
-        }
-        
-        if ($player) {
-            $search_terms[] = $wpdb->prepare("`player_id` = '%d'", intval($player));
-        }
-        
-        if ($gender) {
-            $search_terms[] = $wpdb->prepare("`gender` = '%s'", htmlspecialchars(strip_tags($gender)));
-        }
-        
-        if ($inactive) {
-            $search_terms[] = "A.`removed_date` IS NULL";
-        }
-        
-        $search = "";
-        if (count($search_terms) > 0) {
-            $search = implode(" AND ", $search_terms);
-        }
-        
-        $orderby_string = ""; $i = 0;
-        foreach ($orderby AS $order => $direction) {
-            if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) $direction = "ASC";
-            $orderby_string .= "`".$order."` ".$direction;
-            if ($i < (count($orderby)-1)) $orderby_string .= ",";
-            $i++;
-        }
-        $order = $orderby_string;
-        
-        $offset = 0;
-        
-        if ( $count ) {
-            $sql = "SELECT COUNT(ID) FROM {$wpdb->leaguemanager_roster}.'_old'";
-            if ( $search != "") $sql .= " WHERE $search";
-            $cachekey = md5($sql);
-            
-            $this->num_players[$cachekey] = $wpdb->get_var($sql);
-            return $this->num_players[$cachekey];
-        }
-        
-        $sql = "SELECT A.`id` as `roster_id`, B.`ID` as `player_id`, `fullname` as fullname, `affiliatedclub`, A.`removed_date` FROM {$wpdb->leaguemanager_roster}_old A INNER JOIN {$wpdb->leaguemanager_players} B ON A.`player_id` = B.`id`" ;
-        if ( $search != "") $sql .= " WHERE $search";
-        if ( $order != "") $sql .= " ORDER BY $order";
-        
-        $rosters = $wpdb->get_results( $sql, $output );
-        
-        $i = 0;
-        $class = '';
-        foreach ( $rosters AS $roster ) {
-            $class = ( 'alternate' == $class ) ? '' : 'alternate';
-            $rosters[$i]->class = $class;
-            
-            $rosters[$i] = (object)(array)$roster;
-            
-            $rosters[$i]->roster_id = $roster->roster_id;
-            $rosters[$i]->player_id = $roster->player_id;
-            $rosters[$i]->fullname = $roster->fullname;
-            $rosters[$i]->gender = get_user_meta($roster->player_id, 'gender', true );
-            $rosters[$i]->removed_date = get_user_meta($roster->player_id, 'remove_date', true );
-            $rosters[$i]->btm = get_user_meta($roster->player_id, 'btm', true );;
-            
-            $i++;
-        }
-        
-        return $rosters;
-    }
-    
 	/**
 	 * get list of  player
 	 *
@@ -2707,9 +2621,9 @@ class LeagueManager
 			$search_terms1[] = $wpdb->prepare("ro.`affiliatedclub` = '%d'", intval($club));
 		}
 		
-//        if (!$system) {
-//            $search_terms1[] = "p.`system_record` IS NULL";
-//        }
+        if (!$system) {
+            $search_terms1[] = "ro.`system_record` IS NULL";
+        }
 		$search1 = "";
 		if (count($search_terms1) > 0) {
 			$search1 = implode(" AND ", $search_terms1);
@@ -3038,12 +2952,8 @@ class LeagueManager
 			$table = $wpdb->leaguemanager_matches;
         elseif ($table == "rubbers")
             $table = $wpdb->leaguemanager_rubbers;
-		elseif ($table == "players")
-			$table = $wpdb->leaguemanager_players;
 		elseif ($table == "roster")
 			$table = $wpdb->leaguemanager_roster;
-		elseif ($table == "player")
-			$table = $wpdb->leaguemanager_players;
 		elseif ($table == "leagues")
 			$table = $wpdb->leaguemanager;
 		else

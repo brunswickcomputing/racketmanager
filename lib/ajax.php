@@ -1,0 +1,526 @@
+<?php
+/**
+ * AJAX class for the WordPress plugin LeagueManager
+ *
+ * @author 	Kolja Schleich
+ * @package	LeagueManager
+ * @copyright Copyright 2008
+*/
+class LeagueManagerAJAX
+{
+	/**
+	 * register ajax actions
+	 *
+	 * @param none
+	 * @return void
+	 */
+	function __construct()
+	{
+		add_action( 'wp_ajax_leaguemanager_add_team_from_db', array(&$this, 'addTeamFromDB') );
+		add_action( 'wp_ajax_leaguemanager_set_team_roster_groups', array(&$this, 'setTeamRosterGroups') );
+		add_action( 'wp_ajax_leaguemanager_save_team_standings', array(&$this, 'saveTeamStandings') );
+		add_action( 'wp_ajax_leaguemanager_save_add_points', array(&$this, 'saveAddPoints') );
+		add_action( 'wp_ajax_leaguemanager_insert_logo_from_library', array(&$this, 'insertLogoFromLibrary') );
+		add_action( 'wp_ajax_leaguemanager_insert_home_stadium', array(&$this, 'insertHomeStadium') );
+		add_action( 'wp_ajax_leaguemanager_set_match_day_popup', array(&$this, 'setMatchDayPopUp') );
+		add_action( 'wp_ajax_leaguemanager_set_match_date', array(&$this, 'setMatchDate') );
+		
+		add_action( 'wp_ajax_leaguemanager_get_match_box', array(&$this, 'getMatchBox') );
+		add_action( 'wp_ajax_nopriv_leaguemanager_get_match_box', array(&$this, 'getMatchBox') );
+
+        add_action( 'wp_ajax_leaguemanager_show_rubbers', array(&$this, 'showRubbers') );
+        add_action( 'wp_ajax_leaguemanager_update_rubbers', array(&$this, 'updateRubbers') );
+	}
+	function LeagueManagerAJAX()
+	{
+		$this->__construct();
+	}
+
+
+	/**
+	 * Ajax Response to set match index in widget
+	 *
+	 * @param none
+	 * @return void
+	 */
+	function getMatchBox() {
+		$widget = new LeagueManagerWidget(true);
+
+		$current = $_POST['current'];
+		$element = $_POST['element'];
+		$operation = $_POST['operation'];
+		$league_id = intval($_POST['league_id']);
+		$match_limit = ( $_POST['match_limit'] == 'false' ) ? false : intval($_POST['match_limit']);
+		$widget_number = intval($_POST['widget_number']);
+		$season = htmlspecialchars($_POST['season']);
+		$group = ( isset($_POST['group']) ? htmlspecialchars($_POST['group']) : '' );
+		$home_only = htmlspecialchars($_POST['home_only']);
+		$date_format = htmlspecialchars($_POST['date_format']);
+
+		if ( $operation == 'next' )
+			$index = $current + 1;
+		elseif ( $operation == 'prev' )
+			$index = $current - 1;
+
+		$widget->setMatchIndex( $index, $element );
+
+		if ( isset($group) ) {
+			$instance = array( 'league' => $league_id, 'group' => $group, 'match_limit' => $match_limit, 'season' => $season, 'home_only' => $home_only, 'date_format' => $date_format );
+		} else {
+			$instance = array( 'league' => $league_id, 'match_limit' => $match_limit, 'season' => $season, 'home_only' => $home_only, 'date_format' => $date_format );
+		}
+		
+		if ( $element == 'next' ) {
+			$parent_id = 'next_matches_'.$widget_number;
+			$match_box = $widget->showNextMatchBox($widget_number, $instance, false);
+		} elseif ( $element == 'prev' ) {
+			$parent_id = 'prev_matches_'.$widget_number;
+			$match_box = $widget->showPrevMatchBox($widget_number, $instance, false, true);
+		}
+
+		die( "jQuery('div#".$parent_id."').fadeOut('fast', function() {
+			jQuery('div#".$parent_id."').html('".addslashes_gpc($match_box)."').fadeIn('fast');
+		});");
+	}
+
+
+	/**
+	 * SACK response to manually set team ranking
+	 *
+	 * @since 2.8
+	 */
+	function saveTeamStandings() {
+		global $wpdb, $lmLoader, $leaguemanager;
+		$ranking = $_POST['ranking'];
+		$ranking = $lmLoader->adminPanel->getRanking($ranking);
+		foreach ( $ranking AS $rank => $team_id ) {
+			$old = $leaguemanager->getTeam( $team_id );
+			$oldRank = $old->rank;
+
+			if ( $oldRank != 0 ) {
+				if ( $rank == $oldRank )
+					$status = '&#8226;';
+				elseif ( $rank < $oldRank )
+					$status = '&#8593';
+				else
+					$status = '&#8595';
+			} else {
+				$status = '&#8226;';
+			}
+
+			$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_teams} SET `rank` = '%d', `status` = '%s' WHERE `id` = '%d'", $rank, $status, $team_id ) );
+		}
+	}
+
+
+	/**
+	* SACK response to manually set additional points
+	*
+	* @since 2.8
+	*/
+	function saveAddPoints() {
+		global $wpdb, $leaguemanager;
+		$team_id = intval($_POST['team_id']);
+		$points = $_POST['points'];
+		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_teams} SET `add_points` = '%s' WHERE `id` = '%d'", $points, $team_id ) );
+		$leaguemanager->rankTeams(1);
+
+		die("Leaguemanager.doneLoading('loading_".$team_id."')");
+	}
+
+
+	/**
+	 * SACK response to get team data from database and insert into team edit form
+	 *
+	 * @since 2.9
+	 */
+	function addTeamFromDB() {
+		global $leaguemanager;
+
+		$team_id = (int)$_POST['team_id'];
+		$team = $leaguemanager->getTeam( $team_id );
+
+		$roster = '';
+		if ( $leaguemanager->hasBridge() ) {
+			global $projectmanager;
+			$html = '<select size="1" name="roster" id="roster" onChange="Leaguemanager.toggleTeamRosterGroups(this.value);return false;"><option value="">'.__('None','leaguemanager').'</option>';
+			foreach ( $projectmanager->getProjects() AS $dataset ) {
+				$selected = ( $dataset->id == $team->roster['id'] ) ? ' selected="selected"' : '';
+				$html .= '<option value="'.$dataset->id.'"'.$selected.'>'.$dataset->title.'</option>';
+			}
+			$html .= '</select>';
+			$roster = "jQuery('span#rosterbox').fadeOut('fast', function() {
+					jQuery('span#rosterbox').html('".addslashes_gpc($html)."').fadeIn('fast')
+				   });";
+
+			if ( isset($team->roster['cat_id']) ) {
+				$project = $projectmanager->getProject($team->roster['id']);
+				$category = $project->category;
+
+				if ( !empty($category) ) {
+					$html = wp_dropdown_categories(array('hide_empty' => 0, 'name' => 'roster_group', 'orderby' => 'name', 'echo' => 0, 'show_option_none' => __('Select Group (Optional)', 'leaguemanager'), 'child_of' => $category, 'selected' => $team->roster['cat_id'] ));
+					$html = str_replace("\n", "", $html);
+				} else {
+					$html = "";
+				}
+				$roster .= "jQuery('span#team_roster_groups').fadeOut('fast', function () {
+						jQuery('span#team_roster_groups').html('".addslashes_gpc($html)."').fadeIn('fast');
+					   });";
+			} else {
+				$roster .= "jQuery('span#team_roster_groups').fadeOut('fast');";
+			}
+		}
+
+		$home = ( isset($team->home) && $team->home == 1 ) ? "document.getElementById('home').checked = true;" : "document.getElementById('home').checked = false;";
+
+		$logo = ( !empty($team->logo) ) ? "<img src='".$team->logo."' />" : "";
+		die("
+			document.getElementById('team').value = '".$team->title."';
+			document.getElementById('captain').value = '".$team->captain."';
+			document.getElementById('contactno').value = '".$team->contactno."';
+            document.getElementById('contactemail').value = '".$team->contactemail."';
+            document.getElementById('affiliatedclub').value = '".$team->affiliatedclub."';
+			document.getElementById('stadium').value = '".$team->stadium."';
+			document.getElementById('logo_db').value = '".$team->logo."';
+			jQuery('div#logo_db_box').html('".addslashes_gpc($logo)."').fadeIn('fast');
+			".$home."
+			".$roster."
+		");
+	}
+
+
+	/**
+	 * SACK response to display respective ProjectManager Groups as Team Roster
+	 *
+	 * @since 3.0
+	 */
+	function setTeamRosterGroups() {
+		global $projectmanager;
+
+		$roster = (int)$_POST['roster'];
+		$project = $projectmanager->getProject($roster);
+
+		if ( $projectmanager->hasCategories($project->id) ) {
+			$html = '<select size="1" name="roster_group" id="roster_group">';
+			$html .= '<option value="-1">'.__( 'Select Group (Optional)', 'leaguemanager' ).'</option>';
+			foreach ( $projectmanager->getCategories( $project->id ) AS $category ) {
+				$html .= '<option value="'.$category->id.'">'.$category->title.'</option>';
+			}
+			$html .= '</select>';
+			//$html = wp_dropdown_categories(array('hide_empty' => 0, 'name' => 'roster_group', 'orderby' => 'name', 'echo' => 0, 'show_option_none' => __('Select Group (Optional)', 'leaguemanager'), 'child_of' => $category ));
+			$html = str_replace("\n", "", $html);
+		} else {
+			$html = "";
+		}
+
+		die("jQuery('span#team_roster_groups').fadeOut('fast', function () {
+			jQuery('span#team_roster_groups').html('".addslashes_gpc($html)."').fadeIn('fast');
+		});");
+	}
+
+
+	/**
+	 * insert Logo from Library
+	 *
+	 * @param none
+	 * @return void
+	 */
+	function insertLogoFromLibrary()
+	{
+		$logo = htmlspecialchars($_POST['logo']);
+		$logo = 'http://' . $logo;
+		$html = "<img id='logo_image' src='".$logo."' />";
+
+		if ( $_SERVER['HTTP_HOST'] != substr($logo, 7, strlen($_SERVER['HTTP_HOST'])) ) {
+			die("alert('".__('The image cannot be on a remote server', 'leaguemanager')."')");
+		} else {
+			die("jQuery('div#logo_db_box').fadeOut('fast', function() {
+				document.getElementById('logo_db').value = '".$logo."';
+				jQuery('div#logo_db_box').html('".addslashes_gpc($html)."').fadeIn('fast');
+			});");
+		}
+	}
+
+
+	/**
+	 * insert home team stadium if available
+	 *
+	 * @param none
+	 * @rturn void
+	 */
+	function insertHomeStadium()
+	{
+		global $leaguemanager;
+		$team_id = (int)$_POST['team_id'];
+		$i = (int)$_POST['i'];
+
+		$team = $leaguemanager->getTeam( $team_id );
+		die("document.getElementById('location[".$i."]').value = '".$team->stadium."';");
+	}
+
+	/**
+	 * change all Match Day Pop-ups to match first one set
+	 *
+	 * @param none
+	 * @rturn void
+	 */
+	function setMatchDayPopUp()
+	{
+		global $leaguemanager;
+		$match_day = (int)$_POST['match_day'];
+		$i = (int)$_POST['i'];
+		$max_matches = (int)$_POST['max_matches'];
+		$mode = htmlspecialchars($_POST['mode']);
+
+        if ( $i == 0 && $mode == 'add') {
+            $myAjax = "";
+            for ( $xx = 1; $xx < $max_matches; $xx++ ) {
+    		    $myAjax .= "document.getElementById('match_day_".$xx."').value = '".$match_day."'; ";
+            }
+    		die("".$myAjax."");
+        }
+    }
+
+	/**
+	 * change all Match Date fields to match first one set
+	 *
+	 * @param none
+	 * @rturn void
+	 */
+	function setMatchDate()
+	{
+		global $leaguemanager;
+		$match_date = htmlspecialchars($_POST['match_date']);
+		$i = (int)$_POST['i'];
+		$max_matches = (int)$_POST['max_matches'];
+		$mode = htmlspecialchars($_POST['mode']);
+
+        if ( $i == 0 && $mode == 'add' ) {
+            $myAjax = "";
+            for ( $xx = 1; $xx < $max_matches; $xx++ ) {
+    		    $myAjax .= "document.getElementById('mydatepicker[".$xx."]').value = '".$match_date."'; ";
+            }
+    		die("".$myAjax."");
+        }
+    }
+            
+	/**
+	 * build screen to show match rubbers
+	 *
+	 * @param none
+	 * @rturn void
+	 */
+    function showRubbers()
+    {
+            global $leaguemanager;
+            $matchId = $_POST['matchId'];
+            $match = $leaguemanager->getMatch($matchId);
+            $league = $leaguemanager->getCurrentLeague();
+            $num_sets = $league->num_sets;
+            $num_rubbers = $league->num_rubbers;
+			$match_type = $league->type;
+			switch ($match_type) {
+			case 'MD':
+				$homeroster1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
+				$homeroster2 = $homeroster1;
+				$awayroster1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
+				$awayroster2 = $awayroster1;
+				break;
+			case 'WD':
+				$homeroster1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
+				$homeroster2 = $homeroster1;
+				$awayroster1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
+				$awayroster2 = $awayroster1;
+				break;
+			case 'XD':
+				$homeroster1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
+				$homeroster2 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
+				$awayroster1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
+				$awayroster2 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
+				break;
+			default:
+				$homeroster1 = $leaguemanager->getRoster(array('team' => $match->home_team));
+				$homeroster2 = $homeroster1;
+				$awayroster1 = $leaguemanager->getRoster(array('team' => $match->away_team));
+				$awayroster2 = $awayroster1;
+			}
+    ?>
+<div id="matchrubbers" class="rubber-block">
+    
+    <form id="match-rubbers" action="#" method="post" onsubmit="return checkSelect(this)">
+        <?php wp_nonce_field( 'rubbers-match' ) ?>
+
+        <input type="hidden" name="current_match_id" id="current_match_id" value="<?php echo $matchId ?>" />
+        <input type="hidden" name="num_rubbers" value="<?php echo $num_rubbers ?>" />
+        <input type="hidden" name="home_team" value="<?php echo $match->home_team ?>" />
+        <input type="hidden" name="away_team" value="<?php echo $match->away_team ?>" />
+    
+        <table class="widefat" summary="" style="margin-bottom: 2em;">
+            <thead>
+                <tr>
+					<th style="text-align: center;"><?php _e( 'Pair', 'leaguemanager' ) ?></th>
+                    <th style="text-align: center;" colspan="2"><?php _e( 'Home Team', 'leaguemanager' ) ?></th>
+                    <th style="text-align: center;" colspan="<?php echo $num_sets ?>"><?php _e('Sets', 'leaguemanager' ) ?></th>
+                    <th style="text-align: center;" colspan="2"><?php _e( 'Away Team', 'leaguemanager' ) ?></th>
+                </tr>
+            </thead>
+            <tbody class="rtbody rubber-table" id="the-list-rubbers-<?php echo $match->id ?>" >
+    
+    <?php $class = '';
+        $rubbers = $leaguemanager->getRubbers(array("match_id" => $matchId));
+        $r = 0 ;
+        
+        foreach ($rubbers as $rubber) {
+    ?>
+                <tr class="rtr '.$class.'">
+                    <input type="hidden" name="id[<?php echo $r ?>]" value="<?php echo $rubber->id ?>" </>
+					<td rowspan="2" class="rtd centered">
+						<?php echo (isset($rubber->rubber_number) ? $rubber->rubber_number : '') ?>
+					</td>
+					<td class="rtd">
+						<select required size="1" name="homeplayer1[<?php echo $r ?>]" id="homeplayer1_<?php echo $r ?>">
+							<option><?php _e( 'Select Player', 'leaguemanager' ) ?></option>
+<?php foreach ( $homeroster1 AS $roster ) {
+	isset($roster->removed_date) ? $disabled = 'disabled' : $disabled = ''; ?>
+							<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->home_player_1)) selected($roster->roster_id, $rubber->home_player_1 ); echo $disabled; ?>>
+								<?php echo $roster->firstname ?> <?php echo $roster->surname ?>
+							</option>
+<?php } ?>
+						</select>
+					</td>
+                    <td class="rtd">
+						<select required size="1" name="homeplayer2[<?php echo $r ?>]" id="homeplayer2_<?php echo $r ?>">
+							<option><?php _e( 'Select Player', 'leaguemanager' ) ?></option>
+<?php foreach ( $homeroster2 AS $roster ) {
+	isset($roster->removed_date) ? $disabled = 'disabled' : $disabled = ''; ?>
+							<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->home_player_2)) selected($roster->roster_id, $rubber->home_player_2 ); echo $disabled; ?>>
+							<?php echo $roster->firstname ?> <?php echo $roster->surname ?>
+							</option>
+<?php } ?>
+						</select>
+                    </td>
+
+                    <?php for ( $i = 1; $i <= $num_sets; $i++ ) {
+                        if (!isset($rubber->sets[$i])) {
+                            $rubber->sets[$i] = array('player1' => '', 'player2' => '');
+                        } ?>
+                        <td class="rtd">
+                            <input class="points" type="text" size="2" id="set_<?php echo $r ?>_<?php echo $i ?>_player1" name="custom[<?php echo $r ?>][sets][<?php echo $i ?>][player1]" value="<?php echo $rubber->sets[$i]['player1'] ?>" />
+                            :
+                            <input class="points" type="text" size="2" id="set_<?php echo $r ?>_<?php echo $i ?>_player2" name="custom[<?php echo $r ?>][sets][<?php echo $i ?>][player2]" value="<?php echo $rubber->sets[$i]['player2'] ?>" />
+                        </td>
+                    <?php } ?>
+
+                    <td class="rtd">
+						<select required size="1" name="awayplayer1[<?php echo $r ?>]" id="awayplayer1_<?php echo $r ?>">
+							<option><?php _e( 'Select Player', 'leaguemanager' ) ?></option>
+<?php foreach ( $awayroster1 AS $roster ) {
+	isset($roster->removed_date) ? $disabled = 'disabled' : $disabled = ''; ?>
+							<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->away_player_1)) selected($roster->roster_id, $rubber->away_player_1 ); echo $disabled; ?>>
+								<?php echo $roster->firstname ?> <?php echo $roster->surname ?>
+							</option>
+<?php } ?>
+						</select>
+                    </td>
+                    <td class="rtd">
+						<select required size="1" name="awayplayer2[<?php echo $r ?>]" id="awayplayer2_<?php echo $r ?>">
+							<option><?php _e( 'Select Player', 'leaguemanager' ) ?></option>
+<?php foreach ( $awayroster2 AS $roster ) { ?>
+							<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->away_player_2)) selected($roster->roster_id, $rubber->away_player_2 ) ?>><?php echo $roster->firstname ?> <?php echo $roster->surname ?></option>
+<?php } ?>
+						</select>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="7" class="rtd" style="text-align: center;">
+                        <input class="points" type="text" size="2" disabled id="home_points[<?php echo $r ?>]" name="home_points[<?php echo $r ?>]" value="<?php echo (isset($rubber->home_points) ? $rubber->home_points : '') ?>" />
+                        :
+                        <input class="points" type="text" size="2" disabled id="away_points[<?php echo $r ?>]" name="away_points[<?php echo $r ?>]" value="<?php echo (isset($rubber->away_points) ? $rubber->away_points : '') ?>" />
+                    </td>
+                </tr>
+    <?php
+        $r ++;
+        }
+    ?>
+            </tbody>
+        </table>
+        <input type="hidden" name="updateRubber" value="results" />
+        <button class="button button-primary" type="button" id="updateRubberResults" onclick="Leaguemanager.updateRubbers(this)">Update Results</button>
+        <p id="UpdateResponse"></p>
+    </form>
+</div>
+<?php
+    die();
+    }
+    
+    function updateRubbers()
+    {
+        global $wpdb, $leaguemanager;
+        
+        if ( isset($_POST['updateRubber'])) {
+            check_admin_referer('rubbers-match');
+            
+            if ( 'results' == $_POST['updateRubber'] ) {
+
+                $homepoints = isset($_POST['home_points']) ? $_POST['home_points'] : array();
+                $awaypoints = isset( $_POST['away_points']) ? $_POST['away_points'] : array();
+                $num_rubbers = $_POST['num_rubbers'];
+                $home_team = $_POST['home_team'];
+                $away_team = $_POST['away_team'];
+                $homepoints = array();
+                $awaypoints = array();
+                $return = array();
+                
+                for ($ix = 0; $ix < $num_rubbers; $ix++) {
+                    
+                    $rubberId       = $_POST['id'][$ix];
+                    $homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : NULL;
+                    $homeplayer2    = isset($_POST['homeplayer2'][$ix]) ? $_POST['homeplayer2'][$ix] : NULL;
+                    $awayplayer1    = isset($_POST['awayplayer1'][$ix]) ? $_POST['awayplayer1'][$ix] : NULL;
+                    $awayplayer2    = isset($_POST['awayplayer2'][$ix]) ? $_POST['awayplayer2'][$ix] : NULL;
+                    $custom         = isset($_POST['custom'][$ix]) ? $_POST['custom'][$ix] : "";
+                    $winner         = $loser = '';
+                    $homescore      = '';
+                    $awayscore      = '';
+                    $sets           = $custom['sets'];
+                    
+                    foreach ( $sets as $set ) {
+                        
+                        if ( $set['player1'] > $set['player2']) {
+                            $homescore += 1;
+                        } elseif ( $set['player1'] < $set['player2']) {
+                            $awayscore += 1;
+                        }
+                    }
+                    
+                    if ( $homescore > $awayscore) {
+                        $winner = $home_team;
+                        $loser = $away_team;
+                    } elseif ( $homescore< $awayscore) {
+                        $winner = $away_team;
+                        $loser = $home_team;
+                    }
+                    
+                    if (isset($homeplayer1) || isset($homeplayer2) || isset($awayplayer1) || isset($awayplayer2) || empty($homescore) || empty($awayscore) ) {
+                        $homescore = !empty($homescore) ? $homescore : "0";
+                        $awayscore = !empty($awayscore) ? $awayscore : "0";
+                        $homepoints[$ix] = $homescore;
+                        $awaypoints[$ix] = $awayscore;
+
+                        $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_rubbers} SET `home_points` = '%s',`away_points` = '%s',`home_player_1` = '%s',`home_player_2` = '%s',`away_player_1` = '%s',`away_player_2` = '%s',`winner_id` = '%d',`loser_id` = '%d',`custom` = '%s' WHERE `id` = '%d'", $homescore, $awayscore, $homeplayer1, $homeplayer2, $awayplayer1, $awayplayer2, $winner, $loser, maybe_serialize($custom), $rubberId));
+                        $msg = 'Results Updated';
+                    } else {
+                        $msg = 'Nothing to update';
+                    }
+                }
+            }
+            
+            array_push($return,$msg,$homepoints,$awaypoints);
+            
+            die(json_encode($return));
+		} else {
+			die(0);
+		}
+    }
+}
+?>

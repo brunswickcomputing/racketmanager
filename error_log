@@ -1,0 +1,3 @@
+[26-Nov-2016 01:36:22 UTC] PHP Fatal error:  Call to a member function show_errors() on null in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/leaguemanager.php on line 77
+[26-Nov-2016 07:55:18 UTC] PHP Fatal error:  Call to a member function show_errors() on null in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/leaguemanager.php on line 77
+[26-Nov-2016 19:17:21 UTC] PHP Fatal error:  Call to a member function show_errors() on null in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/leaguemanager.php on line 77

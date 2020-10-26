@@ -1044,7 +1044,7 @@ td input.player {
     display:flex;
     flex-direction:column;
     justify-content:center;
-    width:220px;
+    width:210px;
     list-style:none;
     padding:0;
 }
@@ -1059,7 +1059,7 @@ td input.player {
     text-align:center;
     font-weight:bold;
     font-size:1.2em;
-    width: 220px;
+    width: 210px;
     display:inline-block;
 }
 /*

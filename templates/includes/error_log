@@ -1,0 +1,4 @@
+[19-Dec-2019 23:24:49 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function is_user_logged_in() in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/templates/includes/member_account_update.php:2
+Stack trace:
+#0 {main}
+  thrown in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/templates/includes/member_account_update.php on line 2

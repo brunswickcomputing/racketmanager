@@ -354,7 +354,7 @@ class LeagueManagerShortcodes extends LeagueManager
 		$leaguemanager->setNumMatches($leaguemanager->getMatches(array_merge($match_args, array('limit' => false, 'count' => true))));
 		$league->current_page = $leaguemanager->getCurrentPage($league->id);
 		$league->pagination = ( $limit == 'true' ) ? $leaguemanager->getPageLinks($league->current_page, "match_paged_".$league->id) : '';
-		$league->num_matches = $leaguemanager->getNumMatches($leaguemanager->getLeagueID());
+		$league->num_matches = $leaguemanager->getNumMatches($leaguemanager->getLeagueID(), $season);
 		// get matches
 		//$match_args['cache'] = false;
         $matches = $leaguemanager->getMatches( $match_args );
@@ -605,7 +605,6 @@ class LeagueManagerShortcodes extends LeagueManager
 		}
 		$league->season = $season;
 		$league_id = $this->league_id = $league->id;
-
 		$championship->initialize($league->id);
 		$finals = array();
 		foreach ( array_reverse($championship->getFinals()) AS $final ) {
@@ -1159,7 +1158,7 @@ class LeagueManagerShortcodes extends LeagueManager
 		foreach ( $players AS $p => $player ) {
 			
 			$matches = $player->matchdays;
-			$played = $won = $lost = $setsWon = $setsConceded = $gamesWon = $gamesConceded = 0;
+			$played = $won = $lost = $setsWon = $setsConceded = $gamesWon = $gamesConceded = $setsDiff = $gamesDiff = 0;
 			$playername = $player->fullname;
 
 			foreach ( $matches AS $match ) {
@@ -1197,11 +1196,13 @@ class LeagueManagerShortcodes extends LeagueManager
 			}
 
 			$winpct = $won*100/$played;
-			$playerstats[$p]		= array('playername' => $playername, 'team' => $team, 'played' => $played, 'won' => $won, 'lost' => $lost, 'setsWon' => $setsWon, 'setsConceded' => $setsConceded, 'gamesWon' => $gamesWon, 'gamesConceded' => $gamesConceded, 'winpct' => $winpct );
+            $setsDiff = $setsWon - $setsConceded;
+            $gamesDiff = $gamesWon - $gamesConceded;
+			$playerstats[$p]		= array('playername' => $playername, 'team' => $team, 'played' => $played, 'won' => $won, 'lost' => $lost, 'setsWon' => $setsWon, 'setsConceded' => $setsConceded, 'gamesWon' => $gamesWon, 'gamesConceded' => $gamesConceded, 'winpct' => $winpct, 'setsDiff' => $setsDiff, 'gamesDiff' => $gamesDiff );
 			
 		}
 		
-		$playerstats = array_msort($playerstats, array('won'=>SORT_DESC, 'winpct'=>SORT_DESC, 'setsWon'=>SORT_DESC, 'gamesWon'=>SORT_DESC, 'playername'=>SORT_ASC));
+		$playerstats = array_msort($playerstats, array('won'=>SORT_DESC, 'winpct'=>SORT_DESC, 'setsDiff'=>SORT_DESC, 'gamesDiff'=>SORT_DESC,  'playername'=>SORT_ASC));
 		
 		if ( empty($template) && $this->checkTemplate('players-'.$league->sport) ) {
 			$filename = 'players-'.$league->sport;

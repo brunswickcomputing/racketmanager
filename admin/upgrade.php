@@ -135,7 +135,33 @@ function leaguemanager_upgrade() {
         $wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_matches} ADD `away_captain` int(11) NULL  AFTER `home_captain`;" );
         $wpdb->query( "UPDATE {$wpdb->leaguemanager_matches} SET `confirmed` = 'Y' WHERE `winner_id` != 0;" );
     }
- 
+//    if (version_compare($installed, '5.3.5', '<')) {
+//        echo __('starting 5.3.5 upgrade', 'leaguemanager') . "<br />\n";
+//        $teams = $wpdb->get_results(" SELECT `title` FROM {$wpdb->leaguemanager_teams} GROUP BY `title` HAVING COUNT(*) > 1 ORDER BY `title`; ");
+//
+//        foreach ($teams AS $team) {
+//           $teamsList = $wpdb->get_results( $wpdb->prepare(" SELECT `id`, `title` FROM {$wpdb->leaguemanager_teams} WHERE `title` = '%s';", $team->title) );
+//            $teamId = $prevTitle = '';
+//            foreach($teamsList AS $teamEntry) {
+//                if ( $prevTitle != $teamEntry->title ) {
+//                    $teamId = $teamEntry->id;
+//                    $prevTitle = $teamEntry->title;
+//                    echo 'updating '.$prevTitle. '<br />';
+//                } else {
+//                    echo 'updating '.$teamEntry->id. '<br />';
+//                    $wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->leaguemanager_matches} SET `home_team` = '%s' WHERE `home_team` = '%s'", $teamId, $teamEntry->id ) );
+//                    $wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->leaguemanager_matches} SET `away_team` = '%s' WHERE `away_team` = '%s'", $teamId, $teamEntry->id ) );
+//                    $wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->leaguemanager_matches} SET `winner_id` = '%d' WHERE `winner_id` = '%d'", $teamId, $teamEntry->id ) );
+//                    $wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->leaguemanager_matches} SET `loser_id` = '%d' WHERE `loser_id` = '%d'", $teamId, $teamEntry->id ) );
+//                    $wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->leaguemanager_team_competition} SET `team_id` = '%d' WHERE `team_id` = '%d'", $teamId, $teamEntry->id ) );
+//                    $wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->leaguemanager_table} SET `team_id` = '%d' WHERE `team_id` = '%d'", $teamId, $teamEntry->id ) );
+//                    $wpdb->query( $wpdb->prepare(" DELETE FROM {$wpdb->leaguemanager_team_competition} WHERE `team_id` = %s", $teamEntry->id ) );
+//                    $wpdb->query( $wpdb->prepare(" DELETE FROM {$wpdb->leaguemanager_teams} WHERE `id` = %s", $teamEntry->id ) );
+//                }
+//            }
+//        }
+//    }
+
     /*
 	* Update version and dbversion
 	*/

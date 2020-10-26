@@ -106,7 +106,8 @@ class LeagueManagerChampionship extends LeagueManager
             $this->num_teams = $num_teams;
             $num_teams = 2;
             $i = $num_rounds;
-                while ( $num_teams <= $this->num_teams_first_round ) {
+            $this->finals= array();
+            while ( $num_teams <= $this->num_teams_first_round ) {
                 $finalkey = $this->getFinalKey($num_teams);
                 $this->finals[$finalkey] = array( 'key' => $finalkey, 'name' => $this->getFinalName($finalkey), 'num_matches' => $num_teams/2, 'num_teams' => $num_teams, 'round' => $i );
 
@@ -286,27 +287,6 @@ class LeagueManagerChampionship extends LeagueManager
 			return 'quarter';
 		else
 			return 'last-'.$num_teams;
-	}
-
-
-	/**
-	 * get number of matches
-	 *
-	 * @param string $key
-	 * @return int
-	 */
-	function getNumMatches( $key )
-	{
-		if ( 'final' == $key || 'third' == $key )
-			return 1;
-		elseif ( 'semi' == $key )
-			return 2;
-		elseif ( 'quarter' == $key )
-			return 4;
-		else {
-			$tmp = explode("-", $key);
-			return $tmp[1]/2;
-		}
 	}
 
     function getChampionshipMatchTitle( $match, $teams, $teams2) {

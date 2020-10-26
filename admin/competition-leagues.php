@@ -29,8 +29,8 @@
 								<th scope="row" class="check-column"><input type="checkbox" value="<?php echo $league->id ?>" name="league[<?php echo $league->id ?>]" /></th>
 								<td class="num"><?php echo $league->id ?></td>
 								<td><a href="admin.php?page=leaguemanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a></td>
-								<td class="num"><?php echo $leaguemanager->getNumTeams( $league->id ) ?></td>
-								<td class="num"><?php echo $leaguemanager->getNumMatches( $league->id ) ?></td>
+								<td class="num"><?php echo $leaguemanager->getNumTeams( $league->id, '', end($league->seasons)['name'] ) ?></td>
+								<td class="num"><?php echo $leaguemanager->getNumMatches( $league->id, end($league->seasons)['name'] ) ?></td>
 								<td><a href="admin.php?page=leaguemanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>&amp;editleague=<?php echo $league->id ?>"><?php _e( 'Edit', 'leaguemanager' ) ?></a></td>
 							</tr>
 	<?php } ?>

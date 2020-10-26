@@ -1556,11 +1556,11 @@ class LeagueManager
 	 * @param string $search
 	 * @return int
 	 */
-	function getNumMatches( $league_id )
+	function getNumMatches( $league_id, $season )
 	{
 		global $wpdb;
 	
-		$this->num_matches = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->leaguemanager_matches} WHERE `league_id` = '%d'", $league_id) );
+		$this->num_matches = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->leaguemanager_matches} WHERE `league_id` = '%d' AND `season` = '%s'", $league_id, $season) );
 		return $this->num_matches;
 	}
 	
@@ -2767,7 +2767,7 @@ class LeagueManager
 		$i = 0;
 		$class = '';
 		foreach ( $playerstats AS $playerstat ) {
-			
+
 			$playerstats[$i] = (object)(array)$playerstat;
 			
 			$sql3 = "SELECT t.`id` AS team_id,  t.`title` AS team_title, m.`season`, m.`match_day`, m.`home_team`, m.`away_team`, m.`winner_id` AS match_winner, m.`home_points`, m.`away_points`, m.`loser_id` AS match_loser, r.`rubber_number`, r.`home_player_1`, r.`home_player_2`, r.`away_player_1`, r.`away_player_2`, r.`winner_id` AS rubber_winner, r.`loser_id` AS rubber_loser, r.`custom`";

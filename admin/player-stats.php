@@ -6,7 +6,6 @@
             $primaryLeague = get_league($competition->primary_league);
         } else {
             $leagues = $competition->getLeagues(array( 'competition' => $competition->id));
-            debug_to_console($leagues);
             $primaryLeague = get_league(array_key_first($competition->league_index));
         }
         $numCols = $primaryLeague->championship->num_rounds;
@@ -82,14 +81,14 @@
             for ( $t = 1; $t < $numCols; $t++ ) {
                 $teamplay[$t] = 0;
             }
-            
+
 			foreach ( $playerstat->matchdays AS $m => $match) {
                 if ( ($competition->is_championship && !$prevRound == $match->final) || ( !$competition->is_championship && !$prevMatchDay == $match->match_day) ) {
 					$i = 0;
 				}
 				$teamNum = substr($match->team_title,-1) ;
                 $teamplay[$teamNum] ++;
-                
+
 				if ( $prevTeamNum == 0) {
 					$playdir = '';
 				} elseif ( $teamNum > $prevTeamNum ) {
@@ -103,7 +102,7 @@
 					$playdir = '';
 				}
 				$prevTeamNum = $teamNum;
-				
+
                 if ($match->match_winner === $match->team_id) $matchresult = 'Won'; else $matchresult = 'Lost';
                 if ($match->rubber_winner === $match->team_id) $rubberresult = 'Won'; else $rubberresult = 'Lost';
                 $playerLine = array('team' => $match->team_title, 'pair' => $match->rubber_number, 'matchresult' => $matchresult, 'rubberresult' => $rubberresult, 'playdir' => $playdir);
@@ -117,7 +116,7 @@
                 $prevRound = $match->final;
 				$i++;
 			}
-			
+
 			if ( !$playdowncount == 0 ) {
 				echo '<td title="Played Down">'.$playdowncount.'</td>';
 			} else {
@@ -134,7 +133,7 @@
 						$pair		= $stat['pair'];
 						$dayshow	.= $team.'<br />Pair'.$pair.'<br />';
 					}
-	
+
 				}
 				if ( count($daystat) > 1 ) {
 					$playdir = 'playmulti';

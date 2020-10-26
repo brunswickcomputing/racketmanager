@@ -51,6 +51,11 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 
 == Changelog ==
 
+= 5.6.3 =
+* UPDATE: change tournament entry order display
+* UPDATE: add documentation for tournaments
+* BUGFIX: fix tournament entry season update
+
 = 5.6.2 =
 * BUGFIX: stop conflict with elementor plugin
 * BUGFIX: fix match card popup error

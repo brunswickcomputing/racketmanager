@@ -442,6 +442,9 @@
      */
     function have_matches() {
         global $league;
+
+        if (!isset($league->matches)) return false;
+
         if ( $league->current_match + 1 < count($league->matches) ) {
             return true;
         } elseif ( $league->current_match == count($league->matches)-1 && count($league->matches) > 0 ) {

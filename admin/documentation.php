@@ -13,7 +13,7 @@
     <h1 id="top"><?php _e( 'LeagueManager Documentation', 'leaguemanager' ) ?></h1>
 
     <div class="documentation-blocks jquery-ui-accordion" id="tabs">
-        
+
         <ul id="tablist" style="display: none;">
             <li><a href="#competitions-table"><?php _e( 'Competitions', 'leaguemanager' ) ?></a></li>
             <li><a href="#seasons-table"><?php _e( 'Seasons', 'leaguemanager' ) ?></a></li>
@@ -24,8 +24,9 @@
             <li><a href="#clubs-table"><?php _e( 'Clubs', 'leaguemanager' ) ?></a></li>
             <li><a href="#results-table"><?php _e( 'Results', 'leaguemanager' ) ?></a></li>
             <li><a href="#results-checker-table"><?php _e( 'Results Checker', 'leaguemanager' ) ?></a></li>
+            <li><a href="#tournaments-table"><?php _e( 'Tournaments', 'leaguemanager' ) ?></a></li>
         </ul>
-    
+
         <div id="competitions-table" class="league-block-container">
             <h2 class="header"><?php _e( 'Competitions', 'leaguemanager' ) ?></h2>
             <div class="documentation-block content">
@@ -196,6 +197,22 @@
                 <p>Each check can be either marked as approved or can be deleted.</p>
                 <p>If the match result is updated, any records for the match and player are regenerated.</p>
                 <p>However, if a player is swapped for another player in the match result, the original player entry will remain in the list of result checks. It can then be deleted if required.</p>
+            </div>
+        </div>
+        <div id="tournaments-table" class="league-block-container">
+            <h2 class="header"><?php _e( 'Tournaments', 'leaguemanager' ) ?></h2>
+            <div class="documentation-block content">
+                <a href="#top" class="alignright top-link"><?php _e( 'Top', 'leaguemanager' ) ?></a>
+                <p>The tournaments page of Leaguemanager shows all the tournaments that have been created.</p>
+                <h4 id="Deleting tournaments"><?php _e( 'Deleting tournaments', 'leaguemanager' ) ?></h4>
+                <p>Tournaments can also be deleted from this page.</p>
+                <h4 id="Adding tournaments"><?php _e( 'Adding tournaments', 'leaguemanager' ) ?></h4>
+                <p>Clicking the "Add Tournament" button takes the user to a screen where the new tournament details can be entered. The required fields are <ul><li>Name</li><li>Type (Summer or Winter)</li><li>Season</li><li>Closing date for entries</li><li>Tournament secretary</li></p>
+                <p>Typing in the tournament secretary name will automatically populate a list of user.</p<p>Clicking on the name will automatically populate the tournament secretary name along with any contact number and email address associated.</p>
+                <p>Entering or amending these details will update the associated player record when the "Update" button is pressed.</p>
+                <p>Additionally, the following information may be entered<ul><li>Host Club</li><li>Website</li><li>Finals Date</li><ul>
+                <h4 id="Editing tournament details"><?php _e( 'Editing tournament details', 'leaguemanager' ) ?></h4>
+                <p>Clicking on the tournament name in the list of tournaments displays the edit screen.</p>
             </div>
         </div>
 

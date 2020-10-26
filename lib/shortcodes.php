@@ -940,7 +940,7 @@ class LeagueManagerShortcodes extends LeagueManager {
         if ( !$tournaments ) return _e('No tournament open for entries', 'leaguemanager');
         $tournament = $tournaments[0];
 
-        $competitions = $leaguemanager->getCompetitions( array('type' => 'tournament', 'name' => $type, 'season' => $tournament->season) );
+        $competitions = $leaguemanager->getCompetitions( array('type' => 'tournament', 'name' => $type, 'season' => $tournament->season, 'orderby' => array("id" => "ASC")) );
 
         $player = wp_get_current_user();
         $player->contactno = get_user_meta( $player->ID, 'contactno', true);

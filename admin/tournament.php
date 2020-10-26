@@ -37,7 +37,7 @@
                         <option><?php _e( 'Select season' , 'leaguemanager') ?></option>
                     <?php $seasons = $leaguemanager->getSeasons( "DESC" );
                     foreach ( $seasons AS $season ) { ?>
-                        <option value="<?php echo $season->name ?>"><?php echo $season->name ?></option>
+                        <option value="<?php echo $season->name ?>" <?php selected( $season->name, $tournament->season ) ?>><?php echo $season->name ?></option>
                     <?php } ?>
                     </select>
                 </div>

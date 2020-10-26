@@ -2197,7 +2197,7 @@ final class LeagueManagerAdmin extends LeagueManager
             return false;
         }
 
-		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->leaguemanager_tournaments} (`name`, `type`, `season`, `venue`, `tournamentsecretary`, `date`, `closingdate` ) VALUES ('%s', '%s', '%d', '%d', '%s', '%s' )", $name, $type, $season, $venue, $tournamentSecretary, $date, $closingdate ) );
+		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->leaguemanager_tournaments} (`name`, `type`, `season`, `venue`, `tournamentsecretary`, `date`, `closingdate` ) VALUES ('%s', '%s', '%d', '%d', '%s', '%s', '%s' )", $name, $type, $season, $venue, $tournamentSecretary, $date, $closingdate ) );
 
 		$this->setMessage( __('Tournament added','leaguemanager') );
 

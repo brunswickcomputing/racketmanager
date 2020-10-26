@@ -41,7 +41,7 @@
     <form method="post" action="">
         <input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
         <input type="hidden" name="season" value="<?php echo $league->current_season['name'] ?>" />
-        <input type="hidden" name="round" value="<?php echo $final['round'] ?>" />
+        <input type="hidden" name="round" value="<?php if (isset($final['round'])) echo $final['round'] ?>" />
         <input type="hidden" name="jquery-ui-tab" value="<?php echo $tab ?>" class="jquery_ui_tab_index" />
 
 <?php if ( $matches ) { ?>

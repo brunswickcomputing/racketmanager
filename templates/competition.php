@@ -10,7 +10,7 @@ The following variables are usable:
  
 	You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
 */
-global $wp_query;
+global $wp_query, $leaguemanager_shortcodes;
 $postID = isset($wp_query->post->ID) ? $wp_query->post->ID : "";
 wp_enqueue_style('datatables');
 wp_enqueue_script('datatables');
@@ -37,7 +37,7 @@ wp_enqueue_script('datatables');
 			<!-- Standings Table -->
 			<div id="standings-archive" class="jquery-ui-tab">
 				<h4 class="header"><a href="/leagues/<?php echo str_replace(' ', '-', $league->title) ?>/<?php echo $curr_season ?>"><?php echo $league->title ?></a></h4>
-				<?php leaguemanager_standings( $league->id, array( 'season' => $curr_season, 'template' => 'nolink', 'logo' => false ) ) ?>
+				<?php leaguemanager_standings( $league->id, array( 'season' => $curr_season, 'template' => '' ) ) ?>
 			</div>
     <?php } ?>
 	</div>
@@ -47,7 +47,7 @@ wp_enqueue_script('datatables');
 			<!-- Brackets -->
 			<div id="brackets" class="jquery-ui-tab">
 				<h4 class="header"><?php echo $league->title ?></h4>
-				<?php leaguemanager_championship( $league->id, array( 'season' => $curr_season, 'template' => '', 'logo' => false ) ) ?>
+				<?php leaguemanager_championship( $league->id, array( 'season' => $curr_season, 'template' => '' ) ) ?>
 			</div>
     <?php } ?>
     </div>

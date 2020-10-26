@@ -13,9 +13,10 @@ The following variables are usable:
 <?php if ( $teams ) { ?>
 
 <div class="teamlist jquery-ui-accordion">
-<?php foreach ( $teams AS $team ) { ?>
-	<?php include('team.php'); ?>
-<?php } ?>
+<?php while ( have_teams() ) {
+    the_team();
+    include('team.php');
+} ?>
 </div>
 
 <?php } ?>

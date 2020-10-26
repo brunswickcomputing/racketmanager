@@ -2,7 +2,7 @@
 	<?php wp_nonce_field( 'seasons-bulk' ) ?>
 	
 	<input type="hidden" name="competition_id" value="<?php echo $competition_id ?>" />
-	<div class="tablenav" style="margin-bottom: 0.1em;">
+    <div class="tablenav">
 		<!-- Bulk Actions -->
 		<select name="action" size="1">
 			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
@@ -41,10 +41,23 @@
 	<table class="lm-form-table">
 		<tr valign="top">
 			<th scope="row"><label for="season"><?php _e( 'Season', 'leaguemanager' ) ?></label></th>
+<?php if ( $season_id ) { ?>
 			<td>
 				<input type="number" name="season" id="season" value="<?php echo $season_data['name'] ?>" size="4" />
 			</td>
-		</tr>
+<?php } else { ?>
+            <td>
+                <select size="1" name="season" id="season" >
+                    <option><?php _e( 'Select season' , 'leaguemanager') ?></option>
+<?php $seasons = $leaguemanager->getSeasons( "DESC" );
+    foreach ( $seasons AS $season ) { ?>
+                    <option value="<?php echo $season->name ?>"><?php echo $season->name ?></option>
+                    <?php } ?>
+                </select>
+            </td>
+
+<?php } ?>
+        </tr>
 		<tr valign="top">
 			<th scope="row"><label for="num_match_days"><?php _e( 'Number of Match Days', 'leaguemanager' ) ?></label></th>
 			<td>

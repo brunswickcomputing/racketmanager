@@ -15,15 +15,13 @@ The following variables are usable:
 	<h3 class="header"><?php _e( 'Match', 'leaguemanager' ) ?></h3>
 	
 	<div class="match-content">
-		<h4><?php echo $leaguemanager->getMatchTitle($match->id, false) ?></h4>
+		<h4><?php echo $match->match_title($match->id, false) ?></h4>
 		
     <?php if ( $match->score == '0:0' ) { ?>
 		<p class="matchdate"><?php echo $match->date." ".$match->start_time." ".$match->location ?></p>
     <?php } else { ?>
 		<p class="score">
-			<span class="home_logo"><img src="<?php echo $match->homeLogo ?>" alt="" /></span>
 			<?php echo $match->score ?>
-			<span class="away_logo"><img src="<?php echo $match->awayLogo ?>" alt="" /></span>
 		</p>
     <?php } ?>
 		

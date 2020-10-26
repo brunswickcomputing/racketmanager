@@ -1,0 +1,5 @@
+[18-Jun-2020 09:18:09 UTC] PHP Notice:  Undefined variable: teams in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/templates/teams-list.php on line 13
+[18-Jun-2020 14:25:34 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function wp_get_current_user() in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/templates/club.php:13
+Stack trace:
+#0 {main}
+  thrown in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/templates/club.php on line 13

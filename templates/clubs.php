@@ -12,7 +12,7 @@ The following variables are usable:
 ?>
 
 <?php foreach ($clubs AS $club) { ?>
-            <h2 class="title-post"><a href="/club/<?php echo sanitize_title($club->name) ?>/"><?php echo $club->name ?></a></h2>
+            <h2 class="title-post"><a href="/club/<?php echo sanitize_title($club->shortcode) ?>/"><?php echo $club->name ?></a></h2>
             <div class="entry-content">
                 <div class="tm-team-content">
                     <div id="club-info">
@@ -38,8 +38,8 @@ The following variables are usable:
                                 <?php if ($club->matchSecretaryEmail !=null) { ?>
                                     <dt>Match Secretary Email:</dt><dd><?php echo $club->matchSecretaryEmail; ?></dd>
                                 <?php }
-                                if ($club->matchSecretaryContactno !=null) { ?>
-                                    <dt>Match Secretary Contact:</dt><dd><?php echo $club->matchSecretaryContactno ?></dd>
+                                if ($club->matchSecretaryContactNo !=null) { ?>
+                                    <dt>Match Secretary Contact:</dt><dd><?php echo $club->matchSecretaryContactNo ?></dd>
                                 <?php } ?>
                             <?php } ?>
 
@@ -56,19 +56,20 @@ The following variables are usable:
                    <script>
                     jQuery(document).ready(function() {
                                       // Accordion
-                                           jQuery("#team-info").accordion({ header: "h3",active: false, collapsible: true, heightStyle: content });
+                                           jQuery("#club-teams").accordion({ header: "h3",active: false, collapsible: true, heightStyle: content });
                                       
                                       }); //end of document ready
                     </script>
-                    <div id="team-info" class="team">
+                    <div id="club-teams" class="team">
                         <?php
                             $shortCode = $club->shortcode;
-                            $competitions = $leaguemanager->getCompetitions('league');
+                            $competitions = $leaguemanager->getCompetitions(array('type'=>'league'));
                             if ( $competitions ) { ?>
                                 <h2 class="teams-header">Teams</h2>
                                 <div class="competition-list jquery-ui-accordion">
                                 <?php foreach ($competitions AS $competition) {
-                                    $teams = $leaguemanager->getTeamsInfo(array('competition_id' => $competition->id, 'affiliatedclub' => $club->id, 'orderby' => array("title" => "ASC") ));
+                                    $competition = get_competition($competition);
+                                    $teams = $competition->getTeamsInfo(array('affiliatedclub' => $club->id, 'orderby' => array("title" => "ASC") ));
                                     if ( $teams ) {
                                         ?>
                                     <div class="club-teams" id="competition-<?php echo $competition->id ?>">

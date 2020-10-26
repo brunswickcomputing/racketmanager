@@ -11,16 +11,15 @@ The following variables are usable:
 	
 	You can check the content of a variable when you insert the tag <?php var_dump($variable)
 */
+if ( is_single_match() ) {
+    the_single_match();
+} else {
+    include('matches-selections.php');
+
+	if ( $matches ) {
+        include('matches-tennis-scores.php');
+    }
+
+}
+include('matches-tennis-modal.php');
 ?>
-<?php if (isset($_GET['match_'.$league->id]) ) { ?>
-	<?php leaguemanager_match(intval($_GET['match_'.$league->id])); ?>
-<?php } else { ?>
-
-	<?php include('matches-selections.php'); ?>
-	
-	<?php if ( $matches ) { ?>
-        <?php include('matches-tennis-scores.php'); ?>
-
-	<?php } ?>
-
-<?php } ?>

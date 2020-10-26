@@ -1,5 +1,5 @@
 === LeagueManager ===
-Contributors: Kolja Schleich, LaMonte Forthun
+Contributors: Paul Moffat, Kolja Schleich, LaMonte Forthun
 Donate link: 
 Tags: league management, sport, widget, basketball, football, hockey, league, soccer, volleyball, gymnastics, tennis, baseball, rugby
 Requires at least: 4.5
@@ -84,11 +84,91 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 * TO-DO - Updating the translation code to remove the deprecated code has broken some translations due to a change in how WordPress handles multiple options. The translations files need some attention, so do the sport files...
 * Coming soon - Players, pagination for leagues, teams, matches, and players. New admin dashboard. New sport files.
 
+= 5.5.7 =
+* UPDATE: change member account update to highlight specific errors
+
+= 5.5.6 =
+* UPDATE: match result validation for administrators
+* UPDATE: automatically generate team name from club and type
+
+= 5.5.5 =
+* UPDATE: change profile screen template
+* UPDATE: allow password visibility toggle
+* UPDATE: use svg icons
+* BUGFIX: create player when roster request player_id not set
+* BUGFIX: only action incomplete roster requests
+
+= 5.5.4 =
+* UPDATE: highlight winner of matches and rubbers
+* UPDATE: change admin form layouts
+* UPDATE: remove dashboard widget
+* UPDATE: allow club updates by match secretary
+
+= 5.5.3 =
+* UPDATE: allow match secretaries to update team captain information
+* BUGFIX: roster count to check for affiliated club
+
+= 5.5.2 =
+* UPDATE: send email to inform administrator of pending roster requests and pending results
+* UPDATE: remove UpdateResultsMatch function and replace by admin UpdateResults
+* BUGFIX: fix championship match updates from frontend
+
+= 5.5.1 =
+* BUGFIX: ensure login pages work with shortcodes
+* BUGFIX: make match modal popup work for cups
+* UPDATE: make css files versioned
+
+= 5.5.0 =
+This is release contains major restructuring on the technical level to improve performance and security.
+* NEW: Major restructuring of plugin code
+* NEW: mobile responsive admin panel
+* NEW: wordpress style template tags system
+* NEW: Generalization of sports modules for easier implementation of new sport types
+* BUGFIX: league settings issue due to caching
+
+= 5.4.7 =
+* UPDATE: allow seasons to be added across competitions
+
+= 5.4.6 =
+* UPDATE: use modal popup not thickbox
+* UPDATE: use modal popup for user tennis match updates
+* BUGFIX: ensure user match updates are reflected in tables
+
+= 5.4.5 =
+* BUGFIX: change getMatches to return all results when final parameter not specified
+* UPDATE: display drawn matches in player stats if a draw is possible
+* UPDATE: make additional points handle half points
+* UPDATE: show pending player requests on club page
+* UPDATE: allow match secretaries to remove players from their roster
+* UPDATE: allow club shortcode as search term
+* UPDATE: make add to calendar text white
+* UPDATE: show user who removed roster record
+* UPDATE: remove stats
+
+= 5.4.4 =
+* BUGFIX: fixed match entry to only allow logged in user to access
+* UPDATE: show created date in player admin screen
+* UPDATE: show splash page when loading/updating match results
+* UPDATE: show user created date
+
 = 5.4.3 =
 * UPDATE: get daily match day short url working
 
 = 5.4.2 =
-*
+* NEW:    add club management
+* BUGFIX: pass email address on account form when already entered
+* UPDATE: allow matches to be completed in rounds when previous round is not complete
+
+= 5.4.1 =
+* NEW:    allow match secretaries to request players to be added to club
+* UPDATE: store creation date and created user against roster record
+
+= 5.4.0 =
+* UPDATE: make user match update work for cups
+* UPDATE: allow rosters to exclude system records (NO PLAYER, WALKOVER, SHARE)
+* UPDATE: allow club records to be edited outside of league
+* UPDATE: reduce font size on playerstats view
+* BUGFIX: fix height of rubber view popup
 
 = 4.1.1 =
 * BUGFIX: fixed problem that matches per page was not set correctly with league mysql cache

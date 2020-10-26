@@ -1,222 +1,4 @@
-/*
-* @section: Backend
-*/
-.entry-content {
-    padding-bottom: 2em;
-}
-button[readonly], html input[readonly] {
-    cursor: default;
-}
-#club-location-picker {
-    height: 320px;
-}
-#lm_admin {
-	width:92%;
-	margin-top:10px;
-}
-
-#lm_head {
-	font-family:Verdana;
-	font-size:18px;
-    position: relative;
-	top: -2px;
-}
-#lm_admin .lm_head_strong {
-	font-family:Verdana;
-	font-size:18px;
-	font-weight:bold;
-}
-
-#lm_version {
-    font-family:Verdana;
-    font-size:14px;
-    position: relative;
-	top: -20px;
-    float: right;
-}
-
-#lm_admin .lm_version_strong {
-    font-family:Verdana;
-    font-size:14px;
-    font-weight:bold;
-}
-
-.check-column {
-	vertical-align: middle;
-}
-
-/* 
- * Global Settings Page
- */
-.colorbox {
-	display: inline-block;
-	margin-left: 5px;
-	width: 15px;
-	height: 15px;
-	border: 1px solid #000;
-}
-
-/*
- * League page
- */
-.subsubsub:after {
-	content: " ";
-	clear: both;
-	display: block;
-}
-.subsubsub {
-	margin-bottom: 1.5em;
-}
-.league-blocks {
-	clear: both;
-}
-.league-blocks h2.header {
-	margin-bottom: 0;
-}
-.championship-blocks {
-	clear: both;
-}
-
-/*
- * sortable tables 
- */
-tbody.sortable tr:hover th,
-tbody.sortable tr:hover td {
-	border-top: 1px solid #585858;
-	border-bottom: 1px solid #585858;
-}
-tbody.sortable th,
-tbody.sortable td {
-	background-color: #fff;
-}
-tbody.sortable tr.alternate th,
-tbody.sortable tr.alternate td {
-	background-color: #f9f9f9;
-}
-
-/*
- * Admin Crosstable
- */
-.widefat.crosstable {
-	margin-top: 1em;
-}
-.widefat.crosstable th {
-	font-weight: bold;
-}
-
-/*--- Documentation ---*/
-dl.leaguemanager {
-	}
-dl.leaguemanager dt {
-	clear: both;
-	font-weight: bold;
-	}
-dl.leaguemanager dd {
-	text-indent: 1.5em;
-	}
-ul.doc-import-structure {
-	list-style: none;
-	margin-left: 0;
-}
-ul.doc-import-structure li {
-	float: left;
-	border: 1px solid #585858;
-	margin-right: 0.2em;
-	background: #f1f1f1;
-	padding: 0.5em;
-	-moz-border-radius: 4px;
-	-webkit-border-radius: 4px;
-	border-radius: 4px;
-	font-weight: bold;
-}
-ul.doc-import-structure:after {
-	content: " ";
-	clear: both;
-	display: block;
-}
-p.match_info {
-	font-size: 0.9em;
-	margin-top: 1.5em;
-	}
-
-p.leaguemanager_breadcrumb {
-	clear: both;
-	float: right;
-	margin: 1.5em 1.3em 1.3em auto;
-	}
-
-.widefat .num {
-	text-align: center;
-	}
-.widefat .logo {
-	width: 20px;
-	}
-.widefat .logo img {
-	display: block;
-	margin: 0;
-	padding: 0;
-	}
-a.colorpicker {
-	border: 1px solid #000000;
-	font-family:Verdana;
-	font-size:10px;
-	width: 20px;
-	height: 12px;
-	text-decoration: none;
-	margin: 1.4em 0.5em 0 1em;
-	}
-p.table_rows {
-	float: left;
-	padding: 0;
-	margin: 0 2em 0 0;
-	}
-
-p.info { margin: 0; padding: 0; float: right; }
-
-/*table#standings tr { cursor: move; }*/
-
-span.loading { margin-left: 5px; }
-span.loading img { vertical-align: middle; }
-
-.leaguemanager_thickbox {
-	text-align: center;
-	}
-.leaguemanager_thickbox select {
-	display: block;
-	margin: 0.5em auto;
-	}
-
-span.team_roster { margin-left: 0.5em; vertical-align: middle; }
-
-div.leaguemanager_widget_control label {
-	padding: 0 0.5em 0.5em 0.5em;
-	float: left;
-	width: 7em;
-}
-div.leaguemanager_widget_control label.right {
-	float: none;
-	width: auto;
-}
-div.leaguemanager_widget_control input {
-	margin-left: 0.5em;
-	display: inline;
-	clear: none;
-	width: auto;
-	border-width: 1px;
-	border-style: solid;
-	border-collapse: separate;
-	border-spacing: 0;
-	-moz-border-radius: 4px;
-	-khtml-border-radius: 4px;
-	-webkit-border-radius: 4px;
-	border-radius: 4px;
-	vertical-align: middle;
-}
-div.leaguemanager_widget_control select {
-	margin-left: 0.5em;
-	vertical-align: middle;
-}
-
+@import "modal.css";
 
 /*
 * @section: Frontend Tables
@@ -278,7 +60,7 @@ table .leaguemanager .match-title.logo {
 .match-title.logo {
 	max-width: 50px;
 }
-.match-title {
+th.match-title, td.match-title {
     text-align: center;
     width: 300px;
 }
@@ -410,6 +192,9 @@ div.match .match-stats {
 /*
  * Match List
  */
+.captain {
+    font-weight: 900;
+}
 div.matchlist {
 	margin-bottom: 1em;
 }
@@ -514,27 +299,29 @@ div.tm-team-content .teamlogo img {
 	display: block;
 	margin: 0 0 1em auto;
 }
-div.tm-team-content dl.team {
+div.tm-team-content dl.team{
 	margin: 1em 0;
 	float: left;
 }
-div.tm-team-content dl.team dt {
+div.tm-team-content dl.team dt{
 	float: left;
 	clear: both;
 	padding: 0.3em 0;
 	font-size: 1.1em;
     width: 225px;
 }
-.alternate {
-    background-color: #f9f9f9;
-}
-.playerstats td, .playerstats th {
-    border: 0;
-}
 div.tm-team-content dl.team dd {
 	padding: 0.3em 0;
 	float: left;
 	font-size: 1.1em;
+    height: 2em;
+}
+div.tm-team-content dl.team dt.contact-login-msg {
+    width: 400px;
+    padding: 20px;
+}
+.contact-login-msg {
+    text-align: center;
 }
 div.tm-team-content .matches {
 	/*margin-top: 90px;*/
@@ -570,6 +357,63 @@ div.tm-team-content .team-projectmanager {
 	position: relative;
 }
 
+/*
+* Club page
+*/
+#club-info {
+    font-size: 1.1em;
+}
+div.tm-team-content .title {
+    font-size: 1.2em;
+}
+div.tm-team-content div.team {
+    margin: 1em 0;
+}
+.form-control {
+    width: 100%;
+    font-size: 1.1em;
+}
+.form-group {
+    position: relative;
+}
+.form-group label {
+    font-size: 0.85em;
+}
+.form-check-label {
+    font-weight: normal;
+}
+.form-group .form-control input {
+    font-size: 1.1em;
+}
+input[type="text"]:disabled, input[type="email"]:disabled, input[type="tel"]:disabled, input[type="url"]:disabled, input[type="number"]:disabled {
+    border: none;
+    background: none;
+}
+.updateResponse {
+    padding: 1em;
+}
+th input[type="checkbox"] {
+    margin-left: 4em;
+}
+.alternate {
+    background-color: #f9f9f9;
+}
+.noborder td, .noborder th {
+    border: none;
+}
+.playerstats td, .playerstats th {
+    border: 0;
+    font-size: .75em;
+}
+.playerstats th.playername {
+    text-align: left;
+}
+.playerlist td.playername {
+    text-align: left;
+}
+.playerlist td, .playerlist th {
+    text-align: left;
+}
 
 div.teamlist .header .ui-icon {
 /*	background-image: none;*/
@@ -581,7 +425,9 @@ div.teamlist .header .ui-icon {
 .tablist a {
 	border: 0;
 }
-
+.ui-widget-content a.roll-button {
+    color: #ffffff;
+}
 /*
  * jQuery accordion lists
  */
@@ -662,275 +508,8 @@ div.teamlist .header .ui-icon {
 	/*background-color: transparent;*/
 	}
 
-/*--- Fancy Slideshow Overlay ---*/
-.fancy-slideshow .slide-overlay.leaguemanager,
-.fancy-slideshow .cycle-overlay.leaguemanager {
-}
-.fancy-slideshow .slide-overlay.leaguemanager .title,
-.fancy-slideshow .cycle-overlay.leaguemanager .title {
-	font-size: 1.5em;
-}
-.fancy-slideshow .slide-overlay.leaguemanager .title .match_title,
-.fancy-slideshow .cycle-overlay.leaguemanager .title .match_title {
-	margin: 0;
-}
-.fancy-slideshow .slide-overlay.leaguemanager .title .logos,
-.fancy-slideshow .cycle-overlay.leaguemanager .title .logos {
-	margin: 0;
-	width: 100%;
-}
-.fancy-slideshow .slide-overlay.leaguemanager .title .logos .result,
-.fancy-slideshow .cycle-overlay.leaguemanager .title .logos .result {
-	margin: 0 0.5em;
-}
-.fancy-slideshow .slide-overlay.leaguemanager .title img.logo,
-.fancy-slideshow .cycle-overlay.leaguemanager .title img.logo {
-	display: inline;
-	width: auto;
-	max-width: 25% !important;
-	height: auto !important;
-}
-.fancy-slideshow .slide-overlay.leaguemanager .description p,
-.fancy-slideshow .cycle-overlay.leaguemanager .description p {
-	margin: 0;
-	padding: 0;
-}
-
-/* Pagination */
-
-#lm_admin .pagination{
-	text-align: center
-}
-
-#lm_admin .pagination li{
-	display: inline-block;
-	*display: inline;
-	zoom: 1;
-	margin: 0 0 0 5px;
-	height: 25px
-}
-
-#lm_admin .pagination li:first-child{
-	margin: 0 0 0 0
-}
-
-#lm_admin .pagination li a{
-	display: inline-block;
-	*display: inline;
-	zoom: 1;
-	font-size: 12px;
-	/*color: #5d666c;*/
-	border: solid 1px;/* #dedede;*/
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
-	border-radius: 3px;
-	text-decoration: none;
-	padding: 4px 8px;
-	height: 15px
-}
-
-#lm_admin .pagination li.active a{
-	/*border-color: #5d666c*/
-}
-
-#lm_admin .pagination li a:hover{
-	text-decoration: none
-}
-
-#lm_admin .pagination li span{
-	display: inline-block;
-	*display: inline;
-	zoom: 1;
-	width: 25px;
-	text-align: center;
-	font-size: 12px;
-	/*color: #5d666c;*/
-	margin: 4px 0
-}
-
-#lm_admin .pagination li.prev_page a{
-	width: 7px;
-	height: 15px;
-	text-indent: -999999px
-}
-
-#lm_admin .pagination li.next_page a{
-	width: 7px;
-	height: 15px;
-	text-indent: -999999px
-}
-
-#lm_admin .pagination li.prev_page a em{
-	display: none
-}
-
-#lm_admin .pagination li.next_page a em{
-	display: none
-}
-#lm_admin .pagination li.first_page a{
-	width: 7px;
-	height: 15px;
-	text-indent: -999999px
-}
-
-#lm_admin .pagination li.last_page a{
-	width: 7px;
-	height: 15px;
-	text-indent: -999999px
-}
-
-#lm_admin .pagination li.first_page a em{
-	display: none
-}
-
-#lm_admin .pagination li.last_page a em{
-	display: none
-}
-
 .points {
     text-align: center;
-}
-
-#matchrubbers select {
-	width:	80%;
-}
-
-#matchrubbers .centered {
-	text-align: center;
-	vertical-align: middle
-}
-/* Bulk Actions */
-.tablenav-pages a,
-.tablenav-pages-navspan {
-	font-weight: 600;
-	padding: 0 2px;
-}
-
-.tablenav-pages .current-page {
-	margin: 0 0 0 2px;
-	padding-bottom: 5px;
-	font-size: 13px;
-	text-align: center;
-}
-
-.tablenav .total-pages {
-	margin-left: 2px;
-}
-
-.tablenav #table-paging {
-	margin-right: 2px;
-}
-
-.tablenav a.button-secondary {
-	display: block;
-	margin: 3px 0 0 8px;
-}
-
-.tablenav {
-	clear: both;
-	height: 30px;
-	margin: 6px 0 4px;
-	vertical-align: middle;
-}
-
-.tablenav.themes {
-	max-width: 98%;
-}
-
-.tablenav .tablenav-pages {
-	height: 28px;
-	margin-top: 3px;
-	cursor: default;
-	color: #555;
-}
-
-.tablenav .no-pages,
-.tablenav .one-page .pagination-links {
-	display: none;
-}
-
-.tablenav .tablenav-pages a,
-.tablenav-pages span.current  {
-	text-decoration: none;
-	padding: 3px 6px;
-}
-
-.tablenav .tablenav-pages a,
-.tablenav-pages-navspan {
-	display: inline-block;
-	min-width: 17px;
-	border: 1px solid #ccc; /* same color as buttons border */
-	padding: 3px 5px 7px;
-	background: #e5e5e5;
-	font-size: 16px;
-	line-height: 1;
-	font-weight: normal;
-	text-align: center;
-}
-
-.tablenav-pages-navspan {
-	height: 16px;
-	border-color: #ddd; /* same as disabled buttons */
-	background: #f7f7f7; /* same as disabled buttons */
-	color: #a0a5aa; /* same as disabled buttons */
-}
-
-.tablenav .tablenav-pages a:hover,
-.tablenav .tablenav-pages a:focus {
-	border-color: #5b9dd9;
-	color: #fff;
-	background: #00a0d2;
-	-webkit-box-shadow: none;
-	box-shadow: none;
-	outline: none; /* IE8 */
-}
-
-.tablenav .displaying-num {
-	margin-left: 7px;
-}
-
-.tablenav .one-page .displaying-num {
-	display: inline-block;
-	margin-top: 5px;
-	margin-left: 0;
-}
-
-.tablenav .actions {
-	overflow: hidden;
-	padding: 2px 0 0 8px;
-}
-
-.wp-filter .actions {
-	display: inline-block;
-	vertical-align: middle;
-}
-
-.tablenav .delete {
-	margin-left: 20px;
-}
-
-/* @todo: unclear if the following tablenav rules are actually used.
- classes exist in paginate_links() but not seen in list table output. */
-.tablenav .dots {
-	border-color: transparent;
-}
-
-.tablenav .next,
-.tablenav .prev {
-	border-color: transparent;
-	color: #0073aa;
-}
-
-.tablenav .next:hover,
-.tablenav .prev:hover {
-	border-color: transparent;
-	color: #00a0d2;
-}
-
-.tablenav .view-switch {
-	float: left;
-	margin: 0 5px;
-	padding-top: 3px;
 }
 
 .wp-filter .view-switch {
@@ -940,39 +519,6 @@ div.teamlist .header .ui-icon {
 	margin: 0 2px 0 8px;
 }
 
-.playername {
-	width: 20%;
-}
-
-.playerstats .matchday {
-	width: 8.5%;
-	text-align: center;
-    font-size: .75em;
-}
-.playerstats th {
-	text-align: center;
-    font-size: .8em;
-}
-.playerstats thead th.colspan {
-	border: none;
-}
-
-td.matchday.playup {
-	background-color: greenyellow;
-    color: white;
-}
-td.matchday.playdown {
-    background-color: blue;
-    color: white;
-}
-td.matchday.playdownerr {
-    background-color: red;
-    color: white;
-}
-td.matchday.playmulti {
-	background-color: red;
-    color: white;
-}
 td.angledir {
 	width: 5%;
 }
@@ -996,32 +542,32 @@ th.team {
 div.teampage h3.header {
 	color: #500B73;
 }
-div#matchheader {
-	font-size: 1.1em;
-	font-weight: 600;
-}
-div#matchheader .leaguetitle {
-	float: left;
-}
-div#matchheader .matchdate {
-	float: right;
-}
-div#matchheader .matchday {
-	float: none;
-	text-align: center;
-}
-div#matchheader .matchtitle {
-	text-align: center;
-}
-td input.points {
-	padding: 3px;
-}
-td input.player {
-	width: 200px;
-}
 .cr3_sponsorwrapper {
 	text-align: center
 }
+
+/*
+ * Pagination
+ */
+.leaguemanager-pagination.page-numbers {
+    clear: both;
+    text-align: center;
+    font-size: 1em;
+    margin: 1em 0;
+}
+.leaguemanager-pagination.page-numbers a {
+    padding: 2px 5px 0 5px;
+    border: 1px solid;
+    border-bottom: none;
+}
+.leaguemanager-pagination.page-numbers span {
+    font-weight: bold;
+}
+.leaguemanager-pagination.page-numbers span.current {
+    font-weight: bold;
+    border: none;
+}
+
 /*
  *  Flex Layout Specifics
  */
@@ -1083,6 +629,122 @@ li.game-bottom{
 }
 .doubles.game-bottom {
     height: 47px;
+}
+
+/*---------------------Club Style-------------------------- */
+
+#club-info {
+    float: left;
+    text-align: left;
+    width: 100%;
+}
+#club-players {
+    clear: both;
+    text-align: left;
+}
+h2.roster-header {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+dl.roster {
+    margin-bottom: 0;
+}
+#club-teams {
+    clear: both;
+    text-align: left;
+}
+h2.teams-header {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+#club-teams li {
+    list-style-type: none;
+}
+#clubdesc {
+    padding: 10px;
+}
+.club-thumb {
+    float:  left;
+}
+.roll-club.carousel .club-item {
+    padding: 0 25px;
+}
+.club-item {
+          margin-bottom: 30px;
+}
+.roll-club .club-inner {
+    padding: 4px;
+    background-color: #fff;
+    position: relative;
+    text-align: center;
+}
+.roll-club .club-content {
+    text-align: center;
+}
+.roll-club .club-content .name {
+    font-family: "Raleway", sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 12px 0 2px;
+}
+.roll-club .club-content .pos {
+    padding-bottom: 12px;
+    color: #443f3f;
+}
+.archive .club-item:nth-of-type(3n+1) {
+    clear: left;
+}
+form#rosterRequestFrm label {
+    font-size: .85em;
+}
+form#rosterRequestFrm input[type="text"], form#rosterRequestFrm input[type="number"] {
+    height: 2.25em;
+}
+#updateResponse {
+    padding: 1em;
+}
+#TB_window {
+    overflow: scroll;
+}
+.leaguemanager-svg-icon {
+    width: 1.2em;
+    display: inline-block;
+    height: 1.2em;
+    vertical-align: middle;
+    line-height: 1;
+}
+.calendar-add svg {
+    fill: #FFF;
+}
+.calendar-add:hover svg {
+    fill: #00964b;
+}
+.passwordShow svg {
+    fill: #00964b;
+}
+.passwordShow:hover svg {
+    opacity: 0.25;
+}
+.angle-down {
+    transform: rotate(90deg);
+}
+.form-group.field_error {
+    background-color: #FFDFDF;
+    border: 1px dotted #C89797;
+    margin-bottom: 6px !important;
+    padding: 6px !important;
+}
+span.form-error {
+    margin-top: 10px;
+    padding-top: 5px;
+    border-top: 1px dotted #c89797;
+    font-size: 100%;
+    margin-left: 0;
+    font-style: italic;
+}
+#profile-message {
+    padding-top: 32px;
+    font-weight: bold;
 }
 .login-form-container {
     margin: auto;
@@ -1146,9 +808,33 @@ div#password-lost-form {
 .label-radio {
     width: 100%;
 }
+.passwordShow {
+    position: absolute;
+    right: 1em;
+    top: 2.75em;
+    cursor: pointer;
+}
+#login i.passwordShow, #password-reset i.passwordShow {
+    top: .75em;
+}
 p.message-error {
     color: red;
-    font-weight: bold;
+    padding: 6px 9px;
+    margin: 0 auto 25px;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    background: #ffebe8;
+    border: 1px solid #C00;
+}
+p.message-success {
+    padding: 6px 9px;
+    margin: 0 auto 25px;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    background: #e7f7d3;
+    border: 1px solid #6c3;
 }
 @media only screen and (max-width: 640px) {
     .login-form-container {
@@ -1158,113 +844,12 @@ p.message-error {
 form#signupform {
     height: 300px;
 }
-div.tm-team-content dl.team dt.contact-login-msg {
-    width: 400px;
-    text-align: center;
-    padding: 20px;
-}
-.playerselect {
-    width: 25%;
-}
-#content .playerselect {
-    border: none;
-    border-right: 1px solid #333;
-}
-#wpfooter {
-    position: relative;
-}
-
-.spinnerMatch {
-    border: 16px solid #f3f3f3; /* Light grey */
-    border-top: 16px solid #00964b; /* Blue */
-    border-radius: 50%;
-    width: 120px;
-    height: 120px;
-    animation: spin 2s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
 .right {
     float: right;
 }
 .left {
     float: left;
 }
-}
-/*---------------------Club Style-------------------------- */
-
-#club-info {
-    float: left;
-    text-align: left;
-    width: 100%;
-}
-#club-roster {
-    clear: both;
-    text-align: left;
-}
-h2.roster-header {
-    font-size: 1.5em;
-    margin-bottom: 10px;
-}
-dl.roster {
-    margin-bottom: 0;
-}
-#team-info {
-    clear: both;
-    text-align: left;
-}
-h2.teams-header {
-    font-size: 1.5em;
-    margin-bottom: 10px;
-}
-#team-info li {
-    list-style-type: none;
-}
-#clubdesc {
-    padding: 10px;
-}
-.club-thumb {
-    float:  left;
-}
-.roll-club.carousel .club-item {
-    padding: 0 25px;
-}
-.club-item {
-          margin-bottom: 30px;
-}
-.roll-club .club-inner {
-    padding: 4px;
-    background-color: #fff;
-    position: relative;
-    text-align: center;
-}
-.roll-club .club-content {
-    text-align: center;
-}
-.roll-club .club-content .name {
-    font-family: "Raleway", sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    padding: 12px 0 2px;
-}
-.roll-club .club-content .pos {
-    padding-bottom: 12px;
-    color: #443f3f;
-}
-.archive .club-item:nth-of-type(3n+1) {
-    clear: left;
-}
-form#rosterRequestFrm label {
-    font-size: .85em;
-}
-form#rosterRequestFrm input[type="text"], form#rosterRequestFrm input[type="number"] {
-    height: 2.25em;
-}
-#updateResponse {
-    padding: 1em;
 }
 /*  START OF MEDIA QUERIES */
 

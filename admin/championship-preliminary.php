@@ -5,7 +5,7 @@
         <p><?php _e( 'Afterwards changes to rankings will NOT affect the final results', 'leaguemanager' ) ?></p>
     </form>
 
-    <?php $teams = $leaguemanager->getTeams( array("league_id" => $league->id, "season" => $season['name'], "group" => $group) ); ?>
+    <?php $teams = $league->getLeagueTeams( array() ); ?>
     <?php include('standings.php'); ?>
 
 </div>

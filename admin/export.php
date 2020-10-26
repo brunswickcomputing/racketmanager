@@ -1,25 +1,3 @@
-<?php
-    if ( !current_user_can( 'manage_leaguemanager' ) ) {
-     echo '<p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p>';
-    } else {
-
-if ( isset($_POST['leaguemanager_export']) ) {
-	$options = get_option('leaguemanager');
-	if ($_POST['exportkey'] ==	$options['exportkey']) {
-		ob_end_clean();
-		$this->export((int)$_POST['league_id'], $_POST['mode'], $_POST['season']);
-		unset($options['exportkey']);
-		update_option('projectmanager', $options);
-	} else {
-		ob_end_flush();
-		$this->setMessage( __("You don't have permission to perform this task", 'projectmanager'), true );
-		$this->printMessage();
-	}
-}
-$options = get_option('leaguemanager');
-$options['exportkey'] = uniqid(rand(), true);
-update_option('leaguemanager', $options);
-?>
 <div class="wrap narrow">
 	<h1><?php _e('LeagueManager Export', 'leaguemanager') ?></h1>
 	<p><?php _e( 'Here you can export teams and matches for a specific league.', 'leaguemanager' ) ?></p>
@@ -29,17 +7,34 @@ update_option('leaguemanager', $options);
 		<?php wp_nonce_field( 'leaguemanager_export-datasets' ) ?>
 		<h3><?php _e('Options'); ?></h3>
 		<table class="lm-form-table">
+        <tr>
+            <th><label for="competition_id"><?php _e('Competition', 'leaguemanager'); ?></label></th>
+            <td>
+                <?php if ( $competitions = parent::getCompetitions() ) { ?>
+                <select size="1" name="competition_id" id="competition_id" onChange='Leaguemanager.getLeagueDropdown(this.value)'>
+                    <option><?php _e( 'Select Competition', 'leaguemanager') ?></option>
+                <?php foreach ( $competitions AS $competition ) { ?>
+                    <option value="<?php echo $competition->id ?>"><?php echo $competition->name ?></option>
+                <?php } ?>
+                </select>
+                <?php } ?>
+            </td>
+        </tr>
+		<tr>
+			<th><label for="season"><?php _e('Season', 'leaguemanager'); ?></label></th>
+			<td>
+                <select size="1" name="season" id="season" >
+                    <option><?php _e( 'Select season' , 'leaguemanager') ?></option>
+<?php $seasons = parent::getSeasons( "DESC" );
+foreach ( $seasons AS $season ) { ?>
+                    <option value="<?php echo $season->name ?>"><?php echo $season->name ?></option>
+<?php } ?>
+                </select>
+			</td>
+		</tr>
 		<tr>
 			<th><label for="league_id"><?php _e('League', 'leaguemanager'); ?></label></th>
-			<td>
-                <?php if ( $leagues = parent::getLeagues() ) : ?>
-				<select size="1" name="league_id" id="league_id">
-                    <option><?php _e( 'Select league', 'leaguemanager') ?></option>
-				<?php foreach ( $leagues AS $league ) : ?>
-					<option value="<?php echo $league->id ?>"><?php echo $league->title ?></option>
-				<?php endforeach; ?>
-				</select>
-				<?php endif; ?>
+			<td id="leagues">
 			</td>
 		</tr>
 		<tr>
@@ -53,22 +48,7 @@ update_option('leaguemanager', $options);
 				</select>
 			</td>
 		</tr>
-		<tr>
-			<th><label for="season"><?php _e('Season', 'leaguemanager'); ?></label></th>
-			<td>
-				<select size="1" name="season" id="season">
-                    <option><?php _e( 'Select season', 'leaguemanager') ?></option>
-					<option value="2016">2016</option>
-                    <option value="2017">2017</option>
-                    <option value="2018">2018</option>
-                    <option value="2019">2019</option>
-                    <option value="2020">2020</option>
-				</select>
-			</td>
-		</tr>
 		</table>
 		<p class="submit"><input type="submit" name="leaguemanager_export" value="<?php _e('Download File'); ?>" class="button button-primary" /></p>
 	</form>
 </div>
-
-<?php } ?>

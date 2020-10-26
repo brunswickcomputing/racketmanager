@@ -1,25 +1,4 @@
 <?php
-    if ( !current_user_can( 'manage_leaguemanager' ) ) {
-        echo '<p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p>';
-        return;
-    }
-    $league_id = intval($_GET['league_id']);
-    $league = $leaguemanager->getLeague( $league_id );
-    switch ($league->type) {
-        case 'MD':
-            $leagueType = ' Mens ';
-            break;
-        case 'WD':
-            $leagueType = ' Ladies ';
-            break;
-        case 'XD':
-        case 'LD':
-            $leagueType = ' Mixed ';
-            break;
-        default:
-            $leagueType = '';
-    }
-    $season = isset($_GET['season']) ? htmlspecialchars(strip_tags($_GET['season'])) : '';
 ?>
 <div class="wrap league-block">
     <p class="leaguemanager_breadcrumb"><a href="admin.php?page=leaguemanager"><?php _e( 'LeagueManager', 'leaguemanager' ) ?></a> &raquo; <a href="admin.php?page=leaguemanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a> &raquo; <?php echo 'Add Teams to League' ?></p>
@@ -32,7 +11,7 @@
 
     <legend>Select Teams to Add</legend>
 
-	<div class="tablenav" style="margin-bottom: 0.1em;">
+    <div class="tablenav">
 		<!-- Bulk Actions -->
 		<select name="action" size="1">
 			<option value="addTeamsToLeague"><?php _e('Add')?></option>
@@ -51,20 +30,28 @@
 		</tr>
 		<tbody id="the-list">
 
-	<?php if ( $teams = $leaguemanager->getTeamsList('', '', $leagueType ) ) { $class = ''; ?>
-		<?php foreach ( $teams AS $team ) { ?>
-			<?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-			<tr class="<?php echo $class ?>">
-				<th scope="row" class="check-column">
-					<input type="checkbox" value="<?php echo $team->id ?>" name="team[<?php echo $team->id ?>]" />
-				</th>
-				<td class="num"><?php echo $team->id ?></td>
-				<td><?php echo $team->title ?></td>
-                <td><?php echo $team->affiliatedclubname ?></td>
-				<td><?php echo $team->stadium ?></td>
-			</tr>
-		<?php } ?>
-	<?php } ?>
+	<?php
+        if ( $clubs = $leaguemanager->getClubs() ) {
+            foreach ( $clubs AS $club ) {
+                $club = get_club($club);
+                if ( $teams = $club->getTeams($entryType, $leagueType ) ) {
+                    $class = '';
+                    foreach ( $teams AS $team ) { ?>
+                        <?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+                        <tr class="<?php echo $class ?>">
+                            <th scope="row" class="check-column">
+                                <input type="checkbox" value="<?php echo $team->id ?>" name="team[<?php echo $team->id ?>]" />
+                            </th>
+                            <td class="num"><?php echo $team->id ?></td>
+                            <td><?php echo $team->title ?></td>
+                            <td><?php echo $team->affiliatedclubname ?></td>
+                            <td><?php echo $team->stadium ?></td>
+                        </tr>
+                    <?php
+                    }
+                }
+            }
+        } ?>
 		</tbody>
 	</table>
 </form>

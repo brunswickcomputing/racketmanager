@@ -2,7 +2,7 @@
 					<?php wp_nonce_field( 'leagues-bulk' ) ?>
 
 					<input type="hidden" name="competition_id" value="<?php echo $competition_id ?>" />
-					<div class="tablenav" style="margin-bottom: 0.1em;">
+                    <div class="tablenav">
 						<!-- Bulk Actions -->
 						<select name="action" size="1">
 							<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
@@ -22,15 +22,18 @@
 							<th scope="col"><?php _e( 'Actions', 'leaguemanager' ) ?></th>
 						</tr>
 						<tbody id="the-list">
-<?php if ( $leagues = $leaguemanager->getLeagues( array('competition' => $competition_id)) ) { $class = ''; ?>
-	<?php foreach ( $leagues AS $league ) { ?>
-							<?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+<?php
+    if ( $leagues = $competition->getLeagues( array('competition' => $competition_id)) ) {
+        $class = '';
+        foreach ( $leagues AS $league ) {
+            $league = get_league($league);
+            $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 							<tr class="<?php echo $class ?>">
 								<th scope="row" class="check-column"><input type="checkbox" value="<?php echo $league->id ?>" name="league[<?php echo $league->id ?>]" /></th>
 								<td class="num"><?php echo $league->id ?></td>
 								<td><a href="admin.php?page=leaguemanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a></td>
-								<td class="num"><?php echo $leaguemanager->getNumTeams( $league->id, '', end($league->seasons)['name'] ) ?></td>
-								<td class="num"><?php echo $leaguemanager->getNumMatches( $league->id, end($league->seasons)['name'] ) ?></td>
+								<td class="num"><?php echo $league->num_teams_total ?></td>
+								<td class="num"><?php echo $league->num_matches_total ?></td>
 								<td><a href="admin.php?page=leaguemanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>&amp;editleague=<?php echo $league->id ?>"><?php _e( 'Edit', 'leaguemanager' ) ?></a></td>
 							</tr>
 	<?php } ?>

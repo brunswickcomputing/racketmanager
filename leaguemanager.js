@@ -34,11 +34,11 @@ jQuery(document).ready(function($) {
 	jQuery(".jquery-ui-tabs>.tablist").css("display", "block");
 	jQuery(".jquery-ui-tabs .tab-header").css("display", "none");
 	jQuery("tr.match-rubber-row").slideToggle('fast','linear');
-	jQuery ("i", "tr.match-row").toggleClass("fa-angle-right fa-angle-down");
+	jQuery ("i", "td.angle-dir", "tr.match-row").toggleClass("angle-right angle-down");
 
 	jQuery("tr.match-row").click(function(e){
 								jQuery(this).next("tr.match-rubber-row").slideToggle('0','linear');
-								jQuery(this).find("i").toggleClass("fa-angle-right fa-angle-down");
+								jQuery(this).find("i.angledir").toggleClass("angle-right angle-down");
 								});
 /* Friendly URL rewrite */
 	jQuery('#leaguemanager_archive').submit(function() {
@@ -77,6 +77,113 @@ jQuery(document).ready(function($) {
 								return false;  // Prevent default button behaviour
 								});
 
+    jQuery('.teamcaptain').autocomplete({
+                              minLength: 2,
+                              source: function(name, response) {
+                                        var affiliatedClub = jQuery("#affiliatedClub").val();
+
+                              jQuery.ajax({
+                                     type: 'POST',
+                                     datatype: 'json',
+                                     url: LeagueManagerAjaxL10n.requestUrl,
+                                     data: {"name": name,
+                                     "affiliatedClub": affiliatedClub,
+                                     "action": "leaguemanager_getCaptainName"},
+                                     success: function(data) {
+                                     response(JSON.parse(data));
+                                     }
+                                     });
+                              },
+                              select: function(event, ui) {
+                              var captaininput = this.id;
+                              var ref = captaininput.substr(7);
+                              var captain = "#".concat(captaininput);
+                              var captainId = "#captainId".concat(ref);
+                              var contactno = "#contactno".concat(ref);
+                              var contactemail = "#contactemail".concat(ref);
+                              jQuery(captain).val(ui.item.value);
+                              jQuery(captainId).val(ui.item.id);
+                              jQuery(contactno).val(ui.item.contactno);
+                              jQuery(contactemail).val(ui.item.user_email);
+                              },
+                              change: function(event, ui) {
+                              var captaininput = this.id;
+                              var ref = captaininput.substr(7);
+                              var captain = "#".concat(captaininput);
+                              var captainId = "#captainid".concat(ref);
+                              var contactno = "#contactno".concat(ref);
+                              var contactemail = "#contactemail".concat(ref);
+                              if (ui.item === null) {
+                                  jQuery(this).val('');
+                                  jQuery(captain).val('');
+                                  jQuery(captainId).val('');
+                                  jQuery(contactno).val('');
+                                  jQuery(contactemail).val('');
+                              } else {
+                                  jQuery(captain).val(ui.item.value);
+                                  jQuery(captainId).val(ui.item.id);
+                                  jQuery(contactno).val(ui.item.contactno);
+                                  jQuery(contactemail).val(ui.item.user_email);
+                              }
+                              }
+                              });
+
+    jQuery('#matchSecretaryName').autocomplete({
+                              minLength: 2,
+                              source: function(name, response) {
+                                        var affiliatedClub = jQuery("#clubId").val();
+
+                              jQuery.ajax({
+                                     type: 'POST',
+                                     datatype: 'json',
+                                     url: LeagueManagerAjaxL10n.requestUrl,
+                                     data: {"name": name,
+                                     "affiliatedClub": affiliatedClub,
+                                     "action": "leaguemanager_getCaptainName"},
+                                     success: function(data) {
+                                     response(JSON.parse(data));
+                                     }
+                                     });
+                              },
+                              select: function(event, ui) {
+                              var captain = "#matchSecretaryName";
+                              var captainId = "#matchSecretaryId";
+                              var contactno = "#matchSecretaryContactNo";
+                              var contactemail = "#matchSecretaryEmail";
+                              jQuery(captain).val(ui.item.value);
+                              jQuery(captainId).val(ui.item.id);
+                              jQuery(contactno).val(ui.item.contactno);
+                              jQuery(contactemail).val(ui.item.user_email);
+                              },
+                              change: function(event, ui) {
+                              var captain = "#matchSecretaryName";
+                              var captainId = "#matchSecretaryId";
+                              var contactno = "#matchSecretaryContactNo";
+                              var contactemail = "#matchSecretaryEmail";
+                              if (ui.item === null) {
+                                  jQuery(this).val('');
+                                  jQuery(captain).val('');
+                                  jQuery(captainId).val('');
+                                  jQuery(contactno).val('');
+                                  jQuery(contactemail).val('');
+                              } else {
+                                  jQuery(captain).val(ui.item.value);
+                                  jQuery(captainId).val(ui.item.id);
+                                  jQuery(contactno).val(ui.item.contactno);
+                                  jQuery(contactemail).val(ui.item.user_email);
+                              }
+                              }
+                              });
+
+    jQuery('.passwordShow').hover(function () {
+                                  var input=jQuery(this).parent().find('.password');
+                                  input.attr('type', 'text');
+                            }, function () {
+                                  jQuery('.password').attr('type', 'password');
+                                  var input=jQuery(this).parent().find('.password');
+                                  input.attr('type', 'password');
+                            });
+                       
 });
 
 var Leaguemanager = new Object();
@@ -130,10 +237,16 @@ Leaguemanager.printScoreCard = function(e, link) {
 				}
 				}) ;
 };
+Leaguemanager.closeMatchModal = function(link) {
+    jQuery("#modalMatch").hide();
+};
 Leaguemanager.showRubbers = function(matchId) {
     
     jQuery("#showMatchRubbers").empty();
-    jQuery("#showMatchRubbers").addClass("spinnerMatch");
+    jQuery("#modalMatch").show();
+    jQuery("#viewMatchRubbers").show();
+    jQuery("#splash").css('opacity', 1);
+    jQuery("#splash").show();
 
     jQuery.ajax({
                 url:LeagueManagerAjaxL10n.requestUrl,
@@ -142,8 +255,9 @@ Leaguemanager.showRubbers = function(matchId) {
                 "action": "leaguemanager_show_rubbers"},
                 success: function(response) {
                 jQuery("#showMatchRubbers").empty();
-                jQuery("#showMatchRubbers").removeClass("spinnerMatch");
                 jQuery("#showMatchRubbers").html(response);
+                jQuery("#splash").css('opacity', 0);
+                jQuery("#splash").hide();
                 },
                 error: function() {
                 alert("Ajax error on getting rubbers");
@@ -170,7 +284,10 @@ Leaguemanager.updateRubbers = function(link) {
     $form += "&action=leaguemanager_update_rubbers";
     jQuery("#updateRubberResults").prop("disabled", "true");
     jQuery("#updateRubberResults").addClass("disabled");
-
+    jQuery("#splash").css('opacity', 1);
+    jQuery("#splash").show();
+    jQuery("#showMatchRubbers").hide();
+    
     jQuery.ajax({
                 url:LeagueManagerAjaxL10n.requestUrl,
                 type: "POST",
@@ -195,6 +312,9 @@ Leaguemanager.updateRubbers = function(link) {
                         jQuery($formfield).val($fieldval);
                         $matchaway  = +$matchaway + +$awaypoints[i];
                     }
+                    jQuery("#splash").css('opacity', 0);
+                    jQuery("#splash").hide();
+                    jQuery("#showMatchRubbers").show();
                 },
                 error: function() {
                     alert("Ajax error on updating rubbers");
@@ -209,7 +329,7 @@ Leaguemanager.rosterRequest = function(link) {
     var $form = jQuery('#rosterRequestFrm').serialize();
     $form += "&action=leaguemanager_roster_request";
     jQuery("#updateResponse").val("");
-    jQuery("#rosterUpdateSubmit").prop("disabled", "true");
+    jQuery("#rosterUpdateSubmit").hide();
     jQuery("#rosterUpdateSubmit").addClass("disabled");
 
     jQuery.ajax({
@@ -235,9 +355,84 @@ Leaguemanager.rosterRequest = function(link) {
                     }
                 },
                 error: function() {
-                    alert("Ajax error on roster request");
+                    alert("Ajax error on player add");
                 }
                 }) ;
-    jQuery("#rosterUpdateSubmit").removeProp("disabled");
-    jQuery("#rosterUpdateSubmit").removeClass("disabled");
+    jQuery("#rosterUpdateSubmit").show();
+};
+Leaguemanager.rosterRemove = function(link) {
+    
+    var $form = jQuery(link).serialize();
+    $form += "&action=leaguemanager_roster_remove";
+
+    jQuery.ajax({
+                url:LeagueManagerAjaxL10n.requestUrl,
+                type: "POST",
+                data: $form,
+                success: function() {
+                    jQuery(link).find('tr').each(function () {
+                        var row = jQuery(this);
+                        if (row.find('input[type="checkbox"]').is(':checked')) {
+                            var rowId = "#"+row.attr('id');
+                            jQuery(rowId).remove();
+                        }
+                    });
+                },
+                error: function() {
+                    alert("Ajax error on player removal");
+                }
+                }) ;
+};
+Leaguemanager.teamCaptainUpdate = function(link) {
+    
+    var formId = '#'.concat(link.form.id);
+    var $form = jQuery(formId).serialize();
+    var competition = link.form[3].value;
+    var team = link.form[2].value;
+    var updateResponse = "#updateTeamResponse-".concat(competition,"-",team);
+    var submitButton = "#teamUpdateSubmit-".concat(competition,"-",team);
+    $form += "&action=leaguemanager_team_captain_update";
+    jQuery(updateResponse).val("");
+    jQuery(submitButton).hide();
+
+    jQuery.ajax({
+                url:LeagueManagerAjaxL10n.requestUrl,
+                type: "POST",
+                data: $form,
+                success: function(response) {
+                    var $response = jQuery.parseJSON(response);
+                    var $message = $response[0];
+                    jQuery(updateResponse).html($message);
+                },
+                error: function() {
+                    alert("Ajax error on captain update");
+                }
+                }) ;
+    jQuery(submitButton).show();
+};
+Leaguemanager.updateClub = function(link) {
+    
+    var formId = '#'.concat(link.form.id);
+    var $form = jQuery(formId).serialize();
+    var updateResponse = "#updateClub";
+    var submitButton = "#updateClubSubmit";
+    $form += "&action=leaguemanager_update_club";
+    jQuery(updateResponse).val("");
+    jQuery(submitButton).hide();
+
+    jQuery.ajax({
+                url:LeagueManagerAjaxL10n.requestUrl,
+                type: "POST",
+                data: $form,
+                success: function(response) {
+                    var $response = jQuery.parseJSON(response);
+                    var $message = $response[0];
+                    jQuery(updateResponse).html($message);
+                    jQuery(submitButton).show();
+                },
+                error: function() {
+                    alert("Ajax error on club update");
+                    jQuery(submitButton).show();
+                }
+                }) ;
 };

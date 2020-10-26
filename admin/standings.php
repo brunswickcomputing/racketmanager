@@ -6,128 +6,98 @@
 	<?php $league_id = intval($_GET['league_id']); ?>
 	<?php $sport = (isset($league->sport) ? $league->sport : '' ); ?>
 
-		<div class="tablenav">
-			<!-- Bulk Actions -->
-			<select name="action" size="1">
-				<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
-				<option value="delete"><?php _e('Delete')?></option>
-			</select>
-			<input type="submit" value="<?php _e('Apply'); ?>" name="doaction" id="doaction" class="button-secondary action" />
-		</div>
+    <div class="tablenav">
+        <!-- Bulk Actions -->
+        <select name="action" size="1">
+            <option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
+            <option value="delete"><?php _e('Delete')?></option>
+        </select>
+        <input type="submit" value="<?php _e('Apply'); ?>" name="doaction" id="doaction" class="button-secondary action" />
+    </div>
 			
-		<table id="standings" class="widefat" summary="" title="<?php _e( 'Table', 'leaguemanager' ) ?>">
-			<thead>
-				<tr>
-					<th scope="col" class="check-column"><input type="checkbox" onclick="Leaguemanager.checkAll(document.getElementById('teams-filter'));" /></th>
-					<th class="num"><?php _e( 'ID', 'leaguemanager' ) ?></th>
-					<th class="num"><?php _e( 'Rank', 'leaguemanager' ) ?></th>
+    <table id="standings" class="widefat" summary="" title="<?php _e( 'Table', 'leaguemanager' ) ?>">
+        <thead>
+            <tr>
+                <th scope="col" class="check-column"><input type="checkbox" onclick="Leaguemanager.checkAll(document.getElementById('teams-filter'));" /></th>
+                <th class="num"><?php _e( 'Rank', 'leaguemanager' ) ?></th>
+<?php if ( $league->mode != 'championship' ) { ?><th class="num">&#160;</th><?php } ?>
+				<th><?php _e( 'Club', 'leaguemanager' ) ?></th>
 <?php if ( $league->mode != 'championship' ) { ?>
-					<th class="num">&#160;</th>
+    <?php if ( !empty($league->groups) && $league->mode == 'championship' ) { ?><th class="num"><?php _e( 'Group', 'leaguemanager' ) ?></th><?php } ?>
+    <?php if ( isset($league->standings['pld']) && 1 == $league->standings['pld'] ) { ?><th class="num"><?php _e( 'Pld', 'leaguemanager' ) ?></th><?php } ?>
+    <?php if ( isset($league->standings['won']) && 1 == $league->standings['won'] ) { ?><th class="num"><?php _e( 'W','leaguemanager' ) ?></th><?php } ?>
+    <?php if ( isset($league->standings['tie']) && 1 == $league->standings['tie'] ) { ?><th class="num"><?php _e( 'T','leaguemanager' ) ?></th><?php } ?>
+    <?php if ( isset($league->standings['lost']) && 1 == $league->standings['lost'] ) { ?><th class="num"><?php _e( 'L','leaguemanager' ) ?></th><?php } ?>
+    <?php if ( isset($league->standings['winPercent']) && 1 == $league->standings['winPercent'] ) { ?><th class="num"><?php _e( 'PCT','leaguemanager' ) ?></th><?php } ?>
+<?php $league->displayStandingsHeader(); ?>
+                <th class="num"><?php _e( 'Pts', 'leaguemanager' ) ?></th>
+                <th class="num"><?php _e( '+/- Points', 'leaguemanager' ) ?></th>
+                <th class="num"><?php _e( 'ID', 'leaguemanager' ) ?></th>
 <?php } ?>
-					<th><?php _e( 'Club', 'leaguemanager' ) ?></th>
-<?php if ( $league->mode != 'championship' ) { ?>
-    <?php if ( !empty($league->groups) && $league->mode == 'championship' ) { ?>
-                        <th class="num"><?php _e( 'Group', 'leaguemanager' ) ?></th>
-    <?php } ?>
-    <?php if ( isset($league->standings['pld']) && 1 == $league->standings['pld'] ) { ?>
-                        <th class="num"><?php _e( 'Pld', 'leaguemanager' ) ?></th>
-    <?php } ?>
-    <?php if ( isset($league->standings['won']) && 1 == $league->standings['won'] ) { ?>
-                        <th class="num"><?php _e( 'W','leaguemanager' ) ?></th>
-    <?php } ?>
-    <?php if ( isset($league->standings['tie']) && 1 == $league->standings['tie'] ) { ?>
-                        <th class="num"><?php _e( 'T','leaguemanager' ) ?></th>
-    <?php } ?>
-    <?php if ( isset($league->standings['lost']) && 1 == $league->standings['lost'] ) { ?>
-                        <th class="num"><?php _e( 'L','leaguemanager' ) ?></th>
-    <?php } ?>
-                <?php do_action( 'leaguemanager_standings_header_'.$sport ) ?>
-                        <th class="num"><?php _e( 'Pts', 'leaguemanager' ) ?></th>
-                        <th class="num"><?php _e( '+/- Points', 'leaguemanager' ) ?></th>
-<?php } ?>
-                </tr>
-			</thead>
-			<tbody id="<?php echo ( $league->mode == 'championship' ) ? "the-list-standings-".$group : "the-list-standings" ?>" class="lm-form-table standings-table <?php if ($league->team_ranking == 'manual') echo 'sortable' ?>">
+            </tr>
+        </thead>
+		<tbody id="the-list-standings" class="lm-form-table standings-table <?php if ($league->team_ranking == 'manual') echo 'sortable' ?>">
 			<?php $class = ''; ?>
-<?php foreach( $teams AS $i => $team ) { $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-				<tr class="<?php echo $class ?>" id="team_<?php echo $team->id ?>">
-					<th scope="row" class="check-column"><input type="hidden" name="team_id[<?php echo $team->id ?>]" value="<?php echo $team->id ?>" /><input type="checkbox" value="<?php echo $team->id ?>" name="team[<?php echo $team->id ?>]" /></th>
-					<td class="num"><?php echo $team->id ?></td>
-					<td class="num">
-						<?php if ($league->team_ranking == 'manual') : ?>
-                        <input type="text" name="rank[<?php echo $team->id ?>]" size="2" id="rank_<?php echo $team->id ?>" class="rank-input" value="<?php echo $team->rank ?>" /><input type="hidden" name="table_id[<?php echo $team->table_id ?>]" value="<?php echo $team->table_id ?>" />
-						<?php else : ?>
-						<?php echo $i+1;//$team->rank ?>
-						<?php endif; ?>
-					</td>
-<?php if ( $league->mode != 'championship' ) { ?>
-					<td class="num"><?php echo $team->status ?></td>
-<?php } ?>
-					<td><a href="admin.php?page=leaguemanager&amp;subpage=team&amp;league_id=<?php echo $league_id ?>&amp;edit=<?php echo $team->id; ?>"><?php if ($team->home == 1) echo "<strong>".$team->title."</strong>"; else echo $team->title; ?></a></td>
-<?php if ( !empty($league->groups) && $league->mode == 'championship' ) { ?>
-					<td class="num"><?php echo $team->group ?></td>
-<?php } ?>
+<?php foreach( $teams AS $i => $team ) {
+    $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+            <tr class="<?php echo $class ?>" id="team_<?php echo $team->id ?>">
+                <th scope="row" class="check-column"><input type="hidden" name="team_id[<?php echo $team->id ?>]" value="<?php echo $team->id ?>" /><input type="checkbox" value="<?php echo $team->id ?>" name="team[<?php echo $team->id ?>]" /></th>
+                <td class="num">
+                    <?php if ($league->team_ranking == 'manual') { ?>
+                    <input type="text" name="rank[<?php echo $team->id ?>]" size="2" id="rank_<?php echo $team->id ?>" class="rank-input" value="<?php echo $team->rank ?>" /><input type="hidden" name="table_id[<?php echo $team->table_id ?>]" value="<?php echo $team->table_id ?>" />
+                    <?php } else { ?>
+                    <?php echo $i+1;//$team->rank ?>
+                    <?php } ?>
+                </td>
+<?php if ( $league->mode != 'championship' ) { ?><td class="num"><?php echo $team->status ?></td><?php } ?>
+				<td><a href="admin.php?page=leaguemanager&amp;subpage=team&amp;league_id=<?php echo $league_id ?>&amp;edit=<?php echo $team->id; ?>"><?php if ($team->home == 1) echo "<strong>".$team->title."</strong>"; else echo $team->title; ?></a></td>
+<?php if ( !empty($league->groups) && $league->mode == 'championship' ) { ?><td class="num"><?php echo $team->group ?></td><?php } ?>
 <?php if ( $league->mode != 'championship' ) { ?>
     <?php if ( $league->point_rule != 'manual' ) { ?>
-        <?php if ( isset($league->standings['pld']) && 1 == $league->standings['pld'] ) { ?>
-                        <td class="num"><?php echo $team->done_matches ?></td>
-        <?php } ?>
-        <?php if ( isset($league->standings['won']) && 1 == $league->standings['won'] ) { ?>
-                        <td class="num"><?php echo $team->won_matches ?></td>
-        <?php } ?>
-        <?php if ( isset($league->standings['tie']) && 1 == $league->standings['tie'] ) { ?>
-                        <td class="num"><?php echo $team->draw_matches ?></td>
-        <?php } ?>
-        <?php if ( isset($league->standings['lost']) && 1 == $league->standings['lost'] ) { ?>
-                        <td class="num"><?php echo $team->lost_matches ?></td>
-        <?php } ?>
+        <?php if ( isset($league->standings['pld']) && 1 == $league->standings['pld'] ) { ?><td class="num"><?php echo $team->done_matches ?></td><?php } ?>
+        <?php if ( isset($league->standings['won']) && 1 == $league->standings['won'] ) { ?><td class="num"><?php echo $team->won_matches ?></td><?php } ?>
+        <?php if ( isset($league->standings['tie']) && 1 == $league->standings['tie'] ) { ?><td class="num"><?php echo $team->draw_matches ?></td><?php } ?>
+        <?php if ( isset($league->standings['lost']) && 1 == $league->standings['lost'] ) { ?><td class="num"><?php echo $team->lost_matches ?></td><?php } ?>
+        <?php if ( isset($league->standings['winPercent']) && 1 == $league->standings['winPercent'] ) { ?><td class="num"><?php echo $team->winPercent ?></td><?php } ?>
     <?php } else { ?>
-                        <td class="num">
-        <?php if ( 1 == $league->standings['pld'] ) { ?>
-                            <input type="text" size="2" name="num_done_matches[<?php echo $team->id ?>]" value="<?php echo $team->done_matches  ?>" />
-        <?php } else { ?>
-                            <input type="hidden" name="num_done_matches[<?php echO $team->id ?>]" value="0" />
+                <td class="num">
+        <?php if ( 1 == $league->standings['pld'] ) { ?><input type="text" size="2" name="num_done_matches[<?php echo $team->id ?>]" value="<?php echo $team->done_matches  ?>" />
+        <?php } else { ?><input type="hidden" name="num_done_matches[<?php echo $team->id ?>]" value="0" />
         <?php } ?>
-                        </td>
-                        <td class="num">
-        <?php if ( 1 == $league->standings['won'] ) { ?>
-                            <input type="text" size="2" name="num_won_matches[<?php echo $team->id ?>]" value="<?php echo $team->won_matches  ?>" />
-        <?php } else { ?>
-                            <input type="hidden" name="num_won_matches[<?php echo $team->id ?>]" value="0" />
+                </td>
+                <td class="num">
+        <?php if ( 1 == $league->standings['won'] ) { ?><input type="text" size="2" name="num_won_matches[<?php echo $team->id ?>]" value="<?php echo $team->won_matches  ?>" />
+        <?php } else { ?><input type="hidden" name="num_won_matches[<?php echo $team->id ?>]" value="0" />
         <?php } ?>
-                        </td>
-                        <td class="num">
-        <?php if ( 1 == $league->standings['tie'] ) { ?>
-                            <input type="text" size="2" name="num_draw_matches[<?php echo $team->id ?>]" value="<?php echo $team->draw_matches ?>" />
-        <?php } else { ?>
-                            <input type="hidden" name="num_draw_matches[<?php echo $team->id ?>]" value="0" />
+                </td>
+                <td class="num">
+        <?php if ( 1 == $league->standings['tie'] ) { ?><input type="text" size="2" name="num_draw_matches[<?php echo $team->id ?>]" value="<?php echo $team->draw_matches ?>" />
+        <?php } else { ?><input type="hidden" name="num_draw_matches[<?php echo $team->id ?>]" value="0" />
         <?php } ?>
-                        </td>
-                        <td class="num">
-        <?php if ( 1 == $league->standings['lost'] ) { ?>
-                            <input type="text" size="2" name="num_lost_matches[<?php echo $team->id ?>]" value="<?php echo $team->lost_matches ?>" />
-        <?php } else { ?>
-                            <input type="hidden" name="num_lost_matches[<?php echo $team->id ?>]" value="0" />
+                </td>
+                <td class="num">
+        <?php if ( 1 == $league->standings['lost'] ) { ?><input type="text" size="2" name="num_lost_matches[<?php echo $team->id ?>]" value="<?php echo $team->lost_matches ?>" />
+        <?php } else { ?><input type="hidden" name="num_lost_matches[<?php echo $team->id ?>]" value="0" />
         <?php } ?>
-                        </td>
+                </td>
 
     <?php } ?>
-                        <?php do_action( 'leaguemanager_standings_columns_'.$league->sport, $team, $league->point_rule ) ?>
-                        <td class="num">
-    <?php if ( $league->point_rule != 'manual' ) { ?>
-                            <?php printf($league->point_format, $team->points_plus+$team->add_points, $team->points_minus) ?>
-    <?php } else { ?>
-                            <input type="text" size="2" name="points_plus[<?php echo $team->id ?>]" value="<?php echo $team->points_plus + $team->add_points ?>" /> : <input type="text" size="2" name="points_minus[<?php echo $team->id ?>]" value="<?php echo $team->points_minus ?>" />
+                <?php do_action( 'leaguemanager_standings_columns_'.$league->sport, $team, $league->point_rule ) ?>
+                <?php $league->displayStandingsColumns($team, $league->point_rule); ?>
+                <td class="num">
+    <?php if ( $league->point_rule != 'manual' ) { ?><?php printf($league->point_format, $team->points_plus, $team->points_minus) ?>
+    <?php } else { ?><input type="text" size="2" name="points_plus[<?php echo $team->id ?>]" value="<?php echo $team->points_plus ?>" /> : <input type="text" size="2" name="points_minus[<?php echo $team->id ?>]" value="<?php echo $team->points_minus ?>" />
     <?php } ?>
-                        </td>
-                        <td class="num">
-                            <input type="text" size="2" style="text-align: center;" id="add_points_<?php echo $team->id ?>" name="add_points[<?php echo $team->id ?>]" value="<?php echo $team->add_points ?>" onblur="Leaguemanager.saveAddPoints(<?php echo $team->id ?>, <?php echo $league_id ?> )" /><span class="loading" id="loading_<?php echo $team->id ?>"></span>
-                        </td>
+                </td>
+                <td class="num">
+                    <input type="text" size="3" style="text-align: center;" id="add_points_<?php echo $team->id ?>" name="add_points[<?php echo $team->id ?>]" value="<?php echo $team->add_points ?>" onblur="Leaguemanager.saveAddPoints(this.value, <?php echo $team->id ?>, <?php echo $league_id ?> )" /><span class="loading" id="loading_<?php echo $team->id ?>"></span>
+                </td>
+                <td class="num"><?php echo $team->id ?></td>
 <?php } ?>
-				</tr>
+            </tr>
 <?php } ?>
-			</tbody>
-		</table>
+        </tbody>
+    </table>
 			
 <?php if ( (isset($league->team_ranking) && ($league->team_ranking == 'manual')) && ($league->mode != 'championship') ) { ?>
 	<script type='text/javascript'>

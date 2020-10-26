@@ -35,9 +35,9 @@ The following variables are usable:
                     <ul class="round">
                         <li class="spacer">&nbsp;</li>
                     <?php foreach ( (array)$final->matches AS $no => $match ) { ?>
-                        <li class="game game-top<?php if ( isset($match->homeTeam) && $match->home_team == $match->winner_id ) { echo ' winner'; if ( $final->name == 'Final' ) { $champion=$match->homeTeam->title; }} ?>"><?php if ( isset($match->homeTeam) && $match->home_team != -1 ) echo str_replace('/','<br/>',$match->homeTeam->title); elseif ( isset($match->homeTeam) && $match->home_team == -1 ) echo 'Bye'; else echo '&nbsp;'; ?></li>
+                        <li class="game game-top<?php if ( isset($match->home_team) && $match->home_team == $match->winner_id ) { echo ' winner'; if ( $final->name == 'Final' ) { $champion = $match->teams['home']->title; }} ?>"><?php if ( isset($match->teams['home']) && is_numeric($match->home_team) ) echo str_replace('/','<br/>',$match->teams['home']->title); else echo '&nbsp;'; ?></li>
                         <li class="game game-spacer"><?php if ( $match->score != '-:-' ) echo $match->score ?></li>
-                        <li class="game game-bottom<?php if ( isset($league->entryType) && $league->entryType == 'player' ) if ( isset($league->type) && substr($league->type,1,1) == 'D' )  echo ' doubles'; if ( isset($match->awayTeam) && $match->away_team == $match->winner_id ) { echo ' winner';if ( $final->name == 'Final' ) { $champion=$match->awayTeam->title; }} ?>"><?php if ( isset($match->awayTeam) && $match->away_team != -1 ) echo str_replace('/','<br/>',$match->awayTeam->title); elseif ( isset($match->awayTeam) && $match->away_team == -1 ) echo 'Bye'; else echo '&nbsp;'; ?></li>
+                        <li class="game game-bottom<?php if ( isset($league->entryType) && $league->entryType == 'player' ) if ( isset($league->type) && substr($league->type,1,1) == 'D' )  echo ' doubles'; if ( isset($match->away_team) && $match->away_team == $match->winner_id ) { echo ' winner';if ( $final->name == 'Final' ) { $champion=$match->teams['away']->title; }} ?>"><?php if ( isset($match->teams['away']) && is_numeric($match->away_team) ) echo str_replace('/','<br/>',$match->teams['away']->title); else echo '&nbsp;'; ?></li>
                         <li class="spacer">&nbsp;</li>
                     <?php } ?>
                     </ul>
@@ -68,16 +68,17 @@ The following variables are usable:
                         <?php include('matches-tennis-scores.php'); ?>
                     </div>
                     <?php } ?>
+                <?php include('matches-tennis-modal.php'); ?>
                 </div>
 			</div>
 			<!-- Teamlist -->
 			<div id="teams" class="jquery-ui-tab">
-				<?php leaguemanager_teams( $league->id, array('season' => $league->season, 'template' => 'list') ) ?>
+				<?php leaguemanager_teams( $league->id, array('season' => $league->current_season['name'], 'template' => 'list') ) ?>
 			</div>
 <?php if ( !isset($league->entryType) || $league->entryType != 'player' ) { ?>
 			<!-- Players -->
 			<div id="players" class="jquery-ui-tab">
-				<?php leaguemanager_players( $league->id, array('season' => $league->season) ) ?>
+				<?php leaguemanager_players( $league->id, array('season' => $league->current_season['name']) ) ?>
 			</div>
 <?php } ?>
         </div>

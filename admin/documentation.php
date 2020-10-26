@@ -68,13 +68,6 @@ else :
 					<td>&#160;</td>
 					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
 				</tr>
-				<tr class="alternate" valign="top">
-					<td>logo</td>
-					<td><?php _e( 'toggle dislay of Team Logos', 'leaguemanager' ) ?></td>
-					<td><em>boolean</em></td>
-					<td>true</td>
-					<td><?php _e( 'Yes', 'leaguemanager' ) ?></td>
-				</tr>
 				<tr class="" valign="top">
 					<td>template</td>
 					<td><?php _e( 'specifies template to use', 'leaguemanager' ) ?></td>
@@ -503,7 +496,6 @@ else :
 				<li><?php _e( 'Stadium', 'leaguemanager' ) ?></li>
 				<li><?php _e( 'Home (0 or 1)', 'leaguemanager' ) ?></li>
 				<li><?php _e( 'Group', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'Logo', 'leaguemanager' ) ?></li>
 				<li><?php _e( 'Played Matches', 'leaguemanager' ) ?></li>
 				<li><?php _e( 'Won Matches', 'leaguemanager' ) ?></li>
 				<li><?php _e( 'Tie Matches', 'leaguemanager' ) ?></li>
@@ -513,7 +505,7 @@ else :
 				<li><?php _e( 'Roster', 'leaguemanager' ) ?></li>
 				<li><?php _e( 'Custom Fields', 'leaguemanager' ) ?> ...</li>
 			</ul>
-			<p><?php _e( "Only <strong>season</strong> and <strong>team name</strong> are <strong>mandatory</strong>. The logo files need to be uploaded separately to the upload folder set in the league preferences. Although the match statistics and points can be included they are not required and would be overwritten by new match results. The last column can be optionally the team roster, which are the project ID and category ID in the format <em>projectID_catID</em> for <a href='%s'>ProjectManager</a>.", 'leaguemanager' ) ?></p>
+			<p><?php _e( "Only <strong>season</strong> and <strong>team name</strong> are <strong>mandatory</strong>. Although the match statistics and points can be included they are not required and would be overwritten by new match results. The last column can be optionally the team roster, which are the project ID and category ID in the format <em>projectID_catID</em> for <a href='%s'>ProjectManager</a>.", 'leaguemanager' ) ?></p>
 			<p><?php _e( 'After the team roster any number of custom fields depending on the sports type can be included. In this case all the above columns have to be present', 'leaguemanager' ) ?></p>
 
 			<h4><?php _e( 'Baseball', 'leaguemanager' ) ?></h4>
@@ -668,7 +660,7 @@ else :
 			<p><?php printf(__( "Fancy slideshows of previous or upcoming matches can be easily created in combination with the <a href='%s' target='_blank'>Fancy Slideshows Plugin</a>. There are some limitations and specic requirements as listed below", 'leaguemanager' ), 'https://wordpress.org/plugins/sponsors-slideshow-widget/') ?></p>
 			<ul style="list-style: disc; margin-left: 1em;">
 				<li><?php _e( 'You should set a height for the slideshow as there is no main image to display. Otherwise each slide might have different heights and some content could be not displayed', 'leaguemanager' ) ?></li>
-				<li><?php _e( 'You should set the slide overlay to show title & description. The title contains the match title and logos, while the description contains the date, location and score of the match', 'leaguemanager' ) ?></li>
+				<li><?php _e( 'You should set the slide overlay to show title & description. The title contains the match title, while the description contains the date, location and score of the match', 'leaguemanager' ) ?></li>
 				<li><?php _e( 'Slide overlay animations are not possible so you have to disable them.', 'leaguemanager' ) ?></li>
 				<li><?php _e( 'The slide overlay style has to be set to <em>LeagueManager</em>', 'leaguemanager' ) ?></li>
 			</ul>
@@ -731,7 +723,7 @@ else :
 		<div id="customization">
 			<a href="#top" class="alignright top-link"><?php _e( 'Top', 'leaguemanager' ) ?></a>
 			<h2><?php _e( 'Customization', 'leaguemanager' ) ?></h2>
-			<p><?php _e( 'The Plugin is built in a modular way with several Wordpress hooks to make customization as easy as possible. The filters are needed to implement rules for new sport types. I here provide a list of available hooks with a short description. For examples on usage see sports files in the sports subdirectory or lib/stats.php.', 'leaguemanager' ) ?></p>
+			<p><?php _e( 'The Plugin is built in a modular way with several Wordpress hooks to make customization as easy as possible. The filters are needed to implement rules for new sport types. I here provide a list of available hooks with a short description. For examples on usage see sports files in the sports subdirectory', 'leaguemanager' ) ?></p>
 
 			<h3><?php _e( 'List of Wordpress Filters', 'leaguemanager' ) ?></h3>
 			<table class="widefat">
@@ -897,7 +889,7 @@ else :
 			<tr class="alternate" valign="top">
 				<td>league_settings, league_settings_<em>$sport</em>, league_settings_<em>$mode</em></td>
 				<td><?php _e( 'add custom settings for league dependent on chosen sport or league mode', 'leaguemanager' ) ?></td>
-				<td>admin/settings.php</td>
+				<td>admin/competition-settings.php</td>
 				<td><?php _e( 'name structure of input fields is name="settings[<em>name</em>]". access of values is <em>$league->name</em>', 'leaguemanager' ) ?></td>
 			</tr>
 			<tr class="" valign="top">
@@ -945,10 +937,6 @@ else :
 			<p><?php printf( __( 'LeagueManager itself cannot manage team rosters, but has to be done together with the plugin <a href="%s" target="_blank">ProjectManager</a>. This plugin is specifically designed for team rosters. It allows the easy generation of custom input forms through the administration panel. Further datasets can be grouped into different categories using the wordpress category system. A template system allows a high degree of customization for displaying datasets in the output. It comes with two default templates to display datasets in a table list or show them as photo gallery, which is especially useful for team roster.', 'leaguemanager' ), "http://wordpress.org/extend/plugins/projectmanager/" ) ?></p>
 			<p><?php printf( __( 'A project in ProjectManager can then be used as team roster and <a href="%s" class="thickbox" rel="howto-roster">linked to a specific team</a> in the team edit page. The team roster will be displayed in a list on an individual team page, e.g. by using the shortcode [team id=ID].', 'leaguemanager' ), LEAGUEMANAGER_URL.'/admin/doc/team_roster.png' ) ?></p>
 
-			<h3 id="match_statistics"><?php _e( 'Match Statistics', 'leaguemanager' ) ?></h3>
-			<p><?php printf( __( 'Match Statistics do not depend on ProjectManager and a team roster, but the combination makes it much more powerful and I recommend the combination. LeagueManager has a simple, but flexible match statistics module, which works similar to the formfields in ProjectManager. The first step is to activate match statistics in the league preferences and then <a href="%s" class="thickbox" rel="howto-statistics">add statistics a field</a>, e.g. Goals, by clicking on the Match Statistics link in the top menu on the league overview page. Each statistics needs a name and can have any number of fields, which are added dynamically. Each field can be either <em>text</em> or <em>roster</em>. Choose roster for a field which holds a player name, also if you do not use a team roster now, as it is more flexible.', 'leaguemanager' ), LEAGUEMANAGER_URL.'/admin/doc/stats.png') ?></p>
-			<p><?php printf( __( 'After having set up the statistics fields you can return to the league overview page and <a href="%s" class="thickbox" rel="howto-statistics">add statistics for each match</a> by clicking the link in the matches table. Each field which was defined as roster will have a button next to the input field. Clicking on the button opens a popup window with a selection of players which are taken from ProjectManager. The statistics will be shown with each individual match, e.g. by using the shortcode [match id=ID].', 'leaguemanager' ), LEAGUEMANAGER_URL.'/admin/doc/match_statistics.png' ) ?></p>
-			<p><?php printf( __( 'Each Statistics field will automatically create <a href="%s" class="thickbox" rel="howto-statistics">another formfield type in ProjectManager</a>. In this way match statistics from LeagueManager can be displayed in each player profile in ProjectManager. Any statistics which only counts the number of entries, e.g. Goals, Assists, Cards will be automatically calculated. ', 'leaguemanager' ), LEAGUEMANAGER_URL.'/admin/doc/goals_field.png') ?></p>
 		</div>
 		
 		<div id="racing">

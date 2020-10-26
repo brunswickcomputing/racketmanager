@@ -1,54 +1,27 @@
 <?php
+
 /**
-* Shortcodes class for the WordPress plugin LeagueManager
-*
-* @author 	Kolja Schleich
-* @package	LeagueManager
-* @copyright Copyright 2008
-*/
-
-class LeagueManagerShortcodes extends LeagueManager
-{
-	/**
-	 * checks if bridge is active
-	 *
-	 * @var boolean
-	 */
-	var $bridge = false;
-
+ * LeagueManagerShortcodes API: LeagueManagerShortcodes class
+ *
+ * @author Kolja Schleich
+ * @author Paul Moffat
+ * @package LeagueManager
+ * @subpackage LeagueManagerShortcodes
+ */
+ 
+/**
+ * Class to implement shortcode functions
+ *
+ */
+class LeagueManagerShortcodes extends LeagueManager {
 
 	/**
 	 * initialize shortcodes
 	 *
-	 * @param boolean $bridge
-	 * @return void
 	 */
-	function __construct($bridge = false)
-	{
-		global $lmLoader;
-
-		$this->addShortcodes();
-		if ( $bridge ) {
-			global $lmBridge;
-			$this->bridge =  true;
-			$this->lmBridge = $lmBridge;
-		}
-	}
-	function LeagueManagerShortcodes($bridge = false)
-	{
-		$this->__construct($bridge);
-	}
-
-
-	/**
-	 * Adds shortcodes
-	 *
-	 * @param none
-	 * @return void
-	 */
-	function addShortcodes()
-	{
+	public function __construct() {
 		add_shortcode( 'standings', array(&$this, 'showStandings') );
+        add_shortcode( 'dailymatches', array(&$this, 'showDailyMatches') );
 		add_shortcode( 'matches', array(&$this, 'showMatches') );
 		add_shortcode( 'match', array(&$this, 'showMatch') );
 		add_shortcode( 'championship', array(&$this, 'showChampionship') );
@@ -61,137 +34,126 @@ class LeagueManagerShortcodes extends LeagueManager
 		add_shortcode( 'players', array(&$this, 'showPlayers') );
         add_shortcode( 'clubs', array(&$this, 'showClubs') );
         add_shortcode( 'club', array(&$this, 'showClub') );
-
-		add_action( 'leaguemanager_teampage', array(&$this, 'showTeam') );
 	}
 
-	/**
-	 * Function to display League Standings
-	 *
-	 *	[standings league_id="1" mode="extend|compact" template="name"]
-	 *
-	 * - league_id is the ID of league
-	 * - league_name (optional) get league by name and not id
-	 * - season: display specific season (optional). default is current season
-	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "standings-template.php" (optional)
-	 * - group: optional
-	 *
-	 * @param array $atts
-	 * @param boolean $widget (optional)
-	 * @return the content
-	 */
-	function showStandings( $atts, $widget = false )
-	{
-		global $wpdb, $leaguemanager;
+    /**
+     * Display League Standings
+     *
+     *    [standings league_id="1" template="name"]
+     *
+     * - league_id is the ID of league
+     * - season: display specific season (optional). default is current season
+     * - template is the template used for displaying. Replace name appropriately. Templates must be named "standings-template.php" (optional)
+     * - group: optional group
+     *
+     * @param array $atts shortcode attributes
+     * @return string
+     */
+	public function showStandings( $atts, $widget = false ) {
+		global $league;
+
 		extract(shortcode_atts(array(
 			'league_id' => 0,
 			'league_name' => '',
-			'logo' => 'true',
-			'template' => 'last5',
+			'template' => '',
 			'season' => false,
 			'group' => false,
-			'home' => 0
+			'home' => 0,
 		), $atts ));
-		$search = !empty($league_name) ? $league_name : intval($league_id);
-		$league = $leaguemanager->getLeague( $search );
-		if (!$season) {
-			$season = $leaguemanager->getSeason( $league );
-			$league->season = $season;
-			$season = $season['name'];
-		}
 
-		$team_args = array("league_id" => $league->id, "season" => $season);
+        $league = $this->getleague($league_id);
+
+        $league->setTemplate('standingstable', $template);
+        $league->setSeason($season);
+        $league->setGroup($group);
+
+		$team_args = array( "orderby" => array('rank' => 'ASC') );
 		if ( $group ) $team_args["group"] = $group;
-		$teams = $leaguemanager->getTeams( $team_args );
-		
-		if ( !empty($home) ) {
-			$teamlist = array();
-			foreach ( $teams AS $offset => $team ) {
-				if ( $team->home == 1 ) {
-					$low = $offset-$home;
-					$high = $offset+$home;
+        $teams = $league->getLeagueTeams( $team_args );
 
-					if ( $low < 0 ) {
-						$high -= $low;
-						$low = 0;
-					} elseif ( $high > count($teams)-1 ) {
-						$low -= $high - count($teams)+1;
-						$high = count($teams)-1;
-					}
-
-					for ( $x = $low; $x <= $high; $x++ ) {
-						if ( !array_key_exists($teams[$x]->rank, $teamlist) )
-							$teamlist[$teams[$x]->rank] = $teams[$x];
-					}
-				}
-			}
-
-			$teams = array_values($teamlist);
-		}
-
-		$i = 0; $class = array('alternate');
-		foreach ( $teams AS $team ) {
-			$class = ( !isset($class) || in_array('alternate', $class) ) ? array() : array('alternate');
-			
-			// Add class for home team
-			if ( 1 == $team->home ) $class[] = 'homeTeam';
-
-			$url = get_permalink();
-			$url = add_query_arg( 'team_'.$league->id, $team->id, $url );
-			foreach ( $_GET AS $key => $value ) {
-				$url = add_query_arg( $key, htmlspecialchars(strip_tags($value)), $url );
-			}
-
-			$teams[$i]->URL = $url;
-			//if ( $league->team_ranking == 'auto' ) $teams[$i]->rank = $i+1;
-			$teams[$i]->class = implode(' ', $class);
-			$teams[$i]->logoURL = $leaguemanager->getThumbnailUrl($team->logo, false, 'full');
-			if ( 1 == $team->home ) $teams[$i]->title = '<strong>'.$team->title.'</strong>';
-
-			$team->points_plus += $team->add_points; // add or substract points
-			$teams[$i]->points = sprintf($league->point_format, $team->points_plus, $team->points_minus);
-			$teams[$i]->points2 = sprintf($league->point_format2, $team->points2_plus, $team->points2_minus);
-			$i++;
-		}
-
-		$league->show_logo = ( $logo == 'true' ) ? true : false;
-
-		if ( !$widget && $this->checkTemplate('standings-'.$league->sport) )
+        if (empty($template))
+            $filename = 'standings';
+		elseif ( !$widget && $this->checkTemplate('standings-'.$league->sport) )
 			$filename = 'standings-'.$league->sport;
 		else
 			$filename = 'standings-'.$template;
 
-		$out = $this->loadTemplate( $filename, array('league' => $league, 'teams' => $teams, 'widget' => $widget, 'season' => $season ) );
+        $out = $this->loadTemplate( $filename, array('league' => $league, 'teams' => $teams, 'widget' => $widget, 'season' => $season ) );
 
 		return $out;
 	}
 
+    /**
+     * Display Daily Matches
+     *
+     *    [dailymatches league_id="1" competition_id="1" match_date="dd/mm/yyyy" template="name"]
+     *
+     * - league_id is the ID of league (optional)
+     * - competition_id is the ID of the competition (optional)
+     * - season: display specific season (optional)
+     * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
+     * - template_type: this is only applicable to template='by_matchday', can be either empty or "accordion" or "tabs" to activitate jQuery accordion/tabs functionality
+     *
+     * @param array $atts shorcode attributes
+     * @return string
+     */
+    public function showDailyMatches( $atts ) {
+        global $leaguemanager, $wpdb;
 
-	/**
-	 * Function to display League Matches
-	 *
-	 *	[matches league_id="1" mode="all|home|racing" template="name" roster=ID]
-	 *
-	 * - league_id is the ID of league
-	 * - league_name: get league by name and not ID (optional)
-	 * - mode can be either "all" or "home". For racing it must be "racing". If it is not specified the matches are displayed on a weekly basis
-	 * - season: display specific season (optional)
-	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
-	 * - roster is the ID of individual team member (currently only works with racing)
-	 * - match_day: specific match day (integer)
-	 *
-	 * @param array $atts
-	 * @return the content
-	 */
-	function showMatches( $atts )
-	{
-		global $leaguemanager, $championship;
+        extract(shortcode_atts(array(
+            'league_id' => 0,
+            'competition_id' => 0,
+            'competition_type' => 'league',
+            'template' => 'daily',
+            'match_date' => false,
+        ), $atts ));
+
+        $matches = false;
+
+        $match_date = get_query_var('match_date');
+        if ( $match_date == '' ) {
+            if (isset($_GET['match_date'])) {
+                $match_date = $_GET['match_date'];
+            }
+        }
+        if ( $match_date == '' ) {
+            $match_date = date("Y-m-d");
+        }
+
+        $matches = $leaguemanager->getMatches( array('match_date' => $match_date, 'competition_type' => $competition_type) );
+        
+        $filename = ( !empty($template) ) ? 'matches-'.$template : 'matches';
+
+        $out = $this->loadTemplate( $filename, array('matches' => $matches, 'match_date' => $match_date ) );
+        return $out;
+    }
+
+    /**
+     * Display League Matches
+     *
+     *    [matches league_id="1" mode="all|home|racing" template="name" roster=ID]
+     *
+     * - league_id is the ID of league
+     * - league_name: get league by name and not ID (optional)
+     * - mode can be either "all" or "home". For racing it must be "racing". If it is not specified the matches are displayed on a weekly basis
+     * - season: display specific season (optional)
+     * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
+     * - template_type: this is only applicable to template='by_matchday', can be either empty or "accordion" or "tabs" to activitate jQuery accordion/tabs functionality
+     * - roster is the ID of individual team member (currently only works with racing)
+     * - match_day: specific match day (integer)
+     *
+     * @param array $atts shorcode attributes
+     * @return string
+     */
+	public function showMatches( $atts ) {
+		global $league, $leaguemanager;
 
 		extract(shortcode_atts(array(
 			'league_id' => 0,
 			'league_name' => '',
 			'team' => 0,
 			'template' => '',
+            'template_type' => 'tabs',
 			'mode' => '',
 			'season' => '',
 			'limit' => 'true',
@@ -207,197 +169,58 @@ class LeagueManagerShortcodes extends LeagueManager
 			'show_match_day_selection' => ''
 		), $atts ));
 
-        /*
-		 * get league
-		 */
-		$search = !empty($league_name) ? $league_name : !empty($league_id) ? intval($league_id) : '';
-		if ( $search !== '') {
-			
-			$league = $leaguemanager->getLeague( $search );
-			$league_id = $this->league_id = $league->id;
-			$leaguemanager->setLeagueID($league_id);
-			
-		} else {
-			$league = new stdClass();
-			$league->id = 0;
-			$league->sport = 'tennis';
-			$league->mode = 'default';
-		}
-		
-		//$leaguemanager->setMatchDay(-1); // reset match day
+        $league = $this->getleague($league_id);
+        
+        $league->setTemplate('matches', $template);
 
-        if (isset($_GET['match_date']))
-            $match_date = $_GET['match_date'];
-        elseif ( !get_query_var('match_date') == "" )
-            $match_date = get_query_var('match_date');
-        if ( !empty($time) ) {
-            if ( empty($match_date) ){
-                $match_date = date("Y-m-d");
-            }
+        // Always disable match day in template to show matches by matchday
+        if ( in_array($template, array("by_matchday")) || !empty($time) )
+            $match_day = -1;
+        
+        $league->setMatchesSelection($show_match_day_selection, $match_day, $show_team_selection, $team);
+        
+        $league->setSeason($season);
+        $league->setMatchDay($match_day);
+        $league->matches_template_type = $template_type;
+
+        $mtaches = false;
+        $match_args = array("final" => '');
+
+        // get matches of specific team
+        $team_name = str_replace('-', ' ', get_query_var('team'));
+        if ( !$team_name == null ) {
+            $team_id = $leaguemanager->getTeamID($team_name);
+        } elseif ( !empty($team) || (isset($_GET['team_id']) && !empty($_GET['team_id'])) ) {
+            $team_id = !empty($team) ? $team : (int)$_GET['team_id'];
         }
-		$match_date = $match_date . " 00:00:00";
-		$class = 'alternate';
+        if ( !empty($team_id) ) {
+            $match_args['team_id'] = $team_id;
+        } elseif ( !empty($group) ) {
+            $match_args['group'] = $group;
+        }
 
-		/*
-		 * set selection menus
-		 */
-		$league->show_match_day_selection = (!empty($match_day) && intval($match_day) > 0) ? false : true;
-		$league->show_team_selection = empty($team) ? true : false;
-		
-		if ($show_team_selection == 'true') $league->show_team_selection = true;
-		if ($show_team_selection == 'false') $league->show_team_selection = false;
-		if (!empty($team) && empty($match_day)) $league->show_match_day_selection = false;
-		if ($show_match_day_selection == 'true') $league->show_match_day_selection = true;
-		if ($show_match_day_selection == 'false') $league->show_match_day_selection = false;
-
-		/*
-		 * set season
-		 */
-		$season = $leaguemanager->getSeason($league, $season);
-		$league->num_match_days = $season['num_match_days'];
-		$leaguemanager->setSeason($season);
-		$season = $season['name'];
-	
-		/*
-		 * set match day
-		 */
-		if ($match_day == 'last' || $match_day == 'next' || $match_day == 'current' || $match_day == 'latest') {
-			$league->isCurrMatchDay = $match_day;
-			if ( $show_match_day_selection != 'true' ) $league->show_match_day_selection = false;
-		} else {
-			$league->isCurrMatchDay = '';
-		}
-		if ( $match_day == -1 || !empty($league->isCurrMatchDay) ) {
-			if (isset($_GET['match_day']))
-				$match_day = intval($_GET['match_day']);
-			elseif ( !get_query_var('match_day') == "" )
-				$match_day = get_query_var('match_day');
-			elseif ($league->isCurrMatchDay != "")
-				$match_day = $leaguemanager->getMatchDay($league->isCurrMatchDay);
-			else
-				$match_day = 1;
-		}
-	
-		if ( $match_day == 0 )
-			$match_day = -1;		
-
-		// get current match day
-		if ( !$league->id === 0) {
-			$league->current_match_day = $leaguemanager->getMatchDay('current');
-		}
-	
-		// Always disable match day in template to show matches by matchday
-		if ( $template == "by_matchday" || $template == "by_matchday-accordion" || $template == "by_matchday-tabs" )
-			$match_day = -1;
-		
-		/*
-		 * set time
-		 */
-		if ( !empty($time) ) {
-			$match_day = -1;
-			$league->show_match_day_selection = false;
-		}
-		if ( !$group && isset($_GET['group']) ) $group = htmlspecialchars(strip_tags($_GET['group']));
-		
-		$league->match_days = ( ( empty($mode) || $mode == 'racing' ) && empty($time) && $league->num_match_days > 0 ) ? true : false;
-
-		/*
-		 * get teams
-		 */
-		if ( !$league_id ) {
-			$teams = $leaguemanager->getTeams( array("league_id" => 'any', "season" => "any", "orderby" => array("title" => "ASC")), 'ARRAY' );
-			$match_args = array("league_id" => 'any', "season" => 'any', "final" => '');
-		} else {
-			$teams = $leaguemanager->getTeams( array("league_id" => $league_id, "season" => $season, "orderby" => array("title" => "ASC")), 'ARRAY' );
-			$match_args = array("league_id" => $league_id, "season" => $season, "final" => '');
-		}
-
-		// get matches of specific team
-		
-		$team_name = str_replace('-', ' ', get_query_var('team'));
-		if ( !$team_name == null ) {
-			$team_id = $leaguemanager->getTeamID($team_name);
-		}
-		if ( !empty($team) || (isset($_GET['team_id']) && !empty($_GET['team_id'])) )
-			$team_id = !empty($team) ? $team : (int)$_GET['team_id'];
-
-		if ( !empty($team_id) ) {
-			$match_args['team_id'] = $team_id;
-		} elseif ( !empty($group) ) {
-			$match_args['group'] = $group;
-		}
-		
-		// set match day
-		$leaguemanager->setMatchDay($match_day);
-		$league->match_day = $match_day;
-		
-		/*
-		 * set match query args
-		 */
-		if (intval($match_day) > 0 && empty($mode)) $match_args['match_day'] = $match_day;
-
-		if ( $limit && is_numeric($limit) ) $leaguemanager->setNumMatchesPerPage($limit);
-		
-		//$leaguemanager->getMatchDay();
-		if ( $limit === 'false' || in_array($template, array('by_matchday', 'by_matchday-tabs', 'by_matchday-accordion')) )  {
-			$match_args['limit'] = false;
-		} elseif ( $limit && is_numeric($limit) ) {
-			$match_args['limit'] = intval($limit);
-		}
+        if ( $limit === 'false' || in_array($template, array('by_matchday', 'by_matchday-tabs', 'by_matchday-accordion')) )  {
+            $match_args['limit'] = false;
+        } elseif ( $limit && is_numeric($limit) ) {
+            $match_args['limit'] = intval($limit);
+        }
 		
 		$match_args['time'] = $time;
-		$match_args['match_date'] = $match_date;
 		$match_args['home_only'] = ( $home_only == 1 || $home_only == 'true' ) ? true : false;
 
-		/*
-		 * matches pagination
-		 */
-		$leaguemanager->setNumMatches($leaguemanager->getMatches(array_merge($match_args, array('limit' => false, 'count' => true))));
-		$league->current_page = $leaguemanager->getCurrentPage($league->id);
-		$league->pagination = ( $limit == 'true' ) ? $leaguemanager->getPageLinks($league->current_page, "match_paged_".$league->id) : '';
-		$league->num_matches = $leaguemanager->getNumMatches($leaguemanager->getLeagueID(), $season);
 		// get matches
-		//$match_args['cache'] = false;
-        $matches = $leaguemanager->getMatches( $match_args );
+        $matches = $league->getMatches( $match_args );
+        $league->setNumMatches();
 
-        /*
-		 * re-sort matches
-		 */
-		foreach ( $matches AS $key => $row ) {
-			$matchdate[$key] = $row->date;
-		}
-		if ($time=='prev1'){ array_multisort( $matchdate, SORT_ASC, $matches ); }
-
-		$i = 0; $class = '';
-		foreach ( $matches AS $match ) {
-			$class = ( 'alternate' == $class ) ? '' : 'alternate';
-
-			$matches[$i]->class = $class;
-			$matches[$i]->hadPenalty = $match->hadPenalty = ( isset($match->penalty) && $match->penalty['home'] != '' && $match->penalty['away'] != '' ) ? true : false;
-			$matches[$i]->hadOvertime = $match->hadOvertime = ( isset($match->overtime) && $match->overtime['home'] != '' && $match->overtime['away'] != '' ) ? true : false;
-
-			$home = $leaguemanager->getTeam($match->home_team);
-			$away = $leaguemanager->getTeam($match->away_team);
-			$matches[$i]->homeLogo = $home ? $leaguemanager->getThumbnailUrl($home->logo) : '';
-			$matches[$i]->awayLogo = $away ? $leaguemanager->getThumbnailUrl($away->logo) : '';
-	
-			$url = esc_url(get_permalink());
-			$url = add_query_arg( 'match_'.$league->id, $match->id, $url );
-			foreach ( $_GET AS $key => $value ) {
-				$url = add_query_arg( $key, htmlspecialchars(strip_tags($value)), $url );
-			}
-			$url = remove_query_arg( 'team_'.$league->id, $url );
-		
-			$matches[$i]->pageURL = esc_url($url);
-
-			$matches[$i]->title = $leaguemanager->getMatchTitle($match->id);
-			$matches[$i]->report = ( $match->post_id != 0 ) ? '(<a href="'.get_permalink($match->post_id).'">'.__('Report', 'leaguemanager').'</a>)' : '';
-
+		foreach ( $matches AS $i => $match ) {
+            
+            $match = get_match($match);
+			$matches[$i] = $match;
 			$matches[$i]->num_rubbers = ( isset($league->num_rubbers) ? $league->num_rubbers : NULL );
 			$matches[$i]->num_sets = ( isset($league->num_sets) ? $league->num_sets : NULL );
 			
 			if ( isset($matches[$i]->num_rubbers) ) {
-				$rubbers = $leaguemanager->getRubbers( array("match_id" => intval($match->id)));
+				$rubbers = $match->getRubbers();
 				$r=1;
 				foreach ($rubbers as $rubber) {
 					$rubber->home_player_1_name = $rubber->home_player_2_name = $rubber->away_player_1_name = $rubber->away_player_2_name = '';
@@ -410,100 +233,56 @@ class LeagueManagerShortcodes extends LeagueManager
 				}
 			}
 			
-			if ( $match->hadPenalty ) {
-				$matches[$i]->homeScore = $match->penalty['home']+$match->overtime['home'];
-				$matches[$i]->awayScore = $match->penalty['away']+$match->overtime['away'];
-				$matches[$i]->score = sprintf("%s - %s", $matches[$i]->homeScore, $matches[$i]->awayScore)." ".__( '(o.P.)', 'leaguemanager' );
-			} elseif ( $match->hadOvertime ) {
-				$matches[$i]->homeScore = $match->overtime['home'];
-				$matches[$i]->awayScore = $match->overtime['away'];
-				$matches[$i]->score = sprintf("%s - %s", $matches[$i]->homeScore, $matches[$i]->awayScore)." ".__( '(AET)', 'leaguemanager' );
-				//$matches[$i]->score = sprintf("%s - %s", $matches[$i]->home_points, $matches[$i]->away_points);
-			} elseif ( $match->home_points != NULL && $match->away_points != NULL ) {
-				$matches[$i]->homeScore = $match->home_points;
-				$matches[$i]->awayScore = $match->away_points;
-				$matches[$i]->score = sprintf("%s - %s", $matches[$i]->homeScore, $matches[$i]->awayScore);
-			} else {
-				$matches[$i]->homeScore = "-";
-				$matches[$i]->awayScore = "-";
-				$matches[$i]->score = "-";
-			}
-			
-			$i++;
 		}
-		//		} else {
-		//			$matches = $teams = false;
-		//		}
 
-		if ( empty($template) && $this->checkTemplate('matches-'.$league->sport) )
+        /*
+         * get teams
+         */
+        $teams = $league->getLeagueTeams( array("season" => $season, "orderby" => array("title" => "ASC")), 'ARRAY' );
+
+        if ( empty($template) && $this->checkTemplate('matches-'.$league->sport) )
 			$filename = 'matches-'.$league->sport;
 		elseif ($this->checkTemplate('matches-'.$template.'-'.$league->sport) )
 			$filename = 'matches-'.$template.'-'.$league->sport;
 		else
 			$filename = ( !empty($template) ) ? 'matches-'.$template : 'matches';
 
-		$out = $this->loadTemplate( $filename, array('league' => $league, 'matches' => $matches, 'teams' => $teams, 'season' => $season, 'roster' => $roster ) );
+        $out = $this->loadTemplate( $filename, array('league' => $league, 'matches' => $matches, 'teams' => $teams, 'season' => $season ) );
 		return $out;
 	}
 
-
-	/**
-	 * Function to display single match
-	 *
-	 * [match id="1" template="name"]
-	 *
-	 * - id is the ID of the match to display
-	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "match-template.php" (optional)
-	 *
-	 * @param array $atts
-	 * @return the content
-	 */
-	function showMatch( $atts )
-	{
-		global $leaguemanager, $lmStats;
+    /**
+     * Display single match
+     *
+     * [match id="1" template="name"]
+     *
+     * - id is the ID of the match to display
+     * - template is the template used for displaying. Replace name appropriately. Templates must be named "match-template.php" (optional)
+     *
+     * @param array $atts shorcode attributes
+     * @return string
+     */
+	public function showMatch( $atts ) {
+		global $match;
 		extract(shortcode_atts(array(
 			'match_id' => 0,
 			'template' => '',
 		), $atts ));
 
-        // Get Match by Name
-        $match_name = get_query_var('match_name');
-        
-        //        if ( !$league_name == '' ) {
-        //            header( 'Location: '.get_option( 'home' ).'leagues'.str_replace(" ", "-", $league_name).'/' );
-        //        }
-        
-        if (!empty($match_name)) {
-            $league_name = get_query_var('league_id');
-            $season = get_query_var('season');
-            if (!empty($league_name)) {
-                $league = $leaguemanager->getLeague( $league_name );
-                $curr_league = $league;
-                $league_id = $league->id;
-                $matchTeams = explode($match_name,'vs');
-                $homeTeam = $leaguemanager->getTeamID($matchTeams[0]);
-                $awayTeam = $leaguemanager->getTeamID($matchTeams[1]);
-                $match = $leaguemanager->getMatchbyTitle( $league_id, $season, $homeTeam, $awayTeam );
-                $match_id = $match->id;
-            }
-        }
-        
         // Get Match ID from shortcode or $_GET
         if ( !$match_id ) {
             $match_id = ( isset($_GET['match_id']) && !empty($_GET['match_id']) ) ? $_GET['match_id'] : false;
         }
-		$match = $leaguemanager->getMatch($match_id);
+		$match = get_match($match_id);
 		
 		$filename = '';
 		if ( $match ) {
-			$league = $leaguemanager->getLeague($match->league_id);
-			$home = $leaguemanager->getTeam($match->home_team);
-			$away = $leaguemanager->getTeam($match->away_team);
+			$league = get_league($match->league_id);
             $match->num_rubbers = ( isset($league->num_rubbers) ? $league->num_rubbers : NULL );
             $match->num_sets = ( isset($league->num_sets) ? $league->num_sets : NULL );
             
             if ( isset($match->num_rubbers) ) {
-                $rubbers = $leaguemanager->getRubbers( array("match_id" => intval($match_id)));
+                $rubbers = $match->getRubbers();
                 $r=1;
                 foreach ($rubbers as $rubber) {
 					$rubber->home_player_1_name = $rubber->home_player_2_name = $rubber->away_player_1_name = $rubber->away_player_2_name = '';
@@ -515,44 +294,7 @@ class LeagueManagerShortcodes extends LeagueManager
                     $r ++;
                 }
             }
-
-			$match->hadPenalty = ( isset($match->penalty) && $match->penalty['home'] != '' && $match->penalty['away'] != '' ) ? true : false;
-			$match->hadOvertime = ( isset($match->overtime) && $match->overtime['home'] != '' && $match->overtime['away'] != '' ) ? true : false;
-
-			//$match->home_points = ( NULL == $match->home_points ) ? '-' : $match->home_points;
-			//$match->away_points = ( NULL == $match->away_points ) ? '-' : $match->away_points;
-
-			$match->homeTeam = $home ? $home->title : '';
-			$match->awayTeam = $away ? $away->title : '';
-			if (!isset($match->title)) $match->title = $match->homeTeam . "&#8211;" . $match->awayTeam;
-
-			$match->homeLogo = $home ? $home->logo : '';
-			$match->awayLogo = $away ? $away->logo : '';
-
-			$match->start_time = ( '00' == $match->hour && '00' == $match->minutes ) ? '' : mysql2date(get_option('time_format'), $match->date);
-			$match->date = ( substr($match->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date(get_option('date_format'), $match->date);
-
-			$match->report = ( $match->post_id != 0 ) ? '(<a href="'.get_permalink($match->post_id).'">'.__('Report', 'leaguemanager').'</a>)' : '';
-
-			if ( $match->hadPenalty ) {
-				$match->homeScore = $match->penalty['home']+$match->overtime['home'];
-				$match->awayScore = $match->penalty['away']+$match->overtime['away'];
-				$match->score = sprintf("%s - %s", $match->homeScore, $match->awayScore)." ".__( '(o.P.)', 'leaguemanager' );
-			} elseif ( $match->hadOvertime ) {
-				$match->homeScore = $match->overtime['home'];
-				$match->awayScore = $match->overtime['away'];
-				$match->score = sprintf("%s - %s", $match->homeScore, $match->awayScore)." ".__( '(AET)', 'leaguemanager' );
-				//$match->score = sprintf("%s - %s", $match->home_points, $match->away_points);
-			} elseif ( $match->home_points != NULL && $match->away_points != NULL ) {
-				$match->homeScore = $match->home_points;
-				$match->awayScore = $match->away_points;
-				$match->score = sprintf("%s - %s", $match->homeScore, $match->awayScore);
-			} else {
-				$match->homeScore = "-";
-				$match->awayScore = "-";
-				$match->score = sprintf("%s:%s", $match->homeScore, $match->awayScore);
-			}
-			
+		
 		}		
         if ( empty($template) && $this->checkTemplate('match-'.$league->sport) )
             $filename = 'match-'.$league->sport;
@@ -566,7 +308,6 @@ class LeagueManagerShortcodes extends LeagueManager
 	}
 
 	function getPlayerNamefromRoster( $roster_id ) {
-
 		global $leaguemanager;
 		
 		$roster_dtls = $leaguemanager->getRosterEntry( intval($roster_id));
@@ -574,22 +315,20 @@ class LeagueManagerShortcodes extends LeagueManager
 		return $playername;
 	}
 	
-	/**
-	 * Function to display Championship
-	 *
-	 *	[championship league_id="1" template="name"]
-	 *
-	 * - league_id is the ID of league
-	 * - league_name: get league by name and not ID (optional)
-	 * - season: display specific season (optional)
-	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
-	 *
-	 * @param array $atts
-	 * @return the content
-	 */
-	function showChampionship( $atts )
-	{
-		global $leaguemanager, $championship;
+    /**
+     * Display Championship
+     *
+     *    [championship league_id="1" template="name"]
+     *
+     * - league_id is the ID of league
+     * - season: display specific season (optional)
+     * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
+     *
+     * @param array $atts shorcode attributes
+     * @return string
+     */
+	public function showChampionship( $atts ) {
+		global $league;
 
 		extract(shortcode_atts(array(
 			'league_id' => 0,
@@ -598,54 +337,37 @@ class LeagueManagerShortcodes extends LeagueManager
 			'season' => false,
 		), $atts ));
 
-		$search = !empty($league_name) ? $league_name : intval($league_id);
-		$league = $leaguemanager->getLeague( $search );
+
+        $league = $this->getleague($league_id);
+
+        $teams = $league->getLeagueTeams( array() );
+        $competition = get_competition($league->competition_id);
+        $league->setTemplate('championship', $template);
 		if ( !$season ) {
-			$season = $leaguemanager->getSeason($league);
+			$season = $league->getSeason();
 			$season = $season['name'];
 		}
 		$league->season = $season;
-		$league_id = $this->league_id = $league->id;
-		$championship->initialize($league->id);
 		$finals = array();
-		foreach ( array_reverse($championship->getFinals()) AS $final ) {
+		foreach ( array_reverse($league->championship->getFinals()) AS $final ) {
 			$class = 'alternate';
 			$data['key'] = $final['key'];
 			$data['name'] = $final['name'];
 			$data['num_matches'] = $final['num_matches'];
-			$data['rowspan'] = ( $championship->getNumTeamsFirstRound()/2 >= 4 ) ? ceil(4/$final['num_matches']) : ceil(($championship->getNumTeamsFirstRound()/2)/$final['num_matches']);
+			$data['rowspan'] = ( $league->championship->num_teams_first_round/2 >= 4 ) ? ceil(4/$final['num_matches']) : ceil(($league->championship->getNumTeamsFirstRound()/2)/$final['num_matches']);
 
-			$matches_raw = $leaguemanager->getMatches( array("league_id" => $league->id, "season" => $season, "final" => $final['key'], "orderby" => array("id" => "ASC")) );
-			$team_args = array("league_id" => $league->id, "season" => $season, "orderby" => array("id" => "ASC"));
-			$teams = $leaguemanager->getTeamsInfo( $team_args, 'ARRAY' );
-			$teams2 = $championship->getFinalTeams($final, 'ARRAY');
+			$matches_raw = $league->getMatches( array("final" => $final['key'], "orderby" => array("id" => "ASC")) );
 
 			$matches = array();
 			for ( $i = 1; $i <= $final['num_matches']; $i++ ) {
                 $match = isset($matches_raw[$i-1]) ? $matches_raw[$i-1] : NULL;
 				
 				if ( $match ) {
+                    $match = get_match($match);
 					$class = ( !isset($class) || 'alternate' == $class ) ? '' : 'alternate';
 					$match->class = $class;
-					if ( is_numeric($match->home_team) ) {
-                        if ( $match->home_team == -1 ) {
-                            $home_title = 'Bye';
-                        } else {
-                            $home_title = $teams[$match->home_team]['title'];
-                        }
-					} else {
-                        $home_title = $teams2[$match->home_team];
-					}
-
-                    if ( is_numeric($match->away_team) ) {
-                        if ( $match->away_team == -1 ) {
-                            $away_title = 'Bye';
-                        } else {
-                            $away_title = $teams[$match->away_team]['title'];
-                        }
-                    } else {
-                        $away_title = $teams2[$match->away_team];
-                    }
+                    $home_title = $match->teams['home']->title;
+                    $away_title = $match->teams['away']->title;
                     $match->title = sprintf("%s &#8211; %s", $home_title, $away_title);
                     $match->home_title = $home_title;
                     $match->away_title = $away_title;
@@ -657,14 +379,14 @@ class LeagueManagerShortcodes extends LeagueManager
                     $match->num_sets = ( isset($league->num_sets) ? $league->num_sets : NULL );
                     
                     if ( isset($match->num_rubbers) && $match->num_rubbers > 0 ) {
-                        $rubbers = $leaguemanager->getRubbers( array("match_id" => intval($match->id)));
+                        $rubbers = $match->getRubbers();
                         $r=1;
                         foreach ($rubbers as $rubber) {
                             $rubber->home_player_1_name = $rubber->home_player_2_name = $rubber->away_player_1_name = $rubber->away_player_2_name = '';
-                            if ( isset($rubber->home_player_1) ) $rubber->home_player_1_name = $this->getPlayerNamefromRoster($rubber->home_player_1);
-                            if ( isset($rubber->home_player_2) ) $rubber->home_player_2_name = $this->getPlayerNamefromRoster($rubber->home_player_2);
-                            if ( isset($rubber->away_player_1) ) $rubber->away_player_1_name = $this->getPlayerNamefromRoster($rubber->away_player_1);
-                            if ( isset($rubber->away_player_2) ) $rubber->away_player_2_name = $this->getPlayerNamefromRoster($rubber->away_player_2);
+                            if ( isset($rubber->home_player_1) && $rubber->home_player_1 > 0 ) $rubber->home_player_1_name = $this->getPlayerNamefromRoster($rubber->home_player_1);
+                            if ( isset($rubber->home_player_2) && $rubber->home_player_2 > 0) $rubber->home_player_2_name = $this->getPlayerNamefromRoster($rubber->home_player_2);
+                            if ( isset($rubber->away_player_1) && $rubber->away_player_1 > 0) $rubber->away_player_1_name = $this->getPlayerNamefromRoster($rubber->away_player_1);
+                            if ( isset($rubber->away_player_2) && $rubber->away_player_2 > 0) $rubber->away_player_2_name = $this->getPlayerNamefromRoster($rubber->away_player_2);
                             $match->rubbers[$r] = $rubber;
                             $r ++;
                         }
@@ -723,7 +445,7 @@ class LeagueManagerShortcodes extends LeagueManager
 		else
 			$filename = ( !empty($template) ) ? 'championship-'.$template : 'championship';
 
-		$out = $this->loadTemplate( $filename, array('league' => $league, 'championship' => $championship, 'finals' => $finals) );
+		$out = $this->loadTemplate( $filename, array('league' => $league, 'finals' => $finals) );
 
 		return $out;
 	}
@@ -737,8 +459,7 @@ class LeagueManagerShortcodes extends LeagueManager
      * @param array $atts
      * @return the content
      */
-    function showClubs( $atts )
-    {
+    public function showClubs( $atts ) {
         global $leaguemanager;
         extract(shortcode_atts(array(
             'type' => '',
@@ -766,8 +487,7 @@ class LeagueManagerShortcodes extends LeagueManager
      * @param array $atts
      * @return the content
      */
-    function showClub( $atts )
-    {
+    public function showClub( $atts ) {
         global $leaguemanager;
         extract(shortcode_atts(array(
             'id' => 0,
@@ -779,13 +499,15 @@ class LeagueManagerShortcodes extends LeagueManager
         $club_name = get_query_var('club_name');
         $club_name = str_replace('-',' ',$club_name);
 
-        $club = $leaguemanager->getClub( array( "name" => $club_name ) );
+        $club = get_Club( $club_name, 'shortcode' );
+        $rosters = $club->getRoster( array( 'inactive' => "Y", 'type' => 'real', 'cache' => false ) );
+        $rosterRequests = $club->getRosterRequests();
 
         $club->single = true;
         
         $filename = ( !empty($template) ) ? 'club-'.$template : 'club';
 
-        $out = $this->loadTemplate( $filename, array( 'club' => $club) );
+        $out = $this->loadTemplate( $filename, array( 'club' => $club, 'rosters' => $rosters, 'rosterRequests' => $rosterRequests ) );
 
         if ( $echo )
             echo $out;
@@ -793,17 +515,21 @@ class LeagueManagerShortcodes extends LeagueManager
             return $out;
     }
 
-	/**
-	 * Function to display Team list
-	 *
-	 *	[teams league_id=ID template=X season=x]
-	 *
-	 * @param array $atts
-	 * @return the content
-	 */
-	function showTeams( $atts )
-	{
-		global $leaguemanager;
+    /**
+     * Display Team list
+     *
+     *    [teams league_id=ID template=X season=x]
+     *
+     * - league_id is the ID of league
+     * - season: use specific season (optional)
+     * - template is the template used for displaying. Replace name appropriately. Templates must be named "teams-template.php" (optional)
+     * - group: show teams only from specific group
+     *
+     * @param array $atts shorcode attributes
+     * @return string
+     */
+	public function showTeams( $atts ) {
+		global $league;
 		extract(shortcode_atts(array(
 			'league_id' => 0,
 			'template' => '',
@@ -811,64 +537,18 @@ class LeagueManagerShortcodes extends LeagueManager
 			'group' => false
 		), $atts ));
 
-		$league = $leaguemanager->getLeague(intval($league_id));
-		$league->teamlist = true;
-		if (empty($season)) {
-			$season = $leaguemanager->getSeason($league);
-			$season = $season['name'];
-		}
+        $league = $this->getleague($league_id);
 
-		$team_args = array("league_id" => $league->id, "season" => $season, "orderby" => array("title" => "ASC"));
-		if ( $group ) $team_args["group"] = $group;
-		$teams = $leaguemanager->getTeamsInfo( $team_args );
+        $competition = get_competition($league->competition_id);
+        
+        $league->setTemplate('teams', $template);
+        $league->setGroup($group);
 
-		foreach ( $teams AS $i => $team ) {
-			// Get next match
-			$next_matches = $leaguemanager->getMatches(array("team_id" => $team->id, "time" => "next", "league_id" => $league->id, "season" => $season));
-			$next_match = isset($next_matches[0]) ? $next_matches[0] : false;
-			if ( $next_match ) {
-				if ( $next_match->home_team == $team->id ) {
-					$opponent = $leaguemanager->getTeam($next_match->away_team);
-					$next_match->match = $team->title . " &#8211; " . $opponent->title;
-				} else {
-					$opponent = $leaguemanager->getTeam($next_match->home_team);
-					$next_match->match = $opponent->title  . " &#8211; " . $team->title;
-				}
-				$next_match->match = $leaguemanager->getMatchTitle($next_match->id);
-			}
+        $team_args = array( "orderby" => array('rank' => 'ASC') );
+        if ( $group ) $team_args["group"] = $group;
+        $teams = $league->getLeagueTeams( $team_args );
+//		$teams = $competition->getTeamsInfo( array("league_id" => $league->id, "season" => $season, "orderby" => array("title" => "ASC")) );
 
-			// Get last match
-			$prev_matches = $leaguemanager->getMatches(array("team_id" => $team->id, "time" => "prev", "limit" => 1, "orderby" => array("date" => "DESC"), "league_id" => $league->id, "season" => $season ));
-			$prev_match = isset($prev_matches[0]) ? $prev_matches[0] : false;
-			if ( $prev_match ) {
-				if ( $prev_match->home_team == $team->id ) {
-					$opponent = $leaguemanager->getTeam($prev_match->away_team);
-					$prev_match->match = $team->title . " &#8211; " . $opponent->title;
-				} else {
-					$opponent = $leaguemanager->getTeam($prev_match->home_team);
-					$prev_match->match = $opponent->title  . " &#8211; " . $team->title;
-				}
-				$prev_match->match = $leaguemanager->getMatchTitle($prev_match->id);
-
-				$prev_match->hadOvertime = ( isset($prev_match->overtime) && $prev_match->overtime['home'] != '' && $prev_match->overtime['away'] != '' ) ? true : false;
-				$prev_match->hadPenalty = ( isset($prev_match->penalty) && $prev_match->penalty['home'] != '' && $prev_match->penalty['away'] != '' ) ? true : false;
-
-				if ( $prev_match->hadPenalty )
-					$prev_match->score = sprintf("%s - %s", $prev_match->penalty['home'], $prev_match->penalty['away'])." "._x( 'o.P.', 'leaguemanager' );
-				elseif ( $prev_match->hadOvertime )
-				//	$prev_match->score = sprintf("%s - %s", $prev_match->overtime['home'], $prev_match->overtime['away'])." "._x( 'AET|after extra time', 'leaguemanager' );
-					$prev_match->score = sprintf("%s - %s", $prev_match->home_points, $prev_match->away_points);
-				elseif ( $prev_match->home_points != "" && $prev_match->away_points != "" )
-					$prev_match->score = sprintf("%s - %s", $prev_match->home_points, $prev_match->away_points);
-				else
-					$prev_match->score = "N/A";
-			}
-			
-			$teams[$i]->next_match = $next_match;
-			$teams[$i]->prev_match = $prev_match;
-			
-			$teams[$i]->projects_tabs = false;
-		}
 		if ( empty($template) && $this->checkTemplate('teams-'.$league->sport) )
 			$filename = 'teams-'.$league->sport;
 		else
@@ -879,71 +559,31 @@ class LeagueManagerShortcodes extends LeagueManager
 		return $out;
 	}
 
-
-	/**
-	 * Function to display Team Info Page
-	 *
-	 *	[team id=ID template=X]
-	 *
-	 * @param array $atts
-	 * @return the content
-	 */
-	function showTeam( $atts )
-	{
-		global $leaguemanager;
+    /**
+     * Display Team Info Page
+     *
+     *    [team id=ID template=X]
+     *
+     * - id: the team ID
+     * - template is the template used for displaying. Replace name appropriately. Templates must be named "team-template.php" (optional)
+     *
+     * @param array $atts shorcode attributes
+     * @return string
+     */
+	public function showTeam( $atts ) {
+		global $league, $leagueTeam;
 		extract(shortcode_atts(array(
 			'id' => 0,
 			'template' => '',
 			'echo' => 0,
 		), $atts ));
 
-		$team = $leaguemanager->getTeam( intval($id) );
-		$league = $leaguemanager->getLeague( $team->league_id );
-
-		// Get next match
-		$next_matches = $leaguemanager->getMatches(array("team_id" => $team->id, "time" => "next", "league_id" => $team->league_id));
-		$next_match = isset($next_matches[0]) ? $next_matches[0] : false;
-		if ( $next_match ) {
-			if ( $next_match->home_team == $team->id ) {
-				$opponent = $leaguemanager->getTeam($next_match->away_team);
-				$next_match->match = $team->title . " &#8211; " . $opponent->title;
-			} else {
-				$opponent = $leaguemanager->getTeam($next_match->home_team);
-				$next_match->match = $opponent->title  . " &#8211; " . $team->title;
-			}
-		}
-
-		// Get last match
-		$prev_matches = $leaguemanager->getMatches(array("team_id" => $team->id, "time" => "prev", "limit" => 1, "orderby" => array("date" => "DESC"), "league_id" => $team->league_id));
-		$prev_match = $prev_matches[0];
-		if ( $prev_match ) {
-			if ( $prev_match->home_team == $team->id ) {
-				$opponent = $leaguemanager->getTeam($prev_match->away_team);
-				$prev_match->match = $team->title . " &#8211; " . $opponent->title;
-			} else {
-				$opponent = $leaguemanager->getTeam($prev_match->home_team);
-				$prev_match->match = $opponent->title  . " &#8211; " . $team->title;
-			}
-
-			$prev_match->hadOvertime = ( isset($prev_match->overtime) && $prev_match->overtime['home'] != '' && $prev_match->overtime['away'] != '' ) ? true : false;
-			$prev_match->hadPenalty = ( isset($prev_match->penalty) && $prev_match->penalty['home'] != '' && $prev_match->penalty['away'] != '' ) ? true : false;
-
-			if ( $prev_match->hadPenalty )
-				$prev_match->score = sprintf("%s - %s", $prev_match->penalty['home'], $prev_match->penalty['away'])." "._x( 'o.P.', 'leaguemanager' );
-			elseif ( $prev_match->hadOvertime )
-			//	$prev_match->score = sprintf("%s - %s", $prev_match->overtime['home'], $prev_match->overtime['away'])." "._x( 'AET|after extra time', 'leaguemanager' );
-				$prev_match->score = sprintf("%s - %s", $prev_match->home_points, $prev_match->away_points);
-			else
-				$prev_match->score = sprintf("%s - %s", $prev_match->home_points, $prev_match->away_points);
-		}
-
-		$team->prev_match = $prev_match;
-		$team->next_match = $next_match;
-		
-		$team->projects_tabs = false;
+        $league = get_league();
+        if ( !is_null($league) )
+            $team = $league->getLeagueTeam(intval($id));
+        else
+            $team = get_leagueTeam(intval($id));
 			
-		$team->single = true;
-		
 		if ( empty($template) && $this->checkTemplate('team-'.$league->sport) )
 			$filename = 'team-'.$league->sport;
 		else
@@ -951,52 +591,41 @@ class LeagueManagerShortcodes extends LeagueManager
 
 		$out = $this->loadTemplate( $filename, array('league' => $league, 'team' => $team) );
 
-		if ( $echo )
-			echo $out;
-		else
-			return $out;
+		return $out;
 	}
 
-
-	/**
-	 * Function to display Crosstable
-	 *
-	 * [crosstable league_id="1" mode="popup" template="name"]
-	 *
-	 * - league_id is the ID of league to display
-	 * - league_name: get league by name and not ID (optional)
-	 * - mode set to "popup" makes the crosstable be displayed in a thickbox popup window.
-	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "crosstable-template.php" (optional)
-	 * - season: display crosstable of given season (optional)
-	 *
-	 *
-	 * @param array $atts
-	 * @return the content
-	 */
-	function showCrosstable( $atts )
-	{
-		global $leaguemanager;
+    /**
+     * Display Crosstable
+     *
+     * [crosstable league_id="1" mode="popup" template="name"]
+     *
+     * - league_id is the ID of league to display
+     * - mode set to "popup" makes the crosstable be displayed in a thickbox popup window.
+     * - template is the template used for displaying. Replace name appropriately. Templates must be named "crosstable-template.php" (optional)
+     * - season: display crosstable of given season (optional)
+     * - group: show crosstable for specific group
+     *
+     * @param array $atts shorcode attributes
+     * @return string
+     */
+	public function showCrosstable( $atts ) {
+		global $league;
 		extract(shortcode_atts(array(
 			'league_id' => 0,
 			'league_name' => '',
 			'group' => '',
 			'template' => '',
 			'mode' => '',
-			'logo' => 'true',
 			'season' => false
 		), $atts ));
 
-		$search = !empty($league_name) ? $league_name : intval($league_id);
-		$league = $leaguemanager->getLeague( $search );
-		if (empty($season)) {
-			$season = $leaguemanager->getSeason($league);
-			$season = $season['name'];
-		}
-		
-		$league->show_logo = ( $logo == 'true' ) ? true : false;
-		
-		$team_args = array("league_id" => $league->id, "season" => $season, "group" => $group);
-		$teams = $leaguemanager->getTeamsInfo( $team_args );
+        $league = $this->getleague($league_id);
+
+        $league->setTemplate('crosstable', $template);
+        $league->setSeason($season);
+        $league->setGroup($group);
+        
+		$teams = $league->getLeagueTeams( array('orderby' => array('rank' => 'ASC')) );
 
 		if ( empty($template) && $this->checkTemplate('crosstable-'.$league->sport) )
 			$filename = 'crosstable-'.$league->sport;
@@ -1008,19 +637,25 @@ class LeagueManagerShortcodes extends LeagueManager
 		return $out;
 	}
 
-	
-	/**
-	 * show League
-	 *
-	 * [league id=ID season=X template=X]
-	 *
-	 * id: ID of league
-	 * season: season to show
-	 * template: teamplate to use
-	 */
-	function showLeague( $atts )
-	{
-		global $leaguemanager, $championship;
+    /**
+     * Display League
+     *
+     * [league id=ID season=X template=X]
+     *
+     * - id: ID of league
+     * - season: season to show
+     * - template: teamplate to use
+     * - standingstable: template for standings table
+     * - crosstable: template for crosstable
+     * - matches: template for matches
+     * - teams: template for teams
+     * - matches_template_type: type of match template
+     *
+     * @param array $atts shorcode attributes
+     * @return string
+     */
+	public function showLeague( $atts ) {
+		global $league;
 		
 		extract(shortcode_atts(array(
 			'id' => 0,
@@ -1028,25 +663,17 @@ class LeagueManagerShortcodes extends LeagueManager
 			'template' => '', 
 			'standingstable' => 'last5',
 			'crosstable' => '',
-			'matches' => '', 
-			'teams' => 'list'
+			'matches' => 'by_matchday',
+            'teams' => 'list',
+            'matches_template_type' => 'accordion'
 		), $atts ));
 		
-		$league = $leaguemanager->getLeague( $id );
-		
-		/*
-		 * set season
-		 */
-		$season = $leaguemanager->getSeason($league, $season);
-		$league->num_match_days = $season['num_match_days'];
-		$leaguemanager->setSeason($season);
-		$season = $season['name'];
-		
-		$league->season = $season;
+		$league = get_league( $id );
+        $league->setSeason($season);
+        $league->setTab();
 		$league->templates = array( 'standingstable' => $standingstable, 'crosstable' => $crosstable, 'matches' => $matches, 'teams' => $teams );
-		
-		if ( $league->mode == 'championship' ) $championship->initialize($league->id);
-		
+        $league->matches_template_type = $matches_template_type;
+
 		if ( empty($template) && $this->checkTemplate('league-'.$league->sport) )
 			$filename = 'league-'.$league->sport;
 		else
@@ -1065,129 +692,109 @@ class LeagueManagerShortcodes extends LeagueManager
 	* season: season to show
 	* template: teamplate to use
 	*/
-	function showCompetition( $atts )
-	{
-	global $leaguemanager;
+	public function showCompetition( $atts ) {
+        global $leaguemanager, $competition;
 
-	extract(shortcode_atts(array(
-							   'id' => 0,
-							   'season' => false,
-							   'template' => '',
-							   'standingstable' => 'last5',
-							   'crosstable' => '',
-							   'matches' => '',
-							   'teams' => 'list'
-							   ), $atts ));
-	$competition = $leaguemanager->getCompetition( $id );
+        extract(shortcode_atts(array(
+                                   'id' => 0,
+                                   'season' => false,
+                                   'template' => '',
+                                   'standingstable' => 'last5',
+                                   'crosstable' => '',
+                                   'matches' => '',
+                                   'teams' => 'list'
+                                   ), $atts ));
+        $competition = get_competition( $id );
 
 	/*
 	* set season
 	*/
-	$seasons = $competition->seasons;
-	$leagues = $leaguemanager->getLeagues( array('competition' => $id, 'orderby' => array("title" => "ASC")));
-		
-	if ( isset($_GET['season']) && !empty($_GET['season']) ) {
-		$season = htmlspecialchars(strip_tags($_GET['season']));
-	} elseif ( isset($_GET['season']) ) {
-		$season = htmlspecialchars(strip_tags($_GET['season']));
-	} else {
-		$season = null !== get_query_var('season') ? get_query_var('season') : false;
-	}
-	
-	if ( empty($template) && $this->checkTemplate('competition-'.$competition->sport) ) {
-		$filename = 'competition-'.$competition->sport;
-	} else {
-		$filename = ( !empty($template) ) ? 'competition-'.$template : 'competition';
-	}
+        $seasons = $competition->seasons;
+        $leagues = $competition->getLeagues( array('competition' => $id, 'orderby' => array("title" => "ASC")));
+            
+        if ( isset($_GET['season']) && !empty($_GET['season']) ) {
+            $season = htmlspecialchars(strip_tags($_GET['season']));
+        } elseif ( isset($_GET['season']) ) {
+            $season = htmlspecialchars(strip_tags($_GET['season']));
+        } else {
+            $season = null !== get_query_var('season') ? get_query_var('season') : false;
+        }
+        
+        if ( empty($template) && $this->checkTemplate('competition-'.$competition->sport) ) {
+            $filename = 'competition-'.$competition->sport;
+        } else {
+            $filename = ( !empty($template) ) ? 'competition-'.$template : 'competition';
+        }
 
-	if ( !$season ) {
-		$season = end($competition->seasons);
-		$season = $season['name'];
-	}
-		
-	$out = $this->loadTemplate( $filename, array('competition' => $competition, 'leagues' => $leagues, 'seasons' => $seasons, 'curr_season' => $season) );
-	return $out;
+        if ( !$season ) {
+            $season = end($competition->seasons);
+            $season = $season['name'];
+        }
+            
+        $out = $this->loadTemplate( $filename, array('competition' => $competition, 'leagues' => $leagues, 'seasons' => $seasons, 'curr_season' => $season) );
+        return $out;
 	}
 					  
-	 
-	/**
-	 * show Archive
-	 *
-	 *	[leaguearchive league_id=ID season=x template=X]
-	 *
-	 * - league_id: ID of league
-	 * - league_name: get league by name and not ID (optional)
-	 * - template: template to use
-	 *
-	 * @param array $atts
-	 * @return the content
-	 */
-	function showArchive( $atts )
-	{
-		global $leaguemanager, $championship;
+     /**
+      * Display Archive
+      *
+      *    [leaguearchive template=X]
+      *
+      * - template: teamplate to use
+      * - standingstable: template for standings table
+      * - crosstable: template for crosstable
+      * - matches: template for matches
+      * - teams: template for teams
+      * - matches_template_type: type of match template
+      *
+      * @param array $atts shorcode attributes
+      * @return string
+      */
+	public function showArchive( $atts ) {
+        global $league;
+        
 		extract(shortcode_atts(array(
 			'league_id' => false,
 			'competition_id' => false,
 			'league_name' => '',
-			'template' => ''
+            'standingstable' => 'last5',
+            'crosstable' => '',
+            'matches' => '',
+            'teams' => 'list',
+			'template' => '',
+            'matches_template_type' => 'accordion'
 		), $atts ));
+        
 		// get all leagues, needed for dropdown
-		$competition = $leaguemanager->getCompetition( $competition_id);
+		$competition = get_competition( $competition_id);
 		$seasons = $competition->seasons;
-		$leagues = $leaguemanager->getLeagues( array('competition' => $competition_id, 'orderby' => array("title" => "ASC")));
-		$league = false; // Initialize league variable
+		$leagues = $competition->getLeagues( array('competition' => $competition_id, 'orderby' => array("title" => "ASC")));
 
 		// Get League by Name
-		$league_name = get_query_var('league_id');
-		$season = get_query_var('season');
+		$league_name = get_query_var('league_name');
 		
-			//		if ( !$league_name == '' ) {
-			//			header( 'Location: '.get_option( 'home' ).'leagues'.str_replace(" ", "-", $league_name).'/' );
-			//		}
-
 		if (!empty($league_name)) {
-			$league = $leaguemanager->getLeague( $league_name );
-			$curr_league = $league;
-			$league_id = $league->id;
+            $league_id = $competition->getLeagueId($league_name);
 		}
 
 		// Get League ID from shortcode or $_GET
-		$single_league = false;
-		if ( !$league_id ) {
-			$league_id = ( isset($_GET['league_id']) && !empty($_GET['league_id']) ) ? $_GET['league_id'] : false;
+		if ( $league_id ) {
+            $league = get_league($league_id);
 		}
 		
-		if ( isset($_GET['season']) && !empty($_GET['season']) ) {
-			$season = htmlspecialchars(strip_tags($_GET['season']));
-		} elseif ( isset($_GET['season_'.$league_id]) ) {
-			$season = htmlspecialchars(strip_tags($_GET['season_'.$league_id]));
-		} else {
-			$season = null !== get_query_var('season') ? get_query_var('season') : false;
-		}
-		
- 		// select first league
-		if ( !$league_id )
-			$league_id = $leagues[0]->id;
+        if ($league) {
+            $league->setTab(true);
+            $league->setTemplates(array( 'standingstable' => $standingstable, 'crosstable' => $crosstable, 'matches' => $matches, 'teams' => $teams ));
+            $league->matches_template_type = $matches_template_type;
 
-		// Get League and last Season if not set
-		if ( !$league ) $curr_league = $leaguemanager->getLeague( $league_id );
-		if ( !$season ) {
-			$season = end($curr_league->seasons);
-			$season = $season['name'];
-		}
-
-		$leaguemanager->setLeagueID($curr_league->id);
-		
-		$curr_league->season = $season;
-
-		if ( $curr_league->mode == 'championship' ) $championship->initialize($curr_league->id);
-
-		if ( empty($template) && $this->checkTemplate('archive-'.$curr_league->sport) )
-			$filename = 'archive-'.$curr_league->sport;
-		else
-			$filename = ( !empty($template) ) ? 'archive-'.$template : 'archive';
-		$out = $this->loadTemplate( $filename, array('leagues' => $leagues, 'curr_league' => $curr_league, 'single_league' => $single_league, 'league_id' => $league_id, 'seasons' => $seasons) );
-		return $out;
+            if ( empty($template) && $this->checkTemplate('archive-'.$league->sport) )
+                $filename = 'archive-'.$league->sport;
+            else
+                $filename = ( !empty($template) ) ? 'archive-'.$template : 'archive';
+            
+            $out = $this->loadTemplate( $filename, array('leagues' => $leagues, 'league' => $league, 'seasons' => $seasons) );
+            return $out;
+        }
 	}
 
 	/**
@@ -1198,9 +805,8 @@ class LeagueManagerShortcodes extends LeagueManager
 	 * @param array $atts
 	 * @return the content
 	 */
-	function showPlayers( $atts )
-	{
-		global $leaguemanager;
+	public function showPlayers( $atts ) {
+		global $league;
 		extract(shortcode_atts(array(
 			'league_id' => 0,
 			'template' => '',
@@ -1208,22 +814,20 @@ class LeagueManagerShortcodes extends LeagueManager
 			'group' => false
 		), $atts ));
 
-		$league = $leaguemanager->getLeague(intval($league_id));
-		if (empty($season)) {
-			$season = $leaguemanager->getSeason($league);
-			$season = $season['name'];
-		}
+        $league = $this->getleague($league_id);
+
+        $competition = get_competition($league->competition_id);
+        $league->setSeason($season);
 
 		$player_args = array("league_id" => $league->id, "season" => $season, "orderby" => array("title" => "ASC"));
-		if ( $group ) $team_args["group"] = $group;
-		$players = $leaguemanager->getPlayerStats( $player_args );
+		$players = $competition->getPlayerStats( $player_args );
 		
 		$playerstats	= array();
 
 		foreach ( $players AS $p => $player ) {
 			
 			$matches = $player->matchdays;
-			$played = $won = $lost = $setsWon = $setsConceded = $gamesWon = $gamesConceded = $setsDiff = $gamesDiff = 0;
+			$played = $won = $lost = $drawn = $setsWon = $setsConceded = $gamesWon = $gamesConceded = $setsDiff = $gamesDiff = 0;
 			$playername = $player->fullname;
 
 			foreach ( $matches AS $match ) {
@@ -1236,7 +840,9 @@ class LeagueManagerShortcodes extends LeagueManager
 					$won ++;
 				} elseif ( $match->rubber_loser == $match->team_id ) {
 					$lost ++;
-				}
+                } else {
+                    $drawn ++;
+                }
 				
 				if ( $player->roster_id == $match->home_player_1 || $player->roster_id == $match->home_player_2 ) {
 					$setPlayer		= 'player1';
@@ -1263,11 +869,12 @@ class LeagueManagerShortcodes extends LeagueManager
 			$winpct = $won*100/$played;
             $setsDiff = $setsWon - $setsConceded;
             $gamesDiff = $gamesWon - $gamesConceded;
-			$playerstats[$p]		= array('playername' => $playername, 'team' => $team, 'played' => $played, 'won' => $won, 'lost' => $lost, 'setsWon' => $setsWon, 'setsConceded' => $setsConceded, 'gamesWon' => $gamesWon, 'gamesConceded' => $gamesConceded, 'winpct' => $winpct, 'setsDiff' => $setsDiff, 'gamesDiff' => $gamesDiff );
+			$playerstats[$p]		= array('playername' => $playername, 'team' => $team, 'played' => $played, 'won' => $won, 'lost' => $lost, 'drawn' => $drawn, 'setsWon' => $setsWon, 'setsConceded' => $setsConceded, 'gamesWon' => $gamesWon, 'gamesConceded' => $gamesConceded, 'winpct' => $winpct, 'setsDiff' => $setsDiff, 'gamesDiff' => $gamesDiff );
 			
 		}
 		
         $playerstats = array_msort($playerstats, array('won'=>SORT_DESC, 'winpct'=>SORT_DESC, 'setsDiff'=>SORT_DESC, 'gamesDiff'=>SORT_DESC,  'playername'=>SORT_ASC));
+        $playerstats = (object)$playerstats;
         
         if ( empty($template) && $this->checkTemplate('players-'.$league->sport) ) {
 			$filename = 'players-'.$league->sport;
@@ -1279,87 +886,6 @@ class LeagueManagerShortcodes extends LeagueManager
 		return $out;
 	}
 
-
-	/**
-	 * get specific field for crosstable
-	 *
-	 * @param int $curr_team_id
-	 * @param int $opponent_id
-	 * @param int $home
-	 * @return string
-	 */
-	function getCrosstableField($curr_team_id, $opponent_id, $home, $league_id, $season = '' )
-	{
-		global $wpdb, $leaguemanager;
-		$match = $leaguemanager->getMatches( array("home_team" => $curr_team_id, "away_team" => $opponent_id, "league_id" => $league_id, "season" => $season) );
-        if ($match) {
-			$score = $this->getScore($curr_team_id, $opponent_id, $match[0], $home);
-		} else {
-			$score = "<td>n/a</td>";
-		}
-		
-		return $score;
-	}
-
-
-	/**
-	 * get score for specific field of crosstable
-	 *
-	 * @param int $curr_team_id
-	 * @param int $opponent_id
-	 * @param int $home
-	 * @return string
-	 */
-	function getScore($curr_team_id, $opponent_id, $match, $home = 0)
-	{
-		global $wpdb, $leaguemanager;
-
-		if ($match) {
-			if ( !empty($match->penalty['home']) && !empty($match->penalty['away']) ) {
-				$match->overtime = maybe_unserialize($match->overtime);
-				$match->penalty = maybe_unserialize($match->penalty);
-				$points = array( 'home' => $match->overtime['home']+$match->penalty['home'], 'away' => $match->overtime['away']+$match->penalty['away']);
-			} elseif ( !empty($match->overtime['home']) && !empty($match->overtime['away']) ) {
-				$match->overtime = maybe_unserialize($match->overtime);
-				$points = array( 'home' => $match->overtime['home'], 'away' => $match->overtime['away']);
-			} else {
-				$points = array( 'home' => $match->home_points, 'away' => $match->away_points );
-			}
-		}
-		
-		// unplayed match
-        if ( !$match || (NULL == $match->home_points && NULL == $match->away_points) ) {
-            $date = ( substr($match->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date('D d/m/Y', $match->date);
-            $time = ( '00' == $match->hour && '00' == $match->minutes ) ? '' : mysql2date('G:i', $match->date);
-            $out = "<td><span class='unplayedMatch'>".$date."<br/>".$time."</span></td>";
-		// match at home
-        } elseif ( $curr_team_id == $match->home_team ) {
-			$score = sprintf("%s:%s", $points['home'], $points['away']);
-            $result = $this->getResult($curr_team_id, $match->winner_id, $match->loser_id);
-            $out = "<td class='num'>".$score."<br/>".$result."</td>";
-		// match away
-        } elseif ( $opponent_id == $match->home_team ) {
-			$score = sprintf("%s:%s", $points['away'], $points['home']);
-            $result = $this->getResult($curr_team_id, $match->winner_id, $match->loser_id);
-            $out = "<td class='num'>".$score."<br/>".$result."</td>";
-        }
-		
-		return $out;
-	}
-
-    function getResult($team, $winner, $loser) {
-        if ( $winner == $team) {
-            $result = "won";
-        } elseif ( $loser == $team ) {
-            $result = "lost";
-		} else {
-			$result = "drew";
-		}
-			
-        return $result;
-
-    }
-    
 	/**
 	 * Load template for user display. First the current theme directory is checked for a template
 	 * before defaulting to the plugin
@@ -1368,11 +894,12 @@ class LeagueManagerShortcodes extends LeagueManager
 	 * @param array $vars Array of variables name=>value available to display code (optional)
 	 * @return the content
 	 */
-	function loadTemplate( $template, $vars = array() )
-	{
-		global $leaguemanager, $lmStats, $championship;
+	public function loadTemplate( $template, $vars = array() ) {
+		global $league, $team, $match, $leaguemanager;
+        
 		extract($vars);
-		ob_start();
+
+        ob_start();
 
 		if ( file_exists( get_stylesheet_directory() . "/leaguemanager/$template.php")) {
 			include(get_stylesheet_directory() . "/leaguemanager/$template.php");
@@ -1381,8 +908,8 @@ class LeagueManagerShortcodes extends LeagueManager
 		} elseif ( file_exists(LEAGUEMANAGER_PATH . "/templates/".$template.".php") ) {
 			include(LEAGUEMANAGER_PATH . "/templates/".$template.".php");
 		} else {
-			parent::setMessage( sprintf(__('Could not load template %s.php', 'leaguemanager'), $template), true );
-			parent::printMessage();
+			$this->setMessage( sprintf(__('Could not load template %s.php', 'leaguemanager'), $template), true );
+			$this->printMessage();
 		}
 		$output = ob_get_contents();
 		ob_end_clean();
@@ -1396,10 +923,9 @@ class LeagueManagerShortcodes extends LeagueManager
 	 * @param string $template
 	 * @return boolean
 	 */
-	function checkTemplate( $template )
-	{
+	private function checkTemplate( $template ) {
 		if ( file_exists( get_stylesheet_directory() . "/leaguemanager/$template.php")) {
-			return true; //include(get_stylesheet_directory() . "/leaguemanager/$template.php");
+			return true;
 		} elseif  ( file_exists( get_template_directory() . "/leaguemanager/$template.php")) {
 			return true;
 		} elseif ( file_exists(LEAGUEMANAGER_PATH . "/templates/".$template.".php") ) {
@@ -1408,6 +934,19 @@ class LeagueManagerShortcodes extends LeagueManager
 
 		return false;
 	}
-}
 
+    /**
+     * get league
+     *
+     * @param int $league_id
+     * @return null|League
+     */
+    private function getLeague( $league_id ) {
+        global $league;
+        
+        if ($league_id == 0) $league = get_league();
+        else $league = get_league(intval($league_id));
+        return $league;
+    }
+}
 ?>

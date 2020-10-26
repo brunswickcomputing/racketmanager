@@ -3,47 +3,33 @@
 	echo '<p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p>';
 
 	} else {
-	$tab = 0;
-	$options = get_option('leaguemanager');
-	//$league = $leaguemanager->getCurrentLeague();
-	$competition = $leaguemanager->getCompetition( intval($_GET['competition_id']) );
-	if ( isset($_POST['updateSettings']) ) {
-		check_admin_referer('leaguemanager_manage-competition-options');
+        $tab = 0;
+        $competition = get_competition( intval($_GET['competition_id']) );
+        if ( isset($_POST['updateSettings']) ) {
+            check_admin_referer('leaguemanager_manage-competition-options');
 
-		$settings = (array)$_POST['settings'];
+            $settings = (array)$_POST['settings'];
 
-		// Set textdomain
-		$options['textdomain'] = (string)$settings['sport'];
-		update_option('leaguemanager', $options);
+            $this->editCompetition( intval($_POST['competition_id']), $_POST['competition_title'], $settings );
+            $this->printMessage();
+            
+            $options = get_option('leaguemanager');
+            $competition->reloadSettings();
 
-		if ( $settings['point_rule'] == 'user' && isset($_POST['forwin']) && is_numeric($_POST['forwin']) )
-			$settings['point_rule'] = array( 'forwin' => intval($_POST['forwin']), 'fordraw' => intval($_POST['fordraw']), 'forloss' => intval($_POST['forloss']), 'forwin_overtime' => intval($_POST['forwin_overtime']), 'forloss_overtime' => intval($_POST['forloss_overtime']) );
-
-		$settings['standings']['pld'] = isset($settings['standings']['pld']) ? 1 : 0;
-		$settings['standings']['won'] = isset($settings['standings']['won']) ? 1 : 0;
-		$settings['standings']['tie'] = isset($settings['standings']['tie']) ? 1 : 0;
-		$settings['standings']['lost'] = isset($settings['standings']['lost']) ? 1 : 0;
-		
-		$this->editCompetition( intval($_POST['competition_id']), $_POST['competition_title'], $settings );
-		$this->printMessage();
-		
-		$options = get_option('leaguemanager');
-		$competition = $leaguemanager->getCompetition( intval($_GET['competition_id']) );
-		
-		// Set active tab
-		$tab = intval($_POST['active-tab']);
-	}
-	
-	$forwin = $fordraw = $forloss = $forwin_overtime = $forloss_overtime = 0;
-	// Manual point rule
-	if ( is_array($competition->point_rule) ) {
-		$forwin = $competition->point_rule['forwin'];
-		$forwin_overtime = $competition->point_rule['forwin_overtime'];
-		$fordraw = $competition->point_rule['fordraw'];
-		$forloss = $competition->point_rule['forloss'];
-		$forloss_overtime = $competition->point_rule['forloss_overtime'];
-		$competition->point_rule = 'user';
-	}
+            // Set active tab
+            $tab = intval($_POST['active-tab']);
+        }
+        
+        $forwin = $fordraw = $forloss = $forwin_overtime = $forloss_overtime = 0;
+        // Manual point rule
+        if ( is_array($competition->point_rule) ) {
+            $forwin = $competition->point_rule['forwin'];
+            $forwin_overtime = $competition->point_rule['forwin_overtime'];
+            $fordraw = $competition->point_rule['fordraw'];
+            $forloss = $competition->point_rule['forloss'];
+            $forloss_overtime = $competition->point_rule['forloss_overtime'];
+            $competition->point_rule = 'user';
+        }
 ?>
 
 <script type='text/javascript'>
@@ -150,7 +136,7 @@
 							<td>
 								<select size="1" name="settings[entryType]" id="entryType">
                                 <?php foreach ( $this->getentryTypes() AS $id => $entryType )  { ?>
-<option value="<?php echo $id ?>"<?php selected( $id, isset($competition->entryType) ? $competition->entryType : '' ) ?>><?php echo $entryType ?></option>
+                                    <option value="<?php echo $id ?>"<?php selected( $id, isset($competition->entryType) ? $competition->entryType : '' ) ?>><?php echo $entryType ?></option>
                                 <?php } ?>
 								</select>
 							</td>
@@ -186,12 +172,14 @@
 					<table class="lm-form-table">
 						<tr valign="top">
 							<th scope="row"><label for="standings_table"><?php _e( 'Standings Table Display', 'leaguemanager' ) ?></label></th>
-							<td>
-								<p><input type="checkbox" name="settings[standings][pld]" id="standings_pld" value="1" <?php checked(1, $competition->standings['pld']) ?> /><label for="standings_pld" style="margin-left: 0.5em;"><?php _e( 'Played Games', 'leaguemanager' ) ?></label></p>
-								<p><input type="checkbox" name="settings[standings][won]" id="standings_won" value="1" <?php checked(1, $competition->standings['won']) ?> /><label for="standings_won" style="margin-left: 0.5em;"><?php _e( 'Won Games', 'leaguemanager' ) ?></label></p>
-								<p><input type="checkbox" name="settings[standings][tie]" id="standings_tie" value="1" <?php checked(1, $competition->standings['tie']) ?> /><label for="standings_tie" style="margin-left: 0.5em;"><?php _e('Tie Games', 'leaguemanager' ) ?></label></p>
-								<p><input type="checkbox" name="settings[standings][lost]" id="standings_lost" value="1" <?php checked(1, $competition->standings['lost']) ?> /><label for="standings_lost" style="margin-left: 0.5em;"><?php _e( 'Lost Games', 'leaguemanager' ) ?></label></p>
-							</td>
+                            <td>
+                                <div class="alignleft">
+<?php $i=0; foreach ( $this->getStandingsDisplayOptions() AS $key => $label ) { $i++; ?>
+                                <p><input type="checkbox" name="settings[standings][<?php echo $key ?>]" id="standings_<?php echo $key ?>" value="1" <?php checked(1, $competition->standings[$key]) ?> /><label for="standings_<?php echo $key ?>"><?php echo $label ?></label></p>
+                                <?php if ( $i == 9 ) echo "</div><div class='alignleft extra-col'>"; ?>
+<?php } ?>
+                                </div>
+                            </td>
 						</tr>
 						<tr valign="top">
 							<th scope="row"><label for="teams_ascend"><?php _e( 'Teams Ascend', 'leaguemanager' ) ?></label></th>
@@ -213,9 +201,9 @@
 				<h2><?php _e( 'Advanced', 'leaguemanager' ) ?></h2>
 				<div class="settings-block">
 					<table class="lm-form-table">
-						<?php do_action( 'league_settings_'.$competition->sport, $competition ); ?>
-						<?php do_action( 'league_settings_'.$competition->mode, $competition ); ?>
-						<?php do_action( 'league_settings', $competition ); ?>
+						<?php do_action( 'competition_settings_'.$competition->sport, $competition ); ?>
+						<?php do_action( 'competition_settings_'.$competition->mode, $competition ); ?>
+						<?php do_action( 'competition_settings', $competition ); ?>
 					</table>
 				</div>
 			</div>

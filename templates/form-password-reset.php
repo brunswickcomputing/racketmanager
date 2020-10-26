@@ -1,4 +1,4 @@
-<div id="password-reset-form" class="login-form-container  widecolumn">
+<div id="password-reset" class="login-form-container  widecolumn">
     <?php if ( $vars['show_title'] ) { ?>
         <h3><?php _e( 'Pick a New Password', 'leaguemanager' ); ?></h3>
     <?php } ?>
@@ -13,14 +13,24 @@
             <?php } ?>
         <?php } ?>
 
-        <p>
-            <label class="hidden" for="pass1"><?php _e( 'New password', 'leaguemanager' ) ?></label>
-            <input type="password" placeholder="<?php _e( 'New password', 'leaguemanager' ) ?>" name="pass1" id="pass1" class="input" size="20" value="" autocomplete="off" />
-        </p>
-        <p>
-            <label class="hidden" for="pass2"><?php _e( 'Repeat new password', 'leaguemanager' ) ?></label>
-            <input type="password" placeholder="<?php _e( 'Repeat new password', 'leaguemanager' ) ?>" name="pass2" id="pass2" class="input" size="20" value="" autocomplete="off" />
-        </p>
+        <div class="form-group">
+            <label class="hidden" for="password"><?php _e( 'New password', 'leaguemanager' ) ?></label>
+            <div class="input">
+                <input type="password" placeholder="<?php _e( 'New password', 'leaguemanager' ) ?>" name="password" id="password" class="password" size="20" value="" autocomplete="off" />
+                <i class="passwordShow leaguemanager-svg-icon">
+                    <?php leaguemanager_the_svg('icon-eye') ?>
+                </i>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="hidden" for="rePassword"><?php _e( 'Repeat new password', 'leaguemanager' ) ?></label>
+            <div class="input">
+                <input type="password" placeholder="<?php _e( 'Repeat new password', 'leaguemanager' ) ?>" name="rePassword" id="rePassword" class="password" size="20" value="" autocomplete="off" />
+                <i class="passwordShow leaguemanager-svg-icon">
+                    <?php leaguemanager_the_svg('icon-eye') ?>
+                </i>
+            </div>
+        </div>
 
         <p class="description"><?php echo wp_get_password_hint(); ?></p>
 

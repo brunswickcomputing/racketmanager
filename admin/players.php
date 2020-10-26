@@ -1,27 +1,33 @@
 <!-- Add Player -->
 <form action="" method="post">
 	<?php wp_nonce_field( 'leaguemanager_add-player' ) ?>
-	<table class="lm-form-table">
-		<tr valign="top">
-			<th scope="row"><label for="firstname"><?php _e( 'First Name', 'leaguemanager' ) ?></label></th>
-			<td><input required="required" placeholder="<?php _e( 'Enter first name', 'leaguemanager') ?>" type="text" name="firstname" id="firstname" value="" size="30" style="margin-bottom: 1em;" /></td>
-		</tr>
-		<tr valign="top">
-			<th scope="row"><label for="surname"><?php _e( 'Surname', 'leaguemanager' ) ?></label></th>
-			<td><input required="required"  placeholder="<?php _e( 'Enter surname', 'leaguemanager') ?>" type="text" name="surname" id="surname" value="" size="30" style="margin-bottom: 1em;" /></td>
-		</tr>
-		<tr valign="top">
-			<th scope="row"><label for="gender"><?php _e('Gender', 'leaguemanager') ?></label></th>
-			<td>
-				<input type="radio" required="required" name="gender" value="M"> <?php _e('Male', 'leaguemanager') ?><br />
-				<input type="radio" name="gender" value="F"> <?php _e('Female', 'leaguemanager') ?>
-			</td>
-		</tr>
-		<tr valign="top">
-			<th scope="row"><label for="btm"><?php _e('BTM', 'leaguemanager') ?></label></th>
-			<td><input type="number"  placeholder="<?php _e( 'Enter BTM number', 'leaguemanager') ?>" name="btm" id="gender" size="11" /></td>
-		</tr>
-	</table>
+    <div class="form-group">
+        <label for="firstname"><?php _e( 'First Name', 'leaguemanager' ) ?></label>
+        <div class="input">
+            <input required="required" placeholder="<?php _e( 'Enter first name', 'leaguemanager') ?>" type="text" name="firstname" id="firstname" value="" size="30" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="surname"><?php _e( 'Surname', 'leaguemanager' ) ?></label>
+        <div class="input">
+            <input required="required"  placeholder="<?php _e( 'Enter surname', 'leaguemanager') ?>" type="text" name="surname" id="surname" value="" size="30" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label><?php _e('Gender', 'leaguemanager') ?></label>
+        <div class="form-check">
+            <input type="radio" required="required" name="gender" id="genderMale" value="M" /><label for "genderMale"><?php _e('Male', 'leaguemanager') ?></label>
+        </div>
+        <div class="form-check">
+            <input type="radio" required="required" name="gender" id="genderFemale" value="F" /><label for "genderFemale"><?php _e('Female', 'leaguemanager') ?></label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="btm"><?php _e('BTM', 'leaguemanager') ?></label>
+        <div class="input">
+            <input type="number"  placeholder="<?php _e( 'Enter BTM number', 'leaguemanager') ?>" name="btm" id="gender" size="11" />
+        </div>
+    </div>
 	<input type="hidden" name="addPlayer" value="player" />
 	<p class="submit"><input type="submit" name="addPlayer" value="<?php _e( 'Add Player','leaguemanager' ) ?>" class="button button-primary" /></p>
 
@@ -30,7 +36,7 @@
 <form id="player-filter" method="post" action="">
 	<?php wp_nonce_field( 'player-bulk' ) ?>
 
-	<div class="tablenav" style="margin-bottom: 0.1em;">
+    <div class="tablenav">
 		<!-- Bulk Actions -->
 		<select name="action" size="1">
 			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
@@ -47,7 +53,8 @@
 			<th scope="col"><?php _e( 'Name', 'leaguemanager' ) ?></th>
 			<th scope="col"><?php _e( 'Gender', 'leaguemanager' ) ?></th>
 			<th scope="col"><?php _e( 'BTM', 'leaguemanager' ) ?></th>
-			<th scope="col"><?php _e( 'Removed', 'leaguemanager') ?></th>
+            <th scope="col"><?php _e( 'Created', 'leaguemanager') ?></th>
+            <th scope="col"><?php _e( 'Removed', 'leaguemanager') ?></th>
 		</tr>
 		<tbody id="the-list">
 <?php if ( $players = $leaguemanager->getPlayers( array() ) ) { $class = ''; ?>
@@ -63,6 +70,7 @@
 				<td><?php echo $player->fullname ?></td>
 				<td><?php echo $player->gender ?></td>
 				<td><?php echo $player->btm ?></td>
+                <td><?php echo substr($player->created_date,0,10) ?></td>
 				<td><?php if ( isset($player->removed_date) ) { echo $player->removed_date; } ?></td>
 			</tr>
 	<?php } ?>

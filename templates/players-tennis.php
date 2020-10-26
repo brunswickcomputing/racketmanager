@@ -22,6 +22,9 @@ You can check the content of a variable when you insert the tag <?php var_dump($
 					<th class='numstat' scope="col"><?php _e( 'Played', 'leaguemanager' ) ?></th>
 					<th class='numstat' scope="col"><?php _e( 'Won', 'leaguemanager' ) ?></th>
 					<th class='numstat' scope="col"><?php _e( 'Lost', 'leaguemanager' ) ?></th>
+<?php if ( $league->num_sets % 2 == 0 ) { ?>
+                    <th class='numstat' scope="col"><?php _e( 'Drawn', 'leaguemanager' ) ?></th>
+<?php } ?>
 					<th class='numstat' scope="col"><?php _e( 'Sets Won', 'leaguemanager' ) ?></th>
 					<th class='numstat' scope="col"><?php _e( 'Sets Lost', 'leaguemanager' ) ?></th>
                     <th class="numstat" scope="col"><?php _e( 'Sets Diff', 'leaguemanager' ) ?></th>
@@ -40,6 +43,9 @@ You can check the content of a variable when you insert the tag <?php var_dump($
 						<td title="<?php _e( 'Played', 'leaguemanager' ) ?>"><?php echo $playerStat['played'] ?></td>
 						<td title="<?php _e( 'Won', 'leaguemanager' ) ?>"><?php echo $playerStat['won'] ?></td>
 						<td title="<?php _e( 'Lost', 'leaguemanager' ) ?>"><?php echo $playerStat['lost'] ?></td>
+<?php if ( $league->num_sets % 2 == 0 ) { ?>
+                        <td title="<?php _e( 'Drawn', 'leaguemanager' ) ?>"><?php echo $playerStat['drawn'] ?></td>
+<?php } ?>
 						<td title="<?php _e( 'Sets Won', 'leaguemanager' ) ?>"><?php echo $playerStat['setsWon'] ?></td>
 						<td title="<?php _e( 'Sets Lost', 'leaguemanager' ) ?>"><?php echo $playerStat['setsConceded'] ?></td>
                         <td title="<?php _e( 'Sets Diff', 'leaguemanager' ) ?>"><?php echo $playerStat['setsDiff'] ?></td>

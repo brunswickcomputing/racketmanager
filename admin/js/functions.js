@@ -52,6 +52,19 @@ jQuery(document).ready(function($) {
 		jQuery('.leaguemanager-colorpicker').iris();
 	});
 
+    $(window).scroll(function() {
+        if ( $(this).scrollTop() > 800 ) {
+            $('.go-top').addClass('show');
+        } else {
+            $('.go-top').removeClass('show');
+        }
+    });
+
+    $('.go-top').on('click', function() {
+        $("html, body").animate({ scrollTop: 0 }, 1000);
+        return false;
+    });
+
 	// make formfield table sortable and add nice css cursor
 	jQuery(".standings-table.sortable").sortable({
 		axis: "y"
@@ -155,7 +168,7 @@ jQuery(document).ready(function($) {
                                                   if (ui.item === null) {
                                                       $(this).val('');
                                                       $("#captain").val('');
-                                                      $("#captainID").val('');
+                                                      $("#captainId").val('');
                                                       $("#contactno").val('');
                                                       $("#contactemail").val('');
                                                   } else {
@@ -184,7 +197,7 @@ jQuery(document).ready(function($) {
                                                   select: function(event, ui) {
                                                   $("#matchsecretaryName").val(ui.item.value);
                                                   $("#matchsecretary").val(ui.item.id);
-                                                  $("#matchSecretaryContactno").val(ui.item.contactno);
+                                                  $("#matchSecretaryContactNo").val(ui.item.contactno);
                                                   $("#matchSecretaryEmail").val(ui.item.user_email);
                                                   },
                                                   change: function(event, ui) {
@@ -192,12 +205,12 @@ jQuery(document).ready(function($) {
                                                       $(this).val('');
                                                       $("#matchsecretaryName").val('');
                                                       $("#matchsecretary").val('');
-                                                      $("#matchSecretaryContactno").val('');
+                                                      $("#matchSecretaryContactNo").val('');
                                                       $("#matchSecretaryEmail").val('');
                                                   } else {
                                                       $("#matchsecretaryName").val(ui.item.value);
                                                       $("#matchsecretary").val(ui.item.id);
-                                                      $("#matchSecretaryContactno").val(ui.item.contactno);
+                                                      $("#matchSecretaryContactNo").val(ui.item.contactno);
                                                       $("#matchSecretaryEmail").val(ui.item.user_email);
                                                   }
                                                   }
@@ -260,16 +273,6 @@ Leaguemanager.insertPlayer = function(id, target) {
 	var player = document.getElementById(id).value;
 	document.getElementById(target).value = player;
 }
-
-Leaguemanager.removeStatsField = function(id) {
-  element_count = document.getElementById("stats_fields").childNodes.length;
-  if(element_count > 1) {
-    target_element = document.getElementById(id);
-    document.getElementById("stats_fields").removeChild(target_element);
-  }
-  return false;
-}
-
 
 Leaguemanager.removeField = function(id, parent_id) {
   element_count = document.getElementById(parent_id).childNodes.length;

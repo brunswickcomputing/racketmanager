@@ -1,45 +1,41 @@
 <?php
 /**
-Template page for the match table
-
-The following variables are usable:
-	
-	$league: contains data of current league
-	$matches: contains all matches for current league
-	$teams: contains teams of current league in an associative array
-	$season: current season
-	
-	You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
+* Matches table template
 */
+    namespace ns;
 ?>
-<?php if (isset($_GET['match']) ) { ?>
-	<?php leaguemanager_match(intval($_GET['match'])); ?>
-<?php } else { ?>
+<div class="leaguemanager-container">
 
-	<?php include('matches-selections.php'); ?>
+<?php
+    if ( is_single_match() ) {
+        the_single_match(); 
+    } else {
+        include('matches-selections.php');
+?>
 
-	<?php if ( $matches ) { ?>
-		<table class='leaguemanager matchtable' summary='' title='<?php echo __( 'Match Plan', 'leaguemanager' )." ".$league->title ?>'>
-			<thead>
-				<tr>
-					<th class='match'><?php _e( 'Match', 'leaguemanager' ) ?></th>
-					<th class='score'><?php _e( 'Score', 'leaguemanager' ) ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php foreach ( $matches AS $match ) { ?>
+<?php if ( have_matches() ) { ?>
+    <table class='leaguemanager matchtable' summary='' title='<?php _e( 'Match Plan', 'leaguemanager' ) ?> <?php the_league_title() ?>'>
+        <thead>
+            <tr>
+                <th class='match'><?php _e( 'Match', 'leaguemanager' ) ?></th>
+                <th class='score'><?php _e( 'Score', 'leaguemanager' ) ?></th>
+            </tr>
+        </thead>
+        <tbody>
+    <?php while( have_matches() ) { the_match(); ?>
 
-					<tr class='<?php echo $match->class ?>'>
-						<td class='match'><?php echo $match->match_date." ".$match->start_time." ".$match->location ?><br /><a href="<?php echo $match->pageURL ?>"><?php echo $leaguemanager->getMatchTitle($match->id) ?></a> <?php echo $match->report ?></td>
-						<td class='score' valign='bottom'><?php echo $match->score ?></td>
-					</tr>
+                <tr class='<?php the_match_class() ?>'>
+                    <td class='match'><?php the_match_date() ?> <?php the_match_time() ?> <?php the_match_location() ?><br /><?php the_match_title() ?> <?php the_match_report() ?></td>
+                    <td class='score' valign='bottom'><?php the_match_score() ?></td>
+                </tr>
 
-				<?php } ?>
-			</tbody>
-		</table>
+            <?php } ?>
+        </tbody>
+    </table>
 
-		<p class='page-numbers'><?php echo $league->pagination ?></p>
+    <?php the_matches_pagination() ?>
 
 	<?php } ?>
 
 <?php } ?>
+</div>

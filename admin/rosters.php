@@ -44,7 +44,7 @@
 <form id="roster-filter" method="post" action="">
 	<?php wp_nonce_field( 'roster-bulk' ) ?>
 
-	<div class="tablenav" style="margin-bottom: 0.1em;">
+    <div class="tablenav">
 		<!-- Bulk Actions -->
 		<select name="action" size="1">
 			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
@@ -62,13 +62,14 @@
 			<th scope="col"><?php _e( 'Gender', 'leaguemanager' ) ?></th>
 			<th scope="col"><?php _e( 'BTM', 'leaguemanager' ) ?></th>
 			<th scope="col"><?php _e( 'Removed', 'leaguemanager') ?></th>
+            <th scope="col"><?php _e( 'Removed By', 'leaguemanager') ?></th>
             <th scope="col"><?php _e( 'Created On', 'leaguemanager') ?></th>
             <th scope="col"><?php _e( 'Created By', 'leaguemanager') ?></th>
 		</tr>
-<?php if ( !$club_id == 0 ) { ?>
+<?php if ( !$club_id == 0 ) { $club = get_club($club_id); ?>
 		<tbody id="the-list">
 
-	<?php if ( $rosters = $leaguemanager->getRoster(array('club'=> $club_id)) ) { $class = ''; ?>
+	<?php if ( $rosters = $club->getRoster(array()) ) { $class = ''; ?>
 		<?php foreach ( $rosters AS $roster ) { ?>
 			<?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 			<tr class="<?php echo $class ?>">
@@ -82,6 +83,7 @@
 				<td><?php echo $roster->gender ?></td>
 				<td><?php echo $roster->btm ?></td>
 				<td><?php if ( isset($roster->removed_date) ) { echo $roster->removed_date; } ?></td>
+                <td><?php echo $roster->removedUserName ?></td>
                 <td><?php echo $roster->created_date ?></td>
                 <td><?php echo $roster->createdUserName ?></td>
 			</tr>

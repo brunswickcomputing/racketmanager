@@ -1,8 +1,7 @@
 <?php
-    global $wp_query, $leaguemanager;
-    $postID = isset($wp_query->post->ID) ? $wp_query->post->ID : "";
+    global $leaguemanager;
 ?>
-            <table class='leaguemanager matchtable' summary='' title='<?php echo __( 'Match Plan', 'leaguemanager' )." ".$league->title ?>'>
+            <table class='leaguemanager matchtable' summary='' title='<?php _e( 'Match Plan', 'leaguemanager' ) ?> <?php the_league_title() ?>'>
             <thead>
                 <tr>
 <?php if ( $league->mode == 'championship' ) { ?>
@@ -13,10 +12,10 @@
                 </tr>
             </thead>
             <tbody>
-            <?php $matchday = isset($_GET['match_day']) ? $_GET['match_day'] : $leaguemanager->getMatchDay(); ?>
+            <?php $matchday = isset($_GET['match_day']) ? $_GET['match_day'] : $league->match_day; ?>
             <?php foreach ( $matches AS $no => $match ) {
-                if ( isset($match->homeTeam) && isset($match->awayTeam) ) {
-                    $userCanUpdate = $leaguemanager->getMatchUpdateAllowed($match->homeTeam, $match->awayTeam);
+                if ( isset($match->teams['home']) && isset($match->teams['away']) ) {
+                    $userCanUpdate = $leaguemanager->getMatchUpdateAllowed($match->teams['home'], $match->teams['away']);
                 } else {
                     $userCanUpdate = false;
                 }
@@ -33,18 +32,23 @@
                     <td><?php echo $no ?></td>
 <?php } ?>
                     <?php if ( isset($match->num_rubbers) && $match->num_rubbers > 0 ) {
-                        if ($match->winner_id != 0) { ?>
+                        if ( ($match->winner_id) != 0) { ?>
                             <?php if ( $match->home_team == -1 || $match->away_team == -1 ) { ?>
                                 <td class='angledir'></td>
                             <?php } else { ?>
-                                <td class='angledir'><i class='fa fa-angle-down'></i></td>
+                                <td class='angledir' title="<?php _e( 'View rubbers', 'leaguemanager' ) ?>"><i class="leaguemanager-svg-icon angledir"><?php leaguemanager_the_svg('icon-chevron-right') ?></i></td>
                             <?php } ?>
                         <?php } else { ?>
                             <td>
-                                <a href="#" class='fa fa-print ' id="<?php echo $match->id ?>" onclick="Leaguemanager.printScoreCard(event, this)"></a>
-                            <?php if ( $userCanUpdate == true && ( !isset($match->confirmed) || $match->confirmed = "P" ) ) {
+                                <a href="#" class='' id="<?php echo $match->id ?>" onclick="Leaguemanager.printScoreCard(event, this)" title="<?php _e( 'Print matchcard', 'leaguemanager' ) ?>">
+                                    <i class="leaguemanager-svg-icon"><?php leaguemanager_the_svg('icon-printer') ?></i>
+                                </a>
+                            <?php
+                                if ( $userCanUpdate == true && ( !isset($match->confirmed) || $match->confirmed = "P" ) ) {
                                 if ( is_numeric($match->home_team) && is_numeric($match->away_team) ) {?>
-                                <a href="/leagues/match?match_id=<?php echo $match->id ?>" class="fa fa-pencil"</a>
+                                <a href="#" class=""  onclick="Leaguemanager.showRubbers(<?php echo $match->id ?>)"  title="<?php _e( 'Enter match result', 'leaguemanager' ) ?>">
+                                    <i class="leaguemanager-svg-icon"><?php leaguemanager_the_svg('icon-pencil') ?></i>
+                                </a>
                                 <?php } ?>
                             <?php } ?>
                             </td>
@@ -53,17 +57,18 @@
                         <td class='angledir'></td>
                     <?php } ?>
                     <td class='match'>
-                        <?php echo mysql2date('l, j F Y', $match->date)." ".$match->start_time." ".$match->location ?><br />
-                        <?php if ( isset($match->home_title) && isset($match->away_title) ) { ?>
-                        <span class="<?php if ( $match->winner_id == $match->home_team ) echo 'winner'?>"><?php echo $match->home_title ?></span> - <span class="<?php if ( $match->winner_id == $match->away_team ) echo 'winner'?>"><?php echo $match->away_title; ?></span>
+
+                        <?php the_match_date() ?> <?php the_match_time() ?> <?php the_match_location() ?><br />
+                        <?php if ( isset($match->teams['home']->title) && isset($match->teams['away']->title) ) { ?>
+                        <span class="<?php if ( $match->winner_id == $match->teams['home']->id ) echo 'winner'?>"><?php echo $match->teams['home']->title ?></span> - <span class="<?php if ( $match->winner_id == $match->teams['away']->id ) echo 'winner'?>"><?php echo $match->teams['away']->title; ?></span>
                         <?php } else { ?>
-                        <?php echo $match->title ;?>
+                        <?php the_match_title() ;?>
                         <?php } ?>
-                        <?php echo $match->report ?>
+                        <?php the_match_report() ?>
                     </td>
                     <td class='score'>
                         <?php if (isset($league->num_rubbers) && $league->num_rubbers > 0) {
-                            echo $match->score;
+                            echo the_match_score();
                         } elseif ( isset($match->sets) ) {
                             $sets = array();
                             foreach ( (array)$match->sets AS $j => $set ) {
@@ -87,8 +92,9 @@
                         <?php if ( $rubber->homePlayer1 != 0 && $rubber->awayPlayer1 != 0 ) { ?>
                                 <tr class='rubber-row <?php echo $match->class ?>'>
                                     <td><?php echo $rubber->rubber_number ?></td>
-                                    <td class='playername'><?php echo $rubber->home_player_1_name ?></td>
-                                    <td class='playername'><?php echo $rubber->home_player_2_name ?></td>
+
+                                    <td class="playername <?php if ( $rubber->winner_id == $match->teams['home']->id ) echo 'winner' ?>" ><?php echo $rubber->home_player_1_name ?></td>
+                                    <td class="playername <?php if ( $rubber->winner_id == $match->teams['home']->id ) echo 'winner' ?>"><?php echo $rubber->home_player_2_name ?></td>
                                     <?php if ( isset($rubber->sets) ) {
                                         foreach ($rubber->sets as $set) { ?>
                                             <?php if ( ($set['player1'] !== '') && ( $set['player2'] !== '' )) { ?>
@@ -98,8 +104,8 @@
                                             <?php } ?>
                                         <?php } ?>
                                     <?php } ?>
-                                    <td class='playername'><?php echo $rubber->away_player_1_name ?></td>
-                                    <td class='playername'><?php echo $rubber->away_player_2_name ?></td>
+                                    <td class="playername <?php if ( $rubber->winner_id == $match->teams['away']->id ) echo 'winner' ?>"><?php echo $rubber->away_player_1_name ?></td>
+                                    <td class="playername <?php if ( $rubber->winner_id == $match->teams['away']->id ) echo 'winner' ?>"><?php echo $rubber->away_player_2_name ?></td>
                                 </tr>
                         <?php } ?>
                                 <?php } ?>
@@ -114,11 +120,4 @@
             </tbody>
         </table>
 
-<?php if ( isset($league->pagination) ) { ?>
-        <div class='tablenav'>
-            <div class='tablenav-pages'>
-                <?php echo $league->pagination ?>
-            </div>
-        </div>
-<?php } ?>
-        <div id='showMatchRubbers' style='display:none'></div>
+<?php the_matches_pagination() ?>

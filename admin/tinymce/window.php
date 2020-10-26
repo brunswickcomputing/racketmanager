@@ -59,10 +59,6 @@ global $wpdb, $championship;
 			</select>
 		</td>
 	</tr>
-	<tr>
-		<td><label for="show_logo"><?php _e( 'Show Logos', 'leaguemanager' ) ?></label></td>
-		<td><input type="checkbox" id="show_logo" name="show_logo" value="1" /></td>
-	</tr>
 	</table>
 	</div>
 	

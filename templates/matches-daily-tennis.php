@@ -4,10 +4,7 @@ Template page for the specific match date match table in tennis
 
 The following variables are usable:
 	
-	$league: contains data of current league
 	$matches: contains all matches for current league
-	$teams: contains teams of current league in an assosiative array
-	$season: current season
 	
 	You can check the content of a variable when you insert the tag <?php var_dump($variable)
 */
@@ -28,21 +25,6 @@ jQuery(document).ready(function($) {
                                                     });
                        });
 </script>
-<?php
-    if (isset($_GET['match']) ) {
-        leaguemanager_match(intval($_GET['match']));
-    } else {
-        $match_date = get_query_var('match_date');
-        if ( $match_date == '' ) {
-            if (isset($_GET['match_date'])) {
-                $match_date = $_GET['match_date'];
-            }
-        }
-        if ( $match_date == '' ) {
-            $match_date = date("Y-m-d");
-        }
-    ?>
-
 <div id="leaguemanager_match_selections" class="">
     <form method="get" action="<?php echo get_permalink($postID); ?>" id="leaguemanager_daily_matches">
     <input type="hidden" name="page_id" value="<?php echo $postID ?>" />
@@ -62,7 +44,9 @@ jQuery(document).ready(function($) {
             <?php foreach ( $matches AS $match ) { ?>
                 <tr class='<?php echo $match->class ?>'>
                     <td class='match'>
-                        <?php echo $match->start_time." ".$match->location ?><br /><?php echo $match->title ?>
+                        <?php echo $match->league->title ?><br />
+                        <?php echo $match->start_time." ".$match->location ?><br />
+                        <?php echo $match->match_title ?>
                     </td>
                 </tr>
 
@@ -70,13 +54,6 @@ jQuery(document).ready(function($) {
             </tbody>
         </table>
 
-        <div class="tablenav">
-            <div class="tablenav-pages">
-                <?php echo $league->pagination ?>
-            </div>
-        </div>
 	<?php } else { ?>
         <p><?php echo __( 'No Matches on selected day', 'leaguemanager' ) ?></p>
 	<?php }?>
-
-<?php } ?>

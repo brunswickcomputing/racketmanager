@@ -13,8 +13,6 @@ function leaguemanager_upgrade() {
 	echo __('Upgrade database structure...', 'leaguemanager') . "<br />\n";
 	$wpdb->show_errors();
 
-	$lmLoader->install();
-
 	if (version_compare($installed, '5.1.7', '<')) {
 
 		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} ADD `system_record` VARCHAR(1) NULL DEFAULT NULL AFTER `removed_date` ");
@@ -181,6 +179,36 @@ function leaguemanager_upgrade() {
     if (version_compare($installed, '5.4.2', '<')) {
         echo __('starting 5.4.2 upgrade', 'leaguemanager') . "<br />\n";
         $wpdb->query( "CREATE TABLE {$wpdb->leaguemanager_clubs} (`id` int( 11 ) NOT NULL AUTO_INCREMENT, `name` varchar( 100 ) NOT NULL default '', `website` varchar( 100 ) NOT NULL default '', `type` varchar( 20 ) NOT NULL default '', `address` varchar( 255 ) NOT NULL default '', `latitude` varchar( 20 ) NOT NULL default '', `longitude` varchar( 20 ) NOT NULL default '', `contactno` varchar( 20 ) NOT NULL default '', `founded` int( 4 ) NULL, `facilities` varchar( 255 ) NOT NULL default '', `shortcode` varchar( 20 ) NOT NULL default '', `matchsecretary` int( 11 ) NULL, PRIMARY KEY ( `id` ))" );
+    }
+    if (version_compare($installed, '5.4.5', '<')) {
+        echo __('starting 5.4.5 upgrade', 'leaguemanager') . "<br />\n";
+        $wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_roster} ADD `removed_user` int( 11 ) NULL AFTER `removed_date` ");
+    }
+    if (version_compare($installed, '5.4.6', '<')) {
+        echo __('starting 5.4.6 upgrade', 'leaguemanager') . "<br />\n";
+        $wpdb->query( "CREATE TABLE {$wpdb->leaguemanager_seasons} (`id` int( 11 ) NOT NULL AUTO_INCREMENT, `name` varchar( 100 ) NOT NULL default '', PRIMARY KEY ( `id` ))" );
+    }
+    if (version_compare($installed, '5.4.7', '<')) {
+        echo __('starting 5.4.7 upgrade', 'leaguemanager') . "<br />\n";
+        $wpdb->query( "CREATE TABLE {$wpdb->leaguemanager_competitions_seasons} (`id` int( 11 ) NOT NULL AUTO_INCREMENT, `competition_id` int( 11 ) NOT NULL, `season_id` int( 11 ) NOT NULL, PRIMARY KEY ( `id` ))" );
+    }
+    if (version_compare($installed, '5.5.6', '<')) {
+        echo __('starting 5.5.6 upgrade', 'leaguemanager') . "<br />\n";
+        $charset_collate = '';
+        if ( $wpdb->has_cap( 'collation' ) ) {
+            if ( ! empty($wpdb->charset) )
+                $charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
+            if ( ! empty($wpdb->collate) )
+                $charset_collate .= " COLLATE $wpdb->collate";
+        }
+        $wpdb->query( "CREATE TABLE {$wpdb->leaguemanager_results_checker} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `league_id` int( 11 ) NOT NULL default '0', `match_id` int( 11 ) NOT NULL default '0', `team_id` int( 11 ) NULL, `player_id` int( 11 ) NULL, `description` varchar( 255 ) NULL, `status` int( 1 ) NULL, `updated_user` int( 11 ) NULL, `updated_date` datetime NULL, PRIMARY KEY ( `id` )) $charset_collate;" );
+    }
+    if (version_compare($installed, '5.5.7', '<')) {
+        echo __('starting 5.5.7 upgrade', 'leaguemanager') . "<br />\n";
+        $wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} ADD `type` varchar( 2 ) NOT NULL default '' AFTER `custom` ");
+        $wpdb->query( "UPDATE {$wpdb->leaguemanager_teams} SET `type` = 'WD' WHERE `title` like '% Ladies %'" );
+        $wpdb->query( "UPDATE {$wpdb->leaguemanager_teams} SET `type` = 'MD' WHERE `title` like '% Mens %'" );
+        $wpdb->query( "UPDATE {$wpdb->leaguemanager_teams} SET `type` = 'XD' WHERE `title` like '% Mixed %'" );
     }
     /*
 	* Update version and dbversion

@@ -1,8 +1,8 @@
 jQuery(function($) {
 
        var clubCarousel = function(){
-            if ( $().owlCarousel ) {
-                $("#clubs").owlCarousel({
+            if ( $().owlCarouselFork ) {
+                $("#clubs").owlCarouselFork({
                                           navigation : false,
                                           pagination: true,
                                           responsive: true,
@@ -20,8 +20,8 @@ jQuery(function($) {
        };
  
        var club2Carousel = function(){
-            if ( $().owlCarousel ) {
-                $("#clubs.roll-club").owlCarousel({
+            if ( $().owlCarouselFork ) {
+                $("#clubs.roll-club").owlCarouselFork({
                                            navigation : false,
                                            pagination: true,
                                            responsive: true,

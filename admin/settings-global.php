@@ -3,15 +3,6 @@
 	if ( !current_user_can( 'manage_leaguemanager' ) ) {
 	echo '<p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p>';
 	} else {
-		if ( isset($_GET['regenerate_thumbnails']) ) {
-			$this->regenerateThumbnails();
-			$tab = 0;
-		}
-		
-		if ( isset($_GET['cleanUnusedFiles']) ) {
-			$this->cleanUnusedMediaFiles();
-			$tab = 0;
-		}
 		$menu_page_url = admin_url('options-general.php?page=leaguemanager-settings');
 
 ?>
@@ -33,25 +24,41 @@
 		
 		<ul id="tablist" style="display: none;">
             <li><a href="#rosters"><?php _e( 'Rosters', 'leaguemanager' ) ?></a></li>
+            <li><a href="#players"><?php _e( 'Player Checks', 'leaguemanager' ) ?></a></li>
             <li><a href="#match-results"><?php _e( 'Match Results', 'leaguemanager' ) ?></a></li>
-			<li><a href="#logos"><?php _e( 'Logos', 'leaguemanager' ) ?></a></li>
 			<li><a href="#colors"><?php _e( 'Color Scheme', 'leaguemanager' ) ?></a></li>
-			<li><a href="#dashboard-widget"><?php _e( 'Dashboard Widget Support News', 'leaguemanager' ) ?></a></li>
 		</ul>
 		
 		<div id="rosters" class="settings-block-container">
 			<h2><?php _e('Rosters', 'leaguemanager') ?></h2>
 			<div class="settings-block">
 				<table class='lm-form-table'>
-				<tr valign='top'>
-					<th scope='row'><label for='rosterConfirmation'><?php _e( 'Roster Confirmation', 'leaguemanager' ) ?></label></th>
-                    <td>
-                        <select id="rosterConfirmation" name="rosterConfirmation">
-                            <option value="auto" <?php if (isset($options['rosterConfirmation']) && $options['rosterConfirmation'] == "admin") echo 'selected="selected"'?>><?php _e('Automatic', 'leaguemanager') ?></option>
-                        <option value="none" <?php if (isset($options['rosterConfirmation']) && $options['rosterConfirmation'] == "none") echo 'selected="selected"'?>><?php _e('None', 'leaguemanager') ?></option>
-                        </select>
-                    </td>
-				</tr>
+                    <tr valign='top'>
+                        <th scope='row'><label for='rosterConfirmation'><?php _e( 'Roster Confirmation', 'leaguemanager' ) ?></label></th>
+                        <td>
+                            <select id="rosterConfirmation" name="rosterConfirmation">
+                                <option value="auto" <?php if (isset($options['rosterConfirmation']) && $options['rosterConfirmation'] == "admin") echo 'selected="selected"'?>><?php _e('Automatic', 'leaguemanager') ?></option>
+                                <option value="none" <?php if (isset($options['rosterConfirmation']) && $options['rosterConfirmation'] == "none") echo 'selected="selected"'?>><?php _e('None', 'leaguemanager') ?></option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr valign='top'>
+                        <th scope='row'><label for='rosterConfirmationEmail'><?php _e( 'Notification Email Address', 'leaguemanager' ) ?></label></th><td><input type="email"  name='rosterConfirmationEmail' id='rosterConfirmationEmail' value='<?php echo isset($options['rosterConfirmationEmail']) ? $options['rosterConfirmationEmail'] : '' ?>' /></td>
+                    </tr>
+				</table>
+			</div>
+		</div>
+
+		<div id="players" class="settings-block-container">
+			<h2><?php _e('Player Checks', 'leaguemanager') ?></h2>
+			<div class="settings-block">
+				<table class='lm-form-table'>
+                        <tr valign='top'>
+                            <th scope='row'><label for='rosterLeadTime'><?php _e( 'Roster Lead Time (days)', 'leaguemanager' ) ?></label></th><td><input type="number"  name='rosterLeadTime' id='rosterLeadTime' value='<?php echo isset($options['rosterLeadTime']) ? $options['rosterLeadTime'] : '' ?>' /></td>
+                        </tr>
+                        <tr valign='top'>
+                            <th scope='row'><label for='playedRounds'><?php _e( 'End of season eligibility (Match Days)', 'leaguemanager' ) ?></label></th><td><input type="number"  name='playedRounds' id='playedRounds' value='<?php echo isset($options['playedRounds']) ? $options['playedRounds'] : '' ?>' /></td>
+                        </tr>
 				</table>
 			</div>
 		</div>
@@ -60,102 +67,41 @@
 			<h2><?php _e('Match Results', 'leaguemanager') ?></h2>
 			<div class="settings-block">
 				<table class='lm-form-table'>
-				<tr valign='top'>
-					<th scope='row'><label for='matchCapability'><?php _e( 'Minimum level to update results', 'leaguemanager' ) ?></label></th>
-                    <td>
-                        <select id="role" name="matchCapability">
-                            <option value="captain" <?php if (isset($options['matchCapability']) && $options['matchCapability'] == "captain") echo 'selected="selected"'?>><?php _e('Captain', 'leaguemanager') ?></option>
-                        <option value="roster" <?php if (isset($options['matchCapability']) && $options['matchCapability'] == "roster") echo 'selected="selected"'?>><?php _e('Roster', 'leaguemanager') ?></option>
-                        <option value="none" <?php if (isset($options['matchCapability']) && $options['matchCapability'] == "none") echo 'selected="selected"'?>><?php _e('None', 'leaguemanager') ?></option>
-                        </select>
-                    </td>
-				</tr>
-				<tr valign='top'>
-					<th scope='row'><label for='resultEntry'><?php _e( 'Result Entry', 'leaguemanager' ) ?></label></th>
-                    <td>
-                        <select id="resultEntry" name="resultEntry">
-                            <option value="home" <?php if (isset($options['resultEntry']) && $options['resultEntry'] == "home") echo 'selected="selected"'?>><?php _e('Home', 'leaguemanager') ?></option>
-                        <option value="either" <?php if (isset($options['resultEntry']) && $options['resultEntry'] == "either") echo 'selected="selected"'?>><?php _e('Either', 'leaguemanager') ?></option>
-                        </select>
-                    </td>
-				</tr>
-				<tr valign='top'>
-					<th scope='row'><label for='resultConfirmation'><?php _e( 'Result Confirmation', 'leaguemanager' ) ?></label></th>
-                    <td>
-                        <select id="resultConfirmation" name="resultConfirmation">
-                            <option value="auto" <?php if (isset($options['resultConfirmation']) && $options['resultConfirmation'] == "admin") echo 'selected="selected"'?>><?php _e('Automatic', 'leaguemanager') ?></option>
-                        <option value="none" <?php if (isset($options['resultConfirmation']) && $options['resultConfirmation'] == "none") echo 'selected="selected"'?>><?php _e('None', 'leaguemanager') ?></option>
-                        </select>
-                    </td>
-				</tr>
+                        <tr valign='top'>
+                            <th scope='row'><label for='matchCapability'><?php _e( 'Minimum level to update results', 'leaguemanager' ) ?></label></th>
+                            <td>
+                                <select id="role" name="matchCapability">
+                                    <option value="captain" <?php if (isset($options['matchCapability']) && $options['matchCapability'] == "captain") echo 'selected="selected"'?>><?php _e('Captain', 'leaguemanager') ?></option>
+                                <option value="roster" <?php if (isset($options['matchCapability']) && $options['matchCapability'] == "roster") echo 'selected="selected"'?>><?php _e('Roster', 'leaguemanager') ?></option>
+                                <option value="none" <?php if (isset($options['matchCapability']) && $options['matchCapability'] == "none") echo 'selected="selected"'?>><?php _e('None', 'leaguemanager') ?></option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr valign='top'>
+                            <th scope='row'><label for='resultEntry'><?php _e( 'Result Entry', 'leaguemanager' ) ?></label></th>
+                            <td>
+                                <select id="resultEntry" name="resultEntry">
+                                    <option value="home" <?php if (isset($options['resultEntry']) && $options['resultEntry'] == "home") echo 'selected="selected"'?>><?php _e('Home', 'leaguemanager') ?></option>
+                                <option value="either" <?php if (isset($options['resultEntry']) && $options['resultEntry'] == "either") echo 'selected="selected"'?>><?php _e('Either', 'leaguemanager') ?></option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr valign='top'>
+                            <th scope='row'><label for='resultConfirmation'><?php _e( 'Result Confirmation', 'leaguemanager' ) ?></label></th>
+                            <td>
+                                <select id="resultConfirmation" name="resultConfirmation">
+                                    <option value="auto" <?php if (isset($options['resultConfirmation']) && $options['resultConfirmation'] == "admin") echo 'selected="selected"'?>><?php _e('Automatic', 'leaguemanager') ?></option>
+                                <option value="none" <?php if (isset($options['resultConfirmation']) && $options['resultConfirmation'] == "none") echo 'selected="selected"'?>><?php _e('None', 'leaguemanager') ?></option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr valign='top'>
+                            <th scope='row'><label for='resultConfirmationEmail'><?php _e( 'Notification Email Address', 'leaguemanager' ) ?></label></th><td><input type="email"  name='resultConfirmationEmail' id='resultConfirmationEmail' value='<?php echo isset($options['resultConfirmationEmail']) ? $options['resultConfirmationEmail'] : '' ?>' /></td>
+                        </tr>
 				</table>
 			</div>
 		</div>
 
-		<div id="logos" class="settings-block-container">
-			<h2><?php _e( 'Logos', 'leaguemanager' ) ?></h2>
-			<div class="settings-block">
-				<table class="lm-form-table">
-					<tr valign="top">
-						<th scope="row">
-							<label for="thumb_size"><?php _e( 'Tiny size', 'leaguemanager' ) ?></label>
-						</th>
-						<td>
-							<label for="tiny_width"><?php _e( 'Max Width' ) ?>&#160;</label>
-							<input type="number" step="1" min="0" class="small-text" name="tiny_width" id="tiny_width" value="<?php echo $options['logos']['tiny_size']['width'] ?>" />
-							<label for="tiny_height"><?php _e( 'Max Height' ) ?>&#160;</label>
-							<input type="number" step="1" min="0" class="small-text" name="tiny_height" id="tiny_height" value="<?php echo $options['logos']['tiny_size']['height'] ?>" />
-							<p>
-								<input type="checkbox" value="1" name="crop_image_tiny" <?php checked( 1, $options['logos']['crop_image']['tiny'] ) ?> id="crop_image_tiny" />
-								<label for="crop_image_tiny"><?php _e( 'Crop image to exact dimensions', 'leaguemanager') ?></label>
-							</p>
-						</td>
-					</tr>
-					<tr valign="top">
-						<th scope="row">
-							<label for="thumb_size"><?php _e( 'Thumbnail size', 'leaguemanager' ) ?></label>
-						</th>
-						<td>
-							<label for="thumb_width"><?php _e( 'Max Width' ) ?>&#160;</label>
-							<input type="number" step="1" min="0" class="small-text" name="thumb_width" id="thumb_width" value="<?php echo $options['logos']['thumb_size']['width'] ?>" />
-							<label for="thumb_height"><?php _e( 'Max Height' ) ?>&#160;</label>
-							<input type="number" step="1" min="0" class="small-text" name="thumb_height" id="thumb_height" value="<?php echo $options['logos']['thumb_size']['height'] ?>" />
-							<p>
-								<input type="checkbox" value="1" name="crop_image_thumb" <?php checked( 1, $options['logos']['crop_image']['thumb'] ) ?> id="crop_image_thumb" />
-								<label for="crop_image_thumb"><?php _e( 'Crop image to exact dimensions', 'leaguemanager') ?></label>
-							</p>
-						</td>
-					</tr>
-					<tr valign="top">
-						<th scope="row">
-							<label for="large_size"><?php _e( 'Large size', 'leaguemanager' ) ?></label>
-						</th>
-						<td>
-							<label for="large_width"><?php _e( 'Max Width' ) ?>&#160;</label>
-							<input type="number" step="1" min="0" class="small-text" id="large_width" name="large_width" value="<?php echo $options['logos']['large_size']['width'] ?>" />
-							<label for="large_height"><?php _e( 'Max Height' ) ?>&#160;</label>
-							<input type="number" step="1" min="0" class="small-text" id="large_height" name="large_height" value="<?php echo $options['logos']['large_size']['height'] ?>" />
-							<p>
-								<input type="checkbox" value="1" name="crop_image_large" <?php checked( 1, $options['logos']['crop_image']['large'] ) ?> id="crop_image_large" />
-								<label for="crop_image_large"><?php _e( 'Crop image to exact dimensions', 'leaguemanager') ?></label>
-							</p>
-						</td>
-					</tr>
-					<tr valign="top">
-						<th scope="row">
-							<label for="regenerate_thumbnails"><?php _e( 'Regenerate Thumbnails', 'leaguemanager' ) ?>
-						</th>
-						<td>
-							<a href="<?php echo $menu_page_url ?>&amp;regenerate_thumbnails" class="button button-secondary"><?php _e( 'Regenerate Thumbnails Now', 'leaguemanager' ) ?></a>
-							<p class="setting-description"><?php _e( 'This will re-create all thumbnail images of this project. Depending on the number of images it could take some time.', 'leaguemanager' ) ?></p>
-						</td>
-					</tr>
-				</table>
-					
-				<p><a href="<?php echo $menu_page_url ?>&amp;cleanUnusedFiles" class="button-secondary"><?php _e( 'List unused media files', 'leaguemanager' ) ?></a></p>
-			</div>
-		</div>
-			
 		<div id="colors" class="settings-block-container">
 			<h2><?php _e( 'Color Scheme', 'leaguemanager' ) ?></h2>
 			<div class="settings-block">
@@ -189,26 +135,6 @@
 			</div>
 		</div>
 	
-		<div id="dashboard-widget" class="settings-block-container">
-			<h2><?php _e('Dashboard Widget Support News', 'leaguemanager') ?></h2>
-			<div class="settings-block">
-				<table class='lm-form-table'>
-				<tr valign='top'>
-					<th scope='row'><label for='dashboard_num_items'><?php _e( 'Number of Support Threads', 'leaguemanager' ) ?></label></th><td><input type="number" step="1" min="0" class="small-text" name='dashboard[num_items]' id='dashboard_num_items' value='<?php echo $options['dashboard_widget']['num_items'] ?>' size='2' /></td>
-				</tr>
-				<tr valign='top'>
-					<th scope='row'><label for='dashboard_show_author'><?php _e( 'Show Author', 'leaguemanager' ) ?></label></th><td><input type='checkbox' name='dashboard[show_author]' id='dashboard_show_author'<?php checked($options['dashboard_widget']['show_author'], 1) ?> /></td>
-				</tr>
-				<tr valign='top'>
-					<th scope='row'><label for='dashboard_show_date'><?php _e( 'Show Date', 'leaguemanager' ) ?></label></th><td><input type='checkbox' name='dashboard[show_date]' id='dashboard_show_date'<?php checked($options['dashboard_widget']['show_date'], 1) ?> /></td>
-				</tr>
-					<tr valign='top'>
-					<th scope='row'><label for='dashboard_show_summary'><?php _e( 'Show Summary', 'leaguemanager' ) ?></label></th><td><input type='checkbox' name='dashboard[show_summary]' id='dashboard_show_summary'<?php checked($options['dashboard_widget']['show_summary'], 1) ?> /></td>
-				</tr>
-				</table>
-			</div>
-		</div>
-
 	</div>
 	
 	<input type='hidden' name='page_options' value='color_headers,color_rows,color_rows_alt,color_rows_ascend,color_rows_descend,color_rows_relegation' />

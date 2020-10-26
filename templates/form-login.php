@@ -59,14 +59,22 @@
 
         <form method="post" action="<?php echo wp_login_url(); ?>">
             <fieldset class="p-fieldset">
-                <p class="login-username">
+                <div class="form-group">
                     <label class="hidden" for="user_login"><?php _e( 'Email', 'leaguemanager' ); ?></label>
-                    <input type="text" placeholder="<?php _e( 'Email', 'leaguemanager' ); ?>" name="log" id="user_login">
-                </p>
-                <p class="login-password">
+                    <div class="input">
+                        <input type="text" placeholder="<?php _e( 'Email', 'leaguemanager' ); ?>" name="log" id="user_login">
+                    </div>
+                </div>
+                <div class="form-group">
                     <label class="hidden" for="user_pass"><?php _e( 'Password', 'leaguemanager' ); ?></label>
-                    <input type="password" name="pwd" placeholder="<?php _e( 'Password', 'leaguemanager' ); ?>" id="user_pass">
-                </p>
+                    <div class="input">
+                        <input type="password" class="password" name="pwd" placeholder="<?php _e( 'Password', 'leaguemanager' ); ?>" id="user_pass">
+                        <i class="passwordShow leaguemanager-svg-icon">
+                            <?php leaguemanager_the_svg('icon-eye') ?>
+                        </i>
+
+                    </div>
+                </div>
             </fieldset>
             <fieldset class="p-fieldset-split">
                 <a class="forgot-password" href="<?php echo wp_lostpassword_url(); ?>">

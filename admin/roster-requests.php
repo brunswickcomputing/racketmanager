@@ -3,7 +3,7 @@
 <form id="roster-request-filter" method="post" action="">
 	<?php wp_nonce_field( 'roster-request-bulk' ) ?>
 
-	<div class="tablenav" style="margin-bottom: 0.1em;">
+    <div class="tablenav">
 		<!-- Bulk Actions -->
 		<select name="action" size="1">
 			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
@@ -30,22 +30,27 @@
 		</tr>
 		<tbody id="the-list">
 
-	<?php if ( $rosterRequests = $leaguemanager->getRosterRequests(array() ) ) { $class = ''; ?>
-		<?php foreach ( $rosterRequests AS $rosterRequest ) { ?>
-			<?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+<?php
+    $clubs = $leaguemanager->getClubs();
+    $class = '';
+    foreach ($clubs AS $club) {
+        $club = get_club($club->id);
+        $rosterRequests = $club->getRosterRequests( true );
+        foreach ($rosterRequests AS $rosterRequest) {
+            $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 			<tr class="<?php echo $class ?>">
 				<th scope="row" class="check-column">
 					<input type="checkbox" value="<?php echo $rosterRequest->id ?>" name="rosterRequest[<?php echo $rosterRequest->id ?>]" />
 				</th>
-				<td class="num"><?php echo $rosterRequest->id ?></td>
-                <td><?php echo $rosterRequest->affiliatedClubName ?></td>
-                <td><?php echo $rosterRequest->firstName ?></td>
+				<td class="num"><?php echo $rosterRequest->id ?><input type="hidden" id="club_id[<?php echo $rosterRequest->id ?>]" name="club_id[<?php echo $rosterRequest->id ?>]" value="<?php echo $club->id ?>"/></td>
+                <td><?php echo $club->name ?></td>
+                <td><?php echo $rosterRequest->first_name ?></td>
 				<td><?php echo $rosterRequest->surname ?></td>
 				<td><?php echo $rosterRequest->gender ?></td>
 				<td><?php echo $rosterRequest->btm ?></td>
-                <td><?php echo $rosterRequest->requestedDate ?></td>
+                <td><?php echo $rosterRequest->requested_date ?></td>
                 <td><?php echo $rosterRequest->requestedUser ?></td>
-                <td><?php echo $rosterRequest->completedDate ?></td>
+                <td><?php echo $rosterRequest->completed_date ?></td>
                 <td><?php echo $rosterRequest->completedUser ?></td>
 			</tr>
 		<?php } ?>
@@ -53,4 +58,3 @@
 		</tbody>
 	</table>
 </form>
-

@@ -1,6 +1,23 @@
 <?php
-	$season = $leaguemanager->getSeasonCompetition($competition);
-//	$clubs = getClubs();
+	$season = $competition->getSeasonCompetition();
+    if ( $competition->is_championship ) {
+        $heading = "Round";
+        if (isset($competition->primary_league)) {
+            $primaryLeague = get_league($competition->primary_league);
+        } else {
+            $primaryLeague = get_league(array_key_first($competition->league_index));
+        }
+        $numCols = $primaryLeague->championship->num_rounds;
+        $rounds = array();
+        $i = 1;
+        foreach ( array_reverse($primaryLeague->championship->getFinals()) AS $final ) {
+            $rounds[$i] = $final;
+            $i ++;
+        }
+    } else {
+        $heading = "Match Day";
+        $numCols = $season['num_match_days'];
+    }
     $clubs = $leaguemanager->getClubs( );
 	if ( !empty($competition->seasons) ) { ?>
 		<!-- Season Dropdown -->
@@ -32,24 +49,25 @@
 	<table class="widefat playerstats" summary="" title="LeagueManager Player Stats">
 		<thead>
 		<tr>
-			<th rowspan="2" scope="col"><?php _e( 'Name', 'leaguemanager' ) ?></th>
-			<th rowspan="2" scope="col"></th>
-			<th colspan="<?php echo $season['num_match_days'] ?>" scope="colgroup" class="colspan"><?php _e( 'Match Day', 'leaguemanager') ?></th>
+            <th rowspan="2" scope="col" class="playername"><?php _e( 'Name', 'leaguemanager' ) ?></th>
+			<th rowspan="2" scope="col" class="status"></th>
+			<th colspan="<?php echo $numCols ?>" scope="colgroup" class="colspan"><?php _e( $heading, 'leaguemanager') ?></th>
 		</tr>
 		<tr>
 <?php
 	$matchdaystatsdummy = array();
-	for ( $day = 1; $day <= $season['num_match_days']; $day++ ) {
+	for ( $day = 1; $day <= $numCols; $day++ ) {
 		$matchdaystatsdummy[$day] = array();
 	?>
-			<th scope="col" class="matchday"><?php echo $day ?></th>
+<th scope="col" class="matchday"><?php if ($competition->is_championship) echo $rounds[$day]['name']; else echo $day; ?></th>
 <?php } ?>
 		</tr>
 
 		<tbody id="the-list">
-<?php if ( $playerstats = $leaguemanager->getPlayerStats(array('competition' => $competition_id, 'season' => $season['name'], 'club' => $club_id))  ) { $class = ''; ?>
-	<?php foreach ( $playerstats AS $playerstat ) { ?>
-			<?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+<?php if ( $playerstats = $competition->getPlayerStats(array('season' => $season['name'], 'club' => $club_id))  ) {
+    $class = '';
+    foreach ( $playerstats AS $playerstat ) {
+        $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 			<tr class="<?php echo $class ?>">
 
 				<td><?php echo $playerstat->fullname ?></td>
@@ -57,17 +75,17 @@
 		<?php $matchdaystats = $matchdaystatsdummy;
 			$prevTeamNum = $playdowncount = 0;
 			$prevMatchDay = $i = 0;
+            $prevRound = "";
 
-            for ( $t = 1; $t < 10; $t++ ) {
+            for ( $t = 1; $t < $numCols; $t++ ) {
                 $teamplay[$t] = 0;
             }
             
-			foreach ( $playerstat->matchdays AS $matches) {
-
-				if ( !$prevMatchDay == $matches->match_day ) {
+			foreach ( $playerstat->matchdays AS $m => $match) {
+                if ( ($competition->is_championship && !$prevRound == $match->final) || ( !$competition->is_championship && !$prevMatchDay == $match->match_day) ) {
 					$i = 0;
 				}
-				$teamNum = substr($matches->team_title,-1) ;
+				$teamNum = substr($match->team_title,-1) ;
                 $teamplay[$teamNum] ++;
                 
 				if ( $prevTeamNum == 0) {
@@ -84,10 +102,17 @@
 				}
 				$prevTeamNum = $teamNum;
 				
-				$matchresult = $matches->match_winner == $matches->team_id ? 'Won' : 'Lost';
-				$rubberresult = $matches->rubber_winner == $matches->team_id ? 'Won' : 'Lost';
-				$matchdaystats[$matches->match_day][$i] = array('team' => $matches->team_title, 'pair' => $matches->rubber_number, 'matchresult' => $matchresult, 'rubberresult' => $rubberresult, 'playdir' => $playdir);
-				$prevMatchDay = $matches->match_day;
+                if ($match->match_winner === $match->team_id) $matchresult = 'Won'; else $matchresult = 'Lost';
+                if ($match->rubber_winner === $match->team_id) $rubberresult = 'Won'; else $rubberresult = 'Lost';
+                $playerLine = array('team' => $match->team_title, 'pair' => $match->rubber_number, 'matchresult' => $matchresult, 'rubberresult' => $rubberresult, 'playdir' => $playdir);
+                if ( $competition->is_championship ) {
+                    $d = $primaryLeague->championship->getFinals($match->final)['round'];
+                    $matchdaystats[$d][$i] = $playerLine;
+                } else {
+                    $matchdaystats[$match->match_day][$i] = $playerLine;
+                }
+				$prevMatchDay = $match->match_day;
+                $prevRound = $match->final;
 				$i++;
 			}
 			
@@ -101,7 +126,7 @@
 				$title = '';
 				foreach ( $daystat AS $stat ) {
 					if ( isset($stat['team']) ) {
-						$title		.= $matchresult.' match & '.$rubberresult.' rubber ';
+						$title		= $matchresult.' match & '.$rubberresult.' rubber ';
 						$playdir	= $stat['playdir'];
 						$team		= $stat['team'];
 						$pair		= $stat['pair'];

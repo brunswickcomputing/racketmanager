@@ -5,7 +5,7 @@
 Template Name: Notitle
 
 */
-	get_header(basic);
+	get_header('basic');
 ?>
 	<div id="primary" class="content-area">
 		<main id="main" class="site-main" role="main">
@@ -46,5 +46,5 @@ Template Name: Notitle
 		</main><!-- #main -->
 	</div><!-- #primary -->
 
-<?php get_footer(basic); ?>
+<?php get_footer('basic'); ?>
 

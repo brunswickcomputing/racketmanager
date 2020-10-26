@@ -3,31 +3,27 @@
         <thead>
             <tr>
                 <th scope="col"><?php _e( 'Round', 'leaguemanager' ) ?></th>
-                <th scope="col" colspan="<?php echo ($num_first_round > 4) ? 4 : $num_first_round; ?>" style="text-align: center;"><?php _e( 'Matches', 'leaguemanager' ) ?></th>
+                <th scope="col" colspan="<?php echo ($league->championship->num_teams_first_round > 4) ? 4 : $league->championship->num_teams_first_round; ?>" style="text-align: center;"><?php _e( 'Matches', 'leaguemanager' ) ?></th>
             </tr>
         </thead>
         <tbody id="the-list-finals" class="lm-form-table"><?php
-foreach ( $championship->getFinals() AS $final ) {
+foreach ( $league->championship->getFinals() AS $final ) {
     $class = ( 'alternate' == $class ) ? '' : 'alternate';
-    $matches = $leaguemanager->getMatches( array("league_id" => $league->id, "season" => $season['name'], "final" => $final['key'], "orderby" => array("id" => "ASC")));
-    if ( $matches ) {
-        $teams = $leaguemanager->getTeams( array("league_id" => $league->id, "season" => $season['name']), 'ARRAY' );
-        $teams2 = $championship->getFinalTeams( $final, 'ARRAY' );
-    } ?>
+    $matches = $league->getMatches( array("final" => $final['key'], "orderby" => array("id" => "ASC")));
+?>
             <tr class="<?php echo $class ?>">
                 <th scope="row" style="padding-left: 1em;"><strong><?php echo $final['name'] ?></strong></th><?php
     for ( $i = 1; $i <= $final['num_matches']; $i++ ) {
         ((isset($matches[0])) ? $match = $matches[$i-1] : 0);
-        $colspan = ( $num_first_round/2 >= 4 ) ? ceil(4/$final['num_matches']) : ceil(($num_first_round/2)/$final['num_matches']); ?>
+        $colspan = ( $league->championship->num_teams_first_round/2 >= 4 ) ? ceil(4/$final['num_matches']) : ceil(($league->championship->num_teams_first_round/2)/$final['num_matches']); ?>
                 <td colspan="<?php echo $colspan ?>" style="text-align: center;"><?php
         if ( isset($match) ) {
             $match->hadPenalty = $match->hadPenalty = ( isset($match->penalty) && $match->penalty['home'] != '' && $match->penalty['away'] != '' ) ? true : false;
             $match->hadOvertime = $match->hadOvertime = ( isset($match->overtime) && $match->overtime['home'] != '' && $match->overtime['away'] != '' ) ? true : false;
-            $title = $championship->getChampionshipMatchTitle($match, $teams, $teams2);
             if ( $final['key'] == 'final' ) { ?>
-                    <p><span id="final_home" style="margin-right: 0.5em;"></span><?php echo $title; ?><span id="final_away" style="margin-left: 0.5em;"></span></p><?php
+                    <p><span id="final_home" style="margin-right: 0.5em;"></span><?php echo $match->getTitle(); ?><span id="final_away" style="margin-left: 0.5em;"></span></p><?php
             } else { ?>
-                    <p><?php echo $title; ?></p><?php
+                    <p><?php echo $match->getTitle(); ?></p><?php
             }
             if ( $match->home_points != NULL && $match->away_points != NULL ) {
                 if ( $final['key'] == 'final' ) {

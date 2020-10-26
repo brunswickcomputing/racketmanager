@@ -20,7 +20,7 @@
 <form id="teams-filter" method="post" action="">
 	<?php wp_nonce_field( 'teams-bulk' ) ?>
 
-	<div class="tablenav" style="margin-bottom: 0.1em;">
+    <div class="tablenav">
 		<!-- Bulk Actions -->
 		<select name="action" size="1">
 			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
@@ -41,23 +41,43 @@
 		<tbody id="the-list">
 <?php if ( isset($club_id) && $club_id > 0) {
     $affiliatedClub = $club_id;
+    $club = get_club($club_id);
+    if ( $teams = $club->getTeams() ) {
+        $class = '';
+        foreach ( $teams AS $team ) {
+            $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+            <tr class="<?php echo $class ?>">
+                <th scope="row" class="check-column">
+                    <input type="checkbox" value="<?php echo $team->id ?>" name="team[<?php echo $team->id ?>]" />
+                </th>
+                <td class="num"><?php echo $team->id ?></td>
+                <td><a href="admin.php?page=leaguemanager&amp;subpage=team&amp;edit=<?php echo $team->id; ?><?php if ( $team->affiliatedclub!= '' ) ?>&amp;club_id=<?php echo $team->affiliatedclub ?> "><?php echo $team->title ?></a></td>
+                <td><?php echo $team->affiliatedclubname ?></td>
+                <td><?php echo $team->stadium ?></td>
+            </tr>
+    <?php }
+    }
 } else {
     $affiliatedClub = '';
+        foreach ( $clubs AS $club ) {
+            $club = get_club($club);
+            if ( $teams = $club->getTeams() ) {
+                $class = '';
+                foreach ( $teams AS $team ) {
+                    $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+                    <tr class="<?php echo $class ?>">
+                        <th scope="row" class="check-column">
+                            <input type="checkbox" value="<?php echo $team->id ?>" name="team[<?php echo $team->id ?>]" />
+                        </th>
+                        <td class="num"><?php echo $team->id ?></td>
+                        <td><a href="admin.php?page=leaguemanager&amp;subpage=team&amp;edit=<?php echo $team->id; ?><?php if ( $team->affiliatedclub!= '' ) ?>&amp;club_id=<?php echo $team->affiliatedclub ?> "><?php echo $team->title ?></a></td>
+                        <td><?php echo $team->affiliatedclubname ?></td>
+                        <td><?php echo $team->stadium ?></td>
+                    </tr>
+            <?php }
+            }
+        }
 } ?>
-	<?php if ( $teams = $leaguemanager->getTeamsList($affiliatedClub) ) { $class = ''; ?>
-		<?php foreach ( $teams AS $team ) { ?>
-			<?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-			<tr class="<?php echo $class ?>">
-				<th scope="row" class="check-column">
-					<input type="checkbox" value="<?php echo $team->id ?>" name="team[<?php echo $team->id ?>]" />
-				</th>
-				<td class="num"><?php echo $team->id ?></td>
-				<td><a href="admin.php?page=leaguemanager&amp;subpage=team&amp;edit=<?php echo $team->id; ?><?php if ( $affiliatedClub!= '' ) ?>&amp;club_id=<?php echo $affiliatedClub ?> "><?php echo $team->title ?></a></td>
-                <td><?php echo $team->affiliatedclubname ?></td>
-				<td><?php echo $team->stadium ?></td>
-			</tr>
-		<?php } ?>
-	<?php } ?>
 		</tbody>
 	</table>
 </form>
@@ -65,28 +85,31 @@
 <!-- Add New Team -->
 <form action="" method="post">
 	<?php wp_nonce_field( 'leaguemanager_add-team' ) ?>
-	<table class="lm-form-table">
-		<tr valign="top">
-			<th scope="row"><label for="teamName"><?php _e( 'Name', 'leaguemanager' ) ?></label></th>
-			<td><input required="required" placeholder="<?php _e( 'Enter name for new Team', 'leaguemanager') ?>" type="text" name="teamName" id="teamName" value="" size="30" style="margin-bottom: 1em;" /></td>
-		</tr>
-            <tr valign="top">
-            <th scope="row"><label for="affiliatedClub"><?php _e( 'Affiliated Club', 'leaguemanager' ) ?></label></th>
-            <td>
-                <select size="1" name="affiliatedClub" id="affiliatedClub" >
-                    <option><?php _e( 'Select club' , 'leaguemanager') ?></option>
-<?php foreach ( $clubs AS $club ) { ?>
-                    <option value="<?php echo $club->id ?>"<?php if(isset($affiliatedClub)) selected($club->id, $affiliatedClub ) ?>><?php echo $club->name ?></option>
-                    <?php } ?>
-                </select>
-            </td>
-        </tr>
-		<tr valign='top'>
-			<th scope='row'><label for='stadium'><?php _e('Stadium', 'leaguemanager') ?></label></th>
-			<td><input required="required" placeholder="<?php _e( 'Stadium', 'leaguemanager') ?>" type='text' name='stadium' id='stadium' value='' size='50' /></td>
-		</tr>
+    <div class="form-group">
+        <label for="affiliatedClub"><?php _e( 'Affiliated Club', 'leaguemanager' ) ?></label>
+        <div class="input">
+            <select size="1" name="affiliatedClub" id="affiliatedClub" >
+                <option><?php _e( 'Select club' , 'leaguemanager') ?></option>
+                <?php foreach ( $clubs AS $club ) { ?>
+                <option value="<?php echo $club->id ?>"<?php if(isset($affiliatedClub)) selected($club->id, $affiliatedClub ) ?>><?php echo $club->name ?></option>
+                <?php } ?>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="team_type"><?php _e( 'Type', 'leaguemanager' ) ?></label>
+        <div class="input">
+            <select size='1' required="required" name='team_type' id='team_type'>
+                <option><?php _e( 'Select', 'leaguemanager') ?></option>
+                <option value='WS'><?php _e( 'Ladies Singles', 'leaguemanager') ?></option>
+                <option value='WD'><?php _e( 'Ladies Doubles', 'leaguemanager') ?></option>
+                <option value='MD'><?php _e( 'Mens Doubles', 'leaguemanager') ?></option>
+                <option value='MS'><?php _e( 'Mens Singles', 'leaguemanager') ?></option>
+                <option value='XD'><?php _e( 'Mixed Doubles', 'leaguemanager') ?></option>
 
-	</table>
+            </select>
+        </div>
+    </div>
 	<input type="hidden" name="addTeam" value="team" />
 	<p class="submit"><input type="submit" name="addTeam" value="<?php _e( 'Add Team','leaguemanager' ) ?>" class="button button-primary" /></p>
 

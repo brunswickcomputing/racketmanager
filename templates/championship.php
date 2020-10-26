@@ -100,8 +100,8 @@ The following variables are usable:
 		<!--<li><a href="#intergroup-matches"><?php _e( 'Inter Group Matches', 'leaguemanager' ) ?></a></li>-->
 	</ul>
 	<?php foreach ( $championship->getGroups() AS $key => $group ) : ?>
-	<?php $teams = $leaguemanager->getTeams( array("league_id" => $league->id, "season" => $league->season, "group" => $group) ); ?>
-	<?php $matches = $leaguemanager->getMatches( array("league_id" => $league->id, "season" => $league->season, "final" => '', "group" => $group) ); ?>
+    <?php $teams = $league->getLeagueTeams( array("season" => $league->season, "group" => $group) ); ?>
+	<?php $matches = $league->getMatches( array("league_id" => $league->id, "season" => $league->season, "final" => '', "group" => $group) ); ?>
 
 	<div id="group-<?php echo $group ?>">
 		<h4 class="header"><?php printf(__('Group %s', 'leaguemanager'), $group) ?></h4>

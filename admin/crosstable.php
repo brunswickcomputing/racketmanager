@@ -9,25 +9,17 @@
 	</tr>
 	</thead>
 	<tbody>
-<?php foreach ( $teams AS $rank => $team ) { ?>
-	<?php if ( 1 == $team->home ) $team->title = '<strong>'.$team->title.'</strong>'; ?>
+<?php foreach ( $teams AS $rank => $team ) {
+    $team = get_leagueteam($team);
+	if ( $team->home == 1 ) $team->title = '<strong>'.$team->title.'</strong>'; ?>
 		<tr class='<?php echo $team->class ?>'>
 			<th scope='row' class='rank'><?php echo $rank + 1 ?></th>
 				<td>
-	<?php if ( $team->logo != '' ) { ?>
-					<img src='<?php echo $leaguemanager->getImageUrl($team->logo, false, 'tiny') ?>' alt='<?php _e('Logo','leaguemanager') ?>' title='<?php _e('Logo','leaguemanager')." ".$team->title ?>' />
-	<?php } ?>
 					<?php echo $team->title ?>
 				</td>
-	<?php for ( $i = 0; $i < count($teams); $i++ ) { ?>
-		
-		<?php if ( ($rank == $i) ) { ?>
-				<td class='num'>-</td>
-<?php } else { ?>
-				<?php echo $leaguemanager->getCrosstableField($team->id, $teams[$i]->id, $team->home, $league->id, $season['name']); ?>
-		<?php } ?>
-	
-	<?php } ?>
+                <?php for ( $i = 1; $i <= count($teams); $i++ ) { ?>
+                    <?php echo $league->getCrosstableField($team->id, $teams[$i-1]->id, $team->home); ?>
+                <?php } ?>
 		</tr>
 <?php } ?>
 	</tbody>

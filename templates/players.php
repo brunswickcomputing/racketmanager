@@ -12,7 +12,7 @@ You can check the content of a variable when you insert the tag <?php var_dump($
 */
 ?>
 
-	<?php if ( $matches ) { ?>
+	<?php if ( $playerstats ) { ?>
 		<table class='leaguemanager player stats table' summary='' title='<?php echo __( 'Player Stats', 'leaguemanager' )." ".$league->title ?>'>
 			<thead>
 				<tr>
@@ -23,13 +23,13 @@ You can check the content of a variable when you insert the tag <?php var_dump($
 				</tr>
 			</thead>
 			<tbody>
-				<?php foreach ( $players AS $player ) { ?>
+				<?php foreach ( $playerstats AS $player ) { ?>
 
-					<tr class='<?php echo $match->class ?>'>
-						<td><?php echo $player->fullname ?></td>
-						<td><?php echo $player->team_title ?></td>
-						<td><?php echo $player->won ?></td>
-						<td><?php echo $player->lost ?></td>
+					<tr>
+						<td><?php echo $player['playername'] ?></td>
+						<td><?php echo $player['team'] ?></td>
+						<td><?php echo $player['won'] ?></td>
+						<td><?php echo $player['lost'] ?></td>
 					</tr>
 
 				<?php } ?>

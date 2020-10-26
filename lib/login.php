@@ -7,34 +7,14 @@
      * @copyright Copyright 2018
      */
     
-    class LeagueManagerLogin extends LeagueManager
-    {
+    class LeagueManagerLogin extends LeagueManager {
         
         /**
          * initialize shortcodes
          *
          * @return void
          */
-        function __construct()
-        {
-            global $lmLoader;
-            
-            $this->addShortcodes();
-        }
-
-        function LeagueManagerShortcodes()
-        {
-            $this->__construct();
-        }
-        
-        /**
-         * Adds shortcodes
-         *
-         * @param none
-         * @return void
-         */
-        function addShortcodes()
-        {
+        public function __construct() {
             add_shortcode( 'custom-login-form', array( $this, 'render_login_form' ) );
             add_shortcode( 'custom-password-lost-form', array( $this, 'render_password_lost_form' ) );
             add_shortcode( 'custom-password-reset-form', array( $this, 'render_password_reset_form' ) );
@@ -62,7 +42,7 @@
             add_filter( 'wp_new_user_notification_email', array( $this, 'my_wp_new_user_notification_email' ), 10, 3 );
         }
         
-        function my_wp_new_user_notification_email_admin($wp_new_user_notification_email, $user, $blogname) {
+        public function my_wp_new_user_notification_email_admin($wp_new_user_notification_email, $user, $blogname) {
             
             $user_count = count_users();
             
@@ -72,9 +52,8 @@
             return $wp_new_user_notification_email;
         }
         
-        function my_wp_new_user_notification_email($wp_new_user_notification_email, $user, $blogname) {
-            
-            global $lmShortcodes;
+        public function my_wp_new_user_notification_email($wp_new_user_notification_email, $user, $blogname) {
+            global $leaguemanager_shortcodes;
             
             $start = strpos($wp_new_user_notification_email['message'],'?action=rp&key=') + 15;
             $end = strpos($wp_new_user_notification_email['message'],'&login=');
@@ -86,15 +65,14 @@
             $vars['display_name'] = $user->display_name;
             $vars['action_url'] = wp_login_url() . '?action=rp&key='.$key.'&login='.rawurlencode($user->user_login);
             $vars['email_link'] = 'info@leighandwestclifftennis.org.uk';
-            $wp_new_user_notification_email['message'] = $lmShortcodes->loadTemplate( 'email-welcome', $vars );
+            $wp_new_user_notification_email['message'] = $leaguemanager_shortcodes->loadTemplate( 'email-welcome', $vars );
             $wp_new_user_notification_email['headers'] = 'Content-Type: text/html; charset=UTF-8';
             
             return $wp_new_user_notification_email;
         }
         
-        function my_wp_retrieve_password_email($message, $key, $user_login, $user_data) {
-            
-            global $lmShortcodes;
+        public function my_wp_retrieve_password_email($message, $key, $user_login, $user_data) {
+            global $leaguemanager_shortcodes;
             
             $vars['site_name'] = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
             $vars['site_url'] = get_option('siteurl');
@@ -102,17 +80,12 @@
             $vars['display_name'] = $user_data->display_name;
             $vars['action_url'] = wp_login_url() . '?action=rp&key='.$key.'&login='.rawurlencode($user_login);
             $vars['email_link'] = 'mailto://info@leighandwestclifftennis.org.uk';
-            $message = $lmShortcodes->loadTemplate( 'email-password-reset-text', $vars );
+            $message = $leaguemanager_shortcodes->loadTemplate( 'email-password-reset-text', $vars );
             
             return $message;
         }
         
-//        function LeagueManagerLoader()
-//        {
-//            $this->__construct();
-//        }
-        
-        function disable_dashboard() {
+        public function disable_dashboard() {
             if (current_user_can('subscriber') && is_admin()) {
                 if ( !DOING_AJAX ) {
                     wp_redirect(home_url());
@@ -130,8 +103,7 @@
          * @return string  The shortcode output
          */
         public function render_login_form( $vars, $content = null ) {
-            
-            global $leaguemanger, $lmShortcodes;
+            global $leaguemanager_shortcodes;
             
             // Parse shortcode vars
             $default_vars = array( 'show_title' => false );
@@ -163,7 +135,7 @@
                 } elseif ( ! get_option( 'users_can_register' ) ) {
                     return __( 'Registering new users is currently not allowed.', 'leaguemanager' );
                 } else {
-                    return $lmShortcodes->loadTemplate( 'form-login', $vars );
+                    return $leaguemanager_shortcodes->loadTemplate( 'form-login', $vars );
                 }
             } else {
                 // Check if the user just registered
@@ -197,14 +169,14 @@
                 $vars['logged_out'] = isset( $_REQUEST['logged_out'] ) && $_REQUEST['logged_out'] == true;
                 
                 // Render the login form using an external template
-                return $lmShortcodes->loadTemplate( 'form-login', $vars );
+                return $leaguemanager_shortcodes->loadTemplate( 'form-login', $vars );
             }
         }
         
         /**
          * Redirect the user to the custom login page instead of wp-login.php.
          */
-        function redirect_to_custom_login() {
+        public function redirect_to_custom_login() {
             if ( $_SERVER['REQUEST_METHOD'] == 'GET' ) {
                 $redirect_to = isset( $_REQUEST['redirect_to'] ) ? $_REQUEST['redirect_to'] : null;
                 
@@ -230,7 +202,7 @@
          *
          * @param string $redirect_to   An optional redirect_to URL for admin users
          */
-        private function redirect_logged_in_user( $redirect_to = null ) {
+        public function redirect_logged_in_user( $redirect_to = null ) {
             $user = wp_get_current_user();
             if ( user_can( $user, 'manage_options' ) ) {
                 if ( $redirect_to ) {
@@ -252,7 +224,7 @@
          *
          * @return Wp_User|Wp_Error The logged in user, or error information if there were errors.
          */
-        function maybe_redirect_at_authenticate( $user, $username, $password ) {
+        public function maybe_redirect_at_authenticate( $user, $username, $password ) {
             // Check if the earlier authenticate filter (most likely,
             // the default WordPress authentication) functions have found errors
             if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
@@ -277,7 +249,7 @@
          *
          * @return string               An error message.
          */
-        private function get_error_message( $error_code ) {
+        public function get_error_message( $error_code ) {
             switch ( $error_code ) {
                 case 'empty_username':
                     return __( 'You do have an email address, right?', 'leaguemanager' );
@@ -318,7 +290,7 @@
                 case 'no_updates':
                     return __( 'No updates to be made', 'leaguemanager' );
                 default:
-                    return __( 'An unknown error occurred. Please try again later.', 'leaguemanager' );
+                    return $error_code;
             }
         }
         
@@ -385,7 +357,7 @@
          *
          * @return int|WP_Error         The id of the user that was created, or error if failed.
          */
-        private function register_user( $email, $first_name, $last_name ) {
+        public function register_user( $email, $first_name, $last_name ) {
             $errors = new WP_Error();
             
             // Email address is used as both username and email. It is also the only
@@ -558,7 +530,7 @@
          */
         public function render_password_lost_form( $vars, $content = null ) {
             
-            global $lmShortcodes;
+            global $leaguemanager_shortcodes;
             
             // Parse shortcode vars
             $default_vars = array( 'show_title' => true );
@@ -577,7 +549,7 @@
             if ( is_user_logged_in() ) {
                 return __( 'You are already signed in.', 'leaguemanager' );
             } else {
-                return $lmShortcodes->loadTemplate( 'form-password-lost', $vars );
+                return $leaguemanager_shortcodes->loadTemplate( 'form-password-lost', $vars );
             }
         }
         
@@ -661,8 +633,7 @@
          * @return string  The shortcode output
          */
         public function render_password_reset_form( $vars, $content = null ) {
-            
-            global $lmShortcodes;
+            global $leaguemanager_shortcodes;
             
             // Parse shortcode vars
             $default_vars = array( 'show_title' => false );
@@ -686,7 +657,7 @@
                     }
                     $vars['errors'] = $errors;
                     
-                    return $lmShortcodes->loadTemplate( 'form-password-reset', $vars );
+                    return $leaguemanager_shortcodes->loadTemplate( 'form-password-reset', $vars );
                 } else {
                     return __( 'Invalid password reset link.', 'leaguemanager' );
                 }
@@ -712,8 +683,8 @@
                     exit;
                 }
                 
-                if ( isset( $_POST['pass1'] ) ) {
-                    if ( $_POST['pass1'] != $_POST['pass2'] ) {
+                if ( isset( $_POST['password'] ) ) {
+                    if ( $_POST['password'] != $_POST['rePassword'] ) {
                         // Passwords don't match
                         $redirect_url = home_url( 'member-password-reset' );
                         
@@ -725,7 +696,7 @@
                         exit;
                     }
                     
-                    if ( empty( $_POST['pass1'] ) ) {
+                    if ( empty( $_POST['password'] ) ) {
                         // Password is empty
                         $redirect_url = home_url( 'member-password-reset' );
                         
@@ -738,7 +709,7 @@
                     }
                     
                     // Parameter checks OK, reset password
-                    reset_password( $user, $_POST['pass1'] );
+                    reset_password( $user, $_POST['password'] );
                     wp_redirect( home_url( 'member-login?password=changed' ) );
                 } else {
                     echo "Invalid request.";
@@ -751,86 +722,162 @@
         /**
          * A shortcode for rendering the form used to display a member account.
          *
-         * @param  array   $vars  Shortcode vars.
-         * @param  string  $content     The text content for shortcode. Not used.
-         *
          * @return string  The shortcode output
          */
-        public function render_member_account_form( $vars, $content = null ) {
+        public function render_member_account_form() {
+
+            return $this->member_account_form;
+                
+        }
+        
+        /**
+         * Generate the form used to display a member account.
+         *
+         * @return string  The output
+         */
+        public function generate_member_account_form() {
+            global $leaguemanager_shortcodes;
             
-            global $lmShortcodes;
-            
-            // Parse shortcode vars
-            $default_vars = array( 'show_title' => true );
-            $vars = shortcode_atts( $default_vars, $vars );
-            
+            if ( !is_user_logged_in() ) {
+                return __( 'You must be signed in to access this page', 'leaguemanager' );
+            }
+
             $current_user = wp_get_current_user();
-            $vars['user-name'] = $current_user->user_email;
-            $vars['user-firstname'] = get_user_meta($current_user->ID,'first_name',true);
-            $vars['user-lastname'] = get_user_meta($current_user->ID,'last_name',true);
-            $vars['user-contactno'] = get_user_meta($current_user->ID,'contactno',true);
-            $vars['user-gender'] = get_user_meta($current_user->ID,'gender',true);
-            $vars['user-btm'] = get_user_meta($current_user->ID,'btm',true);
-            // Error messages
-            $messages = array();
-            if ( isset( $_REQUEST['error'] ) ) {
-                $error_codes = explode( ',', $_REQUEST['error'] );
-                foreach ( $error_codes as $code ) {
-                    $messages [] = array(type => 'error', text => $this->get_error_message( $code ));
+            switch ($_SERVER['REQUEST_METHOD']) {
+                case 'POST':
+                    if ( isset( $_POST['member_account_nonce_field'] ) && wp_verify_nonce( $_POST['member_account_nonce_field'], 'member_account_nonce' ) ) {
+                        $user_data = array(
+                                           'user_name' => sanitize_email( $_POST['username'] ),
+                                           'first_name' => sanitize_text_field( $_POST['firstname'] ),
+                                           'last_name' => sanitize_text_field( $_POST['lastname'] ),
+                                           'password' => $_POST['password'],
+                                           'rePassword' => $_POST['rePassword'],
+                                           'contactno' => sanitize_text_field( $_POST['contactno'] ),
+                                           'gender' => sanitize_text_field( $_POST['gender'] ),
+                                           'btm' => sanitize_text_field( $_POST['btm'] )
+                                           );
+                    } else {
+                        return __( 'You are not authorised for this action', 'leaguemanager' );
+                    }
+                    if ( !empty( $_POST['action'] ) && $_POST['action'] == 'update-user' ) {
+                        $user_data = $this->update_user_profile($current_user, $user_data);
+                    }
+                    break;
+                case 'GET':
+                    $user_data = array(
+                                       'user_name' => $current_user->user_email,
+                                       'first_name' => get_user_meta($current_user->ID,'first_name',true),
+                                       'last_name' => get_user_meta($current_user->ID,'last_name',true),
+                                       'contactno' => get_user_meta($current_user->ID,'contactno',true),
+                                       'gender' => get_user_meta($current_user->ID,'gender',true),
+                                       'btm' => get_user_meta($current_user->ID,'btm',true),
+                                       );
+                    break;
+            }
+
+            return $leaguemanager_shortcodes->loadTemplate( 'form-member-account', array('user_data' => $user_data) );
+        }
+        
+        /**
+         * Generate the form used to display a member account.
+         *
+         * @param object  $current_user     current user object
+         * @param array   $user_data        user data from form
+         * @return array  $user_data        updated user data
+         */
+        private function update_user_profile($current_user, $user_data) {
+
+            $updates = false;
+            $validationErrors = false;
+
+            if ( empty($user_data['user_name']) ) {
+                $user_data['user_name_error'] = $this->get_error_message('empty_username');
+                $validationErrors = true;
+            } elseif ( $user_data['user_name'] != $current_user->user_email ) {
+                $updates = true;
+            }
+
+            if ( empty($user_data['first_name']) ) {
+                $user_data['first_name_error'] = $this->get_error_message('firstname_field_empty');
+                $validationErrors = true;
+            } elseif ( $user_data['first_name'] != get_user_meta($current_user->ID,'first_name',true) ) {
+                $updates = true;
+            }
+
+            if ( empty($user_data['last_name']) ) {
+                $user_data['last_name_error'] = $this->get_error_message('lastname_field_empty');
+                $validationErrors = true;
+            } elseif ( $user_data['last_name'] != get_user_meta($current_user->ID,'last_name',true) ) {
+                $updates = true;
+            }
+
+            if ( empty($user_data['contactno']) ) {
+                if ( !empty(get_user_meta($current_user->ID,'contactno',true)) ) {
+                    $updates = true;
                 }
-            } elseif ( isset( $_REQUEST['updated'] ) ) {
-                $messages [] = array(type => 'info', text => __('Profile successfully updated', 'leaguemanager'));
+            } elseif ( $user_data['contactno'] != get_user_meta($current_user->ID,'contactno',true) ) {
+                $updates = true;
             }
-            $vars['messages'] = $messages;
-            return $lmShortcodes->loadTemplate( 'form-member-account', $vars );
-        }
-        
-        /**
-         * Load template for user display. First the current theme directory is checked for a template
-         * before defaulting to the plugin
-         *
-         * @param string $template Name of the template file (without extension)
-         * @param array $vars Array of variables name=>value available to display code (optional)
-         * @return the content
-         */
-        function loadTemplate( $template, $vars = array() )
-        {
-            global $leaguemanager, $lmStats, $championship;
-            extract($vars);
-            ob_start();
-            
-            if ( file_exists( get_stylesheet_directory() . "/leaguemanager/$template.php")) {
-                include(get_stylesheet_directory() . "/leaguemanager/$template.php");
-            } elseif ( file_exists( get_template_directory() . "/leaguemanager/$template.php")) {
-                include(get_template_directory() . "/leaguemanager/$template.php");
-            } elseif ( file_exists(LEAGUEMANAGER_PATH . "/templates/".$template.".php") ) {
-                include(LEAGUEMANAGER_PATH . "/templates/".$template.".php");
-            } else {
-                parent::setMessage( sprintf(__('Could not load template %s.php', 'leaguemanager'), $template), true );
-                parent::printMessage();
+
+            if ( empty($user_data['gender']) ) {
+                $user_data['gender_error'] = $this->get_error_message('gender_field_empty');
+                $validationErrors = true;
+            } elseif ( $user_data['gender'] != get_user_meta($current_user->ID,'gender',true) ) {
+                $updates = true;
             }
-            $output = ob_get_contents();
-            ob_end_clean();
-            return $output;
-        }
-        
-        /**
-         * check if template exists
-         *
-         * @param string $template
-         * @return boolean
-         */
-        function checkTemplate( $template )
-        {
-            if ( file_exists( get_stylesheet_directory() . "/leaguemanager/$template.php")) {
-                return true; //include(get_stylesheet_directory() . "/leaguemanager/$template.php");
-            } elseif  ( file_exists( get_template_directory() . "/leaguemanager/$template.php")) {
-                return true;
-            } elseif ( file_exists(LEAGUEMANAGER_PATH . "/templates/".$template.".php") ) {
-                return true;
+
+            if ( empty($user_data['btm']) ) {
+                if ( !empty(get_user_meta($current_user->ID,'btm',true)) ) {
+                    $updates = true;
+                }
+            } elseif ( $user_data['btm'] != get_user_meta($current_user->ID,'btm',true) ) {
+                $updates = true;
+            }
+
+            if ( $user_data['password'] != $user_data['rePassword'] ) {
+                $user_data['rePassword_error'] = $this->get_error_message('password_reset_mismatch');
+                $validationErrors = true;
+            } elseif ( !empty( $user_data['password'] ) ) {
+                unset( $user_data['rePassword'] );
+                $updates = true;
             }
             
-            return false;
+            if ( $validationErrors ) {
+                $user_data['error'] = true;
+                $user_data['message'] = __( 'Errors in form', 'leaguemanager');
+                return $user_data;
+            }
+            if ( !$updates ) {
+                $user_data['message'] = $this->get_error_message('no_updates');
+                return $user_data;
+            }
+            
+            foreach( $user_data as $key => $value ) {
+                // http://codex.wordpress.org/Function_Reference/wp_update_user
+                if( $key == 'contactno' ) {
+                    $userid = update_user_meta( $current_user->ID, $key, $value );
+                } elseif( $key == 'btm' ) {
+                    $userid = update_user_meta( $current_user->ID, $key, $value );
+                } elseif( $key == 'gender' ) {
+                    $userid = update_user_meta( $current_user->ID, $key, $value );
+                } elseif( $key == 'first_name' ) {
+                    if ( $user_data['first_name'] != get_user_meta($current_user->ID,'first_name',true) ) {
+                        $userid = update_user_meta( $current_user->ID, $key, $value );
+                        $userid = wp_update_user( array( 'ID' => $current_user->ID, 'display_name' => $value.' '.sanitize_text_field( $user_data['last_name'] ) ) );
+                    }
+                } elseif( $key == 'last_name' ) {
+                    if ( $user_data['last_name'] != get_user_meta($current_user->ID,'last_name',true) ) {
+                        $userid = update_user_meta( $current_user->ID, $key, $value );
+                        $userid = wp_update_user( array( 'ID' => $current_user->ID, 'display_name' => sanitize_text_field( $user_data['first_name'] ).' '.$value ) );
+                    }
+                } elseif ( $key == 'password' ) {
+                    $userid = wp_update_user( array( 'ID' => $current_user->ID, 'user_pass' => $value ) );
+                } else {
+                    $userid = wp_update_user( array( 'ID' => $current_user->ID, $key => $value ) );
+                }
+            }
+            $user_data['message'] = __( 'Your profile has been successfully updated', 'leaguemanager');
+            return $user_data;
         }
     }
 ?>

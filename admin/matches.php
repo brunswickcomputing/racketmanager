@@ -1,5 +1,3 @@
-	<div class="league-block">
-
 <?php if ( !empty($season['num_match_days']) ) { ?>
 <!-- Bulk Editing of Matches -->
 <form action="admin.php" method="get" style="float: right;">
@@ -25,9 +23,9 @@
 	<input type="hidden" name="current_match_day" value="<?php echo $matchDay ?>" />
 	<input type="hidden" name="jquery-ui-tab" value="0" class="jquery_ui_tab_index" />
 	<input type="hidden" name="group" value="<?php echo $group ?>" />
-    <input type="hidden" name="season" value="<?php echo $season['name'] ?>" />
+    <input type="hidden" name="season" value="<?php echo $season ?>" />
 
-	<div class="tablenav" style="margin-bottom: 0.1em; clear: none;">
+    <div class="tablenav">
 		<!-- Bulk Actions -->
 		<select name="action2" size="1">
 			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
@@ -35,12 +33,12 @@
 		</select>
 		<input type="submit" value="<?php _e('Apply'); ?>" name="doaction2" id="doaction2" class="button-secondary action" />
 
-<?php if ( !empty($season['num_match_days']) ) { ?>
+<?php if ( !empty($league->current_season['num_match_days']) ) { ?>
 		<select size='1' name='match_day'>
-			<?php $selected = ( isset($_POST['doaction3']) && $_POST['match_day'] == -1 ) ? ' selected="selected"' : ''; ?>
+			<?php $selected = ( isset($_POST['doaction-match_day']) && $_POST['match_day'] == -1 ) ? ' selected="selected"' : ''; ?>
 			<option value="-1"<?php echo $selected ?>><?php _e( 'Show all Matches', 'leaguemanager' ) ?></option>
-<?php for ($i = 1; $i <= $season['num_match_days']; $i++) { ?>
-			<option value='<?php echo $i ?>'<?php if ($leaguemanager->getMatchDay() == $i) echo ' selected="selected"' ?>><?php printf(__( '%d. Match Day', 'leaguemanager'), $i) ?></option>
+<?php for ($i = 1; $i <= $league->current_season['num_match_days']; $i++) { ?>
+			<option value='<?php echo $i ?>'<?php selected($league->match_day, $i)  ?>><?php printf(__( '%d. Match Day', 'leaguemanager'), $i) ?></option>
 <?php } ?>
 		</select>
 		<select size="1" name="team_id">
@@ -50,7 +48,7 @@
 			<option value="<?php echo $team->id ?>"<?php echo $selected ?>><?php echo $team->title ?></option>
 <?php } ?>
 		</select>
-		<input type='submit' name="doaction3" id="doaction3" class="button-secondary action" value='<?php _e( 'Filter' ) ?>' />
+		<input type='submit' name="doaction-match_day" id="doaction-match_day" class="button-secondary action" value='<?php _e( 'Filter' ) ?>' />
 <?php } ?>
 	</div>
 	
@@ -58,16 +56,16 @@
 		<thead>
 			<tr>
 				<th scope="col" class="check-column"><input type="checkbox" onclick="Leaguemanager.checkAll(document.getElementById('competitions-filter'));" /></th>
-				<th><?php _e( 'ID', 'leaguemanager' ) ?></th>
-				<th><?php _e( 'Date','leaguemanager' ) ?></th>
+				<th scope="col"><?php _e( 'ID', 'leaguemanager' ) ?></th>
+				<th scope="col"><?php _e( 'Date','leaguemanager' ) ?></th>
 <?php if ( !empty($league->groups) && $league->mode == 'championship' ) { ?>
-				<th class="num"><?php _e( 'Group', 'leaguemanager' ) ?></th>
+				<th scope="col" class="num"><?php _e( 'Group', 'leaguemanager' ) ?></th>
 <?php } ?>
-				<th><?php _e( 'Match','leaguemanager' ) ?></th>
-				<th><?php _e( 'Location','leaguemanager' ) ?></th>
-				<th><?php _e( 'Begin','leaguemanager' ) ?></th>
+				<th scope="col" class="match-title"><?php _e( 'Match','leaguemanager' ) ?></th>
+				<th scope="col"><?php _e( 'Location','leaguemanager' ) ?></th>
+				<th scope="col"><?php _e( 'Begin','leaguemanager' ) ?></th>
 				<?php do_action( 'matchtable_header_'.(isset($league->sport) ? $league->sport : '' )); ?>
-				<th style="text-align: center;"><?php _e( 'Score', 'leaguemanager' ) ?></th>
+				<th scope="col" class="score"><?php _e( 'Score', 'leaguemanager' ) ?></th>
 			</tr>
 		</thead>
 		<tbody id="the-list-matches-<?php echo $group ?>" class="lm-form-table">
@@ -84,11 +82,11 @@
 					<td><?php echo $match->id ?></td>
 					<td><?php echo ( substr($match->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date(get_option('date_format'), $match->date) ?></td>
 					<?php if ( !empty($league->groups) && $league->mode == 'championship' ) : ?><td class="num"><?php echo $match->group ?></td><?php endif; ?>
-					<td class="match-title"><a href="admin.php?page=leaguemanager&amp;subpage=match&amp;league_id=<?php echo $league->id ?>&amp;edit=<?php echo $match->id ?>&amp;season=<?php echo $season['name'] ?><?php if(isset($group)) echo '&amp;group=' . $group; ?>"><?php echo $leaguemanager->getMatchTitle($match->id) ?></a></td>
+					<td class="match-title"><a href="admin.php?page=leaguemanager&amp;subpage=match&amp;league_id=<?php echo $league->id ?>&amp;edit=<?php echo $match->id ?>&amp;season=<?php echo $season ?><?php if(isset($group)) echo '&amp;group=' . $group; ?>"><?php echo $match->match_title ?></a></td>
 					<td><?php echo ( empty($match->location) ) ? 'N/A' : $match->location ?></td>
 					<td><?php echo ( '00:00' == $match->hour.":".$match->minutes ) ? 'N/A' : mysql2date(get_option('time_format'), $match->date) ?></td>
 					<?php do_action( 'matchtable_columns_'.(isset($league->sport) ? $league->sport : '' ), $match ) ?>
-					<td>
+					<td class="score">
 						<input class="points" type="text" size="2" style="text-align: center;" id="home_points[<?php echo $match->id ?>]" name="home_points[<?php echo $match->id ?>]" value="<?php echo (isset($match->home_points) ? $match->home_points : '') ?>" /> : <input class="points" type="text" size="2" style="text-align: center;" id="away_points[<?php echo $match->id ?>]" name="away_points[<?php echo $match->id ?>]" value="<?php echo (isset($match->away_points) ? $match->away_points : '') ?>" />
 					</td>
 				</tr>
@@ -100,15 +98,8 @@
 	<?php do_action ( 'leaguemanager_match_administration_descriptions' ) ?>
 
 	<div class="tablenav">
-<?php if ( isset($league->mode) && $league->mode != "championship" && $leaguemanager->getPageLinks() ) { ?>
-		<div class="tablenav-pages">
-		<?php $page_links_text = sprintf( '<span class="displaying-num">' . __( 'Displaying %s&#8211;%s of %s', 'leaguemanager' ) . '</span>%s',
-			number_format_i18n( ( $leaguemanager->getCurrentPage() - 1 ) * $leaguemanager->getNumMatchesPerPage() + 1 ),
-			number_format_i18n( min( $leaguemanager->getCurrentPage() * $leaguemanager->getNumMatchesPerPage(),  $leaguemanager->getNumMatchesQuery() ) ),
-			number_format_i18n(  $leaguemanager->getNumMatchesQuery() ),
-			$leaguemanager->getPageLinks()
-			); echo $page_links_text; ?>
-		</div>
+<?php if ( isset($league->mode) && $league->mode != "championship" && $league->getPageLinks('matches') ) { ?>
+		<div class="tablenav-pages"><?php echo $league->getPageLinks('matches') ?></div>
 <?php } ?>
 		
 <?php if ( $matches ) { ?>
@@ -119,5 +110,4 @@
 <?php } ?>
 	</div>
 </form>
-<div id="showMatchRubbers" style="display:none"></div>
-</div>
+<?php require('match-modal.php'); ?>

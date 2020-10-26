@@ -458,7 +458,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 	 * @param int $team_id
 	 * @return none
 	 */
-	function saveStandings( $team_id )
+	function saveStandings( $team_id, $league_id )
 	{
 		global $wpdb, $leaguemanager;
 
@@ -476,7 +476,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 
 			$diff = $points2['plus'] - $points2['minus'];
 
-			$wpdb->query ( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `points_plus` = '%f', `points_minus` = '%f', `points2_plus` = '%d', `points2_minus` = '%d', `done_matches` = '%d', `won_matches` = '%d', `draw_matches` = '%d', `lost_matches` = '%d', `diff` = '%d' WHERE `team_id` = '%d'", $points['plus'], $points['minus'], $points2['plus'], $points2['minus'], $this->num_done, $this->num_won, $this->num_draw, $this->num_lost, $diff, $team_id ) );
+			$wpdb->query ( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `points_plus` = '%f', `points_minus` = '%f', `points2_plus` = '%d', `points2_minus` = '%d', `done_matches` = '%d', `won_matches` = '%d', `draw_matches` = '%d', `lost_matches` = '%d', `diff` = '%d' WHERE `team_id` = '%d' AND `league_id` = '%d'", $points['plus'], $points['minus'], $points2['plus'], $points2['minus'], $this->num_done, $this->num_won, $this->num_draw, $this->num_lost, $diff, $team_id, $league_id ) );
 
 			do_action( 'leaguemanager_save_standings_'.$league->sport, $team_id );
 		}
@@ -1498,7 +1498,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 				// update Standings for each team
 				$teams = $leaguemanager->getTeams( array("league_id" => $league->id, "season" => $season['name'], "cache" => false) );
 				foreach ( $teams AS $team ) {
-					$this->saveStandings($team->id);
+					$this->saveStandings($team->id, $league->id);
 				}
 
 				// Update Teams Rank and Status

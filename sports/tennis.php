@@ -56,7 +56,7 @@ class LeagueManagerTennis extends LeagueManager
 		add_filter( 'leaguemanager_won_matches_'.$this->key, array(&$this, 'getNumWonMatches'), 10, 2 );
 		add_filter( 'leaguemanager_tie_matches_'.$this->key, array(&$this, 'getNumTieMatches'), 10, 2 );
 		add_filter( 'leaguemanager_lost_matches_'.$this->key, array(&$this, 'getNumLostMatches'), 10, 2 );
-		add_action( 'leaguemanager_save_standings_'.$this->key, array(&$this, 'saveStandings') );
+		add_action( 'leaguemanager_save_standings_'.$this->key, array(&$this, 'saveStandings'), 10, 2 );
 		add_action( 'leaguemanager_get_standings_'.$this->key, array(&$this, 'getStandingsFilter'), 10, 3 );
 
 		add_action( 'league_settings_'.$this->key, array(&$this, 'leagueSettings') );
@@ -172,12 +172,14 @@ class LeagueManagerTennis extends LeagueManager
 	{
 		foreach ( $teams AS $key => $team ) {
 			$points[$key] = $team->points['plus']+$team->add_points;
+			$sets_diff[$key] = $team->sets_won - $team->sets_allowed;
 			$sets_won[$key] = $team->sets_won;
             $sets_allowed[$key] = $team->sets_allowed;
+			$games_diff[$key] = $team->games_won - $team->games_allowed;
             $games_won[$key] = $team->games_won;
 			$games_allowed[$key] = $team->games_allowed;
 		}
-		array_multisort( $points, SORT_DESC, $sets_won, SORT_DESC, $sets_allowed, SORT_ASC, $games_won, SORT_DESC, $games_allowed, SORT_ASC, $teams );
+		array_multisort( $points, SORT_DESC, $sets_diff, SORT_DESC, $sets_won, SORT_DESC, $sets_allowed, SORT_ASC, $games_won, SORT_DESC, $games_allowed, SORT_ASC, $teams );
 		return $teams;
 	}
 
@@ -291,16 +293,16 @@ class LeagueManagerTennis extends LeagueManager
 	 * @param int $team_id
 	 * @return void
 	 */
-	function saveStandings( $team_id )
+	function saveStandings( $team_id, $league_id )
 	{
 		global $wpdb, $leaguemanager;
 
-		$team = $wpdb->get_results( "SELECT `custom` FROM {$wpdb->leaguemanager_table} WHERE `id` = {$team_id}" );
+		$team = $wpdb->get_results( "SELECT `custom` FROM {$wpdb->leaguemanager_table} WHERE `team_id` = {$team_id} AND `league_id` = {$league_id}" );
 		$team = $team[0];
 		$custom = isset($team->custom) ? maybe_unserialize($team->custom) : '';
 		$custom = $this->getStandingsData($team_id, $custom);
 
-		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `custom` = '%s' WHERE `id` = '%d'", maybe_serialize($custom), $team_id ) );
+		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `custom` = '%s' WHERE `team_id` = '%d' AND `league_id` = '%d'", maybe_serialize($custom), $team_id, $league_id ) );
 	}
 
 

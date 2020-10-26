@@ -390,13 +390,13 @@ class LeagueManagerAdminPanel extends LeagueManager
 	 * @param int $team_id
 	 * @return int
 	 */
-	function getNumDoneMatches( $team_id )
+	function getNumDoneMatches( $team_id, $league_id )
 	{
 		global $wpdb, $leaguemanager;
 		$league = $leaguemanager->getCurrentLeague();
 
-		$num_matches = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->leaguemanager_matches} WHERE `final` = '' AND (`home_team` = '%d' OR `away_team` = '%d') AND `home_points` != '' AND `away_points` != ''", $team_id, $team_id) );
-		$num_matches = apply_filters( 'leaguemanager_done_matches_'.$league->sport, $num_matches, $team_id );
+		$num_matches = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->leaguemanager_matches} WHERE `final` = '' AND (`home_team` = '%d' OR `away_team` = '%d') AND `home_points` != '' AND `away_points` != '' AND `league_id` = '%d'", $team_id, $team_id, $league_id) );
+		$num_matches = apply_filters( 'leaguemanager_done_matches_'.$league->sport, $num_matches, $team_id, $league_id );
 		return $num_matches;
 	}
 
@@ -407,13 +407,13 @@ class LeagueManagerAdminPanel extends LeagueManager
 	 * @param int $team_id
 	 * @return int
 	 */
-	function getNumWonMatches( $team_id )
+	function getNumWonMatches( $team_id, $league_id )
 	{
 		global $wpdb, $leaguemanager;
 		$league = $leaguemanager->getCurrentLeague();
 
-		$num_win = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->leaguemanager_matches} WHERE `final` = '' AND `winner_id` = '%d'", $team_id) );
-		$num_win = apply_filters( 'leaguemanager_won_matches_'.$league->sport, $num_win, $team_id );
+		$num_win = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->leaguemanager_matches} WHERE `final` = '' AND `winner_id` = '%d' AND `league_id` = '%d'", $team_id, $league_id) );
+		$num_win = apply_filters( 'leaguemanager_won_matches_'.$league->sport, $num_win, $team_id, $league_id );
 		return $num_win;
 	}
 
@@ -424,13 +424,13 @@ class LeagueManagerAdminPanel extends LeagueManager
 	 * @param int $team_id
 	 * @return int
 	 */
-	function getNumDrawMatches( $team_id )
+	function getNumDrawMatches( $team_id, $league_id )
 	{
 		global $wpdb, $leaguemanager;
 		$league = $leaguemanager->getCurrentLeague();
 
-		$num_draw = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->leaguemanager_matches} WHERE `final` = '' AND `winner_id` = -1 AND `loser_id` = -1 AND (`home_team` = '%d' OR `away_team` = '%d')", $team_id, $team_id) );
-		$num_draw = apply_filters( 'leaguemanager_tie_matches_'.$league->sport, $num_draw, $team_id );
+		$num_draw = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->leaguemanager_matches} WHERE `final` = '' AND `winner_id` = -1 AND `loser_id` = -1 AND (`home_team` = '%d' OR `away_team` = '%d') AND `league_id` = '%d'", $team_id, $team_id, $league_id) );
+		$num_draw = apply_filters( 'leaguemanager_tie_matches_'.$league->sport, $num_draw, $team_id, $league_id );
 		return $num_draw;
 	}
 
@@ -441,13 +441,13 @@ class LeagueManagerAdminPanel extends LeagueManager
 	 * @param int $team_id
 	 * @return int
 	 */
-	function getNumLostMatches( $team_id )
+	function getNumLostMatches( $team_id, $league_id )
 	{
 		global $wpdb, $leaguemanager;
 		$league = $leaguemanager->getCurrentLeague();
 
-		$num_lost = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->leaguemanager_matches} WHERE `final` = '' AND `loser_id` = '%d'", $team_id) );
-		$num_lost = apply_filters( 'leaguemanager_lost_matches_'.$league->sport, $num_lost, $team_id );
+		$num_lost = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->leaguemanager_matches} WHERE `final` = '' AND `loser_id` = '%d' AND `league_id` = '%d'", $team_id, $league_id) );
+		$num_lost = apply_filters( 'leaguemanager_lost_matches_'.$league->sport, $num_lost, $team_id, $league_id );
 		return $num_lost;
 	}
 
@@ -462,15 +462,15 @@ class LeagueManagerAdminPanel extends LeagueManager
 	{
 		global $wpdb, $leaguemanager;
 
-		$this->league = $league = parent::getLeague($this->league_id);
+		$this->league = $league = parent::getLeague($league_id);
 		if ( $league->point_rule != 'manual' ) {
-			$this->num_done = $this->getNumDoneMatches($team_id);
-			$this->num_won = $this->getNumWonMatches($team_id);
-			$this->num_draw = $this->getNumDrawMatches($team_id);
-			$this->num_lost = $this->getNumLostMatches($team_id);
+			$this->num_done = $this->getNumDoneMatches($team_id, $league_id);
+			$this->num_won = $this->getNumWonMatches($team_id, $league_id);
+			$this->num_draw = $this->getNumDrawMatches($team_id, $league_id);
+			$this->num_lost = $this->getNumLostMatches($team_id, $league_id);
 
-			$points['plus'] = $this->calculatePoints( $team_id, 'plus' );
-			$points['minus'] = $this->calculatePoints( $team_id, 'minus' );
+			$points['plus'] = $this->calculatePoints( $team_id, 'plus', $league_id );
+			$points['minus'] = $this->calculatePoints( $team_id, 'minus', $league_id );
 			$points2 = apply_filters( 'team_points2_'.$league->sport, $team_id );
 			if (!isset($points2['plus']) && !isset($points2['minus'])) $points2 = array( 'plus' => 0, 'minus' => 0 );
 
@@ -478,7 +478,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 
 			$wpdb->query ( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `points_plus` = '%f', `points_minus` = '%f', `points2_plus` = '%d', `points2_minus` = '%d', `done_matches` = '%d', `won_matches` = '%d', `draw_matches` = '%d', `lost_matches` = '%d', `diff` = '%d' WHERE `team_id` = '%d' AND `league_id` = '%d'", $points['plus'], $points['minus'], $points2['plus'], $points2['minus'], $this->num_done, $this->num_won, $this->num_draw, $this->num_lost, $diff, $team_id, $league_id ) );
 
-			do_action( 'leaguemanager_save_standings_'.$league->sport, $team_id );
+			do_action( 'leaguemanager_save_standings_'.$league->sport, $team_id, $league_id );
 		}
 	}
 
@@ -490,12 +490,11 @@ class LeagueManagerAdminPanel extends LeagueManager
 	 * @param string $option
 	 * @return int
 	 */
-	function calculatePoints( $team_id, $option )
+	function calculatePoints( $team_id, $option, $league_id )
 	{
 		global $wpdb, $leaguemanager;
 
 		$league = $this->league;
-
 		$rule = $leaguemanager->getPointRule( $league->point_rule );
 		$team_id = intval($team_id);
 		$points = array( 'plus' => 0, 'minus' => 0 );
@@ -529,7 +528,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 			$points['minus'] = $this->num_draw * $fordraw + $this->num_lost * $forwin + $this->num_won * $forloss;
 		}
 
-		$points = apply_filters( 'team_points_'.$league->sport, $points, $team_id, $rule );
+		$points = apply_filters( 'team_points_'.$league->sport, $points, $team_id, $rule, $league_id );
 		return $points[$option];
 	}
 
@@ -556,8 +555,8 @@ class LeagueManagerAdminPanel extends LeagueManager
 			$settings = array(
 							  "sport" => "tennis",
 							  "point_rule" => "tennis",
-							  "point_format" => "%d-%d",
-							  "point_format2" => "%d-%d",
+							  "point_format" => "%s",
+							  "point_format2" => "%s",
 							  "team_ranking" => "auto",
 							  "mode" => "default",
 							  "default_match_start_time" => array("hour" => 19, "minutes" => 30),
@@ -1392,12 +1391,19 @@ class LeagueManagerAdminPanel extends LeagueManager
 	 * @param array $custom
 	 * @return string
 	 */
-	function addMatch( $date, $home_team, $away_team, $match_day, $location, $league_id, $season, $group, $final, $custom )
+	function addMatch( $date, $home_team, $away_team, $match_day, $location, $league_id, $season, $group, $final, $custom, $num_rubbers = 0  )
 	{
 	 	global $wpdb;
 		$sql = "INSERT INTO {$wpdb->leaguemanager_matches} (date, home_team, away_team, match_day, location, league_id, season, final, custom, `group`) VALUES ('%s', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s')";
 		$wpdb->query ( $wpdb->prepare ( $sql, $date, $home_team, $away_team, $match_day, $location, $league_id, $season, $final, maybe_serialize($custom), $group ) );
-		return $wpdb->insert_id;
+		$match_id = $wpdb->insert_id;
+		if ($num_rubbers > 1) {
+			for ($ix = 1; $ix <= $num_rubbers; $ix++) {
+				$rubber_id = $this->addRubber($date, $match_id, $ix, array());
+			}
+		}
+
+		return $match_id;
 	}
 
 
@@ -2179,11 +2185,6 @@ class LeagueManagerAdminPanel extends LeagueManager
 					} else {
 						$home_points[$match_id] = $away_points[$match_id] = '';
 					}
-                    if ($rubbers > 1) {
-                        for ($ix = 1; $ix <= $rubbers; $ix++) {
-                            $rubber_id = $this->addRubber($date, $match_id, $ix, $group, '', array());
-                        }
-                    }
 					$custom = apply_filters( 'leaguemanager_import_matches_'.$league->sport, $custom, $line, $match_id );
 
 					$x++;
@@ -2240,13 +2241,6 @@ class LeagueManagerAdminPanel extends LeagueManager
 					$away_teams[$match_id] = $away_team;
                     $home_points[$match_id] = $away_points[$match_id] = '';
 					
-					if ($rubbers > 1) {
-						for ($ix = 1; $ix <= $rubbers; $ix++) {
-							$rubber_id = $this->addRubber($date, $match_id, $ix, array());
-							$r ++;
-						}
-					}
-
 					$custom = apply_filters( 'leaguemanager_import_fixtures_'.$league->sport, $custom, $match_id );
 
 					$x++;
@@ -2257,7 +2251,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 
 			fclose($handle);
 
-			parent::setMessage(sprintf(__( '%d Fixtures ( %d Rubbers) imported', 'leaguemanager' ), $x, $r));
+			parent::setMessage(sprintf(__( '%d Fixtures imported', 'leaguemanager' ), $x));
 		}
 	}
 	/**

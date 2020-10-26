@@ -29,7 +29,7 @@ if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POS
 					$match_day = ( isset($_POST['match_day'][$i]) ? $_POST['match_day'][$i] : (!empty($_POST['match_day']) ? intval($_POST['match_day']) : '' )) ;
 					$custom = isset($_POST['custom']) ? $_POST['custom'][$i] : array();
 
-					$this->addMatch( $date, $_POST['home_team'][$i], $_POST['away_team'][$i], $match_day, htmlspecialchars(strip_tags($_POST['location'][$i])), intval($_POST['league_id']), htmlspecialchars(strip_tags($_POST['season'])), $group, htmlspecialchars(strip_tags($_POST['final'])), $custom );
+					$this->addMatch( $date, $_POST['home_team'][$i], $_POST['away_team'][$i], $match_day, htmlspecialchars(strip_tags($_POST['location'][$i])), intval($_POST['league_id']), htmlspecialchars(strip_tags($_POST['season'])), $group, htmlspecialchars(strip_tags($_POST['final'])), $custom, intval($_POST['num_rubbers']) );
 				} else {
 					$num_matches -= 1;
 				}
@@ -121,7 +121,7 @@ if (isset($_POST['saveRanking'])) {
 
 $league = $leaguemanager->getCurrentLeague();
 $season = $leaguemanager->getSeason($league);
-$competition = $leaguemanager->getCurrentCompetition();
+$competition = $leaguemanager->getCompetition($league->competition_id);
 $leaguemanager->setSeason($season);
 $league_mode = (isset($league->mode) ? ($league->mode) : '' );
 	

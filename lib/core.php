@@ -1446,7 +1446,7 @@ class LeagueManager
 				
 				if ( !empty($teams) && $league->team_ranking == 'auto' ) {
 					if ( has_filter( 'rank_teams_'.$league->sport ) ) {
-						$teams = apply_filters( 'rank_teams_'.$league->sport, $teams );
+						$teams = apply_filters( 'rank_teams_'.$league->point_rule, $teams );
 					} else {
 						foreach ( $teams AS $key => $row ) {
 							$points[$key] = $row->points['plus'] + $row->add_points;
@@ -1568,7 +1568,7 @@ class LeagueManager
 			$team->points2_plus = $points2['plus'];
 			$team->points2_minus = $points2['minus'];
 			
-			$team = apply_filters( "leaguemanager_get_standings_".$league->sport, $team, $matches, $rule );
+			$team = apply_filters( "leaguemanager_get_standings_".$league->sport, $team, $league->id, $matches, $rule );
 			$team->diff = $team->points2_plus - $team->points2_minus;
 			$team->points = array( 'plus' => $team->points_plus, 'minus' => $team->points_minus );
 			$team->points2 = array( 'plus' => $team->points2_plus, 'minus' => $team->points2_minus );

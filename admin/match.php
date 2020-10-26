@@ -269,6 +269,7 @@
 
 			<input type="hidden" name="mode" value="<?php echo $mode ?>" />
 			<input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
+			<input type="hidden" name="num_rubbers" value="<?php echo $league->num_rubbers ?>" />
 			<input type="hidden" name="season" value="<?php echo $season['name'] ?>" />
 			<input type="hidden" name="final" value="<?php echo $finalkey ?>" />
 			<input type="hidden" name="updateLeague" value="match" />

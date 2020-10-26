@@ -112,6 +112,7 @@
 		
 <?php if ( $matches ) { ?>
 			<input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
+			<input_type="hidden" name="num_rubbers" value="<?php echo $league->num_rubbers ?>" />
 			<input type="hidden" name="updateLeague" value="results" />
 			<p style="float: left; margin: 0; padding: 0;"><input type="submit" name="updateResults" value="<?php _e( 'Update Results','leaguemanager' ) ?>" class="button button-primary" /></p>
 <?php } ?>

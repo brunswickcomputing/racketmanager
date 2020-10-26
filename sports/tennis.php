@@ -27,7 +27,7 @@ class LeagueManagerTennis extends LeagueManager
 	{
 		add_filter( 'leaguemanager_sports', array(&$this, 'sports') );
 		add_filter( 'rank_teams_'.$this->key, array(&$this, 'rankTeams') );
-		add_filter( 'team_points_'.$this->key, array(&$this, 'calculatePoints'), 10, 3 );
+		add_filter( 'team_points_'.$this->key, array(&$this, 'calculatePoints'), 10, 4 );
 
 		add_filter( 'leaguemanager_point_rules_list', array(&$this, 'getPointRuleList') );
 		add_filter( 'leaguemanager_point_rules',  array(&$this, 'getPointRules') );
@@ -56,8 +56,8 @@ class LeagueManagerTennis extends LeagueManager
 		add_filter( 'leaguemanager_won_matches_'.$this->key, array(&$this, 'getNumWonMatches'), 10, 2 );
 		add_filter( 'leaguemanager_tie_matches_'.$this->key, array(&$this, 'getNumTieMatches'), 10, 2 );
 		add_filter( 'leaguemanager_lost_matches_'.$this->key, array(&$this, 'getNumLostMatches'), 10, 2 );
-		add_action( 'leaguemanager_save_standings_'.$this->key, array(&$this, 'saveStandings'), 10, 2 );
-		add_action( 'leaguemanager_get_standings_'.$this->key, array(&$this, 'getStandingsFilter'), 10, 3 );
+		add_action( 'leaguemanager_save_standings_'.$this->key, array(&$this, 'saveStandings'), 10, 3 );
+		add_action( 'leaguemanager_get_standings_'.$this->key, array(&$this, 'getStandingsFilter'), 10, 4 );
 
 		add_action( 'league_settings_'.$this->key, array(&$this, 'leagueSettings') );
 		
@@ -150,12 +150,12 @@ class LeagueManagerTennis extends LeagueManager
 	 * @param int $team_id
 	 * @param array $rule
 	 */
-	function calculatePoints( $points, $team_id, $rule )
+	function calculatePoints( $points, $team_id, $rule, $league_id )
 	{
 		global $leaguemanager;
 
 		extract($rule);
-		$data = $this->getStandingsData($team_id);
+		$data = $this->getStandingsData($team_id, $league_id);
 		$points['plus'] = $data['sets_won'] + $data['straight_set']['win'] * $forwin + $data['split_set']['win'] * $forwin_split + $data['split_set']['lost'] * $forloss_split + $data['sets_shared'] * $forshare;
 		$points['minus'] = $data['sets_allowed'] + $data['straight_set']['lost'] * $forwin + $data['split_set']['win'] * $forloss_split + $data['split_set']['lost'] * $forwin_split + $data['sets_shared'] * $forshare;
 		return $points;
@@ -300,7 +300,7 @@ class LeagueManagerTennis extends LeagueManager
 		$team = $wpdb->get_results( "SELECT `custom` FROM {$wpdb->leaguemanager_table} WHERE `team_id` = {$team_id} AND `league_id` = {$league_id}" );
 		$team = $team[0];
 		$custom = isset($team->custom) ? maybe_unserialize($team->custom) : '';
-		$custom = $this->getStandingsData($team_id, $custom);
+		$custom = $this->getStandingsData($team_id, $league_id, $custom);
 
 		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `custom` = '%s' WHERE `team_id` = '%d' AND `league_id` = '%d'", maybe_serialize($custom), $team_id, $league_id ) );
 	}
@@ -312,12 +312,12 @@ class LeagueManagerTennis extends LeagueManager
 	 * @param object $team
 	 * @param array $matches
 	 */
-	function getStandingsFilter( $team, $matches, $point_rule )
+	function getStandingsFilter( $team, $league_id, $matches, $point_rule )
 	{
 		/*
 		 * analogue to leaguemanager_save_standings_$sport filter
 		 */
-		$data = $this->getStandingsData( $team->id, maybe_unserialize($team->custom), $matches );
+		$data = $this->getStandingsData( $team->id, $league_id, maybe_unserialize($team->custom), $matches );
         $team->sets_allowed = $data['sets_allowed'];
         $team->sets_won = $data['sets_won'];
 		$team->games_allowed = $data['games_allowed'];
@@ -334,7 +334,7 @@ class LeagueManagerTennis extends LeagueManager
 	 * @param array $data
 	 * @return array number of runs for and against as assoziative array
 	 */
-	function getStandingsData( $team_id, $data = array(), $matches = false )
+	function getStandingsData( $team_id, $league_id, $data = array(), $matches = false )
 	{
 		global $leaguemanager;
 
@@ -345,13 +345,11 @@ class LeagueManagerTennis extends LeagueManager
         $data['sets_allowed'] = 0;
 		$data['sets_shared'] = 0;
 
-		$league = $leaguemanager->getCurrentLeague();
+		$league = $leaguemanager->getLeague($league_id);
 		$season = $leaguemanager->getSeason($league);
-
         if ( !$matches ) {
             $matches = $leaguemanager->getMatches( array("league_id" => $league->id, "season" => $season['name'], "final" => '', "limit" => false, "cache" => false, "home_points" => 'not null', "away points" => 'not null') );
         }
-        
 		foreach ( $matches AS $match ) {
 			if ( $match->home_team == $team_id || $match->away_team == $team_id ) {
                 

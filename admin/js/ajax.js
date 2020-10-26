@@ -123,7 +123,7 @@ Leaguemanager.saveStandings = function(ranking) {
 	ajax.runAJAX();
 };
 
-Leaguemanager.saveAddPoints = function(team_id) {
+Leaguemanager.saveAddPoints = function(team_id, league_id, season) {
 	Leaguemanager.isLoading('loading_' + team_id);
 	var points = document.getElementById('add_points_' + team_id).value;
 
@@ -132,6 +132,7 @@ Leaguemanager.saveAddPoints = function(team_id) {
 	ajax.method = 'POST';
 	ajax.setVar( "action", "leaguemanager_save_add_points" );
 	ajax.setVar( "team_id", team_id );
+	ajax.setVar( "league_id", league_id );
 	ajax.setVar( "points", points );
 	ajax.onError = function() { alert('Ajax error on saving additional points'); };
 	ajax.onCompletion = function() { return true; };

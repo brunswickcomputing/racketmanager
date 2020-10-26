@@ -2591,15 +2591,15 @@ class LeagueManager
 	 * @param int $home
 	 * @return string
 	 */
-	function getCrosstableField($curr_team_id, $opponent_id, $home, $league_id)
+	function getCrosstableField($curr_team_id, $opponent_id, $home, $league_id, $season = '' )
 	{
-		$match = $this->getMatches( array("home_team" => $curr_team_id, "away_team" => $opponent_id, "league_id" => $league_id) );
+        $match = $this->getMatches( array("home_team" => $curr_team_id, "away_team" => $opponent_id, "league_id" => $league_id, "season" => $season) );
 		if ($match) $match = $match[0];
 
  		if ( $match ) {
 			$score = $this->getScore($curr_team_id, $opponent_id, $match, $home);
 		} else {
-			$match = $this->getMatches( array("home_team" => $opponent_id, "away_team" => $curr_team_id, "league_id" => $league_id) );
+			$match = $this->getMatches( array("home_team" => $opponent_id, "away_team" => $curr_team_id, "league_id" => $league_id, "season" => $season) );
 			if ($match) $match = $match[0];
 			$score = $this->getScore($curr_team_id, $opponent_id, $match, $home);
 		}

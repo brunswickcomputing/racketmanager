@@ -57,12 +57,13 @@ if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POS
 	} elseif ( 'results' == $_POST['updateLeague'] ) {
 		check_admin_referer('matches-bulk');
 		$custom = isset($_POST['custom']) ? $_POST['custom'] : array();
-		$this->updateResults( intval($_POST['league_id']), $_POST['matches'], $_POST['home_points'], $_POST['away_points'], $_POST['home_team'], $_POST['away_team'], $custom );
+        debug_to_console($_POST);
+		$this->updateResults( intval($_POST['league_id']), $_POST['matches'], $_POST['home_points'], $_POST['away_points'], $_POST['home_team'], $_POST['away_team'], $custom, $_POST['season'] );
 		$tab = 2;
 		$matchDay = intval($_POST['current_match_day']);
 	} elseif ( 'teams_manual' == $_POST['updateLeague'] ) {
 		check_admin_referer('teams-bulk');
-		$this->saveStandingsManually( $_POST['team_id'], $_POST['points_plus'], $_POST['points_minus'], $_POST['num_done_matches'], $_POST['num_won_matches'], $_POST['num_draw_matches'], $_POST['num_lost_matches'], $_POST['add_points'], $_POST['custom'] );
+		$this->saveStandingsManually( $_POST['team_id'], $_POST['points_plus'], $_POST['points_minus'], $_POST['num_done_matches'], $_POST['num_won_matches'], $_POST['num_draw_matches'], $_POST['num_lost_matches'], $_POST['add_points'], $_POST['custom'], intval($_POST['league_id']) );
 
 		$leaguemanager->setMessage(__('Standings Table updated','leaguemanager'));
 	}

@@ -125,8 +125,11 @@ class LeagueManagerAJAX
 	function saveAddPoints() {
 		global $wpdb, $leaguemanager;
 		$team_id = intval($_POST['team_id']);
+		$league_id = intval($_POST['league_id']);
+        $season = $leaguemanager->getSeason($leaguemanager->getLeague($league_id))['name'];
 		$points = $_POST['points'];
-		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `add_points` = '%s' WHERE `team_id` = '%d'", $points, $team_id ) );
+
+		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `add_points` = '%s' WHERE `team_id` = '%d' AND `league_id` = '%d' AND `season` = '%s'", $points, $team_id, $league_id, $season ) );
 		$leaguemanager->rankTeams(1);
 
 		die("Leaguemanager.doneLoading('loading_".$team_id."')");
@@ -320,6 +323,7 @@ class LeagueManagerAJAX
 		$match = $leaguemanager->getMatch($matchId);
 		$league = $leaguemanager->getCurrentLeague();
 		$num_sets = $league->num_sets;
+        $pointsspan = 2 + intval($num_sets);
 		$num_rubbers = $league->num_rubbers;
 		$match_type = $league->type;
 		$sponsorhtml = sponsor_level_cat_func(array("columns" => 1, "title" => 'no', "bio" => 'no', "link" => 'no'), "");
@@ -351,7 +355,7 @@ class LeagueManagerAJAX
         
         foreach ($rubbers as $rubber) {
     ?>
-                <tr class="rtr '.$class.'">
+                <tr class="rtr">
 					<td rowspan="3" class="rtd centered">
 						<?php echo (isset($rubber->rubber_number) ? $rubber->rubber_number : '') ?>
 					</td>
@@ -371,7 +375,7 @@ class LeagueManagerAJAX
 						<input class="player" name="awayplayer1[<?php echo $r ?>]" id="awayplayer1_<?php echo $r ?>" />
                     </td>
                 </tr>
-				<tr class="rtr '.$class.'">
+				<tr class="rtr">
                     <td class="rtd">
 						<input class="player" name="homeplayer2[<?php echo $r ?>]" id="homeplayer2_<?php echo $r ?>" />
                     </td>
@@ -380,7 +384,7 @@ class LeagueManagerAJAX
                     </td>
 				</tr>
                 <tr>
-                    <td colspan="7" class="rtd" style="text-align: center;">
+                    <td colspan="<?php echo $pointsspan ?>" class="rtd" style="text-align: center;">
                         <input class="points" type="text" size="2" disabled id="home_points[<?php echo $r ?>]" name="home_points[<?php echo $r ?>]" />
                         :
                         <input class="points" type="text" size="2" disabled id="away_points[<?php echo $r ?>]" name="away_points[<?php echo $r ?>]" />
@@ -396,7 +400,7 @@ class LeagueManagerAJAX
 			<td class="rtd">
 				<input class="player" name="homesig" id="homesig" placeholder="Home Captain Signature" />
 			</td>
-			<td colspan="3" class="rtd" style="text-align: center;">
+			<td colspan="<?php echo intval($num_sets) ?>" class="rtd" style="text-align: center;">
 				<input class="points" type="text" size="2" disabled id="home_points[<?php echo $r ?>]" name="home_points[<?php echo $r ?>]" />
 				:
 				<input class="points" type="text" size="2" disabled id="away_points[<?php echo $r ?>]" name="away_points[<?php echo $r ?>]" />
@@ -430,64 +434,55 @@ class LeagueManagerAJAX
 		$match_type = $league->type;
 		switch ($match_type) {
 		case 'MD':
-			$homeroster1_1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$homeroster2_1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$awayroster1_1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$awayroster2_1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$homeroster1_2 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$homeroster2_2 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$awayroster1_2 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$awayroster2_2 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$homeroster1_3 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$homeroster2_3 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$awayroster1_3 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$awayroster2_3 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$homeroster1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$homeroster2 = $homeroster1;
-			$awayroster1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$awayroster2 = $awayroster1;
-			break;
+				$homeRosterMen = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
+				$awayRosterMen = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
+				for ($r = 0; $r < $num_rubbers; $r++) {
+					$homeRoster[$r][1] = $homeRosterMen;
+					$homeRoster[$r][2] = $homeRosterMen;
+					$awayRoster[$r][1] = $awayRosterMen;
+					$awayRoster[$r][2] = $awayRosterMen;
+				}
+				break;
 		case 'WD':
-			$homeroster1_1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$homeroster2_1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$awayroster1_1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$awayroster2_1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$homeroster1_2 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$homeroster2_2 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$awayroster1_2 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$awayroster2_2 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$homeroster1_3 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$homeroster2_3 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$awayroster1_3 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$awayroster2_3 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$homeroster1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$homeroster2 = $homeroster1;
-			$awayroster1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$awayroster2 = $awayroster1;
-			break;
+				$homeRosterWomen = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
+				$awayRosterWomen = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
+				for ($r = 0; $r < $num_rubbers; $r++) {
+					$homeRoster[$r][1] = $homeRosterWomen;
+					$homeRoster[$r][2] = $homeRosterWomen;
+					$awayRoster[$r][1] = $awayRosterWomen;
+					$awayRoster[$r][2] = $awayRosterWomen;
+				}
+				break;
 		case 'XD':
-			$homeroster1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$homeroster2 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$awayroster1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$awayroster2 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			break;
-		default:
-			$homeroster1_1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$homeroster2_1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$awayroster1_1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$awayroster2_1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$homeroster1_2 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$homeroster2_2 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$awayroster1_2 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$awayroster2_2 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$homeroster1_3 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$homeroster2_3 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$awayroster1_3 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$awayroster2_3 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$homeroster1 = $leaguemanager->getRoster(array('team' => $match->home_team));
-			$homeroster2 = $homeroster1;
-			$awayroster1 = $leaguemanager->getRoster(array('team' => $match->away_team));
-			$awayroster2 = $awayroster1;
+				$homeRosterMen = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
+				$awayRosterMen = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
+				$homeRosterWomen = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
+				$awayRosterWomen = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
+				for ($r = 0; $r < $num_rubbers; $r++) {
+					$homeRoster[$r][1] = $homeRosterMen;
+					$homeRoster[$r][2] = $homeRosterWomen;
+					$awayRoster[$r][1] = $awayRosterMen;
+					$awayRoster[$r][2] = $awayRosterWomen;
+				}
+				break;
+		case 'LD':
+				$homeRosterMen = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
+				$awayRosterMen = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
+				$homeRosterWomen = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
+				$awayRosterWomen = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
+				$homeRoster[0][1] = $homeRosterWomen;
+				$homeRoster[0][2] = $homeRosterWomen;
+				$homeRoster[1][1] = $homeRosterMen;
+				$homeRoster[1][2] = $homeRosterMen;
+				$homeRoster[2][1] = $homeRosterMen;
+				$homeRoster[2][2] = $homeRosterWomen;
+				$awayRoster[0][1] = $awayRosterWomen;
+				$awayRoster[0][2] = $awayRosterWomen;
+				$awayRoster[1][1] = $awayRosterMen;
+				$awayRoster[1][2] = $awayRosterMen;
+				$awayRoster[2][1] = $awayRosterMen;
+				$awayRoster[2][2] = $awayRosterWomen;
+				break;
 		}
 	?>
 <div id="matchrubbers" class="rubber-block">
@@ -521,26 +516,6 @@ class LeagueManagerAJAX
         $r = $tabbase = 0 ;
         
         foreach ($rubbers as $rubber) {
-    		switch ($rubber->rubber_number) {
-	    	case '1':
-		    	$homeroster1 = $homeroster1_1;
-		    	$homeroster2 = $homeroster2_1;
-		    	$awayroster1 = $awayroster1_1;
-		    	$awayroster2 = $awayroster2_1;
-                break;
-	    	case '2':
-		    	$homeroster1 = $homeroster1_2;
-		    	$homeroster2 = $homeroster2_2;
-		    	$awayroster1 = $awayroster1_2;
-		    	$awayroster2 = $awayroster2_2;
-                break;
-	    	case '3':
-		    	$homeroster1 = $homeroster1_3;
-		    	$homeroster2 = $homeroster2_3;
-		    	$awayroster1 = $awayroster1_3;
-		    	$awayroster2 = $awayroster2_3;
-                break;
-    		}
     ?>
                 <tr class="rtr '.$class.'">
                     <input type="hidden" name="id[<?php echo $r ?>]" value="<?php echo $rubber->id ?>" </>
@@ -551,7 +526,7 @@ class LeagueManagerAJAX
 <?php $tabindex = $tabbase + 1; ?>
 						<select tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer1[<?php echo $r ?>]" id="homeplayer1_<?php echo $r ?>">
 							<option><?php _e( 'Select Player', 'leaguemanager' ) ?></option>
-<?php foreach ( $homeroster1 AS $roster ) {
+<?php foreach ( $homeRoster[$r][1] AS $roster ) {
 	isset($roster->removed_date) ? $disabled = 'disabled' : $disabled = ''; ?>
 							<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->home_player_1)) selected($roster->roster_id, $rubber->home_player_1 ); echo $disabled; ?>>
 								<?php echo $roster->firstname ?> <?php echo $roster->surname ?>
@@ -577,7 +552,7 @@ class LeagueManagerAJAX
 <?php $tabindex = $tabbase + 3; ?>
 						<select tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer1[<?php echo $r ?>]" id="awayplayer1_<?php echo $r ?>">
 							<option><?php _e( 'Select Player', 'leaguemanager' ) ?></option>
-<?php foreach ( $awayroster1 AS $roster ) {
+<?php foreach ( $awayRoster[$r][1] AS $roster ) {
 	isset($roster->removed_date) ? $disabled = 'disabled' : $disabled = ''; ?>
 							<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->away_player_1)) selected($roster->roster_id, $rubber->away_player_1 ); echo $disabled; ?>>
 								<?php echo $roster->firstname ?> <?php echo $roster->surname ?>
@@ -591,7 +566,7 @@ class LeagueManagerAJAX
 <?php $tabindex = $tabbase + 2; ?>
 						<select tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer2[<?php echo $r ?>]" id="homeplayer2_<?php echo $r ?>">
 							<option><?php _e( 'Select Player', 'leaguemanager' ) ?></option>
-<?php foreach ( $homeroster2 AS $roster ) {
+<?php foreach ( $homeRoster[$r][2] AS $roster ) {
 	isset($roster->removed_date) ? $disabled = 'disabled' : $disabled = ''; ?>
 							<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->home_player_2)) selected($roster->roster_id, $rubber->home_player_2 ); echo $disabled; ?>>
 							<?php echo $roster->firstname ?> <?php echo $roster->surname ?>
@@ -603,7 +578,7 @@ class LeagueManagerAJAX
 <?php $tabindex = $tabbase + 4; ?>
 						<select tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer2[<?php echo $r ?>]" id="awayplayer2_<?php echo $r ?>">
 							<option><?php _e( 'Select Player', 'leaguemanager' ) ?></option>
-<?php foreach ( $awayroster2 AS $roster ) { ?>
+<?php foreach ( $awayRoster[$r][2] AS $roster ) { ?>
 							<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->away_player_2)) selected($roster->roster_id, $rubber->away_player_2 ) ?>><?php echo $roster->firstname ?> <?php echo $roster->surname ?></option>
 <?php } ?>
 						</select>

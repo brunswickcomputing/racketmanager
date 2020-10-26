@@ -24,7 +24,7 @@
 		<?php if ( ($rank == $i) ) { ?>
 				<td class='num'>-</td>
 <?php } else { ?>
-				<?php echo $leaguemanager->getCrosstableField($team->id, $teams[$i]->id, $team->home, $league->id); ?>
+				<?php echo $leaguemanager->getCrosstableField($team->id, $teams[$i]->id, $team->home, $league->id, $season['name']); ?>
 		<?php } ?>
 	
 	<?php } ?>

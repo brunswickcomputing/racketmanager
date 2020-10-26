@@ -120,7 +120,7 @@
 <?php } ?>
 					</td>
 					<td class="num">
-						<input type="text" size="2" style="text-align: center;" id="add_points_<?php echo $team->id ?>" name="add_points[<?php echo $team->id ?>]" value="<?php echo $team->add_points ?>" onblur="Leaguemanager.saveAddPoints(<?php echo $team->id ?>)" /><span class="loading" id="loading_<?php echo $team->id ?>"></span>
+						<input type="text" size="2" style="text-align: center;" id="add_points_<?php echo $team->id ?>" name="add_points[<?php echo $team->id ?>]" value="<?php echo $team->add_points ?>" onblur="Leaguemanager.saveAddPoints(<?php echo $team->id ?>, <?php echo $league_id ?> )" /><span class="loading" id="loading_<?php echo $team->id ?>"></span>
 					</td>
 				</tr>
 <?php } ?>

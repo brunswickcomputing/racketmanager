@@ -38,6 +38,7 @@
 case 'WD': _e( 'Ladies Doubles', 'leaguemanager' ); break;
 case 'MD': _e( 'Mens Doubles', 'leaguemanager' ); break;
 case 'XD': _e( 'Mixed Doubles', 'leaguemanager' ); break;
+case 'LD': _e( 'The League', 'leaguemanager' ); break;
 	} ?>
 				</td>
 				<td class="num"><?php echo $leaguemanager->getNumLeagues( $competition->id ) ?></td>
@@ -73,6 +74,7 @@ case 'XD': _e( 'Mixed Doubles', 'leaguemanager' ); break;
 					<option value='WD' <?php if ( isset($competition->type)) ($competition->type == 'WD' ? 'selected' : '') ?>><?php _e( 'Ladies Doubles', 'leaguemanager') ?></option>
 					<option value='MD' <?php if ( isset($competition->type)) ($competition->type == 'MD' ? 'selected' : '') ?>><?php _e( 'Mens Doubles', 'leaguemanager') ?></option>
 					<option value='XD' <?php if ( isset($competition->type)) ($competition->type == 'XD' ? 'selected' : '') ?>><?php _e( 'Mixed Doubles', 'leaguemanager') ?></option>
+					<option value='LD' <?php if ( isset($competition->type)) ($competition->type == 'LD' ? 'selected' : '') ?>><?php _e( 'The League', 'leaguemanager') ?></option>
 				</select>
 			</td>
 		</tr>

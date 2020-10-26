@@ -56,7 +56,7 @@ class LeagueManagerTennis extends LeagueManager
 		add_filter( 'leaguemanager_won_matches_'.$this->key, array(&$this, 'getNumWonMatches'), 10, 2 );
 		add_filter( 'leaguemanager_tie_matches_'.$this->key, array(&$this, 'getNumTieMatches'), 10, 2 );
 		add_filter( 'leaguemanager_lost_matches_'.$this->key, array(&$this, 'getNumLostMatches'), 10, 2 );
-		add_action( 'leaguemanager_save_standings_'.$this->key, array(&$this, 'saveStandings'), 10, 3 );
+		add_action( 'leaguemanager_save_standings_'.$this->key, array(&$this, 'saveStandings'), 10, 4 );
 		add_action( 'leaguemanager_get_standings_'.$this->key, array(&$this, 'getStandingsFilter'), 10, 4 );
 
 		add_action( 'league_settings_'.$this->key, array(&$this, 'leagueSettings') );
@@ -133,12 +133,12 @@ class LeagueManagerTennis extends LeagueManager
 		echo "<tr valign='top'>";
 			echo "<th scope='row'><label for='competition_type'>".__('Type', 'leaguemanager')."</label></th>";
 		echo "<td>";
-				echo "<select size='1' name='competition_type' id='competition_type'>";
+				echo "<select size='1' name='settings[competition_type]' id='competition_type'>";
 					echo "<option>"._e( 'Select', 'leaguemanager')."</option>";
 					echo "<option value='WD' ".($competition->type == 'WD' ? 'selected' : '').">".__( 'Ladies Doubles', 'leaguemanager')."</option>";
 					echo "<option value='MD' ".($competition->type == 'MD' ? 'selected' : '').">".__( 'Mens Doubles', 'leaguemanager')."</option>";
 					echo "<option value='XD' ".($competition->type == 'XD' ? 'selected' : '').">".__( 'Mixed Doubles', 'leaguemanager')."</option>";
-					echo "<option value='XX' ".($competition->type == 'XX' ? 'selected' : '').">".__( 'The League', 'leaguemanager')."</option>";
+					echo "<option value='LD' ".($competition->type == 'LD' ? 'selected' : '').">".__( 'The League', 'leaguemanager')."</option>";
 				echo "</select>";
 			echo "</td>";
 		echo "</tr>";
@@ -294,16 +294,16 @@ class LeagueManagerTennis extends LeagueManager
 	 * @param int $team_id
 	 * @return void
 	 */
-	function saveStandings( $team_id, $league_id )
+	function saveStandings( $team_id, $league_id, $season )
 	{
 		global $wpdb, $leaguemanager;
 
-		$team = $wpdb->get_results( "SELECT `custom` FROM {$wpdb->leaguemanager_table} WHERE `team_id` = {$team_id} AND `league_id` = {$league_id}" );
+        $team = $wpdb->get_results( "SELECT `custom` FROM {$wpdb->leaguemanager_table} WHERE `team_id` = {$team_id} AND `league_id` = {$league_id} AND `season` = {$season}" );
 		$team = $team[0];
 		$custom = isset($team->custom) ? maybe_unserialize($team->custom) : '';
 		$custom = $this->getStandingsData($team_id, $league_id, $custom);
 
-		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `custom` = '%s' WHERE `team_id` = '%d' AND `league_id` = '%d'", maybe_serialize($custom), $team_id, $league_id ) );
+        $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `custom` = '%s' WHERE `team_id` = '%d' AND `league_id` = '%d' AND `season` = '%s'", maybe_serialize($custom), $team_id, $league_id, $season ) );
 	}
 
 
@@ -348,6 +348,7 @@ class LeagueManagerTennis extends LeagueManager
 
 		$league = $leaguemanager->getLeague($league_id);
 		$season = $leaguemanager->getSeason($league);
+        
         if ( !$matches ) {
             $matches = $leaguemanager->getMatches( array("league_id" => $league->id, "season" => $season['name'], "final" => '', "limit" => false, "cache" => false, "home_points" => 'not null', "away points" => 'not null') );
         }
@@ -847,10 +848,10 @@ class LeagueManagerTennis extends LeagueManager
 	 */
 	function importTeams( $custom, $line )
 	{
-        $custom['sets_won'] = isset($line[8]) ? $line[8] : '';
-        $custom['sets_allowed'] = isset($line[9]) ? $line[9] : '';
-		$custom['games_won'] = isset($line[10])? $line[10] : '';
-        $custom['games_allowed'] = isset($line[11])? $line[11] : '';
+        $custom['sets_won'] = isset($line[17]) ? $line[17] : '';
+        $custom['sets_allowed'] = isset($line[18]) ? $line[18] : '';
+		$custom['games_won'] = isset($line[19])? $line[19] : '';
+        $custom['games_allowed'] = isset($line[20])? $line[20] : '';
 
 		return $custom;
 	}

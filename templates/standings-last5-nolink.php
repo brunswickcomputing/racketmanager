@@ -83,7 +83,7 @@ The following variables are usable:
 
 					// Get Next Match
 						//$next_results = get_next_match($team->id, 1);
-						$matcharray = array("time" => "next", "team_id" => $team->id, "limit" => 1, "league_id" => $league->id);
+						$matcharray = array("time" => "next", "team_id" => $team->id, "limit" => 1, "league_id" => $league->id, "season" => $season );
 						$next_results = $leaguemanager->getMatches( $matcharray );
 						$last5 = '<td style="text-align: right;" class="last5Icon last5">';
 						if ( $next_results ) {
@@ -104,7 +104,7 @@ The following variables are usable:
 						// Get the latest results
 						//$results = get_last_matches($team->id, 5);
 						//$results = get_latest_results($team->id, 5);
-						$matcharray = array("time" => "latest", "team_id" => $team->id, "limit" => 5, "league_id" => $league->id);
+						$matcharray = array("time" => "latest", "team_id" => $team->id, "limit" => 5, "league_id" => $league->id, "season" => $season );
 						$results = $leaguemanager->getMatches( $matcharray );
 						foreach ($results as $result)
 						{

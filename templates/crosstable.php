@@ -43,7 +43,7 @@ The following variables are usable:
 						<?php if ( ($rank == $i) ) { ?>
 							<td class='num'>-</td>
 						<?php } else { ?>
-							<?php echo $this->getCrosstableField($team->id, $teams[$i-1]->id, $team->home, $league->id); ?>
+							<?php echo $this->getCrosstableField($team->id, $teams[$i-1]->id, $team->home, $league->id, $season ); ?>
 						<?php } ?>
 						
 					<?php } ?>

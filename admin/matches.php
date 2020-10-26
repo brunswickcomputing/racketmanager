@@ -1,4 +1,4 @@
-<div class="league-block">
+	<div class="league-block">
 
 <?php if ( !empty($season['num_match_days']) ) { ?>
 <!-- Bulk Editing of Matches -->
@@ -25,7 +25,8 @@
 	<input type="hidden" name="current_match_day" value="<?php echo $matchDay ?>" />
 	<input type="hidden" name="jquery-ui-tab" value="0" class="jquery_ui_tab_index" />
 	<input type="hidden" name="group" value="<?php echo $group ?>" />
-	
+    <input type="hidden" name="season" value="<?php echo $season['name'] ?>" />
+
 	<div class="tablenav" style="margin-bottom: 0.1em; clear: none;">
 		<!-- Bulk Actions -->
 		<select name="action2" size="1">

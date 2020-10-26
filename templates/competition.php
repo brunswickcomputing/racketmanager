@@ -27,6 +27,11 @@ wp_enqueue_script('datatables');
 				<option value="<?php echo $key ?>"<?php if ( $season['name'] == $curr_season ) echo ' selected="selected"' ?>><?php echo $season['name'] ?></option>
 		<?php } ?>
 			</select>
+            <input type="submit" class="submit" value="<?php _e( 'Show' ) ?>" />
+        </form>
+    </div>
+
+    <div id="leagues">
 	<?php foreach ( $leagues AS $league ) : ?>
 			<!-- Standings Table -->
 			<div id="standings-archive" class="jquery-ui-tab">
@@ -34,6 +39,5 @@ wp_enqueue_script('datatables');
 				<?php leaguemanager_standings( $league->id, array( 'season' => $curr_season, 'template' => 'nolink', 'logo' => false ) ) ?>
 			</div>
 	<?php endforeach ?>
-		</form>
 	</div>
 </div>

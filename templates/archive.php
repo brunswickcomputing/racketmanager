@@ -34,7 +34,7 @@ wp_enqueue_script('datatables');
 	});
 	jQuery(document).ready(function(){
 						   jQuery('#playerstats').DataTable( {
-															order: [[ 3, 'desc' ], [ 9, 'desc' ], [ 5, 'desc' ], [ 7, 'desc' ],[ 0, 'asc' ]],
+															order: [[ 3, 'desc' ], [ 9, 'desc' ], [ 5, 'desc' ], [ 6, 'asc' ], [ 7, 'desc' ], [ 8, 'asc' ], [ 0, 'asc' ]],
 															fixedHeader: {
 															header: true,
 															footer: true

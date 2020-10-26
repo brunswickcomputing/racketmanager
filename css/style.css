@@ -960,9 +960,11 @@ div.teamlist .header .ui-icon {
 .playerstats .matchday {
 	width: 8.5%;
 	text-align: center;
+    font-size: .75em;
 }
 .playerstats th {
 	text-align: center;
+    font-size: .8em;
 }
 .playerstats thead th.colspan {
 	border: none;

@@ -244,7 +244,9 @@ class LeagueManagerAdminPanel extends LeagueManager
 						case 'show-competition':
 							include_once( dirname(__FILE__) . '/show-competition.php' );
 							break;
-
+                        case 'team':
+                            include_once( dirname(__FILE__) . '/team.php' );
+                            break;
 						default:
 							$menu = $this->getMenu();
 							$page = htmlspecialchars($_GET['subpage']);
@@ -445,7 +447,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 		}
         $season = $leaguemanager->getSeason($league)['name'];
 
-		while ( list($id) = each($teams) ) {
+        foreach(array_keys($teams) as $id) {
 			$points2_plus = isset($custom[$id]['points2']['plus']) ? $custom[$id]['points2']['plus'] : 0;
 			$points2_minus = isset($custom[$id]['points2']['minus']) ? $custom[$id]['points2']['minus'] : 0;
             if ( !is_numeric($points2_plus) ) $points2_plus = 0;
@@ -1070,14 +1072,17 @@ class LeagueManagerAdminPanel extends LeagueManager
 	 * @param boolean $overwrite_image
 	 * @return void
 	 */
-	function editTeam( $team_id, $title, $captain, $contactno, $contactemail, $affiliatedclub, $matchday, $matchtime, $stadium, $home, $group, $roster, $profile, $custom, $logo, $league_id, $del_logo = false, $overwrite_image = false )
+	function editTeam( $team_id, $title, $affiliatedclub, $stadium, $captain = false, $contactno = false, $contactemail = false, $matchday = false, $matchtime = false, $home = false, $group = false, $roster = false, $profile = false, $custom = false, $logo = false, $league_id = false, $del_logo = false, $overwrite_image = false )
 	{
 		global $wpdb, $leaguemanager;
-        $league = $leaguemanager->getLeague($league_id);
 
 		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `stadium` = '%s', `logo` = '%s', `home` = '%d', `roster`= '%s', `profile` = '%d', `custom` = '%s' WHERE `id` = %d", $title, $affiliatedclub, $stadium, basename($logo), $home, maybe_serialize($roster), $profile, maybe_serialize($custom), $team_id ) );
-        $this->setTeamCompetition($team_id, $league->competition_id, $captain, $contactno, $contactemail, $matchday, $matchtime);
-
+        if ( !$league_id ) {
+        } else {
+            $league = $leaguemanager->getLeague($league_id);
+            $this->setTeamCompetition($team_id, $league->competition_id, $captain, $contactno, $contactemail, $matchday, $matchtime);
+        }
+        
 		// Delete Image if options is checked
 		if ($del_logo || $overwrite_image) {
 			$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_teams} SET `logo` = '' WHERE `id` = '%d'", $team_id) );
@@ -1092,6 +1097,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 		if ( isset($_FILES['logo']) && $_FILES['logo']['name'] != '' )
 			$this->uploadLogo($team_id, $_FILES['logo'], $overwrite_image);
 
+        parent::setMessage( __('Team updated', 'leaguemanager') );
 		$leaguemanager->setMessage( __('Team updated','leaguemanager') );
 	}
 
@@ -2297,7 +2303,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 					$custom = apply_filters( 'leaguemanager_import_teams_'.$league->sport, $custom, $line );
                     $team_id = $this->getTeamID($team);
                     if ( $team_id != 0 ) {
-                        $this->editTeam( $team_id, $team, $captain, $contactno, $contactemail, $affiliatedclub, $matchday, $matchtime, $stadium, $home, $group, $roster, $profile, $custom, $logo, $league->id );
+                        $this->editTeam( $team_id, $team, $affiliatedclub, $stadium, $captain, $contactno, $contactemail, $matchday, $matchtime, $home, $group, $roster, $profile, $custom, $logo, $league->id );
                     } else {
                         $team_id = $this->addTeam( $team, $affiliatedclub, $stadium, $captain, $contactno, $contactemail, $matchday, $matchtime, $home, $roster, $profile, $custom, $logo, $league->id );
                     }
@@ -2980,7 +2986,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 
 	function htmlspecialchars_array($arr = array()) {
 		$rs =  array();
-		while(list($key,$val) = each($arr)) {
+        foreach($arr as $key => $val) {
 			if(is_array($val)) {
 				$rs[$key] = $this->htmlspecialchars_array($val);
 			} else {

@@ -38,7 +38,7 @@ class LeagueManagerLoader
 	 *
 	 * @var string
 	 */
-	var $version = '5.3.7';
+	var $version = '5.4.0';
 
 
 	/**
@@ -46,7 +46,7 @@ class LeagueManagerLoader
 	 *
 	 * @var string
 	 */
-	var $dbversion = '5.3.5';
+	var $dbversion = '5.3.6';
 
 
 	/**
@@ -973,4 +973,15 @@ if ( isset($_POST['leaguemanager_export']) )
 	ob_start();
             if ( isset($_GET['leaguemanager_export']) )
             ob_start();
+
+//SELECT c.`name`, t.`title`, tc.`match_day`, tc.`match_time`, display_name, user_email, meta_value
+//FROM `wp_leaguemanager_teams` t, `wp_leaguemanager_team_competition` tc, `wp_users` u, `wp_usermeta` um, `wp_leaguemanager_competitions` c
+//WHERE t.`id` = tc.`team_id`
+//AND tc.`captain` = u.`id`
+//AND u.`id` = um.`user_id`
+//AND tc.`competition_id` = c.`id`
+//AND c.id BETWEEN 1 and 6
+//AND um.`meta_key` = 'contactno'
+//AND t.`affiliatedclub` = 133
+//order by 1,2
 ?>

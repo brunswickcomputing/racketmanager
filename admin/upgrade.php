@@ -161,7 +161,14 @@ function leaguemanager_upgrade() {
 //            }
 //        }
 //    }
-
+    if (version_compare($installed, '5.3.6', '<')) {
+         echo __('starting 5.3.6 upgrade', 'leaguemanager') . "<br />\n";
+         $players = $wpdb->get_results(" SELECT `id`, `user_nicename` FROM {$wpdb->users} WHERE `user_nicename` like 'SHARE%' or `user_nicename` like '%PAIR%' or `user_nicename` like 'walkover%' ORDER BY `user_nicename`; ");
+         foreach ($players AS $player) {
+             $playerId = $player->id;
+             update_user_meta($playerId, 'leaguemanager_type', 'system' );
+         }
+    }
     /*
 	* Update version and dbversion
 	*/

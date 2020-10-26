@@ -676,7 +676,7 @@ class LeagueManagerTennis extends LeagueManager
             if ( !is_numeric($match->home_team) || !is_numeric($match->away_team) ) {
                 echo '<td></td>';
             } else {
-                $base_height = 155;
+                $base_height = 215;
                 $rubber_height = $league->num_rubbers * 145;
                 $height = $base_height + $rubber_height;
                 $link = '#TB_inline?&inlineId=showMatchRubbers&width=650&height='.$height;

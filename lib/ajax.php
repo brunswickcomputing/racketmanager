@@ -472,6 +472,13 @@ class LeagueManagerAJAX
 		global $leaguemanager;
 		$matchId = $_POST['matchId'];
 		$match = $leaguemanager->getMatch($matchId);
+        if ( $match->final == '' ) {
+            $matchRound = '';
+            $matchType = 'league';
+        } else {
+            $matchRound = $match->final;
+            $matchType = 'tournament';
+        }
 		$league = $leaguemanager->getCurrentLeague();
 		$num_sets = $league->num_sets;
 		$num_rubbers = $league->num_rubbers;
@@ -547,7 +554,9 @@ class LeagueManagerAJAX
         <input type="hidden" name="num_rubbers" value="<?php echo $num_rubbers ?>" />
         <input type="hidden" name="home_team" value="<?php echo $match->home_team ?>" />
         <input type="hidden" name="away_team" value="<?php echo $match->away_team ?>" />
-    
+        <input type="hidden" name="match_type" value="<?php echo $matchType ?>" />
+        <input type="hidden" name="match_round" value="<?php echo $matchRound ?>" />
+
         <table class="widefat" summary="" style="margin-bottom: 2em;">
             <thead>
                 <tr>
@@ -706,7 +715,7 @@ class LeagueManagerAJAX
     
     function updateRubbers()
     {
-        global $wpdb, $lmLoader, $leaguemanager;
+        global $wpdb, $lmLoader, $leaguemanager, $championship;
         $admin = $lmLoader->getAdminPanel();
         if ( isset($_POST['updateRubber'])) {
             check_admin_referer('rubbers-match');
@@ -776,19 +785,23 @@ class LeagueManagerAJAX
                     }
                 }
             } elseif ( $_POST['updateRubber'] == 'confirm' ) {
-                switch ( $_POST['resultConfirm'] ) {
-                    case "confirm":
-                        $matchConfirmed = 'A';
-                        $matchMessage = 'Result Approved';
-                        $updates = true;
-                        break;
-                    case "challenge":
-                        $matchConfirmed = 'C';
-                        $matchMessage = 'Result Challenged';
-                        $updates = true;
-                        break;
-                    default:
-                        $matchConfirmed = '';
+                if ( isset($_POST['resultConfirm'])) {
+                    switch ( $_POST['resultConfirm'] ) {
+                        case "confirm":
+                            $matchConfirmed = 'A';
+                            $matchMessage = 'Result Approved';
+                            $updates = true;
+                            break;
+                        case "challenge":
+                            $matchConfirmed = 'C';
+                            $matchMessage = 'Result Challenged';
+                            $updates = true;
+                            break;
+                        default:
+                            $matchConfirmed = '';
+                    }
+                } else {
+                    $matchConfirmed = '';
                 }
             }
             
@@ -802,6 +815,7 @@ class LeagueManagerAJAX
                     if ( $awayRoster > 0 ) {
                         $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `away_captain` = %d WHERE `id` = '%d'", $userid, $matchConfirmed, $userid, $matchId));
                     } else {
+                        $matchConfirmed = 'A';
                         $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s' WHERE `id` = '%d'", get_current_user_id(), $matchConfirmed, $matchId));
                     }
                 }
@@ -818,11 +832,18 @@ class LeagueManagerAJAX
                         $away_team[$matchId] = $away_team;
                         $custom[$matchId] = array();
                         $season = $_POST['current_season'];
-                        $matchCount = $admin->updateResults( $leagueId, $matches, $home_points, $away_points, $home_team, $away_team, $custom, $season );
-                        if ( $matchCount > 0 ) {
-                            $msg = sprintf(__('Saved Results of %d matches','leaguemanager'), $matchCount);
+                        if ( $_POST['match_type'] == 'tournament' ) {
+                            $championship->initialize($leagueId);
+                            $round = $championship->getFinals($_POST['match_round'])['round'];
+                            $championship->updateResults( $leagueId, $matches, $home_points, $away_points, $home_team, $away_team, $custom, $round, $season  );
+                            $msg = __('Match saved','leaguemanager');
                         } else {
-                            $msg = __('No matches to save','leaguemanager');
+                            $matchCount = $admin->updateResults( $leagueId, $matches, $home_points, $away_points, $home_team, $away_team, $custom, $season );
+                            if ( $matchCount > 0 ) {
+                                $msg = sprintf(__('Saved Results of %d matches','leaguemanager'), $matchCount);
+                            } else {
+                                $msg = __('No matches to save','leaguemanager');
+                            }
                         }
                     }
                 }

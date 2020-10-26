@@ -41,6 +41,11 @@
         $this->addTeam( htmlspecialchars(strip_tags($_POST['teamName'])), htmlspecialchars(strip_tags($_POST['affiliatedClub'])), htmlspecialchars(strip_tags($_POST['stadium'])));
         $this->printMessage();
         $tab = 3;
+    } elseif ( isset($_POST['editTeam']) ) {
+        check_admin_referer('leaguemanager_manage-teams');
+        $this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['affiliatedclub']), htmlspecialchars($_POST['stadium']));
+        $this->printMessage();
+        $tab = 3;
     } elseif ( isset($_POST['doteamdel']) && $_POST['action'] == 'delete' ) {
         check_admin_referer('teams-bulk');
         foreach ( $_POST['team'] AS $team_id ) {

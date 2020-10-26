@@ -6,14 +6,26 @@ Leaguemanager.reInit();
         echo '<p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p>';
 	} else {
 		$edit = false;
-        $league_id = intval($_GET['league_id']);
-        $league = $leaguemanager->getLeague( $league_id );
-        $season = isset($_GET['season']) ? htmlspecialchars(strip_tags($_GET['season'])) : '';
-        $matchdays = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
+        if ( isset( $_GET['league_id'] ) ) {
+            $noleague = false ;
+            $league_id = intval($_GET['league_id']);
+            $league = $leaguemanager->getLeague( $league_id );
+            $season = isset($_GET['season']) ? htmlspecialchars(strip_tags($_GET['season'])) : '';
+            $matchdays = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
+        } else {
+            $noleague = true;
+            $league_id = '';
+            $season = '';
+            if ( isset( $_GET['club_id'] ) ) {
+                $clubId = $_GET['club_id'];
+            } else {
+                $clubId = '';
+            }
+        }
         
 		if ( isset( $_GET['edit'] ) ) {
 			$edit = true;
-			$team = $leaguemanager->getTeamDtls(intval($_GET['edit']),intval($_GET['league_id']));
+			$team = $leaguemanager->getTeamDtls(intval($_GET['edit']),$league_id);
 			if ( !isset($team->roster) ) $team->roster = array();
 			
 			$form_title = __( 'Edit Team', 'leaguemanager' );
@@ -34,8 +46,12 @@ Leaguemanager.reInit();
 		}
 ?>
 	<div class="wrap league-block">
-		<p class="leaguemanager_breadcrumb"><a href="admin.php?page=leaguemanager"><?php _e( 'LeagueManager', 'leaguemanager' ) ?></a> &raquo; <a href="admin.php?page=leaguemanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a> &raquo; <?php echo $form_title ?></p>
+<p class="leaguemanager_breadcrumb"><a href="admin.php?page=leaguemanager"><?php _e( 'LeagueManager', 'leaguemanager' ) ?></a><?php if ( !$noleague ) { ?> &raquo; <a href="admin.php?page=leaguemanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a><?php } ?> &raquo; <?php echo $form_title ?></p>
+<?php if ( !$noleague ) { ?>
 		<h1><?php printf( "%s &mdash; %s",  $league->title, $form_title ); ?></h1>
+<?php } else { ?>
+        <h1><?php printf(  $form_title ); ?></h1>
+<?php } ?>
 <?php if ( isset($league->entryType) && $league->entryType == 'player' ) { ?>
 		<form action="admin.php?page=leaguemanager&amp;subpage=show-league&amp;league_id=<?php echo $league_id ?>&amp;season=<?php echo $season ?>" method="post" enctype="multipart/form-data" name="team_edit">
 
@@ -106,16 +122,19 @@ Leaguemanager.reInit();
 			<p class="submit"><input type="submit" name="action" value="<?php echo $form_action ?>" class="button button-primary" /></p>
 		</form>
 
+<?php } else {
+    if ( !$noleague ) { ?>
+		<form action="index.php?page=leaguemanager&amp;subpage=show-league&amp;league_id=<?php echo $league_id ?>&amp;season=<?php echo $season ?>" method="post" enctype="multipart/form-data" name="team_edit">
 <?php } else { ?>
-		<form action="admin.php?page=leaguemanager&amp;subpage=show-league&amp;league_id=<?php echo $league_id ?>&amp;season=<?php echo $season ?>" method="post" enctype="multipart/form-data" name="team_edit">
-		
+<form action="admin.php?page=leaguemanager&amp;view=teams<?php if ( $clubId !== '' ) { ?>&amp;club_id=<?php echo $clubId ?> <?php } ?>" method="post" enctype="multipart/form-data" name="team_edit">
+<?php } ?>
 			<?php wp_nonce_field( 'leaguemanager_manage-teams' ) ?>
 
 			<table class="lm-form-table">
 			<tr valign="top">
 				<th scope="row" style="width: 225px;"><label for="team"><?php _e( 'Team', 'leaguemanager' ) ?></label></th>
 				<td>
-					<input type="text" id="team" name="team" value="<?php echo $team->title ?>" size="30" readonly placeholder="<?php _e( 'Add Team from Database', 'leaguemanager' ) ?>""/>
+					<input type="text" id="team" name="team" value="<?php echo $team->title ?>" size="30" placeholder="<?php _e( 'Add Team from Database', 'leaguemanager' ) ?>""/>
 <?php if ( !$edit ) { ?>
 
 					<div id="teams_db" style="display: none; overflow: auto; width: 300px; height: 80px;"><div>
@@ -169,6 +188,7 @@ Leaguemanager.reInit();
                 </td>
             </tr>
 
+<?php if ( !$noleague ) { ?>
 			<tr valign="top">
 				<th scope="row"><label for="captain"><?php _e( 'Captain', 'leaguemanager' ) ?></label></th><td><input type="text" name="captain" id="captain" autocomplete="name off" value="<?php echo $team->captain ?>" size="40" /><input type="hidden" name="captainId" id="captainId" value="<?php echo $team->captainId ?>" /></td>
 			</tr>
@@ -194,7 +214,7 @@ Leaguemanager.reInit();
                     </select>
                 </td>
             </tr>
-
+<?php } ?>
 			<?php do_action( 'team_edit_form', $team ) ?>
 			<?php do_action( 'team_edit_form_'.(isset($league->sport) ? ($league->sport) : '' ), $team ) ?>
 			</table>
@@ -203,6 +223,10 @@ Leaguemanager.reInit();
 			<input type="hidden" name="league_id" value="<?php echo $league_id ?>" />
 			<input type="hidden" name="updateLeague" value="team" />
 			<input type="hidden" name="season" value="<?php echo $season ?>" />
+            <input type="hidden" name="clubId" value="<?php echo $clubId ?>" />
+<?php if ( $edit ) { ?>
+            <input type="hidden" name="editTeam" value="team" />
+<?php } ?>
 
 			<p class="submit"><input type="submit" name="action" value="<?php echo $form_action ?>" class="button button-primary" /></p>
 		</form>

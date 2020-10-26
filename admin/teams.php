@@ -52,7 +52,7 @@
 					<input type="checkbox" value="<?php echo $team->id ?>" name="team[<?php echo $team->id ?>]" />
 				</th>
 				<td class="num"><?php echo $team->id ?></td>
-				<td><?php echo $team->title ?></td>
+				<td><a href="admin.php?page=leaguemanager&amp;subpage=team&amp;edit=<?php echo $team->id; ?><?php if ( $affiliatedClub!= '' ) ?>&amp;club_id=<?php echo $affiliatedClub ?> "><?php echo $team->title ?></a></td>
                 <td><?php echo $team->affiliatedclubname ?></td>
 				<td><?php echo $team->stadium ?></td>
 			</tr>

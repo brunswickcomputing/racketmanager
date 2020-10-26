@@ -2103,8 +2103,8 @@ class LeagueManager
 		$match->time = ( '00:00' == $match->hour.":".$match->minutes ) ? '' : mysql2date(get_option('time_format'), $match->date);
 		//unset($match->custom);
 
-		$this->match[0] = $match;
-		return $this->match[0];
+        $this->match[$match_id] = $match;
+		return $this->match[$match_id];
 	}
 	
 	
@@ -2374,7 +2374,7 @@ class LeagueManager
 	{
 	 	global $wpdb;
 	
-        $defaults = array( 'count' => false, 'team' => false, 'club' => false, 'player' => false, 'gender' => false, 'inactive' => false, 'cache' => true, 'orderby' => array("display_name" => "ASC" ));
+        $defaults = array( 'count' => false, 'team' => false, 'club' => false, 'player' => false, 'gender' => false, 'inactive' => false, 'cache' => true, 'type' => false, 'orderby' => array("display_name" => "ASC" ));
 		$args = array_merge($defaults, (array)$args);
 		extract($args, EXTR_SKIP);
 		
@@ -2397,6 +2397,9 @@ class LeagueManager
 //            $search_terms[] = $wpdb->prepare("`gender` = '%s'", htmlspecialchars(strip_tags($gender)));
         }
         
+        if ($type) {
+        }
+
         if ($inactive) {
             $search_terms[] = "`removed_date` IS NULL";
         }
@@ -2451,6 +2454,7 @@ class LeagueManager
 			$rosters[$i]->player_id = $roster->player_id;
 			$rosters[$i]->fullname = $roster->fullname;
 			$rosters[$i]->gender = get_user_meta($roster->player_id, 'gender', true );
+            $rosters[$i]->type = get_user_meta($roster->player_id, 'leaguemanager_type', true );
 			$rosters[$i]->removed_date = $roster->removed_date;
 			$rosters[$i]->btm = get_user_meta($roster->player_id, 'btm', true );;
             
@@ -2458,6 +2462,17 @@ class LeagueManager
                 unset($rosters[$i]);
             }
 			
+            if ( $type ) {
+                
+                if ( $type == 'all' ) {
+                    
+                } elseif ( $type == 'real' ) {
+                    if ( $rosters[$i]->type == 'system' ) {
+                        unset($rosters[$i]);
+                    }
+                }
+            }
+            
 			$i++;
 		}
 		
@@ -2582,9 +2597,7 @@ class LeagueManager
         $defaults = array( 'player_id' => false, 'btm' => false, 'firstname' => false, 'surname' => false, 'cache' => true, 'orderby' => array("fullname" => "ASC"  ) );
         $args = array_merge($defaults, (array)$args);
         extract($args, EXTR_SKIP);
-        
-        //        $cachekey = md5(implode(array_map(function($entry) { if(is_array($entry)) { return implode($entry); } else { return $entry; } }, $args)) . $output);
-        
+        $cachekey = md5(implode(array_map(function($entry) { if(is_array($entry)) { return implode($entry); } else { return $entry; } }, $args)) );
         $search_terms = array();
         if ($player_id) {
             $search_terms[] = $wpdb->prepare("`player_id` = '%d'", intval($player_id));
@@ -2619,8 +2632,9 @@ class LeagueManager
         $order = $orderby_string;
         
         // use cached object
-        //        if ( isset($this->player[$player_id]) && $cache )
-        //            return $this->player[$player_id];
+        if ( isset($this->players[$cachekey]) && $cache ) {
+            return $this->players[$cachekey];
+        }
         
         $players = get_users( 'orderby=displayname' );
         if ( !$players ) return false;
@@ -2640,7 +2654,8 @@ class LeagueManager
             $i++;
         }
         
-        return $players;
+        $this->players[$cachekey] = $players;
+        return $this->players[$cachekey];
     }
     
 	/**

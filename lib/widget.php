@@ -165,7 +165,7 @@ class LeagueManagerWidget extends WP_Widget
 			$team_args = array("league_id" => $instance['league'], "season" => $instance['season'], "orderby" => array("id" => "ASC"));
 			if ( !empty($instance['group']) ) $team_args["group"] = $instance['group'];
 			
-			$teams = $leaguemanager->getTeams( $team_args, 'ARRAY' );
+			$teams = $leaguemanager->getTeamsInfo( $team_args, 'ARRAY' );
 			
 			$curr = $this->getMatchIndex('next');
 			if (isset($matches[$curr]))
@@ -245,7 +245,7 @@ class LeagueManagerWidget extends WP_Widget
 			$team_args = array("league_id" => $instance['league'], "season" => $instance['season'], "orderby" => array("id" => "ASC"));
 			if ( !empty($instance['group']) ) $team_args["group"] = $instance['group'];
 			
-			$teams = $leaguemanager->getTeams( $team_args, 'ARRAY' );
+			$teams = $leaguemanager->getTeamsInfo( $team_args, 'ARRAY' );
 							
 			$curr = $this->getMatchIndex('prev');
 			if (isset($matches[$curr]))

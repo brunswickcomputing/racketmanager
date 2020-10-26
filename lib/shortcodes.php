@@ -131,16 +131,6 @@ class LeagueManagerShortcodes extends LeagueManager
 		foreach ( $teams AS $team ) {
 			$class = ( !isset($class) || in_array('alternate', $class) ) ? array() : array('alternate');
 			
-			if ( $team->rank > 0 ) {
-				// Add classes for ascend or descend
-				if ( $team->rank <= $league->num_ascend ) $class[] = 'ascend';
-				elseif ( count($teams)-$team->rank < $league->num_descend ) $class[] =  'descend';
-
-				// Add class for relegation
-				if ( $team->rank > count($teams)-$league->num_descend-$league->num_relegation && $team->rank <= count($teams)-$league->num_descend ) $class[] = 'relegation-down';
-				if ( $team->rank > $league->num_ascend && $team->rank <= $league->num_ascend + $league->num_relegation ) $class[] = 'relegation-up';
-			}
-			
 			// Add class for home team
 			if ( 1 == $team->home ) $class[] = 'homeTeam';
 
@@ -697,11 +687,11 @@ class LeagueManagerShortcodes extends LeagueManager
 
 		$team_args = array("league_id" => $league->id, "season" => $season, "orderby" => array("title" => "ASC"));
 		if ( $group ) $team_args["group"] = $group;
-		$teams = $leaguemanager->getTeams( $team_args );
+		$teams = $leaguemanager->getTeamsInfo( $team_args );
 
 		foreach ( $teams AS $i => $team ) {
 			// Get next match
-			$next_matches = $leaguemanager->getMatches(array("team_id" => $team->id, "time" => "next", "league_id" => $team->league_id, "season" => $season));
+			$next_matches = $leaguemanager->getMatches(array("team_id" => $team->id, "time" => "next", "league_id" => $league->id, "season" => $season));
 			$next_match = isset($next_matches[0]) ? $next_matches[0] : false;
 			if ( $next_match ) {
 				if ( $next_match->home_team == $team->id ) {
@@ -715,7 +705,7 @@ class LeagueManagerShortcodes extends LeagueManager
 			}
 
 			// Get last match
-			$prev_matches = $leaguemanager->getMatches(array("team_id" => $team->id, "time" => "prev", "limit" => 1, "orderby" => array("date" => "DESC"), "league_id" => $team->league_id, "season" => $season ));
+			$prev_matches = $leaguemanager->getMatches(array("team_id" => $team->id, "time" => "prev", "limit" => 1, "orderby" => array("date" => "DESC"), "league_id" => $league->id, "season" => $season ));
 			$prev_match = isset($prev_matches[0]) ? $prev_matches[0] : false;
 			if ( $prev_match ) {
 				if ( $prev_match->home_team == $team->id ) {
@@ -877,7 +867,7 @@ class LeagueManagerShortcodes extends LeagueManager
 		$league->show_logo = ( $logo == 'true' ) ? true : false;
 		
 		$team_args = array("league_id" => $league->id, "season" => $season, "group" => $group);
-		$teams = $leaguemanager->getTeams( $team_args );
+		$teams = $leaguemanager->getTeamsInfo( $team_args );
 
 		if ( empty($template) && $this->checkTemplate('crosstable-'.$league->sport) )
 			$filename = 'crosstable-'.$league->sport;

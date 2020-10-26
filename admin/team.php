@@ -8,7 +8,7 @@ Leaguemanager.reInit();
 		$edit = false;
 		if ( isset( $_GET['edit'] ) ) {
 			$edit = true;
-			$team = $leaguemanager->getTeamDtls(intval($_GET['edit']));
+			$team = $leaguemanager->getTeamDtls(intval($_GET['edit']),intval($_GET['league_id']));
 			if ( !isset($team->roster['id']) ) $team->roster = array('id' => '', 'cat_id' => '');
 			
 			$league_id = intval($_GET['league_id']);

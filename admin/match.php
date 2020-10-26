@@ -145,8 +145,8 @@
     		$team_args["group"] = $group;
 		}
 
-		$teamsHome = $leaguemanager->getTeams( $team_args_home );
-		$teams = $leaguemanager->getTeams( $team_args );
+		$teamsHome = $leaguemanager->getTeamsInfo( $team_args_home );
+		$teams = $leaguemanager->getTeamsInfo( $team_args );
 	}
 	?>
 

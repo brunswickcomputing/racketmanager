@@ -7,7 +7,7 @@ if ( isset($_POST['leaguemanager_export']) ) {
 	$options = get_option('leaguemanager');
 	if ($_POST['exportkey'] ==	$options['exportkey']) {
 		ob_end_clean();
-		$this->export((int)$_POST['league_id'], $_POST['mode']);
+		$this->export((int)$_POST['league_id'], $_POST['mode'], $_POST['season']);
 		unset($options['exportkey']);
 		update_option('projectmanager', $options);
 	} else {
@@ -32,8 +32,9 @@ update_option('leaguemanager', $options);
 		<tr>
 			<th><label for="league_id"><?php _e('League', 'leaguemanager'); ?></label></th>
 			<td>
-				<?php if ( $leagues = $leaguemanager->getLeagues() ) : ?>
+                <?php if ( $leagues = parent::getLeagues() ) : ?>
 				<select size="1" name="league_id" id="league_id">
+                    <option><?php _e( 'Select league', 'leaguemanager') ?></option>
 				<?php foreach ( $leagues AS $league ) : ?>
 					<option value="<?php echo $league->id ?>"><?php echo $league->title ?></option>
 				<?php endforeach; ?>
@@ -45,8 +46,23 @@ update_option('leaguemanager', $options);
 			<th><label for="mode"><?php _e('Data', 'leaguemanager'); ?></label></th>
 			<td>
 				<select size="1" name="mode" id="mode">
+                    <option><?php _e( 'Select export type', 'leaguemanager') ?></option>
 					<option value="teams"><?php _e( 'Teams', 'leaguemanager' ) ?></option>
+					<option value="tables"><?php _e( 'Tables', 'leaguemanager' ) ?></option>
 					<option value="matches"><?php _e( 'Matches', 'leaguemanager' ) ?></option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<th><label for="season"><?php _e('Season', 'leaguemanager'); ?></label></th>
+			<td>
+				<select size="1" name="season" id="season">
+                    <option><?php _e( 'Select season', 'leaguemanager') ?></option>
+					<option value="2016">2016</option>
+                    <option value="2017">2017</option>
+                    <option value="2018">2018</option>
+                    <option value="2019">2019</option>
+                    <option value="2020">2020</option>
 				</select>
 			</td>
 		</tr>

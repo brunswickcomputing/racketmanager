@@ -23,11 +23,6 @@ $season = end($league->seasons)['name'];
             <a href="/index.php?league_id=<?php echo $league->id ?>&team_id=<?php echo $team->id ?>&season=<?php echo $season ?>&leaguemanager_export=calendarFile" class="roll-button" >Add Matches to Calendar</a>
         </div>
 		<dl class="team">
-			<dt><?php _e( 'Rank', 'leaguemanager' ) ?></dt><dd><?php echo $team->rank ?></dd>
-			<dt><?php _e( 'Matches', 'leaguemanager' ) ?></dt><dd><?php echo $team->done_matches ?></dd>
-			<dt><?php _e( 'Won', 'leaguemanager' ) ?></dt><dd><?php echo $team->won_matches ?></dd>
-			<dt><?php _e( 'Tied', 'leaguemanager' ) ?></dt><dd><?php echo $team->draw_matches ?></dd>
-			<dt><?php _e( 'Lost', 'leaguemanager' ) ?></dt><dd><?php echo $team->lost_matches ?></dd>
 <?php if ( !empty($team->captain) ) { ?>
 			<dt><?php _e( 'Captain', 'leaguemanager' ) ?></dt><dd><?php echo $team->captain ?></dd>
 <?php } ?>

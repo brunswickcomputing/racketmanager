@@ -9,12 +9,12 @@ if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POS
 		$profile = isset($_POST['profile']) ? intval($_POST['profile']) : 0;
 		$group = isset($_POST['group']) ? htmlspecialchars(strip_tags($_POST['group'])) : '';
 		if ( '' == $_POST['team_id'] ) {
-			$team_id = $this->addTeam( htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['captain']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']), htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), htmlspecialchars($_POST['stadium']), $home, $roster, $profile, $custom, htmlspecialchars($_POST['logo_db']) );
+			$team_id = $this->addTeam( htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['captain']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']), htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), htmlspecialchars($_POST['stadium']), $home, $roster, $profile, $custom, htmlspecialchars($_POST['logo_db']),htmlspecialchars($_POST['league_id']) );
 			$this->addTableEntry( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
 		} else {
 			$del_logo = isset( $_POST['del_logo'] ) ? true : false;
 			$overwrite_image = isset( $_POST['overwrite_image'] ) ? true: false;
-			$this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['captain']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']),  htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), htmlspecialchars($_POST['stadium']), $home, $group, $roster, $profile, $custom, htmlspecialchars($_POST['logo_db']), $del_logo, $overwrite_image );
+            $this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['captain']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']),  htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), htmlspecialchars($_POST['stadium']), $home, $group, $roster, $profile, $custom, htmlspecialchars($_POST['logo_db']), intval($_POST['league_id']), $del_logo, $overwrite_image );
 		}
 	} elseif ( 'match' == $_POST['updateLeague'] ) {
 		check_admin_referer('leaguemanager_manage-matches');
@@ -57,7 +57,6 @@ if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POS
 	} elseif ( 'results' == $_POST['updateLeague'] ) {
 		check_admin_referer('matches-bulk');
 		$custom = isset($_POST['custom']) ? $_POST['custom'] : array();
-        debug_to_console($_POST);
 		$this->updateResults( intval($_POST['league_id']), $_POST['matches'], $_POST['home_points'], $_POST['away_points'], $_POST['home_team'], $_POST['away_team'], $custom, $_POST['season'] );
 		$tab = 2;
 		$matchDay = intval($_POST['current_match_day']);
@@ -72,8 +71,10 @@ if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POS
 }  elseif ( isset($_POST['doaction']) || isset($_POST['doaction2']) ) {
 	if ( isset($_POST['doaction']) && $_POST['action'] == "delete" ) {
 		check_admin_referer('teams-bulk');
+        $league = $leaguemanager->getCurrentLeague();
+        $season = $leaguemanager->getSeason($league);
 		foreach ( $_POST['team'] AS $team_id )
-			$this->delTeam( intval($team_id), true );
+        $this->delTeamFromLeague( intval($team_id), intval($_GET['league_id']), $season['name'] );
 	} elseif ( isset($_POST['doaction2']) && $_POST['action2'] == "delete" ) {
 		check_admin_referer('matches-bulk');
 		foreach ( $_POST['match'] AS $match_id )
@@ -189,7 +190,7 @@ if ( isset($_GET['standingstable']) ) {
 }
 /*$tmp = $leaguemanager->getTeams( array('league_id' => $league->id) );
 foreach ( $tmp AS $t )
-	$this->delTeam($t->id);*/
+	$this->delTeamFromLeague($t->id);*/
 
 	if ( !wp_mkdir_p( $leaguemanager->getImagePath() ) ) { ?>
   <div class="error"><p><?php printf( __( 'Unable to create directory %s. Is its parent directory writeable by the server?' ), $leaguemanager->getImagePath() ) ?></p></div>

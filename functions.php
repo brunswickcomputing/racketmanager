@@ -322,7 +322,7 @@ function leaguemanager_match( $match_id, $args = array() ) {
         
         if ( $teams = $leaguemanager->getTeams($team_args) ) {
             foreach ( $teams AS $team ) {
-                $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_teams} SET `season` = '%d', `league_id` = '%d' WHERE `id` = '%d'", $season, $new_league_id, $team->id ) );
+                $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `season` = '%d', `league_id` = '%d' WHERE `id` = '%d'", $season, $new_league_id, $team->id ) );
             }
         }
         if ( $matches = $leaguemanager->getMatches($match_args) ) {
@@ -424,13 +424,13 @@ function leaguemanager_match( $match_id, $args = array() ) {
         if ( isset( $_GET["team_id"] )  && isset( $_GET["league_id"] ) && isset( $_GET["season"] ) && isset( $_GET["leaguemanager_export"] ) ) {
             global $leaguemanager;
             define('DATE_ICAL', 'Ymd\THis');
-            $leaguemanager->league_id = $_GET["league_id"];
+            $league_id = $_GET["league_id"];
             $season = $_GET["season"];
             $team_id = $_GET["team_id"];
-            $team = $leaguemanager->getTeamDtls($team_id);
+            $team = $leaguemanager->getTeamDtls($team_id, $league_id);
             $teamname = $team->title;
-            $matches = $leaguemanager->getMatches( array("league_id" => $leaguemanager->league_id, "season" => $season, "team_id" => $team_id) );
-            $leaguemanager->league = $leaguemanager->getLeague($leaguemanager->league_id);
+            $matches = $leaguemanager->getMatches( array("league_id" => $league_id, "season" => $season, "team_id" => $team_id) );
+            $leaguemanager->league = $leaguemanager->getLeague($league_id);
             $filename = sanitize_title($leaguemanager->league->title)."-".$teamname.".ics";
             $contents = "BEGIN:VCALENDAR\n";
             $contents .= "VERSION:2.0\n";

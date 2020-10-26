@@ -807,7 +807,7 @@ class LeagueManager
 	{
 		global $wpdb;
 		
-		$defaults = array( 'offset' => 0, 'limit' => 99999999, 'competition' => false, 'orderby' => array("rank" => "ASC", "id" => "ASC") );
+		$defaults = array( 'offset' => 0, 'limit' => 99999999, 'competition' => false, 'orderby' => array("rank" => "ASC", "title" => "ASC") );
 		$args = array_merge($defaults, $args);
 		extract($args, EXTR_SKIP);
 
@@ -929,150 +929,144 @@ class LeagueManager
 		return $settings;
 	}
 	
-	/**
-	 * get teams from database
-	 *
-	 * @param array $args
-	 * @param string $output OBJECT | ARRAY
-	 * @return array database results
-	 */
-	function getTeams( $args = array(), $output = 'OBJECT' )
-	{
-		global $wpdb;
-		$defaults = array( 'competition_id' => false, 'league_id' => false, 'season' => false, 'group' => false, 'rank' => false, 'orderby' => array("rank" => "ASC", "title" => "ASC"), "home" => false, "cache" => true, 'affiliatedclub' => false );
-		$args = array_merge($defaults, $args);
-		extract($args, EXTR_SKIP);
-		
-		//$cachekey = md5(implode(array_map(function($entry) { if(is_array($entry)) { return implode($entry); } else { return $entry; } }, $args)) . $output);
-				
-		$search_terms = array();
-		if ( $competition_id ) {
-			$search_terms[] = $wpdb->prepare("A.`league_id` IN (SELECT `id` FROM {$wpdb->leaguemanager} WHERE `competition_id` = '%d')", intval($competition_id));
-		}
-		if ( $league_id ) {
-			if ($league_id == "any")
-				$search_terms[] = "A.`league_id` != ''";
-			else
-				$search_terms[] = $wpdb->prepare("A.`league_id` = '%d'", intval($league_id));
-		}
-		if ( $affiliatedclub ) {
-			$search_terms[] = $wpdb->prepare("`affiliatedclub` = '%d'", intval($affiliatedclub));
-		}
-		if ( $season ) {
-			$search_terms[] = $wpdb->prepare("A.`season` = '%s'", htmlspecialchars($season));
-		}
-		if ($group && $this->groupExists($league_id, htmlspecialchars($group)))
-			$search_terms[] = $wpdb->prepare("A.`group` = '%s'", htmlspecialchars($group));
-		if ( $rank )
-			$search_terms[] = $wpdb->prepare("A.`rank` = '%s'", $rank);
-		
-		if ( $home )
-			$search_terms[] = "B.`home` = 1";
-		
-		$search = "";
-		if (count($search_terms) > 0) {
-			$search = " WHERE ";
-			$search .= implode(" AND ", $search_terms);
-		}
-		
-		$orderby_string = ""; $i = 0;
-		foreach ($orderby AS $order => $direction) {
-			if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) $direction = "ASC";
-			if ( ($this->databaseColumnExists("teams", $order)) || ($this->databaseColumnExists("table", $order)) ) {
-				$orderby_string .= "`".$order."` ".$direction;
-				if ($i < (count($orderby)-1)) $orderby_string .= ",";
-			}
-			$i++;
-		}
-		$orderby = $orderby_string;
-		
-		$sql = "SELECT B.`id` AS `id`, B.`title`, B.`captain`, B.`contactno`, B.`contactemail`, B.`affiliatedclub`, B.`stadium`, B.`logo`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`points_plus`, A.`points_minus`, A.`points2_plus`, A.`points2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom` FROM {$wpdb->leaguemanager_teams} B INNER JOIN {$wpdb->leaguemanager_table} A ON B.id = A.team_id $search ORDER BY $orderby";
-		
-		$cachekey = md5($sql.$output);
-		// use cached object
-		if ( isset($this->teams[$cachekey]) && $cache ) {
-			return $this->teams[$cachekey];
-		}
-		$teamlist = $wpdb->get_results( $sql );
-		$teams = array(); $i = 0; $class = '';
-		$logo_sizes = array( 'tiny', 'thumb', 'large' );
-		foreach ( $teamlist AS $team ) {
-			$class = ( 'alternate' == $class ) ? '' : 'alternate'; 
-			$team->custom = stripslashes_deep(maybe_unserialize($team->custom));
-			if ( 'ARRAY' == $output ) {
-				$teams[$team->id]['title'] = htmlspecialchars(stripslashes($team->title), ENT_QUOTES);
-				$teams[$team->id]['rank'] = $team->rank;
-				$teams[$team->id]['status'] = $team->status;
-				$teams[$team->id]['season'] = $team->season;
-				$teams[$team->id]['captain'] = stripslashes($team->captain);
-				$teams[$team->id]['contactno'] = $team->contactno;
-                $teams[$team->id]['contactemail'] = $team->contactemail;
+    /**
+     * get teams from database
+     *
+     * @param array $args
+     * @param string $output OBJECT | ARRAY
+     * @return array database results
+     */
+    function getTeams( $args = array(), $output = 'OBJECT' )
+    {
+        global $wpdb;
+        $defaults = array( 'competition_id' => false, 'league_id' => false, 'season' => false, 'group' => false, 'rank' => false, 'orderby' => array("rank" => "ASC", "title" => "ASC"), "home" => false, "cache" => true, 'affiliatedclub' => false );
+        $args = array_merge($defaults, $args);
+        extract($args, EXTR_SKIP);
+        
+        //$cachekey = md5(implode(array_map(function($entry) { if(is_array($entry)) { return implode($entry); } else { return $entry; } }, $args)) . $output);
+        
+        $search_terms = array();
+        if ( $competition_id ) {
+            $search_terms[] = $wpdb->prepare("A.`league_id` IN (SELECT `id` FROM {$wpdb->leaguemanager} WHERE `competition_id` = '%d')", intval($competition_id));
+        }
+        if ( $league_id ) {
+            if ($league_id == "any")
+                $search_terms[] = "A.`league_id` != ''";
+            else
+                $search_terms[] = $wpdb->prepare("A.`league_id` = '%d'", intval($league_id));
+        }
+        if ( $affiliatedclub ) {
+            $search_terms[] = $wpdb->prepare("`affiliatedclub` = '%d'", intval($affiliatedclub));
+        }
+        if ( $season ) {
+            $search_terms[] = $wpdb->prepare("A.`season` = '%s'", htmlspecialchars($season));
+        }
+        if ($group && $this->groupExists($league_id, htmlspecialchars($group)))
+            $search_terms[] = $wpdb->prepare("A.`group` = '%s'", htmlspecialchars($group));
+        if ( $rank )
+            $search_terms[] = $wpdb->prepare("A.`rank` = '%s'", $rank);
+        
+        if ( $home )
+            $search_terms[] = "B.`home` = 1";
+        
+        $search = "";
+        if (count($search_terms) > 0) {
+            $search = " WHERE ";
+            $search .= implode(" AND ", $search_terms);
+        }
+        
+        $orderby_string = ""; $i = 0;
+        foreach ($orderby AS $order => $direction) {
+            if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) $direction = "ASC";
+            if ( ($this->databaseColumnExists("teams", $order)) || ($this->databaseColumnExists("table", $order)) ) {
+                $orderby_string .= "`".$order."` ".$direction;
+                if ($i < (count($orderby)-1)) $orderby_string .= ",";
+            }
+            $i++;
+        }
+        $orderby = $orderby_string;
+        
+        $sql = "SELECT B.`id` AS `id`, B.`title`, B.`affiliatedclub`, B.`stadium`, B.`logo`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`points_plus`, A.`points_minus`, A.`points2_plus`, A.`points2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom` FROM {$wpdb->leaguemanager_teams} B INNER JOIN {$wpdb->leaguemanager_table} A ON B.id = A.team_id $search ORDER BY $orderby";
+        
+        $cachekey = md5($sql.$output);
+        // use cached object
+        if ( isset($this->teams[$cachekey]) && $cache ) {
+            return $this->teams[$cachekey];
+        }
+        $teamlist = $wpdb->get_results( $sql );
+        $teams = array(); $i = 0; $class = '';
+        $logo_sizes = array( 'tiny', 'thumb', 'large' );
+        foreach ( $teamlist AS $team ) {
+            $class = ( 'alternate' == $class ) ? '' : 'alternate';
+            $team->custom = stripslashes_deep(maybe_unserialize($team->custom));
+            if ( 'ARRAY' == $output ) {
+                $teams[$team->id]['title'] = htmlspecialchars(stripslashes($team->title), ENT_QUOTES);
+                $teams[$team->id]['rank'] = $team->rank;
+                $teams[$team->id]['status'] = $team->status;
+                $teams[$team->id]['season'] = $team->season;
                 $teams[$team->id]['affiliatedclub'] = $team->affiliatedclub;
                 if ( is_plugin_active('wp-clubs/wp-clubs.php') ) {
                     $teams[$team->id]['affiliatedclubname'] = getClubName($team->affiliatedclub);
                 } else {
                     $teams[$team->id]['affiliatedclubname'] = '';
                 }
-				$teams[$team->id]['stadium'] = stripslashes($team->stadium);
-				$teams[$team->id]['logo'] = ( !empty($team->logo) ) ? $this->getImageUrl(basename($team->logo)) : false;
-				if ( $team->logo ) {
-					foreach ( $logo_sizes AS $logo_size ) {
-						$teams[$team->id]['logos'][$logo_size] = $this->getImageUrl( basename($team->logo), false, $logo_size );
-					}
-				}
-				$teams[$team->id]['home'] = $team->home;
-				$teams[$team->id]['group'] = $team->group;
-				$teams[$team->id]['class'] = $class;
-				$teams[$team->id]['roster'] = maybe_unserialize($team->roster);
-				if ( $this->hasBridge() ) {
-					global $lmBridge;
-					$teams[$team->id]['teamRoster'] = $lmBridge->getTeamRoster(maybe_unserialize($team->roster));
-					$teams[$team->id]['profileData'] = $lmBridge->getTeamProfile($team->profile);
-				}
-				$teams[$team->id]['points'] = array( 'plus' => $team->points_plus, 'minus' => $team->points_minus );
-				$teams[$team->id]['points2'] = array( 'plus' => $team->points2_plus, 'minus' => $team->points2_minus );
-				$teams[$team->id]['add_points'] = $team->add_points;
-				$teams[$team->id]['diff'] = ( $team->diff > 0 ) ? '+'.intval($team->diff) : $team->diff;
-				foreach ( (array)$team->custom AS $key => $value )
-					$teams[$team->id][$key] = stripslashes_deep($value);
-			} else {
-				$teamlist[$i]->logo = ( !empty($team->logo) ) ? $this->getImageUrl(basename($team->logo)) : false;
-				if ( $team->logo ) {
-					foreach ( $logo_sizes AS $logo_size ) {
-						$teamlist[$i]->logos[$logo_size] = $this->getImageUrl( basename($team->logo), false, $logo_size );
-					}
-				}
-				$teamlist[$i]->roster = maybe_unserialize($team->roster);
-				$teamlist[$i]->title = htmlspecialchars(stripslashes($team->title), ENT_QUOTES);
-				$teamlist[$i]->captain = stripslashes($team->captain);
-				$teamlist[$i]->contactno = stripslashes($team->contactno);
-                $teamlist[$i]->contactemail = stripslashes($team->contactemail);
+                $teams[$team->id]['stadium'] = stripslashes($team->stadium);
+                $teams[$team->id]['logo'] = ( !empty($team->logo) ) ? $this->getImageUrl(basename($team->logo)) : false;
+                if ( $team->logo ) {
+                    foreach ( $logo_sizes AS $logo_size ) {
+                        $teams[$team->id]['logos'][$logo_size] = $this->getImageUrl( basename($team->logo), false, $logo_size );
+                    }
+                }
+                $teams[$team->id]['home'] = $team->home;
+                $teams[$team->id]['group'] = $team->group;
+                $teams[$team->id]['class'] = $class;
+                $teams[$team->id]['roster'] = maybe_unserialize($team->roster);
+                if ( $this->hasBridge() ) {
+                    global $lmBridge;
+                    $teams[$team->id]['teamRoster'] = $lmBridge->getTeamRoster(maybe_unserialize($team->roster));
+                    $teams[$team->id]['profileData'] = $lmBridge->getTeamProfile($team->profile);
+                }
+                $teams[$team->id]['points'] = array( 'plus' => $team->points_plus, 'minus' => $team->points_minus );
+                $teams[$team->id]['points2'] = array( 'plus' => $team->points2_plus, 'minus' => $team->points2_minus );
+                $teams[$team->id]['add_points'] = $team->add_points;
+                $teams[$team->id]['diff'] = ( $team->diff > 0 ) ? '+'.intval($team->diff) : $team->diff;
+                foreach ( (array)$team->custom AS $key => $value )
+                $teams[$team->id][$key] = stripslashes_deep($value);
+            } else {
+                $teamlist[$i]->logo = ( !empty($team->logo) ) ? $this->getImageUrl(basename($team->logo)) : false;
+                if ( $team->logo ) {
+                    foreach ( $logo_sizes AS $logo_size ) {
+                        $teamlist[$i]->logos[$logo_size] = $this->getImageUrl( basename($team->logo), false, $logo_size );
+                    }
+                }
+                $teamlist[$i]->roster = maybe_unserialize($team->roster);
+                $teamlist[$i]->title = htmlspecialchars(stripslashes($team->title), ENT_QUOTES);
                 $teamlist[$i]->affiliatedclub = stripslashes($team->affiliatedclub);
                 if ( is_plugin_active('wp-clubs/wp-clubs.php') ) {
                     $teamlist[$i]->affiliatedclubname = getClubName($team->affiliatedclub);
                 } else {
                     $teamlist[$i]->affiliatedclubname = '';
                 }
-
-				$teamlist[$i]->stadium = stripslashes($team->stadium);
-				$teamlist[$i]->class = $class;
-				$teamlist[$i]->diff = ( $team->diff > 0 ) ? '+'.intval($team->diff) : $team->diff;
-				$teamlist[$i] = (object)array_merge((array)$team, (array)$team->custom);
-			}
-
-			//unset($teamlist[$i]->custom, $team->custom);
-			$i++;
-		}
-
-		if ( 'ARRAY' == $output ) {
-			$this->teams[$cachekey] = $teams;
-		} else {
-			$this->teams[$cachekey] = $teamlist;
-		}
-		
-		return $this->teams[$cachekey];
-	}
-	
+                
+                $teamlist[$i]->stadium = stripslashes($team->stadium);
+                $teamlist[$i]->class = $class;
+                $teamlist[$i]->diff = ( $team->diff > 0 ) ? '+'.intval($team->diff) : $team->diff;
+                $teamlist[$i] = (object)array_merge((array)$team, (array)$team->custom);
+            }
+            
+            //unset($teamlist[$i]->custom, $team->custom);
+            $i++;
+        }
+        
+        if ( 'ARRAY' == $output ) {
+            $this->teams[$cachekey] = $teams;
+        } else {
+            $this->teams[$cachekey] = $teamlist;
+        }
+        
+        return $this->teams[$cachekey];
+    }
+    
 	/**
 	 * get teams from database
 	 *
@@ -1102,6 +1096,9 @@ class LeagueManager
 		if ( $affiliatedclub ) {
 			$search_terms[] = $wpdb->prepare("`affiliatedclub` = '%d'", intval($affiliatedclub));
 		}
+        if ( $season ) {
+            $search_terms[] = $wpdb->prepare("A.`season` = '%s'", htmlspecialchars($season));
+        }
 		if ($group && $this->groupExists($league_id, htmlspecialchars($group)))
 			$search_terms[] = $wpdb->prepare("A.`group` = '%s'", htmlspecialchars($group));
 		if ( $rank )
@@ -1112,7 +1109,7 @@ class LeagueManager
 		
 		$search = "";
 		if (count($search_terms) > 0) {
-			$search = " WHERE ";
+			$search = " AND ";
 			$search .= implode(" AND ", $search_terms);
 		}
 		
@@ -1127,7 +1124,7 @@ class LeagueManager
 		}
 		$orderby = $orderby_string;
 		
-		$sql = "SELECT B.`title`, B.`captain`, B.`contactno`, B.`contactemail`, B.`affiliatedclub`, B.`stadium`, B.`logo`, B.`home`, B.`roster`, B.`profile` FROM {$wpdb->leaguemanager_teams} B  $search ORDER BY $orderby";
+        $sql = "SELECT B.`id`, B.`title`, C.`captain`, C.`contactno`, C.`contactemail`, B.`affiliatedclub`, B.`stadium`, B.`logo`, B.`home`, B.`roster`, B.`profile`, C.`match_day`, C.`match_time` FROM {$wpdb->leaguemanager_teams} B, {$wpdb->leaguemanager_table} A, {$wpdb->leaguemanager_team_competition} C WHERE B.id = A.team_id AND A.team_id = C.team_id and C.competition_id in (select `competition_id` from {$wpdb->leaguemanager} WHERE `id` = A.league_id) $search ORDER BY $orderby";
 		
 		$cachekey = md5($sql.$output);
 			// use cached object
@@ -1214,7 +1211,7 @@ class LeagueManager
 		if ( isset($this->team[$team_id]) )
 			return $this->team[$team_id];
 		
-		$team = $wpdb->get_results( $wpdb->prepare("SELECT A.`title`, A.`captain`, A.`contactno`, A.`contactemail`, A.`affiliatedclub`, A.`match_day`, A.`match_time`, A.`stadium`, A.`logo`, A.`home`, B.`group`, A.`roster`, A.`profile`, B.`points_plus`, B.`points_minus`, B.`points2_plus`, B.`points2_minus`, B.`add_points`, B.`done_matches`, B.`won_matches`, B.`draw_matches`, B.`lost_matches`, B.`diff`, B.`league_id`, B.`id`, B.`season`, B.`rank`, B.`status`, B.`custom` FROM {$wpdb->leaguemanager_teams} A, {$wpdb->leaguemanager_table} B WHERE A.`id` = '%d' ORDER BY B.`rank` ASC, A.`id` ASC", intval($team_id)) );
+        $team = $wpdb->get_results( $wpdb->prepare("SELECT A.`title`, C.`captain`, C.`contactno`, C.`contactemail`, A.`affiliatedclub`, C.`match_day`, C.`match_time`, A.`stadium`, A.`logo`, A.`home`, B.`group`, A.`roster`, A.`profile`, B.`points_plus`, B.`points_minus`, B.`points2_plus`, B.`points2_minus`, B.`add_points`, B.`done_matches`, B.`won_matches`, B.`draw_matches`, B.`lost_matches`, B.`diff`, B.`league_id`, B.`id`, B.`season`, B.`rank`, B.`status`, B.`custom` FROM {$wpdb->leaguemanager_teams} A, {$wpdb->leaguemanager_table} B, {$wpdb->leaguemanager_team_competition} C, {$wpdb->leaguemanager} D WHERE A.`id` = '%d' AND A.`id` = C.`team_id` and C.`competition_id` = D.`competition_id` AND B.`league_id` = D.`id` ORDER BY B.`rank` ASC, A.`id` ASC", intval($team_id)) );
 		
 		if (!isset($team[0])) return false;
 		
@@ -1256,7 +1253,7 @@ class LeagueManager
 	 * @param int $team_id
 	 * @return object
 	 */
-	function getTeamDtls( $team_id )
+    function getTeamDtls( $team_id, $league_id )
 	{
 		global $wpdb;
 		
@@ -1264,7 +1261,7 @@ class LeagueManager
 		if ( isset($this->teamDtls[$team_id]) )
 			return $this->teamDtls[$team_id];
 		
-		$team = $wpdb->get_results( $wpdb->prepare("SELECT A.`title`, A.`captain`, A.`contactno`, A.`contactemail`, A.`affiliatedclub`, A.`match_day`, A.`match_time`, A.`stadium`, A.`logo`, A.`home`, A.`roster`, A.`profile`, A.`id` FROM {$wpdb->leaguemanager_teams} A WHERE A.`id` = '%d'", intval($team_id)) );
+        $team = $wpdb->get_results( $wpdb->prepare("SELECT A.`title`, B.`captain`, B.`contactno`, B.`contactemail`, A.`affiliatedclub`, B.`match_day`, B.`match_time`, A.`stadium`, A.`logo`, A.`home`, A.`roster`, A.`profile`, A.`id` FROM {$wpdb->leaguemanager_teams} A, {$wpdb->leaguemanager_team_competition} B WHERE A.`id` = '%d' AND A.`id` = B.`team_id` and B.`competition_id` IN (select `competition_id` FROM {$wpdb->leaguemanager} WHERE `id` = '%d')", intval($team_id), intval($league_id)) );
 		
 		if (!isset($team[0])) return false;
 		
@@ -1306,7 +1303,9 @@ class LeagueManager
 		global $wpdb;
 		
 		$team = $wpdb->get_results( $wpdb->prepare("SELECT `id` FROM {$wpdb->leaguemanager_teams} WHERE `title` = '%s'", $title) );
-		return $team[0]->id;
+        if (!isset($team[0]))
+            return 0;
+        else return $team[0]->id;
 	}
 	
 	
@@ -1827,7 +1826,7 @@ class LeagueManager
 			$i++;
 		}
 		$order = $orderby_string;
-		
+        
 		$num_matches_per_page = ( $limit && is_numeric($limit) ) ? intval($limit) : $this->getNumMatchesPerPage();
 		if ( $limit === true ) {
 			$offset = ( $this->getCurrentPage() - 1 ) * $this->getNumMatchesPerPage();

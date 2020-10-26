@@ -38,7 +38,7 @@ class LeagueManagerLoader
 	 *
 	 * @var string
 	 */
-	var $version = '5.1.7';
+	var $version = '5.1.8';
 
 
 	/**
@@ -46,7 +46,7 @@ class LeagueManagerLoader
 	 *
 	 * @var string
 	 */
-	var $dbversion = '5.1.7';
+	var $dbversion = '5.1.8';
 
 
 	/**
@@ -320,6 +320,7 @@ class LeagueManagerLoader
 		$wpdb->leaguemanager_players = $wpdb->prefix . 'leaguemanager_players';
 		$wpdb->leaguemanager_roster = $wpdb->prefix . 'leaguemanager_roster';
 		$wpdb->leaguemanager_competitions = $wpdb->prefix . 'leaguemanager_competitions';
+        $wpdb->leaguemanager_team_competition = $wpdb->prefix . 'leaguemanager_team_competition';
 	}
 
 
@@ -760,6 +761,21 @@ class LeagueManagerLoader
 		PRIMARY KEY ( `id` )) $charset_collate;";
 		maybe_create_table( $wpdb->leaguemanager_teams, $create_teams_sql );
 		
+        $create_team_competition_sql = "CREATE TABLE {$wpdb->leaguemanager_team_competition} (
+        `id` int( 11 ) NOT NULL AUTO_INCREMENT ,
+        `team_id` int( 11 ) NOT NULL default 0,
+        `competition_id` int( 11 ) NOT NULL default 0,
+        `captain` varchar( 255 ) NOT NULL default '',
+        `contactno` varchar( 255 ) NOT NULL default '',
+        `contactemail` varchar( 255 ) NOT NULL default '',
+        `match_day` varchar( 25 ) NOT NULL default '',
+        `match_time` time NULL,
+        PRIMARY KEY ( `id` ),
+        INDEX( `team_id` ),
+        INDEX( `competition_id` )
+        ) $charset_collate;";
+        maybe_create_table( $wpdb->leaguemanager_team_competition, $create_team_competition_sql );
+        
 }
 
 
@@ -777,6 +793,7 @@ class LeagueManagerLoader
         $wpdb->query( "DROP TABLE {$wpdb->leaguemanager_rubbers}" );
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager_matches}" );
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager_table}" );
+        $wpdb->query( "DROP TABLE {$wpdb->leaguemanager_team_competition}" );
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager_teams}" );
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager_stats}" );
 		$wpdb->query( "DROP TABLE {$wpdb->leaguemanager}" );
@@ -823,4 +840,6 @@ $lmLoader = new LeagueManagerLoader();
 // suppress output
 if ( isset($_POST['leaguemanager_export']) )
 	ob_start();
+            if ( isset($_GET['leaguemanager_export']) )
+            ob_start();
 ?>

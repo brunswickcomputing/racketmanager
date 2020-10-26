@@ -32,5 +32,5 @@
 		</div>
 		</form>
 	</div>
-	<br style='clear: both;' />
+    <br style='clear: both;' />
 <?php } ?>

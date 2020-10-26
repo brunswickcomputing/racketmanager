@@ -110,10 +110,10 @@ class LeagueManagerTennisSummer extends LeagueManager
 	{
 		foreach ( $teams AS $key => $team ) {
 			$points[$key] = $team->points['plus']+$team->add_points;
-			$sets_diff[$key] = $team->sets_won - $team->sets_allowed;
+			$sets_diff[$key] = intval($team->sets_won) - intval($team->sets_allowed);
 			$sets_won[$key] = $team->sets_won;
             $sets_allowed[$key] = $team->sets_allowed;
-			$games_diff[$key] = $team->games_won - $team->games_allowed;
+			$games_diff[$key] = intval($team->games_won) - intval($team->games_allowed);
             $games_won[$key] = $team->games_won;
 			$games_allowed[$key] = $team->games_allowed;
 		}

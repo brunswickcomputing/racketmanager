@@ -304,10 +304,10 @@ class LeagueManagerShortcodes extends LeagueManager
 		 * get teams
 		 */
 		if ( !$league_id ) {
-			$teams = $leaguemanager->getTeams( array("league_id" => 'any', "season" => "any", "orderby" => array("title" => "ASC")), 'ARRAY' );
+			$teams = $leaguemanager->getTeamsInfo( array("league_id" => 'any', "season" => "any", "orderby" => array("title" => "ASC")), 'ARRAY' );
 			$match_args = array("league_id" => 'any', "season" => 'any', "final" => '');
 		} else {
-			$teams = $leaguemanager->getTeams( array("league_id" => $league_id, "season" => $season, "orderby" => array("title" => "ASC")), 'ARRAY' );
+			$teams = $leaguemanager->getTeamsInfo( array("league_id" => $league_id, "season" => $season, "orderby" => array("title" => "ASC")), 'ARRAY' );
 			$match_args = array("league_id" => $league_id, "season" => $season, "final" => '');
 		}
 
@@ -687,7 +687,7 @@ class LeagueManagerShortcodes extends LeagueManager
 
 		$team_args = array("league_id" => $league->id, "season" => $season, "orderby" => array("title" => "ASC"));
 		if ( $group ) $team_args["group"] = $group;
-		$teams = $leaguemanager->getTeams( $team_args );
+		$teams = $leaguemanager->getTeamsInfo( $team_args );
 
 		foreach ( $teams AS $i => $team ) {
 			// Get next match
@@ -867,7 +867,7 @@ class LeagueManagerShortcodes extends LeagueManager
 		$league->show_logo = ( $logo == 'true' ) ? true : false;
 		
 		$team_args = array("league_id" => $league->id, "season" => $season, "group" => $group);
-		$teams = $leaguemanager->getTeams( $team_args );
+		$teams = $leaguemanager->getTeamsInfo( $team_args );
 
 		if ( empty($template) && $this->checkTemplate('crosstable-'.$league->sport) )
 			$filename = 'crosstable-'.$league->sport;

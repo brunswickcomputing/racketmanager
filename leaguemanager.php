@@ -3,7 +3,7 @@
 Plugin Name: LeagueManager
 Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
 Description: Manage and present sports league results.
-Version: 5.6.6
+Version: 5.6.7
 Author: Paul Moffat, Kolja Schleich, LaMonte Forthun
 
 Copyright 2008-2020  Paul Moffat (email: paul@paarcs.com)
@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 * @author LaMonte Forthun
 * @author Paul Moffat
 * @package LeagueManager
-* @version 5.6.6
+* @version 5.6.7
 * @copyright 2008-2020
 * @license GPL-3
 */
@@ -49,7 +49,7 @@ class LeagueManager {
 	 *
 	 * @var string
 	 */
-	private $version = '5.6.6';
+	private $version = '5.6.7';
 
 	/**
 	 * database version
@@ -1308,7 +1308,7 @@ class LeagueManager {
      * @param int $matchtime
      * @return $team_competition_id
      */
-    private function addTeamCompetition( $team_id, $competition_id, $captain = NULL, $contactno = NULL, $contactemail = NULL, $matchday = '', $matchtime = NULL ) {
+    public function addTeamCompetition( $team_id, $competition_id, $captain = NULL, $contactno = NULL, $contactemail = NULL, $matchday = '', $matchtime = NULL ) {
         global $wpdb;
 
         $sql = "INSERT INTO {$wpdb->leaguemanager_team_competition} (`team_id`, `competition_id`, `captain`, `match_day`, `match_time`) VALUES ('%d', '%d', '%d', '%s', '%s')";
@@ -1459,7 +1459,7 @@ class LeagueManager {
 	public function getRosterEntry( $roster_id, $cache = true ) {
 		global $wpdb;
 
-        $sql = "SELECT B.`ID` as `player_id`, B.`display_name` AS `fullname`, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->leaguemanager_roster} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID` WHERE A.`id`= '".intval($roster_id)."'";
+        $sql = "SELECT B.`ID` as `player_id`, B.`display_name` AS `fullname`, A.`system_record`, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->leaguemanager_roster} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID` WHERE A.`id`= '".intval($roster_id)."'";
 
         $roster = wp_cache_get( md5($sql), 'rosterentry' );
         if ( !$roster ) {

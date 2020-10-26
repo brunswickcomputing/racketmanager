@@ -125,8 +125,6 @@ class LeagueManagerShortcodes extends LeagueManager {
 
         $matches = $leaguemanager->getMatches( array('match_date' => $match_date, 'competition_type' => $competition_type) );
 
-        if ( !$matches ) return;
-
         $filename = ( !empty($template) ) ? 'matches-'.$template : 'matches';
 
         $out = $this->loadTemplate( $filename, array('matches' => $matches, 'match_date' => $match_date ) );

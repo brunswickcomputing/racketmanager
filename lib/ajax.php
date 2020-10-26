@@ -890,6 +890,8 @@ class LeagueManagerAJAX extends LeagueManager {
         global $wpdb, $leaguemanager;
 
         $player = $leaguemanager->getRosterEntry($rosterId, $team);
+		if ( !empty($player->system_record) ) return;
+
         $teamName = get_team($team)->title;
         $currTeamNum = substr($teamName,-1);
 
@@ -920,13 +922,18 @@ class LeagueManagerAJAX extends LeagueManager {
             }
 
             if ( isset($options['playedRounds']) ) {
-                $sql = $wpdb->prepare("SELECT count(*) FROM {$wpdb->leaguemanager_matches} m, {$wpdb->leaguemanager_rubbers} r WHERE m.`id` = r.`match_id` AND m.`season` = '%s' AND m.`match_day` < %d AND m.`league_id` in (SELECT l.`id` from {$wpdb->leaguemanager} l, {$wpdb->leaguemanager_competitions} c WHERE l.`competition_id` = (SELECT `competition_id` FROM {$wpdb->leaguemanager} WHERE `id` = %d)) AND (`home_player_1` = %d or `home_player_2` = %d or `away_player_1` = %d or `away_player_2` = %d)", $match->season, $match->match_day, $match->league_id, $rosterId, $rosterId, $rosterId, $rosterId);
+				$league = get_league($match->league_id);
+				$numMatchDays = $league->seasons[$match->season]['num_match_days'];
+				if ( $match->match_day >= ($numMatchDays - $options['playedRounds']) ) {
+					$sql = $wpdb->prepare("SELECT count(*) FROM {$wpdb->leaguemanager_matches} m, {$wpdb->leaguemanager_rubbers} r WHERE m.`id` = r.`match_id` AND m.`season` = '%s' AND m.`match_day` < %d AND m.`league_id` in (SELECT l.`id` from {$wpdb->leaguemanager} l, {$wpdb->leaguemanager_competitions} c WHERE l.`competition_id` = (SELECT `competition_id` FROM {$wpdb->leaguemanager} WHERE `id` = %d)) AND (`home_player_1` = %d or `home_player_2` = %d or `away_player_1` = %d or `away_player_2` = %d)", $match->season, $match->match_day, $match->league_id, $rosterId, $rosterId, $rosterId, $rosterId);
 
-                $count = $wpdb->get_var($sql);
-                if ( $count == 0 ) {
-                    $error = sprintf(__('player has not played before the final %d match days','leaguemanager'), $options['playedRounds']);
-                    $leaguemanager->addResultCheck($match, $team, $player->player_id, $error );
-                }
+	                $count = $wpdb->get_var($sql);
+	                if ( $count == 0 ) {
+	                    $error = sprintf(__('player has not played before the final %d match days','leaguemanager'), $options['playedRounds']);
+	                    $leaguemanager->addResultCheck($match, $team, $player->player_id, $error );
+	                }
+				}
+
             }
             if ( isset($options['playerLocked']) ) {
                 $competition = get_competition($match->league->competition_id);

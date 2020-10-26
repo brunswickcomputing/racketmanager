@@ -1125,7 +1125,7 @@ final class LeagueManagerAdmin extends LeagueManager
             } else {
                 $teams = $league->getLeagueTeams( array("season" => $season, "orderby" => array("title" => "ASC")) );
             }
-            include_once( dirname(__FILE__) . '/match.php' );
+            include_once( dirname(__FILE__) . '/includes/match.php' );
         }
     }
 

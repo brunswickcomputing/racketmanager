@@ -51,6 +51,10 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 
 == Changelog ==
 
+= 5.6.7 =
+* UPDATE: do not check results for system records
+* BUGFIX: check result on played rounds when in relevant timeframe
+
 = 5.6.6 =
 * UPDATE: add tennis specific isTie for ranking
 

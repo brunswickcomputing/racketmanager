@@ -41,6 +41,8 @@ The following variables are usable:
 				<?php echo $league->pagination ?>
 			</div>
 		</div>
-	<?php } ?>
+	<?php } else { ?>
+		<p><?php echo __( 'No Matches Today', 'leaguemanager' ) ?></p>
+	<?php }?>
 
 <?php } ?>

@@ -17,7 +17,7 @@ You can check the content of a variable when you insert the tag <?php var_dump($
 			<thead>
 				<tr>
 					<th class='player' scope="col"><?php _e( 'Player', 'leaguemanager' ) ?></th>
-					<th class='team' scope="col"><?php _e( 'Team', 'leaguemanager' ) ?></th>
+					<th class="team" scope="col"><?php _e( 'Team', 'leaguemanager' ) ?></th>
 					<th scope="col"><?php _e( 'Won', 'leaguemanager' ) ?></th>
 					<th scope="col"><?php _e( 'Lost', 'leaguemanager' ) ?></th>
 				</tr>

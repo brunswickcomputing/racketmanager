@@ -1,8 +1,8 @@
 <?php
-if ( !current_user_can( 'manage_leaguemanager' ) ) :
+	if ( !current_user_can( 'manage_leaguemanager' ) ) {
 	echo '<p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p>';
 
-else :
+	} else {
 	$error = $is_finals = $finalkey = $cup = false;
 	$group = ( isset($_GET['group']) ? htmlspecialchars($_GET['group']) : '');
 	$class = 'alternate';
@@ -282,4 +282,4 @@ else :
 		<?php endif; ?>
 
 	</div>
-<?php endif; ?>
+<?php } ?>

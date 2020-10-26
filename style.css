@@ -985,3 +985,32 @@ tr.match-rubber-row {
 th.team {
 	width: 22%;
 }
+div.teampage h3.header {
+	color: #500B73;
+}
+div#matchheader {
+	font-size: 1.1em;
+	font-weight: 600;
+}
+div#matchheader .leaguetitle {
+	float: left;
+}
+div#matchheader .matchdate {
+	float: right;
+}
+div#matchheader .matchday {
+	float: none;
+	text-align: center;
+}
+div#matchheader .matchtitle {
+	text-align: center;
+}
+td input.points {
+	padding: 5px;
+}
+td input.player {
+	width: 200px;
+}
+.cr3_sponsorwrapper {
+	text-align: center
+}

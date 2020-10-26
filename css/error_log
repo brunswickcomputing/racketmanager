@@ -1,4 +1,0 @@
-[29-Nov-2016 00:20:14 UTC] PHP Fatal error:  Using $this when not in object context in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/css/colors.css.php on line 1
-[29-Nov-2016 07:58:04 UTC] PHP Fatal error:  Using $this when not in object context in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/css/colors.css.php on line 1
-[29-Nov-2016 14:29:17 UTC] PHP Fatal error:  Using $this when not in object context in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/css/colors.css.php on line 1
-[30-Nov-2016 08:10:15 UTC] PHP Fatal error:  Using $this when not in object context in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/css/colors.css.php on line 1

@@ -35,8 +35,8 @@ class LeagueManagerTennis extends LeagueManager
 		add_filter( 'leaguemanager_export_matches_header_'.$this->key, array(&$this, 'exportMatchesHeader') );
 		add_filter( 'leaguemanager_export_matches_data_'.$this->key, array(&$this, 'exportMatchesData'), 10, 2 );
 		add_filter( 'leaguemanager_import_matches_'.$this->key, array(&$this, 'importMatches'), 10, 3 );
-        	add_filter( 'leaguemanager_import_fixtures_'.$this->key, array(&$this, 'importFixtures'), 10, 2);
-        	add_filter( 'leaguemanager_import_results_'.$this->key, array(&$this, 'importResults'), 10, 3 );
+        add_filter( 'leaguemanager_import_fixtures_'.$this->key, array(&$this, 'importFixtures'), 10, 2);
+        add_filter( 'leaguemanager_import_results_'.$this->key, array(&$this, 'importResults'), 10, 3 );
 		add_filter( 'leaguemanager_export_teams_header_'.$this->key, array(&$this, 'exportTeamsHeader') );
 		add_filter( 'leaguemanager_export_teams_data_'.$this->key, array(&$this, 'exportTeamsData'), 10, 2 );
 		add_filter( 'leaguemanager_import_teams_'.$this->key, array(&$this, 'importTeams'), 10, 2 );
@@ -169,12 +169,14 @@ class LeagueManagerTennis extends LeagueManager
 	 */
 	function rankTeams( $teams )
 	{
-		foreach ( $teams AS $key => $row ) {
-			$points[$key] = $row->points['plus']+$row->add_points;
-            $sets_allowed[$key] = $row->sets_allowed;
-            $games_allowed[$key] = $row->games_allowed;
+		foreach ( $teams AS $key => $team ) {
+			$points[$key] = $team->points['plus']+$team->add_points;
+			$sets_won[$key] = $team->sets_won;
+            $sets_allowed[$key] = $team->sets_allowed;
+            $games_won[$key] = $team->games_won;
+			$games_allowed[$key] = $team->games_allowed;
 		}
-		array_multisort( $points, SORT_DESC, $sets_allowed, SORT_ASC, $games_allowed, SORT_ASC, $teams );
+		array_multisort( $points, SORT_DESC, $sets_won, SORT_DESC, $sets_allowed, SORT_ASC, $games_won, SORT_DESC, $games_allowed, SORT_ASC, $teams );
 		return $teams;
 	}
 
@@ -570,8 +572,11 @@ class LeagueManagerTennis extends LeagueManager
 			$leaguemanager->printMessage();
 			echo '<td></td>';
         } elseif ( isset($league->num_rubbers)) {
-            $link = '#TB_inline?&inlineId=showMatchRubbers&width=850&height=390';
-            echo '<td><a href="'.$link.'" class="thickbox button button-primary" name="'.$match->match_title.'" id="'.$match->id.'" onclick="Leaguemanager.showRubbers(this)">View Rubbers</a></td>';
+			$base_height = 155;
+			$rubber_height = $league->num_rubbers * 145;
+			$height = $base_height + $rubber_height;
+            $link = '#TB_inline?&inlineId=showMatchRubbers&width=650&height='.$height;
+            echo '<td><a href="'.$link.'" class="thickbox button button-primary" id="'.$match->id.'" onclick="Leaguemanager.showRubbers(this)">View Rubbers</a></td>';
 		} else {
 			for ( $i = 1; $i <= $league->num_sets; $i++ ) {
 				if (!isset($match->sets[$i])) {
@@ -748,7 +753,7 @@ class LeagueManagerTennis extends LeagueManager
 	 */
 	function exportTeamsHeader( $content )
 	{
-		$content .= "\t".utf8_decode(__( 'Sets Won', 'leaguemanager' ))."\t".utf8_decode(__('Sets Allowed', 'leaguemanager'))."\t".utf8_decode(__('Games Won', 'leaguemanager'))."\t".utf8_decode(__('Games Allowed', 'leaguemanager'));
+		$content .= "\t".utf8_decode(__( 'Sets Won', 'leaguemanager' ))."\t".utf8_decode(__('Sets Against', 'leaguemanager'))."\t".utf8_decode(__('Games Won', 'leaguemanager'))."\t".utf8_decode(__('Games Against', 'leaguemanager'));
 		return $content;
 	}
 

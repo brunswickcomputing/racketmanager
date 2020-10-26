@@ -37,7 +37,7 @@ jQuery(document).ready(function($) {
 
 	jQuery("tr.match-row").click(function(e){
 								jQuery(this).next("tr.match-rubber-row").slideToggle('0','linear');
-								jQuery ("i", "tr.match-row").toggleClass("fa-angle-right fa-angle-down");
+								jQuery(this).find("i").toggleClass("fa-angle-right fa-angle-down");
 								});
 /* Friendly URL rewrite */
 	jQuery('#leaguemanager_archive').submit(function() {
@@ -93,3 +93,32 @@ Leaguemanager.setMatchBox = function( requestURL, curr_index, operation, element
 	ajax.runAJAX();
 }
 
+Leaguemanager.showRubbers = function(e, link) {
+	
+	e.preventDefault();
+	var matchId = jQuery(link).attr('id');
+	var $hreflink = jQuery(link).attr('href');
+	var $title = jQuery(link).attr('name');
+	
+	jQuery.ajax({
+				url:LeagueManagerAjaxL10n.requestUrl,
+				type: "POST",
+				data: {"matchId": matchId,
+					"action": "leaguemanager_view_rubbers"},
+				success: function(response) {
+					var printOne = response;
+					var styleSheetList = document.styleSheets;
+					var w = window.open("","","width=800,height=660");
+					w.document.write('<html><head><title>Match Card</title>');
+					for (var item of styleSheetList) {
+						if (item.url != 'null') w.document.write('<link rel="stylesheet" type="text/css" href="' + item.href + '" media="all">');
+					};
+					w.document.write('</head>');
+					w.document.write('<body>' + printOne  + '</body></html>');
+					w.document.close();
+				},
+				error: function() {
+					alert("Ajax error on getting rubbers");
+				}
+				}) ;
+};

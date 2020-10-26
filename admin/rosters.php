@@ -64,25 +64,28 @@
 			<th scope="col"><?php _e( 'BTM', 'leaguemanager' ) ?></th>
 			<th scope="col"><?php _e( 'Removed', 'leaguemanager') ?></th>
 		</tr>
+<?php if ( !$club_id == 0 ) { ?>
 		<tbody id="the-list">
-<?php if ( $rosters = $leaguemanager->getRoster(array('club'=> $club_id)) ) { $class = ''; ?>
-	<?php foreach ( $rosters AS $roster ) { ?>
+
+	<?php if ( $rosters = $leaguemanager->getRoster(array('club'=> $club_id)) ) { $class = ''; ?>
+		<?php foreach ( $rosters AS $roster ) { ?>
 			<?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 			<tr class="<?php echo $class ?>">
 				<th scope="row" class="check-column">
-<?php if ( !isset($roster->removed_date) ) { ?>
+			<?php if ( !isset($roster->removed_date) ) { ?>
 					<input type="checkbox" value="<?php echo $roster->roster_id ?>" name="roster[<?php echo $roster->roster_id ?>]" />
-<?php } ?>
+			<?php } ?>
 				</th>
 				<td class="num"><?php echo $roster->roster_id ?></td>
 				<td><?php echo $roster->firstname ?></td>
 				<td><?php echo $roster->surname ?></td>
 				<td><?php echo $roster->gender ?></td>
 				<td><?php echo $roster->btm ?></td>
-<td><?php if ( isset($roster->removed_date) ) { echo $roster->removed_date; } ?></td>
+				<td><?php if ( isset($roster->removed_date) ) { echo $roster->removed_date; } ?></td>
 			</tr>
+		<?php } ?>
 	<?php } ?>
-<?php } ?>
 		</tbody>
+<?php } ?>
 	</table>
 </form>

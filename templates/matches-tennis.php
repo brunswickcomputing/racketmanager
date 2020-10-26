@@ -31,8 +31,12 @@ The following variables are usable:
 			<?php foreach ( $matches AS $match ) { ?>
 
 				<tr class='match-row rubber-view <?php echo $match->class ?>'>
-					<?php if ( isset($match->num_rubbers) && ($match->winner_id != 0) ) { ?>
-						<td class="angledir"><i class="fa fa-angle-down"></i></td>
+					<?php if ( isset($match->num_rubbers) ) {
+						if ($match->winner_id != 0) { ?>
+							<td class="angledir"><i class="fa fa-angle-down"></i></td>
+						<?php } else { ?>
+							<td><a href="#" class="fa fa-print " id="<?php echo $match->id ?>" onclick="Leaguemanager.showRubbers(event, this)"></a></td>
+						<?php } ?>
 					<?php } else { ?>
 						<td class="angledir"></td>
 					<?php } ?>
@@ -96,6 +100,8 @@ The following variables are usable:
 				<?php echo $league->pagination ?>
 			</div>
 		</div>
+		<div id="showMatchRubbers" style="display:none"></div>
+
 	<?php } ?>
 
 <?php } ?>

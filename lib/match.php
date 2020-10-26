@@ -6,7 +6,7 @@
  * @package LeagueManager
  * @subpackage Match
  */
- 
+
 /**
  * Class to implement the Match object
  *
@@ -19,7 +19,7 @@ final class Match {
      * @var string
      */
     public $final_round = '';
-    
+
 	/**
 	 * retrieve match instance
 	 *
@@ -35,14 +35,14 @@ final class Match {
 		$match = wp_cache_get( $match_id, 'matches' );
 		if ( ! $match ) {
 			$match = $wpdb->get_row( $wpdb->prepare("SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `updated`, `updated_user`, `confirmed`, `home_captain`, `away_captain` FROM {$wpdb->leaguemanager_matches} WHERE `id` = '%d' LIMIT 1", $match_id) );
-			
+
 			if ( !$match ) return false;
-			
+
 			$match = new Match( $match );
 
-			wp_cache_add( $match->id, $match, 'matches' );
+			wp_cache_set( $match->id, $match, 'matches' );
  		}
-		
+
 		return $match;
 	}
 
@@ -57,10 +57,10 @@ final class Match {
                 $match->custom = stripslashes_deep((array)maybe_unserialize($match->custom));
                 $match = (object)array_merge((array)$match, (array)$match->custom);
             }
-            
+
             foreach ( get_object_vars( $match ) as $key => $value )
                 $this->$key = $value;
-            
+
             // get League Object
             $this->league = get_league();
             if ( is_null($this->league) || (!is_null($this->league) && $this->league->id != $this->league_id) )
@@ -88,7 +88,7 @@ final class Match {
                 $this->awayScore = "-";
                 $this->score = sprintf("%s:%s", $this->homeScore, $this->awayScore);
             }
-			
+
 			if (is_admin()) {
 				$url = '';
 			} else {
@@ -102,13 +102,13 @@ final class Match {
 			$this->pageURL = esc_url($url);
 
 			$this->setTeams();
-			
+
 			$this->setDate();
 			$this->setTime();
 
             $this->is_home = $this->isHome();
 			$this->match_title = $this->getTitle();
-			
+
 			// set selected marker
 			if (isset($_GET['match_'.$this->league_id])) $this->is_selected = true;
         }
@@ -142,32 +142,32 @@ final class Match {
             $this->teams['away'] = $teams[$this->away_team];
         }
     }
-    
+
     /**
      * get match title
      *
      * @return string
      */
     public function getTitle() {
-        
+
         // set default title
         $title = "N/A";
-        
+
         $homeTeam = $this->teams['home'];
         $awayTeam = $this->teams['away'];
-        
+
         if ( isset($this->title) && (!$homeTeam || !$awayTeam || $this->home_team == $this->away_team) ) {
             $title = stripslashes($this->title);
         } else {
             $home_team_name = $this->is_home ? "<strong>".$homeTeam->title."</strong>" : $homeTeam->title;
             $away_team_name = $this->is_home ? "<strong>".$awayTeam->title."</strong>" : $awayTeam->title;
-        
+
             $title = sprintf("%s &#8211; %s", $home_team_name, $away_team_name);
         }
-        
+
          return $title;
     }
-    
+
     /**
      * test if it's a match of home team
      *
@@ -182,7 +182,7 @@ final class Match {
         else
             return false;
     }
-    
+
     /**
      * set match date
      *
@@ -193,7 +193,7 @@ final class Match {
         $this->match_date = ( substr($this->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date($date_format, $this->date);
         $this->setTooltipTitle();
     }
-        
+
     /**
      * set match start time
      *
@@ -204,7 +204,7 @@ final class Match {
         //$this->start_time = ( '00:00' == $this->hour.":".$this->minutes ) ? '' : mysql2date($time_format, $this->date);
         $this->start_time = mysql2date($time_format, $this->date);
     }
-    
+
     /**
      * set tooltip title
      *
@@ -217,10 +217,10 @@ final class Match {
             $tooltipTitle = stripslashes($this->title) .' ['.$this->match_date.']';
         else
             $tooltipTitle = $this->homeScore.':'.$this->awayScore. ' - '.$this->teams['home']->title.' - '.$this->teams['away']->title.' ['.$this->match_date.']';
-        
+
         $this->tooltipTitle = $tooltipTitle;
     }
-    
+
     public function updateResults( $sport, $home_points, $away_points, $custom ) {
 
         if ( empty($home_points) ) {
@@ -237,7 +237,7 @@ final class Match {
         }
 
         $score = array( 'home' => $home_points, 'away' => $away_points );
-        
+
         if ( isset($score['home']) && isset($score['away']) ) {
             $home_points = $score['home'];
             $away_points = $score['away'];
@@ -251,7 +251,7 @@ final class Match {
             $home_points = ( '' === $home_points ) ? 'NULL' : $home_points;
             $away_points = ( '' === $away_points ) ? 'NULL' : $away_points;
         }
-        
+
         $this->custom = array_merge( (array)$this->custom, (array)$custom );
         foreach ( $this->custom AS $key => $value )
             $this->{$key} = $value;
@@ -291,12 +291,12 @@ final class Match {
         }
 
         $val = intval($match[$index]);
-        
+
         if ( $index == "winner" )
             $this->winner_id = $val;
         if ( $index == "loser" )
             $this->loser_id = $val;
-        
+
         return $val;
     }
 
@@ -308,26 +308,26 @@ final class Match {
      */
     public function getRubbers() {
          global $wpdb;
-    
+
         $sql = "SELECT `group`, `home_player_1`, `home_player_2`, `away_player_1`, `away_player_2`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `id`, `custom`, `rubber_number` FROM {$wpdb->leaguemanager_rubbers} WHERE `match_id` = ".$this->id." ORDER BY `date` ASC, `id` ASC";
-        
+
         $rubbers = wp_cache_get( md5($sql), 'rubbers' );
         if ( !$rubbers ) {
             $rubbers = $wpdb->get_results( $sql );
-            wp_cache_add( md5($sql), $rubbers, 'rubbers' );
+            wp_cache_set( md5($sql), $rubbers, 'rubbers' );
         }
 
         $class = '';
         foreach ( $rubbers AS $i => $rubber ) {
             $class = ( 'alternate' == $class ) ? '' : 'alternate';
             $rubber->class = $class;
-                        
+
             $rubber->custom = stripslashes_deep(maybe_unserialize($rubber->custom));
             $rubber = (object)array_merge((array)$rubber, (array)$rubber->custom);
-        
+
             $rubber->start_time = ( '00:00' == $rubber->hour.":".$rubber->minutes ) ? '' : mysql2date(get_option('time_format'), $rubber->date);
             $rubber->rubber_date = ( substr($rubber->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date(get_option('date_format'), $rubber->date);
-            
+
             if ( $rubber->home_points != NULL && $rubber->away_points != NULL ) {
                 $rubber->homeScore = $rubber->home_points;
                 $rubber->awayScore = $rubber->away_points;
@@ -343,13 +343,13 @@ final class Match {
             $rubber->awayPlayer1 = $rubber->away_player_1;
             $rubber->awayPlayer2 = $rubber->away_player_2;
             $rubber->rubber_number = $rubber->rubber_number;
-                        
+
             $rubbers[$i] = $rubber;
         }
-        
+
         return $rubbers;
     }
-    
+
 }
 
 /**

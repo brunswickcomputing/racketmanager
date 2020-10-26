@@ -51,11 +51,18 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 
 == Changelog ==
 
+= 5.6.5 =
+* UPDATE: change wp_cache_add to wp_cache_add
+* UPDATE: remove unused getTable function
+* UPDATE: name cache entries properly
+* BUGFIX: save custom fields on standingsdata update 
+* BUGFIX: delete cached data after update
+
 = 5.6.4 =
 * BUGFIX: handle missing round in championship admin
 * BUGFIX: handle no matches in template tags
 * BUGFIX: delete competition cache after season changes
-* BUGFIX: ensure team name calcuation ignores player teams
+* BUGFIX: ensure team name calculation ignores player teams
 * UPDATE: restructure admin area
 * UPDATE: add club name to partner on tournament entry form
 

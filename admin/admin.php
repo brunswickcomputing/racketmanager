@@ -2050,35 +2050,6 @@ final class LeagueManagerAdmin extends LeagueManager
         return true;
     }
 
-    /**
-     * get single team table details
-     *
-     * @param int $team_id
-     * @return object
-     */
-    private function getTable( $table_id ) {
-        global $wpdb;
-
-        $sql = $wpdb->prepare("SELECT `group`, `points_plus`, `points_minus`, `points2_plus`, `points2_minus`, `add_points`, `done_matches`, `won_matches`, `draw_matches`, `lost_matches`, `diff`, `league_id`, `id` AS `table_id`, `season`, `rank`, `status`, `custom` FROM  {$wpdb->leaguemanager_table}  WHERE `id` = '%d'", intval($table_id) );
-
-        $table = wp_cache_get( md5($sql), 'leaguemanager' );
-        if ( !$table ) {
-            $table = $wpdb->get_results( $sql );
-            wp_cache_add( md5($sql), $table, 'leaguemanager' );
-        }
-
-        if (!isset($table[0])) return false;
-
-        $table = $table[0];
-
-        $table->custom = stripslashes_deep(maybe_unserialize($table->custom));
-        $table->diff = ( $table->diff > 0 ) ? '+'.$table->diff : $table->diff;
-
-        $table = (object)array_merge((array)$table,(array)$table->custom);
-
-        return $table;
-    }
-
 	/**
 	 * add new team of players
 	 *
@@ -3404,7 +3375,7 @@ final class LeagueManagerAdmin extends LeagueManager
         $resultsCheckers = wp_cache_get( md5($sql), 'resultsCheckers' );
         if ( !$resultsCheckers ) {
             $resultsCheckers = $wpdb->get_results( $sql );
-            wp_cache_add( md5($sql), $resultsCheckers, 'resultsCheckers' );
+            wp_cache_set( md5($sql), $resultsCheckers, 'resultsCheckers' );
         }
 
         $class = '';

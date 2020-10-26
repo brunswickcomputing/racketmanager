@@ -3,7 +3,7 @@
 Plugin Name: LeagueManager
 Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
 Description: Manage and present sports league results.
-Version: 5.6.4
+Version: 5.6.5
 Author: Paul Moffat, Kolja Schleich, LaMonte Forthun
 
 Copyright 2008-2020  Paul Moffat (email: paul@paarcs.com)
@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 * @author LaMonte Forthun
 * @author Paul Moffat
 * @package LeagueManager
-* @version 5.6.4
+* @version 5.6.5
 * @copyright 2008-2020
 * @license GPL-3
 */
@@ -49,7 +49,7 @@ class LeagueManager {
 	 *
 	 * @var string
 	 */
-	private $version = '5.6.4';
+	private $version = '5.6.5';
 
 	/**
 	 * database version
@@ -965,10 +965,10 @@ class LeagueManager {
 
         $sql = "SELECT `id`, `name` FROM {$wpdb->leaguemanager_seasons} $search ORDER BY `name`";
 
-        $season = wp_cache_get( md5($sql), 'leaguemanager' );
+        $season = wp_cache_get( md5($sql), 'seasons' );
         if ( !$season ) {
             $season = $wpdb->get_results( $sql );
-            wp_cache_add( md5($sql), $season, 'leaguemanager' );
+            wp_cache_set( md5($sql), $season, 'seasons' );
         }
 
         if (!isset($season[0])) return false;
@@ -990,10 +990,10 @@ class LeagueManager {
 
         $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} ORDER BY `id` ASC LIMIT %d, %d",  intval($offset), intval($limit) );
 
-        $tournaments = wp_cache_get( md5($sql), 'leaguemanager' );
+        $tournaments = wp_cache_get( md5($sql), 'tournaments' );
         if ( !$tournaments ) {
             $tournaments = $wpdb->get_results( $sql );
-            wp_cache_add( md5($sql), $tournaments, 'leaguemanager' );
+            wp_cache_set( md5($sql), $tournaments, 'tournaments' );
         }
 
         $i = 0;
@@ -1034,10 +1034,10 @@ class LeagueManager {
 
         $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} WHERE `id` = '%d'",  intval($tournament_id) );
 
-        $tournament = wp_cache_get( md5($sql), 'leaguemanager' );
+        $tournament = wp_cache_get( md5($sql), 'tournaments' );
         if ( !$tournament ) {
             $tournament = $wpdb->get_row( $sql );
-            wp_cache_add( md5($sql), $tournament, 'leaguemanager' );
+            wp_cache_set( md5($sql), $tournament, 'tournaments' );
         }
 
         if ( $tournament->date == "0000-00-00" ) $tournament->date = '';
@@ -1074,10 +1074,10 @@ class LeagueManager {
 
         $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`closingdate`, '%%Y-%%m-%%d') AS closingdate, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} WHERE `type` = '%s' AND `closingdate` >= CURDATE() ORDER BY `id` ASC ",  $type );
 
-        $tournaments = wp_cache_get( md5($sql), 'leaguemanager' );
+        $tournaments = wp_cache_get( md5($sql), 'tournaments' );
         if ( !$tournaments ) {
             $tournaments = $wpdb->get_results( $sql );
-            wp_cache_add( md5($sql), $tournaments, 'leaguemanager' );
+            wp_cache_set( md5($sql), $tournaments, 'tournaments' );
         }
 
         $date_format = get_option('date_format');
@@ -1123,10 +1123,10 @@ class LeagueManager {
 
         $sql = $wpdb->prepare( "SELECT `id`, `name`, `website`, `type`, `address`, `latitude`, `longitude`, `contactno`, `founded`, `facilities`, `shortcode`, `matchsecretary` FROM {$wpdb->leaguemanager_clubs} ORDER BY `name` ASC LIMIT %d, %d",  intval($offset), intval($limit) );
 
-        $clubs = wp_cache_get( md5($sql), 'leaguemanager' );
+        $clubs = wp_cache_get( md5($sql), 'clubs' );
         if ( !$clubs ) {
             $clubs = $wpdb->get_results( $sql );
-            wp_cache_add( md5($sql), $clubs, 'leaguemanager' );
+            wp_cache_set( md5($sql), $clubs, 'clubs' );
         }
 
         $i = 0;
@@ -1405,10 +1405,10 @@ class LeagueManager {
         if ( $search != "") $sql .= " WHERE $search";
         if ( $order != "") $sql .= " ORDER BY $order";
 
-        $rosters = wp_cache_get( md5($sql), 'leaguemanager' );
+        $rosters = wp_cache_get( md5($sql), 'rosters' );
         if ( !$rosters ) {
             $rosters = $wpdb->get_results( $sql );
-            wp_cache_add( md5($sql), $rosters, 'leaguemanager' );
+            wp_cache_set( md5($sql), $rosters, 'rosters' );
         }
 
 		$i = 0;
@@ -1464,7 +1464,7 @@ class LeagueManager {
         $roster = wp_cache_get( md5($sql), 'rosterentry' );
         if ( !$roster ) {
             $roster = $wpdb->get_row( $sql );
-            wp_cache_add( md5($sql), $roster, 'rosterentry' );
+            wp_cache_set( md5($sql), $roster, 'rosterentry' );
         }
 
 		return $roster;
@@ -1721,7 +1721,7 @@ class LeagueManager {
 
 		if ( !$res ) {
 			$res = $wpdb->query( $sql );
-		    wp_cache_add( md5($sql), $res, 'leaguemanager' );
+		    wp_cache_set( md5($sql), $res, 'leaguemanager' );
 		}
 	    $res = ( $res == 1 ) ? true : false;
 	    return $res;

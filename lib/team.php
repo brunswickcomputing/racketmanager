@@ -6,7 +6,7 @@
  * @package LeagueManager
  * @subpackage Team
  */
- 
+
 /**
  * Class to implement the Team object
  *
@@ -28,17 +28,17 @@ final class Team {
 
 		if ( ! $team ) {
 			$team = $wpdb->get_row( $wpdb->prepare( "SELECT `id`, `title`, `stadium`, `home`, `roster`, `profile`, `status`, `affiliatedclub` FROM {$wpdb->leaguemanager_teams} WHERE `id` = '%d' LIMIT 1", $team_id ) );
-			
+
 			if ( !$team ) return false;
-		
+
 			$team = new Team( $team );
 			
-			wp_cache_add( $team->id, $team, 'teams' );
+			wp_cache_set( $team->id, $team, 'teams' );
 		}
-		
+
 		return $team;
 	}
-    
+
 	/**
 	 * Constructor
 	 *
@@ -51,13 +51,13 @@ final class Team {
             foreach ( get_object_vars( $team ) as $key => $value ) {
                 $this->$key = $value;
             }
-			
+
 			$this->title = htmlspecialchars(stripslashes($this->title), ENT_QUOTES);
 			$this->stadium = stripslashes($this->stadium);
-			
+
 			$this->roster = intval($this->roster);
 			$this->profile = intval($this->profile);
-			
+
             $this->affiliatedclubname = get_club( $this->affiliatedclub )->name;
             if ( $this->status == 'P' && $this->roster != null ) {
                 $i = 1;
@@ -70,7 +70,7 @@ final class Team {
             }
 		}
 	}
-	
+
 }
 
 /**

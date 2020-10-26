@@ -509,7 +509,7 @@ class League {
 				$league = new League( $league );
 			}
 
-			wp_cache_add( $league->id, $league, 'leagues' );
+			wp_cache_set( $league->id, $league, 'leagues' );
 		}
 
 		return $league;
@@ -795,7 +795,7 @@ class League {
                 $match = $wpdb->get_row( $wpdb->prepare($sql, $this->id, $this->current_season['name']) );
                 if ($match)  {
                     $match_day = $match->match_day;
-                    wp_cache_add( 'last_'.$this->id, $match_day, 'leagues_match_days' );
+                    wp_cache_set( 'last_'.$this->id, $match_day, 'leagues_match_days' );
                 } else {
                     $match_day = $_match_day;
                 }
@@ -807,7 +807,7 @@ class League {
                 $match = $wpdb->get_row( $wpdb->prepare($sql, $this->id, $this->current_season['name']) );
                 if ($match)  {
                     $match_day = $match->match_day;
-                    wp_cache_add( 'next_'.$this->id, $match_day, 'leagues_match_days' );
+                    wp_cache_set( 'next_'.$this->id, $match_day, 'leagues_match_days' );
                 } else {
                     $match_day = $_match_day;
                 }
@@ -819,7 +819,7 @@ class League {
                 $match = $wpdb->get_row( $wpdb->prepare($sql, $this->id, $this->current_season['name']) );
                 if ($match) {
                     $match_day = $match->match_day;
-                    wp_cache_add( 'current_'.$this->id, $match_day, 'leagues_match_days' );
+                    wp_cache_set( 'current_'.$this->id, $match_day, 'leagues_match_days' );
                 } else {
                     $match_day = $_match_day;
                 }
@@ -1023,10 +1023,10 @@ class League {
          $sql .= " ORDER BY ".$orderby;
          $sql = $wpdb->prepare($sql, $args);
 
-         $teams = wp_cache_get( md5($sql), 'leaguemanager' );
+         $teams = wp_cache_get( $this->id, 'leaguetable' );
          if ( !$teams ) {
              $teams = $wpdb->get_results( $sql );
-             wp_cache_add( md5($sql), $teams, 'leaguemanager' );
+             wp_cache_set( $this->id, $teams, 'leaguetable' );
          }
 
          $class = '';
@@ -1099,7 +1099,7 @@ class League {
         $team = wp_cache_get( md5($sql), 'teamdetails' );
         if ( !$team ) {
             $team = $wpdb->get_row( $sql );
-            wp_cache_add( md5($sql), $team, 'teamdetails' );
+            wp_cache_set( md5($sql), $team, 'teamdetails' );
         }
 
         if (!isset($team)) return false;
@@ -1295,7 +1295,7 @@ class League {
             $matches = wp_cache_get( md5($sql), 'num_matches' );
             if (!$matches || $cache === false) {
                 $matches = intval($wpdb->get_var($sql));
-                wp_cache_add( md5($sql), $matches, 'num_matches' );
+                wp_cache_set( md5($sql), $matches, 'num_matches' );
             }
         } else {
             $orderby_string = ""; $i = 0;
@@ -1316,7 +1316,7 @@ class League {
             $matches = wp_cache_get( md5($sql), 'matches' );
             if (!$matches || $cache === false) {
                 $matches = $wpdb->get_results( $sql );
-                wp_cache_add( md5($sql), $matches, 'matches' );
+                wp_cache_set( md5($sql), $matches, 'matches' );
             }
 
             $class = '';
@@ -1823,7 +1823,7 @@ class League {
 
         if ( !$res ) {
             $res = $wpdb->query( $sql );
-            wp_cache_add( md5($sql), $res, 'leaguemanager' );
+            wp_cache_set( md5($sql), $res, 'leaguemanager' );
         }
         $res = ( $res == 1 ) ? true : false;
         return $res;
@@ -1930,6 +1930,8 @@ class League {
 
         foreach ( $teams AS $key => $team ) {
             $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `rank` = '%d', `status` = '%s' WHERE `id` = '%d'", $team->rank, $team->status, $team->table_id ) );
+			wp_cache_delete($team->table_id, 'leagueteam');
+			wp_cache_delete($team->league_id, 'leaguetable');
         }
     }
 
@@ -2005,7 +2007,8 @@ class League {
             $diff = $points2_plus - $points2_minus;
 
             $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `points_plus` = '%d', `points_minus` = '%d', `points2_plus` = '%d', `points2_minus` = '%d', `done_matches` = '%d', `won_matches` = '%d', `draw_matches` = '%d', `lost_matches` = '%d', `diff` = '%d', `add_points` = '%d' WHERE `team_id` = '%d' and `league_id` = '%d' AND `season` = '%s'", $points_plus[$id], $points_minus[$id], $points2_plus, $points2_minus, $num_done_matches[$id], $num_won_matches[$id], $num_draw_matches[$id], $num_lost_matches[$id], $diff, $add_points[$id], $id, $this->id, $season ) );
-        }
+			wp_cache_flush();
+		}
 
         // Update Teams Rank and Status if not set to manual ranking
         if ($this->team_ranking != 'manual')
@@ -2039,7 +2042,7 @@ class League {
                 $match = $this->updateResults( $match ) ;
                 if ( $match->home_points > 0 || $match->away_points > 0 ) {
                     $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_matches} SET `home_points` = ".$match->home_points.", `away_points` = ".$match->away_points.", `winner_id` = '%d', `loser_id` = '%d', `custom` = '%s', `updated_user` = %d, `updated` = now(), `confirmed` = 'Y' WHERE `id` = '%d'", intval($match->winner_id), intval($match->loser_id), maybe_serialize($match->custom), get_current_user_id(), $match_id) );
-
+					wp_cache_delete($match->id, 'matches');
                     $num_matches ++;
                 }
             }
@@ -2086,7 +2089,9 @@ class League {
             // get custom team standings data
             $leagueTeam->custom = $this->getStandingsData( $leagueTeam->id, $leagueTeam->custom );
 
-            $wpdb->query ( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `points_plus` = '%f', `points_minus` = '%f', `points2_plus` = '%d', `points2_minus` = '%d', `done_matches` = '%d', `won_matches` = '%d', `draw_matches` = '%d', `lost_matches` = '%d', `diff` = '%d' WHERE `team_id` = '%d' AND `league_id` = '%d' AND `season` = '%s'", $leagueTeam->points['plus'], $leagueTeam->points['minus'], $leagueTeam->points2['plus'], $leagueTeam->points2['minus'], $leagueTeam->done_matches, $leagueTeam->won_matches, $leagueTeam->draw_matches, $leagueTeam->lost_matches, $leagueTeam->diff, $leagueTeam->id, $leagueTeam->league_id, $leagueTeam->season ) );
+            $wpdb->query ( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `points_plus` = '%f', `points_minus` = '%f', `points2_plus` = '%d', `points2_minus` = '%d', `done_matches` = '%d', `won_matches` = '%d', `draw_matches` = '%d', `lost_matches` = '%d', `diff` = '%d', `custom` = '%s' WHERE `team_id` = '%d' AND `league_id` = '%d' AND `season` = '%s'", $leagueTeam->points['plus'], $leagueTeam->points['minus'], $leagueTeam->points2['plus'], $leagueTeam->points2['minus'], $leagueTeam->done_matches, $leagueTeam->won_matches, $leagueTeam->draw_matches, $leagueTeam->lost_matches, $leagueTeam->diff, maybe_serialize($leagueTeam->custom), $leagueTeam->id, $leagueTeam->league_id, $leagueTeam->season ) );
+			wp_cache_delete($leagueTeam->id, '$leagueteam');
+			wp_cache_delete($leagueTeam->league_id, 'leaguetable');
         }
 
         return $leagueTeam;

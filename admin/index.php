@@ -31,11 +31,13 @@
 		check_admin_referer('leaguemanager_add-roster');
 		if (isset($_POST['club_id']) && (!$_POST['club_id'] == 0)) {
 			$this->addPlayerIdToRoster( $_POST['club_id'], $_POST['player_id'] );
+        } else {
+            $leaguemanager->setMessage( __('Club must be selected','leaguemanager') );
 		}
 		$this->printMessage();
 		$tab = 1;
 	} elseif ( isset($_GET['view']) && $_GET['view'] == 'roster' ) {
-		$club_id = $_GET['club_id'];
+        if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
 		$tab = 1;
 	}
 ?>

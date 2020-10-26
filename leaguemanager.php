@@ -38,7 +38,7 @@ class LeagueManagerLoader
 	 *
 	 * @var string
 	 */
-	var $version = '5.2.3';
+	var $version = '5.3.0';
 
 
 	/**
@@ -46,7 +46,7 @@ class LeagueManagerLoader
 	 *
 	 * @var string
 	 */
-	var $dbversion = '5.2.0';
+	var $dbversion = '5.3.2';
 
 
 	/**
@@ -97,6 +97,8 @@ class LeagueManagerLoader
 		// register AJAX action to show TinyMCE Window
 		add_action( 'wp_ajax_leaguemanager_tinymce_window', array(&$this, 'showTinyMCEWindow') );
 		
+        add_action( 'wp_loaded', array(&$this, 'add_my_templates') );
+        
 		// Start this plugin once all other plugins are fully loaded
 		//add_action( 'plugins_loaded', array(&$this, 'initialize') );
 
@@ -108,20 +110,44 @@ class LeagueManagerLoader
 		// add LeagueManager template directory to projectmanager search path
 		add_filter( 'projectmanager_template_paths', array(&$this, 'addProjectmangerTemplatePath') );
 		
-		$leaguemanager = new LeagueManager( $this->bridge );
+        add_filter( 'wp_privacy_personal_data_exporters', array(&$this, 'register_privacy_data_exporter') );
+        
+        $leaguemanager = new LeagueManager( $this->bridge );
         $championship = new LeagueManagerChampionship();
 		$lmStats = new LeagueManagerStats();
 
-		if ( is_admin() )
+        if ( is_admin() )
 			$this->adminPanel = new LeagueManagerAdminPanel();
 	}
-	function LeagueManagerLoader()
-	{
-		$this->__construct();
-	}
 
-
-	/**
+    function get_my_template( $template ) {
+        $post = get_post();
+        $page_template = get_post_meta( $post->ID, '_wp_page_template', true );
+        if( $page_template == 'templates/template_notitle.php' ){
+            return plugin_dir_path(__FILE__) . "templates/template_notitle.php";
+        }
+        if( $page_template == 'templates/template_member_account.php' ){
+            return plugin_dir_path(__FILE__) . "templates/template_member_account.php";
+        }
+        return $template;
+    }
+    
+    function filter_admin_page_templates( $templates ) {
+        $templates['templates/template_notitle.php'] = __('No Title');
+        $templates['templates/template_member_account.php'] = __('Member Account');
+        return $templates;
+    }
+    
+    function add_my_templates() {
+        if( is_admin() ) {
+            add_filter( 'theme_page_templates', array(&$this, 'filter_admin_page_templates') );
+        }
+        else {
+            add_filter( 'page_template', array(&$this, 'get_my_template') );
+        }
+    }
+    
+    /**
 	 * add Leaguemanager template path to Projectmanager search path
 	 *
 	 * @param array $paths
@@ -133,8 +159,72 @@ class LeagueManagerLoader
 		return $paths;
 	}
 	
-	
-	/**
+    function register_privacy_data_exporter( $exporters ) {
+        $exporters['leaguemanager'] = array(
+                                             'exporter_friendly_name' => __( 'Leaguemanager Plugin' ),
+                                             'callback' => array(&$this,'leaguemanager_privacy_exporter'),
+                                             );
+        return $exporters;
+    }
+
+    function leaguemanager_privacy_exporter( $email_address, $page = 1 ) {
+        $number = 500; // Limit us to avoid timing out
+        $page = (int) $page;
+        
+        $data_to_export = array();
+        
+        $user = get_user_by( 'email', $email_address );
+        if ( ! $user ) {
+            return array(
+                         'data' => array(),
+                         'done' => true,
+                         );
+        }
+        
+        $user_meta = get_user_meta( $user->ID );
+        
+        $user_prop_to_export = array(
+                                     'gender'           => __( 'User Gender' ),
+                                     'BTM'              => __( 'User BTM' ),
+                                     'remove_date'      => __( 'User Removed Date' ),
+                                     'contactno'        => __( 'User Contact Number' ),
+                                     );
+        
+        $user_data_to_export = array();
+        
+        foreach ( $user_prop_to_export as $key => $name ) {
+            $value = '';
+            
+            switch ( $key ) {
+                case 'gender':
+                case 'BTM':
+                case 'remove_date':
+                case 'contactno':
+                    $value = isset($user_meta[ $key ][0]) ? $user_meta[ $key ][0] : '';
+                    break;
+            }
+            
+            if ( ! empty( $value ) ) {
+                $user_data_to_export[] = array(
+                                               'name'  => $name,
+                                               'value' => $value,
+                                               );
+            }
+        }
+        
+        $data_to_export[] = array(
+                                  'group_id'    => 'user',
+                                  'group_label' => __( 'User' ),
+                                  'item_id'     => "user-{$user->ID}",
+                                  'data'        => $user_data_to_export,
+                                  );
+        return array(
+                     'data' => $data_to_export,
+                     'done' => true,
+                     );
+    }
+    
+    /**
 	 * Add individual league matches to slideshow categories
 	 *
 	 * @param string $categories
@@ -321,6 +411,8 @@ class LeagueManagerLoader
 		$wpdb->leaguemanager_roster = $wpdb->prefix . 'leaguemanager_roster';
 		$wpdb->leaguemanager_competitions = $wpdb->prefix . 'leaguemanager_competitions';
         $wpdb->leaguemanager_team_competition = $wpdb->prefix . 'leaguemanager_team_competition';
+        $wpdb->leaguemanager_users = $wpdb->prefix . 'users';
+        $wpdb->leaguemanager_usermeta = $wpdb->prefix . 'usermeta';
 	}
 
 
@@ -339,6 +431,7 @@ class LeagueManagerLoader
 		require_once (dirname (__FILE__) . '/lib/ajax.php');
 		require_once (dirname (__FILE__) . '/lib/stats.php');
 		require_once (dirname (__FILE__) . '/lib/shortcodes.php');
+        require_once (dirname (__FILE__) . '/lib/login.php');
 			//		require_once (dirname (__FILE__) . '/lib/widget.php');
 		require_once (dirname (__FILE__) . '/functions.php');
 		require_once (dirname (__FILE__) . '/lib/championship.php');
@@ -354,6 +447,7 @@ class LeagueManagerLoader
 		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 		
 		$lmShortcodes = new LeagueManagerShortcodes($this->bridge);
+        $lmLogin = new LeagueManagerLogin();
 	}
 
 
@@ -611,14 +705,63 @@ class LeagueManagerLoader
 		if ( $role !== null ) {
 			$role->add_cap('league_manager');
 		}
+        $this->create_login_pages();
 
 		$this->install();
+    }
+            
+    function create_login_pages()
+    {
+        // Information needed for creating the plugin's pages
+        $page_definitions = array(
+                                  'member-login' => array(
+                                                          'title' => __( 'Sign In', 'leaguemanager' ),
+                                                          'page_template' => 'notitle',
+                                                          'content' => '[custom-login-form]'
+                                                          ),
+                                  'member-account' => array(
+                                                            'title' => __( 'Your Account', 'leaguemanager' ),
+                                                            'page_template' => 'member_account',
+                                                            'content' => '[account-info]'
+                                                            ),
+                                  'member-password-lost' => array(
+                                                                  'title' => __( 'Forgot Your Password?', 'leaguemanager' ),
+                                                                  'page_template' => 'notitle',
+                                                                  'content' => '[custom-password-lost-form]'
+                                                                  ),
+                                  'member-password-reset' => array(
+                                                                   'title' => __( 'Pick a New Password', 'leaguemanager' ),
+                                                                   'page_template' => 'notitle',
+                                                                   'content' => '[custom-password-reset-form]'
+                                                                   )
+                                  );
+        
+        foreach ( $page_definitions as $slug => $page ) {
+            // Check that the page doesn't exist already
+            $query = new WP_Query( 'pagename=' . $slug );
+            if ( ! $query->have_posts() ) {
+                // Add the page using the data from the array above
+                wp_insert_post(
+                               array(
+                                     'post_content'   => $page['content'],
+                                     'post_name'      => $slug,
+                                     'post_title'     => $page['title'],
+                                     'post_status'    => 'publish',
+                                     'post_type'      => 'page',
+                                     'ping_status'    => 'closed',
+                                     'comment_status' => 'closed',
+                                     'page_template' => $page_template,
+                                     )
+                               );
+            }
+        }
 	}
 
 	function install()
 	{
 		global $wpdb;
-		include_once( ABSPATH.'/wp-admin/includes/upgrade.php' );
+
+        include_once( ABSPATH.'/wp-admin/includes/upgrade.php' );
 
 		$charset_collate = '';
 		if ( $wpdb->has_cap( 'collation' ) ) {

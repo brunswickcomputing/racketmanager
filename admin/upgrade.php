@@ -10,7 +10,7 @@ function leaguemanager_upgrade() {
 	$options = get_option( 'leaguemanager' );
 	$installed = $options['dbversion'];
 	
-	echo __('Upgrade database structure...', 'leaguemanager');
+	echo __('Upgrade database structure...', 'leaguemanager') . "<br />\n";
 	$wpdb->show_errors();
 
 	$lmLoader->install();
@@ -33,9 +33,95 @@ function leaguemanager_upgrade() {
         $wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_players} ADD `fullname` VARCHAR(255) NOT NULL AFTER `surname`;" );
         $wpdb->query( "UPDATE {$wpdb->leaguemanager_players} SET `fullname`= concat(`firstname`,' ',`surname`);" );
         $wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_competitions} ADD `competitiontype` VARCHAR(255) NOT NULL AFTER `seasons`;" );
-        $wpdb->query( "UPDATE {$wpdb_competitions} SET `competitiontype` = 'league' WHERE `competitiontype` = '';" );
+        $wpdb->query( "UPDATE {$wpdb->leaguemanager_competitions} SET `competitiontype` = 'league' WHERE `competitiontype` = '';" );
     }
-	/*
+    if (version_compare($installed, '5.3.0', '<')) {
+        echo __('starting 5.3.0 upgrade', 'leaguemanager') . "<br />\n";
+        $prev_player_id = 0;
+        $rosters = $wpdb->get_results(" SELECT `id`, `player_id`, `affiliatedclub`, `removed_date` FROM {$wpdb->leaguemanager_roster} WHERE `updated` = 0 ORDER BY `player_id`;");
+        foreach ($rosters AS $roster) {
+                    echo $roster->player_id . "<br />\n";
+            if ($roster->player_id != $prev_player_id) {
+                $player = $wpdb->get_results( $wpdb->prepare(" SELECT `firstname`, `surname`, `gender`, `btm` FROM {$wpdb->leaguemanager_players} WHERE `id` = %d", $roster->player_id) );
+                if ( !$player ) {
+                    error_log($roster->player_id.' player not found');
+                } else {
+                    $player = $player[0];
+                    $userdata = array();
+                    $userdata['first_name'] = $player->firstname;
+                    $userdata['last_name'] = $player->surname;
+                    $userdata['display_name'] = $player->firstname.' '.$player->surname;
+                    $userdata['user_login'] = strtolower($player->firstname).'.'.strtolower($player->surname);
+                    $userdata['user_pass'] = $userdata['user_login'].'1';
+                    $user = get_user_by( 'login', $userdata['user_login'] );
+                    if ( !$user ) {
+                        $user_id = wp_insert_user( $userdata );
+                    } else {
+                        $user_id = $user->ID;
+                    }
+                    update_user_meta($user_id, 'show_admin_bar_front', false );
+                    update_user_meta($user_id, 'gender', $player->gender);
+                    if ( isset($player->btm) && $player->btm != '' ) {
+                        update_user_meta($user_id, 'btm', $player->btm);
+                    }
+                    if ( isset($player->removed_date) && $player->removed_date != '' ) {
+                        update_user_meta($user_id, 'remove_date', $player->removed_date);
+                    }
+                }
+            }
+            $prev_player_id = $roster->player_id;
+            $wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->leaguemanager_roster} SET `player_id` = %d, `updated` = 1 WHERE `id` = %d", $user_id, $roster->id ) );
+        }
+    }
+    if (version_compare($installed, '5.3.1', '<')) {
+        echo __('starting 5.3.1 upgrade', 'leaguemanager') . "<br />\n";
+        echo __('updating captains', 'leaguemanager') . "<br />\n";
+        $prev_captain = '';
+        $captains = $wpdb->get_results(" SELECT `id`, `captain`, `contactno`, `contactemail` FROM {$wpdb->leaguemanager_team_competition} WHERE `captain` != '' ORDER BY `captain`;");
+        foreach ($captains AS $captain) {
+            if ( !is_numeric($captain->captain) ) {
+                if ( $prev_captain != $captain->captain ) {
+                    $user = $wpdb->get_results( $wpdb->prepare( "SELECT `ID` FROM {$wpdb->users} WHERE `display_name` = '%s'", $captain->captain ) );
+                    if ( !isset($user[0]) ) {
+                        error_log($captain->captain.' not found');
+                    } else {
+                        $user = $user[0];
+                        if ( isset($captain->contactno) && $captain->contactno != '' ) {
+                            update_user_meta($user->ID, 'contactno', $captain->contactno);
+                        }
+                        if ( isset($captain->contactemail) && $captain->contactemail != '' ) {
+                            $userid = wp_update_user( array( 'ID' => $user->ID, 'user_email' => $captain->contactemail ) );
+                        }
+                    }
+                    $prev_captain = $captain->captain;
+                }
+                $wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->leaguemanager_team_competition} SET `captain` = %d WHERE `id` = %s", $user->ID, $captain->id ) );
+            }
+        }
+    }
+    if (version_compare($installed, '5.3.2', '<')) {
+        echo __('starting 5.3.2 upgrade', 'leaguemanager') . "<br />\n";
+        echo __('updating player captains', 'leaguemanager') . "<br />\n";
+        $teams = $wpdb->get_results(" SELECT `id`, `title`, `roster` FROM {$wpdb->leaguemanager_teams} WHERE `status` = 'P' ORDER BY `title`; ");
+        foreach ($teams AS $team) {
+            $team->title = htmlspecialchars(stripslashes($team->title), ENT_QUOTES);
+            $team->roster = maybe_unserialize($team->roster);
+            $captain = $leaguemanager->getRosterEntry($team->roster[0])->player_id;
+            $contacts = $wpdb->get_results( $wpdb->prepare(" SELECT `id`, `captain`, `contactno`, `contactemail` FROM {$wpdb->leaguemanager_team_competition} WHERE `team_id` = %s;", $team->id) );
+            foreach($contacts AS $contact) {
+                if ( isset($contact->contactno) && $contact->contactno != '' ) {
+                    update_user_meta($captain, 'contactno', $contact->contactno);
+                }
+                if ( isset($contact->contactemail) && $contact->contactemail != '' ) {
+                    $userid = wp_update_user( array( 'ID' => $captain, 'user_email' => $contact->contactemail ) );
+                }
+                $wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->leaguemanager_team_competition} SET `captain` = %d WHERE `id` = %s", $captain, $contact->id ) );
+            }
+        }
+        $wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_team_competition} DROP `contactno`, DROP `contactemail`;" );
+   }
+
+    /*
 	* Update version and dbversion
 	*/
 	$options['dbversion'] = LEAGUEMANAGER_DBVERSION;
@@ -46,7 +132,6 @@ function leaguemanager_upgrade() {
 	$wpdb->hide_errors();
 	return;
 }
-
 
 /**
 * leaguemanager_upgrade_page() - This page showsup , when the database version doesn't fit to the script LEAGUEMANAGER_DBVERSION constant.
@@ -70,7 +155,6 @@ function leaguemanager_upgrade_page()  {
 	<?php
 }
 
-
 /**
  * leaguemanager_do_upgrade() - Proceed the upgrade routine
  * 
@@ -85,69 +169,6 @@ function leaguemanager_do_upgrade($filepath) {
 	<p><?php leaguemanager_upgrade();?></p>
 	<p><?php _e('Upgrade successful', 'leaguemanager') ;?></p>
 	<h3><a class="button" href="<?php echo $filepath;?>"><?php _e('Continue', 'leaguemanager'); ?>...</a></h3>
-</div>
-<?php
-}
-
-
-/**
- * display upgrade page for 2.9.2
- */
-function leaguemanager_upgrade_292() {
-	global $leaguemanager;
-
-	if ( isset($_POST['set_season']) ) {
-		$new_league = empty($_POST['new_league']) ? false : $_POST['new_league'];
-		$old_season = empty($_POST['old_season']) ? false : $_POST['old_season'];
-
-		if ( !empty($_POST['season']) ) {
-			move_league_to_season( $_POST['league'], $_POST['season'], $new_league, $old_season );
-			$leaguemanager->setMessage( __( 'Successfully set Season for Matches and Teams', 'leaguemanager') );
-		} else {
-			$leaguemanager->setMessage( __( 'Season was empty', 'leaguemanager' ), true );
-		}
-		$leaguemanager->printMessage();
-	}
-
-	$leagues = $leaguemanager->getLeagues();
-?>
-<div class="wrap">
-<h2><?php _e( 'Upgrade to Version 2.9.2', 'leaguemanager' ) ?></h2>
-
-<form action="" method="post">
-<table class="lm-form-table">
-<tr>
-	<th scope="row"><label for="league"><?php _e( 'League', 'leaguemanager' ) ?></label></th>
-	<td>
-		<select id="league" name="league" size="1">
-			<?php foreach ( $leagues AS $league ) : ?>
-			<option value="<?php echo $league->id ?>"><?php echo $league->title ?></option>
-			<?php endforeach; ?>
-		</select>
-	</td>
-</tr>
-<tr>
-	<th scope="row"><label for="season"><?php _e( 'Season', 'leaguemanager' ) ?></label></th>
-	<td><input type="text" name="season" id="season" size="10" /></td>
-</tr>
-<tr>
-	<th scope="row"><label for="new_league"><?php _e( 'New League', 'leaguemanager' ) ?></label></th>
-	<td>
-		<select id="new_league" name="new_league" size="1">
-			<option value=""><?php _e( 'Keep League', 'leaguemanager' ) ?></option>
-			<?php foreach ( $leagues AS $league ) : ?>
-			<option value="<?php echo $league->id ?>"><?php echo $league->title ?></option>
-			<?php endforeach; ?>
-		</select>
-	</td>
-</tr>
-<tr>
-	<th scope="row"><label for="old_season"><?php _e( 'Old Season', 'leaguemanager' ) ?></label></th>
-	<td><input type="text" name="old_season" id="old_season" size="10" /></td>
-</tr>
-</table>
-<p class="submit"><input type="submit" name="set_season" value="<?php _e( 'Submit' ) ?>" /></p>
-</form>
 </div>
 <?php
 }

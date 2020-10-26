@@ -18,7 +18,7 @@ Leaguemanager.reInit();
 			$form_title = __( 'Add Team', 'leaguemanager' );
 			$form_action = __( 'Add', 'leaguemanager' );
 			$league_id = intval($_GET['league_id']);
-			$team = (object)array( 'title' => '', 'home' => 0, 'id' => '', 'logo' => '', 'website' => '', 'captain' => '', 'contactno' => '', 'contactemail' => '', 'stadium' => '', 'match_day' => '', 'match_time' => '', 'roster' => array('id' => '', 'cat_id' => '' ) );
+			$team = (object)array( 'title' => '', 'home' => 0, 'id' => '', 'logo' => '', 'website' => '', 'captain' => '', 'captainId' => '', 'contactno' => '', 'contactemail' => '', 'stadium' => '', 'match_day' => '', 'match_time' => '', 'roster' => array('id' => '', 'cat_id' => '' ) );
 		}
 		$league = $leaguemanager->getLeague( $league_id );
 		$season = isset($_GET['season']) ? htmlspecialchars(strip_tags($_GET['season'])) : '';
@@ -66,11 +66,11 @@ Leaguemanager.reInit();
     ?>
 <?php } ?>
 			<tr valign="top">
-<th scope="row"><label for="teamPlayer1"><?php _e( 'Player 1', 'leaguemanager' ) ?></label></th><td><input type="text" name="teamPlayer1" id="teamPlayer1" value="<?php echo isset($team->player1) ? $team->player1 : '' ?>" size="50" /><input type="hidden" name="teamPlayerId1" id="teamPlayerId1" value="" /></td>
+                <th scope="row"><label for="teamPlayer1"><?php _e( 'Player 1', 'leaguemanager' ) ?></label></th><td><input type="text" name="teamPlayer1" id="teamPlayer1" value="<?php echo isset($team->player['1']) ? $team->player['1'] : '' ?>" size="50" /><input type="hidden" name="teamPlayerId1" id="teamPlayerId1" value="<?php echo isset($team->playerId['1']) ? $team->playerId['1'] : '' ?>" /></td>
 			</tr>
 <?php if ( substr($league->type,1,1) == 'D'  ) { ?>
 			<tr valign="top">
-<th scope="row"><label for="teamPlayer2"><?php _e( 'Player 2', 'leaguemanager' ) ?></label></th><td><input type="text" name="teamPlayer2" id="teamPlayer2" value="<?php echo isset($team->player2) ? $team->player2 : '' ?>" size="50" /><input type="hidden" name="teamPlayerId2" id="teamPlayerId2" value="" /></td>
+                <th scope="row"><label for="teamPlayer2"><?php _e( 'Player 2', 'leaguemanager' ) ?></label></th><td><input type="text" name="teamPlayer2" id="teamPlayer2" value="<?php echo isset($team->player['2']) ? $team->player['2'] : '' ?>" size="50" /><input type="hidden" name="teamPlayerId2" id="teamPlayerId2" value="<?php echo isset($team->playerId['2']) ? $team->playerId['2'] : '' ?>" /></td>
 			</tr>
 <?php } ?>
             <tr valign="top">
@@ -85,6 +85,9 @@ Leaguemanager.reInit();
                 </td>
             </tr>
 
+			<tr valign="top">
+				<th scope="row"><label for="captain"><?php _e( 'Captain', 'leaguemanager' ) ?></label></th><td><input type="text" name="captain" id="captain" autocomplete="name off" value="<?php echo $team->captain ?>" size="40" disabled /><input type="hidden" name="captainId" id="captainId" value="<?php echo $team->captainId ?>" /></td>
+			</tr>
             <tr valign="top">
                 <th scope="row"><label for="contactno"><?php _e( 'Contact Number', 'leaguemanager' ) ?></label></th><td><input type="tel" name="contactno" id="contactno" autocomplete="tel" value="<?php echo $team->contactno ?>" size="20" /></td>
             </tr>
@@ -168,7 +171,7 @@ Leaguemanager.reInit();
             </tr>
 
 			<tr valign="top">
-				<th scope="row"><label for="captain"><?php _e( 'Captain', 'leaguemanager' ) ?></label></th><td><input type="text" name="captain" id="coach" autocomplete="name off" value="<?php echo $team->captain ?>" size="40" /></td>
+				<th scope="row"><label for="captain"><?php _e( 'Captain', 'leaguemanager' ) ?></label></th><td><input type="text" name="captain" id="captain" autocomplete="name off" value="<?php echo $team->captain ?>" size="40" /><input type="hidden" name="captainId" id="captainId" value="<?php echo $team->captainId ?>" /></td>
 			</tr>
             <tr valign="top">
                 <th scope="row"><label for="contactno"><?php _e( 'Contact Number', 'leaguemanager' ) ?></label></th><td><input type="tel" name="contactno" id="contactno" autocomplete="tel" value="<?php echo $team->contactno ?>" size="20" /></td>

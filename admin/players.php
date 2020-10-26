@@ -44,8 +44,7 @@
 		<tr>
 			<th scope="col" class="check-column"><input type="checkbox" onclick="Leaguemanager.checkAll(document.getElementById('player-filter'));" /></th>
 			<th scope="col" class="num">ID</th>
-			<th scope="col"><?php _e( 'First Name', 'leaguemanager' ) ?></th>
-			<th scope="col"><?php _e( 'Surname', 'leaguemanager' ) ?></th>
+			<th scope="col"><?php _e( 'Name', 'leaguemanager' ) ?></th>
 			<th scope="col"><?php _e( 'Gender', 'leaguemanager' ) ?></th>
 			<th scope="col"><?php _e( 'BTM', 'leaguemanager' ) ?></th>
 			<th scope="col"><?php _e( 'Removed', 'leaguemanager') ?></th>
@@ -61,8 +60,7 @@
 <?php } ?>
 				</th>
 				<td class="num"><?php echo $player->id ?></td>
-				<td><?php echo $player->firstname ?></td>
-				<td><?php echo $player->surname ?></td>
+				<td><?php echo $player->fullname ?></td>
 				<td><?php echo $player->gender ?></td>
 				<td><?php echo $player->btm ?></td>
 				<td><?php if ( isset($player->removed_date) ) { echo $player->removed_date; } ?></td>

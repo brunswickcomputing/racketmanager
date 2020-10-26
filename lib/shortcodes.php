@@ -545,9 +545,7 @@ class LeagueManagerShortcodes extends LeagueManager
 		global $leaguemanager;
 		
 		$roster_dtls = $leaguemanager->getRosterEntry( intval($roster_id));
-		$firstname	= isset($roster_dtls->firstname) ? $roster_dtls->firstname : '';
-		$surname	= isset($roster_dtls->surname) ? $roster_dtls->surname : '';
-		$playername = $firstname.' '.$surname;
+        $playername = $roster_dtls->fullname;
 		return $playername;
 	}
 	
@@ -606,13 +604,28 @@ class LeagueManagerShortcodes extends LeagueManager
 					$class = ( !isset($class) || 'alternate' == $class ) ? '' : 'alternate';
 					$match->class = $class;
 				
-					if ( is_numeric($match->home_team) && is_numeric($match->away_team) ) {
-						//$match->title = $match->title2 = sprintf("%s &#8211; %s", $teams[$match->home_team]['title'], $teams[$match->away_team]['title']);
-						$match->title = $leaguemanager->getMatchTitle($match->id);
+					if ( is_numeric($match->home_team) ) {
+                        if ( $match->home_team == -1 ) {
+                            $home_title = 'Bye';
+                        } else {
+                            $home_title = $teams[$match->home_team]['title'];
+                        }
 					} else {
-						$match->title = sprintf("%s &#8211; %s", $teams2[$match->home_team], $teams2[$match->away_team]);
-						$match->title2 = "&#8211;";
+                        $home_title = $teams2[$match->home_team];
 					}
+
+                    if ( is_numeric($match->away_team) ) {
+                        if ( $match->away_team == -1 ) {
+                            $away_title = 'Bye';
+                        } else {
+                            $away_title = $teams[$match->away_team]['title'];
+                        }
+                    } else {
+                        $away_title = $teams2[$match->away_team];
+                    }
+                    $match->title = sprintf("%s &#8211; %s", $home_title, $away_title);
+                    $match->home_title = $home_title;
+                    $match->away_title = $away_title;
 
 					$match->hadPenalty = $match->hadPenalty = ( isset($match->penalty) && $match->penalty['home'] != '' && $match->penalty['away'] != '' ) ? true : false;
 					$match->hadOvertime = $match->hadOvertime = ( isset($match->overtime) && $match->overtime['home'] != '' && $match->overtime['away'] != '' ) ? true : false;
@@ -651,8 +664,17 @@ class LeagueManagerShortcodes extends LeagueManager
                                         $match->score .= $set['player1'].'-'.$set['player2'].' ';
                                     }
                                 }
+                                if ( $match->score == '' ) {
+                                    $match->score = __('Walkover', 'leaguemanager');
+                                }
                             }
-					} else {
+					} elseif ( $match->winner_id != 0 ) {
+                        if ( $match->home_team == -1 || $match->away_team == -1 ) {
+                            $match->score = '';
+                        } else {
+                            $match->score = __('Walkover', 'leaguemanager');
+                        }
+                    } else {
 						$match->score = "-:-";
 					}
 
@@ -663,7 +685,7 @@ class LeagueManagerShortcodes extends LeagueManager
 						$data['isFinal'] = false;
 					}
 					
-					if ( empty($match->location) ) $match->location = 'N/A';
+					if ( empty($match->location) ) $match->location = '';
 
 					$matches[$i] = $match;
 				}
@@ -1115,7 +1137,7 @@ class LeagueManagerShortcodes extends LeagueManager
 			
 			$matches = $player->matchdays;
 			$played = $won = $lost = $setsWon = $setsConceded = $gamesWon = $gamesConceded = 0;
-			$playername = $player->firstname.' '.$player->surname;
+			$playername = $player->fullname;
 
 			foreach ( $matches AS $match ) {
 				
@@ -1261,7 +1283,6 @@ class LeagueManagerShortcodes extends LeagueManager
 	{
 		global $leaguemanager, $lmStats, $championship;
 		extract($vars);
-
 		ob_start();
 
 		if ( file_exists( get_stylesheet_directory() . "/leaguemanager/$template.php")) {

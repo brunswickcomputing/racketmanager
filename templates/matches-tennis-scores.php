@@ -41,22 +41,27 @@
                         <td class='angledir'></td>
                     <?php } ?>
                     <td class='match'>
-                        <?php echo mysql2date('l, j F Y', $match->date)." ".$match->start_time." ".$match->location ?><br /><?php echo $match->title ?> <?php echo $match->report ?>
+                        <?php echo mysql2date('l, j F Y', $match->date)." ".$match->start_time." ".$match->location ?><br />
+                        <?php if ( isset($match->home_title) && isset($match->away_title) ) { ?>
+                        <span class="<?php if ( $match->winner_id == $match->home_team ) echo 'winner'?>"><?php echo $match->home_title ?></span> - <span class="<?php if ( $match->winner_id == $match->away_team ) echo 'winner'?>"><?php echo $match->away_title; ?></span>
+                        <?php } else { ?>
+                        <?php echo $match->title ;?>
+                        <?php } ?>
+                        <?php echo $match->report ?>
                     </td>
                     <td class='score'>
-                        <?php if (isset($league->num_rubbers)) {
+                        <?php if (isset($league->num_rubbers) && $league->num_rubbers > 0) {
                             echo $match->score;
                         } elseif ( isset($match->sets) ) {
                             $sets = array();
                             foreach ( (array)$match->sets AS $j => $set ) {
                                 if ( $set['player1'] != "" && $set['player2'] != "" ) {
-                                    if ( $match->winner_id == $match->away_team )
-                                        $sets[] = sprintf($league->point_format2, $set['player2'], $set['player1']);
-                                    else
-                                        $sets[] = sprintf($league->point_format2, $set['player1'], $set['player2']);
+                                    $sets[] = $set['player1'].'-'.$set['player2'];
                                 }
                             }
-                            implode(", ", $sets);
+                            echo implode(" ", $sets);
+                        } else {
+                            echo '';
                         } ?>
                     </td>
 

@@ -26,7 +26,7 @@ You can check the content of a variable when you insert the tag <?php var_dump($
 				<?php foreach ( $players AS $player ) { ?>
 
 					<tr class='<?php echo $match->class ?>'>
-						<td><?php echo $player->firstname; echo $player->surname; ?></td>
+						<td><?php echo $player->fullname ?></td>
 						<td><?php echo $player->team_title ?></td>
 						<td><?php echo $player->won ?></td>
 						<td><?php echo $player->lost ?></td>

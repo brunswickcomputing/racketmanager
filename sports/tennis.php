@@ -458,8 +458,10 @@ class LeagueManagerTennis extends LeagueManager
 								
 								for ( $j = 1; $j <= $league->num_sets; $j++  ) {
                                     if ( $rubber->sets[$j]['player1'] != null) {
-                                        $data['games_allowed'] += $rubber->sets[$j]['player2'];
-                                        $data['games_won'] += $rubber->sets[$j]['player1'];
+                                        if ( isset($rubber->sets[$j]['player2']) && is_numeric($rubber->sets[$j]['player2']) ) {
+                                            $data['games_allowed'] += $rubber->sets[$j]['player2'];
+                                            $data['games_won'] += $rubber->sets[$j]['player1'];
+                                        }
                                         if ( $rubber->sets[$j]['player1'] > $rubber->sets[$j]['player2'] ) {
                                             $data['sets_won'] += 1;
                                         } elseif ( $rubber->sets[$j]['player1'] < $rubber->sets[$j]['player2'] ) {
@@ -478,8 +480,10 @@ class LeagueManagerTennis extends LeagueManager
 							} else {                                        //away team
 								for ( $j = 1; $j <= $league->num_sets; $j++  ) {
                                     if ( $rubber->sets[$j]['player1'] != null) {
-                                        $data['games_allowed'] += $rubber->sets[$j]['player1'];
-                                        $data['games_won'] += $rubber->sets[$j]['player2'];
+                                        if ( isset($rubber->sets[$j]['player1']) && is_numeric($rubber->sets[$j]['player1'])) {
+                                            $data['games_allowed'] += $rubber->sets[$j]['player1'];
+                                            $data['games_won'] += $rubber->sets[$j]['player2'];
+                                        }
                                         if ( $rubber->sets[$j]['player2'] > $rubber->sets[$j]['player1'] ) {
                                             $data['sets_won'] += 1;
                                         } elseif ( $rubber->sets[$j]['player2'] < $rubber->sets[$j]['player1'] ) {

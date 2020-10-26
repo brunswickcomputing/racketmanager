@@ -51,10 +51,10 @@
 			<?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 			<tr class="<?php echo $class ?>">
 
-				<td title="BTM: <?php echo $playerstat->btm ?>"><?php echo $playerstat->firstname.' '.$playerstat->surname ?></td>
+				<td><?php echo $playerstat->fullname ?></td>
 
 		<?php $matchdaystats = $matchdaystatsdummy;
-			$prevTeamNum = $playupcount = 0;
+			$prevTeamNum = $playdowncount = 0;
 			$prevMatchDay = $i = 0;
 
 			foreach ( $playerstat->matchdays AS $matches) {
@@ -65,9 +65,8 @@
 				$teamNum = substr($matches->team_title,-1) ;
 				if ( $prevTeamNum == 0) {
 					$playdir = '';
-				} elseif ( $teamNum < $prevTeamNum ) {
-					$playdir = 'playup';
-					$playupcount ++;
+				} elseif ( $teamNum > $prevTeamNum ) {
+					$playdowncount ++;
 					$playdir = 'playdown';
 				} else {
 					$playdir = '';
@@ -81,8 +80,8 @@
 				$i++;
 			}
 			
-			if ( !$playupcount == 0 ) {
-				echo '<td title="Played Up">'.$playupcount.'</td>';
+			if ( !$playdowncount == 0 ) {
+				echo '<td title="Played Down">'.$playdowncount.'</td>';
 			} else {
 				echo '<td></td>';
 			}

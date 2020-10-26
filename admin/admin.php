@@ -21,10 +21,16 @@ class LeagueManagerAdminPanel extends LeagueManager
 
 		add_action('admin_enqueue_scripts', array(&$this, 'loadScripts') );
 		add_action('admin_enqueue_scripts', array(&$this, 'loadStyles') );
-		
+        
 			//		add_action('wp_dashboard_setup', array( $this, 'register_admin_widgets'));
 		add_action( 'admin_menu', array(&$this, 'menu') );
 
+        add_action( 'show_user_profile', array(&$this, 'custom_user_profile_fields') );
+        add_action( 'edit_user_profile', array(&$this, 'custom_user_profile_fields') );
+        add_action( 'personal_options_update', array(&$this, 'update_extra_profile_fields') );
+        add_action( 'edit_user_profile_update', array(&$this, 'update_extra_profile_fields') );
+        
+        add_action( 'admin_menu', array(&$this, 'menu') );
 		// Add meta box to post screen
 
 		add_action( 'publish_post', array(&$this, 'editMatchReport') );
@@ -63,7 +69,80 @@ class LeagueManagerAdminPanel extends LeagueManager
 		add_filter( 'plugin_action_links_' . $plugin, array( &$this, 'pluginActions' ) );
 	}
 
-	/**
+    /** Display in the wp backend
+     * http://codex.wordpress.org/Plugin_API/Action_Reference/show_user_profile
+     *
+     * Show custom user profile fields
+     * @param  obj $user The WP user object.
+     * @return void
+     */
+
+    function custom_user_profile_fields( $user ) {
+        ?>
+        <table class="form-table">
+            <tr>
+                <th>
+                    <label for="gender"><?php _e( 'Gender','leaguemanager' ); ?></label>
+                </th>
+                <td>
+                    <input type="radio" required="required" name="gender" value="M" <?php echo ( get_the_author_meta( 'gender', $user->ID )  == 'M') ? 'checked' : '' ?>> <?php _e('Male', 'leaguemanager') ?><br />
+                    <input type="radio" name="gender" value="F" <?php echo ( get_the_author_meta( 'gender', $user->ID )  == 'F') ? 'checked' : '' ?>> <?php _e('Female', 'leaguemanager') ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <label for="contactno"><?php _e( 'Contact Number','leaguemanager' ); ?></label>
+                </th>
+                <td>
+                    <input type="tel" name="contactno" value="<?php echo esc_attr( get_the_author_meta( 'contactno', $user->ID ) ); ?>">
+                </td>
+            </tr>
+             <tr>
+                <th>
+                    <label for="btm"><?php _e( 'BTM Number','leaguemanager' ); ?></label>
+                </th>
+                <td>
+                    <input type="number" name="btm" value="<?php echo esc_attr( get_the_author_meta( 'btm', $user->ID ) ); ?>">
+                </td>
+            </tr>
+             <tr>
+                <th>
+                    <label for="remove_date"><?php _e( 'Date Removed','leaguemanager' ); ?></label>
+                </th>
+                <td>
+                    <input type="date" name="remove_date" value="<?php echo esc_attr( get_the_author_meta( 'remove_date', $user->ID ) ); ?>">
+                </td>
+            </tr>
+      </table>
+    <?php
+    }
+
+    /** Update the custom meta
+     * https://codex.wordpress.org/Plugin_API/Action_Reference/personal_options_update
+     * https://codex.wordpress.org/Plugin_API/Action_Reference/edit_user_profile_update
+     *
+     * Show custom user profile fields
+     * @param  int user_id.
+     */
+    function update_extra_profile_fields( $user_id ) {
+        
+        if ( current_user_can( 'edit_user', $user_id ) ) {
+            if ( isset($_POST['gender']) ) {
+                update_user_meta( $user_id, 'gender', $_POST['gender'] );
+            }
+            if ( isset($_POST['contactno']) ) {
+                update_user_meta( $user_id, 'contactno', $_POST['contactno'] );
+            }
+            if ( isset($_POST['btm']) ) {
+                update_user_meta( $user_id, 'btm', $_POST['btm'] );
+            }
+            if ( isset($_POST['remove_date']) ) {
+                update_user_meta( $user_id, 'remove_date', $_POST['remove_date'] );
+            }
+        }
+    }
+
+    /**
 	 * adds the required Metaboxes
 	 */
 	function metaboxes() {
@@ -925,9 +1004,25 @@ class LeagueManagerAdminPanel extends LeagueManager
     {
         global $wpdb;
 
-        $sql = "INSERT INTO {$wpdb->leaguemanager_team_competition} (`team_id`, `competition_id`, `captain`, `contactno`, `contactemail`, `match_day`, `match_time`) VALUES ('%d', '%d', '%s', '%s', '%s', '%s', '%s')";
-        $wpdb->query( $wpdb->prepare ( $sql, $team_id, $competition_id, $captain, $contactno, $contactemail, $matchday, $matchtime ) );
+        $sql = "INSERT INTO {$wpdb->leaguemanager_team_competition} (`team_id`, `competition_id`, `captain`, `match_day`, `match_time`) VALUES ('%d', '%d', '%d', '%s', '%s')";
+        $wpdb->query( $wpdb->prepare ( $sql, $team_id, $competition_id, $captain, $matchday, $matchtime ) );
         $team_competition_id = $wpdb->insert_id;
+        if ( isset($captain) && $captain != '' ) {
+            $currentContactNo = get_user_meta( $captain, 'contactno', true);
+            $currentContactEmail = get_userdata($captain)->user_email;
+            if ($currentContactNo != $contactno ) {
+                update_user_meta( $captain, 'contactno', $contactno );
+            }
+            if ($currentContactEmail != $contactemail ) {
+                $userdata = array();
+                $userdata['ID'] = $captain;
+                $userdata['user_email'] = $contactemail;
+                $user_id = wp_update_user( $userdata );
+                if ( is_wp_error($user_id) ) {
+                    error_log('Unable to update user email '.$captain.' - '.$contactemail);
+                }
+            }
+        }
 
         return $team_competition_id;
     }
@@ -979,10 +1074,26 @@ class LeagueManagerAdminPanel extends LeagueManager
 
 		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `stadium` = '%s', `logo` = '%s', `home` = '%d', `roster`= '%s', `profile` = '%d', `custom` = '%s' WHERE `id` = %d", $title, $affiliatedclub, $stadium, basename($logo), $home, maybe_serialize($roster), $profile, maybe_serialize($custom), $team_id ) );
         $team_competition = $wpdb->get_results( $wpdb->prepare("SELECT `id` FROM {$wpdb->leaguemanager_team_competition} WHERE `team_id` = '%d' AND `competition_id` = '%d'", $team_id, $league->competition_id) );
-        if (!isset($team_competition[0]))
+        if (!isset($team_competition[0])) {
             $this->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail, $matchday, $matchtime );
-        else
-            $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_team_competition} SET `captain` = '%s', `contactno` = '%s', `contactemail` = '%s', `match_day` = '%s', `match_time` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captain, $contactno, $contactemail, $matchday, $matchtime, $team_id, $league->competition_id ) );
+        } else {
+            $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_team_competition} SET `captain` = '%s', `match_day` = '%s', `match_time` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captain, $matchday, $matchtime, $team_id, $league->competition_id ) );
+            $currentContactNo = get_user_meta( $captain, 'contactno', true);
+            $currentContactEmail = get_userdata($captain)->user_email;
+            if ($currentContactNo != $contactno ) {
+                update_user_meta( $captain, 'contactno', $contactno );
+            }
+            if ($currentContactEmail != $contactemail ) {
+                $userdata = array();
+                $userdata['ID'] = $captain;
+                $userdata['user_email'] = $contactemail;
+                $user_id = wp_update_user( $userdata );
+                if ( is_wp_error($user_id) ) {
+                    $error_msg = $user_id->get_error_message();
+                    error_log('Unable to update user email '.$captain.' - '.$contactemail.' - '.$error_msg);
+                }
+            }
+        }
 
 		// Delete Image if options is checked
 		if ($del_logo || $overwrite_image) {
@@ -1067,7 +1178,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 		$wpdb->query( $wpdb->prepare ( $sql, $title, $affiliatedclub, maybe_serialize($roster), $status ) );
 		$team_id = $wpdb->insert_id;
 
-        $team_competition_id = $this->addTeamCompetition( $team_id, $league->competition_id, '', $contactno, $contactemail );
+        $team_competition_id = $this->addTeamCompetition( $team_id, $league->competition_id, $player1Id, $contactno, $contactemail );
 
 		if ( $message )
 			$leaguemanager->setMessage( __('Player Team added','leaguemanager') );
@@ -1122,7 +1233,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 	function teamsDropdownCleaned()
 	{
 		global $wpdb;
-		$all_teams = $wpdb->get_results( "SELECT `title`, `id` FROM {$wpdb->leaguemanager_teams} ORDER BY `title` ASC" );
+		$all_teams = $wpdb->get_results( "SELECT `title`, `id` FROM {$wpdb->leaguemanager_teams} WHERE `status` != 'P' ORDER BY `title` ASC" );
 		$teams = array();
 		foreach ( $all_teams AS $team ) {
 			if ( !in_array($team->title, $teams) )
@@ -1580,9 +1691,9 @@ class LeagueManagerAdminPanel extends LeagueManager
 		$num_matches = 0;
 
 		if ( !empty($matches) ) {
-			while ( list($match_id) = each($matches) ) {
+			foreach ($matches AS $match_id) {
 
-                $score = apply_filters('leaguemanager_get_scores_'.$league->sport, $match_id, $custom[$match_id]['sets']);
+                $score = apply_filters('leaguemanager_get_scores_'.$league->sport, $match_id, isset($custom[$match_id]['sets']) ? $custom[$match_id]['sets'] : '');
                 if ( isset($score['home']) && isset($score['guest']) ) {
                     $home_points[$match_id] = $score['home'];
                     $away_points[$match_id] = $score['guest'];
@@ -1628,7 +1739,6 @@ class LeagueManagerAdminPanel extends LeagueManager
 
 		}
 	}
-
 
 	/**
 	 * determine match result
@@ -1928,7 +2038,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 	{
 	 	global $wpdb;
 		$sql = "INSERT INTO {$wpdb->leaguemanager_rubbers} (`date`, `match_id`, `rubber_number`, `custom`) VALUES ('%s', '%d', '%d', '%s')";
-		$wpdb->query ( $wpdb->prepare ( $sql, $date, $match_id, $rubberno, maybe_serialize($custom), '' ) );
+		$wpdb->query ( $wpdb->prepare ( $sql, $date, $match_id, $rubberno, maybe_serialize($custom) ) );
 		return $wpdb->insert_id;
 	}
 
@@ -2002,19 +2112,26 @@ class LeagueManagerAdminPanel extends LeagueManager
 	{
 		global $wpdb, $leaguemanager;
 
-        $fullname = $firstname.' '.$surname;
-		if ( $btm == '' ) {
-			$wpdb->query( $wpdb->prepare("INSERT INTO {$wpdb->leaguemanager_players} (`firstname`, `surname`, `fullname`, `gender`) VALUES ('%s', '%s', '%s', '%s')", $firstname, $surname, $fullname, $gender) );
-		} else {
-			$wpdb->query( $wpdb->prepare("INSERT INTO {$wpdb->leaguemanager_players} (`firstname`, `surname`, `fullname`, `gender`, `btm`) VALUES ('%s', '%s', '%s', '%s', '%d')", $firstname, $surname, $fullname, $gender, $btm) );
-		}
-		$player_id = $wpdb->insert_id;
-
+        $userdata = array();
+        $userdata['first_name'] = $firstname;
+        $userdata['last_name'] = $surname;
+        $userdata['display_name'] = $firstname.' '.$surname;
+        $userdata['user_login'] = $firstname.'.'.$surname;
+        $userdata['user_pass'] = $userdata['user_login'].'1';
+        $user_id = wp_insert_user( $userdata );
+        if ( ! is_wp_error( $user_id ) ) {
+            update_user_meta($user_id, 'show_admin_bar_front', false );
+            update_user_meta($user_id, 'gender', $gender);
+            if ( isset($btm) ) {
+                update_user_meta($user_id, 'btm', $btm);
+            }
+        }
+            
 		if ( $message )
 			$leaguemanager->setMessage( __('Player added','leaguemanager') );
 		parent::setMessage( __('Player added', 'leaguemanager') );
 
-		return $player_id;
+		return $user_id;
 	}
 
 	/**
@@ -2029,9 +2146,9 @@ class LeagueManagerAdminPanel extends LeagueManager
 		
 		$rosterCount = $leaguemanager->getRoster(array('count' => true, 'player' => $player_id));
 		if ( $rosterCount == 0 ) {
-			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_players} WHERE `id` = '%d'", $player_id) );
+			wp_delete_user( $player_id) ;
 		} else {
-			$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_players} SET `removed_date` = NOW() WHERE `id` = '%d'", $player_id) );
+            update_user_meta( $player_id, 'remove_date', NOW() );
 		}
 	}
 
@@ -2101,7 +2218,10 @@ class LeagueManagerAdminPanel extends LeagueManager
 				if ( $i > 0 && count($line) > 1 ) {
 					$season = $line[0];
 					$team               = utf8_encode($line[1]);
-					$captain            = isset($line[2]) ? $line[2] : '';
+					$captainName        = isset($line[2]) ? $line[2] : '';
+                    $captain            = $leaguemanager->getPlayer(array('fullname' => $captainName));
+                    if (!$captain) $captain = 0;
+                    else $captain = $captain->ID;
                     $contactno          = isset($line[3]) ? utf8_encode($line[3]) : '';
 					$contactemail       = isset($line[4]) ? utf8_encode($line[4]) : '';
                     $affiliatedclubname = isset($line[5]) ? utf8_encode($line[5]) : '';
@@ -2549,25 +2669,17 @@ class LeagueManagerAdminPanel extends LeagueManager
 
 		global $leaguemanager;
 		$player_id = $x = 0;
-		if ( !$btm == '' ) {
-			$player = parent::getPlayer( array('btm' => $btm));
-			if ($player) {
-				$player_id = $player->id;
-			} else {
-				$player_id = 0;
-			}
-		} else {
-			if (!$firstname == '' || !$surname == '') {
-				$player = parent::getPlayer(array('firstname' => $firstname, 'surname' => $surname));
-				if ($player) {
-					$player_id = $player->id;
-				} else {
-					$player_id = 0;
-				}
-			} else {
-				$player_id = 0;
-			}
-		}
+        if (!$firstname == '' || !$surname == '') {
+            $fullname = $firstname.' '.$surname;
+            $player = parent::getPlayer(array('fullname' => $fullname));
+            if ($player) {
+                $player_id = $player->id;
+            } else {
+                $player_id = 0;
+            }
+        } else {
+            $player_id = 0;
+        }
 		
 		if ( $player_id == 0 ) {
 			$player_id	= $this->addPlayer( $firstname, $surname, $gender, $btm, false );

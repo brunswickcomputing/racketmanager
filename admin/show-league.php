@@ -10,18 +10,18 @@ if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POS
 		$group = isset($_POST['group']) ? htmlspecialchars(strip_tags($_POST['group'])) : '';
         if ( 'Add' == $_POST['action'] ) {
             if ( '' == $_POST['team_id'] ) {
-                $team_id = $this->addTeam( htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['captain']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']), htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), htmlspecialchars($_POST['stadium']), $home, $roster, $profile, $custom, htmlspecialchars($_POST['logo_db']),htmlspecialchars($_POST['league_id']) );
+                $team_id = $this->addTeam( htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['captainId']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']), htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), htmlspecialchars($_POST['stadium']), $home, $roster, $profile, $custom, htmlspecialchars($_POST['logo_db']),htmlspecialchars($_POST['league_id']) );
                 $this->addTableEntry( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
             } else {
                 $del_logo = isset( $_POST['del_logo'] ) ? true : false;
                 $overwrite_image = isset( $_POST['overwrite_image'] ) ? true: false;
-                $this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['captain']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']),  htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), htmlspecialchars($_POST['stadium']), $home, $group, $roster, $profile, $custom, htmlspecialchars($_POST['logo_db']), intval($_POST['league_id']), $del_logo, $overwrite_image );
+                $this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['captainId']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']),  htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), htmlspecialchars($_POST['stadium']), $home, $group, $roster, $profile, $custom, htmlspecialchars($_POST['logo_db']), intval($_POST['league_id']), $del_logo, $overwrite_image );
                 $this->addTableEntry( htmlspecialchars($_POST['league_id']), intval($_POST['team_id']), htmlspecialchars($_POST['season']) );
             }
         } else {
 			$del_logo = isset( $_POST['del_logo'] ) ? true : false;
 			$overwrite_image = isset( $_POST['overwrite_image'] ) ? true: false;
-            $this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['captain']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']),  htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), htmlspecialchars($_POST['stadium']), $home, $group, $roster, $profile, $custom, htmlspecialchars($_POST['logo_db']), intval($_POST['league_id']), $del_logo, $overwrite_image );
+            $this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['captainId']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']),  htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), htmlspecialchars($_POST['stadium']), $home, $group, $roster, $profile, $custom, htmlspecialchars($_POST['logo_db']), intval($_POST['league_id']), $del_logo, $overwrite_image );
 		}
     } elseif ( 'teamPlayer' == $_POST['updateLeague'] ) {
         check_admin_referer('leaguemanager_manage-teams');
@@ -134,6 +134,31 @@ if (isset($_POST['saveRanking'])) {
 	$tab = 0;
 }
 	
+    // rank teams randomly
+    if (isset($_POST['randomRanking'])) {
+        $league = $leaguemanager->getCurrentLeague();
+        $season = $leaguemanager->getSeason($league);
+        $js = ( $_POST['js-active'] == 1 ) ? true : false;
+        
+        $team_ranks = array();
+        $table_ids = array_values($_POST['table_id']);
+        shuffle($table_ids);
+        foreach ($table_ids AS $key => $table_id) {
+            if ( $js ) {
+                $rank = $key + 1;
+            } else {
+                $rank = intval($_POST['rank'][$table_id]);
+            }
+            $team = $leaguemanager->getTable($table_id);
+            $team_ranks[$rank-1] = $team;
+        }
+        ksort($team_ranks);
+        updateRanking($league->id, $season, "", $team_ranks, $team_ranks);
+        $leaguemanager->setMessage(__('Team ranking saved','leaguemanager'));
+        $leaguemanager->printMessage();
+        
+        $tab = 0;
+    }
 	if (isset($_POST['updateRanking'])) {
 		$league = $leaguemanager->getCurrentLeague();
 		$leaguemanager->rankTeams($league->id);

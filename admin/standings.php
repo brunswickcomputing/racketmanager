@@ -141,6 +141,7 @@
 
 <?php if ( (isset($league->team_ranking) && ($league->team_ranking == 'manual')) ) { ?>
 		<p class="submit"><input type="submit" name="saveRanking" value="<?php _e( 'Save Ranking', 'leaguemanager' ) ?>" class="button button-primary" /></p>
+        <p class="submit"><input type="submit" name="randomRanking" value="<?php _e( 'Random Ranking', 'leaguemanager' ) ?>" class="button button-primary" /></p>
 <?php } ?>
 
 <?php if ( (isset($league->team_ranking) && ($league->team_ranking !== 'manual')) ) { ?>

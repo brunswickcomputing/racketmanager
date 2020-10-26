@@ -16,6 +16,7 @@ class LeagueManagerAJAX
 	 */
 	function __construct()
 	{
+        add_action( 'wp_ajax_leaguemanager_getCaptainName', array(&$this, 'getCaptainName') );
         add_action( 'wp_ajax_leaguemanager_getPlayerName', array(&$this, 'getPlayerName') );
 		add_action( 'wp_ajax_leaguemanager_add_team_from_db', array(&$this, 'addTeamFromDB') );
         add_action( 'wp_ajax_leaguemanager_add_teamplayer_from_db', array(&$this, 'addTeamPlayerFromDB') );
@@ -93,20 +94,46 @@ class LeagueManagerAJAX
         global $wpdb, $leaguemanager;
         $name = $wpdb->esc_like(stripslashes($_POST['name']['term'])).'%';
         
-        $sql = "SELECT  P.`firstname`, P.`surname`,C.`post_title` as club, R.`id` as rosterId, C.`id` as clubId  FROM $wpdb->leaguemanager_roster R, $wpdb->leaguemanager_players P, $wpdb->posts C WHERE R.`player_id` = P.`id` AND R.`removed_date` IS NULL AND C.`post_type` = 'wpclubs' AND C.`id` = R.`affiliatedclub` AND `fullname` like '%s' ORDER BY 1,2,3";
+        $sql = "SELECT  P.`display_name` AS `fullname`, C.`post_title` as club, R.`id` as rosterId, C.`id` as clubId, P.`id` as playerId, P.`user_email` FROM $wpdb->leaguemanager_roster R, $wpdb->users P, $wpdb->posts C WHERE R.`player_id` = P.`ID` AND R.`removed_date` IS NULL AND C.`post_type` = 'wpclubs' AND C.`id` = R.`affiliatedclub` AND `display_name` like '%s' ORDER BY 1,2,3";
         $sql = $wpdb->prepare($sql, $name);
         $results = $wpdb->get_results($sql);
         $players = array();
         $player = array();
         foreach( $results AS $r) {
-            $player['label'] = addslashes($r->firstname).' '.addslashes($r->surname).' - '.$r->club;
-            $player['value'] = addslashes($r->firstname).' '.addslashes($r->surname);
+            $player['label'] = addslashes($r->fullname).' - '.$r->club;
+            $player['value'] = addslashes($r->fullname);
             $player['id'] = $r->rosterId;
             $player['clubId'] = $r->clubId;
             $player['club'] = $r->club;
+            $player['playerId'] = $r->playerId;
+            $player['user_email'] = $r->user_email;
+            $player['contactno'] = get_user_meta($r->playerId, 'contactno', true);
             array_push($players, $player);
         }
         die(json_encode($players));
+    }
+    
+    function getCaptainName() {
+        global $wpdb, $leaguemanager;
+        $name = $wpdb->esc_like(stripslashes($_POST['name']['term'])).'%';
+        $affiliatedClub = isset($_POST['affiliatedClub']) ? $_POST['affiliatedClub'] : '';
+
+        $sql = "SELECT P.`display_name` AS `fullname`, C.`post_title` as club, R.`id` as rosterId, C.`id` as clubId, P.`id` AS `playerId`, P.`user_email` FROM $wpdb->leaguemanager_roster R, $wpdb->users P, $wpdb->posts C WHERE R.`player_id` = P.`ID` AND R.`removed_date` IS NULL AND C.`post_type` = 'wpclubs' AND C.`id` = R.`affiliatedclub` AND C.`id` = '%s' AND `display_name` like '%s' ORDER BY 1,2,3";
+        $sql = $wpdb->prepare($sql, $affiliatedClub, $name);
+        $results = $wpdb->get_results($sql);
+        $captains = array();
+        $captain = array();
+        foreach( $results AS $r) {
+            $captain['label'] = addslashes($r->fullname).' - '.$r->club;
+            $captain['value'] = addslashes($r->fullname);
+            $captain['id'] = $r->playerId;
+            $captain['clubId'] = $r->clubId;
+            $captain['club'] = $r->club;
+            $captain['user_email'] = $r->user_email;
+            $captain['contactno'] = get_user_meta($r->playerId, 'contactno', true);
+            array_push($captains, $captain);
+        }
+        die(json_encode($captains));
     }
     
 	/**
@@ -542,9 +569,9 @@ class LeagueManagerAJAX
 						<select tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer1[<?php echo $r ?>]" id="homeplayer1_<?php echo $r ?>">
 							<option><?php _e( 'Select Player', 'leaguemanager' ) ?></option>
 <?php foreach ( $homeRoster[$r][1] AS $roster ) {
-	isset($roster->removed_date) ? $disabled = 'disabled' : $disabled = ''; ?>
+    if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
 							<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->home_player_1)) selected($roster->roster_id, $rubber->home_player_1 ); echo $disabled; ?>>
-								<?php echo $roster->firstname ?> <?php echo $roster->surname ?>
+								<?php echo $roster->fullname ?>
 							</option>
 <?php } ?>
 						</select>
@@ -568,9 +595,9 @@ class LeagueManagerAJAX
 						<select tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer1[<?php echo $r ?>]" id="awayplayer1_<?php echo $r ?>">
 							<option><?php _e( 'Select Player', 'leaguemanager' ) ?></option>
 <?php foreach ( $awayRoster[$r][1] AS $roster ) {
-	isset($roster->removed_date) ? $disabled = 'disabled' : $disabled = ''; ?>
+    if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
 							<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->away_player_1)) selected($roster->roster_id, $rubber->away_player_1 ); echo $disabled; ?>>
-								<?php echo $roster->firstname ?> <?php echo $roster->surname ?>
+								<?php echo $roster->fullname ?>
 							</option>
 <?php } ?>
 						</select>
@@ -582,9 +609,9 @@ class LeagueManagerAJAX
 						<select tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer2[<?php echo $r ?>]" id="homeplayer2_<?php echo $r ?>">
 							<option><?php _e( 'Select Player', 'leaguemanager' ) ?></option>
 <?php foreach ( $homeRoster[$r][2] AS $roster ) {
-	isset($roster->removed_date) ? $disabled = 'disabled' : $disabled = ''; ?>
+    if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
 							<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->home_player_2)) selected($roster->roster_id, $rubber->home_player_2 ); echo $disabled; ?>>
-							<?php echo $roster->firstname ?> <?php echo $roster->surname ?>
+							<?php echo $roster->fullname ?>
 							</option>
 <?php } ?>
 						</select>
@@ -594,9 +621,9 @@ class LeagueManagerAJAX
 						<select tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer2[<?php echo $r ?>]" id="awayplayer2_<?php echo $r ?>">
 							<option><?php _e( 'Select Player', 'leaguemanager' ) ?></option>
 <?php foreach ( $awayRoster[$r][2] AS $roster ) {
-    isset($roster->removed_date) ? $disabled = 'disabled' : $disabled = ''; ?>
+    if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
 							<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->away_player_2)) selected($roster->roster_id, $rubber->away_player_2 ); echo $disabled; ?>>
-							<?php echo $roster->firstname ?> <?php echo $roster->surname ?>
+							<?php echo $roster->fullname ?>
                             </option>
 <?php } ?>
 						</select>

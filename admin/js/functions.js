@@ -73,7 +73,6 @@ jQuery(document).ready(function($) {
                                                              data: {"name": name,
                                                              "action": "leaguemanager_getPlayerName"},
                                                              success: function(data) {
-                                                             console.log(JSON.parse(data));
                                                              response(JSON.parse(data));
                                                              }
                                                              });
@@ -81,15 +80,27 @@ jQuery(document).ready(function($) {
                                                       select: function(event, ui) {
                                                       $("#teamPlayerId1").val(ui.item.id);
                                                       $("#affiliatedclub").val(ui.item.clubId);
+                                                      $("#captain").val(ui.item.value);
+                                                      $("#captainId").val(ui.item.playerId);
+                                                      $("#contactno").val(ui.item.contactno);
+                                                      $("#contactemail").val(ui.item.user_email);
                                                       },
                                                       change: function(event, ui) {
                                                       if (ui.item === null) {
                                                         $(this).val('');
                                                         $("#teamPlayerId1").val('');
                                                         $("#affiliatedclub").val('');
+                                                        $("#captain").val('');
+                                                        $("#captainId").val('');
+                                                        $("#contactno").val('');
+                                                        $("#contactemail").val('');
                                                       } else {
                                                         $("#teamPlayerId1").val(ui.item.id);
+                                                        $("#captain").val(ui.item.value);
+                                                        $("#captainId").val(ui.item.playerId);
                                                         $("#affiliatedclub").val(ui.item.clubId);
+                                                        $("#contactno").val(ui.item.contactno);
+                                                        $("#contactemail").val(ui.item.user_email);
                                                       }
                                                       }
                                                       });
@@ -103,7 +114,6 @@ jQuery(document).ready(function($) {
                                                              data: {"name": name,
                                                              "action": "leaguemanager_getPlayerName"},
                                                              success: function(data) {
-                                                             console.log(JSON.parse(data));
                                                              response(JSON.parse(data));
                                                              }
                                                              });
@@ -113,13 +123,50 @@ jQuery(document).ready(function($) {
                                                       },
                                                       change: function(event, ui) {
                                                       if (ui.item === null) {
-                                                      $(this).val('');
-                                                      $("#teamPlayerId2").val('');
+                                                        $(this).val('');
+                                                        $("#teamPlayerId2").val('');
                                                       } else {
-                                                      $("#teamPlayerId2").val(ui.item.id);
+                                                        $("#teamPlayerId2").val(ui.item.id);
                                                       }
                                                       }
                                                       });
+                       $('#captain').autocomplete({
+                                                  minLength: 2,
+                                                  source: function(name, response) {
+                                                  $.ajax({
+                                                         type: 'POST',
+                                                         datatype: 'json',
+                                                         url: LeagueManagerAjaxL10n.requestUrl,
+                                                         data: {"name": name,
+                                                         "affiliatedClub": $("#affiliatedclub").val(),
+                                                         "action": "leaguemanager_getCaptainName"},
+                                                         success: function(data) {
+                                                         response(JSON.parse(data));
+                                                         }
+                                                         });
+                                                  },
+                                                  select: function(event, ui) {
+                                                  $("#captain").val(ui.item.value);
+                                                  $("#captainId").val(ui.item.id);
+                                                  $("#contactno").val(ui.item.contactno);
+                                                  $("#contactemail").val(ui.item.user_email);
+                                                  },
+                                                  change: function(event, ui) {
+                                                  if (ui.item === null) {
+                                                      $(this).val('');
+                                                      $("#captain").val('');
+                                                      $("#captainID").val('');
+                                                      $("#contactno").val('');
+                                                      $("#contactemail").val('');
+                                                  } else {
+                                                      $("#captain").val(ui.item.value);
+                                                      $("#captainId").val(ui.item.id);
+                                                      $("#contactno").val(ui.item.contactno);
+                                                      $("#contactemail").val(ui.item.user_email);
+                                                  }
+                                                  }
+                                                  });
+
 });
 
 

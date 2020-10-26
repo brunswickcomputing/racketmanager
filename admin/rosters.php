@@ -6,12 +6,12 @@
 		<select size="1" name="player_id" id="player_id">
 			<option><?php _e( 'Select player', 'leaguemanager' ) ?></option>
 <?php foreach ( $players AS $player ) {
-	if ( isset($player->removed_date)) {
+	if ( isset($player->removed_date) && $player->removed_date != '') {
 		$disabled = 'disabled';
 	} else {
 		$disabled = '';
 	}?>
-			<option value="<?php echo $player->id ?>" <?php echo $disabled ?>><?php echo $player->firstname ?> <?php echo $player->surname ?> (<?php echo $player->btm ?>)</option>
+			<option value="<?php echo $player->id ?>" <?php echo $disabled ?>><?php echo $player->fullname ?> (<?php echo $player->btm ?>)</option>
 	<?php } ?>
 		</select>
 <?php } ?>
@@ -58,8 +58,7 @@
 		<tr>
 			<th scope="col" class="check-column"><input type="checkbox" onclick="Leaguemanager.checkAll(document.getElementById('roster-filter'));" /></th>
 			<th scope="col" class="num">ID</th>
-			<th scope="col"><?php _e( 'First Name', 'leaguemanager' ) ?></th>
-			<th scope="col"><?php _e( 'Surname', 'leaguemanager' ) ?></th>
+			<th scope="col"><?php _e( 'Name', 'leaguemanager' ) ?></th>
 			<th scope="col"><?php _e( 'Gender', 'leaguemanager' ) ?></th>
 			<th scope="col"><?php _e( 'BTM', 'leaguemanager' ) ?></th>
 			<th scope="col"><?php _e( 'Removed', 'leaguemanager') ?></th>
@@ -77,8 +76,7 @@
 			<?php } ?>
 				</th>
 				<td class="num"><?php echo $roster->roster_id ?></td>
-				<td><?php echo $roster->firstname ?></td>
-				<td><?php echo $roster->surname ?></td>
+				<td><?php echo $roster->fullname ?></td>
 				<td><?php echo $roster->gender ?></td>
 				<td><?php echo $roster->btm ?></td>
 				<td><?php if ( isset($roster->removed_date) ) { echo $roster->removed_date; } ?></td>

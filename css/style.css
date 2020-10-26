@@ -972,7 +972,8 @@ td.matchday.playup {
 	background-color: greenyellow;
 }
 td.matchday.playdown {
-	background-color: lightyellow;
+    background-color: blue;
+    color: white;
 }
 td.matchday.playmulti {
 	background-color: red;
@@ -1052,7 +1053,7 @@ td input.player {
     text-align:center;
     font-weight:bold;
     font-size:1.2em;
-    width: 210px;
+    width: 220px;
     display:inline-block;
 }
 /*
@@ -1064,7 +1065,7 @@ li.game{
     font-size: 0.8em;
 }
 
-li.game.winner{
+.winner{
     font-weight:bold;
 }
 li.game span{
@@ -1082,5 +1083,83 @@ li.game-spacer{
 }
 
 li.game-bottom{
-    border-top:1px solid #aaa;
+    border-bottom: 1px solid #aaa;
+    border-right: 1px solid #aaa;
+}
+.doubles.game-bottom {
+    height: 47px;
+}
+.login-form-container {
+    margin: auto;
+    border: 1px;
+    width: 540px;
+}
+#login .login-form-container {
+    border: 1px
+}
+label.hidden {
+    display: none;
+}
+.p-fieldset-split {
+    display: inline-block;
+    margin-right: -4px;
+    width: 50%;
+}
+.login-submit {
+    text-align: right;
+}
+.recaptcha-container {
+    float: left;
+    max-width: 50%;
+}
+.register-submit {
+    width: 50%;
+    float: right;
+}
+.g-recaptcha {
+    transform:scale(0.77);-webkit-transform:scale(0.77);transform-origin:0 0;-webkit-transform-origin:0 0;
+}
+#tabs-login {
+    border: none;
+}
+#tabs-login .ui-tabs-nav {
+    text-align: center;
+    background: none;
+    border: none;
+    border-bottom: 1px solid #aaa;
+}
+#tabs-login .ui-tabs-nav li {
+    display: inline-block;
+    float: none;
+    top: 0px;
+    margin: 0em;
+    margin-bottom: -5px;
+    padding-bottom: 0px;
+}
+.login-form-container input {
+    width: 100%;
+}
+div#password-lost-form {
+    text-align: center;
+}
+#tabs-login.ui-tabs .ui-tabs-nav .ui-tabs-anchor {
+    padding-top: 0em;
+}
+.login-form-container input[type="radio"] {
+    width: 5%;
+}
+.label-radio {
+    width: 100%;
+}
+p.message-error {
+    color: red;
+    font-weight: bold;
+}
+@media only screen and (max-width: 640px) {
+    .login-form-container {
+        width: 100%;
+    }
+}
+form#signupform {
+    height: 300px;
 }

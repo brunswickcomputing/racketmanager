@@ -51,11 +51,14 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 
 == Changelog ==
 
+= 5.6.6 =
+* UPDATE: add tennis specific isTie for ranking
+
 = 5.6.5 =
 * UPDATE: change wp_cache_add to wp_cache_add
 * UPDATE: remove unused getTable function
 * UPDATE: name cache entries properly
-* BUGFIX: save custom fields on standingsdata update 
+* BUGFIX: save custom fields on standingsdata update
 * BUGFIX: delete cached data after update
 
 = 5.6.4 =

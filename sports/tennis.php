@@ -6,7 +6,7 @@
  * @package LeagueManager
  * @subpackage League_Tennis
  */
-    
+
 add_filter( 'leaguemanager_sports', 'leaguemanager_sports_tennis' );
 /**
  * add tennis to list
@@ -90,7 +90,7 @@ class Competition_Tennis extends Competition {
      * @return void
      */
     public function competitionSettings( $competition ) {
-        
+
         $competition->num_sets = isset($competition->num_sets) ? $competition->num_sets : '';
         $competition->num_rubbers = isset($competition->num_rubbers) ? $competition->num_rubbers : '';
         $competition->type = isset($competition->type) ? $competition->type : '';
@@ -135,7 +135,7 @@ class League_Tennis extends League {
      * @var int
      */
     public $num_sets = 3;
-    
+
 	/**
 	 * load specific settings
 	 *
@@ -187,7 +187,7 @@ class League_Tennis extends League {
 	 * @return array of teams
 	 */
 	protected function rankTeams( $teams ) {
-        
+
 		foreach ( $teams AS $key => $team ) {
             $team_sets_won = isset($team->sets_won) ? $team->sets_won : 0;
             $team_sets_allowed = isset($team->sets_allowed) ? $team->sets_allowed : 0;
@@ -233,7 +233,7 @@ class League_Tennis extends League {
             $matches = $league->getMatches( array("season" => $season, "team_id" => $team_id, "final" => '', "limit" => false, "cache" => false, "home_points" => 'not null', "away_points" => 'not null') );
         }
 		foreach ( $matches AS $match ) {
-                
+
             $index = ( $team_id == $match->home_team ) ? 'player2' : 'player1';
             $match = get_match($match);
 
@@ -262,12 +262,12 @@ class League_Tennis extends League {
                             } else {                                    //away team got no set
                                 $data['straight_set']['win'] +=1;
                             }
-                            
+
                         } else {                                        //away team
                             for ( $j = 1; $j <= $league->num_sets; $j++  ) {
                                 if ( $rubber->sets[$j]['player1'] != null) {
-                                    $data['games_allowed'] += $rubber->sets[$j]['player1'];
-                                    $data['games_won'] += $rubber->sets[$j]['player2'];
+                                    $data['games_allowed'] += intval($rubber->sets[$j]['player1']);
+                                    $data['games_won'] += intval($rubber->sets[$j]['player2']);
                                     if ( $rubber->sets[$j]['player2'] > $rubber->sets[$j]['player1'] ) {
                                         $data['sets_won'] += 1;
                                     } elseif ( $rubber->sets[$j]['player2'] < $rubber->sets[$j]['player1'] ) {
@@ -283,7 +283,7 @@ class League_Tennis extends League {
                                 $data['straight_set']['win'] +=1;
                             }
                         }
-                        
+
                     } elseif ($rubber->loser_id == $team_id) {          //away winner
                         if ($match->home_team == $team_id) {            //home team
                             if ($rubber->home_points > "0") {           //home team got a set
@@ -293,8 +293,8 @@ class League_Tennis extends League {
                             }
                             for ( $j = 1; $j <= $league->num_sets; $j++  ) {
                                 if ( $rubber->sets[$j]['player1'] != null) {
-                                    $data['games_allowed'] += $rubber->sets[$j]['player2'];
-                                    $data['games_won'] += $rubber->sets[$j]['player1'];
+                                    $data['games_allowed'] += intval($rubber->sets[$j]['player2']);
+                                    $data['games_won'] += intval($rubber->sets[$j]['player1']);
                                     if ( $rubber->sets[$j]['player1'] > $rubber->sets[$j]['player2'] ) {
                                         $data['sets_won'] += 1;
                                     } elseif ( $rubber->sets[$j]['player1'] < $rubber->sets[$j]['player2'] ) {
@@ -324,10 +324,10 @@ class League_Tennis extends League {
                                 }
                             }
                         }
-                    
+
                     } elseif ( $rubber->winner_id == -1 ) {										//drawn rubber
                         if ($match->home_team == $team_id)  {           //home team
-                            
+
                             for ( $j = 1; $j <= $league->num_sets; $j++  ) {
                                 if ( $rubber->sets[$j]['player1'] != null) {
                                     if ( isset($rubber->sets[$j]['player2']) && is_numeric($rubber->sets[$j]['player2']) ) {
@@ -348,7 +348,7 @@ class League_Tennis extends League {
                             } else {                                    //away team got no set
                                 $data['straight_set']['win'] +=1;
                             }
-                            
+
                         } else {                                        //away team
                             for ( $j = 1; $j <= $league->num_sets; $j++  ) {
                                 if ( $rubber->sets[$j]['player1'] != null) {
@@ -371,9 +371,9 @@ class League_Tennis extends League {
                                 $data['straight_set']['win'] +=1;
                             }
                         }
-                        
+
                     }
-                    
+
                 }
             } else {
                 // First check for Split Set, else it's straight set
@@ -422,11 +422,11 @@ class League_Tennis extends League {
 	{
         if ( $match->home_team == -1 ) {
             $homeTeam = 'Bye';
-        
+
         } else {
             $homeTeam = $teams[$match->home_team]['title'] ;
         }
-        
+
         if ( $match->away_team == -1 ) {
             $awayTeam = 'Bye';
         } else {
@@ -434,7 +434,7 @@ class League_Tennis extends League {
         }
 
 		$title = sprintf("%s - %s", $homeTeam, $awayTeam);
-		
+
 		return $title;
 
 	}
@@ -463,7 +463,7 @@ class League_Tennis extends League {
 	 */
 	function displayMatchesColumns( $match ) {
         global $league;
-        
+
         if ( empty($league) ) $league = $match->league_id;
         $league = get_league($league);
 
@@ -491,7 +491,7 @@ class League_Tennis extends League {
 	 */
 	protected function updateResults( $match ) {
         global $leaguemanager;
-        
+
         $match = get_match( $match );
 
         // exit if only one team is set
@@ -503,12 +503,12 @@ class League_Tennis extends League {
             $score = array( 'home' => '0', 'away' => '0' );
             if (isset($match->league->num_rubbers) && $match->league->num_rubbers > 0) {
                 $rubbers = $match->getRubbers();
-                
+
                 foreach ( $rubbers as $rubber) {
                     if ( is_numeric($rubber->home_points) ) $score['home'] += intval($rubber->home_points);
                     if ( is_numeric($rubber->away_points) ) $score['away'] += intval($rubber->away_points);
                 }
-                
+
             } else {
                 foreach ( $match->sets AS $set ) {
                     if ( $set['player1'] != '' && $set['player2'] != '' ) {
@@ -525,6 +525,44 @@ class League_Tennis extends League {
         }
 
     return $match;
+    }
+
+    /**
+     * determine if two teams are tied based on
+     *
+     * 1) Primary points
+     * 2) sets difference
+     * 3) games difference
+     * 4) sets won
+     *
+     * @param Team $team1
+     * @param Team $team2
+     * @return boolean
+     */
+    protected function isTie( $team1, $team2 ) {
+        // initialize results array
+        $res = array('primary' => false, 'sets_diff' => false, 'games_diff' => false, 'sets_won' => false);
+
+        if ( $team1->points['plus'] == $team2->points['plus'] )
+            $res['primary'] = true;
+
+        if ( ($team1->sets_won - $team1->sets_allowed) == ($team2->sets_won - $team2->sets_allowed) )
+            $res['sets_diff'] = true;
+
+        if ( ($team1->games_won - $team1->games_allowed) == ($team2->games_won - $team2->games_allowed) )
+            $res['sets_diff'] = true;
+
+        if ( $team1->sets_won == $team2->sets_won )
+            $res['sets_won'] = true;
+
+        // get unique results
+        $res = array_values(array_unique($res));
+
+        // more than one results, i.e. not tied
+        if ( count($res) > 1 )
+            return false;
+
+        return $res[0];
     }
 
 }

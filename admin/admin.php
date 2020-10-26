@@ -416,12 +416,12 @@ final class LeagueManagerAdmin extends LeagueManager
                 $tab = 8;
             } elseif ( isset($_POST['addTournament']) ) {
                 check_admin_referer('leaguemanager_add-tournament');
-                $this->addTournament( htmlspecialchars($_POST['tournament']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['venue']),  htmlspecialchars($_POST['date']), htmlspecialchars($_POST['closingdate']), htmlspecialchars($_POST['tournamentSecretaryName']), htmlspecialchars($_POST['tournamentSecretary']), htmlspecialchars($_POST['tournamentSecretaryContactNo']), htmlspecialchars($_POST['tournamentSecretaryEmail']) );
+                $this->addTournament( htmlspecialchars($_POST['tournament']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['season']), htmlspecialchars($_POST['venue']),  htmlspecialchars($_POST['date']), htmlspecialchars($_POST['closingdate']), htmlspecialchars($_POST['tournamentSecretaryName']), htmlspecialchars($_POST['tournamentSecretary']), htmlspecialchars($_POST['tournamentSecretaryContactNo']), htmlspecialchars($_POST['tournamentSecretaryEmail']) );
                 $this->printMessage();
                 $tab = 9;
             } elseif ( isset($_POST['editTournament']) ) {
                 check_admin_referer('leaguemanager_manage-tournament');
-                $this->editTournament( intval($_POST['tournament_id']), htmlspecialchars($_POST['tournament']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['venue']),  htmlspecialchars($_POST['date']), htmlspecialchars($_POST['closingdate']), htmlspecialchars($_POST['tournamentSecretaryName']), htmlspecialchars($_POST['tournamentSecretary']), htmlspecialchars($_POST['tournamentSecretaryContactNo']), htmlspecialchars($_POST['tournamentSecretaryEmail']) );
+                $this->editTournament( intval($_POST['tournament_id']), htmlspecialchars($_POST['tournament']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['season']), htmlspecialchars($_POST['venue']),  htmlspecialchars($_POST['date']), htmlspecialchars($_POST['closingdate']), htmlspecialchars($_POST['tournamentSecretaryName']), htmlspecialchars($_POST['tournamentSecretary']), htmlspecialchars($_POST['tournamentSecretaryContactNo']), htmlspecialchars($_POST['tournamentSecretaryEmail']) );
                 $this->printMessage();
                 $tab = 9;
             } elseif ( isset($_POST['doTournamentDel']) && $_POST['action'] == 'delete' ) {
@@ -2180,6 +2180,7 @@ final class LeagueManagerAdmin extends LeagueManager
 	 *
 	 * @param string $name
 	 * @param string $type
+     * @param string $season
 	 * @param int $venue
      * @param int $tournamentSecretary
      * @param string $tournamentSecretaryContactNo
@@ -2188,7 +2189,7 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @param string $closingdate
 	 * @return boolean
 	 */
-	private function addTournament( $name, $type, $venue, $date, $closingdate, $tournamentSecretaryContactName, $tournamentSecretary, $tournamentSecretaryContactNo, $tournamentSecretaryEmail ) {
+	private function addTournament( $name, $type, $season, $venue, $date, $closingdate, $tournamentSecretaryContactName, $tournamentSecretary, $tournamentSecretaryContactNo, $tournamentSecretaryEmail ) {
 		global $wpdb, $leaguemanager;
 
         if ( !current_user_can('edit_teams') ) {
@@ -2196,7 +2197,7 @@ final class LeagueManagerAdmin extends LeagueManager
             return false;
         }
         
-		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->leaguemanager_tournaments} (`name`, `type`, `venue`, `tournamentsecretary`, `date`, `closingdate` ) VALUES ('%s', '%s', '%d', '%d', '%s', '%s' )", $name, $type, $venue, $tournamentSecretary, $date, $closingdate ) );
+		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->leaguemanager_tournaments} (`name`, `type`, `season`, `venue`, `tournamentsecretary`, `date`, `closingdate` ) VALUES ('%s', '%s', '%d', '%d', '%s', '%s' )", $name, $type, $season, $venue, $tournamentSecretary, $date, $closingdate ) );
         
 		$this->setMessage( __('Tournament added','leaguemanager') );
         
@@ -2208,6 +2209,8 @@ final class LeagueManagerAdmin extends LeagueManager
 	 *
 	 * @param int $club_id
 	 * @param string $name
+     * @param string $type
+     * @param string $season
      * @param int $venue
      * @param int $tournamentSecretary
      * @param string $tournamentSecretaryContactNo
@@ -2216,7 +2219,7 @@ final class LeagueManagerAdmin extends LeagueManager
      * @param string $closingdate
 	 * @return boolean
 	 */
-	private function editTournament( $tournament_id, $name, $type, $venue, $date, $closingdate, $tournamentSecretaryContactName, $tournamentSecretary, $tournamentSecretaryContactNo, $tournamentSecretaryEmail ) {
+	private function editTournament( $tournament_id, $name, $type, $season, $venue, $date, $closingdate, $tournamentSecretaryContactName, $tournamentSecretary, $tournamentSecretaryContactNo, $tournamentSecretaryEmail ) {
         global $wpdb;
 
         if ( !current_user_can('edit_teams') ) {
@@ -2224,7 +2227,7 @@ final class LeagueManagerAdmin extends LeagueManager
             return false;
         }
         
-        $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_tournaments} SET `name` = '%s', `type` = '%s', `venue` = '%d',`tournamentsecretary` = '%d', `date` = '%s', `closingdate` = '%s' WHERE `id` = %d", $name, $type, $venue, $tournamentSecretary, $date, $closingdate, $tournament_id ) );
+        $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_tournaments} SET `name` = '%s', `type` = '%s', `season` = '%s', `venue` = '%d',`tournamentsecretary` = '%d', `date` = '%s', `closingdate` = '%s' WHERE `id` = %d", $name, $type, $season, $venue, $tournamentSecretary, $date, $closingdate, $tournament_id ) );
         
         if ( $tournamentSecretary != '') {
             $currentContactNo = get_user_meta( $tournamentSecretary, 'contactno', true);

@@ -23,7 +23,7 @@ The following variables are usable:
         <?php wp_nonce_field( 'tournament-entry' ) ?>
         <div class="input">
             <label for "venueName"><?php _e( 'Finals Venue', 'leaguemanager' ) ?></label>
-            <input type="text" class="form-control" id="venueName" name="venueName" value="<?php echo $tournament->venueName ?>" disabled />
+            <input type="text" class="form-control" id="venueName" name="venueName" value="<?php if ( $tournament->venueName != '' ) echo $tournament->venueName; else _e('TBC', 'leaguemanager'); ?>" disabled />
         </div>
         <div class="input">
             <label for "date"><?php _e( 'Finals Date', 'leaguemanager' ) ?></label>

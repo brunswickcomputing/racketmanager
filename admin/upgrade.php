@@ -221,6 +221,10 @@ function leaguemanager_upgrade() {
         }
         $wpdb->query( "CREATE TABLE {$wpdb->leaguemanager_tournaments} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `name` varchar( 100 ) NOT NULL default '', `type` varchar( 100 ) NOT NULL default '', `venue` int( 11 ) NULL, `date` date NULL, `closingdate` date NOT NULL, `tournamentsecretary` int( 11 ) NULL, PRIMARY KEY ( `id` )) $charset_collate;" );
     }
+    if (version_compare($installed, '5.6.1', '<')) {
+        echo __('starting 5.6.1 upgrade', 'leaguemanager') . "<br />\n";
+        $wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_tournaments} ADD `season` varchar( 255 ) NOT NULL default '' AFTER `type` ");
+    }
     /*
 	* Update version and dbversion
 	*/

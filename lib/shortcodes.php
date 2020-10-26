@@ -927,16 +927,6 @@ class LeagueManagerShortcodes extends LeagueManager {
             'template' => '',
         ), $atts ));
 
-        // get season
-        if ($season != "") {
-            $season = $season;
-        } elseif ( isset($_GET['season']) && !empty($_GET['season']) ) {
-            $season = htmlspecialchars(strip_tags($_GET['season']));
-        } elseif ( isset($wp->query_vars['season']) ) {
-            $season = get_query_var('season');
-        }
-        if ( !$season ) return;
-        
         // get competition list
         if ($type != "") {
             $type = $type;
@@ -945,12 +935,13 @@ class LeagueManagerShortcodes extends LeagueManager {
         } elseif ( isset($wp->query_vars['type']) ) {
             $type = get_query_var('type');
         }
-        if ( !$type ) return;
+        if ( !$type ) return _e('No tournament open for entries', 'leaguemanager');
         
-        $competitions = $leaguemanager->getCompetitions( array('type' => 'tournament', 'name' => $type, 'season' => $season) );
         $tournaments = $leaguemanager->getOpenTournaments( $type );
-        if ( !$tournaments ) return;
+        if ( !$tournaments ) return _e('No tournament open for entries', 'leaguemanager');
         $tournament = $tournaments[0];
+
+        $competitions = $leaguemanager->getCompetitions( array('type' => 'tournament', 'name' => $type, 'season' => $tournament->season) );
 
         $player = wp_get_current_user();
         $player->contactno = get_user_meta( $player->ID, 'contactno', true);
@@ -961,7 +952,7 @@ class LeagueManagerShortcodes extends LeagueManager {
 
         $filename = ( !empty($template) ) ? 'tournamententry-'.$template : 'tournamententry';
 
-        $out = $this->loadTemplate( $filename, array( 'tournament' => $tournament, 'competitions' => $competitions, 'player' => $player, 'rosters' => $rosters, 'season' => $season, 'type' => $type, 'malePartners' => $malePartners, 'femalePartners' => $femalePartners ) );
+        $out = $this->loadTemplate( $filename, array( 'tournament' => $tournament, 'competitions' => $competitions, 'player' => $player, 'rosters' => $rosters, 'season' => $tournament->season, 'type' => $type, 'malePartners' => $malePartners, 'femalePartners' => $femalePartners ) );
 
         return $out;
     }

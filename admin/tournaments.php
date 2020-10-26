@@ -21,6 +21,7 @@
 			<th scope="col" class="num">ID</th>
             <th scope="col"><?php _e( 'Name', 'leaguemanager' ) ?></th>
 			<th scope="col"><?php _e( 'Type', 'leaguemanager' ) ?></th>
+            <th scope="col"><?php _e( 'Season', 'leaguemanager' ) ?></th>
             <th scope="col"><?php _e( 'Venue', 'leaguemanager' ) ?></th>
             <th scope="col"><?php _e( 'Date', 'leaguemanager' ) ?></th>
             <th scope="col"><?php _e( 'Closing Date', 'leaguemanager' ) ?></th>
@@ -36,6 +37,7 @@
 				<td class="num"><?php echo $tournament->id ?></td>
 				<td><a href="admin.php?page=leaguemanager&amp;subpage=tournament&amp;tournament_id=<?php echo $tournament->id ?> "><?php echo $tournament->name ?></a></td>
                 <td><?php echo $tournament->type ?></td>
+                <td><?php echo $tournament->season ?></td>
                 <td><?php echo $tournament->venueName ?></td>
                 <td><?php echo $tournament->date ?></td>
                 <td><?php echo $tournament->closingdate ?></td>

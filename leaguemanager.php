@@ -3,7 +3,7 @@
 Plugin Name: LeagueManager
 Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
 Description: Manage and present sports league results.
-Version: 5.6.0
+Version: 5.6.1
 Author: Paul Moffat, Kolja Schleich, LaMonte Forthun
 
 Copyright 2008-2020  Paul Moffat (email: paul@paarcs.com)
@@ -49,14 +49,14 @@ class LeagueManager {
 	 *
 	 * @var string
 	 */
-	private $version = '5.6.0';
+	private $version = '5.6.1';
 
 	/**
 	 * database version
 	 *
 	 * @var string
 	 */
-	private $dbversion = '5.6.0';
+	private $dbversion = '5.6.1';
 
 	/**
 	 * constructor
@@ -801,6 +801,7 @@ class LeagueManager {
                         `id` int( 11 ) NOT NULL AUTO_INCREMENT,
                         `name` varchar( 100 ) NOT NULL default '',
                         `type` varchar( 100 ) NOT NULL default '',
+                        `season` varchar( 255 ) NOT NULL default '',
                         `venue` int( 11 ) NULL,
                         `date` date NULL,
                         `closingdate` date NOT NULL,
@@ -987,7 +988,7 @@ class LeagueManager {
     public function getTournaments( $offset=0, $limit=99999999 ) {
         global $wpdb;
         
-        $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} ORDER BY `id` ASC LIMIT %d, %d",  intval($offset), intval($limit) );
+        $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} ORDER BY `id` ASC LIMIT %d, %d",  intval($offset), intval($limit) );
 
         $tournaments = wp_cache_get( md5($sql), 'leaguemanager' );
         if ( !$tournaments ) {
@@ -1031,7 +1032,7 @@ class LeagueManager {
     public function getTournament( $tournament_id ) {
         global $wpdb;
         
-        $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} WHERE `id` = '%d'",  intval($tournament_id) );
+        $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} WHERE `id` = '%d'",  intval($tournament_id) );
 
         $tournament = wp_cache_get( md5($sql), 'leaguemanager' );
         if ( !$tournament ) {
@@ -1071,7 +1072,7 @@ class LeagueManager {
     public function getOpenTournaments( $type ) {
         global $wpdb;
         
-        $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`closingdate`, '%%Y-%%m-%%d') AS closingdate, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} WHERE `type` = '%s' AND `closingdate` >= CURDATE() ORDER BY `id` ASC ",  $type );
+        $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`,`venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`closingdate`, '%%Y-%%m-%%d') AS closingdate, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} WHERE `type` = '%s' AND `closingdate` >= CURDATE() ORDER BY `id` ASC ",  $type );
 
         $tournaments = wp_cache_get( md5($sql), 'leaguemanager' );
         if ( !$tournaments ) {
@@ -1079,7 +1080,7 @@ class LeagueManager {
             wp_cache_add( md5($sql), $tournaments, 'leaguemanager' );
         }
 
-        if ($date_format == '') $date_format = get_option('date_format');
+        $date_format = get_option('date_format');
         $i = 0;
         foreach ( $tournaments AS $i => $tournament ) {
 

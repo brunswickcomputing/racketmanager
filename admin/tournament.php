@@ -31,6 +31,18 @@
                 </div>
             </div>
             <div class="form-group">
+                <label for="type"><?php _e( 'Season', 'leaguemanager' ) ?></label>
+                <div class="input">
+                    <select size="1" name="season" id="season" >
+                        <option><?php _e( 'Select season' , 'leaguemanager') ?></option>
+                    <?php $seasons = $leaguemanager->getSeasons( "DESC" );
+                    foreach ( $seasons AS $season ) { ?>
+                        <option value="<?php echo $season->name ?>"><?php echo $season->name ?></option>
+                    <?php } ?>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
                 <label for="venue"><?php _e( 'Venue', 'leaguemanager' ) ?></label>
                 <div class="input">
                     <select size="1" name="venue" id="venue" >

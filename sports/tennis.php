@@ -138,6 +138,7 @@ class LeagueManagerTennis extends LeagueManager
 					echo "<option value='WD' ".($competition->type == 'WD' ? 'selected' : '').">".__( 'Ladies Doubles', 'leaguemanager')."</option>";
 					echo "<option value='MD' ".($competition->type == 'MD' ? 'selected' : '').">".__( 'Mens Doubles', 'leaguemanager')."</option>";
 					echo "<option value='XD' ".($competition->type == 'XD' ? 'selected' : '').">".__( 'Mixed Doubles', 'leaguemanager')."</option>";
+					echo "<option value='XX' ".($competition->type == 'XX' ? 'selected' : '').">".__( 'The League', 'leaguemanager')."</option>";
 				echo "</select>";
 			echo "</td>";
 		echo "</tr>";

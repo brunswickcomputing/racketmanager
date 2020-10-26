@@ -2234,7 +2234,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 					$location = isset($line[5]) ? utf8_encode($line[5]) : '';
 					$group = isset($line[7]) ? $line[7] : '';
 
-					$match_id = $this->addMatch($date, $home_team, $away_team, $match_day, $location, $this->league_id, $season, $group,'', array());
+					$match_id = $this->addMatch($date, $home_team, $away_team, $match_day, $location, $this->league_id, $season, $group,'', array(), $rubbers);
 
 					$matches[$match_id] = $match_id;
 					$home_teams[$match_id] = $home_team;

@@ -430,36 +430,12 @@ class LeagueManagerAJAX
 		$match_type = $league->type;
 		switch ($match_type) {
 		case 'MD':
-			$homeroster1_1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$homeroster2_1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$awayroster1_1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$awayroster2_1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$homeroster1_2 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$homeroster2_2 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$awayroster1_2 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$awayroster2_2 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$homeroster1_3 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$homeroster2_3 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$awayroster1_3 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$awayroster2_3 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
 			$homeroster1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
 			$homeroster2 = $homeroster1;
 			$awayroster1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
 			$awayroster2 = $awayroster1;
 			break;
 		case 'WD':
-			$homeroster1_1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$homeroster2_1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$awayroster1_1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$awayroster2_1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$homeroster1_2 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$homeroster2_2 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$awayroster1_2 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$awayroster2_2 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$homeroster1_3 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$homeroster2_3 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$awayroster1_3 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$awayroster2_3 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
 			$homeroster1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
 			$homeroster2 = $homeroster1;
 			$awayroster1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
@@ -472,18 +448,6 @@ class LeagueManagerAJAX
 			$awayroster2 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
 			break;
 		default:
-			$homeroster1_1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$homeroster2_1 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$awayroster1_1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$awayroster2_1 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$homeroster1_2 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$homeroster2_2 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$awayroster1_2 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$awayroster2_2 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$homeroster1_3 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$homeroster2_3 = $leaguemanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$awayroster1_3 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$awayroster2_3 = $leaguemanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
 			$homeroster1 = $leaguemanager->getRoster(array('team' => $match->home_team));
 			$homeroster2 = $homeroster1;
 			$awayroster1 = $leaguemanager->getRoster(array('team' => $match->away_team));
@@ -521,26 +485,6 @@ class LeagueManagerAJAX
         $r = $tabbase = 0 ;
         
         foreach ($rubbers as $rubber) {
-    		switch ($rubber->rubber_number) {
-	    	case '1':
-		    	$homeroster1 = $homeroster1_1;
-		    	$homeroster2 = $homeroster2_1;
-		    	$awayroster1 = $awayroster1_1;
-		    	$awayroster2 = $awayroster2_1;
-                break;
-	    	case '2':
-		    	$homeroster1 = $homeroster1_2;
-		    	$homeroster2 = $homeroster2_2;
-		    	$awayroster1 = $awayroster1_2;
-		    	$awayroster2 = $awayroster2_2;
-                break;
-	    	case '3':
-		    	$homeroster1 = $homeroster1_3;
-		    	$homeroster2 = $homeroster2_3;
-		    	$awayroster1 = $awayroster1_3;
-		    	$awayroster2 = $awayroster2_3;
-                break;
-    		}
     ?>
                 <tr class="rtr '.$class.'">
                     <input type="hidden" name="id[<?php echo $r ?>]" value="<?php echo $rubber->id ?>" </>

@@ -1201,48 +1201,48 @@ class LeagueManager
      * @param int $team_id
      * @return object
      */
-    function getTable( $team_id, $league_id, $season )
+    function getTable( $table_id )
     {
         global $wpdb;
         
         // use cached object
-        if ( isset($this->team[$team_id]) )
-            return $this->team[$team_id];
+        if ( isset($this->table[$table_id]) )
+            return $this->table[$table_id];
         
-        $team = $wpdb->get_results( $wpdb->prepare("SELECT A.`title`, C.`captain`, C.`contactno`, C.`contactemail`, A.`affiliatedclub`, C.`match_day`, C.`match_time`, A.`stadium`, A.`logo`, A.`home`, B.`group`, A.`roster`, A.`profile`, B.`points_plus`, B.`points_minus`, B.`points2_plus`, B.`points2_minus`, B.`add_points`, B.`done_matches`, B.`won_matches`, B.`draw_matches`, B.`lost_matches`, B.`diff`, B.`league_id`, B.`id`, B.`season`, B.`rank`, B.`status`, B.`custom` FROM {$wpdb->leaguemanager_teams} A, {$wpdb->leaguemanager_table} B, {$wpdb->leaguemanager_team_competition} C, {$wpdb->leaguemanager} D WHERE A.`id` = '%d' AND A.`id` = B.`team_id` AND A.`id` = C.`team_id` and C.`competition_id` = D.`competition_id` AND B.`league_id` = D.`id` AND D.`id` = '%d' AND B.`season` = '%s' ORDER BY B.`rank` ASC, A.`id` ASC", intval($team_id), intval($league_id), $season) );
+        $table = $wpdb->get_results( $wpdb->prepare("SELECT A.`id`, A.`title`, C.`captain`, C.`contactno`, C.`contactemail`, A.`affiliatedclub`, C.`match_day`, C.`match_time`, A.`stadium`, A.`logo`, A.`home`, B.`group`, A.`roster`, A.`profile`, B.`points_plus`, B.`points_minus`, B.`points2_plus`, B.`points2_minus`, B.`add_points`, B.`done_matches`, B.`won_matches`, B.`draw_matches`, B.`lost_matches`, B.`diff`, B.`league_id`, B.`id` as table_id, B.`season`, B.`rank`, B.`status`, B.`custom` FROM {$wpdb->leaguemanager_teams} A, {$wpdb->leaguemanager_table} B, {$wpdb->leaguemanager_team_competition} C, {$wpdb->leaguemanager} D WHERE B.`id` = '%d' AND A.`id` = B.`team_id` AND A.`id` = C.`team_id` and C.`competition_id` = D.`competition_id` AND B.`league_id` = D.`id`", intval($table_id) ));
         
-        if (!isset($team[0])) return false;
+        if (!isset($table[0])) return false;
         
-        $team = $team[0];
+        $table = $table[0];
         
-        $team->title = htmlspecialchars(stripslashes($team->title), ENT_QUOTES);
-        $team->captain = stripslashes($team->captain);
-        $team->contactno = stripslashes($team->contactno);
-        $team->contactemail = stripslashes($team->contactemail);
-        $team->affiliatedclub = stripslashes($team->affiliatedclub);
+        $table->title = htmlspecialchars(stripslashes($table->title), ENT_QUOTES);
+        $table->captain = stripslashes($table->captain);
+        $table->contactno = stripslashes($table->contactno);
+        $table->contactemail = stripslashes($table->contactemail);
+        $table->affiliatedclub = stripslashes($table->affiliatedclub);
         if ( is_plugin_active('wp-clubs/wp-clubs.php') ) {
-            $team->affiliatedclubname = getClubName($team->affiliatedclub);
+            $table->affiliatedclubname = getClubName($table->affiliatedclub);
         } else {
-            $team->affiliatedclubname = '';
+            $table->affiliatedclubname = '';
         }
         
-        $team->stadium = stripslashes($team->stadium);
-        $team->custom = stripslashes_deep(maybe_unserialize($team->custom));
-        $team->roster = maybe_unserialize($team->roster);
-        $team->logo = ( !empty($team->logo) ) ? $this->getImageUrl(basename($team->logo)) : false;
-        if ( $team->logo ) {
+        $table->stadium = stripslashes($table->stadium);
+        $table->custom = stripslashes_deep(maybe_unserialize($table->custom));
+        $table->roster = maybe_unserialize($table->roster);
+        $table->logo = ( !empty($table->logo) ) ? $this->getImageUrl(basename($table->logo)) : false;
+        if ( $table->logo ) {
             $logo_sizes = array( 'tiny', 'thumb', 'large' );
             foreach ( $logo_sizes AS $logo_size ) {
-                $team->logos[$logo_size] = $this->getImageUrl( basename($team->logo), false, $logo_size );
+                $table->logos[$logo_size] = $this->getImageUrl( basename($table->logo), false, $logo_size );
             }
         }
-        $team->diff = ( $team->diff > 0 ) ? '+'.$team->diff : $team->diff;
+        $table->diff = ( $table->diff > 0 ) ? '+'.$table->diff : $table->diff;
         
-        $team = (object)array_merge((array)$team,(array)$team->custom);
+        $table = (object)array_merge((array)$table,(array)$table->custom);
         //unset($team->custom);
         
-        $this->team[$team_id] = $team;
-        return $this->team[$team_id];
+        $this->table[$table_id] = $table;
+        return $this->table[$table_id];
     }
     
 

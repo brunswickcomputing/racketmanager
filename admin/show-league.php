@@ -116,15 +116,14 @@ if (isset($_POST['saveRanking'])) {
 	$js = ( $_POST['js-active'] == 1 ) ? true : false;
 	
 	$team_ranks = array();
-	$team_ids = array_values($_POST['team_id']);
-	foreach ($team_ids AS $key => $team_id) {
+	$table_ids = array_values($_POST['table_id']);
+	foreach ($table_ids AS $key => $table_id) {
 		if ( $js ) {
 			$rank = $key + 1;
 		} else {
-			$rank = intval($_POST['rank'][$team_id]);
+			$rank = intval($_POST['rank'][$table_id]);
 		}
-		
-		$team = $leaguemanager->getTable($team_id, $league->id, $season['name']);
+		$team = $leaguemanager->getTable($table_id);
 		$team_ranks[$rank-1] = $team;
 	}
 	ksort($team_ranks);

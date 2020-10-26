@@ -55,7 +55,7 @@
 					<td class="num"><?php echo $team->id ?></td>
 					<td class="num">
 						<?php if ($league->team_ranking == 'manual') : ?>
-						<input type="text" name="rank[<?php echo $team->id ?>]" size="2" id="rank_<?php echo $team->id ?>" class="rank-input" value="<?php echo $team->rank ?>" />
+                        <input type="text" name="rank[<?php echo $team->id ?>]" size="2" id="rank_<?php echo $team->id ?>" class="rank-input" value="<?php echo $team->rank ?>" /><input type="hidden" name="table_id[<?php echo $team->table_id ?>]" value="<?php echo $team->table_id ?>" />
 						<?php else : ?>
 						<?php echo $i+1;//$team->rank ?>
 						<?php endif; ?>

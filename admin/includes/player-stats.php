@@ -83,7 +83,7 @@
             }
 
 			foreach ( $playerstat->matchdays AS $m => $match) {
-                if ( ($competition->is_championship && !$prevRound == $match->final) || ( !$competition->is_championship && !$prevMatchDay == $match->match_day) ) {
+                if ( ($competition->is_championship && !$prevRound == $match->final_round) || ( !$competition->is_championship && !$prevMatchDay == $match->match_day) ) {
 					$i = 0;
 				}
 				$teamNum = substr($match->team_title,-1) ;
@@ -107,7 +107,7 @@
                 if ($match->rubber_winner === $match->team_id) $rubberresult = 'Won'; else $rubberresult = 'Lost';
                 $playerLine = array('team' => $match->team_title, 'pair' => $match->rubber_number, 'matchresult' => $matchresult, 'rubberresult' => $rubberresult, 'playdir' => $playdir);
                 if ( $competition->is_championship ) {
-                    $d = $primaryLeague->championship->getFinals($match->final)['round'];
+                    $d = $primaryLeague->championship->getFinals($match->final_round)['round'];
                     $matchdaystats[$d][$i] = $playerLine;
                 } else {
                     $matchdaystats[$match->match_day][$i] = $playerLine;

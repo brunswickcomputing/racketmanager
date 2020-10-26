@@ -1015,14 +1015,14 @@ final class LeagueManagerAdmin extends LeagueManager
 
                 $id = intval($_GET['edit']);
                 $match = get_match($id);
-                if ( isset($match->final) && $match->final != '' ) {
+                if ( isset($match->final_round) && $match->final_round != '' ) {
                     $cup = true;
                     $singleCupGame = true;
                 }
                 $league_id = $match->league_id;
                 $matches[0] = $match;
                 $match_day = $match->match_day;
-                $finalkey = isset($match->final) ? $match->final : '';
+                $finalkey = isset($match->final_round) ? $match->final_round : '';
 
                 $max_matches = 1;
 
@@ -1110,17 +1110,17 @@ final class LeagueManagerAdmin extends LeagueManager
 
             if ( $singleCupGame ) {
                 $final = $league->championship->getFinals($finalkey);
-                $finalTeams = $league->championship->getFinalTeams($final, 'ARRAY');
-                    if ( is_numeric($match->home_team) ) {
-                        $home_title = get_team($match->home_team)->title;
-                    } else {
-                        $home_title = $finalTeams[$match->home_team];
-                    }
-                    if ( is_numeric($match->away_team) ) {
-                        $away_title = get_team($match->away_team)->title;
-                    } else {
-                        $away_title = $finalTeams[$match->away_team];
-                    }
+                $finalTeams = $league->championship->getFinalTeams($final['key'], 'ARRAY');
+                if ( is_numeric($match->home_team) ) {
+                    $home_title = get_team($match->home_team)->title;
+                } else {
+                    $home_title = $finalTeams[$match->home_team]->title;
+                }
+                if ( is_numeric($match->away_team) ) {
+                    $away_title = get_team($match->away_team)->title;
+                } else {
+                    $away_title = $finalTeams[$match->away_team]->title;
+                }
             } elseif ( $is_finals ) {
                 $teams = $league->championship->getFinalTeams( $finalkey );
                 $teamsHome = $teams;

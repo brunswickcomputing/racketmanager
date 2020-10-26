@@ -51,6 +51,11 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 
 == Changelog ==
 
+= 5.6.9 =
+* BUGFIX: handle championship proceed to first round team names correctly
+* BUGFIX: use final_round instead of final for match object
+* BUGFIX: correct team display for championship match edit
+
 = 5.6.8 =
 * BUGFIX: do not exit when no matches for daily match check
 * BUGFIX: pull details from correct table in getRosterEntry

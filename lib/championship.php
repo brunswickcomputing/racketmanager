@@ -445,20 +445,30 @@ final class League_Championship extends LeagueManager {
 
                 if ($match->home_team == -1) {
                     $home['team'] = -1;
+                    $home_team = array('id' => -1);
                 } else {
-                    $home = explode("_", $match->home_team);
-                    $home = array( 'rank' => $home[0], 'group' => $home[1] );
-                    $home_team = $league->getLeagueTeams( array("rank" => $home['rank'], "group" => $home['group'], "reset_query_args" => true) );
-                    if ( $home_team ) $home['team'] = $home_team[0]->id;
+                    if ( strpos($match->home_team, "_") !== false ) {
+                        $home = explode("_", $match->home_team);
+                        $home = array( 'rank' => $home[0], 'group' => isset($home[1]) ? $home[1] : '' );
+                        $home_team = $league->getLeagueTeams( array("rank" => $home['rank'], "group" => $home['group'], "reset_query_args" => true) );
+                        if ( $home_team ) $home['team'] = $home_team[0]->id;
+                    } else {
+                        $home_team = '';
+                    }
                 }
 
                 if ($match->away_team == -1) {
                     $away['team'] = -1;
+                    $away_team = array('id' => -1);
                 } else {
-                    $away = explode("_", $match->away_team);
-                    $away = array( 'rank' => $away[0], 'group' => $away[1] );
-                    $away_team = $league->getLeagueTeams( array("rank" => $away['rank'], "group" => $away['group'], "reset_query_args" => true) );
-                    if ( $away_team ) $away['team'] = $away_team[0]->id;
+                    if ( strpos($match->away_team, "_") !== false ) {
+                        $away = explode("_", $match->away_team);
+                        $away = array( 'rank' => $away[0], 'group' => isset($away[1]) ? $away[1] : '' );
+                        $away_team = $league->getLeagueTeams( array("rank" => $away['rank'], "group" => $away['group'], "reset_query_args" => true) );
+                        if ( $away_team ) $away['team'] = $away_team[0]->id;
+                    } else {
+                        $away_team = '';
+                    }
                 }
 
                 if ( !$home_team || !$away_team ) {

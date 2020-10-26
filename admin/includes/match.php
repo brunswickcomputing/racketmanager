@@ -31,7 +31,7 @@
 <?php if ( $bulk || $is_finals || ($mode=="add") || ($mode=="edit") ) { ?>
 						<th scope="col"><?php _e( 'Date', 'leaguemanager' ) ?></th>
 <?php } ?>
-<?php if ( (isset($match->final) && $match->final != null) || $is_finals ) { ?>
+<?php if ( (isset($match->final_round) && $match->final_round != null) || $is_finals ) { ?>
 <?php } else { ?>
 						<th scope="col"><?php _e( 'Day', 'leaguemanager' ) ?></th>
 <?php } ?>
@@ -39,7 +39,7 @@
 						<th scope="col"><?php _e( 'Guest', 'leaguemanager' ) ?></th>
 						<th scope="col"><?php _e( 'Location','leaguemanager' ) ?></th>
 <?php if ( isset($league->entryType) && $league->entryType == 'player' ) {
-    
+
 } else { ?>
 						<th scope="col"><?php _e( 'Begin','leaguemanager' ) ?></th>
 <?php } ?>
@@ -53,7 +53,7 @@
 	<?php if ( $bulk || $is_finals || ($mode=="add") || $mode == "edit" ) { ?>
                     <td><input type="date" name="mydatepicker[<?php echo $i ?>]" id="mydatepicker[<?php echo $i ?>]" class="" value="<?php if(isset($matches[$i]->date)) echo ( substr($matches[$i]->date, 0, 10) ) ?>" onChange="Leaguemanager.setMatchDate(this.value, <?php echo $i ?>, <?php echo $max_matches ?>, '<?php echo $mode ?>');" /></td>
 	<?php } ?>
-<?php if ( (isset($match->final) && $match->final != null) || $is_finals ) { ?>
+<?php if ( (isset($match->final_round) && $match->final_round != null) || $is_finals ) { ?>
 <?php } else { ?>
 					<td>
 						<select size="1" name="match_day[<?php echo $i ?>]" id="match_day_<?php echo $i ?>" onChange="Leaguemanager.setMatchDayPopUp(this.value, <?php echo $i ?>, <?php echo $max_matches ?>, '<?php echo $mode ?>');">
@@ -66,7 +66,7 @@
 <!-- Home team pop up, only shows teams in a Group if set for 'Championship' -->
 					<td>
 <?php if ( $singleCupGame ) { ?>
-                            <input type="text" name="home_team_title[<?php echo $i ?>]" id="home_team_title_<?php echo $i ?>" value="<?php echo $home_title ?>" />
+                            <input type="text" disabled name="home_team_title[<?php echo $i ?>]" id="home_team_title_<?php echo $i ?>" value="<?php echo $home_title ?>" />
                             <input type="hidden" name="home_team[<?php echo $i ?>]" id="home_team_<?php echo $i ?>" value="<?php echo $matches[$i]->home_team ?>" />
 <?php } else { ?>
                             <select size="1" name="home_team[<?php echo $i ?>]" id="home_team_<?php echo $i ?>" <?php if ( !$finalkey ) { echo 'onChange="Leaguemanager.insertHomeStadium(document.getElementById(\'home_team_'.$i.'\').value, '.$i.');"'; } ?>>
@@ -114,7 +114,7 @@
 					</td>
 					<td><input type="text" name="location[<?php echo $i ?>]" id="location[<?php echo $i ?>]" size="20" value="<?php if(isset($matches[$i]->location)) echo $matches[$i]->location ?>" size="30" /></td>
 <?php if ( isset($league->entryType) && $league->entryType == 'player' ) {
-    
+
 } else { ?>
 					<td>
 						<select size="1" name="begin_hour[<?php echo $i ?>]">
@@ -150,4 +150,3 @@
 <?php } ?>
 
 	</div>
-

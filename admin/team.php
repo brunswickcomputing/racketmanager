@@ -8,10 +8,10 @@ Leaguemanager.reInit();
 		$edit = false;
 		if ( isset( $_GET['edit'] ) ) {
 			$edit = true;
-			$team = $leaguemanager->getTeam(intval($_GET['edit']));
+			$team = $leaguemanager->getTeamDtls(intval($_GET['edit']));
 			if ( !isset($team->roster['id']) ) $team->roster = array('id' => '', 'cat_id' => '');
 			
-			$league_id = intval($team->league_id);
+			$league_id = intval($_GET['league_id']);
 			$form_title = __( 'Edit Team', 'leaguemanager' );
 			$form_action = __( 'Update', 'leaguemanager' );
 		} else {

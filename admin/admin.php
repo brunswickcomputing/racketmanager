@@ -873,7 +873,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 	 * @param boolean $message (optional)
 	 * @return void
 	 */
-	function addTableEntry( $league_id, $team_id, $season , $custom, $message = true )
+	function addTableEntry( $league_id, $team_id, $season , $custom = array(), $message = true )
 	{
 		global $wpdb, $leaguemanager;
 
@@ -887,6 +887,14 @@ class LeagueManagerAdminPanel extends LeagueManager
 		return $table_id;
 	}
 
+	function checkTableEntry( $league_id, $team_id, $season )
+	{
+		global $wpdb, $leaguemanager;
+		$query = $wpdb->prepare ( "SELECT COUNT(ID) FROM {$wpdb->leaguemanager_table} WHERE `team_id` = '%d' AND `season` = '%s' AND `league_id` = '%d'", $team_id, $season, $league_id);
+		$num_teams = $wpdb->get_var( $query );
+		return $num_teams;
+	}
+			
 	/**
 	 * add new team
 	 *
@@ -971,7 +979,7 @@ class LeagueManagerAdminPanel extends LeagueManager
 	{
 		global $wpdb, $leaguemanager;
 
-		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_teams} SET `title` = '%s', `captain` = '%s', `contactno` = '%s', `contactemail` = '%s', `affiliatedclub` = '%d', `match_day` = '%s', `match_time` = '%s', `stadium` = '%s', `logo` = '%s', `home` = '%d', `group` = '%s', `roster`= '%s', `profile` = '%d', `custom` = '%s' WHERE `id` = %d", $title, $captain, $contactno, $contactemail, $affiliatedclub, $matchday, $matchtime, $stadium, basename($logo), $home, $group, maybe_serialize($roster), $profile, maybe_serialize($custom), $team_id ) );
+		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_teams} SET `title` = '%s', `captain` = '%s', `contactno` = '%s', `contactemail` = '%s', `affiliatedclub` = '%d', `match_day` = '%s', `match_time` = '%s', `stadium` = '%s', `logo` = '%s', `home` = '%d', `roster`= '%s', `profile` = '%d', `custom` = '%s' WHERE `id` = %d", $title, $captain, $contactno, $contactemail, $affiliatedclub, $matchday, $matchtime, $stadium, basename($logo), $home, maybe_serialize($roster), $profile, maybe_serialize($custom), $team_id ) );
 
 		// Delete Image if options is checked
 		if ($del_logo || $overwrite_image) {
@@ -2070,41 +2078,48 @@ class LeagueManagerAdminPanel extends LeagueManager
 					$season = $line[0];
 					$team	= utf8_encode($line[1]);
 					$team_id = $this->getTeamID($team);
-					$custom = apply_filters( 'leaguemanager_import_teams_'.$league->sport, $custom, $line );
-					$table_id = $this->addTableEntry( $this->league_id, $team_id, $season, $custom, false );
+					if ( $team_id != 0 ) {
+						
+						$tabledtls = $this->checkTableEntry( $this->league_id, $team_id, $season );
+						if ( $tabledtls == 0 ) {
+													 
+							$custom = apply_filters( 'leaguemanager_import_teams_'.$league->sport, $custom, $line );
+							$table_id = $this->addTableEntry( $this->league_id, $team_id, $season, $custom, false );
 
-					$teams[$team_id] = $team_id;
-					$pld[$team_id] = isset($line[2]) ? $line[2] : 0;
-					$won[$team_id] = isset($line[3]) ? $line[3] : 0;
-					$draw[$team_id] = isset($line[4]) ? $line[4] : 0;
-					$lost[$team_id] = isset($line[5]) ? $line[5] : 0;
-					
-					if ( isset($line[6]) ) {
-						if (strpos($line[6], ':') !== false) {
-							$points2 = explode(":", $line[6]);
-						} else {
-							$points2 = array($line[6], 0);
-						}
-					} else {
-						$points2 = array(0,0);
+							$teams[$team_id] = $team_id;
+							$pld[$team_id] = isset($line[2]) ? $line[2] : 0;
+							$won[$team_id] = isset($line[3]) ? $line[3] : 0;
+							$draw[$team_id] = isset($line[4]) ? $line[4] : 0;
+							$lost[$team_id] = isset($line[5]) ? $line[5] : 0;
+							
+							if ( isset($line[6]) ) {
+								if (strpos($line[6], ':') !== false) {
+									$points2 = explode(":", $line[6]);
+								} else {
+									$points2 = array($line[6], 0);
+								}
+							} else {
+								$points2 = array(0,0);
+							}
+							
+							if ( isset($line[7]) ) {
+								if (strpos($line[7], ':') !== false) {
+									$points = explode(":", $line[7]);
+								} else {
+									$points = array($line[7], 0);
+								}
+							} else {
+								$points = array(0,0);
+							}
+							
+							$points_plus[$team_id] = $points[0];
+							$points_minus[$team_id] = $points[1];
+							$custom[$team_id]['points2'] = array( 'plus' => $points2[0], 'minus' => $points2[1] );
+							$x++;
+						 }
+													 
 					}
-					
-					
-					if ( isset($line[7]) ) {
-						if (strpos($line[7], ':') !== false) {
-							$points = explode(":", $line[7]);
-						} else {
-							$points = array($line[7], 0);
-						}
-					} else {
-						$points = array(0,0);
-					}
-					
-					$points_plus[$team_id] = $points[0];
-					$points_minus[$team_id] = $points[1];
-					$custom[$team_id]['points2'] = array( 'plus' => $points2[0], 'minus' => $points2[1] );
 
-					$x++;
 				}
 				$i++;
 			}

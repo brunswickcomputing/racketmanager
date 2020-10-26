@@ -9,7 +9,8 @@ if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POS
 		$profile = isset($_POST['profile']) ? intval($_POST['profile']) : 0;
 		$group = isset($_POST['group']) ? htmlspecialchars(strip_tags($_POST['group'])) : '';
 		if ( '' == $_POST['team_id'] ) {
-			$this->addTeam( htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['captain']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']), htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), htmlspecialchars($_POST['stadium']), $home, $roster, $profile, $custom, htmlspecialchars($_POST['logo_db']) );
+			$team_id = $this->addTeam( htmlspecialchars(strip_tags($_POST['team'])), htmlspecialchars($_POST['captain']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']), htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), htmlspecialchars($_POST['stadium']), $home, $roster, $profile, $custom, htmlspecialchars($_POST['logo_db']) );
+			$this->addTableEntry( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
 		} else {
 			$del_logo = isset( $_POST['del_logo'] ) ? true : false;
 			$overwrite_image = isset( $_POST['overwrite_image'] ) ? true: false;

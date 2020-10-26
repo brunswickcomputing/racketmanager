@@ -21,4 +21,7 @@
 	th.tennishdr { width: 11%;	}
 	th.num { width: 4%; }
 	a.go-top { display:none;}
+	a[href]:after {
+		content: none !important;
+	}
 }

@@ -949,7 +949,6 @@ class LeagueManagerShortcodes extends LeagueManager
 							   'matches' => '',
 							   'teams' => 'list'
 							   ), $atts ));
-		debug_to_console($atts);
 	$competition = $leaguemanager->getCompetition( $id );
 
 	/*

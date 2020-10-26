@@ -1,4 +1,6 @@
-[12-Mar-2017 08:49:09 UTC] PHP Fatal error:  Call to undefined function add_action() in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/functions.php on line 436
-[12-Mar-2017 08:49:19 UTC] PHP Fatal error:  Call to a member function show_errors() on null in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/leaguemanager.php on line 77
-[12-Mar-2017 15:52:27 UTC] PHP Fatal error:  Call to undefined function add_action() in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/functions.php on line 436
-[12-Mar-2017 15:52:37 UTC] PHP Fatal error:  Call to a member function show_errors() on null in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/leaguemanager.php on line 77
+[12-Mar-2017 21:50:30 UTC] PHP Fatal error:  Call to undefined function add_action() in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/functions.php on line 436
+[12-Mar-2017 21:50:40 UTC] PHP Fatal error:  Call to a member function show_errors() on null in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/leaguemanager.php on line 77
+[13-Mar-2017 03:54:36 UTC] PHP Fatal error:  Call to undefined function add_action() in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/functions.php on line 436
+[13-Mar-2017 03:54:47 UTC] PHP Fatal error:  Call to a member function show_errors() on null in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/leaguemanager.php on line 77
+[13-Mar-2017 09:59:29 UTC] PHP Fatal error:  Call to a member function show_errors() on null in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/leaguemanager.php on line 77
+[13-Mar-2017 09:59:40 UTC] PHP Fatal error:  Call to undefined function add_action() in /home/bmfeyajg/public_html/wp-content/plugins/leaguemanager/functions.php on line 436

@@ -30,7 +30,7 @@ wp_enqueue_script('datatables');
 	<?php foreach ( $leagues AS $league ) : ?>
 			<!-- Standings Table -->
 			<div id="standings-archive" class="jquery-ui-tab">
-				<h4 class="header"><?php echo $league->title ?></h4>
+				<h4 class="header"><a href="/leagues/<?php echo str_replace(' ', '-', $league->title) ?>/<?php echo $curr_season ?>"><?php echo $league->title ?></a></h4>
 				<?php leaguemanager_standings( $league->id, array( 'season' => $curr_season, 'template' => 'nolink', 'logo' => false ) ) ?>
 			</div>
 	<?php endforeach ?>

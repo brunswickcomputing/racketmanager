@@ -1215,6 +1215,51 @@ class LeagueManager
 	}
 	
 	/**
+	 * get single team
+	 *
+	 * @param int $team_id
+	 * @return object
+	 */
+	function getTeamDtls( $team_id )
+	{
+		global $wpdb;
+		
+			// use cached object
+		if ( isset($this->teamDtls[$team_id]) )
+			return $this->teamDtls[$team_id];
+		
+		$team = $wpdb->get_results( $wpdb->prepare("SELECT A.`title`, A.`captain`, A.`contactno`, A.`contactemail`, A.`affiliatedclub`, A.`match_day`, A.`match_time`, A.`stadium`, A.`logo`, A.`home`, A.`roster`, A.`profile`, A.`id` FROM {$wpdb->leaguemanager_teams} A WHERE A.`id` = '%d'", intval($team_id)) );
+		
+		if (!isset($team[0])) return false;
+		
+		$team = $team[0];
+		
+		$team->title = htmlspecialchars(stripslashes($team->title), ENT_QUOTES);
+		$team->captain = stripslashes($team->captain);
+		$team->contactno = stripslashes($team->contactno);
+		$team->contactemail = stripslashes($team->contactemail);
+		$team->affiliatedclub = stripslashes($team->affiliatedclub);
+		if ( is_plugin_active('wp-clubs/wp-clubs.php') ) {
+			$team->affiliatedclubname = getClubName($team->affiliatedclub);
+		} else {
+			$team->affiliatedclubname = '';
+		}
+		
+		$team->stadium = stripslashes($team->stadium);
+		$team->roster = maybe_unserialize($team->roster);
+		$team->logo = ( !empty($team->logo) ) ? $this->getImageUrl(basename($team->logo)) : false;
+		if ( $team->logo ) {
+			$logo_sizes = array( 'tiny', 'thumb', 'large' );
+			foreach ( $logo_sizes AS $logo_size ) {
+				$team->logos[$logo_size] = $this->getImageUrl( basename($team->logo), false, $logo_size );
+			}
+		}
+		
+		$this->teamDtls[$team_id] = $team;
+		return $this->teamDtls[$team_id];
+	}
+	
+	/**
 	 * get Team ID for given string
 	 *
 	 * @param string $title

@@ -541,7 +541,7 @@ class LeagueManagerTennis extends LeagueManager
 	 */
 	function displayStandingsHeader()
 	{
-		echo '<th class="num">'.__( 'Sets Won', 'leaguemanager' ).'</th><th>'.__( 'Sets Against', 'leaguemanager' ).'</th><th>'.__( 'Games Won', 'leaguemanager' ).'</th><th>'.__( 'Games Against', 'leaguemanager' ).'</th>';
+		echo '<th class="tennishdr">'.__( 'Sets Won', 'leaguemanager' ).'</th><th class="tennishdr">'.__( 'Sets Against', 'leaguemanager' ).'</th><th class="tennishdr">'.__( 'Games Won', 'leaguemanager' ).'</th><th class="tennishdr">'.__( 'Games Against', 'leaguemanager' ).'</th>';
 	}
 
 

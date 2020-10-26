@@ -949,25 +949,35 @@ class LeagueManagerShortcodes extends LeagueManager
 							   'matches' => '',
 							   'teams' => 'list'
 							   ), $atts ));
-
+		debug_to_console($atts);
 	$competition = $leaguemanager->getCompetition( $id );
 
 	/*
 	* set season
 	*/
-	$season = $leaguemanager->getSeason($league, $season);
-	$leaguemanager->setSeason($season);
-	$season = $season['name'];
+	$seasons = $competition->seasons;
+	$leagues = $leaguemanager->getLeagues( array('competition' => $id, 'orderby' => array("title" => "ASC")));
+		
+	if ( isset($_GET['season']) && !empty($_GET['season']) ) {
+		$season = htmlspecialchars(strip_tags($_GET['season']));
+	} elseif ( isset($_GET['season']) ) {
+		$season = htmlspecialchars(strip_tags($_GET['season']));
+	} else {
+		$season = null !== get_query_var('season') ? get_query_var('season') : false;
+	}
+	
+	if ( empty($template) && $this->checkTemplate('competition-'.$competition->sport) ) {
+		$filename = 'competition-'.$competition->sport;
+	} else {
+		$filename = ( !empty($template) ) ? 'competition-'.$template : 'competition';
+	}
 
-	$competition->season = $season;
-	$competition->templates = array( 'standingstable' => $standingstable, 'crosstable' => $crosstable, 'matches' => $matches, 'teams' => $teams );
-
-	if ( empty($template) && $this->checkTemplate('competition-'.$competition->sport) )
-	$filename = 'competition-'.$competition->sport;
-	else
-	$filename = ( !empty($template) ) ? 'competition-'.$template : 'competition';
-
-	$out = $this->loadTemplate( $filename, array('competition' => $competition) );
+	if ( !$season ) {
+		$season = end($competition->seasons);
+		$season = $season['name'];
+	}
+		
+	$out = $this->loadTemplate( $filename, array('competition' => $competition, 'leagues' => $leagues, 'seasons' => $seasons, 'curr_season' => $season) );
 	return $out;
 	}
 					  

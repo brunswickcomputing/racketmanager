@@ -25,7 +25,7 @@ The following variables are usable:
 	<th class="logo">&#160;</th>
 	<?php endif; ?>
 	
-	<th><?php _e( 'Team', 'leaguemanager' ) ?></th>
+	<th class="team"><?php _e( 'Team', 'leaguemanager' ) ?></th>
 	<?php if ( isset($league->standings['pld']) && 1 == $league->standings['pld'] ) : ?>
 	<th class="num"><?php _e( 'Pld', 'leaguemanager' ) ?></th>
 	<?php endif; ?>
@@ -39,6 +39,7 @@ The following variables are usable:
 	<th class="num"><?php echo _e( 'L','leaguemanager' ) ?></th>
 	<?php endif; ?>
 	<?php do_action( 'leaguemanager_standings_header_'.$league->sport ) ?>
+	<th class=""><?php _e( 'Pts Adjust', 'leaguemanager' ) ?></th>
 	<th class="num"><?php _e( 'Pts', 'leaguemanager' ) ?></th>
 </tr>
 <?php if ( $teams ) : ?>
@@ -69,6 +70,7 @@ The following variables are usable:
 	<td class='num'><?php echo $team->lost_matches ?></td>
 	<?php endif; ?>
 	<?php do_action( 'leaguemanager_standings_columns_'.$league->sport, $team, $league->point_rule ) ?>
+	<td class='num'><?php echo $team->add_points ?></td>
 	<td class='num'><?php echo $team->points ?></td>
 </tr>
 <?php endforeach; ?>

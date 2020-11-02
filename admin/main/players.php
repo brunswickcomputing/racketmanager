@@ -42,7 +42,7 @@
 			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
 			<option value="delete"><?php _e('Delete')?></option>
 		</select>
-		<input type="submit" value="<?php _e('Apply'); ?>" name="doplayerdel" id="dorplayerdel" class="button-secondary action" />
+		<input type="submit" value="<?php _e('Apply'); ?>" name="doPlayerDel" id="dorPlayerDel" class="button-secondary action" />
 	</div>
 
 	<table class="widefat" summary="" title="LeagueManager Players">
@@ -62,7 +62,7 @@
 			<?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 			<tr class="<?php echo $class ?>">
 				<th scope="row" class="check-column">
-<?php if ( !isset($player->removed_date) ) { ?>
+<?php if ( $player->removed_date == '' ) { ?>
 					<input type="checkbox" value="<?php echo $player->id ?>" name="player[<?php echo $player->id ?>]" />
 <?php } ?>
 				</th>

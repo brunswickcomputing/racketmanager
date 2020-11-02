@@ -51,6 +51,10 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 
 == Changelog ==
 
+= 5.6.10 =
+* BUGFIX: allow delete of players correctly
+* UPDATE: delete duplicate player teams
+ 
 = 5.6.9 =
 * BUGFIX: handle championship proceed to first round team names correctly
 * BUGFIX: use final_round instead of final for match object

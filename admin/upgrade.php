@@ -1,25 +1,25 @@
 <?php
 /**
  * leaguemanager_upgrade() - update routine for older version
- * 
+ *
  * @return Success Message
  */
 function leaguemanager_upgrade() {
 	global $wpdb, $leaguemanager, $lmLoader;
-	
+
 	$options = get_option( 'leaguemanager' );
 	$installed = $options['dbversion'];
-	
+
 	echo __('Upgrade database structure...', 'leaguemanager') . "<br />\n";
 	$wpdb->show_errors();
 
 	if (version_compare($installed, '5.1.7', '<')) {
 
 		$wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_teams} ADD `system_record` VARCHAR(1) NULL DEFAULT NULL AFTER `removed_date` ");
-	
+
     }
     if (version_compare($installed, '5.1.8', '<')) {
-        
+
         $wpdb->query( "CREATE TABLE {$wpdb->leaguemanager_team_competition} (`id` int( 11 ) NOT NULL AUTO_INCREMENT ,`team_id` int( 11 ) NOT NULL default 0, `competition_id` int( 11 ) NOT NULL default 0, `captain` varchar( 255 ) NOT NULL default '',`contactno` varchar( 255 ) NOT NULL default '',`contactemail` varchar( 255 ) NOT NULL default '', `match_day` varchar( 25 ) NOT NULL default '', `match_time` time NULL, PRIMARY KEY ( `id` ), INDEX( `team_id` ), INDEX( `competition_id` ))") ;
         $wpdb->query( "INSERT INTO {$wpdb->leaguemanager_team_competition} (team_id, competition_id, captain, contactno, contactemail, match_day, match_time) (SELECT TE.id, L.`competition_id`, TE.captain, TE.contactno, TE.contactemail, TE.match_day, TE.match_time FROM `wp_leaguemanager_teams` TE, `wp_leaguemanager_table` TA, `wp_leaguemanager_leagues` L WHERE TE.id = TA.`team_id` AND TA.`league_id` = L.`id` GROUP BY team_id, competition_id, captain, contactno, contactemail, match_day, match_time)" );
 
@@ -225,12 +225,38 @@ function leaguemanager_upgrade() {
         echo __('starting 5.6.1 upgrade', 'leaguemanager') . "<br />\n";
         $wpdb->query( "ALTER TABLE {$wpdb->leaguemanager_tournaments} ADD `season` varchar( 255 ) NOT NULL default '' AFTER `type` ");
     }
+    if (version_compare($installed, '5.6.10', '<')) {
+        echo __('starting 5.6.10 upgrade', 'leaguemanager') . "<br />\n";
+        $teams = $wpdb->get_results(" SELECT `title` FROM {$wpdb->leaguemanager_teams} GROUP BY `title` HAVING COUNT(*) > 1 ORDER BY `title`; ");
+
+        foreach ($teams AS $team) {
+           	$teamsList = $wpdb->get_results( $wpdb->prepare(" SELECT `id`, `title` FROM {$wpdb->leaguemanager_teams} WHERE `title` = '%s';", $team->title) );
+            $teamId = $prevTitle = '';
+            foreach($teamsList AS $teamEntry) {
+                if ( $prevTitle != $teamEntry->title ) {
+                    $teamId = $teamEntry->id;
+                    $prevTitle = $teamEntry->title;
+                    echo 'updating '.$prevTitle. '<br />';
+                } else {
+                    echo 'updating '.$teamEntry->id. '<br />';
+                    $wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->leaguemanager_matches} SET `home_team` = '%s' WHERE `home_team` = '%s'", $teamId, $teamEntry->id ) );
+                    $wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->leaguemanager_matches} SET `away_team` = '%s' WHERE `away_team` = '%s'", $teamId, $teamEntry->id ) );
+                    $wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->leaguemanager_matches} SET `winner_id` = '%d' WHERE `winner_id` = '%d'", $teamId, $teamEntry->id ) );
+                    $wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->leaguemanager_matches} SET `loser_id` = '%d' WHERE `loser_id` = '%d'", $teamId, $teamEntry->id ) );
+                    $wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->leaguemanager_team_competition} SET `team_id` = '%d' WHERE `team_id` = '%d'", $teamId, $teamEntry->id ) );
+                    $wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->leaguemanager_table} SET `team_id` = '%d' WHERE `team_id` = '%d'", $teamId, $teamEntry->id ) );
+                    $wpdb->query( $wpdb->prepare(" DELETE FROM {$wpdb->leaguemanager_team_competition} WHERE `team_id` = %s", $teamEntry->id ) );
+                    $wpdb->query( $wpdb->prepare(" DELETE FROM {$wpdb->leaguemanager_teams} WHERE `id` = %s", $teamEntry->id ) );
+                }
+            }
+        }
+    }
     /*
 	* Update version and dbversion
 	*/
 	$options['dbversion'] = LEAGUEMANAGER_DBVERSION;
 	$options['version'] = LEAGUEMANAGER_VERSION;
-	
+
 	update_option('leaguemanager', $options);
 	echo __('finished', 'leaguemanager') . "<br />\n";
 	$wpdb->hide_errors();
@@ -239,10 +265,10 @@ function leaguemanager_upgrade() {
 
 /**
 * leaguemanager_upgrade_page() - This page showsup , when the database version doesn't fit to the script LEAGUEMANAGER_DBVERSION constant.
-* 
+*
 * @return Upgrade Message
 */
-function leaguemanager_upgrade_page()  {	
+function leaguemanager_upgrade_page()  {
 	$filepath    = admin_url() . 'admin.php?page=' . htmlspecialchars($_GET['page']);
 
 	if (isset($_GET['upgrade']) && $_GET['upgrade'] == 'now') {
@@ -261,7 +287,7 @@ function leaguemanager_upgrade_page()  {
 
 /**
  * leaguemanager_do_upgrade() - Proceed the upgrade routine
- * 
+ *
  * @param mixed $filepath
  * @return void
  */

@@ -347,6 +347,17 @@ final class LeagueManagerAdmin extends LeagueManager
                 $this->addPlayer( htmlspecialchars(strip_tags($_POST['firstname'])), htmlspecialchars(strip_tags($_POST['surname'])), $_POST['gender'], htmlspecialchars(strip_tags($_POST['btm'])), 'true');
                 $this->printMessage();
                 $tab = 3;
+			} elseif ( isset($_POST['doPlayerDel']) && $_POST['action'] == 'delete' ) {
+                if ( current_user_can('edit_teams') ) {
+                    check_admin_referer('player-bulk');
+                    foreach ( $_POST['player'] AS $player_id ) {
+                        $this->delPlayer( intval($player_id) );
+                    }
+                } else {
+                    $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+                }
+                $this->printMessage();
+                $tab = 3;
             } elseif ( isset($_POST['dorosterrequest']) ) {
                 if ( current_user_can('edit_teams') ) {
                     check_admin_referer('roster-request-bulk');
@@ -2581,7 +2592,7 @@ final class LeagueManagerAdmin extends LeagueManager
 		if ( $rosterCount == 0 ) {
 			wp_delete_user( $player_id) ;
 		} else {
-            update_user_meta( $player_id, 'remove_date', NOW() );
+            update_user_meta( $player_id, 'remove_date', date('Y-m-d') );
 		}
 
         return true;

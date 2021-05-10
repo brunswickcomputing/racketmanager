@@ -17,7 +17,7 @@
 </form>
 <?php } ?>
 
-<form id="competitions-filter" action="admin.php?page=leaguemanager&subpage=show-league&league_id=<?php echo $league->id ?>" method="post">
+<form id="competitions-filter" action="admin.php?page=leaguemanager&subpage=show-league&league_id=<?php echo $league->id ?>&season=<?php echo $season ?>" method="post">
 <?php wp_nonce_field( 'matches-bulk' ) ?>
 
 	<input type="hidden" name="current_match_day" value="<?php echo $matchDay ?>" />
@@ -51,7 +51,7 @@
 		<input type='submit' name="doaction-match_day" id="doaction-match_day" class="button-secondary action" value='<?php _e( 'Filter' ) ?>' />
 <?php } ?>
 	</div>
-	
+
 	<table class="widefat" summary="" title="<?php _e( 'Match Plan','leaguemanager' ) ?>" style="margin-bottom: 2em;">
 		<thead>
 			<tr>
@@ -76,7 +76,7 @@
 						<input type="hidden" name="matches[<?php echo $match->id ?>]" value="<?php echo $match->id ?>" />
 						<input type="hidden" name="home_team[<?php echo $match->id ?>]" value="<?php echo $match->home_team ?>" />
 						<input type="hidden" name="away_team[<?php echo $match->id ?>]" value="<?php echo $match->away_team ?>" />
-						
+
 						<input type="checkbox" value="<?php echo $match->id ?>" name="match[<?php echo $match->id ?>]" />
 					</th>
 					<td><?php echo $match->id ?></td>
@@ -101,7 +101,7 @@
 <?php if ( isset($league->mode) && $league->mode != "championship" && $league->getPageLinks('matches') ) { ?>
 		<div class="tablenav-pages"><?php echo $league->getPageLinks('matches') ?></div>
 <?php } ?>
-		
+
 <?php if ( $matches ) { ?>
 			<input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
 			<input_type="hidden" name="num_rubbers" value="<?php echo $league->num_rubbers ?>" />

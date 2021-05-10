@@ -1846,7 +1846,7 @@ class League {
      * @param array $league_id
      * @return boolean
      */
-    public function _rankTeams( $league_id ) {
+    public function _rankTeams( $league_id, $season = FALSE) {
 
         if ( isset($league_id) && !$league_id == 0 ) {
             $league = get_league( $league_id );
@@ -2021,7 +2021,7 @@ class League {
 
         // Update Teams Rank and Status if not set to manual ranking
         if ($this->team_ranking != 'manual')
-            $this->_rankTeams( $this->id );
+            $this->_rankTeams( $this->id, $season );
     }
 
     /**
@@ -2066,7 +2066,7 @@ class League {
                 }
 
                 // Update Teams Rank and Status
-                $this->_rankTeams( $this->id );
+                $this->_rankTeams( $this->id, $season );
 
             }
         }

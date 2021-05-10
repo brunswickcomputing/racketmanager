@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 * @author LaMonte Forthun
 * @author Paul Moffat
 * @package LeagueManager
-* @version 5.6.10
+* @version 5.6.11
 * @copyright 2008-2020
 * @license GPL-3
 */
@@ -49,7 +49,7 @@ class LeagueManager {
 	 *
 	 * @var string
 	 */
-	private $version = '5.6.10';
+	private $version = '5.6.11';
 
 	/**
 	 * database version

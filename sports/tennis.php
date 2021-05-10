@@ -167,16 +167,19 @@ class League_Tennis extends League {
 	 * @param array $points
 	 * @param int $team_id
 	 * @param array $rule
-     * @param array $matches
-     * @return array
+	 * @param array $matches
+   * @return array
 	 */
 	public function calculatePoints( $points, $team_id, $rule, $matches ) {
 		global $leaguemanager;
 
+debug_to_console("intennis:calculatePoints");
+debug_to_console($team_id);
 		extract($rule);
 		$data = $this->getStandingsData($team_id,array(),$matches);
 		$points['plus'] = $data['sets_won'] + $data['straight_set']['win'] * $forwin + $data['split_set']['win'] * $forwin_split + $data['split_set']['lost'] * $forloss_split + $data['sets_shared'] * $forshare;
 		$points['minus'] = $data['sets_allowed'] + $data['straight_set']['lost'] * $forwin + $data['split_set']['win'] * $forloss_split + $data['split_set']['lost'] * $forwin_split + $data['sets_shared'] * $forshare;
+debug_to_console($points);
 		return $points;
 	}
 
@@ -220,18 +223,20 @@ class League_Tennis extends League {
 	protected function getStandingsData( $team_id, $data = array(), $matches = false ) {
 		global $league;
 
-        $data['straight_set'] = $data['split_set'] = array( 'win' => 0, 'lost' => 0 );
+    $data['straight_set'] = $data['split_set'] = array( 'win' => 0, 'lost' => 0 );
 		$data['games_allowed'] = 0;
-        $data['games_won'] = 0;
-        $data['sets_won'] = 0;
-        $data['sets_allowed'] = 0;
+    $data['games_won'] = 0;
+    $data['sets_won'] = 0;
+    $data['sets_allowed'] = 0;
 		$data['sets_shared'] = 0;
 
 		$league = get_league($this->id);
 		$season = $league->getSeason();
-        if ( !$matches ) {
-            $matches = $league->getMatches( array("season" => $season, "team_id" => $team_id, "final" => '', "limit" => false, "cache" => false, "home_points" => 'not null', "away_points" => 'not null') );
-        }
+
+    if ( !$matches ) {
+        $matches = $league->getMatches( array("season" => $season, "team_id" => $team_id, "final" => '', "limit" => false, "cache" => false, "home_points" => 'not null', "away_points" => 'not null') );
+    }
+
 		foreach ( $matches AS $match ) {
 
             $index = ( $team_id == $match->home_team ) ? 'player2' : 'player1';
@@ -409,7 +414,6 @@ class League_Tennis extends League {
 		return $data;
 	}
 
-
 	/**
 	 * Filter match title for double matches
 	 *
@@ -418,8 +422,7 @@ class League_Tennis extends League {
 	 * @param string $title
 	 * @return string
 	 */
-	function matchTitle( $title, $match, $teams )
-	{
+	function matchTitle( $title, $match, $teams ) {
         if ( $match->home_team == -1 ) {
             $homeTeam = 'Bye';
 
@@ -541,6 +544,7 @@ class League_Tennis extends League {
      */
     protected function isTie( $team1, $team2 ) {
         // initialize results array
+
         $res = array('primary' => false, 'sets_diff' => false, 'games_diff' => false, 'sets_won' => false);
 
         if ( $team1->points['plus'] == $team2->points['plus'] )

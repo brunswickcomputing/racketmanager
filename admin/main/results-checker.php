@@ -27,7 +27,6 @@
             <th scope="col"><?php _e( 'Status', 'leaguemanager' ) ?></th>
             <th scope="col"><?php _e( 'Updated Date', 'leaguemanager' ) ?></th>
             <th scope="col"><?php _e( 'Updated User', 'leaguemanager' ) ?></th>
-            <th scope="col"></th>
 		</tr>
 		<tbody id="the-list">
 
@@ -50,8 +49,6 @@
             <td><?php echo $resultsChecker->status ?></td>
             <td><?php echo $resultsChecker->updated_date ?></td>
             <td><?php echo $resultsChecker->updated_user_name ?></td>
-            <?php do_action( 'matchtable_columns_'.$resultsChecker->league->sport, $resultsChecker->match ) ?>
-
         </tr>
     <?php } ?>
 		</tbody>

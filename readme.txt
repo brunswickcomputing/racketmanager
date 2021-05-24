@@ -51,6 +51,9 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 
 == Changelog ==
 
+= 5.6.12 =
+* BUGFIX: remove link from results checker
+
 = 5.6.11 =
 * BUGFIX: ensure result and standings updates use correct season
 

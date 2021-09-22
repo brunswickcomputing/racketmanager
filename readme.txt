@@ -51,6 +51,10 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 
 == Changelog ==
 
+= 5.6.13 =
+* BUGFIX: remove debug statement from tennis.php calculatepoints function
+* UPDATE: show winners of tournaments
+
 = 5.6.12 =
 * BUGFIX: remove link from results checker
 

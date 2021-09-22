@@ -173,13 +173,11 @@ class League_Tennis extends League {
 	public function calculatePoints( $points, $team_id, $rule, $matches ) {
 		global $leaguemanager;
 
-debug_to_console("intennis:calculatePoints");
-debug_to_console($team_id);
 		extract($rule);
 		$data = $this->getStandingsData($team_id,array(),$matches);
 		$points['plus'] = $data['sets_won'] + $data['straight_set']['win'] * $forwin + $data['split_set']['win'] * $forwin_split + $data['split_set']['lost'] * $forloss_split + $data['sets_shared'] * $forshare;
 		$points['minus'] = $data['sets_allowed'] + $data['straight_set']['lost'] * $forwin + $data['split_set']['win'] * $forloss_split + $data['split_set']['lost'] * $forwin_split + $data['sets_shared'] * $forshare;
-debug_to_console($points);
+
 		return $points;
 	}
 
@@ -192,24 +190,25 @@ debug_to_console($points);
 	protected function rankTeams( $teams ) {
 
 		foreach ( $teams AS $key => $team ) {
-            $team_sets_won = isset($team->sets_won) ? $team->sets_won : 0;
-            $team_sets_allowed = isset($team->sets_allowed) ? $team->sets_allowed : 0;
-            if ( !is_numeric($team_sets_won) ) $team_sets_won = 0;
-            if ( !is_numeric($team_sets_allowed) ) $team_sets_allowed = 0;
-            $team_games_won = isset($team->games_won) ? $team->games_won : 0;
-            $team_games_allowed = isset($team->games_allowed) ? $team->games_allowed : 0;
-            if ( !is_numeric($team_games_won) ) $team_games_won = 0;
-            if ( !is_numeric($team_games_allowed) ) $team_games_allowed = 0;
+      $team_sets_won = isset($team->sets_won) ? $team->sets_won : 0;
+      $team_sets_allowed = isset($team->sets_allowed) ? $team->sets_allowed : 0;
+      if ( !is_numeric($team_sets_won) ) { $team_sets_won = 0; }
+      if ( !is_numeric($team_sets_allowed) ) { $team_sets_allowed = 0; }
+      $team_games_won = isset($team->games_won) ? $team->games_won : 0 ;
+      $team_games_allowed = isset($team->games_allowed) ? $team->games_allowed : 0;
+      if ( !is_numeric($team_games_won) ) { $team_games_won = 0; }
+      if ( !is_numeric($team_games_allowed) ) { $team_games_allowed = 0; }
 			$points[$key] = $team->points['plus'];
 			$sets_diff[$key] = $team_sets_won - $team_sets_allowed;
 			$sets_won[$key] = $team_sets_won;
-            $sets_allowed[$key] = $team_sets_allowed;
+      $sets_allowed[$key] = $team_sets_allowed;
 			$games_diff[$key] = $team_games_won - $team_games_allowed;
-            $games_won[$key] = $team_games_won;
+      $games_won[$key] = $team_games_won;
 			$games_allowed[$key] = $team_games_allowed;
-            $title[$key] = $team->title;
+      $title[$key] = $team->title;
 		}
 		array_multisort( $points, SORT_DESC, $sets_diff, SORT_DESC, $games_diff, SORT_DESC, $sets_won, SORT_DESC, $sets_allowed, SORT_ASC, $games_won, SORT_DESC, $games_allowed, SORT_ASC, $title, SORT_ASC, $teams );
+
 		return $teams;
 	}
 
@@ -467,7 +466,7 @@ debug_to_console($points);
 	function displayMatchesColumns( $match ) {
         global $league;
 
-        if ( empty($league) ) $league = $match->league_id;
+        if ( empty($league) ) { $league = $match->league_id; };
         $league = get_league($league);
 
         if ( isset($league->num_rubbers) && $league->num_rubbers > 0 ) {
@@ -508,8 +507,8 @@ debug_to_console($points);
                 $rubbers = $match->getRubbers();
 
                 foreach ( $rubbers as $rubber) {
-                    if ( is_numeric($rubber->home_points) ) $score['home'] += intval($rubber->home_points);
-                    if ( is_numeric($rubber->away_points) ) $score['away'] += intval($rubber->away_points);
+                    if ( is_numeric($rubber->home_points) ) { $score['home'] += intval($rubber->home_points); }
+                    if ( is_numeric($rubber->away_points) ) { $score['away'] += intval($rubber->away_points); }
                 }
 
             } else {
@@ -547,24 +546,26 @@ debug_to_console($points);
 
         $res = array('primary' => false, 'sets_diff' => false, 'games_diff' => false, 'sets_won' => false);
 
-        if ( $team1->points['plus'] == $team2->points['plus'] )
+        if ( $team1->points['plus'] == $team2->points['plus'] ) {
             $res['primary'] = true;
-
-        if ( ($team1->sets_won - $team1->sets_allowed) == ($team2->sets_won - $team2->sets_allowed) )
+				}
+        if ( ($team1->sets_won - $team1->sets_allowed) == ($team2->sets_won - $team2->sets_allowed) ) {
             $res['sets_diff'] = true;
-
-        if ( ($team1->games_won - $team1->games_allowed) == ($team2->games_won - $team2->games_allowed) )
+				}
+        if ( ($team1->games_won - $team1->games_allowed) == ($team2->games_won - $team2->games_allowed) ) {
             $res['sets_diff'] = true;
-
-        if ( $team1->sets_won == $team2->sets_won )
+				}
+        if ( $team1->sets_won == $team2->sets_won ) {
             $res['sets_won'] = true;
+				}
 
         // get unique results
         $res = array_values(array_unique($res));
 
         // more than one results, i.e. not tied
-        if ( count($res) > 1 )
+        if ( count($res) > 1 ) {
             return false;
+				}
 
         return $res[0];
     }

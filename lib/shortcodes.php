@@ -21,7 +21,7 @@ class LeagueManagerShortcodes extends LeagueManager {
 	 */
 	public function __construct() {
 		add_shortcode( 'standings', array(&$this, 'showStandings') );
-    	add_shortcode( 'dailymatches', array(&$this, 'showDailyMatches') );
+    add_shortcode( 'dailymatches', array(&$this, 'showDailyMatches') );
 		add_shortcode( 'matches', array(&$this, 'showMatches') );
 		add_shortcode( 'match', array(&$this, 'showMatch') );
 		add_shortcode( 'championship', array(&$this, 'showChampionship') );
@@ -32,9 +32,10 @@ class LeagueManagerShortcodes extends LeagueManager {
 		add_shortcode( 'league', array(&$this, 'showLeague') );
 		add_shortcode( 'competition', array(&$this, 'showCompetition') );
 		add_shortcode( 'players', array(&$this, 'showPlayers') );
-    	add_shortcode( 'clubs', array(&$this, 'showClubs') );
-    	add_shortcode( 'club', array(&$this, 'showClub') );
-    	add_shortcode( 'tournament-entry', array(&$this, 'showTournamentEntry') );
+    add_shortcode( 'clubs', array(&$this, 'showClubs') );
+    add_shortcode( 'club', array(&$this, 'showClub') );
+    add_shortcode( 'tournament-entry', array(&$this, 'showTournamentEntry') );
+		add_shortcode( 'winners', array(&$this, 'showWinners') );
 	}
 
     /**
@@ -950,6 +951,61 @@ class LeagueManagerShortcodes extends LeagueManager {
         $filename = ( !empty($template) ) ? 'tournamententry-'.$template : 'tournamententry';
 
         $out = $this->loadTemplate( $filename, array( 'tournament' => $tournament, 'competitions' => $competitions, 'player' => $player, 'rosters' => $rosters, 'season' => $tournament->season, 'type' => $type, 'malePartners' => $malePartners, 'femalePartners' => $femalePartners ) );
+
+        return $out;
+    }
+
+		/**
+     * Function to display Tournament winner
+     *
+     *    [winners id=ID template=X]
+     *
+     * @param array $atts
+     * @return the content
+     */
+    public function showWinners( $atts ) {
+        global $leaguemanager;
+        extract(shortcode_atts(array(
+            'type' => '',
+						'tournament' => false,
+            'template' => '',
+        ), $atts ));
+
+				debug_to_console($type);
+				debug_to_console($tournament);
+				// get competition list
+				if ($type != "") {
+            $type = $type;
+        } elseif ( isset($_GET['type']) && !empty($_GET['type']) ) {
+            $type = htmlspecialchars(strip_tags($_GET['type']));
+        } elseif ( isset($wp->query_vars['type']) ) {
+            $type = get_query_var('type');
+        }
+        if ( !$type ) return _e('No tournament winners', 'leaguemanager');
+				$tournaments = $leaguemanager->getTournaments( $type );
+
+				if ($tournament != "") {
+            $tournament = $tournament;
+        } elseif ( isset($_GET['tournament']) && !empty($_GET['tournament']) ) {
+            $tournament = htmlspecialchars(strip_tags($_GET['tournament']));
+        } elseif ( isset($wp->query_vars['tournament']) ) {
+            $tournament = get_query_var('tournament');
+				}
+
+				if (!$tournament) {
+					$tournament = $tournaments[0];
+				} else {
+					$tournament = $leaguemanager->getTournament($tournament);
+        }
+
+				$winners = $leaguemanager->getWinners( $tournament->season, $type );
+
+				$filename = ( !empty($template) ) ? 'winners-'.$template : 'winners';
+
+        $out = $this->loadTemplate( $filename, array( 'winners' => $winners, 'tournaments' => $tournaments, 'curr_tournament' => $tournament->name) );
+
+        return $out;
+    }
 
         return $out;
     }

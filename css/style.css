@@ -357,6 +357,19 @@ div.tm-team-content .team-projectmanager {
 	position: relative;
 }
 
+#winners-list dd {
+    width: 30%;
+    float: left;
+}
+
+#winners-list dt {
+    width: 70%;
+}
+
+#winners-list dl {
+    overflow: hidden;
+    width: 100%;
+}
 /*
 * Club page
 */
@@ -968,7 +981,7 @@ form#signupform {
         height: 0;
         overflow: hidden;
     }
-    
+
     .embed-container iframe,
     .embed-container object,
     .embed-container embed {
@@ -978,26 +991,26 @@ form#signupform {
         width: 100%;
         height: 100%;
     }
-    
+
     img {
         max-width:100%;
         height:auto;
     }
-    
+
     img {
         -ms-interpolation-mode:bicubic;
     }
-    
+
 }
 @media only screen and (max-width: 640px) {
-    
+
     .wp_clubwrapper .fours-column, .wp_clubwrapper .threes-column, .wp_clubwrapper .twos-column {
         width: 100%;
     }
-    
+
 }
 @media only screen and (max-width: 480px) {
-    
+
     .form-group select[size] {
         width: 50%;
     }
@@ -1006,7 +1019,7 @@ form#signupform {
     }
 }
 @media only screen and (max-width: 320px) {
-    
+
 }
 
 /*  END OF MEDIA QUERIES */

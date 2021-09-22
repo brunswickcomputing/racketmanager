@@ -3,7 +3,7 @@
 Plugin Name: LeagueManager
 Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
 Description: Manage and present sports league results.
-Version: 5.6.12
+Version: 5.6.13
 Author: Paul Moffat, Kolja Schleich, LaMonte Forthun
 
 Copyright 2008-2020  Paul Moffat (email: paul@paarcs.com)
@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 * @author LaMonte Forthun
 * @author Paul Moffat
 * @package LeagueManager
-* @version 5.6.12
+* @version 5.6.13
 * @copyright 2008-2020
 * @license GPL-3
 */
@@ -49,7 +49,7 @@ class LeagueManager {
 	 *
 	 * @var string
 	 */
-	private $version = '5.6.12';
+	private $version = '5.6.13';
 
 	/**
 	 * database version
@@ -985,10 +985,14 @@ class LeagueManager {
      * @param string $search
      * @return array
      */
-    public function getTournaments( $offset=0, $limit=99999999 ) {
+    public function getTournaments( $type=false, $offset=0, $limit=99999999 ) {
         global $wpdb;
 
-        $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} ORDER BY `id` ASC LIMIT %d, %d",  intval($offset), intval($limit) );
+				if (!$type) {
+        	$sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} ORDER BY `id` ASC LIMIT %d, %d",  intval($offset), intval($limit) );
+				} else {
+					$sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} WHERE `type` = '%s'ORDER BY `id` ASC LIMIT %d, %d",  $type, intval($offset), intval($limit) );
+				}
 
         $tournaments = wp_cache_get( md5($sql), 'tournaments' );
         if ( !$tournaments ) {
@@ -1029,10 +1033,10 @@ class LeagueManager {
      * @param int $tournament_id
      * @return array
      */
-    public function getTournament( $tournament_id ) {
+    public function getTournament( $tournament_name ) {
         global $wpdb;
 
-        $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} WHERE `id` = '%d'",  intval($tournament_id) );
+        $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} WHERE `name` = '%s'",  $tournament_name );
 
         $tournament = wp_cache_get( md5($sql), 'tournaments' );
         if ( !$tournament ) {
@@ -1570,9 +1574,9 @@ class LeagueManager {
 		extract($args, EXTR_SKIP);
 
         $search_terms = array();
-		if ($player_id) {
-            $player = get_user_by( 'id', $player_id );
-		}
+				if ($player_id) {
+		            $player = get_user_by( 'id', $player_id );
+				}
 
         if ($fullname) {
             $player = get_user_by( 'slug', sanitize_title($fullname) );
@@ -1686,6 +1690,40 @@ class LeagueManager {
         }
 
         return $matches;
+    }
+
+		/**
+     * show winners
+     *
+     * @param string $season
+     * @param string $seasonType
+     * @return void
+     */
+    public function getWinners( $season, $seasonType ) {
+        global $leaguemanager, $wpdb;
+
+        $seasonType = $wpdb->esc_like(stripslashes($seasonType)).'%';
+
+        $sql = "SELECT l.`title` ,wt.`title` AS `winner` ,lt.`title` AS `loser` FROM {$wpdb->leaguemanager_matches} m, {$wpdb->leaguemanager} l, {$wpdb->leaguemanager_competitions} c, {$wpdb->leaguemanager_teams} wt, {$wpdb->leaguemanager_teams} lt WHERE `league_id` = l.`id` AND l.`competition_id` = c.`id` AND c.`competitiontype` = 'tournament' AND c.`name` like '%s' AND m.`final` = 'FINAL' AND m.`season` = '%d' AND m.`winner_id` = wt.`id` AND m.`loser_id` = lt.`id` order by 1";
+
+        $sql = $wpdb->prepare($sql, $seasonType, $season);
+        $winners = $wpdb->get_results($sql);
+
+        if ( !$winners ) return false;
+
+        $i = 0;
+        foreach ( $winners AS $winner ) {
+
+            $winners[$i] = (object)(array)$winner;
+            $winners[$i]->league = $winner->title;
+            $winners[$i]->winner = $winner->winner;
+            $winners[$i]->loser = $winner->loser;
+
+            $i++;
+        }
+
+        return $winners;
+
     }
 
     /**

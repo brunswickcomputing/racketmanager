@@ -892,10 +892,10 @@ final class LeagueManagerAdmin extends LeagueManager
         } else {
             $edit = false;
 
-            if ( isset( $_GET['tournament_id'] ) ) {
-                $tournamentId = $_GET['tournament_id'];
+            if ( isset( $_GET['tournament_name'] ) ) {
+                $tournamentName = $_GET['tournament_name'];
                 $edit = true;
-                $tournament = $leaguemanager->getTournament( $tournamentId );
+                $tournament = $leaguemanager->getTournament( $tournamentName );
 
                 $form_title = __( 'Edit Tournament', 'leaguemanager' );
                 $form_action = __( 'Update', 'leaguemanager' );

@@ -35,7 +35,7 @@
 					<input type="checkbox" value="<?php echo $tournament->id ?>" name="tournament[<?php echo $tournament->id ?>]" />
 				</th>
 				<td class="num"><?php echo $tournament->id ?></td>
-				<td><a href="admin.php?page=leaguemanager&amp;subpage=tournament&amp;tournament_id=<?php echo $tournament->id ?> "><?php echo $tournament->name ?></a></td>
+				<td><a href="admin.php?page=leaguemanager&amp;subpage=tournament&amp;tournament_name=<?php echo $tournament->name ?> "><?php echo $tournament->name ?></a></td>
                 <td><?php echo $tournament->type ?></td>
                 <td><?php echo $tournament->season ?></td>
                 <td><?php echo $tournament->venueName ?></td>

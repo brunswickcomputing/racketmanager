@@ -971,8 +971,6 @@ class LeagueManagerShortcodes extends LeagueManager {
             'template' => '',
         ), $atts ));
 
-				debug_to_console($type);
-				debug_to_console($tournament);
 				// get competition list
 				if ($type != "") {
             $type = $type;
@@ -1003,9 +1001,6 @@ class LeagueManagerShortcodes extends LeagueManager {
 				$filename = ( !empty($template) ) ? 'winners-'.$template : 'winners';
 
         $out = $this->loadTemplate( $filename, array( 'winners' => $winners, 'tournaments' => $tournaments, 'curr_tournament' => $tournament->name) );
-
-        return $out;
-    }
 
         return $out;
     }

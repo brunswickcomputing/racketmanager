@@ -3,7 +3,7 @@
 Plugin Name: LeagueManager
 Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
 Description: Manage and present sports league results.
-Version: 5.6.13
+Version: 5.6.14
 Author: Paul Moffat, Kolja Schleich, LaMonte Forthun
 
 Copyright 2008-2020  Paul Moffat (email: paul@paarcs.com)
@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 * @author LaMonte Forthun
 * @author Paul Moffat
 * @package LeagueManager
-* @version 5.6.13
+* @version 5.6.14
 * @copyright 2008-2020
 * @license GPL-3
 */
@@ -49,7 +49,7 @@ class LeagueManager {
 	 *
 	 * @var string
 	 */
-	private $version = '5.6.13';
+	private $version = '5.6.14';
 
 	/**
 	 * database version
@@ -989,9 +989,9 @@ class LeagueManager {
         global $wpdb;
 
 				if (!$type) {
-        	$sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} ORDER BY `id` ASC LIMIT %d, %d",  intval($offset), intval($limit) );
+        	$sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} ORDER BY `name` DESC LIMIT %d, %d",  intval($offset), intval($limit) );
 				} else {
-					$sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} WHERE `type` = '%s'ORDER BY `id` ASC LIMIT %d, %d",  $type, intval($offset), intval($limit) );
+					$sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->leaguemanager_tournaments} WHERE `type` = '%s'ORDER BY `name` DESC LIMIT %d, %d",  $type, intval($offset), intval($limit) );
 				}
 
         $tournaments = wp_cache_get( md5($sql), 'tournaments' );

@@ -7,10 +7,10 @@
         if (is_array($data) || is_object($data)) {
             if (is_array($data)) error_log('PHP: array');
                 else error_log('PHP: object');
-//            echo("<script>console.log('PHP: ".json_encode($data)."');</script>");
+            echo("<script>console.log('PHP: ".json_encode($data)."');</script>");
             error_log('PHP: "'.json_encode($data).'"');
         } else {
-//            echo("<script>console.log('PHP: ".$data."');</script>");
+            echo("<script>console.log('PHP: ".$data."');</script>");
             error_log('PHP: "'.$data.'"');
         }
     }

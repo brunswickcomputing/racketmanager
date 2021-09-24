@@ -51,6 +51,13 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 
 == Changelog ==
 
+= 5.6.14 =
+* BUGFIX: sort tournaments by descending name
+* BUGFIX: remove shortcode debug statements and extraneous return
+* BUGFIX: fix deletion of matches in league
+* BUGFIX: add debug logging to console
+* UPDATE: tidy up indentions in code
+
 = 5.6.13 =
 * BUGFIX: remove debug statement from tennis.php calculatepoints function
 * UPDATE: show winners of tournaments

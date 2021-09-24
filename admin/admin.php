@@ -545,7 +545,7 @@ final class LeagueManagerAdmin extends LeagueManager
 
             $tab = 0;
             $matchDay = false;
-            if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POST['doaction2']) && !isset($_POST['doaction-match_day']) )  {
+            if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POST['delmatches']) && !isset($_POST['doaction-match_day']) )  {
                 if ( 'team' == $_POST['updateLeague'] ) {
                     if ( current_user_can('edit_teams') ) {
                         check_admin_referer('leaguemanager_manage-teams');
@@ -602,8 +602,8 @@ final class LeagueManagerAdmin extends LeagueManager
                             foreach ( $_POST['match'] AS $i => $match_id ) {
                                 if ( isset($_POST['add_match'][$i]) || $_POST['away_team'][$i] != $_POST['home_team'][$i]  ) {
                                     $index = ( isset($_POST['mydatepicker'][$i]) ) ? $i : 0;
-									if (!isset($_POST['begin_hour'][$i])) $_POST['begin_hour'][$i] = 0;
-									if (!isset($_POST['begin_minutes'][$i])) $_POST['begin_minutes'][$i] = 0;
+																		if (!isset($_POST['begin_hour'][$i])) $_POST['begin_hour'][$i] = 0;
+																		if (!isset($_POST['begin_minutes'][$i])) $_POST['begin_minutes'][$i] = 0;
                                     $date = $_POST['mydatepicker'][$index].' '.intval($_POST['begin_hour'][$i]).':'.intval($_POST['begin_minutes'][$i]).':00';
                                     $match_day = ( isset($_POST['match_day'][$i]) ? $_POST['match_day'][$i] : (!empty($_POST['match_day']) ? intval($_POST['match_day']) : '' )) ;
                                     $custom = isset($_POST['custom']) ? $_POST['custom'][$i] : array();
@@ -660,16 +660,18 @@ final class LeagueManagerAdmin extends LeagueManager
                 }
 
                 $this->printMessage();
-            }  elseif ( isset($_POST['doaction']) || isset($_POST['doaction2']) ) {
-                if ( isset($_POST['doaction']) && $_POST['action'] == "delete" ) {
-                    if ( current_user_can('del_teams') ) {
-                        check_admin_referer('teams-bulk');
-                        foreach ( $_POST['team'] AS $team_id )
-                        $this->delTeamFromLeague( intval($team_id), intval($_GET['league_id']), $season );
-                    } else {
-                        $this->setMessage(__("You don't have permission to perform this task", 'leaguemanager'), true);
-                    }
-                } elseif ( isset($_POST['doaction2']) && $_POST['action2'] == "delete" ) {
+            }  elseif ( isset($_POST['doaction']) ) {
+								if ( $_POST['action'] == "delete" ) {
+										if ( current_user_can('del_teams') ) {
+												check_admin_referer('teams-bulk');
+												foreach ( $_POST['team'] AS $team_id )
+												$this->delTeamFromLeague( intval($team_id), intval($_GET['league_id']), $season );
+										} else {
+												$this->setMessage(__("You don't have permission to perform this task", 'leaguemanager'), true);
+										}
+								}
+						}  elseif ( isset($_POST['delmatches']) ) {
+                if ( $_POST['delMatchOption'] == "delete" ) {
                     if ( current_user_can('del_matches') ) {
                         check_admin_referer('matches-bulk');
                         foreach ( $_POST['match'] AS $match_id )
@@ -2004,8 +2006,6 @@ final class LeagueManagerAdmin extends LeagueManager
         $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_team_competition} WHERE `team_id` = '%d'", $team_id) );
         $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_teams} WHERE `id` = '%d'", $team_id) );
 
-        $this->setMessage( __('Team Deleted','leaguemanager') );
-
         return true;
 	}
 
@@ -2026,6 +2026,8 @@ final class LeagueManagerAdmin extends LeagueManager
         $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_rubbers} WHERE `match_id` in (select `id` from {$wpdb->leaguemanager_matches} WHERE `season` = '%d' AND `league_id` = '%d' AND (`home_team` = '%d' OR `away_team` = '%d'))", $season, $league_id, $team_id, $team_id) );
         $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_matches} WHERE `season` = '%d' AND `league_id` = '%d' AND (`home_team` = '%d' OR `away_team` = '%d')", $season, $league_id, $team_id, $team_id) );
         $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_table} WHERE `team_id` = '%d' AND `league_id` = '%d' and `season` = '%s'", $team_id, $league_id, $season) );
+
+				$this->setMessage( __('Team Deleted','leaguemanager') );
 
         return true;
 	}
@@ -2150,7 +2152,7 @@ final class LeagueManagerAdmin extends LeagueManager
 
         }
 
-		$this->setMessage( __('Team updated','leaguemanager') );
+				$this->setMessage( __('Team updated','leaguemanager') );
 
         return true;
 	}
@@ -2323,13 +2325,13 @@ final class LeagueManagerAdmin extends LeagueManager
         }
 
         $sql = "INSERT INTO {$wpdb->leaguemanager_matches} (date, home_team, away_team, match_day, location, league_id, season, final, custom, `group`) VALUES ('%s', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s')";
-		$wpdb->query ( $wpdb->prepare ( $sql, $date, $home_team, $away_team, $match_day, $location, $league_id, $season, $final, maybe_serialize($custom), $group ) );
-		$match_id = $wpdb->insert_id;
-		if ($num_rubbers > 1) {
-			for ($ix = 1; $ix <= $num_rubbers; $ix++) {
-				$rubber_id = $this->addRubber($date, $match_id, $ix, array());
-			}
-		}
+				$wpdb->query ( $wpdb->prepare ( $sql, $date, $home_team, $away_team, $match_day, $location, $league_id, $season, $final, maybe_serialize($custom), $group ) );
+				$match_id = $wpdb->insert_id;
+				if ($num_rubbers > 1) {
+					for ($ix = 1; $ix <= $num_rubbers; $ix++) {
+						$rubber_id = $this->addRubber($date, $match_id, $ix, array());
+					}
+				}
 
 		return $match_id;
 	}
@@ -2358,12 +2360,12 @@ final class LeagueManagerAdmin extends LeagueManager
         }
 
         $this->league_id = $league_id;
-		$home_points = (!isset($home_points)) ? 'NULL' : $home_points;
-		$away_points = (!isset($away_points)) ? 'NULL' : $away_points;
+				$home_points = (!isset($home_points)) ? 'NULL' : $home_points;
+				$away_points = (!isset($away_points)) ? 'NULL' : $away_points;
 
-		$match = $wpdb->get_results( $wpdb->prepare("SELECT `custom` FROM {$wpdb->leaguemanager_matches} WHERE `id` = '%d'", $match_id) );
-		$custom = (!empty($match) ? array_merge( (array)maybe_unserialize($match[0]->custom), $custom ) : '' );
-		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_matches} SET `date` = '%s', `home_team` = '%s', `away_team` = '%s', `match_day` = '%d', `location` = '%s', `league_id` = '%d', `group` = '%s', `final` = '%s', `custom` = '%s' WHERE `id` = %d", $date, $home_team, $away_team, $match_day, $location, $league_id, $group, $final, maybe_serialize($custom), $match_id ) );
+				$match = $wpdb->get_results( $wpdb->prepare("SELECT `custom` FROM {$wpdb->leaguemanager_matches} WHERE `id` = '%d'", $match_id) );
+				$custom = (!empty($match) ? array_merge( (array)maybe_unserialize($match[0]->custom), $custom ) : '' );
+				$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_matches} SET `date` = '%s', `home_team` = '%s', `away_team` = '%s', `match_day` = '%d', `location` = '%s', `league_id` = '%d', `group` = '%s', `final` = '%s', `custom` = '%s' WHERE `id` = %d", $date, $home_team, $away_team, $match_day, $location, $league_id, $group, $final, maybe_serialize($custom), $match_id ) );
 
         return true;
 	}
@@ -2383,7 +2385,7 @@ final class LeagueManagerAdmin extends LeagueManager
         }
 
         $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_rubbers} WHERE `match_id` = '%d'", $match_id) );
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_matches} WHERE `id` = '%d'", $match_id) );
+				$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_matches} WHERE `id` = '%d'", $match_id) );
 
         return true;
     }

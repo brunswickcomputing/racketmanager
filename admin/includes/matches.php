@@ -17,7 +17,7 @@
 </form>
 <?php } ?>
 
-<form id="competitions-filter" action="admin.php?page=leaguemanager&subpage=show-league&league_id=<?php echo $league->id ?>&season=<?php echo $season ?>" method="post">
+<form id="matches-filter" action="admin.php?page=leaguemanager&subpage=show-league&league_id=<?php echo $league->id ?>&season=<?php echo $season ?>" method="post">
 <?php wp_nonce_field( 'matches-bulk' ) ?>
 
 	<input type="hidden" name="current_match_day" value="<?php echo $matchDay ?>" />
@@ -27,11 +27,11 @@
 
     <div class="tablenav">
 		<!-- Bulk Actions -->
-		<select name="action2" size="1">
+		<select name="delMatchOption" size="1">
 			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
-			<option value="delete"><?php _e('Delete')?></option>
+			<option value="delete"><?php _e('Delete', 'leaguemanager')?></option>
 		</select>
-		<input type="submit" value="<?php _e('Apply'); ?>" name="doaction2" id="doaction2" class="button-secondary action" />
+		<input type='submit' name="delmatches" id="delmatches" class="button-secondary action" value='<?php _e( 'Apply' ) ?>' />
 
 <?php if ( !empty($league->current_season['num_match_days']) ) { ?>
 		<select size='1' name='match_day'>
@@ -55,7 +55,7 @@
 	<table class="widefat" summary="" title="<?php _e( 'Match Plan','leaguemanager' ) ?>" style="margin-bottom: 2em;">
 		<thead>
 			<tr>
-				<th scope="col" class="check-column"><input type="checkbox" onclick="Leaguemanager.checkAll(document.getElementById('competitions-filter'));" /></th>
+				<th scope="col" class="check-column"><input type="checkbox" onclick="Leaguemanager.checkAll(document.getElementById('matches-filter'));" /></th>
 				<th scope="col"><?php _e( 'ID', 'leaguemanager' ) ?></th>
 				<th scope="col"><?php _e( 'Date','leaguemanager' ) ?></th>
 <?php if ( !empty($league->groups) && $league->mode == 'championship' ) { ?>

@@ -7,7 +7,8 @@
 		<!-- Bulk Actions -->
 		<select name="action" size="1">
 			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
-            <option value="approve"><?php _e('Approve')?></option>
+      <option value="approve"><?php _e('Approve')?></option>
+			<option value="handle"><?php _e('Handle')?></option>
 			<option value="delete"><?php _e('Delete')?></option>
 		</select>
 		<input type="submit" value="<?php _e('Apply'); ?>" name="doResultsChecker" id="doResultsChecker" class="button-secondary action" />
@@ -18,15 +19,15 @@
 		<tr>
 			<th scope="col" class="check-column"><input type="checkbox" onclick="Leaguemanager.checkAll(document.getElementById('results-checker-filter'));" /></th>
 			<th scope="col" class="num">ID</th>
-            <th scope="col"><?php _e( 'Date', 'leaguemanager' ) ?></th>
+      <th scope="col"><?php _e( 'Date', 'leaguemanager' ) ?></th>
 			<th scope="col"><?php _e( 'League', 'leaguemanager' ) ?></th>
-            <th scope="col"><?php _e( 'Match', 'leaguemanager' ) ?></th>
-            <th scope="col"><?php _e( 'Team', 'leaguemanager' ) ?></th>
+      <th scope="col"><?php _e( 'Match', 'leaguemanager' ) ?></th>
+      <th scope="col"><?php _e( 'Team', 'leaguemanager' ) ?></th>
 			<th scope="col"><?php _e( 'Player', 'leaguemanager' ) ?></th>
 			<th scope="col"><?php _e( 'Description', 'leaguemanager' ) ?></th>
-            <th scope="col"><?php _e( 'Status', 'leaguemanager' ) ?></th>
-            <th scope="col"><?php _e( 'Updated Date', 'leaguemanager' ) ?></th>
-            <th scope="col"><?php _e( 'Updated User', 'leaguemanager' ) ?></th>
+      <th scope="col"><?php _e( 'Status', 'leaguemanager' ) ?></th>
+      <th scope="col"><?php _e( 'Updated Date', 'leaguemanager' ) ?></th>
+      <th scope="col"><?php _e( 'Updated User', 'leaguemanager' ) ?></th>
 		</tr>
 		<tbody id="the-list">
 

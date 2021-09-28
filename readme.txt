@@ -51,6 +51,11 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 
 == Changelog ==
 
+= 5.6.15 =
+* UPDATE: use common function for email send and use HTML format
+* UPDATE: add option to mark result checker entries as handled
+* UPDATE: sort result checker entries in descending order
+
 = 5.6.14 =
 * BUGFIX: sort tournaments by descending name
 * BUGFIX: remove shortcode debug statements and extraneous return

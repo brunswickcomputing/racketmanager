@@ -416,9 +416,11 @@ final class LeagueManagerAdmin extends LeagueManager
                     foreach ( $_POST['resultsChecker'] AS $i => $resultsChecker_id ) {
                         if ( $_POST['action'] == 'approve' ) {
                             $this->approveResultsChecker( intval($resultsChecker_id) );
-                        } elseif ( $_POST['action'] == 'delete' ) {
-                            $this->deleteResultsChecker( intval($resultsChecker_id) );
-                        }
+                        } elseif ( $_POST['action'] == 'handle' ) {
+                            $this->handleResultsChecker( intval($resultsChecker_id) );
+												} elseif ( $_POST['action'] == 'delete' ) {
+	                          $this->deleteResultsChecker( intval($resultsChecker_id) );
+	                      }
                     }
                 } else {
                     $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
@@ -3385,7 +3387,7 @@ final class LeagueManagerAdmin extends LeagueManager
 
         $sql = "SELECT `id`, `league_id`, `match_id`, `team_id`, `player_id`, `updated_date`, `updated_user`, `description`, `status` FROM {$wpdb->leaguemanager_results_checker} WHERE 1 = 1"  ;
 
-        $sql .= " ORDER BY `league_id` ASC, `match_id` ASC, `team_id` ASC, `player_id` ASC";
+        $sql .= " ORDER BY `match_id` DESC, `league_id` ASC, `team_id` ASC, `player_id` ASC";
 
         $resultsCheckers = wp_cache_get( md5($sql), 'resultsCheckers' );
         if ( !$resultsCheckers ) {
@@ -3410,6 +3412,8 @@ final class LeagueManagerAdmin extends LeagueManager
             }
             if  ( $resultsChecker->status == 1 ) {
                 $resultsChecker->status = 'Approved';
+						} elseif ( $resultsChecker->status == 2) {
+	              $resultsChecker->status = 'Handled';
             } else {
                 $resultsChecker->status = '';
             }
@@ -3450,6 +3454,24 @@ final class LeagueManagerAdmin extends LeagueManager
         if ( empty($resultsChecker->updated_date) ) {
             $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_results_checker} SET `updated_date` = now(), `updated_user` = %d, `status` = 1 WHERE `id` = %d ", get_current_user_id(), $resultsCheckerId ) );
             $leaguemanager->setMessage( __('Results checker approved', 'leaguemanager') );
+        }
+
+        return true;
+    }
+
+		/**
+     * handle Results Checker entry
+     *
+     * @param int $resultsCheckerId
+     * @return void
+     */
+    private function handleResultsChecker( $resultsCheckerId ) {
+        global $wpdb, $leaguemanager;
+
+        $resultsChecker = $this->getResultsCheckerEntry($resultsCheckerId);
+        if ( empty($resultsChecker->updated_date) ) {
+            $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_results_checker} SET `updated_date` = now(), `updated_user` = %d, `status` = 2 WHERE `id` = %d ", get_current_user_id(), $resultsCheckerId ) );
+            $leaguemanager->setMessage( __('Results checker updated', 'leaguemanager') );
         }
 
         return true;

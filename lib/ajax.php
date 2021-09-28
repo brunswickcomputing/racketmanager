@@ -829,7 +829,7 @@ class LeagueManagerAJAX extends LeagueManager {
                             $to = $options['resultConfirmationEmail'];
                             $subject = get_option('blogname')." Result Approval";
                             $message = "There is a new match result that needs approval.  Click <a href='".admin_url()."?page=leaguemanager&view=results'>here</a> to see the match result. ";
-                            wp_mail($to, $subject, $message);
+														$leaguemanager->lm_mail($to, $subject, $message);
                         }
                     }
                 } elseif ( $matchConfirmed == 'C' ) {
@@ -837,7 +837,7 @@ class LeagueManagerAJAX extends LeagueManager {
                         $to = $options['resultConfirmationEmail'];
                         $subject = get_option('blogname')." Result Challenge";
                         $message = "There is a new match result that has been challenged.  Click <a href='".admin_url()."?page=leaguemanager&view=results'>here</a> to see the match result. ";
-                        wp_mail($to, $subject, $message);
+												$leaguemanager->lm_mail($to, $subject, $message);
                     }
                 }
             } else {
@@ -1043,7 +1043,7 @@ class LeagueManagerAJAX extends LeagueManager {
                         $to = $options['rosterConfirmationEmail'];
                         $subject = get_option('blogname')." Player Request";
                         $message = "There is a new player request from ".get_club($affiliatedClub)->name." that needs approval.  Click <a href='".admin_url()."?page=leaguemanager&view=rosterRequest'>here</a> to see the request. ";
-                        wp_mail($to, $subject, $message);
+												$leaguemanager->lm_mail($to, $subject, $message);
                     }
                 }
 
@@ -1216,6 +1216,7 @@ class LeagueManagerAJAX extends LeagueManager {
             $playerName = $leaguemanager->getPlayerName($playerId);
             $playerRoster = $leaguemanager->getRoster(array('club' => $affiliatedclub, 'player' => $playerId));
             $playerRosterId = $playerRoster[0]->roster_id;
+						$affiliatedClubName = get_club($affiliatedclub)->name;
         }
         $competitions = isset($_POST['competition']) ? $_POST['competition'] : array();
         if ( empty($competitions) ) {
@@ -1250,7 +1251,7 @@ class LeagueManagerAJAX extends LeagueManager {
         if ( !$error ) {
             $emailTo = $tournamentSecretaryEmail;
             $emailSubject = get_option('blogname')." ".ucfirst($tournamentSeason)." ".$season." Tournament Entry";
-            $emailMessage = "<p>There is a new tournament entry.</p><ul><li>".$playerName."</li><li>".$contactNo."</li><li>".$contactEmail."</li></ul><p>The following events have been entered:</p><ul>";
+            $emailMessage = "<p>There is a new tournament entry.</p><ul><li>".$playerName."</li><li>".$affiliatedClubName."</li><li>".$contactNo."</li><li>".$contactEmail."</li></ul><p>The following events have been entered:</p><ul>";
             foreach ($competitions AS $competition) {
                 $partner = '';
                 $partnerName = '';
@@ -1290,7 +1291,7 @@ class LeagueManagerAJAX extends LeagueManager {
                 $emailMessage .= "</li>";
             }
             $emailMessage .= "</ul><p>The teams have been added to the relevant competitions.";
-            wp_mail($emailTo, $emailSubject, $emailMessage);
+            $leaguemanager->lm_mail($emailTo, $emailSubject, $emailMessage);
             $msg = __('Tournament entry complete', 'leaguemanager');
         } else {
             $msg = __('Errors in tournament entry form', 'leaguemanager');

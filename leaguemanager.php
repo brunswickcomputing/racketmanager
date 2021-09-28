@@ -3,7 +3,7 @@
 Plugin Name: LeagueManager
 Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
 Description: Manage and present sports league results.
-Version: 5.6.14
+Version: 5.6.15
 Author: Paul Moffat, Kolja Schleich, LaMonte Forthun
 
 Copyright 2008-2020  Paul Moffat (email: paul@paarcs.com)
@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 * @author LaMonte Forthun
 * @author Paul Moffat
 * @package LeagueManager
-* @version 5.6.14
+* @version 5.6.15
 * @copyright 2008-2020
 * @license GPL-3
 */
@@ -49,7 +49,7 @@ class LeagueManager {
 	 *
 	 * @var string
 	 */
-	private $version = '5.6.14';
+	private $version = '5.6.15';
 
 	/**
 	 * database version
@@ -1725,6 +1725,21 @@ class LeagueManager {
         return $winners;
 
     }
+
+		/**
+     * send mail
+     *
+     * @param string $to
+     * @param string $subject
+		 * @param string $message
+     * @return none
+     */
+		public function lm_mail($to, $subject, $message) {
+			$headers = array('Content-Type: text/html; charset=UTF-8');
+			wp_mail($to, $subject, $message, $headers);
+
+			return;
+		}
 
     /**
      * check if database column exists

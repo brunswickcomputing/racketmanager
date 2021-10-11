@@ -51,6 +51,9 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 
 == Changelog ==
 
+= 5.6.16 =
+* UPDATE: show latest results
+
 = 5.6.15 =
 * UPDATE: use common function for email send and use HTML format
 * UPDATE: add option to mark result checker entries as handled

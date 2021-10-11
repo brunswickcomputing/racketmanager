@@ -22,6 +22,7 @@ class LeagueManagerShortcodes extends LeagueManager {
 	public function __construct() {
 		add_shortcode( 'standings', array(&$this, 'showStandings') );
     add_shortcode( 'dailymatches', array(&$this, 'showDailyMatches') );
+		add_shortcode( 'latestresults', array(&$this, 'showLatestResults') );
 		add_shortcode( 'matches', array(&$this, 'showMatches') );
 		add_shortcode( 'match', array(&$this, 'showMatch') );
 		add_shortcode( 'championship', array(&$this, 'showChampionship') );
@@ -87,10 +88,55 @@ class LeagueManagerShortcodes extends LeagueManager {
 		return $out;
 	}
 
+	/**
+	 * Display Daily Matches
+	 *
+	 *    [dailymatches league_id="1" competition_id="1" match_date="dd/mm/yyyy" template="name"]
+	 *
+	 * - league_id is the ID of league (optional)
+	 * - competition_id is the ID of the competition (optional)
+	 * - season: display specific season (optional)
+	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
+	 * - template_type: this is only applicable to template='by_matchday', can be either empty or "accordion" or "tabs" to activitate jQuery accordion/tabs functionality
+	 *
+	 * @param array $atts shorcode attributes
+	 * @return string
+	 */
+	public function showDailyMatches( $atts ) {
+			global $leaguemanager, $wpdb;
+
+			extract(shortcode_atts(array(
+					'league_id' => 0,
+					'competition_id' => 0,
+					'competition_type' => 'league',
+					'template' => 'daily',
+					'match_date' => false,
+			), $atts ));
+
+			$matches = false;
+
+			$match_date = get_query_var('match_date');
+			if ( $match_date == '' ) {
+					if (isset($_GET['match_date'])) {
+							$match_date = $_GET['match_date'];
+					}
+			}
+			if ( $match_date == '' ) {
+					$match_date = date("Y-m-d");
+			}
+
+			$matches = $leaguemanager->getMatches( array('match_date' => $match_date, 'competition_type' => $competition_type) );
+
+			$filename = ( !empty($template) ) ? 'matches-'.$template : 'matches';
+
+			$out = $this->loadTemplate( $filename, array('matches' => $matches, 'match_date' => $match_date ) );
+			return $out;
+	}
+
     /**
-     * Display Daily Matches
+     * Display Latest Match results
      *
-     *    [dailymatches league_id="1" competition_id="1" match_date="dd/mm/yyyy" template="name"]
+     *    [latestresults league_id="1" competition_id="1" match_date="dd/mm/yyyy" template="name"]
      *
      * - league_id is the ID of league (optional)
      * - competition_id is the ID of the competition (optional)
@@ -101,34 +147,25 @@ class LeagueManagerShortcodes extends LeagueManager {
      * @param array $atts shorcode attributes
      * @return string
      */
-    public function showDailyMatches( $atts ) {
+    public function showLatestResults( $atts ) {
         global $leaguemanager, $wpdb;
 
         extract(shortcode_atts(array(
             'league_id' => 0,
             'competition_id' => 0,
             'competition_type' => 'league',
-            'template' => 'daily',
-            'match_date' => false,
+            'template' => 'results',
+            'days' => 7,
         ), $atts ));
 
         $matches = false;
 
-        $match_date = get_query_var('match_date');
-        if ( $match_date == '' ) {
-            if (isset($_GET['match_date'])) {
-                $match_date = $_GET['match_date'];
-            }
-        }
-        if ( $match_date == '' ) {
-            $match_date = date("Y-m-d");
-        }
-
-        $matches = $leaguemanager->getMatches( array('match_date' => $match_date, 'competition_type' => $competition_type) );
+				$time = 'latest';
+        $matches = $leaguemanager->getMatches( array('days' => $days, 'competition_type' => $competition_type, 'time' => 'latest', 'history' => $days) );
 
         $filename = ( !empty($template) ) ? 'matches-'.$template : 'matches';
 
-        $out = $this->loadTemplate( $filename, array('matches' => $matches, 'match_date' => $match_date ) );
+        $out = $this->loadTemplate( $filename, array('matches' => $matches ) );
         return $out;
     }
 

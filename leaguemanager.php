@@ -3,7 +3,7 @@
 Plugin Name: LeagueManager
 Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
 Description: Manage and present sports league results.
-Version: 5.6.15
+Version: 5.6.16
 Author: Paul Moffat, Kolja Schleich, LaMonte Forthun
 
 Copyright 2008-2020  Paul Moffat (email: paul@paarcs.com)
@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 * @author LaMonte Forthun
 * @author Paul Moffat
 * @package LeagueManager
-* @version 5.6.15
+* @version 5.6.16
 * @copyright 2008-2020
 * @license GPL-3
 */
@@ -49,7 +49,7 @@ class LeagueManager {
 	 *
 	 * @var string
 	 */
-	private $version = '5.6.15';
+	private $version = '5.6.16';
 
 	/**
 	 * database version
@@ -1650,7 +1650,7 @@ class LeagueManager {
     public function getMatches( $match_args ) {
         global $wpdb;
 
-        $defaults = array( 'league_id' => false, 'season' => false, 'orderby' => array("date" => "ASC", "id" => "ASC"), 'competition_id' => false, 'confirmed' => false, 'match_date' => false, 'competition_type' => false );
+        $defaults = array( 'league_id' => false, 'season' => false, 'orderby' => array("date" => "ASC", "id" => "ASC"), 'competition_id' => false, 'confirmed' => false, 'match_date' => false, 'competition_type' => false, 'time' => false, 'history' => false );
         $match_args = array_merge($defaults, (array)$match_args);
         extract($match_args, EXTR_SKIP);
 
@@ -1673,6 +1673,17 @@ class LeagueManager {
 
         if ( $confirmed ) {
             $sql .= " AND `confirmed` in ('P','A','C')";
+        }
+
+				// get only finished matches with score for time 'latest'
+        if ( $time == 'latest' ) {
+            $home_points = $away_points = false;
+            $sql .= " AND (`home_points` != '' OR `away_points` != '')";
+        }
+
+				// get only updated matches in specified period for history
+        if ( $history ) {
+            $sql .= " AND `updated` >= NOW() - INTERVAL ".$history." DAY";
         }
 
         $sql .= " ORDER BY `league_id` ASC";

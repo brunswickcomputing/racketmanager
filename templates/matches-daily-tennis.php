@@ -3,9 +3,9 @@
 Template page for the specific match date match table in tennis
 
 The following variables are usable:
-	
+
 	$matches: contains all matches for current league
-	
+
 	You can check the content of a variable when you insert the tag <?php var_dump($variable)
 */
     global $wp_query;
@@ -36,17 +36,25 @@ jQuery(document).ready(function($) {
     <?php if ( $matches ) { ?>
         <table class='leaguemanager matchtable' summary='' title='<?php echo __( 'Daily Match Plan', 'leaguemanager' ) ?>'>
             <thead>
-                <tr>
-                    <th class='match'><?php _e( 'Match', 'leaguemanager' ) ?></th>
-                </tr>
             </thead>
             <tbody>
-            <?php foreach ( $matches AS $match ) { ?>
+              <?php $leagueTitle = '';
+              foreach ( $matches AS $match ) {
+                if ( $match->league->title != $leagueTitle ) {
+                  echo "<tr><th class='league-title' colspan='2'>".$match->league->title."</th></tr>";
+                  $leagueTitle = $match->league->title; ?>
+                <?php } ?>
                 <tr class='<?php echo $match->class ?>'>
                     <td class='match'>
-                        <?php echo $match->league->title ?><br />
+                        <?php if ( $match->league->title != $leagueTitle ) {
+                          echo "<b>".$match->league->title."</b>";
+                          $leagueTitle = $match->league->title; ?><br />
+                        <?php } ?>
                         <?php echo $match->start_time." ".$match->location ?><br />
-                        <?php echo $match->match_title ?>
+                        <?php include('matches-title.php');
+                          echo $matchTitle;
+                        ?>
+                        <?php if ( isset($match->home_points) ) echo "<br />".$match->score ?>
                     </td>
                 </tr>
 

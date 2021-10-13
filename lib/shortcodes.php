@@ -156,14 +156,20 @@ class LeagueManagerShortcodes extends LeagueManager {
             'competition_type' => 'league',
             'template' => 'results',
             'days' => 7,
+						'affiliatedclub' => '',
         ), $atts ));
 
         $matches = false;
 
 				$time = 'latest';
-        $matches = $leaguemanager->getMatches( array('days' => $days, 'competition_type' => $competition_type, 'time' => 'latest', 'history' => $days) );
+        $matches = $leaguemanager->getMatches( array('days' => $days, 'competition_type' => $competition_type, 'time' => 'latest', 'history' => $days, 'affiliatedClub' => $affiliatedclub) );
 
-        $filename = ( !empty($template) ) ? 'matches-'.$template : 'matches';
+				if (empty($template))
+            $filename = 'matches';
+				elseif ( isset($league) && $this->checkTemplate('matches-'.$league->sport) )
+						$filename = 'matches-'.$league->sport;
+				else
+						$filename = 'matches-'.$template;
 
         $out = $this->loadTemplate( $filename, array('matches' => $matches ) );
         return $out;

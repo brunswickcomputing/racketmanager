@@ -3,10 +3,10 @@
 Plugin Name: LeagueManager
 Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
 Description: Manage and present sports league results.
-Version: 5.6.16
+Version: 5.6.17
 Author: Paul Moffat, Kolja Schleich, LaMonte Forthun
 
-Copyright 2008-2020  Paul Moffat (email: paul@paarcs.com)
+Copyright 2008-2021  Paul Moffat (email: paul@paarcs.com)
                     Kolja Schleich  (email : kolja.schleich@googlemail.com)
 					 LaMonte Forthun (email : lamontef@collegefundsoftware.com, lamontef@yahoo.com)
 
@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 * @author LaMonte Forthun
 * @author Paul Moffat
 * @package LeagueManager
-* @version 5.6.16
+* @version 5.6.17
 * @copyright 2008-2020
 * @license GPL-3
 */
@@ -49,7 +49,7 @@ class LeagueManager {
 	 *
 	 * @var string
 	 */
-	private $version = '5.6.16';
+	private $version = '5.6.17';
 
 	/**
 	 * database version
@@ -1650,7 +1650,7 @@ class LeagueManager {
     public function getMatches( $match_args ) {
         global $wpdb;
 
-        $defaults = array( 'league_id' => false, 'season' => false, 'orderby' => array("date" => "ASC", "id" => "ASC"), 'competition_id' => false, 'confirmed' => false, 'match_date' => false, 'competition_type' => false, 'time' => false, 'history' => false );
+        $defaults = array( 'league_id' => false, 'season' => false, 'orderby' => array("date" => "ASC", "id" => "ASC"), 'competition_id' => false, 'confirmed' => false, 'match_date' => false, 'competition_type' => false, 'time' => false, 'history' => false, 'affiliatedClub' => false );
         $match_args = array_merge($defaults, (array)$match_args);
         extract($match_args, EXTR_SKIP);
 
@@ -1684,6 +1684,10 @@ class LeagueManager {
 				// get only updated matches in specified period for history
         if ( $history ) {
             $sql .= " AND `updated` >= NOW() - INTERVAL ".$history." DAY";
+        }
+
+				if ( $affiliatedClub ) {
+            $sql .= " AND (`home_team` IN (SELECT `id` FROM {$wpdb->leaguemanager_teams} WHERE `affiliatedclub` = ".$affiliatedClub.") OR `away_team` IN (SELECT `id` FROM {$wpdb->leaguemanager_teams} WHERE `affiliatedclub` = ".$affiliatedClub."))";
         }
 
         $sql .= " ORDER BY `league_id` ASC";

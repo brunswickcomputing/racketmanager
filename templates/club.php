@@ -100,14 +100,23 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                         </form>
                     </div>
                 </div>
+            </div>
                 <script>
                 jQuery(document).ready(function() {
                                   // Accordion
                                        jQuery("#club-players").accordion({ header: "h3",active: false, collapsible: true, heightStyle: content });
                                   }); //end of document ready
                 </script>
-                <div id="club-players">
+                <details id="results">
+                  <summary>
+                    <h2 class="results-header"><?php _e( 'Latest results', 'leaguemanager' ) ?></h2>
+                  </summary>
+                  <?php leaguemanager_results( $club->id, array() ) ?>
+                </details>
+                <details id="club-players">
+                  <summary>
                     <h2 class="roster-header"><?php _e( 'Players', 'leaguemanager' ) ?></h2>
+                  </summary>
                 <?php if ( $userCanUpdateClub ) { ?>
                     <div id="rosterUpdate" class="">
                         <h3 class="header"><?php _e( 'Add player', 'leaguemanager' ) ?></h3>
@@ -260,170 +269,171 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                         </form>
                         <?php } ?>
                     </div>
-                </div>
+                </details>
                 <script>
                 jQuery(document).ready(function() {
                                   // Accordion
                                        jQuery("#club-teams").accordion({ header: "h3",active: false, collapsible: true, heightStyle: content });
                                   }); //end of document ready
                 </script>
-                <div id="club-teams" class="team">
-                    <?php $shortCode = $club->shortcode;
-                        $competitions = $leaguemanager->getCompetitions(array('type'=>'league'));
-                        $matchdays = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
-                        if ( $competitions ) { ?>
-                            <h2 class="teams-header"><?php _e( 'Teams', 'leaguemanager') ?></h2>
-                            <div class="competition-list jquery-ui-accordion">
-                        <?php foreach ($competitions AS $competition) {
-                            $competition = get_competition($competition->id);
-                            $teams = $competition->getTeamsInfo(array( 'affiliatedclub' => $club->id, 'orderby' => array("title" => "ASC") ));
-                            if ( $teams ) { ?>
-                                <div class="club-teams" id="competition-<?php echo $competition->id ?>">
-                                    <h3 class="header"><?php echo $competition->name ?></h3>
-                                    <div class="jquery-ui-tabs">
-                                        <ul class="tablist ui-tabs-nav">
-                                            <li><a href="#club-teams"><?php _e( 'Teams', 'leaguemanager') ?></a></li>
-                                            <li><a href="#club-players"><?php _e( 'Players', 'leaguemanager') ?></a></li>
-                                        </ul>
-                                        <div id="club-teams" class="jquery-ui-tab">
-                                            <?php foreach ($teams AS $team ) { ?>
-                                            <div class="team" id="<?php echo $team->title ?>">
-                                                <h4 class="title"><?php echo $team->title ?></h4>
-                                                <form id="team-update-<?php echo $competition->id ?>-<?php echo $team->id ?>-Frm" action="" method="post">
-                                                <?php wp_nonce_field( 'team-update' ) ?>
-                                                <input type="hidden" id="team_id" name="team_id" value="<?php echo $team->id ?>" />
-                                                <input type="hidden" id="competition_id" name="competition_id" value="<?php echo $competition->id ?>" />
-                                                <?php if ( !empty($team->captain) || $userCanUpdateClub ) { ?>
-                                                <div class="form-group">
-                                                            <label for "captain-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Captain', 'leaguemanager' ) ?></label>
-                                                            <div class="input">
-                                                                <input type="text" class="teamcaptain form-control" id="captain-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="captain-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->captain ?>" <?php disabled($userCanUpdateClub, false) ?> />
-                                                                <input type="hidden" id="captainId-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="captainId-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->captainId ?>" />
-                                                            </div>
-                                                </div>
-                                                <?php } ?>
-                                                <?php if ( is_user_logged_in() ) { ?>
-                                                    <?php if ( !empty($team->contactno) || $userCanUpdateClub ) { ?>
-                                                            <div class="form-group">
-                                                                <label for "contactno-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Contact Number', 'leaguemanager' ) ?></label>
-                                                                <div class="input">
-                                                                    <input type="tel" class="form-control" id="contactno-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="contactno-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->contactno ?>" <?php disabled($userCanUpdateClub, false) ?> />
-                                                                </div>
-                                                            </div>
-                                                    <?php } ?>
-                                                    <?php if ( !empty($team->contactemail) || $userCanUpdateClub ) { ?>
-                                                            <div class="form-group">
-                                                                <label for "contactemail-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Contact Email', 'leaguemanager' ) ?></label>
-                                                                <div class="input">
-                                                                    <input type="email" class="form-control" id="contactemail-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="contactemail-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->contactemail ?>" size="30" <?php disabled($userCanUpdateClub, false) ?> />
-                                                                </div>
-                                                            </div>
-                                                    <?php } ?>
-                                                <?php } ?>
-                                                <?php if ( !empty($team->match_day) ) { ?>
-                                                        <div class="form-group">
-                                                            <label for "match_day-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Match Day', 'leaguemanager' ) ?></label>
-                                                            <div class="input">
-                                                                <?php if ( $userCanUpdateClub ) { ?>
-                                                                <select size="1" name="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" id="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" >
-                                                                    <option><?php _e( 'Select match day' , 'leaguemanager') ?></option>
-                                                                    <?php foreach ( $matchdays AS $matchday ) { ?>
-                                                                    <option value="<?php echo $matchday ?>"<?php if(isset($team->match_day)) selected($matchday, $team->match_day ) ?> <?php disabled($userCanUpdateClub, false) ?>><?php echo $matchday ?></option>
-                                                                    <?php } ?>
-                                                                </select>
-                                                                <?php } else { ?>
-                                                                <input type="text" class="form-control" id="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->match_day ?>" <?php disabled($userCanUpdateClub, false) ?> />
-                                                                <?php } ?>
-                                                            </div>
-                                                        </div>
-                                                <?php } ?>
-                                                <?php if ( !empty($team->match_time) || $userCanUpdateClub ) { ?>
-                                                        <div class="form-group match-time">
-                                                            <label for "matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Match Time', 'leaguemanager' ) ?></label>
-                                                            <div class="input">
-                                                                <input type="time" class="form-control" id="matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->match_time ?>" size="30" <?php disabled($userCanUpdateClub, false) ?> />
-                                                            </div>
-                                                        </div>
-                                                <?php } ?>
-                                                <?php if ( $userCanUpdateClub ) { ?>
-                                                <button class="btn" type="button" id="teamUpdateSubmit-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="teamUpdateSubmit-<?php echo $competition->id ?>-<?php echo $team->id ?>" onclick="Leaguemanager.teamUpdate(this)">Update details</button>
-                                                <div class="updateResponse" id="updateTeamResponse-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="updateTeamResponse-<?php echo $competition->id ?>-<?php echo $team->id ?>"></div>
-                                                <?php } ?>
-                                                </form>
-                                            </div>
-                                        <?php  } ?>
-                                        </div>
-                                        <div id="club-players" class="jquery-ui-tab">
-                                            <?php $season = $competition->getSeasonCompetition(); ?>
-                                            <table class="playerstats" summary="" title="LeagueManager Player Stats">
-                                                <thead>
-                                                    <tr>
-                                                        <th rowspan="2" scope="col"><?php _e( 'Name', 'leaguemanager' ) ?></th>
-                                                        <th colspan="<?php echo $season['num_match_days'] ?>" scope="colgroup" class="colspan"><?php _e( 'Match Day', 'leaguemanager') ?></th>
-                                                    </tr>
-                                                    <tr>
-                                            <?php $matchdaystatsdummy = array();
-                                                for ( $day = 1; $day <= $season['num_match_days']; $day++ ) {
-                                                    $matchdaystatsdummy[$day] = array(); ?>
-                                                        <th scope="col" class="matchday"><?php echo $day ?></th>
-                                            <?php } ?>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="the-list">
-                                        <?php if ( $playerstats = $competition->getPlayerStats(array( 'season' => $season['name'], 'club' => $club->id ))  ) { $class = ''; ?>
-                                            <?php foreach ( $playerstats AS $playerstat ) { ?>
-                                                    <?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-                                                    <tr class="<?php echo $class ?>">
-                                                        <th class="playername"><?php echo $playerstat->fullname ?></th>
-                                                <?php $matchdaystats = $matchdaystatsdummy;
-                                                    $prevMatchDay = $i = 0;
-                                                    foreach ( $playerstat->matchdays AS $matches) {
-                                                        if ( !$prevMatchDay == $matches->match_day ) {
-                                                            $i = 0;
-                                                        }
-                                                        if ( $matches->match_winner == $matches->team_id ) {
-                                                            $matchresult = 'Won';
-                                                        } else {
-                                                            $matchresult = 'Lost';
-                                                        }
-                                                        $matchresult = $matches->match_winner == $matches->team_id ? 'Won' : 'Lost';
-                                                        $rubberresult = $matches->rubber_winner == $matches->team_id ? 'Won' : 'Lost';
-                                                        $matchdaystats[$matches->match_day][$i] = array('team' => $matches->team_title, 'pair' => $matches->rubber_number, 'matchresult' => $matchresult, 'rubberresult' => $rubberresult);
-                                                        $prevMatchDay = $matches->match_day;
-                                                        $i++;
-                                                    }
-                                                    foreach ( $matchdaystats AS $daystat ) {
-                                                        $dayshow = '';
-                                                        $title = '';
-                                                        foreach ( $daystat AS $stat ) {
-                                                            if ( isset($stat['team']) ) {
-                                                                $title        .= $matchresult.' match & '.$rubberresult.' rubber ';
-                                                                $team        = str_replace($shortCode,'',$stat['team']);
-                                                                $pair        = $stat['pair'];
-                                                                $dayshow    .= $team.'<br />Pair'.$pair.'<br />';
-                                                            }
-                                                        }
-                                                        if ( $dayshow == '' ) {
-                                                            echo '<td class="matchday" title=""></td>';
-                                                        } else {
-                                                            echo '<td class="matchday" title="'.$title.'">'.$dayshow.'</td>';
-                                                        }
-                                                    }
-                                                    $matchdaystats = $matchdaystatsdummy; ?>
-                                                    </tr>
-                                            <?php } ?>
-                                        <?php } ?>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php }
-                             } ?>
-                            </div>
-                        <?php } ?>
+<?php $shortCode = $club->shortcode;
+    $competitions = $leaguemanager->getCompetitions(array('type'=>'league'));
+    $matchdays = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
+    if ( $competitions ) { ?>
+                  <details id="club-teams">
+                    <summary>
+                      <h2 class="teams-header"><?php _e( 'Teams', 'leaguemanager') ?></h2>
+                    </summary>
+                    <div class="competition-list jquery-ui-accordion">
+              <?php foreach ($competitions AS $competition) {
+                  $competition = get_competition($competition->id);
+                  $teams = $competition->getTeamsInfo(array( 'affiliatedclub' => $club->id, 'orderby' => array("title" => "ASC") ));
+                  if ( $teams ) { ?>
+                      <div class="club-teams" id="competition-<?php echo $competition->id ?>">
+                          <h3 class="header"><?php echo $competition->name ?></h3>
+                          <div class="jquery-ui-tabs">
+                              <ul class="tablist ui-tabs-nav">
+                                  <li><a href="#club-teams"><?php _e( 'Teams', 'leaguemanager') ?></a></li>
+                                  <li><a href="#club-players"><?php _e( 'Players', 'leaguemanager') ?></a></li>
+                              </ul>
+                              <div id="club-teams" class="jquery-ui-tab">
+                                  <?php foreach ($teams AS $team ) { ?>
+                                  <div class="team" id="<?php echo $team->title ?>">
+                                      <h4 class="title"><?php echo $team->title ?></h4>
+                                      <form id="team-update-<?php echo $competition->id ?>-<?php echo $team->id ?>-Frm" action="" method="post">
+                                      <?php wp_nonce_field( 'team-update' ) ?>
+                                      <input type="hidden" id="team_id" name="team_id" value="<?php echo $team->id ?>" />
+                                      <input type="hidden" id="competition_id" name="competition_id" value="<?php echo $competition->id ?>" />
+                                      <?php if ( !empty($team->captain) || $userCanUpdateClub ) { ?>
+                                      <div class="form-group">
+                                                  <label for "captain-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Captain', 'leaguemanager' ) ?></label>
+                                                  <div class="input">
+                                                      <input type="text" class="teamcaptain form-control" id="captain-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="captain-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->captain ?>" <?php disabled($userCanUpdateClub, false) ?> />
+                                                      <input type="hidden" id="captainId-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="captainId-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->captainId ?>" />
+                                                  </div>
+                                      </div>
+                                      <?php } ?>
+                                      <?php if ( is_user_logged_in() ) { ?>
+                                          <?php if ( !empty($team->contactno) || $userCanUpdateClub ) { ?>
+                                                  <div class="form-group">
+                                                      <label for "contactno-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Contact Number', 'leaguemanager' ) ?></label>
+                                                      <div class="input">
+                                                          <input type="tel" class="form-control" id="contactno-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="contactno-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->contactno ?>" <?php disabled($userCanUpdateClub, false) ?> />
+                                                      </div>
+                                                  </div>
+                                          <?php } ?>
+                                          <?php if ( !empty($team->contactemail) || $userCanUpdateClub ) { ?>
+                                                  <div class="form-group">
+                                                      <label for "contactemail-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Contact Email', 'leaguemanager' ) ?></label>
+                                                      <div class="input">
+                                                          <input type="email" class="form-control" id="contactemail-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="contactemail-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->contactemail ?>" size="30" <?php disabled($userCanUpdateClub, false) ?> />
+                                                      </div>
+                                                  </div>
+                                          <?php } ?>
+                                      <?php } ?>
+                                      <?php if ( !empty($team->match_day) ) { ?>
+                                              <div class="form-group">
+                                                  <label for "match_day-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Match Day', 'leaguemanager' ) ?></label>
+                                                  <div class="input">
+                                                      <?php if ( $userCanUpdateClub ) { ?>
+                                                      <select size="1" name="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" id="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" >
+                                                          <option><?php _e( 'Select match day' , 'leaguemanager') ?></option>
+                                                          <?php foreach ( $matchdays AS $matchday ) { ?>
+                                                          <option value="<?php echo $matchday ?>"<?php if(isset($team->match_day)) selected($matchday, $team->match_day ) ?> <?php disabled($userCanUpdateClub, false) ?>><?php echo $matchday ?></option>
+                                                          <?php } ?>
+                                                      </select>
+                                                      <?php } else { ?>
+                                                      <input type="text" class="form-control" id="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->match_day ?>" <?php disabled($userCanUpdateClub, false) ?> />
+                                                      <?php } ?>
+                                                  </div>
+                                              </div>
+                                      <?php } ?>
+                                      <?php if ( !empty($team->match_time) || $userCanUpdateClub ) { ?>
+                                              <div class="form-group match-time">
+                                                  <label for "matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Match Time', 'leaguemanager' ) ?></label>
+                                                  <div class="input">
+                                                      <input type="time" class="form-control" id="matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->match_time ?>" size="30" <?php disabled($userCanUpdateClub, false) ?> />
+                                                  </div>
+                                              </div>
+                                      <?php } ?>
+                                      <?php if ( $userCanUpdateClub ) { ?>
+                                      <button class="btn" type="button" id="teamUpdateSubmit-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="teamUpdateSubmit-<?php echo $competition->id ?>-<?php echo $team->id ?>" onclick="Leaguemanager.teamUpdate(this)">Update details</button>
+                                      <div class="updateResponse" id="updateTeamResponse-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="updateTeamResponse-<?php echo $competition->id ?>-<?php echo $team->id ?>"></div>
+                                      <?php } ?>
+                                      </form>
+                                  </div>
+                              <?php  } ?>
+                              </div>
+                              <div id="club-players" class="jquery-ui-tab">
+                                  <?php $season = $competition->getSeasonCompetition(); ?>
+                                  <table class="playerstats" summary="" title="LeagueManager Player Stats">
+                                      <thead>
+                                          <tr>
+                                              <th rowspan="2" scope="col"><?php _e( 'Name', 'leaguemanager' ) ?></th>
+                                              <th colspan="<?php echo $season['num_match_days'] ?>" scope="colgroup" class="colspan"><?php _e( 'Match Day', 'leaguemanager') ?></th>
+                                          </tr>
+                                          <tr>
+                                  <?php $matchdaystatsdummy = array();
+                                      for ( $day = 1; $day <= $season['num_match_days']; $day++ ) {
+                                          $matchdaystatsdummy[$day] = array(); ?>
+                                              <th scope="col" class="matchday"><?php echo $day ?></th>
+                                  <?php } ?>
+                                          </tr>
+                                      </thead>
+                                      <tbody id="the-list">
+                              <?php if ( $playerstats = $competition->getPlayerStats(array( 'season' => $season['name'], 'club' => $club->id ))  ) { $class = ''; ?>
+                                  <?php foreach ( $playerstats AS $playerstat ) { ?>
+                                          <?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+                                          <tr class="<?php echo $class ?>">
+                                              <th class="playername"><?php echo $playerstat->fullname ?></th>
+                                      <?php $matchdaystats = $matchdaystatsdummy;
+                                          $prevMatchDay = $i = 0;
+                                          foreach ( $playerstat->matchdays AS $matches) {
+                                              if ( !$prevMatchDay == $matches->match_day ) {
+                                                  $i = 0;
+                                              }
+                                              if ( $matches->match_winner == $matches->team_id ) {
+                                                  $matchresult = 'Won';
+                                              } else {
+                                                  $matchresult = 'Lost';
+                                              }
+                                              $matchresult = $matches->match_winner == $matches->team_id ? 'Won' : 'Lost';
+                                              $rubberresult = $matches->rubber_winner == $matches->team_id ? 'Won' : 'Lost';
+                                              $matchdaystats[$matches->match_day][$i] = array('team' => $matches->team_title, 'pair' => $matches->rubber_number, 'matchresult' => $matchresult, 'rubberresult' => $rubberresult);
+                                              $prevMatchDay = $matches->match_day;
+                                              $i++;
+                                          }
+                                          foreach ( $matchdaystats AS $daystat ) {
+                                              $dayshow = '';
+                                              $title = '';
+                                              foreach ( $daystat AS $stat ) {
+                                                  if ( isset($stat['team']) ) {
+                                                      $title        .= $matchresult.' match & '.$rubberresult.' rubber ';
+                                                      $team        = str_replace($shortCode,'',$stat['team']);
+                                                      $pair        = $stat['pair'];
+                                                      $dayshow    .= $team.'<br />Pair'.$pair.'<br />';
+                                                  }
+                                              }
+                                              if ( $dayshow == '' ) {
+                                                  echo '<td class="matchday" title=""></td>';
+                                              } else {
+                                                  echo '<td class="matchday" title="'.$title.'">'.$dayshow.'</td>';
+                                              }
+                                          }
+                                          $matchdaystats = $matchdaystatsdummy; ?>
+                                          </tr>
+                                  <?php } ?>
+                              <?php } ?>
+                                      </tbody>
+                                  </table>
+                              </div>
+                          </div>
+                      </div>
+                  <?php }
+                   } ?>
                     </div>
-                </div>
+              <?php } ?>
+                </details>
                <?php $address = $club->address;
                    $latitude = $club->latitude;
                    $longitude = $club->longitude;
@@ -446,10 +456,5 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                 <?php } ?>
                 <div id="clubdesc">
 <!--                    <?php //echo $club->desc; ?> -->
-                <?php wp_link_pages( array(
-                                         'before' => '<div class="page-links">' . __( 'Pages:', 'leaguemanager' ),
-                                         'after'  => '</div>',
-                                         )
-                                  ); ?>
                 </div>
         </div><!-- .entry-content -->

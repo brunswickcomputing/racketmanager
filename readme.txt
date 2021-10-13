@@ -51,6 +51,9 @@ The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekami
 
 == Changelog ==
 
+= 5.6.17 =
+* UPDATE: show latest results on club page
+
 = 5.6.16 =
 * UPDATE: show latest results
 

@@ -918,4 +918,24 @@
         echo do_shortcode($shortcode);
     }
 
+    /**
+     * display results table
+     *
+     * @param int $club_id affilated Club id
+     * @param array $args associative array of parameters, see default values (optional)
+     * @category template-tags
+     */
+    function leaguemanager_results( $clubId, $args = array() ) {
+        global $leaguemanager;
+
+        $args['affiliatedclub'] = $clubId;
+        $args['days'] = 3;
+
+        $shortcode = "[latestresults";
+        foreach ($args AS $key => $value)
+            $shortcode .= " ".$key."='".$value."'";
+        $shortcode .= "]";
+        echo do_shortcode($shortcode);
+    }
+
 ?>

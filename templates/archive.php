@@ -56,12 +56,14 @@ if (hash == 'teams') tab = 3;
 <div id="leaguemanager_archive_selections" class="">
 	<form method="get" action="<?php echo get_permalink($postID); ?>" id="leaguemanager_archive">
 		<input type="hidden" name="page_id" value="<?php echo $postID ?>" />
+		<label for="league_id"><?php _e('League', 'leaguemanager') ?></label>
 		<select size="1" name="league_id" id="league_id">
 			<option value=""><?php _e( 'Select League', 'leaguemanager' ) ?></option>
             <?php foreach ( $leagues AS $l ) { ?>
 			<option value="<?php echo $l->title ?>"<?php if ( $l->id == $league->id ) echo ' selected="selected"' ?>><?php echo $l->title ?></option>
             <?php } ?>
 		</select>
+		<label for="season"><?php _e('Season', 'leaguemanager') ?></label>
 		<select size="1" name="season" id="season">
 			<option value=""><?php _e( 'Season', 'leaguemanager' ) ?></option>
             <?php foreach ( $seasons AS $key => $season ) { ?>
@@ -87,31 +89,31 @@ if (hash == 'teams') tab = 3;
 		
 			<!-- Standings Table -->
 			<div id="standings-archive" class="jquery-ui-tab">
-				<h4 class="header"><?php _e('Standings', 'leaguemanager') ?></h4>
+				<h3 class="header"><?php _e('Standings', 'leaguemanager') ?></h3>
 				<?php leaguemanager_standings( 0, array('season' => get_current_season(), 'template' => get_league_template('standingstable')) ) ?>
 			</div>
 			
 			<!-- Crosstable -->
 			<div id="crosstable-archive" class="jquery-ui-tab">
-				<h4 class="header"><?php _e('Crosstable', 'leaguemanager') ?></h4>
+				<h3 class="header"><?php _e('Crosstable', 'leaguemanager') ?></h3>
 				<?php leaguemanager_crosstable( 0, array('season' => get_current_season(), 'template' => get_league_template('crosstable')) ) ?>
 			</div>
 			
 			<!-- Match Overview -->
 			<div id="matches-archive" class="jquery-ui-tab">
-				<h4 class="header"><?php _e('Matches', 'leaguemanager') ?></h4>
+				<h3 class="header"><?php _e('Matches', 'leaguemanager') ?></h3>
 				<?php leaguemanager_matches( 0, array('season' => get_current_season(), 'match_day' => 'current', 'show_match_day_selection' => 'true', 'template' => get_league_template('matches'), 'template_type' => get_match_template_type()) ) ?>
 			</div>
 
 			<!-- Teamlist -->
 			<div id="teams-archive" class="jquery-ui-tab">
-				<h4 class="header"><?php _e('Teams', 'leaguemanager') ?></h4>
+				<h3 class="header"><?php _e('Teams', 'leaguemanager') ?></h3>
 				<?php leaguemanager_teams( 0, array('season' => get_current_season(), 'template' => get_league_template('teams')) ) ?>
 			</div>
 
 			<!-- Players -->
 			<div id="players-archive" class="jquery-ui-tab">
-				<h4 class="header"><?php _e('Players', 'leaguemanager') ?></h4>
+				<h3 class="header"><?php _e('Players', 'leaguemanager') ?></h3>
 				<?php leaguemanager_players( 0, array('season' => get_current_season()) ) ?>
 			</div>
 		</div>

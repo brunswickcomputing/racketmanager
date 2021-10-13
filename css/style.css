@@ -790,6 +790,10 @@ h2.teams-header {
 #clubdesc {
     padding: 10px;
 }
+h2.results-header {
+    font-size: 1.65em;
+    margin-bottom: 10px;
+}
 .club-thumb {
     float:  left;
 }
@@ -832,6 +836,12 @@ form#rosterRequestFrm input[type="text"], form#rosterRequestFrm input[type="numb
 }
 #TB_window {
     overflow: scroll;
+}
+summary {
+    cursor: pointer;
+}
+summary > * {
+    display: list-item;
 }
 .leaguemanager-svg-icon {
     width: 1.2em;

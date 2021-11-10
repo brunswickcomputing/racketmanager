@@ -3,11 +3,11 @@
 Template page for the Archive
 
 The following variables are usable:
-	
+
 	$leagues: array of all leagues
 	$league: current league
 	$seasons: array of all seasons
- 
+
 	You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
 */
 global $wp_query;
@@ -52,18 +52,16 @@ if (hash == 'teams') tab = 3;
 															});
 						   });
 </script>
-<h2><?php printf("%s &mdash; %s %s", $league->title, __('Season', 'leaguemanager'), $league->current_season['name']); ?></h2>
+<h1><?php printf("%s &mdash; %s %s", $league->title, __('Season', 'leaguemanager'), $league->current_season['name']); ?></h1>
 <div id="leaguemanager_archive_selections" class="">
 	<form method="get" action="<?php echo get_permalink($postID); ?>" id="leaguemanager_archive">
 		<input type="hidden" name="page_id" value="<?php echo $postID ?>" />
-		<label for="league_id"><?php _e('League', 'leaguemanager') ?></label>
 		<select size="1" name="league_id" id="league_id">
 			<option value=""><?php _e( 'Select League', 'leaguemanager' ) ?></option>
             <?php foreach ( $leagues AS $l ) { ?>
 			<option value="<?php echo $l->title ?>"<?php if ( $l->id == $league->id ) echo ' selected="selected"' ?>><?php echo $l->title ?></option>
             <?php } ?>
 		</select>
-		<label for="season"><?php _e('Season', 'leaguemanager') ?></label>
 		<select size="1" name="season" id="season">
 			<option value=""><?php _e( 'Season', 'leaguemanager' ) ?></option>
             <?php foreach ( $seasons AS $key => $season ) { ?>
@@ -86,19 +84,19 @@ if (hash == 'teams') tab = 3;
 				<li><a href="#teams-archive"><?php _e( 'Teams', 'leaguemanager' ) ?></a></li>
 				<li><a href="#players-archive"><?php _e( 'Players', 'leaguemanager' ) ?></a></li>
 			</ul>
-		
+
 			<!-- Standings Table -->
 			<div id="standings-archive" class="jquery-ui-tab">
 				<h3 class="header"><?php _e('Standings', 'leaguemanager') ?></h3>
 				<?php leaguemanager_standings( 0, array('season' => get_current_season(), 'template' => get_league_template('standingstable')) ) ?>
 			</div>
-			
+
 			<!-- Crosstable -->
 			<div id="crosstable-archive" class="jquery-ui-tab">
 				<h3 class="header"><?php _e('Crosstable', 'leaguemanager') ?></h3>
 				<?php leaguemanager_crosstable( 0, array('season' => get_current_season(), 'template' => get_league_template('crosstable')) ) ?>
 			</div>
-			
+
 			<!-- Match Overview -->
 			<div id="matches-archive" class="jquery-ui-tab">
 				<h3 class="header"><?php _e('Matches', 'leaguemanager') ?></h3>

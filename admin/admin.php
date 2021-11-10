@@ -1365,7 +1365,7 @@ final class LeagueManagerAdmin extends LeagueManager
      * @return boolean
      */
     private function addCompetition( $name, $num_rubbers, $num_sets, $type, $mode, $entryType ) {
-        global $wpdb;
+        global $wpdb, $leaguemanager;
 
         if ( !current_user_can('edit_leagues') ) {
             $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
@@ -1405,12 +1405,40 @@ final class LeagueManagerAdmin extends LeagueManager
         $competition_id = $wpdb->insert_id;
         $competition = get_competition( $competition_id );
 
+				$this->createCompetitionPages($competition_id, $name);
+
         $this->setMessage( __('Competition added', 'leaguemanager') );
 
         return true;
     }
 
+		private function createCompetitionPages( $competitionId, $competitionName ) {
 
+				$pageContent = "[competition id=".$competitionId."]";
+				$title = $competitionName.' '.__('Tables', 'leaguemanager');
+
+				$this->createCompetitionPage($pageContent, $title);
+
+				$pageContent = "[leaguearchive competition id=".$competitionId."]";
+				$title = $competitionName;
+
+				$this->createCompetitionPage($pageContent, $title);
+
+		}
+
+		private function createCompetitionPage( $content, $title ) {
+
+				$page_definition = array(
+						$title => array(
+            'title' => $title,
+            'page_template' => 'No Title',
+            'content' => $content
+          )
+	      );
+
+				$this->addLeagueManagerPage($page_definition);
+
+		}
 
     /**
      * edit Competition
@@ -1482,9 +1510,29 @@ final class LeagueManagerAdmin extends LeagueManager
         $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_competitions_seasons} WHERE `competition_id` = '%d'", $competition_id) );
         $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_competitions} WHERE `id` = '%d'", $competition_id) );
 
+				$this->deleteCompetitionPages($competition->name);
+
         $this->setMessage( __('Competition deleted', 'leaguemanager') );
         return true;
     }
+
+		/**
+     * delete all Competition Pages
+     *
+     * @pageName string $competitionName
+     * @return none
+     */
+		private function deleteCompetitionPages( $competitionName ) {
+
+			$title = $competitionName.' '.__('Tables', 'leaguemanager');
+			$pageName = sanitize_title_with_dashes($title);
+			$this->deleteLeaguemanagerPage($pageName);
+
+			$title = $competitionName;
+			$pageName = sanitize_title_with_dashes($title);
+			$this->deleteLeaguemanagerPage($pageName);
+
+		}
 
     /**
      * add new Season

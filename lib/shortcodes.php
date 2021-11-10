@@ -199,8 +199,8 @@ class LeagueManagerShortcodes extends LeagueManager {
 			'league_id' => 0,
 			'league_name' => '',
 			'team' => 0,
-			'template' => '',
-            'template_type' => 'tabs',
+			'template' => 'daily',
+      'template_type' => 'tabs',
 			'mode' => '',
 			'season' => '',
 			'limit' => 'true',
@@ -218,7 +218,9 @@ class LeagueManagerShortcodes extends LeagueManager {
 
         $league = $this->getleague($league_id);
 
-        $league->setTemplate('matches', $template);
+        if ( !$league ) return; 
+
+				$league->setTemplate('matches', $template);
 
         // Always disable match day in template to show matches by matchday
         if ( in_array($template, array("by_matchday")) || !empty($time) )

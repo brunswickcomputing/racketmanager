@@ -3,7 +3,7 @@
 Plugin Name: LeagueManager
 Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
 Description: Manage and present sports league results.
-Version: 5.6.17
+Version: 5.6.18
 Author: Paul Moffat, Kolja Schleich, LaMonte Forthun
 
 Copyright 2008-2021  Paul Moffat (email: paul@paarcs.com)
@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 * @author LaMonte Forthun
 * @author Paul Moffat
 * @package LeagueManager
-* @version 5.6.17
+* @version 5.6.18
 * @copyright 2008-2020
 * @license GPL-3
 */
@@ -49,7 +49,7 @@ class LeagueManager {
 	 *
 	 * @var string
 	 */
-	private $version = '5.6.17';
+	private $version = '5.6.18';
 
 	/**
 	 * database version
@@ -57,6 +57,11 @@ class LeagueManager {
 	 * @var string
 	 */
 	private $dbversion = '5.6.10';
+
+	/**
+	 * The array of templates that this plugin tracks.
+	 */
+	protected $templates;
 
 	/**
 	 * constructor
@@ -76,10 +81,11 @@ class LeagueManager {
 
 		register_activation_hook(__FILE__, array(&$this, 'activate') );
 
-		if (function_exists('register_uninstall_hook'))
+		if (function_exists('register_uninstall_hook')) {
 			register_uninstall_hook(__FILE__, array('LeagueManagerLoader', 'uninstall'));
+		}
 
-        add_action( 'widgets_init', array(&$this, 'registerWidget') );
+    add_action( 'widgets_init', array(&$this, 'registerWidget') );
 
 		add_action('wp_enqueue_scripts', array(&$this, 'loadStyles'), 5 );
 		add_action('wp_enqueue_scripts', array(&$this, 'loadScripts') );
@@ -87,40 +93,122 @@ class LeagueManager {
 		// Add TinyMCE Button
 		add_action( 'init', array(&$this, 'addTinyMCEButton') );
 
-        // register AJAX action to show TinyMCE Window
+    // register AJAX action to show TinyMCE Window
 		add_action( 'wp_ajax_leaguemanager_tinymce_window', array(&$this, 'showTinyMCEWindow') );
 
-        add_action( 'wp_loaded', array(&$this, 'add_my_templates') );
+    add_action( 'wp_loaded', array(&$this, 'add_leaguemanager_templates') );
 
-        add_filter( 'wp_privacy_personal_data_exporters', array(&$this, 'register_privacy_data_exporter') );
+    add_filter( 'wp_privacy_personal_data_exporters', array(&$this, 'register_privacy_data_exporter') );
+
 	}
 
-    public function get_my_template( $template ) {
-        $post = get_post();
-        $page_template = get_post_meta( $post->ID, '_wp_page_template', true );
-        if( $page_template == 'templates/template_notitle.php' ){
-            return plugin_dir_path(__FILE__) . "templates/template_notitle.php";
-        }
-        if( $page_template == 'templates/template_member_account.php' ){
-            return plugin_dir_path(__FILE__) . "templates/template_member_account.php";
-        }
-        return $template;
+    public function add_leaguemanager_templates() {
+			// Add your templates to this array.
+			$this->templates = array(
+				'templates/template_notitle.php' => 'No Title',
+				'templates/template_member_account.php' => 'Member Account'
+			);
+
+			// Add a filter to the wp 4.7 version attributes metabox
+			add_filter( 'theme_page_templates', array( $this, 'leaguemanager_templates_as_option' ) );
+
+			// Add a filter to the save post to inject our template into the page cache
+			add_filter( 'wp_insert_post_data', array( $this, 'leaguemanager_post_templates' ) );
+
+			// Add a filter to the template include to determine if the page has our
+			// template assigned and return it's path
+			add_filter(	'template_include',	array( $this, 'leaguemanager_load_template') );
+
+			add_filter( 'archive_template', array( $this, 'leaguemanager_archive_template') );
+
     }
 
-    public function filter_admin_page_templates( $templates ) {
-        $templates['templates/template_notitle.php'] = __('No Title');
-        $templates['templates/template_member_account.php'] = __('Member Account');
-        return $templates;
-    }
+		/**
+		 * Adds our templates to the page dropdown
+		 *
+		 */
+		public function leaguemanager_templates_as_option( $posts_templates ) {
+			$posts_templates = array_merge( $posts_templates, $this->templates );
+			return $posts_templates;
+		}
 
-    public function add_my_templates() {
-        if( is_admin() ) {
-            add_filter( 'theme_page_templates', array(&$this, 'filter_admin_page_templates') );
-        }
-        else {
-            add_filter( 'page_template', array(&$this, 'get_my_template') );
-        }
-    }
+		/**
+		 * Adds our templates to the pages cache in order to trick WordPress
+		 * into thinking the template file exists where it doens't really exist.
+		 */
+		public function leaguemanager_post_templates( $atts ) {
+
+			// Create the key used for the themes cache
+			$cache_key = 'page_templates-' . md5( get_theme_root() . '/' . get_stylesheet() );
+
+			// Retrieve the cache list.
+			// If it doesn't exist, or it's empty prepare an array
+			$pageTemplates = wp_get_theme()->get_page_templates();
+			if ( empty( $pageTemplates ) ) {
+				$pageTemplates = array();
+			}
+
+			// New cache, therefore remove the old one
+			wp_cache_delete( $cache_key , 'themes');
+
+			// Now add our template to the list of templates by merging our templates
+			// with the existing templates array from the cache.
+			$pageTemplates = array_merge( $pageTemplates, $this->templates );
+
+			// Add the modified cache to allow WordPress to pick it up for listing
+			// available templates
+			wp_cache_add( $cache_key, $pageTemplates, 'themes', 1800 );
+
+			return $atts;
+
+		}
+
+		/**
+		 * Checks if the template is assigned to the page
+		 */
+		public function leaguemanager_load_template( $template ) {
+
+			// Get global post
+			global $post;
+
+			// Return template if post is empty
+			if ( ! $post ) {
+				return $template;
+			}
+
+			// Return default template if we don't have a custom one defined
+			if ( ! isset( $this->templates[get_post_meta($post->ID, '_wp_page_template', true)] ) ) {
+				return $template;
+			}
+
+			$file = plugin_dir_path( __FILE__ ). get_post_meta($post->ID, '_wp_page_template', true);
+
+			// Just to be safe, we check if the file exist first
+			if ( file_exists( $file ) ) {
+				return $file;
+			} else {
+				echo $file;
+			}
+
+			// Return template
+			return $template;
+
+		}
+
+		/**
+		 * load specific archive templates
+		 */
+		public function leaguemanager_archive_template( $template ) {
+			global $post;
+
+			debug_to_console("check archive template");
+			debug_to_console(is_category('rules'));
+			if ( is_category('rules') ) {
+				debug_to_console("use rules archive template");
+				$template = plugin_dir_path( __FILE__ ).'templates/pages/category-rules.php';
+			}
+			return $template;
+		}
 
     public function leaguemanager_privacy_exporter( $email_address, $page = 1 ) {
         $number = 500; // Limit us to avoid timing out
@@ -445,9 +533,9 @@ class LeagueManager {
 	 * @param array
 	 */
     public function addTinyMCEPlugin( $plugin_array ) {
-		$plugin_array['LeagueManager'] = LEAGUEMANAGER_URL.'/admin/tinymce/editor_plugin.js';
-		return $plugin_array;
-	}
+			$plugin_array['LeagueManager'] = LEAGUEMANAGER_URL.'/admin/tinymce/editor_plugin.js';
+			return $plugin_array;
+		}
 
 	/**
 	 * register TinyMCE Button
@@ -526,65 +614,146 @@ class LeagueManager {
             // old rules
             $role->add_cap('leaguemanager');
             $role->add_cap('league_manager');
-	}
+		}
 
 		$role = get_role('editor');
 		if ( $role !== null ) {
 			$role->add_cap('league_manager');
 		}
-        $this->create_login_pages();
+
+		$this->add_pages();
 
 		$this->install();
-    }
+  }
+
+	public function add_pages() {
+			$this->create_login_pages();
+			$this->create_basic_pages();
+	}
 
     /**
      * Create login pages
      */
     public function create_login_pages() {
-        // Information needed for creating the plugin's pages
+        // Information needed for creating the plugin's login/account pages
         $page_definitions = array(
                                   'member-login' => array(
                                                           'title' => __( 'Sign In', 'leaguemanager' ),
-                                                          'page_template' => 'notitle',
+                                                          'page_template' => 'No title',
                                                           'content' => '[custom-login-form]'
                                                           ),
                                   'member-account' => array(
                                                             'title' => __( 'Your Account', 'leaguemanager' ),
-                                                            'page_template' => 'member_account',
+                                                            'page_template' => 'Member account',
                                                             'content' => '[account-info]'
                                                             ),
                                   'member-password-lost' => array(
                                                                   'title' => __( 'Forgot Your Password?', 'leaguemanager' ),
-                                                                  'page_template' => 'notitle',
+                                                                  'page_template' => 'No title',
                                                                   'content' => '[custom-password-lost-form]'
                                                                   ),
                                   'member-password-reset' => array(
                                                                    'title' => __( 'Pick a New Password', 'leaguemanager' ),
-                                                                   'page_template' => 'notitle',
+                                                                   'page_template' => 'No title',
                                                                    'content' => '[custom-password-reset-form]'
                                                                    )
                                   );
+					$this->addLeagueManagerPage($page_definitions);
+		}
 
-        foreach ( $page_definitions as $slug => $page ) {
-            // Check that the page doesn't exist already
-            $query = new WP_Query( 'pagename=' . $slug );
-            if ( ! $query->have_posts() ) {
-                // Add the page using the data from the array above
-                wp_insert_post(
-                               array(
-                                     'post_content'   => $page['content'],
-                                     'post_name'      => $slug,
-                                     'post_title'     => $page['title'],
-                                     'post_status'    => 'publish',
-                                     'post_type'      => 'page',
-                                     'ping_status'    => 'closed',
-                                     'comment_status' => 'closed',
-                                     'page_template' => $page_template,
-                                     )
-                               );
-            }
+		/**
+     * Create basic pages
+     */
+    public function create_basic_pages() {
+        // Information needed for creating the plugin's basic pages
+        $page_definitions = array(
+	        'daily-matches-page' => array(
+            'title' => __( 'Daily Matches', 'leaguemanager' ),
+            'page_template' => 'No title',
+            'content' => '[dailymatches]'
+            ),
+	        'latest-results-page' => array(
+            'title' => __( 'Latest Results', 'leaguemanager' ),
+            'page_template' => 'No title',
+            'content' => '[latestresults]'
+            ),
+	        'clubs-page' => array(
+            'title' => __( 'Clubs', 'leaguemanager' ),
+            'page_template' => 'No title',
+            'content' => '[clubs]'
+            ),
+	        'club-page' => array(
+          	'title' => __( 'Club', 'leaguemanager' ),
+          	'page_template' => 'No title',
+          	'content' => '[club]'
+				 		),
+					'match-page' => array(
+            'title' => __( 'Match', 'leaguemanager' ),
+            'page_template' => 'No title',
+            'content' => '[match]'
+          )
+	      );
+
+				$this->addLeagueManagerPage($page_definitions);
+
+		}
+
+		/**
+     * Add pages to database
+     */
+		public function addLeagueManagerPage( $page_definitions ) {
+
+      foreach ( $page_definitions as $slug => $page ) {
+
+        // Check that the page doesn't exist already
+        if ( ! is_page($slug) ) {
+					$pageTemplate = $page['page_template'];
+					if ( $pageTemplate ) {
+						$template = array_search( $pageTemplate, $this->templates );
+						if ( $template ) {
+							$pageTemplate = $template;
+						}
+					}
+          // Add the page using the data from the array above
+          $page = array(
+           	'post_content'   => $page['content'],
+            'post_name'      => $slug,
+            'post_title'     => $page['title'],
+            'post_status'    => 'publish',
+            'post_type'      => 'page',
+            'ping_status'    => 'closed',
+            'comment_status' => 'closed',
+            'page_template' => $pageTemplate,
+          );
+					if ( $page_id = wp_insert_post( $page ) ) {
+						$pageName = sanitize_title_with_dashes($page['post_title']);
+						$option = 'leaguemanager_page_'.$pageName.'_id';
+					   // Only update this option if `wp_insert_post()` was successful
+					   update_option( $option, $page_id );
+					}
         }
-	}
+      }
+		}
+
+		/**
+     * deleteLeaguemanagerPage
+     *
+     * @pageName string $name
+     * @return none
+     */
+		public function deleteLeaguemanagerPage( $pageName ) {
+
+			$option = 'leaguemanager_page_'.$pageName.'_id';
+			$pageId = intval( get_option( $option ) );
+
+	    // Force delete this so the Title/slug "Menu" can be used again.
+			if ( $pageId ) {
+				wp_delete_post( $pageId, true );
+				delete_option($option);
+			}
+
+		}
+
 
     /**
      * Install plugin

@@ -47,9 +47,18 @@ To install the plugin to the following steps
 7. Match Report
 
 == Credits ==
-The LeagueManaager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)
+The LeagueManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)
 
 == Changelog ==
+
+= 5.6.18 =
+* BUGFIX: remove duplicate heading on competition template
+* BUGFIX: remove labels for archive drop-downs
+* BUGFIX: format league titles correctly on competition page
+* BUGFIX: handle missing league in shortcode
+* UPDATE: make league heading <h1> in league archive template
+* UPDATE: add page templates correctly
+* UPDATE: create category template for rules
 
 = 5.6.17 =
 * UPDATE: show latest results on club page

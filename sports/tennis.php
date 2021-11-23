@@ -524,6 +524,7 @@ class League_Tennis extends League {
             }
             $match->home_points = $score['home'];
             $match->away_points = $score['away'];
+						$match->getMatchResult( $match->home_points, $match->away_points );
         }
 
     return $match;

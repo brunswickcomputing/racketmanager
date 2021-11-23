@@ -5,8 +5,11 @@
      */
     function debug_to_console($data) {
         if (is_array($data) || is_object($data)) {
-            if (is_array($data)) error_log('PHP: array');
-                else error_log('PHP: object');
+            if (is_array($data)) {
+              error_log('PHP: array');
+            } else {
+              error_log('PHP: object');
+            }
             echo("<script>console.log('PHP: ".json_encode($data)."');</script>");
             error_log('PHP: "'.json_encode($data).'"');
         } else {
@@ -100,42 +103,69 @@
      * Create calendar download
      */
     function leaguemanager_calendar_download() {
-        global $league;
+        global $league, $leaguemanager;
 
-        if ( isset( $_GET["team_id"] )  && isset( $_GET["league_id"] ) && isset( $_GET["season"] ) && isset( $_GET["leaguemanager_export"] ) ) {
-            define('DATE_ICAL', 'Ymd\THis');
+        if ( isset( $_GET["leaguemanager_export"] ) ) {
+          if ( isset( $_GET["league_id"] ) && isset( $_GET["season"] ) ) {
             $league_id = $_GET["league_id"];
             $league = get_league($league_id);
             $season = $_GET["season"];
-            $team_id = $_GET["team_id"];
-            $teamname = $_GET["team"];
-            $matches = $league->getMatches( array("season" => $season, "team_id" => $team_id, "match_day" => -1) );
-            $filename = $season."-".sanitize_title($league->title)."-".sanitize_title($teamname).".ics";
-            $contents = "BEGIN:VCALENDAR\n";
-            $contents .= "VERSION:2.0\n";
-            $contents .= "PRODID:-//TENNIS CALENDAR//NONSGML Events //EN\n";
-            $contents .= "CALSCALE:GREGORIAN\n";
-            $contents .= "DTSTAMP:".date('Ymd\THis')."\n";
-            foreach ( $matches AS $match ) {
-                $match = get_match($match->id);
-                $contents .= "BEGIN:VEVENT\n";
-                $contents .= "UID:".$match->id."\n";
-                $contents .= "DTSTAMP:".mysql2date('Ymd\THis', $match->date)."\n";
-                $contents .= "DTSTART:".mysql2date('Ymd\THis', $match->date)."\n";
-                $contents .= "DTEND:".date('Ymd\THis', strtotime('+2 hours',strtotime($match->date)))."\n";
-                $contents .= "SUMMARY:".$match->match_title."\n";
-                $contents .= "LOCATION:".$match->location."\n";
-                $contents .= "END:VEVENT\n";
+            $matchArray = array("season" => $season, "match_day" => -1, "limit" => false);
+            $fileTeamName = "";
+            if ( isset( $_GET["team_id"] ) ) {
+              $team_id = $_GET["team_id"];
+              $fileTeamName = "-".$_GET["team"];
+              $matchArray["team_id"] = $team_id;
             }
-            $contents .= "END:VCALENDAR";
-            header('Content-Type: text/calendar');
-            header('Content-Disposition: attachment; filename="'.$filename.'"');
-            echo $contents;
-            exit();
+            $matches = $league->getMatches( $matchArray );
+            $filename = $season."-".sanitize_title($league->title).$fileTeamName.".ics";
+            leaguemanager_write_calendar( $matches, $filename );
+          } elseif ( isset( $_GET["competition_id"] ) ) {
+            $competition_id = $_GET["competition_id"];
+            $competition = get_competition($competition_id);
+            $season = $competition->getSeason();
+            $matchArray = array("competition_id" => $competition_id, "season" => $season);
+            $fileClubName = "";
+            if ( isset( $_GET["club_id"] ) ) {
+              $club_id = $_GET["club_id"];
+              $fileClubName = "-".$_GET["club"];
+              $matchArray["affiliatedClub"] = $club_id;
+            }
+            $matches = $leaguemanager->getMatches( $matchArray );
+            $filename = $season."-".sanitize_title($competition->name).$fileClubName.".ics";
+            leaguemanager_write_calendar( $matches, $filename );
+          }
         }
     }
     add_action('init', 'leaguemanager_calendar_download');
 
+    /*
+     * Produce calendar download file
+     */
+    function leaguemanager_write_calendar( $matches, $filename ) {
+      define('DATE_ICAL', 'Ymd\THis');
+      $contents = "BEGIN:VCALENDAR\n";
+      $contents .= "VERSION:2.0\n";
+      $contents .= "PRODID:-//TENNIS CALENDAR//NONSGML Events //EN\n";
+      $contents .= "CALSCALE:GREGORIAN\n";
+      $contents .= "DTSTAMP:".date('Ymd\THis')."\n";
+      foreach ( $matches AS $match ) {
+          $match = get_match($match->id);
+          $contents .= "BEGIN:VEVENT\n";
+          $contents .= "UID:".$match->id."\n";
+          $contents .= "DTSTAMP:".mysql2date('Ymd\THis', $match->date)."\n";
+          $contents .= "DTSTART:".mysql2date('Ymd\THis', $match->date)."\n";
+          $contents .= "DTEND:".date('Ymd\THis', strtotime('+2 hours',strtotime($match->date)))."\n";
+          $contents .= "SUMMARY:".$match->match_title."\n";
+          $contents .= "LOCATION:".$match->location."\n";
+          $contents .= "END:VEVENT\n";
+      }
+      $contents .= "END:VCALENDAR";
+      header('Content-Type: text/calendar');
+      header('Content-Disposition: attachment; filename="'.$filename.'"');
+      echo $contents;
+      exit();
+    }
     /**
      * Output and Get SVG.
      * Output and get the SVG markup for an icon in the Leaguemanager_SVG_Icons class.

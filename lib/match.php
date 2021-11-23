@@ -238,12 +238,9 @@ final class Match {
 
         $score = array( 'home' => $home_points, 'away' => $away_points );
 
-        if ( isset($score['home']) && isset($score['away']) ) {
-            $home_points = $score['home'];
-            $away_points = $score['away'];
-            $points = array( 'home' => $home_points, 'away' => $away_points );
-            $this->getMatchResult( $score['home'], $score['away'], 'winner' );
-            $this->getMatchResult( $score['home'], $score['away'], 'loser' );
+        if ( isset($home_points) && isset($away_points) ) {
+            $points = $score;
+            $this->getMatchResult( $score['home'], $score['away'] );
             // save original score points
             $this->home_points = $home_points;
             $this->away_points = $away_points;
@@ -253,8 +250,9 @@ final class Match {
         }
 
         $this->custom = array_merge( (array)$this->custom, (array)$custom );
-        foreach ( $this->custom AS $key => $value )
-            $this->{$key} = $value;
+        foreach ( $this->custom AS $key => $value ) {
+          $this->{$key} = $value;
+        }
     }
 
     /**
@@ -262,10 +260,10 @@ final class Match {
      *
      * @param int $home_points
      * @param int $away_points
-     * @param string $index
      * @return int
      */
-    function getMatchResult( $home_points, $away_points, $index ) {
+    public function getMatchResult( $home_points, $away_points ) {
+
         $match = array();
         if ( $home_points > $away_points ) {
             $match['winner'] = $this->home_team;
@@ -282,22 +280,13 @@ final class Match {
         } elseif ( 'NULL' === $home_points && 'NULL' === $away_points ) {
             $match['winner'] = 0;
             $match['loser'] = 0;
-        } elseif ( '' == $home_points && '' == $away_points ) {
-            $match['winner'] = 0;
-            $match['loser'] = 0;
         } else {
             $match['winner'] = -1;
             $match['loser'] = -1;
         }
-
-        $val = intval($match[$index]);
-
-        if ( $index == "winner" )
-            $this->winner_id = $val;
-        if ( $index == "loser" )
-            $this->loser_id = $val;
-
-        return $val;
+        $this->winner_id = $match['winner'];
+        $this->loser_id = $match['loser'];
+        return;
     }
 
     /**

@@ -51,6 +51,15 @@ The LeagueManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 5.6.19 =
+* BUGFIX: remove debug statements
+* BUGFIX: print array details in error_log correctly in debug_to_console
+* BUGFIX: advance winning team correctly in championship admin
+* BUGFIX: remove modal css directs includes in css files
+* BUGFIX: handle cache bypass correctly
+* BUGFIX: tidy up AJAX functions to display rubbers
+* UPDATE: allow match calendar by league, competition and club
+
 = 5.6.18 =
 * BUGFIX: remove duplicate heading on competition template
 * BUGFIX: remove labels for archive drop-downs

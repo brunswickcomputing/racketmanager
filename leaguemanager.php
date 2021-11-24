@@ -3,7 +3,7 @@
 Plugin Name: LeagueManager
 Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
 Description: Manage and present sports league results.
-Version: 5.6.19
+Version: 5.6.20
 Author: Paul Moffat, Kolja Schleich, LaMonte Forthun
 
 Copyright 2008-2021  Paul Moffat (email: paul@paarcs.com)
@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 * @author LaMonte Forthun
 * @author Paul Moffat
 * @package LeagueManager
-* @version 5.6.19
+* @version 5.6.20
 * @copyright 2008-2021
 * @license GPL-3
 */
@@ -49,7 +49,7 @@ class LeagueManager {
 	 *
 	 * @var string
 	 */
-	private $version = '5.6.19';
+	private $version = '5.6.20';
 
 	/**
 	 * database version
@@ -292,16 +292,16 @@ class LeagueManager {
 		$wpdb->leaguemanager_table = $wpdb->prefix . 'leaguemanager_table';
 		$wpdb->leaguemanager_teams = $wpdb->prefix . 'leaguemanager_teams';
 		$wpdb->leaguemanager_matches = $wpdb->prefix . 'leaguemanager_matches';
-        $wpdb->leaguemanager_rubbers = $wpdb->prefix . 'leaguemanager_rubbers';
+    $wpdb->leaguemanager_rubbers = $wpdb->prefix . 'leaguemanager_rubbers';
 		$wpdb->leaguemanager_roster = $wpdb->prefix . 'leaguemanager_roster';
 		$wpdb->leaguemanager_competitions = $wpdb->prefix . 'leaguemanager_competitions';
-        $wpdb->leaguemanager_team_competition = $wpdb->prefix . 'leaguemanager_team_competition';
-        $wpdb->leaguemanager_roster_requests = $wpdb->prefix . 'leaguemanager_roster_requests';
-        $wpdb->leaguemanager_clubs = $wpdb->prefix . 'leaguemanager_clubs';
-        $wpdb->leaguemanager_seasons = $wpdb->prefix . 'leaguemanager_seasons';
-        $wpdb->leaguemanager_competitions_seasons = $wpdb->prefix . 'leaguemanager_competitions_seasons';
-        $wpdb->leaguemanager_results_checker = $wpdb->prefix . 'leaguemanager_results_checker';
-        $wpdb->leaguemanager_tournaments = $wpdb->prefix . 'leaguemanager_tournaments';
+    $wpdb->leaguemanager_team_competition = $wpdb->prefix . 'leaguemanager_team_competition';
+    $wpdb->leaguemanager_roster_requests = $wpdb->prefix . 'leaguemanager_roster_requests';
+    $wpdb->leaguemanager_clubs = $wpdb->prefix . 'leaguemanager_clubs';
+    $wpdb->leaguemanager_seasons = $wpdb->prefix . 'leaguemanager_seasons';
+    $wpdb->leaguemanager_competitions_seasons = $wpdb->prefix . 'leaguemanager_competitions_seasons';
+    $wpdb->leaguemanager_results_checker = $wpdb->prefix . 'leaguemanager_results_checker';
+    $wpdb->leaguemanager_tournaments = $wpdb->prefix . 'leaguemanager_tournaments';
 	}
 
 	/**
@@ -347,7 +347,7 @@ class LeagueManager {
 		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 
 		$leaguemanager_shortcodes = new LeagueManagerShortcodes();
-        $leaguemanager_login = new LeagueManagerLogin();
+    $leaguemanager_login = new LeagueManagerLogin();
 	}
 
     /**
@@ -451,7 +451,7 @@ class LeagueManager {
 	 *
 	 */
 	public function loadScripts() {
-		wp_register_script( 'datatables', LEAGUEMANAGER_URL.'/js/datatables.js', array('jquery', 'jquery-ui-core', 'jquery-ui-accordion', 'jquery-ui-tabs', 'jquery-effects-core', 'jquery-effects-slide') );
+		wp_register_script( 'datatables', 'https://cdn.datatables.net/v/ju/dt-1.11.3/fh-3.2.0/datatables.min.js', array('jquery') );
 		wp_register_script( 'leaguemanager', LEAGUEMANAGER_URL.'/leaguemanager.js', array('jquery', 'jquery-ui-core', 'jquery-ui-accordion', 'jquery-ui-autocomplete', 'jquery-ui-tabs', 'jquery-effects-core', 'jquery-effects-slide', 'sack', 'thickbox'), LEAGUEMANAGER_VERSION );
 		wp_enqueue_script('leaguemanager');
 		?>
@@ -482,15 +482,15 @@ class LeagueManager {
 	 */
 	public function loadStyles() {
 		wp_enqueue_style('thickbox');
-        wp_enqueue_style('leaguemanager-print', LEAGUEMANAGER_URL . "/css/print.css", false, LEAGUEMANAGER_VERSION, 'print');
-        wp_enqueue_style('leaguemanager-modal', LEAGUEMANAGER_URL . "/css/modal.css", false, LEAGUEMANAGER_VERSION, 'screen');
+    wp_enqueue_style('leaguemanager-print', LEAGUEMANAGER_URL . "/css/print.css", false, LEAGUEMANAGER_VERSION, 'print');
+    wp_enqueue_style('leaguemanager-modal', LEAGUEMANAGER_URL . "/css/modal.css", false, LEAGUEMANAGER_VERSION, 'screen');
 		wp_enqueue_style('leaguemanager', LEAGUEMANAGER_URL . "/css/style.css", false, LEAGUEMANAGER_VERSION, 'screen');
 
 		wp_register_style('jquery-ui', LEAGUEMANAGER_URL . "/css/jquery/jquery-ui.min.css", false, '1.11.4', 'all');
 		wp_register_style('jquery-ui-structure', LEAGUEMANAGER_URL . "/css/jquery/jquery-ui.structure.min.css", array('jquery-ui'), '1.11.4', 'all');
 		wp_register_style('jquery-ui-theme', LEAGUEMANAGER_URL . "/css/jquery/jquery-ui.theme.min.css", array('jquery-ui', 'jquery-ui-structure'), '1.11.4', 'all');
-        wp_register_style('jquery-ui-autocomplete', LEAGUEMANAGER_URL . "/css/jquery/jquery-ui.autocomplete.min.css", array('jquery-ui', 'jquery-ui-autocomplete'), '1.11.4', 'all');
-		wp_register_style('datatables', LEAGUEMANAGER_URL . "/css/datatables.css", array('jquery-ui'), '1.11.4', 'all');
+    wp_register_style('jquery-ui-autocomplete', LEAGUEMANAGER_URL . "/css/jquery/jquery-ui.autocomplete.min.css", array('jquery-ui', 'jquery-ui-autocomplete'), '1.11.4', 'all');
+		wp_register_style('datatables-style', 'https://cdn.datatables.net/v/ju/dt-1.11.3/fh-3.2.0/datatables.min.css');
 
 		wp_enqueue_style('jquery-ui-structure');
 		wp_enqueue_style('jquery-ui-theme');
@@ -1139,9 +1139,8 @@ class LeagueManager {
 
         if (!isset($season[0])) return false;
 
-        $season = $season[0];
+        return $season[0];
 
-        return $season;
     }
 
     /**
@@ -1425,8 +1424,7 @@ class LeagueManager {
 		global $wpdb;
 
 		$query = $wpdb->prepare ( "SELECT `id` FROM {$wpdb->leaguemanager_table} WHERE `team_id` = '%d' AND `season` = '%s' AND `league_id` = '%d'", $team_id, $season, $league_id);
-		$num_teams = $wpdb->get_var( $query );
-		return $num_teams;
+		return $wpdb->get_var( $query );
 	}
 
     /**
@@ -1460,7 +1458,6 @@ class LeagueManager {
         $wpdb->query( $wpdb->prepare ( $sql, $title, $affiliatedclub, maybe_serialize($roster), $status, $type ) );
         $team_id = $wpdb->insert_id;
         $captain = $leaguemanager->getRosterEntry($player1Id)->player_id;
-        $team_competition_id = $this->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail );
 
         return $team_id;
     }
@@ -1632,14 +1629,14 @@ class LeagueManager {
         $sql = "SELECT B.`ID` as `player_id`, B.`display_name` AS `fullname`, A.`system_record`, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->leaguemanager_roster} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID` WHERE A.`id`= '".intval($roster_id)."'";
 
         $roster = wp_cache_get( md5($sql), 'rosterentry' );
-        if ( !$roster ) {
+        if ( !$roster || !$cache ) {
             $roster = $wpdb->get_row( $sql );
             wp_cache_set( md5($sql), $roster, 'rosterentry' );
         }
 
 		return $roster;
 	}
-
+	
     /**
      * delete Roster
      *

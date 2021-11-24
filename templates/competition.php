@@ -3,16 +3,16 @@
 Template page for the Competition
 
 The following variables are usable:
-	
+
 	$leagues: array of all leagues
 	$curr_league: current league
 	$seasons: array of all seasons
- 
+
 	You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
 */
 global $wp_query, $leaguemanager_shortcodes;
 $postID = isset($wp_query->post->ID) ? $wp_query->post->ID : "";
-wp_enqueue_style('datatables');
+wp_enqueue_style('datatables-style');
 wp_enqueue_script('datatables');
 ?>
 <div id="leaguetables">

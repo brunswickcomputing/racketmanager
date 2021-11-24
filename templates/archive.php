@@ -23,7 +23,7 @@ if ( isset($_GET['match_day']) || isset($_GET['team_id']) )
 	$tab = 2;
 if ( !$match_day == '' )
 	$tab = 2;
-wp_enqueue_style('datatables');
+wp_enqueue_style('datatables-style');
 wp_enqueue_script('datatables');
 ?>
 <script type='text/javascript'>

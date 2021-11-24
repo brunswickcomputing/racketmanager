@@ -51,6 +51,10 @@ The LeagueManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 5.6.20 =
+* UPDATE: use CDN to pull in datatables files (js and css)
+* UPDATE: tidy up code
+
 = 5.6.19 =
 * BUGFIX: remove debug statements
 * BUGFIX: print array details in error_log correctly in debug_to_console

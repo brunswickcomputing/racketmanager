@@ -207,7 +207,6 @@ class Competition {
             $competition->settings = (array)maybe_unserialize($competition->settings);
             $competition->settings_keys = array_keys((array)maybe_unserialize($competition->settings));
             $competition = (object)array_merge((array)$competition, $competition->settings);
- //           unset($competition->settings);
         }
 
         foreach ( get_object_vars( $competition ) as $key => $value ) {

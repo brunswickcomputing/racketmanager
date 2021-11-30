@@ -457,7 +457,7 @@ final class LeagueManagerAdmin extends LeagueManager
                 $tab = 6;
             } elseif ( isset($_GET['view']) && $_GET['view'] == 'results' ) {
                 $tab = 7;
-            } elseif ( isset($_GET['view']) && $_GET['view'] == 'tournament' ) {
+            } elseif ( isset($_GET['view']) && $_GET['view'] == 'tournaments' ) {
                 $tab = 9;
             }
             include_once( dirname(__FILE__) . '/index.php' );
@@ -3451,7 +3451,11 @@ final class LeagueManagerAdmin extends LeagueManager
             $resultsChecker->league = get_league($resultsChecker->league_id);
             $resultsChecker->date = get_match($resultsChecker->match_id)->date;
             $resultsChecker->match = get_match($resultsChecker->match_id);
-            $resultsChecker->team = get_team($resultsChecker->team_id)->title;
+						if ( $resultsChecker->team_id > 0 ) {
+							$resultsChecker->team = get_team($resultsChecker->team_id)->title;
+						} else {
+							$resultsChecker->team = '';
+						}
             $resultsChecker->player = get_userdata($resultsChecker->player_id)->display_name;
             if ( $resultsChecker->updated_user != '' ) {
                 $resultsChecker->updated_user_name = get_userdata($resultsChecker->updated_user)->display_name;

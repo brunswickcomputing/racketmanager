@@ -51,6 +51,11 @@ The LeagueManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 5.6.21 =
+* BUGFIX: make club admin page work
+* BUGFIX: handle missing team in results checker
+* BUGFIX: use correct tournament->id 
+
 = 5.6.20 =
 * UPDATE: use CDN to pull in datatables files (js and css)
 * UPDATE: tidy up code

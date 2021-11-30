@@ -2,8 +2,8 @@
 ?>
 <!-- <script type="text/javascript" src="/wp-includes/js/jquery/jquery.js"></script> -->
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyBOw-540qtgbXJNz0D-zMcii1eAFYO1P1Y"></script>
-<script type="text/javascript" src="<?php echo plugins_url('/admin/js/locationpicker.jquery.js', dirname(__FILE__)) ?>"></script>
-<script type="text/javascript" src="<?php echo plugins_url('/admin/js/locationpicker.js', dirname(__FILE__)) ?>"></script>
+<script type="text/javascript" src="<?php echo plugins_url('/js/locationpicker.jquery.js', dirname(__FILE__)) ?>"></script>
+<script type="text/javascript" src="<?php echo plugins_url('/js/locationpicker.js', dirname(__FILE__)) ?>"></script>
 	<div class="wrap league-block">
         <p class="leaguemanager_breadcrumb"><a href="admin.php?page=leaguemanager"><?php _e( 'LeagueManager', 'leaguemanager' ) ?></a> &raquo; <?php echo $form_title ?></p>
         <h1><?php printf(  $form_title ); ?></h1>

@@ -561,7 +561,11 @@
      */
     function the_match_time() {
         global $match;
-        echo $match->start_time;
+        if ( $match->start_time == "00:00" ) {
+          echo '';
+        } else {
+          echo $match->start_time;
+        }
     }
 
     /**

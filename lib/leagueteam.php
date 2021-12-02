@@ -162,7 +162,7 @@ final class LeagueTeam {
   public function getPrevMatch() {
     $league = get_league($this->league_id);
     $this->prev_match = $league->getMatches( array("team_id" => $this->id, "time" => "prev", "limit" => 1, "reset_limit" => true) );
-    if ($this->prev_match && $this->prev_match->score == "-:-") $this->prev_match->score = "N/A";
+    if ($this->prev_match && $this->prev_match->score == "") $this->prev_match->score = "N/A";
 
     return $this->prev_match;
   }

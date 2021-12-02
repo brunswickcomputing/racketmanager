@@ -2,7 +2,7 @@
     global $wp_query;
     $postID = $wp_query->post->ID;
     $tab = 0;
-    $action = $_GET[('action')];
+    $action = isset($_GET[('action')]) ? $_GET[('action')] : '' ;
     if ( isset($action) && $action == 'register' ) {
         $tab = 1;
     }

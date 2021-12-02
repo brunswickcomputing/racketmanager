@@ -164,6 +164,10 @@ class LeagueManagerShortcodes extends LeagueManager {
 		$time = 'latest';
 		$matches = $leaguemanager->getMatches( array('days' => $days, 'competition_type' => $competition_type, 'time' => 'latest', 'history' => $days, 'affiliatedClub' => $affiliatedclub) );
 
+		foreach ( $matches AS $i => $match ) {
+				$matches[$i]->score = $this->getMatchScore($match);
+				$i++;
+		}
 		if (empty($template))
 		$filename = 'matches';
 		elseif ( isset($league) && $this->checkTemplate('matches-'.$league->sport) )
@@ -431,9 +435,6 @@ class LeagueManagerShortcodes extends LeagueManager {
 					$match->home_title = $home_title;
 					$match->away_title = $away_title;
 
-					$match->hadPenalty = $match->hadPenalty = ( isset($match->penalty) && $match->penalty['home'] != '' && $match->penalty['away'] != '' ) ? true : false;
-					$match->hadOvertime = $match->hadOvertime = ( isset($match->overtime) && $match->overtime['home'] != '' && $match->overtime['away'] != '' ) ? true : false;
-
 					$match->num_rubbers = ( isset($league->num_rubbers) ? $league->num_rubbers : NULL );
 					$match->num_sets = ( isset($league->num_sets) ? $league->num_sets : NULL );
 
@@ -451,36 +452,7 @@ class LeagueManagerShortcodes extends LeagueManager {
 						}
 					}
 
-					if ( $match->home_points != NULL && $match->away_points != NULL ) {
-						if ( $match->hadPenalty )
-						$match->score = sprintf("%s:%s", $match->penalty['home'], $match->penalty['away'])." ".__( 'o.P.', 'leaguemanager' );
-						elseif ( $match->hadOvertime )
-						$match->score = sprintf("%s:%s", $match->overtime['home'], $match->overtime['away'])." ".__( 'AET', 'leaguemanager' );
-						//$match->score = sprintf("%s:%s", $match->home_points, $match->away_points);
-						else
-						if ( isset($match->num_rubbers) && $match->num_rubbers > 0 ) {
-							$match->score = sprintf("%s:%s", $match->home_points, $match->away_points);
-						} else {
-							$match->score = '';
-							$sets = $match->custom['sets'];
-							foreach ( $sets AS $set ) {
-								if ( $set['player1'] != null && $set['player2'] != null )  {
-									$match->score .= $set['player1'].'-'.$set['player2'].' ';
-								}
-							}
-							if ( $match->score == '' ) {
-								$match->score = __('Walkover', 'leaguemanager');
-							}
-						}
-					} elseif ( $match->winner_id != 0 ) {
-						if ( $match->home_team == -1 || $match->away_team == -1 ) {
-							$match->score = '';
-						} else {
-							$match->score = __('Walkover', 'leaguemanager');
-						}
-					} else {
-						$match->score = "-:-";
-					}
+					$match->score = $this->getMatchScore($match);
 
 					if ( $final['key'] == 'final' ) {
 						$data['isFinal'] = true;
@@ -489,8 +461,9 @@ class LeagueManagerShortcodes extends LeagueManager {
 						$data['isFinal'] = false;
 					}
 
-					if ( empty($match->location) ) $match->location = '';
-
+					if ( empty($match->location) ) {
+						$match->location = '';
+					}
 					$matches[$i] = $match;
 				}
 			}
@@ -499,10 +472,11 @@ class LeagueManagerShortcodes extends LeagueManager {
 			$finals[] = (object)$data;
 		}
 
-		if ( empty($template) && $this->checkTemplate('championship-'.$league->sport) )
-		$filename = 'championship-'.$league->sport;
-		else
-		$filename = ( !empty($template) ) ? 'championship-'.$template : 'championship';
+		if ( empty($template) && $this->checkTemplate('championship-'.$league->sport) ) {
+			$filename = 'championship-'.$league->sport;
+		} else {
+			$filename = ( !empty($template) ) ? 'championship-'.$template : 'championship';
+		}
 
 		$out = $this->loadTemplate( $filename, array('league' => $league, 'finals' => $finals) );
 
@@ -1048,6 +1022,40 @@ class LeagueManagerShortcodes extends LeagueManager {
 		$out = $this->loadTemplate( $filename, array( 'winners' => $winners, 'tournaments' => $tournaments, 'curr_tournament' => $tournament->name) );
 
 		return $out;
+	}
+
+	/**
+	* Get match score
+	*
+	* @param object $match match details
+	* @return the score
+	*/
+	public function getMatchScore($match) {
+		if ( $match->home_points != NULL && $match->away_points != NULL ) {
+			if ( isset($match->league->num_rubbers) && $match->league->num_rubbers > 0 ) {
+				$score = sprintf("%s - %s", $match->home_points, $match->away_points);
+			} else {
+				$score = '';
+				$sets = $match->custom['sets'];
+				foreach ( $sets AS $set ) {
+					if ( $set['player1'] != null && $set['player2'] != null )  {
+						$score .= $set['player1'].'-'.$set['player2'].' ';
+					}
+				}
+				if ( $score == '' ) {
+					$score = __('Walkover', 'leaguemanager');
+				}
+			}
+		} elseif ( $match->winner_id != 0 ) {
+			if ( $match->home_team == -1 || $match->away_team == -1 ) {
+				$score = '';
+			} else {
+				$score = __('Walkover', 'leaguemanager');
+			}
+		} else {
+			$score = "";
+		}
+		return $score;
 	}
 
 	/**

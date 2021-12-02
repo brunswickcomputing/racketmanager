@@ -25,7 +25,11 @@ The following variables are usable:
                 <tr class='<?php echo $match->class ?>'>
                     <td class='match'>
                       <?php include('matches-title.php');
-                        echo "<a href='/".__('leagues', 'leaguemanager')."/".sanitize_title($match->league->title)."/".$match->league->current_season['name']."/day".$match->match_day."' >".$matchTitle."</a>" ?>
+                      if ( $match->league->mode == 'championship' ) {
+                        echo "<a href='/".__('tournaments', 'leaguemanager')."/".sanitize_title($match->league->title)."/".$match->league->current_season['name']."' >".$matchTitle."</a>";
+                      } else {
+                        echo "<a href='/".__('leagues', 'leaguemanager')."/".sanitize_title($match->league->title)."/".$match->league->current_season['name']."/day".$match->match_day."' >".$matchTitle."</a>";
+                      } ?>
                     </td>
                     <td class="score">
                       <?php if ( isset($match->home_points) ) echo $match->score ?>

@@ -844,10 +844,10 @@ class LeagueManagerAJAX extends LeagueManager {
 
 							$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_rubbers} SET `home_points` = '%s',`away_points` = '%s',`home_player_1` = '%s',`home_player_2` = '%s',`away_player_1` = '%s',`away_player_2` = '%s',`winner_id` = '%d',`loser_id` = '%d',`custom` = '%s' WHERE `id` = '%d'", $homescore, $awayscore, $homeplayer1, $homeplayer2, $awayplayer1, $awayplayer2, $winner, $loser, maybe_serialize($custom), $rubberId));
 							$matchConfirmed = 'P';
-							$this->checkPlayerResult($match, $rubberId, $homeplayer1, $home_team, $options);
-							$this->checkPlayerResult($match, $rubberId, $homeplayer2, $home_team, $options);
-							$this->checkPlayerResult($match, $rubberId, $awayplayer1, $away_team, $options);
-							$this->checkPlayerResult($match, $rubberId, $awayplayer2, $away_team, $options);
+							$this->checkPlayerResult($match, $rubberId, $homeplayer1, $match->home_team, $options);
+							$this->checkPlayerResult($match, $rubberId, $homeplayer2, $match->home_team, $options);
+							$this->checkPlayerResult($match, $rubberId, $awayplayer1, $match->away_team, $options);
+							$this->checkPlayerResult($match, $rubberId, $awayplayer2, $match->away_team, $options);
 						}
 					}
 

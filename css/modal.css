@@ -122,6 +122,9 @@ td input.player {
     vertical-align: middle
 }
 
+#matches-archive .modal-content {
+    width: 100%;
+}
 /*  START OF MEDIA QUERIES */
 
 @media only screen and (max-width: 1770px) {

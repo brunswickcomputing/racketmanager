@@ -117,7 +117,7 @@ class LeagueManagerLogin extends LeagueManager {
     }
     // Retrieve recaptcha key
     $vars['recaptcha_site_key'] = get_option( 'leaguemanager-recaptcha-site-key', null );
-    $action = $_GET[('action')];
+    $action = isset($_GET[('action')]) ? $_GET[('action')]: '';
     if ( isset($action) && $action == 'register' ) {
 
       // Retrieve possible errors from request parameters

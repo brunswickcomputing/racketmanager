@@ -73,7 +73,7 @@ table.leaguemanager .home {
 table.leaguemanager th.match {
 	text-align: center;
 	}
-table.leaguemanager th.score {
+table.leaguemanager .score {
 	width: 10%;
 }
 table.leaguemanager .score, table.leaguemanager .ap {

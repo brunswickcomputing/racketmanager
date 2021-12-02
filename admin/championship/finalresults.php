@@ -18,8 +18,6 @@ foreach ( $league->championship->getFinals() AS $final ) {
         $colspan = ( $league->championship->num_teams_first_round/2 >= 4 ) ? ceil(4/$final['num_matches']) : ceil(($league->championship->num_teams_first_round/2)/$final['num_matches']); ?>
                 <td colspan="<?php echo $colspan ?>" style="text-align: center;"><?php
         if ( isset($match) ) {
-            $match->hadPenalty = $match->hadPenalty = ( isset($match->penalty) && $match->penalty['home'] != '' && $match->penalty['away'] != '' ) ? true : false;
-            $match->hadOvertime = $match->hadOvertime = ( isset($match->overtime) && $match->overtime['home'] != '' && $match->overtime['away'] != '' ) ? true : false;
             if ( $final['key'] == 'final' ) { ?>
                     <p><span id="final_home" style="margin-right: 0.5em;"></span><?php echo $match->getTitle(); ?><span id="final_away" style="margin-left: 0.5em;"></span></p><?php
             } else { ?>
@@ -33,16 +31,10 @@ foreach ( $league->championship->getFinals() AS $final ) {
                         jQuery('span#<?php echo $field_id ?>').html('<?php echo addslashes_gpc($img) ?>').fadeIn('fast');
                     </script><?php
                 }
-                if ( $match->hadPenalty ) {
-                    $match->score = sprintf("%d:%d", $match->overtime['home'] + $match->penalty['home'], $match->overtime['away'] + $match->penalty['away'])." "._x( 'o.P.', 'leaguemanager' );
-                } elseif ( $match->hadOvertime ) {
-                    $match->score = sprintf("%d:%d", $match->overtime['home'], $match->overtime['away'])." "._x( '(AET)', 'leaguemanager' );
-                } else {
-                    $match->score = sprintf("%d:%d", $match->home_points, $match->away_points);
-                } ?>
-                    <p><strong><?php echo $match->score ?></strong></p><?php
+                $match->score = sprintf("%d:%d", $match->home_points, $match->away_points);?>
+                <p><strong><?php echo $match->score ?></strong></p><?php
             } else { ?>
-                    <p>-:-</p><?php
+                <p>-:-</p><?php
             }
         } ?>
                 </td><?php

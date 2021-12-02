@@ -233,7 +233,7 @@ class League_Tennis extends League {
 		$season = $league->getSeason();
 
     if ( !$matches ) {
-        $matches = $league->getMatches( array("season" => $season, "team_id" => $team_id, "final" => '', "limit" => false, "cache" => false, "home_points" => 'not null', "away_points" => 'not null') );
+        $matches = $league->getMatches( array("season" => $season, "team_id" => $team_id, "final" => '', "limit" => false, "cache" => false, "home_points" => 'not null', "away_points" => 'not null', 'reset_query_args' => true) );
     }
 
 		foreach ( $matches AS $match ) {

@@ -66,27 +66,17 @@ final class Match {
       if ( is_null($this->league) || (!is_null($this->league) && $this->league->id != $this->league_id) )
       $this->league = get_league($this->league_id);
 
-      $this->location = $this->location != '' ? stripslashes($this->location) : 'N/A';
+      $this->location = $this->location != '' ? stripslashes($this->location) : '';
       $this->report = ( $this->post_id != 0 ) ? '<a href="'.get_permalink($this->post_id).'">'.__('Report', 'leaguemanager').'</a>' : '';
 
-      $this->hadOvertime = ( isset($this->overtime) && $this->overtime['home'] != '' && $this->overtime['away'] != '' ) ? true : false;
-      $this->hadPenalty = ( isset($this->penalty) && $this->penalty['home'] != '' && $this->penalty['away'] != '' ) ? true : false;
-      if ( $this->hadPenalty ) {
-        $this->homeScore = $this->penalty['home']+$this->overtime['home'];
-        $this->awayScore = $this->penalty['away']+$this->overtime['away'];
-        $this->score = sprintf("%d - %d", $this->homeScore, $this->awayScore)." ".__( '(o.P.)', 'leaguemanager' );
-      } elseif ( $this->hadOvertime ) {
-        $this->homeScore = $this->overtime['home'];
-        $this->awayScore = $this->overtime['away'];
-        $this->score = sprintf("%d - %d", $this->homeScore, $this->awayScore)." ".__( '(AET)', 'leaguemanager' );
-      } elseif ( $this->home_points != "" && $this->away_points != "" ) {
+      if ( $this->home_points != "" && $this->away_points != "" ) {
         $this->homeScore = $this->home_points;
         $this->awayScore = $this->away_points;
         $this->score = sprintf("%d - %d", $this->homeScore, $this->awayScore);
       } else {
-        $this->homeScore = "-";
-        $this->awayScore = "-";
-        $this->score = sprintf("%s:%s", $this->homeScore, $this->awayScore);
+        $this->homeScore = "";
+        $this->awayScore = "";
+        $this->score = "";
       }
 
       if (is_admin()) {
@@ -121,7 +111,9 @@ final class Match {
   private function setTeams() {
     // get championship final rounds teams
     if ( $this->league->championship instanceof League_Championship ) {
-      $teams = $this->league->championship->getFinalTeams($this->final_round);
+      if ( $this->final_round ) {
+        $teams = $this->league->championship->getFinalTeams($this->final_round);
+      }
     }
     if ( is_numeric($this->home_team) ) {
       if ( $this->home_team == -1 ) {

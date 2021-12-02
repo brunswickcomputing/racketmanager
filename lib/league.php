@@ -2263,13 +2263,8 @@ protected function calculateSecondaryPoints($team, $matches = false) {
 		if ( $matches ) {
 			foreach ( $matches AS $match ) {
 				$custom = maybe_unserialize($match->custom);
-				if ( isset($custom['overtime']) && $custom['overtime']['home'] != '' && $custom['overtime']['away'] != '' ) {
-					$home_goals = $custom['overtime']['home'];
-					$away_goals = $custom['overtime']['away'];
-				} else {
-					$home_goals = $match->home_points;
-					$away_goals = $match->away_points;
-				}
+				$home_goals = $match->home_points;
+				$away_goals = $match->away_points;
 
 				if ( $match->home_team == $team->id ) {
 					$points['plus'] += $home_goals;

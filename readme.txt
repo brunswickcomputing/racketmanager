@@ -51,10 +51,24 @@ The LeagueManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 5.6.22 =
+* BUGFIX: user correct team field for checkPlayerResult
+* BUGFIX: in championship match only call setteams when round specified
+* BUGFIX: reset queryargs when getting matches in tennis.php
+* BUGFIX: check action is set in login
+* UPDATE: made match modal full width in front end
+* UPDATE: reformat lib class code layouts
+* UPDATE: remove unused core.php
+* UPDATE: remove penalty and overtime checks
+* UPDATE: remove -:- as score
+* UPDATE: set match score consistently in shortcodes.php
+* UPDATE: only show start time if specified
+* UPDATE: allow match results for tournaments
+
 = 5.6.21 =
 * BUGFIX: make club admin page work
 * BUGFIX: handle missing team in results checker
-* BUGFIX: use correct tournament->id 
+* BUGFIX: use correct tournament->id
 
 = 5.6.20 =
 * UPDATE: use CDN to pull in datatables files (js and css)

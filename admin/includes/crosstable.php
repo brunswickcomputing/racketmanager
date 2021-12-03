@@ -1,8 +1,8 @@
 
-<table class='widefat crosstable' summary='' title='<?php echo __( 'Crosstable', 'leaguemanager' )." ".$league->title ?>'>
+<table class='widefat crosstable' summary='' title='<?php echo __( 'Crosstable', 'racketmanager' )." ".$league->title ?>'>
 	<thead>
 	<tr>
-		<th colspan='2' style='text-align: center;'><?php _e( 'Club', 'leaguemanager' ) ?></th>
+		<th colspan='2' style='text-align: center;'><?php _e( 'Club', 'racketmanager' ) ?></th>
 <?php for ( $i = 1; $i <= count($teams); $i++ ) { ?>
 		<th style='text-align: center;'><?php echo $i ?></th>
 <?php } ?>

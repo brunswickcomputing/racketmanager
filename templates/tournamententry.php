@@ -22,15 +22,15 @@ The following variables are usable:
     <form id="form-tournamententry" action="" method="post">
         <?php wp_nonce_field( 'tournament-entry' ) ?>
         <div class="input">
-            <label for "venueName"><?php _e( 'Finals Venue', 'leaguemanager' ) ?></label>
-            <input type="text" class="form-control" id="venueName" name="venueName" value="<?php if ( $tournament->venueName != '' ) echo $tournament->venueName; else _e('TBC', 'leaguemanager'); ?>" disabled />
+            <label for "venueName"><?php _e( 'Finals Venue', 'racketmanager' ) ?></label>
+            <input type="text" class="form-control" id="venueName" name="venueName" value="<?php if ( $tournament->venueName != '' ) echo $tournament->venueName; else _e('TBC', 'racketmanager'); ?>" disabled />
         </div>
         <div class="input">
-            <label for "date"><?php _e( 'Finals Date', 'leaguemanager' ) ?></label>
+            <label for "date"><?php _e( 'Finals Date', 'racketmanager' ) ?></label>
             <input type="text" class="form-control" id="date" name="date" value="<?php echo $tournament->date ?>" disabled />
         </div>
         <div class="input">
-            <label for "closingdate"><?php _e( 'Closing Date For Entries', 'leaguemanager' ) ?></label>
+            <label for "closingdate"><?php _e( 'Closing Date For Entries', 'racketmanager' ) ?></label>
             <input type="text" class="form-control" id="closingdate" name="closingdate" value="<?php echo $tournament->closingdate ?>" disabled />
         </div>
         <div class="form-group">
@@ -67,9 +67,9 @@ The following variables are usable:
                     ?>
 
                     <div class="form-checkboxes__conditional form-checkboxes__conditional--hidden" id="conditional-competition-<?php echo $competition->id ?>">
-                        <label class="form-label" for="partner[<?php echo $competition->id ?>]"><?php _e( 'Partner', 'leaguemanager' ) ?></label>
+                        <label class="form-label" for="partner[<?php echo $competition->id ?>]"><?php _e( 'Partner', 'racketmanager' ) ?></label>
                             <select size="1" name="partner[<?php echo $competition->id ?>]" id="partner[<?php echo $competition->id ?>]" >
-                                <option value="0"><?php _e( 'Select partner' , 'leaguemanager') ?></option>
+                                <option value="0"><?php _e( 'Select partner' , 'racketmanager') ?></option>
                                 <?php foreach ( $partnerList AS $roster ) { ?>
                                 <option value="<?php echo $roster->roster_id ?>"><?php echo $roster->fullname." - ".get_club($roster->affiliatedclub)->name ?></option>
                                 <?php } ?>
@@ -82,19 +82,19 @@ The following variables are usable:
             </fieldset>
         </div>
         <div class="input">
-            <label for "playername"><?php _e( 'Name', 'leaguemanager' ) ?></label>
+            <label for "playername"><?php _e( 'Name', 'racketmanager' ) ?></label>
             <input type="text" class="teamcaptain form-control" id="playername" name="" value="<?php echo $player->display_name ?>" disabled />
             <input type="hidden" id="playerId" name="playerId" value="<?php echo $player->ID ?>" />
         </div>
         <div class="form-group">
-            <label for "affiliatedclub"><?php _e( 'Affiliated Club', 'leaguemanager' ) ?></label>
+            <label for "affiliatedclub"><?php _e( 'Affiliated Club', 'racketmanager' ) ?></label>
             <div class="input">
             <?php if (count($rosters) == 1) { ?>
                 <input type="text" class="form-control" id="affiliatedclubname" name="affiliatedclubname" value="<?php echo get_club($rosters[0]->affiliatedclub)->name ?>" disabled />
                 <input type="hidden" id="affiliatedclub" name="affiliatedclub" value="<?php echo $rosters[0]->affiliatedclub ?>" />
             <?php } else { ?>
                 <select size="1" name="affiliatedclub" id="affiliatedclub" >
-                    <option value="0"><?php _e( 'Select club' , 'leaguemanager') ?></option>
+                    <option value="0"><?php _e( 'Select club' , 'racketmanager') ?></option>
                     <?php foreach ( $rosters AS $roster ) {
                         $club = get_club($roster->affiliatedclub); ?>
                     <option value="<?php echo $club->id ?>"><?php echo $club->name ?></option>
@@ -104,13 +104,13 @@ The following variables are usable:
             </div>
         </div>
         <div class="form-group">
-            <label for "contactno"><?php _e( 'Contact Number', 'leaguemanager' ) ?></label>
+            <label for "contactno"><?php _e( 'Contact Number', 'racketmanager' ) ?></label>
             <div class="input">
                 <input type="tel" class="form-control width-one-quarter" id="contactno" name="contactno" value="<?php echo $player->contactno ?>" />
             </div>
         </div>
         <div class="form-group">
-            <label for "contactemail"><?php _e( 'Contact Email', 'leaguemanager' ) ?></label>
+            <label for "contactemail"><?php _e( 'Contact Email', 'racketmanager' ) ?></label>
             <div class="input">
                 <input type="email" class="form-control" id="contactemail" name="contactemail" value="<?php echo $player->user_email ?>" size="30" />
             </div>
@@ -128,14 +128,14 @@ The following variables are usable:
             <div class="form-checkboxes__item">
                 <input class="form-checkboxes__input" id="acceptance" name="acceptance" type="checkbox">
                 <label class="form-label form-checkboxes__label" for="acceptance">
-                    <?php _e('I agree to abide by the rules of the tournament', 'leaguemanager') ?>
+                    <?php _e('I agree to abide by the rules of the tournament', 'racketmanager') ?>
                 </label>
             </div>
         <div>
         <input type="hidden" name="season" value="<?php echo $season ?>" />
         <input type="hidden" name="tournamentSeason" value="<?php echo $type ?>" />
         <input type="hidden" name="tournamentSecretaryEmail" value="<?php echo $tournament->tournamentSecretaryEmail ?>" />
-        <button class="btn" type="button" id="tournamentEntrySubmit" name="tournamentEntrySubmit" onclick="Leaguemanager.tournamentEntryRequest(this)">Enter Tournament</button>
+        <button class="btn" type="button" id="tournamentEntrySubmit" name="tournamentEntrySubmit" onclick="Racketmanager.tournamentEntryRequest(this)">Enter Tournament</button>
         <div class="updateResponse" id="tournamentEntryResponse" name="tournamentEntryResponse"></div>
     </form>
 <?php } else { ?>

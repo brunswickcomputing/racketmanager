@@ -1,16 +1,16 @@
 <?php
 /**
- * leaguemanager_upgrade() - update routine for older version
+ * racketmanager_upgrade() - update routine for older version
  *
  * @return Success Message
  */
-function leaguemanager_upgrade() {
-	global $wpdb, $leaguemanager, $lmLoader;
+function racketmanager_upgrade() {
+	global $wpdb, $racketmanager, $lmLoader;
 
 	$options = get_option( 'leaguemanager' );
 	$installed = $options['dbversion'];
 
-	echo __('Upgrade database structure...', 'leaguemanager') . "<br />\n";
+	echo __('Upgrade database structure...', 'racketmanager') . "<br />\n";
 	$wpdb->show_errors();
 
 	if (version_compare($installed, '5.1.7', '<')) {
@@ -251,24 +251,62 @@ function leaguemanager_upgrade() {
             }
         }
     }
+		if (version_compare($installed, '6.0.0', '<')) {
+				echo __('starting 6.0.0 upgrade', 'leaguemanager') . "<br />\n";
+				$wpdb_leaguemanager_leagues = $wpdb->prefix . 'leaguemanager_leagues';
+				$wpdb_leaguemanager_table = $wpdb->prefix . 'leaguemanager_table';
+				$wpdb_leaguemanager_teams = $wpdb->prefix . 'leaguemanager_teams';
+				$wpdb_leaguemanager_matches = $wpdb->prefix . 'leaguemanager_matches';
+				$wpdb_leaguemanager_rubbers = $wpdb->prefix . 'leaguemanager_rubbers';
+				$wpdb_leaguemanager_roster = $wpdb->prefix . 'leaguemanager_roster';
+				$wpdb_leaguemanager_competitions = $wpdb->prefix . 'leaguemanager_competitions';
+				$wpdb_leaguemanager_team_competition = $wpdb->prefix . 'leaguemanager_team_competition';
+				$wpdb_leaguemanager_roster_requests = $wpdb->prefix . 'leaguemanager_roster_requests';
+				$wpdb_leaguemanager_clubs = $wpdb->prefix . 'leaguemanager_clubs';
+				$wpdb_leaguemanager_seasons = $wpdb->prefix . 'leaguemanager_seasons';
+				$wpdb_leaguemanager_competitions_seasons = $wpdb->prefix . 'leaguemanager_competitions_seasons';
+				$wpdb_leaguemanager_results_checker = $wpdb->prefix . 'leaguemanager_results_checker';
+				$wpdb_leaguemanager_tournaments = $wpdb->prefix . 'leaguemanager_tournaments';
+
+				$wpdb->query( "RENAME TABLE $wpdb_leaguemanager_clubs TO $wpdb->racketmanager_clubs" );
+				$wpdb->query( "RENAME TABLE $wpdb_leaguemanager_competitions TO $wpdb->racketmanager_competitions" );
+				$wpdb->query( "RENAME TABLE $wpdb_leaguemanager_competitions_seasons TO $wpdb->racketmanager_competitions_seasons" );
+				$wpdb->query( "RENAME TABLE $wpdb_leaguemanager_leagues TO $wpdb->racketmanager" );
+				$wpdb->query( "RENAME TABLE $wpdb_leaguemanager_matches TO $wpdb->racketmanager_matches" );
+				$wpdb->query( "RENAME TABLE $wpdb_leaguemanager_results_checker TO $wpdb->racketmanager_results_checker" );
+				$wpdb->query( "RENAME TABLE $wpdb_leaguemanager_roster TO $wpdb->racketmanager_roster" );
+				$wpdb->query( "RENAME TABLE $wpdb_leaguemanager_roster_requests TO $wpdb->racketmanager_roster_requests" );;
+				$wpdb->query( "RENAME TABLE $wpdb_leaguemanager_rubbers TO $wpdb->racketmanager_rubbers" );
+				$wpdb->query( "RENAME TABLE $wpdb_leaguemanager_seasons TO $wpdb->racketmanager_seasons" );
+				$wpdb->query( "RENAME TABLE $wpdb_leaguemanager_table TO $wpdb->racketmanager_table" );
+				$wpdb->query( "RENAME TABLE $wpdb_leaguemanager_teams TO $wpdb->racketmanager_teams" );
+				$wpdb->query( "RENAME TABLE $wpdb_leaguemanager_team_competition TO $wpdb->racketmanager_team_competition" );
+				$wpdb->query( "RENAME TABLE $wpdb_leaguemanager_tournaments TO $wpdb->racketmanager_tournaments" );
+				$recaptcha_site_key = get_option('leaguemanager-recaptcha-site-key');
+				add_option('racketmanager-recaptcha-site-key', $recaptcha_site_key);
+				$recaptcha_secret_key = get_option('leaguemanager-recaptcha-secret-key');
+				add_option('racketmanager-recaptcha-secret-key', $recaptcha_secret_key);
+				delete_option('leaguemanager-recaptcha-site-key');
+				delete_option('leaguemanager-recaptcha-secret-key');
+		}
     /*
 	* Update version and dbversion
 	*/
-	$options['dbversion'] = LEAGUEMANAGER_DBVERSION;
-	$options['version'] = LEAGUEMANAGER_VERSION;
+	$options['dbversion'] = RACKETMANAGER_DBVERSION;
+	$options['version'] = RACKETMANAGER_VERSION;
 
 	update_option('leaguemanager', $options);
-	echo __('finished', 'leaguemanager') . "<br />\n";
+	echo __('finished', 'racketmanager') . "<br />\n";
 	$wpdb->hide_errors();
 	return;
 }
 
 /**
-* leaguemanager_upgrade_page() - This page showsup , when the database version doesn't fit to the script LEAGUEMANAGER_DBVERSION constant.
+* racketmanager_upgrade_page() - This page showsup , when the database version doesn't fit to the script RACKETMANAGER_DBVERSION constant.
 *
 * @return Upgrade Message
 */
-function leaguemanager_upgrade_page()  {
+function racketmanager_upgrade_page()  {
 	$filepath    = admin_url() . 'admin.php?page=' . htmlspecialchars($_GET['page']);
 
 	if (isset($_GET['upgrade']) && $_GET['upgrade'] == 'now') {
@@ -277,10 +315,10 @@ function leaguemanager_upgrade_page()  {
 	}
 ?>
 	<div class="wrap">
-		<h2><?php _e('Upgrade LeagueManager', 'leaguemanager') ;?></h2>
-		<p><?php _e('Your database for LeagueManager is out-of-date, and must be upgraded before you can continue.', 'leaguemanager'); ?>
-		<p><?php _e('The upgrade process may take a while, so please be patient.', 'leaguemanager'); ?></p>
-		<h3><a class="button" href="<?php echo $filepath;?>&amp;upgrade=now"><?php _e('Start upgrade now', 'leaguemanager'); ?>...</a></h3>
+		<h2><?php _e('Upgrade RacketManager', 'leaguemanager') ;?></h2>
+		<p><?php _e('Your database for RacketManager is out-of-date, and must be upgraded before you can continue.', 'racketmanager'); ?>
+		<p><?php _e('The upgrade process may take a while, so please be patient.', 'racketmanager'); ?></p>
+		<h3><a class="button" href="<?php echo $filepath;?>&amp;upgrade=now"><?php _e('Start upgrade now', 'racketmanager'); ?>...</a></h3>
 	</div>
 	<?php
 }
@@ -295,10 +333,10 @@ function leaguemanager_do_upgrade($filepath) {
 	global $wpdb;
 ?>
 <div class="wrap">
-	<h2><?php _e('Upgrade LeagueManager', 'leaguemanager') ;?></h2>
-	<p><?php leaguemanager_upgrade();?></p>
-	<p><?php _e('Upgrade successful', 'leaguemanager') ;?></p>
-	<h3><a class="button" href="<?php echo $filepath;?>"><?php _e('Continue', 'leaguemanager'); ?>...</a></h3>
+	<h2><?php _e('Upgrade RacketManager', 'racketmanager') ;?></h2>
+	<p><?php racketmanager_upgrade();?></p>
+	<p><?php _e('Upgrade successful', 'racketmanager') ;?></p>
+	<h3><a class="button" href="<?php echo $filepath;?>"><?php _e('Continue', 'racketmanager'); ?>...</a></h3>
 </div>
 <?php
 }

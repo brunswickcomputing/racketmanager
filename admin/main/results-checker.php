@@ -14,20 +14,20 @@
 		<input type="submit" value="<?php _e('Apply'); ?>" name="doResultsChecker" id="doResultsChecker" class="button-secondary action" />
 	</div>
 
-	<table class="widefat" summary="" title="<?php _e( 'LeagueManager Results Checker', 'leaguemanager') ?>">
+	<table class="widefat" summary="" title="<?php _e( 'RacketManager Results Checker', 'racketmanager') ?>">
 		<thead>
 		<tr>
-			<th scope="col" class="check-column"><input type="checkbox" onclick="Leaguemanager.checkAll(document.getElementById('results-checker-filter'));" /></th>
+			<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('results-checker-filter'));" /></th>
 			<th scope="col" class="num">ID</th>
-      <th scope="col"><?php _e( 'Date', 'leaguemanager' ) ?></th>
-			<th scope="col"><?php _e( 'League', 'leaguemanager' ) ?></th>
-      <th scope="col"><?php _e( 'Match', 'leaguemanager' ) ?></th>
-      <th scope="col"><?php _e( 'Team', 'leaguemanager' ) ?></th>
-			<th scope="col"><?php _e( 'Player', 'leaguemanager' ) ?></th>
-			<th scope="col"><?php _e( 'Description', 'leaguemanager' ) ?></th>
-      <th scope="col"><?php _e( 'Status', 'leaguemanager' ) ?></th>
-      <th scope="col"><?php _e( 'Updated Date', 'leaguemanager' ) ?></th>
-      <th scope="col"><?php _e( 'Updated User', 'leaguemanager' ) ?></th>
+      <th scope="col"><?php _e( 'Date', 'racketmanager' ) ?></th>
+			<th scope="col"><?php _e( 'League', 'racketmanager' ) ?></th>
+      <th scope="col"><?php _e( 'Match', 'racketmanager' ) ?></th>
+      <th scope="col"><?php _e( 'Team', 'racketmanager' ) ?></th>
+			<th scope="col"><?php _e( 'Player', 'racketmanager' ) ?></th>
+			<th scope="col"><?php _e( 'Description', 'racketmanager' ) ?></th>
+      <th scope="col"><?php _e( 'Status', 'racketmanager' ) ?></th>
+      <th scope="col"><?php _e( 'Updated Date', 'racketmanager' ) ?></th>
+      <th scope="col"><?php _e( 'Updated User', 'racketmanager' ) ?></th>
 		</tr>
 		<tbody id="the-list">
 
@@ -42,7 +42,7 @@
             </th>
             <td><?php echo $resultsChecker->id ?></td>
             <td><?php echo $resultsChecker->date ?></td>
-            <td><a href="admin.php?page=leaguemanager&subpage=show-league&league_id=<?php echo $resultsChecker->league->id ?>" title="<?php _e( 'Go to league', 'leaguemanager' ) ?>"><?php echo $resultsChecker->league->title ?></a></td>
+            <td><a href="admin.php?page=racketmanager&subpage=show-league&league_id=<?php echo $resultsChecker->league->id ?>" title="<?php _e( 'Go to league', 'racketmanager' ) ?>"><?php echo $resultsChecker->league->title ?></a></td>
             <td><?php echo $resultsChecker->match->match_title ?></td>
             <td><?php echo $resultsChecker->team ?></td>
             <td><?php echo $resultsChecker->player ?></td>

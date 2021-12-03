@@ -1,18 +1,18 @@
 <?php
 /**
- * LeagueManager administration functions
+ * RacketManager administration functions
  *
  */
 
 /**
-* Class to implement LeagueManager Administration panel
+* Class to implement RacketManager Administration panel
 *
 * @author Kolja Schleich
 * @author Paul Moffat
-* @package LeagueManager
-* @subpackage LeagueManagerAdmin
+* @package RacketManager
+* @subpackage RacketManagerAdmin
 */
-final class LeagueManagerAdmin extends LeagueManager
+final class RacketManagerAdmin extends RacketManager
 {
 	/**
 	 * Constructor
@@ -39,37 +39,37 @@ final class LeagueManagerAdmin extends LeagueManager
 		add_action( 'publish_post', array(&$this, 'editMatchReport') );
 		add_action( 'edit_post', array(&$this, 'editMatchReport') );
 		add_action('add_meta_boxes', array(&$this, 'metaboxes'));
-        add_action( 'wp_ajax_leaguemanager_get_league_dropdown', array(&$this, 'getLeagueDropdown'));
+        add_action( 'wp_ajax_racketmanager_get_league_dropdown', array(&$this, 'getLeagueDropdown'));
 	}
 
     /**
 	 * adds menu to the admin interface
 	 */
 	public function menu() {
-		$plugin = 'leaguemanager/leaguemanager.php';
+		$plugin = 'racketmanager/racketmanager.php';
 
         // keep capabilities here for next update
-        $page = add_menu_page(__('LeagueManager','leaguemanager'), __('LeagueManager','leaguemanager'), 'league_manager', 'leaguemanager', array(&$this, 'display'), LEAGUEMANAGER_URL.'/admin/icons/cup_sw.png', 2);
+        $page = add_menu_page(__('RacketManager','racketmanager'), __('RacketManager','racketmanager'), 'league_manager', 'racketmanager', array(&$this, 'display'), RACKETMANAGER_URL.'/admin/icons/cup_sw.png', 2);
         add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
         add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
 
-        $page = add_submenu_page('leaguemanager', __('LeagueManager', 'leaguemanager'), __('Overview','leaguemanager'),'league_manager', 'leaguemanager', array(&$this, 'display'));
+        $page = add_submenu_page('racketmanager', __('RacketManager', 'racketmanager'), __('Overview','racketmanager'),'league_manager', 'racketmanager', array(&$this, 'display'));
         add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
         add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
 
-        $page = add_submenu_page('leaguemanager', __('Settings', 'leaguemanager'), __('Settings','leaguemanager'),'leaguemanager_settings', 'leaguemanager-settings', array( $this, 'display' ));
+        $page = add_submenu_page('racketmanager', __('Settings', 'racketmanager'), __('Settings','racketmanager'),'racketmanager_settings', 'racketmanager-settings', array( $this, 'display' ));
         add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
         add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
 
-        $page = add_submenu_page('leaguemanager', __('Import'), __('Import'),'import_leagues', 'leaguemanager-import', array( $this, 'display' ));
+        $page = add_submenu_page('racketmanager', __('Import'), __('Import'),'import_leagues', 'racketmanager-import', array( $this, 'display' ));
         add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
         add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
 
-        $page = add_submenu_page('leaguemanager', __('Export'), __('Export'),'export_leagues', 'leaguemanager-export', array( $this, 'display' ));
+        $page = add_submenu_page('racketmanager', __('Export'), __('Export'),'export_leagues', 'racketmanager-export', array( $this, 'display' ));
         add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
         add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
 
-        $page = add_submenu_page('leaguemanager', __('Documentation', 'leaguemanager'), __('Documentation','leaguemanager'), 'view_leagues', 'leaguemanager-doc', array( $this, 'display' ));
+        $page = add_submenu_page('racketmanager', __('Documentation', 'racketmanager'), __('Documentation','racketmanager'), 'view_leagues', 'racketmanager-doc', array( $this, 'display' ));
         add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
         add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
 
@@ -98,16 +98,16 @@ final class LeagueManagerAdmin extends LeagueManager
         <table class="form-table">
             <tr>
                 <th>
-                    <label for="gender"><?php _e( 'Gender','leaguemanager' ); ?></label>
+                    <label for="gender"><?php _e( 'Gender','racketmanager' ); ?></label>
                 </th>
                 <td>
-                    <input type="radio" required="required" name="gender" value="M" <?php echo ( get_the_author_meta( 'gender', $user->ID )  == 'M') ? 'checked' : '' ?>> <?php _e('Male', 'leaguemanager') ?><br />
-                    <input type="radio" name="gender" value="F" <?php echo ( get_the_author_meta( 'gender', $user->ID )  == 'F') ? 'checked' : '' ?>> <?php _e('Female', 'leaguemanager') ?>
+                    <input type="radio" required="required" name="gender" value="M" <?php echo ( get_the_author_meta( 'gender', $user->ID )  == 'M') ? 'checked' : '' ?>> <?php _e('Male', 'racketmanager') ?><br />
+                    <input type="radio" name="gender" value="F" <?php echo ( get_the_author_meta( 'gender', $user->ID )  == 'F') ? 'checked' : '' ?>> <?php _e('Female', 'racketmanager') ?>
                 </td>
             </tr>
             <tr>
                 <th>
-                    <label for="contactno"><?php _e( 'Contact Number','leaguemanager' ); ?></label>
+                    <label for="contactno"><?php _e( 'Contact Number','racketmanager' ); ?></label>
                 </th>
                 <td>
                     <input type="tel" name="contactno" value="<?php echo esc_attr( get_the_author_meta( 'contactno', $user->ID ) ); ?>">
@@ -115,7 +115,7 @@ final class LeagueManagerAdmin extends LeagueManager
             </tr>
              <tr>
                 <th>
-                    <label for="btm"><?php _e( 'BTM Number','leaguemanager' ); ?></label>
+                    <label for="btm"><?php _e( 'BTM Number','racketmanager' ); ?></label>
                 </th>
                 <td>
                     <input type="number" name="btm" value="<?php echo esc_attr( get_the_author_meta( 'btm', $user->ID ) ); ?>">
@@ -123,7 +123,7 @@ final class LeagueManagerAdmin extends LeagueManager
             </tr>
              <tr>
                 <th>
-                    <label for="remove_date"><?php _e( 'Date Removed','leaguemanager' ); ?></label>
+                    <label for="remove_date"><?php _e( 'Date Removed','racketmanager' ); ?></label>
                 </th>
                 <td>
                     <input type="date" name="remove_date" value="<?php echo esc_attr( get_the_author_meta( 'remove_date', $user->ID ) ); ?>">
@@ -162,7 +162,7 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * adds the required Metaboxes
 	 */
 	public function metaboxes() {
-		add_meta_box( 'leaguemanager', __('Match-Report','leaguemanager'), array(&$this, 'addMetaBox'), 'post' );
+		add_meta_box( 'racketmanager', __('Match-Report','racketmanager'), array(&$this, 'addMetaBox'), 'post' );
 	}
 
 	/**
@@ -178,9 +178,9 @@ final class LeagueManagerAdmin extends LeagueManager
 		$league_mode = (isset($league->mode) ? ($league->mode) : '' );
 
 		$menu = array(
-                      'teams' => array( 'title' => __('Add Teams', 'leaguemanager'), 'callback' => array(&$this, 'displayTeamsPage'), 'cap' => 'edit_teams' ),
-                      'team' => array( 'title' => __('Add Team', 'leaguemanager'), 'callback' => array(&$this, 'displayTeamPage'), 'cap' => 'edit_teams' ),
-                      'match' => array( 'title' => __('Add Matches', 'leaguemanager'), 'callback' => array(&$this, 'displayMatchPage'), 'cap' => 'edit_matches' )
+                      'teams' => array( 'title' => __('Add Teams', 'racketmanager'), 'callback' => array(&$this, 'displayTeamsPage'), 'cap' => 'edit_teams' ),
+                      'team' => array( 'title' => __('Add Team', 'racketmanager'), 'callback' => array(&$this, 'displayTeamPage'), 'cap' => 'edit_teams' ),
+                      'match' => array( 'title' => __('Add Matches', 'racketmanager'), 'callback' => array(&$this, 'displayMatchPage'), 'cap' => 'edit_matches' )
         );
 		$menu = apply_filters('league_menu_'.$sport, $menu, $league->id, $season);
 		$menu = apply_filters('league_menu_'.$league->mode, $menu, $league->id, $season);
@@ -194,40 +194,40 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @param none
 	 */
 	public function display() {
-		global $league, $leaguemanager, $championship;
+		global $league, $racketmanager, $championship;
 
 		$options = get_option('leaguemanager');
 
 		// Update Plugin Version
-		if ( $options['version'] != LEAGUEMANAGER_VERSION ) {
-			$options['version'] = LEAGUEMANAGER_VERSION;
+		if ( $options['version'] != RACKETMANAGER_VERSION ) {
+			$options['version'] = RACKETMANAGER_VERSION;
 			update_option('leaguemanager', $options);
 		}
 
 		// Update database
-		if( $options['dbversion'] != LEAGUEMANAGER_DBVERSION ) {
+		if( $options['dbversion'] != RACKETMANAGER_DBVERSION ) {
 			include_once ( dirname (__FILE__) . '/upgrade.php' );
-			leaguemanager_upgrade_page();
+			racketmanager_upgrade_page();
 			return;
 		}
 
 		switch ($_GET['page']) {
-			case 'leaguemanager-doc':
+			case 'racketmanager-doc':
 				include_once( dirname(__FILE__) . '/documentation.php' );
 				break;
-			case 'leaguemanager-settings':
+			case 'racketmanager-settings':
 				$this->displayOptionsPage();
 				break;
-			case 'leaguemanager-import':
+			case 'racketmanager-import':
                 $this->displayImportPage();
 				break;
-			case 'leaguemanager-export':
+			case 'racketmanager-export':
                 $this->displayExportPage();
 				break;
-            case 'leaguemanager-documentation':
+            case 'racketmanager-documentation':
                 include_once( dirname(__FILE__) . '/documentation.php' );
                 break;
-			case 'leaguemanager':
+			case 'racketmanager':
 			default:
 				if ( isset($_GET['subpage']) ) {
 					switch ($_GET['subpage']) {
@@ -269,11 +269,11 @@ final class LeagueManagerAdmin extends LeagueManager
 	}
 
 	/**
-	 * show LeagueManager index page
+	 * show RacketManager index page
 	 *
 	 */
 	private function displayIndexPage() {
-		global $leaguemanager, $competition, $club;
+		global $racketmanager, $competition, $club;
 
 		if ( !current_user_can( 'view_leagues' ) ) {
 			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
@@ -284,11 +284,11 @@ final class LeagueManagerAdmin extends LeagueManager
             if ( $club_id ) $club = get_club($club_id);
             if ( isset($_POST['addCompetition']) ) {
                 if ( current_user_can('edit_leagues') ) {
-                    check_admin_referer('leaguemanager_add-competition');
+                    check_admin_referer('racketmanager_add-competition');
                     $this->addCompetition( htmlspecialchars(strip_tags($_POST['competition_name'])), $_POST['num_rubbers'], $_POST['num_sets'], $_POST['competition_type'], $_POST['mode'], $_POST['entryType'] );
                     $this->printMessage();
                 } else {
-                    $this->setMessage(__("You don't have permission to perform this task", 'leaguemanager'), true);
+                    $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
                 }
             } elseif ( isset($_POST['docompdel']) && $_POST['action'] == 'delete' ) {
                 if ( current_user_can('del_leagues') ) {
@@ -297,10 +297,10 @@ final class LeagueManagerAdmin extends LeagueManager
                         $this->delCompetition( intval($competition_id) );
                     }
                 } else {
-                    $this->setMessage(__("You don't have permission to perform this task", 'leaguemanager'), true);
+                    $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
                 }
             } elseif ( isset($_POST['addSeason']) ) {
-                check_admin_referer('leaguemanager_add-season');
+                check_admin_referer('racketmanager_add-season');
                 $this->addSeason( htmlspecialchars(strip_tags($_POST['seasonName'])) );
                 $this->printMessage();
                 $tab = 1;
@@ -312,7 +312,7 @@ final class LeagueManagerAdmin extends LeagueManager
                 $this->printMessage();
                 $tab = 1;
             } elseif ( isset($_POST['doaddCompetitionsToSeason']) && $_POST['action'] == 'addCompetitionsToSeason' ) {
-                check_admin_referer('leaguemanager_add-seasons-competitions-bulk');
+                check_admin_referer('racketmanager_add-seasons-competitions-bulk');
                 foreach ( $_POST['competition'] AS $competition_id ) {
                     $this->addSeasonToCompetition( htmlspecialchars($_POST['season']), intval($_POST['num_match_days']), $competition_id );
                 }
@@ -320,14 +320,14 @@ final class LeagueManagerAdmin extends LeagueManager
                 $tab = 1;
             } elseif ( isset($_POST['addRoster']) ) {
                 if ( current_user_can('edit_teams') ) {
-                    check_admin_referer('leaguemanager_add-roster');
+                    check_admin_referer('racketmanager_add-roster');
                     if (isset($_POST['club_id']) && (!$_POST['club_id'] == 0)) {
                         $this->addPlayerIdToRoster( $_POST['club_id'], $_POST['player_id'] );
                     } else {
-                        $this->setMessage( __("Club must be selected",'leaguemanager'), true );
+                        $this->setMessage( __("Club must be selected",'racketmanager'), true );
                     }
                 } else {
-                    $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+                    $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
                 }
                 $this->printMessage();
                 $tab = 2;
@@ -338,12 +338,12 @@ final class LeagueManagerAdmin extends LeagueManager
                         $this->delRoster( intval($roster_id) );
                     }
                 } else {
-                    $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+                    $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
                 }
                 $this->printMessage();
                 $tab = 2;
             } elseif ( isset($_POST['addPlayer']) ) {
-                check_admin_referer('leaguemanager_add-player');
+                check_admin_referer('racketmanager_add-player');
                 $this->addPlayer( htmlspecialchars(strip_tags($_POST['firstname'])), htmlspecialchars(strip_tags($_POST['surname'])), $_POST['gender'], htmlspecialchars(strip_tags($_POST['btm'])), 'true');
                 $this->printMessage();
                 $tab = 3;
@@ -354,7 +354,7 @@ final class LeagueManagerAdmin extends LeagueManager
                         $this->delPlayer( intval($player_id) );
                     }
                 } else {
-                    $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+                    $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
                 }
                 $this->printMessage();
                 $tab = 3;
@@ -369,18 +369,18 @@ final class LeagueManagerAdmin extends LeagueManager
                         }
                     }
                 } else {
-                    $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+                    $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
                 }
                 $this->printMessage();
                 $tab = 4;
             } elseif ( isset($_POST['addTeam']) ) {
-                check_admin_referer('leaguemanager_add-team');
+                check_admin_referer('racketmanager_add-team');
                 $this->addTeam( $_POST['affiliatedClub'], $_POST['team_type'] );
                 $this->printMessage();
                 $club_id = 0;
                 $tab = 5;
             } elseif ( isset($_POST['editTeam']) ) {
-                check_admin_referer('leaguemanager_manage-teams');
+                check_admin_referer('racketmanager_manage-teams');
                 $this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), $_POST['affiliatedclub']);
                 $this->printMessage();
                 $club_id = 0;
@@ -393,12 +393,12 @@ final class LeagueManagerAdmin extends LeagueManager
                 $this->printMessage();
                 $tab = 5;
             } elseif ( isset($_POST['addClub']) ) {
-                check_admin_referer('leaguemanager_add-club');
+                check_admin_referer('racketmanager_add-club');
                 $this->addClub( htmlspecialchars($_POST['club']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['shortcode']),  htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['website']), htmlspecialchars($_POST['founded']), htmlspecialchars($_POST['facilities']), htmlspecialchars($_POST['address']), htmlspecialchars($_POST['latitude']), htmlspecialchars($_POST['longitude']) );
                 $this->printMessage();
                 $tab = 6;
             } elseif ( isset($_POST['editClub']) ) {
-                check_admin_referer('leaguemanager_manage-club');
+                check_admin_referer('racketmanager_manage-club');
                 $this->editClub( intval($_POST['club_id']), htmlspecialchars(strip_tags($_POST['club'])), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['shortcode']), intval($_POST['matchsecretary']), htmlspecialchars($_POST['matchSecretaryContactNo']), htmlspecialchars($_POST['matchSecretaryEmail']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['website']), htmlspecialchars($_POST['founded']), htmlspecialchars($_POST['facilities']), htmlspecialchars($_POST['address']), htmlspecialchars($_POST['latitude']), htmlspecialchars($_POST['longitude']) );
                 $this->printMessage();
                 $tab = 6;
@@ -423,17 +423,17 @@ final class LeagueManagerAdmin extends LeagueManager
 	                      }
                     }
                 } else {
-                    $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+                    $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
                 }
                 $this->printMessage();
                 $tab = 8;
             } elseif ( isset($_POST['addTournament']) ) {
-                check_admin_referer('leaguemanager_add-tournament');
+                check_admin_referer('racketmanager_add-tournament');
                 $this->addTournament( htmlspecialchars($_POST['tournament']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['season']), htmlspecialchars($_POST['venue']),  htmlspecialchars($_POST['date']), htmlspecialchars($_POST['closingdate']), htmlspecialchars($_POST['tournamentSecretaryName']), htmlspecialchars($_POST['tournamentSecretary']), htmlspecialchars($_POST['tournamentSecretaryContactNo']), htmlspecialchars($_POST['tournamentSecretaryEmail']) );
                 $this->printMessage();
                 $tab = 9;
             } elseif ( isset($_POST['editTournament']) ) {
-                check_admin_referer('leaguemanager_manage-tournament');
+                check_admin_referer('racketmanager_manage-tournament');
                 $this->editTournament( intval($_POST['tournament_id']), htmlspecialchars($_POST['tournament']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['season']), htmlspecialchars($_POST['venue']),  htmlspecialchars($_POST['date']), htmlspecialchars($_POST['closingdate']), htmlspecialchars($_POST['tournamentSecretaryName']), htmlspecialchars($_POST['tournamentSecretary']), htmlspecialchars($_POST['tournamentSecretaryContactNo']), htmlspecialchars($_POST['tournamentSecretaryEmail']) );
                 $this->printMessage();
                 $tab = 9;
@@ -469,7 +469,7 @@ final class LeagueManagerAdmin extends LeagueManager
      *
      */
     private function displayCompetitionPage() {
-        global $leaguemanager, $competition;
+        global $racketmanager, $competition;
 
         if ( !current_user_can( 'edit_teams' ) ) {
             echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
@@ -484,7 +484,7 @@ final class LeagueManagerAdmin extends LeagueManager
             $club_id = 0;
 
             if ( isset($_POST['addLeague']) && !isset($_POST['deleteit']) ) {
-                check_admin_referer('leaguemanager_add-league');
+                check_admin_referer('racketmanager_add-league');
                 if ( empty($_POST['league_id'] ) ){
                     $this->addLeague( htmlspecialchars($_POST['league_title']), intval($_POST['competition_id']) );
                 } else {
@@ -550,7 +550,7 @@ final class LeagueManagerAdmin extends LeagueManager
             if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POST['delmatches']) && !isset($_POST['doaction-match_day']) )  {
                 if ( 'team' == $_POST['updateLeague'] ) {
                     if ( current_user_can('edit_teams') ) {
-                        check_admin_referer('leaguemanager_manage-teams');
+                        check_admin_referer('racketmanager_manage-teams');
 
                         $home = isset( $_POST['home'] ) ? 1 : 0;
                         $custom = !isset($_POST['custom']) ? array() : $_POST['custom'];
@@ -570,11 +570,11 @@ final class LeagueManagerAdmin extends LeagueManager
                             $this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), $_POST['affiliatedclub'], $_POST['team_type'], htmlspecialchars($_POST['captainId']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']),  htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), $home, $group, $roster, $profile, $custom, intval($_POST['league_id']), );
                         }
                     } else {
-                        $this->setMessage(__("You don't have permission to perform this task", 'leaguemanager'), true);
+                        $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
                     }
                 } elseif ( 'teamPlayer' == $_POST['updateLeague'] ) {
                     if ( current_user_can('edit_teams') ) {
-                        check_admin_referer('leaguemanager_manage-teams');
+                        check_admin_referer('racketmanager_manage-teams');
 
                         $teamPlayer2 = isset($_POST['teamPlayer2']) ? htmlspecialchars(strip_tags($_POST['teamPlayer2'])) : '';
                         $teamPlayer2Id = isset($_POST['teamPlayerId2']) ? $_POST['teamPlayerId2'] : 0;
@@ -591,11 +591,11 @@ final class LeagueManagerAdmin extends LeagueManager
                             $this->editTeamPlayer( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['teamPlayer1'])), $_POST['teamPlayerId1'], $teamPlayer2, $teamPlayer2Id, htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']), intval($_POST['league_id']) );
                         }
                     } else {
-                        $this->setMessage(__("You don't have permission to perform this task", 'leaguemanager'), true);
+                        $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
                     }
                 } elseif ( 'match' == $_POST['updateLeague'] ) {
                     if ( current_user_can('edit_matches') ) {
-                        check_admin_referer('leaguemanager_manage-matches');
+                        check_admin_referer('racketmanager_manage-matches');
 
                         $group = isset($_POST['group']) ? htmlspecialchars(strip_tags($_POST['group'])) : '';
 
@@ -615,7 +615,7 @@ final class LeagueManagerAdmin extends LeagueManager
                                     $num_matches -= 1;
                                 }
                             }
-                            $this->setMessage(sprintf(_n('%d Match added', '%d Matches added', $num_matches, 'leaguemanager'), $num_matches));
+                            $this->setMessage(sprintf(_n('%d Match added', '%d Matches added', $num_matches, 'racketmanager'), $num_matches));
                         } else {
                             $num_matches = count($_POST['match']);
                             $post_match = $this->htmlspecialchars_array($_POST['match']);
@@ -635,10 +635,10 @@ final class LeagueManagerAdmin extends LeagueManager
                                 $away_team = isset($_POST['away_team'][$i]) ? htmlspecialchars(strip_tags($_POST['away_team'][$i])) : '';
                                 $this->editMatch( $date, $home_team, $away_team, $match_day, htmlspecialchars($_POST['location'][$i]), intval($_POST['league_id']), $match_id, $group, htmlspecialchars(strip_tags($_POST['final'])), $custom );
                             }
-                            $this->setMessage(sprintf(_n('%d Match updated', '%d Matches updated', $num_matches, 'leaguemanager'), $num_matches));
+                            $this->setMessage(sprintf(_n('%d Match updated', '%d Matches updated', $num_matches, 'racketmanager'), $num_matches));
                         }
                     } else {
-                        $this->setMessage(__("You don't have permission to perform this task", 'leaguemanager'), true);
+                        $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
                     }
                 } elseif ( 'results' == $_POST['updateLeague'] ) {
                     if ( current_user_can('update_results') ) {
@@ -648,16 +648,16 @@ final class LeagueManagerAdmin extends LeagueManager
                         $tab = 2;
                         $matchDay = intval($_POST['current_match_day']);
                     } else {
-                        $this->setMessage(__("You don't have permission to perform this task", 'leaguemanager'), true);
+                        $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
                     }
                 } elseif ( 'teams_manual' == $_POST['updateLeague'] ) {
                     if ( current_user_can('update_results') ) {
                         check_admin_referer('teams-bulk');
                         $league->saveStandingsManually( $_POST['team_id'], $_POST['points_plus'], $_POST['points_minus'], $_POST['num_done_matches'], $_POST['num_won_matches'], $_POST['num_draw_matches'], $_POST['num_lost_matches'], $_POST['add_points'], $_POST['custom'] );
 
-                        $this->setMessage(__('Standings Table updated','leaguemanager'));
+                        $this->setMessage(__('Standings Table updated','racketmanager'));
                     } else {
-                        $this->setMessage(__("You don't have permission to perform this task", 'leaguemanager'), true);
+                        $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
                     }
                 }
 
@@ -669,7 +669,7 @@ final class LeagueManagerAdmin extends LeagueManager
 												foreach ( $_POST['team'] AS $team_id )
 												$this->delTeamFromLeague( intval($team_id), intval($_GET['league_id']), $season );
 										} else {
-												$this->setMessage(__("You don't have permission to perform this task", 'leaguemanager'), true);
+												$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
 										}
 								}
 						}  elseif ( isset($_POST['delmatches']) ) {
@@ -681,7 +681,7 @@ final class LeagueManagerAdmin extends LeagueManager
 
                         $tab = 2;
                     } else {
-                        $this->setMessage(__("You don't have permission to perform this task", 'leaguemanager'), true);
+                        $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
                     }
                 }
             } elseif ( isset($_POST['action']) && $_POST['action'] == 'addTeamsToLeague' ) {
@@ -710,9 +710,9 @@ final class LeagueManagerAdmin extends LeagueManager
                     ksort($team_ranks);
                     $team_ranks = $league->getRanking($team_ranks);
                     $league->updateRanking($team_ranks);
-                    $this->setMessage(__('Team ranking saved','leaguemanager'));
+                    $this->setMessage(__('Team ranking saved','racketmanager'));
                 } else {
-                    $this->setMessage(__("You don't have permission to perform this task", 'leaguemanager'), true);
+                    $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
                 }
                 $this->printMessage();
 
@@ -738,9 +738,9 @@ final class LeagueManagerAdmin extends LeagueManager
                     ksort($team_ranks);
                     $team_ranks = $league->getRanking($team_ranks);
                     $league->updateRanking($team_ranks);
-                    $this->setMessage(__('Team ranking saved','leaguemanager'));
+                    $this->setMessage(__('Team ranking saved','racketmanager'));
                 } else {
-                    $this->setMessage(__("You don't have permission to perform this task", 'leaguemanager'), true);
+                    $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
                 }
                 $this->printMessage();
 
@@ -749,10 +749,10 @@ final class LeagueManagerAdmin extends LeagueManager
             if (isset($_POST['updateRanking'])) {
                 if ( current_user_can('update_results') ) {
                     $league->_rankTeams($league->id);
-                    $this->setMessage(__('Team ranking updated','leaguemanager'));
+                    $this->setMessage(__('Team ranking updated','racketmanager'));
                     $this->printMessage();
                 } else {
-                    $this->setMessage(__("You don't have permission to perform this task", 'leaguemanager'), true);
+                    $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
                 }
 
                 $tab = 0;
@@ -793,7 +793,7 @@ final class LeagueManagerAdmin extends LeagueManager
             }
 
             if ( empty($competition->seasons)  ) {
-                $this->setMessage( __( 'You need to add at least one season for the competition', 'leaguemanager' ), true );
+                $this->setMessage( __( 'You need to add at least one season for the competition', 'racketmanager' ), true );
                 $this->printMessage();
             }
 
@@ -832,7 +832,7 @@ final class LeagueManagerAdmin extends LeagueManager
      *
      */
     private function displayTeamsPage() {
-        global $leaguemanager;
+        global $racketmanager;
 
         if ( !current_user_can( 'edit_teams' ) ) {
             echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
@@ -857,7 +857,7 @@ final class LeagueManagerAdmin extends LeagueManager
      *
      */
     private function displayClubPage() {
-        global $leaguemanager;
+        global $racketmanager;
 
         if ( !current_user_can( 'edit_teams' ) ) {
             echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
@@ -871,12 +871,12 @@ final class LeagueManagerAdmin extends LeagueManager
                 $edit = true;
                 $club = get_club( $clubId );
 
-                $form_title = __( 'Edit Club', 'leaguemanager' );
-                $form_action = __( 'Update', 'leaguemanager' );
+                $form_title = __( 'Edit Club', 'racketmanager' );
+                $form_action = __( 'Update', 'racketmanager' );
             } else {
                 $clubId = '';
-                $form_title = __( 'Add Club', 'leaguemanager' );
-                $form_action = __( 'Add', 'leaguemanager' );
+                $form_title = __( 'Add Club', 'racketmanager' );
+                $form_action = __( 'Add', 'racketmanager' );
                 $club = (object)array( 'name' => '', 'type' => '', 'id' => '', 'website' => '', 'matchsecretary' => '', 'matchSecretaryName' => '', 'contactno' => '', 'matchSecretaryContactNo' => '', 'matchSecretaryEmail' => '', 'shortcode' => '', 'founded' => '', 'facilities' => '', 'address' => '', 'latitude' => '', 'longitude' => '' );
             }
 
@@ -889,7 +889,7 @@ final class LeagueManagerAdmin extends LeagueManager
      *
      */
     private function displayTournamentPage() {
-        global $leaguemanager;
+        global $racketmanager;
 
         if ( !current_user_can( 'edit_teams' ) ) {
             echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
@@ -899,18 +899,18 @@ final class LeagueManagerAdmin extends LeagueManager
             if ( isset( $_GET['tournament_name'] ) ) {
                 $tournamentName = $_GET['tournament_name'];
                 $edit = true;
-                $tournament = $leaguemanager->getTournament( $tournamentName );
+                $tournament = $racketmanager->getTournament( $tournamentName );
 
-                $form_title = __( 'Edit Tournament', 'leaguemanager' );
-                $form_action = __( 'Update', 'leaguemanager' );
+                $form_title = __( 'Edit Tournament', 'racketmanager' );
+                $form_action = __( 'Update', 'racketmanager' );
             } else {
                 $tournamentId = '';
-                $form_title = __( 'Add Tournament', 'leaguemanager' );
-                $form_action = __( 'Add', 'leaguemanager' );
+                $form_title = __( 'Add Tournament', 'racketmanager' );
+                $form_action = __( 'Add', 'racketmanager' );
                 $tournament = (object)array( 'name' => '', 'type' => '', 'id' => '', 'tournamentSecretary' => '', 'tournamentSecretaryName' => '', 'venue' => '', 'tournamentSecretaryContactNo' => '', 'tournamentSecretaryEmail' => '', 'date' => '', 'closingdate' => '' );
             }
 
-            $clubs = $leaguemanager->getClubs( );
+            $clubs = $racketmanager->getClubs( );
             include_once( dirname(__FILE__) . '/includes/tournament.php' );
         }
     }
@@ -920,14 +920,14 @@ final class LeagueManagerAdmin extends LeagueManager
      *
      */
     private function displayCompetitionsPage() {
-        global $leaguemanager;
+        global $racketmanager;
 
         if ( !current_user_can( 'edit_teams' ) ) {
             echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
         } else {
             if ( isset( $_GET['season'] ) ) {
                 $season = $_GET['season'];
-                $season = $leaguemanager->getSeasonDB( array( 'name' => $season) );
+                $season = $racketmanager->getSeasonDB( array( 'name' => $season) );
             }
             include_once( dirname(__FILE__) . '/includes/competitions-list.php' );
         }
@@ -938,7 +938,7 @@ final class LeagueManagerAdmin extends LeagueManager
      *
      */
     private function displayTeamPage() {
-        global $leaguemanager;
+        global $racketmanager;
 
         if ( !current_user_can( 'edit_teams' ) ) {
             echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
@@ -976,14 +976,14 @@ final class LeagueManagerAdmin extends LeagueManager
 
                 if ( !isset($team->roster) ) $team->roster = array();
 
-                $form_title = __( 'Edit Team', 'leaguemanager' );
-                $form_action = __( 'Update', 'leaguemanager' );
+                $form_title = __( 'Edit Team', 'racketmanager' );
+                $form_action = __( 'Update', 'racketmanager' );
             } else {
-                $form_title = __( 'Add Team', 'leaguemanager' );
-                $form_action = __( 'Add', 'leaguemanager' );
+                $form_title = __( 'Add Team', 'racketmanager' );
+                $form_action = __( 'Add', 'racketmanager' );
                 $team = (object)array( 'title' => '', 'home' => 0, 'id' => '', 'website' => '', 'captain' => '', 'captainId' => '', 'contactno' => '', 'contactemail' => '', 'stadium' => '', 'match_day' => '', 'match_time' => '', 'roster' => array('id' => '', 'cat_id' => '' ) );
             }
-            $clubs = $leaguemanager->getClubs( );
+            $clubs = $racketmanager->getClubs( );
 
             require_once( dirname(__FILE__) . '/includes/teams/'. $file );
         }
@@ -1026,7 +1026,7 @@ final class LeagueManagerAdmin extends LeagueManager
                 $mode = 'edit';
                 $edit = true;
                 $bulk = false;
-                $form_title  = $submit_title = __( 'Edit Match', 'leaguemanager' );
+                $form_title  = $submit_title = __( 'Edit Match', 'racketmanager' );
 
                 $id = intval($_GET['edit']);
                 $match = get_match($id);
@@ -1054,8 +1054,8 @@ final class LeagueManagerAdmin extends LeagueManager
                     $match_args["group"] = $group;
                 }
 
-                $form_title = sprintf(__( 'Edit Matches &#8211; %d. Match Day', 'leaguemanager' ), $match_day);
-                $submit_title = __('Edit Matches', 'leaguemanager');
+                $form_title = sprintf(__( 'Edit Matches &#8211; %d. Match Day', 'racketmanager' ), $match_day);
+                $submit_title = __('Edit Matches', 'racketmanager');
 
                 $matches = $league->getMatches( $match_args );
                 $max_matches = count($matches);
@@ -1073,14 +1073,14 @@ final class LeagueManagerAdmin extends LeagueManager
                 $max_matches = $final['num_matches'];
 
                 if ( 'add' == $mode ) {
-                    $form_title = $submit_title = sprintf(__( 'Add Matches &#8211; %s', 'leaguemanager' ), $league->championship->getFinalname($finalkey));
+                    $form_title = $submit_title = sprintf(__( 'Add Matches &#8211; %s', 'racketmanager' ), $league->championship->getFinalname($finalkey));
                     for ( $h = 0; $h < $max_matches; $h++ ) {
                         $matches[$h] = new Match();
                         $matches[$h]->hour = $league->default_match_start_time['hour'];
                         $matches[$h]->minutes = $league->default_match_start_time['minutes'];
                     }
                 } else {
-                    $form_title = $submit_title = sprintf(__( 'Edit Matches &#8211; %s', 'leaguemanager' ), $league->championship->getFinalname($finalkey));
+                    $form_title = $submit_title = sprintf(__( 'Edit Matches &#8211; %s', 'racketmanager' ), $league->championship->getFinalname($finalkey));
                     $match_args = array("final" => $finalkey);
                     $matches = $league->getMatches( $match_args );
                 }
@@ -1096,16 +1096,16 @@ final class LeagueManagerAdmin extends LeagueManager
                     $search .= $wpdb->prepare(" AND `group` = '%s'", $group);
                 }
 
-                $maxMatchDay = $wpdb->get_var( "SELECT MAX(match_day) FROM {$wpdb->leaguemanager_matches} WHERE  ".$search."" );
+                $maxMatchDay = $wpdb->get_var( "SELECT MAX(match_day) FROM {$wpdb->racketmanager_matches} WHERE  ".$search."" );
 
                 if ( isset($_GET['final']) ) {
                 } else {
                     if ( $cup ) {
-                        $form_title = sprintf(__( 'Add Matches - Group %s', 'leaguemanager' ), $group);
-                        $submit_title = __( 'Add Matches', 'leaguemanager' );
+                        $form_title = sprintf(__( 'Add Matches - Group %s', 'racketmanager' ), $group);
+                        $submit_title = __( 'Add Matches', 'racketmanager' );
                         $max_matches = ceil(($league->num_teams/2) * $season['num_match_days']); // set number of matches to add to half the number of teams per match day
                     } else {
-                        $form_title = $submit_title = __( 'Add Matches', 'leaguemanager' );
+                        $form_title = $submit_title = __( 'Add Matches', 'racketmanager' );
                         $max_matches = ceil($league->num_teams_total); // set number of matches to add to half the number of teams per match day
                     }
                     $match_day = 1;
@@ -1156,12 +1156,12 @@ final class LeagueManagerAdmin extends LeagueManager
             echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
         } else {
             if ( isset($_POST['import']) ) {
-                check_admin_referer('leaguemanager_import-datasets');
-                $this->import( intval($_POST['league_id']), $_FILES['leaguemanager_import'], htmlspecialchars($_POST['delimiter']), htmlspecialchars($_POST['mode']) );
+                check_admin_referer('racketmanager_import-datasets');
+                $this->import( intval($_POST['league_id']), $_FILES['racketmanager_import'], htmlspecialchars($_POST['delimiter']), htmlspecialchars($_POST['mode']) );
                 $this->printMessage();
             }
-            global $leaguemanager;
-            include_once( LEAGUEMANAGER_PATH . '/admin/tools/import.php' );
+            global $racketmanager;
+            include_once( RACKETMANAGER_PATH . '/admin/tools/import.php' );
         }
     }
 
@@ -1174,7 +1174,7 @@ final class LeagueManagerAdmin extends LeagueManager
         if ( !current_user_can( 'export_leagues' ) ) {
             echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
         } else {
-            if ( isset($_POST['leaguemanager_export']) ) {
+            if ( isset($_POST['racketmanager_export']) ) {
                 $options = get_option('leaguemanager');
                 if ($_POST['exportkey'] == $options['exportkey']) {
                     ob_end_clean();
@@ -1183,7 +1183,7 @@ final class LeagueManagerAdmin extends LeagueManager
                     update_option('leaguemanager', $options);
                 } else {
                     ob_end_flush();
-                    $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+                    $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
                     $this->printMessage();
                 }
             }
@@ -1192,7 +1192,7 @@ final class LeagueManagerAdmin extends LeagueManager
             $options['exportkey'] = uniqid(rand(), true);
             update_option('leaguemanager', $options);
 
-            include_once( LEAGUEMANAGER_PATH . '/admin/tools/export.php' );
+            include_once( RACKETMANAGER_PATH . '/admin/tools/export.php' );
         }
     }
 
@@ -1203,7 +1203,7 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return array
 	 */
 	public function pluginActions( $links ) {
-		$settings_link = '<a href="admin.php?page=leaguemanager-settings">' . __('Settings') . '</a>';
+		$settings_link = '<a href="admin.php?page=racketmanager-settings">' . __('Settings') . '</a>';
 		array_unshift( $links, $settings_link );
 
 		return $links;
@@ -1214,17 +1214,17 @@ final class LeagueManagerAdmin extends LeagueManager
 	 *
 	 */
 	public function loadScripts() {
-		wp_register_script( 'leaguemanager-functions', plugins_url('/admin/js/functions.js', dirname(__FILE__)), array( 'thickbox', 'jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'jquery-ui-tabs', 'jquery-ui-accordion', 'jquery-ui-sortable', 'jquery-ui-tooltip', 'jquery-effects-core', 'jquery-effects-slide', 'jquery-effects-explode', 'jquery-ui-autocomplete', 'iris' ), LEAGUEMANAGER_VERSION );
-		wp_enqueue_script('leaguemanager-functions');
+		wp_register_script( 'racketmanager-functions', plugins_url('/admin/js/functions.js', dirname(__FILE__)), array( 'thickbox', 'jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'jquery-ui-tabs', 'jquery-ui-accordion', 'jquery-ui-sortable', 'jquery-ui-tooltip', 'jquery-effects-core', 'jquery-effects-slide', 'jquery-effects-explode', 'jquery-ui-autocomplete', 'iris' ), RACKETMANAGER_VERSION );
+		wp_enqueue_script('racketmanager-functions');
 
-    wp_register_script( 'leaguemanager-ajax', plugins_url('/admin/js/ajax.js', dirname(__FILE__)), array('sack'), LEAGUEMANAGER_VERSION );
-		wp_enqueue_script('leaguemanager-ajax');
+    wp_register_script( 'racketmanager-ajax', plugins_url('/admin/js/ajax.js', dirname(__FILE__)), array('sack'), RACKETMANAGER_VERSION );
+		wp_enqueue_script('racketmanager-ajax');
 
 		?>
 		<script type='text/javascript'>
 		<!--<![CDATA[-->
-		LeagueManagerAjaxL10n = {
-			requestUrl: "<?php bloginfo( 'wpurl' ); ?>/wp-admin/admin-ajax.php", manualPointRuleDescription: "<?php _e( 'Order: win, win overtime, tie, loss, loss overtime', 'leaguemanager' ) ?>", pluginUrl: "<?php plugins_url('', dirname(__FILE__)); ?>/wp-content/plugins/leaguemanager", Edit: "<?php _e("Edit"); ?>", Post: "<?php _e("Post"); ?>", Save: "<?php _e("Save"); ?>", Cancel: "<?php _e("Cancel"); ?>", pleaseWait: "<?php _e("Please wait..."); ?>", Delete: "<?php _e('Delete', 'leaguemanager') ?>", Yellow: "<?php _e( 'Yellow', 'leaguemanager') ?>", Red: "<?php _e( 'Red', 'leaguemanager') ?>", Yellow_Red: "<?php _e('Yellow/Red', 'leaguemanager') ?>", Insert: "<?php _e( 'Insert', 'leaguemanager' ) ?>", InsertPlayer: "<?php _e( 'Insert Player', 'leaguemanager' ) ?>", AddPlayerFromRoster: "<?php _e( 'Add Player from Team Roster', 'leaguemanager' ) ?>"
+		RacketManagerAjaxL10n = {
+			requestUrl: "<?php bloginfo( 'wpurl' ); ?>/wp-admin/admin-ajax.php", manualPointRuleDescription: "<?php _e( 'Order: win, win overtime, tie, loss, loss overtime', 'racketmanager' ) ?>", pluginUrl: "<?php plugins_url('', dirname(__FILE__)); ?>/wp-content/plugins/racketmanager", Edit: "<?php _e("Edit"); ?>", Post: "<?php _e("Post"); ?>", Save: "<?php _e("Save"); ?>", Cancel: "<?php _e("Cancel"); ?>", pleaseWait: "<?php _e("Please wait..."); ?>", Delete: "<?php _e('Delete', 'racketmanager') ?>", Yellow: "<?php _e( 'Yellow', 'racketmanager') ?>", Red: "<?php _e( 'Red', 'racketmanager') ?>", Yellow_Red: "<?php _e('Yellow/Red', 'racketmanager') ?>", Insert: "<?php _e( 'Insert', 'racketmanager' ) ?>", InsertPlayer: "<?php _e( 'Insert Player', 'racketmanager' ) ?>", AddPlayerFromRoster: "<?php _e( 'Add Player from Team Roster', 'racketmanager' ) ?>"
 		}
 		<!--]]>-->
 		</script>
@@ -1236,8 +1236,8 @@ final class LeagueManagerAdmin extends LeagueManager
 	 *
 	 */
 	public function loadStyles() {
-		wp_enqueue_style('leaguemanager-modal', plugins_url("/css/modal.css", dirname(__FILE__)), false, LEAGUEMANAGER_VERSION, 'screen');
-        wp_enqueue_style('leaguemanager', plugins_url("/css/admin.css", dirname(__FILE__)), false, LEAGUEMANAGER_VERSION, 'screen');
+		wp_enqueue_style('racketmanager-modal', plugins_url("/css/modal.css", dirname(__FILE__)), false, RACKETMANAGER_VERSION, 'screen');
+        wp_enqueue_style('racketmanager', plugins_url("/css/admin.css", dirname(__FILE__)), false, RACKETMANAGER_VERSION, 'screen');
 
 		wp_register_style('jquery-ui', plugins_url("/css/jquery/jquery-ui.min.css", dirname(__FILE__)), false, '1.11.4', 'all');
 		wp_register_style('jquery-ui-structure', plugins_url("/css/jquery/jquery-ui.structure.min.css", dirname(__FILE__)), array('jquery-ui'), '1.11.4', 'all');
@@ -1255,7 +1255,7 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return array
 	 */
 	public function getModes() {
-		$modes = array( 'default' => __('Default', 'leaguemanager') );
+		$modes = array( 'default' => __('Default', 'racketmanager') );
         /**
          * Fired when league modes are built
          *
@@ -1263,7 +1263,7 @@ final class LeagueManagerAdmin extends LeagueManager
          * @return array
          * @category wp-filter
          */
-		$modes = apply_filters( 'leaguemanager_modes', $modes);
+		$modes = apply_filters( 'racketmanager_modes', $modes);
 		return $modes;
 	}
 
@@ -1273,7 +1273,7 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return array
 	 */
 	public function getentryTypes() {
-		$entryTypes = array( 'team' => __('Team', 'leaguemanager'), 'player' => __('Player', 'leaguemanager') );
+		$entryTypes = array( 'team' => __('Team', 'racketmanager'), 'player' => __('Player', 'racketmanager') );
 		return $entryTypes;
 	}
 
@@ -1283,7 +1283,7 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return array
 	 */
 	public function getPointRules() {
-		$rules = array( 'manual' => __( 'Update Standings Manually', 'leaguemanager' ), 'one' => __( 'One-Point-Rule', 'leaguemanager' ), 'two' => __('Two-Point-Rule','leaguemanager'), 'three' => __('Three-Point-Rule', 'leaguemanager'), 'score' => __( 'Score', 'leaguemanager'), 'user' => __('User defined', 'leaguemanager') );
+		$rules = array( 'manual' => __( 'Update Standings Manually', 'racketmanager' ), 'one' => __( 'One-Point-Rule', 'racketmanager' ), 'two' => __('Two-Point-Rule','racketmanager'), 'three' => __('Three-Point-Rule', 'racketmanager'), 'score' => __( 'Score', 'racketmanager'), 'user' => __('User defined', 'racketmanager') );
 
         /**
          * Fired when league point rules are built
@@ -1292,7 +1292,7 @@ final class LeagueManagerAdmin extends LeagueManager
          * @return array
          * @category wp-filter
          */
-		$rules = apply_filters( 'leaguemanager_point_rules_list', $rules );
+		$rules = apply_filters( 'racketmanager_point_rules_list', $rules );
 		asort($rules);
 
 		return $rules;
@@ -1312,7 +1312,7 @@ final class LeagueManagerAdmin extends LeagueManager
          * @return array
          * @category wp-filter
          */
-		$point_formats = apply_filters( 'leaguemanager_point_formats', $point_formats );
+		$point_formats = apply_filters( 'racketmanager_point_formats', $point_formats );
 		return $point_formats;
 	}
 
@@ -1332,7 +1332,7 @@ final class LeagueManagerAdmin extends LeagueManager
      */
     private function updateResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $season, $final = false, $message = true ) {
         if ( !current_user_can('update_results') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -1341,7 +1341,7 @@ final class LeagueManagerAdmin extends LeagueManager
         $num_matches = $league->_updateResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $season, $final );
 
         if ( $message ) {
-           $this->setMessage( sprintf(__('Updated Results of %d matches','leaguemanager'), $num_matches) );
+           $this->setMessage( sprintf(__('Updated Results of %d matches','racketmanager'), $num_matches) );
         }
         return true;
     }
@@ -1365,10 +1365,10 @@ final class LeagueManagerAdmin extends LeagueManager
      * @return boolean
      */
     private function addCompetition( $name, $num_rubbers, $num_sets, $type, $mode, $entryType ) {
-        global $wpdb, $leaguemanager;
+        global $wpdb, $racketmanager;
 
         if ( !current_user_can('edit_leagues') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -1401,13 +1401,13 @@ final class LeagueManagerAdmin extends LeagueManager
                           "num_matches_per_page" => 10,
                           );
 
-        $wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->leaguemanager_competitions} (`name`, `num_rubbers`, `num_sets`, `type`, `settings`, `competitiontype`) VALUES ('%s', '%d', '%d', '%s', '%s', '%s')", $name, $num_rubbers, $num_sets, $type, maybe_serialize($settings), $competitionType ) );
+        $wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager_competitions} (`name`, `num_rubbers`, `num_sets`, `type`, `settings`, `competitiontype`) VALUES ('%s', '%d', '%d', '%s', '%s', '%s')", $name, $num_rubbers, $num_sets, $type, maybe_serialize($settings), $competitionType ) );
         $competition_id = $wpdb->insert_id;
         $competition = get_competition( $competition_id );
 
 				$this->createCompetitionPages($competition_id, $name);
 
-        $this->setMessage( __('Competition added', 'leaguemanager') );
+        $this->setMessage( __('Competition added', 'racketmanager') );
 
         return true;
     }
@@ -1415,7 +1415,7 @@ final class LeagueManagerAdmin extends LeagueManager
 		private function createCompetitionPages( $competitionId, $competitionName ) {
 
 				$pageContent = "[competition id=".$competitionId."]";
-				$title = $competitionName.' '.__('Tables', 'leaguemanager');
+				$title = $competitionName.' '.__('Tables', 'racketmanager');
 
 				$this->createCompetitionPage($pageContent, $title);
 
@@ -1436,7 +1436,7 @@ final class LeagueManagerAdmin extends LeagueManager
           )
 	      );
 
-				$this->addLeagueManagerPage($page_definition);
+				$this->addRacketManagerPage($page_definition);
 
 		}
 
@@ -1452,7 +1452,7 @@ final class LeagueManagerAdmin extends LeagueManager
         global $wpdb;
 
         if ( !current_user_can('edit_league_settings') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -1472,8 +1472,8 @@ final class LeagueManagerAdmin extends LeagueManager
         $num_sets = $settings['num_sets'];
         $type = $settings['competition_type'];
 
-        $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_competitions} SET `name` = '%s', `settings` = '%s', `num_rubbers` = '%d', `num_sets` = '%d', `type` = '%s' WHERE `id` = '%d'", $title, maybe_serialize($settings), $num_rubbers, $num_sets, $type, $competition_id ) );
-        $this->setMessage( __('Settings saved', 'leaguemanager') );
+        $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_competitions} SET `name` = '%s', `settings` = '%s', `num_rubbers` = '%d', `num_sets` = '%d', `type` = '%s' WHERE `id` = '%d'", $title, maybe_serialize($settings), $num_rubbers, $num_sets, $type, $competition_id ) );
+        $this->setMessage( __('Settings saved', 'racketmanager') );
 
         return true;
     }
@@ -1487,7 +1487,7 @@ final class LeagueManagerAdmin extends LeagueManager
         global $wpdb;
 
         if ( !current_user_can('del_leagues') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -1497,22 +1497,22 @@ final class LeagueManagerAdmin extends LeagueManager
             $league_id = $league->id;
 
             // remove tables
-            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_table} WHERE `league_id` = '%d'", $league_id) );
+            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_table} WHERE `league_id` = '%d'", $league_id) );
             // remove matches and rubbers
-            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_rubbers} WHERE `match_id` IN ( SELECT `id` from {$wpdb->leaguemanager_matches} WHERE `league_id` = '%d')", $league_id) );
-            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_matches} WHERE `league_id` = '%d'", $league_id) );
+            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` IN ( SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` = '%d')", $league_id) );
+            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `league_id` = '%d'", $league_id) );
 
-            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager} WHERE `id` = '%d'", $league_id) );
+            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager} WHERE `id` = '%d'", $league_id) );
 
         }
 
-        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_team_competition} WHERE `competition_id` = '%d'", $competition_id) );
-        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_competitions_seasons} WHERE `competition_id` = '%d'", $competition_id) );
-        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_competitions} WHERE `id` = '%d'", $competition_id) );
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_team_competition} WHERE `competition_id` = '%d'", $competition_id) );
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_competitions_seasons} WHERE `competition_id` = '%d'", $competition_id) );
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_competitions} WHERE `id` = '%d'", $competition_id) );
 
 				$this->deleteCompetitionPages($competition->name);
 
-        $this->setMessage( __('Competition deleted', 'leaguemanager') );
+        $this->setMessage( __('Competition deleted', 'racketmanager') );
         return true;
     }
 
@@ -1524,13 +1524,13 @@ final class LeagueManagerAdmin extends LeagueManager
      */
 		private function deleteCompetitionPages( $competitionName ) {
 
-			$title = $competitionName.' '.__('Tables', 'leaguemanager');
+			$title = $competitionName.' '.__('Tables', 'racketmanager');
 			$pageName = sanitize_title_with_dashes($title);
-			$this->deleteLeaguemanagerPage($pageName);
+			$this->deleteRacketmanagerPage($pageName);
 
 			$title = $competitionName;
 			$pageName = sanitize_title_with_dashes($title);
-			$this->deleteLeaguemanagerPage($pageName);
+			$this->deleteRacketmanagerPage($pageName);
 
 		}
 
@@ -1544,13 +1544,13 @@ final class LeagueManagerAdmin extends LeagueManager
         global $wpdb;
 
         if ( !current_user_can('edit_seasons') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
         $settings = array();
-        $wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->leaguemanager_seasons} (name) VALUES ('%s')", $name) );
-        $this->setMessage( __('Season added', 'leaguemanager') );
+        $wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager_seasons} (name) VALUES ('%s')", $name) );
+        $this->setMessage( __('Season added', 'racketmanager') );
 
         return true;
     }
@@ -1565,12 +1565,12 @@ final class LeagueManagerAdmin extends LeagueManager
         global $wpdb;
 
         if ( !current_user_can('del_seasons') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
-        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_seasons} WHERE `id` = '%d'", $season_id) );
-        $this->setMessage( __('Season deleted','leaguemanager') );
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_seasons} WHERE `id` = '%d'", $season_id) );
+        $this->setMessage( __('Season deleted','racketmanager') );
 
         return true;
     }
@@ -1583,10 +1583,10 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return boolean
 	 */
 	private function addSeasonToCompetition( $season, $num_match_days, $competition_id ) {
-		global $leaguemanager, $wpdb, $competition;
+		global $racketmanager, $wpdb, $competition;
 
         if ( !current_user_can('edit_seasons') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -1598,7 +1598,7 @@ final class LeagueManagerAdmin extends LeagueManager
 		ksort($competition->seasons);
 		$this->saveCompetitionSeasons($competition->seasons, $competition->id);
 
-		$this->setMessage( sprintf(__('Season <strong>%s</strong> added','leaguemanager'), $season ) );
+		$this->setMessage( sprintf(__('Season <strong>%s</strong> added','racketmanager'), $season ) );
 
         return true;
 	}
@@ -1612,10 +1612,10 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return boolean
 	 */
 	private function editSeason( $season_id, $season, $num_match_days, $competition_id ) {
-		global $leaguemanager, $wpdb, $competition;
+		global $racketmanager, $wpdb, $competition;
 
         if ( !current_user_can('edit_seasons') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -1626,12 +1626,12 @@ final class LeagueManagerAdmin extends LeagueManager
             $league = get_league($league);
             if ( $teams = $league->getLeagueTeams( array("season" => $season_id) ) ) {
                 foreach ( $teams AS $team ) {
-                    $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_table} SET `season` = '%s' WHERE `id` = '%d'", $season, $team->table_id) );
+                    $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_table} SET `season` = '%s' WHERE `id` = '%d'", $season, $team->table_id) );
                 }
             }
             if ( $matches = $league->getMatches( array("season" => $season_id, "limit" => false) ) ) {
                   foreach ( $matches AS $match ) {
-                      $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_matches} SET `season` = '%s' WHERE `id` = '%d'", $season, $match->id) );
+                      $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `season` = '%s' WHERE `id` = '%d'", $season, $match->id) );
                   }
               }
         }
@@ -1644,7 +1644,7 @@ final class LeagueManagerAdmin extends LeagueManager
 		ksort($competition->seasons);
 		$this->saveCompetitionSeasons($competition->seasons, $competition->id);
 
-		$this->setMessage( sprintf(__('Season <strong>%s</strong> saved','leaguemanager'), $season ) );
+		$this->setMessage( sprintf(__('Season <strong>%s</strong> saved','racketmanager'), $season ) );
 
         return true;
 	}
@@ -1657,10 +1657,10 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return boolean
 	 */
 	private function delCompetitionSeason( $seasons, $competition_id ) {
-		global $leaguemanager, $wpdb, $competition;
+		global $racketmanager, $wpdb, $competition;
 
         if ( !current_user_can('del_seasons') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -1672,10 +1672,10 @@ final class LeagueManagerAdmin extends LeagueManager
 
                 $league_id = $league->id;
                 // remove tables
-                $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_table} WHERE `league_id` = '%d' AND `season` = '%s'", $league_id, $season) );
+                $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_table} WHERE `league_id` = '%d' AND `season` = '%s'", $league_id, $season) );
                 // remove matches and rubbers
-                $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_rubbers} WHERE `match_id` IN ( SELECT `id` from {$wpdb->leaguemanager_matches} WHERE `league_id` = '%d' AND `season` = '%s')", $league_id, $season) );
-                $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_matches} WHERE `league_id` = '%d' AND `season` = '%s'", $league_id, $season) );
+                $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` IN ( SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` = '%d' AND `season` = '%s')", $league_id, $season) );
+                $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `league_id` = '%d' AND `season` = '%s'", $league_id, $season) );
 
             }
             unset($competition->seasons[$season]);
@@ -1696,11 +1696,11 @@ final class LeagueManagerAdmin extends LeagueManager
 		global $wpdb;
 
         if ( !current_user_can('edit_seasons') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
-		$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_competitions} SET `seasons` = '%s' WHERE `id` = '%d'", maybe_serialize($seasons), $competition_id) );
+		$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_competitions} SET `seasons` = '%s' WHERE `id` = '%d'", maybe_serialize($seasons), $competition_id) );
 
 		wp_cache_delete($competition_id, 'competitions');
 
@@ -1725,13 +1725,13 @@ final class LeagueManagerAdmin extends LeagueManager
 		global $wpdb;
 
         if ( !current_user_can('edit_leagues') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
 		$settings = array();
-		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->leaguemanager} (title, competition_id, settings, seasons) VALUES ('%s', '%d', '%s', '%s')", $title, $competition_id, maybe_serialize($settings), '') );
-		$this->setMessage( __('League added', 'leaguemanager') );
+		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager} (title, competition_id, settings, seasons) VALUES ('%s', '%d', '%s', '%s')", $title, $competition_id, maybe_serialize($settings), '') );
+		$this->setMessage( __('League added', 'racketmanager') );
 
         return true;
 	}
@@ -1749,12 +1749,12 @@ final class LeagueManagerAdmin extends LeagueManager
 		global $wpdb;
 
         if ( !current_user_can('edit_leagues') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
-		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager} SET `title` = '%s', `competition_id` = '%d' WHERE `id` = '%d'", $title, intval($competition_id), $league_id ) );
-		$this->setMessage( __('League Updated', 'leaguemanager') );
+		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager} SET `title` = '%s', `competition_id` = '%d' WHERE `id` = '%d'", $title, intval($competition_id), $league_id ) );
+		$this->setMessage( __('League Updated', 'racketmanager') );
 
         return true;
 	}
@@ -1766,20 +1766,20 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return boolean
 	 */
 	private function delLeague( $league_id ) {
-		global $wpdb, $leaguemanager;
+		global $wpdb, $racketmanager;
 
         if ( !current_user_can('del_leagues') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
         // remove tables
-        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_table} WHERE `league_id` = '%d'", $league_id) );
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_table} WHERE `league_id` = '%d'", $league_id) );
 		// remove matches and rubbers
-        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_rubbers} WHERE `match_id` IN ( SELECT `id` from {$wpdb->leaguemanager_matches} WHERE `league_id` = '%d')", $league_id) );
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_matches} WHERE `league_id` = '%d'", $league_id) );
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` IN ( SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` = '%d')", $league_id) );
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `league_id` = '%d'", $league_id) );
 
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager} WHERE `id` = '%d'", $league_id) );
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager} WHERE `id` = '%d'", $league_id) );
 
         return true;
 	}
@@ -1809,16 +1809,16 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return boolean
 	 */
 	private function addClub( $name, $type, $shortcode, $contactno, $website, $founded, $facilities, $address, $latitude, $longitude ) {
-		global $wpdb, $leaguemanager;
+		global $wpdb, $racketmanager;
 
         if ( !current_user_can('edit_teams') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
-		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->leaguemanager_clubs} (`name`, `type`, `shortcode`, `contactno`, `website`, `founded`, `facilities`, `address`, `latitude`, `longitude`) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s','%s' )", $name, $type, $shortcode, $contactno, $website, $founded, $facilities, $address, $latitude, $longitude ) );
+		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager_clubs} (`name`, `type`, `shortcode`, `contactno`, `website`, `founded`, `facilities`, `address`, `latitude`, `longitude`) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s','%s' )", $name, $type, $shortcode, $contactno, $website, $founded, $facilities, $address, $latitude, $longitude ) );
 
-		$this->setMessage( __('Club added','leaguemanager') );
+		$this->setMessage( __('Club added','racketmanager') );
 
         return true;
 	}
@@ -1845,13 +1845,13 @@ final class LeagueManagerAdmin extends LeagueManager
 	private function editClub( $club_id, $name, $type, $shortcode, $matchsecretary, $matchSecretaryContactNo, $matchSecretaryEmail, $contactno, $website, $founded, $facilities, $address, $latitude, $longitude ) {
 
         if ( !current_user_can('edit_teams') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
         $this->updateClub( $club_id, $name, $type, $shortcode, $matchsecretary, $matchSecretaryContactNo, $matchSecretaryEmail, $contactno, $website, $founded, $facilities, $address, $latitude, $longitude );
 
-        $this->setMessage( __('Club updated','leaguemanager') );
+        $this->setMessage( __('Club updated','racketmanager') );
 
         return true;
 	}
@@ -1866,17 +1866,17 @@ final class LeagueManagerAdmin extends LeagueManager
 		global $wpdb, $club;
 
         if ( !current_user_can('del_teams') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
-        $teams = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->leaguemanager_teams} WHERE `affiliatedclub` = '%d'", $club_id) );
+        $teams = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d'", $club_id) );
         if ( !empty($teams) ) {
-            $this->setMessage( __('Unable to delete club - still has teams attached','leaguemanager') );
+            $this->setMessage( __('Unable to delete club - still has teams attached','racketmanager') );
         } else {
-            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_roster_requests} WHERE `affiliatedclub` = '%d'", $club_id) );
-            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_roster} WHERE `affiliatedclub` = '%d'", $club_id) );
-            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_clubs} WHERE `id` = '%d'", $club_id) );
-            $this->setMessage( __('Club Deleted','leaguemanager') );
+            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_roster_requests} WHERE `affiliatedclub` = '%d'", $club_id) );
+            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_roster} WHERE `affiliatedclub` = '%d'", $club_id) );
+            $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_clubs} WHERE `id` = '%d'", $club_id) );
+            $this->setMessage( __('Club Deleted','racketmanager') );
 
             return true;
         }
@@ -1900,14 +1900,14 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return int | false
 	 */
 	private function addTableEntry( $leagueId, $teamId, $season , $custom = array(), $message = true ) {
-		global $wpdb, $leaguemanager;
+		global $wpdb, $racketmanager;
 
         if ( !current_user_can('edit_teams') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
-        $tableId = $leaguemanager->addTeamtoTable( $leagueId, $teamId, $season , $custom = array(), $message = true );
+        $tableId = $racketmanager->addTeamtoTable( $leagueId, $teamId, $season , $custom = array(), $message = true );
         return $tableId;
     }
 
@@ -1923,11 +1923,11 @@ final class LeagueManagerAdmin extends LeagueManager
 		global $wpdb;
 
         if ( !current_user_can('edit_teams') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
-        $sql = $wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->leaguemanager_teams} WHERE `affiliatedclub` = %d AND `type` = '%s' AND `status` != 'P'",$affiliatedclub, $team_type);
+        $sql = $wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = %d AND `type` = '%s' AND `status` != 'P'",$affiliatedclub, $team_type);
         $count = $wpdb->get_var($sql);
         $count ++;
 
@@ -1941,11 +1941,11 @@ final class LeagueManagerAdmin extends LeagueManager
         $title = $club->shortcode.' '.$type.' '.$count;
         $stadium = $club->name;
 
-        $sql = "INSERT INTO {$wpdb->leaguemanager_teams} (`title`, `stadium`, `affiliatedclub`, `type`) VALUES ('%s', '%s', '%d', '%s')";
+        $sql = "INSERT INTO {$wpdb->racketmanager_teams} (`title`, `stadium`, `affiliatedclub`, `type`) VALUES ('%s', '%s', '%d', '%s')";
 		$wpdb->query( $wpdb->prepare ( $sql, $title, $stadium, $affiliatedclub, $team_type) );
 		$team_id = $wpdb->insert_id;
 
-        $this->setMessage( __('Team added','leaguemanager') );
+        $this->setMessage( __('Team added','racketmanager') );
 
 		return $team_id;
 	}
@@ -1970,10 +1970,10 @@ final class LeagueManagerAdmin extends LeagueManager
      * @return int | false
      */
     private function addTeamToLeague( $affiliatedclub, $team_type, $captain = false, $contactno = false, $contactemail = false, $matchday = false, $matchtime = false, $home = '', $roster = '', $profile = '', $custom = '', $league_id = false, $message = true ) {
-        global $wpdb, $leaguemanager;
+        global $wpdb, $racketmanager;
 
         if ( !current_user_can('edit_teams') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -1981,11 +1981,11 @@ final class LeagueManagerAdmin extends LeagueManager
 
         if ( $league_id ) {
             $league = get_league($league_id);
-            $team_competition_id = $leaguemanager->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail, $matchday, $matchtime );
+            $team_competition_id = $racketmanager->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail, $matchday, $matchtime );
         }
 
         if ( $message )
-            $this->setMessage( __('Team added','leaguemanager') );
+            $this->setMessage( __('Team added','racketmanager') );
 
         return $team_id;
     }
@@ -2011,7 +2011,7 @@ final class LeagueManagerAdmin extends LeagueManager
 		global $wpdb;
 
         if ( !current_user_can('edit_teams') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -2021,16 +2021,16 @@ final class LeagueManagerAdmin extends LeagueManager
             if ( $team_type != $league->type ) {
                 if ( $team_type == 'XD' && $league->type == 'LD' ) {
                 } else {
-                    $this->setMessage( __('Team type does not match league type', 'leaguemanager'), true );
+                    $this->setMessage( __('Team type does not match league type', 'racketmanager'), true );
                     return false;
                 }
             }
             $this->setTeamCompetition($team_id, $league->competition_id, $captain, $contactno, $contactemail, $matchday, $matchtime);
         }
 
-        $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `home` = '%d', `roster`= '%s', `profile` = '%d', `custom` = '%s', `type` = '%s' WHERE `id` = %d", $title, $affiliatedclub, $home, maybe_serialize($roster), $profile, maybe_serialize($custom), $team_type, $team_id ) );
+        $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `home` = '%d', `roster`= '%s', `profile` = '%d', `custom` = '%s', `type` = '%s' WHERE `id` = %d", $title, $affiliatedclub, $home, maybe_serialize($roster), $profile, maybe_serialize($custom), $team_type, $team_id ) );
 
-        $this->setMessage( __('Team updated', 'leaguemanager') );
+        $this->setMessage( __('Team updated', 'racketmanager') );
 
         return true;
 	}
@@ -2045,16 +2045,16 @@ final class LeagueManagerAdmin extends LeagueManager
 		global $wpdb;
 
         if ( !current_user_can('del_teams') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
         $team = get_team( $team_id );
 
-        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_rubbers} WHERE `match_id` in (select `id` from {$wpdb->leaguemanager_matches} WHERE `home_team` = '%d' OR `away_team` = '%d')", $team_id, $team_id) );
-        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_matches} WHERE `home_team` = '%d' OR `away_team` = '%d'", $team_id, $team_id) );
-        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_team_competition} WHERE `team_id` = '%d'", $team_id) );
-        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_teams} WHERE `id` = '%d'", $team_id) );
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` in (select `id` from {$wpdb->racketmanager_matches} WHERE `home_team` = '%d' OR `away_team` = '%d')", $team_id, $team_id) );
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `home_team` = '%d' OR `away_team` = '%d'", $team_id, $team_id) );
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_team_competition} WHERE `team_id` = '%d'", $team_id) );
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_teams} WHERE `id` = '%d'", $team_id) );
 
         return true;
 	}
@@ -2069,15 +2069,15 @@ final class LeagueManagerAdmin extends LeagueManager
 		global $wpdb;
 
         if ( !current_user_can('del_teams') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
-        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_rubbers} WHERE `match_id` in (select `id` from {$wpdb->leaguemanager_matches} WHERE `season` = '%d' AND `league_id` = '%d' AND (`home_team` = '%d' OR `away_team` = '%d'))", $season, $league_id, $team_id, $team_id) );
-        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_matches} WHERE `season` = '%d' AND `league_id` = '%d' AND (`home_team` = '%d' OR `away_team` = '%d')", $season, $league_id, $team_id, $team_id) );
-        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_table} WHERE `team_id` = '%d' AND `league_id` = '%d' and `season` = '%s'", $team_id, $league_id, $season) );
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` in (select `id` from {$wpdb->racketmanager_matches} WHERE `season` = '%d' AND `league_id` = '%d' AND (`home_team` = '%d' OR `away_team` = '%d'))", $season, $league_id, $team_id, $team_id) );
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `season` = '%d' AND `league_id` = '%d' AND (`home_team` = '%d' OR `away_team` = '%d')", $season, $league_id, $team_id, $team_id) );
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_table} WHERE `team_id` = '%d' AND `league_id` = '%d' and `season` = '%s'", $team_id, $league_id, $season) );
 
-				$this->setMessage( __('Team Deleted','leaguemanager') );
+				$this->setMessage( __('Team Deleted','racketmanager') );
 
         return true;
 	}
@@ -2095,20 +2095,20 @@ final class LeagueManagerAdmin extends LeagueManager
     * @return boolean
     */
     private function setTeamCompetition( $teamId, $competitionId, $captain = NULL, $contactNo = NULL, $contactEmail = NULL , $matchDay = NULL, $matchTime = NULL) {
-        global $wpdb, $leaguemanager;
+        global $wpdb, $racketmanager;
 
         if ( !current_user_can('edit_teams') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
-        $team_competition = $wpdb->get_results( $wpdb->prepare("SELECT `id` FROM {$wpdb->leaguemanager_team_competition} WHERE `team_id` = '%d' AND `competition_id` = '%d'", $teamId, $competitionId) );
+        $team_competition = $wpdb->get_results( $wpdb->prepare("SELECT `id` FROM {$wpdb->racketmanager_team_competition} WHERE `team_id` = '%d' AND `competition_id` = '%d'", $teamId, $competitionId) );
         if (!isset($team_competition[0])) {
-            $leaguemanager->addTeamCompetition( $teamId, $competitionId, $captain, $contactNo, $contactEmail, $matchDay, $matchTime );
+            $racketmanager->addTeamCompetition( $teamId, $competitionId, $captain, $contactNo, $contactEmail, $matchDay, $matchTime );
         } else {
             if ( isset($captain) ) {
-                $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_team_competition} SET `captain` = '%s', `match_day` = '%s', `match_time` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captain, $matchDay, $matchTime, $teamId, $competitionId ) );
-                $leaguemanager->updatePlayerDetails($captain,$contactNo,$contactEmail);
+                $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_team_competition} SET `captain` = '%s', `match_day` = '%s', `match_time` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captain, $matchDay, $matchTime, $teamId, $competitionId ) );
+                $racketmanager->updatePlayerDetails($captain,$contactNo,$contactEmail);
             }
         }
 
@@ -2129,16 +2129,16 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return int | false
 	 */
 	private function addTeamPlayer( $player1, $player1Id, $player2, $player2Id, $contactno, $contactemail, $affiliatedclub, $league_id, $message = true ) {
-		global $wpdb, $leaguemanager;
+		global $wpdb, $racketmanager;
 
         if ( !current_user_can('edit_teams') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
-        $team_id = $leaguemanager->addPlayerTeam( $player1, $player1Id, $player2, $player2Id, $contactno, $contactemail, $affiliatedclub, $league_id );
+        $team_id = $racketmanager->addPlayerTeam( $player1, $player1Id, $player2, $player2Id, $contactno, $contactemail, $affiliatedclub, $league_id );
 		if ( $message )
-			$this->setMessage( __('Player Team added','leaguemanager') );
+			$this->setMessage( __('Player Team added','racketmanager') );
 
 		return $team_id;
 	}
@@ -2158,10 +2158,10 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return boolean
 	 */
 	private function editTeamPlayer( $team_id, $player1, $player1Id, $player2, $player2Id, $contactno, $contactemail, $affiliatedclub, $league_id ) {
-		global $wpdb, $leaguemanager;
+		global $wpdb, $racketmanager;
 
         if ( !current_user_can('edit_teams') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -2175,14 +2175,14 @@ final class LeagueManagerAdmin extends LeagueManager
             $roster = array($player1Id, $player2Id);
         }
 
-        $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `roster` = '%s' WHERE `id` = %d", $title, $affiliatedclub, maybe_serialize($roster), $team_id ) );
+        $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `roster` = '%s' WHERE `id` = %d", $title, $affiliatedclub, maybe_serialize($roster), $team_id ) );
 
-        $team_competition = $wpdb->get_results( $wpdb->prepare("SELECT `id` FROM {$wpdb->leaguemanager_team_competition} WHERE `team_id` = '%d' AND `competition_id` = '%d'", $team_id, $league->competition_id) );
-        $captain = $leaguemanager->getRosterEntry($player1Id)->player_id;
+        $team_competition = $wpdb->get_results( $wpdb->prepare("SELECT `id` FROM {$wpdb->racketmanager_team_competition} WHERE `team_id` = '%d' AND `competition_id` = '%d'", $team_id, $league->competition_id) );
+        $captain = $racketmanager->getRosterEntry($player1Id)->player_id;
         if (!isset($team_competition[0])) {
-            $leaguemanager->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail );
+            $racketmanager->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail );
         } else {
-            $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_team_competition} SET `captain` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captain, $team_id, $league->competition_id ) );
+            $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_team_competition} SET `captain` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captain, $team_id, $league->competition_id ) );
             if ( isset($captain) && $captain != '' ) {
                 $currentContactNo = get_user_meta( $captain, 'contactno', true);
                 $currentContactEmail = get_userdata($captain)->user_email;
@@ -2202,7 +2202,7 @@ final class LeagueManagerAdmin extends LeagueManager
 
         }
 
-				$this->setMessage( __('Team updated','leaguemanager') );
+				$this->setMessage( __('Team updated','racketmanager') );
 
         return true;
 	}
@@ -2228,16 +2228,16 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return boolean
 	 */
 	private function addTournament( $name, $type, $season, $venue, $date, $closingdate, $tournamentSecretaryContactName, $tournamentSecretary, $tournamentSecretaryContactNo, $tournamentSecretaryEmail ) {
-		global $wpdb, $leaguemanager;
+		global $wpdb, $racketmanager;
 
         if ( !current_user_can('edit_teams') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
-		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->leaguemanager_tournaments} (`name`, `type`, `season`, `venue`, `tournamentsecretary`, `date`, `closingdate` ) VALUES ('%s', '%s', '%d', '%d', '%s', '%s', '%s' )", $name, $type, $season, $venue, $tournamentSecretary, $date, $closingdate ) );
+		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager_tournaments} (`name`, `type`, `season`, `venue`, `tournamentsecretary`, `date`, `closingdate` ) VALUES ('%s', '%s', '%d', '%d', '%s', '%s', '%s' )", $name, $type, $season, $venue, $tournamentSecretary, $date, $closingdate ) );
 
-		$this->setMessage( __('Tournament added','leaguemanager') );
+		$this->setMessage( __('Tournament added','racketmanager') );
 
         return true;
 	}
@@ -2261,11 +2261,11 @@ final class LeagueManagerAdmin extends LeagueManager
         global $wpdb;
 
         if ( !current_user_can('edit_teams') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
-        $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_tournaments} SET `name` = '%s', `type` = '%s', `season` = '%s', `venue` = '%d',`tournamentsecretary` = '%d', `date` = '%s', `closingdate` = '%s' WHERE `id` = %d", $name, $type, $season, $venue, $tournamentSecretary, $date, $closingdate, $tournament_id ) );
+        $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_tournaments} SET `name` = '%s', `type` = '%s', `season` = '%s', `venue` = '%d',`tournamentsecretary` = '%d', `date` = '%s', `closingdate` = '%s' WHERE `id` = %d", $name, $type, $season, $venue, $tournamentSecretary, $date, $closingdate, $tournament_id ) );
 
         if ( $tournamentSecretary != '') {
             $currentContactNo = get_user_meta( $tournamentSecretary, 'contactno', true);
@@ -2285,7 +2285,7 @@ final class LeagueManagerAdmin extends LeagueManager
             }
         }
 
-        $this->setMessage( __('Tournament updated','leaguemanager') );
+        $this->setMessage( __('Tournament updated','racketmanager') );
 
         return true;
 	}
@@ -2300,12 +2300,12 @@ final class LeagueManagerAdmin extends LeagueManager
 		global $wpdb;
 
         if ( !current_user_can('del_teams') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
-        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_tournaments} WHERE `id` = '%d'", $tournament_id) );
-        $this->setMessage( __('Tournament Deleted','leaguemanager') );
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_tournaments} WHERE `id` = '%d'", $tournament_id) );
+        $this->setMessage( __('Tournament Deleted','racketmanager') );
 
         return true;
 	}
@@ -2317,7 +2317,7 @@ final class LeagueManagerAdmin extends LeagueManager
 	 */
 	private function teamsDropdownCleaned() {
 		global $wpdb;
-		$all_teams = $wpdb->get_results( "SELECT `title`, `id` FROM {$wpdb->leaguemanager_teams} WHERE `status` != 'P' ORDER BY `title` ASC" );
+		$all_teams = $wpdb->get_results( "SELECT `title`, `id` FROM {$wpdb->racketmanager_teams} WHERE `status` != 'P' ORDER BY `title` ASC" );
 		$teams = array();
 		foreach ( $all_teams AS $team ) {
 			if ( !in_array($team->title, $teams) )
@@ -2333,7 +2333,7 @@ final class LeagueManagerAdmin extends LeagueManager
 	 */
 	function teamPlayersDropdownCleaned() {
 		global $wpdb;
-		$all_teams = $wpdb->get_results( "SELECT `title`, `id` FROM {$wpdb->leaguemanager_teams} WHERE `status` = 'P' ORDER BY `title` ASC" );
+		$all_teams = $wpdb->get_results( "SELECT `title`, `id` FROM {$wpdb->racketmanager_teams} WHERE `status` = 'P' ORDER BY `title` ASC" );
 		$teams = array();
 		foreach ( $all_teams AS $team ) {
 			if ( !in_array($team->title, $teams) )
@@ -2370,11 +2370,11 @@ final class LeagueManagerAdmin extends LeagueManager
 	 	global $wpdb;
 
         if ( !current_user_can('edit_matches') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
-        $sql = "INSERT INTO {$wpdb->leaguemanager_matches} (date, home_team, away_team, match_day, location, league_id, season, final, custom, `group`) VALUES ('%s', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s')";
+        $sql = "INSERT INTO {$wpdb->racketmanager_matches} (date, home_team, away_team, match_day, location, league_id, season, final, custom, `group`) VALUES ('%s', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s')";
 				$wpdb->query ( $wpdb->prepare ( $sql, $date, $home_team, $away_team, $match_day, $location, $league_id, $season, $final, maybe_serialize($custom), $group ) );
 				$match_id = $wpdb->insert_id;
 				if ($num_rubbers > 1) {
@@ -2405,7 +2405,7 @@ final class LeagueManagerAdmin extends LeagueManager
 	 	global $wpdb;
 
         if ( !current_user_can('edit_matches') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -2413,9 +2413,9 @@ final class LeagueManagerAdmin extends LeagueManager
 				$home_points = (!isset($home_points)) ? 'NULL' : $home_points;
 				$away_points = (!isset($away_points)) ? 'NULL' : $away_points;
 
-				$match = $wpdb->get_results( $wpdb->prepare("SELECT `custom` FROM {$wpdb->leaguemanager_matches} WHERE `id` = '%d'", $match_id) );
+				$match = $wpdb->get_results( $wpdb->prepare("SELECT `custom` FROM {$wpdb->racketmanager_matches} WHERE `id` = '%d'", $match_id) );
 				$custom = (!empty($match) ? array_merge( (array)maybe_unserialize($match[0]->custom), $custom ) : '' );
-				$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->leaguemanager_matches} SET `date` = '%s', `home_team` = '%s', `away_team` = '%s', `match_day` = '%d', `location` = '%s', `league_id` = '%d', `group` = '%s', `final` = '%s', `custom` = '%s' WHERE `id` = %d", $date, $home_team, $away_team, $match_day, $location, $league_id, $group, $final, maybe_serialize($custom), $match_id ) );
+				$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_matches} SET `date` = '%s', `home_team` = '%s', `away_team` = '%s', `match_day` = '%d', `location` = '%s', `league_id` = '%d', `group` = '%s', `final` = '%s', `custom` = '%s' WHERE `id` = %d", $date, $home_team, $away_team, $match_day, $location, $league_id, $group, $final, maybe_serialize($custom), $match_id ) );
 
         return true;
 	}
@@ -2430,12 +2430,12 @@ final class LeagueManagerAdmin extends LeagueManager
 	  	global $wpdb;
 
         if ( !current_user_can('del_matches') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
-        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_rubbers} WHERE `match_id` = '%d'", $match_id) );
-				$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_matches} WHERE `id` = '%d'", $match_id) );
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` = '%d'", $match_id) );
+				$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `id` = '%d'", $match_id) );
 
         return true;
     }
@@ -2451,21 +2451,21 @@ final class LeagueManagerAdmin extends LeagueManager
 	 */
 	public function getDateSelection( $day, $month, $year, $index = 0 ) {
 		$out = '<select size="1" name="day['.$index.']" class="date">';
-		$out .= "<option value='00'>".__('Day','leaguemanager')."</option>";
+		$out .= "<option value='00'>".__('Day','racketmanager')."</option>";
 		for ( $d = 1; $d <= 31; $d++ ) {
 			$selected = ( $d == $day ) ? ' selected="selected"' : '';
 			$out .= '<option value="'.str_pad($d, 2, 0, STR_PAD_LEFT).'"'.$selected.'>'.$d.'</option>';
 		}
 		$out .= '</select>';
 		$out .= '<select size="1" name="month['.$index.']" class="date">';
-		$out .= "<option value='00'>".__('Month','leaguemanager')."</option>";
+		$out .= "<option value='00'>".__('Month','racketmanager')."</option>";
 		foreach ( $this->getMonths() AS $key => $m ) {
 			$selected = ( $key == $month ) ? ' selected="selected"' : '';
 			$out .= '<option value="'.str_pad($key, 2, 0, STR_PAD_LEFT).'"'.$selected.'>'.$m.'</option>';
 		}
 		$out .= '</select>';
 		$out .= '<select size="1" name="year['.$index.']" class="date">';
-		$out .= "<option value='0000'>".__('Year','leaguemanager')."</option>";
+		$out .= "<option value='0000'>".__('Year','racketmanager')."</option>";
 		for ( $y = date("Y")-20; $y <= date("Y")+10; $y++ ) {
 			$selected =  ( $y == $year ) ? ' selected="selected"' : '';
 			$out .= '<option value="'.$y.'"'.$selected.'>'.$y.'</option>';
@@ -2494,14 +2494,14 @@ final class LeagueManagerAdmin extends LeagueManager
 	 *
 	 */
 	public function displayOptionsPage() {
-        if ( !current_user_can( 'manage_leaguemanager' ) ) {
+        if ( !current_user_can( 'manage_racketmanager' ) ) {
             echo '<p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p>';
         } else {
             $options = get_option('leaguemanager');
 
             $tab = 0;
-            if ( isset($_POST['updateLeagueManager']) ) {
-                check_admin_referer('leaguemanager_manage-global-league-options');
+            if ( isset($_POST['updateRacketManager']) ) {
+                check_admin_referer('racketmanager_manage-global-league-options');
                 $options['rosterConfirmation'] = htmlspecialchars($_POST['rosterConfirmation']);
                 $options['rosterConfirmationEmail'] = htmlspecialchars($_POST['rosterConfirmationEmail']);
                 $options['rosterLeadTime'] = htmlspecialchars($_POST['rosterLeadTime']);
@@ -2516,7 +2516,7 @@ final class LeagueManagerAdmin extends LeagueManager
                 $options['colors']['boxheader'] = array(htmlspecialchars($_POST['color_boxheader1']), htmlspecialchars($_POST['color_boxheader2']));
 
                 update_option( 'leaguemanager', $options );
-                $this->setMessage(__( 'Settings saved', 'leaguemanager' ));
+                $this->setMessage(__( 'Settings saved', 'racketmanager' ));
                 $this->printMessage();
 
                 // Set active tab
@@ -2533,13 +2533,13 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @param object $post
 	 */
 	public function addMetaBox( $post ) {
-		global $wpdb, $post_ID, $leaguemanager;
+		global $wpdb, $post_ID, $racketmanager;
 
-		if ( $leagues = $wpdb->get_results( "SELECT `title`, `id` FROM {$wpdb->leaguemanager} ORDER BY id ASC" ) ) {
+		if ( $leagues = $wpdb->get_results( "SELECT `title`, `id` FROM {$wpdb->racketmanager} ORDER BY id ASC" ) ) {
 			$league_id = $match_id = $season = 0;
 			$curr_league = $match = false;
 			if ( $post->ID != 0 ) {
-				$match = $wpdb->get_row( $wpdb->prepare("SELECT `id`, `league_id`, `season` FROM {$wpdb->leaguemanager_matches} WHERE `post_id` = '%d'", $post->ID) );
+				$match = $wpdb->get_row( $wpdb->prepare("SELECT `id`, `league_id`, `season` FROM {$wpdb->racketmanager_matches} WHERE `post_id` = '%d'", $post->ID) );
 
 				if ( $match ) {
 					$match_id = $match->id;
@@ -2550,8 +2550,8 @@ final class LeagueManagerAdmin extends LeagueManager
 			}
 
 			echo "<input type='hidden' name='curr_match_id' value='".$match_id."' />";
-			echo "<select name='league_id' class='alignleft' id='league_id' onChange='Leaguemanager.getSeasonDropdown(this.value, ".$season.")'>";
-			echo "<option value='0'>".__('Choose League','leaguemanager')."</option>";
+			echo "<select name='league_id' class='alignleft' id='league_id' onChange='Racketmanager.getSeasonDropdown(this.value, ".$season.")'>";
+			echo "<option value='0'>".__('Choose League','racketmanager')."</option>";
 			foreach ( $leagues AS $league ) {
 				echo "<option value='".$league->id."'".selected($league_id, $league->id, false).">".$league->title."</option>";
 			}
@@ -2583,9 +2583,9 @@ final class LeagueManagerAdmin extends LeagueManager
 			$curr_match_ID = isset($_POST['curr_match_id']) ? (int) $_POST['curr_match_id'] : false;
 
 			if ( $match_ID && $curr_match_ID != $match_ID ) {
-				$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_matches} SET `post_id` = '%d' WHERE `id` = '%d'", $post_ID, $match_ID ) );
+				$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_matches} SET `post_id` = '%d' WHERE `id` = '%d'", $post_ID, $match_ID ) );
 				if ( $curr_match_ID != 0 )
-					$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_matches} SET `post_id` = 0 WHERE `id` = '%d'", $curr_match_ID ) );
+					$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_matches} SET `post_id` = 0 WHERE `id` = '%d'", $curr_match_ID ) );
 			}
 		}
 	}
@@ -2610,11 +2610,11 @@ final class LeagueManagerAdmin extends LeagueManager
 	 	global $wpdb;
 
         if ( !current_user_can('edit_matches') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
-        $sql = "INSERT INTO {$wpdb->leaguemanager_rubbers} (`date`, `match_id`, `rubber_number`, `custom`) VALUES ('%s', '%d', '%d', '%s')";
+        $sql = "INSERT INTO {$wpdb->racketmanager_rubbers} (`date`, `match_id`, `rubber_number`, `custom`) VALUES ('%s', '%d', '%d', '%s')";
 		$wpdb->query ( $wpdb->prepare ( $sql, $date, $match_id, $rubberno, maybe_serialize($custom) ) );
 
         return $wpdb->insert_id;
@@ -2637,10 +2637,10 @@ final class LeagueManagerAdmin extends LeagueManager
 		global $wpdb;
 
         if ( !current_user_can('del_teams') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
-        $rosterCount = $wpdb->get_var("SELECT count(*) FROM {$wpdb->leaguemanager_roster} WHERE `player_id` = ".$player_id);
+        $rosterCount = $wpdb->get_var("SELECT count(*) FROM {$wpdb->racketmanager_roster} WHERE `player_id` = ".$player_id);
 		if ( $rosterCount == 0 ) {
 			wp_delete_user( $player_id) ;
 		} else {
@@ -2666,7 +2666,7 @@ final class LeagueManagerAdmin extends LeagueManager
     private function _approveRosterRequest( $club_id, $rosterRequestId ) {
 
         if ( !current_user_can('edit_teams') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -2684,12 +2684,12 @@ final class LeagueManagerAdmin extends LeagueManager
         global $wpdb;
 
         if ( !current_user_can('edit_teams') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
-        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_roster_requests} WHERE `id` = %d", $rosterRequestId) );
-        $this->setMessage( __('Roster request deleted', 'leaguemanager') );
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_roster_requests} WHERE `id` = %d", $rosterRequestId) );
+        $this->setMessage( __('Roster request deleted', 'racketmanager') );
 
         return true;
     }
@@ -2705,10 +2705,10 @@ final class LeagueManagerAdmin extends LeagueManager
      * @return void | false
      */
     private function import( $league_id, $file, $delimiter, $mode, $affiliatedClub = false ) {
-        global $leaguemanager;
+        global $racketmanager;
 
         if ( !current_user_can('import_leagues') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -2737,7 +2737,7 @@ final class LeagueManagerAdmin extends LeagueManager
             }
             @unlink($new_file); // remove file from server after import is done
         } else {
-            $this->setMessage( __('The uploaded file seems to be empty', 'leaguemanager'), true );
+            $this->setMessage( __('The uploaded file seems to be empty', 'racketmanager'), true );
         }
     }
 
@@ -2749,10 +2749,10 @@ final class LeagueManagerAdmin extends LeagueManager
      * @return void|false
 	 */
 	private function importTeams( $file, $delimiter ) {
-		global $leaguemanager;
+		global $racketmanager;
 
         if ( !current_user_can('import_leagues') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -2773,7 +2773,7 @@ final class LeagueManagerAdmin extends LeagueManager
 					$season = $line[0];
 					$team               = utf8_encode($line[1]);
 					$captainName        = isset($line[2]) ? $line[2] : '';
-                    $captain            = $leaguemanager->getPlayer(array('fullname' => $captainName));
+                    $captain            = $racketmanager->getPlayer(array('fullname' => $captainName));
                     if (!$captain) $captain = 0;
                     else $captain = $captain->ID;
                     $contactno          = isset($line[3]) ? utf8_encode($line[3]) : '';
@@ -2796,7 +2796,7 @@ final class LeagueManagerAdmin extends LeagueManager
 					}
 					$profile = 0;
 
-					$custom = apply_filters( 'leaguemanager_import_teams_'.$league->sport, $custom, $line );
+					$custom = apply_filters( 'racketmanager_import_teams_'.$league->sport, $custom, $line );
                     $team_id = $this->getTeamID($team);
                     if ( $team_id != 0 ) {
                         $this->editTeam( $team_id, $team, $affiliatedclub, $stadium, $captain, $contactno, $contactemail, $matchday, $matchtime, $home, $group, $roster, $profile, $custom, $league->id );
@@ -2807,7 +2807,7 @@ final class LeagueManagerAdmin extends LeagueManager
                     $tabledtls = $this->checkTableEntry( $this->league_id, $team_id, $season );
                     if ( $tabledtls == 0 ) {
 
-                        $custom = apply_filters( 'leaguemanager_import_teams_'.$league->sport, $custom, $line );
+                        $custom = apply_filters( 'racketmanager_import_teams_'.$league->sport, $custom, $line );
                         $table_id = $this->addTableEntry( $this->league_id, $team_id, $season, $custom, false );
 
                         $teams[$team_id] = $team_id;
@@ -2852,7 +2852,7 @@ final class LeagueManagerAdmin extends LeagueManager
 
 			fclose($handle);
 
-			$this->setMessage(sprintf(__( '%d Teams imported', 'leaguemanager' ), $x));
+			$this->setMessage(sprintf(__( '%d Teams imported', 'racketmanager' ), $x));
 		}
 	}
 
@@ -2864,10 +2864,10 @@ final class LeagueManagerAdmin extends LeagueManager
      * @return void|false
 	 */
 	private function importTable( $file, $delimiter ) {
-		global $leaguemanager;
+		global $racketmanager;
 
         if ( !current_user_can('import_leagues') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -2893,7 +2893,7 @@ final class LeagueManagerAdmin extends LeagueManager
 						$tabledtls = $this->checkTableEntry( $this->league_id, $team_id, $season );
 						if ( $tabledtls == 0 ) {
 
-//							$custom = apply_filters( 'leaguemanager_import_teams_'.$league->sport, $custom, $line );
+//							$custom = apply_filters( 'racketmanager_import_teams_'.$league->sport, $custom, $line );
 							$table_id = $this->addTableEntry( $this->league_id, $team_id, $season, $custom, false );
 
 							$teams[$team_id] = $team_id;
@@ -2940,7 +2940,7 @@ final class LeagueManagerAdmin extends LeagueManager
 
 			fclose($handle);
 
-			$this->setMessage(sprintf(__( '%d Table Entries imported', 'leaguemanager' ), $x));
+			$this->setMessage(sprintf(__( '%d Table Entries imported', 'racketmanager' ), $x));
 		}
 	}
 
@@ -2952,10 +2952,10 @@ final class LeagueManagerAdmin extends LeagueManager
      * @return void|false
 	 */
 	private function importMatches( $file, $delimiter ) {
-		global $leaguemanager;
+		global $racketmanager;
 
         if ( !current_user_can('import_leagues') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -2995,7 +2995,7 @@ final class LeagueManagerAdmin extends LeagueManager
 					} else {
 						$home_points[$match_id] = $away_points[$match_id] = '';
 					}
-					$custom = apply_filters( 'leaguemanager_import_matches_'.$league->sport, $custom, $line, $match_id );
+					$custom = apply_filters( 'racketmanager_import_matches_'.$league->sport, $custom, $line, $match_id );
 
 					$x++;
 				}
@@ -3006,7 +3006,7 @@ final class LeagueManagerAdmin extends LeagueManager
 
 			fclose($handle);
 
-			parent::setMessage(sprintf(__( '%d Matches imported', 'leaguemanager' ), $x));
+			parent::setMessage(sprintf(__( '%d Matches imported', 'racketmanager' ), $x));
 		}
 	}
 
@@ -3017,10 +3017,10 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @param string $delimiter
 	 */
 	private function importFixtures( $file, $delimiter ) {
-		global $leaguemanager;
+		global $racketmanager;
 
         if ( !current_user_can('import_leagues') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -3057,7 +3057,7 @@ final class LeagueManagerAdmin extends LeagueManager
                         $away_teams[$match_id] = $away_team;
                         $home_points[$match_id] = $away_points[$match_id] = '';
 
-                        $custom = apply_filters( 'leaguemanager_import_fixtures_'.$league->sport, $custom, $match_id );
+                        $custom = apply_filters( 'racketmanager_import_fixtures_'.$league->sport, $custom, $match_id );
 
                     }
 					$x++;
@@ -3068,7 +3068,7 @@ final class LeagueManagerAdmin extends LeagueManager
 
 			fclose($handle);
 
-			parent::setMessage(sprintf(__( '%d Fixtures imported', 'leaguemanager' ), $x));
+			parent::setMessage(sprintf(__( '%d Fixtures imported', 'racketmanager' ), $x));
 		}
 	}
 
@@ -3079,10 +3079,10 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @param string $delimiter
 	 */
 	private function importPlayers( $file, $delimiter ) {
-		global $leaguemanager;
+		global $racketmanager;
 
         if ( !current_user_can('import_leagues') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -3114,22 +3114,22 @@ final class LeagueManagerAdmin extends LeagueManager
 
 			fclose($handle);
 
-			parent::setMessage(sprintf(__( '%d Players imported', 'leaguemanager' ), $x));
+			parent::setMessage(sprintf(__( '%d Players imported', 'racketmanager' ), $x));
 		}
 	}
 
 	private function addPlayerIdToRoster($club_id, $player_id ) {
-        global $wpdb, $leaguemanager;
+        global $wpdb, $racketmanager;
 
 		if (!$player_id == 0 ) {
-            $rosterCount = $wpdb->get_var("SELECT count(*) FROM {$wpdb->leaguemanager_roster} WHERE `player_id` = ".$player_id." AND `affiliatedclub` = ".$club_id." AND `removed_date` IS NULL");
+            $rosterCount = $wpdb->get_var("SELECT count(*) FROM {$wpdb->racketmanager_roster} WHERE `player_id` = ".$player_id." AND `affiliatedclub` = ".$club_id." AND `removed_date` IS NULL");
 			if ($rosterCount == 0) {
                 $club = get_club($club_id);
 				$roster_id	= $club->addRoster( $player_id, false );
 				$roster[$roster_id] = $roster_id;
 			}
 		}
-		$leaguemanager->setMessage( __('Player added to Roster','leaguemanager') );
+		$racketmanager->setMessage( __('Player added to Roster','racketmanager') );
         return;
 	}
 
@@ -3165,10 +3165,10 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return file
 	 */
 	private function export( $league_id, $mode, $season, $competition_id ) {
-		global $leaguemanager;
+		global $racketmanager;
 
         if ( !current_user_can('export_leagues') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -3206,10 +3206,10 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return string
 	 */
 	private function exportTeams() {
-		global $leaguemanager;
+		global $racketmanager;
 
         if ( !current_user_can('export_leagues') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -3220,17 +3220,17 @@ final class LeagueManagerAdmin extends LeagueManager
 		$teams = $competition->getTeamsInfo( array("league_id" => $this->league_id, "season" => $season) );
 
 		if ( $teams ) {
-			$contents = __('Season', 'leaguemanager')."\t".
-            __('Team','leaguemanager')."\t".
-			__('Captain','leaguemanager')."\t".
-			__('Contact Number','leaguemanager')."\t".
-            __('Contact Email','leaguemanager')."\t".
-            __('Affiliated Club','leaguemanager')."\t".
-			__('Stadium','leaguemanager')."\t".
-            __('Match Day','leaguemanager')."\t".
-            __('Match Time','leaguemanager')."\t".
-			__('Home Team','leaguemanager') ."\t".
-            __('Group','leaguemanager')."\t";
+			$contents = __('Season', 'racketmanager')."\t".
+            __('Team','racketmanager')."\t".
+			__('Captain','racketmanager')."\t".
+			__('Contact Number','racketmanager')."\t".
+            __('Contact Email','racketmanager')."\t".
+            __('Affiliated Club','racketmanager')."\t".
+			__('Stadium','racketmanager')."\t".
+            __('Match Day','racketmanager')."\t".
+            __('Match Time','racketmanager')."\t".
+			__('Home Team','racketmanager') ."\t".
+            __('Group','racketmanager')."\t";
 
 			foreach ( $teams AS $team ) {
                 $affiliatedclub = get_club($team->affiliatedclub)->name;
@@ -3260,10 +3260,10 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return string
 	 */
 	private function exportTables()	{
-		global $leaguemanager;
+		global $racketmanager;
 
         if ( !current_user_can('export_leagues') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -3273,17 +3273,17 @@ final class LeagueManagerAdmin extends LeagueManager
         $teams = $league->getLeagueTeams( array("season" => $season) );
 
 		if ( $teams ) {
-			$contents = __('Season','leaguemanager')."\t".
-			__('Team','leaguemanager')."\t".
-			__('Pld|Played','leaguemanager')."\t".
-			__('W|Won','leaguemanager')."\t".
-			__('T|Tie','leaguemanager')."\t".
-			__('L|Lost','leaguemanager')."\t".
-			__('Points2', 'leaguemanager')."\t".
-			__('Diff','leaguemanager')."\t".
-            __('Pts','leaguemanager')."\t";
+			$contents = __('Season','racketmanager')."\t".
+			__('Team','racketmanager')."\t".
+			__('Pld|Played','racketmanager')."\t".
+			__('W|Won','racketmanager')."\t".
+			__('T|Tie','racketmanager')."\t".
+			__('L|Lost','racketmanager')."\t".
+			__('Points2', 'racketmanager')."\t".
+			__('Diff','racketmanager')."\t".
+            __('Pts','racketmanager')."\t";
 
-			$contents = apply_filters( 'leaguemanager_export_teams_header_'.$league->sport, $contents );
+			$contents = apply_filters( 'racketmanager_export_teams_header_'.$league->sport, $contents );
 
 			foreach ( $teams AS $team ) {
 
@@ -3296,7 +3296,7 @@ final class LeagueManagerAdmin extends LeagueManager
 
 				.sprintf("%d:%d",$team->points2_plus, $team->points2_minus)."\t".$team->diff."\t".sprintf("%d:%d", $team->points_plus, $team->points_minus);
 
-				$contents = apply_filters( 'leaguemanager_export_teams_data_'.$league->sport, $contents, $team );
+				$contents = apply_filters( 'racketmanager_export_teams_data_'.$league->sport, $contents, $team );
 			}
 			return $contents;
 		}
@@ -3311,10 +3311,10 @@ final class LeagueManagerAdmin extends LeagueManager
 	 * @return string
 	 */
 	private function exportMatches() {
-		global $leaguemanager;
+		global $racketmanager;
 
         if ( !current_user_can('export_leagues') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'leaguemanager'), true );
+            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
             return false;
         }
 
@@ -3327,18 +3327,18 @@ final class LeagueManagerAdmin extends LeagueManager
 
 			// Build header
 			$contents =
-            __('MatchID','leaguemanager')."\t".
-			__('Date','leaguemanager')."\t".
-            __('Season','leaguemanager')."\t".
-            __('Match Day','leaguemanager')."\t".
-            __('Home','leaguemanager')."\t".
-            __('Guest','leaguemanager')."\t".
-            __('Location','leaguemanager')."\t".
-            __('Begin','leaguemanager')."\t".
-            __('Group','leaguemanager')."\t".
-            __('Score','leaguemanager');
+            __('MatchID','racketmanager')."\t".
+			__('Date','racketmanager')."\t".
+            __('Season','racketmanager')."\t".
+            __('Match Day','racketmanager')."\t".
+            __('Home','racketmanager')."\t".
+            __('Guest','racketmanager')."\t".
+            __('Location','racketmanager')."\t".
+            __('Begin','racketmanager')."\t".
+            __('Group','racketmanager')."\t".
+            __('Score','racketmanager');
 
-			$contents = apply_filters( 'leaguemanager_export_matches_header_'.$league->sport, $contents );
+			$contents = apply_filters( 'racketmanager_export_matches_header_'.$league->sport, $contents );
 
             foreach ( $matches AS $match ) {
                 $contents .= "\n".intval($match->id)."\t".
@@ -3352,7 +3352,7 @@ final class LeagueManagerAdmin extends LeagueManager
 				$match->group."\t";
 
 				$contents .= !empty($match->home_points) ? sprintf("%d:%d",$match->home_points, $match->away_points) : '';
-				$contents = apply_filters( 'leaguemanager_export_matches_data_'.$league->sport, $contents, $match );
+				$contents = apply_filters( 'racketmanager_export_matches_data_'.$league->sport, $contents, $match );
 			}
 
 			return $contents;
@@ -3380,12 +3380,12 @@ final class LeagueManagerAdmin extends LeagueManager
 
 
     /**
-     * show database columns of LeagueManager
+     * show database columns of RacketManager
      */
 	private function showDatabaseColumns() {
 		global  $wpdb;
 
-		$tables = array($wpdb->leaguemanager, $wpdb->leaguemanager_teams, $wpdb->leaguemanager_matches, $wpdb->leaguemanager_rosters, $wpdb->leaguemanager_rubbers);
+		$tables = array($wpdb->racketmanager, $wpdb->racketmanager_teams, $wpdb->racketmanager_matches, $wpdb->racketmanager_rosters, $wpdb->racketmanager_rubbers);
 
 		foreach( $tables AS $table ) {
 			$results = $wpdb->get_results("SHOW COLUMNS FROM {$table}");
@@ -3399,7 +3399,7 @@ final class LeagueManagerAdmin extends LeagueManager
 		}
 	}
 
-//  Move to leaguemanager.php
+//  Move to racketmanager.php
 //  Move to league.php
     /**
      * display league dropdown
@@ -3408,14 +3408,14 @@ final class LeagueManagerAdmin extends LeagueManager
      * @return void|string
      */
     function getLeagueDropdown( $competition_id = false ) {
-        global $leaguemanager;
+        global $racketmanager;
 
         $competition_id = (int)$_POST['competition_id'];
         $competition = get_competition($competition_id);
         $leagues = $competition->getLeagues( array("competition" => $competition_id) ); ?>
 
 <select size='1' name='league_id' id='league_id' class='alignleft'>
-    <option value='0'><?php _e('Choose league', 'leaguemanager') ?></option>
+    <option value='0'><?php _e('Choose league', 'racketmanager') ?></option>
 <?php foreach ( $leagues AS $league ) { ?>
     <option value=<?php echo $league->id ?>><?php echo $league->title ?></option>
 <?php } ?>
@@ -3431,9 +3431,9 @@ final class LeagueManagerAdmin extends LeagueManager
      * @return array
      */
     public function getResultsChecker( $completed = false ) {
-         global $wpdb, $leaguemanager;
+         global $wpdb, $racketmanager;
 
-        $sql = "SELECT `id`, `league_id`, `match_id`, `team_id`, `player_id`, `updated_date`, `updated_user`, `description`, `status` FROM {$wpdb->leaguemanager_results_checker} WHERE 1 = 1"  ;
+        $sql = "SELECT `id`, `league_id`, `match_id`, `team_id`, `player_id`, `updated_date`, `updated_user`, `description`, `status` FROM {$wpdb->racketmanager_results_checker} WHERE 1 = 1"  ;
 
         $sql .= " ORDER BY `match_id` DESC, `league_id` ASC, `team_id` ASC, `player_id` ASC";
 
@@ -3485,7 +3485,7 @@ final class LeagueManagerAdmin extends LeagueManager
     private function getResultsCheckerEntry( $resultsCheckerId ) {
         global $wpdb;
 
-        $resultsChecker = $wpdb->get_row("SELECT `league_id`, `match_id`, `team_id`, `player_id`, `updated_date`, `updated_user`, `description`, `status` FROM {$wpdb->leaguemanager_results_checker} WHERE `id` = '".intval($resultsCheckerId)."'");
+        $resultsChecker = $wpdb->get_row("SELECT `league_id`, `match_id`, `team_id`, `player_id`, `updated_date`, `updated_user`, `description`, `status` FROM {$wpdb->racketmanager_results_checker} WHERE `id` = '".intval($resultsCheckerId)."'");
 
         if ( !$resultsChecker ) return false;
 
@@ -3500,12 +3500,12 @@ final class LeagueManagerAdmin extends LeagueManager
      * @return void
      */
     private function approveResultsChecker( $resultsCheckerId ) {
-        global $wpdb, $leaguemanager;
+        global $wpdb, $racketmanager;
 
         $resultsChecker = $this->getResultsCheckerEntry($resultsCheckerId);
         if ( empty($resultsChecker->updated_date) ) {
-            $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_results_checker} SET `updated_date` = now(), `updated_user` = %d, `status` = 1 WHERE `id` = %d ", get_current_user_id(), $resultsCheckerId ) );
-            $leaguemanager->setMessage( __('Results checker approved', 'leaguemanager') );
+            $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_results_checker} SET `updated_date` = now(), `updated_user` = %d, `status` = 1 WHERE `id` = %d ", get_current_user_id(), $resultsCheckerId ) );
+            $racketmanager->setMessage( __('Results checker approved', 'racketmanager') );
         }
 
         return true;
@@ -3518,12 +3518,12 @@ final class LeagueManagerAdmin extends LeagueManager
      * @return void
      */
     private function handleResultsChecker( $resultsCheckerId ) {
-        global $wpdb, $leaguemanager;
+        global $wpdb, $racketmanager;
 
         $resultsChecker = $this->getResultsCheckerEntry($resultsCheckerId);
         if ( empty($resultsChecker->updated_date) ) {
-            $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_results_checker} SET `updated_date` = now(), `updated_user` = %d, `status` = 2 WHERE `id` = %d ", get_current_user_id(), $resultsCheckerId ) );
-            $leaguemanager->setMessage( __('Results checker updated', 'leaguemanager') );
+            $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_results_checker} SET `updated_date` = now(), `updated_user` = %d, `status` = 2 WHERE `id` = %d ", get_current_user_id(), $resultsCheckerId ) );
+            $racketmanager->setMessage( __('Results checker updated', 'racketmanager') );
         }
 
         return true;
@@ -3538,8 +3538,8 @@ final class LeagueManagerAdmin extends LeagueManager
     private function deleteResultsChecker( $resultsCheckerId ) {
         global $wpdb;
 
-        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->leaguemanager_results_checker} WHERE `id` = %d", $resultsCheckerId) );
-        $this->setMessage( __('Results checker deleted', 'leaguemanager') );
+        $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_results_checker} WHERE `id` = %d", $resultsCheckerId) );
+        $this->setMessage( __('Results checker deleted', 'racketmanager') );
 
         return true;
     }

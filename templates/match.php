@@ -12,7 +12,7 @@ The following variables are usable:
 <?php if ( $match ) { ?>
 
 <div class="match" id="match-<?php echo $match->id ?>">
-	<h3 class="header"><?php _e( 'Match', 'leaguemanager' ) ?></h3>
+	<h3 class="header"><?php _e( 'Match', 'racketmanager' ) ?></h3>
 	
 	<div class="match-content">
 		<h4><?php echo $match->match_title($match->id, false) ?></h4>
@@ -26,14 +26,14 @@ The following variables are usable:
     <?php } ?>
 		
     <?php if ( !empty($match->match_day) ) { ?>
-        <p class='match_day'><?php printf(__("<strong>%d.</strong> Match Day", 'leaguemanager'), $match->match_day) ?></p>
+        <p class='match_day'><?php printf(__("<strong>%d.</strong> Match Day", 'racketmanager'), $match->match_day) ?></p>
     <?php } ?>
 		
 		<p class='date'><?php echo mysql2date(get_option('date_format'), $match->date) ?>, <span class='time'><?php echo $match->time ?></span></p>
 		<p class='location'><?php echo $match->location ?></p>
 		
     <?php if ( $match->post_id != 0 ) { ?>
-        <p class='report'><a href='<?php the_permalink($match->post_id) ?>'><?php _e( 'Report', 'leaguemanager' ) ?></a></p>
+        <p class='report'><a href='<?php the_permalink($match->post_id) ?>'><?php _e( 'Report', 'racketmanager' ) ?></a></p>
     <?php } ?>
 			
     <?php if ( isset($match->hasStats) && $match->hasStats ) { ?>

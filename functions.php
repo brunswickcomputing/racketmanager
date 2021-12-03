@@ -102,10 +102,10 @@
     /*
      * Create calendar download
      */
-    function leaguemanager_calendar_download() {
-        global $league, $leaguemanager;
+    function racketmanager_calendar_download() {
+        global $league, $racketmanager;
 
-        if ( isset( $_GET["leaguemanager_export"] ) ) {
+        if ( isset( $_GET["racketmanager_export"] ) ) {
           if ( isset( $_GET["league_id"] ) && isset( $_GET["season"] ) ) {
             $league_id = $_GET["league_id"];
             $league = get_league($league_id);
@@ -119,7 +119,7 @@
             }
             $matches = $league->getMatches( $matchArray );
             $filename = $season."-".sanitize_title($league->title).$fileTeamName.".ics";
-            leaguemanager_write_calendar( $matches, $filename );
+            racketmanager_write_calendar( $matches, $filename );
           } elseif ( isset( $_GET["competition_id"] ) ) {
             $competition_id = $_GET["competition_id"];
             $competition = get_competition($competition_id);
@@ -131,18 +131,18 @@
               $fileClubName = "-".$_GET["club"];
               $matchArray["affiliatedClub"] = $club_id;
             }
-            $matches = $leaguemanager->getMatches( $matchArray );
+            $matches = $racketmanager->getMatches( $matchArray );
             $filename = $season."-".sanitize_title($competition->name).$fileClubName.".ics";
-            leaguemanager_write_calendar( $matches, $filename );
+            racketmanager_write_calendar( $matches, $filename );
           }
         }
     }
-    add_action('init', 'leaguemanager_calendar_download');
+    add_action('init', 'racketmanager_calendar_download');
 
     /*
      * Produce calendar download file
      */
-    function leaguemanager_write_calendar( $matches, $filename ) {
+    function racketmanager_write_calendar( $matches, $filename ) {
       define('DATE_ICAL', 'Ymd\THis');
       $contents = "BEGIN:VCALENDAR\n";
       $contents .= "VERSION:2.0\n";
@@ -168,12 +168,12 @@
     }
     /**
      * Output and Get SVG.
-     * Output and get the SVG markup for an icon in the Leaguemanager_SVG_Icons class.
+     * Output and get the SVG markup for an icon in the Racketmanager_SVG_Icons class.
      *
      * @param string $svg_name The name of the icon.
      */
-    function leaguemanager_the_svg( $svg_name ) {
-        echo leaguemanager_get_svg( $svg_name );
+    function racketmanager_the_svg( $svg_name ) {
+        echo racketmanager_get_svg( $svg_name );
     }
 
     /**
@@ -181,11 +181,11 @@
      *
      * @param string $svg_name The name of the icon.
      */
-    function leaguemanager_get_svg( $svg_name, $group = 'ui', $color = '' ) {
+    function racketmanager_get_svg( $svg_name, $group = 'ui', $color = '' ) {
 
         // Make sure that only our allowed tags and attributes are included.
         $svg = wp_kses(
-            Leaguemanager_SVG_Icons::get_svg( $svg_name ),
+            Racketmanager_SVG_Icons::get_svg( $svg_name ),
             array(
                 'svg'     => array(
                     'class'       => true,

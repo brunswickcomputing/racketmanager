@@ -1,25 +1,25 @@
 <?php
 $options = get_option('leaguemanager');
 
-    global $wpdb, $league, $leaguemanager;
+    global $wpdb, $league, $racketmanager;
 
-    $matches = $leaguemanager->getMatches( array('confirmed' => true) );
+    $matches = $racketmanager->getMatches( array('confirmed' => true) );
     $prev_league = 0;
     ?>
 <div class="wrap">
 	<div class="league-block">
         <form id="match-results">
         <?php wp_nonce_field( 'results-update' ) ?>
-            <table class="widefat" summary="" title="<?php _e( 'Match Plan','leaguemanager' ) ?>" style="margin-bottom: 2em;">
+            <table class="widefat" summary="" title="<?php _e( 'Match Plan','racketmanager' ) ?>" style="margin-bottom: 2em;">
                 <thead>
                     <tr>
-                        <th><?php _e( 'ID', 'leaguemanager' ) ?></th>
-                        <th><?php _e( 'Date','leaguemanager' ) ?></th>
-                        <th><?php _e( 'Match','leaguemanager' ) ?></th>
-                        <th><?php _e( 'Location','leaguemanager' ) ?></th>
-                        <th><?php _e( 'Begin','leaguemanager' ) ?></th>
-                        <th><?php _e( 'Rubbers', 'leaguemanager' ) ?></th>
-                        <th style="text-align: center;"><?php _e( 'Score', 'leaguemanager' ) ?></th>
+                        <th><?php _e( 'ID', 'racketmanager' ) ?></th>
+                        <th><?php _e( 'Date','racketmanager' ) ?></th>
+                        <th><?php _e( 'Match','racketmanager' ) ?></th>
+                        <th><?php _e( 'Location','racketmanager' ) ?></th>
+                        <th><?php _e( 'Begin','racketmanager' ) ?></th>
+                        <th><?php _e( 'Rubbers', 'racketmanager' ) ?></th>
+                        <th style="text-align: center;"><?php _e( 'Score', 'racketmanager' ) ?></th>
                     </tr>
                 </thead>
                 <tbody id="the-list-matches" class="lm-form-table">
@@ -44,7 +44,7 @@ $options = get_option('leaguemanager');
                             <input type="hidden" name="away_team[<?php echo $match->league->id ?>][<?php echo $match->id ?>]" value="<?php echo $match->away_team ?>" />
                         </td>
                         <td><?php echo ( substr($match->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date(get_option('date_format'), $match->date) ?></td>
-                        <td class="match-title"><a href="admin.php?page=leaguemanager&amp;subpage=match&amp;league_id=<?php echo $match->league_id ?>&amp;edit=<?php echo $match->id ?>&amp;season=<?php echo $match->season ?>"><?php echo $match->match_title ?></a></td>
+                        <td class="match-title"><a href="admin.php?page=racketmanager&amp;subpage=match&amp;league_id=<?php echo $match->league_id ?>&amp;edit=<?php echo $match->id ?>&amp;season=<?php echo $match->season ?>"><?php echo $match->match_title ?></a></td>
                         <td><?php echo ( empty($match->location) ) ? 'N/A' : $match->location ?></td>
                         <td><?php echo ( '00:00' == $match->hour.":".$match->minutes ) ? 'N/A' : mysql2date(get_option('time_format'), $match->date) ?></td>
                         <?php do_action( 'matchtable_columns_'.(isset($match->league->sport) ? $match->league->sport : '' ), $match ) ?>
@@ -54,17 +54,17 @@ $options = get_option('leaguemanager');
                     </tr>
     <?php }
 } else { ?>
-                    <tr><td><?php _e('No matches with pending results', 'leaguemanager') ?></td></tr>
+                    <tr><td><?php _e('No matches with pending results', 'racketmanager') ?></td></tr>
 <?php } ?>
                 </tbody>
             </table>
 
-            <?php do_action ( 'leaguemanager_match_administration_descriptions' ) ?>
+            <?php do_action ( 'racketmanager_match_administration_descriptions' ) ?>
 
             <div class="tablenav">
 
 <?php if ( $matches ) { ?>
-                <p style="float: left; margin: 0; padding: 0;"><input type="submit" name="updateResults" id="updateResults" value="<?php _e( 'Update Results','leaguemanager' ) ?>" class="button button-primary" onclick="return Leaguemanager.confirmResults()" /></p>
+                <p style="float: left; margin: 0; padding: 0;"><input type="submit" name="updateResults" id="updateResults" value="<?php _e( 'Update Results','racketmanager' ) ?>" class="button button-primary" onclick="return Racketmanager.confirmResults()" /></p>
 <?php } ?>
             </div>
             <div id="message">

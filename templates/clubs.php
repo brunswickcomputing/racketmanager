@@ -63,7 +63,7 @@ The following variables are usable:
                     <div id="club-teams" class="team">
                         <?php
                             $shortCode = $club->shortcode;
-                            $competitions = $leaguemanager->getCompetitions(array('type'=>'league'));
+                            $competitions = $racketmanager->getCompetitions(array('type'=>'league'));
                             if ( $competitions ) { ?>
                                 <h2 class="teams-header">Teams</h2>
                                 <div class="competition-list jquery-ui-accordion">
@@ -80,14 +80,14 @@ The following variables are usable:
                                                     <dl class="team">
                                                     <dd><?php echo $team->title ?></dd>
 <?php if ( !empty($team->captain) ) { ?>
-            <dt><?php _e( 'Captain', 'leaguemanager' ) ?></dt><dd><?php echo $team->captain ?></dd>
+            <dt><?php _e( 'Captain', 'racketmanager' ) ?></dt><dd><?php echo $team->captain ?></dd>
 <?php } ?>
 <?php if ( is_user_logged_in() ) { ?>
     <?php if ( !empty($team->contactno) ) { ?>
-            <dt><?php _e( 'Contact Number', 'leaguemanager' ) ?></dt><dd><?php echo $team->contactno ?></dd>
+            <dt><?php _e( 'Contact Number', 'racketmanager' ) ?></dt><dd><?php echo $team->contactno ?></dd>
     <?php } ?>
     <?php if ( !empty($team->contactemail) ) { ?>
-            <dt><?php _e( 'Contact Email', 'leaguemanager' ) ?></dt><dd><?php echo $team->contactemail ?></dd>
+            <dt><?php _e( 'Contact Email', 'racketmanager' ) ?></dt><dd><?php echo $team->contactemail ?></dd>
     <?php } ?>
 <?php } ?>
                                                     </dl>

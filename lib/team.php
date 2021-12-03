@@ -3,7 +3,7 @@
 * Team API: Team class
 *
 * @author Kolja Schleich
-* @package LeagueManager
+* @package RacketManager
 * @subpackage Team
 */
 
@@ -27,7 +27,7 @@ final class Team {
 		$team = wp_cache_get( $team_id, 'teams' );
 
 		if ( ! $team ) {
-			$team = $wpdb->get_row( $wpdb->prepare( "SELECT `id`, `title`, `stadium`, `home`, `roster`, `profile`, `status`, `affiliatedclub` FROM {$wpdb->leaguemanager_teams} WHERE `id` = '%d' LIMIT 1", $team_id ) );
+			$team = $wpdb->get_row( $wpdb->prepare( "SELECT `id`, `title`, `stadium`, `home`, `roster`, `profile`, `status`, `affiliatedclub` FROM {$wpdb->racketmanager_teams} WHERE `id` = '%d' LIMIT 1", $team_id ) );
 
 			if ( !$team ) return false;
 
@@ -45,7 +45,7 @@ final class Team {
 	* @param object $team Team object.
 	*/
 	public function __construct( $team = null ) {
-		global $leaguemanager;
+		global $racketmanager;
 
 		if ( !is_null($team) ) {
 			foreach ( get_object_vars( $team ) as $key => $value ) {

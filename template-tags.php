@@ -491,7 +491,7 @@
      * @param string $end_el
      * @category template-tags
      */
-    function the_matches_pagination($start_el = "<p class='leaguemanager-pagination page-numbers'>", $end_el = "</p>") {
+    function the_matches_pagination($start_el = "<p class='racketmanager-pagination page-numbers'>", $end_el = "</p>") {
         global $league;
 
         if ( !empty($league->pagination_matches) )
@@ -707,7 +707,7 @@
     * @category template-tags
 
     */
-   function leaguemanager_club( $club_id, $args = array() ) {
+   function racketmanager_club( $club_id, $args = array() ) {
        $defaults = array('template' => '');
        $args = array_merge($defaults, $args);
        $args['club_id'] = intval($club_id);
@@ -727,7 +727,7 @@
      * @category template-tags
 
      */
-    function leaguemanager_players( $league_id, $args = array() ) {
+    function racketmanager_players( $league_id, $args = array() ) {
         global $league;
 
         $defaults = array('season' => false, 'template' => '', 'group' => false);
@@ -748,7 +748,7 @@
      * @param array $args associative array of parameters, see default values (optional)
      * @category template-tags
      */
-    function leaguemanager_standings( $league_id, $args = array() ) {
+    function racketmanager_standings( $league_id, $args = array() ) {
         global $league;
 
         $defaults = array( 'season' => false, 'template' => '', 'group' => false, 'home' => 0 );
@@ -769,7 +769,7 @@
      * @param array $args associative array of parameters, see default values (optional)
      * @category template-tags
      */
-    function leaguemanager_crosstable( $league_id, $args = array() ) {
+    function racketmanager_crosstable( $league_id, $args = array() ) {
         global $league;
 
         $defaults = array('season' => false, 'group' => '', 'template' => '', 'mode' => '');
@@ -790,7 +790,7 @@
      * @param array $args associative array of parameters, see default values (optional)
      * @category template-tags
      */
-    function leaguemanager_matches( $league_id, $args = array() ) {
+    function racketmanager_matches( $league_id, $args = array() ) {
         global $league;
 
         $defaults = array('season' => '', 'template' => '', 'mode' => '', 'limit' => 'true', 'match_day' => -1, 'group' => false, 'roster' => false, 'order' => false, 'show_match_day_selection' => '', 'show_team_selection' => '', 'time' => '', 'team' => 0, 'home_only' => 'false', 'match_date' => false, 'dateformat' => '', 'timeformat' => '');
@@ -811,7 +811,7 @@
      * @param array $args additional arguments as associative array (optional)
      * @category template-tags
      */
-    function leaguemanager_match( $match_id, $args = array() ) {
+    function racketmanager_match( $match_id, $args = array() ) {
         $defaults = array('template' => '');
         $args = array_merge($defaults, $args);
         $args['id'] = $match_id;
@@ -830,7 +830,7 @@
     * @param array $args additional arguments as associative array (optional)
     * @category template-tags
     */
-    function leaguemanager_teams( $league_id, $args = array() ) {
+    function racketmanager_teams( $league_id, $args = array() ) {
         global $league;
 
         $defaults = array('season' => false, 'template' => '', 'group' => false);
@@ -851,7 +851,7 @@
     * @param array $args additional arguments as associative array (optional)
     * @return void
     */
-    function leaguemanager_team( $team_id, $args = array() ) {
+    function racketmanager_team( $team_id, $args = array() ) {
         $defaults = array('template' => '');
         $args = array_merge($defaults, $args);
         $args['id'] = $team_id;
@@ -870,7 +870,7 @@
     * @param array $args additional arguments as associative array (optional)
     * @return void
     */
-    function leaguemanager_championship( $league_id, $args = array() ) {
+    function racketmanager_championship( $league_id, $args = array() ) {
         global $league;
 
         $defaults = array('template' => '', 'season' => false);
@@ -891,7 +891,7 @@
     * @param array $args additional arguments as associative array (optional)
     * @return void
     */
-    function leaguemanager_archive( $league_id, $args = array() ) {
+    function racketmanager_archive( $league_id, $args = array() ) {
         $defaults = array('template' => '');
         $args = array_merge($defaults, $args);
         $args['league_id'] = $league_id;
@@ -910,7 +910,7 @@
     * @param array $args additional arguments as associative array (optional)
     * @return void
     */
-    function leaguemanager_league( $league_id, $args = array() ) {
+    function racketmanager_league( $league_id, $args = array() ) {
         $defaults = array('season' => false, 'template' => '');
         $args = array_merge($defaults, $args);
         $args['league_id'] = $league_id;
@@ -929,8 +929,8 @@
      * @param array $args associative array of parameters, see default values (optional)
      * @category template-tags
      */
-    function leaguemanager_results( $clubId, $args = array() ) {
-        global $leaguemanager;
+    function racketmanager_results( $clubId, $args = array() ) {
+        global $racketmanager;
 
         $args['affiliatedclub'] = $clubId;
         $args['days'] = 3;

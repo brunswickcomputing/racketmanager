@@ -11,8 +11,8 @@
 	.entry-header {  display:none; }
 	.header-clone {  display:none; }
 	#season {  display:none; }
-    form#leaguemanager_archive { display: none; }
-	table.leaguemanager td, table.leaguemanager th {
+    form#racketmanager_archive { display: none; }
+	table.racketmanager td, table.racketmanager th {
 		vertical-align: middle;
 		padding: 0px;
 		margin: 0;

@@ -3,7 +3,7 @@
 * Team API: League Team class
 *
 * @author Paul Moffat
-* @package LeagueManager
+* @package RacketManager
 * @subpackage LeagueTeam
 */
 
@@ -70,7 +70,7 @@ final class LeagueTeam {
     $leagueTeam = wp_cache_get( $leagueTeam_id, 'leagueteams' );
 
     if ( ! $leagueTeam ) {
-      $leagueTeam = $wpdb->get_row( $wpdb->prepare( "SELECT B.`id` AS `id`, B.`title`, B.`affiliatedclub`, B.`stadium`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`points_plus`, A.`points_minus`, A.`points2_plus`, A.`points2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom` FROM {$wpdb->leaguemanager_teams} B INNER JOIN {$wpdb->leaguemanager_table} A ON B.id = A.team_id WHERE A.`id` = '%d' LIMIT 1", $leagueTeam_id ) );
+      $leagueTeam = $wpdb->get_row( $wpdb->prepare( "SELECT B.`id` AS `id`, B.`title`, B.`affiliatedclub`, B.`stadium`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`points_plus`, A.`points_minus`, A.`points2_plus`, A.`points2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom` FROM {$wpdb->racketmanager_teams} B INNER JOIN {$wpdb->racketmanager_table} A ON B.id = A.team_id WHERE A.`id` = '%d' LIMIT 1", $leagueTeam_id ) );
 
       if ( !$leagueTeam ) return false;
 
@@ -88,7 +88,7 @@ final class LeagueTeam {
   * @param object $leagueTeam LeagueTeam object.
   */
   public function __construct( $leagueTeam = null ) {
-    global $leaguemanager;
+    global $racketmanager;
 
     if ( !is_null($leagueTeam) ) {
       if ( isset($leagueTeam->custom) ) {
@@ -186,9 +186,9 @@ final class LeagueTeam {
     $last5 .= '<span  class="N last5-bg" title="'.$next_result->tooltipTitle.'">&nbsp;</span>';
     else
     if ( $link )
-    $last5 .= '<a class="N last5-bg" title="'.__('Next Match: No Game Scheduled', 'leaguemanager').'">&nbsp;</a>';
+    $last5 .= '<a class="N last5-bg" title="'.__('Next Match: No Game Scheduled', 'racketmanager').'">&nbsp;</a>';
     else
-    $last5 .= '<span class="N last5-bg" title="'.__('Next Match: No Game Scheduled', 'leaguemanager').'">&nbsp;</span>';
+    $last5 .= '<span class="N last5-bg" title="'.__('Next Match: No Game Scheduled', 'racketmanager').'">&nbsp;</span>';
 
     // get last 5 match results
     $last_results = $league->getMatches( array("time" => "prev", "team_id" => $this->id, "match_day" => -1, "limit" => 5, "reset_query_args" => true) );
@@ -227,8 +227,8 @@ final class LeagueTeam {
     if (is_null($league)) $league = get_league($this->league_id);
 
     $num_matches = $league->getMatches(array('count' => true, 'team_id' => $this->id, 'home_points' => 'not_empty', 'away_points' => 'not_empty', 'limit' => false, 'cache' => false, 'match_day' => -1, 'reset_query_args' => true));
-    $num_matches = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->leaguemanager_matches} WHERE `final` = '' AND (`home_team` = '%d' OR `away_team` = '%d') AND `home_points` != '' AND `away_points` != '' AND `league_id` = '%d' AND `season` = '%s'", $this->id, $this->id, $league->id, $this->season) );
-    $num_matches = apply_filters( 'leaguemanager_done_matches_'.$league->sport, $num_matches, $this->id, $league->id );
+    $num_matches = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->racketmanager_matches} WHERE `final` = '' AND (`home_team` = '%d' OR `away_team` = '%d') AND `home_points` != '' AND `away_points` != '' AND `league_id` = '%d' AND `season` = '%s'", $this->id, $this->id, $league->id, $this->season) );
+    $num_matches = apply_filters( 'racketmanager_done_matches_'.$league->sport, $num_matches, $this->id, $league->id );
 
     $this->done_matches = $num_matches;
 
@@ -244,14 +244,14 @@ final class LeagueTeam {
   * @return int
   */
   public function getNumWonMatches() {
-    global $wpdb, $leaguemanager;
+    global $wpdb, $racketmanager;
 
     $league = get_league();
     if (is_null($league)) $league = get_league($this->league_id);
 
     $num_won = $league->getMatches(array('count' => true, 'winner_id' => $this->id, 'limit' => false, 'cache' => false, 'match_day' => -1, 'reset_query_args' => true));
-    $num_won = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->leaguemanager_matches} WHERE `final` = '' AND `winner_id` = '%d' AND `league_id` = '%d' AND `season` = '%s'", $this->id, $league->id, $this->season) );
-    $num_won = apply_filters( 'leaguemanager_won_matches_'.$league->sport, $num_won, $this->id, $league->id );
+    $num_won = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->racketmanager_matches} WHERE `final` = '' AND `winner_id` = '%d' AND `league_id` = '%d' AND `season` = '%s'", $this->id, $league->id, $this->season) );
+    $num_won = apply_filters( 'racketmanager_won_matches_'.$league->sport, $num_won, $this->id, $league->id );
 
     $this->won_matches = $num_won;
 
@@ -273,8 +273,8 @@ final class LeagueTeam {
     if (is_null($league)) $league = get_league($this->league_id);
 
     $num_draw = $league->getMatches(array('count' => true, 'team_id' => $this->id, 'winner_id' => -1, 'loser_id' => -1, 'limit' => false, 'cache' => false, 'match_day' => -1, 'reset_query_args' => true));
-    $num_draw = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->leaguemanager_matches} WHERE `final` = '' AND `winner_id` = -1 AND `loser_id` = -1 AND (`home_team` = '%d' OR `away_team` = '%d') AND `league_id` = '%d' AND `season` = '%s'", $this->id, $this->id, $league->id, $this->season) );
-    $num_draw = apply_filters( 'leaguemanager_tie_matches_'.$league->sport, $num_draw, $this->id, $league->id );
+    $num_draw = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->racketmanager_matches} WHERE `final` = '' AND `winner_id` = -1 AND `loser_id` = -1 AND (`home_team` = '%d' OR `away_team` = '%d') AND `league_id` = '%d' AND `season` = '%s'", $this->id, $this->id, $league->id, $this->season) );
+    $num_draw = apply_filters( 'racketmanager_tie_matches_'.$league->sport, $num_draw, $this->id, $league->id );
 
     $this->draw_matches = $num_draw;
 
@@ -296,8 +296,8 @@ final class LeagueTeam {
     if (is_null($league)) $league = get_league($this->league_id);
 
     $num_lost = $league->getMatches(array('count' => true, 'loser_id' => $this->id, 'limit' => false, 'cache' => false, 'match_day' => -1, 'reset_query_args' => true));
-    $num_lost = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->leaguemanager_matches} WHERE `final` = '' AND `loser_id` = '%d' AND `league_id` = '%d' AND `season` = '%s'", $this->id, $league->id, $this->season) );
-    $num_lost = apply_filters( 'leaguemanager_lost_matches_'.$league->sport, $num_lost, $this->id, $league->id );
+    $num_lost = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->racketmanager_matches} WHERE `final` = '' AND `loser_id` = '%d' AND `league_id` = '%d' AND `season` = '%s'", $this->id, $league->id, $this->season) );
+    $num_lost = apply_filters( 'racketmanager_lost_matches_'.$league->sport, $num_lost, $this->id, $league->id );
 
     $this->lost_matches = $num_lost;
 

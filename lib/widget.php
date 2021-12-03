@@ -1,20 +1,20 @@
 <?php
 /**
-* LeagueManagerWidget API: LeagueManagerWidget class
+* RacketManagerWidget API: RacketManagerWidget class
 *
 * @author Kolja Schleich
 * @author Paul Moffat
-* @package LeagueManager
-* @subpackage LeagueManagerWidget
+* @package RacketManager
+* @subpackage RacketManagerWidget
 */
 
 /**
 * Class to implement the widget
 *
-* @package LeagueManager
-* @subpackage LeagueManagerWidget
+* @package RacketManager
+* @subpackage RacketManagerWidget
 */
-class LeagueManagerWidget extends WP_Widget {
+class RacketManagerWidget extends WP_Widget {
   /**
   * index for matches in widget
   *
@@ -30,8 +30,8 @@ class LeagueManagerWidget extends WP_Widget {
   */
   public function __construct( $template = false ) {
     if ( !$template ) {
-      $widget_ops = array('classname' => 'leaguemanager_widget', 'description' => __('Clubs at a glance.', 'leaguemanager') );
-      parent::__construct('leaguemanager-widget', __( 'League Manager', 'leaguemanager' ), $widget_ops);
+      $widget_ops = array('classname' => 'racketmanager_widget', 'description' => __('Clubs at a glance.', 'racketmanager') );
+      parent::__construct('racketmanager-widget', __( 'League Manager', 'racketmanager' ), $widget_ops);
     }
   }
 
@@ -42,10 +42,10 @@ class LeagueManagerWidget extends WP_Widget {
   * @param array $instance
   */
   public function widget( $args, $instance ) {
-    global $leaguemanager_shortcodes, $leaguemanager;
+    global $racketmanager_shortcodes, $racketmanager;
     $cache = array();
     if ( ! $this->is_preview() ) {
-      $cache = wp_cache_get( 'leaguemanager', 'widget' );
+      $cache = wp_cache_get( 'racketmanager', 'widget' );
     }
 
     if ( ! is_array( $cache ) ) {
@@ -63,7 +63,7 @@ class LeagueManagerWidget extends WP_Widget {
 
     ob_start();
     extract( $args );
-    wp_enqueue_script( 'leaguemanager_widget_js', '/wp-content/plugins/leaguemanager/js/widget.js' );
+    wp_enqueue_script( 'racketmanager_widget_js', '/wp-content/plugins/racketmanager/js/widget.js' );
 
     $title          = ( ! empty( $instance['title'] ) ) ? $instance['title'] : '';
     $title          = apply_filters('widget_title', $instance['title']);
@@ -74,7 +74,7 @@ class LeagueManagerWidget extends WP_Widget {
     $club_type      = $instance['club_type'];
     $orderby        = $instance['orderby'];
 
-    $clubs = $leaguemanager->getClubs();
+    $clubs = $racketmanager->getClubs();
 
     echo $args['before_widget'];
 
@@ -120,7 +120,7 @@ class LeagueManagerWidget extends WP_Widget {
           </div>
 
           <a href="/clubs" class="roll-button more-button">
-            <?php echo __('See all our clubs', 'leaguemanager'); ?>
+            <?php echo __('See all our clubs', 'racketmanager'); ?>
           </a>
 
         <?php } ?>
@@ -131,7 +131,7 @@ class LeagueManagerWidget extends WP_Widget {
 
         if ( ! $this->is_preview() ) {
           $cache[ $args['widget_id'] ] = ob_get_flush();
-          wp_cache_set( 'leaguemanager', $cache, 'widget' );
+          wp_cache_set( 'racketmanager', $cache, 'widget' );
         } else {
           ob_end_flush();
         }
@@ -155,7 +155,7 @@ class LeagueManagerWidget extends WP_Widget {
       * @param int|array $widget_args
       */
       public function form( $instance ) {
-        global $leaguemanager;
+        global $racketmanager;
         $title     = isset( $instance['title'] ) ? esc_attr( $instance['title'] ) : '';
         $clubname  = isset( $instance['clubname'] ) ? esc_attr( $instance['clubname'] ) : '';
         $clublink  = isset( $instance['clublink'] ) ? esc_attr( $instance['clublink'] ) : '';
@@ -165,43 +165,43 @@ class LeagueManagerWidget extends WP_Widget {
         $club_type = isset( $instance['club_type'] ) ? esc_attr( $instance['club_type'] ) : '';
         ?>
         <p>
-          <label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title', 'leaguemanager'); ?></label>
+          <label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title', 'racketmanager'); ?></label>
           <input id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" style="float:right; width:56%;" />
         </p>
         <p>
-          <label for="<?php echo $this->get_field_id('orderby'); ?>"><?php _e('Sorting Method', 'leaguemanager'); ?></label>
+          <label for="<?php echo $this->get_field_id('orderby'); ?>"><?php _e('Sorting Method', 'racketmanager'); ?></label>
           <select id="<?php echo $this->get_field_id('orderby'); ?>" name="<?php echo $this->get_field_name('orderby'); ?>"  style="float:right; width:56%;">
-            <option selected="selected" value="none"><?php _e( 'Select One', 'leaguemanager' ); ?></option>
-            <option <?php if ( $orderby == 'asc' ) { echo ' selected="selected"'; } ?> value="asc"><?php _e('Asc', 'leaguemanager'); ?></option>
-            <option <?php if ( $orderby == 'desc' ) { echo ' selected="selected"'; } ?> value="desc"><?php _e('Desc', 'leaguemanager'); ?></option>
-            <option <?php if ( $orderby == 'rand' ) { echo ' selected="selected"'; } ?> value="rand"><?php _e('Random', 'leaguemanager'); ?></option>
-            <option <?php if ( $orderby == 'menu_order' ) { echo ' selected="selected"'; } ?> value="menu_order"><?php _e('Page Attributes "Order"', 'leaguemanager'); ?></option>
+            <option selected="selected" value="none"><?php _e( 'Select One', 'racketmanager' ); ?></option>
+            <option <?php if ( $orderby == 'asc' ) { echo ' selected="selected"'; } ?> value="asc"><?php _e('Asc', 'racketmanager'); ?></option>
+            <option <?php if ( $orderby == 'desc' ) { echo ' selected="selected"'; } ?> value="desc"><?php _e('Desc', 'racketmanager'); ?></option>
+            <option <?php if ( $orderby == 'rand' ) { echo ' selected="selected"'; } ?> value="rand"><?php _e('Random', 'racketmanager'); ?></option>
+            <option <?php if ( $orderby == 'menu_order' ) { echo ' selected="selected"'; } ?> value="menu_order"><?php _e('Page Attributes "Order"', 'racketmanager'); ?></option>
           </select>
         </p>
         <p>
-          <label for="<?php echo $this->get_field_id('itemstodisplay'); ?>"><?php _e('How many to show?', 'leaguemanager'); ?></label>
+          <label for="<?php echo $this->get_field_id('itemstodisplay'); ?>"><?php _e('How many to show?', 'racketmanager'); ?></label>
           <input id="<?php echo $this->get_field_id('itemstodisplay'); ?>" name="<?php echo $this->get_field_name('itemstodisplay'); ?>" type="text" value="<?php echo $itemstodisplay; ?>" style="float:right; width:56%;" />
         </p>
 
         <p>
-          <label for="<?php echo $this->get_field_id('clubname'); ?>"><?php _e('Show club name?', 'leaguemanager'); ?></label>
+          <label for="<?php echo $this->get_field_id('clubname'); ?>"><?php _e('Show club name?', 'racketmanager'); ?></label>
           <input id="<?php echo $this->get_field_id('clubname'); ?>" name="<?php echo $this->get_field_name('clubname'); ?>" type="checkbox" value="1" <?php checked( '1', $clubname ); ?> style="float:right; margin-right:6px;" />
         </p>
         <p>
-          <label for="<?php echo $this->get_field_id('clublink'); ?>"><?php _e('Link club name?', 'leaguemanager'); ?></label>
+          <label for="<?php echo $this->get_field_id('clublink'); ?>"><?php _e('Link club name?', 'racketmanager'); ?></label>
           <input id="<?php echo $this->get_field_id('clublink'); ?>" name="<?php echo $this->get_field_name('clublink'); ?>" type="checkbox" value="1" <?php checked( '1', $clublink ); ?> style="float:right; margin-right:6px;" />
         </p>
         <p>
-          <label for="<?php echo $this->get_field_id('clubbio'); ?>"><?php _e('Show club bio?', 'leaguemanager'); ?></label>
+          <label for="<?php echo $this->get_field_id('clubbio'); ?>"><?php _e('Show club bio?', 'racketmanager'); ?></label>
           <input id="<?php echo $this->get_field_id('clubbio'); ?>" name="<?php echo $this->get_field_name('clubbio'); ?>" type="checkbox" value="1" <?php checked( '1', $clubbio ); ?> style="float:right; margin-right:6px;" />
         </p>
         <p>
-          <label for="<?php echo $this->get_field_id('club_type'); ?>"><?php _e('Club Type', 'leaguemanager'); ?></label>
+          <label for="<?php echo $this->get_field_id('club_type'); ?>"><?php _e('Club Type', 'racketmanager'); ?></label>
           <select id="<?php echo $this->get_field_id('club_type'); ?>" name="<?php echo $this->get_field_name('club_type'); ?>"  style="float:right; width:56%;" >
-            <option selected="selected" value="none"><?php _e( 'Select One', 'leaguemanager' ); ?></option>
+            <option selected="selected" value="none"><?php _e( 'Select One', 'racketmanager' ); ?></option>
             <?php $terms = get_terms( 'club_type' ); ?>
-            <option <?php if ( $club_type == 'all' ) { echo ' selected="selected"'; } ?> value="all"><?php _e( 'All', 'leaguemanager' ); ?></option>
-            <option<?php if ( $club_type == "affiliated" ) { echo ' selected="selected"'; } ?> value="affiliated"><?php _e( 'Affiliated', 'leaguemanager' ); ?></option>
+            <option <?php if ( $club_type == 'all' ) { echo ' selected="selected"'; } ?> value="all"><?php _e( 'All', 'racketmanager' ); ?></option>
+            <option<?php if ( $club_type == "affiliated" ) { echo ' selected="selected"'; } ?> value="affiliated"><?php _e( 'Affiliated', 'racketmanager' ); ?></option>
           </select>
         </p>
 

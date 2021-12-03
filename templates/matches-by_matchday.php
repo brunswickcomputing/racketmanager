@@ -34,21 +34,21 @@
     <?php if (get_match_template_type() == 'tabs') { ?>
     <ul class="tablist">
     <?php for ($i = 1; $i <= get_num_match_days(); $i++) { ?>
-        <li><a href="#match_day_tab_<?php echo $i ?>_<?php the_league_id() ?>"><?php printf(__('%d. Match Day', 'leaguemanager'), $i) ?></a></li>
+        <li><a href="#match_day_tab_<?php echo $i ?>_<?php the_league_id() ?>"><?php printf(__('%d. Match Day', 'racketmanager'), $i) ?></a></li>
     <?php } ?>
     </ul>
     <?php } ?>
     
     <?php for ($i = 1; $i <= get_num_match_days(); $i++) { ?>
     <div id="match_day_tab_<?php echo $i ?>_<?php the_league_id() ?>" class="match <?php the_matchbox_class() ?>">
-        <h3 class="<?php the_matchbox_header_class() ?>"><?php printf(__('%d. Match Day', 'leaguemanager'), $i) ?></h3>
+        <h3 class="<?php the_matchbox_header_class() ?>"><?php printf(__('%d. Match Day', 'racketmanager'), $i) ?></h3>
         
         <div class="<?php the_matchbox_content_class() ?>">
-            <table class='leaguemanager matchtable' summary='' title='<?php _e( 'Match Plan', 'leaguemanager' ) ?> <?php the_league_title() ?>>'>
+            <table class='racketmanager matchtable' summary='' title='<?php _e( 'Match Plan', 'racketmanager' ) ?> <?php the_league_title() ?>>'>
                 <thead>
                     <tr>
-                        <th class='match'><?php _e( 'Match', 'leaguemanager' ) ?></th>
-                        <th class='score'><?php _e( 'Score', 'leaguemanager' ) ?></th>
+                        <th class='match'><?php _e( 'Match', 'racketmanager' ) ?></th>
+                        <th class='score'><?php _e( 'Score', 'racketmanager' ) ?></th>
                     </tr>
                 </thead>
                 <tbody>

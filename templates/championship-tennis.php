@@ -13,11 +13,11 @@ You can check the content of a variable when you insert the tag <?php var_dump($
 ?>
 <div class="jquery-ui-tabs">
 	<ul class="tablist">
-		<li><a href="#results"><?php _e( 'Results', 'leaguemanager' ) ?></a></li>
-		<li><a href="#matches"><?php _e( 'Matches', 'leaguemanager' ) ?></a></li>
-		<li><a href="#teams"><?php _e( 'Teams', 'leaguemanager' ) ?></a></li>
+		<li><a href="#results"><?php _e( 'Results', 'racketmanager' ) ?></a></li>
+		<li><a href="#matches"><?php _e( 'Matches', 'racketmanager' ) ?></a></li>
+		<li><a href="#teams"><?php _e( 'Teams', 'racketmanager' ) ?></a></li>
 		<?php if ( !isset($league->entryType) || $league->entryType != 'player' ) { ?>
-			<li><a href="#players"><?php _e( 'Players', 'leaguemanager' ) ?></a></li>
+			<li><a href="#players"><?php _e( 'Players', 'racketmanager' ) ?></a></li>
 		<?php } ?>
 	</ul>
 	<!-- Results Overview -->
@@ -73,12 +73,12 @@ You can check the content of a variable when you insert the tag <?php var_dump($
 	</div>
 	<!-- Teamlist -->
 	<div id="teams" class="jquery-ui-tab">
-		<?php leaguemanager_teams( $league->id, array('season' => $league->current_season['name'], 'template' => 'list') ) ?>
+		<?php racketmanager_teams( $league->id, array('season' => $league->current_season['name'], 'template' => 'list') ) ?>
 	</div>
 	<?php if ( !isset($league->entryType) || $league->entryType != 'player' ) { ?>
 		<!-- Players -->
 		<div id="players" class="jquery-ui-tab">
-			<?php leaguemanager_players( $league->id, array('season' => $league->current_season['name']) ) ?>
+			<?php racketmanager_players( $league->id, array('season' => $league->current_season['name']) ) ?>
 		</div>
 	<?php } ?>
 </div>

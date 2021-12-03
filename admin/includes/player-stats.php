@@ -19,27 +19,27 @@
         $heading = "Match Day";
         $numCols = $season['num_match_days'];
     }
-    $clubs = $leaguemanager->getClubs( );
+    $clubs = $racketmanager->getClubs( );
 	if ( !empty($competition->seasons) ) { ?>
 		<!-- Season Dropdown -->
 <div class="alignright" style="clear: both;">
 	<form action="admin.php" method="get" style="display: inline;">
-		<input type="hidden" name="page" value="leaguemanager" />
+		<input type="hidden" name="page" value="racketmanager" />
 		<input type="hidden" name="subpage" value="show-competition" />
 		<input type="hidden" name="competition_id" value="<?php echo $competition->id ?>" />
-		<label for="club_id"><?php _e('Affiliated Club', 'leaguemanager') ?></label>		<select size="1" name="club_id" id="club_id">
-			<option><?php _e( 'Select club', 'leaguemanager' ) ?></option>
+		<label for="club_id"><?php _e('Affiliated Club', 'racketmanager') ?></label>		<select size="1" name="club_id" id="club_id">
+			<option><?php _e( 'Select club', 'racketmanager' ) ?></option>
 <?php foreach ( $clubs AS $club ) { ?>
 			<option value="<?php echo $club->id ?>" <?php echo ($club->id == $club_id ?  'selected' :  '') ?>><?php echo $club->name ?></option>
 <?php } ?>
 		</select>
-		<label for="season" style="vertical-align: middle;"><?php _e( 'Season', 'leaguemanager' ) ?></label>
+		<label for="season" style="vertical-align: middle;"><?php _e( 'Season', 'racketmanager' ) ?></label>
 		<select size="1" name="season" id="season">
 <?php foreach ( $competition->seasons AS $s ) { ?>
 			<option value="<?php echo htmlspecialchars($s['name']) ?>"<?php if ( $s['name'] == $season['name'] ) echo ' selected="selected"' ?>><?php echo $s['name'] ?></option>
 <?php } ?>
 		</select>
-		<input type="submit" name="statsseason" value="<?php _e( 'Show', 'leaguemanager' ) ?>" class="button" />
+		<input type="submit" name="statsseason" value="<?php _e( 'Show', 'racketmanager' ) ?>" class="button" />
 	</form>
 </div>
 <?php } ?>
@@ -47,12 +47,12 @@
 <!-- View Player Stats -->
 <form id="player-stats-filter" method="post" action="">
 
-	<table class="widefat playerstats" summary="" title="LeagueManager Player Stats">
+	<table class="widefat playerstats" summary="" title="RacketManager Player Stats">
 		<thead>
 		<tr>
-            <th rowspan="2" scope="col" class="playername"><?php _e( 'Name', 'leaguemanager' ) ?></th>
+            <th rowspan="2" scope="col" class="playername"><?php _e( 'Name', 'racketmanager' ) ?></th>
 			<th rowspan="2" scope="col" class="status"></th>
-			<th colspan="<?php echo $numCols ?>" scope="colgroup" class="colspan"><?php _e( $heading, 'leaguemanager') ?></th>
+			<th colspan="<?php echo $numCols ?>" scope="colgroup" class="colspan"><?php _e( $heading, 'racketmanager') ?></th>
 		</tr>
 		<tr>
 <?php

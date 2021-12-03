@@ -3,19 +3,19 @@
  * League_Tennis API: League_Tennis class
  *
  * @author Kolja Schleich
- * @package LeagueManager
+ * @package RacketManager
  * @subpackage League_Tennis
  */
 
-add_filter( 'leaguemanager_sports', 'leaguemanager_sports_tennis' );
+add_filter( 'racketmanager_sports', 'racketmanager_sports_tennis' );
 /**
  * add tennis to list
  *
  * @param array $sports
  * @return array
  */
-function leaguemanager_sports_tennis( $sports ) {
-	$sports['tennis'] = __( 'Tennis', 'leaguemanager' );
+function racketmanager_sports_tennis( $sports ) {
+	$sports['tennis'] = __( 'Tennis', 'racketmanager' );
 	return $sports;
 }
 
@@ -42,18 +42,18 @@ class Competition_Tennis extends Competition {
      * @return void
      */
     public function __construct($competition) {
-        $this->fields_team['sets_won'] = array('label' => __( 'Sets Won', 'leaguemanager' ));
-        $this->fields_team['sets_allowed'] = array('label' => __( 'Sets Against', 'leaguemanager' ));
-        $this->fields_team['sets_shared'] = array('label' => __( 'Sets Shared', 'leaguemanager' ));
-        $this->fields_team['straight_set'] = array('label' => __( 'Straight Set', 'leaguemanager' ), 'keys' => array('win','lost'));
-        $this->fields_team['split_set'] = array('label' => __( 'Split Set', 'leaguemanager' ), 'keys' => array('win','lost'));
-        $this->fields_team['games_won'] = array('label' => __( 'Games Won', 'leaguemanager' ));
-        $this->fields_team['games_allowed'] = array('label' => __( 'Games Against', 'leaguemanager' ));
+        $this->fields_team['sets_won'] = array('label' => __( 'Sets Won', 'racketmanager' ));
+        $this->fields_team['sets_allowed'] = array('label' => __( 'Sets Against', 'racketmanager' ));
+        $this->fields_team['sets_shared'] = array('label' => __( 'Sets Shared', 'racketmanager' ));
+        $this->fields_team['straight_set'] = array('label' => __( 'Straight Set', 'racketmanager' ), 'keys' => array('win','lost'));
+        $this->fields_team['split_set'] = array('label' => __( 'Split Set', 'racketmanager' ), 'keys' => array('win','lost'));
+        $this->fields_team['games_won'] = array('label' => __( 'Games Won', 'racketmanager' ));
+        $this->fields_team['games_allowed'] = array('label' => __( 'Games Against', 'racketmanager' ));
 
         parent::__construct($competition);
 
-        add_filter( 'leaguemanager_point_rules_list', array(&$this, 'getPointRuleList') );
-        add_filter( 'leaguemanager_point_rules',  array(&$this, 'getPointRules') );
+        add_filter( 'racketmanager_point_rules_list', array(&$this, 'getPointRuleList') );
+        add_filter( 'racketmanager_point_rules',  array(&$this, 'getPointRules') );
 
         add_action( 'competition_settings_'.$this->sport, array(&$this, 'competitionSettings') );
     }
@@ -64,8 +64,8 @@ class Competition_Tennis extends Competition {
      * @return array
      */
     public function getPointRuleList( $rules ) {
-        $rules['tennis'] = __('Tennis', 'leaguemanager');
-        $rules['tennisSummer'] = __('Tennis Summer', 'leaguemanager');
+        $rules['tennis'] = __('Tennis', 'racketmanager');
+        $rules['tennisSummer'] = __('Tennis Summer', 'racketmanager');
 
         return $rules;
     }
@@ -95,24 +95,24 @@ class Competition_Tennis extends Competition {
         $competition->num_rubbers = isset($competition->num_rubbers) ? $competition->num_rubbers : '';
         $competition->type = isset($competition->type) ? $competition->type : '';
         echo "<tr valign='top'>";
-            echo "<th scope='row'><label for='num_sets'>".__('Number of Sets', 'leaguemanager')."</label></th>";
+            echo "<th scope='row'><label for='num_sets'>".__('Number of Sets', 'racketmanager')."</label></th>";
             echo "<td><input type='number' name='settings[num_sets]' id='num_sets' value='".$competition->num_sets."' size='3' /></td>";
         echo "</tr>";
         echo "<tr valign='top'>";
-            echo "<th scope='row'><label for='num_rubbers'>".__('Number of Rubbers', 'leaguemanager')."</label></th>";
+            echo "<th scope='row'><label for='num_rubbers'>".__('Number of Rubbers', 'racketmanager')."</label></th>";
             echo "<td><input type='number' name='settings[num_rubbers]' id='num_rubbers' value='".$competition->num_rubbers."' size='3' /></td>";
         echo "</tr>";
         echo "<tr valign='top'>";
-            echo "<th scope='row'><label for='competition_type'>".__('Type', 'leaguemanager')."</label></th>";
+            echo "<th scope='row'><label for='competition_type'>".__('Type', 'racketmanager')."</label></th>";
         echo "<td>";
                 echo "<select size='1' name='settings[competition_type]' id='competition_type'>";
-                    echo "<option>"._e( 'Select', 'leaguemanager')."</option>";
-                    echo "<option value='WS' ".($competition->type == 'WS' ? 'selected' : '').">".__( 'Ladies Singles', 'leaguemanager')."</option>";
-                    echo "<option value='WD' ".($competition->type == 'WD' ? 'selected' : '').">".__( 'Ladies Doubles', 'leaguemanager')."</option>";
-                    echo "<option value='MS' ".($competition->type == 'MS' ? 'selected' : '').">".__( 'Mens Singles', 'leaguemanager')."</option>";
-                    echo "<option value='MD' ".($competition->type == 'MD' ? 'selected' : '').">".__( 'Mens Doubles', 'leaguemanager')."</option>";
-                    echo "<option value='XD' ".($competition->type == 'XD' ? 'selected' : '').">".__( 'Mixed Doubles', 'leaguemanager')."</option>";
-                    echo "<option value='LD' ".($competition->type == 'LD' ? 'selected' : '').">".__( 'The League', 'leaguemanager')."</option>";
+                    echo "<option>"._e( 'Select', 'racketmanager')."</option>";
+                    echo "<option value='WS' ".($competition->type == 'WS' ? 'selected' : '').">".__( 'Ladies Singles', 'racketmanager')."</option>";
+                    echo "<option value='WD' ".($competition->type == 'WD' ? 'selected' : '').">".__( 'Ladies Doubles', 'racketmanager')."</option>";
+                    echo "<option value='MS' ".($competition->type == 'MS' ? 'selected' : '').">".__( 'Mens Singles', 'racketmanager')."</option>";
+                    echo "<option value='MD' ".($competition->type == 'MD' ? 'selected' : '').">".__( 'Mens Doubles', 'racketmanager')."</option>";
+                    echo "<option value='XD' ".($competition->type == 'XD' ? 'selected' : '').">".__( 'Mixed Doubles', 'racketmanager')."</option>";
+                    echo "<option value='LD' ".($competition->type == 'LD' ? 'selected' : '').">".__( 'The League', 'racketmanager')."</option>";
                 echo "</select>";
             echo "</td>";
         echo "</tr>";
@@ -143,19 +143,19 @@ class League_Tennis extends League {
 	 * @return void
 	 */
 	public function __construct($league) {
-        $this->fields_team['sets_won'] = array('label' => __( 'Sets Won', 'leaguemanager' ));
-        $this->fields_team['sets_allowed'] = array('label' => __( 'Sets Against', 'leaguemanager' ));
-        $this->fields_team['sets_shared'] = array('label' => __( 'Sets Shared', 'leaguemanager' ));
-        $this->fields_team['straight_set'] = array('label' => __( 'Straight Set', 'leaguemanager' ), 'keys' => array('win','lost'));
-        $this->fields_team['split_set'] = array('label' => __( 'Split Set', 'leaguemanager' ), 'keys' => array('win','lost'));
-        $this->fields_team['games_won'] = array('label' => __( 'Games Won', 'leaguemanager' ));
-        $this->fields_team['games_allowed'] = array('label' => __( 'Games Against', 'leaguemanager' ));
+        $this->fields_team['sets_won'] = array('label' => __( 'Sets Won', 'racketmanager' ));
+        $this->fields_team['sets_allowed'] = array('label' => __( 'Sets Against', 'racketmanager' ));
+        $this->fields_team['sets_shared'] = array('label' => __( 'Sets Shared', 'racketmanager' ));
+        $this->fields_team['straight_set'] = array('label' => __( 'Straight Set', 'racketmanager' ), 'keys' => array('win','lost'));
+        $this->fields_team['split_set'] = array('label' => __( 'Split Set', 'racketmanager' ), 'keys' => array('win','lost'));
+        $this->fields_team['games_won'] = array('label' => __( 'Games Won', 'racketmanager' ));
+        $this->fields_team['games_allowed'] = array('label' => __( 'Games Against', 'racketmanager' ));
 
         parent::__construct($league);
 
         add_filter( 'team_points_'.$this->sport, array(&$this, 'calculatePoints'), 10, 4 );
 
-		add_filter( 'leaguemanager_matchtitle_'.$this->sport, array(&$this, 'matchTitle'), 10, 3 );
+		add_filter( 'racketmanager_matchtitle_'.$this->sport, array(&$this, 'matchTitle'), 10, 3 );
 
 		add_action( 'matchtable_header_'.$this->sport, array(&$this, 'displayMatchesHeader'), 10, 0);
 		add_action( 'matchtable_columns_'.$this->sport, array(&$this, 'displayMatchesColumns') );
@@ -171,7 +171,7 @@ class League_Tennis extends League {
    * @return array
 	 */
 	public function calculatePoints( $points, $team_id, $rule, $matches ) {
-		global $leaguemanager;
+		global $racketmanager;
 
 		extract($rule);
 		$data = $this->getStandingsData($team_id,array(),$matches);
@@ -451,9 +451,9 @@ class League_Tennis extends League {
 		global $league;
 		$league = get_league($league);
         if ( isset($league->num_rubbers) && $league->num_rubbers > 0 ) {
-            echo '<th>'.__( 'Rubbers', 'leaguemanager' ).'</th>';
+            echo '<th>'.__( 'Rubbers', 'racketmanager' ).'</th>';
         } else {
-            echo '<th colspan="'.$league->num_sets.'" style="text-align: center;">'.__( 'Sets', 'leaguemanager' ).'</th>';
+            echo '<th colspan="'.$league->num_sets.'" style="text-align: center;">'.__( 'Sets', 'racketmanager' ).'</th>';
         }
 	}
 
@@ -473,7 +473,7 @@ class League_Tennis extends League {
             if ( !is_numeric($match->home_team) || !is_numeric($match->away_team) ) {
                 echo '<td></td>';
             } else {
-                echo '<td><a href="#" class="button button-primary" id="'.$match->id.'" onclick="Leaguemanager.showRubbers(this)">View Rubbers</a></td>';
+                echo '<td><a href="#" class="button button-primary" id="'.$match->id.'" onclick="Racketmanager.showRubbers(this)">View Rubbers</a></td>';
             }
 		} else {
 			for ( $i = 1; $i <= $league->num_sets; $i++ ) {
@@ -492,7 +492,7 @@ class League_Tennis extends League {
 	 * @return none
 	 */
 	protected function updateResults( $match ) {
-        global $leaguemanager;
+        global $racketmanager;
 
         $match = get_match( $match );
 

@@ -12,7 +12,7 @@ The following variables are usable:
     $postID = $wp_query->post->ID;
 ?>
     <?php if ( $matches ) { ?>
-        <table class='leaguemanager matchtable' summary='' title='<?php echo __( 'Latest results', 'leaguemanager' ) ?>'>
+        <table class='racketmanager matchtable' summary='' title='<?php echo __( 'Latest results', 'racketmanager' ) ?>'>
             <thead>
             </thead>
             <tbody>
@@ -26,9 +26,9 @@ The following variables are usable:
                     <td class='match'>
                       <?php include('matches-title.php');
                       if ( $match->league->mode == 'championship' ) {
-                        echo "<a href='/".__('tournaments', 'leaguemanager')."/".sanitize_title($match->league->title)."/".$match->league->current_season['name']."' >".$matchTitle."</a>";
+                        echo "<a href='/".__('tournaments', 'racketmanager')."/".sanitize_title($match->league->title)."/".$match->league->current_season['name']."' >".$matchTitle."</a>";
                       } else {
-                        echo "<a href='/".__('leagues', 'leaguemanager')."/".sanitize_title($match->league->title)."/".$match->league->current_season['name']."/day".$match->match_day."' >".$matchTitle."</a>";
+                        echo "<a href='/".__('leagues', 'racketmanager')."/".sanitize_title($match->league->title)."/".$match->league->current_season['name']."/day".$match->match_day."' >".$matchTitle."</a>";
                       } ?>
                     </td>
                     <td class="score">
@@ -41,5 +41,5 @@ The following variables are usable:
         </table>
 
 	<?php } else { ?>
-        <p><?php echo __( 'No recent results', 'leaguemanager' ) ?></p>
+        <p><?php echo __( 'No recent results', 'racketmanager' ) ?></p>
 	<?php }?>

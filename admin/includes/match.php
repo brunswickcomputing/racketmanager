@@ -1,16 +1,16 @@
 <div class="wrap">
-	<p class="leaguemanager_breadcrumb">
-		<a href="admin.php?page=leaguemanager"><?php _e( 'LeagueManager', 'leaguemanager' ) ?></a> &raquo;
-		<a href="admin.php?page=leaguemanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>"><?php echo $competition->name ?></a> &raquo;
-		<a href="admin.php?page=leaguemanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a> &raquo;
+	<p class="racketmanager_breadcrumb">
+		<a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo;
+		<a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>"><?php echo $competition->name ?></a> &raquo;
+		<a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a> &raquo;
 		<?php echo $form_title ?>
 	</p>
 	<h1><?php printf( "%s &mdash; %s",  $league->title, $form_title ); ?></h1>
-<?php if ( has_action( 'leaguemanager_edit_match_'.$league->sport ) ) { ?>
-		<?php do_action( 'leaguemanager_edit_match_'.$league->sport, $league, $teams, $season, $max_matches, $matches, $submit_title, $mode ) ?>
+<?php if ( has_action( 'racketmanager_edit_match_'.$league->sport ) ) { ?>
+		<?php do_action( 'racketmanager_edit_match_'.$league->sport, $league, $teams, $season, $max_matches, $matches, $submit_title, $mode ) ?>
 <?php } else { ?>
-<form action="admin.php?page=leaguemanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id?>&amp;season=<?php echo $season ?><?php if (isset($finalkey)) echo '&amp;final=' . $finalkey . '&amp;jquery-ui-tab=1'; ?><?php if(isset($group)) echo '&amp;group=' . $group; ?>" method="post">
-			<?php wp_nonce_field( 'leaguemanager_manage-matches' ) ?>
+<form action="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id?>&amp;season=<?php echo $season ?><?php if (isset($finalkey)) echo '&amp;final=' . $finalkey . '&amp;jquery-ui-tab=1'; ?><?php if(isset($group)) echo '&amp;group=' . $group; ?>" method="post">
+			<?php wp_nonce_field( 'racketmanager_manage-matches' ) ?>
 <?php if ( !$is_finals ) { ?>
 			<table class="lm-form-table">
 
@@ -22,26 +22,26 @@
 			</table>
 <?php } ?>
 
-			<p class="match_info"><?php if ( !$edit ) { ?><?php _e( 'Note: Matches with different Home and Guest Teams will be added to the database.', 'leaguemanager' ) ?><?php } ?></p>
+			<p class="match_info"><?php if ( !$edit ) { ?><?php _e( 'Note: Matches with different Home and Guest Teams will be added to the database.', 'racketmanager' ) ?><?php } ?></p>
 
 			<table class="widefat">
 				<thead>
 					<tr>
-                        <th scope="col"><?php _e( 'Id', 'leaguemanager') ?></th>
+                        <th scope="col"><?php _e( 'Id', 'racketmanager') ?></th>
 <?php if ( $bulk || $is_finals || ($mode=="add") || ($mode=="edit") ) { ?>
-						<th scope="col"><?php _e( 'Date', 'leaguemanager' ) ?></th>
+						<th scope="col"><?php _e( 'Date', 'racketmanager' ) ?></th>
 <?php } ?>
 <?php if ( (isset($match->final_round) && $match->final_round != null) || $is_finals ) { ?>
 <?php } else { ?>
-						<th scope="col"><?php _e( 'Day', 'leaguemanager' ) ?></th>
+						<th scope="col"><?php _e( 'Day', 'racketmanager' ) ?></th>
 <?php } ?>
-						<th scope="col"><?php _e( 'Home', 'leaguemanager' ) ?></th>
-						<th scope="col"><?php _e( 'Guest', 'leaguemanager' ) ?></th>
-						<th scope="col"><?php _e( 'Location','leaguemanager' ) ?></th>
+						<th scope="col"><?php _e( 'Home', 'racketmanager' ) ?></th>
+						<th scope="col"><?php _e( 'Guest', 'racketmanager' ) ?></th>
+						<th scope="col"><?php _e( 'Location','racketmanager' ) ?></th>
 <?php if ( isset($league->entryType) && $league->entryType == 'player' ) {
 
 } else { ?>
-						<th scope="col"><?php _e( 'Begin','leaguemanager' ) ?></th>
+						<th scope="col"><?php _e( 'Begin','racketmanager' ) ?></th>
 <?php } ?>
                         <?php do_action('edit_matches_header_'.$league->sport) ?>
 					</tr>
@@ -51,12 +51,12 @@
 				<tr class="<?php echo $class; ?>">
                     <td><?php if (isset($matches[$i]->id)) echo $matches[$i]->id ?></td>
 	<?php if ( $bulk || $is_finals || ($mode=="add") || $mode == "edit" ) { ?>
-                    <td><input type="date" name="mydatepicker[<?php echo $i ?>]" id="mydatepicker[<?php echo $i ?>]" class="" value="<?php if(isset($matches[$i]->date)) echo ( substr($matches[$i]->date, 0, 10) ) ?>" onChange="Leaguemanager.setMatchDate(this.value, <?php echo $i ?>, <?php echo $max_matches ?>, '<?php echo $mode ?>');" /></td>
+                    <td><input type="date" name="mydatepicker[<?php echo $i ?>]" id="mydatepicker[<?php echo $i ?>]" class="" value="<?php if(isset($matches[$i]->date)) echo ( substr($matches[$i]->date, 0, 10) ) ?>" onChange="Racketmanager.setMatchDate(this.value, <?php echo $i ?>, <?php echo $max_matches ?>, '<?php echo $mode ?>');" /></td>
 	<?php } ?>
 <?php if ( (isset($match->final_round) && $match->final_round != null) || $is_finals ) { ?>
 <?php } else { ?>
 					<td>
-						<select size="1" name="match_day[<?php echo $i ?>]" id="match_day_<?php echo $i ?>" onChange="Leaguemanager.setMatchDayPopUp(this.value, <?php echo $i ?>, <?php echo $max_matches ?>, '<?php echo $mode ?>');">
+						<select size="1" name="match_day[<?php echo $i ?>]" id="match_day_<?php echo $i ?>" onChange="Racketmanager.setMatchDayPopUp(this.value, <?php echo $i ?>, <?php echo $max_matches ?>, '<?php echo $mode ?>');">
 	<?php for ($d = 1; $d <= $league->current_season['num_match_days']; $d++) { ?>
 							<option value="<?php echo $d ?>"<?php if(isset($match_day) && $d == $match_day) echo ' selected="selected"' ?>><?php echo $d ?></option>
 	<?php } ?>
@@ -69,7 +69,7 @@
                             <input type="text" disabled name="home_team_title[<?php echo $i ?>]" id="home_team_title_<?php echo $i ?>" value="<?php echo $home_title ?>" />
                             <input type="hidden" name="home_team[<?php echo $i ?>]" id="home_team_<?php echo $i ?>" value="<?php echo $matches[$i]->home_team ?>" />
 <?php } else { ?>
-                            <select size="1" name="home_team[<?php echo $i ?>]" id="home_team_<?php echo $i ?>" <?php if ( !$finalkey ) { echo 'onChange="Leaguemanager.insertHomeStadium(document.getElementById(\'home_team_'.$i.'\').value, '.$i.');"'; } ?>>
+                            <select size="1" name="home_team[<?php echo $i ?>]" id="home_team_<?php echo $i ?>" <?php if ( !$finalkey ) { echo 'onChange="Racketmanager.insertHomeStadium(document.getElementById(\'home_team_'.$i.'\').value, '.$i.');"'; } ?>>
 						<?php $myTeam = 0; ?>
 <?php foreach ( $teams AS $team ) { ?>
 							<option value="<?php echo $team->id ?>"<?php if(isset($matches[$i]->home_team)) selected($team->id, $matches[$i]->home_team ) ?>><?php echo $team->title ?></option>
@@ -88,7 +88,7 @@
 
                         <?php if ( 1 == $non_group ) {  ?>
 
-                            <select size="1" name="away_team[<?php echo $i ?>]" id="away_team_<?php echo $i ?>" <?php if ( !$finalkey ) { echo 'onChange="Leaguemanager.insertHomeStadium(document.getElementById(\'home_team_'.$i.'\').value, '.$i.');"'; } ?>>
+                            <select size="1" name="away_team[<?php echo $i ?>]" id="away_team_<?php echo $i ?>" <?php if ( !$finalkey ) { echo 'onChange="Racketmanager.insertHomeStadium(document.getElementById(\'home_team_'.$i.'\').value, '.$i.');"'; } ?>>
 
 <?php foreach ( $teams AS $team ) { ?>
                                 <?php if ( isset($matches[$i]->away_team) ) { ?>
@@ -103,7 +103,7 @@
 									} ?>
                             </select>
                         <?php } else { ?>
-                            <select size="1" name="away_team[<?php echo $i ?>]" id="away_team_<?php echo $i ?>" <?php if ( !$finalkey ) { echo 'onChange="Leaguemanager.insertHomeStadium(document.getElementById(\'home_team_'.$i.'\').value, '.$i.');"'; } ?>>
+                            <select size="1" name="away_team[<?php echo $i ?>]" id="away_team_<?php echo $i ?>" <?php if ( !$finalkey ) { echo 'onChange="Racketmanager.insertHomeStadium(document.getElementById(\'home_team_'.$i.'\').value, '.$i.');"'; } ?>>
 <?php foreach ( $teams AS $team ) { ?>
                                 <option value="<?php echo $team->id ?>"<?php if(isset($matches[$i]->away_team)) selected( $team->id, $matches[$i]->away_team ) ?>><?php echo  $team->title ?></option>
 <?php } ?>

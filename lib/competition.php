@@ -3,7 +3,7 @@
 * Competition API: Competition class
 *
 * @author Paul Moffat
-* @package LeagueManager
+* @package RacketManager
 * @subpackage Competition
 */
 
@@ -174,7 +174,7 @@ class Competition {
 		$competition = wp_cache_get( $competition_id, 'competitions' );
 
 		if ( ! $competition ) {
-			$competition = $wpdb->get_row( $wpdb->prepare( "SELECT `name`, `id`, `num_sets`, `num_rubbers`, `type`, `settings`, `seasons` FROM {$wpdb->leaguemanager_competitions} WHERE `id` = '%d'", $competition_id ) );
+			$competition = $wpdb->get_row( $wpdb->prepare( "SELECT `name`, `id`, `num_sets`, `num_rubbers`, `type`, `settings`, `seasons` FROM {$wpdb->racketmanager_competitions} WHERE `id` = '%d'", $competition_id ) );
 			$competition->settings = (array)maybe_unserialize($competition->settings);
 			$competition = (object)array_merge((array)$competition, $competition->settings);
 
@@ -201,7 +201,7 @@ class Competition {
 	* @param object $competition Competition object.
 	*/
 	public function __construct( $competition ) {
-		global $leaguemanager;
+		global $racketmanager;
 
 		if (isset($competition->settings)) {
 			$competition->settings = (array)maybe_unserialize($competition->settings);
@@ -333,7 +333,7 @@ class Competition {
 		global $wpdb;
 
 		if ($total === true) {
-			$this->num_leagues = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->leaguemanager} WHERE `competition_id` = '%d'", $this->id) );
+			$this->num_leagues = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->racketmanager} WHERE `competition_id` = '%d'", $this->id) );
 		}
 	}
 
@@ -370,7 +370,7 @@ class Competition {
 			$i++;
 		}
 		$orderby = $orderby_string;
-		$sql = $wpdb->prepare( "SELECT `title`, `id`, `settings`, `competition_id` FROM {$wpdb->leaguemanager} $search ORDER BY $orderby LIMIT %d, %d", intval($offset), intval($limit) );
+		$sql = $wpdb->prepare( "SELECT `title`, `id`, `settings`, `competition_id` FROM {$wpdb->racketmanager} $search ORDER BY $orderby LIMIT %d, %d", intval($offset), intval($limit) );
 		$leagues = wp_cache_get( md5($sql), 'leagues' );
 		if ( !$leagues ) {
 			$leagues =  $wpdb->get_results($sql);
@@ -399,7 +399,7 @@ class Competition {
 	public function getLeagueId( $title ) {
 		global $wpdb;
 
-		$sql = $wpdb->prepare( "SELECT `id` FROM {$wpdb->leaguemanager} WHERE `title` = '%s'", $title );
+		$sql = $wpdb->prepare( "SELECT `id` FROM {$wpdb->racketmanager} WHERE `title` = '%s'", $title );
 		$league = wp_cache_get( md5($sql), 'league' );
 		if ( !$league ) {
 			$league =  $wpdb->get_row($sql);
@@ -424,8 +424,8 @@ class Competition {
 		$args = array_merge($defaults, (array)$args);
 		extract($args, EXTR_SKIP);
 
-		$sql1 = "SELECT p.ID AS `player_id`, p.`display_name` AS `fullname`, ro.`id` AS `roster_id`,  ro.`affiliatedclub` FROM {$wpdb->leaguemanager_roster} AS ro, {$wpdb->users} AS p WHERE ro.`player_id` = p.`ID`";
-		$sql2 = "FROM {$wpdb->leaguemanager_teams} AS t, {$wpdb->leaguemanager_rubbers} AS r, {$wpdb->leaguemanager_matches} AS m, {$wpdb->leaguemanager_roster} as ro WHERE r.`winner_id` != 0 AND (((r.`home_player_1` = ro.`id` OR r.`home_player_2` = ro.`id`) AND  m.`home_team` = t.`id`) OR ((r.`away_player_1` = ro.`id` OR r.`away_player_2` = ro.`id`) AND m.`away_team` = t.`id`)) AND ro.`affiliatedclub` = t.`affiliatedclub` AND r.`match_id` = m.`id` AND m.`league_id` IN (SELECT `id` FROM {$wpdb->leaguemanager} WHERE `competition_id` = '%d') ";
+		$sql1 = "SELECT p.ID AS `player_id`, p.`display_name` AS `fullname`, ro.`id` AS `roster_id`,  ro.`affiliatedclub` FROM {$wpdb->racketmanager_roster} AS ro, {$wpdb->users} AS p WHERE ro.`player_id` = p.`ID`";
+		$sql2 = "FROM {$wpdb->racketmanager_teams} AS t, {$wpdb->racketmanager_rubbers} AS r, {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager_roster} as ro WHERE r.`winner_id` != 0 AND (((r.`home_player_1` = ro.`id` OR r.`home_player_2` = ro.`id`) AND  m.`home_team` = t.`id`) OR ((r.`away_player_1` = ro.`id` OR r.`away_player_2` = ro.`id`) AND m.`away_team` = t.`id`)) AND ro.`affiliatedclub` = t.`affiliatedclub` AND r.`match_id` = m.`id` AND m.`league_id` IN (SELECT `id` FROM {$wpdb->racketmanager} WHERE `competition_id` = '%d') ";
 
 		$search_terms1 = array();
 		$search_terms2 = array($this->id);
@@ -498,7 +498,7 @@ class Competition {
 	* @return array database results
 	*/
 	public function getTeamsInfo( $args = array() ) {
-		global $wpdb, $leaguemanager;
+		global $wpdb, $racketmanager;
 
 		$defaults = array( 'league_id' => false, 'season' => false, 'group' => false, 'rank' => false, 'orderby' => array("rank" => "ASC", "title" => "ASC"), "home" => false, "cache" => true, 'affiliatedclub' => false );
 		$args = array_merge($defaults, $args);
@@ -538,7 +538,7 @@ class Competition {
 		}
 		$orderby = $orderby_string;
 
-		$sql = "SELECT DISTINCT B.`id`, B.`title`, C.`captain`, B.`affiliatedclub`, B.`stadium`, B.`home`, B.`roster`, B.`profile`, C.`match_day`, C.`match_time` FROM {$wpdb->leaguemanager_teams} B, {$wpdb->leaguemanager_table} A, {$wpdb->leaguemanager_team_competition} C WHERE B.id = A.team_id AND A.team_id = C.team_id and C.competition_id in (select `competition_id` from {$wpdb->leaguemanager} WHERE `id` = A.league_id) AND C.`competition_id` = ".$this->id." $search ORDER BY $orderby";
+		$sql = "SELECT DISTINCT B.`id`, B.`title`, C.`captain`, B.`affiliatedclub`, B.`stadium`, B.`home`, B.`roster`, B.`profile`, C.`match_day`, C.`match_time` FROM {$wpdb->racketmanager_teams} B, {$wpdb->racketmanager_table} A, {$wpdb->racketmanager_team_competition} C WHERE B.id = A.team_id AND A.team_id = C.team_id and C.competition_id in (select `competition_id` from {$wpdb->racketmanager} WHERE `id` = A.league_id) AND C.`competition_id` = ".$this->id." $search ORDER BY $orderby";
 
 		$teams = wp_cache_get( md5($sql), 'teams' );
 		if ( !$teams ) {
@@ -582,7 +582,7 @@ class Competition {
 	public function getTeamInfo( $team_id ) {
 		global $wpdb;
 
-		$sql = "SELECT `captain`, `match_day`, `match_time` FROM {$wpdb->leaguemanager_team_competition} WHERE `competition_id` = ".$this->id." AND `team_id` = ".$team_id;
+		$sql = "SELECT `captain`, `match_day`, `match_time` FROM {$wpdb->racketmanager_team_competition} WHERE `competition_id` = ".$this->id." AND `team_id` = ".$team_id;
 
 		$team = wp_cache_get( md5($sql), 'team' );
 		if ( !$team ) {
@@ -629,7 +629,7 @@ class Competition {
 	public function reloadSettings() {
 		global $wpdb;
 
-		$result = $wpdb->get_row( $wpdb->prepare("SELECT `settings` FROM {$wpdb->leaguemanager_competitions} WHERE `id` = '%d'", intval($this->id)) );
+		$result = $wpdb->get_row( $wpdb->prepare("SELECT `settings` FROM {$wpdb->racketmanager_competitions} WHERE `id` = '%d'", intval($this->id)) );
 		foreach ( maybe_unserialize($result->settings) as $key => $value )
 		$this->$key = $value;
 	}

@@ -178,13 +178,13 @@ th.score, td.score {
     text-align: center;
 }
 /*--- Documentation ---*/
-dl.leaguemanager {
+dl.racketmanager {
     }
-dl.leaguemanager dt {
+dl.racketmanager dt {
     clear: both;
     font-weight: bold;
     }
-dl.leaguemanager dd {
+dl.racketmanager dd {
     text-indent: 1.5em;
     }
 ul.doc-import-structure {
@@ -212,7 +212,7 @@ p.match_info {
     margin-top: 1.5em;
     }
 
-p.leaguemanager_breadcrumb {
+p.racketmanager_breadcrumb {
     clear: both;
     float: right;
     margin: 1.5em 1.3em 1.3em auto;
@@ -251,26 +251,26 @@ p.info { margin: 0; padding: 0; float: right; }
 span.loading { margin-left: 5px; }
 span.loading img { vertical-align: middle; }
 
-.leaguemanager_thickbox {
+.racketmanager_thickbox {
     text-align: center;
     }
-.leaguemanager_thickbox select {
+.racketmanager_thickbox select {
     display: block;
     margin: 0.5em auto;
     }
 
 span.team_roster { margin-left: 0.5em; vertical-align: middle; }
 
-div.leaguemanager_widget_control label {
+div.racketmanager_widget_control label {
     padding: 0 0.5em 0.5em 0.5em;
     float: left;
     width: 7em;
 }
-div.leaguemanager_widget_control label.right {
+div.racketmanager_widget_control label.right {
     float: none;
     width: auto;
 }
-div.leaguemanager_widget_control input {
+div.racketmanager_widget_control input {
     margin-left: 0.5em;
     display: inline;
     clear: none;
@@ -285,7 +285,7 @@ div.leaguemanager_widget_control input {
     border-radius: 4px;
     vertical-align: middle;
 }
-div.leaguemanager_widget_control select {
+div.racketmanager_widget_control select {
     margin-left: 0.5em;
     vertical-align: middle;
 }

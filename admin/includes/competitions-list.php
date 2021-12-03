@@ -1,7 +1,7 @@
 <?php
 ?>
 <div class="wrap league-block">
-    <p class="leaguemanager_breadcrumb"><a href="admin.php?page=leaguemanager"><?php _e( 'LeagueManager', 'leaguemanager' ) ?></a> &raquo; <?php echo $season->name ?> &raquo; <?php echo 'Add Competitions to Season' ?></p>
+    <p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <?php echo $season->name ?> &raquo; <?php echo 'Add Competitions to Season' ?></p>
     <h1><?php printf( "%s &mdash; %s",  $season->name, 'Add Competitions to Season' ); ?></h1>
     <legend>Select Competitions to Add</legend>
     <script type='text/javascript'>
@@ -10,19 +10,19 @@
                                      });
            });
     </script>
-    <div id="tabs-competitions" class="leaguemanager-blocks">
-        <form action="admin.php?page=leaguemanager" method="post" enctype="multipart/form-data" name="competitions_add">
-        <?php wp_nonce_field( 'leaguemanager_add-seasons-competitions-bulk' ) ?>
+    <div id="tabs-competitions" class="racketmanager-blocks">
+        <form action="admin.php?page=racketmanager" method="post" enctype="multipart/form-data" name="competitions_add">
+        <?php wp_nonce_field( 'racketmanager_add-seasons-competitions-bulk' ) ?>
             <input type="hidden" name="season_id" value="<?php echo $season->id ?>" />
             <input type="hidden" name="season" value="<?php echo $season->name ?>" />
             <div id="matchDays">
-                <label for="num_match_days"><?php _e( 'Number of Match Days', 'leaguemanager' ) ?></label>
+                <label for="num_match_days"><?php _e( 'Number of Match Days', 'racketmanager' ) ?></label>
                 <input type="number" min="1" step="1" required="required" class="small-text" name="num_match_days" id="num_match_days" size="2" />
             </div>
             <ul id="tablist">
-                <li><a href="#competitions-cup"><?php _e( 'Cups', 'leaguemanager' ) ?></a></li>
-                <li><a href="#competitions-league"><?php _e( 'Leagues', 'leaguemanager' ) ?></a></li>
-                <li><a href="#competitions-tournament"><?php _e( 'Tournaments', 'leaguemanager' ) ?></a></li>
+                <li><a href="#competitions-cup"><?php _e( 'Cups', 'racketmanager' ) ?></a></li>
+                <li><a href="#competitions-league"><?php _e( 'Leagues', 'racketmanager' ) ?></a></li>
+                <li><a href="#competitions-tournament"><?php _e( 'Tournaments', 'racketmanager' ) ?></a></li>
             </ul>
 
             <div class="tablenav">
@@ -33,16 +33,16 @@
                 <input type="submit" value="<?php _e('Apply'); ?>" name="doaddCompetitionsToSeason" id="doaddCompetitionsToSeason" class="button action" />
             </div>
 
-            <table class="widefat" summary="" title="LeagueManager Competitions">
+            <table class="widefat" summary="" title="RacketManager Competitions">
                 <thead>
                 <tr>
-                    <th scope="col" class="check-column"><input type="checkbox" onclick="Leaguemanager.checkAll(document.getElementById('competitions-filter'));" /></th>
+                    <th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('competitions-filter'));" /></th>
                     <th scope="col" class="num">ID</th>
-                    <th scope="col"><?php _e( 'Name', 'leaguemanager' ) ?></th>
+                    <th scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>
                 </tr>
 
 <?php $prevCompType = '';
-    if ( $competitions = $leaguemanager->getCompetitions(array('orderby' => array("competitiontype" => "ASC", "name" => "ASC"))) ) {
+    if ( $competitions = $racketmanager->getCompetitions(array('orderby' => array("competitiontype" => "ASC", "name" => "ASC"))) ) {
         $class = '';
         foreach ( $competitions AS $competition ) {
             $class = ( 'alternate' == $class ) ? '' : 'alternate';

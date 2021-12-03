@@ -1,58 +1,58 @@
 /*
 * @section: Frontend Tables
 */
-table.leaguemanager,
-div.matchlist table.leaguemanager {
+table.racketmanager,
+div.matchlist table.racketmanager {
 	text-align: left;
 	border: 1px solid;
 	border-collapse: collapse;
 	width: 100%;
 	margin: 1em auto 1.5em auto;
 }
-table.leaguemanager th,
-div.matchlist table.leaguemanager {
+table.racketmanager th,
+div.matchlist table.racketmanager {
 	padding: 2px 3px;
 	margin: 0;
 	border-bottom: 1px solid;
 	}
-table.leaguemanager td,
-div.matchlist table.leaguemanager td {
+table.racketmanager td,
+div.matchlist table.racketmanager td {
 	vertical-align: middle;
 	border: 0;
 	padding: 5px;
 	margin: 0;
 	}
-table.leaguemanager.matchtable a,
-table.leaguemanager.matchtable span,
-table.leaguemanager .last5 a,
-table.leaguemanager .last5 span {
+table.racketmanager.matchtable a,
+table.racketmanager.matchtable span,
+table.racketmanager .last5 a,
+table.racketmanager .last5 span {
 	border: 0;
 }
 
-table.leaguemanager a.W, table.leaguemanager span.W { background-position:0 -150px; }
-table.leaguemanager a.D, table.leaguemanager span.D { background-position:0 -200px; }
-table.leaguemanager a.L, table.leaguemanager span.L { background-position:0 -250px; }
-table.leaguemanager a.N, table.leaguemanager span.N { background-position:0 -650px; }
+table.racketmanager a.W, table.racketmanager span.W { background-position:0 -150px; }
+table.racketmanager a.D, table.racketmanager span.D { background-position:0 -200px; }
+table.racketmanager a.L, table.racketmanager span.L { background-position:0 -250px; }
+table.racketmanager a.N, table.racketmanager span.N { background-position:0 -650px; }
 
-table.leaguemanager a.W:hover, table.leaguemanager span.W:hover { background-position:0 -300px; }
-table.leaguemanager a.D:hover, table.leaguemanager span.D:hover { background-position:0 -350px; }
-table.leaguemanager a.L:hover, table.leaguemanager span.L:hover { background-position:0 -400px; }
-table.leaguemanager a.N:hover, table.leaguemanager span.N:hover { background-position:0 -700px; }
+table.racketmanager a.W:hover, table.racketmanager span.W:hover { background-position:0 -300px; }
+table.racketmanager a.D:hover, table.racketmanager span.D:hover { background-position:0 -350px; }
+table.racketmanager a.L:hover, table.racketmanager span.L:hover { background-position:0 -400px; }
+table.racketmanager a.N:hover, table.racketmanager span.N:hover { background-position:0 -700px; }
 
-table.leaguemanager .last5Icon a,
-table.leaguemanager .last5Icon span { border: 0; background-image: url(images/last5.png); position: relative; top: 0px; }
+table.racketmanager .last5Icon a,
+table.racketmanager .last5Icon span { border: 0; background-image: url(images/last5.png); position: relative; top: 0px; }
 
-table.leaguemanager .last5-bg { float:left; width:20px; height:17px; }
+table.racketmanager .last5-bg { float:left; width:20px; height:17px; }
 
-table.leaguemanager .num {
+table.racketmanager .num {
 	text-align: center;
 	}
-table.leaguemanager .last5 {
+table.racketmanager .last5 {
 	text-align: center;
 	width: 130px;
 	}
-table.leaguemanager .logo,
-table .leaguemanager .match-title.logo {
+table.racketmanager .logo,
+table .racketmanager .match-title.logo {
 	width: 20px;
 	}
 .match-title.logo {
@@ -62,27 +62,27 @@ th.match-title, td.match-title {
     text-align: center;
     width: 300px;
 }
-table.leaguemanager .logo img {
+table.racketmanager .logo img {
 	display: block;
 	margin: 0;
 	padding: 0;
 	}
-table.leaguemanager .home {
+table.racketmanager .home {
 	font-weight: bold;
 	}
-table.leaguemanager th.match {
+table.racketmanager th.match {
 	text-align: center;
 	}
-table.leaguemanager .score {
+table.racketmanager .score {
 	width: 10%;
 }
-table.leaguemanager .score, table.leaguemanager .ap {
+table.racketmanager .score, table.racketmanager .ap {
 	text-align: center;
 	}
-table.leaguemanager tr.divider {
+table.racketmanager tr.divider {
 	/*border-bottom: 1px solid;*/
 	}
-table.leaguemanager a {
+table.racketmanager a {
 	text-decoration: none;
 }
 
@@ -107,15 +107,15 @@ table.leaguemanager a {
 }
 
 /*--- Crosstable Popup ---*/
-div#leaguemanager_crosstable div { text-align: center; padding-top: 1em;}
+div#racketmanager_crosstable div { text-align: center; padding-top: 1em;}
 
-table.leaguemanager.crosstable {
+table.racketmanager.crosstable {
 }
-table.leaguemanager.crosstable th {
+table.racketmanager.crosstable th {
 	vertical-align: middle;
 	border: 1px solid;
 }
-table.leaguemanager.crosstable td {
+table.racketmanager.crosstable td {
 	border: 1px solid;
 }
 table.crosstable img {
@@ -129,7 +129,7 @@ table.crosstable img {
 .jquery-ui-tabs .tab-content {
 	overflow: auto;
 }
-div#leaguemanager_archive_selections { margin-bottom: 1em; }
+div#racketmanager_archive_selections { margin-bottom: 1em; }
 
 /*--- Single Match ---*/
 div.match .match-content:after {
@@ -205,7 +205,7 @@ div.matchlist h3.header {
 div.matchlist h3.header.ui-accordion-header {
 	padding-left: 2em !important;
 }
-div.matchlist table.leaguemanager  th {
+div.matchlist table.racketmanager  th {
 	padding: 4px;
 	margin: 0;
 	border: 1px solid;
@@ -565,63 +565,63 @@ div.teamlist .header .ui-icon {
 /*
 * @section: Widget
 */
-.leaguemanager_widget {
+.racketmanager_widget {
 	background-image: none;
 	width: 100%;
 	margin-left: auto;
 	margin-right: auto;
 	}
-.leaguemanager_widget img {
+.racketmanager_widget img {
 	border: 0;
 	vertical-align: middle;
 	}
 
 /*--- Match Events ---*/
-.leaguemanager_widget .match_box {
+.racketmanager_widget .match_box {
 	margin-bottom: 1.5em;
 	text-align: center;
 	}
-.leaguemanager_widget .match_box .match {
+.racketmanager_widget .match_box .match {
 	padding: 0.3em 0 0 0;
 	margin: 0.5em 0;
 	}
-.leaguemanager_widget .match_box .logos {
+.racketmanager_widget .match_box .logos {
 	margin: 0.5em auto;
 	}
-.leaguemanager_widget .match_box .logos img {
+.racketmanager_widget .match_box .logos img {
 	display: inline;
 	width: auto;
 	max-width: 25% !important;
 	height: auto !important;
 }
-.leaguemanager_widget .match_box .home_logo {
+.racketmanager_widget .match_box .home_logo {
 	margin-right: 0.5em;
 	}
-.leaguemanager_widget .match_box .away_logo {
+.racketmanager_widget .match_box .away_logo {
 	margin-left: 0.5em;
 	}
-.leaguemanager_widget .match_box .match_day, .leaguemanager_widget .match_box .date, .leaguemanager_widget .match_box .location {
+.racketmanager_widget .match_box .match_day, .racketmanager_widget .match_box .date, .racketmanager_widget .match_box .location {
 	padding: 0;
 	margin: 0.3em 0;
 	}
-.leaguemanager_widget .match_box .result {
+.racketmanager_widget .match_box .result {
 	font-size: 1.3em;
 	font-weight: bold;
 	}
-.leaguemanager_widget .match_box .report {
+.racketmanager_widget .match_box .report {
 	text-align: right;
 	}
 
 /*--- Standings Table ---*/
-.leaguemanager_widget table.leaguemanager {
+.racketmanager_widget table.racketmanager {
 	font-size: 0.9em;
 	margin: 0;
 	padding: 0;
 	}
-.leaguemanager_widget table.leaguemanager th {
+.racketmanager_widget table.racketmanager th {
 	/*background-color: transparent;*/
 	}
-.leaguemanager_widget table.leaguemanager th, .leaguemanager_widget table.leaguemanager td {
+.racketmanager_widget table.racketmanager th, .racketmanager_widget table.racketmanager td {
 	padding: 4px;
 	margin: 0;
 	border: 0;
@@ -629,7 +629,7 @@ div.teamlist .header .ui-icon {
 	/*background-color: transparent;*/
 	}
 
-.leaguemanager_widget table.leaguemanager tr, .leaguemanager_widget table.leaguemanager tr.alternate {
+.racketmanager_widget table.racketmanager tr, .racketmanager_widget table.racketmanager tr.alternate {
 	/*background-color: transparent;*/
 	}
 
@@ -674,21 +674,21 @@ div.teampage h3.header {
 /*
  * Pagination
  */
-.leaguemanager-pagination.page-numbers {
+.racketmanager-pagination.page-numbers {
     clear: both;
     text-align: center;
     font-size: 1em;
     margin: 1em 0;
 }
-.leaguemanager-pagination.page-numbers a {
+.racketmanager-pagination.page-numbers a {
     padding: 2px 5px 0 5px;
     border: 1px solid;
     border-bottom: none;
 }
-.leaguemanager-pagination.page-numbers span {
+.racketmanager-pagination.page-numbers span {
     font-weight: bold;
 }
-.leaguemanager-pagination.page-numbers span.current {
+.racketmanager-pagination.page-numbers span.current {
     font-weight: bold;
     border: none;
 }
@@ -841,7 +841,7 @@ summary {
 summary > * {
     display: list-item;
 }
-.leaguemanager-svg-icon {
+.racketmanager-svg-icon {
     width: 1.2em;
     display: inline-block;
     height: 1.2em;

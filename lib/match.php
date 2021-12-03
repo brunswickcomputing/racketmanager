@@ -3,7 +3,7 @@
 * Match API: Match class
 *
 * @author Kolja Schleich
-* @package LeagueManager
+* @package RacketManager
 * @subpackage Match
 */
 
@@ -34,7 +34,7 @@ final class Match {
 
     $match = wp_cache_get( $match_id, 'matches' );
     if ( ! $match ) {
-      $match = $wpdb->get_row( $wpdb->prepare("SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `updated`, `updated_user`, `confirmed`, `home_captain`, `away_captain` FROM {$wpdb->leaguemanager_matches} WHERE `id` = '%d' LIMIT 1", $match_id) );
+      $match = $wpdb->get_row( $wpdb->prepare("SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `updated`, `updated_user`, `confirmed`, `home_captain`, `away_captain` FROM {$wpdb->racketmanager_matches} WHERE `id` = '%d' LIMIT 1", $match_id) );
 
       if ( !$match ) return false;
 
@@ -67,7 +67,7 @@ final class Match {
       $this->league = get_league($this->league_id);
 
       $this->location = $this->location != '' ? stripslashes($this->location) : '';
-      $this->report = ( $this->post_id != 0 ) ? '<a href="'.get_permalink($this->post_id).'">'.__('Report', 'leaguemanager').'</a>' : '';
+      $this->report = ( $this->post_id != 0 ) ? '<a href="'.get_permalink($this->post_id).'">'.__('Report', 'racketmanager').'</a>' : '';
 
       if ( $this->home_points != "" && $this->away_points != "" ) {
         $this->homeScore = $this->home_points;
@@ -290,7 +290,7 @@ final class Match {
   public function getRubbers() {
     global $wpdb;
 
-    $sql = "SELECT `group`, `home_player_1`, `home_player_2`, `away_player_1`, `away_player_2`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `id`, `custom`, `rubber_number` FROM {$wpdb->leaguemanager_rubbers} WHERE `match_id` = ".$this->id." ORDER BY `date` ASC, `id` ASC";
+    $sql = "SELECT `group`, `home_player_1`, `home_player_2`, `away_player_1`, `away_player_2`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `id`, `custom`, `rubber_number` FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` = ".$this->id." ORDER BY `date` ASC, `id` ASC";
 
     $rubbers = wp_cache_get( md5($sql), 'rubbers' );
     if ( !$rubbers ) {

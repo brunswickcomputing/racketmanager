@@ -4,7 +4,7 @@
 */
     namespace ns;
 ?>
-<div class="leaguemanager-container">
+<div class="racketmanager-container">
 
 <?php
     if ( is_single_match() ) {
@@ -14,11 +14,11 @@
 ?>
 
 <?php if ( have_matches() ) { ?>
-    <table class='leaguemanager matchtable' summary='' title='<?php _e( 'Match Plan', 'leaguemanager' ) ?> <?php the_league_title() ?>'>
+    <table class='racketmanager matchtable' summary='' title='<?php _e( 'Match Plan', 'racketmanager' ) ?> <?php the_league_title() ?>'>
         <thead>
             <tr>
-                <th class='match'><?php _e( 'Match', 'leaguemanager' ) ?></th>
-                <th class='score'><?php _e( 'Score', 'leaguemanager' ) ?></th>
+                <th class='match'><?php _e( 'Match', 'racketmanager' ) ?></th>
+                <th class='score'><?php _e( 'Score', 'racketmanager' ) ?></th>
             </tr>
         </thead>
         <tbody>

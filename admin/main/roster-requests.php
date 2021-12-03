@@ -13,25 +13,25 @@
 		<input type="submit" value="<?php _e('Apply'); ?>" name="dorosterrequest" id="dorosterrequest" class="button-secondary action" />
 	</div>
 
-	<table class="widefat" summary="" title="LeagueManager Roster Request">
+	<table class="widefat" summary="" title="RacketManager Roster Request">
 		<thead>
 		<tr>
-			<th scope="col" class="check-column"><input type="checkbox" onclick="Leaguemanager.checkAll(document.getElementById('roster-request-filter'));" /></th>
+			<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('roster-request-filter'));" /></th>
 			<th scope="col" class="num">ID</th>
-            <th scope="col"><?php _e( 'Club', 'leaguemanager' ) ?></th>
-			<th scope="col"><?php _e( 'First Name', 'leaguemanager' ) ?></th>
-            <th scope="col"><?php _e( 'Surame', 'leaguemanager' ) ?></th>
-			<th scope="col"><?php _e( 'Gender', 'leaguemanager' ) ?></th>
-			<th scope="col"><?php _e( 'BTM', 'leaguemanager' ) ?></th>
-            <th scope="col"><?php _e( 'Requested Date', 'leaguemanager' ) ?></th>
-            <th scope="col"><?php _e( 'Requested User', 'leaguemanager' ) ?></th>
-            <th scope="col"><?php _e( 'Completed Date', 'leaguemanager' ) ?></th>
-            <th scope="col"><?php _e( 'Completed User', 'leaguemanager' ) ?></th>
+            <th scope="col"><?php _e( 'Club', 'racketmanager' ) ?></th>
+			<th scope="col"><?php _e( 'First Name', 'racketmanager' ) ?></th>
+            <th scope="col"><?php _e( 'Surame', 'racketmanager' ) ?></th>
+			<th scope="col"><?php _e( 'Gender', 'racketmanager' ) ?></th>
+			<th scope="col"><?php _e( 'BTM', 'racketmanager' ) ?></th>
+            <th scope="col"><?php _e( 'Requested Date', 'racketmanager' ) ?></th>
+            <th scope="col"><?php _e( 'Requested User', 'racketmanager' ) ?></th>
+            <th scope="col"><?php _e( 'Completed Date', 'racketmanager' ) ?></th>
+            <th scope="col"><?php _e( 'Completed User', 'racketmanager' ) ?></th>
 		</tr>
 		<tbody id="the-list">
 
 <?php
-    $clubs = $leaguemanager->getClubs();
+    $clubs = $racketmanager->getClubs();
     $class = '';
     foreach ($clubs AS $club) {
         $club = get_club($club->id);

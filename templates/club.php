@@ -13,7 +13,7 @@ The following variables are usable:
 $user = wp_get_current_user();
 $userid = $user->ID;
 $userCanUpdateClub = false;
-if ( current_user_can( 'manage_leaguemanager' ) ) {
+if ( current_user_can( 'manage_racketmanager' ) ) {
     $userCanUpdateClub = true;
 } else {
     if ( $club->matchsecretary !=null && $club->matchsecretary == $userid ) {
@@ -32,7 +32,7 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                             <input type="hidden" id="clubId" name="clubId" value="<?php echo $club->id ?>" />
                         <?php if ($club->contactno !=null || $userCanUpdateClub) { ?>
                             <div class="form-group">
-                                <label for "clubContactNo"><?php _e( 'Contact Number', 'leaguemanager' ) ?></label>
+                                <label for "clubContactNo"><?php _e( 'Contact Number', 'racketmanager' ) ?></label>
                                 <div class="input">
                                     <input type="tel" class="form-control" id="clubContactNo" name="clubContactNo" value="<?php echo $club->contactno ?>" <?php disabled($userCanUpdateClub, false) ?> />
                                 </div>
@@ -40,7 +40,7 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                         <?php } ?>
                         <?php if ($club->facilities !=null || $userCanUpdateClub) { ?>
                             <div class="form-group">
-                                <label for "facilities"><?php _e( 'Facilities', 'leaguemanager' ) ?></label>
+                                <label for "facilities"><?php _e( 'Facilities', 'racketmanager' ) ?></label>
                                 <div class="input">
                                     <input type="text" class="form-control" id="facilities" name="facilities" value="<?php echo $club->facilities ?>" <?php disabled($userCanUpdateClub, false) ?> />
                                 </div>
@@ -48,7 +48,7 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                         <?php } ?>
                         <?php if ($club->founded !=null || $userCanUpdateClub) { ?>
                             <div class="form-group">
-                                <label for "founded"><?php _e( 'Founded', 'leaguemanager' ) ?></label>
+                                <label for "founded"><?php _e( 'Founded', 'racketmanager' ) ?></label>
                                 <div class="input">
                                     <input type="number" class="form-control" id="founded" name="founded" value="<?php echo $club->founded ?>" <?php disabled($userCanUpdateClub, false) ?> />
                                 </div>
@@ -56,7 +56,7 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                         <?php } ?>
                         <?php if ($club->matchsecretary !=null || $userCanUpdateClub) { ?>
                             <div class="form-group">
-                                <label for "matchSecretaryName"><?php _e( 'Match Secretary', 'leaguemanager' ) ?></label>
+                                <label for "matchSecretaryName"><?php _e( 'Match Secretary', 'racketmanager' ) ?></label>
                                 <div class="input">
                                     <input type="text" class="form-control" id="matchSecretaryName" name="matchSecretaryName" value="<?php echo $club->matchSecretaryName ?>" <?php disabled($userCanUpdateClub, false) ?> />
                                     <input type="hidden" id="matchSecretaryId" name="matchSecretaryId" value="<?php echo $club->matchsecretary ?>" />
@@ -65,7 +65,7 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                         <?php if ( is_user_logged_in() ) { ?>
                             <?php if ($club->matchSecretaryEmail !=null || $userCanUpdateClub) { ?>
                             <div class="form-group">
-                                <label for "matchSecretaryEmail"><?php _e( 'Match Secretary Email', 'leaguemanager' ) ?></label>
+                                <label for "matchSecretaryEmail"><?php _e( 'Match Secretary Email', 'racketmanager' ) ?></label>
                                 <div class="input">
                                     <input type="email" class="form-control" id="matchSecretaryEmail" name="matchSecretaryEmail" value="<?php echo $club->matchSecretaryEmail ?>" <?php disabled($userCanUpdateClub, false) ?> />
                                 </div>
@@ -73,7 +73,7 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                             <?php }
                             if ($club->matchSecretaryContactNo !=null || $userCanUpdateClub) { ?>
                             <div class="form-group">
-                               <label for "matchSecretaryContactNo"><?php _e( 'Match Secretary Contact', 'leaguemanager' ) ?></label>
+                               <label for "matchSecretaryContactNo"><?php _e( 'Match Secretary Contact', 'racketmanager' ) ?></label>
                                <div class="input">
                                    <input type="tel" class="form-control" id="matchSecretaryContactNo" name="matchSecretaryContactNo" value="<?php echo $club->matchSecretaryContactNo ?>" <?php disabled($userCanUpdateClub, false) ?> />
                                </div>
@@ -87,14 +87,14 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                         <?php } ?>
                         <?php if ($club->website != null || $userCanUpdateClub) { ?>
                             <div class="form-group">
-                                <label for "website"><?php _e( 'Website', 'leaguemanager' ) ?></label>
+                                <label for "website"><?php _e( 'Website', 'racketmanager' ) ?></label>
                                 <div class="input">
                                     <input type="url" class="form-control" id="website" name="website" value="<?php echo $club->website ?>" <?php disabled($userCanUpdateClub, false) ?> />
                                 </div>
                             </div>
                         <?php } ?>
                         <?php if ( $userCanUpdateClub ) { ?>
-                            <button class="btn" type="button" id="updateClubSubmit" name="updateClubSubmit" onclick="Leaguemanager.updateClub(this)"><?php _e( 'Update details', 'leaguemanager' ) ?></button>
+                            <button class="btn" type="button" id="updateClubSubmit" name="updateClubSubmit" onclick="Racketmanager.updateClub(this)"><?php _e( 'Update details', 'racketmanager' ) ?></button>
                             <div class="updateResponse" id="updateClub" name="updateClub"></div>
                         <?php } ?>
                         </form>
@@ -109,65 +109,65 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                 </script>
                 <details id="results">
                   <summary>
-                    <h2 class="results-header"><?php _e( 'Latest results', 'leaguemanager' ) ?></h2>
+                    <h2 class="results-header"><?php _e( 'Latest results', 'racketmanager' ) ?></h2>
                   </summary>
-                  <?php leaguemanager_results( $club->id, array() ) ?>
+                  <?php racketmanager_results( $club->id, array() ) ?>
                 </details>
                 <details id="club-players">
                   <summary>
-                    <h2 class="roster-header"><?php _e( 'Players', 'leaguemanager' ) ?></h2>
+                    <h2 class="roster-header"><?php _e( 'Players', 'racketmanager' ) ?></h2>
                   </summary>
                 <?php if ( $userCanUpdateClub ) { ?>
                     <div id="rosterUpdate" class="">
-                        <h3 class="header"><?php _e( 'Add player', 'leaguemanager' ) ?></h3>
+                        <h3 class="header"><?php _e( 'Add player', 'racketmanager' ) ?></h3>
                         <form id="rosterRequestFrm" action="" method="post" onsubmit="return checkSelect(this)">
                             <?php wp_nonce_field( 'roster-request' ) ?>
 
                             <input type="hidden" name="affiliatedClub" id="affiliatedClub" value="<?php echo $club->id ?>" />
                             <fieldset>
                                 <div class="form-group">
-                                    <label for="firstName"><?php _e( 'First name', 'leaguemanager' ) ?></label>
+                                    <label for="firstName"><?php _e( 'First name', 'racketmanager' ) ?></label>
                                     <div class="input">
                                         <input required="required" type="text" class="form-control" id="firstName" name="firstName" size="30" class="form-control" />
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="surname"><?php _e( 'Surname', 'leaguemanager' ) ?></label>
+                                    <label for="surname"><?php _e( 'Surname', 'racketmanager' ) ?></label>
                                     <div class="input">
                                         <input required="required" type="text" class="form-control" id="surname" name="surname" size="30" class="form-control" />
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label><?php _e( 'Gender', 'leaguemanager' ) ?></label>
+                                    <label><?php _e( 'Gender', 'racketmanager' ) ?></label>
                                     <div class="form-check">
                                         <input required="required" type="radio" id="genderMale" name="gender" value="M" class="form-check-input" />
-                                        <label for="genderMale" class="form-check-label"><?php _e( 'Male', 'leaguemanager' ) ?></label>
+                                        <label for="genderMale" class="form-check-label"><?php _e( 'Male', 'racketmanager' ) ?></label>
                                     </div>
                                     <div class="form-check">
                                         <input type="radio" id="genderFemale" name="gender" value="F" class="form-check-input" "/>
-                                        <label for="genderFemale" class="form-check-label"><?php _e( 'Female', 'leaguemanager' ) ?></label>
+                                        <label for="genderFemale" class="form-check-label"><?php _e( 'Female', 'racketmanager' ) ?></label>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="btm"><?php _e( 'BTM', 'leaguemanager' ) ?></label>
+                                    <label for="btm"><?php _e( 'BTM', 'racketmanager' ) ?></label>
                                     <div class="input">
-                                        <input type="number" class="form-control" placeholder="<?php _e( 'Enter BTM number', 'leaguemanager' ) ?>" name="btm" id="btm" size="11" class="form-control" />
+                                        <input type="number" class="form-control" placeholder="<?php _e( 'Enter BTM number', 'racketmanager' ) ?>" name="btm" id="btm" size="11" class="form-control" />
                                     </div>
                                 </div>
                             </fieldset>
-                            <button class="btn" type="button" id="rosterUpdateSubmit" onclick="Leaguemanager.rosterRequest(this)"><?php _e( 'Add player', 'leaguemanager' ) ?></button>
+                            <button class="btn" type="button" id="rosterUpdateSubmit" onclick="Racketmanager.rosterRequest(this)"><?php _e( 'Add player', 'racketmanager' ) ?></button>
                             <div id="updateResponse"></div>
                         </form>
                     <?php if ( $rosterRequests ) {?>
-                        <h3 class="header"><?php _e( 'Pending players', 'leaguemanager' ) ?></h3>
-                        <table class="widefat noborder" summary="" title="LeagueManager Pending Club Players">
+                        <h3 class="header"><?php _e( 'Pending players', 'racketmanager' ) ?></h3>
+                        <table class="widefat noborder" summary="" title="RacketManager Pending Club Players">
                             <thead>
                                 <tr>
-                                    <th scope="col"><?php _e( 'Name', 'leaguemanager' ) ?></th>
-                                    <th scope="col" class="colspan"><?php _e( 'Gender', 'leaguemanager') ?></th>
-                                    <th scope="col" class="colspan"><?php _e( 'BTM', 'leaguemanager') ?></th>
-                                    <th scope="col" class="colspan"><?php _e( 'Requested Date', 'leaguemanager') ?></th>
-                                    <th scope="col" class="colspan"><?php _e( 'Requested By', 'leaguemanager') ?></th>
+                                    <th scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>
+                                    <th scope="col" class="colspan"><?php _e( 'Gender', 'racketmanager') ?></th>
+                                    <th scope="col" class="colspan"><?php _e( 'BTM', 'racketmanager') ?></th>
+                                    <th scope="col" class="colspan"><?php _e( 'Requested Date', 'racketmanager') ?></th>
+                                    <th scope="col" class="colspan"><?php _e( 'Requested By', 'racketmanager') ?></th>
                                 </tr>
                             </thead>
                             <tbody id="pendingRosters">
@@ -187,22 +187,22 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                     </div>
                 <?php }
                     } ?>
-                    <h3 class="header"><?php _e( 'Ladies', 'leaguemanager') ?></h3>
+                    <h3 class="header"><?php _e( 'Ladies', 'racketmanager') ?></h3>
                     <div id="roster-ladies" class="">
                         <?php if ( $rosters ) { ?>
                         <form id="roster-ladies-remove" method="post" action="">
                         <?php wp_nonce_field( 'roster-remove' ) ?>
-                            <table class="playerlist noborder" summary="" title="LeagueManager Club Ladies Players">
+                            <table class="playerlist noborder" summary="" title="RacketManager Club Ladies Players">
                                 <thead>
                                     <tr>
                                         <th scope="col" class="check-column">
                                             <?php if ( $userCanUpdateClub ) { ?>
-                                            <button class="btn" type="button" id="rosterRemoveSubmit" onclick="Leaguemanager.rosterRemove('#roster-ladies-remove')"><?php _e( 'Remove', 'leaguemanager') ?></button>
+                                            <button class="btn" type="button" id="rosterRemoveSubmit" onclick="Racketmanager.rosterRemove('#roster-ladies-remove')"><?php _e( 'Remove', 'racketmanager') ?></button>
                                             <?php } ?>
                                         </th>
-                                        <th scope="col"><?php _e( 'Name', 'leaguemanager' ) ?></th>
-                                        <th scope="col" class="colspan"><?php _e( 'Created Date', 'leaguemanager') ?></th>
-                                        <th scope="col" class="colspan"><?php _e( 'Created By', 'leaguemanager') ?></th>
+                                        <th scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>
+                                        <th scope="col" class="colspan"><?php _e( 'Created Date', 'racketmanager') ?></th>
+                                        <th scope="col" class="colspan"><?php _e( 'Created By', 'racketmanager') ?></th>
                                     </tr>
                                 </thead>
                                 <tbody id="Club Ladies Players">
@@ -227,23 +227,23 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                         </form>
                         <?php } ?>
                     </div>
-                    <h3 class="header"><?php _e( 'Men', 'leaguemanager') ?></h3>
+                    <h3 class="header"><?php _e( 'Men', 'racketmanager') ?></h3>
                     <div id="roster-men" class="">
                         <?php if ( $rosters ) { ?>
                         <form id="roster-men-remove" method="post" action="">
                         <?php wp_nonce_field( 'roster-remove' ) ?>
 
-                            <table class="playerlist noborder" summary="" title="LeagueManager Club Mens Players">
+                            <table class="playerlist noborder" summary="" title="RacketManager Club Mens Players">
                                 <thead>
                                     <tr>
                                         <th scope="col" class="check-column">
                                         <?php if ( $userCanUpdateClub ) { ?>
-                                            <button class="btn" type="button" id="rosterRemoveSubmit" onclick="Leaguemanager.rosterRemove('#roster-men-remove')"><?php _e( 'Remove', 'leaguemanager') ?></button>
+                                            <button class="btn" type="button" id="rosterRemoveSubmit" onclick="Racketmanager.rosterRemove('#roster-men-remove')"><?php _e( 'Remove', 'racketmanager') ?></button>
                                         <?php } ?>
                                         </th>
-                                        <th scope="col"><?php _e( 'Name', 'leaguemanager' ) ?></th>
-                                        <th scope="col" class="colspan"><?php _e( 'Created Date', 'leaguemanager') ?></th>
-                                        <th scope="col" class="colspan"><?php _e( 'Created By', 'leaguemanager') ?></th>
+                                        <th scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>
+                                        <th scope="col" class="colspan"><?php _e( 'Created Date', 'racketmanager') ?></th>
+                                        <th scope="col" class="colspan"><?php _e( 'Created By', 'racketmanager') ?></th>
                                     </tr>
                                 </thead>
                                 <tbody id="Club Mens Players">
@@ -277,12 +277,12 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                                   }); //end of document ready
                 </script>
 <?php $shortCode = $club->shortcode;
-    $competitions = $leaguemanager->getCompetitions(array('type'=>'league'));
+    $competitions = $racketmanager->getCompetitions(array('type'=>'league'));
     $matchdays = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
     if ( $competitions ) { ?>
                   <details id="club-teams">
                     <summary>
-                      <h2 class="teams-header"><?php _e( 'Teams', 'leaguemanager') ?></h2>
+                      <h2 class="teams-header"><?php _e( 'Teams', 'racketmanager') ?></h2>
                     </summary>
                     <div class="competition-list jquery-ui-accordion">
               <?php foreach ($competitions AS $competition) {
@@ -293,8 +293,8 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                           <h3 class="header"><?php echo $competition->name ?></h3>
                           <div class="jquery-ui-tabs">
                               <ul class="tablist ui-tabs-nav">
-                                  <li><a href="#club-teams"><?php _e( 'Teams', 'leaguemanager') ?></a></li>
-                                  <li><a href="#club-players"><?php _e( 'Players', 'leaguemanager') ?></a></li>
+                                  <li><a href="#club-teams"><?php _e( 'Teams', 'racketmanager') ?></a></li>
+                                  <li><a href="#club-players"><?php _e( 'Players', 'racketmanager') ?></a></li>
                               </ul>
                               <div id="club-teams" class="jquery-ui-tab">
                                   <?php foreach ($teams AS $team ) { ?>
@@ -306,7 +306,7 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                                       <input type="hidden" id="competition_id" name="competition_id" value="<?php echo $competition->id ?>" />
                                       <?php if ( !empty($team->captain) || $userCanUpdateClub ) { ?>
                                       <div class="form-group">
-                                                  <label for "captain-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Captain', 'leaguemanager' ) ?></label>
+                                                  <label for "captain-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Captain', 'racketmanager' ) ?></label>
                                                   <div class="input">
                                                       <input type="text" class="teamcaptain form-control" id="captain-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="captain-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->captain ?>" <?php disabled($userCanUpdateClub, false) ?> />
                                                       <input type="hidden" id="captainId-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="captainId-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->captainId ?>" />
@@ -316,7 +316,7 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                                       <?php if ( is_user_logged_in() ) { ?>
                                           <?php if ( !empty($team->contactno) || $userCanUpdateClub ) { ?>
                                                   <div class="form-group">
-                                                      <label for "contactno-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Contact Number', 'leaguemanager' ) ?></label>
+                                                      <label for "contactno-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Contact Number', 'racketmanager' ) ?></label>
                                                       <div class="input">
                                                           <input type="tel" class="form-control" id="contactno-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="contactno-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->contactno ?>" <?php disabled($userCanUpdateClub, false) ?> />
                                                       </div>
@@ -324,7 +324,7 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                                           <?php } ?>
                                           <?php if ( !empty($team->contactemail) || $userCanUpdateClub ) { ?>
                                                   <div class="form-group">
-                                                      <label for "contactemail-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Contact Email', 'leaguemanager' ) ?></label>
+                                                      <label for "contactemail-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Contact Email', 'racketmanager' ) ?></label>
                                                       <div class="input">
                                                           <input type="email" class="form-control" id="contactemail-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="contactemail-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->contactemail ?>" size="30" <?php disabled($userCanUpdateClub, false) ?> />
                                                       </div>
@@ -333,11 +333,11 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                                       <?php } ?>
                                       <?php if ( !empty($team->match_day) ) { ?>
                                               <div class="form-group">
-                                                  <label for "match_day-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Match Day', 'leaguemanager' ) ?></label>
+                                                  <label for "match_day-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Match Day', 'racketmanager' ) ?></label>
                                                   <div class="input">
                                                       <?php if ( $userCanUpdateClub ) { ?>
                                                       <select size="1" name="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" id="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" >
-                                                          <option><?php _e( 'Select match day' , 'leaguemanager') ?></option>
+                                                          <option><?php _e( 'Select match day' , 'racketmanager') ?></option>
                                                           <?php foreach ( $matchdays AS $matchday ) { ?>
                                                           <option value="<?php echo $matchday ?>"<?php if(isset($team->match_day)) selected($matchday, $team->match_day ) ?> <?php disabled($userCanUpdateClub, false) ?>><?php echo $matchday ?></option>
                                                           <?php } ?>
@@ -350,14 +350,14 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                                       <?php } ?>
                                       <?php if ( !empty($team->match_time) || $userCanUpdateClub ) { ?>
                                               <div class="form-group match-time">
-                                                  <label for "matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Match Time', 'leaguemanager' ) ?></label>
+                                                  <label for "matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Match Time', 'racketmanager' ) ?></label>
                                                   <div class="input">
                                                       <input type="time" class="form-control" id="matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->match_time ?>" size="30" <?php disabled($userCanUpdateClub, false) ?> />
                                                   </div>
                                               </div>
                                       <?php } ?>
                                       <?php if ( $userCanUpdateClub ) { ?>
-                                      <button class="btn" type="button" id="teamUpdateSubmit-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="teamUpdateSubmit-<?php echo $competition->id ?>-<?php echo $team->id ?>" onclick="Leaguemanager.teamUpdate(this)">Update details</button>
+                                      <button class="btn" type="button" id="teamUpdateSubmit-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="teamUpdateSubmit-<?php echo $competition->id ?>-<?php echo $team->id ?>" onclick="Racketmanager.teamUpdate(this)">Update details</button>
                                       <div class="updateResponse" id="updateTeamResponse-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="updateTeamResponse-<?php echo $competition->id ?>-<?php echo $team->id ?>"></div>
                                       <?php } ?>
                                       </form>
@@ -366,11 +366,11 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                               </div>
                               <div id="club-players" class="jquery-ui-tab">
                                   <?php $season = $competition->getSeasonCompetition(); ?>
-                                  <table class="playerstats" summary="" title="LeagueManager Player Stats">
+                                  <table class="playerstats" summary="" title="RacketManager Player Stats">
                                       <thead>
                                           <tr>
-                                              <th rowspan="2" scope="col"><?php _e( 'Name', 'leaguemanager' ) ?></th>
-                                              <th colspan="<?php echo $season['num_match_days'] ?>" scope="colgroup" class="colspan"><?php _e( 'Match Day', 'leaguemanager') ?></th>
+                                              <th rowspan="2" scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>
+                                              <th colspan="<?php echo $season['num_match_days'] ?>" scope="colgroup" class="colspan"><?php _e( 'Match Day', 'racketmanager') ?></th>
                                           </tr>
                                           <tr>
                                   <?php $matchdaystatsdummy = array();
@@ -440,7 +440,7 @@ if ( current_user_can( 'manage_leaguemanager' ) ) {
                    if ( $address != null ) { ?>
                 <div class="club-address">
                     <div class="form-group">
-                        <label for "address"><?php _e( 'Address', 'leaguemanager' ); ?></label>
+                        <label for "address"><?php _e( 'Address', 'racketmanager' ); ?></label>
                         <div class="input">
                     <?php if ( $latitude != null && $longitude != null ) {
                         $zoom = 15;

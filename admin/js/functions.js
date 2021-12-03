@@ -37,7 +37,7 @@ jQuery(document).ready(function($) {
 
 	// Enable iris colorpicker
 	jQuery(document).ready(function() {
-		jQuery('.leaguemanager-colorpicker').iris();
+		jQuery('.racketmanager-colorpicker').iris();
 	});
 
     $(window).scroll(function() {
@@ -70,9 +70,9 @@ jQuery(document).ready(function($) {
                                                       $.ajax({
                                                              type: 'POST',
                                                              datatype: 'json',
-                                                             url: LeagueManagerAjaxL10n.requestUrl,
+                                                             url: RacketManagerAjaxL10n.requestUrl,
                                                              data: {"name": name,
-                                                             "action": "leaguemanager_getPlayerDetails"},
+                                                             "action": "racketmanager_getPlayerDetails"},
                                                              success: function(data) {
                                                              response(JSON.parse(data));
                                                              }
@@ -120,9 +120,9 @@ jQuery(document).ready(function($) {
                                                       $.ajax({
                                                              type: 'POST',
                                                              datatype: 'json',
-                                                             url: LeagueManagerAjaxL10n.requestUrl,
+                                                             url: RacketManagerAjaxL10n.requestUrl,
                                                              data: {"name": name,
-                                                             "action": "leaguemanager_getPlayerDetails"},
+                                                             "action": "racketmanager_getPlayerDetails"},
                                                              success: function(data) {
                                                              response(JSON.parse(data));
                                                              }
@@ -151,10 +151,10 @@ jQuery(document).ready(function($) {
                                                   $.ajax({
                                                          type: 'POST',
                                                          datatype: 'json',
-                                                         url: LeagueManagerAjaxL10n.requestUrl,
+                                                         url: RacketManagerAjaxL10n.requestUrl,
                                                          data: {"name": name,
                                                          "affiliatedClub": $("#affiliatedclub").val(),
-                                                         "action": "leaguemanager_getCaptainName"},
+                                                         "action": "racketmanager_getCaptainName"},
                                                          success: function(data) {
                                                          response(JSON.parse(data));
                                                          }
@@ -187,10 +187,10 @@ jQuery(document).ready(function($) {
                                                   $.ajax({
                                                          type: 'POST',
                                                          datatype: 'json',
-                                                         url: LeagueManagerAjaxL10n.requestUrl,
+                                                         url: RacketManagerAjaxL10n.requestUrl,
                                                          data: {"name": name,
                                                          "affiliatedClub": $("#club_id").val(),
-                                                         "action": "leaguemanager_getCaptainName"},
+                                                         "action": "racketmanager_getCaptainName"},
                                                          success: function(data) {
                                                          response(JSON.parse(data));
                                                          }
@@ -223,9 +223,9 @@ jQuery(document).ready(function($) {
                                                   $.ajax({
                                                          type: 'POST',
                                                          datatype: 'json',
-                                                         url: LeagueManagerAjaxL10n.requestUrl,
+                                                         url: RacketManagerAjaxL10n.requestUrl,
                                                          data: {"name": name,
-                                                         "action": "leaguemanager_getPlayerDetails"},
+                                                         "action": "racketmanager_getPlayerDetails"},
                                                          success: function(data) {
                                                          response(JSON.parse(data));
                                                          }
@@ -263,10 +263,10 @@ jQuery(document).ready(function($) {
                                    $.ajax({
                                           type: 'POST',
                                           datatype: 'json',
-                                          url: LeagueManagerAjaxL10n.requestUrl,
+                                          url: RacketManagerAjaxL10n.requestUrl,
                                           async: false,
                                           data: {"name": $("#team").val(),
-                                          "action": "leaguemanager_checkTeamExists"},
+                                          "action": "racketmanager_checkTeamExists"},
                                           success: function(response) {
                                               if ( response == true ) {
                                                     $error = true;
@@ -302,13 +302,13 @@ jQuery(document).ready(function($) {
 });
 
 
-if(typeof Leaguemanager == "undefined") {
-	var Leaguemanager = new Object();
+if(typeof Racketmanager == "undefined") {
+	var Racketmanager = new Object();
 }
 
 tb_init('a.thickbox, area.thickbox, input.thickbox');
 
-Leaguemanager.checkAll = function(form) {
+Racketmanager.checkAll = function(form) {
    for (i = 0, n = form.elements.length; i < n; i++) {
       if(form.elements[i].type == "checkbox" && !(form.elements[i].getAttribute('onclick',2))) {
          if(form.elements[i].checked == true)
@@ -320,8 +320,8 @@ Leaguemanager.checkAll = function(form) {
 }
 
 
-//Leaguemanager.checkPointRule = function( forwin, forwin_overtime, fordraw, forloss, forloss_overtime ) {
-Leaguemanager.checkPointRule = function( rule ) {
+//Racketmanager.checkPointRule = function( forwin, forwin_overtime, fordraw, forloss, forloss_overtime ) {
+Racketmanager.checkPointRule = function( rule ) {
 //	var rule = document.getElementById('point_rule').value;
 
 	// manual rule selected
@@ -332,7 +332,7 @@ Leaguemanager.checkPointRule = function( rule ) {
 		new_element_contents += "<input type='text' name='fordraw' id='fordraw' value=" + fordraw + " size='2' />";
 		new_element_contents += "<input type='text' name='forloss' id='forloss' value=" + forloss + " size='2' />";
 		new_element_contents += "<input type='text' name='forloss_overtime' id='forloss_overtime' value=" + forloss_overtime + " size='2' />";
-		new_element_contents += "&#160;<span class='setting-description'>" + LeagueManagerAjaxL10n.manualPointRuleDescription + "</span>";
+		new_element_contents += "&#160;<span class='setting-description'>" + RacketManagerAjaxL10n.manualPointRuleDescription + "</span>";
 		new_element_id = "point_rule_manual_content";
 		new_element = document.createElement('div');
 		new_element.id = new_element_id;
@@ -351,13 +351,13 @@ Leaguemanager.checkPointRule = function( rule ) {
 	return false;
 }
 
-Leaguemanager.insertPlayer = function(id, target) {
+Racketmanager.insertPlayer = function(id, target) {
 	tb_remove();
 	var player = document.getElementById(id).value;
 	document.getElementById(target).value = player;
 }
 
-Leaguemanager.removeField = function(id, parent_id) {
+Racketmanager.removeField = function(id, parent_id) {
   element_count = document.getElementById(parent_id).childNodes.length;
   if(element_count > 1) {
     target_element = document.getElementById(id);
@@ -367,6 +367,6 @@ Leaguemanager.removeField = function(id, parent_id) {
 }
 
 
-Leaguemanager.reInit = function() {
+Racketmanager.reInit = function() {
 	tb_init('a.thickbox, area.thickbox, input.thickbox');
 }

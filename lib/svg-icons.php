@@ -1,17 +1,17 @@
 <?php
 /**
-* SVG_Icons API: Leaguemanager_SVG_Icons class
+* SVG_Icons API: Racketmanager_SVG_Icons class
 *
 * @author Paul Moffat
-* @package LeagueManager
+* @package RacketManager
 * @subpackage SVG_Icons
 */
 
-if ( ! class_exists( 'Leaguemanager_SVG_Icons' ) ) {
+if ( ! class_exists( 'Racketmanager_SVG_Icons' ) ) {
   /**
   * Get a svg icon
   */
-  class Leaguemanager_SVG_Icons {
+  class Racketmanager_SVG_Icons {
 
     public static function get_svg( $icon ) {
       $icons = self::$svg_icons;

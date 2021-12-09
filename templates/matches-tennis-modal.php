@@ -7,7 +7,7 @@ Template page for the match modal in tennis
 <div id="modalMatch" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <span id="modalClose" onclick="Leaguemanager.closeMatchModal(this)" class="close">&times;</span>
+            <span id="modalClose" onclick="Racketmanager.closeMatchModal(this)" class="close">&times;</span>
         </div>
         <div class="modal-body">
             <div id="viewMatchRubbers" style="display:none">
@@ -21,7 +21,7 @@ Template page for the match modal in tennis
             </div>
         </div>
         <div class="modal-footer">
-            <span id="modalClose" onclick="Leaguemanager.closeMatchModal(this)" class="close">&times;</span>
+            <span id="modalClose" onclick="Racketmanager.closeMatchModal(this)" class="close">&times;</span>
         </div>
     </div>
 </div>

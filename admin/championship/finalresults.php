@@ -2,8 +2,8 @@
     <table class="widefat">
         <thead>
             <tr>
-                <th scope="col"><?php _e( 'Round', 'leaguemanager' ) ?></th>
-                <th scope="col" colspan="<?php echo ($league->championship->num_teams_first_round > 4) ? 4 : $league->championship->num_teams_first_round; ?>" style="text-align: center;"><?php _e( 'Matches', 'leaguemanager' ) ?></th>
+                <th scope="col"><?php _e( 'Round', 'racketmanager' ) ?></th>
+                <th scope="col" colspan="<?php echo ($league->championship->num_teams_first_round > 4) ? 4 : $league->championship->num_teams_first_round; ?>" style="text-align: center;"><?php _e( 'Matches', 'racketmanager' ) ?></th>
             </tr>
         </thead>
         <tbody id="the-list-finals" class="lm-form-table"><?php
@@ -26,7 +26,7 @@ foreach ( $league->championship->getFinals() AS $final ) {
             if ( $match->home_points != NULL && $match->away_points != NULL ) {
                 if ( $final['key'] == 'final' ) {
                     $field_id = ( $match->winner_id == $match->home_team ) ? "final_home" : "final_away";
-                    $img = '<img style="vertical-align: middle;" src="'.LEAGUEMANAGER_URL . '/admin/icons/cup.png" />';?>
+                    $img = '<img style="vertical-align: middle;" src="'.RACKETMANAGER_URL . '/admin/icons/cup.png" />';?>
                     <script type="text/javascript">
                         jQuery('span#<?php echo $field_id ?>').html('<?php echo addslashes_gpc($img) ?>').fadeIn('fast');
                     </script><?php

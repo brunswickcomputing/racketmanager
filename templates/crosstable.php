@@ -7,10 +7,10 @@
 <?php if ( have_teams() ) { ?>
 
 	<?php $rank = 0; ?>
-	<table class='leaguemanager crosstable' summary='' title='<?php _e( 'Crosstable', 'leaguemanager' ) ?> <?php the_league_title() ?>'>
+	<table class='racketmanager crosstable' summary='' title='<?php _e( 'Crosstable', 'racketmanager' ) ?> <?php the_league_title() ?>'>
 		<thead>
 			<tr>
-				<th colspan='2' style='text-align: center;'><?php _e( 'Club', 'leaguemanager' ) ?></th>
+				<th colspan='2' style='text-align: center;'><?php _e( 'Club', 'racketmanager' ) ?></th>
 			<?php for ( $i = 1; $i <= get_num_teams_total(); $i++ ) { ?>
 				<th style='text-align: center;'><?php echo $i ?></th>
 			<?php } ?>

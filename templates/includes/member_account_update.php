@@ -4,7 +4,7 @@
      * done here to allow for password update which regenerates login cookie
      *
      */
-    global $leaguemanager_login;
+    global $racketmanager_login;
     
-    $leaguemanager_login->member_account_form = $leaguemanager_login->generate_member_account_form();
+    $racketmanager_login->member_account_form = $racketmanager_login->generate_member_account_form();
 ?>

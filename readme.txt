@@ -1,4 +1,4 @@
-=== LeagueManager ===
+=== Racketmanager ===
 Contributors: Paul Moffat, Kolja Schleich, LaMonte Forthun
 Donate link:
 Tags: league management, sport, widget, basketball, football, hockey, league, soccer, volleyball, gymnastics, tennis, baseball, rugby
@@ -11,12 +11,11 @@ Plugin to manage and present Sports Leagues
 
 == Description ==
 
-This Plugin is designed to manage sports leagues and display them on your blog.
+This Plugin is designed to manage rackets leagues and tournaments and display them on your blog.
 
 **Features**
 
 * easy adding of teams and matches
-* fancy slideshows of previous or next matches in combination with the [Fancy Slideshow Plugin](https://wordpress.org/plugins/sponsors-slideshow-widget/))
 * numerous point-rules implemented to also support special rules (e.g. Hockey, Pool, Baseball, Cornhole)
 * weekly-based ordering of matches with bulk editing mechanism
 * automatic or manual saving of standings table
@@ -47,9 +46,12 @@ To install the plugin to the following steps
 7. Match Report
 
 == Credits ==
-The LeagueManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)
+The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)
 
 == Changelog ==
+
+= 6.0.0 =
+* NEW: use racketmanager instead of racketmanager
 
 = 5.6.22 =
 * BUGFIX: user correct team field for checkPlayerResult
@@ -195,7 +197,7 @@ The LeagueManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 = 5.5.8 =
 * NEW: how to documentation for administrators
-* UPDATE: make leaguemanager section on admin menu
+* UPDATE: make racketmanager section on admin menu
 * NEW: add player locked to team check
 
 = 5.5.7 =
@@ -494,7 +496,7 @@ This is release contains major restructuring on the technical level to improve p
 * BUGFIX: fixed match day match editing
 
 = 3.8.9 =
-* UPDATE: Numerous files have been worked on to remove PHP Strict Mode warnings. These warnings didn't affect LeagueManager use, but if your WordPress installation had debugging mode turned on there were many, many warnings being thrown at you. There are no doubt more that will need to be fixed, but a conservative guess is that over 100 fixes have been applied.
+* UPDATE: Numerous files have been worked on to remove PHP Strict Mode warnings. These warnings didn't affect RacketManager use, but if your WordPress installation had debugging mode turned on there were many, many warnings being thrown at you. There are no doubt more that will need to be fixed, but a conservative guess is that over 100 fixes have been applied.
 * BUGFIX: Fixed the error with the Widget not changing
 * BUGFIX: Permissions error on documenation page
 * UPDATE: Added completed games to soccer ranking
@@ -516,7 +518,7 @@ This is release contains major restructuring on the technical level to improve p
 
 = 3.8.8.3 =
 * BUGFIX: Permission error
-* UPDATE: Changed some internal code from 'leagues' to 'leaguemanager'
+* UPDATE: Changed some internal code from 'leagues' to 'racketmanager'
 * ADDED: Dashboard Widget
 
 = 3.8.8.2 =
@@ -536,7 +538,7 @@ use this shortcode to test:
 
 If you test and find that the icons at the end of each line in the standings are moving to a second line it means you don't have enough room on your template for five past results. You can then change to a lesser number in the template, named 'standings-last5.php' in the 'admin/templates' folder. Go to 43:
 
-    <th width="100" class="last5"><?php _e( 'Last 5', 'leaguemanager' ) ?></th>
+    <th width="100" class="last5"><?php _e( 'Last 5', 'racketmanager' ) ?></th>
 
 change the 'Last 5' text to 'Last 3' if you're going to use three past results, or whatever you choose. Then go to line 93:
 
@@ -560,7 +562,7 @@ The final version will probably have this as a preference option.
 = 3.8.5 =
 *** IF YOU'VE DONE ANY MANUAL MODIFICATIONS, DOWNLOAD THIS AND CHECK THAT YOU AREN'T GOING TO LOSE THEM WHEN YOU UPDATE (INSTEAD OF DOING AN AUTO UPDATE). THIS UPDATE TOUCHES A NUMBER OF FILES (17). IF YOU HAVE QUESTIONS BEFORE UPDATING, LEAVE A MESSAGE ON THE SUPPORT FORUM ON WORDPRESS.ORG. A LIST OF ALL FILES UPDATED IS LISTED IN A POST THERE. ***
 
-http://wordpress.org/support/topic/leaguemanager-385-changes-info
+http://wordpress.org/support/topic/racketmanager-385-changes-info
 
 * CHANGED: 'championchip' to 'championship' throughout the plugin
 * BUGFIX: fixed missing '>' in core.php that was causing white screen after adding or editing matches.
@@ -573,7 +575,7 @@ http://wordpress.org/support/topic/leaguemanager-385-changes-info
 * BUGFIX: export function
 
 = 3.8.2 =
-* BUGFIX: Undefined function in leaguemanager.php upon export
+* BUGFIX: Undefined function in racketmanager.php upon export
 
 = 3.8.1 =
 * BUGFIX: Fixed security vulnerability of SQL Injection. Added security check current_user_can('manage_leagues') and cast $_POST['league_id'] as (int)
@@ -613,7 +615,7 @@ http://wordpress.org/support/topic/leaguemanager-385-changes-info
 
 = 3.6.2 =
 * NEW: Score Point-Rule. Teams get one point according to the game score
-* BUGFIX: only load javascript files on leaguemanager pages to avoid malfunction of WP image editor
+* BUGFIX: only load javascript files on racketmanager pages to avoid malfunction of WP image editor
 * BUGFIX: Widget option
 
 = 3.6.1 =
@@ -767,7 +769,7 @@ http://wordpress.org/support/topic/leaguemanager-385-changes-info
 
 = 3.0.3 =
 * BUGFIX: archive template
-* BUGFIX: leaguemanager_matches function
+* BUGFIX: racketmanager_matches function
 * BUGFIX: team display in matches template
 
 = 3.0.2 =
@@ -945,7 +947,7 @@ http://wordpress.org/support/topic/leaguemanager-385-changes-info
 
 = 1.2 =
 * BUGFIX: teams sorting in widget
-* CHANGED: load javascript only on Leaguemanager admin pages
+* CHANGED: load javascript only on Racketmanager admin pages
 * CHANGED: remodeling of the plugin structure
 
 = 1.1 =

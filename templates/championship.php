@@ -12,12 +12,12 @@ The following variables are usable:
 */
 ?>
 
-<h3><?php _e( 'Final Results', 'leaguemanager' ) ?></h3>
-<table class="widefat leaguemanager_finals">
+<h3><?php _e( 'Final Results', 'racketmanager' ) ?></h3>
+<table class="widefat racketmanager_finals">
     <thead>
     <tr>
         <th scope="col"><?php _e( 'Round', 'leaguemanger' ) ?></th>
-        <th scope="col" colspan="<?php echo $finals[0]->colspan; ?>" style="text-align: center;"><?php _e( 'Matches', 'leaguemanager' ) ?></th>
+        <th scope="col" colspan="<?php echo $finals[0]->colspan; ?>" style="text-align: center;"><?php _e( 'Matches', 'racketmanager' ) ?></th>
     </tr>
 </thead>
 <tbody id="the-list-finals" class="lm-form-table">
@@ -33,7 +33,7 @@ The following variables are usable:
 <?php } ?>
 
 		<?php if ( $match->home_points != NULL && $match->away_points != NULL && $final->isFinal ) : ?>
-		<?php $img = '<img style="vertical-align: middle;" src="'.LEAGUEMANAGER_URL . '/admin/icons/cup.png" />'; ?>
+		<?php $img = '<img style="vertical-align: middle;" src="'.RACKETMANAGER_URL . '/admin/icons/cup.png" />'; ?>
 		<script type="text/javascript">
 			jQuery('span#<?php echo $final->field_id ?>').html('<?php echo addslashes_gpc($img) ?>').fadeIn('fast');
 		</script>
@@ -52,7 +52,7 @@ The following variables are usable:
 </table>
 
 
-<h3><?php _e( 'Final Matches', 'leaguemanager' ) ?></h3>
+<h3><?php _e( 'Final Matches', 'racketmanager' ) ?></h3>
 <div class="jquery-ui-tabs">
 	<ul class="tablist">
 	<?php foreach ( $finals AS $final ) : ?>
@@ -66,12 +66,12 @@ The following variables are usable:
 		<table class="widefat">
 		<thead>
 		<tr>
-			<th><?php _e( '#', 'leaguemanager' ) ?></th>
-			<th><?php _e( 'Date','leaguemanager' ) ?></th>
-			<th><?php _e( 'Match','leaguemanager' ) ?></th>
-			<th><?php _e( 'Location','leaguemanager' ) ?></th>
-			<th><?php _e( 'Begin','leaguemanager' ) ?></th>
-			<th><?php _e( 'Score', 'leaguemanager' ) ?></th>
+			<th><?php _e( '#', 'racketmanager' ) ?></th>
+			<th><?php _e( 'Date','racketmanager' ) ?></th>
+			<th><?php _e( 'Match','racketmanager' ) ?></th>
+			<th><?php _e( 'Location','racketmanager' ) ?></th>
+			<th><?php _e( 'Begin','racketmanager' ) ?></th>
+			<th><?php _e( 'Score', 'racketmanager' ) ?></th>
 		</tr>
 		</thead>
 		<tbody id="the-list-<?php echo $final->key ?>" class="lm-form-table">
@@ -91,30 +91,30 @@ The following variables are usable:
 	<?php endforeach; ?>
 </div>
 
-<h3><?php _e( 'Preliminary Rounds', 'leaguemanager' ) ?></h3>
+<h3><?php _e( 'Preliminary Rounds', 'racketmanager' ) ?></h3>
 <div class="jquery-ui-tabs">
 	<ul class="tablist">
 		<?php foreach ( $championship->getGroups() AS $key => $group ) : ?>
-		<li><a href="#group-<?php echo $group ?>"><?php printf(__('Group %s', 'leaguemanager'), $group) ?></a></li>
+		<li><a href="#group-<?php echo $group ?>"><?php printf(__('Group %s', 'racketmanager'), $group) ?></a></li>
 		<?php endforeach ?>
-		<!--<li><a href="#intergroup-matches"><?php _e( 'Inter Group Matches', 'leaguemanager' ) ?></a></li>-->
+		<!--<li><a href="#intergroup-matches"><?php _e( 'Inter Group Matches', 'racketmanager' ) ?></a></li>-->
 	</ul>
 	<?php foreach ( $championship->getGroups() AS $key => $group ) : ?>
     <?php $teams = $league->getLeagueTeams( array("season" => $league->season, "group" => $group) ); ?>
 	<?php $matches = $league->getMatches( array("league_id" => $league->id, "season" => $league->season, "final" => '', "group" => $group) ); ?>
 
 	<div id="group-<?php echo $group ?>">
-		<h4 class="header"><?php printf(__('Group %s', 'leaguemanager'), $group) ?></h4>
-		<h5><?php _e( 'Standings', 'leaguemanager' ) ?></h5>
-		<?php leaguemanager_standings( $league->id, array('season' => $league->season, 'group' => $group, 'template' => 'last5') ); ?>
+		<h4 class="header"><?php printf(__('Group %s', 'racketmanager'), $group) ?></h4>
+		<h5><?php _e( 'Standings', 'racketmanager' ) ?></h5>
+		<?php racketmanager_standings( $league->id, array('season' => $league->season, 'group' => $group, 'template' => 'last5') ); ?>
 
-		<h5><?php _e( 'Match Plan', 'leaguemanager' ) ?></h5>
-		<?php leaguemanager_matches( $league->id, array('season' => $league->season, 'limit' => 'false', 'group' => $group, 'match_day' => 'all') ); ?>
+		<h5><?php _e( 'Match Plan', 'racketmanager' ) ?></h5>
+		<?php racketmanager_matches( $league->id, array('season' => $league->season, 'limit' => 'false', 'group' => $group, 'match_day' => 'all') ); ?>
 	</div>
 	<?php endforeach; ?>
 
 	<div id="intergroup-matches">
-		<!--<h4 class="header"><?php _e( 'Inter Group Matches', 'leaguemanager' ) ?></h5>-->
-		<?php //leaguemanager_matches( $league->id, array('season' => $league->season, 'group' => '', 'limit' => 'false') ); ?>
+		<!--<h4 class="header"><?php _e( 'Inter Group Matches', 'racketmanager' ) ?></h5>-->
+		<?php //racketmanager_matches( $league->id, array('season' => $league->season, 'group' => '', 'limit' => 'false') ); ?>
 	</div>
 </div>

@@ -1,21 +1,21 @@
 <?php
-global $leaguemanager;
+global $racketmanager;
 ?>
-<table class='leaguemanager matchtable' summary='' title='<?php _e( 'Match Plan', 'leaguemanager' ) ?> <?php the_league_title() ?>'>
+<table class='racketmanager matchtable' summary='' title='<?php _e( 'Match Plan', 'racketmanager' ) ?> <?php the_league_title() ?>'>
   <thead>
     <tr>
       <?php if ( $league->mode == 'championship' ) { ?>
-        <th><?php _e( '#', 'leaguemanager' ) ?></th>
+        <th><?php _e( '#', 'racketmanager' ) ?></th>
       <?php } ?>
-      <th colspan="2" class='match'><?php _e( 'Match', 'leaguemanager' ) ?></th>
-      <th class='score'><?php _e( 'Score', 'leaguemanager' ) ?></th>
+      <th colspan="2" class='match'><?php _e( 'Match', 'racketmanager' ) ?></th>
+      <th class='score'><?php _e( 'Score', 'racketmanager' ) ?></th>
     </tr>
   </thead>
   <tbody>
     <?php $matchday = isset($_GET['match_day']) ? $_GET['match_day'] : $league->match_day; ?>
     <?php foreach ( $matches AS $no => $match ) {
       if ( isset($match->teams['home']) && isset($match->teams['away']) ) {
-        $userCanUpdate = $leaguemanager->getMatchUpdateAllowed($match->teams['home'], $match->teams['away']);
+        $userCanUpdate = $racketmanager->getMatchUpdateAllowed($match->teams['home'], $match->teams['away']);
       } else {
         $userCanUpdate = false;
       }
@@ -36,18 +36,18 @@ global $leaguemanager;
             <?php if ( $match->home_team == -1 || $match->away_team == -1 ) { ?>
               <td class='angledir'></td>
             <?php } else { ?>
-              <td class='angledir' title="<?php _e( 'View rubbers', 'leaguemanager' ) ?>"><i class="leaguemanager-svg-icon angledir"><?php leaguemanager_the_svg('icon-chevron-right') ?></i></td>
+              <td class='angledir' title="<?php _e( 'View rubbers', 'racketmanager' ) ?>"><i class="racketmanager-svg-icon angledir"><?php racketmanager_the_svg('icon-chevron-right') ?></i></td>
             <?php } ?>
           <?php } else { ?>
             <td>
-              <a href="#" class='' id="<?php echo $match->id ?>" onclick="Leaguemanager.printScoreCard(event, this)" title="<?php _e( 'Print matchcard', 'leaguemanager' ) ?>">
-                <i class="leaguemanager-svg-icon"><?php leaguemanager_the_svg('icon-printer') ?></i>
+              <a href="#" class='' id="<?php echo $match->id ?>" onclick="Racketmanager.printScoreCard(event, this)" title="<?php _e( 'Print matchcard', 'racketmanager' ) ?>">
+                <i class="racketmanager-svg-icon"><?php racketmanager_the_svg('icon-printer') ?></i>
               </a>
               <?php
               if ( $userCanUpdate == true && ( !isset($match->confirmed) || $match->confirmed = "P" ) ) {
                 if ( is_numeric($match->home_team) && is_numeric($match->away_team) ) {?>
-                  <a href="#" class=""  onclick="Leaguemanager.showRubbers(<?php echo $match->id ?>)"  title="<?php _e( 'Enter match result', 'leaguemanager' ) ?>">
-                    <i class="leaguemanager-svg-icon"><?php leaguemanager_the_svg('icon-pencil') ?></i>
+                  <a href="#" class=""  onclick="Racketmanager.showRubbers(<?php echo $match->id ?>)"  title="<?php _e( 'Enter match result', 'racketmanager' ) ?>">
+                    <i class="racketmanager-svg-icon"><?php racketmanager_the_svg('icon-pencil') ?></i>
                   </a>
                 <?php } ?>
               <?php } ?>

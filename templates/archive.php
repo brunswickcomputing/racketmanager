@@ -52,18 +52,18 @@ if (hash == 'teams') tab = 3;
 															});
 						   });
 </script>
-<h1><?php printf("%s &mdash; %s %s", $league->title, __('Season', 'leaguemanager'), $league->current_season['name']); ?></h1>
-<div id="leaguemanager_archive_selections" class="">
-	<form method="get" action="<?php echo get_permalink($postID); ?>" id="leaguemanager_archive">
+<h1><?php printf("%s &mdash; %s %s", $league->title, __('Season', 'racketmanager'), $league->current_season['name']); ?></h1>
+<div id="racketmanager_archive_selections" class="">
+	<form method="get" action="<?php echo get_permalink($postID); ?>" id="racketmanager_archive">
 		<input type="hidden" name="page_id" value="<?php echo $postID ?>" />
 		<select size="1" name="league_id" id="league_id">
-			<option value=""><?php _e( 'Select League', 'leaguemanager' ) ?></option>
+			<option value=""><?php _e( 'Select League', 'racketmanager' ) ?></option>
             <?php foreach ( $leagues AS $l ) { ?>
 			<option value="<?php echo $l->title ?>"<?php if ( $l->id == $league->id ) echo ' selected="selected"' ?>><?php echo $l->title ?></option>
             <?php } ?>
 		</select>
 		<select size="1" name="season" id="season">
-			<option value=""><?php _e( 'Season', 'leaguemanager' ) ?></option>
+			<option value=""><?php _e( 'Season', 'racketmanager' ) ?></option>
             <?php foreach ( $seasons AS $key => $season ) { ?>
             <option value="<?php echo $key ?>"<?php if ( $season['name'] == $league->current_season['name'] ) echo ' selected="selected"' ?>><?php echo $season['name'] ?></option>
             <?php } ?>
@@ -73,46 +73,46 @@ if (hash == 'teams') tab = 3;
 </div>
 
 <?php if ( $league->mode == 'championship' ) { ?>
-		<?php leaguemanager_championship( 0, array('season' => $league->season) ); ?>
+		<?php racketmanager_championship( 0, array('season' => $league->season) ); ?>
 <?php } else {
     ?>
 		<div class="jquery-ui-tabs">
 			<ul class="tablist">
-				<li><a href="#standings-archive"><?php _e( 'Standings', 'leaguemanager' ) ?></a></li>
-				<li><a href="#crosstable-archive"><?php _e( 'Crosstable', 'leaguemanager' ) ?></a></li>
-				<li><a href="#matches-archive"><?php _e( 'Matches', 'leaguemanager' ) ?></a></li>
-				<li><a href="#teams-archive"><?php _e( 'Teams', 'leaguemanager' ) ?></a></li>
-				<li><a href="#players-archive"><?php _e( 'Players', 'leaguemanager' ) ?></a></li>
+				<li><a href="#standings-archive"><?php _e( 'Standings', 'racketmanager' ) ?></a></li>
+				<li><a href="#crosstable-archive"><?php _e( 'Crosstable', 'racketmanager' ) ?></a></li>
+				<li><a href="#matches-archive"><?php _e( 'Matches', 'racketmanager' ) ?></a></li>
+				<li><a href="#teams-archive"><?php _e( 'Teams', 'racketmanager' ) ?></a></li>
+				<li><a href="#players-archive"><?php _e( 'Players', 'racketmanager' ) ?></a></li>
 			</ul>
 
 			<!-- Standings Table -->
 			<div id="standings-archive" class="jquery-ui-tab">
-				<h3 class="header"><?php _e('Standings', 'leaguemanager') ?></h3>
-				<?php leaguemanager_standings( 0, array('season' => get_current_season(), 'template' => get_league_template('standingstable')) ) ?>
+				<h3 class="header"><?php _e('Standings', 'racketmanager') ?></h3>
+				<?php racketmanager_standings( 0, array('season' => get_current_season(), 'template' => get_league_template('standingstable')) ) ?>
 			</div>
 
 			<!-- Crosstable -->
 			<div id="crosstable-archive" class="jquery-ui-tab">
-				<h3 class="header"><?php _e('Crosstable', 'leaguemanager') ?></h3>
-				<?php leaguemanager_crosstable( 0, array('season' => get_current_season(), 'template' => get_league_template('crosstable')) ) ?>
+				<h3 class="header"><?php _e('Crosstable', 'racketmanager') ?></h3>
+				<?php racketmanager_crosstable( 0, array('season' => get_current_season(), 'template' => get_league_template('crosstable')) ) ?>
 			</div>
 
 			<!-- Match Overview -->
 			<div id="matches-archive" class="jquery-ui-tab">
-				<h3 class="header"><?php _e('Matches', 'leaguemanager') ?></h3>
-				<?php leaguemanager_matches( 0, array('season' => get_current_season(), 'match_day' => 'current', 'show_match_day_selection' => 'true', 'template' => get_league_template('matches'), 'template_type' => get_match_template_type()) ) ?>
+				<h3 class="header"><?php _e('Matches', 'racketmanager') ?></h3>
+				<?php racketmanager_matches( 0, array('season' => get_current_season(), 'match_day' => 'current', 'show_match_day_selection' => 'true', 'template' => get_league_template('matches'), 'template_type' => get_match_template_type()) ) ?>
 			</div>
 
 			<!-- Teamlist -->
 			<div id="teams-archive" class="jquery-ui-tab">
-				<h3 class="header"><?php _e('Teams', 'leaguemanager') ?></h3>
-				<?php leaguemanager_teams( 0, array('season' => get_current_season(), 'template' => get_league_template('teams')) ) ?>
+				<h3 class="header"><?php _e('Teams', 'racketmanager') ?></h3>
+				<?php racketmanager_teams( 0, array('season' => get_current_season(), 'template' => get_league_template('teams')) ) ?>
 			</div>
 
 			<!-- Players -->
 			<div id="players-archive" class="jquery-ui-tab">
-				<h3 class="header"><?php _e('Players', 'leaguemanager') ?></h3>
-				<?php leaguemanager_players( 0, array('season' => get_current_season()) ) ?>
+				<h3 class="header"><?php _e('Players', 'racketmanager') ?></h3>
+				<?php racketmanager_players( 0, array('season' => get_current_season()) ) ?>
 			</div>
 		</div>
 <?php } ?>

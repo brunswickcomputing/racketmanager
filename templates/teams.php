@@ -15,21 +15,21 @@ $class = 'alternate';
 ?>
 
 <?php if (isset($_GET['team'])) { ?>
-	<?php leaguemanager_team($_GET['team']); ?>
+	<?php racketmanager_team($_GET['team']); ?>
 <?php } else { ?>
 
 <?php if ( $teams ) { ?>
 
-<table class="leaguemanager teamslist" summary="" title="<?php _e( 'Teams', 'leaguemanager' ) ?>">
+<table class="racketmanager teamslist" summary="" title="<?php _e( 'Teams', 'racketmanager' ) ?>">
 <thead>
 <tr>
-	<th style="text-align: center;"><?php _e( 'Team', 'leaguemanager' ) ?></th>
-	<th style="text-align: center;"><?php _e( 'Captain', 'leaguemanager' ) ?></th>
-    <th style="text-align: center;"><?php _e( 'Contact Number', 'leaguemanager' ) ?></th>
-    <th style="text-align: center;"><?php _e( 'Contact Email', 'leaguemanager' ) ?></th>
-	<th style="text-align: center;"><?php echo _x( 'W', 'leaguemanager' ) ?></th>
-	<th style="text-align: center;"><?php echo _x( 'T', 'leaguemanager' ) ?></th>
-	<th style="text-align: center;"><?php echo _x( 'L', 'leaguemanager' ) ?></th>
+	<th style="text-align: center;"><?php _e( 'Team', 'racketmanager' ) ?></th>
+	<th style="text-align: center;"><?php _e( 'Captain', 'racketmanager' ) ?></th>
+    <th style="text-align: center;"><?php _e( 'Contact Number', 'racketmanager' ) ?></th>
+    <th style="text-align: center;"><?php _e( 'Contact Email', 'racketmanager' ) ?></th>
+	<th style="text-align: center;"><?php echo _x( 'W', 'racketmanager' ) ?></th>
+	<th style="text-align: center;"><?php echo _x( 'T', 'racketmanager' ) ?></th>
+	<th style="text-align: center;"><?php echo _x( 'L', 'racketmanager' ) ?></th>
 </tr>
 </thead>
 <tbody id="the-list">

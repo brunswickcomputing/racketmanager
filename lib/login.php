@@ -1,13 +1,13 @@
 <?php
 /**
-* Login class for the WordPress plugin LeagueManager
+* Login class for the WordPress plugin RacketManager
 *
 * @author     Paul Moffat
-* @package    LeagueManager
+* @package    RacketManager
 * @copyright Copyright 2018
 */
 
-class LeagueManagerLogin extends LeagueManager {
+class RacketManagerLogin extends RacketManager {
 
   /**
   * initialize shortcodes
@@ -53,7 +53,7 @@ class LeagueManagerLogin extends LeagueManager {
   }
 
   public function my_wp_new_user_notification_email($wp_new_user_notification_email, $user, $blogname) {
-    global $leaguemanager_shortcodes;
+    global $racketmanager_shortcodes;
 
     $start = strpos($wp_new_user_notification_email['message'],'?action=rp&key=') + 15;
     $end = strpos($wp_new_user_notification_email['message'],'&login=');
@@ -65,14 +65,14 @@ class LeagueManagerLogin extends LeagueManager {
     $vars['display_name'] = $user->display_name;
     $vars['action_url'] = wp_login_url() . '?action=rp&key='.$key.'&login='.rawurlencode($user->user_login);
     $vars['email_link'] = 'info@leighandwestclifftennis.org.uk';
-    $wp_new_user_notification_email['message'] = $leaguemanager_shortcodes->loadTemplate( 'email-welcome', $vars );
+    $wp_new_user_notification_email['message'] = $racketmanager_shortcodes->loadTemplate( 'email-welcome', $vars );
     $wp_new_user_notification_email['headers'] = 'Content-Type: text/html; charset=UTF-8';
 
     return $wp_new_user_notification_email;
   }
 
   public function my_wp_retrieve_password_email($message, $key, $user_login, $user_data) {
-    global $leaguemanager_shortcodes;
+    global $racketmanager_shortcodes;
 
     $vars['site_name'] = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
     $vars['site_url'] = get_option('siteurl');
@@ -80,7 +80,7 @@ class LeagueManagerLogin extends LeagueManager {
     $vars['display_name'] = $user_data->display_name;
     $vars['action_url'] = wp_login_url() . '?action=rp&key='.$key.'&login='.rawurlencode($user_login);
     $vars['email_link'] = 'mailto://info@leighandwestclifftennis.org.uk';
-    $message = $leaguemanager_shortcodes->loadTemplate( 'email-password-reset-text', $vars );
+    $message = $racketmanager_shortcodes->loadTemplate( 'email-password-reset-text', $vars );
 
     return $message;
   }
@@ -103,7 +103,7 @@ class LeagueManagerLogin extends LeagueManager {
   * @return string  The shortcode output
   */
   public function render_login_form( $vars, $content = null ) {
-    global $leaguemanager_shortcodes;
+    global $racketmanager_shortcodes;
 
     // Parse shortcode vars
     $default_vars = array( 'show_title' => false );
@@ -113,10 +113,10 @@ class LeagueManagerLogin extends LeagueManager {
     $vars['site_url'] = get_option('siteurl');
 
     if ( is_user_logged_in() ) {
-      return __( 'You are already signed in.', 'leaguemanager' );
+      return __( 'You are already signed in.', 'racketmanager' );
     }
     // Retrieve recaptcha key
-    $vars['recaptcha_site_key'] = get_option( 'leaguemanager-recaptcha-site-key', null );
+    $vars['recaptcha_site_key'] = get_option( 'racketmanager-recaptcha-site-key', null );
     $action = isset($_GET[('action')]) ? $_GET[('action')]: '';
     if ( isset($action) && $action == 'register' ) {
 
@@ -131,11 +131,11 @@ class LeagueManagerLogin extends LeagueManager {
       }
 
       if ( is_user_logged_in() ) {
-        return __( 'You are already signed in.', 'leaguemanager' );
+        return __( 'You are already signed in.', 'racketmanager' );
       } elseif ( ! get_option( 'users_can_register' ) ) {
-        return __( 'Registering new users is currently not allowed.', 'leaguemanager' );
+        return __( 'Registering new users is currently not allowed.', 'racketmanager' );
       } else {
-        return $leaguemanager_shortcodes->loadTemplate( 'form-login', $vars );
+        return $racketmanager_shortcodes->loadTemplate( 'form-login', $vars );
       }
     } else {
       // Check if the user just registered
@@ -169,7 +169,7 @@ class LeagueManagerLogin extends LeagueManager {
       $vars['logged_out'] = isset( $_REQUEST['logged_out'] ) && $_REQUEST['logged_out'] == true;
 
       // Render the login form using an external template
-      return $leaguemanager_shortcodes->loadTemplate( 'form-login', $vars );
+      return $racketmanager_shortcodes->loadTemplate( 'form-login', $vars );
     }
   }
 
@@ -253,43 +253,43 @@ class LeagueManagerLogin extends LeagueManager {
   public function get_error_message( $error_code ) {
     switch ( $error_code ) {
       case 'empty_username':
-      return __( 'You do have an email address, right?', 'leaguemanager' );
+      return __( 'You do have an email address, right?', 'racketmanager' );
       case 'empty_password':
-      return __( 'You need to enter a password to login.', 'leaguemanager' );
+      return __( 'You need to enter a password to login.', 'racketmanager' );
       case 'invalid_email':
       case 'invalid_username':
-      return __( "We don't have any users with that email address. Maybe you used a different one when signing up?", 'leaguemanager' );
+      return __( "We don't have any users with that email address. Maybe you used a different one when signing up?", 'racketmanager' );
       case 'incorrect_password':
-      $err = __( "The password you entered wasn't quite right. <a href='%s'>Did you forget your password</a>?", 'leaguemanager' );
+      $err = __( "The password you entered wasn't quite right. <a href='%s'>Did you forget your password</a>?", 'racketmanager' );
       return sprintf( $err, wp_lostpassword_url() );
       case 'email':
-      return __( 'The email address you entered is not valid.', 'leaguemanager' );
+      return __( 'The email address you entered is not valid.', 'racketmanager' );
       case 'email_exists':
-      return __( 'An account exists with this email address.', 'leaguemanager' );
+      return __( 'An account exists with this email address.', 'racketmanager' );
       case 'closed':
-      return __( 'Registering new users is currently not allowed.', 'leaguemanager' );
+      return __( 'Registering new users is currently not allowed.', 'racketmanager' );
       case 'captcha':
-      return __( 'The Google reCAPTCHA check failed. Are you a robot?', 'leaguemanager' );
+      return __( 'The Google reCAPTCHA check failed. Are you a robot?', 'racketmanager' );
       case 'empty_username':
-      return __( 'You need to enter your email address to continue.', 'leaguemanager' );
+      return __( 'You need to enter your email address to continue.', 'racketmanager' );
       case 'invalid_email':
       case 'invalidcombo':
-      return __( 'There are no users registered with this email address.', 'leaguemanager' );
+      return __( 'There are no users registered with this email address.', 'racketmanager' );
       case 'expiredkey':
       case 'invalidkey':
-      return __( 'The password reset link you used is not valid anymore.', 'leaguemanager' );
+      return __( 'The password reset link you used is not valid anymore.', 'racketmanager' );
       case 'password_reset_mismatch':
-      return __( "The two passwords you entered don't match.", 'leaguemanager' );
+      return __( "The two passwords you entered don't match.", 'racketmanager' );
       case 'password_reset_empty':
-      return __( "Sorry, we don't accept empty passwords.", 'leaguemanager' );
+      return __( "Sorry, we don't accept empty passwords.", 'racketmanager' );
       case 'firstname_field_empty':
-      return __( 'First name must be specified', 'leaguemanager' );
+      return __( 'First name must be specified', 'racketmanager' );
       case 'lastname_field_empty':
-      return __( 'Last name must be specified', 'leaguemanager' );
+      return __( 'Last name must be specified', 'racketmanager' );
       case 'gender_field_empty':
-      return __( 'Gender must be specified', 'leaguemanager' );
+      return __( 'Gender must be specified', 'racketmanager' );
       case 'no_updates':
-      return __( 'No updates to be made', 'leaguemanager' );
+      return __( 'No updates to be made', 'racketmanager' );
       default:
       return $error_code;
     }
@@ -440,32 +440,32 @@ class LeagueManagerLogin extends LeagueManager {
   */
   public function register_settings_fields() {
     // Create settings fields for the two keys used by reCAPTCHA
-    register_setting( 'general', 'leaguemanager-recaptcha-site-key' );
-    register_setting( 'general', 'leaguemanager-recaptcha-secret-key' );
+    register_setting( 'general', 'racketmanager-recaptcha-site-key' );
+    register_setting( 'general', 'racketmanager-recaptcha-secret-key' );
 
     add_settings_field(
-      'leaguemanager-recaptcha-site-key',
-      '<label for="leaguemanager-recaptcha-site-key">' . __( 'reCAPTCHA site key' , 'leaguemanager' ) . '</label>',
+      'racketmanager-recaptcha-site-key',
+      '<label for="racketmanager-recaptcha-site-key">' . __( 'reCAPTCHA site key' , 'racketmanager' ) . '</label>',
       array( $this, 'render_recaptcha_site_key_field' ),
       'general'
     );
 
     add_settings_field(
-      'leaguemanager-recaptcha-secret-key',
-      '<label for="leaguemanager-recaptcha-secret-key">' . __( 'reCAPTCHA secret key' , 'leaguemanager' ) . '</label>',
+      'racketmanager-recaptcha-secret-key',
+      '<label for="racketmanager-recaptcha-secret-key">' . __( 'reCAPTCHA secret key' , 'racketmanager' ) . '</label>',
       array( $this, 'render_recaptcha_secret_key_field' ),
       'general'
     );
   }
 
   public function render_recaptcha_site_key_field() {
-    $value = get_option( 'leaguemanager-recaptcha-site-key', '' );
-    echo '<input type="text" id="leaguemanager-recaptcha-site-key" name="leaguemanager-recaptcha-site-key" value="' . esc_attr( $value ) . '" />';
+    $value = get_option( 'racketmanager-recaptcha-site-key', '' );
+    echo '<input type="text" id="racketmanager-recaptcha-site-key" name="racketmanager-recaptcha-site-key" value="' . esc_attr( $value ) . '" />';
   }
 
   public function render_recaptcha_secret_key_field() {
-    $value = get_option( 'leaguemanager-recaptcha-secret-key', '' );
-    echo '<input type="text" id="leaguemanager-recaptcha-secret-key" name="leaguemanager-recaptcha-secret-key" value="' . esc_attr( $value ) . '" />';
+    $value = get_option( 'racketmanager-recaptcha-secret-key', '' );
+    echo '<input type="text" id="racketmanager-recaptcha-secret-key" name="racketmanager-recaptcha-secret-key" value="' . esc_attr( $value ) . '" />';
   }
 
   /**
@@ -487,7 +487,7 @@ class LeagueManagerLogin extends LeagueManager {
       'https://www.google.com/recaptcha/api/siteverify',
       array(
         'body' => array(
-          'secret' => get_option( 'leaguemanager-recaptcha-secret-key' ),
+          'secret' => get_option( 'racketmanager-recaptcha-secret-key' ),
           'response' => $captcha_response
         )
       )
@@ -535,7 +535,7 @@ class LeagueManagerLogin extends LeagueManager {
   */
   public function render_password_lost_form( $vars, $content = null ) {
 
-    global $leaguemanager_shortcodes;
+    global $racketmanager_shortcodes;
 
     // Parse shortcode vars
     $default_vars = array( 'show_title' => true );
@@ -552,9 +552,9 @@ class LeagueManagerLogin extends LeagueManager {
     }
 
     if ( is_user_logged_in() ) {
-      return __( 'You are already signed in.', 'leaguemanager' );
+      return __( 'You are already signed in.', 'racketmanager' );
     } else {
-      return $leaguemanager_shortcodes->loadTemplate( 'form-password-lost', $vars );
+      return $racketmanager_shortcodes->loadTemplate( 'form-password-lost', $vars );
     }
   }
 
@@ -592,12 +592,12 @@ class LeagueManagerLogin extends LeagueManager {
   */
   public function replace_retrieve_password_message( $message, $key, $user_login, $user_data ) {
     // Create new message
-    $msg  = __( 'Hello!', 'leaguemanager' ) . "\r\n\r\n";
-    $msg .= sprintf( __( 'You asked us to reset your password for your account using the email address %s.', 'leaguemanager' ), $user_login ) . "\r\n\r\n";
-    $msg .= __( "If this was a mistake, or you didn't ask for a password reset, just ignore this email and nothing will happen.", 'leaguemanager' ) . "\r\n\r\n";
-    $msg .= __( 'To reset your password, visit the following address:', 'leaguemanager' ) . "\r\n\r\n";
+    $msg  = __( 'Hello!', 'racketmanager' ) . "\r\n\r\n";
+    $msg .= sprintf( __( 'You asked us to reset your password for your account using the email address %s.', 'racketmanager' ), $user_login ) . "\r\n\r\n";
+    $msg .= __( "If this was a mistake, or you didn't ask for a password reset, just ignore this email and nothing will happen.", 'racketmanager' ) . "\r\n\r\n";
+    $msg .= __( 'To reset your password, visit the following address:', 'racketmanager' ) . "\r\n\r\n";
     $msg .= site_url( "wp-login.php?action=rp&key=$key&login=" . rawurlencode( $user_login ), 'login' ) . "\r\n\r\n";
-    $msg .= __( 'Thanks!', 'leaguemanager' ) . "\r\n";
+    $msg .= __( 'Thanks!', 'racketmanager' ) . "\r\n";
 
     return $msg;
   }
@@ -638,14 +638,14 @@ class LeagueManagerLogin extends LeagueManager {
   * @return string  The shortcode output
   */
   public function render_password_reset_form( $vars, $content = null ) {
-    global $leaguemanager_shortcodes;
+    global $racketmanager_shortcodes;
 
     // Parse shortcode vars
     $default_vars = array( 'show_title' => false );
     $vars = shortcode_atts( $default_vars, $vars );
 
     if ( is_user_logged_in() ) {
-      return __( 'You are already signed in.', 'leaguemanager' );
+      return __( 'You are already signed in.', 'racketmanager' );
     } else {
       if ( isset( $_REQUEST['login'] ) && isset( $_REQUEST['key'] ) ) {
         $vars['login'] = $_REQUEST['login'];
@@ -662,9 +662,9 @@ class LeagueManagerLogin extends LeagueManager {
         }
         $vars['errors'] = $errors;
 
-        return $leaguemanager_shortcodes->loadTemplate( 'form-password-reset', $vars );
+        return $racketmanager_shortcodes->loadTemplate( 'form-password-reset', $vars );
       } else {
-        return __( 'Invalid password reset link.', 'leaguemanager' );
+        return __( 'Invalid password reset link.', 'racketmanager' );
       }
     }
   }
@@ -741,10 +741,10 @@ class LeagueManagerLogin extends LeagueManager {
   * @return string  The output
   */
   public function generate_member_account_form() {
-    global $leaguemanager_shortcodes;
+    global $racketmanager_shortcodes;
 
     if ( !is_user_logged_in() ) {
-      return __( 'You must be signed in to access this page', 'leaguemanager' );
+      return __( 'You must be signed in to access this page', 'racketmanager' );
     }
 
     $current_user = wp_get_current_user();
@@ -762,7 +762,7 @@ class LeagueManagerLogin extends LeagueManager {
           'btm' => sanitize_text_field( $_POST['btm'] )
         );
       } else {
-        return __( 'You are not authorised for this action', 'leaguemanager' );
+        return __( 'You are not authorised for this action', 'racketmanager' );
       }
       if ( !empty( $_POST['action'] ) && $_POST['action'] == 'update-user' ) {
         $user_data = $this->update_user_profile($current_user, $user_data);
@@ -780,7 +780,7 @@ class LeagueManagerLogin extends LeagueManager {
       break;
     }
 
-    return $leaguemanager_shortcodes->loadTemplate( 'form-member-account', array('user_data' => $user_data) );
+    return $racketmanager_shortcodes->loadTemplate( 'form-member-account', array('user_data' => $user_data) );
   }
 
   /**
@@ -849,7 +849,7 @@ class LeagueManagerLogin extends LeagueManager {
 
     if ( $validationErrors ) {
       $user_data['error'] = true;
-      $user_data['message'] = __( 'Errors in form', 'leaguemanager');
+      $user_data['message'] = __( 'Errors in form', 'racketmanager');
       return $user_data;
     }
     if ( !$updates ) {
@@ -881,7 +881,7 @@ class LeagueManagerLogin extends LeagueManager {
         $userid = wp_update_user( array( 'ID' => $current_user->ID, $key => $value ) );
       }
     }
-    $user_data['message'] = __( 'Your profile has been successfully updated', 'leaguemanager');
+    $user_data['message'] = __( 'Your profile has been successfully updated', 'racketmanager');
     return $user_data;
   }
 }

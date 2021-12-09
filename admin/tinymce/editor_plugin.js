@@ -2,9 +2,9 @@
 
 (function() {
 	// Load plugin specific language pack
-	tinymce.PluginManager.requireLangPack('LeagueManager');
+	tinymce.PluginManager.requireLangPack('RacketManager');
 	
-	tinymce.create('tinymce.plugins.LeagueManager', {
+	tinymce.create('tinymce.plugins.RacketManager', {
 		/**
 		 * Initializes the plugin, this will be executed after the plugin has been created.
 		 * This call is done before the editor instance has finished it's initialization so use the onInit event
@@ -16,11 +16,11 @@
 		init : function(ed, url) {
 			// Register the command so that it can be invoked by using tinyMCE.activeEditor.execCommand('mceExample');
 
-			ed.addCommand('mceLeagueManager', function() {
+			ed.addCommand('mceRacketManager', function() {
 				ed.windowManager.open({
-					file: ajaxurl + '?action=leaguemanager_tinymce_window',
-					width : 600 + ed.getLang('LeagueManager.delta_width', 0),
-					height : 210 + ed.getLang('LeagueManager.delta_height', 0),
+					file: ajaxurl + '?action=racketmanager_tinymce_window',
+					width : 600 + ed.getLang('RacketManager.delta_width', 0),
+					height : 210 + ed.getLang('RacketManager.delta_height', 0),
 					inline : 1
 				}, {
 					plugin_url : url // Plugin absolute URL
@@ -28,15 +28,15 @@
 			});
 
 			// Register example button
-			ed.addButton('LeagueManager', {
-				title : 'LeagueManager.desc',
-				cmd : 'mceLeagueManager',
-				image : url + '/leaguemanager.png'
+			ed.addButton('RacketManager', {
+				title : 'RacketManager.desc',
+				cmd : 'mceRacketManager',
+				image : url + '/racketmanager.png'
 			});
 
 			// Add a node change handler, selects the button in the UI when a image is selected
 			ed.onNodeChange.add(function(ed, cm, n) {
-				cm.setActive('LeagueManager', n.nodeName == 'IMG');
+				cm.setActive('RacketManager', n.nodeName == 'IMG');
 			});
 		},
 
@@ -62,17 +62,17 @@
 		 */
 		getInfo : function() {
 			return {
-					longname  : 'LeagueManager',
+					longname  : 'RacketManager',
 					author 	  : 'Kolja Schleich',
-					authorurl : 'http://wordpress.org/extend/plugins/leaguemanager/',
-					infourl   : 'http://wordpress.org/extend/plugins/leaguemanager/',
+					authorurl : 'http://wordpress.org/extend/plugins/racketmanager/',
+					infourl   : 'http://wordpress.org/extend/plugins/racketmanager/',
 					version   : "2.9"
 			};
 		}
 	});
 
 	// Register plugin
-	tinymce.PluginManager.add('LeagueManager', tinymce.plugins.LeagueManager);
+	tinymce.PluginManager.add('RacketManager', tinymce.plugins.RacketManager);
 })();
 
 

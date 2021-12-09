@@ -3,7 +3,7 @@
 * Club API: Club class
 *
 * @author Kolja Schleich
-* @package LeagueManager
+* @package RacketManager
 * @subpackage Club
 */
 
@@ -40,7 +40,7 @@ final class Club {
     $club = wp_cache_get( $club_id, 'clubs' );
 
     if ( ! $club ) {
-      $club = $wpdb->get_row( $wpdb->prepare( "SELECT `id`, `name`, `website`, `type`, `address`, `latitude`, `longitude`, `contactno`, `founded`, `facilities`, `shortcode`, `matchsecretary` FROM {$wpdb->leaguemanager_clubs} WHERE ".$search." LIMIT 1", $club_id ) );
+      $club = $wpdb->get_row( $wpdb->prepare( "SELECT `id`, `name`, `website`, `type`, `address`, `latitude`, `longitude`, `contactno`, `founded`, `facilities`, `shortcode`, `matchsecretary` FROM {$wpdb->racketmanager_clubs} WHERE ".$search." LIMIT 1", $club_id ) );
 
       if ( !$club ) return false;
 
@@ -88,7 +88,7 @@ final class Club {
     global $wpdb;
 
     $args = array();
-    $sql = "SELECT `id`, `title`, `affiliatedclub`, `stadium`, `home`, `roster`, `profile` FROM {$wpdb->leaguemanager_teams} WHERE 1 = 1";
+    $sql = "SELECT `id`, `title`, `affiliatedclub`, `stadium`, `home`, `roster`, `profile` FROM {$wpdb->racketmanager_teams} WHERE 1 = 1";
     $sql .= " AND `affiliatedclub` = '%d'";
     $args[] = intval($this->id);
     if ( !$players ) {
@@ -135,7 +135,7 @@ final class Club {
   public function getTeam( $team_id ) {
     global $wpdb;
 
-    $sql = "SELECT `id`, `title`, `affiliatedclub`, `stadium`, `home`, `roster`, `profile`, `type` FROM {$wpdb->leaguemanager_teams} WHERE `id` = ".$team_id;
+    $sql = "SELECT `id`, `title`, `affiliatedclub`, `stadium`, `home`, `roster`, `profile`, `type` FROM {$wpdb->racketmanager_teams} WHERE `id` = ".$team_id;
 
     $team = $wpdb->get_row( $sql );
 
@@ -154,9 +154,9 @@ final class Club {
   * @return array
   */
   public function getRosterRequests( $completed = false ) {
-    global $wpdb, $leaguemanager;
+    global $wpdb, $racketmanager;
 
-    $sql = "SELECT `id`, `first_name`, `surname`, `affiliatedclub`, `requested_date`, `requested_user`, `completed_date`, `completed_user`, `gender`, `btm` FROM {$wpdb->leaguemanager_roster_requests} WHERE `affiliatedclub` = '%d'"  ;
+    $sql = "SELECT `id`, `first_name`, `surname`, `affiliatedclub`, `requested_date`, `requested_user`, `completed_date`, `completed_user`, `gender`, `btm` FROM {$wpdb->racketmanager_roster_requests} WHERE `affiliatedclub` = '%d'"  ;
     $args = array($this->id);
 
     if ( !$completed ) {
@@ -201,7 +201,7 @@ final class Club {
   private function getRosterRequest( $rosterRequestId ) {
     global $wpdb;
 
-    $rosterRequest = $wpdb->get_row("SELECT `first_name`, `surname`, `gender`, `btm`, `player_id`, `requested_date`, `requested_user`, `completed_date`, `completed_user` FROM {$wpdb->leaguemanager_roster_requests} WHERE `id` = '".intval($rosterRequestId)."'");
+    $rosterRequest = $wpdb->get_row("SELECT `first_name`, `surname`, `gender`, `btm`, `player_id`, `requested_date`, `requested_user`, `completed_date`, `completed_user` FROM {$wpdb->racketmanager_roster_requests} WHERE `id` = '".intval($rosterRequestId)."'");
 
     if ( !$rosterRequest ) return false;
 
@@ -216,16 +216,16 @@ final class Club {
   * @return boolean
   */
   public function approveRosterRequest( $rosterRequestId ) {
-    global $wpdb, $leaguemanager;
+    global $wpdb, $racketmanager;
 
     $rosterRequest = $this->getRosterRequest($rosterRequestId);
     if ( empty($rosterRequest->completed_date) ) {
       if ( empty($rosterRequest->player_id) ) {
-        $rosterRequest->player_id = $leaguemanager->addPlayer( $rosterRequest->first_name, $rosterRequest->surname, $rosterRequest->gender, $rosterRequest->btm);
+        $rosterRequest->player_id = $racketmanager->addPlayer( $rosterRequest->first_name, $rosterRequest->surname, $rosterRequest->gender, $rosterRequest->btm);
       }
       $rosterId = $this->addRoster( $rosterRequest->player_id, false);
-      $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_roster_requests} SET `completed_date` = now(), `completed_user` = %d WHERE `id` = %d ", get_current_user_id(), $rosterRequestId ) );
-      $leaguemanager->setMessage( __('Roster added', 'leaguemanager') );
+      $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_roster_requests} SET `completed_date` = now(), `completed_user` = %d WHERE `id` = %d ", get_current_user_id(), $rosterRequestId ) );
+      $racketmanager->setMessage( __('Roster added', 'racketmanager') );
     }
 
     return true;
@@ -240,14 +240,14 @@ final class Club {
   * @return int | false
   */
   public function addRoster( $player_id, $message = true ) {
-    global $wpdb, $leaguemanager;
+    global $wpdb, $racketmanager;
 
     $userid = get_current_user_id();
-    $sql = "INSERT INTO {$wpdb->leaguemanager_roster} (`affiliatedclub`, `player_id`, `created_date`, `created_user` ) VALUES ('%d', '%d', now(), %d)";
+    $sql = "INSERT INTO {$wpdb->racketmanager_roster} (`affiliatedclub`, `player_id`, `created_date`, `created_user` ) VALUES ('%d', '%d', now(), %d)";
     $wpdb->query( $wpdb->prepare ( $sql, $this->id, $player_id, $userid ) );
     $roster_id = $wpdb->insert_id;
 
-    $leaguemanager->setMessage( __('Roster added', 'leaguemanager') );
+    $racketmanager->setMessage( __('Roster added', 'racketmanager') );
 
     return $roster_id;
   }
@@ -269,7 +269,7 @@ final class Club {
 
     $search_terms = array();
     if ($team) {
-      $search_terms[] = $wpdb->prepare("`affiliatedclub` in (select `affiliatedclub` from {$wpdb->leaguemanager_teams} where `id` = '%d')", intval($team));
+      $search_terms[] = $wpdb->prepare("`affiliatedclub` in (select `affiliatedclub` from {$wpdb->racketmanager_teams} where `id` = '%d')", intval($team));
     }
 
     if ($player) {
@@ -305,7 +305,7 @@ final class Club {
     $offset = 0;
 
     if ( $count ) {
-      $sql = "SELECT COUNT(ID) FROM {$wpdb->leaguemanager_roster} WHERE `affiliatedclub` = ".$this->id;
+      $sql = "SELECT COUNT(ID) FROM {$wpdb->racketmanager_roster} WHERE `affiliatedclub` = ".$this->id;
       if ( $search != "") $sql .= " AND $search";
       $cachekey = md5($sql);
       if ( isset($this->num_players[$cachekey]) && $cache && $count )
@@ -315,7 +315,7 @@ final class Club {
       return $this->num_players[$cachekey];
     }
 
-    $sql = "SELECT A.`id` as `roster_id`, B.`ID` as `player_id`, `display_name` as fullname, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->leaguemanager_roster} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID` WHERE `affiliatedclub` = ".$this->id ;
+    $sql = "SELECT A.`id` as `roster_id`, B.`ID` as `player_id`, `display_name` as fullname, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_roster} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID` WHERE `affiliatedclub` = ".$this->id ;
     if ( $search != "") $sql .= " AND $search";
     if ( $order != "") $sql .= " ORDER BY $order";
 
@@ -337,7 +337,7 @@ final class Club {
       $rosters[$i]->player_id = $roster->player_id;
       $rosters[$i]->fullname = $roster->fullname;
       $rosters[$i]->gender = get_user_meta($roster->player_id, 'gender', true );
-      $rosters[$i]->type = get_user_meta($roster->player_id, 'leaguemanager_type', true );
+      $rosters[$i]->type = get_user_meta($roster->player_id, 'racketmanager_type', true );
       $rosters[$i]->removed_date = $roster->removed_date;
       $rosters[$i]->removed_user = $roster->removed_user;
       if ( $roster->removed_user ) {

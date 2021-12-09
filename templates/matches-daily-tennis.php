@@ -25,8 +25,8 @@ jQuery(document).ready(function($) {
                                                     });
                        });
 </script>
-<div id="leaguemanager_match_selections" class="">
-    <form method="get" action="<?php echo get_permalink($postID); ?>" id="leaguemanager_daily_matches">
+<div id="racketmanager_match_selections" class="">
+    <form method="get" action="<?php echo get_permalink($postID); ?>" id="racketmanager_daily_matches">
     <input type="hidden" name="page_id" value="<?php echo $postID ?>" />
 
         <input type="text" name="match_date" id="match_date" class="form-control date_picker" value="<?php echo($match_date) ?>" />
@@ -34,7 +34,7 @@ jQuery(document).ready(function($) {
     </form>
 </div>
     <?php if ( $matches ) { ?>
-        <table class='leaguemanager matchtable' summary='' title='<?php echo __( 'Daily Match Plan', 'leaguemanager' ) ?>'>
+        <table class='racketmanager matchtable' summary='' title='<?php echo __( 'Daily Match Plan', 'racketmanager' ) ?>'>
             <thead>
             </thead>
             <tbody>
@@ -63,5 +63,5 @@ jQuery(document).ready(function($) {
         </table>
 
 	<?php } else { ?>
-        <p><?php echo __( 'No Matches on selected day', 'leaguemanager' ) ?></p>
+        <p><?php echo __( 'No Matches on selected day', 'racketmanager' ) ?></p>
 	<?php }?>

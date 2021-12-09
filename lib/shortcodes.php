@@ -1,19 +1,19 @@
 <?php
 
 /**
-* LeagueManagerShortcodes API: LeagueManagerShortcodes class
+* RacketManagerShortcodes API: RacketManagerShortcodes class
 *
 * @author Kolja Schleich
 * @author Paul Moffat
-* @package LeagueManager
-* @subpackage LeagueManagerShortcodes
+* @package RacketManager
+* @subpackage RacketManagerShortcodes
 */
 
 /**
 * Class to implement shortcode functions
 *
 */
-class LeagueManagerShortcodes extends LeagueManager {
+class RacketManagerShortcodes extends RacketManager {
 
 	/**
 	* initialize shortcodes
@@ -103,7 +103,7 @@ class LeagueManagerShortcodes extends LeagueManager {
 	* @return string
 	*/
 	public function showDailyMatches( $atts ) {
-		global $leaguemanager, $wpdb;
+		global $racketmanager, $wpdb;
 
 		extract(shortcode_atts(array(
 			'league_id' => 0,
@@ -125,7 +125,7 @@ class LeagueManagerShortcodes extends LeagueManager {
 			$match_date = date("Y-m-d");
 		}
 
-		$matches = $leaguemanager->getMatches( array('match_date' => $match_date, 'competition_type' => $competition_type) );
+		$matches = $racketmanager->getMatches( array('match_date' => $match_date, 'competition_type' => $competition_type) );
 
 		$filename = ( !empty($template) ) ? 'matches-'.$template : 'matches';
 
@@ -148,7 +148,7 @@ class LeagueManagerShortcodes extends LeagueManager {
 	* @return string
 	*/
 	public function showLatestResults( $atts ) {
-		global $leaguemanager, $wpdb;
+		global $racketmanager, $wpdb;
 
 		extract(shortcode_atts(array(
 			'league_id' => 0,
@@ -162,7 +162,7 @@ class LeagueManagerShortcodes extends LeagueManager {
 		$matches = false;
 
 		$time = 'latest';
-		$matches = $leaguemanager->getMatches( array('days' => $days, 'competition_type' => $competition_type, 'time' => 'latest', 'history' => $days, 'affiliatedClub' => $affiliatedclub) );
+		$matches = $racketmanager->getMatches( array('days' => $days, 'competition_type' => $competition_type, 'time' => 'latest', 'history' => $days, 'affiliatedClub' => $affiliatedclub) );
 
 		foreach ( $matches AS $i => $match ) {
 				$matches[$i]->score = $this->getMatchScore($match);
@@ -197,7 +197,7 @@ class LeagueManagerShortcodes extends LeagueManager {
 	* @return string
 	*/
 	public function showMatches( $atts ) {
-		global $league, $leaguemanager;
+		global $league, $racketmanager;
 
 		extract(shortcode_atts(array(
 			'league_id' => 0,
@@ -242,7 +242,7 @@ class LeagueManagerShortcodes extends LeagueManager {
 		// get matches of specific team
 		$team_name = str_replace('-', ' ', get_query_var('team'));
 		if ( !$team_name == null ) {
-			$team_id = $leaguemanager->getTeamID($team_name);
+			$team_id = $racketmanager->getTeamID($team_name);
 		} elseif ( !empty($team) || (isset($_GET['team_id']) && !empty($_GET['team_id'])) ) {
 			$team_id = !empty($team) ? $team : (int)$_GET['team_id'];
 		}
@@ -370,9 +370,9 @@ class LeagueManagerShortcodes extends LeagueManager {
 	* @return string $playerName
 	*/
 	function getPlayerNamefromRoster( $roster_id ) {
-		global $leaguemanager;
+		global $racketmanager;
 
-		$roster_dtls = $leaguemanager->getRosterEntry( intval($roster_id));
+		$roster_dtls = $racketmanager->getRosterEntry( intval($roster_id));
 		$playerName = $roster_dtls->fullname;
 		return $playerName;
 	}
@@ -493,14 +493,14 @@ class LeagueManagerShortcodes extends LeagueManager {
 	* @return the content
 	*/
 	public function showClubs( $atts ) {
-		global $leaguemanager;
+		global $racketmanager;
 		extract(shortcode_atts(array(
 			'type' => '',
 			'template' => '',
 			'echo' => 0,
 		), $atts ));
 
-		$clubs = $leaguemanager->getClubs();
+		$clubs = $racketmanager->getClubs();
 
 		$filename = ( !empty($template) ) ? 'clubs-'.$template : 'clubs';
 
@@ -521,7 +521,7 @@ class LeagueManagerShortcodes extends LeagueManager {
 	* @return the content
 	*/
 	public function showClub( $atts ) {
-		global $leaguemanager;
+		global $racketmanager;
 		extract(shortcode_atts(array(
 			'id' => 0,
 			'template' => '',
@@ -732,7 +732,7 @@ class LeagueManagerShortcodes extends LeagueManager {
 	* template: teamplate to use
 	*/
 	public function showCompetition( $atts ) {
-		global $leaguemanager, $competition;
+		global $racketmanager, $competition;
 
 		extract(shortcode_atts(array(
 			'id' => 0,
@@ -938,7 +938,7 @@ class LeagueManagerShortcodes extends LeagueManager {
 	* @return the content
 	*/
 	public function showTournamentEntry( $atts ) {
-		global $leaguemanager;
+		global $racketmanager;
 		extract(shortcode_atts(array(
 			'type' => '',
 			'template' => '',
@@ -952,20 +952,20 @@ class LeagueManagerShortcodes extends LeagueManager {
 		} elseif ( isset($wp->query_vars['type']) ) {
 			$type = get_query_var('type');
 		}
-		if ( !$type ) return _e('No tournament open for entries', 'leaguemanager');
+		if ( !$type ) return _e('No tournament open for entries', 'racketmanager');
 
-		$tournaments = $leaguemanager->getOpenTournaments( $type );
-		if ( !$tournaments ) return _e('No tournament open for entries', 'leaguemanager');
+		$tournaments = $racketmanager->getOpenTournaments( $type );
+		if ( !$tournaments ) return _e('No tournament open for entries', 'racketmanager');
 		$tournament = $tournaments[0];
 
-		$competitions = $leaguemanager->getCompetitions( array('type' => 'tournament', 'name' => $type, 'season' => $tournament->season, 'orderby' => array("id" => "ASC")) );
+		$competitions = $racketmanager->getCompetitions( array('type' => 'tournament', 'name' => $type, 'season' => $tournament->season, 'orderby' => array("id" => "ASC")) );
 
 		$player = wp_get_current_user();
 		$player->contactno = get_user_meta( $player->ID, 'contactno', true);
 		$player->gender = get_user_meta( $player->ID, 'gender', true);
-		$rosters = $leaguemanager->getRoster( array('player' => $player->ID, 'inactive' => true) );
-		$malePartners = $leaguemanager->getRoster( array('gender' => 'M', 'inactive' => true, 'type' => true) );
-		$femalePartners = $leaguemanager->getRoster( array('gender' => 'F', 'inactive' => true, 'type' => true) );
+		$rosters = $racketmanager->getRoster( array('player' => $player->ID, 'inactive' => true) );
+		$malePartners = $racketmanager->getRoster( array('gender' => 'M', 'inactive' => true, 'type' => true) );
+		$femalePartners = $racketmanager->getRoster( array('gender' => 'F', 'inactive' => true, 'type' => true) );
 
 		$filename = ( !empty($template) ) ? 'tournamententry-'.$template : 'tournamententry';
 
@@ -983,7 +983,7 @@ class LeagueManagerShortcodes extends LeagueManager {
 	* @return the content
 	*/
 	public function showWinners( $atts ) {
-		global $leaguemanager;
+		global $racketmanager;
 		extract(shortcode_atts(array(
 			'type' => '',
 			'tournament' => false,
@@ -998,8 +998,8 @@ class LeagueManagerShortcodes extends LeagueManager {
 		} elseif ( isset($wp->query_vars['type']) ) {
 			$type = get_query_var('type');
 		}
-		if ( !$type ) return _e('No tournament winners', 'leaguemanager');
-		$tournaments = $leaguemanager->getTournaments( $type );
+		if ( !$type ) return _e('No tournament winners', 'racketmanager');
+		$tournaments = $racketmanager->getTournaments( $type );
 
 		if ($tournament != "") {
 			$tournament = $tournament;
@@ -1012,10 +1012,10 @@ class LeagueManagerShortcodes extends LeagueManager {
 		if (!$tournament) {
 			$tournament = $tournaments[0];
 		} else {
-			$tournament = $leaguemanager->getTournament($tournament);
+			$tournament = $racketmanager->getTournament($tournament);
 		}
 
-		$winners = $leaguemanager->getWinners( $tournament->season, $type );
+		$winners = $racketmanager->getWinners( $tournament->season, $type );
 
 		$filename = ( !empty($template) ) ? 'winners-'.$template : 'winners';
 
@@ -1043,14 +1043,14 @@ class LeagueManagerShortcodes extends LeagueManager {
 					}
 				}
 				if ( $score == '' ) {
-					$score = __('Walkover', 'leaguemanager');
+					$score = __('Walkover', 'racketmanager');
 				}
 			}
 		} elseif ( $match->winner_id != 0 ) {
 			if ( $match->home_team == -1 || $match->away_team == -1 ) {
 				$score = '';
 			} else {
-				$score = __('Walkover', 'leaguemanager');
+				$score = __('Walkover', 'racketmanager');
 			}
 		} else {
 			$score = "";
@@ -1067,20 +1067,20 @@ class LeagueManagerShortcodes extends LeagueManager {
 	* @return the content
 	*/
 	public function loadTemplate( $template, $vars = array() ) {
-		global $league, $team, $match, $leaguemanager;
+		global $league, $team, $match, $racketmanager;
 
 		extract($vars);
 
 		ob_start();
 
-		if ( file_exists( get_stylesheet_directory() . "/leaguemanager/$template.php")) {
-			include(get_stylesheet_directory() . "/leaguemanager/$template.php");
-		} elseif ( file_exists( get_template_directory() . "/leaguemanager/$template.php")) {
-			include(get_template_directory() . "/leaguemanager/$template.php");
-		} elseif ( file_exists(LEAGUEMANAGER_PATH . "/templates/".$template.".php") ) {
-			include(LEAGUEMANAGER_PATH . "/templates/".$template.".php");
+		if ( file_exists( get_stylesheet_directory() . "/racketmanager/$template.php")) {
+			include(get_stylesheet_directory() . "/racketmanager/$template.php");
+		} elseif ( file_exists( get_template_directory() . "/racketmanager/$template.php")) {
+			include(get_template_directory() . "/racketmanager/$template.php");
+		} elseif ( file_exists(RACKETMANAGER_PATH . "/templates/".$template.".php") ) {
+			include(RACKETMANAGER_PATH . "/templates/".$template.".php");
 		} else {
-			$this->setMessage( sprintf(__('Could not load template %s.php', 'leaguemanager'), $template), true );
+			$this->setMessage( sprintf(__('Could not load template %s.php', 'racketmanager'), $template), true );
 			$this->printMessage();
 		}
 		$output = ob_get_contents();
@@ -1096,11 +1096,11 @@ class LeagueManagerShortcodes extends LeagueManager {
 	* @return boolean
 	*/
 	private function checkTemplate( $template ) {
-		if ( file_exists( get_stylesheet_directory() . "/leaguemanager/$template.php")) {
+		if ( file_exists( get_stylesheet_directory() . "/racketmanager/$template.php")) {
 			return true;
-		} elseif  ( file_exists( get_template_directory() . "/leaguemanager/$template.php")) {
+		} elseif  ( file_exists( get_template_directory() . "/racketmanager/$template.php")) {
 			return true;
-		} elseif ( file_exists(LEAGUEMANAGER_PATH . "/templates/".$template.".php") ) {
+		} elseif ( file_exists(RACKETMANAGER_PATH . "/templates/".$template.".php") ) {
 			return true;
 		}
 

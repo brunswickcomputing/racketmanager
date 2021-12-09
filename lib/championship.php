@@ -4,15 +4,15 @@
 *
 */
 
-add_filter( 'leaguemanager_modes', 'leaguemanager_championship_mode' );
+add_filter( 'racketmanager_modes', 'racketmanager_championship_mode' );
 /**
 * add championship mode
 *
 * @param array $modes
 * @return array
 */
-function leaguemanager_championship_mode( $modes ) {
-  $modes['championship'] = __( 'Championship', 'leaguemanager' );
+function racketmanager_championship_mode( $modes ) {
+  $modes['championship'] = __( 'Championship', 'racketmanager' );
   return $modes;
 }
 
@@ -26,10 +26,10 @@ function championship_settingsPage( $competition ) {
   $leagues = $competition->getLeagues( array('competition' => $competition->id) ); ?>
 
   <tr valign="top">
-    <th scope='row'><label for='primary_league'><?php _e('Primary League', 'leaguemanager') ?></label></th>
+    <th scope='row'><label for='primary_league'><?php _e('Primary League', 'racketmanager') ?></label></th>
     <td>
       <select size="1" name="settings[primary_league] ?>" id="primary_league">;
-        <option><?php _e( 'Select', 'leaguemanager') ?></option>
+        <option><?php _e( 'Select', 'racketmanager') ?></option>
         <?php foreach($leagues AS $league) { ?>
           <option value="<?php echo $league->id ?>" <?php echo ($competition->settings['primary_league'] == $league->id ? 'selected' : '') ?> ><?php echo $league->title ?></option>
         <?php } ?>
@@ -37,28 +37,28 @@ function championship_settingsPage( $competition ) {
     </td>
   </tr>
   <tr valign="top">
-    <th scope="row"><label for="groups"><?php _e( 'Groups', 'leaguemanager' ) ?></label></th>
+    <th scope="row"><label for="groups"><?php _e( 'Groups', 'racketmanager' ) ?></label></th>
     <td valign="top"><input type="text" name="settings[groups]" id="groups" size="20" value="<?php echo ((isset($competition->groups)) ? is_array($competition->groups) ? implode(";",$competition->groups) : $competition->groups  : '') ?>" /></td>
-    <td class="setting-description"><?php _e( 'Separate Groups by semicolon ;', 'leaguemanager' ) ?></td>
+    <td class="setting-description"><?php _e( 'Separate Groups by semicolon ;', 'racketmanager' ) ?></td>
   </tr>
   <tr valign="top">
-    <th scope="row"><label for="teams_per_group"><?php _e( 'Teams per group', 'leaguemanager' ) ?></label></th>
+    <th scope="row"><label for="teams_per_group"><?php _e( 'Teams per group', 'racketmanager' ) ?></label></th>
     <td valign="top"><input type="text" name="settings[teams_per_group]" id="teams_per_group" size="3" value="<?php echo ((isset($competition->teams_per_group)) ? $competition->teams_per_group  : '') ?>" /></td>
   </tr>
   <tr valign="top">
-    <th scope="row"><label for="num_advance"><?php _e('Teams Advance', 'leaguemanager') ?></label></th>
+    <th scope="row"><label for="num_advance"><?php _e('Teams Advance', 'racketmanager') ?></label></th>
     <td><input type="text" size="3" id="num_advance" name="settings[num_advance]" value="<?php echo ((isset($competition->num_advance)) ? $competition->num_advance  : '') ?>" /></td>
   </tr>
   <tr valign="top">
-    <th scope="row"><label for="match_place3"><?php _e('Include 3rd place match', 'leaguemanager' ) ?></label></th>
+    <th scope="row"><label for="match_place3"><?php _e('Include 3rd place match', 'racketmanager' ) ?></label></th>
     <td><input type="checkbox" id="match_place3" name="settings[match_place3]" value="1" <?php echo (isset($competition->match_place3) && 1 == $competition->match_place3 ) ? ' checked="checked"' : ''; ?> /></td>
   </tr>
   <tr valign="top">
-    <th scope="row"><label for="non_group"><?php _e('Allow Non-Group Games', 'leaguemanager' ) ?></label></th>
+    <th scope="row"><label for="non_group"><?php _e('Allow Non-Group Games', 'racketmanager' ) ?></label></th>
     <td><input type="checkbox" id="non_group" name="settings[non_group]" value="1" <?php echo (isset($competition->non_group) && 1 == $competition->non_group ) ? ' checked="checked"' : ''; ?> /></td>
   </tr>
   <tr valign="top">
-    <th scope="row"><label for="entry_open"><?php _e('Open for entries', 'leaguemanager' ) ?></label></th>
+    <th scope="row"><label for="entry_open"><?php _e('Open for entries', 'racketmanager' ) ?></label></th>
     <td><input type="checkbox" id="entry_open" name="settings[entry_open]" value="1" <?php echo (isset($competition->entry_open) && 1 == $competition->entry_open ) ? ' checked="checked"' : ''; ?> /></td>
   </tr>
   <?php
@@ -71,10 +71,10 @@ add_action( 'competition_settings_championship', 'championship_settingsPage' );
 *
 * @author 	Kolja Schleich
 * @author  Paul Moffat
-* @package	LeagueManager
+* @package	RacketManager
 * @subpackage League_Championship
 */
-final class League_Championship extends LeagueManager {
+final class League_Championship extends RacketManager {
   /**
   * League ID
   *
@@ -227,7 +227,7 @@ final class League_Championship extends LeagueManager {
     $this->setCurrentFinal();
     $this->setFinalTeams();
 
-    $this->cup_icon = '<img style="vertical-align: middle;" src="'.LEAGUEMANAGER_URL . '/admin/icons/cup.png" />';
+    $this->cup_icon = '<img style="vertical-align: middle;" src="'.RACKETMANAGER_URL . '/admin/icons/cup.png" />';
   }
 
   /**
@@ -283,16 +283,16 @@ final class League_Championship extends LeagueManager {
 
     if (!empty($key)) {
       if ( 'final' == $key )
-      return __( 'Final', 'leaguemanager' );
+      return __( 'Final', 'racketmanager' );
       elseif ( 'third' == $key )
-      return __( 'Third Place', 'leaguemanager' );
+      return __( 'Third Place', 'racketmanager' );
       elseif ( 'semi' == $key )
-      return __( 'Semi Final', 'leaguemanager' );
+      return __( 'Semi Final', 'racketmanager' );
       elseif ( 'quarter' == $key )
-      return __( 'Quarter Final', 'leaguemanager' );
+      return __( 'Quarter Final', 'racketmanager' );
       else {
         $tmp = explode("-", $key);
-        return sprintf(__( 'Round of %d', 'leaguemanager'), $tmp[1]);
+        return sprintf(__( 'Round of %d', 'racketmanager'), $tmp[1]);
       }
     }
   }
@@ -368,10 +368,10 @@ final class League_Championship extends LeagueManager {
 
         for ( $x = 1; $x <= $final['num_matches']; $x++ ) {
           if ( $k == 'third' ) {
-            $title = sprintf(__('Looser %s %d', 'leaguemanager'), $final['name'], $x);
+            $title = sprintf(__('Looser %s %d', 'racketmanager'), $final['name'], $x);
             $key = '2_'.$final['key'].'_'.$x;
           } else {
-            $title = sprintf(__('Winner %s %d', 'leaguemanager'), $final['name'], $x);
+            $title = sprintf(__('Winner %s %d', 'racketmanager'), $final['name'], $x);
             $key = '1_'.$final['key'].'_'.$x;
           }
 
@@ -382,14 +382,14 @@ final class League_Championship extends LeagueManager {
         if ( !empty($this->groups) ) {
           foreach ( $this->groups AS $group ) {
             for ( $a = 1; $a <= $this->num_advance; $a++ ) {
-              $this->final_teams[$k][$a.'_'.$group] =    (object) array('id' => $a.'_'.$group, 'title' => sprintf(__('%d. Group %s', 'leaguemanager'), $a, $group), 'home' => 0);
+              $this->final_teams[$k][$a.'_'.$group] =    (object) array('id' => $a.'_'.$group, 'title' => sprintf(__('%d. Group %s', 'racketmanager'), $a, $group), 'home' => 0);
             }
           }
         } else {
           for ( $a = 1; $a <= $this->num_teams; $a++ ) {
-            $this->final_teams[$k][$a.'_'] = (object) array('id' => $a.'_', 'title' => sprintf(__('Team Rank %d', 'leaguemanager'), $a), 'home' => 0);
+            $this->final_teams[$k][$a.'_'] = (object) array('id' => $a.'_', 'title' => sprintf(__('Team Rank %d', 'racketmanager'), $a), 'home' => 0);
           }
-          $this->final_teams[$k][$a] = (object) array('id' => '-1', 'title' => __('Bye', 'leaguemanager'), 'home' => 0);
+          $this->final_teams[$k][$a] = (object) array('id' => '-1', 'title' => __('Bye', 'racketmanager'), 'home' => 0);
         }
       }
     }
@@ -426,7 +426,7 @@ final class League_Championship extends LeagueManager {
     if ( $round < $this->num_rounds )
     $this->proceed($this->getFinalKeys($round), $this->getFinalKeys($round+1));
 
-    $this->setMessage( sprintf(__('Updated Results of %d matches','leaguemanager'), $num_matches) );
+    $this->setMessage( sprintf(__('Updated Results of %d matches','racketmanager'), $num_matches) );
   }
 
   /**
@@ -476,7 +476,7 @@ final class League_Championship extends LeagueManager {
         }
 
         if ( $update ) {
-          $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_matches} SET `home_team` = %d, `away_team` = %d WHERE `id` = %d", $home['team'], $away['team'], $match->id ) );
+          $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_matches} SET `home_team` = %d, `away_team` = %d WHERE `id` = %d", $home['team'], $away['team'], $match->id ) );
         }
       }
     }
@@ -536,11 +536,11 @@ final class League_Championship extends LeagueManager {
 
         if ( $update ) {
           if ( $home['team'] != 0 && $away['team'] != 0 ) {
-            $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_matches} SET `home_team` = %d, `away_team` = %d WHERE `id` = %d", $home['team'], $away['team'], $match->id ) );
+            $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_matches} SET `home_team` = %d, `away_team` = %d WHERE `id` = %d", $home['team'], $away['team'], $match->id ) );
           } elseif ( $home['team'] != 0 && $away['team'] == 0 ) {
-            $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_matches} SET `home_team` = %d WHERE `id` = %d", $home['team'], $match->id ) );
+            $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_matches} SET `home_team` = %d WHERE `id` = %d", $home['team'], $match->id ) );
           } elseif ( $home['team'] == 0 && $away['team'] != 0 ) {
-            $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_matches} SET `away_team` = %d WHERE `id` = %d", $away['team'], $match->id ) );
+            $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_matches} SET `away_team` = %d WHERE `id` = %d", $away['team'], $match->id ) );
           }
           // Set winners on final
           if ( $current == 'third' ) {
@@ -548,7 +548,7 @@ final class League_Championship extends LeagueManager {
             $match = $match[0];
             $home_team = $prev_home->winner_id;
             $away_team = $prev_away->winner_id;
-            $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_matches} SET `home_team`= %d, `away_team`= %d WHERE `id` = %d", $home_team, $away_team, $match->id ) );
+            $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_matches} SET `home_team`= %d, `away_team`= %d WHERE `id` = %d", $home_team, $away_team, $match->id ) );
           }
         }
       }
@@ -587,7 +587,7 @@ final class League_Championship extends LeagueManager {
       if (isset($_GET['jquery-ui-tab'])) $tab = intval($_GET['jquery-ui-tab']);
       if (isset($_POST['jquery-ui-tab'])) $tab = intval($_POST['jquery-ui-tab']);
 
-      include_once( LEAGUEMANAGER_PATH . '/admin/championship.php' );
+      include_once( RACKETMANAGER_PATH . '/admin/championship.php' );
     } else {
       echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
     }

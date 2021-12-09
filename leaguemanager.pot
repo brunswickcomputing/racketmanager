@@ -1,13 +1,13 @@
-# Translation of the WordPress plugin LeagueManager 3.6 by Kolja Schleich.
+# Translation of the WordPress plugin RacketManager 3.6 by Kolja Schleich.
 # Copyright (C) 2010 Kolja Schleich
-# This file is distributed under the same license as the LeagueManager package.
+# This file is distributed under the same license as the RacketManager package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2010.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: LeagueManager 3.6\n"
-"Report-Msgid-Bugs-To: http://wordpress.org/tag/leaguemanager\n"
+"Project-Id-Version: RacketManager 3.6\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/tag/racketmanager\n"
 "POT-Creation-Date: 2010-10-07 20:52+0000\n"
 "PO-Revision-Date: 2010-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
@@ -77,7 +77,7 @@ msgstr ""
 #: admin/match.php:122 admin/seasons.php:36 admin/settings.php:38
 #: admin/show-league.php:101 admin/stats.php:59 admin/team.php:27
 #: admin/tinymce/window.php:27 sports/racing.php:280
-msgid "Leaguemanager"
+msgid "Racketmanager"
 msgstr ""
 
 #: admin/admin.php:54
@@ -123,30 +123,30 @@ msgid "Order: Forwin, Fordraw, Forloss"
 msgstr ""
 
 #: admin/admin.php:188 admin/seasons.php:68 admin/stats.php:145
-#: admin/stats.php:184 leaguemanager.php:299
+#: admin/stats.php:184 racketmanager.php:299
 msgid "Edit"
 msgstr ""
 
-#: admin/admin.php:188 leaguemanager.php:299
+#: admin/admin.php:188 racketmanager.php:299
 msgid "Post"
 msgstr ""
 
-#: admin/admin.php:188 leaguemanager.php:299
+#: admin/admin.php:188 racketmanager.php:299
 msgid "Save"
 msgstr ""
 
 #: admin/admin.php:188 admin/stats.php:91 admin/team.php:46 admin/team.php:58
-#: admin/tinymce/window.php:244 leaguemanager.php:299 lib/stats.php:411
+#: admin/tinymce/window.php:244 racketmanager.php:299 lib/stats.php:411
 msgid "Cancel"
 msgstr ""
 
-#: admin/admin.php:188 leaguemanager.php:299
+#: admin/admin.php:188 racketmanager.php:299
 msgid "Please wait..."
 msgstr ""
 
 #: admin/admin.php:188 admin/index.php:27 admin/matches.php:25
 #: admin/seasons.php:48 admin/standings.php:8 admin/stats.php:98
-#: admin/stats.php:126 leaguemanager.php:299 lib/stats.php:350
+#: admin/stats.php:126 racketmanager.php:299 lib/stats.php:350
 #: lib/stats.php:416
 msgid "Delete"
 msgstr ""
@@ -491,7 +491,7 @@ msgid "You do not have sufficient permissions to access this page."
 msgstr ""
 
 #: admin/documentation.php:9
-msgid "LeagueManager Documentation"
+msgid "RacketManager Documentation"
 msgstr ""
 
 #: admin/documentation.php:11
@@ -752,7 +752,7 @@ msgid "Template"
 msgstr ""
 
 #: admin/documentation.php:445
-msgid "Display an archive of LeagueManager."
+msgid "Display an archive of RacketManager."
 msgstr ""
 
 #: admin/documentation.php:449
@@ -1084,8 +1084,8 @@ msgstr ""
 #: admin/documentation.php:711
 msgid ""
 "remove action before hooking own function by remove_all_actions"
-"(\"leaguemanager_widget_next_match\") or remove_all_action"
-"(\"leaguemanager_widget_prev_match\")"
+"(\"racketmanager_widget_next_match\") or remove_all_action"
+"(\"racketmanager_widget_prev_match\")"
 msgstr ""
 
 #: admin/documentation.php:715
@@ -1099,7 +1099,7 @@ msgstr ""
 #: admin/documentation.php:724
 #, php-format
 msgid ""
-"The main page of LeagueManager shows an <a href=\"%s\" class=\"thickbox"
+"The main page of RacketManager shows an <a href=\"%s\" class=\"thickbox"
 "\">overview of leagues</a> in the database together with a few statistics on "
 "number of seasons, teams and matches. At the beginning it is necessary to "
 "add at least one season for which the number of match days is also "
@@ -1108,7 +1108,7 @@ msgid ""
 "which implement different extensions, point rules, point formats, team "
 "ranking and different other options. Afterwards <a href=\"%s\" class="
 "\"thickbox\">teams</a> and <a href=\"%s\" class=\"thickbox\">matches</a> can "
-"be added to database. Data from LeagueManager can be inserted in a page or "
+"be added to database. Data from RacketManager can be inserted in a page or "
 "post using the cup <a href=\"%s\" class=\"thickbox\">TinyMCE Button</a> or "
 "directly shortcodes introduced above. Furthermore matches and standings can "
 "be displayed in the sidebar with a <a href=\"%s\" class=\"thickbox\">widget</"
@@ -1143,7 +1143,7 @@ msgstr ""
 #: admin/documentation.php:730
 #, php-format
 msgid ""
-"LeagueManager itself cannot manage team rosters, but has to be done together "
+"RacketManager itself cannot manage team rosters, but has to be done together "
 "with the plugin <a href=\"%s\" target=\"_blank\">ProjectManager</a>. This "
 "plugin is specifically designed for team rosters. It allows the easy "
 "generation of custom input forms through the administration panel. Further "
@@ -1168,7 +1168,7 @@ msgstr ""
 msgid ""
 "Match Statistics do not depend on ProjectManager and a team roster, but the "
 "combination makes it much more powerful and I recommend the combination. "
-"LeagueManager has a simple, but flexible match statistics module, which "
+"RacketManager has a simple, but flexible match statistics module, which "
 "works similar to the formfields in ProjectManager. The first step is to "
 "activate match statistics in the league preferences and then <a href=\"%s\" "
 "class=\"thickbox\">add statistics a field</a>, e.g. Goals, by clicking on "
@@ -1196,7 +1196,7 @@ msgstr ""
 msgid ""
 "Each Statistics field will automatically create <a href=\"%s\" class="
 "\"thickbox\">another formfield type in ProjectManager</a>. In this way match "
-"statistics from LeagueManager can be displayed in each player profile in "
+"statistics from RacketManager can be displayed in each player profile in "
 "ProjectManager. Any statistics which only counts the number of entries, e.g. "
 "Goals, Assists, Cards will be automatically calculated. "
 msgstr ""
@@ -1207,7 +1207,7 @@ msgid ""
 msgstr ""
 
 #: admin/export.php:8
-msgid "LeagueManager Export"
+msgid "RacketManager Export"
 msgstr ""
 
 #: admin/export.php:9
@@ -1220,7 +1220,7 @@ msgid ""
 "on another WordPress blog to import this blog."
 msgstr ""
 
-#: admin/export.php:13 leaguemanager.php:299
+#: admin/export.php:13 racketmanager.php:299
 msgid "Options"
 msgstr ""
 
@@ -1238,7 +1238,7 @@ msgid "Download File"
 msgstr ""
 
 #: admin/import.php:14
-msgid "LeagueManager Import"
+msgid "RacketManager Import"
 msgstr ""
 
 #: admin/import.php:16
@@ -1375,7 +1375,7 @@ msgid "Add Season"
 msgstr ""
 
 #: admin/settings-global.php:5
-msgid "Leaguemanager Global Settings"
+msgid "Racketmanager Global Settings"
 msgstr ""
 
 #: admin/settings-global.php:6
@@ -1715,12 +1715,12 @@ msgid "finished"
 msgstr ""
 
 #: admin/upgrade.php:420 admin/upgrade.php:439
-msgid "Upgrade LeagueManager"
+msgid "Upgrade RacketManager"
 msgstr ""
 
 #: admin/upgrade.php:421
 msgid ""
-"Your database for LeagueManager is out-of-date, and must be upgraded before "
+"Your database for RacketManager is out-of-date, and must be upgraded before "
 "you can continue."
 msgstr ""
 
@@ -1764,11 +1764,11 @@ msgstr ""
 msgid "Submit"
 msgstr ""
 
-#: leaguemanager.php:299
+#: racketmanager.php:299
 msgid "Page Revisions"
 msgstr ""
 
-#: leaguemanager.php:299
+#: racketmanager.php:299
 msgid "Insert time"
 msgstr ""
 
@@ -1846,7 +1846,7 @@ msgid "Stats"
 msgstr ""
 
 #: lib/stats.php:172
-msgid "Stastistics from LeagueManager"
+msgid "Stastistics from RacketManager"
 msgstr ""
 
 #: lib/stats.php:267
@@ -2278,11 +2278,11 @@ msgid "Defeat"
 msgstr ""
 
 #. Plugin Name of the plugin/theme
-msgid "LeagueManager"
+msgid "RacketManager"
 msgstr ""
 
 #. Plugin URI of the plugin/theme
-msgid "http://kolja.galerie-neander.de/plugins/leaguemanager/"
+msgid "http://kolja.galerie-neander.de/plugins/racketmanager/"
 msgstr ""
 
 #. Description of the plugin/theme

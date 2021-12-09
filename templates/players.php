@@ -13,13 +13,13 @@ You can check the content of a variable when you insert the tag <?php var_dump($
 ?>
 
 	<?php if ( $playerstats ) { ?>
-		<table class='leaguemanager player stats table' summary='' title='<?php echo __( 'Player Stats', 'leaguemanager' )." ".$league->title ?>'>
+		<table class='racketmanager player stats table' summary='' title='<?php echo __( 'Player Stats', 'racketmanager' )." ".$league->title ?>'>
 			<thead>
 				<tr>
-					<th class='player' scope="col"><?php _e( 'Player', 'leaguemanager' ) ?></th>
-					<th class="team" scope="col"><?php _e( 'Team', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Won', 'leaguemanager' ) ?></th>
-					<th scope="col"><?php _e( 'Lost', 'leaguemanager' ) ?></th>
+					<th class='player' scope="col"><?php _e( 'Player', 'racketmanager' ) ?></th>
+					<th class="team" scope="col"><?php _e( 'Team', 'racketmanager' ) ?></th>
+					<th scope="col"><?php _e( 'Won', 'racketmanager' ) ?></th>
+					<th scope="col"><?php _e( 'Lost', 'racketmanager' ) ?></th>
 				</tr>
 			</thead>
 			<tbody>

@@ -3,7 +3,7 @@ function init() {
 }
 
 
-function LeagueManagerGetCheckedValue(radioObj) {
+function RacketManagerGetCheckedValue(radioObj) {
 	if(!radioObj)
 		return "";
 	var radioLength = radioObj.length;
@@ -20,7 +20,7 @@ function LeagueManagerGetCheckedValue(radioObj) {
 	return "";
 }
 
-function insertLeagueManagerLink() {
+function insertRacketManagerLink() {
 
 	var tagtext;
 
@@ -82,7 +82,7 @@ function insertLeagueManagerLink() {
 
 	if (crosstable.className.indexOf('current') != -1) {
 		var leagueId = document.getElementById('crosstable_tag').value;
-		var showtype = LeagueManagerGetCheckedValue(document.getElementsByName('crosstable_showtype'));
+		var showtype = RacketManagerGetCheckedValue(document.getElementsByName('crosstable_showtype'));
 
 		if (leagueId != 0)
 			tagtext = "[crosstable league_id=" + leagueId + " mode=" + showtype + "]";

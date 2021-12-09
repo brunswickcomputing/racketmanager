@@ -42,7 +42,7 @@ jQuery(document).ready(function($) {
 								jQuery(this).find("i.angledir").toggleClass("angle-right angle-down");
 								});
 /* Friendly URL rewrite */
-	jQuery('#leaguemanager_archive').submit(function() {
+	jQuery('#racketmanager_archive').submit(function() {
 								var league = jQuery('#league_id').val().replace(/[^A-Za-z0-9 ]/g,''); // Remove unwanted characters, only accept alphanumeric and space */
 								var season = jQuery('#season').val();
 								league = league.replace(/\s{2,}/g,' '); // Replace multi spaces with a single space */
@@ -55,7 +55,7 @@ jQuery(document).ready(function($) {
 								});
 
 /* Friendly URL rewrite */
-	jQuery('#leaguemanager_match_day_selection').submit(function() {
+	jQuery('#racketmanager_match_day_selection').submit(function() {
 								var league = jQuery('#league_id').val().replace(/[^A-Za-z0-9 ]/g,''); // Remove unwanted characters, only accept alphanumeric and space */
 								league = league.replace(/\s{2,}/g,' '); // Replace multi spaces with a single space */
 								league = league.replace(/\s/g, "-"); // Replace space with a '-' symbol */
@@ -71,7 +71,7 @@ jQuery(document).ready(function($) {
 								return false;  // Prevent default button behaviour
 								});
 /* Friendly URL rewrite */
-	jQuery('#leaguemanager_winners').submit(function() {
+	jQuery('#racketmanager_winners').submit(function() {
 								var tournament = jQuery('#tournament').val().replace(/[^A-Za-z0-9 ]/g,''); // Remove unwanted characters, only accept alphanumeric and space */
 								tournament = tournament.replace(/\s{2,}/g,' '); // Replace multi spaces with a single space */
 								tournament = tournament.replace(/\s/g, "-"); // Replace space with a '-' symbol */
@@ -81,7 +81,7 @@ jQuery(document).ready(function($) {
 
 								return false;  // Prevent default button behaviour
 								});
-	jQuery('#leaguemanager_daily_matches').submit(function() {
+	jQuery('#racketmanager_daily_matches').submit(function() {
 								var matchDate = jQuery('#match_date').val();
 								var cleanUrl = window.location.protocol + '//' + window.location.host + '/leagues/daily-matches/' + matchDate + '/';
 								window.location = cleanUrl;
@@ -97,10 +97,10 @@ jQuery(document).ready(function($) {
                               jQuery.ajax({
                                      type: 'POST',
                                      datatype: 'json',
-                                     url: LeagueManagerAjaxL10n.requestUrl,
+                                     url: RacketManagerAjaxL10n.requestUrl,
                                      data: {"name": name,
                                      "affiliatedClub": affiliatedClub,
-                                     "action": "leaguemanager_getCaptainName"},
+                                     "action": "racketmanager_getCaptainName"},
                                      success: function(data) {
                                      response(JSON.parse(data));
                                      }
@@ -148,10 +148,10 @@ jQuery(document).ready(function($) {
                               jQuery.ajax({
                                      type: 'POST',
                                      datatype: 'json',
-                                     url: LeagueManagerAjaxL10n.requestUrl,
+                                     url: RacketManagerAjaxL10n.requestUrl,
                                      data: {"name": name,
                                      "affiliatedClub": affiliatedClub,
-                                     "action": "leaguemanager_getCaptainName"},
+                                     "action": "racketmanager_getCaptainName"},
                                      success: function(data) {
                                      response(JSON.parse(data));
                                      }
@@ -216,13 +216,13 @@ jQuery(document).ready(function($) {
 
 });
 
-var Leaguemanager = new Object();
+var Racketmanager = new Object();
 
-Leaguemanager.setMatchBox = function( requestURL, curr_index, operation, element, league_id, match_limit, widget_number, season, group, home_only, date_format ) {
+Racketmanager.setMatchBox = function( requestURL, curr_index, operation, element, league_id, match_limit, widget_number, season, group, home_only, date_format ) {
 	var ajax = new sack(requestURL);
 	ajax.execute = 1;
 	ajax.method = 'POST';
-	ajax.setVar( "action", "leaguemanager_get_match_box" );
+	ajax.setVar( "action", "racketmanager_get_match_box" );
 	ajax.setVar( "widget_number", widget_number );
 	ajax.setVar( "current", curr_index );
 	ajax.setVar( "season", season );
@@ -238,7 +238,7 @@ Leaguemanager.setMatchBox = function( requestURL, curr_index, operation, element
 	ajax.runAJAX();
 }
 
-Leaguemanager.printScoreCard = function(e, link) {
+Racketmanager.printScoreCard = function(e, link) {
 
 	e.preventDefault();
 	var matchId = jQuery(link).attr('id');
@@ -254,10 +254,10 @@ Leaguemanager.printScoreCard = function(e, link) {
 	var $content = '';
 
 	jQuery.ajax({
-				url:LeagueManagerAjaxL10n.requestUrl,
+				url:RacketManagerAjaxL10n.requestUrl,
 				type: "POST",
 				data: {"matchId": matchId,
-					"action": "leaguemanager_view_rubbers"},
+					"action": "racketmanager_view_rubbers"},
 				success: function($response) {
 					var printOne = $response;
 					if (!$mathCardWindow || $mathCardWindow.closed) {
@@ -278,10 +278,10 @@ Leaguemanager.printScoreCard = function(e, link) {
 				}
 				}) ;
 };
-Leaguemanager.closeMatchModal = function(link) {
+Racketmanager.closeMatchModal = function(link) {
     jQuery("#modalMatch").hide();
 };
-Leaguemanager.showRubbers = function(matchId) {
+Racketmanager.showRubbers = function(matchId) {
 
     jQuery("#showMatchRubbers").empty();
     jQuery("#modalMatch").show();
@@ -290,10 +290,10 @@ Leaguemanager.showRubbers = function(matchId) {
     jQuery("#splash").show();
 
     jQuery.ajax({
-                url:LeagueManagerAjaxL10n.requestUrl,
+                url:RacketManagerAjaxL10n.requestUrl,
                 type: "POST",
                 data: {"matchId": matchId,
-                "action": "leaguemanager_show_rubbers"},
+                "action": "racketmanager_show_rubbers"},
                 success: function(response) {
                 jQuery("#showMatchRubbers").empty();
                 jQuery("#showMatchRubbers").html(response);
@@ -305,13 +305,13 @@ Leaguemanager.showRubbers = function(matchId) {
                 }
                 }) ;
 };
-Leaguemanager.disableRubberUpdate = function() {
+Racketmanager.disableRubberUpdate = function() {
 
     jQuery("select").prop("disabled", "true");
     jQuery("input").prop("readonly", "true");
     jQuery("#updateRubber").val("confirm");
 };
-Leaguemanager.updateRubbers = function(link) {
+Racketmanager.updateRubbers = function(link) {
 
     var selects = document.getElementById('match-rubbers').getElementsByTagName('select');
     var values = [];
@@ -322,7 +322,7 @@ Leaguemanager.updateRubbers = function(link) {
     var $match = document.getElementById('current_match_id');
     var $matchId = $match.value;
     var $form = jQuery('#match-rubbers').serialize();
-    $form += "&action=leaguemanager_update_rubbers";
+    $form += "&action=racketmanager_update_rubbers";
     jQuery("#updateRubberResults").prop("disabled", "true");
     jQuery("#updateRubberResults").addClass("disabled");
     jQuery("#splash").css('opacity', 1);
@@ -330,7 +330,7 @@ Leaguemanager.updateRubbers = function(link) {
     jQuery("#showMatchRubbers").hide();
 
     jQuery.ajax({
-                url:LeagueManagerAjaxL10n.requestUrl,
+                url:RacketManagerAjaxL10n.requestUrl,
                 type: "POST",
                 data: $form,
                 success: function(response) {
@@ -364,17 +364,17 @@ Leaguemanager.updateRubbers = function(link) {
     jQuery("#updateRubberResults").removeProp("disabled");
     jQuery("#updateRubberResults").removeClass("disabled");
 };
-Leaguemanager.rosterRequest = function(link) {
+Racketmanager.rosterRequest = function(link) {
 
     var $affiliatedClub = document.getElementById('affiliatedClub').value;
     var $form = jQuery('#rosterRequestFrm').serialize();
-    $form += "&action=leaguemanager_roster_request";
+    $form += "&action=racketmanager_roster_request";
     jQuery("#updateResponse").val("");
     jQuery("#rosterUpdateSubmit").hide();
     jQuery("#rosterUpdateSubmit").addClass("disabled");
 
     jQuery.ajax({
-                url:LeagueManagerAjaxL10n.requestUrl,
+                url:RacketManagerAjaxL10n.requestUrl,
                 async: false,
                 type: "POST",
                 data: $form,
@@ -402,13 +402,13 @@ Leaguemanager.rosterRequest = function(link) {
                 }) ;
     jQuery("#rosterUpdateSubmit").show();
 };
-Leaguemanager.rosterRemove = function(link) {
+Racketmanager.rosterRemove = function(link) {
 
     var $form = jQuery(link).serialize();
-    $form += "&action=leaguemanager_roster_remove";
+    $form += "&action=racketmanager_roster_remove";
 
     jQuery.ajax({
-                url:LeagueManagerAjaxL10n.requestUrl,
+                url:RacketManagerAjaxL10n.requestUrl,
                 type: "POST",
                 data: $form,
                 success: function() {
@@ -425,7 +425,7 @@ Leaguemanager.rosterRemove = function(link) {
                 }
                 }) ;
 };
-Leaguemanager.teamUpdate = function(link) {
+Racketmanager.teamUpdate = function(link) {
 
     var formId = '#'.concat(link.form.id);
     var $form = jQuery(formId).serialize();
@@ -433,12 +433,12 @@ Leaguemanager.teamUpdate = function(link) {
     var team = link.form[2].value;
     var updateResponse = "#updateTeamResponse-".concat(competition,"-",team);
     var submitButton = "#teamUpdateSubmit-".concat(competition,"-",team);
-    $form += "&action=leaguemanager_team_update";
+    $form += "&action=racketmanager_team_update";
     jQuery(updateResponse).val("");
     jQuery(submitButton).hide();
 
     jQuery.ajax({
-                url:LeagueManagerAjaxL10n.requestUrl,
+                url:RacketManagerAjaxL10n.requestUrl,
                 type: "POST",
                 async: false,
                 data: $form,
@@ -453,18 +453,18 @@ Leaguemanager.teamUpdate = function(link) {
                 }) ;
     jQuery(submitButton).show();
 };
-Leaguemanager.updateClub = function(link) {
+Racketmanager.updateClub = function(link) {
 
     var formId = '#'.concat(link.form.id);
     var $form = jQuery(formId).serialize();
     var updateResponse = "#updateClub";
     var submitButton = "#updateClubSubmit";
-    $form += "&action=leaguemanager_update_club";
+    $form += "&action=racketmanager_update_club";
     jQuery(updateResponse).val("");
     jQuery(submitButton).hide();
 
     jQuery.ajax({
-                url:LeagueManagerAjaxL10n.requestUrl,
+                url:RacketManagerAjaxL10n.requestUrl,
                 type: "POST",
                 data: $form,
                 async: false,
@@ -480,10 +480,10 @@ Leaguemanager.updateClub = function(link) {
                 }
                 }) ;
 };
-Leaguemanager.tournamentEntryRequest = function(link) {
+Racketmanager.tournamentEntryRequest = function(link) {
 
     var $form = jQuery('#form-tournamententry').serialize();
-    $form += "&action=leaguemanager_tournament_entry";
+    $form += "&action=racketmanager_tournament_entry";
     jQuery("#tournamEntentryResponse").val("");
     jQuery("#tournamentEntrySubmit").hide();
     jQuery("#tournamentEntrySubmit").addClass("disabled");
@@ -491,7 +491,7 @@ Leaguemanager.tournamentEntryRequest = function(link) {
     jQuery("#tournamentEntryResponse").removeClass('message-success');
 
     jQuery.ajax({
-                url:LeagueManagerAjaxL10n.requestUrl,
+                url:RacketManagerAjaxL10n.requestUrl,
                 async: false,
                 type: "POST",
                 data: $form,

@@ -1,12 +1,12 @@
-var Leaguemanager = new Object();
+var Racketmanager = new Object();
 
-Leaguemanager.getLeagueDropdown = function(competition_id) {
+Racketmanager.getLeagueDropdown = function(competition_id) {
 
     jQuery.ajax({
-                url:LeagueManagerAjaxL10n.requestUrl,
+                url:RacketManagerAjaxL10n.requestUrl,
                 type: "POST",
                 data: {"competition_id": competition_id,
-                "action": "leaguemanager_get_league_dropdown"},
+                "action": "racketmanager_get_league_dropdown"},
                 success: function(response) {
                 jQuery("#leagues").empty();
                 jQuery("#leagues").html(response);
@@ -17,13 +17,13 @@ Leaguemanager.getLeagueDropdown = function(competition_id) {
                 }) ;
 };
 
-Leaguemanager.getSeasonDropdown = function(league_id) {
+Racketmanager.getSeasonDropdown = function(league_id) {
     
     jQuery.ajax({
-                url:LeagueManagerAjaxL10n.requestUrl,
+                url:RacketManagerAjaxL10n.requestUrl,
                 type: "POST",
                 data: {"league_id": league_id,
-                "action": "leaguemanager_get_season_dropdown"},
+                "action": "racketmanager_get_season_dropdown"},
                 success: function(response) {
                 jQuery("#seasons").empty();
                 jQuery("#seasons").html(response);
@@ -34,14 +34,14 @@ Leaguemanager.getSeasonDropdown = function(league_id) {
                 }) ;
 };
 
-Leaguemanager.getMatchDropdown = function(league_id, season) {
+Racketmanager.getMatchDropdown = function(league_id, season) {
 
     jQuery.ajax({
-                url:LeagueManagerAjaxL10n.requestUrl,
+                url:RacketManagerAjaxL10n.requestUrl,
                 type: "POST",
                 data: {"league_id": league_id,
                 "season": season,
-                "action": "leaguemanager_get_match_dropdown"},
+                "action": "racketmanager_get_match_dropdown"},
                 success: function(response) {
                 jQuery("#matches").empty();
                 jQuery("#matches").html(response);
@@ -52,14 +52,14 @@ Leaguemanager.getMatchDropdown = function(league_id, season) {
                 }) ;
 };
 
-Leaguemanager.saveAddPoints = function(points, team_id, league_id, season) {
+Racketmanager.saveAddPoints = function(points, team_id, league_id, season) {
     jQuery('#loading_' + team_id).css("display", "inline");
-    jQuery('#loading_' + team_id).html("<img src='"+LeagueManagerAjaxL10n.pluginUrl+"/images/loading.gif' />");
+    jQuery('#loading_' + team_id).html("<img src='"+RacketManagerAjaxL10n.pluginUrl+"/images/loading.gif' />");
 
-	var ajax = new sack(LeagueManagerAjaxL10n.requestUrl);
+	var ajax = new sack(RacketManagerAjaxL10n.requestUrl);
 	ajax.execute = 1;
 	ajax.method = 'POST';
-	ajax.setVar( "action", "leaguemanager_save_add_points" );
+	ajax.setVar( "action", "racketmanager_save_add_points" );
 	ajax.setVar( "team_id", team_id );
 	ajax.setVar( "league_id", league_id );
 	ajax.setVar( "points", points );
@@ -68,20 +68,20 @@ Leaguemanager.saveAddPoints = function(points, team_id, league_id, season) {
 	ajax.runAJAX();
 };
 
-Leaguemanager.isLoading = function(id) {
+Racketmanager.isLoading = function(id) {
 	document.getElementById(id).style.display = 'inline';
-	document.getElementById(id).innerHTML="<img src='"+LeagueManagerAjaxL10n.pluginUrl+"/images/loading.gif' />";
+	document.getElementById(id).innerHTML="<img src='"+RacketManagerAjaxL10n.pluginUrl+"/images/loading.gif' />";
 };
 
-Leaguemanager.doneLoading = function(id) {
+Racketmanager.doneLoading = function(id) {
 	document.getElementById(id).style.display = 'none';
 };
 
-Leaguemanager.setMatchDayPopUp = function(match_day, i, max_matches, mode) {
-	var ajax = new sack(LeagueManagerAjaxL10n.requestUrl);
+Racketmanager.setMatchDayPopUp = function(match_day, i, max_matches, mode) {
+	var ajax = new sack(RacketManagerAjaxL10n.requestUrl);
 	ajax.execute = 1;
 	ajax.method = 'POST';
-	ajax.setVar( "action", "leaguemanager_set_match_day_popup" );
+	ajax.setVar( "action", "racketmanager_set_match_day_popup" );
 	ajax.setVar( "match_day", match_day );
 	ajax.setVar( "i", i);
 	ajax.setVar( "mode", mode);
@@ -91,11 +91,11 @@ Leaguemanager.setMatchDayPopUp = function(match_day, i, max_matches, mode) {
 	ajax.runAJAX();
 };
 
-Leaguemanager.setMatchDate = function(match_date, i, max_matches, mode) {
-	var ajax = new sack(LeagueManagerAjaxL10n.requestUrl);
+Racketmanager.setMatchDate = function(match_date, i, max_matches, mode) {
+	var ajax = new sack(RacketManagerAjaxL10n.requestUrl);
 	ajax.execute = 1;
 	ajax.method = 'POST';
-	ajax.setVar( "action", "leaguemanager_set_match_date" );
+	ajax.setVar( "action", "racketmanager_set_match_date" );
 	ajax.setVar( "match_date", match_date );
 	ajax.setVar( "i", i);
 	ajax.setVar( "mode", mode);
@@ -105,14 +105,14 @@ Leaguemanager.setMatchDate = function(match_date, i, max_matches, mode) {
 	ajax.runAJAX();
 };
 
-Leaguemanager.insertHomeStadium = function(team_id, i) {
+Racketmanager.insertHomeStadium = function(team_id, i) {
 
     var teamId = team_id;
     jQuery.ajax({
-                url:LeagueManagerAjaxL10n.requestUrl,
+                url:RacketManagerAjaxL10n.requestUrl,
                 type: "POST",
                 data: {"team_id": teamId,
-                "action": "leaguemanager_insert_home_stadium"},
+                "action": "racketmanager_insert_home_stadium"},
                 success: function(stadium) {
                     if (jQuery('#location\\['+i+'\\]').val() == '' ) {
                         jQuery('#location\\['+i+'\\]').val(stadium);
@@ -124,11 +124,11 @@ Leaguemanager.insertHomeStadium = function(team_id, i) {
                 }) ;
 };
 
-Leaguemanager.closeMatchModal = function(link) {
+Racketmanager.closeMatchModal = function(link) {
     jQuery("#modalMatch").hide();
     };
 
-Leaguemanager.showRubbers = function(link) {
+Racketmanager.showRubbers = function(link) {
 
     var matchId = jQuery(link).attr('id');
     jQuery("#showMatchRubbers").empty();
@@ -138,10 +138,10 @@ Leaguemanager.showRubbers = function(link) {
     jQuery("#splash").show();
 
     jQuery.ajax({
-                url:LeagueManagerAjaxL10n.requestUrl,
+                url:RacketManagerAjaxL10n.requestUrl,
                 type: "POST",
                 data: {"matchId": matchId,
-                "action": "leaguemanager_show_rubbers"},
+                "action": "racketmanager_show_rubbers"},
                 success: function(response) {
                 jQuery("#showMatchRubbers").empty();
                 jQuery("#showMatchRubbers").html(response);
@@ -153,10 +153,10 @@ Leaguemanager.showRubbers = function(link) {
                 }
                 }) ;
 };
-Leaguemanager.disableRubberUpdate = function() {
+Racketmanager.disableRubberUpdate = function() {
     
 };
-Leaguemanager.updateRubbers = function(link) {
+Racketmanager.updateRubbers = function(link) {
     
 	var selects = document.getElementById('match-rubbers').getElementsByTagName('select');
 	var values = [];
@@ -175,13 +175,13 @@ Leaguemanager.updateRubbers = function(link) {
     var $league = document.getElementById('current_league_id');
     var $leagueId = $league.value;
     var $form = jQuery('#match-rubbers').serialize();
-    $form += "&action=leaguemanager_update_rubbers";
+    $form += "&action=racketmanager_update_rubbers";
     jQuery("#showMatchRubbers").hide();
     jQuery("#splash").css('opacity', 1);
     jQuery("#splash").show();
 
     jQuery.ajax({
-                url:LeagueManagerAjaxL10n.requestUrl,
+                url:RacketManagerAjaxL10n.requestUrl,
                 type: "POST",
                 data: $form,
                 success: function(response) {
@@ -221,15 +221,15 @@ Leaguemanager.updateRubbers = function(link) {
                 }
                 }) ;
 };
-Leaguemanager.confirmResults = function() {
+Racketmanager.confirmResults = function() {
     
     var $form = jQuery('#match-results').serialize();
-    $form += "&action=leaguemanager_confirm_results";
+    $form += "&action=racketmanager_confirm_results";
     jQuery("#updates").css('opacity', 1);
     jQuery("#updateResults").hide();
 
     jQuery.ajax({
-                url:LeagueManagerAjaxL10n.requestUrl,
+                url:RacketManagerAjaxL10n.requestUrl,
                 type: "POST",
                 data: $form,
                 success: function(response) {

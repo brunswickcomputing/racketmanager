@@ -3,7 +3,7 @@
 * League API: League class
 *
 * @author Kolja Schleich
-* @package LeagueManager
+* @package RacketManager
 * @subpackage League
 */
 
@@ -493,7 +493,7 @@ class League {
 		$league = wp_cache_get( $league_id, 'leagues' );
 
 		if ( ! $league ) {
-			$league = $wpdb->get_row( $wpdb->prepare( "SELECT `title`, `id`, `seasons`, `settings`, `competition_id` FROM {$wpdb->leaguemanager} WHERE ".$search." LIMIT 1", $league_id ) );
+			$league = $wpdb->get_row( $wpdb->prepare( "SELECT `title`, `id`, `seasons`, `settings`, `competition_id` FROM {$wpdb->racketmanager} WHERE ".$search." LIMIT 1", $league_id ) );
 			$competition = get_competition($league->competition_id);
 			$league->settings = (array)maybe_unserialize($competition->settings);
 			$league = (object)array_merge((array)$league, $league->settings);
@@ -588,13 +588,13 @@ class League {
 		// add actions & filter
 		add_filter( 'league_standings_options', array(&$this, 'standingsTableDisplayOptions') );
 
-		add_filter( 'leaguemanager_export_matches_header_'.$this->sport, array(&$this, 'exportMatchesHeader') );
-		add_filter( 'leaguemanager_export_matches_data_'.$this->sport, array(&$this, 'exportMatchesData'), 10, 2 );
-		add_filter( 'leaguemanager_import_matches_'.$this->sport, array(&$this, 'importMatches'), 10, 4 );
+		add_filter( 'racketmanager_export_matches_header_'.$this->sport, array(&$this, 'exportMatchesHeader') );
+		add_filter( 'racketmanager_export_matches_data_'.$this->sport, array(&$this, 'exportMatchesData'), 10, 2 );
+		add_filter( 'racketmanager_import_matches_'.$this->sport, array(&$this, 'importMatches'), 10, 4 );
 
-		add_filter( 'leaguemanager_export_teams_header_'.$this->sport, array(&$this, 'exportTeamsHeader') );
-		add_filter( 'leaguemanager_export_teams_data_'.$this->sport, array(&$this, 'exportTeamsData'), 10, 2 );
-		add_filter( 'leaguemanager_import_teams_'.$this->sport, array(&$this, 'importTeams'), 10, 3 );
+		add_filter( 'racketmanager_export_teams_header_'.$this->sport, array(&$this, 'exportTeamsHeader') );
+		add_filter( 'racketmanager_export_teams_data_'.$this->sport, array(&$this, 'exportTeamsData'), 10, 2 );
+		add_filter( 'racketmanager_import_teams_'.$this->sport, array(&$this, 'importTeams'), 10, 3 );
 	}
 
 	/**
@@ -791,7 +791,7 @@ class League {
 		} elseif ( $_match_day == "last" ) {
 			$match_day = wp_cache_get( 'last_'.$this->id, 'leagues_match_days' );
 			if (!$match_day) {
-				$sql = "SELECT `match_day`, DATEDIFF(NOW(), `date`) AS datediff FROM {$wpdb->leaguemanager_matches} WHERE `league_id` = '%d' AND `season` = '%s' AND DATEDIFF(NOW(), `date`) > 0 ORDER BY datediff ASC LIMIT 1";
+				$sql = "SELECT `match_day`, DATEDIFF(NOW(), `date`) AS datediff FROM {$wpdb->racketmanager_matches} WHERE `league_id` = '%d' AND `season` = '%s' AND DATEDIFF(NOW(), `date`) > 0 ORDER BY datediff ASC LIMIT 1";
 				$match = $wpdb->get_row( $wpdb->prepare($sql, $this->id, $this->current_season['name']) );
 				if ($match)  {
 					$match_day = $match->match_day;
@@ -803,7 +803,7 @@ class League {
 		} elseif ( $_match_day == "next" ) {
 			$match_day = wp_cache_get( 'next_'.$this->id, 'leagues_match_days' );
 			if (!$match_day) {
-				$sql = "SELECT `match_day`, DATEDIFF(NOW(), `date`) AS datediff FROM {$wpdb->leaguemanager_matches} WHERE `league_id` = '%d' AND `season` = '%s' AND DATEDIFF(NOW(), `date`) < 0 ORDER BY datediff DESC LIMIT 1";
+				$sql = "SELECT `match_day`, DATEDIFF(NOW(), `date`) AS datediff FROM {$wpdb->racketmanager_matches} WHERE `league_id` = '%d' AND `season` = '%s' AND DATEDIFF(NOW(), `date`) < 0 ORDER BY datediff DESC LIMIT 1";
 				$match = $wpdb->get_row( $wpdb->prepare($sql, $this->id, $this->current_season['name']) );
 				if ($match)  {
 					$match_day = $match->match_day;
@@ -815,7 +815,7 @@ class League {
 		} elseif ( $_match_day == "current" || $_match_day == "latest") {
 			$match_day = wp_cache_get( 'current_'.$this->id, 'leagues_match_days' );
 			if (!$match_day) {
-				$sql = "SELECT `id`, `match_day`, ABS(DATEDIFF(NOW(), `date`)) AS datediff FROM {$wpdb->leaguemanager_matches} WHERE `league_id` = '%d' AND `season` = '%s' ORDER BY datediff ASC LIMIT 1";
+				$sql = "SELECT `id`, `match_day`, ABS(DATEDIFF(NOW(), `date`)) AS datediff FROM {$wpdb->racketmanager_matches} WHERE `league_id` = '%d' AND `season` = '%s' ORDER BY datediff ASC LIMIT 1";
 				$match = $wpdb->get_row( $wpdb->prepare($sql, $this->id, $this->current_season['name']) );
 				if ($match) {
 					$match_day = $match->match_day;
@@ -843,7 +843,7 @@ class League {
 		global $wpdb;
 
 		$args = array( $this->id, $this->getSeason() );
-		$sql = "SELECT MAX(match_day) FROM {$wpdb->leaguemanager_matches} WHERE  `league_id` = '%d' AND `season` = '%s'";
+		$sql = "SELECT MAX(match_day) FROM {$wpdb->racketmanager_matches} WHERE  `league_id` = '%d' AND `season` = '%s'";
 		if ( $this->getGroup() != "" && $this->groupExists(htmlspecialchars($this->getGroup())) ) {
 			$sql .= " AND `group` = '%s'";
 			$args[] = htmlspecialchars($this->getGroup());
@@ -894,13 +894,13 @@ class League {
 		));
 
 		if ( $page_links && is_admin() ) {
-			/*$page_links = sprintf( '<span class="displaying-num">' . __( 'Displaying %s&#8211;%s of %s', 'leaguemanager' ) . '</span>',
+			/*$page_links = sprintf( '<span class="displaying-num">' . __( 'Displaying %s&#8211;%s of %s', 'racketmanager' ) . '</span>',
 			number_format_i18n( ( $current_page - 1 ) * $per_page + 1 ),
 			number_format_i18n( min( $current_page * $per_page,  $num_items ) ),
 			number_format_i18n(  $num_items ),
 			$page_links
 		);*/
-		$page_links = sprintf( '<span class="displaying-num">' . __( '%s Matches', 'leaguemanager' ) . '</span>%s',
+		$page_links = sprintf( '<span class="displaying-num">' . __( '%s Matches', 'racketmanager' ) . '</span>%s',
 		number_format_i18n(  $num_items ),
 		$page_links
 	);
@@ -989,7 +989,7 @@ public function getLeagueTeams( $query_args = array() ) {
 	extract($this->team_query_args, EXTR_SKIP);
 
 	$args = array($this->id);
-	$sql = "SELECT B.`id` AS `id`, B.`title`, B.`affiliatedclub`, B.`stadium`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`points_plus`, A.`points_minus`, A.`points2_plus`, A.`points2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom` FROM {$wpdb->leaguemanager_teams} B INNER JOIN {$wpdb->leaguemanager_table} A ON B.id = A.team_id WHERE `league_id` = '%d'";
+	$sql = "SELECT B.`id` AS `id`, B.`title`, B.`affiliatedclub`, B.`stadium`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`points_plus`, A.`points_minus`, A.`points2_plus`, A.`points2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom` FROM {$wpdb->racketmanager_teams} B INNER JOIN {$wpdb->racketmanager_table} A ON B.id = A.team_id WHERE `league_id` = '%d'";
 
 	if ( $season == "" ) {
 		$sql .= " AND A.`season` = '%s'";
@@ -1095,7 +1095,7 @@ public function getLeagueTeam( $team_id ) {
 * @return object
 */
 public function getTeamDtls( $team_id ) {
-	global $wpdb, $leaguemanager;
+	global $wpdb, $racketmanager;
 
 	if ( $team_id == -1 ) {
 		$team = (object) ['id' => -1, 'title' => 'Bye'];
@@ -1103,7 +1103,7 @@ public function getTeamDtls( $team_id ) {
 		return $team;
 	}
 
-	$sql = $wpdb->prepare("SELECT A.`title`, B.`captain`, A.`affiliatedclub`, B.`match_day`, B.`match_time`, A.`stadium`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status`, A.`type` FROM {$wpdb->leaguemanager_teams} A LEFT JOIN {$wpdb->leaguemanager_team_competition} B ON A.`id` = B.`team_id` and B.`competition_id` IN (select `competition_id` FROM {$wpdb->leaguemanager} WHERE `id` = '%d') WHERE A.`id` = '%d'", intval($this->id), intval($team_id));
+	$sql = $wpdb->prepare("SELECT A.`title`, B.`captain`, A.`affiliatedclub`, B.`match_day`, B.`match_time`, A.`stadium`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status`, A.`type` FROM {$wpdb->racketmanager_teams} A LEFT JOIN {$wpdb->racketmanager_team_competition} B ON A.`id` = B.`team_id` and B.`competition_id` IN (select `competition_id` FROM {$wpdb->racketmanager} WHERE `id` = '%d') WHERE A.`id` = '%d'", intval($this->id), intval($team_id));
 
 	$team = wp_cache_get( md5($sql), 'teamdetails' );
 	if ( !$team ) {
@@ -1134,7 +1134,7 @@ public function getTeamDtls( $team_id ) {
 	if ( $team->status == 'P' && $team->roster != null ) {
 		$i = 1;
 		foreach ($team->roster AS $player) {
-			$teamplayer = $leaguemanager->getRosterEntry($player);
+			$teamplayer = $racketmanager->getRosterEntry($player);
 			$team->player[$i] =  isset($teamplayer->fullname) ? $teamplayer->fullname : '';
 			$team->playerId[$i] = $player;
 			$i++;
@@ -1180,9 +1180,9 @@ public function getMatches( $query_args ) {
 
 	$args = array(intval($this->id));
 	if ( $count )
-	$sql = "SELECT COUNT(ID) FROM {$wpdb->leaguemanager_matches} WHERE `league_id` = '%d'";
+	$sql = "SELECT COUNT(ID) FROM {$wpdb->racketmanager_matches} WHERE `league_id` = '%d'";
 	else
-	$sql = "SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `confirmed`, `home_captain`, `away_captain` FROM {$wpdb->leaguemanager_matches} WHERE `league_id` = '%d'";
+	$sql = "SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `confirmed`, `home_captain`, `away_captain` FROM {$wpdb->racketmanager_matches} WHERE `league_id` = '%d'";
 
 	// disable limit for championship mode
 	if ( $this->mode == "championship" ) $limit = false;
@@ -1472,14 +1472,14 @@ public function getStandings( $teams = false, $match_day = false, $mode = 'all',
 public function getStandingsSelection() {
 	$selected = isset($_GET['standingstable']) ? htmlspecialchars($_GET['standingstable']) : '';
 
-	$options = array( 'all' => __( 'Current Table', 'leaguemanager' ), 'home' => __( 'Hometable', 'leaguemanager' ), 'away' => __( 'Awaytable', 'leaguemanager' ) );
-	$action = is_admin() ? menu_page_url('leaguemanager', 0)."&amp;subpage=show-league&amp;league_id=".$this->id : get_permalink();
+	$options = array( 'all' => __( 'Current Table', 'racketmanager' ), 'home' => __( 'Hometable', 'racketmanager' ), 'away' => __( 'Awaytable', 'racketmanager' ) );
+	$action = is_admin() ? menu_page_url('racketmanager', 0)."&amp;subpage=show-league&amp;league_id=".$this->id : get_permalink();
 	$out = "<select size='1' name='standingstable'>";
 	foreach ( $options AS $value => $label ) {
 		$out .= "<option value='".$value."'".selected($value, $selected, false).">".$label."</option>";
 	}
 	for ( $day = 1; $day <= $this->current_season['num_match_days']; $day++ ) {
-		$out .= "<option value='match_day-".$day."'".selected("match_day-".$day, $selected, false).">".sprintf(__("%d. Match Day", 'leaguemanager'), $day)."</option>";
+		$out .= "<option value='match_day-".$day."'".selected("match_day-".$day, $selected, false).">".sprintf(__("%d. Match Day", 'racketmanager'), $day)."</option>";
 	}
 	$out .= "</select>";
 
@@ -1527,7 +1527,7 @@ public function getPointRule( $rule = false ) {
 		* @return array
 		* @category wp-filter
 		*/
-		$point_rules = apply_filters( 'leaguemanager_point_rules', $point_rules );
+		$point_rules = apply_filters( 'racketmanager_point_rules', $point_rules );
 
 		return $point_rules[$rule];
 	}
@@ -1543,7 +1543,7 @@ public function setNumTeams($total = false) {
 
 	if ($total === true) {
 		// get total number of teams
-		$this->num_teams_total = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->leaguemanager_table} WHERE `league_id` = '%d' AND `season`= '%s'", $this->id, $this->current_season['name']) );
+		$this->num_teams_total = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(ID) FROM {$wpdb->racketmanager_table} WHERE `league_id` = '%d' AND `season`= '%s'", $this->id, $this->current_season['name']) );
 	} else {
 		$this->num_teams = $this->num_teams_total;
 		$this->pagination_teams = $this->getPageLinks('teams');
@@ -1810,29 +1810,29 @@ public function databaseColumnExists($table, $column) {
 	global $wpdb;
 
 	if ($table == "teams")
-	$table = $wpdb->leaguemanager_teams;
+	$table = $wpdb->racketmanager_teams;
 	elseif ($table == "table")
-	$table = $wpdb->leaguemanager_table;
+	$table = $wpdb->racketmanager_table;
 	elseif ($table == "matches")
-	$table = $wpdb->leaguemanager_matches;
+	$table = $wpdb->racketmanager_matches;
 	elseif ($table == "rubbers")
-	$table = $wpdb->leaguemanager_rubbers;
+	$table = $wpdb->racketmanager_rubbers;
 	elseif ($table == "leagues")
-	$table = $wpdb->leaguemanager;
+	$table = $wpdb->racketmanager;
 	elseif ($table == "seasons")
-	$table = $wpdb->leaguemanager_seasons;
+	$table = $wpdb->racketmanager_seasons;
 	elseif ($table == "competititons")
-	$table = $wpdb->leaguemanager_competititons;
+	$table = $wpdb->racketmanager_competititons;
 	else
 	return false;
 
 	$sql = $wpdb->prepare("SHOW COLUMNS FROM {$table} LIKE %s", $column);
 
-	$res = wp_cache_get( md5($sql), 'leaguemanager' );
+	$res = wp_cache_get( md5($sql), 'racketmanager' );
 
 	if ( !$res ) {
 		$res = $wpdb->query( $sql );
-		wp_cache_set( md5($sql), $res, 'leaguemanager' );
+		wp_cache_set( md5($sql), $res, 'racketmanager' );
 	}
 	$res = ( $res == 1 ) ? true : false;
 	return $res;
@@ -1938,7 +1938,7 @@ public function updateRanking( $teams ) {
 	global $wpdb;
 
 	foreach ( $teams AS $key => $team ) {
-		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `rank` = '%d', `status` = '%s' WHERE `id` = '%d'", $team->rank, $team->status, $team->table_id ) );
+		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_table} SET `rank` = '%d', `status` = '%s' WHERE `id` = '%d'", $team->rank, $team->status, $team->table_id ) );
 		wp_cache_delete($team->table_id, 'leagueteam');
 		wp_cache_delete($team->league_id, 'leaguetable');
 	}
@@ -1954,8 +1954,8 @@ public function getSeasonDropdown( $season = '' ) {
 	$competition = get_competition($this->competition_id);
 	$competition->seasons = maybe_unserialize($competition->seasons);
 
-	$out = '<select size="1" class="alignleft" id="season" name="season" onChange="Leaguemanager.getMatchDropdown('.$this->id.', this.value);">';
-	$out .= '<option value="">'.__('Choose Season', 'leaguemanager').'</option>';
+	$out = '<select size="1" class="alignleft" id="season" name="season" onChange="Racketmanager.getMatchDropdown('.$this->id.', this.value);">';
+	$out .= '<option value="">'.__('Choose Season', 'racketmanager').'</option>';
 	foreach ( $competition->seasons AS $s ) {
 		$out .= '<option value="'.$s['name'].'"'.selected($season, $s['name'], false).'>'.$s['name'].'</option>';
 	}
@@ -1975,7 +1975,7 @@ public function getMatchDropdown( $match_id = 0 ) {
 	$matches = $this->getMatches( array("limit" => false, "match_day" => -1, "reset_query_args" => true) );
 
 	$out = '<select size="1" name="match_id" id="match_id" class="alignleft">';
-	$out .= '<option value="0">'.__('Choose Match', 'leaguemanager').'</option>';
+	$out .= '<option value="0">'.__('Choose Match', 'racketmanager').'</option>';
 	foreach ( $matches AS $match ) {
 		$out .= '<option value="'.$match->id.'"'.selected($match_id, $match->id, false).'>'.$match->getTitle(false).'</option>';
 	}
@@ -2015,7 +2015,7 @@ public function saveStandingsManually( $teams, $points_plus, $points_minus,  $nu
 		if ( !is_numeric($points2_minus) ) $points2_minus = 0;
 		$diff = $points2_plus - $points2_minus;
 
-		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `points_plus` = '%d', `points_minus` = '%d', `points2_plus` = '%d', `points2_minus` = '%d', `done_matches` = '%d', `won_matches` = '%d', `draw_matches` = '%d', `lost_matches` = '%d', `diff` = '%d', `add_points` = '%d' WHERE `team_id` = '%d' and `league_id` = '%d' AND `season` = '%s'", $points_plus[$id], $points_minus[$id], $points2_plus, $points2_minus, $num_done_matches[$id], $num_won_matches[$id], $num_draw_matches[$id], $num_lost_matches[$id], $diff, $add_points[$id], $id, $this->id, $season ) );
+		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_table} SET `points_plus` = '%d', `points_minus` = '%d', `points2_plus` = '%d', `points2_minus` = '%d', `done_matches` = '%d', `won_matches` = '%d', `draw_matches` = '%d', `lost_matches` = '%d', `diff` = '%d', `add_points` = '%d' WHERE `team_id` = '%d' and `league_id` = '%d' AND `season` = '%s'", $points_plus[$id], $points_minus[$id], $points2_plus, $points2_minus, $num_done_matches[$id], $num_won_matches[$id], $num_draw_matches[$id], $num_lost_matches[$id], $diff, $add_points[$id], $id, $this->id, $season ) );
 		wp_cache_flush();
 	}
 
@@ -2050,7 +2050,7 @@ public function _updateResults( $matches, $home_points, $away_points, $home_team
 			// custom results update
 			$match = $this->updateResults( $match ) ;
 			if ( $match->home_points > 0 || $match->away_points > 0 ) {
-				$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->leaguemanager_matches} SET `home_points` = ".$match->home_points.", `away_points` = ".$match->away_points.", `winner_id` = '%d', `loser_id` = '%d', `custom` = '%s', `updated_user` = %d, `updated` = now(), `confirmed` = 'Y' WHERE `id` = '%d'", intval($match->winner_id), intval($match->loser_id), maybe_serialize($match->custom), get_current_user_id(), $match_id) );
+				$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `home_points` = ".$match->home_points.", `away_points` = ".$match->away_points.", `winner_id` = '%d', `loser_id` = '%d', `custom` = '%s', `updated_user` = %d, `updated` = now(), `confirmed` = 'Y' WHERE `id` = '%d'", intval($match->winner_id), intval($match->loser_id), maybe_serialize($match->custom), get_current_user_id(), $match_id) );
 				wp_cache_delete($match->id, 'matches');
 				$num_matches ++;
 			}
@@ -2098,7 +2098,7 @@ private function saveStandings( $leagueTeam ) {
 		// get custom team standings data
 		$leagueTeam->custom = $this->getStandingsData( $leagueTeam->id, $leagueTeam->custom );
 
-		$wpdb->query ( $wpdb->prepare( "UPDATE {$wpdb->leaguemanager_table} SET `points_plus` = '%f', `points_minus` = '%f', `points2_plus` = '%d', `points2_minus` = '%d', `done_matches` = '%d', `won_matches` = '%d', `draw_matches` = '%d', `lost_matches` = '%d', `diff` = '%d', `custom` = '%s' WHERE `team_id` = '%d' AND `league_id` = '%d' AND `season` = '%s'", $leagueTeam->points['plus'], $leagueTeam->points['minus'], $leagueTeam->points2['plus'], $leagueTeam->points2['minus'], $leagueTeam->done_matches, $leagueTeam->won_matches, $leagueTeam->draw_matches, $leagueTeam->lost_matches, $leagueTeam->diff, maybe_serialize($leagueTeam->custom), $leagueTeam->id, $leagueTeam->league_id, $leagueTeam->season ) );
+		$wpdb->query ( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_table} SET `points_plus` = '%f', `points_minus` = '%f', `points2_plus` = '%d', `points2_minus` = '%d', `done_matches` = '%d', `won_matches` = '%d', `draw_matches` = '%d', `lost_matches` = '%d', `diff` = '%d', `custom` = '%s' WHERE `team_id` = '%d' AND `league_id` = '%d' AND `season` = '%s'", $leagueTeam->points['plus'], $leagueTeam->points['minus'], $leagueTeam->points2['plus'], $leagueTeam->points2['minus'], $leagueTeam->done_matches, $leagueTeam->won_matches, $leagueTeam->draw_matches, $leagueTeam->lost_matches, $leagueTeam->diff, maybe_serialize($leagueTeam->custom), $leagueTeam->id, $leagueTeam->league_id, $leagueTeam->season ) );
 		wp_cache_delete($leagueTeam->id, '$leagueteam');
 		wp_cache_delete($leagueTeam->league_id, 'leaguetable');
 	}

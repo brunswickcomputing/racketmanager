@@ -15,24 +15,24 @@
         <input type="submit" value="<?php _e('Apply'); ?>" name="doaction" id="doaction" class="button-secondary action" />
     </div>
 			
-    <table id="standings" class="widefat" summary="" title="<?php _e( 'Table', 'leaguemanager' ) ?>">
+    <table id="standings" class="widefat" summary="" title="<?php _e( 'Table', 'racketmanager' ) ?>">
         <thead>
             <tr>
-                <th scope="col" class="check-column"><input type="checkbox" onclick="Leaguemanager.checkAll(document.getElementById('teams-filter'));" /></th>
-                <th class="num"><?php _e( 'Rank', 'leaguemanager' ) ?></th>
+                <th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" /></th>
+                <th class="num"><?php _e( 'Rank', 'racketmanager' ) ?></th>
 <?php if ( $league->mode != 'championship' ) { ?><th class="num">&#160;</th><?php } ?>
-				<th><?php _e( 'Club', 'leaguemanager' ) ?></th>
+				<th><?php _e( 'Club', 'racketmanager' ) ?></th>
 <?php if ( $league->mode != 'championship' ) { ?>
-    <?php if ( !empty($league->groups) && $league->mode == 'championship' ) { ?><th class="num"><?php _e( 'Group', 'leaguemanager' ) ?></th><?php } ?>
-    <?php if ( isset($league->standings['pld']) && 1 == $league->standings['pld'] ) { ?><th class="num"><?php _e( 'Pld', 'leaguemanager' ) ?></th><?php } ?>
-    <?php if ( isset($league->standings['won']) && 1 == $league->standings['won'] ) { ?><th class="num"><?php _e( 'W','leaguemanager' ) ?></th><?php } ?>
-    <?php if ( isset($league->standings['tie']) && 1 == $league->standings['tie'] ) { ?><th class="num"><?php _e( 'T','leaguemanager' ) ?></th><?php } ?>
-    <?php if ( isset($league->standings['lost']) && 1 == $league->standings['lost'] ) { ?><th class="num"><?php _e( 'L','leaguemanager' ) ?></th><?php } ?>
-    <?php if ( isset($league->standings['winPercent']) && 1 == $league->standings['winPercent'] ) { ?><th class="num"><?php _e( 'PCT','leaguemanager' ) ?></th><?php } ?>
+    <?php if ( !empty($league->groups) && $league->mode == 'championship' ) { ?><th class="num"><?php _e( 'Group', 'racketmanager' ) ?></th><?php } ?>
+    <?php if ( isset($league->standings['pld']) && 1 == $league->standings['pld'] ) { ?><th class="num"><?php _e( 'Pld', 'racketmanager' ) ?></th><?php } ?>
+    <?php if ( isset($league->standings['won']) && 1 == $league->standings['won'] ) { ?><th class="num"><?php _e( 'W','racketmanager' ) ?></th><?php } ?>
+    <?php if ( isset($league->standings['tie']) && 1 == $league->standings['tie'] ) { ?><th class="num"><?php _e( 'T','racketmanager' ) ?></th><?php } ?>
+    <?php if ( isset($league->standings['lost']) && 1 == $league->standings['lost'] ) { ?><th class="num"><?php _e( 'L','racketmanager' ) ?></th><?php } ?>
+    <?php if ( isset($league->standings['winPercent']) && 1 == $league->standings['winPercent'] ) { ?><th class="num"><?php _e( 'PCT','racketmanager' ) ?></th><?php } ?>
 <?php $league->displayStandingsHeader(); ?>
-                <th class="num"><?php _e( 'Pts', 'leaguemanager' ) ?></th>
-                <th class="num"><?php _e( '+/- Points', 'leaguemanager' ) ?></th>
-                <th class="num"><?php _e( 'ID', 'leaguemanager' ) ?></th>
+                <th class="num"><?php _e( 'Pts', 'racketmanager' ) ?></th>
+                <th class="num"><?php _e( '+/- Points', 'racketmanager' ) ?></th>
+                <th class="num"><?php _e( 'ID', 'racketmanager' ) ?></th>
 <?php } ?>
             </tr>
         </thead>
@@ -50,7 +50,7 @@
                     <?php } ?>
                 </td>
 <?php if ( $league->mode != 'championship' ) { ?><td class="num"><?php echo $team->status ?></td><?php } ?>
-				<td><a href="admin.php?page=leaguemanager&amp;subpage=team&amp;league_id=<?php echo $league_id ?>&amp;edit=<?php echo $team->id; ?>"><?php if ($team->home == 1) echo "<strong>".$team->title."</strong>"; else echo $team->title; ?></a></td>
+				<td><a href="admin.php?page=racketmanager&amp;subpage=team&amp;league_id=<?php echo $league_id ?>&amp;edit=<?php echo $team->id; ?>"><?php if ($team->home == 1) echo "<strong>".$team->title."</strong>"; else echo $team->title; ?></a></td>
 <?php if ( !empty($league->groups) && $league->mode == 'championship' ) { ?><td class="num"><?php echo $team->group ?></td><?php } ?>
 <?php if ( $league->mode != 'championship' ) { ?>
     <?php if ( $league->point_rule != 'manual' ) { ?>
@@ -82,7 +82,7 @@
                 </td>
 
     <?php } ?>
-                <?php do_action( 'leaguemanager_standings_columns_'.$league->sport, $team, $league->point_rule ) ?>
+                <?php do_action( 'racketmanager_standings_columns_'.$league->sport, $team, $league->point_rule ) ?>
                 <?php $league->displayStandingsColumns($team, $league->point_rule); ?>
                 <td class="num">
     <?php if ( $league->point_rule != 'manual' ) { ?><?php printf($league->point_format, $team->points_plus, $team->points_minus) ?>
@@ -90,7 +90,7 @@
     <?php } ?>
                 </td>
                 <td class="num">
-                    <input type="text" size="3" style="text-align: center;" id="add_points_<?php echo $team->id ?>" name="add_points[<?php echo $team->id ?>]" value="<?php echo $team->add_points ?>" onblur="Leaguemanager.saveAddPoints(this.value, <?php echo $team->id ?>, <?php echo $league_id ?> )" /><span class="loading" id="loading_<?php echo $team->id ?>"></span>
+                    <input type="text" size="3" style="text-align: center;" id="add_points_<?php echo $team->id ?>" name="add_points[<?php echo $team->id ?>]" value="<?php echo $team->add_points ?>" onblur="Racketmanager.saveAddPoints(this.value, <?php echo $team->id ?>, <?php echo $league_id ?> )" /><span class="loading" id="loading_<?php echo $team->id ?>"></span>
                 </td>
                 <td class="num"><?php echo $team->id ?></td>
 <?php } ?>
@@ -106,15 +106,15 @@
 
 <?php if ( (isset($league->point_rule) && ($league->point_rule == 'manual')) ) { ?>
 		<input type="hidden" name="updateLeague" value="teams_manual" />
-		<p class="submit" style="float: right; margin: 0 0 1em 0;"><input type="submit" value="<?php _e( 'Save Standings', 'leaguemanager' ) ?>" class="button button-primary" /></p>
+		<p class="submit" style="float: right; margin: 0 0 1em 0;"><input type="submit" value="<?php _e( 'Save Standings', 'racketmanager' ) ?>" class="button button-primary" /></p>
 <?php } ?>
 
 <?php if ( (isset($league->team_ranking) && ($league->team_ranking == 'manual')) ) { ?>
-		<p class="submit"><input type="submit" name="saveRanking" value="<?php _e( 'Save Ranking', 'leaguemanager' ) ?>" class="button button-primary" /></p>
-        <p class="submit"><input type="submit" name="randomRanking" value="<?php _e( 'Random Ranking', 'leaguemanager' ) ?>" class="button button-primary" /></p>
+		<p class="submit"><input type="submit" name="saveRanking" value="<?php _e( 'Save Ranking', 'racketmanager' ) ?>" class="button button-primary" /></p>
+        <p class="submit"><input type="submit" name="randomRanking" value="<?php _e( 'Random Ranking', 'racketmanager' ) ?>" class="button button-primary" /></p>
 <?php } ?>
 
 <?php if ( (isset($league->team_ranking) && ($league->team_ranking !== 'manual')) ) { ?>
-		<p class="submit"><input type="submit" name="updateRanking" value="<?php _e( 'Update Ranking', 'leaguemanager' ) ?>" class="button button-primary" /></p>
+		<p class="submit"><input type="submit" name="updateRanking" value="<?php _e( 'Update Ranking', 'racketmanager' ) ?>" class="button button-primary" /></p>
 <?php } ?>
 </form>

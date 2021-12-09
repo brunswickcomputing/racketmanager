@@ -1,16 +1,16 @@
 <?php if ( !empty($this->options['colors']['headers']) ) { ?>
-table.leaguemanager th,
-div.matchlist table.leaguemanager th {
+table.racketmanager th,
+div.matchlist table.racketmanager th {
 	background-color: <?php echo $this->options['colors']['headers'] ?>;
 }
 <?php } ?>
 <?php if ( !empty($this->options['colors']['rows']['main']) ) { ?>
-table.leaguemanager tr {
+table.racketmanager tr {
 	background-color: <?php echo $this->options['colors']['rows']['main'] ?>;
 }
 <?php } ?>
 <?php if ( !empty($this->options['colors']['rows']['alternate']) ) { ?>
-table.leaguemanager tr.alternate {
+table.racketmanager tr.alternate {
 	background-color: <?php echo $this->options['colors']['rows']['alternate'] ?>;
 }
 <?php } ?>

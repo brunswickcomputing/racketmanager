@@ -1,9 +1,9 @@
 <?php
 /*
 Plugin Name: Racketmanager
-Plugin URI: http://wordpress.org/extend/plugins/racketmanager/
+Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
 Description: Manage and present sports league results.
-Version: 6.0.0
+Version: 6.0.1
 Author: Paul Moffat
 
 Copyright 2008-2021  Paul Moffat (email: paul@paarcs.com)
@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 * @author Paul Moffat
 * @package RacketManager
-* @version 6.0.0
+* @version 6.0.1
 * @copyright 2008-2021
 * @license GPL-3
 */
@@ -45,7 +45,7 @@ class RacketManager {
 	*
 	* @var string
 	*/
-	private $version = '6.0.0';
+	private $version = '6.0.1';
 
 	/**
 	* database version
@@ -85,12 +85,6 @@ class RacketManager {
 
 		add_action('wp_enqueue_scripts', array(&$this, 'loadStyles'), 5 );
 		add_action('wp_enqueue_scripts', array(&$this, 'loadScripts') );
-
-		// Add TinyMCE Button
-		add_action( 'init', array(&$this, 'addTinyMCEButton') );
-
-		// register AJAX action to show TinyMCE Window
-		add_action( 'wp_ajax_racketmanager_tinymce_window', array(&$this, 'showTinyMCEWindow') );
 
 		add_action( 'wp_loaded', array(&$this, 'add_racketmanager_templates') );
 
@@ -493,57 +487,6 @@ class RacketManager {
 		ob_end_clean();
 
 		wp_add_inline_style( 'racketmanager', $css );
-	}
-
-	/**
-	* add TinyMCE Button
-	*
-	* @param none
-	* @return void
-	*/
-	public function addTinyMCEButton() {
-		// Don't bother doing this stuff if the current user lacks permissions
-		if ( !current_user_can('edit_posts') && !current_user_can('edit_pages') ) return;
-
-		// Check for RacketManager capability
-		if ( !current_user_can('manage_racketmanager') ) return;
-
-		// Add only in Rich Editor mode
-		if ( get_user_option('rich_editing') == 'true') {
-			add_filter("mce_external_plugins", array(&$this, 'addTinyMCEPlugin'));
-			add_filter('mce_buttons', array(&$this, 'registerTinyMCEButton'));
-		}
-	}
-
-	/**
-	* add TinyMCE Plugin
-	*
-	* @param array $plugin_array An array of TinyMCE plugins
-	* @param array
-	*/
-	public function addTinyMCEPlugin( $plugin_array ) {
-		$plugin_array['RacketManager'] = RACKETMANAGER_URL.'/admin/tinymce/editor_plugin.js';
-		return $plugin_array;
-	}
-
-	/**
-	* register TinyMCE Button
-	*
-	* @param array $buttons An array of TinyMCE Buttons
-	* @return array
-	*/
-	public function registerTinyMCEButton( $buttons ) {
-		array_push($buttons, "separator", "RacketManager");
-		return $buttons;
-	}
-
-	/**
-	* Display the TinyMCE Window.
-	*
-	*/
-	public function showTinyMCEWindow() {
-		require_once( RACKETMANAGER_PATH . '/admin/tinymce/window.php' );
-		exit;
 	}
 
 	/**

@@ -50,8 +50,13 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.0.1 =
+* BUGFIX: use correct plugin name in widget.php to load Javascript
+* BUGFIX: use correct plugin name in admin.php for ajax settings
+* UPDATE: remove tinymce
+
 = 6.0.0 =
-* NEW: use racketmanager instead of racketmanager
+* NEW: use racketmanager instead of leaguemanager
 
 = 5.6.22 =
 * BUGFIX: user correct team field for checkPlayerResult

@@ -66,9 +66,7 @@ msgstr ""
 
 #: admin/admin.php:50 admin/admin.php:52 admin/export.php:16
 #: admin/import.php:29 admin/index.php:37 admin/index.php:75
-#: admin/tinymce/window.php:55 admin/tinymce/window.php:90
-#: admin/tinymce/window.php:151 admin/tinymce/window.php:195
-#: admin/tinymce/window.php:223 admin/upgrade.php:475 lib/widget.php:32
+#: admin/upgrade.php:475 lib/widget.php:32
 #: lib/widget.php:300 templates/archive-tennis.php:18 templates/archive.php:19
 msgid "League"
 msgstr ""
@@ -76,7 +74,7 @@ msgstr ""
 #: admin/admin.php:54 admin/championship.php:25 admin/index.php:13
 #: admin/match.php:122 admin/seasons.php:36 admin/settings.php:38
 #: admin/show-league.php:101 admin/stats.php:59 admin/team.php:27
-#: admin/tinymce/window.php:27 sports/racing.php:280
+#: sports/racing.php:280
 msgid "Racketmanager"
 msgstr ""
 
@@ -136,7 +134,7 @@ msgid "Save"
 msgstr ""
 
 #: admin/admin.php:188 admin/stats.php:91 admin/team.php:46 admin/team.php:58
-#: admin/tinymce/window.php:244 racketmanager.php:299 lib/stats.php:411
+#: racketmanager.php:299 lib/stats.php:411
 msgid "Cancel"
 msgstr ""
 
@@ -164,7 +162,7 @@ msgid "Yellow/Red"
 msgstr ""
 
 #: admin/admin.php:188 admin/stats.php:91 admin/team.php:46 admin/team.php:58
-#: admin/tinymce/window.php:248 lib/stats.php:411
+#: lib/stats.php:411
 msgid "Insert"
 msgstr ""
 
@@ -287,8 +285,7 @@ msgstr ""
 msgid "Season"
 msgstr ""
 
-#: admin/admin.php:1408 admin/team.php:35 admin/tinymce/window.php:45
-#: admin/tinymce/window.php:172 templates/standings-compact.php:27
+#: admin/admin.php:1408 admin/team.php:35 templates/standings-compact.php:27
 #: templates/standings-extend.php:28 templates/teams.php:23
 msgid "Team"
 msgstr ""
@@ -412,7 +409,7 @@ msgid "Round"
 msgstr ""
 
 #: admin/championship.php:48 admin/export.php:32 admin/import.php:45
-#: admin/index.php:40 admin/tinymce/window.php:42 lib/widget.php:309
+#: lib/widget.php:309
 #: templates/archive-tennis.php:39 templates/archive.php:50
 #: templates/championship.php:20 templates/team.php:29
 msgid "Matches"
@@ -449,8 +446,7 @@ msgstr ""
 msgid "#"
 msgstr ""
 
-#: admin/championship.php:164 admin/matches.php:48 admin/tinymce/window.php:43
-#: admin/tinymce/window.php:121 templates/championship.php:64
+#: admin/championship.php:164 admin/matches.php:48 templates/championship.php:64
 #: templates/matches-gymnastics.php:50
 #: templates/matches-irish-gaelic-football.php:50
 #: templates/matches-tennis.php:51 templates/matches-volleyball.php:50
@@ -468,7 +464,7 @@ msgid "Preliminary Rounds &#8211; Group %s"
 msgstr ""
 
 #: admin/championship.php:213 admin/show-league.php:136 admin/standings.php:13
-#: admin/tinymce/window.php:40 lib/widget.php:118 lib/widget.php:322
+#: lib/widget.php:118 lib/widget.php:322
 msgid "Table"
 msgstr ""
 
@@ -759,7 +755,7 @@ msgstr ""
 msgid "Championship display"
 msgstr ""
 
-#: admin/documentation.php:453 admin/tinymce/window.php:41
+#: admin/documentation.php:453
 #: templates/archive.php:54 templates/crosstable.php:20
 #: templates/crosstable.php:47
 msgid "Crosstable"
@@ -1109,8 +1105,7 @@ msgid ""
 "ranking and different other options. Afterwards <a href=\"%s\" class="
 "\"thickbox\">teams</a> and <a href=\"%s\" class=\"thickbox\">matches</a> can "
 "be added to database. Data from RacketManager can be inserted in a page or "
-"post using the cup <a href=\"%s\" class=\"thickbox\">TinyMCE Button</a> or "
-"directly shortcodes introduced above. Furthermore matches and standings can "
+"post using shortcodes introduced above. Furthermore matches and standings can "
 "be displayed in the sidebar with a <a href=\"%s\" class=\"thickbox\">widget</"
 "a>. A page or post can be also marked as <a href=\"%s\" class=\"thickbox"
 "\">match report</a> with easy-to-use dropdown menus from which the match can "
@@ -1229,7 +1224,7 @@ msgid "Data"
 msgstr ""
 
 #: admin/export.php:31 admin/import.php:44 admin/index.php:39
-#: admin/tinymce/window.php:44 templates/teams.php:20
+#: templates/teams.php:20
 msgid "Teams"
 msgstr ""
 
@@ -1647,62 +1642,7 @@ msgstr ""
 msgid "Select Group (Optional)"
 msgstr ""
 
-#: admin/tinymce/window.php:46
-msgid "Archive"
-msgstr ""
-
-#: admin/tinymce/window.php:58 admin/tinymce/window.php:93
-#: admin/tinymce/window.php:154 admin/tinymce/window.php:198
-#: admin/tinymce/window.php:226
-msgid "No League"
-msgstr ""
-
-#: admin/tinymce/window.php:70 admin/tinymce/window.php:105
-#: admin/tinymce/window.php:210
-msgid "Display"
-msgstr ""
-
-#: admin/tinymce/window.php:73
-msgid "Extend"
-msgstr ""
-
-#: admin/tinymce/window.php:74
-msgid "Compact"
-msgstr ""
-
-#: admin/tinymce/window.php:75
-msgid "Slim"
-msgstr ""
-
-#: admin/tinymce/window.php:80
-msgid "Show Logos"
-msgstr ""
-
-#: admin/tinymce/window.php:108
-msgid "Match day based"
-msgstr ""
-
-#: admin/tinymce/window.php:109
-msgid "All"
-msgstr ""
-
-#: admin/tinymce/window.php:110
-msgid "Only Home Team"
-msgstr ""
-
-#: admin/tinymce/window.php:124
-msgid "No Match"
-msgstr ""
-
-#: admin/tinymce/window.php:175
-msgid "No Team"
-msgstr ""
-
-#: admin/tinymce/window.php:212
-msgid "Embed"
-msgstr ""
-
-#: admin/tinymce/window.php:213 templates/crosstable.php:47
+#: templates/crosstable.php:47
 msgid "Popup"
 msgstr ""
 
@@ -2279,20 +2219,4 @@ msgstr ""
 
 #. Plugin Name of the plugin/theme
 msgid "RacketManager"
-msgstr ""
-
-#. Plugin URI of the plugin/theme
-msgid "http://kolja.galerie-neander.de/plugins/racketmanager/"
-msgstr ""
-
-#. Description of the plugin/theme
-msgid "Manage and present sports league results."
-msgstr ""
-
-#. Author of the plugin/theme
-msgid "Kolja Schleich"
-msgstr ""
-
-#. Author URI of the plugin/theme
-msgid "http://kolja.galerie-neander.de/"
 msgstr ""

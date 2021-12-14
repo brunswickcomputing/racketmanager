@@ -63,7 +63,7 @@ class RacketManagerWidget extends WP_Widget {
 
     ob_start();
     extract( $args );
-    wp_enqueue_script( 'racketmanager_widget_js', '/wp-content/plugins/racketmanager/js/widget.js' );
+    wp_enqueue_script( 'racketmanager_widget_js', '/wp-content/plugins/leaguemanager/js/widget.js' );
 
     $title          = ( ! empty( $instance['title'] ) ) ? $instance['title'] : '';
     $title          = apply_filters('widget_title', $instance['title']);

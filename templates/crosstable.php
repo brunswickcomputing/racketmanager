@@ -10,9 +10,9 @@
 	<table class='racketmanager crosstable' summary='' title='<?php _e( 'Crosstable', 'racketmanager' ) ?> <?php the_league_title() ?>'>
 		<thead>
 			<tr>
-				<th colspan='2' style='text-align: center;'><?php _e( 'Club', 'racketmanager' ) ?></th>
+				<th colspan='2' class="team"><?php _e( 'Club', 'racketmanager' ) ?></th>
 			<?php for ( $i = 1; $i <= get_num_teams_total(); $i++ ) { ?>
-				<th style='text-align: center;'><?php echo $i ?></th>
+				<th class="fixture"><?php echo $i ?></th>
 			<?php } ?>
 			</tr>
 		</thead>
@@ -30,5 +30,5 @@
 			<?php } ?>
 		</tbody>
 	</table>
-								
+
 <?php } ?>

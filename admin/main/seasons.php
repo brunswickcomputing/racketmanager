@@ -16,7 +16,7 @@
 		<thead>
 		<tr>
 			<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('seasons-filter'));" /></th>
-			<th scope="col" class="num">ID</th>
+			<th scope="col" class="column-num">ID</th>
 			<th scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>
             <th scope="col"><?php _e( 'Action', 'racketmanager' ) ?></th>
 		</tr>
@@ -28,7 +28,7 @@
 				<th scope="row" class="check-column">
 					<input type="checkbox" value="<?php echo $season->id ?>" name="season[<?php echo $season->id ?>]" />
 				</th>
-				<td class="num"><?php echo $season->id ?></td>
+				<td class="column-num"><?php echo $season->id ?></td>
 				<td><?php echo $season->name ?></td>
                 <td><a class="button-secondary" href="admin.php?page=racketmanager&amp;subpage=competitions&amp;season=<?php echo $season->name ?>">Add Competitions</a></td>
 			</tr>

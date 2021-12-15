@@ -37,12 +37,12 @@ jQuery(function() {
                 <thead>
                 <tr>
                     <th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('competitions-filter'));" /></th>
-                    <th scope="col" class="num">ID</th>
+                    <th scope="col" class="column-num">ID</th>
                     <th scope="col"><?php _e( 'Competition', 'racketmanager' ) ?></th>
-                    <th scope="col" class="num"><?php _e( 'Number of Seasons', 'racketmanager' ) ?></th>
-                    <th scope="col" class="num"><?php _e( 'Leagues', 'racketmanager' ) ?></th>
-                    <th scope="col" class="num"><?php _e( 'Number of Sets', 'racketmanager' ) ?></th>
-                    <th scope="col" class="num"><?php _e( 'Number of Rubbers', 'racketmanager' ) ?></th>
+                    <th scope="col" class="column-num"><?php _e( 'Number of Seasons', 'racketmanager' ) ?></th>
+                    <th scope="col" class="column-num"><?php _e( 'Leagues', 'racketmanager' ) ?></th>
+                    <th scope="col" class="column-num"><?php _e( 'Number of Sets', 'racketmanager' ) ?></th>
+                    <th scope="col" class="column-num"><?php _e( 'Number of Rubbers', 'racketmanager' ) ?></th>
                     <th scope="col" class="centered"><?php _e( 'Type', 'racketmanager' ) ?></th>
                 </tr>
                 <tbody id="the-list">
@@ -53,12 +53,12 @@ jQuery(function() {
                     $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
                     <tr class="<?php echo $class ?>">
                         <th scope="row" class="check-column"><input type="checkbox" value="<?php echo $competition->id ?>" name="competition[<?php echo $competition->id ?>]" /></th>
-                        <td class="num"><?php echo $competition->id ?></td>
+                        <td class="column-num"><?php echo $competition->id ?></td>
                         <td><a href="index.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>"><?php echo $competition->name ?></a></td>
-                        <td class="num"><?php echo $competition->num_seasons ?></td>
-                        <td class="num"><?php echo $competition->num_leagues ?></td>
-                        <td class="num"><?php echo $competition->num_sets ?></td>
-                        <td class="num"><?php echo $competition->num_rubbers ?></td>
+                        <td class="column-num"><?php echo $competition->num_seasons ?></td>
+                        <td class="column-num"><?php echo $competition->num_leagues ?></td>
+                        <td class="column-num"><?php echo $competition->num_sets ?></td>
+                        <td class="column-num"><?php echo $competition->num_rubbers ?></td>
                         <td>
                             <?php switch ($competition->type) {
                             case 'WS': _e( 'Ladies Singles', 'racketmanager' ); break;

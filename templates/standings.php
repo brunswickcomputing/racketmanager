@@ -12,7 +12,7 @@
         <tr>
             <th class="num"><?php echo _e( 'Pos', 'racketmanager' ) ?></th>
             <?php if ( show_standings('status') ) {      ?><th class="num">&#160;</th><?php } ?>
-            <th><?php _e( 'Team', 'racketmanager' ) ?></th>
+            <th class="team"><?php _e( 'Team', 'racketmanager' ) ?></th>
             <?php if ( show_standings('pld') ) {         ?><th class="num"><?php _e( 'Pld', 'racketmanager' ) ?></th><?php } ?>
             <?php if ( show_standings('won') ) {         ?><th class="num"><?php _e( 'W','racketmanager' ) ?></th><?php } ?>
             <?php if ( show_standings('tie') ) {         ?><th class="num"><?php _e( 'T','racketmanager' ) ?></th><?php } ?>
@@ -43,4 +43,3 @@
 </table>
 
 <?php } ?>
-

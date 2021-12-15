@@ -49,7 +49,7 @@
 		<thead>
 		<tr>
 			<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('player-filter'));" /></th>
-			<th scope="col" class="num">ID</th>
+			<th scope="col" class="column-num">ID</th>
 			<th scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>
 			<th scope="col"><?php _e( 'Gender', 'racketmanager' ) ?></th>
 			<th scope="col"><?php _e( 'BTM', 'racketmanager' ) ?></th>
@@ -66,7 +66,7 @@
 					<input type="checkbox" value="<?php echo $player->id ?>" name="player[<?php echo $player->id ?>]" />
 <?php } ?>
 				</th>
-				<td class="num"><?php echo $player->id ?></td>
+				<td class="column-num"><?php echo $player->id ?></td>
 				<td><?php echo $player->fullname ?></td>
 				<td><?php echo $player->gender ?></td>
 				<td><?php echo $player->btm ?></td>

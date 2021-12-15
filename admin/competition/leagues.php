@@ -15,10 +15,10 @@
 						<thead>
 						<tr>
 							<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('leagues-filter'));" /></th>
-							<th scope="col" class="num">ID</th>
+							<th scope="col" class="column-num">ID</th>
 							<th scope="col"><?php _e( 'League', 'racketmanager' ) ?></th>
-							<th scope="col" class="num"><?php _e( 'Teams', 'racketmanager' ) ?></th>
-							<th scope="col" class="num"><?php _e( 'Matches', 'racketmanager' ) ?></th>
+							<th scope="col" class="column-num"><?php _e( 'Teams', 'racketmanager' ) ?></th>
+							<th scope="col" class="column-num"><?php _e( 'Matches', 'racketmanager' ) ?></th>
 							<th scope="col"><?php _e( 'Actions', 'racketmanager' ) ?></th>
 						</tr>
 						<tbody id="the-list">
@@ -30,10 +30,10 @@
             $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 							<tr class="<?php echo $class ?>">
 								<th scope="row" class="check-column"><input type="checkbox" value="<?php echo $league->id ?>" name="league[<?php echo $league->id ?>]" /></th>
-								<td class="num"><?php echo $league->id ?></td>
+								<td class="column-num"><?php echo $league->id ?></td>
 								<td><a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a></td>
-								<td class="num"><?php echo $league->num_teams_total ?></td>
-								<td class="num"><?php echo $league->num_matches_total ?></td>
+								<td class="column-num"><?php echo $league->num_teams_total ?></td>
+								<td class="column-num"><?php echo $league->num_matches_total ?></td>
 								<td><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>&amp;editleague=<?php echo $league->id ?>"><?php _e( 'Edit', 'racketmanager' ) ?></a></td>
 							</tr>
 	<?php } ?>

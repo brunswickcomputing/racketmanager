@@ -17,7 +17,7 @@
 		<thead>
 		<tr>
 			<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('roster-request-filter'));" /></th>
-			<th scope="col" class="num">ID</th>
+			<th scope="col" class="column-num">ID</th>
             <th scope="col"><?php _e( 'Club', 'racketmanager' ) ?></th>
 			<th scope="col"><?php _e( 'First Name', 'racketmanager' ) ?></th>
             <th scope="col"><?php _e( 'Surame', 'racketmanager' ) ?></th>
@@ -42,7 +42,7 @@
 				<th scope="row" class="check-column">
 					<input type="checkbox" value="<?php echo $rosterRequest->id ?>" name="rosterRequest[<?php echo $rosterRequest->id ?>]" />
 				</th>
-				<td class="num"><?php echo $rosterRequest->id ?><input type="hidden" id="club_id[<?php echo $rosterRequest->id ?>]" name="club_id[<?php echo $rosterRequest->id ?>]" value="<?php echo $club->id ?>"/></td>
+				<td class="column-num"><?php echo $rosterRequest->id ?><input type="hidden" id="club_id[<?php echo $rosterRequest->id ?>]" name="club_id[<?php echo $rosterRequest->id ?>]" value="<?php echo $club->id ?>"/></td>
                 <td><?php echo $club->name ?></td>
                 <td><?php echo $rosterRequest->first_name ?></td>
 				<td><?php echo $rosterRequest->surname ?></td>

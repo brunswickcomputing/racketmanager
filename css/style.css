@@ -44,12 +44,12 @@ table.racketmanager .last5Icon span { border: 0; background-image: url(images/la
 
 table.racketmanager .last5-bg { float:left; width:20px; height:17px; }
 
-table.racketmanager .num {
+table.racketmanager .num, table.racketmanager .fixture {
 	text-align: center;
 	}
 table.racketmanager .last5 {
 	text-align: center;
-	width: 130px;
+	width: 12.5%;
 	}
 table.racketmanager .logo,
 table .racketmanager .match-title.logo {
@@ -662,7 +662,7 @@ tr.match-rubber-row {
 	color: #666666;
 }
 th.team {
-	width: 22%;
+	width: 25%;
 }
 div.teampage h3.header {
 	color: #500B73;

@@ -50,6 +50,11 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.0.2 =
+* UPDATE: apply consistent widths for standings and crosstable fields
+* UPDATE: replace css style num with column-num in admin
+* UPDATE: display set and total scrore boxes when printing match card
+
 = 6.0.1 =
 * BUGFIX: use correct plugin name in widget.php to load Javascript
 * BUGFIX: use correct plugin name in admin.php for ajax settings

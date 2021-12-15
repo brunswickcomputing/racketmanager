@@ -18,11 +18,11 @@
 		<thead>
 		<tr>
 			<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('clubs-filter'));" /></th>
-			<th scope="col" class="num">ID</th>
+			<th scope="col" class="column-num">ID</th>
 			<th scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>
             <th scope="col"><?php _e( 'Match Secretary', 'racketmanager' ) ?></th>
-            <th scope="col" class="num"></th>
-            <th scope="col" class="num"></th>
+            <th scope="col" class="column-num"></th>
+            <th scope="col" class="column-num"></th>
 		</tr>
 		<tbody id="the-list">
 <?php if ( isset($club_id) && $club_id > 0) {
@@ -38,7 +38,7 @@
 				<th scope="row" class="check-column">
 					<input type="checkbox" value="<?php echo $club->id ?>" name="club[<?php echo $club->id ?>]" />
 				</th>
-				<td class="num"><?php echo $club->id ?></td>
+				<td class="column-num"><?php echo $club->id ?></td>
 				<td><a href="admin.php?page=racketmanager&amp;subpage=club&amp;club_id=<?php echo $club->id ?> "><?php echo $club->name ?></a></td>
                 <td><?php echo $club->matchSecretaryName ?></td>
                 <td><a href="admin.php?page=racketmanager&amp;view=roster&amp;club_id=<?php echo $club->id ?> " class="button-secondary"><?php _e( 'Roster', 'racketmanager' ) ?></a></td>

@@ -57,7 +57,7 @@
 		<thead>
 		<tr>
 			<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('roster-filter'));" /></th>
-			<th scope="col" class="num">ID</th>
+			<th scope="col" class="column-num">ID</th>
 			<th scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>
 			<th scope="col"><?php _e( 'Gender', 'racketmanager' ) ?></th>
 			<th scope="col"><?php _e( 'BTM', 'racketmanager' ) ?></th>
@@ -78,7 +78,7 @@
 					<input type="checkbox" value="<?php echo $roster->roster_id ?>" name="roster[<?php echo $roster->roster_id ?>]" />
 			<?php } ?>
 				</th>
-				<td class="num"><?php echo $roster->roster_id ?></td>
+				<td class="column-num"><?php echo $roster->roster_id ?></td>
 				<td><?php echo $roster->fullname ?></td>
 				<td><?php echo $roster->gender ?></td>
 				<td><?php echo $roster->btm ?></td>

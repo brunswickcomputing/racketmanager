@@ -37,8 +37,8 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_show_rubbers', array(&$this, 'showRubbers') );
 		add_action( 'wp_ajax_nopriv_racketmanager_show_rubbers', array(&$this, 'showRubbers') );
 
-		add_action( 'wp_ajax_racketmanager_view_rubbers', array(&$this, 'viewRubbers') );
-		add_action( 'wp_ajax_nopriv_racketmanager_view_rubbers', array(&$this, 'viewRubbers') );
+		add_action( 'wp_ajax_racketmanager_view_rubbers', array(&$this, 'viewMatchRubbers') );
+		add_action( 'wp_ajax_nopriv_racketmanager_view_rubbers', array(&$this, 'viewMatchRubbers') );
 
 		add_action( 'wp_ajax_racketmanager_update_rubbers', array(&$this, 'updateRubbers') );
 		add_action( 'wp_ajax_racketmanager_confirm_results', array(&$this, 'confirmResults') );
@@ -317,10 +317,10 @@ class RacketManagerAJAX extends RacketManager {
 	}
 
 	/**
-	* build screen to view match rubbers
+	* build screen to view match rubbers for printing
 	*
 	*/
-	public function viewRubbers() {
+	public function viewMatchRubbers() {
 		global $racketmanager, $championship;
 		$matchId = $_POST['matchId'];
 		$match = get_match($matchId);
@@ -394,9 +394,9 @@ class RacketManagerAJAX extends RacketManager {
 							</tr>
 							<tr>
 								<td colspan="<?php echo $pointsspan ?>" class="rtd" style="text-align: center;">
-									<input class="points" type="text" size="2" disabled id="home_points[<?php echo $r ?>]" name="home_points[<?php echo $r ?>]" />
+									<input class="points" type="text" size="2" id="home_points[<?php echo $r ?>]" name="home_points[<?php echo $r ?>]" />
 									:
-									<input class="points" type="text" size="2" disabled id="away_points[<?php echo $r ?>]" name="away_points[<?php echo $r ?>]" />
+									<input class="points" type="text" size="2" id="away_points[<?php echo $r ?>]" name="away_points[<?php echo $r ?>]" />
 								</td>
 							</tr>
 							<?php
@@ -410,9 +410,9 @@ class RacketManagerAJAX extends RacketManager {
 								<input class="player" name="homesig" id="homesig" placeholder="Home Captain Signature" />
 							</td>
 							<td colspan="<?php echo intval($num_sets) ?>" class="rtd" style="text-align: center;">
-								<input class="points" type="text" size="2" disabled id="home_points[<?php echo $r ?>]" name="home_points[<?php echo $r ?>]" />
+								<input class="points" type="text" size="2" id="home_points[<?php echo $r ?>]" name="home_points[<?php echo $r ?>]" />
 								:
-								<input class="points" type="text" size="2" disabled id="away_points[<?php echo $r ?>]" name="away_points[<?php echo $r ?>]" />
+								<input class="points" type="text" size="2" id="away_points[<?php echo $r ?>]" name="away_points[<?php echo $r ?>]" />
 							</td>
 							<td class="rtd">
 								<input class="player" name="awaysig" id="awaysig" placeholder="Away Captain Signature" />

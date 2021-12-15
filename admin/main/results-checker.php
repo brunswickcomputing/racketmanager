@@ -18,7 +18,7 @@
 		<thead>
 		<tr>
 			<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('results-checker-filter'));" /></th>
-			<th scope="col" class="num">ID</th>
+			<th scope="col" class="column-num">ID</th>
       <th scope="col"><?php _e( 'Date', 'racketmanager' ) ?></th>
 			<th scope="col"><?php _e( 'League', 'racketmanager' ) ?></th>
       <th scope="col"><?php _e( 'Match', 'racketmanager' ) ?></th>

@@ -33,7 +33,7 @@
 		<thead>
 		<tr>
 			<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" /></th>
-			<th scope="col" class="num">ID</th>
+			<th scope="col" class="column-num">ID</th>
 			<th scope="col"><?php _e( 'Title', 'racketmanager' ) ?></th>
 			<th scope="col"><?php _e( 'Affiliated Club', 'racketmanager' ) ?></th>
 			<th scope="col"><?php _e( 'Stadium', 'racketmanager' ) ?></th>
@@ -50,7 +50,7 @@
                 <th scope="row" class="check-column">
                     <input type="checkbox" value="<?php echo $team->id ?>" name="team[<?php echo $team->id ?>]" />
                 </th>
-                <td class="num"><?php echo $team->id ?></td>
+                <td class="column-num"><?php echo $team->id ?></td>
                 <td><a href="admin.php?page=racketmanager&amp;subpage=team&amp;edit=<?php echo $team->id; ?><?php if ( $team->affiliatedclub!= '' ) ?>&amp;club_id=<?php echo $team->affiliatedclub ?> "><?php echo $team->title ?></a></td>
                 <td><?php echo $team->affiliatedclubname ?></td>
                 <td><?php echo $team->stadium ?></td>
@@ -69,7 +69,7 @@
                         <th scope="row" class="check-column">
                             <input type="checkbox" value="<?php echo $team->id ?>" name="team[<?php echo $team->id ?>]" />
                         </th>
-                        <td class="num"><?php echo $team->id ?></td>
+                        <td class="column-num"><?php echo $team->id ?></td>
                         <td><a href="admin.php?page=racketmanager&amp;subpage=team&amp;edit=<?php echo $team->id; ?><?php if ( $team->affiliatedclub!= '' ) ?>&amp;club_id=<?php echo $team->affiliatedclub ?> "><?php echo $team->title ?></a></td>
                         <td><?php echo $team->affiliatedclubname ?></td>
                         <td><?php echo $team->stadium ?></td>

@@ -59,7 +59,7 @@
 				<th scope="col"><?php _e( 'ID', 'racketmanager' ) ?></th>
 				<th scope="col"><?php _e( 'Date','racketmanager' ) ?></th>
 <?php if ( !empty($league->groups) && $league->mode == 'championship' ) { ?>
-				<th scope="col" class="num"><?php _e( 'Group', 'racketmanager' ) ?></th>
+				<th scope="col" class="column-num"><?php _e( 'Group', 'racketmanager' ) ?></th>
 <?php } ?>
 				<th scope="col" class="match-title"><?php _e( 'Match','racketmanager' ) ?></th>
 				<th scope="col"><?php _e( 'Location','racketmanager' ) ?></th>
@@ -81,7 +81,7 @@
 					</th>
 					<td><?php echo $match->id ?></td>
 					<td><?php echo ( substr($match->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date(get_option('date_format'), $match->date) ?></td>
-					<?php if ( !empty($league->groups) && $league->mode == 'championship' ) : ?><td class="num"><?php echo $match->group ?></td><?php endif; ?>
+					<?php if ( !empty($league->groups) && $league->mode == 'championship' ) : ?><td class="column-num"><?php echo $match->group ?></td><?php endif; ?>
 					<td class="match-title"><a href="admin.php?page=racketmanager&amp;subpage=match&amp;league_id=<?php echo $league->id ?>&amp;edit=<?php echo $match->id ?>&amp;season=<?php echo $season ?><?php if(isset($group)) echo '&amp;group=' . $group; ?>"><?php echo $match->match_title ?></a></td>
 					<td><?php echo ( empty($match->location) ) ? 'N/A' : $match->location ?></td>
 					<td><?php echo ( '00:00' == $match->hour.":".$match->minutes ) ? 'N/A' : mysql2date(get_option('time_format'), $match->date) ?></td>

@@ -485,16 +485,16 @@ final class League_Championship extends RacketManager {
   /**
   * proceed to next final round
   *
-  * @param string $last
-  * @param string $current
+  * @param string $current current round
+  * @param string $next next round
   * @param string $league_id
   * @return void
   */
-  private function proceed( $last, $current ) {
+  private function proceed( $current, $next ) {
     global $wpdb;
 
     $league = get_league();
-    $matches = $league->getMatches( array("final" => $current, "limit" => false) );
+    $matches = $league->getMatches( array("final" => $next, "limit" => false) );
 
     foreach ( $matches AS $match ) {
       $update = true;
@@ -514,9 +514,9 @@ final class League_Championship extends RacketManager {
         } else {
           $away['no'] = 0;
         }
-        // get matches of previous round
+        // get matches of current round
 
-        $prev = $league->getMatches( array("final" => $last, "limit" => false) );
+        $prev = $league->getMatches( array("final" => $current, "limit" => false) );
 
         $home['team'] = 0;
         $away['team'] = 0;
@@ -543,7 +543,7 @@ final class League_Championship extends RacketManager {
             $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_matches} SET `away_team` = %d WHERE `id` = %d", $away['team'], $match->id ) );
           }
           // Set winners on final
-          if ( $current == 'third' ) {
+          if ( $next == 'third' ) {
             $match = $league->getMatches( array_merge($match_args, array("final" => "final")) );
             $match = $match[0];
             $home_team = $prev_home->winner_id;

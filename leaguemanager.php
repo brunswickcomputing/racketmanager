@@ -3,7 +3,7 @@
 Plugin Name: Racketmanager
 Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
 Description: Manage and present sports league results.
-Version: 6.0.2
+Version: 6.0.3
 Author: Paul Moffat
 
 Copyright 2008-2021  Paul Moffat (email: paul@paarcs.com)
@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 * @author Paul Moffat
 * @package RacketManager
-* @version 6.0.2
+* @version 6.0.3
 * @copyright 2008-2021
 * @license GPL-3
 */
@@ -45,7 +45,7 @@ class RacketManager {
 	*
 	* @var string
 	*/
-	private $version = '6.0.2';
+	private $version = '6.0.3';
 
 	/**
 	* database version
@@ -88,7 +88,7 @@ class RacketManager {
 
 		add_action( 'wp_loaded', array(&$this, 'add_racketmanager_templates') );
 
-		add_filter( 'wp_privacy_personal_data_exporters', array(&$this, 'register_privacy_data_exporter') );
+		add_filter( 'wp_privacy_personal_data_exporters', array(&$this, 'racketmanager_register_exporter') );
 
 	}
 
@@ -196,6 +196,15 @@ class RacketManager {
 		return $template;
 	}
 
+	public function racketmanager_register_exporter( $exporters_array ) {
+		$exporters_array['racketmanager_exporter'] = array(
+			'exporter_friendly_name' => 'Racketmanager exporter',
+		 	'callback' => array(&$this, 'racketmanager_privacy_exporter')
+		);
+		return $exporters_array;
+
+	}
+
 	public function racketmanager_privacy_exporter( $email_address, $page = 1 ) {
 		$page = (int) $page;
 
@@ -246,6 +255,7 @@ class RacketManager {
 			'item_id'     => "user-{$user->ID}",
 			'data'        => $user_data_to_export,
 		);
+
 		return array(
 			'data' => $data_to_export,
 			'done' => true,

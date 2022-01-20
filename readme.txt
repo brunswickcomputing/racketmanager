@@ -50,6 +50,10 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.0.3 =
+* BUGFIX: make privacy exporter work
+* UPDATE: make championship proceed function clearer
+
 = 6.0.2 =
 * UPDATE: apply consistent widths for standings and crosstable fields
 * UPDATE: replace css style num with column-num in admin

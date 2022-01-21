@@ -13,7 +13,7 @@ You can check the content of a variable when you insert the tag <?php var_dump($
 ?>
 <div class="jquery-ui-tabs">
 	<ul class="tablist">
-		<li><a href="#results"><?php _e( 'Results', 'racketmanager' ) ?></a></li>
+		<li><a href="#results"><?php _e( 'Draw', 'racketmanager' ) ?></a></li>
 		<li><a href="#matches"><?php _e( 'Matches', 'racketmanager' ) ?></a></li>
 		<li><a href="#teams"><?php _e( 'Teams', 'racketmanager' ) ?></a></li>
 		<?php if ( !isset($league->entryType) || $league->entryType != 'player' ) { ?>

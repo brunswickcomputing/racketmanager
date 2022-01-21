@@ -40,6 +40,9 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_view_rubbers', array(&$this, 'viewMatchRubbers') );
 		add_action( 'wp_ajax_nopriv_racketmanager_view_rubbers', array(&$this, 'viewMatchRubbers') );
 
+		add_action( 'wp_ajax_racketmanager_matchcard_player', array(&$this, 'printMatchCardPlayer') );
+		add_action( 'wp_ajax_nopriv_racketmanager_matchcard_player', array(&$this, 'printMatchCardPlayer') );
+
 		add_action( 'wp_ajax_racketmanager_update_rubbers', array(&$this, 'updateRubbers') );
 		add_action( 'wp_ajax_racketmanager_confirm_results', array(&$this, 'confirmResults') );
 
@@ -413,6 +416,93 @@ class RacketManagerAJAX extends RacketManager {
 								<input class="points" type="text" size="2" id="home_points[<?php echo $r ?>]" name="home_points[<?php echo $r ?>]" />
 								:
 								<input class="points" type="text" size="2" id="away_points[<?php echo $r ?>]" name="away_points[<?php echo $r ?>]" />
+							</td>
+							<td class="rtd">
+								<input class="player" name="awaysig" id="awaysig" placeholder="Away Captain Signature" />
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</form>
+			<?php echo $sponsorhtml ?>
+		</div>
+		<?php
+		die();
+	}
+
+	/**
+	* build screen to print matchcard for players
+	*
+	*/
+	public function printMatchCardPlayer() {
+		global $racketmanager, $championship;
+		$matchId = $_POST['matchId'];
+		$match = get_match($matchId);
+		$league = get_league($match->league_id);
+		$num_sets = $league->num_sets;
+		$pointsspan = 2 + intval($num_sets);
+		$match_type = $league->type;
+		$sponsorhtml = sponsor_level_cat_func(array("columns" => 1, "title" => 'no', "bio" => 'no', "link" => 'no'), "");
+		?>
+		<div id="matchrubbers" class="rubber-block">
+			<div id="matchheader">
+				<div class="leaguetitle"><?php echo $league->title ?></div>
+				<div class="matchdate"><?php echo substr($match->date,0,10) ?></div>
+				<div class="matchday">
+					<?php if ( $league->mode == 'championship' ) {
+						echo $league->championship->getFinalName($match->final_round);
+					} else {
+						echo 'Week'.$match->match_day;
+					}?>
+				</div>
+				<div class="matchtitle">
+					<?php if ( $league->mode == 'championship' ) {
+					} else {
+						echo $match->match_title;
+					}
+				?>
+				</div>
+			</div>
+			<form id="match-view" action="#" method="post" onsubmit="return checkSelect(this)">
+				<?php wp_nonce_field( 'rubbers-match' ) ?>
+
+				<table class="widefat" summary="" style="margin-bottom: 2em;">
+					<thead>
+						<tr>
+							<th style="text-align: center;" colspan="1"><?php _e( 'Team', 'racketmanager' ) ?></th>
+							<th style="text-align: center;" colspan="<?php echo $num_sets ?>"><?php _e('Sets', 'racketmanager' ) ?></th>
+							<th style="text-align: center;" colspan="1"><?php _e( 'Team', 'racketmanager' ) ?></th>
+						</tr>
+					</thead>
+					<tbody class="rtbody rubber-table" id="the-list-rubbers-<?php echo $match->id ?>" >
+
+						<?php $class = ''; ?>
+
+						<tr class="rtr">
+							<td class="rtd">
+								<?php echo $match->teams['home']->title ?>
+							</td>
+
+							<?php for ( $i = 1; $i <= $num_sets; $i++ ) { ?>
+								<td class="rtd">
+									<input class="points" type="text" size="2" id="set_<?php echo $i ?>_player1" name="custom[sets][<?php echo $i ?>][player1]" />
+									:
+									<input class="points" type="text" size="2" id="set_<?php echo $i ?>_player2" name="custom[sets][<?php echo $i ?>][player2]" />
+								</td>
+							<?php } ?>
+
+							<td class="rtd">
+								<?php echo $match->teams['away']->title ?>
+							</td>
+						</tr>
+						<tr>
+							<td class="rtd">
+								<input class="player" name="homesig" id="homesig" placeholder="Home Captain Signature" />
+							</td>
+							<td colspan="<?php echo intval($num_sets) ?>" class="rtd" style="text-align: center;">
+								<input class="points" type="text" size="2" id="home_points" name="home_points" />
+								:
+								<input class="points" type="text" size="2" id="away_points" name="away_points" />
 							</td>
 							<td class="rtd">
 								<input class="player" name="awaysig" id="awaysig" placeholder="Away Captain Signature" />

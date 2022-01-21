@@ -242,8 +242,12 @@ Racketmanager.printScoreCard = function(e, link) {
 
 	e.preventDefault();
 	var matchId = jQuery(link).attr('id');
-	var $hreflink = jQuery(link).attr('href');
-	var $title = jQuery(link).attr('name');
+	var matchtype = jQuery(link).attr('type');
+	if (matchtype == 'player') {
+		var ajaxAction = 'racketmanager_matchcard_player';
+	} else {
+		var ajaxAction = 'racketmanager_view_rubbers';
+	}
 	var styleSheetList = document.styleSheets;
 	var $head = '<html><head><title>Match Card</title>';
 	for (var item of styleSheetList) {
@@ -257,7 +261,7 @@ Racketmanager.printScoreCard = function(e, link) {
 				url:RacketManagerAjaxL10n.requestUrl,
 				type: "POST",
 				data: {"matchId": matchId,
-					"action": "racketmanager_view_rubbers"},
+					"action": ajaxAction},
 				success: function($response) {
 					var printOne = $response;
 					if (!$mathCardWindow || $mathCardWindow.closed) {

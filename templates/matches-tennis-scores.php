@@ -29,7 +29,8 @@ global $racketmanager;
 
       <tr class='match-row rubber-view <?php echo $match->class ?>'>
         <?php if ( $league->mode == 'championship' ) { ?>
-          <td><?php echo $no ?></td>
+          <td><?php echo $no ?>
+          </td>
         <?php } ?>
         <?php if ( isset($match->num_rubbers) && $match->num_rubbers > 0 ) {
           if ( ($match->winner_id) != 0) { ?>
@@ -40,7 +41,7 @@ global $racketmanager;
             <?php } ?>
           <?php } else { ?>
             <td>
-              <a href="#" class='' id="<?php echo $match->id ?>" onclick="Racketmanager.printScoreCard(event, this)" title="<?php _e( 'Print matchcard', 'racketmanager' ) ?>">
+              <a href="#" class='' type="<?php echo $match->league->entryType ?>" id="<?php echo $match->id ?>" onclick="Racketmanager.printScoreCard(event, this)" title="<?php _e( 'Print matchcard', 'racketmanager' ) ?>">
                 <i class="racketmanager-svg-icon"><?php racketmanager_the_svg('icon-printer') ?></i>
               </a>
               <?php
@@ -53,9 +54,22 @@ global $racketmanager;
               <?php } ?>
             </td>
           <?php } ?>
-        <?php } else { ?>
-          <td class='angledir'></td>
-        <?php } ?>
+        <?php } else {
+          if ( ($match->winner_id) != 0) { ?>
+            <td class='angledir'></td>
+          <?php } else {
+            if ( strpos($match->home_team, "_") == false && strpos($match->away_team, "_") == false ) { ?>
+              <td class='angledir'>
+                <a href="#" class='' type="<?php echo $match->league->entryType ?>"
+                  id="<?php echo $match->id ?>" onclick="Racketmanager.printScoreCard(event, this)" title="<?php _e( 'Print matchcard', 'racketmanager' ) ?>">
+                  <i class="racketmanager-svg-icon"><?php racketmanager_the_svg('icon-printer') ?></i>
+                </a>
+              </td>
+            <?php } else { ?>
+              <td class='angledir'></td>
+            <?php }
+          }
+        } ?>
         <td class='match'>
 
           <?php the_match_date() ?> <?php the_match_time() ?> <?php the_match_location() ?><br />

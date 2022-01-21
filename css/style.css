@@ -647,6 +647,9 @@ div.teamlist .header .ui-icon {
 td.angledir {
 	width: 5%;
 }
+span.host {
+	font-weight: 700;
+}
 span.unplayedMatch {
 	color: grey;
 	font-size: 80%;
@@ -734,7 +737,7 @@ li.game{
 .winner{
     font-weight:bold;
 }
-li.game span{
+li.game span.draw-home {
     float:right;
     margin-right:5px;
 }

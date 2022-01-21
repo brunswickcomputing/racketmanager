@@ -9,20 +9,9 @@
 	<?php if ( has_action( 'racketmanager_edit_match_'.$league->sport ) ) {
 		do_action( 'racketmanager_edit_match_'.$league->sport, $league, $teams, $season, $max_matches, $matches, $submit_title, $mode )
 	} else { ?>
-		<form action="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id?>&amp;season=<?php echo $season ?><?php if (isset($finalkey)) echo '&amp;final=' . $finalkey . '&amp;jquery-ui-tab=1'; ?><?php if(isset($group)) echo '&amp;group=' . $group; ?>" method="post">
+		<form action="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id?>&amp;season=<?php echo $season ?><?php if (isset($finalkey)) echo '&amp;final=' . $finalkey . '&amp;jquery-ui-tab=1'; ?>" method="post">
 			<?php wp_nonce_field( 'racketmanager_manage-matches' ) ?>
-			<?php if ( !$is_finals ) { ?>
-				<table class="lm-form-table">
-
-					<?php if ( $cup && isset($group) ) { ?>
-						<tr valign="top">
-							<th scope="row"><input type="hidden" name="group" id="group" value="<?php echo $group ?>" /></th>
-						</tr>
-					<?php } ?>
-				</table>
-			<?php } ?>
-
-			<p class="match_info"><?php if ( !$edit ) { ?><?php _e( 'Note: Matches with different Home and Guest Teams will be added to the database.', 'racketmanager' ) ?><?php } ?></p>
+			<?php if ( !$edit ) { ?><p class="match_info"><?php _e( 'Note: Matches with different Home and Guest Teams will be added to the database.', 'racketmanager' ) ?></p><?php } ?>
 
 				<table class="widefat">
 					<thead>
@@ -35,15 +24,17 @@
 							<?php } else { ?>
 								<th scope="col"><?php _e( 'Day', 'racketmanager' ) ?></th>
 							<?php } ?>
-							<th scope="col"><?php _e( 'Home', 'racketmanager' ) ?></th>
-							<th scope="col"><?php _e( 'Guest', 'racketmanager' ) ?></th>
+							<th scope="col"><?php if ( $cup ) { _e( 'Team', 'racketmanager' ); } else { _e( 'Home', 'racketmanager' ); } ?></th>
+							<th scope="col"><?php if ( $cup ) { _e( 'Team', 'racketmanager' ); } else { _e( 'Away', 'racketmanager' ); } ?></th>
 							<th scope="col"><?php _e( 'Location','racketmanager' ) ?></th>
 							<?php if ( isset($league->entryType) && $league->entryType == 'player' ) {
-
 							} else { ?>
 								<th scope="col"><?php _e( 'Begin','racketmanager' ) ?></th>
 							<?php } ?>
 							<?php do_action('edit_matches_header_'.$league->sport) ?>
+							<?php if ( $singleCupGame ) { ?>
+								<th scope="col"></th>
+							<?php } ?>
 						</tr>
 					</thead>
 					<tbody id="the-list" class="lm-form-table">
@@ -63,7 +54,7 @@
 										</select>
 									</td>
 								<?php } ?>
-								<!-- Home team pop up, only shows teams in a Group if set for 'Championship' -->
+								<!-- Home team pop up -->
 								<td>
 									<?php if ( $singleCupGame ) { ?>
 										<input type="text" disabled name="home_team_title[<?php echo $i ?>]" id="home_team_title_<?php echo $i ?>" value="<?php echo $home_title ?>" />
@@ -78,8 +69,11 @@
 											<?php } ?>
 										</select>
 									<?php } ?>
+									<?php if ( $cup ) { ?>
+										<input type="radio" name="custom[<?php echo $i ?>][host]" id="team_host[<?php echo $i ?>]" value="home" <?php if ( isset($matches[$i]->custom['host']) ) { echo ($matches[$i]->custom['host'] == 'home') ? 'checked' : ''; } ?> />
+									<?php } ?>
 								</td>
-								<!-- Away team pop up, shows all teams in the league only if 'Allow non-group' check is set, otherwise only show teams in group, if set for 'Championship' -->
+								<!-- Away team pop up -->
 								<td>
 									<?php if ( $singleCupGame ) { ?>
 										<input type="text" disabled name="away_team_title[<?php echo $i ?>]" id="away_team_title_<?php echo $i ?>" value="<?php echo $away_title ?>" />
@@ -111,6 +105,9 @@
 										<?php } ?>
 
 									<?php } ?>
+									<?php if ( $cup ) { ?>
+										<input type="radio" name="custom[<?php echo $i ?>][host]" id="team_host[<?php echo $i ?>]" value="away" <?php if ( isset($matches[$i]->custom['host']) ) { echo ($matches[$i]->custom['host'] == 'away') ? 'checked' : ''; } ?> />
+									<?php } ?>
 								</td>
 								<td><input type="text" name="location[<?php echo $i ?>]" id="location[<?php echo $i ?>]" size="20" value="<?php if(isset($matches[$i]->location)) echo $matches[$i]->location ?>" size="30" /></td>
 								<?php if ( isset($league->entryType) && $league->entryType == 'player' ) {
@@ -132,6 +129,11 @@
 									</td>
 								<?php } ?>
 								<?php do_action('edit_matches_columns_'.$league->sport, (isset($matches[$i]) ? $matches[$i] : ''), $league, $season, (isset($teams) ? $teams : ''), $i) ?>
+								<?php if ( $singleCupGame ) { ?>
+									<td>
+										<input type="button" value="<?php _e('Notify teams', 'racketmanager') ?>" class="button button-secondary" />
+									</td>
+								<?php } ?>
 							</tr>
 							<input type="hidden" name="match[<?php echo $i ?>]" value="<?php if (isset($matches[$i]->id)) echo $matches[$i]->id; else echo ""; ?>" />
 						<?php } ?>

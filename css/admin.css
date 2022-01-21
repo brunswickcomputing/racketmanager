@@ -141,6 +141,12 @@ button[readonly], html input[readonly] {
 .championship-blocks {
     clear: both;
 }
+span.winner, span.host {
+  font-weight: 700;
+}
+span.host {
+  font-style: italic;
+}
 /*
  * sortable tables
  */

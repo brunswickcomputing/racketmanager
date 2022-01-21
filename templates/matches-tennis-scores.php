@@ -47,7 +47,7 @@ global $racketmanager;
               <?php
               if ( $userCanUpdate == true && ( !isset($match->confirmed) || $match->confirmed = "P" ) ) {
                 if ( is_numeric($match->home_team) && is_numeric($match->away_team) ) {?>
-                  <a href="#" class=""  onclick="Racketmanager.showRubbers(<?php echo $match->id ?>)"  title="<?php _e( 'Enter match result', 'racketmanager' ) ?>">
+                  <a href="#" class="" onclick="Racketmanager.showRubbers(<?php echo $match->id ?>)"  title="<?php _e( 'Enter match result', 'racketmanager' ) ?>">
                     <i class="racketmanager-svg-icon"><?php racketmanager_the_svg('icon-pencil') ?></i>
                   </a>
                 <?php } ?>
@@ -72,9 +72,30 @@ global $racketmanager;
         } ?>
         <td class='match'>
 
+          <?php
+          $homeClass = '';
+          $awayClass = '';
+          $homeTip = '';
+          $awayTip = '';
+          if ( $match->winner_id == $match->teams['home']->id ) {
+            $homeClass = 'winner';
+            $homeTip = 'Match winner';
+          } elseif ( $match->winner_id == $match->teams['away']->id ) {
+            $awayClass = 'winner';
+            $awayTip = 'Match winner';
+          } elseif ( isset( $match->custom['host'] ) ) {
+            if ( $match->custom['host'] == 'home' ) {
+              $homeClass = 'host';
+              $homeTip = 'Home team';
+            } elseif ( $match->custom['host'] == 'away' ) {
+              $awayClass = 'host';
+              $awayTip = 'Home team';
+            }
+          }
+          ?>
           <?php the_match_date() ?> <?php the_match_time() ?> <?php the_match_location() ?><br />
           <?php if ( isset($match->teams['home']->title) && isset($match->teams['away']->title) ) { ?>
-            <span class="<?php if ( $match->winner_id == $match->teams['home']->id ) echo 'winner'?>"><?php echo $match->teams['home']->title ?></span> - <span class="<?php if ( $match->winner_id == $match->teams['away']->id ) echo 'winner'?>"><?php echo $match->teams['away']->title; ?></span>
+            <span title="<?php echo $homeTip ?>" class="<?php echo $homeClass ?>"><?php echo $match->teams['home']->title ?></span> - <span title="<?php echo $awayTip ?>" class="<?php echo $awayClass?>"><?php echo $match->teams['away']->title; ?></span>
           <?php } else { ?>
             <?php the_match_title() ;?>
           <?php } ?>

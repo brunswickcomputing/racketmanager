@@ -50,6 +50,14 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.0.4 =
+* BUGFIX: fix group explode error in admin
+* UPDATE: use tournament name on tournament entry form
+* UPDATE: change tab name to "Draw" on championship pages
+* UPDATE: allow match card to be printed for player tournaments
+* UPDATE: reformat lines
+* UPDATE: set and show home team for championships
+
 = 6.0.3 =
 * BUGFIX: make privacy exporter work
 * UPDATE: make championship proceed function clearer

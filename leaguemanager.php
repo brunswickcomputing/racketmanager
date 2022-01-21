@@ -3,7 +3,7 @@
 Plugin Name: Racketmanager
 Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
 Description: Manage and present sports league results.
-Version: 6.0.3
+Version: 6.0.4
 Author: Paul Moffat
 
 Copyright 2008-2021  Paul Moffat (email: paul@paarcs.com)
@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 * @author Paul Moffat
 * @package RacketManager
-* @version 6.0.3
+* @version 6.0.4
 * @copyright 2008-2021
 * @license GPL-3
 */
@@ -45,7 +45,7 @@ class RacketManager {
 	*
 	* @var string
 	*/
-	private $version = '6.0.3';
+	private $version = '6.0.4';
 
 	/**
 	* database version

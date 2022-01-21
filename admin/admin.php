@@ -1015,9 +1015,16 @@ final class RacketManagerAdmin extends RacketManager
 
             // select first group if none is selected and league is cup championship
             if ( $cup && empty($group) && !$is_finals ) {
-                $groups = ( isset($league->groups) ? $league->groups : '');
-                $tmp = explode(";", $groups);
-                $group = $tmp[0];
+              $groups = ( isset($league->groups) ? $league->groups : '');
+							if ( is_array($groups) ) {
+							} else {
+								$groups = explode(";", $groups);
+							}
+							if (isset($groups[0])) {
+								$group = $groups[0];
+							} else {
+								$group = '';
+							}
             }
 
             $matches = array();

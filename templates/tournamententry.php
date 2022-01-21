@@ -16,7 +16,7 @@ The following variables are usable:
 	You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
 */
 ?>
-<h1 class="title-post"><?php echo ucfirst($type)." ".$season." " ?> Tournament Entry Form</h1>
+<h1 class="title-post"><?php echo $tournament->name ?> Tournament Entry Form</h1>
 <div class="entry-content">
 <?php if ( is_user_logged_in() ) { ?>
     <form id="form-tournamententry" action="" method="post">

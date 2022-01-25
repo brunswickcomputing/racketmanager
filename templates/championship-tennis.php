@@ -22,13 +22,13 @@ You can check the content of a variable when you insert the tag <?php var_dump($
 	</ul>
 	<!-- Results Overview -->
 	<div id="results" class="jquery-ui-tab">
-		<div class="">
+		<div class="tournament-bracket">
 			<?php foreach ( $finals AS $final ) { ?>
 
 				<div class="round-header"><?php echo $final->name; ?></div>
 			<?php } ?>
 		</div>
-		<div id="tournament-bracket">
+		<div class="tournament-bracket">
 
 			<?php foreach ( $finals AS $final ) { ?>
 

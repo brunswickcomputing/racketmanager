@@ -421,7 +421,7 @@ final class League_Championship extends RacketManager {
   public function updateFinalResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $round, $season ) {
     $league = get_league();
     $league->setFinals(true);
-    $num_matches = $league->_updateResults($matches, $home_points, $away_points, $home_team, $away_team, $custom, $season, $round, true);
+    $num_matches = $league->_updateResults($matches, $home_points, $away_points, $home_team, $away_team, $custom, $season, $round);
 
     if ( $round < $this->num_rounds )
     $this->proceed($this->getFinalKeys($round), $this->getFinalKeys($round+1));

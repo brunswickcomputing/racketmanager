@@ -534,14 +534,14 @@ class RacketManagerAJAX extends RacketManager {
 			$match->type = 'tournament';
 		}
 		$league = get_league($match->league_id);
-		$num_sets = $league->num_sets;
-		$num_rubbers = $league->num_rubbers;
+		$match->num_sets = $league->num_sets;
+		$match->num_rubbers = $league->num_rubbers;
 		$match_type = $league->type;
 		switch ($match_type) {
 			case 'MD':
 			$homeRosterMen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
 			$awayRosterMen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			for ($r = 0; $r < $num_rubbers; $r++) {
+			for ($r = 0; $r < $match->num_rubbers; $r++) {
 				$homeRoster[$r][1] = $homeRosterMen;
 				$homeRoster[$r][2] = $homeRosterMen;
 				$awayRoster[$r][1] = $awayRosterMen;
@@ -551,7 +551,7 @@ class RacketManagerAJAX extends RacketManager {
 			case 'WD':
 			$homeRosterWomen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
 			$awayRosterWomen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			for ($r = 0; $r < $num_rubbers; $r++) {
+			for ($r = 0; $r < $match->num_rubbers; $r++) {
 				$homeRoster[$r][1] = $homeRosterWomen;
 				$homeRoster[$r][2] = $homeRosterWomen;
 				$awayRoster[$r][1] = $awayRosterWomen;
@@ -563,7 +563,7 @@ class RacketManagerAJAX extends RacketManager {
 			$awayRosterMen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
 			$homeRosterWomen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
 			$awayRosterWomen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			for ($r = 0; $r < $num_rubbers; $r++) {
+			for ($r = 0; $r < $match->num_rubbers; $r++) {
 				$homeRoster[$r][1] = $homeRosterMen;
 				$homeRoster[$r][2] = $homeRosterWomen;
 				$awayRoster[$r][1] = $awayRosterMen;
@@ -617,7 +617,7 @@ class RacketManagerAJAX extends RacketManager {
 				<input type="hidden" name="current_league_id" id="current_league_id" value="<?php echo $match->league_id ?>" />
 				<input type="hidden" name="current_match_id" id="current_match_id" value="<?php echo $match->id ?>" />
 				<input type="hidden" name="current_season" id="current_season" value="<?php echo $match->season ?>" />
-				<input type="hidden" name="num_rubbers" value="<?php echo $league->num_rubbers ?>" />
+				<input type="hidden" name="num_rubbers" value="<?php echo $match->num_rubbers ?>" />
 				<input type="hidden" name="home_team" value="<?php echo $match->home_team ?>" />
 				<input type="hidden" name="away_team" value="<?php echo $match->away_team ?>" />
 				<input type="hidden" name="match_type" value="<?php echo $match->type ?>" />
@@ -628,7 +628,7 @@ class RacketManagerAJAX extends RacketManager {
 						<tr>
 							<th style="text-align: center;"><?php _e( 'Pair', 'racketmanager' ) ?></th>
 							<th style="text-align: center;"><?php _e( 'Home Team', 'racketmanager' ) ?></th>
-							<th style="text-align: center;" colspan="<?php echo $league->num_sets ?>"><?php _e('Sets', 'racketmanager' ) ?></th>
+							<th style="text-align: center;" colspan="<?php echo $match->num_sets ?>"><?php _e('Sets', 'racketmanager' ) ?></th>
 							<th style="text-align: center;"><?php _e( 'Away Team', 'racketmanager' ) ?></th>
 						</tr>
 					</thead>
@@ -658,7 +658,7 @@ class RacketManagerAJAX extends RacketManager {
 									</select>
 								</td>
 
-								<?php for ( $i = 1; $i <= $league->num_sets; $i++ ) {
+								<?php for ( $i = 1; $i <= $match->num_sets; $i++ ) {
 									if (!isset($rubber->sets[$i])) {
 										$rubber->sets[$i] = array('player1' => '', 'player2' => '');
 									} ?>
@@ -726,8 +726,8 @@ class RacketManagerAJAX extends RacketManager {
 							<tr>
 								<td class="rtd centered"></td>
 								<td class="rtd captain"><?php _e( 'Home Captain', 'racketmanager' ) ?></td>
-								<td colspan="<?php echo intval($num_sets) ?>" class="rtd">
-									<td class="rtd captain"><?php _e( 'Away Captain', 'racketmanager' ) ?></td>
+								<td colspan="<?php echo intval($match->num_sets) ?>" class="rtd">
+								<td class="rtd captain"><?php _e( 'Away Captain', 'racketmanager' ) ?></td>
 								</tr>
 								<tr>
 									<td class="rtd centered">
@@ -744,7 +744,7 @@ class RacketManagerAJAX extends RacketManager {
 											<?php } ?>
 										<?php } ?>
 									</td>
-									<td colspan="<?php echo intval($num_sets) ?>" class="rtd">
+									<td colspan="<?php echo intval($match->num_sets) ?>" class="rtd">
 									</td>
 									<td class="rtd" id="awayCaptain">
 										<?php if ( isset($match->away_captain) ) {

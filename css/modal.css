@@ -120,9 +120,11 @@ td input.player {
     text-align: center;
     vertical-align: middle
 }
+#matches-archive .modal-content,
+#matches .modal-content {
+    width: 90%;
+}
 
-#matches-archive .modal-content {
-    width: 100%;
 }
 /*  START OF MEDIA QUERIES */
 

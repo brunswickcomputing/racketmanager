@@ -156,8 +156,8 @@ Racketmanager.showRubbers = function(link) {
 Racketmanager.disableRubberUpdate = function() {
     
 };
-Racketmanager.updateRubbers = function(link) {
-    
+Racketmanager.updateResults = function(link) {
+
 	var selects = document.getElementById('match-rubbers').getElementsByTagName('select');
 	var values = [];
 	for(i=0;i<selects.length;i++) {

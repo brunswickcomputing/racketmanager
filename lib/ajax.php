@@ -769,7 +769,7 @@ class RacketManagerAJAX extends RacketManager {
 							<?php if ( current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == NULL ) { ?>
 
 								<input type="hidden" name="updateRubber" id="updateRubber" value="results" />
-								<button tabindex="500" class="button button-primary" type="button" id="updateRubberResults" onclick="Racketmanager.updateRubbers(this)">Update Results</button>
+								<button tabindex="500" class="button button-primary" type="button" id="updateRubberResults" onclick="Racketmanager.updateResults(this)">Update Results</button>
 							<?php } ?>
 							<p id="UpdateResponse"></p>
 							<?php if ( $match->confirmed == 'P' ) { ?>

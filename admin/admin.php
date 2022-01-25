@@ -1061,7 +1061,7 @@ final class RacketManagerAdmin extends RacketManager
                     $match_args["group"] = $group;
                 }
 
-                $form_title = sprintf(__( 'Edit Matches &#8211; %d. Match Day', 'racketmanager' ), $match_day);
+                $form_title = sprintf(__( 'Edit Matches - %d. Match Day', 'racketmanager' ), $match_day);
                 $submit_title = __('Edit Matches', 'racketmanager');
 
                 $matches = $league->getMatches( $match_args );
@@ -1080,14 +1080,14 @@ final class RacketManagerAdmin extends RacketManager
                 $max_matches = $final['num_matches'];
 
                 if ( 'add' == $mode ) {
-                    $form_title = $submit_title = sprintf(__( 'Add Matches &#8211; %s', 'racketmanager' ), $league->championship->getFinalname($finalkey));
+                    $form_title = $submit_title = sprintf(__( 'Add Matches - %s', 'racketmanager' ), $league->championship->getFinalname($finalkey));
                     for ( $h = 0; $h < $max_matches; $h++ ) {
                         $matches[$h] = new Match();
                         $matches[$h]->hour = $league->default_match_start_time['hour'];
                         $matches[$h]->minutes = $league->default_match_start_time['minutes'];
                     }
                 } else {
-                    $form_title = $submit_title = sprintf(__( 'Edit Matches &#8211; %s', 'racketmanager' ), $league->championship->getFinalname($finalkey));
+                    $form_title = $submit_title = sprintf(__( 'Edit Matches - %s', 'racketmanager' ), $league->championship->getFinalname($finalkey));
                     $match_args = array("final" => $finalkey);
                     $matches = $league->getMatches( $match_args );
                 }

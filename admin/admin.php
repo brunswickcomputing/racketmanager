@@ -2518,6 +2518,8 @@ final class RacketManagerAdmin extends RacketManager
                 $options['resultConfirmation'] = htmlspecialchars($_POST['resultConfirmation']);
                 $options['resultEntry'] = htmlspecialchars($_POST['resultEntry']);
                 $options['resultConfirmationEmail'] = htmlspecialchars($_POST['resultConfirmationEmail']);
+								$options['resultConfirmationEmailCup'] = htmlspecialchars($_POST['resultConfirmationEmailCup']);
+								$options['resultConfirmationEmailTournament'] = htmlspecialchars($_POST['resultConfirmationEmailTournament']);
                 $options['colors']['headers'] = htmlspecialchars($_POST['color_headers']);
                 $options['colors']['rows'] = array( 'alternate' => htmlspecialchars($_POST['color_rows_alt']), 'main' => htmlspecialchars($_POST['color_rows']), 'ascend' => htmlspecialchars($_POST['color_rows_ascend']), 'descend' => htmlspecialchars($_POST['color_rows_descend']), 'relegation' => htmlspecialchars($_POST['color_rows_relegation']) );
                 $options['colors']['boxheader'] = array(htmlspecialchars($_POST['color_boxheader1']), htmlspecialchars($_POST['color_boxheader2']));

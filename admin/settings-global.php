@@ -101,6 +101,12 @@ if ( !current_user_can( 'manage_racketmanager' ) ) {
 						<tr valign='top'>
 							<th scope='row'><label for='resultConfirmationEmail'><?php _e( 'Notification Email Address', 'racketmanager' ) ?></label></th><td><input type="email"  name='resultConfirmationEmail' id='resultConfirmationEmail' value='<?php echo isset($options['resultConfirmationEmail']) ? $options['resultConfirmationEmail'] : '' ?>' /></td>
 						</tr>
+						<tr valign='top'>
+							<th scope='row'><label for='resultConfirmationEmailCup'><?php _e( 'Cup Notification Email Address', 'racketmanager' ) ?></label></th><td><input type="email"  name='resultConfirmationEmailCup' id='resultConfirmationEmailCup' value='<?php echo isset($options['resultConfirmationEmailCup']) ? $options['resultConfirmationEmailCup'] : '' ?>' /></td>
+						</tr>
+						<tr valign='top'>
+							<th scope='row'><label for='resultConfirmationEmailTournament'><?php _e( 'Tournament Notification Email Address', 'racketmanager' ) ?></label></th><td><input type="email"  name='resultConfirmationEmailTournament' id='resultConfirmationEmailTournament' value='<?php echo isset($options['resultConfirmationEmailTournament']) ? $options['resultConfirmationEmailTournament'] : '' ?>' /></td>
+						</tr>
 					</table>
 				</div>
 			</div>

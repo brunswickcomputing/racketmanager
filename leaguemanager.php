@@ -1700,6 +1700,28 @@ class RacketManager {
 	}
 
 	/**
+	* get confirmation email
+	*
+	* @param boolean $championship
+	* @param string $type
+	* @return string $email
+	*/
+	public function getConfirmationEmail($championship, $type) {
+		global $racketmanager;
+		$lm_options = $racketmanager->getOptions();
+		if ( $championship ) {
+			if ($type == 'player' ) {
+				$email = isset($lm_options['resultConfirmationEmailTournament']) ? $lm_options['resultConfirmationEmailTournament'] : '';
+			} else {
+				$email = isset($lm_options['resultConfirmationEmailCup']) ? $lm_options['resultConfirmationEmailCup'] : '';
+			}
+		} else {
+			$email = isset($lm_options['resultConfirmationEmail']) ? $lm_options['resultConfirmationEmail'] : '';
+		}
+		return $email;
+	}
+
+	/**
 	* check if database column exists
 	*
 	* @param string $table

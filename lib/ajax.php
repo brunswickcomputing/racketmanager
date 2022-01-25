@@ -841,6 +841,7 @@ class RacketManagerAJAX extends RacketManager {
 								$custom[$matchId] = array();
 								$season = $_POST['current_season'];
 								$league = get_league($leagueId);
+								$emailTo = $racketmanager->getConfirmationEmail($match->league->is_championship, $match->league->entryType);
 								if ( $league->is_championship ) {
 									$round = $league->championship->getFinals($_POST['match_round'])['round'];
 									$league->championship->updateFinalResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $round, $season  );
@@ -854,15 +855,15 @@ class RacketManagerAJAX extends RacketManager {
 									}
 								}
 							} elseif ( $matchConfirmed == 'A' ) {
-								if ( isset($lm_options['resultConfirmationEmail']) && !is_null($lm_options['resultConfirmationEmail']) ) {
-									$to = $lm_options['resultConfirmationEmail'];
+								if ( $emailTo > '' ) {
+									$to = $emailTo;
 									$subject = get_option('blogname')." Result Approval";
 									$message = "There is a new match result that needs approval.  Click <a href='".admin_url()."?page=racketmanager&view=results'>here</a> to see the match result. ";
 									$racketmanager->lm_mail($to, $subject, $message);
 								}
 							} elseif ( $matchConfirmed == 'C' ) {
-								if ( isset($lm_options['resultConfirmationEmail']) && !is_null($lm_options['resultConfirmationEmail']) ) {
-									$to = $lm_options['resultConfirmationEmail'];
+								if ( $emailTo > '' ) {
+									$to = $emailTo;
 									$subject = get_option('blogname')." Result Challenge";
 									$message = "There is a new match result that has been challenged.  Click <a href='".admin_url()."?page=racketmanager&view=results'>here</a> to see the match result. ";
 									$racketmanager->lm_mail($to, $subject, $message);

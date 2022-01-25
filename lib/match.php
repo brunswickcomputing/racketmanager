@@ -154,7 +154,7 @@ final class Match {
       $home_team_name = $this->is_home ? "<strong>".$homeTeam->title."</strong>" : $homeTeam->title;
       $away_team_name = $this->is_home ? "<strong>".$awayTeam->title."</strong>" : $awayTeam->title;
 
-      $title = sprintf("%s &#8211; %s", $home_team_name, $away_team_name);
+      $title = sprintf("%s - %s", $home_team_name, $away_team_name);
     }
 
     return $title;

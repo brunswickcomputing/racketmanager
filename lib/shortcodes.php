@@ -431,7 +431,7 @@ class RacketManagerShortcodes extends RacketManager {
 					$match->class = $class;
 					$home_title = $match->teams['home']->title;
 					$away_title = $match->teams['away']->title;
-					$match->title = sprintf("%s &#8211; %s", $home_title, $away_title);
+					$match->title = sprintf("%s - %s", $home_title, $away_title);
 					$match->home_title = $home_title;
 					$match->away_title = $away_title;
 

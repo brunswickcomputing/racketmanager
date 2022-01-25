@@ -894,7 +894,7 @@ class League {
 		));
 
 		if ( $page_links && is_admin() ) {
-			/*$page_links = sprintf( '<span class="displaying-num">' . __( 'Displaying %s&#8211;%s of %s', 'racketmanager' ) . '</span>',
+			/*$page_links = sprintf( '<span class="displaying-num">' . __( 'Displaying %s-%s of %s', 'racketmanager' ) . '</span>',
 			number_format_i18n( ( $current_page - 1 ) * $per_page + 1 ),
 			number_format_i18n( min( $current_page * $per_page,  $num_items ) ),
 			number_format_i18n(  $num_items ),

@@ -11,6 +11,6 @@
   } else {
     $awayTeam = $match->teams['away']->title;
   }
-  $matchTitle = $homeTeam." &#8211; ".$awayTeam;
+  $matchTitle = $homeTeam." - ".$awayTeam;
 }
 ?>

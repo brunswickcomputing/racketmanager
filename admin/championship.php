@@ -39,7 +39,7 @@
 		</div>
 
 		<div id="finals" class="championship-block-container">
-			<h2><?php printf(__( 'Finals &#8211; %s', 'racketmanager' ), $league->championship->getFinalName()) ?></h2>
+			<h2><?php printf(__( 'Finals - %s', 'racketmanager' ), $league->championship->getFinalName()) ?></h2>
             <?php include('championship/finals.php'); ?>
 		</div>
 

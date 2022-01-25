@@ -315,7 +315,7 @@ Racketmanager.disableRubberUpdate = function() {
     jQuery("input").prop("readonly", "true");
     jQuery("#updateRubber").val("confirm");
 };
-Racketmanager.updateRubbers = function(link) {
+Racketmanager.updateResults = function(link) {
 
     var selects = document.getElementById('match-rubbers').getElementsByTagName('select');
     var values = [];

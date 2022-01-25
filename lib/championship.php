@@ -516,7 +516,7 @@ final class League_Championship extends RacketManager {
         }
         // get matches of current round
 
-        $prev = $league->getMatches( array("final" => $current, "limit" => false) );
+        $prev = $league->getMatches( array("final" => $current, "limit" => false, "orderby" => array("id" => "ASC")) );
 
         $home['team'] = 0;
         $away['team'] = 0;

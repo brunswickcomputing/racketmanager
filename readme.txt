@@ -50,6 +50,9 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.0.5 =
+* BUGFIX: sort matches by id for championship proceed to next round
+
 = 6.0.4 =
 * BUGFIX: fix group explode error in admin
 * UPDATE: use tournament name on tournament entry form

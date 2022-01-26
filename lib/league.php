@@ -1052,6 +1052,10 @@ public function getLeagueTeams( $query_args = array() ) {
 
 		$team->pointsFormatted = array( 'primary' => sprintf($this->point_format, $team->points_plus, $team->points_minus), 'secondary' => sprintf($this->point_format2, $team->points2_plus, $team->points2_minus) );
 
+		$teamDtls = $this->getTeamDtls($team->id);
+		foreach ($teamDtls as $property => $value) {
+			$team->$property = $value;
+		}
 		$team_index[$team->id] = $i;
 		$teams[$i] = $team;
 	}

@@ -403,7 +403,6 @@ class RacketManagerShortcodes extends RacketManager {
 		$league = $this->getleague($league_id);
 		if ( !$league ) return;
 
-		$teams = $league->getLeagueTeams( array() );
 		$competition = get_competition($league->competition_id);
 		$league->setTemplate('championship', $template);
 		if ( !$season ) {

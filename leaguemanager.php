@@ -1859,27 +1859,29 @@ class RacketManager {
 		$userid = get_current_user_id();
 		$userCanUpdate = false;
 
-		if ( $userid ) {
-			if ( !current_user_can( 'manage_racketmanager' ) ) {
-				if ( $options['matchCapability'] == 'roster' ) {
-					$club = get_club($homeTeam->affiliatedclub);
-					$homeRoster = $club->getRoster( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
-					if ( $homeRoster != 0 ) {
-						$userCanUpdate = true;
-					} elseif ( $options['resultEntry'] == 'either' ) {
-						$club = get_club($awayTeam->affiliatedclub);
-						$awayRoster = $club->getRoster( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
-						if ( $awayRoster != 0 ) {
+		if ( isset($homeTeam) && isset($awayTeam) ) {
+			if ( $userid ) {
+				if ( !current_user_can( 'manage_racketmanager' ) ) {
+					if ( $options['matchCapability'] == 'roster' ) {
+						$club = get_club($homeTeam->affiliatedclub);
+						$homeRoster = $club->getRoster( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
+						if ( $homeRoster != 0 ) {
+							$userCanUpdate = true;
+						} elseif ( $options['resultEntry'] == 'either' ) {
+							$club = get_club($awayTeam->affiliatedclub);
+							$awayRoster = $club->getRoster( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
+							if ( $awayRoster != 0 ) {
+								$userCanUpdate = true;
+							}
+						}
+					} elseif ( $options['matchCapability'] == 'captain' ) {
+						if ( ( isset($homeTeam->captainId) && $userid == $homeTeam->captainId ) || ( $options['resultEntry'] == 'either' && ( isset($awayTeam->captainId) && $userid == $awayTeam->captainId ) ) ) {
 							$userCanUpdate = true;
 						}
 					}
-				} elseif ( $options['matchCapability'] == 'captain' ) {
-					if ( $userid == $homeTeam->captainId || ( $options['resultEntry'] == 'either' && $userid == $awayTeam->captainId ) ) {
-						$userCanUpdate = true;
-					}
+				} else {
+					$userCanUpdate = true;
 				}
-			} else {
-				$userCanUpdate = true;
 			}
 		}
 

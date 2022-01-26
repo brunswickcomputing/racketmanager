@@ -100,6 +100,7 @@ div#matchheader .matchtitle {
 td input.points {
     padding: 3px;
     text-align: center;
+    width: 37px;
 }
 td input.player {
     width: 200px;
@@ -119,6 +120,9 @@ td input.player {
 #matchrubbers .centered {
     text-align: center;
     vertical-align: middle
+}
+.match-team {
+  width: 30%;
 }
 #matches-archive .modal-content,
 #matches .modal-content {

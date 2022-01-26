@@ -43,6 +43,9 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_matchcard_player', array(&$this, 'printMatchCardPlayer') );
 		add_action( 'wp_ajax_nopriv_racketmanager_matchcard_player', array(&$this, 'printMatchCardPlayer') );
 
+		add_action( 'wp_ajax_racketmanager_show_match', array(&$this, 'showMatch') );
+		add_action( 'wp_ajax_racketmanager_update_match', array(&$this, 'updateMatch') );
+
 		add_action( 'wp_ajax_racketmanager_update_rubbers', array(&$this, 'updateRubbers') );
 		add_action( 'wp_ajax_racketmanager_confirm_results', array(&$this, 'confirmResults') );
 
@@ -515,6 +518,168 @@ class RacketManagerAJAX extends RacketManager {
 		</div>
 		<?php
 		die();
+	}
+
+	/**
+	* build screen to allow input of scores for match
+	*
+	*/
+	public function showMatch() {
+		global $racketmanager, $championship;
+		$matchId = $_POST['matchId'];
+		$match = get_match($matchId);
+		if ( $match->final_round == '' ) {
+			$match->round = '';
+			$match->type = 'league';
+		} else {
+			$match->round = $match->final_round;
+			$match->type = 'tournament';
+		}
+		$league = get_league($match->league_id);
+		$num_sets = $league->num_sets;
+		$pointsspan = 2 + intval($num_sets);
+		$match_type = $league->type;
+		$tabindex = 0;
+		?>
+		<div id="matchrubbers" class="rubber-block">
+			<div id="matchheader">
+				<div class="leaguetitle"><?php echo $league->title ?></div>
+				<div class="matchdate"><?php echo substr($match->date,0,10) ?></div>
+				<div class="matchday">
+					<?php if ( $league->mode == 'championship' ) {
+						echo $league->championship->getFinalName($match->final_round);
+					} else {
+						echo 'Week'.$match->match_day;
+					}?>
+				</div>
+				<div class="matchtitle">
+					<?php if ( $league->mode == 'championship' ) {
+					} else {
+						echo $match->match_title;
+					}
+				?>
+				</div>
+			</div>
+			<form id="match-view" action="#" method="post" onsubmit="return checkSelect(this)">
+				<?php wp_nonce_field( 'scores-match' ) ?>
+
+				<input type="hidden" name="current_league_id" id="current_league_id" value="<?php echo $match->league_id ?>" />
+				<input type="hidden" name="current_match_id" id="current_match_id" value="<?php echo $match->id ?>" />
+				<input type="hidden" name="current_season" id="current_season" value="<?php echo $match->season ?>" />
+				<input type="hidden" name="home_team" value="<?php echo $match->home_team ?>" />
+				<input type="hidden" name="away_team" value="<?php echo $match->away_team ?>" />
+				<input type="hidden" name="match_type" value="<?php echo $match->type ?>" />
+				<input type="hidden" name="match_round" value="<?php echo $match->round ?>" />
+
+				<table class="widefat" summary="" style="margin-bottom: 2em;">
+					<thead>
+						<tr>
+							<th class="match-team centered"><?php _e( 'Team', 'racketmanager' ) ?></th>
+							<th class="centered" colspan="<?php echo $num_sets ?>"><?php _e('Sets', 'racketmanager' ) ?></th>
+							<th class="match-team centered"><?php _e( 'Team', 'racketmanager' ) ?></th>
+						</tr>
+					</thead>
+					<tbody class="rtbody rubber-table" id="the-list-rubbers-<?php echo $match->id ?>" >
+
+						<?php $class = ''; ?>
+
+						<tr class="rtr">
+							<td class="rtd">
+								<?php echo $match->teams['home']->title ?>
+							</td>
+
+							<?php for ( $i = 1; $i <= $num_sets; $i++ ) {
+								if (!isset($match->sets[$i])) {
+									$match->sets[$i] = array('player1' => '', 'player2' => '');
+								} ?>
+								<td class="rtd">
+									<input class="points" tabindex="<?php echo $tabindex+$i ?>" type="number" size="2" id="set_<?php echo $i ?>_player1" name="custom[sets][<?php echo $i ?>][player1]" value="<?php echo $match->sets[$i]['player1'] ?>" />
+									:
+									<input class="points" tabindex="<?php echo $tabindex+$i+1 ?>" type="number" size="2" id="set_<?php echo $i ?>_player2" name="custom[sets][<?php echo $i ?>][player2]" value="<?php echo $match->sets[$i]['player2'] ?>" />
+								</td>
+							<?php } ?>
+
+							<td class="rtd">
+								<?php echo $match->teams['away']->title ?>
+							</td>
+						</tr>
+						<tr>
+							<td colspan="<?php echo intval($num_sets)+2 ?>" class="rtd" style="text-align: center;">
+								<input class="points" type="text" size="2" readonly id="home_points" name="home_points" value="<?php echo (isset($match->home_points) ? $match->home_points : '') ?>" />
+								:
+								<input class="points" type="text" size="2" readonly id="away_points" name="away_points" value="<?php echo (isset($match->away_points) ? $match->away_points : '') ?>" />
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<p>
+					<?php if ( isset($match->updated_user) ) echo 'Updated By:'.$racketmanager->getPlayerName($match->updated_user) ?>
+						<?php if ( isset($match->updated) ) echo ' On:'.$match->updated ?>
+						</p>
+						<?php if ( current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == NULL ) { ?>
+
+							<input type="hidden" name="updateMatch" id="updateMatch" value="results" />
+							<button tabindex="20" class="button button-primary" type="button" id="updateMatchResults" onclick="Racketmanager.updateMatchResults(this)">Update Result</button>
+						<?php } ?>
+						<p id="UpdateResponse"></p>
+						<?php if ( $match->confirmed == 'Y' ) { ?>
+							<script type="text/javascript">
+							jQuery(document).ready(function($) {
+								Racketmanager.disableRubberUpdate();
+							});
+							</script>
+						<?php } ?>
+			</form>
+		</div>
+		<?php
+		die();
+	}
+
+	/**
+	* update match scores
+	*
+	*/
+	public function updateMatch() {
+		global $racketmanager, $league, $match;
+
+		if ( isset($_POST['updateMatch'])) {
+			check_admin_referer('scores-match');
+			$return = array();
+			$updates = false;
+			$matchId = $_POST['current_match_id'];
+			$match = get_match($matchId);
+			$league = get_league($match->league_id);
+			$matchConfirmed = 'P';
+			$matches[$matchId] = $matchId;
+			$home_points[$matchId] = 0;
+			$away_points[$matchId] = 0;
+			$home_team[$matchId] = $_POST['home_team'];
+			$away_team[$matchId] = $_POST['away_team'];
+			$custom[$matchId] = $_POST['custom'];
+			$season[$matchId] = $_POST['current_season'];
+			$matchCount = $league->_updateResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $season, $_POST['match_round'], $matchConfirmed );
+			if ( $matchCount > 0 ) {
+				$msg = __('Result saved','racketmanager');
+				$match = get_match($matchId);
+				$homePoints = $match->home_points;
+				$awayPoints = $match->away_points;
+				$emailTo = $racketmanager->getConfirmationEmail($match->league->is_championship, $match->league->entryType);
+				if ( $emailTo > '' ) {
+					$to = $emailTo;
+					$subject = get_option('blogname')." Result Approval - ".$match->league->title." - ".$match->match_title;
+					$message = "There is a new match result that needs approval.  Click <a href='".admin_url()."?page=racketmanager&subpage=show-league&league_id=".$match->league_id."&final=".$match->final_round."&jquery-ui-tab=1'>here</a> to see the match result. ";
+					$racketmanager->lm_mail($to, $subject, $message);
+				}
+			} else {
+				$msg = __('No result to save','racketmanager');
+			}
+
+			array_push($return,$msg,$homePoints,$awayPoints);
+
+			die(json_encode($return));
+		} else {
+			die(0);
+		}
 	}
 
 	/**

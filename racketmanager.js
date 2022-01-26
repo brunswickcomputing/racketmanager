@@ -309,6 +309,69 @@ Racketmanager.showRubbers = function(matchId) {
                 }
                 }) ;
 };
+Racketmanager.showMatch = function(matchId) {
+
+    jQuery("#showMatchRubbers").empty();
+    jQuery("#modalMatch").show();
+    jQuery("#viewMatchRubbers").show();
+    jQuery("#splash").css('opacity', 1);
+    jQuery("#splash").show();
+
+    jQuery.ajax({
+                url:RacketManagerAjaxL10n.requestUrl,
+                type: "POST",
+                data: {"matchId": matchId,
+                "action": "racketmanager_show_match"},
+                success: function(response) {
+                jQuery("#showMatchRubbers").empty();
+                jQuery("#showMatchRubbers").html(response);
+                jQuery("#splash").css('opacity', 0);
+                jQuery("#splash").hide();
+                },
+                error: function() {
+                alert("Ajax error on getting match");
+                }
+                }) ;
+};
+Racketmanager.updateMatchResults = function(link) {
+
+	var $match = document.getElementById('current_match_id');
+	var $matchId = $match.value;
+	var $form = jQuery('#match-view').serialize();
+	$form += "&action=racketmanager_update_match";
+	jQuery("#updateRubberResults").prop("disabled", "true");
+	jQuery("#updateRubberResults").addClass("disabled");
+	jQuery("#splash").css('opacity', 1);
+	jQuery("#splash").show();
+	jQuery("#showMatchRubbers").hide();
+	
+	jQuery.ajax({
+		url:RacketManagerAjaxL10n.requestUrl,
+		type: "POST",
+		data: $form,
+		success: function(response) {
+			var $response = jQuery.parseJSON(response);
+			var $message = $response[0];
+			jQuery("#UpdateResponse").text($message);
+			var $homepoints = $response[1];
+			var $formfield = "#home_points";
+			var $fieldval = $homepoints;
+			jQuery($formfield).val($fieldval);
+			var $awaypoints = $response[2];
+			var $formfield = "#away_points";
+			var $fieldval = $awaypoints;
+			jQuery($formfield).val($fieldval);
+			jQuery("#splash").css('opacity', 0);
+			jQuery("#splash").hide();
+			jQuery("#showMatchRubbers").show();
+		},
+		error: function() {
+			alert("Ajax error on updating match");
+		}
+	}) ;
+	jQuery("#updateRubberResults").removeProp("disabled");
+	jQuery("#updateRubberResults").removeClass("disabled");
+};
 Racketmanager.disableRubberUpdate = function() {
 
     jQuery("select").prop("disabled", "true");

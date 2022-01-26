@@ -50,6 +50,21 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.1.0 =
+* UPDATE: allow non-rubber match results to be entered
+* UPDATE: add result confirmation email addresses for cups and tournaments
+* UPDATE: replace &#8211; with -
+* UPDATE: make match confirmation status able to be passed in league->_updateResults
+* UPDATE: make tournament bracket header flexible width to allow headings to appear correctly
+* UPDATE: make modal close button not overflow
+* UPDATE: make modal fit screens correctly
+* UPDATE: remove number incrementors on modal screen
+* UPDATE: rename updateRubbers to updateResults
+* UPDATE: make function to get confirmation email address
+* BUGFIX: remove extra parameter from $league->_updateResults in championship->updateFinalResults
+* BUGFIX: user correct variables for num_sets and num_rubbers
+* BUGFIX: ensure correct parameters passed to getMatchUpdateAllowed function
+
 = 6.0.5 =
 * BUGFIX: sort matches by id for championship proceed to next round
 

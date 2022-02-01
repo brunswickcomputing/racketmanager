@@ -7,7 +7,7 @@
 	</p>
 	<h1><?php printf( "%s &mdash; %s",  $league->title, $form_title ); ?></h1>
 	<?php if ( has_action( 'racketmanager_edit_match_'.$league->sport ) ) {
-		do_action( 'racketmanager_edit_match_'.$league->sport, $league, $teams, $season, $max_matches, $matches, $submit_title, $mode )
+		do_action( 'racketmanager_edit_match_'.$league->sport, $league, $teams, $season, $max_matches, $matches, $submit_title, $mode );
 	} else { ?>
 		<form action="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id?>&amp;season=<?php echo $season ?><?php if (isset($finalkey)) echo '&amp;final=' . $finalkey . '&amp;jquery-ui-tab=1'; ?>" method="post">
 			<?php wp_nonce_field( 'racketmanager_manage-matches' ) ?>

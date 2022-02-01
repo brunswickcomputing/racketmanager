@@ -16,7 +16,7 @@ wp_enqueue_style('datatables-style');
 wp_enqueue_script('datatables');
 ?>
 <div id="leaguetables">
-	<h1><?php printf("%s &mdash; %s %s", $competition->name, __('Season', 'racketmanager'), $curr_season); ?></h1>
+	<h1><?php printf("%s - %s %s", $competition->name, __('Season', 'racketmanager'), $curr_season); ?></h1>
 	<div id="racketmanager_archive_selections" class="">
 		<form method="get" action="<?php echo get_permalink($postID); ?>" id="racketmanager_archive">
 			<input type="hidden" name="page_id" value="<?php echo $postID ?>" />

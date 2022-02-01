@@ -2,7 +2,7 @@
 ?>
 <div class="wrap league-block">
     <p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <?php echo $season->name ?> &raquo; <?php echo 'Add Competitions to Season' ?></p>
-    <h1><?php printf( "%s &mdash; %s",  $season->name, 'Add Competitions to Season' ); ?></h1>
+    <h1><?php printf( "%s - %s",  $season->name, 'Add Competitions to Season' ); ?></h1>
     <legend>Select Competitions to Add</legend>
     <script type='text/javascript'>
     jQuery(function() {
@@ -68,4 +68,3 @@
             </table>
         </form>
     </div>
-

@@ -2,7 +2,7 @@
 ?>
 <div class="wrap league-block">
     <p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a> &raquo; <?php echo 'Add Teams to League' ?></p>
-<h1><?php printf( "%s &mdash; %s",  $league->title, 'Add Teams to League' ); ?></h1>
+<h1><?php printf( "%s - %s",  $league->title, 'Add Teams to League' ); ?></h1>
 <form action="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league_id ?>&amp;season=<?php echo $season ?>" method="post" enctype="multipart/form-data" name="teams_add">
 <?php wp_nonce_field( 'racketmanager_add-teams-bulk' ) ?>
     <input type="hidden" name="competition_id" value="<?php echo $league->competition_id ?>" />

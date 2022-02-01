@@ -5,7 +5,7 @@
 		<a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a> &raquo;
 		<?php echo $form_title ?>
 	</p>
-	<h1><?php printf( "%s &mdash; %s",  $league->title, $form_title ); ?></h1>
+	<h1><?php printf( "%s - %s",  $league->title, $form_title ); ?></h1>
 	<?php if ( has_action( 'racketmanager_edit_match_'.$league->sport ) ) {
 		do_action( 'racketmanager_edit_match_'.$league->sport, $league, $teams, $season, $max_matches, $matches, $submit_title, $mode );
 	} else { ?>

@@ -54,7 +54,7 @@ jQuery(document).ready(function(){
 	});
 });
 </script>
-<h1><?php printf("%s &mdash; %s %s", $league->title, __('Season', 'racketmanager'), $league->current_season['name']); ?></h1>
+<h1><?php printf("%s - %s %s", $league->title, __('Season', 'racketmanager'), $league->current_season['name']); ?></h1>
 <div id="racketmanager_archive_selections" class="">
 	<form method="get" action="<?php echo get_permalink($postID); ?>" id="racketmanager_archive">
 		<input type="hidden" name="page_id" value="<?php echo $postID ?>" />

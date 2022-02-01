@@ -9,7 +9,7 @@
 <div class="wrap league-block">
     <p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a><?php if ( !$noleague ) { ?> &raquo; <a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a><?php } ?> &raquo; <?php echo $form_title ?></p>
     <?php if ( !$noleague ) { ?>
-    <h1><?php printf( "%s &mdash; %s",  $league->title, $form_title ); ?></h1>
+    <h1><?php printf( "%s - %s",  $league->title, $form_title ); ?></h1>
     <?php } else { ?>
     <h1><?php printf(  $form_title ); ?></h1>
     <?php }

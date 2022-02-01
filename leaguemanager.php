@@ -930,14 +930,42 @@ class RacketManager {
 	* @param string $search
 	* @return array
 	*/
-	public function getTournaments( $type=false, $offset=0, $limit=99999999 ) {
+	public function getTournaments( $args = array() ) {
 		global $wpdb;
+		$defaults = array( 'offset' => 0, 'limit' => 99999999, 'type' => false, 'name' => false, 'entryopen' => false, 'open' => false, 'orderby' => array("name" => "DESC") );
+		$args = array_merge($defaults, $args);
+		extract($args, EXTR_SKIP);
 
-		if (!$type) {
-			$sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->racketmanager_tournaments} ORDER BY `name` DESC LIMIT %d, %d",  intval($offset), intval($limit) );
-		} else {
-			$sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->racketmanager_tournaments} WHERE `type` = '%s'ORDER BY `name` DESC LIMIT %d, %d",  $type, intval($offset), intval($limit) );
+		$search_terms = array();
+
+		if ( $type ) {
+			$search_terms[] = $wpdb->prepare("`type` = '%s'", $type);
 		}
+
+		if ( $entryopen ) {
+			$search_terms[] = "`closingdate` >= CURDATE()";
+		}
+
+		if ( $open ) {
+			$search_terms[] = "(`date` >= CURDATE() OR `date` = '0000-00-00')";
+		}
+
+		$search = "";
+		if (count($search_terms) > 0) {
+			$search = " WHERE ";
+			$search .= implode(" AND ", $search_terms);
+		}
+
+		$orderby_string = ""; $i = 0;
+		foreach ($orderby AS $order => $direction) {
+			if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) $direction = "ASC";
+			$orderby_string .= "`".$order."` ".$direction;
+			if ($i < (count($orderby)-1)) $orderby_string .= ",";
+			$i++;
+		}
+		$orderby = $orderby_string;
+
+		$sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`closingdate`, '%%Y-%%m-%%d') AS closingdate, `tournamentsecretary` FROM {$wpdb->racketmanager_tournaments} $search ORDER BY $orderby LIMIT %d, %d", intval($offset), intval($limit) );
 
 		$tournaments = wp_cache_get( md5($sql), 'tournaments' );
 		if ( !$tournaments ) {
@@ -945,13 +973,16 @@ class RacketManager {
 			wp_cache_set( md5($sql), $tournaments, 'tournaments' );
 		}
 
+		$date_format = get_option('date_format');
 		$i = 0;
 		foreach ( $tournaments AS $i => $tournament ) {
 
-			if ( $tournament->date == "0000-00-00" ) $tournament->date = '';
+			$tournament->date = ( substr($tournament->date, 0, 10) == '0000-00-00' ) ? 'TBC' : mysql2date($date_format, $tournament->date);
+			$tournament->closingdate = ( substr($tournament->closingdate, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date($date_format, $tournament->closingdate);
+
 			if ( $tournament->venue == 0 ) {
 				$tournament->venue = '';
-				$tournament->venueName = '';
+				$tournament->venueName = 'TBC';
 			} else {
 				$tournament->venueName = get_club($tournament->venue)->name;
 			}
@@ -981,7 +1012,7 @@ class RacketManager {
 	public function getTournament( $tournament_name ) {
 		global $wpdb;
 
-		$sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, `date`, `closingdate`, `tournamentsecretary` FROM {$wpdb->racketmanager_tournaments} WHERE `name` = '%s'",  $tournament_name );
+		$sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`closingdate`, '%%Y-%%m-%%d') AS closingdate, `tournamentsecretary` FROM {$wpdb->racketmanager_tournaments} WHERE `name` = '%s'",  $tournament_name );
 
 		$tournament = wp_cache_get( md5($sql), 'tournaments' );
 		if ( !$tournament ) {
@@ -989,10 +1020,13 @@ class RacketManager {
 			wp_cache_set( md5($sql), $tournament, 'tournaments' );
 		}
 
-		if ( $tournament->date == "0000-00-00" ) $tournament->date = '';
+		$date_format = get_option('date_format');
+		$tournament->date = ( substr($tournament->date, 0, 10) == '0000-00-00' ) ? 'TBC' : mysql2date($date_format, $tournament->date);
+		$tournament->closingdate = ( substr($tournament->closingdate, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date($date_format, $tournament->closingdate);
+
 		if ( $tournament->venue == 0 ) {
 			$tournament->venue = '';
-			$tournament->venueName = '';
+			$tournament->venueName = 'TBC';
 		} else {
 			$tournament->venueName = get_club($tournament->venue)->name;
 		}
@@ -1009,55 +1043,6 @@ class RacketManager {
 		}
 
 		return $tournament;
-	}
-
-	/**
-	* get open tournaments from database
-	*
-	* @param none
-	* @param string $search
-	* @return array
-	*/
-	public function getOpenTournaments( $type ) {
-		global $wpdb;
-
-		$sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`closingdate`, '%%Y-%%m-%%d') AS closingdate, `tournamentsecretary` FROM {$wpdb->racketmanager_tournaments} WHERE `type` = '%s' AND `closingdate` >= CURDATE() ORDER BY `id` ASC ",  $type );
-
-		$tournaments = wp_cache_get( md5($sql), 'tournaments' );
-		if ( !$tournaments ) {
-			$tournaments = $wpdb->get_results( $sql );
-			wp_cache_set( md5($sql), $tournaments, 'tournaments' );
-		}
-
-		$date_format = get_option('date_format');
-		$i = 0;
-		foreach ( $tournaments AS $i => $tournament ) {
-
-			$tournament->date = ( substr($tournament->date, 0, 10) == '0000-00-00' ) ? 'TBC' : mysql2date($date_format, $tournament->date);
-			$tournament->closingdate = ( substr($tournament->closingdate, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date($date_format, $tournament->closingdate);
-
-			if ( $tournament->date == "0000-00-00" ) $tournament->date = '';
-			if ( $tournament->venue == 0 ) {
-				$tournament->venue = '';
-				$tournament->venueName = '';
-			} else {
-				$tournament->venueName = get_club($tournament->venue)->name;
-			}
-			if ( $tournament->tournamentsecretary != '0' ) {
-				$tournamentSecretaryDtls = get_userdata($tournament->tournamentsecretary);
-				$tournament->tournamentSecretaryName = $tournamentSecretaryDtls->display_name;
-				$tournament->tournamentSecretaryEmail = $tournamentSecretaryDtls->user_email;
-				$tournament->tournamentSecretaryContactNo = get_user_meta($tournament->tournamentsecretary, 'contactno', true);
-			} else {
-				$tournament->tournamentSecretaryName = '';
-				$tournament->tournamentSecretaryEmail = '';
-				$tournament->tournamentSecretaryContactNo = '';
-			}
-
-			$tournaments[$i] = $tournament;
-		}
-
-		return $tournaments;
 	}
 
 	/**

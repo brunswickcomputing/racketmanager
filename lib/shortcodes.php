@@ -953,7 +953,7 @@ class RacketManagerShortcodes extends RacketManager {
 		}
 		if ( !$type ) return _e('No tournament open for entries', 'racketmanager');
 
-		$tournaments = $racketmanager->getOpenTournaments( $type );
+		$tournaments = $racketmanager->getTournaments( array( 'type' => $type, 'entryopen' => true ) );
 		if ( !$tournaments ) return _e('No tournament open for entries', 'racketmanager');
 		$tournament = $tournaments[0];
 
@@ -998,7 +998,7 @@ class RacketManagerShortcodes extends RacketManager {
 			$type = get_query_var('type');
 		}
 		if ( !$type ) return _e('No tournament winners', 'racketmanager');
-		$tournaments = $racketmanager->getTournaments( $type );
+		$tournaments = $racketmanager->getTournaments( array( 'type' => $type ) );
 
 		if ($tournament != "") {
 			$tournament = $tournament;

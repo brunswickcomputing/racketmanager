@@ -32,7 +32,7 @@ jQuery(function() {
         <label for="season" style="vertical-align: middle;"><?php _e( 'Season', 'racketmanager' ) ?></label>
         <select size="1" name="season" id="season">
           <?php foreach ( $competition->seasons AS $s ) { ?>
-            <option value="<?php echo htmlspecialchars($s['name']) ?>"<?php if ( $s['name'] == $season ) echo ' selected="selected"' ?>><?php echo $s['name'] ?></option>
+            <option value="<?php echo htmlspecialchars($s['name']) ?>"<?php if ( $s['name'] == $season ) { echo ' selected="selected"'; } ?>><?php echo $s['name'] ?></option>
           <?php } ?>
         </select>
         <input type="submit" value="<?php _e( 'Show', 'racketmanager' ) ?>" class="button" />

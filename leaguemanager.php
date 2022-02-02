@@ -1677,8 +1677,8 @@ class RacketManager {
 	* @param string $message
 	* @return none
 	*/
-	public function lm_mail($to, $subject, $message) {
-		$headers = array('Content-Type: text/html; charset=UTF-8');
+	public function lm_mail($to, $subject, $message, $headers=array()) {
+		array_push($headers, 'Content-Type: text/html; charset=UTF-8');
 		wp_mail($to, $subject, $message, $headers);
 
 		return;

@@ -119,7 +119,7 @@ final class Match {
       if ( $this->home_team == -1 ) {
         $this->teams['home'] = (object)array('id' => -1, 'title' => "Bye");
       } else {
-        $this->teams['home'] = $this->league->getLeagueTeam($this->home_team);
+        $this->teams['home'] = $this->league->getTeamDtls($this->home_team);
       }
     } else {
       $this->teams['home'] = $teams[$this->home_team];
@@ -128,7 +128,7 @@ final class Match {
       if ( $this->away_team == -1 ) {
         $this->teams['away'] = (object)array('id' => -1, 'title' => "Bye");
       } else {
-        $this->teams['away'] = $this->league->getLeagueTeam($this->away_team);
+        $this->teams['away'] = $this->league->getTeamDtls($this->away_team);
       }
     } else {
       $this->teams['away'] = $teams[$this->away_team];

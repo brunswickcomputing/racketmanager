@@ -65,7 +65,7 @@ class RacketManagerLogin extends RacketManager {
     $vars['display_name'] = $user->display_name;
     $vars['action_url'] = wp_login_url() . '?action=rp&key='.$key.'&login='.rawurlencode($user->user_login);
     $vars['email_link'] = 'info@leighandwestclifftennis.org.uk';
-    $wp_new_user_notification_email['message'] = $racketmanager_shortcodes->loadTemplate( 'email-welcome', $vars );
+    $wp_new_user_notification_email['message'] = $racketmanager_shortcodes->loadTemplate( 'email-welcome', $vars, 'email' );
     $wp_new_user_notification_email['headers'] = 'Content-Type: text/html; charset=UTF-8';
 
     return $wp_new_user_notification_email;
@@ -80,7 +80,7 @@ class RacketManagerLogin extends RacketManager {
     $vars['display_name'] = $user_data->display_name;
     $vars['action_url'] = wp_login_url() . '?action=rp&key='.$key.'&login='.rawurlencode($user_login);
     $vars['email_link'] = 'mailto://info@leighandwestclifftennis.org.uk';
-    $message = $racketmanager_shortcodes->loadTemplate( 'email-password-reset-text', $vars );
+    $message = $racketmanager_shortcodes->loadTemplate( 'email-password-reset-text', $vars, 'email' );
 
     return $message;
   }

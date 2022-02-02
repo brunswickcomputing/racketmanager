@@ -1063,21 +1063,37 @@ class RacketManagerShortcodes extends RacketManager {
 	*
 	* @param string $template Name of the template file (without extension)
 	* @param array $vars Array of variables name=>value available to display code (optional)
+	* @param string $type Type of content template (email, page)
 	* @return the content
 	*/
-	public function loadTemplate( $template, $vars = array() ) {
+	public function loadTemplate( $template, $vars = array(), $type = false ) {
 		global $league, $team, $match, $racketmanager;
 
 		extract($vars);
 
+		if ( $type ) {
+			switch ( $type ) {
+				case 'email':
+				$templateDir = 'templates/email';
+				break;
+				case 'page':
+				$templateDir = 'templates/page';
+				break;
+				default:
+				$templateDir = 'templates';
+				break;
+			}
+		} else {
+			$templateDir = 'templates';
+		}
 		ob_start();
 
 		if ( file_exists( get_stylesheet_directory() . "/racketmanager/$template.php")) {
 			include(get_stylesheet_directory() . "/racketmanager/$template.php");
 		} elseif ( file_exists( get_template_directory() . "/racketmanager/$template.php")) {
 			include(get_template_directory() . "/racketmanager/$template.php");
-		} elseif ( file_exists(RACKETMANAGER_PATH . "/templates/".$template.".php") ) {
-			include(RACKETMANAGER_PATH . "/templates/".$template.".php");
+		} elseif ( file_exists(RACKETMANAGER_PATH . "/".$templateDir."/".$template.".php") ) {
+			include(RACKETMANAGER_PATH . "/".$templateDir."/".$template.".php");
 		} else {
 			$this->setMessage( sprintf(__('Could not load template %s.php', 'racketmanager'), $template), true );
 			$this->printMessage();

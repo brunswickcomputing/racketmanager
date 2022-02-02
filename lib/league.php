@@ -551,9 +551,11 @@ class League {
 
 		$this->num_sets = $competition->num_sets;
 		$this->num_rubbers = $competition->num_rubbers;
+		$this->competitionType = $competition->competitiontype;
 		$this->type = $competition->type;
 		$this->sport = $competition->sport;
 		$this->competition_id = $competition->id;
+		$this->competitionName = $competition->name;
 		$this->setMatchQueryArgs();
 		$this->setNumMatches(true); // get total number of matches
 		$this->setNumMatches();

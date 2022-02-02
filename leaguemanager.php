@@ -1691,15 +1691,13 @@ class RacketManager {
 	* @param string $type
 	* @return string $email
 	*/
-	public function getConfirmationEmail($championship, $type) {
+	public function getConfirmationEmail($type) {
 		global $racketmanager;
 		$lm_options = $racketmanager->getOptions();
-		if ( $championship ) {
-			if ($type == 'player' ) {
-				$email = isset($lm_options['resultConfirmationEmailTournament']) ? $lm_options['resultConfirmationEmailTournament'] : '';
-			} else {
-				$email = isset($lm_options['resultConfirmationEmailCup']) ? $lm_options['resultConfirmationEmailCup'] : '';
-			}
+		if ($type == 'tournament' ) {
+			$email = isset($lm_options['resultConfirmationEmailTournament']) ? $lm_options['resultConfirmationEmailTournament'] : '';
+		} elseif ($type == 'cup' ) {
+			$email = isset($lm_options['resultConfirmationEmailCup']) ? $lm_options['resultConfirmationEmailCup'] : '';
 		} else {
 			$email = isset($lm_options['resultConfirmationEmail']) ? $lm_options['resultConfirmationEmail'] : '';
 		}

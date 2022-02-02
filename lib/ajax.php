@@ -663,7 +663,7 @@ class RacketManagerAJAX extends RacketManager {
 				$match = get_match($matchId);
 				$homePoints = $match->home_points;
 				$awayPoints = $match->away_points;
-				$emailTo = $racketmanager->getConfirmationEmail($match->league->is_championship, $match->league->entryType);
+				$emailTo = $racketmanager->getConfirmationEmail($match->league->competitionType);
 				if ( $emailTo > '' ) {
 					$to = $emailTo;
 					$subject = get_option('blogname')." Result Approval - ".$match->league->title." - ".$match->match_title;
@@ -1006,7 +1006,7 @@ class RacketManagerAJAX extends RacketManager {
 								$custom[$matchId] = array();
 								$season = $_POST['current_season'];
 								$league = get_league($leagueId);
-								$emailTo = $racketmanager->getConfirmationEmail($match->league->is_championship, $match->league->entryType);
+								$emailTo = $racketmanager->getConfirmationEmail($league->competitionType);
 								if ( $league->is_championship ) {
 									$round = $league->championship->getFinals($_POST['match_round'])['round'];
 									$league->championship->updateFinalResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $round, $season  );

@@ -174,7 +174,7 @@ class Competition {
 		$competition = wp_cache_get( $competition_id, 'competitions' );
 
 		if ( ! $competition ) {
-			$competition = $wpdb->get_row( $wpdb->prepare( "SELECT `name`, `id`, `num_sets`, `num_rubbers`, `type`, `settings`, `seasons` FROM {$wpdb->racketmanager_competitions} WHERE `id` = '%d'", $competition_id ) );
+			$competition = $wpdb->get_row( $wpdb->prepare( "SELECT `name`, `id`, `num_sets`, `num_rubbers`, `type`, `settings`, `seasons`, `competitiontype` FROM {$wpdb->racketmanager_competitions} WHERE `id` = '%d'", $competition_id ) );
 			$competition->settings = (array)maybe_unserialize($competition->settings);
 			$competition = (object)array_merge((array)$competition, $competition->settings);
 

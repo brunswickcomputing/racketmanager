@@ -1,23 +1,27 @@
 <?php
     /**
-     * Send debug code to the Javascript console
-     * @param string $message Optional message that will be sent the the error_log before the backtrace
-     */
+    * Send debug code to the Javascript console
+    * @param string $message Optional message that will be sent the the error_log before the backtrace
+    */
     function debug_to_console($data) {
-        if (is_array($data) || is_object($data)) {
-            if (is_array($data)) {
-              error_log('PHP: array');
-            } else {
-              error_log('PHP: object');
-            }
-            echo("<script>console.log('PHP: ".json_encode($data)."');</script>");
-            error_log('PHP: "'.json_encode($data).'"');
+      if (is_array($data) || is_object($data)) {
+        if (is_array($data)) {
+          error_log('PHP: array');
         } else {
-            echo("<script>console.log('PHP: ".$data."');</script>");
-            error_log('PHP: "'.$data.'"');
+          error_log('PHP: object');
         }
+        if ( !wp_doing_ajax() ) {
+          echo("<script>console.log('PHP: ".json_encode($data)."');</script>");
+        }
+        error_log('PHP: "'.json_encode($data).'"');
+      } else {
+        if ( !wp_doing_ajax() ) {
+          echo("<script>console.log('PHP: ".$data."');</script>");
+        }
+        error_log('PHP: "'.$data.'"');
+      }
     }
-    
+
 	/*
 	 * Send the output from a backtrace to the error_log
 	 * @param string $message Optional message that will be sent the the error_log before the backtrace
@@ -73,7 +77,7 @@
         }
         return $ret;
     }
-    
+
     /*
      * Create formatted url
      */

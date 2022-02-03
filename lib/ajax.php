@@ -994,9 +994,11 @@ class RacketManagerAJAX extends RacketManager {
 								$matchConfirmed = '';
 							}
 
+							$emailTo = $racketmanager->getConfirmationEmail($match->league->competitionType);
 							$msg = sprintf(__('%s','racketmanager'), $matchMessage);
 							if ( $matchConfirmed == 'A' && $lm_options['resultConfirmation'] == 'auto' ) {
 								$leagueId = $_POST['current_league_id'];
+								$league = get_league($leagueId);
 								$matchId = $_POST['current_match_id'];
 								$matches[$matchId] = $matchId;
 								$home_points[$matchId] = array_sum($matchRubbers['homepoints']);
@@ -1005,8 +1007,6 @@ class RacketManagerAJAX extends RacketManager {
 								$away_team[$matchId] = $away_team;
 								$custom[$matchId] = array();
 								$season = $_POST['current_season'];
-								$league = get_league($leagueId);
-								$emailTo = $racketmanager->getConfirmationEmail($league->competitionType);
 								if ( $league->is_championship ) {
 									$round = $league->championship->getFinals($_POST['match_round'])['round'];
 									$league->championship->updateFinalResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $round, $season  );
@@ -1031,6 +1031,13 @@ class RacketManagerAJAX extends RacketManager {
 									$to = $emailTo;
 									$subject = get_option('blogname')." Result Challenge";
 									$message = "There is a new match result that has been challenged.  Click <a href='".admin_url()."?page=racketmanager&view=results'>here</a> to see the match result. ";
+									$racketmanager->lm_mail($to, $subject, $message);
+								}
+							} elseif ( !current_user_can( 'manage_racketmanager' ) && $matchConfirmed == 'P' ) {
+								if ( $emailTo > '' ) {
+									$to = $emailTo;
+									$subject = get_option('blogname')." Result Pending";
+									$message = "There is a new match result that has been input.  Click <a href='".admin_url()."?page=racketmanager&view=results'>here</a> to see the match result. ";
 									$racketmanager->lm_mail($to, $subject, $message);
 								}
 							}

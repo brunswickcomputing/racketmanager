@@ -37,6 +37,7 @@ class RacketManagerShortcodes extends RacketManager {
 		add_shortcode( 'club', array(&$this, 'showClub') );
 		add_shortcode( 'tournament-entry', array(&$this, 'showTournamentEntry') );
 		add_shortcode( 'winners', array(&$this, 'showWinners') );
+		add_shortcode( 'matchnotification', array(&$this, 'showMatchNotification') );
 	}
 
 	/**
@@ -1055,6 +1056,80 @@ class RacketManagerShortcodes extends RacketManager {
 			$score = "";
 		}
 		return $score;
+	}
+
+	/**
+	* Function to show match notification
+	*
+	*    [matchnotification id=ID template=X]
+	*
+	* @param array $atts
+	* @return the content
+	*/
+	public function showMatchNotification( $atts ) {
+		global $racketmanager;
+
+		extract(shortcode_atts(array(
+			'match' => '',
+			'template' => '',
+			'tournament' => '',
+			'competition' => '',
+			'organisationname' => '',
+			'round' => '',
+			'competitiontype' => ''
+		), $atts ));
+
+		$match = get_match($match);
+
+		$homeDtls = array();
+		$awayDtls = array();
+		if ( $competitiontype == 'tournament') {
+			$tournament = $racketmanager->getTournament( $tournament );
+			if ( substr($match->league->competition_type,1,1) == 'D' ) {
+				$homeDtls['title'] = "Home Players";
+				$awayDtls['title'] = "Away Players";
+			} else {
+				$homeDtls['title'] = "Home Player";
+				$awayDtls['title'] = "Away Player";
+			}
+		} elseif ( $competitiontype == 'cup' ) {
+			$template = 'cup';
+			$homeDtls['title'] = "Home Team";
+			$awayDtls['title'] = "Away Team";
+		}
+		if ( $match->custom['host'] == 'home') {
+			$homeDtls['name'] = $match->teams['home']->title;
+			$homeDtls['club'] = $match->teams['home']->affiliatedclubname;
+			$homeDtls['captain'] = $match->teams['home']->captain;
+			$homeDtls['captainEmail'] = $match->teams['home']->contactemail;
+			$homeDtls['captainTel'] = $match->teams['home']->contactno;
+			$homeDtls['matchDay'] = $match->teams['home']->match_day;
+			$homeDtls['matchTime'] = $match->teams['home']->match_time;
+			$awayDtls['name'] = $match->teams['away']->title;
+			$awayDtls['club'] = $match->teams['away']->affiliatedclubname;
+			$awayDtls['captain'] = $match->teams['away']->captain;
+			$awayDtls['captainEmail'] = $match->teams['away']->contactemail;
+			$awayDtls['captainTel'] = $match->teams['away']->contactno;
+		} else {
+			$awayDtls['name'] = $match->teams['home']->title;
+			$awayDtls['club'] = $match->teams['home']->affiliatedclubname;
+			$awayDtls['captain'] = $match->teams['home']->captain;
+			$awayDtls['captainEmail'] = $match->teams['home']->contactemail;
+			$awayDtls['captainTel'] = $match->teams['home']->contactno;
+			$homeDtls['name'] = $match->teams['away']->title;
+			$homeDtls['club'] = $match->teams['away']->affiliatedclubname;
+			$homeDtls['captain'] = $match->teams['away']->captain;
+			$homeDtls['captainEmail'] = $match->teams['away']->contactemail;
+			$homeDtls['captainTel'] = $match->teams['away']->contactno;
+			$homeDtls['matchDay'] = $match->teams['away']->match_day;
+			$homeDtls['matchTime'] = $match->teams['away']->match_time;
+		}
+
+		$filename = ( !empty($template) ) ? 'match-notification-'.$template : 'match-notification';
+
+		$out = $this->loadTemplate( $filename, array( 'tournament' => $tournament, 'competition' => $competition, 'match' => $match, 'homeDtls' => $homeDtls, 'awayDtls' => $awayDtls, 'round' => $round, 'organisationName' => $organisationname ), 'email' );
+
+		return $out;
 	}
 
 	/**

@@ -941,5 +941,25 @@
         $shortcode .= "]";
         echo do_shortcode($shortcode);
     }
+    /**
+     * display match email
+     *
+     * @param int $match_id match id
+     * @param array $args associative array of parameters, see default values (optional)
+     * @category template-tags
+     */
+    function racketmanager_match_notification( $matchId, $args = array() ) {
+        global $racketmanager;
+
+        $args['match'] = $matchId;
+
+        $shortcode = "[matchnotification";
+        foreach ($args AS $key => $value)
+            $shortcode .= " ".$key."='".$value."'";
+        $shortcode .= "]";
+        $matchMessage = do_shortcode($shortcode);
+        return $matchMessage;
+    }
+
 
 ?>

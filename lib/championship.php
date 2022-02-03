@@ -564,15 +564,16 @@ final class League_Championship extends RacketManager {
       $league = get_league( );
 
       if ( isset($_POST['startFinals']) ) {
-        if ( current_user_can( 'update_results' ) )
-        $this->startFinalRounds($league->id);
-        else
-        echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+        if ( current_user_can( 'update_results' ) ) {
+          $this->startFinalRounds($league->id);
+        } else {
+          echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+        }
       }
 
       if ( isset($_POST['updateFinalResults']) ) {
         if ( current_user_can( 'update_results' ) ) {
-          $custom = isset($_POST['custom']) ? $_POST['custom'] : false;
+          $custom = isset($_POST['custom']) ? $_POST['custom'] : '';
           $this->updateFinalResults( $_POST['matches'], $_POST['home_points'], $_POST['away_points'], $_POST['home_team'], $_POST['away_team'], $custom, $_POST['round'], $_POST['season']);
         } else {
           $this->setMessage(__("You do not have sufficient permissions to access this page."), true);
@@ -580,12 +581,11 @@ final class League_Championship extends RacketManager {
         $this->printMessage();
       }
 
-      $class = 'alternate';
-      if (count($this->groups) > 0) $league->setGroup($this->groups[0]);
+      if (count($this->groups) > 0) { $league->setGroup($this->groups[0]); }
 
       $tab = 0;
-      if (isset($_GET['jquery-ui-tab'])) $tab = intval($_GET['jquery-ui-tab']);
-      if (isset($_POST['jquery-ui-tab'])) $tab = intval($_POST['jquery-ui-tab']);
+      if (isset($_GET['jquery-ui-tab'])) { $tab = intval($_GET['jquery-ui-tab']); }
+      if (isset($_POST['jquery-ui-tab'])) { $tab = intval($_POST['jquery-ui-tab']); }
 
       include_once( RACKETMANAGER_PATH . '/admin/championship.php' );
     } else {

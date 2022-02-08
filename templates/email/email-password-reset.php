@@ -5,7 +5,6 @@ $siteurl = $vars['site_url'];
 $userlogin = $vars['user_login'];
 $username = $vars['display_name'];
 $actionurl = $vars['action_url'];
-$emaillink = $vars['email_link'];
 $title = 'Password Reset Link';
 ?>
 <?php include('email-header.php'); ?>

@@ -37,7 +37,7 @@ class RacketManagerLogin extends RacketManager {
     add_filter( 'authenticate', array( $this, 'maybe_redirect_at_authenticate' ), 101, 3 );
     add_filter( 'login_redirect', array( $this, 'redirect_after_login' ), 10, 3 );
     add_filter( 'admin_init' , array( $this, 'register_settings_fields' ) );
-    add_filter( 'retrieve_password_message', array( $this, 'my_wp_retrieve_password_email' ), 10, 4 );
+    add_filter( 'retrieve_password_message', array( $this, 'racketmanager_retrieve_password_email' ), 10, 4 );
     add_filter( 'wp_new_user_notification_email_admin', array( $this, 'my_wp_new_user_notification_email_admin' ), 10, 3 );
     add_filter( 'wp_new_user_notification_email', array( $this, 'my_wp_new_user_notification_email' ), 10, 3 );
   }
@@ -64,7 +64,7 @@ class RacketManagerLogin extends RacketManager {
     $vars['user_login'] = $user->user_login;
     $vars['display_name'] = $user->display_name;
     $vars['action_url'] = wp_login_url() . '?action=rp&key='.$key.'&login='.rawurlencode($user->user_login);
-    $vars['email_link'] = 'info@leighandwestclifftennis.org.uk';
+    $vars['email_link'] = get_option('admin_email');
     $wp_new_user_notification_email['message'] = $racketmanager_shortcodes->loadTemplate( 'email-welcome', $vars, 'email' );
     $wp_new_user_notification_email['headers'] = 'Content-Type: text/html; charset=UTF-8';
 
@@ -75,7 +75,7 @@ class RacketManagerLogin extends RacketManager {
     return 'text/html';
   }
 
-  public function my_wp_retrieve_password_email($message, $key, $user_login, $user_data) {
+  public function racketmanager_retrieve_password_email($message, $key, $user_login, $user_data) {
     global $racketmanager_shortcodes;
 
     add_filter( 'wp_mail_content_type', array( $this,'racketmanager_wp_email_content_type' ) );
@@ -84,7 +84,6 @@ class RacketManagerLogin extends RacketManager {
     $vars['user_login'] = $user_login;
     $vars['display_name'] = $user_data->display_name;
     $vars['action_url'] = wp_login_url() . '?action=rp&key='.$key.'&login='.rawurlencode($user_login);
-    $vars['email_link'] = 'mailto://info@leighandwestclifftennis.org.uk';
     $message = $racketmanager_shortcodes->loadTemplate( 'email-password-reset', $vars, 'email' );
 
     return $message;

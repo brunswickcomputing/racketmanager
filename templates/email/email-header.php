@@ -24,6 +24,7 @@
   body {
     background-color: #f6f6f6;
     font-family: sans-serif;
+    margin: 0 auto !important;
     -webkit-font-smoothing: antialiased;
     font-size: 16px;
     line-height: 1.4;
@@ -31,6 +32,7 @@
     padding: 0;
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
+    max-width: 660px;
   }
 
   table {
@@ -57,19 +59,14 @@
   /* Set a max-width, and make it display as block so it will automatically stretch to that width, but will also shrink down on a phone or something */
   .container {
     display: block;
-    margin: 0 auto !important;
+
     /* makes it centered */
-    max-width: 660px;
-    padding: 10px;
-    width: 660px;
   }
 
   /* This should also be a block element, so that it will fill 100% of the .container */
   .content {
     box-sizing: border-box;
     display: block;
-    margin: 0 auto;
-    max-width: 660px;
     padding: 10px;
   }
 
@@ -336,16 +333,6 @@
       border-color: #34495e !important;
     }
   }
-  /*! CSS Used from: https://www.leighandwestclifftennis.org.uk/wp-content/plugins/leaguemanager/css/print.css?ver=6.1.0 ; media=print */
-  @media print{
-    @media print{
-      body{background:blue;font-size:10pt;margin:0;}
-      #colophon{display:none;}
-      .header-clone{display:none;}
-      a[href]:after{content:none!important;}
-    }
-  }
-  /*! CSS Used from: https://www.leighandwestclifftennis.org.uk/wp-content/themes/sydney/css/bootstrap/bootstrap.min.css?ver=1 ; media=all */
   @media all{
     body{margin:0;}
     footer,header{display:block;}
@@ -386,12 +373,10 @@
     .container-fluid:after,.container-fluid:before,.row:after,.row:before{content:" ";display:table;}
     .container-fluid:after,.row:after{clear:both;}
   }
-  /*! CSS Used from: https://www.leighandwestclifftennis.org.uk/wp-includes/css/dist/block-library/style.min.css?ver=5.8.3 ; media=all */
   @media all{
     .screen-reader-text{border:0;clip:rect(1px,1px,1px,1px);-webkit-clip-path:inset(50%);clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px;word-wrap:normal!important;}
     .screen-reader-text:focus{background-color:#ddd;clip:auto!important;-webkit-clip-path:none;clip-path:none;color:#444;display:block;font-size:1em;height:auto;left:5px;line-height:normal;padding:15px 23px 14px;text-decoration:none;top:5px;width:auto;z-index:100000;}
   }
-  /*! CSS Used from: https://www.leighandwestclifftennis.org.uk/wp-content/themes/sydney/style.css?ver=5.8.3 ; media=all */
   @media all{
     .valign{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-ms-flex-align:center;align-items:center;}
     .screen-reader-text{clip:rect(1px, 1px, 1px, 1px);position:absolute!important;height:1px;width:1px;overflow:hidden;}
@@ -453,7 +438,6 @@
       .site-info .sydney-credits{text-align:center;}
     }
   }
-  /*! CSS Used from: Embedded */
   input[type="submit"]:hover,a{color:#006800;}
   input[type="submit"]{background-color:#006800;}
   input[type="search"]:focus,input[type="submit"]{border-color:#006800;}

@@ -954,6 +954,38 @@ div#password-lost-form {
 #login i.passwordShow, #password-reset i.passwordShow {
     top: .75em;
 }
+#password-strength.short {
+    background-color: #D2222D;
+    color: #FFFFFF;
+}
+#password-strength.bad {
+    background-color: #D2222D;
+    color: #FFFFFF;
+}
+#password-strength.good {
+    background-color: #FFBF00
+    ;
+}
+#password-strength {
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+}
+#password-strength.strong {
+    background-color: #238823;
+    color: white;
+}
+#password-reset .description {
+    color: #505a5f;
+    font-weight: 400;
+}
+input#resetpassButton:disabled, input#memberaccount-button:disabled {
+    cursor: not-allowed;
+}
+input#resetpassButton:hover:disabled, input#memberaccount-button:hover:disabled {
+    color: white;
+    background-color: #006800;
+}
 .message-error {
     color: red;
     display: block;

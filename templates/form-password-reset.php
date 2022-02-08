@@ -13,6 +13,7 @@
             <?php } ?>
         <?php } ?>
 
+        <p class="description"><?php echo wp_get_password_hint(); ?></p>
         <div class="form-group">
             <label class="hidden" for="password"><?php _e( 'New password', 'racketmanager' ) ?></label>
             <div class="input">
@@ -31,11 +32,12 @@
                 </i>
             </div>
         </div>
-
-        <p class="description"><?php echo wp_get_password_hint(); ?></p>
+        <div class="form-group">
+          <span id="password-strength"></span>
+        </div>
 
         <p class="resetpass-submit">
-            <input type="submit" name="submit" id="resetpass-button"
+            <input type="submit" name="submit" id="resetpassButton"
                    class="button" value="<?php _e( 'Reset Password', 'racketmanager' ); ?>" />
         </p>
     </form>

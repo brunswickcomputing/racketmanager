@@ -87,6 +87,9 @@
                 </div>
                 <?php if (isset($user_data['rePassword_error'])) echo '<span class="form-error">'.$user_data["rePassword_error"].'</span>' ?>
             </div>
+            <div class="form-group">
+              <span id="password-strength"></span>
+            </div>
         </fieldset>
 
         <p class="memberaccount-submit">

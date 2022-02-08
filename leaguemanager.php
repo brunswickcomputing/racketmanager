@@ -1847,28 +1847,32 @@ class RacketManager {
 	* @param array $away_team
 	* @return boolean
 	*/
-	public function getMatchUpdateAllowed($homeTeam, $awayTeam) {
+	public function getMatchUpdateAllowed($homeTeam, $awayTeam, $competitionType) {
 		$options = $this->getOptions();
 		$userid = get_current_user_id();
 		$userCanUpdate = false;
+		if ( $competitionType == 'league' ) { $competitionType= ''; }
+		$competitionType = ucfirst($competitionType);
+		$matchCapability = 'matchCapability'.$competitionType;
+		$resultEntry = 'resultEntry'.$competitionType;
 
 		if ( isset($homeTeam) && isset($awayTeam) ) {
 			if ( $userid ) {
 				if ( !current_user_can( 'manage_racketmanager' ) ) {
-					if ( $options['matchCapability'] == 'roster' ) {
+					if ( $options[$matchCapability] == 'roster' ) {
 						$club = get_club($homeTeam->affiliatedclub);
 						$homeRoster = $club->getRoster( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
 						if ( $homeRoster != 0 ) {
 							$userCanUpdate = true;
-						} elseif ( $options['resultEntry'] == 'either' ) {
+						} elseif ( $options[$resultEntry] == 'either' ) {
 							$club = get_club($awayTeam->affiliatedclub);
 							$awayRoster = $club->getRoster( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
 							if ( $awayRoster != 0 ) {
 								$userCanUpdate = true;
 							}
 						}
-					} elseif ( $options['matchCapability'] == 'captain' ) {
-						if ( ( isset($homeTeam->captainId) && $userid == $homeTeam->captainId ) || ( $options['resultEntry'] == 'either' && ( isset($awayTeam->captainId) && $userid == $awayTeam->captainId ) ) ) {
+					} elseif ( $options[$matchCapability] == 'captain' ) {
+						if ( ( isset($homeTeam->captainId) && $userid == $homeTeam->captainId ) || ( $options[$resultEntry] == 'either' && ( isset($awayTeam->captainId) && $userid == $awayTeam->captainId ) ) ) {
 							$userCanUpdate = true;
 						}
 					}

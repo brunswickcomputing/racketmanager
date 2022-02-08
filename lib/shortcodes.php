@@ -1092,7 +1092,7 @@ class RacketManagerShortcodes extends RacketManager {
 				$homeDtls['title'] = "Home Player";
 				$awayDtls['title'] = "Away Player";
 			}
-		} elseif ( $competitiontype == 'cup' ) {
+		} elseif ( $competitionType == 'cup' ) {
 			$template = 'cup';
 			$homeDtls['title'] = "Home Team";
 			$awayDtls['title'] = "Away Team";

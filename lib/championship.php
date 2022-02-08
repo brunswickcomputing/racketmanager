@@ -603,7 +603,7 @@ final class League_Championship extends RacketManager {
     if ( $match->league->competitionType == 'tournament' ) {
       $leagueTitle = explode(" ", $match->league->title);
       $tournamentType = $leagueTitle[0];
-      $tournaments = $racketmanager->getTournaments( array( 'type' => $tournamentType, 'open' => true ) );
+      $tournaments = $racketmanager->getTournaments( array( 'type' => $tournamenttype, 'open' => true ) );
       $tournament = $tournaments[0];
       if ( $emailFrom == '' ) { $emailFrom = $tournament->tournamentSecretaryEmail; }
       $messageArgs['tournament'] = $tournament->name;

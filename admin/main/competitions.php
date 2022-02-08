@@ -18,9 +18,9 @@ jQuery(function() {
         <li><a href="#competitions-league"><?php _e( 'Leagues', 'racketmanager' ) ?></a></li>
         <li><a href="#competitions-tournament"><?php _e( 'Tournaments', 'racketmanager' ) ?></a></li>
     </ul>
-<?php $competitiontypes = array('cup','league','tournament');
-    foreach ( $competitiontypes AS $competitiontype ) { ?>
-    <div id="competitions-<?php echo $competitiontype ?>" class="league-block-container">
+<?php $competitionTypes = array('cup','league','tournament');
+    foreach ( $competitionTypes AS $competitionType ) { ?>
+    <div id="competitions-<?php echo $competitionType ?>" class="league-block-container">
         <form id="competitions-filter" method="post" action="">
             <?php wp_nonce_field( 'competitions-bulk' ) ?>
 
@@ -46,7 +46,7 @@ jQuery(function() {
                     <th scope="col" class="centered"><?php _e( 'Type', 'racketmanager' ) ?></th>
                 </tr>
                 <tbody id="the-list">
-                <?php $competitions = $racketmanager->getCompetitions( array('type' => $competitiontype) );
+                <?php $competitions = $racketmanager->getCompetitions( array('type' => $competitionType) );
                     $class = '';
                 foreach ( $competitions AS $competition ) {
                     $competition = get_competition($competition);

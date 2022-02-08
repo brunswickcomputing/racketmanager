@@ -2505,6 +2505,7 @@ final class RacketManagerAdmin extends RacketManager
             echo '<p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p>';
         } else {
             $options = get_option('leaguemanager');
+						$comptab = 1;
 
             $tab = 0;
             if ( isset($_POST['updateRacketManager']) ) {
@@ -2514,12 +2515,18 @@ final class RacketManagerAdmin extends RacketManager
                 $options['rosterLeadTime'] = htmlspecialchars($_POST['rosterLeadTime']);
                 $options['playedRounds'] = htmlspecialchars($_POST['playedRounds']);
                 $options['playerLocked'] = htmlspecialchars($_POST['playerLocked']);
-                $options['matchCapability'] = htmlspecialchars($_POST['matchCapability']);
-                $options['resultConfirmation'] = htmlspecialchars($_POST['resultConfirmation']);
-                $options['resultEntry'] = htmlspecialchars($_POST['resultEntry']);
-                $options['resultConfirmationEmail'] = htmlspecialchars($_POST['resultConfirmationEmail']);
-								$options['resultConfirmationEmailCup'] = htmlspecialchars($_POST['resultConfirmationEmailCup']);
-								$options['resultConfirmationEmailTournament'] = htmlspecialchars($_POST['resultConfirmationEmailTournament']);
+								$competitionTypes = array('Cup','League','Tournament');
+							  foreach ( $competitionTypes AS $competitionType ) {
+									if ( $competitionType == 'League' ) { $competitionType = ''; }
+									$matchCapability = 'matchCapability'.$competitionType;
+						      $resultEntry = 'resultEntry'.$competitionType;
+						      $resultConfirmation = 'resultConfirmation'.$competitionType;
+						      $resultConfirmationEmail = 'resultConfirmationEmail'.$competitionType;
+									$options[$matchCapability] = htmlspecialchars($_POST[$matchCapability]);
+	                $options[$resultConfirmation] = htmlspecialchars($_POST[$resultConfirmation]);
+	                $options[$resultEntry] = htmlspecialchars($_POST[$resultEntry]);
+	                $options[$resultConfirmationEmail] = htmlspecialchars($_POST[$resultConfirmationEmail]);
+								}
                 $options['colors']['headers'] = htmlspecialchars($_POST['color_headers']);
                 $options['colors']['rows'] = array( 'alternate' => htmlspecialchars($_POST['color_rows_alt']), 'main' => htmlspecialchars($_POST['color_rows']), 'ascend' => htmlspecialchars($_POST['color_rows_ascend']), 'descend' => htmlspecialchars($_POST['color_rows_descend']), 'relegation' => htmlspecialchars($_POST['color_rows_relegation']) );
                 $options['colors']['boxheader'] = array(htmlspecialchars($_POST['color_boxheader1']), htmlspecialchars($_POST['color_boxheader2']));

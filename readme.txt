@@ -50,6 +50,9 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.2.1 =
+* BUGFIX: fix player result check bug with playedrounds
+
 = 6.2.0 =
 * BUGFIX: add missing end of statement to do_action in admin/includes/match.php
 * BUGFIX: fix admin player stats

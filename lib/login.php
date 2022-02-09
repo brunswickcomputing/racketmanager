@@ -39,6 +39,8 @@ class RacketManagerLogin extends RacketManager {
     add_filter( 'admin_init' , array( $this, 'register_settings_fields' ) );
     add_filter( 'retrieve_password_message', array( $this, 'racketmanager_retrieve_password_email' ), 10, 4 );
     add_filter( 'password_change_email', array( $this, 'racketmanager_password_change_email' ), 10, 3 );
+    add_filter( 'wp_privacy_personal_data_email_content', array( $this, 'racketmanager_privacy_personal_data_email' ), 10, 3 );
+    add_filter( 'user_request_action_email_content', array( $this, 'racketmanager_user_request_action_email' ), 10, 2 );
     add_filter( 'wp_new_user_notification_email_admin', array( $this, 'my_wp_new_user_notification_email_admin' ), 10, 3 );
     add_filter( 'wp_new_user_notification_email', array( $this, 'my_wp_new_user_notification_email' ), 10, 3 );
   }
@@ -102,6 +104,28 @@ class RacketManagerLogin extends RacketManager {
     $passwordChangeMessage['message'] = $racketmanager_shortcodes->loadTemplate( 'email-password-change', $vars, 'email' );
 
     return $passwordChangeMessage;
+  }
+
+  public function racketmanager_privacy_personal_data_email($message, $request, $email_data) {
+    global $racketmanager_shortcodes;
+
+    add_filter( 'wp_mail_content_type', array( $this,'racketmanager_wp_email_content_type' ) );
+    $vars['site_name'] = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
+    $vars['site_url'] = get_option('siteurl');
+    $message = $racketmanager_shortcodes->loadTemplate( 'email-privacy-personal-data', $vars, 'email' );
+
+    return $message;
+  }
+
+  public function racketmanager_user_request_action_email($message, $email_data) {
+    global $racketmanager_shortcodes;
+
+    add_filter( 'wp_mail_content_type', array( $this,'racketmanager_wp_email_content_type' ) );
+    $vars['site_name'] = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
+    $vars['site_url'] = get_option('siteurl');
+    $message = $racketmanager_shortcodes->loadTemplate( 'email-user-request-action', $vars, 'email' );
+
+    return $message;
   }
 
   public function disable_dashboard() {

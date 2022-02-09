@@ -244,3 +244,18 @@ Racketmanager.confirmResults = function() {
                 }) ;
     return false;
 };
+Racketmanager.notifyTeams = function(matchId) {
+
+    jQuery.ajax({
+                url:RacketManagerAjaxL10n.requestUrl,
+                type: "POST",
+                data: {"matchId": matchId,
+                "action": "racketmanager_notify_teams"},
+                success: function(response) {
+                alert(response);
+                },
+                error: function() {
+                alert("Ajax error on notifying teams");
+                }
+                }) ;
+};

@@ -56,6 +56,8 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_update_club', array(&$this, 'clubUpdate') );
 
 		add_action( 'wp_ajax_racketmanager_tournament_entry', array(&$this, 'tournamentEntryRequest') );
+
+		add_action( 'wp_ajax_racketmanager_notify_teams', array(&$this, 'notifyTeams') );
 	}
 
 	/**
@@ -1608,5 +1610,29 @@ class RacketManagerAJAX extends RacketManager {
 
 				}
 
+
+			/**
+			* notify teams
+			*
+			* @see templates/tournamententry.php
+			*/
+			public function notifyTeams() {
+				global $match, $racketmanager;
+
+				$return ='';
+				$messageSent = false;
+
+				$match = get_match($_POST['matchId']);
+				$messageSent = $racketmanager->notifyNextMatchTeams($match);
+
+				if ( $messageSent ) {
+					$return = __('Teams notified','racketmanager');
+				} else {
+					$return = __('No notification','racketmanager');
+				}
+
+				die(json_encode($return));
 			}
+
+		}
 			?>

@@ -451,7 +451,11 @@ final class League_Championship extends RacketManager {
             $home = explode("_", $match->home_team);
             $home = array( 'rank' => $home[0], 'group' => isset($home[1]) ? $home[1] : '' );
             $home_team = $league->getLeagueTeams( array("rank" => $home['rank'], "group" => $home['group'], "reset_query_args" => true) );
-            if ( $home_team ) $home['team'] = $home_team[0]->id;
+            if ( $home_team ) {
+              $home['team'] = $home_team[0]->id;
+              $match->home_team = $home['team'];
+              $match->teams['home'] = $league->getTeamDtls($home_team[0]->id);
+            }
           } else {
             $home_team = '';
           }
@@ -465,7 +469,11 @@ final class League_Championship extends RacketManager {
             $away = explode("_", $match->away_team);
             $away = array( 'rank' => $away[0], 'group' => isset($away[1]) ? $away[1] : '' );
             $away_team = $league->getLeagueTeams( array("rank" => $away['rank'], "group" => $away['group'], "reset_query_args" => true) );
-            if ( $away_team ) $away['team'] = $away_team[0]->id;
+            if ( $away_team )  {
+              $away['team'] = $away_team[0]->id;
+              $match->away_team = $away['team'];
+              $match->teams['away'] = $league->getTeamDtls($away_team[0]->id);
+            }
           } else {
             $away_team = '';
           }
@@ -477,6 +485,11 @@ final class League_Championship extends RacketManager {
 
         if ( $update ) {
           $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_matches} SET `home_team` = %d, `away_team` = %d WHERE `id` = %d", $home['team'], $away['team'], $match->id ) );
+          if ( is_numeric($match->home_team) && is_numeric($match->away_team) ) {
+            if ( isset($match->custom['host']) ) {
+              $this->notifyNextMatchTeams($match);
+            }
+          }
         }
       }
     }
@@ -590,6 +603,9 @@ final class League_Championship extends RacketManager {
     if ( !$match->teams['home']->contactemail > '' && !$match->teams['away']->contactemail > '' ) {
       return;
     }
+    if ( $match->teams['home']->id == -1 || $match->teams['away']->id == -1 ) {
+      return;
+    }
     $to = array();
     if ( $match->teams['home']->contactemail > '' ) { array_push($to, $match->teams['home']->contactemail); }
     if ( $match->teams['away']->contactemail > '' ) { array_push($to, $match->teams['away']->contactemail); }
@@ -603,7 +619,7 @@ final class League_Championship extends RacketManager {
     if ( $match->league->competitionType == 'tournament' ) {
       $leagueTitle = explode(" ", $match->league->title);
       $tournamentType = $leagueTitle[0];
-      $tournaments = $racketmanager->getTournaments( array( 'type' => $tournamenttype, 'open' => true ) );
+      $tournaments = $racketmanager->getTournaments( array( 'type' => $tournamentType, 'open' => true ) );
       $tournament = $tournaments[0];
       if ( $emailFrom == '' ) { $emailFrom = $tournament->tournamentSecretaryEmail; }
       $messageArgs['tournament'] = $tournament->name;

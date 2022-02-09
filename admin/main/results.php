@@ -19,13 +19,18 @@ $prev_league = 0;
             <th><?php _e( 'Location','racketmanager' ) ?></th>
             <th><?php _e( 'Begin','racketmanager' ) ?></th>
             <th class="score"><?php _e( 'Score', 'racketmanager' ) ?></th>
+            <th></th>
           </tr>
         </thead>
         <tbody id="the-list-matches" class="lm-form-table">
           <?php if ( $matches ) { $class = '';
             foreach ( $matches AS $match ) {
               $match = get_match($match);
-              debug_to_console($match);
+              if ( $match->league->is_championship ) {
+                $matchLink = 'final='.$match->final_round.'&amp;league-tab=1';
+              } else {
+                $matchLink = 'match_day='.$match->match_day;
+              }
               $class = ( 'alternate' == $class ) ? '' : 'alternate';
               if ( $prev_league != $match->league_id) {
                 $prev_league = $match->league_id; ?>
@@ -48,6 +53,8 @@ $prev_league = 0;
                 <td><?php echo ( '00:00' == $match->hour.":".$match->minutes ) ? 'N/A' : mysql2date(get_option('time_format'), $match->date) ?></td>
                 <td class="score">
                   <input class="points" type="text" size="2" style="text-align: center;" id="home_points[<?php echo $match->league->id ?>][<?php echo $match->id ?>]" name="home_points[<?php echo $match->league->id ?>][<?php echo $match->id ?>]" value="<?php echo (isset($match->home_points) ? $match->home_points : '') ?>" /> : <input class="points" type="text" size="2" style="text-align: center;" id="away_points[<?php echo $match->league->id ?>][<?php echo $match->id ?>]" name="away_points[<?php echo $match->league->id ?>][<?php echo $match->id ?>]" value="<?php echo (isset($match->away_points) ? $match->away_points : '') ?>" />
+                </td>
+                <td><a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $match->league->id ?>&amp;season=<?php echo $match->season ?>&amp;<?php echo $matchLink ?> " class="button button-secondary"><?php _e('View match', 'racketmanager') ?></a>
                 </td>
               </tr>
             <?php }

@@ -435,7 +435,7 @@ final class League_Championship extends RacketManager {
   */
   public function startFinalRounds() {
     if ( is_admin() && current_user_can( 'update_results' ) ) {
-      global $wpdb;
+      global $wpdb, $racketmanager;
 
       $league = get_league();
 
@@ -487,7 +487,7 @@ final class League_Championship extends RacketManager {
           $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_matches} SET `home_team` = %d, `away_team` = %d WHERE `id` = %d", $home['team'], $away['team'], $match->id ) );
           if ( is_numeric($match->home_team) && is_numeric($match->away_team) ) {
             if ( isset($match->custom['host']) ) {
-              $this->notifyNextMatchTeams($match);
+              $racketmanager->notifyNextMatchTeams($match);
             }
           }
         }
@@ -504,7 +504,7 @@ final class League_Championship extends RacketManager {
   * @return void
   */
   private function proceed( $current, $next ) {
-    global $wpdb;
+    global $wpdb, $racketmanager;
 
     $league = get_league();
     $matches = $league->getMatches( array("final" => $next, "limit" => false) );
@@ -575,7 +575,7 @@ final class League_Championship extends RacketManager {
           }
           if ( is_numeric($match->home_team) && is_numeric($match->away_team) ) {
             if ( isset($match->custom['host']) ) {
-              $this->notifyNextMatchTeams($match);
+              $racketmanager->notifyNextMatchTeams($match);
             }
           }
           // Set winners on final
@@ -591,46 +591,6 @@ final class League_Championship extends RacketManager {
     }
   }
 
-  /**
-  * notify teams for next round
-  *
-  * @param object $match next match
-  * @return void
-  */
-  public function notifyNextMatchTeams($match) {
-    global $racketmanager;
-
-    if ( !$match->teams['home']->contactemail > '' && !$match->teams['away']->contactemail > '' ) {
-      return;
-    }
-    if ( $match->teams['home']->id == -1 || $match->teams['away']->id == -1 ) {
-      return;
-    }
-    $to = array();
-    if ( $match->teams['home']->contactemail > '' ) { array_push($to, $match->teams['home']->contactemail); }
-    if ( $match->teams['away']->contactemail > '' ) { array_push($to, $match->teams['away']->contactemail); }
-    $emailFrom = $racketmanager->getConfirmationEmail($match->league->competitionType);
-    $organisationName = get_option('blogname');
-    $roundName = $match->league->championship->finals[$match->final_round]['name'];
-    $messageArgs = array();
-    $messageArgs['organisationname'] = $organisationName;
-    $messageArgs['round'] = $roundName;
-    $messageArgs['competitiontype'] = $match->league->competitionType;
-    if ( $match->league->competitionType == 'tournament' ) {
-      $leagueTitle = explode(" ", $match->league->title);
-      $tournamentType = $leagueTitle[0];
-      $tournaments = $racketmanager->getTournaments( array( 'type' => $tournamentType, 'open' => true ) );
-      $tournament = $tournaments[0];
-      if ( $emailFrom == '' ) { $emailFrom = $tournament->tournamentSecretaryEmail; }
-      $messageArgs['tournament'] = $tournament->name;
-    } else if ( $match->league->competitionType == 'cup' ) {
-      $messageArgs['competition'] = $match->league->competitionName;
-    }
-    $emailMessage = racketmanager_match_notification($match->id, $messageArgs );
-    $headers = array('From: '.$match->league->competitionType.' secretary <'.$emailFrom.'>');
-    $subject = $organisationName." - ".$match->league->title." - ".$roundName." - Match Details";
-    $racketmanager->lm_mail($to, $subject, $emailMessage, $headers);
-  }
   /**
   * display administration panel
   *

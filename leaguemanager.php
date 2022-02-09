@@ -1884,6 +1884,48 @@ class RacketManager {
 
 		return $userCanUpdate;
 	}
+
+	/**
+  * notify teams for next round
+  *
+  * @param object $match next match
+  * @return void
+  */
+  public function notifyNextMatchTeams($match) {
+    global $racketmanager;
+
+		if ( !(isset($match->teams['home']->contactemail) && $match->teams['home']->contactemail > '') && !(isset($match->teams['away']->contactemail) && $match->teams['away']->contactemail > '' ) ) {
+      return;
+    }
+    if ( $match->teams['home']->id == -1 || $match->teams['away']->id == -1 ) {
+      return;
+    }
+    $to = array();
+    if ( isset($match->teams['home']->contactemail) && $match->teams['home']->contactemail > '' ) { array_push($to, $match->teams['home']->contactemail); }
+    if ( isset($match->teams['away']->contactemail) && $match->teams['away']->contactemail > '' ) { array_push($to, $match->teams['away']->contactemail); }
+    $emailFrom = $racketmanager->getConfirmationEmail($match->league->competitionType);
+    $organisationName = get_option('blogname');
+    $roundName = $match->league->championship->finals[$match->final_round]['name'];
+    $messageArgs = array();
+    $messageArgs['organisationname'] = $organisationName;
+    $messageArgs['round'] = $roundName;
+    $messageArgs['competitiontype'] = $match->league->competitionType;
+    if ( $match->league->competitionType == 'tournament' ) {
+      $leagueTitle = explode(" ", $match->league->title);
+      $tournamentType = $leagueTitle[0];
+      $tournaments = $racketmanager->getTournaments( array( 'type' => $tournamentType, 'open' => true ) );
+      $tournament = $tournaments[0];
+      if ( $emailFrom == '' ) { $emailFrom = $tournament->tournamentSecretaryEmail; }
+      $messageArgs['tournament'] = $tournament->name;
+    } else if ( $match->league->competitionType == 'cup' ) {
+      $messageArgs['competition'] = $match->league->competitionName;
+    }
+    $emailMessage = racketmanager_match_notification($match->id, $messageArgs );
+    $headers = array('From: '.$match->league->competitionType.' secretary <'.$emailFrom.'>');
+    $subject = $organisationName." - ".$match->league->title." - ".$roundName." - Match Details";
+    $racketmanager->lm_mail($to, $subject, $emailMessage, $headers);
+		return true;
+  }
 }
 
 global $racketmanager;

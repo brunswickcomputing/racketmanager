@@ -58,7 +58,7 @@
                     <th><?php _e( 'Begin','racketmanager' ) ?></th>
         <?php } ?>
         <?php do_action( 'matchtable_header_'.$league->sport ); ?>
-                    <th style="text-align: center;"><?php _e( 'Score', 'racketmanager' ) ?></th>
+                    <th class="score"><?php _e( 'Score', 'racketmanager' ) ?></th>
                 </tr>
             </thead>
             <tbody id="the-list-<?php echo $final['key'] ?>" class="lm-form-table">
@@ -77,7 +77,7 @@
                     <td><?php echo ( isset($match->hour) ) ? mysql2date(get_option('time_format'), $match->date) : 'N/A' ?></td>
             <?php } ?>
             <?php do_action( 'matchtable_columns_'.$league->sport, ( ( isset($match) ) ? $match : '' ) ) ?>
-                    <td>
+                    <td class="score">
                         <input class="points" type="text" size="2" style="text-align: center;" id="home_points[<?php echo $match->id ?>]" name="home_points[<?php echo $match->id ?>]" value="<?php echo ((isset($match->home_points)) ? $match->home_points : '') ?>" /> : <input class="points" type="text" size="2" style="text-align: center;" id="away_points[<?php echo $match->id ?>]" name="away_points[<?php echo $match->id ?>]" value="<?php echo ((isset($match->away_points)) ? $match->away_points : '') ?>" />
                     </td>
                 </tr>

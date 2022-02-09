@@ -1856,7 +1856,7 @@ class RacketManager {
 		$matchCapability = 'matchCapability'.$competitionType;
 		$resultEntry = 'resultEntry'.$competitionType;
 
-		if ( isset($homeTeam) && isset($awayTeam) ) {
+		if ( isset($homeTeam) && isset($awayTeam) && isset($homeTeam->affiliatedclub) && isset($awayTeam->affiliatedclub) ) {
 			if ( $userid ) {
 				if ( !current_user_can( 'manage_racketmanager' ) ) {
 					if ( $options[$matchCapability] == 'roster' ) {

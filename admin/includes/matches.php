@@ -12,7 +12,7 @@
 		<option value="<?php echo $i ?>"><?php printf(__( '%d. Match Day', 'racketmanager'), $i) ?></option>
 <?php } ?>
 	</select>
-	<input type="hidden" name="jquery-ui-tab" value="0" class="jquery_ui_tab_index" />
+	<input type="hidden" name="league-tab" value="0" class="jquery_ui_tab_index" />
 	<input type="submit" value="<?php _e('Edit Matches', 'racketmanager'); ?>" class="button-secondary action" />
 </form>
 <?php } ?>
@@ -21,7 +21,7 @@
 <?php wp_nonce_field( 'matches-bulk' ) ?>
 
 	<input type="hidden" name="current_match_day" value="<?php echo $matchDay ?>" />
-	<input type="hidden" name="jquery-ui-tab" value="0" class="jquery_ui_tab_index" />
+	<input type="hidden" name="league-tab" value="0" class="jquery_ui_tab_index" />
 	<input type="hidden" name="group" value="<?php echo $group ?>" />
     <input type="hidden" name="season" value="<?php echo $season ?>" />
 

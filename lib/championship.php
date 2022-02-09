@@ -621,8 +621,8 @@ final class League_Championship extends RacketManager {
       if (count($this->groups) > 0) { $league->setGroup($this->groups[0]); }
 
       $tab = 0;
-      if (isset($_GET['jquery-ui-tab'])) { $tab = intval($_GET['jquery-ui-tab']); }
-      if (isset($_POST['jquery-ui-tab'])) { $tab = intval($_POST['jquery-ui-tab']); }
+      if (isset($_GET['league-tab'])) { $tab = intval($_GET['league-tab']); }
+      if (isset($_POST['league-tab'])) { $tab = intval($_POST['league-tab']); }
 
       include_once( RACKETMANAGER_PATH . '/admin/championship.php' );
     } else {

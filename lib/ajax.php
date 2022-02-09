@@ -669,7 +669,7 @@ class RacketManagerAJAX extends RacketManager {
 				if ( $emailTo > '' ) {
 					$to = $emailTo;
 					$subject = get_option('blogname')." Result Approval - ".$match->league->title." - ".$match->match_title;
-					$message = "There is a new match result that needs approval.  Click <a href='".admin_url()."?page=racketmanager&subpage=show-league&league_id=".$match->league_id."&final=".$match->final_round."&jquery-ui-tab=1'>here</a> to see the match result. ";
+					$message = "There is a new match result that needs approval.  Click <a href='".admin_url()."?page=racketmanager&subpage=show-league&league_id=".$match->league_id."&final=".$match->final_round."&league-tab=1'>here</a> to see the match result. ";
 					$racketmanager->lm_mail($to, $subject, $message);
 				}
 			} else {

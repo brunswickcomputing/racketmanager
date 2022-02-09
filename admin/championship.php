@@ -21,7 +21,7 @@
 				<option value="<?php echo $g ?>"<?php selected($g, $group) ?>><?php printf(__('Group %s','racketmanager'), $g) ?></option>
             <?php } ?>
 			</select>
-			<input type="hidden" name="jquery-ui-tab" value="<?php echo $tab ?>" class="jquery_ui_tab_index" />
+			<input type="hidden" name="league-tab" value="<?php echo $tab ?>" class="jquery_ui_tab_index" />
 			<input type="submit" class="button-secondary" value="<?php _e( 'Show', 'racketmanager' ) ?>" />
 		</form>
 	</div>

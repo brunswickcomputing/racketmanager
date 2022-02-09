@@ -9,7 +9,7 @@
 	<?php if ( has_action( 'racketmanager_edit_match_'.$league->sport ) ) {
 		do_action( 'racketmanager_edit_match_'.$league->sport, $league, $teams, $season, $max_matches, $matches, $submit_title, $mode );
 	} else { ?>
-		<form action="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id?>&amp;season=<?php echo $season ?><?php if (isset($finalkey)) echo '&amp;final=' . $finalkey . '&amp;jquery-ui-tab=1'; ?>" method="post">
+		<form action="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id?>&amp;season=<?php echo $season ?><?php if (isset($finalkey)) echo '&amp;final=' . $finalkey . '&amp;league-tab=1'; ?>" method="post">
 			<?php wp_nonce_field( 'racketmanager_manage-matches' ) ?>
 			<?php if ( !$edit ) { ?><p class="match_info"><?php _e( 'Note: Matches with different Home and Guest Teams will be added to the database.', 'racketmanager' ) ?></p><?php } ?>
 

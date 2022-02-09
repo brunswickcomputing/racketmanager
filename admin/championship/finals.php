@@ -10,7 +10,7 @@
                 <option value="<?php echo $final['key'] ?>"<?php selected($league->championship->getCurrentFinalKey(), $final['key']) ?>><?php echo $final['name'] ?></option>
                 <?php endforeach; ?>
             </select>
-            <input type="hidden" name="jquery-ui-tab" value="<?php echo $tab ?>" class="jquery_ui_tab_index" />
+            <input type="hidden" name="league-tab" value="<?php echo $tab ?>" class="jquery_ui_tab_index" />
             <input type="submit" class="button-secondary" value="<?php _e( 'Show', 'racketmanager' ) ?>" />
         </form>
         <form action="admin.php" method="get" style="display: inline;">
@@ -30,7 +30,7 @@
                 <option value="<?php echo $final['key'] ?>"><?php echo $final['name'] ?></option>
             <?php } ?>
             </select>
-            <input type="hidden" name="jquery-ui-tab" value="<?php echo $tab ?>" class="jquery_ui_tab_index" />
+            <input type="hidden" name="league-tab" value="<?php echo $tab ?>" class="jquery_ui_tab_index" />
             <input type="submit" class="button-secondary" value="<?php _e( 'Go', 'racketmanager' ) ?>" />
         </form>
     </div>
@@ -42,7 +42,7 @@
         <input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
         <input type="hidden" name="season" value="<?php echo $league->current_season['name'] ?>" />
         <input type="hidden" name="round" value="<?php if (!empty($final['round'])) echo $final['round']; ?>" />
-        <input type="hidden" name="jquery-ui-tab" value="<?php echo $tab ?>" class="jquery_ui_tab_index" />
+        <input type="hidden" name="league-tab" value="<?php echo $tab ?>" class="jquery_ui_tab_index" />
 
 <?php if ( $matches ) { ?>
         <table class="widefat">

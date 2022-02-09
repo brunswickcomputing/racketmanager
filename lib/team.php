@@ -21,8 +21,13 @@ final class Team {
 	public static function get_instance($team_id) {
 		global $wpdb;
 		$team_id = (int) $team_id;
-		if ( ! $team_id )
-		return false;
+		if ( ! $team_id ) {
+			return false;
+		}
+		if ( $team_id == -1) {
+			$team = (object)array( 'id' => $team_id, 'title' => __( 'Bye', 'racketmanager' ) );
+			return $team;
+		}
 
 		$team = wp_cache_get( $team_id, 'teams' );
 

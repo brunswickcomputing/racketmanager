@@ -50,6 +50,36 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.2.0 =
+* BUGFIX: add missing end of statement to do_action in admin/includes/match.php
+* BUGFIX: fix admin player stats
+* BUGFIX: handle debug handle correctly when using ajax
+* BUGFIX: only check match update allowed if affiliatedclub is set
+* BUGFIX: replace &mdash; with '-'
+* BUGFIX: send result notification emails correctly
+* UPDATE: add ability to notify teams of match details at individual level
+* UPDATE: add braces around if statement in admin/show-league and reformat lines
+* UPDATE: add password complexity check to frontend
+* UPDATE: align points correctly in championship admin screens
+* UPDATE: allow headers to be passed to email send
+* UPDATE: create dummy team object for "Bye"
+* UPDATE: fix styling errors
+* UPDATE: format change password confirmation email
+* UPDATE: format password reset emails
+* UPDATE: format privacy emails
+* UPDATE: get team details in match.php
+* UPDATE: link to league match page from admin results page
+* UPDATE: move match notification function to racketmanager class
+* UPDATE: move racketmanager.js file to js folder
+* UPDATE: organise email templates into separate folder
+* UPDATE: send notification of next tournament match details
+* UPDATE: send notification of next tournament match details for first rounds
+* UPDATE: store results options by competition type
+* UPDATE: style welcome and reset password emails
+* UPDATE: use competitiontype
+* UPDATE: use league-tab rather than jquery-ui-tab
+* UPDATE: use standard getTournaments for all tournament queries
+
 = 6.1.0 =
 * UPDATE: allow non-rubber match results to be entered
 * UPDATE: add result confirmation email addresses for cups and tournaments

@@ -30,7 +30,7 @@ if ( !empty($competition->seasons) ) { ?>
 			<label for="club_id"><?php _e('Affiliated Club', 'racketmanager') ?></label>		<select size="1" name="club_id" id="club_id">
 				<option><?php _e( 'Select club', 'racketmanager' ) ?></option>
 				<?php foreach ( $clubs AS $club ) { ?>
-					<option value="<?php echo $club->id ?>" <?php echo ($club->id == $club_id ?  'selected' :  '') ?>><?php echo $club->name ?></option>
+					<option value="<?php echo $club->id ?>" <?php echo $club->id == $club_id ?  'selected' :  '' ?>><?php echo $club->name ?></option>
 				<?php } ?>
 			</select>
 			<label for="season" style="vertical-align: middle;"><?php _e( 'Season', 'racketmanager' ) ?></label>
@@ -83,7 +83,7 @@ if ( !empty($competition->seasons) ) { ?>
 							}
 
 							foreach ( $playerstat->matchdays AS $m => $match) {
-								if ( ($competition->is_championship && !$prevRound == $match->final_round) || ( !$competition->is_championship && !$prevMatchDay == $match->match_day) ) {
+								if ( ($competition->is_championship && !$prevRound == $match->final) || ( !$competition->is_championship && !$prevMatchDay == $match->match_day) ) {
 									$i = 0;
 								}
 								$teamNum = substr($match->team_title,-1) ;
@@ -107,7 +107,7 @@ if ( !empty($competition->seasons) ) { ?>
 								if ($match->rubber_winner === $match->team_id) $rubberresult = 'Won'; else $rubberresult = 'Lost';
 								$playerLine = array('team' => $match->team_title, 'pair' => $match->rubber_number, 'matchresult' => $matchresult, 'rubberresult' => $rubberresult, 'playdir' => $playdir);
 								if ( $competition->is_championship ) {
-									$d = $primaryLeague->championship->getFinals($match->final_round)['round'];
+									$d = $primaryLeague->championship->getFinals($match->final)['round'];
 									$matchdaystats[$d][$i] = $playerLine;
 								} else {
 									$matchdaystats[$match->match_day][$i] = $playerLine;

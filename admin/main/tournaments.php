@@ -27,7 +27,7 @@
 				<th scope="col"><?php _e( 'Closing Date', 'racketmanager' ) ?></th>
 			</tr>
 			<tbody id="the-list">
-				<?php if ( $tournaments = $racketmanager->getTournaments( array() ) ) { $class = ''; ?>
+				<?php if ( $tournaments = $racketmanager->getTournaments( array( 'orderby' => array('date' => 'desc', 'name' => 'asc')) ) ) { $class = ''; ?>
 				<?php foreach ( $tournaments AS $tournament ) {
 					$class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 					<tr class="<?php echo $class ?>">

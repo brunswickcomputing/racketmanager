@@ -39,8 +39,8 @@
 						<td><?php echo $tournament->type ?></td>
 						<td><?php echo $tournament->season ?></td>
 						<td><?php echo $tournament->venueName ?></td>
-						<td><?php echo $tournament->date ?></td>
-						<td><?php echo $tournament->closingdate ?></td>
+						<td><?php echo $tournament->dateDisplay ?></td>
+						<td><?php echo $tournament->closingDateDisplay ?></td>
 					</tr>
 				<?php } ?>
 			<?php } ?>

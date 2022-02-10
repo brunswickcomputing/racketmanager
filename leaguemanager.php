@@ -987,25 +987,7 @@ class RacketManager {
 		$i = 0;
 		foreach ( $tournaments AS $i => $tournament ) {
 
-			$tournament->date = ( substr($tournament->date, 0, 10) == '0000-00-00' ) ? 'TBC' : mysql2date($date_format, $tournament->date);
-			$tournament->closingdate = ( substr($tournament->closingdate, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date($date_format, $tournament->closingdate);
-
-			if ( $tournament->venue == 0 ) {
-				$tournament->venue = '';
-				$tournament->venueName = 'TBC';
-			} else {
-				$tournament->venueName = get_club($tournament->venue)->name;
-			}
-			if ( $tournament->tournamentsecretary != '0' ) {
-				$tournamentSecretaryDtls = get_userdata($tournament->tournamentsecretary);
-				$tournament->tournamentSecretaryName = $tournamentSecretaryDtls->display_name;
-				$tournament->tournamentSecretaryEmail = $tournamentSecretaryDtls->user_email;
-				$tournament->tournamentSecretaryContactNo = get_user_meta($tournament->tournamentsecretary, 'contactno', true);
-			} else {
-				$tournament->tournamentSecretaryName = '';
-				$tournament->tournamentSecretaryEmail = '';
-				$tournament->tournamentSecretaryContactNo = '';
-			}
+			$tournament = $this->formatTournament($tournament);
 
 			$tournaments[$i] = $tournament;
 		}
@@ -1030,9 +1012,15 @@ class RacketManager {
 			wp_cache_set( md5($sql), $tournament, 'tournaments' );
 		}
 
+		$tournament = $this->formatTournament($tournament);
+		return $tournament;
+	}
+
+	public function formatTournament($tournament) {
+
 		$date_format = get_option('date_format');
-		$tournament->date = ( substr($tournament->date, 0, 10) == '0000-00-00' ) ? 'TBC' : mysql2date($date_format, $tournament->date);
-		$tournament->closingdate = ( substr($tournament->closingdate, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date($date_format, $tournament->closingdate);
+		$tournament->dateDisplay = ( substr($tournament->date, 0, 10) == '0000-00-00' ) ? 'TBC' : mysql2date($date_format, $tournament->date);
+		$tournament->closingDateDisplay = ( substr($tournament->closingdate, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date($date_format, $tournament->closingdate);
 
 		if ( $tournament->venue == 0 ) {
 			$tournament->venue = '';
@@ -1053,8 +1041,8 @@ class RacketManager {
 		}
 
 		return $tournament;
-	}
 
+	}
 	/**
 	* get clubs from database
 	*

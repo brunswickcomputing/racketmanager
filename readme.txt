@@ -50,6 +50,10 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.2.2 =
+* UPDATE: sort tournaments by date in admin pages
+* UPDATE: use separate display format for tournament dates
+
 = 6.2.1 =
 * BUGFIX: fix player result check bug with playedrounds
 

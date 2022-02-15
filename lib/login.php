@@ -15,6 +15,8 @@ class RacketManagerLogin extends RacketManager {
   * @return void
   */
   public function __construct() {
+    $this->site_url = get_option('siteurl');
+    $this->admin_email = get_option('admin_email');
     add_shortcode( 'custom-login-form', array( $this, 'render_login_form' ) );
     add_shortcode( 'custom-password-lost-form', array( $this, 'render_password_lost_form' ) );
     add_shortcode( 'custom-password-reset-form', array( $this, 'render_password_reset_form' ) );
@@ -62,12 +64,12 @@ class RacketManagerLogin extends RacketManager {
     $end = strpos($wp_new_user_notification_email['message'],'&login=');
     $length = $end - $start ;
     $key = substr($wp_new_user_notification_email['message'],$start,$length);
-    $vars['site_name'] = $blogname;
-    $vars['site_url'] = get_option('siteurl');
+    $vars['site_name'] = $this->site_name;
+    $vars['site_url'] = $this->site_url;
     $vars['user_login'] = $user->user_login;
     $vars['display_name'] = $user->display_name;
     $vars['action_url'] = wp_login_url() . '?action=rp&key='.$key.'&login='.rawurlencode($user->user_login);
-    $vars['email_link'] = get_option('admin_email');
+    $vars['email_link'] = $this->admin_email;
     $wp_new_user_notification_email['message'] = $racketmanager_shortcodes->loadTemplate( 'email-welcome', $vars, 'email' );
     $wp_new_user_notification_email['headers'] = 'Content-Type: text/html; charset=UTF-8';
 
@@ -82,8 +84,8 @@ class RacketManagerLogin extends RacketManager {
     global $racketmanager_shortcodes;
 
     add_filter( 'wp_mail_content_type', array( $this,'racketmanager_wp_email_content_type' ) );
-    $vars['site_name'] = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
-    $vars['site_url'] = get_option('siteurl');
+    $vars['site_name'] = $this->site_name;
+    $vars['site_url'] = $this->site_url;
     $vars['user_login'] = $user_login;
     $vars['display_name'] = $user_data->display_name;
     $vars['action_url'] = wp_login_url() . '?action=rp&key='.$key.'&login='.rawurlencode($user_login);
@@ -96,11 +98,11 @@ class RacketManagerLogin extends RacketManager {
     global $racketmanager_shortcodes;
 
     add_filter( 'wp_mail_content_type', array( $this,'racketmanager_wp_email_content_type' ) );
-    $vars['site_name'] = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
-    $vars['site_url'] = get_option('siteurl');
+    $vars['site_name'] = $this->site_name;
+    $vars['site_url'] = $this->site_url;
     $vars['user_login'] = $user_data['user_login'];
     $vars['display_name'] = $user_data['display_name'];
-    $vars['email_link'] = get_option('admin_email');
+    $vars['email_link'] = $this->admin_email;
     $passwordChangeMessage['message'] = $racketmanager_shortcodes->loadTemplate( 'email-password-change', $vars, 'email' );
 
     return $passwordChangeMessage;
@@ -110,8 +112,8 @@ class RacketManagerLogin extends RacketManager {
     global $racketmanager_shortcodes;
 
     add_filter( 'wp_mail_content_type', array( $this,'racketmanager_wp_email_content_type' ) );
-    $vars['site_name'] = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
-    $vars['site_url'] = get_option('siteurl');
+    $vars['site_name'] = $this->site_name;
+    $vars['site_url'] = $this->site_url;
     $message = $racketmanager_shortcodes->loadTemplate( 'email-privacy-personal-data', $vars, 'email' );
 
     return $message;
@@ -121,8 +123,8 @@ class RacketManagerLogin extends RacketManager {
     global $racketmanager_shortcodes;
 
     add_filter( 'wp_mail_content_type', array( $this,'racketmanager_wp_email_content_type' ) );
-    $vars['site_name'] = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
-    $vars['site_url'] = get_option('siteurl');
+    $vars['site_name'] = $this->site_name;
+    $vars['site_url'] = $this->site_url;
     $message = $racketmanager_shortcodes->loadTemplate( 'email-user-request-action', $vars, 'email' );
 
     return $message;
@@ -152,8 +154,8 @@ class RacketManagerLogin extends RacketManager {
     $default_vars = array( 'show_title' => false );
     $vars = shortcode_atts( $default_vars, $vars );
     $show_title = $vars['show_title'];
-    $vars['site_name'] = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
-    $vars['site_url'] = get_option('siteurl');
+    $vars['site_name'] = $this->site_name;
+    $vars['site_url'] = $this->site_urls;
 
     if ( is_user_logged_in() ) {
       return __( 'You are already signed in.', 'racketmanager' );
@@ -191,7 +193,7 @@ class RacketManagerLogin extends RacketManager {
       if ( isset( $_REQUEST['redirect_to'] ) ) {
         $vars['redirect'] = wp_validate_redirect( $_REQUEST['redirect_to'], $vars['redirect'] );
       } elseif ( wp_get_referer() ) {
-        if ( strpos(wp_get_referer(), get_option('siteurl')) === 0 ) {
+        if ( strpos(wp_get_referer(), $this->site_url ) === 0 ) {
           $vars['redirect'] = wp_validate_redirect( wp_get_referer(), $vars['redirect'] );
         }
       }

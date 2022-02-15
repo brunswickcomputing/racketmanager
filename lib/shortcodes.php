@@ -38,6 +38,7 @@ class RacketManagerShortcodes extends RacketManager {
 		add_shortcode( 'tournament-entry', array(&$this, 'showTournamentEntry') );
 		add_shortcode( 'winners', array(&$this, 'showWinners') );
 		add_shortcode( 'matchnotification', array(&$this, 'showMatchNotification') );
+		add_shortcode( 'resultnotification', array(&$this, 'showResultNotification') );
 	}
 
 	/**
@@ -1128,6 +1129,37 @@ class RacketManagerShortcodes extends RacketManager {
 		$filename = ( !empty($template) ) ? 'match-notification-'.$template : 'match-notification';
 
 		$out = $this->loadTemplate( $filename, array( 'tournament' => $tournament, 'competition' => $competition, 'match' => $match, 'homeDtls' => $homeDtls, 'awayDtls' => $awayDtls, 'round' => $round, 'organisationName' => $organisationname ), 'email' );
+			
+		return $out;
+}
+
+	/**
+	* Function to show result notification
+	*
+	*    [resultnotification id=ID template=X]
+	*
+	* @param array $atts
+	* @return the content
+	*/
+	public function showResultNotification( $atts ) {
+		global $racketmanager;
+
+		extract(shortcode_atts(array(
+			'match' => '',
+			'template' => '',
+			'organisationname' => false,
+		), $atts ));
+
+		$match = get_match($match);
+
+		if ( !$organisationname ) {
+			$organisationname = $racketmanager->site_name;
+		}
+		$actionurl = admin_url().'?page=racketmanager&view=results';
+
+		$filename = ( !empty($template) ) ? 'result-notification-'.$template : 'result-notification';
+
+		$out = $this->loadTemplate( $filename, array( 'match' => $match, 'organisationName' => $organisationname, 'actionurl' => $actionurl ), 'email' );
 
 		return $out;
 	}

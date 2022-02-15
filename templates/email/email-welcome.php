@@ -67,7 +67,7 @@ $title = 'Welcome Email';
                 </td>
               </tr>
             </table>
-          </td>
+          </div>
         </td>
       </tr>
     </table>

@@ -69,12 +69,12 @@
                 <tr class="<?php echo $class ?>">
                     <td><?php echo $i ?><input type="hidden" name="matches[<?php echo $match->id ?>]" value="<?php echo $match->id ?>" /><input type="hidden" name="home_team[<?php echo $match->id ?>]" value="<?php echo $match->home_team ?>" /><input type="hidden" name="away_team[<?php echo $match->id ?>]" value="<?php echo $match->away_team ?>" /></td>
                     <td><?php echo $match->id ?></td>
-                    <td><?php echo ( isset($match->date) ) ? mysql2date(get_option('date_format'), $match->date) : 'N/A' ?></td>
+                    <td><?php echo ( isset($match->date) ) ? mysql2date($this->date_format, $match->date) : 'N/A' ?></td>
                     <td class="match-title"><a href="admin.php?page=racketmanager&amp;subpage=match&amp;league_id=<?php echo $league->id ?>&amp;edit=<?php echo $match->id ?>"><?php echo $match->getTitle() ?></a></td>
                     <td><?php echo ( isset($match->location) ) ? $match->location : 'N/A' ?></td>
             <?php if ( isset($league->entryType) && $league->entryType == 'player' ) {
             } else { ?>
-                    <td><?php echo ( isset($match->hour) ) ? mysql2date(get_option('time_format'), $match->date) : 'N/A' ?></td>
+                    <td><?php echo ( isset($match->hour) ) ? mysql2date($this->time_format, $match->date) : 'N/A' ?></td>
             <?php } ?>
             <?php do_action( 'matchtable_columns_'.$league->sport, ( ( isset($match) ) ? $match : '' ) ) ?>
                     <td class="score">

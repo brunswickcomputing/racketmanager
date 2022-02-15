@@ -181,7 +181,8 @@ final class Match {
   * @param string $date_format
   */
   public function setDate($date_format = '') {
-    if ($date_format == '') $date_format = get_option('date_format');
+    global $racketmanager;
+    if ($date_format == '') { $date_format = $racketmanager->date_format; }
     $this->match_date = ( substr($this->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date($date_format, $this->date);
     $this->setTooltipTitle();
   }
@@ -192,7 +193,8 @@ final class Match {
   * @param string $time_format
   */
   public function setTime($time_format = '') {
-    if ($time_format == '') $time_format = get_option('time_format');
+    global $racketmanager;
+    if ($time_format == '') { $time_format = $racketmanager->time_format; }
     //$this->start_time = ( '00:00' == $this->hour.":".$this->minutes ) ? '' : mysql2date($time_format, $this->date);
     $this->start_time = mysql2date($time_format, $this->date);
   }
@@ -288,7 +290,7 @@ final class Match {
   * @return array
   */
   public function getRubbers() {
-    global $wpdb;
+    global $wpdb, $racketmanager;
 
     $sql = "SELECT `group`, `home_player_1`, `home_player_2`, `away_player_1`, `away_player_2`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `id`, `custom`, `rubber_number` FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` = ".$this->id." ORDER BY `date` ASC, `id` ASC";
 
@@ -306,8 +308,8 @@ final class Match {
       $rubber->custom = stripslashes_deep(maybe_unserialize($rubber->custom));
       $rubber = (object)array_merge((array)$rubber, (array)$rubber->custom);
 
-      $rubber->start_time = ( '00:00' == $rubber->hour.":".$rubber->minutes ) ? '' : mysql2date(get_option('time_format'), $rubber->date);
-      $rubber->rubber_date = ( substr($rubber->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date(get_option('date_format'), $rubber->date);
+      $rubber->start_time = ( '00:00' == $rubber->hour.":".$rubber->minutes ) ? '' : mysql2date($racketmanager->time_format, $rubber->date);
+      $rubber->rubber_date = ( substr($rubber->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date($racketmanager->date_format, $rubber->date);
 
       if ( $rubber->home_points != NULL && $rubber->away_points != NULL ) {
         $rubber->homeScore = $rubber->home_points;

@@ -1,6 +1,4 @@
 <?php
-$options = get_option('leaguemanager');
-
 global $wpdb, $league, $racketmanager;
 
 $matches = $racketmanager->getMatches( array('confirmed' => true) );
@@ -47,10 +45,10 @@ $prev_league = 0;
                   <input type="hidden" name="home_team[<?php echo $match->league->id ?>][<?php echo $match->id ?>]" value="<?php echo $match->home_team ?>" />
                   <input type="hidden" name="away_team[<?php echo $match->league->id ?>][<?php echo $match->id ?>]" value="<?php echo $match->away_team ?>" />
                 </td>
-                <td><?php echo ( substr($match->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date(get_option('date_format'), $match->date) ?></td>
+                <td><?php echo ( substr($match->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date($this->date_format, $match->date) ?></td>
                 <td class="match-title"><a href="admin.php?page=racketmanager&amp;subpage=match&amp;league_id=<?php echo $match->league_id ?>&amp;edit=<?php echo $match->id ?>&amp;season=<?php echo $match->season ?>"><?php echo $match->match_title ?></a></td>
                 <td><?php echo ( empty($match->location) ) ? 'N/A' : $match->location ?></td>
-                <td><?php echo ( '00:00' == $match->hour.":".$match->minutes ) ? 'N/A' : mysql2date(get_option('time_format'), $match->date) ?></td>
+                <td><?php echo ( '00:00' == $match->hour.":".$match->minutes ) ? 'N/A' : mysql2date($this->time_format, $match->date) ?></td>
                 <td class="score">
                   <input class="points" type="text" size="2" style="text-align: center;" id="home_points[<?php echo $match->league->id ?>][<?php echo $match->id ?>]" name="home_points[<?php echo $match->league->id ?>][<?php echo $match->id ?>]" value="<?php echo (isset($match->home_points) ? $match->home_points : '') ?>" /> : <input class="points" type="text" size="2" style="text-align: center;" id="away_points[<?php echo $match->league->id ?>][<?php echo $match->id ?>]" name="away_points[<?php echo $match->league->id ?>][<?php echo $match->id ?>]" value="<?php echo (isset($match->away_points) ? $match->away_points : '') ?>" />
                 </td>

@@ -404,6 +404,8 @@ class RacketManager {
 	*/
 	private function loadOptions() {
 		$this->options = get_option('leaguemanager');
+		$this->date_format = get_option('date_format');
+		$this->time_format = get_option('time_format');
 	}
 
 	/**
@@ -983,7 +985,6 @@ class RacketManager {
 			wp_cache_set( md5($sql), $tournaments, 'tournaments' );
 		}
 
-		$date_format = get_option('date_format');
 		$i = 0;
 		foreach ( $tournaments AS $i => $tournament ) {
 
@@ -1018,9 +1019,8 @@ class RacketManager {
 
 	public function formatTournament($tournament) {
 
-		$date_format = get_option('date_format');
-		$tournament->dateDisplay = ( substr($tournament->date, 0, 10) == '0000-00-00' ) ? 'TBC' : mysql2date($date_format, $tournament->date);
-		$tournament->closingDateDisplay = ( substr($tournament->closingdate, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date($date_format, $tournament->closingdate);
+		$tournament->dateDisplay = ( substr($tournament->date, 0, 10) == '0000-00-00' ) ? 'TBC' : mysql2date($this->date_format, $tournament->date);
+		$tournament->closingDateDisplay = ( substr($tournament->closingdate, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date($this->date_format, $tournament->closingdate);
 
 		if ( $tournament->venue == 0 ) {
 			$tournament->venue = '';

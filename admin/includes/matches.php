@@ -80,11 +80,11 @@
 						<input type="checkbox" value="<?php echo $match->id ?>" name="match[<?php echo $match->id ?>]" />
 					</th>
 					<td><?php echo $match->id ?></td>
-					<td><?php echo ( substr($match->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date(get_option('date_format'), $match->date) ?></td>
+					<td><?php echo ( substr($match->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date($this->date_format, $match->date) ?></td>
 					<?php if ( !empty($league->groups) && $league->mode == 'championship' ) : ?><td class="column-num"><?php echo $match->group ?></td><?php endif; ?>
 					<td class="match-title"><a href="admin.php?page=racketmanager&amp;subpage=match&amp;league_id=<?php echo $league->id ?>&amp;edit=<?php echo $match->id ?>&amp;season=<?php echo $season ?><?php if(isset($group)) echo '&amp;group=' . $group; ?>"><?php echo $match->match_title ?></a></td>
 					<td><?php echo ( empty($match->location) ) ? 'N/A' : $match->location ?></td>
-					<td><?php echo ( '00:00' == $match->hour.":".$match->minutes ) ? 'N/A' : mysql2date(get_option('time_format'), $match->date) ?></td>
+					<td><?php echo ( '00:00' == $match->hour.":".$match->minutes ) ? 'N/A' : mysql2date($this->time_format, $match->date) ?></td>
 					<?php do_action( 'matchtable_columns_'.(isset($league->sport) ? $league->sport : '' ), $match ) ?>
 					<td class="score">
 						<input class="points" type="text" size="2" style="text-align: center;" id="home_points[<?php echo $match->id ?>]" name="home_points[<?php echo $match->id ?>]" value="<?php echo (isset($match->home_points) ? $match->home_points : '') ?>" /> : <input class="points" type="text" size="2" style="text-align: center;" id="away_points[<?php echo $match->id ?>]" name="away_points[<?php echo $match->id ?>]" value="<?php echo (isset($match->away_points) ? $match->away_points : '') ?>" />

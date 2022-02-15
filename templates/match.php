@@ -28,8 +28,8 @@ The following variables are usable:
     <?php if ( !empty($match->match_day) ) { ?>
         <p class='match_day'><?php printf(__("<strong>%d.</strong> Match Day", 'racketmanager'), $match->match_day) ?></p>
     <?php } ?>
-		
-		<p class='date'><?php echo mysql2date(get_option('date_format'), $match->date) ?>, <span class='time'><?php echo $match->time ?></span></p>
+
+		<p class='date'><?php the_match_date() ?>, <span class='time'><?php the_match_time() ?></span></p>
 		<p class='location'><?php echo $match->location ?></p>
 		
     <?php if ( $match->post_id != 0 ) { ?>

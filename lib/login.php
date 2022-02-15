@@ -15,8 +15,6 @@ class RacketManagerLogin extends RacketManager {
   * @return void
   */
   public function __construct() {
-    $this->site_url = get_option('siteurl');
-    $this->admin_email = get_option('admin_email');
     add_shortcode( 'custom-login-form', array( $this, 'render_login_form' ) );
     add_shortcode( 'custom-password-lost-form', array( $this, 'render_password_lost_form' ) );
     add_shortcode( 'custom-password-reset-form', array( $this, 'render_password_reset_form' ) );

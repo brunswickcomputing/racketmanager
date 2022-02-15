@@ -407,6 +407,8 @@ class RacketManager {
 		$this->date_format = get_option('date_format');
 		$this->time_format = get_option('time_format');
 		$this->site_name = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
+		$this->admin_email = get_option('admin_email');
+		$this->site_url = get_option('siteurl');
 	}
 
 	/**

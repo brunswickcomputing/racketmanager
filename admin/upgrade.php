@@ -7,7 +7,7 @@
 function racketmanager_upgrade() {
 	global $wpdb, $racketmanager, $lmLoader;
 
-	$options = get_option( 'leaguemanager' );
+	$options = $this->options;
 	$installed = $options['dbversion'];
 
 	echo __('Upgrade database structure...', 'racketmanager') . "<br />\n";

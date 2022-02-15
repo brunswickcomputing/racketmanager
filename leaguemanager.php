@@ -406,6 +406,7 @@ class RacketManager {
 		$this->options = get_option('leaguemanager');
 		$this->date_format = get_option('date_format');
 		$this->time_format = get_option('time_format');
+		$this->site_name = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
 	}
 
 	/**
@@ -531,7 +532,7 @@ class RacketManager {
 	* Activate plugin
 	*/
 	public function activate() {
-		$options = get_option( 'leaguemanager' );
+		$options = get_option('leaguemanager');
 		if ( !options ) {
 			$options = array();
 			$options['version'] = $this->version;
@@ -1892,7 +1893,7 @@ class RacketManager {
     if ( isset($match->teams['home']->contactemail) && $match->teams['home']->contactemail > '' ) { array_push($to, $match->teams['home']->contactemail); }
     if ( isset($match->teams['away']->contactemail) && $match->teams['away']->contactemail > '' ) { array_push($to, $match->teams['away']->contactemail); }
     $emailFrom = $racketmanager->getConfirmationEmail($match->league->competitionType);
-    $organisationName = get_option('blogname');
+    $organisationName = $racketmanager->site_name;
     $roundName = $match->league->championship->finals[$match->final_round]['name'];
     $messageArgs = array();
     $messageArgs['organisationname'] = $organisationName;

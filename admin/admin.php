@@ -196,7 +196,7 @@ final class RacketManagerAdmin extends RacketManager
 	public function display() {
 		global $league, $racketmanager, $championship;
 
-		$options = get_option('leaguemanager');
+		$options = $this->options;
 
 		// Update Plugin Version
 		if ( $options['version'] != RACKETMANAGER_VERSION ) {
@@ -766,7 +766,7 @@ final class RacketManagerAdmin extends RacketManager
 
             $team_id = isset($_POST['team_id']) ? intval($_POST['team_id']) : false;
 
-            $options = get_option('leaguemanager');
+            $options = $this->options;
 
             $match_args = array("final" => "", "cache" => false);
             if ( $season )
@@ -1182,7 +1182,7 @@ final class RacketManagerAdmin extends RacketManager
             echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
         } else {
             if ( isset($_POST['racketmanager_export']) ) {
-                $options = get_option('leaguemanager');
+                $options = $this->options;
                 if ($_POST['exportkey'] == $options['exportkey']) {
                     ob_end_clean();
                     $this->export(intval($_POST['league_id']), $_POST['mode'], $_POST['season'], $_POST['competition_id']);
@@ -1195,7 +1195,7 @@ final class RacketManagerAdmin extends RacketManager
                 }
             }
 
-            $options = get_option('leaguemanager');
+            $options = $this->options;
             $options['exportkey'] = uniqid(rand(), true);
             update_option('leaguemanager', $options);
 
@@ -1464,7 +1464,7 @@ final class RacketManagerAdmin extends RacketManager
         }
 
         // Set textdomain
-        $options = get_option('leaguemanager');
+        $options = $this->options;
         $options['textdomain'] = (string)$settings['sport'];
         update_option('leaguemanager', $options);
 
@@ -2504,7 +2504,7 @@ final class RacketManagerAdmin extends RacketManager
         if ( !current_user_can( 'manage_racketmanager' ) ) {
             echo '<p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p>';
         } else {
-            $options = get_option('leaguemanager');
+            $options = $this->options;
 						$comptab = 1;
 
             $tab = 0;

@@ -12,8 +12,8 @@
 
             $this->editCompetition( intval($_POST['competition_id']), $_POST['competition_title'], $settings );
             $this->printMessage();
-            
-            $options = get_option('leaguemanager');
+
+            $options = $racketmanager->options;
             $competition->reloadSettings();
 
             // Set active tab

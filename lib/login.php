@@ -437,7 +437,7 @@ class RacketManagerLogin extends RacketManager {
     );
 
     $user_id = wp_insert_user( $user_data );
-    wp_new_user_notification( $user_id, $password );
+    wp_new_user_notification( $user_id, NULL, 'both' );
 
     return $user_id;
   }

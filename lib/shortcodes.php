@@ -1073,13 +1073,14 @@ class RacketManagerShortcodes extends RacketManager {
 		extract(shortcode_atts(array(
 			'match' => '',
 			'template' => '',
-			'tournament' => '',
+			'tournament' => false,
 			'competition' => '',
-			'organisationname' => '',
+			'emailfrom' => '',
 			'round' => '',
 			'competitiontype' => ''
 		), $atts ));
 
+		$organisationname = $racketmanager->site_name;
 		$match = get_match($match);
 
 		$homeDtls = array();
@@ -1093,7 +1094,7 @@ class RacketManagerShortcodes extends RacketManager {
 				$homeDtls['title'] = "Home Player";
 				$awayDtls['title'] = "Away Player";
 			}
-		} elseif ( $competitionType == 'cup' ) {
+		} elseif ( $competitiontype == 'cup' ) {
 			$template = 'cup';
 			$homeDtls['title'] = "Home Team";
 			$awayDtls['title'] = "Away Team";
@@ -1128,8 +1129,8 @@ class RacketManagerShortcodes extends RacketManager {
 
 		$filename = ( !empty($template) ) ? 'match-notification-'.$template : 'match-notification';
 
-		$out = $this->loadTemplate( $filename, array( 'tournament' => $tournament, 'competition' => $competition, 'match' => $match, 'homeDtls' => $homeDtls, 'awayDtls' => $awayDtls, 'round' => $round, 'organisationName' => $organisationname ), 'email' );
-			
+		$out = $this->loadTemplate( $filename, array( 'tournament' => $tournament, 'competition' => $competition, 'match' => $match, 'homeDtls' => $homeDtls, 'awayDtls' => $awayDtls, 'round' => $round, 'organisationName' => $organisationname, 'emailFrom' => $emailfrom ), 'email' );
+
 		return $out;
 }
 

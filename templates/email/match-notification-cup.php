@@ -82,7 +82,7 @@ $title = $organisationName.' Match Details - '.$competitionName.' - '.$round;
                           <td><h4>Winners</h4></td>
                         </tr>
                         <tr>
-                          <td>Should <a href="mailto: ?subject=<?php echo $competitionName; ?>&nbsp;<?php echo $round; ?> Result">inform</a> the cup secretary of the result</td>
+                          <td>Should <a href="mailto: <?php echo $emailFrom; ?>?subject=<?php echo $competitionName; ?>&nbsp;<?php echo $round; ?> Result">inform</a> the cup secretary of the result</td>
                         </tr>
                       </table>
                     </td>

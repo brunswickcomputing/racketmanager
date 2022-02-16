@@ -1898,7 +1898,6 @@ class RacketManager {
     $organisationName = $racketmanager->site_name;
     $roundName = $match->league->championship->finals[$match->final_round]['name'];
     $messageArgs = array();
-    $messageArgs['organisationname'] = $organisationName;
     $messageArgs['round'] = $roundName;
     $messageArgs['competitiontype'] = $match->league->competitionType;
     if ( $match->league->competitionType == 'tournament' ) {
@@ -1911,6 +1910,7 @@ class RacketManager {
     } else if ( $match->league->competitionType == 'cup' ) {
       $messageArgs['competition'] = $match->league->competitionName;
     }
+		$messageArgs['emailfrom'] = $emailFrom;
     $emailMessage = racketmanager_match_notification($match->id, $messageArgs );
     $headers = array('From: '.$match->league->competitionType.' secretary <'.$emailFrom.'>');
     $subject = $organisationName." - ".$match->league->title." - ".$roundName." - Match Details";

@@ -2679,7 +2679,7 @@ final class RacketManagerAdmin extends RacketManager
      * @param int $rosterRequst_id
      * @return void
      */
-    private function _approveRosterRequest( $club_id, $rosterRequestId ) {
+    public function _approveRosterRequest( $club_id, $rosterRequestId ) {
 
         if ( !current_user_can('edit_teams') ) {
             $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );

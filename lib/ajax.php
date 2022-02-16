@@ -1343,7 +1343,7 @@ class RacketManagerAJAX extends RacketManager {
 				$rosterRequestId = $wpdb->insert_id;
 				$options = $racketmanager->getOptions();
 				if ( $options['rosterConfirmation'] == 'auto' ) {
-					$racketmanager->approveRosterRequest( $rosterRequestId );
+					$racketmanager->_approveRosterRequest( $affiliatedClub, $rosterRequestId );
 					$msg = __('Player added to club','racketmanager');
 				} else {
 					$msg = __('Player request submitted','racketmanager');

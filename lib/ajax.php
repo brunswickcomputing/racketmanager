@@ -661,22 +661,16 @@ class RacketManagerAJAX extends RacketManager {
 			$season[$matchId] = $_POST['current_season'];
 			$matchCount = $league->_updateResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $season, $_POST['match_round'], $matchConfirmed );
 			if ( $matchCount > 0 ) {
-				$msg = __('Result saved','racketmanager');
+				$matchMessage = __( 'Result saved', 'racketmanager' );
 				$match = get_match($matchId);
 				$homePoints = $match->home_points;
 				$awayPoints = $match->away_points;
-				$emailTo = $racketmanager->getConfirmationEmail($match->league->competitionType);
-				if ( $emailTo > '' ) {
-					$to = $emailTo;
-					$subject = $racketmanager->site_name." Result Approval - ".$match->league->title." - ".$match->match_title;
-					$message = "There is a new match result that needs approval.  Click <a href='".admin_url()."?page=racketmanager&subpage=show-league&league_id=".$match->league_id."&final=".$match->final_round."&league-tab=1'>here</a> to see the match result. ";
-					$racketmanager->lm_mail($to, $subject, $message);
-				}
+				$this->resultNotification($matchConfirmed, $matchMessage, $match);
 			} else {
-				$msg = __('No result to save','racketmanager');
+				$matchMessage = __('No result to save','racketmanager');
 			}
 
-			array_push($return,$msg,$homePoints,$awayPoints);
+			array_push($return,$matchMessage,$homePoints,$awayPoints);
 
 			die(json_encode($return));
 		} else {
@@ -1044,10 +1038,15 @@ class RacketManagerAJAX extends RacketManager {
 
 		if ( $emailTo > '' ) {
 			$messageArgs = array();
+			$messageArgs['league'] = $match->league->id;
+			if ( $match->league->is_championship ) {
+				$messageArgs['round'] = $match->final_round;
+			} else {
+				$messageArgs['matchday'] = $match->match_day;
+			}
 			$headers = array();
 			$headers['from'] = 'From: '.wp_get_current_user()->display_name.' <'.$racketmanager->admin_email.'>';
-			$subject = $racketmanager->site_name." - ".$matchMessage." - ".$match->league->title;
-//			$message = "There is a new match result that needs actioning.  Click <a href='".admin_url()."?page=racketmanager&view=results'>here</a> to see the match result. ";
+			$subject = $racketmanager->site_name." - ".$matchMessage." - ".$match->league->title." - ".$match->match_title;
 			$message = racketmanager_result_notification($match->id, $messageArgs );
 			$racketmanager->lm_mail($emailTo, $subject, $message, $headers);
 		}

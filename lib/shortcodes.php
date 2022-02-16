@@ -1148,15 +1148,28 @@ class RacketManagerShortcodes extends RacketManager {
 		extract(shortcode_atts(array(
 			'match' => '',
 			'template' => '',
+			'league' => false,
+			'round' => false,
+			'matchday' => false,
 			'organisationname' => false,
 		), $atts ));
 
 		$match = get_match($match);
 
+		$actionurl = admin_url().'?page=racketmanager&view=results';
+		if ( $league ) {
+			$actionurl .= '&subpage=show-league&league_id='.$league;
+		}
+		if ( $matchday ) {
+			$actionurl .= '&match_day='.$matchday;
+		}
+		if ( $round ) {
+			$actionurl .= '&final='.$round.'&league-tab=1';
+		}
+
 		if ( !$organisationname ) {
 			$organisationname = $racketmanager->site_name;
 		}
-		$actionurl = admin_url().'?page=racketmanager&view=results';
 
 		$filename = ( !empty($template) ) ? 'result-notification-'.$template : 'result-notification';
 

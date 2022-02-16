@@ -981,4 +981,21 @@
         return $matchMessage;
     }
 
+    /**
+     * display roster request email
+     *
+     * @param var $clubname Club Name
+     * @category template-tags
+     */
+    function racketmanager_roster_notification( $args = array() ) {
+        global $racketmanager;
+
+        $shortcode = "[rosternotification";
+        foreach ($args AS $key => $value)
+            $shortcode .= " ".$key."='".$value."'";
+        $shortcode .= "]";
+        $rosterMessage = do_shortcode($shortcode);
+        return $rosterMessage;
+    }
+
 ?>

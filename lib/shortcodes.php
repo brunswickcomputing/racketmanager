@@ -39,6 +39,7 @@ class RacketManagerShortcodes extends RacketManager {
 		add_shortcode( 'winners', array(&$this, 'showWinners') );
 		add_shortcode( 'matchnotification', array(&$this, 'showMatchNotification') );
 		add_shortcode( 'resultnotification', array(&$this, 'showResultNotification') );
+		add_shortcode( 'rosternotification', array(&$this, 'showRosterNotification') );
 	}
 
 	/**
@@ -1132,7 +1133,7 @@ class RacketManagerShortcodes extends RacketManager {
 		$out = $this->loadTemplate( $filename, array( 'tournament' => $tournament, 'competition' => $competition, 'match' => $match, 'homeDtls' => $homeDtls, 'awayDtls' => $awayDtls, 'round' => $round, 'organisationName' => $organisationname, 'emailFrom' => $emailfrom ), 'email' );
 
 		return $out;
-}
+	}
 
 	/**
 	* Function to show result notification
@@ -1174,6 +1175,34 @@ class RacketManagerShortcodes extends RacketManager {
 		$filename = ( !empty($template) ) ? 'result-notification-'.$template : 'result-notification';
 
 		$out = $this->loadTemplate( $filename, array( 'match' => $match, 'organisationName' => $organisationname, 'actionurl' => $actionurl ), 'email' );
+
+		return $out;
+	}
+	/**
+	* Function to show roster notification
+	*
+	*    [rostertnotification club=club template=X]
+	*
+	* @param array $atts
+	* @return the content
+	*/
+
+	public function showRosterNotification( $atts ) {
+		global $racketmanager;
+
+		extract(shortcode_atts(array(
+			'club' => '',
+			'action' => false,
+			'template' => ''
+		), $atts ));
+
+		$actionurl = admin_url().'?page=racketmanager&view=rosterRequest';
+
+		$organisationname = $racketmanager->site_name;
+
+		$filename = ( !empty($template) ) ? 'roster-notification-'.$template : 'roster-notification';
+
+		$out = $this->loadTemplate( $filename, array( 'action' => $action, 'club' => $club, 'organisationName' => $organisationname, 'actionurl' => $actionurl ), 'email' );
 
 		return $out;
 	}

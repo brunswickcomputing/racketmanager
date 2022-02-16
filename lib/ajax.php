@@ -1045,7 +1045,7 @@ class RacketManagerAJAX extends RacketManager {
 				$messageArgs['matchday'] = $match->match_day;
 			}
 			$headers = array();
-			$headers['from'] = 'From: '.wp_get_current_user()->display_name.' <'.$racketmanager->admin_email.'>';
+			$headers['from'] = $racketmanager->getFromUserEmail();
 			$subject = $racketmanager->site_name." - ".$matchMessage." - ".$match->league->title." - ".$match->match_title;
 			$message = racketmanager_result_notification($match->id, $messageArgs );
 			$racketmanager->lm_mail($emailTo, $subject, $message, $headers);

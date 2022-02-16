@@ -1917,6 +1917,15 @@ class RacketManager {
     $racketmanager->lm_mail($to, $subject, $emailMessage, $headers);
 		return true;
   }
+
+	/**
+  * get from line for email
+  *
+  * @return string from line
+  */
+	public function getFromUserEmail() {
+		return 'From: '.wp_get_current_user()->display_name.' <'.$this->admin_email.'>';
+	}
 }
 
 global $racketmanager;

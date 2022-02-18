@@ -58,6 +58,9 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_tournament_entry', array(&$this, 'tournamentEntryRequest') );
 
 		add_action( 'wp_ajax_racketmanager_notify_teams', array(&$this, 'notifyTeams') );
+		add_action( 'wp_ajax_racketmanager_get_team_info', array(&$this, 'getTeamCompetitionInfo') );
+		add_action( 'wp_ajax_racketmanager_cup_entry', array(&$this, 'cupEntryRequest') );
+
 	}
 
 	/**
@@ -1622,11 +1625,10 @@ class RacketManagerAJAX extends RacketManager {
 
 	}
 
-
 	/**
 	* notify teams
 	*
-	* @see templates/tournamententry.php
+	* @see templates/email/match-notification.php
 	*/
 	public function notifyTeams() {
 		global $match, $racketmanager;
@@ -1646,5 +1648,192 @@ class RacketManagerAJAX extends RacketManager {
 		die(json_encode($return));
 	}
 
+	/**
+	* Ajax Response to get captain information
+	*
+	*/
+	public function getTeamCompetitionInfo() {
+		global $wpdb;
+
+		$teamInfo = array();
+		$teamId = isset($_POST['team']) ? $_POST['team'] : '';
+		$competitionId = isset($_POST['competition']) ? $_POST['competition'] : '';
+
+		$competition = get_competition($competitionId);
+		$team = $competition->getTeamInfo($teamId);
+		if ( $team ) {
+			$teamInfo['captain'] = addslashes($team->captain);
+			$teamInfo['captainid'] = $team->captainId;
+			$teamInfo['user_email'] = $team->contactemail;
+			$teamInfo['contactno'] = $team->contactno;
+			$teamInfo['match_day'] = $team->match_day;
+			$teamInfo['match_time'] = $team->match_time;
+		}
+
+		die(json_encode($teamInfo));
+	}
+
+	/**
+	* cup entry request
+	*
+	* @see templates/cupentry.php
+	*/
+	public function cupEntryRequest() {
+		global $wpdb, $racketmanager, $racketmanager_shortcodes;
+
+		$return = array();
+		$msg = '';
+		$error = false;
+		$errorField = array();
+		$errorMsg = array();
+		$errorId = 0;
+
+		check_admin_referer('cup-entry');
+
+		if ( is_user_logged_in() ) {
+			$user = wp_get_current_user();
+		} else {
+			$error = true;
+			$errorField[$errorId] = 'affiliatedclub';
+			$errorMsg[$errorId] = __('You must be logged in to submit a cup entry', 'racketmanager');
+			$errorId ++;
+		}
+		$season = $_POST['season'];
+		$cupSeason = $_POST['cupSeason'];
+		$affiliatedclub = isset($_POST['affiliatedClub']) ? $_POST['affiliatedClub'] : 0;
+		if ($affiliatedclub == 0) {
+			$error = true;
+			$errorField[$errorId] = 'affiliatedclub';
+			$errorMsg[$errorId] = __('Select the club you are a member of', 'racketmanager');
+			$errorId ++;
+		} else {
+			$club = get_club($affiliatedclub);
+			$affiliatedClubName = $club->name;
+		}
+		$competitions = isset($_POST['competition']) ? $_POST['competition'] : array();
+		if ( empty($competitions) ) {
+			$error = true;
+			$errorField[$errorId] = 'competition';
+			$errorMsg[$errorId] = __('You must select a competition to enter', 'racketmanager');
+			$errorId ++;
+		} else {
+			$teams = isset($_POST['team']) ? $_POST['team'] : array();
+			$captains = isset($_POST['captain']) ? $_POST['captain'] : array();
+			$captainIds = isset($_POST['captainId']) ? $_POST['captainId'] : array();
+			$contactnos = isset($_POST['contactno']) ? $_POST['contactno'] : array();
+			$contactemails = isset($_POST['contactemail']) ? $_POST['contactemail'] : array();
+			$matchdays = isset($_POST['matchday']) ? $_POST['matchday'] : array();
+			$matchtimes = isset($_POST['matchtime']) ? $_POST['matchtime'] : array();
+			foreach ($competitions AS $competitionId) {
+				$competition = get_competition($competitionId);
+				$team = isset($teams[$competition->id]) ? $teams[$competition->id] : 0;
+				if ( empty($team) ) {
+					$error = true;
+					$errorField[$errorId] = 'team['.$competition->id.']';
+					$errorMsg[$errorId] = sprintf(__('Team not selected for %s', '$racketmanager'), $competition->name);
+					$errorId ++;
+				} else {
+					$captain = isset($captains[$competition->id]) ? $captains[$competition->id] : 0;
+					$captainId = isset($captainIds[$competition->id]) ? $captainIds[$competition->id] : 0;
+					$contactno = isset($contactnos[$competition->id]) ? $contactnos[$competition->id] : '';
+					$contactemail = isset($contactemails[$competition->id]) ? $contactemails[$competition->id] : '';
+					$matchday = isset($matchdays[$competition->id]) ? $matchdays[$competition->id] : '';
+					$matchtime = isset($matchtimes[$competition->id]) ? $matchtimes[$competition->id] : '';
+					if ( empty($captain) ) {
+						$error = true;
+						$errorField[$errorId] = 'captain['.$competition->id.']';
+						$errorMsg[$errorId] = sprintf(__('Captain not selected for %s', '$racketmanager'), $competition->name);
+						$errorId ++;
+					} else {
+						if ( empty($contactno) || empty($contactemail) ) {
+							$error = true;
+							$errorField[$errorId] = 'captain['.$competition->id.']';
+							$errorMsg[$errorId] = sprintf(__('Captain contact details missing for %s', '$racketmanager'), $competition->name);
+							$errorId ++;
+						}
+					}
+					if ( empty($matchday) ) {
+						$error = true;
+						$errorField[$errorId] = 'matchday['.$competition->id.']';
+						$errorMsg[$errorId] = sprintf(__('Match day not selected for %s', '$racketmanager'), $competition->name);
+						$errorId ++;
+					}
+					if ( empty($matchtime) ) {
+						$error = true;
+						$errorField[$errorId] = 'matchtime['.$competition->id.']';
+						$errorMsg[$errorId] = sprintf(__('Match time not selected for %s', '$racketmanager'), $competition->name);
+						$errorId ++;
+					}
+				}
+			}
+		}
+		$acceptance = isset($_POST['acceptance']) ? $_POST['acceptance'] : '';
+		if ( empty($acceptance) ) {
+			$error = true;
+			$errorField[$errorId] = 'acceptance';
+			$errorMsg[$errorId] = __('You must agree to the rules', 'racketmanager');
+			$errorId ++;
+		}
+
+		if ( !$error ) {
+			$emailTo = $racketmanager->getConfirmationEmail('cup');
+			$emailSubject = $racketmanager->site_name." ".ucfirst($cupSeason)." ".$season." Cup Entry - ".$affiliatedClubName;
+			$emailMessage = "<p>There is a new cup entry.</p>";
+			$cupEntrys = array();
+			$i = 0;
+			foreach ($competitions AS $i => $competitionId) {
+				$cupEntry = array();
+				$competition = get_competition($competitionId);
+				$cupEntry['competitionName'] = $competition->name;
+				if (isset($competition->primary_league)) {
+					$league = $competition->primary_league;
+				} else {
+					$leagues = $competition->getLeagues(array( 'competition' => $competition->id ));
+					$league = get_league(array_key_first($competition->league_index))->id;
+				}
+				$teamId = isset($teams[$competition->id]) ? $teams[$competition->id] : 0;
+				if ( $teamId ) {
+					$team = $club->getTeam($teamId);
+					$captain = isset($captains[$competition->id]) ? $captains[$competition->id] : 0;
+					$captainId = isset($captainIds[$competition->id]) ? $captainIds[$competition->id] : 0;
+					$contactno = isset($contactnos[$competition->id]) ? $contactnos[$competition->id] : '';
+					$contactemail = isset($contactemails[$competition->id]) ? $contactemails[$competition->id] : '';
+					$matchday = isset($matchdays[$competition->id]) ? $matchdays[$competition->id] : '';
+					$matchtime = isset($matchtimes[$competition->id]) ? $matchtimes[$competition->id] : '';
+					$teamInfo = $competition->getTeamInfo($teamId);
+					if ( !$teamInfo ) {
+						$team_competition_id = $racketmanager->addTeamCompetition( $teamId, $competitionId, $captainId, $contactno, $contactemail, $matchday, $matchtime );
+					} else {
+					$returnMsg = $this->updateTeamCompetition($competitionId, $teamId, $captainId, $contactno, $contactemail, $matchday, $matchtime);
+					}
+				}
+				$racketmanager->addTeamtoTable($league, $teamId, $season);
+				$cupEntry['competitionName']= $competition->name;
+				$cupEntry['teamName'] = $team->title;
+				$cupEntry['captain'] = $captain;
+				$cupEntry['contactno'] = $contactno;
+				$cupEntry['contactemail'] = $contactemail;
+				$cupEntry['matchday'] = $matchday;
+				$cupEntry['matchtime'] = $matchtime;
+				$cupEntrys[$i] = $cupEntry;
+			}
+			$headers = array();
+			$headers[] = 'From: '.$affiliatedClubName.' <'.$racketmanager->admin_email.'>';
+			if ( isset($user->user_email) ) {
+				$headers[] = 'Cc: '.$user->display_name.' <'.$user->user_email.'>';
+			}
+			$organisationName = $racketmanager->site_name;
+			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'cup-entry', array( 'cupEntries' => $cupEntrys, 'organisationName' => $organisationName, 'season' => $season, 'cupSeason' => $cupSeason, 'club' => $affiliatedClubName ), 'email' );
+			$racketmanager->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
+
+			$msg = __('Cup entry complete', 'racketmanager');
+		} else {
+			$msg = __('Errors in cup entry form', 'racketmanager');
+		}
+
+		array_push($return, $msg, $error, $errorMsg, $errorField);
+		die(json_encode($return));
+
+	}
 }
 ?>

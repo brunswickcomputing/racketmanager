@@ -214,6 +214,39 @@ jQuery(document).ready(function($) {
                                }
                        });
 
+	jQuery('select.cupteam').on('change', function (e) {
+ 		team = this.value;
+ 		competition = this.name;
+ 		competition = competition.substring(5,competition.length-1);
+
+ 		jQuery.ajax({
+ 					 type: 'POST',
+ 					 datatype: 'json',
+ 					 url: RacketManagerAjaxL10n.requestUrl,
+ 					 data: {"team": team,
+ 					 "competition": competition,
+ 					 "action": "racketmanager_get_team_info"},
+ 					 success: function(data) {
+ 					 response = jQuery.parseJSON(data);
+ 					 var captaininput = "captain-".concat(competition);
+ 					 var ref = captaininput.substr(7);
+ 					 var captain = "#".concat(captaininput);
+ 					 var captainId = "#captainId".concat(ref);
+ 					 var contactno = "#contactno".concat(ref);
+ 					 var contactemail = "#contactemail".concat(ref);
+ 					 var matchday = "#matchday".concat(ref);
+ 					 var matchtime = "#matchtime".concat(ref);
+ 					 jQuery(captain).val(response.captain);
+ 					 jQuery(captainId).val(response.captainid);
+ 					 jQuery(contactno).val(response.contactno);
+ 					 jQuery(contactemail).val(response.user_email);
+ 					 jQuery(matchday).val(response.match_day);
+ 					 jQuery(matchtime).val(response.match_time);
+
+ 					 }
+ 					 });
+ 	});
+
 });
 
 var Racketmanager = new Object();
@@ -344,7 +377,7 @@ Racketmanager.updateMatchResults = function(link) {
 	jQuery("#splash").css('opacity', 1);
 	jQuery("#splash").show();
 	jQuery("#showMatchRubbers").hide();
-	
+
 	jQuery.ajax({
 		url:RacketManagerAjaxL10n.requestUrl,
 		type: "POST",
@@ -590,6 +623,7 @@ Racketmanager.tournamentEntryRequest = function(link) {
                         }
                         jQuery("#tournamentEntryResponse").html($message);
                     } else {
+												jQuery("#tournamentEntryResponse").show();
                         jQuery("#tournamentEntryResponse").addClass('message-success');
                         jQuery("#tournamentEntryResponse").html($message);
 												jQuery("#tournamentEntryResponse").delay(10000).fadeOut('slow');
@@ -600,4 +634,48 @@ Racketmanager.tournamentEntryRequest = function(link) {
                 }
                 }) ;
     jQuery("#tournamentEntrySubmit").show();
-};
+	};
+	Racketmanager.cupEntryRequest = function(link) {
+
+		var $form = jQuery('#form-cupentry').serialize();
+		$form += "&action=racketmanager_cup_entry";
+		jQuery("#cupentryResponse").val("");
+		jQuery("#cupEntrySubmit").hide();
+		jQuery("#cupEntrySubmit").addClass("disabled");
+		jQuery("#cupEntryResponse").removeClass('message-error');
+		jQuery("#cupEntryResponse").removeClass('message-success');
+
+		jQuery.ajax({
+			url:RacketManagerAjaxL10n.requestUrl,
+			async: false,
+			type: "POST",
+			data: $form,
+			success: function(response) {
+				var $response = jQuery.parseJSON(response);
+				var $message = $response[0];
+				var $error = $response[1];
+				var $errorMsg = $response[2];
+				var $errorField = $response[3];
+				if ($error === true) {
+					jQuery("#cupEntryResponse").addClass('message-error');
+					for ( var errorMsg of $response[2] ) {
+						$message += '<br />' + errorMsg;
+					}
+					for ( var errorField of $response[3] ) {
+						var $id = '#'.concat(errorField);
+						jQuery($id).parents('.form-group').addClass('field-error');
+					}
+					jQuery("#cupEntryResponse").html($message);
+				} else {
+					jQuery("#cupEntryResponse").show();
+					jQuery("#cupEntryResponse").addClass('message-success');
+					jQuery("#cupEntryResponse").html($message);
+					jQuery("#cupEntryResponse").delay(10000).fadeOut('slow');
+				}
+			},
+			error: function() {
+				alert("Ajax error on cup entry");
+			}
+		}) ;
+		jQuery("#cupEntrySubmit").show();
+	};

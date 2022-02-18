@@ -40,6 +40,7 @@ class RacketManagerShortcodes extends RacketManager {
 		add_shortcode( 'matchnotification', array(&$this, 'showMatchNotification') );
 		add_shortcode( 'resultnotification', array(&$this, 'showResultNotification') );
 		add_shortcode( 'rosternotification', array(&$this, 'showRosterNotification') );
+		add_shortcode( 'cupentry', array(&$this, 'showCupEntry') );
 	}
 
 	/**
@@ -1203,6 +1204,80 @@ class RacketManagerShortcodes extends RacketManager {
 		$filename = ( !empty($template) ) ? 'roster-notification-'.$template : 'roster-notification';
 
 		$out = $this->loadTemplate( $filename, array( 'action' => $action, 'club' => $club, 'organisationName' => $organisationname, 'actionurl' => $actionurl ), 'email' );
+
+		return $out;
+	}
+
+	/**
+	* Function to display Cup Entry Page
+	*
+	*    [cupentry id=ID template=X]
+	*
+	* @param array $atts
+	* @return the content
+	*/
+	public function showCupEntry( $atts ) {
+		global $racketmanager;
+		extract(shortcode_atts(array(
+			'type' => false,
+			'season' => false,
+			'template' => '',
+		), $atts ));
+
+		if ( !is_user_logged_in() ) {
+			return '<p class="contact-login-msg">You need to <a href="<?php echo wp_login_url(); ?>">login</a> to enter cups</p>';
+		}
+		$club_name = get_query_var('club_name');
+		$club_name = str_replace('-',' ',$club_name);
+
+		$club = get_Club( $club_name, 'shortcode' );
+
+		if ( !$club ) {
+			return _e('No club selected', 'racketmanager');
+		}
+		$user = wp_get_current_user();
+		$userid = $user->ID;
+		$userCanUpdateClub = false;
+		if ( current_user_can( 'manage_racketmanager' ) ) {
+		    $userCanUpdateClub = true;
+		} else {
+		    if ( $club->matchsecretary !=null && $club->matchsecretary == $userid ) {
+		        $userCanUpdateClub = true;
+		    }
+		}
+		if ( !$userCanUpdateClub ) {
+			return _e('User not authorised for club', 'racketmanager');
+		}
+
+		// get competition list
+		if ($type) {
+			$type = $type;
+		} elseif ( isset($_GET['type']) && !empty($_GET['type']) ) {
+			$type = htmlspecialchars(strip_tags($_GET['type']));
+		} elseif ( isset($wp->query_vars['type']) ) {
+			$type = get_query_var('type');
+		}
+		if ( !$type ) {
+			return _e('No cups open for entries', 'racketmanager');
+		}
+		if ($season) {
+			$season = $season;
+		} elseif ( isset($_GET['season']) && !empty($_GET['season']) ) {
+			$season = htmlspecialchars(strip_tags($_GET['season']));
+		} elseif ( isset($wp->query_vars['season']) ) {
+			$season = get_query_var('season');
+		}
+		if ( !$season ) {
+			return _e('No season specified', 'racketmanager');
+		}
+		$competitions = $racketmanager->getCompetitions( array('type' => 'cup', 'name' => $type, 'season' => $season, 'orderby' => array("name" => "ASC")) );
+		$ladiesTeams = $club->getTeams(false, 'WD');
+		$mensTeams = $club->getTeams(false, 'MD');
+		$mixedTeams = $club->getTeams(false, 'XD');
+
+		$filename = ( !empty($template) ) ? 'cupentry-'.$template : 'cupentry';
+
+		$out = $this->loadTemplate( $filename, array( 'club' => $club, 'competitions' => $competitions, 'ladiesTeams' => $ladiesTeams, 'mensTeams' => $mensTeams, 'mixedTeams' => $mixedTeams, 'season' => $season, 'type' => $type ) );
 
 		return $out;
 	}

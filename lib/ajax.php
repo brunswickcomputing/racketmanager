@@ -1506,7 +1506,7 @@ class RacketManagerAJAX extends RacketManager {
 	* @see templates/tournamententry.php
 	*/
 	public function tournamentEntryRequest() {
-		global $wpdb, $racketmanager;
+		global $wpdb, $racketmanager, $racketmanager_shortcodes;
 
 		$return = array();
 		$msg = '';
@@ -1517,15 +1517,23 @@ class RacketManagerAJAX extends RacketManager {
 
 		check_admin_referer('tournament-entry');
 
+		if ( is_user_logged_in() ) {
+			$user = wp_get_current_user();
+		} else {
+			$error = true;
+			$errorField[$errorId] = 'affiliatedclub';
+			$errorMsg[$errorId] = __('You must be logged in to submit a tournament entry', 'racketmanager');
+			$errorId ++;
+		}
 		$season = $_POST['season'];
 		$tournamentSeason = $_POST['tournamentSeason'];
 		$tournamentSecretaryEmail = $_POST['tournamentSecretaryEmail'];
 		$playerId = $_POST['playerId'];
-		$contactNo = isset($_POST['contactno']) ? $_POST['contactno'] : '';
-		$contactEmail = isset($_POST['contactemail']) ? $_POST['contactemail'] : '';
-		if ( $contactEmail == '' ) {
+		$contactno = isset($_POST['contactno']) ? $_POST['contactno'] : '';
+		$contactemail = isset($_POST['contactemail']) ? $_POST['contactemail'] : '';
+		if ( $contactemail == '' ) {
 			$error = true;
-			$errorField[$errorId] = 'contactEmail';
+			$errorField[$errorId] = 'contactemail';
 			$errorMsg[$errorId] = __('Email address required', 'racketmanager');
 			$errorId ++;
 		}
@@ -1536,7 +1544,7 @@ class RacketManagerAJAX extends RacketManager {
 			$errorMsg[$errorId] = __('Select the club you are a member of', 'racketmanager');
 			$errorId ++;
 		} else {
-			$playerName = $racketmanager->getPlayerName($playerId);
+			$playerName = $user->display_name;
 			$playerRoster = $racketmanager->getRoster(array('club' => $affiliatedclub, 'player' => $playerId));
 			$playerRosterId = $playerRoster[0]->roster_id;
 			$affiliatedClubName = get_club($affiliatedclub)->name;
@@ -1574,13 +1582,15 @@ class RacketManagerAJAX extends RacketManager {
 		if ( !$error ) {
 			$emailTo = $tournamentSecretaryEmail;
 			$emailSubject = $racketmanager->site_name." ".ucfirst($tournamentSeason)." ".$season." Tournament Entry";
-			$emailMessage = "<p>There is a new tournament entry.</p><ul><li>".$playerName."</li><li>".$affiliatedClubName."</li><li>".$contactNo."</li><li>".$contactEmail."</li></ul><p>The following events have been entered:</p><ul>";
-			foreach ($competitions AS $competition) {
+			$tournamentEntrys = array();
+			$i = 0;
+			foreach ($competitions AS $i => $competitionId) {
+				$tournamentEntry = array();
 				$partner = '';
 				$partnerName = '';
 				$newTeam = false;
-				$competition = get_competition($competition);
-				$emailMessage .= "<li>".$competition->name;
+				$competition = get_competition($competitionId);
+				$tournamentEntry['competitionName'] = $competition->name;
 				if (isset($competition->primary_league)) {
 					$league = $competition->primary_league;
 				} else {
@@ -1593,7 +1603,7 @@ class RacketManagerAJAX extends RacketManager {
 					$partner = $racketmanager->getRosterEntry($partnerId);
 					$partnerName = $partner->fullname;
 					$team .= ' / '.$partnerName;
-					$emailMessage .= " with partner ".$partnerName;
+					$tournamentEntry['partner'] = $partnerName;
 				}
 				$teamId = $racketmanager->getTeamId($team);
 				if (!$teamId) {
@@ -1611,10 +1621,16 @@ class RacketManagerAJAX extends RacketManager {
 					$teamId = $racketmanager->addPlayerTeam( $playerName, $playerRosterId, $partnerName, $partnerId, $contactNo, $contactEmail, $affiliatedclub, $league );
 				}
 				$racketmanager->addTeamtoTable($league, $teamId, $season);
-				$emailMessage .= "</li>";
+				$tournamentEntrys[$i] = $tournamentEntry;
 			}
-			$emailMessage .= "</ul><p>The teams have been added to the relevant competitions.";
-			$racketmanager->lm_mail($emailTo, $emailSubject, $emailMessage);
+			$headers = array();
+			$headers[] = 'From: '.$user->display_name.' <'.$racketmanager->admin_email.'>';
+			if ( isset($user->user_email) ) {
+				$headers[] = 'Cc: '.$user->display_name.' <'.$user->user_email.'>';
+			}
+			$organisationName = $racketmanager->site_name;
+			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'tournament-entry', array( 'tournamentEntries' => $tournamentEntrys, 'organisationName' => $organisationName, 'season' => $season, 'tournamentSeason' => $tournamentSeason, 'contactno' => $contactno, 'contactemail' => $contactemail, 'player' => $playerName, 'club' => $affiliatedClubName ), 'email' );
+			$racketmanager->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
 			$msg = __('Tournament entry complete', 'racketmanager');
 		} else {
 			$msg = __('Errors in tournament entry form', 'racketmanager');
@@ -1778,7 +1794,6 @@ class RacketManagerAJAX extends RacketManager {
 		if ( !$error ) {
 			$emailTo = $racketmanager->getConfirmationEmail('cup');
 			$emailSubject = $racketmanager->site_name." ".ucfirst($cupSeason)." ".$season." Cup Entry - ".$affiliatedClubName;
-			$emailMessage = "<p>There is a new cup entry.</p>";
 			$cupEntrys = array();
 			$i = 0;
 			foreach ($competitions AS $i => $competitionId) {

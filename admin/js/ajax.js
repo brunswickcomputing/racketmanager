@@ -158,18 +158,6 @@ Racketmanager.disableRubberUpdate = function() {
 };
 Racketmanager.updateResults = function(link) {
 
-	var selects = document.getElementById('match-rubbers').getElementsByTagName('select');
-	var values = [];
-	for(i=0;i<selects.length;i++) {
-		var select = selects[i];
-//		if(values.indexOf(select.value)>-1) {
-//			jQuery("#UpdateResponse").text('Results not updated - duplicate player selected');
-//			return false;
-//		}
-//		else
-//			values.push(select.value);
-
-	}
 	var $match = document.getElementById('current_match_id');
 	var $matchId = $match.value;
     var $league = document.getElementById('current_league_id');
@@ -192,20 +180,20 @@ Racketmanager.updateResults = function(link) {
                     jQuery("#UpdateResponse").text($message);
                     var $matchhome = 0;
                     var $matchaway = 0;
-                    for (var i = 0; i < $homepoints.length; i++) {
-                        var $formfield = "#home_points\\["+i+"\\]";
-                        var $fieldval = $homepoints[i];
+                    for ( i = 0; i < $homepoints.length; i++) {
+                        $formfield = "#home_points\\["+i+"\\]";
+                        $fieldval = $homepoints[i];
                         jQuery($formfield).val($fieldval);
                         $matchhome  = +$matchhome + +$homepoints[i];
                     }
-                    for (var i = 0; i < $awaypoints.length; i++) {
-                        var $formfield = "#away_points\\["+i+"\\]";
-                        var $fieldval = $awaypoints[i];
+                    for ( i = 0; i < $awaypoints.length; i++) {
+                        $formfield = "#away_points\\["+i+"\\]";
+                        $fieldval = $awaypoints[i];
                         jQuery($formfield).val($fieldval);
                         $matchaway  = +$matchaway + +$awaypoints[i];
                     }
-                    var $formfield = "#home_points\\["+$matchId+"\\]";
-                    var $formfield1 = "#home_points\\["+$leagueId+"\\]\\["+$matchId+"\\]";
+                    $formfield = "#home_points\\["+$matchId+"\\]";
+                    $formfield1 = "#home_points\\["+$leagueId+"\\]\\["+$matchId+"\\]";
                     jQuery($formfield).val($matchhome);
                     jQuery($formfield1).val($matchhome);
                     var $formfield = "#away_points\\["+$matchId+"\\]";

@@ -352,6 +352,7 @@ Racketmanager.updateMatchResults = function(link) {
 		success: function(response) {
 			var $response = jQuery.parseJSON(response);
 			var $message = $response[0];
+			jQuery("#UpdateResponse").show();
 			jQuery("#UpdateResponse").text($message);
 			var $homepoints = $response[1];
 			var $formfield = "#home_points";
@@ -403,6 +404,7 @@ Racketmanager.updateResults = function(link) {
                 success: function(response) {
                     var $response = jQuery.parseJSON(response);
                     var $message = $response[0];
+										jQuery("#UpdateResponse").show();
                     jQuery("#UpdateResponse").text($message);
                     var $homepoints = $response[1];
                     var $matchhome = 0;
@@ -460,7 +462,10 @@ Racketmanager.rosterRequest = function(link) {
                         jQuery("#genderMale").prop('checked', false);
                         jQuery("#genderFemale").prop('checked', false);
                         jQuery("#btm").val("");
+												jQuery("#updateResponse").addClass("message-success");
+												jQuery("#updateResponse").show();
                         jQuery("#updateResponse").html($message);
+												jQuery("#updateResponse").delay(10000).fadeOut('slow');
                     }
                 },
                 error: function() {
@@ -502,6 +507,7 @@ Racketmanager.teamUpdate = function(link) {
     var submitButton = "#teamUpdateSubmit-".concat(competition,"-",team);
     $form += "&action=racketmanager_team_update";
     jQuery(updateResponse).val("");
+		jQuery(updateResponse).hide();
     jQuery(submitButton).hide();
 
     jQuery.ajax({
@@ -512,7 +518,10 @@ Racketmanager.teamUpdate = function(link) {
                 success: function(response) {
                     var $response = jQuery.parseJSON(response);
                     var $message = $response[0];
+										jQuery(updateResponse).show();
+										jQuery(updateResponse).addClass("message-success");
                     jQuery(updateResponse).html($message);
+										jQuery(updateResponse).delay(10000).fadeOut('slow');
                 },
                 error: function() {
                     alert("Ajax error on team update");
@@ -538,7 +547,9 @@ Racketmanager.updateClub = function(link) {
                 success: function(response) {
                     var $response = jQuery.parseJSON(response);
                     var $message = $response[0];
+										jQuery(updateResponse).addClass("message-success");
                     jQuery(updateResponse).html($message);
+										jQuery(updateResponse).delay(10000).fadeOut('slow');
                     jQuery(submitButton).show();
                 },
                 error: function() {
@@ -581,6 +592,7 @@ Racketmanager.tournamentEntryRequest = function(link) {
                     } else {
                         jQuery("#tournamentEntryResponse").addClass('message-success');
                         jQuery("#tournamentEntryResponse").html($message);
+												jQuery("#tournamentEntryResponse").delay(10000).fadeOut('slow');
                     }
                 },
                 error: function() {

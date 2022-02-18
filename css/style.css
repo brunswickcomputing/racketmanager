@@ -514,9 +514,6 @@ input[type="text"]:disabled, input[type="email"]:disabled, input[type="tel"]:dis
     border: none;
     background: none;
 }
-.updateResponse {
-    padding: 1em;
-}
 th input[type="checkbox"] {
     margin-left: 4em;
 }
@@ -832,8 +829,10 @@ form#rosterRequestFrm label {
 form#rosterRequestFrm input[type="text"], form#rosterRequestFrm input[type="number"] {
     height: 2.25em;
 }
-#updateResponse {
+#updateResponse, .updateResponse {
     padding: 1em;
+		margin-top: 20px;
+		display: none;
 }
 #TB_window {
     overflow: scroll;

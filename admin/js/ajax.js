@@ -177,6 +177,7 @@ Racketmanager.updateResults = function(link) {
                     var $message = $response[0];
                     var $homepoints = $response[1];
                     var $awaypoints = $response[2];
+                    jQuery("#UpdateResponse").show();
                     jQuery("#UpdateResponse").text($message);
                     var $matchhome = 0;
                     var $matchaway = 0;

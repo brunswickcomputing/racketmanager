@@ -17,11 +17,11 @@ $emaillink = $vars['email_link'];
           <div>
             <h1 class="username">Hi <?php echo $username ?>,</h1>
             <p>Your password has now been changed for your <?php echo $organisationName ?> account.</p>
-            <p>If you did not change yout password, please <a href="mailto:<?php echo $emaillink ?>">contact the team</a>.</p>
+            <p>If you did not change your password, please <a href="mailto:<?php echo $emaillink ?>">contact the team</a>.</p>
             <p>Thanks,</p>
             <p>The <?php echo $organisationName ?> Team</p>
             <!-- Sub copy -->
-          </td>
+          </div>
         </td>
       </tr>
     </table>

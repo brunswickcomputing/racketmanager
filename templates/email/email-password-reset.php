@@ -49,7 +49,7 @@ $title = 'Password Reset Link';
                 </td>
               </tr>
             </table>
-          </td>
+          </div>
         </td>
       </tr>
     </table>

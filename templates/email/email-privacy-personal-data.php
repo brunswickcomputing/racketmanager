@@ -46,7 +46,7 @@ $title = 'Personal Data Export';
                 </td>
               </tr>
             </table>
-          </td>
+          </div>
         </td>
       </tr>
     </table>

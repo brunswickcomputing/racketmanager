@@ -47,7 +47,7 @@ $title = 'Request Action Confirmation';
                 </td>
               </tr>
             </table>
-          </td>
+          </div>
         </td>
       </tr>
     </table>

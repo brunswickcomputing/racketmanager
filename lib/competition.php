@@ -590,17 +590,19 @@ class Competition {
 			wp_cache_set( md5($sql), $team, 'team' );
 		}
 
-		$captain = get_userdata($team->captain);
-		if ( $captain != '' ) {
-			$team->captain = $captain->display_name;
-			$team->captainId = $captain->ID;
-			$team->contactno = get_user_meta($captain->ID, 'contactno', true);
-			$team->contactemail = $captain->user_email;
-		} else {
-			$team->captain = 'Unknown';
-			$team->captainId = '';
-			$team->contactno = '';
-			$team->contactemail = '';
+		if ( $team ) {
+			$captain = get_userdata($team->captain);
+			if ( $captain != '' ) {
+				$team->captain = $captain->display_name;
+				$team->captainId = $captain->ID;
+				$team->contactno = get_user_meta($captain->ID, 'contactno', true);
+				$team->contactemail = $captain->user_email;
+			} else {
+				$team->captain = 'Unknown';
+				$team->captainId = '';
+				$team->contactno = '';
+				$team->contactemail = '';
+			}
 		}
 
 		return $team;

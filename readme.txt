@@ -50,6 +50,23 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.3.0 =
+* BUGFIX: check team found in competition->getTeamInfo
+* BUGFIX: correct html element in email_welcome template
+* BUGFIX: get roster request auto confirmation working correctly
+* UPDATE: allow cup entries by match secretaries
+* UPDATE: fadeout success messages from ajax after 10 seconds
+* UPDATE: format roster request emails
+* UPDATE: format tournament entry email
+* UPDATE: get date and time formats once and store in global variable for use
+* UPDATE: get options once and store in global variable for use
+* UPDATE: get site info once and store in global variable for use
+* UPDATE: only update match if result changed
+* UPDATE: pass from email address into matchnotification
+* UPDATE: redirect to referral page after login
+* UPDATE: remove depreciated variable for wp_new_user_notification
+* UPDATE: standardise result notification emails
+
 = 6.2.2 =
 * UPDATE: sort tournaments by date in admin pages
 * UPDATE: use separate display format for tournament dates

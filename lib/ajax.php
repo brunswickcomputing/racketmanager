@@ -1398,12 +1398,9 @@ class RacketManagerAJAX extends RacketManager {
 	* @see templates/club.php
 	*/
 	public function updateTeam() {
-		global $wpdb, $racketmanager, $competition;
 
-		$updates = false;
-		$return = array();
-		$msg = '';
 		check_admin_referer('team-update');
+		$return = array();
 		$competitionId = $_POST['competition_id'];
 		$teamId = $_POST['team_id'];
 
@@ -1413,6 +1410,19 @@ class RacketManagerAJAX extends RacketManager {
 		$contactemail = $_POST['contactemail-'.$competitionId.'-'.$teamId];
 		$matchday = $_POST['matchday-'.$competitionId.'-'.$teamId];
 		$matchtime = $_POST['matchtime-'.$competitionId.'-'.$teamId];
+
+		$msg = $this->updateTeamCompetition($competitionId, $teamId, $captainId, $contactno, $contactemail, $matchday, $matchtime);
+
+		array_push($return, $msg);
+		die(json_encode($return));
+
+	}
+
+	public function updateTeamCompetition($competitionId, $teamId, $captainId, $contactno, $contactemail, $matchday, $matchtime) {
+		global $wpdb, $racketmanager, $competition;
+
+		$updates = false;
+		$msg = '';
 
 		$competition = get_competition($competitionId);
 		$team = $competition->getTeamInfo($teamId);
@@ -1427,19 +1437,17 @@ class RacketManagerAJAX extends RacketManager {
 				$updates = true;
 			} else {
 				$updates = false;
-				$msg = "error updating team";
+				$msg = "Error updating team";
 			}
 		}
 
 		if ( $updates ) {
 			$msg = "Team updated";
 		} elseif ( empty($msg) ) {
-			$msg = "nothing to update";
+			$msg = "Nothing to update";
 		}
 
-		array_push($return, $msg);
-		die(json_encode($return));
-
+		return $msg;
 	}
 
 	/**

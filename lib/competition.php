@@ -652,6 +652,52 @@ class Competition {
 		return $options;
 	}
 
+	/**
+	* get constitution from database
+	*
+	* @param int $league_id (default: false)
+	* @param string $search
+	* @return array
+	*/
+	public function getConstitution( $args = array() ) {
+		global $wpdb;
+
+		$defaults = array( 'offset' => 0, 'limit' => 99999999, 'competition' => false, 'season' => false, 'orderby' => false );
+		$args = array_merge($defaults, $args);
+		extract($args, EXTR_SKIP);
+
+		$search_terms = array();
+		if ( $competition ) {
+			$search_terms[] = $wpdb->prepare("`competition_id` = '%d'", intval($competition));
+		}
+
+		if ( $season ) {
+			$search_terms[] = $wpdb->prepare("`season` = '%d'", $season);
+		}
+
+		$search = "";
+		if (count($search_terms) > 0) {
+			$search = " AND ";
+			$search .= implode(" AND ", $search_terms);
+		}
+
+		$sql = $wpdb->prepare( "SELECT `l`.`title` AS `leagueTitle`, l.`id` as `leagueId`, t2.`id` as `teamId`, t1.`id` as `tableId`, `t2`.`title`,`t1`.`rank`, l.`id`, l.`competition_id`, t1.`points_plus`, t1.`add_points`, t1.`status`, t1.`profile` FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} t1, {$wpdb->racketmanager_teams} t2 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ORDER BY l.`title` ASC, t1.`rank` ASC LIMIT %d, %d", intval($offset), intval($limit) );
+		$constitutions = wp_cache_get( md5($sql), 'constitution' );
+		if ( !$constitutions ) {
+			$constitutions =  $wpdb->get_results($sql);
+			wp_cache_set( md5($sql), $constitutions, 'constitution' );
+		}
+
+		foreach ( $constitutions AS $i => $constitution ) {
+
+			$constitutions[$i] = $constitution;
+		}
+
+		$this->constitutions = $constitutions;
+
+		return $constitutions;
+	}
+
 }
 
 /**

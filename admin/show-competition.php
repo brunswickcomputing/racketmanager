@@ -19,6 +19,7 @@ jQuery(function() {
 			<li><a href="#player-stats"><?php _e( 'Players Stats', 'racketmanager' ) ?></a></li>
 			<li><a href="#seasons-table"><?php _e( 'Seasons', 'racketmanager' ) ?></a></li>
 			<li><a href="#settings"><?php _e( 'Settings', 'racketmanager' ) ?></a></li>
+			<li><a href="#constitution"><?php _e( 'Constitution', 'racketmanager' ) ?></a></li>
 		</ul>
 
 		<div id="leagues-table" class="league-block-container">
@@ -35,8 +36,11 @@ jQuery(function() {
 		</div>
 
 		<div id="settings" class="league-block-container">
-			<h2 class="settings"><?php _e( 'Settings', 'racketmanager' ) ?></h2>
+			<h2 class="header"><?php _e( 'Settings', 'racketmanager' ) ?></h2>
 			<?php include('competition/settings.php'); ?>
+		</div>
+		<div id="constitution" class="league-block-container">
+			<?php include('competition/Constitution.php'); ?>
 		</div>
 
 	</div>

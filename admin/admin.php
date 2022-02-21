@@ -525,6 +525,40 @@ final class RacketManagerAdmin extends RacketManager
                     $club_id = intval($_GET['club_id']);
                 }
                 $tab = 1;
+						} elseif ( isset($_POST['doactionconstitution']) && $_POST['action'] == 'delete' ) {
+                if ( current_user_can('del_leagues') ) {
+                    check_admin_referer('constitution-bulk');
+                    foreach ( $_POST['table'] AS $tableId ) {
+											$teams = isset($_POST['teamId']) ? $_POST['teamId'] : array();
+											$leagues = isset($_POST['leagueId']) ? $_POST['leagueId'] : array();
+											$team = isset($teams[$tableId]) ? $teams[$tableId] : 0;
+											$league = isset($leagues[$tableId]) ? $leagues[$tableId] : 0;
+											if ( isset($team) && isset($league) ) {
+											$this->delTeamFromLeague( $team, $league, $_POST['latestSeason']);
+											}
+                    }
+                } else {
+                    $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
+                }
+								$tab = 4;
+						} elseif ( isset($_POST['saveconstitution']) ) {
+                check_admin_referer('constitution-bulk');
+								debug_to_console($_POST);
+                foreach ( $_POST['tableId'] AS $tableId ) {
+									$team = $_POST['teamId'][$tableId];
+									$league = $_POST['leagueId'][$tableId];
+									$rank = $_POST['rank'][$tableId];
+									$points_plus = $_POST['points_plus'][$tableId];
+									$add_points = $_POST['add_points'][$tableId];
+									$status = $_POST['status'][$tableId];
+									$profile = $_POST['profile'][$tableId];
+									if ( $_POST['constitutionAction'] == 'insert' ) {
+										$racketmanager->addTeamtoTable( $league, $team, $_POST['latestSeason'], array(), false, $rank, $status, $profile, $points_plus, $add_points );
+									} elseif ( $_POST['constitutionAction'] == 'update' ) {
+										$this->updateTable( $tableId, $league, $team, $_POST['latestSeason'], $rank, $status, $profile, $points_plus, $add_points );
+									}
+                }
+								$tab = 4;
             }
             include_once( dirname(__FILE__) . '/show-competition.php' );
         }
@@ -1539,6 +1573,20 @@ final class RacketManagerAdmin extends RacketManager
 			$pageName = sanitize_title_with_dashes($title);
 			$this->deleteRacketmanagerPage($pageName);
 
+		}
+
+		/**
+		* update Table
+		*
+		* @param string $title
+		* @return int
+		*/
+		private function updateTable( $tableId, $leagueId, $teamId, $season , $rank, $status, $profile, $points_plus, $add_points ) {
+			global $wpdb, $racketmanager;
+
+			$sql = "UPDATE {$wpdb->racketmanager_table} SET `league_id` = '%d', `rank` = '%d', `status` = '%s', `profile` = '%d', `points_plus` = '%d', `add_points` = '%d' WHERE `id` = '%d'";
+			$wpdb->query( $wpdb->prepare ( $sql, $leagueId, $rank, $status, $profile, $points_plus, $add_points, $tableId ) );
+			return;
 		}
 
     /**

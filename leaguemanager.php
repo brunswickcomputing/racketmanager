@@ -1160,15 +1160,20 @@ class RacketManager {
 	* @param string $title
 	* @return int
 	*/
-	public function addTeamtoTable( $leagueId, $teamId, $season , $custom = array(), $message = true) {
+	public function addTeamtoTable( $leagueId, $teamId, $season , $custom = array(), $message = true, $rank = false, $status = false, $profile = false, $points_plus = false, $add_points = false ) {
 		global $wpdb, $racketmanager;
 
 		$tableId = $this->checkTableEntry( $leagueId, $teamId, $season );
 		if ( $tableId ) {
 			$messageText = 'Team already in table';
 		} else {
-			$sql = "INSERT INTO {$wpdb->racketmanager_table} (`team_id`, `season`, `custom`, `league_id`) VALUES ('%d', '%s', '%s', '%d')";
-			$wpdb->query( $wpdb->prepare ( $sql, $teamId, $season, maybe_serialize($custom), $leagueId) );
+			if ( !$rank ) {
+				$sql = "INSERT INTO {$wpdb->racketmanager_table} (`team_id`, `season`, `custom`, `league_id`) VALUES ('%d', '%s', '%s', '%d')";
+				$wpdb->query( $wpdb->prepare ( $sql, $teamId, $season, maybe_serialize($custom), $leagueId) );
+			} else {
+				$sql = "INSERT INTO {$wpdb->racketmanager_table} (`team_id`, `season`, `custom`, `league_id`, `rank`, `status`, `profile`, `points_plus`, `add_points`) VALUES ('%d', '%s', '%s', '%d', '%d', '%s', '%d', '%d', '%d')";
+				$wpdb->query( $wpdb->prepare ( $sql, $teamId, $season, maybe_serialize($custom), $leagueId, $rank, $status, $profile, $points_plus, $add_points ) );
+			}
 			$tableId = $wpdb->insert_id;
 			$messageText = 'Table entry added';
 		}

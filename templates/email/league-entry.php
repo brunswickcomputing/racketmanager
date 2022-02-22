@@ -28,7 +28,7 @@ $title = $organisationName.' League Entry';
               <?php } ?>
             <?php } ?>
             <p>Captains will be notified when the leagues have been finalised and fixtures for the season are available.</p>
-            <p>There are <?php echo $competitionEntries['numCourtsAvailable'] ?> court available for matches.</p>
+            <p>There are <?php echo $competitionEntries['numCourtsAvailable'] ?> courts available for matches.</p>
             <p>Thanks</p>
             <p>The <?php echo $organisationName ?> Team</p>
           </td>

@@ -668,15 +668,15 @@ class Competition {
 
 		$search_terms = array();
 		if ( $competition ) {
-			$search_terms[] = $wpdb->prepare("`competition_id` = '%d'", intval($competition));
+			$search_terms[] = $wpdb->prepare("`competition_id` = %d", intval($competition));
 		}
 
 		if ( $season ) {
-			$search_terms[] = $wpdb->prepare("`season` = '%d'", $season);
+			$search_terms[] = $wpdb->prepare("`season` = '%s'", $season);
 		}
 
 		if ( $club ) {
-			$search_terms[] = $wpdb->prepare("t2.`affiliatedclub` = '%d'", intval($club));
+			$search_terms[] = $wpdb->prepare("t2.`affiliatedclub` = %d", intval($club));
 		}
 
 		$search = "";
@@ -709,10 +709,20 @@ class Competition {
 	* @param int $club Club Id
 	* @return none
 	*/
-	public function markTeamsWithdrawn( $season, $club ) {
+	public function markTeamsWithdrawn( $season, $club, $team = false ) {
 		global $wpdb;
 
-		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_table} SET `profile` = 3 WHERE `league_id` IN (select `id` FROM {$wpdb->racketmanager} WHERE `competition_id` = '%d') AND `season` = '%s' AND `team_id` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d')", $this->id, $season, $club ) );
+		$search_terms = array();
+		if ( $team ) {
+			$search_terms[] = $wpdb->prepare("`team_id` = %d", intval($team));
+		}
+		$search = "";
+		if (count($search_terms) > 0) {
+			$search = " AND ";
+			$search .= implode(" AND ", $search_terms);
+		}
+
+		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_table} SET `profile` = 3 WHERE `league_id` IN (select `id` FROM {$wpdb->racketmanager} WHERE `competition_id` = '%d') AND `season` = '%s' AND `team_id` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d') $search ", $this->id, $season, $club ) );
 	}
 
 	/**

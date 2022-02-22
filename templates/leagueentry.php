@@ -32,7 +32,9 @@ You can check the content of a variable when you insert the tag <?php var_dump($
             Select all events that you would like to enter.
           </div>
           <div class="form-checkboxes">
-            <?php foreach ($competitions AS $competition) { ?>
+            <?php $leagueCompetitions = array();
+            foreach ($competitions AS $competition) {
+              $leagueCompetitions[] = $competition->id; ?>
               <div class="form-checkboxes__item competitionList">
                 <input class="form-checkboxes__input competitionId" id="competition[<?php echo $competition->id ?>]" name="competition[<?php echo $competition->id ?>]" type="checkbox" value=<?php echo $competition->id ?> aria-controls="conditional-competition-<?php echo $competition->id ?>">
                 <label class="form-label form-checkboxes__label" for="competition[<?php echo $competition->id ?>]">
@@ -44,8 +46,9 @@ You can check the content of a variable when you insert the tag <?php var_dump($
                 <div id="event-hint" class="hint">
                   Select all teams that you would like to enter.
                 </div>
-                <?php
-                foreach($competition->constitutions AS $constitution) { ?>
+                <?php $competitionTeams = array();
+                foreach($competition->constitutions AS $constitution) {
+                  $competitionTeams[] = $constitution->teamId; ?>
                   <div class="form-checkboxes__item teamCompetitionList">
                     <input class="form-checkboxes__input teamCompetitionId" id="teamCompetition[<?php echo $competition->id ?>][<?php echo $constitution->teamId ?>]" name="teamCompetition[<?php echo $competition->id ?>][<?php echo $constitution->teamId ?>]" type="checkbox" value=<?php echo $constitution->teamId ?> aria-controls="conditional-team-competition-<?php echo $competition->id ?>-<?php echo $constitution->teamId ?>">
 
@@ -91,6 +94,7 @@ You can check the content of a variable when you insert the tag <?php var_dump($
                     </div>
                   </div>
                 <?php } ?>
+                <input type="hidden" name="competitionTeams[<?php echo $competition->id ?>]" id="competitionTeams[<?php echo $competition->id ?>]" value="<?php echo implode(',',$competitionTeams) ?>" />
               </div>
             <?php } ?>
           </div>
@@ -128,6 +132,7 @@ You can check the content of a variable when you insert the tag <?php var_dump($
         </div>
       </div>
       <div>
+        <input type="hidden" name="leagueCompetitions" id="leagueCompetitions" value="<?php echo implode(',',$leagueCompetitions) ?>" />
         <input type="hidden" name="affiliatedClub" id="affiliatedClub" value="<?php echo $club->id ?>" />
         <input type="hidden" name="season" value="<?php echo $season ?>" />
         <input type="hidden" name="leagueSeason" value="<?php echo $type ?>" />

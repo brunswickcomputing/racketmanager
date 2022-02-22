@@ -1968,6 +1968,7 @@ class RacketManagerAJAX extends RacketManager {
 		}
 
 		if ( !$error ) {
+			$leagueCompetitions = explode(',', $_POST['leagueCompetitions']);
 			$emailTo = $racketmanager->getConfirmationEmail('league');
 			$emailSubject = $racketmanager->site_name." ".ucfirst($leagueSeason)." ".$season." League Entry - ".$affiliatedClubName;
 			$competitionEntries = array();
@@ -1976,13 +1977,19 @@ class RacketManagerAJAX extends RacketManager {
 			$competitionEntries['competitions'] = array();
 			$i = 0;
 			foreach ($competitions AS $i => $competitionId) {
+				if (($key = array_search($competitionId, $leagueCompetitions)) !== false) {
+    			unset($leagueCompetitions[$key]);
+				}
+				$competitionTeams = explode(',', $_POST['competitionTeams'][$competition->id]);
 				$competitionEntry = array();
 				$competition = get_competition($competitionId);
 				$competitionEntry['competitionName'] = $competition->name;
 				$teams = isset($teamCompetition[$competition->id]) ? $teamCompetition[$competition->id] : array();
-				$competition->markTeamsWithdrawn($season, $affiliatedclub);
 				$leagueEntries = array();
 				foreach ($teams AS $t => $teamId) {
+					if (($key = array_search($teamId, $competitionTeams)) !== false) {
+	    			unset($competitionTeams[$key]);
+					}
 					$leagueEntry = array();
 					$teamCompetitionTitle = isset($teamCompetitionTitles[$competition->id][$teamId]) ? $teamCompetitionTitles[$competition->id][$teamId] : '';
 					$captain = isset($captains[$competition->id][$teamId]) ? $captains[$competition->id][$teamId] : 0;
@@ -2006,10 +2013,17 @@ class RacketManagerAJAX extends RacketManager {
 					$leagueEntry['matchtime'] = $matchtime;
 					$leagueEntries[] = $leagueEntry;
 				}
+				foreach ($competitionTeams as $key => $teamId) {
+					$competition->markTeamsWithdrawn($season, $affiliatedclub, $teamId);
+				}
 				$competitionEntry['teams'] = $leagueEntries;
 				$competitionDetails[] = $competitionEntry;
 			}
 			$competitionEntries['competitions'] = $competitionDetails;
+			foreach ($leagueCompetitions as $key => $competitionId) {
+				$competition = get_competition($competitionId);
+				$competition->markTeamsWithdrawn($season, $affiliatedclub);
+			}
 
 			$headers = array();
 			$headers[] = 'From: '.$affiliatedClubName.' <'.$racketmanager->admin_email.'>';

@@ -547,15 +547,19 @@ final class RacketManagerAdmin extends RacketManager
 									$team = $_POST['teamId'][$tableId];
 									$league = $_POST['leagueId'][$tableId];
 									$rank = $_POST['rank'][$tableId];
-									$points_plus = $_POST['points_plus'][$tableId];
-									$add_points = $_POST['add_points'][$tableId];
 									$status = $_POST['status'][$tableId];
 									$profile = $_POST['profile'][$tableId];
 									if ( $_POST['constitutionAction'] == 'insert' ) {
-										$racketmanager->addTeamtoTable( $league, $team, $_POST['latestSeason'], array(), false, $rank, $status, $profile, $points_plus, $add_points );
+										$racketmanager->addTeamtoTable( $league, $team, $_POST['latestSeason'], array(), true, $rank, $status, $profile );
 									} elseif ( $_POST['constitutionAction'] == 'update' ) {
-										$this->updateTable( $tableId, $league, $team, $_POST['latestSeason'], $rank, $status, $profile, $points_plus, $add_points );
+										$this->updateTable( $tableId, $league, $team, $_POST['latestSeason'], $rank, $status, $profile );
 									}
+                }
+								$tab = 4;
+						} elseif ( isset($_POST['action']) && $_POST['action'] == 'addTeamsToLeague' ) {
+                foreach ( $_POST['team'] AS $i => $team_id ) {
+									$racketmanager->addTeamtoTable( $_POST['league_id'], $team_id, htmlspecialchars($_POST['season']), array(), false, '99', 'NT', '1' );
+                  $this->setTeamCompetition( $team_id, $_POST['competition_id'] );
                 }
 								$tab = 4;
             }
@@ -881,6 +885,7 @@ final class RacketManagerAdmin extends RacketManager
                 $entryType = '';
             }
             $season = isset($_GET['season']) ? htmlspecialchars(strip_tags($_GET['season'])) : '';
+						$view = isset($_GET['view']) ? htmlspecialchars(strip_tags($_GET['view'])) : '';
             include_once( dirname(__FILE__) . '/includes/teamslist.php' );
         }
     }

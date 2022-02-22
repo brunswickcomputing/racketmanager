@@ -34,7 +34,6 @@ if ( empty($this->seasons) ) { ?>
 				</select>
 				<input type="submit" value="<?php _e('Apply'); ?>" name="doactionconstitution" id="doactionconstitution" class="button-secondary action" />
 				<input type="submit" value="<?php _e('Save'); ?>" name="saveconstitution" id="saveconstitution" class="button-primary action" />
-				<input type="submit" value="<?php _e('Refresh'); ?>" name="refreshconstitution" id="refreshconstitution" class="button-primary action" />
 			</div>
 
 			<table class="widefat" summary="" title="RacketManager">

@@ -543,7 +543,6 @@ final class RacketManagerAdmin extends RacketManager
 								$tab = 4;
 						} elseif ( isset($_POST['saveconstitution']) ) {
                 check_admin_referer('constitution-bulk');
-								debug_to_console($_POST);
                 foreach ( $_POST['tableId'] AS $tableId ) {
 									$team = $_POST['teamId'][$tableId];
 									$league = $_POST['leagueId'][$tableId];

@@ -679,3 +679,48 @@ Racketmanager.cupEntryRequest = function(link) {
 	}) ;
 	jQuery("#cupEntrySubmit").show();
 };
+Racketmanager.leagueEntryRequest = function(link) {
+
+	var $form = jQuery('#form-leagueentry').serialize();
+	$form += "&action=racketmanager_league_entry";
+	jQuery("#leagueentryResponse").val("");
+	jQuery("#leagueEntrySubmit").hide();
+	jQuery("#leagueEntrySubmit").addClass("disabled");
+	jQuery("#leagueEntryResponse").removeClass('message-error');
+	jQuery("#leagueEntryResponse").removeClass('message-success');
+
+	jQuery.ajax({
+		url:RacketManagerAjaxL10n.requestUrl,
+		async: false,
+		type: "POST",
+		data: $form,
+		success: function(response) {
+			var $response = jQuery.parseJSON(response);
+			var $message = $response[0];
+			var $error = $response[1];
+			var $errorMsg = $response[2];
+			var $errorField = $response[3];
+			jQuery( "#acceptance" ).prop( "checked", false );
+			if ($error === true) {
+				jQuery("#leagueEntryResponse").addClass('message-error');
+				for ( var errorMsg of $response[2] ) {
+					$message += '<br />' + errorMsg;
+				}
+				for ( var errorField of $response[3] ) {
+					var $id = '#'.concat(errorField);
+					jQuery($id).parents('.form-group').addClass('field-error');
+				}
+				jQuery("#leagueEntryResponse").html($message);
+			} else {
+				jQuery("#leagueEntryResponse").show();
+				jQuery("#leagueEntryResponse").addClass('message-success');
+				jQuery("#leagueEntryResponse").html($message);
+				jQuery("#leagueEntryResponse").delay(10000).fadeOut('slow');
+			}
+		},
+		error: function() {
+			alert("Ajax error on league entry");
+		}
+	}) ;
+	jQuery("#leagueEntrySubmit").show();
+};

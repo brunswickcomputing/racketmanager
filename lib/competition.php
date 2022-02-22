@@ -662,7 +662,7 @@ class Competition {
 	public function getConstitution( $args = array() ) {
 		global $wpdb;
 
-		$defaults = array( 'offset' => 0, 'limit' => 99999999, 'competition' => false, 'season' => false, 'orderby' => false );
+		$defaults = array( 'offset' => 0, 'limit' => 99999999, 'competition' => false, 'season' => false, 'orderby' => false, 'club' => false );
 		$args = array_merge($defaults, $args);
 		extract($args, EXTR_SKIP);
 
@@ -673,6 +673,10 @@ class Competition {
 
 		if ( $season ) {
 			$search_terms[] = $wpdb->prepare("`season` = '%d'", $season);
+		}
+
+		if ( $club ) {
+			$search_terms[] = $wpdb->prepare("t2.`affiliatedclub` = '%d'", intval($club));
 		}
 
 		$search = "";
@@ -696,6 +700,32 @@ class Competition {
 		$this->constitutions = $constitutions;
 
 		return $constitutions;
+	}
+
+	/**
+	* mark teams as withdrawn from competition
+	*
+	* @param string $season season
+	* @param int $club Club Id
+	* @return none
+	*/
+	public function markTeamsWithdrawn( $season, $club ) {
+		global $wpdb;
+
+		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_table} SET `profile` = 3 WHERE `league_id` IN (select `id` FROM {$wpdb->racketmanager} WHERE `competition_id` = '%d') AND `season` = '%s' AND `team_id` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d')", $this->id, $season, $club ) );
+	}
+
+	/**
+	* mark teams as entered into competition
+	*
+	* @param int $team Team Id
+	* @param string $season season
+	* @return none
+	*/
+	public function markTeamsEntered( $team, $season ) {
+		global $wpdb;
+
+			$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_table} SET `profile` = 1 WHERE `league_id` IN (select `id` FROM {$wpdb->racketmanager} WHERE `competition_id` = '%d') AND `season` = '%s' AND `team_id` = '%d'", $this->id, $season, $team ) );
 	}
 
 }

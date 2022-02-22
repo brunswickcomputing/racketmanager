@@ -41,6 +41,7 @@ class RacketManagerShortcodes extends RacketManager {
 		add_shortcode( 'resultnotification', array(&$this, 'showResultNotification') );
 		add_shortcode( 'rosternotification', array(&$this, 'showRosterNotification') );
 		add_shortcode( 'cupentry', array(&$this, 'showCupEntry') );
+		add_shortcode( 'leagueentry', array(&$this, 'showLeagueEntry') );
 	}
 
 	/**
@@ -1278,6 +1279,97 @@ class RacketManagerShortcodes extends RacketManager {
 		$filename = ( !empty($template) ) ? 'cupentry-'.$template : 'cupentry';
 
 		$out = $this->loadTemplate( $filename, array( 'club' => $club, 'competitions' => $competitions, 'ladiesTeams' => $ladiesTeams, 'mensTeams' => $mensTeams, 'mixedTeams' => $mixedTeams, 'season' => $season, 'type' => $type ) );
+
+		return $out;
+	}
+
+	/**
+	* Function to display league Entry Page
+	*
+	*    [leagueentry id=ID template=X]
+	*
+	* @param array $atts
+	* @return the content
+	*/
+	public function showLeagueEntry( $atts ) {
+		global $racketmanager;
+		extract(shortcode_atts(array(
+			'type' => false,
+			'season' => false,
+			'template' => '',
+		), $atts ));
+
+		if ( !is_user_logged_in() ) {
+			return '<p class="contact-login-msg">You need to <a href="<?php echo wp_login_url(); ?>">login</a> to enter leagues</p>';
+		}
+		$club_name = get_query_var('club_name');
+		$club_name = str_replace('-',' ',$club_name);
+
+		$club = get_Club( $club_name, 'shortcode' );
+
+		if ( !$club ) {
+			return _e('No club selected', 'racketmanager');
+		}
+		$user = wp_get_current_user();
+		$userid = $user->ID;
+		$userCanUpdateClub = false;
+		if ( current_user_can( 'manage_racketmanager' ) ) {
+		    $userCanUpdateClub = true;
+		} else {
+		    if ( $club->matchsecretary !=null && $club->matchsecretary == $userid ) {
+		        $userCanUpdateClub = true;
+		    }
+		}
+		if ( !$userCanUpdateClub ) {
+			return _e('User not authorised for club', 'racketmanager');
+		}
+
+		// get competition list
+		if ($type) {
+			$type = $type;
+		} elseif ( isset($_GET['type']) && !empty($_GET['type']) ) {
+			$type = htmlspecialchars(strip_tags($_GET['type']));
+		} elseif ( isset($wp->query_vars['type']) ) {
+			$type = get_query_var('type');
+		}
+		if ( !$type ) {
+			return _e('No leagues open for entries', 'racketmanager');
+		}
+		if ($season) {
+			$season = $season;
+		} elseif ( isset($_GET['season']) && !empty($_GET['season']) ) {
+			$season = htmlspecialchars(strip_tags($_GET['season']));
+		} elseif ( isset($wp->query_vars['season']) ) {
+			$season = get_query_var('season');
+		}
+		if ( !$season ) {
+			return _e('No season specified', 'racketmanager');
+		}
+		$constitutionsLadies = false;
+		$constitutionsMens = false;
+		$constitutionsMixed = false;
+		$competitions = $racketmanager->getCompetitions( array('type' => 'league', 'name' => $type, 'orderby' => array("name" => "ASC")) );
+		foreach ($competitions AS $i => $competition) {
+			$competition = get_competition($competition->id);
+			$constitutions = $competition->getConstitution(array('competition' => $competition->id, 'season' => $season, 'club' => $club->id));
+			foreach ($constitutions as $c => $constitution) {
+				$constitution->teamInfo = $team = $competition->getTeamInfo($constitution->teamId);
+				$constitutions[$c] = $constitution;
+			}
+			$competition->constitutions = $constitutions;
+			if ( $competition->type == 'WD' ) {
+				$competition->teams = $club->getTeams(false, 'WD');
+			} elseif ( $competition->type == 'MD' ) {
+				$competition->teams = $club->getTeams(false, 'MD');
+			} elseif ( $competition->type == 'XD' or $competition->type == 'LD' ) {
+				$competition->teams = $club->getTeams(false, 'XD');
+			}
+			$competitions[$i] = $competition;
+		}
+
+		$filename = ( !empty($template) ) ? 'leagueentry-'.$template : 'leagueentry';
+
+		$out = $this->loadTemplate( $filename, array( 'club' => $club, 'competitions' => $competitions, 'season' => $season, 'type' => $type ) );
 
 		return $out;
 	}

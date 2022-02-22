@@ -300,28 +300,31 @@ class Competition {
 
 		if ( isset($_GET['season']) && !empty($_GET['season']) ) {
 			$key = htmlspecialchars(strip_tags($_GET['season']));
-			if (!isset($this->seasons[$key]))
-			return false;
-
-			$data = $this->seasons[$key];
+			if (!isset($this->seasons[$key])) {
+				$data = false;
+			} else {
+				$data = $this->seasons[$key];
+			}
 		} elseif ( isset($_GET['season_'.$this->id]) ) {
 			$key = htmlspecialchars(strip_tags($_GET['season_'.$this->id]));
-			if (!isset($this->seasons[$key]))
-			return false;
-
-			$data = $this->seasons[$key];
+			if (!isset($this->seasons[$key])) {
+				$data = false;
+			} else {
+				$data = $this->seasons[$key];
+			}
 		} elseif ( $season ) {
 			$data = $this->seasons[$season];
 		} elseif ( !empty($this->seasons) ) {
 			$data = end($this->seasons);
 		} else {
-			return false;
+			$data = false;
 		}
-
-		if ( $index )
-		return $data[$index];
-		else
-		return $data;
+		if (empty($data)) $data = end($this->seasons);
+		if ( $index ) {
+			return $data[$index];
+		}	else {
+			return $data;
+		}
 	}
 
 	/**

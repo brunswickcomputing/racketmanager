@@ -1345,18 +1345,15 @@ class RacketManagerShortcodes extends RacketManager {
 		if ( !$season ) {
 			return _e('No season specified', 'racketmanager');
 		}
-		$constitutionsLadies = false;
-		$constitutionsMens = false;
-		$constitutionsMixed = false;
 		$competitions = $racketmanager->getCompetitions( array('type' => 'league', 'name' => $type, 'orderby' => array("name" => "ASC")) );
 		foreach ($competitions AS $i => $competition) {
 			$competition = get_competition($competition->id);
-			$constitutions = $competition->getConstitution(array('competition' => $competition->id, 'season' => $season, 'club' => $club->id));
-			foreach ($constitutions as $c => $constitution) {
-				$constitution->teamInfo = $team = $competition->getTeamInfo($constitution->teamId);
-				$constitutions[$c] = $constitution;
+			$competitionTeams = $competition->getTeams(array('season' => $season, 'club' => $club->id));
+			foreach ($competitionTeams as $c => $competitionTeam) {
+				$competitionTeam->teamInfo = $competition->getTeamInfo($competitionTeam->teamId);
+				$competitionTeams[$c] = $competitionTeam;
 			}
-			$competition->constitutions = $constitutions;
+			$competition->competitionTeams = $competitionTeams;
 			if ( $competition->type == 'WD' ) {
 				$competition->teams = $club->getTeams(false, 'WD');
 			} elseif ( $competition->type == 'MD' ) {

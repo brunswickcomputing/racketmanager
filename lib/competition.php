@@ -768,6 +768,50 @@ class Competition {
 	* get teams from database
 	*
 	* @param int $league_id (default: false)
+	* @param string $search
+	* @return array
+	*/
+	public function getTeams( $args = array() ) {
+		global $wpdb;
+
+		$defaults = array( 'offset' => 0, 'limit' => 99999999, 'season' => false, 'orderby' => false, 'club' => false );
+		$args = array_merge($defaults, $args);
+		extract($args, EXTR_SKIP);
+
+		$search_terms = array();
+		$search_terms[] = $wpdb->prepare("`competition_id` = %d", $this->id);
+
+		if ( $season ) {
+			$search_terms[] = $wpdb->prepare("t1.`season` = '%s'", $season);
+		}
+
+		if ( $club ) {
+			$search_terms[] = $wpdb->prepare("t2.`affiliatedclub` = %d", intval($club));
+		}
+
+		$search = "";
+		if (count($search_terms) > 0) {
+			$search = " AND ";
+			$search .= implode(" AND ", $search_terms);
+		}
+
+		$sql = $wpdb->prepare( "SELECT `l`.`title` AS `leagueTitle`, l.`id` as `leagueId`, t2.`id` as `teamId`, t1.`id` as `tableId`, `t2`.`title`,`t1`.`rank`, l.`id`, t1.`status`, t1.`profile` FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_teams} t2, {$wpdb->racketmanager_table} t1 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ORDER BY l.`title` ASC, t1.`rank` ASC LIMIT %d, %d", intval($offset), intval($limit) );
+
+		$competitionTeams = wp_cache_get( md5($sql), 'competitionTeams' );
+		if ( !$competitionTeams ) {
+			$competitionTeams =  $wpdb->get_results($sql);
+			wp_cache_set( md5($sql), $competitionTeams, 'competitionTeams' );
+		}
+
+		foreach ( $competitionTeams AS $i => $competitionTeam ) {
+			$competitionTeams[$i] = $competitionTeam;
+		}
+
+		$this->competitionTeams = $competitionTeams;
+
+		return $competitionTeams;
+	}
+
 	/**
 	* mark teams as withdrawn from competition
 	*

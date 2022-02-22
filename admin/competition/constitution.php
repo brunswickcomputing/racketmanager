@@ -7,10 +7,10 @@ if ( empty($this->seasons) ) { ?>
 		<p><?php _e('No pending seasons for competition', 'racketmanager') ?>
 	<?php } else {
 		$latestCompetitionSeason = end($competition->seasons)['name'];
-		$teams = $competition->getConstitution( array('competition' => $competition_id, 'season' => $latestSeason));
+		$teams = $competition->getConstitution( array('season' => $latestSeason, 'oldseason' => $latestCompetitionSeason));
 		$constitutionAction = "update";
 		if ( !$teams ) {
-			$teams = $competition->getConstitution( array('competition' => $competition_id, 'season' => $latestCompetitionSeason));
+			$teams = $competition->buildConstitution( array('season' => $latestCompetitionSeason));
 			$constitutionAction = "insert";
 		}
 		$leagues = $competition->getLeagues( array('competition' => $competition_id))
@@ -41,12 +41,14 @@ if ( empty($this->seasons) ) { ?>
 				<thead>
 					<tr>
 						<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('leagues-filter'));" /></th>
-						<th scope="col"><?php _e( 'League', 'racketmanager' ) ?></th>
-						<th scope="col" class="column-num"><?php _e( 'Rank', 'racketmanager' ) ?></th>
+						<th scope="col"><?php _e( 'Previous League', 'racketmanager' ) ?></th>
+						<th scope="col"><?php _e( 'New League', 'racketmanager' ) ?></th>
 						<th scope="col"><?php _e( 'Team', 'racketmanager' ) ?></th>
+						<th scope="col"><?php _e( 'Status', 'racketmanager' ) ?></th>
+						<th scope="col" class="column-num"><?php _e( 'Previous Rank', 'racketmanager' ) ?></th>
+						<th scope="col" class="column-num"><?php _e( 'Rank', 'racketmanager' ) ?></th>
 						<th scope="col" class="column-num"><?php _e( 'Points', 'racketmanager' ) ?></th>
 						<th scope="col" class="column-num"><?php _e( '+/- Points', 'racketmanager' ) ?></th>
-						<th scope="col"><?php _e( 'Status', 'racketmanager' ) ?></th>
 						<th scope="col"><?php _e( 'Entered', 'racketmanager' ) ?></th>
 					</tr>
 				</thead>
@@ -62,27 +64,19 @@ if ( empty($this->seasons) ) { ?>
 									<input type="hidden" name="tableId[<?php echo $team->tableId ?>]" value="<?php echo $team->tableId ?>" />
 								</th>
 								<td>
+									<?php echo $team->oldLeagueTitle ?>
+									<input type="hidden" name="originalLeagueId[<?php echo $team->tableId ?>]" value=<?php echo $team->oldLeagueId ?> />
+								</td>
+								<td>
 									<select size=1 name="leagueId[<?php echo $team->tableId ?>]">
 										<?php foreach ($leagues as $i => $league) { ?>
 											<option value="<?php echo $league->id ?>" <?php selected($league->id, $team->leagueId) ?>><?php echo $league->title ?></option>
 										<?php } ?>
 									</select>
 								</td>
-								<td class="column-num">
-									<?php echo $team->rank ?>
-									<input type="hidden" name="rank[<?php echo $team->tableId ?>]" id="rank[<?php echo $team->tableId ?>]" value=<?php echo $team->rank ?> />
-								</td>
 								<td>
 									<?php echo $team->title ?>
 									<input type="hidden" name="teamId[<?php echo $team->tableId ?>]" id="teamId[<?php echo $team->tableId ?>]" value=<?php echo $team->teamId ?> />
-								</td>
-								<td class="column-num" name="points[<?php echo $team->tableId ?>]">
-									<?php echo $team->points_plus + $team->add_points ?>
-									<input type="hidden" name="points_plus[<?php echo $team->tableId ?>]" value=<?php echo $team->points_plus ?> />
-								</td>
-								<td class="column-num">
-									<?php echo $team->add_points ?>
-									<input type="hidden" name="add_points[<?php echo $team->tableId ?>]" value=<?php echo $team->add_points ?> />
 								</td>
 								<td>
 									<select size=1 name="status[<?php echo $team->tableId ?>]">
@@ -94,8 +88,23 @@ if ( empty($this->seasons) ) { ?>
 										<option value="RB" <?php selected('RB', $team->status) ?>><?php _e( "Relegated from bottom place", "racketmanager") ?></option>
 										<option value="RT" <?php selected('RT', $team->status) ?>><?php _e( "Relegated as team in division above", "racketmanager") ?></option>
 										<option value="BT" <?php selected('BT', $team->status) ?>><?php _e( "Not relegated bottom team", "racketmanager") ?></option>
-										<option value="N" <?php selected('N', $team->status) ?>><?php _e( "New team", "racketmanager") ?></option>
+										<option value="NT" <?php selected('NT', $team->status) ?>><?php _e( "New team", "racketmanager") ?></option>
 									</select>
+								</td>
+								<td class="column-num">
+									<?php echo $team->oldRank ?>
+									<input type="hidden" name="oldrank[<?php echo $team->tableId ?>]" id="oldrank[<?php echo $team->tableId ?>]" value=<?php echo $team->oldRank ?> />
+								</td>
+								<td class="column-num">
+									<input type="text" size="2" name="rank[<?php echo $team->tableId ?>]" id="rank[<?php echo $team->tableId ?>]" value=<?php echo $team->rank ?> />
+								</td>
+								<td class="column-num" name="points[<?php echo $team->tableId ?>]">
+									<?php echo $team->points_plus + $team->add_points ?>
+									<input type="hidden" name="points_plus[<?php echo $team->tableId ?>]" value=<?php echo $team->points_plus ?> />
+								</td>
+								<td class="column-num">
+									<?php echo $team->add_points ?>
+									<input type="hidden" name="add_points[<?php echo $team->tableId ?>]" value=<?php echo $team->add_points ?> />
 								</td>
 								<td>
 									<select size=1 name="profile[<?php echo $team->tableId ?>]">

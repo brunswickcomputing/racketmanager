@@ -1585,11 +1585,12 @@ final class RacketManagerAdmin extends RacketManager
 		* @param string $title
 		* @return int
 		*/
-		private function updateTable( $tableId, $leagueId, $teamId, $season , $rank, $status, $profile, $points_plus, $add_points ) {
+		private function updateTable( $tableId, $leagueId, $teamId, $season , $rank, $status, $profile ) {
 			global $wpdb, $racketmanager;
 
-			$sql = "UPDATE {$wpdb->racketmanager_table} SET `league_id` = '%d', `rank` = '%d', `status` = '%s', `profile` = '%d', `points_plus` = '%d', `add_points` = '%d' WHERE `id` = '%d'";
-			$wpdb->query( $wpdb->prepare ( $sql, $leagueId, $rank, $status, $profile, $points_plus, $add_points, $tableId ) );
+			$sql = "UPDATE {$wpdb->racketmanager_table} SET `league_id` = '%d', `rank` = '%d', `status` = '%s', `profile` = '%d' WHERE `id` = '%d'";
+			$wpdb->query( $wpdb->prepare ( $sql, $leagueId, $rank, $status, $profile, $tableId ) );
+			$this->setMessage( __('Updated', 'racketmanager') );
 			return;
 		}
 

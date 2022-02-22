@@ -971,7 +971,7 @@ class RacketManagerShortcodes extends RacketManager {
 		$malePartners = $racketmanager->getRoster( array('gender' => 'M', 'inactive' => true, 'type' => true) );
 		$femalePartners = $racketmanager->getRoster( array('gender' => 'F', 'inactive' => true, 'type' => true) );
 
-		$filename = ( !empty($template) ) ? 'tournamententry-'.$template : 'tournamententry';
+		$filename = ( !empty($template) ) ? 'entry-tournament-'.$template : 'entry-tournament';
 
 		$out = $this->loadTemplate( $filename, array( 'tournament' => $tournament, 'competitions' => $competitions, 'player' => $player, 'rosters' => $rosters, 'season' => $tournament->season, 'type' => $type, 'malePartners' => $malePartners, 'femalePartners' => $femalePartners ) );
 
@@ -1276,7 +1276,7 @@ class RacketManagerShortcodes extends RacketManager {
 		$mensTeams = $club->getTeams(false, 'MD');
 		$mixedTeams = $club->getTeams(false, 'XD');
 
-		$filename = ( !empty($template) ) ? 'cupentry-'.$template : 'cupentry';
+		$filename = ( !empty($template) ) ? 'entry-cup-'.$template : 'entry-cup';
 
 		$out = $this->loadTemplate( $filename, array( 'club' => $club, 'competitions' => $competitions, 'ladiesTeams' => $ladiesTeams, 'mensTeams' => $mensTeams, 'mixedTeams' => $mixedTeams, 'season' => $season, 'type' => $type ) );
 
@@ -1364,7 +1364,7 @@ class RacketManagerShortcodes extends RacketManager {
 			$competitions[$i] = $competition;
 		}
 
-		$filename = ( !empty($template) ) ? 'leagueentry-'.$template : 'leagueentry';
+		$filename = ( !empty($template) ) ? 'entry-league-'.$template : 'entry-league';
 
 		$out = $this->loadTemplate( $filename, array( 'club' => $club, 'competitions' => $competitions, 'season' => $season, 'type' => $type ) );
 

@@ -14,15 +14,16 @@ global $wp_query, $racketmanager_shortcodes;
 $postID = isset($wp_query->post->ID) ? $wp_query->post->ID : "";
 wp_enqueue_style('datatables-style');
 wp_enqueue_script('datatables');
+$pagename = $wp_query->query['pagename'];
 ?>
 <div id="leaguetables">
 	<h1><?php printf("%s - %s %s", $competition->name, __('Season', 'racketmanager'), $curr_season); ?></h1>
 	<div id="racketmanager_archive_selections" class="">
-		<form method="get" action="<?php echo get_permalink($postID); ?>" id="racketmanager_archive">
+		<form method="get" action="<?php echo get_permalink($postID); ?>" id="racketmanager_competititon_archive">
 			<input type="hidden" name="page_id" value="<?php echo $postID ?>" />
+			<input type="hidden" name="pagename" id="pagename" value="<?php echo $pagename ?>" />
 			<select size="1" name="season" id="season">
 				<option value=""><?php _e( 'Season', 'racketmanager' ) ?></option>
-				<!--<option value=""><?php _e( 'Season', 'racketmanager' ) ?></option>-->
 		<?php foreach ( $seasons AS $key => $season ) { ?>
 				<option value="<?php echo $key ?>"<?php if ( $season['name'] == $curr_season ) echo ' selected="selected"' ?>><?php echo $season['name'] ?></option>
 		<?php } ?>

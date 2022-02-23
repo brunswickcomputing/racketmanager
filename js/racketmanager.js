@@ -43,12 +43,21 @@ jQuery(document).ready(function($) {
 	});
 	/* Friendly URL rewrite */
 	jQuery('#racketmanager_archive').submit(function() {
-		var league = jQuery('#league_id').val().replace(/[^A-Za-z0-9 ]/g,''); // Remove unwanted characters, only accept alphanumeric and space */
+		var league = jQuery('#league_id').val(); //
 		var season = jQuery('#season').val();
-		league = league.replace(/\s{2,}/g,' '); // Replace multi spaces with a single space */
-		league = league.replace(/\s/g, "-"); // Replace space with a '-' symbol */
 
-		var cleanUrl = window.location.protocol + '//' + window.location.host + '/leagues/' + league.toLowerCase() + '/' + season;
+		var cleanUrl = window.location.protocol + '//' + window.location.host + '/leagues/' + league.toLowerCase() + '/' + season + '/';
+		window.location = cleanUrl;
+
+		return false;  // Prevent default button behaviour
+	});
+
+	/* Friendly URL rewrite */
+	jQuery('#racketmanager_competititon_archive').submit(function() {
+		var pagename = jQuery('#pagename').val();
+		var season = jQuery('#season').val();
+
+		var cleanUrl = window.location.protocol + '//' + window.location.host + '/' + pagename.toLowerCase() + '/' + season + '/';
 		window.location = cleanUrl;
 
 		return false;  // Prevent default button behaviour

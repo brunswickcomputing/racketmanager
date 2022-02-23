@@ -817,6 +817,7 @@ class RacketManagerShortcodes extends RacketManager {
 
 		// Get League by Name
 		$league_name = get_query_var('league_name');
+		$league_name = str_replace('-',' ',$league_name);
 
 		if (!empty($league_name)) {
 			$league_id = $competition->getLeagueId($league_name);

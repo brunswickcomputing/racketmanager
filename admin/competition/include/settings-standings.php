@@ -1,14 +1,16 @@
 <table class="lm-form-table">
   <tr valign="top">
     <th scope="row"><label for="standings_table"><?php _e( 'Standings Table Display', 'racketmanager' ) ?></label></th>
-                  <td>
-                      <div class="alignleft">
-<?php $i=0; foreach ( $this->getStandingsDisplayOptions() AS $key => $label ) { $i++; ?>
-                      <p><input type="checkbox" name="settings[standings][<?php echo $key ?>]" id="standings_<?php echo $key ?>" value="1" <?php checked(1, $competition->standings[$key]) ?> /><label for="standings_<?php echo $key ?>"><?php echo $label ?></label></p>
-                      <?php if ( $i == 9 ) echo "</div><div class='alignleft extra-col'>"; ?>
-<?php } ?>
-                      </div>
-                  </td>
+    <td>
+      <div class="alignleft">
+        <?php $i=0; foreach ( $this->getStandingsDisplayOptions() AS $key => $label ) { $i++; ?>
+          <div class="form-group">
+            <input type="checkbox" name="settings[standings][<?php echo $key ?>]" id="standings_<?php echo $key ?>" value="1" <?php checked(1, $competition->standings[$key]) ?> />
+            <label for="standings_<?php echo $key ?>"><?php echo $label ?></label>
+          <?php } ?>
+        </div>
+      </div>
+    </td>
   </tr>
   <tr valign="top">
     <th scope="row"><label for="teams_ascend"><?php _e( 'Teams Ascend', 'racketmanager' ) ?></label></th>

@@ -1252,23 +1252,11 @@ class RacketManagerShortcodes extends RacketManager {
 		}
 
 		// get competition list
-		if ($type) {
-			$type = $type;
-		} elseif ( isset($_GET['type']) && !empty($_GET['type']) ) {
-			$type = htmlspecialchars(strip_tags($_GET['type']));
-		} elseif ( isset($wp->query_vars['type']) ) {
-			$type = get_query_var('type');
-		}
+		$type = get_query_var('type');
 		if ( !$type ) {
 			return _e('No cups open for entries', 'racketmanager');
 		}
-		if ($season) {
-			$season = $season;
-		} elseif ( isset($_GET['season']) && !empty($_GET['season']) ) {
-			$season = htmlspecialchars(strip_tags($_GET['season']));
-		} elseif ( isset($wp->query_vars['season']) ) {
-			$season = get_query_var('season');
-		}
+		$season = get_query_var('season');
 		if ( !$season ) {
 			return _e('No season specified', 'racketmanager');
 		}
@@ -1326,23 +1314,11 @@ class RacketManagerShortcodes extends RacketManager {
 		}
 
 		// get competition list
-		if ($type) {
-			$type = $type;
-		} elseif ( isset($_GET['type']) && !empty($_GET['type']) ) {
-			$type = htmlspecialchars(strip_tags($_GET['type']));
-		} elseif ( isset($wp->query_vars['type']) ) {
-			$type = get_query_var('type');
-		}
+		$type = get_query_var('type');
 		if ( !$type ) {
 			return _e('No leagues open for entries', 'racketmanager');
 		}
-		if ($season) {
-			$season = $season;
-		} elseif ( isset($_GET['season']) && !empty($_GET['season']) ) {
-			$season = htmlspecialchars(strip_tags($_GET['season']));
-		} elseif ( isset($wp->query_vars['season']) ) {
-			$season = get_query_var('season');
-		}
+		$season = get_query_var('season');
 		if ( !$season ) {
 			return _e('No season specified', 'racketmanager');
 		}

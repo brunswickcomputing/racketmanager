@@ -97,24 +97,73 @@
     * Create formatted url
     */
     function create_new_url_querystring() {
-        add_rewrite_rule(
-                       '^leagues/(.+?)-(.+?)-([0-9]{1})/?$',
-                       'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[1]-$matches[2]&league_name=$matches[1]%20$matches[2]%20$matches[3]',
-                       'top'
-                       );
-        add_rewrite_rule('^leagues/(.+?)-(.+?)-([0-9]{1})/([0-9]{4})?$',
-                         'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[1]-$matches[2]&league_name=$matches[1]%20$matches[2]%20$matches[3]&season=$matches[4]',
-                       'top'
-                       );
-        add_rewrite_rule( '^club/(.+?)/?$','index.php?pagename=club&club_name=$matches[1]','top');
+      // daily matches - date
+      add_rewrite_rule(
+        'leagues/daily-matches/([0-9]{4})-([0-9]{2})-([0-9]{2})/?$',
+        'index.php?pagename=leagues%2Fdaily-matches&match_date=$matches[1]-$matches[2]-$matches[3]',
+        'top'
+      );
+      // competiton - season
+      add_rewrite_rule(
+        'leagues/(.+?)-leagues/(.+?)-(.+?)-competition/([0-9]{4})?$',
+        'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[2]-$matches[3]-competition&season=$matches[4]',
+        'top'
+      );
+      // league - season - matchday - team
+      add_rewrite_rule(
+        'leagues/(.+?)-(.+?)-([0-9]{1})/([0-9]{4})/day([0-9]{1,2})/(.+?)/?$',
+        'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[1]-$matches[2]&league_name=$matches[1]-$matches[2]-$matches[3]&season=$matches[4]&match_day=$matches[5]&team=$matches[6]',
+        'top'
+      );
+      // league - season - matchday
+      add_rewrite_rule(
+        'leagues/(.+?)-(.+?)-([0-9]{1})/([0-9]{4})/day([0-9]{1,2})/?$',
+        'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[1]-$matches[2]&league_name=$matches[1]-$matches[2]-$matches[3]&season=$matches[4]&match_day=$matches[5]',
+        'top'
+      );
+      // league - season - team
+      add_rewrite_rule(
+        'leagues/(.+?)-(.+?)-([0-9]{1})/([0-9]{4})/(.+?)/?$',
+        'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[1]-$matches[2]&league_name=$matches[1]-$matches[2]-$matches[3]&season=$matches[4]&team=$matches[5]',
+        'top'
+      );
+      // league
+      add_rewrite_rule(
+        'leagues/(.+?)-(.+?)-([0-9]{1})/?$',
+        'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[1]-$matches[2]&league_name=$matches[1]%20$matches[2]%20$matches[3]',
+        'top'
+      );
+      // league - season
+      add_rewrite_rule(
+        'leagues/(.+?)-(.+?)-([0-9]{1})/([0-9]{4})?$',
+        'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[1]-$matches[2]&league_name=$matches[1]-$matches[2]-$matches[3]&season=$matches[4]',
+        'top'
+      );
+      // club
+      add_rewrite_rule(
+        'club/(.+?)/?$','index.php?pagename=club&club_name=$matches[1]','top'
+      );
+      // type - season - club
+      add_rewrite_rule(
+        'leagues/(.+?)-entry/([0-9]{4})/(.+?)/?$',
+        'index.php?pagename=league-entry-form&club_name=$matches[3]&season=$matches[2]&type=$matches[1]',
+        'top'
+      );
+      // type - season - club
+      add_rewrite_rule(
+        'cups/(.+?)-entry/([0-9]{4})/(.+?)/?$',
+        'index.php?pagename=cup-entry-form&club_name=$matches[3]&season=$matches[2]&type=$matches[1]',
+        'top'
+      );
 
-        add_rewrite_tag('%league_name%','([^/]*)');
-        add_rewrite_tag('%league_id%','([^/]*)');
-        add_rewrite_tag('%season%','([0-9]{4})');
-        add_rewrite_tag('%match_day%','([0-9]{1,2})');
-        add_rewrite_tag('%team%','(.+?)');
-        add_rewrite_tag('%club_name%','(.+?)');
-        add_rewrite_tag('%match_date%','(.+?)');
+      add_rewrite_tag('%league_name%','([^/]*)');
+      add_rewrite_tag('%league_id%','([^/]*)');
+      add_rewrite_tag('%season%','([0-9]{4})');
+      add_rewrite_tag('%match_day%','([0-9]{1,2})');
+      add_rewrite_tag('%team%','(.+?)');
+      add_rewrite_tag('%club_name%','(.+?)');
+      add_rewrite_tag('%match_date%','(.+?)');
+      add_rewrite_tag('%type%','(.+?)');
     }
     add_action('init', 'create_new_url_querystring');
 

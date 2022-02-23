@@ -61,7 +61,7 @@ jQuery(document).ready(function(){
 		<select size="1" name="league_id" id="league_id">
 			<option value=""><?php _e( 'Select League', 'racketmanager' ) ?></option>
 			<?php foreach ( $leagues AS $l ) { ?>
-				<option value="<?php echo $l->title ?>"<?php if ( $l->id == $league->id ) echo ' selected="selected"' ?>><?php echo $l->title ?></option>
+				<option value="<?php echo seoUrl($l->title) ?>"<?php if ( $l->id == $league->id ) echo ' selected="selected"' ?>><?php echo $l->title ?></option>
 			<?php } ?>
 		</select>
 		<select size="1" name="season" id="season">

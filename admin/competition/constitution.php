@@ -3,7 +3,7 @@ if ( empty($this->seasons) ) { ?>
 	<p><?php _e('No seasons defined', 'racketmanager') ?>
 <?php } else {
 	$latestSeason = reset($this->seasons)->name;
-	if ( empty($competition->seasons) || end($competition->seasons)['name'] >= $latestSeason ) { ?>
+	if ( empty($competition->seasons)  ) { ?>
 		<p><?php _e('No pending seasons for competition', 'racketmanager') ?>
 	<?php } else {
 		$latestCompetitionSeason = end($competition->seasons)['name'];
@@ -120,6 +120,13 @@ if ( empty($this->seasons) ) { ?>
 				</tbody>
 			</table>
 		</form>
-	<?php }
+	<?php
+	if ( $latestCompetitionSeason >= $latestSeason ) { ?>
+	<script>
+	jQuery("#constitution").find("*").prop('disabled', true);
+	jQuery("#constitution").addClass("disabledButton");
+	</script>
+<?php }
+ }
 }
 ?>

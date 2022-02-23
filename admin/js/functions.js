@@ -1,5 +1,4 @@
 jQuery(document).ready(function($) {
-
 	// Tabs
 	$('#tabs').tabs({
 		collapsible: true,
@@ -14,14 +13,6 @@ jQuery(document).ready(function($) {
 		var index = ui.newTab.index();
 		jQuery("#tabs.form>.active-tab").val(index);
 	});
-
-	/* jQuery UI accordion list */
-	/*jQuery( ".league-blocks" ).accordion({
-		header: "h2",
-		collapsible: true,
-		heightStyle: "content"
-	});
-	*/
 
 	/* hide top-links in documentation */
 	jQuery(".top-link").css("display", "none");
@@ -40,18 +31,18 @@ jQuery(document).ready(function($) {
 		jQuery('.racketmanager-colorpicker').iris();
 	});
 
-    $(window).scroll(function() {
-        if ( $(this).scrollTop() > 800 ) {
-            $('.go-top').addClass('show');
-        } else {
-            $('.go-top').removeClass('show');
-        }
-    });
+	$(window).scroll(function() {
+		if ( $(this).scrollTop() > 800 ) {
+			$('.go-top').addClass('show');
+		} else {
+			$('.go-top').removeClass('show');
+		}
+	});
 
-    $('.go-top').on('click', function() {
-        $("html, body").animate({ scrollTop: 0 }, 1000);
-        return false;
-    });
+	$('.go-top').on('click', function() {
+		$("html, body").animate({ scrollTop: 0 }, 1000);
+		return false;
+	});
 
 	// make formfield table sortable and add nice css cursor
 	jQuery(".standings-table.sortable").sortable({
@@ -64,243 +55,242 @@ jQuery(document).ready(function($) {
 	// Set js-active value to 1
 	jQuery("#teams-filter>input.js-active").val(1);
 
-                       $('#teamPlayer1').autocomplete({
-                                                      minLength: 2,
-                                                      source: function(name, response) {
-                                                      $.ajax({
-                                                             type: 'POST',
-                                                             datatype: 'json',
-                                                             url: RacketManagerAjaxL10n.requestUrl,
-                                                             data: {"name": name,
-                                                             "action": "racketmanager_getPlayerDetails"},
-                                                             success: function(data) {
-                                                             response(JSON.parse(data));
-                                                             }
-                                                             });
-                                                      },
-                                                      select: function(event, ui) {
-                                                      $("#teamPlayerId1").val(ui.item.id);
-                                                      $("#affiliatedclub").val(ui.item.clubId);
-                                                      $("#captain").val(ui.item.value);
-                                                      $("#captainId").val(ui.item.playerId);
-                                                      $("#contactno").val(ui.item.contactno);
-                                                      $("#contactemail").val(ui.item.user_email);
-                                                      },
-                                                      change: function(event, ui) {
-                                                          if (ui.item === null) {
-                                                            $(this).val('');
-                                                            $("#teamPlayerId1").val('');
-                                                            $("#affiliatedclub").val('');
-                                                            $("#captain").val('');
-                                                            $("#captainId").val('');
-                                                            $("#contactno").val('');
-                                                            $("#contactemail").val('');
-                                                            $("#team").val('');
-                                                          } else {
-                                                            $("#teamPlayerId1").val(ui.item.id);
-                                                            $("#captain").val(ui.item.value);
-                                                            $("#captainId").val(ui.item.playerId);
-                                                            $("#affiliatedclub").val(ui.item.clubId);
-                                                            $("#contactno").val(ui.item.contactno);
-                                                            $("#contactemail").val(ui.item.user_email);
-                                                            $team1 = $("#teamPlayer1").val();
-                                                            if ( $("#teamPlayer2").val() == '' ) {
-                                                                $team2 = $("#teamPlayer2").val();
-                                                                $team = $team1 + ' \/ ' + $team2;
-                                                            } else {
-                                                                $team = $team1;
-                                                            }
-                                                            $("#team").val($team);
-                                                          }
-                                                        }
-                                                      });
-                       $('#teamPlayer2').autocomplete({
-                                                      minLength: 2,
-                                                      source: function(name, response) {
-                                                      $.ajax({
-                                                             type: 'POST',
-                                                             datatype: 'json',
-                                                             url: RacketManagerAjaxL10n.requestUrl,
-                                                             data: {"name": name,
-                                                             "action": "racketmanager_getPlayerDetails"},
-                                                             success: function(data) {
-                                                             response(JSON.parse(data));
-                                                             }
-                                                             });
-                                                      },
-                                                      select: function(event, ui) {
-                                                      $("#teamPlayerId2").val(ui.item.id);
-                                                      },
-                                                      change: function(event, ui) {
-                                                          if (ui.item === null) {
-                                                            $(this).val('');
-                                                            $("#teamPlayerId2").val('');
-                                                            $("#team").val('');
-                                                          } else {
-                                                            $("#teamPlayerId2").val(ui.item.id);
-                                                            $team1 = $("#teamPlayer1").val();
-                                                            $team2 = $("#teamPlayer2").val();
-                                                            $team = $team1 + ' \/ ' + $team2;
-                                                            $("#team").val($team);
-                                                          }
-                                                      }
-                                                      });
-                       $('#captain').autocomplete({
-                                                  minLength: 2,
-                                                  source: function(name, response) {
-                                                  $.ajax({
-                                                         type: 'POST',
-                                                         datatype: 'json',
-                                                         url: RacketManagerAjaxL10n.requestUrl,
-                                                         data: {"name": name,
-                                                         "affiliatedClub": $("#affiliatedclub").val(),
-                                                         "action": "racketmanager_getCaptainName"},
-                                                         success: function(data) {
-                                                         response(JSON.parse(data));
-                                                         }
-                                                         });
-                                                  },
-                                                  select: function(event, ui) {
-                                                  $("#captain").val(ui.item.value);
-                                                  $("#captainId").val(ui.item.id);
-                                                  $("#contactno").val(ui.item.contactno);
-                                                  $("#contactemail").val(ui.item.user_email);
-                                                  },
-                                                  change: function(event, ui) {
-                                                  if (ui.item === null) {
-                                                      $(this).val('');
-                                                      $("#captain").val('');
-                                                      $("#captainId").val('');
-                                                      $("#contactno").val('');
-                                                      $("#contactemail").val('');
-                                                  } else {
-                                                      $("#captain").val(ui.item.value);
-                                                      $("#captainId").val(ui.item.id);
-                                                      $("#contactno").val(ui.item.contactno);
-                                                      $("#contactemail").val(ui.item.user_email);
-                                                  }
-                                                  }
-                                                  });
-                       $('#matchSecretaryName').autocomplete({
-                                                  minLength: 2,
-                                                  source: function(name, response) {
-                                                  $.ajax({
-                                                         type: 'POST',
-                                                         datatype: 'json',
-                                                         url: RacketManagerAjaxL10n.requestUrl,
-                                                         data: {"name": name,
-                                                         "affiliatedClub": $("#club_id").val(),
-                                                         "action": "racketmanager_getCaptainName"},
-                                                         success: function(data) {
-                                                         response(JSON.parse(data));
-                                                         }
-                                                         });
-                                                  },
-                                                  select: function(event, ui) {
-                                                  $("#matchsecretaryName").val(ui.item.value);
-                                                  $("#matchsecretary").val(ui.item.id);
-                                                  $("#matchSecretaryContactNo").val(ui.item.contactno);
-                                                  $("#matchSecretaryEmail").val(ui.item.user_email);
-                                                  },
-                                                  change: function(event, ui) {
-                                                  if (ui.item === null) {
-                                                      $(this).val('');
-                                                      $("#matchsecretaryName").val('');
-                                                      $("#matchsecretary").val('');
-                                                      $("#matchSecretaryContactNo").val('');
-                                                      $("#matchSecretaryEmail").val('');
-                                                  } else {
-                                                      $("#matchsecretaryName").val(ui.item.value);
-                                                      $("#matchsecretary").val(ui.item.id);
-                                                      $("#matchSecretaryContactNo").val(ui.item.contactno);
-                                                      $("#matchSecretaryEmail").val(ui.item.user_email);
-                                                  }
-                                                  }
-                                                  });
-                       $('#tournamentSecretaryName').autocomplete({
-                                                  minLength: 2,
-                                                  source: function(name, response) {
-                                                  $.ajax({
-                                                         type: 'POST',
-                                                         datatype: 'json',
-                                                         url: RacketManagerAjaxL10n.requestUrl,
-                                                         data: {"name": name,
-                                                         "action": "racketmanager_getPlayerDetails"},
-                                                         success: function(data) {
-                                                         response(JSON.parse(data));
-                                                         }
-                                                         });
-                                                  },
-                                                  select: function(event, ui) {
-                                                  $("#tournamentSecretaryName").val(ui.item.value);
-                                                  $("#tournamentSecretary").val(ui.item.playerId);
-                                                  $("#tournamentSecretaryContactNo").val(ui.item.contactno);
-                                                  $("#tournamentSecretaryEmail").val(ui.item.user_email);
-                                                  },
-                                                  change: function(event, ui) {
-                                                  if (ui.item === null) {
-                                                      $(this).val('');
-                                                      $("#tournamentSecretaryName").val('');
-                                                      $("#tournamentSecretary").val('');
-                                                      $("#tournamentSecretaryContactNo").val('');
-                                                      $("#tournamentSecretaryEmail").val('');
-                                                  } else {
-                                                      $("#tournamentSecretaryName").val(ui.item.value);
-                                                      $("#tournamentSecretary").val(ui.item.playerId);
-                                                      $("#tournamentSecretaryContactNo").val(ui.item.contactno);
-                                                      $("#tournamentSecretaryEmail").val(ui.item.user_email);
-                                                  }
-                                                  }
-                                                  });
+	$('#teamPlayer1').autocomplete({
+		minLength: 2,
+		source: function(name, response) {
+			$.ajax({
+				type: 'POST',
+				datatype: 'json',
+				url: RacketManagerAjaxL10n.requestUrl,
+				data: {"name": name,
+				"action": "racketmanager_getPlayerDetails"},
+				success: function(data) {
+					response(JSON.parse(data));
+				}
+			});
+		},
+		select: function(event, ui) {
+			$("#teamPlayerId1").val(ui.item.id);
+			$("#affiliatedclub").val(ui.item.clubId);
+			$("#captain").val(ui.item.value);
+			$("#captainId").val(ui.item.playerId);
+			$("#contactno").val(ui.item.contactno);
+			$("#contactemail").val(ui.item.user_email);
+		},
+		change: function(event, ui) {
+			if (ui.item === null) {
+				$(this).val('');
+				$("#teamPlayerId1").val('');
+				$("#affiliatedclub").val('');
+				$("#captain").val('');
+				$("#captainId").val('');
+				$("#contactno").val('');
+				$("#contactemail").val('');
+				$("#team").val('');
+			} else {
+				$("#teamPlayerId1").val(ui.item.id);
+				$("#captain").val(ui.item.value);
+				$("#captainId").val(ui.item.playerId);
+				$("#affiliatedclub").val(ui.item.clubId);
+				$("#contactno").val(ui.item.contactno);
+				$("#contactemail").val(ui.item.user_email);
+				$team1 = $("#teamPlayer1").val();
+				if ( $("#teamPlayer2").val() == '' ) {
+					$team2 = $("#teamPlayer2").val();
+					$team = $team1 + ' \/ ' + $team2;
+				} else {
+					$team = $team1;
+				}
+				$("#team").val($team);
+			}
+		}
+	});
+	$('#teamPlayer2').autocomplete({
+		minLength: 2,
+		source: function(name, response) {
+			$.ajax({
+				type: 'POST',
+				datatype: 'json',
+				url: RacketManagerAjaxL10n.requestUrl,
+				data: {"name": name,
+				"action": "racketmanager_getPlayerDetails"},
+				success: function(data) {
+					response(JSON.parse(data));
+				}
+			});
+		},
+		select: function(event, ui) {
+			$("#teamPlayerId2").val(ui.item.id);
+		},
+		change: function(event, ui) {
+			if (ui.item === null) {
+				$(this).val('');
+				$("#teamPlayerId2").val('');
+				$("#team").val('');
+			} else {
+				$("#teamPlayerId2").val(ui.item.id);
+				$team1 = $("#teamPlayer1").val();
+				$team2 = $("#teamPlayer2").val();
+				$team = $team1 + ' \/ ' + $team2;
+				$("#team").val($team);
+			}
+		}
+	});
+	$('#captain').autocomplete({
+		minLength: 2,
+		source: function(name, response) {
+			$.ajax({
+				type: 'POST',
+				datatype: 'json',
+				url: RacketManagerAjaxL10n.requestUrl,
+				data: {"name": name,
+				"affiliatedClub": $("#affiliatedclub").val(),
+				"action": "racketmanager_getCaptainName"},
+				success: function(data) {
+					response(JSON.parse(data));
+				}
+			});
+		},
+		select: function(event, ui) {
+			$("#captain").val(ui.item.value);
+			$("#captainId").val(ui.item.id);
+			$("#contactno").val(ui.item.contactno);
+			$("#contactemail").val(ui.item.user_email);
+		},
+		change: function(event, ui) {
+			if (ui.item === null) {
+				$(this).val('');
+				$("#captain").val('');
+				$("#captainId").val('');
+				$("#contactno").val('');
+				$("#contactemail").val('');
+			} else {
+				$("#captain").val(ui.item.value);
+				$("#captainId").val(ui.item.id);
+				$("#contactno").val(ui.item.contactno);
+				$("#contactemail").val(ui.item.user_email);
+			}
+		}
+	});
+	$('#matchSecretaryName').autocomplete({
+		minLength: 2,
+		source: function(name, response) {
+			$.ajax({
+				type: 'POST',
+				datatype: 'json',
+				url: RacketManagerAjaxL10n.requestUrl,
+				data: {"name": name,
+				"affiliatedClub": $("#club_id").val(),
+				"action": "racketmanager_getCaptainName"},
+				success: function(data) {
+					response(JSON.parse(data));
+				}
+			});
+		},
+		select: function(event, ui) {
+			$("#matchsecretaryName").val(ui.item.value);
+			$("#matchsecretary").val(ui.item.id);
+			$("#matchSecretaryContactNo").val(ui.item.contactno);
+			$("#matchSecretaryEmail").val(ui.item.user_email);
+		},
+		change: function(event, ui) {
+			if (ui.item === null) {
+				$(this).val('');
+				$("#matchsecretaryName").val('');
+				$("#matchsecretary").val('');
+				$("#matchSecretaryContactNo").val('');
+				$("#matchSecretaryEmail").val('');
+			} else {
+				$("#matchsecretaryName").val(ui.item.value);
+				$("#matchsecretary").val(ui.item.id);
+				$("#matchSecretaryContactNo").val(ui.item.contactno);
+				$("#matchSecretaryEmail").val(ui.item.user_email);
+			}
+		}
+	});
+	$('#tournamentSecretaryName').autocomplete({
+		minLength: 2,
+		source: function(name, response) {
+			$.ajax({
+				type: 'POST',
+				datatype: 'json',
+				url: RacketManagerAjaxL10n.requestUrl,
+				data: {"name": name,
+				"action": "racketmanager_getPlayerDetails"},
+				success: function(data) {
+					response(JSON.parse(data));
+				}
+			});
+		},
+		select: function(event, ui) {
+			$("#tournamentSecretaryName").val(ui.item.value);
+			$("#tournamentSecretary").val(ui.item.playerId);
+			$("#tournamentSecretaryContactNo").val(ui.item.contactno);
+			$("#tournamentSecretaryEmail").val(ui.item.user_email);
+		},
+		change: function(event, ui) {
+			if (ui.item === null) {
+				$(this).val('');
+				$("#tournamentSecretaryName").val('');
+				$("#tournamentSecretary").val('');
+				$("#tournamentSecretaryContactNo").val('');
+				$("#tournamentSecretaryEmail").val('');
+			} else {
+				$("#tournamentSecretaryName").val(ui.item.value);
+				$("#tournamentSecretary").val(ui.item.playerId);
+				$("#tournamentSecretaryContactNo").val(ui.item.contactno);
+				$("#tournamentSecretaryEmail").val(ui.item.user_email);
+			}
+		}
+	});
 
-    $("#teamPlayerFrm").submit(function( event ) {
-                               var $error = false;
-                               var $msg = '';
-                               if ( $("#team").val() == '' ) {
-                                    $error = true;
-                                    $msg += 'Team name not set\n';
-                               } else {
-                                   $.ajax({
-                                          type: 'POST',
-                                          datatype: 'json',
-                                          url: RacketManagerAjaxL10n.requestUrl,
-                                          async: false,
-                                          data: {"name": $("#team").val(),
-                                          "action": "racketmanager_checkTeamExists"},
-                                          success: function(response) {
-                                              if ( response == true ) {
-                                                    $error = true;
-                                                    $msg += 'Team already exists\n';
-                                              }
-                                          },
-                                          error: function() {
-                                                $error = true;
-                                                $msg += 'Error with team name check\n';
-                                          }
-                                          });
-                               }
-                               if ( $("#teamPlayerId1").val() == '' ) {
-                                    $error = true;
-                                    $msg += 'Player 1 not set\n';
-                               }
-                               if ($("#teamPlayerId2").length){
-                                   if ( $("#teamPlayerId2").val() == '' ) {
-                                        $error = true;
-                                        $msg += 'Player 2 not set\n';
-                                   }
-                               }
-                               if ( $("#affiliatedclub").val() == '' ) {
-                                    $error = true;
-                                    $msg += 'Club not set\n';
-                               }
-                               if ($error) {
-                                    $("#errorMsg").show();
-                                    $("#errorMsg").text($msg);
-                                    event.preventDefault();
-                               }
-    });
+	$("#teamPlayerFrm").submit(function( event ) {
+		var $error = false;
+		var $msg = '';
+		if ( $("#team").val() == '' ) {
+			$error = true;
+			$msg += 'Team name not set\n';
+		} else {
+			$.ajax({
+				type: 'POST',
+				datatype: 'json',
+				url: RacketManagerAjaxL10n.requestUrl,
+				async: false,
+				data: {"name": $("#team").val(),
+				"action": "racketmanager_checkTeamExists"},
+				success: function(response) {
+					if ( response == true ) {
+						$error = true;
+						$msg += 'Team already exists\n';
+					}
+				},
+				error: function() {
+					$error = true;
+					$msg += 'Error with team name check\n';
+				}
+			});
+		}
+		if ( $("#teamPlayerId1").val() == '' ) {
+			$error = true;
+			$msg += 'Player 1 not set\n';
+		}
+		if ($("#teamPlayerId2").length){
+			if ( $("#teamPlayerId2").val() == '' ) {
+				$error = true;
+				$msg += 'Player 2 not set\n';
+			}
+		}
+		if ( $("#affiliatedclub").val() == '' ) {
+			$error = true;
+			$msg += 'Club not set\n';
+		}
+		if ($error) {
+			$("#errorMsg").show();
+			$("#errorMsg").text($msg);
+			event.preventDefault();
+		}
+	});
 });
-
 
 if(typeof Racketmanager == "undefined") {
 	var Racketmanager = new Object();
@@ -309,20 +299,19 @@ if(typeof Racketmanager == "undefined") {
 tb_init('a.thickbox, area.thickbox, input.thickbox');
 
 Racketmanager.checkAll = function(form) {
-   for (i = 0, n = form.elements.length; i < n; i++) {
-      if(form.elements[i].type == "checkbox" && !(form.elements[i].getAttribute('onclick',2))) {
-         if(form.elements[i].checked == true)
-            form.elements[i].checked = false;
-         else
-            form.elements[i].checked = true;
-      }
-   }
+	for (i = 0, n = form.elements.length; i < n; i++) {
+		if(form.elements[i].type == "checkbox" && !(form.elements[i].getAttribute('onclick',2))) {
+			if(form.elements[i].checked == true)
+			form.elements[i].checked = false;
+			else
+			form.elements[i].checked = true;
+		}
+	}
 }
-
 
 //Racketmanager.checkPointRule = function( forwin, forwin_overtime, fordraw, forloss, forloss_overtime ) {
 Racketmanager.checkPointRule = function( rule ) {
-//	var rule = document.getElementById('point_rule').value;
+	//	var rule = document.getElementById('point_rule').value;
 
 	// manual rule selected
 	if ( rule == 'user' ) {
@@ -358,14 +347,13 @@ Racketmanager.insertPlayer = function(id, target) {
 }
 
 Racketmanager.removeField = function(id, parent_id) {
-  element_count = document.getElementById(parent_id).childNodes.length;
-  if(element_count > 1) {
-    target_element = document.getElementById(id);
-    document.getElementById(parent_id).removeChild(target_element);
-  }
-  return false;
+	element_count = document.getElementById(parent_id).childNodes.length;
+	if(element_count > 1) {
+		target_element = document.getElementById(id);
+		document.getElementById(parent_id).removeChild(target_element);
+	}
+	return false;
 }
-
 
 Racketmanager.reInit = function() {
 	tb_init('a.thickbox, area.thickbox, input.thickbox');

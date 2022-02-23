@@ -1499,35 +1499,20 @@ final class RacketManagerAdmin extends RacketManager
      * @param array $settings
      * @return boolean
      */
-    private function editCompetition( $competition_id, $title, $settings ){
-        global $wpdb;
+    public function _editCompetition( $competition_id, $title, $settings ) {
+			global $racketmanager;
 
-        if ( !current_user_can('edit_league_settings') ) {
-            $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-            return false;
-        }
+			if ( !current_user_can('edit_league_settings') ) {
+					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+					return false;
+			}
 
-        // Set textdomain
-        $options = $this->options;
-        $options['textdomain'] = (string)$settings['sport'];
-        update_option('leaguemanager', $options);
+			$racketmanager->editCompetition($competition_id, $title, $settings);
+      $this->setMessage( __('Settings saved', 'racketmanager') );
 
-        if ( $settings['point_rule'] == 'user' && isset($_POST['forwin']) && is_numeric($_POST['forwin']) )
-            $settings['point_rule'] = array( 'forwin' => intval($_POST['forwin']), 'fordraw' => intval($_POST['fordraw']), 'forloss' => intval($_POST['forloss']), 'forwin_overtime' => intval($_POST['forwin_overtime']), 'forloss_overtime' => intval($_POST['forloss_overtime']) );
-
-        foreach ( $this->getStandingsDisplayOptions() AS $key => $label ) {
-            $settings['standings'][$key] = isset($settings['standings'][$key]) ? 1 : 0;
-        }
-
-        $num_rubbers = $settings['num_rubbers'];
-        $num_sets = $settings['num_sets'];
-        $type = $settings['competition_type'];
-
-        $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_competitions} SET `name` = '%s', `settings` = '%s', `num_rubbers` = '%d', `num_sets` = '%d', `type` = '%s' WHERE `id` = '%d'", $title, maybe_serialize($settings), $num_rubbers, $num_sets, $type, $competition_id ) );
-        $this->setMessage( __('Settings saved', 'racketmanager') );
-
-        return true;
+      return true;
     }
+
     /**
      * delete Competiton
      *

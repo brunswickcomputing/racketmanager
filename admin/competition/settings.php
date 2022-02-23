@@ -10,7 +10,7 @@ if ( !current_user_can( 'manage_racketmanager' ) ) {
 
 		$settings = (array)$_POST['settings'];
 
-		$this->editCompetition( intval($_POST['competition_id']), $_POST['competition_title'], $settings );
+		$this->_editCompetition( intval($_POST['competition_id']), $_POST['competition_title'], $settings );
 		$this->printMessage();
 
 		$options = $racketmanager->options;
@@ -51,6 +51,7 @@ if ( !current_user_can( 'manage_racketmanager' ) ) {
 					<li><a href="#general"><?php _e( 'General', 'racketmanager' ) ?></a></li>
 					<li><a href="#standings"><?php _e( 'Standings Table', 'racketmanager' ) ?></a></li>
 					<li><a href="#advanced"><?php _e( 'Advanced', 'racketmanager' ) ?></a></li>
+					<li><a href="#availability"><?php _e( 'Availability', 'racketmanager' ) ?></a></li>
 				</ul>
 
 				<div id='general' class='settings-block-container'>
@@ -74,6 +75,11 @@ if ( !current_user_can( 'manage_racketmanager' ) ) {
 					</div>
 				</div>
 
+				<div id='availability' class="settings-block-container">
+					<h2><?php _e( 'Availability', 'racketmanager' ) ?></h2>
+					<div class="settings-block">
+						<?php include('include/settings-availability.php'); ?>
+					</div>
 				</div>
 			</div>
 			<input type="hidden" name="competition_id" value="<?php echo $competition->id ?>" />

@@ -795,7 +795,7 @@ class Competition {
 			$search .= implode(" AND ", $search_terms);
 		}
 
-		$sql = $wpdb->prepare( "SELECT `l`.`title` AS `leagueTitle`, l.`id` as `leagueId`, t2.`id` as `teamId`, t1.`id` as `tableId`, `t2`.`title`,`t1`.`rank`, l.`id`, t1.`status`, t1.`profile` FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_teams} t2, {$wpdb->racketmanager_table} t1 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ORDER BY l.`title` ASC, t1.`rank` ASC LIMIT %d, %d", intval($offset), intval($limit) );
+		$sql = $wpdb->prepare( "SELECT `l`.`title` AS `leagueTitle`, l.`id` as `leagueId`, t2.`id` as `teamId`, t1.`id` as `tableId`, `t2`.`title`,`t1`.`rank`, l.`id`, t1.`status`, t1.`profile` FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_teams} t2, {$wpdb->racketmanager_table} t1 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ORDER BY l.`title` ASC, t2.`title` ASC LIMIT %d, %d", intval($offset), intval($limit) );
 
 		$competitionTeams = wp_cache_get( md5($sql), 'competitionTeams' );
 		if ( !$competitionTeams ) {

@@ -19,9 +19,10 @@ if ( empty($this->seasons) ) { ?>
 		<div>
 			<a class="button-secondary" href="admin.php?page=racketmanager&amp;subpage=teams&amp;league_id=<?php echo end($leagues)->id ?>&amp;season=<?php echo $latestSeason ?>&amp;view=constitution">Add Teams</a>
 		</div>
-		<form id="leagues-filter" method="post" action="">
+		<form id="teams-filter" method="post" action="">
 			<?php wp_nonce_field( 'constitution-bulk' ) ?>
 
+			<input type="hidden" name="js-active" value="0" class="js-active" />
 			<input type="hidden" name="constitutionAction" value="<?php echo $constitutionAction ?>" />
 			<input type="hidden" name="competition_id" value="<?php echo $competition_id ?>" />
 			<input type="hidden" name="latestSeason" value="<?php echo $latestSeason ?>" />
@@ -79,7 +80,7 @@ if ( empty($this->seasons) ) { ?>
 								</td>
 								<td>
 									<select size=1 name="status[<?php echo $team->tableId ?>]">
-										<option value="" <?php selected('', $team->status) ?>><?php echo $team->status ?></option>
+										<option value="" <?php selected('', $team->status) ?>></option>
 										<option value="C" <?php selected('C', $team->status) ?>><?php _e( "Champions", "racketmanager") ?></option>
 										<option value="P1" <?php selected('P1', $team->status) ?>><?php _e( "Promoted in first place", "racketmanager") ?></option>
 										<option value="P2" <?php selected('P2', $team->status) ?>><?php _e( "Promoted in second place", "racketmanager") ?></option>
@@ -95,7 +96,7 @@ if ( empty($this->seasons) ) { ?>
 									<input type="hidden" name="oldrank[<?php echo $team->tableId ?>]" id="oldrank[<?php echo $team->tableId ?>]" value=<?php echo $team->oldRank ?> />
 								</td>
 								<td class="column-num">
-									<input type="text" size="2" name="rank[<?php echo $team->tableId ?>]" id="rank[<?php echo $team->tableId ?>]" value=<?php echo $team->rank ?> />
+									<input type="text" size="2" class="rank-input" name="rank[<?php echo $team->tableId ?>]" id="rank[<?php echo $team->tableId ?>]" value=<?php echo $team->rank ?> />
 								</td>
 								<td class="column-num" name="points[<?php echo $team->tableId ?>]">
 									<?php echo $team->points_plus + $team->add_points ?>

@@ -543,10 +543,16 @@ final class RacketManagerAdmin extends RacketManager
 								$tab = 4;
 						} elseif ( isset($_POST['saveconstitution']) ) {
                 check_admin_referer('constitution-bulk');
+								$js = ( $_POST['js-active'] == 1 ) ? true : false;
+								$rank = 0;
                 foreach ( $_POST['tableId'] AS $tableId ) {
 									$team = $_POST['teamId'][$tableId];
 									$league = $_POST['leagueId'][$tableId];
-									$rank = $_POST['rank'][$tableId];
+									if ( $js ) {
+										$rank ++;
+									} else {
+										$rank = isset($_POST['rank'][$tableId]) ? $_POST['rank'][$tableId] : '';
+									}
 									$status = $_POST['status'][$tableId];
 									$profile = $_POST['profile'][$tableId];
 									if ( $_POST['constitutionAction'] == 'insert' ) {

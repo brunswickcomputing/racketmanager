@@ -16,10 +16,11 @@ if ( empty($this->seasons) ) { ?>
 		$leagues = $competition->getLeagues( array('competition' => $competition_id))
 		?>
 		<h2 class="header"><?php _e( 'Constitution', 'racketmanager' ) ?> - <?php echo $latestSeason ?></h2>
-		<div>
-			<a class="button-secondary" href="admin.php?page=racketmanager&amp;subpage=teams&amp;league_id=<?php echo end($leagues)->id ?>&amp;season=<?php echo $latestSeason ?>&amp;view=constitution">Add Teams</a>
-		</div>
 		<form id="teams-filter" method="post" action="">
+			<div>
+				<input type="submit" value="<?php _e('Save'); ?>" name="saveconstitution" id="saveconstitution" class="button-primary action" />
+				<a class="button-secondary" href="admin.php?page=racketmanager&amp;subpage=teams&amp;league_id=<?php echo end($leagues)->id ?>&amp;season=<?php echo $latestSeason ?>&amp;view=constitution">Add Teams</a>
+			</div>
 			<?php wp_nonce_field( 'constitution-bulk' ) ?>
 
 			<input type="hidden" name="js-active" value="0" class="js-active" />
@@ -34,7 +35,6 @@ if ( empty($this->seasons) ) { ?>
 					<option value="delete"><?php _e('Delete')?></option>
 				</select>
 				<input type="submit" value="<?php _e('Apply'); ?>" name="doactionconstitution" id="doactionconstitution" class="button-secondary action" />
-				<input type="submit" value="<?php _e('Save'); ?>" name="saveconstitution" id="saveconstitution" class="button-primary action" />
 			</div>
 
 			<table class="widefat" summary="" title="RacketManager">

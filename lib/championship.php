@@ -178,13 +178,13 @@ final class League_Championship extends RacketManager {
     } else {
       $this->num_advance = $league->current_season['num_match_days'];
       $num_teams = $league->num_teams_total;
-      if ( $num_teams != 0 ) {
-        $this->num_rounds = ceil(log($num_teams, 2));
-        $this->num_teams_first_round = pow(2, $this->num_rounds);
-      } else {
+      if ( $num_teams < $league->current_season['num_match_days'] ) {
         $num_teams = $league->current_season['num_match_days'];
         $this->num_teams_first_round = $num_teams;
         $this->num_rounds = ceil(log($this->num_teams_first_round, 2));
+      } else {
+        $this->num_rounds = ceil(log($num_teams, 2)); 
+        $this->num_teams_first_round = pow(2, $this->num_rounds);
       }
       $this->num_teams = $num_teams;
     }

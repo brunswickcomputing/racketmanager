@@ -3,10 +3,10 @@
 
 <script type='text/javascript'>
 jQuery(function() {
-	   jQuery("#tabs").tabs({
-							active: <?php echo $tab ?>
-							});
-	   });
+	jQuery("#tabs").tabs({
+		active: <?php echo $tab ?>
+	});
+});
 </script>
 <div class="wrap"  style="margin-bottom: 1em;">
 	<p class="racketmanager_breadcrumb"><a href="index.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <?php echo $competition->name ?></p>
@@ -19,7 +19,9 @@ jQuery(function() {
 			<li><a href="#player-stats"><?php _e( 'Players Stats', 'racketmanager' ) ?></a></li>
 			<li><a href="#seasons-table"><?php _e( 'Seasons', 'racketmanager' ) ?></a></li>
 			<li><a href="#settings"><?php _e( 'Settings', 'racketmanager' ) ?></a></li>
-			<li><a href="#constitution"><?php _e( 'Constitution', 'racketmanager' ) ?></a></li>
+			<?php if ( $competition->competitiontype == 'league' ) { ?>
+				<li><a href="#constitution"><?php _e( 'Constitution', 'racketmanager' ) ?></a></li>
+			<?php } ?>
 		</ul>
 
 		<div id="leagues-table" class="league-block-container">
@@ -39,9 +41,11 @@ jQuery(function() {
 			<h2 class="header"><?php _e( 'Settings', 'racketmanager' ) ?></h2>
 			<?php include('competition/settings.php'); ?>
 		</div>
-		<div id="constitution" class="league-block-container">
-			<?php include('competition/Constitution.php'); ?>
-		</div>
+		<?php if ( $competition->competitiontype == 'league' ) { ?>
+			<div id="constitution" class="league-block-container">
+				<?php include('competition/constitution.php'); ?>
+			</div>
+		<?php } ?>
 
 	</div>
 </div>

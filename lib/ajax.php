@@ -61,6 +61,7 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_get_team_info', array(&$this, 'getTeamCompetitionInfo') );
 		add_action( 'wp_ajax_racketmanager_cup_entry', array(&$this, 'cupEntryRequest') );
 		add_action( 'wp_ajax_racketmanager_league_entry', array(&$this, 'leagueEntryRequest') );
+		add_action( 'wp_ajax_racketmanager_notify_league_entry', array(&$this, 'notifyLeagueEntry') );
 
 	}
 
@@ -1858,7 +1859,7 @@ class RacketManagerAJAX extends RacketManager {
 	* @see templates/leagueentry.php
 	*/
 	public function leagueEntryRequest() {
-		global $wpdb, $racketmanager, $racketmanager_shortcodes;
+		global $racketmanager, $racketmanager_shortcodes;
 
 		$return = array();
 		$msg = '';
@@ -1969,8 +1970,6 @@ class RacketManagerAJAX extends RacketManager {
 
 		if ( !$error ) {
 			$leagueCompetitions = explode(',', $_POST['leagueCompetitions']);
-			$emailTo = $racketmanager->getConfirmationEmail('league');
-			$emailSubject = $racketmanager->site_name." ".ucfirst($leagueSeason)." ".$season." League Entry - ".$affiliatedClubName;
 			$competitionEntries = array();
 			$competitionDetails = array();
 			$competitionEntries['numCourtsAvailable'] = $numCourtsAvailable;
@@ -2027,6 +2026,8 @@ class RacketManagerAJAX extends RacketManager {
 				$competition->markTeamsWithdrawn($season, $affiliatedclub);
 			}
 
+			$emailTo = $racketmanager->getConfirmationEmail('league');
+			$emailSubject = $racketmanager->site_name." ".ucfirst($leagueSeason)." ".$season." League Entry - ".$affiliatedClubName;
 			$headers = array();
 			$headers[] = 'From: '.$affiliatedClubName.' <'.$racketmanager->admin_email.'>';
 			if ( isset($user->user_email) ) {
@@ -2044,5 +2045,47 @@ class RacketManagerAJAX extends RacketManager {
 		die(json_encode($return));
 
 	}
+
+	/**
+	* notify match secretaries of league entry open
+	*
+	* @see templates/email/match-notification.php
+	*/
+	public function notifyLeagueEntry() {
+		global $racketmanager_shortcodes, $racketmanager;
+
+		$return ='';
+		$messageSent = false;
+
+		$competition = get_competition($_POST['competitonId']);
+		$latestSeason = $_POST['latestSeason'];
+		$competitionTitle = explode(" ", $competition->name);
+		$competitionSeason = seourl($competitionTitle[0]);
+
+		$clubs = $racketmanager->getClubs();
+
+		$headers = array();
+		$fromEmail = $racketmanager->getConfirmationEmail('league');
+		$headers[] = 'From: LeagueSecretary <'.$fromEmail.'>';
+		$organisationName = $racketmanager->site_name;
+
+		foreach ($clubs as $key => $club) {
+			$emailSubject = $racketmanager->site_name." - ".ucfirst($competitionSeason)." ".$latestSeason." League Entry Open - ".$club->name;
+			$emailTo = $club->matchSecretaryName.' <'.$club->matchSecretaryEmail.'>';
+			$actionURL = $racketmanager->site_url.'/leagues/'.$competitionSeason.'-entry/'.$latestSeason.'/'.seoUrl($club->shortcode);
+			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'league-entry-open', array( 'emailSubject' => $emailSubject, 'fromEmail' => $fromEmail, 'actionURL' => $actionURL, 'organisationName' => $organisationName, 'season' => $latestSeason, 'competitionSeason' => $competitionSeason, 'club' => $club ), 'email' );
+			$racketmanager->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
+			$messageSent = true;
+		}
+
+		if ( $messageSent ) {
+			$return = __('Match secretaries notified','racketmanager');
+		} else {
+			$return = __('No notification','racketmanager');
+		}
+
+		die(json_encode($return));
+	}
+
 }
 ?>

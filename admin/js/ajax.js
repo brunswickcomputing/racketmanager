@@ -248,3 +248,23 @@ Racketmanager.notifyTeams = function(matchId) {
                 }
                 }) ;
 };
+Racketmanager.notifyLeagueEntry = function(competitionId) {
+  var latestSeason = document.getElementById('latestSeason').value;
+
+  jQuery.ajax({
+    url:RacketManagerAjaxL10n.requestUrl,
+    type: "POST",
+    data: {"competitonId": competitionId,
+    "latestSeason": latestSeason,
+    "action": "racketmanager_notify_league_entry"},
+    success: function(response) {
+      var $response = jQuery.parseJSON(response);
+      jQuery("#notifyMessage").text($response);
+      jQuery("#notifyMessage").show();
+      jQuery("#notifyMessage").delay(10000).fadeOut('slow');
+    },
+    error: function() {
+      alert("Ajax error on notifying secretaries of League Entry");
+    }
+  }) ;
+};

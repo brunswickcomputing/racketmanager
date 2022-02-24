@@ -139,8 +139,7 @@ jQuery(function() {
         </div>
     </div>
 
-	<input type="hidden" name="addCompetiton" value="competition" />
+	<input type="hidden" name="addCompetition" value="competition" />
 	<p class="submit"><input type="submit" name="addCompetition" value="<?php _e( 'Add Competition','racketmanager' ) ?>" class="button button-primary" /></p>
 
 </form>
-

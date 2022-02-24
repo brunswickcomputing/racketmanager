@@ -1514,7 +1514,7 @@ final class RacketManagerAdmin extends RacketManager
     }
 
     /**
-     * delete Competiton
+     * delete Competition
      *
      * @param int $competition_id
      * @return boolean

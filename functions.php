@@ -103,7 +103,7 @@
         'index.php?pagename=leagues%2Fdaily-matches&match_date=$matches[1]-$matches[2]-$matches[3]',
         'top'
       );
-      // competiton - season
+      // competition - season
       add_rewrite_rule(
         'leagues/(.+?)-leagues/(.+?)-(.+?)-competition/([0-9]{4})?$',
         'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[2]-$matches[3]-competition&season=$matches[4]',

@@ -61,7 +61,7 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_get_team_info', array(&$this, 'getTeamCompetitionInfo') );
 		add_action( 'wp_ajax_racketmanager_cup_entry', array(&$this, 'cupEntryRequest') );
 		add_action( 'wp_ajax_racketmanager_league_entry', array(&$this, 'leagueEntryRequest') );
-		add_action( 'wp_ajax_racketmanager_notify_league_entry', array(&$this, 'notifyLeagueEntry') );
+		add_action( 'wp_ajax_racketmanager_notify_entries_open', array(&$this, 'notifyEntriesOpen') );
 
 	}
 
@@ -2047,11 +2047,11 @@ class RacketManagerAJAX extends RacketManager {
 	}
 
 	/**
-	* notify match secretaries of league entry open
+	* notify match secretaries of competition entries open
 	*
-	* @see templates/email/match-notification.php
+	* @see templates/email/league-entry-open.php
 	*/
-	public function notifyLeagueEntry() {
+	public function notifyEntriesOpen() {
 		global $racketmanager_shortcodes, $racketmanager;
 
 		$return ='';

@@ -20,7 +20,7 @@ if ( empty($this->seasons) ) { ?>
 			<div>
 				<input type="submit" value="<?php _e('Save'); ?>" name="saveconstitution" id="saveconstitution" class="button-primary action" />
 				<a class="button-secondary" href="admin.php?page=racketmanager&amp;subpage=teams&amp;league_id=<?php echo end($leagues)->id ?>&amp;season=<?php echo $latestSeason ?>&amp;view=constitution">Add Teams</a>
-				<a class="button-secondary" onclick="Racketmanager.notifyLeagueEntry(<?php echo $competition_id ?>);" ><?php _e( 'Notify Secretaries', 'racketmanager' ) ?></a>
+				<a class="button-secondary" onclick="Racketmanager.notifyEntryOpen(<?php echo $competition_id ?>);" ><?php _e( 'Notify entries open', 'racketmanager' ) ?></a>
 				<span id="notifyMessage"></span>
 			</div>
 			<?php wp_nonce_field( 'constitution-bulk' ) ?>

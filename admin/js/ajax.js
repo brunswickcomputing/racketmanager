@@ -248,7 +248,7 @@ Racketmanager.notifyTeams = function(matchId) {
                 }
                 }) ;
 };
-Racketmanager.notifyLeagueEntry = function(competitionId) {
+Racketmanager.notifyEntryOpen = function(competitionId) {
   var latestSeason = document.getElementById('latestSeason').value;
 
   jQuery.ajax({
@@ -256,7 +256,7 @@ Racketmanager.notifyLeagueEntry = function(competitionId) {
     type: "POST",
     data: {"competitonId": competitionId,
     "latestSeason": latestSeason,
-    "action": "racketmanager_notify_league_entry"},
+    "action": "racketmanager_notify_entries_open"},
     success: function(response) {
       var $response = jQuery.parseJSON(response);
       jQuery("#notifyMessage").text($response);
@@ -264,7 +264,7 @@ Racketmanager.notifyLeagueEntry = function(competitionId) {
       jQuery("#notifyMessage").delay(10000).fadeOut('slow');
     },
     error: function() {
-      alert("Ajax error on notifying secretaries of League Entry");
+      alert("Ajax error on notifying secretaries of entries open");
     }
   }) ;
 };

@@ -87,7 +87,7 @@ if ( empty($this->seasons) ) { ?>
 										<option value="P1" <?php selected('P1', $team->status) ?>><?php _e( "Promoted in first place", "racketmanager") ?></option>
 										<option value="P2" <?php selected('P2', $team->status) ?>><?php _e( "Promoted in second place", "racketmanager") ?></option>
 										<option value="P3" <?php selected('P3', $team->status) ?>><?php _e( "Promoted in third place", "racketmanager") ?></option>
-										<option value="RB" <?php selected('RB', $team->status) ?>><?php _e( "Relegated from bottom place", "racketmanager") ?></option>
+										<option value="RB" <?php selected('RB', $team->status) ?>><?php _e( "Relegated in bottom place", "racketmanager") ?></option>
 										<option value="RT" <?php selected('RT', $team->status) ?>><?php _e( "Relegated as team in division above", "racketmanager") ?></option>
 										<option value="BT" <?php selected('BT', $team->status) ?>><?php _e( "Not relegated bottom team", "racketmanager") ?></option>
 										<option value="NT" <?php selected('NT', $team->status) ?>><?php _e( "New team", "racketmanager") ?></option>

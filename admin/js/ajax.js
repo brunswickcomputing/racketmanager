@@ -18,7 +18,7 @@ Racketmanager.getLeagueDropdown = function(competition_id) {
 };
 
 Racketmanager.getSeasonDropdown = function(league_id) {
-    
+
     jQuery.ajax({
                 url:RacketManagerAjaxL10n.requestUrl,
                 type: "POST",
@@ -154,7 +154,7 @@ Racketmanager.showRubbers = function(link) {
                 }) ;
 };
 Racketmanager.disableRubberUpdate = function() {
-    
+
 };
 Racketmanager.updateResults = function(link) {
 
@@ -211,7 +211,7 @@ Racketmanager.updateResults = function(link) {
                 }) ;
 };
 Racketmanager.confirmResults = function() {
-    
+
     var $form = jQuery('#match-results').serialize();
     $form += "&action=racketmanager_confirm_results";
     jQuery("#updates").css('opacity', 1);

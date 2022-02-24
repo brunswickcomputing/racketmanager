@@ -1227,7 +1227,7 @@ class RacketManagerShortcodes extends RacketManager {
 		), $atts ));
 
 		if ( !is_user_logged_in() ) {
-			return '<p class="contact-login-msg">You need to <a href="<?php echo wp_login_url(); ?>">login</a> to enter cups</p>';
+			return '<p class="contact-login-msg">You need to <a href="'.wp_login_url().'">login</a> to enter cups</p>';
 		}
 		$club_name = get_query_var('club_name');
 		$club_name = str_replace('-',' ',$club_name);
@@ -1289,7 +1289,7 @@ class RacketManagerShortcodes extends RacketManager {
 		), $atts ));
 
 		if ( !is_user_logged_in() ) {
-			return '<p class="contact-login-msg">You need to <a href="<?php echo wp_login_url(); ?>">login</a> to enter leagues</p>';
+			return '<p class="contact-login-msg">You need to <a href="'.wp_login_url().'">login</a> to enter leagues</p>';
 		}
 		$club_name = get_query_var('club_name');
 		$club_name = str_replace('-',' ',$club_name);

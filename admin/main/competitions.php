@@ -107,39 +107,51 @@ jQuery(function() {
       <div class="input">
         <select size='1' required="required" name='competition_type' id='competition_type'>
           <option><?php _e( 'Select', 'racketmanager') ?></option>
-          <option value='WS' <?php if ( isset($competition->type)) ($competition->type == 'WS' ? 'selected' : '') ?>><?php _e( 'Ladies Singles', 'racketmanager') ?></option>
-            <option value='WD' <?php if ( isset($competition->type)) ($competition->type == 'WD' ? 'selected' : '') ?>><?php _e( 'Ladies Doubles', 'racketmanager') ?></option>
-              <option value='MD' <?php if ( isset($competition->type)) ($competition->type == 'MD' ? 'selected' : '') ?>><?php _e( 'Mens Doubles', 'racketmanager') ?></option>
-                <option value='MS' <?php if ( isset($competition->type)) ($competition->type == 'MS' ? 'selected' : '') ?>><?php _e( 'Mens Singles', 'racketmanager') ?></option>
-                  <option value='XD' <?php if ( isset($competition->type)) ($competition->type == 'XD' ? 'selected' : '') ?>><?php _e( 'Mixed Doubles', 'racketmanager') ?></option>
-                    <option value='LD' <?php if ( isset($competition->type)) ($competition->type == 'LD' ? 'selected' : '') ?>><?php _e( 'The League', 'racketmanager') ?></option>
-                    </select>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label for="mode"><?php _e( 'Mode', 'racketmanager' ) ?></label>
-                  <div class="input">
-                    <select size="1" name="mode" id="mode">
-                      <option><?php _e( 'Select', 'racketmanager') ?></option>
-                      <?php foreach ( $this->getModes() AS $id => $mode ) { ?>
-                        <option value="<?php echo $id ?>"><?php echo $mode ?></option>
-                      <?php } ?>
-                    </select>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label for="entryType"><?php _e( 'Entry Type', 'racketmanager' ) ?></label>
-                  <div class="input">
-                    <select size="1" name="entryType" id="entryType">
-                      <option><?php _e( 'Select', 'racketmanager') ?></option>
-                      <?php foreach ( $this->getentryTypes() AS $id => $entryType ) { ?>
-                        <option value="<?php echo $id ?>"><?php echo $entryType ?></option>
-                      <?php } ?>
-                    </select>
-                  </div>
-                </div>
+          <option value='WS' <?php if ( isset($competition->type)) ($competition->type == 'WS' ? 'selected' : '') ?>>
+            <?php _e( 'Ladies Singles', 'racketmanager') ?>
+          </option>
+          <option value='WD' <?php if ( isset($competition->type)) ($competition->type == 'WD' ? 'selected' : '') ?>>
+            <?php _e( 'Ladies Doubles', 'racketmanager') ?>
+          </option>
+          <option value='MD' <?php if ( isset($competition->type)) ($competition->type == 'MD' ? 'selected' : '') ?>>
+            <?php _e( 'Mens Doubles', 'racketmanager') ?>
+          </option>
+          <option value='MS' <?php if ( isset($competition->type)) ($competition->type == 'MS' ? 'selected' : '') ?>>
+            <?php _e( 'Mens Singles', 'racketmanager') ?>
+          </option>
+          <option value='XD' <?php if ( isset($competition->type)) ($competition->type == 'XD' ? 'selected' : '') ?>>
+            <?php _e( 'Mixed Doubles', 'racketmanager') ?>
+          </option>
+          <option value='LD' <?php if ( isset($competition->type)) ($competition->type == 'LD' ? 'selected' : '') ?>>
+            <?php _e( 'The League', 'racketmanager') ?>
+          </option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="mode"><?php _e( 'Mode', 'racketmanager' ) ?></label>
+      <div class="input">
+        <select size="1" name="mode" id="mode">
+          <option><?php _e( 'Select', 'racketmanager') ?></option>
+          <?php foreach ( $this->getModes() AS $id => $mode ) { ?>
+            <option value="<?php echo $id ?>"><?php echo $mode ?></option>
+          <?php } ?>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="entryType"><?php _e( 'Entry Type', 'racketmanager' ) ?></label>
+      <div class="input">
+        <select size="1" name="entryType" id="entryType">
+          <option><?php _e( 'Select', 'racketmanager') ?></option>
+          <?php foreach ( $this->getentryTypes() AS $id => $entryType ) { ?>
+            <option value="<?php echo $id ?>"><?php echo $entryType ?></option>
+          <?php } ?>
+        </select>
+      </div>
+    </div>
 
-                <input type="hidden" name="addCompetition" value="competition" />
-                <p class="submit"><input type="submit" name="addCompetition" value="<?php _e( 'Add Competition','racketmanager' ) ?>" class="button button-primary" /></p>
+    <input type="hidden" name="addCompetition" value="competition" />
+    <p class="submit"><input type="submit" name="addCompetition" value="<?php _e( 'Add Competition','racketmanager' ) ?>" class="button button-primary" /></p>
 
-              </form>
+  </form>

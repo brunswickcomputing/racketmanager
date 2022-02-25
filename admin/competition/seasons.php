@@ -2,7 +2,7 @@
 	<?php wp_nonce_field( 'seasons-bulk' ) ?>
 
 	<input type="hidden" name="competition_id" value="<?php echo $competition_id ?>" />
-    <div class="tablenav">
+	<div class="tablenav">
 		<!-- Bulk Actions -->
 		<select name="action" size="1">
 			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
@@ -20,19 +20,19 @@
 			</tr>
 		</thead>
 		<tbody id="the-list">
-<?php if ( !empty($competition->seasons) ) { $class = ''; ?>
-	<?php foreach( (array)$competition->seasons AS $key => $season ) { ?>
-			<?php $class = ( 'alternate' == $class ) ? '' : 'alternate' ?>
-			<tr class="<?php echo $class ?>">
-				<th scope="row" class="check-column"><input type="checkbox" value="<?php echo $key ?>" name="del_season[<?php echo $key ?>]" /></th>
-				<td><?php echo $season['name'] ?></td>
-				<td><?php echo $season['num_match_days'] ?></td>
-				<td><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>&amp;editseason=<?php echo $key ?>"><?php _e( 'Edit', 'racketmanager' ) ?></a></td>
-			</tr>
-	<?php } ?>
-<?php } ?>
-		</tbody>
-	</table>
+			<?php if ( !empty($competition->seasons) ) { $class = ''; ?>
+			<?php foreach( (array)$competition->seasons AS $key => $season ) { ?>
+				<?php $class = ( 'alternate' == $class ) ? '' : 'alternate' ?>
+				<tr class="<?php echo $class ?>">
+					<th scope="row" class="check-column"><input type="checkbox" value="<?php echo $key ?>" name="del_season[<?php echo $key ?>]" /></th>
+					<td><?php echo $season['name'] ?></td>
+					<td><?php echo $season['num_match_days'] ?></td>
+					<td><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>&amp;editseason=<?php echo $key ?>"><?php _e( 'Edit', 'racketmanager' ) ?></a></td>
+				</tr>
+			<?php } ?>
+		<?php } ?>
+	</tbody>
+</table>
 </form>
 
 <form action="admin.php?page=racketmanager&amp;subpage=show-competition&competition_id=<?php echo $competition_id ?>" method="post"  style="margin-top: 3em;">
@@ -41,23 +41,23 @@
 	<table class="lm-form-table">
 		<tr valign="top">
 			<th scope="row"><label for="season"><?php _e( 'Season', 'racketmanager' ) ?></label></th>
-<?php if ( $season_id ) { ?>
-			<td>
-				<input type="number" name="season" id="season" value="<?php echo $season_data['name'] ?>" size="4" />
-			</td>
-<?php } else { ?>
-            <td>
-                <select size="1" name="season" id="season" >
-                    <option><?php _e( 'Select season' , 'racketmanager') ?></option>
-<?php $seasons = $racketmanager->getSeasons( "DESC" );
-    foreach ( $seasons AS $season ) { ?>
-                    <option value="<?php echo $season->name ?>"><?php echo $season->name ?></option>
-                    <?php } ?>
-                </select>
-            </td>
+			<?php if ( $season_id ) { ?>
+				<td>
+					<input type="number" name="season" id="season" value="<?php echo $season_data['name'] ?>" size="4" />
+				</td>
+			<?php } else { ?>
+				<td>
+					<select size="1" name="season" id="season" >
+						<option><?php _e( 'Select season' , 'racketmanager') ?></option>
+						<?php $seasons = $racketmanager->getSeasons( "DESC" );
+						foreach ( $seasons AS $season ) { ?>
+							<option value="<?php echo $season->name ?>"><?php echo $season->name ?></option>
+						<?php } ?>
+					</select>
+				</td>
 
-<?php } ?>
-        </tr>
+			<?php } ?>
+		</tr>
 		<tr valign="top">
 			<th scope="row"><label for="num_match_days"><?php _e( 'Number of Match Days', 'racketmanager' ) ?></label></th>
 			<td>

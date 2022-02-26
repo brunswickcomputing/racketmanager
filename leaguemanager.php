@@ -1928,6 +1928,9 @@ class RacketManager {
     if ( $match->teams['home']->id == -1 || $match->teams['away']->id == -1 ) {
       return;
     }
+		if ( !isset($match->custom['host']) ) {
+			return;
+		}
     $to = array();
     if ( isset($match->teams['home']->contactemail) && $match->teams['home']->contactemail > '' ) { array_push($to, $match->teams['home']->contactemail); }
     if ( isset($match->teams['away']->contactemail) && $match->teams['away']->contactemail > '' ) { array_push($to, $match->teams['away']->contactemail); }

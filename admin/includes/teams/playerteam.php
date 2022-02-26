@@ -71,7 +71,7 @@ namespace ns;
     <input type="hidden" name="updateLeague" value="teamPlayer" />
     <input type="hidden" name="season" value="<?php echo $season ?>" />
 
-    <p class="submit"><input type="submit" id="actionPlayerTeam" name="action" value="<?php echo $form_action ?>" class="button button-primary" /></p>
+    <input type="submit" id="actionPlayerTeam" name="action" value="<?php echo $form_action ?>" class="btn btn-primary" />
   </form>
   <div id="errorMsg" style="display:none;"></div>
 </div>

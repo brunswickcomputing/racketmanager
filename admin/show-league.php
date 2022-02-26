@@ -44,7 +44,7 @@ jQuery(function() {
   <ul class="subsubsub">
     <?php foreach ( $this->getMenu() AS $key => $menu ) { ?>
       <?php if ( !isset($menu['show']) || $menu['show'] ) { ?>
-        <li><a class="button-secondary" href="admin.php?page=racketmanager&amp;subpage=<?php echo $key ?>&amp;league_id=<?php echo $league->id ?>&amp;season=<?php echo $season ?>&amp;group=<?php echo $group ?>"><?php echo $menu['title'] ?></a></li>
+        <li><a class="btn btn-secondary" href="admin.php?page=racketmanager&amp;subpage=<?php echo $key ?>&amp;league_id=<?php echo $league->id ?>&amp;season=<?php echo $season ?>&amp;group=<?php echo $group ?>"><?php echo $menu['title'] ?></a></li>
       <?php } ?>
     <?php } ?>
   </ul>

@@ -23,7 +23,7 @@ namespace ns;
       <div class="form-group">
         <label for="team"><?php _e( 'Team', 'racketmanager' ) ?></label>
         <div class="input">
-          <input type="text" id="team" name="team" readonly value="<?php echo $team->title ?>" size="30" placeholder="<?php _e( 'Add Team', 'racketmanager' ) ?>""/>
+          <input type="text" id="team" name="team" readonly value="<?php echo $team->title ?>" size="30" placeholder="<?php _e( 'Add Team', 'racketmanager' ) ?>"/>
         </div>
       </div>
       <div class="form-group">
@@ -102,6 +102,6 @@ namespace ns;
         <input type="hidden" name="editTeam" value="team" />
       <?php } ?>
 
-      <p class="submit"><input type="submit" name="action" value="<?php echo $form_action ?>" class="button button-primary" /></p>
+      <input type="submit" name="action" value="<?php echo $form_action ?>" class="btn btn-primary" />
     </form>
   </div>

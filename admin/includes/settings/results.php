@@ -14,9 +14,9 @@ jQuery(function() {
 </script>
 <div id="tabs-competitions" class="racketmanager-blocks">
   <ul id="tablist">
-    <li><a href="#competitions-Cup"><?php _e( 'Cups', 'racketmanager' ) ?></a></li>
-    <li><a href="#competitions-League"><?php _e( 'Leagues', 'racketmanager' ) ?></a></li>
-    <li><a href="#competitions-Tournament"><?php _e( 'Tournaments', 'racketmanager' ) ?></a></li>
+    <li><h4><a href="#competitions-Cup"><?php _e( 'Cups', 'racketmanager' ) ?></a></h4></li>
+    <li><h4><a href="#competitions-League"><?php _e( 'Leagues', 'racketmanager' ) ?></a></h4></li>
+    <li><h4><a href="#competitions-Tournament"><?php _e( 'Tournaments', 'racketmanager' ) ?></a></h4></li>
   </ul>
   <?php $competitionTypes = array('Cup','League','Tournament');
   foreach ( $competitionTypes AS $competitionType ) { ?>

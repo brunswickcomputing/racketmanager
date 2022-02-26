@@ -12,7 +12,7 @@
 				<?php } ?>
 			</select>
 		<?php } ?>
-		<input type="submit" value="<?php _e( 'View Teams','racketmanager' ) ?>" class="button button-primary" />
+		<input type="submit" value="<?php _e( 'View Teams','racketmanager' ) ?>" class="btn btn-primary" />
 	</div>
 
 </form>
@@ -26,7 +26,7 @@
 			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
 			<option value="delete"><?php _e('Delete')?></option>
 		</select>
-		<input type="submit" value="<?php _e('Apply'); ?>" name="doteamdel" id="doteamdel" class="button-secondary action" />
+		<input type="submit" value="<?php _e('Apply'); ?>" name="doteamdel" id="doteamdel" class="btn btn-secondary action" />
 	</div>
 
 	<table class="widefat" summary="" title="RacketManager Teams">
@@ -51,7 +51,7 @@
 									<input type="checkbox" value="<?php echo $team->id ?>" name="team[<?php echo $team->id ?>]" />
 								</th>
 								<td class="column-num"><?php echo $team->id ?></td>
-								<td><a href="admin.php?page=racketmanager&amp;subpage=team&amp;edit=<?php echo $team->id; ?><?php if ( $team->affiliatedclub!= '' ) ?>&amp;club_id=<?php echo $team->affiliatedclub ?> "><?php echo $team->title ?></a></td>
+								<td class="teamname"><a href="admin.php?page=racketmanager&amp;subpage=team&amp;edit=<?php echo $team->id; ?><?php if ( $team->affiliatedclub!= '' ) ?>&amp;club_id=<?php echo $team->affiliatedclub ?> "><?php echo $team->title ?></a></td>
 								<td><?php echo $team->affiliatedclubname ?></td>
 								<td><?php echo $team->stadium ?></td>
 							</tr>
@@ -70,7 +70,7 @@
 										<input type="checkbox" value="<?php echo $team->id ?>" name="team[<?php echo $team->id ?>]" />
 									</th>
 									<td class="column-num"><?php echo $team->id ?></td>
-									<td><a href="admin.php?page=racketmanager&amp;subpage=team&amp;edit=<?php echo $team->id; ?><?php if ( $team->affiliatedclub!= '' ) ?>&amp;club_id=<?php echo $team->affiliatedclub ?> "><?php echo $team->title ?></a></td>
+									<td class="teamname"><a href="admin.php?page=racketmanager&amp;subpage=team&amp;edit=<?php echo $team->id; ?><?php if ( $team->affiliatedclub!= '' ) ?>&amp;club_id=<?php echo $team->affiliatedclub ?> "><?php echo $team->title ?></a></td>
 									<td><?php echo $team->affiliatedclubname ?></td>
 									<td><?php echo $team->stadium ?></td>
 								</tr>
@@ -81,7 +81,7 @@
 			</tbody>
 		</table>
 	</form>
-	<h2><?php _e( 'Add Team', 'racketmanager' ) ?></h2>
+	<h3><?php _e( 'Add Team', 'racketmanager' ) ?></h3>
 	<!-- Add New Team -->
 	<form action="" method="post">
 		<?php wp_nonce_field( 'racketmanager_add-team' ) ?>
@@ -111,6 +111,6 @@
 			</div>
 		</div>
 		<input type="hidden" name="addTeam" value="team" />
-		<p class="submit"><input type="submit" name="addTeam" value="<?php _e( 'Add Team','racketmanager' ) ?>" class="button button-primary" /></p>
+		<input type="submit" name="addTeam" value="<?php _e( 'Add Team','racketmanager' ) ?>" class="btn btn-primary" />
 
 	</form>

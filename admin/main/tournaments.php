@@ -9,9 +9,7 @@
 			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
 			<option value="delete"><?php _e('Delete')?></option>
 		</select>
-		<input type="submit" value="<?php _e('Apply'); ?>" name="doTournamentDel" id="doTournamentDel" class="button-secondary action" />
-		<!-- Add New Team -->
-		<a href="admin.php?page=racketmanager&amp;subpage=tournament" name="addTournament" class="button button-primary submit"><?php _e( 'Add Tournament','racketmanager' ) ?></a>
+		<input type="submit" value="<?php _e('Apply'); ?>" name="doTournamentDel" id="doTournamentDel" class="btn btn-secondary action" />
 	</div>
 
 	<table class="widefat" summary="" title="RacketManager Tournaments">
@@ -47,3 +45,5 @@
 		</tbody>
 	</table>
 </form>
+<!-- Add New Tournament -->
+<a href="admin.php?page=racketmanager&amp;subpage=tournament" name="addTournament" class="btn btn-primary submit"><?php _e( 'Add Tournament','racketmanager' ) ?></a>

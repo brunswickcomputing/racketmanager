@@ -17,7 +17,7 @@
 		<div class="form-group">
 			<label for="tournament"><?php _e( 'Name', 'racketmanager' ) ?></label>
 			<div class="input">
-				<input type="text" id="tournament" name="tournament" value="<?php echo $tournament->name ?>" size="30" placeholder="<?php _e( 'Add tournament', 'racketmanager' ) ?>""/>
+				<input type="text" id="tournament" name="tournament" value="<?php echo $tournament->name ?>" size="30" placeholder="<?php _e( 'Add tournament', 'racketmanager' ) ?>"" />
 			</div>
 		</div>
 		<div class="form-group">
@@ -94,7 +94,7 @@
 			<input type="hidden" name="addTournament" value="tournament" />
 		<?php } ?>
 
-		<p class="submit"><input type="submit" name="action" value="<?php echo $form_action ?>" class="button button-primary" /></p>
+		<input type="submit" name="action" value="<?php echo $form_action ?>" class="btn btn-primary" />
 	</form>
 
 </div>

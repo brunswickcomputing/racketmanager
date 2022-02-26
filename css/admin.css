@@ -223,7 +223,9 @@ p.racketmanager_breadcrumb {
     float: right;
     margin: 1.5em 1.3em 1.3em auto;
     }
-
+.widefat {
+  margin-bottom: 2em;
+}
 .widefat .column-num {
     text-align: center;
     }
@@ -450,13 +452,19 @@ td.matchday.playmulti {
 .tablenav #table-paging {
     margin-right: 2px;
 }
-
+#seasons-table a, #clubs-table a, #results-table a, #tournament-table a, #teams-table a {
+    color: #ffffff;
+}
+#teams-table .teamname a, #clubs-table .clubname a, #results-table .match-title a {
+    color: #222222;
+}
 .tablenav a.button-secondary {
     display: block;
     margin: 3px 0 0 8px;
 }
 
 .tablenav {
+  height:auto;
     clear: none;
     margin: 6px 0 4px;
     vertical-align: middle;
@@ -575,4 +583,30 @@ div#errorMsg {
 .disabledButton {
     opacity: .4;
     pointer-events: none;
+}
+.roundName {
+}
+.finalmatch {
+  float: left;
+  min-height: 100px;
+  font-size: 10px;
+}
+.roundmatches {
+  display: inline-block;
+}
+.winner {
+  font-weight: 700;
+}
+.score {
+  text-align: center;
+}
+.team-left {
+  text-align: right;
+}
+.team-right {
+  text-align: left;
+}
+.finalround {
+  border: solid;
+  margin: 5px;
 }

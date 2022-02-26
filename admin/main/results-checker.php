@@ -11,7 +11,7 @@
 			<option value="handle"><?php _e('Handle')?></option>
 			<option value="delete"><?php _e('Delete')?></option>
 		</select>
-		<input type="submit" value="<?php _e('Apply'); ?>" name="doResultsChecker" id="doResultsChecker" class="button-secondary action" />
+		<input type="submit" value="<?php _e('Apply'); ?>" name="doResultsChecker" id="doResultsChecker" class="btn btn-secondary action" />
 	</div>
 
 	<table class="widefat" summary="" title="<?php _e( 'RacketManager Results Checker', 'racketmanager') ?>">

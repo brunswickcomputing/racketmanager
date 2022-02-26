@@ -12,7 +12,7 @@
 			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
 			<option value="delete"><?php _e('Delete')?></option>
 		</select>
-		<input type="submit" value="<?php _e('Apply'); ?>" name="doaction" id="doaction" class="button-secondary action" />
+		<input type="submit" value="<?php _e('Apply'); ?>" name="doaction" id="doaction" class="btn btn-secondary action" />
 	</div>
 
 	<table id="standings" class="widefat" summary="" title="<?php _e( 'Table', 'racketmanager' ) ?>">
@@ -106,15 +106,15 @@
 
 <?php if ( (isset($league->point_rule) && ($league->point_rule == 'manual')) ) { ?>
 	<input type="hidden" name="updateLeague" value="teams_manual" />
-	<p class="submit" style="float: right; margin: 0 0 1em 0;"><input type="submit" value="<?php _e( 'Save Standings', 'racketmanager' ) ?>" class="button button-primary" /></p>
+	<input type="submit" value="<?php _e( 'Save Standings', 'racketmanager' ) ?>" class="btn btn-primary" />
 <?php } ?>
 
 <?php if ( (isset($league->team_ranking) && ($league->team_ranking == 'manual')) ) { ?>
-	<p class="submit"><input type="submit" name="saveRanking" value="<?php _e( 'Save Ranking', 'racketmanager' ) ?>" class="button button-primary" /></p>
-	<p class="submit"><input type="submit" name="randomRanking" value="<?php _e( 'Random Ranking', 'racketmanager' ) ?>" class="button button-primary" /></p>
+	<input type="submit" name="saveRanking" value="<?php _e( 'Save Ranking', 'racketmanager' ) ?>" class="btn btn-primary" />
+	<input type="submit" name="randomRanking" value="<?php _e( 'Random Ranking', 'racketmanager' ) ?>" class="btn btn-primary" />
 <?php } ?>
 
 <?php if ( (isset($league->team_ranking) && ($league->team_ranking !== 'manual')) ) { ?>
-	<p class="submit"><input type="submit" name="updateRanking" value="<?php _e( 'Update Ranking', 'racketmanager' ) ?>" class="button button-primary" /></p>
+	<input type="submit" name="updateRanking" value="<?php _e( 'Update Ranking', 'racketmanager' ) ?>" class="btn btn-primary" />
 <?php } ?>
 </form>

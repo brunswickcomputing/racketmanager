@@ -23,36 +23,36 @@ if ( !current_user_can( 'manage_racketmanager' ) ) {
 			<input type="hidden" class="active-tab" name="active-tab" value="<?php echo $tab ?>" ?>
 
 			<ul id="tablist" style="display: none;">
-				<li><a href="#rosters"><?php _e( 'Rosters', 'racketmanager' ) ?></a></li>
-				<li><a href="#players"><?php _e( 'Player Checks', 'racketmanager' ) ?></a></li>
-				<li><a href="#match-results"><?php _e( 'Match Results', 'racketmanager' ) ?></a></li>
-				<li><a href="#colors"><?php _e( 'Color Scheme', 'racketmanager' ) ?></a></li>
+				<li><h2><a href="#rosters"><?php _e( 'Rosters', 'racketmanager' ) ?></a></h2></li>
+				<li><h2><a href="#players"><?php _e( 'Player Checks', 'racketmanager' ) ?></a></h2></li>
+				<li><h2><a href="#match-results"><?php _e( 'Match Results', 'racketmanager' ) ?></a></h2></li>
+				<li><h2><a href="#colors"><?php _e( 'Color Scheme', 'racketmanager' ) ?></a></h2></li>
 			</ul>
 
 			<div id="rosters" class="settings-block-container">
-				<h2><?php _e('Rosters', 'racketmanager') ?></h2>
+				<h3><?php _e('Rosters', 'racketmanager') ?></h3>
 				<?php include(RACKETMANAGER_PATH . '/admin/includes/settings/rosters.php'); ?>
 			</div>
 
 			<div id="players" class="settings-block-container">
-				<h2><?php _e('Player Checks', 'racketmanager') ?></h2>
+				<h3><?php _e('Player Checks', 'racketmanager') ?></h3>
 				<?php include(RACKETMANAGER_PATH . '/admin/includes/settings/players.php'); ?>
 			</div>
 
 			<div id="match-results" class="settings-block-container">
-				<h2><?php _e('Match Results', 'racketmanager') ?></h2>
+				<h3><?php _e('Match Results', 'racketmanager') ?></h3>
 				<?php include(RACKETMANAGER_PATH . '/admin/includes/settings/results.php'); ?>
 			</div>
 
 			<div id="colors" class="settings-block-container">
-				<h2><?php _e( 'Color Scheme', 'racketmanager' ) ?></h2>
+				<h3><?php _e( 'Color Scheme', 'racketmanager' ) ?></h3>
 				<?php include(RACKETMANAGER_PATH . '/admin/includes/settings/colors.php'); ?>
 			</div>
 
 		</div>
 
 		<input type='hidden' name='page_options' value='color_headers,color_rows,color_rows_alt,color_rows_ascend,color_rows_descend,color_rows_relegation' />
-		<p class='submit'><input type='submit' name='updateRacketManager' value='<?php _e( 'Save Preferences', 'racketmanager' ) ?>' class='button button-primary' /></p>
+		<input type='submit' name='updateRacketManager' value='<?php _e( 'Save Preferences', 'racketmanager' ) ?>' class='btn btn-primary' />
 	</div>
 </form>
 

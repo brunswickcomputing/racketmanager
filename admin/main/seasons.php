@@ -9,7 +9,7 @@
 			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
 			<option value="delete"><?php _e('Delete')?></option>
 		</select>
-		<input type="submit" value="<?php _e('Apply'); ?>" name="doSeasonDel" id="doSeasonDel" class="button-secondary action" />
+		<input type="submit" value="<?php _e('Apply'); ?>" name="doSeasonDel" id="doSeasonDel" class="btn btn-secondary action" />
 	</div>
 
 	<table class="widefat" summary="" title="RacketManager Seasons">
@@ -30,7 +30,7 @@
 						</th>
 						<td class="column-num"><?php echo $season->id ?></td>
 						<td><?php echo $season->name ?></td>
-						<td><a class="button-secondary" href="admin.php?page=racketmanager&amp;subpage=competitions&amp;season=<?php echo $season->name ?>">Add Competitions</a></td>
+						<td><a class="btn btn-secondary" href="admin.php?page=racketmanager&amp;subpage=competitions&amp;season=<?php echo $season->name ?>">Add Competitions</a></td>
 					</tr>
 				<?php } ?>
 			<?php } ?>
@@ -48,6 +48,6 @@
 		</div>
 	</div>
 	<input type="hidden" name="addSeason" value="season" />
-	<p class="submit"><input type="submit" name="addSeason" value="<?php _e( 'Add Season','racketmanager' ) ?>" class="button button-primary" /></p>
+	<input type="submit" name="addSeason" value="<?php _e( 'Add Season','racketmanager' ) ?>" class="btn btn-primary" />
 
 </form>

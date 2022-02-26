@@ -10,7 +10,7 @@
 			<option value="approve"><?php _e('Approve')?></option>
 			<option value="delete"><?php _e('Delete')?></option>
 		</select>
-		<input type="submit" value="<?php _e('Apply'); ?>" name="dorosterrequest" id="dorosterrequest" class="button-secondary action" />
+		<input type="submit" value="<?php _e('Apply'); ?>" name="dorosterrequest" id="dorosterrequest" class="btn btn-secondary action" />
 	</div>
 
 	<table class="widefat" summary="" title="RacketManager Roster Request">

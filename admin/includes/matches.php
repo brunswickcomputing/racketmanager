@@ -13,7 +13,7 @@
 			<?php } ?>
 		</select>
 		<input type="hidden" name="league-tab" value="0" class="jquery_ui_tab_index" />
-		<input type="submit" value="<?php _e('Edit Matches', 'racketmanager'); ?>" class="button-secondary action" />
+		<input type="submit" value="<?php _e('Edit Matches', 'racketmanager'); ?>" class="btn btn-secondary action" />
 	</form>
 <?php } ?>
 
@@ -31,7 +31,7 @@
 			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
 			<option value="delete"><?php _e('Delete', 'racketmanager')?></option>
 		</select>
-		<input type='submit' name="delmatches" id="delmatches" class="button-secondary action" value='<?php _e( 'Apply' ) ?>' />
+		<input type='submit' name="delmatches" id="delmatches" class="btn btn-secondary action" value='<?php _e( 'Apply' ) ?>' />
 
 		<?php if ( !empty($league->current_season['num_match_days']) ) { ?>
 			<select size='1' name='match_day'>
@@ -48,7 +48,7 @@
 					<option value="<?php echo $team->id ?>"<?php echo $selected ?>><?php echo $team->title ?></option>
 				<?php } ?>
 			</select>
-			<input type='submit' name="doaction-match_day" id="doaction-match_day" class="button-secondary action" value='<?php _e( 'Filter' ) ?>' />
+			<input type='submit' name="doaction-match_day" id="doaction-match_day" class="btn btn-secondary action" value='<?php _e( 'Filter' ) ?>' />
 		<?php } ?>
 	</div>
 
@@ -106,7 +106,7 @@
 		<input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
 		<input_type="hidden" name="num_rubbers" value="<?php echo $league->num_rubbers ?>" />
 		<input type="hidden" name="updateLeague" value="results" />
-		<p style="float: left; margin: 0; padding: 0;"><input type="submit" name="updateResults" value="<?php _e( 'Update Results','racketmanager' ) ?>" class="button button-primary" /></p>
+		<input type="submit" name="updateResults" value="<?php _e( 'Update Results','racketmanager' ) ?>" class="btn btn-primary" />
 	<?php } ?>
 </div>
 </form>

@@ -39,7 +39,7 @@ if ( !empty($competition->seasons) ) { ?>
 					<option value="<?php echo htmlspecialchars($s['name']) ?>"<?php if ( $s['name'] == $season['name'] ) echo ' selected="selected"' ?>><?php echo $s['name'] ?></option>
 				<?php } ?>
 			</select>
-			<input type="submit" name="statsseason" value="<?php _e( 'Show', 'racketmanager' ) ?>" class="button" />
+			<input type="submit" name="statsseason" value="<?php _e( 'Show', 'racketmanager' ) ?>" class="btn btn-secondary" />
 		</form>
 	</div>
 <?php } ?>
@@ -72,7 +72,7 @@ if ( !empty($competition->seasons) ) { ?>
 						<tr class="<?php echo $class ?>">
 
 							<td><?php echo $playerstat->fullname ?></td>
-							
+
 							<?php $matchdaystats = $matchdaystatsdummy;
 							$prevTeamNum = $playdowncount = 0;
 							$prevMatchDay = $i = 0;

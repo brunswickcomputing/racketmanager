@@ -29,7 +29,7 @@
 		</div>
 	</div>
 	<input type="hidden" name="addPlayer" value="player" />
-	<p class="submit"><input type="submit" name="addPlayer" value="<?php _e( 'Add Player','racketmanager' ) ?>" class="button button-primary" /></p>
+	<input type="submit" name="addPlayer" value="<?php _e( 'Add Player','racketmanager' ) ?>" class="btn btn-primary" />
 
 </form>
 
@@ -42,7 +42,7 @@
 			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
 			<option value="delete"><?php _e('Delete')?></option>
 		</select>
-		<input type="submit" value="<?php _e('Apply'); ?>" name="doPlayerDel" id="dorPlayerDel" class="button-secondary action" />
+		<input type="submit" value="<?php _e('Apply'); ?>" name="doPlayerDel" id="dorPlayerDel" class="btn btn-secondary action" />
 	</div>
 
 	<table class="widefat" summary="" title="RacketManager Players">

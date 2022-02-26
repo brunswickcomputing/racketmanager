@@ -30,7 +30,7 @@ jQuery(function() {
             <option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
             <option value="delete"><?php _e('Delete')?></option>
           </select>
-          <input type="submit" value="<?php _e('Apply'); ?>" name="docompdel" id="docompdel" class="button-secondary action" />
+          <input type="submit" value="<?php _e('Apply'); ?>" name="docompdel" id="docompdel" class="btn btn-secondary action" />
         </div>
 
         <table class="widefat" summary="" title="RacketManager Competitions">
@@ -80,7 +80,7 @@ jQuery(function() {
 
   </div>
 
-  <h2><?php _e( 'Add Competition', 'racketmanager' ) ?></h2>
+  <h3><?php _e( 'Add Competition', 'racketmanager' ) ?></h3>
   <!-- Add New Competition -->
   <form action="" method="post">
     <?php wp_nonce_field( 'racketmanager_add-competition' ) ?>
@@ -152,6 +152,6 @@ jQuery(function() {
     </div>
 
     <input type="hidden" name="addCompetition" value="competition" />
-    <p class="submit"><input type="submit" name="addCompetition" value="<?php _e( 'Add Competition','racketmanager' ) ?>" class="button button-primary" /></p>
+    <input type="submit" name="addCompetition" value="<?php _e( 'Add Competition','racketmanager' ) ?>" class="btn btn-primary" />
 
   </form>

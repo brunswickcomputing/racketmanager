@@ -12,7 +12,7 @@
         <?php endforeach; ?>
       </select>
       <input type="hidden" name="league-tab" value="<?php echo $tab ?>" class="jquery_ui_tab_index" />
-      <input type="submit" class="button-secondary" value="<?php _e( 'Show', 'racketmanager' ) ?>" />
+      <input type="submit" class="btn btn-secondary" value="<?php _e( 'Show', 'racketmanager' ) ?>" />
     </form>
     <form action="admin.php" method="get" style="display: inline;">
       <input type="hidden" name="page" value="<?php echo htmlspecialchars($_GET['page']) ?>" />
@@ -32,7 +32,7 @@
         <?php } ?>
       </select>
       <input type="hidden" name="league-tab" value="<?php echo $tab ?>" class="jquery_ui_tab_index" />
-      <input type="submit" class="button-secondary" value="<?php _e( 'Go', 'racketmanager' ) ?>" />
+      <input type="submit" class="btn btn-secondary" value="<?php _e( 'Go', 'racketmanager' ) ?>" />
     </form>
   </div>
 
@@ -86,7 +86,7 @@
         </tbody>
       </table>
 
-      <p class="submit"><input type="submit" name="updateFinalResults" value="<?php _e( 'Save Results','racketmanager' ) ?>" class="button-primary" /></p>
+      <input type="submit" name="updateFinalResults" value="<?php _e( 'Save Results','racketmanager' ) ?>" class="btn btn-primary" />
     <?php } ?>
   </form>
 </div>

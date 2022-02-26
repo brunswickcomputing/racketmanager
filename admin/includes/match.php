@@ -147,7 +147,7 @@
 						<input type="hidden" name="final" value="<?php echo $finalkey ?>" />
 						<input type="hidden" name="updateLeague" value="match" />
 
-						<p class="submit"><input type="submit" value="<?php echo $submit_title ?>" class="button button-primary" /></p>
+						<p class="submit"><input type="submit" value="<?php echo $submit_title ?>" class="btn btn-primary" /></p>
 					</form>
 				<?php } ?>
 

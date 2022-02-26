@@ -8,7 +8,7 @@ $prev_league = 0;
   <div class="league-block">
     <form id="match-results">
       <?php wp_nonce_field( 'results-update' ) ?>
-      <table class="widefat" summary="" title="<?php _e( 'Match Plan','racketmanager' ) ?>" style="margin-bottom: 2em;">
+      <table class="widefat" summary="" title="<?php _e( 'Match Plan','racketmanager' ) ?>">
         <thead>
           <tr>
             <th><?php _e( 'ID', 'racketmanager' ) ?></th>
@@ -52,7 +52,7 @@ $prev_league = 0;
                 <td class="score">
                   <input class="points" type="text" size="2" style="text-align: center;" id="home_points[<?php echo $match->league->id ?>][<?php echo $match->id ?>]" name="home_points[<?php echo $match->league->id ?>][<?php echo $match->id ?>]" value="<?php echo (isset($match->home_points) ? $match->home_points : '') ?>" /> : <input class="points" type="text" size="2" style="text-align: center;" id="away_points[<?php echo $match->league->id ?>][<?php echo $match->id ?>]" name="away_points[<?php echo $match->league->id ?>][<?php echo $match->id ?>]" value="<?php echo (isset($match->away_points) ? $match->away_points : '') ?>" />
                 </td>
-                <td><a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $match->league->id ?>&amp;season=<?php echo $match->season ?>&amp;<?php echo $matchLink ?> " class="button button-secondary"><?php _e('View match', 'racketmanager') ?></a>
+                <td><a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $match->league->id ?>&amp;season=<?php echo $match->season ?>&amp;<?php echo $matchLink ?> " class="btn btn-secondary"><?php _e('View match', 'racketmanager') ?></a>
                 </td>
               </tr>
             <?php }
@@ -67,7 +67,7 @@ $prev_league = 0;
       <div class="tablenav">
 
         <?php if ( $matches ) { ?>
-          <p style="float: left; margin: 0; padding: 0;"><input type="submit" name="updateResults" id="updateResults" value="<?php _e( 'Update Results','racketmanager' ) ?>" class="button button-primary" onclick="return Racketmanager.confirmResults()" /></p>
+          <input type="submit" name="updateResults" id="updateResults" value="<?php _e( 'Update Results','racketmanager' ) ?>" class="btn btn-primary" onclick="return Racketmanager.confirmResults()" />
         <?php } ?>
       </div>
       <div id="message">

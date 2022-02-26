@@ -473,7 +473,7 @@ class League_Tennis extends League {
             if ( !is_numeric($match->home_team) || !is_numeric($match->away_team) ) {
                 echo '<td></td>';
             } else {
-                echo '<td><a href="#" class="button button-primary" id="'.$match->id.'" onclick="Racketmanager.showRubbers(this)">View Rubbers</a></td>';
+                echo '<td><input class="btn btn-secondary" id="'.$match->id.'" onclick="Racketmanager.showRubbers(this)" value="'.__("View Rubbers", "racketmanager").'"</a></td>';
             }
 		} else {
 			for ( $i = 1; $i <= $league->num_sets; $i++ ) {

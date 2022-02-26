@@ -8,7 +8,7 @@
 			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
 			<option value="delete"><?php _e('Delete')?></option>
 		</select>
-		<input type="submit" value="<?php _e('Apply'); ?>" name="doactionleague" id="doactionleague" class="button-secondary action" />
+		<input type="submit" value="<?php _e('Apply'); ?>" name="doactionleague" id="doactionleague" class="btn btn-secondary action" />
 	</div>
 
 	<table class="widefat" summary="" title="RacketManager">
@@ -47,11 +47,9 @@
 		<?php wp_nonce_field( 'racketmanager_add-league' ) ?>
 		<input type="hidden" name="competition_id" value="<?php echo $competition_id ?>" />
 		<input type="hidden" name="league_id" value="<?php echo $league_id ?>" />
-		<table class="lm-form-table">
-			<tr valign="top">
-				<th scope="row"><label for="league_title"><?php _e( 'League', 'racketmanager' ) ?></label></th>
-				<td><input type="text" required="required" placeholder="<?php _e( 'Enter new league name', 'racketmanager') ?>"name="league_title" id="league_title" value="<?php echo $league_title ?>" size="30" /></td>
-			</tr>
-		</table>
-		<p class="submit"><input type="submit" name="addLeague" value="<?php if ( !$league_id ) _e( 'Add League', 'racketmanager' ); else _e( 'Update League', 'racketmanager' ); ?>" class="button button-primary" /></p>
+		<div class="form-group">
+			<label for="league_title"><?php _e( 'League', 'racketmanager' ) ?></label>
+			<input type="text" required="required" placeholder="<?php _e( 'Enter new league name', 'racketmanager') ?>"name="league_title" id="league_title" value="<?php echo $league_title ?>" size="30" />
+		</div>
+		<input type="submit" name="addLeague" value="<?php if ( !$league_id ) _e( 'Add League', 'racketmanager' ); else _e( 'Update League', 'racketmanager' ); ?>" class="btn btn-primary" />
 	</form>

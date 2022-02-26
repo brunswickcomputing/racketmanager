@@ -18,9 +18,9 @@ if ( empty($this->seasons) ) { ?>
 		<h2 class="header"><?php _e( 'Constitution', 'racketmanager' ) ?> - <?php echo $latestSeason ?></h2>
 		<form id="teams-filter" method="post" action="">
 			<div>
-				<input type="submit" value="<?php _e('Save'); ?>" name="saveconstitution" id="saveconstitution" class="button-primary action" />
-				<a class="button-secondary" href="admin.php?page=racketmanager&amp;subpage=teams&amp;league_id=<?php echo end($leagues)->id ?>&amp;season=<?php echo $latestSeason ?>&amp;view=constitution">Add Teams</a>
-				<a class="button-secondary" onclick="Racketmanager.notifyEntryOpen(<?php echo $competition_id ?>);" ><?php _e( 'Notify entries open', 'racketmanager' ) ?></a>
+				<input type="submit" value="<?php _e('Save'); ?>" name="saveconstitution" id="saveconstitution" class="btn btn-primary action" />
+				<a id="addTeams" class="btn btn-secondary" href="admin.php?page=racketmanager&amp;subpage=teams&amp;league_id=<?php echo end($leagues)->id ?>&amp;season=<?php echo $latestSeason ?>&amp;view=constitution">Add Teams</a>
+				<input class="btn btn-secondary" onclick="Racketmanager.notifyEntryOpen(<?php echo $competition_id ?>);" value="<?php _e( 'Notify entries open', 'racketmanager' ) ?>" />
 				<span id="notifyMessage"></span>
 			</div>
 			<?php wp_nonce_field( 'constitution-bulk' ) ?>
@@ -36,7 +36,7 @@ if ( empty($this->seasons) ) { ?>
 					<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
 					<option value="delete"><?php _e('Delete')?></option>
 				</select>
-				<input type="submit" value="<?php _e('Apply'); ?>" name="doactionconstitution" id="doactionconstitution" class="button-secondary action" />
+				<input type="submit" value="<?php _e('Apply'); ?>" name="doactionconstitution" id="doactionconstitution" class="btn btn-secondary action" />
 			</div>
 
 			<table class="widefat" summary="" title="RacketManager">

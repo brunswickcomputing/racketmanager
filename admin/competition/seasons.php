@@ -8,7 +8,7 @@
 			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
 			<option value="delete"><?php _e('Delete')?></option>
 		</select>
-		<input type="submit" value="<?php _e('Apply'); ?>" name="doactionseason" id="doactionseason" class="button-secondary action" />
+		<input type="submit" value="<?php _e('Apply'); ?>" name="doactionseason" id="doactionseason" class="btn btn-secondary action" />
 	</div>
 	<table class="widefat">
 		<thead>
@@ -68,5 +68,5 @@
 	</table>
 
 	<input type="hidden" name="season_id" value="<?php echo $season_id ?>" />
-	<p class="submit"><input type="submit" name="saveSeason" class="button button-primary" value="<?php if ( !$season_id ) _e( 'Add Season', 'racketmanager' ); else _e( 'Update Season', 'racketmanager' ); ?>" /></p>
+	<input type="submit" name="saveSeason" class="btn btn-primary" value="<?php if ( !$season_id ) _e( 'Add Season', 'racketmanager' ); else _e( 'Update Season', 'racketmanager' ); ?>" />
 </form>

@@ -30,7 +30,7 @@
         <select name="action" size="1">
           <option value="addCompetitionsToSeason"><?php _e('Add')?></option>
         </select>
-        <input type="submit" value="<?php _e('Apply'); ?>" name="doaddCompetitionsToSeason" id="doaddCompetitionsToSeason" class="button action" />
+        <input type="submit" value="<?php _e('Apply'); ?>" name="doaddCompetitionsToSeason" id="doaddCompetitionsToSeason" class="btn btn-primary action" />
       </div>
 
       <table class="widefat" summary="" title="RacketManager Competitions">

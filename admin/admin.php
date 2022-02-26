@@ -26,20 +26,19 @@ final class RacketManagerAdmin extends RacketManager
 		add_action( 'admin_enqueue_scripts', array(&$this, 'loadStyles') );
 
 		add_action( 'admin_menu', array(&$this, 'menu') );
-        add_action( 'admin_footer', array(&$this, 'scroll_top') );
+    add_action( 'admin_footer', array(&$this, 'scroll_top') );
 
-        add_action( 'show_user_profile', array(&$this, 'custom_user_profile_fields') );
-        add_action( 'edit_user_profile', array(&$this, 'custom_user_profile_fields') );
-        add_action( 'personal_options_update', array(&$this, 'update_extra_profile_fields') );
-        add_action( 'edit_user_profile_update', array(&$this, 'update_extra_profile_fields') );
+    add_action( 'show_user_profile', array(&$this, 'custom_user_profile_fields') );
+    add_action( 'edit_user_profile', array(&$this, 'custom_user_profile_fields') );
+    add_action( 'personal_options_update', array(&$this, 'update_extra_profile_fields') );
+    add_action( 'edit_user_profile_update', array(&$this, 'update_extra_profile_fields') );
 
-        add_action( 'admin_menu', array(&$this, 'menu') );
 		// Add meta box to post screen
 
 		add_action( 'publish_post', array(&$this, 'editMatchReport') );
 		add_action( 'edit_post', array(&$this, 'editMatchReport') );
 		add_action('add_meta_boxes', array(&$this, 'metaboxes'));
-        add_action( 'wp_ajax_racketmanager_get_league_dropdown', array(&$this, 'getLeagueDropdown'));
+    add_action( 'wp_ajax_racketmanager_get_league_dropdown', array(&$this, 'getLeagueDropdown'));
 	}
 
     /**
@@ -1287,8 +1286,9 @@ final class RacketManagerAdmin extends RacketManager
 	 *
 	 */
 	public function loadStyles() {
+		wp_enqueue_style('racketmanager-bootstrap', plugins_url("/css/bootstrap.min.css", dirname(__FILE__)), false, RACKETMANAGER_VERSION, 'screen');
+    wp_enqueue_style('racketmanager', plugins_url("/css/admin.css", dirname(__FILE__)), false, RACKETMANAGER_VERSION, 'screen');
 		wp_enqueue_style('racketmanager-modal', plugins_url("/css/modal.css", dirname(__FILE__)), false, RACKETMANAGER_VERSION, 'screen');
-        wp_enqueue_style('racketmanager', plugins_url("/css/admin.css", dirname(__FILE__)), false, RACKETMANAGER_VERSION, 'screen');
 
 		wp_register_style('jquery-ui', plugins_url("/css/jquery/jquery-ui.min.css", dirname(__FILE__)), false, '1.11.4', 'all');
 		wp_register_style('jquery-ui-structure', plugins_url("/css/jquery/jquery-ui.structure.min.css", dirname(__FILE__)), array('jquery-ui'), '1.11.4', 'all');

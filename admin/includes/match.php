@@ -131,7 +131,7 @@
 										<?php do_action('edit_matches_columns_'.$league->sport, (isset($matches[$i]) ? $matches[$i] : ''), $league, $season, (isset($teams) ? $teams : ''), $i) ?>
 										<?php if ( $singleCupGame ) { ?>
 											<td>
-												<input type="button" value="<?php _e('Notify teams', 'racketmanager') ?>" class="button button-secondary" onclick="Racketmanager.notifyTeams(<?php echo $matches[$i]->id ?>)" />
+												<input type="button" value="<?php _e('Notify teams', 'racketmanager') ?>" class="btn btn-secondary" onclick="Racketmanager.notifyTeams(<?php echo $matches[$i]->id ?>)" /><span class="notifymessage" id="notifyMessage-<?php echo $matches[$i]->id ?>"></span>
 											</td>
 										<?php } ?>
 									</tr>

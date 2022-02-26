@@ -1663,7 +1663,7 @@ class RacketManagerAJAX extends RacketManager {
 			$return = __('No notification','racketmanager');
 		}
 
-		die(json_encode($return));
+		die($return);
 	}
 
 	/**

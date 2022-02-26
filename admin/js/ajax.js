@@ -235,13 +235,16 @@ Racketmanager.confirmResults = function() {
 };
 Racketmanager.notifyTeams = function(matchId) {
 
+    notifyField = "#notifyMessage-"+matchId;
     jQuery.ajax({
                 url:RacketManagerAjaxL10n.requestUrl,
                 type: "POST",
                 data: {"matchId": matchId,
                 "action": "racketmanager_notify_teams"},
                 success: function(response) {
-                alert(response);
+                jQuery(notifyField).text(response);
+                jQuery(notifyField).show();
+                jQuery(notifyField).delay(10000).fadeOut('slow');
                 },
                 error: function() {
                 alert("Ajax error on notifying teams");

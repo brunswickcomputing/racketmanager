@@ -55,12 +55,13 @@ jQuery(function() {
   } else { ?>
     <div id="tabs" class="league-blocks">
       <ul id="tablist" style="display: none;">
-        <li><h2><a href="#standings-table"><?php _e( 'Standings', 'racketmanager' ) ?></a></h2></li>
-        <li><h2><a href="#crosstable"><?php _e( 'Crosstable', 'racketmanager' ) ?></a></h2></li>
-        <li><h2><a href="#matches-table"><?php _e( 'Match Plan', 'racketmanager' ) ?></a></h2></li>
+        <li><a href="#standings-table"><?php _e( 'Standings', 'racketmanager' ) ?></a></li>
+        <li><a href="#crosstable"><?php _e( 'Crosstable', 'racketmanager' ) ?></a></li>
+        <li><a href="#matches-table"><?php _e( 'Match Plan', 'racketmanager' ) ?></a></li>
       </ul>
 
       <div id="standings-table" class="league-block-container">
+        <h2><?php _e( 'Standings', 'racketmanager' ) ?></h2>
         <div class="alignright">
           <form action="admin.php" method="get">
             <input type="hidden" name="page" value="racketmanager" />
@@ -76,11 +77,13 @@ jQuery(function() {
 
       <!-- crosstable -->
       <div id="crosstable" class="league-block-container">
+        <h2><?php _e( 'Crosstable', 'racketmanager' ) ?></h2>
         <?php include(RACKETMANAGER_PATH . '/admin/includes/crosstable.php'); ?>
       </div>
 
       <!-- match table -->
       <div id="matches-table" class="league-block-container">
+        <h2><?php _e( 'Matches', 'racketmanager' ) ?></h2>
         <?php include(RACKETMANAGER_PATH . '/admin/includes/matches.php'); ?>
       </div>
     </div>

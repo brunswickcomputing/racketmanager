@@ -48,10 +48,10 @@ if ( !current_user_can( 'manage_racketmanager' ) ) {
 				<input type="hidden" class="active-tab" name="active-tab" value="<?php echo $tab ?>" ?>
 
 				<ul id="tablist" style="display: none";>
-					<li><h3><a href="#general"><?php _e( 'General', 'racketmanager' ) ?></a></h3></li>
-					<li><h3><a href="#standings"><?php _e( 'Standings Table', 'racketmanager' ) ?></a></h3></li>
-					<li><h3><a href="#advanced"><?php _e( 'Advanced', 'racketmanager' ) ?></a></h3></li>
-					<li><h3><a href="#availability"><?php _e( 'Availability', 'racketmanager' ) ?></a></h3></li>
+					<li><a href="#general"><?php _e( 'General', 'racketmanager' ) ?></a></li>
+					<li><a href="#standings"><?php _e( 'Standings Table', 'racketmanager' ) ?></a></li>
+					<li><a href="#advanced"><?php _e( 'Advanced', 'racketmanager' ) ?></a></li>
+					<li><a href="#availability"><?php _e( 'Availability', 'racketmanager' ) ?></a></li>
 				</ul>
 
 				<div id='general' class='settings-block-container'>

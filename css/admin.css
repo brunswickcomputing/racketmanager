@@ -452,7 +452,7 @@ td.matchday.playmulti {
 .tablenav #table-paging {
     margin-right: 2px;
 }
-#seasons-table a, #clubs-table a, #results-table a, #tournament-table a, #teams-table a {
+#seasons-table a, #clubs-table a, #results-table a, #tournament-table a, #teams-table a, #constitution a {
     color: #ffffff;
 }
 #teams-table .teamname a, #clubs-table .clubname a, #results-table .match-title a {

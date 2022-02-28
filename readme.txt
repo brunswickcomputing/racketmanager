@@ -50,6 +50,15 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.4.0 =
+* BUGFIX: fix season setting
+* UPDATE: add competition constitution option
+* UPDATE: allow league entry by match secretaries
+* UPDATE: give archive links correct name
+* UPDATE: set correct rewrite rules
+* UPDATE: set number of rounds correctly in championship construct
+* UPDATE: use bootstrap v5 for admin screens
+
 = 6.3.0 =
 * BUGFIX: check team found in competition->getTeamInfo
 * BUGFIX: correct html element in email_welcome template

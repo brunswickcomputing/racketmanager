@@ -1,6 +1,5 @@
 <?php
-global $wpdb, $league, $racketmanager;
-
+global $racketmanager;
 $matches = $racketmanager->getMatches( array('confirmed' => true) );
 $prev_league = 0;
 ?>
@@ -61,18 +60,6 @@ $prev_league = 0;
           <?php } ?>
         </tbody>
       </table>
-
-      <?php do_action ( 'racketmanager_match_administration_descriptions' ) ?>
-
-      <div class="tablenav">
-
-        <?php if ( $matches ) { ?>
-          <input type="submit" name="updateResults" id="updateResults" value="<?php _e( 'Update Results','racketmanager' ) ?>" class="btn btn-primary" onclick="return Racketmanager.confirmResults()" />
-        <?php } ?>
-      </div>
-      <div id="message">
-        <p id="MatchUpdateResponse"></p>
-      </div>
     </form>
   </div>
 </div>

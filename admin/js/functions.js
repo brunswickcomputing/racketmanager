@@ -358,3 +358,7 @@ Racketmanager.removeField = function(id, parent_id) {
 Racketmanager.reInit = function() {
 	tb_init('a.thickbox, area.thickbox, input.thickbox');
 }
+function activaTab(tab) {
+    jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');
+		jQuery('.nav-pills button[data-bs-target="#' + tab + '"]').tab('show');
+}

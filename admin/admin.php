@@ -56,6 +56,10 @@ final class RacketManagerAdmin extends RacketManager
         add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
         add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
 
+				$page = add_submenu_page('racketmanager', __('RacketManager', 'racketmanager'), __('Results','racketmanager'),'racket_manager', 'racketmanager-results', array(&$this, 'display'));
+        add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+        add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+
         $page = add_submenu_page('racketmanager', __('Settings', 'racketmanager'), __('Settings','racketmanager'),'racketmanager_settings', 'racketmanager-settings', array( $this, 'display' ));
         add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
         add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
@@ -214,6 +218,9 @@ final class RacketManagerAdmin extends RacketManager
 			case 'racketmanager-doc':
 				include_once( dirname(__FILE__) . '/documentation.php' );
 				break;
+				case 'racketmanager-results':
+					$this->displayResultsPage();
+					break;
 			case 'racketmanager-settings':
 				$this->displayOptionsPage();
 				break;
@@ -461,6 +468,39 @@ final class RacketManagerAdmin extends RacketManager
             }
             include_once( dirname(__FILE__) . '/index.php' );
         }
+	}
+
+	/**
+	* show RacketManager results page
+	*
+	*/
+	private function displayResultsPage() {
+		global $league, $championship, $competition ;
+
+		if ( !current_user_can( 'view_leagues' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+		} else {
+			$tab = "results";	
+			if ( isset($_POST['doResultsChecker']) ) {
+				if ( current_user_can('update_results') ) {
+					check_admin_referer('results-checker-bulk');
+					foreach ( $_POST['resultsChecker'] AS $i => $resultsChecker_id ) {
+						if ( $_POST['action'] == 'approve' ) {
+							$this->approveResultsChecker( intval($resultsChecker_id) );
+						} elseif ( $_POST['action'] == 'handle' ) {
+							$this->handleResultsChecker( intval($resultsChecker_id) );
+						} elseif ( $_POST['action'] == 'delete' ) {
+							$this->deleteResultsChecker( intval($resultsChecker_id) );
+						}
+					}
+				} else {
+					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+				}
+				$this->printMessage();
+				$tab = "resultschecker";
+			}
+		}
+		include_once( dirname(__FILE__) . '/show-results.php' );
 	}
 
     /**
@@ -1264,6 +1304,8 @@ final class RacketManagerAdmin extends RacketManager
 	 *
 	 */
 	public function loadScripts() {
+			wp_register_script( 'racketmanager-bootstrap', plugins_url('/admin/js/bootstrap/bootstrap.js', dirname(__FILE__)), array(), RACKETMANAGER_VERSION );
+			wp_enqueue_script('racketmanager-bootstrap');
 		wp_register_script( 'racketmanager-functions', plugins_url('/admin/js/functions.js', dirname(__FILE__)), array( 'thickbox', 'jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'jquery-ui-tabs', 'jquery-ui-accordion', 'jquery-ui-sortable', 'jquery-ui-tooltip', 'jquery-effects-core', 'jquery-effects-slide', 'jquery-effects-explode', 'jquery-ui-autocomplete', 'iris' ), RACKETMANAGER_VERSION );
 		wp_enqueue_script('racketmanager-functions');
 

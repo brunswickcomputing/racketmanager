@@ -12,7 +12,7 @@
 				<?php } ?>
 			</select>
 		<?php } ?>
-		<input type="submit" value="<?php _e( 'View Teams','racketmanager' ) ?>" class="btn btn-primary" />
+		<input type="submit" value="<?php _e( 'View Teams','racketmanager' ) ?>" class="btn btn-secondary" />
 	</div>
 
 </form>

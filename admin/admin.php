@@ -1555,6 +1555,16 @@ final class RacketManagerAdmin extends RacketManager
 	}
 
 	/**
+	 * get available competition types
+	 *
+	 * @return array
+	 */
+	public function getCompetitionTypes() {
+		$competitionTypes = array( 'league' => __('league', 'racketmanager'), 'cup' => __('cup', 'racketmanager'), 'tournament' => __('tournament', 'racketmanager') );
+		return $competitionTypes;
+	}
+
+	/**
 	 * get available league modes
 	 *
 	 * @return array
@@ -2813,8 +2823,9 @@ final class RacketManagerAdmin extends RacketManager
                 $options['rosterLeadTime'] = htmlspecialchars($_POST['rosterLeadTime']);
                 $options['playedRounds'] = htmlspecialchars($_POST['playedRounds']);
                 $options['playerLocked'] = htmlspecialchars($_POST['playerLocked']);
-								$competitionTypes = array('Cup','League','Tournament');
+								$competitionTypes = $this->getCompetitionTypes();
 							  foreach ( $competitionTypes AS $competitionType ) {
+									$competitionType = ucfirst($competitionType);
 									if ( $competitionType == 'League' ) { $competitionType = ''; }
 									$matchCapability = 'matchCapability'.$competitionType;
 						      $resultEntry = 'resultEntry'.$competitionType;

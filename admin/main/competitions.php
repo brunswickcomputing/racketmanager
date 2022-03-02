@@ -18,7 +18,7 @@ jQuery(function() {
     <li><a href="#competitions-league"><?php _e( 'Leagues', 'racketmanager' ) ?></a></li>
     <li><a href="#competitions-tournament"><?php _e( 'Tournaments', 'racketmanager' ) ?></a></li>
   </ul>
-  <?php $competitionTypes = array('cup','league','tournament');
+  <?php $competitionTypes = $this->getCompetitionTypes();
   foreach ( $competitionTypes AS $competitionType ) {
     $season = '';
     $competitionQuery = array( 'type' => $competitionType );

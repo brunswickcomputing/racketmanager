@@ -16,7 +16,6 @@ jQuery(function() {
 		<ul id="tablist" style="display: none;">
 			<li><a href="#competitions-table"><?php _e( 'Competitions', 'racketmanager' ) ?></a></li>
 			<li><a href="#seasons-table"><?php _e( 'Seasons', 'racketmanager' ) ?></a></li>
-			<li><a href="#roster-table"><?php _e( 'Rosters', 'racketmanager' ) ?></a></li>
 			<li><a href="#player-table"><?php _e( 'Players', 'racketmanager' ) ?></a></li>
 			<li><a href="#rosterrequest-table"><?php _e( 'Roster Request', 'racketmanager' ) ?></a></li>
 		</ul>
@@ -28,10 +27,6 @@ jQuery(function() {
 		<div id="seasons-table" class="league-block-container">
 			<h2 class="header"><?php _e( 'Seasons', 'racketmanager' ) ?></h2>
 			<?php include('main/seasons.php'); ?>
-		</div>
-		<div id="roster-table" class="league-block-container">
-			<h2 class="header"><?php _e( 'Rosters', 'racketmanager' ) ?></h2>
-			<?php include('main/rosters.php'); ?>
 		</div>
 		<div id="rosterrequest-table" class="league-block-container">
 			<h2 class="header"><?php _e( 'Roster Request', 'racketmanager' ) ?></h2>

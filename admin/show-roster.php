@@ -1,28 +1,16 @@
+<?php
+/**
+* Roster main page administration panel
+*
+*/
+namespace ns;
+?>
+<div class="container">
+	<p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager-clubs"><?php _e( 'Clubs', 'racketmanager' ) ?></a> &raquo; <?php _e( 'Players', 'racketmanager' ) ?></p>
+	<h1><?php _e( 'Players', 'racketmanager' ) ?> - <?php echo $club->name ?></h1>
+
 <!-- View Rosters -->
 <div class="row row-cols-1 row-cols-sm-1 row-cols-md-2">
-	<div>
-		<form action="admin.php?page=racketmanager" method="get">
-			<input type="hidden" name="page" value="racketmanager" />
-			<input type="hidden" name="view" value="roster" />
-			<div class="lm-form-table">
-				<?php if ( $clubs = $racketmanager->getClubs( ) ) { ?>
-					<div class="form-group">
-						<label for="club_id"><?php _e("Club","racketmanager") ?></label>
-						<div class="input">
-							<select size="1" name="club_id" id="club_id">
-								<option><?php _e( 'Select affiliated club', 'racketmanager' ) ?></option>
-								<?php foreach ( $clubs AS $club ) { ?>
-									<option value="<?php echo $club->id ?>" <?php echo ($club->id == $club_id ?  'selected' :  '') ?>><?php echo $club->name ?></option>
-								<?php } ?>
-							</select>
-						</div>
-					</div>
-				<?php } ?>
-				<input type="submit" value="<?php _e( 'View Roster','racketmanager' ) ?>" class="btn btn-secondary" />
-			</div>
-		</form>
-	</div>
-
 	<!-- Add Roster -->
 	<div>
 		<form action="" method="post">
@@ -46,7 +34,7 @@
 						</div>
 					</div>
 				<?php } ?>
-				<input type="submit" name="addPlayertoRoster" value="<?php _e( 'Add Roster','racketmanager' ) ?>" class="btn btn-primary" />
+				<input type="submit" name="addPlayertoRoster" value="<?php _e( 'Add Player','racketmanager' ) ?>" class="btn btn-primary" />
 			</div>
 			<input type="hidden" name="addRoster" value="player" />
 			<input type="hidden" name="club_id" value=<?php echo $club_id ?> />
@@ -106,3 +94,4 @@
 		<?php } ?>
 	</table>
 </form>
+</div>

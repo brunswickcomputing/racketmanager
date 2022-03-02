@@ -296,6 +296,8 @@ final class RacketManagerAdmin extends RacketManager
 			$view = isset($_GET['view']) ? $_GET['view'] : '';
 				if ( $view == 'teams' ) {
 					$this->displayTeamsPage();
+				} elseif ( $view == 'roster' ) {
+					$this->displayRosterPage();
 				} else {
 					$this->displayClubsPage();
 				}
@@ -408,35 +410,11 @@ final class RacketManagerAdmin extends RacketManager
                 }
                 $this->printMessage();
                 $tab = 1;
-            } elseif ( isset($_POST['addRoster']) ) {
-                if ( current_user_can('edit_teams') ) {
-                    check_admin_referer('racketmanager_add-roster');
-                    if (isset($_POST['club_id']) && (!$_POST['club_id'] == 0)) {
-                        $this->addPlayerIdToRoster( $_POST['club_id'], $_POST['player_id'] );
-                    } else {
-                        $this->setMessage( __("Club must be selected",'racketmanager'), true );
-                    }
-                } else {
-                    $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-                }
-                $this->printMessage();
-                $tab = 2;
-            } elseif ( isset($_POST['dorosterdel']) && $_POST['action'] == 'delete' ) {
-                if ( current_user_can('edit_teams') ) {
-                    check_admin_referer('roster-bulk');
-                    foreach ( $_POST['roster'] AS $roster_id ) {
-                        $this->delRoster( intval($roster_id) );
-                    }
-                } else {
-                    $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-                }
-                $this->printMessage();
-                $tab = 2;
             } elseif ( isset($_POST['addPlayer']) ) {
                 check_admin_referer('racketmanager_add-player');
                 $this->addPlayer( htmlspecialchars(strip_tags($_POST['firstname'])), htmlspecialchars(strip_tags($_POST['surname'])), $_POST['gender'], htmlspecialchars(strip_tags($_POST['btm'])), 'true');
                 $this->printMessage();
-                $tab = 3;
+                $tab = 2;
 			} elseif ( isset($_POST['doPlayerDel']) && $_POST['action'] == 'delete' ) {
                 if ( current_user_can('edit_teams') ) {
                     check_admin_referer('player-bulk');
@@ -447,7 +425,7 @@ final class RacketManagerAdmin extends RacketManager
                     $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
                 }
                 $this->printMessage();
-                $tab = 3;
+                $tab = 2;
             } elseif ( isset($_POST['dorosterrequest']) ) {
                 if ( current_user_can('edit_teams') ) {
                     check_admin_referer('roster-request-bulk');
@@ -462,29 +440,9 @@ final class RacketManagerAdmin extends RacketManager
                     $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
                 }
                 $this->printMessage();
-                $tab = 4;
-            } elseif ( isset($_POST['doResultsChecker']) ) {
-                if ( current_user_can('update_results') ) {
-                    check_admin_referer('results-checker-bulk');
-                    foreach ( $_POST['resultsChecker'] AS $i => $resultsChecker_id ) {
-                        if ( $_POST['action'] == 'approve' ) {
-                            $this->approveResultsChecker( intval($resultsChecker_id) );
-                        } elseif ( $_POST['action'] == 'handle' ) {
-                            $this->handleResultsChecker( intval($resultsChecker_id) );
-												} elseif ( $_POST['action'] == 'delete' ) {
-	                          $this->deleteResultsChecker( intval($resultsChecker_id) );
-	                      }
-                    }
-                } else {
-                    $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-                }
-                $this->printMessage();
-                $tab = 8;
-            } elseif ( isset($_GET['view']) && $_GET['view'] == 'roster' ) {
-                if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
-                $tab = 2;
+                $tab = 3;
             } elseif ( isset($_GET['view']) && $_GET['view'] == 'rosterRequest' ) {
-                $tab = 4;
+                $tab = 3;
             }
             include_once( dirname(__FILE__) . '/index.php' );
         }
@@ -1092,6 +1050,44 @@ final class RacketManagerAdmin extends RacketManager
 				$club = (object)array( 'name' => '', 'type' => '', 'id' => '', 'website' => '', 'matchsecretary' => '', 'matchSecretaryName' => '', 'contactno' => '', 'matchSecretaryContactNo' => '', 'matchSecretaryEmail' => '', 'shortcode' => '', 'founded' => '', 'facilities' => '', 'address' => '', 'latitude' => '', 'longitude' => '' );
 			}
 			include_once( dirname(__FILE__) . '/includes/club.php' );
+		}
+	}
+
+	/**
+	* display roster page
+	*
+	*/
+	private function displayRosterPage() {
+		global $racketmanager;
+
+		if ( !current_user_can( 'edit_teams' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+		} else {
+			if ( isset($_POST['addRoster']) ) {
+				if ( current_user_can('edit_teams') ) {
+						check_admin_referer('racketmanager_add-roster');
+						if (isset($_POST['club_id']) && (!$_POST['club_id'] == 0)) {
+								$this->addPlayerIdToRoster( $_POST['club_id'], $_POST['player_id'] );
+						} else {
+								$this->setMessage( __("Club must be selected",'racketmanager'), true );
+						}
+				} else {
+						$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+				}
+			} elseif ( isset($_POST['dorosterdel']) && $_POST['action'] == 'delete' ) {
+				if ( current_user_can('edit_teams') ) {
+						check_admin_referer('roster-bulk');
+						foreach ( $_POST['roster'] AS $roster_id ) {
+								$this->delRoster( intval($roster_id) );
+						}
+				} else {
+					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+				}
+			}
+			$this->printMessage();
+			if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
+			$club = get_club($club_id);
+			include_once( dirname(__FILE__) . '/show-roster.php' );
 		}
 	}
 

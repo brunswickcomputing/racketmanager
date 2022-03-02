@@ -105,6 +105,17 @@ final class RacketManagerAdmin extends RacketManager
 
 		$page = add_submenu_page(
 			'racketmanager'
+			, __('Administration', 'racketmanager')
+			, __('Administration','racketmanager')
+			,'racketmanager_settings'
+			, 'racketmanager-admin'
+			, array( $this, 'display' )
+		);
+		add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+		add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+
+		$page = add_submenu_page(
+			'racketmanager'
 			, __('Settings', 'racketmanager')
 			, __('Settings','racketmanager')
 			,'racketmanager_settings'
@@ -305,6 +316,9 @@ final class RacketManagerAdmin extends RacketManager
 			case 'racketmanager-results':
 			$this->displayResultsPage();
 			break;
+			case 'racketmanager-admin':
+			$this->displayAdminPage();
+			break;
 			case 'racketmanager-settings':
 			$this->displayOptionsPage();
 			break;
@@ -391,25 +405,6 @@ final class RacketManagerAdmin extends RacketManager
                 } else {
                     $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
                 }
-            } elseif ( isset($_POST['addSeason']) ) {
-                check_admin_referer('racketmanager_add-season');
-                $this->addSeason( htmlspecialchars(strip_tags($_POST['seasonName'])) );
-                $this->printMessage();
-                $tab = 1;
-            } elseif ( isset($_POST['doSeasonDel']) && $_POST['action'] == 'delete' ) {
-                check_admin_referer('seasons-bulk');
-                foreach ( $_POST['season'] AS $season_id ) {
-                    $this->delSeason( intval($season_id) );
-                }
-                $this->printMessage();
-                $tab = 1;
-            } elseif ( isset($_POST['doaddCompetitionsToSeason']) && $_POST['action'] == 'addCompetitionsToSeason' ) {
-                check_admin_referer('racketmanager_add-seasons-competitions-bulk');
-                foreach ( $_POST['competition'] AS $competition_id ) {
-                    $this->addSeasonToCompetition( htmlspecialchars($_POST['season']), intval($_POST['num_match_days']), $competition_id );
-                }
-                $this->printMessage();
-                $tab = 1;
             } elseif ( isset($_POST['addPlayer']) ) {
                 check_admin_referer('racketmanager_add-player');
                 $this->addPlayer( htmlspecialchars(strip_tags($_POST['firstname'])), htmlspecialchars(strip_tags($_POST['surname'])), $_POST['gender'], htmlspecialchars(strip_tags($_POST['btm'])), 'true');
@@ -1357,6 +1352,40 @@ final class RacketManagerAdmin extends RacketManager
             include_once( dirname(__FILE__) . '/includes/match.php' );
         }
     }
+
+	/**
+	* display admin page
+	*
+	*/
+	private function displayAdminPage() {
+		global $racketmanager;
+
+		if ( !current_user_can( 'edit_leagues' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+		} else {
+			$tab = "seasons";
+			if ( isset($_POST['addSeason']) ) {
+				check_admin_referer('racketmanager_add-season');
+				$this->addSeason( htmlspecialchars(strip_tags($_POST['seasonName'])) );
+				$tab = "seasons";
+			} elseif ( isset($_POST['doSeasonDel']) && $_POST['action'] == 'delete' ) {
+				check_admin_referer('seasons-bulk');
+				foreach ( $_POST['season'] AS $season_id ) {
+					$this->delSeason( intval($season_id) );
+				}
+				$tab = "seasons";
+			} elseif ( isset($_POST['doaddCompetitionsToSeason']) && $_POST['action'] == 'addCompetitionsToSeason' ) {
+				check_admin_referer('racketmanager_add-seasons-competitions-bulk');
+				foreach ( $_POST['competition'] AS $competition_id ) {
+					$this->addSeasonToCompetition( htmlspecialchars($_POST['season']), intval($_POST['num_match_days']), $competition_id );
+				}
+				$tab = "seasons";
+			}
+			$this->printMessage();
+
+			include_once( dirname(__FILE__) . '/show-admin.php' );
+		}
+	}
 
     /**
 	 * display import Page

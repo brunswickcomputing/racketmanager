@@ -44,7 +44,7 @@
 	<div class="form-group">
 		<label for="seasonName"><?php _e( 'Name', 'racketmanager' ) ?></label>
 		<div class="input">
-			<input required="required" placeholder="<?php _e( 'Enter name for new season', 'racketmanager') ?>" type="text" name="seasonName" id="seasonName" value=""  />
+			<input required="required" placeholder="<?php _e( 'Enter season name', 'racketmanager') ?>" type="text" name="seasonName" id="seasonName" value=""  />
 		</div>
 	</div>
 	<input type="hidden" name="addSeason" value="season" />

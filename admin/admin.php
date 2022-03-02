@@ -237,39 +237,41 @@ final class RacketManagerAdmin extends RacketManager
 			default:
 				if ( isset($_GET['subpage']) ) {
 					switch ($_GET['subpage']) {
+						case 'show-competitions':
+						$this->displayCompetitionsPage();
+						break;
 						case 'show-competition':
-                            $this->displayCompetitionPage();
-							break;
-                        case 'competitions':
-                            $this->displayCompetitionsPage();
-                            break;
-                        case 'club':
-                            $this->displayClubPage();
-                            break;
-                        case 'team':
-                            $this->displayTeamPage();
-                            break;
-                        case 'tournament':
-                            $this->displayTournamentPage();
-                            break;
+						$this->displayCompetitionPage();
+						break;
+						case 'competitions':
+						$this->displayCompetitionsList();
+						break;
+						case 'club':
+						$this->displayClubPage();
+						break;
+						case 'team':
+						$this->displayTeamPage();
+						break;
+						case 'tournament':
+						$this->displayTournamentPage();
+						break;
 						default:
-                            $this->league_id = intval($_GET['league_id']);
-                            $league = get_league($this->league_id);
-
-							$menu = $this->getMenu();
-							$page = htmlspecialchars($_GET['subpage']);
-							if ( array_key_exists( $page, $menu ) ) {
-								if ( isset($menu[$page]['callback']) && is_callable($menu[$page]['callback']) ) {
-									call_user_func($menu[$page]['callback']);
-								} else {
-									include_once( $menu[$page]['file'] );
-								}
+						$this->league_id = intval($_GET['league_id']);
+						$league = get_league($this->league_id);
+						$menu = $this->getMenu();
+						$page = htmlspecialchars($_GET['subpage']);
+						if ( array_key_exists( $page, $menu ) ) {
+							if ( isset($menu[$page]['callback']) && is_callable($menu[$page]['callback']) ) {
+								call_user_func($menu[$page]['callback']);
 							} else {
-                                $this->displayLeaguePage();
+								include_once( $menu[$page]['file'] );
 							}
+						} else {
+							$this->displayLeaguePage();
+						}
 					}
 				} else {
-                    $this->displayIndexPage();
+          $this->displayIndexPage();
 				}
 		}
 	}
@@ -480,7 +482,7 @@ final class RacketManagerAdmin extends RacketManager
 		if ( !current_user_can( 'view_leagues' ) ) {
 			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
 		} else {
-			$tab = "results";	
+			$tab = "results";
 			if ( isset($_POST['doResultsChecker']) ) {
 				if ( current_user_can('update_results') ) {
 					check_admin_referer('results-checker-bulk');
@@ -503,6 +505,24 @@ final class RacketManagerAdmin extends RacketManager
 		include_once( dirname(__FILE__) . '/show-results.php' );
 	}
 
+	/**
+	* display competitions page
+	*
+	*/
+	private function displayCompetitionsPage() {
+		global $racketmanager, $competition;
+
+		if ( !current_user_can( 'edit_leagues' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+		} else {
+			$competitionType = $_GET['competitiontype'];
+			$season = $_GET['season'];
+			$type = $_GET['type'];
+			$competitionQuery = array( 'type' => $competitionType, 'name' => $type, 'season' => $season );
+			include_once( dirname(__FILE__) . '/show-competitions.php' );
+		}
+	}
+
     /**
      * display competition page
      *
@@ -510,7 +530,7 @@ final class RacketManagerAdmin extends RacketManager
     private function displayCompetitionPage() {
         global $racketmanager, $competition;
 
-        if ( !current_user_can( 'edit_teams' ) ) {
+        if ( !current_user_can( 'edit_leagues' ) ) {
             echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
         } else {
             $tab = 0;
@@ -999,10 +1019,10 @@ final class RacketManagerAdmin extends RacketManager
     }
 
     /**
-     * display competitions page
+     * display competitions list page
      *
      */
-    private function displayCompetitionsPage() {
+    private function displayCompetitionsList() {
         global $racketmanager;
 
         if ( !current_user_can( 'edit_teams' ) ) {

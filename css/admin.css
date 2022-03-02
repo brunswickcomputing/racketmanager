@@ -455,7 +455,7 @@ td.matchday.playmulti {
 #seasons-table a, #clubs-table a, #results-table a, #tournament-table a, #teams-table a, #constitution a {
     color: #ffffff;
 }
-#teams-table .teamname a, #clubs-table .clubname a, #results-table .match-title a {
+#teams-table .teamname a, #clubs-table .clubname a, #results-table .match-title a, #tournament-table .tournamentname a {
     color: #222222;
 }
 .tablenav a.button-secondary {

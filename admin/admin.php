@@ -405,23 +405,6 @@ final class RacketManagerAdmin extends RacketManager
                 } else {
                     $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
                 }
-            } elseif ( isset($_POST['dorosterrequest']) ) {
-                if ( current_user_can('edit_teams') ) {
-                    check_admin_referer('roster-request-bulk');
-                    foreach ( $_POST['rosterRequest'] AS $i => $rosterRequest_id ) {
-                        if ( $_POST['action'] == 'approve' ) {
-                            $this->_approveRosterRequest( intval($_POST['club_id'][$i]), intval($rosterRequest_id) );
-                        } elseif ( $_POST['action'] == 'delete' ) {
-                            $this->deleteRosterRequest( intval($rosterRequest_id) );
-                        }
-                    }
-                } else {
-                    $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-                }
-                $this->printMessage();
-                $tab = 3;
-            } elseif ( isset($_GET['view']) && $_GET['view'] == 'rosterRequest' ) {
-                $tab = 3;
             }
             include_once( dirname(__FILE__) . '/index.php' );
         }
@@ -1378,6 +1361,22 @@ final class RacketManagerAdmin extends RacketManager
 					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
 				}
 				$tab = "players";
+			} elseif ( isset($_POST['dorosterrequest']) ) {
+				if ( current_user_can('edit_teams') ) {
+					check_admin_referer('roster-request-bulk');
+					foreach ( $_POST['rosterRequest'] AS $i => $rosterRequest_id ) {
+						if ( $_POST['action'] == 'approve' ) {
+							$this->_approveRosterRequest( intval($_POST['club_id'][$i]), intval($rosterRequest_id) );
+						} elseif ( $_POST['action'] == 'delete' ) {
+							$this->deleteRosterRequest( intval($rosterRequest_id) );
+						}
+					}
+				} else {
+					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+				}
+				$tab = "rosterrequest";
+			} elseif ( isset($_GET['view']) && $_GET['view'] == 'rosterRequest' ) {
+				$tab = "rosterrequest";
 			}
 			$this->printMessage();
 

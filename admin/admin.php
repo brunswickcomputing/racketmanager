@@ -990,38 +990,6 @@ final class RacketManagerAdmin extends RacketManager
         }
     }
 
-    /**
-     * display club page
-     *
-     */
-    private function displayClubPage() {
-        global $racketmanager;
-
-        if ( !current_user_can( 'edit_teams' ) ) {
-            echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
-        } else {
-            $edit = false;
-            $noleague = true;
-            $league_id = '';
-            $season = '';
-            if ( isset( $_GET['club_id'] ) ) {
-                $clubId = $_GET['club_id'];
-                $edit = true;
-                $club = get_club( $clubId );
-
-                $form_title = __( 'Edit Club', 'racketmanager' );
-                $form_action = __( 'Update', 'racketmanager' );
-            } else {
-                $clubId = '';
-                $form_title = __( 'Add Club', 'racketmanager' );
-                $form_action = __( 'Add', 'racketmanager' );
-                $club = (object)array( 'name' => '', 'type' => '', 'id' => '', 'website' => '', 'matchsecretary' => '', 'matchSecretaryName' => '', 'contactno' => '', 'matchSecretaryContactNo' => '', 'matchSecretaryEmail' => '', 'shortcode' => '', 'founded' => '', 'facilities' => '', 'address' => '', 'latitude' => '', 'longitude' => '' );
-            }
-
-            include_once( dirname(__FILE__) . '/includes/club.php' );
-        }
-    }
-
 	/**
 	* display tournaments page
 	*
@@ -1114,6 +1082,37 @@ final class RacketManagerAdmin extends RacketManager
 		}
 	}
 
+	/**
+	* display club page
+	*
+	*/
+	private function displayClubPage() {
+		global $racketmanager;
+
+		if ( !current_user_can( 'edit_teams' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+		} else {
+			$edit = false;
+			$noleague = true;
+			$league_id = '';
+			$season = '';
+			if ( isset( $_GET['club_id'] ) ) {
+				$clubId = $_GET['club_id'];
+				$edit = true;
+				$club = get_club( $clubId );
+
+				$form_title = __( 'Edit Club', 'racketmanager' );
+				$form_action = __( 'Update', 'racketmanager' );
+			} else {
+				$clubId = '';
+				$form_title = __( 'Add Club', 'racketmanager' );
+				$form_action = __( 'Add', 'racketmanager' );
+				$club = (object)array( 'name' => '', 'type' => '', 'id' => '', 'website' => '', 'matchsecretary' => '', 'matchSecretaryName' => '', 'contactno' => '', 'matchSecretaryContactNo' => '', 'matchSecretaryEmail' => '', 'shortcode' => '', 'founded' => '', 'facilities' => '', 'address' => '', 'latitude' => '', 'longitude' => '' );
+			}
+
+			include_once( dirname(__FILE__) . '/includes/club.php' );
+		}
+	}
     /**
      * display competitions list page
      *

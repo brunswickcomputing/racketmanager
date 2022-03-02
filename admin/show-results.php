@@ -6,7 +6,6 @@ jQuery(document).ready(function(){
 });
 </script>
 <div class="container">
-	<p class="racketmanager_breadcrumb"><a href="index.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a></p>
 
 	<h1><?php _e("Results", "racketmanager") ?></h1>
 

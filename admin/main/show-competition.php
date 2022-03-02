@@ -40,7 +40,7 @@
               <th scope="row" class="check-column"><input type="checkbox" value="<?php echo $competition->id ?>" name="competition[<?php echo $competition->id ?>]" /></th>
             <?php } ?>
               <td class="column-num"><?php echo $competition->id ?></td>
-              <td><a href="index.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>"><?php echo $competition->name ?></a></td>
+              <td><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>"><?php echo $competition->name ?></a></td>
               <?php if ( !$season ) { ?>
               <td class="column-num"><?php echo $competition->num_seasons ?></td>
               <?php } ?>

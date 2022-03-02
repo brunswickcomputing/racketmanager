@@ -23,6 +23,7 @@
 				<th scope="col"><?php _e( 'Venue', 'racketmanager' ) ?></th>
 				<th scope="col"><?php _e( 'Date', 'racketmanager' ) ?></th>
 				<th scope="col"><?php _e( 'Closing Date', 'racketmanager' ) ?></th>
+				<th scope="col"><?php _e( 'Competitions', 'racketmanager' ) ?></th>
 			</tr>
 			<tbody id="the-list">
 				<?php if ( $tournaments = $racketmanager->getTournaments( array( 'orderby' => array('date' => 'desc', 'name' => 'asc')) ) ) { $class = ''; ?>
@@ -33,12 +34,13 @@
 							<input type="checkbox" value="<?php echo $tournament->id ?>" name="tournament[<?php echo $tournament->id ?>]" />
 						</th>
 						<td class="column-num"><?php echo $tournament->id ?></td>
-						<td><a href="admin.php?page=racketmanager&amp;subpage=tournament&amp;tournament_name=<?php echo $tournament->name ?> "><?php echo $tournament->name ?></a></td>
+						<td class="tournamentname"><a href="admin.php?page=racketmanager&amp;subpage=tournament&amp;tournament_name=<?php echo $tournament->name ?> "><?php echo $tournament->name ?></a></td>
 						<td><?php echo $tournament->type ?></td>
 						<td><?php echo $tournament->season ?></td>
 						<td><?php echo $tournament->venueName ?></td>
 						<td><?php echo $tournament->dateDisplay ?></td>
 						<td><?php echo $tournament->closingDateDisplay ?></td>
+						<td><a href="admin.php?page=racketmanager&amp;subpage=show-competitions&amp;season=<?php echo $tournament->season ?>&amp;type=<?php echo $tournament->type ?>&amp;competitiontype=tournament" class="btn btn-secondary"><?php _e( 'Competitions', 'racketmanager' ) ?></a></td>
 					</tr>
 				<?php } ?>
 			<?php } ?>

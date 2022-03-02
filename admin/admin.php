@@ -405,22 +405,6 @@ final class RacketManagerAdmin extends RacketManager
                 } else {
                     $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
                 }
-            } elseif ( isset($_POST['addPlayer']) ) {
-                check_admin_referer('racketmanager_add-player');
-                $this->addPlayer( htmlspecialchars(strip_tags($_POST['firstname'])), htmlspecialchars(strip_tags($_POST['surname'])), $_POST['gender'], htmlspecialchars(strip_tags($_POST['btm'])), 'true');
-                $this->printMessage();
-                $tab = 2;
-			} elseif ( isset($_POST['doPlayerDel']) && $_POST['action'] == 'delete' ) {
-                if ( current_user_can('edit_teams') ) {
-                    check_admin_referer('player-bulk');
-                    foreach ( $_POST['player'] AS $player_id ) {
-                        $this->delPlayer( intval($player_id) );
-                    }
-                } else {
-                    $this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-                }
-                $this->printMessage();
-                $tab = 2;
             } elseif ( isset($_POST['dorosterrequest']) ) {
                 if ( current_user_can('edit_teams') ) {
                     check_admin_referer('roster-request-bulk');
@@ -1380,6 +1364,20 @@ final class RacketManagerAdmin extends RacketManager
 					$this->addSeasonToCompetition( htmlspecialchars($_POST['season']), intval($_POST['num_match_days']), $competition_id );
 				}
 				$tab = "seasons";
+			} elseif ( isset($_POST['addPlayer']) ) {
+				check_admin_referer('racketmanager_add-player');
+				$this->addPlayer( htmlspecialchars(strip_tags($_POST['firstname'])), htmlspecialchars(strip_tags($_POST['surname'])), $_POST['gender'], htmlspecialchars(strip_tags($_POST['btm'])), 'true');
+				$tab = "players";
+			} elseif ( isset($_POST['doPlayerDel']) && $_POST['action'] == 'delete' ) {
+				if ( current_user_can('edit_teams') ) {
+					check_admin_referer('player-bulk');
+					foreach ( $_POST['player'] AS $player_id ) {
+						$this->delPlayer( intval($player_id) );
+					}
+				} else {
+					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+				}
+				$tab = "players";
 			}
 			$this->printMessage();
 

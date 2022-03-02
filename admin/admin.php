@@ -83,6 +83,17 @@ final class RacketManagerAdmin extends RacketManager
 
 		$page = add_submenu_page(
 			'racketmanager'
+			, __('Clubs', 'racketmanager')
+			, __('Clubs','racketmanager')
+			,'racket_manager'
+			, 'racketmanager-clubs'
+			, array(&$this, 'display')
+		);
+		add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+		add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+
+		$page = add_submenu_page(
+			'racketmanager'
 			, __('Results', 'racketmanager')
 			, __('Results','racketmanager')
 			,'racket_manager'
@@ -281,6 +292,9 @@ final class RacketManagerAdmin extends RacketManager
 			case 'racketmanager-tournaments':
 			$this->displayTournamentsPage();
 			break;
+			case 'racketmanager-clubs':
+			$this->displayClubsPage();
+			break;
 			case 'racketmanager-results':
 			$this->displayResultsPage();
 			break;
@@ -463,24 +477,6 @@ final class RacketManagerAdmin extends RacketManager
                 }
                 $this->printMessage();
                 $tab = 5;
-            } elseif ( isset($_POST['addClub']) ) {
-                check_admin_referer('racketmanager_add-club');
-                $this->addClub( htmlspecialchars($_POST['club']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['shortcode']),  htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['website']), htmlspecialchars($_POST['founded']), htmlspecialchars($_POST['facilities']), htmlspecialchars($_POST['address']), htmlspecialchars($_POST['latitude']), htmlspecialchars($_POST['longitude']) );
-                $this->printMessage();
-                $tab = 6;
-            } elseif ( isset($_POST['editClub']) ) {
-                check_admin_referer('racketmanager_manage-club');
-                $this->editClub( intval($_POST['club_id']), htmlspecialchars(strip_tags($_POST['club'])), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['shortcode']), intval($_POST['matchsecretary']), htmlspecialchars($_POST['matchSecretaryContactNo']), htmlspecialchars($_POST['matchSecretaryEmail']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['website']), htmlspecialchars($_POST['founded']), htmlspecialchars($_POST['facilities']), htmlspecialchars($_POST['address']), htmlspecialchars($_POST['latitude']), htmlspecialchars($_POST['longitude']) );
-                $this->printMessage();
-                $tab = 6;
-            } elseif ( isset($_POST['doClubDel']) && $_POST['action'] == 'delete' ) {
-                check_admin_referer('clubs-bulk');
-                foreach ( $_POST['club'] AS $club_id ) {
-                    $this->delClub( intval($club_id) );
-                }
-                $club_id = 0;
-                $this->printMessage();
-                $tab = 6;
             } elseif ( isset($_POST['doResultsChecker']) ) {
                 if ( current_user_can('update_results') ) {
                     check_admin_referer('results-checker-bulk');
@@ -506,8 +502,6 @@ final class RacketManagerAdmin extends RacketManager
             } elseif ( isset($_GET['view']) && $_GET['view'] == 'teams' ) {
                 if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
                 $tab = 5;
-            } elseif ( isset($_GET['view']) && $_GET['view'] == 'clubs' ) {
-                $tab = 6;
             }
             include_once( dirname(__FILE__) . '/index.php' );
         }
@@ -1089,6 +1083,36 @@ final class RacketManagerAdmin extends RacketManager
             include_once( dirname(__FILE__) . '/includes/tournament.php' );
         }
     }
+
+	/**
+	* display clubs page
+	*
+	*/
+	private function displayClubsPage() {
+		global $racketmanager;
+
+		if ( !current_user_can( 'edit_leagues' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+		} else {
+			if ( isset($_POST['addClub']) ) {
+				check_admin_referer('racketmanager_add-club');
+				$this->addClub( htmlspecialchars($_POST['club']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['shortcode']),  htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['website']), htmlspecialchars($_POST['founded']), htmlspecialchars($_POST['facilities']), htmlspecialchars($_POST['address']), htmlspecialchars($_POST['latitude']), htmlspecialchars($_POST['longitude']) );
+				$this->printMessage();
+			} elseif ( isset($_POST['editClub']) ) {
+				check_admin_referer('racketmanager_manage-club');
+				$this->editClub( intval($_POST['club_id']), htmlspecialchars(strip_tags($_POST['club'])), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['shortcode']), intval($_POST['matchsecretary']), htmlspecialchars($_POST['matchSecretaryContactNo']), htmlspecialchars($_POST['matchSecretaryEmail']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['website']), htmlspecialchars($_POST['founded']), htmlspecialchars($_POST['facilities']), htmlspecialchars($_POST['address']), htmlspecialchars($_POST['latitude']), htmlspecialchars($_POST['longitude']) );
+				$this->printMessage();
+			} elseif ( isset($_POST['doClubDel']) && $_POST['action'] == 'delete' ) {
+				check_admin_referer('clubs-bulk');
+				foreach ( $_POST['club'] AS $club_id ) {
+						$this->delClub( intval($club_id) );
+				}
+				$club_id = 0;
+				$this->printMessage();
+			}
+			include_once( dirname(__FILE__) . '/show-clubs.php' );
+		}
+	}
 
     /**
      * display competitions list page

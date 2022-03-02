@@ -4,12 +4,11 @@
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyBOw-540qtgbXJNz0D-zMcii1eAFYO1P1Y"></script>
 <script type="text/javascript" src="<?php echo plugins_url('/js/locationpicker.jquery.js', dirname(__FILE__)) ?>"></script>
 <script type="text/javascript" src="<?php echo plugins_url('/js/locationpicker.js', dirname(__FILE__)) ?>"></script>
-<div class="wrap league-block">
-	<p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <?php echo $form_title ?></p>
+<div class="container league-block">
+	<p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager-clubs"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <?php echo $form_title ?></p>
 	<h1><?php printf(  $form_title ); ?></h1>
 
-
-	<form action="admin.php?page=racketmanager&amp;view=clubs<?php if ( $clubId !== '' ) { ?>&amp;club_id=<?php echo $clubId ?> <?php } ?>" method="post" enctype="multipart/form-data" name="club_edit">
+	<form action="admin.php?page=racketmanager-clubs<?php if ( $clubId !== '' ) { ?>&amp;club_id=<?php echo $clubId ?> <?php } ?>" method="post" enctype="multipart/form-data" name="club_edit">
 
 		<?php if ( $edit ) { ?>
 			<?php wp_nonce_field( 'racketmanager_manage-club' ) ?>
@@ -20,7 +19,7 @@
 		<div class="form-group">
 			<label for="team"><?php _e( 'Club', 'racketmanager' ) ?></label>
 			<div class="input">
-				<input type="text" id="club" name="club" value="<?php echo $club->name ?>" size="30" placeholder="<?php _e( 'Add Club', 'racketmanager' ) ?>""/>
+				<input type="text" id="club" name="club" value="<?php echo $club->name ?>" size="30" placeholder="<?php _e( 'Add Club', 'racketmanager' ) ?>" />
 			</div>
 		</div>
 		<div class="form-group">
@@ -104,7 +103,7 @@
 			<input type="hidden" name="addClub" value="club" />
 		<?php } ?>
 
-		<p class="submit"><input type="submit" name="action" value="<?php echo $form_action ?>" class="button button-primary" /></p>
+		<p class="submit"><input type="submit" name="action" value="<?php echo $form_action ?>" class="btn btn-primary" /></p>
 	</form>
 
 </div>

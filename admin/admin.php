@@ -954,7 +954,6 @@ final class RacketManagerAdmin extends RacketManager
 			$season = '';
 			$competitionQuery = array( 'type' => $competitionType );
 			include_once( dirname(__FILE__) . '/show-competitions.php' );
-//			include_once( dirname(__FILE__) . '/show-cups.php' );
 		}
 	}
 

@@ -76,28 +76,16 @@ jQuery(function() {
       </div>
     </div>
     <div class="form-group">
-      <label for="mode"><?php _e( 'Mode', 'racketmanager' ) ?></label>
+      <label for="competitiontype"><?php _e( 'Mode', 'racketmanager' ) ?></label>
       <div class="input">
-        <select size="1" name="mode" id="mode">
+        <select size="1" name="competitiontype" id="competitiontype">
           <option><?php _e( 'Select', 'racketmanager') ?></option>
-          <?php foreach ( $this->getModes() AS $id => $mode ) { ?>
-            <option value="<?php echo $id ?>"><?php echo $mode ?></option>
+          <?php foreach ( $this->getCompetitionTypes() AS $id => $competitionType ) { ?>
+            <option value="<?php echo $id ?>"><?php echo ucfirst($competitionType) ?></option>
           <?php } ?>
         </select>
       </div>
     </div>
-    <div class="form-group">
-      <label for="entryType"><?php _e( 'Entry Type', 'racketmanager' ) ?></label>
-      <div class="input">
-        <select size="1" name="entryType" id="entryType">
-          <option><?php _e( 'Select', 'racketmanager') ?></option>
-          <?php foreach ( $this->getentryTypes() AS $id => $entryType ) { ?>
-            <option value="<?php echo $id ?>"><?php echo $entryType ?></option>
-          <?php } ?>
-        </select>
-      </div>
-    </div>
-
     <input type="hidden" name="addCompetition" value="competition" />
     <input type="submit" name="addCompetition" value="<?php _e( 'Add Competition','racketmanager' ) ?>" class="btn btn-primary" />
 

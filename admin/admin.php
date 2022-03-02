@@ -72,6 +72,28 @@ final class RacketManagerAdmin extends RacketManager
 
 		$page = add_submenu_page(
 			'racketmanager'
+			, __('Leagues', 'racketmanager')
+			, __('Leagues','racketmanager')
+			,'racket_manager'
+			, 'racketmanager-leagues'
+			, array(&$this, 'display')
+		);
+		add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+		add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+
+		$page = add_submenu_page(
+			'racketmanager'
+			, __('Cups', 'racketmanager')
+			, __('Cups','racketmanager')
+			,'racket_manager'
+			, 'racketmanager-cups'
+			, array(&$this, 'display')
+		);
+		add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+		add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+
+		$page = add_submenu_page(
+			'racketmanager'
 			, __('Tournaments', 'racketmanager')
 			, __('Tournaments','racketmanager')
 			,'racket_manager'
@@ -299,6 +321,12 @@ final class RacketManagerAdmin extends RacketManager
 		switch ($_GET['page']) {
 			case 'racketmanager-doc':
 			include_once( dirname(__FILE__) . '/documentation.php' );
+			break;
+			case 'racketmanager-leagues':
+			$this->displayLeaguesPage();
+			break;
+			case 'racketmanager-cups':
+			$this->displayCupsPage();
 			break;
 			case 'racketmanager-tournaments':
 			$this->displayTournamentsPage();
@@ -892,6 +920,43 @@ final class RacketManagerAdmin extends RacketManager
             include_once( dirname(__FILE__) . '/includes/teamslist.php' );
         }
     }
+
+	/**
+	* display leagues page
+	*
+	*/
+	private function displayLeaguesPage() {
+		global $racketmanager;
+
+		if ( !current_user_can( 'edit_leagues' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+		} else {
+			$competitionType = 'league';
+			$type = '';
+			$season = '';
+			$competitionQuery = array( 'type' => $competitionType );
+			include_once( dirname(__FILE__) . '/show-competitions.php' );
+		}
+	}
+
+	/**
+	* display cups page
+	*
+	*/
+	private function displayCupsPage() {
+		global $racketmanager;
+
+		if ( !current_user_can( 'edit_leagues' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+		} else {
+			$competitionType = 'cup';
+			$type = '';
+			$season = '';
+			$competitionQuery = array( 'type' => $competitionType );
+			include_once( dirname(__FILE__) . '/show-competitions.php' );
+//			include_once( dirname(__FILE__) . '/show-cups.php' );
+		}
+	}
 
 	/**
 	* display tournaments page

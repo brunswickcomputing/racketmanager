@@ -8,7 +8,7 @@ jQuery(function() {
 	});
 });
 </script>
-<div class="wrap"  style="margin-bottom: 1em;">
+<div class="container">
 	<p class="racketmanager_breadcrumb"><a href="index.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <?php echo $competition->name ?></p>
 
 	<h1><?php echo $competition->name ?></h1>

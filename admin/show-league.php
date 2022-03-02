@@ -12,7 +12,7 @@ jQuery(function() {
   });
 });
 </script>
-<div class="wrap">
+<div class="container">
   <p class="racketmanager_breadcrumb">
     <a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a>
     &raquo;

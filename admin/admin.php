@@ -41,42 +41,102 @@ final class RacketManagerAdmin extends RacketManager
     add_action( 'wp_ajax_racketmanager_get_league_dropdown', array(&$this, 'getLeagueDropdown'));
 	}
 
-    /**
-	 * adds menu to the admin interface
-	 */
+	/**
+	* adds menu to the admin interface
+	*/
 	public function menu() {
 		$plugin = 'racketmanager/racketmanager.php';
 
-        // keep capabilities here for next update
-        $page = add_menu_page(__('RacketManager','racketmanager'), __('RacketManager','racketmanager'), 'racket_manager', 'racketmanager', array(&$this, 'display'), RACKETMANAGER_URL.'/admin/icons/cup_sw.png', 2);
-        add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
-        add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+		// keep capabilities here for next update
+		$page = add_menu_page(
+			__('RacketManager','racketmanager')
+			, __('RacketManager','racketmanager')
+			, 'racket_manager'
+			, 'racketmanager'
+			, array(&$this, 'display')
+			, RACKETMANAGER_URL.'/admin/icons/cup_sw.png', 2
+		);
+		add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+		add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
 
-        $page = add_submenu_page('racketmanager', __('RacketManager', 'racketmanager'), __('Overview','racketmanager'),'racket_manager', 'racketmanager', array(&$this, 'display'));
-        add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
-        add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+		$page = add_submenu_page(
+			'racketmanager' //parent page
+			, __('RacketManager', 'racketmanager') //page title
+			, __('Overview','racketmanager') //menu title
+			,'racket_manager' //capability
+			, 'racketmanager' //menu slug
+			, array(&$this, 'display')
+		);
+		add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+		add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
 
-				$page = add_submenu_page('racketmanager', __('RacketManager', 'racketmanager'), __('Results','racketmanager'),'racket_manager', 'racketmanager-results', array(&$this, 'display'));
-        add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
-        add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+		$page = add_submenu_page(
+			'racketmanager'
+			, __('Tournaments', 'racketmanager')
+			, __('Tournaments','racketmanager')
+			,'racket_manager'
+			, 'racketmanager-tournaments'
+			, array(&$this, 'display')
+		);
+		add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+		add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
 
-        $page = add_submenu_page('racketmanager', __('Settings', 'racketmanager'), __('Settings','racketmanager'),'racketmanager_settings', 'racketmanager-settings', array( $this, 'display' ));
-        add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
-        add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+		$page = add_submenu_page(
+			'racketmanager'
+			, __('Results', 'racketmanager')
+			, __('Results','racketmanager')
+			,'racket_manager'
+			, 'racketmanager-results'
+			, array(&$this, 'display')
+		);
+		add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+		add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
 
-        $page = add_submenu_page('racketmanager', __('Import'), __('Import'),'import_leagues', 'racketmanager-import', array( $this, 'display' ));
-        add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
-        add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+		$page = add_submenu_page(
+			'racketmanager'
+			, __('Settings', 'racketmanager')
+			, __('Settings','racketmanager')
+			,'racketmanager_settings'
+			, 'racketmanager-settings'
+			, array( $this, 'display' )
+		);
+		add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+		add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
 
-        $page = add_submenu_page('racketmanager', __('Export'), __('Export'),'export_leagues', 'racketmanager-export', array( $this, 'display' ));
-        add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
-        add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+		$page = add_submenu_page(
+			'racketmanager'
+			, __('Import')
+			, __('Import')
+			,'import_leagues'
+			, 'racketmanager-import'
+			, array( $this, 'display' )
+		);
+		add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+		add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
 
-        $page = add_submenu_page('racketmanager', __('Documentation', 'racketmanager'), __('Documentation','racketmanager'), 'view_leagues', 'racketmanager-doc', array( $this, 'display' ));
-        add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
-        add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+		$page = add_submenu_page(
+			'racketmanager'
+			, __('Export')
+			, __('Export')
+			,'export_leagues'
+			, 'racketmanager-export'
+			, array( $this, 'display' )
+		);
+		add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+		add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
 
-        add_filter( 'plugin_action_links_' . $plugin, array( &$this, 'pluginActions' ) );
+		$page = add_submenu_page(
+			'racketmanager'
+			, __('Documentation', 'racketmanager')
+			, __('Documentation','racketmanager')
+			, 'view_leagues'
+			, 'racketmanager-doc'
+			, array( $this, 'display' )
+		);
+		add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+		add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+
+		add_filter( 'plugin_action_links_' . $plugin, array( &$this, 'pluginActions' ) );
 	}
 
     /**
@@ -216,23 +276,26 @@ final class RacketManagerAdmin extends RacketManager
 
 		switch ($_GET['page']) {
 			case 'racketmanager-doc':
-				include_once( dirname(__FILE__) . '/documentation.php' );
-				break;
-				case 'racketmanager-results':
-					$this->displayResultsPage();
-					break;
+			include_once( dirname(__FILE__) . '/documentation.php' );
+			break;
+			case 'racketmanager-tournaments':
+			$this->displayTournamentsPage();
+			break;
+			case 'racketmanager-results':
+			$this->displayResultsPage();
+			break;
 			case 'racketmanager-settings':
-				$this->displayOptionsPage();
-				break;
+			$this->displayOptionsPage();
+			break;
 			case 'racketmanager-import':
-                $this->displayImportPage();
-				break;
+			$this->displayImportPage();
+			break;
 			case 'racketmanager-export':
-                $this->displayExportPage();
-				break;
-            case 'racketmanager-documentation':
-                include_once( dirname(__FILE__) . '/documentation.php' );
-                break;
+			$this->displayExportPage();
+			break;
+			case 'racketmanager-documentation':
+			include_once( dirname(__FILE__) . '/documentation.php' );
+			break;
 			case 'racketmanager':
 			default:
 				if ( isset($_GET['subpage']) ) {
@@ -435,24 +498,6 @@ final class RacketManagerAdmin extends RacketManager
                 }
                 $this->printMessage();
                 $tab = 8;
-            } elseif ( isset($_POST['addTournament']) ) {
-                check_admin_referer('racketmanager_add-tournament');
-                $this->addTournament( htmlspecialchars($_POST['tournament']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['season']), htmlspecialchars($_POST['venue']),  htmlspecialchars($_POST['date']), htmlspecialchars($_POST['closingdate']), htmlspecialchars($_POST['tournamentSecretaryName']), htmlspecialchars($_POST['tournamentSecretary']), htmlspecialchars($_POST['tournamentSecretaryContactNo']), htmlspecialchars($_POST['tournamentSecretaryEmail']) );
-                $this->printMessage();
-                $tab = 9;
-            } elseif ( isset($_POST['editTournament']) ) {
-                check_admin_referer('racketmanager_manage-tournament');
-                $this->editTournament( intval($_POST['tournament_id']), htmlspecialchars($_POST['tournament']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['season']), htmlspecialchars($_POST['venue']),  htmlspecialchars($_POST['date']), htmlspecialchars($_POST['closingdate']), htmlspecialchars($_POST['tournamentSecretaryName']), htmlspecialchars($_POST['tournamentSecretary']), htmlspecialchars($_POST['tournamentSecretaryContactNo']), htmlspecialchars($_POST['tournamentSecretaryEmail']) );
-                $this->printMessage();
-                $tab = 9;
-            } elseif ( isset($_POST['doTournamentDel']) && $_POST['action'] == 'delete' ) {
-                check_admin_referer('tournaments-bulk');
-                foreach ( $_POST['tournament'] AS $tournament_id ) {
-                    $this->delTournament( intval($tournament_id) );
-                }
-                $club_id = 0;
-                $this->printMessage();
-                $tab = 9;
             } elseif ( isset($_GET['view']) && $_GET['view'] == 'roster' ) {
                 if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
                 $tab = 2;
@@ -463,10 +508,6 @@ final class RacketManagerAdmin extends RacketManager
                 $tab = 5;
             } elseif ( isset($_GET['view']) && $_GET['view'] == 'clubs' ) {
                 $tab = 6;
-            } elseif ( isset($_GET['view']) && $_GET['view'] == 'results' ) {
-                $tab = 7;
-            } elseif ( isset($_GET['view']) && $_GET['view'] == 'tournaments' ) {
-                $tab = 9;
             }
             include_once( dirname(__FILE__) . '/index.php' );
         }
@@ -986,6 +1027,37 @@ final class RacketManagerAdmin extends RacketManager
             include_once( dirname(__FILE__) . '/includes/club.php' );
         }
     }
+
+	/**
+	* display tournaments page
+	*
+	*/
+	private function displayTournamentsPage() {
+		global $racketmanager;
+
+		if ( !current_user_can( 'edit_leagues' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+		} else {
+			if ( isset($_POST['addTournament']) ) {
+				check_admin_referer('racketmanager_add-tournament');
+				$this->addTournament( htmlspecialchars($_POST['tournament']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['season']), htmlspecialchars($_POST['venue']),  htmlspecialchars($_POST['date']), htmlspecialchars($_POST['closingdate']), htmlspecialchars($_POST['tournamentSecretaryName']), htmlspecialchars($_POST['tournamentSecretary']), htmlspecialchars($_POST['tournamentSecretaryContactNo']), htmlspecialchars($_POST['tournamentSecretaryEmail']) );
+				$this->printMessage();
+			} elseif ( isset($_POST['editTournament']) ) {
+				check_admin_referer('racketmanager_manage-tournament');
+				$this->editTournament( intval($_POST['tournament_id']), htmlspecialchars($_POST['tournament']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['season']), htmlspecialchars($_POST['venue']),  htmlspecialchars($_POST['date']), htmlspecialchars($_POST['closingdate']), htmlspecialchars($_POST['tournamentSecretaryName']), htmlspecialchars($_POST['tournamentSecretary']), htmlspecialchars($_POST['tournamentSecretaryContactNo']), htmlspecialchars($_POST['tournamentSecretaryEmail']) );
+				$this->printMessage();
+			} elseif ( isset($_POST['doTournamentDel']) && $_POST['action'] == 'delete' ) {
+				check_admin_referer('tournaments-bulk');
+				foreach ( $_POST['tournament'] AS $tournament_id ) {
+					$this->delTournament( intval($tournament_id) );
+				}
+			}
+			$club_id = 0;
+			$this->printMessage();
+			$clubs = $racketmanager->getClubs( );
+			include_once( dirname(__FILE__) . '/show-tournaments.php' );
+		}
+	}
 
     /**
      * display tournament page

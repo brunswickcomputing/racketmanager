@@ -850,7 +850,7 @@ class RacketManager {
 			if ( $this->error )
 			echo "<div class='error'><p>".$this->message."</p></div>";
 			else
-			echo "<div id='message' class='updated fade'><p><strong>".$this->message."</strong></p></div>";
+			echo "<div id='message' class='updated fade show'><p><strong>".$this->message."</strong></p></div>";
 		}
 		$this->message = '';
 	}

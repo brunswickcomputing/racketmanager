@@ -21,7 +21,6 @@ jQuery(function() {
 			<li><a href="#rosterrequest-table"><?php _e( 'Roster Request', 'racketmanager' ) ?></a></li>
 			<li><a href="#teams-table"><?php _e( 'Teams', 'racketmanager' ) ?></a></li>
 			<li><a href="#clubs-table"><?php _e( 'Clubs', 'racketmanager' ) ?></a></li>
-			<li><a href="#tournament-table"><?php _e( 'Tournaments', 'racketmanager' ) ?></a></li>
 		</ul>
 
 		<div id="competitions-table" class="league-block-container">
@@ -51,10 +50,6 @@ jQuery(function() {
 		<div id="clubs-table" class="league-block-container">
 			<h2 class="header"><?php _e( 'Clubs', 'racketmanager' ) ?></h2>
 			<?php include('main/clubs.php'); ?>
-		</div>
-		<div id="tournament-table" class="league-block-container">
-			<h2 class="header"><?php _e( 'Tournaments', 'racketmanager' ) ?></h2>
-			<?php include('main/tournaments.php'); ?>
 		</div>
 		<?php include(RACKETMANAGER_PATH . '/admin/includes/match-modal.php'); ?>
 	</div>

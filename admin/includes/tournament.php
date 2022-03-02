@@ -1,12 +1,11 @@
 <?php
 ?>
-<!-- <script type="text/javascript" src="/wp-includes/js/jquery/jquery.js"></script> -->
-<div class="wrap league-block">
-	<p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <?php echo $form_title ?></p>
+<div class="container">
+	<p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager-tournaments"><?php _e( 'RacketManager Tournaments', 'racketmanager' ) ?></a> &raquo; <?php echo $form_title ?></p>
 	<h1><?php printf(  $form_title ); ?></h1>
 
 
-	<form action="admin.php?page=racketmanager&amp;view=tournaments<?php if ( $tournament->id !== '' ) { ?>&amp;tournament_id=<?php echo $tournament->id ?> <?php } ?>" method="post" enctype="multipart/form-data" name="tournament_edit">
+	<form action="admin.php?page=racketmanager-tournaments<?php if ( $tournament->id !== '' ) { ?>&amp;tournament_id=<?php echo $tournament->id ?> <?php } ?>" method="post" enctype="multipart/form-data" name="tournament_edit">
 
 		<?php if ( $edit ) { ?>
 			<?php wp_nonce_field( 'racketmanager_manage-tournament' ) ?>
@@ -37,7 +36,7 @@
 					<option><?php _e( 'Select season' , 'racketmanager') ?></option>
 					<?php $seasons = $racketmanager->getSeasons( "DESC" );
 					foreach ( $seasons AS $season ) { ?>
-						<option value="<?php echo $season->name ?>" <?php selected( $season->name, $tournament->season ) ?>><?php echo $season->name ?></option>
+						<option value="<?php echo $season->name ?>" <?php selected( $season->name, isset($tournament->season) ? $tournament->season : '' ) ?>><?php echo $season->name ?></option>
 					<?php } ?>
 				</select>
 			</div>
@@ -68,7 +67,7 @@
 		<div class="form-group">
 			<label for="tournamentSecretaryName"><?php _e( 'Tournament secretary', 'racketmanager' ) ?></label>
 			<div class="input">
-				<input type="text" name="tournamentSecretaryName" id="tournamentSecretaryName" autocomplete="name off" value="<?php echo $tournament->tournamentSecretaryName ?>" size="40" /><input type="hidden" name="tournamentSecretary" id="tournamentSecretary" value="<?php echo $tournament->tournamentsecretary ?>" />
+				<input type="text" name="tournamentSecretaryName" id="tournamentSecretaryName" autocomplete="name off" value="<?php echo $tournament->tournamentSecretaryName ?>" size="40" /><input type="hidden" name="tournamentSecretary" id="tournamentSecretary" value="<?php if (isset($tournament->tournamentsecretary)) echo $tournament->tournamentsecretary ?>" />
 			</div>
 		</div>
 		<div class="form-group">

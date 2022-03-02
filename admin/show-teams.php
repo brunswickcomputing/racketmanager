@@ -1,22 +1,15 @@
+<?php
+/**
+* Teams main page administration panel
+*
+*/
+namespace ns;
+?>
+<div class="container">
+	<p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager-clubs"><?php _e( 'Clubs', 'racketmanager' ) ?></a> &raquo; <?php _e( 'Teams', 'racketmanager' ) ?></p>
+	<h1><?php _e( 'Teams', 'racketmanager' ) ?> - <?php echo $club->name ?></h1>
+
 <!-- Add Team -->
-<!-- View Teams -->
-<form action="admin.php?page=racketmanager" method="get">
-	<input type="hidden" name="page" value="racketmanager" />
-	<input type="hidden" name="view" value="teams" />
-	<div class="lm-form-table">
-		<?php if ( $clubs = $racketmanager->getClubs( ) ) { ?>
-			<select size="1" name="club_id" id="club_id">
-				<option><?php _e( 'Select affiliated club', 'racketmanager' ) ?></option>
-				<?php foreach ( $clubs AS $club ) { ?>
-					<option value="<?php echo $club->id ?>" <?php echo ($club->id == $club_id ?  'selected' :  '') ?>><?php echo $club->name ?></option>
-				<?php } ?>
-			</select>
-		<?php } ?>
-		<input type="submit" value="<?php _e( 'View Teams','racketmanager' ) ?>" class="btn btn-secondary" />
-	</div>
-
-</form>
-
 <form id="teams-filter" method="post" action="">
 	<?php wp_nonce_field( 'teams-bulk' ) ?>
 
@@ -86,17 +79,6 @@
 	<form action="" method="post">
 		<?php wp_nonce_field( 'racketmanager_add-team' ) ?>
 		<div class="form-group">
-			<label for="affiliatedClub"><?php _e( 'Affiliated Club', 'racketmanager' ) ?></label>
-			<div class="input">
-				<select size="1" name="affiliatedClub" id="affiliatedClub" >
-					<option><?php _e( 'Select club' , 'racketmanager') ?></option>
-					<?php foreach ( $clubs AS $club ) { ?>
-						<option value="<?php echo $club->id ?>"<?php if(isset($affiliatedClub)) selected($club->id, $affiliatedClub ) ?>><?php echo $club->name ?></option>
-					<?php } ?>
-				</select>
-			</div>
-		</div>
-		<div class="form-group">
 			<label for="team_type"><?php _e( 'Type', 'racketmanager' ) ?></label>
 			<div class="input">
 				<select size='1' required="required" name='team_type' id='team_type'>
@@ -110,7 +92,9 @@
 				</select>
 			</div>
 		</div>
+		<input type="hidden" name="affiliatedClub" value=<?php echo $club->id ?> />
 		<input type="hidden" name="addTeam" value="team" />
 		<input type="submit" name="addTeam" value="<?php _e( 'Add Team','racketmanager' ) ?>" class="btn btn-primary" />
 
 	</form>
+</div>

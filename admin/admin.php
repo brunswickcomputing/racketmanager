@@ -252,7 +252,7 @@ final class RacketManagerAdmin extends RacketManager
 		$league_mode = (isset($league->mode) ? ($league->mode) : '' );
 
 		$menu = array(
-                      'teams' => array( 'title' => __('Add Teams', 'racketmanager'), 'callback' => array(&$this, 'displayTeamsPage'), 'cap' => 'edit_teams' ),
+                      'teams' => array( 'title' => __('Add Teams', 'racketmanager'), 'callback' => array(&$this, 'displayTeamsList'), 'cap' => 'edit_teams' ),
                       'team' => array( 'title' => __('Add Team', 'racketmanager'), 'callback' => array(&$this, 'displayTeamPage'), 'cap' => 'edit_teams' ),
                       'match' => array( 'title' => __('Add Matches', 'racketmanager'), 'callback' => array(&$this, 'displayMatchPage'), 'cap' => 'edit_matches' )
         );
@@ -293,7 +293,12 @@ final class RacketManagerAdmin extends RacketManager
 			$this->displayTournamentsPage();
 			break;
 			case 'racketmanager-clubs':
-			$this->displayClubsPage();
+			$view = isset($_GET['view']) ? $_GET['view'] : '';
+				if ( $view == 'teams' ) {
+					$this->displayTeamsPage();
+				} else {
+					$this->displayClubsPage();
+				}
 			break;
 			case 'racketmanager-results':
 			$this->displayResultsPage();
@@ -458,25 +463,6 @@ final class RacketManagerAdmin extends RacketManager
                 }
                 $this->printMessage();
                 $tab = 4;
-            } elseif ( isset($_POST['addTeam']) ) {
-                check_admin_referer('racketmanager_add-team');
-                $this->addTeam( $_POST['affiliatedClub'], $_POST['team_type'] );
-                $this->printMessage();
-                $club_id = 0;
-                $tab = 5;
-            } elseif ( isset($_POST['editTeam']) ) {
-                check_admin_referer('racketmanager_manage-teams');
-                $this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), $_POST['affiliatedclub']);
-                $this->printMessage();
-                $club_id = 0;
-                $tab = 5;
-            } elseif ( isset($_POST['doteamdel']) && $_POST['action'] == 'delete' ) {
-                check_admin_referer('teams-bulk');
-                foreach ( $_POST['team'] AS $team_id ) {
-                    $this->delTeam( intval($team_id) );
-                }
-                $this->printMessage();
-                $tab = 5;
             } elseif ( isset($_POST['doResultsChecker']) ) {
                 if ( current_user_can('update_results') ) {
                     check_admin_referer('results-checker-bulk');
@@ -499,9 +485,6 @@ final class RacketManagerAdmin extends RacketManager
                 $tab = 2;
             } elseif ( isset($_GET['view']) && $_GET['view'] == 'rosterRequest' ) {
                 $tab = 4;
-            } elseif ( isset($_GET['view']) && $_GET['view'] == 'teams' ) {
-                if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
-                $tab = 5;
             }
             include_once( dirname(__FILE__) . '/index.php' );
         }
@@ -965,10 +948,10 @@ final class RacketManagerAdmin extends RacketManager
     }
 
     /**
-     * display teams page
+     * display teams list page
      *
      */
-    private function displayTeamsPage() {
+    private function displayTeamsList() {
         global $racketmanager;
 
         if ( !current_user_can( 'edit_teams' ) ) {
@@ -1100,7 +1083,6 @@ final class RacketManagerAdmin extends RacketManager
 				$clubId = $_GET['club_id'];
 				$edit = true;
 				$club = get_club( $clubId );
-
 				$form_title = __( 'Edit Club', 'racketmanager' );
 				$form_action = __( 'Update', 'racketmanager' );
 			} else {
@@ -1109,10 +1091,10 @@ final class RacketManagerAdmin extends RacketManager
 				$form_action = __( 'Add', 'racketmanager' );
 				$club = (object)array( 'name' => '', 'type' => '', 'id' => '', 'website' => '', 'matchsecretary' => '', 'matchSecretaryName' => '', 'contactno' => '', 'matchSecretaryContactNo' => '', 'matchSecretaryEmail' => '', 'shortcode' => '', 'founded' => '', 'facilities' => '', 'address' => '', 'latitude' => '', 'longitude' => '' );
 			}
-
 			include_once( dirname(__FILE__) . '/includes/club.php' );
 		}
 	}
+
     /**
      * display competitions list page
      *
@@ -1130,6 +1112,35 @@ final class RacketManagerAdmin extends RacketManager
             include_once( dirname(__FILE__) . '/includes/competitions-list.php' );
         }
     }
+
+		/**
+		* display teams page
+		*
+		*/
+		private function displayTeamsPage() {
+			global $racketmanager;
+
+			if ( !current_user_can( 'edit_teams' ) ) {
+				echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+			} else {
+				if ( isset($_POST['addTeam']) ) {
+					check_admin_referer('racketmanager_add-team');
+					$this->addTeam( $_POST['affiliatedClub'], $_POST['team_type'] );
+				} elseif ( isset($_POST['editTeam']) ) {
+					check_admin_referer('racketmanager_manage-teams');
+					$this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), $_POST['affiliatedclub'], $_POST['team_type']);
+				} elseif ( isset($_POST['doteamdel']) && $_POST['action'] == 'delete' ) {
+					check_admin_referer('teams-bulk');
+					foreach ( $_POST['team'] AS $team_id ) {
+						$this->delTeam( intval($team_id) );
+					}
+				}
+				$this->printMessage();
+				if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
+				$club = get_club($club_id);
+				include_once( dirname(__FILE__) . '/show-teams.php' );
+			}
+		}
 
     /**
      * display team page

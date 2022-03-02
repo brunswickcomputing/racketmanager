@@ -16,7 +16,7 @@ namespace ns;
   if ( !$noleague ) { ?>
     <form action="index.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league_id ?>&amp;season=<?php echo $season ?>" method="post" enctype="multipart/form-data" name="team_edit">
     <?php } else { ?>
-      <form action="admin.php?page=racketmanager&amp;view=teams<?php if ( $clubId !== '' ) { ?>&amp;club_id=<?php echo $clubId ?> <?php } ?>" method="post" enctype="multipart/form-data" name="team_edit">
+      <form action="admin.php?page=racketmanager-clubs&amp;view=teams<?php if ( $clubId !== '' ) { ?>&amp;club_id=<?php echo $clubId ?> <?php } ?>" method="post" enctype="multipart/form-data" name="team_edit">
       <?php } ?>
       <?php wp_nonce_field( 'racketmanager_manage-teams' ) ?>
 

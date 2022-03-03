@@ -6,7 +6,7 @@
 namespace ns;
 ?>
 
-<div class="wrap league-block">
+<div class="container league-block">
   <p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a><?php if ( !$noleague ) { ?> &raquo; <a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a><?php } ?> &raquo; <?php echo $form_title ?></p>
   <?php if ( !$noleague ) { ?>
     <h1><?php printf( "%s - %s",  $league->title, $form_title ); ?></h1>
@@ -16,7 +16,7 @@ namespace ns;
   if ( !$noleague ) { ?>
     <form action="index.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league_id ?>&amp;season=<?php echo $season ?>" method="post" enctype="multipart/form-data" name="team_edit">
     <?php } else { ?>
-      <form action="admin.php?page=racketmanager-clubs&amp;view=teams<?php if ( $clubId !== '' ) { ?>&amp;club_id=<?php echo $clubId ?> <?php } ?>" method="post" enctype="multipart/form-data" name="team_edit">
+      <form action="admin.php?page=racketmanager-clubs&amp;view=teams<?php if ( $clubId !== '' ) { ?>&amp;club_id=<?php echo $clubId ?> <?php } ?>" method="post" enctype="multipart/form-data" name="team_edit" class="form-control">
       <?php } ?>
       <?php wp_nonce_field( 'racketmanager_manage-teams' ) ?>
 

@@ -39,7 +39,7 @@
 </form>
 <h2><?php _e( 'Add Season', 'racketmanager' ) ?></h2>
 <!-- Add New Season -->
-<form action="" method="post">
+<form action="" method="post" class="form-control">
 	<?php wp_nonce_field( 'racketmanager_add-season' ) ?>
 	<div class="form-group">
 		<label for="seasonName"><?php _e( 'Name', 'racketmanager' ) ?></label>

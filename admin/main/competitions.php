@@ -29,7 +29,7 @@ jQuery(function() {
 
   <h3><?php _e( 'Add Competition', 'racketmanager' ) ?></h3>
   <!-- Add New Competition -->
-  <form action="" method="post">
+  <form action="" method="post" class="form-control">
     <?php wp_nonce_field( 'racketmanager_add-competition' ) ?>
     <div class="form-group">
       <label for="competition_name"><?php _e( 'Competition', 'racketmanager' ) ?></label>

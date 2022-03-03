@@ -5,7 +5,7 @@
 	<h1><?php printf(  $form_title ); ?></h1>
 
 
-	<form action="admin.php?page=racketmanager-tournaments<?php if ( $tournament->id !== '' ) { ?>&amp;tournament_id=<?php echo $tournament->id ?> <?php } ?>" method="post" enctype="multipart/form-data" name="tournament_edit">
+	<form action="admin.php?page=racketmanager-tournaments<?php if ( $tournament->id !== '' ) { ?>&amp;tournament_id=<?php echo $tournament->id ?> <?php } ?>" method="post" enctype="multipart/form-data" name="tournament_edit" class="form-control">
 
 		<?php if ( $edit ) { ?>
 			<?php wp_nonce_field( 'racketmanager_manage-tournament' ) ?>

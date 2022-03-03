@@ -1,5 +1,5 @@
 <!-- Add Player -->
-<form action="" method="post">
+<form action="" method="post" class="form-control">
 	<?php wp_nonce_field( 'racketmanager_add-player' ) ?>
 	<div class="form-group">
 		<label for="firstname"><?php _e( 'First Name', 'racketmanager' ) ?></label>

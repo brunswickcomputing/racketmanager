@@ -8,7 +8,7 @@
 	<p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager-clubs"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <?php echo $form_title ?></p>
 	<h1><?php printf(  $form_title ); ?></h1>
 
-	<form action="admin.php?page=racketmanager-clubs<?php if ( $clubId !== '' ) { ?>&amp;club_id=<?php echo $clubId ?> <?php } ?>" method="post" enctype="multipart/form-data" name="club_edit">
+	<form action="admin.php?page=racketmanager-clubs<?php if ( $clubId !== '' ) { ?>&amp;club_id=<?php echo $clubId ?> <?php } ?>" method="post" enctype="multipart/form-data" name="club_edit" class="form-control">
 
 		<?php if ( $edit ) { ?>
 			<?php wp_nonce_field( 'racketmanager_manage-club' ) ?>

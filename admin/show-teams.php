@@ -10,7 +10,7 @@ namespace ns;
 	<h1><?php _e( 'Teams', 'racketmanager' ) ?> - <?php echo $club->name ?></h1>
 
 <!-- Add Team -->
-<form id="teams-filter" method="post" action="">
+<form id="teams-filter" method="post" action="" class="form-control">
 	<?php wp_nonce_field( 'teams-bulk' ) ?>
 
 	<div class="tablenav">

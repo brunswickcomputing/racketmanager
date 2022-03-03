@@ -21,6 +21,7 @@ jQuery(function() {
   <?php $competitionTypes = $this->getCompetitionTypes();
   foreach ( $competitionTypes AS $competitionType ) {
     $season = '';
+    $type = '';
     $competitionQuery = array( 'type' => $competitionType );
     include('show-competition.php');
   } ?>

@@ -751,7 +751,6 @@ class RacketManagerShortcodes extends RacketManager {
 
 		if ( !$competition ) return;
 
-		$seasons = $competition->seasons;
 		$leagues = $competition->getLeagues( array('competition' => $id, 'orderby' => array("title" => "ASC")));
 
 		if ( isset($_GET['season']) && !empty($_GET['season']) ) {
@@ -768,9 +767,14 @@ class RacketManagerShortcodes extends RacketManager {
 			$filename = ( !empty($template) ) ? 'competition-'.$template : 'competition';
 		}
 
+		$seasons = $competition->seasons;
 		if ( !$season ) {
-			$season = end($competition->seasons);
-			$season = $season['name'];
+			if ( $seasons ) {
+				$season = end($competition->seasons);
+				$season = $season['name'];
+			} else {
+				$season = '';
+			}
 		}
 
 		$out = $this->loadTemplate( $filename, array('competition' => $competition, 'leagues' => $leagues, 'seasons' => $seasons, 'curr_season' => $season) );

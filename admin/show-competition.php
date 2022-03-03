@@ -9,7 +9,7 @@ jQuery(function() {
 });
 </script>
 <div class="container">
-	<p class="racketmanager_breadcrumb"><a href="index.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <?php echo $competition->name ?></p>
+	<p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <?php echo $competition->name ?></p>
 
 	<h1><?php echo $competition->name ?></h1>
 

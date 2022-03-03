@@ -14,7 +14,7 @@ global $wp_query, $racketmanager_shortcodes;
 $postID = isset($wp_query->post->ID) ? $wp_query->post->ID : "";
 wp_enqueue_style('datatables-style');
 wp_enqueue_script('datatables');
-$pagename = $wp_query->query['pagename'];
+$pagename = isset($wp_query->query['pagename']) ? $wp_query->query['pagename'] : '';
 ?>
 <div id="leaguetables">
 	<h1><?php printf("%s - %s %s", $competition->name, __('Season', 'racketmanager'), $curr_season); ?></h1>

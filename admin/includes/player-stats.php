@@ -17,7 +17,7 @@ if ( $competition->is_championship ) {
 	}
 } else {
 	$heading = "Match Day";
-	$numCols = $season['num_match_days'];
+	$numCols = isset($season['num_match_days']) ? $season['num_match_days'] : 0;
 }
 $clubs = $racketmanager->getClubs( );
 if ( !empty($competition->seasons) ) { ?>
@@ -65,7 +65,7 @@ if ( !empty($competition->seasons) ) { ?>
 			</tr>
 
 			<tbody id="the-list">
-				<?php if ( $playerstats = $competition->getPlayerStats(array('season' => $season['name'], 'club' => $club_id))  ) {
+				<?php if ( $playerstats = $competition->getPlayerStats(array('season' => isset($season['name']) ? $season['name'] : false, 'club' => $club_id))  ) {
 					$class = '';
 					foreach ( $playerstats AS $playerstat ) {
 						$class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>

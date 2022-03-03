@@ -2,7 +2,7 @@
   <form id="competitions-filter" method="post" action="">
     <?php wp_nonce_field( 'competitions-bulk' ) ?>
 
-    <?php if ( !$competitionType ) { ?>
+    <?php if ( !$type ) { ?>
     <div class="tablenav">
       <!-- Bulk Actions -->
       <select name="action" size="1">
@@ -16,12 +16,12 @@
     <table class="widefat" summary="" title="RacketManager Competitions">
       <thead>
         <tr>
-          <?php if ( !$competitionType ) { ?>
+          <?php if ( !$type ) { ?>
           <th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('competitions-filter'));" /></th>
         <?php } ?>
           <th scope="col" class="column-num">ID</th>
           <th scope="col"><?php _e( 'Competition', 'racketmanager' ) ?></th>
-          <?php if ( !$competitionType ) { ?>
+          <?php if ( !$type ) { ?>
           <th scope="col" class="column-num"><?php _e( 'Number of Seasons', 'racketmanager' ) ?></th>
           <?php } ?>
           <th scope="col" class="column-num"><?php _e( 'Leagues', 'racketmanager' ) ?></th>
@@ -36,12 +36,12 @@
             $competition = get_competition($competition);
             $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
             <tr class="<?php echo $class ?>">
-              <?php if ( !$competitionType ) { ?>
+              <?php if ( !$type ) { ?>
               <th scope="row" class="check-column"><input type="checkbox" value="<?php echo $competition->id ?>" name="competition[<?php echo $competition->id ?>]" /></th>
             <?php } ?>
               <td class="column-num"><?php echo $competition->id ?></td>
               <td><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>"><?php echo $competition->name ?></a></td>
-              <?php if ( !$competitionType ) { ?>
+              <?php if ( !$type ) { ?>
               <td class="column-num"><?php echo $competition->num_seasons ?></td>
               <?php } ?>
               <td class="column-num"><?php echo $competition->num_leagues ?></td>

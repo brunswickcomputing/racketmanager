@@ -419,7 +419,7 @@ final class RacketManagerAdmin extends RacketManager
             if ( isset($_POST['addCompetition']) ) {
                 if ( current_user_can('edit_leagues') ) {
                     check_admin_referer('racketmanager_add-competition');
-                    $this->addCompetition( htmlspecialchars(strip_tags($_POST['competition_name'])), $_POST['num_rubbers'], $_POST['num_sets'], $_POST['competition_type'], $_POST['competitionType'] );
+                    $this->addCompetition( htmlspecialchars(strip_tags($_POST['competition_name'])), $_POST['num_rubbers'], $_POST['num_sets'], $_POST['competition_type'], $_POST['competitiontype'] );
                     $this->printMessage();
                 } else {
                     $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
@@ -1689,13 +1689,13 @@ final class RacketManagerAdmin extends RacketManager
 
 				if ( $competitionType == 'league' ) {
 					$mode = 'default';
-					$entryType == 'team';
+					$entryType = 'team';
 				} elseif ( $competitionType == 'cup' ) {
 					$mode = 'championship';
-					$entryType == 'team';
+					$entryType = 'team';
 				} elseif ( $competitionType == 'tournament' ) {
 					$mode = 'championship';
-					$entryType == 'player';
+					$entryType = 'player';
 				}
         if ( $mode == 'championship' ) {
             $ranking = "manual";

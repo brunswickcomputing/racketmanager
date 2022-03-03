@@ -12,16 +12,27 @@ jQuery(function() {
   });
 });
 </script>
-<div id="tabs-competitions" class="racketmanager-blocks">
-  <ul id="tablist">
-    <li><h4><a href="#competitions-Cup"><?php _e( 'Cups', 'racketmanager' ) ?></a></h4></li>
-    <li><h4><a href="#competitions-League"><?php _e( 'Leagues', 'racketmanager' ) ?></a></h4></li>
-    <li><h4><a href="#competitions-Tournament"><?php _e( 'Tournaments', 'racketmanager' ) ?></a></h4></li>
+<div class="container">
+  <!-- Nav tabs -->
+  <ul class="nav nav-pills" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="competitions-cup-tab" data-bs-toggle="pill" data-bs-target="#competitions-cup" type="button" role="tab" aria-controls="competitions-cup" aria-selected="true"><?php _e( 'Cups', 'racketmanager' ) ?></button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="competitions-league-tab" data-bs-toggle="pill" data-bs-target="#competitions-league" type="button" role="tab" aria-controls="competitions-league" aria-selected="false"><?php _e( 'Leagues', 'racketmanager' ) ?></button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="competitions-tournament-tab" data-bs-toggle="pill" data-bs-target="#competitions-tournament" type="button" role="tab" aria-controls="competitions-tournament" aria-selected="false"><?php _e( 'Tournaments', 'racketmanager' ) ?></button>
+    </li>
   </ul>
-  <?php $competitionTypes = array('Cup','League','Tournament');
-  foreach ( $competitionTypes AS $competitionType ) { ?>
-    <div id="competitions-<?php echo $competitionType ?>" class="league-block-container">
-      <?php if ( $competitionType == 'League' ) { $competitionType = ''; }
+  <!-- Tab panes -->
+  <div class="tab-content">
+  <?php $competitionTypes = $this->getCompetitionTypes();
+  $i = 0;
+  foreach ( $competitionTypes AS $competitionType ) { $i ++; ?>
+    <div id="competitions-<?php echo $competitionType ?>" class="tab-pane <?php if ( $i == 1 )  { echo 'active show';} ?> fade" role="tabpanel" aria-labelledby="competitions-<?php echo $competitionType ?>-tab">
+      <?php $competitionType = ucfirst($competitionType);
+      if ( $competitionType == 'League' ) { $competitionType = ''; }
       $matchCapability = 'matchCapability'.$competitionType;
       $resultEntry = 'resultEntry'.$competitionType;
       $resultConfirmation = 'resultConfirmation'.$competitionType;
@@ -65,6 +76,7 @@ jQuery(function() {
       </div>
     </div>
 
-  <?php } ?>
 
+  <?php } ?>
+    </div>
 </div>

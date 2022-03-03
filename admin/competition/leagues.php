@@ -43,13 +43,21 @@
 	</form>
 
 	<!-- Add New League -->
-	<form action="admin.php?page=racketmanager&amp;subpage=show-competition&competition_id=<?php echo $competition_id ?>" method="post" style="margin-top: 3em;">
+	<form action="admin.php?page=racketmanager&amp;subpage=show-competition&competition_id=<?php echo $competition_id ?>" method="post" class="form-control">
 		<?php wp_nonce_field( 'racketmanager_add-league' ) ?>
 		<input type="hidden" name="competition_id" value="<?php echo $competition_id ?>" />
 		<input type="hidden" name="league_id" value="<?php echo $league_id ?>" />
 		<div class="form-group">
-			<label for="league_title"><?php _e( 'League', 'racketmanager' ) ?></label>
-			<input type="text" required="required" placeholder="<?php _e( 'Enter new league name', 'racketmanager') ?>"name="league_title" id="league_title" value="<?php echo $league_title ?>" size="30" />
+			<div class="form-label">
+				<label for="league_title"><?php _e( 'League', 'racketmanager' ) ?></label>
+			</div>
+			<div class="form-input">
+				<input type="text" required="required" placeholder="<?php _e( 'Enter new league name', 'racketmanager') ?>"name="league_title" id="league_title" value="<?php echo $league_title ?>" size="30" />
+			</div>
 		</div>
-		<input type="submit" name="addLeague" value="<?php if ( !$league_id ) _e( 'Add League', 'racketmanager' ); else _e( 'Update League', 'racketmanager' ); ?>" class="btn btn-primary" />
+		<div class="form-group">
+			<div class="form-input">
+				<input type="submit" name="addLeague" value="<?php if ( !$league_id ) _e( 'Add League', 'racketmanager' ); else _e( 'Update League', 'racketmanager' ); ?>" class="btn btn-primary" />
+			</div>
+		</div>
 	</form>

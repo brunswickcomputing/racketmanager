@@ -35,18 +35,18 @@
 </table>
 </form>
 
-<form action="admin.php?page=racketmanager&amp;subpage=show-competition&competition_id=<?php echo $competition_id ?>" method="post"  style="margin-top: 3em;">
+<form action="admin.php?page=racketmanager&amp;subpage=show-competition&competition_id=<?php echo $competition_id ?>" method="post"  class="form-control">
 	<?php wp_nonce_field( 'racketmanager_add-season' ) ?>
 	<input type="hidden" name="competition_id" value="<?php echo $competition_id ?>" />
 	<table class="lm-form-table">
-		<tr valign="top">
-			<th scope="row"><label for="season"><?php _e( 'Season', 'racketmanager' ) ?></label></th>
-			<?php if ( $season_id ) { ?>
-				<td>
+		<div class="form-group">
+			<div class="form-label">
+				<label for="season"><?php _e( 'Season', 'racketmanager' ) ?></label>
+			</div>
+			<div class="form-input">
+				<?php if ( $season_id ) { ?>
 					<input type="number" name="season" id="season" value="<?php echo $season_data['name'] ?>" size="4" />
-				</td>
-			<?php } else { ?>
-				<td>
+				<?php } else { ?>
 					<select size="1" name="season" id="season" >
 						<option><?php _e( 'Select season' , 'racketmanager') ?></option>
 						<?php $seasons = $racketmanager->getSeasons( "DESC" );
@@ -54,16 +54,19 @@
 							<option value="<?php echo $season->name ?>"><?php echo $season->name ?></option>
 						<?php } ?>
 					</select>
-				</td>
 
-			<?php } ?>
-		</tr>
-		<tr valign="top">
-			<th scope="row"><label for="num_match_days"><?php _e( 'Number of Match Days', 'racketmanager' ) ?></label></th>
-			<td>
+				<?php } ?>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="form-label">
+				<label for="num_match_days"><?php _e( 'Number of Match Days', 'racketmanager' ) ?></label>
+			</div>
+			<div class="form-input">
 				<input type="number" min="1" step="1" class="small-text" name="num_match_days" id="num_match_days" value="<?php echo $season_data['num_match_days'] ?>" size="2" />
-			</td>
-		</tr>
+			</div>
+		</div>
+
 
 	</table>
 

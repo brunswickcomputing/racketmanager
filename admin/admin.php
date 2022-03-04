@@ -499,7 +499,7 @@ final class RacketManagerAdmin extends RacketManager
         if ( !current_user_can( 'edit_leagues' ) ) {
             echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
         } else {
-            $tab = 0;
+            $tab = 'leagues';
             $competition_id = $_GET['competition_id'];
             $competition = get_competition($_GET['competition_id']);
             $league_id = false;
@@ -521,7 +521,7 @@ final class RacketManagerAdmin extends RacketManager
                 $league = get_league($league_id);
                 $league_title = $league->title;
             } elseif ( isset($_POST['saveSeason']) || isset($_GET['editseason'])) {
-                $tab = 2;
+                $tab = 'seasons';
                 if ( !empty($_POST['season']) ) {
                     if ( empty($_POST['season_id']) ) {
                         $this->addSeasonToCompetition( htmlspecialchars($_POST['season']), intval($_POST['num_match_days']), intval($_POST['competition_id']) );
@@ -536,6 +536,7 @@ final class RacketManagerAdmin extends RacketManager
                 }
                 $this->printMessage();
             } elseif ( isset($_POST['doactionseason']) ) {
+							$tab = 'seasons';
                 check_admin_referer('seasons-bulk');
                 if ( 'delete' == $_POST['action'] ) {
                     $this->delCompetitionSeason( $_POST['del_season'], $competition->id );
@@ -549,8 +550,8 @@ final class RacketManagerAdmin extends RacketManager
                 if ( isset($_GET['club_id']) ) {
                     $club_id = intval($_GET['club_id']);
                 }
-                $tab = 1;
 						} elseif ( isset($_POST['doactionconstitution']) && $_POST['action'] == 'delete' ) {
+							$tab = 'constitution';
                 if ( current_user_can('del_leagues') ) {
                     check_admin_referer('constitution-bulk');
                     foreach ( $_POST['table'] AS $tableId ) {
@@ -565,8 +566,8 @@ final class RacketManagerAdmin extends RacketManager
                 } else {
                     $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
                 }
-								$tab = 4;
 						} elseif ( isset($_POST['saveconstitution']) ) {
+							$tab = 'constitution';
                 check_admin_referer('constitution-bulk');
 								$js = ( $_POST['js-active'] == 1 ) ? true : false;
 								$rank = 0;
@@ -586,14 +587,12 @@ final class RacketManagerAdmin extends RacketManager
 										$this->updateTable( $tableId, $league, $team, $_POST['latestSeason'], $rank, $status, $profile );
 									}
                 }
-								$tab = 4;
 						} elseif ( isset($_POST['action']) && $_POST['action'] == 'addTeamsToLeague' ) {
+							$tab = 'constitution';
                 foreach ( $_POST['team'] AS $i => $team_id ) {
 									$racketmanager->addTeamtoTable( $_POST['league_id'], $team_id, htmlspecialchars($_POST['season']), array(), false, '99', 'NT', '1' );
                   $this->setTeamCompetition( $team_id, $_POST['competition_id'] );
                 }
-								$tab = 4;
-            }
             } elseif ( isset($_POST['updateSettings']) ) {
 							check_admin_referer('racketmanager_manage-competition-options');
 

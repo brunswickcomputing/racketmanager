@@ -1,21 +1,4 @@
 <?php
-$tab = 0;
-$competition = get_competition( intval($_GET['competition_id']) );
-if ( isset($_POST['updateSettings']) ) {
-	check_admin_referer('racketmanager_manage-competition-options');
-
-	$settings = (array)$_POST['settings'];
-
-	$this->_editCompetition( intval($_POST['competition_id']), $_POST['competition_title'], $settings );
-	$this->printMessage();
-
-	$options = $racketmanager->options;
-	$competition->reloadSettings();
-
-	// Set active tab
-	$tab = intval($_POST['active-tab']);
-}
-
 $forwin = $fordraw = $forloss = $forwin_overtime = $forloss_overtime = 0;
 // Manual point rule
 if ( is_array($competition->point_rule) ) {

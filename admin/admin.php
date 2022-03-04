@@ -594,6 +594,20 @@ final class RacketManagerAdmin extends RacketManager
                 }
 								$tab = 4;
             }
+            } elseif ( isset($_POST['updateSettings']) ) {
+							check_admin_referer('racketmanager_manage-competition-options');
+
+							$settings = (array)$_POST['settings'];
+
+							$this->_editCompetition( intval($_POST['competition_id']), $_POST['competition_title'], $settings );
+							$this->printMessage();
+
+							$options = $racketmanager->options;
+							$competition->reloadSettings();
+
+							// Set active tab
+							$tab = 'settings';
+						}
             include_once( dirname(__FILE__) . '/show-competition.php' );
         }
     }

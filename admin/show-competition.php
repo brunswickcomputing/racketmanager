@@ -25,9 +25,11 @@ jQuery(function() {
 			<li class="nav-item" role="presentation">
 				<button class="nav-link" id="seasons-tab" data-bs-toggle="pill" data-bs-target="#seasons" type="button" role="tab" aria-controls="seasons" aria-selected="false"><?php _e( 'Seasons', 'racketmanager' ) ?></button>
 			</li>
-			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="settings-tab" data-bs-toggle="pill" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false"><?php _e( 'Settings', 'racketmanager' ) ?></button>
-			</li>
+			<?php if ( current_user_can( 'manage_racketmanager' ) ) { ?>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" id="settings-tab" data-bs-toggle="pill" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false"><?php _e( 'Settings', 'racketmanager' ) ?></button>
+				</li>
+			<?php } ?>
 			<?php if ( $competition->competitiontype == 'league' ) { ?>
 				<li class="nav-item" role="presentation">
 					<button class="nav-link" id="constitution-tab" data-bs-toggle="pill" data-bs-target="#constitution" type="button" role="tab" aria-controls="constitution" aria-selected="false"><?php _e( 'Constitution', 'racketmanager' ) ?></button>
@@ -49,10 +51,12 @@ jQuery(function() {
 				<h2><?php _e( 'Seasons', 'racketmanager' ) ?></h2>
 				<?php include('competition/seasons.php'); ?>
 			</div>
-			<div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
-				<h2><?php _e( 'Settings', 'racketmanager' ) ?></h2>
-				<?php include('competition/settings.php'); ?>
-			</div>
+			<?php if ( current_user_can( 'manage_racketmanager' ) ) { ?>
+				<div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+					<h2><?php _e( 'Settings', 'racketmanager' ) ?></h2>
+					<?php include('competition/settings.php'); ?>
+				</div>
+			<?php } ?>
 			<?php if ( $competition->competitiontype == 'league' ) { ?>
 				<div class="tab-pane fade" id="constitution" role="tabpanel" aria-labelledby="constitution-tab">
 					<div id="constitution" class="league-block-container">

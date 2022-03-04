@@ -610,3 +610,11 @@ div#errorMsg {
   border: solid;
   margin: 5px;
 }
+.nav-pills .nav-link {
+    color: #212529;
+}
+.nav-pills .nav-link.active {
+    color: #fff;
+    background-color: #1a1e21;
+    border-color: #191c1f;
+}

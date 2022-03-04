@@ -13,39 +13,52 @@ jQuery(function() {
 
 	<h1><?php echo $competition->name ?></h1>
 
-	<div id="tabs" class="competition-blocks">
-		<ul id="tablist" style="display: none;">
-			<li><a href="#leagues-table"><?php _e( 'Leagues', 'racketmanager' ) ?></a></li>
-			<li><a href="#player-stats"><?php _e( 'Players Stats', 'racketmanager' ) ?></a></li>
-			<li><a href="#seasons-table"><?php _e( 'Seasons', 'racketmanager' ) ?></a></li>
-			<li><a href="#settings"><?php _e( 'Settings', 'racketmanager' ) ?></a></li>
+	<div class="container">
+		<!-- Nav tabs -->
+		<ul class="nav nav-pills" id="myTab" role="tablist">
+			<li class="nav-item" role="presentation">
+				<button class="nav-link active" id="leagues-tab" data-bs-toggle="pill" data-bs-target="#leagues" type="button" role="tab" aria-controls="leagues" aria-selected="true"><?php _e( 'Leagues', 'racketmanager' ) ?></button>
+			</li>
+			<li class="nav-item" role="presentation">
+				<button class="nav-link" id="playerstats-tab" data-bs-toggle="pill" data-bs-target="#playerstats" type="button" role="tab" aria-controls="playerstats" aria-selected="false"><?php _e( 'Players Stats', 'racketmanager' ) ?></button>
+			</li>
+			<li class="nav-item" role="presentation">
+				<button class="nav-link" id="seasons-tab" data-bs-toggle="pill" data-bs-target="#seasons" type="button" role="tab" aria-controls="seasons" aria-selected="false"><?php _e( 'Seasons', 'racketmanager' ) ?></button>
+			</li>
+			<li class="nav-item" role="presentation">
+				<button class="nav-link" id="settings-tab" data-bs-toggle="pill" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false"><?php _e( 'Settings', 'racketmanager' ) ?></button>
+			</li>
 			<?php if ( $competition->competitiontype == 'league' ) { ?>
-				<li><a href="#constitution"><?php _e( 'Constitution', 'racketmanager' ) ?></a></li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" id="constitution-tab" data-bs-toggle="pill" data-bs-target="#constitution" type="button" role="tab" aria-controls="constitution" aria-selected="false"><?php _e( 'Constitution', 'racketmanager' ) ?></button>
+			</li>
 			<?php } ?>
+
 		</ul>
-
-		<div id="leagues-table" class="league-block-container">
-			<h2><?php _e( 'Leagues', 'racketmanager' ) ?></h2>
-			<?php include('competition/leagues.php'); ?>
-		</div>
-		<div id="player-stats" class="league-block-container">
-			<h2><?php _e( 'Player Statistics', 'racketmanager' ) ?></h2>
-			<?php include(RACKETMANAGER_PATH . '/admin/includes/player-stats.php'); ?>
-		</div>
-		<div id="seasons-table" class="league-block-container">
-			<h2><?php _e( 'Seasons', 'racketmanager' ) ?></h2>
-			<?php include('competition/seasons.php'); ?>
-		</div>
-
-		<div id="settings" class="league-block-container">
-			<h2><?php _e( 'Settings', 'racketmanager' ) ?></h2>
-			<?php include('competition/settings.php'); ?>
-		</div>
-		<?php if ( $competition->competitiontype == 'league' ) { ?>
-			<div id="constitution" class="league-block-container">
-				<?php include('competition/constitution.php'); ?>
+		<!-- Tab panes -->
+		<div class="tab-content">
+			<div class="tab-pane active show fade" id="leagues" role="tabpanel" aria-labelledby="leagues-tab">
+				<h2><?php _e( 'Leagues', 'racketmanager' ) ?></h2>
+				<?php include('competition/leagues.php'); ?>
 			</div>
-		<?php } ?>
-
+			<div class="tab-pane fade" id="playerstats" role="tabpanel" aria-labelledby="playerstats-tab">
+				<h2><?php _e( 'Player Statistics', 'racketmanager' ) ?></h2>
+				<?php include(RACKETMANAGER_PATH . '/admin/includes/player-stats.php'); ?>
+			</div>
+			<div class="tab-pane fade" id="seasons" role="tabpanel" aria-labelledby="seasons-tab">
+				<h2><?php _e( 'Seasons', 'racketmanager' ) ?></h2>
+				<?php include('competition/seasons.php'); ?>
+			</div>
+			<div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+				<h2><?php _e( 'Settings', 'racketmanager' ) ?></h2>
+				<?php include('competition/settings.php'); ?>
+			</div>
+			<?php if ( $competition->competitiontype == 'league' ) { ?>
+				<div class="tab-pane fade" id="constitution" role="tabpanel" aria-labelledby="constitution-tab">
+					<div id="constitution" class="league-block-container">
+						<?php include('competition/constitution.php'); ?>
+				</div>
+			<?php } ?>
+		</div>
 	</div>
 </div>

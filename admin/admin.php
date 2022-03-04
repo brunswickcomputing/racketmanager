@@ -412,8 +412,7 @@ final class RacketManagerAdmin extends RacketManager
 		if ( !current_user_can( 'view_leagues' ) ) {
 			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
 		} else {
-            $tab = 0;
-            $comptab = 1;
+						$tab = 'competitionsleague';
             $club_id = isset($_GET['club_id']) ? $_GET['club_id'] : 0;
             if ( $club_id ) $club = get_club($club_id);
             if ( isset($_POST['addCompetition']) ) {
@@ -484,6 +483,7 @@ final class RacketManagerAdmin extends RacketManager
 			$competitionType = $_GET['competitiontype'];
 			$season = $_GET['season'];
 			$type = $_GET['type'];
+			$standalone = true;
 			$competitionQuery = array( 'type' => $competitionType, 'name' => $type, 'season' => $season );
 			include_once( dirname(__FILE__) . '/show-competitions.php' );
 		}
@@ -934,6 +934,7 @@ final class RacketManagerAdmin extends RacketManager
 			$competitionType = 'league';
 			$type = '';
 			$season = '';
+			$standalone = true;
 			$competitionQuery = array( 'type' => $competitionType );
 			include_once( dirname(__FILE__) . '/show-competitions.php' );
 		}
@@ -952,6 +953,7 @@ final class RacketManagerAdmin extends RacketManager
 			$competitionType = 'cup';
 			$type = '';
 			$season = '';
+			$standalone = true;
 			$competitionQuery = array( 'type' => $competitionType );
 			include_once( dirname(__FILE__) . '/show-competitions.php' );
 		}

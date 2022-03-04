@@ -1,4 +1,5 @@
-<div id="competitions-<?php echo $competitionType ?>" class="league-block-container">
+
+<div class="tab-pane <?php if ( $standalone ) echo 'active show ' ?>fade" id="competitions<?php echo $competitionType ?>" role="tabpanel" aria-labelledby="competitions<?php echo $competitionType ?>-tab">
   <form id="competitions-filter" method="post" action="">
     <?php wp_nonce_field( 'competitions-bulk' ) ?>
 

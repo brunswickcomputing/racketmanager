@@ -10,57 +10,55 @@ if ( is_array($competition->point_rule) ) {
 	$competition->point_rule = 'user';
 }
 ?>
+<div class="container">
 
-<script type='text/javascript'>
-jQuery(function() {
-	jQuery("#tabs.form").tabs({
-		active: <?php echo $tab ?>
-	});
-});
-</script>
-<div class="wrap">
-
-	<form action="" method="post">
+	<form action="" method="post" class="form-control">
 		<?php wp_nonce_field( 'racketmanager_manage-competition-options' ) ?>
 
-		<div class="theme-settings-blocks form" id="tabs">
-			<input type="hidden" class="active-tab" name="active-tab" value="<?php echo $tab ?>" ?>
+		<input type="hidden" class="active-tab" name="active-tab" value="<?php echo $tab ?>" ?>
 
-			<ul id="tablist" style="display: none";>
-				<li><a href="#general"><?php _e( 'General', 'racketmanager' ) ?></a></li>
-				<li><a href="#standings"><?php _e( 'Standings Table', 'racketmanager' ) ?></a></li>
-				<li><a href="#advanced"><?php _e( 'Advanced', 'racketmanager' ) ?></a></li>
-				<li><a href="#availability"><?php _e( 'Availability', 'racketmanager' ) ?></a></li>
+		<div class="container">
+			<!-- Nav tabs -->
+			<ul class="nav nav-pills" id="myTab" role="tablist">
+				<li class="nav-item" role="presentation">
+					<button class="nav-link active" id="general-tab" data-bs-toggle="pill" data-bs-target="#general" type="button" role="tab" aria-controls="leaggeneralues" aria-selected="true"><?php _e( 'General', 'racketmanager' ) ?></button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" id="standings-tab" data-bs-toggle="pill" data-bs-target="#standings" type="button" role="tab" aria-controls="standings" aria-selected="false"><?php _e( 'Standings Table', 'racketmanager' ) ?></button>
+				</li>
+				<?php if ( current_user_can( 'manage_racketmanager' ) ) { ?>
+					<li class="nav-item" role="presentation">
+						<button class="nav-link" id="advanced-tab" data-bs-toggle="pill" data-bs-target="#advanced" type="button" role="tab" aria-controls="advanced" aria-selected="false"><?php _e( 'Advanced', 'racketmanager' ) ?></button>
+					</li>
+				<?php } ?>
+				<?php if ( $competition->competitiontype == 'league' ) { ?>
+					<li class="nav-item" role="presentation">
+						<button class="nav-link" id="availability-tab" data-bs-toggle="pill" data-bs-target="#availability" type="button" role="tab" aria-controls="availability" aria-selected="false"><?php _e( 'Availability', 'racketmanager' ) ?></button>
+					</li>
+				<?php } ?>
+
 			</ul>
-
-			<div id='general' class='settings-block-container'>
-				<h2><?php _e( 'General', 'racketmanager' ) ?></h2>
-				<div class="settings-block">
+			<!-- Tab panes -->
+			<div class="tab-content">
+				<div class="tab-pane active show fade" id="general" role="tabpanel" aria-labelledby="general-tab">
+					<h2><?php _e( 'General', 'racketmanager' ) ?></h2>
 					<?php include('include/settings-general.php'); ?>
 				</div>
-			</div>
-
-			<div id='standings' class='settings-block-container'>
-				<h2><?php _e( 'Standings Table', 'racketmanager' ) ?></h2>
-				<div class="settings-block">
+				<div class="tab-pane fade" id="standings" role="tabpanel" aria-labelledby="standings-tab">
+					<h2><?php _e( 'Standings Table', 'racketmanager' ) ?></h2>
 					<?php include('include/settings-standings.php'); ?>
 				</div>
-			</div>
-
-			<div id='advanced' class="settings-block-container">
-				<h2><?php _e( 'Advanced', 'racketmanager' ) ?></h2>
-				<div class="settings-block">
+				<div class="tab-pane fade" id="advanced" role="tabpanel" aria-labelledby="advanced-tab">
+					<h2><?php _e( 'Advanced', 'racketmanager' ) ?></h2>
 					<?php include('include/settings-advanced.php'); ?>
 				</div>
-			</div>
-
-			<div id='availability' class="settings-block-container">
-				<h2><?php _e( 'Availability', 'racketmanager' ) ?></h2>
-				<div class="settings-block">
+				<div class="tab-pane fade" id="availability" role="tabpanel" aria-labelledby="availability-tab">
+					<h2><?php _e( 'Availability', 'racketmanager' ) ?></h2>
 					<?php include('include/settings-availability.php'); ?>
 				</div>
 			</div>
 		</div>
+
 		<input type="hidden" name="competition_id" value="<?php echo $competition->id ?>" />
 		<input type="submit" name="updateSettings" value="<?php _e( 'Save Settings', 'racketmanager' ) ?>" class="btn btn-primary" />
 	</form>

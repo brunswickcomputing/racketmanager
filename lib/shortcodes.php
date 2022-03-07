@@ -1172,7 +1172,7 @@ class RacketManagerShortcodes extends RacketManager {
 			$actionurl .= '&match_day='.$matchday;
 		}
 		if ( $round ) {
-			$actionurl .= '&final='.$round.'&league-tab=1';
+			$actionurl .= '&final='.$round.'&league-tab=matches';
 		}
 
 		if ( !$organisationname ) {

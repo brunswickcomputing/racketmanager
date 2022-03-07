@@ -27,7 +27,7 @@ jQuery(document).ready(function(){
 			<button class="nav-link" id="finalresults-tab" data-bs-toggle="pill" data-bs-target="#finalresults" type="button" role="tab" aria-controls="finalresults" aria-selected="true"><?php _e( 'Final Results', 'racketmanager' ) ?></button>
 		</li>
 		<li class="nav-item" role="presentation">
-			<button class="nav-link" id="finals-tab" data-bs-toggle="pill" data-bs-target="#finals" type="button" role="tab" aria-controls="finals" aria-selected="false"><?php _e( 'Finals', 'racketmanager' ) ?></button>
+			<button class="nav-link" id="matches-tab" data-bs-toggle="pill" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="false"><?php _e( 'Finals', 'racketmanager' ) ?></button>
 		</li>
 		<li class="nav-item" role="presentation">
 			<button class="nav-link" id="preliminary-tab" data-bs-toggle="pill" data-bs-target="#preliminary" type="button" role="tab" aria-controls="preliminary" aria-selected="false"><?php _e( 'Preliminary Rounds', 'racketmanager' ) ?></button>
@@ -39,7 +39,7 @@ jQuery(document).ready(function(){
 			<h2><?php _e( 'Final Results', 'racketmanager' ) ?></h2>
 			<?php include('championship/finalresults.php'); ?>
 		</div>
-		<div class="tab-pane fade" id="finals" role="tabpanel" aria-labelledby="finals-tab">
+		<div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
 			<h2><?php echo $league->championship->getFinalName() ?></h2>
 			<?php include('championship/finals.php'); ?>
 		</div>

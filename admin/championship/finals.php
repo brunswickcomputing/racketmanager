@@ -11,7 +11,7 @@
           <option value="<?php echo $final['key'] ?>"<?php selected($league->championship->getCurrentFinalKey(), $final['key']) ?>><?php echo $final['name'] ?></option>
         <?php } ?>
       </select>
-      <input type="hidden" name="league-tab" value="finals" />
+      <input type="hidden" name="league-tab" value="matches" />
       <input type="submit" class="btn btn-secondary" value="<?php _e( 'Show', 'racketmanager' ) ?>" />
     </form>
     <form action="" method="get" class="col-auto">
@@ -31,7 +31,7 @@
           <option value="<?php echo $final['key'] ?>"><?php echo $final['name'] ?></option>
         <?php } ?>
       </select>
-      <input type="hidden" name="league-tab" value="<?php echo $tab ?>" class="jquery_ui_tab_index" />
+      <input type="hidden" name="league-tab" value="matches" />
       <input type="submit" class="btn btn-secondary" value="<?php _e( 'Go', 'racketmanager' ) ?>" />
     </form>
   </div>
@@ -43,7 +43,7 @@
     <input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
     <input type="hidden" name="season" value="<?php echo $league->current_season['name'] ?>" />
     <input type="hidden" name="round" value="<?php if (!empty($final['round'])) echo $final['round']; ?>" />
-    <input type="hidden" name="league-tab" value="finals" />
+    <input type="hidden" name="league-tab" value="matches" />
 
     <?php if ( $matches ) { ?>
       <table class="widefat">

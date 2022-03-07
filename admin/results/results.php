@@ -24,7 +24,7 @@ $prev_league = 0;
             foreach ( $matches AS $match ) {
               $match = get_match($match);
               if ( $match->league->is_championship ) {
-                $matchLink = 'final='.$match->final_round.'&amp;league-tab=1';
+                $matchLink = 'final='.$match->final_round.'&amp;league-tab=matches';
               } else {
                 $matchLink = 'match_day='.$match->match_day;
               }

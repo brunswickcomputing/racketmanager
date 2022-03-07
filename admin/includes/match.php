@@ -1,4 +1,4 @@
-<div class="wrap">
+<div class="container">
 	<p class="racketmanager_breadcrumb">
 		<a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo;
 		<a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>"><?php echo $competition->name ?></a> &raquo;
@@ -6,7 +6,7 @@
 		<?php echo $form_title ?>
 	</p>
 	<h1><?php printf( "%s - %s",  $league->title, $form_title ); ?></h1>
-	<form action="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id?>&amp;season=<?php echo $season ?><?php if (isset($finalkey)) echo '&amp;final=' . $finalkey . '&amp;league-tab=finals'; ?>" method="post">
+	<form action="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id?>&amp;season=<?php echo $season ?><?php if (isset($finalkey) && $finalkey > '') echo '&amp;final=' . $finalkey . '&amp;league-tab=matches'; ?>" method="post">
 		<?php wp_nonce_field( 'racketmanager_manage-matches' ) ?>
 		<?php if ( !$edit ) { ?>
 			<p class="match_info"><?php _e( 'Note: Matches with different Home and Guest Teams will be added to the database.', 'racketmanager' ) ?></p>

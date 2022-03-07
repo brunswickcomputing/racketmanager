@@ -386,17 +386,18 @@ final class League_Championship extends RacketManager {
       if ($data['round'] > 1) {
         // get data of previous round
         $final = $this->getFinals( $this->getFinalKeys($data['round']-1) );
+        if ( isset($final['num_matches']) ) {
+          for ( $x = 1; $x <= $final['num_matches']; $x++ ) {
+            if ( $k == 'third' ) {
+              $title = sprintf(__('Looser %s %d', 'racketmanager'), $final['name'], $x);
+              $key = '2_'.$final['key'].'_'.$x;
+            } else {
+              $title = sprintf(__('Winner %s %d', 'racketmanager'), $final['name'], $x);
+              $key = '1_'.$final['key'].'_'.$x;
+            }
 
-        for ( $x = 1; $x <= $final['num_matches']; $x++ ) {
-          if ( $k == 'third' ) {
-            $title = sprintf(__('Looser %s %d', 'racketmanager'), $final['name'], $x);
-            $key = '2_'.$final['key'].'_'.$x;
-          } else {
-            $title = sprintf(__('Winner %s %d', 'racketmanager'), $final['name'], $x);
-            $key = '1_'.$final['key'].'_'.$x;
+            $this->final_teams[$k][$key] = (object) array('id' => $key, 'title' => $title, 'home' => 0);
           }
-
-          $this->final_teams[$k][$key] = (object) array('id' => $key, 'title' => $title, 'home' => 0);
         }
       } else {
         // First Final Rounds

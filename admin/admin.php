@@ -1791,9 +1791,15 @@ final class RacketManagerAdmin extends RacketManager
 					return false;
 			}
 
+			if ( $settings['mode'] == 'championship' ) {
+				if ( !$settings['primary_league'] ) {
+					$error = true;
+					$this->setMessage( __('Primary league not set', 'racketmanager'), true );
+					return false;
+				}
+			}
 			$racketmanager->editCompetition($competition_id, $title, $settings);
       $this->setMessage( __('Settings saved', 'racketmanager') );
-
       return true;
     }
 

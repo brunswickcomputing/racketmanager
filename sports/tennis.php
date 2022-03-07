@@ -94,29 +94,42 @@ class Competition_Tennis extends Competition {
         $competition->num_sets = isset($competition->num_sets) ? $competition->num_sets : '';
         $competition->num_rubbers = isset($competition->num_rubbers) ? $competition->num_rubbers : '';
         $competition->type = isset($competition->type) ? $competition->type : '';
-        echo "<tr valign='top'>";
-            echo "<th scope='row'><label for='num_sets'>".__('Number of Sets', 'racketmanager')."</label></th>";
-            echo "<td><input type='number' name='settings[num_sets]' id='num_sets' value='".$competition->num_sets."' size='3' /></td>";
-        echo "</tr>";
-        echo "<tr valign='top'>";
-            echo "<th scope='row'><label for='num_rubbers'>".__('Number of Rubbers', 'racketmanager')."</label></th>";
-            echo "<td><input type='number' name='settings[num_rubbers]' id='num_rubbers' value='".$competition->num_rubbers."' size='3' /></td>";
-        echo "</tr>";
-        echo "<tr valign='top'>";
-            echo "<th scope='row'><label for='competition_type'>".__('Type', 'racketmanager')."</label></th>";
-        echo "<td>";
-                echo "<select size='1' name='settings[competition_type]' id='competition_type'>";
-                    echo "<option>"._e( 'Select', 'racketmanager')."</option>";
-                    echo "<option value='WS' ".($competition->type == 'WS' ? 'selected' : '').">".__( 'Ladies Singles', 'racketmanager')."</option>";
-                    echo "<option value='WD' ".($competition->type == 'WD' ? 'selected' : '').">".__( 'Ladies Doubles', 'racketmanager')."</option>";
-                    echo "<option value='MS' ".($competition->type == 'MS' ? 'selected' : '').">".__( 'Mens Singles', 'racketmanager')."</option>";
-                    echo "<option value='MD' ".($competition->type == 'MD' ? 'selected' : '').">".__( 'Mens Doubles', 'racketmanager')."</option>";
-                    echo "<option value='XD' ".($competition->type == 'XD' ? 'selected' : '').">".__( 'Mixed Doubles', 'racketmanager')."</option>";
-                    echo "<option value='LD' ".($competition->type == 'LD' ? 'selected' : '').">".__( 'The League', 'racketmanager')."</option>";
-                echo "</select>";
-            echo "</td>";
-        echo "</tr>";
-    }
+
+				?>
+				  <div class="form-group">
+				    <div class="form-label">
+							<label for='num_sets'><?php _e('Number of Sets', 'racketmanager') ?></label>
+				    </div>
+				    <div class="form-input">
+						<input type='number' name='settings[num_sets]' id='num_sets' value='<?php echo $competition->num_sets ?>' size='3' />
+				    </div>
+				  </div>
+					<div class="form-group">
+				    <div class="form-label">
+							<label for='num_rubbers'><?php _e('Number of Rubbers', 'racketmanager') ?></label>
+				    </div>
+				    <div class="form-input">
+						<input type='number' name='settings[num_rubbers]' id='num_rubbers' value='<?php echo $competition->num_rubbers ?>' size='3' />
+				    </div>
+				  </div>
+					<div class="form-group">
+				    <div class="form-label">
+							<label for='competition_type'><?php _e('Type', 'racketmanager') ?></label>
+				    </div>
+				    <div class="form-input">
+							<select size='1' name='settings[competition_type]' id='competition_type'>
+							<option><?php _e( 'Select', 'racketmanager') ?></option>
+							<option value='WS' <?php echo ($competition->type == 'WS' ? 'selected' : '') ?>><?php _e( 'Ladies Singles', 'racketmanager') ?></option>
+							<option value='WD' <?php echo ($competition->type == 'WD' ? 'selected' : '') ?>><?php _e( 'Ladies Doubles', 'racketmanager') ?></option>
+							<option value='MS' <?php echo ($competition->type == 'MS' ? 'selected' : '') ?>><?php _e( 'Mens Singles', 'racketmanager') ?></option>
+							<option value='MD' <?php echo ($competition->type == 'MD' ? 'selected' : '') ?>><?php _e( 'Mens Doubles', 'racketmanager') ?></option>
+							<option value='XD' <?php echo ($competition->type == 'XD' ? 'selected' : '') ?>><?php _e( 'Mixed Doubles', 'racketmanager') ?></option>
+							<option value='LD' <?php echo ($competition->type == 'LD' ? 'selected' : '') ?>><?php _e( 'The League', 'racketmanager') ?></option>
+							</select>
+						</div>
+				  </div>
+
+		<?php }
 
 }
 

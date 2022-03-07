@@ -20,23 +20,6 @@ jQuery(document).ready(function(){
   </p>
   <h1><?php echo $league->title ?></h1>
 
-  <?php if ( !empty($competition->seasons) ) { ?>
-    <!-- Season Dropdown -->
-    <div class="alignright" style="clear: both;">
-      <form action="admin.php" method="get" style="display: inline;">
-        <input type="hidden" name="page" value="racketmanager" />
-        <input type="hidden" name="subpage" value="show-league" />
-        <input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
-        <label for="season" style="vertical-align: middle;"><?php _e( 'Season', 'racketmanager' ) ?></label>
-        <select size="1" name="season" id="season">
-          <?php foreach ( $competition->seasons AS $s ) { ?>
-            <option value="<?php echo htmlspecialchars($s['name']) ?>"<?php if ( $s['name'] == $season ) { echo ' selected="selected"'; } ?>><?php echo $s['name'] ?></option>
-          <?php } ?>
-        </select>
-        <input type="submit" value="<?php _e( 'Show', 'racketmanager' ) ?>" class="btn btn-secondary" />
-      </form>
-    </div>
-  <?php } ?>
 
   <!-- League Menu -->
   <ul class="subsubsub">

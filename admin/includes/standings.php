@@ -1,3 +1,13 @@
+<div class="alignright">
+	<form action="admin.php" method="get">
+		<input type="hidden" name="page" value="racketmanager" />
+		<input type="hidden" name="subpage" value="show-league" />
+		<input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
+
+		<?php echo $league->getStandingsSelection(); ?>
+		<input type="submit" class="btn btn-secondary" value="<?php _e( 'Show', 'racketmanager' ) ?>" />
+	</form>
+</div>
 <form id="teams-filter" action="" method="post" name="standings">
 	<input type="hidden" name="js-active" value="0" class="js-active" />
 	<input type="hidden" name="league-tab" value="0" class="jquery_ui_tab_index" />

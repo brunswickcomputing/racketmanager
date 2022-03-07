@@ -141,10 +141,10 @@ button[readonly], html input[readonly] {
 .championship-blocks {
     clear: both;
 }
-span.winner, span.host {
+span.winner, .host {
   font-weight: 700;
 }
-span.host {
+.host {
   font-style: italic;
 }
 /*

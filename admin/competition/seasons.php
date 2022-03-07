@@ -60,7 +60,7 @@
 		</div>
 		<div class="form-group">
 			<div class="form-label">
-				<label for="num_match_days"><?php _e( 'Number of Match Days', 'racketmanager' ) ?></label>
+				<label for="num_match_days"><?php if ($competition->is_championship) { _e( 'Number of teams', 'racketmanager' ); } else { _e( 'Number of Match Days', 'racketmanager' ); } ?></label>
 			</div>
 			<div class="form-input">
 				<input type="number" min="1" step="1" class="small-text" name="num_match_days" id="num_match_days" value="<?php echo $season_data['num_match_days'] ?>" size="2" />

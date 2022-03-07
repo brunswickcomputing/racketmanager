@@ -12,7 +12,7 @@
 <?php } ?>
 <form id="teams-filter" action="" method="post" name="standings">
 	<input type="hidden" name="js-active" value="0" class="js-active" />
-	<input type="hidden" name="league-tab" value="0" class="jquery_ui_tab_index" />
+	<input type="hidden" name="league-tab" value="preliminary" />
 
 	<?php wp_nonce_field( 'teams-bulk' ) ?>
 	<?php $league_id = intval($_GET['league_id']); ?>

@@ -183,7 +183,7 @@ final class League_Championship extends RacketManager {
         $this->num_teams_first_round = $num_teams;
         $this->num_rounds = ceil(log($this->num_teams_first_round, 2));
       } else {
-        $this->num_rounds = ceil(log($num_teams, 2)); 
+        $this->num_rounds = ceil(log($num_teams, 2));
         $this->num_teams_first_round = pow(2, $this->num_rounds);
       }
       $this->num_teams = $num_teams;
@@ -620,10 +620,9 @@ final class League_Championship extends RacketManager {
       $class = 'alternate';
       if (count($this->groups) > 0) { $league->setGroup($this->groups[0]); }
 
-      $tab = 0;
-      if (isset($_GET['league-tab'])) { $tab = intval($_GET['league-tab']); }
-      if (isset($_POST['league-tab'])) { $tab = intval($_POST['league-tab']); }
-
+      $tab = 'finalresults';
+      if (isset($_REQUEST['league-tab'])) { $tab = $_REQUEST['league-tab']; }
+      if (isset($_REQUEST['final'])) { $final = $_REQUEST['final']; }
       include_once( RACKETMANAGER_PATH . '/admin/championship.php' );
     } else {
       echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';

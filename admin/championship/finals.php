@@ -1,7 +1,7 @@
 <?php global $racketmanager; ?>
 <div class="championship-block">
-  <div class="tablenav">
-    <form action="admin.php" method="get" style="display: inline;">
+  <div class="row tablenav">
+    <form action="" method="get" class="col-auto">
       <input type="hidden" name="page" value="<?php echo htmlspecialchars($_GET['page']) ?>" />
       <input type="hidden" name="subpage" value="<?php echo htmlspecialchars($_GET['subpage']) ?>" />
       <input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
@@ -11,10 +11,10 @@
           <option value="<?php echo $final['key'] ?>"<?php selected($league->championship->getCurrentFinalKey(), $final['key']) ?>><?php echo $final['name'] ?></option>
         <?php endforeach; ?>
       </select>
-      <input type="hidden" name="league-tab" value="<?php echo $tab ?>" class="jquery_ui_tab_index" />
+      <input type="hidden" name="league-tab" value="finals" />
       <input type="submit" class="btn btn-secondary" value="<?php _e( 'Show', 'racketmanager' ) ?>" />
     </form>
-    <form action="admin.php" method="get" style="display: inline;">
+    <form action="" method="get" class="col-auto">
       <input type="hidden" name="page" value="<?php echo htmlspecialchars($_GET['page']) ?>" />
       <input type="hidden" name="subpage" value="match" />
       <input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
@@ -43,7 +43,7 @@
     <input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
     <input type="hidden" name="season" value="<?php echo $league->current_season['name'] ?>" />
     <input type="hidden" name="round" value="<?php if (!empty($final['round'])) echo $final['round']; ?>" />
-    <input type="hidden" name="league-tab" value="<?php echo $tab ?>" class="jquery_ui_tab_index" />
+    <input type="hidden" name="league-tab" value="finals" />
 
     <?php if ( $matches ) { ?>
       <table class="widefat">

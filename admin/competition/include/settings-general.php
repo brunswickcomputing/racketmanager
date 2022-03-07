@@ -24,7 +24,7 @@
       </select>
       <span class="setting-description"><?php printf( __("For details on point rules see the <a href='%s'>Documentation</a>", 'racketmanager'), admin_url() . 'admin.php?page=racketmanager-doc' ) ?></span>
       <div id="point_rule_manual" style="display: block;">
-      <?php if ( $competition->point_rule == 'user' ) : ?>
+      <?php if ( $competition->point_rule == 'user' ) { ?>
         <div id="point_rule_manual_content">
           <input type='text' name='forwin' id='forwin' value='<?php echo $forwin ?>' size='2' />
           <input type='text' name='forwin_overtime' id='forwin_overtime' value='<?php echo $forwin_overtime ?>' size='2' />
@@ -33,7 +33,7 @@
           <input type='text' name='forloss_overtime' id='forloss_overtime' value='<?php echo $forloss_overtime ?>' size='2' />
           &#160;<span class='setting-description'><?php _e( 'Order: win, win overtime, tie, loss, loss overtime', 'racketmanager' ) ?></span>
         </div>
-      <?php endif; ?>
+      <?php } ?>
       </div>
     </td>
   </tr>
@@ -93,9 +93,9 @@
       </select>
       <select size="1" name="settings[default_match_start_time][minutes]">
       <?php for ( $minute = 0; $minute <= 60; $minute++ ) : ?>
-        <?php if ( 0 == $minute % 5 && 60 != $minute ) : ?>
+        <?php if ( 0 == $minute % 5 && 60 != $minute ) { ?>
         <option value="<?php  echo str_pad($minute, 2, 0, STR_PAD_LEFT) ?>"<?php selected( $minute, $competition->default_match_start_time['minutes'] ) ?>><?php echo str_pad($minute, 2, 0, STR_PAD_LEFT) ?></option>
-      <?php endif; ?>
+      <?php } ?>
       <?php endfor; ?>
       </select>
     </td>

@@ -43,7 +43,8 @@
 	</form>
 
 	<!-- Add New League -->
-	<form action="admin.php?page=racketmanager&amp;subpage=show-competition&competition_id=<?php echo $competition_id ?>" method="post" class="form-control">
+	<h3><?php _e( 'Add League', 'racketmanager' ) ?></h3>
+	<form action="" method="post" class="form-control">
 		<?php wp_nonce_field( 'racketmanager_add-league' ) ?>
 		<input type="hidden" name="competition_id" value="<?php echo $competition_id ?>" />
 		<input type="hidden" name="league_id" value="<?php echo $league_id ?>" />

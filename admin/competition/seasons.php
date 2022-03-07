@@ -35,7 +35,8 @@
 </table>
 </form>
 
-<form action="admin.php?page=racketmanager&amp;subpage=show-competition&competition_id=<?php echo $competition_id ?>" method="post"  class="form-control">
+<h3><?php _e( 'Add Season', 'racketmanager' ) ?></h3>
+<form action="" method="post"  class="form-control">
 	<?php wp_nonce_field( 'racketmanager_add-season' ) ?>
 	<input type="hidden" name="competition_id" value="<?php echo $competition_id ?>" />
 	<table class="lm-form-table">
@@ -54,7 +55,6 @@
 							<option value="<?php echo $season->name ?>"><?php echo $season->name ?></option>
 						<?php } ?>
 					</select>
-
 				<?php } ?>
 			</div>
 		</div>
@@ -66,8 +66,6 @@
 				<input type="number" min="1" step="1" class="small-text" name="num_match_days" id="num_match_days" value="<?php echo $season_data['num_match_days'] ?>" size="2" />
 			</div>
 		</div>
-
-
 	</table>
 
 	<input type="hidden" name="season_id" value="<?php echo $season_id ?>" />

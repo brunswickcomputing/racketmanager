@@ -7,9 +7,9 @@
       <input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
 
       <select size="1" name="final" id="final">
-        <?php foreach ( $league->championship->getFinals() AS $final ) : ?>
+        <?php foreach ( $league->championship->getFinals() AS $final ) { ?>
           <option value="<?php echo $final['key'] ?>"<?php selected($league->championship->getCurrentFinalKey(), $final['key']) ?>><?php echo $final['name'] ?></option>
-        <?php endforeach; ?>
+        <?php } ?>
       </select>
       <input type="hidden" name="league-tab" value="finals" />
       <input type="submit" class="btn btn-secondary" value="<?php _e( 'Show', 'racketmanager' ) ?>" />

@@ -31,7 +31,7 @@ $class = 'alternate';
 				</tr>
 			</thead>
 			<tbody id="the-list">
-				<?php foreach ( $teams AS $team ) : $class = ('alternate' == $class) ? '' : 'alternate'; ?>
+				<?php foreach ( $teams AS $team ) { $class = ('alternate' == $class) ? '' : 'alternate'; ?>
 					<?php $url = add_query_arg('team_'.$league->id, $team->id, get_permalink()); ?>
 					<tr class="<?php echo $class ?>">
 						<td><a href="<?php echo $url; ?>"><?php echo $team->title ?></a></td>
@@ -40,7 +40,7 @@ $class = 'alternate';
 						<td style="text-align: center;"><?php echo $team->draw_matches ?></td>
 						<td style="text-align: center;"><?php echo $team->lost_matches ?></td>
 					</tr>
-				<?php endforeach; ?>
+				<?php } ?>
 			</tbody>
 		</table>
 

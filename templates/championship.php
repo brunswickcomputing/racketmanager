@@ -55,12 +55,12 @@ You can check the content of a variable when you insert the tag <?php var_dump($
 <h3><?php _e( 'Final Matches', 'racketmanager' ) ?></h3>
 <div class="jquery-ui-tabs">
   <ul class="tablist">
-    <?php foreach ( $finals AS $final ) : ?>
+    <?php foreach ( $finals AS $final ) { ?>
       <li><a href="#final-<?php echo $final->key ?>"><?php echo $final->name ?></a></li>
-    <?php endforeach; ?>
+    <?php } ?>
   </ul>
 
-  <?php foreach ( $finals AS $final ) : ?>
+  <?php foreach ( $finals AS $final ) { ?>
     <div id="final-<?php echo $final->key ?>">
       <h4 class="header"><?php echo $final->name ?></h4>
       <table class="widefat">
@@ -75,7 +75,7 @@ You can check the content of a variable when you insert the tag <?php var_dump($
           </tr>
         </thead>
         <tbody id="the-list-<?php echo $final->key ?>" class="lm-form-table">
-          <?php foreach ( (array)$final->matches AS $no => $match ) : ?>
+          <?php foreach ( (array)$final->matches AS $no => $match ) { ?>
             <tr class="<?php echo $match->class ?>">
               <td><?php echo $no ?></td>
               <td><?php echo $match->date ?></td>
@@ -84,22 +84,22 @@ You can check the content of a variable when you insert the tag <?php var_dump($
               <td><?php echo $match->time ?></td>
               <td><?php echo $match->score ?></td>
             </tr>
-          <?php endforeach; ?>
+          <?php } ?>
         </tbody>
       </table>
     </div>
-  <?php endforeach; ?>
+  <?php } ?>
 </div>
 
 <h3><?php _e( 'Preliminary Rounds', 'racketmanager' ) ?></h3>
 <div class="jquery-ui-tabs">
   <ul class="tablist">
-    <?php foreach ( $championship->getGroups() AS $key => $group ) : ?>
+    <?php foreach ( $championship->getGroups() AS $key => $group ) { ?>
       <li><a href="#group-<?php echo $group ?>"><?php printf(__('Group %s', 'racketmanager'), $group) ?></a></li>
-    <?php endforeach ?>
+    <?php } ?>
     <!--<li><a href="#intergroup-matches"><?php _e( 'Inter Group Matches', 'racketmanager' ) ?></a></li>-->
   </ul>
-  <?php foreach ( $championship->getGroups() AS $key => $group ) : ?>
+  <?php foreach ( $championship->getGroups() AS $key => $group ) { ?>
     <?php $teams = $league->getLeagueTeams( array("season" => $league->season, "group" => $group) ); ?>
     <?php $matches = $league->getMatches( array("league_id" => $league->id, "season" => $league->season, "final" => '', "group" => $group) ); ?>
 
@@ -111,7 +111,7 @@ You can check the content of a variable when you insert the tag <?php var_dump($
       <h5><?php _e( 'Match Plan', 'racketmanager' ) ?></h5>
       <?php racketmanager_matches( $league->id, array('season' => $league->season, 'limit' => 'false', 'group' => $group, 'match_day' => 'all') ); ?>
     </div>
-  <?php endforeach; ?>
+  <?php } ?>
 
   <div id="intergroup-matches">
     <!--<h4 class="header"><?php _e( 'Inter Group Matches', 'racketmanager' ) ?></h5>-->

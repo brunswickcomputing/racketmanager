@@ -626,7 +626,7 @@ final class RacketManagerAdmin extends RacketManager
             $season = $league->getSeason();
             $league_mode = (isset($league->mode) ? ($league->mode) : '' );
 
-            $tab = 0;
+            $tab = 'standings';
             $matchDay = false;
             if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POST['delmatches']) && !isset($_POST['doaction-match_day']) )  {
                 if ( 'team' == $_POST['updateLeague'] ) {
@@ -726,7 +726,7 @@ final class RacketManagerAdmin extends RacketManager
                         check_admin_referer('matches-bulk');
                         $custom = isset($_POST['custom']) ? $_POST['custom'] : array();
                         $this->updateResults( $_POST['matches'], $_POST['home_points'], $_POST['away_points'], $_POST['home_team'], $_POST['away_team'], $custom, $_POST['season'] );
-                        $tab = 2;
+                        $tab = 'matches';
                         $matchDay = intval($_POST['current_match_day']);
                     } else {
                         $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
@@ -760,7 +760,7 @@ final class RacketManagerAdmin extends RacketManager
                         foreach ( $_POST['match'] AS $match_id )
                             $this->delMatch( intval($match_id) );
 
-                        $tab = 2;
+                        $tab = 'matches';
                     } else {
                         $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
                     }
@@ -797,7 +797,7 @@ final class RacketManagerAdmin extends RacketManager
                 }
                 $this->printMessage();
 
-                $tab = 0;
+                $tab = 'standings';
             }
 
             // rank teams randomly
@@ -825,7 +825,7 @@ final class RacketManagerAdmin extends RacketManager
                 }
                 $this->printMessage();
 
-                $tab = 0;
+                $tab = 'standings';
             }
             if (isset($_POST['updateRanking'])) {
                 if ( current_user_can('update_results') ) {
@@ -836,7 +836,7 @@ final class RacketManagerAdmin extends RacketManager
                     $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
                 }
 
-                $tab = 0;
+                $tab = 'standings';
             }
 
             // check if league is a cup championship
@@ -865,7 +865,7 @@ final class RacketManagerAdmin extends RacketManager
                     $matchDay = intval($_POST['match_day']);
                     $league->setMatchDay($matchDay);
                 }
-                $tab = 2;
+                $tab = 'matches';
             } else {
                 if ( $league->match_display == 'current_match_day' )
                     $league->setMatchDay('current');
@@ -885,7 +885,7 @@ final class RacketManagerAdmin extends RacketManager
             }
 
             if ( isset($_GET['match_paged']) )
-                $tab = 2;
+                $tab = 'matches';
 
             if ( isset($_GET['standingstable']) ) {
                 $get = $_GET['standingstable'];
@@ -901,7 +901,7 @@ final class RacketManagerAdmin extends RacketManager
             }
 
             if (isset($_GET['match_day']) ) {
-                $tab = 2;
+                $tab = 'matches';
             }
 
             include_once( dirname(__FILE__) . '/show-league.php' );

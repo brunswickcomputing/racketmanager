@@ -6,10 +6,8 @@
 namespace ns;
 ?>
 <script type='text/javascript'>
-jQuery(function() {
-  jQuery("#tabs").tabs({
-    active: <?php echo $tab ?>
-  });
+jQuery(document).ready(function(){
+  activaTab('<?php echo $tab ?>');
 });
 </script>
 <div class="container">
@@ -54,39 +52,32 @@ jQuery(function() {
     $league->championship->displayAdminPage();
   } else { ?>
     <div class="container">
-      <div id="tabs" class="league-blocks">
-        <ul id="tablist" style="display: none;">
-          <li><a href="#standings-table"><?php _e( 'Standings', 'racketmanager' ) ?></a></li>
-          <li><a href="#crosstable"><?php _e( 'Crosstable', 'racketmanager' ) ?></a></li>
-          <li><a href="#matches-table"><?php _e( 'Match Plan', 'racketmanager' ) ?></a></li>
-        </ul>
-
-        <div id="standings-table" class="league-block-container">
-          <h2><?php _e( 'Standings', 'racketmanager' ) ?></h2>
-          <div class="alignright">
-            <form action="admin.php" method="get">
-              <input type="hidden" name="page" value="racketmanager" />
-              <input type="hidden" name="subpage" value="show-league" />
-              <input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
-
-              <?php echo $league->getStandingsSelection(); ?>
-              <input type="submit" class="btn btn-secondary" value="<?php _e( 'Show', 'racketmanager' ) ?>" />
-            </form>
-          </div>
+  		<!-- Nav tabs -->
+  		<ul class="nav nav-pills" id="myTab" role="tablist">
+  			<li class="nav-item" role="presentation">
+  				<button class="nav-link" id="standings-tab" data-bs-toggle="pill" data-bs-target="#standings" type="button" role="tab" aria-controls="standings" aria-selected="true"><?php _e( 'Standings', 'racketmanager' ) ?></button>
+  			</li>
+  			<li class="nav-item" role="presentation">
+  				<button class="nav-link" id="crosstable-tab" data-bs-toggle="pill" data-bs-target="#crosstable" type="button" role="tab" aria-controls="crosstable" aria-selected="false"><?php _e( 'Crosstable', 'racketmanager' ) ?></button>
+  			</li>
+  			<li class="nav-item" role="presentation">
+  				<button class="nav-link" id="matches-tab" data-bs-toggle="pill" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="false"><?php _e( 'Match Plan', 'racketmanager' ) ?></button>
+  			</li>
+  		</ul>
+  		<!-- Tab panes -->
+  		<div class="tab-content">
+  			<div class="tab-pane fade" id="standings" role="tabpanel" aria-labelledby="standings-tab">
+  				<h2><?php _e( 'Standings', 'racketmanager' ) ?></h2>
           <?php include_once(RACKETMANAGER_PATH . '/admin/includes/standings.php'); ?>
-        </div>
-
-        <!-- crosstable -->
-        <div id="crosstable" class="league-block-container">
-          <h2><?php _e( 'Crosstable', 'racketmanager' ) ?></h2>
-          <?php include(RACKETMANAGER_PATH . '/admin/includes/crosstable.php'); ?>
-        </div>
-
-        <!-- match table -->
-        <div id="matches-table" class="league-block-container">
-          <h2><?php _e( 'Matches', 'racketmanager' ) ?></h2>
-          <?php include(RACKETMANAGER_PATH . '/admin/includes/matches.php'); ?>
-        </div>
+  			</div>
+        <div class="tab-pane fade" id="crosstable" role="tabpanel" aria-labelledby="crosstable-tab">
+  				<h2><?php _e( 'Crosstable', 'racketmanager' ) ?></h2>
+          <?php include_once(RACKETMANAGER_PATH . '/admin/includes/crosstable.php'); ?>
+  			</div>
+        <div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
+  				<h2><?php _e( 'Matches', 'racketmanager' ) ?></h2>
+          <?php include_once(RACKETMANAGER_PATH . '/admin/includes/matches.php'); ?>
+  			</div>
       </div>
     </div>
   <?php } ?>

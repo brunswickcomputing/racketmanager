@@ -76,7 +76,7 @@ namespace ns;
 	</form>
 	<h3><?php _e( 'Add Team', 'racketmanager' ) ?></h3>
 	<!-- Add New Team -->
-	<form action="" method="post">
+	<form action="" method="post" class="form-control">
 		<?php wp_nonce_field( 'racketmanager_add-team' ) ?>
 		<div class="form-group">
 			<label for="team_type"><?php _e( 'Type', 'racketmanager' ) ?></label>

@@ -10,10 +10,10 @@ namespace ns;
 	<h1><?php _e( 'Players', 'racketmanager' ) ?> - <?php echo $club->name ?></h1>
 
 <!-- View Rosters -->
-<div class="row row-cols-1 row-cols-sm-1 row-cols-md-2">
+<div class="row">
 	<!-- Add Roster -->
 	<div>
-		<form action="" method="post">
+		<form action="" method="post" class="form-control">
 			<?php wp_nonce_field( 'racketmanager_add-roster' ) ?>
 			<div class="lm-form-table">
 				<?php if ( $players = $racketmanager->getPlayers( array() ) ) { ?>

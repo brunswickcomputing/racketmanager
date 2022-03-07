@@ -273,22 +273,23 @@ final class RacketManagerAdmin extends RacketManager
 	}
 
 	/**
-	 * build league menu
-	 *
-	 * @return array
-	 */
+	* build league menu
+	*
+	* @return array
+	*/
 	private function getMenu() {
-        $league = get_league();
+		$league = get_league();
 		$league_id = (isset($_GET['league_id']) ? intval($_GET['league_id']) : $league->id);
 		$season = (isset($_GET['season']) ? htmlspecialchars($_GET['season']) : $league->current_season);
 		$sport = (isset($league->sport) ? ($league->sport) : '' );
 		$league_mode = (isset($league->mode) ? ($league->mode) : '' );
 
-		$menu = array(
-                      'teams' => array( 'title' => __('Add Teams', 'racketmanager'), 'callback' => array(&$this, 'displayTeamsList'), 'cap' => 'edit_teams' ),
-                      'team' => array( 'title' => __('Add Team', 'racketmanager'), 'callback' => array(&$this, 'displayTeamPage'), 'cap' => 'edit_teams' ),
-                      'match' => array( 'title' => __('Add Matches', 'racketmanager'), 'callback' => array(&$this, 'displayMatchPage'), 'cap' => 'edit_matches' )
-        );
+		$menu = array();
+		$menu['teams'] = array( 'title' => __('Add Teams', 'racketmanager'), 'callback' => array(&$this, 'displayTeamsList'), 'cap' => 'edit_teams' );
+		$menu['team'] = array( 'title' => __('Add Team', 'racketmanager'), 'callback' => array(&$this, 'displayTeamPage'), 'cap' => 'edit_teams' );
+		if ( !$league->is_championship ) {
+			$menu['match'] = array( 'title' => __('Add Matches', 'racketmanager'), 'callback' => array(&$this, 'displayMatchPage'), 'cap' => 'edit_matches' );
+		}
 		$menu = apply_filters('league_menu_'.$sport, $menu, $league->id, $season);
 		$menu = apply_filters('league_menu_'.$league->mode, $menu, $league->id, $season);
 

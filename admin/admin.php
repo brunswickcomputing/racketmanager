@@ -489,424 +489,424 @@ final class RacketManagerAdmin extends RacketManager
 		}
 	}
 
-    /**
-     * display competition page
-     *
-     */
-    private function displayCompetitionPage() {
-        global $racketmanager, $competition;
+	/**
+	* display competition page
+	*
+	*/
+	private function displayCompetitionPage() {
+		global $racketmanager, $competition;
 
-        if ( !current_user_can( 'edit_leagues' ) ) {
-            echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
-        } else {
-            $tab = 'leagues';
-            $competition_id = $_GET['competition_id'];
-            $competition = get_competition($_GET['competition_id']);
-            $league_id = false;
-            $league_title = "";
-            $season_id = false;
-            $season_data = array('name' => '', 'num_match_days' => '');
-            $club_id = 0;
+		if ( !current_user_can( 'edit_leagues' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+		} else {
+			$tab = 'leagues';
+			$competition_id = $_GET['competition_id'];
+			$competition = get_competition($_GET['competition_id']);
+			$league_id = false;
+			$league_title = "";
+			$season_id = false;
+			$season_data = array('name' => '', 'num_match_days' => '');
+			$club_id = 0;
 
-            if ( isset($_POST['addLeague']) && !isset($_POST['deleteit']) ) {
-                check_admin_referer('racketmanager_add-league');
-                if ( empty($_POST['league_id'] ) ){
-                    $this->addLeague( htmlspecialchars($_POST['league_title']), intval($_POST['competition_id']) );
-                } else {
-                    $this->editLeague( intval($_POST['league_id']), htmlspecialchars($_POST['league_title']), intval($_POST['competition_id']) );
-                }
-                $this->printMessage();
-            } elseif ( isset($_GET['editleague']) ) {
-                $league_id = htmlspecialchars($_GET['editleague']);
-                $league = get_league($league_id);
-                $league_title = $league->title;
-            } elseif ( isset($_POST['saveSeason']) || isset($_GET['editseason'])) {
-                $tab = 'seasons';
-                if ( !empty($_POST['season']) ) {
-                    if ( empty($_POST['season_id']) ) {
-                        $this->addSeasonToCompetition( htmlspecialchars($_POST['season']), intval($_POST['num_match_days']), intval($_POST['competition_id']) );
-                    } else {
-                        $this->editSeason( intval($_POST['season_id']), htmlspecialchars($_POST['season']), intval($_POST['num_match_days']), intval($_POST['competition_id']) );
-                    }
-                } else {
-                    if ( isset($_GET['editseason']) ) {
-                        $season_id = htmlspecialchars($_GET['editseason']);
-                        $season_data = $competition->seasons[$season_id];
-                    }
-                }
-                $this->printMessage();
-            } elseif ( isset($_POST['doactionseason']) ) {
-							$tab = 'seasons';
-                check_admin_referer('seasons-bulk');
-                if ( 'delete' == $_POST['action'] ) {
-                    $this->delCompetitionSeason( $_POST['del_season'], $competition->id );
-                }
-                $this->printMessage();
-            } elseif ( isset($_POST['doactionleague']) && $_POST['action'] == 'delete' ) {
-                check_admin_referer('leagues-bulk');
-                foreach ( $_POST['league'] AS $league_id )
-                    $this->delLeague( intval($league_id) );
-            } elseif ( isset($_GET['statsseason']) && $_GET['statsseason'] == 'Show' ) {
-                if ( isset($_GET['club_id']) ) {
-                    $club_id = intval($_GET['club_id']);
-                }
-						} elseif ( isset($_POST['doactionconstitution']) && $_POST['action'] == 'delete' ) {
-							$tab = 'constitution';
-                if ( current_user_can('del_leagues') ) {
-                    check_admin_referer('constitution-bulk');
-                    foreach ( $_POST['table'] AS $tableId ) {
-											$teams = isset($_POST['teamId']) ? $_POST['teamId'] : array();
-											$leagues = isset($_POST['leagueId']) ? $_POST['leagueId'] : array();
-											$team = isset($teams[$tableId]) ? $teams[$tableId] : 0;
-											$league = isset($leagues[$tableId]) ? $leagues[$tableId] : 0;
-											if ( isset($team) && isset($league) ) {
-											$this->delTeamFromLeague( $team, $league, $_POST['latestSeason']);
-											}
-                    }
-                } else {
-                    $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
-                }
-						} elseif ( isset($_POST['saveconstitution']) ) {
-							$tab = 'constitution';
-                check_admin_referer('constitution-bulk');
-								$js = ( $_POST['js-active'] == 1 ) ? true : false;
-								$rank = 0;
-                foreach ( $_POST['tableId'] AS $tableId ) {
-									$team = $_POST['teamId'][$tableId];
-									$league = $_POST['leagueId'][$tableId];
-									if ( $js ) {
-										$rank ++;
-									} else {
-										$rank = isset($_POST['rank'][$tableId]) ? $_POST['rank'][$tableId] : '';
-									}
-									$status = $_POST['status'][$tableId];
-									$profile = $_POST['profile'][$tableId];
-									if ( $_POST['constitutionAction'] == 'insert' ) {
-										$racketmanager->addTeamtoTable( $league, $team, $_POST['latestSeason'], array(), true, $rank, $status, $profile );
-									} elseif ( $_POST['constitutionAction'] == 'update' ) {
-										$this->updateTable( $tableId, $league, $team, $_POST['latestSeason'], $rank, $status, $profile );
-									}
-                }
-						} elseif ( isset($_POST['action']) && $_POST['action'] == 'addTeamsToLeague' ) {
-							$tab = 'constitution';
-                foreach ( $_POST['team'] AS $i => $team_id ) {
-									$racketmanager->addTeamtoTable( $_POST['league_id'], $team_id, htmlspecialchars($_POST['season']), array(), false, '99', 'NT', '1' );
-                  $this->setTeamCompetition( $team_id, $_POST['competition_id'] );
-                }
-            } elseif ( isset($_POST['updateSettings']) ) {
-							check_admin_referer('racketmanager_manage-competition-options');
-
-							$settings = (array)$_POST['settings'];
-
-							$this->_editCompetition( intval($_POST['competition_id']), $_POST['competition_title'], $settings );
-							$this->printMessage();
-
-							$options = $racketmanager->options;
-							$competition->reloadSettings();
-
-							// Set active tab
-							$tab = 'settings';
+			if ( isset($_POST['addLeague']) && !isset($_POST['deleteit']) ) {
+				check_admin_referer('racketmanager_add-league');
+				if ( empty($_POST['league_id'] ) ){
+					$this->addLeague( htmlspecialchars($_POST['league_title']), intval($_POST['competition_id']) );
+				} else {
+					$this->editLeague( intval($_POST['league_id']), htmlspecialchars($_POST['league_title']), intval($_POST['competition_id']) );
+				}
+				$this->printMessage();
+			} elseif ( isset($_GET['editleague']) ) {
+				$league_id = htmlspecialchars($_GET['editleague']);
+				$league = get_league($league_id);
+				$league_title = $league->title;
+			} elseif ( isset($_POST['saveSeason']) || isset($_GET['editseason'])) {
+				$tab = 'seasons';
+				if ( !empty($_POST['season']) ) {
+					if ( empty($_POST['season_id']) ) {
+						$this->addSeasonToCompetition( htmlspecialchars($_POST['season']), intval($_POST['num_match_days']), intval($_POST['competition_id']) );
+					} else {
+						$this->editSeason( intval($_POST['season_id']), htmlspecialchars($_POST['season']), intval($_POST['num_match_days']), intval($_POST['competition_id']) );
+					}
+				} else {
+					if ( isset($_GET['editseason']) ) {
+						$season_id = htmlspecialchars($_GET['editseason']);
+						$season_data = $competition->seasons[$season_id];
+					}
+				}
+				$this->printMessage();
+			} elseif ( isset($_POST['doactionseason']) ) {
+				$tab = 'seasons';
+				check_admin_referer('seasons-bulk');
+				if ( 'delete' == $_POST['action'] ) {
+					$this->delCompetitionSeason( $_POST['del_season'], $competition->id );
+				}
+				$this->printMessage();
+			} elseif ( isset($_POST['doactionleague']) && $_POST['action'] == 'delete' ) {
+				check_admin_referer('leagues-bulk');
+				foreach ( $_POST['league'] AS $league_id )
+				$this->delLeague( intval($league_id) );
+			} elseif ( isset($_GET['statsseason']) && $_GET['statsseason'] == 'Show' ) {
+				if ( isset($_GET['club_id']) ) {
+					$club_id = intval($_GET['club_id']);
+				}
+			} elseif ( isset($_POST['doactionconstitution']) && $_POST['action'] == 'delete' ) {
+				$tab = 'constitution';
+				if ( current_user_can('del_leagues') ) {
+					check_admin_referer('constitution-bulk');
+					foreach ( $_POST['table'] AS $tableId ) {
+						$teams = isset($_POST['teamId']) ? $_POST['teamId'] : array();
+						$leagues = isset($_POST['leagueId']) ? $_POST['leagueId'] : array();
+						$team = isset($teams[$tableId]) ? $teams[$tableId] : 0;
+						$league = isset($leagues[$tableId]) ? $leagues[$tableId] : 0;
+						if ( isset($team) && isset($league) ) {
+							$this->delTeamFromLeague( $team, $league, $_POST['latestSeason']);
 						}
-            include_once( dirname(__FILE__) . '/show-competition.php' );
-        }
-    }
+					}
+				} else {
+					$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
+				}
+			} elseif ( isset($_POST['saveconstitution']) ) {
+				$tab = 'constitution';
+				check_admin_referer('constitution-bulk');
+				$js = ( $_POST['js-active'] == 1 ) ? true : false;
+				$rank = 0;
+				foreach ( $_POST['tableId'] AS $tableId ) {
+					$team = $_POST['teamId'][$tableId];
+					$league = $_POST['leagueId'][$tableId];
+					if ( $js ) {
+						$rank ++;
+					} else {
+						$rank = isset($_POST['rank'][$tableId]) ? $_POST['rank'][$tableId] : '';
+					}
+					$status = $_POST['status'][$tableId];
+					$profile = $_POST['profile'][$tableId];
+					if ( $_POST['constitutionAction'] == 'insert' ) {
+						$racketmanager->addTeamtoTable( $league, $team, $_POST['latestSeason'], array(), true, $rank, $status, $profile );
+					} elseif ( $_POST['constitutionAction'] == 'update' ) {
+						$this->updateTable( $tableId, $league, $team, $_POST['latestSeason'], $rank, $status, $profile );
+					}
+				}
+			} elseif ( isset($_POST['action']) && $_POST['action'] == 'addTeamsToLeague' ) {
+				$tab = 'constitution';
+				foreach ( $_POST['team'] AS $i => $team_id ) {
+					$racketmanager->addTeamtoTable( $_POST['league_id'], $team_id, htmlspecialchars($_POST['season']), array(), false, '99', 'NT', '1' );
+					$this->setTeamCompetition( $team_id, $_POST['competition_id'] );
+				}
+			} elseif ( isset($_POST['updateSettings']) ) {
+				check_admin_referer('racketmanager_manage-competition-options');
 
-    /**
-     * display league overview page
-     *
-     */
-    private function displayLeaguePage() {
-        global $league, $championship, $competition ;
+				$settings = (array)$_POST['settings'];
 
-        if ( !current_user_can( 'view_leagues' ) ) {
-            echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
-        } else {
-            $league = get_league();
-            $league->setSeason();
-            $season = $league->getSeason();
-            $league_mode = (isset($league->mode) ? ($league->mode) : '' );
+				$this->_editCompetition( intval($_POST['competition_id']), $_POST['competition_title'], $settings );
+				$this->printMessage();
 
-            $tab = 'standings';
-            $matchDay = false;
-            if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POST['delmatches']) && !isset($_POST['doaction-match_day']) )  {
-                if ( 'team' == $_POST['updateLeague'] ) {
-                    if ( current_user_can('edit_teams') ) {
-                        check_admin_referer('racketmanager_manage-teams');
+				$options = $racketmanager->options;
+				$competition->reloadSettings();
 
-                        $home = isset( $_POST['home'] ) ? 1 : 0;
-                        $custom = !isset($_POST['custom']) ? array() : $_POST['custom'];
-                        $roster = isset($_POST['roster']) ? intval($_POST['roster']) : 0;
-                        $profile = isset($_POST['profile']) ? intval($_POST['profile']) : 0;
-                        $group = isset($_POST['group']) ? htmlspecialchars(strip_tags($_POST['group'])) : '';
+				// Set active tab
+				$tab = 'settings';
+			}
+			include_once( dirname(__FILE__) . '/show-competition.php' );
+		}
+	}
 
-                        if ( 'Add' == $_POST['action'] ) {
-                            if ( '' == $_POST['team_id'] ) {
-                                $team_id = $this->addTeamToLeague( $_POST['affiliatedclub'], ($_POST['team_type']), htmlspecialchars($_POST['captainId']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), $home, $roster, $profile, $custom,htmlspecialchars($_POST['league_id']) );
-                                $this->addTableEntry( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
-                            } else {
-                                $this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), $_POST['affiliatedclub'], $_POST['team_type'],htmlspecialchars($_POST['captainId']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']),  $_POST['matchday'], $_POST['matchtime'], $home, $group, $roster, $profile, $custom, intval($_POST['league_id']) );
-                                $this->addTableEntry( htmlspecialchars($_POST['league_id']), intval($_POST['team_id']), htmlspecialchars($_POST['season']) );
-                            }
-                        } else {
-                            $this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), $_POST['affiliatedclub'], $_POST['team_type'], htmlspecialchars($_POST['captainId']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']),  htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), $home, $group, $roster, $profile, $custom, intval($_POST['league_id']), );
-                        }
-                    } else {
-                        $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
-                    }
-                } elseif ( 'teamPlayer' == $_POST['updateLeague'] ) {
-                    if ( current_user_can('edit_teams') ) {
-                        check_admin_referer('racketmanager_manage-teams');
+	/**
+	* display league overview page
+	*
+	*/
+	private function displayLeaguePage() {
+		global $league, $championship, $competition ;
 
-                        $teamPlayer2 = isset($_POST['teamPlayer2']) ? htmlspecialchars(strip_tags($_POST['teamPlayer2'])) : '';
-                        $teamPlayer2Id = isset($_POST['teamPlayerId2']) ? $_POST['teamPlayerId2'] : 0;
+		if ( !current_user_can( 'view_leagues' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+		} else {
+			$league = get_league();
+			$league->setSeason();
+			$season = $league->getSeason();
+			$league_mode = (isset($league->mode) ? ($league->mode) : '' );
 
-                        if ( 'Add' == $_POST['action'] ) {
-                            if ( '' == $_POST['team_id'] ) {
-                                $team_id = $this->addTeamPlayer( htmlspecialchars(strip_tags($_POST['teamPlayer1'])), $_POST['teamPlayerId1'], $teamPlayer2, $teamPlayer2Id, htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']), htmlspecialchars($_POST['league_id']) );
-                                $this->addTableEntry( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
-                            } else {
-                                $this->editTeamPlayer( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['teamPlayer1'])), $_POST['teamPlayerId1'], $teamPlayer2, $teamPlayer2Id, htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']),  intval($_POST['league_id']) );
-                                $this->addTableEntry( htmlspecialchars($_POST['league_id']), intval($_POST['team_id']), htmlspecialchars($_POST['season']) );
-                            }
-                        } else {
-                            $this->editTeamPlayer( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['teamPlayer1'])), $_POST['teamPlayerId1'], $teamPlayer2, $teamPlayer2Id, htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']), intval($_POST['league_id']) );
-                        }
-                    } else {
-                        $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
-                    }
-                } elseif ( 'match' == $_POST['updateLeague'] ) {
-                    if ( current_user_can('edit_matches') ) {
-                        check_admin_referer('racketmanager_manage-matches');
+			$tab = 'standings';
+			$matchDay = false;
+			if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POST['delmatches']) && !isset($_POST['doaction-match_day']) )  {
+				if ( 'team' == $_POST['updateLeague'] ) {
+					if ( current_user_can('edit_teams') ) {
+						check_admin_referer('racketmanager_manage-teams');
 
-                        $group = isset($_POST['group']) ? htmlspecialchars(strip_tags($_POST['group'])) : '';
+						$home = isset( $_POST['home'] ) ? 1 : 0;
+						$custom = !isset($_POST['custom']) ? array() : $_POST['custom'];
+						$roster = isset($_POST['roster']) ? intval($_POST['roster']) : 0;
+						$profile = isset($_POST['profile']) ? intval($_POST['profile']) : 0;
+						$group = isset($_POST['group']) ? htmlspecialchars(strip_tags($_POST['group'])) : '';
 
-                        if ( 'add' == $_POST['mode'] ) {
-                            $num_matches = count($_POST['match']);
-                            foreach ( $_POST['match'] AS $i => $match_id ) {
-                                if ( isset($_POST['add_match'][$i]) || $_POST['away_team'][$i] != $_POST['home_team'][$i]  ) {
-                                    $index = ( isset($_POST['mydatepicker'][$i]) ) ? $i : 0;
-																		if (!isset($_POST['begin_hour'][$i])) $_POST['begin_hour'][$i] = 0;
-																		if (!isset($_POST['begin_minutes'][$i])) $_POST['begin_minutes'][$i] = 0;
-                                    $date = $_POST['mydatepicker'][$index].' '.intval($_POST['begin_hour'][$i]).':'.intval($_POST['begin_minutes'][$i]).':00';
-                                    $match_day = ( isset($_POST['match_day'][$i]) ? $_POST['match_day'][$i] : (!empty($_POST['match_day']) ? intval($_POST['match_day']) : '' )) ;
-                                    $custom = isset($_POST['custom']) ? $_POST['custom'][$i] : array();
+						if ( 'Add' == $_POST['action'] ) {
+							if ( '' == $_POST['team_id'] ) {
+								$team_id = $this->addTeamToLeague( $_POST['affiliatedclub'], ($_POST['team_type']), htmlspecialchars($_POST['captainId']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), $home, $roster, $profile, $custom,htmlspecialchars($_POST['league_id']) );
+								$this->addTableEntry( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
+							} else {
+								$this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), $_POST['affiliatedclub'], $_POST['team_type'],htmlspecialchars($_POST['captainId']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']),  $_POST['matchday'], $_POST['matchtime'], $home, $group, $roster, $profile, $custom, intval($_POST['league_id']) );
+								$this->addTableEntry( htmlspecialchars($_POST['league_id']), intval($_POST['team_id']), htmlspecialchars($_POST['season']) );
+							}
+						} else {
+							$this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), $_POST['affiliatedclub'], $_POST['team_type'], htmlspecialchars($_POST['captainId']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']),  htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), $home, $group, $roster, $profile, $custom, intval($_POST['league_id']), );
+						}
+					} else {
+						$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
+					}
+				} elseif ( 'teamPlayer' == $_POST['updateLeague'] ) {
+					if ( current_user_can('edit_teams') ) {
+						check_admin_referer('racketmanager_manage-teams');
 
-                                    $this->addMatch( $date, $_POST['home_team'][$i], $_POST['away_team'][$i], $match_day, htmlspecialchars(strip_tags($_POST['location'][$i])), intval($_POST['league_id']), htmlspecialchars(strip_tags($_POST['season'])), $group, htmlspecialchars(strip_tags($_POST['final'])), $custom, intval($_POST['num_rubbers']) );
-                                } else {
-                                    $num_matches -= 1;
-                                }
-                            }
-                            $this->setMessage(sprintf(_n('%d Match added', '%d Matches added', $num_matches, 'racketmanager'), $num_matches));
-                        } else {
-                            $num_matches = count($_POST['match']);
-                            $post_match = $this->htmlspecialchars_array($_POST['match']);
-                            foreach ( $post_match AS $i => $match_id ) {
-                                $begin_hour = isset($_POST['begin_hour'][$i]) ? intval($_POST['begin_hour'][$i]) : "00";
-                                $begin_minutes = isset($_POST['begin_minutes'][$i]) ? intval($_POST['begin_minutes'][$i]) : "00";
-                                if( isset($_POST['mydatepicker'][$i]) ) {
-                                    $index = ( isset($_POST['mydatepicker'][$i]) ) ? $i : 0;
-                                    $date = htmlspecialchars(strip_tags($_POST['mydatepicker'][$index])).' '.$begin_hour.':'.$begin_minutes.':00';
-                                } else {
-                                    $index = ( isset($_POST['year'][$i]) && isset($_POST['month'][$i]) && isset($_POST['day'][$i]) ) ? $i : 0;
-                                    $date = intval($_POST['year'][$index]).'-'.intval($_POST['month'][$index]).'-'.intval($_POST['day'][$index]).' '.$begin_hour.':'.$begin_minutes.':00';
-                                }
-                                $match_day = (isset($_POST['match_day']) && is_array($_POST['match_day'])) ? intval($_POST['match_day'][$i]) : (isset($_POST['match_day']) && !empty($_POST['match_day']) ? intval($_POST['match_day']) : '' ) ;
-                                $custom = isset($_POST['custom']) ? $_POST['custom'][$i] : array();
-                                $home_team = isset($_POST['home_team'][$i]) ? htmlspecialchars(strip_tags($_POST['home_team'][$i])) : '';
-                                $away_team = isset($_POST['away_team'][$i]) ? htmlspecialchars(strip_tags($_POST['away_team'][$i])) : '';
-                                $this->editMatch( $date, $home_team, $away_team, $match_day, htmlspecialchars($_POST['location'][$i]), intval($_POST['league_id']), $match_id, $group, htmlspecialchars(strip_tags($_POST['final'])), $custom );
-                            }
-                            $this->setMessage(sprintf(_n('%d Match updated', '%d Matches updated', $num_matches, 'racketmanager'), $num_matches));
-                        }
-                    } else {
-                        $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
-                    }
-                } elseif ( 'results' == $_POST['updateLeague'] ) {
-                    if ( current_user_can('update_results') ) {
-                        check_admin_referer('matches-bulk');
-                        $custom = isset($_POST['custom']) ? $_POST['custom'] : array();
-                        $this->updateResults( $_POST['matches'], $_POST['home_points'], $_POST['away_points'], $_POST['home_team'], $_POST['away_team'], $custom, $_POST['season'] );
-                        $tab = 'matches';
-                        $matchDay = intval($_POST['current_match_day']);
-                    } else {
-                        $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
-                    }
-                } elseif ( 'teams_manual' == $_POST['updateLeague'] ) {
-                    if ( current_user_can('update_results') ) {
-                        check_admin_referer('teams-bulk');
-                        $league->saveStandingsManually( $_POST['team_id'], $_POST['points_plus'], $_POST['points_minus'], $_POST['num_done_matches'], $_POST['num_won_matches'], $_POST['num_draw_matches'], $_POST['num_lost_matches'], $_POST['add_points'], $_POST['custom'] );
+						$teamPlayer2 = isset($_POST['teamPlayer2']) ? htmlspecialchars(strip_tags($_POST['teamPlayer2'])) : '';
+						$teamPlayer2Id = isset($_POST['teamPlayerId2']) ? $_POST['teamPlayerId2'] : 0;
 
-                        $this->setMessage(__('Standings Table updated','racketmanager'));
-                    } else {
-                        $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
-                    }
-                }
+						if ( 'Add' == $_POST['action'] ) {
+							if ( '' == $_POST['team_id'] ) {
+								$team_id = $this->addTeamPlayer( htmlspecialchars(strip_tags($_POST['teamPlayer1'])), $_POST['teamPlayerId1'], $teamPlayer2, $teamPlayer2Id, htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']), htmlspecialchars($_POST['league_id']) );
+								$this->addTableEntry( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
+							} else {
+								$this->editTeamPlayer( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['teamPlayer1'])), $_POST['teamPlayerId1'], $teamPlayer2, $teamPlayer2Id, htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']),  intval($_POST['league_id']) );
+								$this->addTableEntry( htmlspecialchars($_POST['league_id']), intval($_POST['team_id']), htmlspecialchars($_POST['season']) );
+							}
+						} else {
+							$this->editTeamPlayer( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['teamPlayer1'])), $_POST['teamPlayerId1'], $teamPlayer2, $teamPlayer2Id, htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['affiliatedclub']), intval($_POST['league_id']) );
+						}
+					} else {
+						$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
+					}
+				} elseif ( 'match' == $_POST['updateLeague'] ) {
+					if ( current_user_can('edit_matches') ) {
+						check_admin_referer('racketmanager_manage-matches');
 
-                $this->printMessage();
-            }  elseif ( isset($_POST['doaction']) ) {
-								if ( $_POST['action'] == "delete" ) {
-										if ( current_user_can('del_teams') ) {
-												check_admin_referer('teams-bulk');
-												foreach ( $_POST['team'] AS $team_id )
-												$this->delTeamFromLeague( intval($team_id), intval($_GET['league_id']), $season );
-										} else {
-												$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
-										}
+						$group = isset($_POST['group']) ? htmlspecialchars(strip_tags($_POST['group'])) : '';
+
+						if ( 'add' == $_POST['mode'] ) {
+							$num_matches = count($_POST['match']);
+							foreach ( $_POST['match'] AS $i => $match_id ) {
+								if ( isset($_POST['add_match'][$i]) || $_POST['away_team'][$i] != $_POST['home_team'][$i]  ) {
+									$index = ( isset($_POST['mydatepicker'][$i]) ) ? $i : 0;
+									if (!isset($_POST['begin_hour'][$i])) $_POST['begin_hour'][$i] = 0;
+									if (!isset($_POST['begin_minutes'][$i])) $_POST['begin_minutes'][$i] = 0;
+									$date = $_POST['mydatepicker'][$index].' '.intval($_POST['begin_hour'][$i]).':'.intval($_POST['begin_minutes'][$i]).':00';
+									$match_day = ( isset($_POST['match_day'][$i]) ? $_POST['match_day'][$i] : (!empty($_POST['match_day']) ? intval($_POST['match_day']) : '' )) ;
+									$custom = isset($_POST['custom']) ? $_POST['custom'][$i] : array();
+
+									$this->addMatch( $date, $_POST['home_team'][$i], $_POST['away_team'][$i], $match_day, htmlspecialchars(strip_tags($_POST['location'][$i])), intval($_POST['league_id']), htmlspecialchars(strip_tags($_POST['season'])), $group, htmlspecialchars(strip_tags($_POST['final'])), $custom, intval($_POST['num_rubbers']) );
+								} else {
+									$num_matches -= 1;
 								}
-						}  elseif ( isset($_POST['delmatches']) ) {
-                if ( $_POST['delMatchOption'] == "delete" ) {
-                    if ( current_user_can('del_matches') ) {
-                        check_admin_referer('matches-bulk');
-                        foreach ( $_POST['match'] AS $match_id )
-                            $this->delMatch( intval($match_id) );
+							}
+							$this->setMessage(sprintf(_n('%d Match added', '%d Matches added', $num_matches, 'racketmanager'), $num_matches));
+						} else {
+							$num_matches = count($_POST['match']);
+							$post_match = $this->htmlspecialchars_array($_POST['match']);
+							foreach ( $post_match AS $i => $match_id ) {
+								$begin_hour = isset($_POST['begin_hour'][$i]) ? intval($_POST['begin_hour'][$i]) : "00";
+								$begin_minutes = isset($_POST['begin_minutes'][$i]) ? intval($_POST['begin_minutes'][$i]) : "00";
+								if( isset($_POST['mydatepicker'][$i]) ) {
+									$index = ( isset($_POST['mydatepicker'][$i]) ) ? $i : 0;
+									$date = htmlspecialchars(strip_tags($_POST['mydatepicker'][$index])).' '.$begin_hour.':'.$begin_minutes.':00';
+								} else {
+									$index = ( isset($_POST['year'][$i]) && isset($_POST['month'][$i]) && isset($_POST['day'][$i]) ) ? $i : 0;
+									$date = intval($_POST['year'][$index]).'-'.intval($_POST['month'][$index]).'-'.intval($_POST['day'][$index]).' '.$begin_hour.':'.$begin_minutes.':00';
+								}
+								$match_day = (isset($_POST['match_day']) && is_array($_POST['match_day'])) ? intval($_POST['match_day'][$i]) : (isset($_POST['match_day']) && !empty($_POST['match_day']) ? intval($_POST['match_day']) : '' ) ;
+								$custom = isset($_POST['custom']) ? $_POST['custom'][$i] : array();
+								$home_team = isset($_POST['home_team'][$i]) ? htmlspecialchars(strip_tags($_POST['home_team'][$i])) : '';
+								$away_team = isset($_POST['away_team'][$i]) ? htmlspecialchars(strip_tags($_POST['away_team'][$i])) : '';
+								$this->editMatch( $date, $home_team, $away_team, $match_day, htmlspecialchars($_POST['location'][$i]), intval($_POST['league_id']), $match_id, $group, htmlspecialchars(strip_tags($_POST['final'])), $custom );
+							}
+							$this->setMessage(sprintf(_n('%d Match updated', '%d Matches updated', $num_matches, 'racketmanager'), $num_matches));
+						}
+					} else {
+						$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
+					}
+				} elseif ( 'results' == $_POST['updateLeague'] ) {
+					if ( current_user_can('update_results') ) {
+						check_admin_referer('matches-bulk');
+						$custom = isset($_POST['custom']) ? $_POST['custom'] : array();
+						$this->updateResults( $_POST['matches'], $_POST['home_points'], $_POST['away_points'], $_POST['home_team'], $_POST['away_team'], $custom, $_POST['season'] );
+						$tab = 'matches';
+						$matchDay = intval($_POST['current_match_day']);
+					} else {
+						$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
+					}
+				} elseif ( 'teams_manual' == $_POST['updateLeague'] ) {
+					if ( current_user_can('update_results') ) {
+						check_admin_referer('teams-bulk');
+						$league->saveStandingsManually( $_POST['team_id'], $_POST['points_plus'], $_POST['points_minus'], $_POST['num_done_matches'], $_POST['num_won_matches'], $_POST['num_draw_matches'], $_POST['num_lost_matches'], $_POST['add_points'], $_POST['custom'] );
 
-                        $tab = 'matches';
-                    } else {
-                        $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
-                    }
-                }
-            } elseif ( isset($_POST['action']) && $_POST['action'] == 'addTeamsToLeague' ) {
-                foreach ( $_POST['team'] AS $i => $team_id ) {
-                    $this->addTableEntry( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
-                    $this->setTeamCompetition( $team_id, $_POST['competition_id'] );
-                }
-            }
+						$this->setMessage(__('Standings Table updated','racketmanager'));
+					} else {
+						$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
+					}
+				}
 
-            // rank teams manually
-            if (isset($_POST['saveRanking'])) {
-                if ( current_user_can('update_results') ) {
-                    $js = ( $_POST['js-active'] == 1 ) ? true : false;
+				$this->printMessage();
+			}  elseif ( isset($_POST['doaction']) ) {
+				if ( $_POST['action'] == "delete" ) {
+					if ( current_user_can('del_teams') ) {
+						check_admin_referer('teams-bulk');
+						foreach ( $_POST['team'] AS $team_id )
+						$this->delTeamFromLeague( intval($team_id), intval($_GET['league_id']), $season );
+					} else {
+						$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
+					}
+				}
+			}  elseif ( isset($_POST['delmatches']) ) {
+				if ( $_POST['delMatchOption'] == "delete" ) {
+					if ( current_user_can('del_matches') ) {
+						check_admin_referer('matches-bulk');
+						foreach ( $_POST['match'] AS $match_id )
+						$this->delMatch( intval($match_id) );
 
-                    $team_ranks = array();
-                    $team_ids = array_values($_POST['table_id']);
-                    foreach ($team_ids AS $key => $team_id) {
-                        if ( $js ) {
-                            $rank = $key + 1;
-                        } else {
-                            $rank = intval($_POST['rank'][$team_id]);
-                        }
-                        $team = get_leagueteam($team_id);
-                        $team_ranks[$rank-1] = $team;
-                    }
-                    ksort($team_ranks);
-                    $team_ranks = $league->getRanking($team_ranks);
-                    $league->updateRanking($team_ranks);
-                    $this->setMessage(__('Team ranking saved','racketmanager'));
-                } else {
-                    $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
-                }
-                $this->printMessage();
+						$tab = 'matches';
+					} else {
+						$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
+					}
+				}
+			} elseif ( isset($_POST['action']) && $_POST['action'] == 'addTeamsToLeague' ) {
+				foreach ( $_POST['team'] AS $i => $team_id ) {
+					$this->addTableEntry( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
+					$this->setTeamCompetition( $team_id, $_POST['competition_id'] );
+				}
+			}
 
-                $tab = 'standings';
-            }
+			// rank teams manually
+			if (isset($_POST['saveRanking'])) {
+				if ( current_user_can('update_results') ) {
+					$js = ( $_POST['js-active'] == 1 ) ? true : false;
 
-            // rank teams randomly
-            if (isset($_POST['randomRanking'])) {
-                if ( current_user_can('update_results') ) {
-                    $js = ( $_POST['js-active'] == 1 ) ? true : false;
-                    $team_ranks = array();
-                    $team_ids = array_values($_POST['table_id']);
-                    shuffle($team_ids);
-                    foreach ($team_ids AS $key => $team_id) {
-                        if ( $js ) {
-                            $rank = $key + 1;
-                        } else {
-                            $rank = intval($_POST['rank'][$team_id]);
-                        }
-                        $team = get_leagueteam($team_id);
-                        $team_ranks[$rank-1] = $team;
-                    }
-                    ksort($team_ranks);
-                    $team_ranks = $league->getRanking($team_ranks);
-                    $league->updateRanking($team_ranks);
-                    $this->setMessage(__('Team ranking saved','racketmanager'));
-                } else {
-                    $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
-                }
-                $this->printMessage();
+					$team_ranks = array();
+					$team_ids = array_values($_POST['table_id']);
+					foreach ($team_ids AS $key => $team_id) {
+						if ( $js ) {
+							$rank = $key + 1;
+						} else {
+							$rank = intval($_POST['rank'][$team_id]);
+						}
+						$team = get_leagueteam($team_id);
+						$team_ranks[$rank-1] = $team;
+					}
+					ksort($team_ranks);
+					$team_ranks = $league->getRanking($team_ranks);
+					$league->updateRanking($team_ranks);
+					$this->setMessage(__('Team ranking saved','racketmanager'));
+				} else {
+					$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
+				}
+				$this->printMessage();
 
-                $tab = 'standings';
-            }
-            if (isset($_POST['updateRanking'])) {
-                if ( current_user_can('update_results') ) {
-                    $league->_rankTeams($league->id);
-                    $this->setMessage(__('Team ranking updated','racketmanager'));
-                    $this->printMessage();
-                } else {
-                    $this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
-                }
+				$tab = 'standings';
+			}
 
-                $tab = 'standings';
-            }
+			// rank teams randomly
+			if (isset($_POST['randomRanking'])) {
+				if ( current_user_can('update_results') ) {
+					$js = ( $_POST['js-active'] == 1 ) ? true : false;
+					$team_ranks = array();
+					$team_ids = array_values($_POST['table_id']);
+					shuffle($team_ids);
+					foreach ($team_ids AS $key => $team_id) {
+						if ( $js ) {
+							$rank = $key + 1;
+						} else {
+							$rank = intval($_POST['rank'][$team_id]);
+						}
+						$team = get_leagueteam($team_id);
+						$team_ranks[$rank-1] = $team;
+					}
+					ksort($team_ranks);
+					$team_ranks = $league->getRanking($team_ranks);
+					$league->updateRanking($team_ranks);
+					$this->setMessage(__('Team ranking saved','racketmanager'));
+				} else {
+					$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
+				}
+				$this->printMessage();
 
-            // check if league is a cup championship
-            $cup = ( $league_mode == 'championship' ) ? true : false;
+				$tab = 'standings';
+			}
+			if (isset($_POST['updateRanking'])) {
+				if ( current_user_can('update_results') ) {
+					$league->_rankTeams($league->id);
+					$this->setMessage(__('Team ranking updated','racketmanager'));
+					$this->printMessage();
+				} else {
+					$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
+				}
 
-            $group = isset($_GET['group']) ? htmlspecialchars(strip_tags($_GET['group'])) : '';
-            if ( empty($group) && isset($_POST['group']) ) $group = htmlspecialchars(strip_tags($_POST['group']));
+				$tab = 'standings';
+			}
 
-            $team_id = isset($_POST['team_id']) ? intval($_POST['team_id']) : false;
+			// check if league is a cup championship
+			$cup = ( $league_mode == 'championship' ) ? true : false;
 
-            $options = $this->options;
+			$group = isset($_GET['group']) ? htmlspecialchars(strip_tags($_GET['group'])) : '';
+			if ( empty($group) && isset($_POST['group']) ) $group = htmlspecialchars(strip_tags($_POST['group']));
 
-            $match_args = array("final" => "", "cache" => false);
-            if ( $season )
-                $match_args["season"] = $season;
-            if ( $group )
-                $match_args["group"] = $group;
-            if ( $team_id )
-                $match_args['team_id'] = $team_id;
+			$team_id = isset($_POST['team_id']) ? intval($_POST['team_id']) : false;
 
-            if (intval($league->num_matches_per_page) > 0)
-                $match_args['limit'] = intval($league->num_matches_per_page);
+			$options = $this->options;
 
-            if ( isset($_POST['doaction-match_day'])) {
-                if ($_POST['match_day'] != -1) {
-                    $matchDay = intval($_POST['match_day']);
-                    $league->setMatchDay($matchDay);
-                }
-                $tab = 'matches';
-            } else {
-                if ( $league->match_display == 'current_match_day' )
-                    $league->setMatchDay('current');
-                elseif ( $league->match_display == 'all' )
-                    $league->setMatchDay(-1);
-            }
+			$match_args = array("final" => "", "cache" => false);
+			if ( $season )
+			$match_args["season"] = $season;
+			if ( $group )
+			$match_args["group"] = $group;
+			if ( $team_id )
+			$match_args['team_id'] = $team_id;
 
-            if ( empty($competition->seasons)  ) {
-                $this->setMessage( __( 'You need to add at least one season for the competition', 'racketmanager' ), true );
-                $this->printMessage();
-            }
+			if (intval($league->num_matches_per_page) > 0)
+			$match_args['limit'] = intval($league->num_matches_per_page);
 
-            $teams = $league->getLeagueTeams( array( "season" => $season, "cache" => false) );
-            if ( $league_mode != 'championship' ) {
-                $matches = $league->getMatches( $match_args );
-                $league->setNumMatches();
-            }
+			if ( isset($_POST['doaction-match_day'])) {
+				if ($_POST['match_day'] != -1) {
+					$matchDay = intval($_POST['match_day']);
+					$league->setMatchDay($matchDay);
+				}
+				$tab = 'matches';
+			} else {
+				if ( $league->match_display == 'current_match_day' )
+				$league->setMatchDay('current');
+				elseif ( $league->match_display == 'all' )
+				$league->setMatchDay(-1);
+			}
 
-            if ( isset($_GET['match_paged']) )
-                $tab = 'matches';
+			if ( empty($competition->seasons)  ) {
+				$this->setMessage( __( 'You need to add at least one season for the competition', 'racketmanager' ), true );
+				$this->printMessage();
+			}
 
-            if ( isset($_GET['standingstable']) ) {
-                $get = $_GET['standingstable'];
-                $match_day = false;
-                $mode = 'all';
-                if ( preg_match('/match_day-\d/', $get, $hits) ) {
-                    $res = explode("-", $hits[0]);
-                    $match_day = $res[1];
-                } elseif ( in_array($get, array('home', 'away')) ) {
-                    $mode = htmlspecialchars($get);
-                }
-                $teams = $league->getStandings( $teams, $match_day, $mode );
-            }
+			$teams = $league->getLeagueTeams( array( "season" => $season, "cache" => false) );
+			if ( $league_mode != 'championship' ) {
+				$matches = $league->getMatches( $match_args );
+				$league->setNumMatches();
+			}
 
-            if (isset($_GET['match_day']) ) {
-                $tab = 'matches';
-            }
+			if ( isset($_GET['match_paged']) )
+			$tab = 'matches';
 
-            include_once( dirname(__FILE__) . '/show-league.php' );
-        }
-    }
+			if ( isset($_GET['standingstable']) ) {
+				$get = $_GET['standingstable'];
+				$match_day = false;
+				$mode = 'all';
+				if ( preg_match('/match_day-\d/', $get, $hits) ) {
+					$res = explode("-", $hits[0]);
+					$match_day = $res[1];
+				} elseif ( in_array($get, array('home', 'away')) ) {
+					$mode = htmlspecialchars($get);
+				}
+				$teams = $league->getStandings( $teams, $match_day, $mode );
+			}
+
+			if (isset($_GET['match_day']) ) {
+				$tab = 'matches';
+			}
+
+			include_once( dirname(__FILE__) . '/show-league.php' );
+		}
+	}
 
     /**
      * display teams list page

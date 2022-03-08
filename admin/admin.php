@@ -346,7 +346,12 @@ final class RacketManagerAdmin extends RacketManager
 			$this->displayResultsPage();
 			break;
 			case 'racketmanager-admin':
-			$this->displayAdminPage();
+			$view = isset($_GET['subpage']) ? $_GET['subpage'] : '';
+			if ( $view == 'competitions' ) {
+				$this->displayCompetitionsList();
+			} else {
+				$this->displayAdminPage();
+			}
 			break;
 			case 'racketmanager-settings':
 			$this->displayOptionsPage();
@@ -369,9 +374,6 @@ final class RacketManagerAdmin extends RacketManager
 						break;
 						case 'show-competition':
 						$this->displayCompetitionPage();
-						break;
-						case 'competitions':
-						$this->displayCompetitionsList();
 						break;
 						case 'club':
 						$this->displayClubPage();

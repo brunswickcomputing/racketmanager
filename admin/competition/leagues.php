@@ -19,7 +19,6 @@
 				<th scope="col"><?php _e( 'League', 'racketmanager' ) ?></th>
 				<th scope="col" class="column-num"><?php _e( 'Teams', 'racketmanager' ) ?></th>
 				<th scope="col" class="column-num"><?php _e( 'Matches', 'racketmanager' ) ?></th>
-				<th scope="col"><?php _e( 'Actions', 'racketmanager' ) ?></th>
 			</tr>
 			<tbody id="the-list">
 				<?php
@@ -34,7 +33,6 @@
 							<td><a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a></td>
 							<td class="column-num"><?php echo $league->num_teams_total ?></td>
 							<td class="column-num"><?php echo $league->num_matches_total ?></td>
-							<td><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>&amp;editleague=<?php echo $league->id ?>"><?php _e( 'Edit', 'racketmanager' ) ?></a></td>
 						</tr>
 					<?php } ?>
 				<?php } ?>

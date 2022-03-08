@@ -45,36 +45,34 @@
 		<input type="submit" value="<?php _e('Apply'); ?>" name="doPlayerDel" id="dorPlayerDel" class="btn btn-secondary action" />
 	</div>
 
-	<table class="widefat" summary="" title="RacketManager Players">
-		<thead>
-			<tr>
-				<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('player-filter'));" /></th>
-				<th scope="col" class="column-num">ID</th>
-				<th scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>
-				<th scope="col"><?php _e( 'Gender', 'racketmanager' ) ?></th>
-				<th scope="col"><?php _e( 'BTM', 'racketmanager' ) ?></th>
-				<th scope="col"><?php _e( 'Created', 'racketmanager') ?></th>
-				<th scope="col"><?php _e( 'Removed', 'racketmanager') ?></th>
-			</tr>
-			<tbody id="the-list">
-				<?php if ( $players = $racketmanager->getPlayers( array() ) ) { $class = ''; ?>
-				<?php foreach ( $players AS $player ) { ?>
-					<?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-					<tr class="<?php echo $class ?>">
-						<th scope="row" class="check-column">
-							<?php if ( $player->removed_date == '' ) { ?>
-								<input type="checkbox" value="<?php echo $player->id ?>" name="player[<?php echo $player->id ?>]" />
-							<?php } ?>
-						</th>
-						<td class="column-num"><?php echo $player->id ?></td>
-						<td><?php echo $player->fullname ?></td>
-						<td><?php echo $player->gender ?></td>
-						<td><?php echo $player->btm ?></td>
-						<td><?php echo substr($player->created_date,0,10) ?></td>
-						<td><?php if ( isset($player->removed_date) ) { echo $player->removed_date; } ?></td>
-					</tr>
-				<?php } ?>
+	<div class="container">
+		<div class="row table-header">
+			<div class="col-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('player-filter'));" /></div>
+			<div class="col-1 column-num">ID</div>
+			<div class="col-3"><?php _e( 'Name', 'racketmanager' ) ?></div>
+			<div class="col-1"><?php _e( 'Gender', 'racketmanager' ) ?></div>
+			<div class="col-1"><?php _e( 'BTM', 'racketmanager' ) ?></div>
+			<div class="col-1"><?php _e( 'Created', 'racketmanager') ?></div>
+			<div class="col-1"><?php _e( 'Removed', 'racketmanager') ?></div>
+		</div>
+		<?php if ( $players = $racketmanager->getPlayers( array() ) ) {
+			$class = '';
+			foreach ( $players AS $player ) {
+				$class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+				<div class="row table-row <?php echo $class ?>">
+					<div class="col-1 check-column">
+						<?php if ( $player->removed_date == '' ) { ?>
+							<input type="checkbox" value="<?php echo $player->id ?>" name="player[<?php echo $player->id ?>]" />
+						<?php } ?>
+					</div>
+					<div class="col-1 column-num"><?php echo $player->id ?></div>
+					<div class="col-3"><?php echo $player->fullname ?></div>
+					<div class="col-1"><?php echo $player->gender ?></div>
+					<div class="col-1"><?php echo $player->btm ?></div>
+					<div class="col-1"><?php echo substr($player->created_date,0,10) ?></div>
+					<div class="col-1"><?php if ( isset($player->removed_date) ) { echo $player->removed_date; } ?></div>
+				</div>
 			<?php } ?>
-		</tbody>
-	</table>
+		<?php } ?>
+	</div>
 </form>

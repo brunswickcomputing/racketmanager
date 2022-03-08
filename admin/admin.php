@@ -1576,7 +1576,7 @@ final class RacketManagerAdmin extends RacketManager
 	 * @return array
 	 */
 	public function getCompetitionTypes() {
-		$competitionTypes = array( 'league' => __('league', 'racketmanager'), 'cup' => __('cup', 'racketmanager'), 'tournament' => __('tournament', 'racketmanager') );
+		$competitionTypes = array( 'cup' => __('cup', 'racketmanager'), 'league' => __('league', 'racketmanager'), 'tournament' => __('tournament', 'racketmanager') );
 		return $competitionTypes;
 	}
 

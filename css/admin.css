@@ -631,3 +631,16 @@ div#errorMsg {
     background-color: #1a1e21;
     border-color: #191c1f;
 }
+.table-header, .table-row {
+    padding: 8px 0;
+    vertical-align: middle;
+    font-size:13px;
+}
+.table-header {
+    border: 1px solid #c3c4c7;
+    line-height: 1.4em;
+}
+.table-row {
+    line-height: 1.5em;
+    border: 1px solid #f6f7f7;
+}

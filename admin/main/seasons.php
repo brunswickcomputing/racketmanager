@@ -30,7 +30,7 @@
 						</th>
 						<td class="column-num"><?php echo $season->id ?></td>
 						<td><?php echo $season->name ?></td>
-						<td><a class="btn btn-secondary" href="admin.php?page=racketmanager&amp;subpage=competitions&amp;season=<?php echo $season->name ?>">Add Competitions</a></td>
+						<td><a class="btn btn-secondary" href="admin.php?page=racketmanager-admin&amp;subpage=competitions&amp;season=<?php echo $season->name ?>">Add Competitions</a></td>
 					</tr>
 				<?php } ?>
 			<?php } ?>

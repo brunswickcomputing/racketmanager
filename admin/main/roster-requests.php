@@ -13,48 +13,44 @@
 		<input type="submit" value="<?php _e('Apply'); ?>" name="dorosterrequest" id="dorosterrequest" class="btn btn-secondary action" />
 	</div>
 
-	<table class="widefat" summary="" title="RacketManager Roster Request">
-		<thead>
-			<tr>
-				<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('roster-request-filter'));" /></th>
-				<th scope="col" class="column-num">ID</th>
-				<th scope="col"><?php _e( 'Club', 'racketmanager' ) ?></th>
-				<th scope="col"><?php _e( 'First Name', 'racketmanager' ) ?></th>
-				<th scope="col"><?php _e( 'Surame', 'racketmanager' ) ?></th>
-				<th scope="col"><?php _e( 'Gender', 'racketmanager' ) ?></th>
-				<th scope="col"><?php _e( 'BTM', 'racketmanager' ) ?></th>
-				<th scope="col"><?php _e( 'Requested Date', 'racketmanager' ) ?></th>
-				<th scope="col"><?php _e( 'Requested User', 'racketmanager' ) ?></th>
-				<th scope="col"><?php _e( 'Completed Date', 'racketmanager' ) ?></th>
-				<th scope="col"><?php _e( 'Completed User', 'racketmanager' ) ?></th>
-			</tr>
-			<tbody id="the-list">
-
-				<?php
-				$clubs = $racketmanager->getClubs();
-				$class = '';
-				foreach ($clubs AS $club) {
-					$club = get_club($club->id);
-					$rosterRequests = $club->getRosterRequests( true );
-					foreach ($rosterRequests AS $rosterRequest) {
-						$class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-						<tr class="<?php echo $class ?>">
-							<th scope="row" class="check-column">
-								<input type="checkbox" value="<?php echo $rosterRequest->id ?>" name="rosterRequest[<?php echo $rosterRequest->id ?>]" />
-							</th>
-							<td class="column-num"><?php echo $rosterRequest->id ?><input type="hidden" id="club_id[<?php echo $rosterRequest->id ?>]" name="club_id[<?php echo $rosterRequest->id ?>]" value="<?php echo $club->id ?>"/></td>
-							<td><?php echo $club->name ?></td>
-							<td><?php echo $rosterRequest->first_name ?></td>
-							<td><?php echo $rosterRequest->surname ?></td>
-							<td><?php echo $rosterRequest->gender ?></td>
-							<td><?php echo $rosterRequest->btm ?></td>
-							<td><?php echo $rosterRequest->requested_date ?></td>
-							<td><?php echo $rosterRequest->requestedUser ?></td>
-							<td><?php echo $rosterRequest->completed_date ?></td>
-							<td><?php echo $rosterRequest->completedUser ?></td>
-						</tr>
-					<?php } ?>
-				<?php } ?>
-			</tbody>
-		</table>
-	</form>
+	<div class="container">
+		<div class="row table-header">
+			<div class="col-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('roster-request-filter'));" /></div>
+			<div class="col-1 column-num">ID</div>
+			<div class="col-2"><?php _e( 'Club', 'racketmanager' ) ?></div>
+			<div class="col-1"><?php _e( 'First Name', 'racketmanager' ) ?></div>
+			<div class="col-1"><?php _e( 'Surame', 'racketmanager' ) ?></div>
+			<div class="col-1"><?php _e( 'Gender', 'racketmanager' ) ?></div>
+			<div class="col-1"><?php _e( 'BTM', 'racketmanager' ) ?></div>
+			<div class="col-1"><?php _e( 'Requested Date', 'racketmanager' ) ?></div>
+			<div class="col-1"><?php _e( 'Requested User', 'racketmanager' ) ?></div>
+			<div class="col-1"><?php _e( 'Completed Date', 'racketmanager' ) ?></div>
+			<div class="col-1"><?php _e( 'Completed User', 'racketmanager' ) ?></div>
+		</div>
+		<?php
+		$clubs = $racketmanager->getClubs();
+		$class = '';
+		foreach ($clubs AS $club) {
+			$club = get_club($club->id);
+			$rosterRequests = $club->getRosterRequests( true );
+			foreach ($rosterRequests AS $rosterRequest) {
+				$class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+				<div class="row table-row <?php echo $class ?>">
+					<div class="col-1 check-column">
+						<input type="checkbox" value="<?php echo $rosterRequest->id ?>" name="rosterRequest[<?php echo $rosterRequest->id ?>]" />
+					</div>
+					<div class="col-1 column-num"><?php echo $rosterRequest->id ?><input type="hidden" id="club_id[<?php echo $rosterRequest->id ?>]" name="club_id[<?php echo $rosterRequest->id ?>]" value="<?php echo $club->id ?>"/></div>
+					<div class="col-2"><?php echo $club->name ?></div>
+					<div class="col-1"><?php echo $rosterRequest->first_name ?></div>
+					<div class="col-1"><?php echo $rosterRequest->surname ?></div>
+					<div class="col-1"><?php echo $rosterRequest->gender ?></div>
+					<div class="col-1"><?php echo $rosterRequest->btm ?></div>
+					<div class="col-1"><?php echo $rosterRequest->requested_date ?></div>
+					<div class="col-1"><?php echo $rosterRequest->requestedUser ?></div>
+					<div class="col-1"><?php echo $rosterRequest->completed_date ?></div>
+					<div class="col-1"><?php echo $rosterRequest->completedUser ?></div>
+				</div>
+			<?php } ?>
+		<?php } ?>
+	</div>
+</form>

@@ -553,6 +553,7 @@ final class RacketManagerAdmin extends RacketManager
 				if ( isset($_GET['club_id']) ) {
 					$club_id = intval($_GET['club_id']);
 				}
+				$tab = 'playerstats';
 			} elseif ( isset($_POST['doactionconstitution']) && $_POST['action'] == 'delete' ) {
 				$tab = 'constitution';
 				if ( current_user_can('del_leagues') ) {

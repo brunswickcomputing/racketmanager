@@ -1581,7 +1581,7 @@ public function getCrosstableField($team_id, $opponent_id, $home=0 ) {
 	if ($match) {
 		$score = $this->getScore($team_id, $opponent_id, $match[0], $home);
 	} else {
-		$score = "<td>n/a</td>";
+		$score = "n/a";
 	}
 
 	return $score;
@@ -1602,17 +1602,17 @@ public function getScore($team_id, $opponent_id, $match, $home = 0) {
 	if ( !$match || (NULL == $match->home_points && NULL == $match->away_points) ) {
 		$date = ( substr($match->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date('D d/m/Y', $match->date);
 		$time = ( '00' == $match->hour && '00' == $match->minutes ) ? '' : mysql2date('G:i', $match->date);
-		$out = "<td><span class='unplayedMatch'>".$date."<br/>".$time."</span></td>";
+		$out = "<span class='unplayedMatch'>".$date."<br/>".$time."</span>";
 		// match at home
 	} elseif ( $team_id == $match->home_team ) {
 		$score = sprintf("%s:%s", $match->home_points, $match->away_points);
 		$result = $this->getResult($team_id, $match->winner_id, $match->loser_id);
-		$out = "<td class='num'>".$score."<br/>".$result."</td>";
+		$out = $score."<br/>".$result;
 		// match away
 	} elseif ( $opponent_id == $match->home_team ) {
 		$score = sprintf("%s:%s", $match->away_points, $match->home_points);
 		$result = $this->getResult($team_id, $match->winner_id, $match->loser_id);
-		$out = "<td class='num'>".$score."<br/>".$result."</td>";
+		$out = $score."<br/>".$result;
 	} else {
 		$out = "";
 	}

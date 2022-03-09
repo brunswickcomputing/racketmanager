@@ -1131,7 +1131,7 @@ final class RacketManagerAdmin extends RacketManager
 			$this->printMessage();
 			if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
 			$club = get_club($club_id);
-			include_once( dirname(__FILE__) . '/show-roster.php' );
+			include_once( dirname(__FILE__) . '/club/show-roster.php' );
 		}
 	}
 
@@ -1178,7 +1178,7 @@ final class RacketManagerAdmin extends RacketManager
 				$this->printMessage();
 				if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
 				$club = get_club($club_id);
-				include_once( dirname(__FILE__) . '/show-teams.php' );
+				include_once( dirname(__FILE__) . '/club/show-teams.php' );
 			}
 		}
 

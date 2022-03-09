@@ -9,10 +9,9 @@ namespace ns;
 	<p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager-clubs"><?php _e( 'Clubs', 'racketmanager' ) ?></a> &raquo; <?php _e( 'Players', 'racketmanager' ) ?></p>
 	<h1><?php _e( 'Players', 'racketmanager' ) ?> - <?php echo $club->name ?></h1>
 
-<!-- View Rosters -->
-<div class="row">
-	<!-- Add Roster -->
-	<div>
+	<!-- View Rosters -->
+	<div class="container">
+		<!-- Add Roster -->
 		<form action="" method="post" class="form-control">
 			<?php wp_nonce_field( 'racketmanager_add-roster' ) ?>
 			<div class="lm-form-table">
@@ -40,58 +39,55 @@ namespace ns;
 			<input type="hidden" name="club_id" value=<?php echo $club_id ?> />
 		</form>
 	</div>
-</div>
 
-<form id="roster-filter" method="post" action="">
-	<?php wp_nonce_field( 'roster-bulk' ) ?>
+	<div class="container">
+		<form id="roster-filter" method="post" action="">
+			<?php wp_nonce_field( 'roster-bulk' ) ?>
 
-	<div class="tablenav">
-		<!-- Bulk Actions -->
-		<select name="action" size="1">
-			<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
-			<option value="delete"><?php _e('Delete')?></option>
-		</select>
-		<input type="submit" value="<?php _e('Apply'); ?>" name="dorosterdel" id="dorosterdel" class="btn btn-secondary action" />
-	</div>
+			<div class="tablenav">
+				<!-- Bulk Actions -->
+				<select name="action" size="1">
+					<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
+					<option value="delete"><?php _e('Delete')?></option>
+				</select>
+				<input type="submit" value="<?php _e('Apply'); ?>" name="dorosterdel" id="dorosterdel" class="btn btn-secondary action" />
+			</div>
 
-	<table class="widefat" summary="" title="RacketManager Roster">
-		<thead>
-			<tr>
-				<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('roster-filter'));" /></th>
-				<th scope="col" class="column-num">ID</th>
-				<th scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>
-				<th scope="col"><?php _e( 'Gender', 'racketmanager' ) ?></th>
-				<th scope="col"><?php _e( 'BTM', 'racketmanager' ) ?></th>
-				<th scope="col"><?php _e( 'Removed', 'racketmanager') ?></th>
-				<th scope="col"><?php _e( 'Removed By', 'racketmanager') ?></th>
-				<th scope="col"><?php _e( 'Created On', 'racketmanager') ?></th>
-				<th scope="col"><?php _e( 'Created By', 'racketmanager') ?></th>
-			</tr>
-			<?php if ( !$club_id == 0 ) { $club = get_club($club_id); ?>
-				<tbody id="the-list">
+			<div class="container">
+				<div class="row table-header">
+					<div class="col-12 col-md-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('roster-filter'));" /></div>
+					<div class="col-12 col-md-2"><?php _e( 'Name', 'racketmanager' ) ?></div>
+					<div class="col-12 col-md-1"><?php _e( 'Gender', 'racketmanager' ) ?></div>
+					<div class="col-12 col-md-1"><?php _e( 'BTM', 'racketmanager' ) ?></div>
+					<div class="col-12 col-md-1"><?php _e( 'Removed', 'racketmanager') ?></div>
+					<div class="col-12 col-md-2"><?php _e( 'Removed By', 'racketmanager') ?></div>
+					<div class="col-12 col-md-1"><?php _e( 'Created On', 'racketmanager') ?></div>
+					<div class="col-12 col-md-2"><?php _e( 'Created By', 'racketmanager') ?></div>
+				</div>
+				<?php if ( !$club_id == 0 ) { $club = get_club($club_id); ?>
 
-					<?php if ( $rosters = $club->getRoster(array()) ) { $class = ''; ?>
-					<?php foreach ( $rosters AS $roster ) { ?>
-						<?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-						<tr class="<?php echo $class ?>">
-							<th scope="row" class="check-column">
-								<?php if ( !isset($roster->removed_date) ) { ?>
-									<input type="checkbox" value="<?php echo $roster->roster_id ?>" name="roster[<?php echo $roster->roster_id ?>]" />
-								<?php } ?>
-							</th>
-							<td class="column-num"><?php echo $roster->roster_id ?></td>
-							<td><?php echo $roster->fullname ?></td>
-							<td><?php echo $roster->gender ?></td>
-							<td><?php echo $roster->btm ?></td>
-							<td><?php if ( isset($roster->removed_date) ) { echo $roster->removed_date; } ?></td>
-							<td><?php echo $roster->removedUserName ?></td>
-							<td><?php echo $roster->created_date ?></td>
-							<td><?php echo $roster->createdUserName ?></td>
-						</tr>
+					<?php if ( $rosters = $club->getRoster(array()) ) {
+						$class = '';
+						foreach ( $rosters AS $roster ) { ?>
+							<?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+							<div class="row table-row <?php echo $class ?>">
+								<div class="col-12 col-md-1 check-column">
+									<?php if ( !isset($roster->removed_date) ) { ?>
+										<input type="checkbox" value="<?php echo $roster->roster_id ?>" name="roster[<?php echo $roster->roster_id ?>]" />
+									<?php } ?>
+								</div>
+								<div class="col-12 col-md-2"><?php echo $roster->fullname ?></div>
+								<div class="col-12 col-md-1"><?php echo $roster->gender ?></div>
+								<div class="col-12 col-md-1"><?php echo $roster->btm ?></div>
+								<div class="col-12 col-md-1"><?php if ( isset($roster->removed_date) ) { echo $roster->removed_date; } ?></div>
+								<div class="col-12 col-md-2"><?php echo $roster->removedUserName ?></div>
+								<div class="col-12 col-md-1"><?php echo $roster->created_date ?></div>
+								<div class="col-12 col-md-2"><?php echo $roster->createdUserName ?></div>
+							</div>
+						<?php } ?>
 					<?php } ?>
 				<?php } ?>
-			</tbody>
-		<?php } ?>
-	</table>
-</form>
+			</div>
+		</form>
+	</div>
 </div>

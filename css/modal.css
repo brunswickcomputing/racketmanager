@@ -122,6 +122,7 @@ td input.player {
 }
 #matches-archive .modal-content {
     width: 90%;
+    background: #FFFFFF;
 }
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,

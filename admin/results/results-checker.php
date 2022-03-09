@@ -27,27 +27,26 @@
 			<div class="col-12 col-md-1"><?php _e( 'Updated Date', 'racketmanager' ) ?></div>
 			<div class="col-12 col-md-1"><?php _e( 'Updated User', 'racketmanager' ) ?></div>
 		</div>
-		<tbody id="the-list">
 
-			<?php
-			$resultsCheckers = $this->getResultsChecker();
-			$class = '';
-			foreach ($resultsCheckers AS $resultsChecker) {
-				$class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-				<div class="row table-row <?php echo $class ?>">
-					<div class="col-12 col-md-auto check-column">
-						<input type="checkbox" value="<?php echo $resultsChecker->id ?>" name="resultsChecker[<?php echo $resultsChecker->id ?>]" />
-					</div>
-					<div class="col-12 col-md-1"><?php echo $resultsChecker->date ?></div>
-					<div class="col-12 col-md-1"><a href="admin.php?page=racketmanager&subpage=show-league&league_id=<?php echo $resultsChecker->league->id ?>" title="<?php _e( 'Go to league', 'racketmanager' ) ?>"><?php echo $resultsChecker->league->title ?></a></div>
-					<div class="col-12 col-md-2"><?php echo $resultsChecker->match->match_title ?></div>
-					<div class="col-12 col-md-1"><?php echo $resultsChecker->team ?></div>
-					<div class="col-12 col-md-1"><?php echo $resultsChecker->player ?></div>
-					<div class="col-12 col-md-2"><?php echo $resultsChecker->description ?></div>
-					<div class="col-12 col-md-1"><?php echo $resultsChecker->status ?></div>
-					<div class="col-12 col-md-1"><?php echo $resultsChecker->updated_date ?></div>
-					<div class="col-12 col-md-1"><?php echo $resultsChecker->updated_user_name ?></div>
+		<?php
+		$resultsCheckers = $this->getResultsChecker();
+		$class = '';
+		foreach ($resultsCheckers AS $resultsChecker) {
+			$class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+			<div class="row table-row <?php echo $class ?>">
+				<div class="col-12 col-md-auto check-column">
+					<input type="checkbox" value="<?php echo $resultsChecker->id ?>" name="resultsChecker[<?php echo $resultsChecker->id ?>]" />
 				</div>
-			<?php } ?>
-		</div>
-	</form>
+				<div class="col-12 col-md-1"><?php echo $resultsChecker->date ?></div>
+				<div class="col-12 col-md-1"><a href="admin.php?page=racketmanager&subpage=show-league&league_id=<?php echo $resultsChecker->league->id ?>" title="<?php _e( 'Go to league', 'racketmanager' ) ?>"><?php echo $resultsChecker->league->title ?></a></div>
+				<div class="col-12 col-md-2"><?php echo $resultsChecker->match->match_title ?></div>
+				<div class="col-12 col-md-1"><?php echo $resultsChecker->team ?></div>
+				<div class="col-12 col-md-1"><?php echo $resultsChecker->player ?></div>
+				<div class="col-12 col-md-2"><?php echo $resultsChecker->description ?></div>
+				<div class="col-12 col-md-1"><?php echo $resultsChecker->status ?></div>
+				<div class="col-12 col-md-1"><?php echo $resultsChecker->updated_date ?></div>
+				<div class="col-12 col-md-1"><?php echo $resultsChecker->updated_user_name ?></div>
+			</div>
+		<?php } ?>
+	</div>
+</form>

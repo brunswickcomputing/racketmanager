@@ -59,7 +59,7 @@ if ( !empty($competition->seasons) ) { ?>
 				<div class="row justify-content-center">
 					<div class="col-auto"><?php _e( $heading, 'racketmanager') ?></div>
 				</div>
-				<div class="row">
+				<div class="row justify-content-evenly">
 					<?php
 					$matchdaystatsdummy = array();
 					for ( $day = 1; $day <= $numCols; $day++ ) {
@@ -141,7 +141,7 @@ if ( !empty($competition->seasons) ) { ?>
 						<?php } ?>
 					</div>
 					<div class="col-9">
-						<div class="row">
+						<div class="row justify-content-evenly">
 							<?php	foreach ( $matchdaystats AS $daystat ) {
 								$dayshow = '';
 								$title = '';

@@ -103,8 +103,20 @@ if ( !empty($competition->seasons) ) { ?>
 								}
 								$prevTeamNum = $teamNum;
 
-								if ($match->match_winner === $match->team_id) $matchresult = 'Won'; else $matchresult = 'Lost';
-								if ($match->rubber_winner === $match->team_id) $rubberresult = 'Won'; else $rubberresult = 'Lost';
+								if ($match->match_winner == $match->team_id) {
+									$matchresult = __('Won','racketmanager');
+								} elseif ($match->match_loser == $match->team_id ) {
+									$matchresult = __('Lost','racketmanager');
+								} else {
+									$matchresult = __('Drew','racketmanager');
+								}
+								if ($match->rubber_winner == $match->team_id) {
+									$rubberresult = __('Won','racketmanager');
+								} elseif ($match->rubber_loser == $match->team_id) {
+									$rubberresult = __('Lost','racketmanager');
+								} else {
+									$rubberresult = __('Drew','racketmanager');
+								}
 								$playerLine = array('team' => $match->team_title, 'pair' => $match->rubber_number, 'matchresult' => $matchresult, 'rubberresult' => $rubberresult, 'playdir' => $playdir);
 								if ( $competition->is_championship ) {
 									$d = $primaryLeague->championship->getFinals($match->final)['round'];

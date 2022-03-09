@@ -323,8 +323,7 @@ div.racketmanager_widget_control select {
     width: 2%;
 }
 
-.playerstats .matchday {
-    width: 8.5%;
+.matchday {
     text-align: center;
     font-size: .75em;
 }
@@ -336,19 +335,19 @@ div.racketmanager_widget_control select {
     border: none;
 }
 
-td.matchday.playup {
+.matchday.playup {
     background-color: greenyellow;
     color: white;
 }
-td.matchday.playdown {
+.matchday.playdown {
     background-color: blue;
     color: white;
 }
-td.matchday.playdownerr {
+.matchday.playdownerr {
     background-color: red;
     color: white;
 }
-td.matchday.playmulti {
+.matchday.playmulti {
     background-color: red;
     color: white;
 }

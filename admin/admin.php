@@ -2371,7 +2371,9 @@ final class RacketManagerAdmin extends RacketManager
             $this->setTeamCompetition($team_id, $league->competition_id, $captain, $contactno, $contactemail, $matchday, $matchtime);
         }
 
-        $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `home` = '%d', `roster`= '%s', `profile` = '%d', `custom` = '%s', `type` = '%s' WHERE `id` = %d", $title, $affiliatedclub, $home, maybe_serialize($roster), $profile, maybe_serialize($custom), $team_type, $team_id ) );
+				$club = get_club($affiliatedclub);
+        $stadium = $club->name;
+        $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `stadium` = '%s', `home` = '%d', `roster`= '%s', `profile` = '%d', `custom` = '%s', `type` = '%s' WHERE `id` = %d", $title, $affiliatedclub, $stadium, $home, maybe_serialize($roster), $profile, maybe_serialize($custom), $team_type, $team_id ) );
 
         $this->setMessage( __('Team updated', 'racketmanager') );
 

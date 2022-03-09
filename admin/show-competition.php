@@ -18,9 +18,11 @@ jQuery(document).ready(function(){
 			<li class="nav-item" role="presentation">
 				<button class="nav-link" id="leagues-tab" data-bs-toggle="pill" data-bs-target="#leagues" type="button" role="tab" aria-controls="leagues" aria-selected="true"><?php _e( 'Leagues', 'racketmanager' ) ?></button>
 			</li>
-			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="playerstats-tab" data-bs-toggle="pill" data-bs-target="#playerstats" type="button" role="tab" aria-controls="playerstats" aria-selected="false"><?php _e( 'Players Stats', 'racketmanager' ) ?></button>
-			</li>
+			<?php if ( $competition->competitiontype != 'tournament' ) { ?>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" id="playerstats-tab" data-bs-toggle="pill" data-bs-target="#playerstats" type="button" role="tab" aria-controls="playerstats" aria-selected="false"><?php _e( 'Players Stats', 'racketmanager' ) ?></button>
+				</li>
+			<?php } ?>
 			<li class="nav-item" role="presentation">
 				<button class="nav-link" id="seasons-tab" data-bs-toggle="pill" data-bs-target="#seasons" type="button" role="tab" aria-controls="seasons" aria-selected="false"><?php _e( 'Seasons', 'racketmanager' ) ?></button>
 			</li>
@@ -42,10 +44,12 @@ jQuery(document).ready(function(){
 				<h2><?php _e( 'Leagues', 'racketmanager' ) ?></h2>
 				<?php include('competition/leagues.php'); ?>
 			</div>
-			<div class="tab-pane fade" id="playerstats" role="tabpanel" aria-labelledby="playerstats-tab">
-				<h2><?php _e( 'Player Statistics', 'racketmanager' ) ?></h2>
-				<?php include(RACKETMANAGER_PATH . '/admin/includes/player-stats.php'); ?>
-			</div>
+			<?php if ( $competition->competitiontype != 'tournament' ) { ?>
+				<div class="tab-pane fade" id="playerstats" role="tabpanel" aria-labelledby="playerstats-tab">
+					<h2><?php _e( 'Player Statistics', 'racketmanager' ) ?></h2>
+					<?php include(RACKETMANAGER_PATH . '/admin/includes/player-stats.php'); ?>
+				</div>
+			<?php } ?>
 			<div class="tab-pane fade" id="seasons" role="tabpanel" aria-labelledby="seasons-tab">
 				<h2><?php _e( 'Seasons', 'racketmanager' ) ?></h2>
 				<?php include('competition/seasons.php'); ?>

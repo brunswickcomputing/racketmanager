@@ -187,6 +187,9 @@ th.score, td.score {
 /*
  * Admin Crosstable
  */
+ .fixture {
+   text-align: center;
+ }
 .widefat.crosstable {
     margin-top: 1em;
 }

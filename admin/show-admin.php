@@ -27,15 +27,15 @@ jQuery(document).ready(function(){
 		<div class="tab-content">
 			<div class="tab-pane active show fade" id="seasons" role="tabpanel" aria-labelledby="seasons-tab">
 				<h2 class="header"><?php _e( 'Seasons', 'racketmanager' ) ?></h2>
-				<?php include('main/seasons.php'); ?>
+				<?php include('admin/seasons.php'); ?>
 			</div>
 			<div class="tab-pane fade" id="rosterrequest" role="tabpanel" aria-labelledby="rosterrequest-tab">
 				<h2 class="header"><?php _e( 'Player Request', 'racketmanager' ) ?></h2>
-				<?php include('main/roster-requests.php'); ?>
+				<?php include('admin/roster-requests.php'); ?>
 			</div>
 			<div class="tab-pane fade" id="players" role="tabpanel" aria-labelledby="players-tab">
 				<h2 class="header"><?php _e( 'Players', 'racketmanager' ) ?></h2>
-				<?php include('main/players.php'); ?>
+				<?php include('admin/players.php'); ?>
 			</div>
 		</div>
 	</div>

@@ -65,7 +65,7 @@ jQuery(document).ready(function($) {
 
 	/* Friendly URL rewrite */
 	jQuery('#racketmanager_match_day_selection').submit(function() {
-		var league = jQuery('#league_id').val().replace(/[^A-Za-z0-9 ]/g,''); // Remove unwanted characters, only accept alphanumeric and space */
+		var league = jQuery('#league_id').val().replace(/[^A-Za-z0-9 -]/g,''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
 		league = league.replace(/\s{2,}/g,' '); // Replace multi spaces with a single space */
 		league = league.replace(/\s/g, "-"); // Replace space with a '-' symbol */
 		var season = jQuery('#season').val();

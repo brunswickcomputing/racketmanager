@@ -113,6 +113,10 @@ final class LeagueTeam {
       $this->roster = intval($this->roster);
       $this->profile = intval($this->profile);
 
+      $standingStatus = $racketmanager->getStandingStatus();
+      if ( isset($standingStatus[$this->status])) {
+        $this->status = $standingStatus[$this->status];
+      }
       $this->affiliatedclubname = get_club( $this->affiliatedclub )->name;
       if ( $this->status == 'P' && $this->roster != null ) {
         $i = 1;

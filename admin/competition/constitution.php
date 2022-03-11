@@ -13,7 +13,8 @@ if ( empty($this->seasons) ) { ?>
 			$teams = $competition->buildConstitution( array('season' => $latestCompetitionSeason));
 			$constitutionAction = "insert";
 		}
-		$leagues = $competition->getLeagues( array('competition' => $competition_id))
+		$leagues = $competition->getLeagues( array('competition' => $competition_id));
+		$standingStatus = $racketmanager->getStandingStatus();
 		?>
 		<h2 class="header"><?php _e( 'Constitution', 'racketmanager' ) ?> - <?php echo $latestSeason ?></h2>
 		<form id="teams-filter" method="post" action="">
@@ -83,16 +84,9 @@ if ( empty($this->seasons) ) { ?>
 								<td>
 									<select size=1 name="status[<?php echo $team->tableId ?>]">
 										<option value="" <?php selected('', $team->status) ?>></option>
-										<option value="C" <?php selected('C', $team->status) ?>><?php _e( "Champions", "racketmanager") ?></option>
-										<option value="P1" <?php selected('P1', $team->status) ?>><?php _e( "Promoted in first place", "racketmanager") ?></option>
-										<option value="P2" <?php selected('P2', $team->status) ?>><?php _e( "Promoted in second place", "racketmanager") ?></option>
-										<option value="P3" <?php selected('P3', $team->status) ?>><?php _e( "Promoted in third place", "racketmanager") ?></option>
-										<option value="W1" <?php selected('W1', $team->status) ?>><?php _e( "League winners but league locked", "racketmanager") ?></option>
-										<option value="W2" <?php selected('W2', $team->status) ?>><?php _e( "Second place but league locked", "racketmanager") ?></option>
-										<option value="RB" <?php selected('RB', $team->status) ?>><?php _e( "Relegated in bottom place", "racketmanager") ?></option>
-										<option value="RT" <?php selected('RT', $team->status) ?>><?php _e( "Relegated as team in division above", "racketmanager") ?></option>
-										<option value="BT" <?php selected('BT', $team->status) ?>><?php _e( "Finished bottom but not relegated", "racketmanager") ?></option>
-										<option value="NT" <?php selected('NT', $team->status) ?>><?php _e( "New team", "racketmanager") ?></option>
+										<?php foreach ($standingStatus as $key => $value) { ?>
+											<option value="<?php echo $key ?>" <?php selected($key, $team->status) ?>><?php echo $value ?></option>
+										<?php } ?>
 									</select>
 								</td>
 								<td class="column-num">

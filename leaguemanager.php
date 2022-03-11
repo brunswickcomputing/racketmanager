@@ -1759,6 +1759,7 @@ class RacketManager {
 			,'RT' => __( 'Relegated as team in division above', 'racketmanager')
 			,'BT' => __( 'Finished bottom but not relegated', 'racketmanager')
 			,'NT' => __( 'New team', 'racketmanager')
+			,'W' => __( 'Withdrawn', 'racketmanager')
 		);
 		return $standingStatus;
 	}

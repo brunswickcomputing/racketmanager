@@ -832,7 +832,7 @@ class Competition {
 			$search .= implode(" AND ", $search_terms);
 		}
 
-		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_table} SET `profile` = 3 WHERE `league_id` IN (select `id` FROM {$wpdb->racketmanager} WHERE `competition_id` = '%d') AND `season` = '%s' AND `team_id` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d') $search ", $this->id, $season, $club ) );
+		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_table} SET `profile` = 3, `status` = 'W' WHERE `league_id` IN (select `id` FROM {$wpdb->racketmanager} WHERE `competition_id` = '%d') AND `season` = '%s' AND `team_id` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d') $search ", $this->id, $season, $club ) );
 	}
 
 	/**

@@ -207,10 +207,10 @@
                 <h4 id="Deleting tournaments"><?php _e( 'Deleting tournaments', 'racketmanager' ) ?></h4>
                 <p>Tournaments can also be deleted from this page.</p>
                 <h4 id="Adding tournaments"><?php _e( 'Adding tournaments', 'racketmanager' ) ?></h4>
-                <p>Clicking the "Add Tournament" button takes the user to a screen where the new tournament details can be entered. The required fields are <ul><li>Name</li><li>Type (Summer or Winter)</li><li>Season</li><li>Closing date for entries</li><li>Tournament secretary</li></p>
+                <p>Clicking the "Add Tournament" button takes the user to a screen where the new tournament details can be entered. The required fields are <ul><li>Name</li><li>Type (Summer or Winter)</li><li>Season</li><li>Closing date for entries</li><li>Tournament secretary</li></ul></p>
                 <p>Typing in the tournament secretary name will automatically populate a list of user.</p<p>Clicking on the name will automatically populate the tournament secretary name along with any contact number and email address associated.</p>
                 <p>Entering or amending these details will update the associated player record when the "Update" button is pressed.</p>
-                <p>Additionally, the following information may be entered<ul><li>Host Club</li><li>Website</li><li>Finals Date</li><ul>
+                <p>Additionally, the following information may be entered<ul><li>Host Club</li><li>Website</li><li>Finals Date</li></ul>
                 <h4 id="Editing tournament details"><?php _e( 'Editing tournament details', 'racketmanager' ) ?></h4>
                 <p>Clicking on the tournament name in the list of tournaments displays the edit screen.</p>
             </div>

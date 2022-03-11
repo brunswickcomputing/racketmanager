@@ -998,4 +998,25 @@
         return $rosterMessage;
     }
 
+    /**
+     * display constitution email
+     *
+     * @param int $competition_id competition id
+     * @param array $args associative array of parameters, see default values (optional)
+     * @category template-tags
+     */
+    function racketmanager_constitution_notification( $competitionId, $args = array() ) {
+        global $racketmanager;
+
+        $args['id'] = $competitionId;
+        $args['standingstable'] = 'constitution';
+
+        $shortcode = "[competition";
+        foreach ($args AS $key => $value)
+            $shortcode .= " ".$key."='".$value."'";
+        $shortcode .= "]";
+        $emailMessage = do_shortcode($shortcode);
+        return $emailMessage;
+    }
+
 ?>

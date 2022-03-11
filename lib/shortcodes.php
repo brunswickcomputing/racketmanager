@@ -742,7 +742,7 @@ class RacketManagerShortcodes extends RacketManager {
 			'id' => 0,
 			'season' => false,
 			'template' => '',
-			'standingstable' => 'last5',
+			'standingstable' => '',
 			'crosstable' => '',
 			'matches' => '',
 			'teams' => 'list'
@@ -777,7 +777,7 @@ class RacketManagerShortcodes extends RacketManager {
 			}
 		}
 
-		$out = $this->loadTemplate( $filename, array('competition' => $competition, 'leagues' => $leagues, 'seasons' => $seasons, 'curr_season' => $season) );
+		$out = $this->loadTemplate( $filename, array('competition' => $competition, 'leagues' => $leagues, 'seasons' => $seasons, 'curr_season' => $season, 'standingsTemplate' => $standingstable) );
 		return $out;
 	}
 

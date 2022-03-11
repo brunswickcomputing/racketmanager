@@ -774,7 +774,7 @@ class Competition {
 	public function getTeams( $args = array() ) {
 		global $wpdb;
 
-		$defaults = array( 'offset' => 0, 'limit' => 99999999, 'season' => false, 'orderby' => false, 'club' => false );
+		$defaults = array( 'offset' => 0, 'limit' => 99999999, 'season' => false, 'orderby' => false, 'club' => false, 'status' => false );
 		$args = array_merge($defaults, $args);
 		extract($args, EXTR_SKIP);
 
@@ -787,6 +787,10 @@ class Competition {
 
 		if ( $club ) {
 			$search_terms[] = $wpdb->prepare("t2.`affiliatedclub` = %d", intval($club));
+		}
+
+		if ( $status ) {
+			$search_terms[] = $wpdb->prepare("t1.`profile` = %d", intval($status));
 		}
 
 		$search = "";

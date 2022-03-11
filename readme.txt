@@ -50,6 +50,22 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.5.0 =
+* UPDATE: move results/resultschecker into own area in admin menu
+* UPDATE: move tournaments to own area in admin menu
+* UPDATE: move clubs to own area in admin menu
+* UPDATE: move teams under clubs in admin
+* UPDATE: move rosters under clubs in admin
+* BUGFIX: ensure pages shown within racketmanager section of admin menu
+* UPDATE: create admin section in admin menu and move season maintenance to it
+* UPDATE: move players under admin
+* UPDATE: move roster requests under admin
+* UPDATE: move cups to own area in admin menu
+* UPDATE: move leagues to own area in admin menu
+* UPDATE: return competitionTypes as array
+* UPDATE: add competition uses explicit type (league/cup/tournament)
+* UPDATE: send constitution to league secretary when season added / delete withdrawn teams
+
 = 6.4.0 =
 * BUGFIX: fix season setting
 * UPDATE: add competition constitution option

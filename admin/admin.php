@@ -1413,7 +1413,7 @@ final class RacketManagerAdmin extends RacketManager
 		if ( !current_user_can( 'edit_leagues' ) ) {
 			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
 		} else {
-			$tab = "seasons";
+			$tab = "rosterrequest";
 			if ( isset($_POST['addSeason']) ) {
 				check_admin_referer('racketmanager_add-season');
 				$this->addSeason( htmlspecialchars(strip_tags($_POST['seasonName'])) );

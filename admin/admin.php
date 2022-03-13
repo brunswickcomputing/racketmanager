@@ -450,7 +450,7 @@ final class RacketManagerAdmin extends RacketManager
 		if ( !current_user_can( 'view_leagues' ) ) {
 			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
 		} else {
-			$tab = "results";
+			$tab = "resultschecker";
 			if ( isset($_POST['doResultsChecker']) ) {
 				if ( current_user_can('update_results') ) {
 					check_admin_referer('results-checker-bulk');

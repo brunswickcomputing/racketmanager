@@ -262,9 +262,14 @@ Racketmanager.notifyEntryOpen = function(competitionId) {
     "action": "racketmanager_notify_entries_open"},
     success: function(response) {
       var $response = jQuery.parseJSON(response);
-      jQuery("#notifyMessage").text($response);
+      var $message = $response['msg'];
+      var $error = $response['error'];
+
+      jQuery("#notifyMessage").text($message);
       jQuery("#notifyMessage").show();
-      jQuery("#notifyMessage").delay(10000).fadeOut('slow');
+      if ( !$error ) {
+        jQuery("#notifyMessage").delay(10000).fadeOut('slow');
+      }
     },
     error: function() {
       alert("Ajax error on notifying secretaries of entries open");

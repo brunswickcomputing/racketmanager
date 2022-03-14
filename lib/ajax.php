@@ -2049,10 +2049,10 @@ class RacketManagerAJAX extends RacketManager {
 	/**
 	* notify match secretaries of competition entries open
 	*
-	* @see templates/email/league-entry-open.php
+	* @see templates/email/competition-entry-open.php
 	*/
 	public function notifyEntriesOpen() {
-		global $racketmanager_shortcodes, $racketmanager;
+		global $racketmanager;
 
 		$return ='';
 		$messageSent = false;
@@ -2061,28 +2061,9 @@ class RacketManagerAJAX extends RacketManager {
 		$latestSeason = $_POST['latestSeason'];
 		$competitionTitle = explode(" ", $competition->name);
 		$competitionSeason = seourl($competitionTitle[0]);
+		$competitionType = $competition->competitiontype;
 
-		$clubs = $racketmanager->getClubs();
-
-		$headers = array();
-		$fromEmail = $racketmanager->getConfirmationEmail('league');
-		$headers[] = 'From: LeagueSecretary <'.$fromEmail.'>';
-		$organisationName = $racketmanager->site_name;
-
-		foreach ($clubs as $key => $club) {
-			$emailSubject = $racketmanager->site_name." - ".ucfirst($competitionSeason)." ".$latestSeason." League Entry Open - ".$club->name;
-			$emailTo = $club->matchSecretaryName.' <'.$club->matchSecretaryEmail.'>';
-			$actionURL = $racketmanager->site_url.'/leagues/'.$competitionSeason.'-entry/'.$latestSeason.'/'.seoUrl($club->shortcode);
-			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'league-entry-open', array( 'emailSubject' => $emailSubject, 'fromEmail' => $fromEmail, 'actionURL' => $actionURL, 'organisationName' => $organisationName, 'season' => $latestSeason, 'competitionSeason' => $competitionSeason, 'club' => $club ), 'email' );
-			$racketmanager->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
-			$messageSent = true;
-		}
-
-		if ( $messageSent ) {
-			$return = __('Match secretaries notified','racketmanager');
-		} else {
-			$return = __('No notification','racketmanager');
-		}
+		$return = $racketmanager->notifyEntryOpen($competitionType, $latestSeason, $competitionSeason);
 
 		die(json_encode($return));
 	}

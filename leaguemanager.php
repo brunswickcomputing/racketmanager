@@ -1988,6 +1988,46 @@ class RacketManager {
 	public function getFromUserEmail() {
 		return 'From: '.wp_get_current_user()->display_name.' <'.$this->admin_email.'>';
 	}
+
+	/**
+  * notify clubs entries open
+  *
+  * @return string notifivation status
+  */
+	public function notifyEntryOpen($competitionType, $season, $competitionSeason) {
+		global $racketmanager_shortcodes;
+
+		$return = array();
+		if ( !$competitionSeason ) {
+			$return['error'] = true;
+			$return['msg'] = __('Type not selected','racketmanager');
+		} else {
+			$clubs = $this->getClubs();
+
+			$headers = array();
+			$fromEmail = $this->getConfirmationEmail($competitionType);
+			$headers[] = 'From: '.ucfirst($competitionType).'Secretary <'.$fromEmail.'>';
+			$organisationName = $this->site_name;
+
+			foreach ($clubs as $key => $club) {
+				$emailSubject = $this->site_name." - ".ucfirst($competitionSeason)." ".$season." ".ucfirst($competitionType)." Entry Open - ".$club->name;
+				$emailTo = $club->matchSecretaryName.' <'.$club->matchSecretaryEmail.'>';
+				$actionURL = $this->site_url.'/'.$competitionType.'s/'.$competitionSeason.'-entry/'.$season.'/'.seoUrl($club->shortcode);
+				$emailMessage = $racketmanager_shortcodes->loadTemplate( 'competition-entry-open', array( 'emailSubject' => $emailSubject, 'fromEmail' => $fromEmail, 'actionURL' => $actionURL, 'organisationName' => $organisationName, 'season' => $season, 'competitionSeason' => $competitionSeason, 'competitionType' => $competitionType, 'club' => $club ), 'email' );
+				$this->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
+				$messageSent = true;
+			}
+
+			if ( $messageSent ) {
+				$return['msg'] = __('Match secretaries notified','racketmanager');
+			} else {
+				$return['error'] = true;
+				$return['msg'] = __('No notification','racketmanager');
+			}
+		}
+		return $return;
+	}
+
 }
 
 global $racketmanager;

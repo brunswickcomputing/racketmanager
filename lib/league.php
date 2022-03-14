@@ -701,6 +701,10 @@ class League {
 
 		if (empty($data)) $data = end($this->seasons);
 
+		if ( !$data ) {
+			$data['name'] = '';
+			$data['num_match_days'] = 0;
+		}
 		$this->current_season = $data;
 		$this->num_match_days = $data['num_match_days'];
 

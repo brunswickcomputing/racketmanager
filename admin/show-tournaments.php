@@ -18,40 +18,33 @@ namespace ns;
 			</select>
 			<input type="submit" value="<?php _e('Apply'); ?>" name="doTournamentDel" id="doTournamentDel" class="btn btn-secondary action" />
 		</div>
-		<table class="widefat" summary="" title="RacketManager Tournaments">
-			<thead>
-				<tr>
-					<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('tournaments-filter'));" /></th>
-					<th scope="col" class="column-num">ID</th>
-					<th scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>
-					<th scope="col"><?php _e( 'Type', 'racketmanager' ) ?></th>
-					<th scope="col"><?php _e( 'Season', 'racketmanager' ) ?></th>
-					<th scope="col"><?php _e( 'Venue', 'racketmanager' ) ?></th>
-					<th scope="col"><?php _e( 'Date', 'racketmanager' ) ?></th>
-					<th scope="col"><?php _e( 'Closing Date', 'racketmanager' ) ?></th>
-					<th scope="col"><?php _e( 'Competitions', 'racketmanager' ) ?></th>
-				</tr>
-				<tbody id="the-list">
-					<?php if ( $tournaments = $racketmanager->getTournaments( array( 'orderby' => array('date' => 'desc', 'name' => 'asc')) ) ) { $class = ''; ?>
-					<?php foreach ( $tournaments AS $tournament ) {
-						$class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-						<tr class="<?php echo $class ?>">
-							<th scope="row" class="check-column">
-								<input type="checkbox" value="<?php echo $tournament->id ?>" name="tournament[<?php echo $tournament->id ?>]" />
-							</th>
-							<td class="column-num"><?php echo $tournament->id ?></td>
-							<td class="tournamentname"><a href="admin.php?page=racketmanager&amp;subpage=tournament&amp;tournament_name=<?php echo $tournament->name ?> "><?php echo $tournament->name ?></a></td>
-							<td><?php echo $tournament->type ?></td>
-							<td><?php echo $tournament->season ?></td>
-							<td><?php echo $tournament->venueName ?></td>
-							<td><?php echo $tournament->dateDisplay ?></td>
-							<td><?php echo $tournament->closingDateDisplay ?></td>
-							<td><a href="admin.php?page=racketmanager&amp;subpage=show-competitions&amp;season=<?php echo $tournament->season ?>&amp;type=<?php echo $tournament->type ?>&amp;competitiontype=tournament" class="btn btn-secondary"><?php _e( 'Competitions', 'racketmanager' ) ?></a></td>
-						</tr>
+		<div class="row table-header">
+			<div class="col-12 col-md-auto check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('tournaments-filter'));" /></div>
+			<div class="col-12 col-md-2"><?php _e( 'Name', 'racketmanager' ) ?></div>
+			<div class="col-12 col-md-1"><?php _e( 'Season', 'racketmanager' ) ?></div>
+			<div class="col-12 col-md-2"><?php _e( 'Venue', 'racketmanager' ) ?></div>
+			<div class="col-12 col-md-1"><?php _e( 'Date', 'racketmanager' ) ?></div>
+		</div>
+		<?php if ( $tournaments = $racketmanager->getTournaments( array( 'orderby' => array('date' => 'desc', 'name' => 'asc')) ) ) {
+			$class = ''; ?>
+			<?php foreach ( $tournaments AS $tournament ) {
+				$class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+				<div class="row table-row <?php echo $class ?>">
+					<div class="col-12 col-md-auto check-column">
+						<input type="checkbox" value="<?php echo $tournament->id ?>" name="tournament[<?php echo $tournament->id ?>]" />
+					</div>
+					<div class="col-12 col-md-2"><a href="admin.php?page=racketmanager&amp;subpage=tournament&amp;tournament_name=<?php echo $tournament->name ?> "><?php echo $tournament->name ?></a></div>
+					<div class="col-12 col-md-1"><?php echo $tournament->season ?></div>
+					<div class="col-12 col-md-2"><?php echo $tournament->venueName ?></div>
+					<div class="col-12 col-md-1"><?php echo $tournament->date ?></div>
+					<div class="col-12 col-md-2"><a href="admin.php?page=racketmanager&amp;subpage=show-competitions&amp;season=<?php echo $tournament->season ?>&amp;type=<?php echo $tournament->type ?>&amp;competitiontype=tournament" class="btn btn-secondary"><?php _e( 'Competitions', 'racketmanager' ) ?></a></div>
+					<?php if ( $tournament->open ) { ?>
+						<div class="col-12 col-md-auto"><a class="btn btn-secondary" onclick="Racketmanager.notifyTournamentEntryOpen('<?php echo seoUrl($tournament->name) ?>');"><?php _e( 'Notify open', 'racketmanager' ) ?></a></div>
+						<div class="col-12 col-md-auto"><span id="notifyMessage-<?php echo seoURL($tournament->name) ?>"></span></div>
 					<?php } ?>
-				<?php } ?>
-			</tbody>
-		</table>
+				</div>
+			<?php } ?>
+		<?php } ?>
 	</form>
 	<!-- Add New Tournament -->
 	<a href="admin.php?page=racketmanager&amp;subpage=tournament" name="addTournament" class="btn btn-primary submit"><?php _e( 'Add Tournament','racketmanager' ) ?></a>

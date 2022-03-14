@@ -62,6 +62,7 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_cup_entry', array(&$this, 'cupEntryRequest') );
 		add_action( 'wp_ajax_racketmanager_league_entry', array(&$this, 'leagueEntryRequest') );
 		add_action( 'wp_ajax_racketmanager_notify_entries_open', array(&$this, 'notifyEntriesOpen') );
+		add_action( 'wp_ajax_racketmanager_notify_tournament_entries_open', array(&$this, 'notifyTournamentEntriesOpen') );
 
 	}
 
@@ -2062,6 +2063,28 @@ class RacketManagerAJAX extends RacketManager {
 		$competitionTitle = explode(" ", $competition->name);
 		$competitionSeason = seourl($competitionTitle[0]);
 		$competitionType = $competition->competitiontype;
+
+		$return = $racketmanager->notifyEntryOpen($competitionType, $latestSeason, $competitionSeason);
+
+		die(json_encode($return));
+	}
+
+	/**
+	* notify match secretaries of tournament entries open
+	*
+	* @see templates/email/competition-entry-open.php
+	*/
+	public function notifyTournamentEntriesOpen() {
+		global $racketmanager;
+
+		$return ='';
+		$messageSent = false;
+
+		$tournamentId = str_replace('-',' ',$_POST['tournamentId']);
+		$tournament = $racketmanager->getTournament($tournamentId);
+		$latestSeason = $tournament->season;
+		$competitionSeason = $tournament->type;
+		$competitionType = 'tournament';
 
 		$return = $racketmanager->notifyEntryOpen($competitionType, $latestSeason, $competitionSeason);
 

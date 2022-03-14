@@ -155,6 +155,12 @@
         'index.php?pagename=cup-entry-form&club_name=$matches[3]&season=$matches[2]&type=$matches[1]',
         'top'
       );
+      // type - season - club
+      add_rewrite_rule(
+        'tournaments/(.+?)-entry/([0-9]{4})/(.+?)/?$',
+        'index.php?pagename=tournaments%2F$matches[1]-tournaments%2F$matches[1]-tournament-entry-form',
+        'top'
+      );
 
       add_rewrite_tag('%league_name%','([^/]*)');
       add_rewrite_tag('%league_id%','([^/]*)');

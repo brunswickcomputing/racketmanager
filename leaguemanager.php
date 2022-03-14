@@ -1043,6 +1043,11 @@ class RacketManager {
 			$tournament->tournamentSecretaryContactNo = '';
 		}
 
+		if ( isset($tournament->closingdate) && $tournament->closingdate >= date("Y-m-d") ) {
+			$tournament->open = true;
+		} else {
+			$tournament->open = false;
+		}
 		return $tournament;
 
 	}

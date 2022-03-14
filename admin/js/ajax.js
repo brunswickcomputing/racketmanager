@@ -276,3 +276,27 @@ Racketmanager.notifyEntryOpen = function(competitionId) {
     }
   }) ;
 };
+Racketmanager.notifyTournamentEntryOpen = function(tournamentId) {
+  notifyField = "#notifyMessage-"+tournamentId;
+
+  jQuery.ajax({
+    url:RacketManagerAjaxL10n.requestUrl,
+    type: "POST",
+    data: {"tournamentId": tournamentId,
+    "action": "racketmanager_notify_tournament_entries_open"},
+    success: function(response) {
+      var $response = jQuery.parseJSON(response);
+      var $message = $response['msg'];
+      var $error = $response['error'];
+
+      jQuery(notifyField).text($message);
+      jQuery(notifyField).show();
+      if ( !$error ) {
+        jQuery(notifyField).delay(10000).fadeOut('slow');
+      }
+    },
+    error: function() {
+      alert("Ajax error on notifying secretaries of entries open");
+    }
+  }) ;
+};

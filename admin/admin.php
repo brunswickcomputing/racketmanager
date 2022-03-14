@@ -967,12 +967,23 @@ final class RacketManagerAdmin extends RacketManager
 		if ( !current_user_can( 'edit_leagues' ) ) {
 			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
 		} else {
+			if ( isset($_POST['notifyCupOpen']) ) {
+				check_admin_referer('racketmanager_notify-cup-open');
+				if ( isset($_POST['type']) ) {
+					$notification = $this->notifyEntryOpen('cup', htmlspecialchars($_POST['season']), htmlspecialchars($_POST['type']) );
+					$this->setMessage($notification['msg'], isset($notification['error']) ? $notification['error'] : false );
+				} else {
+					$this->setMessage(__('Type not selected','racketmanager'), true );
+				}
+				$this->printMessage();
+			}
 			$competitionType = 'cup';
 			$type = '';
 			$season = '';
 			$standalone = true;
 			$competitionQuery = array( 'type' => $competitionType );
 			include_once( dirname(__FILE__) . '/show-competitions.php' );
+			include_once( dirname(__FILE__) . '/show-cup-entry.php' );
 		}
 	}
 

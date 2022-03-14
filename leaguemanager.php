@@ -2009,7 +2009,7 @@ class RacketManager {
 			$headers[] = 'From: '.ucfirst($competitionType).'Secretary <'.$fromEmail.'>';
 			$organisationName = $this->site_name;
 
-			foreach ($clubs as $key => $club) {
+			foreach ($clubs as $club) {
 				$emailSubject = $this->site_name." - ".ucfirst($competitionSeason)." ".$season." ".ucfirst($competitionType)." Entry Open - ".$club->name;
 				$emailTo = $club->matchSecretaryName.' <'.$club->matchSecretaryEmail.'>';
 				$actionURL = $this->site_url.'/'.$competitionType.'s/'.$competitionSeason.'-entry/'.$season.'/'.seoUrl($club->shortcode);

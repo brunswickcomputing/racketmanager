@@ -11,36 +11,48 @@ namespace ns;
 
 	<!-- View Rosters -->
 	<div class="container">
-		<!-- Add Roster -->
+		<!-- Add Player -->
+		<h2><?php _e( 'Add Player', 'racketmanager' ) ?></h2>
 		<form action="" method="post" class="form-control">
 			<?php wp_nonce_field( 'racketmanager_add-roster' ) ?>
-			<div class="lm-form-table">
-				<?php if ( $players = $racketmanager->getPlayers( array() ) ) { ?>
-					<div class="form-group">
-						<label for="player_id"><?php _e("Player","racketmanager") ?></label>
-						<div class="input">
-							<select size="1" name="player_id" id="player_id">
-								<option><?php _e( 'Select player', 'racketmanager' ) ?></option>
-								<?php foreach ( $players AS $player ) {
-									if ( isset($player->removed_date) && $player->removed_date != '') {
-										$disabled = 'disabled';
-									} else {
-										$disabled = '';
-									}?>
-									<option value="<?php echo $player->id ?>" <?php echo $disabled ?>><?php echo $player->fullname ?> (<?php echo $player->btm ?>)</option>
-								<?php } ?>
-							</select>
-						</div>
-					</div>
-				<?php } ?>
-				<input type="submit" name="addPlayertoRoster" value="<?php _e( 'Add Player','racketmanager' ) ?>" class="btn btn-primary" />
+			<div class="form-group">
+				<label for="firstname"><?php _e( 'First Name', 'racketmanager' ) ?></label>
+				<div class="form-input">
+					<input required="required" placeholder="<?php _e( 'Enter first name', 'racketmanager') ?>" type="text" name="firstname" id="firstname" value="" size="30" />
+				</div>
 			</div>
-			<input type="hidden" name="addRoster" value="player" />
-			<input type="hidden" name="club_id" value=<?php echo $club_id ?> />
+			<div class="form-group">
+				<label for="surname"><?php _e( 'Surname', 'racketmanager' ) ?></label>
+				<div class="form-input">
+					<input required="required"  placeholder="<?php _e( 'Enter surname', 'racketmanager') ?>" type="text" name="surname" id="surname" value="" size="30" />
+				</div>
+			</div>
+			<div class="form-group">
+				<label><?php _e('Gender', 'racketmanager') ?></label>
+				<div class="form-check">
+					<input type="radio" required="required" name="gender" id="genderMale" value="M" />
+					<label for "genderMale" class="form-check-label"><?php _e('Male', 'racketmanager') ?></label>
+				</div>
+				<div class="form-check">
+					<input type="radio" required="required" name="gender" id="genderFemale" value="F" />
+					<label for "genderFemale" class="form-check-label"><?php _e('Female', 'racketmanager') ?></label>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="btm"><?php _e('BTM', 'racketmanager') ?></label>
+				<div class="form-input">
+					<input type="number"  placeholder="<?php _e( 'Enter BTM number', 'racketmanager') ?>" name="btm" id="gender" size="11" />
+				</div>
+			</div>
+			<input type="hidden" name="club_Id" id="club_Id" value="<?php echo $club_id ?>" />
+			<input type="hidden" name="addRosterPlayer" value="player" />
+			<input type="submit" name="addRosterPlayer" value="<?php _e( 'Add Player','racketmanager' ) ?>" class="btn btn-primary" />
+
 		</form>
 	</div>
 
 	<div class="container">
+		<h2><?php _e( 'View Players', 'racketmanager' ) ?></h2>
 		<form id="roster-filter" method="post" action="">
 			<?php wp_nonce_field( 'roster-bulk' ) ?>
 
@@ -48,7 +60,7 @@ namespace ns;
 				<!-- Bulk Actions -->
 				<select name="action" size="1">
 					<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
-					<option value="delete"><?php _e('Delete')?></option>
+					<option value="delete"><?php _e('Remove')?></option>
 				</select>
 				<input type="submit" value="<?php _e('Apply'); ?>" name="dorosterdel" id="dorosterdel" class="btn btn-secondary action" />
 			</div>

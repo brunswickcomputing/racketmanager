@@ -1119,25 +1119,22 @@ final class RacketManagerAdmin extends RacketManager
 		if ( !current_user_can( 'edit_teams' ) ) {
 			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
 		} else {
-			if ( isset($_POST['addRoster']) ) {
-				if ( current_user_can('edit_teams') ) {
-					check_admin_referer('racketmanager_add-roster');
-					if (isset($_POST['club_id']) && (!$_POST['club_id'] == 0)) {
-						$this->addPlayerIdToRoster( $_POST['club_id'], $_POST['player_id'] );
-					} else {
-						$this->setMessage( __("Club must be selected",'racketmanager'), true );
-					}
+			if ( isset($_POST['addRosterPlayer']) ) {
+				check_admin_referer('racketmanager_add-roster');
+				if ( !isset($_POST['firstname']) ) {
+					$this->setMessage( __("First name required",'racketmanager'), true );
+				} elseif ( !isset($_POST['surname']) ) {
+					$this->setMessage( __("Surname required",'racketmanager'), true );
+				} elseif ( !isset($_POST['gender']) ) {
+					$this->setMessage( __("Gender required",'racketmanager'), true );
 				} else {
-					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+					$btm = isset($_POST['btm']) ? $_POST['btm'] : false;
+ 					$this->addPlayerToRoster( $_POST['club_Id'], $_POST['firstname'], $_POST['surname'], $_POST['gender'], $btm );
 				}
 			} elseif ( isset($_POST['dorosterdel']) && $_POST['action'] == 'delete' ) {
-				if ( current_user_can('edit_teams') ) {
-					check_admin_referer('roster-bulk');
-					foreach ( $_POST['roster'] AS $roster_id ) {
-						$this->delRoster( intval($roster_id) );
-					}
-				} else {
-					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+				check_admin_referer('roster-bulk');
+				foreach ( $_POST['roster'] AS $roster_id ) {
+					$this->delRoster( intval($roster_id) );
 				}
 			}
 			$this->printMessage();
@@ -3513,6 +3510,34 @@ final class RacketManagerAdmin extends RacketManager
 			}
 		}
 		$racketmanager->setMessage( __('Player added to Roster','racketmanager') );
+		return;
+	}
+
+	private function addPlayerToRoster($affiliatedClub, $firstName, $surname, $gender, $btm ) {
+		global $wpdb, $racketmanager;
+
+		$fullName = $firstName . ' ' . $surname;
+		$player = $racketmanager->getPlayer(array('fullname' => $fullName));
+		if ( !$player ) {
+			$playerId = $racketmanager->addPlayer( $firstName, $surname, $gender, $btm);
+			$rosterFound = false;
+		} else {
+			$playerId = $player->ID;
+			$rosterCount = $racketmanager->getRoster(array('club' => $affiliatedClub, 'player' => $playerId, 'inactive' => true, 'count' => true));
+			if ( $rosterCount == 0 ) {
+				$rosterFound = false;
+			} else {
+				$rosterFound = true;
+			}
+		}
+		if ( $rosterFound == false ) {
+			$club = get_club($affiliatedClub);
+			$roster_id	= $club->addRoster( $playerId, false );
+			$roster[$roster_id] = $roster_id;
+			$racketmanager->setMessage( __('Player added to club','racketmanager') );
+		} else {
+			$racketmanager->setMessage( __('Player already registered','racketmanager'), true	 );
+		}
 		return;
 	}
 

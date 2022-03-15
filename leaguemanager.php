@@ -1456,7 +1456,7 @@ class RacketManager {
 
 		$userid = get_current_user_id();
 		$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_roster} SET `removed_date` = NOW(), `removed_user` = %d WHERE `id` = '%d'", $userid, $roster_id) );
-		$this->setMessage( __('Roster deleted', 'racketmanager') );
+		$this->setMessage( __('Player removed from club', 'racketmanager') );
 
 		return true;
 	}

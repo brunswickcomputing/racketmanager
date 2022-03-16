@@ -300,3 +300,21 @@ Racketmanager.notifyTournamentEntryOpen = function(tournamentId) {
     }
   }) ;
 };
+Racketmanager.getImportOption = function(option) {
+
+  var selectedOption = option;
+  if ( selectedOption == 'table' || selectedOption == 'fixtures' ) {
+    jQuery("#competitions").show();
+    jQuery("#leagues").show();
+    jQuery("#clubs").hide();
+  } else if ( selectedOption == 'roster') {
+    jQuery("#clubs").show();
+    jQuery("#competitions").hide();
+    jQuery("#leagues").hide();
+  } else if ( selectedOption == 'players') {
+    jQuery("#clubs").hide();
+    jQuery("#competitions").hide();
+    jQuery("#leagues").hide();
+  }
+
+};

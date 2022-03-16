@@ -1547,9 +1547,7 @@ class RacketManager {
 		$search_terms = array();
 		if ($player_id) {
 			$player = get_user_by( 'id', $player_id );
-		}
-
-		if ($fullname) {
+		} elseif ($fullname) {
 			$player = get_user_by( 'slug', sanitize_title($fullname) );
 		}
 

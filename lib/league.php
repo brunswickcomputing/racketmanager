@@ -1960,7 +1960,7 @@ public function getSeasonDropdown( $season = '' ) {
 	$competition = get_competition($this->competition_id);
 	$competition->seasons = maybe_unserialize($competition->seasons);
 
-	$out = '<select size="1" class="alignleft" id="season" name="season" onChange="Racketmanager.getMatchDropdown('.$this->id.', this.value);">';
+	$out = '<select class="form-select" size="1" id="season" name="season" onChange="Racketmanager.getMatchDropdown('.$this->id.', this.value);">';
 	$out .= '<option value="">'.__('Choose Season', 'racketmanager').'</option>';
 	foreach ( $competition->seasons AS $s ) {
 		$out .= '<option value="'.$s['name'].'"'.selected($season, $s['name'], false).'>'.$s['name'].'</option>';
@@ -1980,7 +1980,7 @@ public function getMatchDropdown( $match_id = 0 ) {
 
 	$matches = $this->getMatches( array("limit" => false, "match_day" => -1, "reset_query_args" => true) );
 
-	$out = '<select size="1" name="match_id" id="match_id" class="alignleft">';
+	$out = '<select class="form-select" size="1" name="match_id" id="match_id" class="alignleft">';
 	$out .= '<option value="0">'.__('Choose Match', 'racketmanager').'</option>';
 	foreach ( $matches AS $match ) {
 		$out .= '<option value="'.$match->id.'"'.selected($match_id, $match->id, false).'>'.$match->getTitle(false).'</option>';

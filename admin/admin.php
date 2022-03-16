@@ -645,7 +645,7 @@ final class RacketManagerAdmin extends RacketManager
 
 						if ( 'Add' == $_POST['action'] ) {
 							if ( '' == $_POST['team_id'] ) {
-								$team_id = $this->addTeamToLeague( $_POST['affiliatedclub'], ($_POST['team_type']), htmlspecialchars($_POST['captainId']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), $home, $roster, $profile, $custom,htmlspecialchars($_POST['league_id']) );
+								$team_id = $this->addNewTeamToLeague( htmlspecialchars($_POST['league_id']), $_POST['affiliatedclub'], ($_POST['team_type']), htmlspecialchars($_POST['captainId']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), $home, $roster, $profile, $custom );
 								$this->addTableEntry( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
 							} else {
 								$this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), $_POST['affiliatedclub'], $_POST['team_type'],htmlspecialchars($_POST['captainId']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']),  $_POST['matchday'], $_POST['matchtime'], $home, $group, $roster, $profile, $custom, intval($_POST['league_id']) );
@@ -1486,7 +1486,9 @@ final class RacketManagerAdmin extends RacketManager
 		} else {
 			if ( isset($_POST['import']) ) {
 				check_admin_referer('racketmanager_import-datasets');
-				$this->import( intval($_POST['league_id']), $_FILES['racketmanager_import'], htmlspecialchars($_POST['delimiter']), htmlspecialchars($_POST['mode']) );
+				$leagueId = isset($_POST['league_id']) ? $_POST['league_id'] : 0;
+				$affiliatedClub = isset($_POST['affiliatedClub']) ? $_POST['affiliatedClub'] : 0;
+				$this->import( $leagueId, $_FILES['racketmanager_import'], htmlspecialchars($_POST['delimiter']), htmlspecialchars($_POST['mode']), $affiliatedClub );
 				$this->printMessage();
 			}
 			global $racketmanager;
@@ -2337,7 +2339,7 @@ final class RacketManagerAdmin extends RacketManager
 	* @param boolean $message (optional)
 	* @return int | false
 	*/
-	private function addTeamToLeague( $affiliatedclub, $team_type, $captain = false, $contactno = false, $contactemail = false, $matchday = false, $matchtime = false, $home = '', $roster = '', $profile = '', $custom = '', $league_id = false, $message = true ) {
+	private function addNewTeamToLeague( $league_id, $affiliatedclub, $team_type, $captain = false, $contactno = false, $contactemail = false, $matchday = false, $matchtime = false, $home = '', $roster = '', $profile = '', $custom = '', $message = true ) {
 		global $wpdb, $racketmanager;
 
 		if ( !current_user_can('edit_teams') ) {
@@ -2347,13 +2349,12 @@ final class RacketManagerAdmin extends RacketManager
 
 		$team_id = $this->addTeam( $affiliatedclub, $team_type );
 
-		if ( $league_id ) {
-			$league = get_league($league_id);
-			$team_competition_id = $racketmanager->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail, $matchday, $matchtime );
-		}
+		$league = get_league($league_id);
+		$team_competition_id = $racketmanager->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail, $matchday, $matchtime );
 
-		if ( $message )
-		$this->setMessage( __('Team added','racketmanager') );
+		if ( $message ) {
+			$this->setMessage( __('Team added','racketmanager') );
+		}
 
 		return $team_id;
 	}
@@ -3100,15 +3101,12 @@ final class RacketManagerAdmin extends RacketManager
 			*/
 			$new_file = $this->getFilePath($file['name']);
 			if ( move_uploaded_file($file['tmp_name'], $new_file) ) {
-				$this->league_id = $league_id;
-				if ( 'teams' == $mode ) {
-					$this->importTeams($new_file, $delimiter);
-				} elseif ( 'table' == $mode ) {
-					$this->importTable($new_file, $delimiter);
-				} elseif ( 'matches' == $mode ) {
-					$this->importMatches($new_file, $delimiter);
+				if ( 'table' == $mode ) {
+					$this->importTable($new_file, $delimiter, $league_id);
 				} elseif ( 'fixtures' == $mode ) {
-					$this->importFixtures($new_file, $delimiter);
+					$this->importFixtures($new_file, $delimiter, $league_id);
+				} elseif ( 'roster' == $mode ) {
+					$this->importRoster($new_file, $delimiter, $affiliatedClub);
 				} elseif ( 'players' == $mode ) {
 					$this->importPlayers($new_file, $delimiter);
 				}
@@ -3122,128 +3120,13 @@ final class RacketManagerAdmin extends RacketManager
 	}
 
 	/**
-	* import teams from CSV file
-	*
-	* @param string $file
-	* @param string $delimiter
-	* @return void|false
-	*/
-	private function importTeams( $file, $delimiter ) {
-		global $racketmanager;
-
-		if ( !current_user_can('import_leagues') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		$handle = @fopen($file, "r");
-		if ($handle) {
-			$league = get_league( $this->league_id );
-			if ( "TAB" == $delimiter ) $delimiter = "\t"; // correct tabular delimiter
-
-			$teams = $points_plus = $points_minus = $points2_plus = $points2_minus = $pld = $won = $draw = $lost = $custom = $add_points = array();
-
-			$i = $x = 0;
-			while (!feof($handle)) {
-				$buffer = fgets($handle, 4096);
-				$line = explode($delimiter, $buffer);
-
-				// ignore header and empty lines
-				if ( $i > 0 && count($line) > 1 ) {
-					$season = $line[0];
-					$team               = utf8_encode($line[1]);
-					$captainName        = isset($line[2]) ? $line[2] : '';
-					$captain            = $racketmanager->getPlayer(array('fullname' => $captainName));
-					if (!$captain) $captain = 0;
-					else $captain = $captain->ID;
-					$contactno          = isset($line[3]) ? utf8_encode($line[3]) : '';
-					$contactemail       = isset($line[4]) ? utf8_encode($line[4]) : '';
-					$affiliatedclubname = isset($line[5]) ? utf8_encode($line[5]) : '';
-					if (!$affiliatedclubname == '') {
-						$affiliatedclub = get_club( $affiliatedclubname, 'name' )->id;
-					}
-					$stadium = isset($line[6]) ? utf8_encode($line[6]) : '';
-					$matchday = isset($line[7]) ? utf8_encode($line[7]) : '';
-					$matchtime = isset($line[8]) ? utf8_encode($line[8]) : '';
-					$home = '';
-					$group = '';
-					if ( isset($line[16]) ) {
-						$roster = explode("_", $line[16]);
-						$cat_id = isset($roster[1]) ? $roster[1] : false;
-						$roster = array( 'id' => $roster[0], 'cat_id' => $cat_id );
-					} else {
-						$roster = array( 'id' => '', 'cat_id' => false );
-					}
-					$profile = 0;
-
-					$custom = apply_filters( 'racketmanager_import_teams_'.$league->sport, $custom, $line );
-					$team_id = $this->getTeamID($team);
-					if ( $team_id != 0 ) {
-						$this->editTeam( $team_id, $team, $affiliatedclub, $stadium, $captain, $contactno, $contactemail, $matchday, $matchtime, $home, $group, $roster, $profile, $custom, $league->id );
-					} else {
-						$team_id = $this->addTeamToLeague( $team, $affiliatedclub, $stadium, $captain, $contactno, $contactemail, $matchday, $matchtime, $home, $roster, $profile, $custom, $league->id );
-					}
-
-					$tabledtls = $this->checkTableEntry( $this->league_id, $team_id, $season );
-					if ( $tabledtls == 0 ) {
-
-						$custom = apply_filters( 'racketmanager_import_teams_'.$league->sport, $custom, $line );
-						$table_id = $this->addTableEntry( $this->league_id, $team_id, $season, $custom, false );
-
-						$teams[$team_id] = $team_id;
-						$pld[$team_id] = isset($line[10]) ? $line[10] : 0;
-						$won[$team_id] = isset($line[11]) ? $line[11] : 0;
-						$draw[$team_id] = isset($line[12]) ? $line[12] : 0;
-						$lost[$team_id] = isset($line[13]) ? $line[13] : 0;
-
-						if ( isset($line[14]) ) {
-							if (strpos($line[14], ':') !== false) {
-								$points2 = explode(":", $line[14]);
-							} else {
-								$points2 = array($line[14], 0);
-							}
-						} else {
-							$points2 = array(0,0);
-						}
-
-
-						if ( isset($line[15]) ) {
-							if (strpos($line[15], ':') !== false) {
-								$points = explode(":", $line[15]);
-							} else {
-								$points = array($line[15], 0);
-							}
-						} else {
-							$points = array(0,0);
-						}
-
-						$points_plus[$team_id] = $points[0];
-						$points_minus[$team_id] = $points[1];
-						$custom[$team_id]['points2'] = array( 'plus' => $points2[0], 'minus' => $points2[1] );
-						$add_points[$team_id] = 0;
-
-						$x++;
-					}
-				}
-				$i++;
-			}
-
-			$league->saveStandingsManually($teams, $points_plus, $points_minus, $pld, $won, $draw, $lost, $add_points, $custom);
-
-			fclose($handle);
-
-			$this->setMessage(sprintf(__( '%d Teams imported', 'racketmanager' ), $x));
-		}
-	}
-
-	/**
 	* import table from CSV file
 	*
 	* @param string $file
 	* @param string $delimiter
 	* @return void|false
 	*/
-	private function importTable( $file, $delimiter ) {
+	private function importTable( $file, $delimiter, $league_id ) {
 		global $racketmanager;
 
 		if ( !current_user_can('import_leagues') ) {
@@ -3253,7 +3136,7 @@ final class RacketManagerAdmin extends RacketManager
 
 		$handle = @fopen($file, "r");
 		if ($handle) {
-			$league = get_league( $this->league_id );
+			$league = get_league( $league_id );
 			if ( "TAB" == $delimiter ) $delimiter = "\t"; // correct tabular delimiter
 
 			$teams = $points_plus = $points_minus = $points2_plus = $points2_minus = $pld = $won = $draw = $lost = $custom = $add_points = array();
@@ -3273,7 +3156,6 @@ final class RacketManagerAdmin extends RacketManager
 						$tabledtls = $this->checkTableEntry( $this->league_id, $team_id, $season );
 						if ( $tabledtls == 0 ) {
 
-							//							$custom = apply_filters( 'racketmanager_import_teams_'.$league->sport, $custom, $line );
 							$table_id = $this->addTableEntry( $this->league_id, $team_id, $season, $custom, false );
 
 							$teams[$team_id] = $team_id;
@@ -3316,8 +3198,6 @@ final class RacketManagerAdmin extends RacketManager
 				$i++;
 			}
 
-			$league->saveStandingsManually($teams, $points_plus, $points_minus, $pld, $won, $draw, $lost, $add_points, $custom);
-
 			fclose($handle);
 
 			$this->setMessage(sprintf(__( '%d Table Entries imported', 'racketmanager' ), $x));
@@ -3325,13 +3205,12 @@ final class RacketManagerAdmin extends RacketManager
 	}
 
 	/**
-	* import matches from CSV file
+	* import fixtures from file
 	*
 	* @param string $file
 	* @param string $delimiter
-	* @return void|false
 	*/
-	private function importMatches( $file, $delimiter ) {
+	private function importFixtures( $file, $delimiter, $league_id ) {
 		global $racketmanager;
 
 		if ( !current_user_can('import_leagues') ) {
@@ -3343,72 +3222,7 @@ final class RacketManagerAdmin extends RacketManager
 		if ($handle) {
 			if ( "TAB" == $delimiter ) $delimiter = "\t"; // correct tabular delimiter
 
-			$league = get_league( $this->league_id );
-			$rubbers = $league->num_rubbers;
-			if ( is_null($rubbers)) { $rubbers = 1; }
-			$matches = $home_points = $away_points = $home_teams = $away_teams = $custom = array();
-
-			$i = $x = 0;
-			while (!feof($handle)) {
-				$buffer = fgets($handle, 4096);
-				$line = explode($delimiter, $buffer);
-				// ignore header and empty lines
-				if ( $i > 0 && count($line) > 1 ) {
-					$date = ( !empty($line[6]) ) ? $line[0]." ".$line[6] : $line[0]. " 00:00";
-					$season = $this->season = isset($line[1]) ? $line[1] : '';
-					$match_day = isset($line[2]) ? $line[2] : '';
-					$date = trim($date);
-					$home_team = $this->getTeamID(utf8_encode($line[3]));
-					$away_team = $this->getTeamID(utf8_encode($line[4]));
-					$location = isset($line[5]) ? utf8_encode($line[5]) : '';
-					$group = isset($line[7]) ? $line[7] : '';
-
-					$match_id = $this->addMatch($date, $home_team, $away_team, $match_day, $location, $this->league_id, $season, $group,'', array());
-
-					$matches[$match_id] = $match_id;
-					$home_teams[$match_id] = $home_team;
-					$away_teams[$match_id] = $away_team;
-					if ( isset($line[8]) && !empty($line[8]) ) {
-						$score = explode(":", $line[8]);
-						$home_points[$match_id] = $score[0];
-						$away_points[$match_id] = $score[1];
-					} else {
-						$home_points[$match_id] = $away_points[$match_id] = '';
-					}
-					$custom = apply_filters( 'racketmanager_import_matches_'.$league->sport, $custom, $line, $match_id );
-
-					$x++;
-				}
-
-				$i++;
-			}
-			$this->updateResults( $matches, $home_points, $away_points, $home_teams, $away_teams, $custom, $season, false );
-
-			fclose($handle);
-
-			parent::setMessage(sprintf(__( '%d Matches imported', 'racketmanager' ), $x));
-		}
-	}
-
-	/**
-	* import fixtures from CSV file
-	*
-	* @param string $file
-	* @param string $delimiter
-	*/
-	private function importFixtures( $file, $delimiter ) {
-		global $racketmanager;
-
-		if ( !current_user_can('import_leagues') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		$handle = @fopen($file, "r");
-		if ($handle) {
-			if ( "TAB" == $delimiter ) $delimiter = "\t"; // correct tabular delimiter
-
-			$league = get_league( $this->league_id );
+			$league = get_league( $league_id );
 			$rubbers = $league->num_rubbers;
 			if ( is_null($rubbers) ) { $rubbers = 1; }
 			$matches = $home_points = $away_points = $home_teams = $away_teams = $custom = array();
@@ -3453,7 +3267,7 @@ final class RacketManagerAdmin extends RacketManager
 	}
 
 	/**
-	* import players from CSV file
+	* import players from file
 	*
 	* @param string $file
 	* @param string $delimiter
@@ -3483,8 +3297,61 @@ final class RacketManagerAdmin extends RacketManager
 					$surname	= isset($line[1]) ? utf8_encode($line[1]) : '';
 					$gender		= isset($line[2]) ? utf8_encode($line[2]) : '';
 					$btm		= isset($line[3]) ? utf8_encode($line[3]) : '';
-					$player_id	= $this->addPlayer( $firstname, $surname, $gender, $btm, false );
-					$players[$player_id] = $player_id;
+					if ( !username_exists($firstname.'.'.$surname) ) {
+						$player_id	= $this->addPlayer( $firstname, $surname, $gender, $btm, false );
+						$players[$player_id] = $player_id;
+						$x++;
+					}
+				}
+
+				$i++;
+			}
+
+			fclose($handle);
+
+			parent::setMessage(sprintf(__( '%d Players imported', 'racketmanager' ), $x));
+		}
+	}
+
+	/**
+	* import roster from file
+	*
+	* @param string $file
+	* @param string $delimiter
+	*/
+	private function importRoster( $file, $delimiter, $affiliatedClub ) {
+		global $racketmanager;
+
+		if ( !current_user_can('import_leagues') ) {
+			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+			return false;
+		}
+
+		$handle = @fopen($file, "r");
+		if ($handle) {
+			if ( "TAB" == $delimiter ) $delimiter = "\t"; // correct tabular delimiter
+
+			$club = get_club( $affiliatedClub );
+			$players = array();
+
+			$i = $x = 0;
+			while (!feof($handle)) {
+				$buffer = fgets($handle, 4096);
+				$line = explode($delimiter, $buffer);
+
+				// ignore header and empty lines
+				if ( $i > 0 && count($line) > 1 ) {
+					$firstname	= isset($line[0]) ? utf8_encode($line[0]) : '';
+					$surname	= isset($line[1]) ? utf8_encode($line[1]) : '';
+					$gender		= isset($line[2]) ? utf8_encode($line[2]) : '';
+					$btm		= isset($line[3]) ? utf8_encode($line[3]) : '';
+					if ( !username_exists($firstname.'.'.$surname) ) {
+						$player_id	= $this->addPlayer( $firstname, $surname, $gender, $btm, false );
+						$players[$player_id] = $player_id;
+					} else {
+						$player_id = get_user_by('login', $firstname.'.'.$surname )->ID;
+					}
+					$this->addPlayerIdToRoster($affiliatedClub, $player_id);
 
 					$x++;
 				}
@@ -3494,7 +3361,7 @@ final class RacketManagerAdmin extends RacketManager
 
 			fclose($handle);
 
-			parent::setMessage(sprintf(__( '%d Players imported', 'racketmanager' ), $x));
+			parent::setMessage(sprintf(__( '%d Rosters imported', 'racketmanager' ), $x));
 		}
 	}
 
@@ -3822,12 +3689,13 @@ final class RacketManagerAdmin extends RacketManager
 		$competition = get_competition($competition_id);
 		$leagues = $competition->getLeagues( array("competition" => $competition_id) ); ?>
 
-		<select size='1' name='league_id' id='league_id' class='alignleft'>
+		<select size='1' name='league_id' id='league_id' class="form-select" >
 			<option value='0'><?php _e('Choose league', 'racketmanager') ?></option>
 			<?php foreach ( $leagues AS $league ) { ?>
 				<option value=<?php echo $league->id ?>><?php echo $league->title ?></option>
 			<?php } ?>
 		</select>
+		<label for="league_id"><?php _e('League','racketmanager') ?></label>
 
 		<?php die();
 	}

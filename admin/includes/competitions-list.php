@@ -3,7 +3,6 @@
 <div class="container league-block">
   <p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <?php echo $season->name ?> &raquo; <?php echo 'Add Competitions to Season' ?></p>
   <h1><?php printf( "%s - %s",  $season->name, 'Add Competitions to Season' ); ?></h1>
-  <legend>Select Competitions to Add</legend>
   <script type='text/javascript'>
   jQuery(function() {
     jQuery("#tabs-competitions").tabs({
@@ -11,6 +10,7 @@
   });
   </script>
   <div class="container">
+    <legend>Select Competitions to Add</legend>
     <form action="admin.php?page=racketmanager-admin" method="post" enctype="multipart/form-data" name="competitions_add">
       <?php wp_nonce_field( 'racketmanager_add-seasons-competitions-bulk' ) ?>
       <input type="hidden" name="season_id" value="<?php echo $season->id ?>" />
@@ -41,33 +41,36 @@
             </select>
             <input type="submit" value="<?php _e('Apply'); ?>" name="doaddCompetitionsToSeason" id="doaddCompetitionsToSeason" class="btn btn-primary action" />
           </div>
-
-          <div class="row table-header">
-            <div class="col-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('competitions-filter'));" /></div>
-            <div class="col-2 column-num">ID</div>
-            <div class="col-4"><?php _e( 'Name', 'racketmanager' ) ?></div>
+          <div class="container">
+            <div class="row table-header">
+              <div class="col-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('competitions-filter'));" /></div>
+              <div class="col-2 column-num">ID</div>
+              <div class="col-4"><?php _e( 'Name', 'racketmanager' ) ?></div>
+            </div>
           </div>
 
           <?php $competitionTypes = $this->getCompetitionTypes();
           $i = 0;
           foreach ( $competitionTypes AS $competitionType ) { $i ++; ?>
             <div id="competitions<?php echo $competitionType ?>" class="tab-pane table-pane <?php if ( $i == 1 )  { echo 'active show';} ?> fade" role="tabpanel" aria-labelledby="competitions<?php echo $competitionType ?>-tab">
-              <?php $competitionQuery = array( 'type' => $competitionType );
-              $competitions = $racketmanager->getCompetitions( $competitionQuery );
-              $class = ''; ?>
-              <?php foreach ( $competitions AS $competition ) {
-                $competition = get_competition($competition);
-                $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-                <div class="row table-row <?php echo $class ?>">
-                  <div class="col-1 check-column">
-                    <?php if ( !is_numeric(array_search($season->name,array_column($competition->seasons, 'name') ,true)) ) { ?>
-                      <input type="checkbox" value="<?php echo $competition->id ?>" name="competition[<?php echo $competition->id ?>]" />
-                    <?php } ?>
+              <div class="container">
+                <?php $competitionQuery = array( 'type' => $competitionType );
+                $competitions = $racketmanager->getCompetitions( $competitionQuery );
+                $class = ''; ?>
+                <?php foreach ( $competitions AS $competition ) {
+                  $competition = get_competition($competition);
+                  $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+                  <div class="row table-row <?php echo $class ?>">
+                    <div class="col-1 check-column">
+                      <?php if ( !is_numeric(array_search($season->name,array_column($competition->seasons, 'name') ,true)) ) { ?>
+                        <input type="checkbox" value="<?php echo $competition->id ?>" name="competition[<?php echo $competition->id ?>]" />
+                      <?php } ?>
+                    </div>
+                    <div class="col-2 column-num"><?php echo $competition->id ?></div>
+                    <div class="col-4"><?php echo $competition->name ?></div>
                   </div>
-                  <div class="col-2 column-num"><?php echo $competition->id ?></div>
-                  <div class="col-4"><?php echo $competition->name ?></div>
-                </div>
-              <?php } ?>
+                <?php } ?>
+              </div>
             </div>
           <?php } ?>
         </div>

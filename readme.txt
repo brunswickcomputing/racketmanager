@@ -50,6 +50,17 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.6.0 =
+* BUGFIX: handle no seasons for league
+* UPDATE: allow trigger of cup entry open
+* UPDATE: allow trigger of tournament entry open
+* UPDATE: allow players to be added from club roster directly
+* UPDATE: allow roster import
+* UPDATE: rearrange tab orders for results in admin menu
+* UPDATE: rearrange tab orders for admin in admin menu
+* UPDATE: remove export function
+* UPDATE: update documentation
+
 = 6.5.0 =
 * UPDATE: move results/resultschecker into own area in admin menu
 * UPDATE: move tournaments to own area in admin menu

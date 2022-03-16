@@ -590,12 +590,7 @@ class League {
 		// add actions & filter
 		add_filter( 'league_standings_options', array(&$this, 'standingsTableDisplayOptions') );
 
-		add_filter( 'racketmanager_export_matches_header_'.$this->sport, array(&$this, 'exportMatchesHeader') );
-		add_filter( 'racketmanager_export_matches_data_'.$this->sport, array(&$this, 'exportMatchesData'), 10, 2 );
 		add_filter( 'racketmanager_import_matches_'.$this->sport, array(&$this, 'importMatches'), 10, 4 );
-
-		add_filter( 'racketmanager_export_teams_header_'.$this->sport, array(&$this, 'exportTeamsHeader') );
-		add_filter( 'racketmanager_export_teams_data_'.$this->sport, array(&$this, 'exportTeamsData'), 10, 2 );
 		add_filter( 'racketmanager_import_teams_'.$this->sport, array(&$this, 'importTeams'), 10, 3 );
 	}
 
@@ -2444,72 +2439,6 @@ public function displayMatchesColumns($match) {
 }
 
 /**
-* export matches header
-*
-* @param string $content
-* @return string
-*/
-public function exportMatchesHeader( $content ) {
-	if ( count($this->fields_match) > 0 ) {
-		foreach ( $this->fields_match AS $key => $data ) {
-			$content .= "\t".utf8_decode($data['label']);
-
-			if ( isset($data['keys']) && is_array($data['keys'][array_keys($data['keys'])[0]]) ) {
-				$content .= str_repeat("\t".utf8_decode($data['label']), count($data['keys'])-1);
-			}
-		}
-	}
-	return $content;
-}
-
-/**
-* export matches data
-*
-* @param string $content
-* @param Match $match
-* @return string
-*/
-public function exportMatchesData( $content, $match ) {
-	if ( count($this->fields_match) > 0 ) {
-		foreach ( $this->fields_match AS $key => $data ) {
-			if (!isset($match->{$key})) {
-				if ( isset($data['keys']) && is_array($data['keys'][array_keys($data['keys'])[0]]) ) {
-					$x = array();
-					foreach ( $data['keys'] AS $k => $v ) {
-						$x[$k] = array();
-						$x[$k][$v[0]] = '';
-						$x[$k][$v[1]] = '';
-					}
-				} else {
-					if ( isset($data['keys']) ) {
-						$x = array();
-						$x[$data['keys'][0]] = '';
-						$x[$data['keys'][1]] = '';
-					} else {
-						$x = '';
-					}
-				}
-				$match->{$key} = $x;
-			}
-
-			if ( isset($data['keys']) && is_array($data['keys'][array_keys($data['keys'])[0]]) ) {
-				foreach ( $data['keys'] AS $k => $v ) {
-					$content .= "\t".vsprintf("%d-%d", $match->{$key}[$k]);
-				}
-			} else {
-				if ( isset($data['keys']) ) {
-					$content .= "\t".vsprintf("%d-%d", $match->{$key});
-				} else {
-					$content .= "\t".$match->{$key};
-				}
-			}
-		}
-	}
-
-	return $content;
-}
-
-/**
 * import matches
 *
 * @param array $custom
@@ -2553,53 +2482,6 @@ public function importMatches( $custom, $line, $match_id, $col ) {
 	}
 
 	return $custom;
-}
-
-/**
-* export teams header
-*
-* @param string $content
-* @return string
-*/
-public function exportTeamsHeader( $content ) {
-	if ( count($this->fields_team) > 0 ) {
-		foreach ( $this->fields_team AS $key => $data )
-		$content .= "\t".utf8_decode($data['label']);
-	}
-
-	return $content;
-}
-
-/**
-* export teams data
-*
-* @param string $content
-* @param object $team
-* @return the content
-*/
-public function exportTeamsData( $content, $team ) {
-	if ( count($this->fields_team) > 0 ) {
-		foreach ( $this->fields_team AS $key => $data ) {
-			if ( !isset($team->{$key}) ) {
-				if ( isset($data['keys']) ) {
-					$team->{$key} = array();
-					foreach ($data['keys'] AS $k)
-					$team->{$key}[$k] = '';
-				} else {
-					$team->{$key} = '';
-				}
-			}
-
-			if (is_array($team->{$key})) {
-				//$team->{$key} = array_values($team->{$key});
-				$team->{$key} = vsprintf("%d-%d", $team->{$key});
-			}
-
-			$content .= "\t".$team->{$key};
-		}
-	}
-
-	return $content;
 }
 
 /**

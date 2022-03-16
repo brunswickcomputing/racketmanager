@@ -160,17 +160,6 @@ final class RacketManagerAdmin extends RacketManager
 
 		$page = add_submenu_page(
 			'racketmanager'
-			, __('Export')
-			, __('Export')
-			,'export_leagues'
-			, 'racketmanager-export'
-			, array( $this, 'display' )
-		);
-		add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
-		add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
-
-		$page = add_submenu_page(
-			'racketmanager'
 			, __('Documentation', 'racketmanager')
 			, __('Documentation','racketmanager')
 			, 'view_leagues'
@@ -358,9 +347,6 @@ final class RacketManagerAdmin extends RacketManager
 			break;
 			case 'racketmanager-import':
 			$this->displayImportPage();
-			break;
-			case 'racketmanager-export':
-			$this->displayExportPage();
 			break;
 			case 'racketmanager-documentation':
 			include_once( dirname(__FILE__) . '/documentation.php' );
@@ -1493,37 +1479,6 @@ final class RacketManagerAdmin extends RacketManager
 			}
 			global $racketmanager;
 			include_once( RACKETMANAGER_PATH . '/admin/tools/import.php' );
-		}
-	}
-
-	/**
-	* display export Page
-	*
-	*/
-	private function displayExportPage() {
-		global $competition;
-		if ( !current_user_can( 'export_leagues' ) ) {
-			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
-		} else {
-			if ( isset($_POST['racketmanager_export']) ) {
-				$options = $this->options;
-				if ($_POST['exportkey'] == $options['exportkey']) {
-					ob_end_clean();
-					$this->export(intval($_POST['league_id']), $_POST['mode'], $_POST['season'], $_POST['competition_id']);
-					unset($options['exportkey']);
-					update_option('leaguemanager', $options);
-				} else {
-					ob_end_flush();
-					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-					$this->printMessage();
-				}
-			}
-
-			$options = $this->options;
-			$options['exportkey'] = uniqid(rand(), true);
-			update_option('leaguemanager', $options);
-
-			include_once( RACKETMANAGER_PATH . '/admin/tools/export.php' );
 		}
 	}
 
@@ -3429,211 +3384,6 @@ final class RacketManagerAdmin extends RacketManager
 		return false;
 
 		return in_array( $role, (array) $user->roles );
-	}
-
-
-	/**
-	* export league data
-	*
-	* @param int $league_id
-	* @param string $mode
-	* @return file
-	*/
-	private function export( $league_id, $mode, $season, $competition_id ) {
-		global $racketmanager;
-
-		if ( !current_user_can('export_leagues') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		$this->league_id = (int)$league_id;
-		if ( $league_id > 0 ) {
-			$this->league = get_league($this->league_id);
-			$filename = sanitize_title($this->league->title)."-".$mode."_".date("Y-m-d").".tsv";
-		} elseif ( $competition_id > 0 ) {
-			$this->competition = get_competition($competition_id);
-			$filename = sanitize_title($this->competition->name)."-".$mode."_".date("Y-m-d").".tsv";
-		}
-		$this->season = $season;
-
-		if ( 'teams' == $mode )
-		$contents = $this->exportTeams();
-		elseif ( 'matches' ==  $mode )
-		$contents = $this->exportMatches();
-		elseif ( 'tables' ==  $mode )
-		$contents = $this->exportTables();
-		elseif ( 'competitions' ==  $mode )
-		$contents = $this->exportLeagues();
-
-		$this->league = get_league($this->league_id);
-
-		header('Content-Type: text/csv');
-		header('Content-Disposition: inline; filename="'.$filename.'"');
-		echo $contents;
-		exit();
-	}
-
-	/**
-	* export teams
-	*
-	* @param none
-	* @return string
-	*/
-	private function exportTeams() {
-		global $racketmanager;
-
-		if ( !current_user_can('export_leagues') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		$league = $this->league;
-		$season = $this->season;
-		$competition = $this->competition;
-
-		$teams = $competition->getTeamsInfo( array("league_id" => $this->league_id, "season" => $season) );
-
-		if ( $teams ) {
-			$contents = __('Season', 'racketmanager')."\t".
-			__('Team','racketmanager')."\t".
-			__('Captain','racketmanager')."\t".
-			__('Contact Number','racketmanager')."\t".
-			__('Contact Email','racketmanager')."\t".
-			__('Affiliated Club','racketmanager')."\t".
-			__('Stadium','racketmanager')."\t".
-			__('Match Day','racketmanager')."\t".
-			__('Match Time','racketmanager')."\t".
-			__('Home Team','racketmanager') ."\t".
-			__('Group','racketmanager')."\t";
-
-			foreach ( $teams AS $team ) {
-				$affiliatedclub = get_club($team->affiliatedclub)->name;
-				$home = ( $team->home == 1 ) ? 1 : 0;
-				$contents .= "\n".utf8_decode($season)."\t"
-				.utf8_decode($team->title)."\t"
-				.utf8_decode($team->captain)."\t"
-				.utf8_decode($team->contactno)."\t"
-				.utf8_decode($team->contactemail)."\t"
-				.utf8_decode($affiliatedclub)."\t"
-				.utf8_decode($team->stadium)."\t"
-				.$team->match_day."\t"
-				.$team->match_time."\t"
-				.$team->home."\t"
-				.$team->group."\t";
-
-			}
-			return $contents;
-		}
-		return false;
-	}
-
-	/**
-	* export tables
-	*
-	* @param none
-	* @return string
-	*/
-	private function exportTables()	{
-		global $racketmanager;
-
-		if ( !current_user_can('export_leagues') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		$league = $this->league;
-		$season = $this->season;
-
-		$teams = $league->getLeagueTeams( array("season" => $season) );
-
-		if ( $teams ) {
-			$contents = __('Season','racketmanager')."\t".
-			__('Team','racketmanager')."\t".
-			__('Pld|Played','racketmanager')."\t".
-			__('W|Won','racketmanager')."\t".
-			__('T|Tie','racketmanager')."\t".
-			__('L|Lost','racketmanager')."\t".
-			__('Points2', 'racketmanager')."\t".
-			__('Diff','racketmanager')."\t".
-			__('Pts','racketmanager')."\t";
-
-			$contents = apply_filters( 'racketmanager_export_teams_header_'.$league->sport, $contents );
-
-			foreach ( $teams AS $team ) {
-
-				$contents .= "\n".$team->season."\t"
-				.utf8_decode($team->title)."\t"
-				.$team->done_matches."\t"
-				.$team->won_matches."\t"
-				.$team->draw_matches."\t"
-				.$team->lost_matches."\t"
-
-				.sprintf("%d:%d",$team->points2_plus, $team->points2_minus)."\t".$team->diff."\t".sprintf("%d:%d", $team->points_plus, $team->points_minus);
-
-				$contents = apply_filters( 'racketmanager_export_teams_data_'.$league->sport, $contents, $team );
-			}
-			return $contents;
-		}
-		return false;
-	}
-
-
-	/**
-	* export matches
-	*
-	* @param none
-	* @return string
-	*/
-	private function exportMatches() {
-		global $racketmanager;
-
-		if ( !current_user_can('export_leagues') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		$league = get_league($this->league_id);
-		$match_args = array("season" => $this->season);
-
-		$matches = $league_>getMatches( $match_args );
-		if ( $matches ) {
-			$teams = $league->getLeagueTeams( array("season" => $this->season, "orderby" => array("id" => "ASC")) );
-
-			// Build header
-			$contents =
-			__('MatchID','racketmanager')."\t".
-			__('Date','racketmanager')."\t".
-			__('Season','racketmanager')."\t".
-			__('Match Day','racketmanager')."\t".
-			__('Home','racketmanager')."\t".
-			__('Guest','racketmanager')."\t".
-			__('Location','racketmanager')."\t".
-			__('Begin','racketmanager')."\t".
-			__('Group','racketmanager')."\t".
-			__('Score','racketmanager');
-
-			$contents = apply_filters( 'racketmanager_export_matches_header_'.$league->sport, $contents );
-
-			foreach ( $matches AS $match ) {
-				$contents .= "\n".intval($match->id)."\t".
-				mysql2date('Y-m-d', $match->date)."\t".
-				$match->season."\t".
-				$match->match_day."\t".
-				utf8_decode($match->teams['home']->title)."\t".
-				utf8_decode($match->teams['away']->title)."\t".
-				utf8_decode($match->location)."\t".
-				mysql2date("H:i", $match->date)."\t".
-				$match->group."\t";
-
-				$contents .= !empty($match->home_points) ? sprintf("%d:%d",$match->home_points, $match->away_points) : '';
-				$contents = apply_filters( 'racketmanager_export_matches_data_'.$league->sport, $contents, $match );
-			}
-
-			return $contents;
-		}
-
-		return false;
 	}
 
 	/**

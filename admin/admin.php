@@ -62,7 +62,7 @@ final class RacketManagerAdmin extends RacketManager
 		$page = add_submenu_page(
 			'racketmanager' //parent page
 			, __('RacketManager', 'racketmanager') //page title
-			, __('Overview','racketmanager') //menu title
+			, __('Competitions','racketmanager') //menu title
 			,'racket_manager' //capability
 			, 'racketmanager' //menu slug
 			, array(&$this, 'display')

@@ -10,7 +10,7 @@ if ( $view == 'constitution' ) {
 }
 $mainTitle = $link.' - '.$title;
 ?>
-<div class="container league-block">
+<div class="container">
   <p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <a href="admin.php?page=racketmanager&amp;subpage=<?php echo $breadcrumb ?>"><?php echo $link ?></a> &raquo; <?php echo $title ?></p>
   <h1><?php echo $mainTitle; ?></h1>
   <form action="admin.php?page=racketmanager&amp;subpage=<?php echo $breadcrumb ?>&amp;season=<?php echo $season ?>" method="post" enctype="multipart/form-data" name="teams_add">
@@ -29,34 +29,36 @@ $mainTitle = $link.' - '.$title;
       <input type="submit" value="<?php _e('Apply'); ?>" name="doAddTeamToLeague" id="doAddTeamToLeague" class="button action" />
     </div>
 
-    <div class="row table-header">
-      <div class="col-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" /></div>
-      <div class="col-1 column-num">ID</div>
-      <div class="col-3"><?php _e( 'Title', 'racketmanager' ) ?></div>
-      <div class="col-3"><?php _e( 'Affiliated Club', 'racketmanager' ) ?></div>
-      <div class="col-3"><?php _e( 'Stadium', 'racketmanager' ) ?></div>
-    </div>
-    <?php
-    $class = '';
-    if ( $clubs = $racketmanager->getClubs() ) {
-      foreach ( $clubs AS $club ) {
-        $club = get_club($club);
-        if ( $teams = $club->getTeams($entryType, $leagueType ) ) {
-          foreach ( $teams AS $team ) { ?>
-            <?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-            <div class="row table-row <?php echo $class ?>">
-              <div class="col-1 check-column">
-                <input type="checkbox" value="<?php echo $team->id ?>" name="team[<?php echo $team->id ?>]" />
+    <div class="container">
+      <div class="row table-header">
+        <div class="col-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" /></div>
+        <div class="col-1 column-num">ID</div>
+        <div class="col-3"><?php _e( 'Title', 'racketmanager' ) ?></div>
+        <div class="col-3"><?php _e( 'Affiliated Club', 'racketmanager' ) ?></div>
+        <div class="col-3"><?php _e( 'Stadium', 'racketmanager' ) ?></div>
+      </div>
+      <?php
+      $class = '';
+      if ( $clubs = $racketmanager->getClubs() ) {
+        foreach ( $clubs AS $club ) {
+          $club = get_club($club);
+          if ( $teams = $club->getTeams($entryType, $leagueType ) ) {
+            foreach ( $teams AS $team ) { ?>
+              <?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+              <div class="row table-row <?php echo $class ?>">
+                <div class="col-1 check-column">
+                  <input type="checkbox" value="<?php echo $team->id ?>" name="team[<?php echo $team->id ?>]" />
+                </div>
+                <div class="col-1 column-num"><?php echo $team->id ?></div>
+                <div class="col-3"><?php echo $team->title ?></div>
+                <div class="col-3"><?php echo $team->affiliatedclubname ?></div>
+                <div class="col-3"><?php echo $team->stadium ?></div>
               </div>
-              <div class="col-1 column-num"><?php echo $team->id ?></div>
-              <div class="col-3"><?php echo $team->title ?></div>
-              <div class="col-3"><?php echo $team->affiliatedclubname ?></div>
-              <div class="col-3"><?php echo $team->stadium ?></div>
-            </div>
-            <?php
+              <?php
+            }
           }
         }
-      }
-    } ?>
-  </form>
+      } ?>
+    </form>
+  </div>
 </div>

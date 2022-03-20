@@ -330,7 +330,10 @@ Racketmanager.closeMatchModal = function(link) {
 Racketmanager.showRubbers = function(matchId) {
 
 	jQuery("#showMatchRubbers").empty();
-	jQuery("#modalMatch").show();
+	var myModal = new bootstrap.Modal(document.getElementById('modalMatch'), {
+	  keyboard: true,	backdrop: false, focus: true
+	})
+	myModal.show()
 	jQuery("#viewMatchRubbers").show();
 	jQuery("#splash").css('opacity', 1);
 	jQuery("#splash").show();
@@ -354,7 +357,10 @@ Racketmanager.showRubbers = function(matchId) {
 Racketmanager.showMatch = function(matchId) {
 
 	jQuery("#showMatchRubbers").empty();
-	jQuery("#modalMatch").show();
+	var myModal = new bootstrap.Modal(document.getElementById('modalMatch'), {
+	  keyboard: true,	backdrop: false, focus: true
+	})
+	myModal.show()
 	jQuery("#viewMatchRubbers").show();
 	jQuery("#splash").css('opacity', 1);
 	jQuery("#splash").show();

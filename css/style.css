@@ -837,11 +837,12 @@ form#rosterRequestFrm input[type="text"], form#rosterRequestFrm input[type="numb
 #TB_window {
     overflow: scroll;
 }
-summary {
+#results summary, #club-players summary, #club-teams summary {
     cursor: pointer;
+		display: block
 }
 summary > * {
-    display: list-item;
+  display: list-item;
 }
 .racketmanager-svg-icon {
     width: 1.2em;

@@ -354,7 +354,25 @@ div.tm-team-content .team-projectmanager {
 	clear: both;
 	position: relative;
 }
-
+h3.accordion-header {
+    margin-top: 0;
+}
+.frontend.accordion-button:not(.collapsed) {
+  color: #006800;
+  background-color: #FFFFFF;
+}
+.frontend.accordion-button:focus {
+/*  box-shadow: 0 0 0 0.25rem rgb(0 104 0 / 25%); */
+	box-shadow: none;
+}
+.frontend.accordion-button::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23FFFFFF'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+}
+.frontend.accordion-button:not(.collapsed)::after
+, .frontend.accordion-button:focus::after
+, .frontend.accordion-button:hover::after {
+	background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23006800'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+}
 #winners-list dd {
     width: 30%;
     float: left;

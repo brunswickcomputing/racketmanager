@@ -53,45 +53,44 @@ You can check the content of a variable when you insert the tag <?php var_dump($
           <?php } ?>
         </dl>
       </div>
-      <script>
-      jQuery(document).ready(function() {
-        // Accordion
-        jQuery("#club-teams").accordion({ header: "h3",active: false, collapsible: true, heightStyle: content });
-
-      }); //end of document ready
-      </script>
       <div id="club-teams" class="team">
         <?php
         $shortCode = $club->shortcode;
         $competitions = $racketmanager->getCompetitions(array('type'=>'league'));
         if ( $competitions ) { ?>
           <h2 class="teams-header">Teams</h2>
-          <div class="competition-list jquery-ui-accordion">
+          <div id="competition-list-<?php echo $club->id ?>" class="competition-list accordion accordion-flush">
             <?php foreach ($competitions AS $competition) {
               $competition = get_competition($competition);
               $teams = $competition->getTeamsInfo(array('affiliatedclub' => $club->id, 'orderby' => array("title" => "ASC") ));
               if ( $teams ) {
                 ?>
-                <div class="club-teams" id="competition-<?php echo $competition->id ?>">
-                  <h3 class="header"><?php echo $competition->name ?></h3>
-                  <div id="club-teams" class="jquery-ui-tab">
-                    <div class="team">
-                      <?php foreach ($teams AS $team ) { ?>
-                        <dl class="team">
-                          <dd><?php echo $team->title ?></dd>
-                          <?php if ( !empty($team->captain) ) { ?>
-                            <dt><?php _e( 'Captain', 'racketmanager' ) ?></dt><dd><?php echo $team->captain ?></dd>
-                          <?php } ?>
-                          <?php if ( is_user_logged_in() ) { ?>
-                            <?php if ( !empty($team->contactno) ) { ?>
-                              <dt><?php _e( 'Contact Number', 'racketmanager' ) ?></dt><dd><?php echo $team->contactno ?></dd>
+                <div class="accordion-item">
+                  <h3 class="header accordion-header" id="comp-<?php echo $competition->id ?>-club-<?php echo $club->id ?>">
+                    <button class="accordion-button collapsed frontend" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<?php echo $competition->id ?>-club-<?php echo $club->id ?>" aria-expanded="false" aria-controls="collapse-<?php echo $competition->id ?>-club-<?php echo $club->id ?>">
+                      <?php echo $competition->name ?>
+                    </button>
+                  </h3>
+                  <div id="collapse-<?php echo $competition->id ?>-club-<?php echo $club->id ?>" class="accordion-collapse collapse" aria-labelledby="comp-<?php echo $competition->id ?>-club-<?php echo $club->id ?>" data-bs-parent="#competition-list-<?php echo $club->id ?>">
+                    <div class="accordion-body">
+                      <div class="row team">
+                        <?php foreach ($teams AS $team ) { ?>
+                          <h4><?php echo $team->title ?></h4>
+                          <dl class="team">
+                            <?php if ( !empty($team->captain) ) { ?>
+                              <dt><?php _e( 'Captain', 'racketmanager' ) ?></dt><dd><?php echo $team->captain ?></dd>
                             <?php } ?>
-                            <?php if ( !empty($team->contactemail) ) { ?>
-                              <dt><?php _e( 'Contact Email', 'racketmanager' ) ?></dt><dd><?php echo $team->contactemail ?></dd>
+                            <?php if ( is_user_logged_in() ) { ?>
+                              <?php if ( !empty($team->contactno) ) { ?>
+                                <dt><?php _e( 'Contact Number', 'racketmanager' ) ?></dt><dd><?php echo $team->contactno ?></dd>
+                              <?php } ?>
+                              <?php if ( !empty($team->contactemail) ) { ?>
+                                <dt><?php _e( 'Contact Email', 'racketmanager' ) ?></dt><dd><?php echo $team->contactemail ?></dd>
+                              <?php } ?>
                             <?php } ?>
-                          <?php } ?>
-                        </dl>
-                      <?php } ?>
+                          </dl>
+                        <?php } ?>
+                      </div>
                     </div>
                   </div>
                 </div>

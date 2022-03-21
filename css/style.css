@@ -307,22 +307,15 @@ div.tm-team-content .teamlogo img {
 	display: block;
 	margin: 0 0 1em auto;
 }
-div.tm-team-content dl.team{
-	margin: 1em 0;
-	float: left;
-}
 div.tm-team-content dl.team dt{
 	float: left;
 	clear: both;
-	padding: 0.3em 0;
 	font-size: 1.1em;
-    width: 225px;
+  width: 225px;
 }
 div.tm-team-content dl.team dd {
-	padding: 0.3em 0;
 	float: left;
 	font-size: 1.1em;
-    height: 2em;
 }
 div.tm-team-content dl.team dt.contact-login-msg {
     width: 400px;

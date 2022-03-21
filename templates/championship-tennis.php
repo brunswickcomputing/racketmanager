@@ -10,106 +10,54 @@ $finals: data for finals
 
 You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
 */
+
+global $wp_query;
+$postID = $wp_query->post->ID;
+$archive = true;
+$tab = 'draw';
 ?>
-<div class="jquery-ui-tabs">
-	<ul class="tablist">
-		<li><a href="#results"><?php _e( 'Draw', 'racketmanager' ) ?></a></li>
-		<li><a href="#matches"><?php _e( 'Matches', 'racketmanager' ) ?></a></li>
-		<li><a href="#teams"><?php _e( 'Teams', 'racketmanager' ) ?></a></li>
-		<?php if ( !isset($league->entryType) || $league->entryType != 'player' ) { ?>
-			<li><a href="#players"><?php _e( 'Players', 'racketmanager' ) ?></a></li>
+<script type='text/javascript'>
+var tab = '<?php echo $tab ?>;'
+var hash = window.location.hash.substr(1);
+if (hash == 'teams') tab = 'teams';
+jQuery(function() {
+	activaTab('<?php echo $tab ?>');
+});
+</script>
+<!-- Nav tabs -->
+<ul class="nav nav-tabs frontend" id="myTab" role="tablist">
+	<li class="nav-item" role="presentation">
+		<button class="nav-link" id="draw-tab" data-bs-toggle="pill" data-bs-target="#draw" type="button" role="tab" aria-controls="draw" aria-selected="true"><?php _e( 'Draw', 'racketmanager' ) ?></button>
+	</li>
+	<li class="nav-item" role="presentation">
+		<button class="nav-link" id="matches-tab" data-bs-toggle="pill" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="false"><?php _e( 'Matches', 'racketmanager' ) ?></button>
+	</li>
+	<li class="nav-item" role="presentation">
+		<button class="nav-link" id="teams-tab" data-bs-toggle="pill" data-bs-target="#teams" type="button" role="tab" aria-controls="teams" aria-selected="false"><?php _e( 'Teams', 'racketmanager' ) ?></button>
+	</li>
+	<?php if ( !isset($league->entryType) || $league->entryType != 'player' ) { ?>
+	<li class="nav-item" role="presentation">
+		<button class="nav-link" id="players-tab" data-bs-toggle="pill" data-bs-target="#players" type="button" role="tab" aria-controls="players" aria-selected="false"><?php _e( 'Players', 'racketmanager' ) ?></button>
+	</li>
 		<?php } ?>
-	</ul>
-	<!-- Results Overview -->
-	<div id="results" class="jquery-ui-tab">
-		<div class="tournament-bracket">
-			<?php foreach ( $finals AS $final ) { ?>
-
-				<div class="round-header"><?php echo $final->name; ?></div>
-			<?php } ?>
-		</div>
-		<div class="tournament-bracket">
-
-			<?php foreach ( $finals AS $final ) { ?>
-
-				<ul class="round">
-					<li class="spacer">&nbsp;</li>
-					<?php foreach ( (array)$final->matches AS $no => $match ) {
-						$topClass = '';
-						$bottomClass = '';
-						if ( isset($match->home_team) && $match->home_team == $match->winner_id ) {
-							$topClass .= ' winner';
-							if ( $final->name == 'Final' ) { $champion = $match->teams['home']->title;
-							}
-						} elseif ( isset($match->away_team) && $match->away_team == $match->winner_id ) {
-							$bottomClass .= ' winner';
-							if ( $final->name == 'Final' ) { $champion=$match->teams['away']->title;
-							}
-						}
-						if ( isset($league->entryType) && $league->entryType == 'player' && isset($league->type) && substr($league->type,1,1) == 'D' )  $bottomClass .= ' doubles';
-						?>
-						<li class="game game-top<?php echo $topClass; ?>">
-							<span class="draw-team">
-								<?php if ( isset($match->teams['home']) && is_numeric($match->home_team) ) {
-									echo str_replace('/','<br/>',$match->teams['home']->title);
-								} else {
-									echo '&nbsp;';
-								} ?>
-							</span>
-							<span class="draw-home"><?php if ( isset($match->custom['host']) && $match->custom['host'] == 'home' ) { echo "H";} ?></span>
-						</li>
-						<li class="game game-spacer"><?php if ( $match->score != '' ) { echo $match->score; } ?> </li>
-						<li class="game game-bottom<?php echo $bottomClass; ?>">
-							<span class="draw-team">
-							<?php if ( isset($match->teams['away']) && is_numeric($match->away_team) ) {
-								echo str_replace('/','<br/>',$match->teams['away']->title);
-							} else {
-								echo '&nbsp;';
-							}?>
-							</span>
-							<span class="draw-home"><?php if ( isset($match->custom['host']) && $match->custom['host'] == 'away' ) { echo "H";} ?></span>
-						</li>
-						<li class="spacer">&nbsp;</li>
-					<?php } ?>
-				</ul>
-				<?php if ( isset($champion) ) { ?>
-					<ul class="round">
-						<li class="spacer">&nbsp;</li>
-						<li class="game game-top winner"><?php echo str_replace('/','<br/>',$champion) ?></li>
-						<li class="spacer">&nbsp;</li>
-					</ul>
-				<?php } ?>
-
-			<?php } ?>
-
-		</div>
+</ul>
+<!-- Tab panes -->
+<div class="tab-content">
+	<div class="tab-pane fade" id="draw" role="tabpanel" aria-labelledby="draw-tab">
+		<h3 class="header"><?php _e('Draw', 'racketmanager') ?></h3>
+		<?php include('championship-results-tennis.php'); ?>
 	</div>
-	<!-- Match Overview -->
-	<div id="matches" class="jquery-ui-tab">
-		<div class="jquery-ui-tabs">
-			<ul class="tablist">
-				<?php foreach ( $finals AS $final ) { ?>
-					<li><a href="#final-<?php echo $final->key ?>"><?php echo $final->name ?></a></li>
-				<?php } ?>
-			</ul>
-
-			<?php foreach ( $finals AS $final ) { ?>
-				<div id="final-<?php echo $final->key ?>">
-					<?php $matches = $final->matches; ?>
-					<?php include('matches-tennis-scores.php'); ?>
-				</div>
-			<?php } ?>
-			<?php include('matches-tennis-modal.php'); ?>
-		</div>
+	<div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
+		<h3 class="header"><?php _e('Matches', 'racketmanager') ?></h3>
+		<?php include('championship-matches-tennis.php'); ?>
 	</div>
-	<!-- Teamlist -->
-	<div id="teams" class="jquery-ui-tab">
-		<?php racketmanager_teams( $league->id, array('season' => $league->current_season['name'], 'template' => 'list') ) ?>
+	<div class="tab-pane fade" id="teams" role="tabpanel" aria-labelledby="teams-tab">
+		<h3 class="header"><?php _e('Teams', 'racketmanager') ?></h3>
+		<?php racketmanager_teams( $league->id, array('season' => get_current_season(), 'template' => 'list') ) ?>
 	</div>
 	<?php if ( !isset($league->entryType) || $league->entryType != 'player' ) { ?>
-		<!-- Players -->
-		<div id="players" class="jquery-ui-tab">
-			<?php racketmanager_players( $league->id, array('season' => $league->current_season['name']) ) ?>
-		</div>
+	<div class="tab-pane fade" id="players" role="tabpanel" aria-labelledby="players-tab">
+		<h3 class="header"><?php _e('Players', 'racketmanager') ?></h3>
+			<?php racketmanager_players( $league->id, array('season' => get_current_season()) ) ?>	</div>
 	<?php } ?>
 </div>

@@ -553,7 +553,6 @@ th input[type="checkbox"] {
 }
 .playerstats td, .playerstats th {
     border: 0;
-    font-size: .75em;
 }
 .playerstats th.playername {
     text-align: left;
@@ -639,7 +638,6 @@ div.teamlist .header .ui-icon {
 
 /*--- Standings Table ---*/
 .racketmanager_widget table.racketmanager {
-	font-size: 0.9em;
 	margin: 0;
 	padding: 0;
 	}
@@ -686,7 +684,6 @@ th.player {
 	width: 18%;
 }
 tr.match-rubber-row {
-	font-size: .9em;
 	color: #666666;
 }
 th.team {
@@ -756,7 +753,6 @@ div.teampage h3.header {
 
 li.game{
     padding-left:10px;
-    font-size: 0.8em;
 }
 
 .winner{

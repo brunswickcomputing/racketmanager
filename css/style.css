@@ -131,6 +131,16 @@ table.crosstable img {
 }
 div#racketmanager_archive_selections { margin-bottom: 1em; }
 
+.nav-pills button.nav-link {
+    color: #006800;
+}
+.nav-tabs button.nav-link {
+    color: #006800;
+}
+.nav-pills.frontend .nav-link.active, .nav-pills .show>.nav-link {
+    color: #fff;
+    background-color: #006800;
+}
 /*--- Single Match ---*/
 div.match .match-content:after {
 	content: " ";

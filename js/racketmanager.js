@@ -739,3 +739,7 @@ Racketmanager.leagueEntryRequest = function(link) {
 	}) ;
 	jQuery("#leagueEntrySubmit").show();
 };
+function activaTab(tab) {
+		jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');
+		jQuery('.nav-pills button[data-bs-target="#' + tab + '"]').tab('show');
+}

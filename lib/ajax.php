@@ -1290,6 +1290,7 @@ class RacketManagerAJAX extends RacketManager {
 		$msg = '';
 		$error = false;
 		$errorField = array();
+		$errorMsg = array();
 		$errorId = 0;
 		$rosterFound = false;
 		$custom = array();
@@ -1297,21 +1298,24 @@ class RacketManagerAJAX extends RacketManager {
 		$affiliatedClub = $_POST['affiliatedClub'];
 		if ( $_POST['firstName'] == '' ) {
 			$error = true;
-			$errorField[$errorId] = "First name required";
+			$errorField[$errorId] = "firstName";
+			$errorMsg[$errorId] = "First name required";
 			$errorId ++;
 		} else {
 			$firstName = $_POST['firstName'];
 		}
 		if ( $_POST['surname'] == '' ) {
 			$error = true;
-			$errorField[$errorId] = "Surname required";
+			$errorField[$errorId] = "surname";
+			$errorMsg[$errorId] = "Surname required";
 			$errorId ++;
 		} else {
 			$surname = $_POST['surname'];
 		}
 		if ( !isset($_POST['gender']) || $_POST['gender'] == '' ) {
 			$error = true;
-			$errorField[$errorId] = "Gender required";
+			$errorField[$errorId] = "gender";
+			$errorMsg[$errorId] = "Gender required";
 			$errorId ++;
 		} else {
 			$gender = $_POST['gender'];
@@ -1369,13 +1373,14 @@ class RacketManagerAJAX extends RacketManager {
 					$racketmanager->lm_mail($emailTo, $subject, $message, $headers);
 				}
 			} else {
+				$error = true;
 				$msg = __('Player already registered with club','racketmanager');
 			}
 		} else {
-			$msg = __('No player to add','racketmanager');
+			$msg = __('Error in player request','racketmanager');
 		}
 
-		array_push($return, $msg, $error, $errorField);
+		array_push($return, $msg, $error, $errorField, $errorMsg);
 		die(json_encode($return));
 
 	}

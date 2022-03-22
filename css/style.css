@@ -392,34 +392,11 @@ h3.accordion-header {
 /*
 * Club page
 */
-#club-info {
-    font-size: 1.1em;
-}
 div.tm-team-content .title {
     font-size: 1.2em;
 }
 div.tm-team-content div.team {
     margin: 1em 0;
-}
-.form-control {
-    width: 100%;
-    font-size: 1.1em;
-}
-.form-group {
-    position: relative;
-}
-.form-group label {
-    font-size: 0.85em;
-}
-.form-check-label {
-    font-weight: normal;
-}
-.form-group .form-control input {
-    font-size: 1.1em;
-}
-.form-group select[size] {
-    height: 50px;
-    width: 25%;
 }
 .match-time {
     width: 25%;
@@ -839,12 +816,6 @@ h2.results-header {
 }
 .archive .club-item:nth-of-type(3n+1) {
     clear: left;
-}
-form#rosterRequestFrm label {
-    font-size: .85em;
-}
-form#rosterRequestFrm input[type="text"], form#rosterRequestFrm input[type="number"] {
-    height: 2.25em;
 }
 #updateResponse, .updateResponse {
     padding: 1em;

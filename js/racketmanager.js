@@ -489,6 +489,10 @@ Racketmanager.rosterRequest = function(link) {
 	jQuery("#updateResponse").val("");
 	jQuery("#rosterUpdateSubmit").hide();
 	jQuery("#rosterUpdateSubmit").addClass("disabled");
+	jQuery("#updateResponse").removeClass("message-success");
+	jQuery("#updateResponse").removeClass("message-error");
+	jQuery(".is-invalid").removeClass("is-invalid");
+	jQuery(".invalidFeedback").val("");
 
 	jQuery.ajax({
 		url:RacketManagerAjaxL10n.requestUrl,
@@ -500,9 +504,16 @@ Racketmanager.rosterRequest = function(link) {
 			var $message = $response[0];
 			var $error = $response[1];
 			if ($error === true) {
-				for ( var errorField of $response[2] ) {
-					$message += '<br />' + errorField;
+				var $errorField = $response[2];
+				var $errorMsg = $response[3];
+				for ( var $i=0; $i < $errorField.length; $i++) {
+					var $id = '#'.concat($errorField[$i]);
+					jQuery($id).addClass("is-invalid");
+					var $id2 = '#'.concat($errorField[$i],'Feedback');
+					jQuery($id2).html($errorMsg[$i]);
 				}
+				jQuery("#updateResponse").addClass("message-error");
+				jQuery("#updateResponse").show();
 				jQuery("#updateResponse").html($message);
 			} else {
 				jQuery("#firstName").val("");
@@ -515,6 +526,7 @@ Racketmanager.rosterRequest = function(link) {
 				jQuery("#updateResponse").html($message);
 				jQuery("#updateResponse").delay(10000).fadeOut('slow');
 			}
+			jQuery("#rosterUpdateSubmit").removeClass("disabled");
 		},
 		error: function() {
 			alert("Ajax error on player add");

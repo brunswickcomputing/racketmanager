@@ -483,7 +483,6 @@ Racketmanager.updateResults = function(link) {
 };
 Racketmanager.rosterRequest = function(link) {
 
-	var $affiliatedClub = document.getElementById('affiliatedClub').value;
 	var $form = jQuery('#rosterRequestFrm').serialize();
 	$form += "&action=racketmanager_roster_request";
 	jQuery("#updateResponse").val("");

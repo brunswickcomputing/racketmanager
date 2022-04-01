@@ -30,7 +30,6 @@ class RacketManagerShortcodes extends RacketManager {
 		add_shortcode( 'teams', array(&$this, 'showTeams') );
 		add_shortcode( 'team', array(&$this, 'showTeam') );
 		add_shortcode( 'leaguearchive', array(&$this, 'showArchive') );
-		add_shortcode( 'league', array(&$this, 'showLeague') );
 		add_shortcode( 'competition', array(&$this, 'showCompetition') );
 		add_shortcode( 'players', array(&$this, 'showPlayers') );
 		add_shortcode( 'clubs', array(&$this, 'showClubs') );
@@ -102,7 +101,6 @@ class RacketManagerShortcodes extends RacketManager {
 	* - competition_id is the ID of the competition (optional)
 	* - season: display specific season (optional)
 	* - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
-	* - template_type: this is only applicable to template='by_matchday', can be either empty or "accordion" or "tabs" to activitate jQuery accordion/tabs functionality
 	*
 	* @param array $atts shorcode attributes
 	* @return string
@@ -147,7 +145,6 @@ class RacketManagerShortcodes extends RacketManager {
 	* - competition_id is the ID of the competition (optional)
 	* - season: display specific season (optional)
 	* - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
-	* - template_type: this is only applicable to template='by_matchday', can be either empty or "accordion" or "tabs" to activitate jQuery accordion/tabs functionality
 	*
 	* @param array $atts shorcode attributes
 	* @return string
@@ -194,7 +191,6 @@ class RacketManagerShortcodes extends RacketManager {
 	* - mode can be either "all" or "home". For racing it must be "racing". If it is not specified the matches are displayed on a weekly basis
 	* - season: display specific season (optional)
 	* - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
-	* - template_type: this is only applicable to template='by_matchday', can be either empty or "accordion" or "tabs" to activitate jQuery accordion/tabs functionality
 	* - roster is the ID of individual team member (currently only works with racing)
 	* - match_day: specific match day (integer)
 	*
@@ -257,7 +253,7 @@ class RacketManagerShortcodes extends RacketManager {
 			$match_args['group'] = $group;
 		}
 
-		if ( $limit === 'false' || in_array($template, array('by_matchday', 'by_matchday-tabs', 'by_matchday-accordion')) )  {
+		if ( $limit === 'false' )  {
 			$match_args['limit'] = false;
 		} elseif ( $limit && is_numeric($limit) ) {
 			$match_args['limit'] = intval($limit);
@@ -679,54 +675,6 @@ class RacketManagerShortcodes extends RacketManager {
 	}
 
 	/**
-	* Display League
-	*
-	* [league id=ID season=X template=X]
-	*
-	* - id: ID of league
-	* - season: season to show
-	* - template: teamplate to use
-	* - standingstable: template for standings table
-	* - crosstable: template for crosstable
-	* - matches: template for matches
-	* - teams: template for teams
-	* - matches_template_type: type of match template
-	*
-	* @param array $atts shorcode attributes
-	* @return string
-	*/
-	public function showLeague( $atts ) {
-		global $league;
-
-		extract(shortcode_atts(array(
-			'id' => 0,
-			'season' => false,
-			'template' => '',
-			'standingstable' => 'last5',
-			'crosstable' => '',
-			'matches' => 'by_matchday',
-			'teams' => 'list',
-			'matches_template_type' => 'accordion'
-		), $atts ));
-
-		$league = get_league( $id );
-
-		if ( !$league ) return;
-		$league->setSeason($season);
-		$league->setTab();
-		$league->templates = array( 'standingstable' => $standingstable, 'crosstable' => $crosstable, 'matches' => $matches, 'teams' => $teams );
-		$league->matches_template_type = $matches_template_type;
-
-		if ( empty($template) && $this->checkTemplate('league-'.$league->sport) )
-		$filename = 'league-'.$league->sport;
-		else
-		$filename = ( !empty($template) ) ? 'league-'.$template : 'league';
-
-		$out = $this->loadTemplate( $filename, array('league' => $league) );
-		return $out;
-	}
-
-	/**
 	* show Competition
 	*
 	* [competition_id=ID season=X template=X]
@@ -808,7 +756,7 @@ class RacketManagerShortcodes extends RacketManager {
 			'matches' => '',
 			'teams' => 'list',
 			'template' => '',
-			'matches_template_type' => 'accordion'
+			'matches_template_type' => ''
 		), $atts ));
 
 		// get all leagues, needed for dropdown

@@ -212,9 +212,6 @@ div.matchlist {
 div.matchlist h3.header {
 	cursor: pointer;
 }
-div.matchlist h3.header.ui-accordion-header {
-	padding-left: 2em !important;
-}
 div.matchlist table.racketmanager  th {
 	padding: 4px;
 	margin: 0;
@@ -230,9 +227,6 @@ div.teamlist {
 }
 div.teamlist h3.header {
 	cursor: pointer;
-}
-div.teamlist h3.header.ui-accordion-header {
-	padding-left: 2em !important;
 }
 div.tm-team-content .prev_match,
 div.tm-team-content .next_match {
@@ -291,8 +285,7 @@ div.entry-content .tm-team-content {
 	border: none;
 	box-shadow: none;
 }
-div.tm-team-content,
-.ui-accordion-content {
+div.tm-team-content {
 	padding: 0.5em !important;
 }
 div.tm-team-content .teamlogo:after {
@@ -357,9 +350,6 @@ div.tm-team-content .team-projectmanager {
 	clear: both;
 	position: relative;
 }
-h3.accordion-header {
-    margin-top: 0;
-}
 .frontend.accordion-button:not(.collapsed) {
   color: #006800;
   background-color: #FFFFFF;
@@ -379,6 +369,7 @@ h3.accordion-header {
 #winners-list dd {
     width: 30%;
     float: left;
+		clear: both;
 }
 
 #winners-list dt {
@@ -547,14 +538,6 @@ div.teamlist .header .ui-icon {
 .ui-widget-content a.roll-button {
     color: #ffffff;
 }
-/*
- * jQuery accordion lists
- */
-.ui-accordion .teampage,
-.ui-accordion .match {
-	margin-bottom: 0 !important;
-}
-
 
 /*
 * @section: Widget
@@ -846,7 +829,7 @@ summary > * {
     fill: #00964b;
 }
 .passwordShow svg {
-    fill: #00964b;
+    fill: #006800;
 }
 .passwordShow:hover svg {
     opacity: 0.25;
@@ -889,6 +872,18 @@ label.hidden {
 }
 .login-submit {
     text-align: right;
+}
+.login-info {
+    padding: 1rem;
+    border: 0.2rem solid #198754;
+    margin-top: 1rem;
+    color: #198754;
+}
+.login-error {
+    padding: 1rem;
+    border: 0.2rem solid #dc3545;
+    margin-top: 1rem;
+    color: #dc3545;
 }
 .recaptcha-container {
     float: left;
@@ -935,12 +930,9 @@ div#password-lost-form {
 }
 .passwordShow {
     position: absolute;
-    right: 1em;
-    top: 2.75em;
+    right: 2.5em;
+    top: 1.05em;
     cursor: pointer;
-}
-#login i.passwordShow, #password-reset i.passwordShow {
-    top: .75em;
 }
 #password-strength.short {
     background-color: #D2222D;
@@ -960,7 +952,7 @@ div#password-lost-form {
     text-align: center;
 }
 #password-strength.strong {
-    background-color: #238823;
+    background-color: #157347s;
     color: white;
 }
 #password-reset .description {
@@ -986,6 +978,9 @@ input#resetpassButton:hover:disabled, input#memberaccount-button:hover:disabled 
     width: 100%;
     box-sizing: border-box;
     border: 5px solid #6c3;
+}
+.form-row {
+    padding-top: 2rem;
 }
 @media only screen and (max-width: 640px) {
     .login-form-container {

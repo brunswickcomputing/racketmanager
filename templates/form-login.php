@@ -1,134 +1,110 @@
 <?php
-    global $wp_query;
-    $postID = $wp_query->post->ID;
-    $tab = 0;
-    $action = isset($_GET[('action')]) ? $_GET[('action')] : '' ;
-    if ( isset($action) && $action == 'register' ) {
-        $tab = 1;
-    }
+global $wp_query;
+$postID = $wp_query->post->ID;
+$tab = 'login';
+$action = isset($_GET[('action')]) ? $_GET[('action')] : '' ;
+if ( isset($action) && $action == 'register' ) {
+  $tab = 'registration';
+}
 ?>
-    <script type='text/javascript'>
-       jQuery(function() {
-              jQuery(".jquery-ui-tabs").tabs({
-                                             active: <?php echo $tab ?>
-                                             });
-              });
+<script type='text/javascript'>
+var tab = '<?php echo $tab ?>;'
+var hash = window.location.hash.substr(1);
+if (hash == 'teams') tab = 'teams';
+jQuery(function() {
+  activaTab('<?php echo $tab ?>');
+});
 </script>
-<div id="tabs-login" class="jquery-ui-tabs login-form-container">
-    <ul id="tablist">
-        <li><h3><a href="#login"><?php _e( 'Login', 'racketmanager' ) ?></a></h3></li>
-        <li><h3><a href="#register"><?php _e( 'Sign Up', 'racketmanager' ) ?></a><h3></li>
-    </ul>
-    <div id="login" class="">
-        <?php if ( $vars['show_title'] ) { ?>
-        <h2><?php _e( 'Sign In', 'racketmanager' ); ?></h2>
-        <?php } ?>
-    <?php if ( count( $vars['errors'] ) > 0 ) { ?>
-        <?php foreach ( $vars['errors'] as $error ) { ?>
-        <p class="login-error">
-            <?php echo $error; ?>
-        </p>
-        <?php } ?>
+<div id="tabs-login" class="login-form-container">
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs frontend" id="loginTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="login-tab" data-bs-toggle="pill" data-bs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="true"><?php _e( 'Login', 'racketmanager' ) ?></button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="registration-tab" data-bs-toggle="pill" data-bs-target="#registration" type="button" role="tab" aria-controls="registration" aria-selected="true"><?php _e( 'Sign Up', 'racketmanager' ) ?></button>
+    </li>
+  </ul>
+  <?php
+  $usernameErr = false;
+  $passwordErr = false;
+  $usernameMsg = '';
+  $passwordMsg = '';
+  $emailErr = false;
+  $firstNameErr = false;
+  $surnameErr = false;
+  $recaptchaErr = false;
+  $emailMsg = '';
+  $firstNameMsg = '';
+  $surnameMsg = '';
+  $recaptchaMsg = '';
+  if ( count( $vars['errors'] ) > 0 ) { ?>
+    <?php foreach ( $vars['error_codes'] as $error ) {
+      if ( $error == 'empty_username' ) {
+        $usernameErr = true;
+        $usernameMsg = __( 'Username must be provided', 'racketmanager' );
+      }
+      if ( $error == 'empty_password' ) {
+        $passwordErr = true;
+        $passwordMsg = __( 'Password must be provided', 'racketmanager' );
+      }
+      if ( $error == 'incorrect_password' ) {
+        $passwordErr = true;
+        $passwordMsg = __( 'Password not correct', 'racketmanager' );
+      }
+      if ( $error == 'email' ) {
+        $emailErr = true;
+        $emailMsg = __( 'Email address must be specified', 'racketmanager' );
+      }
+      if ( $error == 'email_exists' ) {
+        $emailErr = true;
+        $emailMsg = __( 'An account exists with this email address', 'racketmanager' );
+      }
+      if ( $error == 'captcha' ) {
+        $recaptchaErr = true;
+        $recaptchaMsg = __( 'Google reCAPTCHA verification failed', 'racketmanager' );
+      }
+      if ( $error == 'first_name' ) {
+        $firstNameErr = true;
+        $firstNameMsg = __( 'First name must be specified', 'racketmanager' );
+      }
+      if ( $error == 'last_name' ) {
+        $surnameErr = true;
+        $surnameMsg = __( 'Last name must be specified', 'racketmanager' );
+      }
+      ?>
     <?php } ?>
-    <?php if ( $vars['logged_out'] ) { ?>
-        <p class="login-info">
-            <?php _e( 'You have signed out. Would you like to sign in again?', 'racketmanager' ); ?>
-        </p>
-    <?php } ?>
-    <?php if ( $vars['registered'] ) { ?>
-        <p class="login-info">
-            <?php
-                printf(
-                    __( 'You have successfully registered to <strong>%s</strong>. We have emailed your password to the email address you entered.', 'racketmanager' ),
-                    get_bloginfo( 'name' )
-                );
-            ?>
-        </p>
-    <?php } ?>
-    <?php if ( $vars['lost_password_sent'] ) { ?>
-        <p class="login-info">
-            <?php _e( 'Check your email for a link to reset your password.', 'racketmanager' ); ?>
-        </p>
-    <?php } ?>
-
-    <?php if ( $vars['password_updated'] ) { ?>
-        <p class="login-info">
-            <?php _e( 'Your password has been changed. You can sign in now.', 'racketmanager' ); ?>
-        </p>
-    <?php } ?>
-
-        <form method="post" action="<?php echo wp_login_url(); ?>">
-            <fieldset class="p-fieldset">
-                <div class="form-group">
-                    <label class="hidden" for="user_login"><?php _e( 'Email', 'racketmanager' ); ?></label>
-                    <div class="input">
-                        <input type="text" placeholder="<?php _e( 'Email', 'racketmanager' ); ?>" name="log" id="user_login">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="hidden" for="user_pass"><?php _e( 'Password', 'racketmanager' ); ?></label>
-                    <div class="input">
-                        <input type="password" class="password" name="pwd" placeholder="<?php _e( 'Password', 'racketmanager' ); ?>" id="user_pass">
-                        <i class="passwordShow racketmanager-svg-icon">
-                            <?php racketmanager_the_svg('icon-eye') ?>
-                        </i>
-
-                    </div>
-                </div>
-            </fieldset>
-            <fieldset class="p-fieldset-split">
-                <a class="forgot-password" href="<?php echo wp_lostpassword_url(); ?>">
-                    <?php _e( 'Forgot your password?', 'racketmanager' ); ?>
-                </a>
-            </fieldset>
-            <fieldset class="p-fieldset-split">
-                <p class="login-submit">
-                    <input type="submit" value="<?php _e( 'Login', 'racketmanager' ); ?>">
-                    <input type="hidden" name="redirect_to" value="<?php echo esc_url( $vars['redirect'] ) ?>" />
-                </p>
-            </fieldset>
-        </form>
+    <p class="login-error">
+      <?php echo sprintf(__( 'Error in %s', 'racketmanager' ), $tab); ?>
+    </p>
+  <?php } ?>
+  <?php if ( isset($vars['logged_out']) && $vars['logged_out'] ) { ?>
+    <p class="login-info">
+      <?php _e( 'You have signed out. Would you like to sign in again?', 'racketmanager' ); ?>
+    </p>
+  <?php } ?>
+  <?php if ( isset($vars['registered']) && $vars['registered'] ) { ?>
+    <p class="login-info">
+      <?php _e( 'You have successfully registered. We have emailed your password to the email address you entered.', 'racketmanager' ); ?>
+    </p>
+  <?php } ?>
+  <?php if ( isset($vars['lost_password_sent']) && $vars['lost_password_sent'] ) { ?>
+    <p class="login-info">
+      <?php _e( 'Check your email for a link to reset your password.', 'racketmanager' ); ?>
+    </p>
+  <?php } ?>
+  <?php if ( isset($vars['password_updated']) && $vars['password_updated'] ) { ?>
+    <p class="login-info">
+      <?php _e( 'Your password has been changed. You can sign in now.', 'racketmanager' ); ?>
+    </p>
+  <?php } ?>
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div class="tab-pane fade" id="login" role="tabpanel" aria-labelledby="login-tab">
+      <?php include('forms/login-page.php'); ?>
     </div>
-    <div id="register" class="">
-    <?php if ( $vars['show_title'] ) { ?>
-        <h3><?php _e( 'Register', 'racketmanager' ); ?></h3>
-    <?php } ?>
-
-    <?php if ( count( $vars['errors'] ) > 0 ) { ?>
-        <?php foreach ( $vars['errors'] as $error ) { ?>
-        <p><?php echo $error; ?></p>
-        <?php } ?>
-    <?php } ?>
-
-        <form id="signupform" method="post" action="<?php echo wp_registration_url(); ?>">
-            <fieldset class="p-fieldset">
-                <p class="form-row">
-                    <label class="hidden" for="email"><?php _e( 'Email', 'racketmanager' ); ?> <strong>*</strong></label>
-                    <input type="email" placeholder="<?php _e( 'Email', 'racketmanager' ); ?>" name="email" id="email">
-                </p>
-                <p class="form-row">
-                    <label class="hidden" for="first_name"><?php _e( 'First name', 'racketmanager' ); ?></label>
-                    <input type="text" placeholder="<?php _e( 'First name', 'racketmanager' ); ?>" name="first_name" id="first-name">
-                </p>
-                <p class="form-row">
-                    <label class="hidden" for="last_name"><?php _e( 'Last name', 'racketmanager' ); ?></label>
-                    <input type="text" placeholder="<?php _e( 'Last name', 'racketmanager' ); ?>" name="last_name" id="last-name">
-                </p>
-            </fieldset>
-            <p class="form-row">
-                <?php _e( 'Note: Your password will be generated automatically and sent to your email address.', 'racketmanager' ); ?>
-            </p>
-    <?php if ( $vars['recaptcha_site_key'] ) { ?>
-            <div class="recaptcha-container">
-                <div class="g-recaptcha" data-sitekey="<?php echo $vars['recaptcha_site_key']; ?>"></div>
-            </div>
-    <?php } ?>
-            <div class="register-submit">
-                <p class="login-submit">
-                    <input type="submit" name="submit" class="register-button"
-                           value="<?php _e( 'Register', 'racketmanager' ); ?>"/>
-                </p>
-            </div>
-        </form>
+    <div class="tab-pane fade" id="registration" role="tabpanel" aria-labelledby="registration-tab">
+      <?php include('forms/register-page.php'); ?>
     </div>
+  </div>
 </div>

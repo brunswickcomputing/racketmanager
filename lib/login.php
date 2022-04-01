@@ -169,14 +169,18 @@ class RacketManagerLogin extends RacketManager {
     if ( isset($action) && $action == 'register' ) {
 
       // Retrieve possible errors from request parameters
-      $vars['errors'] = array();
+      $errors = array();
+      $error_codes = array();
+
       if ( isset( $_REQUEST['register-errors'] ) ) {
         $error_codes = explode( ',', $_REQUEST['register-errors'] );
 
-        foreach ( $error_codes as $error_code ) {
-          $vars['errors'] []= $this->get_error_message( $error_code );
+        foreach ( $error_codes as $code ) {
+          $errors []= $this->get_error_message( $code );
         }
       }
+      $vars['errors'] = $errors;
+      $vars['error_codes'] = $error_codes;
 
       if ( is_user_logged_in() ) {
         return __( 'You are already signed in.', 'racketmanager' );
@@ -202,6 +206,7 @@ class RacketManagerLogin extends RacketManager {
       }
       // Error messages
       $errors = array();
+      $error_codes = array();
       if ( isset( $_REQUEST['login'] ) ) {
         $error_codes = explode( ',', $_REQUEST['login'] );
 
@@ -210,6 +215,7 @@ class RacketManagerLogin extends RacketManager {
         }
       }
       $vars['errors'] = $errors;
+      $vars['error_codes'] = $error_codes;
 
       // Check if the user just requested a new password
       $vars['lost_password_sent'] = isset( $_REQUEST['checkemail'] ) && $_REQUEST['checkemail'] == 'confirm';
@@ -456,30 +462,40 @@ class RacketManagerLogin extends RacketManager {
   public function do_register_user() {
     if ( 'POST' == $_SERVER['REQUEST_METHOD'] ) {
       $redirect_url = home_url( 'member-login?action=register' );
+      $errors = array();
 
       if ( ! get_option( 'users_can_register' ) ) {
         // Registration closed, display error
+        $errors[] = 'closed';
         $redirect_url = add_query_arg( 'register-errors', 'closed', $redirect_url );
       } elseif ( ! $this->verify_recaptcha() ) {
         // Recaptcha check failed, display error
+        $errors[] = 'captcha';
         $redirect_url = add_query_arg( 'register-errors', 'captcha', $redirect_url );
       } else {
         $email = $_POST['email'];
+        if ( !$email ) { $errors[] = 'email'; }
         $first_name = sanitize_text_field( $_POST['first_name'] );
+        if ( !$first_name ) { $errors[] = 'first_name'; }
         $last_name = sanitize_text_field( $_POST['last_name'] );
+        if ( !$last_name ) { $errors[] = 'last_name'; }
+      }
 
+      if ( !$errors ) {
         $result = $this->register_user( $email, $first_name, $last_name );
-
         if ( is_wp_error( $result ) ) {
-          // Parse errors into a string and append as parameter to redirect
-          $errors = join( ',', $result->get_error_codes() );
-          $redirect_url = add_query_arg( 'register-errors', $errors, $redirect_url );
-        } else {
-          update_user_meta( $result, 'show_admin_bar_front', false );
-          // Success, redirect to login page.
-          $redirect_url = home_url( 'member-login' );
-          $redirect_url = add_query_arg( 'registered', $email, $redirect_url );
+          $errors = $result->get_error_codes();
         }
+      }
+
+      if ( !$errors ) {
+        update_user_meta( $result, 'show_admin_bar_front', false );
+        // Success, redirect to login page.
+        $redirect_url = home_url( 'member-login' );
+        $redirect_url = add_query_arg( 'registered', $email, $redirect_url );
+      } else {
+        $errorMsgs = join( ',', $errors );
+        $redirect_url = add_query_arg( 'register-errors', $errorMsgs, $redirect_url );
       }
 
       wp_redirect( $redirect_url );
@@ -558,7 +574,7 @@ class RacketManagerLogin extends RacketManager {
   * at the end of the page.
   */
   public function add_captcha_js_to_footer() {
-    echo "<script src='https://www.google.com/recaptcha/api.js'></script>";
+    echo "<script src='https://www.google.com/recaptcha/api.js' async defer></script>";
   }
 
   /**

@@ -453,7 +453,7 @@ class RacketManager {
 	*/
 	public function loadScripts() {
 		wp_register_script( 'datatables', 'https://cdn.datatables.net/v/ju/dt-1.11.3/fh-3.2.0/datatables.min.js', array('jquery') );
-		wp_register_script( 'racketmanager', RACKETMANAGER_URL.'/js/racketmanager.js', array('jquery', 'jquery-ui-core', 'jquery-ui-autocomplete', 'jquery-ui-tabs', 'jquery-effects-core', 'jquery-effects-slide', 'sack', 'thickbox'), RACKETMANAGER_VERSION );
+		wp_register_script( 'racketmanager', RACKETMANAGER_URL.'/js/racketmanager.js', array('jquery', 'jquery-ui-core', 'jquery-ui-autocomplete', 'jquery-effects-core', 'jquery-effects-slide', 'sack', 'thickbox'), RACKETMANAGER_VERSION );
 		wp_enqueue_script('racketmanager');
 		wp_enqueue_script( 'password-strength-meter' );
 		wp_enqueue_script( 'password-strength-meter-mediator', RACKETMANAGER_URL . '/js/password-strength-meter-mediator.js', array('password-strength-meter'));

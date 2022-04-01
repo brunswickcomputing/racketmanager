@@ -1,31 +1,5 @@
 var $mathCardWindow;
 jQuery(document).ready(function($) {
-	/*
-	* Make sure that jQuery UI Tab content containers have correct IDs based on tablist links
-	*/
-	var i = 0;
-	// get all tablist a elements
-	jQuery('.jquery-ui-tabs>.tablist a').each(function() {
-		// get href attribute of current link and remove leading #
-		var tab_id = jQuery(this).attr('href');
-		tab_id = tab_id.substring(1, tab_id.length);
-		// get corresponding tab container
-		var tab = jQuery('.jquery-ui-tabs .tab-content').eq(i);
-		// set ID of tab container
-		tab.attr('id', tab_id);
-
-		// increment item count
-		i = i + 1;
-	});
-
-	/*
-	* Acivate Tabs
-	*/
-	jQuery('.jquery-ui-tabs').tabs({
-		collapsible: true,
-	});
-	jQuery(".jquery-ui-tabs>.tablist").css("display", "block");
-	jQuery(".jquery-ui-tabs .tab-header").css("display", "none");
 	jQuery("tr.match-rubber-row").slideToggle('fast','linear');
 	jQuery ("i", "td.angle-dir", "tr.match-row").toggleClass("angle-right angle-down");
 

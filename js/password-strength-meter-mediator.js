@@ -58,7 +58,7 @@ function wdmChkPwdStrength( $pwd,  $confirmPwd, $strengthStatus, $submitBtn, bla
     $strengthStatus.addClass( 'bad' ).html( pwsL10n.bad );
   }
   // set the status of the submit button
-  if ( 4 === pwdStrength && '' !== confirmPwd.trim() ) {
+  if ( (4 === pwdStrength || 3 === pwdStrength) && '' !== confirmPwd.trim() ) {
     $submitBtn.removeAttr( 'disabled' );
   }
 

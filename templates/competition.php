@@ -38,7 +38,7 @@ $pagename = isset($wp_query->query['pagename']) ? $wp_query->query['pagename'] :
     <div id="leagues">
 	<?php foreach ( $leagues AS $league ) { ?>
 			<!-- Standings Table -->
-			<div id="standings-archive" class="jquery-ui-tab">
+			<div id="standings-archive">
 				<h4 class="header"><?php if ( $standingsTemplate != 'constitution' ) { ?><a href="/<?php _e('leagues', 'racketmanager') ?>/<?php echo seoUrl($league->title) ?>/<?php echo $curr_season ?>/"><?php } ?><?php echo $league->title ?><?php if ( $standingsTemplate != 'constitution' ) { ?></a><?php } ?></h4>
 				<?php racketmanager_standings( $league->id, array( 'season' => $curr_season, 'template' => $standingsTemplate ) ) ?>
 			</div>
@@ -48,7 +48,7 @@ $pagename = isset($wp_query->query['pagename']) ? $wp_query->query['pagename'] :
     <div id="cups">
     <?php foreach ( $leagues AS $league ) { ?>
 			<!-- Brackets -->
-			<div id="brackets" class="jquery-ui-tab">
+			<div id="brackets">
 				<h4 class="header"><?php echo $league->title ?></h4>
 				<?php racketmanager_championship( $league->id, array( 'season' => $curr_season, 'template' => '' ) ) ?>
 			</div>

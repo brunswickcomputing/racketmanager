@@ -34,7 +34,7 @@ $postID = isset($wp_query->post->ID) ? $wp_query->post->ID : "";
 } else {
 	 foreach ( $winners AS $winner ) { ?>
 			<!-- Standings Table -->
-			<div id="winners-list" class="jquery-ui-tab">
+			<div id="winners-list">
 				<h4 class="header"><?php echo $winner->league ?></h4>
 				<dl>
 					<dd><?php _e('Winner', 'racketmanager') ?></dd>

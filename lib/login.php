@@ -43,6 +43,11 @@ class RacketManagerLogin extends RacketManager {
     add_filter( 'user_request_action_email_content', array( $this, 'racketmanager_user_request_action_email' ), 10, 2 );
     add_filter( 'wp_new_user_notification_email_admin', array( $this, 'my_wp_new_user_notification_email_admin' ), 10, 3 );
     add_filter( 'wp_new_user_notification_email', array( $this, 'my_wp_new_user_notification_email' ), 10, 3 );
+    add_filter( 'password_hint', array( $this, 'racketmanager_change_password_hint' ), 10, 1 );
+  }
+
+  public function racketmanager_change_password_hint( $hint_text ) {
+    return "Please use a strong password. Passwords that consist of special characters (&#%!@), upper case/lower case characters and numbers are considered strong.";
   }
 
   public function my_wp_new_user_notification_email_admin($wp_new_user_notification_email, $user, $blogname) {

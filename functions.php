@@ -139,6 +139,18 @@ function create_new_url_querystring() {
     'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[1]-$matches[2]&league_name=$matches[1]-$matches[2]-$matches[3]&season=$matches[4]',
     'top'
   );
+  // tournament - season
+  add_rewrite_rule(
+    'tournaments/(.+?)-tournaments/(.+?)-(.+?)-(.+?)/([0-9]{4})?$',
+    'index.php?pagename=tournaments%2F$matches[1]-tournaments%2F$matches[2]-$matches[3]-$matches[4]&season=$matches[5]',
+    'top'
+  );
+  // cup - season
+  add_rewrite_rule(
+    'cups/(.+?)-cups/(.+?)-(.+?)-(.+?)/([0-9]{4})?$',
+    'index.php?pagename=cups%2F$matches[1]-cups%2F$matches[2]-$matches[3]-$matches[4]&season=$matches[5]',
+    'top'
+  );
   // club
   add_rewrite_rule(
     'club/(.+?)/?$','index.php?pagename=club&club_name=$matches[1]','top'

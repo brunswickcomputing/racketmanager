@@ -280,12 +280,6 @@ if ( current_user_can( 'manage_racketmanager' ) ) {
       </div>
     </div>
   </details>
-  <script>
-  jQuery(document).ready(function() {
-    // Accordion
-    jQuery("#club-teams").accordion({ header: "h3",active: false, collapsible: true, heightStyle: content });
-  }); //end of document ready
-  </script>
   <?php $shortCode = $club->shortcode;
   $competitions = $racketmanager->getCompetitions(array('type'=>'league'));
   $matchdays = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
@@ -294,148 +288,155 @@ if ( current_user_can( 'manage_racketmanager' ) ) {
       <summary>
         <h2 class="teams-header"><?php _e( 'Teams', 'racketmanager') ?></h2>
       </summary>
-      <div class="competition-list jquery-ui-accordion">
+      <div class="competition-list accordion accordion-flush">
         <?php foreach ($competitions AS $competition) {
           $competition = get_competition($competition->id);
           $teams = $competition->getTeamsInfo(array( 'affiliatedclub' => $club->id, 'orderby' => array("title" => "ASC") ));
           if ( $teams ) { ?>
-            <div class="club-teams" id="competition-<?php echo $competition->id ?>">
-              <h3 class="header"><?php echo $competition->name ?></h3>
-              <div class="jquery-ui-tabs">
-                <ul class="tablist ui-tabs-nav">
-                  <li><a href="#club-teams"><?php _e( 'Teams', 'racketmanager') ?></a></li>
-                  <li><a href="#club-players"><?php _e( 'Players', 'racketmanager') ?></a></li>
-                </ul>
-                <div id="club-teams" class="jquery-ui-tab">
-                  <?php foreach ($teams AS $team ) { ?>
-                    <div class="team" id="<?php echo $team->title ?>">
-                      <h4 class="title"><?php echo $team->title ?></h4>
-                      <form id="team-update-<?php echo $competition->id ?>-<?php echo $team->id ?>-Frm" action="" method="post">
-                        <?php wp_nonce_field( 'team-update' ) ?>
-                        <input type="hidden" id="team_id" name="team_id" value="<?php echo $team->id ?>" />
-                        <input type="hidden" id="competition_id" name="competition_id" value="<?php echo $competition->id ?>" />
-                        <?php if ( !empty($team->captain) || $userCanUpdateClub ) { ?>
-                          <div class="form-group">
-                            <label for "captain-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Captain', 'racketmanager' ) ?></label>
-                            <div class="input">
-                              <input type="text" class="teamcaptain form-control" id="captain-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="captain-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->captain ?>" <?php disabled($userCanUpdateClub, false) ?> />
-                              <input type="hidden" id="captainId-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="captainId-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->captainId ?>" />
-                            </div>
-                          </div>
-                        <?php } ?>
-                        <?php if ( is_user_logged_in() ) { ?>
-                          <?php if ( !empty($team->contactno) || $userCanUpdateClub ) { ?>
-                            <div class="form-group">
-                              <label for "contactno-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Contact Number', 'racketmanager' ) ?></label>
-                              <div class="input">
-                                <input type="tel" class="form-control" id="contactno-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="contactno-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->contactno ?>" <?php disabled($userCanUpdateClub, false) ?> />
-                              </div>
-                            </div>
-                          <?php } ?>
-                          <?php if ( !empty($team->contactemail) || $userCanUpdateClub ) { ?>
-                            <div class="form-group">
-                              <label for "contactemail-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Contact Email', 'racketmanager' ) ?></label>
-                              <div class="input">
-                                <input type="email" class="form-control" id="contactemail-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="contactemail-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->contactemail ?>" size="30" <?php disabled($userCanUpdateClub, false) ?> />
-                              </div>
-                            </div>
-                          <?php } ?>
-                        <?php } ?>
-                        <?php if ( !empty($team->match_day) ) { ?>
-                          <div class="form-group">
-                            <label for "match_day-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Match Day', 'racketmanager' ) ?></label>
-                            <div class="input">
-                              <?php if ( $userCanUpdateClub ) { ?>
-                                <select size="1" name="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" id="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" >
-                                  <option><?php _e( 'Select match day' , 'racketmanager') ?></option>
-                                  <?php foreach ( $matchdays AS $matchday ) { ?>
-                                    <option value="<?php echo $matchday ?>"<?php if(isset($team->match_day)) selected($matchday, $team->match_day ) ?> <?php disabled($userCanUpdateClub, false) ?>><?php echo $matchday ?></option>
-                                  <?php } ?>
-                                </select>
-                              <?php } else { ?>
-                                <input type="text" class="form-control" id="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->match_day ?>" <?php disabled($userCanUpdateClub, false) ?> />
+            <div class="accordion-item">
+              <h3 class="header accordion-header" id="comp-<?php echo $competition->id ?>-club-<?php echo $club->id ?>">
+                <button class="accordion-button collapsed frontend" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<?php echo $competition->id ?>-club-<?php echo $club->id ?>" aria-expanded="false" aria-controls="collapse-<?php echo $competition->id ?>-club-<?php echo $club->id ?>">
+                  <?php echo $competition->name ?>
+                </button>
+              </h3>
+              <div id="collapse-<?php echo $competition->id ?>-club-<?php echo $club->id ?>" class="accordion-collapse collapse" aria-labelledby="comp-<?php echo $competition->id ?>-club-<?php echo $club->id ?>" data-bs-parent="#competition-list-<?php echo $club->id ?>">
+                <div class="accordion-body">
+                  <div class="row team">
+                    <!-- Nav tabs -->
+                    <ul class="nav nav-tabs frontend" id="myTab" role="tablist">
+                    	<li class="nav-item active" role="presentation">
+                    		<button class="nav-link" id="teams-tab-<?php echo $competition->id ?>" data-bs-toggle="tab" data-bs-target="#teams-<?php echo $competition->id ?>" type="button" role="tab" aria-controls="teams-<?php echo $competition->id ?>" aria-selected="true"><?php _e( 'Teams', 'racketmanager' ) ?></button>
+                    	</li>
+                      <li class="nav-item" role="presentation">
+                    		<button class="nav-link" id="players-tab-<?php echo $competition->id ?>" data-bs-toggle="tab" data-bs-target="#players-<?php echo $competition->id ?>" type="button" role="tab" aria-controls="players-<?php echo $competition->id ?>" aria-selected="true"><?php _e( 'Players', 'racketmanager' ) ?></button>
+                    	</li>
+                    </ul>
+                    <!-- Tab panes -->
+                    <div class="tab-content">
+                    	<div class="tab-pane fade active show" id="teams-<?php echo $competition->id ?>" role="tabpanel" aria-labelledby="teams-tab-<?php echo $competition->id ?>">
+                        <?php foreach ($teams AS $team ) { ?>
+                          <div class="team" id="<?php echo $team->title ?>">
+                            <h4 class="title"><?php echo $team->title ?></h4>
+                            <form id="team-update-<?php echo $competition->id ?>-<?php echo $team->id ?>-Frm" action="" method="post" class="form-control">
+                              <?php wp_nonce_field( 'team-update' ) ?>
+                              <input type="hidden" id="team_id" name="team_id" value="<?php echo $team->id ?>" />
+                              <input type="hidden" id="competition_id" name="competition_id" value="<?php echo $competition->id ?>" />
+                              <?php if ( !empty($team->captain) || $userCanUpdateClub ) { ?>
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="teamcaptain form-control" id="captain-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="captain-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->captain ?>" <?php disabled($userCanUpdateClub, false) ?> />
+                                    <input type="hidden" id="captainId-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="captainId-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->captainId ?>" />
+                                    <label for "captain-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Captain', 'racketmanager' ) ?></label>
+                                </div>
                               <?php } ?>
-                            </div>
+                              <?php if ( is_user_logged_in() ) { ?>
+                                <?php if ( !empty($team->contactno) || $userCanUpdateClub ) { ?>
+                                  <div class="form-floating mb-3">
+                                      <input type="tel" class="form-control" id="contactno-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="contactno-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->contactno ?>" <?php disabled($userCanUpdateClub, false) ?> />
+                                      <label for "contactno-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Contact Number', 'racketmanager' ) ?></label>
+                                  </div>
+                                <?php } ?>
+                                <?php if ( !empty($team->contactemail) || $userCanUpdateClub ) { ?>
+                                  <div class="form-floating mb-3">
+                                      <input type="email" class="form-control" id="contactemail-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="contactemail-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->contactemail ?>" size="30" <?php disabled($userCanUpdateClub, false) ?> />
+                                      <label for "contactemail-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Contact Email', 'racketmanager' ) ?></label>
+                                  </div>
+                                <?php } ?>
+                              <?php } ?>
+                              <?php if ( !empty($team->match_day) ) { ?>
+                                <div class="form-floating mb-3">
+                                    <?php if ( $userCanUpdateClub ) { ?>
+                                      <select class="form-select" size="1" name="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" id="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" >
+                                        <option><?php _e( 'Select match day' , 'racketmanager') ?></option>
+                                        <?php foreach ( $matchdays AS $matchday ) { ?>
+                                          <option value="<?php echo $matchday ?>"<?php if(isset($team->match_day)) selected($matchday, $team->match_day ) ?> <?php disabled($userCanUpdateClub, false) ?>><?php echo $matchday ?></option>
+                                        <?php } ?>
+                                      </select>
+                                    <?php } else { ?>
+                                      <input type="text" class="form-control" id="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="matchday-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->match_day ?>" <?php disabled($userCanUpdateClub, false) ?> />
+                                    <?php } ?>
+                                    <label for "match_day-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Match Day', 'racketmanager' ) ?></label>
+                                </div>
+                              <?php } ?>
+                              <?php if ( !empty($team->match_time) || $userCanUpdateClub ) { ?>
+                                <div class="form-floating mb-3">
+                                    <input type="time" class="form-control" id="matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->match_time ?>" size="30" <?php disabled($userCanUpdateClub, false) ?> />
+                                    <label for "matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Match Time', 'racketmanager' ) ?></label>
+                                </div>
+                              <?php } ?>
+                              <?php if ( $userCanUpdateClub ) { ?>
+                                <button class="btn  mb-3" type="button" id="teamUpdateSubmit-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="teamUpdateSubmit-<?php echo $competition->id ?>-<?php echo $team->id ?>" onclick="Racketmanager.teamUpdate(this)">Update details</button>
+                                <div class="updateResponse" id="updateTeamResponse-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="updateTeamResponse-<?php echo $competition->id ?>-<?php echo $team->id ?>"></div>
+                              <?php } ?>
+                            </form>
                           </div>
-                        <?php } ?>
-                        <?php if ( !empty($team->match_time) || $userCanUpdateClub ) { ?>
-                          <div class="form-group match-time">
-                            <label for "matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>"><?php _e( 'Match Time', 'racketmanager' ) ?></label>
-                            <div class="input">
-                              <input type="time" class="form-control" id="matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="matchtime-<?php echo $competition->id ?>-<?php echo $team->id ?>" value="<?php echo $team->match_time ?>" size="30" <?php disabled($userCanUpdateClub, false) ?> />
-                            </div>
-                          </div>
-                        <?php } ?>
-                        <?php if ( $userCanUpdateClub ) { ?>
-                          <button class="btn" type="button" id="teamUpdateSubmit-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="teamUpdateSubmit-<?php echo $competition->id ?>-<?php echo $team->id ?>" onclick="Racketmanager.teamUpdate(this)">Update details</button>
-                          <div class="updateResponse" id="updateTeamResponse-<?php echo $competition->id ?>-<?php echo $team->id ?>" name="updateTeamResponse-<?php echo $competition->id ?>-<?php echo $team->id ?>"></div>
-                        <?php } ?>
-                      </form>
+                        <?php  } ?>
+                    	</div>
+                      <div class="tab-pane fade" id="players-<?php echo $competition->id ?>" role="tabpanel" aria-labelledby="players-tab-<?php echo $competition->id ?>">
+                          <?php $season = $competition->getSeasonCompetition(); ?>
+                          <table class="playerstats" summary="" title="RacketManager Player Stats">
+                            <thead>
+                              <tr>
+                                <th rowspan="2" scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>
+                                <th colspan="<?php echo $season['num_match_days'] ?>" scope="colgroup" class="colspan"><?php _e( 'Match Day', 'racketmanager') ?></th>
+                              </tr>
+                              <tr>
+                                <?php $matchdaystatsdummy = array();
+                                for ( $day = 1; $day <= $season['num_match_days']; $day++ ) {
+                                  $matchdaystatsdummy[$day] = array(); ?>
+                                  <th scope="col" class="matchday"><?php echo $day ?></th>
+                                <?php } ?>
+                              </tr>
+                            </thead>
+                            <tbody id="the-list">
+                              <?php if ( $playerstats = $competition->getPlayerStats(array( 'season' => $season['name'], 'club' => $club->id ))  ) { $class = ''; ?>
+                              <?php foreach ( $playerstats AS $playerstat ) { ?>
+                                <?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+                                <tr class="<?php echo $class ?>">
+                                  <th class="playername"><?php echo $playerstat->fullname ?></th>
+                                  <?php $matchdaystats = $matchdaystatsdummy;
+                                  $prevMatchDay = $i = 0;
+                                  foreach ( $playerstat->matchdays AS $matches) {
+                                    if ( !$prevMatchDay == $matches->match_day ) {
+                                      $i = 0;
+                                    }
+                                    if ( $matches->match_winner == $matches->team_id ) {
+                                      $matchresult = 'Won';
+                                    } else {
+                                      $matchresult = 'Lost';
+                                    }
+                                    $matchresult = $matches->match_winner == $matches->team_id ? 'Won' : 'Lost';
+                                    $rubberresult = $matches->rubber_winner == $matches->team_id ? 'Won' : 'Lost';
+                                    $matchdaystats[$matches->match_day][$i] = array('team' => $matches->team_title, 'pair' => $matches->rubber_number, 'matchresult' => $matchresult, 'rubberresult' => $rubberresult);
+                                    $prevMatchDay = $matches->match_day;
+                                    $i++;
+                                  }
+                                  foreach ( $matchdaystats AS $daystat ) {
+                                    $dayshow = '';
+                                    $title = '';
+                                    foreach ( $daystat AS $stat ) {
+                                      if ( isset($stat['team']) ) {
+                                        $title        .= $matchresult.' match & '.$rubberresult.' rubber ';
+                                        $team        = str_replace($shortCode,'',$stat['team']);
+                                        $pair        = $stat['pair'];
+                                        $dayshow    .= $team.'<br />Pair'.$pair.'<br />';
+                                      }
+                                    }
+                                    if ( $dayshow == '' ) {
+                                      echo '<td class="matchday" title=""></td>';
+                                    } else {
+                                      echo '<td class="matchday" title="'.$title.'">'.$dayshow.'</td>';
+                                    }
+                                  }
+                                  $matchdaystats = $matchdaystatsdummy; ?>
+                                </tr>
+                              <?php } ?>
+                            <?php } ?>
+                          </tbody>
+                        </table>
+
                     </div>
-                  <?php  } ?>
+                  </div>
                 </div>
-                <div id="club-players" class="jquery-ui-tab">
-                  <?php $season = $competition->getSeasonCompetition(); ?>
-                  <table class="playerstats" summary="" title="RacketManager Player Stats">
-                    <thead>
-                      <tr>
-                        <th rowspan="2" scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>
-                        <th colspan="<?php echo $season['num_match_days'] ?>" scope="colgroup" class="colspan"><?php _e( 'Match Day', 'racketmanager') ?></th>
-                      </tr>
-                      <tr>
-                        <?php $matchdaystatsdummy = array();
-                        for ( $day = 1; $day <= $season['num_match_days']; $day++ ) {
-                          $matchdaystatsdummy[$day] = array(); ?>
-                          <th scope="col" class="matchday"><?php echo $day ?></th>
-                        <?php } ?>
-                      </tr>
-                    </thead>
-                    <tbody id="the-list">
-                      <?php if ( $playerstats = $competition->getPlayerStats(array( 'season' => $season['name'], 'club' => $club->id ))  ) { $class = ''; ?>
-                      <?php foreach ( $playerstats AS $playerstat ) { ?>
-                        <?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-                        <tr class="<?php echo $class ?>">
-                          <th class="playername"><?php echo $playerstat->fullname ?></th>
-                          <?php $matchdaystats = $matchdaystatsdummy;
-                          $prevMatchDay = $i = 0;
-                          foreach ( $playerstat->matchdays AS $matches) {
-                            if ( !$prevMatchDay == $matches->match_day ) {
-                              $i = 0;
-                            }
-                            if ( $matches->match_winner == $matches->team_id ) {
-                              $matchresult = 'Won';
-                            } else {
-                              $matchresult = 'Lost';
-                            }
-                            $matchresult = $matches->match_winner == $matches->team_id ? 'Won' : 'Lost';
-                            $rubberresult = $matches->rubber_winner == $matches->team_id ? 'Won' : 'Lost';
-                            $matchdaystats[$matches->match_day][$i] = array('team' => $matches->team_title, 'pair' => $matches->rubber_number, 'matchresult' => $matchresult, 'rubberresult' => $rubberresult);
-                            $prevMatchDay = $matches->match_day;
-                            $i++;
-                          }
-                          foreach ( $matchdaystats AS $daystat ) {
-                            $dayshow = '';
-                            $title = '';
-                            foreach ( $daystat AS $stat ) {
-                              if ( isset($stat['team']) ) {
-                                $title        .= $matchresult.' match & '.$rubberresult.' rubber ';
-                                $team        = str_replace($shortCode,'',$stat['team']);
-                                $pair        = $stat['pair'];
-                                $dayshow    .= $team.'<br />Pair'.$pair.'<br />';
-                              }
-                            }
-                            if ( $dayshow == '' ) {
-                              echo '<td class="matchday" title=""></td>';
-                            } else {
-                              echo '<td class="matchday" title="'.$title.'">'.$dayshow.'</td>';
-                            }
-                          }
-                          $matchdaystats = $matchdaystatsdummy; ?>
-                        </tr>
-                      <?php } ?>
-                    <?php } ?>
-                  </tbody>
-                </table>
               </div>
             </div>
           </div>

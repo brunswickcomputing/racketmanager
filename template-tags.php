@@ -643,47 +643,6 @@
     }
 
     /**
-     * print match CSS class for list
-     *
-     * @category template-tags
-     */
-    function the_matchlist_class() {
-        if (get_match_template_type() == 'accordion')
-            echo 'jquery-ui-accordion';
-        elseif (get_match_template_type() == 'tabs')
-            echo 'jquery-ui-tabs';
-    }
-    /**
-     * print match container CSS class for jQuery UI Tabs
-     *
-     * @category template-tags
-     */
-    function the_matchbox_class() {
-        if (get_match_template_type() == 'tabs')
-            echo 'jquery-ui-tab';
-    }
-    /**
-     * print match header CSS class for jQuery UI Tabs & Accordion
-     *
-     * @return string
-     * @category template-tags
-     */
-    function the_matchbox_header_class() {
-        if (in_array(get_match_template_type(), array('tabs', 'accordion')))
-            echo 'header';
-    }
-    /**
-     * print match content CSS class for jQuery UI Tabs & Accordion
-     *
-     * @return string
-     * @category template-tags
-     */
-    function the_matchbox_content_class() {
-        if (in_array(get_match_template_type(), array('tabs', 'accordion')))
-            echo 'match-content';
-    }
-
-    /**
      * print crosstable field
      *
      * @param int $i
@@ -897,25 +856,6 @@
         $args['league_id'] = $league_id;
 
         $shortcode = "[leaguearchive";
-        foreach ($args AS $key => $value)
-            $shortcode .= " ".$key."='".$value."'";
-        $shortcode .= "]";
-        echo do_shortcode($shortcode);
-    }
-
-    /**
-    * display league
-    *
-    * @param int $league_id
-    * @param array $args additional arguments as associative array (optional)
-    * @return void
-    */
-    function racketmanager_league( $league_id, $args = array() ) {
-        $defaults = array('season' => false, 'template' => '');
-        $args = array_merge($defaults, $args);
-        $args['league_id'] = $league_id;
-
-        $shortcode = "[league";
         foreach ($args AS $key => $value)
             $shortcode .= " ".$key."='".$value."'";
         $shortcode .= "]";

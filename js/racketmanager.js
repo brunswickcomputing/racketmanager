@@ -1,13 +1,5 @@
 var $mathCardWindow;
 jQuery(document).ready(function($) {
-	/* jQuery UI accordion list */
-	jQuery( ".jquery-ui-accordion" ).accordion({
-		header: "h3.header",
-		collapsible: true,
-		heightStyle: "content",
-		active: "false"
-	});
-
 	/*
 	* Make sure that jQuery UI Tab content containers have correct IDs based on tablist links
 	*/

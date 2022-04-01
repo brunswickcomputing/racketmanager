@@ -14,25 +14,21 @@
     <?php } ?>
 
     <p class="description"><?php echo wp_get_password_hint(); ?></p>
-    <div class="form-group">
-      <label class="hidden" for="password"><?php _e( 'New password', 'racketmanager' ) ?></label>
-      <div class="input">
-        <input type="password" placeholder="<?php _e( 'New password', 'racketmanager' ) ?>" name="password" id="password" class="password" size="20" value="" autocomplete="off" />
+    <div class="form-floating mb-3">
+        <input class="form-control password" type="password" placeholder="<?php _e( 'New password', 'racketmanager' ) ?>" name="password" id="password" size="20" value="" autocomplete="off" />
         <i class="passwordShow racketmanager-svg-icon">
           <?php racketmanager_the_svg('icon-eye') ?>
         </i>
-      </div>
+        <label class="" for="password"><?php _e( 'New password', 'racketmanager' ) ?></label>
     </div>
-    <div class="form-group">
-      <label class="hidden" for="rePassword"><?php _e( 'Repeat new password', 'racketmanager' ) ?></label>
-      <div class="input">
-        <input type="password" placeholder="<?php _e( 'Repeat new password', 'racketmanager' ) ?>" name="rePassword" id="rePassword" class="password" size="20" value="" autocomplete="off" />
+    <div class="form-floating mb-3">
+        <input class="form-control password" type="password" placeholder="<?php _e( 'Repeat new password', 'racketmanager' ) ?>" name="rePassword" id="rePassword" size="20" value="" autocomplete="off" />
+        <label class="" for="rePassword"><?php _e( 'Repeat new password', 'racketmanager' ) ?></label>
         <i class="passwordShow racketmanager-svg-icon">
           <?php racketmanager_the_svg('icon-eye') ?>
         </i>
-      </div>
     </div>
-    <div class="form-group">
+    <div class="form-group mb-3">
       <span id="password-strength"></span>
     </div>
 

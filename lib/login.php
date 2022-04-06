@@ -176,7 +176,7 @@ class RacketManagerLogin extends RacketManager {
         $error_codes = explode( ',', $_REQUEST['register-errors'] );
 
         foreach ( $error_codes as $code ) {
-          $errors []= $this->get_error_message( $code );
+          $errors[]= $this->get_error_message( $code );
         }
       }
       $vars['errors'] = $errors;
@@ -240,7 +240,6 @@ class RacketManagerLogin extends RacketManager {
     if ( $_SERVER['REQUEST_METHOD'] == 'GET' ) {
       $redirect_to = isset( $_REQUEST['redirect_to'] ) ? $_REQUEST['redirect_to'] : null;
 
-
       if ( is_user_logged_in() ) {
         $this->redirect_logged_in_user( $redirect_to );
         exit;
@@ -258,8 +257,7 @@ class RacketManagerLogin extends RacketManager {
   }
 
   /**
-  * Redirects the user to the correct page depending on whether he / she
-  * is an admin or not.
+  * Redirects the user to the correct page depending on whether admin or not.
   *
   * @param string $redirect_to   An optional redirect_to URL for admin users
   */
@@ -607,25 +605,30 @@ class RacketManagerLogin extends RacketManager {
 
     global $racketmanager_shortcodes;
 
+    if ( is_user_logged_in() ) {
+      return __( 'You are already signed in.', 'racketmanager' );
+    }
+
     // Parse shortcode vars
     $default_vars = array( 'show_title' => true );
     $vars = shortcode_atts( $default_vars, $vars );
 
     // Retrieve possible errors from request parameters
-    $vars['errors'] = array();
+    $errors = array();
+    $error_codes = array();
     if ( isset( $_REQUEST['errors'] ) ) {
       $error_codes = explode( ',', $_REQUEST['errors'] );
 
-      foreach ( $error_codes as $error_code ) {
-        $vars['errors'] []= $this->get_error_message( $error_code );
+      foreach ( $error_codes as $code ) {
+        $errors[] = $this->get_error_message( $code );
       }
     }
+    $vars['errors'] = $errors;
+    $vars['error_codes'] = $error_codes;
+    // Check if the user just requested a new password
+    $vars['lost_password_sent'] = isset( $_REQUEST['checkemail'] ) && $_REQUEST['checkemail'] == 'confirm';
 
-    if ( is_user_logged_in() ) {
-      return __( 'You are already signed in.', 'racketmanager' );
-    } else {
-      return $racketmanager_shortcodes->loadTemplate( 'form-password-lost', $vars );
-    }
+    return $racketmanager_shortcodes->loadTemplate( 'form-password-lost', $vars );
   }
 
   /**
@@ -633,17 +636,15 @@ class RacketManagerLogin extends RacketManager {
   */
   public function do_password_lost() {
     if ( 'POST' == $_SERVER['REQUEST_METHOD'] ) {
+      $redirect_url = home_url( 'member-password-lost' );
       $errors = retrieve_password();
       if ( is_wp_error( $errors ) ) {
         // Errors found
-        $redirect_url = home_url( 'member-password-lost' );
         $redirect_url = add_query_arg( 'errors', join( ',', $errors->get_error_codes() ), $redirect_url );
       } else {
         // Email sent
-        $redirect_url = home_url( 'member-login' );
         $redirect_url = add_query_arg( 'checkemail', 'confirm', $redirect_url );
       }
-
       wp_redirect( $redirect_url );
       exit;
     }
@@ -683,9 +684,9 @@ class RacketManagerLogin extends RacketManager {
       $user = check_password_reset_key( $_REQUEST['key'], $_REQUEST['login'] );
       if ( ! $user || is_wp_error( $user ) ) {
         if ( $user && $user->get_error_code() === 'expired_key' ) {
-          wp_redirect( home_url( 'member-login?login=expiredkey' ) );
+          wp_redirect( home_url( 'member-password-lost?errors=expiredkey' ) );
         } else {
-          wp_redirect( home_url( 'member-login?login=invalidkey' ) );
+          wp_redirect( home_url( 'member-password-lost?errors=invalidkey' ) );
         }
         exit;
       }
@@ -723,6 +724,7 @@ class RacketManagerLogin extends RacketManager {
 
         // Error messages
         $errors = array();
+        $error_codes = array();
         if ( isset( $_REQUEST['error'] ) ) {
           $error_codes = explode( ',', $_REQUEST['error'] );
 
@@ -731,6 +733,7 @@ class RacketManagerLogin extends RacketManager {
           }
         }
         $vars['errors'] = $errors;
+        $vars['error_codes'] = $error_codes;
 
         return $racketmanager_shortcodes->loadTemplate( 'form-password-reset', $vars );
       } else {

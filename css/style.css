@@ -850,14 +850,6 @@ span.form-error {
     padding: 32px;
     font-weight: bold;
 }
-.login-form-container {
-    margin: auto;
-    border: 1px;
-    width: 540px;
-}
-#login .login-form-container {
-    border: 1px
-}
 label.hidden {
     display: none;
 }
@@ -909,17 +901,8 @@ label.hidden {
     margin-bottom: -5px;
     padding-bottom: 0px;
 }
-.login-form-container input {
-    width: 100%;
-}
-div#password-lost-form {
-    text-align: center;
-}
 #tabs-login.ui-tabs .ui-tabs-nav .ui-tabs-anchor {
     padding-top: 0em;
-}
-.login-form-container input[type="radio"] {
-    width: 5%;
 }
 .label-radio {
     width: 100%;
@@ -939,8 +922,7 @@ div#password-lost-form {
     color: #FFFFFF;
 }
 #password-strength.good {
-    background-color: #FFBF00
-    ;
+    background-color: #FFBF00;
 }
 #password-strength {
     width: 100%;
@@ -948,7 +930,7 @@ div#password-lost-form {
     text-align: center;
 }
 #password-strength.strong {
-    background-color: #157347s;
+    background-color: #157347;
     color: white;
 }
 #password-reset .description {
@@ -977,11 +959,6 @@ input#resetpassButton:hover:disabled, input#memberaccount-button:hover:disabled 
 }
 .form-row {
     padding-top: 2rem;
-}
-@media only screen and (max-width: 640px) {
-    .login-form-container {
-        width: 100%;
-    }
 }
 form#signupform {
     height: 300px;

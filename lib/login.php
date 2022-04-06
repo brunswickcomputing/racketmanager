@@ -200,7 +200,9 @@ class RacketManagerLogin extends RacketManager {
       if ( isset( $_REQUEST['redirect_to'] ) ) {
         $vars['redirect'] = wp_validate_redirect( $_REQUEST['redirect_to'], $vars['redirect'] );
       } elseif ( wp_get_referer() ) {
-        if ( strpos(wp_get_referer(), $racketmanager->site_url ) === 0 ) {
+        if ( strpos(wp_get_referer(), 'member-login' ) > 0 ) {
+          $vars['redirect'] = '';
+        } elseif ( strpos(wp_get_referer(), $racketmanager->site_url ) === 0 ) {
           $vars['redirect'] = wp_validate_redirect( wp_get_referer(), $vars['redirect'] );
         }
       }

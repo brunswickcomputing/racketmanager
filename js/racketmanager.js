@@ -389,8 +389,8 @@ Racketmanager.updateMatchResults = function(link) {
 };
 Racketmanager.disableRubberUpdate = function() {
 
-	jQuery("select").prop("disabled", "true");
-	jQuery("input").prop("readonly", "true");
+	jQuery("#match-rubbers select").prop("disabled", "true");
+	jQuery("#match-rubbers input").prop("readonly", "true");
 	jQuery("#updateRubber").val("confirm");
 };
 Racketmanager.updateResults = function(link) {

@@ -7,7 +7,7 @@
 function racketmanager_upgrade() {
 	global $wpdb, $racketmanager, $lmLoader;
 
-	$options = $this->options;
+	$options = $racketmanager->options;
 	$installed = $options['dbversion'];
 
 	echo __('Upgrade database structure...', 'racketmanager') . "<br />\n";
@@ -310,6 +310,10 @@ function racketmanager_upgrade() {
 				}
 
 		}
+		if (version_compare($installed, '6.7.0', '<')) {
+        echo __('starting 6.7.0 upgrade', 'leaguemanager') . "<br />\n";
+        $wpdb->query( "ALTER TABLE {$wpdb->racketmanager_matches} ADD `comments` varchar( 500 ) NULL AFTER `away_captain` ");
+    }
     /*
 	* Update version and dbversion
 	*/

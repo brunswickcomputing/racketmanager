@@ -930,6 +930,10 @@ class RacketManagerAJAX extends RacketManager {
 													<input class="form-check-input" type="radio" name="resultConfirm" value="challenge" required />
 													<label class="form-check-label">Challenge</label>
 												</div>
+												<div class="form-floating">
+													<textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmCommentsHome" id="resultConfirmCommentsHome"></textarea>
+													<label for="resultConfirmCommentsHome"><?php _e( 'Comments', 'racketmanager' ) ?></label>
+												</div>
 											<?php } ?>
 										<?php } ?>
 									</div>
@@ -951,6 +955,10 @@ class RacketManagerAJAX extends RacketManager {
 													<input class="form-check-input" type="radio" name="resultConfirm" value="challenge" required />
 													<label class="form-check-label"><?php _e( 'Challenge', 'racketmanager' ) ?></label>
 												</div>
+												<div class="form-floating">
+													<textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmCommentsAway" id="resultConfirmCommentsAway"></textarea>
+													<label for="resultConfirmCommentsAway"><?php _e( 'Comments', 'racketmanager' ) ?></label>
+												</div>
 											<?php } ?>
 										<?php } ?>
 									</div>
@@ -959,6 +967,10 @@ class RacketManagerAJAX extends RacketManager {
 						</div>
 					</div>
 				<?php } ?>
+				<div class="form-floating">
+					<textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmComments" id="resultConfirmComments"><?php echo $match->comments ?></textarea>
+					<label for="resultConfirmComments"><?php _e( 'Comments', 'racketmanager' ) ?></label>
+				</div>
 				<div class="mb-3">
 					<?php if ( isset($match->updated_user) ) {
 						echo 'Updated By:'.$racketmanager->getPlayerName($match->updated_user);
@@ -1008,6 +1020,11 @@ class RacketManagerAJAX extends RacketManager {
 			$away_team = $_POST['away_team'];
 			$lm_options = $racketmanager->getOptions();
 			$matchConfirmed = '';
+			$matchComments = isset($_POST['resultConfirmComments']) ? $_POST['resultConfirmComments'] : '';
+			$matchCommentsHome = isset($_POST['resultConfirmCommentsHome']) ? $_POST['resultConfirmCommentsHome'] : '';
+			$matchCommentsAway = isset($_POST['resultConfirmCommentsAway']) ? $_POST['resultConfirmCommentsAway'] : '';
+			if ($matchCommentsHome) { $matchComments = $match->comments.PHP_EOL.__('Home:','racketmanager').':'.$matchCommentsHome; }
+			if ($matchCommentsAway) { $matchComments = $match->comments.PHP_EOL.__('Away:','racketmanager').':'.$matchCommentsAway; }
 			if ( $_POST['updateRubber'] == 'results' ) {
 				$matchConfirmed = $this->updateRubberResults( $match, $num_rubbers, $lm_options);
 			} elseif ( $_POST['updateRubber'] == 'confirm' ) {
@@ -1015,7 +1032,7 @@ class RacketManagerAJAX extends RacketManager {
 			}
 
 			if ( $matchConfirmed ) {
-				$this->updateMatchStatus( $matchId, $matchConfirmed, $home_team, $away_team );
+				$this->updateMatchStatus( $matchId, $matchConfirmed, $home_team, $away_team, $matchComments );
 				switch ( $matchConfirmed ) {
 					case "A":
 					$matchMessage = 'Result Approved';
@@ -1183,20 +1200,20 @@ class RacketManagerAJAX extends RacketManager {
 	* update match status
 	*
 	*/
-	public function updateMatchStatus( $matchId, $matchConfirmed, $homeTeam, $awayTeam ) {
+	public function updateMatchStatus( $matchId, $matchConfirmed, $homeTeam, $awayTeam, $comments ) {
 		global $wpdb, $racketmanager, $league, $match;
 
 		$userid = get_current_user_id();
 		$homeRoster = $racketmanager->getRoster(array("count" => true, "team" => $homeTeam, "player" => $userid, "inactive" => true));
 		if ( $homeRoster > 0 ) { //Home captain
-			$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `home_captain` = %d WHERE `id` = '%d'", $userid, $matchConfirmed, $userid, $matchId));
+			$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `home_captain` = %d, `comments` = '%s' WHERE `id` = '%d'", $userid, $matchConfirmed, $userid, $comments, $matchId));
 		} else {
 			$awayRoster = $racketmanager->getRoster(array("count" => true, "team" => $awayTeam, "player" => $userid, "inactive" => true));
 			if ( $awayRoster > 0 ) { // Away Captain
-				$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `away_captain` = %d WHERE `id` = '%d'", $userid, $matchConfirmed, $userid, $matchId));
+				$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `away_captain` = %d, `comments` = '%s' WHERE `id` = '%d'", $userid, $matchConfirmed, $userid, $comments, $matchId));
 			} else {
 				$matchConfirmed = 'A'; //Admin user
-				$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s' WHERE `id` = '%d'", get_current_user_id(), $matchConfirmed, $matchId));
+				$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `comments` = '%s' WHERE `id` = '%d'", get_current_user_id(), $matchConfirmed, $comments, $matchId));
 			}
 		}
 	}

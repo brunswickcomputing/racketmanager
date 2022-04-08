@@ -199,6 +199,9 @@ div.match .match-stats {
 .captain {
     font-weight: 900;
 }
+.form-floating>.form-control.result-comments {
+	height: 100px;
+}
 div.matchlist {
 	margin-bottom: 1em;
 }
@@ -608,7 +611,10 @@ div.teamlist .header .ui-icon {
 .points {
     text-align: center;
 }
-
+.row input.points {
+	padding: 2px 3px;
+	margin: 3px;
+}
 .wp-filter .view-switch {
 	display: inline-block;
 	vertical-align: middle;

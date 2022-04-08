@@ -771,12 +771,16 @@ class RacketManagerAJAX extends RacketManager {
 		?>
 		<div id="matchrubbers" class="rubber-block">
 			<div id="matchheader">
-				<div class="leaguetitle"><?php echo $league->title ?></div>
-				<div class="matchdate"><?php echo substr($match->date,0,10) ?></div>
-				<?php if ( isset($match->match_day) && $match->match_day > 0 ) { ?>
-					<div class="matchday">Week <?php echo $match->match_day ?></div>
-				<?php } ?>
-				<div class="matchtitle"><?php echo $match->match_title ?></div>
+				<div class="row justify-content-between" id="match-header-1">
+					<div class="col-auto leaguetitle"><?php echo $league->title ?></div>
+					<?php if ( isset($match->match_day) && $match->match_day > 0 ) { ?>
+						<div class="col-auto matchday">Week <?php echo $match->match_day ?></div>
+					<?php } ?>
+					<div class="col-auto matchdate"><?php echo substr($match->date,0,10) ?></div>
+				</div>
+				<div class="row justify-content-center" id="match-header-2">
+					<div class="col-auto matchtitle"><?php echo $match->match_title ?></div>
+				</div>
 			</div>
 			<form id="match-rubbers" action="#" method="post" onsubmit="return checkSelect(this)">
 				<?php wp_nonce_field( 'rubbers-match' ) ?>
@@ -790,156 +794,186 @@ class RacketManagerAJAX extends RacketManager {
 				<input type="hidden" name="match_type" value="<?php echo $match->type ?>" />
 				<input type="hidden" name="match_round" value="<?php echo $match->round ?>" />
 
-				<table class="widefat" summary="" style="margin-bottom: 2em;">
-					<thead>
-						<tr>
-							<th style="text-align: center;"><?php _e( 'Pair', 'racketmanager' ) ?></th>
-							<th style="text-align: center;"><?php _e( 'Home Team', 'racketmanager' ) ?></th>
-							<th style="text-align: center;" colspan="<?php echo $match->num_sets ?>"><?php _e('Sets', 'racketmanager' ) ?></th>
-							<th style="text-align: center;"><?php _e( 'Away Team', 'racketmanager' ) ?></th>
-						</tr>
-					</thead>
-					<tbody class="rtbody rubber-table" id="the-list-rubbers-<?php echo $match->id ?>" >
-						<?php $class = '';
-						$rubbers = $match->getRubbers();
-						$r = $tabbase = 0 ;
+				<div class="row mb-3">
+					<div class="col-1 text-center"><strong><?php _e( 'Pair', 'racketmanager' ) ?></strong></div>
+					<div class="col-3 text-center"><strong><?php _e( 'Home Team', 'racketmanager' ) ?></strong></div>
+					<div class="col-5 text-center"><strong><?php _e('Sets', 'racketmanager' ) ?></strong></div>
+					<div class="col-3 text-center"><strong><?php _e( 'Away Team', 'racketmanager' ) ?></strong></div>
+				</div>
 
-						foreach ($rubbers as $rubber) {	?>
-							<tr class="rtr <?php echo $class ?>">
-								<input type="hidden" name="id[<?php echo $r ?>]" value="<?php echo $rubber->id ?>" </>
-								<td rowspan="3" class="rtd centered">
-									<?php echo isset($rubber->rubber_number) ? $rubber->rubber_number : '' ?>
-								</td>
-								<td class="rtd playerselect">
-									<?php $tabindex = $tabbase + 1; ?>
-									<select tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer1[<?php echo $r ?>]" id="homeplayer1_<?php echo $r ?>">
-										<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
-										<?php foreach ( $homeRoster[$r][1] AS $roster ) {
-											if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
-											<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->home_player_1)) selected($roster->roster_id, $rubber->home_player_1 ); echo $disabled; ?>>
-												<?php echo $roster->fullname ?>
-											</option>
-										<?php } ?>
-									</select>
-								</td>
+				<?php $class = '';
+				$rubbers = $match->getRubbers();
+				$r = $tabbase = 0 ;
 
-								<?php for ( $i = 1; $i <= $match->num_sets; $i++ ) {
-									if (!isset($rubber->sets[$i])) {
-										$rubber->sets[$i] = array('player1' => '', 'player2' => '');
-									} ?>
-									<?php $tabindex = $tabbase + 10 + $i; ?>
-									<td class="rtd centered" rowspan="2">
-										<input tabindex="<?php echo $tabindex ?>" class="points" type="text" size="2" id="set_<?php echo $r ?>_<?php echo $i ?>_player1" name="custom[<?php echo $r ?>][sets][<?php echo $i ?>][player1]" value="<?php echo $rubber->sets[$i]['player1'] ?>" />
-										:
-										<?php $tabindex = $tabbase + 11 + $i; ?>
-										<input tabindex="<?php echo $tabindex ?>" class="points" type="text" size="2" id="set_<?php echo $r ?>_<?php echo $i ?>_player2" name="custom[<?php echo $r ?>][sets][<?php echo $i ?>][player2]" value="<?php echo $rubber->sets[$i]['player2'] ?>" />
-									</td>
-								<?php } ?>
+				foreach ($rubbers as $rubber) {	?>
+					<div class="row mb-3">
+						<input type="hidden" name="id[<?php echo $r ?>]" value="<?php echo $rubber->id ?>" </>
+						<div class="col-1 text-center align-self-center"><?php echo isset($rubber->rubber_number) ? $rubber->rubber_number : '' ?></div>
+						<div class="col-11">
+							<div class="row">
+								<div class="col-12 col-sm-4 mb-3">
+									<div class="row">
+										<div class="col-6 col-sm-12">
+											<div class="form-floating mb-2">
+												<?php $tabindex = $tabbase + 1; ?>
+												<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer1[<?php echo $r ?>]" id="homeplayer1_<?php echo $r ?>">
+													<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
+													<?php foreach ( $homeRoster[$r][1] AS $roster ) {
+														if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
+														<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->home_player_1)) selected($roster->roster_id, $rubber->home_player_1 ); echo $disabled; ?>>
+															<?php echo $roster->fullname ?>
+														</option>
+													<?php } ?>
+												</select>
+												<label for="homeplayer1_<?php echo $r ?>"><?php _e( 'Player', 'racketmanager') ?></label>
+											</div>
+										</div>
+										<div class="col-6 col-sm-12">
+											<div class="form-floating mb-2">
+												<?php $tabindex = $tabbase + 2; ?>
+												<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer2[<?php echo $r ?>]" id="homeplayer2_<?php echo $r ?>">
+													<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
+													<?php foreach ( $homeRoster[$r][2] AS $roster ) {
+														if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
+														<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->home_player_2)) selected($roster->roster_id, $rubber->home_player_2 ); echo $disabled; ?>>
+															<?php echo $roster->fullname ?>
+														</option>
+													<?php } ?>
+												</select>
+												<label for="homeplayer2_<?php echo $r ?>"><?php _e( 'Player', 'racketmanager') ?></label>
+											</div>
+										</div>
+									</div>
+								</div>
 
-								<td class="rtd playerselect">
-									<?php $tabindex = $tabbase + 3; ?>
-									<select tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer1[<?php echo $r ?>]" id="awayplayer1_<?php echo $r ?>">
-										<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
-										<?php foreach ( $awayRoster[$r][1] AS $roster ) {
-											if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
-											<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->away_player_1)) selected($roster->roster_id, $rubber->away_player_1 ); echo $disabled; ?>>
-												<?php echo $roster->fullname ?>
-											</option>
+								<div class="col-12 col-sm-4 mb-3 align-self-center">
+									<div class="row text-center">
+										<?php for ( $i = 1; $i <= $match->num_sets; $i++ ) {
+											if (!isset($rubber->sets[$i])) {
+												$rubber->sets[$i] = array('player1' => '', 'player2' => '');
+											}
+											$colspan = 12 / $match->num_sets;
+											$tabindex = $tabbase + 10 + $i; ?>
+											<div class="col-<?php echo $colspan ?>">
+												<input tabindex="<?php echo $tabindex ?>" class="points" type="text" size="2" id="set_<?php echo $r ?>_<?php echo $i ?>_player1" name="custom[<?php echo $r ?>][sets][<?php echo $i ?>][player1]" value="<?php echo $rubber->sets[$i]['player1'] ?>" />
+												<?php $tabindex = $tabbase + 11 + $i; ?>
+												<input tabindex="<?php echo $tabindex ?>" class="points" type="text" size="2" id="set_<?php echo $r ?>_<?php echo $i ?>_player2" name="custom[<?php echo $r ?>][sets][<?php echo $i ?>][player2]" value="<?php echo $rubber->sets[$i]['player2'] ?>" />
+											</div>
 										<?php } ?>
-									</select>
-								</td>
-							</tr>
-							<tr>
-								<td class="rtd playerselect">
-									<?php $tabindex = $tabbase + 2; ?>
-									<select tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer2[<?php echo $r ?>]" id="homeplayer2_<?php echo $r ?>">
-										<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
-										<?php foreach ( $homeRoster[$r][2] AS $roster ) {
-											if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
-											<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->home_player_2)) selected($roster->roster_id, $rubber->home_player_2 ); echo $disabled; ?>>
-												<?php echo $roster->fullname ?>
-											</option>
-										<?php } ?>
-									</select>
-								</td>
-								<td class="rtd playerselect">
-									<?php $tabindex = $tabbase + 4; ?>
-									<select tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer2[<?php echo $r ?>]" id="awayplayer2_<?php echo $r ?>">
-										<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
-										<?php foreach ( $awayRoster[$r][2] AS $roster ) {
-											if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
-											<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->away_player_2)) selected($roster->roster_id, $rubber->away_player_2 ); echo $disabled; ?>>
-												<?php echo $roster->fullname ?>
-											</option>
-										<?php } ?>
-									</select>
-								</td>
-							</tr>
-							<tr>
-								<td colspan="5" class="rtd" style="text-align: center;">
+									</div>
+								</div>
+
+								<div class="col-12 col-sm-4 mb-3">
+									<div class="row">
+										<div class="col-6 col-sm-12">
+											<div class="form-floating mb-2">
+												<?php $tabindex = $tabbase + 3; ?>
+												<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer1[<?php echo $r ?>]" id="awayplayer1_<?php echo $r ?>">
+													<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
+													<?php foreach ( $awayRoster[$r][1] AS $roster ) {
+														if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
+														<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->away_player_1)) selected($roster->roster_id, $rubber->away_player_1 ); echo $disabled; ?>>
+															<?php echo $roster->fullname ?>
+														</option>
+													<?php } ?>
+												</select>
+												<label for="awayplayer1_<?php echo $r ?>"><?php _e( 'Player', 'racketmanager') ?></label>
+											</div>
+										</div>
+										<div class="col-6 col-sm-12">
+											<div class="form-floating mb-2">
+												<?php $tabindex = $tabbase + 4; ?>
+												<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer2[<?php echo $r ?>]" id="awayplayer2_<?php echo $r ?>">
+													<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
+													<?php foreach ( $awayRoster[$r][2] AS $roster ) {
+														if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
+														<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->away_player_2)) selected($roster->roster_id, $rubber->away_player_2 ); echo $disabled; ?>>
+															<?php echo $roster->fullname ?>
+														</option>
+													<?php } ?>
+												</select>
+												<label for="awayplayer2_<?php echo $r ?>"><?php _e( 'Player', 'racketmanager') ?></label>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row text-center">
+								<div class="col-12">
 									<input class="points" type="text" size="2" readonly id="home_points[<?php echo $r ?>]" name="home_points[<?php echo $r ?>]" value="<?php echo (isset($rubber->home_points) ? $rubber->home_points : '') ?>" />
-									:
 									<input class="points" type="text" size="2" readonly id="away_points[<?php echo $r ?>]" name="away_points[<?php echo $r ?>]" value="<?php echo (isset($rubber->away_points) ? $rubber->away_points : '') ?>" />
-								</td>
-							</tr>
-							<?php
-							$tabbase +=100;
-							$r ++;
-						}	?>
-						<?php if ( isset($match->home_captain) || isset($match->away_captain) ) { ?>
-							<tr>
-								<td class="rtd centered"></td>
-								<td class="rtd captain"><?php _e( 'Home Captain', 'racketmanager' ) ?></td>
-								<td colspan="<?php echo intval($match->num_sets) ?>" class="rtd"></td>
-								<td class="rtd captain"><?php _e( 'Away Captain', 'racketmanager' ) ?></td>
-							</tr>
-							<tr>
-								<td class="rtd centered">
-								</td>
-								<td class="rtd" id="homeCaptain">
-									<?php if ( isset($match->home_captain) ) {
-										echo $racketmanager->getPlayerName($match->home_captain);
-									} else { ?>
-										<?php if ( !current_user_can( 'manage_racketmanager' ) && $match->confirmed == 'P' ) { ?>
-											<div class="radio-list">
-												<label class="left"><input type="radio" name="resultConfirm" value="confirm" required />Confirm</label>
-												<label class="right"><input type="radio" name="resultConfirm" value="challenge" required />Challenge</label>
-											</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<?php
+					$tabbase +=100;
+					$r ++;
+				}	?>
+				<?php if ( isset($match->home_captain) || isset($match->away_captain) ) { ?>
+					<div class="row mb-3">
+						<div class="col-1 text-center align-self-center"></div>
+						<div class="col-11">
+							<div class="row justify-content-center">
+								<div class="col-4 mb-3">
+									<div class="col-12 text-center captain"><?php _e( 'Home Captain', 'racketmanager' ) ?></div>
+									<div class="col-12">
+										<?php if ( isset($match->home_captain) ) {
+											echo $racketmanager->getPlayerName($match->home_captain);
+										} else { ?>
+											<?php if ( !current_user_can( 'manage_racketmanager' ) && $match->confirmed == 'P' ) { ?>
+												<div class="form-check">
+													<input class="form-check-input" type="radio" name="resultConfirm" value="confirm" required />
+													<label class="form-check-label">Confirm</label>
+												</div>
+												<div class="form-check">
+													<input class="form-check-input" type="radio" name="resultConfirm" value="challenge" required />
+													<label class="form-check-label">Challenge</label>
+												</div>
+											<?php } ?>
 										<?php } ?>
-									<?php } ?>
-								</td>
-								<td colspan="<?php echo intval($match->num_sets) ?>" class="rtd">
-								</td>
-								<td class="rtd" id="awayCaptain">
-									<?php if ( isset($match->away_captain) ) {
-										echo $racketmanager->getPlayerName($match->away_captain);
-									} else { ?>
-										<?php if ( !current_user_can( 'manage_racketmanager' ) && $match->confirmed == 'P' ) { ?>
-											<div class="radio-list">
-												<label class="left"><input type="radio" name="resultConfirm" value="confirm" required />Confirm</label>
-												<label class="right"><input type="radio" name="resultConfirm" value="challenge" required />Challenge</label>
-											</div>
+									</div>
+								</div>
+								<div class="col-4 mb-3">
+								</div>
+								<div class="col-4 mb-3">
+									<div class="col-12 text-center captain"><?php _e( 'Away Captain', 'racketmanager' ) ?></div>
+									<div class="col-12">
+										<?php if ( isset($match->away_captain) ) {
+											echo $racketmanager->getPlayerName($match->away_captain);
+										} else { ?>
+											<?php if ( !current_user_can( 'manage_racketmanager' ) && $match->confirmed == 'P' ) { ?>
+												<div class="form-check">
+													<input class="form-check-input" type="radio" name="resultConfirm" value="confirm" required />
+													<label class="form-check-label"><?php _e( 'Confirm', 'racketmanager' ) ?></label>
+												</div>
+												<div class="form-check">
+													<input class="form-check-input" type="radio" name="resultConfirm" value="challenge" required />
+													<label class="form-check-label"><?php _e( 'Challenge', 'racketmanager' ) ?></label>
+												</div>
+											<?php } ?>
 										<?php } ?>
-									<?php } ?>
-								</td>
-							</tr>
-						<?php } ?>
-					</tbody>
-				</table>
-				<p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				<?php } ?>
+				<div class="mb-3">
 					<?php if ( isset($match->updated_user) ) {
 						echo 'Updated By:'.$racketmanager->getPlayerName($match->updated_user);
 					} ?>
 					<?php if ( isset($match->updated) ) {
 						echo ' On:'.$match->updated;
 					} ?>
-				</p>
+				</div>
 				<?php if ( current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == NULL ) { ?>
-
-					<input type="hidden" name="updateRubber" id="updateRubber" value="results" />
-					<button tabindex="500" class="button button-primary" type="button" id="updateRubberResults" onclick="Racketmanager.updateResults(this)">Update Results</button>
+					<div class="mb3">
+						<input type="hidden" name="updateRubber" id="updateRubber" value="results" />
+						<button tabindex="500" class="button button-primary" type="button" id="updateRubberResults" onclick="Racketmanager.updateResults(this)">Update Results</button>
+					</div>
 				<?php } ?>
-				<p id="UpdateResponse"></p>
+				<div id="UpdateResponse"></div>
 				<?php if ( $match->confirmed == 'P' ) { ?>
 					<script type="text/javascript">
 					jQuery(document).ready(function($) {

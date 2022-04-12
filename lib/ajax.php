@@ -771,6 +771,16 @@ class RacketManagerAJAX extends RacketManager {
 	*/
 	public function buildRubbersScreen($match, $homeRoster, $awayRoster) {
 		global $racketmanager, $league, $match;
+		$userCanUpdateArray = $racketmanager->getMatchUpdateAllowed($match->teams['home'], $match->teams['away'], $match->league->competitionType);
+		$userCanUpdate = $userCanUpdateArray[0];
+		$userType = $userCanUpdateArray[1];
+		$userTeam = $userCanUpdateArray[2];
+		$updatesAllowed = true;
+		if ( $match->confirmed == 'P' ) {
+			if ( $userType != 'admin') {
+				$updatesAllowed = false;
+			}
+		}
 		?>
 		<div id="matchrubbers" class="rubber-block">
 			<div id="matchheader">
@@ -819,7 +829,7 @@ class RacketManagerAJAX extends RacketManager {
 										<div class="col-6 col-sm-12">
 											<div class="form-floating mb-2">
 												<?php $tabindex = $tabbase + 1; ?>
-												<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer1[<?php echo $r ?>]" id="homeplayer1_<?php echo $r ?>">
+												<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer1[<?php echo $r ?>]" id="homeplayer1_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
 													<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
 													<?php foreach ( $homeRoster[$r][1] AS $roster ) {
 														if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
@@ -834,7 +844,7 @@ class RacketManagerAJAX extends RacketManager {
 										<div class="col-6 col-sm-12">
 											<div class="form-floating mb-2">
 												<?php $tabindex = $tabbase + 2; ?>
-												<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer2[<?php echo $r ?>]" id="homeplayer2_<?php echo $r ?>">
+												<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer2[<?php echo $r ?>]" id="homeplayer2_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
 													<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
 													<?php foreach ( $homeRoster[$r][2] AS $roster ) {
 														if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
@@ -858,9 +868,9 @@ class RacketManagerAJAX extends RacketManager {
 											$colspan = 12 / $match->num_sets;
 											$tabindex = $tabbase + 10 + $i; ?>
 											<div class="col-<?php echo $colspan ?>">
-												<input tabindex="<?php echo $tabindex ?>" class="points" type="text" size="2" id="set_<?php echo $r ?>_<?php echo $i ?>_player1" name="custom[<?php echo $r ?>][sets][<?php echo $i ?>][player1]" value="<?php echo $rubber->sets[$i]['player1'] ?>" />
+												<input tabindex="<?php echo $tabindex ?>" class="points" type="text" <?php if ( !$updatesAllowed ) { echo 'readonly';} ?> size="2" id="set_<?php echo $r ?>_<?php echo $i ?>_player1" name="custom[<?php echo $r ?>][sets][<?php echo $i ?>][player1]" value="<?php echo $rubber->sets[$i]['player1'] ?>" />
 												<?php $tabindex = $tabbase + 11 + $i; ?>
-												<input tabindex="<?php echo $tabindex ?>" class="points" type="text" size="2" id="set_<?php echo $r ?>_<?php echo $i ?>_player2" name="custom[<?php echo $r ?>][sets][<?php echo $i ?>][player2]" value="<?php echo $rubber->sets[$i]['player2'] ?>" />
+												<input tabindex="<?php echo $tabindex ?>" class="points" type="text" <?php if ( !$updatesAllowed ) { echo 'readonly';} ?> size="2" id="set_<?php echo $r ?>_<?php echo $i ?>_player2" name="custom[<?php echo $r ?>][sets][<?php echo $i ?>][player2]" value="<?php echo $rubber->sets[$i]['player2'] ?>" />
 											</div>
 										<?php } ?>
 									</div>
@@ -871,7 +881,7 @@ class RacketManagerAJAX extends RacketManager {
 										<div class="col-6 col-sm-12">
 											<div class="form-floating mb-2">
 												<?php $tabindex = $tabbase + 3; ?>
-												<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer1[<?php echo $r ?>]" id="awayplayer1_<?php echo $r ?>">
+												<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer1[<?php echo $r ?>]" id="awayplayer1_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
 													<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
 													<?php foreach ( $awayRoster[$r][1] AS $roster ) {
 														if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
@@ -886,7 +896,7 @@ class RacketManagerAJAX extends RacketManager {
 										<div class="col-6 col-sm-12">
 											<div class="form-floating mb-2">
 												<?php $tabindex = $tabbase + 4; ?>
-												<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer2[<?php echo $r ?>]" id="awayplayer2_<?php echo $r ?>">
+												<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer2[<?php echo $r ?>]" id="awayplayer2_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
 													<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
 													<?php foreach ( $awayRoster[$r][2] AS $roster ) {
 														if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
@@ -925,18 +935,20 @@ class RacketManagerAJAX extends RacketManager {
 											echo $racketmanager->getPlayerName($match->home_captain);
 										} else { ?>
 											<?php if ( !current_user_can( 'manage_racketmanager' ) && $match->confirmed == 'P' ) { ?>
-												<div class="form-check">
-													<input class="form-check-input" type="radio" name="resultConfirm" value="confirm" required />
-													<label class="form-check-label">Confirm</label>
-												</div>
-												<div class="form-check">
-													<input class="form-check-input" type="radio" name="resultConfirm" value="challenge" required />
-													<label class="form-check-label">Challenge</label>
-												</div>
-												<div class="form-floating">
-													<textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmCommentsHome" id="resultConfirmCommentsHome"></textarea>
-													<label for="resultConfirmCommentsHome"><?php _e( 'Comments', 'racketmanager' ) ?></label>
-												</div>
+												<?php if ( $userType != 'admin' && $userTeam == 'home' ) { ?>
+													<div class="form-check">
+														<input class="form-check-input" type="radio" name="resultConfirm" value="confirm" required />
+														<label class="form-check-label">Confirm</label>
+													</div>
+													<div class="form-check">
+														<input class="form-check-input" type="radio" name="resultConfirm" value="challenge" required />
+														<label class="form-check-label">Challenge</label>
+													</div>
+													<div class="form-floating">
+														<textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmCommentsHome" id="resultConfirmCommentsHome"></textarea>
+														<label for="resultConfirmCommentsHome"><?php _e( 'Comments', 'racketmanager' ) ?></label>
+													</div>
+												<?php } ?>
 											<?php } ?>
 										<?php } ?>
 									</div>
@@ -950,18 +962,20 @@ class RacketManagerAJAX extends RacketManager {
 											echo $racketmanager->getPlayerName($match->away_captain);
 										} else { ?>
 											<?php if ( !current_user_can( 'manage_racketmanager' ) && $match->confirmed == 'P' ) { ?>
-												<div class="form-check">
-													<input class="form-check-input" type="radio" name="resultConfirm" value="confirm" required />
-													<label class="form-check-label"><?php _e( 'Confirm', 'racketmanager' ) ?></label>
-												</div>
-												<div class="form-check">
-													<input class="form-check-input" type="radio" name="resultConfirm" value="challenge" required />
-													<label class="form-check-label"><?php _e( 'Challenge', 'racketmanager' ) ?></label>
-												</div>
-												<div class="form-floating">
-													<textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmCommentsAway" id="resultConfirmCommentsAway"></textarea>
-													<label for="resultConfirmCommentsAway"><?php _e( 'Comments', 'racketmanager' ) ?></label>
-												</div>
+												<?php if ( $userType != 'admin' && $userTeam == 'away' ) { ?>
+													<div class="form-check">
+														<input class="form-check-input" type="radio" name="resultConfirm" value="confirm" required />
+														<label class="form-check-label"><?php _e( 'Confirm', 'racketmanager' ) ?></label>
+													</div>
+													<div class="form-check">
+														<input class="form-check-input" type="radio" name="resultConfirm" value="challenge" required />
+														<label class="form-check-label"><?php _e( 'Challenge', 'racketmanager' ) ?></label>
+													</div>
+													<div class="form-floating">
+														<textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmCommentsAway" id="resultConfirmCommentsAway"></textarea>
+														<label for="resultConfirmCommentsAway"><?php _e( 'Comments', 'racketmanager' ) ?></label>
+													</div>
+												<?php } ?>
 											<?php } ?>
 										<?php } ?>
 									</div>
@@ -970,32 +984,43 @@ class RacketManagerAJAX extends RacketManager {
 						</div>
 					</div>
 				<?php } ?>
-				<div class="form-floating">
-					<textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmComments" id="resultConfirmComments"><?php echo $match->comments ?></textarea>
-					<label for="resultConfirmComments"><?php _e( 'Comments', 'racketmanager' ) ?></label>
+				<div class="row mb-3">
+					<div>
+						<div class="form-floating">
+							<textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmComments" id="resultConfirmComments"><?php echo $match->comments ?></textarea>
+							<label for="resultConfirmComments"><?php _e( 'Comments', 'racketmanager' ) ?></label>
+						</div>
+					</div>
 				</div>
-				<div class="mb-3">
-					<?php if ( isset($match->updated_user) ) {
-						echo 'Updated By:'.$racketmanager->getPlayerName($match->updated_user);
-					} ?>
-					<?php if ( isset($match->updated) ) {
-						echo ' On:'.$match->updated;
-					} ?>
+				<div class="row mb-3">
+					<?php if ( isset($match->updated_user) ) { ?>
+						<div class="col-2">
+							Updated By:
+						</div>
+						<div class="col-10">
+							<?php echo $racketmanager->getPlayerName($match->updated_user); ?>
+						</div>
+					<?php } ?>
+					<?php if ( isset($match->updated) ) { ?>
+						<div class="col-2">
+							On:
+						</div>
+						<div class="col-10">
+							<?php echo $match->updated; ?>
+						</div>
+					<?php } ?>
 				</div>
 				<?php if ( current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == NULL ) { ?>
-					<div class="mb3">
-						<input type="hidden" name="updateRubber" id="updateRubber" value="results" />
-						<button tabindex="500" class="button button-primary" type="button" id="updateRubberResults" onclick="Racketmanager.updateResults(this)">Update Results</button>
+					<div class="row mb-3">
+						<div class="col-12">
+							<input type="hidden" name="updateRubber" id="updateRubber" value="<?php if ( !$updatesAllowed ) { echo 'confirm';} else { echo 'results';} ?>" />
+							<button tabindex="500" class="button button-primary" type="button" id="updateRubberResults" onclick="Racketmanager.updateResults(this)">Update Results</button>
+						</div>
 					</div>
 				<?php } ?>
-				<div id="UpdateResponse"></div>
-				<?php if ( $match->confirmed == 'P' ) { ?>
-					<script type="text/javascript">
-					jQuery(document).ready(function($) {
-						Racketmanager.disableRubberUpdate();
-					});
-					</script>
-				<?php } ?>
+				<div class="row mb-3">
+					<div id="UpdateResponse"></div>
+				</div>
 			</form>
 		</div>
 	<?php	}
@@ -1012,6 +1037,7 @@ class RacketManagerAJAX extends RacketManager {
 			$homepoints = array();
 			$awaypoints = array();
 			$return = array();
+			$msg= '';
 			$updates = false;
 			$matchId = $_POST['current_match_id'];
 			$match = get_match($matchId);
@@ -1023,13 +1049,50 @@ class RacketManagerAJAX extends RacketManager {
 			$away_team = $_POST['away_team'];
 			$lm_options = $racketmanager->getOptions();
 			$matchConfirmed = '';
+			$userCanUpdateArray = $racketmanager->getMatchUpdateAllowed($match->teams['home'], $match->teams['away'], $match->league->competitionType);
+			$userCanUpdate = $userCanUpdateArray[0];
+			$userType = $userCanUpdateArray[1];
+			$userTeam = $userCanUpdateArray[2];
 			$matchComments = isset($_POST['resultConfirmComments']) ? $_POST['resultConfirmComments'] : '';
 			$matchCommentsHome = isset($_POST['resultConfirmCommentsHome']) ? $_POST['resultConfirmCommentsHome'] : '';
 			$matchCommentsAway = isset($_POST['resultConfirmCommentsAway']) ? $_POST['resultConfirmCommentsAway'] : '';
 			if ($matchCommentsHome) { $matchComments = $match->comments.PHP_EOL.__('Home:','racketmanager').':'.$matchCommentsHome; }
 			if ($matchCommentsAway) { $matchComments = $match->comments.PHP_EOL.__('Away:','racketmanager').':'.$matchCommentsAway; }
 			if ( $_POST['updateRubber'] == 'results' ) {
-				$matchConfirmed = $this->updateRubberResults( $match, $num_rubbers, $lm_options);
+				if ( $userCanUpdate ) {
+					if ( $userType == 'player' ) {
+						if ( $userTeam == 'home' ) {
+							$club = $match->teams['home']->affiliatedclub;
+						} else {
+							$club = $match->teams['away']->affiliatedclub;
+						}
+						$playerRoster = $racketmanager->getRoster( array('player' => get_current_user_id(), 'club' => $club, 'inactive' => true) );
+						$playerRosterId = $playerRoster[0]->roster_id;
+						$playerFound = false;
+						for ($ix = 0; $ix < $num_rubbers; $ix++) {
+							$homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : NULL;
+							$homeplayer2    = isset($_POST['homeplayer2'][$ix]) ? $_POST['homeplayer2'][$ix] : NULL;
+							$awayplayer1    = isset($_POST['awayplayer1'][$ix]) ? $_POST['awayplayer1'][$ix] : NULL;
+							$awayplayer2    = isset($_POST['awayplayer2'][$ix]) ? $_POST['awayplayer2'][$ix] : NULL;
+							if ( $userTeam == 'home' ) {
+								if ( $playerRosterId == $homeplayer1 || $playerRosterId == $homeplayer2 ) {
+									$playerFound = true;
+								}
+							} else {
+								if ( $playerRosterId == $awayplayer1 || $playerRosterId == $awayplayer2 ) {
+									$playerFound = true;
+								}
+							}
+						}
+						if ( !$playerFound ) {
+							$userCanUpdate = false;
+							$msg = __('Player cannot submit results', 'racketmanager');
+						}
+					}
+				}
+				if ( $userCanUpdate ) {
+					$matchConfirmed = $this->updateRubberResults( $match, $num_rubbers, $lm_options);
+				}
 			} elseif ( $_POST['updateRubber'] == 'confirm' ) {
 				$matchConfirmed = $this->confirmRubberResults();
 			}
@@ -1082,7 +1145,9 @@ class RacketManagerAJAX extends RacketManager {
 					$this->resultNotification($matchConfirmed, $matchMessage, $match);
 				}
 			} else {
-				$msg = __('No results to save','racketmanager');
+				if ( !$msg ) {
+					$msg = __('No results to save','racketmanager');
+				}
 			}
 			array_push($return,$msg,$matchRubbers['homepoints'],$matchRubbers['awaypoints']);
 

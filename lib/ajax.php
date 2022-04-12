@@ -547,25 +547,25 @@ class RacketManagerAJAX extends RacketManager {
 		$num_sets = $league->num_sets;
 		$pointsspan = 2 + intval($num_sets);
 		$match_type = $league->type;
-		$tabindex = 0;
+		$tabbase = 0;
 		?>
-		<div id="matchrubbers" class="rubber-block">
+		<div id="matchrubbers">
 			<div id="matchheader">
-				<div class="leaguetitle"><?php echo $league->title ?></div>
-				<div class="matchdate"><?php echo substr($match->date,0,10) ?></div>
-				<div class="matchday">
-					<?php if ( $league->mode == 'championship' ) {
-						echo $league->championship->getFinalName($match->final_round);
-					} else {
-						echo 'Week'.$match->match_day;
-					}?>
+				<div class="row justify-content-between" id="match-header-1">
+					<div class="col-auto leaguetitle"><?php echo $league->title ?></div>
+					<div class="col-auto matchday">
+						<?php if ( $league->mode == 'championship' ) {
+							echo $league->championship->getFinalName($match->final_round);
+						} else {
+							echo 'Week'.$match->match_day;
+						} ?>
+					</div>
+					<div class="col-auto matchdate"><?php echo substr($match->date,0,10) ?></div>
 				</div>
-				<div class="matchtitle">
-					<?php if ( $league->mode == 'championship' ) {
-					} else {
-						echo $match->match_title;
-					}
-				?>
+				<div class="row justify-content-center" id="match-header-2">
+					<?php if ( $league->mode != 'championship' ) { ?>
+						<div class="col-auto matchtitle"><?php echo $match->match_title ?></div>
+					<?php } ?>
 				</div>
 			</div>
 			<form id="match-view" action="#" method="post" onsubmit="return checkSelect(this)">
@@ -579,64 +579,67 @@ class RacketManagerAJAX extends RacketManager {
 				<input type="hidden" name="match_type" value="<?php echo $match->type ?>" />
 				<input type="hidden" name="match_round" value="<?php echo $match->round ?>" />
 
-				<table class="widefat" summary="" style="margin-bottom: 2em;">
-					<thead>
-						<tr>
-							<th class="match-team centered"><?php _e( 'Team', 'racketmanager' ) ?></th>
-							<th class="centered" colspan="<?php echo $num_sets ?>"><?php _e('Sets', 'racketmanager' ) ?></th>
-							<th class="match-team centered"><?php _e( 'Team', 'racketmanager' ) ?></th>
-						</tr>
-					</thead>
-					<tbody class="rtbody rubber-table" id="the-list-rubbers-<?php echo $match->id ?>" >
-
-						<?php $class = ''; ?>
-
-						<tr class="rtr">
-							<td class="rtd">
-								<?php echo $match->teams['home']->title ?>
-							</td>
-
+				<div class="row mb-3">
+		      <div class="col-4 text-center"><strong><?php _e( 'Team', 'racketmanager' ) ?></strong></div>
+		      <div class="col-4 text-center"><strong><?php _e('Sets', 'racketmanager' ) ?></strong></div>
+		      <div class="col-4 text-center"><strong><?php _e( 'Team', 'racketmanager' ) ?></strong></div>
+		    </div>
+				<div class="row align-items-center mb-3">
+					<div class="col-4 text-center">
+						<?php echo $match->teams['home']->title ?>
+					</div>
+					<div class="col-4 align-self-center">
+						<div class="row text-center">
 							<?php for ( $i = 1; $i <= $num_sets; $i++ ) {
 								if (!isset($match->sets[$i])) {
 									$match->sets[$i] = array('player1' => '', 'player2' => '');
-								} ?>
-								<td class="rtd">
-									<input class="points" tabindex="<?php echo $tabindex+$i ?>" type="number" size="2" id="set_<?php echo $i ?>_player1" name="custom[sets][<?php echo $i ?>][player1]" value="<?php echo $match->sets[$i]['player1'] ?>" />
-									:
-									<input class="points" tabindex="<?php echo $tabindex+$i+1 ?>" type="number" size="2" id="set_<?php echo $i ?>_player2" name="custom[sets][<?php echo $i ?>][player2]" value="<?php echo $match->sets[$i]['player2'] ?>" />
-								</td>
+								}
+								$colspan = 12 / $num_sets;
+								$tabindex = $tabbase + 10 + $i; ?>
+								<div class="col-<?php echo $colspan ?>">
+									<input tabindex="<?php echo $tabindex ?>" class="points" type="text" size="2" id="set_<?php echo $i ?>_player1" name="custom[sets][<?php echo $i ?>][player1]" value="<?php echo $match->sets[$i]['player1'] ?>" />
+									<?php $tabindex = $tabbase + 11 + $i; ?>
+									<input tabindex="<?php echo $tabindex ?>" class="points" type="text" size="2" id="set_<?php echo $i ?>_player2" name="custom[sets][<?php echo $i ?>][player2]" value="<?php echo $match->sets[$i]['player2'] ?>" />
+								</div>
 							<?php } ?>
-
-							<td class="rtd">
-								<?php echo $match->teams['away']->title ?>
-							</td>
-						</tr>
-						<tr>
-							<td colspan="<?php echo intval($num_sets)+2 ?>" class="rtd" style="text-align: center;">
-								<input class="points" type="text" size="2" readonly id="home_points" name="home_points" value="<?php echo (isset($match->home_points) ? $match->home_points : '') ?>" />
-								:
-								<input class="points" type="text" size="2" readonly id="away_points" name="away_points" value="<?php echo (isset($match->away_points) ? $match->away_points : '') ?>" />
-							</td>
-						</tr>
-					</tbody>
-				</table>
-				<p>
-					<?php if ( isset($match->updated_user) ) echo 'Updated By:'.$racketmanager->getPlayerName($match->updated_user) ?>
-						<?php if ( isset($match->updated) ) echo ' On:'.$match->updated ?>
-						</p>
-						<?php if ( current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == NULL ) { ?>
-
-							<input type="hidden" name="updateMatch" id="updateMatch" value="results" />
-							<button tabindex="20" class="button button-primary" type="button" id="updateMatchResults" onclick="Racketmanager.updateMatchResults(this)">Update Result</button>
-						<?php } ?>
-						<p id="UpdateResponse"></p>
-						<?php if ( $match->confirmed == 'Y' ) { ?>
-							<script type="text/javascript">
-							jQuery(document).ready(function($) {
-								Racketmanager.disableRubberUpdate();
-							});
-							</script>
-						<?php } ?>
+						</div>
+					</div>
+					<div class="col-4 text-center">
+						<?php echo $match->teams['away']->title ?>
+					</div>
+				</div>
+				<div class="row text-center mb-3">
+					<div class="col-12">
+						<input class="points" type="text" size="2" readonly id="home_points" name="home_points" value="<?php echo (isset($match->home_points) ? $match->home_points : '') ?>" />
+						<input class="points" type="text" size="2" readonly id="away_points" name="away_points[" value="<?php echo (isset($match->away_points) ? $match->away_points : '') ?>" />
+					</div>
+				</div>
+				<div class="form-floating">
+		      <textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmComments" id="resultConfirmComments"><?php echo $match->comments ?></textarea>
+		      <label for="resultConfirmComments"><?php _e( 'Comments', 'racketmanager' ) ?></label>
+		    </div>
+		    <div class="mb-3">
+		      <?php if ( isset($match->updated_user) ) {
+		        echo 'Updated By:'.$racketmanager->getPlayerName($match->updated_user);
+		      } ?>
+		      <?php if ( isset($match->updated) ) {
+		        echo ' On:'.$match->updated;
+		      } ?>
+		    </div>
+		    <?php if ( current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == NULL ) { ?>
+		      <div class="mb3">
+		        <input type="hidden" name="updateMatch" id="updateMatch" value="results" />
+		        <button tabindex="500" class="button button-primary" type="button" id="updateMatchResults" onclick="Racketmanager.updateMatchResults(this)">Update Result</button>
+		      </div>
+		    <?php } ?>
+		    <div id="UpdateResponse"></div>
+		    <?php if ( $match->confirmed == 'Y' ) { ?>
+		      <script type="text/javascript">
+		      jQuery(document).ready(function($) {
+		        Racketmanager.disableRubberUpdate();
+		      });
+		      </script>
+		    <?php } ?>
 			</form>
 		</div>
 		<?php

@@ -656,3 +656,6 @@ span.error {
 dl dl {
     padding-left: 1rem;
 }
+.points {
+  text-align: center;
+}

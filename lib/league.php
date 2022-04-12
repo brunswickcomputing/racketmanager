@@ -2056,7 +2056,7 @@ public function _updateResults( $matches, $home_points, $away_points, $home_team
 			// custom results update
 			$match = $this->updateResults( $match ) ;
 			if ( $match->home_points > 0 || $match->away_points > 0 ) {
-				if ($matchHomePoints != $match->home_points || $matchAwayPoints != $match->away_points || $matchWinner != $match->winner_id || $matchLoser != $match->loser_id || $matchCustom != $match->custom ) {
+				if ($matchHomePoints != $match->home_points || $matchAwayPoints != $match->away_points || $matchWinner != $match->winner_id || $matchLoser != $match->loser_id || $matchCustom != $match->custom || $confirmed != $match->confirmed ) {
 					$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `home_points` = ".$match->home_points.", `away_points` = ".$match->away_points.", `winner_id` = '%d', `loser_id` = '%d', `custom` = '%s', `updated_user` = %d, `updated` = now(), `confirmed` = %s WHERE `id` = '%d'", intval($match->winner_id), intval($match->loser_id), maybe_serialize($match->custom), get_current_user_id(), $confirmed, $match_id) );
 					wp_cache_delete($match->id, 'matches');
 					$num_matches ++;

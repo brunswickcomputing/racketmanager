@@ -439,13 +439,13 @@ Racketmanager.updateResults = function(link) {
 			jQuery("#splash").css('opacity', 0);
 			jQuery("#splash").hide();
 			jQuery("#showMatchRubbers").show();
+			jQuery("#updateRubberResults").removeAttr("disabled");
+			jQuery("#updateRubberResults").removeClass("disabled");
 		},
 		error: function() {
 			alert("Ajax error on updating rubbers");
 		}
 	}) ;
-	jQuery("#updateRubberResults").removeProp("disabled");
-	jQuery("#updateRubberResults").removeClass("disabled");
 };
 Racketmanager.rosterRequest = function(link) {
 

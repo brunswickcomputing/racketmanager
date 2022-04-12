@@ -1904,6 +1904,9 @@ class RacketManager {
 		$options = $this->getOptions();
 		$userid = get_current_user_id();
 		$userCanUpdate = false;
+		$return = array();
+		$userType = '';
+		$userTeam = '';
 		if ( $competitionType == 'league' ) { $competitionType= ''; }
 		$competitionType = ucfirst($competitionType);
 		$matchCapability = 'matchCapability'.$competitionType;
@@ -1916,26 +1919,38 @@ class RacketManager {
 						$club = get_club($homeTeam->affiliatedclub);
 						$homeRoster = $club->getRoster( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
 						if ( $homeRoster != 0 ) {
+							$userType = 'player';
+							$userTeam = 'home';
 							$userCanUpdate = true;
 						} elseif ( $options[$resultEntry] == 'either' ) {
 							$club = get_club($awayTeam->affiliatedclub);
 							$awayRoster = $club->getRoster( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
 							if ( $awayRoster != 0 ) {
+								$userType = 'player';
+								$userTeam = 'away';
 								$userCanUpdate = true;
 							}
 						}
 					} elseif ( $options[$matchCapability] == 'captain' ) {
-						if ( ( isset($homeTeam->captainId) && $userid == $homeTeam->captainId ) || ( $options[$resultEntry] == 'either' && ( isset($awayTeam->captainId) && $userid == $awayTeam->captainId ) ) ) {
+						if ( isset($homeTeam->captainId) && $userid == $homeTeam->captainId ) {
+							$userType = 'captain';
+							$userTeam = 'home';
+							$userCanUpdate = true;
+						} elseif ( $options[$resultEntry] == 'either' && ( isset($awayTeam->captainId) && $userid == $awayTeam->captainId ) ) {
+							$userType = 'captain';
+							$userTeam = 'away';
 							$userCanUpdate = true;
 						}
 					}
 				} else {
+					$userType = 'admin';
+					$userTeam = '';
 					$userCanUpdate = true;
 				}
 			}
 		}
-
-		return $userCanUpdate;
+		array_push($return,$userCanUpdate,$userType,$userTeam);
+		return $return;
 	}
 
 	/**

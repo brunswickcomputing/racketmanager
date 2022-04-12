@@ -26,7 +26,7 @@ jQuery(document).ready(function(){
     <div class="row justify-content-between">
       <div class="col-auto">
         <?php foreach ( $this->getMenu() AS $key => $menu ) { ?>
-          <?php if ( !isset($menu['show']) || $menu['show'] ) { ?>
+          <?php if ( isset($menu['show']) && $menu['show'] ) { ?>
             <a class="btn btn-secondary" href="admin.php?page=racketmanager&amp;subpage=<?php echo $key ?>&amp;league_id=<?php echo $league->id ?>&amp;season=<?php echo $season ?>&amp;group=<?php echo $group ?>"><?php echo $menu['title'] ?></a>
           <?php } ?>
         <?php } ?>

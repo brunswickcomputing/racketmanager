@@ -274,10 +274,11 @@ final class RacketManagerAdmin extends RacketManager
 		$league_mode = (isset($league->mode) ? ($league->mode) : '' );
 
 		$menu = array();
-		$menu['teams'] = array( 'title' => __('Add Teams', 'racketmanager'), 'callback' => array(&$this, 'displayTeamsList'), 'cap' => 'edit_teams' );
-		$menu['team'] = array( 'title' => __('Add Team', 'racketmanager'), 'callback' => array(&$this, 'displayTeamPage'), 'cap' => 'edit_teams' );
+		$menu['teams'] = array( 'title' => __('Add Teams', 'racketmanager'), 'callback' => array(&$this, 'displayTeamsList'), 'cap' => 'edit_teams', 'show' => true );
+		$menu['team'] = array( 'title' => __('Add Team', 'racketmanager'), 'callback' => array(&$this, 'displayTeamPage'), 'cap' => 'edit_teams', 'show' => true );
+		$menu['match'] = array( 'title' => __('Add Matches', 'racketmanager'), 'callback' => array(&$this, 'displayMatchPage'), 'cap' => 'edit_matches' );
 		if ( !$league->is_championship ) {
-			$menu['match'] = array( 'title' => __('Add Matches', 'racketmanager'), 'callback' => array(&$this, 'displayMatchPage'), 'cap' => 'edit_matches' );
+			$menu['match']['show'] = true;
 		}
 		$menu = apply_filters('league_menu_'.$sport, $menu, $league->id, $season);
 		$menu = apply_filters('league_menu_'.$league->mode, $menu, $league->id, $season);

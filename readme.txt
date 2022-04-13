@@ -50,6 +50,20 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.7.0 =
+* UPDATE: get modal working with bootstrap
+* UPDATE: capture comments for match results
+* UPDATE: use bootstrap accordion
+* UPDATE: add rewrite rules for cups and tournaments
+* UPDATE: use sport independent tempaltes for championships
+* UPDATE: change password hint message
+* UPDATE: use bootstrap form styling for auth pages 
+* UPDATE: redirect to homepage when login initiated from login page
+* UPDATE: allow comments for match result entry
+* UPDATE: use bootstrap styling for match/rubber result entry
+* UPDATE: allow updates to rubber only if player in team
+* UPDATE: update match when status changes
+
 = 6.6.0 =
 * BUGFIX: handle no seasons for league
 * UPDATE: allow trigger of cup entry open

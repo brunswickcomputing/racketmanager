@@ -1,18 +1,7 @@
-<?php
-
-if ( !current_user_can( 'manage_racketmanager' ) ) {
+<?php if ( !current_user_can( 'manage_racketmanager' ) ) {
 	echo '<p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p>';
 } else {
-	$menu_page_url = admin_url('options-general.php?page=racketmanager-settings');
-
-	?>
-	<script type='text/javascript'>
-	jQuery(function() {
-		jQuery("#tabs.form").tabs({
-			active: <?php echo $tab ?>
-		});
-	});
-</script>
+	$menu_page_url = admin_url('options-general.php?page=racketmanager-settings'); ?>
 <div class='container'>
 	<h1><?php _e( 'Racketmanager Global Settings', 'racketmanager' ) ?></h1>
 

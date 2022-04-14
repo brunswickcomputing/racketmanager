@@ -5,13 +5,6 @@
 */
 namespace ns;
 ?>
-<script type='text/javascript'>
-jQuery(function() {
-  jQuery("#tabs-competitions").tabs({
-    active: <?php echo $comptab ?>
-  });
-});
-</script>
 <div class="container">
   <!-- Nav tabs -->
   <ul class="nav nav-pills" id="myTab" role="tablist">

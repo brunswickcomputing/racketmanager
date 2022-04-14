@@ -3,12 +3,6 @@
 <div class="container league-block">
   <p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <?php echo $season->name ?> &raquo; <?php echo 'Add Competitions to Season' ?></p>
   <h1><?php printf( "%s - %s",  $season->name, 'Add Competitions to Season' ); ?></h1>
-  <script type='text/javascript'>
-  jQuery(function() {
-    jQuery("#tabs-competitions").tabs({
-    });
-  });
-  </script>
   <div class="container">
     <legend>Select Competitions to Add</legend>
     <form action="admin.php?page=racketmanager-admin" method="post" enctype="multipart/form-data" name="competitions_add">

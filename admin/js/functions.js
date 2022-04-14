@@ -1,18 +1,4 @@
 jQuery(document).ready(function($) {
-	// Tabs
-	$('#tabs').tabs({
-		collapsible: true,
-	});
-	jQuery("#tabs>#tablist").css("display", "block");
-	jQuery(".settings-block-container>h2").css("display", "none");
-
-	jQuery(".import-block-container>h2").css("display", "none");
-
-	/* Add event listener to get active tab */
-	jQuery( "#tabs.form").on('tabsactivate', function(event, ui) {
-		var index = ui.newTab.index();
-		jQuery("#tabs.form>.active-tab").val(index);
-	});
 
 	/* hide top-links in documentation */
 	jQuery(".top-link").css("display", "none");

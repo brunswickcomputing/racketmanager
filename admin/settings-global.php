@@ -28,7 +28,7 @@
 			</ul>
 
 			<!-- Tab panes -->
-			<div class="tab-content">
+			<div class="tab-content mb-3">
 				<div class="tab-pane active show fade" id="rosters" role="tabpanel" aria-labelledby="rosters-tab">
 					<?php include(RACKETMANAGER_PATH . '/admin/includes/settings/rosters.php'); ?>
 				</div>

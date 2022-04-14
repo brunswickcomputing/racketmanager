@@ -8,7 +8,7 @@ namespace ns;
 <div class="container">
 	<h1><?php _e( 'Tournaments', 'racketmanager' ) ?></h1>
 
-	<div class="container">
+	<div class="form-control mb-3">
 		<form id="tournaments-filter" method="post" action="">
 			<?php wp_nonce_field( 'tournaments-bulk' ) ?>
 			<div class="tablenav">

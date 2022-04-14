@@ -1,5 +1,5 @@
 
-<div class="tab-pane <?php if ( $standalone ) echo 'active show ' ?>fade" id="competitions<?php echo $competitionType ?>" role="tabpanel" aria-labelledby="competitions<?php echo $competitionType ?>-tab">
+<div class="tab-pane <?php if ( $standalone ) echo 'active show ' ?>fade form-control" id="competitions<?php echo $competitionType ?>" role="tabpanel" aria-labelledby="competitions<?php echo $competitionType ?>-tab">
   <form id="competitions-filter" method="post" action="">
     <?php wp_nonce_field( 'competitions-bulk' ) ?>
 

@@ -1,8 +1,7 @@
 <div class="container">
-  <div class="row">
-    <h3><?php _e( 'Notify Cup Entry Open', 'racketmanager' ) ?></h3>
-    <!-- Add New Competition -->
-    <form action="" method="post" class="form-control">
+  <h3><?php _e( 'Notify Cup Entry Open', 'racketmanager' ) ?></h3>
+  <div class="form-control">
+    <form action="" method="post">
       <?php wp_nonce_field( 'racketmanager_notify-cup-open' ) ?>
       <div class="form-group">
         <label class="form-label" for="type"><?php _e( 'Season', 'racketmanager' ) ?></label>
@@ -27,7 +26,6 @@
       </div>
       <input type="hidden" name="notifyCupOpen" value="open" />
       <input type="submit" name="notifyCupOpen" value="<?php _e( 'Notify cup entry open','racketmanager' ) ?>" class="btn btn-primary" />
-
     </form>
   </div>
 </div>

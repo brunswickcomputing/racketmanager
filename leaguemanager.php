@@ -1005,19 +1005,30 @@ class RacketManager {
 	* @param int $tournament_id
 	* @return array
 	*/
-	public function getTournament( $tournament_name ) {
+	public function getTournament( $args = array() ) {
 		global $wpdb;
 
-		$sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`closingdate`, '%%Y-%%m-%%d') AS closingdate, `tournamentsecretary` FROM {$wpdb->racketmanager_tournaments} WHERE `name` = '%s'",  $tournament_name );
+		$defaults = array( 'id' => false, 'name' => false );
+		$args = array_merge($defaults, $args);
+		extract($args, EXTR_SKIP);
 
-		$tournament = wp_cache_get( md5($sql), 'tournaments' );
+		$searchString = '';
+
+		if ( $id ) {
+			$searchString = $wpdb->prepare(" WHERE `id` = '%s'", $id);
+		}
+		if ( $name ) {
+			$searchString = $wpdb->prepare("WHERE `name` = '%s'", $name);
+		}
+		$sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`closingdate`, '%%Y-%%m-%%d') AS closingdate, `tournamentsecretary`, `numcourts`, `starttime`, `timeincrement`, `orderofplay` FROM {$wpdb->racketmanager_tournaments} $searchString" );
+
+		$tournament = wp_cache_get( md5($sql), 'tournament' );
 		if ( !$tournament ) {
 			$tournament = $wpdb->get_row( $sql );
-			wp_cache_set( md5($sql), $tournament, 'tournaments' );
+			wp_cache_set( md5($sql), $tournament, 'tournament' );
 		}
 
-		$tournament = $this->formatTournament($tournament);
-		return $tournament;
+		return $this->formatTournament($tournament);
 	}
 
 	public function formatTournament($tournament) {
@@ -1986,7 +1997,7 @@ class RacketManager {
       $tournaments = $racketmanager->getTournaments( array( 'type' => $tournamentType, 'open' => true ) );
       $tournament = $tournaments[0];
       if ( $emailFrom == '' ) { $emailFrom = $tournament->tournamentSecretaryEmail; }
-      $messageArgs['tournament'] = $tournament->name;
+      $messageArgs['tournament'] = $tournament->id;
     } else if ( $match->league->competitionType == 'cup' ) {
       $messageArgs['competition'] = $match->league->competitionName;
     }

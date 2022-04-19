@@ -35,13 +35,13 @@ namespace ns;
 							<div class="col-12 col-md-auto check-column">
 								<input type="checkbox" value="<?php echo $tournament->id ?>" name="tournament[<?php echo $tournament->id ?>]" />
 							</div>
-							<div class="col-12 col-md-2"><a href="admin.php?page=racketmanager&amp;subpage=tournament&amp;tournament_name=<?php echo $tournament->name ?> "><?php echo $tournament->name ?></a></div>
+							<div class="col-12 col-md-2"><a href="admin.php?page=racketmanager&amp;subpage=tournament&amp;tournament=<?php echo $tournament->id ?> "><?php echo $tournament->name ?></a></div>
 							<div class="col-12 col-md-1"><?php echo $tournament->season ?></div>
 							<div class="col-12 col-md-2"><?php echo $tournament->venueName ?></div>
 							<div class="col-12 col-md-1"><?php echo $tournament->date ?></div>
 							<div class="col-12 col-md-2"><a href="admin.php?page=racketmanager&amp;subpage=show-competitions&amp;season=<?php echo $tournament->season ?>&amp;type=<?php echo $tournament->type ?>&amp;competitiontype=tournament" class="btn btn-secondary"><?php _e( 'Competitions', 'racketmanager' ) ?></a></div>
 							<?php if ( $tournament->open ) { ?>
-								<div class="col-12 col-md-auto"><a class="btn btn-secondary" onclick="Racketmanager.notifyTournamentEntryOpen('<?php echo seoUrl($tournament->name) ?>');"><?php _e( 'Notify open', 'racketmanager' ) ?></a></div>
+								<div class="col-12 col-md-auto"><a class="btn btn-secondary" onclick="Racketmanager.notifyTournamentEntryOpen('<?php echo ($tournament->id) ?>');"><?php _e( 'Notify open', 'racketmanager' ) ?></a></div>
 								<div class="col-12 col-md-auto"><span id="notifyMessage-<?php echo seoURL($tournament->name) ?>"></span></div>
 							<?php } ?>
 						</div>

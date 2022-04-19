@@ -1017,10 +1017,10 @@ final class RacketManagerAdmin extends RacketManager
 		} else {
 			$edit = false;
 
-			if ( isset( $_GET['tournament_name'] ) ) {
-				$tournamentName = $_GET['tournament_name'];
+			if ( isset( $_GET['tournament'] ) ) {
+				$tournamentId = $_GET['tournament'];
 				$edit = true;
-				$tournament = $racketmanager->getTournament( $tournamentName );
+				$tournament = $racketmanager->getTournament( array('id' => $tournamentId) );
 
 				$form_title = __( 'Edit Tournament', 'racketmanager' );
 				$form_action = __( 'Update', 'racketmanager' );

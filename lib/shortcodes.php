@@ -969,7 +969,7 @@ class RacketManagerShortcodes extends RacketManager {
 		if (!$tournament) {
 			$tournament = $tournaments[0];
 		} else {
-			$tournament = $racketmanager->getTournament($tournament);
+			$tournament = $racketmanager->getTournament( array('name' => $tournament) );
 		}
 
 		$winners = $racketmanager->getWinners( $tournament->season, $type );
@@ -1042,7 +1042,7 @@ class RacketManagerShortcodes extends RacketManager {
 		$homeDtls = array();
 		$awayDtls = array();
 		if ( $competitiontype == 'tournament') {
-			$tournament = $racketmanager->getTournament( $tournament );
+			$tournament = $racketmanager->getTournament( array('id' => $tournament) );
 			if ( substr($match->league->competition_type,1,1) == 'D' ) {
 				$homeDtls['title'] = "Home Players";
 				$awayDtls['title'] = "Away Players";

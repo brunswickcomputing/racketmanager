@@ -658,3 +658,13 @@ dl dl {
 .points {
   text-align: center;
 }
+.tournament-match {
+  min-height: 6rem;
+  border: 1px solid;
+}
+.drag-over {
+  border: dashed 3px red;
+}
+.hide {
+  display: none;
+}

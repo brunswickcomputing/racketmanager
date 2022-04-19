@@ -773,7 +773,6 @@ class RacketManager {
 
 	}
 
-
 	/**
 	* Uninstall Plugin
 	*/
@@ -1058,6 +1057,11 @@ class RacketManager {
 			$tournament->open = true;
 		} else {
 			$tournament->open = false;
+		}
+		if ( isset($tournament->date) && $tournament->date >= date("Y-m-d") ) {
+			$tournament->active = true;
+		} else {
+			$tournament->active = false;
 		}
 		$tournament->orderofplay = (array)maybe_unserialize($tournament->orderofplay);
 		return $tournament;

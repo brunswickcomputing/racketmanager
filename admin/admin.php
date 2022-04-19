@@ -371,6 +371,9 @@ final class RacketManagerAdmin extends RacketManager
 					case 'tournament':
 					$this->displayTournamentPage();
 					break;
+					case 'tournament-plan':
+					$this->displayTournamentPlanPage();
+					break;
 					default:
 					$this->league_id = intval($_GET['league_id']);
 					$league = get_league($this->league_id);
@@ -1033,6 +1036,35 @@ final class RacketManagerAdmin extends RacketManager
 
 			$clubs = $racketmanager->getClubs( );
 			include_once( dirname(__FILE__) . '/includes/tournament.php' );
+		}
+	}
+
+	/**
+	* display tournament plan page
+	*
+	*/
+	private function displayTournamentPlanPage() {
+		global $racketmanager;
+
+		if ( !current_user_can( 'edit_teams' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+		} else {
+			if ( isset($_POST['saveTournamentPlanner']) ) {
+				check_admin_referer('racketmanager_tournament-planner');
+				$this->saveTournamentPlan($_POST['tournamentId'], $_POST['numFinals'], $_POST['court'], $_POST['match'], $_POST['matchtime'] );
+				$this->printMessage();
+			} elseif ( isset($_POST['saveTournament']) ) {
+				check_admin_referer('racketmanager_tournament');
+				$this->updateTournament($_POST['tournamentId'], $_POST['starttime'], $_POST['numcourts'], $_POST['timeincrement'] );
+				$this->printMessage();
+			}
+
+			if ( isset( $_GET['tournament'] ) ) {
+				$tournamentId = $_GET['tournament'];
+				$tournament = $racketmanager->getTournament( array('id' => $tournamentId) );
+				$finalMatches = $racketmanager->getMatches( array('season' => $tournament->season, 'final' => 'final', 'competitiontype' => 'tournament', 'competitionseason' => $tournament->type));
+			}
+			include_once( dirname(__FILE__) . '/includes/tournament-plan.php' );
 		}
 	}
 
@@ -3573,5 +3605,68 @@ final class RacketManagerAdmin extends RacketManager
 		return true;
 	}
 
+	/**
+	* save Tournament Plan
+	*
+	* @param int $tournament
+	* @param int $numMatches
+	* @param array $court
+	* @param array $matches
+	* @return void
+	*/
+	private function saveTournamentPlan($tournament, $numMatches, $courts, $matches, $matchtimes) {
+		global $wpdb, $racketmanager;
+
+		$tournament = $racketmanager->getTournament(array('id' => $tournament));
+		$orderofplay = array();
+		for ($i=0; $i < count($courts); $i++) {
+			$orderofplay[$i]['court'] = $courts[$i];
+			$orderofplay[$i]['matches'] = $matches[$i];
+			for ($m=0; $m < count($matches); $m++) {
+				$matchId = $matches[$i][$m];
+				if ( $matchId != '' ) {
+					$match = get_match($matchId);
+					$month = str_pad($match->month,2, '0', STR_PAD_LEFT);
+					$day = str_pad($match->day,2, '0', STR_PAD_LEFT);
+					$date = $match->year.'-'.$month.'-'.$day.' '.$matchtimes[$i][$m];
+					$location = $courts[$i];
+					if ( $date != $match->date || $location != $match->location ) {
+						$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_matches} SET `date` = '%s', `location` = '%s' WHERE `id` = %d", $date, $location, $matchId) );
+					}
+				}
+			}
+		}
+		if ( $orderofplay != $tournament->orderofplay ) {
+			$orderofplay = maybe_serialize($orderofplay);
+			$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_tournaments} SET `orderofplay` = '%s' WHERE `id` = %d", $orderofplay, $tournament->id ) );
+			$this->setMessage( __('Tournament plan updated', 'racketmanager') );
+		} else {
+			$this->setMessage( __('No updates', 'racketmanager') );
+		}
+		return true;
+	}
+
+	/**
+	* update Tournament
+	*
+	* @param int $tournament
+	* @param text $starttime
+	* @param int $numcourts
+	* @param text $timeincrement
+	* @return void
+	*/
+	private function updateTournament($tournament, $starttime, $numcourts, $timeincrement) {
+		global $wpdb, $racketmanager;
+
+		$tournament = $racketmanager->getTournament(array('id' => $tournament));
+		if ( $starttime != $tournament->starttime || $numcourts != $tournament->numcourts || $timeincrement != $tournament->timeincrement ) {
+			wp_cache_flush();
+			$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_tournaments} SET `starttime` = '%s', `numcourts` = %d, `timeincrement` = '%s' WHERE `id` = %d", $starttime, $numcourts, $timeincrement, $tournament->id ) );
+			$this->setMessage( __('Tournament updated', 'racketmanager') );
+		} else {
+			$this->setMessage( __('No updates', 'racketmanager') );
+		}
+		return true;
+	}
 }
 ?>

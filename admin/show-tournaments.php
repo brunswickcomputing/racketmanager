@@ -43,6 +43,10 @@ namespace ns;
 							<?php if ( $tournament->open ) { ?>
 								<div class="col-12 col-md-auto"><a class="btn btn-secondary" onclick="Racketmanager.notifyTournamentEntryOpen('<?php echo ($tournament->id) ?>');"><?php _e( 'Notify open', 'racketmanager' ) ?></a></div>
 								<div class="col-12 col-md-auto"><span id="notifyMessage-<?php echo seoURL($tournament->name) ?>"></span></div>
+							<?php } elseif ( $tournament->active ) { ?>
+								<div class="col-12 col-md-auto">
+									<a href="admin.php?page=racketmanager&amp;subpage=tournament-plan&amp;tournament=<?php echo $tournament->id ?>" class="btn btn-secondary"><?php _e( 'Plan Finals', 'racketmanager' ) ?></a>
+								</div>
 							<?php } ?>
 						</div>
 					<?php } ?>
@@ -50,7 +54,7 @@ namespace ns;
 			</form>
 		</div>
 	</div>
-	<div class="container">
+	<div class="mb-3">
 		<!-- Add New Tournament -->
 		<a href="admin.php?page=racketmanager&amp;subpage=tournament" name="addTournament" class="btn btn-primary submit"><?php _e( 'Add Tournament','racketmanager' ) ?></a>
 	</div>

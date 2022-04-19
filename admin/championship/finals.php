@@ -5,6 +5,7 @@
       <input type="hidden" name="page" value="<?php echo htmlspecialchars($_GET['page']) ?>" />
       <input type="hidden" name="subpage" value="<?php echo htmlspecialchars($_GET['subpage']) ?>" />
       <input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
+      <input type="hidden" name="season" value="<?php echo $league->current_season['name'] ?>" />
 
       <select size="1" name="final" id="final">
         <?php foreach ( $league->championship->getFinals() AS $final ) { ?>
@@ -18,6 +19,7 @@
       <input type="hidden" name="page" value="<?php echo htmlspecialchars($_GET['page']) ?>" />
       <input type="hidden" name="subpage" value="match" />
       <input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
+      <input type="hidden" name="season" value="<?php echo $league->current_season['name'] ?>" />
 
       <!-- Bulk Actions -->
       <select name="mode" size="1">

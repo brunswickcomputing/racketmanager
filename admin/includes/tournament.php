@@ -1,7 +1,11 @@
 <?php
 ?>
 <div class="container">
-	<p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager-tournaments"><?php _e( 'RacketManager Tournaments', 'racketmanager' ) ?></a> &raquo; <?php echo $form_title ?></p>
+	<div class="row justify-content-end">
+		<div class="col-auto racketmanager_breadcrumb">
+			<a href="admin.php?page=racketmanager-tournaments"><?php _e( 'RacketManager Tournaments', 'racketmanager' ) ?></a> &raquo; <?php echo $form_title ?>
+		</div>
+	</div>
 	<h1><?php printf(  $form_title ); ?></h1>
 
 

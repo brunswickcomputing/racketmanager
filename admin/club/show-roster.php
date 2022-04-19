@@ -6,7 +6,11 @@
 namespace ns;
 ?>
 <div class="container">
-	<p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager-clubs"><?php _e( 'Clubs', 'racketmanager' ) ?></a> &raquo; <?php _e( 'Players', 'racketmanager' ) ?></p>
+	<div class="row justify-content-end">
+		<div class="col-auto racketmanager_breadcrumb">
+			<a href="admin.php?page=racketmanager-clubs"><?php _e( 'Clubs', 'racketmanager' ) ?></a> &raquo; <?php _e( 'Players', 'racketmanager' ) ?>
+		</div>
+	</div>
 	<h1><?php _e( 'Players', 'racketmanager' ) ?> - <?php echo $club->name ?></h1>
 
 	<!-- View Rosters -->

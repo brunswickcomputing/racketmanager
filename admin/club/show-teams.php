@@ -6,7 +6,11 @@
 namespace ns;
 ?>
 <div class="container">
-	<p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager-clubs"><?php _e( 'Clubs', 'racketmanager' ) ?></a> &raquo; <?php _e( 'Teams', 'racketmanager' ) ?></p>
+	<div class="row justify-content-end">
+		<div class="col-auto racketmanager_breadcrumb">
+			<a href="admin.php?page=racketmanager-clubs"><?php _e( 'Clubs', 'racketmanager' ) ?></a> &raquo; <?php _e( 'Teams', 'racketmanager' ) ?>
+		</div>
+	</div>
 	<h1><?php _e( 'Teams', 'racketmanager' ) ?> - <?php echo $club->name ?></h1>
 
 	<!-- Add Team -->

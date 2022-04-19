@@ -11,16 +11,12 @@ jQuery(document).ready(function(){
 });
 </script>
 <div class="container">
-  <p class="racketmanager_breadcrumb">
-    <a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a>
-    &raquo;
-    <a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>"><?php echo $competition->name ?></a>
-    &raquo;
-    <?php echo $league->title ?>
-  </p>
+  <div class="row justify-content-end">
+    <div class="col-auto racketmanager_breadcrumb">
+      <a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>"><?php echo $competition->name ?></a> &raquo; <?php echo $league->title ?>
+    </div>
+  </div>
   <h1><?php echo $league->title ?></h1>
-
-
   <!-- League Menu -->
   <div class="container">
     <div class="row justify-content-between">

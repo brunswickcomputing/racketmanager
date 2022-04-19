@@ -1631,7 +1631,7 @@ class RacketManager {
 	public function getMatches( $match_args ) {
 		global $wpdb;
 
-		$defaults = array( 'league_id' => false, 'season' => false, 'orderby' => array("date" => "ASC", "id" => "ASC"), 'competition_id' => false, 'confirmed' => false, 'match_date' => false, 'competition_type' => false, 'time' => false, 'history' => false, 'affiliatedClub' => false );
+		$defaults = array( 'league_id' => false, 'season' => false, 'final' => false, 'competitiontype' => false, 'competitionseason' => false, 'orderby' => array("date" => "ASC", "id" => "ASC"), 'competition_id' => false, 'confirmed' => false, 'match_date' => false, 'competition_type' => false, 'time' => false, 'history' => false, 'affiliatedClub' => false );
 		$match_args = array_merge($defaults, (array)$match_args);
 		extract($match_args, EXTR_SKIP);
 
@@ -1650,6 +1650,15 @@ class RacketManager {
 
 		if ( $league_id ) {
 			$sql .= " AND `league_id`  = '".$league_id."'";
+		}
+		if ( $season ) {
+			$sql .= " AND `season`  = '".$season."'";
+		}
+		if ( $final ) {
+			$sql .= " AND `final`  = '".$final."'";
+		}
+		if ( $competitiontype ) {
+			$sql .= " AND `league_id` in (select l.`id` from {$wpdb->racketmanager} l, {$wpdb->racketmanager_competitions} c WHERE l.`competition_id` = c.`id` AND c.`competitiontype` = '".$competitiontype."' AND c.`name` LIKE '".$competitionseason."%')";
 		}
 
 		if ( $confirmed ) {

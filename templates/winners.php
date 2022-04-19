@@ -4,11 +4,11 @@ Template page for the Winners
 
 The following variables are usable:
 
-	$winners: array of all winners
-	$curr_season: current season
-	$tournaments: array of all tournaments
+$winners: array of all winners
+$curr_season: current season
+$tournaments: array of all tournaments
 
-	You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
+You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
 */
 global $wp_query, $racketmanager_shortcodes;
 $postID = isset($wp_query->post->ID) ? $wp_query->post->ID : "";
@@ -21,18 +21,18 @@ $postID = isset($wp_query->post->ID) ? $wp_query->post->ID : "";
 			<select size="1" name="tournament" id="tournament">
 				<option value=""><?php _e( 'Tournament', 'racketmanager' ) ?></option>
 				<!--<option value=""><?php _e( 'Season', 'racketmanager' ) ?></option>-->
-		<?php foreach ( $tournaments AS $tournament ) { ?>
-				<option value="<?php echo $tournament->name ?>"<?php if ( $tournament->name == $curr_tournament ) echo ' selected="selected"' ?>><?php echo $tournament->name ?></option>
-		<?php } ?>
+				<?php foreach ( $tournaments AS $tournament ) { ?>
+					<option value="<?php echo $tournament->name ?>"<?php if ( $tournament->name == $curr_tournament ) echo ' selected="selected"' ?>><?php echo $tournament->name ?></option>
+				<?php } ?>
 			</select>
-            <input type="submit" class="submit" value="<?php _e( 'Show' ) ?>" />
-        </form>
-    </div>
+			<input type="submit" class="submit" value="<?php _e( 'Show' ) ?>" />
+		</form>
+	</div>
 
-<?php if ( !$winners ) {
-	 _e('No tournament winners', 'racketmanager');
-} else {
-	 foreach ( $winners AS $winner ) { ?>
+	<?php if ( !$winners ) {
+		_e('No tournament winners', 'racketmanager');
+	} else {
+		foreach ( $winners AS $winner ) { ?>
 			<!-- Standings Table -->
 			<div id="winners-list">
 				<h4 class="header"><?php echo $winner->league ?></h4>
@@ -44,5 +44,5 @@ $postID = isset($wp_query->post->ID) ? $wp_query->post->ID : "";
 				</dl>
 			</div>
 		<?php } ?>
-<?php } ?>
+	<?php } ?>
 </div>

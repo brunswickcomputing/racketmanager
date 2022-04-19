@@ -7,8 +7,6 @@
 		</div>
 	</div>
 	<h1><?php printf(  $form_title ); ?></h1>
-
-
 	<form action="admin.php?page=racketmanager-tournaments<?php if ( $tournament->id !== '' ) { ?>&amp;tournament_id=<?php echo $tournament->id ?> <?php } ?>" method="post" enctype="multipart/form-data" name="tournament_edit" class="form-control">
 
 		<?php if ( $edit ) { ?>
@@ -17,74 +15,64 @@
 			<?php wp_nonce_field( 'racketmanager_add-tournament' ) ?>
 		<?php } ?>
 
-		<div class="form-group">
-			<label for="tournament"><?php _e( 'Name', 'racketmanager' ) ?></label>
-			<div class="input">
-				<input type="text" id="tournament" name="tournament" value="<?php echo $tournament->name ?>" size="30" placeholder="<?php _e( 'Add tournament', 'racketmanager' ) ?>"" />
-			</div>
+		<div class="form-floating mb-3">
+				<input type="text" class="form-control" id="tournament" name="tournament" value="<?php echo $tournament->name ?>" size="30" placeholder="<?php _e( 'Add tournament', 'racketmanager' ) ?>" />
+				<label for="tournament"><?php _e( 'Name', 'racketmanager' ) ?></label>
 		</div>
-		<div class="form-group">
-			<label for="type"><?php _e( 'Type', 'racketmanager' ) ?></label>
-			<div class="input">
-				<select size="1" name="type" id="type" >
+		<div class="form-floating mb-3">
+				<select class="form-select" size="1" name="type" id="type" >
 					<option><?php _e( 'Select type' , 'racketmanager') ?></option>
 					<option value="summer" <?php selected( 'summer', $tournament->type ) ?>><?php _e( 'Summer', 'racketmanager') ?></option>
 					<option value="winter" <?php selected( 'winter', $tournament->type ) ?>><?php _e( 'Winter', 'racketmanager') ?></option>
 				</select>
-			</div>
+				<label for="type"><?php _e( 'Type', 'racketmanager' ) ?></label>
 		</div>
-		<div class="form-group">
-			<label for="type"><?php _e( 'Season', 'racketmanager' ) ?></label>
-			<div class="input">
-				<select size="1" name="season" id="season" >
+		<div class="form-floating mb-3">
+				<select class="form-select" size="1" name="season" id="season" >
 					<option><?php _e( 'Select season' , 'racketmanager') ?></option>
 					<?php $seasons = $racketmanager->getSeasons( "DESC" );
 					foreach ( $seasons AS $season ) { ?>
 						<option value="<?php echo $season->name ?>" <?php selected( $season->name, isset($tournament->season) ? $tournament->season : '' ) ?>><?php echo $season->name ?></option>
 					<?php } ?>
 				</select>
-			</div>
+				<label for="type"><?php _e( 'Season', 'racketmanager' ) ?></label>
 		</div>
-		<div class="form-group">
-			<label for="venue"><?php _e( 'Venue', 'racketmanager' ) ?></label>
-			<div class="input">
-				<select size="1" name="venue" id="venue" >
+		<div class="form-floating mb-3">
+				<input type="date" class="form-control" name="date" id="date" value="<?php echo $tournament->date ?>" size="20" />
+				<label for="date"><?php _e( 'Date', 'racketmanager' ) ?></label>
+		</div>
+		<div class="form-floating mb-3">
+				<input type="date" class="form-control" name="closingdate" id="closingdate" value="<?php echo $tournament->closingdate ?>" size="20" />
+				<label for="closingdate"><?php _e( 'Closing Date', 'racketmanager' ) ?></label>
+		</div>
+		<div class="form-floating mb-3">
+				<select class="form-select" size="1" name="venue" id="venue" >
 					<option><?php _e( 'Select venue' , 'racketmanager') ?></option>
 					<?php foreach ( $clubs AS $club ) { ?>
 						<option value="<?php echo $club->id ?>"<?php if ( isset($tournament->venue) ) selected($tournament->venue, $club->id) ?>><?php echo $club->name ?></option>
 					<?php } ?>
 				</select>
-			</div>
+				<label for="venue"><?php _e( 'Venue', 'racketmanager' ) ?></label>
 		</div>
-		<div class="form-group">
-			<label for="date"><?php _e( 'Date', 'racketmanager' ) ?></label>
-			<div class="input">
-				<input type="date" name="date" id="date" value="<?php echo $tournament->date ?>" size="20" />
-			</div>
+		<div class="form-floating mb-3">
+				<input type="time" class="form-control" name="starttime" id="starttime" value="<?php echo $tournament->starttime ?>" size="20" />
+				<label for="starttime"><?php _e( 'Start Time', 'racketmanager' ) ?></label>
 		</div>
-		<div class="form-group">
-			<label for="closingdate"><?php _e( 'Closing Date', 'racketmanager' ) ?></label>
-			<div class="input">
-				<input type="date" name="closingdate" id="closingdate" value="<?php echo $tournament->closingdate ?>" size="20" />
-			</div>
+		<div class="form-floating mb-3">
+				<input type="number" class="form-control" name="numcourts" id="numcourts" value="<?php echo $tournament->numcourts ?>" />
+				<label for="numcourts"><?php _e( 'Number of courts', 'racketmanager' ) ?></label>
 		</div>
-		<div class="form-group">
-			<label for="tournamentSecretaryName"><?php _e( 'Tournament secretary', 'racketmanager' ) ?></label>
-			<div class="input">
-				<input type="text" name="tournamentSecretaryName" id="tournamentSecretaryName" autocomplete="name off" value="<?php echo $tournament->tournamentSecretaryName ?>" size="40" /><input type="hidden" name="tournamentSecretary" id="tournamentSecretary" value="<?php if (isset($tournament->tournamentsecretary)) echo $tournament->tournamentsecretary ?>" />
-			</div>
+		<div class="form-floating mb-3">
+				<input type="text" class="form-control" name="tournamentSecretaryName" id="tournamentSecretaryName" autocomplete="name off" value="<?php echo $tournament->tournamentSecretaryName ?>" size="40" /><input type="hidden" name="tournamentSecretary" id="tournamentSecretary" value="<?php if (isset($tournament->tournamentsecretary)) echo $tournament->tournamentsecretary ?>" />
+				<label for="tournamentSecretaryName"><?php _e( 'Tournament secretary', 'racketmanager' ) ?></label>
 		</div>
-		<div class="form-group">
-			<label for="tournamentSecretaryContactNo"><?php _e( 'Tournament secretary contact', 'racketmanager' ) ?></label>
-			<div class="input">
-				<input type="tel" name="tournamentSecretaryContactNo" id="tournamentSecretaryContactNo" autocomplete="tel" value="<?php echo $tournament->tournamentSecretaryContactNo ?>" size="20" />
-			</div>
+		<div class="form-floating mb-3">
+				<input type="tel" class="form-control" name="tournamentSecretaryContactNo" id="tournamentSecretaryContactNo" autocomplete="tel" value="<?php echo $tournament->tournamentSecretaryContactNo ?>" size="20" />
+				<label for="tournamentSecretaryContactNo"><?php _e( 'Tournament secretary contact', 'racketmanager' ) ?></label>
 		</div>
-		<div class="form-group">
-			<label for="tournamentSecretaryEmail"><?php _e( 'Tournament secretary email', 'racketmanager' ) ?></label>
-			<div class="input">
-				<input type="email" name="tournamentSecretaryEmail" id="tournamentSecretaryEmail" autocomplete="email" value="<?php echo $tournament->tournamentSecretaryEmail ?>" size="60" />
-			</div>
+		<div class="form-floating mb-3">
+				<input type="email" class="form-control" name="tournamentSecretaryEmail" id="tournamentSecretaryEmail" autocomplete="email" value="<?php echo $tournament->tournamentSecretaryEmail ?>" size="60" />
+				<label for="tournamentSecretaryEmail"><?php _e( 'Tournament secretary email', 'racketmanager' ) ?></label>
 		</div>
 		<?php do_action( 'tournament_edit_form', $tournament ) ?>
 

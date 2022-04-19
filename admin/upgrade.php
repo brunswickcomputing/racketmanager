@@ -314,6 +314,13 @@ function racketmanager_upgrade() {
         echo __('starting 6.7.0 upgrade', 'leaguemanager') . "<br />\n";
         $wpdb->query( "ALTER TABLE {$wpdb->racketmanager_matches} ADD `comments` varchar( 500 ) NULL AFTER `away_captain` ");
     }
+		if (version_compare($installed, '6.8.0', '<')) {
+        echo __('starting 6.8.0 upgrade', 'leaguemanager') . "<br />\n";
+        $wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} ADD numcourts int( 1) NULL AFTER `tournamentsecretary` ");
+				$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} ADD starttime time NULL AFTER `numcourts` ");
+				$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} ADD timeincrement time NULL AFTER `starttime` ");
+				$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} ADD orderofplay longtext NULL AFTER `timeincrement` ");
+    }
     /*
 	* Update version and dbversion
 	*/

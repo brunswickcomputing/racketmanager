@@ -52,7 +52,7 @@ class RacketManager {
 	*
 	* @var string
 	*/
-	private $dbversion = '6.7.0';
+	private $dbversion = '6.8.0';
 
 	/**
 	* The array of templates that this plugin tracks.
@@ -768,7 +768,7 @@ class RacketManager {
 		$create_results_checker_sql = "CREATE TABLE {$wpdb->racketmanager_results_checker} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT , `league_id` int( 11 ) NOT NULL default '0', `match_id` int( 11 ) NOT NULL default '0', `team_id` int( 11 ) NULL, `player_id` int( 11 ) NULL, `description` varchar( 255 ) NULL, `status` int( 1 ) NULL, `updated_user` int( 11 ) NULL, `updated_date` datetime NULL, PRIMARY KEY ( `id` )) $charset_collate;";
 		maybe_create_table( $wpdb->racketmanager_results_checker, $create_results_checker_sql );
 
-		$create_tournaments_sql = "CREATE TABLE {$wpdb->racketmanager_tournaments} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `name` varchar( 100 ) NOT NULL default '', `type` varchar( 100 ) NOT NULL default '', `season` varchar( 255 ) NOT NULL default '', `venue` int( 11 ) NULL, `date` date NULL, `closingdate` date NOT NULL, `tournamentsecretary` int( 11 ) NULL, PRIMARY KEY ( `id` )) $charset_collate;";
+		$create_tournaments_sql = "CREATE TABLE {$wpdb->racketmanager_tournaments} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `name` varchar( 100 ) NOT NULL default '', `type` varchar( 100 ) NOT NULL default '', `season` varchar( 255 ) NOT NULL default '', `venue` int( 11 ) NULL, `date` date NULL, `closingdate` date NOT NULL, `tournamentsecretary` int( 11 ) NULL, numcourts int( 1) NULL, starttime time NULL, timeincrement time NULL, orderofplay longtext NULL, (PRIMARY KEY ( `id` )) $charset_collate;";
 		maybe_create_table( $wpdb->racketmanager_tournaments, $create_tournaments_sql );
 
 	}
@@ -980,7 +980,7 @@ class RacketManager {
 		}
 		$orderby = $orderby_string;
 
-		$sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`closingdate`, '%%Y-%%m-%%d') AS closingdate, `tournamentsecretary` FROM {$wpdb->racketmanager_tournaments} $search ORDER BY $orderby LIMIT %d, %d", intval($offset), intval($limit) );
+		$sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`closingdate`, '%%Y-%%m-%%d') AS closingdate, `tournamentsecretary`, `numcourts`, `starttime`, `timeincrement`, `orderofplay` FROM {$wpdb->racketmanager_tournaments} $search ORDER BY $orderby LIMIT %d, %d", intval($offset), intval($limit) );
 
 		$tournaments = wp_cache_get( md5($sql), 'tournaments' );
 		if ( !$tournaments ) {
@@ -1059,6 +1059,7 @@ class RacketManager {
 		} else {
 			$tournament->open = false;
 		}
+		$tournament->orderofplay = (array)maybe_unserialize($tournament->orderofplay);
 		return $tournament;
 
 	}

@@ -24,10 +24,16 @@ function dragEnd(ev) {
 }
 function dragEnter(ev) {
   ev.preventDefault();
+  if (jQuery(this).children('.final-match').length) {
+    return;
+  }
   ev.target.classList.add('drag-over');
 }
 function dragOver(ev) {
   ev.preventDefault();
+  if (jQuery(this).children('.final-match').length) {
+    return;
+  }
   ev.target.classList.add('drag-over');
 }
 function dragLeave(ev) {
@@ -39,8 +45,11 @@ function drop(ev) {
   const id = ev.dataTransfer.getData("text/plain");
   const draggable = document.getElementById(id);
   const sourceId = draggable.parentElement.id;
-  ev.target.appendChild(draggable);
   draggable.classList.remove('hide');
+  if (jQuery(this).children('.final-match').length) {
+    return;
+  }
+  ev.target.appendChild(draggable);
   const inputId = targetId.replace('schedule','match');
   const input = document.getElementById(inputId);
   input.value=id.replace('match-','');

@@ -1,6 +1,6 @@
 <!-- Results Checker -->
 
-<form id="results-checker-filter" method="post" action="">
+<form id="results-checker-filter" method="post" action="" class="form-control">
 	<?php wp_nonce_field( 'results-checker-bulk' ) ?>
 
 	<div class="tablenav">

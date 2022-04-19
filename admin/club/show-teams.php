@@ -14,8 +14,8 @@ namespace ns;
 	<h1><?php _e( 'Teams', 'racketmanager' ) ?> - <?php echo $club->name ?></h1>
 
 	<!-- Add Team -->
-	<div class="container">
-		<form id="teams-filter" method="post" action="">
+	<div class="mb-3">
+		<form id="teams-filter" method="post" action="" class="form-control">
 			<?php wp_nonce_field( 'teams-bulk' ) ?>
 
 			<div class="tablenav">
@@ -53,7 +53,7 @@ namespace ns;
 		</form>
 	</div>
 	<!-- Add New Team -->
-	<div class="container">
+	<div class="mb-3">
 		<h3><?php _e( 'Add Team', 'racketmanager' ) ?></h3>
 		<form action="" method="post" class="form-control">
 			<?php wp_nonce_field( 'racketmanager_add-team' ) ?>

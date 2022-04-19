@@ -47,7 +47,7 @@ namespace ns;
 			</form>
 		</div>
 	</div>
-	<div class="container">
+	<div class="mb-3">
 		<!-- Add New Club -->
 		<a href="admin.php?page=racketmanager&amp;subpage=club" name="addTeam" class="btn btn-primary submit"><?php _e( 'Add Club','racketmanager' ) ?></a>
 	</div>

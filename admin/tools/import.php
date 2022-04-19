@@ -6,15 +6,15 @@
 	<form action="" method="post" enctype="multipart/form-data">
 		<?php wp_nonce_field( 'racketmanager_import-datasets' ) ?>
 
-		<div class="form-group">
+		<div class="form-group mb-3">
 			<input class="form-control" type="file" name="racketmanager_import" id="racketmanager_import" size="40" placeholder="File name" />
 		</div>
-		<div class="form-floating">
+		<div class="form-floating mb-3">
 			<input class="form-control" type="text" name="delimiter" id="delimiter" value="TAB" size="3" placeholder="TAB" />
 			<label for="delimiter"><?php _e('Delimiter','racketmanager') ?></label>
 		</div>
 		<p><?php _e('For tab delimited files use TAB as delimiter', 'racketmanager') ?></p>
-		<div class="form-floating">
+		<div class="form-floating mb-3">
 			<select class="form-select" size="1" name="mode" id="mode" onChange='Racketmanager.getImportOption(this.value)'>
 				<option><?php _e( 'Select', 'racketmanager') ?></option>
 				<option value="table"><?php _e( 'Table', 'racketmanager' ) ?></option>
@@ -26,7 +26,7 @@
 			</select>
 			<label for="mode"><?php _e('Type of data', 'racketmanager'); ?></label>
 		</div>
-		<div id="competitions" class="form-floating" style="display:none">
+		<div id="competitions" class="form-floating mb-3" style="display:none">
 			<?php if ( $competitions = parent::getCompetitions() ) { ?>
 				<select class="form-select" size="1" name="competition_id" id="competition_id" onChange='Racketmanager.getLeagueDropdown(this.value)'>
 					<option><?php _e( 'Select Competition', 'racketmanager') ?></option>
@@ -39,7 +39,7 @@
 		</div>
 		<div id="leagues" class="form-floating">
 		</div>
-		<div id="clubs" class="form-floating" style="display:none">
+		<div id="clubs" class="form-floating mb-3" style="display:none">
 			<?php if ( $clubs = parent::getClubs( ) ) { ?>
 				<select class="form-select" size="1" name="affiliatedClub" id="affiliatedClub">
 					<option><?php _e( 'Select affiliated club', 'racketmanager' ) ?></option>
@@ -50,7 +50,9 @@
 			<?php } ?>
 			<label for="club_id"><?php _e('Affiliated Club', 'racketmanager'); ?></label>
 		</div>
-		<p class="submit"><input type="submit" name="import" value="<?php _e( 'Upload file and import' ); ?>" class="button button-primary" /></p>
+		<div class="mb-3">
+			<input type="submit" name="import" value="<?php _e( 'Upload file and import' ); ?>" class="btn btn-primary" />
+		</div>
 	</form>
 	<p><?php printf(__( "The required structure of the file to import is described in the <a href='%s'>Documentation</a>", 'racketmanager' ), 'admin.php?page=racketmanager-doc' ) ?></p>
 </div>

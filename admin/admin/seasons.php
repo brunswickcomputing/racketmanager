@@ -1,5 +1,6 @@
 <!-- View Seasons -->
-<form id="seasons-filter" method="post" action="">
+<div class="mb-3">
+<form id="seasons-filter" method="post" action="" class="form-control">
 	<?php wp_nonce_field( 'seasons-bulk' ) ?>
 
 	<div class="tablenav">
@@ -34,6 +35,7 @@
 		<?php } ?>
 	</div>
 </form>
+</div>
 <!-- Add New Season -->
 <div clas="container">
 	<h2><?php _e( 'Add Season', 'racketmanager' ) ?></h2>

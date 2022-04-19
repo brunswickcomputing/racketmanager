@@ -5,7 +5,7 @@
 
 	<h1><?php _e( 'Racketmanager Competitions', 'racketmanager' ) ?></h1>
 
-	<div id="competitions-table" class="league-block-container">
+	<div id="competitions-table" class="league-block-container mb-3">
 		<script type='text/javascript'>
 		jQuery(document).ready(function(){
 			activaTab('<?php echo $tab ?>');

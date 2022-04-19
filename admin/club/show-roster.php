@@ -14,7 +14,7 @@ namespace ns;
 	<h1><?php _e( 'Players', 'racketmanager' ) ?> - <?php echo $club->name ?></h1>
 
 	<!-- View Rosters -->
-	<div class="container">
+	<div class="mb-3">
 		<!-- Add Player -->
 		<h2><?php _e( 'Add Player', 'racketmanager' ) ?></h2>
 		<form action="" method="post" class="form-control">
@@ -55,9 +55,9 @@ namespace ns;
 		</form>
 	</div>
 
-	<div class="container">
+	<div class="mb-3">
 		<h2><?php _e( 'View Players', 'racketmanager' ) ?></h2>
-		<form id="roster-filter" method="post" action="">
+		<form id="roster-filter" method="post" action="" class="form-control">
 			<?php wp_nonce_field( 'roster-bulk' ) ?>
 
 			<div class="tablenav">

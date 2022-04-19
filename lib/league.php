@@ -1200,12 +1200,16 @@ public function getMatches( $query_args ) {
 		}
 	}
 
-	if ($final != false && $this->finalExists(htmlspecialchars(strip_tags($final)))) {
-		$sql .= " AND `final` = '%s'";
-		$args[] = htmlspecialchars(strip_tags($final));
-		$match_day = -1;
-		$limit = 0;
-		$group = '';
+	if ($final) {
+		if ($this->finalExists(htmlspecialchars(strip_tags($final)))) {
+			$sql .= " AND `final` = '%s'";
+			$args[] = htmlspecialchars(strip_tags($final));
+			$match_day = -1;
+			$limit = 0;
+			$group = '';
+		} else {
+			$sql .= " AND `final` != ''";
+		}
 	} else {
 		$sql .= " AND `final` = ''";
 	}

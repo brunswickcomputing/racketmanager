@@ -43,6 +43,9 @@ Go to top button
 /*
 * @section: Backend
 */
+ul.posttype-tabs, ul.outer-border {
+  padding-left: 0px;
+}
 #matchPreloader .preloader {
     height: 25%;
     width: 75%;

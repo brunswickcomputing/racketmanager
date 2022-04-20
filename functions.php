@@ -185,6 +185,18 @@ function create_new_url_querystring() {
     'index.php?pagename=tournaments%2F$matches[1]%2Fwinners&type=$matches[1]',
     'top'
   );
+  // type - season - tournament
+  add_rewrite_rule(
+    'tournaments/(.+?)/order-of-play/(.+?)/?$',
+    'index.php?pagename=tournaments%2F$matches[1]%2Forder-of-play&tournament=$matches[2]&type=$matches[1]',
+    'top'
+  );
+  // type - season
+  add_rewrite_rule(
+    'tournaments/(.+?)/order-of-play/?$',
+    'index.php?pagename=tournaments%2F$matches[1]%2Forder-of-play&type=$matches[1]',
+    'top'
+  );
 
   add_rewrite_tag('%league_name%','([^/]*)');
   add_rewrite_tag('%league_id%','([^/]*)');

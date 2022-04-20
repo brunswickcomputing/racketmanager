@@ -734,7 +734,10 @@ li.game-bottom{
 .doubles.game-bottom {
     height: 47px;
 }
-
+.tournament-match {
+	border: solid 1px;
+	padding: 5px;
+}
 /*---------------------Club Style-------------------------- */
 
 #club-info {

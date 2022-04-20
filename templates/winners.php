@@ -18,6 +18,7 @@ $postID = isset($wp_query->post->ID) ? $wp_query->post->ID : "";
 	<div id="racketmanager_archive_selections" class="">
 		<form method="get" action="<?php echo get_permalink($postID); ?>" id="racketmanager_winners">
 			<input type="hidden" name="page_id" value="<?php echo $postID ?>" />
+			<input type="hidden" name="season" id="season" value="<?php echo $season ?>" />
 			<select size="1" name="tournament" id="tournament">
 				<option value=""><?php _e( 'Tournament', 'racketmanager' ) ?></option>
 				<!--<option value=""><?php _e( 'Season', 'racketmanager' ) ?></option>-->

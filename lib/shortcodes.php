@@ -940,7 +940,7 @@ class RacketManagerShortcodes extends RacketManager {
 	* @return the content
 	*/
 	public function showWinners( $atts ) {
-		global $racketmanager;
+		global $racketmanager, $wp;
 		extract(shortcode_atts(array(
 			'type' => '',
 			'tournament' => false,
@@ -955,15 +955,17 @@ class RacketManagerShortcodes extends RacketManager {
 		} elseif ( isset($wp->query_vars['type']) ) {
 			$type = get_query_var('type');
 		}
-		if ( !$type ) return _e('No tournament winners', 'racketmanager');
+		if ( !$type ) return _e('No tournament type set', 'racketmanager');
 		$tournaments = $racketmanager->getTournaments( array( 'type' => $type ) );
 
 		if ($tournament != "") {
 			$tournament = $tournament;
 		} elseif ( isset($_GET['tournament']) && !empty($_GET['tournament']) ) {
 			$tournament = htmlspecialchars(strip_tags($_GET['tournament']));
+			$tournament = str_replace('-',' ',$tournament);
 		} elseif ( isset($wp->query_vars['tournament']) ) {
 			$tournament = get_query_var('tournament');
+			$tournament = str_replace('_',' ',$tournament);
 		}
 
 		if (!$tournament) {
@@ -976,7 +978,7 @@ class RacketManagerShortcodes extends RacketManager {
 
 		$filename = ( !empty($template) ) ? 'winners-'.$template : 'winners';
 
-		$out = $this->loadTemplate( $filename, array( 'winners' => $winners, 'tournaments' => $tournaments, 'curr_tournament' => $tournament->name) );
+		$out = $this->loadTemplate( $filename, array( 'winners' => $winners, 'tournaments' => $tournaments, 'curr_tournament' => $tournament->name, 'season' => $type) );
 
 		return $out;
 	}

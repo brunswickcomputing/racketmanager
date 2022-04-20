@@ -173,6 +173,18 @@ function create_new_url_querystring() {
     'index.php?pagename=tournaments%2F$matches[1]-tournaments%2F$matches[1]-tournament-entry-form',
     'top'
   );
+  // type - season - tournament
+  add_rewrite_rule(
+    'tournaments/(.+?)/winners/(.+?)/?$',
+    'index.php?pagename=tournaments%2F$matches[1]%2Fwinners&tournament=$matches[2]&type=$matches[1]',
+    'top'
+  );
+  // type - season
+  add_rewrite_rule(
+    'tournaments/(.+?)/winners/?$',
+    'index.php?pagename=tournaments%2F$matches[1]%2Fwinners&type=$matches[1]',
+    'top'
+  );
 
   add_rewrite_tag('%league_name%','([^/]*)');
   add_rewrite_tag('%league_id%','([^/]*)');
@@ -182,6 +194,7 @@ function create_new_url_querystring() {
   add_rewrite_tag('%club_name%','(.+?)');
   add_rewrite_tag('%match_date%','(.+?)');
   add_rewrite_tag('%type%','(.+?)');
+  add_rewrite_tag('%tournament%','(.+?)');
 }
 add_action('init', 'create_new_url_querystring');
 

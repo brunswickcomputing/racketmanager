@@ -47,9 +47,17 @@ jQuery(document).ready(function($) {
 	});
 	/* Friendly URL rewrite */
 	jQuery('#racketmanager_winners').submit(function() {
-		var tournament = jQuery('#tournament').val().replace(/[^A-Za-z0-9 ]/g,''); // Remove unwanted characters, only accept alphanumeric and space */
+		var tournament = jQuery('#tournament').val().replace(/[^A-Za-z0-9 -]/g,''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
 		tournament = tournament.replace(/\s{2,}/g,' '); // Replace multi spaces with a single space */
-		tournament = tournament.replace(/\s/g, "-"); // Replace space with a '-' symbol */
+		tournament = tournament.replace(/\s/g, "_"); // Replace space with a '-' symbol */
+		var season = jQuery('#season').val();
+
+		var cleanUrl = window.location.protocol + '//' + window.location.host + '/tournaments/' + season + '/winners/' + tournament.toLowerCase() + '/';
+		window.location = cleanUrl;
+
+		return false;  // Prevent default button behaviour
+	});
+	jQuery('#racketmanager_orderofplay').submit(function() {
 
 		var cleanUrl = window.location.protocol + '//' + window.location.host + '/tournaments/' + tournament.toLowerCase() + '/' + season;
 		window.location = cleanUrl;

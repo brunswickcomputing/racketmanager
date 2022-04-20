@@ -3622,7 +3622,7 @@ final class RacketManagerAdmin extends RacketManager
 		for ($i=0; $i < count($courts); $i++) {
 			$orderofplay[$i]['court'] = $courts[$i];
 			$orderofplay[$i]['matches'] = $matches[$i];
-			for ($m=0; $m < count($matches); $m++) {
+			for ($m=0; $m < count($matches[$i]); $m++) {
 				$matchId = $matches[$i][$m];
 				if ( $matchId != '' ) {
 					$match = get_match($matchId);

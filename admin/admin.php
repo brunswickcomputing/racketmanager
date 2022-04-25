@@ -1051,7 +1051,11 @@ final class RacketManagerAdmin extends RacketManager
 		} else {
 			if ( isset($_POST['saveTournamentPlanner']) ) {
 				check_admin_referer('racketmanager_tournament-planner');
-				$this->saveTournamentPlan($_POST['tournamentId'], $_POST['numFinals'], $_POST['court'], $_POST['match'], $_POST['matchtime'] );
+				$this->saveTournamentPlan($_POST['tournamentId'], $_POST['numFinals'], $_POST['court'], $_POST['starttime'], $_POST['match'], $_POST['matchtime'] );
+				$this->printMessage();
+			} elseif ( isset($_POST['resetTournamentPlanner']) ) {
+				check_admin_referer('racketmanager_tournament-planner');
+				$this->resetTournamentPlan($_POST['tournamentId']);
 				$this->printMessage();
 			} elseif ( isset($_POST['saveTournament']) ) {
 				check_admin_referer('racketmanager_tournament');
@@ -3614,21 +3618,23 @@ final class RacketManagerAdmin extends RacketManager
 	* @param array $matches
 	* @return void
 	*/
-	private function saveTournamentPlan($tournament, $numMatches, $courts, $matches, $matchtimes) {
+	private function saveTournamentPlan($tournament, $numMatches, $courts, $starttimes, $matches, $matchtimes) {
 		global $wpdb, $racketmanager;
 
 		$tournament = $racketmanager->getTournament(array('id' => $tournament));
 		$orderofplay = array();
 		for ($i=0; $i < count($courts); $i++) {
 			$orderofplay[$i]['court'] = $courts[$i];
+			$orderofplay[$i]['starttime'] = $starttimes[$i];
 			$orderofplay[$i]['matches'] = $matches[$i];
 			for ($m=0; $m < count($matches[$i]); $m++) {
 				$matchId = $matches[$i][$m];
 				if ( $matchId != '' ) {
+					$time = strtotime($starttimes[$i]) + $matchtimes[$i][$m];
 					$match = get_match($matchId);
 					$month = str_pad($match->month,2, '0', STR_PAD_LEFT);
 					$day = str_pad($match->day,2, '0', STR_PAD_LEFT);
-					$date = $match->year.'-'.$month.'-'.$day.' '.$matchtimes[$i][$m];
+					$date = $match->year.'-'.$month.'-'.$day.' '.date('H:i', $time);
 					$location = $courts[$i];
 					if ( $date != $match->date || $location != $match->location ) {
 						$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_matches} SET `date` = '%s', `location` = '%s' WHERE `id` = %d", $date, $location, $matchId) );
@@ -3638,6 +3644,7 @@ final class RacketManagerAdmin extends RacketManager
 		}
 		if ( $orderofplay != $tournament->orderofplay ) {
 			$orderofplay = maybe_serialize($orderofplay);
+			wp_cache_flush();
 			$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_tournaments} SET `orderofplay` = '%s' WHERE `id` = %d", $orderofplay, $tournament->id ) );
 			$this->setMessage( __('Tournament plan updated', 'racketmanager') );
 		} else {

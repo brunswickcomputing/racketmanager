@@ -12,7 +12,12 @@ You can check the content of a variable when you insert the tag <?php var_dump($
 */
 global $wp_query, $racketmanager_shortcodes;
 $postID = isset($wp_query->post->ID) ? $wp_query->post->ID : "";
-$columnWidth = floor(12 / $currTournament->numcourts) ;
+if ( !$currTournament->numcourts ) {
+	$numCourts = 1;
+} else {
+	$numCourts = $currTournament->numcourts;
+}
+$columnWidth = floor(12 / $numCourts) ;
 ?>
 <div id="orderofplay">
 	<h1><?php echo $currTournament->name ?> <?php _e('Finals Day Order of Play', 'racketmanager'); ?></h1>
@@ -32,7 +37,7 @@ $columnWidth = floor(12 / $currTournament->numcourts) ;
 
 	<h2><?php echo $currTournament->venueName ?></h2>
 	<?php if ( !empty($orderofplay) ) { ?>
-		<div class="row text-center mb-3">
+		<div class="row text-center mb-3 fw-bold fs-3">
 			<div class="col-2 col-sm-1"><?php _e('Time', 'racketmanager') ?></div>
 			<div class="col-10 col-sm-11">
 				<div class="row">
@@ -49,26 +54,36 @@ $columnWidth = floor(12 / $currTournament->numcourts) ;
 			<div class="mb-3">
 				<?php	$startTime = strtotime($currTournament->starttime);
 				for ($i=0; $i < count($matchTimes); $i++) { ?>
-					<div class="row align-items-center text-center mb-3">
-						<div class="col-2 col-sm-1">
+					<div class="row text-center mb-3">
+						<div class="col-2 col-sm-1 fw-bold fs-4">
 							<?php echo $matchTimes[$i]; ?>
 						</div>
 						<div class="col-10 col-sm-11">
-							<div class="row align-items-center">
+							<div class="row ">
 								<?php for ($c=0; $c < $currTournament->numcourts; $c++) {
 									$scheduledMatch = $orderofplay[$c]['matches'][$i]; ?>
 									<div class="col-<?php echo $columnWidth?>">
 										<?php if ( isset($scheduledMatch->id) ) { ?>
-											<div class="tournament-match btn btn-success">
-												<div class="league">
+											<div class="tournament-match btn btn-success <?php if ( $scheduledMatch->time != $matchTimes[$i] ) { echo 'matchLater'; } ?>">
+												<?php if ( $scheduledMatch->time != $matchTimes[$i] ) { ?>
+													<div class="fw-bold"><?php echo $scheduledMatch->time ?></div>
+												<?php } ?>
+												<div class="fw-bold">
 													<?php echo $scheduledMatch->league; ?>
 												</div>
 												<div class="team <?php if ( isset($scheduledMatch->winner) && $scheduledMatch->team1Id == $scheduledMatch->winner ) { echo 'winner'; } ?>">
 													<?php echo $scheduledMatch->team1; ?>
 												</div>
+												<?php if ( is_numeric($scheduledMatch->team1Id) ) { ?>
+													<div class="fst-italic">(<?php echo $scheduledMatch->team1Club ?>)</div>
+												<?php } ?>
+												<div class=""><?php _e( 'vs', 'racketmanager' ); ?></div>
 												<div class="team <?php if ( isset($scheduledMatch->winner) && $scheduledMatch->team2Id == $scheduledMatch->winner ) { echo 'winner'; } ?>">
 													<?php echo $scheduledMatch->team2; ?>
 												</div>
+												<?php if ( is_numeric($scheduledMatch->team2Id) ) { ?>
+													<div class="fst-italic">(<?php echo $scheduledMatch->team2Club ?>)</div>
+												<?php } ?>
 											</div>
 										<?php } ?>
 									</div>

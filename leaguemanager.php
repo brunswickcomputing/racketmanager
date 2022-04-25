@@ -1694,11 +1694,41 @@ class RacketManager {
 
 			$class = ( 'alternate' == $class ) ? '' : 'alternate';
 			$match = get_match($match);
+			if ( $match->final_round == 'final' ) {
+				if ( !is_numeric($match->home_team) ) {
+					$match->prevHomeMatch = $this->getPrevRoundMatches($match->home_team, $match->season, $match->league);
+				}
+				if ( !is_numeric($match->away_team) ) {
+					$match->prevAwayMatch = $this->getPrevRoundMatches($match->away_team, $match->season, $match->league);
+				}
+			}
 			$match->class = $class;
 			$matches[$i] = $match;
 		}
 
 		return $matches;
+	}
+
+	/**
+	* get details of previous round match
+	*
+	* @param string $teamRef
+	* @param string $season
+	* @param string $leagueId
+	* @return array $prevMatch
+	*/
+	public function getPrevRoundMatches($teamRef, $season, $leagueId) {
+		global $racketmanager;
+		$team = explode("_", $teamRef);
+		$league = get_league($leagueId);
+		$prevMatches = $league->getMatches( array('final' => $team[1], 'season' => $season, "orderby" => array("id" => "ASC") ));
+		if ( $prevMatches ) {
+			$matchRef = $team[2] - 1;
+			$prevMatch = $prevMatches[$matchRef];
+			return $prevMatch;
+		} else {
+			return false;
+		}
 	}
 
 	/**

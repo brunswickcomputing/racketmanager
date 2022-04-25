@@ -1346,10 +1346,6 @@ class RacketManagerShortcodes extends RacketManager {
 			$tournament = $racketmanager->getTournament( array('name' => $tournament) );
 		}
 
-//		if ( $tournament->orderofplay == '' || empty($tournament->orderofplay)) {
-//			return _e('No finals day order of play available', 'racketmanager');
-//		}
-
 		$matchTimes = array();
 		$courts = array();
 		$numMatches = 0;
@@ -1368,8 +1364,20 @@ class RacketManagerShortcodes extends RacketManager {
 					$finalMatch->time = $match->hour.':'.$match->minutes;
 					$finalMatch->league = $match->league->title;
 					$finalMatch->location = $match->location;
-					$finalMatch->team1 = $match->teams['home']->title;
-					$finalMatch->team2 = $match->teams['away']->title;
+					if ( is_numeric($match->home_team) ) {
+						$finalMatch->team1 = $match->teams['home']->title;
+						$finalMatch->team1Club = $match->teams['home']->affiliatedclubname;
+					} else {
+						$prevMatch = $racketmanager->getPrevRoundMatches($match->home_team, $match->season, $match->league);
+						$finalMatch->team1 = $prevMatch->match_title;
+					}
+					if ( is_numeric($match->away_team) ) {
+						$finalMatch->team2 = $match->teams['away']->title;
+						$finalMatch->team2Club = $match->teams['away']->affiliatedclubname;
+					} else {
+						$prevMatch = $racketmanager->getPrevRoundMatches($match->away_team, $match->season, $match->league);
+						$finalMatch->team2 = $prevMatch->match_title;
+					}
 					$finalMatch->team1Id = $match->home_team;
 					$finalMatch->team2Id = $match->away_team;
 					$finalMatch->winner = $match->winner_id;
@@ -1384,6 +1392,22 @@ class RacketManagerShortcodes extends RacketManager {
 		$orderofplay = $courts;
 
 		array_multisort($matchTimes);
+		$startTimes = array();
+		$startTime = strtotime($tournament->starttime);
+		$maxSchedules = ceil($numMatches / $tournament->numcourts);
+		for ($i=0; $i < $maxSchedules; $i++) {
+			$startTimes[$i] = date('H:i', $startTime);
+			$startTime = $startTime + strtotime($tournament->timeincrement);
+		}
+
+		$numSlots = count($matchTimes);
+		for ($i=0; $i < $numSlots; $i++) {
+			if ( !in_array($matchTimes[$i],$startTimes) ) {
+				unset($matchTimes[$i]);
+			}
+		}
+		$matchTimes = array_values($matchTimes);
+
 		$filename = ( !empty($template) ) ? 'orderofplay-'.$template : 'orderofplay';
 
 		$out = $this->loadTemplate( $filename, array( 'tournaments' => $tournaments, 'currTournament' => $tournament, 'matchTimes' => $matchTimes, 'orderofplay' => $orderofplay, 'season' => $type) );

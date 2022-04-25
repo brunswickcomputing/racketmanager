@@ -50,6 +50,9 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.8.1 =
+* BUGFIX: fix javascript security warnings
+
 = 6.8.0 =
 * BUGFIX: pass season to tournament admin pages
 * BUGFIX: set correct number of rounds if tournament matches completed

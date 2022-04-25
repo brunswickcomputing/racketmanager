@@ -50,6 +50,14 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.8.0 =
+* BUGFIX: pass season to tournament admin pages
+* BUGFIX: set correct number of rounds if tournament matches completed
+* BUGFIX: fix tab handling for multiple leagues
+* UPDATE: set urls correctly for winners
+* UPDATE: add tournament planner
+* UPDATE: standardise admin screen layouts
+
 = 6.7.0 =
 * UPDATE: get modal working with bootstrap
 * UPDATE: capture comments for match results
@@ -57,7 +65,7 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 * UPDATE: add rewrite rules for cups and tournaments
 * UPDATE: use sport independent tempaltes for championships
 * UPDATE: change password hint message
-* UPDATE: use bootstrap form styling for auth pages 
+* UPDATE: use bootstrap form styling for auth pages
 * UPDATE: redirect to homepage when login initiated from login page
 * UPDATE: allow comments for match result entry
 * UPDATE: use bootstrap styling for match/rubber result entry

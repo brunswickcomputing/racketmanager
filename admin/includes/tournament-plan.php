@@ -110,10 +110,11 @@ if ( !is_array($tournament->orderofplay) || count($tournament->orderofplay) != $
 					<?php $startTime = $startTime + $matchLength;
 				} ?>
 			</div>
-			<div class="mb-3">
-				<input type="submit" name="saveTournamentPlanner" value="<?php _e('Save schedule', 'racketmanager') ?>" class="btn btn-primary" />
-			</div>
-		</form>
+				<div class="mb-3">
+					<button class="btn btn-primary" name="saveTournamentPlanner" id="saveTournamentPlanner"><?php _e('Save schedule', 'racketmanager') ?></button>
+					<button class="btn btn-secondary" name="resetTournamentPlanner" id="resetTournamentPlanner"><?php _e('Reset schedule', 'racketmanager') ?></button>
+				</div>
+			</form>
 	</div>
 </div>
 <?php wp_register_script( 'racketmanager-draggable', plugins_url('/js/draggable.js', dirname(__FILE__)), array(), RACKETMANAGER_VERSION );

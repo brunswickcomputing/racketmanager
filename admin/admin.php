@@ -3668,5 +3668,38 @@ final class RacketManagerAdmin extends RacketManager
 		}
 		return true;
 	}
+	/**
+	* reset Tournament Plan
+	*
+	* @param int $tournament
+	* @return void
+	*/
+	private function resetTournamentPlan($tournament) {
+		global $wpdb, $racketmanager;
+
+		$tournament = $racketmanager->getTournament(array('id' => $tournament));
+		$orderofplay = array();
+		$finalMatches = $racketmanager->getMatches( array('season' => $tournament->season, 'final' => 'final', 'competitiontype' => 'tournament', 'competitionseason' => $tournament->type));
+
+		foreach ($finalMatches as $match) {
+			$month = str_pad($match->month,2, '0', STR_PAD_LEFT);
+			$day = str_pad($match->day,2, '0', STR_PAD_LEFT);
+			$date = $match->year.'-'.$month.'-'.$day.' 00:00';
+			$location = '';
+			if ( $date != $match->date || $location != $match->location ) {
+				$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_matches} SET `date` = '%s', `location` = '%s' WHERE `id` = %d", $date, $location, $match->id) );
+			}
+		}
+		if ( $orderofplay != $tournament->orderofplay ) {
+			$orderofplay = maybe_serialize($orderofplay);
+			wp_cache_flush();
+			$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_tournaments} SET `orderofplay` = '%s' WHERE `id` = %d", $orderofplay, $tournament->id ) );
+			$this->setMessage( __('Tournament plan reset', 'racketmanager') );
+		} else {
+			$this->setMessage( __('No updates', 'racketmanager') );
+		}
+		return true;
+	}
+
 }
 ?>

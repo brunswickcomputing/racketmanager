@@ -19,7 +19,7 @@
       	<div class="tab-pane fade <?php if ( $i == 0 ) { echo 'show active'; } ?>" id="favouriteType-<?php echo $favouriteType['name'] ?>" role="tabpanel" aria-labelledby="favouriteType-<?php echo $favouriteType['name'] ?>-tab">
           <?php foreach ($favouriteType['favourites'] as $key => $league) { ?>
             <div>
-              <h4 class="header"><?php echo $league->name ?></h4>
+              <h4 class="header"><a href="/leagues/<?php echo seoUrl($league->name) ?>"><?php echo $league->name ?></a></h4>
               <?php if ( is_user_logged_in() ) {
                 $isFavourite = $racketmanager->userFavourite('league', $league->id); ?>
                 <div class="fav-icon">
@@ -31,14 +31,12 @@
                   <div class="fav-msg" id="fav-msg-<?php echo $league->id ?>"></div>
                 </div>
               <?php } ?>
-
             </div>
           <?php } ?>
       	</div>
         <?php $i ++;
         } ?>
       </div>
-
     </div>
   </div>
 </div>

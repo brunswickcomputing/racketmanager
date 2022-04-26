@@ -14,16 +14,16 @@ global $wp_query, $racketmanager_shortcodes;
 $postID = isset($wp_query->post->ID) ? $wp_query->post->ID : "";
 ?>
 <div id="winners">
-	<h1><?php printf("%s %s", $curr_tournament, __('Winners', 'racketmanager')); ?></h1>
+	<h1><?php printf("%s %s", $curr_entry, __('Winners', 'racketmanager')); ?></h1>
 	<div id="racketmanager_archive_selections" class="">
 		<form method="get" action="<?php echo get_permalink($postID); ?>" id="racketmanager_winners">
 			<input type="hidden" name="page_id" value="<?php echo $postID ?>" />
-			<input type="hidden" name="season" id="season" value="<?php echo $season ?>" />
-			<select size="1" name="tournament" id="tournament">
-				<option value=""><?php _e( 'Tournament', 'racketmanager' ) ?></option>
-				<!--<option value=""><?php _e( 'Season', 'racketmanager' ) ?></option>-->
-				<?php foreach ( $tournaments AS $tournament ) { ?>
-					<option value="<?php echo $tournament->name ?>"<?php if ( $tournament->name == $curr_tournament ) echo ' selected="selected"' ?>><?php echo $tournament->name ?></option>
+			<input type="hidden" name="competitionSeason" id="competitionSeason" value="<?php echo $season ?>" />
+			<input type="hidden" name="competitionType" id="competitionType" value="<?php echo $competitiontype ?>" />
+			<select size="1" name="selection" id="selection">
+				<option value=""><?php _e( 'Season', 'racketmanager' ) ?></option>
+				<?php foreach ( $selections AS $selection ) { ?>
+					<option value="<?php echo $selection->name ?>"<?php if ( $selection->name == $curr_entry ) echo ' selected="selected"' ?>><?php echo $selection->name ?></option>
 				<?php } ?>
 			</select>
 			<input type="submit" class="submit" value="<?php _e( 'Show' ) ?>" />
@@ -31,7 +31,7 @@ $postID = isset($wp_query->post->ID) ? $wp_query->post->ID : "";
 	</div>
 
 	<?php if ( !$winners ) {
-		_e('No tournament winners', 'racketmanager');
+		_e('No winners', 'racketmanager');
 	} else {
 		foreach ( $winners AS $winner ) { ?>
 			<!-- Standings Table -->

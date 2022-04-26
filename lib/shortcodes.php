@@ -947,6 +947,8 @@ class RacketManagerShortcodes extends RacketManager {
 			'type' => '',
 			'tournament' => false,
 			'template' => '',
+			'competitiontype' => 'tournament',
+			'season' => false,
 		), $atts ));
 
 		// get competition list
@@ -957,30 +959,46 @@ class RacketManagerShortcodes extends RacketManager {
 		} elseif ( isset($wp->query_vars['type']) ) {
 			$type = get_query_var('type');
 		}
-		if ( !$type ) return _e('No tournament type set', 'racketmanager');
-		$tournaments = $racketmanager->getTournaments( array( 'type' => $type ) );
-
-		if ($tournament != "") {
-			$tournament = $tournament;
-		} elseif ( isset($_GET['tournament']) && !empty($_GET['tournament']) ) {
-			$tournament = htmlspecialchars(strip_tags($_GET['tournament']));
-			$tournament = str_replace('-',' ',$tournament);
-		} elseif ( isset($wp->query_vars['tournament']) ) {
-			$tournament = get_query_var('tournament');
-			$tournament = str_replace('_',' ',$tournament);
+		if ( !$type ) return _e('No type set', 'racketmanager');
+		if ( $competitiontype == 'tournament' ) {
+			$tournaments = $racketmanager->getTournaments( array( 'type' => $type ) );
+			if ($tournament != "") {
+				$tournament = $tournament;
+			} elseif ( isset($_GET['tournament']) && !empty($_GET['tournament']) ) {
+				$tournament = htmlspecialchars(strip_tags($_GET['tournament']));
+				$tournament = str_replace('-',' ',$tournament);
+			} elseif ( isset($wp->query_vars['tournament']) ) {
+				$tournament = get_query_var('tournament');
+				$tournament = str_replace('_',' ',$tournament);
+			}
+			if (!$tournament) {
+				$tournament = $tournaments[0];
+			} else {
+				$tournament = $racketmanager->getTournament( array('name' => $tournament) );
+			}
+			$season = $tournament->season;
+			$curr_entry = $tournament->name;
+			$selections = $tournaments;
+		} elseif ( $competitiontype == 'cup' ) {
+			$seasons = $racketmanager->getSeasons( "DESC" );
+			if ( $season != '' ) {
+				$season = $season;
+			} elseif ( isset($_GET['season']) && !empty($_GET['season']) ) {
+				$season = htmlspecialchars(strip_tags($_GET['season']));
+			} elseif ( isset($_GET['season']) ) {
+				$season = htmlspecialchars(strip_tags($_GET['season']));
+			} else {
+				$season = null !== get_query_var('season') ? get_query_var('season') : false;
+			}
+			$curr_entry = $season;
+			$selections = $seasons;
 		}
 
-		if (!$tournament) {
-			$tournament = $tournaments[0];
-		} else {
-			$tournament = $racketmanager->getTournament( array('name' => $tournament) );
-		}
-
-		$winners = $racketmanager->getWinners( $tournament->season, $type );
+		$winners = $racketmanager->getWinners( $season, $type, $competitiontype );
 
 		$filename = ( !empty($template) ) ? 'winners-'.$template : 'winners';
 
-		$out = $this->loadTemplate( $filename, array( 'winners' => $winners, 'tournaments' => $tournaments, 'curr_tournament' => $tournament->name, 'season' => $type) );
+		$out = $this->loadTemplate( $filename, array( 'winners' => $winners, 'competitiontype' => $competitiontype, 'selections' => $selections, 'curr_entry' => $curr_entry, 'season' => $type) );
 
 		return $out;
 	}

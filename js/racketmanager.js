@@ -47,12 +47,13 @@ jQuery(document).ready(function($) {
 	});
 	/* Friendly URL rewrite */
 	jQuery('#racketmanager_winners').submit(function() {
-		var tournament = jQuery(`#tournament`).val().replace(/[^A-Za-z0-9 -]/g,''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
-		tournament = tournament.replace(/\s{2,}/g,' '); // Replace multi spaces with a single space */
-		tournament = tournament.replace(/\s/g, "_"); // Replace space with a '-' symbol */
-		var season = jQuery(`#season`).val();
+		var selection = jQuery(`#selection`).val().replace(/[^A-Za-z0-9 -]/g,''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
+		selection = selection.replace(/\s{2,}/g,' '); // Replace multi spaces with a single space */
+		selection = selection.replace(/\s/g, "_"); // Replace space with a '-' symbol */
+		var competitionSeason = jQuery(`#competitionSeason`).val();
+		var competitionType = jQuery(`#competitionType`).val();
 
-		var cleanUrl = window.location.protocol + '//' + window.location.host + '/tournaments/' + season + '/winners/' + tournament.toLowerCase() + '/';
+		var cleanUrl = window.location.protocol + '//' + window.location.host + '/' + competitionType + 's/' + competitionSeason + '/winners/' + selection.toLowerCase() + '/';
 		window.location = cleanUrl;
 
 		return false;  // Prevent default button behaviour

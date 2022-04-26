@@ -1738,14 +1738,14 @@ class RacketManager {
 	* @param string $seasonType
 	* @return void
 	*/
-	public function getWinners( $season, $seasonType ) {
+	public function getWinners( $season, $seasonType, $competitionType = 'tournament' ) {
 		global $racketmanager, $wpdb;
 
 		$seasonType = $wpdb->esc_like(stripslashes($seasonType)).'%';
 
-		$sql = "SELECT l.`title` ,wt.`title` AS `winner` ,lt.`title` AS `loser` FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l, {$wpdb->racketmanager_competitions} c, {$wpdb->racketmanager_teams} wt, {$wpdb->racketmanager_teams} lt WHERE `league_id` = l.`id` AND l.`competition_id` = c.`id` AND c.`competitiontype` = 'tournament' AND c.`name` like '%s' AND m.`final` = 'FINAL' AND m.`season` = '%d' AND m.`winner_id` = wt.`id` AND m.`loser_id` = lt.`id` order by 1";
+		$sql = "SELECT l.`title` ,wt.`title` AS `winner` ,lt.`title` AS `loser` FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l, {$wpdb->racketmanager_competitions} c, {$wpdb->racketmanager_teams} wt, {$wpdb->racketmanager_teams} lt WHERE `league_id` = l.`id` AND l.`competition_id` = c.`id` AND c.`competitiontype` = '%s' AND c.`name` like '%s' AND m.`final` = 'FINAL' AND m.`season` = '%d' AND m.`winner_id` = wt.`id` AND m.`loser_id` = lt.`id` order by 1";
 
-		$sql = $wpdb->prepare($sql, $seasonType, $season);
+		$sql = $wpdb->prepare($sql, $competitionType, $seasonType, $season);
 		$winners = $wpdb->get_results($sql);
 
 		if ( !$winners ) return false;

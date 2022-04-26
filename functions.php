@@ -141,14 +141,20 @@ function create_new_url_querystring() {
   );
   // tournament - season
   add_rewrite_rule(
-    'tournaments/(.+?)-tournaments/(.+?)-(.+?)-(.+?)/([0-9]{4})?$',
-    'index.php?pagename=tournaments%2F$matches[1]-tournaments%2F$matches[2]-$matches[3]-$matches[4]&season=$matches[5]',
+    'tournaments/(.+?)/(.+?)-(.+?)-(.+?)/([0-9]{4})?$',
+    'index.php?pagename=tournaments%2F$matches[1]%2F$matches[2]-$matches[3]-$matches[4]&season=$matches[5]',
+    'top'
+  );
+  // cup - season (winners)
+  add_rewrite_rule(
+    'cups/(.+?)/winners/([0-9]{4})?$',
+    'index.php?pagename=cups%2F$matches[1]%2Fwinners&season=$matches[2]',
     'top'
   );
   // cup - season
   add_rewrite_rule(
-    'cups/(.+?)-cups/(.+?)-(.+?)-(.+?)/([0-9]{4})?$',
-    'index.php?pagename=cups%2F$matches[1]-cups%2F$matches[2]-$matches[3]-$matches[4]&season=$matches[5]',
+    'cups/(.+?)/(.+?)-(.+?)-(.+?)/([0-9]{4})?$',
+    'index.php?pagename=cups%2F$matches[1]%2F$matches[2]-$matches[3]-$matches[4]&season=$matches[5]',
     'top'
   );
   // club

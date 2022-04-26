@@ -233,7 +233,38 @@ jQuery(document).ready(function($) {
 			}
 		});
 	});
+	jQuery('[data-js=add-favourite]').click(function(e){
+		e.preventDefault();
+		var favouriteid = $(this).data('favourite');
+		var favouritetype = $(this).data('type');
+		var favourite_field = "#".concat(e.currentTarget.id);
+		var message_field = "#fav-msg-".concat(favouriteid);
 
+		jQuery.ajax({
+			url:RacketManagerAjaxL10n.requestUrl,
+			type: "POST",
+			data: {"type": favouritetype,
+			"id": favouriteid,
+			"action": "racketmanager_add_favourite"},
+			success: function(response) {
+				var $response = jQuery.parseJSON(response);
+				var $message = $response[1];
+				var $action = $response[0];
+				if ( $action == 'del' ) {
+					jQuery(favourite_field).find('i').removeClass('fav-icon-svg-selected');
+				} else if ( $action == 'add' ) {
+					jQuery(favourite_field).find('i').addClass('fav-icon-svg-selected');
+				}
+				jQuery(message_field).show();
+				jQuery(message_field).addClass('message-success');
+				jQuery(message_field).html($message);
+				jQuery(message_field).delay(10000).fadeOut('slow');
+			},
+			error: function() {
+				alert("Ajax error on adding favourite");
+			}
+		}) ;
+	});
 });
 
 var Racketmanager = new Object();

@@ -40,6 +40,16 @@ $pagename = isset($wp_query->query['pagename']) ? $wp_query->query['pagename'] :
 			<!-- Standings Table -->
 			<div id="standings-archive">
 				<h4 class="header"><?php if ( $standingsTemplate != 'constitution' ) { ?><a href="/<?php _e('leagues', 'racketmanager') ?>/<?php echo seoUrl($league->title) ?>/<?php echo $curr_season ?>/"><?php } ?><?php echo $league->title ?><?php if ( $standingsTemplate != 'constitution' ) { ?></a><?php } ?></h4>
+				<?php if ( is_user_logged_in() ) { ?>
+					<div class="fav-icon">
+						<a href="" id="fav-<?php echo $league->id ?>" title="<?php _e( 'Mark favourite', 'racketmanager') ?>" data-js="add-favourite" data-type="league" data-favourite="<?php echo $league->id ?>">
+							<i class="fav-icon-svg racketmanager-svg-icon <?php if ( $racketmanager->userFavourite('league', $league->id) ) { echo 'fav-icon-svg-selected'; } ?>">
+		            <?php racketmanager_the_svg('icon-star') ?>
+		          </i>
+						</a>
+						<div class="fav-msg" id="fav-msg-<?php echo $league->id ?>"></div>
+					</div>
+				<?php } ?>
 				<?php racketmanager_standings( $league->id, array( 'season' => $curr_season, 'template' => $standingsTemplate ) ) ?>
 			</div>
     <?php } ?>

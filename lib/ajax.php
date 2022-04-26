@@ -64,6 +64,7 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_notify_entries_open', array(&$this, 'notifyEntriesOpen') );
 		add_action( 'wp_ajax_racketmanager_notify_tournament_entries_open', array(&$this, 'notifyTournamentEntriesOpen') );
 
+		add_action( 'wp_ajax_racketmanager_add_favourite', array(&$this, 'addFavourite') );
 	}
 
 	/**
@@ -2212,6 +2213,35 @@ class RacketManagerAJAX extends RacketManager {
 
 		$return = $racketmanager->notifyEntryOpen($competitionType, $latestSeason, $competitionSeason);
 
+		die(json_encode($return));
+	}
+
+	/**
+	* add item as favourite
+	*
+	*/
+	public function addFavourite() {
+		global $racketmanager;
+
+		$return = array();
+
+		$type = $_POST['type'];
+		$id = $_POST['id'];
+		$userid = get_current_user_id();
+		$metaKey = 'favourite-'.$type;
+		$meta = get_user_meta($userid, $metaKey);
+		$favouriteFound = (array_search($id, $meta,true));
+		if ( !is_numeric($favouriteFound) ) {
+			$insert = add_user_meta($userid, $metaKey, $id);
+			$msg = __('Favourite added', 'racketmanager');
+			$action = 'add';
+		} else {
+			delete_user_meta($userid, $metaKey, $id);
+			$msg = __('Favourite removed', 'racketmanager');
+			$action = 'del';
+		}
+
+		array_push($return, $action, $msg);
 		die(json_encode($return));
 	}
 

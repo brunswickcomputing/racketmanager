@@ -981,6 +981,29 @@ form#signupform {
 .left {
     float: left;
 }
+h4.header {
+	display: inline-block!important;
+}
+
+.fav-icon {
+	display: inline-block;
+	position: absolute;
+	padding-top: .6rem;
+	padding-left: .6rem;
+}
+.fav-icon-svg {
+	fill: white;
+	stroke: black;
+}
+.fav-icon-svg-selected {
+	fill: gold;
+}
+.fav-icon-svg:hover {
+	fill: gold;
+}
+.fav-msg {
+	display: unset;
+}
 }
 /*  START OF MEDIA QUERIES */
 

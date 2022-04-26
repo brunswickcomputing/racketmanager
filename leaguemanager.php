@@ -2101,6 +2101,27 @@ class RacketManager {
 		return $return;
 	}
 
+	/**
+  * user favourite
+  *
+  * @return boolean true/false
+  */
+	public function userFavourite($type, $id) {
+
+		if ( !is_user_logged_in() ) {
+			return false;
+		}
+		$userId = get_current_user_id();
+		$metaKey = 'favourite-'.$type;
+		$favourites = get_user_meta($userId, $metaKey);
+		$favouriteFound = (array_search($id, $favourites,true));
+		if ( is_numeric($favouriteFound) ) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 }
 
 global $racketmanager;

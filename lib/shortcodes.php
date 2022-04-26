@@ -42,6 +42,7 @@ class RacketManagerShortcodes extends RacketManager {
 		add_shortcode( 'cupentry', array(&$this, 'showCupEntry') );
 		add_shortcode( 'leagueentry', array(&$this, 'showLeagueEntry') );
 		add_shortcode( 'orderofplay', array(&$this, 'showOrderOfPlay') );
+		add_shortcode( 'favourites', array(&$this, 'showFavourites') );
 	}
 
 	/**
@@ -1411,6 +1412,48 @@ class RacketManagerShortcodes extends RacketManager {
 		$filename = ( !empty($template) ) ? 'orderofplay-'.$template : 'orderofplay';
 
 		$out = $this->loadTemplate( $filename, array( 'tournaments' => $tournaments, 'currTournament' => $tournament, 'matchTimes' => $matchTimes, 'orderofplay' => $orderofplay, 'season' => $type) );
+
+		return $out;
+	}
+
+	/**
+	* Function to show favourites
+	*
+	*    [favourites template=X]
+	*
+	* @param array $atts
+	* @return the content
+	*/
+
+	public function showFavourites( $atts ) {
+		global $racketmanager;
+
+		extract(shortcode_atts(array(
+			'template' => ''
+		), $atts ));
+
+		$userid = get_current_user_id();
+		$favouritesTypes = array();
+		$favouritesTypes[] = 'league';
+		foreach ($favouritesTypes as $f => $favouritesType) {
+			$favouriteTypes[$f]['name'] = $favouritesType;
+			$metaKey = 'favourite-'.$favouritesType;
+			$metaFavourites = get_user_meta($userid, $metaKey);
+			$favourites = array();
+			foreach ($metaFavourites as $i => $favourite) {
+				$favouriteItem = (object)array();
+				$league = get_league($favourite);
+				$favouriteItem->name = $league->title;
+				$favouriteItem->id = $favourite;
+				$favourites[$i] = $favouriteItem;
+			}
+			array_multisort($favourites);
+			$favouriteTypes[$f]['favourites'] = $favourites;
+		}
+
+		$filename = ( !empty($template) ) ? 'form-favourites-'.$template : 'form-favourites';
+
+		$out = $this->loadTemplate( $filename, array( 'favouriteTypes' => $favouriteTypes) );
 
 		return $out;
 	}

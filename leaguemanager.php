@@ -2122,6 +2122,31 @@ class RacketManager {
 		}
 	}
 
+	/**
+  * notify favourites
+  *
+	* @param object $users
+	* @param object $matches
+  * @return null
+  */
+	public function notifyFavourites($favourite, $users, $matches, $league) {
+		global $racketmanager_shortcodes;
+
+		$headers = array();
+		$fromEmail = $this->getConfirmationEmail($league->competitionType);
+		$headers[] = 'From: '.ucfirst($league->competitionType).'Secretary <'.$fromEmail.'>';
+		$organisationName = $this->site_name;
+		$emailSubject = $this->site_name." - ".$league->title." Result Notification";
+		$favouriteURL = $this->site_url.'/member-account/favourites';
+		$matchURL = $this->site_url.'/'.$league->competitionType.'s/'.seoUrl($league->title).'/'.$league->current_season['name'].'/';
+
+		foreach ( $users AS $user ) {
+			$userDtls = get_userdata($user);
+			$emailTo = $userDtls->display_name.' <'.$userDtls->user_email.'>';
+			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'favourite-notification', array( 'emailSubject' => $emailSubject, 'fromEmail' => $fromEmail, 'matchURL' => $matchURL, 'favouriteURL' => $favouriteURL, 'favouriteTitle' => $favourite, 'organisationName' => $organisationName, 'user' => $userDtls, 'matches' => $matches ), 'email' );
+			$this->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
+		}
+	}
 }
 
 global $racketmanager;

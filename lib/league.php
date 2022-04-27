@@ -2042,10 +2042,11 @@ public function saveStandingsManually( $teams, $points_plus, $points_minus,  $nu
 * @return boolean
 */
 public function _updateResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $season, $final = false, $confirmed = "Y" ) {
-	global $wpdb;
+	global $wpdb, $racketmanager;
 
 	$num_matches = 0;
 	if ( !empty($matches) ) {
+		$matchesUpdated = array();
 		foreach ($matches AS $match_id) {
 			$match = get_match( $match_id );
 			$matchHomePoints = $match->home_points;
@@ -2064,12 +2065,22 @@ public function _updateResults( $matches, $home_points, $away_points, $home_team
 					$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `home_points` = ".$match->home_points.", `away_points` = ".$match->away_points.", `winner_id` = '%d', `loser_id` = '%d', `custom` = '%s', `updated_user` = %d, `updated` = now(), `confirmed` = %s WHERE `id` = '%d'", intval($match->winner_id), intval($match->loser_id), maybe_serialize($match->custom), get_current_user_id(), $confirmed, $match_id) );
 					wp_cache_delete($match->id, 'matches');
 					$num_matches ++;
+					$matchesUpdated[] = $match;
 				}
 			}
 		}
 	}
 
 	if ( $num_matches > 0 ) {
+
+		$users = get_users(array(
+			'meta_key' => 'favourite-league',
+			'meta_value' => $this->id,
+			'fields' => 'ids'
+		));
+		if ( $users ) {
+			$racketmanager->notifyFavourites($this->title, $users, $matchesUpdated, $this);
+		}
 		if ( !$final ) {
 			// update Standings for each team
 			$leagueTeams = $this->getLeagueTeams( array("season" => $season, "cache" => false) );

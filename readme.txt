@@ -50,6 +50,10 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.9.0 =
+* UPDATE: display cup winner
+* UPDATE: add favourites for leagues
+
 = 6.8.1 =
 * BUGFIX: fix javascript security warnings
 
@@ -66,7 +70,7 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 * UPDATE: capture comments for match results
 * UPDATE: use bootstrap accordion
 * UPDATE: add rewrite rules for cups and tournaments
-* UPDATE: use sport independent tempaltes for championships
+* UPDATE: use sport independent templates for championshipsWe We
 * UPDATE: change password hint message
 * UPDATE: use bootstrap form styling for auth pages
 * UPDATE: redirect to homepage when login initiated from login page

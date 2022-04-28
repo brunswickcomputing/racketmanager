@@ -2135,6 +2135,31 @@ class RacketManager {
 			$this->notifyFavouritesEmail($favourite, $league, $users, $matches);
 		}
 
+		$clubs = array();
+		foreach ($matches as $i => $match) {
+			if ( isset($match->teams['home']->affiliatedclub) ) {
+				$clubs[$i]['id'] = $match->teams['home']->affiliatedclub;
+				$clubs[$i]['name'] = $match->teams['home']->affiliatedclubname;
+				$clubs[$i]['matches'] = array();
+				$clubs[$i]['matches'][] = $match;
+			}
+			if ( isset($match->teams['away']->affiliatedclub) ) {
+				if ( isset($match->teams['home']->affiliatedclub) && $match->teams['home']->affiliatedclub != $match->teams['away']->affiliatedclub ) {
+					$clubs[$i]['id'] = $match->teams['away']->affiliatedclub;
+					$clubs[$i]['name'] = $match->teams['away']->affiliatedclubname;
+					$clubs[$i]['matches'] = array();
+					$clubs[$i]['matches'][] = $match;
+				}
+			}
+		}
+		$clubs = array_unique($clubs);
+		foreach ($clubs as $club) {
+			$users = $this->getUsersForFavourite('club', $club['id']);
+			if ( $users ) {
+				$favourite = $club['name'];
+				$this->notifyFavouritesEmail($favourite, $league, $users, $club['matches']);
+			}
+		}
 	}
 
 	/**
@@ -2180,6 +2205,7 @@ class RacketManager {
 			$this->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
 		}
 	}
+
 }
 
 global $racketmanager;

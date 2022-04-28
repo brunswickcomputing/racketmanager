@@ -1451,8 +1451,7 @@ class RacketManagerShortcodes extends RacketManager {
 		), $atts ));
 
 		$userid = get_current_user_id();
-		$favouritesTypes = array();
-		$favouritesTypes[] = 'league';
+		$favouritesTypes = array('league','club');
 		foreach ($favouritesTypes as $f => $favouritesType) {
 			$favouriteTypes[$f]['name'] = $favouritesType;
 			$metaKey = 'favourite-'.$favouritesType;
@@ -1460,8 +1459,13 @@ class RacketManagerShortcodes extends RacketManager {
 			$favourites = array();
 			foreach ($metaFavourites as $i => $favourite) {
 				$favouriteItem = (object)array();
-				$league = get_league($favourite);
-				$favouriteItem->name = $league->title;
+				if ( $favouritesType == 'league' ) {
+					$league = get_league($favourite);
+					$favouriteItem->name = $league->title;
+				} elseif ( $favouritesType == 'club' ) {
+					$club = get_club($favourite);
+					$favouriteItem->name = $club->name;
+				}
 				$favouriteItem->id = $favourite;
 				$favourites[$i] = $favouriteItem;
 			}

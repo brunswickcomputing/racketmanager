@@ -24,6 +24,17 @@ if ( current_user_can( 'manage_racketmanager' ) ) {
 
 <h1 class="club-name">
   <?php echo $club->name ?>
+  <?php if ( is_user_logged_in() ) {
+    $isFavourite = $racketmanager->userFavourite('club', $club->id); ?>
+    <div class="fav-icon">
+      <a href="" id="fav-<?php echo $club->id ?>" title="<?php if ( $isFavourite) { _e( 'Remove favourite', 'racketmanager' ); } else { _e( 'Add favourite', 'racketmanager'); } ?>" data-js="add-favourite" data-type="club" data-favourite="<?php echo $club->id ?>">
+        <i class="fav-icon-svg racketmanager-svg-icon <?php if ( $isFavourite ) { echo 'fav-icon-svg-selected'; } ?>">
+          <?php racketmanager_the_svg('icon-star') ?>
+        </i>
+      </a>
+      <div class="fav-msg" id="fav-msg-<?php echo $club->id ?>"></div>
+    </div>
+  <?php } ?>
 </h1>
 <div class="entry-content">
   <div class="team">

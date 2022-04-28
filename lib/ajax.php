@@ -853,10 +853,11 @@ class RacketManagerAJAX extends RacketManager {
 									<div class="row">
 										<?php for ($p=1; $p <= $numPlayers ; $p++) { ?>
 											<div class="col-6 col-sm-12">
-												<div class="form-floating mb-2">
+												<div class="form-group mb-2">
 													<?php $tabindex = $tabbase + 1; ?>
 													<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer<?php echo $p ?>[<?php echo $r ?>]" id="homeplayer<?php echo $p ?>_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
-														<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
+														<?php if ($homeRoster[$r][$p]['gender'] == 'm') { $select = 'Select male player'; } else { $select = 'Select female player'; } ?>
+														<option><?php _e( $select, 'racketmanager' ) ?></option>
 														<?php foreach ( $homeRoster[$r][$p]['players'] AS $roster ) {
 															if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
 															<option value="<?php echo $roster->roster_id ?>"<?php $player = 'home_player_'.$p; if(isset($rubber->$player)) selected($roster->roster_id, $rubber->$player ); echo $disabled; ?>>
@@ -864,8 +865,6 @@ class RacketManagerAJAX extends RacketManager {
 															</option>
 														<?php } ?>
 													</select>
-													<?php if ($homeRoster[$r][$p]['gender'] == 'm') { $label = 'Male player'; } else { $label = 'Female player'; } ?>
-													<label for="homeplayer<?php echo $p ?>_<?php echo $r ?>"><?php _e( $label, 'racketmanager') ?></label>
 												</div>
 											</div>
 										<?php } ?>
@@ -893,10 +892,11 @@ class RacketManagerAJAX extends RacketManager {
 									<div class="row">
 										<?php for ($p=1; $p <= $numPlayers ; $p++) { ?>
 											<div class="col-6 col-sm-12">
-												<div class="form-floating mb-2">
+												<div class="form-group mb-2">
 													<?php $tabindex = $tabbase + 3; ?>
 													<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer<?php echo $p ?>[<?php echo $r ?>]" id="awayplayer<?php echo $p ?>_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
-														<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
+														<?php if ($awayRoster[$r][$p]['gender'] == 'm') { $select = 'Select male player'; } else { $label = 'Select female player'; } ?>
+														<option><?php _e( $select, 'racketmanager' ) ?></option>
 														<?php foreach ( $awayRoster[$r][$p]['players'] AS $roster ) {
 															if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
 															<option value="<?php echo $roster->roster_id ?>"<?php $player = 'away_player_'.$p; if(isset($rubber->$player)) selected($roster->roster_id, $rubber->$player ); echo $disabled; ?>>
@@ -904,8 +904,6 @@ class RacketManagerAJAX extends RacketManager {
 															</option>
 														<?php } ?>
 													</select>
-													<?php if ($awayRoster[$r][$p]['gender'] == 'm') { $label = 'Male player'; } else { $label = 'Female player'; } ?>
-													<label for="awayplayer<?php echo $p ?>_<?php echo $r ?>"><?php _e( $label, 'racketmanager') ?></label>
 												</div>
 											</div>
 										<?php } ?>

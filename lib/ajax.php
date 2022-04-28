@@ -704,10 +704,9 @@ class RacketManagerAJAX extends RacketManager {
 			$match->round = $match->final_round;
 			$match->type = 'tournament';
 		}
-		$league = get_league($match->league_id);
-		$match->num_sets = $league->num_sets;
-		$match->num_rubbers = $league->num_rubbers;
-		$match_type = $league->type;
+		$match->num_sets = $match->league->num_sets;
+		$match->num_rubbers = $match->league->num_rubbers;
+		$match_type = $match->league->type;
 		switch ($match_type) {
 			case 'MD':
 			$homeRosterMen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));

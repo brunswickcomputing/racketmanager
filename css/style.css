@@ -1022,6 +1022,9 @@ h4.header {
   background-color: #6c3;
   color: #FFFFFF;
 }
+.archive {
+	min-height: 35vw;
+}
 }
 /*  START OF MEDIA QUERIES */
 

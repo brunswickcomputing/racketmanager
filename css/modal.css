@@ -69,6 +69,12 @@ td input.player {
 .match-team {
   width: 30%;
 }
+.modal select {
+  height: 38px;
+}
+.modal input.points {
+  height: 38px;
+}
 .modal-header button.btn-close,
 .modal-header button.btn-close:hover,
 .modal-header button.btn-close:focus {

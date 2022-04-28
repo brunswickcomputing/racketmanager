@@ -382,6 +382,13 @@ div.tm-team-content .team-projectmanager {
 /*
 * Club page
 */
+h2.club-name {
+	font-size: 36px;
+	line-height: normal;
+	padding-bottom: 10px;
+	margin: 0;
+	display: inline-block;
+}
 div.tm-team-content .title {
     font-size: 1.2em;
 }
@@ -987,9 +994,8 @@ h4.header {
 
 .fav-icon {
 	display: inline-block;
-	position: absolute;
-	padding-top: .6rem;
 	padding-left: .6rem;
+	vertical-align: text-bottom;
 }
 .fav-icon-svg {
 	fill: white;
@@ -1003,6 +1009,10 @@ h4.header {
 }
 .fav-msg {
 	display: unset;
+	vertical-align: middle;
+	font-size: 0.8rem;
+  background-color: #6c3;
+  color: #FFFFFF;
 }
 }
 /*  START OF MEDIA QUERIES */

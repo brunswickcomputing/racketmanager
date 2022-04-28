@@ -712,20 +712,28 @@ class RacketManagerAJAX extends RacketManager {
 			$homeRosterMen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
 			$awayRosterMen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
 			for ($r = 0; $r < $match->num_rubbers; $r++) {
-				$homeRoster[$r][1] = $homeRosterMen;
-				$homeRoster[$r][2] = $homeRosterMen;
-				$awayRoster[$r][1] = $awayRosterMen;
-				$awayRoster[$r][2] = $awayRosterMen;
+				$homeRoster[$r][1]['players'] = $homeRosterMen;
+				$homeRoster[$r][1]['gender'] = 'm';
+				$homeRoster[$r][2]['players'] = $homeRosterMen;
+				$homeRoster[$r][2]['gender'] = 'm';
+				$awayRoster[$r][1]['players'] = $awayRosterMen;
+				$awayRoster[$r][1]['gender'] = 'm';
+				$awayRoster[$r][2]['players'] = $awayRosterMen;
+				$awayRoster[$r][2]['gender'] = 'm';
 			}
 			break;
 			case 'WD':
 			$homeRosterWomen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
 			$awayRosterWomen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
 			for ($r = 0; $r < $match->num_rubbers; $r++) {
-				$homeRoster[$r][1] = $homeRosterWomen;
-				$homeRoster[$r][2] = $homeRosterWomen;
-				$awayRoster[$r][1] = $awayRosterWomen;
-				$awayRoster[$r][2] = $awayRosterWomen;
+				$homeRoster[$r][1]['players'] = $homeRosterWomen;
+				$homeRoster[$r][1]['gender'] = 'f';
+				$homeRoster[$r][2]['players'] = $homeRosterWomen;
+				$homeRoster[$r][2]['gender'] = 'f';
+				$awayRoster[$r][1]['players'] = $awayRosterWomen;
+				$awayRoster[$r][1]['gender'] = 'f';
+				$awayRoster[$r][2]['players'] = $awayRosterWomen;
+				$awayRoster[$r][2]['gender'] = 'f';
 			}
 			break;
 			case 'XD':
@@ -734,10 +742,14 @@ class RacketManagerAJAX extends RacketManager {
 			$homeRosterWomen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
 			$awayRosterWomen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
 			for ($r = 0; $r < $match->num_rubbers; $r++) {
-				$homeRoster[$r][1] = $homeRosterMen;
-				$homeRoster[$r][2] = $homeRosterWomen;
-				$awayRoster[$r][1] = $awayRosterMen;
-				$awayRoster[$r][2] = $awayRosterWomen;
+				$homeRoster[$r][1]['players'] = $homeRosterMen;
+				$homeRoster[$r][1]['gender'] = 'm';
+				$homeRoster[$r][2]['players'] = $homeRosterWomen;
+				$homeRoster[$r][2]['gender'] = 'f';
+				$awayRoster[$r][1]['players'] = $awayRosterMen;
+				$awayRoster[$r][1]['gender'] = 'm';
+				$awayRoster[$r][2]['players'] = $awayRosterWomen;
+				$awayRoster[$r][2]['gender'] = 'f';
 			}
 			break;
 			case 'LD':
@@ -745,18 +757,30 @@ class RacketManagerAJAX extends RacketManager {
 			$awayRosterMen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
 			$homeRosterWomen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
 			$awayRosterWomen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$homeRoster[0][1] = $homeRosterWomen;
-			$homeRoster[0][2] = $homeRosterWomen;
-			$homeRoster[1][1] = $homeRosterMen;
-			$homeRoster[1][2] = $homeRosterMen;
-			$homeRoster[2][1] = $homeRosterMen;
-			$homeRoster[2][2] = $homeRosterWomen;
-			$awayRoster[0][1] = $awayRosterWomen;
-			$awayRoster[0][2] = $awayRosterWomen;
-			$awayRoster[1][1] = $awayRosterMen;
-			$awayRoster[1][2] = $awayRosterMen;
-			$awayRoster[2][1] = $awayRosterMen;
-			$awayRoster[2][2] = $awayRosterWomen;
+			$homeRoster[0][1]['players'] = $homeRosterWomen;
+			$homeRoster[0][1]['gender'] = 'f';
+			$homeRoster[0][2]['players'] = $homeRosterWomen;
+			$homeRoster[0][2]['gender'] = 'f';
+			$homeRoster[1][1]['players'] = $homeRosterMen;
+			$homeRoster[1][1]['gender'] = 'm';
+			$homeRoster[1][2]['players'] = $homeRosterMen;
+			$homeRoster[1][2]['gender'] = 'm';
+			$homeRoster[2][1]['players'] = $homeRosterMen;
+			$homeRoster[2][1]['gender'] = 'm';
+			$homeRoster[2][2]['players'] = $homeRosterWomen;
+			$homeRoster[2][2]['gender'] = 'f';
+			$awayRoster[0][1]['players'] = $awayRosterWomen;
+			$awayRoster[0][1]['gender'] = 'f';
+			$awayRoster[0][2]['players'] = $awayRosterWomen;
+			$awayRoster[0][2]['gender'] = 'f';
+			$awayRoster[1][1]['players'] = $awayRosterMen;
+			$awayRoster[1][1]['gender'] = 'm';
+			$awayRoster[1][2]['players'] = $awayRosterMen;
+			$awayRoster[1][2]['gender'] = 'm';
+			$awayRoster[2][1]['players'] = $awayRosterMen;
+			$awayRoster[2][1]['gender'] = 'm';
+			$awayRoster[2][2]['players'] = $awayRosterWomen;
+			$awayRoster[2][2]['gender'] = 'f';
 			break;
 		}
 		$this->buildRubbersScreen($match, $homeRoster, $awayRoster);
@@ -785,7 +809,7 @@ class RacketManagerAJAX extends RacketManager {
 		<div id="matchrubbers" class="rubber-block">
 			<div id="matchheader">
 				<div class="row justify-content-between" id="match-header-1">
-					<div class="col-auto leaguetitle"><?php echo $league->title ?></div>
+					<div class="col-auto leaguetitle"><?php echo $match->league->title ?></div>
 					<?php if ( isset($match->match_day) && $match->match_day > 0 ) { ?>
 						<div class="col-auto matchday">Week <?php echo $match->match_day ?></div>
 					<?php } ?>
@@ -807,7 +831,7 @@ class RacketManagerAJAX extends RacketManager {
 				<input type="hidden" name="match_type" value="<?php echo $match->type ?>" />
 				<input type="hidden" name="match_round" value="<?php echo $match->round ?>" />
 
-				<div class="row mb-3">
+				<div class="row">
 					<div class="col-1 text-center"><strong><?php _e( 'Pair', 'racketmanager' ) ?></strong></div>
 					<div class="col-3 text-center"><strong><?php _e( 'Home Team', 'racketmanager' ) ?></strong></div>
 					<div class="col-5 text-center"><strong><?php _e('Sets', 'racketmanager' ) ?></strong></div>
@@ -817,55 +841,44 @@ class RacketManagerAJAX extends RacketManager {
 				<?php $class = '';
 				$rubbers = $match->getRubbers();
 				$r = $tabbase = 0 ;
+				$numPlayers = 2;
 
 				foreach ($rubbers as $rubber) {	?>
-					<div class="row mb-3">
+					<div class="row">
 						<input type="hidden" name="id[<?php echo $r ?>]" value="<?php echo $rubber->id ?>" </>
 						<div class="col-1 text-center align-self-center"><?php echo isset($rubber->rubber_number) ? $rubber->rubber_number : '' ?></div>
 						<div class="col-11">
 							<div class="row">
-								<div class="col-12 col-sm-4 mb-3">
+								<div class="col-12 col-sm-4">
 									<div class="row">
-										<div class="col-6 col-sm-12">
-											<div class="form-floating mb-2">
-												<?php $tabindex = $tabbase + 1; ?>
-												<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer1[<?php echo $r ?>]" id="homeplayer1_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
-													<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
-													<?php foreach ( $homeRoster[$r][1] AS $roster ) {
-														if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
-														<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->home_player_1)) selected($roster->roster_id, $rubber->home_player_1 ); echo $disabled; ?>>
-															<?php echo $roster->fullname ?>
-														</option>
-													<?php } ?>
-												</select>
-												<label for="homeplayer1_<?php echo $r ?>"><?php _e( 'Player', 'racketmanager') ?></label>
+										<?php for ($p=1; $p <= $numPlayers ; $p++) { ?>
+											<div class="col-6 col-sm-12">
+												<div class="form-floating mb-2">
+													<?php $tabindex = $tabbase + 1; ?>
+													<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer<?php echo $p ?>[<?php echo $r ?>]" id="homeplayer<?php echo $p ?>_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
+														<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
+														<?php foreach ( $homeRoster[$r][$p]['players'] AS $roster ) {
+															if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
+															<option value="<?php echo $roster->roster_id ?>"<?php $player = 'home_player_'.$p; if(isset($rubber->$player)) selected($roster->roster_id, $rubber->$player ); echo $disabled; ?>>
+																<?php echo $roster->fullname ?>
+															</option>
+														<?php } ?>
+													</select>
+													<?php if ($homeRoster[$r][$p]['gender'] == 'm') { $label = 'Male player'; } else { $label = 'Female player'; } ?>
+													<label for="homeplayer<?php echo $p ?>_<?php echo $r ?>"><?php _e( $label, 'racketmanager') ?></label>
+												</div>
 											</div>
-										</div>
-										<div class="col-6 col-sm-12">
-											<div class="form-floating mb-2">
-												<?php $tabindex = $tabbase + 2; ?>
-												<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer2[<?php echo $r ?>]" id="homeplayer2_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
-													<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
-													<?php foreach ( $homeRoster[$r][2] AS $roster ) {
-														if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
-														<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->home_player_2)) selected($roster->roster_id, $rubber->home_player_2 ); echo $disabled; ?>>
-															<?php echo $roster->fullname ?>
-														</option>
-													<?php } ?>
-												</select>
-												<label for="homeplayer2_<?php echo $r ?>"><?php _e( 'Player', 'racketmanager') ?></label>
-											</div>
-										</div>
+										<?php } ?>
 									</div>
 								</div>
 
-								<div class="col-12 col-sm-4 mb-3 align-self-center">
+								<div class="col-12 col-sm-4 align-self-center">
 									<div class="row text-center">
 										<?php for ( $i = 1; $i <= $match->num_sets; $i++ ) {
 											if (!isset($rubber->sets[$i])) {
 												$rubber->sets[$i] = array('player1' => '', 'player2' => '');
 											}
-											$colspan = 12 / $match->num_sets;
+											$colspan = ceil(12 / $match->num_sets);
 											$tabindex = $tabbase + 10 + $i; ?>
 											<div class="col-<?php echo $colspan ?>">
 												<input tabindex="<?php echo $tabindex ?>" class="points" type="text" <?php if ( !$updatesAllowed ) { echo 'readonly';} ?> size="2" id="set_<?php echo $r ?>_<?php echo $i ?>_player1" name="custom[<?php echo $r ?>][sets][<?php echo $i ?>][player1]" value="<?php echo $rubber->sets[$i]['player1'] ?>" />
@@ -876,38 +889,26 @@ class RacketManagerAJAX extends RacketManager {
 									</div>
 								</div>
 
-								<div class="col-12 col-sm-4 mb-3">
+								<div class="col-12 col-sm-4">
 									<div class="row">
-										<div class="col-6 col-sm-12">
-											<div class="form-floating mb-2">
-												<?php $tabindex = $tabbase + 3; ?>
-												<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer1[<?php echo $r ?>]" id="awayplayer1_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
-													<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
-													<?php foreach ( $awayRoster[$r][1] AS $roster ) {
-														if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
-														<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->away_player_1)) selected($roster->roster_id, $rubber->away_player_1 ); echo $disabled; ?>>
-															<?php echo $roster->fullname ?>
-														</option>
-													<?php } ?>
-												</select>
-												<label for="awayplayer1_<?php echo $r ?>"><?php _e( 'Player', 'racketmanager') ?></label>
+										<?php for ($p=1; $p <= $numPlayers ; $p++) { ?>
+											<div class="col-6 col-sm-12">
+												<div class="form-floating mb-2">
+													<?php $tabindex = $tabbase + 3; ?>
+													<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer<?php echo $p ?>[<?php echo $r ?>]" id="awayplayer<?php echo $p ?>_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
+														<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
+														<?php foreach ( $awayRoster[$r][$p]['players'] AS $roster ) {
+															if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
+															<option value="<?php echo $roster->roster_id ?>"<?php $player = 'away_player_'.$p; if(isset($rubber->$player)) selected($roster->roster_id, $rubber->$player ); echo $disabled; ?>>
+																<?php echo $roster->fullname ?>
+															</option>
+														<?php } ?>
+													</select>
+													<?php if ($awayRoster[$r][$p]['gender'] == 'm') { $label = 'Male player'; } else { $label = 'Female player'; } ?>
+													<label for="awayplayer<?php echo $p ?>_<?php echo $r ?>"><?php _e( $label, 'racketmanager') ?></label>
+												</div>
 											</div>
-										</div>
-										<div class="col-6 col-sm-12">
-											<div class="form-floating mb-2">
-												<?php $tabindex = $tabbase + 4; ?>
-												<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer2[<?php echo $r ?>]" id="awayplayer2_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
-													<option><?php _e( 'Select Player', 'racketmanager' ) ?></option>
-													<?php foreach ( $awayRoster[$r][2] AS $roster ) {
-														if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
-														<option value="<?php echo $roster->roster_id ?>"<?php if(isset($rubber->away_player_2)) selected($roster->roster_id, $rubber->away_player_2 ); echo $disabled; ?>>
-															<?php echo $roster->fullname ?>
-														</option>
-													<?php } ?>
-												</select>
-												<label for="awayplayer2_<?php echo $r ?>"><?php _e( 'Player', 'racketmanager') ?></label>
-											</div>
-										</div>
+										<?php } ?>
 									</div>
 								</div>
 							</div>
@@ -924,7 +925,7 @@ class RacketManagerAJAX extends RacketManager {
 					$r ++;
 				}	?>
 				<?php if ( isset($match->home_captain) || isset($match->away_captain) ) { ?>
-					<div class="row mb-3">
+					<div id="captains" class="row mb-3">
 						<div class="col-1 text-center align-self-center"></div>
 						<div class="col-11">
 							<div class="row justify-content-center">
@@ -984,7 +985,7 @@ class RacketManagerAJAX extends RacketManager {
 						</div>
 					</div>
 				<?php } ?>
-				<div class="row mb-3">
+				<div class="row mt-3 mb-3">
 					<div>
 						<div class="form-floating">
 							<textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmComments" id="resultConfirmComments"><?php echo $match->comments ?></textarea>
@@ -992,24 +993,24 @@ class RacketManagerAJAX extends RacketManager {
 						</div>
 					</div>
 				</div>
-				<div class="row mb-3">
-					<?php if ( isset($match->updated_user) ) { ?>
+				<?php if ( isset($match->updated_user) ) { ?>
+					<div class="row mb-3">
 						<div class="col-2">
 							Updated By:
 						</div>
 						<div class="col-10">
 							<?php echo $racketmanager->getPlayerName($match->updated_user); ?>
 						</div>
-					<?php } ?>
-					<?php if ( isset($match->updated) ) { ?>
-						<div class="col-2">
-							On:
-						</div>
-						<div class="col-10">
-							<?php echo $match->updated; ?>
-						</div>
-					<?php } ?>
-				</div>
+						<?php if ( isset($match->updated) ) { ?>
+							<div class="col-2">
+								On:
+							</div>
+							<div class="col-10">
+								<?php echo $match->updated; ?>
+							</div>
+						<?php } ?>
+					</div>
+				<?php } ?>
 				<?php if ( current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == NULL ) { ?>
 					<div class="row mb-3">
 						<div class="col-12">

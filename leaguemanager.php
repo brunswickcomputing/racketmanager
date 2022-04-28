@@ -2129,7 +2129,41 @@ class RacketManager {
 	* @param object $matches
   * @return null
   */
-	public function notifyFavourites($favourite, $users, $matches, $league) {
+	public function notifyFavourites($matches, $league) {
+		$users = $this->getUsersForFavourite('league', $league->id);
+		if ( $users ) {
+			$favourite = $league->title;
+			$this->notifyFavouritesEmail($favourite, $league, $users, $matches);
+		}
+
+	}
+
+	/**
+  * get users for favourite
+  *
+	* @param string $type
+	* @param string $key
+  * @return array list of users
+  */
+	public function getUsersForFavourite($type, $key) {
+		$users = get_users(array(
+			'meta_key' => 'favourite-'.$type,
+			'meta_value' => $key,
+			'fields' => 'ids'
+		));
+		return $users;
+	}
+
+	/**
+  * send emails to users for favourite updates
+  *
+	* @param string $favourite
+	* @param object $league
+	* @param array 	$users
+	* @param array 	$matches
+  * @return null
+  */
+	public function notifyFavouritesEmail($favourite, $league, $users, $matches) {
 		global $racketmanager_shortcodes;
 
 		$headers = array();

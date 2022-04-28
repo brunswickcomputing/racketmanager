@@ -2072,15 +2072,7 @@ public function _updateResults( $matches, $home_points, $away_points, $home_team
 	}
 
 	if ( $num_matches > 0 ) {
-
-		$users = get_users(array(
-			'meta_key' => 'favourite-league',
-			'meta_value' => $this->id,
-			'fields' => 'ids'
-		));
-		if ( $users ) {
-			$racketmanager->notifyFavourites($this->title, $users, $matchesUpdated, $this);
-		}
+		$racketmanager->notifyFavourites($matchesUpdated, $this);
 		if ( !$final ) {
 			// update Standings for each team
 			$leagueTeams = $this->getLeagueTeams( array("season" => $season, "cache" => false) );

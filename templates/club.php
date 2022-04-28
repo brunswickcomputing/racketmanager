@@ -22,7 +22,9 @@ if ( current_user_can( 'manage_racketmanager' ) ) {
 }
 ?>
 
-<h1 class="title-post"><?php echo $club->name ?></h1>
+<h1 class="club-name">
+  <?php echo $club->name ?>
+</h1>
 <div class="entry-content">
   <div class="team">
     <form id="clubUpdateFrm" action="" method="post">

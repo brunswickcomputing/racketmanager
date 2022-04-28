@@ -387,6 +387,9 @@ div.tm-team-content .team-projectmanager {
 /*
 * Club page
 */
+h1.club-name {
+	display: inline-block;
+}
 h2.club-name {
 	font-size: 36px;
 	line-height: normal;

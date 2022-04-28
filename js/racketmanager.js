@@ -337,8 +337,9 @@ Racketmanager.printScoreCard = function(e, link) {
 Racketmanager.closeMatchModal = function(link) {
 	jQuery("#modalMatch").hide();
 };
-Racketmanager.showRubbers = function(matchId) {
+Racketmanager.showRubbers = function(e, matchId) {
 
+	e.preventDefault();
 	jQuery("#showMatchRubbers").empty();
 	var myModal = new bootstrap.Modal(document.getElementById('modalMatch'), {
 	  keyboard: true,	backdrop: false, focus: true

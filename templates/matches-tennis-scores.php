@@ -42,13 +42,13 @@ global $racketmanager;
             <?php } ?>
           <?php } else { ?>
             <td>
-              <a href="#" class='' type="<?php echo $match->league->entryType ?>" id="<?php echo $match->id ?>" onclick="Racketmanager.printScoreCard(event, this)" title="<?php _e( 'Print matchcard', 'racketmanager' ) ?>">
+              <a href="" class='' type="<?php echo $match->league->entryType ?>" id="<?php echo $match->id ?>" onclick="Racketmanager.printScoreCard(event, this)" title="<?php _e( 'Print matchcard', 'racketmanager' ) ?>">
                 <i class="racketmanager-svg-icon"><?php racketmanager_the_svg('icon-printer') ?></i>
               </a>
               <?php
               if ( $userCanUpdate == true && ( !isset($match->confirmed) || $match->confirmed = "P" ) ) {
                 if ( is_numeric($match->home_team) && is_numeric($match->away_team) ) {?>
-                  <a href="#" class="" onclick="Racketmanager.showRubbers(<?php echo $match->id ?>)"  title="<?php _e( 'Enter match result', 'racketmanager' ) ?>">
+                  <a href="" class="" onclick="Racketmanager.showRubbers(event, <?php echo $match->id ?>)"  title="<?php _e( 'Enter match result', 'racketmanager' ) ?>">
                     <i class="racketmanager-svg-icon"><?php racketmanager_the_svg('icon-pencil') ?></i>
                   </a>
                 <?php } ?>

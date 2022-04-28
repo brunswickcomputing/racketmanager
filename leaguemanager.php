@@ -2117,9 +2117,8 @@ class RacketManager {
 		$favouriteFound = (array_search($id, $favourites,true));
 		if ( is_numeric($favouriteFound) ) {
 			return true;
-		} else {
-			return false;
 		}
+		return false;
 	}
 
 	/**

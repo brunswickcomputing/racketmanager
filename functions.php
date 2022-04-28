@@ -159,7 +159,7 @@ function create_new_url_querystring() {
   );
   // club
   add_rewrite_rule(
-    'club/(.+?)/?$','index.php?pagename=club&club_name=$matches[1]','top'
+    'clubs/(.+?)/?$','index.php?pagename=club&club_name=$matches[1]','top'
   );
   // type - season - club
   add_rewrite_rule(

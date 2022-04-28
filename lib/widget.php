@@ -89,7 +89,7 @@ class RacketManagerWidget extends WP_Widget {
           $clubfacilities = $club->facilities;
           $clubaddress    = $club->address;
           //                $excerpt        = $club->description;
-          $clubinfolink   = "/club/".sanitize_title($club->shortcode)."/";
+          $clubinfolink   = "/clubs/".sanitize_title($club->shortcode)."/";
           ?>
           <div class="club-item">
             <div class="club-inner">

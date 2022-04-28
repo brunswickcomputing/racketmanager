@@ -13,7 +13,7 @@ You can check the content of a variable when you insert the tag <?php var_dump($
 
 <?php foreach ($clubs AS $club) { ?>
   <h2 class="club-name">
-    <a href="/club/<?php echo sanitize_title($club->shortcode) ?>/"><?php echo $club->name ?></a>
+    <a href="/clubs/<?php echo sanitize_title($club->shortcode) ?>/"><?php echo $club->name ?></a>
   </h2>
   <div class="entry-content">
     <div class="tm-team-content">

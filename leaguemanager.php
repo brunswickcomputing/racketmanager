@@ -52,7 +52,7 @@ class RacketManager {
 	*
 	* @var string
 	*/
-	private $dbversion = '6.8.0';
+	private $dbversion = '6.10.0';
 
 	/**
 	* The array of templates that this plugin tracks.
@@ -753,7 +753,7 @@ class RacketManager {
 		$create_team_competition_sql = "CREATE TABLE {$wpdb->racketmanager_team_competition} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT , `team_id` int( 11 ) NOT NULL default 0, `competition_id` int( 11 ) NOT NULL default 0, `captain` varchar( 255 ) NOT NULL default '', `contactno` varchar( 255 ) NOT NULL default '', `contactemail` varchar( 255 ) NOT NULL default '', `match_day` varchar( 25 ) NOT NULL default '', `match_time` time NULL, PRIMARY KEY ( `id` ), INDEX( `team_id` ), INDEX( `competition_id` ) ) $charset_collate;";
 		maybe_create_table( $wpdb->racketmanager_team_competition, $create_team_competition_sql );
 
-		$create_roster_requests_sql = "CREATE TABLE {$wpdb->racketmanager_roster_requests} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `affiliatedclub` int( 11 ) NOT NULL default 0, `first_name` varchar( 255 ) NOT NULL default '', `surname` varchar( 255 ) NOT NULL default '', `gender` varchar( 1 ) NOT NULL default '', `btm` int( 11 ) NULL , `player_id` int( 11 ) NOT NULL default 0, `requested_date` date NULL, `requested_user` int( 11 ), `completed_date` date NULL, `completed_user` int( 11 ) NULL, PRIMARY KEY ( `id` )) $charset_collate;";
+		$create_roster_requests_sql = "CREATE TABLE {$wpdb->racketmanager_roster_requests} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `affiliatedclub` int( 11 ) NOT NULL default 0, `first_name` varchar( 255 ) NOT NULL default '', `surname` varchar( 255 ) NOT NULL default '', `gender` varchar( 1 ) NOT NULL default '', `btm` int( 11 ) NULL , `email` varchar( 255 ) NULL,  player_id` int( 11 ) NOT NULL default 0, `requested_date` date NULL, `requested_user` int( 11 ), `completed_date` date NULL, `completed_user` int( 11 ) NULL, PRIMARY KEY ( `id` )) $charset_collate;";
 		maybe_create_table( $wpdb->racketmanager_roster_requests, $create_roster_requests_sql );
 
 		$create_clubs_sql = "CREATE TABLE {$wpdb->racketmanager_clubs} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `name` varchar( 100 ) NOT NULL default '', `website` varchar( 100 ) NOT NULL default '', `type` varchar( 20 ) NOT NULL default '', `address` varchar( 255 ) NOT NULL default '', `latitude` varchar( 20 ) NOT NULL default '', `longitude` varchar( 20 ) NOT NULL default '', `contactno` varchar( 20 ) NOT NULL default '', `founded` int( 4 ) NULL, `facilities` varchar( 255 ) NOT NULL default '', `shortcode` varchar( 20 ) NOT NULL default '', `matchsecretary` int( 11 ) NULL, PRIMARY KEY ( `id` )) $charset_collate;";
@@ -1596,9 +1596,10 @@ class RacketManager {
 	* @param string $gender
 	* @param int $btm
 	* @param boolean $message (optional)
+	* @param string $email (optional)
 	* @return int | false
 	*/
-	public function addPlayer( $firstname, $surname, $gender, $btm, $message = true ) {
+	public function addPlayer( $firstname, $surname, $gender, $btm, $email = false, $message = true ) {
 
 		if ( !current_user_can('edit_teams') ) {
 			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
@@ -1611,6 +1612,10 @@ class RacketManager {
 		$userdata['display_name'] = $firstname.' '.$surname;
 		$userdata['user_login'] = $firstname.'.'.$surname;
 		$userdata['user_pass'] = $userdata['user_login'].'1';
+		debug_to_console($email);
+		if ( $email ) {
+			$userdata['user_email'] = $email;
+		}
 		$user_id = wp_insert_user( $userdata );
 		if ( ! is_wp_error( $user_id ) ) {
 			update_user_meta($user_id, 'show_admin_bar_front', false );

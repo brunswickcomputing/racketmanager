@@ -221,7 +221,7 @@ final class Club {
     $rosterRequest = $this->getRosterRequest($rosterRequestId);
     if ( empty($rosterRequest->completed_date) ) {
       if ( empty($rosterRequest->player_id) ) {
-        $rosterRequest->player_id = $racketmanager->addPlayer( $rosterRequest->first_name, $rosterRequest->surname, $rosterRequest->gender, $rosterRequest->btm);
+        $rosterRequest->player_id = $racketmanager->addPlayer( $rosterRequest->first_name, $rosterRequest->surname, $rosterRequest->gender, $rosterRequest->btm, $rosterRequest->email);
       }
       $rosterId = $this->addRoster( $rosterRequest->player_id, false);
       $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_roster_requests} SET `completed_date` = now(), `completed_user` = %d WHERE `id` = %d ", get_current_user_id(), $rosterRequestId ) );

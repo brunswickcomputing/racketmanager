@@ -531,6 +531,7 @@ Racketmanager.rosterRequest = function(link) {
 				jQuery("#genderMale").prop('checked', false);
 				jQuery("#genderFemale").prop('checked', false);
 				jQuery("#btm").val("");
+				jQuery("#email").val("");
 				jQuery("#updateResponse").addClass("message-success");
 				jQuery("#updateResponse").show();
 				jQuery("#updateResponse").html($message);

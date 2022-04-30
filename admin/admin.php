@@ -1152,7 +1152,8 @@ final class RacketManagerAdmin extends RacketManager
 					$this->setMessage( __("Gender required",'racketmanager'), true );
 				} else {
 					$btm = isset($_POST['btm']) ? $_POST['btm'] : false;
- 					$this->addPlayerToRoster( $_POST['club_Id'], $_POST['firstname'], $_POST['surname'], $_POST['gender'], $btm );
+					$email = isset($_POST['email']) ? $_POST['email'] : false;
+ 					$this->addPlayerToRoster( $_POST['club_Id'], $_POST['firstname'], $_POST['surname'], $_POST['gender'], $btm, $email );
 				}
 			} elseif ( isset($_POST['dorosterdel']) && $_POST['action'] == 'delete' ) {
 				check_admin_referer('roster-bulk');
@@ -1463,7 +1464,7 @@ final class RacketManagerAdmin extends RacketManager
 				$tab = "seasons";
 			} elseif ( isset($_POST['addPlayer']) ) {
 				check_admin_referer('racketmanager_add-player');
-				$this->addPlayer( htmlspecialchars(strip_tags($_POST['firstname'])), htmlspecialchars(strip_tags($_POST['surname'])), $_POST['gender'], htmlspecialchars(strip_tags($_POST['btm'])), 'true');
+				$this->addPlayer( htmlspecialchars(strip_tags($_POST['firstname'])), htmlspecialchars(strip_tags($_POST['surname'])), $_POST['gender'], htmlspecialchars(strip_tags($_POST['btm'])), $_POST['email'], 'true');
 				$tab = "players";
 			} elseif ( isset($_POST['doPlayerDel']) && $_POST['action'] == 'delete' ) {
 				if ( current_user_can('edit_teams') ) {
@@ -3291,8 +3292,9 @@ final class RacketManagerAdmin extends RacketManager
 					$surname	= isset($line[1]) ? utf8_encode($line[1]) : '';
 					$gender		= isset($line[2]) ? utf8_encode($line[2]) : '';
 					$btm		= isset($line[3]) ? utf8_encode($line[3]) : '';
+					$email		= isset($line[4]) ? utf8_encode($line[4]) : '';
 					if ( !username_exists($firstname.'.'.$surname) ) {
-						$player_id	= $this->addPlayer( $firstname, $surname, $gender, $btm, false );
+						$player_id	= $this->addPlayer( $firstname, $surname, $gender, $btm, $email, false );
 						$players[$player_id] = $player_id;
 						$x++;
 					}
@@ -3339,8 +3341,9 @@ final class RacketManagerAdmin extends RacketManager
 					$surname	= isset($line[1]) ? utf8_encode($line[1]) : '';
 					$gender		= isset($line[2]) ? utf8_encode($line[2]) : '';
 					$btm		= isset($line[3]) ? utf8_encode($line[3]) : '';
+					$email		= isset($line[4]) ? utf8_encode($line[4]) : '';
 					if ( !username_exists($firstname.'.'.$surname) ) {
-						$player_id	= $this->addPlayer( $firstname, $surname, $gender, $btm, false );
+						$player_id	= $this->addPlayer( $firstname, $surname, $gender, $btm, $email, false );
 						$players[$player_id] = $player_id;
 					} else {
 						$player_id = get_user_by('login', $firstname.'.'.$surname )->ID;
@@ -3374,13 +3377,13 @@ final class RacketManagerAdmin extends RacketManager
 		return;
 	}
 
-	private function addPlayerToRoster($affiliatedClub, $firstName, $surname, $gender, $btm ) {
+	private function addPlayerToRoster($affiliatedClub, $firstName, $surname, $gender, $btm, $email ) {
 		global $wpdb, $racketmanager;
 
 		$fullName = $firstName . ' ' . $surname;
 		$player = $racketmanager->getPlayer(array('fullname' => $fullName));
 		if ( !$player ) {
-			$playerId = $racketmanager->addPlayer( $firstName, $surname, $gender, $btm);
+			$playerId = $racketmanager->addPlayer( $firstName, $surname, $gender, $btm, $email);
 			$rosterFound = false;
 		} else {
 			$playerId = $player->ID;

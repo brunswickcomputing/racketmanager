@@ -1445,12 +1445,19 @@ class RacketManagerAJAX extends RacketManager {
 			$btmSupplied = true;
 			$btm = $_POST['btm'];
 		}
+		if ( !isset($_POST['email']) || $_POST['email'] == '' ) {
+			$emailSupplied = false;
+			$email = '';
+		} else {
+			$emailSupplied = true;
+			$email = $_POST['email'];
+		}
 
 		if ( !$error ) {
 			$fullName = $firstName . ' ' . $surname;
 			$player = $racketmanager->getPlayer(array('fullname' => $fullName));
 			if ( !$player ) {
-				$playerId = $racketmanager->addPlayer( $firstName, $surname, $gender, $btm);
+				$playerId = $racketmanager->addPlayer( $firstName, $surname, $gender, $btm, $email);
 				$rosterFound = false;
 			} else {
 				$playerId = $player->ID;

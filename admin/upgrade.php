@@ -321,6 +321,10 @@ function racketmanager_upgrade() {
 				$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} ADD timeincrement time NULL AFTER `starttime` ");
 				$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} ADD orderofplay longtext NULL AFTER `timeincrement` ");
     }
+		if (version_compare($installed, '6.10.0', '<')) {
+        echo __('starting 6.10.0 upgrade', 'leaguemanager') . "<br />\n";
+        $wpdb->query( "ALTER TABLE {$wpdb->racketmanager_roster_requests} ADD email varchar( 255 ) NULL AFTER `btm` ");
+    }
     /*
 	* Update version and dbversion
 	*/

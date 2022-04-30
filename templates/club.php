@@ -148,6 +148,11 @@ if ( current_user_can( 'manage_racketmanager' ) ) {
                     <label for="btm"><?php _e( 'BTM', 'racketmanager' ) ?></label>
                     <div id="btmFeedback" class="invalid-feedback"></div>
                   </div>
+                  <div class="form-floating mb-3">
+                    <input type="email" class="form-control" placeholder="<?php _e( 'Enter email address', 'racketmanager' ) ?>" name="email" id="email" class="form-control" aria-describedby="emailFeedback" />
+                    <label for="email"><?php _e( 'Email address', 'racketmanager' ) ?></label>
+                    <div id="emailFeedback" class="invalid-feedback"></div>
+                  </div>
                 </fieldset>
                 <button class="btn" type="button" id="rosterUpdateSubmit" onclick="Racketmanager.rosterRequest(this)"><?php _e( 'Add player', 'racketmanager' ) ?></button>
                 <div id="updateResponse"></div>

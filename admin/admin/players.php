@@ -2,32 +2,28 @@
 <div class="mb-3">
 	<form action="" method="post" class="form-control">
 		<?php wp_nonce_field( 'racketmanager_add-player' ) ?>
-		<div class="form-group">
+		<div class="form-floating mb-3">
+			<input required="required" placeholder="<?php _e( 'Enter first name', 'racketmanager') ?>" type="text" name="firstname" id="firstname" value="" size="30" class="form-control"/>
 			<label for="firstname"><?php _e( 'First Name', 'racketmanager' ) ?></label>
-			<div class="input">
-				<input required="required" placeholder="<?php _e( 'Enter first name', 'racketmanager') ?>" type="text" name="firstname" id="firstname" value="" size="30" />
-			</div>
 		</div>
-		<div class="form-group">
+		<div class="form-floating mb-3">
+			<input required="required"  placeholder="<?php _e( 'Enter surname', 'racketmanager') ?>" type="text" name="surname" id="surname" value="" size="30" class="form-control" />
 			<label for="surname"><?php _e( 'Surname', 'racketmanager' ) ?></label>
-			<div class="input">
-				<input required="required"  placeholder="<?php _e( 'Enter surname', 'racketmanager') ?>" type="text" name="surname" id="surname" value="" size="30" />
-			</div>
 		</div>
-		<div class="form-group">
-			<label><?php _e('Gender', 'racketmanager') ?></label>
-			<div class="form-check">
-				<input type="radio" required="required" name="gender" id="genderMale" value="M" /><label for "genderMale"><?php _e('Male', 'racketmanager') ?></label>
-			</div>
-			<div class="form-check">
-				<input type="radio" required="required" name="gender" id="genderFemale" value="F" /><label for "genderFemale"><?php _e('Female', 'racketmanager') ?></label>
-			</div>
+		<label><?php _e('Gender', 'racketmanager') ?></label>
+		<div class="form-check">
+			<input type="radio" required="required" name="gender" id="genderMale" value="M" class="form-check-input" /><label for "genderMale" class="form-check-label"><?php _e('Male', 'racketmanager') ?></label>
 		</div>
-		<div class="form-group">
+		<div class="form-check">
+			<input type="radio" required="required" name="gender" id="genderFemale" value="F" class="form-check-input" /><label for "genderFemale" class="form-check-label"><?php _e('Female', 'racketmanager') ?></label>
+		</div>
+		<div class="form-floating mb-3">
+			<input type="number"  placeholder="<?php _e( 'Enter BTM number', 'racketmanager') ?>" name="btm" id="gender" size="11" class="form-control" />
 			<label for="btm"><?php _e('BTM', 'racketmanager') ?></label>
-			<div class="input">
-				<input type="number"  placeholder="<?php _e( 'Enter BTM number', 'racketmanager') ?>" name="btm" id="gender" size="11" />
-			</div>
+		</div>
+		<div class="form-floating mb-3">
+			<input type="email" placeholder="<?php _e( 'Enter email address', 'racketmanager') ?>" name="email" id="email" class="form-control" />
+			<label for="email"><?php _e('Email address', 'racketmanager') ?></label>
 		</div>
 		<input type="hidden" name="addPlayer" value="player" />
 		<input type="submit" name="addPlayer" value="<?php _e( 'Add Player','racketmanager' ) ?>" class="btn btn-primary" />

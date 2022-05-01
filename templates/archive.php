@@ -65,7 +65,7 @@ wp_enqueue_script('datatables');
 			</select>
 			<select size="1" name="season" id="season">
 				<option value=""><?php _e( 'Season', 'racketmanager' ) ?></option>
-				<?php foreach ( $seasons AS $key => $season ) { ?>
+				<?php foreach ( array_reverse($seasons) AS $key => $season ) { ?>
 					<option value="<?php echo $key ?>"<?php if ( $season['name'] == $league->current_season['name'] ) echo ' selected="selected"' ?>><?php echo $season['name'] ?></option>
 				<?php } ?>
 			</select>

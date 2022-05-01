@@ -25,7 +25,7 @@ $pagename = isset($wp_query->query['pagename']) ? $wp_query->query['pagename'] :
 				<input type="hidden" name="pagename" id="pagename" value="<?php echo $pagename ?>" />
 				<select size="1" name="season" id="season">
 					<option value=""><?php _e( 'Season', 'racketmanager' ) ?></option>
-					<?php foreach ( $seasons AS $key => $season ) { ?>
+					<?php foreach ( array_reverse($seasons) AS $key => $season ) { ?>
 						<option value="<?php echo $key ?>"<?php if ( $season['name'] == $curr_season ) echo ' selected="selected"' ?>><?php echo $season['name'] ?></option>
 					<?php } ?>
 				</select>

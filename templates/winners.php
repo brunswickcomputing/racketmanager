@@ -39,9 +39,9 @@ $postID = isset($wp_query->post->ID) ? $wp_query->post->ID : "";
 				<h4 class="header"><?php echo $winner->league ?></h4>
 				<dl>
 					<dd><?php _e('Winner', 'racketmanager') ?></dd>
-					<dt><?php echo $winner->winner ?></dt>
+					<dt><?php echo $winner->winner ?><?php if ( $competitiontype == 'tournament' ) { echo ' ('.$winner->winnerClub.')'; } ?></dt>
 					<dd><?php _e('Runner-up', 'racketmanager') ?></dd>
-					<dt><?php echo $winner->loser ?></dt>
+					<dt><?php echo $winner->loser ?><?php if ( $competitiontype == 'tournament' ) { echo ' ('.$winner->loserClub.')'; } ?></dt>
 				</dl>
 			</div>
 		<?php } ?>

@@ -1173,7 +1173,7 @@ class RacketManagerShortcodes extends RacketManager {
 			'template' => ''
 		), $atts ));
 
-		$actionurl = admin_url().'?page=racketmanager&view=rosterRequest';
+		$actionurl = admin_url().'admin.php?page=racketmanager-admin&view=rosterRequest';
 
 		$organisationname = $racketmanager->site_name;
 

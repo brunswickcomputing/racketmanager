@@ -41,11 +41,9 @@
 	<h2><?php _e( 'Add Season', 'racketmanager' ) ?></h2>
 	<form action="" method="post" class="form-control">
 		<?php wp_nonce_field( 'racketmanager_add-season' ) ?>
-		<div class="form-group">
+		<div class="form-floating mb-3">
+			<input class="form-control" required="required" placeholder="<?php _e( 'Enter season name', 'racketmanager') ?>" type="text" name="seasonName" id="seasonName" value=""  />
 			<label for="seasonName"><?php _e( 'Name', 'racketmanager' ) ?></label>
-			<div class="input">
-				<input required="required" placeholder="<?php _e( 'Enter season name', 'racketmanager') ?>" type="text" name="seasonName" id="seasonName" value=""  />
-			</div>
 		</div>
 		<input type="hidden" name="addSeason" value="season" />
 		<input type="submit" name="addSeason" value="<?php _e( 'Add Season','racketmanager' ) ?>" class="btn btn-primary" />

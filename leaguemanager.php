@@ -1612,7 +1612,6 @@ class RacketManager {
 		$userdata['display_name'] = $firstname.' '.$surname;
 		$userdata['user_login'] = $firstname.'.'.$surname;
 		$userdata['user_pass'] = $userdata['user_login'].'1';
-		debug_to_console($email);
 		if ( $email ) {
 			$userdata['user_email'] = $email;
 		}

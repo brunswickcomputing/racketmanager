@@ -1,6 +1,6 @@
 <!-- Roster Request -->
 
-<form id="roster-request-filter" method="post" action="">
+<form id="roster-request-filter" method="post" action="" class="form-control">
 	<?php wp_nonce_field( 'roster-request-bulk' ) ?>
 
 	<div class="tablenav">

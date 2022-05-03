@@ -1747,7 +1747,7 @@ class RacketManager {
 
 		$seasonType = $wpdb->esc_like(stripslashes($seasonType)).'%';
 
-		$sql = "SELECT l.`title` ,wt.`title` AS `winner` ,lt.`title` AS `loser` FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l, {$wpdb->racketmanager_competitions} c, {$wpdb->racketmanager_teams} wt, {$wpdb->racketmanager_teams} lt WHERE `league_id` = l.`id` AND l.`competition_id` = c.`id` AND c.`competitiontype` = '%s' AND c.`name` like '%s' AND m.`final` = 'FINAL' AND m.`season` = '%d' AND m.`winner_id` = wt.`id` AND m.`loser_id` = lt.`id` order by 1";
+		$sql = "SELECT l.`title` ,wt.`title` AS `winner` ,lt.`title` AS `loser`, m.`id`, m.`home_team`, m.`away_team`, m.`winner_id` AS `winnerId`, m.`loser_id` AS `loserId` FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l, {$wpdb->racketmanager_competitions} c, {$wpdb->racketmanager_teams} wt, {$wpdb->racketmanager_teams} lt WHERE `league_id` = l.`id` AND l.`competition_id` = c.`id` AND c.`competitiontype` = '%s' AND c.`name` like '%s' AND m.`final` = 'FINAL' AND m.`season` = '%d' AND m.`winner_id` = wt.`id` AND m.`loser_id` = lt.`id` order by 1";
 
 		$sql = $wpdb->prepare($sql, $competitionType, $seasonType, $season);
 		$winners = $wpdb->get_results($sql);
@@ -1757,10 +1757,21 @@ class RacketManager {
 		$i = 0;
 		foreach ( $winners AS $winner ) {
 
+			$match = get_match($winner->id);
 			$winners[$i] = (object)(array)$winner;
 			$winners[$i]->league = $winner->title;
 			$winners[$i]->winner = $winner->winner;
+			if ( $winner->winnerId == $winner->home_team ) {
+				$winners[$i]->winnerClub = $match->teams['home']->affiliatedclubname;
+			} else {
+				$winners[$i]->winnerClub = $match->teams['away']->affiliatedclubname;
+			}
 			$winners[$i]->loser = $winner->loser;
+			if ( $winner->loserId == $winner->home_team ) {
+				$winners[$i]->loserClub = $match->teams['home']->affiliatedclubname;
+			} else {
+				$winners[$i]->loserClub = $match->teams['away']->affiliatedclubname;
+			}
 
 			$i++;
 		}

@@ -671,3 +671,7 @@ dl dl {
 .hide {
   display: none;
 }
+.form-check .form-check-input[type=radio] {
+  margin-top: 0.25em;
+  margin-right: 0;
+}

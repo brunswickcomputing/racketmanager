@@ -1469,33 +1469,40 @@ class RacketManagerAJAX extends RacketManager {
 				}
 			}
 			if ( $rosterFound == false ) {
-				$userid = get_current_user_id();
-				if ( $btmSupplied  ) {
-					$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->racketmanager_roster_requests} (`affiliatedClub`, `first_name`, `surname`, `gender`, `btm`, `player_id`, `requested_date`, `requested_user`) values (%d, '%s', '%s', '%s', %d, %d, now(), %d) ", $affiliatedClub, $firstName, $surname, $gender, $btm, $playerId, $userid ) );
+				$club = get_club($affiliatedClub);
+				$rosterRequestCount = $club->getRosterRequests( array('count' => true, 'firstName' => $firstName, 'surname' => $surname) );
+				if ( $rosterRequestCount == 0 ) {
+					$userid = get_current_user_id();
+					if ( $btmSupplied  ) {
+						$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->racketmanager_roster_requests} (`affiliatedClub`, `first_name`, `surname`, `gender`, `btm`, `player_id`, `requested_date`, `requested_user`) values (%d, '%s', '%s', '%s', %d, %d, now(), %d) ", $affiliatedClub, $firstName, $surname, $gender, $btm, $playerId, $userid ) );
+					} else {
+						$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->racketmanager_roster_requests} (`affiliatedClub`, `first_name`, `surname`, `gender`, `player_id`, `requested_date`, `requested_user`) values (%d, '%s', '%s', '%s', %d, now(), %d)", $affiliatedClub, $firstName, $surname, $gender, $playerId, $userid ) );
+					}
+					$rosterRequestId = $wpdb->insert_id;
+					$options = $racketmanager->getOptions();
+					if ( $options['rosterConfirmation'] == 'auto' ) {
+						$racketmanager->_approveRosterRequest( $affiliatedClub, $rosterRequestId );
+						$action = 'add';
+						$msg = __('Player added to club','racketmanager');
+					} else {
+						$action = 'request';
+						$msg = __('Player request submitted','racketmanager');
+					}
+					if ( isset($options['rosterConfirmationEmail']) && !is_null($options['rosterConfirmationEmail']) ) {
+						$clubName = get_club($affiliatedClub)->name;
+						$emailTo = $options['rosterConfirmationEmail'];
+						$messageArgs = array();
+						$messageArgs['action'] = $action;
+						$messageArgs['club'] = $clubName;
+						$headers = array();
+						$headers['from'] = $racketmanager->getFromUserEmail();
+						$subject = $racketmanager->site_name." - ".$msg." - ".$clubName;
+						$message = racketmanager_roster_notification($messageArgs);
+						$racketmanager->lm_mail($emailTo, $subject, $message, $headers);
+					}
 				} else {
-					$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->racketmanager_roster_requests} (`affiliatedClub`, `first_name`, `surname`, `gender`, `player_id`, `requested_date`, `requested_user`) values (%d, '%s', '%s', '%s', %d, now(), %d)", $affiliatedClub, $firstName, $surname, $gender, $playerId, $userid ) );
-				}
-				$rosterRequestId = $wpdb->insert_id;
-				$options = $racketmanager->getOptions();
-				if ( $options['rosterConfirmation'] == 'auto' ) {
-					$racketmanager->_approveRosterRequest( $affiliatedClub, $rosterRequestId );
-					$action = 'add';
-					$msg = __('Player added to club','racketmanager');
-				} else {
-					$action = 'request';
-					$msg = __('Player request submitted','racketmanager');
-				}
-				if ( isset($options['rosterConfirmationEmail']) && !is_null($options['rosterConfirmationEmail']) ) {
-					$clubName = get_club($affiliatedClub)->name;
-					$emailTo = $options['rosterConfirmationEmail'];
-					$messageArgs = array();
-					$messageArgs['action'] = $action;
-					$messageArgs['club'] = $clubName;
-					$headers = array();
-					$headers['from'] = $racketmanager->getFromUserEmail();
-					$subject = $racketmanager->site_name." - ".$msg." - ".$clubName;
-					$message = racketmanager_roster_notification($messageArgs);
-					$racketmanager->lm_mail($emailTo, $subject, $message, $headers);
+					$error = true;
+					$msg = __('Player request already exists','racketmanager');
 				}
 			} else {
 				$error = true;

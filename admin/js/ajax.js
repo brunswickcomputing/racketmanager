@@ -133,7 +133,7 @@ Racketmanager.showRubbers = function(link) {
   var matchId = jQuery(link).attr('id');
   jQuery("#showMatchRubbers").empty();
   var myModal = new bootstrap.Modal(document.getElementById('modalMatch'), {
-	  keyboard: true,	backdrop: false, focus: true
+	  keyboard: true,	backdrop: true, focus: true
 	})
 	myModal.show()
   jQuery("#viewMatchRubbers").show();

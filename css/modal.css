@@ -75,6 +75,9 @@ td input.player {
 .modal input.points {
   height: 38px;
 }
+.modal-backdrop {
+  z-index: -1;
+}
 .modal-header button.btn-close,
 .modal-header button.btn-close:hover,
 .modal-header button.btn-close:focus {

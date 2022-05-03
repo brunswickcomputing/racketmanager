@@ -2298,8 +2298,13 @@ final class RacketManagerAdmin extends RacketManager
 			case 'W': $type = 'Ladies'; break;
 			case 'M': $type = 'Mens';break;
 			case 'X': $type = 'Mixed';break;
+			default: $type= 'error';break;
 		}
 
+		if ( $type == 'error' ) {
+			$this->setMessage( __('Type not selected','racketmanager'), 'error' );
+			return false;
+		}
 		$club = get_club($affiliatedclub);
 		$title = $club->shortcode.' '.$type.' '.$count;
 		$stadium = $club->name;

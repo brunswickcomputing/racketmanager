@@ -539,7 +539,7 @@ class RacketManagerShortcodes extends RacketManager {
 		if ( !$club ) return;
 
 		$rosters = $club->getRoster( array( 'inactive' => "Y", 'type' => 'real', 'cache' => false ) );
-		$rosterRequests = $club->getRosterRequests();
+		$rosterRequests = $club->getRosterRequests( array() );
 
 		$club->single = true;
 

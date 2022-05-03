@@ -32,7 +32,7 @@
 		$class = '';
 		foreach ($clubs AS $club) {
 			$club = get_club($club->id);
-			$rosterRequests = $club->getRosterRequests( true );
+			$rosterRequests = $club->getRosterRequests( array('completed' => true) );
 			foreach ($rosterRequests AS $rosterRequest) {
 				$class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 				<div class="row table-row <?php echo $class ?>">

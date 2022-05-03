@@ -153,19 +153,59 @@ final class Club {
   * @param array $query_args
   * @return array
   */
-  public function getRosterRequests( $completed = false ) {
+  public function getRosterRequests( $query_args ) {
     global $wpdb, $racketmanager;
 
-    $sql = "SELECT `id`, `first_name`, `surname`, `affiliatedclub`, `requested_date`, `requested_user`, `completed_date`, `completed_user`, `gender`, `btm` FROM {$wpdb->racketmanager_roster_requests} WHERE `affiliatedclub` = '%d'"  ;
-    $args = array($this->id);
+    $defaults = array( 'count' => false, 'firstName' => false, 'surname' => false, 'gender' => false, 'completed' => false, 'orderby' => array('completed_date' => 'ASC', 'requested_date' => 'ASC', 'surname' => 'DESC', 'first_name' => 'DESC' ));
+    $query_args = array_merge($defaults, (array)$query_args);
+    extract($query_args, EXTR_SKIP);
+
+    $search_terms = array();
+    $sql = "SELECT `id`, `first_name`, `surname`, `affiliatedclub`, `requested_date`, `requested_user`, `completed_date`, `completed_user`, `gender`, `btm` FROM {$wpdb->racketmanager_roster_requests} WHERE `affiliatedclub` = ".$this->id ;
 
     if ( !$completed ) {
-      $sql .= " AND `completed_date` IS NULL";
+      $search_terms[] = "`completed_date` IS NULL";
+    }
+    if ( $firstName ) {
+      $search_terms[] = $wpdb->prepare("`first_name` = '%s'", htmlspecialchars($firstName));
+    }
+    if ( $surname ) {
+      $search_terms[] = $wpdb->prepare("`surname` = '%s'", htmlspecialchars($surname));
+    }
+    $search = "";
+    if (count($search_terms) > 0) {
+      $search = implode(" AND ", $search_terms);
     }
 
-    $sql .= " ORDER BY `completed_date` ASC, `requested_date` ASC, `surname` ASC, `first_name` ASC";
+    if ( $count ) {
+      $sql = $sql = "SELECT COUNT(ID) FROM {$wpdb->racketmanager_roster_requests} WHERE `affiliatedclub` = ".$this->id;
+      if ( $search != "") {
+        $sql .= " AND $search";
+      }
+      $numRosterRequests = $wpdb->get_var($sql);
+      return $numRosterRequests;
+    }
 
-    $sql = $wpdb->prepare($sql, $args);
+    $orderby_string = "";
+    $i = 0;
+    foreach ($orderby AS $order => $direction) {
+      if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) {
+        $direction = "ASC";
+      }
+      $orderby_string .= "`".$order."` ".$direction;
+      if ($i < (count($orderby)-1)) {
+        $orderby_string .= ",";
+      }
+      $i++;
+    }
+    $order = $orderby_string;
+    if ( $search != "") {
+      $sql .= " AND $search";
+    }
+    if ( $order != "") {
+      $sql .= " ORDER BY $order";
+    }
+
     $rosterRequests = wp_cache_get( md5($sql), 'rosterRequests' );
     if ( !$rosterRequests ) {
       $rosterRequests = $wpdb->get_results( $sql );

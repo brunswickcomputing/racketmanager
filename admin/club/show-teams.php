@@ -13,7 +13,7 @@ namespace ns;
 	</div>
 	<h1><?php _e( 'Teams', 'racketmanager' ) ?> - <?php echo $club->name ?></h1>
 
-	<!-- Add Team -->
+	<!-- View Teams -->
 	<div class="mb-3">
 		<form id="teams-filter" method="post" action="" class="form-control">
 			<?php wp_nonce_field( 'teams-bulk' ) ?>
@@ -57,18 +57,16 @@ namespace ns;
 		<h3><?php _e( 'Add Team', 'racketmanager' ) ?></h3>
 		<form action="" method="post" class="form-control">
 			<?php wp_nonce_field( 'racketmanager_add-team' ) ?>
-			<div class="form-group">
+			<div class="form-floating mb-3">
+				<select class="form-select" size='1' required="required" name='team_type' id='team_type'>
+					<option><?php _e( 'Select', 'racketmanager') ?></option>
+					<option value='WS'><?php _e( 'Ladies Singles', 'racketmanager') ?></option>
+					<option value='WD'><?php _e( 'Ladies Doubles', 'racketmanager') ?></option>
+					<option value='MD'><?php _e( 'Mens Doubles', 'racketmanager') ?></option>
+					<option value='MS'><?php _e( 'Mens Singles', 'racketmanager') ?></option>
+					<option value='XD'><?php _e( 'Mixed Doubles', 'racketmanager') ?></option>
+				</select>
 				<label for="team_type"><?php _e( 'Type', 'racketmanager' ) ?></label>
-				<div class="input">
-					<select size='1' required="required" name='team_type' id='team_type'>
-						<option><?php _e( 'Select', 'racketmanager') ?></option>
-						<option value='WS'><?php _e( 'Ladies Singles', 'racketmanager') ?></option>
-						<option value='WD'><?php _e( 'Ladies Doubles', 'racketmanager') ?></option>
-						<option value='MD'><?php _e( 'Mens Doubles', 'racketmanager') ?></option>
-						<option value='MS'><?php _e( 'Mens Singles', 'racketmanager') ?></option>
-						<option value='XD'><?php _e( 'Mixed Doubles', 'racketmanager') ?></option>
-					</select>
-				</div>
 			</div>
 			<input type="hidden" name="affiliatedClub" value=<?php echo $club->id ?> />
 			<input type="hidden" name="addTeam" value="team" />

@@ -25,6 +25,9 @@
 				<li class="nav-item" role="presentation">
 					<button class="nav-link" id="colors-tab" data-bs-toggle="pill" data-bs-target="#colors" type="button" role="tab" aria-controls="colors" aria-selected="false"><?php _e( 'Color Scheme', 'racketmanager' ) ?></button>
 				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" id="championship-tab" data-bs-toggle="pill" data-bs-target="#championship" type="button" role="tab" aria-controls="championship" aria-selected="false"><?php _e( 'Championship', 'racketmanager' ) ?></button>
+				</li>
 			</ul>
 
 			<!-- Tab panes -->
@@ -40,6 +43,9 @@
 				</div>
 				<div class="tab-pane fade" id="colors" role="tabpanel" aria-labelledby="colors-tab">
 					<?php include(RACKETMANAGER_PATH . '/admin/includes/settings/colors.php'); ?>
+				</div>
+				<div class="tab-pane fade" id="championship" role="tabpanel" aria-labelledby="championship-tab">
+					<?php include(RACKETMANAGER_PATH . '/admin/includes/settings/championship.php'); ?>
 				</div>
 			</div>
 		</div>

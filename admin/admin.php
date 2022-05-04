@@ -1945,7 +1945,7 @@ final class RacketManagerAdmin extends RacketManager
 		ksort($competition->seasons);
 		$this->saveCompetitionSeasons($competition->seasons, $competition->id);
 
-		if ( $competition->competitiontype = 'league' ) {
+		if ( $competition->competitiontype == 'league' ) {
 			$emailAddr = $racketmanager->getConfirmationEmail($competition->competitiontype);
 			$organisationName = $racketmanager->site_name;
 			$messageArgs = array();

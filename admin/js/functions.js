@@ -284,66 +284,6 @@ if(typeof Racketmanager == "undefined") {
 
 tb_init('a.thickbox, area.thickbox, input.thickbox');
 
-Racketmanager.checkAll = function(form) {
-	for (i = 0, n = form.elements.length; i < n; i++) {
-		if(form.elements[i].type == "checkbox" && !(form.elements[i].getAttribute('onclick',2))) {
-			if(form.elements[i].checked == true)
-			form.elements[i].checked = false;
-			else
-			form.elements[i].checked = true;
-		}
-	}
-}
-
-//Racketmanager.checkPointRule = function( forwin, forwin_overtime, fordraw, forloss, forloss_overtime ) {
-Racketmanager.checkPointRule = function( rule ) {
-	//	var rule = document.getElementById('point_rule').value;
-
-	// manual rule selected
-	if ( rule == 'user' ) {
-		new_element_contents = "";
-		new_element_contents += "<input type='text' name='forwin' id='forwin' value=" + forwin + " size='2' />";
-		new_element_contents += "<input type='text' name='forwin_overtime' id='forwin_overtime' value=" + forwin_overtime + " size='2' />";
-		new_element_contents += "<input type='text' name='fordraw' id='fordraw' value=" + fordraw + " size='2' />";
-		new_element_contents += "<input type='text' name='forloss' id='forloss' value=" + forloss + " size='2' />";
-		new_element_contents += "<input type='text' name='forloss_overtime' id='forloss_overtime' value=" + forloss_overtime + " size='2' />";
-		new_element_contents += "&#160;<span class='setting-description'>" + RacketManagerAjaxL10n.manualPointRuleDescription + "</span>";
-		new_element_id = "point_rule_manual_content";
-		new_element = document.createElement('div');
-		new_element.id = new_element_id;
-
-		document.getElementById("point_rule_manual").appendChild(new_element);
-		document.getElementById(new_element_id).innerHTML = new_element_contents;
-	} else {
-		element_count = document.getElementById("point_rule_manual").childNodes.length;
-		if(element_count > 0) {
-			target_element = document.getElementById("point_rule_manual_content");
-			document.getElementById("point_rule_manual").removeChild(target_element);
-		}
-
-	}
-
-	return false;
-}
-
-Racketmanager.insertPlayer = function(id, target) {
-	tb_remove();
-	var player = document.getElementById(id).value;
-	document.getElementById(target).value = player;
-}
-
-Racketmanager.removeField = function(id, parent_id) {
-	element_count = document.getElementById(parent_id).childNodes.length;
-	if(element_count > 1) {
-		target_element = document.getElementById(id);
-		document.getElementById(parent_id).removeChild(target_element);
-	}
-	return false;
-}
-
-Racketmanager.reInit = function() {
-	tb_init('a.thickbox, area.thickbox, input.thickbox');
-}
 function activaTab(tab) {
     jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');
 		jQuery('.nav-pills button[data-bs-target="#' + tab + '"]').tab('show');

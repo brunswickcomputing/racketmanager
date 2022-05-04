@@ -1,5 +1,5 @@
 <div class="container">
-	<form id="leagues-filter" method="post" action="">
+	<form id="leagues-filter" method="post" action="" class="form-control mb-3">
 		<?php wp_nonce_field( 'leagues-bulk' ) ?>
 
 		<input type="hidden" name="competition_id" value="<?php echo $competition_id ?>" />
@@ -52,18 +52,12 @@
 		<?php wp_nonce_field( 'racketmanager_add-league' ) ?>
 		<input type="hidden" name="competition_id" value="<?php echo $competition_id ?>" />
 		<input type="hidden" name="league_id" value="<?php echo $league_id ?>" />
-		<div class="form-group">
-			<div class="form-label">
-				<label for="league_title"><?php _e( 'League', 'racketmanager' ) ?></label>
-			</div>
-			<div class="form-input">
-				<input type="text" required="required" placeholder="<?php _e( 'Enter new league name', 'racketmanager') ?>"name="league_title" id="league_title" value="<?php echo $league_title ?>" size="30" />
-			</div>
+		<div class="form-floating mb-3">
+			<input type="text" class="form-control" required="required" placeholder="<?php _e( 'Enter new league name', 'racketmanager') ?>"name="league_title" id="league_title" value="<?php echo $league_title ?>" size="30" />
+			<label for="league_title"><?php _e( 'League name', 'racketmanager' ) ?></label>
 		</div>
-		<div class="form-group">
-			<div class="form-input">
-				<input type="submit" name="addLeague" value="<?php echo $action ?>" class="btn btn-primary" />
-			</div>
+		<div class="form-group mb-3">
+			<input type="submit" name="addLeague" value="<?php echo $action ?>" class="btn btn-primary" />
 		</div>
 	</form>
 </div>

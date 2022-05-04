@@ -1,5 +1,5 @@
 <div class=container>
-	<form id="seasons-filter" action="" method="post">
+	<form id="seasons-filter" action="" method="post" class="form-control mb-3">
 		<?php wp_nonce_field( 'seasons-bulk' ) ?>
 
 		<input type="hidden" name="competition_id" value="<?php echo $competition_id ?>" />
@@ -39,35 +39,28 @@
 		<?php wp_nonce_field( 'racketmanager_add-season' ) ?>
 		<input type="hidden" name="competition_id" value="<?php echo $competition_id ?>" />
 		<table class="lm-form-table">
-			<div class="form-group">
-				<div class="form-label">
-					<label for="season"><?php _e( 'Season', 'racketmanager' ) ?></label>
-				</div>
-				<div class="form-input">
-					<?php if ( $season_id ) { ?>
-						<input type="number" name="season" id="season" value="<?php echo $season_data['name'] ?>" size="4" />
-					<?php } else { ?>
-						<select size="1" name="season" id="season" >
-							<option><?php _e( 'Select season' , 'racketmanager') ?></option>
-							<?php $seasons = $racketmanager->getSeasons( "DESC" );
-							foreach ( $seasons AS $season ) { ?>
-								<option value="<?php echo $season->name ?>"><?php echo $season->name ?></option>
-							<?php } ?>
-						</select>
-					<?php } ?>
-				</div>
+			<div class="form-floating mb-3">
+				<?php if ( $season_id ) { ?>
+					<input type="number" class="form-control" name="season" id="season" value="<?php echo $season_data['name'] ?>" size="4" />
+				<?php } else { ?>
+					<select size="1" name="season" id="season" class="form-select">
+						<option><?php _e( 'Select season' , 'racketmanager') ?></option>
+						<?php $seasons = $racketmanager->getSeasons( "DESC" );
+						foreach ( $seasons AS $season ) { ?>
+							<option value="<?php echo $season->name ?>"><?php echo $season->name ?></option>
+						<?php } ?>
+					</select>
+				<?php } ?>
+				<label for="season"><?php _e( 'Season', 'racketmanager' ) ?></label>
 			</div>
-			<div class="form-group">
-				<div class="form-label">
-					<label for="num_match_days"><?php if ($competition->is_championship) { _e( 'Number of teams', 'racketmanager' ); } else { _e( 'Number of Match Days', 'racketmanager' ); } ?></label>
-				</div>
-				<div class="form-input">
-					<input type="number" min="1" step="1" class="small-text" name="num_match_days" id="num_match_days" value="<?php echo $season_data['num_match_days'] ?>" size="2" />
-				</div>
-			</div>
-		</table>
+		</div>
+		<div class="form-floating mb-3">
+			<input type="number" class="form-control" min="1" step="1" class="small-text" name="num_match_days" id="num_match_days" value="<?php echo $season_data['num_match_days'] ?>" size="2" />
+			<label for="num_match_days"><?php if ($competition->is_championship) { _e( 'Number of rounds', 'racketmanager' ); } else { _e( 'Number of match days', 'racketmanager' ); } ?></label>
+		</div>
+	</table>
 
-		<input type="hidden" name="season_id" value="<?php echo $season_id ?>" />
-		<input type="submit" name="saveSeason" class="btn btn-primary" value="<?php if ( !$season_id ) _e( 'Add Season', 'racketmanager' ); else _e( 'Update Season', 'racketmanager' ); ?>" />
-	</form>
+	<input type="hidden" name="season_id" value="<?php echo $season_id ?>" />
+	<input type="submit" name="saveSeason" class="btn btn-primary" value="<?php if ( !$season_id ) _e( 'Add Season', 'racketmanager' ); else _e( 'Update Season', 'racketmanager' ); ?>" />
+</form>
 </div>

@@ -2604,7 +2604,7 @@ final class RacketManagerAdmin extends RacketManager
 			return false;
 		}
 
-		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager_tournaments} (`name`, `type`, `season`, `venue`, `tournamentsecretary`, `date`, `closingdate`, `numcourts`, `starttime` ) VALUES ('%s', '%s', '%d', '%d', '%s', '%s', '%s' )", $name, $type, $season, $venue, $tournamentSecretary, $date, $closingdate, $numcourts, $starttime ) );
+		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager_tournaments} (`name`, `type`, `season`, `venue`, `tournamentsecretary`, `date`, `closingdate`, `numcourts`, `starttime` ) VALUES ('%s', '%s', '%d', '%d', '%s', '%s', '%s', %d, '%s' )", $name, $type, $season, $venue, $tournamentSecretary, $date, $closingdate, $numcourts, $starttime ) );
 
 		$this->setMessage( __('Tournament added','racketmanager') );
 

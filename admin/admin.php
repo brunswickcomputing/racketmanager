@@ -357,7 +357,7 @@ final class RacketManagerAdmin extends RacketManager
 			if ( isset($_GET['subpage']) ) {
 				switch ($_GET['subpage']) {
 					case 'show-competitions':
-					$this->displayCompetitionsPage();
+					$this->displayTournamentCompetitionsPage();
 					break;
 					case 'show-competition':
 					$this->displayCompetitionPage();
@@ -467,17 +467,27 @@ final class RacketManagerAdmin extends RacketManager
 	* display competitions page
 	*
 	*/
-	private function displayCompetitionsPage() {
+	private function displayTournamentCompetitionsPage() {
 		global $racketmanager, $competition;
 
 		if ( !current_user_can( 'edit_leagues' ) ) {
 			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
 		} else {
-			$competitionType = $_GET['competitiontype'];
-			$season = $_GET['season'];
-			$type = $_GET['type'];
+			if ( isset($_POST['doaddCompetitionsToSeason']) && $_POST['action'] == 'addCompetitionsToSeason' ) {
+				check_admin_referer('racketmanager_add-seasons-competitions-bulk');
+				if ( isset($_POST['competition'])) {
+					foreach ( $_POST['competition'] AS $competition_id ) {
+						$this->addSeasonToCompetition( htmlspecialchars($_POST['season']), intval($_POST['num_match_days']), $competition_id );
+					}
+				}
+			}
+			$tournament = $racketmanager->getTournament( array('id' => $_GET['tournament']) );
+			$competitionType = 'tournament';
+			$season = $tournament->season;
+			$type = $tournament->type;
 			$standalone = true;
 			$competitionQuery = array( 'type' => $competitionType, 'name' => $type, 'season' => $season );
+			$pageTitle = $tournament->name.' '.__( 'Tournament Competitions', 'racketmanager' );
 			include_once( dirname(__FILE__) . '/show-competitions.php' );
 		}
 	}
@@ -943,6 +953,7 @@ final class RacketManagerAdmin extends RacketManager
 			$season = '';
 			$standalone = true;
 			$competitionQuery = array( 'type' => $competitionType );
+			$pageTitle = __( ucfirst($competitionType), 'racketmanager').' '.__( 'Competitions', 'racketmanager' );
 			include_once( dirname(__FILE__) . '/show-competitions.php' );
 		}
 	}
@@ -972,6 +983,7 @@ final class RacketManagerAdmin extends RacketManager
 			$season = '';
 			$standalone = true;
 			$competitionQuery = array( 'type' => $competitionType );
+			$pageTitle = __( ucfirst($competitionType), 'racketmanager').' '.__( 'Competitions', 'racketmanager' );
 			include_once( dirname(__FILE__) . '/show-competitions.php' );
 			include_once( dirname(__FILE__) . '/show-cup-entry.php' );
 		}

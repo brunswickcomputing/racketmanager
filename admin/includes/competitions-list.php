@@ -10,13 +10,15 @@ if ( isset($_GET['tournament']) ) {
 }
 ?>
 <div class="container league-block">
-  <?php if ( !isset( $_GET['tournament'] ) ) { ?>
-    <div class="row justify-content-end">
-  		<div class="col-auto racketmanager_breadcrumb">
+  <div class="row justify-content-end">
+    <div class="col-auto racketmanager_breadcrumb">
+      <?php if ( !isset( $_GET['tournament'] ) ) { ?>
   			<a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <?php echo $season->name ?> &raquo; <?php echo 'Add Competitions to Season' ?>
-  		</div>
-  	</div>
-  <?php } ?>
+      <?php } else { ?>
+        <a href="admin.php?page=racketmanager-tournaments"><?php _e( 'RacketManager Tournaments', 'racketmanager' ) ?></a> &raquo; <?php echo $tournament->name ?> &raquo; <?php echo 'Add Competitions to Tournament' ?>
+      <?php } ?>
+    </div>
+  </div>
   <h1><?php if ( isset( $_GET['tournament'] ) ) { _e('Add Competitions to Tournament', 'racketmanager'); } else { printf( "%s - %s",  $season->name, 'Add Competitions to Season' ); } ?></h1>
   <div class="container">
     <legend>Select Competitions to Add</legend>
@@ -32,6 +34,8 @@ if ( isset($_GET['tournament']) ) {
           <label for="num_match_days"><?php _e( 'Number of Match Days', 'racketmanager' ) ?></label>
           <input type="number" min="1" step="1" required="required" class="small-text" name="num_match_days" id="num_match_days" size="2" />
         </div>
+      <?php } else { ?>
+        <input type="hidden" name="num_match_days" id="num_match_days" />
       <?php } ?>
       <div class="container">
         <?php if ( $type == 'all' ) { ?>

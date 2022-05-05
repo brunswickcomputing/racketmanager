@@ -1194,6 +1194,9 @@ final class RacketManagerAdmin extends RacketManager
 				$season = $_GET['season'];
 				$season = $racketmanager->getSeasonDB( array( 'name' => $season) );
 			}
+			if ( isset( $_GET['tournament'] ) ) {
+				$tournament = $racketmanager->getTournament(array('id' => $_GET['tournament']));
+			}
 			include_once( dirname(__FILE__) . '/includes/competitions-list.php' );
 		}
 	}

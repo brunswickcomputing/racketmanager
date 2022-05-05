@@ -50,6 +50,27 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.10.0 =
+* BUGFIX: check for competitiontype correctly
+* BUGFIX: fix admin javascript type problem
+* BUGFIX: fix bootstrap styling being overridden in admin screens for radio buttons
+* BUGFIX: handle team type not set
+* BUGFIX: pass missing parameters to addtournament query
+* BUGFIX: use correct reference for tournament notify message
+* UPDATE: add default setting for championship number of rounds
+* UPDATE: add email address as player optional attribute
+* UPDATE: add favourites for clubs
+* UPDATE: amend entry form rewrite rules
+* UPDATE: change accordion colours
+* UPDATE: change link for club
+* UPDATE: check for club player request already existing
+* UPDATE: hide columns on small screens in admin section
+* UPDATE: make match modal fit page better
+* UPDATE: show club for finalists
+* UPDATE: show seasons by latest first
+* UPDATE: use bootstrap floating labels
+* UPDATE: use modal backdrop
+
 = 6.9.0 =
 * UPDATE: display cup winner
 * UPDATE: add favourites for leagues

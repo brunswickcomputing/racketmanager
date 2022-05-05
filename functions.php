@@ -105,38 +105,44 @@ function create_new_url_querystring() {
   );
   // competition - season
   add_rewrite_rule(
-    'leagues/(.+?)-leagues/(.+?)-(.+?)-competition/([0-9]{4})?$',
-    'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[2]-$matches[3]-competition&season=$matches[4]',
+    'leagues/(.+?)/(.+?)-competition/([0-9]{4})?$',
+    'index.php?pagename=leagues%2F$matches[1]%2F$matches[2]-competition&season=$matches[3]',
+    'top'
+  );
+  // competition
+  add_rewrite_rule(
+    'leagues/(.+?)/(.+?)-competition/?$',
+    'index.php?pagename=leagues%2F$matches[1]%2F$matches[2]-competition',
     'top'
   );
   // league - season - matchday - team
   add_rewrite_rule(
     'leagues/(.+?)-(.+?)-([0-9]{1})/([0-9]{4})/day([0-9]{1,2})/(.+?)/?$',
-    'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[1]-$matches[2]&league_name=$matches[1]-$matches[2]-$matches[3]&season=$matches[4]&match_day=$matches[5]&team=$matches[6]',
+    'index.php?pagename=leagues%2F$matches[1]%2F$matches[2]&league_name=$matches[1]-$matches[2]-$matches[3]&season=$matches[4]&match_day=$matches[5]&team=$matches[6]',
     'top'
   );
   // league - season - matchday
   add_rewrite_rule(
     'leagues/(.+?)-(.+?)-([0-9]{1})/([0-9]{4})/day([0-9]{1,2})/?$',
-    'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[1]-$matches[2]&league_name=$matches[1]-$matches[2]-$matches[3]&season=$matches[4]&match_day=$matches[5]',
+    'index.php?pagename=leagues%2F$matches[1]%2F$matches[2]&league_name=$matches[1]-$matches[2]-$matches[3]&season=$matches[4]&match_day=$matches[5]',
     'top'
   );
   // league - season - team
   add_rewrite_rule(
     'leagues/(.+?)-(.+?)-([0-9]{1})/([0-9]{4})/(.+?)/?$',
-    'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[1]-$matches[2]&league_name=$matches[1]-$matches[2]-$matches[3]&season=$matches[4]&team=$matches[5]',
+    'index.php?pagename=leagues%2F$matches[1]%2F$matches[2]&league_name=$matches[1]-$matches[2]-$matches[3]&season=$matches[4]&team=$matches[5]',
     'top'
   );
   // league
   add_rewrite_rule(
     'leagues/(.+?)-(.+?)-([0-9]{1})/?$',
-    'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[1]-$matches[2]&league_name=$matches[1]%20$matches[2]%20$matches[3]',
+    'index.php?pagename=leagues%2F$matches[1]%2F$matches[2]&league_name=$matches[1]%20$matches[2]%20$matches[3]',
     'top'
   );
   // league - season
   add_rewrite_rule(
     'leagues/(.+?)-(.+?)-([0-9]{1})/([0-9]{4})?$',
-    'index.php?pagename=leagues%2F$matches[1]-leagues%2F$matches[1]-$matches[2]&league_name=$matches[1]-$matches[2]-$matches[3]&season=$matches[4]',
+    'index.php?pagename=leagues%2F$matches[1]%2F$matches[2]&league_name=$matches[1]-$matches[2]-$matches[3]&season=$matches[4]',
     'top'
   );
   // tournament - season

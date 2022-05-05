@@ -164,19 +164,19 @@ function create_new_url_querystring() {
   // type - season - club
   add_rewrite_rule(
     'leagues/(.+?)-entry/([0-9]{4})/(.+?)/?$',
-    'index.php?pagename=league-entry-form&club_name=$matches[3]&season=$matches[2]&type=$matches[1]',
+    'index.php?pagename=leagues%2Fentry-form&club_name=$matches[3]&season=$matches[2]&type=$matches[1]',
     'top'
   );
   // type - season - club
   add_rewrite_rule(
     'cups/(.+?)-entry/([0-9]{4})/(.+?)/?$',
-    'index.php?pagename=cup-entry-form&club_name=$matches[3]&season=$matches[2]&type=$matches[1]',
+    'index.php?pagename=cups%2Fentry-form&club_name=$matches[3]&season=$matches[2]&type=$matches[1]',
     'top'
   );
   // type - season - club
   add_rewrite_rule(
     'tournaments/(.+?)-entry/([0-9]{4})/(.+?)/?$',
-    'index.php?pagename=tournaments%2F$matches[1]-tournaments%2F$matches[1]-tournament-entry-form',
+    'index.php?pagename=tournaments%2F$matches[1]%2Fentry-form',
     'top'
   );
   // type - season - tournament

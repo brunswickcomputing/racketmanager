@@ -50,6 +50,15 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.10.1 =
+* BUGFIX: add email column to select for rosterrequests
+* BUGFIX: use club->approveRosterRequest
+* BUGFIX: remove check for authorised to addplayer
+* BUGFIX: use correct label for showRubbers
+* BUGFIX: use correct season key for archive
+* UPDATE: change layout for match modal for small screens
+* UPDATE: remove leading/trailing spaces for first name/surname
+
 = 6.10.0 =
 * BUGFIX: check for competitiontype correctly
 * BUGFIX: fix admin javascript type problem

@@ -161,7 +161,7 @@ final class Club {
     extract($query_args, EXTR_SKIP);
 
     $search_terms = array();
-    $sql = "SELECT `id`, `first_name`, `surname`, `affiliatedclub`, `requested_date`, `requested_user`, `completed_date`, `completed_user`, `gender`, `btm` FROM {$wpdb->racketmanager_roster_requests} WHERE `affiliatedclub` = ".$this->id ;
+    $sql = "SELECT `id`, `first_name`, `surname`, `affiliatedclub`, `requested_date`, `requested_user`, `completed_date`, `completed_user`, `gender`, `btm`, `email` FROM {$wpdb->racketmanager_roster_requests} WHERE `affiliatedclub` = ".$this->id ;
 
     if ( !$completed ) {
       $search_terms[] = "`completed_date` IS NULL";
@@ -241,7 +241,7 @@ final class Club {
   private function getRosterRequest( $rosterRequestId ) {
     global $wpdb;
 
-    $rosterRequest = $wpdb->get_row("SELECT `first_name`, `surname`, `gender`, `btm`, `player_id`, `requested_date`, `requested_user`, `completed_date`, `completed_user` FROM {$wpdb->racketmanager_roster_requests} WHERE `id` = '".intval($rosterRequestId)."'");
+    $rosterRequest = $wpdb->get_row("SELECT `first_name`, `surname`, `gender`, `btm`, `email`, `player_id`, `requested_date`, `requested_user`, `completed_date`, `completed_user` FROM {$wpdb->racketmanager_roster_requests} WHERE `id` = '".intval($rosterRequestId)."'");
 
     if ( !$rosterRequest ) return false;
 

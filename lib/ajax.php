@@ -1420,7 +1420,7 @@ class RacketManagerAJAX extends RacketManager {
 			$errorMsg[$errorId] = "First name required";
 			$errorId ++;
 		} else {
-			$firstName = $_POST['firstName'];
+			$firstName = trim($_POST['firstName']);
 		}
 		if ( $_POST['surname'] == '' ) {
 			$error = true;
@@ -1428,7 +1428,7 @@ class RacketManagerAJAX extends RacketManager {
 			$errorMsg[$errorId] = "Surname required";
 			$errorId ++;
 		} else {
-			$surname = $_POST['surname'];
+			$surname = trim($_POST['surname']);
 		}
 		if ( !isset($_POST['gender']) || $_POST['gender'] == '' ) {
 			$error = true;

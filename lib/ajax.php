@@ -849,10 +849,10 @@ class RacketManagerAJAX extends RacketManager {
 						<div class="col-1 text-center align-self-center"><?php echo isset($rubber->rubber_number) ? $rubber->rubber_number : '' ?></div>
 						<div class="col-11">
 							<div class="row">
-								<div class="col-12 col-sm-4">
+								<div class="col-6 col-sm-4">
 									<div class="row">
 										<?php for ($p=1; $p <= $numPlayers ; $p++) { ?>
-											<div class="col-6 col-sm-12">
+											<div class="col-12">
 												<div class="form-group mb-2">
 													<?php $tabindex = $tabbase + 1; ?>
 													<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer<?php echo $p ?>[<?php echo $r ?>]" id="homeplayer<?php echo $p ?>_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
@@ -871,7 +871,7 @@ class RacketManagerAJAX extends RacketManager {
 									</div>
 								</div>
 
-								<div class="col-12 col-sm-4 align-self-center">
+								<div class="col-12 col-sm-4 align-self-center order-3 order-sm-2">
 									<div class="row text-center">
 										<?php for ( $i = 1; $i <= $match->num_sets; $i++ ) {
 											if (!isset($rubber->sets[$i])) {
@@ -888,14 +888,14 @@ class RacketManagerAJAX extends RacketManager {
 									</div>
 								</div>
 
-								<div class="col-12 col-sm-4">
+								<div class="col-6 col-sm-4 order-2 order-sm-3">
 									<div class="row">
 										<?php for ($p=1; $p <= $numPlayers ; $p++) { ?>
-											<div class="col-6 col-sm-12">
+											<div class="col-12">
 												<div class="form-group mb-2">
 													<?php $tabindex = $tabbase + 3; ?>
 													<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer<?php echo $p ?>[<?php echo $r ?>]" id="awayplayer<?php echo $p ?>_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
-														<?php if ($awayRoster[$r][$p]['gender'] == 'm') { $select = 'Select male player'; } else { $label = 'Select female player'; } ?>
+														<?php if ($awayRoster[$r][$p]['gender'] == 'm') { $select = 'Select male player'; } else { $select = 'Select female player'; } ?>
 														<option><?php _e( $select, 'racketmanager' ) ?></option>
 														<?php foreach ( $awayRoster[$r][$p]['players'] AS $roster ) {
 															if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>

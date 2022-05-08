@@ -1601,11 +1601,6 @@ class RacketManager {
 	*/
 	public function addPlayer( $firstname, $surname, $gender, $btm, $email = false, $message = true ) {
 
-		if ( !current_user_can('edit_teams') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
 		$userdata = array();
 		$userdata['first_name'] = $firstname;
 		$userdata['last_name'] = $surname;

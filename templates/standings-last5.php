@@ -7,7 +7,7 @@ namespace ns;
 <?php if ( isset($_GET['team']) && !$widget ) { ?>
   //    <?php the_single_team(); ?>
 <?php } elseif ( have_teams() ) { ?>
-  <duv class="table-responsive">
+  <div class="table-responsive">
     <table class="table table-striped align-middle" summary="" title="<?php _e( 'Standings', 'racketmanager' ) .' '.get_league_title(); ?>">
       <thead class="table-dark">
         <tr>

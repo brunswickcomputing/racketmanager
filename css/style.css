@@ -1,6 +1,37 @@
 /*
 * @section: Frontend Tables
 */
+table.table td {
+	border: 0;
+}
+table.table {
+	border: 1px solid;
+}
+table.table a.W, table.table span.W { background-position:0 -150px; }
+table.table a.D, table.table span.D { background-position:0 -200px; }
+table.table a.L, table.table span.L { background-position:0 -250px; }
+table.table a.N, table.table span.N { background-position:0 -650px; }
+
+table.table a.W:hover, table.table span.W:hover { background-position:0 -300px; }
+table.table a.D:hover, table.table span.D:hover { background-position:0 -350px; }
+table.table a.L:hover, table.table span.L:hover { background-position:0 -400px; }
+table.table a.N:hover, table.table span.N:hover { background-position:0 -700px; }
+table.table .last5 {
+	text-align: center;
+	width: 12.5%;
+}
+table.table .last5Icon a,
+table.table .last5Icon span {
+	border: 0;
+	background-image: url(images/last5.png);
+	position: relative;
+	top: 0px;
+}
+table.table .last5-bg {
+	float:left;
+	width:20px;
+	height:17px;
+}
 table.racketmanager,
 div.matchlist table.racketmanager {
 	text-align: left;

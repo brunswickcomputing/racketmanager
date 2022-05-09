@@ -675,3 +675,6 @@ dl dl {
   margin-top: 0.25em;
   margin-right: 0;
 }
+.update-core-php h2 {
+  margin: 0;
+}

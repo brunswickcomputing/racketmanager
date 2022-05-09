@@ -4,7 +4,7 @@
 */
 ?>
 <?php if ( ($league->show_match_day_selection || $league->show_team_selection) && $league->mode != 'championship' ) { ?>
-	<div class="matches-selections wp-clearfix" style='float: left; margin-top: 1em;'>
+	<div class="matches-selections wp-clearfix mb-3" style='float: left; margin-top: 1em;'>
 		<form method='get' action='<?php the_permalink(get_the_ID()); ?>' id='racketmanager_match_day_selection'>
 		<div>
 			<input type="hidden" name="page_id" value="<?php the_ID() ?>" />

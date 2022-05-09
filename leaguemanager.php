@@ -1963,9 +1963,11 @@ class RacketManager {
 	*
 	* @param array $home_team
 	* @param array $away_team
+	* @param string $competitionType
+	* @param string $matchStatus
 	* @return boolean
 	*/
-	public function getMatchUpdateAllowed($homeTeam, $awayTeam, $competitionType) {
+	public function getMatchUpdateAllowed($homeTeam, $awayTeam, $competitionType, $matchStatus) {
 		$options = $this->getOptions();
 		$userid = get_current_user_id();
 		$userCanUpdate = false;
@@ -2001,6 +2003,12 @@ class RacketManager {
 							$userType = 'captain';
 							$userTeam = 'home';
 							$userCanUpdate = true;
+						} elseif ( $options[$resultEntry] == 'home' && ( isset($awayTeam->captainId) && $userid == $awayTeam->captainId ) ) {
+							if ( $matchStatus == 'P') {
+								$userType = 'captain';
+								$userTeam = 'away';
+								$userCanUpdate = true;
+							}
 						} elseif ( $options[$resultEntry] == 'either' && ( isset($awayTeam->captainId) && $userid == $awayTeam->captainId ) ) {
 							$userType = 'captain';
 							$userTeam = 'away';

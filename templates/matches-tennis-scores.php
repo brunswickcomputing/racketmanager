@@ -15,7 +15,7 @@ global $racketmanager;
     <?php $matchday = isset($_GET['match_day']) ? $_GET['match_day'] : $league->match_day; ?>
     <?php foreach ( $matches AS $no => $match ) {
       if ( isset($match->teams['home']) && isset($match->teams['away']) ) {
-        $userCanUpdateArray = $racketmanager->getMatchUpdateAllowed($match->teams['home'], $match->teams['away'], $match->league->competitionType);
+        $userCanUpdateArray = $racketmanager->getMatchUpdateAllowed($match->teams['home'], $match->teams['away'], $match->league->competitionType, $match->confirmed);
         $userCanUpdate = $userCanUpdateArray[0];
       } else {
         $userCanUpdate = false;

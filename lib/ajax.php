@@ -795,7 +795,7 @@ class RacketManagerAJAX extends RacketManager {
 	*/
 	public function buildRubbersScreen($match, $homeRoster, $awayRoster) {
 		global $racketmanager, $league, $match;
-		$userCanUpdateArray = $racketmanager->getMatchUpdateAllowed($match->teams['home'], $match->teams['away'], $match->league->competitionType);
+		$userCanUpdateArray = $racketmanager->getMatchUpdateAllowed($match->teams['home'], $match->teams['away'], $match->league->competitionType, $match->confirmed);
 		$userCanUpdate = $userCanUpdateArray[0];
 		$userType = $userCanUpdateArray[1];
 		$userTeam = $userCanUpdateArray[2];
@@ -1048,7 +1048,7 @@ class RacketManagerAJAX extends RacketManager {
 			$away_team = $_POST['away_team'];
 			$lm_options = $racketmanager->getOptions();
 			$matchConfirmed = '';
-			$userCanUpdateArray = $racketmanager->getMatchUpdateAllowed($match->teams['home'], $match->teams['away'], $match->league->competitionType);
+			$userCanUpdateArray = $racketmanager->getMatchUpdateAllowed($match->teams['home'], $match->teams['away'], $match->league->competitionType, $match->confirmed);
 			$userCanUpdate = $userCanUpdateArray[0];
 			$userType = $userCanUpdateArray[1];
 			$userTeam = $userCanUpdateArray[2];

@@ -43,12 +43,12 @@ class Competition_Tennis extends Competition {
      */
     public function __construct($competition) {
         $this->fields_team['sets_won'] = array('label' => __( 'Sets Won', 'racketmanager' ));
-        $this->fields_team['sets_allowed'] = array('label' => __( 'Sets Against', 'racketmanager' ));
+        $this->fields_team['sets_allowed'] = array('label' => __( 'Sets Lost', 'racketmanager' ));
         $this->fields_team['sets_shared'] = array('label' => __( 'Sets Shared', 'racketmanager' ));
         $this->fields_team['straight_set'] = array('label' => __( 'Straight Set', 'racketmanager' ), 'keys' => array('win','lost'));
         $this->fields_team['split_set'] = array('label' => __( 'Split Set', 'racketmanager' ), 'keys' => array('win','lost'));
         $this->fields_team['games_won'] = array('label' => __( 'Games Won', 'racketmanager' ));
-        $this->fields_team['games_allowed'] = array('label' => __( 'Games Against', 'racketmanager' ));
+        $this->fields_team['games_allowed'] = array('label' => __( 'Games Lost', 'racketmanager' ));
 
         parent::__construct($competition);
 
@@ -157,12 +157,12 @@ class League_Tennis extends League {
 	 */
 	public function __construct($league) {
         $this->fields_team['sets_won'] = array('label' => __( 'Sets Won', 'racketmanager' ));
-        $this->fields_team['sets_allowed'] = array('label' => __( 'Sets Against', 'racketmanager' ));
+        $this->fields_team['sets_allowed'] = array('label' => __( 'Sets Lost', 'racketmanager' ));
         $this->fields_team['sets_shared'] = array('label' => __( 'Sets Shared', 'racketmanager' ));
         $this->fields_team['straight_set'] = array('label' => __( 'Straight Set', 'racketmanager' ), 'keys' => array('win','lost'));
         $this->fields_team['split_set'] = array('label' => __( 'Split Set', 'racketmanager' ), 'keys' => array('win','lost'));
         $this->fields_team['games_won'] = array('label' => __( 'Games Won', 'racketmanager' ));
-        $this->fields_team['games_allowed'] = array('label' => __( 'Games Against', 'racketmanager' ));
+        $this->fields_team['games_allowed'] = array('label' => __( 'Games Lost', 'racketmanager' ));
 
         parent::__construct($league);
 

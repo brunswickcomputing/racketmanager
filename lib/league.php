@@ -2333,7 +2333,7 @@ public function displayStandingsHeader() {
 	if ( count($this->fields_team) > 0 ) {
 		foreach ( $this->fields_team AS $key => $data ) {
 			if ( show_standings($key) || (is_admin() && get_league_pointrule() == 'manual') ) {
-				echo '<th class="manage-column column-'.$key.' column-num">'.$data['label'].'</th>';
+				echo '<th class="manage-column column-'.$key.' column-num d-none d-md-table-cell">'.$data['label'].'</th>';
 			}
 		}
 	}
@@ -2359,7 +2359,7 @@ public function displayStandingsColumns($team, $rule) {
 			}
 
 			if ( (isset($data['type']) && $data['type'] == 'input') && is_admin() && $rule == 'manual' ) {
-				echo '<td class="column-'.$key.' column-num" data-colname="'.$data['label'].'">';
+				echo '<td class="column-'.$key.' column-num d-none d-md-table-cell" data-colname="'.$data['label'].'">';
 				if ( is_array($team->{$key}) ) {
 					foreach ( $team->{$key} AS $k => $v ) {
 						echo '<input class="points" type="text" size="2" id="home_'.$team->id.'_'.$k.'" name="custom['.$team->id.']['.$key.']['.$k.']" value="'.$team->{$key}[$k].'" />';
@@ -2373,7 +2373,7 @@ public function displayStandingsColumns($team, $rule) {
 					//$team->{$key} = array_values($team->{$key});
 					$team->{$key} = vsprintf($this->point_format2, $team->{$key});
 				}
-				echo '<td class="num column-'.$key.'" data-colname="'.$data['label'].'">'.$team->{$key}.'</td>';
+				echo '<td class="num column-'.$key.' d-none d-md-table-cell d-none d-md-table-cell" data-colname="'.$data['label'].'">'.$team->{$key}.'</td>';
 			}
 		}
 	}

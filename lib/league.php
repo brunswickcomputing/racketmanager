@@ -1605,7 +1605,8 @@ public function getScore($team_id, $opponent_id, $match, $home = 0) {
 	if ( !$match || (NULL == $match->home_points && NULL == $match->away_points) ) {
 		$date = ( substr($match->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date('D d/m/Y', $match->date);
 		$time = ( '00' == $match->hour && '00' == $match->minutes ) ? '' : mysql2date('G:i', $match->date);
-		$out = "<span class='unplayedMatch'>".$date."<br/>".$time."</span>";
+		$matchDay = isset($match->match_day) ? __('Match Day', 'racketmanager').' '.$match->match_day : '';
+		$out = "<span class='unplayedMatch'>".$matchDay."<br/>".$date."<br/>".$time."</span>";
 		// match at home
 	} elseif ( $team_id == $match->home_team ) {
 		$score = sprintf("%s:%s", $match->home_points, $match->away_points);

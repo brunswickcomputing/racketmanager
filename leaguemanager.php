@@ -2170,7 +2170,7 @@ class RacketManager {
 				}
 			}
 		}
-		$clubs = array_unique($clubs);
+		$clubs = array_unique($clubs, SORT_REGULAR);
 		foreach ($clubs as $club) {
 			$users = $this->getUsersForFavourite('club', $club['id']);
 			if ( $users ) {

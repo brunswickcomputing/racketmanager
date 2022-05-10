@@ -50,6 +50,18 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.11.0 =
+* BUGFIX: check match confirmed flag for away team captain update allowed
+* BUGFIX: remove warning when sorting array
+* BUGFIX: remove extra space created in admin by bootstrap use
+* UPDATE: show match day for outstanding matches in crosstable
+* UPDATE: change standings headings
+* UPDATE: make standings use bootstrap styling
+* UPDATE: do not display sport columns for standings on small screens
+* UPDATE: make matches use bootstrap styling
+* UPDATE: make selections use bootstrap styling
+
+
 = 6.10.1 =
 * BUGFIX: add email column to select for rosterrequests
 * BUGFIX: use club->approveRosterRequest

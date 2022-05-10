@@ -25,63 +25,41 @@ function championship_settingsPage( $competition ) {
   if ( !isset($competition->settings['primary_league']) ) $competition->settings['primary_league'] = '';
   $leagues = $competition->getLeagues( array('competition' => $competition->id) ); ?>
 
-  <div class="form-group">
-    <div class="form-label">
-      <label for='primary_league'><?php _e('Primary League', 'racketmanager') ?></label>
-    </div>
-    <div class="form-input">
-      <select size="1" name="settings[primary_league] ?>" id="primary_league">;
-        <option value=""><?php _e( 'Select', 'racketmanager') ?></option>
-        <?php foreach($leagues AS $league) { ?>
-          <option value="<?php echo $league->id ?>" <?php echo ($competition->settings['primary_league'] == $league->id ? 'selected' : '') ?> ><?php echo $league->title ?></option>
-        <?php } ?>
-      </select>
-    </div>
+  <div class="form-floating mb-3">
+    <select class="form-select" size="1" name="settings[primary_league] ?>" id="primary_league">;
+      <option value=""><?php _e( 'Select', 'racketmanager') ?></option>
+      <?php foreach($leagues AS $league) { ?>
+        <option value="<?php echo $league->id ?>" <?php echo ($competition->settings['primary_league'] == $league->id ? 'selected' : '') ?> ><?php echo $league->title ?></option>
+      <?php } ?>
+    </select>
+    <label for='primary_league'><?php _e('Primary League', 'racketmanager') ?></label>
   </div>
-  <div class="form-group">
-    <div class="form-label">
-      <label for="groups"><?php _e( 'Groups', 'racketmanager' ) ?></label>
-    </div>
+  <div class="form-floating mb-3">
+    <input class="form-control" type="text" name="settings[groups]" id="groups" size="20" value="<?php echo ((isset($competition->groups)) ? is_array($competition->groups) ? implode(";",$competition->groups) : $competition->groups  : '') ?>" />
+    <label for="groups"><?php _e( 'Groups', 'racketmanager' ) ?></label>
     <div class="form-hint">
       <?php _e( 'Separate Groups by semicolon ;', 'racketmanager' ) ?>
     </div>
-    <div class="form-input">
-      <input type="text" name="settings[groups]" id="groups" size="20" value="<?php echo ((isset($competition->groups)) ? is_array($competition->groups) ? implode(";",$competition->groups) : $competition->groups  : '') ?>" />
-    </div>
   </div>
-  <div class="form-group">
-    <div class="form-label">
-      <label for="teams_per_group"><?php _e( 'Teams per group', 'racketmanager' ) ?></label>
-    </div>
-    <div class="form-input">
-      <input type="text" name="settings[teams_per_group]" id="teams_per_group" size="3" value="<?php echo ((isset($competition->teams_per_group)) ? $competition->teams_per_group  : '') ?>" />
-    </div>
+  <div class="form-floating mb-3 col-2">
+    <input class="form-control" type="text" name="settings[teams_per_group]" id="teams_per_group" size="3" value="<?php echo ((isset($competition->teams_per_group)) ? $competition->teams_per_group  : '') ?>" />
+    <label for="teams_per_group"><?php _e( 'Teams per group', 'racketmanager' ) ?></label>
   </div>
-  <div class="form-group">
-    <div class="form-label">
-      <label for="num_advance"><?php _e('Teams Advance', 'racketmanager') ?></label>
-    </div>
-    <div class="form-input">
-      <input type="text" size="3" id="num_advance" name="settings[num_advance]" value="<?php echo ((isset($competition->num_advance)) ? $competition->num_advance  : '') ?>" />
-    </div>
+  <div class="form-floating mb-3 col-2">
+    <input class="form-control" type="text" size="3" id="num_advance" name="settings[num_advance]" value="<?php echo ((isset($competition->num_advance)) ? $competition->num_advance  : '') ?>" />
+    <label for="num_advance"><?php _e('Teams Advance', 'racketmanager') ?></label>
   </div>
-  <div class="form-group">
-    <div class="form-check">
-      <input type="checkbox" class="form-check-input" id="match_place3" name="settings[match_place3]" value="1" <?php echo (isset($competition->match_place3) && 1 == $competition->match_place3 ) ? ' checked="checked"' : ''; ?> />
-      <label for="match_place3" class="form-check-label"><?php _e('Include 3rd place match', 'racketmanager' ) ?></label>
-    </div>
+  <div class="form-check">
+    <input type="checkbox" class="form-check-input" id="match_place3" name="settings[match_place3]" value="1" <?php echo (isset($competition->match_place3) && 1 == $competition->match_place3 ) ? ' checked="checked"' : ''; ?> />
+    <label for="match_place3" class="form-check-label"><?php _e('Include 3rd place match', 'racketmanager' ) ?></label>
   </div>
-  <div class="form-group">
-    <div class="form-check">
-      <input type="checkbox" class="form-check-input" id="non_group" name="settings[non_group]" value="1" <?php echo (isset($competition->non_group) && 1 == $competition->non_group ) ? ' checked="checked"' : ''; ?> />
-      <label for="non_group" class="form-check-label"><?php _e('Allow Non-Group Games', 'racketmanager' ) ?></label>
-    </div>
+  <div class="form-check">
+    <input type="checkbox" class="form-check-input" id="non_group" name="settings[non_group]" value="1" <?php echo (isset($competition->non_group) && 1 == $competition->non_group ) ? ' checked="checked"' : ''; ?> />
+    <label for="non_group" class="form-check-label"><?php _e('Allow Non-Group Games', 'racketmanager' ) ?></label>
   </div>
-  <div class="form-group">
-    <div class="form-check">
-      <input type="checkbox" class="form-check-input" id="entry_open" name="settings[entry_open]" value="1" <?php echo (isset($competition->entry_open) && 1 == $competition->entry_open ) ? ' checked="checked"' : ''; ?> />
-      <label for="entry_open" class="form-check-label"><?php _e('Open for entries', 'racketmanager' ) ?></label>
-    </div>
+  <div class="form-check">
+    <input type="checkbox" class="form-check-input" id="entry_open" name="settings[entry_open]" value="1" <?php echo (isset($competition->entry_open) && 1 == $competition->entry_open ) ? ' checked="checked"' : ''; ?> />
+    <label for="entry_open" class="form-check-label"><?php _e('Open for entries', 'racketmanager' ) ?></label>
   </div>
 <?php }
 add_action( 'competition_settings_championship', 'championship_settingsPage' );

@@ -1,5 +1,5 @@
-<table class="lm-form-table">
-  <thead>
+<table class="table table-striped align-middle">
+  <thead class="table-dark">
     <tr>
       <th scope="row"><?php _e( 'Club', 'racketmanager' ) ?></th>
       <th scope="row"><?php _e( 'Number of Courts', 'racketmanager' ) ?></th>

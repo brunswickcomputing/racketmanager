@@ -17,27 +17,27 @@ jQuery(document).ready(function(){
 	<?php $this->printMessage(); ?>
 	<div class="container">
 		<!-- Nav tabs -->
-		<ul class="nav nav-pills" id="myTab" role="tablist">
+		<ul class="nav nav-tabs" id="myTab" role="tablist">
 			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="leagues-tab" data-bs-toggle="pill" data-bs-target="#leagues" type="button" role="tab" aria-controls="leagues" aria-selected="true"><?php _e( 'Leagues', 'racketmanager' ) ?></button>
+				<button class="nav-link" id="leagues-tab" data-bs-toggle="tab" data-bs-target="#leagues" type="button" role="tab" aria-controls="leagues" aria-selected="true"><?php _e( 'Leagues', 'racketmanager' ) ?></button>
 			</li>
 			<?php if ( $competition->competitiontype != 'tournament' ) { ?>
 				<li class="nav-item" role="presentation">
-					<button class="nav-link" id="playerstats-tab" data-bs-toggle="pill" data-bs-target="#playerstats" type="button" role="tab" aria-controls="playerstats" aria-selected="false"><?php _e( 'Players Stats', 'racketmanager' ) ?></button>
+					<button class="nav-link" id="playerstats-tab" data-bs-toggle="tab" data-bs-target="#playerstats" type="button" role="tab" aria-controls="playerstats" aria-selected="false"><?php _e( 'Players Stats', 'racketmanager' ) ?></button>
 				</li>
 			<?php } ?>
 			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="seasons-tab" data-bs-toggle="pill" data-bs-target="#seasons" type="button" role="tab" aria-controls="seasons" aria-selected="false"><?php _e( 'Seasons', 'racketmanager' ) ?></button>
+				<button class="nav-link" id="seasons-tab" data-bs-toggle="tab" data-bs-target="#seasons" type="button" role="tab" aria-controls="seasons" aria-selected="false"><?php _e( 'Seasons', 'racketmanager' ) ?></button>
 			</li>
 			<?php if ( current_user_can( 'manage_racketmanager' ) ) { ?>
 				<li class="nav-item" role="presentation">
-					<button class="nav-link" id="settings-tab" data-bs-toggle="pill" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false"><?php _e( 'Settings', 'racketmanager' ) ?></button>
+					<button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false"><?php _e( 'Settings', 'racketmanager' ) ?></button>
 				</li>
 			<?php } ?>
 			<?php if ( $competition->competitiontype == 'league' ) { ?>
 				<li class="nav-item" role="presentation">
-					<button class="nav-link" id="constitution-tab" data-bs-toggle="pill" data-bs-target="#constitution" type="button" role="tab" aria-controls="constitution" aria-selected="false"><?php _e( 'Constitution', 'racketmanager' ) ?></button>
-			</li>
+					<button class="nav-link" id="constitution-tab" data-bs-toggle="tab" data-bs-target="#constitution" type="button" role="tab" aria-controls="constitution" aria-selected="false"><?php _e( 'Constitution', 'racketmanager' ) ?></button>
+				</li>
 			<?php } ?>
 
 		</ul>
@@ -66,8 +66,8 @@ jQuery(document).ready(function(){
 				<div class="tab-pane fade" id="constitution" role="tabpanel" aria-labelledby="constitution-tab">
 					<div id="constitution" class="league-block-container">
 						<?php include('competition/constitution.php'); ?>
-				</div>
-			<?php } ?>
+					</div>
+				<?php } ?>
+			</div>
 		</div>
 	</div>
-</div>

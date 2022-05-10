@@ -52,15 +52,15 @@ jQuery(document).ready(function(){
   } else { ?>
     <div class="container">
       <!-- Nav tabs -->
-      <ul class="nav nav-pills" id="myTab" role="tablist">
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="standings-tab" data-bs-toggle="pill" data-bs-target="#standings" type="button" role="tab" aria-controls="standings" aria-selected="true"><?php _e( 'Standings', 'racketmanager' ) ?></button>
+          <button class="nav-link" id="standings-tab" data-bs-toggle="tab" data-bs-target="#standings" type="button" role="tab" aria-controls="standings" aria-selected="true"><?php _e( 'Standings', 'racketmanager' ) ?></button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="crosstable-tab" data-bs-toggle="pill" data-bs-target="#crosstable" type="button" role="tab" aria-controls="crosstable" aria-selected="false"><?php _e( 'Crosstable', 'racketmanager' ) ?></button>
+          <button class="nav-link" id="crosstable-tab" data-bs-toggle="tab" data-bs-target="#crosstable" type="button" role="tab" aria-controls="crosstable" aria-selected="false"><?php _e( 'Crosstable', 'racketmanager' ) ?></button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="matches-tab" data-bs-toggle="pill" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="false"><?php _e( 'Match Plan', 'racketmanager' ) ?></button>
+          <button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="false"><?php _e( 'Match Plan', 'racketmanager' ) ?></button>
         </li>
       </ul>
       <!-- Tab panes -->

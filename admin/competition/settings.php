@@ -10,7 +10,7 @@ if ( is_array($competition->point_rule) ) {
 	$competition->point_rule = 'user';
 }
 ?>
-<div class="container">
+<div class="container mt-3">
 
 	<form action="" method="post" class="form-control">
 		<?php wp_nonce_field( 'racketmanager_manage-competition-options' ) ?>
@@ -19,21 +19,21 @@ if ( is_array($competition->point_rule) ) {
 
 		<div class="container">
 			<!-- Nav tabs -->
-			<ul class="nav nav-pills" id="myTab" role="tablist">
+			<ul class="nav nav-tabs" id="myTab" role="tablist">
 				<li class="nav-item" role="presentation">
-					<button class="nav-link active" id="general-tab" data-bs-toggle="pill" data-bs-target="#general" type="button" role="tab" aria-controls="leaggeneralues" aria-selected="true"><?php _e( 'General', 'racketmanager' ) ?></button>
+					<button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="leaggeneralues" aria-selected="true"><?php _e( 'General', 'racketmanager' ) ?></button>
 				</li>
 				<li class="nav-item" role="presentation">
-					<button class="nav-link" id="standings-tab" data-bs-toggle="pill" data-bs-target="#standings" type="button" role="tab" aria-controls="standings" aria-selected="false"><?php _e( 'Standings Table', 'racketmanager' ) ?></button>
+					<button class="nav-link" id="standings-tab" data-bs-toggle="tab" data-bs-target="#standings" type="button" role="tab" aria-controls="standings" aria-selected="false"><?php _e( 'Standings Table', 'racketmanager' ) ?></button>
 				</li>
 				<?php if ( current_user_can( 'manage_racketmanager' ) ) { ?>
 					<li class="nav-item" role="presentation">
-						<button class="nav-link" id="advanced-tab" data-bs-toggle="pill" data-bs-target="#advanced" type="button" role="tab" aria-controls="advanced" aria-selected="false"><?php _e( 'Advanced', 'racketmanager' ) ?></button>
+						<button class="nav-link" id="advanced-tab" data-bs-toggle="tab" data-bs-target="#advanced" type="button" role="tab" aria-controls="advanced" aria-selected="false"><?php _e( 'Advanced', 'racketmanager' ) ?></button>
 					</li>
 				<?php } ?>
 				<?php if ( $competition->competitiontype == 'league' ) { ?>
 					<li class="nav-item" role="presentation">
-						<button class="nav-link" id="availability-tab" data-bs-toggle="pill" data-bs-target="#availability" type="button" role="tab" aria-controls="availability" aria-selected="false"><?php _e( 'Availability', 'racketmanager' ) ?></button>
+						<button class="nav-link" id="availability-tab" data-bs-toggle="tab" data-bs-target="#availability" type="button" role="tab" aria-controls="availability" aria-selected="false"><?php _e( 'Availability', 'racketmanager' ) ?></button>
 					</li>
 				<?php } ?>
 

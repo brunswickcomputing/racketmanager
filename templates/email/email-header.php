@@ -225,7 +225,9 @@
   .mb0 {
     margin-bottom: 0;
   }
-
+  .team {
+      width: 40%;
+  }
   .preheader {
     color: transparent;
     display: none;

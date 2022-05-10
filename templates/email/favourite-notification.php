@@ -15,9 +15,9 @@ $title = $organisationName.' Match Result - '.$favouriteTitle;
               <?php foreach ($matches AS $match) {
                 $matchURL .= 'day'.$match->match_day.'/'; ?>
                 <tr>
-                  <td class="align-right"><a href="<?php echo $matchURL ?>"><?php echo $match->teams['home']->title ?></a></td>
+                  <td class="align-right team"><a href="<?php echo $matchURL ?>"><?php echo $match->teams['home']->title ?></a></td>
                   <td class="align-center"><a href="<?php echo $matchURL ?>"><?php echo $match->score ?></a></td>
-                  <td class="align-left"><a href="<?php echo $matchURL ?>"><?php echo $match->teams['away']->title ?></a></td>
+                  <td class="align-left team"><a href="<?php echo $matchURL ?>"><?php echo $match->teams['away']->title ?></a></td>
                 </tr>
               <?php } ?>
             </table>

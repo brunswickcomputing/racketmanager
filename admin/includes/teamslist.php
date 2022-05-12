@@ -11,7 +11,11 @@ if ( $view == 'constitution' ) {
 $mainTitle = $link.' - '.$title;
 ?>
 <div class="container">
-  <p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <a href="admin.php?page=racketmanager&amp;subpage=<?php echo $breadcrumb ?>"><?php echo $link ?></a> &raquo; <?php echo $title ?></p>
+  <div class="row justify-content-end">
+    <div class="col-auto racketmanager_breadcrumb">
+			<a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <a href="admin.php?page=racketmanager&amp;subpage=<?php echo $breadcrumb ?>"><?php echo $link ?></a> &raquo; <?php echo $title ?>
+    </div>
+  </div>
   <h1><?php echo $mainTitle; ?></h1>
   <form action="admin.php?page=racketmanager&amp;subpage=<?php echo $breadcrumb ?>&amp;season=<?php echo $season ?>" method="post" enctype="multipart/form-data" name="teams_add">
     <?php wp_nonce_field( 'racketmanager_add-teams-bulk' ) ?>

@@ -50,6 +50,12 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.12.0 =
+* UPDATE: format team display in favourite emails
+* UPDATE: use tabs in admin screens instead of pills
+* UPDATE: fix breadcrumb styling
+* NEW: add ability to email league captains
+
 = 6.11.0 =
 * BUGFIX: check match confirmed flag for away team captain update allowed
 * BUGFIX: remove warning when sorting array

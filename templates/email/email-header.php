@@ -400,11 +400,6 @@
     .site-title a,.site-title a:hover{color:#fff;}
     .site-title{margin:0;}
     .main-header,.header-search-form{background-color:var(--sydney-dark-background);z-index:999;}
-    @media (max-width: 1024px){
-      .main-header{display:none;}
-    }
-    .site-title{margin:0;}
-    .site-title a,.site-title a:visited{color:#fff;}
     .header-elements{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-ms-flex-align:center;align-items:center;}
     .header-elements svg{fill:#fff;max-height:16px;}
     .site-branding{text-align:center;}
@@ -421,9 +416,6 @@
     .header-search-form form .search-field,.header-search-form form label{width:100%;}
     .header-search-form label{margin-bottom:0;}
     .header-search-form form .search-field{display:block;}
-    @media (max-width: 1024px){
-      .main-header{display:none;}
-    }
     .search-field{max-width:100%;}
     .site-info{padding:20px 0;}
     .site-footer{background-color:#1c1c1c; text-align: center;}
@@ -433,12 +425,6 @@
     input[type="submit"]:hover{background-color:transparent;color:#d65050;}
     input[type="search"]:focus{border:1px solid #d65050;}
     .sydney-svg-icon{display:inline-block;width:16px;height:16px;vertical-align:middle;line-height:1;}
-    @media only screen and (max-width: 1024px){
-      .header-clone{display:none;}
-    }
-    @media only screen and (max-width: 767px){
-      .site-info .sydney-credits{text-align:center;}
-    }
   }
   input[type="submit"]:hover,a{color:#006800;}
   input[type="submit"]{background-color:#006800;}

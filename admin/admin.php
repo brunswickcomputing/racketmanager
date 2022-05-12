@@ -280,6 +280,7 @@ final class RacketManagerAdmin extends RacketManager
 		if ( !$league->is_championship ) {
 			$menu['match']['show'] = true;
 		}
+		$menu['contact'] = array( 'title' => __('Contact', 'racketmanager'), 'callback' => array(&$this, 'displayContactPage'), 'cap' => 'edit_teams', 'show' => true );
 		$menu = apply_filters('league_menu_'.$sport, $menu, $league->id, $season);
 		$menu = apply_filters('league_menu_'.$league->mode, $menu, $league->id, $season);
 
@@ -373,6 +374,8 @@ final class RacketManagerAdmin extends RacketManager
 					break;
 					case 'tournament-plan':
 					$this->displayTournamentPlanPage();
+					case 'contact':
+					$this->displayContactPage();
 					break;
 					default:
 					$this->league_id = intval($_GET['league_id']);
@@ -774,6 +777,14 @@ final class RacketManagerAdmin extends RacketManager
 					$this->addTableEntry( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
 					$this->setTeamCompetition( $team_id, $_POST['competition_id'] );
 				}
+			} elseif ( isset($_POST['contactTeam']) ) {
+				if ( current_user_can('edit_teams') ) {
+					check_admin_referer('racketmanager_contact-teams-preview');
+					$this->contactLeagueTeams( intval($_POST['league_id']), $_POST['season'], htmlspecialchars_decode($_POST['emailMessage']) );
+				} else {
+					$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
+				}
+				$this->printMessage();
 			}
 
 			// rank teams manually
@@ -1532,6 +1543,49 @@ final class RacketManagerAdmin extends RacketManager
 			}
 			global $racketmanager;
 			include_once( RACKETMANAGER_PATH . '/admin/tools/import.php' );
+		}
+	}
+
+	/**
+	* display contact page
+	*
+	*/
+	private function displayContactPage() {
+		global $racketmanager, $racketmanager_shortcodes;
+
+		if ( !current_user_can( 'edit_teams' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.", 'racketmanager').'</p></div>';
+		} else {
+			if ( isset($_POST['contactTeamPreview']) ) {
+				if ( isset($_POST['league_id']) ) {
+					$league = get_league($_POST['league_id']);
+				}
+				if ( isset($_POST['season']) ) {
+					$season = $_POST['season'];
+				}
+				$emailTitle = $_POST['contactTitle'];
+				$emailIntro = $_POST['contactIntro'];
+				$emailBody = $_POST['contactBody'];
+				$emailClose = $_POST['contactClose'];
+				$organisationName = $racketmanager->site_name;
+				$emailMessage = $racketmanager_shortcodes->loadTemplate( 'contact-teams', array( 'league' => $league, 'organisationName' => $organisationName, 'season' => $season, 'title' => $emailTitle, 'intro' => $emailIntro, 'body' => $emailBody, 'closing' => $emailClose ), 'email' );
+				$tab = 'preview';
+			} else {
+				if ( isset($_GET['league_id']) ) {
+					$league = get_league($_GET['league_id']);
+				}
+				if ( isset($_GET['season']) ) {
+					$season = $_GET['season'];
+				}
+				$emailTitle = '';
+				$emailIntro = '';
+				$emailClose = '';
+				$emailBody = array();
+				$emailMessage = '';
+				$tab = 'compose';
+			}
+
+			include_once( dirname(__FILE__) . '/includes/contact.php' );
 		}
 	}
 
@@ -3740,6 +3794,41 @@ final class RacketManagerAdmin extends RacketManager
 			$this->setMessage( __('Tournament plan reset', 'racketmanager') );
 		} else {
 			$this->setMessage( __('No updates', 'racketmanager') );
+		}
+		return true;
+	}
+
+	/**
+	* contact League Teams
+	*
+	* @param int $league
+	* @param string $season
+	* @param string $emailMessage
+	* @return void
+	*/
+	private function contactLeagueTeams($league, $season, $emailMessage) {
+		global $wpdb, $racketmanager;
+
+		$league = get_league($league);
+		$teams = $league->getLeagueTeams(array('season' => $season));
+		$emailMessage = str_replace('\"','"',$emailMessage);
+		$headers = array();
+		$fromEmail = $this->getConfirmationEmail($league->competitionType);
+		$headers[] = 'From: League Secretary <'.$fromEmail.'>';
+		$organisationName = $this->site_name;
+
+		foreach ($teams as $team) {
+			$emailSubject = $this->site_name." - ".$league->title." ".$season." - Important Message";
+			$teamDtls = $league->getTeamDtls($team->id);
+			$emailTo = $teamDtls->contactemail;
+			if ( $emailTo ) {
+				$this->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
+				$messageSent = true;
+			}
+		}
+
+		if ( $messageSent ) {
+			$this->setMessage( __('Email sent to captains', 'racketmanager') );
 		}
 		return true;
 	}

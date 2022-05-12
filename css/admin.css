@@ -678,3 +678,9 @@ dl dl {
 .update-core-php h2 {
   margin: 0;
 }
+.contactText {
+  min-height: 5rem;
+}
+.contactBody {
+  min-height: 10rem;
+}

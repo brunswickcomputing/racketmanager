@@ -597,8 +597,9 @@ class RacketManagerAJAX extends RacketManager {
 								}
 								$colspan = 12 / $num_sets;
 								$tabindex = $tabbase + 10 + $i; ?>
-								<div class="col-<?php echo $colspan ?>">
+								<div class="col-<?php echo $colspan ?> col-sm-12 col-lg-<?php echo $colspan ?>">
 									<input tabindex="<?php echo $tabindex ?>" class="points" type="text" size="2" id="set_<?php echo $i ?>_player1" name="custom[sets][<?php echo $i ?>][player1]" value="<?php echo $match->sets[$i]['player1'] ?>" />
+									-
 									<?php $tabindex = $tabbase + 11 + $i; ?>
 									<input tabindex="<?php echo $tabindex ?>" class="points" type="text" size="2" id="set_<?php echo $i ?>_player2" name="custom[sets][<?php echo $i ?>][player2]" value="<?php echo $match->sets[$i]['player2'] ?>" />
 								</div>
@@ -844,7 +845,7 @@ class RacketManagerAJAX extends RacketManager {
 				$numPlayers = 2;
 
 				foreach ($rubbers as $rubber) {	?>
-					<div class="row">
+					<div class="row mb-3">
 						<input type="hidden" name="id[<?php echo $r ?>]" value="<?php echo $rubber->id ?>" </>
 						<div class="col-1 text-center align-self-center"><?php echo isset($rubber->rubber_number) ? $rubber->rubber_number : '' ?></div>
 						<div class="col-11">
@@ -879,8 +880,9 @@ class RacketManagerAJAX extends RacketManager {
 											}
 											$colspan = ceil(12 / $match->num_sets);
 											$tabindex = $tabbase + 10 + $i; ?>
-											<div class="col-<?php echo $colspan ?>">
+											<div class="col-<?php echo $colspan ?> col-sm-12 col-lg-<?php echo $colspan ?>">
 												<input tabindex="<?php echo $tabindex ?>" class="points" type="text" <?php if ( !$updatesAllowed ) { echo 'readonly';} ?> size="2" id="set_<?php echo $r ?>_<?php echo $i ?>_player1" name="custom[<?php echo $r ?>][sets][<?php echo $i ?>][player1]" value="<?php echo $rubber->sets[$i]['player1'] ?>" />
+												-
 												<?php $tabindex = $tabbase + 11 + $i; ?>
 												<input tabindex="<?php echo $tabindex ?>" class="points" type="text" <?php if ( !$updatesAllowed ) { echo 'readonly';} ?> size="2" id="set_<?php echo $r ?>_<?php echo $i ?>_player2" name="custom[<?php echo $r ?>][sets][<?php echo $i ?>][player2]" value="<?php echo $rubber->sets[$i]['player2'] ?>" />
 											</div>

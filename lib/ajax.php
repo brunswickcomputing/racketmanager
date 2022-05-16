@@ -1061,27 +1061,35 @@ class RacketManagerAJAX extends RacketManager {
 			if ($matchCommentsAway) { $matchComments = $match->comments.PHP_EOL.__('Away:','racketmanager').':'.$matchCommentsAway; }
 			if ( $_POST['updateRubber'] == 'results' ) {
 				if ( $userCanUpdate ) {
+					$playerFound = false;
 					if ( $userType == 'player' ) {
 						if ( $userTeam == 'home' ) {
+							if ( $match->teams['home']->captainId == get_current_user_id() ) {
+								$playerFound = true;
+							}
 							$club = $match->teams['home']->affiliatedclub;
 						} else {
+							if ( $match->teams['away']->captainId == get_current_user_id() ) {
+								$playerFound = true;
+							}
 							$club = $match->teams['away']->affiliatedclub;
 						}
-						$playerRoster = $racketmanager->getRoster( array('player' => get_current_user_id(), 'club' => $club, 'inactive' => true) );
-						$playerRosterId = $playerRoster[0]->roster_id;
-						$playerFound = false;
-						for ($ix = 0; $ix < $num_rubbers; $ix++) {
-							$homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : NULL;
-							$homeplayer2    = isset($_POST['homeplayer2'][$ix]) ? $_POST['homeplayer2'][$ix] : NULL;
-							$awayplayer1    = isset($_POST['awayplayer1'][$ix]) ? $_POST['awayplayer1'][$ix] : NULL;
-							$awayplayer2    = isset($_POST['awayplayer2'][$ix]) ? $_POST['awayplayer2'][$ix] : NULL;
-							if ( $userTeam == 'home' ) {
-								if ( $playerRosterId == $homeplayer1 || $playerRosterId == $homeplayer2 ) {
-									$playerFound = true;
-								}
-							} else {
-								if ( $playerRosterId == $awayplayer1 || $playerRosterId == $awayplayer2 ) {
-									$playerFound = true;
+						if ( !$playerFound ) {
+							$playerRoster = $racketmanager->getRoster( array('player' => get_current_user_id(), 'club' => $club, 'inactive' => true) );
+							$playerRosterId = $playerRoster[0]->roster_id;
+							for ($ix = 0; $ix < $num_rubbers; $ix++) {
+								$homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : NULL;
+								$homeplayer2    = isset($_POST['homeplayer2'][$ix]) ? $_POST['homeplayer2'][$ix] : NULL;
+								$awayplayer1    = isset($_POST['awayplayer1'][$ix]) ? $_POST['awayplayer1'][$ix] : NULL;
+								$awayplayer2    = isset($_POST['awayplayer2'][$ix]) ? $_POST['awayplayer2'][$ix] : NULL;
+								if ( $userTeam == 'home' ) {
+									if ( $playerRosterId == $homeplayer1 || $playerRosterId == $homeplayer2 ) {
+										$playerFound = true;
+									}
+								} else {
+									if ( $playerRosterId == $awayplayer1 || $playerRosterId == $awayplayer2 ) {
+										$playerFound = true;
+									}
 								}
 							}
 						}

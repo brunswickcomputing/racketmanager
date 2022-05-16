@@ -1,11 +1,24 @@
 /*
 * @section: Frontend Tables
 */
-table.table td {
-	border: 0;
-}
 table.table {
 	border: 1px solid;
+}
+table.table th, table.table td {
+	border: 0;
+}
+.table td.match-heading {
+	padding-bottom: 0;
+	display: block;
+}
+.table td.match-title {
+	padding-top: 0;
+	display: block;
+	width: 100%;
+}
+.table td.match-score {
+	margin-top: -15px;
+	display: block;
 }
 table.table a.W, table.table span.W { background-position:0 -150px; }
 table.table a.D, table.table span.D { background-position:0 -200px; }

@@ -25,7 +25,7 @@ jQuery(document).ready(function($) {
   });
 });
 </script>
-<div id="racketmanager_match_selections" class="">
+<div id="racketmanager_match_selections container" class="">
   <form method="get" action="<?php echo get_permalink($postID); ?>" id="racketmanager_daily_matches">
     <input type="hidden" name="page_id" value="<?php echo $postID ?>" />
 
@@ -38,30 +38,32 @@ jQuery(document).ready(function($) {
   </form>
 </div>
 <?php if ( $matches ) { ?>
-  <table class='racketmanager matchtable' summary='' title='<?php echo __( 'Daily Match Plan', 'racketmanager' ) ?>'>
+  <table class="table">
     <thead>
     </thead>
     <tbody>
       <?php $leagueTitle = '';
       foreach ( $matches AS $match ) {
-        if ( $match->league->title != $leagueTitle ) {
-          echo "<tr><th class='league-title' colspan='2'>".$match->league->title."</th></tr>";
-          $leagueTitle = $match->league->title; ?>
+        if ( $match->league->title != $leagueTitle ) { ?>
+          <tr class='table-dark'>
+            <th class='league-title'><?php echo $match->league->title ?></th>
+          </tr>
+          <?php $leagueTitle = $match->league->title; ?>
         <?php } ?>
         <tr class='<?php echo $match->class ?>'>
-          <td class='match'>
-            <?php if ( $match->league->title != $leagueTitle ) {
-              echo "<b>".$match->league->title."</b>";
-              $leagueTitle = $match->league->title; ?><br />
-            <?php } ?>
-            <?php echo $match->start_time." ".$match->location ?><br />
-            <?php include('matches-title.php');
-            echo $matchTitle;
-            ?>
-            <?php if ( isset($match->home_points) ) echo "<br />".$match->score ?>
+          <td class="match-heading col-12">
+            <?php echo $match->start_time." ".$match->location ?>
           </td>
+          <td class="match-title col-12">
+            <?php $matchTitle = get_matchTitle($match); ?>
+            <a href="/<?php _e('leagues', 'racketmanager') ?>/<?php echo sanitize_title($match->league->title) ?>/<?php echo $match->league->current_season['name'] ?>/day<?php echo $match->match_day ?>"><?php echo $matchTitle ?></a>
+          </td>
+          <?php if ( isset($match->home_points) ) { ?>
+            <td class="match-score col-12">
+              <?php echo $match->score ?>
+            </td>
+          <?php } ?>
         </tr>
-
       <?php } ?>
     </tbody>
   </table>

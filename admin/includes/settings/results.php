@@ -24,40 +24,42 @@ namespace ns;
     $i = 0;
     foreach ( $competitionTypes AS $competitionType ) { $i ++; ?>
       <div id="competitions-<?php echo $competitionType ?>" class="tab-pane <?php if ( $i == 1 )  { echo 'active show';} ?> fade" role="tabpanel" aria-labelledby="competitions-<?php echo $competitionType ?>-tab">
-        <?php $competitionType = ucfirst($competitionType);
-        if ( $competitionType == 'League' ) { $competitionType = ''; }
-        $matchCapability = 'matchCapability'.$competitionType;
-        $resultEntry = 'resultEntry'.$competitionType;
-        $resultConfirmation = 'resultConfirmation'.$competitionType;
-        $resultConfirmationEmail = 'resultConfirmationEmail'.$competitionType;
-        ?>
+
         <div class="form-control">
           <div class="form-floating mb-3">
-            <select class="form-select" id="role" name="<?php echo $matchCapability ?>">
-              <option value="none" <?php if (isset($options[$matchCapability]) && $options[$matchCapability] == "none") echo 'selected="selected"'?>><?php _e('None', 'racketmanager') ?></option>
-              <option value="captain" <?php if (isset($options[$matchCapability]) && $options[$matchCapability] == "captain") echo 'selected="selected"'?>><?php _e('Captain', 'racketmanager') ?></option>
-              <option value="roster" <?php if (isset($options[$matchCapability]) && $options[$matchCapability] == "roster") echo 'selected="selected"'?>><?php _e('Roster', 'racketmanager') ?></option>
+            <select class="form-select" id="role" name="<?php echo $competitionType ?>[matchCapability]">
+              <option value="none" <?php if (isset($options[$competitionType]['matchCapability']) && $options[$competitionType]['matchCapability'] == "none") echo 'selected="selected"'?>><?php _e('None', 'racketmanager') ?></option>
+              <option value="captain" <?php if (isset($options[$competitionType]['matchCapability']) && $options[$competitionType]['matchCapability'] == "captain") echo 'selected="selected"'?>><?php _e('Captain', 'racketmanager') ?></option>
+              <option value="roster" <?php if (isset($options[$competitionType]['matchCapability']) && $options[$competitionType]['matchCapability'] == "roster") echo 'selected="selected"'?>><?php _e('Roster', 'racketmanager') ?></option>
             </select>
-            <label for="<?php echo $matchCapability ?>"><?php _e( 'Minimum level to update results', 'racketmanager' ) ?></label>
+            <label for="<?php echo $competitionType ?>[matchCapability]"><?php _e( 'Minimum level to update results', 'racketmanager' ) ?></label>
           </div>
           <div class="form-floating mb-3">
-            <select class="form-select" id="<?php echo $resultEntry ?>" name="<?php echo $resultEntry ?>">
-              <option value="none" <?php if (isset($options[$resultEntry]) && $options[$resultEntry] == "none") echo 'selected="selected"'?>><?php _e('None', 'racketmanager') ?></option>
-              <option value="home" <?php if (isset($options[$resultEntry]) && $options[$resultEntry] == "home") echo 'selected="selected"'?>><?php _e('Home', 'racketmanager') ?></option>
-              <option value="either" <?php if (isset($options[$resultEntry]) && $options[$resultEntry] == "either") echo 'selected="selected"'?>><?php _e('Either', 'racketmanager') ?></option>
+            <select class="form-select" id="<?php echo $competitionType.'-resultEntry' ?>" name="<?php echo $competitionType ?>[resultEntry]">
+              <option value="none" <?php if (isset($options[$competitionType]['resultEntry']) && $options[$competitionType]['resultEntry'] == "none") echo 'selected="selected"'?>><?php _e('None', 'racketmanager') ?></option>
+              <option value="home" <?php if (isset($options[$competitionType]['resultEntry']) && $options[$competitionType]['resultEntry'] == "home") echo 'selected="selected"'?>><?php _e('Home', 'racketmanager') ?></option>
+              <option value="either" <?php if (isset($options[$competitionType]['resultEntry']) && $options[$competitionType]['resultEntry'] == "either") echo 'selected="selected"'?>><?php _e('Either', 'racketmanager') ?></option>
             </select>
-            <label for="<?php echo $resultEntry ?>"><?php _e( 'Result Entry', 'racketmanager' ) ?></label>
+            <label for="<?php echo $competitionType ?>[resultEntry]"><?php _e( 'Result Entry', 'racketmanager' ) ?></label>
           </div>
           <div class="form-floating mb-3">
-            <select class="form-select" id="<?php echo $resultConfirmation ?>" name="<?php echo $resultConfirmation ?>">
-              <option value="none" <?php if (isset($options[$resultConfirmation]) && $options[$resultConfirmation] == "none") echo 'selected="selected"'?>><?php _e('None', 'racketmanager') ?></option>
-              <option value="auto" <?php if (isset($options[$resultConfirmation]) && $options[$resultConfirmation] == "admin") echo 'selected="selected"'?>><?php _e('Automatic', 'racketmanager') ?></option>
+            <select class="form-select" id="<?php echo $competitionType.'-resultConfirmation' ?>" name="<?php echo $competitionType ?>[resultConfirmation]">
+              <option value="none" <?php if (isset($options[$competitionType]['resultConfirmation']) && $options[$competitionType]['resultConfirmation'] == "none") echo 'selected="selected"'?>><?php _e('None', 'racketmanager') ?></option>
+              <option value="auto" <?php if (isset($options[$competitionType]['resultConfirmation']) && $options[$competitionType]['resultConfirmation'] == "admin") echo 'selected="selected"'?>><?php _e('Automatic', 'racketmanager') ?></option>
             </select>
-            <label for="<?php echo $resultConfirmation ?>"><?php _e( 'Result Confirmation', 'racketmanager' ) ?></label>
+            <label for="<?php echo $competitionType ?>[resultConfirmation]"><?php _e( 'Result Confirmation', 'racketmanager' ) ?></label>
           </div>
           <div class="form-floating mb-3">
-            <input type="email" class="form-control" name="<?php echo $resultConfirmationEmail ?>" id="<?php echo $resultConfirmationEmail ?>" value='<?php echo isset($options[$resultConfirmationEmail]) ? $options[$resultConfirmationEmail] : '' ?>' />
-            <label for="<?php echo $resultConfirmationEmail ?>"><?php _e( 'Notification Email Address', 'racketmanager' ) ?></label>
+            <input type="email" class="form-control" name="<?php echo $competitionType ?>[resultConfirmationEmail]" id="<?php echo $competitionType ?>.'-resultConfirmationEmail'" value='<?php echo isset($options[$competitionType]['resultConfirmationEmail']) ? $options[$competitionType]['resultConfirmationEmail'] : '' ?>' />
+            <label for="<?php echo $competitionType ?>[resultConfirmationEmail]"><?php _e( 'Notification Email Address', 'racketmanager' ) ?></label>
+          </div>
+          <div class="form-floating mb-3">
+            <select class="form-select" id="<?php echo $competitionType ?>.'-resultNotification'" name="<?php echo $competitionType ?>[resultNotification]">
+              <option value="none" <?php if (isset($options[$competitionType]['resultNotification']) && $options[$competitionType]['resultNotification'] == "none") echo 'selected="selected"'?>><?php _e('None', 'racketmanager') ?></option>
+              <option value="captain" <?php if (isset($options[$competitionType]['resultNotification']) && $options[$competitionType]['resultNotification'] == "captain") echo 'selected="selected"'?>><?php _e('Captain', 'racketmanager') ?></option>
+              <option value="secretary" <?php if (isset($options[$competitionType]['resultNotification']) && $options[$competitionType]['resultNotification'] == "secretary") echo 'selected="selected"'?>><?php _e('Match Secretary', 'racketmanager') ?></option>
+            </select>
+            <label for="<?php echo $competitionType ?>[resultNotification]"><?php _e( 'Result Notification', 'racketmanager' ) ?></label>
           </div>
         </div>
       </div>

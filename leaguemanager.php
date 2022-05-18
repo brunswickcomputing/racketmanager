@@ -53,6 +53,7 @@ class RacketManager {
 	* @var string
 	*/
 	private $dbversion = '6.10.0';
+	private $dbversion = '6.13.0';
 
 	/**
 	* The array of templates that this plugin tracks.
@@ -1800,13 +1801,7 @@ class RacketManager {
 	public function getConfirmationEmail($type) {
 		global $racketmanager;
 		$lm_options = $racketmanager->getOptions();
-		if ($type == 'tournament' ) {
-			$email = isset($lm_options['resultConfirmationEmailTournament']) ? $lm_options['resultConfirmationEmailTournament'] : '';
-		} elseif ($type == 'cup' ) {
-			$email = isset($lm_options['resultConfirmationEmailCup']) ? $lm_options['resultConfirmationEmailCup'] : '';
-		} else {
-			$email = isset($lm_options['resultConfirmationEmail']) ? $lm_options['resultConfirmationEmail'] : '';
-		}
+		$email = isset($lm_options[$type]['resultConfirmationEmail']) ? $lm_options[$type]['resultConfirmationEmail'] : '';
 		return $email;
 	}
 
@@ -1974,15 +1969,13 @@ class RacketManager {
 		$return = array();
 		$userType = '';
 		$userTeam = '';
-		if ( $competitionType == 'league' ) { $competitionType= ''; }
-		$competitionType = ucfirst($competitionType);
-		$matchCapability = 'matchCapability'.$competitionType;
-		$resultEntry = 'resultEntry'.$competitionType;
+		$matchCapability = $options[$competitionType]['matchCapability'];
+		$resultEntry = $options[$competitionType]['resultEntry'];
 
 		if ( isset($homeTeam) && isset($awayTeam) && isset($homeTeam->affiliatedclub) && isset($awayTeam->affiliatedclub) ) {
 			if ( $userid ) {
 				if ( !current_user_can( 'manage_racketmanager' ) ) {
-					if ( $options[$matchCapability] == 'roster' ) {
+					if ( $matchCapability == 'roster' ) {
 						$club = get_club($homeTeam->affiliatedclub);
 						$homeRoster = $club->getRoster( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
 						if ( $homeRoster != 0 ) {
@@ -1998,18 +1991,18 @@ class RacketManager {
 								$userCanUpdate = true;
 							}
 						}
-					} elseif ( $options[$matchCapability] == 'captain' ) {
+					} elseif ( $matchCapability == 'captain' ) {
 						if ( isset($homeTeam->captainId) && $userid == $homeTeam->captainId ) {
 							$userType = 'captain';
 							$userTeam = 'home';
 							$userCanUpdate = true;
-						} elseif ( $options[$resultEntry] == 'home' && ( isset($awayTeam->captainId) && $userid == $awayTeam->captainId ) ) {
+						} elseif ( $resultEntry == 'home' && ( isset($awayTeam->captainId) && $userid == $awayTeam->captainId ) ) {
 							if ( $matchStatus == 'P') {
 								$userType = 'captain';
 								$userTeam = 'away';
 								$userCanUpdate = true;
 							}
-						} elseif ( $options[$resultEntry] == 'either' && ( isset($awayTeam->captainId) && $userid == $awayTeam->captainId ) ) {
+						} elseif ( $resultEntry == 'either' && ( isset($awayTeam->captainId) && $userid == $awayTeam->captainId ) ) {
 							$userType = 'captain';
 							$userTeam = 'away';
 							$userCanUpdate = true;

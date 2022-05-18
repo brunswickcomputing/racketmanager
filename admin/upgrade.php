@@ -325,6 +325,78 @@ function racketmanager_upgrade() {
         echo __('starting 6.10.0 upgrade', 'leaguemanager') . "<br />\n";
         $wpdb->query( "ALTER TABLE {$wpdb->racketmanager_roster_requests} ADD email varchar( 255 ) NULL AFTER `btm` ");
     }
+		if (version_compare($installed, '6.13.0', '<')) {
+        echo __('starting 6.13.0 upgrade', 'leaguemanager') . "<br />\n";
+				$options = $racketmanager->getOptions();
+				$competitionTypes = array();
+				foreach ($options as $option => $value) {
+					if ( $option == 'matchCapability' || $option == 'matchCapabilityLeague' ) {
+						$competitionTypes['league']['matchCapability'] = $value;
+						unset($options[$option]);
+					}
+					if ( $option == 'matchCapabilityCup' ) {
+						$competitionTypes['cup']['matchCapability'] = $value;
+						unset($options[$option]);
+					}
+					if ( $option == 'matchCapabilityTournament' ) {
+						$competitionTypes['tournament']['matchCapability'] = $value;
+						unset($options[$option]);
+					}
+					if ( $option == 'resultEntry' || $option == 'resultEntryLeague' ) {
+						$competitionTypes['league']['resultEntry'] = $value;
+						unset($options[$option]);
+					}
+					if ( $option == 'resultEntryCup' ) {
+						$competitionTypes['cup']['resultEntry'] = $value;
+						unset($options[$option]);
+					}
+					if ( $option == 'resultEntryTournament' ) {
+						$competitionTypes['tournament']['resultEntry'] = $value;
+						unset($options[$option]);
+					}
+					if ( $option == 'resultConfirmation' || $option == 'resultConfirmationLeague' ) {
+						$competitionTypes['league']['resultConfirmation'] = $value;
+						unset($options[$option]);
+					}
+					if ( $option == 'resultConfirmationCup' ) {
+						$competitionTypes['cup']['resultConfirmation'] = $value;
+						unset($options[$option]);
+					}
+					if ( $option == 'resultConfirmationTournament' ) {
+						$competitionTypes['tournament']['resultConfirmation'] = $value;
+						unset($options[$option]);
+					}
+					if ( $option == 'resultConfirmationEmail' || $option == 'resultConfirmationEmailLeague' ) {
+						$competitionTypes['league']['resultConfirmationEmail'] = $value;
+						unset($options[$option]);
+					}
+					if ( $option == 'resultConfirmationEmailCup' ) {
+						$competitionTypes['cup']['resultConfirmationEmail'] = $value;
+						unset($options[$option]);
+					}
+					if ( $option == 'resultConfirmationEmailTournament' ) {
+						$competitionTypes['tournament']['resultConfirmationEmail'] = $value;
+						unset($options[$option]);
+					}
+					if ( $option == 'resultNotification' || $option == 'resultNotificationLeague' ) {
+						$competitionTypes['league']['resultNotification'] = $value;
+						unset($options[$option]);
+					}
+					if ( $option == 'resultNotificationCup' ) {
+						$competitionTypes['cup']['resultNotification'] = $value;
+						unset($options[$option]);
+					}
+					if ( $option == 'resultNotificationTournament' ) {
+						$competitionTypes['tournament']['resultNotification'] = $value;
+						unset($options[$option]);
+					}
+
+				}
+				$options['league'] = $competitionTypes['league'];
+				$options['cup'] = $competitionTypes['cup'];
+				$options['tournament'] = $competitionTypes['tournament'];
+				update_option( 'leaguemanager', $options );
+    }
     /*
 	* Update version and dbversion
 	*/

@@ -2962,16 +2962,11 @@ final class RacketManagerAdmin extends RacketManager
 				$options['playerLocked'] = htmlspecialchars($_POST['playerLocked']);
 				$competitionTypes = $this->getCompetitionTypes();
 				foreach ( $competitionTypes AS $competitionType ) {
-					$competitionType = ucfirst($competitionType);
-					if ( $competitionType == 'League' ) { $competitionType = ''; }
-					$matchCapability = 'matchCapability'.$competitionType;
-					$resultEntry = 'resultEntry'.$competitionType;
-					$resultConfirmation = 'resultConfirmation'.$competitionType;
-					$resultConfirmationEmail = 'resultConfirmationEmail'.$competitionType;
-					$options[$matchCapability] = htmlspecialchars($_POST[$matchCapability]);
-					$options[$resultConfirmation] = htmlspecialchars($_POST[$resultConfirmation]);
-					$options[$resultEntry] = htmlspecialchars($_POST[$resultEntry]);
-					$options[$resultConfirmationEmail] = htmlspecialchars($_POST[$resultConfirmationEmail]);
+					$options[$competitionType]['matchCapability'] = htmlspecialchars($_POST[$competitionType]['matchCapability']);
+					$options[$competitionType]['resultConfirmation'] = htmlspecialchars($_POST[$competitionType]['resultConfirmation']);
+					$options[$competitionType]['resultEntry'] = htmlspecialchars($_POST[$competitionType]['resultEntry']);
+					$options[$competitionType]['resultConfirmationEmail'] = htmlspecialchars($_POST[$competitionType]['resultConfirmationEmail']);
+					$options[$competitionType]['resultNotification'] = htmlspecialchars($_POST[$competitionType]['resultNotification']);
 				}
 				$options['colors']['headers'] = htmlspecialchars($_POST['color_headers']);
 				$options['colors']['rows'] = array( 'alternate' => htmlspecialchars($_POST['color_rows_alt']), 'main' => htmlspecialchars($_POST['color_rows']), 'ascend' => htmlspecialchars($_POST['color_rows_ascend']), 'descend' => htmlspecialchars($_POST['color_rows_descend']), 'relegation' => htmlspecialchars($_POST['color_rows_relegation']) );

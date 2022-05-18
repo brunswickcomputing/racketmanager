@@ -1054,6 +1054,7 @@ class RacketManagerAJAX extends RacketManager {
 			$userCanUpdate = $userCanUpdateArray[0];
 			$userType = $userCanUpdateArray[1];
 			$userTeam = $userCanUpdateArray[2];
+			$resultConfirmation = $lm_options[$match->league->competitionType]['resultConfirmation'];
 			$matchComments = isset($_POST['resultConfirmComments']) ? $_POST['resultConfirmComments'] : '';
 			$matchCommentsHome = isset($_POST['resultConfirmCommentsHome']) ? $_POST['resultConfirmCommentsHome'] : '';
 			$matchCommentsAway = isset($_POST['resultConfirmCommentsAway']) ? $_POST['resultConfirmCommentsAway'] : '';
@@ -1123,7 +1124,7 @@ class RacketManagerAJAX extends RacketManager {
 				}
 
 				$msg = sprintf(__('%s','racketmanager'), $matchMessage);
-				if ( $matchConfirmed == 'A' && $lm_options['resultConfirmation'] == 'auto' ) {
+				if ( $matchConfirmed == 'A' && $resultConfirmation == 'auto' ) {
 					$leagueId = $_POST['current_league_id'];
 					$league = get_league($leagueId);
 					$matchId = $_POST['current_match_id'];

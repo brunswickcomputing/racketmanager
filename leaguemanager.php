@@ -2217,6 +2217,444 @@ class RacketManager {
 		}
 	}
 
+	public function showMatchScreen($match) {
+		global $racketmanager, $championship;
+
+		if ( $match->final_round == '' ) {
+			$match->round = '';
+			$match->type = 'league';
+		} else {
+			$match->round = $match->final_round;
+			$match->type = 'tournament';
+		}
+		$league = get_league($match->league_id);
+		$num_sets = $league->num_sets;
+		$pointsspan = 2 + intval($num_sets);
+		$match_type = $league->type;
+		$tabbase = 0;
+		?>
+		<div id="matchrubbers">
+			<div id="matchheader">
+				<div class="row justify-content-between" id="match-header-1">
+					<div class="col-auto leaguetitle"><?php echo $league->title ?></div>
+					<div class="col-auto matchday">
+						<?php if ( $league->mode == 'championship' ) {
+							echo $league->championship->getFinalName($match->final_round);
+						} else {
+							echo 'Week'.$match->match_day;
+						} ?>
+					</div>
+					<div class="col-auto matchdate"><?php echo substr($match->date,0,10) ?></div>
+				</div>
+				<div class="row justify-content-center" id="match-header-2">
+					<?php if ( $league->mode != 'championship' ) { ?>
+						<div class="col-auto matchtitle"><?php echo $match->match_title ?></div>
+					<?php } ?>
+				</div>
+			</div>
+			<form id="match-view" action="#" method="post" onsubmit="return checkSelect(this)">
+				<?php wp_nonce_field( 'scores-match' ) ?>
+
+				<input type="hidden" name="current_league_id" id="current_league_id" value="<?php echo $match->league_id ?>" />
+				<input type="hidden" name="current_match_id" id="current_match_id" value="<?php echo $match->id ?>" />
+				<input type="hidden" name="current_season" id="current_season" value="<?php echo $match->season ?>" />
+				<input type="hidden" name="home_team" value="<?php echo $match->home_team ?>" />
+				<input type="hidden" name="away_team" value="<?php echo $match->away_team ?>" />
+				<input type="hidden" name="match_type" value="<?php echo $match->type ?>" />
+				<input type="hidden" name="match_round" value="<?php echo $match->round ?>" />
+
+				<div class="row mb-3">
+					<div class="col-4 text-center"><strong><?php _e( 'Team', 'racketmanager' ) ?></strong></div>
+					<div class="col-4 text-center"><strong><?php _e('Sets', 'racketmanager' ) ?></strong></div>
+					<div class="col-4 text-center"><strong><?php _e( 'Team', 'racketmanager' ) ?></strong></div>
+				</div>
+				<div class="row align-items-center mb-3">
+					<div class="col-4 text-center">
+						<?php echo $match->teams['home']->title ?>
+					</div>
+					<div class="col-4 align-self-center">
+						<div class="row text-center">
+							<?php for ( $i = 1; $i <= $num_sets; $i++ ) {
+								if (!isset($match->sets[$i])) {
+									$match->sets[$i] = array('player1' => '', 'player2' => '');
+								}
+								$colspan = 12 / $num_sets;
+								$tabindex = $tabbase + 10 + $i; ?>
+								<div class="col-<?php echo $colspan ?> col-sm-12 col-lg-<?php echo $colspan ?>">
+									<input tabindex="<?php echo $tabindex ?>" class="points" type="text" size="2" id="set_<?php echo $i ?>_player1" name="custom[sets][<?php echo $i ?>][player1]" value="<?php echo $match->sets[$i]['player1'] ?>" />
+									-
+									<?php $tabindex = $tabbase + 11 + $i; ?>
+									<input tabindex="<?php echo $tabindex ?>" class="points" type="text" size="2" id="set_<?php echo $i ?>_player2" name="custom[sets][<?php echo $i ?>][player2]" value="<?php echo $match->sets[$i]['player2'] ?>" />
+								</div>
+							<?php } ?>
+						</div>
+					</div>
+					<div class="col-4 text-center">
+						<?php echo $match->teams['away']->title ?>
+					</div>
+				</div>
+				<div class="row text-center mb-3">
+					<div class="col-12">
+						<input class="points" type="text" size="2" readonly id="home_points" name="home_points" value="<?php echo (isset($match->home_points) ? $match->home_points : '') ?>" />
+						<input class="points" type="text" size="2" readonly id="away_points" name="away_points[" value="<?php echo (isset($match->away_points) ? $match->away_points : '') ?>" />
+					</div>
+				</div>
+				<div class="form-floating">
+					<textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmComments" id="resultConfirmComments"><?php echo $match->comments ?></textarea>
+					<label for="resultConfirmComments"><?php _e( 'Comments', 'racketmanager' ) ?></label>
+				</div>
+				<div class="mb-3">
+					<?php if ( isset($match->updated_user) ) {
+						echo 'Updated By:'.$racketmanager->getPlayerName($match->updated_user);
+					} ?>
+					<?php if ( isset($match->updated) ) {
+						echo ' On:'.$match->updated;
+					} ?>
+				</div>
+				<?php if ( current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == NULL ) { ?>
+					<div class="mb3">
+						<input type="hidden" name="updateMatch" id="updateMatch" value="results" />
+						<button tabindex="500" class="button button-primary" type="button" id="updateMatchResults" onclick="Racketmanager.updateMatchResults(this)">Update Result</button>
+					</div>
+				<?php } ?>
+				<div id="UpdateResponse"></div>
+				<?php if ( $match->confirmed == 'Y' ) { ?>
+					<script type="text/javascript">
+					jQuery(document).ready(function($) {
+						Racketmanager.disableRubberUpdate();
+					});
+					</script>
+				<?php } ?>
+			</form>
+		</div>
+	<?php	}
+
+	public function showRubbersScreen($match) {
+		global $racketmanager, $league, $match;
+		if ( $match->final_round == '' ) {
+			$match->round = '';
+			$match->type = 'league';
+		} else {
+			$match->round = $match->final_round;
+			$match->type = 'tournament';
+		}
+		$match->num_sets = $match->league->num_sets;
+		$match->num_rubbers = $match->league->num_rubbers;
+		$match_type = $match->league->type;
+		switch ($match_type) {
+			case 'MD':
+			$homeRosterMen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
+			$awayRosterMen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
+			for ($r = 0; $r < $match->num_rubbers; $r++) {
+				$homeRoster[$r][1]['players'] = $homeRosterMen;
+				$homeRoster[$r][1]['gender'] = 'm';
+				$homeRoster[$r][2]['players'] = $homeRosterMen;
+				$homeRoster[$r][2]['gender'] = 'm';
+				$awayRoster[$r][1]['players'] = $awayRosterMen;
+				$awayRoster[$r][1]['gender'] = 'm';
+				$awayRoster[$r][2]['players'] = $awayRosterMen;
+				$awayRoster[$r][2]['gender'] = 'm';
+			}
+			break;
+			case 'WD':
+			$homeRosterWomen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
+			$awayRosterWomen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
+			for ($r = 0; $r < $match->num_rubbers; $r++) {
+				$homeRoster[$r][1]['players'] = $homeRosterWomen;
+				$homeRoster[$r][1]['gender'] = 'f';
+				$homeRoster[$r][2]['players'] = $homeRosterWomen;
+				$homeRoster[$r][2]['gender'] = 'f';
+				$awayRoster[$r][1]['players'] = $awayRosterWomen;
+				$awayRoster[$r][1]['gender'] = 'f';
+				$awayRoster[$r][2]['players'] = $awayRosterWomen;
+				$awayRoster[$r][2]['gender'] = 'f';
+			}
+			break;
+			case 'XD':
+			$homeRosterMen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
+			$awayRosterMen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
+			$homeRosterWomen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
+			$awayRosterWomen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
+			for ($r = 0; $r < $match->num_rubbers; $r++) {
+				$homeRoster[$r][1]['players'] = $homeRosterMen;
+				$homeRoster[$r][1]['gender'] = 'm';
+				$homeRoster[$r][2]['players'] = $homeRosterWomen;
+				$homeRoster[$r][2]['gender'] = 'f';
+				$awayRoster[$r][1]['players'] = $awayRosterMen;
+				$awayRoster[$r][1]['gender'] = 'm';
+				$awayRoster[$r][2]['players'] = $awayRosterWomen;
+				$awayRoster[$r][2]['gender'] = 'f';
+			}
+			break;
+			case 'LD':
+			$homeRosterMen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
+			$awayRosterMen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
+			$homeRosterWomen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
+			$awayRosterWomen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
+			$homeRoster[0][1]['players'] = $homeRosterWomen;
+			$homeRoster[0][1]['gender'] = 'f';
+			$homeRoster[0][2]['players'] = $homeRosterWomen;
+			$homeRoster[0][2]['gender'] = 'f';
+			$homeRoster[1][1]['players'] = $homeRosterMen;
+			$homeRoster[1][1]['gender'] = 'm';
+			$homeRoster[1][2]['players'] = $homeRosterMen;
+			$homeRoster[1][2]['gender'] = 'm';
+			$homeRoster[2][1]['players'] = $homeRosterMen;
+			$homeRoster[2][1]['gender'] = 'm';
+			$homeRoster[2][2]['players'] = $homeRosterWomen;
+			$homeRoster[2][2]['gender'] = 'f';
+			$awayRoster[0][1]['players'] = $awayRosterWomen;
+			$awayRoster[0][1]['gender'] = 'f';
+			$awayRoster[0][2]['players'] = $awayRosterWomen;
+			$awayRoster[0][2]['gender'] = 'f';
+			$awayRoster[1][1]['players'] = $awayRosterMen;
+			$awayRoster[1][1]['gender'] = 'm';
+			$awayRoster[1][2]['players'] = $awayRosterMen;
+			$awayRoster[1][2]['gender'] = 'm';
+			$awayRoster[2][1]['players'] = $awayRosterMen;
+			$awayRoster[2][1]['gender'] = 'm';
+			$awayRoster[2][2]['players'] = $awayRosterWomen;
+			$awayRoster[2][2]['gender'] = 'f';
+			break;
+		}
+		$this->buildRubbersScreen($match, $homeRoster, $awayRoster);
+	}
+	/**
+	* build screen to allow input of match rubber scores
+	*
+	*/
+	public function buildRubbersScreen($match, $homeRoster, $awayRoster) {
+		global $racketmanager, $league, $match;
+		$userCanUpdateArray = $racketmanager->getMatchUpdateAllowed($match->teams['home'], $match->teams['away'], $match->league->competitionType, $match->confirmed);
+		$userCanUpdate = $userCanUpdateArray[0];
+		$userType = $userCanUpdateArray[1];
+		$userTeam = $userCanUpdateArray[2];
+		$updatesAllowed = true;
+		if ( $match->confirmed == 'P' ) {
+			if ( $userType != 'admin') {
+				$updatesAllowed = false;
+			}
+		}
+		?>
+		<div id="matchrubbers" class="rubber-block">
+			<div id="matchheader">
+				<div class="row justify-content-between" id="match-header-1">
+					<div class="col-auto leaguetitle"><?php echo $match->league->title ?></div>
+					<?php if ( isset($match->match_day) && $match->match_day > 0 ) { ?>
+						<div class="col-auto matchday">Week <?php echo $match->match_day ?></div>
+					<?php } ?>
+					<div class="col-auto matchdate"><?php echo substr($match->date,0,10) ?></div>
+				</div>
+				<div class="row justify-content-center" id="match-header-2">
+					<div class="col-auto matchtitle"><?php echo $match->match_title ?></div>
+				</div>
+			</div>
+			<form id="match-rubbers" action="#" method="post" onsubmit="return checkSelect(this)">
+				<?php wp_nonce_field( 'rubbers-match' ) ?>
+
+				<input type="hidden" name="current_league_id" id="current_league_id" value="<?php echo $match->league_id ?>" />
+				<input type="hidden" name="current_match_id" id="current_match_id" value="<?php echo $match->id ?>" />
+				<input type="hidden" name="current_season" id="current_season" value="<?php echo $match->season ?>" />
+				<input type="hidden" name="num_rubbers" value="<?php echo $match->num_rubbers ?>" />
+				<input type="hidden" name="home_team" value="<?php echo $match->home_team ?>" />
+				<input type="hidden" name="away_team" value="<?php echo $match->away_team ?>" />
+				<input type="hidden" name="match_type" value="<?php echo $match->type ?>" />
+				<input type="hidden" name="match_round" value="<?php echo $match->round ?>" />
+
+				<div class="row">
+					<div class="col-1 text-center"><strong><?php _e( 'Pair', 'racketmanager' ) ?></strong></div>
+					<div class="col-3 text-center"><strong><?php _e( 'Home Team', 'racketmanager' ) ?></strong></div>
+					<div class="col-5 text-center"><strong><?php _e('Sets', 'racketmanager' ) ?></strong></div>
+					<div class="col-3 text-center"><strong><?php _e( 'Away Team', 'racketmanager' ) ?></strong></div>
+				</div>
+
+				<?php $class = '';
+				$rubbers = $match->getRubbers();
+				$r = $tabbase = 0 ;
+				$numPlayers = 2;
+
+				foreach ($rubbers as $rubber) {	?>
+					<div class="row mb-3">
+						<input type="hidden" name="id[<?php echo $r ?>]" value="<?php echo $rubber->id ?>" </>
+						<div class="col-1 text-center align-self-center"><?php echo isset($rubber->rubber_number) ? $rubber->rubber_number : '' ?></div>
+						<div class="col-11">
+							<div class="row">
+								<div class="col-6 col-sm-4">
+									<div class="row">
+										<?php for ($p=1; $p <= $numPlayers ; $p++) { ?>
+											<div class="col-12">
+												<div class="form-group mb-2">
+													<?php $tabindex = $tabbase + 1; ?>
+													<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer<?php echo $p ?>[<?php echo $r ?>]" id="homeplayer<?php echo $p ?>_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
+														<?php if ($homeRoster[$r][$p]['gender'] == 'm') { $select = 'Select male player'; } else { $select = 'Select female player'; } ?>
+														<option><?php _e( $select, 'racketmanager' ) ?></option>
+														<?php foreach ( $homeRoster[$r][$p]['players'] AS $roster ) {
+															if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
+															<option value="<?php echo $roster->roster_id ?>"<?php $player = 'home_player_'.$p; if(isset($rubber->$player)) selected($roster->roster_id, $rubber->$player ); echo $disabled; ?>>
+																<?php echo $roster->fullname ?>
+															</option>
+														<?php } ?>
+													</select>
+												</div>
+											</div>
+										<?php } ?>
+									</div>
+								</div>
+
+								<div class="col-12 col-sm-4 align-self-center order-3 order-sm-2">
+									<div class="row text-center">
+										<?php for ( $i = 1; $i <= $match->num_sets; $i++ ) {
+											if (!isset($rubber->sets[$i])) {
+												$rubber->sets[$i] = array('player1' => '', 'player2' => '');
+											}
+											$colspan = ceil(12 / $match->num_sets);
+											$tabindex = $tabbase + 10 + $i; ?>
+											<div class="col-<?php echo $colspan ?> col-sm-12 col-lg-<?php echo $colspan ?>">
+												<input tabindex="<?php echo $tabindex ?>" class="points" type="text" <?php if ( !$updatesAllowed ) { echo 'readonly';} ?> size="2" id="set_<?php echo $r ?>_<?php echo $i ?>_player1" name="custom[<?php echo $r ?>][sets][<?php echo $i ?>][player1]" value="<?php echo $rubber->sets[$i]['player1'] ?>" />
+												-
+												<?php $tabindex = $tabbase + 11 + $i; ?>
+												<input tabindex="<?php echo $tabindex ?>" class="points" type="text" <?php if ( !$updatesAllowed ) { echo 'readonly';} ?> size="2" id="set_<?php echo $r ?>_<?php echo $i ?>_player2" name="custom[<?php echo $r ?>][sets][<?php echo $i ?>][player2]" value="<?php echo $rubber->sets[$i]['player2'] ?>" />
+											</div>
+										<?php } ?>
+									</div>
+								</div>
+
+								<div class="col-6 col-sm-4 order-2 order-sm-3">
+									<div class="row">
+										<?php for ($p=1; $p <= $numPlayers ; $p++) { ?>
+											<div class="col-12">
+												<div class="form-group mb-2">
+													<?php $tabindex = $tabbase + 3; ?>
+													<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer<?php echo $p ?>[<?php echo $r ?>]" id="awayplayer<?php echo $p ?>_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
+														<?php if ($awayRoster[$r][$p]['gender'] == 'm') { $select = 'Select male player'; } else { $select = 'Select female player'; } ?>
+														<option><?php _e( $select, 'racketmanager' ) ?></option>
+														<?php foreach ( $awayRoster[$r][$p]['players'] AS $roster ) {
+															if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
+															<option value="<?php echo $roster->roster_id ?>"<?php $player = 'away_player_'.$p; if(isset($rubber->$player)) selected($roster->roster_id, $rubber->$player ); echo $disabled; ?>>
+																<?php echo $roster->fullname ?>
+															</option>
+														<?php } ?>
+													</select>
+												</div>
+											</div>
+										<?php } ?>
+									</div>
+								</div>
+							</div>
+							<div class="row text-center">
+								<div class="col-12">
+									<input class="points" type="text" size="2" readonly id="home_points[<?php echo $r ?>]" name="home_points[<?php echo $r ?>]" value="<?php echo (isset($rubber->home_points) ? $rubber->home_points : '') ?>" />
+									<input class="points" type="text" size="2" readonly id="away_points[<?php echo $r ?>]" name="away_points[<?php echo $r ?>]" value="<?php echo (isset($rubber->away_points) ? $rubber->away_points : '') ?>" />
+								</div>
+							</div>
+						</div>
+					</div>
+					<?php
+					$tabbase +=100;
+					$r ++;
+				}	?>
+				<?php if ( isset($match->home_captain) || isset($match->away_captain) ) { ?>
+					<div id="captains" class="row mb-3">
+						<div class="col-1 text-center align-self-center"></div>
+						<div class="col-11">
+							<div class="row justify-content-center">
+								<div class="col-4 mb-3">
+									<div class="col-12 text-center captain"><?php _e( 'Home Captain', 'racketmanager' ) ?></div>
+									<div class="col-12">
+										<?php if ( isset($match->home_captain) ) {
+											echo $racketmanager->getPlayerName($match->home_captain);
+										} else { ?>
+											<?php if ( !current_user_can( 'manage_racketmanager' ) && $match->confirmed == 'P' ) { ?>
+												<?php if ( $userType != 'admin' && $userTeam == 'home' ) { ?>
+													<div class="form-check">
+														<input class="form-check-input" type="radio" name="resultConfirm" value="confirm" required />
+														<label class="form-check-label">Confirm</label>
+													</div>
+													<div class="form-check">
+														<input class="form-check-input" type="radio" name="resultConfirm" value="challenge" required />
+														<label class="form-check-label">Challenge</label>
+													</div>
+													<div class="form-floating">
+														<textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmCommentsHome" id="resultConfirmCommentsHome"></textarea>
+														<label for="resultConfirmCommentsHome"><?php _e( 'Comments', 'racketmanager' ) ?></label>
+													</div>
+												<?php } ?>
+											<?php } ?>
+										<?php } ?>
+									</div>
+								</div>
+								<div class="col-4 mb-3">
+								</div>
+								<div class="col-4 mb-3">
+									<div class="col-12 text-center captain"><?php _e( 'Away Captain', 'racketmanager' ) ?></div>
+									<div class="col-12">
+										<?php if ( isset($match->away_captain) ) {
+											echo $racketmanager->getPlayerName($match->away_captain);
+										} else { ?>
+											<?php if ( !current_user_can( 'manage_racketmanager' ) && $match->confirmed == 'P' ) { ?>
+												<?php if ( $userType != 'admin' && $userTeam == 'away' ) { ?>
+													<div class="form-check">
+														<input class="form-check-input" type="radio" name="resultConfirm" value="confirm" required />
+														<label class="form-check-label"><?php _e( 'Confirm', 'racketmanager' ) ?></label>
+													</div>
+													<div class="form-check">
+														<input class="form-check-input" type="radio" name="resultConfirm" value="challenge" required />
+														<label class="form-check-label"><?php _e( 'Challenge', 'racketmanager' ) ?></label>
+													</div>
+													<div class="form-floating">
+														<textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmCommentsAway" id="resultConfirmCommentsAway"></textarea>
+														<label for="resultConfirmCommentsAway"><?php _e( 'Comments', 'racketmanager' ) ?></label>
+													</div>
+												<?php } ?>
+											<?php } ?>
+										<?php } ?>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				<?php } ?>
+				<div class="row mt-3 mb-3">
+					<div>
+						<div class="form-floating">
+							<textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmComments" id="resultConfirmComments"><?php echo $match->comments ?></textarea>
+							<label for="resultConfirmComments"><?php _e( 'Comments', 'racketmanager' ) ?></label>
+						</div>
+					</div>
+				</div>
+				<?php if ( isset($match->updated_user) ) { ?>
+					<div class="row mb-3">
+						<div class="col-2">
+							Updated By:
+						</div>
+						<div class="col-10">
+							<?php echo $racketmanager->getPlayerName($match->updated_user); ?>
+						</div>
+						<?php if ( isset($match->updated) ) { ?>
+							<div class="col-2">
+								On:
+							</div>
+							<div class="col-10">
+								<?php echo $match->updated; ?>
+							</div>
+						<?php } ?>
+					</div>
+				<?php } ?>
+				<?php if ( current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == NULL ) { ?>
+					<div class="row mb-3">
+						<div class="col-12">
+							<input type="hidden" name="updateRubber" id="updateRubber" value="<?php if ( !$updatesAllowed ) { echo 'confirm';} else { echo 'results';} ?>" />
+							<button tabindex="500" class="button button-primary" type="button" id="updateRubberResults" onclick="Racketmanager.updateResults(this)">Update Results</button>
+						</div>
+					</div>
+				<?php } ?>
+				<div class="row mb-3">
+					<div id="UpdateResponse"></div>
+				</div>
+			</form>
+		</div>
+	<?php	}
+
 }
 
 global $racketmanager;

@@ -50,6 +50,15 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.13.0 =
+* UPDATE: use bootstrap styling for daily matches / latest results
+* UPDATE: hide standings columns on small screens
+* UPDATE: reformat set scores on small screens
+* UPDATE: allow non-playing captains to confirm results
+* UPDATE: move result options into array by competitionType
+* UPDATE: send result notification to opposing captain
+* UPDATE: display match information 
+
 = 6.12.0 =
 * UPDATE: format team display in favourite emails
 * UPDATE: use tabs in admin screens instead of pills

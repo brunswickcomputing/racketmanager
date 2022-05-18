@@ -2326,7 +2326,7 @@ class RacketManager {
 						echo ' On:'.$match->updated;
 					} ?>
 				</div>
-				<?php if ( current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == NULL ) { ?>
+				<?php if ( (is_user_logged_in()) && (current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == NULL) ) { ?>
 					<div class="mb3">
 						<input type="hidden" name="updateMatch" id="updateMatch" value="results" />
 						<button tabindex="500" class="button button-primary" type="button" id="updateMatchResults" onclick="Racketmanager.updateMatchResults(this)">Update Result</button>
@@ -2655,7 +2655,7 @@ class RacketManager {
 						<?php } ?>
 					</div>
 				<?php } ?>
-				<?php if ( current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == NULL ) { ?>
+				<?php if ( (is_user_logged_in()) && (current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == NULL) ) { ?>
 					<div class="row mb-3">
 						<div class="col-12">
 							<input type="hidden" name="updateRubber" id="updateRubber" value="<?php if ( !$updatesAllowed ) { echo 'confirm';} else { echo 'results';} ?>" />

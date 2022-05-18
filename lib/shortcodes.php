@@ -38,6 +38,7 @@ class RacketManagerShortcodes extends RacketManager {
 		add_shortcode( 'winners', array(&$this, 'showWinners') );
 		add_shortcode( 'matchnotification', array(&$this, 'showMatchNotification') );
 		add_shortcode( 'resultnotification', array(&$this, 'showResultNotification') );
+		add_shortcode( 'resultnotificationcaptain', array(&$this, 'showCaptainResultNotification') );
 		add_shortcode( 'rosternotification', array(&$this, 'showRosterNotification') );
 		add_shortcode( 'cupentry', array(&$this, 'showCupEntry') );
 		add_shortcode( 'leagueentry', array(&$this, 'showLeagueEntry') );
@@ -1155,6 +1156,47 @@ class RacketManagerShortcodes extends RacketManager {
 
 		return $out;
 	}
+
+	/**
+	* Function to show result notification
+	*
+	*    [resultnotificationcaptain id=ID template=X]
+	*
+	* @param array $atts
+	* @return the content
+	*/
+	public function showCaptainResultNotification( $atts ) {
+		global $racketmanager;
+
+		extract(shortcode_atts(array(
+			'match' => '',
+			'template' => '',
+			'league' => false,
+			'round' => false,
+			'matchday' => false,
+			'organisationname' => false,
+		), $atts ));
+
+		$match = get_match($match);
+
+		$actionurl = $racketmanager->site_url;
+		if ( $match->league->mode == 'championship' ) {
+			$actionurl .= "/".__('match', 'racketmanager')."/".sanitize_title($match->league->title)."/".$match->league->current_season['name']."/".$match->final_round."/".sanitize_title($match->teams['home']->title)."-vs-".sanitize_title($match->teams['away']->title);
+		} else {
+			$actionurl .= "/".__('match', 'racketmanager')."/".sanitize_title($match->league->title)."/".$match->league->current_season['name']."/day".$match->match_day."/".sanitize_title($match->teams['home']->title)."-vs-".sanitize_title($match->teams['away']->title);
+		}
+
+		if ( !$organisationname ) {
+			$organisationname = $racketmanager->site_name;
+		}
+
+		$filename = ( !empty($template) ) ? 'result-notification-'.$template : 'result-notification';
+
+		$out = $this->loadTemplate( $filename, array( 'match' => $match, 'organisationName' => $organisationname, 'actionurl' => $actionurl ), 'email' );
+
+		return $out;
+	}
+
 	/**
 	* Function to show roster notification
 	*

@@ -1108,7 +1108,7 @@ class RacketManagerAJAX extends RacketManager {
 			}
 
 			if ( $matchConfirmed ) {
-				$this->updateMatchStatus( $matchId, $matchConfirmed, $home_team, $away_team, $matchComments );
+				$matchUpdatedby = $this->updateMatchStatus( $matchId, $matchConfirmed, $home_team, $away_team, $matchComments );
 				switch ( $matchConfirmed ) {
 					case "A":
 					$matchMessage = 'Result Approved';
@@ -1148,11 +1148,11 @@ class RacketManagerAJAX extends RacketManager {
 						}
 					}
 				} elseif ( $matchConfirmed == 'A' ) {
-					$this->resultNotification($matchConfirmed, $matchMessage, $match);
+					$this->resultNotification($matchConfirmed, $matchMessage, $match, $matchUpdatedby);
 				} elseif ( $matchConfirmed == 'C' ) {
-					$this->resultNotification($matchConfirmed, $matchMessage, $match);
+					$this->resultNotification($matchConfirmed, $matchMessage, $match, $matchUpdatedby);
 				} elseif ( !current_user_can( 'manage_racketmanager' ) && $matchConfirmed == 'P' ) {
-					$this->resultNotification($matchConfirmed, $matchMessage, $match);
+					$this->resultNotification($matchConfirmed, $matchMessage, $match, $matchUpdatedby);
 				}
 			} else {
 				if ( !$msg ) {
@@ -1167,9 +1167,11 @@ class RacketManagerAJAX extends RacketManager {
 		}
 	}
 
-	public function resultNotification($matchStatus, $matchMessage, $match) {
+	public function resultNotification($matchStatus, $matchMessage, $match, $matchUpdatedby=false) {
 		global $racketmanager;
 		$emailTo = $racketmanager->getConfirmationEmail($match->league->competitionType);
+		$rm_options = $racketmanager->getOptions();
+		$resultNotification = $rm_options[$match->league->competitionType]['resultNotification'];
 
 		if ( $emailTo > '' ) {
 			$messageArgs = array();
@@ -1184,6 +1186,32 @@ class RacketManagerAJAX extends RacketManager {
 			$subject = $racketmanager->site_name." - ".$matchMessage." - ".$match->league->title." - ".$match->match_title;
 			$message = racketmanager_result_notification($match->id, $messageArgs );
 			$racketmanager->lm_mail($emailTo, $subject, $message, $headers);
+			if ( $matchStatus == 'P' ) {
+				$emailFrom = $emailTo;
+				unset($headers['from']);
+				$headers['from'] = 'From: '.$match->league->competitionType.' secretary <'.$emailFrom.'>';
+				$emailTo = '';
+				if ( $matchUpdatedby == 'home' ) {
+					if ( $resultNotification == 'captain' ) {
+						$emailTo = $match->teams['away']->contactemail;
+					} elseif ( $resultNotification == 'secretary' ) {
+						$club = get_club($match->teams['away']->affiliatedclub);
+						$emailTo = isset($club->matchSecretaryEmail) ? $club->matchSecretaryEmail : '';
+					}
+				} else {
+					if ( $resultNotification == 'captain' ) {
+						$emailTo = $match->teams['home']->contactemail;
+					} elseif ( $resultNotification == 'secretary' ) {
+						$club = get_club($match->teams['away']->affiliatedclub);
+						$emailTo = isset($club->matchSecretaryEmail) ? $club->matchSecretaryEmail : '';
+					}
+				}
+				if ( $emailTo > '' ) {
+					$subject = $racketmanager->site_name." - ".$match->league->title." - ".$match->match_title." - Result confirmation required";
+					$message = racketmanager_captain_result_notification($match->id, $messageArgs );
+					$racketmanager->lm_mail($emailTo, $subject, $message, $headers);
+				}
+			}
 		}
 	}
 
@@ -1285,13 +1313,16 @@ class RacketManagerAJAX extends RacketManager {
 		$homeRoster = $racketmanager->getRoster(array("count" => true, "team" => $homeTeam, "player" => $userid, "inactive" => true));
 		if ( $homeRoster > 0 ) { //Home captain
 			$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `home_captain` = %d, `comments` = '%s' WHERE `id` = '%d'", $userid, $matchConfirmed, $userid, $comments, $matchId));
+			return 'home';
 		} else {
 			$awayRoster = $racketmanager->getRoster(array("count" => true, "team" => $awayTeam, "player" => $userid, "inactive" => true));
 			if ( $awayRoster > 0 ) { // Away Captain
 				$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `away_captain` = %d, `comments` = '%s' WHERE `id` = '%d'", $userid, $matchConfirmed, $userid, $comments, $matchId));
+				return 'away';
 			} else {
 				$matchConfirmed = 'A'; //Admin user
 				$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `comments` = '%s' WHERE `id` = '%d'", get_current_user_id(), $matchConfirmed, $comments, $matchId));
+				return 'admin';
 			}
 		}
 	}

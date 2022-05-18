@@ -1635,7 +1635,7 @@ class RacketManager {
 	public function getMatches( $match_args ) {
 		global $wpdb;
 
-		$defaults = array( 'league_id' => false, 'season' => false, 'final' => false, 'competitiontype' => false, 'competitionseason' => false, 'orderby' => array("date" => "ASC", "id" => "ASC"), 'competition_id' => false, 'confirmed' => false, 'match_date' => false, 'competition_type' => false, 'time' => false, 'history' => false, 'affiliatedClub' => false );
+		$defaults = array( 'league_id' => false, 'season' => false, 'final' => false, 'competitiontype' => false, 'competitionseason' => false, 'orderby' => array("date" => "ASC", "id" => "ASC"), 'competition_id' => false, 'confirmed' => false, 'match_date' => false, 'competition_type' => false, 'time' => false, 'history' => false, 'affiliatedClub' => false, 'league_name' => false, 'homeTeam' => false, 'awayTeam' => false, 'matchDay' => false, 'competition_name' => false );
 		$match_args = array_merge($defaults, (array)$match_args);
 		extract($match_args, EXTR_SKIP);
 
@@ -1647,6 +1647,9 @@ class RacketManager {
 		if ( $competition_type ) {
 			$sql .= " AND `league_id` in (select `id` from {$wpdb->racketmanager} WHERE `competition_id` in (SELECT `id` FROM {$wpdb->racketmanager_competitions} WHERE `competitiontype` = '".$competition_type."'))";
 		}
+		if ( $competition_name ) {
+			$sql .= " AND `league_id` in (select `id` from {$wpdb->racketmanager} WHERE `competition_id` in (SELECT `id` FROM {$wpdb->racketmanager_competitions} WHERE `name` = '".$competition_name."'))";
+		}
 
 		if ( $competition_id ) {
 			$sql .= " AND `league_id` in (select `id` from {$wpdb->racketmanager} WHERE `competition_id` = '".$competition_id."')";
@@ -1654,6 +1657,9 @@ class RacketManager {
 
 		if ( $league_id ) {
 			$sql .= " AND `league_id`  = '".$league_id."'";
+		}
+		if ( $league_name ) {
+			$sql .= " AND `league_id` in (select `id` from {$wpdb->racketmanager} WHERE `title` = '".$league_name."')";
 		}
 		if ( $season ) {
 			$sql .= " AND `season`  = '".$season."'";
@@ -1682,6 +1688,15 @@ class RacketManager {
 
 		if ( $affiliatedClub ) {
 			$sql .= " AND (`home_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = ".$affiliatedClub.") OR `away_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = ".$affiliatedClub."))";
+		}
+		if (!empty($homeTeam)) {
+			$sql .= " AND `home_team` = ".$homeTeam." ";
+		}
+		if (!empty($awayTeam)) {
+			$sql .= " AND `away_team` = ".$awayTeam." ";
+		}
+		if ( $matchDay && intval($matchDay) > 0 ) {
+			$sql .= " AND `match_day` = ".$matchDay." ";
 		}
 
 		$sql .= " ORDER BY `league_id` ASC";

@@ -322,7 +322,8 @@ class RacketManagerShortcodes extends RacketManager {
 	* @return string
 	*/
 	public function showMatch( $atts ) {
-		global $match;
+		global $racketmanager, $match;
+
 		extract(shortcode_atts(array(
 			'match_id' => 0,
 			'template' => '',
@@ -330,40 +331,44 @@ class RacketManagerShortcodes extends RacketManager {
 
 		// Get Match ID from shortcode or $_GET
 		if ( !$match_id ) {
-			$match_id = ( isset($_GET['match_id']) && !empty($_GET['match_id']) ) ? $_GET['match_id'] : false;
+			$homeTeam = $racketmanager->getTeamID(str_replace('-', ' ', get_query_var('teamHome')));
+			$awayTeam = $racketmanager->getTeamID(str_replace('-', ' ', get_query_var('teamAway')));
+			$leagueName = str_replace('-', ' ', get_query_var('league_name'));
+			$competitionName = str_replace('-', ' ', get_query_var('competition_name'));
+			$matchDay = get_query_var('match_day');
+			$season = get_query_var('season');
+			$round = get_query_var('round');
+			$matchArgs = array();
+			if ($homeTeam) {
+				$matchArgs['homeTeam'] = $homeTeam;
+			}
+			if ($awayTeam) {
+				$matchArgs['awayTeam'] = $awayTeam;
+			}
+			if ($leagueName) {
+				$matchArgs['league_name'] = $leagueName;
+			}
+			if ($competitionName) {
+				$matchArgs['competition_name'] = $competitionName;
+			}
+			if ($matchDay) {
+				$matchArgs['matchDay'] = $matchDay;
+			}
+			if ($round) {
+				$matchArgs['final'] = $round;
+			}
+			if ($season) {
+				$matchArgs['season'] = $season;
+			}
+			$matches = $racketmanager->getMatches($matchArgs);
+			$match_id = $matches[0]->id;
 		}
 		$match = get_match($match_id);
-
-		$filename = '';
-		if ( $match ) {
-			$league = get_league($match->league_id);
-			$match->num_rubbers = ( isset($league->num_rubbers) ? $league->num_rubbers : NULL );
-			$match->num_sets = ( isset($league->num_sets) ? $league->num_sets : NULL );
-
-			if ( isset($match->num_rubbers) ) {
-				$rubbers = $match->getRubbers();
-				$r=1;
-				foreach ($rubbers as $rubber) {
-					$rubber->home_player_1_name = $rubber->home_player_2_name = $rubber->away_player_1_name = $rubber->away_player_2_name = '';
-					if ( isset($rubber->home_player_1) ) $rubber->home_player_1_name = $this->getPlayerNamefromRoster($rubber->home_player_1);
-					if ( isset($rubber->home_player_2) ) $rubber->home_player_2_name = $this->getPlayerNamefromRoster($rubber->home_player_2);
-					if ( isset($rubber->away_player_1) ) $rubber->away_player_1_name = $this->getPlayerNamefromRoster($rubber->away_player_1);
-					if ( isset($rubber->away_player_2) ) $rubber->away_player_2_name = $this->getPlayerNamefromRoster($rubber->away_player_2);
-					$match->rubbers[$r] = $rubber;
-					$r ++;
-				}
-			}
-
+		if (isset($match->league->num_rubbers) && $match->league->num_rubbers > 0 ) {
+			$out = $racketmanager->showRubbersScreen($match);
+		} else {
+			$out = $racketmanager->showMatchScreen($match);
 		}
-
-		if ( empty($template) && $this->checkTemplate('match-'.$league->sport) )
-		$filename = 'match-'.$league->sport;
-		elseif ($this->checkTemplate('match-'.$template.'-'.$league->sport) )
-		$filename = 'match-'.$template.'-'.$league->sport;
-		else
-		$filename = ( !empty($template) ) ? 'matches-'.$template : 'matches';
-		$out = $this->loadTemplate( $filename, array('match' => $match) );
-
 		return $out;
 	}
 

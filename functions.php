@@ -115,6 +115,18 @@ function create_new_url_querystring() {
     'index.php?pagename=leagues%2F$matches[1]%2F$matches[2]-competition',
     'top'
   );
+  // league - season - matchday - match
+  add_rewrite_rule(
+    'match/(.+?)-(.+?)-([0-9]{1})/([0-9]{4})/day([0-9]{1,2})/(.+?)-vs-(.+?)/?$',
+    'index.php?pagename=match%2F&league_name=$matches[1]-$matches[2]-$matches[3]&season=$matches[4]&match_day=$matches[5]&teamHome=$matches[6]&teamAway=$matches[7]',
+    'top'
+  );
+  // league - season - matchday - match
+  add_rewrite_rule(
+    'match/(.+?)-(.+?)-(.+?)/([0-9]{4})/(.+?)/(.+?)-vs-(.+?)/?$',
+    'index.php?pagename=match%2F&competition_name=$matches[1]-$matches[2]-$matches[3]&season=$matches[4]&round=$matches[5]&teamHome=$matches[6]&teamAway=$matches[7]',
+    'top'
+  );
   // league - season - matchday - team
   add_rewrite_rule(
     'leagues/(.+?)-(.+?)-([0-9]{1})/([0-9]{4})/day([0-9]{1,2})/(.+?)/?$',
@@ -210,11 +222,15 @@ function create_new_url_querystring() {
     'top'
   );
 
+  add_rewrite_tag('%competition_name%','([^/]*)');
+  add_rewrite_tag('%round%','(.+?)');
   add_rewrite_tag('%league_name%','([^/]*)');
   add_rewrite_tag('%league_id%','([^/]*)');
   add_rewrite_tag('%season%','([0-9]{4})');
   add_rewrite_tag('%match_day%','([0-9]{1,2})');
   add_rewrite_tag('%team%','(.+?)');
+  add_rewrite_tag('%teamHome%','(.+?)');
+  add_rewrite_tag('%teamAway%','(.+?)');
   add_rewrite_tag('%club_name%','(.+?)');
   add_rewrite_tag('%match_date%','(.+?)');
   add_rewrite_tag('%type%','(.+?)');

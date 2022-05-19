@@ -2009,7 +2009,8 @@ final class RacketManagerAdmin extends RacketManager
 		$competition = get_competition($competition_id);
 		if ( !$num_match_days ) {
 			if ( $competition->competitiontype == 'cup' || $competition->competitiontype == 'tournament' ) {
-				$rm_options = $racketmanager->getOptions();
+				$options = $racketmanager->getOptions();
+				$rm_options = $options['championship'];
 				$num_match_days = isset($rm_options['numRounds']) ? $rm_options['numRounds'] : 0;
 			}
 		}
@@ -2971,7 +2972,7 @@ final class RacketManagerAdmin extends RacketManager
 				$options['colors']['headers'] = htmlspecialchars($_POST['color_headers']);
 				$options['colors']['rows'] = array( 'alternate' => htmlspecialchars($_POST['color_rows_alt']), 'main' => htmlspecialchars($_POST['color_rows']), 'ascend' => htmlspecialchars($_POST['color_rows_ascend']), 'descend' => htmlspecialchars($_POST['color_rows_descend']), 'relegation' => htmlspecialchars($_POST['color_rows_relegation']) );
 				$options['colors']['boxheader'] = array(htmlspecialchars($_POST['color_boxheader1']), htmlspecialchars($_POST['color_boxheader2']));
-				$options['numRounds'] = htmlspecialchars($_POST['numRounds']);
+				$options['championship']['numRounds'] = htmlspecialchars($_POST['numRounds']);
 
 				update_option( 'leaguemanager', $options );
 				$this->setMessage(__( 'Settings saved', 'racketmanager' ));

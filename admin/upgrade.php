@@ -330,6 +330,7 @@ function racketmanager_upgrade() {
 				$options = $racketmanager->getOptions();
 				$competitionTypes = array();
 				$rosters = array();
+				$checks = array();
 				foreach ($options as $option => $value) {
 					if ( $option == 'matchCapability' || $option == 'matchCapabilityLeague' ) {
 						$competitionTypes['league']['matchCapability'] = $value;
@@ -399,8 +400,21 @@ function racketmanager_upgrade() {
 						$rosters['rosterConfirmationEmail'] = $value;
 						unset($options[$option]);
 					}
+					if ( $option == 'rosterLeadTime' ) {
+						$checks['rosterLeadTime'] = $value;
+						unset($options[$option]);
+					}
+					if ( $option == 'playedRounds' ) {
+						$checks['playedRounds'] = $value;
+						unset($options[$option]);
+					}
+					if ( $option == 'playerLocked' ) {
+						$checks['playerLocked'] = $value;
+						unset($options[$option]);
+					}
 
 				}
+				$options['checks'] = $checks;
 				$options['rosters'] = $rosters;
 				$options['league'] = $competitionTypes['league'];
 				$options['cup'] = $competitionTypes['cup'];

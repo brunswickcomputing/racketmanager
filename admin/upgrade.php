@@ -329,6 +329,7 @@ function racketmanager_upgrade() {
         echo __('starting 6.13.0 upgrade', 'leaguemanager') . "<br />\n";
 				$options = $racketmanager->getOptions();
 				$competitionTypes = array();
+				$rosters = array();
 				foreach ($options as $option => $value) {
 					if ( $option == 'matchCapability' || $option == 'matchCapabilityLeague' ) {
 						$competitionTypes['league']['matchCapability'] = $value;
@@ -390,8 +391,17 @@ function racketmanager_upgrade() {
 						$competitionTypes['tournament']['resultNotification'] = $value;
 						unset($options[$option]);
 					}
+					if ( $option == 'rosterConfirmation' ) {
+						$rosters['rosterConfirmation'] = $value;
+						unset($options[$option]);
+					}
+					if ( $option == 'rosterConfirmationEmail' ) {
+						$rosters['rosterConfirmationEmail'] = $value;
+						unset($options[$option]);
+					}
 
 				}
+				$options['rosters'] = $rosters;
 				$options['league'] = $competitionTypes['league'];
 				$options['cup'] = $competitionTypes['cup'];
 				$options['tournament'] = $competitionTypes['tournament'];

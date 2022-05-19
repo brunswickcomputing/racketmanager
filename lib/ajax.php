@@ -1090,7 +1090,8 @@ class RacketManagerAJAX extends RacketManager {
 						$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->racketmanager_roster_requests} (`affiliatedClub`, `first_name`, `surname`, `gender`, `player_id`, `requested_date`, `requested_user`) values (%d, '%s', '%s', '%s', %d, now(), %d)", $affiliatedClub, $firstName, $surname, $gender, $playerId, $userid ) );
 					}
 					$rosterRequestId = $wpdb->insert_id;
-					$options = $racketmanager->getOptions();
+					$rmOptions = $racketmanager->getOptions();
+					$options = $rmOptions['rosters'];
 					if ( $options['rosterConfirmation'] == 'auto' ) {
 						$club->approveRosterRequest( $rosterRequestId );
 						$action = 'add';

@@ -56,8 +56,11 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 * UPDATE: reformat set scores on small screens
 * UPDATE: allow non-playing captains to confirm results
 * UPDATE: move result options into array by competitionType
+* UPDATE: move roster options into array
+* UPDATE: move player check options into array
+* UPDATE: move championship options into array
 * UPDATE: send result notification to opposing captain
-* UPDATE: display match information 
+* UPDATE: display match information
 
 = 6.12.0 =
 * UPDATE: format team display in favourite emails

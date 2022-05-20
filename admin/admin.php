@@ -445,6 +445,7 @@ final class RacketManagerAdmin extends RacketManager
 			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
 		} else {
 			$tab = "resultschecker";
+			$resultsCheckFilter = '';
 			if ( isset($_POST['doResultsChecker']) ) {
 				if ( current_user_can('update_results') ) {
 					check_admin_referer('results-checker-bulk');
@@ -462,8 +463,14 @@ final class RacketManagerAdmin extends RacketManager
 				}
 				$this->printMessage();
 				$tab = "resultschecker";
+			} elseif ( isset($_POST['doFilterResultsChecker']) ) {
+				if ( $_POST['filterResultsChecker'] == 'outstanding') {
+					$resultsCheckFilter = 'outstanding';
+				}
 			}
 		}
+		$resultsCheckers = $this->getResultsChecker($resultsCheckFilter);
+
 		include_once( dirname(__FILE__) . '/show-results.php' );
 	}
 
@@ -3584,10 +3591,14 @@ final class RacketManagerAdmin extends RacketManager
 	* @param array $query_args
 	* @return array
 	*/
-	public function getResultsChecker( $completed = false ) {
+	public function getResultsChecker( $outstanding = false ) {
 		global $wpdb, $racketmanager;
 
 		$sql = "SELECT `id`, `league_id`, `match_id`, `team_id`, `player_id`, `updated_date`, `updated_user`, `description`, `status` FROM {$wpdb->racketmanager_results_checker} WHERE 1 = 1"  ;
+
+		if ( $outstanding ) {
+			$sql .= " AND `status` IS NULL";
+		}
 
 		$sql .= " ORDER BY `match_id` DESC, `league_id` ASC, `team_id` ASC, `player_id` ASC";
 

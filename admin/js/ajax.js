@@ -303,6 +303,30 @@ Racketmanager.notifyTournamentEntryOpen = function(tournamentId) {
     }
   }) ;
 };
+Racketmanager.chaseMatchResult = function(matchId) {
+  notifyField = "#notifyMessage-"+matchId;
+
+  jQuery.ajax({
+    url:RacketManagerAjaxL10n.requestUrl,
+    type: "POST",
+    data: {"matchId": matchId,
+    "action": "racketmanager_chase_match_result"},
+    success: function(response) {
+      var $response = jQuery.parseJSON(response);
+      var $message = $response['msg'];
+      var $error = $response['error'];
+
+      jQuery(notifyField).text($message);
+      jQuery(notifyField).show();
+      if ( !$error ) {
+        jQuery(notifyField).delay(10000).fadeOut('slow');
+      }
+    },
+    error: function() {
+      alert("Ajax error on chasing for match result");
+    }
+  }) ;
+};
 Racketmanager.getImportOption = function(option) {
 
   var selectedOption = option;

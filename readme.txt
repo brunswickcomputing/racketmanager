@@ -50,6 +50,14 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.14.0 =
+* NEW: show matches with results not provided
+* NEW: send email to captains to chase outstanding results
+* BUGFIX: add missing break statement
+* UPDATE: add filter to only show outstanding result checks
+* UPDATE: cc competition secretary on emails
+* UPDATE: tidy up results page
+
 = 6.13.0 =
 * UPDATE: use bootstrap styling for daily matches / latest results
 * UPDATE: hide standings columns on small screens

@@ -23,6 +23,10 @@ $prev_league = 0;
         <div class="col-9 col-sm-6 col-lg-4 match-title">
           <a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $match->league->id ?>&amp;season=<?php echo $match->season ?>&amp;<?php echo $matchLink ?> "><?php echo $match->match_title ?></a>
         </div>
+        <div class="col-12 col-md-auto"><a class="btn btn-secondary" onclick="Racketmanager.chaseMatchResult('<?php echo ($match->id) ?>');">
+          <?php _e( 'Chase result', 'racketmanager' ) ?></a>
+        </div>
+        <div class="col-12 col-md-auto"><span id="notifyMessage-<?php echo $match->id ?>"></span></div>
       </div>
     <?php }
   } else { ?>

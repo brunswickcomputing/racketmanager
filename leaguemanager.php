@@ -2072,7 +2072,8 @@ class RacketManager {
     }
 		$messageArgs['emailfrom'] = $emailFrom;
     $emailMessage = racketmanager_match_notification($match->id, $messageArgs );
-    $headers = array('From: '.$match->league->competitionType.' secretary <'.$emailFrom.'>');
+    $headers = array();
+		$headers[] = 'From: '.ucfirst($match->league->competitionType).' Secretary <'.$emailFrom.'>';
     $subject = $organisationName." - ".$match->league->title." - ".$roundName." - Match Details";
     $racketmanager->lm_mail($to, $subject, $emailMessage, $headers);
 		return true;

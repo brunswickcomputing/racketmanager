@@ -2045,12 +2045,9 @@ class RacketManager {
 		if ( !(isset($match->teams['home']->contactemail) && $match->teams['home']->contactemail > '') && !(isset($match->teams['away']->contactemail) && $match->teams['away']->contactemail > '' ) ) {
       return;
     }
-    if ( $match->teams['home']->id == -1 || $match->teams['away']->id == -1 ) {
+    if ( ( $match->teams['home']->id == -1 || $match->teams['away']->id == -1 ) || ( !isset($match->custom['host']) ) ) {
       return;
     }
-		if ( !isset($match->custom['host']) ) {
-			return;
-		}
     $to = array();
     if ( isset($match->teams['home']->contactemail) && $match->teams['home']->contactemail > '' ) { array_push($to, $match->teams['home']->contactemail); }
     if ( isset($match->teams['away']->contactemail) && $match->teams['away']->contactemail > '' ) { array_push($to, $match->teams['away']->contactemail); }

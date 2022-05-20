@@ -2220,7 +2220,7 @@ class RacketManager {
 
 		$headers = array();
 		$fromEmail = $this->getConfirmationEmail($league->competitionType);
-		$headers[] = 'From: '.ucfirst($league->competitionType).'Secretary <'.$fromEmail.'>';
+		$headers[] = 'From: '.ucfirst($league->competitionType).' Secretary <'.$fromEmail.'>';
 		$organisationName = $this->site_name;
 		$emailSubject = $this->site_name." - ".$league->title." Result Notification";
 		$favouriteURL = $this->site_url.'/member-account/favourites';

@@ -758,7 +758,7 @@ class RacketManagerAJAX extends RacketManager {
 			if ( $matchStatus == 'P' ) {
 				$emailFrom = $emailTo;
 				unset($headers['from']);
-				$headers['from'] = 'From: '.$match->league->competitionType.' secretary <'.$emailFrom.'>';
+				$headers['from'] = 'From: '.ucfirst($match->league->competitionType).' Secretary <'.$emailFrom.'>';
 				$headers[] = 'cc: '.ucfirst($match->league->competitionType).' Secretary <'.$emailFrom.'>';
 				$emailTo = '';
 				if ( $matchUpdatedby == 'home' ) {

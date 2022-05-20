@@ -2074,6 +2074,7 @@ class RacketManager {
     $emailMessage = racketmanager_match_notification($match->id, $messageArgs );
     $headers = array();
 		$headers[] = 'From: '.ucfirst($match->league->competitionType).' Secretary <'.$emailFrom.'>';
+		$headers[] = 'cc: '.ucfirst($match->league->competitionType).' Secretary <'.$emailFrom.'>';
     $subject = $organisationName." - ".$match->league->title." - ".$roundName." - Match Details";
     $racketmanager->lm_mail($to, $subject, $emailMessage, $headers);
 		return true;
@@ -2106,6 +2107,7 @@ class RacketManager {
 			$headers = array();
 			$fromEmail = $this->getConfirmationEmail($competitionType);
 			$headers[] = 'From: '.ucfirst($competitionType).'Secretary <'.$fromEmail.'>';
+			$headers[] = 'cc: '.ucfirst($competitionType).'Secretary <'.$fromEmail.'>';
 			$organisationName = $this->site_name;
 
 			foreach ($clubs as $club) {

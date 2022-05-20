@@ -2036,6 +2036,7 @@ final class RacketManagerAdmin extends RacketManager
 			$emailMessage = racketmanager_constitution_notification($competition->id, $messageArgs );
 			$headers = array();
 			$headers[] = 'From: '.ucfirst($competition->competitiontype).' Secretary <'.$emailAddr.'>';
+			$headers[] = 'cc: '.ucfirst($competition->competitiontype).' Secretary <'.$emailAddr.'>';
 			$subject = $organisationName." - ".$competition->name." ".$season." - Constitution";
 			$racketmanager->lm_mail($emailAddr, $subject, $emailMessage, $headers);
 			$teams = $competition->getTeams( array('status' => 3) );
@@ -3812,6 +3813,7 @@ final class RacketManagerAdmin extends RacketManager
 		$headers = array();
 		$fromEmail = $this->getConfirmationEmail($league->competitionType);
 		$headers[] = 'From: League Secretary <'.$fromEmail.'>';
+		$headers[] = 'cc: '.ucfirst($league->competitionType).' Secretary <'.$emailFrom.'>';
 		$organisationName = $this->site_name;
 
 		foreach ($teams as $team) {

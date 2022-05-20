@@ -374,6 +374,7 @@ final class RacketManagerAdmin extends RacketManager
 					break;
 					case 'tournament-plan':
 					$this->displayTournamentPlanPage();
+					break;
 					case 'contact':
 					$this->displayContactPage();
 					break;

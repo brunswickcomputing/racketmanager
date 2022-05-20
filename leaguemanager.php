@@ -1634,7 +1634,7 @@ class RacketManager {
 	public function getMatches( $match_args ) {
 		global $wpdb;
 
-		$defaults = array( 'league_id' => false, 'season' => false, 'final' => false, 'competitiontype' => false, 'competitionseason' => false, 'orderby' => array("date" => "ASC", "id" => "ASC"), 'competition_id' => false, 'confirmed' => false, 'match_date' => false, 'competition_type' => false, 'time' => false, 'history' => false, 'affiliatedClub' => false, 'league_name' => false, 'homeTeam' => false, 'awayTeam' => false, 'matchDay' => false, 'competition_name' => false );
+		$defaults = array( 'league_id' => false, 'season' => false, 'final' => false, 'competitiontype' => false, 'competitionseason' => false, 'orderby' => array('league_id' => 'ASC', 'id' => 'ASC'), 'competition_id' => false, 'confirmed' => false, 'match_date' => false, 'competition_type' => false, 'time' => false, 'history' => false, 'affiliatedClub' => false, 'league_name' => false, 'homeTeam' => false, 'awayTeam' => false, 'matchDay' => false, 'competition_name' => false );
 		$match_args = array_merge($defaults, (array)$match_args);
 		extract($match_args, EXTR_SKIP);
 
@@ -1667,7 +1667,11 @@ class RacketManager {
 			$sql .= " AND `final`  = '".$final."'";
 		}
 		if ( $competitiontype ) {
-			$sql .= " AND `league_id` in (select l.`id` from {$wpdb->racketmanager} l, {$wpdb->racketmanager_competitions} c WHERE l.`competition_id` = c.`id` AND c.`competitiontype` = '".$competitiontype."' AND c.`name` LIKE '".$competitionseason."%')";
+			$sql .= " AND `league_id` in (select l.`id` from {$wpdb->racketmanager} l, {$wpdb->racketmanager_competitions} c WHERE l.`competition_id` = c.`id` AND c.`competitiontype` = '".$competitiontype."'";
+			if ( $competitionseason ) {
+				$sql .= " AND c.`name` LIKE '".$competitionseason."%'";
+			}
+			$sql .= ")";
 		}
 
 		if ( $confirmed ) {
@@ -1678,6 +1682,9 @@ class RacketManager {
 		if ( $time == 'latest' ) {
 			$home_points = $away_points = false;
 			$sql .= " AND (`home_points` != '' OR `away_points` != '')";
+		}
+		if ( $time == 'outstanding' ) {
+			$sql .= " AND `date` <= NOW() AND `winner_id` = 0";
 		}
 
 		// get only updated matches in specified period for history
@@ -1697,8 +1704,16 @@ class RacketManager {
 		if ( $matchDay && intval($matchDay) > 0 ) {
 			$sql .= " AND `match_day` = ".$matchDay." ";
 		}
-
-		$sql .= " ORDER BY `league_id` ASC";
+		$orderby_string = "";
+		$i = 0;
+		foreach ($orderby AS $order => $direction) {
+			$orderby_string .= "`".$order."` ".$direction;
+			if ($i < (count($orderby)-1)) {
+				$orderby_string .= ",";
+			}
+			$i++;
+		}
+		$sql .= " ORDER BY ".$orderby_string;
 
 		// get matches
 		$matches = $wpdb->get_results($sql);

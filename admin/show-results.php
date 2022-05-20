@@ -11,12 +11,15 @@ jQuery(document).ready(function(){
 
   <div class="container">
     <!-- Nav tabs -->
-    <ul class="nav nav-tabs" id="myTab" role="tablist">
+    <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="resultschecker-tab" data-bs-toggle="tab" data-bs-target="#resultschecker" type="button" role="tab" aria-controls="resultschecker" aria-selected="false">Results Checker</button>
       </li>
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="results-tab" data-bs-toggle="tab" data-bs-target="#results" type="button" role="tab" aria-controls="results" aria-selected="true">Results</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="pendingresults-tab" data-bs-toggle="tab" data-bs-target="#pendingresults" type="button" role="tab" aria-controls="pendingresults" aria-selected="true"> Pending Results</button>
       </li>
     </ul>
 
@@ -27,8 +30,12 @@ jQuery(document).ready(function(){
         <?php include('results/results-checker.php'); ?>
       </div>
       <div class="tab-pane fade" id="results" role="tabpanel" aria-labelledby="results-tab">
-        <h2 class="header"><?php _e( 'Pending Results', 'racketmanager' ) ?></h2>
+        <h2 class="header"><?php _e( 'Results requiring action', 'racketmanager' ) ?></h2>
         <?php include('results/results.php'); ?>
+      </div>
+      <div class="tab-pane fade" id="pendingresults" role="tabpanel" aria-labelledby="pendingresults-tab">
+        <h2 class="header"><?php _e( 'Results not yet in', 'racketmanager' ) ?></h2>
+        <?php include('results/pending-results.php'); ?>
       </div>
     </div>
   </div>

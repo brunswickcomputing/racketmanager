@@ -167,6 +167,8 @@ Racketmanager.updateResults = function(link) {
   var $leagueId = $league.value;
   var $form = jQuery('#match-rubbers').serialize();
   $form += "&action=racketmanager_update_rubbers";
+  jQuery("#updateResponse").removeClass("message-success");
+	jQuery("#updateResponse").removeClass("message-error");
   jQuery("#showMatchRubbers").hide();
   jQuery("#splash").css('opacity', 1);
   jQuery("#splash").show();
@@ -178,32 +180,42 @@ Racketmanager.updateResults = function(link) {
     success: function(response) {
       var $response = jQuery.parseJSON(response);
       var $message = $response[0];
-      var $homepoints = $response[1];
-      var $awaypoints = $response[2];
-      jQuery("#UpdateResponse").show();
-      jQuery("#UpdateResponse").text($message);
-      var $matchhome = 0;
-      var $matchaway = 0;
-      for ( i = 0; i < $homepoints.length; i++) {
-        $formfield = "#home_points\\["+i+"\\]";
-        $fieldval = $homepoints[i];
-        jQuery($formfield).val($fieldval);
-        $matchhome  = +$matchhome + +$homepoints[i];
+      var $error = $response[1];
+			if ($error === true) {
+				jQuery("#updateResponse").addClass('message-error');
+				jQuery("#updateResponse").html($message);
+			} else {
+        jQuery("#updateResponse").show();
+				jQuery("#updateResponse").addClass('message-success');
+				jQuery("#updateResponse").html($message);
+				jQuery("#updateResponse").delay(10000).fadeOut('slow');
+        var $homepoints = $response[2];
+        var $awaypoints = $response[3];
+        jQuery("#updateResponse").show();
+        jQuery("#updateResponse").text($message);
+        var $matchhome = 0;
+        var $matchaway = 0;
+        for ( i = 0; i < $homepoints.length; i++) {
+          $formfield = "#home_points\\["+i+"\\]";
+          $fieldval = $homepoints[i];
+          jQuery($formfield).val($fieldval);
+          $matchhome  = +$matchhome + +$homepoints[i];
+        }
+        for ( i = 0; i < $awaypoints.length; i++) {
+          $formfield = "#away_points\\["+i+"\\]";
+          $fieldval = $awaypoints[i];
+          jQuery($formfield).val($fieldval);
+          $matchaway  = +$matchaway + +$awaypoints[i];
+        }
+        $formfield = "#home_points\\["+$matchId+"\\]";
+        $formfield1 = "#home_points\\["+$leagueId+"\\]\\["+$matchId+"\\]";
+        jQuery($formfield).val($matchhome);
+        jQuery($formfield1).val($matchhome);
+        var $formfield = "#away_points\\["+$matchId+"\\]";
+        var $formfield1 = "#away_points\\["+$leagueId+"\\]\\["+$matchId+"\\]";
+        jQuery($formfield).val($matchaway);
+        jQuery($formfield1).val($matchaway);
       }
-      for ( i = 0; i < $awaypoints.length; i++) {
-        $formfield = "#away_points\\["+i+"\\]";
-        $fieldval = $awaypoints[i];
-        jQuery($formfield).val($fieldval);
-        $matchaway  = +$matchaway + +$awaypoints[i];
-      }
-      $formfield = "#home_points\\["+$matchId+"\\]";
-      $formfield1 = "#home_points\\["+$leagueId+"\\]\\["+$matchId+"\\]";
-      jQuery($formfield).val($matchhome);
-      jQuery($formfield1).val($matchhome);
-      var $formfield = "#away_points\\["+$matchId+"\\]";
-      var $formfield1 = "#away_points\\["+$leagueId+"\\]\\["+$matchId+"\\]";
-      jQuery($formfield).val($matchaway);
-      jQuery($formfield1).val($matchaway);
       jQuery("#splash").css('opacity', 0);
       jQuery("#splash").hide();
       jQuery("#showMatchRubbers").show();

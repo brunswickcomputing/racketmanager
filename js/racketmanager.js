@@ -411,8 +411,8 @@ Racketmanager.updateMatchResults = function(link) {
 		success: function(response) {
 			var $response = jQuery.parseJSON(response);
 			var $message = $response[0];
-			jQuery("#UpdateResponse").show();
-			jQuery("#UpdateResponse").text($message);
+			jQuery("#updateResponse").show();
+			jQuery("#updateResponse").text($message);
 			var $homepoints = $response[1];
 			var $formfield = "#home_points";
 			var $fieldval = $homepoints;
@@ -452,6 +452,8 @@ Racketmanager.updateResults = function(link) {
 	$form += "&action=racketmanager_update_rubbers";
 	jQuery("#updateRubberResults").prop("disabled", "true");
 	jQuery("#updateRubberResults").addClass("disabled");
+	jQuery("#updateResponse").removeClass("message-success");
+	jQuery("#updateResponse").removeClass("message-error");
 	jQuery("#splash").css('opacity', 1);
 	jQuery("#splash").show();
 	jQuery("#showMatchRubbers").hide();
@@ -463,23 +465,31 @@ Racketmanager.updateResults = function(link) {
 		success: function(response) {
 			var $response = jQuery.parseJSON(response);
 			var $message = $response[0];
-			jQuery("#UpdateResponse").show();
-			jQuery("#UpdateResponse").text($message);
-			var $homepoints = $response[1];
-			var $matchhome = 0;
-			var $matchaway = 0;
-			for ( var i in $homepoints) {
-				var $formfield = "#home_points\\["+i+"\\]";
-				var $fieldval = $homepoints[i];
-				jQuery($formfield).val($fieldval);
-				$matchhome  = +$matchhome + +$homepoints[i];
-			}
-			var $awaypoints = $response[2];
-			for ( var i in $awaypoints) {
-				var $formfield = "#away_points\\["+i+"\\]";
-				var $fieldval = $awaypoints[i];
-				jQuery($formfield).val($fieldval);
-				$matchaway  = +$matchaway + +$awaypoints[i];
+			var $error = $response[1];
+			jQuery("#updateResponse").show();
+			if ($error === true) {
+				jQuery("#updateResponse").addClass('message-error');
+				jQuery("#updateResponse").html($message);
+			} else {
+				jQuery("#updateResponse").addClass('message-success');
+				jQuery("#updateResponse").html($message);
+				jQuery("#updateResponse").delay(10000).fadeOut('slow');
+				var $homepoints = $response[2];
+				var $matchhome = 0;
+				var $matchaway = 0;
+				for ( var i in $homepoints) {
+					var $formfield = "#home_points\\["+i+"\\]";
+					var $fieldval = $homepoints[i];
+					jQuery($formfield).val($fieldval);
+					$matchhome  = +$matchhome + +$homepoints[i];
+				}
+				var $awaypoints = $response[3];
+				for ( var i in $awaypoints) {
+					var $formfield = "#away_points\\["+i+"\\]";
+					var $fieldval = $awaypoints[i];
+					jQuery($formfield).val($fieldval);
+					$matchaway  = +$matchaway + +$awaypoints[i];
+				}
 			}
 			jQuery("#splash").css('opacity', 0);
 			jQuery("#splash").hide();

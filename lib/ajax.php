@@ -944,7 +944,9 @@ class RacketManagerAJAX extends RacketManager {
 		$teamName = get_team($team)->title;
 		$currTeamNum = substr($teamName,-1);
 
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_results_checker} WHERE `player_id` = %d AND `match_id` = %d", $player->player_id, $match->id) );
+		if ( $player ) {
+			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_results_checker} WHERE `player_id` = %d AND `match_id` = %d", $player->player_id, $match->id) );
+		}
 
 		if ( isset($options['rosterLeadTime']) ) {
 			if ( isset($player->created_date) ) {

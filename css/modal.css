@@ -74,6 +74,9 @@ td input.player {
 }
 .modal input.points {
   height: 38px;
+  width: 26px;
+  padding-left: 2px;
+  padding-right: 2px;
 }
 .modal-backdrop {
   z-index: -1;

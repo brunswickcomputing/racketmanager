@@ -2521,7 +2521,7 @@ class RacketManager {
 						<input type="hidden" name="id[<?php echo $r ?>]" value="<?php echo $rubber->id ?>" </>
 						<div class="col-1 text-center align-self-center"><?php echo isset($rubber->rubber_number) ? $rubber->rubber_number : '' ?></div>
 						<div class="col-11">
-							<div class="row">
+							<div class="row mb-1">
 								<div class="col-6 col-sm-4">
 									<div class="row">
 										<?php for ($p=1; $p <= $numPlayers ; $p++) { ?>

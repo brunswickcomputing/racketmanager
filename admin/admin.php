@@ -3623,7 +3623,12 @@ final class RacketManagerAdmin extends RacketManager
 			} else {
 				$resultsChecker->team = '';
 			}
-			$resultsChecker->player = get_userdata($resultsChecker->player_id)->display_name;
+			$player = get_userdata($resultsChecker->player_id);
+			if ( $player ) {
+				$resultsChecker->player = $player->display_name;
+			} else {
+				$resultsChecker->player = '';
+			}
 			if ( $resultsChecker->updated_user != '' ) {
 				$resultsChecker->updated_user_name = get_userdata($resultsChecker->updated_user)->display_name;
 			} else {

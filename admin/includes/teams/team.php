@@ -7,7 +7,11 @@ namespace ns;
 ?>
 
 <div class="container league-block">
-  <p class="racketmanager_breadcrumb"><a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a><?php if ( !$noleague ) { ?> &raquo; <a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a><?php } ?> &raquo; <?php echo $form_title ?></p>
+  <div class="row justify-content-end">
+		<div class="col-auto racketmanager_breadcrumb">
+			<a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a><?php if ( !$noleague ) { ?> &raquo; <a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a><?php } ?> &raquo; <?php echo $form_title ?>
+		</div>
+	</div>
   <?php if ( !$noleague ) { ?>
     <h1><?php printf( "%s - %s",  $league->title, $form_title ); ?></h1>
   <?php } else { ?>

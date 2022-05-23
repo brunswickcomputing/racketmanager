@@ -1992,59 +1992,72 @@ class RacketManager {
 	* @return boolean
 	*/
 	public function getMatchUpdateAllowed($homeTeam, $awayTeam, $competitionType, $matchStatus) {
-		$options = $this->getOptions();
-		$userid = get_current_user_id();
 		$userCanUpdate = false;
 		$return = array();
 		$userType = '';
 		$userTeam = '';
-		$matchCapability = $options[$competitionType]['matchCapability'];
-		$resultEntry = $options[$competitionType]['resultEntry'];
+		$message = '';
+		if ( is_user_logged_in() ) {
+			$options = $this->getOptions();
+			$userid = get_current_user_id();
+			$matchCapability = $options[$competitionType]['matchCapability'];
+			$resultEntry = $options[$competitionType]['resultEntry'];
 
-		if ( isset($homeTeam) && isset($awayTeam) && isset($homeTeam->affiliatedclub) && isset($awayTeam->affiliatedclub) ) {
-			if ( $userid ) {
-				if ( !current_user_can( 'manage_racketmanager' ) ) {
-					if ( $matchCapability == 'roster' ) {
-						$club = get_club($homeTeam->affiliatedclub);
-						$homeRoster = $club->getRoster( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
-						if ( $homeRoster != 0 ) {
-							$userType = 'player';
-							$userTeam = 'home';
-							$userCanUpdate = true;
-						} elseif ( $options[$resultEntry] == 'either' ) {
-							$club = get_club($awayTeam->affiliatedclub);
-							$awayRoster = $club->getRoster( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
-							if ( $awayRoster != 0 ) {
+			if ( isset($homeTeam) && isset($awayTeam) && isset($homeTeam->affiliatedclub) && isset($awayTeam->affiliatedclub) ) {
+				if ( $userid ) {
+					if ( !current_user_can( 'manage_racketmanager' ) ) {
+						if ( $matchCapability == 'roster' ) {
+							$club = get_club($homeTeam->affiliatedclub);
+							$homeRoster = $club->getRoster( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
+							if ( $homeRoster != 0 ) {
 								$userType = 'player';
-								$userTeam = 'away';
+								$userTeam = 'home';
 								$userCanUpdate = true;
+							} elseif ( $options[$resultEntry] == 'either' ) {
+								$club = get_club($awayTeam->affiliatedclub);
+								$awayRoster = $club->getRoster( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
+								if ( $awayRoster != 0 ) {
+									$userType = 'player';
+									$userTeam = 'away';
+									$userCanUpdate = true;
+								}
+							} else {
+								$message = 'notTeamPlayer';
 							}
-						}
-					} elseif ( $matchCapability == 'captain' ) {
-						if ( isset($homeTeam->captainId) && $userid == $homeTeam->captainId ) {
-							$userType = 'captain';
-							$userTeam = 'home';
-							$userCanUpdate = true;
-						} elseif ( $resultEntry == 'home' && ( isset($awayTeam->captainId) && $userid == $awayTeam->captainId ) ) {
-							if ( $matchStatus == 'P') {
+						} elseif ( $matchCapability == 'captain' ) {
+							if ( isset($homeTeam->captainId) && $userid == $homeTeam->captainId ) {
+								$userType = 'captain';
+								$userTeam = 'home';
+								$userCanUpdate = true;
+							} elseif ( $resultEntry == 'home' && ( isset($awayTeam->captainId) && $userid == $awayTeam->captainId ) ) {
+								if ( $matchStatus == 'P') {
+									$userType = 'captain';
+									$userTeam = 'away';
+									$userCanUpdate = true;
+								}
+							} elseif ( $resultEntry == 'either' && ( isset($awayTeam->captainId) && $userid == $awayTeam->captainId ) ) {
 								$userType = 'captain';
 								$userTeam = 'away';
 								$userCanUpdate = true;
+							} else {
+								$message = 'notCaptain';
 							}
-						} elseif ( $resultEntry == 'either' && ( isset($awayTeam->captainId) && $userid == $awayTeam->captainId ) ) {
-							$userType = 'captain';
-							$userTeam = 'away';
-							$userCanUpdate = true;
 						}
+					} else {
+						$userType = 'admin';
+						$userTeam = '';
+						$userCanUpdate = true;
 					}
 				} else {
-					$userType = 'admin';
-					$userTeam = '';
-					$userCanUpdate = true;
+					$message = 'notLoggedIn';
 				}
+			} else {
+				$message = 'notTeamSet';
 			}
+		} else {
+			$message = 'notLoggedIn';
 		}
-		array_push($return,$userCanUpdate,$userType,$userTeam);
+		array_push($return,$userCanUpdate,$userType,$userTeam,$message);
 		return $return;
 	}
 
@@ -2346,7 +2359,7 @@ class RacketManager {
 						<button tabindex="500" class="button button-primary" type="button" id="updateMatchResults" onclick="Racketmanager.updateMatchResults(this)">Update Result</button>
 					</div>
 				<?php } ?>
-				<div id="UpdateResponse"></div>
+				<div id="updateResponse"></div>
 				<?php if ( $match->confirmed == 'Y' ) { ?>
 					<script type="text/javascript">
 					jQuery(document).ready(function($) {
@@ -2458,6 +2471,7 @@ class RacketManager {
 		$userCanUpdate = $userCanUpdateArray[0];
 		$userType = $userCanUpdateArray[1];
 		$userTeam = $userCanUpdateArray[2];
+		$userMessage = $userCanUpdateArray[3];
 		$updatesAllowed = true;
 		if ( $match->confirmed == 'P' ) {
 			if ( $userType != 'admin') {
@@ -2669,17 +2683,35 @@ class RacketManager {
 						<?php } ?>
 					</div>
 				<?php } ?>
-				<?php if ( ($userCanUpdate) && (current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == NULL) ) { ?>
-					<div class="row mb-3">
-						<div class="col-12">
-							<input type="hidden" name="updateRubber" id="updateRubber" value="<?php if ( !$updatesAllowed ) { echo 'confirm';} else { echo 'results';} ?>" />
-							<button tabindex="500" class="button button-primary" type="button" id="updateRubberResults" onclick="Racketmanager.updateResults(this)">Update Results</button>
+				<?php if ( $userCanUpdate ) {
+					if (current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == NULL) { ?>
+						<div class="row mb-3">
+							<div class="col-12">
+								<input type="hidden" name="updateRubber" id="updateRubber" value="<?php if ( !$updatesAllowed ) { echo 'confirm';} else { echo 'results';} ?>" />
+								<button tabindex="500" class="button button-primary" type="button" id="updateRubberResults" onclick="Racketmanager.updateResults(this)">Update Results</button>
+							</div>
+						</div>
+						<div class="row mb-3">
+							<div id="updateResponse" class="updateResponse"></div>
+						</div>
+					<?php } else { ?>
+						<div class="row mb-3">
+							<div class="col-12 updateResponse message-error">
+								<?php _e('Updates not allowed', 'racketmanager') ?>
+							</div>
+						</div>
+					<?php } ?>
+				<?php } else { ?>
+					<div class="row mb-3 justify-content-center">
+						<div class="col-auto">
+							<?php if ( $userMessage == 'notLoggedIn' ) { ?>
+								You need to <a href="<?php echo wp_login_url( $_SERVER['REQUEST_URI'] ); ?>">login</a> to update the result.
+							<?php } else {
+								_e('User not allowed to update result', 'racketmanager');
+							} ?>
 						</div>
 					</div>
 				<?php } ?>
-				<div class="row mb-3">
-					<div id="UpdateResponse"></div>
-				</div>
 			</form>
 		</div>
 	<?php	}

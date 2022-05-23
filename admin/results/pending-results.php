@@ -18,7 +18,7 @@ $prev_league = 0;
       }
       $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 
-      <div class="row table-row <?php echo $class ?>">
+      <div class="row table-row <?php echo $class ?> align-items-center">
         <div class="col-3 col-sm-2 col-xxl-1"><?php echo mysql2date('Y-m-d', $match->date) ?></div>
         <div class="col-9 col-sm-6 col-lg-4 match-title">
           <a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $match->league->id ?>&amp;season=<?php echo $match->season ?>&amp;<?php echo $matchLink ?> "><?php echo $match->match_title ?></a>

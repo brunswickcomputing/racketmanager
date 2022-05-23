@@ -21,7 +21,7 @@ $prev_league = 0;
       }
       $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 
-      <div class="row table-row <?php echo $class ?>">
+      <div class="row table-row <?php echo $class ?> align-items-center">
         <?php if ( $prev_league != $match->league_id) {
           $prev_league = $match->league_id; ?>
           <div class="col-12"><?php echo $match->league->title ?></div>

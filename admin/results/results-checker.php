@@ -14,7 +14,7 @@
 		<input type="submit" value="<?php _e('Apply'); ?>" name="doResultsChecker" id="doResultsChecker" class="btn btn-secondary action" />
 		<select name="filterResultsChecker" size="1">
 			<option value="-1" selected="selected"><?php _e('Filter results') ?></option>
-			<option value=""><?php _e('All')?></option>
+			<option value="all"><?php _e('All')?></option>
 			<option value="outstanding" <?php if ( $resultsCheckFilter == 'outstanding' ) echo 'selected' ?>><?php _e('Outstanding')?></option>
 		</select>
 		<input type="submit" value="<?php _e('Apply'); ?>" name="doFilterResultsChecker" id="doFilterResultsChecker" class="btn btn-secondary action" />

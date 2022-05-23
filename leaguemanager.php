@@ -2665,24 +2665,28 @@ class RacketManager {
 						</div>
 					</div>
 				</div>
-				<?php if ( isset($match->updated_user) ) { ?>
-					<div class="row mb-3">
-						<div class="col-2">
-							Updated By:
-						</div>
-						<div class="col-10">
-							<?php echo $racketmanager->getPlayerName($match->updated_user); ?>
+				<div class="mb-3">
+					<?php if ( isset($match->updated_user) ) { ?>
+						<div class="row">
+							<div class="col-auto">
+								Updated By:
+							</div>
+							<div class="col-auto">
+								<?php echo $racketmanager->getPlayerName($match->updated_user); ?>
+							</div>
 						</div>
 						<?php if ( isset($match->updated) ) { ?>
-							<div class="col-2">
-								On:
-							</div>
-							<div class="col-10">
-								<?php echo $match->updated; ?>
+							<div class="row">
+								<div class="col-auto">
+									On:
+								</div>
+								<div class="col-auto">
+									<?php echo $match->updated; ?>
+								</div>
 							</div>
 						<?php } ?>
-					</div>
-				<?php } ?>
+					<?php } ?>
+				</div>
 				<?php if ( $userCanUpdate ) {
 					if (current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == NULL) { ?>
 						<div class="row mb-3">

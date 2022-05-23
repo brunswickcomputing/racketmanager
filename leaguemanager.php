@@ -2315,7 +2315,7 @@ class RacketManager {
 						<?php echo $match->teams['home']->title ?>
 					</div>
 					<div class="col-4 align-self-center">
-						<div class="row text-center">
+						<div class="row text-center mb-1">
 							<?php for ( $i = 1; $i <= $num_sets; $i++ ) {
 								if (!isset($match->sets[$i])) {
 									$match->sets[$i] = array('player1' => '', 'player2' => '');

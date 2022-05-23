@@ -79,6 +79,17 @@ final class Match {
         $this->score = "";
       }
 
+      if ( $this->confirmed == 'Y' ) {
+        $this->confirmedDisplay = __('Complete', 'racketmanager');
+      } elseif ( $this->confirmed == 'A' ) {
+        $this->confirmedDisplay = __('Approved', 'racketmanager');
+      } elseif ( $this->confirmed == 'C' ) {
+        $this->confirmedDisplay = __('Challenged', 'racketmanager');
+      } elseif ( $this->confirmed == 'P' ) {
+        $this->confirmedDisplay = __('Pending', 'racketmanager');
+      } else {
+        $this->confirmedDisplay = $this->confirmed;
+      }
       if (is_admin()) {
         $url = '';
       } else {

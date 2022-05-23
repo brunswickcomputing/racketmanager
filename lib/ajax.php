@@ -608,7 +608,8 @@ class RacketManagerAJAX extends RacketManager {
 			$homepoints = array();
 			$awaypoints = array();
 			$return = array();
-			$msg= '';
+			$msg = '';
+			$error = false;
 			$updates = false;
 			$matchId = $_POST['current_match_id'];
 			$match = get_match($matchId);
@@ -667,6 +668,7 @@ class RacketManagerAJAX extends RacketManager {
 						if ( !$playerFound ) {
 							$userCanUpdate = false;
 							$msg = __('Player cannot submit results', 'racketmanager');
+							$error = true;
 						}
 					}
 				}
@@ -727,9 +729,10 @@ class RacketManagerAJAX extends RacketManager {
 			} else {
 				if ( !$msg ) {
 					$msg = __('No results to save','racketmanager');
+					$error = true;
 				}
 			}
-			array_push($return,$msg,$matchRubbers['homepoints'],$matchRubbers['awaypoints']);
+			array_push($return,$msg,$error,$matchRubbers['homepoints'],$matchRubbers['awaypoints']);
 
 			die(json_encode($return));
 		} else {

@@ -696,7 +696,7 @@ class RacketManagerAJAX extends RacketManager {
 				}
 
 				$msg = sprintf(__('%s','racketmanager'), $matchMessage);
-				if ( $matchConfirmed == 'A' && $resultConfirmation == 'auto' ) {
+				if ( ( $matchConfirmed == 'A' && $resultConfirmation == 'auto' ) || ( $userType == 'admin' ) ) {
 					$leagueId = $_POST['current_league_id'];
 					$league = get_league($leagueId);
 					$matchId = $_POST['current_match_id'];

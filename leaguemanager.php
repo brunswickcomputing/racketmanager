@@ -1684,7 +1684,7 @@ class RacketManager {
 			$sql .= " AND (`home_points` != '' OR `away_points` != '')";
 		}
 		if ( $time == 'outstanding' ) {
-			$sql .= " AND `date` <= NOW() AND `winner_id` = 0";
+			$sql .= " AND `date` <= NOW() AND `winner_id` = 0 AND (`confirmed` IS NULL OR `confirmed` != 'P')";
 		}
 
 		// get only updated matches in specified period for history

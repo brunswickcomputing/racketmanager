@@ -50,6 +50,12 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.15.0 =
+* UPDATE: exclude pending matches from outstanding results list
+* UPDATE: fix breadcrumbs display formatting
+* UPDATE: show why user cannot update results
+* UPDATE: link to match results entry from results screen
+
 = 6.14.0 =
 * NEW: show matches with results not provided
 * NEW: send email to captains to chase outstanding results

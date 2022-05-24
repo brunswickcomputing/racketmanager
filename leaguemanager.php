@@ -2660,7 +2660,7 @@ class RacketManager {
 				<div class="row mt-3 mb-3">
 					<div>
 						<div class="form-floating">
-							<textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmComments" id="resultConfirmComments"><?php echo $match->comments ?></textarea>
+							<textarea class="form-control result-comments" tabindex="490" placeholder="Leave a comment here" name="resultConfirmComments" id="resultConfirmComments"><?php echo $match->comments ?></textarea>
 							<label for="resultConfirmComments"><?php _e( 'Comments', 'racketmanager' ) ?></label>
 						</div>
 					</div>

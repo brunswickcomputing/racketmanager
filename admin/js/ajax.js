@@ -225,6 +225,46 @@ Racketmanager.updateResults = function(link) {
     }
   }) ;
 };
+Racketmanager.updateMatchResults = function(link) {
+
+	var $match = document.getElementById('current_match_id');
+	var $matchId = $match.value;
+	var $form = jQuery('#match-view').serialize();
+	$form += "&action=racketmanager_update_match";
+	jQuery("#updateRubberResults").prop("disabled", "true");
+	jQuery("#updateRubberResults").addClass("disabled");
+	jQuery("#splash").css('opacity', 1);
+	jQuery("#splash").show();
+	jQuery("#showMatchRubbers").hide();
+
+	jQuery.ajax({
+		url:RacketManagerAjaxL10n.requestUrl,
+		type: "POST",
+		data: $form,
+		success: function(response) {
+			var $response = jQuery.parseJSON(response);
+			var $message = $response[0];
+			jQuery("#updateResponse").show();
+			jQuery("#updateResponse").text($message);
+			var $homepoints = $response[1];
+			var $formfield = "#home_points";
+			var $fieldval = $homepoints;
+			jQuery($formfield).val($fieldval);
+			var $awaypoints = $response[2];
+			var $formfield = "#away_points";
+			var $fieldval = $awaypoints;
+			jQuery($formfield).val($fieldval);
+			jQuery("#splash").css('opacity', 0);
+			jQuery("#splash").hide();
+			jQuery("#showMatchRubbers").show();
+		},
+		error: function() {
+			alert("Ajax error on updating match");
+		}
+	}) ;
+	jQuery("#updateRubberResults").removeProp("disabled");
+	jQuery("#updateRubberResults").removeClass("disabled");
+};
 Racketmanager.confirmResults = function() {
 
   var $form = jQuery('#match-results').serialize();

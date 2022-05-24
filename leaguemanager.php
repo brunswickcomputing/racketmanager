@@ -2262,6 +2262,11 @@ class RacketManager {
 	public function showMatchScreen($match) {
 		global $racketmanager, $championship;
 
+		$userCanUpdateArray = $racketmanager->getMatchUpdateAllowed($match->teams['home'], $match->teams['away'], $match->league->competitionType, $match->confirmed);
+		$userCanUpdate = $userCanUpdateArray[0];
+		$userType = $userCanUpdateArray[1];
+		$userTeam = $userCanUpdateArray[2];
+		$userMessage = $userCanUpdateArray[3];
 		if ( $match->final_round == '' ) {
 			$match->round = '';
 			$match->type = 'league';
@@ -2342,30 +2347,59 @@ class RacketManager {
 					</div>
 				</div>
 				<div class="form-floating">
-					<textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmComments" id="resultConfirmComments"><?php echo $match->comments ?></textarea>
+					<textarea class="form-control result-comments" tabindex="490" placeholder="Leave a comment here" name="resultConfirmComments" id="resultConfirmComments"><?php echo $match->comments ?></textarea>
 					<label for="resultConfirmComments"><?php _e( 'Comments', 'racketmanager' ) ?></label>
 				</div>
 				<div class="mb-3">
-					<?php if ( isset($match->updated_user) ) {
-						echo 'Updated By:'.$racketmanager->getPlayerName($match->updated_user);
-					} ?>
-					<?php if ( isset($match->updated) ) {
-						echo ' On:'.$match->updated;
-					} ?>
+					<?php if ( isset($match->updated_user) ) { ?>
+						<div class="row">
+							<div class="col-auto">
+								Updated By:
+							</div>
+							<div class="col-auto">
+								<?php echo $racketmanager->getPlayerName($match->updated_user); ?>
+							</div>
+						</div>
+						<?php if ( isset($match->updated) ) { ?>
+							<div class="row">
+								<div class="col-auto">
+									On:
+								</div>
+								<div class="col-auto">
+									<?php echo $match->updated; ?>
+								</div>
+							</div>
+						<?php } ?>
+					<?php } ?>
 				</div>
-				<?php if ( ($userCanUpdate) && (current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == NULL) ) { ?>
-					<div class="mb3">
-						<input type="hidden" name="updateMatch" id="updateMatch" value="results" />
-						<button tabindex="500" class="button button-primary" type="button" id="updateMatchResults" onclick="Racketmanager.updateMatchResults(this)">Update Result</button>
+				<?php if ( $userCanUpdate ) {
+					if (current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == NULL) { ?>
+						<div class="row mb-3">
+							<div class="col-12">
+								<input type="hidden" name="updateMatch" id="updateMatch" value="results" />
+								<button tabindex="500" class="button button-primary" type="button" id="updateMatchResults" onclick="Racketmanager.updateMatchResults(this)">Update Result</button>
+							</div>
+						</div>
+						<div class="row mb-3">
+							<div id="updateResponse" class="updateResponse"></div>
+						</div>
+					<?php } else { ?>
+						<div class="row mb-3">
+							<div class="col-12 updateResponse message-error">
+								<?php _e('Updates not allowed', 'racketmanager') ?>
+							</div>
+						</div>
+					<?php } ?>
+				<?php } else { ?>
+					<div class="row mb-3 justify-content-center">
+						<div class="col-auto">
+							<?php if ( $userMessage == 'notLoggedIn' ) { ?>
+								You need to <a href="<?php echo wp_login_url( $_SERVER['REQUEST_URI'] ); ?>">login</a> to update the result.
+							<?php } else {
+								_e('User not allowed to update result', 'racketmanager');
+							} ?>
+						</div>
 					</div>
-				<?php } ?>
-				<div id="updateResponse"></div>
-				<?php if ( $match->confirmed == 'Y' ) { ?>
-					<script type="text/javascript">
-					jQuery(document).ready(function($) {
-						Racketmanager.disableRubberUpdate();
-					});
-					</script>
 				<?php } ?>
 			</form>
 		</div>

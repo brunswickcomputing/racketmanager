@@ -575,7 +575,7 @@ class RacketManagerAJAX extends RacketManager {
 				$matchMessage = __('No result to save','racketmanager');
 			}
 
-			array_push($return,$matchMessage,$homePoints,$awayPoints);
+			array_push($return,$matchMessage,$home_points[$matchId],$away_points[$matchId]);
 
 			die(json_encode($return));
 		} else {

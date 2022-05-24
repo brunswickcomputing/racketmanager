@@ -334,7 +334,12 @@ final class RacketManagerAdmin extends RacketManager
 			}
 			break;
 			case 'racketmanager-results':
-			$this->displayResultsPage();
+			$view = isset($_GET['subpage']) ? $_GET['subpage'] : '';
+			if ( $view == 'match' ) {
+				$this->displayMatchResultsPage();
+			} else {
+				$this->displayResultsPage();
+			}
 			break;
 			case 'racketmanager-admin':
 			$view = isset($_GET['subpage']) ? $_GET['subpage'] : '';
@@ -444,7 +449,7 @@ final class RacketManagerAdmin extends RacketManager
 		if ( !current_user_can( 'view_leagues' ) ) {
 			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
 		} else {
-			$tab = "resultschecker";
+			$tab = isset($_GET['tab']) ? $_GET['tab'] : "resultschecker";
 			$resultsCheckFilter = 'outstanding';
 			if ( isset($_POST['doResultsChecker']) ) {
 				if ( current_user_can('update_results') ) {
@@ -469,11 +474,27 @@ final class RacketManagerAdmin extends RacketManager
 				} elseif ( $_POST['filterResultsChecker'] == 'all' ) {
 					$resultsCheckFilter = '';
 				}
+				$tab = "resultschecker";
 			}
+			$resultsCheckers = $this->getResultsChecker($resultsCheckFilter);
+			include_once( dirname(__FILE__) . '/show-results.php' );
 		}
-		$resultsCheckers = $this->getResultsChecker($resultsCheckFilter);
+	}
 
-		include_once( dirname(__FILE__) . '/show-results.php' );
+	/**
+	* show RacketManager match results page
+	*
+	*/
+	private function displayMatchResultsPage() {
+		global $match ;
+
+		if ( !current_user_can( 'update_results' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+		} else {
+			$match = get_match($_GET['match_id']);
+			$referrer = isset($_GET['referrer']) ? $_GET['referrer'] : '';
+			include_once( dirname(__FILE__) . '/show-match.php' );
+		}
 	}
 
 	/**

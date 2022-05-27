@@ -46,14 +46,6 @@ global $racketmanager;
                 <a href="" class='' type="<?php echo $match->league->entryType ?>" id="<?php echo $match->id ?>" onclick="Racketmanager.printScoreCard(event, this)" title="<?php _e( 'Print matchcard', 'racketmanager' ) ?>">
                   <i class="racketmanager-svg-icon"><?php racketmanager_the_svg('icon-printer') ?></i>
                 </a>
-                <?php
-                if ( $userCanUpdate == true && ( !isset($match->confirmed) || $match->confirmed = "P" ) ) {
-                  if ( is_numeric($match->home_team) && is_numeric($match->away_team) ) {?>
-                    <a href="" class="" onclick="Racketmanager.showRubbers(event, <?php echo $match->id ?>)"  title="<?php _e( 'Enter match result', 'racketmanager' ) ?>">
-                      <i class="racketmanager-svg-icon"><?php racketmanager_the_svg('icon-pencil') ?></i>
-                    </a>
-                  <?php } ?>
-                <?php } ?>
               </td>
             <?php } ?>
           <?php } else {
@@ -101,8 +93,25 @@ global $racketmanager;
             }
             ?>
             <?php the_match_date() ?> <?php the_match_time() ?> <?php the_match_location() ?><br />
-            <?php if ( isset($match->teams['home']->title) && isset($match->teams['away']->title) ) { ?>
-              <span title="<?php echo $homeTip ?>" class="<?php echo $homeClass ?>"><?php echo $match->teams['home']->title ?></span> - <span title="<?php echo $awayTip ?>" class="<?php echo $awayClass?>"><?php echo $match->teams['away']->title; ?></span>
+            <?php if ( isset($match->teams['home']->title) && isset($match->teams['away']->title) ) {
+              if ( is_numeric($match->home_team) && is_numeric($match->away_team) ) {
+                $matchLink = false;
+                if ( $userCanUpdate == true && ( !isset($match->confirmed) || $match->confirmed == "P" ) ) {
+                  $matchLink = true;
+                  if ($match->league->is_championship) {
+                    $matchRef = $match->final_round;
+                  } else {
+                    $matchRef = 'day'.$match->match_day;
+                  } ?>
+                  <a href="/match/<?php echo seoUrl($match->league->title); ?>/<?php echo $match->season ?>/<?php echo $matchRef; ?>/<?php echo seoUrl($match->teams['home']->title) ?>-vs-<?php echo seoUrl($match->teams['away']->title) ?>/">
+                <?php } ?>
+                <span title="<?php echo $homeTip ?>" class="<?php echo $homeClass ?>"><?php echo $match->teams['home']->title ?></span> - <span title="<?php echo $awayTip ?>" class="<?php echo $awayClass?>"><?php echo $match->teams['away']->title; ?></span>
+                <?php if ( $matchLink ) { ?>
+                  </a>
+                <?php } ?>
+              <?php } else { ?>
+                <?php the_match_title() ;?>
+              <?php } ?>
             <?php } else { ?>
               <?php the_match_title() ;?>
             <?php } ?>

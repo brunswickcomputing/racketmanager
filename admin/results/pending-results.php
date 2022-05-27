@@ -34,6 +34,6 @@ $prev_league = 0;
       </div>
     <?php }
   } else { ?>
-    <div class="col-auto"><?php _e('No matches with pending results', 'racketmanager') ?></div>
+    <div class="col-auto my-3"><?php _e('No matches with pending results', 'racketmanager') ?></div>
   <?php } ?>
 </div>

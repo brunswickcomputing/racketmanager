@@ -55,7 +55,7 @@
 				</div>
 			<?php }
 		} else { ?>
-			<div class="col-auto"><?php _e('No player checks found', 'racketmanager') ?></div>
+			<div class="col-auto my-3"><?php _e('No player checks found', 'racketmanager') ?></div>
 		<?php } ?>
 	</div>
 </form>

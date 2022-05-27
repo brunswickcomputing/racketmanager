@@ -364,11 +364,19 @@ class RacketManagerShortcodes extends RacketManager {
 			$match_id = $matches[0]->id;
 		}
 		$match = get_match($match_id);
-		if (isset($match->league->num_rubbers) && $match->league->num_rubbers > 0 ) {
-			$out = $racketmanager->showRubbersScreen($match);
+		$competition = get_competition($match->league->competition_id);
+		$seasons = $competition->seasons;
+		$leagues = $competition->getLeagues( array('competition' => $competition->id, 'orderby' => array("title" => "ASC")));
+
+		if ( empty($template) && $this->checkTemplate('match-'.$match->league->sport) ) {
+			$filename = 'match-'.$match->league->sport;
+		} elseif ($this->checkTemplate('match-'.$template.'-'.$match->league->sport) ) {
+			$filename = 'match-'.$template.'-'.$match->league->sport;
 		} else {
-			$out = $racketmanager->showMatchScreen($match);
+			$filename = ( !empty($template) ) ? 'match-'.$template : 'match';
 		}
+
+		$out = $this->loadTemplate( $filename, array('match' => $match, 'leagues' => $leagues, 'seasons' => $seasons, 'league' => $match->league ) );
 		return $out;
 	}
 

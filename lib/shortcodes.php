@@ -382,7 +382,11 @@ class RacketManagerShortcodes extends RacketManager {
 		global $racketmanager;
 
 		$roster_dtls = $racketmanager->getRosterEntry( intval($roster_id));
-		$playerName = $roster_dtls->fullname;
+		if ( $roster_dtls ) {
+			$playerName = $roster_dtls->fullname;
+		} else {
+			$playerName = '';
+		}
 		return $playerName;
 	}
 

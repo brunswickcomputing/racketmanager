@@ -550,6 +550,7 @@ class League {
 		$this->setSeason();
 
 		$this->num_sets = $competition->num_sets;
+		$this->numSetstoWin = floor($this->num_sets / 2) + 1;
 		$this->num_rubbers = $competition->num_rubbers;
 		$this->competitionType = $competition->competitiontype;
 		$this->type = $competition->type;

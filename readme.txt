@@ -50,6 +50,11 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.16.0 =
+* UPDATE: display league selection on match page
+* UPDATE: add match and set validation
+* BUGFIX: dandle player not found
+
 = 6.15.0 =
 * UPDATE: exclude pending matches from outstanding results list
 * UPDATE: fix breadcrumbs display formatting

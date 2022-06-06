@@ -851,16 +851,6 @@ class RacketManagerAJAX extends RacketManager {
 		$error = false;
 		$s = 1;
 		foreach ( $sets as $set ) {
-			if ( $set['player1'] !== NULL && $set['player2'] !== NULL ) {
-				if ( $set['player1'] > $set['player2']) {
-					$homescore += 1;
-				} elseif ( $set['player1'] < $set['player2']) {
-					$awayscore += 1;
-				} elseif ( $set['player1'] == 'S' ){
-					$homescore += 0.5;
-					$awayscore += 0.5;
-				}
-			}
 			$setPrefix = $setPrefixStart.$s.'_';
 			$setType = 'tiebreak';
 			if ( $s > $numSetstoWin ) {
@@ -873,6 +863,16 @@ class RacketManagerAJAX extends RacketManager {
 			$errField = $setValidate[1];
 			if ( $errMsg ) {
 				$error = true;
+			}
+			if ( $set['player1'] !== NULL && $set['player2'] !== NULL ) {
+				if ( $set['player1'] > $set['player2']) {
+					$homescore += 1;
+				} elseif ( $set['player1'] < $set['player2']) {
+					$awayscore += 1;
+				} elseif ( $set['player1'] == 'S' ){
+					$homescore += 0.5;
+					$awayscore += 0.5;
+				}
 			}
 			$s++;
 		}

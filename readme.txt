@@ -50,6 +50,11 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.16.1 =
+* BUGFIX: calculate match score after set check
+* BUGFIX: use league name for championship matches
+* BUGFIX: update javascript to use correct fields for match update
+
 = 6.16.0 =
 * UPDATE: display league selection on match page
 * UPDATE: add match and set validation

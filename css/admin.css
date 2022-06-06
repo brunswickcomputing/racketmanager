@@ -661,6 +661,15 @@ dl dl {
 .points {
   text-align: center;
 }
+.message-error {
+  border: 2px solid #dc3545;
+  color: #dc3545;
+  padding: 5px;
+}
+.points.is-invalid {
+  border-color: #dc3545;
+  color: #dc3545;
+}
 .tournament-match {
   min-height: 6rem;
   border: 1px solid;

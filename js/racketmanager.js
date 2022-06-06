@@ -450,11 +450,13 @@ Racketmanager.updateResults = function(link) {
 	var $matchId = $match.value;
 	var $form = jQuery('#match-rubbers').serialize();
 	$form += "&action=racketmanager_update_rubbers";
+	jQuery(".is-invalid").removeClass("is-invalid");
 	jQuery("#updateRubberResults").prop("disabled", "true");
 	jQuery("#updateRubberResults").addClass("disabled");
 	jQuery("#updateResponse").removeClass("message-success");
 	jQuery("#updateResponse").removeClass("message-error");
 	jQuery("#splash").css('opacity', 1);
+	jQuery("#splash").removeClass("d-none");
 	jQuery("#splash").show();
 	jQuery("#showMatchRubbers").hide();
 
@@ -470,6 +472,11 @@ Racketmanager.updateResults = function(link) {
 			if ($error === true) {
 				jQuery("#updateResponse").addClass('message-error');
 				jQuery("#updateResponse").html($message);
+				var $errField = $response[4];
+				for (var i = 0; i < $errField.length; i++) {
+					$formfield = "#"+$errField[i];
+					jQuery($formfield).addClass('is-invalid');
+				}
 			} else {
 				jQuery("#updateResponse").addClass('message-success');
 				jQuery("#updateResponse").html($message);

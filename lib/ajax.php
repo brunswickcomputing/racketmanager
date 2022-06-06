@@ -564,18 +564,40 @@ class RacketManagerAJAX extends RacketManager {
 			$away_team[$matchId] = $_POST['away_team'];
 			$custom[$matchId] = $_POST['custom'];
 			$season[$matchId] = $_POST['current_season'];
-			$matchCount = $league->_updateResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $season, $_POST['match_round'], $matchConfirmed );
-			if ( $matchCount > 0 ) {
-				$matchMessage = __( 'Result saved', 'racketmanager' );
-				$match = get_match($matchId);
-				$homePoints = $match->home_points;
-				$awayPoints = $match->away_points;
-				$this->resultNotification($matchConfirmed, $matchMessage, $match);
-			} else {
-				$matchMessage = __('No result to save','racketmanager');
+
+			$sets = $custom[$matchId]['sets'];
+			$errMsg = array();
+			$errField = array();
+			$error = false;
+
+			$homescore = 0;
+			$awayscore = 0;
+			$setPrefix = 'set_';
+			$numSetstoWin = $match->league->numSetstoWin;
+
+			$matchValidate = $this->validateMatchScore($sets, $setPrefix, $numSetstoWin, $errMsg, $errField);
+			$error = $matchValidate[0];
+			$errMsg = $matchValidate[1];
+			$errField = $matchValidate[2];
+			$homescore = $matchValidate[3];
+			$awayscore = $matchValidate[4];
+			$matchMessage = implode('<br>', $errMsg);
+
+
+			if ( !$error ) {
+				$matchCount = $league->_updateResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $season, $_POST['match_round'], $matchConfirmed );
+				if ( $matchCount > 0 ) {
+					$matchMessage = __( 'Result saved', 'racketmanager' );
+					$match = get_match($matchId);
+					$homePoints = $match->home_points;
+					$awayPoints = $match->away_points;
+					$this->resultNotification($matchConfirmed, $matchMessage, $match);
+				} else {
+					$matchMessage = __('No result to save','racketmanager');
+				}
 			}
 
-			array_push($return,$matchMessage,$home_points[$matchId],$away_points[$matchId]);
+			array_push($return,$matchMessage,$home_points[$matchId],$away_points[$matchId],$error,$errField);
 
 			die(json_encode($return));
 		} else {
@@ -609,6 +631,7 @@ class RacketManagerAJAX extends RacketManager {
 			$awaypoints = array();
 			$return = array();
 			$msg = '';
+			$errField = array();
 			$error = false;
 			$updates = false;
 			$matchId = $_POST['current_match_id'];
@@ -673,66 +696,73 @@ class RacketManagerAJAX extends RacketManager {
 					}
 				}
 				if ( $userCanUpdate ) {
-					$matchConfirmed = $this->updateRubberResults( $match, $num_rubbers, $lm_options);
+					$rubberResult = $this->updateRubberResults( $match, $num_rubbers, $lm_options);
+					$error = $rubberResult[0];
+					$matchConfirmed = $rubberResult[1];
+					$errMsg = $rubberResult[2];
+					$errField = $rubberResult[3];
+					$msg = implode('<br>', $errMsg);
 				}
 			} elseif ( $_POST['updateRubber'] == 'confirm' ) {
 				$matchConfirmed = $this->confirmRubberResults();
 			}
 
-			if ( $matchConfirmed ) {
-				$matchUpdatedby = $this->updateMatchStatus( $matchId, $matchConfirmed, $home_team, $away_team, $matchComments );
-				switch ( $matchConfirmed ) {
-					case "A":
-					$matchMessage = 'Result Approved';
-					break;
-					case "C":
-					$matchMessage = 'Result Challenged';
-					break;
-					case "P":
-					$matchMessage = 'Result Saved';
-					break;
-					default:
-					$matchConfirmed = '';
-				}
-
-				$msg = sprintf(__('%s','racketmanager'), $matchMessage);
-				if ( ( $matchConfirmed == 'A' && $resultConfirmation == 'auto' ) || ( $userType == 'admin' ) ) {
-					$leagueId = $_POST['current_league_id'];
-					$league = get_league($leagueId);
-					$matchId = $_POST['current_match_id'];
-					$matches[$matchId] = $matchId;
-					$home_points[$matchId] = array_sum($matchRubbers['homepoints']);
-					$away_points[$matchId] = array_sum($matchRubbers['awaypoints']);
-					$home_team[$matchId] = $home_team;
-					$away_team[$matchId] = $away_team;
-					$custom[$matchId] = array();
-					$season = $_POST['current_season'];
-					if ( $league->is_championship ) {
-						$round = $league->championship->getFinals($_POST['match_round'])['round'];
-						$league->championship->updateFinalResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $round, $season  );
-						$msg = __('Match saved','racketmanager');
-					} else {
-						$matchCount = $league->_updateResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $season );
-						if ( $matchCount > 0 ) {
-							$msg = sprintf(__('Saved Results of %d matches','racketmanager'), $matchCount);
-						} else {
-							$msg = __('No matches to save','racketmanager');
-						}
+			if ( !$error ) {
+				if ( $matchConfirmed ) {
+					$matchUpdatedby = $this->updateMatchStatus( $matchId, $matchConfirmed, $home_team, $away_team, $matchComments );
+					switch ( $matchConfirmed ) {
+						case "A":
+						$matchMessage = 'Result Approved';
+						break;
+						case "C":
+						$matchMessage = 'Result Challenged';
+						break;
+						case "P":
+						$matchMessage = 'Result Saved';
+						break;
+						default:
+						$matchConfirmed = '';
 					}
-				} elseif ( $matchConfirmed == 'A' ) {
-					$this->resultNotification($matchConfirmed, $matchMessage, $match, $matchUpdatedby);
-				} elseif ( $matchConfirmed == 'C' ) {
-					$this->resultNotification($matchConfirmed, $matchMessage, $match, $matchUpdatedby);
-				} elseif ( !current_user_can( 'manage_racketmanager' ) && $matchConfirmed == 'P' ) {
-					$this->resultNotification($matchConfirmed, $matchMessage, $match, $matchUpdatedby);
-				}
-			} else {
-				if ( !$msg ) {
-					$msg = __('No results to save','racketmanager');
-					$error = true;
+
+					$msg = sprintf(__('%s','racketmanager'), $matchMessage);
+					if ( ( $matchConfirmed == 'A' && $resultConfirmation == 'auto' ) || ( $userType == 'admin' ) ) {
+						$leagueId = $_POST['current_league_id'];
+						$league = get_league($leagueId);
+						$matchId = $_POST['current_match_id'];
+						$matches[$matchId] = $matchId;
+						$home_points[$matchId] = array_sum($matchRubbers['homepoints']);
+						$away_points[$matchId] = array_sum($matchRubbers['awaypoints']);
+						$home_team[$matchId] = $home_team;
+						$away_team[$matchId] = $away_team;
+						$custom[$matchId] = array();
+						$season = $_POST['current_season'];
+						if ( $league->is_championship ) {
+							$round = $league->championship->getFinals($_POST['match_round'])['round'];
+							$league->championship->updateFinalResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $round, $season  );
+							$msg = __('Match saved','racketmanager');
+						} else {
+							$matchCount = $league->_updateResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $season );
+							if ( $matchCount > 0 ) {
+								$msg = sprintf(__('Saved Results of %d matches','racketmanager'), $matchCount);
+							} else {
+								$msg = __('No matches to save','racketmanager');
+							}
+						}
+					} elseif ( $matchConfirmed == 'A' ) {
+						$this->resultNotification($matchConfirmed, $matchMessage, $match, $matchUpdatedby);
+					} elseif ( $matchConfirmed == 'C' ) {
+						$this->resultNotification($matchConfirmed, $matchMessage, $match, $matchUpdatedby);
+					} elseif ( !current_user_can( 'manage_racketmanager' ) && $matchConfirmed == 'P' ) {
+						$this->resultNotification($matchConfirmed, $matchMessage, $match, $matchUpdatedby);
+					}
+				} else {
+					if ( !$msg ) {
+						$msg = __('No results to save','racketmanager');
+						$error = true;
+					}
 				}
 			}
-			array_push($return,$msg,$error,$matchRubbers['homepoints'],$matchRubbers['awaypoints']);
+			array_push($return,$msg,$error,$matchRubbers['homepoints'],$matchRubbers['awaypoints'], $errField);
 
 			die(json_encode($return));
 		} else {
@@ -740,6 +770,236 @@ class RacketManagerAJAX extends RacketManager {
 		}
 	}
 
+	/**
+	* update results for each rubber
+	*
+	*/
+	public function updateRubberResults( $match, $numRubbers, $options ) {
+		global $wpdb, $racketmanager, $league, $match, $matchRubbers;
+
+		$return = array();
+		$error = false;
+		$errMsg = array();
+		$errField = array();
+		$matchConfirmed = '';
+		for ($ix = 0; $ix < $numRubbers; $ix++) {
+			$rubberId       = $_POST['id'][$ix];
+			$homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : NULL;
+			$homeplayer2    = isset($_POST['homeplayer2'][$ix]) ? $_POST['homeplayer2'][$ix] : NULL;
+			$awayplayer1    = isset($_POST['awayplayer1'][$ix]) ? $_POST['awayplayer1'][$ix] : NULL;
+			$awayplayer2    = isset($_POST['awayplayer2'][$ix]) ? $_POST['awayplayer2'][$ix] : NULL;
+			$custom         = isset($_POST['custom'][$ix]) ? $_POST['custom'][$ix] : "";
+			$winner         = $loser = '';
+			$sets           = $custom['sets'];
+
+			$homescore = 0;
+			$awayscore = 0;
+			$setPrefix = 'set_'.$ix.'_';
+			$numSetstoWin = $match->league->numSetstoWin;
+
+			$matchValidate = $this->validateMatchScore($sets, $setPrefix, $numSetstoWin, $errMsg, $errField);
+			$error = $matchValidate[0];
+			$errMsg = $matchValidate[1];
+			$errField = $matchValidate[2];
+			$homescore = $matchValidate[3];
+			$awayscore = $matchValidate[4];
+
+			if ( !$error ) {
+				if ( $homescore > $awayscore) {
+					$winner = $match->home_team;
+					$loser = $match->away_team;
+				} elseif ( $homescore < $awayscore) {
+					$winner = $match->away_team;
+					$loser = $match->home_team;
+				} elseif ( 'NULL' === $homescore && 'NULL' === $awayscore ) {
+					$winner = 0;
+					$loser = 0;
+				} else {
+					$winner = -1;
+					$loser = -1;
+				}
+				if (isset($homeplayer1) && isset($homeplayer2) && isset($awayplayer1) && isset($awayplayer2) && ( !empty($homescore) || !empty($awayscore) ) ) {
+					$homescore = !empty($homescore) ? $homescore : 0;
+					$awayscore = !empty($awayscore) ? $awayscore : 0;
+					$matchRubbers['homepoints'][$ix] = $homescore;
+					$matchRubbers['awaypoints'][$ix] = $awayscore;
+
+					$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_rubbers} SET `home_points` = '%s',`away_points` = '%s',`home_player_1` = '%s',`home_player_2` = '%s',`away_player_1` = '%s',`away_player_2` = '%s',`winner_id` = '%d',`loser_id` = '%d',`custom` = '%s' WHERE `id` = '%d'", $homescore, $awayscore, $homeplayer1, $homeplayer2, $awayplayer1, $awayplayer2, $winner, $loser, maybe_serialize($custom), $rubberId));
+					$matchConfirmed = 'P';
+					$checkOptions = $options['checks'];
+					$this->checkPlayerResult($match, $rubberId, $homeplayer1, $match->home_team, $checkOptions);
+					$this->checkPlayerResult($match, $rubberId, $homeplayer2, $match->home_team, $checkOptions);
+					$this->checkPlayerResult($match, $rubberId, $awayplayer1, $match->away_team, $checkOptions);
+					$this->checkPlayerResult($match, $rubberId, $awayplayer2, $match->away_team, $checkOptions);
+				}
+			}
+		}
+
+		array_push($return, $error, $matchConfirmed, $errMsg, $errField);
+		return $return;
+	}
+
+	/**
+	* validate Match Score
+	*
+	*/
+	public function validateMatchScore($sets, $setPrefixStart, $numSetstoWin, $errMsg, $errField) {
+
+		$return = array();
+		$homescore = 0;
+		$awayscore = 0;
+		$error = false;
+		$s = 1;
+		foreach ( $sets as $set ) {
+			if ( $set['player1'] !== NULL && $set['player2'] !== NULL ) {
+				if ( $set['player1'] > $set['player2']) {
+					$homescore += 1;
+				} elseif ( $set['player1'] < $set['player2']) {
+					$awayscore += 1;
+				} elseif ( $set['player1'] == 'S' ){
+					$homescore += 0.5;
+					$awayscore += 0.5;
+				}
+			}
+			$setPrefix = $setPrefixStart.$s.'_';
+			$setType = 'tiebreak';
+			if ( $s > $numSetstoWin ) {
+				if ( $homescore == $numSetstoWin || $awayscore == $numSetstoWin ) {
+					$setType = 'null';
+				}
+			}
+			$setValidate = $this->validateSetScore($set, $setPrefix, $errMsg, $errField, $setType);
+			$errMsg = $setValidate[0];
+			$errField = $setValidate[1];
+			if ( $errMsg ) {
+				$error = true;
+			}
+			$s++;
+		}
+
+		array_push($return, $error, $errMsg, $errField, $homescore, $awayscore);
+		return $return;
+	}
+
+	/**
+	* validate set score
+	*
+	*/
+	public function validateSetScore($set, $setPrefix, $errMsg, $errField, $setType) {
+		$return = array();
+		if ( $setType == 'tiebreak' ) {
+			$maxWin = 7;
+			$minWin = 6;
+			$maxLoss = $maxWin - 2;
+			$minLoss = $minWin - 2;
+		} elseif ( $setType == 'matchtiebreak' ) {
+			$maxWin = 1;
+			$minWin = 1;
+			$maxLoss = $maxWin - 1;
+			$minLoss = $minWin - 1;
+		} elseif ( $setType == 'fast4' ) {
+			$maxWin = 4;
+			$minWin = 4;
+			$maxLoss = $maxWin - 1;
+			$minLoss = $minWin - 1;
+		} elseif ( $setType == 'standard' ) {
+			$maxWin = 99;
+			$minWin = 6;
+			$maxLoss = $maxWin - 2;
+			$minLoss = $minWin - 2;
+		} elseif ( $setType == 'null' ) {
+			$maxWin = 0;
+			$minWin = 0;
+			$maxLoss = 0;
+			$minLoss = 0;
+		}
+		if ( $set['player1'] !== NULL && $set['player2'] !== NULL ) {
+			if ( $setType == 'null' ) {
+				if ( $set['player1'] != '' ) {
+					$error = true;
+					$errMsg[] = __('Set score should be empty', 'racketmanager');
+					$errField[] = $setPrefix.'player1';
+				}
+				if ( $set['player2'] != '' ) {
+					$error = true;
+					$errMsg[] = __('Set score should be empty', 'racketmanager');
+					$errField[] = $setPrefix.'player2';
+				}
+			} elseif ( $set['player1'] > $set['player2']) {
+				if ( $set['player1'] < $minWin ) {
+					$error = true;
+					$errMsg[] = __('Winning set score too low', 'racketmanager');
+					$errField[] = $setPrefix.'player1';
+				} elseif ( $set['player1'] > $maxWin ) {
+					$error = true;
+					$errMsg[] = __('Winning set score too high', 'racketmanager');
+					$errField[] = $setPrefix.'player1';
+				} elseif ( $set['player1'] == $minWin && $set['player2'] > $minLoss ) {
+					$error = true;
+					$errMsg[] = __('Games difference must be at least 2', 'racketmanager');
+					$errField[] = $setPrefix.'player1';
+					$errField[] = $setPrefix.'player2';
+				} elseif ( $set['player1'] == $maxWin && $set['player2'] < $maxLoss ) {
+					$error = true;
+					$errMsg[] = __('Games difference incorrect', 'racketmanager');
+					$errField[] = $setPrefix.'player1';
+					$errField[] = $setPrefix.'player2';
+				}
+			} elseif ( $set['player1'] < $set['player2']) {
+				if ( $set['player2'] < $minWin ) {
+					$error = true;
+					$errMsg[] = __('Winning set score too low', 'racketmanager');
+					$errField[] = $setPrefix.'player2';
+				} elseif ( $set['player2'] > $maxWin ) {
+					$error = true;
+					$errMsg[] = __('Winning set score too high', 'racketmanager');
+					$errField[] = $setPrefix.'player2';
+				} elseif ( $set['player2'] == $minWin && $set['player1'] > $minLoss ) {
+					$error = true;
+					$errMsg[] = __('Games difference must be at least 2', 'racketmanager');
+					$errField[] = $setPrefix.'player1';
+					$errField[] = $setPrefix.'player2';
+				} elseif ( $set['player2'] == $maxWin && $set['player1'] < $maxLoss ) {
+					$error = true;
+					$errMsg[] = __('Games difference incorrect', 'racketmanager');
+					$errField[] = $setPrefix.'player1';
+					$errField[] = $setPrefix.'player2';
+				}
+			} elseif ( $set['player1'] == 'S' || $set['player2'] == 'S' ) {
+				if ( $set['player1'] != 'S' ) {
+					$error = true;
+					$errMsg[] = __('Both scores must be shared', 'racketmanager');
+					$errField[] = $setPrefix.'player1';
+				}
+				if ( $set['player2'] != 'S' ) {
+					$error = true;
+					$errMsg[] = __('Both scores must be shared', 'racketmanager');
+					$errField[] = $setPrefix.'player2';
+				}
+			} elseif ( $set['player1'] == '' || $set['player2'] == '' ) {
+				$error = true;
+				$errMsg[] = __('Set score not entered', 'racketmanager');
+				if ( $set['player1'] == '' ) {
+					$errField[] = $setPrefix.'player1';
+				}
+				if ( $set['player2'] == '' ) {
+					$errField[] = $setPrefix.'player2';
+				}
+			} elseif ( $set['player1'] == $set['player2'] ) {
+				$error = true;
+				$errMsg[] = __('Set scores must be different', 'racketmanager');
+				$errField[] = $setPrefix.'player1';
+				$errField[] = $setPrefix.'player2';
+			}
+		}
+		array_push($return, $errMsg, $errField);
+		return $return;
+	}
+
+	/**
+	* ressult notification
+	*
+	*/
 	public function resultNotification($matchStatus, $matchMessage, $match, $matchUpdatedby=false) {
 		global $racketmanager;
 		$emailTo = $racketmanager->getConfirmationEmail($match->league->competitionType);
@@ -787,71 +1047,6 @@ class RacketManagerAJAX extends RacketManager {
 				}
 			}
 		}
-	}
-
-	/**
-	* update results for each rubber
-	*
-	*/
-	public function updateRubberResults( $match, $numRubbers, $options ) {
-		global $wpdb, $racketmanager, $league, $match, $matchRubbers;
-
-		$matchConfirmed = '';
-		for ($ix = 0; $ix < $numRubbers; $ix++) {
-			$rubberId       = $_POST['id'][$ix];
-			$homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : NULL;
-			$homeplayer2    = isset($_POST['homeplayer2'][$ix]) ? $_POST['homeplayer2'][$ix] : NULL;
-			$awayplayer1    = isset($_POST['awayplayer1'][$ix]) ? $_POST['awayplayer1'][$ix] : NULL;
-			$awayplayer2    = isset($_POST['awayplayer2'][$ix]) ? $_POST['awayplayer2'][$ix] : NULL;
-			$custom         = isset($_POST['custom'][$ix]) ? $_POST['custom'][$ix] : "";
-			$winner         = $loser = '';
-			$homescore      = $awayscore = 0;
-			$sets           = $custom['sets'];
-
-			foreach ( $sets as $set ) {
-				if ( $set['player1'] !== NULL && $set['player2'] !== NULL ) {
-					if ( $set['player1'] > $set['player2']) {
-						$homescore += 1;
-					} elseif ( $set['player1'] < $set['player2']) {
-						$awayscore += 1;
-					} elseif ( $set['player1'] == 'S' ){
-						$homescore += 0.5;
-						$awayscore += 0.5;
-					}
-				}
-			}
-
-			if ( $homescore > $awayscore) {
-				$winner = $match->home_team;
-				$loser = $match->away_team;
-			} elseif ( $homescore < $awayscore) {
-				$winner = $match->away_team;
-				$loser = $match->home_team;
-			} elseif ( 'NULL' === $homescore && 'NULL' === $awayscore ) {
-				$winner = 0;
-				$loser = 0;
-			} else {
-				$winner = -1;
-				$loser = -1;
-			}
-
-			if (isset($homeplayer1) && isset($homeplayer2) && isset($awayplayer1) && isset($awayplayer2) && ( !empty($homescore) || !empty($awayscore) ) ) {
-				$homescore = !empty($homescore) ? $homescore : 0;
-				$awayscore = !empty($awayscore) ? $awayscore : 0;
-				$matchRubbers['homepoints'][$ix] = $homescore;
-				$matchRubbers['awaypoints'][$ix] = $awayscore;
-
-				$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_rubbers} SET `home_points` = '%s',`away_points` = '%s',`home_player_1` = '%s',`home_player_2` = '%s',`away_player_1` = '%s',`away_player_2` = '%s',`winner_id` = '%d',`loser_id` = '%d',`custom` = '%s' WHERE `id` = '%d'", $homescore, $awayscore, $homeplayer1, $homeplayer2, $awayplayer1, $awayplayer2, $winner, $loser, maybe_serialize($custom), $rubberId));
-				$matchConfirmed = 'P';
-				$checkOptions = $options['checks'];
-				$this->checkPlayerResult($match, $rubberId, $homeplayer1, $match->home_team, $checkOptions);
-				$this->checkPlayerResult($match, $rubberId, $homeplayer2, $match->home_team, $checkOptions);
-				$this->checkPlayerResult($match, $rubberId, $awayplayer1, $match->away_team, $checkOptions);
-				$this->checkPlayerResult($match, $rubberId, $awayplayer2, $match->away_team, $checkOptions);
-			}
-		}
-
-		return $matchConfirmed;
 	}
 
 	/**
@@ -939,7 +1134,9 @@ class RacketManagerAJAX extends RacketManager {
 		global $wpdb, $racketmanager;
 
 		$player = $racketmanager->getRosterEntry($rosterId, $team);
-		if ( !empty($player->system_record) ) return;
+		if ( !empty($player->system_record) ) {
+			return;
+		}
 
 		$teamName = get_team($team)->title;
 		$currTeamNum = substr($teamName,-1);
@@ -948,63 +1145,70 @@ class RacketManagerAJAX extends RacketManager {
 			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_results_checker} WHERE `player_id` = %d AND `match_id` = %d", $player->player_id, $match->id) );
 		}
 
-		if ( isset($options['rosterLeadTime']) ) {
-			if ( isset($player->created_date) ) {
-				$matchDate = new DateTime($match->date);
-				$rosterDate = new DateTime($player->created_date);
-				$interval = $rosterDate->diff($matchDate);
-				if ( $interval->days < intval($options['rosterLeadTime']) ) {
-					$error = sprintf(__('player registered with club only %d days before match','racketmanager'), $interval->days);
-					$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
-				} elseif ( $interval->invert ) {
-					$error = sprintf(__('player registered with club %d days after match','racketmanager'), $interval->days);
-					$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
-				}
-			}
+		if ( !is_numeric($rosterId) ) {
+			$error = __('Player not selected', 'racketmanager');
+			$racketmanager->addResultCheck($match, $team, 0, $error );
 		}
 
-		if ( isset($match->match_day) ) {
-			$sql = $wpdb->prepare("SELECT count(*) FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager_rubbers} r WHERE m.`id` = r.`match_id` AND m.`season` = '%s' AND m.`match_day` = %d AND  m.`league_id` != %d AND m.`league_id` in (SELECT l.`id` from {$wpdb->racketmanager} l, {$wpdb->racketmanager_competitions} c WHERE l.`competition_id` = (SELECT `competition_id` FROM {$wpdb->racketmanager} WHERE `id` = %d)) AND (`home_player_1` = %d or `home_player_2` = %d or `away_player_1` = %d or `away_player_2` = %d)", $match->season, $match->match_day, $match->league_id, $match->league_id, $rosterId, $rosterId, $rosterId, $rosterId);
-
-			$count = $wpdb->get_var($sql);
-			if ( $count > 0 ) {
-				$error = sprintf(__('player has already played on match day %d','racketmanager'), $match->match_day);
-				$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
-			}
-
-			if ( isset($options['playedRounds']) ) {
-				$league = get_league($match->league_id);
-				$numMatchDays = $league->seasons[$match->season]['num_match_days'];
-				if ( $match->match_day > ($numMatchDays - $options['playedRounds']) ) {
-					$sql = $wpdb->prepare("SELECT count(*) FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager_rubbers} r WHERE m.`id` = r.`match_id` AND m.`season` = '%s' AND m.`match_day` < %d AND m.`league_id` in (SELECT l.`id` from {$wpdb->racketmanager} l, {$wpdb->racketmanager_competitions} c WHERE l.`competition_id` = (SELECT `competition_id` FROM {$wpdb->racketmanager} WHERE `id` = %d)) AND (`home_player_1` = %d or `home_player_2` = %d or `away_player_1` = %d or `away_player_2` = %d)", $match->season, $match->match_day, $match->league_id, $rosterId, $rosterId, $rosterId, $rosterId);
-
-					$count = $wpdb->get_var($sql);
-					if ( $count == 0 ) {
-						$error = sprintf(__('player has not played before the final %d match days','racketmanager'), $options['playedRounds']);
+		if ( $player ) {
+			if ( isset($options['rosterLeadTime']) ) {
+				if ( isset($player->created_date) ) {
+					$matchDate = new DateTime($match->date);
+					$rosterDate = new DateTime($player->created_date);
+					$interval = $rosterDate->diff($matchDate);
+					if ( $interval->days < intval($options['rosterLeadTime']) ) {
+						$error = sprintf(__('player registered with club only %d days before match','racketmanager'), $interval->days);
+						$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
+					} elseif ( $interval->invert ) {
+						$error = sprintf(__('player registered with club %d days after match','racketmanager'), $interval->days);
 						$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
 					}
 				}
-
 			}
-			if ( isset($options['playerLocked']) ) {
-				$competition = get_competition($match->league->competition_id);
-				$playerStats = $competition->getPlayerStats(array('season' => $match->season, 'roster' => $rosterId));
-				$prevTeamNum = $playdowncount = $prevMatchDay = 0;
-				$teamplay = array();
-				foreach ( $playerStats AS $playerStat ) {
-					foreach ( $playerStat->matchdays AS $m => $matchDay) {
-						if ( $prevMatchDay != $matchDay->match_day ) {
-							$i = 0;
+
+			if ( isset($match->match_day) ) {
+				$sql = $wpdb->prepare("SELECT count(*) FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager_rubbers} r WHERE m.`id` = r.`match_id` AND m.`season` = '%s' AND m.`match_day` = %d AND  m.`league_id` != %d AND m.`league_id` in (SELECT l.`id` from {$wpdb->racketmanager} l, {$wpdb->racketmanager_competitions} c WHERE l.`competition_id` = (SELECT `competition_id` FROM {$wpdb->racketmanager} WHERE `id` = %d)) AND (`home_player_1` = %d or `home_player_2` = %d or `away_player_1` = %d or `away_player_2` = %d)", $match->season, $match->match_day, $match->league_id, $match->league_id, $rosterId, $rosterId, $rosterId, $rosterId);
+
+				$count = $wpdb->get_var($sql);
+				if ( $count > 0 ) {
+					$error = sprintf(__('player has already played on match day %d','racketmanager'), $match->match_day);
+					$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
+				}
+
+				if ( isset($options['playedRounds']) ) {
+					$league = get_league($match->league_id);
+					$numMatchDays = $league->seasons[$match->season]['num_match_days'];
+					if ( $match->match_day > ($numMatchDays - $options['playedRounds']) ) {
+						$sql = $wpdb->prepare("SELECT count(*) FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager_rubbers} r WHERE m.`id` = r.`match_id` AND m.`season` = '%s' AND m.`match_day` < %d AND m.`league_id` in (SELECT l.`id` from {$wpdb->racketmanager} l, {$wpdb->racketmanager_competitions} c WHERE l.`competition_id` = (SELECT `competition_id` FROM {$wpdb->racketmanager} WHERE `id` = %d)) AND (`home_player_1` = %d or `home_player_2` = %d or `away_player_1` = %d or `away_player_2` = %d)", $match->season, $match->match_day, $match->league_id, $rosterId, $rosterId, $rosterId, $rosterId);
+
+						$count = $wpdb->get_var($sql);
+						if ( $count == 0 ) {
+							$error = sprintf(__('player has not played before the final %d match days','racketmanager'), $options['playedRounds']);
+							$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
 						}
-						$teamNum = substr($matchDay->team_title,-1) ;
-						if (isset($teamplay[$teamNum])) $teamplay[$teamNum] ++;
-						else $teamplay[$teamNum] = 1;
 					}
-					foreach ( $teamplay AS $teamNum => $played) {
-						if ($teamNum < $currTeamNum) {
-							if ($played > 2) {
-								$error = sprintf(__('player is locked to team %d','racketmanager'), $teamNum);
-								$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
+
+				}
+				if ( isset($options['playerLocked']) ) {
+					$competition = get_competition($match->league->competition_id);
+					$playerStats = $competition->getPlayerStats(array('season' => $match->season, 'roster' => $rosterId));
+					$teamplay = array();
+					foreach ( $playerStats AS $playerStat ) {
+						foreach ( $playerStat->matchdays AS $matchDay) {
+							$teamNum = substr($matchDay->team_title,-1) ;
+							if (isset($teamplay[$teamNum])) {
+								$teamplay[$teamNum] ++;
+							}
+							else {
+								$teamplay[$teamNum] = 1;
+							}
+						}
+						foreach ( $teamplay AS $teamNum => $played) {
+							if ($teamNum < $currTeamNum) {
+								if ($played > 2) {
+									$error = sprintf(__('player is locked to team %d','racketmanager'), $teamNum);
+									$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
+								}
 							}
 						}
 					}

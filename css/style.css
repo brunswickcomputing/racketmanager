@@ -670,6 +670,10 @@ div.teamlist .header .ui-icon {
 .points {
     text-align: center;
 }
+.points.is-invalid {
+  border-color: #dc3545;
+  color: #dc3545;
+}
 .row input.points {
 	padding: 2px 3px;
 	margin: 3px;
@@ -788,11 +792,11 @@ li.game-spacer{
 }
 
 li.game-bottom{
-    border-bottom: 1px solid #aaa;
-    border-right: 1px solid #aaa;
+  border-bottom: 1px solid #aaa;
+  border-right: 1px solid #aaa;
 }
 .doubles.game-bottom {
-    height: 47px;
+  min-height: 47px;
 }
 .tournament-match {
 	border: solid 1px;

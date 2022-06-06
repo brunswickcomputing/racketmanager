@@ -167,6 +167,7 @@ Racketmanager.updateResults = function(link) {
   var $leagueId = $league.value;
   var $form = jQuery('#match-rubbers').serialize();
   $form += "&action=racketmanager_update_rubbers";
+  jQuery(".is-invalid").removeClass("is-invalid");
   jQuery("#updateResponse").removeClass("message-success");
 	jQuery("#updateResponse").removeClass("message-error");
   jQuery("#showMatchRubbers").hide();
@@ -184,6 +185,12 @@ Racketmanager.updateResults = function(link) {
 			if ($error === true) {
 				jQuery("#updateResponse").addClass('message-error');
 				jQuery("#updateResponse").html($message);
+        jQuery("#updateResponse").show();
+        var $errField = $response[4];
+        for (var i = 0; i < $errField.length; i++) {
+          $formfield = "#"+$errField[i];
+          jQuery($formfield).addClass('is-invalid');
+        }
 			} else {
         jQuery("#updateResponse").show();
 				jQuery("#updateResponse").addClass('message-success');
@@ -243,17 +250,27 @@ Racketmanager.updateMatchResults = function(link) {
 		data: $form,
 		success: function(response) {
 			var $response = jQuery.parseJSON(response);
-			var $message = $response[0];
+      var $message = $response[0];
 			jQuery("#updateResponse").show();
-			jQuery("#updateResponse").text($message);
-			var $homepoints = $response[1];
-			var $formfield = "#home_points";
-			var $fieldval = $homepoints;
-			jQuery($formfield).val($fieldval);
-			var $awaypoints = $response[2];
-			var $formfield = "#away_points";
-			var $fieldval = $awaypoints;
-			jQuery($formfield).val($fieldval);
+			jQuery("#updateResponse").html($message);
+      var $error = $response[3];
+      if ($error === true) {
+				jQuery("#updateResponse").addClass('message-error');
+        var $errField = $response[4];
+        for (var i = 0; i < $errField.length; i++) {
+          $formfield = "#"+$errField[i];
+          jQuery($formfield).addClass('is-invalid');
+        }
+      } else {
+        var $homepoints = $response[1];
+  			var $formfield = "#home_points";
+  			var $fieldval = $homepoints;
+  			jQuery($formfield).val($fieldval);
+  			var $awaypoints = $response[2];
+  			var $formfield = "#away_points";
+  			var $fieldval = $awaypoints;
+  			jQuery($formfield).val($fieldval);
+      }
 			jQuery("#splash").css('opacity', 0);
 			jQuery("#splash").hide();
 			jQuery("#showMatchRubbers").show();

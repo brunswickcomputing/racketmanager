@@ -238,6 +238,9 @@ Racketmanager.updateMatchResults = function(link) {
 	var $matchId = $match.value;
 	var $form = jQuery('#match-view').serialize();
 	$form += "&action=racketmanager_update_match";
+  jQuery(".is-invalid").removeClass("is-invalid");
+  jQuery("#updateResponse").removeClass("message-success");
+	jQuery("#updateResponse").removeClass("message-error");
 	jQuery("#updateRubberResults").prop("disabled", "true");
 	jQuery("#updateRubberResults").addClass("disabled");
 	jQuery("#splash").css('opacity', 1);

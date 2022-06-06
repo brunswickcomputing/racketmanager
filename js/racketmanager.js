@@ -398,8 +398,13 @@ Racketmanager.updateMatchResults = function(link) {
 	var $matchId = $match.value;
 	var $form = jQuery('#match-view').serialize();
 	$form += "&action=racketmanager_update_match";
+	jQuery(".is-invalid").removeClass("is-invalid");
 	jQuery("#updateRubberResults").prop("disabled", "true");
 	jQuery("#updateRubberResults").addClass("disabled");
+	jQuery("#updateRubberResults").prop("disabled", "true");
+	jQuery("#updateRubberResults").addClass("disabled");
+	jQuery("#updateResponse").removeClass("message-success");
+	jQuery("#updateResponse").removeClass("message-error");
 	jQuery("#splash").css('opacity', 1);
 	jQuery("#splash").show();
 	jQuery("#showMatchRubbers").hide();
@@ -411,16 +416,28 @@ Racketmanager.updateMatchResults = function(link) {
 		success: function(response) {
 			var $response = jQuery.parseJSON(response);
 			var $message = $response[0];
+			var $error = $response[3];
 			jQuery("#updateResponse").show();
-			jQuery("#updateResponse").text($message);
-			var $homepoints = $response[1];
-			var $formfield = "#home_points";
-			var $fieldval = $homepoints;
-			jQuery($formfield).val($fieldval);
-			var $awaypoints = $response[2];
-			var $formfield = "#away_points";
-			var $fieldval = $awaypoints;
-			jQuery($formfield).val($fieldval);
+			if ($error === true) {
+				jQuery("#updateResponse").addClass('message-error');
+				jQuery("#updateResponse").html($message);
+				var $errField = $response[4];
+				for (var i = 0; i < $errField.length; i++) {
+					$formfield = "#"+$errField[i];
+					jQuery($formfield).addClass('is-invalid');
+				}
+			} else {
+				jQuery("#updateResponse").html($message);
+				jQuery("#updateResponse").addClass('message-success');
+				var $homepoints = $response[1];
+				var $formfield = "#home_points";
+				var $fieldval = $homepoints;
+				jQuery($formfield).val($fieldval);
+				var $awaypoints = $response[2];
+				var $formfield = "#away_points";
+				var $fieldval = $awaypoints;
+				jQuery($formfield).val($fieldval);
+			}
 			jQuery("#splash").css('opacity', 0);
 			jQuery("#splash").hide();
 			jQuery("#showMatchRubbers").show();

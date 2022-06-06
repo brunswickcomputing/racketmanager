@@ -124,7 +124,7 @@ function create_new_url_querystring() {
   // league - season - matchday - match
   add_rewrite_rule(
     'match/(.+?)-(.+?)-(.+?)/([0-9]{4})/(.+?)/(.+?)-vs-(.+?)/?$',
-    'index.php?pagename=match%2F&competition_name=$matches[1]-$matches[2]-$matches[3]&season=$matches[4]&round=$matches[5]&teamHome=$matches[6]&teamAway=$matches[7]',
+    'index.php?pagename=match%2F&league_name=$matches[1]-$matches[2]-$matches[3]&season=$matches[4]&round=$matches[5]&teamHome=$matches[6]&teamAway=$matches[7]',
     'top'
   );
   // league - season - matchday - team

@@ -905,6 +905,11 @@ class RacketManagerAJAX extends RacketManager {
 			$minWin = 6;
 			$maxLoss = $maxWin - 2;
 			$minLoss = $minWin - 2;
+		} elseif ( $setType == 'pro' ) {
+			$maxWin = 9;
+			$minWin = 8;
+			$maxLoss = $maxWin - 2;
+			$minLoss = $minWin - 2;
 		} elseif ( $setType == 'null' ) {
 			$maxWin = 0;
 			$minWin = 0;

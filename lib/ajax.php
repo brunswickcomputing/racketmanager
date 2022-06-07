@@ -565,7 +565,6 @@ class RacketManagerAJAX extends RacketManager {
 			$custom[$matchId] = $_POST['custom'];
 			$season[$matchId] = $_POST['current_season'];
 
-			$sets = $custom[$matchId]['sets'];
 			$errMsg = array();
 			$errField = array();
 			$error = false;
@@ -573,9 +572,8 @@ class RacketManagerAJAX extends RacketManager {
 			$homescore = 0;
 			$awayscore = 0;
 			$setPrefix = 'set_';
-			$numSetstoWin = $match->league->numSetstoWin;
 
-			$matchValidate = $this->validateMatchScore($sets, $setPrefix, $numSetstoWin, $errMsg, $errField);
+			$matchValidate = $this->validateMatchScore($match, $custom[$matchId], $setPrefix, $errMsg, $errField);
 			$error = $matchValidate[0];
 			$errMsg = $matchValidate[1];
 			$errField = $matchValidate[2];
@@ -790,14 +788,12 @@ class RacketManagerAJAX extends RacketManager {
 			$awayplayer2    = isset($_POST['awayplayer2'][$ix]) ? $_POST['awayplayer2'][$ix] : NULL;
 			$custom         = isset($_POST['custom'][$ix]) ? $_POST['custom'][$ix] : "";
 			$winner         = $loser = '';
-			$sets           = $custom['sets'];
 
 			$homescore = 0;
 			$awayscore = 0;
 			$setPrefix = 'set_'.$ix.'_';
-			$numSetstoWin = $match->league->numSetstoWin;
 
-			$matchValidate = $this->validateMatchScore($sets, $setPrefix, $numSetstoWin, $errMsg, $errField);
+			$matchValidate = $this->validateMatchScore($match, $custom, $setPrefix, $errMsg, $errField);
 			$error = $matchValidate[0];
 			$errMsg = $matchValidate[1];
 			$errField = $matchValidate[2];
@@ -843,16 +839,18 @@ class RacketManagerAJAX extends RacketManager {
 	* validate Match Score
 	*
 	*/
-	public function validateMatchScore($sets, $setPrefixStart, $numSetstoWin, $errMsg, $errField) {
+	public function validateMatchScore($match, $custom, $setPrefixStart, $errMsg, $errField) {
 
+		$numSetstoWin = $match->league->numSetstoWin;
+		$sets = $custom['sets'];
 		$return = array();
 		$homescore = 0;
 		$awayscore = 0;
 		$error = false;
+		$setType = isset($match->league->setType) ? $match->league->setType : 'tiebreak';
 		$s = 1;
 		foreach ( $sets as $set ) {
 			$setPrefix = $setPrefixStart.$s.'_';
-			$setType = 'tiebreak';
 			if ( $s > $numSetstoWin ) {
 				if ( $homescore == $numSetstoWin || $awayscore == $numSetstoWin ) {
 					$setType = 'null';

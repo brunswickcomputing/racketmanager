@@ -28,7 +28,7 @@ $postID = $wp_query->post->ID;
           <td class='match'>
             <?php $matchTitle = get_matchTitle($match);
             if ( $match->league->mode == 'championship' ) { ?>
-              <a href="/<?php _e('tournaments', 'racketmanager') ?>/<?php echo sanitize_title($match->league->title) ?>/<?php echo $match->league->current_season['name'] ?>"><?php echo $matchTitle ?></a>;
+              <a href="/<?php _e('tournaments', 'racketmanager') ?>/<?php echo sanitize_title($match->league->title) ?>/<?php echo $match->league->current_season['name'] ?>"><?php echo $matchTitle ?></a>
             <?php } else { ?>
               <a href="/<?php _e('leagues', 'racketmanager') ?>/<?php echo sanitize_title($match->league->title) ?>/<?php echo $match->league->current_season['name'] ?>/day<?php echo $match->match_day ?>"><?php echo $matchTitle ?></a>
             <?php } ?>

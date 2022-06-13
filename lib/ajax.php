@@ -780,6 +780,8 @@ class RacketManagerAJAX extends RacketManager {
 		$errMsg = array();
 		$errField = array();
 		$matchConfirmed = '';
+		$homeTeamScore = 0;
+		$awayTeamScore = 0;
 		for ($ix = 0; $ix < $numRubbers; $ix++) {
 			$rubberId       = $_POST['id'][$ix];
 			$homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : NULL;
@@ -794,26 +796,19 @@ class RacketManagerAJAX extends RacketManager {
 			$setPrefix = 'set_'.$ix.'_';
 			$validateMatch = true;
 
-			$matchValidate = $this->validateMatchScore($match, $custom, $setPrefix, $errMsg, $errField);
-			$error = $matchValidate[0];
-			$errMsg = $matchValidate[1];
-			$errField = $matchValidate[2];
-			$homescore = $matchValidate[3];
-			$awayscore = $matchValidate[4];
-
-			if ( !$error ) {
-				if ( $homescore > $awayscore) {
-					$winner = $match->home_team;
-					$loser = $match->away_team;
-				} elseif ( $homescore < $awayscore) {
-					$winner = $match->away_team;
-					$loser = $match->home_team;
-				} elseif ( 'NULL' === $homescore && 'NULL' === $awayscore ) {
-					$winner = 0;
-					$loser = 0;
-				} else {
-					$winner = -1;
-					$loser = -1;
+			if ( $validateMatch ) {
+				$rubberNumber = $ix + 1;
+				$matchValidate = $this->validateMatchScore($match, $custom, $setPrefix, $errMsg, $errField, $rubberNumber);
+				$error = $matchValidate[0];
+				$errMsg = $matchValidate[1];
+				$errField = $matchValidate[2];
+				$homescore = $matchValidate[3];
+				$awayscore = $matchValidate[4];
+				if ( is_numeric($homescore) ) {
+					$homeTeamScore += $homescore;
+				}
+				if ( is_numeric($awayscore) ) {
+					$awayTeamScore += $awayscore;
 				}
 
 				if ( !$error ) {
@@ -856,7 +851,7 @@ class RacketManagerAJAX extends RacketManager {
 	* validate Match Score
 	*
 	*/
-	public function validateMatchScore($match, $custom, $setPrefixStart, $errMsg, $errField) {
+	public function validateMatchScore($match, $custom, $setPrefixStart, $errMsg, $errField, $rubberNumber=false) {
 
 		$numSetstoWin = $match->league->numSetstoWin;
 		$sets = $custom['sets'];

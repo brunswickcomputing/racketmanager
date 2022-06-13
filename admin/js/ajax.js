@@ -399,6 +399,33 @@ Racketmanager.chaseMatchResult = function(matchId) {
     }
   }) ;
 };
+Racketmanager.chaseMatchApproval = function(matchId) {
+  notifyField = "#notifyMessage-"+matchId;
+
+  jQuery.ajax({
+    url:RacketManagerAjaxL10n.requestUrl,
+    type: "POST",
+    data: {"matchId": matchId,
+    "action": "racketmanager_chase_match_approval"},
+    success: function(response) {
+      var $response = jQuery.parseJSON(response);
+      var $message = $response['msg'];
+      var $error = $response['error'];
+
+      jQuery(notifyField).text($message);
+      jQuery(notifyField).show();
+      if ( !$error ) {
+        jQuery(notifyField).addClass('message-success');
+        jQuery(notifyField).delay(10000).fadeOut('slow');
+      } else {
+        jQuery(notifyField).addClass('message-error');
+      }
+    },
+    error: function() {
+      alert("Ajax error on chasing for match approval");
+    }
+  }) ;
+};
 Racketmanager.getImportOption = function(option) {
 
   var selectedOption = option;

@@ -34,9 +34,16 @@ $prev_league = 0;
         <div class="col-12 col-md-1">
           <?php echo $match->confirmedDisplay ?>
         </div>
-        <div class="col-12 col-md-2">
+        <div class="col-auto">
           <a href="admin.php?page=racketmanager-results&amp;subpage=match&amp;match_id=<?php echo $match->id ?>&amp;referrer=results" class="btn btn-secondary"><?php _e('View result', 'racketmanager') ?></a>
         </div>
+        <?php if ( $match->confirmed == 'P' ) { ?>
+          <div class="col-auto">
+            <a class="btn btn-secondary" onclick="Racketmanager.chaseMatchApproval('<?php echo ($match->id) ?>');">
+            <?php _e( 'Chase approval', 'racketmanager' ) ?></a>
+          </div>
+          <div class="col-12 col-md-auto"><span id="notifyMessage-<?php echo $match->id ?>"></span></div>
+        <?php } ?>
       </div>
     <?php }
   } else { ?>

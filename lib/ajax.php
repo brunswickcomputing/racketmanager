@@ -64,6 +64,7 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_notify_entries_open', array(&$this, 'notifyEntriesOpen') );
 		add_action( 'wp_ajax_racketmanager_notify_tournament_entries_open', array(&$this, 'notifyTournamentEntriesOpen') );
 		add_action( 'wp_ajax_racketmanager_chase_match_result', array(&$this, 'chaseMatchResult') );
+		add_action( 'wp_ajax_racketmanager_chase_match_approval', array(&$this, 'chaseMatchApproval') );
 
 		add_action( 'wp_ajax_racketmanager_add_favourite', array(&$this, 'addFavourite') );
 	}
@@ -2167,6 +2168,63 @@ class RacketManagerAJAX extends RacketManager {
 			}
 			$actionURL = $racketmanager->site_url.'/match/'.seoUrl($match->league->title).'/'.$match->season.'/day'.$match->match_day.'/'.seoUrl($match->teams['home']->title).'-vs-'.seoUrl($match->teams['away']->title);
 			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'match-result-pending', array( 'actionURL' => $actionURL, 'organisationName' => $organisationName ), 'email' );
+			$this->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
+			$messageSent = true;
+		}
+
+		if ( $messageSent ) {
+			$return['msg'] = __('Captain emailed','racketmanager');
+		} else {
+			$return['error'] = true;
+			$return['msg'] = __('No notification','racketmanager');
+		}
+
+		die(json_encode($return));
+	}
+
+	/**
+	* contact captain for match approval
+	*
+	* @see templates/email/match-approval-pending.php
+	*/
+	public function chaseMatchApproval() {
+		global $racketmanager, $racketmanager_shortcodes, $match;
+
+		$matchId = $_POST['matchId'];
+		$match = get_match($matchId);
+
+		$messageSent = false;
+		$return = array();
+		$clubs = $this->getClubs();
+
+		$headers = array();
+		$fromEmail = $this->getConfirmationEmail($match->league->competitionType);
+		$headers[] = 'From: '.ucfirst($match->league->competitionType).' Secretary <'.$fromEmail.'>';
+		$headers[] = 'cc: '.ucfirst($match->league->competitionType).' Secretary <'.$fromEmail.'>';
+		$organisationName = $racketmanager->site_name;
+
+		$emailSubject = $racketmanager->site_name." - ".$match->league->title." - ".$match->getTitle()." Match approval pending";
+		$emailTo = '';
+		if ( isset($match->home_captain) ) {
+			if ( isset($match->teams['away']->contactemail) ) {
+				$emailTo = $match->teams['away']->captain.' <'.$match->teams['away']->contactemail.'>';
+				$club = get_club($match->teams['away']->affiliatedclub);
+				if ( isset($club->matchSecretaryEmail) ) {
+					$headers[] = 'cc: '.$club->matchSecretaryName.' <'.$club->matchSecretaryEmail.'>';
+				}
+			}
+		} elseif ( isset($match->away_captain) ) {
+			if ( isset($match->teams['home']->contactemail) ) {
+				$emailTo = $match->teams['home']->captain.' <'.$match->teams['home']->contactemail.'>';
+				$club = get_club($match->teams['home']->affiliatedclub);
+				if ( isset($club->matchSecretaryEmail) ) {
+					$headers[] = 'cc: '.$club->matchSecretaryName.' <'.$club->matchSecretaryEmail.'>';
+				}
+			}
+		}
+		if ( !empty($emailTo) ) {
+			$actionURL = $racketmanager->site_url.'/match/'.seoUrl($match->league->title).'/'.$match->season.'/day'.$match->match_day.'/'.seoUrl($match->teams['home']->title).'-vs-'.seoUrl($match->teams['away']->title);
+			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'match-approval-pending', array( 'actionURL' => $actionURL, 'organisationName' => $organisationName ), 'email' );
 			$this->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
 			$messageSent = true;
 		}

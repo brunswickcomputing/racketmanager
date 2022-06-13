@@ -2202,7 +2202,8 @@ class RacketManagerAJAX extends RacketManager {
 		$headers[] = 'From: '.ucfirst($match->league->competitionType).' Secretary <'.$fromEmail.'>';
 		$headers[] = 'cc: '.ucfirst($match->league->competitionType).' Secretary <'.$fromEmail.'>';
 		$organisationName = $racketmanager->site_name;
-
+		$messageArgs = array();
+		$messageArgs['outstanding'] = true;
 		$emailSubject = $racketmanager->site_name." - ".$match->league->title." - ".$match->getTitle()." Match approval pending";
 		$emailTo = '';
 		if ( isset($match->home_captain) ) {
@@ -2224,7 +2225,9 @@ class RacketManagerAJAX extends RacketManager {
 		}
 		if ( !empty($emailTo) ) {
 			$actionURL = $racketmanager->site_url.'/match/'.seoUrl($match->league->title).'/'.$match->season.'/day'.$match->match_day.'/'.seoUrl($match->teams['home']->title).'-vs-'.seoUrl($match->teams['away']->title);
-			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'match-approval-pending', array( 'actionURL' => $actionURL, 'organisationName' => $organisationName ), 'email' );
+			$emailMessage = racketmanager_captain_result_notification($match->id, $messageArgs );
+
+//			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'match-approval-pending', array( 'actionURL' => $actionURL, 'organisationName' => $organisationName ), 'email' );
 			$this->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
 			$messageSent = true;
 		}

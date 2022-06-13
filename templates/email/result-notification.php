@@ -12,7 +12,12 @@ $title = $organisationName.' Match Result - '.$competitionName;
           <div>
             <h1 class="align-center"><?php echo $competitionName; ?></h1>
             <h2 class="align-center"><?php echo the_match_title(); ?></h2>
-            <p>The result of this match has been entered and requires action.</p>
+            <?php if ( isset($outstanding) && $outstanding ) { ?>
+              <p>The approval of this result is outstanding.</p>
+              <p>Please either approval or challenge the result as soon as possible.</p>
+            <?php } else { ?>
+              <p>The result of this match has been entered and requires action.</p>
+            <?php } ?>
             <!-- Action -->
             <table class="body-action" align="center" width="100%" cellpadding="0" cellspacing="0">
               <tr>

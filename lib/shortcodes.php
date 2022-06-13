@@ -1188,10 +1188,7 @@ class RacketManagerShortcodes extends RacketManager {
 		extract(shortcode_atts(array(
 			'match' => '',
 			'template' => '',
-			'league' => false,
-			'round' => false,
-			'matchday' => false,
-			'organisationname' => false,
+			'outstanding' => false,
 		), $atts ));
 
 		$match = get_match($match);
@@ -1203,13 +1200,11 @@ class RacketManagerShortcodes extends RacketManager {
 			$actionurl .= "/".__('match', 'racketmanager')."/".sanitize_title($match->league->title)."/".$match->league->current_season['name']."/day".$match->match_day."/".sanitize_title($match->teams['home']->title)."-vs-".sanitize_title($match->teams['away']->title);
 		}
 
-		if ( !$organisationname ) {
-			$organisationname = $racketmanager->site_name;
-		}
+		$organisationname = $racketmanager->site_name;
 
 		$filename = ( !empty($template) ) ? 'result-notification-'.$template : 'result-notification';
 
-		$out = $this->loadTemplate( $filename, array( 'match' => $match, 'organisationName' => $organisationname, 'actionurl' => $actionurl ), 'email' );
+		$out = $this->loadTemplate( $filename, array( 'match' => $match, 'organisationName' => $organisationname, 'actionurl' => $actionurl, 'outstanding' => $outstanding ), 'email' );
 
 		return $out;
 	}

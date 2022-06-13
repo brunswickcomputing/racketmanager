@@ -405,6 +405,7 @@ Racketmanager.updateMatchResults = function(link) {
 	jQuery("#updateRubberResults").addClass("disabled");
 	jQuery("#updateResponse").removeClass("message-success");
 	jQuery("#updateResponse").removeClass("message-error");
+	jQuery("#splash").removeClass("d-none");
 	jQuery("#splash").css('opacity', 1);
 	jQuery("#splash").show();
 	jQuery("#showMatchRubbers").hide();

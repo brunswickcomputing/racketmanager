@@ -45,7 +45,7 @@
 					</div>
 					<div class="col-12 col-md-1"><?php echo $resultsChecker->date ?></div>
 					<div class="col-12 col-md-1"><a href="admin.php?page=racketmanager&subpage=show-league&league_id=<?php echo $resultsChecker->league->id ?>" title="<?php _e( 'Go to league', 'racketmanager' ) ?>"><?php echo $resultsChecker->league->title ?></a></div>
-					<div class="col-12 col-md-2"><?php echo $resultsChecker->match->match_title ?></div>
+					<div class="col-12 col-md-2"><a href="admin.php?page=racketmanager-results&amp;subpage=match&amp;match_id=<?php echo $resultsChecker->match_id ?>&amp;referrer=resultschecker"><?php echo $resultsChecker->match->match_title ?></a></div>
 					<div class="col-12 col-md-1"><?php echo $resultsChecker->team ?></div>
 					<div class="col-12 col-md-1"><?php echo $resultsChecker->player ?></div>
 					<div class="col-12 col-md-2"><?php echo $resultsChecker->description ?></div>

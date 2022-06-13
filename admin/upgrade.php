@@ -427,7 +427,149 @@ function racketmanager_upgrade() {
 				$options['tournament'] = $competitionTypes['tournament'];
 				update_option( 'leaguemanager', $options );
     }
-    /*
+		if (version_compare($installed, '6.17.0', '<')) {
+        echo __('starting 6.17.0 upgrade', 'leaguemanager') . "<br />\n";
+				$userId = get_current_user_id();
+				$user = get_user_by('login','share.m6');
+				if ( $user ) {
+					$userData = array();
+					$userData['ID'] = $user->ID;
+					$userData['firstname'] = __('unregistered', 'racketmanager');
+					$userData['surname'] = __('male player', 'racketmanager');
+					$userData['user_login'] = __('unregistered.maleplayer', 'racketmanager');
+					$userData['user_nicename'] = __('unregistered-male-player', 'racketmanager');
+					$userData['display_name'] = __('Unregistered male player', 'racketmanager');
+					$userData['nickname'] = __('unregistered.maleplayer', 'racketmanager');
+					wp_update_user($userData);
+				}
+				$user = get_user_by('login','no pair.m1');
+				if ( $user ) {
+					$userData = array();
+					$userData['ID'] = $user->ID;
+					$userData['firstname'] = __('no', 'racketmanager');
+					$userData['surname'] = __('male player', 'racketmanager');
+					$userData['user_login'] = __('no.maleplayer', 'racketmanager');
+					$userData['user_nicename'] = __('no-male-player', 'racketmanager');
+					$userData['display_name'] = __('No male player', 'racketmanager');
+					$userData['nickname'] = __('no.maleplayer', 'racketmanager');
+					wp_update_user($userData);
+				}
+				for ($i=2; $i <= 6 ; $i++) {
+					$userLogin = 'no pair.m'.$i;
+					$user = get_user_by('login',$userLogin);
+					if ( $user ) {
+						$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_roster} SET `removed_date` = NOW(), `removed_user` = %d WHERE `player_id` = '%d'", $userId, $user->ID ) );
+					}
+				}
+				$user = get_user_by('login','share.m1');
+				if ( $user ) {
+					$userData = array();
+					$userData['ID'] = $user->ID;
+					$userData['firstname'] = __('shared', 'racketmanager');
+					$userData['surname'] = __('match', 'racketmanager');
+					$userData['user_login'] = __('shared.match.male', 'racketmanager');
+					$userData['user_nicename'] = __('shared-match', 'racketmanager');
+					$userData['display_name'] = __('Shared Match', 'racketmanager');
+					$userData['nickname'] = __('shared.match', 'racketmanager');
+					wp_update_user($userData);
+				}
+				for ($i=2; $i <= 5 ; $i++) {
+					$userLogin = 'share.m'.$i;
+					$user = get_user_by('login',$userLogin);
+					if ( $user ) {
+						$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_roster} SET `removed_date` = NOW(), `removed_user` = %d WHERE `player_id` = '%d'", $userId, $user->ID ) );
+					}
+				}
+				$user = get_user_by('login','walkover.m1');
+				if ( $user ) {
+					$userData = array();
+					$userData['ID'] = $user->ID;
+					$userData['firstname'] = __('walkover', 'racketmanager');
+					$userData['surname'] = __('male', 'racketmanager');
+					$userData['user_login'] = __('walkover.male', 'racketmanager');
+					$userData['user_nicename'] = __('walkover-male', 'racketmanager');
+					$userData['display_name'] = __('Walkover', 'racketmanager');
+					$userData['nickname'] = __('walkover', 'racketmanager');
+					wp_update_user($userData);
+				}
+				for ($i=2; $i <= 6 ; $i++) {
+					$userLogin = 'walkover.m'.$i;
+					$user = get_user_by('login',$userLogin);
+					if ( $user ) {
+						$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_roster} SET `removed_date` = NOW(), `removed_user` = %d WHERE `player_id` = '%d'", $userId, $user->ID ) );
+					}
+				}
+				$user = get_user_by('login','share.f6');
+				if ( $user ) {
+					$userData = array();
+					$userData['ID'] = $user->ID;
+					$userData['firstname'] = __('unregistered', 'racketmanager');
+					$userData['surname'] = __('female player', 'racketmanager');
+					$userData['user_login'] = __('unregistered.femaleplayer', 'racketmanager');
+					$userData['user_nicename'] = __('unregistered-female-player', 'racketmanager');
+					$userData['display_name'] = __('Unregistered female player', 'racketmanager');
+					$userData['nickname'] = __('unregistered.femaleplayer', 'racketmanager');
+					wp_update_user($userData);
+				}
+				$user = get_user_by('login','no pair.f1');
+				if ( $user ) {
+					$userData = array();
+					$userData['ID'] = $user->ID;
+					$userData['firstname'] = __('no', 'racketmanager');
+					$userData['surname'] = __('female player', 'racketmanager');
+					$userData['user_login'] = __('no.femaleplayer', 'racketmanager');
+					$userData['user_nicename'] = __('no-female-player', 'racketmanager');
+					$userData['display_name'] = __('No female player', 'racketmanager');
+					$userData['nickname'] = __('no.femaleplayer', 'racketmanager');
+					wp_update_user($userData);
+				}
+				for ($i=2; $i <= 6 ; $i++) {
+					$userLogin = 'no pair.f'.$i;
+					$user = get_user_by('login',$userLogin);
+					if ( $user ) {
+						$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_roster} SET `removed_date` = NOW(), `removed_user` = %d WHERE `player_id` = '%d'", $userId, $user->ID ) );
+					}
+				}
+				$user = get_user_by('login','share.f1');
+				if ( $user ) {
+					$userData = array();
+					$userData['ID'] = $user->ID;
+					$userData['firstname'] = __('shared', 'racketmanager');
+					$userData['surname'] = __('match', 'racketmanager');
+					$userData['user_login'] = __('shared.match.female', 'racketmanager');
+					$userData['user_nicename'] = __('shared-match', 'racketmanager');
+					$userData['display_name'] = __('Shared Match', 'racketmanager');
+					$userData['nickname'] = __('shared.match', 'racketmanager');
+					wp_update_user($userData);
+				}
+				for ($i=2; $i <= 5 ; $i++) {
+					$userLogin = 'share.f'.$i;
+					$user = get_user_by('login',$userLogin);
+					if ( $user ) {
+						$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_roster} SET `removed_date` = NOW(), `removed_user` = %d WHERE `player_id` = '%d'", $userId, $user->ID ) );
+					}
+				}
+				$user = get_user_by('login','walkover.f1');
+				if ( $user ) {
+					$userData = array();
+					$userData['ID'] = $user->ID;
+					$userData['firstname'] = __('walkover', 'racketmanager');
+					$userData['surname'] = __('female', 'racketmanager');
+					$userData['user_login'] = __('walkover.female', 'racketmanager');
+					$userData['user_nicename'] = __('walkover-female', 'racketmanager');
+					$userData['display_name'] = __('Walkover', 'racketmanager');
+					$userData['nickname'] = __('walkover', 'racketmanager');
+					wp_update_user($userData);
+				}
+				for ($i=2; $i <= 6 ; $i++) {
+					$userLogin = 'walkover.f'.$i;
+					$user = get_user_by('login',$userLogin);
+					if ( $user ) {
+						$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_roster} SET `removed_date` = NOW(), `removed_user` = %d WHERE `player_id` = '%d'", $userId, $user->ID ) );
+					}
+				}
+    }
+  /*
 	* Update version and dbversion
 	*/
 	$options['dbversion'] = RACKETMANAGER_DBVERSION;

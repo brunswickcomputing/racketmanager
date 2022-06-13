@@ -796,6 +796,13 @@ class RacketManagerAJAX extends RacketManager {
 			$setPrefix = 'set_'.$ix.'_';
 			$validateMatch = true;
 
+			if (isset($match->league->scoring) && $match->league->scoring == 'TP') {
+				if ( $ix == $numRubbers - 1 ) {
+					if ( $homeTeamScore != $awayTeamScore ) {
+						$validateMatch = false;
+					}
+				}
+			}
 			if ( $validateMatch ) {
 				$rubberNumber = $ix + 1;
 				$matchValidate = $this->validateMatchScore($match, $custom, $setPrefix, $errMsg, $errField, $rubberNumber);

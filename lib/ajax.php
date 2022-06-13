@@ -815,19 +815,35 @@ class RacketManagerAJAX extends RacketManager {
 					$winner = -1;
 					$loser = -1;
 				}
-				if (isset($homeplayer1) && isset($homeplayer2) && isset($awayplayer1) && isset($awayplayer2) && ( !empty($homescore) || !empty($awayscore) ) ) {
-					$homescore = !empty($homescore) ? $homescore : 0;
-					$awayscore = !empty($awayscore) ? $awayscore : 0;
-					$matchRubbers['homepoints'][$ix] = $homescore;
-					$matchRubbers['awaypoints'][$ix] = $awayscore;
 
-					$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_rubbers} SET `home_points` = '%s',`away_points` = '%s',`home_player_1` = '%s',`home_player_2` = '%s',`away_player_1` = '%s',`away_player_2` = '%s',`winner_id` = '%d',`loser_id` = '%d',`custom` = '%s' WHERE `id` = '%d'", $homescore, $awayscore, $homeplayer1, $homeplayer2, $awayplayer1, $awayplayer2, $winner, $loser, maybe_serialize($custom), $rubberId));
-					$matchConfirmed = 'P';
-					$checkOptions = $options['checks'];
-					$this->checkPlayerResult($match, $rubberId, $homeplayer1, $match->home_team, $checkOptions);
-					$this->checkPlayerResult($match, $rubberId, $homeplayer2, $match->home_team, $checkOptions);
-					$this->checkPlayerResult($match, $rubberId, $awayplayer1, $match->away_team, $checkOptions);
-					$this->checkPlayerResult($match, $rubberId, $awayplayer2, $match->away_team, $checkOptions);
+				if ( !$error ) {
+					if ( $homescore > $awayscore) {
+						$winner = $match->home_team;
+						$loser = $match->away_team;
+					} elseif ( $homescore < $awayscore) {
+						$winner = $match->away_team;
+						$loser = $match->home_team;
+					} elseif ( 'NULL' === $homescore && 'NULL' === $awayscore ) {
+						$winner = 0;
+						$loser = 0;
+					} else {
+						$winner = -1;
+						$loser = -1;
+					}
+					if (isset($homeplayer1) && isset($homeplayer2) && isset($awayplayer1) && isset($awayplayer2) && ( !empty($homescore) || !empty($awayscore) ) ) {
+						$homescore = !empty($homescore) ? $homescore : 0;
+						$awayscore = !empty($awayscore) ? $awayscore : 0;
+						$matchRubbers['homepoints'][$ix] = $homescore;
+						$matchRubbers['awaypoints'][$ix] = $awayscore;
+
+						$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_rubbers} SET `home_points` = '%s',`away_points` = '%s',`home_player_1` = '%s',`home_player_2` = '%s',`away_player_1` = '%s',`away_player_2` = '%s',`winner_id` = '%d',`loser_id` = '%d',`custom` = '%s' WHERE `id` = '%d'", $homescore, $awayscore, $homeplayer1, $homeplayer2, $awayplayer1, $awayplayer2, $winner, $loser, maybe_serialize($custom), $rubberId));
+						$matchConfirmed = 'P';
+						$checkOptions = $options['checks'];
+						$this->checkPlayerResult($match, $rubberId, $homeplayer1, $match->home_team, $checkOptions);
+						$this->checkPlayerResult($match, $rubberId, $homeplayer2, $match->home_team, $checkOptions);
+						$this->checkPlayerResult($match, $rubberId, $awayplayer1, $match->away_team, $checkOptions);
+						$this->checkPlayerResult($match, $rubberId, $awayplayer2, $match->away_team, $checkOptions);
+					}
 				}
 			}
 		}

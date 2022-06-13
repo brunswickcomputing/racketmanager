@@ -792,6 +792,7 @@ class RacketManagerAJAX extends RacketManager {
 			$homescore = 0;
 			$awayscore = 0;
 			$setPrefix = 'set_'.$ix.'_';
+			$validateMatch = true;
 
 			$matchValidate = $this->validateMatchScore($match, $custom, $setPrefix, $errMsg, $errField);
 			$error = $matchValidate[0];
@@ -847,10 +848,43 @@ class RacketManagerAJAX extends RacketManager {
 		$homescore = 0;
 		$awayscore = 0;
 		$error = false;
-		$setType = isset($match->league->setType) ? $match->league->setType : 'tiebreak';
+		$scoring = isset($match->league->scoring) ? $match->league->scoring : 'TB';
 		$s = 1;
 		foreach ( $sets as $set ) {
 			$setPrefix = $setPrefixStart.$s.'_';
+			if ( $scoring == 'TB' ) {
+				$setType = 'tiebreak';
+			} elseif ( $scoring == 'TM' ) {
+				if ( $s == $match->league->num_sets ) {
+					$setType = 'matchtiebreak';
+				} else {
+					$setType = 'tiebreak';
+				}
+			} elseif ( $scoring == 'F4' ) {
+				$setType = 'fast4';
+			} elseif ( $scoring == 'FM' ) {
+				if ( $s == $match->league->num_sets ) {
+					$setType = 'matchtiebreak';
+				} else {
+					$setType = 'fast4';
+				}
+			} elseif ( $scoring == 'PR' ) {
+				$setType = 'pro';
+			} elseif ( $scoring == 'TP' ) {
+				$setType = 'tiebreak';
+				if ( $rubberNumber && $rubberNumber == $match->league->num_rubbers ) {
+					if ( $s != 1 ) {
+						$setType = 'null';
+					}
+				}
+			} elseif ( $scoring == 'MP' ) {
+				$setType = 'matchtiebreak';
+				if ( $rubberNumber && $rubberNumber == $match->league->num_rubbers ) {
+					if ( $s != 1 ) {
+						$setType = 'null';
+					}
+				}
+			}
 			if ( $s > $numSetstoWin ) {
 				if ( $homescore == $numSetstoWin || $awayscore == $numSetstoWin ) {
 					$setType = 'null';

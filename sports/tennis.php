@@ -35,6 +35,13 @@ class Competition_Tennis extends Competition {
      */
     public $num_sets = 3;
 
+		/**
+     * default scoring
+     *
+     * @var int
+     */
+    public $scoring = 'TB';
+
     /**
      * load specific settings
      *
@@ -94,6 +101,7 @@ class Competition_Tennis extends Competition {
         $competition->num_sets = isset($competition->num_sets) ? $competition->num_sets : '';
         $competition->num_rubbers = isset($competition->num_rubbers) ? $competition->num_rubbers : '';
         $competition->type = isset($competition->type) ? $competition->type : '';
+				$competition->scoring = isset($competition->scoring) ? $competition->scoring : 'TB';
 
 				?>
 				  <div class="form-floating mb-3 col-2">
@@ -114,6 +122,18 @@ class Competition_Tennis extends Competition {
 							<option value='LD' <?php echo ($competition->type == 'LD' ? 'selected' : '') ?>><?php _e( 'The League', 'racketmanager') ?></option>
 							</select>
 							<label for='competition_type'><?php _e('Type', 'racketmanager') ?></label>
+				  </div>
+					<div class="form-floating mb-3 col-2">
+							<select class="form-select" size='1' name='settings[scoring]' id='scoring'>
+								<option value='F4' <?php echo $competition->scoring == 'F4' ? 'selected' : ''; ?>><?php _e( 'Fast 4', 'racketmanager') ?></option>
+								<option value='FM' <?php echo $competition->scoring == 'FM' ? 'selected' : ''; ?>><?php _e( 'Fast 4 with match tie break', 'racketmanager') ?></option>
+								<option value='PR' <?php echo $competition->scoring == 'PR' ? 'selected' : ''; ?>><?php _e( 'Pro', 'racketmanager') ?></option>
+								<option value='TB' <?php echo $competition->scoring == 'TB' ? 'selected' : ''; ?>><?php _e( 'Tie break', 'racketmanager') ?></option>
+								<option value='TM' <?php echo $competition->scoring == 'TM' ? 'selected' : ''; ?>><?php _e( 'Tie break with match tie break', 'racketmanager') ?></option>
+								<option value='TP' <?php echo $competition->scoring == 'TP' ? 'selected' : ''; ?>><?php _e( 'Tie break with tie break playoff', 'racketmanager') ?></option>
+								<option value='MP' <?php echo $competition->scoring == 'MP' ? 'selected' : ''; ?>><?php _e( 'Tie break with match tie break playoff', 'racketmanager') ?></option>
+							</select>
+							<label for='scoring'><?php _e('Scoring Format', 'racketmanager') ?></label>
 				  </div>
 
 		<?php }

@@ -50,6 +50,15 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.17.0 =
+* NEW: add competition scoring option
+* NEW: send email to captains to chase result approval
+* BUGFIX: remove erroneous semi colon
+* UPDATE: link to match from results checker
+* UPDATE: change walkover/no player/shared player names
+* UPDATE: add unregistered player option
+* UPDATE: show login prompt on match details when not logged in
+
 = 6.16.1 =
 * BUGFIX: calculate match score after set check
 * BUGFIX: use league name for championship matches
@@ -58,7 +67,7 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 = 6.16.0 =
 * UPDATE: display league selection on match page
 * UPDATE: add match and set validation
-* BUGFIX: dandle player not found
+* BUGFIX: handle player not found
 
 = 6.15.0 =
 * UPDATE: exclude pending matches from outstanding results list

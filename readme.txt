@@ -50,6 +50,10 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.18.0 =
+* UPDATE: add how to category template
+* UPDATE: fix historical player names for system records
+
 = 6.17.0 =
 * NEW: add competition scoring option
 * NEW: send email to captains to chase result approval

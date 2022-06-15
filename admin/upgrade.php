@@ -569,6 +569,62 @@ function racketmanager_upgrade() {
 					}
 				}
     }
+		if (version_compare($installed, '6.18.0', '<')) {
+			echo __('starting 6.18.0 upgrade', 'leaguemanager') . "<br />\n";
+			$userId = get_current_user_id();
+			$clubs = $wpdb->get_results(" SELECT `id` FROM {$wpdb->racketmanager_clubs}  ORDER BY `id`; ");
+
+			foreach ($clubs AS $club) {
+				//male shared
+				$roster = $wpdb->get_results( $wpdb->prepare(" SELECT `id` FROM {$wpdb->racketmanager_roster} WHERE `affiliatedclub` = '%d' AND `player_id` = 1509;", $club->id) );
+				if ( $roster ) {
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `home_player_1` = '%d' WHERE `home_player_1` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1509 and 1514 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `home_player_2` = '%d' WHERE `home_player_2` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1509 and 1514 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `away_player_1` = '%d' WHERE `away_player_1` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1509 and 1514 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `away_player_2` = '%d' WHERE `away_player_2` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1509 and 1514 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+				}
+				//female shared
+				$roster = $wpdb->get_results( $wpdb->prepare(" SELECT `id` FROM {$wpdb->racketmanager_roster} WHERE `affiliatedclub` = '%d' AND `player_id` = 1491;", $club->id) );
+				if ( $roster ) {
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `home_player_1` = '%d' WHERE `home_player_1` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1491 and 1496 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `home_player_2` = '%d' WHERE `home_player_2` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1491 and 1496 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `away_player_1` = '%d' WHERE `away_player_1` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1491 and 1496 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `away_player_2` = '%d' WHERE `away_player_2` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1491 and 1496 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+				}
+				//male walkover
+				$roster = $wpdb->get_results( $wpdb->prepare(" SELECT `id` FROM {$wpdb->racketmanager_roster} WHERE `affiliatedclub` = '%d' AND `player_id` = 1497;", $club->id) );
+				if ( $roster ) {
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `home_player_1` = '%d' WHERE `home_player_1` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1497 and 1502 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `home_player_2` = '%d' WHERE `home_player_2` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1497 and 1502 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `away_player_1` = '%d' WHERE `away_player_1` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1497 and 1502 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `away_player_2` = '%d' WHERE `away_player_2` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1497 and 1502 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+				}
+				//female walkover
+				$roster = $wpdb->get_results( $wpdb->prepare(" SELECT `id` FROM {$wpdb->racketmanager_roster} WHERE `affiliatedclub` = '%d' AND `player_id` = 1479;", $club->id) );
+				if ( $roster ) {
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `home_player_1` = '%d' WHERE `home_player_1` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1479 and 1484 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `home_player_2` = '%d' WHERE `home_player_2` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1479 and 1484 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `away_player_1` = '%d' WHERE `away_player_1` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1479 and 1484 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `away_player_2` = '%d' WHERE `away_player_2` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1479 and 1484 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+				}
+				//male no pair
+				$roster = $wpdb->get_results( $wpdb->prepare(" SELECT `id` FROM {$wpdb->racketmanager_roster} WHERE `affiliatedclub` = '%d' AND `player_id` = 1503;", $club->id) );
+				if ( $roster ) {
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `home_player_1` = '%d' WHERE `home_player_1` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1503 and 1508 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `home_player_2` = '%d' WHERE `home_player_2` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1503 and 1508 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `away_player_1` = '%d' WHERE `away_player_1` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1503 and 1508 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `away_player_2` = '%d' WHERE `away_player_2` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1503 and 1508 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+				}
+				//female no pair
+				$roster = $wpdb->get_results( $wpdb->prepare(" SELECT `id` FROM {$wpdb->racketmanager_roster} WHERE `affiliatedclub` = '%d' AND `player_id` = 1485;", $club->id) );
+				if ( $roster ) {
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `home_player_1` = '%d' WHERE `home_player_1` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1485 and 1490 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `home_player_2` = '%d' WHERE `home_player_2` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1485 and 1490 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `away_player_1` = '%d' WHERE `away_player_1` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1485 and 1490 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+					$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `away_player_2` = '%d' WHERE `away_player_2` IN (select `id` from {$wpdb->racketmanager_roster} WHERE `player_id` between 1485 and 1490 AND `affiliatedclub` = '%d') ", $roster[0]->id, $club->id ));
+				}
+			}
+		}
   /*
 	* Update version and dbversion
 	*/

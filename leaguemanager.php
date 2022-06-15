@@ -52,7 +52,7 @@ class RacketManager {
 	*
 	* @var string
 	*/
-	private $dbversion = '6.17.0';
+	private $dbversion = '6.18.0';
 
 	/**
 	* The array of templates that this plugin tracks.

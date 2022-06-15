@@ -193,6 +193,9 @@ class RacketManager {
 		if ( is_category('rules') ) {
 			$template = plugin_dir_path( __FILE__ ).'templates/pages/category-rules.php';
 		}
+		if ( is_category('how-to') ) {
+			$template = plugin_dir_path( __FILE__ ).'templates/pages/category-how-to.php';
+		}
 		return $template;
 	}
 

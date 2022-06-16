@@ -2567,7 +2567,7 @@ class RacketManager {
 													<?php $tabindex = $tabbase + 1; ?>
 													<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer<?php echo $p ?>[<?php echo $r ?>]" id="homeplayer<?php echo $p ?>_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
 														<?php if ($homeRoster[$r][$p]['gender'] == 'm') { $select = 'Select male player'; } else { $select = 'Select female player'; } ?>
-														<option><?php _e( $select, 'racketmanager' ) ?></option>
+														<option value="0"><?php _e( $select, 'racketmanager' ) ?></option>
 														<?php foreach ( $homeRoster[$r][$p]['players'] AS $roster ) {
 															if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
 															<option value="<?php echo $roster->roster_id ?>"<?php $player = 'home_player_'.$p; if(isset($rubber->$player)) selected($roster->roster_id, $rubber->$player ); echo $disabled; ?>>
@@ -2607,7 +2607,7 @@ class RacketManager {
 													<?php $tabindex = $tabbase + 3; ?>
 													<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer<?php echo $p ?>[<?php echo $r ?>]" id="awayplayer<?php echo $p ?>_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
 														<?php if ($awayRoster[$r][$p]['gender'] == 'm') { $select = 'Select male player'; } else { $select = 'Select female player'; } ?>
-														<option><?php _e( $select, 'racketmanager' ) ?></option>
+														<option value="0"><?php _e( $select, 'racketmanager' ) ?></option>
 														<?php foreach ( $awayRoster[$r][$p]['players'] AS $roster ) {
 															if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
 															<option value="<?php echo $roster->roster_id ?>"<?php $player = 'away_player_'.$p; if(isset($rubber->$player)) selected($roster->roster_id, $rubber->$player ); echo $disabled; ?>>

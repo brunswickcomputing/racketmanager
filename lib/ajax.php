@@ -805,6 +805,26 @@ class RacketManagerAJAX extends RacketManager {
 				}
 			}
 			if ( $validateMatch ) {
+				if ( empty($homeplayer1) ) {
+					$errField[] = 'homeplayer1_'.$ix;
+					$errMsg[] = __('Home player not selected', 'racketmanager');
+					$error = true;
+				}
+				if ( empty($homeplayer2) ) {
+					$errField[] = 'homeplayer2_'.$ix;
+					$errMsg[] = __('Home partner not selected', 'racketmanager');
+					$error = true;
+				}
+				if ( empty($awayplayer1) ) {
+					$errField[] = 'awayplayer1_'.$ix;
+					$errMsg[] = __('Away player not selected', 'racketmanager');
+					$error = true;
+				}
+				if ( empty($awayplayer2) ) {
+					$errField[] = 'awayplayer2_'.$ix;
+					$errMsg[] = __('Away partner not selected', 'racketmanager');
+					$error = true;
+				}
 				$rubberNumber = $ix + 1;
 				$matchValidate = $this->validateMatchScore($match, $custom, $setPrefix, $errMsg, $errField, $rubberNumber);
 				$error = $matchValidate[0];

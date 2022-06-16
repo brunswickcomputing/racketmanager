@@ -783,6 +783,7 @@ class RacketManagerAJAX extends RacketManager {
 		$matchConfirmed = '';
 		$homeTeamScore = 0;
 		$awayTeamScore = 0;
+		$players = array();
 		for ($ix = 0; $ix < $numRubbers; $ix++) {
 			$rubberId       = $_POST['id'][$ix];
 			$homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : NULL;
@@ -796,34 +797,43 @@ class RacketManagerAJAX extends RacketManager {
 			$awayscore = 0;
 			$setPrefix = 'set_'.$ix.'_';
 			$validateMatch = true;
+			$playoff = false;
 
 			if (isset($match->league->scoring) && $match->league->scoring == 'TP') {
 				if ( $ix == $numRubbers - 1 ) {
 					if ( $homeTeamScore != $awayTeamScore ) {
 						$validateMatch = false;
+					} else {
+						$playoff = true;
 					}
 				}
 			}
 			if ( $validateMatch ) {
-				if ( empty($homeplayer1) ) {
-					$errField[] = 'homeplayer1_'.$ix;
-					$errMsg[] = __('Home player not selected', 'racketmanager');
-					$error = true;
-				}
-				if ( empty($homeplayer2) ) {
-					$errField[] = 'homeplayer2_'.$ix;
-					$errMsg[] = __('Home partner not selected', 'racketmanager');
-					$error = true;
-				}
-				if ( empty($awayplayer1) ) {
-					$errField[] = 'awayplayer1_'.$ix;
-					$errMsg[] = __('Away player not selected', 'racketmanager');
-					$error = true;
-				}
-				if ( empty($awayplayer2) ) {
-					$errField[] = 'awayplayer2_'.$ix;
-					$errMsg[] = __('Away partner not selected', 'racketmanager');
-					$error = true;
+				$playerTypes = array('homeplayer1', 'homeplayer2', 'awayplayer1', 'awayplayer2');
+				foreach ($playerTypes as $type) {
+					if ( empty($$type) ) {
+						$errField[] = $type.'_'.$ix;
+						$errMsg[] = __('Player not selected', 'racketmanager');
+						$error = true;
+					} else {
+						$player = $$type;
+						$playerFound = array_search($player, $players);
+						if ( $playerFound === false ) {
+							if ( $playoff ) {
+								$errField[] = $type.'_'.$ix;
+								$errMsg[] = __('Player for playoff must have played', 'racketmanager');
+								$error = true;
+							} else {
+								$players[] = $player;
+							}
+						} else {
+							if ( !$playoff ) {
+								$errField[] = $type.'_'.$ix;
+								$errMsg[] = __('Player already selected', 'racketmanager');
+								$error = true;
+							}
+						}
+					}
 				}
 				$rubberNumber = $ix + 1;
 				$matchValidate = $this->validateMatchScore($match, $custom, $setPrefix, $errMsg, $errField, $rubberNumber);

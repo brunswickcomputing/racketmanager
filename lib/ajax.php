@@ -817,20 +817,23 @@ class RacketManagerAJAX extends RacketManager {
 						$error = true;
 					} else {
 						$player = $$type;
-						$playerFound = array_search($player, $players);
-						if ( $playerFound === false ) {
-							if ( $playoff ) {
-								$errField[] = $type.'_'.$ix;
-								$errMsg[] = __('Player for playoff must have played', 'racketmanager');
-								$error = true;
+						$rosterEntry = $racketmanager->getRosterEntry($player);
+						if ( !$rosterEntry->system_record ) {
+							$playerFound = array_search($player, $players);
+							if ( $playerFound === false ) {
+								if ( $playoff ) {
+									$errField[] = $type.'_'.$ix;
+									$errMsg[] = __('Player for playoff must have played', 'racketmanager');
+									$error = true;
+								} else {
+									$players[] = $player;
+								}
 							} else {
-								$players[] = $player;
-							}
-						} else {
-							if ( !$playoff ) {
-								$errField[] = $type.'_'.$ix;
-								$errMsg[] = __('Player already selected', 'racketmanager');
-								$error = true;
+								if ( !$playoff ) {
+									$errField[] = $type.'_'.$ix;
+									$errMsg[] = __('Player already selected', 'racketmanager');
+									$error = true;
+								}
 							}
 						}
 					}

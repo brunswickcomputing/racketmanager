@@ -1014,6 +1014,17 @@ class RacketManagerAJAX extends RacketManager {
 					$errMsg[] = __('Set score should be empty', 'racketmanager');
 					$errField[] = $setPrefix.'player2';
 				}
+			} elseif ( strtoupper($set['player1']) == 'S' || strtoupper($set['player2'] == 'S') ) {
+				if ( strtoupper($set['player1'] != 'S') ) {
+					$error = true;
+					$errMsg[] = __('Both scores must be shared', 'racketmanager');
+					$errField[] = $setPrefix.'player1';
+				}
+				if ( strtoupper($set['player2'] != 'S') ) {
+					$error = true;
+					$errMsg[] = __('Both scores must be shared', 'racketmanager');
+					$errField[] = $setPrefix.'player2';
+				}
 			} elseif ( $set['player1'] > $set['player2']) {
 				if ( $set['player1'] < $minWin ) {
 					$error = true;
@@ -1052,17 +1063,6 @@ class RacketManagerAJAX extends RacketManager {
 					$error = true;
 					$errMsg[] = __('Games difference incorrect', 'racketmanager');
 					$errField[] = $setPrefix.'player1';
-					$errField[] = $setPrefix.'player2';
-				}
-			} elseif ( $set['player1'] == 'S' || $set['player2'] == 'S' ) {
-				if ( $set['player1'] != 'S' ) {
-					$error = true;
-					$errMsg[] = __('Both scores must be shared', 'racketmanager');
-					$errField[] = $setPrefix.'player1';
-				}
-				if ( $set['player2'] != 'S' ) {
-					$error = true;
-					$errMsg[] = __('Both scores must be shared', 'racketmanager');
 					$errField[] = $setPrefix.'player2';
 				}
 			} elseif ( $set['player1'] == '' || $set['player2'] == '' ) {

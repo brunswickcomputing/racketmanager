@@ -104,15 +104,15 @@ class Competition_Tennis extends Competition {
 				$competition->scoring = isset($competition->scoring) ? $competition->scoring : 'TB';
 
 				?>
-				  <div class="form-floating mb-3 col-2">
+				  <div class="form-floating mb-3 col-12 col-xl-2">
 						<input class="form-control" type='number' name='settings[num_sets]' id='num_sets' value='<?php echo $competition->num_sets ?>' size='3' />
 						<label for='num_sets'><?php _e('Number of Sets', 'racketmanager') ?></label>
 				  </div>
-					<div class="form-floating mb-3 col-2">
+					<div class="form-floating mb-3 col-12 col-xl-2">
 						<input class="form-control" type='number' name='settings[num_rubbers]' id='num_rubbers' value='<?php echo $competition->num_rubbers ?>' size='3' />
 						<label for='num_rubbers'><?php _e('Number of Rubbers', 'racketmanager') ?></label>
 				  </div>
-					<div class="form-floating mb-3 col-2">
+					<div class="form-floating mb-3 col-12 col-xl-2">
 							<select class="form-select" size='1' name='settings[competition_type]' id='competition_type'>
 							<option value='WS' <?php echo ($competition->type == 'WS' ? 'selected' : '') ?>><?php _e( 'Ladies Singles', 'racketmanager') ?></option>
 							<option value='WD' <?php echo ($competition->type == 'WD' ? 'selected' : '') ?>><?php _e( 'Ladies Doubles', 'racketmanager') ?></option>
@@ -123,7 +123,7 @@ class Competition_Tennis extends Competition {
 							</select>
 							<label for='competition_type'><?php _e('Type', 'racketmanager') ?></label>
 				  </div>
-					<div class="form-floating mb-3 col-2">
+					<div class="form-floating mb-3 col-12 col-xl-2">
 							<select class="form-select" size='1' name='settings[scoring]' id='scoring'>
 								<option value='F4' <?php echo $competition->scoring == 'F4' ? 'selected' : ''; ?>><?php _e( 'Fast 4', 'racketmanager') ?></option>
 								<option value='FM' <?php echo $competition->scoring == 'FM' ? 'selected' : ''; ?>><?php _e( 'Fast 4 with match tie break', 'racketmanager') ?></option>

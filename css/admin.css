@@ -331,6 +331,7 @@ div.racketmanager_widget_control select {
 .matchday {
     text-align: center;
     font-size: .75em;
+    min-width: 75px;
 }
 .playerstats th {
     text-align: center;

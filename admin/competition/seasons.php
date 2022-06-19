@@ -14,20 +14,20 @@
 
 		<div class=container>
 			<div class="row table-header">
-				<div class="col-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('seaons-filter'));" /></div>
-				<div class="col-1"><?php _e( 'Season', 'racketmanager' ) ?></div>
-				<div class="col-1"><?php _e( 'Match Days', 'racketmanager' ) ?></div>
-				<div class="col-1"><?php _e( 'Actions', 'racketmanager' ) ?></div>
+				<div class="col-2 col-lg-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('seaons-filter'));" /></div>
+				<div class="col-3 col-lg-1"><?php _e( 'Season', 'racketmanager' ) ?></div>
+				<div class="col-3 col-lg-1"><?php _e( 'Match Days', 'racketmanager' ) ?></div>
+				<div class="col-3 col-lg-1"><?php _e( 'Actions', 'racketmanager' ) ?></div>
 			</div>
 			<?php if ( !empty($competition->seasons) ) {
 				$class = '';
 				foreach( (array)$competition->seasons AS $key => $season ) {
 					$class = ( 'alternate' == $class ) ? '' : 'alternate' ?>
 					<div class="row table-row <?php echo $class ?>">
-						<div class="col-1 check-column"><input type="checkbox" value="<?php echo $key ?>" name="del_season[<?php echo $key ?>]" /></div>
-						<div class="col-1"><?php echo $season['name'] ?></div>
-						<div class="col-1"><?php echo $season['num_match_days'] ?></div>
-						<div class="col-1"><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>&amp;editseason=<?php echo $key ?>"><?php _e( 'Edit', 'racketmanager' ) ?></a></div>
+						<div class="col-2 col-lg-1 check-column"><input type="checkbox" value="<?php echo $key ?>" name="del_season[<?php echo $key ?>]" /></div>
+						<div class="col-3 col-lg-1"><?php echo $season['name'] ?></div>
+						<div class="col-3 col-lg-1"><?php echo $season['num_match_days'] ?></div>
+						<div class="col-3 col-lg-1"><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>&amp;editseason=<?php echo $key ?>"><?php _e( 'Edit', 'racketmanager' ) ?></a></div>
 					</div>
 				<?php } ?>
 			<?php } ?>

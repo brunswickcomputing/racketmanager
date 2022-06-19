@@ -14,11 +14,11 @@
 
 		<div class="container">
 			<div class="row table-header">
-				<div class="col-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('leagues-filter'));" /></div>
-				<div class="col-1 column-num">ID</div>
-				<div class="col-3"><?php _e( 'League', 'racketmanager' ) ?></div>
-				<div class="col-1 column-num"><?php _e( 'Teams', 'racketmanager' ) ?></div>
-				<div class="col-1 column-num"><?php _e( 'Matches', 'racketmanager' ) ?></div>
+				<div class="col-2 col-lg-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('leagues-filter'));" /></div>
+				<div class="d-none d-lg-1 col-1 column-num">ID</div>
+				<div class="col-4"><?php _e( 'League', 'racketmanager' ) ?></div>
+				<div class="col-3 col-lg-1 column-num"><?php _e( 'Teams', 'racketmanager' ) ?></div>
+				<div class="col-3 col-lg-1 column-num"><?php _e( 'Matches', 'racketmanager' ) ?></div>
 			</div>
 
 			<?php
@@ -28,12 +28,12 @@
 					$league = get_league($league);
 					$class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 					<div class="row table-row <?php echo $class ?>">
-						<div class="col-1 check-column"><input type="checkbox" value="<?php echo $league->id ?>" name="league[<?php echo $league->id ?>]" /></div>
-						<div class="col-1 column-num"><?php echo $league->id ?></div>
-						<div class="col-3"><a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a></div>
-						<div class="col-1 column-num"><?php echo $league->num_teams_total ?></div>
-						<div class="col-1 column-num"><?php echo $league->num_matches_total ?></div>
-						<div class="col-1"><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>&amp;editleague=<?php echo $league->id ?>"><?php _e( 'Edit', 'racketmanager' ) ?></a></div>
+						<div class="col-2 col-lg-1 check-column"><input type="checkbox" value="<?php echo $league->id ?>" name="league[<?php echo $league->id ?>]" /></div>
+						<div class="d-none d-lg-1 col-1 column-num"><?php echo $league->id ?></div>
+						<div class="col-4"><a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a></div>
+						<div class="col-3 col-lg-1 column-num"><?php echo $league->num_teams_total ?></div>
+						<div class="col-3 col-lg-1 column-num"><?php echo $league->num_matches_total ?></div>
+						<div class="d-none d-lg-1 col-auto"><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>&amp;editleague=<?php echo $league->id ?>"><?php _e( 'Edit', 'racketmanager' ) ?></a></div>
 					</div>
 				<?php } ?>
 			<?php } ?>

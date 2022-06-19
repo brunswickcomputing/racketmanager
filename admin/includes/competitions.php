@@ -18,17 +18,17 @@
       <div class="row table-header">
 
         <?php if ( !$type ) { ?>
-          <div class="col-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('competitions-filter'));" /></div>
+          <div class="col-2 col-md-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('competitions-filter'));" /></div>
         <?php } ?>
         <div class="col-1 column-num">ID</div>
-        <div class="col-3"><?php _e( 'Competition', 'racketmanager' ) ?></div>
+        <div class="col-5 col-md-3"><?php _e( 'Competition', 'racketmanager' ) ?></div>
         <?php if ( !$type ) { ?>
           <div class="d-none d-md-block col-1 text-center"><?php _e( 'Number of Seasons', 'racketmanager' ) ?></div>
         <?php } ?>
         <div class="d-none d-md-block col-1 text-center"><?php _e( 'Leagues', 'racketmanager' ) ?></div>
         <div class="d-none d-md-block col-1 text-center"><?php _e( 'Number of Sets', 'racketmanager' ) ?></div>
         <div class="d-none d-md-block col-1 text-center"><?php _e( 'Number of Rubbers', 'racketmanager' ) ?></div>
-        <div class="col-1 centered"><?php _e( 'Type', 'racketmanager' ) ?></div>
+        <div class="col-3 centered"><?php _e( 'Type', 'racketmanager' ) ?></div>
       </div>
       <?php $competitions = $racketmanager->getCompetitions( $competitionQuery );
       $class = '';
@@ -37,17 +37,17 @@
         $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
         <div class="row table-row <?php echo $class ?>">
           <?php if ( !$type ) { ?>
-            <div class="col-1 check-column"><input type="checkbox" value="<?php echo $competition->id ?>" name="competition[<?php echo $competition->id ?>]" /></div>
+            <div class="col-2 col-md-1 check-column"><input type="checkbox" value="<?php echo $competition->id ?>" name="competition[<?php echo $competition->id ?>]" /></div>
           <?php } ?>
           <div class="col-1 column-num"><?php echo $competition->id ?></div>
-          <div class="col-3"><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>"><?php echo $competition->name ?></a></div>
+          <div class="col-5 col-md-3"><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>"><?php echo $competition->name ?></a></div>
           <?php if ( !$type ) { ?>
             <div class="d-none d-md-block col-1 text-center"><?php echo $competition->num_seasons ?></div>
           <?php } ?>
           <div class="d-none d-md-block col-1 text-center"><?php echo $competition->num_leagues ?></div>
           <div class="d-none d-md-block col-1 text-center"><?php echo $competition->num_sets ?></div>
           <div class="d-none d-md-block col-1 text-center"><?php echo $competition->num_rubbers ?></div>
-          <div class="col-2 centered">
+          <div class="col-3 centered">
             <?php switch ($competition->type) {
               case 'WS': _e( 'Ladies Singles', 'racketmanager' ); break;
               case 'WD': _e( 'Ladies Doubles', 'racketmanager' ); break;

@@ -51,97 +51,88 @@ if ( !empty($competition->seasons) ) { ?>
 <!-- View Player Stats -->
 <div class="container">
 	<form id="player-stats-filter" method="post" action="">
-
-		<div class="row table-header">
-			<div class="col-2"><?php _e( 'Name', 'racketmanager' ) ?></div>
-			<div class="col-1"></div>
-			<div class="col-9">
-				<div class="row justify-content-center">
-					<div class="col-auto"><?php _e( $heading, 'racketmanager') ?></div>
-				</div>
-				<div class="row justify-content-evenly">
+		<table class="table table-striped">
+			<thead class="table-dark">
+				<tr>
+					<th><?php _e( 'Name', 'racketmanager' ) ?></th>
+					<th></th>
 					<?php
 					$matchdaystatsdummy = array();
 					for ( $day = 1; $day <= $numCols; $day++ ) {
 						$matchdaystatsdummy[$day] = array();
 						?>
-						<div class="col-1 matchday"><?php if ($competition->is_championship) echo $rounds[$day]['name']; else echo $day; ?></div>
+						<th class="matchday"><?php if ($competition->is_championship) echo $rounds[$day]['name']; else echo $day; ?></th>
 					<?php } ?>
-				</div>
-			</div>
-		</div>
+				</tr>
+			</thead>
+			<tbody>
+				<?php if ( $playerstats = $competition->getPlayerStats(array('season' => isset($season['name']) ? $season['name'] : false, 'club' => $club_id))  ) {
+					$class = '';
+					foreach ( $playerstats AS $playerstat ) {
+						$class = ( 'alternate' == $class ) ? '' : 'alternate';
+						$matchdaystats = $matchdaystatsdummy;
+						$prevTeamNum = $playdowncount = 0;
+						$prevMatchDay = $i = 0;
+						$prevRound = "";
 
-		<?php if ( $playerstats = $competition->getPlayerStats(array('season' => isset($season['name']) ? $season['name'] : false, 'club' => $club_id))  ) {
-			$class = '';
-			foreach ( $playerstats AS $playerstat ) {
-				$class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-				<div class="row table-row <?php echo $class ?>">
-
-					<div class="col-2"><?php echo $playerstat->fullname ?></div>
-
-					<?php $matchdaystats = $matchdaystatsdummy;
-					$prevTeamNum = $playdowncount = 0;
-					$prevMatchDay = $i = 0;
-					$prevRound = "";
-
-					for ( $t = 1; $t < $numCols; $t++ ) {
-						$teamplay[$t] = 0;
-					}
-
-					foreach ( $playerstat->matchdays AS $m => $match) {
-						if ( ($competition->is_championship && !$prevRound == $match->final) || ( !$competition->is_championship && !$prevMatchDay == $match->match_day) ) {
-							$i = 0;
+						for ( $t = 1; $t < $numCols; $t++ ) {
+							$teamplay[$t] = 0;
 						}
-						$teamNum = substr($match->team_title,-1) ;
-						$teamplay[$teamNum] ++;
 
-						if ( $prevTeamNum == 0) {
-							$playdir = '';
-						} elseif ( $teamNum > $prevTeamNum ) {
-							if ( $teamplay[$prevTeamNum] > 2 ) {
-								$playdir = 'playdownerr';
-							} else {
-								$playdir = 'playdown';
+						foreach ( $playerstat->matchdays AS $m => $match) {
+							if ( ($competition->is_championship && !$prevRound == $match->final) || ( !$competition->is_championship && !$prevMatchDay == $match->match_day) ) {
+								$i = 0;
 							}
-							$playdowncount ++;
-						} else {
-							$playdir = '';
-						}
-						$prevTeamNum = $teamNum;
+							$teamNum = substr($match->team_title,-1) ;
+							$teamplay[$teamNum] ++;
 
-						if ($match->match_winner == $match->team_id) {
-							$matchresult = __('Won','racketmanager');
-						} elseif ($match->match_loser == $match->team_id ) {
-							$matchresult = __('Lost','racketmanager');
-						} else {
-							$matchresult = __('Drew','racketmanager');
-						}
-						if ($match->rubber_winner == $match->team_id) {
-							$rubberresult = __('Won','racketmanager');
-						} elseif ($match->rubber_loser == $match->team_id) {
-							$rubberresult = __('Lost','racketmanager');
-						} else {
-							$rubberresult = __('Drew','racketmanager');
-						}
-						$playerLine = array('team' => $match->team_title, 'pair' => $match->rubber_number, 'matchresult' => $matchresult, 'rubberresult' => $rubberresult, 'playdir' => $playdir);
-						if ( $competition->is_championship ) {
-							$d = $primaryLeague->championship->getFinals($match->final)['round'];
-							$matchdaystats[$d][$i] = $playerLine;
-						} else {
-							$matchdaystats[$match->match_day][$i] = $playerLine;
-						}
-						$prevMatchDay = $match->match_day;
-						$prevRound = $match->final;
-						$i++;
-					} ?>
+							if ( $prevTeamNum == 0) {
+								$playdir = '';
+							} elseif ( $teamNum > $prevTeamNum ) {
+								if ( $teamplay[$prevTeamNum] > 2 ) {
+									$playdir = 'playdownerr';
+								} else {
+									$playdir = 'playdown';
+								}
+								$playdowncount ++;
+							} else {
+								$playdir = '';
+							}
+							$prevTeamNum = $teamNum;
 
-					<div class="col-1" title="Played Down">
-						<?php if ( !$playdowncount == 0 ) { ?>
-							<?php echo $playdowncount ?></td>
-						<?php } ?>
-					</div>
-					<div class="col-9">
-						<div class="row justify-content-evenly">
+							if ($match->match_winner == $match->team_id) {
+								$matchresult = __('Won','racketmanager');
+							} elseif ($match->match_loser == $match->team_id ) {
+								$matchresult = __('Lost','racketmanager');
+							} else {
+								$matchresult = __('Drew','racketmanager');
+							}
+							if ($match->rubber_winner == $match->team_id) {
+								$rubberresult = __('Won','racketmanager');
+							} elseif ($match->rubber_loser == $match->team_id) {
+								$rubberresult = __('Lost','racketmanager');
+							} else {
+								$rubberresult = __('Drew','racketmanager');
+							}
+							$playerLine = array('team' => $match->team_title, 'pair' => $match->rubber_number, 'matchresult' => $matchresult, 'rubberresult' => $rubberresult, 'playdir' => $playdir);
+							if ( $competition->is_championship ) {
+								$d = $primaryLeague->championship->getFinals($match->final)['round'];
+								$matchdaystats[$d][$i] = $playerLine;
+							} else {
+								$matchdaystats[$match->match_day][$i] = $playerLine;
+							}
+							$prevMatchDay = $match->match_day;
+							$prevRound = $match->final;
+							$i++;
+						} ?>
+
+						<tr>
+							<td><?php echo $playerstat->fullname ?></td>
+							<td title="Played Down">
+								<?php if ( !$playdowncount == 0 ) { ?>
+									<?php echo $playdowncount ?></td>
+								<?php } ?>
+							</td>
 							<?php	foreach ( $matchdaystats AS $daystat ) {
 								$dayshow = '';
 								$title = '';
@@ -158,17 +149,17 @@ if ( !empty($competition->seasons) ) { ?>
 								if ( count($daystat) > 1 ) {
 									$playdir = 'playmulti';
 								} ?>
-								<div class="col-1 matchday <?php echo $playdir ?>" title="<?php echo $title ?>">
+								<td class="matchday <?php echo $playdir ?>" title="<?php echo $title ?>">
 									<?php if ( !$dayshow == '' ) { ?>
 										<?php echo $dayshow ?>
 									<?php } ?>
-								</div>
+								</td>
 							<?php }
 							$matchdaystats = $matchdaystatsdummy; ?>
-						</div>
-					</div>
-				</div>
-			<?php } ?>
-		<?php } ?>
+						</tr>
+					<?php } ?>
+				<?php } ?>
+			</tbody>
+		</table>
 	</form>
 </div>

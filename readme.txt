@@ -50,6 +50,11 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.19.0 =
+* UPDATE: add validation for player selections for rubbers
+* UPDATE: change button spacing on outstanding results screen
+* UPDATE: improve admin screen visibility on mobile devices
+
 = 6.18.0 =
 * UPDATE: add how to category template
 * UPDATE: fix historical player names for system records

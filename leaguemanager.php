@@ -52,7 +52,7 @@ class RacketManager {
 	*
 	* @var string
 	*/
-	private $dbversion = '6.18.0';
+	private $dbversion = '6.20.0';
 
 	/**
 	* The array of templates that this plugin tracks.
@@ -738,7 +738,7 @@ class RacketManager {
 		$create_matches_sql = "CREATE TABLE {$wpdb->racketmanager_matches} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT , `group` varchar( 30 ) NOT NULL default '', `date` datetime NOT NULL, `home_team` varchar( 255 ) NOT NULL default 0, `away_team` varchar( 255 ) NOT NULL default 0, `match_day` tinyint( 4 ) NOT NULL default '0', `location` varchar( 100 ) NOT NULL default '', `league_id` int( 11 ) NOT NULL default '0', `season` varchar( 255 ) NOT NULL default '', `home_points` varchar( 30 ) NULL default NULL, `away_points` varchar( 30 ) NULL default NULL, `winner_id` int( 11 ) NOT NULL default '0', `loser_id` int( 11 ) NOT NULL default '0', `post_id` int( 11 ) NOT NULL default '0', `final` varchar( 150 ) NOT NULL default '', `custom` longtext NOT NULL, `updated_user` int( 11 ) NULL, `updated` datetime NULL, `confirmed` varchar( 1 ) NULL, `home_captain` int( 11 ) NULL, `away_captain` int( 11 ) NULL, `comments` varchar( 500 ) NULL, PRIMARY KEY ( `id` ), INDEX( `league_id` )) $charset_collate;";
 		maybe_create_table( $wpdb->racketmanager_matches, $create_matches_sql );
 
-		$create_rubbers_sql = "CREATE TABLE {$wpdb->racketmanager_rubbers} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT , `group` varchar( 30 ) NOT NULL default '', `date` datetime NOT NULL, `match_id` int( 11 ) NOT NULL default '0', `rubber_number` int( 1 ) NOT NULL default 0, `home_player_1` int( 11 ) NULL default NULL, `home_player_2` int( 11 ) NULL default NULL, `away_player_1` int( 11 ) NULL default NULL, `away_player_2` int( 11 ) NULL default NULL, `home_points` varchar( 30 ) NULL default NULL, `away_points` varchar( 30 ) NULL default NULL, `winner_id` int( 11 ) NOT NULL default '0', `loser_id` int( 11 ) NOT NULL default '0', `post_id` int( 11 ) NOT NULL default '0', `final` varchar( 150 ) NOT NULL default '', `custom` longtext NOT NULL, PRIMARY KEY ( `id` ), INDEX( `home_player_1` ), INDEX( `home_player_2` ), INDEX( `away_player_1` ), INDEX( `away_player_2` ), INDEX( `match_id` )) $charset_collate;";
+		$create_rubbers_sql = "CREATE TABLE {$wpdb->racketmanager_rubbers} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT , `group` varchar( 30 ) NOT NULL default '', `date` datetime NOT NULL, `match_id` int( 11 ) NOT NULL default '0', `rubber_number` int( 1 ) NOT NULL default 0, `home_player_1` int( 11 ) NULL default NULL, `home_player_2` int( 11 ) NULL default NULL, `away_player_1` int( 11 ) NULL default NULL, `away_player_2` int( 11 ) NULL default NULL, `home_points` varchar( 30 ) NULL default NULL, `away_points` varchar( 30 ) NULL default NULL, `winner_id` int( 11 ) NOT NULL default '0', `loser_id` int( 11 ) NOT NULL default '0', `post_id` int( 11 ) NOT NULL default '0', `final` varchar( 150 ) NOT NULL default '', `type` varchar( 2 ) NULL default NULL, `custom` longtext NOT NULL, PRIMARY KEY ( `id` ), INDEX( `home_player_1` ), INDEX( `home_player_2` ), INDEX( `away_player_1` ), INDEX( `away_player_2` ), INDEX( `match_id` )) $charset_collate;";
 		maybe_create_table( $wpdb->racketmanager_rubbers, $create_rubbers_sql );
 
 		$create_roster_sql = "CREATE TABLE {$wpdb->racketmanager_roster} (  `removed_date` date NULL, `removed_user` int( 11 ) NULL, `updated` int( 1 ) NOT NULL, `system_record` VARCHAR(1) NULL DEFAULT NULL, `created_date` date NULL, `created_user` int( 11 ) NULL, PRIMARY KEY ( `id` )) $charset_collate;";
@@ -2422,78 +2422,19 @@ class RacketManager {
 		$match_type = $match->league->type;
 		switch ($match_type) {
 			case 'MD':
-			$homeRosterMen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$awayRosterMen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			for ($r = 0; $r < $match->num_rubbers; $r++) {
-				$homeRoster[$r][1]['players'] = $homeRosterMen;
-				$homeRoster[$r][1]['gender'] = 'm';
-				$homeRoster[$r][2]['players'] = $homeRosterMen;
-				$homeRoster[$r][2]['gender'] = 'm';
-				$awayRoster[$r][1]['players'] = $awayRosterMen;
-				$awayRoster[$r][1]['gender'] = 'm';
-				$awayRoster[$r][2]['players'] = $awayRosterMen;
-				$awayRoster[$r][2]['gender'] = 'm';
-			}
+			$homeRoster['m'] = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
+			$awayRoster['m'] = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
 			break;
 			case 'WD':
-			$homeRosterWomen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$awayRosterWomen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			for ($r = 0; $r < $match->num_rubbers; $r++) {
-				$homeRoster[$r][1]['players'] = $homeRosterWomen;
-				$homeRoster[$r][1]['gender'] = 'f';
-				$homeRoster[$r][2]['players'] = $homeRosterWomen;
-				$homeRoster[$r][2]['gender'] = 'f';
-				$awayRoster[$r][1]['players'] = $awayRosterWomen;
-				$awayRoster[$r][1]['gender'] = 'f';
-				$awayRoster[$r][2]['players'] = $awayRosterWomen;
-				$awayRoster[$r][2]['gender'] = 'f';
-			}
+			$homeRoster['f'] = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
+			$awayRoster['f'] = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
 			break;
 			case 'XD':
-			$homeRosterMen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$awayRosterMen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$homeRosterWomen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$awayRosterWomen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			for ($r = 0; $r < $match->num_rubbers; $r++) {
-				$homeRoster[$r][1]['players'] = $homeRosterMen;
-				$homeRoster[$r][1]['gender'] = 'm';
-				$homeRoster[$r][2]['players'] = $homeRosterWomen;
-				$homeRoster[$r][2]['gender'] = 'f';
-				$awayRoster[$r][1]['players'] = $awayRosterMen;
-				$awayRoster[$r][1]['gender'] = 'm';
-				$awayRoster[$r][2]['players'] = $awayRosterWomen;
-				$awayRoster[$r][2]['gender'] = 'f';
-			}
-			break;
 			case 'LD':
-			$homeRosterMen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-			$awayRosterMen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-			$homeRosterWomen = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-			$awayRosterWomen = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
-			$homeRoster[0][1]['players'] = $homeRosterWomen;
-			$homeRoster[0][1]['gender'] = 'f';
-			$homeRoster[0][2]['players'] = $homeRosterWomen;
-			$homeRoster[0][2]['gender'] = 'f';
-			$homeRoster[1][1]['players'] = $homeRosterMen;
-			$homeRoster[1][1]['gender'] = 'm';
-			$homeRoster[1][2]['players'] = $homeRosterMen;
-			$homeRoster[1][2]['gender'] = 'm';
-			$homeRoster[2][1]['players'] = $homeRosterMen;
-			$homeRoster[2][1]['gender'] = 'm';
-			$homeRoster[2][2]['players'] = $homeRosterWomen;
-			$homeRoster[2][2]['gender'] = 'f';
-			$awayRoster[0][1]['players'] = $awayRosterWomen;
-			$awayRoster[0][1]['gender'] = 'f';
-			$awayRoster[0][2]['players'] = $awayRosterWomen;
-			$awayRoster[0][2]['gender'] = 'f';
-			$awayRoster[1][1]['players'] = $awayRosterMen;
-			$awayRoster[1][1]['gender'] = 'm';
-			$awayRoster[1][2]['players'] = $awayRosterMen;
-			$awayRoster[1][2]['gender'] = 'm';
-			$awayRoster[2][1]['players'] = $awayRosterMen;
-			$awayRoster[2][1]['gender'] = 'm';
-			$awayRoster[2][2]['players'] = $awayRosterWomen;
-			$awayRoster[2][2]['gender'] = 'f';
+			$homeRoster['m'] = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
+			$homeRoster['f'] = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
+			$awayRoster['m'] = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
+			$awayRoster['f'] = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
 			break;
 		}
 		$this->buildRubbersScreen($match, $homeRoster, $awayRoster);
@@ -2553,7 +2494,66 @@ class RacketManager {
 				$r = $tabbase = 0 ;
 				$numPlayers = 2;
 
-				foreach ($rubbers as $rubber) {	?>
+				foreach ($rubbers as $rubber) {
+					$r = $rubber->rubber_number;
+					if ( $match->league->type == 'MD' ) {
+						$homeRoster[$r][1]['players'] = $homeRoster['m'];
+						$homeRoster[$r][1]['gender'] = 'm';
+						$homeRoster[$r][2]['players'] = $homeRoster['m'];
+						$homeRoster[$r][2]['gender'] = 'm';
+						$awayRoster[$r][1]['players'] = $awayRoster['m'];
+						$awayRoster[$r][1]['gender'] = 'm';
+						$awayRoster[$r][2]['players'] = $awayRoster['m'];
+						$awayRoster[$r][2]['gender'] = 'm';
+					} elseif ( $match->league->type == 'WD' ) {
+						$homeRoster[$r][1]['players'] = $homeRoster['f'];
+						$homeRoster[$r][1]['gender'] = 'f';
+						$homeRoster[$r][2]['players'] = $homeRoster['f'];
+						$homeRoster[$r][2]['gender'] = 'f';
+						$awayRoster[$r][1]['players'] = $awayRoster['f'];
+						$awayRoster[$r][1]['gender'] = 'f';
+						$awayRoster[$r][2]['players'] = $awayRoster['f'];
+						$awayRoster[$r][2]['gender'] = 'f';
+					} elseif ( $match->league->type == 'XD' ) {
+						$homeRoster[$r][1]['players'] = $homeRoster['m'];
+						$homeRoster[$r][1]['gender'] = 'm';
+						$homeRoster[$r][2]['players'] = $homeRoster['f'];
+						$homeRoster[$r][2]['gender'] = 'f';
+						$awayRoster[$r][1]['players'] = $awayRoster['m'];
+						$awayRoster[$r][1]['gender'] = 'm';
+						$awayRoster[$r][2]['players'] = $awayRoster['f'];
+						$awayRoster[$r][2]['gender'] = 'f';
+					} elseif ( $match->league->type == 'LD' ) {
+						if ( $rubber->rubber_number == 1 ) {
+							$homeRoster[$r][1]['players'] = $homeRoster['f'];
+							$homeRoster[$r][1]['gender'] = 'f';
+							$homeRoster[$r][2]['players'] = $homeRoster['f'];
+							$homeRoster[$r][2]['gender'] = 'f';
+							$awayRoster[$r][1]['players'] = $awayRoster['f'];
+							$awayRoster[$r][1]['gender'] = 'f';
+							$awayRoster[$r][2]['players'] = $awayRoster['f'];
+							$awayRoster[$r][2]['gender'] = 'f';
+						} elseif ( $rubber->rubber_number == 2 ) {
+							$homeRoster[$r][1]['players'] = $homeRoster['m'];
+							$homeRoster[$r][1]['gender'] = 'm';
+							$homeRoster[$r][2]['players'] = $homeRoster['m'];
+							$homeRoster[$r][2]['gender'] = 'm';
+							$awayRoster[$r][1]['players'] = $awayRoster['m'];
+							$awayRoster[$r][1]['gender'] = 'm';
+							$awayRoster[$r][2]['players'] = $awayRoster['m'];
+							$awayRoster[$r][2]['gender'] = 'm';
+						} elseif ( $rubber->rubber_number == 3 ) {
+							$homeRoster[$r][1]['players'] = $homeRoster['m'];
+							$homeRoster[$r][1]['gender'] = 'm';
+							$homeRoster[$r][2]['players'] = $homeRoster['f'];
+							$homeRoster[$r][2]['gender'] = 'f';
+							$awayRoster[$r][1]['players'] = $awayRoster['m'];
+							$awayRoster[$r][1]['gender'] = 'm';
+							$awayRoster[$r][2]['players'] = $awayRoster['f'];
+							$awayRoster[$r][2]['gender'] = 'f';
+						}
+					}
+					?>
 					<div class="row mb-3">
 						<input type="hidden" name="id[<?php echo $r ?>]" value="<?php echo $rubber->id ?>" </>
 						<div class="col-1 text-center align-self-center"><?php echo isset($rubber->rubber_number) ? $rubber->rubber_number : '' ?></div>

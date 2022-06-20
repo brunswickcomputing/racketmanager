@@ -625,6 +625,16 @@ function racketmanager_upgrade() {
 				}
 			}
 		}
+		if (version_compare($installed, '6.20.0', '<')) {
+			echo __('starting 6.20.0 upgrade', 'racketmanager') . "<br />\n";
+			$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_rubbers} ADD type varchar( 2 ) NULL AFTER `final` ");
+			$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `type` = 'WD' WHERE `match_id` in (SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` in (SELECT `id` FROM {$wpdb->racketmanager} WHERE `competition_id` in (SELECT `id` FROM {$wpdb->racketmanager_competitions} WHERE `competitiontype` = 'league' AND `type` = 'WD'))) "));
+			$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `type` = 'MD' WHERE `match_id` in (SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` in (SELECT `id` FROM {$wpdb->racketmanager} WHERE `competition_id` in (SELECT `id` FROM {$wpdb->racketmanager_competitions} WHERE `competitiontype` = 'league' AND `type` = 'MD'))) "));
+			$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `type` = 'XD' WHERE `match_id` in (SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` in (SELECT `id` FROM {$wpdb->racketmanager} WHERE `competition_id` in (SELECT `id` FROM {$wpdb->racketmanager_competitions} WHERE `competitiontype` = 'league' AND `type` = 'XD'))) "));
+			$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `type` = 'WD' WHERE `rubber_number` = 1 AND `match_id` in (SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` in (SELECT `id` FROM {$wpdb->racketmanager} WHERE `competition_id` in (SELECT `id` FROM {$wpdb->racketmanager_competitions} WHERE `competitiontype` = 'league' AND `type` = 'LD'))) "));
+			$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `type` = 'MD' WHERE `rubber_number` = 2 AND `match_id` in (SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` in (SELECT `id` FROM {$wpdb->racketmanager} WHERE `competition_id` in (SELECT `id` FROM {$wpdb->racketmanager_competitions} WHERE `competitiontype` = 'league' AND `type` = 'LD'))) "));
+			$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `type` = 'XD' WHERE `rubber_number` = 3 AND `match_id` in (SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` in (SELECT `id` FROM {$wpdb->racketmanager} WHERE `competition_id` in (SELECT `id` FROM {$wpdb->racketmanager_competitions} WHERE `competitiontype` = 'league' AND `type` = 'LD'))) "));
+		}
   /*
 	* Update version and dbversion
 	*/

@@ -2864,8 +2864,25 @@ final class RacketManagerAdmin extends RacketManager
 		$wpdb->query ( $wpdb->prepare ( $sql, $date, $home_team, $away_team, $match_day, $location, $league_id, $season, $final, maybe_serialize($custom), $group ) );
 		$match_id = $wpdb->insert_id;
 		if ($num_rubbers > 1) {
+			$league = get_league($league_id);
 			for ($ix = 1; $ix <= $num_rubbers; $ix++) {
-				$rubber_id = $this->addRubber($date, $match_id, $ix, array());
+				$type = $league->competition_type;
+				if ( $league->competition_type == 'MD' ) {
+					$type = 'MD';
+				} elseif ( $league->competition_type == 'WD' ) {
+					$type = 'WD';
+				} elseif ( $league->competition_type == 'XD' ) {
+					$type = 'XD';
+				} elseif ( $league->competition_type == 'LD' ) {
+					if ( $ix == 1 ) {
+						$type = 'WD';
+					} elseif ( $ix == 2 ) {
+						$type = 'MD';
+					} elseif ( $ix == 3 ) {
+						$type = 'XD';
+					}
+				}
+				$rubber_id = $this->addRubber($date, $match_id, $ix, $type);
 			}
 		}
 
@@ -3098,7 +3115,7 @@ final class RacketManagerAdmin extends RacketManager
 	* @param array $custom
 	* @return int | false
 	*/
-	private function addRubber( $date, $match_id, $rubberno, $custom ) {
+	private function addRubber( $date, $match_id, $rubberno, $type, $custom=array() ) {
 		global $wpdb;
 
 		if ( !current_user_can('edit_matches') ) {
@@ -3106,8 +3123,8 @@ final class RacketManagerAdmin extends RacketManager
 			return false;
 		}
 
-		$sql = "INSERT INTO {$wpdb->racketmanager_rubbers} (`date`, `match_id`, `rubber_number`, `custom`) VALUES ('%s', '%d', '%d', '%s')";
-		$wpdb->query ( $wpdb->prepare ( $sql, $date, $match_id, $rubberno, maybe_serialize($custom) ) );
+		$sql = "INSERT INTO {$wpdb->racketmanager_rubbers} (`date`, `match_id`, `rubber_number`, `type`, `custom`) VALUES ('%s', '%d', '%d', '%s', '%s')";
+		$wpdb->query ( $wpdb->prepare ( $sql, $date, $match_id, $rubberno, $type, maybe_serialize($custom) ) );
 
 		return $wpdb->insert_id;
 	}

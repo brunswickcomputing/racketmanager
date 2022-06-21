@@ -53,6 +53,9 @@ ul.posttype-tabs, ul.outer-border {
 #matchDays {
     padding: 1em;
 }
+.captain {
+  font-weight: bold;
+}
 .entry-content {
     padding-bottom: 2em;
 }

@@ -2633,13 +2633,37 @@ class RacketManager {
 					$tabbase +=100;
 					$r ++;
 				}	?>
+				<div id="captains" class="row mb-3">
+					<div class="col-1 text-center align-self-center"></div>
+					<div class="col-11">
+						<div class="row">
+							<div class="col-4 mb-3">
+								<div class="col-12 captain"><?php _e( 'Captain', 'racketmanager' ) ?></div>
+								<div class="col-12">
+									<?php echo $match->teams['home']->captain; ?>
+								</div>
+							</div>
+							<div class="col-4 mb-3">
+							</div>
+							<div class="col-4 mb-3">
+								<div class="col-12 captain"><?php _e( 'Captain', 'racketmanager' ) ?></div>
+								<div class="col-12">
+									<?php echo $match->teams['away']->captain; ?>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
 				<?php if ( isset($match->home_captain) || isset($match->away_captain) ) { ?>
-					<div id="captains" class="row mb-3">
+					<div id="approvals" class="row mb-3">
 						<div class="col-1 text-center align-self-center"></div>
 						<div class="col-11">
-							<div class="row justify-content-center">
+							<div class="row">
 								<div class="col-4 mb-3">
-									<div class="col-12 text-center captain"><?php _e( 'Home Captain', 'racketmanager' ) ?></div>
+									<div class="col-12 captain"><?php _e( 'Approval', 'racketmanager' ) ?></div>
+									<div class="col-12">
+										<?php echo $racketmanager->getPlayerName($match->teams['home']->captain); ?>
+									</div>
 									<div class="col-12">
 										<?php if ( isset($match->home_captain) ) {
 											echo $racketmanager->getPlayerName($match->home_captain);
@@ -2666,7 +2690,7 @@ class RacketManager {
 								<div class="col-4 mb-3">
 								</div>
 								<div class="col-4 mb-3">
-									<div class="col-12 text-center captain"><?php _e( 'Away Captain', 'racketmanager' ) ?></div>
+									<div class="col-12 captain"><?php _e( 'Approval', 'racketmanager' ) ?></div>
 									<div class="col-12">
 										<?php if ( isset($match->away_captain) ) {
 											echo $racketmanager->getPlayerName($match->away_captain);

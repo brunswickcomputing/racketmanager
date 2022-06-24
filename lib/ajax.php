@@ -874,6 +874,9 @@ class RacketManagerAJAX extends RacketManager {
 
 						$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_rubbers} SET `home_points` = '%s',`away_points` = '%s',`home_player_1` = '%s',`home_player_2` = '%s',`away_player_1` = '%s',`away_player_2` = '%s',`winner_id` = '%d',`loser_id` = '%d',`custom` = '%s' WHERE `id` = '%d'", $homescore, $awayscore, $homeplayer1, $homeplayer2, $awayplayer1, $awayplayer2, $winner, $loser, maybe_serialize($custom), $rubberId));
 						$matchConfirmed = 'P';
+
+						$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_results_checker} WHERE `match_id` = %d", $match->id) );
+
 						$checkOptions = $options['checks'];
 						$this->checkPlayerResult($match, $rubberId, $homeplayer1, $match->home_team, $checkOptions);
 						$this->checkPlayerResult($match, $rubberId, $homeplayer2, $match->home_team, $checkOptions);
@@ -1229,10 +1232,6 @@ class RacketManagerAJAX extends RacketManager {
 
 		$teamName = get_team($team)->title;
 		$currTeamNum = substr($teamName,-1);
-
-		if ( $player ) {
-			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_results_checker} WHERE `player_id` = %d AND `match_id` = %d", $player->player_id, $match->id) );
-		}
 
 		if ( !is_numeric($rosterId) ) {
 			$error = __('Player not selected', 'racketmanager');

@@ -40,7 +40,7 @@
       <?php } ?>
       <div class="register-submit col-6">
         <p class="login-submit">
-          <input type="submit" name="btnS ubmit" class="register-button" id="recaptchaSubmit" value="<?php _e( 'Register', 'racketmanager' ); ?>" />
+          <input type="submit" name="btnSubmit" class="register-button" id="recaptchaSubmit" value="<?php _e( 'Register', 'racketmanager' ); ?>" />
         </p>
       </div>
     </div>

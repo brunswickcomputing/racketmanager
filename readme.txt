@@ -50,6 +50,14 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.20.0 =
+* UPDATE: store type against rubber
+* UPDATE: show team captain in result entry
+* UPDATE: remove register link
+* UPDATE: delete player checks before each match update
+* BUGFIX: handle updatesAllowed check correctly
+* BUGFIX: fix button name
+
 = 6.19.0 =
 * UPDATE: add validation for player selections for rubbers
 * UPDATE: change button spacing on outstanding results screen

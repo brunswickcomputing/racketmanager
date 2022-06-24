@@ -671,7 +671,7 @@ class RacketManagerAJAX extends RacketManager {
 						if ( !$playerFound ) {
 							$playerRoster = $racketmanager->getRoster( array('player' => get_current_user_id(), 'club' => $club, 'inactive' => true) );
 							$playerRosterId = $playerRoster[0]->roster_id;
-							for ($ix = 0; $ix < $num_rubbers; $ix++) {
+							for ($ix = 1; $ix <= $num_rubbers; $ix++) {
 								$homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : NULL;
 								$homeplayer2    = isset($_POST['homeplayer2'][$ix]) ? $_POST['homeplayer2'][$ix] : NULL;
 								$awayplayer1    = isset($_POST['awayplayer1'][$ix]) ? $_POST['awayplayer1'][$ix] : NULL;
@@ -784,7 +784,7 @@ class RacketManagerAJAX extends RacketManager {
 		$homeTeamScore = 0;
 		$awayTeamScore = 0;
 		$players = array();
-		for ($ix = 0; $ix < $numRubbers; $ix++) {
+		for ($ix = 1; $ix <= $numRubbers; $ix++) {
 			$rubberId       = $_POST['id'][$ix];
 			$homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : NULL;
 			$homeplayer2    = isset($_POST['homeplayer2'][$ix]) ? $_POST['homeplayer2'][$ix] : NULL;

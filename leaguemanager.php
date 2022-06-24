@@ -2016,7 +2016,7 @@ class RacketManager {
 								$userType = 'player';
 								$userTeam = 'home';
 								$userCanUpdate = true;
-							} elseif ( $options[$resultEntry] == 'either' ) {
+							} elseif ( $resultEntry == 'either' ) {
 								$club = get_club($awayTeam->affiliatedclub);
 								$awayRoster = $club->getRoster( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
 								if ( $awayRoster != 0 ) {

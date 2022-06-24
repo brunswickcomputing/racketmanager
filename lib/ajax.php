@@ -878,10 +878,18 @@ class RacketManagerAJAX extends RacketManager {
 						$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_results_checker} WHERE `match_id` = %d", $match->id) );
 
 						$checkOptions = $options['checks'];
-						$this->checkPlayerResult($match, $rubberId, $homeplayer1, $match->home_team, $checkOptions);
-						$this->checkPlayerResult($match, $rubberId, $homeplayer2, $match->home_team, $checkOptions);
-						$this->checkPlayerResult($match, $rubberId, $awayplayer1, $match->away_team, $checkOptions);
-						$this->checkPlayerResult($match, $rubberId, $awayplayer2, $match->away_team, $checkOptions);
+						if ( !empty($homeplayer1) ) {
+							$this->checkPlayerResult($match, $rubberId, $homeplayer1, $match->home_team, $checkOptions);
+						}
+						if ( !empty($homeplayer2) ) {
+							$this->checkPlayerResult($match, $rubberId, $homeplayer2, $match->home_team, $checkOptions);
+						}
+						if ( !empty($awayplayer1) ) {
+							$this->checkPlayerResult($match, $rubberId, $awayplayer1, $match->away_team, $checkOptions);
+						}
+						if ( !empty($awayplayer2) ) {
+							$this->checkPlayerResult($match, $rubberId, $awayplayer2, $match->away_team, $checkOptions);
+						}
 					}
 				}
 			}

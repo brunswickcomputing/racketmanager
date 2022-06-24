@@ -45,7 +45,7 @@ namespace ns;
           <div class="form-floating mb-3">
             <select class="form-select" id="<?php echo $competitionType.'-resultConfirmation' ?>" name="<?php echo $competitionType ?>[resultConfirmation]">
               <option value="none" <?php if (isset($options[$competitionType]['resultConfirmation']) && $options[$competitionType]['resultConfirmation'] == "none") echo 'selected="selected"'?>><?php _e('None', 'racketmanager') ?></option>
-              <option value="auto" <?php if (isset($options[$competitionType]['resultConfirmation']) && $options[$competitionType]['resultConfirmation'] == "admin") echo 'selected="selected"'?>><?php _e('Automatic', 'racketmanager') ?></option>
+              <option value="auto" <?php if (isset($options[$competitionType]['resultConfirmation']) && $options[$competitionType]['resultConfirmation'] == "auto") echo 'selected="selected"'?>><?php _e('Automatic', 'racketmanager') ?></option>
             </select>
             <label for="<?php echo $competitionType ?>[resultConfirmation]"><?php _e( 'Result Confirmation', 'racketmanager' ) ?></label>
           </div>

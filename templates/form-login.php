@@ -22,9 +22,9 @@ jQuery(function() {
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="login-tab" data-bs-toggle="pill" data-bs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="true"><?php _e( 'Login', 'racketmanager' ) ?></button>
       </li>
-      <li class="nav-item" role="presentation">
+      <!--<li class="nav-item" role="presentation">
         <button class="nav-link" id="registration-tab" data-bs-toggle="pill" data-bs-target="#registration" type="button" role="tab" aria-controls="registration" aria-selected="true"><?php _e( 'Sign Up', 'racketmanager' ) ?></button>
-      </li>
+      </li>-->
     </ul>
     <?php
     $usernameErr = false;

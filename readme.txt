@@ -53,6 +53,7 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 = 6.20.1 =
 * BUGFIX: correct rubber loop
 * BUGFIX: use correct value for match result confirmation
+* BUGFIX: fix rubber point display
 
 = 6.20.0 =
 * UPDATE: store type against rubber

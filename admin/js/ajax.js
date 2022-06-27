@@ -169,7 +169,7 @@ Racketmanager.updateResults = function(link) {
   $form += "&action=racketmanager_update_rubbers";
   jQuery(".is-invalid").removeClass("is-invalid");
   jQuery("#updateResponse").removeClass("message-success");
-	jQuery("#updateResponse").removeClass("message-error");
+  jQuery("#updateResponse").removeClass("message-error");
   jQuery("#showMatchRubbers").hide();
   jQuery("#splash").css('opacity', 1);
   jQuery("#splash").show();
@@ -182,34 +182,39 @@ Racketmanager.updateResults = function(link) {
       var $response = jQuery.parseJSON(response);
       var $message = $response[0];
       var $error = $response[1];
-			if ($error === true) {
-				jQuery("#updateResponse").addClass('message-error');
-				jQuery("#updateResponse").html($message);
+      jQuery("#splash").css('opacity', 0);
+      jQuery("#splash").hide();
+      jQuery("#showMatchRubbers").show();
+      if ($error === true) {
+        jQuery("#updateResponse").addClass('message-error');
+        jQuery("#updateResponse").html($message);
         jQuery("#updateResponse").show();
         var $errField = $response[4];
         for (var i = 0; i < $errField.length; i++) {
           $formfield = "#"+$errField[i];
           jQuery($formfield).addClass('is-invalid');
         }
-			} else {
+      } else {
         jQuery("#updateResponse").show();
-				jQuery("#updateResponse").addClass('message-success');
-				jQuery("#updateResponse").html($message);
-				jQuery("#updateResponse").delay(10000).fadeOut('slow');
-        var $homepoints = $response[2];
-        var $awaypoints = $response[3];
+        jQuery("#updateResponse").addClass('message-success');
+        jQuery("#updateResponse").html($message);
+        jQuery("#updateResponse").delay(10000).fadeOut('slow');
+        var $homepoints = Object.values($response[2]);
+        var $awaypoints = Object.values($response[3]);
         jQuery("#updateResponse").show();
         jQuery("#updateResponse").text($message);
         var $matchhome = 0;
         var $matchaway = 0;
         for ( i = 0; i < $homepoints.length; i++) {
-          $formfield = "#home_points\\["+i+"\\]";
+          $rubber = i + 1;
+          $formfield = "#home_points\\["+$rubber+"\\]";
           $fieldval = $homepoints[i];
           jQuery($formfield).val($fieldval);
           $matchhome  = +$matchhome + +$homepoints[i];
         }
         for ( i = 0; i < $awaypoints.length; i++) {
-          $formfield = "#away_points\\["+i+"\\]";
+          $rubber = i + 1;
+          $formfield = "#away_points\\["+$rubber+"\\]";
           $fieldval = $awaypoints[i];
           jQuery($formfield).val($fieldval);
           $matchaway  = +$matchaway + +$awaypoints[i];
@@ -223,9 +228,6 @@ Racketmanager.updateResults = function(link) {
         jQuery($formfield).val($matchaway);
         jQuery($formfield1).val($matchaway);
       }
-      jQuery("#splash").css('opacity', 0);
-      jQuery("#splash").hide();
-      jQuery("#showMatchRubbers").show();
     },
     error: function() {
       alert("Ajax error on updating rubbers");

@@ -31,9 +31,6 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_get_season_dropdown', array(&$this, 'setSeasonDropdown') );
 		add_action( 'wp_ajax_racketmanager_get_match_dropdown', array(&$this, 'setMatchesDropdown') );
 
-		add_action( 'wp_ajax_racketmanager_get_match_box', array(&$this, 'getMatchBox') );
-		add_action( 'wp_ajax_nopriv_racketmanager_get_match_box', array(&$this, 'getMatchBox') );
-
 		add_action( 'wp_ajax_racketmanager_show_rubbers', array(&$this, 'showRubbers') );
 		add_action( 'wp_ajax_nopriv_racketmanager_show_rubbers', array(&$this, 'showRubbers') );
 
@@ -67,50 +64,6 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_chase_match_approval', array(&$this, 'chaseMatchApproval') );
 
 		add_action( 'wp_ajax_racketmanager_add_favourite', array(&$this, 'addFavourite') );
-	}
-
-	/**
-	* Ajax Response to set match index in widget
-	*
-	*/
-	public function getMatchBox() {
-		$widget = new RacketManagerWidget(true);
-
-		$current = $_POST['current'];
-		$element = $_POST['element'];
-		$operation = $_POST['operation'];
-		$league_id = intval($_POST['league_id']);
-		$match_limit = ( $_POST['match_limit'] == 'false' ) ? false : intval($_POST['match_limit']);
-		$widget_number = intval($_POST['widget_number']);
-		$season = htmlspecialchars($_POST['season']);
-		$group = ( isset($_POST['group']) ? htmlspecialchars($_POST['group']) : '' );
-		$home_only = htmlspecialchars($_POST['home_only']);
-		$date_format = htmlspecialchars($_POST['date_format']);
-
-		if ( $operation == 'next' )
-		$index = $current + 1;
-		elseif ( $operation == 'prev' )
-		$index = $current - 1;
-
-		$widget->setMatchIndex( $index, $element );
-
-		if ( isset($group) ) {
-			$instance = array( 'league' => $league_id, 'group' => $group, 'match_limit' => $match_limit, 'season' => $season, 'home_only' => $home_only, 'date_format' => $date_format );
-		} else {
-			$instance = array( 'league' => $league_id, 'match_limit' => $match_limit, 'season' => $season, 'home_only' => $home_only, 'date_format' => $date_format );
-		}
-
-		if ( $element == 'next' ) {
-			$parent_id = 'next_matches_'.$widget_number;
-			$match_box = $widget->showNextMatchBox($widget_number, $instance, false);
-		} elseif ( $element == 'prev' ) {
-			$parent_id = 'prev_matches_'.$widget_number;
-			$match_box = $widget->showPrevMatchBox($widget_number, $instance, false, true);
-		}
-
-		die( "jQuery('div#".$parent_id."').fadeOut('fast', function() {
-			jQuery('div#".$parent_id."').html('".addslashes_gpc($match_box)."').fadeIn('fast');
-		});");
 	}
 
 	/**

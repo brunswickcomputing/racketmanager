@@ -15,6 +15,9 @@ $title = $organisationName.' Match Result - '.$competitionName;
             <?php if ( isset($outstanding) && $outstanding ) { ?>
               <p>The approval of this result is outstanding.</p>
               <p>Please either approval or challenge the result as soon as possible.</p>
+            <?php } elseif ( $complete ) { ?>
+              <p>The result of this match has been confirmed and updated.</p>
+              <p>There is no further action required.</p>
             <?php } else { ?>
               <p>The result of this match has been entered and requires action.</p>
             <?php } ?>

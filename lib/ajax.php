@@ -747,6 +747,10 @@ class RacketManagerAJAX extends RacketManager {
 								$msg = __('No matches to save','racketmanager');
 							}
 						}
+						if ( $userType != 'admin' ) {
+							$matchConfirmed = 'Y';
+							$this->resultNotification($matchConfirmed, $matchMessage, $match, $matchUpdatedby);
+						}
 					} elseif ( $matchConfirmed == 'A' ) {
 						$this->resultNotification($matchConfirmed, $matchMessage, $match, $matchUpdatedby);
 					} elseif ( $matchConfirmed == 'C' ) {
@@ -1117,6 +1121,10 @@ class RacketManagerAJAX extends RacketManager {
 			$headers = array();
 			$headers['from'] = $racketmanager->getFromUserEmail();
 			$subject = $racketmanager->site_name." - ".$matchMessage." - ".$match->league->title." - ".$match->match_title;
+			if ( $matchStatus == 'Y' ) {
+				$messageArgs['complete'] = true;
+				$subject .= " - ".__('Match complete', 'racketmanager');
+			}
 			$message = racketmanager_result_notification($match->id, $messageArgs );
 			$racketmanager->lm_mail($emailTo, $subject, $message, $headers);
 			if ( $matchStatus == 'P' ) {

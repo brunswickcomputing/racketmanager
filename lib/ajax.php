@@ -34,8 +34,8 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_show_rubbers', array(&$this, 'showRubbers') );
 		add_action( 'wp_ajax_nopriv_racketmanager_show_rubbers', array(&$this, 'showRubbers') );
 
-		add_action( 'wp_ajax_racketmanager_view_rubbers', array(&$this, 'viewMatchRubbers') );
-		add_action( 'wp_ajax_nopriv_racketmanager_view_rubbers', array(&$this, 'viewMatchRubbers') );
+		add_action( 'wp_ajax_racketmanager_matchcard_team', array(&$this, 'printMatchCardTeam') );
+		add_action( 'wp_ajax_nopriv_racketmanager_matchcard_team', array(&$this, 'printMatchCardTeam') );
 
 		add_action( 'wp_ajax_racketmanager_matchcard_player', array(&$this, 'printMatchCardPlayer') );
 		add_action( 'wp_ajax_nopriv_racketmanager_matchcard_player', array(&$this, 'printMatchCardPlayer') );
@@ -290,7 +290,7 @@ class RacketManagerAJAX extends RacketManager {
 	* build screen to view match rubbers for printing
 	*
 	*/
-	public function viewMatchRubbers() {
+	public function printMatchCardTeam() {
 		global $racketmanager, $championship;
 		$matchId = $_POST['matchId'];
 		$match = get_match($matchId);

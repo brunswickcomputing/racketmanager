@@ -278,7 +278,7 @@ Racketmanager.printScoreCard = function(e, link) {
 	if (matchtype == 'player') {
 		var ajaxAction = 'racketmanager_matchcard_player';
 	} else {
-		var ajaxAction = 'racketmanager_view_rubbers';
+		var ajaxAction = 'racketmanager_matchcard_team';
 	}
 	var styleSheetList = document.styleSheets;
 	var $head = '<html><head><title>Match Card</title>';

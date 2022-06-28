@@ -1073,7 +1073,7 @@ class RacketManagerAJAX extends RacketManager {
 			}
 			$headers = array();
 			$headers['from'] = $racketmanager->getFromUserEmail();
-			$subject = $racketmanager->site_name." - ".$matchMessage." - ".$match->league->title." - ".$match->match_title;
+			$subject = $racketmanager->site_name." - ".$match->league->title." - ".$match->match_title." - ".$matchMessage;
 			if ( $matchStatus == 'Y' ) {
 				$messageArgs['complete'] = true;
 				$subject .= " - ".__('Match complete', 'racketmanager');

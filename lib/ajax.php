@@ -31,9 +31,6 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_get_season_dropdown', array(&$this, 'setSeasonDropdown') );
 		add_action( 'wp_ajax_racketmanager_get_match_dropdown', array(&$this, 'setMatchesDropdown') );
 
-		add_action( 'wp_ajax_racketmanager_show_rubbers', array(&$this, 'showRubbers') );
-		add_action( 'wp_ajax_nopriv_racketmanager_show_rubbers', array(&$this, 'showRubbers') );
-
 		add_action( 'wp_ajax_racketmanager_matchcard_team', array(&$this, 'printMatchCardTeam') );
 		add_action( 'wp_ajax_nopriv_racketmanager_matchcard_team', array(&$this, 'printMatchCardTeam') );
 
@@ -43,6 +40,8 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_show_match', array(&$this, 'showMatch') );
 		add_action( 'wp_ajax_racketmanager_update_match', array(&$this, 'updateMatch') );
 
+		add_action( 'wp_ajax_racketmanager_show_rubbers', array(&$this, 'showRubbers') );
+		add_action( 'wp_ajax_nopriv_racketmanager_show_rubbers', array(&$this, 'showRubbers') );
 		add_action( 'wp_ajax_racketmanager_update_rubbers', array(&$this, 'updateRubbers') );
 		add_action( 'wp_ajax_racketmanager_confirm_results', array(&$this, 'confirmResults') );
 

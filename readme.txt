@@ -34,7 +34,7 @@ This Plugin is designed to manage rackets leagues and tournaments and display th
 To install the plugin to the following steps
 
 1. Unzip the zip-file and upload the content to your Wordpress Plugin directory.
-2. Activiate the plugin via the admin plugin page.
+2. Activate the plugin via the admin plugin page.
 
 == Screenshots ==
 1. Main page for selected League
@@ -49,6 +49,12 @@ To install the plugin to the following steps
 The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)
 
 == Changelog ==
+
+= 6.21.0 =
+* UPDATE: send email when result approved and auto confirmation
+* UPDATE: remove redundant match box
+* UPDATE: change matchcard print function names
+* UPDATE: standard match update email subject format
 
 = 6.20.1 =
 * BUGFIX: correct rubber loop

@@ -348,11 +348,10 @@ div.racketmanager_widget_control select {
     background-color: greenyellow;
     color: white;
 }
-.matchday.playdown {
+.matchday.playdown, .table-striped>tbody>tr:nth-of-type(odd)>*.playdown {
     background-color: blue;
     color: white;
-}
-.matchday.playdownerr {
+}.matchday.playdownerr {
     background-color: red;
     color: white;
 }

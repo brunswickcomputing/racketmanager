@@ -50,6 +50,12 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.22.0 =
+* BUGFIX: use correct colour for playdown class in striped table
+* UPDATE: remove competition id from getLeagues calls
+* UPDATE: allow new teams to be added for league entry
+* UPDATE: check enough courts available for league entry
+
 = 6.21.0 =
 * UPDATE: send email when result approved and auto confirmation
 * UPDATE: remove redundant match box

@@ -1364,7 +1364,7 @@ class RacketManagerShortcodes extends RacketManager {
 				$competition->teams = $club->getTeams(false, 'WD');
 			} elseif ( $competition->type == 'MD' ) {
 				$competition->teams = $club->getTeams(false, 'MD');
-			} elseif ( $competition->type == 'XD' or $competition->type == 'LD' ) {
+			} elseif ( $competition->type == 'XD' || $competition->type == 'LD' ) {
 				$competition->teams = $club->getTeams(false, 'XD');
 			}
 			$competitions[$i] = $competition;

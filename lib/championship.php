@@ -23,7 +23,7 @@ function racketmanager_championship_mode( $modes ) {
 */
 function championship_settingsPage( $competition ) {
   if ( !isset($competition->settings['primary_league']) ) $competition->settings['primary_league'] = '';
-  $leagues = $competition->getLeagues( array('competition' => $competition->id) ); ?>
+  $leagues = $competition->getLeagues(); ?>
 
   <div class="form-floating mb-3">
     <select class="form-select" size="1" name="settings[primary_league] ?>" id="primary_league">;

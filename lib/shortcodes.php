@@ -366,7 +366,7 @@ class RacketManagerShortcodes extends RacketManager {
 		$match = get_match($match_id);
 		$competition = get_competition($match->league->competition_id);
 		$seasons = $competition->seasons;
-		$leagues = $competition->getLeagues( array('competition' => $competition->id, 'orderby' => array("title" => "ASC")));
+		$leagues = $competition->getLeagues();
 
 		if ( empty($template) && $this->checkTemplate('match-'.$match->league->sport) ) {
 			$filename = 'match-'.$match->league->sport;
@@ -719,7 +719,7 @@ class RacketManagerShortcodes extends RacketManager {
 
 		if ( !$competition ) return;
 
-		$leagues = $competition->getLeagues( array('competition' => $id, 'orderby' => array("title" => "ASC")));
+		$leagues = $competition->getLeagues();
 
 		if ( isset($_GET['season']) && !empty($_GET['season']) ) {
 			$season = htmlspecialchars(strip_tags($_GET['season']));
@@ -785,7 +785,7 @@ class RacketManagerShortcodes extends RacketManager {
 		if ( !$competition ) return;
 
 		$seasons = $competition->seasons;
-		$leagues = $competition->getLeagues( array('competition' => $competition_id, 'orderby' => array("title" => "ASC")));
+		$leagues = $competition->getLeagues();
 
 		// Get League by Name
 		$league_name = get_query_var('league_name');

@@ -1924,7 +1924,7 @@ final class RacketManagerAdmin extends RacketManager
 		}
 
 		$competition = get_competition($competition_id);
-		foreach ( $competition->getLeagues( array("competition" => $competition_id )) AS $league ) {
+		foreach ( $competition->getLeagues() AS $league ) {
 
 			$league_id = $league->id;
 
@@ -2099,7 +2099,7 @@ final class RacketManagerAdmin extends RacketManager
 
 		$competition = get_competition($competition_id);
 		$season_id = htmlspecialchars($season_id);
-		$leagues = $competition->getLeagues( array("competition" => $competition_id) );
+		$leagues = $competition->getLeagues();
 		foreach ( $leagues AS $league ) {
 			$league = get_league($league);
 			if ( $teams = $league->getLeagueTeams( array("season" => $season_id) ) ) {
@@ -2146,7 +2146,7 @@ final class RacketManagerAdmin extends RacketManager
 
 		foreach ( $seasons AS $season ) {
 
-			foreach ( $competition->getLeagues( array("competition" => $competition_id )) AS $league ) {
+			foreach ( $competition->getLeagues() AS $league ) {
 
 				$league_id = $league->id;
 				// remove tables
@@ -3612,7 +3612,7 @@ final class RacketManagerAdmin extends RacketManager
 
 		$competition_id = (int)$_POST['competition_id'];
 		$competition = get_competition($competition_id);
-		$leagues = $competition->getLeagues( array("competition" => $competition_id) ); ?>
+		$leagues = $competition->getLeagues(); ?>
 
 		<select size='1' name='league_id' id='league_id' class="form-select" >
 			<option value='0'><?php _e('Choose league', 'racketmanager') ?></option>

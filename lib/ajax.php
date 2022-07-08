@@ -1614,7 +1614,7 @@ class RacketManagerAJAX extends RacketManager {
 				if (isset($competition->primary_league)) {
 					$league = $competition->primary_league;
 				} else {
-					$leagues = $competition->getLeagues(array( 'competition' => $competition->id ));
+					$leagues = $competition->getLeagues();
 					$league = get_league(array_key_first($competition->league_index))->id;
 				}
 				$team = $playerName;
@@ -1823,7 +1823,7 @@ class RacketManagerAJAX extends RacketManager {
 				if (isset($competition->primary_league)) {
 					$league = $competition->primary_league;
 				} else {
-					$leagues = $competition->getLeagues(array( 'competition' => $competition->id ));
+					$leagues = $competition->getLeagues();
 					$league = get_league(array_key_first($competition->league_index))->id;
 				}
 				$teamId = isset($teams[$competition->id]) ? $teams[$competition->id] : 0;

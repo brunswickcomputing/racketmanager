@@ -22,7 +22,7 @@
 			</div>
 
 			<?php
-			if ( $leagues = $competition->getLeagues( array('competition' => $competition_id)) ) {
+			if ( $leagues = $competition->getLeagues() ) {
 				$class = '';
 				foreach ( $leagues AS $league ) {
 					$league = get_league($league);

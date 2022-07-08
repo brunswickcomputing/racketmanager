@@ -355,9 +355,7 @@ class Competition {
 		extract($args, EXTR_SKIP);
 
 		$search_terms = array();
-		if ( $competition ) {
-			$search_terms[] = $wpdb->prepare("`competition_id` = '%d'", intval($competition));
-		}
+		$search_terms[] = $wpdb->prepare("`competition_id` = '%d'", intval($this->id));
 
 		$search = "";
 		if (count($search_terms) > 0) {
@@ -698,7 +696,7 @@ class Competition {
 			wp_cache_set( md5($sql), $constitutions, 'constitution' );
 		}
 
-		$leagues = $this->getLeagues(array('competition' => $this->id));
+		$leagues = $this->getLeagues();
 		foreach ( $constitutions AS $i => $constitution ) {
 			if ( isset($constitution->oldLeagueId) ) {
 				$constitution->oldLeagueTitle = get_league($constitution->oldLeagueId)->title;

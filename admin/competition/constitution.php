@@ -13,7 +13,7 @@ if ( empty($this->seasons) ) { ?>
 			$teams = $competition->buildConstitution( array('season' => $latestCompetitionSeason));
 			$constitutionAction = "insert";
 		}
-		$leagues = $competition->getLeagues( array('competition' => $competition_id));
+		$leagues = $competition->getLeagues();
 		$standingStatus = $racketmanager->getStandingStatus();
 		?>
 		<h2 class="header"><?php _e( 'Constitution', 'racketmanager' ) ?> - <?php echo $latestSeason ?></h2>

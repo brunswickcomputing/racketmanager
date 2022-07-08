@@ -25,6 +25,12 @@ $matchdays = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satu
     <form id="form-leagueentry" action="" method="post">
       <?php wp_nonce_field( 'league-entry' ) ?>
       <div class="form-group">
+        <div class="form-floating mb-3">
+          <input class="form-control" type="number" id="numCourtsAvailable" name="numCourtsAvailable" />
+          <label class="form-label" for="numCourtsAvailable">
+            <?php _e('How many courts are available for league matches?', 'racketmanager') ?>
+          </label>
+        </div>
         <fieldset class="form-fieldset">
           <legend class="fieldset-legend">
             <h3>Which events would you like to enter?</h3>
@@ -60,40 +66,30 @@ $matchdays = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satu
                     <input type="hidden" value="<?php echo $competitionTeam->leagueId ?>" name="teamCompetitionLeague[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]" />
                   </div>
                   <div class="form-checkboxes__conditional form-checkboxes__conditional--hidden" id="conditional-team-competition-<?php echo $competition->id ?>-<?php echo $competitionTeam->teamId ?>">
-                    <div class="form-group">
-                      <label class="form-label" for="matchday[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]"><?php _e( 'Match Day', 'racketmanager') ?></label>
-                      <select name="matchday[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]" id="matchday-<?php echo $competition->id ?>-<?php echo $competitionTeam->teamId ?>" size="1">
+                    <div class="form-floating mb-3">
+                      <select class="form-select" name="matchday[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]" id="matchday-<?php echo $competition->id ?>-<?php echo $competitionTeam->teamId ?>" size="1">
                         <?php foreach ( $matchdays AS $matchday ) { ?>
                           <option value="<?php echo $matchday ?>"<?php if (isset($competitionTeam->teamInfo->match_day)) selected($matchday, $competitionTeam->teamInfo->match_day ) ?> ><?php echo $matchday ?></option>
                         <?php } ?>
                       </select>
+                      <label class="form-label" for="matchday[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]"><?php _e( 'Match Day', 'racketmanager') ?></label>
                     </div>
-                    <div class="form-group match-time">
+                    <div class="form-floating mb-3 match-time">
+                      <input type="time" class="form-control" name="matchtime[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]" id="matchtime-<?php echo $competition->id ?>-<?php echo $competitionTeam->teamId ?>" value="<?php if (isset($competitionTeam->teamInfo->match_time)) echo $competitionTeam->teamInfo->match_time ?>" />
                       <label class="form-label" for="matchtime[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]"><?php _e( 'Match Time', 'racketmanager') ?></label>
-                      <div class="input">
-                        <input type="time" class="form-control" name="matchtime[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]" id="matchtime-<?php echo $competition->id ?>-<?php echo $competitionTeam->teamId ?>" value="<?php if (isset($competitionTeam->teamInfo->match_time)) echo $competitionTeam->teamInfo->match_time ?>" />
-                      </div>
                     </div>
-                    <div>
-                      <div class="form-group">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control teamcaptain" name="captain[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]" id="captain-<?php echo $competition->id ?>-<?php echo $competitionTeam->teamId ?>" value="<?php if (isset($competitionTeam->teamInfo->captain)) echo $competitionTeam->teamInfo->captain ?>" />
                         <label class="form-label" for="captain[<?php echo $competition->id ?>]"><?php _e( 'Captain', 'racketmanager') ?></label>
-                        <div class="input">
-                          <input type="text" class="form-control teamcaptain" name="captain[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]" id="captain-<?php echo $competition->id ?>-<?php echo $competitionTeam->teamId ?>" value="<?php if (isset($competitionTeam->teamInfo->captain)) echo $competitionTeam->teamInfo->captain ?>" />
-                          <input type="hidden" name="captainId[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]" id="captainId-<?php echo $competition->id ?>-<?php echo $competitionTeam->teamId ?>" value="<?php if (isset($competitionTeam->teamInfo->captainId)) echo $competitionTeam->teamInfo->captainId ?>" />
-                        </div>
-                      </div>
-                      <div class="form-group">
+                        <input type="hidden" name="captainId[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]" id="captainId-<?php echo $competition->id ?>-<?php echo $competitionTeam->teamId ?>" value="<?php if (isset($competitionTeam->teamInfo->captainId)) echo $competitionTeam->teamInfo->captainId ?>" />
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="tel" class="form-control" name="contactno[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]" id="contactno-<?php echo $competition->id ?>-<?php echo $competitionTeam->teamId ?>" value="<?php if (isset($competitionTeam->teamInfo->contactno)) echo $competitionTeam->teamInfo->contactno ?>" />
                         <label class="form-label" for="contactno[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]"><?php _e( 'Contact Number', 'racketmanager') ?></label>
-                        <div class="input">
-                          <input type="tel" class="form-control" name="contactno[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]" id="contactno-<?php echo $competition->id ?>-<?php echo $competitionTeam->teamId ?>" value="<?php if (isset($competitionTeam->teamInfo->contactno)) echo $competitionTeam->teamInfo->contactno ?>" />
-                        </div>
-                      </div>
-                      <div class="form-group">
-                        <label class="form-label" for="contactemail[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]"><?php _e( 'Contact Email', 'racketmanager') ?></label>
-                        <div class="input">
-                          <input type="email" class="form-control" name="contactemail[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]" id="contactemail-<?php echo $competition->id ?>-<?php echo $competitionTeam->teamId ?>" value="<?php if (isset($competitionTeam->teamInfo->contactemail)) echo $competitionTeam->teamInfo->contactemail ?>" />
-                        </div>
-                      </div>
+                    </div>
+                    <div class="form-floating mb-3">
+                      <input type="email" class="form-control" name="contactemail[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]" id="contactemail-<?php echo $competition->id ?>-<?php echo $competitionTeam->teamId ?>" value="<?php if (isset($competitionTeam->teamInfo->contactemail)) echo $competitionTeam->teamInfo->contactemail ?>" />
+                      <label class="form-label" for="contactemail[<?php echo $competition->id ?>][<?php echo $competitionTeam->teamId ?>]"><?php _e( 'Contact Email', 'racketmanager') ?></label>
                     </div>
                   </div>
                 <?php } ?>
@@ -102,14 +98,6 @@ $matchdays = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satu
             <?php } ?>
           </div>
         </fieldset>
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="numCourtsAvailable">
-          <?php _e('How many courts are available for league matches?', 'racketmanager') ?>
-        </label>
-        <div class="input">
-          <input type="number" id="numCourtsAvailable" name="numCourtsAvailable" />
-        </div>
       </div>
       <div>
         <h3>Notes</h3>
@@ -126,7 +114,7 @@ $matchdays = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satu
           </ul>
         </ol>
       </div>
-      <div class="form-checkboxes">
+      <div class="form-checkboxes mb-3">
         <div class="form-checkboxes__item">
           <input class="form-checkboxes__input" id="acceptance" name="acceptance" type="checkbox">
           <label class="form-label form-checkboxes__label" for="acceptance">
@@ -139,7 +127,7 @@ $matchdays = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satu
         <input type="hidden" name="affiliatedClub" id="affiliatedClub" value="<?php echo $club->id ?>" />
         <input type="hidden" name="season" value="<?php echo $season ?>" />
         <input type="hidden" name="leagueSeason" value="<?php echo $type ?>" />
-        <button class="btn" type="button" id="leagueEntrySubmit" name="leagueEntrySubmit" onclick="Racketmanager.leagueEntryRequest(this)">Enter Leagues</button>
+        <button class="btn mb-3" type="button" id="leagueEntrySubmit" name="leagueEntrySubmit" onclick="Racketmanager.leagueEntryRequest(this)">Enter Leagues</button>
         <div class="updateResponse" id="leagueEntryResponse" name="leagueEntryResponse"></div>
       </div>
     </form>

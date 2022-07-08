@@ -2015,13 +2015,18 @@ class RacketManagerAJAX extends RacketManager {
 					$contactemail = isset($contactemails[$competition->id][$teamId]) ? $contactemails[$competition->id][$teamId] : '';
 					$matchday = isset($matchdays[$competition->id][$teamId]) ? $matchdays[$competition->id][$teamId] : '';
 					$matchtime = isset($matchtimes[$competition->id][$teamId]) ? $matchtimes[$competition->id][$teamId] : '';
+					$leagueId = isset($teamCompetitionLeague[$competition->id][$teamId]) ? $teamCompetitionLeague[$competition->id][$teamId] : '';
 					$teamInfo = $competition->getTeamInfo($teamId);
 					if ( !$teamInfo ) {
 						$team_competition_id = $racketmanager->addTeamCompetition( $teamId, $competitionId, $captainId, $contactno, $contactemail, $matchday, $matchtime );
 					} else {
 						$returnMsg = $this->updateTeamCompetition($competitionId, $teamId, $captainId, $contactno, $contactemail, $matchday, $matchtime);
 					}
-					$competition->markTeamsEntered($teamId, $season);
+					if ( $leagueId ) {
+						$competition->markTeamsEntered($teamId, $season);
+					} else {
+						$competition->addTeamToCompetition($teamId, $season);
+					}
 					$leagueEntry['teamName'] = $teamCompetitionTitle;
 					$leagueEntry['captain'] = $captain;
 					$leagueEntry['contactno'] = $contactno;
@@ -2030,8 +2035,10 @@ class RacketManagerAJAX extends RacketManager {
 					$leagueEntry['matchtime'] = $matchtime;
 					$leagueEntries[] = $leagueEntry;
 				}
-				foreach ($competitionTeams as $key => $teamId) {
-					$competition->markTeamsWithdrawn($season, $affiliatedclub, $teamId);
+				foreach ($competitionTeams as $team) {
+					if ( !empty($team->leagueId) ) {
+						$competition->markTeamsWithdrawn($season, $affiliatedclub, $team->teamId);
+					}
 				}
 				$competitionEntry['teams'] = $leagueEntries;
 				$competitionDetails[] = $competitionEntry;

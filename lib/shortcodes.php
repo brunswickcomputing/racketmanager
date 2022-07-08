@@ -1367,6 +1367,20 @@ class RacketManagerShortcodes extends RacketManager {
 			} elseif ( $competition->type == 'XD' || $competition->type == 'LD' ) {
 				$competition->teams = $club->getTeams(false, 'XD');
 			}
+			$key = 0;
+			foreach ($competition->teams as $team ) {
+				$found = array_search($team->id, array_column($competition->competitionTeams, 'teamId'));
+				if ( $found !== false ) {
+					unset($competition->teams[$key]);
+				} else {
+					$competitionTeam = (object)array();
+					$competitionTeam->teamId = $team->id;
+					$competitionTeam->title = $team->title;
+					$competitionTeam->leagueId = 0;
+					$competition->competitionTeams[] = $competitionTeam;
+				}
+				$key ++;
+			}
 			$competitions[$i] = $competition;
 		}
 

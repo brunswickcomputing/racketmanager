@@ -850,6 +850,24 @@ class Competition {
 			$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_table} SET `profile` = 1 WHERE `league_id` IN (select `id` FROM {$wpdb->racketmanager} WHERE `competition_id` = '%d') AND `season` = '%s' AND `team_id` = '%d'", $this->id, $season, $team ) );
 	}
 
+	/**
+	* add team as entered into competition
+	*
+	* @param int $team Team Id
+	* @param string $season season
+	* @return none
+	*/
+	public function addTeamToCompetition( $team, $season ) {
+		global $racketmanager;
+
+		$leagues = $this->getLeagues( array('orderby' => array("title" => "DESC")));
+		$leagueId = $leagues[0]->id;
+		$rank = 99;
+		$status = 'NT';
+		$profile = 2;
+		$racketmanager->addTeamtoTable( $leagueId, $team, $season, array(), true, $rank, $status, $profile );
+	}
+
 }
 
 /**

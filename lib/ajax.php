@@ -1885,6 +1885,7 @@ class RacketManagerAJAX extends RacketManager {
 		$errorField = array();
 		$errorMsg = array();
 		$errorId = 0;
+		$courtsNeeded = array();
 
 		check_admin_referer('league-entry');
 
@@ -1955,17 +1956,29 @@ class RacketManagerAJAX extends RacketManager {
 								$errorId ++;
 							}
 						}
-						if ( empty($matchday) ) {
-							$error = true;
-							$errorField[$errorId] = 'matchday['.$competition->id.']['.$teamId.']';
-							$errorMsg[$errorId] = sprintf(__('Match day not selected for %s', '$racketmanager'), $teamCompetitionTitle);
-							$errorId ++;
-						}
 						if ( empty($matchtime) ) {
 							$error = true;
 							$errorField[$errorId] = 'matchtime['.$competition->id.']['.$teamId.']';
 							$errorMsg[$errorId] = sprintf(__('Match time not selected for %s', '$racketmanager'), $teamCompetitionTitle);
 							$errorId ++;
+						} else {
+							if ( strlen($matchtime) == 5 ) {
+								$matchtime = $matchtime.':00';
+							}
+						}
+						if ( empty($matchday) ) {
+							$error = true;
+							$errorField[$errorId] = 'matchday['.$competition->id.']['.$teamId.']';
+							$errorMsg[$errorId] = sprintf(__('Match day not selected for %s', '$racketmanager'), $teamCompetitionTitle);
+							$errorId ++;
+						} else {
+							$matchDayTime = $matchday.' '.$matchtime;
+							if ( isset($courtsNeeded[$matchDayTime]) ) {
+								$courtsNeeded[$matchDayTime]['teams'] += 1;
+								$courtsNeeded[$matchDayTime]['courts'] += $competition->num_rubbers;
+							} else {
+								$courtsNeeded[$matchDayTime] = array('teams' => 1, 'courts' => $competition->num_rubbers);
+							}
 						}
 					}
 				}
@@ -1977,6 +1990,18 @@ class RacketManagerAJAX extends RacketManager {
 			$errorField[$errorId] = 'numCourtsAvailable';
 			$errorMsg[$errorId] = __('You must agree specify the number of courts available', 'racketmanager');
 			$errorId ++;
+		} else {
+			foreach ($courtsNeeded as $matchDay => $value) {
+				$courtNeeds = $value['courts'] / $value['teams'];
+				$courtNeedsbyDay = $courtNeeds * ceil($value['teams']/2);
+				if ( $courtNeedsbyDay > $numCourtsAvailable ) {
+					$error = true;
+					$errorField[$errorId] = 'numCourtsAvailable';
+					$errorText = __('There are not enough courts available for', 'racketmanager');
+					$errorMsg[$errorId] = $errorText.' '.$matchDay;
+					$errorId ++;
+				}
+			}
 		}
 		$acceptance = isset($_POST['acceptance']) ? $_POST['acceptance'] : '';
 		if ( empty($acceptance) ) {

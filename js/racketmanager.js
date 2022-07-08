@@ -674,6 +674,7 @@ Racketmanager.tournamentEntryRequest = function(link) {
 					var $id = '#'.concat(errorField);
 					jQuery($id).parents('.form-group').addClass('field-error');
 				}
+				jQuery("#tournamentEntrySubmit").removeClass("disabled");
 				jQuery("#tournamentEntryResponse").html($message);
 			} else {
 				jQuery("#tournamentEntryResponse").show();
@@ -751,9 +752,8 @@ Racketmanager.leagueEntryRequest = function(link) {
 			var $response = jQuery.parseJSON(response);
 			var $message = $response[0];
 			var $error = $response[1];
-			var $errorMsg = $response[2];
-			var $errorField = $response[3];
 			jQuery( "#acceptance" ).prop( "checked", false );
+			jQuery("#leagueEntryResponse").show();
 			if ($error === true) {
 				jQuery("#leagueEntryResponse").addClass('message-error');
 				for ( var errorMsg of $response[2] ) {
@@ -764,8 +764,8 @@ Racketmanager.leagueEntryRequest = function(link) {
 					jQuery($id).parents('.form-group').addClass('field-error');
 				}
 				jQuery("#leagueEntryResponse").html($message);
+				jQuery("#leagueEntrySubmit").removeClass("disabled");
 			} else {
-				jQuery("#leagueEntryResponse").show();
 				jQuery("#leagueEntryResponse").addClass('message-success');
 				jQuery("#leagueEntryResponse").html($message);
 				jQuery("#leagueEntryResponse").delay(10000).fadeOut('slow');

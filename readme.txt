@@ -50,6 +50,9 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.22.1 =
+* BUGFIX: delete result checker only once per match
+
 = 6.22.0 =
 * BUGFIX: use correct colour for playdown class in striped table
 * UPDATE: remove competition id from getLeagues calls

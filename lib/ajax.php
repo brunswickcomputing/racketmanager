@@ -740,6 +740,9 @@ class RacketManagerAJAX extends RacketManager {
 		$homeTeamScore = 0;
 		$awayTeamScore = 0;
 		$players = array();
+
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_results_checker} WHERE `match_id` = %d", $match->id) );
+
 		for ($ix = 1; $ix <= $numRubbers; $ix++) {
 			$rubberId       = $_POST['id'][$ix];
 			$homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : NULL;
@@ -830,8 +833,6 @@ class RacketManagerAJAX extends RacketManager {
 
 						$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_rubbers} SET `home_points` = '%s',`away_points` = '%s',`home_player_1` = '%s',`home_player_2` = '%s',`away_player_1` = '%s',`away_player_2` = '%s',`winner_id` = '%d',`loser_id` = '%d',`custom` = '%s' WHERE `id` = '%d'", $homescore, $awayscore, $homeplayer1, $homeplayer2, $awayplayer1, $awayplayer2, $winner, $loser, maybe_serialize($custom), $rubberId));
 						$matchConfirmed = 'P';
-
-						$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_results_checker} WHERE `match_id` = %d", $match->id) );
 
 						$checkOptions = $options['checks'];
 						if ( !empty($homeplayer1) ) {
@@ -1261,7 +1262,7 @@ class RacketManagerAJAX extends RacketManager {
 						}
 						foreach ( $teamplay AS $teamNum => $played) {
 							if ($teamNum < $currTeamNum) {
-								if ($played > 2) {
+								if ($played > $options['playerLocked']) {
 									$error = sprintf(__('player is locked to team %d','racketmanager'), $teamNum);
 									$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
 								}

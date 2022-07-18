@@ -946,7 +946,7 @@ class RacketManagerShortcodes extends RacketManager {
 
 		$filename = ( !empty($template) ) ? 'entry-tournament-'.$template : 'entry-tournament';
 
-		$out = $this->loadTemplate( $filename, array( 'tournament' => $tournament, 'competitions' => $competitions, 'player' => $player, 'rosters' => $rosters, 'season' => $tournament->season, 'type' => $type, 'malePartners' => $malePartners, 'femalePartners' => $femalePartners ) );
+		$out = $this->loadTemplate( $filename, array( 'tournament' => $tournament, 'competitions' => $competitions, 'player' => $player, 'rosters' => $rosters, 'season' => $tournament->season, 'type' => $type, 'malePartners' => $malePartners, 'femalePartners' => $femalePartners ), 'entry' );
 
 		return $out;
 	}
@@ -1296,7 +1296,7 @@ class RacketManagerShortcodes extends RacketManager {
 
 		$filename = ( !empty($template) ) ? 'entry-cup-'.$template : 'entry-cup';
 
-		$out = $this->loadTemplate( $filename, array( 'club' => $club, 'competitions' => $competitions, 'ladiesTeams' => $ladiesTeams, 'mensTeams' => $mensTeams, 'mixedTeams' => $mixedTeams, 'season' => $season, 'type' => $type ) );
+		$out = $this->loadTemplate( $filename, array( 'club' => $club, 'competitions' => $competitions, 'ladiesTeams' => $ladiesTeams, 'mensTeams' => $mensTeams, 'mixedTeams' => $mixedTeams, 'season' => $season, 'type' => $type ), 'entry' );
 
 		return $out;
 	}
@@ -1386,7 +1386,7 @@ class RacketManagerShortcodes extends RacketManager {
 
 		$filename = ( !empty($template) ) ? 'entry-league-'.$template : 'entry-league';
 
-		$out = $this->loadTemplate( $filename, array( 'club' => $club, 'competitions' => $competitions, 'season' => $season, 'type' => $type ) );
+		$out = $this->loadTemplate( $filename, array( 'club' => $club, 'competitions' => $competitions, 'season' => $season, 'type' => $type ), 'entry' );
 
 		return $out;
 	}
@@ -1558,15 +1558,18 @@ class RacketManagerShortcodes extends RacketManager {
 	* @param string $type Type of content template (email, page)
 	* @return the content
 	*/
-	public function loadTemplate( $template, $vars = array(), $type = false ) {
+	public function loadTemplate( $template, $vars = array(), $templateType = false ) {
 		global $league, $team, $match, $racketmanager;
 
 		extract($vars);
 
-		if ( $type ) {
-			switch ( $type ) {
+		if ( $templateType ) {
+			switch ( $templateType ) {
 				case 'email':
 				$templateDir = 'templates/email';
+				break;
+				case 'entry':
+				$templateDir = 'templates/entry';
 				break;
 				case 'page':
 				$templateDir = 'templates/page';

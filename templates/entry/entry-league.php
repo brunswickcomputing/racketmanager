@@ -102,7 +102,7 @@ $matchdays = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satu
       <div>
         <h3>Notes</h3>
         <ol>
-          <li>See regulations 9-32 re League Rules.</li>
+          <li>See regulations 9-32 regarding League Rules.</li>
           <li>Summer leagues</li>
           <ul>
             <li>No weekend home days allowed.</li>
@@ -110,6 +110,7 @@ $matchdays = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satu
           </ul>
           <li>Winter leagues</li>
           <ul>
+            <li>Weekend matches should only be used where there are a lack of floodlights available.</li>
             <li>Please avoid weekend matches between 12:00 and 14:00.</li>
           </ul>
         </ol>

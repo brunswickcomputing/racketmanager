@@ -95,8 +95,8 @@ class RacketManager {
 	public function add_racketmanager_templates() {
 		// Add your templates to this array.
 		$this->templates = array(
-			'templates/template_notitle.php' => 'No Title',
-			'templates/template_member_account.php' => 'Member Account'
+			'templates/page_template/template_notitle.php' => 'No Title',
+			'templates/page_template/template_member_account.php' => 'Member Account'
 		);
 
 		// Add a filter to the wp 4.7 version attributes metabox

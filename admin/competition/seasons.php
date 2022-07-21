@@ -27,14 +27,14 @@
 						<div class="col-2 col-lg-1 check-column"><input type="checkbox" value="<?php echo $key ?>" name="del_season[<?php echo $key ?>]" /></div>
 						<div class="col-3 col-lg-1"><?php echo $season['name'] ?></div>
 						<div class="col-3 col-lg-1"><?php echo $season['num_match_days'] ?></div>
-						<div class="col-3 col-lg-1"><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>&amp;editseason=<?php echo $key ?>"><?php _e( 'Edit', 'racketmanager' ) ?></a></div>
+						<div class="col-3 col-lg-1"><a href="admin.php?page=racketmanager&amp;subpage=show-season&amp;competition_id=<?php echo $competition->id ?>&amp;season=<?php echo $key ?>"><?php _e( 'Edit', 'racketmanager' ) ?></a></div>
 					</div>
 				<?php } ?>
 			<?php } ?>
 		</form>
 	</div>
 
-	<h3><?php if ( !$season_id ) _e( 'Add Season', 'racketmanager' ); else _e( 'Update Season', 'racketmanager' ); ?></h3>
+	<h3><?php _e( 'Add Season', 'racketmanager' ) ?></h3>
 	<form action="" method="post"  class="form-control">
 		<?php wp_nonce_field( 'racketmanager_add-season' ) ?>
 		<input type="hidden" name="competition_id" value="<?php echo $competition_id ?>" />
@@ -61,6 +61,6 @@
 	</table>
 
 	<input type="hidden" name="season_id" value="<?php echo $season_id ?>" />
-	<input type="submit" name="saveSeason" class="btn btn-primary" value="<?php if ( !$season_id ) _e( 'Add Season', 'racketmanager' ); else _e( 'Update Season', 'racketmanager' ); ?>" />
+	<input type="submit" name="saveSeason" class="btn btn-primary" value="<?php _e( 'Add Season', 'racketmanager' ) ?>" />
 </form>
 </div>

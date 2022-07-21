@@ -374,6 +374,9 @@ final class RacketManagerAdmin extends RacketManager
 					case 'team':
 					$this->displayTeamPage();
 					break;
+					case 'show-season':
+					$this->displaySeasonPage();
+					break;
 					case 'tournament':
 					$this->displayTournamentPage();
 					break;
@@ -563,7 +566,7 @@ final class RacketManagerAdmin extends RacketManager
 					if ( empty($_POST['season_id']) ) {
 						$this->addSeasonToCompetition( htmlspecialchars($_POST['season']), intval($_POST['num_match_days']), intval($_POST['competition_id']) );
 					} else {
-						$this->editSeason( intval($_POST['season_id']), htmlspecialchars($_POST['season']), intval($_POST['num_match_days']), intval($_POST['competition_id']) );
+						$this->editSeason( intval($_POST['season_id']), intval($_POST['num_match_days']), intval($_POST['competition_id']) );
 					}
 				} else {
 					if ( isset($_GET['editseason']) ) {
@@ -1621,6 +1624,37 @@ final class RacketManagerAdmin extends RacketManager
 	}
 
 	/**
+	* display season page
+	*
+	*/
+	private function displaySeasonPage() {
+		global $racketmanager, $racketmanager_shortcodes;
+
+		if ( !current_user_can( 'edit_leagues' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.", 'racketmanager').'</p></div>';
+		} else {
+			if ( isset($_POST['saveSeason'])) {
+				if ( isset($_POST['seasonId']) ) {
+					$seasonId = $_POST['seasonId'];
+				}
+				if ( isset($_POST['matchDate'])) {
+					$matchDate = $_POST['matchDate'];
+				} else {
+					$matchDate = array();
+				}
+				$this->editSeason( intval($_POST['seasonId']), intval($_POST['num_match_days']), intval($_POST['competitionId']), $matchDate );
+				$this->printMessage();
+			} else {
+				$seasonId = htmlspecialchars($_GET['season']);
+			}
+			$competition = get_competition($_GET['competition_id']);
+			$season_data = $competition->seasons[$seasonId];
+
+			include_once( dirname(__FILE__) . '/includes/season.php' );
+		}
+	}
+
+	/**
 	* display link to settings page in plugin table
 	*
 	* @param array $links array of action links
@@ -2087,44 +2121,38 @@ final class RacketManagerAdmin extends RacketManager
 	* @param int $season_id
 	* @param string $season
 	* @param int $competition_id
+	* @param array $matchDate
 	* @return boolean
 	*/
-	private function editSeason( $season_id, $season, $num_match_days, $competition_id ) {
+	private function editSeason( $season, $num_match_days, $competition_id, $matchDates=false ) {
 		global $racketmanager, $wpdb, $competition;
+
+		$error = false;
 
 		if ( !current_user_can('edit_seasons') ) {
 			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
 			return false;
 		}
 
-		$competition = get_competition($competition_id);
-		$season_id = htmlspecialchars($season_id);
-		$leagues = $competition->getLeagues();
-		foreach ( $leagues AS $league ) {
-			$league = get_league($league);
-			if ( $teams = $league->getLeagueTeams( array("season" => $season_id) ) ) {
-				foreach ( $teams AS $team ) {
-					$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_table} SET `season` = '%s' WHERE `id` = '%d'", $season, $team->table_id) );
-				}
-			}
-			if ( $matches = $league->getMatches( array("season" => $season_id, "limit" => false) ) ) {
-				foreach ( $matches AS $match ) {
-					$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `season` = '%s' WHERE `id` = '%d'", $season, $match->id) );
+		if ( $matchDates ) {
+			foreach ($matchDates as $matchDate) {
+				if (empty($matchDate)) {
+					$this->setMessage( __("Match date not set", 'racketmanager'), true );
+					$error = true;
 				}
 			}
 		}
 
-		// unset broken season, due to delete bug
-		if ( $season_id && $season_id != $season )
-		unset($competition->seasons[$season_id]);
+		if ( !$error ) {
+			$competition = get_competition($competition_id);
 
-		$competition->seasons[$season] = array( 'name' => $season, 'num_match_days' => $num_match_days );
-		ksort($competition->seasons);
-		$this->saveCompetitionSeasons($competition->seasons, $competition->id);
+			$competition->seasons[$season] = array( 'name' => $season, 'num_match_days' => $num_match_days, 'matchDates' => $matchDates );
+			ksort($competition->seasons);
+			$this->saveCompetitionSeasons($competition->seasons, $competition->id);
 
-		$this->setMessage( sprintf(__('Season <strong>%s</strong> saved','racketmanager'), $season ) );
-
-		return true;
+			$this->setMessage( sprintf(__('Season <strong>%s</strong> saved','racketmanager'), $season ) );
+		}
+		return;
 	}
 
 	/**

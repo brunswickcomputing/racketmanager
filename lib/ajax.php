@@ -758,8 +758,8 @@ class RacketManagerAJAX extends RacketManager {
 			$validateMatch = true;
 			$playoff = false;
 
-			if (isset($match->league->scoring) && $match->league->scoring == 'TP') {
-				if ( $ix == $numRubbers - 1 ) {
+			if (isset($match->league->scoring) && ($match->league->scoring == 'TP' || $match->league->scoring == 'MP')) {
+				if ( $ix == $numRubbers ) {
 					if ( $homeTeamScore != $awayTeamScore ) {
 						$validateMatch = false;
 					} else {
@@ -797,7 +797,7 @@ class RacketManagerAJAX extends RacketManager {
 						}
 					}
 				}
-				$rubberNumber = $ix + 1;
+				$rubberNumber = $ix;
 				$matchValidate = $this->validateMatchScore($match, $custom, $setPrefix, $errMsg, $errField, $rubberNumber);
 				$error = $matchValidate[0];
 				$errMsg = $matchValidate[1];
@@ -898,8 +898,13 @@ class RacketManagerAJAX extends RacketManager {
 					}
 				}
 			} elseif ( $scoring == 'MP' ) {
-				$setType = 'matchtiebreak';
+				if ( $s == $match->league->num_sets ) {
+					$setType = 'matchtiebreak';
+				} else {
+					$setType = 'tiebreak';
+				}
 				if ( $rubberNumber && $rubberNumber == $match->league->num_rubbers ) {
+					$setType = 'matchtiebreak';
 					if ( $s != 1 ) {
 						$setType = 'null';
 					}

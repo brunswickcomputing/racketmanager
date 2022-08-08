@@ -1,3 +1,4 @@
+<?php debug_to_console($season_data); ?>
 <div class="container">
   <div class="row justify-content-end">
     <div class="col-auto racketmanager_breadcrumb">
@@ -10,6 +11,19 @@
 		<div class="form-floating mb-3">
 			<input type="number" class="form-control" min="1" step="1" name="num_match_days" id="num_match_days" value="<?php echo $season_data['num_match_days'] ?>" size="2" />
 			<label for="num_match_days"><?php if ($competition->is_championship) { _e( 'Number of rounds', 'racketmanager' ); } else { _e( 'Number of match days', 'racketmanager' ); } ?></label>
+		</div>
+    <div class="form-control mb-3">
+      <div class="mb-1">
+        <label class="form-check-label"><?php _e( 'Fixtures', 'racketmanager' ) ?></label>
+      </div>
+      <div class="form-check form-check-inline">
+  			<input type="radio" class="form-check-input" name="homeAway" id="homeAwayTrue" value="true" <?php if (isset($season_data['homeAway'])) { echo ($season_data['homeAway'] == 'true') ? 'checked' : ''; } else { echo 'checked'; } ?> />
+  			<label class="form-check-label" for="homeAwayTrue"><?php _e( 'Home and Away', 'racketmanager' ) ?></label>
+  		</div>
+      <div class="form-check form-check-inline">
+  			<input type="radio" class="form-check-input" name="homeAway" id="homeAwayFalse" value="false" <?php if (isset($season_data['homeAway'])) { echo ($season_data['homeAway'] == 'false') ? ' checked' : ''; } ?> />
+  			<label class="form-check-label" for="homeAwayFalse"><?php _e( 'Home only', 'racketmanager' ) ?></label>
+      </div>
 		</div>
 
     <?php for ($i=0; $i < $season_data['num_match_days'] ; $i++) { ?>

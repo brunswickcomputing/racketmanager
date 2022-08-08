@@ -545,7 +545,7 @@ final class RacketManagerAdmin extends RacketManager
 			$league_id = false;
 			$league_title = "";
 			$season_id = false;
-			$season_data = array('name' => '', 'num_match_days' => '');
+			$season_data = array('name' => '', 'num_match_days' => '', 'homeAndAway' => '');
 			$club_id = 0;
 
 			if ( isset($_POST['addLeague']) && !isset($_POST['deleteit']) ) {
@@ -1642,7 +1642,12 @@ final class RacketManagerAdmin extends RacketManager
 				} else {
 					$matchDate = array();
 				}
-				$this->editSeason( intval($_POST['seasonId']), intval($_POST['num_match_days']), intval($_POST['competitionId']), $matchDate );
+				if ( isset($_POST['homeAway'])) {
+					$homeAway = $_POST['homeAway'];
+				} else {
+					$homeAway = true;
+				}
+				$this->editSeason( intval($_POST['seasonId']), intval($_POST['num_match_days']), intval($_POST['competitionId']), $matchDate, $homeAway );
 				$this->printMessage();
 			} else {
 				$seasonId = htmlspecialchars($_GET['season']);
@@ -2122,9 +2127,10 @@ final class RacketManagerAdmin extends RacketManager
 	* @param string $season
 	* @param int $competition_id
 	* @param array $matchDate
+	* @param boolean $homeAway
 	* @return boolean
 	*/
-	private function editSeason( $season, $num_match_days, $competition_id, $matchDates=false ) {
+	private function editSeason( $season, $num_match_days, $competition_id, $matchDates=false, $homeAway=true ) {
 		global $racketmanager, $wpdb, $competition;
 
 		$error = false;
@@ -2146,7 +2152,7 @@ final class RacketManagerAdmin extends RacketManager
 		if ( !$error ) {
 			$competition = get_competition($competition_id);
 
-			$competition->seasons[$season] = array( 'name' => $season, 'num_match_days' => $num_match_days, 'matchDates' => $matchDates );
+			$competition->seasons[$season] = array( 'name' => $season, 'num_match_days' => $num_match_days, 'matchDates' => $matchDates, 'homeAway' => $homeAway );
 			ksort($competition->seasons);
 			$this->saveCompetitionSeasons($competition->seasons, $competition->id);
 

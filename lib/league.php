@@ -283,14 +283,14 @@ class League {
 	*
 	* @var array
 	*/
-	private $team_query_args = array( 'limit' => false, 'group' => '', 'season' => '', 'rank' => 0, 'orderby' => array("rank" => "ASC"), "home" => false, 'ids' => array(), 'cache' => true, 'reset_query_args' => false );
+	private $team_query_args = array( 'limit' => false, 'group' => '', 'season' => '', 'rank' => 0, 'orderby' => array("rank" => "ASC"), "home" => false, 'ids' => array(), 'cache' => true, 'reset_query_args' => false, 'getDetails' => false );
 
 	/**
 	* team query argument types
 	*
 	* @var array
 	*/
-	private $team_query_args_types = array( 'limit' => 'numeric', 'group' => 'string', 'season' => 'string', 'rank' => 'numeric', 'orderby' => 'array', 'home' => 'boolean', 'ids' => 'array_numeric', 'cache' => 'boolean', 'reset_query_args' => 'boolean' );
+	private $team_query_args_types = array( 'limit' => 'numeric', 'group' => 'string', 'season' => 'string', 'rank' => 'numeric', 'orderby' => 'array', 'home' => 'boolean', 'ids' => 'array_numeric', 'cache' => 'boolean', 'reset_query_args' => 'boolean', 'getDetails' => 'boolean' );
 
 	/**
 	* match query arguments
@@ -1054,6 +1054,11 @@ public function getLeagueTeams( $query_args = array() ) {
 		if ( 1 == $team->home ) $team->title = '<strong>'.$team->title.'</strong>';
 
 		$team->pointsFormatted = array( 'primary' => sprintf($this->point_format, $team->points_plus, $team->points_minus), 'secondary' => sprintf($this->point_format2, $team->points2_plus, $team->points2_minus) );
+		if ( $getDetails ) {
+			$teamDtls = $this->getTeamDtls($team->id);
+			$team->match_day = $teamDtls->match_day;
+			$team->match_time = $teamDtls->match_time;
+		}
 
 		$team_index[$team->id] = $i;
 		$teams[$i] = $team;

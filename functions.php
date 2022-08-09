@@ -383,4 +383,29 @@ function get_matchTitle($match) {
   return $matchTitle;
 }
 
+/**
+* get day code
+*
+* @param string $matchDay match dat text
+* return day number
+*/
+function getMatchDay($matchDay) {
+  if ( $matchDay == 'Monday' ) {
+    $day = 0;
+  } elseif ( $matchDay == 'Tuesday' ) {
+    $day = 1;
+  } elseif ( $matchDay == 'Wednesday' ) {
+    $day = 2;
+  } elseif ( $matchDay == 'Thursday' ) {
+    $day = 3;
+  } elseif ( $matchDay == 'Friday' ) {
+    $day = 4;
+  } elseif ( $matchDay == 'Saturday' ) {
+    $day = 5;
+  } elseif ( $matchDay == 'Sunday' ) {
+    $day = 6;
+  }
+  return $day;
+}
+
 ?>

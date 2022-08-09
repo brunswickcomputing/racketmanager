@@ -1641,7 +1641,11 @@ class RacketManager {
 		$match_args = array_merge($defaults, (array)$match_args);
 		extract($match_args, EXTR_SKIP);
 
-		$sql = "SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(`date`, '%e') AS day, DATE_FORMAT(`date`, '%c') AS month, DATE_FORMAT(`date`, '%Y') AS year, DATE_FORMAT(`date`, '%H') AS `hour`, DATE_FORMAT(`date`, '%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `confirmed`, `home_captain`, `away_captain`, `comments` FROM {$wpdb->racketmanager_matches} WHERE 1 = 1";
+		if ( $count ) {
+			$sql = "SELECT COUNT(*) FROM {$wpdb->racketmanager_matches} WHERE 1 = 1";
+		} else {
+			$sql = "SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(`date`, '%e') AS day, DATE_FORMAT(`date`, '%c') AS month, DATE_FORMAT(`date`, '%Y') AS year, DATE_FORMAT(`date`, '%H') AS `hour`, DATE_FORMAT(`date`, '%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `confirmed`, `home_captain`, `away_captain`, `comments` FROM {$wpdb->racketmanager_matches} WHERE 1 = 1";
+		}
 
 		if ( $match_date ) {
 			$sql .= " AND DATEDIFF('". htmlspecialchars(strip_tags($match_date))."', `date`) = 0";
@@ -1707,35 +1711,40 @@ class RacketManager {
 		if ( $matchDay && intval($matchDay) > 0 ) {
 			$sql .= " AND `match_day` = ".$matchDay." ";
 		}
-		$orderby_string = "";
-		$i = 0;
-		foreach ($orderby AS $order => $direction) {
-			$orderby_string .= "`".$order."` ".$direction;
-			if ($i < (count($orderby)-1)) {
-				$orderby_string .= ",";
-			}
-			$i++;
-		}
-		$sql .= " ORDER BY ".$orderby_string;
 
-		// get matches
-		$matches = $wpdb->get_results($sql);
-		$class = '';
-
-		foreach ( $matches AS $i => $match ) {
-
-			$class = ( 'alternate' == $class ) ? '' : 'alternate';
-			$match = get_match($match);
-			if ( $match->final_round == 'final' ) {
-				if ( !is_numeric($match->home_team) ) {
-					$match->prevHomeMatch = $this->getPrevRoundMatches($match->home_team, $match->season, $match->league);
+		if ( $count ) {
+			$matches = intval($wpdb->get_var($sql));
+		} else {
+			$orderby_string = "";
+			$i = 0;
+			foreach ($orderby AS $order => $direction) {
+				$orderby_string .= "`".$order."` ".$direction;
+				if ($i < (count($orderby)-1)) {
+					$orderby_string .= ",";
 				}
-				if ( !is_numeric($match->away_team) ) {
-					$match->prevAwayMatch = $this->getPrevRoundMatches($match->away_team, $match->season, $match->league);
-				}
+				$i++;
 			}
-			$match->class = $class;
-			$matches[$i] = $match;
+			$sql .= " ORDER BY ".$orderby_string;
+
+			// get matches
+			$matches = $wpdb->get_results($sql);
+			$class = '';
+
+			foreach ( $matches AS $i => $match ) {
+
+				$class = ( 'alternate' == $class ) ? '' : 'alternate';
+				$match = get_match($match);
+				if ( $match->final_round == 'final' ) {
+					if ( !is_numeric($match->home_team) ) {
+						$match->prevHomeMatch = $this->getPrevRoundMatches($match->home_team, $match->season, $match->league);
+					}
+					if ( !is_numeric($match->away_team) ) {
+						$match->prevAwayMatch = $this->getPrevRoundMatches($match->away_team, $match->season, $match->league);
+					}
+				}
+				$match->class = $class;
+				$matches[$i] = $match;
+			}
 		}
 
 		return $matches;

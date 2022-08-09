@@ -897,12 +897,6 @@ class League {
 		));
 
 		if ( $page_links && is_admin() ) {
-			/*$page_links = sprintf( '<span class="displaying-num">' . __( 'Displaying %s-%s of %s', 'racketmanager' ) . '</span>',
-			number_format_i18n( ( $current_page - 1 ) * $per_page + 1 ),
-			number_format_i18n( min( $current_page * $per_page,  $num_items ) ),
-			number_format_i18n(  $num_items ),
-			$page_links
-		);*/
 		$page_links = sprintf( '<span class="displaying-num">' . __( '%s Matches', 'racketmanager' ) . '</span>%s',
 		number_format_i18n(  $num_items ),
 		$page_links
@@ -1071,7 +1065,6 @@ public function getLeagueTeams( $query_args = array() ) {
 
 	// reset team query args
 	if ($reset_query_args === true) {
-		//$this->team_query_args = $old_query_args;
 		foreach ($old_query_args AS $key => $query_arg)
 		$this->setTeamQueryArg($key, $query_arg, true);
 
@@ -1092,7 +1085,6 @@ public function getLeagueTeam( $team_id ) {
 		return $this->teams[$this->team_index[$team_id]];
 	} else {
 		return $this->getTeamDtls($team_id);
-		//            return get_leagueTeam($team_id);
 	}
 }
 

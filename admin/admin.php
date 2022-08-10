@@ -127,6 +127,17 @@ final class RacketManagerAdmin extends RacketManager
 
 		$page = add_submenu_page(
 			'racketmanager'
+			, __('Schedule', 'racketmanager')
+			, __('Schedule','racketmanager')
+			,'racket_manager'
+			, 'racketmanager-schedule'
+			, array(&$this, 'display')
+		);
+		add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+		add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+
+		$page = add_submenu_page(
+			'racketmanager'
 			, __('Administration', 'racketmanager')
 			, __('Administration','racketmanager')
 			,'racketmanager_settings'
@@ -357,6 +368,9 @@ final class RacketManagerAdmin extends RacketManager
 			break;
 			case 'racketmanager-documentation':
 			include_once( dirname(__FILE__) . '/documentation.php' );
+			break;
+			case 'racketmanager-schedule':
+			$this->displaySchedulePage();
 			break;
 			case 'racketmanager':
 			default:
@@ -1660,6 +1674,46 @@ final class RacketManagerAdmin extends RacketManager
 	}
 
 	/**
+	* display schedule page
+	*
+	*/
+	private function displaySchedulePage() {
+		global $racketmanager, $racketmanager_shortcodes;
+
+		if ( !current_user_can( 'edit_leagues' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.", 'racketmanager').'</p></div>';
+		} else {
+			if ( isset($_POST['doScheduleCompetitions']) ) {
+				$schedule = $this->scheduleLeagueMatches( $_POST['competition'] );
+				$this->printMessage();
+			} elseif ( isset($_POST['doDeleteCompetitionMatches']) ) {
+				debug_to_console($_POST);
+				foreach ($_POST['competition'] as $competitionId) {
+					$this->deleteCompetitionMatches($competitionId);
+				}
+				$this->printMessage();
+			}
+			$competitions = $racketmanager->getCompetitions( array('type' => 'league') );
+			include_once( dirname(__FILE__) . '/show-schedule.php' );
+		}
+	}
+
+	private function deleteCompetitionMatches($competition) {
+		global $wpdb;
+
+		$competition = get_competition($competition);
+		$season = $competition->getSeason();
+		$leagues = $competition->getLeagues();
+		foreach ($leagues as $league) {
+			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` IN ( SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` = %d AND `season` = %d)", $league->id, $season) );
+			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `league_id` = %d AND `season`= %d", $league->id, $season) );
+
+		}
+		$this->setMessage( __('Matches deleted', 'racketmanager') );
+		return true;
+	}
+
+	/**
 	* display link to settings page in plugin table
 	*
 	* @param array $links array of action links
@@ -2886,7 +2940,7 @@ final class RacketManagerAdmin extends RacketManager
 	* @param array $num_rubbers
 	* @return int | false
 	*/
-	private function addMatch( $date, $home_team, $away_team, $match_day, $location, $league_id, $season, $group, $final, $custom, $num_rubbers = 0  ) {
+	public function addMatch( $date, $home_team, $away_team, $match_day, $location, $league_id, $season, $group = '', $final = '', $custom = array(), $num_rubbers = 0  ) {
 		global $wpdb;
 
 		if ( !current_user_can('edit_matches') ) {
@@ -2897,9 +2951,9 @@ final class RacketManagerAdmin extends RacketManager
 		$sql = "INSERT INTO {$wpdb->racketmanager_matches} (date, home_team, away_team, match_day, location, league_id, season, final, custom, `group`) VALUES ('%s', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s')";
 		$wpdb->query ( $wpdb->prepare ( $sql, $date, $home_team, $away_team, $match_day, $location, $league_id, $season, $final, maybe_serialize($custom), $group ) );
 		$match_id = $wpdb->insert_id;
-		if ($num_rubbers > 1) {
-			$league = get_league($league_id);
-			for ($ix = 1; $ix <= $num_rubbers; $ix++) {
+		$league = get_league($league_id);
+		if ($league->num_rubbers > 1) {
+			for ($ix = 1; $ix <= $league->num_rubbers; $ix++) {
 				$type = $league->competition_type;
 				if ( $league->competition_type == 'MD' ) {
 					$type = 'MD';
@@ -3921,6 +3975,159 @@ final class RacketManagerAdmin extends RacketManager
 			$this->setMessage( __('Email sent to captains', 'racketmanager') );
 		}
 		return true;
+	}
+
+	/**
+	* get latest season
+	*
+	* @return int
+	*/
+	public function getLatestSeason() {
+		global $wpdb;
+
+		$season = $wpdb->get_var( "SELECT MAX(name) FROM {$wpdb->racketmanager_seasons}" );
+		return $season;
+	}
+
+	/**
+	* schedule league matches
+	*
+	* @param array $competitions
+	* @return void
+	*/
+	private function scheduleLeagueMatches($competitions) {
+		global $wpdb, $racketmanager;
+
+		$error = false;
+
+		$result = $this->balanceSchedule($competitions);
+
+		if ( $result ) {
+			foreach ($competitions as $competitionId) {
+				$competition = get_competition($competitionId);
+				foreach ($competition->getLeagues() as $league) {
+					$league = get_league($league);
+					$league->scheduleMatches();
+				}
+			}
+			$this->setMessage(__('Matches scheduled', 'racketmanager'));
+		}
+		return;
+	}
+
+	/**
+	* balance schedule by team
+	*
+	* @param array $competitions
+	* @return boolean $success
+	*/
+	private function balanceSchedule($competitions) {
+		global $wpdb, $racketmanager;
+
+		$competition = get_competition(reset($competitions));
+		$numRounds = $competition->current_season['num_match_days'];
+		$homeAway = isset($competition->current_season['homeAway']) ? $competition->current_season['homeAway'] : 'true' ;
+		if ( $homeAway ) {
+			$numRounds = $numRounds / 2;
+		}
+		$numTeamsMax = $numRounds + 1;
+		$defaultRefs = array();
+		for ($i=1; $i <= $numTeamsMax ; $i++) {
+			$defaultRefs[] = $i;
+		}
+
+		$success = true;
+		$competitionIds = implode(',',$competitions);
+		$season = $this->getLatestSeason();
+
+		/* clear out schedule keys for this run */
+		$wpdb->query( "UPDATE {$wpdb->racketmanager_table} SET `group` = '' WHERE `season` = $season AND `league_id` IN (SELECT `id` FROM {$wpdb->racketmanager} WHERE `competition_id` IN ($competitionIds))" );
+
+		/* find all clubs with multiple matches at the same time */
+		$sql = "SELECT `t`.`affiliatedclub`, `tc`.`match_day`, `tc`.`match_time` FROM {$wpdb->racketmanager_team_competition} tc, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} tbl WHERE tc.`team_id` = t.`id` AND tc.`competition_id` = l.`competition_id` AND l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND tc.`competition_id` in (".$competitionIds.") AND tbl.`season` = $season GROUP BY t.`affiliatedclub`, tc.`match_day`, tc.`match_time` HAVING COUNT(*) > 1";
+		$competitionTeams = $wpdb->get_results( $sql );
+		/* for each club / match time combination balance schedule so one team is home while the other is away */
+		foreach ($competitionTeams as $competitionTeam) {
+			$sql = "SELECT tbl.`id`, tbl.`team_id`, tbl.`league_id` FROM {$wpdb->racketmanager_team_competition} tc, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} tbl WHERE tc.`team_id` = t.`id` AND tc.`competition_id` = l.`competition_id` AND l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND tc.`competition_id` in (".$competitionIds.") AND tbl.`season` = ".$season." AND t.`affiliatedclub` = ".$competitionTeam->affiliatedclub." AND tc.`match_day` = '".$competitionTeam->match_day."' AND tc.`match_time` = '".$competitionTeam->match_time."' ORDER BY tbl.`team_id`";
+			$teams = $wpdb->get_results( $sql );
+			$counter = 1;
+			foreach ($teams as $team) {
+				/* for first of pair */
+				if ( $counter & 1 ) {
+					$team1 = $team->team_id;
+					$table1 = $team->id;
+					$league1 = $team->league_id;
+					$refs = $defaultRefs;
+					$altRefs = $refs;
+					$groups = $this->getTableGroups($league1, $season);
+					if ( $groups ) {
+						foreach ($groups as $group) {
+							$ref = array_search($group->value, $refs);
+							array_splice($refs, $ref, 1);
+						}
+					}
+				} else {
+					/* for second of pair */
+					$team2 = $team->team_id;
+					$table2 = $team->id;
+					$league2 = $team->league_id;
+					$groups = $this->getTableGroups($league2, $season);
+					if ( $groups ) {
+						foreach ($groups as $group) {
+							$ref = array_search($group->value, $altRefs);
+							array_splice($altRefs, $ref, 1);
+						}
+					}
+					if ( $refs ) {
+						for ($i=0; $i < count($refs) ; $i++) {
+							$ref = $refs[$i];
+							$altRef = $ref + $numTeamsMax / 2;
+							if ( $altRef > $numTeamsMax ) {
+								$altRef = $altRef - $numTeamsMax;
+							}
+							$altFound = array_search($altRef, $altRefs);
+							if ( $altFound !== false ) {
+								$this->setTableGroup($ref, $table1);
+								$this->setTableGroup($altRef, $table2);
+								break;
+							}
+						}
+					} else {
+						$success = false;
+						$this->setMessage( sprintf(__('Error in scheduling league %d for team %d','racketmanager'), $league1, $team1), true );
+					}
+				}
+				$counter ++;
+			}
+		}
+		return $success;
+	}
+
+	/**
+	* set table group
+	*
+	* @param string $group
+	* @param integer $id
+	* @return null
+	*/
+	public function setTableGroup($group, $id) {
+		global $wpdb;
+
+		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_table} SET `group` = '%s' WHERE `id` = %d", $group, $id ) );
+	}
+
+	/**
+	* set get table groups
+	*
+	* @param integer $league
+	* @param integer $season
+	* @return array $groups
+	*/
+	private function getTableGroups($league, $season) {
+		global $wpdb;
+
+		$groups = $wpdb->get_results( "SELECT `group` as `value` FROM {$wpdb->racketmanager_table} WHERE `league_id` = $league AND `season` = $season AND `group` != ''");
+		return $groups;
 	}
 
 }

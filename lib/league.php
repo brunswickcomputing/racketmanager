@@ -2519,6 +2519,177 @@ public function importTeams( $custom, $line, $col ) {
 	return $custom;
 }
 
+	public function scheduleMatches() {
+		global $racketmanager;
+
+		$season = $this->getSeason();
+		$scheduleTeams = $this->getLeagueTeams(array('season' => $season, 'orderby' => array('group' => 'ASC', 'title' => 'ASC')));
+		$this->numRounds = $this->current_season['num_match_days'];
+		$this->homeAway = isset($this->current_season['homeAway']) ? $this->current_season['homeAway'] : 'true' ;
+		if ( $this->homeAway ) {
+			$this->numRounds = $this->numRounds / 2;
+		}
+		$this->numTeamsMax = $this->numRounds + 1;
+		$refs = array();
+		for ($i=1; $i <= $this->numTeamsMax ; $i++) {
+			$refs[] = $i;
+		}
+		foreach ($scheduleTeams as $team) {
+			if ( $team->group ) {
+				$ref = array_search($team->group, $refs);
+				array_splice($refs, $ref, 1);
+			}
+		}
+		foreach ($scheduleTeams as $team) {
+			if ( !$team->group ) {
+				$group = $refs[0];
+				$racketmanager->setTableGroup($group, $team->table_id);
+				array_splice($refs, 0, 1);
+			}
+		}
+
+		$scheduleTeams = $this->getLeagueTeams(array('season' => $season, 'getDetails' => true, 'cache' => false, 'orderby' => array('group' => 'ASC', 'title' => 'ASC')));
+		if ( $scheduleTeams ) {
+			if ( $refs ) {
+				foreach ($refs as $ref) {
+					$team = array('id' => -1, 'title' => __('Bye', 'racketmanager'), 'group' => $ref);
+					$scheduleTeams[] = (object)$team;
+				}
+			}
+			$this->createSchedule($scheduleTeams);
+		}
+	}
+
+	public function createSchedule($teams) {
+		$season = $this->current_season['name'];
+		$matchDates = $this->current_season['matchDates'];
+		$numTeams = count($teams);
+		$numRounds = $this->current_season['num_match_days'];
+		$homeAway = isset($this->current_season['homeAway']) ? $this->current_season['homeAway'] : 'true' ;
+		if ( $homeAway ) {
+			$numRounds = $numRounds / 2;
+		}
+		if ( $numTeams & 1 ) {
+			$numTeams = $numTeams + 1;
+		}
+		$numFixturesPerRound = $numTeams / 2;
+		$rounds = array();
+		for ($i=0; $i < $numRounds; $i++) {
+			$rounds[$i] = array('fixtures' => array());
+			for ($x=0; $x < $numFixturesPerRound ; $x++) {
+				$rounds[$i]['fixtures'][$x] = array();
+			}
+		}
+		$rounds = $this->makeFirstRow($rounds, $numTeams, $numRounds, $numFixturesPerRound, $homeAway);
+		$rounds = $this->makeOtherRows($rounds, $numTeams, $numRounds, $numFixturesPerRound, $homeAway);
+		$this->createMatchSchedule($rounds, $teams, $matchDates, $season);
+
+	}
+
+	public function makeFirstRow($rounds, $numTeams, $numRounds, $numFixturesPerRound, $homeAway) {
+    $counterFirstHalf = 0;
+    $counterSecondHalf = 1;
+
+    for ($i=1; $i <= $numRounds; $i++) {
+      if ( $i <= $numFixturesPerRound ) {
+        $rounds[$counterFirstHalf]['fixtures'][0]['home'] = $i;
+        $rounds[$counterFirstHalf]['fixtures'][0]['away'] = $numTeams;
+        if ($homeAway) {
+          $rounds[$counterFirstHalf+$numRounds]['fixtures'][0]['home'] = $numTeams;
+          $rounds[$counterFirstHalf+$numRounds]['fixtures'][0]['away'] = $i;
+        }
+        $counterFirstHalf += 2;
+      } elseif ( $i > $numFixturesPerRound && $i != $numTeams ) {
+        $rounds[$counterSecondHalf]['fixtures'][0]['home'] = $numTeams;
+        $rounds[$counterSecondHalf]['fixtures'][0]['away'] = $i;
+        if ($homeAway) {
+          $rounds[$counterSecondHalf+$numRounds]['fixtures'][0]['home'] = $i;
+          $rounds[$counterSecondHalf+$numRounds]['fixtures'][0]['away'] = $numTeams;
+        }
+        $counterSecondHalf += 2;
+      }
+    }
+		return $rounds;
+  }
+
+  public function makeOtherRows($rounds, $numTeams, $numRounds, $numFixturesPerRound, $homeAway) {
+    $left = 2;
+    $right = $numRounds;
+
+    for ($c=0; $c < $numRounds; $c++) {
+      for ($r=1; $r < $numFixturesPerRound ; $r++) {
+        $rounds[$c]['fixtures'][$r]['home'] = $left;
+        $rounds[$c]['fixtures'][$r]['away'] = $right;
+        if ($homeAway) {
+          $rounds[$c+$numRounds]['fixtures'][$r]['home'] = $right;
+          $rounds[$c+$numRounds]['fixtures'][$r]['away'] = $left;
+        }
+        $right = $this->rightDecrement($right, $numRounds);
+        if ( $r < $numFixturesPerRound - 1) {
+          $left = $this->leftDecrement($left, $numRounds);
+        } elseif ( $r == $numFixturesPerRound - 1) {
+          $left = $this->leftDecrementForLastColumn($left, $numTeams);
+        }
+      }
+    }
+		return $rounds;
+  }
+
+  public function leftDecrement($col, $numRounds) {
+    if ( $col < $numRounds) {
+      return $col + 1;
+    } elseif ( $col == $numRounds) {
+      return 1;
+    }
+  }
+
+  public function rightDecrement($col, $numRounds) {
+    if ( $col > 1) {
+      return $col - 1;
+    } elseif ( $col == 1 ) {
+      return $numRounds;
+    }
+  }
+
+  public function leftDecrementForLastColumn($col, $numTeams) {
+    if ( $col <= $numTeams - 3 ) {
+      return $col + 2;
+    } elseif ( $col == $numTeams - 2 ) {
+      return 1;
+    } elseif ( $col == $numTeams - 1 ) {
+      return 2;
+    }
+  }
+
+	public function createMatchSchedule($rounds, $teams, $matchDates, $season) {
+    global $racketmanager;
+
+    for ($i=0; $i < count($rounds) ; $i++) {
+      $roundNumber = $i + 1;
+      $startDate = $matchDates[$i];
+      $rounds[$i]['startDate'] = $startDate;
+      $fixtures = $rounds[$i]['fixtures'];
+      $f = 0;
+      foreach ($fixtures as $fixture) {
+        $homeTeamDtls = $teams[$fixture['home'] - 1];
+        $awayTeamDtls = $teams[$fixture['away'] - 1];
+        if ( $homeTeamDtls->id != -1 && $awayTeamDtls->id != -1 ) {
+          $matchDay = $homeTeamDtls->match_day;
+          $matchTime = $homeTeamDtls->match_time;
+          $fixtures[$f]['matchDay'] = $matchDay;
+					$day = getMatchDay($matchDay);
+          $matchDate = date('Y-m-d', strtotime($startDate . " +$day day")).' '.$matchTime;
+          $fixtures[$f]['matchDate'] = $matchDate;
+          $fixtures[$f]['homeTeam'] = $homeTeamDtls;
+          $fixtures[$f]['awayTeam'] = $awayTeamDtls;
+  				$racketmanager->addMatch($matchDate, $homeTeamDtls->id, $awayTeamDtls->id, $roundNumber, $homeTeamDtls->affiliatedclubname, $this->id, $season);
+        }
+        $f ++;
+      }
+      $rounds[$i]['fixtures'] = $fixtures;
+    }
+  }
+
 }
 
 /**

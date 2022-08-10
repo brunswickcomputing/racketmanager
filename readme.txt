@@ -50,6 +50,13 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.23.0 =
+* NEW: allow scheduling of league matches
+* UPDATE: move page templates to own folder
+* UPDATE: move entry templates to own folder
+* UPDATE: separate season edit into new screen and allow matchday date setting
+* BUGFIX: fix match tie break and playoff validation
+
 = 6.22.1 =
 * BUGFIX: delete result checker only once per match
 

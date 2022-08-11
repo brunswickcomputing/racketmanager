@@ -52,6 +52,7 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 = 6.23.0 =
 * NEW: allow scheduling of league matches
+* UPDATE: handle week offset when checking court availability
 * UPDATE: move page templates to own folder
 * UPDATE: move entry templates to own folder
 * UPDATE: separate season edit into new screen and allow matchday date setting

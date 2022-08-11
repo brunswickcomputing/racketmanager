@@ -4000,7 +4000,7 @@ final class RacketManagerAdmin extends RacketManager
 
 		$error = false;
 
-		$result = $this->balanceSchedule($competitions);
+		$result = $this->validateSchedule($competitions);
 
 		if ( $result ) {
 			foreach ($competitions as $competitionId) {
@@ -4016,88 +4016,120 @@ final class RacketManagerAdmin extends RacketManager
 	}
 
 	/**
-	* balance schedule by team
+	* validate schedule by team
 	*
 	* @param array $competitions
 	* @return boolean $success
 	*/
-	private function balanceSchedule($competitions) {
+	private function validateSchedule($competitions) {
 		global $wpdb, $racketmanager;
 
-		$competition = get_competition(reset($competitions));
-		$numRounds = $competition->current_season['num_match_days'];
-		$homeAway = isset($competition->current_season['homeAway']) ? $competition->current_season['homeAway'] : 'true' ;
-		if ( $homeAway ) {
-			$numRounds = $numRounds / 2;
-		}
-		$numTeamsMax = $numRounds + 1;
-		$defaultRefs = array();
-		for ($i=1; $i <= $numTeamsMax ; $i++) {
-			$defaultRefs[] = $i;
-		}
-
 		$success = true;
-		$competitionIds = implode(',',$competitions);
-		$season = $this->getLatestSeason();
-
-		/* clear out schedule keys for this run */
-		$wpdb->query( "UPDATE {$wpdb->racketmanager_table} SET `group` = '' WHERE `season` = $season AND `league_id` IN (SELECT `id` FROM {$wpdb->racketmanager} WHERE `competition_id` IN ($competitionIds))" );
-
-		/* find all clubs with multiple matches at the same time */
-		$sql = "SELECT `t`.`affiliatedclub`, `tc`.`match_day`, `tc`.`match_time` FROM {$wpdb->racketmanager_team_competition} tc, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} tbl WHERE tc.`team_id` = t.`id` AND tc.`competition_id` = l.`competition_id` AND l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND tc.`competition_id` in (".$competitionIds.") AND tbl.`season` = $season GROUP BY t.`affiliatedclub`, tc.`match_day`, tc.`match_time` HAVING COUNT(*) > 1";
-		$competitionTeams = $wpdb->get_results( $sql );
-		/* for each club / match time combination balance schedule so one team is home while the other is away */
-		foreach ($competitionTeams as $competitionTeam) {
-			$sql = "SELECT tbl.`id`, tbl.`team_id`, tbl.`league_id` FROM {$wpdb->racketmanager_team_competition} tc, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} tbl WHERE tc.`team_id` = t.`id` AND tc.`competition_id` = l.`competition_id` AND l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND tc.`competition_id` in (".$competitionIds.") AND tbl.`season` = ".$season." AND t.`affiliatedclub` = ".$competitionTeam->affiliatedclub." AND tc.`match_day` = '".$competitionTeam->match_day."' AND tc.`match_time` = '".$competitionTeam->match_time."' ORDER BY tbl.`team_id`";
-			$teams = $wpdb->get_results( $sql );
-			$counter = 1;
-			foreach ($teams as $team) {
-				/* for first of pair */
-				if ( $counter & 1 ) {
-					$team1 = $team->team_id;
-					$table1 = $team->id;
-					$league1 = $team->league_id;
-					$refs = $defaultRefs;
-					$altRefs = $refs;
-					$groups = $this->getTableGroups($league1, $season);
-					if ( $groups ) {
-						foreach ($groups as $group) {
-							$ref = array_search($group->value, $refs);
-							array_splice($refs, $ref, 1);
-						}
+		$c = 0;
+		foreach ($competitions as $competitionId) {
+			$competition = get_competition($competitionId);
+			$season = $competition->getSeason();
+			$matchCount = $racketmanager->getMatches(array('count' => true, 'competition_id' => $competition->id, 'season' => $season));
+			if ( $matchCount != 0 ) {
+				$success = false;
+				$this->setMessage( sprintf(__('%s already has matches scheduled for %d','racketmanager'), $competition->name, $season), true );
+				break;
+			} else {
+				if ( $c == 0 ) {
+					$numMatchDays = $competition->current_season['num_match_days'];
+					if ( !isset($competition->current_season['matchDates']) ) {
+						$success = false;
+						$this->setMessage( __('Competitions match dates not set','racketmanager'), true );
+					}
+					$homeAway = isset($competition->current_season['homeAway']) ? $competition->current_season['homeAway'] : 'true' ;
+					if ( $homeAway ) {
+						$numRounds = $numMatchDays / 2;
+					} else {
+						$numRounds = $numMatchDays;
+					}
+					$numTeamsMax = $numRounds + 1;
+					$defaultRefs = array();
+					for ($i=1; $i <= $numTeamsMax ; $i++) {
+						$defaultRefs[] = $i;
 					}
 				} else {
-					/* for second of pair */
-					$team2 = $team->team_id;
-					$table2 = $team->id;
-					$league2 = $team->league_id;
-					$groups = $this->getTableGroups($league2, $season);
-					if ( $groups ) {
-						foreach ($groups as $group) {
-							$ref = array_search($group->value, $altRefs);
-							array_splice($altRefs, $ref, 1);
-						}
+					if ( $competition->current_season['num_match_days'] != $numMatchDays ) {
+						$success = false;
+						$this->setMessage( __('Competitions have different number of match days','racketmanager'), true );
 					}
-					if ( $refs ) {
-						for ($i=0; $i < count($refs) ; $i++) {
-							$ref = $refs[$i];
-							$altRef = $ref + $numTeamsMax / 2;
-							if ( $altRef > $numTeamsMax ) {
-								$altRef = $altRef - $numTeamsMax;
-							}
-							$altFound = array_search($altRef, $altRefs);
-							if ( $altFound !== false ) {
-								$this->setTableGroup($ref, $table1);
-								$this->setTableGroup($altRef, $table2);
-								break;
+					$homeAwayNew = isset($competition->current_season['homeAway']) ? $competition->current_season['homeAway'] : 'true' ;
+					if ( $homeAwayNew != $homeAway ) {
+						$success = false;
+						$this->setMessage( __('Competitions have different home / away setting','racketmanager'), true );
+					}
+				}
+			}
+			$c ++;
+		}
+
+		if ( $success ) {
+			$competitionIds = implode(',',$competitions);
+			$season = $this->getLatestSeason();
+
+			/* clear out schedule keys for this run */
+			$wpdb->query( "UPDATE {$wpdb->racketmanager_table} SET `group` = '' WHERE `season` = $season AND `league_id` IN (SELECT `id` FROM {$wpdb->racketmanager} WHERE `competition_id` IN ($competitionIds))" );
+
+			/* find all clubs with multiple matches at the same time */
+			$sql = "SELECT `t`.`affiliatedclub`, `tc`.`match_day`, `tc`.`match_time` FROM {$wpdb->racketmanager_team_competition} tc, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} tbl WHERE tc.`team_id` = t.`id` AND tc.`competition_id` = l.`competition_id` AND l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND tc.`competition_id` in (".$competitionIds.") AND tbl.`season` = $season GROUP BY t.`affiliatedclub`, tc.`match_day`, tc.`match_time` HAVING COUNT(*) > 1";
+			$competitionTeams = $wpdb->get_results( $sql );
+			/* for each club / match time combination balance schedule so one team is home while the other is away */
+			foreach ($competitionTeams as $competitionTeam) {
+				$sql = "SELECT tbl.`id`, tbl.`team_id`, tbl.`league_id` FROM {$wpdb->racketmanager_team_competition} tc, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} tbl WHERE tc.`team_id` = t.`id` AND tc.`competition_id` = l.`competition_id` AND l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND tc.`competition_id` in (".$competitionIds.") AND tbl.`season` = ".$season." AND t.`affiliatedclub` = ".$competitionTeam->affiliatedclub." AND tc.`match_day` = '".$competitionTeam->match_day."' AND tc.`match_time` = '".$competitionTeam->match_time."' ORDER BY tbl.`team_id`";
+				$teams = $wpdb->get_results( $sql );
+				$counter = 1;
+				foreach ($teams as $team) {
+					/* for first of pair */
+					if ( $counter & 1 ) {
+						$team1 = $team->team_id;
+						$table1 = $team->id;
+						$league1 = $team->league_id;
+						$refs = $defaultRefs;
+						$altRefs = $refs;
+						$groups = $this->getTableGroups($league1, $season);
+						if ( $groups ) {
+							foreach ($groups as $group) {
+								$ref = array_search($group->value, $refs);
+								array_splice($refs, $ref, 1);
 							}
 						}
 					} else {
-						$success = false;
-						$this->setMessage( sprintf(__('Error in scheduling league %d for team %d','racketmanager'), $league1, $team1), true );
+						/* for second of pair */
+						$team2 = $team->team_id;
+						$table2 = $team->id;
+						$league2 = $team->league_id;
+						$groups = $this->getTableGroups($league2, $season);
+						if ( $groups ) {
+							foreach ($groups as $group) {
+								$ref = array_search($group->value, $altRefs);
+								array_splice($altRefs, $ref, 1);
+							}
+						}
+						if ( $refs ) {
+							for ($i=0; $i < count($refs) ; $i++) {
+								$ref = $refs[$i];
+								$altRef = $ref + $numTeamsMax / 2;
+								if ( $altRef > $numTeamsMax ) {
+									$altRef = $altRef - $numTeamsMax;
+								}
+								$altFound = array_search($altRef, $altRefs);
+								if ( $altFound !== false ) {
+									$this->setTableGroup($ref, $table1);
+									$this->setTableGroup($altRef, $table2);
+									break;
+								}
+							}
+						} else {
+							$success = false;
+							$this->setMessage( sprintf(__('Error in scheduling league %d for team %d','racketmanager'), $league1, $team1), true );
+						}
 					}
+					$counter ++;
 				}
-				$counter ++;
 			}
 		}
 		return $success;

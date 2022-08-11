@@ -102,6 +102,7 @@ class Competition_Tennis extends Competition {
         $competition->num_rubbers = isset($competition->num_rubbers) ? $competition->num_rubbers : '';
         $competition->type = isset($competition->type) ? $competition->type : '';
 				$competition->scoring = isset($competition->scoring) ? $competition->scoring : 'TB';
+				$competition->offset = isset($competition->offset) ? $competition->offset : '0';
 
 				?>
 				  <div class="form-floating mb-3 col-12 col-xl-2">
@@ -134,6 +135,14 @@ class Competition_Tennis extends Competition {
 								<option value='MP' <?php echo $competition->scoring == 'MP' ? 'selected' : ''; ?>><?php _e( 'Tie break with match tie break playoff', 'racketmanager') ?></option>
 							</select>
 							<label for='scoring'><?php _e('Scoring Format', 'racketmanager') ?></label>
+				  </div>
+					<div class="form-floating mb-3 col-12 col-xl-2">
+							<select class="form-select" size='1' name='settings[offset]' id='offset'>
+							<option value='0' <?php echo ($competition->offset == '0' ? 'selected' : '') ?>><?php _e( 'Week 0', 'racketmanager') ?></option>
+							<option value='1' <?php echo ($competition->offset == '1' ? 'selected' : '') ?>><?php _e( 'Week 1', 'racketmanager') ?></option>
+							<option value='2' <?php echo ($competition->offset == '2' ? 'selected' : '') ?>><?php _e( 'Week 2', 'racketmanager') ?></option>
+							</select>
+							<label for='offset'><?php _e('Offset week', 'racketmanager') ?></label>
 				  </div>
 
 		<?php }

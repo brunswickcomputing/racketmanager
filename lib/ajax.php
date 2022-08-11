@@ -1934,6 +1934,10 @@ class RacketManagerAJAX extends RacketManager {
 			$matchtimes = isset($_POST['matchtime']) ? $_POST['matchtime'] : array();
 			foreach ($competitions AS $competitionId) {
 				$competition = get_competition($competitionId);
+				$week = isset($competition->offset) ? $competition->offset : '0';
+				if ( !isset($courtsNeeded[$week]) ) {
+					$courtsNeeded[$week] = array();
+				}
 				$teams = isset($teamCompetition[$competition->id]) ? $teamCompetition[$competition->id] : array();
 				if ( empty($teams) ) {
 					$error = true;
@@ -1979,11 +1983,11 @@ class RacketManagerAJAX extends RacketManager {
 							$errorId ++;
 						} else {
 							$matchDayTime = $matchday.' '.$matchtime;
-							if ( isset($courtsNeeded[$matchDayTime]) ) {
-								$courtsNeeded[$matchDayTime]['teams'] += 1;
-								$courtsNeeded[$matchDayTime]['courts'] += $competition->num_rubbers;
+							if ( isset($courtsNeeded[$week][$matchDayTime]) ) {
+								$courtsNeeded[$week][$matchDayTime]['teams'] += 1;
+								$courtsNeeded[$week][$matchDayTime]['courts'] += $competition->num_rubbers;
 							} else {
-								$courtsNeeded[$matchDayTime] = array('teams' => 1, 'courts' => $competition->num_rubbers);
+								$courtsNeeded[$week][$matchDayTime] = array('teams' => 1, 'courts' => $competition->num_rubbers);
 							}
 						}
 					}
@@ -1997,15 +2001,17 @@ class RacketManagerAJAX extends RacketManager {
 			$errorMsg[$errorId] = __('You must agree specify the number of courts available', 'racketmanager');
 			$errorId ++;
 		} else {
-			foreach ($courtsNeeded as $matchDay => $value) {
-				$courtNeeds = $value['courts'] / $value['teams'];
-				$courtNeedsbyDay = $courtNeeds * ceil($value['teams']/2);
-				if ( $courtNeedsbyDay > $numCourtsAvailable ) {
-					$error = true;
-					$errorField[$errorId] = 'numCourtsAvailable';
-					$errorText = __('There are not enough courts available for', 'racketmanager');
-					$errorMsg[$errorId] = $errorText.' '.$matchDay;
-					$errorId ++;
+			foreach ($courtsNeeded as $week) {
+				foreach ( $week as $matchDay => $value) {
+					$courtNeeds = $value['courts'] / $value['teams'];
+					$courtNeedsbyDay = $courtNeeds * ceil($value['teams']/2);
+					if ( $courtNeedsbyDay > $numCourtsAvailable ) {
+						$error = true;
+						$errorField[$errorId] = 'numCourtsAvailable';
+						$errorText = __('There are not enough courts available for', 'racketmanager');
+						$errorMsg[$errorId] = $errorText.' '.$matchDay;
+						$errorId ++;
+					}
 				}
 			}
 		}

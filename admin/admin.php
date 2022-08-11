@@ -1697,21 +1697,6 @@ final class RacketManagerAdmin extends RacketManager
 		}
 	}
 
-	private function deleteCompetitionMatches($competition) {
-		global $wpdb;
-
-		$competition = get_competition($competition);
-		$season = $competition->getSeason();
-		$leagues = $competition->getLeagues();
-		foreach ($leagues as $league) {
-			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` IN ( SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` = %d AND `season` = %d)", $league->id, $season) );
-			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `league_id` = %d AND `season`= %d", $league->id, $season) );
-
-		}
-		$this->setMessage( __('Matches deleted', 'racketmanager') );
-		return true;
-	}
-
 	/**
 	* display link to settings page in plugin table
 	*
@@ -2056,6 +2041,34 @@ final class RacketManagerAdmin extends RacketManager
 		$pageName = sanitize_title_with_dashes($title);
 		$this->deleteRacketmanagerPage($pageName);
 
+	}
+
+	/**
+	* delete matches for competition
+	*
+	* @param int $competition
+	* @return boolean $success
+	*/
+	private function deleteCompetitionMatches($competition) {
+		global $wpdb, $racketmanager;
+
+		$success = true;
+		$competition = get_competition($competition);
+		$season = $competition->getSeason();
+		$matchCount = $racketmanager->getMatches(array('count' => true, 'competition_id' => $competition->id, 'season' => $season, 'time' => 'latest'));
+
+		if ( $matchCount != 0 ) {
+			$this->setMessage( __('Competition has completed matches', 'racketmanager'), true );
+			$success = false;
+		} else {
+			$leagues = $competition->getLeagues();
+			foreach ($leagues as $league) {
+				$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` IN ( SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` = %d AND `season` = %d)", $league->id, $season) );
+				$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `league_id` = %d AND `season`= %d", $league->id, $season) );
+			}
+			$this->setMessage( __('Matches deleted', 'racketmanager') );
+		}
+		return $success;
 	}
 
 	/**

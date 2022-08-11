@@ -1,4 +1,3 @@
-<?php debug_to_console($season_data); ?>
 <div class="container">
   <div class="row justify-content-end">
     <div class="col-auto racketmanager_breadcrumb">

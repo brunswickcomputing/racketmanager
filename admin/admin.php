@@ -1687,7 +1687,6 @@ final class RacketManagerAdmin extends RacketManager
 				$schedule = $this->scheduleLeagueMatches( $_POST['competition'] );
 				$this->printMessage();
 			} elseif ( isset($_POST['doDeleteCompetitionMatches']) ) {
-				debug_to_console($_POST);
 				foreach ($_POST['competition'] as $competitionId) {
 					$this->deleteCompetitionMatches($competitionId);
 				}

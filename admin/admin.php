@@ -663,6 +663,7 @@ final class RacketManagerAdmin extends RacketManager
 				}
 				$tab = 'playerstats';
 			} elseif ( isset($_GET['view']) && $_GET['view'] == 'matches' ) {
+				$tab = 'matches';
 			}
 			include_once( dirname(__FILE__) . '/show-competition.php' );
 		}
@@ -1663,7 +1664,12 @@ final class RacketManagerAdmin extends RacketManager
 				} else {
 					$homeAway = true;
 				}
-				$this->editSeason( intval($_POST['seasonId']), intval($_POST['num_match_days']), intval($_POST['competitionId']), $matchDate, $homeAway );
+				if ( isset($_POST['status'])) {
+					$status = $_POST['status'];
+				} else {
+					$status = "draft";
+				}
+				$this->editSeason( intval($_POST['seasonId']), intval($_POST['num_match_days']), intval($_POST['competitionId']), $matchDate, $homeAway, $status );
 				$this->printMessage();
 			} else {
 				$seasonId = htmlspecialchars($_GET['season']);
@@ -2196,9 +2202,10 @@ final class RacketManagerAdmin extends RacketManager
 	* @param int $competition_id
 	* @param array $matchDate
 	* @param boolean $homeAway
+	* @param string $status
 	* @return boolean
 	*/
-	private function editSeason( $season, $num_match_days, $competition_id, $matchDates=false, $homeAway=true ) {
+	private function editSeason( $season, $num_match_days, $competition_id, $matchDates=false, $homeAway=true, $status="draft" ) {
 		global $racketmanager, $wpdb, $competition;
 
 		$error = false;
@@ -2220,7 +2227,7 @@ final class RacketManagerAdmin extends RacketManager
 		if ( !$error ) {
 			$competition = get_competition($competition_id);
 
-			$competition->seasons[$season] = array( 'name' => $season, 'num_match_days' => $num_match_days, 'matchDates' => $matchDates, 'homeAway' => $homeAway );
+			$competition->seasons[$season] = array( 'name' => $season, 'num_match_days' => $num_match_days, 'matchDates' => $matchDates, 'homeAway' => $homeAway, 'status' => $status );
 			ksort($competition->seasons);
 			$this->saveCompetitionSeasons($competition->seasons, $competition->id);
 

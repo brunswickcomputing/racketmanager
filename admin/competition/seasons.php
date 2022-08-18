@@ -14,22 +14,22 @@
 
 		<div class=container>
 			<div class="row table-header">
-				<div class="col-2 col-lg-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('seaons-filter'));" /></div>
+				<div class="col-1 me-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('seaons-filter'));" /></div>
 				<div class="col-3 col-lg-1"><?php _e( 'Season', 'racketmanager' ) ?></div>
-				<div class="col-3 col-lg-1"><?php _e( 'Match Days', 'racketmanager' ) ?></div>
-				<div class="col-3 col-lg-1"><?php _e( 'Home/Away', 'racketmanager' ) ?></div>
-				<div class="col-3 col-lg-1"><?php _e( 'Actions', 'racketmanager' ) ?></div>
+				<div class="col-2 col-lg-1"><?php _e( 'Match Days', 'racketmanager' ) ?></div>
+				<div class="col-2 col-lg-1"><?php _e( 'Type', 'racketmanager' ) ?></div>
+				<div class="col-auto"><?php _e( 'Status', 'racketmanager' ) ?></div>
 			</div>
 			<?php if ( !empty($competition->seasons) ) {
 				$class = '';
 				foreach( (array)$competition->seasons AS $key => $season ) {
 					$class = ( 'alternate' == $class ) ? '' : 'alternate' ?>
 					<div class="row table-row <?php echo $class ?>">
-						<div class="col-2 col-lg-1 check-column"><input type="checkbox" value="<?php echo $key ?>" name="del_season[<?php echo $key ?>]" /></div>
-						<div class="col-3 col-lg-1"><?php echo $season['name'] ?></div>
-						<div class="col-3 col-lg-1"><?php echo $season['num_match_days'] ?></div>
-						<div class="col-3 col-lg-1"><?php if (isset($season['homeAway'])) { echo $season['homeAway']; } ?></div>
-						<div class="col-3 col-lg-1"><a href="admin.php?page=racketmanager&amp;subpage=show-season&amp;competition_id=<?php echo $competition->id ?>&amp;season=<?php echo $key ?>"><?php _e( 'Edit', 'racketmanager' ) ?></a></div>
+						<div class="col-1 me-1 check-column"><input type="checkbox" value="<?php echo $key ?>" name="del_season[<?php echo $key ?>]" /></div>
+						<div class="col-3 col-lg-1"><a href="admin.php?page=racketmanager&amp;subpage=show-season&amp;competition_id=<?php echo $competition->id ?>&amp;season=<?php echo $key ?>"><?php echo $season['name'] ?></a></div>
+						<div class="col-2 col-lg-1"><?php echo $season['num_match_days'] ?></div>
+						<div class="col-2 col-lg-1"><?php if (isset($season['homeAway'])) { if ( $season['homeAway'] ) { echo 'both'; } else { echo 'home only'; } } ?></div>
+						<div class="col-auto"><?php if (isset($season['status'])) { echo $season['status']; } ?></div>
 					</div>
 				<?php } ?>
 			<?php } ?>

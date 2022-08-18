@@ -6,7 +6,14 @@ if ( empty($this->seasons) ) { ?>
 	if ( empty($competition->seasons)  ) { ?>
 		<p><?php _e('No pending seasons for competition', 'racketmanager') ?>
 	<?php } else {
-		$latestCompetitionSeason = end($competition->seasons)['name'];
+		foreach (array_reverse($competition->seasons) as $season) {
+			if ( isset($season['status']) && $season['status'] == 'draft' ) {
+				continue;
+			} else {
+				$latestCompetitionSeason = $season['name'];
+				break;
+			}
+		}
 		$teams = $competition->getConstitution( array('season' => $latestSeason, 'oldseason' => $latestCompetitionSeason));
 		$constitutionAction = "update";
 		if ( !$teams ) {
@@ -124,7 +131,8 @@ if ( empty($this->seasons) ) { ?>
 	jQuery("#constitution").find("*").prop('disabled', true);
 	jQuery("#constitution").addClass("disabledButton");
 	</script>
-<?php }
+<?php
+ }
  }
 }
 ?>

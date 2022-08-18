@@ -13,6 +13,19 @@
 		</div>
     <div class="form-control mb-3">
       <div class="mb-1">
+        <label class="form-check-label"><?php _e( 'Status', 'racketmanager' ) ?></label>
+      </div>
+      <div class="form-check form-check-inline">
+  			<input type="radio" class="form-check-input" name="status" id="statusLive" value="live" <?php if (isset($season_data['status'])) { echo ($season_data['status'] == 'live') ? 'checked' : ''; } else { echo 'checked'; } ?> />
+  			<label class="form-check-label" for="statusLive"><?php _e( 'Live', 'racketmanager' ) ?></label>
+  		</div>
+      <div class="form-check form-check-inline">
+  			<input type="radio" class="form-check-input" name="status" id="statusDraft" value="draft" <?php if (isset($season_data['status'])) { echo ($season_data['status'] == 'draft') ? ' checked' : ''; } ?> />
+  			<label class="form-check-label" for="statusDraft"><?php _e( 'Draft', 'racketmanager' ) ?></label>
+      </div>
+		</div>
+    <div class="form-control mb-3">
+      <div class="mb-1">
         <label class="form-check-label"><?php _e( 'Fixtures', 'racketmanager' ) ?></label>
       </div>
       <div class="form-check form-check-inline">

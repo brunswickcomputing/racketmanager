@@ -328,6 +328,9 @@ if ( current_user_can( 'manage_racketmanager' ) ) {
                       <li class="nav-item" role="presentation">
                     		<button class="nav-link" id="players-tab-<?php echo $competition->id ?>" data-bs-toggle="tab" data-bs-target="#players-<?php echo $competition->id ?>" type="button" role="tab" aria-controls="players-<?php echo $competition->id ?>" aria-selected="true"><?php _e( 'Players', 'racketmanager' ) ?></button>
                     	</li>
+                      <li class="nav-item" role="presentation">
+                    		<button class="nav-link" id="matches-tab-<?php echo $competition->id ?>" data-bs-toggle="tab" data-bs-target="#matches-<?php echo $competition->id ?>" type="button" role="tab" aria-controls="matches-<?php echo $competition->id ?>" aria-selected="true"><?php _e( 'Matches', 'racketmanager' ) ?></button>
+                    	</li>
                     </ul>
                     <!-- Tab panes -->
                     <div class="tab-content">
@@ -451,18 +454,49 @@ if ( current_user_can( 'manage_racketmanager' ) ) {
                             <?php } ?>
                           </tbody>
                         </table>
-
+                      </div>
+                      <div class="tab-pane fade" id="matches-<?php echo $competition->id ?>" role="tabpanel" aria-labelledby="matches-tab-<?php echo $competition->id ?>">
+                        <?php $season = $competition->getSeasonCompetition(); ?>
+                        <table class="mt-3" summary="" title="RacketManager Club matches">
+                          <thead>
+                            <tr>
+                              <th scope="col"><?php _e( 'Match date', 'racketmanager' ) ?></th>
+                              <th scope="col"><?php _e( 'Match', 'racketmanager' ) ?></th>
+                              <th scope="col"><?php _e( 'League', 'racketmanager' ) ?></th>
+                            </tr>
+                          </thead>
+                          <tbody id="the-list">
+                            <?php if ( $matches = $racketmanager->getMatches(array('competition_id' => $competition->id, 'season' => $season['name'], 'affiliatedClub' => $club->id, 'orderby' => array('match_day' => 'ASC', 'date' => 'ASC', 'league_id' => 'ASC', 'home_team' => 'ASC'))) ) {
+                              $class = '';
+                              $matchDay = ''; ?>
+                            <?php foreach ( $matches AS $match ) { ?>
+                              <?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+                              <?php if ( $matchDay != $match->match_day) {
+                                $matchDay = $match->match_day; ?>
+                                <tr class="<?php echo $class ?>">
+                                  <td colspan="3"><?php echo __('Match Day', 'racketmanager').' '.$matchDay ?></td>
+                                </tr>
+                              <?php } ?>
+                              <tr class="<?php echo $class ?>">
+                                <td><?php echo $match->date ?></td>
+                        				<td><?php echo $match->match_title ?></td>
+                        				<td><?php echo $match->league->title ?></td>
+                              </tr>
+                            <?php } ?>
+                          <?php } ?>
+                        </tbody>
+                      </table>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        <?php }
-      } ?>
-    </div>
+          <?php } ?>
+        <?php } ?>
+      </div>
+    </details>
   <?php } ?>
-</details>
 <?php $address = $club->address;
 $latitude = $club->latitude;
 $longitude = $club->longitude;

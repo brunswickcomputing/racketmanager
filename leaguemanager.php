@@ -1702,6 +1702,9 @@ class RacketManager {
 		if ( $affiliatedClub ) {
 			$sql .= " AND (`home_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = ".$affiliatedClub.") OR `away_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = ".$affiliatedClub."))";
 		}
+		if ( $homeAffiliatedClub ) {
+			$sql .= " AND `home_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = ".$homeAffiliatedClub.")";
+		}
 		if (!empty($homeTeam)) {
 			$sql .= " AND `home_team` = ".$homeTeam." ";
 		}

@@ -39,6 +39,11 @@ jQuery(document).ready(function(){
 					<button class="nav-link" id="constitution-tab" data-bs-toggle="tab" data-bs-target="#constitution" type="button" role="tab" aria-controls="constitution" aria-selected="false"><?php _e( 'Constitution', 'racketmanager' ) ?></button>
 				</li>
 			<?php } ?>
+			<?php if ( $competition->competitiontype == 'league' ) { ?>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="false"><?php _e( 'Matches', 'racketmanager' ) ?></button>
+				</li>
+			<?php } ?>
 
 		</ul>
 		<!-- Tab panes -->
@@ -67,7 +72,14 @@ jQuery(document).ready(function(){
 					<div id="constitution" class="league-block-container">
 						<?php include('competition/constitution.php'); ?>
 					</div>
-				<?php } ?>
-			</div>
+				</div>
+			<?php } ?>
+			<?php if ( $competition->competitiontype == 'league' ) { ?>
+				<div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
+					<div id="matches" class="league-block-container">
+						<?php include('competition/matches.php'); ?>
+					</div>
+				</div>
+			<?php } ?>
 		</div>
 	</div>

@@ -600,11 +600,6 @@ final class RacketManagerAdmin extends RacketManager
 				check_admin_referer('leagues-bulk');
 				foreach ( $_POST['league'] AS $league_id )
 				$this->delLeague( intval($league_id) );
-			} elseif ( isset($_GET['statsseason']) && $_GET['statsseason'] == 'Show' ) {
-				if ( isset($_GET['club_id']) ) {
-					$club_id = intval($_GET['club_id']);
-				}
-				$tab = 'playerstats';
 			} elseif ( isset($_POST['doactionconstitution']) && $_POST['action'] == 'delete' ) {
 				$tab = 'constitution';
 				if ( current_user_can('del_leagues') ) {
@@ -661,6 +656,12 @@ final class RacketManagerAdmin extends RacketManager
 
 				// Set active tab
 				$tab = 'settings';
+			} elseif ( isset($_GET['statsseason']) && $_GET['statsseason'] == 'Show' ) {
+				if ( isset($_GET['club_id']) ) {
+					$club_id = intval($_GET['club_id']);
+				}
+				$tab = 'playerstats';
+			} elseif ( isset($_GET['view']) && $_GET['view'] == 'matches' ) {
 			}
 			include_once( dirname(__FILE__) . '/show-competition.php' );
 		}

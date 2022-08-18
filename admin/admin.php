@@ -4242,8 +4242,6 @@ final class RacketManagerAdmin extends RacketManager
 									if ( !$refSet ) {
 										$success = false;
 										$this->setMessage( sprintf(__('2 - Error in scheduling league %d for team %d','racketmanager'), $league1, $team1), true );
-										debug_to_console($refs);
-										debug_to_console($altRefs);
 									}
 								}
 							}

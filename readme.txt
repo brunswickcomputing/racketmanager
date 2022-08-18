@@ -50,6 +50,15 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.25.0 =
+* UPDATE: simplify season get
+* UPDATE: remove unused select options
+* UPDATE: allow draft seasons
+* UPDATE: only show draft seasons on backend
+* UPDATE: show matches for competition in admin and by club
+* UPDATE: send league constitution emails to match secretaries when season changed to live
+* BUGFIX: refresh competition object when settings updated
+
 = 6.24.0 =
 * UPDATE: handle scheduling of teams from same club in first round
 * UPDATE: send fixtures to team captains and match secretaries

@@ -222,8 +222,22 @@ class Competition {
 		$this->type = stripslashes($this->type);
 
 		// set seasons
-		if ( $this->seasons == '' ) $this->seasons = array();
-		$this->seasons = (array)maybe_unserialize($this->seasons);
+		if ( $this->seasons == '' ) {
+			$this->seasons = array();
+		} else {
+			$this->seasons = (array)maybe_unserialize($this->seasons);
+		}
+		if ( !is_admin() ) {
+			$i = 0;
+			foreach ($this->seasons as $season) {
+				$seasons[$season['name']] = $season;
+				if ( isset($season['status']) && $season['status'] == 'draft' ) {
+					unset($seasons[$season['name']]);
+				}
+				$i++;
+			}
+			$this->seasons = $seasons;
+		}
 		$this->num_seasons = count($this->seasons);
 		$this->setNumLeagues(true);
 

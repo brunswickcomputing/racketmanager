@@ -334,7 +334,7 @@ Racketmanager.notifyEntryOpen = function(competitionId) {
   jQuery.ajax({
     url:RacketManagerAjaxL10n.requestUrl,
     type: "POST",
-    data: {"competitonId": competitionId,
+    data: {"competitionId": competitionId,
     "latestSeason": latestSeason,
     "action": "racketmanager_notify_entries_open"},
     success: function(response) {
@@ -505,3 +505,27 @@ Racketmanager.removeField = function(id, parent_id) {
 Racketmanager.reInit = function() {
 	tb_init('a.thickbox, area.thickbox, input.thickbox');
 }
+Racketmanager.sendFixtures = function(competitionId) {
+  notifyField = "#notifyMessage-"+competitionId;
+
+  jQuery.ajax({
+    url:RacketManagerAjaxL10n.requestUrl,
+    type: "POST",
+    data: {"competitionId": competitionId,
+    "action": "racketmanager_send_fixtures"},
+    success: function(response) {
+      var $response = jQuery.parseJSON(response);
+      var $message = $response['msg'];
+      var $error = $response['error'];
+
+      jQuery(notifyField).text($message);
+      jQuery(notifyField).show();
+      if ( !$error ) {
+        jQuery(notifyField).delay(10000).fadeOut('slow');
+      }
+    },
+    error: function() {
+      alert("Ajax error on sending fixtures");
+    }
+  }) ;
+};

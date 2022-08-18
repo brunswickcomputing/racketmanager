@@ -1052,6 +1052,10 @@ public function getLeagueTeams( $query_args = array() ) {
 			$teamDtls = $this->getTeamDtls($team->id);
 			$team->match_day = $teamDtls->match_day;
 			$team->match_time = $teamDtls->match_time;
+			$team->captainId = $teamDtls->captainId;
+			$team->captain = $teamDtls->captain;
+			$team->contactno = $teamDtls->contactno;
+			$team->contactemail = $teamDtls->contactemail;
 		}
 
 		$team_index[$team->id] = $i;

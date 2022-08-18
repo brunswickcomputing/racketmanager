@@ -61,6 +61,7 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_notify_tournament_entries_open', array(&$this, 'notifyTournamentEntriesOpen') );
 		add_action( 'wp_ajax_racketmanager_chase_match_result', array(&$this, 'chaseMatchResult') );
 		add_action( 'wp_ajax_racketmanager_chase_match_approval', array(&$this, 'chaseMatchApproval') );
+		add_action( 'wp_ajax_racketmanager_send_fixtures', array(&$this, 'sendFixtures') );
 
 		add_action( 'wp_ajax_racketmanager_add_favourite', array(&$this, 'addFavourite') );
 	}
@@ -2119,7 +2120,7 @@ class RacketManagerAJAX extends RacketManager {
 		$return ='';
 		$messageSent = false;
 
-		$competition = get_competition($_POST['competitonId']);
+		$competition = get_competition($_POST['competitionId']);
 		$latestSeason = $_POST['latestSeason'];
 		$competitionTitle = explode(" ", $competition->name);
 		$competitionSeason = seourl($competitionTitle[0]);
@@ -2270,14 +2271,65 @@ class RacketManagerAJAX extends RacketManager {
 		if ( !empty($emailTo) ) {
 			$actionURL = $racketmanager->site_url.'/match/'.seoUrl($match->league->title).'/'.$match->season.'/day'.$match->match_day.'/'.seoUrl($match->teams['home']->title).'-vs-'.seoUrl($match->teams['away']->title);
 			$emailMessage = racketmanager_captain_result_notification($match->id, $messageArgs );
-
-//			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'match-approval-pending', array( 'actionURL' => $actionURL, 'organisationName' => $organisationName ), 'email' );
 			$this->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
 			$messageSent = true;
 		}
 
 		if ( $messageSent ) {
 			$return['msg'] = __('Captain emailed','racketmanager');
+		} else {
+			$return['error'] = true;
+			$return['msg'] = __('No notification','racketmanager');
+		}
+
+		die(json_encode($return));
+	}
+
+	/**
+	* send fixtures to captains
+	*
+	* @see templates/email/match-result-pending.php
+	*/
+	public function sendFixtures() {
+		global $racketmanager, $racketmanager_shortcodes, $competition;
+
+		$competitionId = $_POST['competitionId'];
+		$competition = get_competition($competitionId);
+		$season = $competition->current_season['name'];
+
+		$messageSent = false;
+		$return = array();
+		$clubs = $this->getClubs();
+
+		$fromEmail = $this->getConfirmationEmail($competition->competitiontype);
+		$organisationName = $racketmanager->site_name;
+
+		$leagues = $competition->getLeagues(array());
+		foreach ($leagues as $league) {
+			$league = get_league($league->id);
+			$teams = $league->getLeagueTeams(array('getDetails' => true));
+			foreach ($teams as $team) {
+				$headers = array();
+				$headers[] = 'From: '.ucfirst($competition->competitiontype).' Secretary <'.$fromEmail.'>';
+				$headers[] = 'cc: '.ucfirst($competition->competitiontype).' Secretary <'.$fromEmail.'>';
+				$emailSubject = $racketmanager->site_name." - ".$league->title." - Season ".$team->season." - Fixtures - ".$team->title;
+				$emailTo = '';
+				if ( isset($team->contactemail) ) {
+					$emailTo = $team->captain.' <'.$team->contactemail.'>';
+					$club = get_club($team->affiliatedclub);
+					if ( isset($club->matchSecretaryEmail) ) {
+						$headers[] = 'cc: '.$club->matchSecretaryName.' <'.$club->matchSecretaryEmail.'>';
+					}
+					$actionURL = $racketmanager->site_url.'/'.$competition->competitiontype.'s/'.seoUrl($league->title).'/'.$team->season.'/day0/'.seoUrl($team->title);
+					$emailMessage = $racketmanager_shortcodes->loadTemplate( 'send-fixtures', array( 'competition' => $competition->name, 'captain' => $team->captain, 'season' => $season, 'actionURL' => $actionURL, 'organisationName' => $organisationName ), 'email' );
+					$this->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
+					$messageSent = true;
+				}
+			}
+		}
+
+		if ( $messageSent ) {
+			$return['msg'] = __('Captains emailed','racketmanager');
 		} else {
 			$return['error'] = true;
 			$return['msg'] = __('No notification','racketmanager');

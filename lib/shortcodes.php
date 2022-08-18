@@ -738,8 +738,7 @@ class RacketManagerShortcodes extends RacketManager {
 		$seasons = $competition->seasons;
 		if ( !$season ) {
 			if ( $seasons ) {
-				$season = end($competition->seasons);
-				$season = $season['name'];
+				$season = $competition->current_season['name'];
 			} else {
 				$season = '';
 			}

@@ -632,6 +632,7 @@ class Competition {
 	public function reloadSettings() {
 		global $wpdb;
 
+		wp_cache_delete( $this->id, 'competitions' );
 		$result = $wpdb->get_row( $wpdb->prepare("SELECT `settings` FROM {$wpdb->racketmanager_competitions} WHERE `id` = '%d'", intval($this->id)) );
 		foreach ( maybe_unserialize($result->settings) as $key => $value )
 		$this->$key = $value;

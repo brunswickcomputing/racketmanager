@@ -653,6 +653,7 @@ final class RacketManagerAdmin extends RacketManager
 
 				$options = $racketmanager->options;
 				$competition->reloadSettings();
+				$competition = get_competition($competition);
 
 				// Set active tab
 				$tab = 'settings';

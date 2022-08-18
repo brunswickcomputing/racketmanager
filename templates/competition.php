@@ -47,7 +47,7 @@ $pagename = isset($wp_query->query['pagename']) ? $wp_query->query['pagename'] :
 				<div id="standings-archive">
 					<h4 class="header">
 						<?php if ( $standingsTemplate != 'constitution' ) { ?><a href="/<?php _e('leagues', 'racketmanager') ?>/<?php echo seoUrl($league->title) ?>/<?php echo $curr_season ?>/"><?php } ?><?php echo $league->title ?><?php if ( $standingsTemplate != 'constitution' ) { ?></a><?php } ?>
-						<?php if ( is_user_logged_in() ) {
+						<?php if ( is_user_logged_in() && $standingsTemplate != 'constitution' ) {
 							$isFavourite = $racketmanager->userFavourite('league', $league->id); ?>
 							<div class="fav-icon">
 								<a href="" id="fav-<?php echo $league->id ?>" title="<?php if ( $isFavourite) { _e( 'Remove favourite', 'racketmanager' ); } else { _e( 'Add favourite', 'racketmanager'); } ?>" data-js="add-favourite" data-type="league" data-favourite="<?php echo $league->id ?>">

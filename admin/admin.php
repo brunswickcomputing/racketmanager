@@ -2171,24 +2171,6 @@ final class RacketManagerAdmin extends RacketManager
 		ksort($competition->seasons);
 		$this->saveCompetitionSeasons($competition->seasons, $competition->id);
 
-		if ( $competition->competitiontype == 'league' ) {
-			$emailAddr = $racketmanager->getConfirmationEmail($competition->competitiontype);
-			$organisationName = $racketmanager->site_name;
-			$messageArgs = array();
-			$messageArgs['competition'] = $competition->name;
-			$messageArgs['emailfrom'] = $emailAddr;
-			$emailMessage = racketmanager_constitution_notification($competition->id, $messageArgs );
-			$headers = array();
-			$headers[] = 'From: '.ucfirst($competition->competitiontype).' Secretary <'.$emailAddr.'>';
-			$headers[] = 'cc: '.ucfirst($competition->competitiontype).' Secretary <'.$emailAddr.'>';
-			$subject = $organisationName." - ".$competition->name." ".$season." - Constitution";
-			$racketmanager->lm_mail($emailAddr, $subject, $emailMessage, $headers);
-			$teams = $competition->getTeams( array('status' => 3) );
-			foreach ($teams as $team) {
-				$this->delTeamFromLeague($team->teamId, $team->leagueId, $season);
-			}
-		}
-
 		$this->setMessage( sprintf(__('Season <strong>%s</strong> added','racketmanager'), $season ) );
 
 		return true;
@@ -2226,12 +2208,33 @@ final class RacketManagerAdmin extends RacketManager
 
 		if ( !$error ) {
 			$competition = get_competition($competition_id);
-
 			$competition->seasons[$season] = array( 'name' => $season, 'num_match_days' => $num_match_days, 'matchDates' => $matchDates, 'homeAway' => $homeAway, 'status' => $status );
 			ksort($competition->seasons);
 			$this->saveCompetitionSeasons($competition->seasons, $competition->id);
-
-			$this->setMessage( sprintf(__('Season <strong>%s</strong> saved','racketmanager'), $season ) );
+			if ( $status == 'live' && $competition->competitiontype == 'league' ) {
+				$emailAddr = $racketmanager->getConfirmationEmail($competition->competitiontype);
+				$organisationName = $racketmanager->site_name;
+				$messageArgs = array();
+				$messageArgs['competition'] = $competition->name;
+				$messageArgs['emailfrom'] = $emailAddr;
+				$emailMessage = racketmanager_constitution_notification($competition->id, $messageArgs );
+				$headers = array();
+				$headers[] = 'From: '.ucfirst($competition->competitiontype).' Secretary <'.$emailAddr.'>';
+				foreach ($racketmanager->getClubs() as $club) {
+					if ( !empty($club->matchSecretaryEmail) ) {
+						$headers[] = 'bcc: '.$club->matchSecretaryName.' <'.$club->matchSecretaryEmail.'>';
+					}
+				}
+				$subject = $organisationName." - ".$competition->name." ".$season." - Constitution";
+				$racketmanager->lm_mail($emailAddr, $subject, $emailMessage, $headers);
+				$teams = $competition->getTeams( array('status' => 3) );
+				foreach ($teams as $team) {
+					$this->delTeamFromLeague($team->teamId, $team->leagueId, $season);
+				}
+				$this->setMessage( sprintf(__('Season <strong>%s</strong> saved and constitution emailed','racketmanager'), $season ) );
+			} else {
+				$this->setMessage( sprintf(__('Season <strong>%s</strong> saved','racketmanager'), $season ) );
+			}
 		}
 		return;
 	}

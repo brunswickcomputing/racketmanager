@@ -50,6 +50,11 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.24.0 =
+* UPDATE: handle scheduling of teams from same club in first round
+* UPDATE: send fixtures to team captains and match secretaries
+* BUGFIX: add missing query option to getMatches
+
 = 6.23.0 =
 * NEW: allow scheduling of league matches
 * UPDATE: handle week offset when checking court availability

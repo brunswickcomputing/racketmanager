@@ -28,7 +28,7 @@ $class = '';
 						<input type="checkbox" value="<?php echo $competition->id ?>" name="competition[<?php echo $competition->id ?>]" />
 					</div>
 					<div class="col-1 column-num"><?php echo $competition->id ?></div>
-					<div class="col-3"><?php echo $competition->name ?></div>
+					<div class="col-3"><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>"><?php echo $competition->name ?></a></div>
 					<?php if ( $matchCount != 0 ) { ?>
 						<div class="col-3 col-md-auto">
 							<a class="btn btn-secondary" href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>&amp;view=matches"><?php _e('View matches', 'racketmanager') ?></a>

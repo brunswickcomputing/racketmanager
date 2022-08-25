@@ -4092,9 +4092,21 @@ final class RacketManagerAdmin extends RacketManager
 		}
 
 		if ( $success ) {
-			$competitionIds = implode(',',$competitions);
 			$season = $this->getLatestSeason();
-
+			$competitionIds = implode(',',$competitions);
+			$sql = "SELECT `t`.`title`FROM {$wpdb->racketmanager_teams} t , {$wpdb->racketmanager_team_competition} tc , {$wpdb->racketmanager_table} t1 , {$wpdb->racketmanager} l WHERE t.`id` = `tc`.`team_id` AND `tc`.`match_day` = '' AND `tc`.`competition_id` in (".$competitionIds.") AND l.`id` = `t1`.`league_id` AND `l`.`competition_id` = tc.`competition_id` AND `t1`.`season` = ".$season." AND `t1`.`team_id` = `tc`.`team_id`";
+			$teamsMissingDetails = $wpdb->get_results( $sql );
+			if ( $teamsMissingDetails ) {
+				$missingTeams = array();
+				foreach ($teamsMissingDetails as $team) {
+					$missingTeams[] = $team->title;
+				}
+				$teams = implode(' and ',$missingTeams);
+				$success = false;
+				$messages[] = sprintf(__('Missing match days for %s','racketmanager'), $teams);
+			}
+		}
+		if ( $success ) {
 			/* clear out schedule keys for this run */
 			$wpdb->query( "UPDATE {$wpdb->racketmanager_table} SET `group` = '' WHERE `season` = $season AND `league_id` IN (SELECT `id` FROM {$wpdb->racketmanager} WHERE `competition_id` IN ($competitionIds))" );
 

@@ -283,14 +283,14 @@ class League {
 	*
 	* @var array
 	*/
-	private $team_query_args = array( 'limit' => false, 'group' => '', 'season' => '', 'rank' => 0, 'orderby' => array("rank" => "ASC"), "home" => false, 'ids' => array(), 'cache' => true, 'reset_query_args' => false, 'getDetails' => false );
+	private $team_query_args = array( 'limit' => false, 'group' => '', 'season' => '', 'rank' => 0, 'orderby' => array("rank" => "ASC"), "home" => false, 'ids' => array(), 'cache' => true, 'reset_query_args' => false, 'getDetails' => false, 'status' => false );
 
 	/**
 	* team query argument types
 	*
 	* @var array
 	*/
-	private $team_query_args_types = array( 'limit' => 'numeric', 'group' => 'string', 'season' => 'string', 'rank' => 'numeric', 'orderby' => 'array', 'home' => 'boolean', 'ids' => 'array_numeric', 'cache' => 'boolean', 'reset_query_args' => 'boolean', 'getDetails' => 'boolean' );
+	private $team_query_args_types = array( 'limit' => 'numeric', 'group' => 'string', 'season' => 'string', 'rank' => 'numeric', 'orderby' => 'array', 'home' => 'boolean', 'ids' => 'array_numeric', 'cache' => 'boolean', 'reset_query_args' => 'boolean', 'getDetails' => 'boolean', 'status' => 'string' );
 
 	/**
 	* match query arguments
@@ -1006,6 +1006,11 @@ public function getLeagueTeams( $query_args = array() ) {
 	}
 	if ( $home ) {
 		$sql .= " AND B.`home` = 1";
+	}
+	if ( $status ) {
+		if ( $status == 'active' ) {
+			$sql .= " AND A.`profile` != 3";
+		}
 	}
 
 	$orderby_string = ""; $i = 0;
@@ -2527,7 +2532,7 @@ public function importTeams( $custom, $line, $col ) {
 		global $racketmanager;
 
 		$season = $this->getSeason();
-		$scheduleTeams = $this->getLeagueTeams(array('season' => $season, 'orderby' => array('group' => 'ASC', 'title' => 'ASC')));
+		$scheduleTeams = $this->getLeagueTeams(array('season' => $season, 'status' => 'active', 'orderby' => array('group' => 'ASC', 'title' => 'ASC')));
 		$this->numRounds = $this->current_season['num_match_days'];
 		$this->homeAway = isset($this->current_season['homeAway']) ? $this->current_season['homeAway'] : 'true' ;
 		if ( $this->homeAway ) {
@@ -2552,7 +2557,7 @@ public function importTeams( $custom, $line, $col ) {
 			}
 		}
 
-		$scheduleTeams = $this->getLeagueTeams(array('season' => $season, 'getDetails' => true, 'cache' => false, 'orderby' => array('group' => 'ASC', 'title' => 'ASC')));
+		$scheduleTeams = $this->getLeagueTeams(array('season' => $season, 'status' => 'active', 'getDetails' => true, 'cache' => false, 'orderby' => array('group' => 'ASC', 'title' => 'ASC')));
 		if ( $scheduleTeams ) {
 			if ( $refs ) {
 				foreach ($refs as $ref) {

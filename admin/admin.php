@@ -4049,6 +4049,7 @@ final class RacketManagerAdmin extends RacketManager
 		global $wpdb, $racketmanager;
 
 		$success = true;
+		$messages = array();
 		$c = 0;
 		foreach ($competitions as $competitionId) {
 			$competition = get_competition($competitionId);
@@ -4056,14 +4057,14 @@ final class RacketManagerAdmin extends RacketManager
 			$matchCount = $racketmanager->getMatches(array('count' => true, 'competition_id' => $competition->id, 'season' => $season));
 			if ( $matchCount != 0 ) {
 				$success = false;
-				$this->setMessage( sprintf(__('%s already has matches scheduled for %d','racketmanager'), $competition->name, $season), true );
+				$messages[] = sprintf(__('%s already has matches scheduled for %d','racketmanager'), $competition->name, $season);
 				break;
 			} else {
 				if ( $c == 0 ) {
 					$numMatchDays = $competition->current_season['num_match_days'];
 					if ( !isset($competition->current_season['matchDates']) ) {
 						$success = false;
-						$this->setMessage( __('Competitions match dates not set','racketmanager'), true );
+						$messages[] = __('Competitions match dates not set','racketmanager');
 					}
 					$homeAway = isset($competition->current_season['homeAway']) ? $competition->current_season['homeAway'] : 'true' ;
 					if ( $homeAway ) {
@@ -4079,12 +4080,12 @@ final class RacketManagerAdmin extends RacketManager
 				} else {
 					if ( $competition->current_season['num_match_days'] != $numMatchDays ) {
 						$success = false;
-						$this->setMessage( __('Competitions have different number of match days','racketmanager'), true );
+						$messages[] = __('Competitions have different number of match days','racketmanager');
 					}
 					$homeAwayNew = isset($competition->current_season['homeAway']) ? $competition->current_season['homeAway'] : 'true' ;
 					if ( $homeAwayNew != $homeAway ) {
 						$success = false;
-						$this->setMessage( __('Competitions have different home / away setting','racketmanager'), true );
+						$messages[] = __('Competitions have different home / away setting','racketmanager');
 					}
 				}
 			}
@@ -4162,11 +4163,11 @@ final class RacketManagerAdmin extends RacketManager
 							}
 							if ( !$refSet ) {
 								$success = false;
-								$this->setMessage( sprintf(__('Unable to schedule first round for league %d for team %d and team %d','racketmanager'), $league1, $team1, $team2), true );
+								$messages[] = sprintf(__('Unable to schedule first round for league %d for team %d and team %d','racketmanager'), $league1, $team1, $team2);
 							}
 						} else {
 							$success = false;
-							$this->setMessage( sprintf(__('Error in scheduling first round for league %d for team %d and team %d','racketmanager'), $league1, $team1, $team2), true );
+							$messages[] = sprintf(__('Error in scheduling first round for league %d for team %d and team %d','racketmanager'), $league1, $team1, $team2);
 						}
 					}
 					$counter ++;
@@ -4228,7 +4229,7 @@ final class RacketManagerAdmin extends RacketManager
 									$this->setTableGroup($altRef, $table2);
 								} else {
 									$success = false;
-									$this->setMessage( sprintf(__('1 - Error in scheduling league %d for team %d','racketmanager'), $league1, $team1), true );
+									$messages[] = sprintf(__('1 - Error in scheduling league %d for team %d','racketmanager'), $league1, $team1);
 								}
 							} else {
 								$refSet = false;
@@ -4245,7 +4246,7 @@ final class RacketManagerAdmin extends RacketManager
 										$this->setTableGroup($altRef, $table2);
 									} else {
 										$success = false;
-										$this->setMessage( sprintf(__('4 - Error in scheduling league %d for team %d','racketmanager'), $league1, $team1), true );
+										$messages[] = sprintf(__('4 - Error in scheduling league %d for team %d','racketmanager'), $league1, $team1);
 									}
 								} else {
 									for ($i=0; $i < count($refs) ; $i++) {
@@ -4264,19 +4265,21 @@ final class RacketManagerAdmin extends RacketManager
 									}
 									if ( !$refSet ) {
 										$success = false;
-										$this->setMessage( sprintf(__('2 - Error in scheduling league %d for team %d','racketmanager'), $league1, $team1), true );
+										$messages[] = sprintf(__('2 - Error in scheduling league %d for team %d','racketmanager'), $league1, $team1);
 									}
 								}
 							}
 						} else {
 							$success = false;
-							$this->setMessage( sprintf(__('3 - Error in scheduling league %d for team %d','racketmanager'), $league1, $team1), true );
+							$messages[] = sprintf(__('3 - Error in scheduling league %d for team %d','racketmanager'), $league1, $team1);
 						}
 					}
 					$counter ++;
 				}
 			}
 		}
+		$message = implode('<br>', $messages);
+		$this->setMessage( $message, true );
 		return $success;
 	}
 

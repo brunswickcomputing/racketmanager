@@ -9,7 +9,7 @@ $title = $organisationName.' Fixtures';
         <td>
           <div>
             <h1 class="align-left">Dear captain</h1>
-            <p>Please find attached your fixture list for the <?php echo $competition ?> <?php echo $season ?> season.  If you could check your details and notify me of any details that are incorrect. </p>
+            <p>Please find attached your fixture list for the <?php echo $competition ?> <?php echo $season ?> season.  If you could check your details and notify me of errors.</p>
             <!-- Action -->
             <table class="body-action" align="center" width="100%" cellpadding="0" cellspacing="0">
               <tr>

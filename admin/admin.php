@@ -2167,7 +2167,7 @@ final class RacketManagerAdmin extends RacketManager
 		if ( $competition->seasons == '' ) {
 			$competition->seasons = array();
 		}
-		$competition->seasons[$season] = array( 'name' => $season, 'num_match_days' => $num_match_days );
+		$competition->seasons[$season] = array( 'name' => $season, 'num_match_days' => $num_match_days, 'status' => 'draft' );
 		ksort($competition->seasons);
 		$this->saveCompetitionSeasons($competition->seasons, $competition->id);
 

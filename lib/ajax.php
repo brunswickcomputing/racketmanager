@@ -2309,6 +2309,7 @@ class RacketManagerAJAX extends RacketManager {
 			$league = get_league($league->id);
 			$teams = $league->getLeagueTeams(array('getDetails' => true));
 			foreach ($teams as $team) {
+				$matches = $league->getMatches(array('final' => '', 'team_id' => $team->id));
 				$headers = array();
 				$headers[] = 'From: '.ucfirst($competition->competitiontype).' Secretary <'.$fromEmail.'>';
 				$headers[] = 'cc: '.ucfirst($competition->competitiontype).' Secretary <'.$fromEmail.'>';
@@ -2321,7 +2322,7 @@ class RacketManagerAJAX extends RacketManager {
 						$headers[] = 'cc: '.$club->matchSecretaryName.' <'.$club->matchSecretaryEmail.'>';
 					}
 					$actionURL = $racketmanager->site_url.'/'.$competition->competitiontype.'s/'.seoUrl($league->title).'/'.$team->season.'/day0/'.seoUrl($team->title);
-					$emailMessage = $racketmanager_shortcodes->loadTemplate( 'send-fixtures', array( 'competition' => $competition->name, 'captain' => $team->captain, 'season' => $season, 'actionURL' => $actionURL, 'organisationName' => $organisationName ), 'email' );
+					$emailMessage = $racketmanager_shortcodes->loadTemplate( 'send-fixtures', array( 'competition' => $competition->name, 'captain' => $team->captain, 'season' => $season, 'matches' => $matches, 'team' => $team, 'actionURL' => $actionURL, 'organisationName' => $organisationName ), 'email' );
 					$this->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
 					$messageSent = true;
 				}

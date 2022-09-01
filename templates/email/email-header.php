@@ -527,6 +527,12 @@
   .body-sub p {
     color: #6B6E76;
   }
+  .bold {
+    font-weight: bold;
+  }
+  table.fixtures td {
+    font-size: 12px;
+  }
   </style>
 </head>
 <body class="body">

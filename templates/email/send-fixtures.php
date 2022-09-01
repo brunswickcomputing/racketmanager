@@ -10,6 +10,32 @@ $title = $organisationName.' Fixtures';
           <div>
             <h1 class="align-left">Dear captain</h1>
             <p>Please find attached your fixture list for the <?php echo $competition ?> <?php echo $season ?> season.  If you could check your details and notify me of errors.</p>
+            <table class="fixtures">
+              <thead>
+                <tr class="align-center bold">
+                  <td><?php _e('Round', 'racketmanager') ?></td>
+                  <td><?php _e('Date', 'racketmanager') ?></td>
+                  <td><?php _e('Day', 'racketmanager') ?></td>
+                  <td><?php _e('Time', 'racketmanager') ?></td>
+                  <td class="align-right"><?php _e('Home', 'racketmanager') ?></td>
+                  <td></td>
+                  <td class="align-left"><?php _e('Away', 'racketmanager') ?></td>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach ($matches as $match) { ?>
+                  <tr class="align-center">
+                    <td><?php the_match_day() ?></td>
+                    <td><?php $format = 'd M y'; the_match_date($format); ?></td>
+                    <td><?php the_match_date('D') ?></td>
+                    <td><?php the_match_time() ?></td>
+                    <td class="align-right <?php if ($match->home_team == $team->id) { echo 'bold'; } ?>"><?php echo $match->teams['home']->title ?></td>
+                    <td>-</td>
+                    <td class="align-left <?php if ($match->away_team == $team->id) { echo 'bold'; } ?>"><?php echo $match->teams['away']->title ?></td>
+                  </tr>
+                <?php } ?>
+              </tbody>
+            </table>
             <!-- Action -->
             <table class="body-action" align="center" width="100%" cellpadding="0" cellspacing="0">
               <tr>

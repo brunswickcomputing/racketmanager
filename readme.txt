@@ -50,6 +50,12 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.26.0 =
+* UPDATE: ignore withdrawn teams from scheduling
+* UPDATE: display all scheduling errors
+* UPDATE: make new competition seasons draft on creation
+* UPDATE: send fixture list to captains as well as link
+
 = 6.25.0 =
 * UPDATE: simplify season get
 * UPDATE: remove unused select options

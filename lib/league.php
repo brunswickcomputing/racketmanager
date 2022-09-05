@@ -2564,6 +2564,7 @@ public function importTeams( $custom, $line, $col ) {
 					$team = array('id' => -1, 'title' => __('Bye', 'racketmanager'), 'group' => $ref);
 					$scheduleTeams[] = (object)$team;
 				}
+				usort($scheduleTeams, fn($a, $b) => $a->group <=> $b->group);
 			}
 			$this->createSchedule($scheduleTeams);
 		}

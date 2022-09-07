@@ -4175,7 +4175,7 @@ final class RacketManagerAdmin extends RacketManager
 			}
 
 			/* find all clubs with multiple matches at the same time */
-			$sql = "SELECT `t`.`affiliatedclub`, `tc`.`match_day`, `tc`.`match_time`, count(*) FROM {$wpdb->racketmanager_team_competition} tc, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} tbl WHERE tc.`team_id` = t.`id` AND tc.`competition_id` = l.`competition_id` AND l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND tc.`competition_id` in (".$competitionIds.") AND tbl.`season` = $season AND tbl.`profile` != 3 GROUP BY t.`affiliatedclub`, tc.`match_day`, tc.`match_time` HAVING COUNT(*) > 1 ORDER BY count(*) DESC";
+			$sql = "SELECT `t`.`affiliatedclub`, `tc`.`match_day`, `tc`.`match_time`, count(*) FROM {$wpdb->racketmanager_team_competition} tc, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} tbl WHERE tc.`team_id` = t.`id` AND tc.`competition_id` = l.`competition_id` AND l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND tc.`competition_id` in (".$competitionIds.") AND tbl.`season` = $season AND tbl.`profile` != 3 GROUP BY t.`affiliatedclub`, tc.`match_day`, tc.`match_time` HAVING COUNT(*) > 1 ORDER BY count(*) DESC, 1 DESC, 2 ASC, 3 ASC";
 			$competitionTeams = $wpdb->get_results( $sql );
 			/* for each club / match time combination balance schedule so one team is home while the other is away */
 			foreach ($competitionTeams as $competitionTeam) {

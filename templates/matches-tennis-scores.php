@@ -137,7 +137,7 @@ global $racketmanager;
           </td>
 
         </tr>
-        <?php if ( isset($match->num_rubbers) && $match->num_rubbers > 0 && ($match->winner_id != 0) ) { ?>
+        <?php if ( isset($match->num_rubbers) && $match->num_rubbers > 0 && isset($match->rubbers) && ($match->winner_id != 0) ) { ?>
           <tr class='match-rubber-row <?php echo $match->class ?>'>
             <td colspan="<?php if ( $league->mode == 'championship' ) echo '4'; else echo '3' ?>">
               <table id='rubbers_<?php echo $match->id ?>'>

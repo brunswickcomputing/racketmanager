@@ -50,6 +50,11 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.26.2 =
+* BUGFIX: handle no rubbers on tennis match score
+* BUGFIX: change order of paired teams for scheduling
+* BUGFIX: display away team name correctly if previous match not completed
+
 = 6.26.1 =
 * BUGFIX: ignore withdrawn teams from scheduling
 * BUGFIX: sort teams with dummy entries correctly within scheduling

@@ -64,13 +64,29 @@ if ( !is_array($tournament->orderofplay) || count($tournament->orderofplay) != $
 				<?php foreach ($finalMatches as $match ) { ?>
 					<div class="col-3 mb-3">
 						<div class="btn <?php if ( !is_numeric($match->home_team) || !is_numeric($match->away_team) ) { echo 'btn-warning'; } else { echo 'btn-success'; } ?> final-match" name="match-<?php echo $match->id ?>" id="match-<?php echo $match->id ?>" draggable="true">
-							<div class="fw-bold"><?php echo $match->league->title ?></div>
-							<div <?php if ( !is_numeric($match->home_team) ) { echo 'class="fst-italic"'; } ?>><?php if ( is_numeric($match->home_team) ) { echo $match->teams['home']->title; } else { echo $match->prevHomeMatch->match_title; } ?></div>
+							<div class="fw-bold">
+								<?php echo $match->league->title ?>
+							</div>
+							<div <?php if ( !is_numeric($match->home_team) ) { echo 'class="fst-italic"'; } ?>>
+								<?php if ( is_numeric($match->home_team) ) {
+									echo $match->teams['home']->title;
+								} else {
+									echo $match->prevHomeMatch->match_title;
+								} ?>
+							</div>
 							<?php if ( is_numeric($match->home_team) ) { ?>
 								<div class="fst-italic">(<?php echo $match->teams['home']->affiliatedclubname ?>)</div>
 							<?php } ?>
-							<div><?php _e( 'vs', 'racketmanager' ) ?></div>
-							<div><?php echo $match->teams['away']->title ?></div>
+							<div>
+								<?php _e( 'vs', 'racketmanager' ) ?>
+							</div>
+							<div <?php if ( !is_numeric($match->away_team) ) { echo 'class="fst-italic"'; } ?>>
+								<?php if ( is_numeric($match->home_team) ) {
+									echo $match->teams['away']->title;
+								} else {
+									echo $match->prevAwayMatch->match_title; 
+								} ?>
+							</div>
 							<?php if ( is_numeric($match->away_team) ) { ?>
 								<div class="fst-italic">(<?php echo $match->teams['away']->affiliatedclubname ?>)</div>
 							<?php } ?>

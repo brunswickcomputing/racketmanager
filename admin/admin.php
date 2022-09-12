@@ -3980,7 +3980,7 @@ final class RacketManagerAdmin extends RacketManager
 		$teams = $league->getLeagueTeams(array('season' => $season));
 		$emailMessage = str_replace('\"','"',$emailMessage);
 		$headers = array();
-		$fromEmail = $this->getConfirmationEmail($league->competitionType);
+		$emailFrom = $this->getConfirmationEmail($league->competitionType);
 		$headers[] = 'From: '.ucfirst($league->competitionType).' Secretary <'.$emailFrom.'>';
 		$headers[] = 'cc: '.ucfirst($league->competitionType).' Secretary <'.$emailFrom.'>';
 		$organisationName = $this->site_name;

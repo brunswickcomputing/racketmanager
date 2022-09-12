@@ -81,10 +81,10 @@ if ( !is_array($tournament->orderofplay) || count($tournament->orderofplay) != $
 								<?php _e( 'vs', 'racketmanager' ) ?>
 							</div>
 							<div <?php if ( !is_numeric($match->away_team) ) { echo 'class="fst-italic"'; } ?>>
-								<?php if ( is_numeric($match->home_team) ) {
+								<?php if ( is_numeric($match->away_team) ) {
 									echo $match->teams['away']->title;
 								} else {
-									echo $match->prevAwayMatch->match_title; 
+									echo $match->prevAwayMatch->match_title;
 								} ?>
 							</div>
 							<?php if ( is_numeric($match->away_team) ) { ?>

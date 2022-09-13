@@ -2312,7 +2312,6 @@ class RacketManagerAJAX extends RacketManager {
 				$matches = $league->getMatches(array('final' => '', 'team_id' => $team->id));
 				$headers = array();
 				$headers[] = 'From: '.ucfirst($competition->competitiontype).' Secretary <'.$fromEmail.'>';
-				$headers[] = 'cc: '.ucfirst($competition->competitiontype).' Secretary <'.$fromEmail.'>';
 				$emailSubject = $racketmanager->site_name." - ".$league->title." - Season ".$team->season." - Fixtures - ".$team->title;
 				$emailTo = '';
 				if ( isset($team->contactemail) ) {

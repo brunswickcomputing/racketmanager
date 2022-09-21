@@ -4229,7 +4229,9 @@ final class RacketManagerAdmin extends RacketManager
 									$this->setTableGroup($altRef, $table2);
 								} else {
 									$success = false;
-									$messages[] = sprintf(__('1 - Error in scheduling league %d for team %d','racketmanager'), $league1, $team1);
+									$league = get_league($league1);
+									$team = get_team($team1);
+									$messages[] = sprintf(__('1 - Error in scheduling %s in %s','racketmanager'), $team->title, $league->title);
 								}
 							} else {
 								$refSet = false;
@@ -4246,7 +4248,9 @@ final class RacketManagerAdmin extends RacketManager
 										$this->setTableGroup($altRef, $table2);
 									} else {
 										$success = false;
-										$messages[] = sprintf(__('4 - Error in scheduling league %d for team %d','racketmanager'), $league1, $team1);
+										$league = get_league($league1);
+										$team = get_team($team1);
+										$messages[] = sprintf(__('4 - Error in scheduling %s in %s','racketmanager'), $team->title, $league->title);
 									}
 								} else {
 									for ($i=0; $i < count($refs) ; $i++) {
@@ -4265,13 +4269,20 @@ final class RacketManagerAdmin extends RacketManager
 									}
 									if ( !$refSet ) {
 										$success = false;
-										$messages[] = sprintf(__('2 - Error in scheduling league %d for team %d','racketmanager'), $league1, $team1);
+										$league = get_league($league1);
+										$team = get_team($team1);
+										$messages[] = sprintf(__('2 - Error in scheduling %s in %s','racketmanager'), $team->title, $league->title);
+										debug_to_console($refs);
+										debug_to_console($altRefs);
+										debug_to_console($league2);
 									}
 								}
 							}
 						} else {
 							$success = false;
-							$messages[] = sprintf(__('3 - Error in scheduling league %d for team %d','racketmanager'), $league1, $team1);
+							$league = get_league($league1);
+							$team = get_team($team1);
+							$messages[] = sprintf(__('3 - Error in scheduling %s in %s','racketmanager'), $team->title, $league->title);
 						}
 					}
 					$counter ++;

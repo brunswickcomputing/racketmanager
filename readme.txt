@@ -50,6 +50,11 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.26.3 =
+* BUGFIX: fix email from address on league contact page
+* BUGFIX: use correct title on order of play schedule
+* BUGFIX: remove cc league secretary from fixture email
+
 = 6.26.2 =
 * BUGFIX: handle no rubbers on tennis match score
 * BUGFIX: change order of paired teams for scheduling

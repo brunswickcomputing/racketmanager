@@ -1224,6 +1224,7 @@ class RacketManagerShortcodes extends RacketManager {
 		extract(shortcode_atts(array(
 			'club' => '',
 			'action' => false,
+			'player' => false,
 			'template' => ''
 		), $atts ));
 
@@ -1233,9 +1234,8 @@ class RacketManagerShortcodes extends RacketManager {
 
 		$filename = ( !empty($template) ) ? 'roster-notification-'.$template : 'roster-notification';
 
-		$out = $this->loadTemplate( $filename, array( 'action' => $action, 'club' => $club, 'organisationName' => $organisationname, 'actionurl' => $actionurl ), 'email' );
+		return $this->loadTemplate( $filename, array( 'action' => $action, 'club' => $club, 'player' => $player, 'organisationName' => $organisationname, 'actionurl' => $actionurl ), 'email' );
 
-		return $out;
 	}
 
 	/**

@@ -1381,6 +1381,7 @@ class RacketManagerAJAX extends RacketManager {
 						$messageArgs = array();
 						$messageArgs['action'] = $action;
 						$messageArgs['club'] = $clubName;
+						$messageArgs['player'] = $fullName;
 						$headers = array();
 						$headers['from'] = $racketmanager->getFromUserEmail();
 						$subject = $racketmanager->site_name." - ".$msg." - ".$clubName;

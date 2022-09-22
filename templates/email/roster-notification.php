@@ -10,6 +10,9 @@ $title = $organisationName.' Roster Request - '.$club;
           <div>
             <h1 class="align-center">Player <?php echo ucfirst($action); ?></h1>
             <p>A new player has been added for <?php echo $club; ?>.</p>
+            <?php if ( $player ) { ?>
+              <p class="align-center"><?php echo $player; ?></p>
+            <?php } ?>
             <?php if ( $action == 'request' ) { ?>
               <!-- Action -->
               <table class="body-action" align="center" width="100%" cellpadding="0" cellspacing="0">

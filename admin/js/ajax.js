@@ -330,6 +330,8 @@ Racketmanager.notifyTeams = function(matchId) {
 };
 Racketmanager.notifyEntryOpen = function(competitionId) {
   var latestSeason = document.getElementById('latestSeason').value;
+  notifyField = "#notifyMessage";
+  jQuery(notifyField).removeClass();
 
   jQuery.ajax({
     url:RacketManagerAjaxL10n.requestUrl,
@@ -342,10 +344,13 @@ Racketmanager.notifyEntryOpen = function(competitionId) {
       var $message = $response['msg'];
       var $error = $response['error'];
 
-      jQuery("#notifyMessage").text($message);
-      jQuery("#notifyMessage").show();
+      jQuery(notifyField).text($message);
+      jQuery(notifyField).show();
       if ( !$error ) {
-        jQuery("#notifyMessage").delay(10000).fadeOut('slow');
+        jQuery(notifyField).delay(10000).fadeOut('slow');
+        jQuery(notifyField).addClass('message-success');
+      } else {
+        jQuery(notifyField).addClass('message-error');
       }
     },
     error: function() {
@@ -355,6 +360,7 @@ Racketmanager.notifyEntryOpen = function(competitionId) {
 };
 Racketmanager.notifyTournamentEntryOpen = function(tournamentId) {
   notifyField = "#notifyMessage-"+tournamentId;
+  jQuery(notifyField).removeClass();
 
   jQuery.ajax({
     url:RacketManagerAjaxL10n.requestUrl,
@@ -370,6 +376,9 @@ Racketmanager.notifyTournamentEntryOpen = function(tournamentId) {
       jQuery(notifyField).show();
       if ( !$error ) {
         jQuery(notifyField).delay(10000).fadeOut('slow');
+        jQuery(notifyField).addClass('message-success');
+      } else {
+        jQuery(notifyField).addClass('message-error');
       }
     },
     error: function() {

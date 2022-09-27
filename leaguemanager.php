@@ -2146,24 +2146,28 @@ class RacketManager {
 
 			$headers = array();
 			$fromEmail = $this->getConfirmationEmail($competitionType);
-			$headers[] = 'From: '.ucfirst($competitionType).'Secretary <'.$fromEmail.'>';
-			$headers[] = 'cc: '.ucfirst($competitionType).'Secretary <'.$fromEmail.'>';
-			$organisationName = $this->site_name;
+			if ( $fromEmail ) {
+				$headers[] = 'From: '.ucfirst($competitionType).'Secretary <'.$fromEmail.'>';
+				$headers[] = 'cc: '.ucfirst($competitionType).'Secretary <'.$fromEmail.'>';
+				$organisationName = $this->site_name;
 
-			foreach ($clubs as $club) {
-				$emailSubject = $this->site_name." - ".ucfirst($competitionSeason)." ".$season." ".ucfirst($competitionType)." Entry Open - ".$club->name;
-				$emailTo = $club->matchSecretaryName.' <'.$club->matchSecretaryEmail.'>';
-				$actionURL = $this->site_url.'/'.$competitionType.'s/'.$competitionSeason.'-entry/'.$season.'/'.seoUrl($club->shortcode);
-				$emailMessage = $racketmanager_shortcodes->loadTemplate( 'competition-entry-open', array( 'emailSubject' => $emailSubject, 'fromEmail' => $fromEmail, 'actionURL' => $actionURL, 'organisationName' => $organisationName, 'season' => $season, 'competitionSeason' => $competitionSeason, 'competitionType' => $competitionType, 'club' => $club ), 'email' );
-				$this->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
-				$messageSent = true;
-			}
-
-			if ( $messageSent ) {
-				$return['msg'] = __('Match secretaries notified','racketmanager');
+				foreach ($clubs as $club) {
+					$emailSubject = $this->site_name." - ".ucfirst($competitionSeason)." ".$season." ".ucfirst($competitionType)." Entry Open - ".$club->name;
+					$emailTo = $club->matchSecretaryName.' <'.$club->matchSecretaryEmail.'>';
+					$actionURL = $this->site_url.'/'.$competitionType.'s/'.$competitionSeason.'-entry/'.$season.'/'.seoUrl($club->shortcode);
+					$emailMessage = $racketmanager_shortcodes->loadTemplate( 'competition-entry-open', array( 'emailSubject' => $emailSubject, 'fromEmail' => $fromEmail, 'actionURL' => $actionURL, 'organisationName' => $organisationName, 'season' => $season, 'competitionSeason' => $competitionSeason, 'competitionType' => $competitionType, 'club' => $club ), 'email' );
+					$response = $this->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
+					$messageSent = true;
+				}
+				if ( $messageSent ) {
+					$return['msg'] = __('Match secretaries notified','racketmanager');
+				} else {
+					$return['error'] = true;
+					$return['msg'] = __('No notification','racketmanager');
+				}
 			} else {
 				$return['error'] = true;
-				$return['msg'] = __('No notification','racketmanager');
+				$return['msg'] = __('No secretary email','racketmanager');
 			}
 		}
 		return $return;

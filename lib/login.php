@@ -804,7 +804,7 @@ class RacketManagerLogin extends RacketManager {
   */
   public function render_member_account_form() {
 
-    return $this->member_account_form;
+    return $this->generate_member_account_form();
 
   }
 

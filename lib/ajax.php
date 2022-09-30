@@ -1652,10 +1652,13 @@ class RacketManagerAJAX extends RacketManager {
 				$tournamentEntries[$i] = $tournamentEntry;
 			}
 			$headers = array();
-			$headers[] = 'From: '.$user->display_name.' <'.$racketmanager->admin_email.'>';
 			if ( isset($user->user_email) ) {
 				$headers[] = 'Cc: '.$user->display_name.' <'.$user->user_email.'>';
+				$emailFrom = $user->user_email;
+			} else {
+				$emailFrom = $racketmanager->admin_email;
 			}
+			$headers[] = 'From: '.$user->display_name.' <'.$emailFrom.'>';
 			$organisationName = $racketmanager->site_name;
 			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'tournament-entry', array( 'tournamentEntries' => $tournamentEntries, 'organisationName' => $organisationName, 'season' => $season, 'tournamentSeason' => $tournamentSeason, 'contactno' => $contactno, 'contactemail' => $contactemail, 'player' => $playerName, 'club' => $affiliatedClubName ), 'email' );
 			$racketmanager->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);

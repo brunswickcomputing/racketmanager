@@ -2754,49 +2754,14 @@ final class RacketManagerAdmin extends RacketManager
 	* @return boolean
 	*/
 	private function editTeamPlayer( $team_id, $player1, $player1Id, $player2, $player2Id, $contactno, $contactemail, $affiliatedclub, $league_id ) {
-		global $wpdb, $racketmanager;
+		global $racketmanager;
 
 		if ( !current_user_can('edit_teams') ) {
 			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
 			return false;
 		}
 
-		$league = get_league($league_id);
-
-		if ( $player2Id == 0 ) {
-			$title = $player1;
-			$roster = array($player1Id);
-		} else {
-			$title = $player1.' / '.$player2;
-			$roster = array($player1Id, $player2Id);
-		}
-
-		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `roster` = '%s' WHERE `id` = %d", $title, $affiliatedclub, maybe_serialize($roster), $team_id ) );
-
-		$team_competition = $wpdb->get_results( $wpdb->prepare("SELECT `id` FROM {$wpdb->racketmanager_team_competition} WHERE `team_id` = '%d' AND `competition_id` = '%d'", $team_id, $league->competition_id) );
-		$captain = $racketmanager->getRosterEntry($player1Id)->player_id;
-		if (!isset($team_competition[0])) {
-			$racketmanager->addTeamCompetition( $team_id, $league->competition_id, $captain, $contactno, $contactemail );
-		} else {
-			$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_team_competition} SET `captain` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captain, $team_id, $league->competition_id ) );
-			if ( isset($captain) && $captain != '' ) {
-				$currentContactNo = get_user_meta( $captain, 'contactno', true);
-				$currentContactEmail = get_userdata($captain)->user_email;
-				if ($currentContactNo != $contactno ) {
-					update_user_meta( $captain, 'contactno', $contactno );
-				}
-				if ($currentContactEmail != $contactemail ) {
-					$userdata = array();
-					$userdata['ID'] = $captain;
-					$userdata['user_email'] = $contactemail;
-					$user_id = wp_update_user( $userdata );
-					if ( is_wp_error($user_id) ) {
-						error_log('Unable to update user email '.$captain.' - '.$contactemail);
-					}
-				}
-			}
-
-		}
+		$racketmanager->editPlayerTeam( $team_id, $player1, $player1Id, $player2, $player2Id, $contactno, $contactemail, $affiliatedclub, $league_id );
 
 		$this->setMessage( __('Team updated','racketmanager') );
 

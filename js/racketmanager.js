@@ -203,8 +203,8 @@ jQuery(document).ready(function($) {
 	});
 
 	jQuery('select.cupteam').on('change', function (e) {
-		team = this.value;
-		competition = this.name;
+		var team = this.value;
+		var competition = this.name;
 		competition = competition.substring(5,competition.length-1);
 
 		jQuery.ajax({
@@ -215,7 +215,7 @@ jQuery(document).ready(function($) {
 			"competition": competition,
 			"action": "racketmanager_get_team_info"},
 			success: function(data) {
-				response = jQuery.parseJSON(data);
+				var response = jQuery.parseJSON(data);
 				var captaininput = "captain-".concat(competition);
 				var ref = captaininput.substr(7);
 				var captain = "#".concat(captaininput);
@@ -275,10 +275,11 @@ Racketmanager.printScoreCard = function(e, link) {
 	e.preventDefault();
 	var matchId = jQuery(link).attr('id');
 	var matchtype = jQuery(link).attr('type');
+	var ajaxAction = '';
 	if (matchtype == 'player') {
-		var ajaxAction = 'racketmanager_matchcard_player';
+		ajaxAction = 'racketmanager_matchcard_player';
 	} else {
-		var ajaxAction = 'racketmanager_matchcard_team';
+		ajaxAction = 'racketmanager_matchcard_team';
 	}
 	var styleSheetList = document.styleSheets;
 	var $head = '<html><head><title>Match Card</title>';
@@ -295,7 +296,6 @@ Racketmanager.printScoreCard = function(e, link) {
 		data: {"matchId": matchId,
 		"action": ajaxAction},
 		success: function($response) {
-			var printOne = $response;
 			if (!$mathCardWindow || $mathCardWindow.closed) {
 				$mathCardWindow = window.open("about:blank","_blank","width=800,height=660");
 				if (!$mathCardWindow) {
@@ -374,8 +374,6 @@ Racketmanager.showMatch = function(matchId) {
 };
 Racketmanager.updateMatchResults = function(link) {
 
-	var $match = document.getElementById('current_match_id');
-	var $matchId = $match.value;
 	var $form = jQuery('#match-view').serialize();
 	$form += "&action=racketmanager_update_match";
 	jQuery(".is-invalid").removeClass("is-invalid");
@@ -415,8 +413,8 @@ Racketmanager.updateMatchResults = function(link) {
 				var $fieldval = $homepoints;
 				jQuery($formfield).val($fieldval);
 				var $awaypoints = $response[2];
-				var $formfield = "#away_points";
-				var $fieldval = $awaypoints;
+				$formfield = "#away_points";
+				$fieldval = $awaypoints;
 				jQuery($formfield).val($fieldval);
 			}
 			jQuery("#splash").css('opacity', 0);
@@ -438,14 +436,6 @@ Racketmanager.disableRubberUpdate = function() {
 };
 Racketmanager.updateResults = function(link) {
 
-	var selects = document.getElementById('match-rubbers').getElementsByTagName('select');
-	var values = [];
-	for(i=0;i<selects.length;i++) {
-		var select = selects[i];
-
-	}
-	var $match = document.getElementById('current_match_id');
-	var $matchId = $match.value;
 	var $form = jQuery('#match-rubbers').serialize();
 	$form += "&action=racketmanager_update_rubbers";
 	jQuery(".is-invalid").removeClass("is-invalid");
@@ -471,8 +461,8 @@ Racketmanager.updateResults = function(link) {
 				jQuery("#updateResponse").addClass('message-error');
 				jQuery("#updateResponse").html($message);
 				var $errField = $response[4];
-				for (var i = 0; i < $errField.length; i++) {
-					$formfield = "#"+$errField[i];
+				for (var x = 0; x < $errField.length; x++) {
+					$formfield = "#"+$errField[x];
 					jQuery($formfield).addClass('is-invalid');
 				}
 			} else {
@@ -489,11 +479,11 @@ Racketmanager.updateResults = function(link) {
 					$matchhome  = +$matchhome + +$homepoints[i];
 				}
 				var $awaypoints = $response[3];
-				for ( var i in $awaypoints) {
-					var $formfield = "#away_points\\["+i+"\\]";
-					var $fieldval = $awaypoints[i];
-					jQuery($formfield).val($fieldval);
-					$matchaway  = +$matchaway + +$awaypoints[i];
+				for ( var j in $awaypoints) {
+					var $awayformfield = "#away_points\\["+j+"\\]";
+					var $awayfieldval = $awaypoints[j];
+					jQuery($awayformfield).val($awayfieldval);
+					$matchaway  = +$matchaway + +$awaypoints[j];
 				}
 			}
 			jQuery("#splash").css('opacity', 0);
@@ -663,8 +653,6 @@ Racketmanager.tournamentEntryRequest = function(link) {
 			var $response = jQuery.parseJSON(response);
 			var $message = $response[0];
 			var $error = $response[1];
-			var $errorMsg = $response[2];
-			var $errorField = $response[3];
 			if ($error === true) {
 				jQuery("#tournamentEntryResponse").addClass('message-error');
 				for ( var errorMsg of $response[2] ) {
@@ -708,8 +696,6 @@ Racketmanager.cupEntryRequest = function(link) {
 			var $response = jQuery.parseJSON(response);
 			var $message = $response[0];
 			var $error = $response[1];
-			var $errorMsg = $response[2];
-			var $errorField = $response[3];
 			if ($error === true) {
 				jQuery("#cupEntryResponse").addClass('message-error');
 				for ( var errorMsg of $response[2] ) {

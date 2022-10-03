@@ -1544,50 +1544,35 @@ class RacketManager {
 	* @return array
 	*/
 	public function getPlayers( $args ) {
-		$defaults = array( 'player_id' => false, 'btm' => false, 'firstname' => false, 'surname' => false, 'cache' => true, 'orderby' => array("fullname" => "ASC"  ) );
+		$defaults = array( 'name' => false, 'cache' => true );
 		$args = array_merge($defaults, (array)$args);
 		extract($args, EXTR_SKIP);
 		$cachekey = md5(implode(array_map(function($entry) { if(is_array($entry)) { return implode($entry); } else { return $entry; } }, $args)) );
-		$search_terms = array();
-		if ($player_id) {
-			$search_terms[] = $wpdb->prepare("`player_id` = '%d'", intval($player_id));
+		$search = '';
+		if ($name) {
+			$search = '*'.$name.'*';
+			$searchTerms = 'display_name';
 		}
 
-		if ($btm) {
-			$search_terms[] = $wpdb->prepare("`btm` = '%d'", intval($btm));
-		}
-
-		if ($firstname) {
-			$search_terms[] = $wpdb->prepare("`firstname` = '%s'", htmlspecialchars(strip_tags($firstname)));
-		}
-
-		if ($surname) {
-			$search_terms[] = $wpdb->prepare("`surname` = '%s'", htmlspecialchars(strip_tags($surname)));
-		}
-
-		$search = "";
-		if (count($search_terms) > 0) {
-			$search = implode(" AND ", $search_terms);
-		}
-
-		$orderby_string = ""; $i = 0;
-		foreach ($orderby AS $order => $direction) {
-			if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) $direction = "ASC";
-			if ($this->databaseColumnExists("player", $order)) {
-				$orderby_string .= "`".$order."` ".$direction;
-				if ($i < (count($orderby)-1)) $orderby_string .= ",";
-			}
-			$i++;
-		}
-		$order = $orderby_string;
+		$orderby_string = 'display_name';
+		$order = 'ASC';
 
 		// use cached object
 		if ( isset($this->players[$cachekey]) && $cache ) {
 			return $this->players[$cachekey];
 		}
 
-		$players = get_users( 'orderby=displayname' );
-		if ( !$players ) return false;
+		$searchArgs = array();
+		$searchArgs['orderby'] = $orderby_string;
+		$searchArgs['order'] = $order;
+		if ( $search ) {
+			$searchArgs['search'] = $search;
+			$searchArgs['search_columns'] = array($searchTerms);
+		}
+		$players = get_users( $searchArgs);
+		if ( !$players ) {
+			return false;
+		}
 
 		$i = 0;
 		foreach ( $players AS $player ) {

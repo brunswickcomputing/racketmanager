@@ -372,6 +372,9 @@ class RacketManagerLogin extends RacketManager {
   * @return string Redirect URL
   */
   public function redirect_after_login( $redirect_to, $requested_redirect_to, $user ) {
+    if ( strpos($redirect_to, 'password-reset') ) {
+      $redirect_to = '';
+    }
     $redirect_url = home_url();
     if ( ! isset( $user->ID ) ) {
       return $redirect_url;
@@ -379,17 +382,17 @@ class RacketManagerLogin extends RacketManager {
 
     if ( user_can( $user, 'manage_options' ) ) {
       // Use the redirect_to parameter if one is set, otherwise redirect to admin dashboard.
-      if ( $requested_redirect_to == '' ) {
+      if ( $redirect_to == '' ) {
         $redirect_url = admin_url();
       } else {
-        $redirect_url = $requested_redirect_to;
+        $redirect_url = $redirect_to;
       }
     } else {
       // Use the redirect_to parameter if one is set, otherwise redirect to homepage.
-      if ( $requested_redirect_to == '' ) {
+      if ( $redirect_to == '' ) {
         $redirect_url = home_url();
       } else {
-        $redirect_url = $requested_redirect_to;
+        $redirect_url = $redirect_to;
       }
     }
 

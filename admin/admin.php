@@ -1519,6 +1519,8 @@ final class RacketManagerAdmin extends RacketManager
 	private function displayAdminPage() {
 		global $racketmanager;
 
+		$players = '';
+
 		if ( !current_user_can( 'edit_leagues' ) ) {
 			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
 		} else {
@@ -1543,14 +1545,23 @@ final class RacketManagerAdmin extends RacketManager
 				check_admin_referer('racketmanager_add-player');
 				$this->addPlayer( htmlspecialchars(strip_tags($_POST['firstname'])), htmlspecialchars(strip_tags($_POST['surname'])), $_POST['gender'], htmlspecialchars(strip_tags($_POST['btm'])), $_POST['email'], 'true');
 				$tab = "players";
-			} elseif ( isset($_POST['doPlayerDel']) && $_POST['action'] == 'delete' ) {
-				if ( current_user_can('edit_teams') ) {
-					check_admin_referer('player-bulk');
-					foreach ( $_POST['player'] AS $player_id ) {
-						$this->delPlayer( intval($player_id) );
+			} elseif ( isset($_POST['doPlayerDel']) ) {
+				if ( $_POST['action'] == 'delete' ) {
+					if ( current_user_can('edit_teams') ) {
+						check_admin_referer('player-bulk');
+						foreach ( $_POST['player'] AS $player_id ) {
+							$this->delPlayer( intval($player_id) );
+						}
+					} else {
+						$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
 					}
+				}
+				$tab = "players";
+			} elseif ( isset($_POST['doPlayerSearch']) ) {
+				if ( $_POST['name'] ) {
+					$players = $racketmanager->getPlayers( array('name' => $_POST['name']) );
 				} else {
-					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+					$this->setMessage( __("No search term specified", 'racketmanager'), true );
 				}
 				$tab = "players";
 			} elseif ( isset($_POST['dorosterrequest']) ) {
@@ -1571,6 +1582,10 @@ final class RacketManagerAdmin extends RacketManager
 				$tab = "rosterrequest";
 			}
 			$this->printMessage();
+			debug_to_console($players);
+			if ( !$players ) {
+				$players = $racketmanager->getPlayers( array() );
+			}
 
 			include_once( dirname(__FILE__) . '/show-admin.php' );
 		}

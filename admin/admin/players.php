@@ -34,13 +34,29 @@
 	<form id="player-filter" method="post" action="" class="form-control">
 		<?php wp_nonce_field( 'player-bulk' ) ?>
 
-		<div class="tablenav">
+		<div class="row g-3 mb-3 align-items-center">
 			<!-- Bulk Actions -->
-			<select name="action" size="1">
-				<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
-				<option value="delete"><?php _e('Delete')?></option>
-			</select>
-			<input type="submit" value="<?php _e('Apply'); ?>" name="doPlayerDel" id="dorPlayerDel" class="btn btn-secondary action" />
+			<div class="col-auto">
+				<div class="form-floating">
+					<select class="form-select" name="action" size="1">
+						<option value="-1"><?php _e('Select', 'racketmanager') ?></option>
+						<option value="delete"><?php _e('Delete player', 'racketmanager')?></option>
+					</select>
+					<label for="action"><?php _e('Bulk Action', 'racketmanager') ?></label>
+				</div>
+			</div>
+			<div class="col-auto">
+				<input type="submit" value="<?php _e('Apply', 'racketmanager'); ?>" name="doPlayerDel" id="dorPlayerDel" class="btn btn-secondary action" />
+			</div>
+			<div class="col-auto">
+				<div class="form-floating">
+					<input placeholder="<?php _e( 'Enter search', 'racketmanager') ?>" type="text" name="name" id="name" size="30" class="form-control" />
+					<label for="name"><?php _e( 'Search by name', 'racketmanager' ) ?></label>
+				</div>
+			</div>
+			<div class="col-auto">
+			<input type="submit" value="<?php _e('Search', 'racketmanager'); ?>" name="doPlayerSearch" id="dorPlayerSearch" class="btn btn-secondary action" />
+			</div>
 		</div>
 
 		<div class="container">
@@ -53,7 +69,7 @@
 				<div class="col-1"><?php _e( 'Created', 'racketmanager') ?></div>
 				<div class="col-1"><?php _e( 'Removed', 'racketmanager') ?></div>
 			</div>
-			<?php if ( $players = $racketmanager->getPlayers( array() ) ) {
+			<?php if ( $players ) {
 				$class = '';
 				foreach ( $players AS $player ) {
 					$class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>

@@ -2023,7 +2023,7 @@ class RacketManager {
 			$currentContactNo = get_user_meta( $matchsecretary, 'contactno', true);
 			$currentContactEmail = get_userdata($matchsecretary)->user_email;
 			if ($currentContactNo != $matchSecretaryContactNo ) {
-				update_user_meta( $matchsecretary, 'contactno', $contactNo );
+				update_user_meta( $matchsecretary, 'contactno', $matchSecretaryContactNo );
 			}
 			if ($currentContactEmail != $matchSecretaryEmail ) {
 				$userdata = array();

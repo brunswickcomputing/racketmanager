@@ -73,10 +73,17 @@ jQuery(function() {
           $surnameErr = true;
           $surnameMsg = __( 'Last name must be specified', 'racketmanager' );
         }
+        if ( $error == 'invalidkey' ) {
+          $errorErr = true;
+          $errorMsg = __( 'Password reset link has expired', 'racketmanager' );
+        }
         ?>
       <?php } ?>
       <p class="login-error">
         <?php echo sprintf(__( 'Error in %s', 'racketmanager' ), $tab); ?>
+        <?php if ( $errorErr ) {
+          echo $errorMsg;
+        } ?>
       </p>
     <?php } ?>
     <?php if ( isset($vars['logged_out']) && $vars['logged_out'] ) { ?>

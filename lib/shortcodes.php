@@ -1543,7 +1543,7 @@ class RacketManagerShortcodes extends RacketManager {
 
 		$filename = ( !empty($template) ) ? 'form-favourites-'.$template : 'form-favourites';
 
-		$out = $this->loadTemplate( $filename, array( 'favouriteTypes' => $favouriteTypes) );
+		$out = $this->loadTemplate( $filename, array( 'favouriteTypes' => $favouriteTypes), 'form' );
 
 		return $out;
 	}
@@ -1569,6 +1569,9 @@ class RacketManagerShortcodes extends RacketManager {
 				break;
 				case 'entry':
 				$templateDir = 'templates/entry';
+				break;
+				case 'form':
+				$templateDir = 'templates/forms';
 				break;
 				case 'page':
 				$templateDir = 'templates/page';

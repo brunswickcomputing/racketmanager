@@ -167,73 +167,80 @@ class RacketManagerLogin extends RacketManager {
     $vars['recaptcha_site_key'] = get_option( 'racketmanager-recaptcha-site-key', null );
     $action = isset($_GET[('action')]) ? $_GET[('action')]: '';
     if ( isset($action) && $action == 'register' ) {
-
-      // Retrieve possible errors from request parameters
-      $errors = array();
-      $error_codes = array();
-
-      if ( isset( $_REQUEST['register-errors'] ) ) {
-        $error_codes = explode( ',', $_REQUEST['register-errors'] );
-
-        foreach ( $error_codes as $code ) {
-          $errors[]= $this->get_error_message( $code );
-        }
-      }
-      $vars['errors'] = $errors;
-      $vars['error_codes'] = $error_codes;
-
-      if ( is_user_logged_in() ) {
-        return __( 'You are already signed in.', 'racketmanager' );
-      } elseif ( ! get_option( 'users_can_register' ) ) {
-        return __( 'Registering new users is currently not allowed.', 'racketmanager' );
-      } else {
-        return $racketmanager_shortcodes->loadTemplate( 'form-login', $vars );
-      }
+      return $this->formRegister($vars);
     } else {
-      // Check if the user just registered
-      $vars['registered'] = isset( $_REQUEST['registered'] );
-
-      // Pass the redirect parameter to the WordPress login functionality: by default,
-      // don't specify a redirect, but if a valid redirect URL has been passed as
-      // request parameter, use it.
-      $vars['redirect'] = '';
-      if ( isset( $_REQUEST['redirect_to'] ) ) {
-        $vars['redirect'] = wp_validate_redirect( $_REQUEST['redirect_to'], $vars['redirect'] );
-      } elseif ( wp_get_referer() ) {
-        if ( strpos(wp_get_referer(), 'member-login' ) > 0 ) {
-          $vars['redirect'] = '';
-        } elseif ( strpos(wp_get_referer(), $racketmanager->site_url ) === 0 ) {
-          $vars['redirect'] = wp_validate_redirect( wp_get_referer(), $vars['redirect'] );
-        }
-      }
-      // Error messages
-      $errors = array();
-      $error_codes = array();
-      if ( isset( $_REQUEST['login'] ) ) {
-        $error_codes = explode( ',', $_REQUEST['login'] );
-
-        foreach ( $error_codes as $code ) {
-          $errors []= $this->get_error_message( $code );
-        }
-      }
-      $vars['errors'] = $errors;
-      $vars['error_codes'] = $error_codes;
-
-      // Check if the user just requested a new password
-      $vars['lost_password_sent'] = isset( $_REQUEST['checkemail'] ) && $_REQUEST['checkemail'] == 'confirm';
-
-      // Check if user just updated password
-      $vars['password_updated'] = isset( $_REQUEST['password'] ) && $_REQUEST['password'] == 'changed';
-
-      // Check if user just logged out
-      $vars['logged_out'] = isset( $_REQUEST['logged_out'] ) && $_REQUEST['logged_out'] == true;
-
-      // Render the login form using an external template
-      return $racketmanager_shortcodes->loadTemplate( 'form-login', $vars );
+      return $this->formLogin($vars);
     }
   }
 
-  /**
+  public function formRegister($vars) {
+    global $racketmanager_shortcodes;
+    // Retrieve possible errors from request parameters
+    $errors = array();
+    $errorCodes = array();
+
+    if ( isset( $_REQUEST['register-errors'] ) ) {
+      $errorCodes = explode( ',', $_REQUEST['register-errors'] );
+
+      foreach ( $errorCodes as $code ) {
+        $errors[]= $this->get_error_message( $code );
+      }
+    }
+    $vars['errors'] = $errors;
+    $vars['error_codes'] = $errorCodes;
+
+    if ( ! get_option( 'users_can_register' ) ) {
+      $return = __( 'Registering new users is currently not allowed', 'racketmanager' );
+    } else {
+      $return = $racketmanager_shortcodes->loadTemplate( 'form-login', $vars, 'form' );
+    }
+    return $return;
+}
+
+public function formLogin($vars) {
+  global $racketmanager_shortcodes, $racketmanager;
+  // Check if the user just registered
+  $vars['registered'] = isset( $_REQUEST['registered'] );
+  // Pass the redirect parameter to the WordPress login functionality: by default,
+  // don't specify a redirect, but if a valid redirect URL has been passed as
+  // request parameter, use it.
+  $vars['redirect'] = '';
+  if ( isset( $_REQUEST['redirect_to'] ) ) {
+    $vars['redirect'] = wp_validate_redirect( $_REQUEST['redirect_to'], $vars['redirect'] );
+  } elseif ( wp_get_referer() ) {
+    if ( strpos(wp_get_referer(), 'member-login' ) > 0 ) {
+      $vars['redirect'] = '';
+    } elseif ( strpos(wp_get_referer(), $racketmanager->site_url ) === 0 ) {
+      $vars['redirect'] = wp_validate_redirect( wp_get_referer(), $vars['redirect'] );
+    }
+  }
+  // Error messages
+  $errors = array();
+  $errorCodes = array();
+  if ( isset( $_REQUEST['login'] ) ) {
+    $errorCodes = explode( ',', $_REQUEST['login'] );
+
+    foreach ( $errorCodes as $code ) {
+      $errors []= $this->get_error_message( $code );
+    }
+  }
+  $vars['errors'] = $errors;
+  $vars['error_codes'] = $errorCodes;
+
+  // Check if the user just requested a new password
+  $vars['lost_password_sent'] = isset( $_REQUEST['checkemail'] ) && $_REQUEST['checkemail'] == 'confirm';
+
+  // Check if user just updated password
+  $vars['password_updated'] = isset( $_REQUEST['passwordUpdate'] ) && $_REQUEST['passwordUpdate'] == 'true';
+
+  // Check if user just logged out
+  $vars['logged_out'] = isset( $_REQUEST['logged_out'] ) && $_REQUEST['logged_out'] ;
+
+  // Render the login form using an external template
+  return $racketmanager_shortcodes->loadTemplate( 'form-login', $vars, 'form' );
+
+}
+
   * Redirect the user to the custom login page instead of wp-login.php.
   */
   public function redirect_to_custom_login() {
@@ -631,7 +638,7 @@ class RacketManagerLogin extends RacketManager {
     // Check if the user just requested a new password
     $vars['lost_password_sent'] = isset( $_REQUEST['checkemail'] ) && $_REQUEST['checkemail'] == 'confirm';
 
-    return $racketmanager_shortcodes->loadTemplate( 'form-password-lost', $vars );
+    return $racketmanager_shortcodes->loadTemplate( 'form-password-lost', $vars, 'form' );
   }
 
   /**
@@ -738,7 +745,7 @@ class RacketManagerLogin extends RacketManager {
         $vars['errors'] = $errors;
         $vars['error_codes'] = $error_codes;
 
-        return $racketmanager_shortcodes->loadTemplate( 'form-password-reset', $vars );
+        return $racketmanager_shortcodes->loadTemplate( 'form-password-reset', $vars, 'form' );
       } else {
         return __( 'Invalid password reset link.', 'racketmanager' );
       }
@@ -856,7 +863,7 @@ class RacketManagerLogin extends RacketManager {
       break;
     }
 
-    return $racketmanager_shortcodes->loadTemplate( 'form-member-account', array('user_data' => $user_data) );
+    return $racketmanager_shortcodes->loadTemplate( 'form-member-account', array('userData' => $userData), 'form' );
   }
 
   /**

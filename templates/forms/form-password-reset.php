@@ -21,6 +21,7 @@ if ( count( $vars['errors'] ) > 0 ) {
 ?>
 <div class="row justify-content-center">
   <div id="tabs-login" class="col-12 col-md-9 col-lg-6">
+    <h1><?php _e('Change Password', 'racketmanager'); ?></h1>
     <form name="resetpassform" id="resetpassform" action="<?php echo site_url( 'wp-login.php?action=resetpass' ); ?>" method="post" autocomplete="off">
       <input type="hidden" id="user_login" name="rp_login" value="<?php echo esc_attr( $vars['login'] ); ?>" autocomplete="off" />
       <input type="hidden" name="rp_key" value="<?php echo esc_attr( $vars['key'] ); ?>" />

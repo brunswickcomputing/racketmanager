@@ -915,6 +915,10 @@ summary > * {
     margin-bottom: 6px !important;
     padding-left: 6px !important;
 }
+.form-info {
+    color: #505a5f;
+    margin-bottom: 1rem;
+}
 span.form-error {
     margin-top: 10px;
     padding-top: 5px;

@@ -31,6 +31,7 @@ jQuery(function() {
     $passwordErr = false;
     $usernameMsg = '';
     $passwordMsg = '';
+    $errorErr = false;
     $emailErr = false;
     $firstNameErr = false;
     $surnameErr = false;
@@ -104,10 +105,10 @@ jQuery(function() {
     <!-- Tab panes -->
     <div class="tab-content">
       <div class="tab-pane fade" id="login" role="tabpanel" aria-labelledby="login-tab">
-        <?php include('forms/login-page.php'); ?>
+        <?php include('login-page.php'); ?>
       </div>
       <div class="tab-pane fade" id="registration" role="tabpanel" aria-labelledby="registration-tab">
-        <?php include('forms/register-page.php'); ?>
+        <?php include('register-page.php'); ?>
       </div>
     </div>
   </div>

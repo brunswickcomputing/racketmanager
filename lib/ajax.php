@@ -79,7 +79,7 @@ class RacketManagerAJAX extends RacketManager {
 		$results = $wpdb->get_results($sql);
 		$players = array();
 		$player = array();
-		foreach( $results AS $r) {
+		foreach( $results as $r) {
 			$player['label'] = addslashes($r->fullname).' - '.$r->club;
 			$player['value'] = addslashes($r->fullname);
 			$player['id'] = $r->rosterId;
@@ -108,7 +108,7 @@ class RacketManagerAJAX extends RacketManager {
 		$results = $wpdb->get_results($sql);
 		$captains = array();
 		$captain = array();
-		foreach( $results AS $r) {
+		foreach( $results as $r) {
 			$captain['label'] = addslashes($r->fullname).' - '.$r->club;
 			$captain['value'] = addslashes($r->fullname);
 			$captain['id'] = $r->playerId;
@@ -129,22 +129,23 @@ class RacketManagerAJAX extends RacketManager {
 		global $wpdb, $lmLoader, $racketmanager, $league;
 		$ranking = $_POST['ranking'];
 		$teams = $league->getRanking($ranking);
-		foreach ( $teams AS $rank => $team_id ) {
-			$old = get_team( $team_id );
+		foreach ( $teams as $rank => $teamId ) {
+			$old = get_team( $teamId );
 			$oldRank = $old->rank;
 
 			if ( $oldRank != 0 ) {
-				if ( $rank == $oldRank )
-				$status = '&#8226;';
-				elseif ( $rank < $oldRank )
-				$status = '&#8593';
-				else
-				$status = '&#8595';
+				if ( $rank == $oldRank ) {
+					$status = '&#8226;';
+				} elseif ( $rank < $oldRank ) {
+					$status = '&#8593';
+				} else {
+					$status = '&#8595';
+				}
 			} else {
 				$status = '&#8226;';
 			}
 
-			$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_table} SET `rank` = '%d', `status` = '%s' WHERE `team_id` = '%d'", $rank, $status, $team_id ) );
+			$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_table} SET `rank` = '%d', `status` = '%s' WHERE `team_id` = '%d'", $rank, $status, $teamId ) );
 		}
 	}
 
@@ -156,15 +157,15 @@ class RacketManagerAJAX extends RacketManager {
 	public function saveAddPoints() {
 		global $wpdb;
 
-		$team_id = intval($_POST['team_id']);
+		$teamId = intval($_POST['team_id']);
 		$league = get_league(intval($_POST['league_id']));
 		$season = $league->getSeason();
-		$add_points = $_POST['points'];
+		$addPoints = $_POST['points'];
 
-		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_table} SET `add_points` = '%s' WHERE `team_id` = '%d' AND `league_id` = '%d' AND `season` = '%s'", $add_points, $team_id, $league->id, $season ) );
-		$league->_rankTeams($league_id);
+		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_table} SET `add_points` = '%s' WHERE `team_id` = '%d' AND `league_id` = '%d' AND `season` = '%s'", $addPoints, $teamId, $league->id, $season ) );
+		$league->_rankTeams($league->id);
 
-		die("jQuery('#loading_".$team_id."').fadeOut('fast'); window.location.reload(true);");
+		die("jQuery('#loading_".$teamId."').fadeOut('fast'); window.location.reload(true);");
 	}
 
 	/**
@@ -175,14 +176,12 @@ class RacketManagerAJAX extends RacketManager {
 	public function addTeamPlayerFromDB() {
 		global $racketmanager;
 
-		$team_id = (int)$_POST['team_id'];
-		$team = get_team( $team_id );
-		$return = "document.getElementById('team_id').value = ".$team_id.";document.getElementById('team').value = '".$team->title."';document.getElementById('affiliatedclub').value = ".$team->affiliatedclub.";document.getElementById('teamPlayer1').value = '".$team->player[1]."';document.getElementById('teamPlayerId1').value = ".$team->playerId[1].";";
+		$teamId = (int)$_POST['team_id'];
+		$team = get_team( $teamId );
+		$return = "document.getElementById('team_id').value = ".$teamId.";document.getElementById('team').value = '".$team->title."';document.getElementById('affiliatedclub').value = ".$team->affiliatedclub.";document.getElementById('teamPlayer1').value = '".$team->player[1]."';document.getElementById('teamPlayerId1').value = ".$team->playerId[1].";";
 		if ( isset($team->player[2]) ) {
 			$return .= "document.getElementById('teamPlayer2').value = '".$team->player[2]."';document.getElementById('teamPlayerId2').value = ".$team->playerId[2].";";
 		}
-
-		$home = '';
 
 		die($return);
 	}
@@ -194,12 +193,15 @@ class RacketManagerAJAX extends RacketManager {
 	*/
 	public function insertHomeStadium() {
 
-		$team_id = (int)$_POST['team_id'];
+		$teamId = (int)$_POST['team_id'];
 
-		$team = get_team( $team_id );
+		$team = get_team( $teamId );
 
-		if ($team) $stadium = trim($team->stadium);
-		else $stadium = "";
+		if ($team) {
+			$stadium = trim($team->stadium);
+		} else {
+			$stadium = "";
+		}
 		die($stadium);
 	}
 
@@ -210,15 +212,15 @@ class RacketManagerAJAX extends RacketManager {
 	*/
 	public function setMatchDayPopUp() {
 		global $racketmanager;
-		$match_day = (int)$_POST['match_day'];
+		$matchDay = (int)$_POST['match_day'];
 		$i = (int)$_POST['i'];
-		$max_matches = (int)$_POST['max_matches'];
+		$maxMatches = (int)$_POST['max_matches'];
 		$mode = htmlspecialchars($_POST['mode']);
 
 		if ( $i == 0 && $mode == 'add') {
 			$myAjax = "";
-			for ( $xx = 1; $xx < $max_matches; $xx++ ) {
-				$myAjax .= "document.getElementById('match_day_".$xx."').value = '".$match_day."'; ";
+			for ( $xx = 1; $xx < $maxMatches; $xx++ ) {
+				$myAjax .= "document.getElementById('match_day_".$xx."').value = '".$matchDay."'; ";
 			}
 			die("".$myAjax."");
 		}
@@ -231,15 +233,15 @@ class RacketManagerAJAX extends RacketManager {
 	*/
 	public function setMatchDate() {
 		global $racketmanager;
-		$match_date = htmlspecialchars($_POST['match_date']);
+		$matchDate = htmlspecialchars($_POST['match_date']);
 		$i = (int)$_POST['i'];
-		$max_matches = (int)$_POST['max_matches'];
+		$maxMatches = (int)$_POST['max_matches'];
 		$mode = htmlspecialchars($_POST['mode']);
 
 		if ( $i == 0 && $mode == 'add' ) {
 			$myAjax = "";
-			for ( $xx = 1; $xx < $max_matches; $xx++ ) {
-				$myAjax .= "document.getElementById('mydatepicker[".$xx."]').value = '".$match_date."'; ";
+			for ( $xx = 1; $xx < $maxMatches; $xx++ ) {
+				$myAjax .= "document.getElementById('mydatepicker[".$xx."]').value = '".$matchDate."'; ";
 			}
 			die("".$myAjax."");
 		}
@@ -295,10 +297,8 @@ class RacketManagerAJAX extends RacketManager {
 		$matchId = $_POST['matchId'];
 		$match = get_match($matchId);
 		$league = get_league($match->league_id);
-		$num_sets = $league->num_sets;
-		$pointsspan = 2 + intval($num_sets);
-		$num_rubbers = $league->num_rubbers;
-		$match_type = $league->type;
+		$numSets = $league->num_sets;
+		$pointsspan = 2 + intval($numSets);
 		$sponsorhtml = sponsor_level_cat_func(array("columns" => 1, "title" => 'no', "bio" => 'no', "link" => 'no'), "");
 		?>
 		<div id="matchrubbers" class="rubber-block">
@@ -317,18 +317,19 @@ class RacketManagerAJAX extends RacketManager {
 			<form id="match-rubbers" action="#" method="post" onsubmit="return checkSelect(this)">
 				<?php wp_nonce_field( 'rubbers-match' ) ?>
 
-				<table class="widefat" summary="" style="margin-bottom: 2em;">
+				<table class="widefat">
+					<caption><?php _e('Match card', 'racketmanager') ?></caption>
 					<thead>
 						<tr>
 							<th style="text-align: center;"><?php _e( 'Pair', 'racketmanager' ) ?></th>
 							<th style="text-align: center;" colspan="1"><?php _e( 'Home Team', 'racketmanager' ) ?></th>
-							<th style="text-align: center;" colspan="<?php echo $num_sets ?>"><?php _e('Sets', 'racketmanager' ) ?></th>
+							<th style="text-align: center;" colspan="<?php echo $numSets ?>"><?php _e('Sets', 'racketmanager' ) ?></th>
 							<th style="text-align: center;" colspan="1"><?php _e( 'Away Team', 'racketmanager' ) ?></th>
 						</tr>
 					</thead>
 					<tbody class="rtbody rubber-table" id="the-list-rubbers-<?php echo $match->id ?>" >
 
-						<?php $class = '';
+						<?php
 						$rubbers = $match->getRubbers();
 						$r = 0 ;
 
@@ -336,13 +337,13 @@ class RacketManagerAJAX extends RacketManager {
 							?>
 							<tr class="rtr">
 								<td rowspan="3" class="rtd centered">
-									<?php echo (isset($rubber->rubber_number) ? $rubber->rubber_number : '') ?>
+									<?php echo isset($rubber->rubber_number) ? $rubber->rubber_number : '' ?>
 								</td>
 								<td class="rtd">
 									<input class="player" name="homeplayer1[<?php echo $r ?>]" id="homeplayer1_<?php echo $r ?>" />
 								</td>
 
-								<?php for ( $i = 1; $i <= $num_sets; $i++ ) { ?>
+								<?php for ( $i = 1; $i <= $numSets; $i++ ) { ?>
 									<td rowspan="2" class="rtd">
 										<input class="points" type="text" size="2" id="set_<?php echo $r ?>_<?php echo $i ?>_player1" name="custom[<?php echo $r ?>][sets][<?php echo $i ?>][player1]" />
 										:
@@ -379,7 +380,7 @@ class RacketManagerAJAX extends RacketManager {
 							<td class="rtd">
 								<input class="player" name="homesig" id="homesig" placeholder="Home Captain Signature" />
 							</td>
-							<td colspan="<?php echo intval($num_sets) ?>" class="rtd" style="text-align: center;">
+							<td colspan="<?php echo intval($numSets) ?>" class="rtd" style="text-align: center;">
 								<input class="points" type="text" size="2" id="home_points[<?php echo $r ?>]" name="home_points[<?php echo $r ?>]" />
 								:
 								<input class="points" type="text" size="2" id="away_points[<?php echo $r ?>]" name="away_points[<?php echo $r ?>]" />
@@ -406,9 +407,7 @@ class RacketManagerAJAX extends RacketManager {
 		$matchId = $_POST['matchId'];
 		$match = get_match($matchId);
 		$league = get_league($match->league_id);
-		$num_sets = $league->num_sets;
-		$pointsspan = 2 + intval($num_sets);
-		$match_type = $league->type;
+		$numSets = $league->num_sets;
 		$sponsorhtml = sponsor_level_cat_func(array("columns" => 1, "title" => 'no', "bio" => 'no', "link" => 'no'), "");
 		?>
 		<div id="matchrubbers" class="rubber-block">
@@ -423,8 +422,7 @@ class RacketManagerAJAX extends RacketManager {
 					}?>
 				</div>
 				<div class="matchtitle">
-					<?php if ( $league->mode == 'championship' ) {
-					} else {
+					<?php if ( $league->mode != 'championship' ) {
 						echo $match->match_title;
 					}
 				?>
@@ -433,24 +431,23 @@ class RacketManagerAJAX extends RacketManager {
 			<form id="match-view" action="#" method="post" onsubmit="return checkSelect(this)">
 				<?php wp_nonce_field( 'rubbers-match' ) ?>
 
-				<table class="widefat" summary="" style="margin-bottom: 2em;">
+				<table class="widefat">
+				<caption><?php _e('Match card', 'racketmanager') ?></caption>
 					<thead>
 						<tr>
 							<th style="text-align: center;" colspan="1"><?php _e( 'Team', 'racketmanager' ) ?></th>
-							<th style="text-align: center;" colspan="<?php echo $num_sets ?>"><?php _e('Sets', 'racketmanager' ) ?></th>
+							<th style="text-align: center;" colspan="<?php echo $numSets ?>"><?php _e('Sets', 'racketmanager' ) ?></th>
 							<th style="text-align: center;" colspan="1"><?php _e( 'Team', 'racketmanager' ) ?></th>
 						</tr>
 					</thead>
 					<tbody class="rtbody rubber-table" id="the-list-rubbers-<?php echo $match->id ?>" >
-
-						<?php $class = ''; ?>
 
 						<tr class="rtr">
 							<td class="rtd">
 								<?php echo $match->teams['home']->title ?>
 							</td>
 
-							<?php for ( $i = 1; $i <= $num_sets; $i++ ) { ?>
+							<?php for ( $i = 1; $i <= $numSets; $i++ ) { ?>
 								<td class="rtd">
 									<input class="points" type="text" size="2" id="set_<?php echo $i ?>_player1" name="custom[sets][<?php echo $i ?>][player1]" />
 									:
@@ -466,7 +463,7 @@ class RacketManagerAJAX extends RacketManager {
 							<td class="rtd">
 								<input class="player" name="homesig" id="homesig" placeholder="Home Captain Signature" />
 							</td>
-							<td colspan="<?php echo intval($num_sets) ?>" class="rtd" style="text-align: center;">
+							<td colspan="<?php echo intval($numSets) ?>" class="rtd" style="text-align: center;">
 								<input class="points" type="text" size="2" id="home_points" name="home_points" />
 								:
 								<input class="points" type="text" size="2" id="away_points" name="away_points" />
@@ -506,16 +503,15 @@ class RacketManagerAJAX extends RacketManager {
 		if ( isset($_POST['updateMatch'])) {
 			check_admin_referer('scores-match');
 			$return = array();
-			$updates = false;
 			$matchId = $_POST['current_match_id'];
 			$match = get_match($matchId);
 			$league = get_league($match->league_id);
 			$matchConfirmed = 'P';
 			$matches[$matchId] = $matchId;
-			$home_points[$matchId] = 0;
-			$away_points[$matchId] = 0;
-			$home_team[$matchId] = $_POST['home_team'];
-			$away_team[$matchId] = $_POST['away_team'];
+			$homePoints[$matchId] = 0;
+			$awayPoints[$matchId] = 0;
+			$homeTeam[$matchId] = $_POST['home_team'];
+			$awayTeam[$matchId] = $_POST['away_team'];
 			$custom[$matchId] = $_POST['custom'];
 			$season[$matchId] = $_POST['current_season'];
 
@@ -523,33 +519,28 @@ class RacketManagerAJAX extends RacketManager {
 			$errField = array();
 			$error = false;
 
-			$homescore = 0;
-			$awayscore = 0;
 			$setPrefix = 'set_';
 
 			$matchValidate = $this->validateMatchScore($match, $custom[$matchId], $setPrefix, $errMsg, $errField);
 			$error = $matchValidate[0];
 			$errMsg = $matchValidate[1];
 			$errField = $matchValidate[2];
-			$homescore = $matchValidate[3];
-			$awayscore = $matchValidate[4];
 			$matchMessage = implode('<br>', $errMsg);
 
-
 			if ( !$error ) {
-				$matchCount = $league->_updateResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $season, $_POST['match_round'], $matchConfirmed );
+				$matchCount = $league->_updateResults( $matches, $homePoints, $awayPoints, $homeTeam, $awayTeam, $custom, $season, $_POST['match_round'], $matchConfirmed );
 				if ( $matchCount > 0 ) {
 					$matchMessage = __( 'Result saved', 'racketmanager' );
 					$match = get_match($matchId);
-					$homePoints = $match->home_points;
-					$awayPoints = $match->away_points;
+					$homePoints[$matchId] = $match->home_points;
+					$awayPoints[$matchId] = $match->away_points;
 					$this->resultNotification($matchConfirmed, $matchMessage, $match);
 				} else {
 					$matchMessage = __('No result to save','racketmanager');
 				}
 			}
 
-			array_push($return,$matchMessage,$home_points[$matchId],$away_points[$matchId],$error,$errField);
+			array_push($return,$matchMessage,$homePoints[$matchId],$awayPoints[$matchId],$error,$errField);
 
 			die(json_encode($return));
 		} else {
@@ -579,28 +570,25 @@ class RacketManagerAJAX extends RacketManager {
 
 		if ( isset($_POST['updateRubber'])) {
 			check_admin_referer('rubbers-match');
-			$homepoints = array();
-			$awaypoints = array();
 			$return = array();
 			$msg = '';
 			$errField = array();
 			$error = false;
-			$updates = false;
 			$matchId = $_POST['current_match_id'];
 			$match = get_match($matchId);
 			$matchRubbers = array();
 			$matchRubbers['homepoints'] = isset($_POST['home_points']) ? $_POST['home_points'] : array();
 			$matchRubbers['awaypoints'] = isset( $_POST['away_points']) ? $_POST['away_points'] : array();
-			$num_rubbers = $_POST['num_rubbers'];
-			$home_team = $_POST['home_team'];
-			$away_team = $_POST['away_team'];
-			$lm_options = $racketmanager->getOptions();
+			$numRubbers = $_POST['num_rubbers'];
+			$homeTeam = $_POST['home_team'];
+			$awayTeam = $_POST['away_team'];
+			$rmOptions = $racketmanager->getOptions();
 			$matchConfirmed = '';
 			$userCanUpdateArray = $racketmanager->getMatchUpdateAllowed($match->teams['home'], $match->teams['away'], $match->league->competitionType, $match->confirmed);
 			$userCanUpdate = $userCanUpdateArray[0];
 			$userType = $userCanUpdateArray[1];
 			$userTeam = $userCanUpdateArray[2];
-			$resultConfirmation = $lm_options[$match->league->competitionType]['resultConfirmation'];
+			$resultConfirmation = $rmOptions[$match->league->competitionType]['resultConfirmation'];
 			$matchComments = isset($_POST['resultConfirmComments']) ? $_POST['resultConfirmComments'] : '';
 			$matchCommentsHome = isset($_POST['resultConfirmCommentsHome']) ? $_POST['resultConfirmCommentsHome'] : '';
 			$matchCommentsAway = isset($_POST['resultConfirmCommentsAway']) ? $_POST['resultConfirmCommentsAway'] : '';
@@ -624,11 +612,11 @@ class RacketManagerAJAX extends RacketManager {
 						if ( !$playerFound ) {
 							$playerRoster = $racketmanager->getRoster( array('player' => get_current_user_id(), 'club' => $club, 'inactive' => true) );
 							$playerRosterId = $playerRoster[0]->roster_id;
-							for ($ix = 1; $ix <= $num_rubbers; $ix++) {
-								$homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : NULL;
-								$homeplayer2    = isset($_POST['homeplayer2'][$ix]) ? $_POST['homeplayer2'][$ix] : NULL;
-								$awayplayer1    = isset($_POST['awayplayer1'][$ix]) ? $_POST['awayplayer1'][$ix] : NULL;
-								$awayplayer2    = isset($_POST['awayplayer2'][$ix]) ? $_POST['awayplayer2'][$ix] : NULL;
+							for ($ix = 1; $ix <= $numRubbers; $ix++) {
+								$homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : null;
+								$homeplayer2    = isset($_POST['homeplayer2'][$ix]) ? $_POST['homeplayer2'][$ix] : null;
+								$awayplayer1    = isset($_POST['awayplayer1'][$ix]) ? $_POST['awayplayer1'][$ix] : null;
+								$awayplayer2    = isset($_POST['awayplayer2'][$ix]) ? $_POST['awayplayer2'][$ix] : null;
 								if ( $userTeam == 'home' ) {
 									if ( $playerRosterId == $homeplayer1 || $playerRosterId == $homeplayer2 ) {
 										$playerFound = true;
@@ -648,7 +636,7 @@ class RacketManagerAJAX extends RacketManager {
 					}
 				}
 				if ( $userCanUpdate ) {
-					$rubberResult = $this->updateRubberResults( $match, $num_rubbers, $lm_options);
+					$rubberResult = $this->updateRubberResults( $match, $numRubbers, $rmOptions);
 					$error = $rubberResult[0];
 					$matchConfirmed = $rubberResult[1];
 					$errMsg = $rubberResult[2];
@@ -661,7 +649,7 @@ class RacketManagerAJAX extends RacketManager {
 
 			if ( !$error ) {
 				if ( $matchConfirmed ) {
-					$matchUpdatedby = $this->updateMatchStatus( $matchId, $matchConfirmed, $home_team, $away_team, $matchComments );
+					$matchUpdatedby = $this->updateMatchStatus( $matchId, $matchConfirmed, $homeTeam, $awayTeam, $matchComments );
 					switch ( $matchConfirmed ) {
 						case "A":
 						$matchMessage = 'Result Approved';
@@ -682,18 +670,18 @@ class RacketManagerAJAX extends RacketManager {
 						$league = get_league($leagueId);
 						$matchId = $_POST['current_match_id'];
 						$matches[$matchId] = $matchId;
-						$home_points[$matchId] = array_sum($matchRubbers['homepoints']);
-						$away_points[$matchId] = array_sum($matchRubbers['awaypoints']);
-						$home_team[$matchId] = $home_team;
-						$away_team[$matchId] = $away_team;
+						$homePoints[$matchId] = array_sum($matchRubbers['homepoints']);
+						$awayPoints[$matchId] = array_sum($matchRubbers['awaypoints']);
+						$homeTeam[$matchId] = $homeTeam;
+						$awayTeam[$matchId] = $awayTeam;
 						$custom[$matchId] = array();
 						$season = $_POST['current_season'];
 						if ( $league->is_championship ) {
 							$round = $league->championship->getFinals($_POST['match_round'])['round'];
-							$league->championship->updateFinalResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $round, $season  );
+							$league->championship->updateFinalResults( $matches, $homePoints, $awayPoints, $homeTeam, $awayTeam, $custom, $round, $season  );
 							$msg = __('Match saved','racketmanager');
 						} else {
-							$matchCount = $league->_updateResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $season );
+							$matchCount = $league->_updateResults( $matches, $homePoints, $awayPoints, $homeTeam, $awayTeam, $custom, $season );
 							if ( $matchCount > 0 ) {
 								$msg = sprintf(__('Saved Results of %d matches','racketmanager'), $matchCount);
 							} else {
@@ -746,10 +734,10 @@ class RacketManagerAJAX extends RacketManager {
 
 		for ($ix = 1; $ix <= $numRubbers; $ix++) {
 			$rubberId       = $_POST['id'][$ix];
-			$homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : NULL;
-			$homeplayer2    = isset($_POST['homeplayer2'][$ix]) ? $_POST['homeplayer2'][$ix] : NULL;
-			$awayplayer1    = isset($_POST['awayplayer1'][$ix]) ? $_POST['awayplayer1'][$ix] : NULL;
-			$awayplayer2    = isset($_POST['awayplayer2'][$ix]) ? $_POST['awayplayer2'][$ix] : NULL;
+			$homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : null;
+			$homeplayer2    = isset($_POST['homeplayer2'][$ix]) ? $_POST['homeplayer2'][$ix] : null;
+			$awayplayer1    = isset($_POST['awayplayer1'][$ix]) ? $_POST['awayplayer1'][$ix] : null;
+			$awayplayer2    = isset($_POST['awayplayer2'][$ix]) ? $_POST['awayplayer2'][$ix] : null;
 			$custom         = isset($_POST['custom'][$ix]) ? $_POST['custom'][$ix] : "";
 			$winner         = $loser = '';
 
@@ -759,13 +747,11 @@ class RacketManagerAJAX extends RacketManager {
 			$validateMatch = true;
 			$playoff = false;
 
-			if (isset($match->league->scoring) && ($match->league->scoring == 'TP' || $match->league->scoring == 'MP')) {
-				if ( $ix == $numRubbers ) {
-					if ( $homeTeamScore != $awayTeamScore ) {
-						$validateMatch = false;
-					} else {
-						$playoff = true;
-					}
+			if (isset($match->league->scoring) && ($match->league->scoring == 'TP' || $match->league->scoring == 'MP') && $ix == $numRubbers ) {
+				if ( $homeTeamScore != $awayTeamScore ) {
+					$validateMatch = false;
+				} else {
+					$playoff = true;
 				}
 			}
 			if ( $validateMatch ) {
@@ -893,10 +879,8 @@ class RacketManagerAJAX extends RacketManager {
 				$setType = 'pro';
 			} elseif ( $scoring == 'TP' ) {
 				$setType = 'tiebreak';
-				if ( $rubberNumber && $rubberNumber == $match->league->num_rubbers ) {
-					if ( $s != 1 ) {
-						$setType = 'null';
-					}
+				if ( $rubberNumber && $rubberNumber == $match->league->num_rubbers && $s != 1 ) {
+					$setType = 'null';
 				}
 			} elseif ( $scoring == 'MP' ) {
 				if ( $s == $match->league->num_sets ) {
@@ -911,10 +895,8 @@ class RacketManagerAJAX extends RacketManager {
 					}
 				}
 			}
-			if ( $s > $numSetstoWin ) {
-				if ( $homescore == $numSetstoWin || $awayscore == $numSetstoWin ) {
-					$setType = 'null';
-				}
+			if ( $s > $numSetstoWin && $homescore == $numSetstoWin || $awayscore == $numSetstoWin ) {
+				$setType = 'null';
 			}
 			$setValidate = $this->validateSetScore($set, $setPrefix, $errMsg, $errField, $setType);
 			$errMsg = $setValidate[0];
@@ -922,7 +904,7 @@ class RacketManagerAJAX extends RacketManager {
 			if ( $errMsg ) {
 				$error = true;
 			}
-			if ( $set['player1'] !== NULL && $set['player2'] !== NULL ) {
+			if ( $set['player1'] !== null && $set['player2'] !== null ) {
 				if ( $set['player1'] > $set['player2']) {
 					$homescore += 1;
 				} elseif ( $set['player1'] < $set['player2']) {
@@ -976,71 +958,58 @@ class RacketManagerAJAX extends RacketManager {
 			$maxLoss = 0;
 			$minLoss = 0;
 		}
-		if ( $set['player1'] !== NULL && $set['player2'] !== NULL ) {
+		if ( $set['player1'] !== null && $set['player2'] !== null ) {
 			if ( $setType == 'null' ) {
 				if ( $set['player1'] != '' ) {
-					$error = true;
 					$errMsg[] = __('Set score should be empty', 'racketmanager');
 					$errField[] = $setPrefix.'player1';
 				}
 				if ( $set['player2'] != '' ) {
-					$error = true;
 					$errMsg[] = __('Set score should be empty', 'racketmanager');
 					$errField[] = $setPrefix.'player2';
 				}
 			} elseif ( strtoupper($set['player1']) == 'S' || strtoupper($set['player2'] == 'S') ) {
 				if ( strtoupper($set['player1'] != 'S') ) {
-					$error = true;
 					$errMsg[] = __('Both scores must be shared', 'racketmanager');
 					$errField[] = $setPrefix.'player1';
 				}
 				if ( strtoupper($set['player2'] != 'S') ) {
-					$error = true;
 					$errMsg[] = __('Both scores must be shared', 'racketmanager');
 					$errField[] = $setPrefix.'player2';
 				}
 			} elseif ( $set['player1'] > $set['player2']) {
 				if ( $set['player1'] < $minWin ) {
-					$error = true;
 					$errMsg[] = __('Winning set score too low', 'racketmanager');
 					$errField[] = $setPrefix.'player1';
 				} elseif ( $set['player1'] > $maxWin ) {
-					$error = true;
 					$errMsg[] = __('Winning set score too high', 'racketmanager');
 					$errField[] = $setPrefix.'player1';
 				} elseif ( $set['player1'] == $minWin && $set['player2'] > $minLoss ) {
-					$error = true;
 					$errMsg[] = __('Games difference must be at least 2', 'racketmanager');
 					$errField[] = $setPrefix.'player1';
 					$errField[] = $setPrefix.'player2';
 				} elseif ( $set['player1'] == $maxWin && $set['player2'] < $maxLoss ) {
-					$error = true;
 					$errMsg[] = __('Games difference incorrect', 'racketmanager');
 					$errField[] = $setPrefix.'player1';
 					$errField[] = $setPrefix.'player2';
 				}
 			} elseif ( $set['player1'] < $set['player2']) {
 				if ( $set['player2'] < $minWin ) {
-					$error = true;
 					$errMsg[] = __('Winning set score too low', 'racketmanager');
 					$errField[] = $setPrefix.'player2';
 				} elseif ( $set['player2'] > $maxWin ) {
-					$error = true;
 					$errMsg[] = __('Winning set score too high', 'racketmanager');
 					$errField[] = $setPrefix.'player2';
 				} elseif ( $set['player2'] == $minWin && $set['player1'] > $minLoss ) {
-					$error = true;
 					$errMsg[] = __('Games difference must be at least 2', 'racketmanager');
 					$errField[] = $setPrefix.'player1';
 					$errField[] = $setPrefix.'player2';
 				} elseif ( $set['player2'] == $maxWin && $set['player1'] < $maxLoss ) {
-					$error = true;
 					$errMsg[] = __('Games difference incorrect', 'racketmanager');
 					$errField[] = $setPrefix.'player1';
 					$errField[] = $setPrefix.'player2';
 				}
 			} elseif ( $set['player1'] == '' || $set['player2'] == '' ) {
-				$error = true;
 				$errMsg[] = __('Set score not entered', 'racketmanager');
 				if ( $set['player1'] == '' ) {
 					$errField[] = $setPrefix.'player1';
@@ -1049,7 +1018,6 @@ class RacketManagerAJAX extends RacketManager {
 					$errField[] = $setPrefix.'player2';
 				}
 			} elseif ( $set['player1'] == $set['player2'] ) {
-				$error = true;
 				$errMsg[] = __('Set scores must be different', 'racketmanager');
 				$errField[] = $setPrefix.'player1';
 				$errField[] = $setPrefix.'player2';
@@ -1066,8 +1034,8 @@ class RacketManagerAJAX extends RacketManager {
 	public function resultNotification($matchStatus, $matchMessage, $match, $matchUpdatedby=false) {
 		global $racketmanager;
 		$emailTo = $racketmanager->getConfirmationEmail($match->league->competitionType);
-		$rm_options = $racketmanager->getOptions();
-		$resultNotification = $rm_options[$match->league->competitionType]['resultNotification'];
+		$rmOptions = $racketmanager->getOptions();
+		$resultNotification = $rmOptions[$match->league->competitionType]['resultNotification'];
 
 		if ( $emailTo > '' ) {
 			$messageArgs = array();
@@ -1085,7 +1053,7 @@ class RacketManagerAJAX extends RacketManager {
 				$subject .= " - ".__('Match complete', 'racketmanager');
 			}
 			$message = racketmanager_result_notification($match->id, $messageArgs );
-			$racketmanager->lm_mail($emailTo, $subject, $message, $headers);
+			$racketmanager->rmMail($emailTo, $subject, $message, $headers);
 			if ( $matchStatus == 'P' ) {
 				$emailFrom = $emailTo;
 				unset($headers['from']);
@@ -1110,7 +1078,7 @@ class RacketManagerAJAX extends RacketManager {
 				if ( $emailTo > '' ) {
 					$subject = $racketmanager->site_name." - ".$match->league->title." - ".$match->match_title." - Result confirmation required";
 					$message = racketmanager_captain_result_notification($match->id, $messageArgs );
-					$racketmanager->lm_mail($emailTo, $subject, $message, $headers);
+					$racketmanager->rmMail($emailTo, $subject, $message, $headers);
 				}
 			}
 		}
@@ -1214,18 +1182,16 @@ class RacketManagerAJAX extends RacketManager {
 		}
 
 		if ( $player ) {
-			if ( isset($options['rosterLeadTime']) ) {
-				if ( isset($player->created_date) ) {
-					$matchDate = new DateTime($match->date);
-					$rosterDate = new DateTime($player->created_date);
-					$interval = $rosterDate->diff($matchDate);
-					if ( $interval->days < intval($options['rosterLeadTime']) ) {
-						$error = sprintf(__('player registered with club only %d days before match','racketmanager'), $interval->days);
-						$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
-					} elseif ( $interval->invert ) {
-						$error = sprintf(__('player registered with club %d days after match','racketmanager'), $interval->days);
-						$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
-					}
+			if ( isset($options['rosterLeadTime']) && isset($player->created_date) ) {
+				$matchDate = new DateTime($match->date);
+				$rosterDate = new DateTime($player->created_date);
+				$interval = $rosterDate->diff($matchDate);
+				if ( $interval->days < intval($options['rosterLeadTime']) ) {
+					$error = sprintf(__('player registered with club only %d days before match','racketmanager'), $interval->days);
+					$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
+				} elseif ( $interval->invert ) {
+					$error = sprintf(__('player registered with club %d days after match','racketmanager'), $interval->days);
+					$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
 				}
 			}
 
@@ -1256,8 +1222,8 @@ class RacketManagerAJAX extends RacketManager {
 					$competition = get_competition($match->league->competition_id);
 					$playerStats = $competition->getPlayerStats(array('season' => $match->season, 'roster' => $rosterId));
 					$teamplay = array();
-					foreach ( $playerStats AS $playerStat ) {
-						foreach ( $playerStat->matchdays AS $matchDay) {
+					foreach ( $playerStats as $playerStat ) {
+						foreach ( $playerStat->matchdays as $matchDay) {
 							$teamNum = substr($matchDay->team_title,-1) ;
 							if (isset($teamplay[$teamNum])) {
 								$teamplay[$teamNum] ++;
@@ -1266,12 +1232,10 @@ class RacketManagerAJAX extends RacketManager {
 								$teamplay[$teamNum] = 1;
 							}
 						}
-						foreach ( $teamplay AS $teamNum => $played) {
-							if ($teamNum < $currTeamNum) {
-								if ($played > $options['playerLocked']) {
-									$error = sprintf(__('player is locked to team %d','racketmanager'), $teamNum);
-									$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
-								}
+						foreach ( $teamplay as $teamNum => $played) {
+							if ($teamNum < $currTeamNum && $played > $options['playerLocked']) {
+								$error = sprintf(__('player is locked to team %d','racketmanager'), $teamNum);
+								$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
 							}
 						}
 					}
@@ -1279,7 +1243,6 @@ class RacketManagerAJAX extends RacketManager {
 			}
 		}
 
-		return;
 	}
 
 	/**
@@ -1297,7 +1260,6 @@ class RacketManagerAJAX extends RacketManager {
 		$errorMsg = array();
 		$errorId = 0;
 		$rosterFound = false;
-		$custom = array();
 		check_admin_referer('roster-request');
 		$affiliatedClub = $_POST['affiliatedClub'];
 		if ( $_POST['firstName'] == '' ) {
@@ -1332,10 +1294,8 @@ class RacketManagerAJAX extends RacketManager {
 			$btm = $_POST['btm'];
 		}
 		if ( !isset($_POST['email']) || $_POST['email'] == '' ) {
-			$emailSupplied = false;
 			$email = '';
 		} else {
-			$emailSupplied = true;
 			$email = $_POST['email'];
 		}
 
@@ -1354,7 +1314,7 @@ class RacketManagerAJAX extends RacketManager {
 					$rosterFound = true;
 				}
 			}
-			if ( $rosterFound == false ) {
+			if ( !$rosterFound ) {
 				$club = get_club($affiliatedClub);
 				$rosterRequestCount = $club->getRosterRequests( array('count' => true, 'firstName' => $firstName, 'surname' => $surname) );
 				if ( $rosterRequestCount == 0 ) {
@@ -1386,7 +1346,7 @@ class RacketManagerAJAX extends RacketManager {
 						$headers['from'] = $racketmanager->getFromUserEmail();
 						$subject = $racketmanager->site_name." - ".$msg." - ".$clubName;
 						$message = racketmanager_roster_notification($messageArgs);
-						$racketmanager->lm_mail($emailTo, $subject, $message, $headers);
+						$racketmanager->rmMail($emailTo, $subject, $message, $headers);
 					}
 				} else {
 					$error = true;
@@ -1416,8 +1376,7 @@ class RacketManagerAJAX extends RacketManager {
 		$return = array();
 		check_admin_referer('roster-remove');
 
-		$userid = get_current_user_id();
-		foreach ( $_POST['roster'] AS $roster_id ) {
+		foreach ( $_POST['roster'] as $roster_id ) {
 			$racketmanager->delRoster( intval($roster_id) );
 		}
 		die(json_encode($return));
@@ -1435,7 +1394,6 @@ class RacketManagerAJAX extends RacketManager {
 		$competitionId = $_POST['competition_id'];
 		$teamId = $_POST['team_id'];
 
-		$captain = $_POST['captain-'.$competitionId.'-'.$teamId];
 		$captainId = $_POST['captainId-'.$competitionId.'-'.$teamId];
 		$contactno = $_POST['contactno-'.$competitionId.'-'.$teamId];
 		$contactemail = $_POST['contactemail-'.$competitionId.'-'.$teamId];
@@ -1585,7 +1543,7 @@ class RacketManagerAJAX extends RacketManager {
 			$errorId ++;
 		} else {
 			$partners = isset($_POST['partner']) ? $_POST['partner'] : array();
-			foreach ($competitions AS $competition) {
+			foreach ($competitions as $competition) {
 				$competition = get_competition($competition);
 				if ( substr($competition->type,1,1) == 'D' ) {
 					$partnerId = isset($partners[$competition->id]) ? $partners[$competition->id] : 0;
@@ -1593,7 +1551,7 @@ class RacketManagerAJAX extends RacketManager {
 					if ( empty($partnerId) ) {
 						$error = true;
 						$errorField[$errorId] = 'partner['.$competition->id.']';
-						$errorMsg[$errorId] = sprintf(__('Partner not selected for %s', '$racketmanager'), $competition->name);
+						$errorMsg[$errorId] = sprintf(__('Partner not selected for %s', 'racketmanager'), $competition->name);
 						$errorId ++;
 					}
 				}
@@ -1612,7 +1570,7 @@ class RacketManagerAJAX extends RacketManager {
 			$emailSubject = $racketmanager->site_name." ".ucfirst($tournamentSeason)." ".$season." Tournament Entry";
 			$tournamentEntries = array();
 			$i = 0;
-			foreach ($competitions AS $i => $competitionId) {
+			foreach ($competitions as $i => $competitionId) {
 				$tournamentEntry = array();
 				$partner = '';
 				$partnerName = '';
@@ -1622,7 +1580,6 @@ class RacketManagerAJAX extends RacketManager {
 				if (isset($competition->primary_league)) {
 					$league = $competition->primary_league;
 				} else {
-					$leagues = $competition->getLeagues();
 					$league = get_league(array_key_first($competition->league_index))->id;
 				}
 				$teamName = $playerName;
@@ -1663,7 +1620,7 @@ class RacketManagerAJAX extends RacketManager {
 			$headers[] = 'From: '.$user->display_name.' <'.$emailFrom.'>';
 			$organisationName = $racketmanager->site_name;
 			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'tournament-entry', array( 'tournamentEntries' => $tournamentEntries, 'organisationName' => $organisationName, 'season' => $season, 'tournamentSeason' => $tournamentSeason, 'contactno' => $contactno, 'contactemail' => $contactemail, 'player' => $playerName, 'club' => $affiliatedClubName ), 'email' );
-			$racketmanager->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
+			$racketmanager->rmMail($emailTo, $emailSubject, $emailMessage, $headers);
 			$msg = __('Tournament entry complete', 'racketmanager');
 		} else {
 			$msg = __('Errors in tournament entry form', 'racketmanager');
@@ -1773,17 +1730,16 @@ class RacketManagerAJAX extends RacketManager {
 			$contactemails = isset($_POST['contactemail']) ? $_POST['contactemail'] : array();
 			$matchdays = isset($_POST['matchday']) ? $_POST['matchday'] : array();
 			$matchtimes = isset($_POST['matchtime']) ? $_POST['matchtime'] : array();
-			foreach ($competitions AS $competitionId) {
+			foreach ($competitions as $competitionId) {
 				$competition = get_competition($competitionId);
 				$team = isset($teams[$competition->id]) ? $teams[$competition->id] : 0;
 				if ( empty($team) ) {
 					$error = true;
 					$errorField[$errorId] = 'team['.$competition->id.']';
-					$errorMsg[$errorId] = sprintf(__('Team not selected for %s', '$racketmanager'), $competition->name);
+					$errorMsg[$errorId] = sprintf(__('Team not selected for %s', 'racketmanager'), $competition->name);
 					$errorId ++;
 				} else {
 					$captain = isset($captains[$competition->id]) ? $captains[$competition->id] : 0;
-					$captainId = isset($captainIds[$competition->id]) ? $captainIds[$competition->id] : 0;
 					$contactno = isset($contactnos[$competition->id]) ? $contactnos[$competition->id] : '';
 					$contactemail = isset($contactemails[$competition->id]) ? $contactemails[$competition->id] : '';
 					$matchday = isset($matchdays[$competition->id]) ? $matchdays[$competition->id] : '';
@@ -1791,26 +1747,26 @@ class RacketManagerAJAX extends RacketManager {
 					if ( empty($captain) ) {
 						$error = true;
 						$errorField[$errorId] = 'captain['.$competition->id.']';
-						$errorMsg[$errorId] = sprintf(__('Captain not selected for %s', '$racketmanager'), $competition->name);
+						$errorMsg[$errorId] = sprintf(__('Captain not selected for %s', 'racketmanager'), $competition->name);
 						$errorId ++;
 					} else {
 						if ( empty($contactno) || empty($contactemail) ) {
 							$error = true;
 							$errorField[$errorId] = 'captain['.$competition->id.']';
-							$errorMsg[$errorId] = sprintf(__('Captain contact details missing for %s', '$racketmanager'), $competition->name);
+							$errorMsg[$errorId] = sprintf(__('Captain contact details missing for %s', 'racketmanager'), $competition->name);
 							$errorId ++;
 						}
 					}
 					if ( empty($matchday) ) {
 						$error = true;
 						$errorField[$errorId] = 'matchday['.$competition->id.']';
-						$errorMsg[$errorId] = sprintf(__('Match day not selected for %s', '$racketmanager'), $competition->name);
+						$errorMsg[$errorId] = sprintf(__('Match day not selected for %s', 'racketmanager'), $competition->name);
 						$errorId ++;
 					}
 					if ( empty($matchtime) ) {
 						$error = true;
 						$errorField[$errorId] = 'matchtime['.$competition->id.']';
-						$errorMsg[$errorId] = sprintf(__('Match time not selected for %s', '$racketmanager'), $competition->name);
+						$errorMsg[$errorId] = sprintf(__('Match time not selected for %s', 'racketmanager'), $competition->name);
 						$errorId ++;
 					}
 				}
@@ -1829,14 +1785,12 @@ class RacketManagerAJAX extends RacketManager {
 			$emailSubject = $racketmanager->site_name." ".ucfirst($cupSeason)." ".$season." Cup Entry - ".$affiliatedClubName;
 			$cupEntrys = array();
 			$i = 0;
-			foreach ($competitions AS $i => $competitionId) {
+			foreach ($competitions as $i => $competitionId) {
 				$cupEntry = array();
 				$competition = get_competition($competitionId);
-				$cupEntry['competitionName'] = $competition->name;
 				if (isset($competition->primary_league)) {
 					$league = $competition->primary_league;
 				} else {
-					$leagues = $competition->getLeagues();
 					$league = get_league(array_key_first($competition->league_index))->id;
 				}
 				$teamId = isset($teams[$competition->id]) ? $teams[$competition->id] : 0;
@@ -1850,13 +1804,13 @@ class RacketManagerAJAX extends RacketManager {
 					$matchtime = isset($matchtimes[$competition->id]) ? $matchtimes[$competition->id] : '';
 					$teamInfo = $competition->getTeamInfo($teamId);
 					if ( !$teamInfo ) {
-						$team_competition_id = $racketmanager->addTeamCompetition( $teamId, $competitionId, $captainId, $contactno, $contactemail, $matchday, $matchtime );
+						$racketmanager->addTeamCompetition( $teamId, $competitionId, $captainId, $contactno, $contactemail, $matchday, $matchtime );
 					} else {
-					$returnMsg = $this->updateTeamCompetition($competitionId, $teamId, $captainId, $contactno, $contactemail, $matchday, $matchtime);
+						$this->updateTeamCompetition($competitionId, $teamId, $captainId, $contactno, $contactemail, $matchday, $matchtime);
 					}
 				}
 				$racketmanager->addTeamtoTable($league, $teamId, $season);
-				$cupEntry['competitionName']= $competition->name;
+				$cupEntry['competitionName'] = $competition->name;
 				$cupEntry['teamName'] = $team->title;
 				$cupEntry['captain'] = $captain;
 				$cupEntry['contactno'] = $contactno;
@@ -1872,7 +1826,7 @@ class RacketManagerAJAX extends RacketManager {
 			}
 			$organisationName = $racketmanager->site_name;
 			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'cup-entry', array( 'cupEntries' => $cupEntrys, 'organisationName' => $organisationName, 'season' => $season, 'cupSeason' => $cupSeason, 'club' => $affiliatedClubName ), 'email' );
-			$racketmanager->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
+			$racketmanager->rmMail($emailTo, $emailSubject, $emailMessage, $headers);
 
 			$msg = __('Cup entry complete', 'racketmanager');
 		} else {
@@ -1939,7 +1893,7 @@ class RacketManagerAJAX extends RacketManager {
 			$contactemails = isset($_POST['contactemail']) ? $_POST['contactemail'] : array();
 			$matchdays = isset($_POST['matchday']) ? $_POST['matchday'] : array();
 			$matchtimes = isset($_POST['matchtime']) ? $_POST['matchtime'] : array();
-			foreach ($competitions AS $competitionId) {
+			foreach ($competitions as $competitionId) {
 				$competition = get_competition($competitionId);
 				$week = isset($competition->offset) ? $competition->offset : '0';
 				if ( !isset($courtsNeeded[$week]) ) {
@@ -1949,13 +1903,12 @@ class RacketManagerAJAX extends RacketManager {
 				if ( empty($teams) ) {
 					$error = true;
 					$errorField[$errorId] = 'competition['.$competition->id.']';
-					$errorMsg[$errorId] = sprintf(__('No teams selected for %s', '$racketmanager'), $competition->name);
+					$errorMsg[$errorId] = sprintf(__('No teams selected for %s', 'racketmanager'), $competition->name);
 					$errorId ++;
 				} else {
-					foreach ($teams AS $teamId) {
+					foreach ($teams as $teamId) {
 						$teamCompetitionTitle = isset($teamCompetitionTitles[$competition->id][$teamId]) ? $teamCompetitionTitles[$competition->id][$teamId] : '';
 						$captain = isset($captains[$competition->id][$teamId]) ? $captains[$competition->id][$teamId] : 0;
-						$captainId = isset($captainIds[$competition->id][$teamId]) ? $captainIds[$competition->id][$teamId] : 0;
 						$contactno = isset($contactnos[$competition->id][$teamId]) ? $contactnos[$competition->id][$teamId] : '';
 						$contactemail = isset($contactemails[$competition->id][$teamId]) ? $contactemails[$competition->id][$teamId] : '';
 						$matchday = isset($matchdays[$competition->id][$teamId]) ? $matchdays[$competition->id][$teamId] : '';
@@ -1963,20 +1916,20 @@ class RacketManagerAJAX extends RacketManager {
 						if ( empty($captain) ) {
 							$error = true;
 							$errorField[$errorId] = 'captain['.$competition->id.']['.$teamId.']';
-							$errorMsg[$errorId] = sprintf(__('Captain not selected for %s', '$racketmanager'), $teamCompetitionTitle);
+							$errorMsg[$errorId] = sprintf(__('Captain not selected for %s', 'racketmanager'), $teamCompetitionTitle);
 							$errorId ++;
 						} else {
 							if ( empty($contactno) || empty($contactemail) ) {
 								$error = true;
 								$errorField[$errorId] = 'captain['.$competition->id.']['.$teamId.']';
-								$errorMsg[$errorId] = sprintf(__('Captain contact details missing for %s', '$racketmanager'), $teamCompetitionTitle);
+								$errorMsg[$errorId] = sprintf(__('Captain contact details missing for %s', 'racketmanager'), $teamCompetitionTitle);
 								$errorId ++;
 							}
 						}
 						if ( empty($matchtime) ) {
 							$error = true;
 							$errorField[$errorId] = 'matchtime['.$competition->id.']['.$teamId.']';
-							$errorMsg[$errorId] = sprintf(__('Match time not selected for %s', '$racketmanager'), $teamCompetitionTitle);
+							$errorMsg[$errorId] = sprintf(__('Match time not selected for %s', 'racketmanager'), $teamCompetitionTitle);
 							$errorId ++;
 						} else {
 							if ( strlen($matchtime) == 5 ) {
@@ -1986,7 +1939,7 @@ class RacketManagerAJAX extends RacketManager {
 						if ( empty($matchday) ) {
 							$error = true;
 							$errorField[$errorId] = 'matchday['.$competition->id.']['.$teamId.']';
-							$errorMsg[$errorId] = sprintf(__('Match day not selected for %s', '$racketmanager'), $teamCompetitionTitle);
+							$errorMsg[$errorId] = sprintf(__('Match day not selected for %s', 'racketmanager'), $teamCompetitionTitle);
 							$errorId ++;
 						} else {
 							$matchDayTime = $matchday.' '.$matchtime;
@@ -2035,9 +1988,7 @@ class RacketManagerAJAX extends RacketManager {
 			$competitionEntries = array();
 			$competitionDetails = array();
 			$competitionEntries['numCourtsAvailable'] = $numCourtsAvailable;
-			$competitionEntries['competitions'] = array();
-			$i = 0;
-			foreach ($competitions AS $i => $competitionId) {
+		foreach ($competitions as $competitionId) {
 				if (($key = array_search($competitionId, $leagueCompetitions)) !== false) {
     			unset($leagueCompetitions[$key]);
 				}
@@ -2047,7 +1998,7 @@ class RacketManagerAJAX extends RacketManager {
 				$competitionEntry['competitionName'] = $competition->name;
 				$teams = isset($teamCompetition[$competition->id]) ? $teamCompetition[$competition->id] : array();
 				$leagueEntries = array();
-				foreach ($teams AS $t => $teamId) {
+				foreach ($teams as $teamId) {
 					if (($key = array_search($teamId, $competitionTeams)) !== false) {
 	    			unset($competitionTeams[$key]);
 					}
@@ -2062,9 +2013,9 @@ class RacketManagerAJAX extends RacketManager {
 					$leagueId = isset($teamCompetitionLeague[$competition->id][$teamId]) ? $teamCompetitionLeague[$competition->id][$teamId] : '';
 					$teamInfo = $competition->getTeamInfo($teamId);
 					if ( !$teamInfo ) {
-						$team_competition_id = $racketmanager->addTeamCompetition( $teamId, $competitionId, $captainId, $contactno, $contactemail, $matchday, $matchtime );
+						$racketmanager->addTeamCompetition( $teamId, $competitionId, $captainId, $contactno, $contactemail, $matchday, $matchtime );
 					} else {
-						$returnMsg = $this->updateTeamCompetition($competitionId, $teamId, $captainId, $contactno, $contactemail, $matchday, $matchtime);
+						$this->updateTeamCompetition($competitionId, $teamId, $captainId, $contactno, $contactemail, $matchday, $matchtime);
 					}
 					if ( $leagueId ) {
 						$competition->markTeamsEntered($teamId, $season);
@@ -2104,7 +2055,7 @@ class RacketManagerAJAX extends RacketManager {
 			}
 			$organisationName = $racketmanager->site_name;
 			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'league-entry', array( 'competitionEntries' => $competitionEntries, 'organisationName' => $organisationName, 'season' => $season, 'leagueSeason' => $leagueSeason, 'club' => $affiliatedClubName ), 'email' );
-			$racketmanager->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
+			$racketmanager->rmMail($emailTo, $emailSubject, $emailMessage, $headers);
 			$msg = __('league entry complete', 'racketmanager');
 		} else {
 			$msg = __('Errors in league entry form', 'racketmanager');
@@ -2124,7 +2075,6 @@ class RacketManagerAJAX extends RacketManager {
 		global $racketmanager;
 
 		$return ='';
-		$messageSent = false;
 
 		$competition = get_competition($_POST['competitionId']);
 		$latestSeason = $_POST['latestSeason'];
@@ -2146,7 +2096,6 @@ class RacketManagerAJAX extends RacketManager {
 		global $racketmanager;
 
 		$return ='';
-		$messageSent = false;
 
 		$tournamentId = $_POST['tournamentId'];
 		$tournament = $racketmanager->getTournament( array( 'id' => $tournamentId) );
@@ -2175,7 +2124,7 @@ class RacketManagerAJAX extends RacketManager {
 		$meta = get_user_meta($userid, $metaKey);
 		$favouriteFound = (array_search($id, $meta,true));
 		if ( !is_numeric($favouriteFound) ) {
-			$insert = add_user_meta($userid, $metaKey, $id);
+			add_user_meta($userid, $metaKey, $id);
 			$msg = __('Favourite added', 'racketmanager');
 			$action = 'add';
 		} else {
@@ -2201,7 +2150,6 @@ class RacketManagerAJAX extends RacketManager {
 
 		$messageSent = false;
 		$return = array();
-		$clubs = $this->getClubs();
 
 		$headers = array();
 		$fromEmail = $this->getConfirmationEmail($match->league->competitionType);
@@ -2219,7 +2167,7 @@ class RacketManagerAJAX extends RacketManager {
 			}
 			$actionURL = $racketmanager->site_url.'/match/'.seoUrl($match->league->title).'/'.$match->season.'/day'.$match->match_day.'/'.seoUrl($match->teams['home']->title).'-vs-'.seoUrl($match->teams['away']->title);
 			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'match-result-pending', array( 'actionURL' => $actionURL, 'organisationName' => $organisationName ), 'email' );
-			$this->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
+			$this->rmMail($emailTo, $emailSubject, $emailMessage, $headers);
 			$messageSent = true;
 		}
 
@@ -2246,13 +2194,11 @@ class RacketManagerAJAX extends RacketManager {
 
 		$messageSent = false;
 		$return = array();
-		$clubs = $this->getClubs();
 
 		$headers = array();
 		$fromEmail = $this->getConfirmationEmail($match->league->competitionType);
 		$headers[] = 'From: '.ucfirst($match->league->competitionType).' Secretary <'.$fromEmail.'>';
 		$headers[] = 'cc: '.ucfirst($match->league->competitionType).' Secretary <'.$fromEmail.'>';
-		$organisationName = $racketmanager->site_name;
 		$messageArgs = array();
 		$messageArgs['outstanding'] = true;
 		$emailSubject = $racketmanager->site_name." - ".$match->league->title." - ".$match->getTitle()." Match approval pending";
@@ -2275,9 +2221,8 @@ class RacketManagerAJAX extends RacketManager {
 			}
 		}
 		if ( !empty($emailTo) ) {
-			$actionURL = $racketmanager->site_url.'/match/'.seoUrl($match->league->title).'/'.$match->season.'/day'.$match->match_day.'/'.seoUrl($match->teams['home']->title).'-vs-'.seoUrl($match->teams['away']->title);
 			$emailMessage = racketmanager_captain_result_notification($match->id, $messageArgs );
-			$this->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
+			$this->rmMail($emailTo, $emailSubject, $emailMessage, $headers);
 			$messageSent = true;
 		}
 
@@ -2327,7 +2272,7 @@ class RacketManagerAJAX extends RacketManager {
 					}
 					$actionURL = $racketmanager->site_url.'/'.$competition->competitiontype.'s/'.seoUrl($league->title).'/'.$team->season.'/day0/'.seoUrl($team->title);
 					$emailMessage = $racketmanager_shortcodes->loadTemplate( 'send-fixtures', array( 'competition' => $competition->name, 'captain' => $team->captain, 'season' => $season, 'matches' => $matches, 'team' => $team, 'actionURL' => $actionURL, 'organisationName' => $organisationName ), 'email' );
-					$this->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
+					$this->rmMail($emailTo, $emailSubject, $emailMessage, $headers);
 					$messageSent = true;
 				}
 			}

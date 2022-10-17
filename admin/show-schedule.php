@@ -20,8 +20,8 @@ $class = '';
 			</div>
 			<?php foreach ( $competitions AS $competition ) {
 				$competition = get_competition($competition);
-				$matchCount = $racketmanager->getMatches(array('count' => true, 'competition_id' => $competition->id, 'season' => $competition->getSeason()));
-				$matchCompletionCount = $racketmanager->getMatches(array('count' => true, 'competition_id' => $competition->id, 'season' => $competition->getSeason(), 'time' => 'latest'));
+				$matchCount = $racketmanager->getMatches(array('count' => true, 'competitionId' => $competition->id, 'season' => $competition->getSeason()));
+				$matchCompletionCount = $racketmanager->getMatches(array('count' => true, 'competitionId' => $competition->id, 'season' => $competition->getSeason(), 'time' => 'latest'));
 				$class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 				<div class="row table-row <?php echo $class ?>">
 					<div class="col-1 check-column">

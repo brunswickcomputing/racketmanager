@@ -1811,9 +1811,9 @@ class RacketManager {
 	public function getMatches( $match_args ) {
 		global $wpdb;
 
-		$defaults = array( 'league_id' => false, 'season' => false, 'final' => false, 'competitiontype' => false, 'competitionseason' => false, 'orderby' => array('league_id' => 'ASC', 'id' => 'ASC'), 'competition_id' => false, 'confirmed' => false, 'match_date' => false, 'competition_type' => false, 'time' => false, 'history' => false, 'affiliatedClub' => false, 'league_name' => false, 'homeTeam' => false, 'awayTeam' => false, 'matchDay' => false, 'competition_name' => false, 'homeAffiliatedClub' => false, 'count' => false );
-		$match_args = array_merge($defaults, (array)$match_args);
-		extract($match_args, EXTR_SKIP);
+		$defaults = array( 'leagueId' => false, 'season' => false, 'final' => false, 'competitiontype' => false, 'competitionseason' => false, 'orderby' => array('league_id' => 'ASC', 'id' => 'ASC'), 'competitionId' => false, 'confirmed' => false, 'match_date' => false, 'competition_type' => false, 'time' => false, 'history' => false, 'affiliatedClub' => false, 'league_name' => false, 'homeTeam' => false, 'awayTeam' => false, 'matchDay' => false, 'competition_name' => false, 'homeAffiliatedClub' => false, 'count' => false );
+		$matchArgs = array_merge($defaults, (array)$matchArgs);
+		extract($matchArgs, EXTR_SKIP);
 
 		if ( $count ) {
 			$sql = "SELECT COUNT(*) FROM {$wpdb->racketmanager_matches} WHERE 1 = 1";
@@ -1831,8 +1831,8 @@ class RacketManager {
 			$sql .= " AND `league_id` in (select `id` from {$wpdb->racketmanager} WHERE `competition_id` in (SELECT `id` FROM {$wpdb->racketmanager_competitions} WHERE `name` = '".$competition_name."'))";
 		}
 
-		if ( $competition_id ) {
-			$sql .= " AND `league_id` in (select `id` from {$wpdb->racketmanager} WHERE `competition_id` = '".$competition_id."')";
+		if ( $competitionId ) {
+			$sql .= " AND `league_id` in (select `id` from {$wpdb->racketmanager} WHERE `competition_id` = '".$competitionId."')";
 		}
 
 		if ( $league_id ) {

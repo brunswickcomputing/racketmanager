@@ -6,7 +6,7 @@
 		<div class="d-none d-lg-block col-3"><?php _e('League', 'racketmanager') ?></div>
 	</div>
 
-	<?php if ( $matches = $racketmanager->getMatches(array('competition_id' => $competition->id, 'season' => $competition->getSeasonCompetition()['name'], 'orderby' => array('match_day' => 'ASC', 'date' => 'ASC', 'league_id' => 'ASC', 'home_team' => 'ASC'))) ) {
+	<?php if ( $matches = $racketmanager->getMatches(array('competitionId' => $competition->id, 'season' => $competition->getSeasonCompetition()['name'], 'orderby' => array('match_day' => 'ASC', 'date' => 'ASC', 'league_id' => 'ASC', 'home_team' => 'ASC'))) ) {
 		$class = '';
 		$matchDay = '';
 		foreach ( $matches AS $match ) {

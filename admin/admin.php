@@ -2078,7 +2078,7 @@ final class RacketManagerAdmin extends RacketManager
 		$success = true;
 		$competition = get_competition($competition);
 		$season = $competition->getSeason();
-		$matchCount = $racketmanager->getMatches(array('count' => true, 'competition_id' => $competition->id, 'season' => $season, 'time' => 'latest'));
+		$matchCount = $racketmanager->getMatches(array('count' => true, 'competitionId' => $competition->id, 'season' => $season, 'time' => 'latest'));
 
 		if ( $matchCount != 0 ) {
 			$this->setMessage( __('Competition has completed matches', 'racketmanager'), true );
@@ -4034,7 +4034,7 @@ final class RacketManagerAdmin extends RacketManager
 		foreach ($competitions as $competitionId) {
 			$competition = get_competition($competitionId);
 			$season = $competition->getSeason();
-			$matchCount = $racketmanager->getMatches(array('count' => true, 'competition_id' => $competition->id, 'season' => $season));
+			$matchCount = $racketmanager->getMatches(array('count' => true, 'competitionId' => $competition->id, 'season' => $season));
 			if ( $matchCount != 0 ) {
 				$success = false;
 				$messages[] = sprintf(__('%s already has matches scheduled for %d','racketmanager'), $competition->name, $season);

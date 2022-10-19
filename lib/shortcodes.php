@@ -838,7 +838,7 @@ class RacketManagerShortcodes extends RacketManager {
 		$competition = get_competition($league->competition_id);
 		$league->setSeason($season);
 
-		$player_args = array("league_id" => $league->id, "season" => $season, "orderby" => array("title" => "ASC"));
+		$player_args = array("leagueId" => $league->id, "season" => $season, "orderby" => array("title" => "ASC"));
 		$players = $competition->getPlayerStats( $player_args );
 
 		$playerstats	= array();

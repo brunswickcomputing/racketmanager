@@ -466,7 +466,7 @@ if ( current_user_can( 'manage_racketmanager' ) ) {
                             </tr>
                           </thead>
                           <tbody id="the-list">
-                            <?php if ( $matches = $racketmanager->getMatches(array('competitionId => $competition->id, 'season' => $season['name'], 'affiliatedClub' => $club->id, 'orderby' => array('match_day' => 'ASC', 'date' => 'ASC', 'league_id' => 'ASC', 'home_team' => 'ASC'))) ) {
+                            <?php if ( $matches = $racketmanager->getMatches(array('competitionId' => $competition->id, 'season' => $season['name'], 'affiliatedClub' => $club->id, 'orderby' => array('match_day' => 'ASC', 'date' => 'ASC', 'league_id' => 'ASC', 'home_team' => 'ASC'))) ) {
                               $class = '';
                               $matchDay = ''; ?>
                             <?php foreach ( $matches AS $match ) { ?>

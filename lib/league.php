@@ -881,7 +881,7 @@ class League {
 			return '';
 		}
 
-		$query_args = is_admin() ? array('league_id' => $this->id) : $this->query_args;
+		$query_args = $this->query_args;
 
 		if ($which == 'matches' && isset($_POST['match_day']) && is_string($_POST['match_day'])) {
 			$query_args['match_day'] = htmlspecialchars(strip_tags($_POST['match_day']));

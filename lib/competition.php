@@ -435,7 +435,7 @@ class Competition {
 	public function getPlayerStats( $args ) {
 		global $wpdb;
 
-		$defaults = array( 'season' => false, 'cache' => true, 'club' => false, 'league_id' => false, 'system' => false, 'roster' => false );
+		$defaults = array( 'season' => false, 'cache' => true, 'club' => false, 'leagueId' => false, 'system' => false, 'roster' => false );
 		$args = array_merge($defaults, (array)$args);
 		extract($args, EXTR_SKIP);
 
@@ -449,9 +449,9 @@ class Competition {
 			$sql2 .= " AND m.`season` = '%s'";
 			$search_terms2[] = htmlspecialchars(strip_tags($season));
 		}
-		if ($league_id) {
+		if ($leagueId) {
 			$sql2 .= " AND m.`league_id` = '%d'";
-			$search_terms2[] = intval($league_id);
+			$search_terms2[] = intval($leagueId);
 		}
 		if ($club) {
 			$sql2 .= " AND ro.`affiliatedclub` = '%d'";
@@ -515,16 +515,16 @@ class Competition {
 	public function getTeamsInfo( $args = array() ) {
 		global $wpdb, $racketmanager;
 
-		$defaults = array( 'league_id' => false, 'season' => false, 'group' => false, 'rank' => false, 'orderby' => array("rank" => "ASC", "title" => "ASC"), "home" => false, "cache" => true, 'affiliatedclub' => false );
+		$defaults = array( 'leagueId' => false, 'season' => false, 'group' => false, 'rank' => false, 'orderby' => array("rank" => "ASC", "title" => "ASC"), "home" => false, "cache" => true, 'affiliatedclub' => false );
 		$args = array_merge($defaults, $args);
 		extract($args, EXTR_SKIP);
 
 		$search_terms = array();
-		if ( $league_id ) {
-			if ($league_id == "any")
+		if ( $leagueId ) {
+			if ($leagueId == "any")
 			$search_terms[] = "A.`league_id` != ''";
 			else
-			$search_terms[] = $wpdb->prepare("A.`league_id` = '%d'", intval($league_id));
+			$search_terms[] = $wpdb->prepare("A.`league_id` = '%d'", intval($leagueId));
 		}
 		if ( $affiliatedclub ) {
 			$search_terms[] = $wpdb->prepare("`affiliatedclub` = '%d'", intval($affiliatedclub));

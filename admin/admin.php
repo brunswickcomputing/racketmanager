@@ -445,7 +445,7 @@ final class RacketManagerAdmin extends RacketManager
 			} elseif ( isset($_POST['docompdel']) && $_POST['action'] == 'delete' ) {
 				if ( current_user_can('del_leagues') ) {
 					check_admin_referer('competitions-bulk');
-					foreach ( $_POST['competition'] AS $competition_id ) {
+					foreach ( $_POST['competition'] as $competition_id ) {
 						$this->delCompetition( intval($competition_id) );
 					}
 				} else {
@@ -471,7 +471,7 @@ final class RacketManagerAdmin extends RacketManager
 			if ( isset($_POST['doResultsChecker']) ) {
 				if ( current_user_can('update_results') ) {
 					check_admin_referer('results-checker-bulk');
-					foreach ( $_POST['resultsChecker'] AS $i => $resultsChecker_id ) {
+					foreach ( $_POST['resultsChecker'] as $i => $resultsChecker_id ) {
 						if ( $_POST['action'] == 'approve' ) {
 							$this->approveResultsChecker( intval($resultsChecker_id) );
 						} elseif ( $_POST['action'] == 'handle' ) {
@@ -527,7 +527,7 @@ final class RacketManagerAdmin extends RacketManager
 			if ( isset($_POST['doaddCompetitionsToSeason']) && $_POST['action'] == 'addCompetitionsToSeason' ) {
 				check_admin_referer('racketmanager_add-seasons-competitions-bulk');
 				if ( isset($_POST['competition'])) {
-					foreach ( $_POST['competition'] AS $competition_id ) {
+					foreach ( $_POST['competition'] as $competition_id ) {
 						$this->addSeasonToCompetition( htmlspecialchars($_POST['season']), intval($_POST['num_match_days']), $competition_id );
 					}
 				}
@@ -598,13 +598,13 @@ final class RacketManagerAdmin extends RacketManager
 				$this->printMessage();
 			} elseif ( isset($_POST['doactionleague']) && $_POST['action'] == 'delete' ) {
 				check_admin_referer('leagues-bulk');
-				foreach ( $_POST['league'] AS $league_id )
+				foreach ( $_POST['league'] as $league_id )
 				$this->delLeague( intval($league_id) );
 			} elseif ( isset($_POST['doactionconstitution']) && $_POST['action'] == 'delete' ) {
 				$tab = 'constitution';
 				if ( current_user_can('del_leagues') ) {
 					check_admin_referer('constitution-bulk');
-					foreach ( $_POST['table'] AS $tableId ) {
+					foreach ( $_POST['table'] as $tableId ) {
 						$teams = isset($_POST['teamId']) ? $_POST['teamId'] : array();
 						$leagues = isset($_POST['leagueId']) ? $_POST['leagueId'] : array();
 						$team = isset($teams[$tableId]) ? $teams[$tableId] : 0;
@@ -621,7 +621,7 @@ final class RacketManagerAdmin extends RacketManager
 				check_admin_referer('constitution-bulk');
 				$js = ( $_POST['js-active'] == 1 ) ? true : false;
 				$rank = 0;
-				foreach ( $_POST['tableId'] AS $tableId ) {
+				foreach ( $_POST['tableId'] as $tableId ) {
 					$team = $_POST['teamId'][$tableId];
 					$league = $_POST['leagueId'][$tableId];
 					if ( $js ) {
@@ -639,7 +639,7 @@ final class RacketManagerAdmin extends RacketManager
 				}
 			} elseif ( isset($_POST['action']) && $_POST['action'] == 'addTeamsToLeague' ) {
 				$tab = 'constitution';
-				foreach ( $_POST['team'] AS $i => $team_id ) {
+				foreach ( $_POST['team'] as $i => $team_id ) {
 					$racketmanager->addTeamtoTable( $_POST['league_id'], $team_id, htmlspecialchars($_POST['season']), array(), false, '99', 'NT', '1' );
 					$this->setTeamCompetition( $team_id, $_POST['competition_id'] );
 				}
@@ -740,7 +740,7 @@ final class RacketManagerAdmin extends RacketManager
 
 						if ( 'add' == $_POST['mode'] ) {
 							$num_matches = count($_POST['match']);
-							foreach ( $_POST['match'] AS $i => $match_id ) {
+							foreach ( $_POST['match'] as $i => $match_id ) {
 								if ( isset($_POST['add_match'][$i]) || $_POST['away_team'][$i] != $_POST['home_team'][$i]  ) {
 									$index = ( isset($_POST['mydatepicker'][$i]) ) ? $i : 0;
 									if (!isset($_POST['begin_hour'][$i])) $_POST['begin_hour'][$i] = 0;
@@ -758,7 +758,7 @@ final class RacketManagerAdmin extends RacketManager
 						} else {
 							$num_matches = count($_POST['match']);
 							$post_match = $this->htmlspecialchars_array($_POST['match']);
-							foreach ( $post_match AS $i => $match_id ) {
+							foreach ( $post_match as $i => $match_id ) {
 								$begin_hour = isset($_POST['begin_hour'][$i]) ? intval($_POST['begin_hour'][$i]) : "00";
 								$begin_minutes = isset($_POST['begin_minutes'][$i]) ? intval($_POST['begin_minutes'][$i]) : "00";
 								if( isset($_POST['mydatepicker'][$i]) ) {
@@ -805,7 +805,7 @@ final class RacketManagerAdmin extends RacketManager
 				if ( $_POST['action'] == "delete" ) {
 					if ( current_user_can('del_teams') ) {
 						check_admin_referer('teams-bulk');
-						foreach ( $_POST['team'] AS $team_id )
+						foreach ( $_POST['team'] as $team_id )
 						$this->delTeamFromLeague( intval($team_id), intval($_GET['league_id']), $season );
 					} else {
 						$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
@@ -815,7 +815,7 @@ final class RacketManagerAdmin extends RacketManager
 				if ( $_POST['delMatchOption'] == "delete" ) {
 					if ( current_user_can('del_matches') ) {
 						check_admin_referer('matches-bulk');
-						foreach ( $_POST['match'] AS $match_id )
+						foreach ( $_POST['match'] as $match_id )
 						$this->delMatch( intval($match_id) );
 
 						$tab = 'matches';
@@ -824,7 +824,7 @@ final class RacketManagerAdmin extends RacketManager
 					}
 				}
 			} elseif ( isset($_POST['action']) && $_POST['action'] == 'addTeamsToLeague' ) {
-				foreach ( $_POST['team'] AS $i => $team_id ) {
+				foreach ( $_POST['team'] as $i => $team_id ) {
 					$this->addTableEntry( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
 					$this->setTeamCompetition( $team_id, $_POST['competition_id'] );
 				}
@@ -845,7 +845,7 @@ final class RacketManagerAdmin extends RacketManager
 
 					$team_ranks = array();
 					$team_ids = array_values($_POST['table_id']);
-					foreach ($team_ids AS $key => $team_id) {
+					foreach ($team_ids as $key => $team_id) {
 						if ( $js ) {
 							$rank = $key + 1;
 						} else {
@@ -873,7 +873,7 @@ final class RacketManagerAdmin extends RacketManager
 					$team_ranks = array();
 					$team_ids = array_values($_POST['table_id']);
 					shuffle($team_ids);
-					foreach ($team_ids AS $key => $team_id) {
+					foreach ($team_ids as $key => $team_id) {
 						if ( $js ) {
 							$rank = $key + 1;
 						} else {
@@ -1071,7 +1071,7 @@ final class RacketManagerAdmin extends RacketManager
 				$this->printMessage();
 			} elseif ( isset($_POST['doTournamentDel']) && $_POST['action'] == 'delete' ) {
 				check_admin_referer('tournaments-bulk');
-				foreach ( $_POST['tournament'] AS $tournament_id ) {
+				foreach ( $_POST['tournament'] as $tournament_id ) {
 					$this->delTournament( intval($tournament_id) );
 				}
 			}
@@ -1166,7 +1166,7 @@ final class RacketManagerAdmin extends RacketManager
 				$this->printMessage();
 			} elseif ( isset($_POST['doClubDel']) && $_POST['action'] == 'delete' ) {
 				check_admin_referer('clubs-bulk');
-				foreach ( $_POST['club'] AS $club_id ) {
+				foreach ( $_POST['club'] as $club_id ) {
 					$this->delClub( intval($club_id) );
 				}
 				$club_id = 0;
@@ -1231,7 +1231,7 @@ final class RacketManagerAdmin extends RacketManager
 				}
 			} elseif ( isset($_POST['dorosterdel']) && $_POST['action'] == 'delete' ) {
 				check_admin_referer('roster-bulk');
-				foreach ( $_POST['roster'] AS $roster_id ) {
+				foreach ( $_POST['roster'] as $roster_id ) {
 					$this->delRoster( intval($roster_id) );
 				}
 			}
@@ -1281,7 +1281,7 @@ final class RacketManagerAdmin extends RacketManager
 				$this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), $_POST['affiliatedclub'], $_POST['team_type']);
 			} elseif ( isset($_POST['doteamdel']) && $_POST['action'] == 'delete' ) {
 				check_admin_referer('teams-bulk');
-				foreach ( $_POST['team'] AS $team_id ) {
+				foreach ( $_POST['team'] as $team_id ) {
 					$this->delTeam( intval($team_id) );
 				}
 			}
@@ -1531,13 +1531,13 @@ final class RacketManagerAdmin extends RacketManager
 				$tab = "seasons";
 			} elseif ( isset($_POST['doSeasonDel']) && $_POST['action'] == 'delete' ) {
 				check_admin_referer('seasons-bulk');
-				foreach ( $_POST['season'] AS $season_id ) {
+				foreach ( $_POST['season'] as $season_id ) {
 					$this->delSeason( intval($season_id) );
 				}
 				$tab = "seasons";
 			} elseif ( isset($_POST['doaddCompetitionsToSeason']) && $_POST['action'] == 'addCompetitionsToSeason' ) {
 				check_admin_referer('racketmanager_add-seasons-competitions-bulk');
-				foreach ( $_POST['competition'] AS $competition_id ) {
+				foreach ( $_POST['competition'] as $competition_id ) {
 					$this->addSeasonToCompetition( htmlspecialchars($_POST['season']), intval($_POST['num_match_days']), $competition_id );
 				}
 				$tab = "seasons";
@@ -1549,7 +1549,7 @@ final class RacketManagerAdmin extends RacketManager
 				if ( $_POST['action'] == 'delete' ) {
 					if ( current_user_can('edit_teams') ) {
 						check_admin_referer('player-bulk');
-						foreach ( $_POST['player'] AS $player_id ) {
+						foreach ( $_POST['player'] as $player_id ) {
 							$this->delPlayer( intval($player_id) );
 						}
 					} else {
@@ -1567,7 +1567,7 @@ final class RacketManagerAdmin extends RacketManager
 			} elseif ( isset($_POST['dorosterrequest']) ) {
 				if ( current_user_can('edit_teams') ) {
 					check_admin_referer('roster-request-bulk');
-					foreach ( $_POST['rosterRequest'] AS $i => $rosterRequest_id ) {
+					foreach ( $_POST['rosterRequest'] as $i => $rosterRequest_id ) {
 						if ( $_POST['action'] == 'approve' ) {
 							$this->_approveRosterRequest( intval($_POST['club_id'][$i]), intval($rosterRequest_id) );
 						} elseif ( $_POST['action'] == 'delete' ) {
@@ -2024,7 +2024,7 @@ final class RacketManagerAdmin extends RacketManager
 		}
 
 		$competition = get_competition($competition_id);
-		foreach ( $competition->getLeagues() AS $league ) {
+		foreach ( $competition->getLeagues() as $league ) {
 
 			$league_id = $league->id;
 
@@ -2271,9 +2271,9 @@ final class RacketManagerAdmin extends RacketManager
 
 		$competition = get_competition($competition_id);
 
-		foreach ( $seasons AS $season ) {
+		foreach ( $seasons as $season ) {
 
-			foreach ( $competition->getLeagues() AS $league ) {
+			foreach ( $competition->getLeagues() as $league ) {
 
 				$league_id = $league->id;
 				// remove tables
@@ -2897,11 +2897,11 @@ final class RacketManagerAdmin extends RacketManager
 		global $wpdb;
 		$all_teams = $wpdb->get_results( "SELECT `title`, `id` FROM {$wpdb->racketmanager_teams} WHERE `status` != 'P' ORDER BY `title` ASC" );
 		$teams = array();
-		foreach ( $all_teams AS $team ) {
+		foreach ( $all_teams as $team ) {
 			if ( !in_array($team->title, $teams) )
 			$teams[$team->id] = htmlspecialchars(stripslashes($team->title), ENT_QUOTES);
 		}
-		foreach ( $teams AS $team_id => $name )
+		foreach ( $teams as $team_id => $name )
 		echo "<option value='".$team_id."'>".$name."</option>";
 	}
 
@@ -2913,11 +2913,11 @@ final class RacketManagerAdmin extends RacketManager
 		global $wpdb;
 		$all_teams = $wpdb->get_results( "SELECT `title`, `id` FROM {$wpdb->racketmanager_teams} WHERE `status` = 'P' ORDER BY `title` ASC" );
 		$teams = array();
-		foreach ( $all_teams AS $team ) {
+		foreach ( $all_teams as $team ) {
 			if ( !in_array($team->title, $teams) )
 			$teams[$team->id] = htmlspecialchars(stripslashes($team->title), ENT_QUOTES);
 		}
-		foreach ( $teams AS $team_id => $name )
+		foreach ( $teams as $team_id => $name )
 		echo "<option value='".$team_id."'>".$name."</option>";
 	}
 
@@ -3054,7 +3054,7 @@ final class RacketManagerAdmin extends RacketManager
 		$out .= '</select>';
 		$out .= '<select size="1" name="month['.$index.']" class="date">';
 		$out .= "<option value='00'>".__('Month','racketmanager')."</option>";
-		foreach ( $this->getMonths() AS $key => $m ) {
+		foreach ( $this->getMonths() as $key => $m ) {
 			$selected = ( $key == $month ) ? ' selected="selected"' : '';
 			$out .= '<option value="'.str_pad($key, 2, 0, STR_PAD_LEFT).'"'.$selected.'>'.$m.'</option>';
 		}
@@ -3104,7 +3104,7 @@ final class RacketManagerAdmin extends RacketManager
 				$options['checks']['playedRounds'] = htmlspecialchars($_POST['playedRounds']);
 				$options['checks']['playerLocked'] = htmlspecialchars($_POST['playerLocked']);
 				$competitionTypes = $this->getCompetitionTypes();
-				foreach ( $competitionTypes AS $competitionType ) {
+				foreach ( $competitionTypes as $competitionType ) {
 					$options[$competitionType]['matchCapability'] = htmlspecialchars($_POST[$competitionType]['matchCapability']);
 					$options[$competitionType]['resultConfirmation'] = htmlspecialchars($_POST[$competitionType]['resultConfirmation']);
 					$options[$competitionType]['resultEntry'] = htmlspecialchars($_POST[$competitionType]['resultEntry']);
@@ -3153,7 +3153,7 @@ final class RacketManagerAdmin extends RacketManager
 			echo "<input type='hidden' name='curr_match_id' value='".$match_id."' />";
 			echo "<select name='league_id' class='alignleft' id='league_id' onChange='Racketmanager.getSeasonDropdown(this.value, ".$season.")'>";
 			echo "<option value='0'>".__('Choose League','racketmanager')."</option>";
-			foreach ( $leagues AS $league ) {
+			foreach ( $leagues as $league ) {
 				echo "<option value='".$league->id."'".selected($league_id, $league->id, false).">".$league->title."</option>";
 			}
 			echo "</select>";
@@ -3679,10 +3679,10 @@ final class RacketManagerAdmin extends RacketManager
 
 		$tables = array($wpdb->racketmanager, $wpdb->racketmanager_teams, $wpdb->racketmanager_matches, $wpdb->racketmanager_rosters, $wpdb->racketmanager_rubbers);
 
-		foreach( $tables AS $table ) {
+		foreach( $tables as $table ) {
 			$results = $wpdb->get_results("SHOW COLUMNS FROM {$table}");
 			$columns = array();
-			foreach ( $results AS $result ) {
+			foreach ( $results as $result ) {
 				$columns[] = "<li>".$result->Field." ".$result->Type.", NULL: ".$result->Null.", Default: ".$result->Default.", Extra: ".$result->Extra."</li>";
 			}
 			echo "<p>Table ".$table."<ul>";
@@ -3708,7 +3708,7 @@ final class RacketManagerAdmin extends RacketManager
 
 		<select size='1' name='league_id' id='league_id' class="form-select" >
 			<option value='0'><?php _e('Choose league', 'racketmanager') ?></option>
-			<?php foreach ( $leagues AS $league ) { ?>
+			<?php foreach ( $leagues as $league ) { ?>
 				<option value=<?php echo $league->id ?>><?php echo $league->title ?></option>
 			<?php } ?>
 		</select>
@@ -3741,7 +3741,7 @@ final class RacketManagerAdmin extends RacketManager
 		}
 
 		$class = '';
-		foreach ( $resultsCheckers AS $i => $resultsChecker ) {
+		foreach ( $resultsCheckers as $i => $resultsChecker ) {
 			$class = ( 'alternate' == $class ) ? '' : 'alternate';
 			$resultsChecker->class = $class;
 

@@ -4002,8 +4002,6 @@ final class RacketManagerAdmin extends RacketManager
 	private function scheduleLeagueMatches($competitions) {
 		global $wpdb, $racketmanager;
 
-		$error = false;
-
 		$result = $this->validateSchedule($competitions);
 
 		if ( $result ) {
@@ -4016,7 +4014,6 @@ final class RacketManagerAdmin extends RacketManager
 			}
 			$this->setMessage(__('Matches scheduled', 'racketmanager'));
 		}
-		return;
 	}
 
 	/**
@@ -4252,9 +4249,6 @@ final class RacketManagerAdmin extends RacketManager
 										$league = get_league($league1);
 										$team = get_team($team1);
 										$messages[] = sprintf(__('2 - Error in scheduling %s in %s','racketmanager'), $team->title, $league->title);
-										debug_to_console($refs);
-										debug_to_console($altRefs);
-										debug_to_console($league2);
 									}
 								}
 							}
@@ -4297,8 +4291,7 @@ final class RacketManagerAdmin extends RacketManager
 	private function getTableGroups($league, $season) {
 		global $wpdb;
 
-		$groups = $wpdb->get_results( "SELECT `group` as `value` FROM {$wpdb->racketmanager_table} WHERE `league_id` = $league AND `season` = $season AND `group` != ''");
-		return $groups;
+		return $wpdb->get_results( "SELECT `group` as `value` FROM {$wpdb->racketmanager_table} WHERE `league_id` = $league AND `season` = $season AND `group` != ''");
 	}
 
 }

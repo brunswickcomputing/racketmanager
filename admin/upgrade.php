@@ -642,6 +642,7 @@ function racketmanager_upgrade() {
 	$options['version'] = RACKETMANAGER_VERSION;
 
 	update_option('leaguemanager', $options);
+	flush_rewrite_rules();
 	echo __('finished', 'racketmanager') . "<br />\n";
 	$wpdb->hide_errors();
 	return;

@@ -387,7 +387,7 @@ class Competition {
 		$search_terms[] = $wpdb->prepare("`competition_id` = '%d'", intval($this->id));
 
 		$search = "";
-		if (count($search_terms) > 0) {
+		if (!empty($search_terms)) {
 			$search = " WHERE ";
 			$search .= implode(" AND ", $search_terms);
 		}
@@ -565,7 +565,7 @@ class Competition {
 		}
 
 		$search = "";
-		if (count($search_terms) > 0) {
+		if (!empty($search_terms)) {
 			$search = " AND ";
 			$search .= implode(" AND ", $search_terms);
 		}
@@ -731,7 +731,7 @@ class Competition {
 		}
 
 		$search = "";
-		if (count($search_terms) > 0) {
+		if (!empty($search_terms)) {
 			$search = " AND ";
 			$search .= implode(" AND ", $search_terms);
 		}
@@ -785,7 +785,7 @@ class Competition {
 		}
 
 		$search = "";
-		if (count($search_terms) > 0) {
+		if (!empty($search_terms)) {
 			$search = " AND ";
 			$search .= implode(" AND ", $search_terms);
 		}
@@ -840,7 +840,7 @@ class Competition {
 		}
 
 		$search = "";
-		if (count($search_terms) > 0) {
+		if (!empty($search_terms)) {
 			$search = " AND ";
 			$search .= implode(" AND ", $search_terms);
 		}
@@ -877,7 +877,7 @@ class Competition {
 			$search_terms[] = $wpdb->prepare("`team_id` = %d", intval($team));
 		}
 		$search = "";
-		if (count($search_terms) > 0) {
+		if (!empty($search_terms)) {
 			$search = " AND ";
 			$search .= implode(" AND ", $search_terms);
 		}

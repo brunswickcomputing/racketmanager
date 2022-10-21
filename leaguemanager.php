@@ -89,6 +89,7 @@ class RacketManager {
 		add_action( 'wp_loaded', array(&$this, 'add_racketmanager_templates') );
 
 		add_filter( 'wp_privacy_personal_data_exporters', array(&$this, 'racketmanager_register_exporter') );
+		add_filter( 'wp_mail', array(&$this, 'racketmanagerMail') );
 
 	}
 
@@ -721,6 +722,20 @@ class RacketManager {
 	    'clubs/(.+?)/?$','index.php?pagename=club&club_name=$matches[1]','top'
 	  );
 	  flush_rewrite_rules();
+	}
+
+	/**
+	* add html content type to mail header
+	*
+	* @param array $args
+	* @return args
+	*/
+	public function racketmanagerMail($args) {
+		debug_to_console($args['headers']);
+		$headers = $args['headers'];
+		$headers[] = 'Content-Type: text/html; charset=UTF-8';
+		$args['headers'] = $headers;
+		return $args;
 	}
 
 	}
@@ -1995,21 +2010,6 @@ class RacketManager {
 	}
 
 	/**
-	* send mail
-	*
-	* @param string $to
-	* @param string $subject
-	* @param string $message
-	* @return none
-	*/
-	public function lm_mail($to, $subject, $message, $headers=array()) {
-		array_push($headers, 'Content-Type: text/html; charset=UTF-8');
-		wp_mail($to, $subject, $message, $headers);
-
-		return;
-	}
-
-	/**
 	* get confirmation email
 	*
 	* @param boolean $championship
@@ -2290,8 +2290,8 @@ class RacketManager {
 		$headers[] = 'From: '.ucfirst($match->league->competitionType).' Secretary <'.$emailFrom.'>';
 		$headers[] = 'cc: '.ucfirst($match->league->competitionType).' Secretary <'.$emailFrom.'>';
     $subject = $organisationName." - ".$match->league->title." - ".$roundName." - Match Details";
-    $racketmanager->lm_mail($to, $subject, $emailMessage, $headers);
-		return true;
+    wp_mail($to, $subject, $emailMessage, $headers);
+	return true;
   }
 
 	/**
@@ -2330,7 +2330,7 @@ class RacketManager {
 					$emailTo = $club->matchSecretaryName.' <'.$club->matchSecretaryEmail.'>';
 					$actionURL = $this->site_url.'/'.$competitionType.'s/'.$competitionSeason.'-entry/'.$season.'/'.seoUrl($club->shortcode);
 					$emailMessage = $racketmanager_shortcodes->loadTemplate( 'competition-entry-open', array( 'emailSubject' => $emailSubject, 'fromEmail' => $fromEmail, 'actionURL' => $actionURL, 'organisationName' => $organisationName, 'season' => $season, 'competitionSeason' => $competitionSeason, 'competitionType' => $competitionType, 'club' => $club ), 'email' );
-					$response = $this->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
+					wp_mail($emailTo, $emailSubject, $emailMessage, $headers);
 					$messageSent = true;
 				}
 				if ( $messageSent ) {
@@ -2448,7 +2448,7 @@ class RacketManager {
 			$userDtls = get_userdata($user);
 			$emailTo = $userDtls->display_name.' <'.$userDtls->user_email.'>';
 			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'favourite-notification', array( 'emailSubject' => $emailSubject, 'fromEmail' => $fromEmail, 'matchURL' => $matchURL, 'favouriteURL' => $favouriteURL, 'favouriteTitle' => $favourite, 'organisationName' => $organisationName, 'user' => $userDtls, 'matches' => $matches ), 'email' );
-			$this->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
+			wp_mail($emailTo, $emailSubject, $emailMessage, $headers);
 		}
 	}
 

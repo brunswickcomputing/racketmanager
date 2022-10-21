@@ -2241,7 +2241,7 @@ final class RacketManagerAdmin extends RacketManager
 					}
 				}
 				$subject = $organisationName." - ".$competition->name." ".$season." - Constitution";
-				$racketmanager->lm_mail($emailAddr, $subject, $emailMessage, $headers);
+				wp_mail($emailAddr, $subject, $emailMessage, $headers);
 				$teams = $competition->getTeams( array('status' => 3) );
 				foreach ($teams as $team) {
 					$this->delTeamFromLeague($team->teamId, $team->leagueId, $season);
@@ -3970,7 +3970,7 @@ final class RacketManagerAdmin extends RacketManager
 			$teamDtls = $league->getTeamDtls($team->id);
 			$emailTo = $teamDtls->contactemail;
 			if ( $emailTo ) {
-				$this->lm_mail($emailTo, $emailSubject, $emailMessage, $headers);
+				wp_mail($emailTo, $emailSubject, $emailMessage, $headers);
 				$messageSent = true;
 			}
 		}

@@ -1053,7 +1053,7 @@ class RacketManagerAJAX extends RacketManager {
 				$subject .= " - ".__('Match complete', 'racketmanager');
 			}
 			$message = racketmanager_result_notification($match->id, $messageArgs );
-			$racketmanager->rmMail($emailTo, $subject, $message, $headers);
+			wp_mail($emailTo, $subject, $message, $headers);
 			if ( $matchStatus == 'P' ) {
 				$emailFrom = $emailTo;
 				unset($headers['from']);
@@ -1078,7 +1078,7 @@ class RacketManagerAJAX extends RacketManager {
 				if ( $emailTo > '' ) {
 					$subject = $racketmanager->site_name." - ".$match->league->title." - ".$match->match_title." - Result confirmation required";
 					$message = racketmanager_captain_result_notification($match->id, $messageArgs );
-					$racketmanager->rmMail($emailTo, $subject, $message, $headers);
+					wp_mail($emailTo, $subject, $message, $headers);
 				}
 			}
 		}
@@ -1346,7 +1346,7 @@ class RacketManagerAJAX extends RacketManager {
 						$headers['from'] = $racketmanager->getFromUserEmail();
 						$subject = $racketmanager->site_name." - ".$msg." - ".$clubName;
 						$message = racketmanager_roster_notification($messageArgs);
-						$racketmanager->rmMail($emailTo, $subject, $message, $headers);
+						wp_mail($emailTo, $subject, $message, $headers);
 					}
 				} else {
 					$error = true;
@@ -1620,7 +1620,7 @@ class RacketManagerAJAX extends RacketManager {
 			$headers[] = 'From: '.$user->display_name.' <'.$emailFrom.'>';
 			$organisationName = $racketmanager->site_name;
 			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'tournament-entry', array( 'tournamentEntries' => $tournamentEntries, 'organisationName' => $organisationName, 'season' => $season, 'tournamentSeason' => $tournamentSeason, 'contactno' => $contactno, 'contactemail' => $contactemail, 'player' => $playerName, 'club' => $affiliatedClubName ), 'email' );
-			$racketmanager->rmMail($emailTo, $emailSubject, $emailMessage, $headers);
+			wp_mail($emailTo, $emailSubject, $emailMessage, $headers);
 			$msg = __('Tournament entry complete', 'racketmanager');
 		} else {
 			$msg = __('Errors in tournament entry form', 'racketmanager');
@@ -1826,7 +1826,7 @@ class RacketManagerAJAX extends RacketManager {
 			}
 			$organisationName = $racketmanager->site_name;
 			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'cup-entry', array( 'cupEntries' => $cupEntrys, 'organisationName' => $organisationName, 'season' => $season, 'cupSeason' => $cupSeason, 'club' => $affiliatedClubName ), 'email' );
-			$racketmanager->rmMail($emailTo, $emailSubject, $emailMessage, $headers);
+			wp_mail($emailTo, $emailSubject, $emailMessage, $headers);
 
 			$msg = __('Cup entry complete', 'racketmanager');
 		} else {
@@ -2055,7 +2055,7 @@ class RacketManagerAJAX extends RacketManager {
 			}
 			$organisationName = $racketmanager->site_name;
 			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'league-entry', array( 'competitionEntries' => $competitionEntries, 'organisationName' => $organisationName, 'season' => $season, 'leagueSeason' => $leagueSeason, 'club' => $affiliatedClubName ), 'email' );
-			$racketmanager->rmMail($emailTo, $emailSubject, $emailMessage, $headers);
+			wp_mail($emailTo, $emailSubject, $emailMessage, $headers);
 			$msg = __('league entry complete', 'racketmanager');
 		} else {
 			$msg = __('Errors in league entry form', 'racketmanager');
@@ -2167,7 +2167,7 @@ class RacketManagerAJAX extends RacketManager {
 			}
 			$actionURL = $racketmanager->site_url.'/match/'.seoUrl($match->league->title).'/'.$match->season.'/day'.$match->match_day.'/'.seoUrl($match->teams['home']->title).'-vs-'.seoUrl($match->teams['away']->title);
 			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'match-result-pending', array( 'actionURL' => $actionURL, 'organisationName' => $organisationName ), 'email' );
-			$this->rmMail($emailTo, $emailSubject, $emailMessage, $headers);
+			wp_mail($emailTo, $emailSubject, $emailMessage, $headers);
 			$messageSent = true;
 		}
 
@@ -2222,7 +2222,7 @@ class RacketManagerAJAX extends RacketManager {
 		}
 		if ( !empty($emailTo) ) {
 			$emailMessage = racketmanager_captain_result_notification($match->id, $messageArgs );
-			$this->rmMail($emailTo, $emailSubject, $emailMessage, $headers);
+			wp_mail($emailTo, $emailSubject, $emailMessage, $headers);
 			$messageSent = true;
 		}
 
@@ -2272,7 +2272,7 @@ class RacketManagerAJAX extends RacketManager {
 					}
 					$actionURL = $racketmanager->site_url.'/'.$competition->competitiontype.'s/'.seoUrl($league->title).'/'.$team->season.'/day0/'.seoUrl($team->title);
 					$emailMessage = $racketmanager_shortcodes->loadTemplate( 'send-fixtures', array( 'competition' => $competition->name, 'captain' => $team->captain, 'season' => $season, 'matches' => $matches, 'team' => $team, 'actionURL' => $actionURL, 'organisationName' => $organisationName ), 'email' );
-					$this->rmMail($emailTo, $emailSubject, $emailMessage, $headers);
+					wp_mail($emailTo, $emailSubject, $emailMessage, $headers);
 					$messageSent = true;
 				}
 			}

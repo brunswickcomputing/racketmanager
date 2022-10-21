@@ -168,8 +168,9 @@ class Competition {
 		global $wpdb;
 
 		$competition_id = (int) $competition_id;
-		if ( ! $competition_id )
-		return false;
+		if ( ! $competition_id ) {
+			return false;
+		}
 
 		$competition = wp_cache_get( $competition_id, 'competitions' );
 
@@ -178,10 +179,14 @@ class Competition {
 			$competition->settings = (array)maybe_unserialize($competition->settings);
 			$competition = (object)array_merge((array)$competition, $competition->settings);
 
-			if ( !$competition ) return false;
+			if ( !$competition ) {
+				return false;
+			}
 
 			// check if specific sports class exists
-			if ( !isset($competition->sport) ) $competition->sport = '';
+			if ( !isset($competition->sport) ) {
+				$competition->sport = '';
+			}
 			$instance = "Competition_". ucfirst($competition->sport);
 			if (class_exists($instance)) {
 				$competition = new $instance( $competition );
@@ -210,10 +215,11 @@ class Competition {
 		}
 
 		foreach ( get_object_vars( $competition ) as $key => $value ) {
-			if ( $key == "standings")
-			$this->$key = array_merge($this->$key, $value);
-			else
-			$this->$key = $value;
+			if ( $key == "standings") {
+				$this->$key = array_merge($this->$key, $value);
+			} else {
+				$this->$key = $value;
+			}
 		}
 
 		$this->name = stripslashes($this->name);
@@ -244,13 +250,16 @@ class Competition {
 		// set default standings display options for additional team fields
 		if ( count($this->fields_team) > 0 ) {
 			foreach ( $this->fields_team as $key => $data ) {
-				if ( !isset($this->standings[$key]) )
-				$this->standings[$key] = 1;
+				if ( !isset($this->standings[$key]) ) {
+					$this->standings[$key] = 1;
+				}
 			}
 		}
 
 		// set season to latest
-		if ( $this->num_seasons > 0 ) $this->setSeason();
+		if ( $this->num_seasons > 0 ) {
+			$this->setSeason();
+		}
 
 		// Championship
 		if ( $this->mode == "championship" ) {
@@ -272,23 +281,27 @@ class Competition {
 			$data = $this->seasons[$season];
 		} elseif ( isset($_GET['season']) && !empty($_GET['season']) ) {
 			$key = htmlspecialchars(strip_tags($_GET['season']));
-			if (!isset($this->seasons[$key]))
-			$data = false;
-			else
-			$data = $this->seasons[$key];
+			if (!isset($this->seasons[$key])) {
+				$data = false;
+			} else {
+				$data = $this->seasons[$key];
+			}
 		} elseif ( isset($_GET['season_'.$this->id]) && !empty($_GET['season_'.$this->id]) ) {
 			$key = htmlspecialchars(strip_tags($_GET['season_'.$this->id]));
-			if (!isset($this->seasons[$key]))
-			$data = false;
-			else
-			$data = $this->seasons[$key];
+			if (!isset($this->seasons[$key])) {
+				$data = false;
+			} else {
+				$data = $this->seasons[$key];
+			}
 		} elseif ( !empty($season) ) {
 			$data = $this->seasons[$season];
 		} else {
 			$data = end($this->seasons);
 		}
 
-		if (empty($data)) $data = end($this->seasons);
+		if (empty($data)) {
+			$data = end($this->seasons);
+		}
 
 		$this->current_season = $data;
 		$this->num_match_days = $data['num_match_days'];
@@ -333,7 +346,9 @@ class Competition {
 		} else {
 			$data = false;
 		}
-		if (empty($data)) $data = end($this->seasons);
+		if (empty($data)) {
+			$data = end($this->seasons);
+		}
 		if ( $index ) {
 			return $data[$index];
 		}	else {
@@ -379,9 +394,13 @@ class Competition {
 
 		$orderby_string = ""; $i = 0;
 		foreach ($orderby as $order => $direction) {
-			if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) $direction = "ASC";
+			if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) {
+				$direction = "ASC";
+			}
 			$orderby_string .= "`".$order."` ".$direction;
-			if ($i < (count($orderby)-1)) $orderby_string .= ",";
+			if ($i < (count($orderby)-1)) {
+				$orderby_string .= ",";
+			}
 			$i++;
 		}
 		$orderby = $orderby_string;
@@ -421,7 +440,9 @@ class Competition {
 			wp_cache_set( md5($sql), $league, 'league' );
 		}
 
-		if ( !$league ) return 0;
+		if ( !$league ) {
+			return 0;
+		}
 
 		return $league->id;
 	}
@@ -469,7 +490,9 @@ class Competition {
 
 		$sql = $sql1." AND ro.`id` in (SELECT ro.id ".$sql2.")";
 
-		if ( $order != "") $sql .= " ORDER BY $order";
+		if ( $order != "") {
+			$sql .= " ORDER BY $order";
+		}
 
 		$sql = $wpdb->prepare($sql, $search_terms2);
 		$playerstats = wp_cache_get( md5($sql), 'playerstats' );
@@ -521,10 +544,11 @@ class Competition {
 
 		$search_terms = array();
 		if ( $leagueId ) {
-			if ($leagueId == "any")
-			$search_terms[] = "A.`league_id` != ''";
-			else
-			$search_terms[] = $wpdb->prepare("A.`league_id` = '%d'", intval($leagueId));
+			if ($leagueId == "any") {
+				$search_terms[] = "A.`league_id` != ''";
+			} else {
+				$search_terms[] = $wpdb->prepare("A.`league_id` = '%d'", intval($leagueId));
+			}
 		}
 		if ( $affiliatedclub ) {
 			$search_terms[] = $wpdb->prepare("`affiliatedclub` = '%d'", intval($affiliatedclub));
@@ -532,11 +556,13 @@ class Competition {
 		if ( $season ) {
 			$search_terms[] = $wpdb->prepare("A.`season` = '%s'", htmlspecialchars($season));
 		}
-		if ( $rank )
-		$search_terms[] = $wpdb->prepare("A.`rank` = '%s'", $rank);
+		if ( $rank ) {
+			$search_terms[] = $wpdb->prepare("A.`rank` = '%s'", $rank);
+		}
 
-		if ( $home )
-		$search_terms[] = "B.`home` = 1";
+		if ( $home ) {
+			$search_terms[] = "B.`home` = 1";
+		}
 
 		$search = "";
 		if (count($search_terms) > 0) {
@@ -546,9 +572,13 @@ class Competition {
 
 		$orderby_string = ""; $i = 0;
 		foreach ($orderby as $order => $direction) {
-			if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) $direction = "ASC";
+			if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) {
+				$direction = "ASC";
+			}
 			$orderby_string .= "`".$order."` ".$direction;
-			if ($i < (count($orderby)-1)) $orderby_string .= ",";
+			if ($i < (count($orderby)-1)) {
+				$orderby_string .= ",";
+			}
 			$i++;
 		}
 		$orderby = $orderby_string;
@@ -631,11 +661,13 @@ class Competition {
 	*/
 	public function getSettings($key=false) {
 		$settings = array();
-		foreach ($this->settings_keys as $k)
-		$settings[$k] = $this->$k;
+		foreach ($this->settings_keys as $k) {
+			$settings[$k] = $this->$k;
+		}
 
-		if ( $key )
-		return (isset($settings[$key])) ? $settings[$key] : false;
+		if ( $key ) {
+			return (isset($settings[$key])) ? $settings[$key] : false;
+		}
 
 		return $settings;
 	}
@@ -648,8 +680,9 @@ class Competition {
 
 		wp_cache_delete( $this->id, 'competitions' );
 		$result = $wpdb->get_row( $wpdb->prepare("SELECT `settings` FROM {$wpdb->racketmanager_competitions} WHERE `id` = '%d'", intval($this->id)) );
-		foreach ( maybe_unserialize($result->settings) as $key => $value )
-		$this->$key = $value;
+		foreach ( maybe_unserialize($result->settings) as $key => $value ) {
+			$this->$key = $value;
+		}
 	}
 
 	/**
@@ -830,7 +863,7 @@ class Competition {
 	}
 
 	/**
-	* mark teams as withdrawn from competition
+	* mark teams withdrawn from competition
 	*
 	* @param string $season season
 	* @param int $club Club Id
@@ -853,7 +886,7 @@ class Competition {
 	}
 
 	/**
-	* mark teams as entered into competition
+	* mark teams entered into competition
 	*
 	* @param int $team Team Id
 	* @param string $season season
@@ -866,7 +899,7 @@ class Competition {
 	}
 
 	/**
-	* add team as entered into competition
+	* add team entered into competition
 	*
 	* @param int $team Team Id
 	* @param string $season season
@@ -892,14 +925,17 @@ class Competition {
 * @return League|null
 */
 function get_competition( $competition = null ) {
-	if ( empty( $competition ) && isset( $GLOBALS['competition'] ) )
-	$competition = $GLOBALS['competition'];
+	if ( empty( $competition ) && isset( $GLOBALS['competition'] ) ) {
+		$competition = $GLOBALS['competition'];
+	}
 
 	if ( $competition instanceof Competition ) {
 		$_competition = $competition;
 	} elseif ( is_object( $competition ) ) {
 		// check if specific sports class exists
-		if ( !isset($competition->sport) ) $competition->sport = '';
+		if ( !isset($competition->sport) ) {
+			$competition->sport = '';
+		}
 		$instance = "Competition_". ucfirst($competition->sport);
 		if (class_exists($instance)) {
 			$_competition = new $instance( $competition );
@@ -910,8 +946,9 @@ function get_competition( $competition = null ) {
 		$_competition = Competition::get_instance( $competition );
 	}
 
-	if ( ! $_competition )
-	return null;
+	if ( ! $_competition ) {
+		return null;
+	}
 
 	return $_competition;
 }

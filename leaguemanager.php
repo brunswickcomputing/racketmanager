@@ -233,8 +233,7 @@ class RacketManager {
 
 		$user_data_to_export = array();
 
-		foreach ( $user_prop_to_export as $key => $name ) {
-			$value = '';
+		foreach ( $userPropToExport as $key => $name ) {
 
 			switch ( $key ) {
 				case 'gender':
@@ -330,7 +329,7 @@ class RacketManager {
 		$files = array_merge($this->readDirectory(RACKETMANAGER_PATH."/sports"), $this->readDirectory(get_stylesheet_directory() . "/sports"));
 
 		// load files
-		foreach ( $files AS $file ) {
+		foreach ( $files as $file ) {
 			require_once($file);
 		}
 
@@ -1037,7 +1036,7 @@ class RacketManager {
 		$orderBy = $orderBy_string;
 		$seasons = $wpdb->get_results("SELECT `name`, `id` FROM {$wpdb->racketmanager_seasons} ORDER BY $orderBy" );
 		$i = 0;
-		foreach ( $seasons AS $season ) {
+		foreach ( $seasons as $season ) {
 			$seasons[$i]->id = $season->id;
 			$seasons[$i]->name = stripslashes($season->name);
 
@@ -1120,11 +1119,15 @@ class RacketManager {
 			$search .= implode(" AND ", $search_terms);
 		}
 
-		$orderby_string = ""; $i = 0;
-		foreach ($orderby AS $order => $direction) {
-			if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) $direction = "ASC";
-			$orderby_string .= "`".$order."` ".$direction;
-			if ($i < (count($orderby)-1)) $orderby_string .= ",";
+		$orderbyString = ""; $i = 0;
+		foreach ($orderby as $order => $direction) {
+			if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) {
+				$direction = "ASC";
+			}
+			$orderbyString .= "`".$order."` ".$direction;
+			if ($i < (count($orderby)-1)) {
+				$orderbyString .= ",";
+			}
 			$i++;
 		}
 		$orderby = $orderby_string;
@@ -1138,7 +1141,7 @@ class RacketManager {
 		}
 
 		$i = 0;
-		foreach ( $tournaments AS $i => $tournament ) {
+		foreach ( $tournaments as $i => $tournament ) {
 
 			$tournament = $this->formatTournament($tournament);
 
@@ -1236,7 +1239,7 @@ class RacketManager {
 		}
 
 		$i = 0;
-		foreach ( $clubs AS $i => $club ) {
+		foreach ( $clubs as $i => $club ) {
 			$club = get_club($club);
 
 			$clubs[$i] = $club;
@@ -1275,18 +1278,22 @@ class RacketManager {
 			$search .= implode(" AND ", $search_terms);
 		}
 
-		$orderby_string = ""; $i = 0;
-		foreach ($orderby AS $order => $direction) {
-			if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) $direction = "ASC";
-			$orderby_string .= "`".$order."` ".$direction;
-			if ($i < (count($orderby)-1)) $orderby_string .= ",";
+		$orderbyString = ""; $i = 0;
+		foreach ($orderby as $order => $direction) {
+			if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) {
+				$direction = "ASC";
+			}
+			$orderbyString .= "`".$order."` ".$direction;
+			if ($i < (count($orderby)-1)) {
+				$orderbyString .= ",";
+			}
 			$i++;
 		}
 		$orderby = $orderby_string;
 
 		$competitions = $wpdb->get_results($wpdb->prepare( "SELECT `name`, `id`, `num_sets`, `num_rubbers`, `type`, `settings`, `seasons`, `competitiontype` FROM {$wpdb->racketmanager_competitions} $search ORDER BY $orderby LIMIT %d, %d", intval($offset), intval($limit) ));
 		$i = 0;
-		foreach ( $competitions AS $i => $competition ) {
+		foreach ( $competitions as $i => $competition ) {
 			$competition->name = stripslashes($competition->name);
 			$competition->num_rubbers = $competition->num_rubbers;
 			$competition->num_sets = $competition->num_sets;
@@ -1329,7 +1336,7 @@ class RacketManager {
 		if ( $settings['point_rule'] == 'user' && isset($_POST['forwin']) && is_numeric($_POST['forwin']) )
 				$settings['point_rule'] = array( 'forwin' => intval($_POST['forwin']), 'fordraw' => intval($_POST['fordraw']), 'forloss' => intval($_POST['forloss']), 'forwin_overtime' => intval($_POST['forwin_overtime']), 'forloss_overtime' => intval($_POST['forloss_overtime']) );
 
-		foreach ( $this->getStandingsDisplayOptions() AS $key => $label ) {
+		foreach ( $this->getStandingsDisplayOptions() as $key => $label ) {
 				$settings['standings'][$key] = isset($settings['standings'][$key]) ? 1 : 0;
 		}
 
@@ -1577,11 +1584,16 @@ class RacketManager {
 			$search = implode(" AND ", $search_terms);
 		}
 
-		$orderby_string = ""; $i = 0;
-		foreach ($orderby AS $order => $direction) {
-			if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) $direction = "ASC";
-			$orderby_string .= "`".$order."` ".$direction;
-			if ($i < (count($orderby)-1)) $orderby_string .= ",";
+		$orderbyString = "";
+		$i = 0;
+		foreach ($orderby as $order => $direction) {
+			if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) {
+				$direction = "ASC";
+			}
+			$orderbyString .= "`".$order."` ".$direction;
+			if ($i < (count($orderby)-1)) {
+				$orderbyString .= ",";
+			}
 			$i++;
 		}
 		$order = $orderby_string;
@@ -1611,7 +1623,7 @@ class RacketManager {
 
 		$i = 0;
 		$class = '';
-		foreach ( $rosters AS $roster ) {
+		foreach ( $rosters as $roster ) {
 			$class = ( 'alternate' == $class ) ? '' : 'alternate';
 			$rosters[$i]->class = $class;
 
@@ -1722,7 +1734,7 @@ class RacketManager {
 		}
 
 		$i = 0;
-		foreach ( $players AS $player ) {
+		foreach ( $players as $player ) {
 
 			$players[$i] = (object)(array)$player;
 			$players[$i]->id = $player->ID;
@@ -1909,8 +1921,8 @@ class RacketManager {
 		} else {
 			$orderby_string = "";
 			$i = 0;
-			foreach ($orderby AS $order => $direction) {
-				$orderby_string .= "`".$order."` ".$direction;
+			foreach ($orderby as $order => $direction) {
+				$orderbyString .= "`".$order."` ".$direction;
 				if ($i < (count($orderby)-1)) {
 					$orderby_string .= ",";
 				}
@@ -1922,7 +1934,7 @@ class RacketManager {
 			$matches = $wpdb->get_results($sql);
 			$class = '';
 
-			foreach ( $matches AS $i => $match ) {
+			foreach ( $matches as $i => $match ) {
 
 				$class = ( 'alternate' == $class ) ? '' : 'alternate';
 				$match = get_match($match);
@@ -1984,7 +1996,7 @@ class RacketManager {
 		if ( !$winners ) return false;
 
 		$i = 0;
-		foreach ( $winners AS $winner ) {
+		foreach ( $winners as $winner ) {
 
 			$match = get_match($winner->id);
 			$winners[$i] = (object)(array)$winner;
@@ -2444,7 +2456,7 @@ class RacketManager {
 		$favouriteURL = $this->site_url.'/member-account/favourites';
 		$matchURL = $this->site_url.'/'.$league->competitionType.'s/'.seoUrl($league->title).'/'.$league->current_season['name'].'/';
 
-		foreach ( $users AS $user ) {
+		foreach ( $users as $user ) {
 			$userDtls = get_userdata($user);
 			$emailTo = $userDtls->display_name.' <'.$userDtls->user_email.'>';
 			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'favourite-notification', array( 'emailSubject' => $emailSubject, 'fromEmail' => $fromEmail, 'matchURL' => $matchURL, 'favouriteURL' => $favouriteURL, 'favouriteTitle' => $favourite, 'organisationName' => $organisationName, 'user' => $userDtls, 'matches' => $matches ), 'email' );
@@ -2758,9 +2770,9 @@ class RacketManager {
 													<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer<?php echo $p ?>[<?php echo $r ?>]" id="homeplayer<?php echo $p ?>_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
 														<?php if ($homeRoster[$r][$p]['gender'] == 'm') { $select = 'Select male player'; } else { $select = 'Select female player'; } ?>
 														<option value="0"><?php _e( $select, 'racketmanager' ) ?></option>
-														<?php foreach ( $homeRoster[$r][$p]['players'] AS $roster ) {
-															if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
-															<option value="<?php echo $roster->roster_id ?>"<?php $player = 'home_player_'.$p; if(isset($rubber->$player)) selected($roster->roster_id, $rubber->$player ); echo $disabled; ?>>
+														<?php foreach ( $homeRoster[$r][$p]['players'] as $roster ) {
+															if ( isset($roster->removed_date) && $roster->removed_date != '' ) { $disabled = 'disabled'; } else { $disabled = ''; } ?>
+															<option value="<?php echo $roster->roster_id ?>"<?php $player = 'home_player_'.$p; if (isset($rubber->$player)) { selected($roster->roster_id, $rubber->$player ); echo $disabled; } ?>>
 																<?php echo $roster->fullname ?>
 															</option>
 														<?php } ?>
@@ -2798,9 +2810,9 @@ class RacketManager {
 													<select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer<?php echo $p ?>[<?php echo $r ?>]" id="awayplayer<?php echo $p ?>_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
 														<?php if ($awayRoster[$r][$p]['gender'] == 'm') { $select = 'Select male player'; } else { $select = 'Select female player'; } ?>
 														<option value="0"><?php _e( $select, 'racketmanager' ) ?></option>
-														<?php foreach ( $awayRoster[$r][$p]['players'] AS $roster ) {
-															if ( isset($roster->removed_date) && $roster->removed_date != '' )  $disabled = 'disabled'; else $disabled = ''; ?>
-															<option value="<?php echo $roster->roster_id ?>"<?php $player = 'away_player_'.$p; if(isset($rubber->$player)) selected($roster->roster_id, $rubber->$player ); echo $disabled; ?>>
+														<?php foreach ( $awayRoster[$r][$p]['players'] as $roster ) {
+															if ( isset($roster->removed_date) && $roster->removed_date != '' ) { $disabled = 'disabled'; } else { $disabled = ''; } ?>
+															<option value="<?php echo $roster->roster_id ?>"<?php $player = 'away_player_'.$p; if (isset($rubber->$player)) { selected($roster->roster_id, $rubber->$player ); echo $disabled; } ?>>
 																<?php echo $roster->fullname ?>
 															</option>
 														<?php } ?>

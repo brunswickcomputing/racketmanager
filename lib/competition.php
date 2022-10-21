@@ -538,7 +538,7 @@ class Competition {
 	public function getTeamsInfo( $args = array() ) {
 		global $wpdb, $racketmanager;
 
-		$defaults = array( 'leagueId' => false, 'season' => false, 'group' => false, 'rank' => false, 'orderby' => array("rank" => "ASC", "title" => "ASC"), "home" => false, "cache" => true, 'affiliatedclub' => false );
+		$defaults = array( 'leagueId' => false, 'group' => false, 'rank' => false, 'orderby' => array("rank" => "ASC", "title" => "ASC"), "home" => false, "cache" => true, 'affiliatedclub' => false );
 		$args = array_merge($defaults, $args);
 		extract($args, EXTR_SKIP);
 
@@ -552,9 +552,6 @@ class Competition {
 		}
 		if ( $affiliatedclub ) {
 			$search_terms[] = $wpdb->prepare("`affiliatedclub` = '%d'", intval($affiliatedclub));
-		}
-		if ( $season ) {
-			$search_terms[] = $wpdb->prepare("A.`season` = '%s'", htmlspecialchars($season));
 		}
 		if ( $rank ) {
 			$search_terms[] = $wpdb->prepare("A.`rank` = '%s'", $rank);
@@ -583,7 +580,7 @@ class Competition {
 		}
 		$orderby = $orderby_string;
 
-		$sql = "SELECT DISTINCT B.`id`, B.`title`, C.`captain`, B.`affiliatedclub`, B.`stadium`, B.`home`, B.`roster`, B.`profile`, A.`group`, C.`match_day`, C.`match_time` FROM {$wpdb->racketmanager_teams} B, {$wpdb->racketmanager_table} A, {$wpdb->racketmanager_team_competition} C WHERE B.id = A.team_id AND A.team_id = C.team_id and C.competition_id in (select `competition_id` from {$wpdb->racketmanager} WHERE `id` = A.league_id) AND C.`competition_id` = ".$this->id." $search ORDER BY $orderby";
+		$sql = "SELECT DISTINCT B.`id`, B.`title`, C.`captain`, B.`affiliatedclub`, B.`stadium`, B.`home`, B.`roster`, B.`profile`, A.`group`, C.`match_day`, C.`match_time` FROM {$wpdb->racketmanager_teams} B, {$wpdb->racketmanager_table} A, {$wpdb->racketmanager_team_competition} C WHERE B.id = A.team_id AND A.team_id = C.team_id and C.competition_id in (select `competition_id` from {$wpdb->racketmanager} WHERE `id` = A.league_id) AND C.`competition_id` = ".$this->id." AND A.season = ".$this->current_season['name']." $search ORDER BY $orderby";
 
 		$teams = wp_cache_get( md5($sql), 'teams' );
 		if ( !$teams ) {

@@ -243,7 +243,7 @@ class Competition {
 
 		// set default standings display options for additional team fields
 		if ( count($this->fields_team) > 0 ) {
-			foreach ( $this->fields_team AS $key => $data ) {
+			foreach ( $this->fields_team as $key => $data ) {
 				if ( !isset($this->standings[$key]) )
 				$this->standings[$key] = 1;
 			}
@@ -378,7 +378,7 @@ class Competition {
 		}
 
 		$orderby_string = ""; $i = 0;
-		foreach ($orderby AS $order => $direction) {
+		foreach ($orderby as $order => $direction) {
 			if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) $direction = "ASC";
 			$orderby_string .= "`".$order."` ".$direction;
 			if ($i < (count($orderby)-1)) $orderby_string .= ",";
@@ -393,7 +393,7 @@ class Competition {
 		}
 
 		$league_index = array();
-		foreach ( $leagues AS $i => $league ) {
+		foreach ( $leagues as $i => $league ) {
 
 			$league_index[$league->id] = $i;
 			$leagues[$i] = $league;
@@ -440,7 +440,7 @@ class Competition {
 		extract($args, EXTR_SKIP);
 
 		$sql1 = "SELECT p.ID AS `player_id`, p.`display_name` AS `fullname`, ro.`id` AS `roster_id`,  ro.`affiliatedclub` FROM {$wpdb->racketmanager_roster} AS ro, {$wpdb->users} AS p WHERE ro.`player_id` = p.`ID`";
-		$sql2 = "FROM {$wpdb->racketmanager_teams} AS t, {$wpdb->racketmanager_rubbers} AS r, {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager_roster} as ro WHERE r.`winner_id` != 0 AND (((r.`home_player_1` = ro.`id` OR r.`home_player_2` = ro.`id`) AND  m.`home_team` = t.`id`) OR ((r.`away_player_1` = ro.`id` OR r.`away_player_2` = ro.`id`) AND m.`away_team` = t.`id`)) AND ro.`affiliatedclub` = t.`affiliatedclub` AND r.`match_id` = m.`id` AND m.`league_id` IN (SELECT `id` FROM {$wpdb->racketmanager} WHERE `competition_id` = '%d') ";
+		$sql2 = "FROM {$wpdb->racketmanager_teams} AS t, {$wpdb->racketmanager_rubbers} AS r, {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager_roster} AS ro WHERE r.`winner_id` != 0 AND (((r.`home_player_1` = ro.`id` OR r.`home_player_2` = ro.`id`) AND  m.`home_team` = t.`id`) OR ((r.`away_player_1` = ro.`id` OR r.`away_player_2` = ro.`id`) AND m.`away_team` = t.`id`)) AND ro.`affiliatedclub` = t.`affiliatedclub` AND r.`match_id` = m.`id` AND m.`league_id` IN (SELECT `id` FROM {$wpdb->racketmanager} WHERE `competition_id` = '%d') ";
 
 		$search_terms1 = array();
 		$search_terms2 = array($this->id);
@@ -478,7 +478,7 @@ class Competition {
 			wp_cache_set( md5($sql), $playerstats, 'playerstats' );
 		}
 
-		foreach ( $playerstats AS $i => $playerstat ) {
+		foreach ( $playerstats as $i => $playerstat ) {
 
 			$sql3 = "SELECT t.`id` AS team_id,  t.`title` AS team_title, m.`season`, m.`match_day`, m.`home_team`, m.`away_team`, m.`winner_id` AS match_winner, m.`home_points`, m.`away_points`, m.`loser_id` AS match_loser, r.`rubber_number`, r.`home_player_1`, r.`home_player_2`, r.`away_player_1`, r.`away_player_2`, r.`winner_id` AS rubber_winner, r.`loser_id` AS rubber_loser, r.`custom`, m.`final`";
 			$sql3 .= $sql2." AND ro.`ID` = ".$playerstat->roster_id;
@@ -491,7 +491,7 @@ class Competition {
 				wp_cache_set( md5($sql), $stats, 'playerstats' );
 			}
 
-			foreach ( $stats AS $s => $stat ) {
+			foreach ( $stats as $s => $stat ) {
 
 				$stat->custom = stripslashes_deep(maybe_unserialize($stat->custom));
 				$stats[$s] = $stat;
@@ -545,7 +545,7 @@ class Competition {
 		}
 
 		$orderby_string = ""; $i = 0;
-		foreach ($orderby AS $order => $direction) {
+		foreach ($orderby as $order => $direction) {
 			if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) $direction = "ASC";
 			$orderby_string .= "`".$order."` ".$direction;
 			if ($i < (count($orderby)-1)) $orderby_string .= ",";
@@ -562,7 +562,7 @@ class Competition {
 		}
 
 		$class = '';
-		foreach ( $teams AS $i => $team ) {
+		foreach ( $teams as $i => $team ) {
 			$class = ( 'alternate' == $class ) ? '' : 'alternate';
 			$captain = get_userdata($team->captain);
 			$team->roster = maybe_unserialize($team->roster);
@@ -631,7 +631,7 @@ class Competition {
 	*/
 	public function getSettings($key=false) {
 		$settings = array();
-		foreach ($this->settings_keys AS $k)
+		foreach ($this->settings_keys as $k)
 		$settings[$k] = $this->$k;
 
 		if ( $key )
@@ -660,7 +660,7 @@ class Competition {
 	*/
 	public function standingsTableDisplayOptions( $options ) {
 		if ( count($this->fields_team) > 0 ) {
-			foreach ( $this->fields_team AS $key => $data ) {
+			foreach ( $this->fields_team as $key => $data ) {
 				$options[$key] = isset($data['desc']) ? $data['desc'] : $data['label'];
 			}
 		}
@@ -703,7 +703,7 @@ class Competition {
 			$search .= implode(" AND ", $search_terms);
 		}
 
-		$sql = $wpdb->prepare( "SELECT `l`.`title` AS `leagueTitle`, l.`id` as `leagueId`, ot.league_id as oldLeagueId, t2.`id` as `teamId`, t1.`id` as `tableId`, `t2`.`title`,`t1`.`rank`,`ot`.`rank` as oldRank, l.`id`, ot.`points_plus`, ot.`add_points`, t1.`status`, t1.`profile` FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_teams} t2, {$wpdb->racketmanager_table} t1 LEFT OUTER JOIN {$wpdb->racketmanager_table} ot ON `ot`.`season` = '%s' and `ot`.`team_id` = `t1`.`team_id` and ot.league_id in (select id from wp_racketmanager_leagues ol where ol.`competition_id` = %d) WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ORDER BY l.`title` ASC, t1.`rank` ASC LIMIT %d, %d", $oldseason, $this->id, intval($offset), intval($limit) );
+		$sql = $wpdb->prepare( "SELECT `l`.`title` AS `leagueTitle`, l.`id` AS `leagueId`, ot.`league_id` AS oldLeagueId, t2.`id` AS `teamId`, t1.`id` AS `tableId`, `t2`.`title`,`t1`.`rank`,`ot`.`rank` AS oldRank, l.`id`, ot.`points_plus`, ot.`add_points`, t1.`status`, t1.`profile` FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_teams} t2, {$wpdb->racketmanager_table} t1 LEFT OUTER JOIN {$wpdb->racketmanager_table} ot ON `ot`.`season` = '%s' and `ot`.`team_id` = `t1`.`team_id` and ot.league_id in (select id from wp_racketmanager_leagues ol where ol.`competition_id` = %d) WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ORDER BY l.`title` ASC, t1.`rank` ASC LIMIT %d, %d", $oldseason, $this->id, intval($offset), intval($limit) );
 
 		$constitutions = wp_cache_get( md5($sql), 'constitution' );
 		if ( !$constitutions ) {
@@ -712,7 +712,7 @@ class Competition {
 		}
 
 		$leagues = $this->getLeagues();
-		foreach ( $constitutions AS $i => $constitution ) {
+		foreach ( $constitutions as $i => $constitution ) {
 			if ( isset($constitution->oldLeagueId) ) {
 				$constitution->oldLeagueTitle = get_league($constitution->oldLeagueId)->title;
 			} else {
@@ -757,14 +757,14 @@ class Competition {
 			$search .= implode(" AND ", $search_terms);
 		}
 
-		$sql = $wpdb->prepare( "SELECT `l`.`title` AS `oldLeagueTitle`, l.`id` as `oldLeagueId`, t2.`id` as `teamId`, t1.`id` as `tableId`, `t2`.`title`,`t1`.`rank` as oldRank, l.`id`, t1.`points_plus`, t1.`add_points`, t1.`status`, t1.`profile` FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} t1, {$wpdb->racketmanager_teams} t2 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ORDER BY l.`title` ASC, t1.`rank` ASC LIMIT %d, %d", intval($offset), intval($limit) );
+		$sql = $wpdb->prepare( "SELECT `l`.`title` AS `oldLeagueTitle`, l.`id` AS `oldLeagueId`, t2.`id` AS `teamId`, t1.`id` AS `tableId`, `t2`.`title`,`t1`.`rank` AS oldRank, l.`id`, t1.`points_plus`, t1.`add_points`, t1.`status`, t1.`profile` FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} t1, {$wpdb->racketmanager_teams} t2 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ORDER BY l.`title` ASC, t1.`rank` ASC LIMIT %d, %d", intval($offset), intval($limit) );
 		$constitutions = wp_cache_get( md5($sql), 'constitution' );
 		if ( !$constitutions ) {
 			$constitutions =  $wpdb->get_results($sql);
 			wp_cache_set( md5($sql), $constitutions, 'constitution' );
 		}
 
-		foreach ( $constitutions AS $i => $constitution ) {
+		foreach ( $constitutions as $i => $constitution ) {
 			$constitution->rank = $constitution->oldRank;
 			$constitution->status = '';
 			$constitution->leagueId = $constitution->oldLeagueId;
@@ -812,7 +812,7 @@ class Competition {
 			$search .= implode(" AND ", $search_terms);
 		}
 
-		$sql = $wpdb->prepare( "SELECT `l`.`title` AS `leagueTitle`, l.`id` as `leagueId`, t2.`id` as `teamId`, t1.`id` as `tableId`, `t2`.`title`,`t1`.`rank`, l.`id`, t1.`status`, t1.`profile`, t1.`group` FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_teams} t2, {$wpdb->racketmanager_table} t1 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ORDER BY l.`title` ASC, t2.`title` ASC LIMIT %d, %d", intval($offset), intval($limit) );
+		$sql = $wpdb->prepare( "SELECT `l`.`title` AS `leagueTitle`, l.`id` AS `leagueId`, t2.`id` AS `teamId`, t1.`id` AS `tableId`, `t2`.`title`,`t1`.`rank`, l.`id`, t1.`status`, t1.`profile`, t1.`group` FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_teams} t2, {$wpdb->racketmanager_table} t1 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ORDER BY l.`title` ASC, t2.`title` ASC LIMIT %d, %d", intval($offset), intval($limit) );
 
 		$competitionTeams = wp_cache_get( md5($sql), 'competitionTeams' );
 		if ( !$competitionTeams ) {
@@ -820,7 +820,7 @@ class Competition {
 			wp_cache_set( md5($sql), $competitionTeams, 'competitionTeams' );
 		}
 
-		foreach ( $competitionTeams AS $i => $competitionTeam ) {
+		foreach ( $competitionTeams as $i => $competitionTeam ) {
 			$competitionTeams[$i] = $competitionTeam;
 		}
 

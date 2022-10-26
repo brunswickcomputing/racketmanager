@@ -904,12 +904,14 @@ class RacketManagerAJAX extends RacketManager {
 			if ( $errMsg ) {
 				$error = true;
 			}
-			if ( $set['player1'] !== null && $set['player2'] !== null ) {
-				if ( $set['player1'] > $set['player2']) {
+			$setPlayer1 = strtoupper($set['player1']);
+			$setPlayer2 = strtoupper($set['player2']);
+			if ( $setPlayer1 !== null && $setPlayer2 !== null ) {
+				if ( $setPlayer1 > $setPlayer2 ) {
 					$homescore += 1;
-				} elseif ( $set['player1'] < $set['player2']) {
+				} elseif ( $setPlayer1 < $setPlayer2 ) {
 					$awayscore += 1;
-				} elseif ( $set['player1'] == 'S' ){
+				} elseif ( $setPlayer1 == 'S' ){
 					$homescore += 0.5;
 					$awayscore += 0.5;
 				}
@@ -958,6 +960,8 @@ class RacketManagerAJAX extends RacketManager {
 			$maxLoss = 0;
 			$minLoss = 0;
 		}
+		$set['player1'] = strtoupper($set['player1']);
+		$set['player2'] = strtoupper($set['player2']);
 		if ( $set['player1'] !== null && $set['player2'] !== null ) {
 			if ( $setType == 'null' ) {
 				if ( $set['player1'] != '' ) {
@@ -968,12 +972,12 @@ class RacketManagerAJAX extends RacketManager {
 					$errMsg[] = __('Set score should be empty', 'racketmanager');
 					$errField[] = $setPrefix.'player2';
 				}
-			} elseif ( strtoupper($set['player1']) == 'S' || strtoupper($set['player2'] == 'S') ) {
-				if ( strtoupper($set['player1'] != 'S') ) {
+			} elseif ( $set['player1'] == 'S' || $set['player2'] == 'S' ) {
+				if ( $set['player1'] != 'S' ) {
 					$errMsg[] = __('Both scores must be shared', 'racketmanager');
 					$errField[] = $setPrefix.'player1';
 				}
-				if ( strtoupper($set['player2'] != 'S') ) {
+				if ( $set['player2'] != 'S' ) {
 					$errMsg[] = __('Both scores must be shared', 'racketmanager');
 					$errField[] = $setPrefix.'player2';
 				}

@@ -396,6 +396,14 @@ final class Club {
       if ( $gender && $gender != $rosters[$i]->gender ) {
         unset($rosters[$i]);
       }
+      $rosters[$i]->locked = get_user_meta($roster->player_id, 'locked', true );
+			$rosters[$i]->locked_date = get_user_meta($roster->player_id, 'locked_date', true );
+			$rosters[$i]->locked_user = get_user_meta($roster->player_id, 'locked_user', true );
+			if ( $rosters[$i]->locked_user ) {
+				$rosters[$i]->lockedUserName = get_userdata($rosters[$i]->locked_user)->display_name;
+			} else {
+				$rosters[$i]->lockedUserName = '';
+			}
 
       $i++;
     }

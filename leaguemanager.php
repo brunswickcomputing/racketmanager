@@ -1647,6 +1647,14 @@ class RacketManager {
 			$rosters[$i]->fullname = $roster->fullname;
 			$rosters[$i]->gender = get_user_meta($roster->player_id, 'gender', true );
 			$rosters[$i]->type = get_user_meta($roster->player_id, 'racketmanager_type', true );
+			$rosters[$i]->locked = get_user_meta($roster->player_id, 'locked', true );
+			$rosters[$i]->locked_date = get_user_meta($roster->player_id, 'locked_date', true );
+			$rosters[$i]->locked_user = get_user_meta($roster->player_id, 'locked_user', true );
+			if ( $rosters[$i]->locked_user ) {
+				$rosters[$i]->lockedUserName = get_userdata($rosters[$i]->locked_user)->display_name;
+			} else {
+				$rosters[$i]->lockedUserName = '';
+			}
 			$rosters[$i]->removed_date = $roster->removed_date;
 			$rosters[$i]->removed_user = $roster->removed_user;
 			if ( $roster->removed_user ) {

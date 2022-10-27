@@ -3716,8 +3716,12 @@ final class RacketManagerAdmin extends RacketManager
 			$update = true;
 			if ( $locked ) {
 				update_user_meta($userId, 'locked', $locked);
+				update_user_meta($userId, 'locked_date', date('Y-m-d'));
+				update_user_meta($userId, 'locked_user', get_current_user_id());
 			} else {
 				delete_user_meta($userId, 'locked');
+				delete_user_meta($userId, 'locked_date');
+				delete_user_meta($userId, 'locked_user');
 			}
 		}
 

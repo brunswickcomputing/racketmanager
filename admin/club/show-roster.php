@@ -69,14 +69,13 @@ namespace ns;
 
 			<div class="container">
 				<div class="row table-header">
-					<div class="col-12 col-md-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('roster-filter'));" /></div>
-					<div class="col-12 col-md-2"><?php _e( 'Name', 'racketmanager' ) ?></div>
-					<div class="col-12 col-md-1"><?php _e( 'Gender', 'racketmanager' ) ?></div>
-					<div class="col-12 col-md-1"><?php _e( 'BTM', 'racketmanager' ) ?></div>
-					<div class="col-12 col-md-1"><?php _e( 'Removed', 'racketmanager') ?></div>
-					<div class="col-12 col-md-2"><?php _e( 'Removed By', 'racketmanager') ?></div>
-					<div class="col-12 col-md-1"><?php _e( 'Created On', 'racketmanager') ?></div>
-					<div class="col-12 col-md-2"><?php _e( 'Created By', 'racketmanager') ?></div>
+					<div class="col-1 col-md-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('roster-filter'));" /></div>
+					<div class="col-6 col-md-2"><?php _e( 'Name', 'racketmanager' ) ?></div>
+					<div class="col-2 col-md-1"><?php _e( 'Gender', 'racketmanager' ) ?></div>
+					<div class="col-2 col-md-1"><?php _e( 'BTM', 'racketmanager' ) ?></div>
+					<div class="col-4 col-md-1"><?php _e( 'Removed', 'racketmanager') ?></div>
+					<div class="col-4 col-md-1"><?php _e( 'Created On', 'racketmanager') ?></div>
+					<div class="col-4 col-md-1"><?php _e( 'Locked On', 'racketmanager') ?></div>
 				</div>
 				<?php if ( !$club_id == 0 ) { $club = get_club($club_id); ?>
 
@@ -85,18 +84,17 @@ namespace ns;
 						foreach ( $rosters AS $roster ) { ?>
 							<?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 							<div class="row table-row <?php echo $class ?>">
-								<div class="col-12 col-md-1 check-column">
+								<div class="col-1 col-md-1 check-column">
 									<?php if ( !isset($roster->removed_date) ) { ?>
 										<input type="checkbox" value="<?php echo $roster->roster_id ?>" name="roster[<?php echo $roster->roster_id ?>]" />
 									<?php } ?>
 								</div>
-								<div class="col-12 col-md-2"><a href="admin.php?page=racketmanager-clubs&amp;view=player&amp;club_id=<?php echo $club->id ?>&amp;roster_id=<?php echo $roster->roster_id ?>"><?php echo $roster->fullname ?></a></div>
-								<div class="col-12 col-md-1"><?php echo $roster->gender ?></div>
-								<div class="col-12 col-md-1"><?php echo $roster->btm ?></div>
-								<div class="col-12 col-md-1"><?php if ( isset($roster->removed_date) ) { echo $roster->removed_date; } ?></div>
-								<div class="col-12 col-md-2"><?php echo $roster->removedUserName ?></div>
-								<div class="col-12 col-md-1"><?php echo $roster->created_date ?></div>
-								<div class="col-12 col-md-2"><?php echo $roster->createdUserName ?></div>
+								<div class="col-6 col-md-2"><a href="admin.php?page=racketmanager-clubs&amp;view=player&amp;club_id=<?php echo $club->id ?>&amp;roster_id=<?php echo $roster->roster_id ?>"><?php echo $roster->fullname ?></a></div>
+								<div class="col-1 col-md-1"><?php echo $roster->gender ?></div>
+								<div class="col-4 col-md-1"><?php echo $roster->btm ?></div>
+								<div class="col-4 col-md-1" title="<?php if (!empty($roster->removedUserName)) { echo __('Removed by',' racketmanager').' '.$roster->removedUserName; } ?>"><?php if ( isset($roster->removed_date) ) { echo $roster->removed_date; } ?></div>
+								<div class="col-4 col-md-1" title="<?php if (!empty($roster->createdUserName)) { echo __('Created by',' racketmanager').' '.$roster->createdUserName; } ?>"><?php echo $roster->created_date ?></div>
+								<div class="col-4 col-md-1" title="<?php if (!empty($roster->lockedUserName)) { echo __('Locked by',' racketmanager').' '.$roster->lockedUserName; } ?>"><?php echo $roster->locked_date ?></div>
 							</div>
 						<?php } ?>
 					<?php } ?>

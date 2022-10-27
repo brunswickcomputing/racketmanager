@@ -90,6 +90,7 @@ class RacketManager {
 
 		add_filter( 'wp_privacy_personal_data_exporters', array(&$this, 'racketmanagerRegisterExporter') );
 		add_filter( 'wp_mail', array(&$this, 'racketmanagerMail') );
+		add_filter( 'email_change_email', array(&$this, 'racketmanagerChangeEmailAddress'), 10, 3 );
 
 	}
 
@@ -728,6 +729,20 @@ class RacketManager {
 		$headers[] = 'Content-Type: text/html; charset=UTF-8';
 		$args['headers'] = $headers;
 		return $args;
+	}
+
+	public function racketmanagerChangeEmailAddress($emailChange, $user, $userData) {
+		global $racketmanager_shortcodes, $racketmanager;
+
+    $vars['site_name'] = $racketmanager->site_name;
+    $vars['site_url'] = $racketmanager->site_url;
+    $vars['user_login'] = $userData['user_login'];
+    $vars['display_name'] = $userData['display_name'];
+    $vars['email_link'] = $racketmanager->admin_email;
+    $emailChange['message'] = $racketmanager_shortcodes->loadTemplate( 'email-email-change', $vars, 'email' );
+		debug_to_console($emailChange);
+		return $emailChange;
+
 	}
 
 	public function addPages() {

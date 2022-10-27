@@ -90,7 +90,7 @@ namespace ns;
 										<input type="checkbox" value="<?php echo $roster->roster_id ?>" name="roster[<?php echo $roster->roster_id ?>]" />
 									<?php } ?>
 								</div>
-								<div class="col-12 col-md-2"><?php echo $roster->fullname ?></div>
+								<div class="col-12 col-md-2"><a href="admin.php?page=racketmanager-clubs&amp;view=player&amp;club_id=<?php echo $club->id ?>&amp;roster_id=<?php echo $roster->roster_id ?>"><?php echo $roster->fullname ?></a></div>
 								<div class="col-12 col-md-1"><?php echo $roster->gender ?></div>
 								<div class="col-12 col-md-1"><?php echo $roster->btm ?></div>
 								<div class="col-12 col-md-1"><?php if ( isset($roster->removed_date) ) { echo $roster->removed_date; } ?></div>

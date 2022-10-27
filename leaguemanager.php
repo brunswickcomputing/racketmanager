@@ -1681,13 +1681,25 @@ class RacketManager {
 	public function getRosterEntry( $rosterId, $cache = true ) {
 		global $wpdb;
 
-		$sql = "SELECT B.`ID` as `player_id`, B.`display_name` AS `fullname`, A.`system_record`, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_roster} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID` WHERE A.`id`= '".intval($rosterId)."'";
+		$sql = "SELECT A.`player_id` as `player_id`, A.`system_record`, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_roster} A WHERE A.`id`= '".intval($rosterId)."'";
 
 		$roster = wp_cache_get( md5($sql), 'rosterentry' );
 		if ( !$roster || !$cache ) {
 			$roster = $wpdb->get_row( $sql );
 			wp_cache_set( md5($sql), $roster, 'rosterentry' );
 		}
+		$roster->id = $rosterId;
+		$player = get_userdata($roster->player_id);
+		$roster->fullname = $player->display_name;
+		$roster->email = $player->user_email;
+		$player = get_user_meta($roster->player_id);
+		$roster->firstname = $player['first_name'][0];
+		$roster->surname = $player['last_name'][0];
+		$roster->gender = isset($player['gender']) ? $player['gender'][0] : '';
+		$roster->btm = isset($player['btm']) ? $player['btm'][0] : '';
+		$roster->locked = isset($player['locked']) ? $player['locked'][0] : '';
+		$roster->locked_date = isset($player['locked_date']) ? $player['locked_date'][0] : '';
+		$roster->locked_user = isset($player['locked_user']) ? $player['locked_user'][0] : '';
 
 		return $roster;
 	}

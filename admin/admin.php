@@ -340,6 +340,8 @@ final class RacketManagerAdmin extends RacketManager
 				$this->displayTeamsPage();
 			} elseif ( $view == 'roster' ) {
 				$this->displayRosterPage();
+			} elseif ( $view == 'player' ) {
+				$this->displayPlayerPage();
 			} else {
 				$this->displayClubsPage();
 			}
@@ -1234,11 +1236,62 @@ final class RacketManagerAdmin extends RacketManager
 				foreach ( $_POST['roster'] as $roster_id ) {
 					$this->delRoster( intval($roster_id) );
 				}
+			} elseif ( isset($_POST['editRosterPlayer']) ) {
+					check_admin_referer('racketmanager_edit-roster');
+					if ( !isset($_POST['firstname']) ) {
+						$this->setMessage( __("First name required",'racketmanager'), true );
+					} elseif ( !isset($_POST['surname']) ) {
+						$this->setMessage( __("Surname required",'racketmanager'), true );
+					} elseif ( !isset($_POST['gender']) ) {
+						$this->setMessage( __("Gender required",'racketmanager'), true );
+					} else {
+						$btm = isset($_POST['btm']) ? $_POST['btm'] : false;
+						$email = isset($_POST['email']) ? $_POST['email'] : false;
+						$locked = isset($_POST['locked']) ? $_POST['locked'] : false;
+	 					$this->editPlayerRoster( $_POST['roster_id'], $_POST['player_id'], $_POST['firstname'], $_POST['surname'], $_POST['gender'], $btm, $email, $locked );
+					}
 			}
 			$this->printMessage();
 			if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
 			$club = get_club($club_id);
 			include_once( dirname(__FILE__) . '/club/show-roster.php' );
+		}
+	}
+
+	/**
+	* display player page
+	*
+	*/
+	private function displayPlayerPage() {
+		global $racketmanager;
+
+		if ( !current_user_can( 'edit_teams' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+		} else {
+			if ( isset($_POST['addRosterPlayer']) ) {
+				check_admin_referer('racketmanager_add-roster');
+				if ( !isset($_POST['firstname']) ) {
+					$this->setMessage( __("First name required",'racketmanager'), true );
+				} elseif ( !isset($_POST['surname']) ) {
+					$this->setMessage( __("Surname required",'racketmanager'), true );
+				} elseif ( !isset($_POST['gender']) ) {
+					$this->setMessage( __("Gender required",'racketmanager'), true );
+				} else {
+					$btm = isset($_POST['btm']) ? $_POST['btm'] : false;
+					$email = isset($_POST['email']) ? $_POST['email'] : false;
+ 					$this->addPlayerToRoster( $_POST['club_Id'], $_POST['firstname'], $_POST['surname'], $_POST['gender'], $btm, $email );
+				}
+			} elseif ( isset($_POST['dorosterdel']) && $_POST['action'] == 'delete' ) {
+				check_admin_referer('roster-bulk');
+				foreach ( $_POST['roster'] as $roster_id ) {
+					$this->delRoster( intval($roster_id) );
+				}
+			}
+			$this->printMessage();
+			if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
+			if (isset($_GET['roster_id'])) $roster_id = $_GET['roster_id'];
+			$roster = $racketmanager->getRosterEntry($roster_id);
+			include_once( dirname(__FILE__) . '/club/show-player.php' );
 		}
 	}
 
@@ -1582,7 +1635,6 @@ final class RacketManagerAdmin extends RacketManager
 				$tab = "rosterrequest";
 			}
 			$this->printMessage();
-			debug_to_console($players);
 			if ( !$players ) {
 				$players = $racketmanager->getPlayers( array() );
 			}
@@ -3626,6 +3678,63 @@ final class RacketManagerAdmin extends RacketManager
 			$racketmanager->setMessage( __('Player added to club','racketmanager') );
 		} else {
 			$racketmanager->setMessage( __('Player already registered','racketmanager'), true	 );
+		}
+		return;
+	}
+
+	private function editPlayerRoster($rosterId, $userId, $firstname, $surname, $gender, $btm, $email, $locked ) {
+		global $wpdb, $racketmanager;
+
+		$update = false;
+		$userData = array();
+		$roster = $racketmanager->getRosterEntry($rosterId);
+		if ( $roster->firstname != $firstname ) {
+			$update = true;
+			$userData['first_name'] = $firstname;
+			$userData['display_name'] = $firstname.' '.$surname;
+			$userData['user_nicename'] = sanitize_title($userData['display_name']);
+		}
+		if ( $roster->surname != $surname ) {
+			$update = true;
+			$userData['last_name'] = $surname;
+			$userData['display_name'] = $firstname.' '.$surname;
+			$userData['user_nicename'] = sanitize_title($userData['display_name']);
+		}
+		if ( $roster->gender != $gender ) {
+			$update = true;
+			update_user_meta($userId, 'gender', $gender);
+		}
+		if ( $roster->btm != $btm ) {
+			$update = true;
+			update_user_meta($userId, 'btm', $btm);
+		}
+		if ( $roster->email != $email ) {
+			$update = true;
+			$userData['user_email'] = $email;
+		}
+		if ( $roster->locked != $locked ) {
+			$update = true;
+			if ( $locked ) {
+				update_user_meta($userId, 'locked', $locked);
+			} else {
+				delete_user_meta($userId, 'locked');
+			}
+		}
+
+		if (!$update) {
+			$racketmanager->setMessage( __('No updates','racketmanager') );
+			return;
+		}
+		if ( $userData ) {
+			$userData['ID'] = $userId;
+			$userId = wp_update_user($userData);
+			if ( is_wp_error($userId) ) {
+				$racketmanager->setMessage($userId->get_error_message());
+			} else {
+				$racketmanager->setMessage( __('Player details updated','racketmanager') );
+			}
+		} else {
+			$racketmanager->setMessage( __('Player details updated','racketmanager') );
 		}
 		return;
 	}

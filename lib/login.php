@@ -896,12 +896,36 @@ public function formLogin($vars) {
       $updates = true;
     }
 
-    if ( $updates ) {
-      return $this->updateUserProfile($currentUser, $userData);
-    } else {
+    if ( !$updates ) {
       $userData['message'] = $this->get_error_message('no_updates');
       return $userData;
     }
+    foreach( $userData as $key => $value ) {
+      // http://codex.wordpress.org/Function_Reference/wp_update_user
+      if( $key == 'contactno' ) {
+        update_user_meta( $currentUser->ID, $key, $value );
+      } elseif( $key == 'btm' ) {
+        update_user_meta( $currentUser->ID, $key, $value );
+      } elseif( $key == 'gender' ) {
+        update_user_meta( $currentUser->ID, $key, $value );
+      } elseif( $key == 'first_name' ) {
+        if ( $userData['first_name'] != get_user_meta($currentUser->ID,'first_name',true) ) {
+          update_user_meta( $currentUser->ID, $key, $value );
+          wp_update_user( array( 'ID' => $currentUser->ID, 'display_name' => $value.' '.sanitize_text_field( $userData['last_name'] ) ) );
+        }
+      } elseif( $key == 'last_name' ) {
+        if ( $userData['last_name'] != get_user_meta($currentUser->ID,'last_name',true) ) {
+          update_user_meta( $currentUser->ID, $key, $value );
+          wp_update_user( array( 'ID' => $currentUser->ID, 'display_name' => sanitize_text_field( $userData['first_name'] ).' '.$value ) );
+        }
+      } elseif ( $key == 'password' ) {
+        wp_update_user( array( 'ID' => $currentUser->ID, 'user_pass' => $value ) );
+      } else {
+        wp_update_user( array( 'ID' => $currentUser->ID, $key => $value ) );
+      }
+    }
+    $userData['message'] = __( 'Your profile has been successfully updated', 'racketmanager');
+    return $userData;
   }
 
   private function validateUserProfile($userData) {

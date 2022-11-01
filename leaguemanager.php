@@ -743,7 +743,6 @@ class RacketManager {
     $vars['display_name'] = $userData['display_name'];
     $vars['email_link'] = $racketmanager->admin_email;
     $emailChange['message'] = $racketmanager_shortcodes->loadTemplate( 'email-email-change', $vars, 'email' );
-		debug_to_console($emailChange);
 		return $emailChange;
 
 	}

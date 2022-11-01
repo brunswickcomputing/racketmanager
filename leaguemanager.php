@@ -726,6 +726,9 @@ class RacketManager {
 	*/
 	public function racketmanagerMail($args) {
 		$headers = $args['headers'];
+		if ( !$headers ) {
+			$headers = array();
+		}
 		$headers[] = 'Content-Type: text/html; charset=UTF-8';
 		$args['headers'] = $headers;
 		return $args;

@@ -1191,15 +1191,15 @@ class RacketManagerAJAX extends RacketManager {
 				$rosterDate = new DateTime($player->created_date);
 				$interval = $rosterDate->diff($matchDate);
 				if ( $interval->days < intval($options['rosterLeadTime']) ) {
-					$error = sprintf(__('player registered with club only %d days before match','racketmanager'), $interval->days);
+					$error = sprintf(__('registered with club only %d days before match','racketmanager'), $interval->days);
 					$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
 				} elseif ( $interval->invert ) {
-					$error = sprintf(__('player registered with club %d days after match','racketmanager'), $interval->days);
+					$error = sprintf(__('registered with club %d days after match','racketmanager'), $interval->days);
 					$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
 				}
 			}
 			if ( !empty($player->locked) ) {
-				$error = __('Player locked', 'racketmanager');
+				$error = __('locked', 'racketmanager');
 				$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
 			}
 
@@ -1208,7 +1208,7 @@ class RacketManagerAJAX extends RacketManager {
 
 				$count = $wpdb->get_var($sql);
 				if ( $count > 0 ) {
-					$error = sprintf(__('player has already played on match day %d','racketmanager'), $match->match_day);
+					$error = sprintf(__('already played on match day %d','racketmanager'), $match->match_day);
 					$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
 				}
 
@@ -1220,7 +1220,7 @@ class RacketManagerAJAX extends RacketManager {
 
 						$count = $wpdb->get_var($sql);
 						if ( $count == 0 ) {
-							$error = sprintf(__('player has not played before the final %d match days','racketmanager'), $options['playedRounds']);
+							$error = sprintf(__('not played before the final %d match days','racketmanager'), $options['playedRounds']);
 							$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
 						}
 					}
@@ -1242,7 +1242,7 @@ class RacketManagerAJAX extends RacketManager {
 						}
 						foreach ( $teamplay as $teamNum => $played) {
 							if ($teamNum < $currTeamNum && $played > $options['playerLocked']) {
-								$error = sprintf(__('player is locked to team %d','racketmanager'), $teamNum);
+								$error = sprintf(__('locked to team %d','racketmanager'), $teamNum);
 								$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
 							}
 						}

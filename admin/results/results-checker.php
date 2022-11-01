@@ -22,16 +22,18 @@
 
 	<div class="container">
 		<div class="row table-header">
-			<div class="col-12 col-md-auto check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('results-checker-filter'));" /></div>
-			<div class="col-12 col-md-1"><?php _e( 'Date', 'racketmanager' ) ?></div>
-			<div class="col-12 col-md-1"><?php _e( 'League', 'racketmanager' ) ?></div>
-			<div class="col-12 col-md-2"><?php _e( 'Match', 'racketmanager' ) ?></div>
-			<div class="col-12 col-md-1"><?php _e( 'Team', 'racketmanager' ) ?></div>
-			<div class="col-12 col-md-1"><?php _e( 'Player', 'racketmanager' ) ?></div>
+			<div class="col-2 col-md-auto check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('results-checker-filter'));" /></div>
+			<div class="col-5 col-sm-2 col-lg-1"><?php _e( 'Date', 'racketmanager' ) ?></div>
+			<div class="col-12 col-sm-2 col-lg-3"><?php _e( 'Match', 'racketmanager' ) ?></div>
+			<div class="col-6 col-md-2"><?php _e( 'Team', 'racketmanager' ) ?></div>
+			<div class="col-6 col-sm-2"><?php _e( 'Player', 'racketmanager' ) ?></div>
 			<div class="col-12 col-md-2"><?php _e( 'Description', 'racketmanager' ) ?></div>
-			<div class="col-12 col-md-1"><?php _e( 'Status', 'racketmanager' ) ?></div>
-			<div class="col-12 col-md-1"><?php _e( 'Updated Date', 'racketmanager' ) ?></div>
-			<div class="col-12 col-md-1"><?php _e( 'Updated User', 'racketmanager' ) ?></div>
+			<?php if ( $resultsCheckFilter != 'outstanding' ) { ?>
+				<div class="d-none d-md-block col-md-3 col-lg-6"></div>
+				<div class="col-4 col-md-3 col-lg-2"><?php _e( 'Status', 'racketmanager' ) ?></div>
+				<div class="col-4 col-md-3 col-lg-2"><?php _e( 'Updated Date', 'racketmanager' ) ?></div>
+				<div class="col-4 col-md-3 col-lg-2"><?php _e( 'Updated User', 'racketmanager' ) ?></div>
+			<?php } ?>
 		</div>
 
 		<?php
@@ -40,18 +42,20 @@
 			foreach ($resultsCheckers AS $resultsChecker) {
 				$class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 				<div class="row table-row <?php echo $class ?>">
-					<div class="col-12 col-md-auto check-column">
+					<div class="col-2 col-md-auto check-column">
 						<input type="checkbox" value="<?php echo $resultsChecker->id ?>" name="resultsChecker[<?php echo $resultsChecker->id ?>]" />
 					</div>
-					<div class="col-12 col-md-1"><?php echo $resultsChecker->date ?></div>
-					<div class="col-12 col-md-1"><a href="admin.php?page=racketmanager&subpage=show-league&league_id=<?php echo $resultsChecker->league->id ?>" title="<?php _e( 'Go to league', 'racketmanager' ) ?>"><?php echo $resultsChecker->league->title ?></a></div>
-					<div class="col-12 col-md-2"><a href="admin.php?page=racketmanager-results&amp;subpage=match&amp;match_id=<?php echo $resultsChecker->match_id ?>&amp;referrer=resultschecker"><?php echo $resultsChecker->match->match_title ?></a></div>
-					<div class="col-12 col-md-1"><?php echo $resultsChecker->team ?></div>
-					<div class="col-12 col-md-1"><?php echo $resultsChecker->player ?></div>
-					<div class="col-12 col-md-2"><?php echo $resultsChecker->description ?></div>
-					<div class="col-12 col-md-1"><?php echo $resultsChecker->status ?></div>
-					<div class="col-12 col-md-1"><?php echo $resultsChecker->updated_date ?></div>
-					<div class="col-12 col-md-1"><?php echo $resultsChecker->updated_user_name ?></div>
+					<div class="col-5 col-sm-2 col-lg-1"><?php echo mysql2date('Y-m-d', $resultsChecker->match->date) ?></div>
+					<div class="col-12 col-md-2 col-lg-3"><a href="admin.php?page=racketmanager-results&amp;subpage=match&amp;match_id=<?php echo $resultsChecker->match_id ?>&amp;referrer=resultschecker"><?php echo $resultsChecker->match->match_title ?></a></div>
+					<div class="col-auto col-md-2"><?php echo $resultsChecker->team ?></div>
+					<div class="col-auto col-sm-2"><?php echo $resultsChecker->player ?></div>
+					<div class="col-12 col-md-3"><?php echo $resultsChecker->description ?></div>
+					<?php if ( $resultsCheckFilter != 'outstanding' ) { ?>
+						<div class="d-none d-md-block col-md-3 col-lg-6"></div>
+						<div class="col-4 col-md-3 col-lg-2"><?php echo $resultsChecker->status ?></div>
+						<div class="col-4 col-md-3 col-lg-2"><?php echo $resultsChecker->updated_date ?></div>
+						<div class="col-4 col-md-3 col-lg-2"><?php echo $resultsChecker->updated_user_name ?></div>
+					<?php } ?>
 				</div>
 			<?php }
 		} else { ?>

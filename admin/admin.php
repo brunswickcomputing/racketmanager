@@ -3858,13 +3858,14 @@ final class RacketManagerAdmin extends RacketManager
 			$class = ( 'alternate' == $class ) ? '' : 'alternate';
 			$resultsChecker->class = $class;
 
-			$resultsChecker->league = get_league($resultsChecker->league_id);
-			$resultsChecker->date = get_match($resultsChecker->match_id)->date;
 			$resultsChecker->match = get_match($resultsChecker->match_id);
+			$resultsChecker->team = '';
 			if ( $resultsChecker->team_id > 0 ) {
-				$resultsChecker->team = get_team($resultsChecker->team_id)->title;
-			} else {
-				$resultsChecker->team = '';
+				if ( $resultsChecker->team_id ==  $resultsChecker->match->home_team ) {
+					$resultsChecker->team = $resultsChecker->match->teams['home']->title;
+				} elseif ( $resultsChecker->team_id ==  $resultsChecker->match->away_team ) {
+					$resultsChecker->team = $resultsChecker->match->teams['away']->title;
+				}
 			}
 			$player = get_userdata($resultsChecker->player_id);
 			if ( $player ) {

@@ -50,6 +50,28 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.27.0 =
+* BUGFIX: show account screen correctly
+* BUGFIX: update club info from front end
+* BUGFIX: use current season to get team info
+* BUGFIX: update match secretary contact number correctly
+* UPDATE: show error in login page header
+* UPDATE: handle user display page after resetting password
+* UPDATE: add search by name for players
+* UPDATE: update player details for tournament entry
+* UPDATE: make scheduling error messages more informative
+* UPDATE: change scheduling pairing to random order
+* UPDATE: add player name to registration email
+* UPDATE: highlight notification messages correctly
+* UPDATE: move forms to separate templates subfolder
+* UPDATE: code cleanup - remove sonarlint warnings
+* UPDATE: handle shared set scores easier
+* UPDATE: custom email change email
+* UPDATE: change display of clubs admin screen
+* UPDATE: add update player function to allow player locking
+* UPDATE: player lock check in match result
+* UPDATE: change admin result display for smaller screens
+
 = 6.26.3 =
 * BUGFIX: fix email from address on league contact page
 * BUGFIX: use correct title on order of play schedule

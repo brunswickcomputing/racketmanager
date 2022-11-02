@@ -664,6 +664,9 @@ dl dl {
 .points {
   text-align: center;
 }
+input.points {
+  padding: 3px;
+}
 .message-error {
   border: 2px solid #dc3545;
   color: #dc3545;

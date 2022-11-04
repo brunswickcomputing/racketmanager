@@ -1037,11 +1037,11 @@ class RacketManagerAJAX extends RacketManager {
 	*/
 	public function resultNotification($matchStatus, $matchMessage, $match, $matchUpdatedby=false) {
 		global $racketmanager;
-		$emailTo = $racketmanager->getConfirmationEmail($match->league->competitionType);
+		$adminEmail = $racketmanager->getConfirmationEmail($match->league->competitionType);
 		$rmOptions = $racketmanager->getOptions();
 		$resultNotification = $rmOptions[$match->league->competitionType]['resultNotification'];
 
-		if ( $emailTo > '' ) {
+		if ( $adminEmail > '' ) {
 			$messageArgs = array();
 			$messageArgs['league'] = $match->league->id;
 			if ( $match->league->is_championship ) {
@@ -1050,41 +1050,41 @@ class RacketManagerAJAX extends RacketManager {
 				$messageArgs['matchday'] = $match->match_day;
 			}
 			$headers = array();
-			$headers['from'] = $racketmanager->getFromUserEmail();
-			$subject = $racketmanager->site_name." - ".$match->league->title." - ".$match->match_title." - ".$matchMessage;
-			if ( $matchStatus == 'Y' ) {
-				$messageArgs['complete'] = true;
-				$subject .= " - ".__('Match complete', 'racketmanager');
-			}
-			$message = racketmanager_result_notification($match->id, $messageArgs );
-			wp_mail($emailTo, $subject, $message, $headers);
+			$confirmationEmail = '';
 			if ( $matchStatus == 'P' ) {
-				$emailFrom = $emailTo;
-				unset($headers['from']);
-				$headers['from'] = 'From: '.ucfirst($match->league->competitionType).' Secretary <'.$emailFrom.'>';
-				$headers[] = 'cc: '.ucfirst($match->league->competitionType).' Secretary <'.$emailFrom.'>';
-				$emailTo = '';
 				if ( $matchUpdatedby == 'home' ) {
 					if ( $resultNotification == 'captain' ) {
-						$emailTo = $match->teams['away']->contactemail;
+						$confirmationEmail = $match->teams['away']->contactemail;
 					} elseif ( $resultNotification == 'secretary' ) {
 						$club = get_club($match->teams['away']->affiliatedclub);
-						$emailTo = isset($club->matchSecretaryEmail) ? $club->matchSecretaryEmail : '';
+						$confirmationEmail = isset($club->matchSecretaryEmail) ? $club->matchSecretaryEmail : '';
 					}
 				} else {
 					if ( $resultNotification == 'captain' ) {
-						$emailTo = $match->teams['home']->contactemail;
+						$confirmationEmail = $match->teams['home']->contactemail;
 					} elseif ( $resultNotification == 'secretary' ) {
 						$club = get_club($match->teams['away']->affiliatedclub);
-						$emailTo = isset($club->matchSecretaryEmail) ? $club->matchSecretaryEmail : '';
+						$confirmationEmail = isset($club->matchSecretaryEmail) ? $club->matchSecretaryEmail : '';
 					}
 				}
-				if ( $emailTo > '' ) {
-					$subject = $racketmanager->site_name." - ".$match->league->title." - ".$match->match_title." - Result confirmation required";
-					$message = racketmanager_captain_result_notification($match->id, $messageArgs );
-					wp_mail($emailTo, $subject, $message, $headers);
-				}
 			}
+			if ( $confirmationEmail ) {
+				$emailTo = $confirmationEmail;
+				$headers[] = 'From: '.ucfirst($match->league->competitionType).' Secretary <'.$adminEmail.'>';
+				$headers[] = 'cc: '.ucfirst($match->league->competitionType).' Secretary <'.$adminEmail.'>';
+				$subject = $racketmanager->site_name." - ".$match->league->title." - ".$match->match_title." - Result confirmation required";
+				$message = racketmanager_captain_result_notification($match->id, $messageArgs );
+			} else {
+				$emailTo = $adminEmail;
+				$headers[] = $racketmanager->getFromUserEmail();
+				$subject = $racketmanager->site_name." - ".$match->league->title." - ".$match->match_title." - ".$matchMessage;
+				if ( $matchStatus == 'Y' ) {
+					$messageArgs['complete'] = true;
+					$subject .= " - ".__('Match complete', 'racketmanager');
+				}
+				$message = racketmanager_result_notification($match->id, $messageArgs );
+			}
+			wp_mail($emailTo, $subject, $message, $headers);
 		}
 	}
 

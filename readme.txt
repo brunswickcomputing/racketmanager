@@ -50,6 +50,9 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.28.0 =
+* UPDATE: only send one email when result entered
+
 = 6.27.0 =
 * BUGFIX: show account screen correctly
 * BUGFIX: update club info from front end

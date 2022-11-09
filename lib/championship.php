@@ -227,7 +227,7 @@ final class League_Championship extends RacketManager {
     $this->setCurrentFinal();
     $this->setFinalTeams();
 
-    $this->cup_icon = '<img style="vertical-align: middle;" src="'.RACKETMANAGER_URL . '/admin/icons/cup.png" />';
+    $this->cup_icon = '<img style="vertical-align: middle;" src="'.RACKETMANAGER_URL . 'admin/icons/cup.png" />';
   }
 
   /**

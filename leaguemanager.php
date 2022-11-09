@@ -278,8 +278,7 @@ class RacketManager {
 		define( 'RACKETMANAGER', 'racketmanager');
 		define( 'RACKETMANAGER_VERSION', $this->version );
 		define( 'RACKETMANAGER_DBVERSION', $this->dbversion );
-		// remove trailing slash as the plugin has been coded without it
-		define( 'RACKETMANAGER_URL', rtrim(esc_url(plugin_dir_url(__FILE__)), "/") );
+		define( 'RACKETMANAGER_URL', esc_url(plugin_dir_url(__FILE__)) );
 		define( 'RACKETMANAGER_PATH', dirname(__FILE__) );
 	}
 
@@ -456,10 +455,10 @@ class RacketManager {
 	*/
 	public function loadScripts() {
 		wp_register_script( 'datatables', 'https://cdn.datatables.net/v/ju/dt-1.11.3/fh-3.2.0/datatables.min.js', array('jquery') );
-		wp_register_script( 'racketmanager', RACKETMANAGER_URL.'/js/racketmanager.js', array('jquery', 'jquery-ui-core', 'jquery-ui-autocomplete', 'jquery-effects-core', 'jquery-effects-slide', 'sack', 'thickbox'), RACKETMANAGER_VERSION );
+		wp_register_script( 'racketmanager', RACKETMANAGER_URL.'js/racketmanager.js', array('jquery', 'jquery-ui-core', 'jquery-ui-autocomplete', 'jquery-effects-core', 'jquery-effects-slide', 'sack', 'thickbox'), RACKETMANAGER_VERSION );
 		wp_enqueue_script('racketmanager');
 		wp_enqueue_script( 'password-strength-meter' );
-		wp_enqueue_script( 'password-strength-meter-mediator', RACKETMANAGER_URL . '/js/password-strength-meter-mediator.js', array('password-strength-meter'));
+		wp_enqueue_script( 'password-strength-meter-mediator', RACKETMANAGER_URL . 'js/password-strength-meter-mediator.js', array('password-strength-meter'));
 		wp_localize_script( 'password-strength-meter', 'pwsL10n', array(
 			'empty' => __( 'Strength indicator' ),
 			'short' => __( 'Very weak' ),
@@ -496,14 +495,14 @@ class RacketManager {
 	*/
 	public function loadStyles() {
 		wp_enqueue_style('thickbox');
-		wp_enqueue_style('racketmanager-print', RACKETMANAGER_URL . "/css/print.css", false, RACKETMANAGER_VERSION, 'print');
-		wp_enqueue_style('racketmanager-modal', RACKETMANAGER_URL . "/css/modal.css", false, RACKETMANAGER_VERSION, 'screen');
-		wp_enqueue_style('racketmanager', RACKETMANAGER_URL . "/css/style.css", false, RACKETMANAGER_VERSION, 'screen');
+		wp_enqueue_style('racketmanager-print', RACKETMANAGER_URL . "css/print.css", false, RACKETMANAGER_VERSION, 'print');
+		wp_enqueue_style('racketmanager-modal', RACKETMANAGER_URL . "css/modal.css", false, RACKETMANAGER_VERSION, 'screen');
+		wp_enqueue_style('racketmanager', RACKETMANAGER_URL . "css/style.css", false, RACKETMANAGER_VERSION, 'screen');
 
-		wp_register_style('jquery-ui', RACKETMANAGER_URL . "/css/jquery/jquery-ui.min.css", false, '1.11.4', 'all');
-		wp_register_style('jquery-ui-structure', RACKETMANAGER_URL . "/css/jquery/jquery-ui.structure.min.css", array('jquery-ui'), '1.11.4', 'all');
-		wp_register_style('jquery-ui-theme', RACKETMANAGER_URL . "/css/jquery/jquery-ui.theme.min.css", array('jquery-ui', 'jquery-ui-structure'), '1.11.4', 'all');
-		wp_register_style('jquery-ui-autocomplete', RACKETMANAGER_URL . "/css/jquery/jquery-ui.autocomplete.min.css", array('jquery-ui', 'jquery-ui-autocomplete'), '1.11.4', 'all');
+		wp_register_style('jquery-ui', RACKETMANAGER_URL . "css/jquery/jquery-ui.min.css", false, '1.11.4', 'all');
+		wp_register_style('jquery-ui-structure', RACKETMANAGER_URL . "css/jquery/jquery-ui.structure.min.css", array('jquery-ui'), '1.11.4', 'all');
+		wp_register_style('jquery-ui-theme', RACKETMANAGER_URL . "css/jquery/jquery-ui.theme.min.css", array('jquery-ui', 'jquery-ui-structure'), '1.11.4', 'all');
+		wp_register_style('jquery-ui-autocomplete', RACKETMANAGER_URL . "css/jquery/jquery-ui.autocomplete.min.css", array('jquery-ui', 'jquery-ui-autocomplete'), '1.11.4', 'all');
 		wp_register_style('datatables-style', 'https://cdn.datatables.net/v/ju/dt-1.11.3/fh-3.2.0/datatables.min.css');
 
 		wp_enqueue_style('jquery-ui-structure');

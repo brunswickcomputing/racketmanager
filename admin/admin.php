@@ -54,7 +54,7 @@ final class RacketManagerAdmin extends RacketManager
 			, 'racket_manager'
 			, 'racketmanager'
 			, array(&$this, 'display')
-			, RACKETMANAGER_URL.'/admin/icons/cup_sw.png', 2
+			, RACKETMANAGER_URL.'admin/icons/cup_sw.png', 2
 		);
 		add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
 		add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );

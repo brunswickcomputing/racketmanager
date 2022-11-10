@@ -50,6 +50,10 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 6.29.0 =
+* UPDATE: handle trailing slash on RACKETMANAGER_URL
+* UPDATE: change menu icon
+
 = 6.28.0 =
 * UPDATE: only send one email when result entered
 

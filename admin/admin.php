@@ -37,8 +37,8 @@ final class RacketManagerAdmin extends RacketManager
 
 		add_action( 'publish_post', array(&$this, 'editMatchReport') );
 		add_action( 'edit_post', array(&$this, 'editMatchReport') );
-		add_action('add_meta_boxes', array(&$this, 'metaboxes'));
-		add_action( 'wp_ajax_racketmanager_get_league_dropdown', array(&$this, 'getLeagueDropdown'));
+		add_action( 'add_meta_boxes', array(&$this, 'metaboxes') );
+		add_action( 'wp_ajax_racketmanager_get_league_dropdown', array(&$this, 'getLeagueDropdown') );
 	}
 
 	/**

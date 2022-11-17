@@ -321,6 +321,7 @@ Racketmanager.notifyTeams = function(matchId) {
     success: function(response) {
       jQuery(notifyField).text(response);
       jQuery(notifyField).show();
+      jQuery(notifyField).addClass('message-success');
       jQuery(notifyField).delay(10000).fadeOut('slow');
     },
     error: function() {
@@ -402,6 +403,7 @@ Racketmanager.chaseMatchResult = function(matchId) {
       jQuery(notifyField).text($message);
       jQuery(notifyField).show();
       if ( !$error ) {
+        jQuery(notifyField).addClass('message-success');
         jQuery(notifyField).delay(10000).fadeOut('slow');
       }
     },

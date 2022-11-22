@@ -40,19 +40,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 */
 class RacketManager {
-	/**
-	* plugin version
-	*
-	* @var string
-	*/
-	private $version = '6.29.0';
-
-	/**
-	* database version
-	*
-	* @var string
-	*/
-	private $dbversion = '6.27.0';
 
 	/**
 	* The array of templates that this plugin tracks.

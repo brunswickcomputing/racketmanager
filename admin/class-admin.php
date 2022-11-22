@@ -1176,7 +1176,7 @@ final class RacketManagerAdmin extends RacketManager
 					$club->latitude = htmlspecialchars($_POST['latitude']);
 					$club->longitude = htmlspecialchars($_POST['longitude']);
 					debug_to_console($club);
-					$club = get_club($club);
+					$club = new Club($club);
 					$this->setMessage( __('Club added','racketmanager') );
 				}
 				$this->printMessage();

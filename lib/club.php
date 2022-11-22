@@ -64,7 +64,7 @@ final class Club {
       $this->$key = $value;
 
       if ( !isset($this->id) ) {
-        $this->addClub();
+        $this->add();
       }
       if ( isset($this->matchsecretary) && $this->matchsecretary != '' ) {
         $matchSecretaryDtls = get_userdata($this->matchsecretary);
@@ -84,7 +84,7 @@ final class Club {
   * create club in database
   *
   */
-  private function addClub() {
+  private function add() {
     global $wpdb;
 
     $wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager_clubs} (`name`, `type`, `shortcode`, `contactno`, `website`, `founded`, `facilities`, `address`, `latitude`, `longitude`) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s','%s' )", $this->name, $this->type, $this->shortcode, $this->contactno, $this->website, $this->founded, $this->facilities, $this->address, $this->latitude, $this->longitude ) );

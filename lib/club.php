@@ -66,15 +66,16 @@ final class Club {
       if ( !isset($this->id) ) {
         $this->add();
       }
-      if ( isset($this->matchsecretary) && $this->matchsecretary != '' ) {
+      $this->matchSecretaryName = '';
+      $this->matchSecretaryEmail = '';
+      $this->matchSecretaryContactNo = '';
+      if ( isset($this->matchsecretary) && $this->matchsecretary != '0' ) {
         $matchSecretaryDtls = get_userdata($this->matchsecretary);
-        $this->matchSecretaryName = $matchSecretaryDtls->display_name;
-        $this->matchSecretaryEmail = $matchSecretaryDtls->user_email;
-        $this->matchSecretaryContactNo = get_user_meta($this->matchsecretary, 'contactno', true);
-      } else {
-        $this->matchSecretaryName = '';
-        $this->matchSecretaryEmail = '';
-        $this->matchSecretaryContactNo = '';
+        if ($matchSecretaryDtls) {
+          $this->matchSecretaryName = $matchSecretaryDtls->display_name;
+          $this->matchSecretaryEmail = $matchSecretaryDtls->user_email;
+          $this->matchSecretaryContactNo = get_user_meta($this->matchsecretary, 'contactno', true);
+        }
       }
       $this->desc = '';
     }

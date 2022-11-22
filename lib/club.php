@@ -101,8 +101,7 @@ final class Club {
     global $wpdb;
 
     $args = array();
-    $sql = "SELECT `id`, `title`, `affiliatedclub`, `stadium`, `home`, `roster`, `profile` FROM {$wpdb->racketmanager_teams} WHERE 1 = 1";
-    $sql .= " AND `affiliatedclub` = '%d'";
+    $sql = "SELECT `id`, `title`, `affiliatedclub`, `stadium`, `home`, `roster`, `profile` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d'";
     $args[] = intval($this->id);
     if ( !$players ) {
       $sql .= " AND `status` != 'P'";

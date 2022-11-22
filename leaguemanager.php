@@ -1858,36 +1858,6 @@ class RacketManager {
 	}
 
 	/**
-	* update club
-	*
-	* @param object $club
-	* @return boolean
-	*/
-	public function updateClub( $club ) {
-		global $wpdb;
-
-		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_clubs} SET `name` = '%s', `type` = '%s', `shortcode` = '%s',`matchsecretary` = '%d', `contactno` = '%s', `website` = '%s', `founded`= '%s', `facilities` = '%s', `address` = '%s', `latitude` = '%s', `longitude` = '%s' WHERE `id` = %d", $club->name, $club->type, $club->shortcode, $club->matchsecretary, $club->contactno, $club->website, $club->founded, $club->facilities, $club->address, $club->latitude, $club->longitude, $club->id ) );
-
-		if ( $club->matchsecretary != '') {
-			$currentContactNo = get_user_meta( $club->matchsecretary, 'contactno', true);
-			$currentContactEmail = get_userdata($club->matchsecretary)->user_email;
-			if ($currentContactNo != $club->matchSecretaryContactNo ) {
-				update_user_meta( $club->matchsecretary, 'contactno', $club->matchSecretaryContactNo );
-			}
-			if ($currentContactEmail != $club->matchSecretaryEmail ) {
-				$userdata = array();
-				$userdata['ID'] = $club->matchsecretary;
-				$userdata['user_email'] = $club->matchSecretaryEmail;
-				$userId = wp_update_user( $userdata );
-				if ( is_wp_error($userId) ) {
-					$errorMsg = $userId->get_error_message();
-					error_log('Unable to update user email '.$club->matchsecretary.' - '.$club->matchSecretaryEmail.' - '.$errorMsg);
-				}
-			}
-		}
-	}
-
-	/**
 	* add entry to results checker for errors on match result
 	*
 	* @param match $match

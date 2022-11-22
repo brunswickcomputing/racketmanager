@@ -1154,7 +1154,7 @@ final class RacketManagerAdmin extends RacketManager
 	*
 	*/
 	private function displayClubsPage() {
-		global $racketmanager;
+		global $racketmanager, $club;
 
 		if ( !current_user_can( 'edit_leagues' ) ) {
 			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
@@ -2516,13 +2516,14 @@ final class RacketManagerAdmin extends RacketManager
 	* @return boolean
 	*/
 	private function editClub( $club ) {
+		global $club;
 
 		if ( !current_user_can('edit_teams') ) {
 			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
 			return false;
 		}
 
-		$this->updateClub( $club );
+		$club->updateClub( $club );
 
 		$this->setMessage( __('Club updated','racketmanager') );
 

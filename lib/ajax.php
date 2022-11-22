@@ -1479,7 +1479,7 @@ class RacketManagerAJAX extends RacketManager {
 			$club->website = $website;
 			$club->matchSecretaryContactNo = $matchSecretaryContactNo;
 			$club->matchSecretaryEmail = $matchSecretaryEmail;
-			$racketmanager->updateClub($club);
+			$club->updateClub($club);
 			$updates = true;
 		}
 

@@ -1165,22 +1165,26 @@ final class RacketManagerAdmin extends RacketManager
 				$this->printMessage();
 			} elseif ( isset($_POST['editClub']) ) {
 				check_admin_referer('racketmanager_manage-club');
-				$club = get_club(intval($_POST['club_id']));
-				$club->name = htmlspecialchars(strip_tags($_POST['club']));
-				$club->type = htmlspecialchars($_POST['type']);
-				$club->shortcode = htmlspecialchars($_POST['shortcode']);
-				$club->matchsecretary = intval($_POST['matchsecretary']);
-				$club->matchSecretaryContactNo = htmlspecialchars($_POST['matchSecretaryContactNo']);
-				$club->matchSecretaryEmail = htmlspecialchars($_POST['matchSecretaryEmail']);
-				$club->contactno = htmlspecialchars($_POST['contactno']);
-				$club->website = htmlspecialchars($_POST['website']);
-				$club->founded = htmlspecialchars($_POST['founded']);
-				$club->facilities = htmlspecialchars($_POST['facilities']);
-				$club->address = htmlspecialchars($_POST['address']);
-				$club->latitude = htmlspecialchars($_POST['latitude']);
-				$club->longitude = htmlspecialchars($_POST['longitude']);
-				debug_to_console($club);
-				$this->editClub( $club );
+				if ( !current_user_can('edit_teams') ) {
+					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+				} else {
+					$club = get_club(intval($_POST['club_id']));
+					$club->name = htmlspecialchars(strip_tags($_POST['club']));
+					$club->type = htmlspecialchars($_POST['type']);
+					$club->shortcode = htmlspecialchars($_POST['shortcode']);
+					$club->matchsecretary = intval($_POST['matchsecretary']);
+					$club->matchSecretaryContactNo = htmlspecialchars($_POST['matchSecretaryContactNo']);
+					$club->matchSecretaryEmail = htmlspecialchars($_POST['matchSecretaryEmail']);
+					$club->contactno = htmlspecialchars($_POST['contactno']);
+					$club->website = htmlspecialchars($_POST['website']);
+					$club->founded = htmlspecialchars($_POST['founded']);
+					$club->facilities = htmlspecialchars($_POST['facilities']);
+					$club->address = htmlspecialchars($_POST['address']);
+					$club->latitude = htmlspecialchars($_POST['latitude']);
+					$club->longitude = htmlspecialchars($_POST['longitude']);
+					$club->updateClub( $club );
+					$this->setMessage( __('Club updated','racketmanager') );
+				}
 				$this->printMessage();
 			} elseif ( isset($_POST['doClubDel']) && $_POST['action'] == 'delete' ) {
 				check_admin_referer('clubs-bulk');
@@ -2492,40 +2496,6 @@ final class RacketManagerAdmin extends RacketManager
 		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager_clubs} (`name`, `type`, `shortcode`, `contactno`, `website`, `founded`, `facilities`, `address`, `latitude`, `longitude`) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s','%s' )", $name, $type, $shortcode, $contactno, $website, $founded, $facilities, $address, $latitude, $longitude ) );
 
 		$this->setMessage( __('Club added','racketmanager') );
-
-		return true;
-	}
-
-	/**
-	* edit club
-	*
-	* @param int $club_id
-	* @param string $name
-	* @param string $type
-	* @param string $shortcode
-	* @param int $matchsecretary
-	* @param string $matchSecretaryContactNo
-	* @param string $matchSecretaryEmail
-	* @param string $contactno
-	* @param string $website
-	* @param string $founded
-	* @param string $facilities
-	* @param string $address
-	* @param string $latitude
-	* @param string $longitude
-	* @return boolean
-	*/
-	private function editClub( $club ) {
-		global $club;
-
-		if ( !current_user_can('edit_teams') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		$club->updateClub( $club );
-
-		$this->setMessage( __('Club updated','racketmanager') );
 
 		return true;
 	}

@@ -67,15 +67,15 @@ jQuery(document).ready(function(){
       <div class="tab-content">
         <div class="tab-pane fade" id="standings" role="tabpanel" aria-labelledby="standings-tab">
           <h2><?php _e( 'Standings', 'racketmanager' ) ?></h2>
-          <?php include_once(RACKETMANAGER_PATH . '/admin/includes/standings.php'); ?>
+          <?php include_once(RACKETMANAGER_PATH . 'admin/includes/standings.php'); ?>
         </div>
         <div class="tab-pane fade" id="crosstable" role="tabpanel" aria-labelledby="crosstable-tab">
           <h2><?php _e( 'Crosstable', 'racketmanager' ) ?></h2>
-          <?php include_once(RACKETMANAGER_PATH . '/admin/includes/crosstable.php'); ?>
+          <?php include_once(RACKETMANAGER_PATH . 'admin/includes/crosstable.php'); ?>
         </div>
         <div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
           <h2><?php _e( 'Matches', 'racketmanager' ) ?></h2>
-          <?php include_once(RACKETMANAGER_PATH . '/admin/includes/matches.php'); ?>
+          <?php include_once(RACKETMANAGER_PATH . 'admin/includes/matches.php'); ?>
         </div>
       </div>
     </div>

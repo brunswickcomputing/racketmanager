@@ -33,19 +33,19 @@
 				<!-- Tab panes -->
 				<div class="tab-content mb-3">
 					<div class="tab-pane active show fade" id="rosters" role="tabpanel" aria-labelledby="rosters-tab">
-						<?php include(RACKETMANAGER_PATH . '/admin/includes/settings/rosters.php'); ?>
+						<?php include(RACKETMANAGER_PATH . 'admin/includes/settings/rosters.php'); ?>
 					</div>
 					<div class="tab-pane fade" id="players" role="tabpanel" aria-labelledby="players-tab">
-						<?php include(RACKETMANAGER_PATH . '/admin/includes/settings/players.php'); ?>
+						<?php include(RACKETMANAGER_PATH . 'admin/includes/settings/players.php'); ?>
 					</div>
 					<div class="tab-pane fade" id="matchresults" role="tabpanel" aria-labelledby="matchresults-tab">
-						<?php include(RACKETMANAGER_PATH . '/admin/includes/settings/results.php'); ?>
+						<?php include(RACKETMANAGER_PATH . 'admin/includes/settings/results.php'); ?>
 					</div>
 					<div class="tab-pane fade" id="colors" role="tabpanel" aria-labelledby="colors-tab">
-						<?php include(RACKETMANAGER_PATH . '/admin/includes/settings/colors.php'); ?>
+						<?php include(RACKETMANAGER_PATH . 'admin/includes/settings/colors.php'); ?>
 					</div>
 					<div class="tab-pane fade" id="championship" role="tabpanel" aria-labelledby="championship-tab">
-						<?php include(RACKETMANAGER_PATH . '/admin/includes/settings/championship.php'); ?>
+						<?php include(RACKETMANAGER_PATH . 'admin/includes/settings/championship.php'); ?>
 					</div>
 				</div>
 			</div>

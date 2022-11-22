@@ -1589,8 +1589,8 @@ class RacketManagerShortcodes extends RacketManager {
 			include(get_stylesheet_directory() . "/racketmanager/$template.php");
 		} elseif ( file_exists( get_template_directory() . "/racketmanager/$template.php")) {
 			include(get_template_directory() . "/racketmanager/$template.php");
-		} elseif ( file_exists(RACKETMANAGER_PATH . "/".$templateDir."/".$template.".php") ) {
-			include(RACKETMANAGER_PATH . "/".$templateDir."/".$template.".php");
+		} elseif ( file_exists(RACKETMANAGER_PATH.$templateDir."/".$template.".php") ) {
+			include(RACKETMANAGER_PATH.$templateDir."/".$template.".php");
 		} else {
 			$this->setMessage( sprintf(__('Could not load template %s.php', 'racketmanager'), $template), true );
 			$this->printMessage();
@@ -1612,7 +1612,7 @@ class RacketManagerShortcodes extends RacketManager {
 			return true;
 		} elseif  ( file_exists( get_template_directory() . "/racketmanager/$template.php")) {
 			return true;
-		} elseif ( file_exists(RACKETMANAGER_PATH . "/templates/".$template.".php") ) {
+		} elseif ( file_exists(RACKETMANAGER_PATH . "templates/".$template.".php") ) {
 			return true;
 		}
 

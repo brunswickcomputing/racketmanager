@@ -92,4 +92,4 @@
     <?php } ?>
   </form>
 </div>
-<?php require(RACKETMANAGER_PATH . '/admin/includes/match-modal.php'); ?>
+<?php require(RACKETMANAGER_PATH . 'admin/includes/match-modal.php'); ?>

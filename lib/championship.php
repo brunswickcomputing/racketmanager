@@ -624,7 +624,7 @@ final class League_Championship extends RacketManager {
       $tab = 'finalresults';
       if (isset($_REQUEST['league-tab'])) { $tab = $_REQUEST['league-tab']; }
       if (isset($_REQUEST['final'])) { $final = $_REQUEST['final']; }
-      include_once( RACKETMANAGER_PATH . '/admin/championship.php' );
+      include_once( RACKETMANAGER_PATH . 'admin/championship.php' );
     } else {
       echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
     }

@@ -6,6 +6,6 @@
   </form>
 
   <?php $teams = $league->getLeagueTeams( array() ); ?>
-  <?php include(RACKETMANAGER_PATH . '/admin/includes/standings.php'); ?>
+  <?php include(RACKETMANAGER_PATH . 'admin/includes/standings.php'); ?>
 
 </div>

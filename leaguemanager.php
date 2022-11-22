@@ -325,7 +325,7 @@ class RacketManager {
 		* load sports libraries
 		*/
 		// First read files in racketmanager sports directory, then overwrite with sports files in user stylesheet directory
-		$files = array_merge($this->readDirectory(RACKETMANAGER_PATH."/sports"), $this->readDirectory(get_stylesheet_directory() . "/sports"));
+		$files = array_merge($this->readDirectory(RACKETMANAGER_PATH."sports"), $this->readDirectory(get_stylesheet_directory() . "/sports"));
 
 		// load files
 		foreach ( $files as $file ) {
@@ -509,7 +509,7 @@ class RacketManager {
 		wp_enqueue_style('jquery-ui-theme');
 
 		ob_start();
-		require_once(RACKETMANAGER_PATH.'/css/colors.css.php');
+		require_once(RACKETMANAGER_PATH.'css/colors.css.php');
 		$css = ob_get_contents();
 		ob_end_clean();
 
@@ -2995,6 +2995,8 @@ if ( is_admin() ) {
 } else {
 	$racketmanager = new RacketManager();
 }
+	define( 'RACKETMANAGER_PATH', plugin_dir_path(__FILE__) );
+	define( 'RACKETMANAGER_PLUGIN_FILE',  __FILE__ );
 
 // suppress output
 if ( isset($_POST['racketmanager_export']) ) {

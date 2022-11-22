@@ -1161,7 +1161,24 @@ final class RacketManagerAdmin extends RacketManager
 		} else {
 			if ( isset($_POST['addClub']) ) {
 				check_admin_referer('racketmanager_add-club');
-				$this->addClub( htmlspecialchars($_POST['club']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['shortcode']),  htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['website']), htmlspecialchars($_POST['founded']), htmlspecialchars($_POST['facilities']), htmlspecialchars($_POST['address']), htmlspecialchars($_POST['latitude']), htmlspecialchars($_POST['longitude']) );
+				if ( !current_user_can('edit_teams') ) {
+					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+				} else {
+					$club = new stdClass();
+					$club->name = htmlspecialchars(strip_tags($_POST['club']));
+					$club->type = htmlspecialchars($_POST['type']);
+					$club->shortcode = htmlspecialchars($_POST['shortcode']);
+					$club->contactno = htmlspecialchars($_POST['contactno']);
+					$club->website = htmlspecialchars($_POST['website']);
+					$club->founded = htmlspecialchars($_POST['founded']);
+					$club->facilities = htmlspecialchars($_POST['facilities']);
+					$club->address = htmlspecialchars($_POST['address']);
+					$club->latitude = htmlspecialchars($_POST['latitude']);
+					$club->longitude = htmlspecialchars($_POST['longitude']);
+					debug_to_console($club);
+					$club = get_club($club);
+					$this->setMessage( __('Club added','racketmanager') );
+				}
 				$this->printMessage();
 			} elseif ( isset($_POST['editClub']) ) {
 				check_admin_referer('racketmanager_manage-club');
@@ -2467,39 +2484,6 @@ final class RacketManagerAdmin extends RacketManager
 	*
 	*
 	*/
-	/**
-	* add club
-	*
-	* @param string $name
-	* @param string $type
-	* @param string $shortcode
-	* @param int $matchsecretary
-	* @param string $matchSecretaryContactNo
-	* @param string $matchSecretaryEmail
-	* @param string $contactno
-	* @param string $website
-	* @param string $founded
-	* @param string $facilities
-	* @param string $address
-	* @param string $latitude
-	* @param string $longitude
-	* @return boolean
-	*/
-	private function addClub( $name, $type, $shortcode, $contactno, $website, $founded, $facilities, $address, $latitude, $longitude ) {
-		global $wpdb, $racketmanager;
-
-		if ( !current_user_can('edit_teams') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager_clubs} (`name`, `type`, `shortcode`, `contactno`, `website`, `founded`, `facilities`, `address`, `latitude`, `longitude`) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s','%s' )", $name, $type, $shortcode, $contactno, $website, $founded, $facilities, $address, $latitude, $longitude ) );
-
-		$this->setMessage( __('Club added','racketmanager') );
-
-		return true;
-	}
-
 	/**
 	* delete Club
 	*

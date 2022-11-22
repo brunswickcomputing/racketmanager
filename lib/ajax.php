@@ -1471,17 +1471,16 @@ class RacketManagerAJAX extends RacketManager {
 
 		$club = get_club($clubId);
 
-		if ( $club->contactno != $contactno || $club->facilities != $facilities || $club->founded != $founded || $club->matchsecretary != $matchSecretaryId || $club->website != $website ) {
-			$racketmanager->updateClub($club->id, $club->name, $club->type, $club->shortcode, $matchSecretaryId, $matchSecretaryContactNo, $matchSecretaryEmail, $contactno, $website, $founded, $facilities, $club->address, $club->latitude, $club->longitude);
+		if ( $club->contactno != $contactno || $club->facilities != $facilities || $club->founded != $founded || $club->matchsecretary != $matchSecretaryId || $club->website != $website || $club->matchSecretaryContactNo != $matchSecretaryContactNo || $club->matchSecretaryEmail != $matchSecretaryEmail ) {
+			$club->contactno = $contactno;
+			$club->facilities = $facilities;
+			$club->founded = $founded;
+			$club->matchsecretary = $matchSecretaryId;
+			$club->website = $website;
+			$club->matchSecretaryContactNo = $matchSecretaryContactNo;
+			$club->matchSecretaryEmail = $matchSecretaryEmail;
+			$racketmanager->updateClub($club);
 			$updates = true;
-		} elseif ( $club->matchSecretaryContactNo != $matchSecretaryContactNo || $club->matchSecretaryEmail != $matchSecretaryEmail ) {
-			$update = $racketmanager->updatePlayerDetails($matchSecretaryId, $matchSecretaryContactNo, $matchSecretaryEmail);
-			if ($update) {
-				$updates = true;
-			} else {
-				$updates = false;
-				$msg = "error updating match secretary";
-			}
 		}
 
 		if ( $updates ) {

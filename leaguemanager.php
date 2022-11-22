@@ -2154,41 +2154,28 @@ class RacketManager {
 	/**
 	* update club
 	*
-	* @param int $clubId
-	* @param string $name
-	* @param string $type
-	* @param string $shortcode
-	* @param int $matchsecretary
-	* @param string $matchSecretaryContactNo
-	* @param string $matchSecretaryEmail
-	* @param string $contactno
-	* @param string $website
-	* @param string $founded
-	* @param string $facilities
-	* @param string $address
-	* @param string $latitude
-	* @param string $longitude
+	* @param object $club
 	* @return boolean
 	*/
-	public function updateClub( $clubId, $name, $type, $shortcode, $matchsecretary, $matchSecretaryContactNo, $matchSecretaryEmail, $contactno, $website, $founded, $facilities, $address, $latitude, $longitude ) {
+	public function updateClub( $club ) {
 		global $wpdb;
 
-		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_clubs} SET `name` = '%s', `type` = '%s', `shortcode` = '%s',`matchsecretary` = '%d', `contactno` = '%s', `website` = '%s', `founded`= '%s', `facilities` = '%s', `address` = '%s', `latitude` = '%s', `longitude` = '%s' WHERE `id` = %d", $name, $type, $shortcode, $matchsecretary, $contactno, $website, $founded, $facilities, $address, $latitude, $longitude, $clubId ) );
+		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_clubs} SET `name` = '%s', `type` = '%s', `shortcode` = '%s',`matchsecretary` = '%d', `contactno` = '%s', `website` = '%s', `founded`= '%s', `facilities` = '%s', `address` = '%s', `latitude` = '%s', `longitude` = '%s' WHERE `id` = %d", $club->name, $club->type, $club->shortcode, $club->matchsecretary, $club->contactno, $club->website, $club->founded, $club->facilities, $club->address, $club->latitude, $club->longitude, $club->id ) );
 
-		if ( $matchsecretary != '') {
-			$currentContactNo = get_user_meta( $matchsecretary, 'contactno', true);
-			$currentContactEmail = get_userdata($matchsecretary)->user_email;
-			if ($currentContactNo != $matchSecretaryContactNo ) {
-				update_user_meta( $matchsecretary, 'contactno', $matchSecretaryContactNo );
+		if ( $club->matchsecretary != '') {
+			$currentContactNo = get_user_meta( $club->matchsecretary, 'contactno', true);
+			$currentContactEmail = get_userdata($club->matchsecretary)->user_email;
+			if ($currentContactNo != $club->matchSecretaryContactNo ) {
+				update_user_meta( $club->matchsecretary, 'contactno', $club->matchSecretaryContactNo );
 			}
-			if ($currentContactEmail != $matchSecretaryEmail ) {
+			if ($currentContactEmail != $club->matchSecretaryEmail ) {
 				$userdata = array();
-				$userdata['ID'] = $matchsecretary;
-				$userdata['user_email'] = $matchSecretaryEmail;
+				$userdata['ID'] = $club->matchsecretary;
+				$userdata['user_email'] = $club->matchSecretaryEmail;
 				$userId = wp_update_user( $userdata );
 				if ( is_wp_error($userId) ) {
 					$errorMsg = $userId->get_error_message();
-					error_log('Unable to update user email '.$matchsecretary.' - '.$matchSecretaryEmail.' - '.$errorMsg);
+					error_log('Unable to update user email '.$club->matchsecretary.' - '.$club->matchSecretaryEmail.' - '.$errorMsg);
 				}
 			}
 		}

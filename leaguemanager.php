@@ -517,22 +517,6 @@ class RacketManager {
 	}
 
 	/**
-	* get upload directory
-	*
-	* @param string|false $file
-	* @return string upload path
-	*/
-	public function getFilePath( $file = false ) {
-		$base = WP_CONTENT_DIR.'/uploads/leagues';
-
-		if ( $file ) {
-			return $base .'/'. basename($file);
-		} else {
-			return $base;
-		}
-	}
-
-	/**
 	* Activate plugin
 	*/
 	public function activate() {

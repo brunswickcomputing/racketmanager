@@ -612,7 +612,7 @@ Racketmanager.updateClub = function(link) {
 	var updateResponse = "#updateClub";
 	var submitButton = "#updateClubSubmit";
 	$form += "&action=racketmanager_update_club";
-	jQuery(updateResponse).val("");
+	jQuery(updateResponse).html("");
 	jQuery(submitButton).hide();
 
 	jQuery.ajax({
@@ -623,6 +623,7 @@ Racketmanager.updateClub = function(link) {
 		success: function(response) {
 			var $response = jQuery.parseJSON(response);
 			var $message = $response[0];
+			jQuery(updateResponse).show();
 			jQuery(updateResponse).addClass("message-success");
 			jQuery(updateResponse).html($message);
 			jQuery(updateResponse).delay(10000).fadeOut('slow');

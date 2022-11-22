@@ -285,7 +285,7 @@ class League_Tennis extends League {
                                         $data['sets_won'] += 1;
                                     } elseif ( $rubber->sets[$j]['player1'] < $rubber->sets[$j]['player2'] ) {
                                         $data['sets_allowed'] += 1;
-                                    } elseif ( $rubber->sets[$j]['player1'] == 'S' ) {
+                                    } elseif ( strtoupper($rubber->sets[$j]['player1']) == 'S' ) {
                                         $data['sets_shared'] += 1;
                                     }
                                 }
@@ -305,7 +305,7 @@ class League_Tennis extends League {
                                         $data['sets_won'] += 1;
                                     } elseif ( $rubber->sets[$j]['player2'] < $rubber->sets[$j]['player1'] ) {
                                         $data['sets_allowed'] += 1;
-                                    } elseif ( $rubber->sets[$j]['player1'] == 'S' ) {
+                                    } elseif ( strtoupper($rubber->sets[$j]['player1']) == 'S' ) {
                                         $data['sets_shared'] += 1;
                                     }
                                 }
@@ -332,7 +332,7 @@ class League_Tennis extends League {
                                         $data['sets_won'] += 1;
                                     } elseif ( $rubber->sets[$j]['player1'] < $rubber->sets[$j]['player2'] ) {
                                         $data['sets_allowed'] += 1;
-                                    } elseif ( $rubber->sets[$j]['player1'] == 'S' ) {
+                                    } elseif ( strtoupper($rubber->sets[$j]['player1']) == 'S' ) {
                                         $data['sets_shared'] += 1;
                                     }
                                 }
@@ -351,7 +351,7 @@ class League_Tennis extends League {
                                         $data['sets_won'] += 1;
                                     } elseif ( $rubber->sets[$j]['player2'] < $rubber->sets[$j]['player1'] ) {
                                         $data['sets_allowed'] += 1;
-                                    } elseif ( $rubber->sets[$j]['player1'] == 'S' ) {
+                                    } elseif ( strtoupper($rubber->sets[$j]['player1']) == 'S' ) {
                                         $data['sets_shared'] += 1;
                                     }
                                 }
@@ -371,7 +371,7 @@ class League_Tennis extends League {
                                         $data['sets_won'] += 1;
                                     } elseif ( $rubber->sets[$j]['player1'] < $rubber->sets[$j]['player2'] ) {
                                         $data['sets_allowed'] += 1;
-                                    } elseif ( $rubber->sets[$j]['player1'] == 'S' ) {
+                                    } elseif ( strtoupper($rubber->sets[$j]['player1']) == 'S' ) {
                                         $data['sets_shared'] += 1;
                                     }
                                 }
@@ -393,7 +393,7 @@ class League_Tennis extends League {
                                         $data['sets_won'] += 1;
                                     } elseif ( $rubber->sets[$j]['player2'] < $rubber->sets[$j]['player1'] ) {
                                         $data['sets_allowed'] += 1;
-                                    } elseif ( $rubber->sets[$j]['player1'] == 'S' ) {
+                                    } elseif ( strtoupper($rubber->sets[$j]['player1']) == 'S' ) {
                                         $data['sets_shared'] += 1;
                                     }
                                 }

@@ -2,7 +2,7 @@
 /**
 * Club API: Club class
 *
-* @author Kolja Schleich
+* @author Paul Moffat
 * @package RacketManager
 * @subpackage Club
 */
@@ -34,8 +34,9 @@ final class Club {
       break;
     }
 
-    if ( ! $club_id )
-    return false;
+    if ( ! $club_id ) {
+      return false;
+    }
 
     $club = wp_cache_get( $club_id, 'clubs' );
 
@@ -60,8 +61,9 @@ final class Club {
   public function __construct( $club = null ) {
     if ( !is_null($club) ) {
 
-      foreach ( get_object_vars( $club ) as $key => $value )
-      $this->$key = $value;
+      foreach ( get_object_vars( $club ) as $key => $value ) {
+        $this->$key = $value;
+      }
 
       if ( !isset($this->id) ) {
         $this->add();

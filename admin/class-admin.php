@@ -1205,10 +1205,26 @@ final class RacketManagerAdmin extends RacketManager
 				$this->printMessage();
 			} elseif ( isset($_POST['doClubDel']) && $_POST['action'] == 'delete' ) {
 				check_admin_referer('clubs-bulk');
-				foreach ( $_POST['club'] as $club_id ) {
-					$this->delClub( intval($club_id) );
+				if ( !current_user_can('del_teams') ) {
+					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+				} else {
+					$messages = array();
+					$messageError= false;
+					foreach ( $_POST['club'] as $club_id ) {
+						$club = get_club($club_id);
+						if ( $club->hasTeams() ) {
+							$messages[] = $club->name.' '.__('not deleted - still has teams attached','racketmanager');
+							$messageError = true;
+						} else {
+							$club->delete();
+							$messages[] = $club->name.' '.__('deleted', 'racketmanager');
+						}
+					}
+					$message = implode('<br>', $messages);
+					$this->setMessage( $message, $messageError );
+					$club_id = 0;
 				}
-				$club_id = 0;
+
 				$this->printMessage();
 			}
 			include_once( dirname(__FILE__) . '/show-clubs.php' );
@@ -2476,38 +2492,6 @@ final class RacketManagerAdmin extends RacketManager
 		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager} WHERE `id` = '%d'", $league_id) );
 
 		return true;
-	}
-
-	/************
-	*
-	*   CLUB SECTION
-	*
-	*
-	*/
-	/**
-	* delete Club
-	*
-	* @param int $club_id
-	* @return boolean
-	*/
-	private function delClub( $club_id ) {
-		global $wpdb, $club;
-
-		if ( !current_user_can('del_teams') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-		$teams = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d'", $club_id) );
-		if ( !empty($teams) ) {
-			$this->setMessage( __('Unable to delete club - still has teams attached','racketmanager') );
-		} else {
-			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_roster_requests} WHERE `affiliatedclub` = '%d'", $club_id) );
-			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_roster} WHERE `affiliatedclub` = '%d'", $club_id) );
-			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_clubs} WHERE `id` = '%d'", $club_id) );
-			$this->setMessage( __('Club Deleted','racketmanager') );
-
-			return true;
-		}
 	}
 
 	/************

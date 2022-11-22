@@ -124,6 +124,35 @@ final class Club {
 	}
 
   /**
+	* delete Club
+	*
+	*/
+	public function delete() {
+		global $wpdb;
+
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_roster_requests} WHERE `affiliatedclub` = '%d'", $this->id) );
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_roster} WHERE `affiliatedclub` = '%d'", $this->id) );
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_clubs} WHERE `id` = '%d'", $this->id) );
+	}
+
+  /**
+  * get teams from database
+  *
+  * @return count number of teams
+  */
+  public function hasTeams() {
+    global $wpdb;
+
+    $args = array();
+    $sql = "SELECT count(*) FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d'";
+    $args[] = intval($this->id);
+    $sql = $wpdb->prepare($sql, $args);
+
+    return $wpdb->get_var( $sql );
+
+  }
+
+  /**
   * get teams from database
   *
   * @param array $args

@@ -271,6 +271,39 @@ class Competition {
 	}
 
 	/**
+	* set name
+	*
+	* @param string $name
+	* @return null
+	*/
+	public function setName($name) {
+		global $wpdb;
+
+		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_competitions} SET `name` = '%s' WHERE `id` = '%d'", $name, $this->id ) );
+		$this->name = $name;
+	}
+
+	/**
+	* update settings
+	*
+	* @param array $settings
+	* @return null
+	*/
+	public function setSettings($settings) {
+		global $wpdb, $racketmanager;
+
+		foreach ( $racketmanager->getStandingsDisplayOptions() as $key => $label ) {
+			$settings['standings'][$key] = isset($settings['standings'][$key]) ? 1 : 0;
+		}
+
+		$numRubbers = $settings['num_rubbers'];
+		$numSets = $settings['num_sets'];
+		$type = $settings['competition_type'];
+
+		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_competitions} SET `settings` = '%s', `num_rubbers` = '%d', `num_sets` = '%d', `type` = '%s' WHERE `id` = '%d'", maybe_serialize($settings), $numRubbers, $numSets, $type, $this->id ) );
+	}
+
+	/**
 	* set current season
 	*
 	* @param mixed $season

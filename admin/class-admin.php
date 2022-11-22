@@ -648,16 +648,19 @@ final class RacketManagerAdmin extends RacketManager
 				}
 			} elseif ( isset($_POST['updateSettings']) ) {
 				check_admin_referer('racketmanager_manage-competition-options');
-
-				$settings = (array)$_POST['settings'];
-
-				$this->_editCompetition( intval($_POST['competition_id']), $_POST['competition_title'], $settings );
+				if ( !current_user_can('edit_league_settings') ) {
+					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+				} else {
+					$settings = $_POST['settings'];
+					if ( $competition->name != $_POST['competition_title'] ) {
+						$competition->setName($_POST['competition_title']);
+					}
+					$competition->setSettings($settings);
+					$competition->reloadSettings();
+					$competition = get_competition($competition);
+					$this->setMessage( __('Settings saved', 'racketmanager') );
+				}
 				$this->printMessage();
-
-				$options = $racketmanager->options;
-				$competition->reloadSettings();
-				$competition = get_competition($competition);
-
 				// Set active tab
 				$tab = 'settings';
 			} elseif ( isset($_GET['statsseason']) && $_GET['statsseason'] == 'Show' ) {
@@ -2083,34 +2086,6 @@ final class RacketManagerAdmin extends RacketManager
 
 		$this->addRacketManagerPage($page_definition);
 
-	}
-
-	/**
-	* edit Competition
-	*
-	* @param int $competition_id
-	* @param string $title
-	* @param array $settings
-	* @return boolean
-	*/
-	public function _editCompetition( $competition_id, $title, $settings ) {
-		global $racketmanager;
-
-		if ( !current_user_can('edit_league_settings') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		if ( $settings['mode'] == 'championship' ) {
-			if ( !$settings['primary_league'] ) {
-				$error = true;
-				$this->setMessage( __('Primary league not set', 'racketmanager'), true );
-				return false;
-			}
-		}
-		$racketmanager->editCompetition($competition_id, $title, $settings);
-		$this->setMessage( __('Settings saved', 'racketmanager') );
-		return true;
 	}
 
 	/**

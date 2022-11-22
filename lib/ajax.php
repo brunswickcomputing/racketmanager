@@ -2045,7 +2045,7 @@ class RacketManagerAJAX extends RacketManager {
 				$competitionEntry['teams'] = $leagueEntries;
 				$competitionDetails[] = $competitionEntry;
 				$competition->settings['numCourtsAvailable'][$affiliatedclub] = $numCourtsAvailable;
-				$racketmanager->editCompetition($competitionId, $competition->name, $competition->settings);
+				$competition->setSettings($competition->settings);
 			}
 			$competitionEntries['competitions'] = $competitionDetails;
 			foreach ($leagueCompetitions as $key => $competitionId) {

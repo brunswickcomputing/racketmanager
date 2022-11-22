@@ -1038,37 +1038,6 @@ class RacketManager {
 	}
 
 	/**
-	* update competition
-	*
-	* @param int $competition Competition Id
-	* @param string $title
-	* @param array $settings
-	* @return null
-	*/
-	public function editCompetition($competition, $title, $settings) {
-		global $wpdb;
-
-		// Set textdomain
-		$options = $this->options;
-		$options['textdomain'] = (string)$settings['sport'];
-		update_option('leaguemanager', $options);
-
-		if ( $settings['point_rule'] == 'user' && isset($_POST['forwin']) && is_numeric($_POST['forwin']) ) {
-			$settings['point_rule'] = array( 'forwin' => intval($_POST['forwin']), 'fordraw' => intval($_POST['fordraw']), 'forloss' => intval($_POST['forloss']), 'forwin_overtime' => intval($_POST['forwin_overtime']), 'forloss_overtime' => intval($_POST['forloss_overtime']) );
-		}
-
-		foreach ( $this->getStandingsDisplayOptions() as $key => $label ) {
-				$settings['standings'][$key] = isset($settings['standings'][$key]) ? 1 : 0;
-		}
-
-		$numRubbers = $settings['num_rubbers'];
-		$numSets = $settings['num_sets'];
-		$type = $settings['competition_type'];
-
-		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_competitions} SET `name` = '%s', `settings` = '%s', `num_rubbers` = '%d', `num_sets` = '%d', `type` = '%s' WHERE `id` = '%d'", $title, maybe_serialize($settings), $numRubbers, $numSets, $type, $competition ) );
-	}
-
-	/**
 	* get Team ID for given string
 	*
 	* @param string $title

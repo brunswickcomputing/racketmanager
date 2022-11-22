@@ -2694,13 +2694,11 @@ class RacketManager {
 
 }
 
-global $racketmanager;
-if ( is_admin() ) {
-	require_once (dirname (__FILE__) . '/admin/admin.php');
-	$racketmanager = new RacketManagerAdmin();
-} else {
-	$racketmanager = new RacketManager();
-}
+setup_racketmanager_plugin();
+
+function setup_racketmanager_plugin() {
+	global $racketmanager;
+
 	define( 'RACKETMANAGER', 'racketmanager');
 	define( 'RACKETMANAGER_VERSION', '7.0.0' );
 	define( 'RACKETMANAGER_DBVERSION', '6.27.0' );
@@ -2708,10 +2706,27 @@ if ( is_admin() ) {
 	define( 'RACKETMANAGER_PATH', plugin_dir_path(__FILE__) );
 	define( 'RACKETMANAGER_PLUGIN_FILE',  __FILE__ );
 
-// suppress output
-if ( isset($_POST['racketmanager_export']) ) {
-	ob_start();
+	require_once RACKETMANAGER_PATH . 'include/class-util.php';
+
 	load_plugin_textdomain( 'racketmanager', false, 'racketmanager/languages' );
 
+	if ( is_admin() ) {
+		require_once RACKETMANAGER_PATH . 'admin/class-activator.php';
+		$racketmanager_activator = new Racketmanager_Activator();
+		$racketmanager_activator->setup();
+		require_once (RACKETMANAGER_PATH . 'admin/class-admin.php');
+		add_action( 'plugins_loaded', 'load_racketmanager_admin' );
+	} else {
+		$racketmanager = new RacketManager();
+	}
+
+	// suppress output
+	if ( isset($_POST['racketmanager_export']) ) {
+		ob_start();
+	}
+}
+function load_racketmanager_admin() {
+	global $racketmanager;
+	$racketmanager = new RacketManagerAdmin();
 }
 ?>

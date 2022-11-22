@@ -72,7 +72,6 @@ class RacketManager {
 		$this->loadOptions();
 		$this->defineConstants();
 		$this->defineTables();
-		$this->loadTextdomain();
 		$this->loadLibraries();
 
 		if (function_exists('register_uninstall_hook')) {
@@ -422,29 +421,6 @@ class RacketManager {
 		} else {
 			return $this->options;
 		}
-	}
-
-	/**
-	* load textdomain
-	*
-	*/
-	private function loadTextdomain() {
-		global $racketmanager;
-
-		$textdomain = $this->getOptions('textdomain');
-		if ( !empty($textdomain) ) {
-			$locale = get_locale();
-			$path = dirname(__FILE__) . '/languages';
-			$domain = 'racketmanager';
-			$mofile = $path . '/'. $domain . '-' . $textdomain . '-' . $locale . '.mo';
-
-			if ( file_exists($mofile) ) {
-				load_textdomain($domain, $mofile);
-				return true;
-			}
-		}
-
-		load_plugin_textdomain( 'racketmanager', false, 'racketmanager/languages' );
 	}
 
 	/**
@@ -2744,5 +2720,7 @@ if ( is_admin() ) {
 // suppress output
 if ( isset($_POST['racketmanager_export']) ) {
 	ob_start();
+	load_plugin_textdomain( 'racketmanager', false, 'racketmanager/languages' );
+
 }
 ?>

@@ -1165,7 +1165,22 @@ final class RacketManagerAdmin extends RacketManager
 				$this->printMessage();
 			} elseif ( isset($_POST['editClub']) ) {
 				check_admin_referer('racketmanager_manage-club');
-				$this->editClub( intval($_POST['club_id']), htmlspecialchars(strip_tags($_POST['club'])), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['shortcode']), intval($_POST['matchsecretary']), htmlspecialchars($_POST['matchSecretaryContactNo']), htmlspecialchars($_POST['matchSecretaryEmail']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['website']), htmlspecialchars($_POST['founded']), htmlspecialchars($_POST['facilities']), htmlspecialchars($_POST['address']), htmlspecialchars($_POST['latitude']), htmlspecialchars($_POST['longitude']) );
+				$club = get_club(intval($_POST['club_id']));
+				$club->name = htmlspecialchars(strip_tags($_POST['club']));
+				$club->type = htmlspecialchars($_POST['type']);
+				$club->shortcode = htmlspecialchars($_POST['shortcode']);
+				$club->matchsecretary = intval($_POST['matchsecretary']);
+				$club->matchSecretaryContactNo = htmlspecialchars($_POST['matchSecretaryContactNo']);
+				$club->matchSecretaryEmail = htmlspecialchars($_POST['matchSecretaryEmail']);
+				$club->contactno = htmlspecialchars($_POST['contactno']);
+				$club->website = htmlspecialchars($_POST['website']);
+				$club->founded = htmlspecialchars($_POST['founded']);
+				$club->facilities = htmlspecialchars($_POST['facilities']);
+				$club->address = htmlspecialchars($_POST['address']);
+				$club->latitude = htmlspecialchars($_POST['latitude']);
+				$club->longitude = htmlspecialchars($_POST['longitude']);
+				debug_to_console($club);
+				$this->editClub( $club );
 				$this->printMessage();
 			} elseif ( isset($_POST['doClubDel']) && $_POST['action'] == 'delete' ) {
 				check_admin_referer('clubs-bulk');
@@ -1661,7 +1676,7 @@ final class RacketManagerAdmin extends RacketManager
 				$this->printMessage();
 			}
 			global $racketmanager;
-			include_once( RACKETMANAGER_PATH . '/admin/tools/import.php' );
+			include_once( RACKETMANAGER_PATH . 'admin/tools/import.php' );
 		}
 	}
 
@@ -2500,14 +2515,14 @@ final class RacketManagerAdmin extends RacketManager
 	* @param string $longitude
 	* @return boolean
 	*/
-	private function editClub( $club_id, $name, $type, $shortcode, $matchsecretary, $matchSecretaryContactNo, $matchSecretaryEmail, $contactno, $website, $founded, $facilities, $address, $latitude, $longitude ) {
+	private function editClub( $club ) {
 
 		if ( !current_user_can('edit_teams') ) {
 			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
 			return false;
 		}
 
-		$this->updateClub( $club_id, $name, $type, $shortcode, $matchsecretary, $matchSecretaryContactNo, $matchSecretaryEmail, $contactno, $website, $founded, $facilities, $address, $latitude, $longitude );
+		$this->updateClub( $club );
 
 		$this->setMessage( __('Club updated','racketmanager') );
 

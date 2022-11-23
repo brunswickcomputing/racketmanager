@@ -235,6 +235,7 @@ class Competition {
 		}
 		if ( !is_admin() ) {
 			$i = 0;
+			$seasons = array();
 			foreach ($this->seasons as $season) {
 				$seasons[$season['name']] = $season;
 				if ( isset($season['status']) && $season['status'] == 'draft' ) {

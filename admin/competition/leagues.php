@@ -33,7 +33,7 @@
 						<div class="col-4"><a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a></div>
 						<div class="col-3 col-lg-1 column-num"><?php echo $league->num_teams_total ?></div>
 						<div class="col-3 col-lg-1 column-num"><?php echo $league->num_matches_total ?></div>
-						<div class="d-none d-lg-1 col-auto"><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>&amp;editleague=<?php echo $league->id ?>"><?php _e( 'Edit', 'racketmanager' ) ?></a></div>
+						<div class="d-none d-lg-block col-auto"><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>&amp;editleague=<?php echo $league->id ?>"><?php _e( 'Edit', 'racketmanager' ) ?></a></div>
 					</div>
 				<?php } ?>
 			<?php } ?>
@@ -48,7 +48,7 @@
 	} ?>
 
 	<h3><?php echo $action ?></h3>
-	<form action="" method="post" class="form-control">
+	<form action="admin.php?page=racketmanager&subpage=show-competition&competition_id=<?php echo $competition_id ?>" method="post" class="form-control">
 		<?php wp_nonce_field( 'racketmanager_add-league' ) ?>
 		<input type="hidden" name="competition_id" value="<?php echo $competition_id ?>" />
 		<input type="hidden" name="league_id" value="<?php echo $league_id ?>" />

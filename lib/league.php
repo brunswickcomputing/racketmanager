@@ -613,6 +613,18 @@ class League {
 	}
 
 	/**
+	* edit League
+	*
+	* @param string $title
+	* @return none
+	*/
+	public function update( $title ) {
+		global $wpdb;
+
+		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager} SET `title` = '%s' WHERE `id` = '%d'", $title, $this->id ) );
+	}
+
+	/**
 	* set detault dataset query arguments
 	*/
 	private function setMatchQueryArgs() {

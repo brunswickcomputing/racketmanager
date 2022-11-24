@@ -581,16 +581,26 @@ final class RacketManagerAdmin extends RacketManager
 			$season_data = array('name' => '', 'num_match_days' => '', 'homeAndAway' => '');
 			$club_id = 0;
 
-			if ( isset($_POST['addLeague']) && !isset($_POST['deleteit']) ) {
+			if ( isset($_POST['addLeague']) ) {
 				if ( !current_user_can('edit_leagues') ) {
 					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
 				} else {
 					check_admin_referer('racketmanager_add-league');
-					$league = new stdClass();
-					$league->title = htmlspecialchars($_POST['league_title']);
-					$league->competition_id = intval($_POST['competition_id']);
-					$league = new League($league);
-					$this->setMessage( __('League added', 'racketmanager') );
+					if ( empty($_POST['league_id'] ) ){
+						$league = new stdClass();
+						$league->title = htmlspecialchars($_POST['league_title']);
+						$league->competition_id = intval($_POST['competition_id']);
+						$league = new League($league);
+						$this->setMessage( __('League added', 'racketmanager') );
+					} else {
+						$league = get_league(intval($_POST['league_id']));
+						if ( $league->title == htmlspecialchars($_POST['league_title']) ) {
+							$this->setMessage( __('No updates', 'racketmanager'), true );
+						} else {
+							$league->update(htmlspecialchars($_POST['league_title']));
+							$this->setMessage( __('League Updated', 'racketmanager') );
+						}
+					}
 				}
 				$this->printMessage();
 			} elseif ( isset($_GET['editleague']) ) {
@@ -2354,29 +2364,6 @@ final class RacketManagerAdmin extends RacketManager
 	*
 	*
 	*/
-
-	/**
-	* edit League
-	*
-	* @param int $league_id
-	* @param string $title
-	* @param array $competition_id
-	* @return boolean
-	*/
-	private function editLeague( $league_id, $title, $competition_id )
-	{
-		global $wpdb;
-
-		if ( !current_user_can('edit_leagues') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager} SET `title` = '%s', `competition_id` = '%d' WHERE `id` = '%d'", $title, intval($competition_id), $league_id ) );
-		$this->setMessage( __('League Updated', 'racketmanager') );
-
-		return true;
-	}
 
 	/**
 	* delete League

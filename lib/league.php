@@ -530,12 +530,16 @@ class League {
 		}
 
 		foreach ( get_object_vars( $league ) as $key => $value ) {
-			if ( $key == "standings")
-			$this->$key = array_merge($this->$key, $value);
-			else
-			$this->$key = $value;
+			if ( $key == "standings") {
+				$this->$key = array_merge($this->$key, $value);
+			}	else {
+				$this->$key = $value;
+			}
 		}
 
+		if ( !isset($this->id) ) {
+			$this->add();
+		}
 		$this->title = stripslashes($this->title);
 		$competition = get_competition($this->competition_id);
 
@@ -593,6 +597,19 @@ class League {
 
 		add_filter( 'racketmanager_import_matches_'.$this->sport, array(&$this, 'importMatches'), 10, 4 );
 		add_filter( 'racketmanager_import_teams_'.$this->sport, array(&$this, 'importTeams'), 10, 3 );
+	}
+
+	/**
+	* add new League
+	*
+	* @return boolean
+	*/
+	private function add() {
+		global $wpdb;
+
+		$settings = array();
+		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager} (title, competition_id, settings) VALUES ('%s', '%d', '%s')", $this->title, $this->competition_id, maybe_serialize($settings)) );
+		$this->id = $wpdb->insert_id;
 	}
 
 	/**

@@ -582,11 +582,15 @@ final class RacketManagerAdmin extends RacketManager
 			$club_id = 0;
 
 			if ( isset($_POST['addLeague']) && !isset($_POST['deleteit']) ) {
-				check_admin_referer('racketmanager_add-league');
-				if ( empty($_POST['league_id'] ) ){
-					$this->addLeague( htmlspecialchars($_POST['league_title']), intval($_POST['competition_id']) );
+				if ( !current_user_can('edit_leagues') ) {
+					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
 				} else {
-					$this->editLeague( intval($_POST['league_id']), htmlspecialchars($_POST['league_title']), intval($_POST['competition_id']) );
+					check_admin_referer('racketmanager_add-league');
+					$league = new stdClass();
+					$league->title = htmlspecialchars($_POST['league_title']);
+					$league->competition_id = intval($_POST['competition_id']);
+					$league = new League($league);
+					$this->setMessage( __('League added', 'racketmanager') );
 				}
 				$this->printMessage();
 			} elseif ( isset($_GET['editleague']) ) {
@@ -2350,28 +2354,6 @@ final class RacketManagerAdmin extends RacketManager
 	*
 	*
 	*/
-
-	/**
-	* add new League
-	*
-	* @param string $title
-	* @param int $competition_id
-	* @return boolean
-	*/
-	private function addLeague( $title, $competition_id = false ) {
-		global $wpdb;
-
-		if ( !current_user_can('edit_leagues') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		$settings = array();
-		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager} (title, competition_id, settings, seasons) VALUES ('%s', '%d', '%s', '%s')", $title, $competition_id, maybe_serialize($settings), '') );
-		$this->setMessage( __('League added', 'racketmanager') );
-
-		return true;
-	}
 
 	/**
 	* edit League

@@ -332,17 +332,8 @@ class Competition {
 		global $wpdb;
 
 		foreach ( $this->getLeagues() as $league ) {
-
-			$league_id = $league->id;
-
-			// remove tables
-			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_table} WHERE `league_id` = '%d'", $league_id) );
-			// remove matches and rubbers
-			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` IN ( SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` = '%d')", $league_id) );
-			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `league_id` = '%d'", $league_id) );
-
-			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager} WHERE `id` = '%d'", $league_id) );
-
+			$league = get_league($league->id);
+			$league->delete();
 		}
 
 		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_team_competition} WHERE `competition_id` = '%d'", $this->id) );

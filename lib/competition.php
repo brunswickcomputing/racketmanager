@@ -208,6 +208,9 @@ class Competition {
 	public function __construct( $competition ) {
 		global $racketmanager;
 
+		if ( !isset($competition->id) ) {
+			$this->add($competition);
+		}
 		if (isset($competition->settings)) {
 			$competition->settings = (array)maybe_unserialize($competition->settings);
 			$competition->settings_keys = array_keys((array)maybe_unserialize($competition->settings));
@@ -269,8 +272,60 @@ class Competition {
 
 		// add actions & filter
 		add_filter( 'competition_standings_options', array(&$this, 'standingsTableDisplayOptions') );
+		return $competition;
 	}
 
+	/**
+	* add new competition
+	*
+	* @param string $name
+	* @param int $num_rubbers
+	* @param int $num_sets
+	* @param string $type
+	* @param string $mode
+	* @param string $entryType
+	* @return boolean
+	*/
+	private function add($competition) {
+		global $wpdb, $racketmanager;
+
+		if ( $competition->competitionType == 'league' ) {
+			$mode = 'default';
+			$entryType = 'team';
+		} elseif ( $competition->competitionType == 'cup' ) {
+			$mode = 'championship';
+			$entryType = 'team';
+		} elseif ( $competition->competitionType == 'tournament' ) {
+			$mode = 'championship';
+			$entryType = 'player';
+		}
+		if ( $mode == 'championship' ) {
+			$ranking = "manual";
+			$standings = array( 'pld' => 1, 'won' => 1, 'tie' => 1, 'lost' => 1 );
+		} else {
+			$ranking = "auto";
+			$standings = array( 'pld' => 0, 'won' => 0, 'tie' => 0, 'lost' => 0 );
+		}
+		$settings = array(
+			"sport" => "tennis",
+			"point_rule" => "tennis",
+			"point_format" => "%s",
+			"point_format2" => "%s",
+			"team_ranking" => $ranking,
+			"mode" => $mode,
+			"entryType" => $entryType,
+			"default_match_start_time" => array("hour" => 19, "minutes" => 30),
+			"standings" => $standings,
+			"num_ascend" => "",
+			"num_descend" => "",
+			"num_relegation" => "",
+			"num_matches_per_page" => 10,
+		);
+
+		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager_competitions} (`name`, `num_rubbers`, `num_sets`, `type`, `settings`, `competitiontype`) VALUES ('%s', '%d', '%d', '%s', '%s', '%s')", $competition->name, $competition->num_rubbers, $competition->num_sets, $competition->type, maybe_serialize($settings), $competition->competitionType ) );
+		$competition->id = $wpdb->insert_id;
+
+	}
 	/**
 	* set name
 	*

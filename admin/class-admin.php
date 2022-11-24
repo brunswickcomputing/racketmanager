@@ -440,7 +440,15 @@ final class RacketManagerAdmin extends RacketManager
 			if ( isset($_POST['addCompetition']) ) {
 				if ( current_user_can('edit_leagues') ) {
 					check_admin_referer('racketmanager_add-competition');
-					$this->addCompetition( htmlspecialchars(strip_tags($_POST['competition_name'])), $_POST['num_rubbers'], $_POST['num_sets'], $_POST['competition_type'], $_POST['competitiontype'] );
+					$competition = new stdClass();
+					$competition->name = htmlspecialchars(strip_tags($_POST['competition_name']));
+					$competition->num_rubbers = $_POST['num_rubbers'];
+					$competition->num_sets = $_POST['num_sets'];
+					$competition->type = $_POST['competition_type'];
+					$competition->competitionType = $_POST['competitiontype'];
+					$competition = new Competition($competition);
+					$this->createCompetitionPages($competition->id, $competition->name);
+					$this->setMessage( __('Competition added', 'racketmanager') );
 					$this->printMessage();
 				} else {
 					$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
@@ -1997,69 +2005,6 @@ final class RacketManagerAdmin extends RacketManager
 	*
 	*/
 
-	/**
-	* add new competition
-	*
-	* @param string $name
-	* @param int $num_rubbers
-	* @param int $num_sets
-	* @param string $type
-	* @param string $mode
-	* @param string $entryType
-	* @return boolean
-	*/
-	private function addCompetition( $name, $num_rubbers, $num_sets, $type, $competitionType ) {
-		global $wpdb, $racketmanager;
-
-		if ( !current_user_can('edit_leagues') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		if ( $competitionType == 'league' ) {
-			$mode = 'default';
-			$entryType = 'team';
-		} elseif ( $competitionType == 'cup' ) {
-			$mode = 'championship';
-			$entryType = 'team';
-		} elseif ( $competitionType == 'tournament' ) {
-			$mode = 'championship';
-			$entryType = 'player';
-		}
-		if ( $mode == 'championship' ) {
-			$ranking = "manual";
-			$standings = array( 'pld' => 1, 'won' => 1, 'tie' => 1, 'lost' => 1 );
-		} else {
-			$ranking = "auto";
-			$standings = array( 'pld' => 0, 'won' => 0, 'tie' => 0, 'lost' => 0 );
-		}
-		$settings = array(
-			"sport" => "tennis",
-			"point_rule" => "tennis",
-			"point_format" => "%s",
-			"point_format2" => "%s",
-			"team_ranking" => $ranking,
-			"mode" => $mode,
-			"entryType" => $entryType,
-			"default_match_start_time" => array("hour" => 19, "minutes" => 30),
-			"standings" => $standings,
-			"num_ascend" => "",
-			"num_descend" => "",
-			"num_relegation" => "",
-			"num_matches_per_page" => 10,
-		);
-
-		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager_competitions} (`name`, `num_rubbers`, `num_sets`, `type`, `settings`, `competitiontype`) VALUES ('%s', '%d', '%d', '%s', '%s', '%s')", $name, $num_rubbers, $num_sets, $type, maybe_serialize($settings), $competitionType ) );
-		$competition_id = $wpdb->insert_id;
-		$competition = get_competition( $competition_id );
-
-		$this->createCompetitionPages($competition_id, $name);
-
-		$this->setMessage( __('Competition added', 'racketmanager') );
-
-		return true;
-	}
-
 	private function createCompetitionPages( $competitionId, $competitionName ) {
 
 		$pageContent = "[competition id=".$competitionId."]";
@@ -2084,7 +2029,7 @@ final class RacketManagerAdmin extends RacketManager
 			)
 		);
 
-		$this->addRacketManagerPage($page_definition);
+		Racketmanager_Util::addRacketManagerPage($page_definition);
 
 	}
 

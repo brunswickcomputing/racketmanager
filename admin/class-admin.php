@@ -630,9 +630,21 @@ final class RacketManagerAdmin extends RacketManager
 				}
 				$this->printMessage();
 			} elseif ( isset($_POST['doactionleague']) && $_POST['action'] == 'delete' ) {
-				check_admin_referer('leagues-bulk');
-				foreach ( $_POST['league'] as $league_id )
-				$this->delLeague( intval($league_id) );
+				if ( !current_user_can('del_leagues') ) {
+					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+				} else {
+					check_admin_referer('leagues-bulk');
+					$messages = array();
+					$messageError= false;
+					foreach ( $_POST['league'] as $league_id ) {
+						$league = get_league($league_id);
+						$league->delete();
+						$messages[] = $league->title.' '.__('deleted', 'racketmanager');
+					}
+					$message = implode('<br>', $messages);
+					$this->setMessage( $message, $messageError );
+				}
+				$this->printMessage();
 			} elseif ( isset($_POST['doactionconstitution']) && $_POST['action'] == 'delete' ) {
 				$tab = 'constitution';
 				if ( current_user_can('del_leagues') ) {
@@ -2354,38 +2366,6 @@ final class RacketManagerAdmin extends RacketManager
 		$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_competitions} SET `seasons` = '%s' WHERE `id` = '%d'", maybe_serialize($seasons), $competition_id) );
 
 		wp_cache_delete($competition_id, 'competitions');
-
-		return true;
-	}
-
-	/************
-	*
-	*   LEAGUE SECTION
-	*
-	*
-	*/
-
-	/**
-	* delete League
-	*
-	* @param int $league_id
-	* @return boolean
-	*/
-	private function delLeague( $league_id ) {
-		global $wpdb, $racketmanager;
-
-		if ( !current_user_can('del_leagues') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		// remove tables
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_table} WHERE `league_id` = '%d'", $league_id) );
-		// remove matches and rubbers
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` IN ( SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` = '%d')", $league_id) );
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `league_id` = '%d'", $league_id) );
-
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager} WHERE `id` = '%d'", $league_id) );
 
 		return true;
 	}

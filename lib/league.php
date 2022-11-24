@@ -625,6 +625,22 @@ class League {
 	}
 
 	/**
+	* delete League
+	*
+	* @return none
+	*/
+	public function delete() {
+		global $wpdb;
+
+		// remove matches and rubbers
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` IN ( SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` = '%d')", $this->id) );
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `league_id` = '%d'", $this->id) );
+		// remove tables
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_table} WHERE `league_id` = '%d'", $this->id) );
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager} WHERE `id` = '%d'", $this->id) );
+	}
+
+	/**
 	* set detault dataset query arguments
 	*/
 	private function setMatchQueryArgs() {

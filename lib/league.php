@@ -1964,11 +1964,10 @@ public function updateRanking( $teams ) {
 * @return string
 */
 public function getSeasonDropdown( $season = '' ) {
-	$this->competition->seasons = maybe_unserialize($this->competition->seasons);
 
 	$out = '<select class="form-select" size="1" id="season" name="season" onChange="Racketmanager.getMatchDropdown('.$this->id.', this.value);">';
 	$out .= '<option value="">'.__('Choose Season', 'racketmanager').'</option>';
-	foreach ( $this->competition->seasons AS $s ) {
+	foreach ( $this->seasons AS $s ) {
 		$out .= '<option value="'.$s['name'].'"'.selected($season, $s['name'], false).'>'.$s['name'].'</option>';
 	}
 	$out .= '</select>';

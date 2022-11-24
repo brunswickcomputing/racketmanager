@@ -108,7 +108,7 @@ class Racketmanager_Activator {
 				'content' => '[custom-password-reset-form]'
 			)
 		);
-		$this->addRacketManagerPage($pageDefinitions);
+		$Racketmanager_Util::addRacketManagerPage($pageDefinitions);
 	}
 
 	/**
@@ -146,43 +146,6 @@ class Racketmanager_Activator {
 
 		$this->addRacketManagerPage($pageDefinitions);
 
-	}
-
-	/**
-	* Add pages to database
-	*/
-	public function addRacketManagerPage( $pageDefinitions ) {
-
-		foreach ( $pageDefinitions as $slug => $page ) {
-
-			// Check that the page doesn't exist already
-			if ( ! is_page($slug) ) {
-				$pageTemplate = $page['page_template'];
-				if ( $pageTemplate ) {
-					$template = array_search( $pageTemplate, $this->templates );
-					if ( $template ) {
-						$pageTemplate = $template;
-					}
-				}
-				// Add the page using the data from the array above
-				$page = array(
-					'post_content'   => $page['content'],
-					'post_name'      => $slug,
-					'post_title'     => $page['title'],
-					'post_status'    => 'publish',
-					'post_type'      => 'page',
-					'ping_status'    => 'closed',
-					'comment_status' => 'closed',
-					'page_template' => $pageTemplate,
-				);
-				if ( $pageId = wp_insert_post( $page ) ) {
-					$pageName = sanitize_title_with_dashes($page['post_title']);
-					$option = 'racketmanager_page_'.$pageName.'_id';
-					// Only update this option if `wp_insert_post()` was successful
-					update_option( $option, $pageId );
-				}
-			}
-		}
 	}
 
   /**

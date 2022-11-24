@@ -278,13 +278,8 @@ class Competition {
 	/**
 	* add new competition
 	*
-	* @param string $name
-	* @param int $num_rubbers
-	* @param int $num_sets
-	* @param string $type
-	* @param string $mode
-	* @param string $entryType
-	* @return boolean
+	* @param object $competition
+	* @return none
 	*/
 	private function add($competition) {
 		global $wpdb, $racketmanager;
@@ -326,6 +321,35 @@ class Competition {
 		$competition->id = $wpdb->insert_id;
 
 	}
+
+	/**
+	* delete Competition
+	*
+	* @param int $competition_id
+	* @return boolean
+	*/
+	public function delete() {
+		global $wpdb;
+
+		foreach ( $this->getLeagues() as $league ) {
+
+			$league_id = $league->id;
+
+			// remove tables
+			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_table} WHERE `league_id` = '%d'", $league_id) );
+			// remove matches and rubbers
+			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` IN ( SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` = '%d')", $league_id) );
+			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `league_id` = '%d'", $league_id) );
+
+			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager} WHERE `id` = '%d'", $league_id) );
+
+		}
+
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_team_competition} WHERE `competition_id` = '%d'", $this->id) );
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_competitions_seasons} WHERE `competition_id` = '%d'", $this->id) );
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_competitions} WHERE `id` = '%d'", $this->id) );
+	}
+
 	/**
 	* set name
 	*

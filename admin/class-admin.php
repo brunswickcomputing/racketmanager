@@ -449,19 +449,27 @@ final class RacketManagerAdmin extends RacketManager
 					$competition = new Competition($competition);
 					$this->createCompetitionPages($competition->id, $competition->name);
 					$this->setMessage( __('Competition added', 'racketmanager') );
-					$this->printMessage();
 				} else {
 					$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
 				}
+				$this->printMessage();
 			} elseif ( isset($_POST['docompdel']) && $_POST['action'] == 'delete' ) {
 				if ( current_user_can('del_leagues') ) {
 					check_admin_referer('competitions-bulk');
+					$messages = array();
+					$messageError= false;
 					foreach ( $_POST['competition'] as $competition_id ) {
-						$this->delCompetition( intval($competition_id) );
+						$competition = get_competition($competition_id);
+						$competition->delete();
+						$this->deleteCompetitionPages($competition->name);
+						$messages[] = $competition->name.' '.__('deleted', 'racketmanager');
 					}
+					$message = implode('<br>', $messages);
+					$this->setMessage( $message, $messageError );
 				} else {
 					$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
 				}
+				$this->printMessage();
 			}
 			include_once( dirname(__FILE__) . '/index.php' );
 		}

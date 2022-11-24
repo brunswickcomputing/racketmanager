@@ -13,7 +13,7 @@ jQuery(document).ready(function(){
 <div class="container">
   <div class="row justify-content-end">
     <div class="col-auto racketmanager_breadcrumb">
-      <a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>"><?php echo $competition->name ?></a> &raquo; <?php echo $league->title ?>
+      <a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $league->competition->id ?>"><?php echo $league->competition->name ?></a> &raquo; <?php echo $league->title ?>
     </div>
   </div>
   <h1><?php echo $league->title ?></h1>
@@ -27,7 +27,7 @@ jQuery(document).ready(function(){
           <?php } ?>
         <?php } ?>
       </div>
-      <?php if ( !empty($competition->seasons) ) { ?>
+      <?php if ( !empty($league->competition->seasons) ) { ?>
         <!-- Season Dropdown -->
         <div class="col-auto">
           <form action="admin.php" method="get" class="form-control">
@@ -36,7 +36,7 @@ jQuery(document).ready(function(){
             <input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
             <label for="season" style="vertical-align: middle;"><?php _e( 'Season', 'racketmanager' ) ?></label>
             <select size="1" name="season" id="season">
-              <?php foreach ( $competition->seasons AS $s ) { ?>
+              <?php foreach ( $league->competition->seasons AS $s ) { ?>
                 <option value="<?php echo htmlspecialchars($s['name']) ?>"<?php if ( $s['name'] == $season ) { echo ' selected="selected"'; } ?>><?php echo $s['name'] ?></option>
               <?php } ?>
             </select>

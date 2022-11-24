@@ -961,7 +961,7 @@ final class RacketManagerAdmin extends RacketManager
 				$league->setMatchDay(-1);
 			}
 
-			if ( empty($competition->seasons)  ) {
+			if ( empty($league->competition->seasons)  ) {
 				$this->setMessage( __( 'You need to add at least one season for the competition', 'racketmanager' ), true );
 				$this->printMessage();
 			}

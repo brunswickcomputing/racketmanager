@@ -1,7 +1,7 @@
 <?php
 if ( $view == 'constitution' ) {
   $title = __('Add Teams to Constitution', 'racketmanager');
-  $link = $league->competitionName;
+  $link = $league->competition->name;
   $breadcrumb = 'show-competition&amp;competition_id='.$league->competition_id;
 } else {
   $title = __('Add Teams to League', 'racketmanager');

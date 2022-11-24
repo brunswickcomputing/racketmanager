@@ -521,7 +521,6 @@ class League {
 	* @param object $league League object.
 	*/
 	public function __construct( $league ) {
-		global $competition;
 
 		if (isset($league->settings)) {
 			$league->settings = (array)maybe_unserialize($league->settings);
@@ -555,7 +554,7 @@ class League {
 		$this->competitionType = $competition->competitiontype;
 		$this->type = $competition->type;
 		$this->sport = $competition->sport;
-		$this->competition_id = $competition->id;
+		$this->competition = $competition;
 		$this->competitionName = $competition->name;
 		$this->scoring = $competition->scoring;
 		$this->setMatchQueryArgs();
@@ -1965,12 +1964,11 @@ public function updateRanking( $teams ) {
 * @return string
 */
 public function getSeasonDropdown( $season = '' ) {
-	$competition = get_competition($this->competition_id);
-	$competition->seasons = maybe_unserialize($competition->seasons);
+	$this->competition->seasons = maybe_unserialize($this->competition->seasons);
 
 	$out = '<select class="form-select" size="1" id="season" name="season" onChange="Racketmanager.getMatchDropdown('.$this->id.', this.value);">';
 	$out .= '<option value="">'.__('Choose Season', 'racketmanager').'</option>';
-	foreach ( $competition->seasons AS $s ) {
+	foreach ( $this->competition->seasons AS $s ) {
 		$out .= '<option value="'.$s['name'].'"'.selected($season, $s['name'], false).'>'.$s['name'].'</option>';
 	}
 	$out .= '</select>';

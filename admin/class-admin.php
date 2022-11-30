@@ -712,6 +712,12 @@ final class RacketManagerAdmin extends RacketManager
 				$tab = 'playerstats';
 			} elseif ( isset($_GET['view']) && $_GET['view'] == 'matches' ) {
 				$tab = 'matches';
+			} elseif ( isset($_POST['dosetseason']) ) {
+				$season = $_POST['season'];
+				$competition->setSeason($season, true);
+			}
+			if ( !isset($season) ) {
+				$season = (isset($_GET['season']) ? htmlspecialchars($_GET['season']) : $competition->current_season['name']);
 			}
 			include_once( dirname(__FILE__) . '/show-competition.php' );
 		}

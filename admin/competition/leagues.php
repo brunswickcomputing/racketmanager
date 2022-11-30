@@ -1,4 +1,5 @@
 <div class="container">
+
 	<form id="leagues-filter" method="post" action="" class="form-control mb-3">
 		<?php wp_nonce_field( 'leagues-bulk' ) ?>
 
@@ -30,7 +31,7 @@
 					<div class="row table-row <?php echo $class ?>">
 						<div class="col-2 col-lg-1 check-column"><input type="checkbox" value="<?php echo $league->id ?>" name="league[<?php echo $league->id ?>]" /></div>
 						<div class="d-none d-lg-1 col-1 column-num"><?php echo $league->id ?></div>
-						<div class="col-4"><a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a></div>
+						<div class="col-4"><a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>&amp;season=<?php echo $season ?>"><?php echo $league->title ?></a></div>
 						<div class="col-3 col-lg-1 column-num"><?php echo $league->num_teams_total ?></div>
 						<div class="col-3 col-lg-1 column-num"><?php echo $league->num_matches_total ?></div>
 						<div class="d-none d-lg-block col-auto"><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>&amp;editleague=<?php echo $league->id ?>"><?php _e( 'Edit', 'racketmanager' ) ?></a></div>

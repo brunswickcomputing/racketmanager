@@ -12,7 +12,28 @@ jQuery(document).ready(function(){
 			<a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <?php echo $competition->name ?>
 		</div>
 	</div>
-	<h1><?php echo $competition->name ?></h1>
+	<div class="row justify-content-between">
+		<div class="col-auto">
+			<h1><?php echo $competition->name ?></h1>
+		</div>
+	<?php if ( !empty($competition->seasons) ) { ?>
+		<!-- Season Dropdown -->
+		<div class="col-auto">
+			<form action="admin.php" method="get" class="form-control">
+				<input type="hidden" name="page" value="racketmanager" />
+				<input type="hidden" name="subpage" value="show-competition" />
+				<input type="hidden" name="competition_id" value="<?php echo $competition->id ?>" />
+				<label for="season" style="vertical-align: middle;"><?php _e( 'Season', 'racketmanager' ) ?></label>
+				<select size="1" name="season" id="season">
+					<?php foreach ( $competition->seasons AS $s ) { ?>
+						<option value="<?php echo htmlspecialchars($s['name']) ?>"<?php if ( $s['name'] == $season ) { echo ' selected="selected"'; } ?>><?php echo $s['name'] ?></option>
+					<?php } ?>
+				</select>
+				<input type="submit" value="<?php _e( 'Show', 'racketmanager' ) ?>" class="btn btn-secondary" />
+			</form>
+		</div>
+	<?php } ?>
+</div>
 
 	<?php $this->printMessage(); ?>
 	<div class="container">

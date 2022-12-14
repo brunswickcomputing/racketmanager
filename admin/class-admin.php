@@ -3004,6 +3004,14 @@ final class RacketManagerAdmin extends RacketManager
 				$options['colors']['rows'] = array( 'alternate' => htmlspecialchars($_POST['color_rows_alt']), 'main' => htmlspecialchars($_POST['color_rows']), 'ascend' => htmlspecialchars($_POST['color_rows_ascend']), 'descend' => htmlspecialchars($_POST['color_rows_descend']), 'relegation' => htmlspecialchars($_POST['color_rows_relegation']) );
 				$options['colors']['boxheader'] = array(htmlspecialchars($_POST['color_boxheader1']), htmlspecialchars($_POST['color_boxheader2']));
 				$options['championship']['numRounds'] = htmlspecialchars($_POST['numRounds']);
+				$options['billing']['billingEmail'] = htmlspecialchars($_POST['billingEmail']);
+				$options['billing']['billingAddress'] = htmlspecialchars($_POST['billingAddress']);
+				$options['billing']['billingTelephone'] = htmlspecialchars($_POST['billingTelephone']);
+				$options['billing']['billingCurrency'] = htmlspecialchars($_POST['billingCurrency']);
+				$options['billing']['bankName'] = htmlspecialchars($_POST['bankName']);
+				$options['billing']['sortCode'] = htmlspecialchars($_POST['sortCode']);
+				$options['billing']['accountNumber'] = htmlspecialchars($_POST['accountNumber']);
+				$options['billing']['invoiceNumber'] = htmlspecialchars($_POST['invoiceNumber']);
 
 				update_option( 'leaguemanager', $options );
 				$this->setMessage(__( 'Settings saved', 'racketmanager' ));

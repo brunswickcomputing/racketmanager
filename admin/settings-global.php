@@ -28,6 +28,9 @@
 					<li class="nav-item" role="presentation">
 						<button class="nav-link" id="championship-tab" data-bs-toggle="tab" data-bs-target="#championship" type="button" role="tab" aria-controls="championship" aria-selected="false"><?php _e( 'Championship', 'racketmanager' ) ?></button>
 					</li>
+					<li class="nav-item" role="presentation">
+						<button class="nav-link" id="billing-tab" data-bs-toggle="tab" data-bs-target="#billing" type="button" role="tab" aria-controls="billing" aria-selected="false"><?php _e( 'Billing', 'racketmanager' ) ?></button>
+					</li>
 				</ul>
 
 				<!-- Tab panes -->
@@ -46,6 +49,9 @@
 					</div>
 					<div class="tab-pane fade" id="championship" role="tabpanel" aria-labelledby="championship-tab">
 						<?php include(RACKETMANAGER_PATH . 'admin/includes/settings/championship.php'); ?>
+					</div>
+					<div class="tab-pane fade" id="billing" role="tabpanel" aria-labelledby="billing-tab">
+						<?php include(RACKETMANAGER_PATH . 'admin/includes/settings/billing.php'); ?>
 					</div>
 				</div>
 			</div>

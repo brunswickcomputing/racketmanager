@@ -285,6 +285,8 @@ class RacketManager {
 		global $racketmanager_shortcodes, $racketmanager_login;
 
 		// Objects
+		require_once (dirname (__FILE__) . '/lib/class-charges.php');
+		require_once (dirname (__FILE__) . '/lib/class-invoice.php');
 		require_once (dirname (__FILE__) . '/lib/club.php');
 		require_once (dirname (__FILE__) . '/lib/championship.php');
 		require_once (dirname (__FILE__) . '/lib/competition.php');
@@ -1018,8 +1020,14 @@ class RacketManager {
 			$i++;
 		}
 		$orderby = $orderbyString;
+		$sql = $wpdb->prepare( "SELECT `name`, `id`, `num_sets`, `num_rubbers`, `type`, `settings`, `seasons`, `competitiontype` FROM {$wpdb->racketmanager_competitions} $search ORDER BY $orderby LIMIT %d, %d", intval($offset), intval($limit) );
 
-		$competitions = $wpdb->get_results($wpdb->prepare( "SELECT `name`, `id`, `num_sets`, `num_rubbers`, `type`, `settings`, `seasons`, `competitiontype` FROM {$wpdb->racketmanager_competitions} $search ORDER BY $orderby LIMIT %d, %d", intval($offset), intval($limit) ));
+		$competitions = wp_cache_get( md5($sql), 'competitions' );
+		if ( !$competitions ) {
+			$competitions = $wpdb->get_results( $sql );
+			wp_cache_set( md5($sql), $competitions, 'competitions' );
+		}
+
 		$i = 0;
 		foreach ( $competitions as $i => $competition ) {
 			$competition->name = stripslashes($competition->name);
@@ -2028,6 +2036,29 @@ class RacketManager {
 			}
 		}
 		return $return;
+	}
+
+	public function sendInvoice($invoice) {
+		global $racketmanager_shortcodes;
+		$headers = array();
+		$fromEmail = $this->getConfirmationEmail($invoice->charge->competitionType);
+		if ( $fromEmail ) {
+			$headers[] = 'From: '.ucfirst($invoice->charge->competitionType).'Secretary <'.$fromEmail.'>';
+			$headers[] = 'cc: '.ucfirst($invoice->charge->competitionType).'Secretary <'.$fromEmail.'>';
+			$organisationName = $this->site_name;
+			$billing = $this->getOptions('billing');
+			$headers[] = 'cc: Treasurer <'.$billing['billingEmailf'].'>';
+			$club = get_club($invoice->club->id);
+			$actionURL = $this->site_url.'/invoice/'.$invoice->id.'/';
+			$emailTo = $invoice->club->matchSecretaryName.' <'.$invoice->club->matchSecretaryEmail.'>';
+			$emailSubject = $this->site_name." - ".ucfirst($invoice->charge->type)." ".$invoice->charge->season." ".ucfirst($invoice->charge->competitionType)." Entry Fees Invoice - ".$club->name;
+			$invoiceView = $invoice->generate($billing);
+			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'send-invoice', array( 'emailSubject' => $emailSubject, 'actionURL' => $actionURL, 'organisationName' => $organisationName, 'charge' => $invoice->charge, 'invoice' => $invoiceView ), 'email' );
+			wp_mail($emailTo, $emailSubject, $emailMessage, $headers);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**

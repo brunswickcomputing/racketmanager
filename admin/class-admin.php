@@ -150,6 +150,17 @@ final class RacketManagerAdmin extends RacketManager
 
 		$page = add_submenu_page(
 			'racketmanager'
+			, __('Finances', 'racketmanager')
+			, __('Finances','racketmanager')
+			,'racket_manager'
+			, 'racketmanager-finances'
+			, array(&$this, 'display')
+		);
+		add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
+		add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
+
+		$page = add_submenu_page(
+			'racketmanager'
 			, __('Settings', 'racketmanager')
 			, __('Settings','racketmanager')
 			,'racketmanager_settings'
@@ -361,6 +372,16 @@ final class RacketManagerAdmin extends RacketManager
 				$this->displayCompetitionsList();
 			} else {
 				$this->displayAdminPage();
+			}
+			break;
+			case 'racketmanager-finances':
+			$view = isset($_GET['subpage']) ? $_GET['subpage'] : '';
+			if ( $view == 'charges' ) {
+				$this->displayChargesPage();
+			} elseif ( $view == 'invoice' ) {
+				$this->displayInvoicePage();
+			} else {
+				$this->displayFinancesPage();
 			}
 			break;
 			case 'racketmanager-settings':
@@ -1811,6 +1832,221 @@ final class RacketManagerAdmin extends RacketManager
 	}
 
 	/**
+	* display finances page
+	*
+	*/
+	private function displayFinancesPage() {
+		global $racketmanager;
+
+		$players = '';
+
+		if ( !current_user_can( 'edit_leagues' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+		} else {
+			$tab = isset($_GET['tab']) ? $_GET['tab'] : "charges";
+			if ( isset($_POST['generateInvoices']) ) {
+				$tab = 'invoices';
+				$chargesId = $_POST['charges_id'];
+				$charges = get_Charges( $chargesId);
+				$chargesEntries = $charges->getClubEntries();
+				$billing = $this->getOptions('billing');
+				$invoiceNumber = $billing['invoiceNumber'];
+				foreach ($chargesEntries as $entry) {
+					$invoice = new stdClass();
+					$invoice->charge_id = $charges->id;
+					$invoice->club_id = $entry->id;
+					$invoice->invoiceNumber = $billing['invoiceNumber'];
+					$invoice->status = 'new';
+					$invoice = new Invoice($invoice);
+					$invoiceView = $invoice->generate($billing);
+					$billing['invoiceNumber'] += 1;
+					$sent = false;
+					$sent = $racketmanager->sendInvoice($invoice);
+					if ( $sent ) {
+						$invoice->setStatus('sent');
+					}
+				}
+				if ( $sent ) {
+					$options = $this->getOptions();
+					$options['billing']['invoiceNumber'] = $billing['invoiceNumber'];
+					update_option( 'leaguemanager', $options );
+					$this->setMessage( __('Invoices sent', 'racketmanager') );
+					$charges->setStatus('final');
+				} else {
+					$this->setMessage( __('No invoices sent', 'racketmanager'), true );
+				}
+			} elseif ( isset($_POST['doChargesDel']) && $_POST['action'] == 'delete' ) {
+				$tab = 'charges';
+				check_admin_referer('charges-bulk');
+				if ( !current_user_can('del_teams') ) {
+					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+				} else {
+					$messages = array();
+					$messageError= false;
+					foreach ( $_POST['charge'] as $charges_id ) {
+						$charge = get_charges($charges_id);
+						$chargeRef = ucfirst($charge->type).' '.$charge->season;
+						if ( $charge->hasInvoices() ) {
+							$messages[] = $chargeRef.' '.__('not deleted - still has invoices attached','racketmanager');
+							$messageError = true;
+						} else {
+							$charge->delete();
+							$messages[] = $chargeRef.' '.__('deleted', 'racketmanager');
+						}
+					}
+					$message = implode('<br>', $messages);
+					$this->setMessage( $message, $messageError );
+				}
+			} elseif ( isset($_POST['doActionInvoices']) && $_POST['action'] != -1 ) {
+				$tab = 'invoices';
+				check_admin_referer('invoices-bulk');
+				if ( !current_user_can('del_teams') ) {
+					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+				} else {
+					$messages = array();
+					$messageError= false;
+					foreach ( $_POST['invoice'] as $invoice_id ) {
+						$invoice = get_invoice($invoice_id);
+						if ( $invoice->status != $_POST['action'] ) {
+							$invoice->setStatus($_POST['action']);
+							$messages[] = __('Invoice', 'racketmanager').' '.$invoice->invoiceNumber.' '.__('updated', 'racketmanager');
+						}
+					}
+					$message = implode('<br>', $messages);
+					$this->setMessage( $message, $messageError );
+				}
+			}
+
+			$this->printMessage();
+
+			include_once( dirname(__FILE__) . '/show-finances.php' );
+		}
+	}
+
+	/**
+	* display charges page
+	*
+	*/
+	private function displayChargesPage() {
+		global $racketmanager, $racketmanager_shortcodes;
+
+		if ( !current_user_can( 'edit_teams' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+		} else {
+			if ( isset($_POST['saveCharges']) ) {
+				if( isset($_POST['charges_id']) && $_POST['charges_id'] != '' ) {
+					$charges = get_charges($_POST['charges_id']);
+					$updates = false;
+					if ( $charges->feeClub != $_POST['feeClub'] ) {
+						$charges->setFeeClub($_POST['feeClub']);
+						$updates = true;
+					}
+					if ( $charges->feeTeam != $_POST['feeTeam'] ) {
+						$charges->setFeeTeam($_POST['feeTeam']);
+						$updates = true;
+					}
+					if ( $charges->status != $_POST['status'] ) {
+						$charges->setStatus($_POST['status']);
+						$updates = true;
+					}
+					if ( $charges->competitionType != $_POST['competitionType'] ) {
+						$charges->setCompetitionType($_POST['competitionType']);
+						$updates = true;
+					}
+					if ( $charges->type != $_POST['type'] ) {
+						$charges->setType($_POST['type']);
+						$updates = true;
+					}
+					if ( $charges->date != $_POST['date'] ) {
+						$charges->setDate($_POST['date']);
+						$updates = true;
+					}
+					if ( $charges->season != $_POST['season'] ) {
+						$charges->setSeason($_POST['season']);
+						$updates = true;
+					}
+					if ( $updates ) {
+						$this->setMessage( __('Charges updated', 'racketmanager') );
+					} else {
+						$this->setMessage( __('No updates', 'racketmanager'), true );
+					}
+				} else {
+					$charges = new stdClass();
+					$charges->competitionType = $_POST['competitionType'];
+					$charges->type = $_POST['type'];
+					$charges->season = $_POST['season'];
+					$charges->status = $_POST['status'];
+					$charges->date = $_POST['date'];
+					$charges->feeClub = $_POST['feeClub'];
+					$charges->feeTeam = $_POST['feeTeam'];
+					$charges = new Charges($charges);
+					$this->setMessage( __('Charges added', 'racketmanager') );
+				}
+			}
+			$this->printMessage();
+			$edit = false;
+			if ( isset($_GET['charges']) || (isset($charges->id) && $charges->id != '') ) {
+				if ( isset($_GET['charges']) ) {
+					$chargesId = $_GET['charges'];
+				} else {
+					$chargesId = $charges->id;
+				}
+				$edit = true;
+				$charges = get_Charges( $chargesId );
+
+				$form_title = __( 'Edit Charges', 'racketmanager' );
+				$form_action = __( 'Update', 'racketmanager' );
+			} else {
+				$chargesId = '';
+				$form_title = __( 'Add Charges', 'racketmanager' );
+				$form_action = __( 'Add', 'racketmanager' );
+				$charges = (object)array( 'competitionType' => '', 'type' => '', 'id' => '', 'season' => '', 'date' => '', 'status' => '', 'feeClub' => '', 'feeTeam' => '');
+			}
+
+			include_once( dirname(__FILE__) . '/finances/charge.php' );
+		}
+	}
+
+	/**
+	* display invoice page
+	*
+	*/
+	private function displayInvoicePage() {
+		global $racketmanager, $racketmanager_shortcodes;
+
+		if ( !current_user_can( 'edit_teams' ) ) {
+			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
+		} else {
+			if ( isset($_POST['saveInvoice']) ) {
+				$invoice = get_invoice($_POST['invoice_id']);
+				$updates = false;
+				if ( $invoice->status != $_POST['status'] ) {
+					$invoice->setStatus($_POST['status']);
+					$updates = true;
+				}
+				if ( $updates ) {
+					$this->setMessage( __('Invoice updated', 'racketmanager') );
+				} else {
+					$this->setMessage( __('No updates', 'racketmanager'), true );
+				}
+			}
+			if ( isset($_GET['charge']) && isset($_GET['club']) ) {
+				$charge = get_Charges($_GET['charge']);
+				$club = get_club($_GET['club']);
+				$entry = $charge->getClubEntry($club);
+				$billing = $racketmanager->getOptions('billing');
+				$invoiceView = $racketmanager_shortcodes->loadTemplate( 'invoice', array( 'organisationName' => $racketmanager->site_name, 'charge' => $charge, 'entry' => $entry, 'competitionType' => 'league', 'club' => $club, 'billing' => $billing ) );
+			} elseif ( isset($_GET['invoice']) ) {
+				$billing = $racketmanager->getOptions('billing');
+				$invoice = get_invoice($_GET['invoice']);
+				$invoiceView = $invoice->generate($billing);
+			}
+
+			include_once( dirname(__FILE__) . '/finances/invoice.php' );
+		}
+	}
+
+	/**
 	* display season page
 	*
 	*/
@@ -3018,7 +3254,7 @@ final class RacketManagerAdmin extends RacketManager
 				$this->printMessage();
 
 				// Set active tab
-				$tab = intval($_POST['active-tab']);
+				$tab = $_POST['active-tab'];
 			}
 
 			require_once (dirname (__FILE__) . '/settings-global.php');
@@ -4250,6 +4486,35 @@ final class RacketManagerAdmin extends RacketManager
 		global $wpdb;
 
 		return $wpdb->get_results( "SELECT `group` as `value` FROM {$wpdb->racketmanager_table} WHERE `league_id` = $league AND `season` = $season AND `group` != ''");
+	}
+
+	/**
+	* get Charges
+	*
+	* @return array $charges
+	*/
+	private function getCharges() {
+		global $wpdb;
+
+		return $wpdb->get_results( "SELECT `id`, `status`, `competitionType`, `type`, `season`, `date` FROM {$wpdb->racketmanager_charges} order by `season`, `type`");
+	}
+
+	/**
+	* get Invoices
+	*
+	* @return array $invoices
+	*/
+	private function getInvoices() {
+		global $wpdb;
+
+		$invoices = $wpdb->get_results( "SELECT `id`, `status`, `charge_id`, `club_id`, `invoiceNumber` FROM {$wpdb->racketmanager_invoices} order by `invoiceNumber`");
+
+		$i = 0;
+		foreach ($invoices as $i => $invoice) {
+			$invoice = get_invoice($invoice);
+			$invoices[$i] = $invoice;
+		}
+		return $invoices;
 	}
 
 }

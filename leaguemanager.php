@@ -273,6 +273,8 @@ class RacketManager {
 		$wpdb->racketmanager_competitions_seasons = $wpdb->prefix . 'racketmanager_competitions_seasons';
 		$wpdb->racketmanager_results_checker = $wpdb->prefix . 'racketmanager_results_checker';
 		$wpdb->racketmanager_tournaments = $wpdb->prefix . 'racketmanager_tournaments';
+		$wpdb->racketmanager_charges = $wpdb->prefix . 'racketmanager_charges';
+		$wpdb->racketmanager_invoices = $wpdb->prefix . 'racketmanager_invoices';
 	}
 
 	/**
@@ -662,6 +664,8 @@ class RacketManager {
 		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_competitions}" );
 		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_seasons}" );
 		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_clubs}" );
+		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_charges}" );
+		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_invoices}" );
 
 		delete_option( 'racketmanager' );
 
@@ -2627,7 +2631,7 @@ function setup_racketmanager_plugin() {
 
 	define( 'RACKETMANAGER', 'racketmanager');
 	define( 'RACKETMANAGER_VERSION', '7.0.0' );
-	define( 'RACKETMANAGER_DBVERSION', '6.27.0' );
+	define( 'RACKETMANAGER_DBVERSION', '7.0.3' );
 	define( 'RACKETMANAGER_URL', esc_url(plugin_dir_url(__FILE__)) );
 	define( 'RACKETMANAGER_PATH', plugin_dir_path(__FILE__) );
 	define( 'RACKETMANAGER_PLUGIN_FILE',  __FILE__ );

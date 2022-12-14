@@ -635,6 +635,41 @@ function racketmanager_upgrade() {
 			$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `type` = 'MD' WHERE `rubber_number` = 2 AND `match_id` in (SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` in (SELECT `id` FROM {$wpdb->racketmanager} WHERE `competition_id` in (SELECT `id` FROM {$wpdb->racketmanager_competitions} WHERE `competitiontype` = 'league' AND `type` = 'LD'))) "));
 			$wpdb->query( $wpdb->prepare(" UPDATE {$wpdb->racketmanager_rubbers} SET `type` = 'XD' WHERE `rubber_number` = 3 AND `match_id` in (SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` in (SELECT `id` FROM {$wpdb->racketmanager} WHERE `competition_id` in (SELECT `id` FROM {$wpdb->racketmanager_competitions} WHERE `competitiontype` = 'league' AND `type` = 'LD'))) "));
 		}
+		if (version_compare($installed, '7.0.0', '<')) {
+			echo __('starting 7.0.0 upgrade', 'racketmanager') . "<br />\n";
+			$charset_collate = '';
+			if ( $wpdb->has_cap( 'collation' ) ) {
+				if ( ! empty($wpdb->charset) ) {
+					$charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
+				}
+				if ( ! empty($wpdb->collate) ) {
+					$charset_collate .= " COLLATE $wpdb->collate";
+				}
+			}
+			$wpdb->query( "CREATE TABLE {$wpdb->racketmanager_charges} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `type` varchar( 100 ) NOT NULL default '', `season` varchar( 255 ) NOT NULL default '', `date` date NULL, `status` varchar( 50 ) NOT NULL default '', PRIMARY KEY ( `id` )) $charset_collate;" );
+		}
+		if (version_compare($installed, '7.0.1', '<')) {
+			echo __('starting 7.0.1 upgrade', 'racketmanager') . "<br />\n";
+			$charset_collate = '';
+			if ( $wpdb->has_cap( 'collation' ) ) {
+				if ( ! empty($wpdb->charset) ) {
+					$charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
+				}
+				if ( ! empty($wpdb->collate) ) {
+					$charset_collate .= " COLLATE $wpdb->collate";
+				}
+			}
+			$wpdb->query( "CREATE TABLE {$wpdb->racketmanager_invoices} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `charge_id` int( 11 ) NOT NULL, `club_id` int( 11 ) NOT NULL, `invoiceNumber` int( 11 ) NOT NULL, `status` varchar( 50 ) NOT NULL, PRIMARY KEY ( `id` )) $charset_collate;" );
+		}
+		if (version_compare($installed, '7.0.2', '<')) {
+			echo __('starting 7.0.2 upgrade', 'racketmanager') . "<br />\n";
+			$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_charges} ADD `feeClub` decimal(10,2) AFTER `status`");
+			$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_charges} ADD `feeTeam` decimal(10,2) AFTER `feeClub`");
+		}
+		if (version_compare($installed, '7.0.3', '<')) {
+			echo __('starting 7.0.3 upgrade', 'racketmanager') . "<br />\n";
+			$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_charges} ADD `competitionType` varchar(255) AFTER `id`");
+		}
   /*
 	* Update version and dbversion
 	*/

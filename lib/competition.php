@@ -921,7 +921,7 @@ class Competition {
 	public function getTeams( $args = array() ) {
 		global $wpdb;
 
-		$defaults = array( 'offset' => 0, 'limit' => 99999999, 'season' => false, 'orderby' => false, 'club' => false, 'status' => false );
+		$defaults = array( 'offset' => 0, 'limit' => 99999999, 'season' => false, 'orderby' => false, 'club' => false, 'status' => false, 'count' => false );
 		$args = array_merge($defaults, $args);
 		extract($args, EXTR_SKIP);
 
@@ -946,7 +946,17 @@ class Competition {
 			$search .= implode(" AND ", $search_terms);
 		}
 
-		$sql = $wpdb->prepare( "SELECT `l`.`title` AS `leagueTitle`, l.`id` AS `leagueId`, t2.`id` AS `teamId`, t1.`id` AS `tableId`, `t2`.`title`,`t1`.`rank`, l.`id`, t1.`status`, t1.`profile`, t1.`group` FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_teams} t2, {$wpdb->racketmanager_table} t1 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ORDER BY l.`title` ASC, t2.`title` ASC LIMIT %d, %d", intval($offset), intval($limit) );
+		if ( $count ) {
+			$sql = "SELECT COUNT(*)";
+		} else {
+			$sql = "SELECT `l`.`title` AS `leagueTitle`, l.`id` AS `leagueId`, t2.`id` AS `teamId`, t1.`id` AS `tableId`, `t2`.`title`,`t1`.`rank`, l.`id`, t1.`status`, t1.`profile`, t1.`group`";
+		}
+		$sql .= " FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_teams} t2, {$wpdb->racketmanager_table} t1 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` ".$search;
+
+		if ( $count ) {
+			return $wpdb->get_var($sql);
+		}
+		$sql = $wpdb->prepare( $sql." ORDER BY l.`title` ASC, t2.`title` ASC LIMIT %d, %d", intval($offset), intval($limit) );
 
 		$competitionTeams = wp_cache_get( md5($sql), 'competitionTeams' );
 		if ( !$competitionTeams ) {

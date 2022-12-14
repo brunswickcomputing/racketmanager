@@ -44,6 +44,7 @@ class RacketManagerShortcodes extends RacketManager {
 		add_shortcode( 'leagueentry', array(&$this, 'showLeagueEntry') );
 		add_shortcode( 'orderofplay', array(&$this, 'showOrderOfPlay') );
 		add_shortcode( 'favourites', array(&$this, 'showFavourites') );
+		add_shortcode( 'invoice', array(&$this, 'showInvoice') );
 	}
 
 	/**
@@ -1546,6 +1547,25 @@ class RacketManagerShortcodes extends RacketManager {
 		$out = $this->loadTemplate( $filename, array( 'favouriteTypes' => $favouriteTypes), 'form' );
 
 		return $out;
+	}
+
+	public function showInvoice( $atts ) {
+		global $racketmanager;
+
+		extract(shortcode_atts(array(
+			'template' => '',
+			'id' => ''
+		), $atts ));
+
+		$invoice = '';
+		$invoice = get_query_var('id');
+		if ( $invoice ) {
+			$invoice = get_invoice($invoice);
+			$billing = $racketmanager->getOptions('billing');
+			return $invoice->generate($billing);
+		} else {
+			return _e('No invoice found', 'racketmanager');
+		}
 	}
 
 	/**

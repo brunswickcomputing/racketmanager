@@ -596,6 +596,10 @@ class RacketManager {
 	  add_rewrite_rule(
 	    'clubs\/(.+?)\/?$','index.php?pagename=club&club_name=$matches[1]','top'
 	  );
+		// club
+	  add_rewrite_rule(
+	    'invoice\/(.+?)\/?$','index.php?pagename=invoice&id=$matches[1]','top'
+	  );
 	}
 
 	/**
@@ -2047,7 +2051,7 @@ class RacketManager {
 			$headers[] = 'cc: '.ucfirst($invoice->charge->competitionType).'Secretary <'.$fromEmail.'>';
 			$organisationName = $this->site_name;
 			$billing = $this->getOptions('billing');
-			$headers[] = 'cc: Treasurer <'.$billing['billingEmailf'].'>';
+			$headers[] = 'cc: Treasurer <'.$billing['billingEmail'].'>';
 			$club = get_club($invoice->club->id);
 			$actionURL = $this->site_url.'/invoice/'.$invoice->id.'/';
 			$emailTo = $invoice->club->matchSecretaryName.' <'.$invoice->club->matchSecretaryEmail.'>';

@@ -1843,6 +1843,8 @@ final class RacketManagerAdmin extends RacketManager
 		if ( !current_user_can( 'edit_leagues' ) ) {
 			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
 		} else {
+			$clubId = isset($_GET['club']) ? $_GET['club'] : '';
+			$status = isset($_GET['status'])  ? $_GET['status'] : '';
 			$tab = isset($_GET['tab']) ? $_GET['tab'] : "charges";
 			if ( isset($_POST['generateInvoices']) ) {
 				$tab = 'invoices';
@@ -1919,6 +1921,7 @@ final class RacketManagerAdmin extends RacketManager
 
 			$this->printMessage();
 
+			$invoices = $racketmanager->getInvoices(array('club' => $clubId, 'status' => $status));
 			include_once( dirname(__FILE__) . '/show-finances.php' );
 		}
 	}
@@ -2031,18 +2034,24 @@ final class RacketManagerAdmin extends RacketManager
 				}
 			}
 			if ( isset($_GET['charge']) && isset($_GET['club']) ) {
-				$charge = get_Charges($_GET['charge']);
-				$club = get_club($_GET['club']);
-				$entry = $charge->getClubEntry($club);
-				$billing = $racketmanager->getOptions('billing');
-				$invoiceView = $racketmanager_shortcodes->loadTemplate( 'invoice', array( 'organisationName' => $racketmanager->site_name, 'charge' => $charge, 'entry' => $entry, 'competitionType' => 'league', 'club' => $club, 'billing' => $billing ) );
+				$invoiceId = $this->getInvoice($_GET['charge'], $_GET['club']);
 			} elseif ( isset($_GET['invoice']) ) {
-				$billing = $racketmanager->getOptions('billing');
-				$invoice = get_invoice($_GET['invoice']);
-				$invoiceView = $invoice->generate($billing);
+				$invoiceId = $_GET['invoice'];
 			}
+			$tab = isset($_GET['tab']) ? $_GET['tab'] : "invoices";
 
-			include_once( dirname(__FILE__) . '/finances/invoice.php' );
+			$invoiceView = '';
+			if ( isset($invoiceId) && $invoiceId ) {
+				$billing = $racketmanager->getOptions('billing');
+				$invoice = get_invoice($invoiceId);
+				if ( $invoice ) {
+					$invoiceView = $invoice->generate($billing);
+					include_once( dirname(__FILE__) . '/finances/invoice.php' );
+					return;
+				}
+			}
+			echo '<div class="error">'.__("Invoice not found", "racketmanager").'</p></div>';
+
 		}
 	}
 
@@ -4504,10 +4513,34 @@ final class RacketManagerAdmin extends RacketManager
 	*
 	* @return array $invoices
 	*/
-	private function getInvoices() {
+	private function getInvoices( $args = array() ) {
 		global $wpdb;
 
-		$invoices = $wpdb->get_results( "SELECT `id`, `status`, `charge_id`, `club_id`, `invoiceNumber` FROM {$wpdb->racketmanager_invoices} order by `invoiceNumber`");
+		$defaults = array( 'club' => false, 'status' => false );
+		$args = array_merge($defaults, $args);
+		extract($args, EXTR_SKIP);
+
+		$searchTerms = array();
+		if ( $club ) {
+			if ( $club != 'all') {
+				$searchTerms[] = $wpdb->prepare("`club_id` = %d", $club);
+			}
+		}
+		if ( $status ) {
+			if ( $status == 'paid') {
+				$searchTerms[] = $wpdb->prepare("`status` = '%s'", $status);
+			} elseif ( $status == 'outstanding') {
+				$searchTerms[] = "`status` != ('paid')";
+			}
+		}
+
+		$search = "";
+		if (!empty($searchTerms)) {
+			$search = " AND ";
+			$search .= implode(" AND ", $searchTerms);
+		}
+
+		$invoices = $wpdb->get_results( "SELECT `id`, `status`, `charge_id`, `club_id`, `invoiceNumber` FROM {$wpdb->racketmanager_invoices} WHERE 1 = 1 $search order by `invoiceNumber`");
 
 		$i = 0;
 		foreach ($invoices as $i => $invoice) {
@@ -4515,6 +4548,17 @@ final class RacketManagerAdmin extends RacketManager
 			$invoices[$i] = $invoice;
 		}
 		return $invoices;
+	}
+
+	/**
+	* get Invoice
+	*
+	* @return int $invoiceId
+	*/
+	private function getInvoice( $charge, $club ) {
+		global $wpdb;
+
+		return $wpdb->get_var( $wpdb->prepare( "SELECT `id` FROM {$wpdb->racketmanager_invoices} WHERE `charge_id` = %d AND `club_id` = %d LIMIT 1", $charge, $club ) );
 	}
 
 }

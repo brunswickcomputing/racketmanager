@@ -2454,7 +2454,7 @@ class RacketManager {
 														<option value="0"><?php _e( $select, 'racketmanager' ) ?></option>
 														<?php foreach ( $homeRoster[$r][$p]['players'] as $roster ) {
 															if ( isset($roster->removed_date) && $roster->removed_date != '' ) { $disabled = 'disabled'; } else { $disabled = ''; } ?>
-															<option value="<?php echo $roster->roster_id ?>"<?php $player = 'home_player_'.$p; if (isset($rubber->$player)) { selected($roster->roster_id, $rubber->$player ); echo $disabled; } ?>>
+															<option value="<?php echo $roster->roster_id ?>"<?php $player = 'home_player_'.$p; if (isset($rubber->$player)) { selected($roster->roster_id, $rubber->$player ); } echo $disabled; ?>>
 																<?php echo $roster->fullname ?>
 															</option>
 														<?php } ?>
@@ -2492,7 +2492,7 @@ class RacketManager {
 														<option value="0"><?php _e( $select, 'racketmanager' ) ?></option>
 														<?php foreach ( $awayRoster[$r][$p]['players'] as $roster ) {
 															if ( isset($roster->removed_date) && $roster->removed_date != '' ) { $disabled = 'disabled'; } else { $disabled = ''; } ?>
-															<option value="<?php echo $roster->roster_id ?>"<?php $player = 'away_player_'.$p; if (isset($rubber->$player)) { selected($roster->roster_id, $rubber->$player ); echo $disabled; } ?>>
+															<option value="<?php echo $roster->roster_id ?>"<?php $player = 'away_player_'.$p; if (isset($rubber->$player)) { selected($roster->roster_id, $rubber->$player ); }  echo $disabled; ?>>
 																<?php echo $roster->fullname ?>
 															</option>
 														<?php } ?>

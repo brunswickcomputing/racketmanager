@@ -1,5 +1,4 @@
 <?php
-$tab = "invoices";
 ?>
 <div class="container">
 	<div class="row justify-content-end">

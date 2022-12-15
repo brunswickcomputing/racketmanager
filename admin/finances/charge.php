@@ -95,7 +95,11 @@ $tab = "charges";?>
 								<div class="col-5"><?php echo $clubCharge->name ?></div>
 								<div class="col-2"><?php echo $clubCharge->numTeams ?></div>
 								<div class="col-2"><?php echo numfmt_format_currency($fmt, $clubCharge->fee, 'GBP') ?></div>
-								<div class="col-3"><a href="admin.php?page=racketmanager-finances&amp;subpage=invoice&amp;club=<?php echo $clubCharge->id ?>&amp;charge=<?php echo $charges->id ?>" class="btn btn-secondary"><?php _e('View Invoice', 'racketmanager') ?></a></div>
+								<div class="col-3">
+									<?php if ( $charges->status == 'final' ) { ?>
+										<a href="admin.php?page=racketmanager-finances&amp;subpage=invoice&amp;club=<?php echo $clubCharge->id ?>&amp;charge=<?php echo $charges->id ?>&amp;tab=charges" class="btn btn-secondary"><?php _e('View Invoice', 'racketmanager') ?></a>
+									<?php } ?>
+								</div>
 								<?php foreach ($clubCharge->competitions as $competition) { ?>
 									<div class="col-2"></div>
 									<div class="col-3"><?php echo Racketmanager_Util::getCompetitionType($competition->type) ?></div>

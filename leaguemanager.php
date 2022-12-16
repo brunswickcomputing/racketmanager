@@ -3,7 +3,7 @@
 Plugin Name: Racketmanager
 Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
 Description: Manage and present sports league results.
-Version: 6.29.0
+Version: 7.0.0
 Author: Paul Moffat
 
 Copyright 2008-2022  Paul Moffat (email: paul@paarcs.com)
@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 * @author Paul Moffat
 * @package RacketManager
-* @version 6.29.0
+* @version 7.0.0
 * @copyright 2008-2022
 * @license GPL-3
 */
@@ -88,7 +88,7 @@ class RacketManager {
 		add_filter( 'theme_page_templates', array( $this, 'racketmanagerTemplatesAsOption' ) );
 
 		// Add a filter to the save post to inject our template into the page cache
-		add_filter( 'wp_insert_post_data', array( $this, 'racketmanagerPostTemplates' ) );
+		add_filter( 'wp_insert_post_data', array( $this, 'registerRacketmanagerTemplates' ) );
 
 		// Add a filter to the template include to determine if the page has our
 		// template assigned and return it's path
@@ -110,16 +110,16 @@ class RacketManager {
 	* Adds our templates to the pages cache in order to trick WordPress
 	* into thinking the template file exists where it doens't really exist.
 	*/
-	public function racketmanagerPostTemplates( $atts ) {
+	public function registerRacketmanagerTemplates( $atts ) {
 
 		// Create the key used for the themes cache
 		$cacheKey = 'page_templates-' . md5( get_theme_root() . '/' . get_stylesheet() );
 
 		// Retrieve the cache list.
 		// If it doesn't exist, or it's empty prepare an array
-		$pageTemplates = wp_get_theme()->get_page_templates();
-		if ( empty( $pageTemplates ) ) {
-			$pageTemplates = array();
+		$templates = wp_get_theme()->get_page_templates();
+		if ( empty( $templates ) ) {
+			$templates = array();
 		}
 
 		// New cache, therefore remove the old one
@@ -127,11 +127,11 @@ class RacketManager {
 
 		// Now add our template to the list of templates by merging our templates
 		// with the existing templates array from the cache.
-		$pageTemplates = array_merge( $pageTemplates, $this->templates );
+		$templates = array_merge( $templates, $this->templates );
 
 		// Add the modified cache to allow WordPress to pick it up for listing
 		// available templates
-		wp_cache_add( $cacheKey, $pageTemplates, 'themes', 1800 );
+		wp_cache_add( $cacheKey, $templates, 'themes', 1800 );
 
 		return $atts;
 

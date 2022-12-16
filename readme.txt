@@ -50,6 +50,14 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 7.0.0 =
+* UPDATE: restructure code
+* UPDATE: add finance section for invoices
+* UPDATE: style message sent confirmation when chasing result
+* BUGFIX: show response when club updated more than once
+* BUGFIX: handle no seasons for competition
+* BUGFIX: handle disabled indicator for players correctly
+
 = 6.29.0 =
 * UPDATE: handle trailing slash on RACKETMANAGER_URL
 * UPDATE: change menu icon

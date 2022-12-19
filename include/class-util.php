@@ -38,7 +38,6 @@ class Racketmanager_Util {
 			// Check that the page doesn't exist already
 			if ( ! is_page($slug) ) {
 				$pageTemplate = $page['page_template'];
-				debug_to_console($pageTemplate);
 				// Add the page using the data from the array above
 				$page = array(
 					'post_content'   => $page['content'],

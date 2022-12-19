@@ -18,6 +18,7 @@ class Racketmanager_Activator {
 	*/
 	public function setup() {
     register_activation_hook( RACKETMANAGER_PLUGIN_FILE, array(&$this, 'activate') );
+		register_deactivation_hook( RACKETMANAGER_PLUGIN_FILE, array(&$this, 'deactivate') );
   }
 
   /**
@@ -108,7 +109,7 @@ class Racketmanager_Activator {
 				'content' => '[custom-password-reset-form]'
 			)
 		);
-		$Racketmanager_Util::addRacketManagerPage($pageDefinitions);
+		Racketmanager_Util::addRacketManagerPage($pageDefinitions);
 	}
 
 	/**
@@ -144,7 +145,7 @@ class Racketmanager_Activator {
 			)
 		);
 
-		$this->addRacketManagerPage($pageDefinitions);
+		Racketmanager_Util::addRacketManagerPage($pageDefinitions);
 
 	}
 
@@ -212,6 +213,12 @@ class Racketmanager_Activator {
 
 		$createInvoicesSql = "CREATE TABLE {$wpdb->racketmanager_invoices} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `charge_id` int( 11 ) NOT NULL, `club_id` int( 11 ) NOT NULL, `invoiceNumber` int( 11 ) NOT NULL, `status` varchar( 50 ) NOT NULL, PRIMARY KEY ( `id` )) $charset_collate;";
 		maybe_create_table( $wpdb->racketmanager_invoices, $createInvoicesSql );
+	}
+
+  /**
+  * Deactivate plugin
+  */
+  public function deactivate() {
 	}
 
 }

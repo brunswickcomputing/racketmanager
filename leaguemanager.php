@@ -60,10 +60,6 @@ class RacketManager {
 		$this->defineTables();
 		$this->loadLibraries();
 
-		if (function_exists('register_uninstall_hook')) {
-			register_uninstall_hook(__FILE__, array('RacketManagerLoader', 'uninstall'));
-		}
-
 		add_action( 'widgets_init', array(&$this, 'registerWidget') );
 		add_action( 'init', array(&$this, 'racketmanagerRewrites') );
 		add_action('wp_enqueue_scripts', array(&$this, 'loadStyles'), 5 );
@@ -650,65 +646,6 @@ class RacketManager {
 
 	}
 
-
-	/**
-	* Uninstall Plugin
-	*/
-	public static function uninstall() {
-		global $wpdb, $racketmanager;
-
-		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_roster_requests}" );
-		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_roster}" );
-		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_results_checker}" );
-		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_rubbers}" );
-		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_matches}" );
-		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_table}" );
-		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_team_competition}" );
-		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_teams}" );
-		$wpdb->query( "DROP TABLE {$wpdb->racketmanager}" );
-		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_competitions_seasons}" );
-		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_competitions}" );
-		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_seasons}" );
-		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_clubs}" );
-		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_charges}" );
-		$wpdb->query( "DROP TABLE {$wpdb->racketmanager_invoices}" );
-
-		delete_option( 'racketmanager' );
-
-		/*
-		* Remove Capabilities
-		*/
-		$role = get_role('administrator');
-		if ( $role !== null ) {
-			$role->remove_cap('racketmanager_settings');
-			$role->remove_cap('view_leagues');
-			$role->remove_cap('edit_leagues');
-			$role->remove_cap('edit_league_settings');
-			$role->remove_cap('del_leagues');
-			$role->remove_cap('edit_seasons');
-			$role->remove_cap('del_seasons');
-			$role->remove_cap('edit_teams');
-			$role->remove_cap('del_teams');
-			$role->remove_cap('edit_matches');
-			$role->remove_cap('del_matches');
-			$role->remove_cap('update_results');
-			$role->remove_cap('export_leagues');
-			$role->remove_cap('import_leagues');
-			$role->remove_cap('manage_racketmanager');
-
-			// old rules
-			$role->remove_cap('racketmanager');
-			$role->remove_cap('racket_manager'); // temporary rule
-		}
-
-		$role = get_role('editor');
-		if ( $role !== null ) {
-			$role->remove_cap('view_leagues');
-
-			// old rules
-			$role->remove_cap('racketmanager');
-		}
-	}
 
 	/**
 	* set message

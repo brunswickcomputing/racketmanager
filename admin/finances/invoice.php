@@ -20,7 +20,8 @@
           <option value="new" <?php selected( 'new', $invoice->status ) ?>><?php _e( 'New', 'racketmanager') ?></option>
 					<option value="final" <?php selected( 'final', $invoice->status ) ?>><?php _e( 'Final', 'racketmanager') ?></option>
           <option value="sent" <?php selected( 'sent', $invoice->status ) ?>><?php _e( 'Sent', 'racketmanager') ?></option>
-          <option value="paid" <?php selected( 'paid', $invoice->status ) ?>><?php _e( 'Paid', 'racketmanager') ?></option>
+          <option value="resent" <?php selected( 'resent', $invoice->status ) ?>><?php _e( 'Resent', 'racketmanager') ?></option>
+					<option value="paid" <?php selected( 'paid', $invoice->status ) ?>><?php _e( 'Paid', 'racketmanager') ?></option>
 				</select>
 				<label for="invoice"><?php _e( 'Status', 'racketmanager' ) ?></label>
 			</div>

@@ -60,8 +60,15 @@ final class Invoice {
   public function setStatus($status) {
     global $wpdb;
 
+    if ( $status == 'resent' ) {
+      $email = $this->send($status);
+      if ( !$email ) {
+        return false;
+      }
+    }
     $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_invoices} set `status` = '%s' WHERE `id` = %d", $status, $this->id ) );
     wp_cache_delete( $this->id, 'invoice' );
+    return true;
   }
 
   public function generate(){

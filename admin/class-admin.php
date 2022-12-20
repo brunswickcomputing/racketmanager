@@ -2031,8 +2031,7 @@ final class RacketManagerAdmin extends RacketManager
 				$invoice = get_invoice($_POST['invoice_id']);
 				$updates = false;
 				if ( $invoice->status != $_POST['status'] ) {
-					$invoice->setStatus($_POST['status']);
-					$updates = true;
+					$updates = $invoice->setStatus($_POST['status']);
 				}
 				if ( $updates ) {
 					$this->setMessage( __('Invoice updated', 'racketmanager') );

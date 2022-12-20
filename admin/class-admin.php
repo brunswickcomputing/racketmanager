@@ -4537,8 +4537,10 @@ final class RacketManagerAdmin extends RacketManager
 		if ( $status ) {
 			if ( $status == 'paid') {
 				$searchTerms[] = $wpdb->prepare("`status` = '%s'", $status);
-			} elseif ( $status == 'outstanding') {
+			} elseif ( $status == 'open') {
 				$searchTerms[] = "`status` != ('paid')";
+			} elseif ( $status == 'overdue') {
+				$searchTerms[] = "(`status` != ('paid') AND `date_due` < CURDATE())";
 			}
 		}
 

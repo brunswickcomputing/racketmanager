@@ -16,8 +16,9 @@ $clubs = $racketmanager->getClubs( );
 				</select>
 				<select class="" size="1" name="status" id="status">
 					<option value="all" <?php echo $status == 'all' ?  'selected' :  '' ?>><?php _e( 'All', 'racketmanager' ) ?></option>
+					<option value="open" <?php echo $status == 'open' ?  'selected' :  '' ?>><?php _e( 'Open', 'racketmanager' ) ?></option>
+					<option value="overdue" <?php echo $status == 'overdue' ?  'selected' :  '' ?>><?php _e( 'Overdue', 'racketmanager' ) ?></option>
 					<option value="paid" <?php echo $status == 'paid' ?  'selected' :  '' ?>><?php _e( 'Paid', 'racketmanager' ) ?></option>
-					<option value="outstanding" <?php echo $status == 'outstanding' ?  'selected' :  '' ?>><?php _e( 'Outstanding', 'racketmanager' ) ?></option>
 				</select>
 				<button class="btn btn-primary"><?php _e('Filter') ?></button>
 			</div>

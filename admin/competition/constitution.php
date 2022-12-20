@@ -21,7 +21,7 @@ if ( empty($this->seasons) ) { ?>
 			$constitutionAction = "insert";
 		}
 		$leagues = $competition->getLeagues();
-		$standingStatus = $racketmanager->getStandingStatus();
+		$standingStatus = Racketmanager_Util::getStandingStatus();
 		?>
 		<h2 class="header"><?php _e( 'Constitution', 'racketmanager' ) ?> - <?php echo $latestSeason ?></h2>
 		<form id="teams-filter" method="post" action="">

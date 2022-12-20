@@ -1676,27 +1676,6 @@ class RacketManager {
 	}
 
 	/**
-	* get available league standing status
-	*
-	* @return array
-	*/
-	public function getStandingStatus() {
-		return array(
-			'C' => __( 'Champions', 'racketmanager' )
-			,'P1' => __( 'Promoted in first place', 'racketmanager')
-			,'P2' => __( 'Promoted in second place', 'racketmanager')
-			,'P3' => __( 'Promoted in third place', 'racketmanager')
-			,'W1' => __( 'League winners but league locked', 'racketmanager')
-			,'W2' => __( 'Second place but league locked', 'racketmanager')
-			,'RB' => __( 'Relegated in bottom place', 'racketmanager')
-			,'RT' => __( 'Relegated as team in division above', 'racketmanager')
-			,'BT' => __( 'Finished bottom but not relegated', 'racketmanager')
-			,'NT' => __( 'New team', 'racketmanager')
-			,'W' => __( 'Withdrawn', 'racketmanager')
-		);
-	}
-
-	/**
 	* check if database column exists
 	*
 	* @param string $table

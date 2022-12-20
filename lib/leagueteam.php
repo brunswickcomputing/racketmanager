@@ -113,7 +113,7 @@ final class LeagueTeam {
       $this->roster = intval($this->roster);
       $this->profile = intval($this->profile);
 
-      $standingStatus = $racketmanager->getStandingStatus();
+      $standingStatus = Racketmanager_Util::getStandingStatus();
       if ( isset($standingStatus[$this->status])) {
         $this->status = $standingStatus[$this->status];
       }

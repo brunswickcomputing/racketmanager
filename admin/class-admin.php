@@ -1868,12 +1868,12 @@ final class RacketManagerAdmin extends RacketManager
 					$invoice->date = $charges->date;
 					$invoice->date_due = $dateDue->format('Y-m-d');
 					$invoice = new Invoice($invoice);
-					$billing['invoiceNumber'] += 1;
 					$sent = false;
 					$sent = $invoice->send();
 					if ( $sent ) {
 						$invoice->setStatus('sent');
 					}
+					$billing['invoiceNumber'] += 1;
 				}
 				if ( $sent ) {
 					$options = $this->getOptions();

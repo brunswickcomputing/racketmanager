@@ -34,4 +34,8 @@
     <input type="number" class="form-control" name='invoiceNumber' id='invoiceNumber' value='<?php echo isset($options['billing']['invoiceNumber']) ? $options['billing']['invoiceNumber'] : '' ?>' />
     <label for='invoiceNumber'><?php _e( 'Invoice Number', 'racketmanager' ) ?></label>
   </div>
+  <div class="form-floating mb-3">
+    <input type="number" class="form-control" name='paymentTerms' id='paymentTerms' value='<?php echo isset($options['billing']['paymentTerms']) ? $options['billing']['paymentTerms'] : '' ?>' />
+    <label for='paymentTerms'><?php _e( 'Payment Terms (days)', 'racketmanager' ) ?></label>
+  </div>
 </div>

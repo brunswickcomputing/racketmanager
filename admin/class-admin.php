@@ -1853,6 +1853,11 @@ final class RacketManagerAdmin extends RacketManager
 				$chargesEntries = $charges->getClubEntries();
 				$billing = $this->getOptions('billing');
 				$dateDue = new DateTime($charges->date);
+				if ( isset($billing['paymentTerms']) && intval($billing['paymentTerms']) != 0 ) {
+					$dateInterval = intval($billing['paymentTerms']);
+					$dateInterval = "P".$dateInterval."D";
+					$dateDue->add(new DateInterval($dateInterval));
+				}
 				$invoiceNumber = $billing['invoiceNumber'];
 				foreach ($chargesEntries as $entry) {
 					$invoice = new stdClass();
@@ -3260,6 +3265,7 @@ final class RacketManagerAdmin extends RacketManager
 				$options['billing']['sortCode'] = htmlspecialchars($_POST['sortCode']);
 				$options['billing']['accountNumber'] = htmlspecialchars($_POST['accountNumber']);
 				$options['billing']['invoiceNumber'] = htmlspecialchars($_POST['invoiceNumber']);
+				$options['billing']['paymentTerms'] = htmlspecialchars($_POST['paymentTerms']);
 
 				update_option( 'leaguemanager', $options );
 				$this->setMessage(__( 'Settings saved', 'racketmanager' ));

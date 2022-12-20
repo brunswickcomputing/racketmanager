@@ -10,10 +10,10 @@
     <h1><?php echo __('Invoice', 'racketmanager').' '.$invoice->invoiceNumber.' ('.__($invoice->status, 'racketmanager').')' ?></h1>
     <h2><?php echo ucfirst($invoice->charge->type).' '.ucfirst($invoice->charge->competitionType).' '.$invoice->charge->season.' - '.$invoice->club->name ?><h2>
   </div>
-  <div class="row mb-3">
-    <form method="post" enctype="multipart/form-data" name="invoice_edit" class="form-control">
+	<form method="post" enctype="multipart/form-data" name="invoice_edit" class="form-control mb-3">
+  	<div class="row justify-content-start align-items-center mb-3">
       <h2><?php _e('Change status', 'racketmanager') ?></h2>
-      <div class="form-floating mb-3">
+      <div class="form-floating col-4">
 				<select class="form-select" size="1" name="status" id="type" >
 					<option><?php _e( 'Select type' , 'racketmanager') ?></option>
 					<option value="draft" <?php selected( 'draft', $invoice->status ) ?>><?php _e( 'Draft', 'racketmanager') ?></option>
@@ -25,12 +25,12 @@
 				</select>
 				<label for="invoice"><?php _e( 'Status', 'racketmanager' ) ?></label>
 			</div>
-      <div class="mb-3">
+      <div class="col-auto">
         <input type="hidden" name="invoice_id" id="invoice_id" value="<?php echo $invoice->id ?>" />
 				<button type="submit" name="saveInvoice" class="btn btn-primary"><?php _e('Update', 'racketmanager') ?></button>
 			</div>
-    </form>
-  </div>
+		</div>
+  </form>
   <div class="row mb-3">
     <?php echo $invoiceView ?>
   </div>

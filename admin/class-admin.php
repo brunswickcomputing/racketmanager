@@ -1852,6 +1852,7 @@ final class RacketManagerAdmin extends RacketManager
 				$charges = get_Charges( $chargesId);
 				$chargesEntries = $charges->getClubEntries();
 				$billing = $this->getOptions('billing');
+				$dateDue = new DateTime($charges->date);
 				$invoiceNumber = $billing['invoiceNumber'];
 				foreach ($chargesEntries as $entry) {
 					$invoice = new stdClass();
@@ -1859,6 +1860,8 @@ final class RacketManagerAdmin extends RacketManager
 					$invoice->club_id = $entry->id;
 					$invoice->invoiceNumber = $billing['invoiceNumber'];
 					$invoice->status = 'new';
+					$invoice->date = $charges->date;
+					$invoice->date_due = $dateDue->format('Y-m-d');
 					$invoice = new Invoice($invoice);
 					$invoiceView = $invoice->generate($billing);
 					$billing['invoiceNumber'] += 1;
@@ -4540,7 +4543,7 @@ final class RacketManagerAdmin extends RacketManager
 			$search .= implode(" AND ", $searchTerms);
 		}
 
-		$invoices = $wpdb->get_results( "SELECT `id`, `status`, `charge_id`, `club_id`, `invoiceNumber` FROM {$wpdb->racketmanager_invoices} WHERE 1 = 1 $search order by `invoiceNumber`");
+		$invoices = $wpdb->get_results( "SELECT `id`, `status`, `charge_id`, `club_id`, `invoiceNumber`, `date`, `date_due` FROM {$wpdb->racketmanager_invoices} WHERE 1 = 1 $search order by `invoiceNumber`");
 
 		$i = 0;
 		foreach ($invoices as $i => $invoice) {

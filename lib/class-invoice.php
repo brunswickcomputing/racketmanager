@@ -20,7 +20,7 @@ final class Invoice {
     $invoice = wp_cache_get( $invoice_id, 'invoice' );
 
     if ( ! $invoice ) {
-      $invoice = $wpdb->get_row( $wpdb->prepare( "SELECT `id`, `charge_id`, `club_id`, `status`, `invoiceNumber` FROM {$wpdb->racketmanager_invoices} WHERE `id` = '%d' LIMIT 1", $invoice_id ) );
+      $invoice = $wpdb->get_row( $wpdb->prepare( "SELECT `id`, `charge_id`, `club_id`, `status`, `invoiceNumber`, `date`, `date_due` FROM {$wpdb->racketmanager_invoices} WHERE `id` = '%d' LIMIT 1", $invoice_id ) );
 
       if ( !$invoice ) {
         return false;
@@ -53,7 +53,7 @@ final class Invoice {
   private function add() {
     global $wpdb;
 
-		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager_invoices} (`charge_id`, `club_id`, `status`, `invoiceNumber`) VALUES (%d, %d, '%s', %d)", $this->charge_id, $this->club_id, $this->status, $this->invoiceNumber ) );
+		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager_invoices} (`charge_id`, `club_id`, `status`, `invoiceNumber`, `date`, `date_due`) VALUES (%d, %d, '%s', %d, '%s', '%s')", $this->charge_id, $this->club_id, $this->status, $this->invoiceNumber, $this->date, $this->date_due ) );
     $this->id = $wpdb->insert_id;
   }
 

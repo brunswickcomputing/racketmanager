@@ -211,7 +211,7 @@ class Racketmanager_Activator {
 		$createChargesSql = "CREATE TABLE {$wpdb->racketmanager_charges} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `competitionType` varchar(255), `type` varchar( 100 ) NOT NULL default '', `season` varchar( 255 ) NOT NULL default '', `date` date NULL, `status` varchar( 50 ) NOT NULL default '', ADD `feeClub` decimal(10,2), ADD `feeTeam` decimal(10,2), PRIMARY KEY ( `id` )) $charset_collate;";
 		maybe_create_table( $wpdb->racketmanager_charges, $createChargesSql );
 
-		$createInvoicesSql = "CREATE TABLE {$wpdb->racketmanager_invoices} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `charge_id` int( 11 ) NOT NULL, `club_id` int( 11 ) NOT NULL, `invoiceNumber` int( 11 ) NOT NULL, `status` varchar( 50 ) NOT NULL, PRIMARY KEY ( `id` )) $charset_collate;";
+		$createInvoicesSql = "CREATE TABLE {$wpdb->racketmanager_invoices} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `charge_id` int( 11 ) NOT NULL, `club_id` int( 11 ) NOT NULL, `invoiceNumber` int( 11 ) NOT NULL, `status` varchar( 50 ) NOT NULL, `date` date, `date_due` date, PRIMARY KEY ( `id` )) $charset_collate;";
 		maybe_create_table( $wpdb->racketmanager_invoices, $createInvoicesSql );
 	}
 

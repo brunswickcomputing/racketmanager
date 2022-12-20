@@ -670,6 +670,11 @@ function racketmanager_upgrade() {
 			echo __('starting 7.0.3 upgrade', 'racketmanager') . "<br />\n";
 			$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_charges} ADD `competitionType` varchar(255) AFTER `id`");
 		}
+		if (version_compare($installed, '7.0.4', '<')) {
+			echo __('starting 7.0.4 upgrade', 'racketmanager') . "<br />\n";
+			$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_invoices} ADD `date` date AFTER `status`");
+			$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_invoices} ADD `date_due` date AFTER `date`");
+		}
   /*
 	* Update version and dbversion
 	*/

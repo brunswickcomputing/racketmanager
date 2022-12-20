@@ -47,6 +47,7 @@ $clubs = $racketmanager->getClubs( );
 						<div class="col-3"><?php _e( 'Charge', 'racketmanager' ) ?></div>
 						<div class="col-3"><?php _e( 'Club', 'racketmanager' ) ?></div>
 						<div class="col-2"><?php _e( 'Status', 'racketmanager' ) ?></div>
+						<div class="col-2"><?php _e( 'Date Due', 'racketmanager' ) ?></div>
 					</div>
 					<?php
 					foreach ( $invoices AS $invoice ) { ?>
@@ -57,6 +58,7 @@ $clubs = $racketmanager->getClubs( );
 							<div class="col-3"><?php echo ucfirst($invoice->charge->type).' '.$invoice->charge->season ?></div>
 							<div class="col-3"><?php echo $invoice->club->name ?></div>
 							<div class="col-2"><?php echo $invoice->status ?></div>
+							<div class="col-2"><?php echo $invoice->date_due ?></div>
 						</div>
 					<?php } ?>
 				</div>

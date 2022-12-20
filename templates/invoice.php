@@ -128,9 +128,11 @@ if ( !isset($invoiceNumber) ) {
       color: #FFFFFF;
       padding: 3px;
     }
-
     #invoice-amount {
       line-height: 2;
+    }
+    .invoice-due {
+    font-style: italic;
     }
   </style>
   <!-- START MAIN CONTENT AREA -->
@@ -150,8 +152,8 @@ if ( !isset($invoiceNumber) ) {
       <div class="invoice-no">
         <h2><?php _e('Invoice', 'racketmanager') ?>&nbsp;<?php echo $invoiceNumber ?></h2>
       </div>
-      <div class="invoice-date"><?php echo $charge->date ?></div>
-      <div class="invoice-due"></div>
+      <div class="invoice-date"><?php echo mysql2date($racketmanager->date_format,$invoice->date) ?></div>
+      <div class="invoice-due"><?php if ( $invoice->date_due == $invoice->date ) { _e('Payment due on receipt', 'racketmanager'); } else { echo __('Payment Due', 'racketmanager').': '.mysql2date($racketmanager->date_format, $invoice->date_due); } ?></div>
     </div>
     <div id="client-details">
       <div class="org"><h2><?php echo $club->name ?></h2></div>
@@ -168,7 +170,7 @@ if ( !isset($invoiceNumber) ) {
       </div>
       <div id="invoice-items">
         <div id="invoice-item">
-          <h2 class="invoice-item-detail"><?php echo ucfirst($charge->type).' '.'League'.' '.$charge->season; ?></h2>
+          <h2 class="invoice-item-detail"><?php echo ucfirst($invoice->charge->type).' '.'League'.' '.$invoice->charge->season; ?></h2>
         </div>
         <div id="invoice-item">
           <div class="invoice-item-detail"><?php echo ucwords(__('club entry fee', 'racketmanger')) ?></div>

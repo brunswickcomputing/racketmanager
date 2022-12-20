@@ -11,7 +11,7 @@ $title = $emailSubject;
         <td>
           <div>
             <h1 class="align-left">Dear Match Secretary</h1>
-            <p>Please find attached your invoice for the <?php echo ucfirst($charge->type) ?> <?php echo ucfirst($charge->competitionType) ?> <?php echo $charge->season ?> season.  If you could check your details and notify me of errors.</p>
+            <p>Please find attached <?php if ( $resend ) { echo 'another copy of ';} ?>your invoice for the <?php echo ucfirst($invoice->charge->type) ?> <?php echo ucfirst($invoice->charge->competitionType) ?> <?php echo $invoice->charge->season ?> season.  If you could check your details and notify me of errors.</p>
             <!-- Action -->
             <table class="body-action" align="center" width="100%" cellpadding="0" cellspacing="0">
               <tr>
@@ -43,7 +43,7 @@ $title = $emailSubject;
                 </td>
               </tr>
             </table>
-            <?php echo $invoice ?>
+            <?php echo $invoiceView ?>
           </div>
         </td>
       </tr>

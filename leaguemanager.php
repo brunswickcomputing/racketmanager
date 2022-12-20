@@ -1954,29 +1954,6 @@ class RacketManager {
 		return $return;
 	}
 
-	public function sendInvoice($invoice) {
-		global $racketmanager_shortcodes;
-		$headers = array();
-		$fromEmail = $this->getConfirmationEmail($invoice->charge->competitionType);
-		if ( $fromEmail ) {
-			$headers[] = 'From: '.ucfirst($invoice->charge->competitionType).'Secretary <'.$fromEmail.'>';
-			$headers[] = 'cc: '.ucfirst($invoice->charge->competitionType).'Secretary <'.$fromEmail.'>';
-			$organisationName = $this->site_name;
-			$billing = $this->getOptions('billing');
-			$headers[] = 'cc: Treasurer <'.$billing['billingEmail'].'>';
-			$club = get_club($invoice->club->id);
-			$actionURL = $this->site_url.'/invoice/'.$invoice->id.'/';
-			$emailTo = $invoice->club->matchSecretaryName.' <'.$invoice->club->matchSecretaryEmail.'>';
-			$emailSubject = $this->site_name." - ".ucfirst($invoice->charge->type)." ".$invoice->charge->season." ".ucfirst($invoice->charge->competitionType)." Entry Fees Invoice - ".$club->name;
-			$invoiceView = $invoice->generate($billing);
-			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'send-invoice', array( 'emailSubject' => $emailSubject, 'actionURL' => $actionURL, 'organisationName' => $organisationName, 'charge' => $invoice->charge, 'invoice' => $invoiceView ), 'email' );
-			wp_mail($emailTo, $emailSubject, $emailMessage, $headers);
-			return true;
-		} else {
-			return false;
-		}
-	}
-
 	/**
   * user favourite
   *

@@ -1561,11 +1561,11 @@ class RacketManagerShortcodes extends RacketManager {
 		$invoice = get_query_var('id');
 		if ( $invoice ) {
 			$invoice = get_invoice($invoice);
-			$billing = $racketmanager->getOptions('billing');
-			return $invoice->generate($billing);
-		} else {
-			return _e('No invoice found', 'racketmanager');
+			if ( $invoice ) {
+				return $invoice->generate();
+			}
 		}
+		return _e('No invoice found', 'racketmanager');
 	}
 
 	/**

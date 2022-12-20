@@ -175,14 +175,14 @@ if ( !isset($invoiceNumber) ) {
         <div id="invoice-item">
           <div class="invoice-item-detail"><?php echo ucwords(__('club entry fee', 'racketmanger')) ?></div>
           <div class="invoice-item-quantity"></div>
-          <div class="invoice-item-unit-price"><?php echo numfmt_format_currency($fmt, $charge->feeClub, $billing['billingCurrency']) ?></div>
-          <div class="invoice-item-net-price"><?php echo numfmt_format_currency($fmt, $charge->feeClub, $billing['billingCurrency']) ?></div>
+          <div class="invoice-item-unit-price"><?php echo numfmt_format_currency($fmt, $invoice->charge->feeClub, $billing['billingCurrency']) ?></div>
+          <div class="invoice-item-net-price"><?php echo numfmt_format_currency($fmt, $invoice->charge->feeClub, $billing['billingCurrency']) ?></div>
         </div>
         <?php foreach ($entry->competitions as $competition) { ?>
           <div id="invoice-item">
             <div class="invoice-item-detail"><?php echo Racketmanager_Util::getCompetitionType($competition->type) ?></div>
             <div class="invoice-item-quantity"><?php echo $competition->count ?></div>
-            <div class="invoice-item-unit-price"><?php echo numfmt_format_currency($fmt, $charge->feeTeam, $billing['billingCurrency']) ?></div>
+            <div class="invoice-item-unit-price"><?php echo numfmt_format_currency($fmt, $invoice->charge->feeTeam, $billing['billingCurrency']) ?></div>
             <div class="invoice-item-net-price"><?php echo numfmt_format_currency($fmt, $competition->fee, $billing['billingCurrency']) ?></div>
           </div>
         <?php } ?>

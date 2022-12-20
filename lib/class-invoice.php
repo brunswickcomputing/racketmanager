@@ -64,13 +64,38 @@ final class Invoice {
     wp_cache_delete( $this->id, 'invoice' );
   }
 
-  public function generate($billing){
+  public function generate(){
     global $racketmanager_shortcodes, $racketmanager;
     $charge = get_charges($this->charge);
     $club = get_club($this->club);
     $entry = $charge->getClubEntry($club);
-		return $racketmanager_shortcodes->loadTemplate( 'invoice', array( 'organisationName' => $racketmanager->site_name, 'charge' => $this->charge, 'entry' => $entry, 'club' => $club, 'billing' => $billing, 'invoiceNumber' => $this->invoiceNumber ) );
+    $billing = $racketmanager->getOptions('billing');
+		return $racketmanager_shortcodes->loadTemplate( 'invoice', array( 'organisationName' => $racketmanager->site_name, 'invoice' => $this, 'entry' => $entry, 'club' => $club, 'billing' => $billing, 'invoiceNumber' => $this->invoiceNumber ) );
   }
+
+  public function send($resend = false) {
+		global $racketmanager_shortcodes, $racketmanager;
+
+    if ( $resend) { $resent = true;}
+    $billing = $racketmanager->getOptions('billing');
+		$headers = array();
+		$fromEmail = $racketmanager->getConfirmationEmail($this->charge->competitionType);
+		if ( $fromEmail ) {
+			$headers[] = 'From: '.ucfirst($this->charge->competitionType).'Secretary <'.$fromEmail.'>';
+			$headers[] = 'cc: '.ucfirst($this->charge->competitionType).'Secretary <'.$fromEmail.'>';
+			$organisationName = $racketmanager->site_name;
+			$headers[] = 'cc: Treasurer <'.$billing['billingEmail'].'>';
+			$actionURL = $racketmanager->site_url.'/invoice/'.$this->id.'/';
+			$emailTo = $this->club->matchSecretaryName.' <'.$this->club->matchSecretaryEmail.'>';
+			$emailSubject = $racketmanager->site_name." - ".ucfirst($this->charge->type)." ".$this->charge->season." ".ucfirst($this->charge->competitionType)." Entry Fees Invoice - ".$this->club->name;
+			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'send-invoice', array( 'emailSubject' => $emailSubject, 'actionURL' => $actionURL, 'organisationName' => $organisationName, 'invoice' => $this, 'invoiceView' => $this->generate(), 'resend' => $resend ), 'email' );
+			wp_mail($emailTo, $emailSubject, $emailMessage, $headers);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 }
 
 /**

@@ -1868,10 +1868,9 @@ final class RacketManagerAdmin extends RacketManager
 					$invoice->date = $charges->date;
 					$invoice->date_due = $dateDue->format('Y-m-d');
 					$invoice = new Invoice($invoice);
-					$invoiceView = $invoice->generate($billing);
 					$billing['invoiceNumber'] += 1;
 					$sent = false;
-					$sent = $racketmanager->sendInvoice($invoice);
+					$sent = $invoice->send();
 					if ( $sent ) {
 						$invoice->setStatus('sent');
 					}
@@ -2053,7 +2052,7 @@ final class RacketManagerAdmin extends RacketManager
 				$billing = $racketmanager->getOptions('billing');
 				$invoice = get_invoice($invoiceId);
 				if ( $invoice ) {
-					$invoiceView = $invoice->generate($billing);
+					$invoiceView = $invoice->generate();
 					include_once( dirname(__FILE__) . '/finances/invoice.php' );
 					return;
 				}

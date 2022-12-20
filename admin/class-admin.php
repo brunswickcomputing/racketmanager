@@ -2040,6 +2040,7 @@ final class RacketManagerAdmin extends RacketManager
 					$this->setMessage( __('No updates', 'racketmanager'), true );
 				}
 			}
+			$this->printMessage();
 			if ( isset($_GET['charge']) && isset($_GET['club']) ) {
 				$invoiceId = $this->getInvoice($_GET['charge'], $_GET['club']);
 			} elseif ( isset($_GET['invoice']) ) {

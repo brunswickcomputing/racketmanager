@@ -57,7 +57,6 @@ class RacketManager {
 
 		$wpdb->show_errors();
 		$this->loadOptions();
-		$this->defineTables();
 		$this->loadLibraries();
 
 		add_action( 'widgets_init', array(&$this, 'registerWidget') );
@@ -247,30 +246,6 @@ class RacketManager {
 	*/
 	public function registerWidget() {
 		register_widget('RacketManagerWidget');
-	}
-
-	/**
-	* define database tables
-	*
-	*/
-	private function defineTables() {
-		global $wpdb;
-		$wpdb->racketmanager = $wpdb->prefix . 'racketmanager_leagues';
-		$wpdb->racketmanager_table = $wpdb->prefix . 'racketmanager_table';
-		$wpdb->racketmanager_teams = $wpdb->prefix . 'racketmanager_teams';
-		$wpdb->racketmanager_matches = $wpdb->prefix . 'racketmanager_matches';
-		$wpdb->racketmanager_rubbers = $wpdb->prefix . 'racketmanager_rubbers';
-		$wpdb->racketmanager_roster = $wpdb->prefix . 'racketmanager_roster';
-		$wpdb->racketmanager_competitions = $wpdb->prefix . 'racketmanager_competitions';
-		$wpdb->racketmanager_team_competition = $wpdb->prefix . 'racketmanager_team_competition';
-		$wpdb->racketmanager_roster_requests = $wpdb->prefix . 'racketmanager_roster_requests';
-		$wpdb->racketmanager_clubs = $wpdb->prefix . 'racketmanager_clubs';
-		$wpdb->racketmanager_seasons = $wpdb->prefix . 'racketmanager_seasons';
-		$wpdb->racketmanager_competitions_seasons = $wpdb->prefix . 'racketmanager_competitions_seasons';
-		$wpdb->racketmanager_results_checker = $wpdb->prefix . 'racketmanager_results_checker';
-		$wpdb->racketmanager_tournaments = $wpdb->prefix . 'racketmanager_tournaments';
-		$wpdb->racketmanager_charges = $wpdb->prefix . 'racketmanager_charges';
-		$wpdb->racketmanager_invoices = $wpdb->prefix . 'racketmanager_invoices';
 	}
 
 	/**
@@ -2607,6 +2582,7 @@ function setup_racketmanager_plugin() {
 	define( 'RACKETMANAGER_URL', esc_url(plugin_dir_url(__FILE__)) );
 	define( 'RACKETMANAGER_PATH', plugin_dir_path(__FILE__) );
 	define( 'RACKETMANAGER_PLUGIN_FILE',  __FILE__ );
+	racketmanager_defineTables();
 
 	require_once RACKETMANAGER_PATH . 'include/class-util.php';
 
@@ -2631,4 +2607,28 @@ function load_racketmanager_admin() {
 	global $racketmanager;
 	$racketmanager = new RacketManagerAdmin();
 }
+/**
+* define database tables
+*
+*/
+function racketmanager_defineTables() {
+	global $wpdb;
+	$wpdb->racketmanager = $wpdb->prefix . 'racketmanager_leagues';
+	$wpdb->racketmanager_table = $wpdb->prefix . 'racketmanager_table';
+	$wpdb->racketmanager_teams = $wpdb->prefix . 'racketmanager_teams';
+	$wpdb->racketmanager_matches = $wpdb->prefix . 'racketmanager_matches';
+	$wpdb->racketmanager_rubbers = $wpdb->prefix . 'racketmanager_rubbers';
+	$wpdb->racketmanager_roster = $wpdb->prefix . 'racketmanager_roster';
+	$wpdb->racketmanager_competitions = $wpdb->prefix . 'racketmanager_competitions';
+	$wpdb->racketmanager_team_competition = $wpdb->prefix . 'racketmanager_team_competition';
+	$wpdb->racketmanager_roster_requests = $wpdb->prefix . 'racketmanager_roster_requests';
+	$wpdb->racketmanager_clubs = $wpdb->prefix . 'racketmanager_clubs';
+	$wpdb->racketmanager_seasons = $wpdb->prefix . 'racketmanager_seasons';
+	$wpdb->racketmanager_competitions_seasons = $wpdb->prefix . 'racketmanager_competitions_seasons';
+	$wpdb->racketmanager_results_checker = $wpdb->prefix . 'racketmanager_results_checker';
+	$wpdb->racketmanager_tournaments = $wpdb->prefix . 'racketmanager_tournaments';
+	$wpdb->racketmanager_charges = $wpdb->prefix . 'racketmanager_charges';
+	$wpdb->racketmanager_invoices = $wpdb->prefix . 'racketmanager_invoices';
+}
+
 ?>

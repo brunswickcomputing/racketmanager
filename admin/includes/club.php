@@ -1,9 +1,5 @@
 <?php
 ?>
-<!-- <script type="text/javascript" src="/wp-includes/js/jquery/jquery.js"></script> -->
-<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyBOw-540qtgbXJNz0D-zMcii1eAFYO1P1Y"></script>
-<script type="text/javascript" src="<?php echo plugins_url('/js/locationpicker.jquery.js', dirname(__FILE__)) ?>"></script>
-<script type="text/javascript" src="<?php echo plugins_url('/js/locationpicker.js', dirname(__FILE__)) ?>"></script>
 <div class="container league-block">
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
@@ -70,8 +66,6 @@
 				<input type="hidden" name="latitude" id="latitude"  value="<?php echo $club->latitude ?>" size="20" />
 				<input type="hidden" name="longitude" id="longitude"  value="<?php echo $club->longitude ?>" size="20" />
 				<label for="address"><?php _e( 'Address', 'racketmanager' ) ?></label>
-			<div class="input" id="club-location-picker"></div>
-			<div class="input">Drag the marker to the clubs location</div>
 		</div>
 		<?php do_action( 'club_edit_form', $club ) ?>
 

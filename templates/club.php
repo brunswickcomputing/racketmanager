@@ -505,15 +505,9 @@ if ( $address != null ) { ?>
     <div class="form-group">
       <label for "address"><?php _e( 'Address', 'racketmanager' ); ?></label>
       <div class="input">
-        <?php if ( $latitude != null && $longitude != null ) {
-          $zoom = 15;
-          $maptype = 'roadmap'; ?>
-          <iframe class="sp-google-map" width="100%" height="320" frameborder="0" style="border:0" src="https://www.google.com/maps/embed/v1/search?key=AIzaSyDUiLHqXfZMMfuo5jnp7jyBmQhkWkHupvQ&amp;q=<?php echo $address; ?>&amp;center=<?php echo $latitude; ?>,<?php echo $longitude; ?>&amp;zoom=<?php echo $zoom; ?>&amp;maptype=<?php echo $maptype; ?>" allowfullscreen>
-          </iframe>
-        </div>
-      <?php } else { ?>
-        <input type="text" class="form-control" id="address" name="address" disabled value="<?php echo $club->address ?>" />
-      <?php } ?>
+        <iframe class="sp-google-map" width="100%" height="320" frameborder="0" style="border:0" src="https://www.google.com/maps/embed/v1/search?key=AIzaSyDUiLHqXfZMMfuo5jnp7jyBmQhkWkHupvQ&amp;q=<?php echo $address; ?>&amp;zoom=15&amp;maptype=roadmap" allowfullscreen>
+        </iframe>
+      </div>
     </div>
   </div>
 <?php } ?>

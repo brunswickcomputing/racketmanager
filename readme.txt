@@ -50,6 +50,14 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 7.1.0 =
+* UPDATE: move uninstall to own file
+* UPDATE: add date and due dates to Invoices
+* UPDATE: allow invoice reprint
+* UPDATE: expand invoice search criteria
+* UPDATE: remove club location picker
+* BUGFIX: use correct class for addRacketManagerPage
+
 = 7.0.0 =
 * UPDATE: restructure code
 * UPDATE: add finance section for invoices

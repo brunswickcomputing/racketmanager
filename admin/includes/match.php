@@ -1,7 +1,7 @@
 <div class="container">
 	<p class="racketmanager_breadcrumb">
 		<a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo;
-		<a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $competition->id ?>"><?php echo $competition->name ?></a> &raquo;
+		<a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo $league->competition->id ?>"><?php echo $league->competition->name ?></a> &raquo;
 		<a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a> &raquo;
 		<?php echo $form_title ?>
 	</p>

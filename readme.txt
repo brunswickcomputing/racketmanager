@@ -50,6 +50,13 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 7.2.0 =
+* UPDATE: move recaptcha keys to keys settings
+* UPDATE: add google maps api keys to settings (issue #7)
+* BUGFIX: use correct text domain
+* BUGFIX: get competition details correctly
+* UPDATE: handle deleted teams in championship (issue #8)
+
 = 7.1.0 =
 * UPDATE: move uninstall to own file
 * UPDATE: add date and due dates to Invoices

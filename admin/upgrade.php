@@ -675,6 +675,19 @@ function racketmanager_upgrade() {
 			$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_invoices} ADD `date` date AFTER `status`");
 			$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_invoices} ADD `date_due` date AFTER `date`");
 		}
+		if (version_compare($installed, '7.2.0', '<')) {
+			echo __('starting 7.2.0 upgrade', 'racketmanager') . "<br />\n";
+			$value = get_option( 'recaptchaSiteKey', '' );
+			if ( $value ) {
+				$options['keys']['recaptchaSiteKey'] = $value;
+				delete_option('recaptchaSiteKey');
+			}
+			$value = get_option( 'recaptchaSecretKey', '' );
+			if ( $value ) {
+				$options['keys']['recaptchaSecretKey'] = $value;
+				delete_option('recaptchaSecretKey');
+			}
+		}
   /*
 	* Update version and dbversion
 	*/

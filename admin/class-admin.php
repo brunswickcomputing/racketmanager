@@ -3265,6 +3265,8 @@ final class RacketManagerAdmin extends RacketManager
 				$options['billing']['accountNumber'] = htmlspecialchars($_POST['accountNumber']);
 				$options['billing']['invoiceNumber'] = htmlspecialchars($_POST['invoiceNumber']);
 				$options['billing']['paymentTerms'] = htmlspecialchars($_POST['paymentTerms']);
+				$options['keys']['recaptchaSiteKey'] = htmlspecialchars($_POST['recaptchaSiteKey']);
+				$options['keys']['recaptchaSecretKey'] = htmlspecialchars($_POST['recaptchaSecretKey']);
 
 				update_option( 'leaguemanager', $options );
 				$this->setMessage(__( 'Settings saved', 'racketmanager' ));

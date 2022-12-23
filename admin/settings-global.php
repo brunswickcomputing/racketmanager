@@ -31,6 +31,9 @@
 					<li class="nav-item" role="presentation">
 						<button class="nav-link" id="billing-tab" data-bs-toggle="tab" data-bs-target="#billing" type="button" role="tab" aria-controls="billing" aria-selected="false"><?php _e( 'Billing', 'racketmanager' ) ?></button>
 					</li>
+					<li class="nav-item" role="presentation">
+						<button class="nav-link" id="keys-tab" data-bs-toggle="tab" data-bs-target="#keys" type="button" role="tab" aria-controls="keys" aria-selected="false"><?php _e( 'Keys', 'racketmanager' ) ?></button>
+					</li>
 				</ul>
 
 				<!-- Tab panes -->
@@ -52,6 +55,9 @@
 					</div>
 					<div class="tab-pane fade" id="billing" role="tabpanel" aria-labelledby="billing-tab">
 						<?php include(RACKETMANAGER_PATH . 'admin/includes/settings/billing.php'); ?>
+					</div>
+					<div class="tab-pane fade" id="keys" role="tabpanel" aria-labelledby="keys-tab">
+						<?php include(RACKETMANAGER_PATH . 'admin/includes/settings/keys.php'); ?>
 					</div>
 				</div>
 			</div>

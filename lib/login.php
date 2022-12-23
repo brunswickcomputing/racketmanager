@@ -9,8 +9,6 @@
 
 class RacketManagerLogin extends RacketManager {
 
-  private $recaptchaSiteKey = 'racketmanager-recaptcha-site-key';
-  private $recaptchaSecretKey = 'racketmanager-recaptcha-secret-key';
   private $alreadySignedIn = 'You are already signed in';
   private $registerLink = "member-login?action=register";
 
@@ -41,7 +39,6 @@ class RacketManagerLogin extends RacketManager {
 
     add_filter( 'authenticate', array( $this, 'maybe_redirect_at_authenticate' ), 101, 3 );
     add_filter( 'login_redirect', array( $this, 'redirect_after_login' ), 10, 3 );
-    add_filter( 'admin_init' , array( $this, 'register_settings_fields' ) );
     add_filter( 'retrieve_password_message', array( $this, 'racketmanager_retrieve_password_email' ), 10, 4 );
     add_filter( 'password_change_email', array( $this, 'racketmanager_password_change_email' ), 10, 3 );
     add_filter( 'wp_privacy_personal_data_email_content', array( $this, 'racketmanager_privacy_personal_data_email' ), 10, 3 );
@@ -158,7 +155,9 @@ class RacketManagerLogin extends RacketManager {
       return __( $this->alreadySignedIn, 'racketmanager' );
     }
     // Retrieve recaptcha key
-    $vars['recaptcha_site_key'] = get_option( $this->recaptchaSiteKey, null );
+    $keys = $racketmanager->getOptions('keys');
+    $recaptchaSiteKey = isset($keys['recaptchaSiteKey']) ? $keys['recaptchaSiteKey'] : '';
+    $vars['recaptcha_site_key'] = $recaptchaSiteKey;
     $action = isset($_GET[('action')]) ? $_GET[('action')]: '';
     if ( isset($action) && $action == 'register' ) {
       return $this->formRegister($vars);
@@ -526,46 +525,13 @@ public function formLogin($vars) {
 }
 
   /**
-  * Registers the settings fields needed by the plugin.
-  */
-  public function register_settings_fields() {
-    $settingGeneral = 'general';
-    // Create settings fields for the two keys used by reCAPTCHA
-    register_setting( $settingGeneral, $this->recaptchaSiteKey );
-    register_setting( $settingGeneral, $this->recaptchaSecretKey );
-
-    add_settings_field(
-      $this->recaptchaSiteKey,
-      '<label for="<?php echo $this->recaptchaSiteKey ?>">' . __( 'reCAPTCHA site key' , 'racketmanager' ) . '</label>',
-      array( $this, 'render_recaptcha_site_key_field' ),
-      $settingGeneral
-    );
-
-    add_settings_field(
-      $this->recaptchaSecretKey,
-      '<label for="<?php echo $this->recaptchaSecretKey ?>">' . __( 'reCAPTCHA secret key' , 'racketmanager' ) . '</label>',
-      array( $this, 'render_recaptcha_secret_key_field' ),
-      $settingGeneral
-    );
-  }
-
-  public function render_recaptcha_site_key_field() {
-    $value = get_option( $this->recaptchaSiteKey, '' );
-    echo '<input type="text" id="<?php echo $this->recaptchaSiteKey ?>" name="<?php echo $this->recaptchaSiteKey ?>" value="' . esc_attr( $value ) . '" />';
-  }
-
-  public function render_recaptcha_secret_key_field() {
-    $value = get_option( $this->recaptchaSecretKey, '' );
-    echo '<input type="text" id="<?php echo $this->recaptchaSecretKey ?>" name="<?php echo $this-recaptchaSecretKey ?>" value="' . esc_attr( $value ) . '" />';
-  }
-
-  /**
   * Checks that the reCAPTCHA parameter sent with the registration
   * request is valid.
   *
   * @return bool True if the CAPTCHA is OK, otherwise false.
   */
   private function verifyRecaptcha() {
+    global $racketmanager;
     // This field is set by the recaptcha widget if check is successful
     if ( isset ( $_POST['g-recaptcha-response'] ) ) {
       $captchaResponse = $_POST['g-recaptcha-response'];
@@ -573,12 +539,17 @@ public function formLogin($vars) {
       return false;
     }
 
+    $keys = $racketmanager->getOptions('keys');
+    $recaptchaSecretKey = isset($keys['recaptchaSecretKey']) ? $keys['recaptchaSecretKey'] : '';
+    if ( !$recaptchaSecretKey ) {
+      return false;
+    }
     // Verify the captcha response from Google
     $response = wp_remote_post(
       'https://www.google.com/recaptcha/api/siteverify',
       array(
         'body' => array(
-          'secret' => get_option( $this->recaptchaSecretKey ),
+          'secret' => $recaptchaSecretKey,
           'response' => $captchaResponse
         )
       )

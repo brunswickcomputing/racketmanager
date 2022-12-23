@@ -163,17 +163,17 @@ if ( !isset($invoiceNumber) ) {
     </div>
     <div id="invoice-amount">
       <div id="header-row">
-        <div class="invoice-item-detail"><?php echo ucwords(__('description', 'racketmanger')) ?></div>
-        <div class="invoice-item-quantity"><?php echo ucwords(__('quantity', 'racketmanger')) ?></div>
-        <div class="invoice-item-unit-price"><?php echo ucwords(__('unit price', 'racketmanger')) ?></div>
-        <div class="invoice-item-net-price"><?php echo ucwords(__('net total', 'racketmanger')) ?></div>
+        <div class="invoice-item-detail"><?php echo ucwords(__('description', 'racketmanager')) ?></div>
+        <div class="invoice-item-quantity"><?php echo ucwords(__('quantity', 'racketmanager')) ?></div>
+        <div class="invoice-item-unit-price"><?php echo ucwords(__('unit price', 'racketmanager')) ?></div>
+        <div class="invoice-item-net-price"><?php echo ucwords(__('net total', 'racketmanager')) ?></div>
       </div>
       <div id="invoice-items">
         <div id="invoice-item">
           <h2 class="invoice-item-detail"><?php echo ucfirst($invoice->charge->type).' '.'League'.' '.$invoice->charge->season; ?></h2>
         </div>
         <div id="invoice-item">
-          <div class="invoice-item-detail"><?php echo ucwords(__('club entry fee', 'racketmanger')) ?></div>
+          <div class="invoice-item-detail"><?php echo ucwords(__('club entry fee', 'racketmanager')) ?></div>
           <div class="invoice-item-quantity"></div>
           <div class="invoice-item-unit-price"><?php echo numfmt_format_currency($fmt, $invoice->charge->feeClub, $billing['billingCurrency']) ?></div>
           <div class="invoice-item-net-price"><?php echo numfmt_format_currency($fmt, $invoice->charge->feeClub, $billing['billingCurrency']) ?></div>

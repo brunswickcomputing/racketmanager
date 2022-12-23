@@ -65,26 +65,41 @@
           </tr>
         </thead>
         <tbody id="the-list-<?php echo $final['key'] ?>" class="lm-form-table">
-          <?php for ( $i = 1; $i <= ( isset($final['num_matches']) ? $final['num_matches'] : 0 ); $i++ ) {
-            $match = isset($matches[0]) ? $matches[$i-1] : '';
+          <?php $i = 1;
+          foreach ($matches as $match) {
             $class = ( 'alternate' == $class ) ? '' : 'alternate';
             ?>
             <tr class="<?php echo $class ?>">
-              <td><?php echo $i ?><input type="hidden" name="matches[<?php echo $match->id ?>]" value="<?php echo $match->id ?>" /><input type="hidden" name="home_team[<?php echo $match->id ?>]" value="<?php echo $match->home_team ?>" /><input type="hidden" name="away_team[<?php echo $match->id ?>]" value="<?php echo $match->away_team ?>" /></td>
-              <td><?php echo $match->id ?></td>
-              <td><?php echo ( isset($match->date) ) ? mysql2date($racketmanager->date_format, $match->date) : 'N/A' ?></td>
-              <td class="match-title"><a href="admin.php?page=racketmanager&amp;subpage=match&amp;league_id=<?php echo $league->id ?>&amp;edit=<?php echo $match->id ?>"><?php echo $match->getTitle() ?></a></td>
-              <td><?php echo ( isset($match->location) ) ? $match->location : 'N/A' ?></td>
+              <td>
+                <?php echo $i ?><input type="hidden" name="matches[<?php echo $match->id ?>]" value="<?php echo $match->id ?>" /><input type="hidden" name="home_team[<?php echo $match->id ?>]" value="<?php echo $match->home_team ?>" /><input type="hidden" name="away_team[<?php echo $match->id ?>]" value="<?php echo $match->away_team ?>" />
+              </td>
+              <td>
+                <?php echo $match->id ?>
+              </td>
+              <td>
+                <?php echo ( isset($match->date) ) ? mysql2date($racketmanager->date_format, $match->date) : 'N/A' ?>
+              </td>
+              <td class="match-title">
+                <a href="admin.php?page=racketmanager&amp;subpage=match&amp;league_id=<?php echo $league->id ?>&amp;edit=<?php echo $match->id ?>">
+                  <?php echo $match->getTitle() ?>
+                </a>
+              </td>
+              <td>
+                <?php echo ( isset($match->location) ) ? $match->location : 'N/A' ?>
+              </td>
               <?php if ( isset($league->entryType) && $league->entryType == 'player' ) {
               } else { ?>
-                <td><?php echo ( isset($match->hour) ) ? mysql2date($racketmanager->time_format, $match->date) : 'N/A' ?></td>
+                <td>
+                  <?php echo ( isset($match->hour) ) ? mysql2date($racketmanager->time_format, $match->date) : 'N/A' ?>
+                </td>
               <?php } ?>
               <?php do_action( 'matchtable_columns_'.$league->sport, ( ( isset($match) ) ? $match : '' ) ) ?>
               <td class="score">
                 <input class="points" type="text" size="2" style="text-align: center;" id="home_points[<?php echo $match->id ?>]" name="home_points[<?php echo $match->id ?>]" value="<?php echo ((isset($match->home_points)) ? $match->home_points : '') ?>" /> : <input class="points" type="text" size="2" style="text-align: center;" id="away_points[<?php echo $match->id ?>]" name="away_points[<?php echo $match->id ?>]" value="<?php echo ((isset($match->away_points)) ? $match->away_points : '') ?>" />
               </td>
             </tr>
-          <?php } ?>
+          <?php $i ++;
+          } ?>
         </tbody>
       </table>
 

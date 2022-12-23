@@ -559,12 +559,14 @@ class RacketManagerShortcodes extends RacketManager {
 
 		$rosters = $club->getRoster( array( 'inactive' => "Y", 'type' => 'real', 'cache' => false ) );
 		$rosterRequests = $club->getRosterRequests( array() );
+		$keys = $racketmanager->getOptions('keys');
+		$googleMapsKey = isset($keys['googleMapsKey']) ? $keys['googleMapsKey'] : '';
 
 		$club->single = true;
 
 		$filename = ( !empty($template) ) ? 'club-'.$template : 'club';
 
-		$out = $this->loadTemplate( $filename, array( 'club' => $club, 'rosters' => $rosters, 'rosterRequests' => $rosterRequests ) );
+		$out = $this->loadTemplate( $filename, array( 'club' => $club, 'rosters' => $rosters, 'rosterRequests' => $rosterRequests, 'googleMapsKey' => $googleMapsKey ) );
 
 		if ( $echo )
 		echo $out;

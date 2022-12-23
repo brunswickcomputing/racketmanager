@@ -3265,6 +3265,7 @@ final class RacketManagerAdmin extends RacketManager
 				$options['billing']['accountNumber'] = htmlspecialchars($_POST['accountNumber']);
 				$options['billing']['invoiceNumber'] = htmlspecialchars($_POST['invoiceNumber']);
 				$options['billing']['paymentTerms'] = htmlspecialchars($_POST['paymentTerms']);
+				$options['keys']['googleMapsKey'] = htmlspecialchars($_POST['googleMapsKey']);
 				$options['keys']['recaptchaSiteKey'] = htmlspecialchars($_POST['recaptchaSiteKey']);
 				$options['keys']['recaptchaSecretKey'] = htmlspecialchars($_POST['recaptchaSecretKey']);
 

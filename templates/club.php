@@ -90,6 +90,12 @@ if ( current_user_can( 'manage_racketmanager' ) ) {
           <label for "website"><?php _e( 'Website', 'racketmanager' ) ?></label>
         </div>
       <?php } ?>
+      <?php if ( $club->address != null || $userCanUpdateClub ) { ?>
+        <div class="form-floating mb-3">
+          <input type="text" class="form-control" id="address" name="address" placeholder="<?php _e('Club address', 'racketmanager') ?>"  <?php disabled($userCanUpdateClub, false) ?> value="<?php echo $club->address ?>" />
+          <label for "address"><?php _e( 'Address', 'racketmanager' ); ?></label>
+        </div>
+      <?php } ?>
       <?php if ( $userCanUpdateClub ) { ?>
         <button class="btn" type="button" id="updateClubSubmit" name="updateClubSubmit" onclick="Racketmanager.updateClub(this)"><?php _e( 'Update details', 'racketmanager' ) ?></button>
         <div class="updateResponse" id="updateClub" name="updateClub"></div>
@@ -497,21 +503,12 @@ if ( current_user_can( 'manage_racketmanager' ) ) {
       </div>
     </details>
   <?php } ?>
-<?php $address = $club->address;
-$latitude = $club->latitude;
-$longitude = $club->longitude;
-if ( $address != null ) { ?>
+<?php if ( $club->address != null && isset($googleMapsKey) && $googleMapsKey != '' ) { ?>
   <div class="club-address">
-    <div class="form-group">
-      <label for "address"><?php _e( 'Address', 'racketmanager' ); ?></label>
-      <div class="input">
-        <iframe class="sp-google-map" width="100%" height="320" frameborder="0" style="border:0" src="https://www.google.com/maps/embed/v1/search?key=AIzaSyDUiLHqXfZMMfuo5jnp7jyBmQhkWkHupvQ&amp;q=<?php echo $address; ?>&amp;zoom=15&amp;maptype=roadmap" allowfullscreen>
-        </iframe>
-      </div>
+    <div class="mb-3">
+      <label for "clubMap" class="d-none"><?php _e( 'Map', 'racketmanager' ); ?></label>
+      <iframe class="sp-google-map" width="100%" height="320" id="clubMap" name="clubMap" frameborder="0" style="border:0" src="https://www.google.com/maps/embed/v1/search?key=<?php echo $googleMapsKey ?>&amp;q=<?php echo $club->address; ?>&amp;zoom=15&amp;maptype=roadmap" allowfullscreen></iframe>
     </div>
   </div>
 <?php } ?>
-<div id="clubdesc">
-  <!--                    <?php //echo $club->desc; ?> -->
-</div>
 </div><!-- .entry-content -->

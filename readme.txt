@@ -50,6 +50,10 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 7.2.1 =
+* BUGFIX: update club address from front end (issue #10)
+* BUGFIX: display tournament competitions correctly (issue #9)
+
 = 7.2.0 =
 * UPDATE: move recaptcha keys to keys settings
 * UPDATE: add google maps api keys to settings (issue #7)

@@ -49,7 +49,7 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_roster_remove', array(&$this, 'rosterRemove') );
 
 		add_action( 'wp_ajax_racketmanager_team_update', array(&$this, 'updateTeam') );
-		add_action( 'wp_ajax_racketmanager_update_club', array(&$this, 'clubUpdate') );
+		add_action( 'wp_ajax_racketmanager_update_club', array(&$this, 'updateClub') );
 
 		add_action( 'wp_ajax_racketmanager_tournament_entry', array(&$this, 'tournamentEntryRequest') );
 
@@ -1452,7 +1452,7 @@ class RacketManagerAJAX extends RacketManager {
 	*
 	* @see templates/club.php
 	*/
-	public function clubUpdate() {
+	public function updateClub() {
 		global $wpdb, $racketmanager;
 
 		$updates = false;
@@ -1468,10 +1468,11 @@ class RacketManagerAJAX extends RacketManager {
 		$matchSecretaryContactNo = $_POST['matchSecretaryContactNo'];
 		$matchSecretaryEmail = $_POST['matchSecretaryEmail'];
 		$website = $_POST['website'];
+		$address = $_POST['address'];
 
 		$club = get_club($clubId);
 
-		if ( $club->contactno != $contactno || $club->facilities != $facilities || $club->founded != $founded || $club->matchsecretary != $matchSecretaryId || $club->website != $website || $club->matchSecretaryContactNo != $matchSecretaryContactNo || $club->matchSecretaryEmail != $matchSecretaryEmail ) {
+		if ( $club->contactno != $contactno || $club->facilities != $facilities || $club->founded != $founded || $club->matchsecretary != $matchSecretaryId || $club->website != $website || $club->matchSecretaryContactNo != $matchSecretaryContactNo || $club->matchSecretaryEmail != $matchSecretaryEmail || $club->address != $address ) {
 			$club->contactno = $contactno;
 			$club->facilities = $facilities;
 			$club->founded = $founded;
@@ -1479,6 +1480,7 @@ class RacketManagerAJAX extends RacketManager {
 			$club->website = $website;
 			$club->matchSecretaryContactNo = $matchSecretaryContactNo;
 			$club->matchSecretaryEmail = $matchSecretaryEmail;
+			$club->address = $address;
 			$club->update($club);
 			$updates = true;
 		}

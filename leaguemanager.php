@@ -953,7 +953,7 @@ class RacketManager {
 			$competition = (object)array_merge((array)$competition, $competition->settings);
 
 			if ( $season ) {
-				if ( array_search($season,array_column($competition->seasons, 'name') ,true) ) {
+				if ( array_search($season,array_column($competition->seasons, 'name') ,false) ) {
 					$competitions[$i] = $competition;
 				} else {
 					unset($competitions[$i]);

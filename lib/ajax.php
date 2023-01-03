@@ -1260,6 +1260,12 @@ class RacketManagerAJAX extends RacketManager {
 	*/
 	public function rosterRequest() {
 		global $wpdb, $racketmanager;
+		$options = $racketmanager->getOptions('rosters');
+		if ( isset($options['btm']) && $options['btm'] == 1 ) {
+			$btmRequired = true;
+		} else {
+			$btmRequired = false;
+		}
 
 		$return = array();
 		$msg = '';
@@ -1296,7 +1302,14 @@ class RacketManagerAJAX extends RacketManager {
 		}
 		if ( !isset($_POST['btm']) || $_POST['btm'] == '' ) {
 			$btmSupplied = false;
-			$btm = '';
+			if ( $btmRequired ) {
+				$error = true;
+				$errorField[$errorId] = "btm";
+				$errorMsg[$errorId] = "BTM required";
+				$errorId ++;
+			} else {
+				$btm = '';
+			}
 		} else {
 			$btmSupplied = true;
 			$btm = $_POST['btm'];

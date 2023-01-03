@@ -2545,7 +2545,7 @@ function setup_racketmanager_plugin() {
 	load_plugin_textdomain( 'racketmanager', false, 'racketmanager/languages' );
 
 	if ( is_admin() ) {
-		require_once RACKETMANAGER_PATH . 'admin/class-activator.php';
+		require_once RACKETMANAGER_PATH . 'include/class-activator.php';
 		$racketmanager_activator = new Racketmanager_Activator();
 		$racketmanager_activator->setup();
 		require_once (RACKETMANAGER_PATH . 'admin/class-admin.php');

@@ -501,13 +501,15 @@ final class RacketManagerAdmin extends RacketManager
 	*
 	*/
 	private function displayResultsPage() {
-		global $league, $championship, $competition ;
+		global $racketmanager, $league, $championship, $competition ;
 
 		if ( !current_user_can( 'view_leagues' ) ) {
 			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
 		} else {
+			$seasonSelect = isset($_GET['season']) ? $_GET['season'] : '';
+			$competitionSelect = isset($_GET['competition']) ? $_GET['competition'] : '';
+			$resultsCheckFilter = isset($_GET['filterResultsChecker'])  ? $_GET['filterResultsChecker'] : 'outstanding';
 			$tab = isset($_GET['tab']) ? $_GET['tab'] : "resultschecker";
-			$resultsCheckFilter = 'outstanding';
 			if ( isset($_POST['doResultsChecker']) ) {
 				if ( current_user_can('update_results') ) {
 					check_admin_referer('results-checker-bulk');
@@ -525,15 +527,8 @@ final class RacketManagerAdmin extends RacketManager
 				}
 				$this->printMessage();
 				$tab = "resultschecker";
-			} elseif ( isset($_POST['doFilterResultsChecker']) ) {
-				if ( $_POST['filterResultsChecker'] == 'outstanding' ) {
-					$resultsCheckFilter = 'outstanding';
-				} elseif ( $_POST['filterResultsChecker'] == 'all' ) {
-					$resultsCheckFilter = '';
-				}
-				$tab = "resultschecker";
 			}
-			$resultsCheckers = $this->getResultsChecker($resultsCheckFilter);
+			$resultsCheckers = $this->getResultsChecker(array('season' => $seasonSelect, 'competition' => $competitionSelect, 'status' => $resultsCheckFilter));
 			include_once( RACKETMANAGER_PATH . '/admin/show-results.php' );
 		}
 	}
@@ -3937,13 +3932,34 @@ final class RacketManagerAdmin extends RacketManager
 	* @param array $query_args
 	* @return array
 	*/
-	public function getResultsChecker( $outstanding = false ) {
+	public function getResultsChecker( $args = array() ) {
 		global $wpdb, $racketmanager;
 
+		$defaults = array( 'season' => false, 'status' => false, 'competition' => false );
+		$args = array_merge($defaults, $args);
+		extract($args, EXTR_SKIP);
+
+		$searchTerms = array();
 		$sql = "SELECT `id`, `league_id`, `match_id`, `team_id`, `player_id`, `updated_date`, `updated_user`, `description`, `status` FROM {$wpdb->racketmanager_results_checker} WHERE 1 = 1"  ;
 
-		if ( $outstanding ) {
-			$sql .= " AND `status` IS NULL";
+		if ( $status ) {
+			if ( $status != 'all' ) {
+				if ( $status == 'outstanding' ) {
+					$sql .= " AND `status` IS NULL";
+				} else {
+					$sql .= $wpdb->prepare(" AND `status` = %d", $status);
+				}
+			}
+		}
+		if ( $season ) {
+			if ( $season != 'all' ) {
+				$sql .= $wpdb->prepare(" AND `match_id` IN (SELECT `id` FROM {$wpdb->racketmanager_matches} WHERE `season` = '%s')", $season);
+			}
+		}
+		if ( $competition ) {
+			if ( $competition != 'all' ) {
+				$sql .= $wpdb->prepare(" AND `match_id` IN (SELECT m.`id` FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l WHERE m.`league_id` = l.`id` AND l.`competition_id` = %d)", $competition);
+			}
 		}
 
 		$sql .= " ORDER BY `match_id` DESC, `league_id` ASC, `team_id` ASC, `player_id` ASC";

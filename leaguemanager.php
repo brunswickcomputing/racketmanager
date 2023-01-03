@@ -2548,7 +2548,7 @@ function setup_racketmanager_plugin() {
 		require_once RACKETMANAGER_PATH . 'include/class-activator.php';
 		$racketmanager_activator = new Racketmanager_Activator();
 		$racketmanager_activator->setup();
-		require_once (RACKETMANAGER_PATH . 'admin/class-admin.php');
+		require_once (RACKETMANAGER_PATH . 'include/class-admin.php');
 		add_action( 'plugins_loaded', 'load_racketmanager_admin' );
 	} else {
 		$racketmanager = new RacketManager();

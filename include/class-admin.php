@@ -328,14 +328,14 @@ final class RacketManagerAdmin extends RacketManager
 
 		// Update database
 		if( $options['dbversion'] != RACKETMANAGER_DBVERSION ) {
-			include_once ( dirname (__FILE__) . '/upgrade.php' );
+			include_once ( RACKETMANAGER_PATH . '/admin/upgrade.php' );
 			racketmanager_upgrade_page();
 			return;
 		}
 
 		switch ($_GET['page']) {
 			case 'racketmanager-doc':
-			include_once( dirname(__FILE__) . '/documentation.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/documentation.php' );
 			break;
 			case 'racketmanager-leagues':
 			$this->displayLeaguesPage();
@@ -391,7 +391,7 @@ final class RacketManagerAdmin extends RacketManager
 			$this->displayImportPage();
 			break;
 			case 'racketmanager-documentation':
-			include_once( dirname(__FILE__) . '/documentation.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/documentation.php' );
 			break;
 			case 'racketmanager-schedule':
 			$this->displaySchedulePage();
@@ -492,7 +492,7 @@ final class RacketManagerAdmin extends RacketManager
 				}
 				$this->printMessage();
 			}
-			include_once( dirname(__FILE__) . '/index.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/index.php' );
 		}
 	}
 
@@ -534,7 +534,7 @@ final class RacketManagerAdmin extends RacketManager
 				$tab = "resultschecker";
 			}
 			$resultsCheckers = $this->getResultsChecker($resultsCheckFilter);
-			include_once( dirname(__FILE__) . '/show-results.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/show-results.php' );
 		}
 	}
 
@@ -550,7 +550,7 @@ final class RacketManagerAdmin extends RacketManager
 		} else {
 			$match = get_match($_GET['match_id']);
 			$referrer = isset($_GET['referrer']) ? $_GET['referrer'] : '';
-			include_once( dirname(__FILE__) . '/show-match.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/show-match.php' );
 		}
 	}
 
@@ -579,7 +579,7 @@ final class RacketManagerAdmin extends RacketManager
 			$standalone = true;
 			$competitionQuery = array( 'type' => $competitionType, 'name' => $type, 'season' => $season );
 			$pageTitle = $tournament->name.' '.__( 'Tournament Competitions', 'racketmanager' );
-			include_once( dirname(__FILE__) . '/show-competitions.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/show-competitions.php' );
 		}
 	}
 
@@ -740,7 +740,7 @@ final class RacketManagerAdmin extends RacketManager
 			if ( !isset($season) ) {
 				$season = (isset($_GET['season']) ? htmlspecialchars($_GET['season']) : $competition->current_season['name']);
 			}
-			include_once( dirname(__FILE__) . '/show-competition.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/show-competition.php' );
 		}
 	}
 
@@ -1045,7 +1045,7 @@ final class RacketManagerAdmin extends RacketManager
 				$tab = 'matches';
 			}
 
-			include_once( dirname(__FILE__) . '/show-league.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/show-league.php' );
 		}
 	}
 
@@ -1071,7 +1071,7 @@ final class RacketManagerAdmin extends RacketManager
 			}
 			$season = isset($_GET['season']) ? htmlspecialchars(strip_tags($_GET['season'])) : '';
 			$view = isset($_GET['view']) ? htmlspecialchars(strip_tags($_GET['view'])) : '';
-			include_once( dirname(__FILE__) . '/includes/teamslist.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/includes/teamslist.php' );
 		}
 	}
 
@@ -1091,7 +1091,7 @@ final class RacketManagerAdmin extends RacketManager
 			$standalone = true;
 			$competitionQuery = array( 'type' => $competitionType );
 			$pageTitle = __( ucfirst($competitionType), 'racketmanager').' '.__( 'Competitions', 'racketmanager' );
-			include_once( dirname(__FILE__) . '/show-competitions.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/show-competitions.php' );
 		}
 	}
 
@@ -1121,8 +1121,8 @@ final class RacketManagerAdmin extends RacketManager
 			$standalone = true;
 			$competitionQuery = array( 'type' => $competitionType );
 			$pageTitle = __( ucfirst($competitionType), 'racketmanager').' '.__( 'Competitions', 'racketmanager' );
-			include_once( dirname(__FILE__) . '/show-competitions.php' );
-			include_once( dirname(__FILE__) . '/show-cup-entry.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/show-competitions.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/show-cup-entry.php' );
 		}
 	}
 
@@ -1153,7 +1153,7 @@ final class RacketManagerAdmin extends RacketManager
 			$club_id = 0;
 			$this->printMessage();
 			$clubs = $racketmanager->getClubs( );
-			include_once( dirname(__FILE__) . '/show-tournaments.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/show-tournaments.php' );
 		}
 	}
 
@@ -1184,7 +1184,7 @@ final class RacketManagerAdmin extends RacketManager
 			}
 
 			$clubs = $racketmanager->getClubs( );
-			include_once( dirname(__FILE__) . '/includes/tournament.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/includes/tournament.php' );
 		}
 	}
 
@@ -1217,7 +1217,7 @@ final class RacketManagerAdmin extends RacketManager
 				$tournament = $racketmanager->getTournament( array('id' => $tournamentId) );
 				$finalMatches = $racketmanager->getMatches( array('season' => $tournament->season, 'final' => 'final', 'competitiontype' => 'tournament', 'competitionseason' => $tournament->type));
 			}
-			include_once( dirname(__FILE__) . '/includes/tournament-plan.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/includes/tournament-plan.php' );
 		}
 	}
 
@@ -1298,7 +1298,7 @@ final class RacketManagerAdmin extends RacketManager
 
 				$this->printMessage();
 			}
-			include_once( dirname(__FILE__) . '/show-clubs.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/show-clubs.php' );
 		}
 	}
 
@@ -1328,7 +1328,7 @@ final class RacketManagerAdmin extends RacketManager
 				$form_action = __( 'Add', 'racketmanager' );
 				$club = (object)array( 'name' => '', 'type' => '', 'id' => '', 'website' => '', 'matchsecretary' => '', 'matchSecretaryName' => '', 'contactno' => '', 'matchSecretaryContactNo' => '', 'matchSecretaryEmail' => '', 'shortcode' => '', 'founded' => '', 'facilities' => '', 'address' => '', 'latitude' => '', 'longitude' => '' );
 			}
-			include_once( dirname(__FILE__) . '/includes/club.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/includes/club.php' );
 		}
 	}
 
@@ -1378,7 +1378,7 @@ final class RacketManagerAdmin extends RacketManager
 			$this->printMessage();
 			if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
 			$club = get_club($club_id);
-			include_once( dirname(__FILE__) . '/club/show-roster.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/club/show-roster.php' );
 		}
 	}
 
@@ -1415,7 +1415,7 @@ final class RacketManagerAdmin extends RacketManager
 			if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
 			if (isset($_GET['roster_id'])) $roster_id = $_GET['roster_id'];
 			$roster = $racketmanager->getRosterEntry($roster_id);
-			include_once( dirname(__FILE__) . '/club/show-player.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/club/show-player.php' );
 		}
 	}
 
@@ -1436,7 +1436,7 @@ final class RacketManagerAdmin extends RacketManager
 			if ( isset( $_GET['tournament'] ) ) {
 				$tournament = $racketmanager->getTournament(array('id' => $_GET['tournament']));
 			}
-			include_once( dirname(__FILE__) . '/includes/competitions-list.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/includes/competitions-list.php' );
 		}
 	}
 
@@ -1465,7 +1465,7 @@ final class RacketManagerAdmin extends RacketManager
 			$this->printMessage();
 			if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
 			$club = get_club($club_id);
-			include_once( dirname(__FILE__) . '/club/show-teams.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/club/show-teams.php' );
 		}
 	}
 
@@ -1521,7 +1521,7 @@ final class RacketManagerAdmin extends RacketManager
 			}
 			$clubs = $racketmanager->getClubs( );
 
-			require_once( dirname(__FILE__) . '/includes/teams/'. $file );
+			require_once( RACKETMANAGER_PATH . '/admin/includes/teams/'. $file );
 		}
 	}
 
@@ -1685,7 +1685,7 @@ final class RacketManagerAdmin extends RacketManager
 			} else {
 				$teams = $league->getLeagueTeams( array("season" => $season, "orderby" => array("title" => "ASC")) );
 			}
-			include_once( dirname(__FILE__) . '/includes/match.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/includes/match.php' );
 		}
 	}
 
@@ -1763,7 +1763,7 @@ final class RacketManagerAdmin extends RacketManager
 				$players = $racketmanager->getPlayers( array() );
 			}
 
-			include_once( dirname(__FILE__) . '/show-admin.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/show-admin.php' );
 		}
 	}
 
@@ -1784,7 +1784,7 @@ final class RacketManagerAdmin extends RacketManager
 				$this->printMessage();
 			}
 			global $racketmanager;
-			include_once( RACKETMANAGER_PATH . 'admin/tools/import.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/tools/import.php' );
 		}
 	}
 
@@ -1827,7 +1827,7 @@ final class RacketManagerAdmin extends RacketManager
 				$tab = 'compose';
 			}
 
-			include_once( dirname(__FILE__) . '/includes/contact.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/includes/contact.php' );
 		}
 	}
 
@@ -1929,7 +1929,7 @@ final class RacketManagerAdmin extends RacketManager
 			$this->printMessage();
 
 			$invoices = $racketmanager->getInvoices(array('club' => $clubId, 'status' => $status));
-			include_once( dirname(__FILE__) . '/show-finances.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/show-finances.php' );
 		}
 	}
 
@@ -2013,7 +2013,7 @@ final class RacketManagerAdmin extends RacketManager
 				$charges = (object)array( 'competitionType' => '', 'type' => '', 'id' => '', 'season' => '', 'date' => '', 'status' => '', 'feeClub' => '', 'feeTeam' => '');
 			}
 
-			include_once( dirname(__FILE__) . '/finances/charge.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/finances/charge.php' );
 		}
 	}
 
@@ -2053,7 +2053,7 @@ final class RacketManagerAdmin extends RacketManager
 				$invoice = get_invoice($invoiceId);
 				if ( $invoice ) {
 					$invoiceView = $invoice->generate();
-					include_once( dirname(__FILE__) . '/finances/invoice.php' );
+					include_once( RACKETMANAGER_PATH . '/admin/finances/invoice.php' );
 					return;
 				}
 			}
@@ -2099,7 +2099,7 @@ final class RacketManagerAdmin extends RacketManager
 			$competition = get_competition($_GET['competition_id']);
 			$season_data = $competition->seasons[$seasonId];
 
-			include_once( dirname(__FILE__) . '/includes/season.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/includes/season.php' );
 		}
 	}
 
@@ -2123,7 +2123,7 @@ final class RacketManagerAdmin extends RacketManager
 				$this->printMessage();
 			}
 			$competitions = $racketmanager->getCompetitions( array('type' => 'league') );
-			include_once( dirname(__FILE__) . '/show-schedule.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/show-schedule.php' );
 		}
 	}
 
@@ -3277,7 +3277,7 @@ final class RacketManagerAdmin extends RacketManager
 				$tab = $_POST['active-tab'];
 			}
 
-			require_once (dirname (__FILE__) . '/settings-global.php');
+			require_once (RACKETMANAGER_PATH . '/admin/settings-global.php');
 		}
 	}
 

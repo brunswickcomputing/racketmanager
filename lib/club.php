@@ -486,6 +486,24 @@ final class Club {
     return $rosters;
   }
 
+  /**
+  * check if player is captain
+  *
+  * @param int $rosterRequst_id
+  * @return boolean
+  */
+  public function isPlayerCaptain( $player ) {
+    global $wpdb;
+
+    $args = array();
+    $sql = "SELECT count(*) FROM {$wpdb->racketmanager_team_competition} tc, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager_clubs} c WHERE c.`id` = '%d' AND c.`id` = t.`affiliatedclub` AND t.`status` != 'P' AND t.`id` = tc.`team_id` AND tc.`captain` = %d";
+    $args[] = intval($this->id);
+    $args[] = intval($player);
+    $sql = $wpdb->prepare($sql, $args);
+
+    return $wpdb->get_var( $sql );
+  }
+
 }
 
 /**

@@ -10,14 +10,26 @@ $rosters: rosters object
 
 You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
 */
-$user = wp_get_current_user();
-$userid = $user->ID;
 $userCanUpdateClub = false;
-if ( current_user_can( 'manage_racketmanager' ) ) {
-  $userCanUpdateClub = true;
-} else {
-  if ( $club->matchsecretary !=null && $club->matchsecretary == $userid ) {
+$userCanAddPlayer = false;
+if ( is_user_logged_in() ) {
+  $user = wp_get_current_user();
+  $userid = $user->ID;
+  if ( current_user_can( 'manage_racketmanager' ) ) {
     $userCanUpdateClub = true;
+    $userCanAddPlayer = true;
+  } else {
+    if ( $club->matchsecretary !=null && $club->matchsecretary == $userid ) {
+      $userCanUpdateClub = true;
+      $userCanAddPlayer = true;
+    } else {
+      $options = $racketmanager->getOptions('rosters');
+      if ( isset($options['rosterEntry']) && $options['rosterEntry'] == 'captain' ) {
+        if ( $club->isPlayerCaptain($userid) ) {
+          $userCanAddPlayer = true;
+        };
+      }
+    }
   }
 }
 ?>
@@ -113,7 +125,7 @@ if ( current_user_can( 'manage_racketmanager' ) ) {
       <h2 class="roster-header"><?php _e( 'Players', 'racketmanager' ) ?></h2>
     </summary>
     <div id="players" class="accordion accordion-flush">
-      <?php if ( $userCanUpdateClub ) { ?>
+      <?php if ( $userCanAddPlayer ) { ?>
         <div class="accordion-item">
           <h3 class="accordion-header" id="heading-addplayer">
             <button class="accordion-button collapsed frontend" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-addplayer" aria-expanded="false" aria-controls="collapse-addplayer">

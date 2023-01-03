@@ -1429,7 +1429,7 @@ class RacketManager {
   public function getMatches( $matchArgs ) {
     global $wpdb;
 
-    $defaults = array( 'leagueId' => false, 'season' => false, 'final' => false, 'competitiontype' => false, 'competitionseason' => false, 'orderby' => array('league_id' => 'ASC', 'id' => 'ASC'), 'competitionId' => false, 'confirmed' => false, 'match_date' => false, 'competition_type' => false, 'time' => false, 'history' => false, 'affiliatedClub' => false, 'league_name' => false, 'homeTeam' => false, 'awayTeam' => false, 'matchDay' => false, 'competition_name' => false, 'homeAffiliatedClub' => false, 'count' => false );
+    $defaults = array( 'leagueId' => false, 'season' => false, 'final' => false, 'competitiontype' => false, 'competitionseason' => false, 'orderby' => array('league_id' => 'ASC', 'id' => 'ASC'), 'competitionId' => false, 'confirmed' => false, 'match_date' => false, 'competition_type' => false, 'time' => false, 'timeOffset' => false, 'history' => false, 'affiliatedClub' => false, 'league_name' => false, 'homeTeam' => false, 'awayTeam' => false, 'matchDay' => false, 'competition_name' => false, 'homeAffiliatedClub' => false, 'count' => false );
     $matchArgs = array_merge($defaults, (array)$matchArgs);
     extract($matchArgs, EXTR_SKIP);
 
@@ -1473,8 +1473,17 @@ class RacketManager {
         $sql .= ")";
       }
 
+      if ( $timeOffset ) {
+        $timeOffset = intval($timeOffset).':00:00';
+      } else {
+        $timeOffset = '00:00:00';
+      }
+
       if ( $confirmed ) {
         $sql .= " AND `confirmed` in ('P','A','C')";
+        if ( $timeOffset ) {
+          $sql .= " AND ADDTIME(`updated`,'".$timeOffset."') <= NOW()";
+        }
       }
 
       // get only finished matches with score for time 'latest'
@@ -1482,7 +1491,7 @@ class RacketManager {
         $sql .= " AND (`home_points` != '' OR `away_points` != '')";
       }
       if ( $time == 'outstanding' ) {
-        $sql .= " AND `date` <= NOW() AND `winner_id` = 0 AND `confirmed` IS NULL";
+        $sql .= " AND ADDTIME(`date`,'".$timeOffset."') <= NOW() AND `winner_id` = 0 AND `confirmed` IS NULL";
       }
 
       // get only updated matches in specified period for history

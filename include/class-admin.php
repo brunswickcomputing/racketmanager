@@ -3635,7 +3635,7 @@ final class RacketManagerAdmin extends RacketManager
 
 			fclose($handle);
 
-			parent::setMessage(sprintf(__( '%d Fixtures imported', 'racketmanager' ), $x));
+			$racketmanager->setMessage(sprintf(__( '%d Fixtures imported', 'racketmanager' ), $x));
 		}
 	}
 
@@ -3683,7 +3683,7 @@ final class RacketManagerAdmin extends RacketManager
 
 			fclose($handle);
 
-			parent::setMessage(sprintf(__( '%d Players imported', 'racketmanager' ), $x));
+			$racketmanager->setMessage(sprintf(__( '%d Players imported', 'racketmanager' ), $x));
 		}
 	}
 
@@ -3736,7 +3736,7 @@ final class RacketManagerAdmin extends RacketManager
 
 			fclose($handle);
 
-			parent::setMessage(sprintf(__( '%d Rosters imported', 'racketmanager' ), $x));
+			$racketmanager->setMessage(sprintf(__( '%d Rosters imported', 'racketmanager' ), $x));
 		}
 	}
 
@@ -4573,6 +4573,20 @@ final class RacketManagerAdmin extends RacketManager
 
 		return $wpdb->get_var( $wpdb->prepare( "SELECT `id` FROM {$wpdb->racketmanager_invoices} WHERE `charge_id` = %d AND `club_id` = %d LIMIT 1", $charge, $club ) );
 	}
+
+	/**
+  * print formatted message
+  */
+  public function printMessage() {
+    if (!empty($this->message)) {
+      if ( $this->error ) {
+        echo "<div class='error'><p>".$this->message."</p></div>";
+      } else {
+        echo "<div id='message' class='updated fade show'><p><strong>".$this->message."</strong></p></div>";
+      }
+    }
+    $this->message = '';
+  }
 
 }
 ?>

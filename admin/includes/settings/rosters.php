@@ -1,5 +1,12 @@
 <div class="form-control">
   <div class="form-floating mb-3">
+      <select class="form-select" id="rosterEntry" name="rosterEntry">
+        <option value="secretary" <?php if (isset($options['rosters']['rosterEntry']) && $options['rosters']['rosterEntry'] == "secretary") echo 'selected="selected"'?>><?php _e('Match Secretary', 'racketmanager') ?></option>
+        <option value="captain" <?php if (isset($options['rosters']['rosterEntry']) && $options['rosters']['rosterEntry'] == "captain") echo 'selected="selected"'?>><?php _e('Captain', 'racketmanager') ?></option>
+      </select>
+      <label for='rosterEntry'><?php _e( 'Roster Entry', 'racketmanager' ) ?></label>
+  </div>
+  <div class="form-floating mb-3">
       <select class="form-select" id="rosterConfirmation" name="rosterConfirmation">
         <option value="auto" <?php if (isset($options['rosters']['rosterConfirmation']) && $options['rosters']['rosterConfirmation'] == "admin") echo 'selected="selected"'?>><?php _e('Automatic', 'racketmanager') ?></option>
         <option value="none" <?php if (isset($options['rosters']['rosterConfirmation']) && $options['rosters']['rosterConfirmation'] == "none") echo 'selected="selected"'?>><?php _e('None', 'racketmanager') ?></option>

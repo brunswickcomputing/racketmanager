@@ -28,7 +28,7 @@
 			<!-- Tab panes -->
 			<div class="tab-content">
 
-				<?php $competitionTypes = $this->getCompetitionTypes();
+				<?php $competitionTypes = Racketmanager_Util::getCompetitionTypes();
 				foreach ( $competitionTypes AS $competitionType ) {
 					$season = '';
 					$type = '';
@@ -85,7 +85,7 @@
 			<div class="form-floating mb-3">
 				<select class="form-select" size="1" name="competitiontype" id="competitiontype">
 					<option><?php _e( 'Select', 'racketmanager') ?></option>
-					<?php foreach ( $this->getCompetitionTypes() AS $id => $competitionType ) { ?>
+					<?php foreach ( Racketmanager_Util::getCompetitionTypes() AS $id => $competitionType ) { ?>
 						<option value="<?php echo $id ?>"><?php echo ucfirst($competitionType) ?></option>
 					<?php } ?>
 				</select>

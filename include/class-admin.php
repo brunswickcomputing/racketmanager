@@ -2179,16 +2179,6 @@ final class RacketManagerAdmin extends RacketManager
 	}
 
 	/**
-	* get available competition types
-	*
-	* @return array
-	*/
-	public function getCompetitionTypes() {
-		$competitionTypes = array( 'cup' => __('cup', 'racketmanager'), 'league' => __('league', 'racketmanager'), 'tournament' => __('tournament', 'racketmanager') );
-		return $competitionTypes;
-	}
-
-	/**
 	* get available league modes
 	*
 	* @return array
@@ -3241,7 +3231,7 @@ final class RacketManagerAdmin extends RacketManager
 				$options['checks']['rosterLeadTime'] = htmlspecialchars($_POST['rosterLeadTime']);
 				$options['checks']['playedRounds'] = htmlspecialchars($_POST['playedRounds']);
 				$options['checks']['playerLocked'] = htmlspecialchars($_POST['playerLocked']);
-				$competitionTypes = $this->getCompetitionTypes();
+				$competitionTypes = Racketmanager_Util::getCompetitionTypes();
 				foreach ( $competitionTypes as $competitionType ) {
 					$options[$competitionType]['matchCapability'] = htmlspecialchars($_POST[$competitionType]['matchCapability']);
 					$options[$competitionType]['resultConfirmation'] = htmlspecialchars($_POST[$competitionType]['resultConfirmation']);

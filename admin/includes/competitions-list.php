@@ -69,7 +69,7 @@ if ( isset($_GET['tournament']) ) {
             </div>
           </div>
 
-          <?php $competitionTypes = $this->getCompetitionTypes();
+          <?php $competitionTypes = Racketmanager_Util::getCompetitionTypes();
           $i = 0;
           foreach ( $competitionTypes AS $competitionType ) {
             if ( $type == 'all' || $type == $competitionType ) {

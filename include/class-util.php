@@ -93,4 +93,14 @@ class Racketmanager_Util {
 		);
 	}
 
+	/**
+	* get available competition types
+	*
+	* @return array
+	*/
+	static function getCompetitionTypes() {
+		$competitionTypes = array( 'cup' => __('cup', 'racketmanager'), 'league' => __('league', 'racketmanager'), 'tournament' => __('tournament', 'racketmanager') );
+		return $competitionTypes;
+	}
+
 }

@@ -3,7 +3,6 @@
 * Results administration panel
 *
 */
-namespace ns;
 ?>
 <div class="container">
   <!-- Nav tabs -->
@@ -20,7 +19,7 @@ namespace ns;
   </ul>
   <!-- Tab panes -->
   <div class="tab-content">
-    <?php $competitionTypes = $this->getCompetitionTypes();
+    <?php $competitionTypes = Racketmanager_Util::getCompetitionTypes();
     $i = 0;
     foreach ( $competitionTypes AS $competitionType ) { $i ++; ?>
       <div id="competitions-<?php echo $competitionType ?>" class="tab-pane <?php if ( $i == 1 )  { echo 'active show';} ?> fade" role="tabpanel" aria-labelledby="competitions-<?php echo $competitionType ?>-tab">

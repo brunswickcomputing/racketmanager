@@ -45,6 +45,7 @@ function setup_racketmanager_plugin() {
 	define( 'RACKETMANAGER_URL', esc_url(plugin_dir_url(__FILE__)) );
 	define( 'RACKETMANAGER_PATH', plugin_dir_path(__FILE__) );
 	define( 'RACKETMANAGER_PLUGIN_FILE',  __FILE__ );
+	define( 'RACKETMANAGER_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 	racketmanager_defineTables();
 
 	require_once (RACKETMANAGER_PATH . 'include/class-util.php');

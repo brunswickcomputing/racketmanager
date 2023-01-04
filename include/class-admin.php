@@ -192,7 +192,7 @@ final class RacketManagerAdmin extends RacketManager
 		add_action("admin_print_scripts-$page", array(&$this, 'loadScripts') );
 		add_action("admin_print_scripts-$page", array(&$this, 'loadStyles') );
 
-		add_filter( 'plugin_action_links_' . $plugin, array( &$this, 'pluginActions' ) );
+		add_filter( 'plugin_action_links_'.RACKETMANAGER_PLUGIN_BASENAME, array( &$this, 'pluginActions' ) );
 	}
 
 	/**
@@ -2129,9 +2129,10 @@ final class RacketManagerAdmin extends RacketManager
 	* @return array
 	*/
 	public function pluginActions( $links ) {
-		$settings_link = '<a href="admin.php?page=racketmanager-settings">' . __('Settings') . '</a>';
-		array_unshift( $links, $settings_link );
-
+		if (is_array($links)) {
+			$links['settings'] = '<a href="admin.php?page=racketmanager-settings">' . __('Settings', 'racketmanager') . '</a>';
+			$links['documentation'] = '<a href="admin.php?page=racketmanager-doc">' . __('Documentation', 'racketmanager') . '</a>';
+		}
 		return $links;
 	}
 

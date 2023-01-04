@@ -15,7 +15,7 @@
 </div>
 <div class="form-floating mb-3 col-12 col-xl-2">
   <select class="form-select" size="1" name="settings[point_rule]" id="point_rule">
-    <?php foreach ( $this->getPointRules() AS $id => $point_rule ) { ?>
+    <?php foreach ( Racketmanager_Util::getPointRules() AS $id => $point_rule ) { ?>
       <option value="<?php echo $id ?>"<?php selected( $id, $competition->point_rule ) ?>><?php echo $point_rule ?></option>
     <?php } ?>
   </select>
@@ -30,12 +30,12 @@
   </div>
   <div class="form-input">
     <select size="1" name="settings[point_format]" id="point_format" >
-      <?php foreach ( $this->getPointFormats() AS $id => $format ) { ?>
+      <?php foreach ( Racketmanager_Util::getPointFormats() AS $id => $format ) { ?>
         <option value="<?php echo $id ?>"<?php selected ( $id, $competition->point_format ) ?>><?php echo $format ?></option>
       <?php } ?>
     </select>
     <select size="1" name="settings[point_format2]" id="point_format2" >
-      <?php foreach ( $this->getPointFormats() AS $id => $format ) { ?>
+      <?php foreach ( Racketmanager_Util::getPointFormats() AS $id => $format ) { ?>
         <option value="<?php echo $id ?>"<?php selected ( $id, $competition->point_format2 ); ?>><?php echo $format ?></option>
       <?php } ?>
     </select>
@@ -53,7 +53,7 @@
 </div>
 <div class="form-floating mb-3 col-12 col-xl-2">
   <select class="form-select" size="1" name="settings[mode]" id="mode">
-    <?php foreach ( $this->getModes() AS $id => $mode ) { ?>
+    <?php foreach ( Racketmanager_Util::getModes() AS $id => $mode ) { ?>
       <option value="<?php echo $id ?>"<?php selected( $id, $competition->mode ) ?>><?php echo $mode ?></option>
     <?php } ?>
   </select>
@@ -61,7 +61,7 @@
 </div>
 <div class="form-floating mb-3 col-12 col-xl-2">
   <select class="form-select" size="1" name="settings[entryType]" id="entryType">
-    <?php foreach ( $this->getentryTypes() AS $id => $entryType )  { ?>
+    <?php foreach ( Racketmanager_Util::getEntryTypes() AS $id => $entryType )  { ?>
       <option value="<?php echo $id ?>"<?php selected( $id, isset($competition->entryType) ? $competition->entryType : '' ) ?>><?php echo $entryType ?></option>
     <?php } ?>
   </select>

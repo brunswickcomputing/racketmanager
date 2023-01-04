@@ -3248,6 +3248,8 @@ final class RacketManagerAdmin extends RacketManager
 					$options[$competitionType]['resultEntry'] = htmlspecialchars($_POST[$competitionType]['resultEntry']);
 					$options[$competitionType]['resultConfirmationEmail'] = htmlspecialchars($_POST[$competitionType]['resultConfirmationEmail']);
 					$options[$competitionType]['resultNotification'] = htmlspecialchars($_POST[$competitionType]['resultNotification']);
+					$options[$competitionType]['resultPending'] = htmlspecialchars($_POST[$competitionType]['resultPending']);
+					$options[$competitionType]['confirmationPending'] = htmlspecialchars($_POST[$competitionType]['confirmationPending']);
 				}
 				$options['colors']['headers'] = htmlspecialchars($_POST['color_headers']);
 				$options['colors']['rows'] = array( 'alternate' => htmlspecialchars($_POST['color_rows_alt']), 'main' => htmlspecialchars($_POST['color_rows']), 'ascend' => htmlspecialchars($_POST['color_rows_ascend']), 'descend' => htmlspecialchars($_POST['color_rows_descend']), 'relegation' => htmlspecialchars($_POST['color_rows_relegation']) );

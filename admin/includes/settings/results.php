@@ -61,6 +61,14 @@ namespace ns;
             </select>
             <label for="<?php echo $competitionType ?>[resultNotification]"><?php _e( 'Result Notification', 'racketmanager' ) ?></label>
           </div>
+          <div class="form-floating col-12 col-lg-3 mb-3">
+            <input type="number" class="form-control" name='<?php echo $competitionType ?>[resultPending]' id='<?php echo $competitionType ?>-resultPending' value='<?php echo isset($options[$competitionType]['resultPending']) ? $options[$competitionType]['resultPending'] : '' ?>' />
+            <label for='resultPending'><?php _e( 'Chasing pending result (hours)', 'racketmanager' ) ?></label>
+          </div>
+          <div class="form-floating col-12 col-lg-3 mb-3">
+            <input type="number" class="form-control" name='<?php echo $competitionType ?>[confirmationPending]' id='<?php echo $competitionType ?>-confirmationPending' value='<?php echo isset($options[$competitionType]['confirmationPending']) ? $options[$competitionType]['confirmationPending'] : '' ?>' />
+            <label for='confirmationPending'><?php _e( 'Chase result confirmation (hours)', 'racketmanager' ) ?></label>
+          </div>
         </div>
       </div>
     <?php } ?>

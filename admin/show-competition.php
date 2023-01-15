@@ -76,7 +76,7 @@ jQuery(document).ready(function(){
 			<?php if ( $competition->competitiontype != 'tournament' ) { ?>
 				<div class="tab-pane fade" id="playerstats" role="tabpanel" aria-labelledby="playerstats-tab">
 					<h2><?php _e( 'Player Statistics', 'racketmanager' ) ?></h2>
-					<?php include(RACKETMANAGER_PATH . 'admin/includes/player-stats.php'); ?>
+					<?php include('competition/player-stats.php'); ?>
 				</div>
 			<?php } ?>
 			<div class="tab-pane fade" id="seasons" role="tabpanel" aria-labelledby="seasons-tab">

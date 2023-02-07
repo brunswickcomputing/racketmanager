@@ -1305,7 +1305,7 @@ class RacketManagerAJAX extends RacketManager {
 			if ( $btmRequired ) {
 				$error = true;
 				$errorField[$errorId] = "btm";
-				$errorMsg[$errorId] = "BTM required";
+				$errorMsg[$errorId] = "World Tennis Number required";
 				$errorId ++;
 			} else {
 				$btm = '';

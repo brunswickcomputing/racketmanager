@@ -164,7 +164,7 @@ class RacketManager {
 
     $userPropToExport = array(
       'gender'           => __( 'User Gender' ),
-      'BTM'              => __( 'User BTM' ),
+      'World Tennis Number'              => __( 'User World Tennis Number' ),
       'remove_date'      => __( 'User Removed Date' ),
       'contactno'        => __( 'User Contact Number' ),
     );
@@ -175,7 +175,7 @@ class RacketManager {
 
       switch ( $key ) {
         case 'gender':
-        case 'BTM':
+        case 'World Tennis Number':
         case 'remove_date':
         case 'contactno':
         $value = isset($userMeta[ $key ][0]) ? $userMeta[ $key ][0] : '';

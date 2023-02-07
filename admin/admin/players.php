@@ -18,8 +18,8 @@
 			<input type="radio" required="required" name="gender" id="genderFemale" value="F" class="form-check-input" /><label for "genderFemale" class="form-check-label"><?php _e('Female', 'racketmanager') ?></label>
 		</div>
 		<div class="form-floating mb-3">
-			<input type="number"  placeholder="<?php _e( 'Enter BTM number', 'racketmanager') ?>" name="btm" id="gender" size="11" class="form-control" />
-			<label for="btm"><?php _e('BTM', 'racketmanager') ?></label>
+			<input type="number"  placeholder="<?php _e( 'Enter World Tennis Number', 'racketmanager') ?>" name="btm" id="gender" size="11" class="form-control" />
+			<label for="btm"><?php _e('World Tennis Number', 'racketmanager') ?></label>
 		</div>
 		<div class="form-floating mb-3">
 			<input type="email" placeholder="<?php _e( 'Enter email address', 'racketmanager') ?>" name="email" id="email" class="form-control" />
@@ -65,7 +65,7 @@
 				<div class="col-1 column-num">ID</div>
 				<div class="col-3"><?php _e( 'Name', 'racketmanager' ) ?></div>
 				<div class="col-1"><?php _e( 'Gender', 'racketmanager' ) ?></div>
-				<div class="col-1"><?php _e( 'BTM', 'racketmanager' ) ?></div>
+				<div class="col-1"><?php _e( 'World Tennis Number', 'racketmanager' ) ?></div>
 				<div class="col-1"><?php _e( 'Created', 'racketmanager') ?></div>
 				<div class="col-1"><?php _e( 'Removed', 'racketmanager') ?></div>
 			</div>

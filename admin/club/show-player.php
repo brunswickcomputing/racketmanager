@@ -37,8 +37,8 @@ namespace ns;
 				</div>
 			</div>
 			<div class="form-floating mb-3">
-				<input type="number" class="form-control" placeholder="<?php _e( 'Enter BTM number', 'racketmanager') ?>" name="btm" id="gender" value="<?php echo $roster->btm ?>" size="11" />
-				<label for="btm"><?php _e('BTM', 'racketmanager') ?></label>
+				<input type="number" class="form-control" placeholder="<?php _e( 'Enter World Tennis Number', 'racketmanager') ?>" name="btm" id="gender" value="<?php echo $roster->btm ?>" size="11" />
+				<label for="btm"><?php _e('World Tennis Number', 'racketmanager') ?></label>
 			</div>
 			<div class="form-floating mb-3">
 				<input type="email" placeholder="<?php _e( 'Enter email address', 'racketmanager') ?>" name="email" id="email" class="form-control" value="<?php echo $roster->email ?>" />

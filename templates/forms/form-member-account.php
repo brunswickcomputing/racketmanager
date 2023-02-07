@@ -50,8 +50,8 @@
           <?php if (isset($userData['gender_error'])) echo '<span class="form-error">'.$userData["gender_error"].'</span>' ?>
         </div>
         <div class="form-floating mb-3 <?php if (isset($userData['btm_error'])) echo 'is-invalid' ?>">
-          <input type="tel" placeholder="<?php _e( 'BTM Number', 'racketmanager' ) ?>" name="btm" id="btm" class="form-control" value="<?php echo $userData['btm'] ?>" />
-          <label for="btm"><?php _e( 'BTM Number', 'racketmanager' ) ?></label>
+          <input type="tel" placeholder="<?php _e( 'World Tennis Number', 'racketmanager' ) ?>" name="btm" id="btm" class="form-control" value="<?php echo $userData['btm'] ?>" />
+          <label for="btm"><?php _e( 'World Tennis Number', 'racketmanager' ) ?></label>
           <?php if (isset($userData['btm_error'])) echo '<span class="form-error">'.$userData["btm_error"].'</span>' ?>
         </div>
       </fieldset>

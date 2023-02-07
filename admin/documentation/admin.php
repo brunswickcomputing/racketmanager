@@ -33,7 +33,7 @@
     <div class="tab-pane fade" id="players" role="tabpanel" aria-labelledby="players-tab">
       <h3 class="header"><?php _e( 'Players', 'racketmanager' ) ?></h3>
       <p>The player page of Racketmanager allows a new player to be added to the system. Required fields are <ul><li>First name</li><li>Surname</li><li>Gender</li></ul></p>
-      <p>Optionally, the BTM (British Tennis Membership) number can be provided.</p>
+      <p>Optionally, the World Tennis Number can be provided.</p>
       <p>Optionally, the a player's email address can be provided.</p>
       <p>The page also lists all existing players registered.</p>
     </div>

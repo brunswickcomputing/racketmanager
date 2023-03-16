@@ -39,7 +39,7 @@
       <h3 class="header"><?php _e( 'Players', 'racketmanager' ) ?></h3>
       <p>The players page within a club allows the players registered for that club to be viewed.</p>
       <h4 id="Adding players"><?php _e( 'Adding players', 'racketmanager' ) ?></h4>
-      <p>A player to be added to the registered players for the club on this page. Player details are entered (first name, surname, gender and, optionally, World Tennis Number). Pressing the "Add Player" button causes the player to be added to the registered players for the club. The centreal player record is created if it does not already exist.</p>
+      <p>A player to be added to the registered players for the club on this page. Player details are entered (first name, surname, gender and, optionally, LTA Tennis Number). Pressing the "Add Player" button causes the player to be added to the registered players for the club. The centreal player record is created if it does not already exist.</p>
       <h4 id="Removing players"><?php _e( 'Removing players', 'racketmanager' ) ?></h4>
       <p>From the list of registered players, individuals can be removed from the club records by clicking the checkbox and then selecting "Delete" from the "Bulk Actions" dropdown. Pressing the "Apply" button will remove the selected player from the list of registered players for the club. Any player who was previously on registered for the club who has subsequently been removed is also listed but there is no checkbox available. Additionally, the date that the player was removed from the list of registered players is shown, along with the user who actioned the removal request.</p>
       <p>It is possible to add and remove a player from the list of registered players multiple times.</p>

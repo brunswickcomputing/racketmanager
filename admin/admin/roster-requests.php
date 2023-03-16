@@ -21,7 +21,7 @@
 			<div class="col-1"><?php _e( 'First Name', 'racketmanager' ) ?></div>
 			<div class="col-1"><?php _e( 'Surame', 'racketmanager' ) ?></div>
 			<div class="col-1"><?php _e( 'Gender', 'racketmanager' ) ?></div>
-			<div class="col-1"><?php _e( 'World Tennis Number', 'racketmanager' ) ?></div>
+			<div class="col-1"><?php _e( 'LTA Tennis Number', 'racketmanager' ) ?></div>
 			<div class="col-1"><?php _e( 'Requested Date', 'racketmanager' ) ?></div>
 			<div class="col-1"><?php _e( 'Requested User', 'racketmanager' ) ?></div>
 			<div class="col-1"><?php _e( 'Completed Date', 'racketmanager' ) ?></div>

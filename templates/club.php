@@ -162,8 +162,8 @@ if ( is_user_logged_in() ) {
                     <div id="genderFeedback" class="invalid-feedback"></div>
                   </div>
                   <div class="form-floating mb-3">
-                    <input type="number" class="form-control" placeholder="<?php _e( 'Enter World Tennis Number', 'racketmanager' ) ?>" name="btm" id="btm" size="11" class="form-control" aria-describedby="btmFeedback" />
-                    <label for="btm"><?php _e( 'World Tennis Number', 'racketmanager' ) ?></label>
+                    <input type="number" class="form-control" placeholder="<?php _e( 'Enter LTA Tennis Number', 'racketmanager' ) ?>" name="btm" id="btm" size="11" class="form-control" aria-describedby="btmFeedback" />
+                    <label for="btm"><?php _e( 'LTA Tennis Number', 'racketmanager' ) ?></label>
                     <div id="btmFeedback" class="invalid-feedback"></div>
                   </div>
                   <div class="form-floating mb-3">
@@ -192,7 +192,7 @@ if ( is_user_logged_in() ) {
                     <tr>
                       <th scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>
                       <th scope="col" class="colspan"><?php _e( 'Gender', 'racketmanager') ?></th>
-                      <th scope="col" class="colspan"><?php _e( 'World Tennis Number', 'racketmanager') ?></th>
+                      <th scope="col" class="colspan"><?php _e( 'LTA Tennis Number', 'racketmanager') ?></th>
                       <th scope="col" class="colspan"><?php _e( 'Requested Date', 'racketmanager') ?></th>
                       <th scope="col" class="colspan"><?php _e( 'Requested By', 'racketmanager') ?></th>
                     </tr>

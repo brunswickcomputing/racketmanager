@@ -1,6 +1,6 @@
 <div class="form-control">
   <div class="mb-3">
-    <label><?php _e( 'World Tennis Number', 'racketmanager' ) ?></label>
+    <label><?php _e( 'LTA Tennis Number', 'racketmanager' ) ?></label>
     <div class="form-check">
       <input class="form-check-input" type="radio" id="btmRequired" name="btmRequired" value="1" <?php if ( isset($options['rosters']['btm']) && $options['rosters']['btm'] == '1' ) { echo 'checked'; } ?>>
       <label for='btmRequired'><?php _e( 'Required', 'racketmanager' ) ?></label>

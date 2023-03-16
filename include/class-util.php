@@ -86,6 +86,7 @@ class Racketmanager_Util {
 			,'W1' => __( 'League winners but league locked', 'racketmanager')
 			,'W2' => __( 'Second place but league locked', 'racketmanager')
 			,'RB' => __( 'Relegated in bottom place', 'racketmanager')
+			,'RQ' => __( 'Relegated by request', 'racketmanager')
 			,'RT' => __( 'Relegated as team in division above', 'racketmanager')
 			,'BT' => __( 'Finished bottom but not relegated', 'racketmanager')
 			,'NT' => __( 'New team', 'racketmanager')

@@ -94,7 +94,7 @@ class Competition {
 	*
 	* @var array
 	*/
-	public $standings = array( 'status' => 1, 'team_link' => 1, 'pld' => 1, 'won' => 1, 'tie' => 1, 'lost' => 1, 'winPercent' => 1, 'last5' => 1 );
+	public $standings = array( 'status' => 1, 'pld' => 1, 'won' => 1, 'tie' => 1, 'lost' => 1, 'winPercent' => 1, 'last5' => 1 );
 
 	/**
 	* number of teams ascending

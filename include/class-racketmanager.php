@@ -268,7 +268,6 @@ class RacketManager {
   public function getStandingsDisplayOptions() {
     $options = array(
       'status' => __( 'Team Status', 'racketmanager' ),
-      'team_link' => __( 'Include Link to team page', 'racketmanager' ),
       'pld' => __( 'Played Games', 'racketmanager' ),
       'won' => __( 'Won Games', 'racketmanager' ),
       'tie' => __('Tie Games', 'racketmanager' ),

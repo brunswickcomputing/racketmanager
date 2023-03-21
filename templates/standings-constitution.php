@@ -11,7 +11,7 @@ namespace ns;
       <?php while( have_teams() ) {
         the_team(); ?>
         <tr class='<?php the_team_class(); ?>'>
-          <td><?php the_team_name_url(show_standings('team_link')) ?></td>
+          <td><?php the_team_name() ?></td>
           <?php if ( show_standings('status') ) { ?><td class="num"><?php the_team_status(); ?></td><?php } ?>
         </tr>
       <?php } ?>

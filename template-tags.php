@@ -239,21 +239,6 @@
     }
 
     /**
-     * print team name URL
-     *
-     * @param string $url
-     * @category template-tags
-     */
-    function the_team_name_url($url = true) {
-        global $team;
-
-        if ( $url )
-            echo '<a href="'.get_team_url().'">'.get_team_name().'</a>';
-        else
-            the_team_name();
-    }
-
-    /**
      * print team CSS class
      *
      * @category template-tags
@@ -262,25 +247,6 @@
         global $team;
 
         echo $team->class;
-    }
-
-    /**
-     * get team URL
-     *
-     * @return string
-     * @category template-tags
-     */
-    function get_team_url() {
-        global $team;
-        return $team->pageURL;
-    }
-    /**
-     * print team URL
-     *
-     * @category template-tags
-     */
-    function the_team_url() {
-        echo get_team_url();
     }
 
     /**
@@ -595,16 +561,6 @@
      */
     function the_match_score() {
         echo get_match_score();
-    }
-
-    /**
-     * print Match URL
-     *
-     * @category template-tags
-     */
-    function the_match_url() {
-        global $match;
-        echo $match->pageURL;
     }
 
     /**

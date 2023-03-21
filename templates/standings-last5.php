@@ -29,7 +29,7 @@
           <tr class='<?php the_team_class(); ?>'>
             <td class='num'><span class="rank"><?php the_team_rank(); ?></span></td>
             <?php if ( show_standings('status') ) {      ?><td class="num d-none d-md-table-cell"><?php the_team_status(); ?></td><?php } ?>
-            <td><?php the_team_name_url(show_standings('team_link')) ?></td>
+            <td><?php the_team_name() ?></td>
             <?php if ( show_standings('pld') ) {         ?><td class='num'><?php num_done_matches(); ?></td><?php } ?>
             <?php if ( show_standings('won') ) {         ?><td class='num'><?php num_won_matches(); ?></td><?php } ?>
             <?php if ( show_standings('tie') ) {         ?><td class='num'><?php num_draw_matches(); ?></td><?php } ?>
@@ -38,7 +38,7 @@
             <?php the_standings_columns(); ?>
             <td class='num d-none d-md-table-cell'><?php the_team_points_adjust(); ?></td>
             <td class='num'><?php the_team_points(); ?></td>
-            <?php if ( show_standings('last5') ) {       ?><td class="last5Icon last5 d-none d-md-table-cell"><?php the_last5_matches(show_standings('team_link')); ?></td><?php } ?>
+            <?php if ( show_standings('last5') ) {       ?><td class="last5Icon last5 d-none d-md-table-cell"><?php the_last5_matches(); ?></td><?php } ?>
           </tr>
         <?php } ?>
       </tbody>

@@ -90,18 +90,6 @@ final class Match {
       } else {
         $this->confirmedDisplay = $this->confirmed;
       }
-      if (is_admin()) {
-        $url = '';
-      } else {
-        $url = esc_url(get_permalink());
-        $url = add_query_arg( 'match_'.$this->league_id, $this->id, $url );
-        foreach ( $_GET AS $key => $value ) {
-          $url = add_query_arg( $key, htmlspecialchars(strip_tags($value)), $url );
-        }
-        $url = remove_query_arg( 'team_'.$this->league_id, $url );
-      }
-      $this->pageURL = esc_url($url);
-
       $this->setTeams();
 
       $this->setDate();

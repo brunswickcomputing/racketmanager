@@ -127,14 +127,6 @@ final class LeagueTeam {
           $i++;
         };
       }
-      if (!is_admin()) {
-        $url = get_permalink();
-        $url = add_query_arg( 'team_'.$this->league_id, $this->id, $url );
-        foreach ( $_GET AS $key => $value ) {
-          $url = add_query_arg( $key, htmlspecialchars(strip_tags($value)), $url );
-        }
-        $this->pageURL = $url;
-      }
     }
   }
 
@@ -176,23 +168,18 @@ final class LeagueTeam {
   *
   * @return string
   */
-  public function last5($link = true) {
+  public function last5() {
     $league = get_league($this->league_id);
     $league->setSeason();
 
     $last5 = '<span>';
     // get next scheduled match
     $next_result = $league->getMatches( array("time" => "next", "team_id" => $this->id, "match_day" => -1, "limit" => 1, "reset_query_args" => true) );
-    if ($next_result)
-    if ( $link )
-    $last5 .= '<a href="?match_'.$this->league_id.'='.$next_result->id.'"  class="N last5-bg" title="'.$next_result->tooltipTitle.'">&nbsp;</a>';
-    else
-    $last5 .= '<span  class="N last5-bg" title="'.$next_result->tooltipTitle.'">&nbsp;</span>';
-    else
-    if ( $link )
-    $last5 .= '<a class="N last5-bg" title="'.__('Next Match: No Game Scheduled', 'racketmanager').'">&nbsp;</a>';
-    else
-    $last5 .= '<span class="N last5-bg" title="'.__('Next Match: No Game Scheduled', 'racketmanager').'">&nbsp;</span>';
+    if ($next_result) {
+      $last5 .= '<span  class="N last5-bg" title="'.$next_result->tooltipTitle.'">&nbsp;</span>';
+    } else {
+      $last5 .= '<span class="N last5-bg" title="'.__('Next Match: No Game Scheduled', 'racketmanager').'">&nbsp;</span>';
+    }
 
     // get last 5 match results
     $last_results = $league->getMatches( array("time" => "prev", "team_id" => $this->id, "match_day" => -1, "limit" => 5, "reset_query_args" => true) );

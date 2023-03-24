@@ -487,6 +487,50 @@ final class Club {
   }
 
   /**
+  * gets player for club from database
+  *
+  * @param array $playerId
+  * @return array
+  */
+  public function getPlayer( $playerId ) {
+    global $wpdb;
+
+    $sql = "SELECT A.`id` as `roster_id`, B.`ID` as `player_id`, `display_name` as fullname, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_roster} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID` WHERE `affiliatedclub` = ".$this->id." AND `player_id` = ".intval($playerId);
+
+    $player = wp_cache_get( md5($sql), 'players' );
+    if ( !$player ) {
+      $player = $wpdb->get_row( $sql );
+      wp_cache_set( md5($sql), $player, 'players' );
+    }
+
+    if ( $player ) {
+      $player->gender = get_user_meta($player->player_id, 'gender', true );
+      $player->type = get_user_meta($player->player_id, 'racketmanager_type', true );
+      if ( $player->removed_user ) {
+        $player->removedUserName = get_userdata($player->removed_user)->display_name;
+      } else {
+        $player->removedUserName = '';
+      }
+      $player->btm = get_user_meta($player->player_id, 'btm', true );;
+      if ( $player->created_user ) {
+        $player->createdUserName = get_userdata($player->created_user)->display_name;
+      } else {
+        $player->createdUserName = '';
+      }
+      $player->locked = get_user_meta($player->player_id, 'locked', true );
+			$player->locked_date = get_user_meta($player->player_id, 'locked_date', true );
+			$player->locked_user = get_user_meta($player->player_id, 'locked_user', true );
+			if ( $player->locked_user ) {
+				$player->lockedUserName = get_userdata($player->locked_user)->display_name;
+			} else {
+				$player->lockedUserName = '';
+			}
+    }
+
+    return $player;
+  }
+
+  /**
   * check if player is captain
   *
   * @param int $rosterRequst_id

@@ -485,6 +485,31 @@ Racketmanager.updateResults = function(link) {
 					jQuery($awayformfield).val($awayfieldval);
 					$matchaway  = +$matchaway + +$awaypoints[j];
 				}
+				var $updatedRubbers = $response[5];
+				rubberNo = 1;
+				for ( let r in $updatedRubbers ) {
+					$rubber = $updatedRubbers[r];
+					for ( let t in $rubber['players'] ) {
+						$team = $rubber['players'][t];
+						for ( let p = 0; p < $team.length; p++ ) {
+							$player = $team[p];
+							let id = p + 1;
+							formfield = '#'+t+'player'+id+'_'+rubberNo;
+							fieldval = $player;
+							jQuery(formfield).val(fieldval);
+						}
+					}
+					for ( let s in $rubber['sets'] ) {
+						team = $rubber['sets'][s];
+						for ( let p in team ) {
+							score = team[p];
+							formfield = '#'+'set_'+rubberNo+'_'+s+'_'+p;
+							fieldval = score;
+							jQuery(formfield).val(fieldval);
+						}
+					}
+					rubberNo ++;
+				}
 			}
 			jQuery("#splash").css('opacity', 0);
 			jQuery("#splash").hide();

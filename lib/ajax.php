@@ -641,6 +641,7 @@ class RacketManagerAJAX extends RacketManager {
 					$matchConfirmed = $rubberResult[1];
 					$errMsg = $rubberResult[2];
 					$errField = $rubberResult[3];
+					$updatedRubbers = $rubberResult[4];
 					$msg = implode('<br>', $errMsg);
 				}
 			} elseif ( $_POST['updateRubber'] == 'confirm' ) {
@@ -706,7 +707,7 @@ class RacketManagerAJAX extends RacketManager {
 					}
 				}
 			}
-			array_push($return,$msg,$error,$matchRubbers['homepoints'],$matchRubbers['awaypoints'], $errField);
+			array_push($return,$msg,$error,$matchRubbers['homepoints'],$matchRubbers['awaypoints'], $errField, $updatedRubbers);
 
 			die(json_encode($return));
 		} else {
@@ -729,11 +730,29 @@ class RacketManagerAJAX extends RacketManager {
 		$homeTeamScore = 0;
 		$awayTeamScore = 0;
 		$players = array();
+		$playerOptions = $racketmanager->getOptions('player');
+		$club = get_club($match->teams['home']->affiliatedclub);
+		$player['walkover']['male']['home'] = $club->getPlayer($playerOptions['walkover']['male']);
+		$player['walkover']['female']['home'] = $club->getPlayer($playerOptions['walkover']['female']);
+		$player['noplayer']['male']['home'] = $club->getPlayer($playerOptions['noplayer']['male']);
+		$player['noplayer']['female']['home'] = $club->getPlayer($playerOptions['noplayer']['female']);
+		$player['share']['male']['home'] = $club->getPlayer($playerOptions['share']['male']);
+		$player['share']['female']['home'] = $club->getPlayer($playerOptions['share']['female']);
+		$club = get_club($match->teams['away']->affiliatedclub);
+		$player['walkover']['male']['away'] = $club->getPlayer($playerOptions['walkover']['male']);
+		$player['walkover']['female']['away'] = $club->getPlayer($playerOptions['walkover']['female']);
+		$player['noplayer']['male']['away'] = $club->getPlayer($playerOptions['noplayer']['male']);
+		$player['noplayer']['female']['away'] = $club->getPlayer($playerOptions['noplayer']['female']);
+		$player['share']['male']['away'] = $club->getPlayer($playerOptions['share']['male']);
+		$player['share']['female']['away'] = $club->getPlayer($playerOptions['share']['female']);
+		$updatedRubbers = array();
 
 		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_results_checker} WHERE `match_id` = %d", $match->id) );
 
 		for ($ix = 1; $ix <= $numRubbers; $ix++) {
 			$rubberId       = $_POST['id'][$ix];
+			$walkover 		= '';
+			$share			= false;
 			$homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : null;
 			$homeplayer2    = isset($_POST['homeplayer2'][$ix]) ? $_POST['homeplayer2'][$ix] : null;
 			$awayplayer1    = isset($_POST['awayplayer1'][$ix]) ? $_POST['awayplayer1'][$ix] : null;
@@ -747,6 +766,78 @@ class RacketManagerAJAX extends RacketManager {
 			$validateMatch = true;
 			$playoff = false;
 
+			if ( isset($_POST['sharedRubber'][$ix]) ) {
+				if ( isset($_POST['walkoverHome'][$ix]) || isset($_POST['walkoverAway'][$ix]) ) {
+					$errField[] = 'sharedRubber_'.$ix;
+					$errMsg[] = __('Share and walkover not allowed in same rubber', 'racketmanager');
+					$error = true;
+					$validateMatch = false;
+				} else {
+					$share = true;
+					if ( $match->league->type == 'MD' ) {
+						$homeplayer1 = $player['share']['male']['home']->roster_id;
+						$homeplayer2 = $homeplayer1;
+						$awayplayer1 = $player['share']['male']['away']->roster_id;
+						$awayplayer2 = $awayplayer1;
+					} elseif ( $match->league->type == 'WD') {
+						$homeplayer1 = $player['share']['female']['home']->roster_id;
+						$homeplayer2 = $homeplayer1;
+						$awayplayer1 = $player['share']['female']['away']->roster_id;
+						$awayplayer2 = $awayplayer1;
+					} elseif ( $match->league->type == 'XD') {
+						$homeplayer1 = $player['share']['male']['home']->roster_id;
+						$homeplayer2 = $player['share']['female']['home']->roster_id;
+						$awayplayer1 = $player['share']['male']['away']->roster_id;
+						$awayplayer2 = $player['share']['female']['away']->roster_id;
+					}
+				}
+			}
+			if ( isset($_POST['walkoverHome'][$ix]) ) {
+				$walkover = 'home';
+				if ( isset($_POST['walkoverAway'][$ix]) ) {
+					$errField[] = 'walkoverHome_'.$ix;
+					$errMsg[] = __('Both teams cannot have a walkover', 'racketmanager');
+					$error = true;
+					$validateMatch = false;
+				} else {
+					if ( $match->league->type == 'MD' ) {
+						$homeplayer1 = $player['walkover']['male']['home']->roster_id;
+						$homeplayer2 = $homeplayer1;
+						$awayplayer1 = $player['noplayer']['male']['away']->roster_id;
+						$awayplayer2 = $awayplayer1;
+					} elseif ( $match->league->type == 'WD') {
+						$homeplayer1 = $player['walkover']['female']['home']->roster_id;
+						$homeplayer2 = $homeplayer1;
+						$awayplayer1 = $player['noplayer']['female']['away']->roster_id;
+						$awayplayer2 = $awayplayer1;
+					} elseif ( $match->league->type == 'XD') {
+						$homeplayer1 = $player['walkover']['male']['home']->roster_id;
+						$homeplayer2 = $player['walkover']['female']['home']->roster_id;
+						$awayplayer1 = $player['noplayer']['male']['away']->roster_id;
+						$awayplayer2 = $player['noplayer']['female']['away']->roster_id;
+					}
+				}
+			} else {
+				if ( isset($_POST['walkoverAway'][$ix]) ) {
+					$walkover = 'away';
+					if ( $match->league->type == 'MD' ) {
+						$homeplayer1 = $player['noplayer']['male']['home']->roster_id;
+						$homeplayer2 = $homeplayer1;
+						$awayplayer1 = $player['walkover']['male']['away']->roster_id;
+						$awayplayer2 = $awayplayer1;
+					} elseif ( $match->league->type == 'WD') {
+						$homeplayer1 = $player['noplayer']['female']['home']->roster_id;
+						$homeplayer2 = $homeplayer1;
+						$awayplayer1 = $player['walkover']['female']['away']->roster_id;
+						$awayplayer2 = $awayplayer1;
+					} elseif ( $match->league->type == 'XD') {
+						$homeplayer1 = $player['noplayer']['male']['home']->roster_id;
+						$homeplayer2 = $player['noplayer']['female']['home']->roster_id;
+						$awayplayer1 = $player['walkover']['male']['away']->roster_id;
+						$awayplayer2 = $player['walkover']['female']['away']->roster_id;
+					}
+				}
+			}
 			if (isset($match->league->scoring) && ($match->league->scoring == 'TP' || $match->league->scoring == 'MP') && $ix == $numRubbers ) {
 				if ( $homeTeamScore != $awayTeamScore ) {
 					$validateMatch = false;
@@ -762,17 +853,17 @@ class RacketManagerAJAX extends RacketManager {
 						$errMsg[] = __('Player not selected', 'racketmanager');
 						$error = true;
 					} else {
-						$player = $$type;
-						$rosterEntry = $racketmanager->getRosterEntry($player);
+						$playerRef = $$type;
+						$rosterEntry = $racketmanager->getRosterEntry($playerRef);
 						if ( !$rosterEntry->system_record ) {
-							$playerFound = array_search($player, $players);
+							$playerFound = array_search($playerRef, $players);
 							if ( $playerFound === false ) {
 								if ( $playoff ) {
 									$errField[] = $type.'_'.$ix;
 									$errMsg[] = __('Player for playoff must have played', 'racketmanager');
 									$error = true;
 								} else {
-									$players[] = $player;
+									$players[] = $playerRef;
 								}
 							} else {
 								if ( !$playoff ) {
@@ -785,12 +876,20 @@ class RacketManagerAJAX extends RacketManager {
 					}
 				}
 				$rubberNumber = $ix;
-				$matchValidate = $this->validateMatchScore($match, $custom, $setPrefix, $errMsg, $errField, $rubberNumber);
+				$matchValidate = $this->validateMatchScore($match, $custom, $setPrefix, $errMsg, $errField, $rubberNumber, $walkover, $share);
 				$error = $matchValidate[0];
 				$errMsg = $matchValidate[1];
 				$errField = $matchValidate[2];
 				$homescore = $matchValidate[3];
 				$awayscore = $matchValidate[4];
+				$sets = $matchValidate[5];
+				$custom['sets'] = $sets;
+				if ( $walkover ) {
+					$custom['walkover'] = $walkover;
+				}
+				if ( $share ) {
+					$custom['share'] = true;
+				}
 				if ( is_numeric($homescore) ) {
 					$homeTeamScore += $homescore;
 				}
@@ -834,12 +933,17 @@ class RacketManagerAJAX extends RacketManager {
 						if ( !empty($awayplayer2) ) {
 							$this->checkPlayerResult($match, $rubberId, $awayplayer2, $match->away_team, $checkOptions);
 						}
+						$updatedRubbers[$rubberId]['players']['home'][] = $homeplayer1;
+						$updatedRubbers[$rubberId]['players']['home'][] = $homeplayer2;
+						$updatedRubbers[$rubberId]['players']['away'][] = $awayplayer1;
+						$updatedRubbers[$rubberId]['players']['away'][] = $awayplayer2;
+						$updatedRubbers[$rubberId]['sets'] = $sets;
 					}
 				}
 			}
 		}
 
-		array_push($return, $error, $matchConfirmed, $errMsg, $errField);
+		array_push($return, $error, $matchConfirmed, $errMsg, $errField, $updatedRubbers);
 		return $return;
 	}
 
@@ -847,7 +951,7 @@ class RacketManagerAJAX extends RacketManager {
 	* validate Match Score
 	*
 	*/
-	public function validateMatchScore($match, $custom, $setPrefixStart, $errMsg, $errField, $rubberNumber=false) {
+	public function validateMatchScore($match, $custom, $setPrefixStart, $errMsg, $errField, $rubberNumber=false, $walkover=false, $share=false) {
 
 		$numSetstoWin = $match->league->numSetstoWin;
 		$sets = $custom['sets'];
@@ -857,6 +961,7 @@ class RacketManagerAJAX extends RacketManager {
 		$error = false;
 		$scoring = isset($match->league->scoring) ? $match->league->scoring : 'TB';
 		$s = 1;
+		$setsUpdated = array();
 		foreach ( $sets as $set ) {
 			$setPrefix = $setPrefixStart.$s.'_';
 			if ( $scoring == 'TB' ) {
@@ -898,7 +1003,8 @@ class RacketManagerAJAX extends RacketManager {
 			if ( $s > $numSetstoWin && $homescore == $numSetstoWin || $awayscore == $numSetstoWin ) {
 				$setType = 'null';
 			}
-			$setValidate = $this->validateSetScore($set, $setPrefix, $errMsg, $errField, $setType);
+			$setValidate = $this->validateSetScore($set, $setPrefix, $errMsg, $errField, $setType, $walkover, $share);
+			$set = $setValidate[2];
 			$errMsg = $setValidate[0];
 			$errField = $setValidate[1];
 			if ( $errMsg ) {
@@ -916,10 +1022,18 @@ class RacketManagerAJAX extends RacketManager {
 					$awayscore += 0.5;
 				}
 			}
+			$setsUpdated[$s] = $set;
 			$s++;
 		}
+		if ( $walkover ) {
+			if ( $walkover == 'home' ) {
+				$awayscore -= 1;
+			} elseif ( $walkover == 'away' ) {
+				$homescore -= 1;
+			}
+		}
 
-		array_push($return, $error, $errMsg, $errField, $homescore, $awayscore);
+		array_push($return, $error, $errMsg, $errField, $homescore, $awayscore, $setsUpdated);
 		return $return;
 	}
 
@@ -927,7 +1041,7 @@ class RacketManagerAJAX extends RacketManager {
 	* validate set score
 	*
 	*/
-	public function validateSetScore($set, $setPrefix, $errMsg, $errField, $setType) {
+	public function validateSetScore($set, $setPrefix, $errMsg, $errField, $setType, $walkover, $share) {
 		$return = array();
 		if ( $setType == 'tiebreak' ) {
 			$maxWin = 7;
@@ -963,7 +1077,20 @@ class RacketManagerAJAX extends RacketManager {
 		$set['player1'] = strtoupper($set['player1']);
 		$set['player2'] = strtoupper($set['player2']);
 		if ( $set['player1'] !== null && $set['player2'] !== null ) {
-			if ( $setType == 'null' ) {
+			if ( $walkover ) {
+				if ( $setType == 'null' ) {
+					$set['player1'] = "";
+					$set['player2'] = "";
+				} elseif ( $walkover == 'home' ) {
+					$set['player1'] = strval($minWin);
+					$set['player2'] = "0";
+				} else {
+					if ( $walkover == 'away' ) {
+						$set['player1'] = "0";
+						$set['player2'] = strval($minWin);
+					}
+				}
+			} elseif ( $setType == 'null' ) {
 				if ( $set['player1'] != '' ) {
 					$errMsg[] = __('Set score should be empty', 'racketmanager');
 					$errField[] = $setPrefix.'player1';
@@ -972,6 +1099,9 @@ class RacketManagerAJAX extends RacketManager {
 					$errMsg[] = __('Set score should be empty', 'racketmanager');
 					$errField[] = $setPrefix.'player2';
 				}
+			} elseif ( $share ) {
+				$set['player1'] = 'S';
+				$set['player2'] = 'S';
 			} elseif ( $set['player1'] == 'S' || $set['player2'] == 'S' ) {
 				if ( $set['player1'] != 'S' ) {
 					$errMsg[] = __('Both scores must be shared', 'racketmanager');
@@ -1027,7 +1157,7 @@ class RacketManagerAJAX extends RacketManager {
 				$errField[] = $setPrefix.'player2';
 			}
 		}
-		array_push($return, $errMsg, $errField);
+		array_push($return, $errMsg, $errField, $set);
 		return $return;
 	}
 

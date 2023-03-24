@@ -203,8 +203,9 @@ class League_Tennis extends League {
 		global $racketmanager;
 
 		extract($rule);
+		$pointOptions = $racketmanager->getOptions('player');
 		$data = $this->getStandingsData($team_id,array(),$matches);
-		$points['plus'] = $data['sets_won'] + $data['straight_set']['win'] * $forwin + $data['split_set']['win'] * $forwin_split + $data['split_set']['lost'] * $forloss_split + $data['sets_shared'] * $forshare;
+		$points['plus'] = $data['sets_won'] + $data['straight_set']['win'] * $forwin + $data['split_set']['win'] * $forwin_split + $data['split_set']['lost'] * $forloss_split + $data['sets_shared'] * $forshare - $data['no_player'] * $pointOptions['walkover']['rubber'] - $data['no_team'] * $pointOptions['walkover']['match'];
 		$points['minus'] = $data['sets_allowed'] + $data['straight_set']['lost'] * $forwin + $data['split_set']['win'] * $forloss_split + $data['split_set']['lost'] * $forwin_split + $data['sets_shared'] * $forshare;
 
 		return $points;
@@ -257,6 +258,8 @@ class League_Tennis extends League {
 		$data['sets_won'] = 0;
 		$data['sets_allowed'] = 0;
 		$data['sets_shared'] = 0;
+		$data['no_player'] = 0;
+		$data['no_team'] = 0;
 
 		$league = get_league($this->id);
 		$season = $league->getSeason();
@@ -272,9 +275,11 @@ class League_Tennis extends League {
 
 			if (isset($league->num_rubbers)) {
 				$rubbers = $match->getRubbers();
+				$walkovers = array();
+				$walkovers = 0;
 				foreach ( $rubbers as $rubber) {
 
-					if ($rubber->winner_id == $team_id) {               //home winner
+					if ($rubber->winner_id == $team_id) {               //winning team
 						if ($match->home_team == $team_id)  {           //home team
 
 							for ( $j = 1; $j <= $league->num_sets; $j++  ) {
@@ -317,8 +322,13 @@ class League_Tennis extends League {
 							}
 						}
 
-					} elseif ($rubber->loser_id == $team_id) {          //away winner
+					} elseif ($rubber->loser_id == $team_id) {          //losing team
 						if ($match->home_team == $team_id) {            //home team
+							if ( isset($rubber->walkover) && $rubber->walkover == 'away' ) {
+								$walkovers ++;
+								$data['no_player'] +=1;
+							}
+	
 							if ($rubber->home_points > "0") {           //home team got a set
 								$data['split_set']['lost'] +=1;
 							} else {                                    //home team got no set
@@ -338,6 +348,10 @@ class League_Tennis extends League {
 								}
 							}
 						} else {                                        //away team
+							if ( isset($rubber->walkover) && $rubber->walkover == 'home' ) {
+								$walkovers ++;
+								$data['no_player'] +=1;
+							}
 							if ($rubber->away_points > "0") {           //away team got a set
 								$data['split_set']['lost'] +=1;
 							} else {                                    //away team got no set
@@ -407,6 +421,9 @@ class League_Tennis extends League {
 
 					}
 
+				}
+				if ( $walkovers == $match->league->num_rubbers ) {
+					$data['no_team'] = $walkovers;
 				}
 			} else {
 				// First check for Split Set, else it's straight set

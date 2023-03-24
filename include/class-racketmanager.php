@@ -2264,10 +2264,26 @@ class RacketManager {
               }
             }
             ?>
-            <div class="row mb-3">
+            <div class="row mb-3 border border-dark">
               <input type="hidden" name="id[<?php echo $r ?>]" value="<?php echo $rubber->id ?>" </>
               <div class="col-1 text-center align-self-center"><?php echo isset($rubber->rubber_number) ? $rubber->rubber_number : '' ?></div>
               <div class="col-11">
+              <div class="row text-center mb-3">
+                  <div class="col-4">
+                    <label for="walkoverHome_<?php echo $r ?>"><?php _e('Home walkover', 'racketmanger') ?></label>
+                    <input type="checkbox" class="checkbox" name="walkoverHome[<?php echo $r ?>]" id="walkoverHome_<?php echo $r ?>" value="walkoverHome" <?php if ( isset($rubber->walkover) && $rubber->walkover == 'home' ) { echo 'checked'; } ?> />
+                  </div>
+                  <div class="col-4">
+                    <div class="col-12">
+                      <label for="sharedRubber_<?php echo $r ?>"><?php _e('Share', 'racketmanger') ?></label>
+                      <input type="checkbox" class="checkbox" name="sharedRubber[<?php echo $r ?>]" id="sharedRubber_<?php echo $r ?>" value="sharedRubber" <?php if ( isset($rubber->share) && $rubber->share == true ) { echo 'checked'; } ?> />
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <label for="walkoverAway_<?php echo $r ?>"><?php _e('Away walkover', 'racketmanger') ?></label>
+                    <input type="checkbox" class="checkbox" name="walkoverAway[<?php echo $r ?>]" id="walkoverAway_<?php echo $r ?>" value="walkoverAway" <?php if ( isset($rubber->walkover) && $rubber->walkover == 'away' ) { echo 'checked'; } ?> />
+                  </div>
+                </div>
                 <div class="row mb-1">
                   <div class="col-6 col-sm-4">
                     <div class="row">
@@ -2329,11 +2345,11 @@ class RacketManager {
                     </div>
                   </div>
                 </div>
-                <div class="row text-center">
-                  <div class="col-12">
-                    <input class="points" type="text" size="2" readonly id="home_points[<?php echo $r ?>]" name="home_points[<?php echo $r ?>]" value="<?php echo isset($rubber->home_points) ? $rubber->home_points : '' ?>" />
-                    <input class="points" type="text" size="2" readonly id="away_points[<?php echo $r ?>]" name="away_points[<?php echo $r ?>]" value="<?php echo isset($rubber->away_points) ? $rubber->away_points : '' ?>" />
-                  </div>
+                <div class="row text-center mb-3">
+                    <div class="col-12">
+                      <input class="points" type="text" size="2" readonly id="home_points[<?php echo $r ?>]" name="home_points[<?php echo $r ?>]" value="<?php echo isset($rubber->home_points) ? $rubber->home_points : '' ?>" />
+                      <input class="points" type="text" size="2" readonly id="away_points[<?php echo $r ?>]" name="away_points[<?php echo $r ?>]" value="<?php echo isset($rubber->away_points) ? $rubber->away_points : '' ?>" />
+                    </div>
                 </div>
               </div>
             </div>

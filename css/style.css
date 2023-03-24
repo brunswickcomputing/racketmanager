@@ -666,6 +666,12 @@ div.teamlist .header .ui-icon {
 .racketmanager_widget table.racketmanager tr, .racketmanager_widget table.racketmanager tr.alternate {
 	/*background-color: transparent;*/
 	}
+input[type="checkbox"].checkbox:checked {
+    filter: hue-rotate(236deg);
+}
+input[type="checkbox"].checkbox.is-invalid {
+    filter: hue-rotate(180deg);
+}
 
 .points {
     text-align: center;

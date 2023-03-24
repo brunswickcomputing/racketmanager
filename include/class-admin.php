@@ -3191,6 +3191,17 @@ final class RacketManagerAdmin extends RacketManager
 				$options['keys']['googleMapsKey'] = htmlspecialchars($_POST['googleMapsKey']);
 				$options['keys']['recaptchaSiteKey'] = htmlspecialchars($_POST['recaptchaSiteKey']);
 				$options['keys']['recaptchaSecretKey'] = htmlspecialchars($_POST['recaptchaSecretKey']);
+				$options['player']['walkover']['female'] = htmlspecialchars($_POST['walkoverFemale']);
+				$options['player']['noplayer']['female'] = htmlspecialchars($_POST['noplayerFemale']);
+				$options['player']['share']['female'] = htmlspecialchars($_POST['shareFemale']);
+				$options['player']['unregistered']['female'] = htmlspecialchars($_POST['unregisteredFemale']);
+				$options['player']['walkover']['male'] = htmlspecialchars($_POST['walkoverMale']);
+				$options['player']['noplayer']['male'] = htmlspecialchars($_POST['noplayerMale']);
+				$options['player']['share']['male'] = htmlspecialchars($_POST['shareMale']);
+				$options['player']['unregistered']['male'] = htmlspecialchars($_POST['unregisteredMale']);
+				$options['player']['walkover']['rubber'] = htmlspecialchars($_POST['walkoverPointsRubber']);
+				$options['player']['walkover']['match'] = htmlspecialchars($_POST['walkoverPointsMatch']);
+				$options['player']['share']['rubber'] = htmlspecialchars($_POST['sharePoints']);
 
 				update_option( 'leaguemanager', $options );
 				$this->setMessage(__( 'Settings saved', 'racketmanager' ));

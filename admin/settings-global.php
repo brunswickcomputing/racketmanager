@@ -34,6 +34,9 @@
 					<li class="nav-item" role="presentation">
 						<button class="nav-link" id="keys-tab" data-bs-toggle="tab" data-bs-target="#keys" type="button" role="tab" aria-controls="keys" aria-selected="false"><?php _e( 'Keys', 'racketmanager' ) ?></button>
 					</li>
+					<li class="nav-item" role="presentation">
+						<button class="nav-link" id="walkover-tab" data-bs-toggle="tab" data-bs-target="#walkover" type="button" role="tab" aria-controls="walkover" aria-selected="false"><?php _e( 'Walkovers', 'racketmanager' ) ?></button>
+					</li>
 				</ul>
 
 				<!-- Tab panes -->
@@ -58,6 +61,9 @@
 					</div>
 					<div class="tab-pane fade" id="keys" role="tabpanel" aria-labelledby="keys-tab">
 						<?php include(RACKETMANAGER_PATH . 'admin/includes/settings/keys.php'); ?>
+					</div>
+					<div class="tab-pane fade" id="walkover" role="tabpanel" aria-labelledby="walkover-tab">
+						<?php include(RACKETMANAGER_PATH . 'admin/includes/settings/walkover.php'); ?>
 					</div>
 				</div>
 			</div>

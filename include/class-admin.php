@@ -4171,7 +4171,11 @@ final class RacketManagerAdmin extends RacketManager
 	private function scheduleLeagueMatches($competitions) {
 		global $wpdb, $racketmanager;
 
+		$i = 1;
+		do {
 		$result = $this->validateSchedule($competitions);
+			$i ++;
+		} while ( $result == false || $i > 20 );
 
 		if ( $result ) {
 			foreach ($competitions as $competitionId) {

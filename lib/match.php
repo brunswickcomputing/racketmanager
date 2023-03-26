@@ -72,7 +72,7 @@ final class Match {
       if ( $this->home_points != "" && $this->away_points != "" ) {
         $this->homeScore = $this->home_points;
         $this->awayScore = $this->away_points;
-        $this->score = sprintf("%d - %d", $this->homeScore, $this->awayScore);
+        $this->score = sprintf("%s - %s", $this->homeScore, $this->awayScore);
       } else {
         $this->homeScore = "";
         $this->awayScore = "";
@@ -242,6 +242,7 @@ final class Match {
     }
 
     $score = array( 'home' => $home_points, 'away' => $away_points );
+    debug_to_console($score);
 
     if ( isset($home_points) && isset($away_points) ) {
       $points = $score;

@@ -1484,19 +1484,21 @@ class RacketManagerShortcodes extends RacketManager {
 		array_multisort($matchTimes);
 		$startTimes = array();
 		$startTime = strtotime($tournament->starttime);
-		$maxSchedules = ceil($numMatches / $tournament->numcourts);
-		for ($i=0; $i < $maxSchedules; $i++) {
-			$startTimes[$i] = date('H:i', $startTime);
-			$startTime = $startTime + strtotime($tournament->timeincrement);
-		}
-
-		$numSlots = count($matchTimes);
-		for ($i=0; $i < $numSlots; $i++) {
-			if ( !in_array($matchTimes[$i],$startTimes) ) {
-				unset($matchTimes[$i]);
+		if ($tournament->numcourts > 0 ) {
+			$maxSchedules = ceil($numMatches / $tournament->numcourts);
+			for ($i=0; $i < $maxSchedules; $i++) {
+				$startTimes[$i] = date('H:i', $startTime);
+				$startTime = $startTime + strtotime($tournament->timeincrement);
 			}
-		}
-		$matchTimes = array_values($matchTimes);
+	
+			$numSlots = count($matchTimes);
+			for ($i=0; $i < $numSlots; $i++) {
+				if ( !in_array($matchTimes[$i],$startTimes) ) {
+					unset($matchTimes[$i]);
+				}
+			}
+			$matchTimes = array_values($matchTimes);
+			}
 
 		$filename = ( !empty($template) ) ? 'orderofplay-'.$template : 'orderofplay';
 

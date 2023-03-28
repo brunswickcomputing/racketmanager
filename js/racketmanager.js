@@ -64,7 +64,7 @@ jQuery(document).ready(function($) {
 		tournament = tournament.replace(/\s/g, "_"); // Replace space with a '-' symbol */
 		var season = jQuery(`#season`).val();
 
-		var cleanUrl = window.location.protocol + '//' + window.location.host + '/tournaments/' + season + '/order-of-play/' + tournament.toLowerCase() + '/' ;
+		var cleanUrl = window.location.protocol + '//' + window.location.host + '/tournaments/' + season + '/' + season + '-order-of-play/' + tournament.toLowerCase() + '/' ;
 		window.location = cleanUrl;
 
 		return false;  // Prevent default button behaviour

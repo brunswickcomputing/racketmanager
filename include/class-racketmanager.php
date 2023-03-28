@@ -493,13 +493,13 @@ class RacketManager {
     // tournament order of play - type - season - tournament
     add_rewrite_rule(
       'tournaments/(.+?)/order-of-play/(.+?)/?$',
-      'index.php?pagename=tournaments%2F$matches[1]%2Forder-of-play&tournament=$matches[2]&type=$matches[1]',
+      'index.php?pagename=tournaments%2F$matches[1]%2F$matches[1]-order-of-play&tournament=$matches[2]&type=$matches[1]',
       'top'
     );
     // tournament order of play - type - season
     add_rewrite_rule(
       'tournaments/(.+?)/order-of-play/?$',
-      'index.php?pagename=tournaments%2F$matches[1]%2Forder-of-play&type=$matches[1]',
+      'index.php?pagename=tournaments%2F$matches[1]%2F$matches[1]-order-of-play&type=$matches[1]',
       'top'
     );
     // tournament - season

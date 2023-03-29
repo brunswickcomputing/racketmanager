@@ -570,6 +570,7 @@ class RacketManagerAJAX extends RacketManager {
 
 		if ( isset($_POST['updateRubber'])) {
 			check_admin_referer('rubbers-match');
+			$updatedRubbers = '';
 			$return = array();
 			$msg = '';
 			$errField = array();
@@ -681,16 +682,21 @@ class RacketManagerAJAX extends RacketManager {
 							$round = $league->championship->getFinals($_POST['match_round'])['round'];
 							$league->championship->updateFinalResults( $matches, $homePoints, $awayPoints, $homeTeam, $awayTeam, $custom, $round, $season  );
 							$msg = __('Match saved','racketmanager');
+							$updated = true;
 						} else {
 							$matchCount = $league->_updateResults( $matches, $homePoints, $awayPoints, $homeTeam, $awayTeam, $custom, $season );
 							if ( $matchCount > 0 ) {
 								$msg = sprintf(__('Saved Results of %d matches','racketmanager'), $matchCount);
+								$updated = true;
 							} else {
 								$msg = __('No matches to save','racketmanager');
+								$updated = false;
 							}
 						}
 						if ( $userType != 'admin' ) {
-							$matchConfirmed = 'Y';
+							if ( $updated ) {
+								$matchConfirmed = 'Y';
+							}
 							$this->resultNotification($matchConfirmed, $matchMessage, $match, $matchUpdatedby);
 						}
 					} elseif ( $matchConfirmed == 'A' ) {
@@ -1205,8 +1211,14 @@ class RacketManagerAJAX extends RacketManager {
 				$headers[] = $racketmanager->getFromUserEmail();
 				$subject = $racketmanager->site_name." - ".$match->league->title." - ".$match->match_title." - ".$matchMessage;
 				if ( $matchStatus == 'Y' ) {
-					$messageArgs['complete'] = true;
-					$subject .= " - ".__('Match complete', 'racketmanager');
+					$match = get_match($match->id);
+					if ( $match->hasResultChecks() ) {
+						$messageArgs['errors'] = true;
+						$subject .= " - ".__('Check results', 'racketmanager');
+					} else {
+						$messageArgs['complete'] = true;
+						$subject .= " - ".__('Match complete', 'racketmanager');
+					}
 				}
 				$message = racketmanager_result_notification($match->id, $messageArgs );
 			}

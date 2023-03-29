@@ -747,7 +747,8 @@ class RacketManagerAJAX extends RacketManager {
 		$player['share']['female']['away'] = $club->getPlayer($playerOptions['share']['female']);
 		$updatedRubbers = array();
 
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_results_checker} WHERE `match_id` = %d", $match->id) );
+		$match = get_match($match->id);
+		$match->delResultCheck();
 
 		for ($ix = 1; $ix <= $numRubbers; $ix++) {
 			$rubberId       = $_POST['id'][$ix];
@@ -921,17 +922,12 @@ class RacketManagerAJAX extends RacketManager {
 						$matchConfirmed = 'P';
 
 						$checkOptions = $options['checks'];
-						if ( !empty($homeplayer1) ) {
-							$this->checkPlayerResult($match, $rubberId, $homeplayer1, $match->home_team, $checkOptions);
-						}
-						if ( !empty($homeplayer2) ) {
-							$this->checkPlayerResult($match, $rubberId, $homeplayer2, $match->home_team, $checkOptions);
-						}
-						if ( !empty($awayplayer1) ) {
-							$this->checkPlayerResult($match, $rubberId, $awayplayer1, $match->away_team, $checkOptions);
-						}
-						if ( !empty($awayplayer2) ) {
-							$this->checkPlayerResult($match, $rubberId, $awayplayer2, $match->away_team, $checkOptions);
+						$playerOptions = $options['player'];
+						$players = array($homeplayer1, $homeplayer2, $awayplayer1, $awayplayer2);
+						foreach ( $players as $playerRef ) {
+							if ( !empty($playerRef) ) {
+								$this->checkPlayerResult($match, $rubberId, $playerRef, $match->home_team, $checkOptions, $playerOptions);
+							}
 						}
 						$updatedRubbers[$rubberId]['players']['home'][] = $homeplayer1;
 						$updatedRubbers[$rubberId]['players']['home'][] = $homeplayer2;
@@ -1299,11 +1295,23 @@ class RacketManagerAJAX extends RacketManager {
 	* @param match $match
 	* @return none
 	*/
-	public function checkPlayerResult( $match, $rubber, $rosterId, $team, $options ) {
-		global $wpdb, $racketmanager;
+	public function checkPlayerResult( $match, $rubber, $rosterId, $team, $options, $playerOptions ) {
+		global $wpdb, $racketmanager, $match;
 
+		$match = get_match($match->id);
 		$player = $racketmanager->getRosterEntry($rosterId, $team);
 		if ( !empty($player->system_record) ) {
+			if ( $player->gender == 'M' ) {
+				$gender = 'male';
+			} elseif ( $player->gender == 'F' ) {
+				$gender = 'female';
+			} else {
+				$gender = 'unknown';
+			}
+			if ( isset($playerOptions['unregistered'][$gender]) && $player->player_id == $playerOptions['unregistered'][$gender] ) {
+				$error = __('Unregistered player', 'racketmanager');
+				$match->addResultCheck( $team, $player->player_id, $error );
+			}
 			return;
 		}
 
@@ -1312,7 +1320,7 @@ class RacketManagerAJAX extends RacketManager {
 
 		if ( !is_numeric($rosterId) ) {
 			$error = __('Player not selected', 'racketmanager');
-			$racketmanager->addResultCheck($match, $team, 0, $error );
+			$match->addResultCheck( $team, 0, $error );
 		}
 
 		if ( $player ) {
@@ -1322,15 +1330,15 @@ class RacketManagerAJAX extends RacketManager {
 				$interval = $rosterDate->diff($matchDate);
 				if ( $interval->days < intval($options['rosterLeadTime']) ) {
 					$error = sprintf(__('registered with club only %d days before match','racketmanager'), $interval->days);
-					$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
+					$match->addResultCheck( $team, $player->player_id, $error );
 				} elseif ( $interval->invert ) {
 					$error = sprintf(__('registered with club %d days after match','racketmanager'), $interval->days);
-					$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
+					$match->addResultCheck( $team, $player->player_id, $error );
 				}
 			}
 			if ( !empty($player->locked) ) {
 				$error = __('locked', 'racketmanager');
-				$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
+				$match->addResultCheck( $team, $player->player_id, $error );
 			}
 
 			if ( isset($match->match_day) ) {
@@ -1339,7 +1347,7 @@ class RacketManagerAJAX extends RacketManager {
 				$count = $wpdb->get_var($sql);
 				if ( $count > 0 ) {
 					$error = sprintf(__('already played on match day %d','racketmanager'), $match->match_day);
-					$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
+					$match->addResultCheck( $team, $player->player_id, $error );
 				}
 
 				if ( isset($options['playedRounds']) ) {
@@ -1351,7 +1359,7 @@ class RacketManagerAJAX extends RacketManager {
 						$count = $wpdb->get_var($sql);
 						if ( $count == 0 ) {
 							$error = sprintf(__('not played before the final %d match days','racketmanager'), $options['playedRounds']);
-							$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
+							$match->addResultCheck( $team, $player->player_id, $error );
 						}
 					}
 
@@ -1373,7 +1381,7 @@ class RacketManagerAJAX extends RacketManager {
 						foreach ( $teamplay as $teamNum => $played) {
 							if ($teamNum < $currTeamNum && $played > $options['playerLocked']) {
 								$error = sprintf(__('locked to team %d','racketmanager'), $teamNum);
-								$racketmanager->addResultCheck($match, $team, $player->player_id, $error );
+								$match->addResultCheck( $team, $player->player_id, $error );
 							}
 						}
 					}

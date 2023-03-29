@@ -1692,22 +1692,6 @@ class RacketManager {
     }
 
     /**
-    * add entry to results checker for errors on match result
-    *
-    * @param match $match
-    * @param int $team
-    * @param int $player
-    * @param string $error
-    * @return none
-    */
-    public function addResultCheck( $match, $team, $player, $error ) {
-      global $wpdb;
-
-      $wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->racketmanager_results_checker} (`league_id`, `match_id`, `team_id`, `player_id`, `description`) values ( %d, %d, %d, %d, '%s') ", $match->league_id, $match->id, $team, $player, $error ) );
-
-    }
-
-    /**
     * check user allowed to update match
     *
     * @param array $home_team

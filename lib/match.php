@@ -242,7 +242,6 @@ final class Match {
     }
 
     $score = array( 'home' => $home_points, 'away' => $away_points );
-    debug_to_console($score);
 
     if ( isset($home_points) && isset($away_points) ) {
       $points = $score;
@@ -342,6 +341,43 @@ final class Match {
     }
 
     return $rubbers;
+  }
+
+  /**
+  * delete result checker entries for match
+  *
+  * @param none
+  * @return null
+  */
+  public function delResultCheck() {
+    global $wpdb, $racketmanager;
+    $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_results_checker} WHERE `match_id` = %d", $this->id) );
+  }
+
+  /**
+  * add entry to results checker for errors on match result
+  *
+  * @param int $team
+  * @param int $player
+  * @param string $error
+  * @return none
+  */
+  public function addResultCheck( $team, $player, $error ) {
+    global $wpdb;
+
+    $wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->racketmanager_results_checker} (`league_id`, `match_id`, `team_id`, `player_id`, `description`) values ( %d, %d, %d, %d, '%s') ", $this->league_id, $this->id, $team, $player, $error ) );
+
+  }
+  
+  /**
+  * are there result checker entries for match
+  *
+  * @param none
+  * @return null
+  */
+  public function hasResultChecks() {
+    global $wpdb, $racketmanager;
+    return $wpdb->get_var( $wpdb->prepare("select count(*) FROM {$wpdb->racketmanager_results_checker} WHERE `match_id` = %d", $this->id) );
   }
 
 }

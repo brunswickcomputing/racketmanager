@@ -50,21 +50,6 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
-= 7.3.0 =
-* UPDATE: restructure main code class
-* UPDATE: add roster entry level option
-* UPDATE: add lta number required option
-* UPDATE: rename BTM to LTA tennis number
-* UPDATE: add new relegation option
-* UPDATE: add walkover/shared rubber result entry
-* UPDATE: add walkover rules for rubber/match scores
-* UPDATE: allow multiple league schedule attempts
-* UPDATE: move results checker to match class
-* UPDATE: add unregistered player to results check
-* BUGFIX: display match scores correctly (issue #13)
-* BUGFIX: make order of play screens work correctly
-* BUGFIX: handle order of play screen when no entries
-
 = 7.2.1 =
 * BUGFIX: update club address from front end (issue #10)
 * BUGFIX: display tournament competitions correctly (issue #9)

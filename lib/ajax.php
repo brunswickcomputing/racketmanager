@@ -929,8 +929,8 @@ class RacketManagerAJAX extends RacketManager {
 
 						$checkOptions = $options['checks'];
 						$playerOptions = $options['player'];
-						$players = array($homeplayer1, $homeplayer2, $awayplayer1, $awayplayer2);
-						foreach ( $players as $playerRef ) {
+						$rubberPlayers = array($homeplayer1, $homeplayer2, $awayplayer1, $awayplayer2);
+						foreach ( $rubberPlayers as $playerRef ) {
 							if ( !empty($playerRef) ) {
 								$this->checkPlayerResult($match, $rubberId, $playerRef, $match->home_team, $checkOptions, $playerOptions);
 							}

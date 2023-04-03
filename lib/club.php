@@ -188,13 +188,7 @@ final class Club {
     $class = '';
     foreach ( $teams AS $i => $team ) {
       $class = ( 'alternate' == $class ) ? '' : 'alternate';
-      $team->roster = maybe_unserialize($team->roster);
-      $team->title = htmlspecialchars(stripslashes($team->title), ENT_QUOTES);
-      $team->affiliatedclub = stripslashes($team->affiliatedclub);
-      $team->affiliatedclubname = get_club( $team->affiliatedclub )->name;
-      $team->stadium = stripslashes($team->stadium);
-      $team->class = $class;
-
+      $team = get_team($team->id);
       $teams[$i] = $team;
     }
 

@@ -195,9 +195,6 @@ final class LeagueTeam {
       $class[] = "N";
 
       if ( $key == 2 ) $class[] = "clear";
-      if ( $link )
-      $last5 .= '<a href="?match_'.$this->league_id.'='.$match->id.'"  class="'.implode(' ', $class).' last5-bg" title="'.$match->tooltipTitle.'">&nbsp;</a>';
-      else
       $last5 .= '<span class="'.implode(' ', $class).' last5-bg" title="'.$match->tooltipTitle.'">&nbsp;</span>';
     }
 

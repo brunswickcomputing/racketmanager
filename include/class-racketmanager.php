@@ -109,7 +109,7 @@ class RacketManager {
       return $template;
     }
 
-    $file = plugin_dir_path( __FILE__ ). get_post_meta($post->ID, '_wp_page_template', true);
+    $file = RACKETMANAGER_PATH. get_post_meta($post->ID, '_wp_page_template', true);
 
     // Just to be safe, we check if the file exist first
     if ( file_exists( $file ) ) {
@@ -130,10 +130,10 @@ class RacketManager {
     global $post;
 
     if ( is_category('rules') ) {
-      $template = plugin_dir_path( __FILE__ ).'templates/pages/category-rules.php';
+      $template = RACKETMANAGER_PATH.'templates/pages/category-rules.php';
     }
     if ( is_category('how-to') ) {
-      $template = plugin_dir_path( __FILE__ ).'templates/pages/category-how-to.php';
+      $template = RACKETMANAGER_PATH.'templates/pages/category-how-to.php';
     }
     return $template;
   }

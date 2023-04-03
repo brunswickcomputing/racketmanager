@@ -1967,7 +1967,7 @@ class RacketManagerAJAX extends RacketManager {
 				}
 				$teamId = isset($teams[$competition->id]) ? $teams[$competition->id] : 0;
 				if ( $teamId ) {
-					$team = $club->getTeam($teamId);
+					$team = get_team($teamId);
 					$captain = isset($captains[$competition->id]) ? $captains[$competition->id] : 0;
 					$captainId = isset($captainIds[$competition->id]) ? $captainIds[$competition->id] : 0;
 					$contactno = isset($contactnos[$competition->id]) ? $contactnos[$competition->id] : '';

@@ -1499,8 +1499,7 @@ final class RacketManagerAdmin extends RacketManager
 			if ( isset( $_GET['edit'] ) ) {
 				$edit = true;
 				if ( $noleague ) {
-					$club = get_club($clubId);
-					$team = $club->getTeam(intval($_GET['edit']));
+					$team = get_team(intval($_GET['edit']));
 				} else {
 					$team = $league->getTeamDtls(intval($_GET['edit']));
 				}

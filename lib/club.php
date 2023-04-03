@@ -174,7 +174,7 @@ final class Club {
     global $wpdb;
 
     $args = array();
-    $sql = "SELECT `id`, `title`, `affiliatedclub`, `stadium`, `home`, `roster`, `profile` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d'";
+    $sql = "SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d'";
     $args[] = intval($this->id);
     if ( !$players ) {
       $sql .= " AND `status` != 'P'";
@@ -203,27 +203,6 @@ final class Club {
     }
 
     return $teams;
-  }
-
-  /**
-  * get single team from database
-  *
-  * @param int $team_id
-  * @return Tea
-  */
-  public function getTeam( $team_id ) {
-    global $wpdb;
-
-    $sql = "SELECT `id`, `title`, `affiliatedclub`, `stadium`, `home`, `roster`, `profile`, `type` FROM {$wpdb->racketmanager_teams} WHERE `id` = ".$team_id;
-
-    $team = $wpdb->get_row( $sql );
-
-    $team->roster = maybe_unserialize($team->roster);
-    $team->title = htmlspecialchars(stripslashes($team->title), ENT_QUOTES);
-    $team->affiliatedclubname = get_club( $team->affiliatedclub )->name;
-    $team->stadium = stripslashes($team->stadium);
-
-    return $team;
   }
 
   /**

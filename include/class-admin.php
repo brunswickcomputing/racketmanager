@@ -1254,7 +1254,10 @@ final class RacketManagerAdmin extends RacketManager
 					$club = get_club(intval($_POST['club_id']));
 					$club->name = htmlspecialchars(strip_tags($_POST['club']));
 					$club->type = htmlspecialchars($_POST['type']);
+					$oldShortcode = $club->shortcode;
+					if ( $club->shortcode != htmlspecialchars($_POST['shortcode']) ) {
 					$club->shortcode = htmlspecialchars($_POST['shortcode']);
+					}
 					$club->matchsecretary = intval($_POST['matchsecretary']);
 					$club->matchSecretaryContactNo = htmlspecialchars($_POST['matchSecretaryContactNo']);
 					$club->matchSecretaryEmail = htmlspecialchars($_POST['matchSecretaryEmail']);
@@ -1265,7 +1268,7 @@ final class RacketManagerAdmin extends RacketManager
 					$club->address = htmlspecialchars($_POST['address']);
 					$club->latitude = htmlspecialchars($_POST['latitude']);
 					$club->longitude = htmlspecialchars($_POST['longitude']);
-					$club->update( $club );
+					$club->update( $club, $oldShortcode );
 					$this->setMessage( __('Club updated','racketmanager') );
 				}
 				$this->printMessage();

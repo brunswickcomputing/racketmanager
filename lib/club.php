@@ -98,13 +98,23 @@ final class Club {
 	* update club
 	*
 	* @param object $club
-	* @return boolean
+  * @param string $oldShortcode
+	* @return null
 	*/
-	public function update( $club ) {
+	public function update( $club, $oldShortcode ) {
 		global $wpdb;
 
-		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_clubs} SET `name` = '%s', `type` = '%s', `shortcode` = '%s',`matchsecretary` = '%d', `contactno` = '%s', `website` = '%s', `founded`= '%s', `facilities` = '%s', `address` = '%s', `latitude` = '%s', `longitude` = '%s' WHERE `id` = %d", $club->name, $club->type, $club->shortcode, $club->matchsecretary, $club->contactno, $club->website, $club->founded, $club->facilities, $club->address, $club->latitude, $club->longitude, $club->id ) );
+		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_clubs} SET `name` = '%s', `type` = '%s', `shortcode` = '%s',`matchsecretary` = '%d', `contactno` = '%s', `website` = '%s', `founded`= '%s', `facilities` = '%s', `address` = '%s', `latitude` = '%s', `longitude` = '%s' WHERE `id` = %d", $club->name, $club->type, $club->shortcode, $club->matchsecretary, $club->contactno, $club->website, $club->founded, $club->facilities, $club->address, $club->latitude, $club->longitude, $this->id ) );
 
+    if ( $oldShortcode != $this->shortcode ) {
+      $teams = $this->getTeams();
+      foreach ( $teams as $team ) {
+        $teamRef = substr($team->title,strlen($oldShortcode)+1,strlen($team->title));
+        debug_to_console($teamRef);
+        $newTitle = $club->shortcode.' '.$teamRef;
+        debug_to_console($newTitle);
+      }
+    }
 		if ( $club->matchsecretary != '') {
 			$currentContactNo = get_user_meta( $club->matchsecretary, 'contactno', true);
 			$currentContactEmail = get_userdata($club->matchsecretary)->user_email;

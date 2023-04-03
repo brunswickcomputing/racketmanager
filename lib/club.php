@@ -109,10 +109,10 @@ final class Club {
     if ( $oldShortcode != $this->shortcode ) {
       $teams = $this->getTeams();
       foreach ( $teams as $team ) {
+        $team = get_team($team->id);
         $teamRef = substr($team->title,strlen($oldShortcode)+1,strlen($team->title));
-        debug_to_console($teamRef);
         $newTitle = $club->shortcode.' '.$teamRef;
-        debug_to_console($newTitle);
+        $team->updateTitle($newTitle);
       }
     }
 		if ( $club->matchsecretary != '') {

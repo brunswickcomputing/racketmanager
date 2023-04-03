@@ -76,6 +76,16 @@ final class Team {
 		}
 	}
 
+  	/**
+	* update title
+	*
+	* @param string $title
+	*/
+	public function updateTitle( $title ) {
+		global $wpdb;
+		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_teams} SET `title` = '%s' WHERE `id` = %d", $title, $this->id ) );
+	}
+
 }
 
 /**

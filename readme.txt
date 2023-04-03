@@ -50,6 +50,13 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 7.3.1 =
+* BUGFIX: fix check for match tie-break player played
+* BUGFIX: message functions now in main class
+* BUGFIX: remove unused $link
+* UPDATE: use correct team class
+* UPDATE: update club teams when shortcode changed
+
 = 7.3.0 =
 * UPDATE: restructure main code class
 * UPDATE: add roster entry level option

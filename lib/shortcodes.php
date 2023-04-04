@@ -557,7 +557,7 @@ class RacketManagerShortcodes extends RacketManager {
 
 		if ( !$club ) return;
 
-		$rosters = $club->getRoster( array( 'inactive' => "Y", 'type' => 'real', 'cache' => false ) );
+		$rosters = $club->getPlayers( array( 'inactive' => "Y", 'type' => 'real', 'cache' => false ) );
 		$rosterRequests = $club->getRosterRequests( array() );
 		$keys = $racketmanager->getOptions('keys');
 		$googleMapsKey = isset($keys['googleMapsKey']) ? $keys['googleMapsKey'] : '';

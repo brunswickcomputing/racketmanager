@@ -79,7 +79,7 @@ namespace ns;
 				</div>
 				<?php if ( !$club_id == 0 ) { $club = get_club($club_id); ?>
 
-					<?php if ( $rosters = $club->getRoster(array()) ) {
+					<?php if ( $rosters = $club->getPlayers(array()) ) {
 						$class = '';
 						foreach ( $rosters AS $roster ) { ?>
 							<?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>

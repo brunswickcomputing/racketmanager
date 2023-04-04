@@ -356,14 +356,12 @@ final class Club {
   * @param array $query_args
   * @return array
   */
-  public function getRoster( $args, $output = 'OBJECT' ) {
+  public function getPlayers( $args ) {
     global $wpdb;
 
     $defaults = array( 'count' => false, 'team' => false, 'player' => false, 'gender' => false, 'inactive' => false, 'cache' => true, 'type' => false, 'orderby' => array("display_name" => "ASC" ));
     $args = array_merge($defaults, (array)$args);
     extract($args, EXTR_SKIP);
-
-    //$cachekey = md5(implode(array_map(function($entry) { if(is_array($entry)) { return implode($entry); } else { return $entry; } }, $args)) . $output);
 
     $search_terms = array();
     if ($team) {
@@ -375,7 +373,8 @@ final class Club {
     }
 
     if ($gender) {
-      //            $search_terms[] = $wpdb->prepare("`gender` = '%s'", htmlspecialchars(strip_tags($gender)));
+      $gender = htmlspecialchars(strip_tags($gender));
+      $search_terms[] = $wpdb->prepare("'%s' = '%s'", $gender, $gender);
     }
 
     if ($type) {
@@ -387,42 +386,38 @@ final class Club {
     }
 
     $search = "";
-    if (count($search_terms) > 0) {
+    if ( !empty($search_terms) ) {
       $search = implode(" AND ", $search_terms);
     }
 
     $orderby_string = ""; $i = 0;
     foreach ($orderby AS $order => $direction) {
-      if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) $direction = "ASC";
+      if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) { $direction = "ASC"; }
       $orderby_string .= "`".$order."` ".$direction;
-      if ($i < (count($orderby)-1)) $orderby_string .= ",";
+      if ($i < (count($orderby)-1)) { $orderby_string .= ","; }
       $i++;
     }
     $order = $orderby_string;
 
-    $offset = 0;
-
     if ( $count ) {
       $sql = "SELECT COUNT(ID) FROM {$wpdb->racketmanager_roster} WHERE `affiliatedclub` = ".$this->id;
-      if ( $search != "") $sql .= " AND $search";
+      if ( $search != "") { $sql .= " AND $search"; }
       $cachekey = md5($sql);
-      if ( isset($this->num_players[$cachekey]) && $cache && $count )
+      if ( isset($this->num_players[$cachekey]) && $cache && $count ) {
       return intval($this->num_players[$cachekey]);
-
+      } else {
       $this->num_players[$cachekey] = $wpdb->get_var($sql);
       return $this->num_players[$cachekey];
     }
+    }
 
-    $sql = "SELECT A.`id` as `roster_id`, B.`ID` as `player_id`, `display_name` as fullname, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_roster} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID` WHERE `affiliatedclub` = ".$this->id ;
-    if ( $search != "") $sql .= " AND $search";
-    if ( $order != "") $sql .= " ORDER BY $order";
+    $sql = "SELECT A.`id` as `roster_id`, A.`player_id`, `display_name` as fullname, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_roster} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID` WHERE `affiliatedclub` = ".$this->id ;
+    if ( $search != "") { $sql .= " AND $search"; }
+    if ( $order != "") { $sql .= " ORDER BY $order"; }
 
     $rosters = wp_cache_get( md5($sql), 'rosters' );
     if ( !$rosters ) {
       $rosters = $wpdb->get_results( $sql );
-      wp_cache_set( md5($sql), $rosters, 'rosters' );
-    }
-
     $i = 0;
     $class = '';
     foreach ( $rosters AS $roster ) {
@@ -433,9 +428,10 @@ final class Club {
 
       $rosters[$i]->roster_id = $roster->roster_id;
       $rosters[$i]->player_id = $roster->player_id;
-      $rosters[$i]->fullname = $roster->fullname;
       $rosters[$i]->gender = get_user_meta($roster->player_id, 'gender', true );
-      $rosters[$i]->type = get_user_meta($roster->player_id, 'racketmanager_type', true );
+        if ( $gender && $gender != $rosters[$i]->gender ) {
+          unset($rosters[$i]);
+        } else {
       $rosters[$i]->removed_date = $roster->removed_date;
       $rosters[$i]->removed_user = $roster->removed_user;
       if ( $roster->removed_user ) {
@@ -443,7 +439,6 @@ final class Club {
       } else {
         $rosters[$i]->removedUserName = '';
       }
-      $rosters[$i]->btm = get_user_meta($roster->player_id, 'btm', true );;
       $rosters[$i]->created_date = $roster->created_date;
       $rosters[$i]->created_user = $roster->created_user;
       if ( $roster->created_user ) {
@@ -451,19 +446,19 @@ final class Club {
       } else {
         $rosters[$i]->createdUserName = '';
       }
-      if ( $gender && $gender != $rosters[$i]->gender ) {
-        unset($rosters[$i]);
-      }
-      $rosters[$i]->locked = get_user_meta($roster->player_id, 'locked', true );
-			$rosters[$i]->locked_date = get_user_meta($roster->player_id, 'locked_date', true );
-			$rosters[$i]->locked_user = get_user_meta($roster->player_id, 'locked_user', true );
-			if ( $rosters[$i]->locked_user ) {
-				$rosters[$i]->lockedUserName = get_userdata($rosters[$i]->locked_user)->display_name;
-			} else {
-				$rosters[$i]->lockedUserName = '';
+          $player = get_player($roster->player_id);
+          $rosters[$i]->fullname = $player->display_name;
+          $rosters[$i]->type = $player->type;
+          $rosters[$i]->btm = $player->btm;
+          $rosters[$i]->locked = $player->locked;
+          $rosters[$i]->locked_date = $player->locked_date;
+          $rosters[$i]->locked_user = $player->locked_user;
+          $rosters[$i]->lockedUserName = $player->lockedUserName;
 			}
 
       $i++;
+      }
+      wp_cache_set( md5($sql), $rosters, 'rosters' );
     }
 
     return $rosters;

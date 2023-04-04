@@ -581,7 +581,9 @@ class RacketManagerAJAX extends RacketManager {
 			$matchRubbers['homepoints'] = isset($_POST['home_points']) ? $_POST['home_points'] : array();
 			$matchRubbers['awaypoints'] = isset( $_POST['away_points']) ? $_POST['away_points'] : array();
 			$numRubbers = $_POST['num_rubbers'];
+			$homeClub = $_POST['home_club'];
 			$homeTeam = $_POST['home_team'];
+			$awayClub = $_POST['away_club'];
 			$awayTeam = $_POST['away_team'];
 			$rmOptions = $racketmanager->getOptions();
 			$matchConfirmed = '';
@@ -603,15 +605,16 @@ class RacketManagerAJAX extends RacketManager {
 							if ( $match->teams['home']->captainId == get_current_user_id() ) {
 								$playerFound = true;
 							}
-							$club = $match->teams['home']->affiliatedclub;
+							$clubId = $match->teams['home']->affiliatedclub;
 						} else {
 							if ( $match->teams['away']->captainId == get_current_user_id() ) {
 								$playerFound = true;
 							}
-							$club = $match->teams['away']->affiliatedclub;
+							$clubId = $match->teams['away']->affiliatedclub;
 						}
 						if ( !$playerFound ) {
-							$playerRoster = $racketmanager->getRoster( array('player' => get_current_user_id(), 'club' => $club, 'inactive' => true) );
+							$club = get_club($clubId);
+							$playerRoster = $club->getPlayers( array('player' => get_current_user_id(), 'inactive' => true) );
 							$playerRosterId = $playerRoster[0]->roster_id;
 							for ($ix = 1; $ix <= $numRubbers; $ix++) {
 								$homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : null;
@@ -651,7 +654,7 @@ class RacketManagerAJAX extends RacketManager {
 
 			if ( !$error ) {
 				if ( $matchConfirmed ) {
-					$matchUpdatedby = $this->updateMatchStatus( $matchId, $matchConfirmed, $homeTeam, $awayTeam, $matchComments );
+					$matchUpdatedby = $this->updateMatchStatus( $matchId, $matchConfirmed, $homeClub, $awayClub, $matchComments );
 					switch ( $matchConfirmed ) {
 						case "A":
 						$matchMessage = 'Result Approved';
@@ -1253,16 +1256,18 @@ class RacketManagerAJAX extends RacketManager {
 	* update match status
 	*
 	*/
-	public function updateMatchStatus( $matchId, $matchConfirmed, $homeTeam, $awayTeam, $comments ) {
+	public function updateMatchStatus( $matchId, $matchConfirmed, $homeClub, $awayClub, $comments ) {
 		global $wpdb, $racketmanager, $league, $match;
 
 		$userid = get_current_user_id();
-		$homeRoster = $racketmanager->getRoster(array("count" => true, "team" => $homeTeam, "player" => $userid, "inactive" => true));
+		$club = get_club($homeClub);
+		$homeRoster = $club->playerActive($userid);
 		if ( $homeRoster > 0 ) { //Home captain
 			$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `home_captain` = %d, `comments` = '%s' WHERE `id` = '%d'", $userid, $matchConfirmed, $userid, $comments, $matchId));
 			return 'home';
 		} else {
-			$awayRoster = $racketmanager->getRoster(array("count" => true, "team" => $awayTeam, "player" => $userid, "inactive" => true));
+			$club = get_club($awayClub);
+			$awayRoster = $club->playerActive($userid);
 			if ( $awayRoster > 0 ) { // Away Captain
 				$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `away_captain` = %d, `comments` = '%s' WHERE `id` = '%d'", $userid, $matchConfirmed, $userid, $comments, $matchId));
 				return 'away';
@@ -1478,7 +1483,8 @@ class RacketManagerAJAX extends RacketManager {
 				$rosterFound = false;
 			} else {
 				$playerId = $player->ID;
-				$rosterCount = $racketmanager->getRoster(array('club' => $affiliatedClub, 'player' => $playerId, 'inactive' => true, 'count' => true));
+				$club = get_club($affiliatedClub);
+				$rosterCount = $club->getPlayers(array('player' => $playerId, 'inactive' => true, 'count' => true));
 				if ( $rosterCount == 0 ) {
 					$rosterFound = false;
 				} else {
@@ -1703,9 +1709,10 @@ class RacketManagerAJAX extends RacketManager {
 			$errorId ++;
 		} else {
 			$playerName = $user->display_name;
-			$playerRoster = $racketmanager->getRoster(array('club' => $affiliatedclub, 'player' => $playerId));
+			$club = get_club($affiliatedclub);
+			$playerRoster = $club->getPlayers(array('player' => $playerId));
 			$playerRosterId = $playerRoster[0]->roster_id;
-			$affiliatedClubName = get_club($affiliatedclub)->name;
+			$affiliatedClubName = $club->name;
 		}
 		$competitions = isset($_POST['competition']) ? $_POST['competition'] : array();
 		if ( empty($competitions) ) {

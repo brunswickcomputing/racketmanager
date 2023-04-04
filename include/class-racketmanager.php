@@ -1717,7 +1717,7 @@ class RacketManager {
             if ( !current_user_can( 'manage_racketmanager' ) ) {
               if ( $matchCapability == 'roster' ) {
                 $club = get_club($homeTeam->affiliatedclub);
-                $homeRoster = $club->getRoster( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
+                $homeRoster = $club->getPlayers( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
                 if ( $homeRoster != 0 ) {
                   if ( $club->matchsecretary == $userid ) {
                     $userType = 'matchsecretary';
@@ -1728,7 +1728,7 @@ class RacketManager {
                   $userCanUpdate = true;
                 } elseif ( $resultEntry == 'either' ) {
                   $club = get_club($awayTeam->affiliatedclub);
-                  $awayRoster = $club->getRoster( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
+                  $awayRoster = $club->getPlayers( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
                   if ( $awayRoster != 0 ) {
                     if ( $club->matchsecretary == $userid ) {
                       $userType = 'matchsecretary';
@@ -2131,21 +2131,23 @@ class RacketManager {
       $match->num_sets = $match->league->num_sets;
       $match->num_rubbers = $match->league->num_rubbers;
       $matchType = $match->league->type;
+      $homeClub = get_club($match->teams['home']->affiliatedclub);
+      $awayClub = get_club($match->teams['away']->affiliatedclub);
       switch ($matchType) {
         case 'MD':
-        $homeRoster['m'] = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-        $awayRoster['m'] = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
+        $homeRoster['m'] = $homeClub->getPlayers(array('gender' => 'M'));
+        $awayRoster['m'] = $awayClub->getPlayers(array('gender' => 'M'));
         break;
         case 'WD':
-        $homeRoster['f'] = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-        $awayRoster['f'] = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
+        $homeRoster['f'] = $homeClub->getPlayers(array('gender' => 'F'));
+        $awayRoster['f'] = $awayClub->getPlayers(array('gender' => 'F'));
         break;
         case 'XD':
         case 'LD':
-        $homeRoster['m'] = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'M'));
-        $homeRoster['f'] = $racketmanager->getRoster(array('team' => $match->home_team, 'gender' => 'F'));
-        $awayRoster['m'] = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'M'));
-        $awayRoster['f'] = $racketmanager->getRoster(array('team' => $match->away_team, 'gender' => 'F'));
+        $homeRoster['m'] = $homeClub->getPlayers(array('gender' => 'M'));
+        $homeRoster['f'] = $homeClub->getPlayers(array('gender' => 'F'));
+        $awayRoster['m'] = $awayClub->getPlayers(array('gender' => 'M'));
+        $awayRoster['f'] = $awayClub->getPlayers(array('gender' => 'F'));
         break;
         default:
         $homeRoster['m'] = array();
@@ -2191,7 +2193,9 @@ class RacketManager {
           <input type="hidden" name="current_match_id" id="current_match_id" value="<?php echo $match->id ?>" />
           <input type="hidden" name="current_season" id="current_season" value="<?php echo $match->season ?>" />
           <input type="hidden" name="num_rubbers" value="<?php echo $match->num_rubbers ?>" />
+          <input type="hidden" name="home_club" value="<?php echo $match->teams['home']->affiliatedclub ?>" />
           <input type="hidden" name="home_team" value="<?php echo $match->home_team ?>" />
+          <input type="hidden" name="away_club" value="<?php echo $match->teams['away']->affiliatedclub ?>" />
           <input type="hidden" name="away_team" value="<?php echo $match->away_team ?>" />
           <input type="hidden" name="match_type" value="<?php echo $match->type ?>" />
           <input type="hidden" name="match_round" value="<?php echo $match->round ?>" />

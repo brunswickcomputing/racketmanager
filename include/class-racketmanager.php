@@ -220,8 +220,8 @@ class RacketManager {
     global $racketmanager_shortcodes, $racketmanager_login;
 
     // Objects
-    require_once (RACKETMANAGER_PATH . '/lib/class-charges.php');
-    require_once (RACKETMANAGER_PATH . '/lib/class-invoice.php');
+    require_once (RACKETMANAGER_PATH . '/include/class-charges.php');
+    require_once (RACKETMANAGER_PATH . '/include/class-invoice.php');
     require_once (RACKETMANAGER_PATH . '/lib/club.php');
     require_once (RACKETMANAGER_PATH . '/lib/championship.php');
     require_once (RACKETMANAGER_PATH . '/lib/competition.php');

@@ -351,7 +351,7 @@ final class RacketManagerAdmin extends RacketManager
 			if ( $view == 'teams' ) {
 				$this->displayTeamsPage();
 			} elseif ( $view == 'roster' ) {
-				$this->displayRosterPage();
+				$this->displayClubPlayersPage();
 			} elseif ( $view == 'player' ) {
 				$this->displayPlayerPage();
 			} else {
@@ -1331,10 +1331,10 @@ final class RacketManagerAdmin extends RacketManager
 	}
 
 	/**
-	* display roster page
+	* display club players page
 	*
 	*/
-	private function displayRosterPage() {
+	private function displayClubPlayersPage() {
 		global $racketmanager;
 
 		if ( !current_user_can( 'edit_teams' ) ) {

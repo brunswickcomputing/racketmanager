@@ -230,6 +230,7 @@ class RacketManager {
     require_once (RACKETMANAGER_PATH . '/lib/match.php');
     require_once (RACKETMANAGER_PATH . '/lib/svg-icons.php');
     require_once (RACKETMANAGER_PATH . '/lib/team.php');
+    require_once (RACKETMANAGER_PATH . '/include/class-player.php');
 
     /*
     * load sports libraries

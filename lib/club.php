@@ -25,17 +25,18 @@ final class Club
     global $wpdb;
 
     switch ($queryTerm) {
-      case "id":
-        $club_id = (int) $club_id;
-        $search = "`id` = '%d'";
-        break;
       case "name":
         $search = "`name` = '%s'";
         break;
       case "shortcode":
         $search = "`shortcode` = '%s'";
         break;
-    }
+      case "id":
+      default:
+          $club_id = (int) $club_id;
+          $search = "`id` = '%d'";
+          break;
+      }
 
     if (!$club_id) {
       return false;
@@ -357,7 +358,7 @@ final class Club
 
     $playerActive = $this->playerActive($player);
     if (!$playerActive) {
-      $roster_id  = $this->addRoster($player, false);
+      $roster_id = $this->addRoster($player, false);
       $roster[$roster_id] = $roster_id;
       $racketmanager->setMessage(__('Player added to club', 'racketmanager'));
     } else {

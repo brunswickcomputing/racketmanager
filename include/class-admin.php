@@ -231,7 +231,7 @@ final class RacketManagerAdmin extends RacketManager
 					<label for="gender"><?php _e( 'Gender','racketmanager' ); ?></label>
 				</th>
 				<td>
-					<input type="radio" required="required" name="gender" value="M" <?php echo ( get_the_author_meta( 'gender', $user->ID )  == 'M') ? 'checked' : '' ?>> <?php _e('Male', 'racketmanager') ?><br />
+					<input type="radio" required name="gender" value="M" <?php echo ( get_the_author_meta( 'gender', $user->ID )  == 'M') ? 'checked' : '' ?>> <?php _e('Male', 'racketmanager') ?><br />
 					<input type="radio" name="gender" value="F" <?php echo ( get_the_author_meta( 'gender', $user->ID )  == 'F') ? 'checked' : '' ?>> <?php _e('Female', 'racketmanager') ?>
 				</td>
 			</tr>
@@ -245,7 +245,7 @@ final class RacketManagerAdmin extends RacketManager
 			</tr>
 			<tr>
 				<th>
-					<label for="btm"><?php _e( 'BTM Number','racketmanager' ); ?></label>
+					<label for="btm"><?php _e( 'LTA Tennis Number','racketmanager' ); ?></label>
 				</th>
 				<td>
 					<input type="number" name="btm" value="<?php echo esc_attr( get_the_author_meta( 'btm', $user->ID ) ); ?>">
@@ -257,6 +257,14 @@ final class RacketManagerAdmin extends RacketManager
 				</th>
 				<td>
 					<input type="date" name="remove_date" value="<?php echo esc_attr( get_the_author_meta( 'remove_date', $user->ID ) ); ?>">
+				</td>
+			</tr>
+			<tr>
+				<th>
+					<label for="locked_date"><?php _e( 'Date Locked','racketmanager' ); ?></label>
+				</th>
+				<td>
+					<input type="date" name="locked_date" value="<?php echo esc_attr( get_the_author_meta( 'locked_date', $user->ID ) ); ?>">
 				</td>
 			</tr>
 		</table>

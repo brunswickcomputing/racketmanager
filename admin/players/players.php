@@ -80,7 +80,7 @@
 							<?php } ?>
 						</div>
 						<div class="col-1 column-num"><?php echo $player->id ?></div>
-						<div class="col-3"><?php echo $player->fullname ?></div>
+						<div class="col-3"><a href="admin.php?page=racketmanager-players&amp;view=player&amp;player_id=<?php echo $player->id ?>"><?php echo $player->fullname ?></a></div>
 						<div class="col-1"><?php echo $player->gender ?></div>
 						<div class="col-1"><?php echo $player->btm ?></div>
 						<div class="col-1"><?php echo substr($player->created_date,0,10) ?></div>

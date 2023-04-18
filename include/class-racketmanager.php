@@ -1293,7 +1293,6 @@ class RacketManager {
     $defaults = array( 'name' => false, 'cache' => true );
     $args = array_merge($defaults, (array)$args);
     extract($args, EXTR_SKIP);
-    $cachekey = md5(implode(array_map(function($entry) { if(is_array($entry)) { return implode($entry); } else { return $entry; } }, $args)) );
     $search = '';
     if ($name) {
       $search = '*'.$name.'*';
@@ -1303,41 +1302,33 @@ class RacketManager {
     $orderbyString = 'display_name';
     $order = 'ASC';
 
-    // use cached object
-    if ( isset($this->players[$cachekey]) && $cache ) {
-      return $this->players[$cachekey];
-    }
-
-    $searchArgs = array();
-    $searchArgs['orderby'] = $orderbyString;
-    $searchArgs['order'] = $order;
+    $userFields = array('ID','display_name');
+    $userArgs = array();
+    $userArgs['meta_key'] = 'gender';
+    $userArgs['meta_value'] = 'M,F';
+    $userArgs['meta_compare'] = 'IN';
+    $userArgs['orderby'] = $orderbyString;
+    $userArgs['order'] = $order;
     if ( $search ) {
-      $searchArgs['search'] = $search;
-      $searchArgs['search_columns'] = array($searchTerms);
+      $userArgs['search'] = $search;
+      $userArgs['search_columns'] = array($searchTerms);
     }
-    $players = get_users( $searchArgs);
+    $userSearch = json_encode($userArgs);
+    $players = wp_cache_get( md5($userSearch), 'players' );
     if ( !$players ) {
-      return false;
+      $userArgs['fields'] = $userFields;
+      $players = get_users( $userArgs);
+      if ( $players ) {
+        $i = 0;
+        foreach ( $players as $player ) {
+          $player = get_player($player->ID);
+          $players[$i] = $player;
+          $i++;
+        }
+          }
+      wp_cache_set( md5($userSearch), $players, 'players' );
     }
-
-    $i = 0;
-    foreach ( $players as $player ) {
-
-      $players[$i] = (object)(array)$player;
-      $players[$i]->id = $player->ID;
-      $players[$i]->fullname = $player->display_name;
-      $players[$i]->firstname = get_user_meta($player->ID, 'first_name', true );
-      $players[$i]->lastname = get_user_meta($player->ID, 'last_name', true );
-      $players[$i]->gender = get_user_meta($player->ID, 'gender', true );
-      $players[$i]->removed_date = get_user_meta($player->ID, 'remove_date', true );
-      $players[$i]->btm = get_user_meta($player->ID, 'btm', true );
-      $players[$i]->created_date = $player->user_registered;
-
-      $i++;
-    }
-
-    $this->players[$cachekey] = $players;
-    return $this->players[$cachekey];
+    return $players;
   }
 
   /**

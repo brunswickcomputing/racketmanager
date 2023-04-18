@@ -30,9 +30,10 @@ final class Player {
 		if ( ! $player ) {
 			$player = get_userdata($player_id);
 
-			if ( !$player ) return false;
-
-			$player = new Player( $player );
+			if ( !$player ) {
+				return false;
+			}
+			$player = new Player( $player->data );
 
 			wp_cache_set( $player_id, $player, 'players' );
 		}
@@ -47,16 +48,25 @@ final class Player {
 	*/
 	public function __construct( $player = null ) {
 		if ( !is_null($player) ) {
-			foreach ( $player->data as $key => $value ) {
+			foreach ( $player as $key => $value ) {
 				$this->$key = $value;
 			}
+
+			if ( !isset($this->ID) ) {
+				$this->ID = $this->add();
+			  }
+		
 			$this->id = $this->ID;
 			$this->email = $this->user_email;
+			$this->fullname = $this->display_name;
+			$this->created_date = $player->user_registered;
 			$this->firstname = get_user_meta($this->ID, 'first_name', true );
 			$this->surname = get_user_meta($this->ID, 'last_name', true );
 			$this->gender = get_user_meta($this->ID, 'gender', true );
 			$this->type = get_user_meta($this->ID, 'racketmanager_type', true );
 			$this->btm = get_user_meta($this->ID, 'btm', true );
+			$this->removed_date = get_user_meta($player->ID, 'remove_date', true );
+			$this->removed_user = get_user_meta($player->ID, 'remove_user', true );
 			$this->locked = get_user_meta($this->ID, 'locked', true );
 			$this->locked_date = get_user_meta($this->ID, 'locked_date', true );
 			$this->locked_user = get_user_meta($this->ID, 'locked_user', true );
@@ -68,7 +78,30 @@ final class Player {
 		}
 	}
 
-  /**
+	private function add() {
+		$this->display_name = $this->firstname.' '.$this->surname;
+		$this->user_email = $this->email;
+		$userdata = array();
+		$userdata['first_name'] = $this->firstname;
+		$userdata['last_name'] = $this->surname;
+		$userdata['display_name'] = $this->display_name;
+		$userdata['user_login'] = $this->firstname.'.'.$this->surname;
+		$userdata['user_pass'] = $userdata['user_login'].'1';
+		if ( $this->email ) {
+		  $userdata['user_email'] = $this->email;
+		}
+		$userId = wp_insert_user( $userdata );
+		if ( ! is_wp_error( $userId ) ) {
+			update_user_meta($userId, 'show_admin_bar_front', false );
+			update_user_meta($userId, 'gender', $this->gender);
+			if ( isset($this->btm) && $this->btm > '' ) {
+				update_user_meta($userId, 'btm', $this->btm);
+			}
+		}
+		return $userId;
+	}
+	
+	/**
 	* update player
 	*
 	* @param string $firstname
@@ -125,6 +158,7 @@ final class Player {
 			$racketmanager->setMessage( __('No updates','racketmanager') );
 			return;
 		}
+		wp_cache_delete( $this->id, 'players' );
 		if ( $userData ) {
 			$userData['ID'] = $this->ID;
 			$userId = wp_update_user($userData);
@@ -138,6 +172,21 @@ final class Player {
 		}
 	}
 
+  	/**
+	* delete player
+	*/
+	public function delete() {
+		global $wpdb;
+
+		$clubPlayer = $wpdb->get_var("SELECT count(*) FROM {$wpdb->racketmanager_roster} WHERE `player_id` = ".$this->id);
+		if ( !$clubPlayer ) {
+			wp_delete_user( $this->id) ;
+		} else {
+			update_user_meta( $this->id, 'remove_date', date('Y-m-d') );
+		}
+		wp_cache_flush_group('players');
+	}
+
 }
 
 /**
@@ -147,8 +196,9 @@ final class Player {
 * @return Player|null
 */
 function get_player( $player = null ) {
-	if ( empty( $player ) && isset( $GLOBALS['player'] ) )
-	$player = $GLOBALS['player'];
+	if ( empty( $player ) && isset( $GLOBALS['player'] ) ) {
+		$player = $GLOBALS['player'];
+	}
 
 	if ( $player instanceof Player ) {
 		$_player = $player;
@@ -158,8 +208,9 @@ function get_player( $player = null ) {
 		$_player = Player::get_instance( $player );
 	}
 
-	if ( ! $_player )
-	return null;
+	if ( ! $_player ) {
+		return null;
+	}
 
 	return $_player;
 }

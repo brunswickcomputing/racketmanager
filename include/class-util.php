@@ -171,4 +171,89 @@ class Racketmanager_Util {
 		return $point_formats;
 	}
 
+	/**
+	 * gets roster requests from database
+	 *
+	 * @param array $query_args
+	 * @return array
+	 */
+	public static function getRosterRequests($query_args)
+	{
+		global $wpdb;
+
+		$defaults = array('count' => false, 'club' => false, 'status' => false, 'orderby' => array('requested_date' => 'DESC', 'completed_date' => 'DESC', 'surname' => 'DESC', 'first_name' => 'DESC'));
+		$query_args = array_merge($defaults, (array)$query_args);
+		extract($query_args, EXTR_SKIP);
+
+		$search_terms = array();
+		$sql = "SELECT `id`, `first_name`, `surname`, `affiliatedclub`, `requested_date`, `requested_user`, `completed_date`, `completed_user`, `gender`, `btm`, `email` FROM {$wpdb->racketmanager_roster_requests} WHERE 1 = 1";
+
+		if ($club) {
+			if ( $club != 'all') {
+				$search_terms[] = $wpdb->prepare("`affiliatedclub` = '%s'", $club);
+			}
+		}
+		if ($status) {
+			if ($status == 'outstanding') {
+				$search_terms[] = "`completed_date` IS NULL";
+			}
+		}
+		$search = "";
+		if (!empty($search_terms)) {
+			$search = implode(" AND ", $search_terms);
+		}
+
+		if ($count) {
+			$sql = $sql = "SELECT COUNT(ID) FROM {$wpdb->racketmanager_roster_requests} WHERE 1 = 1";
+			if ($search != "") {
+				$sql .= " AND $search";
+			}
+			return $wpdb->get_var($sql);
+		}
+
+		$orderby_string = "";
+		$i = 0;
+		foreach ($orderby as $order => $direction) {
+			if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) {
+				$direction = "ASC";
+			}
+			$orderby_string .= "`" . $order . "` " . $direction;
+			if ($i < (count($orderby) - 1)) {
+				$orderby_string .= ",";
+			}
+			$i++;
+		}
+		$order = $orderby_string;
+		if ($search != "") {
+			$sql .= " AND $search";
+		}
+		if ($order != "") {
+			$sql .= " ORDER BY $order";
+		}
+
+		$rosterRequests = wp_cache_get(md5($sql), 'rosterRequests');
+		if (!$rosterRequests) {
+			$rosterRequests = $wpdb->get_results($sql);
+			wp_cache_set(md5($sql), $rosterRequests, 'rosterRequests');
+		}
+
+		$class = '';
+		foreach ($rosterRequests as $i => $rosterRequest) {
+			$class = ('alternate' == $class) ? '' : 'alternate';
+			$rosterRequest->class = $class;
+			$rosterRequest->clubName = get_club($rosterRequest->affiliatedclub)->name;
+			$rosterRequest->requestedUserId = $rosterRequest->requested_user;
+			$rosterRequest->requestedUser = get_userdata($rosterRequest->requested_user)->display_name;
+			$rosterRequest->completedUserId = $rosterRequest->completed_user;
+			if ($rosterRequest->completed_user != '') {
+				$rosterRequest->completedUser = get_userdata($rosterRequest->completed_user)->display_name;
+			} else {
+				$rosterRequest->completedUser = '';
+			}
+
+			$rosterRequests[$i] = $rosterRequest;
+		}
+
+		return $rosterRequests;
+	}
 }

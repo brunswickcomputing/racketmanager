@@ -3816,7 +3816,7 @@ final class RacketManagerAdmin extends RacketManager
 		return;
 	}
 
-	private function addPlayerToRoster($affiliatedClub, $firstName, $surname, $gender, $btm, $email ) {
+	private function addPlayerToClub($affiliatedClub, $firstName, $surname, $gender, $btm, $email ) {
 		global $wpdb, $racketmanager;
 
 		$fullName = $firstName . ' ' . $surname;

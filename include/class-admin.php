@@ -3437,36 +3437,6 @@ final class RacketManagerAdmin extends RacketManager
 
 	/************
 	*
-	*   PLAYERS SECTION
-	*
-	*
-	*/
-
-	/**
-	* delete Player
-	*
-	* @param int $player_id
-	* @return boolean
-	*/
-	private function delPlayer( $player_id ) {
-		global $wpdb;
-
-		if ( !current_user_can('del_teams') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-		$rosterCount = $wpdb->get_var("SELECT count(*) FROM {$wpdb->racketmanager_roster} WHERE `player_id` = ".$player_id);
-		if ( $rosterCount == 0 ) {
-			wp_delete_user( $player_id) ;
-		} else {
-			update_user_meta( $player_id, 'remove_date', date('Y-m-d') );
-		}
-
-		return true;
-	}
-
-	/************
-	*
 	*   ROSTER SECTION
 	*
 	*

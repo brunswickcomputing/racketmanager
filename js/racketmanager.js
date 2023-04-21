@@ -578,7 +578,7 @@ Racketmanager.playerRequest = function(link) {
 Racketmanager.rosterRemove = function(link) {
 
 	var $form = jQuery(link).serialize();
-	$form += "&action=racketmanager_roster_remove";
+	$form += "&action=racketmanager_club_players_remove";
 
 	jQuery.ajax({
 		url:RacketManagerAjaxL10n.requestUrl,

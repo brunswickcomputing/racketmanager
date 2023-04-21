@@ -152,7 +152,7 @@ final class Club
     global $wpdb;
 
     $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->racketmanager_club_player_requests} WHERE `affiliatedclub` = '%d'", $this->id));
-    $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->racketmanager_roster} WHERE `affiliatedclub` = '%d'", $this->id));
+    $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->racketmanager_club_players} WHERE `affiliatedclub` = '%d'", $this->id));
     $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->racketmanager_clubs} WHERE `id` = '%d'", $this->id));
   }
 
@@ -296,7 +296,7 @@ final class Club
             $headers = array();
             $headers['from'] = $racketmanager->getFromUserEmail();
             $subject = $racketmanager->site_name . " - " . $msg . " - " . $clubName;
-            $message = racketmanager_roster_notification($messageArgs);
+            $message = racketmanager_club_players_notification($messageArgs);
             wp_mail($emailTo, $subject, $message, $headers);
           }
           $racketmanager->setMessage($msg);
@@ -317,7 +317,7 @@ final class Club
     global $wpdb;
 
     $args = array();
-    $sql = "SELECT count(*) FROM {$wpdb->racketmanager_roster} WHERE `affiliatedclub` = %d AND `player_id` = %d AND `removed_date` IS NULL";
+    $sql = "SELECT count(*) FROM {$wpdb->racketmanager_club_players} WHERE `affiliatedclub` = %d AND `player_id` = %d AND `removed_date` IS NULL";
     $args[] = intval($this->id);
     $args[] = intval($player);
     $sql = $wpdb->prepare($sql, $args);
@@ -356,7 +356,7 @@ final class Club
     global $wpdb, $racketmanager;
 
     $userid = get_current_user_id();
-    $sql = "INSERT INTO {$wpdb->racketmanager_roster} (`affiliatedclub`, `player_id`, `created_date`, `created_user` ) VALUES ('%d', '%d', now(), %d)";
+    $sql = "INSERT INTO {$wpdb->racketmanager_club_players} (`affiliatedclub`, `player_id`, `created_date`, `created_user` ) VALUES ('%d', '%d', now(), %d)";
     $wpdb->query($wpdb->prepare($sql, $this->id, $player_id, $userid));
     $roster_id = $wpdb->insert_id;
 
@@ -441,7 +441,7 @@ final class Club
     $order = $orderby_string;
 
     if ($count) {
-      $sql = "SELECT COUNT(ID) FROM {$wpdb->racketmanager_roster} WHERE `affiliatedclub` = " . $this->id;
+      $sql = "SELECT COUNT(ID) FROM {$wpdb->racketmanager_club_players} WHERE `affiliatedclub` = " . $this->id;
       if ($search != "") {
         $sql .= " AND $search";
       }
@@ -454,7 +454,7 @@ final class Club
       }
     }
 
-    $sql = "SELECT A.`id` as `roster_id`, A.`player_id`, `display_name` as fullname, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_roster} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID` WHERE `affiliatedclub` = " . $this->id;
+    $sql = "SELECT A.`id` as `roster_id`, A.`player_id`, `display_name` as fullname, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_club_players} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID` WHERE `affiliatedclub` = " . $this->id;
     if ($search != "") {
       $sql .= " AND $search";
     }
@@ -521,7 +521,7 @@ final class Club
   {
     global $wpdb;
 
-    $sql = "SELECT A.`id` as `roster_id`, B.`ID` as `player_id`, `display_name` as fullname, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_roster} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID` WHERE `affiliatedclub` = " . $this->id . " AND `player_id` = " . intval($playerId);
+    $sql = "SELECT A.`id` as `roster_id`, B.`ID` as `player_id`, `display_name` as fullname, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_club_players} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID` WHERE `affiliatedclub` = " . $this->id . " AND `player_id` = " . intval($playerId);
 
     $player = wp_cache_get(md5($sql), 'players');
     if (!$player) {

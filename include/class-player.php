@@ -186,7 +186,7 @@ final class Player {
 	public function delete() {
 		global $wpdb;
 
-		$clubPlayer = $wpdb->get_var("SELECT count(*) FROM {$wpdb->racketmanager_roster} WHERE `player_id` = ".$this->id);
+		$clubPlayer = $wpdb->get_var("SELECT count(*) FROM {$wpdb->racketmanager_club_players} WHERE `player_id` = ".$this->id);
 		if ( !$clubPlayer ) {
 			wp_delete_user( $this->id) ;
 		} else {

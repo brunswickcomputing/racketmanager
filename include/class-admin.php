@@ -3915,7 +3915,7 @@ final class RacketManagerAdmin extends RacketManager
 	private function showDatabaseColumns() {
 		global  $wpdb;
 
-		$tables = array($wpdb->racketmanager, $wpdb->racketmanager_teams, $wpdb->racketmanager_matches, $wpdb->racketmanager_rosters, $wpdb->racketmanager_rubbers);
+		$tables = array($wpdb->racketmanager, $wpdb->racketmanager_teams, $wpdb->racketmanager_matches, $wpdb->racketmanager_club_players, $wpdb->racketmanager_rubbers);
 
 		foreach( $tables as $table ) {
 			$results = $wpdb->get_results("SHOW COLUMNS FROM {$table}");

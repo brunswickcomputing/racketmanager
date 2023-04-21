@@ -83,7 +83,7 @@ function racketmanager_defineTables() {
 	$wpdb->racketmanager_teams = $wpdb->prefix . 'racketmanager_teams';
 	$wpdb->racketmanager_matches = $wpdb->prefix . 'racketmanager_matches';
 	$wpdb->racketmanager_rubbers = $wpdb->prefix . 'racketmanager_rubbers';
-	$wpdb->racketmanager_roster = $wpdb->prefix . 'racketmanager_roster';
+	$wpdb->racketmanager_club_players = $wpdb->prefix . 'racketmanager_club_players';
 	$wpdb->racketmanager_competitions = $wpdb->prefix . 'racketmanager_competitions';
 	$wpdb->racketmanager_team_competition = $wpdb->prefix . 'racketmanager_team_competition';
 	$wpdb->racketmanager_club_player_requests = $wpdb->prefix . 'racketmanager_club_player_requests';

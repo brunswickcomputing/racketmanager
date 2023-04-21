@@ -1161,7 +1161,7 @@ class RacketManager {
     $order = $orderbyString;
 
     if ( $count ) {
-      $sql = "SELECT COUNT(ID) FROM {$wpdb->racketmanager_roster}";
+      $sql = "SELECT COUNT(ID) FROM {$wpdb->racketmanager_club_players}";
       if ( $search != "") {
         $sql .= " WHERE $search";
       }
@@ -1174,7 +1174,7 @@ class RacketManager {
       return $this->num_players[$cachekey];
     }
 
-    $sql = "SELECT A.`id` as `roster_id`, B.`ID` as `player_id`, `display_name` as fullname, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_roster} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID`" ;
+    $sql = "SELECT A.`id` as `roster_id`, B.`ID` as `player_id`, `display_name` as fullname, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_club_players} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID`" ;
     if ( $search != "") {
       $sql .= " WHERE $search";
     }
@@ -1244,7 +1244,7 @@ class RacketManager {
   public function getRosterEntry( $rosterId, $cache = true ) {
     global $wpdb;
 
-    $sql = "SELECT A.`player_id` as `player_id`, A.`system_record`, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_roster} A WHERE A.`id`= '".intval($rosterId)."'";
+    $sql = "SELECT A.`player_id` as `player_id`, A.`system_record`, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_club_players} A WHERE A.`id`= '".intval($rosterId)."'";
 
     $roster = wp_cache_get( md5($sql), 'rosterentry' );
     if ( !$roster || !$cache ) {
@@ -1277,7 +1277,7 @@ class RacketManager {
     global $wpdb;
 
     $userid = get_current_user_id();
-    $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_roster} SET `removed_date` = NOW(), `removed_user` = %d WHERE `id` = '%d'", $userid, $rosterId) );
+    $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_club_players} SET `removed_date` = NOW(), `removed_user` = %d WHERE `id` = '%d'", $userid, $rosterId) );
     $this->setMessage( __('Player removed from club', 'racketmanager') );
 
     return true;
@@ -1638,7 +1638,7 @@ class RacketManager {
       if ($table == "teams") { $table = $wpdb->racketmanager_teams; }
       elseif ($table == "table") { $table = $wpdb->racketmanager_table; }
       elseif ($table == "matches") { $table = $wpdb->racketmanager_matches; }
-      elseif ($table == "roster") { $table = $wpdb->racketmanager_roster; }
+      elseif ($table == "roster") { $table = $wpdb->racketmanager_club_players; }
       elseif ($table == "leagues") { $table = $wpdb->racketmanager; }
       elseif ($table == "seasons") { $table = $wpdb->racketmanager_seasons; }
       elseif ($table == "competititons") { $table = $wpdb->racketmanager_competititons; }

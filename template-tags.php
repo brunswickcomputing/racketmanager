@@ -903,7 +903,7 @@
      * @param var $clubname Club Name
      * @category template-tags
      */
-    function racketmanager_roster_notification( $args = array() ) {
+    function racketmanager_club_players_notification( $args = array() ) {
         global $racketmanager;
 
         $shortcode = "[rosternotification";

@@ -46,7 +46,7 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_confirm_results', array(&$this, 'confirmResults') );
 
 		add_action( 'wp_ajax_racketmanager_club_player_request', array(&$this, 'playerRequest') );
-		add_action( 'wp_ajax_racketmanager_roster_remove', array(&$this, 'rosterRemove') );
+		add_action( 'wp_ajax_racketmanager_club_players_remove', array(&$this, 'rosterRemove') );
 
 		add_action( 'wp_ajax_racketmanager_team_update', array(&$this, 'updateTeam') );
 		add_action( 'wp_ajax_racketmanager_update_club', array(&$this, 'updateClub') );
@@ -74,7 +74,7 @@ class RacketManagerAJAX extends RacketManager {
 		global $wpdb, $racketmanager;
 		$name = $wpdb->esc_like(stripslashes($_POST['name']['term'])).'%';
 
-		$sql = "SELECT  P.`display_name` AS `fullname`, C.`name` as club, R.`id` as rosterId, C.`id` as clubId, P.`id` as playerId, P.`user_email` FROM $wpdb->racketmanager_roster R, $wpdb->users P, $wpdb->racketmanager_clubs C WHERE R.`player_id` = P.`ID` AND R.`removed_date` IS NULL AND C.`id` = R.`affiliatedclub` AND `display_name` like '%s' ORDER BY 1,2,3";
+		$sql = "SELECT  P.`display_name` AS `fullname`, C.`name` as club, R.`id` as rosterId, C.`id` as clubId, P.`id` as playerId, P.`user_email` FROM $wpdb->racketmanager_club_players R, $wpdb->users P, $wpdb->racketmanager_clubs C WHERE R.`player_id` = P.`ID` AND R.`removed_date` IS NULL AND C.`id` = R.`affiliatedclub` AND `display_name` like '%s' ORDER BY 1,2,3";
 		$sql = $wpdb->prepare($sql, $name);
 		$results = $wpdb->get_results($sql);
 		$players = array();
@@ -103,7 +103,7 @@ class RacketManagerAJAX extends RacketManager {
 		$name = $wpdb->esc_like(stripslashes($_POST['name']['term'])).'%';
 		$affiliatedClub = isset($_POST['affiliatedClub']) ? $_POST['affiliatedClub'] : '';
 
-		$sql = "SELECT P.`display_name` AS `fullname`, C.`name` as club, R.`id` as rosterId, C.`id` as clubId, P.`id` AS `playerId`, P.`user_email` FROM $wpdb->racketmanager_roster R, $wpdb->users P, $wpdb->racketmanager_clubs C WHERE R.`player_id` = P.`ID` AND R.`removed_date` IS NULL AND  C.`id` = R.`affiliatedclub` AND C.`id` = '%s' AND `display_name` like '%s' ORDER BY 1,2,3";
+		$sql = "SELECT P.`display_name` AS `fullname`, C.`name` as club, R.`id` as rosterId, C.`id` as clubId, P.`id` AS `playerId`, P.`user_email` FROM $wpdb->racketmanager_club_players R, $wpdb->users P, $wpdb->racketmanager_clubs C WHERE R.`player_id` = P.`ID` AND R.`removed_date` IS NULL AND  C.`id` = R.`affiliatedclub` AND C.`id` = '%s' AND `display_name` like '%s' ORDER BY 1,2,3";
 		$sql = $wpdb->prepare($sql, $affiliatedClub, $name);
 		$results = $wpdb->get_results($sql);
 		$captains = array();

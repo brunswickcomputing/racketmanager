@@ -1,8 +1,8 @@
 <form action="" method="post" class="form-control">
     <?php wp_nonce_field( 'racketmanager_manage-player' ) ?>
     <div class="form-floating mb-3">
-        <input class="form-control <?php if ( isset($formValid) && !$formValid && is_numeric(array_search('firstName',$errorFields))) { echo 'is-invalid'; } ?>" required placeholder="<?php _e( 'Enter first name', 'racketmanager') ?>" type="text" name="firstName" id="firstName" value="<?php if ( isset($player->firstname) ) { echo $player->firstname; } ?>" size="30" />
-        <label for="firstName"><?php _e( 'First Name', 'racketmanager' ) ?></label>
+        <input class="form-control <?php if ( isset($formValid) && !$formValid && is_numeric(array_search('firstname',$errorFields))) { echo 'is-invalid'; } ?>" required placeholder="<?php _e( 'Enter first name', 'racketmanager') ?>" type="text" name="firstname" id="firstname" value="<?php if ( isset($player->firstname) ) { echo $player->firstname; } ?>" size="30" />
+        <label for="firstname"><?php _e( 'First Name', 'racketmanager' ) ?></label>
     </div>
     <div class="form-floating mb-3">
         <input class="form-control <?php if ( isset($formValid) && !$formValid && is_numeric(array_search('surName',$errorFields))) { echo 'is-invalid'; } ?>"  required placeholder="<?php _e( 'Enter surname', 'racketmanager') ?>" type="text" name="surname" id="surname" value="<?php if ( isset($player->surname) ) { echo $player->surname; } ?>" size="30" />

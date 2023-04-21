@@ -429,12 +429,12 @@ public function formLogin($vars) {
   * Validates and then completes the new user signup process if all went well.
   *
   * @param string $email         The new user's email address
-  * @param string $firstName    The new user's first name
+  * @param string $firstname    The new user's first name
   * @param string $lastName     The new user's last name
   *
   * @return int|WP_Error         The id of the user that was created, or error if failed.
   */
-  public function register_user( $email, $firstName, $lastName ) {
+  public function register_user( $email, $firstname, $lastName ) {
     $errors = new WP_Error();
 
     // Email address is used as both username and email. It is also the only
@@ -456,9 +456,9 @@ public function formLogin($vars) {
       'user_login'    => $email,
       'user_email'    => $email,
       'user_pass'     => $password,
-      'first_name'    => $firstName,
+      'first_name'    => $firstname,
       'last_name'     => $lastName,
-      'nickname'      => $firstName,
+      'nickname'      => $firstname,
     );
 
     $userId = wp_insert_user( $userData );
@@ -498,8 +498,8 @@ public function formLogin($vars) {
     if ( !$email ) {
       $errors[] = 'email';
     }
-    $firstName = sanitize_text_field( $_POST['first_name'] );
-    if ( !$firstName ) {
+    $firstname = sanitize_text_field( $_POST['first_name'] );
+    if ( !$firstname ) {
       $errors[] = 'first_name';
     }
     $lastName = sanitize_text_field( $_POST['last_name'] );
@@ -507,7 +507,7 @@ public function formLogin($vars) {
       $errors[] = 'last_name';
     }
     if ( !$errors ) {
-      $result = $this->register_user( $email, $firstName, $lastName );
+      $result = $this->register_user( $email, $firstname, $lastName );
       if ( !is_wp_error( $result ) ) {
         update_user_meta( $result, 'show_admin_bar_front', false );
         // Success, redirect to login page.

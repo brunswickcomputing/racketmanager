@@ -140,9 +140,9 @@ if ( is_user_logged_in() ) {
                 <input type="hidden" name="affiliatedClub" id="affiliatedClub" value="<?php echo $club->id ?>" />
                 <fieldset>
                   <div class="form-floating mb-3">
-                    <input required="required" type="text" class="form-control" id="firstName" name="firstName" size="30" class="form-control" placeholder="First name" aria-describedby="firstNameFeedback" />
-                    <label for="firstName"><?php _e( 'First name', 'racketmanager' ) ?></label>
-                    <div id="firstNameFeedback" class="invalid-feedback"></div>
+                    <input required="required" type="text" class="form-control" id="firstname" name="firstname" size="30" class="form-control" placeholder="First name" aria-describedby="firstnameFeedback" />
+                    <label for="firstname"><?php _e( 'First name', 'racketmanager' ) ?></label>
+                    <div id="firstnameFeedback" class="invalid-feedback"></div>
                   </div>
                   <div class="form-floating mb-3">
                     <input required="required" type="text" class="form-control" id="surname" name="surname" size="30" class="form-control" placeholder="Surname" aria-describedby="surnameFeedback" />

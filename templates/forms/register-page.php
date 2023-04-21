@@ -15,10 +15,10 @@
         </div>
       </div>
       <div class="form-floating mb-3">
-        <input class="form-control <?php if ( $firstNameErr ) { echo 'is-invalid'; } ?>" type="text" placeholder="<?php _e( 'First name', 'racketmanager' ); ?>" name="first_name" id="first-name" aria-describedby="firstNameFeedback" />
+        <input class="form-control <?php if ( $firstnameErr ) { echo 'is-invalid'; } ?>" type="text" placeholder="<?php _e( 'First name', 'racketmanager' ); ?>" name="first_name" id="first-name" aria-describedby="firstnameFeedback" />
         <label class="" for="first_name"><?php _e( 'First name', 'racketmanager' ); ?></label>
-        <div id="firstNameFeedback" class="<?php if ( $firstNameErr ) { echo 'invalid-feedback'; } ?>">
-          <?php if ( $firstNameErr ) { echo $firstNameMsg; } ?>
+        <div id="firstnameFeedback" class="<?php if ( $firstnameErr ) { echo 'invalid-feedback'; } ?>">
+          <?php if ( $firstnameErr ) { echo $firstnameMsg; } ?>
         </div>
       </div>
       <div class="form-floating mb-3">

@@ -556,7 +556,7 @@ Racketmanager.rosterRequest = function(link) {
 				jQuery("#updateResponse").show();
 				jQuery("#updateResponse").html($message);
 			} else {
-				jQuery("#firstName").val("");
+				jQuery("#firstname").val("");
 				jQuery("#surname").val("");
 				jQuery("#genderMale").prop('checked', false);
 				jQuery("#genderFemale").prop('checked', false);

@@ -33,11 +33,11 @@ jQuery(function() {
     $passwordMsg = '';
     $errorErr = false;
     $emailErr = false;
-    $firstNameErr = false;
+    $firstnameErr = false;
     $surnameErr = false;
     $recaptchaErr = false;
     $emailMsg = '';
-    $firstNameMsg = '';
+    $firstnameMsg = '';
     $surnameMsg = '';
     $recaptchaMsg = '';
     if ( count( $vars['errors'] ) > 0 ) { ?>
@@ -67,8 +67,8 @@ jQuery(function() {
           $recaptchaMsg = __( 'Google reCAPTCHA verification failed', 'racketmanager' );
         }
         if ( $error == 'first_name' ) {
-          $firstNameErr = true;
-          $firstNameMsg = __( 'First name must be specified', 'racketmanager' );
+          $firstnameErr = true;
+          $firstnameMsg = __( 'First name must be specified', 'racketmanager' );
         }
         if ( $error == 'last_name' ) {
           $surnameErr = true;

@@ -1454,13 +1454,13 @@ final class RacketManagerAdmin extends RacketManager
 		$errorField = array();
 		$errorMsg = array();
 		$errorId = 0;
-		if ( isset($_POST['firstName']) && $_POST['firstName'] == '' ) {
+		if ( isset($_POST['firstname']) && $_POST['firstname'] == '' ) {
 			$valid = false;
-			$errorField[$errorId] = "firstName";
+			$errorField[$errorId] = "firstname";
 			$errorMsg[$errorId] = "First name required";
 			$errorId ++;
 		} else {
-			$firstName = trim($_POST['firstName']);
+			$firstname = trim($_POST['firstname']);
 		}
 		if ( isset($_POST['surname']) && $_POST['surname'] == '' ) {
 			$valid = false;
@@ -1504,8 +1504,7 @@ final class RacketManagerAdmin extends RacketManager
 		if ( $valid ) {
 			$player = new stdClass();
 			$player->data = array();
-			
-			$player->firstname = $firstName;
+			$player->firstname = $firstname;
 			$player->surname = $surname;
 			$player->fullname = $firstName.' '.$surname;
 			$player->email = $email;

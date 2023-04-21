@@ -85,7 +85,7 @@ final class Player {
 		$userdata['first_name'] = $this->firstname;
 		$userdata['last_name'] = $this->surname;
 		$userdata['display_name'] = $this->display_name;
-		$userdata['user_login'] = $this->firstname.'.'.$this->surname;
+		$userdata['user_login'] = strtolower($this->firstname).'.'.strtolower($this->surname);
 		$userdata['user_pass'] = $userdata['user_login'].'1';
 		if ( $this->email ) {
 		  $userdata['user_email'] = $this->email;

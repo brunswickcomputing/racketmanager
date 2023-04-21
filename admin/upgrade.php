@@ -688,6 +688,14 @@ function racketmanager_upgrade() {
 				delete_option('recaptchaSecretKey');
 			}
 		}
+		if (version_compare($installed, '7.4.0', '<')) {
+			echo __('starting 7.4.0 upgrade', 'racketmanager') . "<br />\n";
+			$users = $wpdb->get_results(" SELECT `ID`, `user_login` FROM {$wpdb->users} ORDER BY `ID`;");
+			foreach ($users AS $user) {
+				$newUserLogin = strtolower($user->user_login);
+				$wpdb->update($wpdb->users,['user_login' => $newUserLogin], ['ID' => $user->ID]);
+			}
+		}
   /*
 	* Update version and dbversion
 	*/

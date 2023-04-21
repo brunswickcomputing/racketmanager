@@ -121,7 +121,7 @@ final class LeagueTeam {
       if ( $this->status == 'P' && $this->roster != null ) {
         $i = 1;
         foreach ($this->roster AS $player) {
-          $teamplayer = $this->getRosterEntry($player);
+          $teamplayer = $this->getClubPlayer($player);
           $this->player[$i] = $teamplayer->fullname;
           $this->playerId[$i] = $player;
           $i++;

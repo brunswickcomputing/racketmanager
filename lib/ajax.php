@@ -864,7 +864,7 @@ class RacketManagerAJAX extends RacketManager {
 						$error = true;
 					} else {
 						$playerRef = $$type;
-						$rosterEntry = $racketmanager->getRosterEntry($playerRef);
+						$rosterEntry = $racketmanager->getClubPlayer($playerRef);
 						if ( !$rosterEntry->system_record ) {
 							$playerFound = array_search($playerRef, $players);
 							if ( $playerFound === false ) {
@@ -1261,14 +1261,14 @@ class RacketManagerAJAX extends RacketManager {
 
 		$userid = get_current_user_id();
 		$club = get_club($homeClub);
-		$homeRoster = $club->playerActive($userid);
-		if ( $homeRoster > 0 ) { //Home captain
+		$homeClubPlayer = $club->playerActive($userid);
+		if ( $homeClubPlayer > 0 ) { //Home captain
 			$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `home_captain` = %d, `comments` = '%s' WHERE `id` = '%d'", $userid, $matchConfirmed, $userid, $comments, $matchId));
 			return 'home';
 		} else {
 			$club = get_club($awayClub);
-			$awayRoster = $club->playerActive($userid);
-			if ( $awayRoster > 0 ) { // Away Captain
+			$awayClubPlayer = $club->playerActive($userid);
+			if ( $awayClubPlayer > 0 ) { // Away Captain
 				$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `away_captain` = %d, `comments` = '%s' WHERE `id` = '%d'", $userid, $matchConfirmed, $userid, $comments, $matchId));
 				return 'away';
 			} else {
@@ -1316,7 +1316,7 @@ class RacketManagerAJAX extends RacketManager {
 		global $wpdb, $racketmanager, $match;
 
 		$match = get_match($match->id);
-		$player = $racketmanager->getRosterEntry($rosterId, $team);
+		$player = $racketmanager->getClubPlayer($rosterId, $team);
 		if ( !empty($player->system_record) ) {
 			if ( $player->gender == 'M' ) {
 				$gender = 'male';
@@ -1452,7 +1452,7 @@ class RacketManagerAJAX extends RacketManager {
 		check_admin_referer('roster-remove');
 
 		foreach ( $_POST['roster'] as $roster_id ) {
-			$racketmanager->delRoster( intval($roster_id) );
+			$racketmanager->delClubPlayer( intval($roster_id) );
 		}
 		die(json_encode($return));
 	}
@@ -1662,7 +1662,7 @@ class RacketManagerAJAX extends RacketManager {
 				$teamName = $playerName;
 				if ( substr($competition->type,1,1) == 'D' ) {
 					$partnerId = isset($partners[$competition->id]) ? $partners[$competition->id] : 0;
-					$partner = $racketmanager->getRosterEntry($partnerId);
+					$partner = $racketmanager->getClubPlayer($partnerId);
 					$partnerName = $partner->fullname;
 					$teamName .= ' / '.$partnerName;
 					$tournamentEntry['partner'] = $partnerName;

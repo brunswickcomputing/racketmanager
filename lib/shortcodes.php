@@ -390,7 +390,7 @@ class RacketManagerShortcodes extends RacketManager {
 	function getPlayerNamefromRoster( $roster_id ) {
 		global $racketmanager;
 
-		$roster_dtls = $racketmanager->getRosterEntry( intval($roster_id));
+		$roster_dtls = $racketmanager->getClubPlayer( intval($roster_id));
 		if ( $roster_dtls ) {
 			$playerName = $roster_dtls->fullname;
 		} else {
@@ -942,9 +942,9 @@ class RacketManagerShortcodes extends RacketManager {
 		$player = wp_get_current_user();
 		$player->contactno = get_user_meta( $player->ID, 'contactno', true);
 		$player->gender = get_user_meta( $player->ID, 'gender', true);
-		$rosters = $racketmanager->getRoster( array('player' => $player->ID, 'inactive' => true) );
-		$malePartners = $racketmanager->getRoster( array('gender' => 'M', 'inactive' => true, 'type' => true) );
-		$femalePartners = $racketmanager->getRoster( array('gender' => 'F', 'inactive' => true, 'type' => true) );
+		$rosters = $racketmanager->getClubPlayers( array('player' => $player->ID, 'inactive' => true) );
+		$malePartners = $racketmanager->getClubPlayers( array('gender' => 'M', 'inactive' => true, 'type' => true) );
+		$femalePartners = $racketmanager->getClubPlayers( array('gender' => 'F', 'inactive' => true, 'type' => true) );
 
 		$filename = ( !empty($template) ) ? 'entry-tournament-'.$template : 'entry-tournament';
 

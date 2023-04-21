@@ -1389,7 +1389,7 @@ final class RacketManagerAdmin extends RacketManager
 			} elseif ( isset($_POST['dorosterdel']) && $_POST['action'] == 'delete' ) {
 				check_admin_referer('roster-bulk');
 				foreach ( $_POST['roster'] as $roster_id ) {
-					$this->delRoster( intval($roster_id) );
+					$this->delClubPlayer( intval($roster_id) );
 				}
 			}
 			$this->printMessage();
@@ -3812,7 +3812,7 @@ final class RacketManagerAdmin extends RacketManager
 
 		$update = false;
 		$userData = array();
-		$roster = $racketmanager->getRosterEntry($rosterId);
+		$roster = $racketmanager->getClubPlayer($rosterId);
 		if ( $roster->firstname != $firstname ) {
 			$update = true;
 			$userData['first_name'] = $firstname;

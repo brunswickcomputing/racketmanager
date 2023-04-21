@@ -247,7 +247,7 @@ final class Club
 
     $playerRequest = $this->getPlayerRequest($playerRequestId);
     if (empty($playerRequest->completed_date)) {
-      $this->addRoster($playerRequest->player_id, false);
+      $this->addClubPlayer($playerRequest->player_id, false);
       $wpdb->query($wpdb->prepare("UPDATE {$wpdb->racketmanager_club_player_requests} SET `completed_date` = now(), `completed_user` = %d WHERE `id` = %d ", get_current_user_id(), $playerRequestId));
       $racketmanager->setMessage(__('Player added to club', 'racketmanager'));
     }
@@ -351,7 +351,7 @@ final class Club
    * @param boolean $message (optional)
    * @return int | false
    */
-  public function addRoster($player_id)
+  public function addClubPlayer($player_id)
   {
     global $wpdb, $racketmanager;
 

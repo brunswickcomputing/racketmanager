@@ -1187,7 +1187,7 @@ public function getTeamDtls( $team_id ) {
 	if ( $team->status == 'P' && $team->roster != null ) {
 		$i = 1;
 		foreach ($team->roster AS $player) {
-			$teamplayer = $racketmanager->getRosterEntry($player);
+			$teamplayer = $racketmanager->getClubPlayer($player);
 			$team->player[$i] =  isset($teamplayer->fullname) ? $teamplayer->fullname : '';
 			$team->playerId[$i] = $player;
 			$i++;

@@ -1007,7 +1007,7 @@ class RacketManager {
     $sql = "INSERT INTO {$wpdb->racketmanager_teams} (`title`, `affiliatedclub`, `roster`, `status`, `type` ) VALUES ('%s', '%d', '%s', '%s', '%s')";
     $wpdb->query( $wpdb->prepare ( $sql, $title, $affiliatedclub, maybe_serialize($roster), $status, $type ) );
     $teamId = $wpdb->insert_id;
-    $captain = $racketmanager->getRosterEntry($player1Id)->player_id;
+    $captain = $racketmanager->getClubPlayer($player1Id)->player_id;
     $league = get_league($leagueId);
     $racketmanager->addTeamCompetition( $teamId, $league->competition_id, $captain, $contactno, $contactemail );
 
@@ -1044,7 +1044,7 @@ class RacketManager {
     $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `roster` = '%s' WHERE `id` = %d", $title, $affiliatedclub, maybe_serialize($roster), $teamId ) );
 
     $teamCompetition = $wpdb->get_results( $wpdb->prepare("SELECT `id` FROM {$wpdb->racketmanager_team_competition} WHERE `team_id` = '%d' AND `competition_id` = '%d'", $teamId, $league->competition_id) );
-    $captain = $racketmanager->getRosterEntry($player1Id)->player_id;
+    $captain = $racketmanager->getClubPlayer($player1Id)->player_id;
     if (!isset($teamCompetition[0])) {
       $racketmanager->addTeamCompetition( $teamId, $league->competition_id, $captain, $contactno, $contactemail );
     } else {
@@ -1113,7 +1113,7 @@ class RacketManager {
   * @param array $query_args
   * @return array
   */
-  public function getRoster( $args ) {
+  public function getClubPlayers( $args ) {
     global $wpdb;
 
     $defaults = array( 'count' => false, 'team' => false, 'club' => false, 'player' => false, 'gender' => false, 'inactive' => false, 'cache' => true, 'type' => false, 'orderby' => array("display_name" => "ASC" ));
@@ -1241,7 +1241,7 @@ class RacketManager {
   * @param array $query_args
   * @return array
   */
-  public function getRosterEntry( $rosterId, $cache = true ) {
+  public function getClubPlayer( $rosterId, $cache = true ) {
     global $wpdb;
 
     $sql = "SELECT A.`player_id` as `player_id`, A.`system_record`, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_club_players} A WHERE A.`id`= '".intval($rosterId)."'";
@@ -1273,7 +1273,7 @@ class RacketManager {
   * @param int $teamId
   * @return boolean
   */
-  public function delRoster( $rosterId ) {
+  public function delClubPlayer( $rosterId ) {
     global $wpdb;
 
     $userid = get_current_user_id();
@@ -1709,8 +1709,8 @@ class RacketManager {
             if ( !current_user_can( 'manage_racketmanager' ) ) {
               if ( $matchCapability == 'roster' ) {
                 $club = get_club($homeTeam->affiliatedclub);
-                $homeRoster = $club->getPlayers( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
-                if ( $homeRoster != 0 ) {
+                $homeClubPlayer = $club->getPlayers( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
+                if ( $homeClubPlayer != 0 ) {
                   if ( $club->matchsecretary == $userid ) {
                     $userType = 'matchsecretary';
                   } else {
@@ -1720,8 +1720,8 @@ class RacketManager {
                   $userCanUpdate = true;
                 } elseif ( $resultEntry == 'either' ) {
                   $club = get_club($awayTeam->affiliatedclub);
-                  $awayRoster = $club->getPlayers( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
-                  if ( $awayRoster != 0 ) {
+                  $awayClubPlayer = $club->getPlayers( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
+                  if ( $awayClubPlayer != 0 ) {
                     if ( $club->matchsecretary == $userid ) {
                       $userType = 'matchsecretary';
                     } else {
@@ -2127,33 +2127,33 @@ class RacketManager {
       $awayClub = get_club($match->teams['away']->affiliatedclub);
       switch ($matchType) {
         case 'MD':
-        $homeRoster['m'] = $homeClub->getPlayers(array('gender' => 'M'));
-        $awayRoster['m'] = $awayClub->getPlayers(array('gender' => 'M'));
+        $homeClubPlayer['m'] = $homeClub->getPlayers(array('gender' => 'M'));
+        $awayClubPlayer['m'] = $awayClub->getPlayers(array('gender' => 'M'));
         break;
         case 'WD':
-        $homeRoster['f'] = $homeClub->getPlayers(array('gender' => 'F'));
-        $awayRoster['f'] = $awayClub->getPlayers(array('gender' => 'F'));
+        $homeClubPlayer['f'] = $homeClub->getPlayers(array('gender' => 'F'));
+        $awayClubPlayer['f'] = $awayClub->getPlayers(array('gender' => 'F'));
         break;
         case 'XD':
         case 'LD':
-        $homeRoster['m'] = $homeClub->getPlayers(array('gender' => 'M'));
-        $homeRoster['f'] = $homeClub->getPlayers(array('gender' => 'F'));
-        $awayRoster['m'] = $awayClub->getPlayers(array('gender' => 'M'));
-        $awayRoster['f'] = $awayClub->getPlayers(array('gender' => 'F'));
+        $homeClubPlayer['m'] = $homeClub->getPlayers(array('gender' => 'M'));
+        $homeClubPlayer['f'] = $homeClub->getPlayers(array('gender' => 'F'));
+        $awayClubPlayer['m'] = $awayClub->getPlayers(array('gender' => 'M'));
+        $awayClubPlayer['f'] = $awayClub->getPlayers(array('gender' => 'F'));
         break;
         default:
-        $homeRoster['m'] = array();
-        $homeRoster['f'] = array();
-        $awayRoster['m'] = array();
-        $awayRoster['f'] = array();
+        $homeClubPlayer['m'] = array();
+        $homeClubPlayer['f'] = array();
+        $awayClubPlayer['m'] = array();
+        $awayClubPlayer['f'] = array();
       }
-      $this->buildRubbersScreen($match, $homeRoster, $awayRoster);
+      $this->buildRubbersScreen($match, $homeClubPlayer, $awayClubPlayer);
     }
     /**
     * build screen to allow input of match rubber scores
     *
     */
-    public function buildRubbersScreen($match, $homeRoster, $awayRoster) {
+    public function buildRubbersScreen($match, $homeClubPlayer, $awayClubPlayer) {
       global $racketmanager, $league, $match;
       $userCanUpdateArray = $racketmanager->getMatchUpdateAllowed($match->teams['home'], $match->teams['away'], $match->league->competitionType, $match->confirmed);
       $userCanUpdate = $userCanUpdateArray[0];
@@ -2207,40 +2207,40 @@ class RacketManager {
           foreach ($rubbers as $rubber) {
             $r = $rubber->rubber_number;
             if ( $match->league->type == 'MD' ) {
-              $homeRoster[$r][1]['players'] = $homeRoster[$r][2]['players'] = $homeRoster['m'];
-              $homeRoster[$r][1]['gender'] = $awayRoster[$r][1]['gender'] = $homeRoster[$r][2]['gender'] = $awayRoster[$r][2]['gender'] = 'm';
-              $awayRoster[$r][1]['players'] = $awayRoster[$r][2]['players'] = $awayRoster['m'];
+              $homeClubPlayer[$r][1]['players'] = $homeClubPlayer[$r][2]['players'] = $homeClubPlayer['m'];
+              $homeClubPlayer[$r][1]['gender'] = $awayClubPlayer[$r][1]['gender'] = $homeClubPlayer[$r][2]['gender'] = $awayClubPlayer[$r][2]['gender'] = 'm';
+              $awayClubPlayer[$r][1]['players'] = $awayClubPlayer[$r][2]['players'] = $awayClubPlayer['m'];
             } elseif ( $match->league->type == 'WD' ) {
-              $homeRoster[$r][1]['players'] = $homeRoster[$r][2]['players'] = $homeRoster['f'];
-              $homeRoster[$r][1]['gender'] = $awayRoster[$r][1]['gender'] = $homeRoster[$r][2]['gender'] = $awayRoster[$r][2]['gender'] = 'f';
-              $awayRoster[$r][1]['players'] = $awayRoster[$r][2]['players'] = $awayRoster['f'];
+              $homeClubPlayer[$r][1]['players'] = $homeClubPlayer[$r][2]['players'] = $homeClubPlayer['f'];
+              $homeClubPlayer[$r][1]['gender'] = $awayClubPlayer[$r][1]['gender'] = $homeClubPlayer[$r][2]['gender'] = $awayClubPlayer[$r][2]['gender'] = 'f';
+              $awayClubPlayer[$r][1]['players'] = $awayClubPlayer[$r][2]['players'] = $awayClubPlayer['f'];
             } elseif ( $match->league->type == 'XD' ) {
-              $homeRoster[$r][1]['players'] = $homeRoster['m'];
-              $awayRoster[$r][1]['players'] = $awayRoster['m'];
-              $homeRoster[$r][1]['gender'] = $awayRoster[$r][1]['gender'] = 'm';
-              $homeRoster[$r][2]['players'] = $homeRoster['f'];
-              $awayRoster[$r][2]['players'] = $awayRoster['f'];
-              $homeRoster[$r][2]['gender'] = $awayRoster[$r][2]['gender'] = 'f';
+              $homeClubPlayer[$r][1]['players'] = $homeClubPlayer['m'];
+              $awayClubPlayer[$r][1]['players'] = $awayClubPlayer['m'];
+              $homeClubPlayer[$r][1]['gender'] = $awayClubPlayer[$r][1]['gender'] = 'm';
+              $homeClubPlayer[$r][2]['players'] = $homeClubPlayer['f'];
+              $awayClubPlayer[$r][2]['players'] = $awayClubPlayer['f'];
+              $homeClubPlayer[$r][2]['gender'] = $awayClubPlayer[$r][2]['gender'] = 'f';
             } elseif ( $match->league->type == 'LD' ) {
               if ( $rubber->rubber_number == 1 ) {
-                $homeRoster[$r][1]['players'] = $homeRoster['f'];
-                $awayRoster[$r][1]['players'] = $awayRoster['f'];
-                $homeRoster[$r][1]['gender'] = $awayRoster[$r][1]['gender'] = $homeRoster[$r][2]['gender'] = $awayRoster[$r][2]['gender'] = 'f';
-                $homeRoster[$r][2]['players'] = $homeRoster['f'];
-                $awayRoster[$r][2]['players'] = $awayRoster['f'];
+                $homeClubPlayer[$r][1]['players'] = $homeClubPlayer['f'];
+                $awayClubPlayer[$r][1]['players'] = $awayClubPlayer['f'];
+                $homeClubPlayer[$r][1]['gender'] = $awayClubPlayer[$r][1]['gender'] = $homeClubPlayer[$r][2]['gender'] = $awayClubPlayer[$r][2]['gender'] = 'f';
+                $homeClubPlayer[$r][2]['players'] = $homeClubPlayer['f'];
+                $awayClubPlayer[$r][2]['players'] = $awayClubPlayer['f'];
               } elseif ( $rubber->rubber_number == 2 ) {
-                $homeRoster[$r][1]['players'] = $homeRoster['m'];
-                $awayRoster[$r][1]['players'] = $awayRoster['m'];
-                $homeRoster[$r][1]['gender'] = $awayRoster[$r][1]['gender'] = $homeRoster[$r][2]['gender'] = $awayRoster[$r][2]['gender'] = 'm';
-                $homeRoster[$r][2]['players'] = $homeRoster['m'];
-                $awayRoster[$r][2]['players'] = $awayRoster['m'];
+                $homeClubPlayer[$r][1]['players'] = $homeClubPlayer['m'];
+                $awayClubPlayer[$r][1]['players'] = $awayClubPlayer['m'];
+                $homeClubPlayer[$r][1]['gender'] = $awayClubPlayer[$r][1]['gender'] = $homeClubPlayer[$r][2]['gender'] = $awayClubPlayer[$r][2]['gender'] = 'm';
+                $homeClubPlayer[$r][2]['players'] = $homeClubPlayer['m'];
+                $awayClubPlayer[$r][2]['players'] = $awayClubPlayer['m'];
               } elseif ( $rubber->rubber_number == 3 ) {
-                $homeRoster[$r][1]['players'] = $homeRoster['m'];
-                $awayRoster[$r][1]['players'] = $awayRoster['m'];
-                $homeRoster[$r][1]['gender'] = $awayRoster[$r][1]['gender'] = 'm';
-                $homeRoster[$r][2]['players'] = $homeRoster['f'];
-                $awayRoster[$r][2]['players'] = $awayRoster['f'];
-                $homeRoster[$r][2]['gender'] = $awayRoster[$r][2]['gender'] = 'f';
+                $homeClubPlayer[$r][1]['players'] = $homeClubPlayer['m'];
+                $awayClubPlayer[$r][1]['players'] = $awayClubPlayer['m'];
+                $homeClubPlayer[$r][1]['gender'] = $awayClubPlayer[$r][1]['gender'] = 'm';
+                $homeClubPlayer[$r][2]['players'] = $homeClubPlayer['f'];
+                $awayClubPlayer[$r][2]['players'] = $awayClubPlayer['f'];
+                $homeClubPlayer[$r][2]['gender'] = $awayClubPlayer[$r][2]['gender'] = 'f';
               }
             }
             ?>
@@ -2272,9 +2272,9 @@ class RacketManager {
                           <div class="form-group mb-2">
                             <?php $tabindex = $tabbase + 1; ?>
                             <select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer<?php echo $p ?>[<?php echo $r ?>]" id="homeplayer<?php echo $p ?>_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
-                              <?php if ($homeRoster[$r][$p]['gender'] == 'm') { $select = 'Select male player'; } else { $select = 'Select female player'; } ?>
+                              <?php if ($homeClubPlayer[$r][$p]['gender'] == 'm') { $select = 'Select male player'; } else { $select = 'Select female player'; } ?>
                               <option value="0"><?php _e( $select, 'racketmanager' ) ?></option>
-                              <?php foreach ( $homeRoster[$r][$p]['players'] as $roster ) {
+                              <?php foreach ( $homeClubPlayer[$r][$p]['players'] as $roster ) {
                                 if ( isset($roster->removed_date) && $roster->removed_date != '' ) { $disabled = 'disabled'; } else { $disabled = ''; } ?>
                                 <option value="<?php echo $roster->roster_id ?>"<?php $player = 'home_player_'.$p; if (isset($rubber->$player)) { selected($roster->roster_id, $rubber->$player ); } echo $disabled; ?>>
                                   <?php echo $roster->fullname ?>
@@ -2310,9 +2310,9 @@ class RacketManager {
                           <div class="form-group mb-2">
                             <?php $tabindex = $tabbase + 3; ?>
                             <select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer<?php echo $p ?>[<?php echo $r ?>]" id="awayplayer<?php echo $p ?>_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
-                              <?php if ($awayRoster[$r][$p]['gender'] == 'm') { $select = 'Select male player'; } else { $select = 'Select female player'; } ?>
+                              <?php if ($awayClubPlayer[$r][$p]['gender'] == 'm') { $select = 'Select male player'; } else { $select = 'Select female player'; } ?>
                               <option value="0"><?php _e( $select, 'racketmanager' ) ?></option>
-                              <?php foreach ( $awayRoster[$r][$p]['players'] as $roster ) {
+                              <?php foreach ( $awayClubPlayer[$r][$p]['players'] as $roster ) {
                                 if ( isset($roster->removed_date) && $roster->removed_date != '' ) { $disabled = 'disabled'; } else { $disabled = ''; } ?>
                                 <option value="<?php echo $roster->roster_id ?>"<?php $player = 'away_player_'.$p; if (isset($rubber->$player)) { selected($roster->roster_id, $rubber->$player ); }  echo $disabled; ?>>
                                   <?php echo $roster->fullname ?>

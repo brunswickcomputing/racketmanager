@@ -1421,115 +1421,19 @@ class RacketManagerAJAX extends RacketManager {
 		$error = false;
 		$errorField = array();
 		$errorMsg = array();
-		$errorId = 0;
-		$rosterFound = false;
-		check_admin_referer('roster-request');
-		$affiliatedClub = $_POST['affiliatedClub'];
-		if ( $_POST['firstName'] == '' ) {
-			$error = true;
-			$errorField[$errorId] = "firstName";
-			$errorMsg[$errorId] = "First name required";
-			$errorId ++;
+		check_admin_referer('club-player-request');
+		$playerValid = $racketmanager->validatePlayer();
+		if ($playerValid[0]) {
+			$newPlayer = $playerValid[1];
+			$club = get_club($_POST['affiliatedClub']);
+			$club->registerPlayer($newPlayer);
 		} else {
-			$firstName = trim($_POST['firstName']);
+			$errorField = $playerValid[1];
+			$errorMsg = $playerValid[2];
+			$racketmanager->setMessage(__('Error in player request','racketmanager'), true);
 		}
-		if ( $_POST['surname'] == '' ) {
-			$error = true;
-			$errorField[$errorId] = "surname";
-			$errorMsg[$errorId] = "Surname required";
-			$errorId ++;
-		} else {
-			$surname = trim($_POST['surname']);
-		}
-		if ( !isset($_POST['gender']) || $_POST['gender'] == '' ) {
-			$error = true;
-			$errorField[$errorId] = "gender";
-			$errorMsg[$errorId] = "Gender required";
-			$errorId ++;
-		} else {
-			$gender = $_POST['gender'];
-		}
-		if ( !isset($_POST['btm']) || $_POST['btm'] == '' ) {
-			$btmSupplied = false;
-			if ( $btmRequired ) {
-				$error = true;
-				$errorField[$errorId] = "btm";
-				$errorMsg[$errorId] = "LTA Tennis Number required";
-				$errorId ++;
-			} else {
-				$btm = '';
-			}
-		} else {
-			$btmSupplied = true;
-			$btm = $_POST['btm'];
-		}
-		if ( !isset($_POST['email']) || $_POST['email'] == '' ) {
-			$email = '';
-		} else {
-			$email = $_POST['email'];
-		}
-
-		if ( !$error ) {
-			$fullName = $firstName . ' ' . $surname;
-			$player = $racketmanager->getPlayer(array('fullname' => $fullName));
-			if ( !$player ) {
-				$playerId = $racketmanager->addPlayer( $firstName, $surname, $gender, $btm, $email);
-				$rosterFound = false;
-			} else {
-				$playerId = $player->ID;
-				$club = get_club($affiliatedClub);
-				$rosterCount = $club->getPlayers(array('player' => $playerId, 'inactive' => true, 'count' => true));
-				if ( $rosterCount == 0 ) {
-					$rosterFound = false;
-				} else {
-					$rosterFound = true;
-				}
-			}
-			if ( !$rosterFound ) {
-				$club = get_club($affiliatedClub);
-				$rosterRequestCount = $club->getRosterRequests( array('count' => true, 'firstName' => $firstName, 'surname' => $surname) );
-				if ( $rosterRequestCount == 0 ) {
-					$userid = get_current_user_id();
-					if ( $btmSupplied  ) {
-						$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->racketmanager_roster_requests} (`affiliatedClub`, `first_name`, `surname`, `gender`, `btm`, `player_id`, `requested_date`, `requested_user`) values (%d, '%s', '%s', '%s', %d, %d, now(), %d) ", $affiliatedClub, $firstName, $surname, $gender, $btm, $playerId, $userid ) );
-					} else {
-						$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->racketmanager_roster_requests} (`affiliatedClub`, `first_name`, `surname`, `gender`, `player_id`, `requested_date`, `requested_user`) values (%d, '%s', '%s', '%s', %d, now(), %d)", $affiliatedClub, $firstName, $surname, $gender, $playerId, $userid ) );
-					}
-					$rosterRequestId = $wpdb->insert_id;
-					$rmOptions = $racketmanager->getOptions();
-					$options = $rmOptions['rosters'];
-					if ( $options['rosterConfirmation'] == 'auto' ) {
-						$club->approveRosterRequest( $rosterRequestId );
-						$action = 'add';
-						$msg = __('Player added to club','racketmanager');
-					} else {
-						$action = 'request';
-						$msg = __('Player request submitted','racketmanager');
-					}
-					if ( isset($options['rosterConfirmationEmail']) && !is_null($options['rosterConfirmationEmail']) ) {
-						$clubName = get_club($affiliatedClub)->name;
-						$emailTo = $options['rosterConfirmationEmail'];
-						$messageArgs = array();
-						$messageArgs['action'] = $action;
-						$messageArgs['club'] = $clubName;
-						$messageArgs['player'] = $fullName;
-						$headers = array();
-						$headers['from'] = $racketmanager->getFromUserEmail();
-						$subject = $racketmanager->site_name." - ".$msg." - ".$clubName;
-						$message = racketmanager_roster_notification($messageArgs);
-						wp_mail($emailTo, $subject, $message, $headers);
-					}
-				} else {
-					$error = true;
-					$msg = __('Player request already exists','racketmanager');
-				}
-			} else {
-				$error = true;
-				$msg = __('Player already registered with club','racketmanager');
-			}
-		} else {
-			$msg = __('Error in player request','racketmanager');
-		}
+		$msg = $racketmanager->message;
+		$error = $racketmanager->error;
 
 		array_push($return, $msg, $error, $errorField, $errorMsg);
 		die(json_encode($return));

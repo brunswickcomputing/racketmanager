@@ -33,10 +33,10 @@ final class Club
         break;
       case "id":
       default:
-          $club_id = (int) $club_id;
-          $search = "`id` = '%d'";
-          break;
-      }
+        $club_id = (int) $club_id;
+        $search = "`id` = '%d'";
+        break;
+    }
 
     if (!$club_id) {
       return false;
@@ -256,23 +256,52 @@ final class Club
   }
 
   /**
-   * add player
+   * register player for Club
    *
-   * @param string $firstname
-   * @param string $surname
-   * @param string $gender
-   * @param string $btm
-   * @param string $email
+   * @param integer $player
    */
-  public function addPlayer($player)
+  public function registerPlayer($newPlayer)
   {
     global $racketmanager;
-
-    $playerActive = $this->playerActive($player);
+    $player = get_player($newPlayer->user_login, 'name');
+    if ( !$player ) {
+      $player = new Player($newPlayer);
+    }
+    $playerActive = $this->playerActive($player->id);
     if (!$playerActive) {
-      $roster_id = $this->addRoster($player, false);
-      $roster[$roster_id] = $roster_id;
-      $racketmanager->setMessage(__('Player added to club', 'racketmanager'));
+      $playerPending = $this->isPlayerPending($player->id);
+      if ($playerPending) {
+        $racketmanager->setMessage(__('Player registration already pending', 'racketmanager'), true);
+      } else {
+        $playerRequestId = $this->addPlayerRequest($player->id);
+        if (current_user_can('edit_teams')) {
+          $this->approvePlayerRequest($playerRequestId);
+        } else {
+          $options = $racketmanager->getOptions('rosters');
+          if ($options['rosterConfirmation'] == 'auto') {
+            $this->approvePlayerRequest($playerRequestId);
+            $action = 'add';
+            $msg = __('Player added to club', 'racketmanager');
+          } else {
+            $action = 'request';
+            $msg = __('Player registration pending', 'racketmanager');
+          }
+          if (isset($options['rosterConfirmationEmail']) && !is_null($options['rosterConfirmationEmail'])) {
+            $clubName = $this->name;
+            $emailTo = $options['rosterConfirmationEmail'];
+            $messageArgs = array();
+            $messageArgs['action'] = $action;
+            $messageArgs['club'] = $clubName;
+            $messageArgs['player'] = $player->fullname;
+            $headers = array();
+            $headers['from'] = $racketmanager->getFromUserEmail();
+            $subject = $racketmanager->site_name . " - " . $msg . " - " . $clubName;
+            $message = racketmanager_roster_notification($messageArgs);
+            wp_mail($emailTo, $subject, $message, $headers);
+          }
+          $racketmanager->setMessage($msg);
+        }
+      }
     } else {
       $racketmanager->setMessage(__('Player already registered', 'racketmanager'), true);
     }
@@ -289,6 +318,24 @@ final class Club
 
     $args = array();
     $sql = "SELECT count(*) FROM {$wpdb->racketmanager_roster} WHERE `affiliatedclub` = %d AND `player_id` = %d AND `removed_date` IS NULL";
+    $args[] = intval($this->id);
+    $args[] = intval($player);
+    $sql = $wpdb->prepare($sql, $args);
+
+    return $wpdb->get_var($sql);
+  }
+
+  /**
+   * check for player pending registration
+   *
+   * @return boolean is player pending registration for club
+   */
+  public function isPlayerPending($player)
+  {
+    global $wpdb;
+
+    $args = array();
+    $sql = "SELECT count(*) FROM {$wpdb->racketmanager_club_player_requests} WHERE `affiliatedclub` = %d AND `player_id` = %d AND `completed_date` IS NULL";
     $args[] = intval($this->id);
     $args[] = intval($player);
     $sql = $wpdb->prepare($sql, $args);
@@ -316,6 +363,26 @@ final class Club
     $racketmanager->setMessage(__('Roster added', 'racketmanager'));
 
     return $roster_id;
+  }
+
+  /**
+   * add new player request
+   *
+   * @param int $player id
+   * @return int player request id
+   */
+  public function addPlayerRequest($player)
+  {
+    global $wpdb, $racketmanager;
+
+    $userid = get_current_user_id();
+    $sql = "INSERT INTO {$wpdb->racketmanager_club_player_requests} (`affiliatedClub`, `first_name`, `surname`, `gender`, `player_id`, `requested_date`, `requested_user`) values (%d, '%s', '%s', '%s', %d, now(), %d)";
+    $wpdb->query($wpdb->prepare($sql, $this->id, '', '', '', $player, $userid));
+    $playerRequestId = $wpdb->insert_id;
+
+    $racketmanager->setMessage(__('Player request added', 'racketmanager'));
+
+    return $playerRequestId;
   }
 
   /**

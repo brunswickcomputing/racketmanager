@@ -18,23 +18,29 @@ final class Player {
 	*
 	* @param int $player_id
 	*/
-	public static function get_instance($player_id) {
+	public static function get_instance($player_id, $queryTerm) {
 		global $wpdb;
-		$player_id = (int) $player_id;
+
 		if ( ! $player_id ) {
 			return false;
 		}
-
 		$player = wp_cache_get( $player_id, 'players' );
 
 		if ( ! $player ) {
+			switch ($queryTerm) {
+			case "name":
+				$player = get_user_by('login', $player_id);
+			  break;
+			case "id":
+			default:
+				$player_id = (int) $player_id;
 			$player = get_userdata($player_id);
-
+			  	break;
+			}
 			if ( !$player ) {
 				return false;
 			}
 			$player = new Player( $player->data );
-
 			wp_cache_set( $player_id, $player, 'players' );
 		}
 
@@ -195,7 +201,7 @@ final class Player {
 * @param int|Player|null Player ID or player object. Defaults to global $player
 * @return Player|null
 */
-function get_player( $player = null ) {
+function get_player( $player = null, $queryTerm = "id") {
 	if ( empty( $player ) && isset( $GLOBALS['player'] ) ) {
 		$player = $GLOBALS['player'];
 	}
@@ -205,7 +211,7 @@ function get_player( $player = null ) {
 	} elseif ( is_object( $player ) ) {
 		$_player = new Player( $player );
 	} else {
-		$_player = Player::get_instance( $player );
+		$_player = Player::get_instance( $player, $queryTerm );
 	}
 
 	if ( ! $_player ) {
@@ -214,22 +220,4 @@ function get_player( $player = null ) {
 
 	return $_player;
 }
-
-/**
-* get Player by name
-*
-* @param string $name
-* @return Player|null
-*/
-function get_playerByName( $name ) {
-    $player = get_user_by( 'slug', sanitize_title($name) );
-
-    if ( !$player ) {
-      return false;
-    }
-
-	return (object)(array)$player;
-
-}
-
 ?>

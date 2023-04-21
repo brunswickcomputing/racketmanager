@@ -229,7 +229,7 @@ class Racketmanager_Util
 		extract($query_args, EXTR_SKIP);
 
 		$search_terms = array();
-		$sql = "SELECT `id`, `first_name`, `surname`, `player_id`, `affiliatedclub`, `requested_date`, `requested_user`, `completed_date`, `completed_user`, `gender`, `btm`, `email` FROM {$wpdb->racketmanager_roster_requests} WHERE 1 = 1";
+		$sql = "SELECT `id`, `first_name`, `surname`, `player_id`, `affiliatedclub`, `requested_date`, `requested_user`, `completed_date`, `completed_user`, `gender`, `btm`, `email` FROM {$wpdb->racketmanager_club_player_requests} WHERE 1 = 1";
 
 		if ($club) {
 			if ( $club != 'all') {

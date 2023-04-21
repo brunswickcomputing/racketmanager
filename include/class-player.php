@@ -34,7 +34,7 @@ final class Player {
 			case "id":
 			default:
 				$player_id = (int) $player_id;
-			$player = get_userdata($player_id);
+				$player = get_userdata($player_id);
 			  	break;
 			}
 			if ( !$player ) {
@@ -65,14 +65,14 @@ final class Player {
 			$this->id = $this->ID;
 			$this->email = $this->user_email;
 			$this->fullname = $this->display_name;
-			$this->created_date = $player->user_registered;
+			$this->created_date = $this->user_registered;
 			$this->firstname = get_user_meta($this->ID, 'first_name', true );
 			$this->surname = get_user_meta($this->ID, 'last_name', true );
 			$this->gender = get_user_meta($this->ID, 'gender', true );
 			$this->type = get_user_meta($this->ID, 'racketmanager_type', true );
 			$this->btm = get_user_meta($this->ID, 'btm', true );
-			$this->removed_date = get_user_meta($player->ID, 'remove_date', true );
-			$this->removed_user = get_user_meta($player->ID, 'remove_user', true );
+			$this->removed_date = get_user_meta($this->ID, 'remove_date', true );
+			$this->removed_user = get_user_meta($this->ID, 'remove_user', true );
 			$this->locked = get_user_meta($this->ID, 'locked', true );
 			$this->locked_date = get_user_meta($this->ID, 'locked_date', true );
 			$this->locked_user = get_user_meta($this->ID, 'locked_user', true );
@@ -87,12 +87,14 @@ final class Player {
 	private function add() {
 		$this->display_name = $this->firstname.' '.$this->surname;
 		$this->user_email = $this->email;
+		$this->user_registered = date('Y-m-d H:i:s');
 		$userdata = array();
 		$userdata['first_name'] = $this->firstname;
 		$userdata['last_name'] = $this->surname;
 		$userdata['display_name'] = $this->display_name;
 		$userdata['user_login'] = strtolower($this->firstname).'.'.strtolower($this->surname);
 		$userdata['user_pass'] = $userdata['user_login'].'1';
+		$userdata['user_registered'] = $this->user_registered;
 		if ( $this->email ) {
 		  $userdata['user_email'] = $this->email;
 		}

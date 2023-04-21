@@ -134,8 +134,8 @@ if ( is_user_logged_in() ) {
           </h3>
           <div id="collapse-addplayer" class="accordion-collapse collapse" aria-labelledby="heading-addplayer" data-bs-parent="#players">
             <div class="accordion-body">
-              <form id="rosterRequestFrm" action="" method="post" onsubmit="return checkSelect(this)">
-                <?php wp_nonce_field( 'roster-request' ) ?>
+              <form id="playerRequestFrm" action="" method="post" onsubmit="return checkSelect(this)">
+                <?php wp_nonce_field( 'club-player-request' ) ?>
 
                 <input type="hidden" name="affiliatedClub" id="affiliatedClub" value="<?php echo $club->id ?>" />
                 <fieldset>
@@ -172,13 +172,13 @@ if ( is_user_logged_in() ) {
                     <div id="emailFeedback" class="invalid-feedback"></div>
                   </div>
                 </fieldset>
-                <button class="btn" type="button" id="rosterUpdateSubmit" onclick="Racketmanager.rosterRequest(this)"><?php _e( 'Add player', 'racketmanager' ) ?></button>
+                <button class="btn" type="button" id="rosterUpdateSubmit" onclick="Racketmanager.playerRequest(this)"><?php _e( 'Add player', 'racketmanager' ) ?></button>
                 <div id="updateResponse"></div>
               </form>
             </div>
           </div>
         </div>
-        <?php if ( $rosterRequests ) {?>
+        <?php if ( $playerRequests ) {?>
           <div class="accordion-item">
             <h3 class="accordion-header" id="heading-pendingplayer">
               <button class="accordion-button collapsed frontend" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-pendingplayer" aria-expanded="false" aria-controls="collapse-pendingplayer">
@@ -199,14 +199,14 @@ if ( is_user_logged_in() ) {
                   </thead>
                   <tbody id="pendingRosters">
                     <?php $class=''; ?>
-                    <?php foreach ($rosterRequests as $rosterRequest) { ?>
+                    <?php foreach ($playerRequests as $playerRequest) { ?>
                       <?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
                       <tr class="<?php echo $class ?>">
-                        <th scope="row"><?php echo $rosterRequest->first_name . ' ' . $rosterRequest->surname; ?></th>
-                        <td><?php echo $rosterRequest->gender; ?></td>
-                        <td><?php echo $rosterRequest->btm; ?></td>
-                        <td><?php echo $rosterRequest->requested_date; ?></td>
-                        <td><?php echo $rosterRequest->requestedUser; ?></td>
+                        <th scope="row"><?php echo $playerRequest->first_name . ' ' . $playerRequest->surname; ?></th>
+                        <td><?php echo $playerRequest->gender; ?></td>
+                        <td><?php echo $playerRequest->btm; ?></td>
+                        <td><?php echo $playerRequest->requested_date; ?></td>
+                        <td><?php echo $playerRequest->requestedUser; ?></td>
                       </tr>
                     <?php } ?>
                   </tbody>

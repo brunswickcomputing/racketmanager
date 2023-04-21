@@ -151,7 +151,7 @@ final class Club
   {
     global $wpdb;
 
-    $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->racketmanager_roster_requests} WHERE `affiliatedclub` = '%d'", $this->id));
+    $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->racketmanager_club_player_requests} WHERE `affiliatedclub` = '%d'", $this->id));
     $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->racketmanager_roster} WHERE `affiliatedclub` = '%d'", $this->id));
     $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->racketmanager_clubs} WHERE `id` = '%d'", $this->id));
   }
@@ -217,107 +217,22 @@ final class Club
   }
 
   /**
-   * gets roster requests from database
+   * get single player request
    *
-   * @param array $query_args
+   * @param int $playerRequestId
    * @return array
    */
-  public function getRosterRequests($query_args)
+  private function getPlayerRequest($playerRequestId)
   {
     global $wpdb;
 
-    $defaults = array('count' => false, 'firstName' => false, 'surname' => false, 'gender' => false, 'completed' => false, 'orderby' => array('completed_date' => 'ASC', 'requested_date' => 'ASC', 'surname' => 'DESC', 'first_name' => 'DESC'));
-    $query_args = array_merge($defaults, (array)$query_args);
-    extract($query_args, EXTR_SKIP);
+    $playerRequest = $wpdb->get_row("SELECT `first_name`, `surname`, `gender`, `btm`, `email`, `player_id`, `requested_date`, `requested_user`, `completed_date`, `completed_user` FROM {$wpdb->racketmanager_club_player_requests} WHERE `id` = '" . intval($playerRequestId) . "'");
 
-    $search_terms = array();
-    $sql = "SELECT `id`, `first_name`, `surname`, `affiliatedclub`, `requested_date`, `requested_user`, `completed_date`, `completed_user`, `gender`, `btm`, `email` FROM {$wpdb->racketmanager_roster_requests} WHERE `affiliatedclub` = " . $this->id;
-
-    if (!$completed) {
-      $search_terms[] = "`completed_date` IS NULL";
-    }
-    if ($firstName) {
-      $search_terms[] = $wpdb->prepare("`first_name` = '%s'", htmlspecialchars($firstName));
-    }
-    if ($surname) {
-      $search_terms[] = $wpdb->prepare("`surname` = '%s'", htmlspecialchars($surname));
-    }
-    $search = "";
-    if (!empty($search_terms)) {
-      $search = implode(" AND ", $search_terms);
-    }
-
-    if ($count) {
-      $sql = $sql = "SELECT COUNT(ID) FROM {$wpdb->racketmanager_roster_requests} WHERE `affiliatedclub` = " . $this->id;
-      if ($search != "") {
-        $sql .= " AND $search";
-      }
-      return $wpdb->get_var($sql);
-    }
-
-    $orderby_string = "";
-    $i = 0;
-    foreach ($orderby as $order => $direction) {
-      if (!in_array($direction, array("DESC", "ASC", "desc", "asc"))) {
-        $direction = "ASC";
-      }
-      $orderby_string .= "`" . $order . "` " . $direction;
-      if ($i < (count($orderby) - 1)) {
-        $orderby_string .= ",";
-      }
-      $i++;
-    }
-    $order = $orderby_string;
-    if ($search != "") {
-      $sql .= " AND $search";
-    }
-    if ($order != "") {
-      $sql .= " ORDER BY $order";
-    }
-
-    $rosterRequests = wp_cache_get(md5($sql), 'rosterRequests');
-    if (!$rosterRequests) {
-      $rosterRequests = $wpdb->get_results($sql);
-      wp_cache_set(md5($sql), $rosterRequests, 'rosterRequests');
-    }
-
-    $class = '';
-    foreach ($rosterRequests as $i => $rosterRequest) {
-      $class = ('alternate' == $class) ? '' : 'alternate';
-      $rosterRequest->class = $class;
-
-      $rosterRequest->requestedUserId = $rosterRequest->requested_user;
-      $rosterRequest->requestedUser = get_userdata($rosterRequest->requested_user)->display_name;
-      $rosterRequest->completedUserId = $rosterRequest->completed_user;
-      if ($rosterRequest->completed_user != '') {
-        $rosterRequest->completedUser = get_userdata($rosterRequest->completed_user)->display_name;
-      } else {
-        $rosterRequest->completedUser = '';
-      }
-
-      $rosterRequests[$i] = $rosterRequest;
-    }
-
-    return $rosterRequests;
-  }
-
-  /**
-   * get single roster request
-   *
-   * @param int $rosterRequestId
-   * @return array
-   */
-  private function getRosterRequest($rosterRequestId)
-  {
-    global $wpdb;
-
-    $rosterRequest = $wpdb->get_row("SELECT `first_name`, `surname`, `gender`, `btm`, `email`, `player_id`, `requested_date`, `requested_user`, `completed_date`, `completed_user` FROM {$wpdb->racketmanager_roster_requests} WHERE `id` = '" . intval($rosterRequestId) . "'");
-
-    if (!$rosterRequest) {
+    if (!$playerRequest) {
       return false;
     }
 
-    return $rosterRequest;
+    return $playerRequest;
   }
 
   /**
@@ -326,18 +241,15 @@ final class Club
    * @param int $rosterRequst_id
    * @return boolean
    */
-  public function approveRosterRequest($rosterRequestId)
+  public function approvePlayerRequest($playerRequestId)
   {
     global $wpdb, $racketmanager;
 
-    $rosterRequest = $this->getRosterRequest($rosterRequestId);
-    if (empty($rosterRequest->completed_date)) {
-      if (empty($rosterRequest->player_id)) {
-        $rosterRequest->player_id = $racketmanager->addPlayer($rosterRequest->first_name, $rosterRequest->surname, $rosterRequest->gender, $rosterRequest->btm, $rosterRequest->email);
-      }
-      $this->addRoster($rosterRequest->player_id, false);
-      $wpdb->query($wpdb->prepare("UPDATE {$wpdb->racketmanager_roster_requests} SET `completed_date` = now(), `completed_user` = %d WHERE `id` = %d ", get_current_user_id(), $rosterRequestId));
-      $racketmanager->setMessage(__('Roster added', 'racketmanager'));
+    $playerRequest = $this->getPlayerRequest($playerRequestId);
+    if (empty($playerRequest->completed_date)) {
+      $this->addRoster($playerRequest->player_id, false);
+      $wpdb->query($wpdb->prepare("UPDATE {$wpdb->racketmanager_club_player_requests} SET `completed_date` = now(), `completed_user` = %d WHERE `id` = %d ", get_current_user_id(), $playerRequestId));
+      $racketmanager->setMessage(__('Player added to club', 'racketmanager'));
     }
 
     return true;

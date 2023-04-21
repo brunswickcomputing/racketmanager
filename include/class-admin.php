@@ -3455,7 +3455,7 @@ final class RacketManagerAdmin extends RacketManager
 	* @param int $rosterRequst_id
 	* @return void
 	*/
-	public function _approveRosterRequest( $club_id, $rosterRequestId ) {
+	public function _approvePlayerRequest( $club_id, $playerRequestId ) {
 
 		if ( !current_user_can('edit_teams') ) {
 			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
@@ -3463,7 +3463,7 @@ final class RacketManagerAdmin extends RacketManager
 		}
 
 		$club = get_club($club_id);
-		$club->approveRosterRequest( $rosterRequestId );
+		$club->approvePlayerRequest( $playerRequestId );
 	}
 
 	/**
@@ -3472,7 +3472,7 @@ final class RacketManagerAdmin extends RacketManager
 	* @param int $rosterRequst_id
 	* @return void
 	*/
-	private function deleteRosterRequest( $rosterRequestId ) {
+	private function deletePlayerRequest( $playerRequestId ) {
 		global $wpdb;
 
 		if ( !current_user_can('edit_teams') ) {
@@ -3480,7 +3480,7 @@ final class RacketManagerAdmin extends RacketManager
 			return false;
 		}
 
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_roster_requests} WHERE `id` = %d", $rosterRequestId) );
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_club_player_requests} WHERE `id` = %d", $playerRequestId) );
 		$this->setMessage( __('Roster request deleted', 'racketmanager') );
 
 		return true;

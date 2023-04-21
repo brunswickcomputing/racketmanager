@@ -45,7 +45,7 @@ class RacketManagerAJAX extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_update_rubbers', array(&$this, 'updateRubbers') );
 		add_action( 'wp_ajax_racketmanager_confirm_results', array(&$this, 'confirmResults') );
 
-		add_action( 'wp_ajax_racketmanager_roster_request', array(&$this, 'rosterRequest') );
+		add_action( 'wp_ajax_racketmanager_club_player_request', array(&$this, 'playerRequest') );
 		add_action( 'wp_ajax_racketmanager_roster_remove', array(&$this, 'rosterRemove') );
 
 		add_action( 'wp_ajax_racketmanager_team_update', array(&$this, 'updateTeam') );
@@ -1413,14 +1413,8 @@ class RacketManagerAJAX extends RacketManager {
 	*
 	* @see templates/club.php
 	*/
-	public function rosterRequest() {
-		global $wpdb, $racketmanager;
-		$options = $racketmanager->getOptions('rosters');
-		if ( isset($options['btm']) && $options['btm'] == 1 ) {
-			$btmRequired = true;
-		} else {
-			$btmRequired = false;
-		}
+	public function playerRequest() {
+		global $racketmanager;
 
 		$return = array();
 		$msg = '';

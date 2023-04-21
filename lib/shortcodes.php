@@ -558,7 +558,7 @@ class RacketManagerShortcodes extends RacketManager {
 		if ( !$club ) return;
 
 		$rosters = $club->getPlayers( array( 'inactive' => "Y", 'type' => 'real', 'cache' => false ) );
-		$rosterRequests = $club->getRosterRequests( array() );
+		$playerRequests = Racketmanager_Util::getPlayerRequests( array('club' => $club->id, 'status' => 'outstanding') );
 		$keys = $racketmanager->getOptions('keys');
 		$googleMapsKey = isset($keys['googleMapsKey']) ? $keys['googleMapsKey'] : '';
 
@@ -566,7 +566,7 @@ class RacketManagerShortcodes extends RacketManager {
 
 		$filename = ( !empty($template) ) ? 'club-'.$template : 'club';
 
-		$out = $this->loadTemplate( $filename, array( 'club' => $club, 'rosters' => $rosters, 'rosterRequests' => $rosterRequests, 'googleMapsKey' => $googleMapsKey ) );
+		$out = $this->loadTemplate( $filename, array( 'club' => $club, 'rosters' => $rosters, 'playerRequests' => $playerRequests, 'googleMapsKey' => $googleMapsKey ) );
 
 		if ( $echo )
 		echo $out;
@@ -1232,7 +1232,7 @@ class RacketManagerShortcodes extends RacketManager {
 			'template' => ''
 		), $atts ));
 
-		$actionurl = admin_url().'admin.php?page=racketmanager-admin&view=rosterRequest';
+		$actionurl = admin_url().'admin.php?page=racketmanager-admin&view=playerRequest';
 
 		$organisationname = $racketmanager->site_name;
 

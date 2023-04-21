@@ -522,10 +522,10 @@ Racketmanager.updateResults = function(link) {
 		}
 	}) ;
 };
-Racketmanager.rosterRequest = function(link) {
+Racketmanager.playerRequest = function(link) {
 
-	var $form = jQuery('#rosterRequestFrm').serialize();
-	$form += "&action=racketmanager_roster_request";
+	var $form = jQuery('#playerRequestFrm').serialize();
+	$form += "&action=racketmanager_club_player_request";
 	jQuery("#updateResponse").val("");
 	jQuery("#rosterUpdateSubmit").hide();
 	jQuery("#rosterUpdateSubmit").addClass("disabled");

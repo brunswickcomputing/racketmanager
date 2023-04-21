@@ -220,7 +220,7 @@ class Racketmanager_Util
 	 * @param array $query_args
 	 * @return array
 	 */
-	public static function getRosterRequests($query_args)
+	public static function getPlayerRequests($query_args)
 	{
 		global $wpdb;
 
@@ -229,7 +229,7 @@ class Racketmanager_Util
 		extract($query_args, EXTR_SKIP);
 
 		$search_terms = array();
-		$sql = "SELECT `id`, `first_name`, `surname`, `affiliatedclub`, `requested_date`, `requested_user`, `completed_date`, `completed_user`, `gender`, `btm`, `email` FROM {$wpdb->racketmanager_roster_requests} WHERE 1 = 1";
+		$sql = "SELECT `id`, `first_name`, `surname`, `player_id`, `affiliatedclub`, `requested_date`, `requested_user`, `completed_date`, `completed_user`, `gender`, `btm`, `email` FROM {$wpdb->racketmanager_roster_requests} WHERE 1 = 1";
 
 		if ($club) {
 			if ( $club != 'all') {
@@ -247,7 +247,7 @@ class Racketmanager_Util
 		}
 
 		if ($count) {
-			$sql = $sql = "SELECT COUNT(ID) FROM {$wpdb->racketmanager_roster_requests} WHERE 1 = 1";
+			$sql = $sql = "SELECT COUNT(ID) FROM {$wpdb->racketmanager_club_player_requests} WHERE 1 = 1";
 			if ($search != "") {
 				$sql .= " AND $search";
 			}
@@ -274,29 +274,37 @@ class Racketmanager_Util
 			$sql .= " ORDER BY $order";
 		}
 
-		$rosterRequests = wp_cache_get(md5($sql), 'rosterRequests');
-		if (!$rosterRequests) {
-			$rosterRequests = $wpdb->get_results($sql);
-			wp_cache_set(md5($sql), $rosterRequests, 'rosterRequests');
+		$playerRequests = wp_cache_get(md5($sql), 'playerRequests');
+		if (!$playerRequests) {
+			$playerRequests = $wpdb->get_results($sql);
+			wp_cache_set(md5($sql), $playerRequests, 'playerRequests');
 		}
 
 		$class = '';
-		foreach ($rosterRequests as $i => $rosterRequest) {
+		foreach ($playerRequests as $i => $playerRequest) {
 			$class = ('alternate' == $class) ? '' : 'alternate';
-			$rosterRequest->class = $class;
-			$rosterRequest->clubName = get_club($rosterRequest->affiliatedclub)->name;
-			$rosterRequest->requestedUserId = $rosterRequest->requested_user;
-			$rosterRequest->requestedUser = get_userdata($rosterRequest->requested_user)->display_name;
-			$rosterRequest->completedUserId = $rosterRequest->completed_user;
-			if ($rosterRequest->completed_user != '') {
-				$rosterRequest->completedUser = get_userdata($rosterRequest->completed_user)->display_name;
+			$playerRequest->class = $class;
+			if ($playerRequest->player_id != 0) {
+				$player = get_player($playerRequest->player_id);
+				$playerRequest->first_name = $player->firstname;
+				$playerRequest->surname = $player->surname;
+				$playerRequest->gender = $player->gender;
+				$playerRequest->btm = $player->btm;
+				$playerRequest->email = $player->email;
+			}
+			$playerRequest->clubName = get_club($playerRequest->affiliatedclub)->name;
+			$playerRequest->requestedUserId = $playerRequest->requested_user;
+			$playerRequest->requestedUser = get_userdata($playerRequest->requested_user)->display_name;
+			$playerRequest->completedUserId = $playerRequest->completed_user;
+			if ($playerRequest->completed_user != '') {
+				$playerRequest->completedUser = get_userdata($playerRequest->completed_user)->display_name;
 			} else {
-				$rosterRequest->completedUser = '';
+				$playerRequest->completedUser = '';
 			}
 
-			$rosterRequests[$i] = $rosterRequest;
+			$playerRequests[$i] = $playerRequest;
 		}
 
-		return $rosterRequests;
+		return $playerRequests;
 	}
 }

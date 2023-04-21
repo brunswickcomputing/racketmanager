@@ -695,6 +695,7 @@ function racketmanager_upgrade() {
 				$newUserLogin = strtolower($user->user_login);
 				$wpdb->update($wpdb->users,['user_login' => $newUserLogin], ['ID' => $user->ID]);
 			}
+			$wpdb->query( "RENAME TABLE $wpdb_racketmanager_roster_requests TO $wpdb->racketmanager_club_player_requests" );
 		}
   /*
 	* Update version and dbversion

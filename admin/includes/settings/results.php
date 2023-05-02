@@ -29,7 +29,7 @@
             <select class="form-select" id="role" name="<?php echo $competitionType ?>[matchCapability]">
               <option value="none" <?php if (isset($options[$competitionType]['matchCapability']) && $options[$competitionType]['matchCapability'] == "none") echo 'selected="selected"'?>><?php _e('None', 'racketmanager') ?></option>
               <option value="captain" <?php if (isset($options[$competitionType]['matchCapability']) && $options[$competitionType]['matchCapability'] == "captain") echo 'selected="selected"'?>><?php _e('Captain', 'racketmanager') ?></option>
-              <option value="roster" <?php if (isset($options[$competitionType]['matchCapability']) && $options[$competitionType]['matchCapability'] == "roster") echo 'selected="selected"'?>><?php _e('Roster', 'racketmanager') ?></option>
+              <option value="roster" <?php if (isset($options[$competitionType]['matchCapability']) && $options[$competitionType]['matchCapability'] == "roster") echo 'selected="selected"'?>><?php _e('Player', 'racketmanager') ?></option>
             </select>
             <label for="<?php echo $competitionType ?>[matchCapability]"><?php _e( 'Minimum level to update results', 'racketmanager' ) ?></label>
           </div>

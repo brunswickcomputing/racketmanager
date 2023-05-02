@@ -6,7 +6,7 @@
     <dd>Teams can be uploaded to a league for a specific season. The competition is chosen and then the league.</dd>
     <dt>Fixtures</dt>
     <dd>Fixtures can be uploaded to a league for a specific season. The competition is chosen and then the league.</dd>
-    <dt>Rosters</dt>
+    <dt>Club Players</dt>
     <dd>Players for a club can be uploaded from a file. Any player not yet registered will be added.</dd>
     <dt>Players</dt>
     <dd>Players can be uploaded from a file.</dd>

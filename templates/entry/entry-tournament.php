@@ -7,7 +7,7 @@ The following variables are usable:
     $tournament: tournament object
 	$competitions: competitions object
     $player: player object
-    $rosters: rosters array
+    $clubPlayers: club Players array
     $season: season name
     $type: competition type
     $malePartners: male partners object
@@ -89,14 +89,14 @@ The following variables are usable:
         <div class="form-group">
             <label for "affiliatedclub"><?php _e( 'Affiliated Club', 'racketmanager' ) ?></label>
             <div class="input">
-            <?php if (count($rosters) == 1) { ?>
-                <input type="text" class="form-control" id="affiliatedclubname" name="affiliatedclubname" value="<?php echo get_club($rosters[0]->affiliatedclub)->name ?>" disabled />
-                <input type="hidden" id="affiliatedclub" name="affiliatedclub" value="<?php echo $rosters[0]->affiliatedclub ?>" />
+            <?php if (count($clubPlayers) == 1) { ?>
+                <input type="text" class="form-control" id="affiliatedclubname" name="affiliatedclubname" value="<?php echo get_club($clubPlayers[0]->affiliatedclub)->name ?>" disabled />
+                <input type="hidden" id="affiliatedclub" name="affiliatedclub" value="<?php echo $clubPlayers[0]->affiliatedclub ?>" />
             <?php } else { ?>
                 <select size="1" name="affiliatedclub" id="affiliatedclub" >
                     <option value="0"><?php _e( 'Select club' , 'racketmanager') ?></option>
-                    <?php foreach ( $rosters AS $roster ) {
-                        $club = get_club($roster->affiliatedclub); ?>
+                    <?php foreach ( $clubPlayers AS $clubPlayer ) {
+                        $club = get_club($clubPlayer->affiliatedclub); ?>
                     <option value="<?php echo $club->id ?>"><?php echo $club->name ?></option>
                     <?php } ?>
                 </select>

@@ -1268,7 +1268,7 @@ class RacketManager {
   }
 
   /**
-  * delete Roster
+  * delete Club Player
   *
   * @param int $teamId
   * @return boolean

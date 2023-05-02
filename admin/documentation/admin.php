@@ -20,7 +20,7 @@
       <p>The player request page shows requests to register players for clubs.</p>
       <p>These requests are generated from the website club screen by match secretaries.</p>
       <p>The page lists the club, player, match secretary and date requested along with any completed date and user who completed the request.</p>
-      <p>The <a href="<?php echo get_admin_url() ?>admin.php?page=racketmanager-settings">Roster Confirmation setting</a> on the "Rosters" tab can be set to either "none" or "automatic". If an email address is set on this screen, an email notification will be sent to this address whenever a player request is made.</p>
+      <p>The <a href="<?php echo get_admin_url() ?>admin.php?page=racketmanager-settings">Confirmation setting</a> on the "Club Players" tab can be set to either "none" or "automatic". If an email address is set on this screen, an email notification will be sent to this address whenever a player request is made.</p>
       <dl>
         <dt><?php _e( 'Automatic Confirmation', 'racketmanager' ) ?></dt>
         <dd>With this set, the player will be automatically added to the club roster (and added to the list of players if a new player).</dd>

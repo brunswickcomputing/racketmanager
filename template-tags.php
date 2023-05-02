@@ -906,7 +906,7 @@
     function racketmanager_club_players_notification( $args = array() ) {
         global $racketmanager;
 
-        $shortcode = "[rosternotification";
+        $shortcode = "[clubplayernotification";
         foreach ($args AS $key => $value)
             $shortcode .= " ".$key."='".$value."'";
         $shortcode .= "]";

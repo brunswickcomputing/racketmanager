@@ -20,7 +20,7 @@
 				<option value="table"><?php _e( 'Table', 'racketmanager' ) ?></option>
 				<option value="fixtures"><?php _e( 'Fixtures', 'racketmanager') ?></option>
 				<option value="players"><?php _e( 'Players', 'racketmanager') ?></option>
-				<option value="roster"><?php _e( 'Roster', 'leaguemanger') ?></option>
+				<option value="roster"><?php _e( 'Club Players', 'leaguemanger') ?></option>
 				<option value="results"><?php _e( 'Results', 'racketmanager') ?></option>
 				<option value="matches"><?php _e( 'Matches', 'racketmanager' ) ?></option>
 			</select>

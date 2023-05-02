@@ -614,19 +614,19 @@ class RacketManagerAJAX extends RacketManager {
 						}
 						if ( !$playerFound ) {
 							$club = get_club($clubId);
-							$playerRoster = $club->getPlayers( array('player' => get_current_user_id(), 'inactive' => true) );
-							$playerRosterId = $playerRoster[0]->roster_id;
+							$clubPlayer = $club->getPlayers( array('player' => get_current_user_id(), 'inactive' => true) );
+							$clubPlayerId = $clubPlayer[0]->roster_id;
 							for ($ix = 1; $ix <= $numRubbers; $ix++) {
 								$homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : null;
 								$homeplayer2    = isset($_POST['homeplayer2'][$ix]) ? $_POST['homeplayer2'][$ix] : null;
 								$awayplayer1    = isset($_POST['awayplayer1'][$ix]) ? $_POST['awayplayer1'][$ix] : null;
 								$awayplayer2    = isset($_POST['awayplayer2'][$ix]) ? $_POST['awayplayer2'][$ix] : null;
 								if ( $userTeam == 'home' ) {
-									if ( $playerRosterId == $homeplayer1 || $playerRosterId == $homeplayer2 ) {
+									if ( $clubPlayerId == $homeplayer1 || $clubPlayerId == $homeplayer2 ) {
 										$playerFound = true;
 									}
 								} else {
-									if ( $playerRosterId == $awayplayer1 || $playerRosterId == $awayplayer2 ) {
+									if ( $clubPlayerId == $awayplayer1 || $clubPlayerId == $awayplayer2 ) {
 										$playerFound = true;
 									}
 								}
@@ -1608,8 +1608,8 @@ class RacketManagerAJAX extends RacketManager {
 		} else {
 			$playerName = $user->display_name;
 			$club = get_club($affiliatedclub);
-			$playerRoster = $club->getPlayers(array('player' => $playerId));
-			$playerRosterId = $playerRoster[0]->roster_id;
+			$clubPlayers = $club->getPlayers(array('player' => $playerId));
+			$clubPlayerId = $clubPlayers[0]->roster_id;
 			$affiliatedClubName = $club->name;
 		}
 		$competitions = isset($_POST['competition']) ? $_POST['competition'] : array();
@@ -1680,9 +1680,9 @@ class RacketManagerAJAX extends RacketManager {
 					}
 				}
 				if ($newTeam) {
-					$teamId = $racketmanager->addPlayerTeam( $playerName, $playerRosterId, $partnerName, $partnerId, $contactno, $contactemail, $affiliatedclub, $league );
+					$teamId = $racketmanager->addPlayerTeam( $playerName, $clubPlayerId, $partnerName, $partnerId, $contactno, $contactemail, $affiliatedclub, $league );
 				} else {
-					$racketmanager->editTeamPlayer( $teamId, $playerName, $playerRosterId, $partnerName, $partnerId, $contactno, $contactemail, $affiliatedclub, $league );
+					$racketmanager->editTeamPlayer( $teamId, $playerName, $clubPlayerId, $partnerName, $partnerId, $contactno, $contactemail, $affiliatedclub, $league );
 				}
 				$racketmanager->addTeamtoTable($league, $teamId, $season);
 				$tournamentEntries[$i] = $tournamentEntry;

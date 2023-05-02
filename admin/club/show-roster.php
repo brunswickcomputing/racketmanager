@@ -1,6 +1,6 @@
 <?php
 /**
-* Roster main page administration panel
+* Club Players main page administration panel
 *
 */
 namespace ns;
@@ -13,7 +13,7 @@ namespace ns;
 	</div>
 	<h1><?php _e( 'Players', 'racketmanager' ) ?> - <?php echo $club->name ?></h1>
 
-	<!-- View Rosters -->
+	<!-- Add player -->
 	<div class="mb-3">
 		<!-- Add Player -->
 		<h2><?php _e( 'Add Player', 'racketmanager' ) ?></h2>

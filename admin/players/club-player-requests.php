@@ -1,8 +1,8 @@
 <?php
 	$clubs = $racketmanager->getClubs();
 ?>
-<!-- Roster Request -->
-<form id="invoices-filter" method="get" action="" class="form-control mb-3">
+<!-- Club Player Request Filter -->
+<form id="club-player-request-filter" method="get" action="" class="form-control mb-3">
 	<input type="hidden" name="page" value="<?php echo 'racketmanager-players' ?>" />
 	<input type="hidden" name="tab" value="<?php echo 'playerrequest' ?>" />
 	<div class="col-auto">

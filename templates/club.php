@@ -6,7 +6,7 @@ The following variables are usable:
 
 
 $club: club object
-$rosters: rosters object
+$clubPlayers: club Players object
 
 You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
 */
@@ -197,7 +197,7 @@ if ( is_user_logged_in() ) {
                       <th scope="col" class="colspan"><?php _e( 'Requested By', 'racketmanager') ?></th>
                     </tr>
                   </thead>
-                  <tbody id="pendingRosters">
+                  <tbody id="pendingClubPlayers">
                     <?php $class=''; ?>
                     <?php foreach ($playerRequests as $playerRequest) { ?>
                       <?php $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
@@ -224,7 +224,7 @@ if ( is_user_logged_in() ) {
         </h3>
         <div id="collapse-ladies" class="accordion-collapse collapse" aria-labelledby="heading-ladies" data-bs-parent="#players">
           <div class="accordion-body">
-            <?php if ( $rosters ) { ?>
+            <?php if ( $clubPlayers ) { ?>
               <form id="roster-ladies-remove" method="post" action="">
                 <?php wp_nonce_field( 'roster-remove' ) ?>
                 <table class="playerlist noborder" summary="" title="RacketManager Club Ladies Players">
@@ -242,18 +242,18 @@ if ( is_user_logged_in() ) {
                   </thead>
                   <tbody id="Club Ladies Players">
                     <?php $class = ''; ?>
-                    <?php foreach ($rosters AS $roster ) {
-                      if ( $roster->gender == "F" ) {
+                    <?php foreach ($clubPlayers AS $clubPlayer ) {
+                      if ( $clubPlayer->gender == "F" ) {
                         $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-                        <tr class="<?php echo $class ?>" id="roster-<?php echo $roster->roster_id ?>">
+                        <tr class="<?php echo $class ?>" id="clubPlayer-<?php echo $clubPlayer->roster_id ?>">
                           <th scope="row" class="check-column">
                             <?php if ( $userCanUpdateClub ) { ?>
-                              <input type="checkbox" value="<?php echo $roster->roster_id ?>" name="roster[<?php echo $roster->roster_id ?>]" />
+                              <input type="checkbox" value="<?php echo $clubPlayer->roster_id ?>" name="clubPlayer[<?php echo $clubPlayer->roster_id ?>]" />
                             <?php } ?>
                           </th>
-                          <td><?php echo $roster->fullname; ?></td>
-                          <td><?php echo $roster->created_date; ?></td>
-                          <td><?php echo $roster->createdUserName; ?></td>
+                          <td><?php echo $clubPlayer->fullname; ?></td>
+                          <td><?php echo $clubPlayer->created_date; ?></td>
+                          <td><?php echo $clubPlayer->createdUserName; ?></td>
                         </tr>
                       <?php }
                     } ?>
@@ -272,7 +272,7 @@ if ( is_user_logged_in() ) {
         </h3>
         <div id="collapse-men" class="accordion-collapse collapse" aria-labelledby="heading-men" data-bs-parent="#players">
           <div class="accordion-body">
-            <?php if ( $rosters ) { ?>
+            <?php if ( $clubPlayers ) { ?>
               <form id="roster-men-remove" method="post" action="">
                 <?php wp_nonce_field( 'roster-remove' ) ?>
 
@@ -292,18 +292,18 @@ if ( is_user_logged_in() ) {
                   <tbody id="Club Mens Players">
 
                     <?php $class = ''; ?>
-                    <?php foreach ($rosters AS $roster ) {
-                      if ( $roster->gender == "M" ) {
+                    <?php foreach ($clubPlayers AS $clubPlayer ) {
+                      if ( $clubPlayer->gender == "M" ) {
                         $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-                        <tr class="<?php echo $class ?>" id="roster-<?php echo $roster->roster_id ?>">
+                        <tr class="<?php echo $class ?>" id="clubPlayer-<?php echo $roster->roster_id ?>">
                           <th scope="row" class="check-column">
                             <?php if ( $userCanUpdateClub ) { ?>
-                              <input type="checkbox" value="<?php echo $roster->roster_id ?>" name="roster[<?php echo $roster->roster_id ?>]" />
+                              <input type="checkbox" value="<?php echo $clubPlayer->roster_id ?>" name="clubPlayer[<?php echo $clubPlayer->clubPlayer ?>]" />
                             <?php } ?>
                           </th>
-                          <td><?php echo $roster->fullname; ?></td>
-                          <td><?php echo $roster->created_date; ?></td>
-                          <td><?php echo $roster->createdUserName; ?></td>
+                          <td><?php echo $clubPlayer->fullname; ?></td>
+                          <td><?php echo $clubPlayer->created_date; ?></td>
+                          <td><?php echo $clubPlayer->createdUserName; ?></td>
                         </tr>
                       <?php }
                     } ?>

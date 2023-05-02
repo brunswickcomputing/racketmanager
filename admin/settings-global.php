@@ -14,7 +14,7 @@
 				<!-- Nav tabs -->
 				<ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
 					<li class="nav-item" role="presentation">
-						<button class="nav-link active" id="rosters-tab" data-bs-toggle="tab" data-bs-target="#rosters" type="button" role="tab" aria-controls="rosters" aria-selected="true"><?php _e( 'Rosters', 'racketmanager' ) ?></button>
+						<button class="nav-link active" id="club-players-tab" data-bs-toggle="tab" data-bs-target="#club-players" type="button" role="tab" aria-controls="club-players" aria-selected="true"><?php _e( 'Club Players', 'racketmanager' ) ?></button>
 					</li>
 					<li class="nav-item" role="presentation">
 						<button class="nav-link" id="players-tab" data-bs-toggle="tab" data-bs-target="#players" type="button" role="tab" aria-controls="players" aria-selected="false"><?php _e( 'Player Checks', 'racketmanager' ) ?></button>
@@ -41,7 +41,7 @@
 
 				<!-- Tab panes -->
 				<div class="tab-content mb-3">
-					<div class="tab-pane active show fade" id="rosters" role="tabpanel" aria-labelledby="rosters-tab">
+					<div class="tab-pane active show fade" id="club-players" role="tabpanel" aria-labelledby="club-players-tab">
 						<?php include(RACKETMANAGER_PATH . 'admin/includes/settings/rosters.php'); ?>
 					</div>
 					<div class="tab-pane fade" id="players" role="tabpanel" aria-labelledby="players-tab">

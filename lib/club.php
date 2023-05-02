@@ -236,7 +236,7 @@ final class Club
   }
 
   /**
-   * approve Roster Request
+   * approve Club Player Request
    *
    * @param int $rosterRequst_id
    * @return boolean
@@ -360,7 +360,7 @@ final class Club
     $wpdb->query($wpdb->prepare($sql, $this->id, $player_id, $userid));
     $roster_id = $wpdb->insert_id;
 
-    $racketmanager->setMessage(__('Roster added', 'racketmanager'));
+    $racketmanager->setMessage(__('Club Player added', 'racketmanager'));
 
     return $roster_id;
   }

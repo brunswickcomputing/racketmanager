@@ -1,5 +1,5 @@
 <?php
-$title = $organisationName.' Roster Request - '.$club;
+$title = $organisationName.' Club Player Request - '.$club;
 ?>
 <?php include('email-header.php'); ?>
 <tr>

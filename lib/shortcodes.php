@@ -39,7 +39,7 @@ class RacketManagerShortcodes extends RacketManager {
 		add_shortcode( 'matchnotification', array(&$this, 'showMatchNotification') );
 		add_shortcode( 'resultnotification', array(&$this, 'showResultNotification') );
 		add_shortcode( 'resultnotificationcaptain', array(&$this, 'showCaptainResultNotification') );
-		add_shortcode( 'rosternotification', array(&$this, 'showRosterNotification') );
+		add_shortcode( 'clubplayernotification', array(&$this, 'showClubPlayerNotification') );
 		add_shortcode( 'cupentry', array(&$this, 'showCupEntry') );
 		add_shortcode( 'leagueentry', array(&$this, 'showLeagueEntry') );
 		add_shortcode( 'orderofplay', array(&$this, 'showOrderOfPlay') );
@@ -284,10 +284,10 @@ class RacketManagerShortcodes extends RacketManager {
 				$r=1;
 				foreach ($rubbers as $rubber) {
 					$rubber->home_player_1_name = $rubber->home_player_2_name = $rubber->away_player_1_name = $rubber->away_player_2_name = '';
-					if ( isset($rubber->home_player_1) ) $rubber->home_player_1_name = $this->getPlayerNamefromRoster($rubber->home_player_1);
-					if ( isset($rubber->home_player_2) ) $rubber->home_player_2_name = $this->getPlayerNamefromRoster($rubber->home_player_2);
-					if ( isset($rubber->away_player_1) ) $rubber->away_player_1_name = $this->getPlayerNamefromRoster($rubber->away_player_1);
-					if ( isset($rubber->away_player_2) ) $rubber->away_player_2_name = $this->getPlayerNamefromRoster($rubber->away_player_2);
+					if ( isset($rubber->home_player_1) ) $rubber->home_player_1_name = $this->getClubPlayerName($rubber->home_player_1);
+					if ( isset($rubber->home_player_2) ) $rubber->home_player_2_name = $this->getClubPlayerName($rubber->home_player_2);
+					if ( isset($rubber->away_player_1) ) $rubber->away_player_1_name = $this->getClubPlayerName($rubber->away_player_1);
+					if ( isset($rubber->away_player_2) ) $rubber->away_player_2_name = $this->getClubPlayerName($rubber->away_player_2);
 					$matches[$i]->rubbers[$r] = $rubber;
 					$r ++;
 				}
@@ -387,10 +387,10 @@ class RacketManagerShortcodes extends RacketManager {
 	* @param int $roster_id
 	* @return string $playerName
 	*/
-	function getPlayerNamefromRoster( $roster_id ) {
+	function getClubPlayerName( $player ) {
 		global $racketmanager;
 
-		$roster_dtls = $racketmanager->getClubPlayer( intval($roster_id));
+		$roster_dtls = $racketmanager->getClubPlayer( intval($player));
 		if ( $roster_dtls ) {
 			$playerName = $roster_dtls->fullname;
 		} else {
@@ -464,10 +464,10 @@ class RacketManagerShortcodes extends RacketManager {
 						$r=1;
 						foreach ($rubbers as $rubber) {
 							$rubber->home_player_1_name = $rubber->home_player_2_name = $rubber->away_player_1_name = $rubber->away_player_2_name = '';
-							if ( isset($rubber->home_player_1) && $rubber->home_player_1 > 0 ) $rubber->home_player_1_name = $this->getPlayerNamefromRoster($rubber->home_player_1);
-							if ( isset($rubber->home_player_2) && $rubber->home_player_2 > 0) $rubber->home_player_2_name = $this->getPlayerNamefromRoster($rubber->home_player_2);
-							if ( isset($rubber->away_player_1) && $rubber->away_player_1 > 0) $rubber->away_player_1_name = $this->getPlayerNamefromRoster($rubber->away_player_1);
-							if ( isset($rubber->away_player_2) && $rubber->away_player_2 > 0) $rubber->away_player_2_name = $this->getPlayerNamefromRoster($rubber->away_player_2);
+							if ( isset($rubber->home_player_1) && $rubber->home_player_1 > 0 ) $rubber->home_player_1_name = $this->getClubPlayerName($rubber->home_player_1);
+							if ( isset($rubber->home_player_2) && $rubber->home_player_2 > 0) $rubber->home_player_2_name = $this->getClubPlayerName($rubber->home_player_2);
+							if ( isset($rubber->away_player_1) && $rubber->away_player_1 > 0) $rubber->away_player_1_name = $this->getClubPlayerName($rubber->away_player_1);
+							if ( isset($rubber->away_player_2) && $rubber->away_player_2 > 0) $rubber->away_player_2_name = $this->getClubPlayerName($rubber->away_player_2);
 							$match->rubbers[$r] = $rubber;
 							$r ++;
 						}
@@ -557,7 +557,7 @@ class RacketManagerShortcodes extends RacketManager {
 
 		if ( !$club ) return;
 
-		$rosters = $club->getPlayers( array( 'inactive' => "Y", 'type' => 'real', 'cache' => false ) );
+		$clubPlayers = $club->getPlayers( array( 'inactive' => "Y", 'type' => 'real', 'cache' => false ) );
 		$playerRequests = Racketmanager_Util::getPlayerRequests( array('club' => $club->id, 'status' => 'outstanding') );
 		$keys = $racketmanager->getOptions('keys');
 		$googleMapsKey = isset($keys['googleMapsKey']) ? $keys['googleMapsKey'] : '';
@@ -566,7 +566,7 @@ class RacketManagerShortcodes extends RacketManager {
 
 		$filename = ( !empty($template) ) ? 'club-'.$template : 'club';
 
-		$out = $this->loadTemplate( $filename, array( 'club' => $club, 'rosters' => $rosters, 'playerRequests' => $playerRequests, 'googleMapsKey' => $googleMapsKey ) );
+		$out = $this->loadTemplate( $filename, array( 'club' => $club, 'clubPlayers' => $clubPlayers, 'playerRequests' => $playerRequests, 'googleMapsKey' => $googleMapsKey ) );
 
 		if ( $echo )
 		echo $out;
@@ -942,13 +942,13 @@ class RacketManagerShortcodes extends RacketManager {
 		$player = wp_get_current_user();
 		$player->contactno = get_user_meta( $player->ID, 'contactno', true);
 		$player->gender = get_user_meta( $player->ID, 'gender', true);
-		$rosters = $racketmanager->getClubPlayers( array('player' => $player->ID, 'inactive' => true) );
+		$clubPlayers = $racketmanager->getClubPlayers( array('player' => $player->ID, 'inactive' => true) );
 		$malePartners = $racketmanager->getClubPlayers( array('gender' => 'M', 'inactive' => true, 'type' => true) );
 		$femalePartners = $racketmanager->getClubPlayers( array('gender' => 'F', 'inactive' => true, 'type' => true) );
 
 		$filename = ( !empty($template) ) ? 'entry-tournament-'.$template : 'entry-tournament';
 
-		$out = $this->loadTemplate( $filename, array( 'tournament' => $tournament, 'competitions' => $competitions, 'player' => $player, 'rosters' => $rosters, 'season' => $tournament->season, 'type' => $type, 'malePartners' => $malePartners, 'femalePartners' => $femalePartners ), 'entry' );
+		$out = $this->loadTemplate( $filename, array( 'tournament' => $tournament, 'competitions' => $competitions, 'player' => $player, 'rosters' => $clubPlayers, 'season' => $tournament->season, 'type' => $type, 'malePartners' => $malePartners, 'femalePartners' => $femalePartners ), 'entry' );
 
 		return $out;
 	}
@@ -1222,7 +1222,7 @@ class RacketManagerShortcodes extends RacketManager {
 	* @return the content
 	*/
 
-	public function showRosterNotification( $atts ) {
+	public function showClubPlayerNotification( $atts ) {
 		global $racketmanager;
 
 		extract(shortcode_atts(array(

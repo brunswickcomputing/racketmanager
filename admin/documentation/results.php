@@ -15,7 +15,7 @@
       <p>The results checker page of Racketmanager shows any player checks that have been failed whenever a match result is input.</p>
       <p>For any of these checks to be applied, the relevant <a href="<?php echo get_admin_url() ?>admin.php?page=racketmanager-settings">setting</a> must be entered on the "Player Checks" tab.</p>
       <dl>
-        <dt><?php _e( 'Roster lead time', 'racketmanager' ) ?></dt>
+        <dt><?php _e( 'Player Registration lead time', 'racketmanager' ) ?></dt>
         <dd>This checks how long a player must be registered before they are eligible to play.</dd>
         <dt><?php _e( 'End of season eligibility', 'racketmanager' ) ?></dt>
         <dd>This checks how many rounds at the end of the season do not allow new players to be registered.</dd>
@@ -41,7 +41,7 @@
           <dd>Results are not able to be entered by users.</dd>
           <dt><?php _e( 'Captain', 'racketmanager' ) ?></dt>
           <dd>Captains of the team involved in the match are able to enter the results.</dd>
-          <dt><?php _e( 'Roster', 'racketmanager' ) ?></dt>
+          <dt><?php _e( 'Player', 'racketmanager' ) ?></dt>
           <dd>Any player registered with the club of the team involved in the match are able to enter the results.</dd>
         </dl>
         <dt><?php _e( 'Result Entry', 'racketmanager' ) ?></dt>

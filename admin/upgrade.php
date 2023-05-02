@@ -695,8 +695,10 @@ function racketmanager_upgrade() {
 				$newUserLogin = strtolower($user->user_login);
 				$wpdb->update($wpdb->users,['user_login' => $newUserLogin], ['ID' => $user->ID]);
 			}
-			$wpdb->query( "RENAME TABLE $wpdb_racketmanager_club_players TO $wpdb->racketmanager_club_players" );
-			$wpdb->query( "RENAME TABLE $wpdb_racketmanager_club_players_requests TO $wpdb->racketmanager_club_player_requests" );
+			$wpdb_racketmanager_roster = $wpdb->prefix . 'racketmanager_roster';
+			$wpdb_racketmanager_roster_requests = $wpdb->prefix . 'racketmanager_roster_requests';
+			$wpdb->query( "RENAME TABLE $wpdb_racketmanager_roster TO $wpdb->racketmanager_club_players" );
+			$wpdb->query( "RENAME TABLE $wpdb_racketmanager_roster_requests TO $wpdb->racketmanager_club_player_requests" );
 		}
 	/*
 	* Update version and dbversion

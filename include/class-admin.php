@@ -2969,7 +2969,7 @@ final class RacketManagerAdmin extends RacketManager
 	* @param int $league_id
 	* @return boolean
 	*/
-	private function editTeamPlayer( $team_id, $player1, $player1Id, $player2, $player2Id, $contactno, $contactemail, $affiliatedclub, $league_id ) {
+	public function editTeamPlayer( $team_id, $player1, $player1Id, $player2, $player2Id, $contactno, $contactemail, $affiliatedclub, $league_id ) {
 		global $racketmanager;
 
 		if ( !current_user_can('edit_teams') ) {

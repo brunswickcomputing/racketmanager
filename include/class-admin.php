@@ -4210,7 +4210,7 @@ final class RacketManagerAdmin extends RacketManager
 
 		$i = 1;
 		do {
-		$result = $this->validateSchedule($competitions);
+			$result = $this->validateSchedule($competitions);
 			$i ++;
 		} while ( $result == false || $i > 20 );
 

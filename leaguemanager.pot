@@ -171,7 +171,7 @@ msgid "Insert Player"
 msgstr ""
 
 #: admin/admin.php:188 admin/stats.php:94 lib/stats.php:412
-msgid "Add Player from Team Roster"
+msgid "Add Player from Team Players"
 msgstr ""
 
 #: admin/admin.php:242 admin/documentation.php:43 admin/documentation.php:102
@@ -525,7 +525,7 @@ msgstr ""
 
 #: admin/documentation.php:22 admin/documentation.php:729 admin/team.php:103
 #: lib/stats.php:339 templates/team.php:60
-msgid "Team Roster"
+msgid "Team Players"
 msgstr ""
 
 #: admin/documentation.php:23 admin/documentation.php:733 admin/stats.php:59
@@ -2082,7 +2082,7 @@ msgid "Save Team Results"
 msgstr ""
 
 #: sports/racing.php:330
-msgid "No Team Roster found."
+msgid "No Team Players found."
 msgstr ""
 
 #: sports/racing.php:366

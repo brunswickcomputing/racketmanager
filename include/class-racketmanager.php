@@ -527,11 +527,15 @@ class RacketManager {
       'index.php?pagename=cups%2Fentry-form&club_name=$matches[3]&season=$matches[2]&type=$matches[1]',
       'top'
     );
+    // player
+    add_rewrite_rule(
+      'clubs/(.+?)/(.+?)/?$','index.php?pagename=club%2Fplayer&club_name=$matches[1]&player_id=$matches[2]','top'
+    );
     // club
     add_rewrite_rule(
       'clubs\/(.+?)\/?$','index.php?pagename=club&club_name=$matches[1]','top'
     );
-    // club
+    // invoice
     add_rewrite_rule(
       'invoice\/(.+?)\/?$','index.php?pagename=invoice&id=$matches[1]','top'
     );

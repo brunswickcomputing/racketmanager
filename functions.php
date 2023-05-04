@@ -110,6 +110,7 @@ function create_new_url_querystring() {
   add_rewrite_tag('%match_date%','(.+?)');
   add_rewrite_tag('%type%','(.+?)');
   add_rewrite_tag('%tournament%','(.+?)');
+  add_rewrite_tag('%player_id%','(.+?)');
   add_rewrite_tag('%id%','(.+?)');
 }
 add_action('init', 'create_new_url_querystring');

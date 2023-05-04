@@ -462,53 +462,51 @@ final class Club
       $sql .= " ORDER BY $order";
     }
 
-    $rosters = wp_cache_get(md5($sql), 'rosters');
-    if (!$rosters) {
-      $rosters = $wpdb->get_results($sql);
+    $players = wp_cache_get(md5($sql), 'clubplayers');
+    if (!$players) {
+      $players = $wpdb->get_results($sql);
       $i = 0;
       $class = '';
-      foreach ($rosters as $roster) {
+      foreach ($players as $player) {
         $class = ('alternate' == $class) ? '' : 'alternate';
-        $rosters[$i]->class = $class;
-
-        $rosters[$i] = (object)(array)$roster;
-
-        $rosters[$i]->roster_id = $roster->roster_id;
-        $rosters[$i]->player_id = $roster->player_id;
-        $rosters[$i]->gender = get_user_meta($roster->player_id, 'gender', true);
-        if ($gender && $gender != $rosters[$i]->gender) {
-          unset($rosters[$i]);
+        $players[$i]->class = $class;
+        $players[$i]->roster_id = $player->roster_id;
+        $players[$i]->player_id = $player->player_id;
+        $players[$i]->gender = get_user_meta($player->player_id, 'gender', true);
+        if ($gender && $gender != $players[$i]->gender) {
+          unset($players[$i]);
         } else {
-          $rosters[$i]->removed_date = $roster->removed_date;
-          $rosters[$i]->removed_user = $roster->removed_user;
-          if ($roster->removed_user) {
-            $rosters[$i]->removedUserName = get_userdata($roster->removed_user)->display_name;
+          $players[$i]->removed_date = $player->removed_date;
+          $players[$i]->removed_user = $player->removed_user;
+          if ($player->removed_user) {
+            $players[$i]->removedUserName = get_userdata($player->removed_user)->display_name;
           } else {
-            $rosters[$i]->removedUserName = '';
+            $players[$i]->removedUserName = '';
           }
-          $rosters[$i]->created_date = $roster->created_date;
-          $rosters[$i]->created_user = $roster->created_user;
-          if ($roster->created_user) {
-            $rosters[$i]->createdUserName = get_userdata($roster->created_user)->display_name;
+          $players[$i]->created_date = $player->created_date;
+          $players[$i]->created_user = $player->created_user;
+          if ($player->created_user) {
+            $players[$i]->createdUserName = get_userdata($player->created_user)->display_name;
           } else {
-            $rosters[$i]->createdUserName = '';
+            $players[$i]->createdUserName = '';
           }
-          $player = get_player($roster->player_id);
-          $rosters[$i]->fullname = $player->display_name;
-          $rosters[$i]->type = $player->type;
-          $rosters[$i]->btm = $player->btm;
-          $rosters[$i]->locked = $player->locked;
-          $rosters[$i]->locked_date = $player->locked_date;
-          $rosters[$i]->locked_user = $player->locked_user;
-          $rosters[$i]->lockedUserName = $player->lockedUserName;
+          $player = get_player($player->player_id);
+          $players[$i]->fullname = $player->display_name;
+          $players[$i]->type = $player->type;
+          $players[$i]->btm = $player->btm;
+          $players[$i]->email = $player->user_email;
+          $players[$i]->locked = $player->locked;
+          $players[$i]->locked_date = $player->locked_date;
+          $players[$i]->locked_user = $player->locked_user;
+          $players[$i]->lockedUserName = $player->lockedUserName;
         }
 
         $i++;
       }
-      wp_cache_set(md5($sql), $rosters, 'rosters');
+      wp_cache_set(md5($sql), $players, 'clubplayers');
     }
 
-    return $rosters;
+    return $players;
   }
 
   /**

@@ -561,9 +561,6 @@ input[type="text"]:disabled, input[type="email"]:disabled, input[type="tel"]:dis
     border: none;
     background: none;
 }
-th input[type="checkbox"] {
-    margin-left: 4em;
-}
 .alternate {
     background-color: #f9f9f9;
 }
@@ -579,10 +576,6 @@ th input[type="checkbox"] {
 .playerlist td.playername {
     text-align: left;
 }
-.playerlist td, .playerlist th {
-    text-align: left;
-}
-
 div.teamlist .header .ui-icon {
 /*	background-image: none;*/
 }

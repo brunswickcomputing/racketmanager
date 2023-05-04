@@ -3457,9 +3457,9 @@ final class RacketManagerAdmin extends RacketManager
 	*/
 
 	/**
-	* delete Roster Request
+	* approve Club Player Request
 	*
-	* @param int $rosterRequst_id
+	* @param int $playerRequestId
 	* @return void
 	*/
 	public function _approvePlayerRequest( $club_id, $playerRequestId ) {
@@ -3474,9 +3474,9 @@ final class RacketManagerAdmin extends RacketManager
 	}
 
 	/**
-	* delete Roster Request
+	* delete Club Player Request
 	*
-	* @param int $rosterRequst_id
+	* @param int $playerRequestId
 	* @return void
 	*/
 	private function deletePlayerRequest( $playerRequestId ) {

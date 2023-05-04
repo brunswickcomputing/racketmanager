@@ -50,6 +50,7 @@ class RacketManagerAJAX extends RacketManager {
 
 		add_action( 'wp_ajax_racketmanager_team_update', array(&$this, 'updateTeam') );
 		add_action( 'wp_ajax_racketmanager_update_club', array(&$this, 'updateClub') );
+		add_action( 'wp_ajax_racketmanager_update_player', array(&$this, 'updatePlayer') );
 
 		add_action( 'wp_ajax_racketmanager_tournament_entry', array(&$this, 'tournamentEntryRequest') );
 
@@ -1559,6 +1560,39 @@ class RacketManagerAJAX extends RacketManager {
 		}
 
 		array_push($return, $msg);
+		die(json_encode($return));
+	}
+
+	/**
+	* update Player
+	*
+	* @see templates/player.php
+	*/
+	public function updatePlayer() {
+		global $wpdb, $racketmanager;
+
+		$errorField = array();
+		$errorMsg = array();
+		$return = array();
+		$msg = '';
+		check_admin_referer('player-update');
+		$playerId = $_POST['playerId'];
+
+		$playerValid = $racketmanager->validatePlayer();
+		if ($playerValid[0]) {
+			$player = get_player($playerId);
+			$newPlayer = $playerValid[1];
+			$player->update($newPlayer->firstname, $newPlayer->surname, $newPlayer->gender, $newPlayer->btm, $newPlayer->email, $newPlayer->locked);
+			$error = $racketmanager->error;
+			$msg = $racketmanager->message;
+		} else {
+			$error = true;
+			$errorField = $playerValid[1];
+			$errorMsg = $playerValid[2];
+			$msg = __('Error with player details', 'racketmanager');
+		}
+
+		array_push($return, $msg, $error, $errorField, $errorMsg);
 		die(json_encode($return));
 	}
 

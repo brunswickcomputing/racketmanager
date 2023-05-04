@@ -32,6 +32,7 @@ class RacketManagerShortcodes extends RacketManager {
 		add_shortcode( 'leaguearchive', array(&$this, 'showArchive') );
 		add_shortcode( 'competition', array(&$this, 'showCompetition') );
 		add_shortcode( 'players', array(&$this, 'showPlayers') );
+		add_shortcode( 'player', array(&$this, 'showPlayer') );
 		add_shortcode( 'clubs', array(&$this, 'showClubs') );
 		add_shortcode( 'club', array(&$this, 'showClub') );
 		add_shortcode( 'tournament-entry', array(&$this, 'showTournamentEntry') );
@@ -906,6 +907,37 @@ class RacketManagerShortcodes extends RacketManager {
 
 		$out = $this->loadTemplate( $filename, array('league' => $league, 'playerstats' => $playerstats) );
 		return $out;
+	}
+
+	/**
+	* Function to display Player
+	*
+	*	[[player] player_id=ID template=X]
+	*
+	* @param array $atts
+	* @return the content
+	*/
+	public function showPlayer( $atts ) {
+		extract(shortcode_atts(array(
+			'template' => '',
+		), $atts ));
+
+		// Get Club by Name
+		$club_name = get_query_var('club_name');
+		$club_name = str_replace('-',' ',$club_name);
+		$club = get_Club( $club_name, 'shortcode' );
+		if ( !$club ) {
+			return;
+		}
+		// Get Player by Name
+		$player_name = get_query_var('player_id');
+		$player_name = str_replace('-','.',$player_name);
+		$player = get_player($player_name, 'name');
+		if ( !$player ) {
+			return;
+		}
+		$filename = ( !empty($template) ) ? 'player-'.$template : 'player';
+		return $this->loadTemplate( $filename, array('club' => $club, 'player' => $player) );
 	}
 
 	/**

@@ -660,6 +660,51 @@ Racketmanager.updateClub = function(link) {
 		}
 	}) ;
 };
+Racketmanager.updatePlayer = function(link) {
+
+	var formId = '#'.concat(link.form.id);
+	var $form = jQuery(formId).serialize();
+	var updateResponse = "#updatePlayer";
+	var submitButton = "#updatePlayerSubmit";
+	$form += "&action=racketmanager_update_player";
+	jQuery(updateResponse).html("");
+	jQuery(submitButton).hide();
+
+	jQuery.ajax({
+		url:RacketManagerAjaxL10n.requestUrl,
+		type: "POST",
+		data: $form,
+		async: false,
+		success: function(response) {
+			var $response = jQuery.parseJSON(response);
+			var $message = $response[0];
+			var $error = $response[1];
+			if ($error === true) {
+				var $errorField = $response[2];
+				var $errorMsg = $response[3];
+				jQuery(updateResponse).addClass('message-error');
+				for ( var $i=0; $i < $errorField.length; $i++) {
+					$formfield = "#"+$errorField[$i];
+					jQuery($formfield).addClass('is-invalid');
+					$formfield = $formfield+'Feedback';
+					jQuery($formfield).html($errorMsg[$i]);
+				}
+				jQuery(submitButton).removeClass("disabled");
+				jQuery(updateResponse).html($message);
+			} else {
+				jQuery(updateResponse).show();
+				jQuery(updateResponse).addClass("message-success");
+				jQuery(updateResponse).html($message);
+				jQuery(updateResponse).delay(10000).fadeOut('slow');
+			}
+			jQuery(submitButton).show();
+		},
+		error: function() {
+			alert("Ajax error on player update");
+			jQuery(submitButton).show();
+		}
+	}) ;
+};
 Racketmanager.tournamentEntryRequest = function(link) {
 
 	var $form = jQuery('#form-tournamententry').serialize();

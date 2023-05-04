@@ -216,104 +216,63 @@ if ( is_user_logged_in() ) {
           </div>
         <?php }
       } ?>
-      <div class="accordion-item">
-        <h3 class="accordion-header" id="heading-ladies">
-          <button class="accordion-button collapsed frontend" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-ladies" aria-expanded="false" aria-controls="collapse-ladies">
-            <?php _e( 'Ladies', 'racketmanager' ) ?>
-          </button>
-        </h3>
-        <div id="collapse-ladies" class="accordion-collapse collapse" aria-labelledby="heading-ladies" data-bs-parent="#players">
-          <div class="accordion-body">
-            <?php if ( $clubPlayers ) { ?>
-              <form id="roster-ladies-remove" method="post" action="">
-                <?php wp_nonce_field( 'roster-remove' ) ?>
-                <table class="playerlist noborder" summary="" title="RacketManager Club Ladies Players">
-                  <thead>
-                    <tr>
-                      <th scope="col" class="check-column">
-                        <?php if ( $userCanUpdateClub ) { ?>
-                          <button class="btn" type="button" id="rosterRemoveSubmit" onclick="Racketmanager.rosterRemove('#roster-ladies-remove')"><?php _e( 'Remove', 'racketmanager') ?></button>
-                        <?php } ?>
-                      </th>
-                      <th scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>
-                      <th scope="col" class="colspan"><?php _e( 'Created Date', 'racketmanager') ?></th>
-                      <th scope="col" class="colspan"><?php _e( 'Created By', 'racketmanager') ?></th>
-                    </tr>
-                  </thead>
-                  <tbody id="Club Ladies Players">
-                    <?php $class = ''; ?>
-                    <?php foreach ($clubPlayers AS $clubPlayer ) {
-                      if ( $clubPlayer->gender == "F" ) {
-                        $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-                        <tr class="<?php echo $class ?>" id="clubPlayer-<?php echo $clubPlayer->roster_id ?>">
-                          <th scope="row" class="check-column">
-                            <?php if ( $userCanUpdateClub ) { ?>
-                              <input type="checkbox" value="<?php echo $clubPlayer->roster_id ?>" name="clubPlayer[<?php echo $clubPlayer->roster_id ?>]" />
-                            <?php } ?>
-                          </th>
-                          <td><?php echo $clubPlayer->fullname; ?></td>
-                          <td><?php echo $clubPlayer->created_date; ?></td>
-                          <td><?php echo $clubPlayer->createdUserName; ?></td>
-                        </tr>
-                      <?php }
-                    } ?>
-                  </tbody>
-                </table>
-              </form>
-            <?php } ?>
+      <?php
+      $genders = array();
+      $genders['ladies'] = 'F';
+      $genders['men'] = 'M';
+      foreach ($genders as $key => $gender ) { ?>
+        <div class="accordion-item">
+          <h3 class="accordion-header" id="heading-<?php echo $key ?>">
+            <button class="accordion-button collapsed frontend" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<?php echo $key ?>" aria-expanded="false" aria-controls="collapse-<?php echo $key ?>">
+              <?php _e( $key, 'racketmanager' ) ?>
+            </button>
+          </h3>
+          <div id="collapse-<?php echo $key ?>" class="accordion-collapse collapse" aria-labelledby="heading-<?php echo $key ?>" data-bs-parent="#players">
+            <div class="accordion-body">
+              <?php if ( $clubPlayers ) { ?>
+                <form id="roster-<?php echo $key ?>-remove" method="post" action="">
+                  <?php wp_nonce_field( 'roster-remove' ) ?>
+                  <table class="playerlist noborder">
+                    <caption>"<?php echo $club->name.' '.$key ?> Players"</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col" class="check-column">
+                          <?php if ( $userCanUpdateClub ) { ?>
+                            <button class="btn" type="button" id="rosterRemoveSubmit" onclick="Racketmanager.rosterRemove('#roster-<?php echo $key ?>-remove')"><?php _e( 'Remove', 'racketmanager') ?></button>
+                          <?php } ?>
+                        </th>
+                        <th scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>
+                        <th scope="col" class="colspan"><?php _e( 'LTA Tennis Number', 'racketmanager') ?></th>
+                        <th scope="col" class="colspan"><?php _e( 'Email', 'racketmanager') ?></th>
+                        <th scope="col" class="colspan"><?php _e( 'Created Date', 'racketmanager') ?></th>
+                      </tr>
+                    </thead>
+                    <tbody id="Club <?php echo $key ?> Players">
+                      <?php $class = ''; ?>
+                      <?php foreach ($clubPlayers AS $clubPlayer ) {
+                        if ( $clubPlayer->gender == $gender ) {
+                          $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+                          <tr class="<?php echo $class ?>" id="clubPlayer-<?php echo $clubPlayer->roster_id ?>">
+                            <th scope="row" class="check-column">
+                              <?php if ( $userCanUpdateClub ) { ?>
+                                <input type="checkbox" class="checkbox" value="<?php echo $clubPlayer->roster_id ?>" name="clubPlayer[<?php echo $clubPlayer->roster_id ?>]" />
+                              <?php } ?>
+                            </th>
+                            <td><a href="<?php echo sanitize_title($clubPlayer->fullname) ?>"><?php echo $clubPlayer->fullname; ?></a></td>
+                            <td><?php echo $clubPlayer->btm; ?></td>
+                            <td><?php echo $clubPlayer->email; ?></td>
+                            <td <?php if (!empty($clubPlayer->createdUserName)) { echo 'title="'.__('Created by',' racketmanager').' '.$clubPlayer->createdUserName.'"'; } ?>><?php echo $clubPlayer->created_date; ?></td>
+                          </tr>
+                        <?php }
+                      } ?>
+                    </tbody>
+                  </table>
+                </form>
+              <?php } ?>
+            </div>
           </div>
-        </div>
-      </div>
-      <div class="accordion-item">
-        <h3 class="accordion-header" id="heading-men">
-          <button class="accordion-button collapsed frontend" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-men" aria-expanded="false" aria-controls="collapse-men">
-            <?php _e( 'Men', 'racketmanager' ) ?>
-          </button>
-        </h3>
-        <div id="collapse-men" class="accordion-collapse collapse" aria-labelledby="heading-men" data-bs-parent="#players">
-          <div class="accordion-body">
-            <?php if ( $clubPlayers ) { ?>
-              <form id="roster-men-remove" method="post" action="">
-                <?php wp_nonce_field( 'roster-remove' ) ?>
-
-                <table class="playerlist noborder" summary="" title="RacketManager Club Mens Players">
-                  <thead>
-                    <tr>
-                      <th scope="col" class="check-column">
-                        <?php if ( $userCanUpdateClub ) { ?>
-                          <button class="btn" type="button" id="rosterRemoveSubmit" onclick="Racketmanager.rosterRemove('#roster-men-remove')"><?php _e( 'Remove', 'racketmanager') ?></button>
-                        <?php } ?>
-                      </th>
-                      <th scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>
-                      <th scope="col" class="colspan"><?php _e( 'Created Date', 'racketmanager') ?></th>
-                      <th scope="col" class="colspan"><?php _e( 'Created By', 'racketmanager') ?></th>
-                    </tr>
-                  </thead>
-                  <tbody id="Club Mens Players">
-
-                    <?php $class = ''; ?>
-                    <?php foreach ($clubPlayers AS $clubPlayer ) {
-                      if ( $clubPlayer->gender == "M" ) {
-                        $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-                        <tr class="<?php echo $class ?>" id="clubPlayer-<?php echo $roster->roster_id ?>">
-                          <th scope="row" class="check-column">
-                            <?php if ( $userCanUpdateClub ) { ?>
-                              <input type="checkbox" value="<?php echo $clubPlayer->roster_id ?>" name="clubPlayer[<?php echo $clubPlayer->clubPlayer ?>]" />
-                            <?php } ?>
-                          </th>
-                          <td><?php echo $clubPlayer->fullname; ?></td>
-                          <td><?php echo $clubPlayer->created_date; ?></td>
-                          <td><?php echo $clubPlayer->createdUserName; ?></td>
-                        </tr>
-                      <?php }
-                    } ?>
-                  </tbody>
-                </table>
-              </form>
-            <?php } ?>
-          </div>
-        </div>
-      </div>
+       </div>
+      <?php } ?>
     </div>
   </details>
   <?php $shortCode = $club->shortcode;

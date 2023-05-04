@@ -19,7 +19,9 @@ if ( is_user_logged_in() ) {
     if ( $player->ID !=null && $player->ID == $userid ) {
 		$userCanUpdate = true;
 	} elseif ( $club->matchsecretary !=null && $club->matchsecretary == $userid ) {
-      $userCanUpdate = true;
+      	$userCanUpdate = true;
+	} else {
+		$userCanUpdate = false;
     }
   }
 }

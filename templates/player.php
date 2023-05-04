@@ -79,5 +79,5 @@ if ( is_user_logged_in() ) {
 			<div class="updateResponse" id="updatePlayer" name="updatePlayer"></div>
 		<?php } ?>
 	</form>
-	<a href="/clubs/<?php echo sanitize_title($club->name) ?>/#players"<button class="btn btn-secondary" type="button" id="updatePlayerSubmit" name="updatePlayerSubmit"><?php _e( 'Return to club', 'racketmanager' ) ?></button></a>
+	<a href="/clubs/<?php echo sanitize_title($club->name) ?>/#players"<button class="btn btn-secondary text-uppercase" type="button" id="updatePlayerSubmit" name="updatePlayerSubmit"><?php _e( 'Return to club', 'racketmanager' ) ?></button></a>
 </div>

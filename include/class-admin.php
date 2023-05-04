@@ -2289,11 +2289,22 @@ final class RacketManagerAdmin extends RacketManager
 
 		?>
 		<script type='text/javascript'>
-		<!--<![CDATA[-->
+		//<!--<![CDATA[-->
 		RacketManagerAjaxL10n = {
-			requestUrl: "<?php bloginfo( 'wpurl' ); ?>/wp-admin/admin-ajax.php", manualPointRuleDescription: "<?php _e( 'Order: win, win overtime, tie, loss, loss overtime', 'racketmanager' ) ?>", pluginUrl: "<?php plugins_url('', dirname(__FILE__)); ?>/wp-content/plugins/leaguemanager", Edit: "<?php _e("Edit"); ?>", Post: "<?php _e("Post"); ?>", Save: "<?php _e("Save"); ?>", Cancel: "<?php _e("Cancel"); ?>", pleaseWait: "<?php _e("Please wait..."); ?>", Delete: "<?php _e('Delete', 'racketmanager') ?>", Yellow: "<?php _e( 'Yellow', 'racketmanager') ?>", Red: "<?php _e( 'Red', 'racketmanager') ?>", Yellow_Red: "<?php _e('Yellow/Red', 'racketmanager') ?>", Insert: "<?php _e( 'Insert', 'racketmanager' ) ?>", InsertPlayer: "<?php _e( 'Insert Player', 'racketmanager' ) ?>" ?>"
+			requestUrl: "<?php bloginfo( 'wpurl' ); ?>/wp-admin/admin-ajax.php",
+			manualPointRuleDescription: "<?php _e( 'Order: win, win overtime, tie, loss, loss overtime', 'racketmanager' ) ?>",
+			pluginUrl: "<?php plugins_url('', dirname(__FILE__)); ?>/wp-content/plugins/leaguemanager", Edit: "<?php _e("Edit"); ?>",
+			Post: "<?php _e("Post"); ?>", Save: "<?php _e("Save"); ?>",
+			Cancel: "<?php _e("Cancel"); ?>",
+			pleaseWait: "<?php _e("Please wait..."); ?>",
+			Delete: "<?php _e('Delete', 'racketmanager') ?>",
+			Yellow: "<?php _e( 'Yellow', 'racketmanager') ?>",
+			Red: "<?php _e( 'Red', 'racketmanager') ?>",
+			Yellow_Red: "<?php _e('Yellow/Red', 'racketmanager') ?>",
+			Insert: "<?php _e( 'Insert', 'racketmanager' ) ?>",
+			InsertPlayer: "<?php _e( 'Insert Player', 'racketmanager' ) ?>"
 		}
-		<!--]]>-->
+		//<!--]]>-->
 		</script>
 		<?php
 	}

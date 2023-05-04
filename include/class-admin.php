@@ -1008,10 +1008,7 @@ final class RacketManagerAdmin extends RacketManager
 			$cup = ( $league_mode == 'championship' ) ? true : false;
 
 			$group = isset($_GET['group']) ? htmlspecialchars(strip_tags($_GET['group'])) : '';
-			if ( empty($group) && isset($_POST['group']) ) $group = htmlspecialchars(strip_tags($_POST['group']));
-
-			$team_id = isset($_POST['team_id']) ? intval($_POST['team_id']) : false;
-
+			$team_id = isset($_GET['team_id']) ? intval($_GET['team_id']) : false;
 			$options = $this->options;
 
 			$match_args = array("final" => "", "cache" => false);
@@ -1025,9 +1022,9 @@ final class RacketManagerAdmin extends RacketManager
 			if (intval($league->num_matches_per_page) > 0)
 			$match_args['limit'] = intval($league->num_matches_per_page);
 
-			if ( isset($_POST['doaction-match_day'])) {
-				if ($_POST['match_day'] != -1) {
-					$matchDay = intval($_POST['match_day']);
+			if ( isset($_GET['doaction-match_day'])) {
+				if ($_GET['match_day'] != -1) {
+					$matchDay = intval($_GET['match_day']);
 					$league->setMatchDay($matchDay);
 				}
 				$tab = 'matches';
@@ -3805,67 +3802,6 @@ final class RacketManagerAdmin extends RacketManager
 			}
 			$racketmanager->setMessage($message);
 		}
-	}
-
-	private function editPlayerRoster($rosterId, $userId, $firstname, $surname, $gender, $btm, $email, $locked ) {
-		global $wpdb, $racketmanager;
-
-		$update = false;
-		$userData = array();
-		$roster = $racketmanager->getClubPlayer($rosterId);
-		if ( $roster->firstname != $firstname ) {
-			$update = true;
-			$userData['first_name'] = $firstname;
-			$userData['display_name'] = $firstname.' '.$surname;
-			$userData['user_nicename'] = sanitize_title($userData['display_name']);
-		}
-		if ( $roster->surname != $surname ) {
-			$update = true;
-			$userData['last_name'] = $surname;
-			$userData['display_name'] = $firstname.' '.$surname;
-			$userData['user_nicename'] = sanitize_title($userData['display_name']);
-		}
-		if ( $roster->gender != $gender ) {
-			$update = true;
-			update_user_meta($userId, 'gender', $gender);
-		}
-		if ( $roster->btm != $btm ) {
-			$update = true;
-			update_user_meta($userId, 'btm', $btm);
-		}
-		if ( $roster->email != $email ) {
-			$update = true;
-			$userData['user_email'] = $email;
-		}
-		if ( $roster->locked != $locked ) {
-			$update = true;
-			if ( $locked ) {
-				update_user_meta($userId, 'locked', $locked);
-				update_user_meta($userId, 'locked_date', date('Y-m-d'));
-				update_user_meta($userId, 'locked_user', get_current_user_id());
-			} else {
-				delete_user_meta($userId, 'locked');
-				delete_user_meta($userId, 'locked_date');
-				delete_user_meta($userId, 'locked_user');
-			}
-		}
-
-		if (!$update) {
-			$racketmanager->setMessage( __('No updates','racketmanager') );
-			return;
-		}
-		if ( $userData ) {
-			$userData['ID'] = $userId;
-			$userId = wp_update_user($userData);
-			if ( is_wp_error($userId) ) {
-				$racketmanager->setMessage($userId->get_error_message());
-			} else {
-				$racketmanager->setMessage( __('Player details updated','racketmanager') );
-			}
-		} else {
-			$racketmanager->setMessage( __('Player details updated','racketmanager') );
-		}
-		return;
 	}
 
 	/**

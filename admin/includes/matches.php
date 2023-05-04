@@ -17,7 +17,30 @@
 	</form>
 <?php } ?>
 
-<form id="matches-filter" action="admin.php?page=racketmanager&subpage=show-league&league_id=<?php echo $league->id ?>&season=<?php echo $season ?>" method="post">
+<form id="matches-filter" method="get">
+	<input type="hidden" name="page" value="racketmanager" />
+	<input type="hidden" name="subpage" value="show-league" />
+	<input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
+	<input type="hidden" name="season" value="<?php echo $season ?>" />
+	<?php if ( !empty($league->current_season['num_match_days']) ) { ?>
+		<select size='1' name='match_day'>
+			<?php $selected = ( isset($_GET['doaction-match_day']) && $_GET['match_day'] == -1 ) ? ' selected="selected"' : ''; ?>
+			<option value="-1"<?php echo $selected ?>><?php _e( 'Show all Matches', 'racketmanager' ) ?></option>
+			<?php for ($i = 1; $i <= $league->current_season['num_match_days']; $i++) { ?>
+				<option value='<?php echo $i ?>'<?php selected($league->match_day, $i)  ?>><?php printf(__( '%d. Match Day', 'racketmanager'), $i) ?></option>
+			<?php } ?>
+		</select>
+		<select size="1" name="team_id">
+			<option value=""><?php _e( 'Choose Team', 'racketmanager' ) ?></option>
+			<?php foreach ( $teams AS $team ) { ?>
+				<?php $selected = (isset($_GET['team_id']) && intval($_GET['team_id']) == $team->id) ? ' selected="selected"' : ''; ?>
+				<option value="<?php echo $team->id ?>"<?php echo $selected ?>><?php echo $team->title ?></option>
+			<?php } ?>
+		</select>
+	<?php } ?>
+	<button class="btn btn-primary"><?php _e('Filter','racketmanager') ?></button>
+</form>
+<form id="matches-action" action="admin.php?page=racketmanager&subpage=show-league&league_id=<?php echo $league->id ?>&season=<?php echo $season ?>" method="post">
 	<?php wp_nonce_field( 'matches-bulk' ) ?>
 
 	<input type="hidden" name="current_match_day" value="<?php echo $matchDay ?>" />
@@ -32,30 +55,12 @@
 			<option value="delete"><?php _e('Delete', 'racketmanager')?></option>
 		</select>
 		<input type='submit' name="delmatches" id="delmatches" class="btn btn-secondary action" value='<?php _e( 'Apply' ) ?>' />
-
-		<?php if ( !empty($league->current_season['num_match_days']) ) { ?>
-			<select size='1' name='match_day'>
-				<?php $selected = ( isset($_POST['doaction-match_day']) && $_POST['match_day'] == -1 ) ? ' selected="selected"' : ''; ?>
-				<option value="-1"<?php echo $selected ?>><?php _e( 'Show all Matches', 'racketmanager' ) ?></option>
-				<?php for ($i = 1; $i <= $league->current_season['num_match_days']; $i++) { ?>
-					<option value='<?php echo $i ?>'<?php selected($league->match_day, $i)  ?>><?php printf(__( '%d. Match Day', 'racketmanager'), $i) ?></option>
-				<?php } ?>
-			</select>
-			<select size="1" name="team_id">
-				<option value=""><?php _e( 'Choose Team', 'racketmanager' ) ?></option>
-				<?php foreach ( $teams AS $team ) { ?>
-					<?php $selected = (isset($_POST['team_id']) && intval($_POST['team_id']) == $team->id) ? ' selected="selected"' : ''; ?>
-					<option value="<?php echo $team->id ?>"<?php echo $selected ?>><?php echo $team->title ?></option>
-				<?php } ?>
-			</select>
-			<input type='submit' name="doaction-match_day" id="doaction-match_day" class="btn btn-secondary action" value='<?php _e( 'Filter' ) ?>' />
-		<?php } ?>
 	</div>
 
 	<table class="widefat" summary="" title="<?php _e( 'Match Plan','racketmanager' ) ?>" style="margin-bottom: 2em;">
 		<thead>
 			<tr>
-				<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('matches-filter'));" /></th>
+				<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('matches-action'));" /></th>
 				<th scope="col"><?php _e( 'ID', 'racketmanager' ) ?></th>
 				<th scope="col"><?php _e( 'Date','racketmanager' ) ?></th>
 				<?php if ( !empty($league->groups) && $league->mode == 'championship' ) { ?>

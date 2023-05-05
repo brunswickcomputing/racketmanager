@@ -1875,9 +1875,9 @@ final class RacketManagerAdmin extends RacketManager
 					}
 				}
 				$tab = "players";
-			} elseif ( isset($_POST['doPlayerSearch']) ) {
-				if ( $_POST['name'] ) {
-					$players = $racketmanager->getPlayers( array('name' => $_POST['name']) );
+			} elseif ( isset($_GET['doPlayerSearch']) ) {
+				if ( $_GET['name'] ) {
+					$players = $racketmanager->getPlayers( array('name' => $_GET['name']) );
 				} else {
 					$this->setMessage( __("No search term specified", 'racketmanager'), true );
 				}

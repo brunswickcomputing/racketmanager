@@ -31,9 +31,22 @@
 	</form>
 </div>
 <div class="mb-3">
-	<form id="player-filter" method="post" action="" class="form-control">
+	<form id="player-filter" method="get">
+		<input type="hidden" name="page" value="racketmanager-players" />
+		<div class="row g-3 mb-3 align-items-center">
+			<div class="col-auto">
+				<div class="form-floating">
+					<input placeholder="<?php _e( 'Enter search', 'racketmanager') ?>" type="text" name="name" id="name" size="30" class="form-control" />
+					<label for="name"><?php _e( 'Search by name', 'racketmanager' ) ?></label>
+				</div>
+			</div>
+			<div class="col-auto">
+			<button class="btn btn-primary" name="doPlayerSearch" id="doPlayerSearch"><?php _e('Filter','racketmanager') ?></button>
+			</div>
+		</div>
+	</form>
+	<form id="player-action" method="post" action="" class="form-control">
 		<?php wp_nonce_field( 'player-bulk' ) ?>
-
 		<div class="row g-3 mb-3 align-items-center">
 			<!-- Bulk Actions -->
 			<div class="col-auto">
@@ -48,26 +61,17 @@
 			<div class="col-auto">
 				<input type="submit" value="<?php _e('Apply', 'racketmanager'); ?>" name="doPlayerDel" id="dorPlayerDel" class="btn btn-secondary action" />
 			</div>
-			<div class="col-auto">
-				<div class="form-floating">
-					<input placeholder="<?php _e( 'Enter search', 'racketmanager') ?>" type="text" name="name" id="name" size="30" class="form-control" />
-					<label for="name"><?php _e( 'Search by name', 'racketmanager' ) ?></label>
-				</div>
-			</div>
-			<div class="col-auto">
-			<input type="submit" value="<?php _e('Search', 'racketmanager'); ?>" name="doPlayerSearch" id="dorPlayerSearch" class="btn btn-secondary action" />
-			</div>
 		</div>
 
 		<div class="container">
 			<div class="row table-header">
-				<div class="col-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('player-filter'));" /></div>
+				<div class="col-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('player-action'));" /></div>
 				<div class="col-1 column-num">ID</div>
 				<div class="col-3"><?php _e( 'Name', 'racketmanager' ) ?></div>
 				<div class="col-1"><?php _e( 'Gender', 'racketmanager' ) ?></div>
 				<div class="col-1"><?php _e( 'LTA Tennis Number', 'racketmanager' ) ?></div>
-				<div class="col-1"><?php _e( 'Created', 'racketmanager') ?></div>
-				<div class="col-1"><?php _e( 'Removed', 'racketmanager') ?></div>
+				<div class="col-auto"><?php _e( 'Created', 'racketmanager') ?></div>
+				<div class="col-auto"><?php _e( 'Removed', 'racketmanager') ?></div>
 			</div>
 			<?php if ( $players ) {
 				$class = '';
@@ -83,8 +87,8 @@
 						<div class="col-3"><a href="admin.php?page=racketmanager-players&amp;view=player&amp;player_id=<?php echo $player->id ?>"><?php echo $player->fullname ?></a></div>
 						<div class="col-1"><?php echo $player->gender ?></div>
 						<div class="col-1"><?php echo $player->btm ?></div>
-						<div class="col-1"><?php echo substr($player->created_date,0,10) ?></div>
-						<div class="col-1"><?php if ( isset($player->removed_date) ) { echo $player->removed_date; } ?></div>
+						<div class="col-auto"><?php echo substr($player->created_date,0,10) ?></div>
+						<div class="col-auto"><?php if ( isset($player->removed_date) ) { echo $player->removed_date; } ?></div>
 					</div>
 				<?php } ?>
 			<?php } ?>

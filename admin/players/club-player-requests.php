@@ -42,10 +42,8 @@
 			<div class="col-1"><?php _e( 'Surame', 'racketmanager' ) ?></div>
 			<div class="col-1"><?php _e( 'Gender', 'racketmanager' ) ?></div>
 			<div class="col-1"><?php _e( 'LTA Tennis Number', 'racketmanager' ) ?></div>
-			<div class="col-1"><?php _e( 'Requested Date', 'racketmanager' ) ?></div>
-			<div class="col-1"><?php _e( 'Requested User', 'racketmanager' ) ?></div>
-			<div class="col-1"><?php _e( 'Completed Date', 'racketmanager' ) ?></div>
-			<div class="col-1"><?php _e( 'Completed User', 'racketmanager' ) ?></div>
+			<div class="col-auto"><?php _e( 'Requested', 'racketmanager' ) ?></div>
+			<div class="col-auto"><?php _e( 'Completed', 'racketmanager' ) ?></div>
 		</div>
 		<?php foreach ($playerRequests as $playerRequest) { ?>
 			<div class="row table-row <?php echo $playerRequest->class ?>">
@@ -58,10 +56,8 @@
 				<div class="col-1"><?php echo $playerRequest->surname ?></div>
 				<div class="col-1"><?php echo $playerRequest->gender ?></div>
 				<div class="col-1"><?php echo $playerRequest->btm ?></div>
-				<div class="col-1"><?php echo $playerRequest->requested_date ?></div>
-				<div class="col-1"><?php echo $playerRequest->requestedUser ?></div>
-				<div class="col-1"><?php echo $playerRequest->completed_date ?></div>
-				<div class="col-1"><?php echo $playerRequest->completedUser ?></div>
+				<div class="col-auto" title="<?php echo $playerRequest->requestedUser ?>"><?php echo $playerRequest->requested_date ?></div>
+				<div class="col-auto" <?php if (!empty($playerRequest->completedUser)) { echo 'title="'.__('Created by',' racketmanager').' '.$playerRequest->completedUser.'"';  } ?>"><?php echo $playerRequest->completed_date ?></div>
 			</div>
 		<?php } ?>
 	</div>

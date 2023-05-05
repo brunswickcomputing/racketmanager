@@ -50,6 +50,21 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 7.4.0 =
+* UPDATE: rename function to getplayers for club
+* UPDATE: add new player class
+* UPDATE: rename roster to clubplayers
+* UPDATE: move players admin to own section
+* UPDATE: use firstname not firstName
+* UPDATE: set user login to lowercase
+* UPDATE: rename roster requests to club player requests
+* UPDATE: rename roster to club players
+* UPDATE: standardise club player creation
+* UPDATE: allow player edit
+* UPDATE: separate out match filter from action
+* UPDATE: setup league entry
+* BUGFIX: make editeamplayer public function
+
 = 7.3.1 =
 * BUGFIX: fix check for match tie-break player played
 * BUGFIX: message functions now in main class
@@ -272,7 +287,7 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 = 6.10.1 =
 * BUGFIX: add email column to select for rosterrequests
-* BUGFIX: use club->approveRosterRequest
+* BUGFIX: use club->approvePlayerRequest
 * BUGFIX: remove check for authorised to addplayer
 * BUGFIX: use correct label for showRubbers
 * BUGFIX: use correct season key for archive
@@ -542,7 +557,7 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 = 5.6.8 =
 * BUGFIX: do not exit when no matches for daily match check
-* BUGFIX: pull details from correct table in getRosterEntry
+* BUGFIX: pull details from correct table in getClubPlayer
 * BUGFIX: make addTeamCompetition function public
 * BUGFIX: use correct path for match.php in admin.php
 * BUGFIX: handle no time in match edit

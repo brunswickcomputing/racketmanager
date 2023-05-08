@@ -50,6 +50,12 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 7.4.1 =
+* UPDATE: make player request user title attribute
+* UPDATE: separate out player search filter
+* BUGFIX: make roster club players
+* BUGFIX: get correct league for tournament entry
+
 = 7.4.0 =
 * UPDATE: rename function to getplayers for club
 * UPDATE: add new player class

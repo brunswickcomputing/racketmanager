@@ -3319,7 +3319,7 @@ final class RacketManagerAdmin extends RacketManager
 			if ( isset($_POST['updateRacketManager']) ) {
 				check_admin_referer('racketmanager_manage-global-league-options');
 				$options['rosters']['btm'] = htmlspecialchars($_POST['btmRequired']);
-				$options['rosters']['rosterEntry'] = htmlspecialchars($_POST['rosterEntry']);
+				$options['rosters']['rosterEntry'] = htmlspecialchars($_POST['ClubPlayerEntry']);
 				$options['rosters']['rosterConfirmation'] = htmlspecialchars($_POST['rosterConfirmation']);
 				$options['rosters']['rosterConfirmationEmail'] = htmlspecialchars($_POST['rosterConfirmationEmail']);
 				$options['checks']['rosterLeadTime'] = htmlspecialchars($_POST['rosterLeadTime']);

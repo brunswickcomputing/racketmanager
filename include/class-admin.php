@@ -3518,7 +3518,7 @@ final class RacketManagerAdmin extends RacketManager
 	* @param int $league_id
 	* @param array $file CSV file
 	* @param string $delimiter
-	* @param array $mode 'teams' | 'matches' | 'fixtures' | 'players' | 'roster'
+	* @param array $mode 'teams' | 'matches' | 'fixtures' | 'players' | 'clubplayers'
 	* @param int $affiliatedClub - optional
 	* @return void | false
 	*/
@@ -3542,7 +3542,7 @@ final class RacketManagerAdmin extends RacketManager
 					$this->importTable($new_file, $delimiter, $league_id);
 				} elseif ( 'fixtures' == $mode ) {
 					$this->importFixtures($new_file, $delimiter, $league_id);
-				} elseif ( 'roster' == $mode ) {
+				} elseif ( 'clubplayers' == $mode ) {
 					$this->importClubPlayers($new_file, $delimiter, $affiliatedClub);
 				} elseif ( 'players' == $mode ) {
 					$this->importPlayers($new_file, $delimiter);

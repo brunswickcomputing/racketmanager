@@ -1642,7 +1642,7 @@ class RacketManager {
       if ($table == "teams") { $table = $wpdb->racketmanager_teams; }
       elseif ($table == "table") { $table = $wpdb->racketmanager_table; }
       elseif ($table == "matches") { $table = $wpdb->racketmanager_matches; }
-      elseif ($table == "roster") { $table = $wpdb->racketmanager_club_players; }
+      elseif ($table == "club_players") { $table = $wpdb->racketmanager_club_players; }
       elseif ($table == "leagues") { $table = $wpdb->racketmanager; }
       elseif ($table == "seasons") { $table = $wpdb->racketmanager_seasons; }
       elseif ($table == "competititons") { $table = $wpdb->racketmanager_competititons; }
@@ -1711,7 +1711,7 @@ class RacketManager {
         if ( isset($homeTeam) && isset($awayTeam) && isset($homeTeam->affiliatedclub) && isset($awayTeam->affiliatedclub) ) {
           if ( $userid ) {
             if ( !current_user_can( 'manage_racketmanager' ) ) {
-              if ( $matchCapability == 'roster' ) {
+              if ( $matchCapability == 'player' ) {
                 $club = get_club($homeTeam->affiliatedclub);
                 $homeClubPlayer = $club->getPlayers( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
                 if ( $homeClubPlayer != 0 ) {

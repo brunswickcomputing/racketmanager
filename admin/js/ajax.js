@@ -446,7 +446,7 @@ Racketmanager.getImportOption = function(option) {
     jQuery("#competitions").show();
     jQuery("#leagues").show();
     jQuery("#clubs").hide();
-  } else if ( selectedOption == 'roster') {
+  } else if ( selectedOption == 'clubplayers') {
     jQuery("#clubs").show();
     jQuery("#competitions").hide();
     jQuery("#leagues").hide();

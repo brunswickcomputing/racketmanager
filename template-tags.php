@@ -708,7 +708,7 @@
     function racketmanager_matches( $league_id, $args = array() ) {
         global $league;
 
-        $defaults = array('season' => '', 'template' => '', 'mode' => '', 'limit' => 'true', 'match_day' => -1, 'group' => false, 'roster' => false, 'order' => false, 'show_match_day_selection' => '', 'show_team_selection' => '', 'time' => '', 'team' => 0, 'home_only' => 'false', 'match_date' => false, 'dateformat' => '', 'timeformat' => '');
+        $defaults = array('season' => '', 'template' => '', 'mode' => '', 'limit' => 'true', 'match_day' => -1, 'group' => false, 'order' => false, 'show_match_day_selection' => '', 'show_team_selection' => '', 'time' => '', 'team' => 0, 'home_only' => 'false', 'match_date' => false, 'dateformat' => '', 'timeformat' => '');
         $args = array_merge($defaults, $args);
         $args['league_id'] = $league_id;
 

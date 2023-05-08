@@ -214,7 +214,6 @@ class RacketManagerShortcodes extends RacketManager {
 			'mode' => '',
 			'season' => '',
 			'limit' => 'true',
-			'roster' => false,
 			'match_day' => -1,
 			'home_only' => 'false',
 			'match_date' => false,
@@ -980,7 +979,7 @@ class RacketManagerShortcodes extends RacketManager {
 
 		$filename = ( !empty($template) ) ? 'entry-tournament-'.$template : 'entry-tournament';
 
-		$out = $this->loadTemplate( $filename, array( 'tournament' => $tournament, 'competitions' => $competitions, 'player' => $player, 'rosters' => $clubPlayers, 'season' => $tournament->season, 'type' => $type, 'malePartners' => $malePartners, 'femalePartners' => $femalePartners ), 'entry' );
+		$out = $this->loadTemplate( $filename, array( 'tournament' => $tournament, 'competitions' => $competitions, 'player' => $player, 'clubPlayers' => $clubPlayers, 'season' => $tournament->season, 'type' => $type, 'malePartners' => $malePartners, 'femalePartners' => $femalePartners ), 'entry' );
 
 		return $out;
 	}

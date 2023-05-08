@@ -1384,7 +1384,7 @@ class RacketManagerAJAX extends RacketManager {
 				}
 				if ( isset($options['playerLocked']) ) {
 					$competition = get_competition($match->league->competition_id);
-					$playerStats = $competition->getPlayerStats(array('season' => $match->season, 'roster' => $rosterId));
+					$playerStats = $competition->getPlayerStats(array('season' => $match->season, 'player' => $rosterId));
 					$teamplay = array();
 					foreach ( $playerStats as $playerStat ) {
 						foreach ( $playerStat->matchdays as $matchDay) {
@@ -1691,7 +1691,8 @@ class RacketManagerAJAX extends RacketManager {
 				if (isset($competition->primary_league)) {
 					$league = $competition->primary_league;
 				} else {
-					$league = get_league(array_key_first($competition->league_index))->id;
+					$leagues = $competition->getLeagues();
+					$league = $leagues[0]->id;
 				}
 				$teamName = $playerName;
 				if ( substr($competition->type,1,1) == 'D' ) {

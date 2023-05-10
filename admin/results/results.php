@@ -2,7 +2,7 @@
 global $racketmanager;
 $matchArgs = array();
 $matchArgs['confirmed'] = true;
-$matchArgs['order'] = array( 'updated' => 'ASC', 'id' => 'ASC');
+$matchArgs['orderby'] = array( 'updated' => 'ASC', 'id' => 'ASC');
 $options = $racketmanager->getOptions('league');
 $confirmationPending = '';
 if ( isset($options['confirmationPending']) ) {

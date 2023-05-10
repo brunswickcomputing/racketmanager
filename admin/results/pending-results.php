@@ -3,7 +3,7 @@ global $racketmanager;
 $matchArgs = array();
 $matchArgs['time'] = 'outstanding';
 $matchArgs['competitiontype'] = 'league';
-$matchArgs['order'] = array( 'updated' => 'ASC', 'id' => 'ASC');
+$matchArgs['orderby'] = array( 'updated' => 'ASC', 'id' => 'ASC');
 $options = $racketmanager->getOptions('league');
 $resultPending = '';
 if ( isset($options['resultPending']) ) {

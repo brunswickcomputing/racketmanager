@@ -50,6 +50,10 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 7.5.0 =
+* UPDATE: automatically chase missing results and confirmations
+* UPDATE: highlight overdue results and confirmations
+
 = 7.4.1 =
 * UPDATE: make player request user title attribute
 * UPDATE: separate out player search filter

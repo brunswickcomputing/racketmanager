@@ -1,6 +1,15 @@
 <?php
 global $racketmanager;
-$matches = $racketmanager->getMatches( array('confirmed' => true, 'order' => array( 'updated' => 'ASC', 'id' => 'ASC')) );
+$matchArgs = array();
+$matchArgs['confirmed'] = true;
+$matchArgs['order'] = array( 'updated' => 'ASC', 'id' => 'ASC');
+$options = $racketmanager->getOptions('league');
+$confirmationPending = '';
+if ( isset($options['confirmationPending']) ) {
+  $confirmationPending = $options['confirmationPending'];
+  $matchArgs['confirmationPending'] = $confirmationPending;
+}
+$matches = $racketmanager->getMatches( $matchArgs );
 $prev_league = 0;
 ?>
 <div class="container">
@@ -14,6 +23,16 @@ $prev_league = 0;
   <?php if ( $matches ) { $class = '';
     foreach ( $matches AS $match ) {
       $match = get_match($match);
+      $overdueClass = '';
+      $overdue = false;
+      if ( $confirmationPending ) {
+        $now = date_create();
+        $dateOverdue = date_create($match->confirmationOverdueDate);
+        if ( $dateOverdue < $now ) {
+          $overdueClass = 'bg-warning';
+          $overdue = true;
+        }
+      }
       if ( $match->league->is_championship ) {
         $matchLink = 'final='.$match->final_round.'&amp;league-tab=matches';
       } else {
@@ -21,7 +40,7 @@ $prev_league = 0;
       }
       $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 
-      <div class="row table-row <?php echo $class ?> align-items-center">
+      <div class="row table-row <?php echo $class.' '.$overdueClass ?> align-items-center" <?php if ($overdue) { echo 'title="'.sprintf(__('Confirmation overdue by %d days', 'racketmanager'), intval($match->overdueTime)).'"';} ?>>
         <?php if ( $prev_league != $match->league_id) {
           $prev_league = $match->league_id; ?>
           <div class="col-12"><?php echo $match->league->title ?></div>

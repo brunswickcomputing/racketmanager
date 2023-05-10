@@ -1424,14 +1424,15 @@ class RacketManager {
   public function getMatches( $matchArgs ) {
     global $wpdb;
 
-    $defaults = array( 'leagueId' => false, 'season' => false, 'final' => false, 'competitiontype' => false, 'competitionseason' => false, 'orderby' => array('league_id' => 'ASC', 'id' => 'ASC'), 'competitionId' => false, 'confirmed' => false, 'match_date' => false, 'competition_type' => false, 'time' => false, 'timeOffset' => false, 'history' => false, 'affiliatedClub' => false, 'league_name' => false, 'homeTeam' => false, 'awayTeam' => false, 'matchDay' => false, 'competition_name' => false, 'homeAffiliatedClub' => false, 'count' => false );
+    $defaults = array( 'leagueId' => false, 'season' => false, 'final' => false, 'competitiontype' => false, 'competitionseason' => false, 'orderby' => array('league_id' => 'ASC', 'id' => 'ASC'), 'competitionId' => false, 'confirmed' => false, 'match_date' => false, 'competition_type' => false, 'time' => false, 'timeOffset' => false, 'history' => false, 'affiliatedClub' => false, 'league_name' => false, 'homeTeam' => false, 'awayTeam' => false, 'matchDay' => false, 'competition_name' => false, 'homeAffiliatedClub' => false, 'count' => false, 'confirmationPending' => false, 'resultPending' => false );
     $matchArgs = array_merge($defaults, (array)$matchArgs);
     extract($matchArgs, EXTR_SKIP);
 
     if ( $count ) {
       $sql = "SELECT COUNT(*) FROM {$wpdb->racketmanager_matches} WHERE 1 = 1";
     } else {
-      $sql = "SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(`date`, '%e') AS day, DATE_FORMAT(`date`, '%c') AS month, DATE_FORMAT(`date`, '%Y') AS year, DATE_FORMAT(`date`, '%H') AS `hour`, DATE_FORMAT(`date`, '%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `confirmed`, `home_captain`, `away_captain`, `comments` FROM {$wpdb->racketmanager_matches} WHERE 1 = 1";
+      $sqlFields = "SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(`date`, '%e') AS day, DATE_FORMAT(`date`, '%c') AS month, DATE_FORMAT(`date`, '%Y') AS year, DATE_FORMAT(`date`, '%H') AS `hour`, DATE_FORMAT(`date`, '%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `confirmed`, `home_captain`, `away_captain`, `comments`, `updated`";
+      $sql = " FROM {$wpdb->racketmanager_matches} WHERE 1 = 1";
     }
 
     if ( $match_date ) {
@@ -1480,6 +1481,14 @@ class RacketManager {
           $sql .= " AND ADDTIME(`updated`,'".$timeOffset."') <= NOW()";
         }
       }
+      if ( $confirmationPending ) {
+        $confirmationPending = intval($confirmationPending).':00:00';
+        $sqlFields .= ",ADDTIME(`updated`,'".$confirmationPending."') as confirmationOverdueDate, TIME_FORMAT(TIMEDIFF(now(),ADDTIME(`updated`,'".$confirmationPending."')), '%H')/24 as overdueTime";
+      }
+      if ( $resultPending ) {
+        $resultPending = intval($resultPending).':00:00';
+        $sqlFields .= ",ADDTIME(`date`,'".$resultPending."') as resultOverdueDate, TIME_FORMAT(TIMEDIFF(now(),ADDTIME(`date`,'".$resultPending."')), '%H')/24 as overdueTime";
+      }
 
       // get only finished matches with score for time 'latest'
       if ( $time == 'latest' ) {
@@ -1523,6 +1532,7 @@ class RacketManager {
           $i++;
         }
         $sql .= " ORDER BY ".$orderbyString;
+        $sql = $sqlFields.$sql;
 
         // get matches
         $matches = $wpdb->get_results($sql);

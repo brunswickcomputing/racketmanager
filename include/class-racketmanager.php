@@ -36,6 +36,73 @@ class RacketManager {
 
   }
 
+  
+	public function _chaseMatchResult($matchId, $timePeriod = false) {
+		global $racketmanager, $racketmanager_shortcodes, $match;
+		$match = get_match($matchId);
+		$messageSent = false;
+		$headers = array();
+		$fromEmail = $this->getConfirmationEmail($match->league->competitionType);
+		$headers[] = 'From: '.ucfirst($match->league->competitionType).' Secretary <'.$fromEmail.'>';
+		$headers[] = 'cc: '.ucfirst($match->league->competitionType).' Secretary <'.$fromEmail.'>';
+		$messageArgs = array();
+    $messageArgs['timeperiod'] = $timePeriod;
+		$organisationName = $racketmanager->site_name;
+
+		$emailSubject = $racketmanager->site_name." - ".$match->league->title." - ".$match->getTitle()." Match result pending";
+		$emailTo = '';
+		if ( isset($match->teams['home']->contactemail) ) {
+			$emailTo = $match->teams['home']->captain.' <'.$match->teams['home']->contactemail.'>';
+			$club = get_club($match->teams['home']->affiliatedclub);
+			if ( isset($club->matchSecretaryEmail) ) {
+				$headers[] = 'cc: '.$club->matchSecretaryName.' <'.$club->matchSecretaryEmail.'>';
+			}
+			$actionURL = $racketmanager->site_url.'/match/'.seoUrl($match->league->title).'/'.$match->season.'/day'.$match->match_day.'/'.seoUrl($match->teams['home']->title).'-vs-'.seoUrl($match->teams['away']->title);
+			$emailMessage = racketmanager_result_outstanding_notification($match->id, $messageArgs );
+			wp_mail($emailTo, $emailSubject, $emailMessage, $headers);
+			$messageSent = true;
+		}
+		return $messageSent;
+	}
+
+  
+	public function _chaseMatchApproval($matchId, $timePeriod = false) {
+		global $racketmanager, $match;
+		$match = get_match($matchId);
+		$messageSent = false;
+		$headers = array();
+		$fromEmail = $this->getConfirmationEmail($match->league->competitionType);
+		$headers[] = 'From: '.ucfirst($match->league->competitionType).' Secretary <'.$fromEmail.'>';
+		$headers[] = 'cc: '.ucfirst($match->league->competitionType).' Secretary <'.$fromEmail.'>';
+		$messageArgs = array();
+		$messageArgs['outstanding'] = true;
+    $messageArgs['timeperiod'] = $timePeriod;
+		$emailSubject = $racketmanager->site_name." - ".$match->league->title." - ".$match->getTitle()." Match approval pending";
+		$emailTo = '';
+		if ( isset($match->home_captain) ) {
+			if ( isset($match->teams['away']->contactemail) ) {
+				$emailTo = $match->teams['away']->captain.' <'.$match->teams['away']->contactemail.'>';
+				$club = get_club($match->teams['away']->affiliatedclub);
+				if ( isset($club->matchSecretaryEmail) ) {
+					$headers[] = 'cc: '.$club->matchSecretaryName.' <'.$club->matchSecretaryEmail.'>';
+				}
+			}
+		} elseif ( isset($match->away_captain) ) {
+			if ( isset($match->teams['home']->contactemail) ) {
+				$emailTo = $match->teams['home']->captain.' <'.$match->teams['home']->contactemail.'>';
+				$club = get_club($match->teams['home']->affiliatedclub);
+				if ( isset($club->matchSecretaryEmail) ) {
+					$headers[] = 'cc: '.$club->matchSecretaryName.' <'.$club->matchSecretaryEmail.'>';
+				}
+			}
+		}
+		if ( !empty($emailTo) ) {
+			$emailMessage = racketmanager_captain_result_notification($match->id, $messageArgs );
+			wp_mail($emailTo, $emailSubject, $emailMessage, $headers);
+			$messageSent = true;
+		}
+		return $messageSent;
+	}
   public function addRacketmanagerTemplates() {
     // Add your templates to this array.
     $this->templates = array(

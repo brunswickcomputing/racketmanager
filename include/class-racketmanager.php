@@ -27,15 +27,27 @@ class RacketManager {
     add_action( 'init', array(&$this, 'racketmanagerRewrites') );
     add_action('wp_enqueue_scripts', array(&$this, 'loadStyles'), 5 );
     add_action('wp_enqueue_scripts', array(&$this, 'loadScripts') );
-
+    add_action( 'rm_resultPending', array(&$this, 'chasePendingResults'), 1);
+    add_action( 'rm_confirmationPending', array(&$this, 'chasePendingApprovals'), 1);
     add_action( 'wp_loaded', array(&$this, 'addRacketmanagerTemplates') );
-
     add_filter( 'wp_privacy_personal_data_exporters', array(&$this, 'racketmanagerRegisterExporter') );
     add_filter( 'wp_mail', array(&$this, 'racketmanagerMail') );
     add_filter( 'email_change_email', array(&$this, 'racketmanagerChangeEmailAddress'), 10, 3 );
 
   }
 
+  public function chasePendingResults($competition) {
+    $resultPending = $this->getOptions($competition)['resultPending'];
+    $matchArgs = array();
+    $matchArgs['time'] = 'outstanding';
+    $matchArgs['competitiontype'] = 'league';
+    $matchArgs['orderby'] = array( 'date' => 'ASC', 'id' => 'ASC');
+    $matchArgs['timeOffset'] = $resultPending;
+    $matches = $this->getMatches( $matchArgs );
+    foreach($matches as $match) {
+      $this->_chaseMatchResult($match->id, $resultPending);
+    }
+	}
   
 	public function _chaseMatchResult($matchId, $timePeriod = false) {
 		global $racketmanager, $racketmanager_shortcodes, $match;
@@ -65,6 +77,18 @@ class RacketManager {
 		return $messageSent;
 	}
 
+  public function chasePendingApprovals($competition) {
+    $confirmationPending = $this->getOptions($competition)['confirmationPending'];
+    $matchArgs = array();
+    $matchArgs['confirmed'] = 'true';
+    $matchArgs['competitiontype'] = 'league';
+    $matchArgs['orderby'] = array( 'updated' => 'ASC', 'id' => 'ASC');
+    $matchArgs['timeOffset'] = $confirmationPending;
+    $matches = $this->getMatches( $matchArgs );
+    foreach($matches as $match) {
+      $this->_chaseMatchApproval($match->id, $confirmationPending);
+    }
+	}
   
 	public function _chaseMatchApproval($matchId, $timePeriod = false) {
 		global $racketmanager, $match;
@@ -103,6 +127,7 @@ class RacketManager {
 		}
 		return $messageSent;
 	}
+
   public function addRacketmanagerTemplates() {
     // Add your templates to this array.
     $this->templates = array(

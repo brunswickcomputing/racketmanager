@@ -13,8 +13,9 @@ $title = $organisationName.' Match Result - '.$competitionName;
             <h1 class="align-center"><?php echo $competitionName; ?></h1>
             <h2 class="align-center"><?php echo the_match_title(); ?></h2>
             <?php if ( isset($outstanding) && $outstanding ) { ?>
-              <p>The approval of this result is outstanding.</p>
+              <p>The approval of this result is outstanding<?php if ($timePeriod) { echo ' more than '.$timePeriod.' hours after the result was entered'; } ?>.</p>
               <p>Please either approval or challenge the result as soon as possible.</p>
+              <?php if ($timePeriod) { echo '<p>Failure to do so may result in a point deduction.</p>'; } ?>
               <?php } elseif ( isset($errors) && $errors ) { ?>
               <p>The result of this match has been confirmed and updated.</p>
               <p>There are player checks that need actioning.</p>

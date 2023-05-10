@@ -9,8 +9,9 @@ $title = $organisationName.' Match Result Pending';
         <td>
           <div>
             <h1 class="align-center"><?php the_match_title(); ?></h1>
-            <p>The result of this match is outstanding.</p>
+            <p>The result of this match is outstanding<?php if ($timePeriod) { echo ' more than '.$timePeriod.' hours after the match was played'; } ?>.</p>
             <p>Please provide the result as soon as possible.</p>
+            <?php if ($timePeriod) { echo '<p>Failure to do so may result in a point deduction.</p>'; } ?>
             <!-- Action -->
             <table class="body-action" align="center" width="100%" cellpadding="0" cellspacing="0">
               <tr>
@@ -21,7 +22,7 @@ $title = $organisationName.' Match Result Pending';
                         <table border="0" cellspacing="0" cellpadding="0">
                           <tr>
                             <td>
-                              <a href="<?php echo $actionURL ?>" class="button button--green" target="_blank">Enter result</a>
+                              <a href="<?php echo $actionurl ?>" class="button button--green" target="_blank">Enter result</a>
                             </td>
                           </tr>
                         </table>
@@ -38,7 +39,7 @@ $title = $organisationName.' Match Result Pending';
               <tr>
                 <td>
                   <p class="sub">If you’re having trouble with the button above, copy and paste the URL below into your web browser.</p>
-                  <p class="sub"><?php echo $actionURL ?></p>
+                  <p class="sub"><?php echo $actionurl ?></p>
                 </td>
               </tr>
             </table>

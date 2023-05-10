@@ -1225,6 +1225,7 @@ class RacketManagerShortcodes extends RacketManager {
 			'match' => '',
 			'template' => '',
 			'outstanding' => false,
+			'timeperiod' => false
 		), $atts ));
 
 		$match = get_match($match);
@@ -1239,6 +1240,8 @@ class RacketManagerShortcodes extends RacketManager {
 		$organisationname = $racketmanager->site_name;
 
 		$filename = ( !empty($template) ) ? 'result-notification-'.$template : 'result-notification';
+
+		$out = $this->loadTemplate( $filename, array( 'match' => $match, 'organisationName' => $organisationname, 'actionurl' => $actionurl, 'outstanding' => $outstanding, 'timePeriod' => $timeperiod ), 'email' );
 
 		return $out;
 	}

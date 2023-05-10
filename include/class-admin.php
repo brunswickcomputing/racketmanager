@@ -3334,6 +3334,7 @@ final class RacketManagerAdmin extends RacketManager
 					$options[$competitionType]['resultNotification'] = htmlspecialchars($_POST[$competitionType]['resultNotification']);
 					$options[$competitionType]['resultPending'] = htmlspecialchars($_POST[$competitionType]['resultPending']);
 					$options[$competitionType]['confirmationPending'] = htmlspecialchars($_POST[$competitionType]['confirmationPending']);
+					$this->scheduleResultChase($competitionType, $options[$competitionType]);
 				}
 				$options['colors']['headers'] = htmlspecialchars($_POST['color_headers']);
 				$options['colors']['rows'] = array( 'alternate' => htmlspecialchars($_POST['color_rows_alt']), 'main' => htmlspecialchars($_POST['color_rows']), 'ascend' => htmlspecialchars($_POST['color_rows_ascend']), 'descend' => htmlspecialchars($_POST['color_rows_descend']), 'relegation' => htmlspecialchars($_POST['color_rows_relegation']) );
@@ -4594,6 +4595,38 @@ final class RacketManagerAdmin extends RacketManager
     }
     $this->message = '';
   }
+
+	private function scheduleResultChase($competitionType, $options) {
+		$current_timestamp = current_time('timestamp');
+		$day = intval(date('d'));
+		$month = intval(date('m'));
+		$year = intval(date('Y'));
+		$scheduleStart = mktime(20,0,0,$month,$day,$year);
+		$interval = 'daily';
+		$scheduleArgs = array($competitionType);
+		if ( $options['resultPending'] != '' ) {
+			$scheduleName = 'rm_resultPending';
+			if ( wp_next_scheduled($scheduleName, $scheduleArgs) ) {
+				wp_clear_scheduled_hook($scheduleName, $scheduleArgs);
+			}
+			if ( ! wp_next_scheduled($scheduleName, $scheduleArgs) ) {
+				if (!wp_schedule_event($scheduleStart, $interval, $scheduleName, $scheduleArgs)) {
+					error_log(__('Error scheduling pending results', 'racketmanager'));
+				}
+			}
+		}
+		if ( $options['confirmationPending'] != '' ) {
+			$scheduleName = 'rm_confirmationPending';
+			if ( wp_next_scheduled($scheduleName, $scheduleArgs) ) {
+				wp_clear_scheduled_hook($scheduleName, $scheduleArgs);
+			}
+			if ( ! wp_next_scheduled($scheduleName, $scheduleArgs) ) {
+				if (!wp_schedule_event($scheduleStart, $interval, $scheduleName, $scheduleArgs)) {
+					error_log(__('Error scheduling result confirmations', 'racketmanager'));
+				}
+			}
+		}
+ 	}
 
 }
 ?>

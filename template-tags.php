@@ -898,6 +898,26 @@
     }
 
     /**
+     * display result outstanding email for captain
+     *
+     * @param int $match_id match id
+     * @param array $args associative array of parameters, see default values (optional)
+     * @category template-tags
+     */
+    function racketmanager_result_outstanding_notification( $matchId, $args = array() ) {
+        global $racketmanager;
+
+        $args['match'] = $matchId;
+
+        $shortcode = "[resultoutstandingnotification";
+        foreach ($args AS $key => $value)
+            $shortcode .= " ".$key."='".$value."'";
+        $shortcode .= "]";
+        $matchMessage = do_shortcode($shortcode);
+        return $matchMessage;
+    }
+
+    /**
      * display roster request email
      *
      * @param var $clubname Club Name

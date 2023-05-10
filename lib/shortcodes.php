@@ -40,6 +40,7 @@ class RacketManagerShortcodes extends RacketManager {
 		add_shortcode( 'matchnotification', array(&$this, 'showMatchNotification') );
 		add_shortcode( 'resultnotification', array(&$this, 'showResultNotification') );
 		add_shortcode( 'resultnotificationcaptain', array(&$this, 'showCaptainResultNotification') );
+		add_shortcode( 'resultoutstandingnotification', array(&$this, 'showResultOutstandingNotification') );
 		add_shortcode( 'clubplayernotification', array(&$this, 'showClubPlayerNotification') );
 		add_shortcode( 'cupentry', array(&$this, 'showCupEntry') );
 		add_shortcode( 'leagueentry', array(&$this, 'showLeagueEntry') );
@@ -1239,7 +1240,41 @@ class RacketManagerShortcodes extends RacketManager {
 
 		$filename = ( !empty($template) ) ? 'result-notification-'.$template : 'result-notification';
 
-		$out = $this->loadTemplate( $filename, array( 'match' => $match, 'organisationName' => $organisationname, 'actionurl' => $actionurl, 'outstanding' => $outstanding ), 'email' );
+		return $out;
+	}
+
+	/**
+	* Function to show result outstanding notification
+	*
+	*    [resultoutstandingnotification id=ID template=X]
+	*
+	* @param array $atts
+	* @return the content
+	*/
+	public function showResultOutstandingNotification( $atts ) {
+		global $racketmanager;
+
+		extract(shortcode_atts(array(
+			'match' => '',
+			'template' => '',
+			'outstanding' => false,
+			'timeperiod' => false
+		), $atts ));
+
+		$match = get_match($match);
+
+		$actionurl = $racketmanager->site_url;
+		if ( $match->league->mode == 'championship' ) {
+			$actionurl .= "/".__('match', 'racketmanager')."/".sanitize_title($match->league->title)."/".$match->league->current_season['name']."/".$match->final_round."/".sanitize_title($match->teams['home']->title)."-vs-".sanitize_title($match->teams['away']->title);
+		} else {
+			$actionurl .= "/".__('match', 'racketmanager')."/".sanitize_title($match->league->title)."/".$match->league->current_season['name']."/day".$match->match_day."/".sanitize_title($match->teams['home']->title)."-vs-".sanitize_title($match->teams['away']->title);
+		}
+
+		$organisationname = $racketmanager->site_name;
+
+		$filename = ( !empty($template) ) ? 'match-result-pending-'.$template : 'match-result-pending';
+
+		$out = $this->loadTemplate( $filename, array( 'match' => $match, 'organisationName' => $organisationname, 'actionurl' => $actionurl, 'timePeriod' => $timeperiod ), 'email' );
 
 		return $out;
 	}

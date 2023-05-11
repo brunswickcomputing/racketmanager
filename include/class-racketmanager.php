@@ -1824,7 +1824,8 @@ class RacketManager {
                   }
                   $userTeam = 'home';
                   $userCanUpdate = true;
-                } elseif ( $resultEntry == 'either' ) {
+                }
+                if ( $resultEntry == 'either' ) {
                   $club = get_club($awayTeam->affiliatedclub);
                   $awayClubPlayer = $club->getPlayers( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
                   if ( $awayClubPlayer != 0 ) {
@@ -1833,10 +1834,15 @@ class RacketManager {
                     } else {
                       $userType = 'player';
                     }
-                    $userTeam = 'away';
+                    if ($userTeam == 'home') {
+                      $userTeam = 'both';
+                    } else {
+                      $userTeam = 'away';
+                    }
                     $userCanUpdate = true;
                   }
-                } else {
+                }
+                if (!$userTeam) {
                   $message = 'notTeamPlayer';
                 }
               } elseif ( $matchCapability == 'captain' ) {
@@ -2481,6 +2487,7 @@ class RacketManager {
                         <?php if ( !current_user_can( 'manage_racketmanager' ) && $match->confirmed == 'P' ) { ?>
                           <?php if ( $userType != 'admin' && $userTeam == 'home' ) { ?>
                             <div class="form-check">
+                              <input type="hidden" name="resultHome" />
                               <input class="form-check-input" type="radio" name="resultConfirm" value="confirm" required />
                               <label class="form-check-label">Confirm</label>
                             </div>
@@ -2505,8 +2512,9 @@ class RacketManager {
                         echo $racketmanager->getPlayerName($match->away_captain);
                       } else { ?>
                         <?php if ( !current_user_can( 'manage_racketmanager' ) && $match->confirmed == 'P' ) { ?>
-                          <?php if ( $userType != 'admin' && $userTeam == 'away' ) { ?>
+                          <?php if ( $userType != 'admin' && ($userTeam == 'away' || $userTeam == 'both') ) { ?>
                             <div class="form-check">
+                              <input type="hidden" name="resultAway" />
                               <input class="form-check-input" type="radio" name="resultConfirm" value="confirm" required />
                               <label class="form-check-label"><?php _e( 'Confirm', 'racketmanager' ) ?></label>
                             </div>

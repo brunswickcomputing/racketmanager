@@ -602,7 +602,7 @@ class RacketManagerAJAX extends RacketManager {
 				if ( $userCanUpdate ) {
 					$playerFound = false;
 					if ( $userType == 'player' ) {
-						if ( $userTeam == 'home' ) {
+						if ( $userTeam == 'home' || $userTeam == 'both' ) {
 							if ( $match->teams['home']->captainId == get_current_user_id() ) {
 								$playerFound = true;
 							}
@@ -622,11 +622,12 @@ class RacketManagerAJAX extends RacketManager {
 								$homeplayer2    = isset($_POST['homeplayer2'][$ix]) ? $_POST['homeplayer2'][$ix] : null;
 								$awayplayer1    = isset($_POST['awayplayer1'][$ix]) ? $_POST['awayplayer1'][$ix] : null;
 								$awayplayer2    = isset($_POST['awayplayer2'][$ix]) ? $_POST['awayplayer2'][$ix] : null;
-								if ( $userTeam == 'home' ) {
+								if ( $userTeam == 'home' || $userTeam == 'both' ) {
 									if ( $clubPlayerId == $homeplayer1 || $clubPlayerId == $homeplayer2 ) {
 										$playerFound = true;
 									}
-								} else {
+								}
+								if ( $userTeam == 'away' || $userTeam == 'both' ) {
 									if ( $clubPlayerId == $awayplayer1 || $clubPlayerId == $awayplayer2 ) {
 										$playerFound = true;
 									}
@@ -655,7 +656,7 @@ class RacketManagerAJAX extends RacketManager {
 
 			if ( !$error ) {
 				if ( $matchConfirmed ) {
-					$matchUpdatedby = $this->updateMatchStatus( $matchId, $matchConfirmed, $homeClub, $awayClub, $matchComments );
+					$matchUpdatedby = $this->updateMatchStatus( $matchId, $matchConfirmed, $homeClub, $awayClub, $matchComments, $userTeam );
 					switch ( $matchConfirmed ) {
 						case "A":
 						$matchMessage = 'Result Approved';
@@ -1257,26 +1258,34 @@ class RacketManagerAJAX extends RacketManager {
 	* update match status
 	*
 	*/
-	public function updateMatchStatus( $matchId, $matchConfirmed, $homeClub, $awayClub, $comments ) {
+	public function updateMatchStatus( $matchId, $matchConfirmed, $homeClub, $awayClub, $comments, $userTeam ) {
 		global $wpdb, $racketmanager, $league, $match;
 
 		$userid = get_current_user_id();
-		$club = get_club($homeClub);
-		$homeClubPlayer = $club->playerActive($userid);
-		if ( $homeClubPlayer > 0 ) { //Home captain
+		if ( isset($_POST['resultHome']) ) {
+			$captain = 'home';
+		} elseif ( isset($_POST['resultAway']) ) {
+			$captain = 'away';
+		} elseif ( $userTeam == 'home' ) {
+			$captain = 'home';
+		} elseif ( $userTeam == 'away' ) {
+			$captain = 'away';
+		} elseif ( $userTeam == 'both' ) {
+			$captain = 'home';
+		} else {
+			$captain = 'admin';
+		}
+
+		if ( $captain == 'home' ) { //Home captain
 			$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `home_captain` = %d, `comments` = '%s' WHERE `id` = '%d'", $userid, $matchConfirmed, $userid, $comments, $matchId));
 			return 'home';
+		} elseif ( $captain == 'away' ) {
+			$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `away_captain` = %d, `comments` = '%s' WHERE `id` = '%d'", $userid, $matchConfirmed, $userid, $comments, $matchId));
+			return 'away';
 		} else {
-			$club = get_club($awayClub);
-			$awayClubPlayer = $club->playerActive($userid);
-			if ( $awayClubPlayer > 0 ) { // Away Captain
-				$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `away_captain` = %d, `comments` = '%s' WHERE `id` = '%d'", $userid, $matchConfirmed, $userid, $comments, $matchId));
-				return 'away';
-			} else {
-				$matchConfirmed = 'A'; //Admin user
-				$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `comments` = '%s' WHERE `id` = '%d'", get_current_user_id(), $matchConfirmed, $comments, $matchId));
-				return 'admin';
-			}
+			$matchConfirmed = 'A'; //Admin user
+			$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = '%s', `comments` = '%s' WHERE `id` = '%d'", get_current_user_id(), $matchConfirmed, $comments, $matchId));
+			return 'admin';
 		}
 	}
 

@@ -1809,65 +1809,81 @@ class RacketManager {
         $userid = get_current_user_id();
         $matchCapability = $options[$competitionType]['matchCapability'];
         $resultEntry = $options[$competitionType]['resultEntry'];
-
         if ( isset($homeTeam) && isset($awayTeam) && isset($homeTeam->affiliatedclub) && isset($awayTeam->affiliatedclub) ) {
           if ( $userid ) {
-            if ( !current_user_can( 'manage_racketmanager' ) ) {
-              if ( $matchCapability == 'player' ) {
+            if ( current_user_can( 'manage_racketmanager' ) ) {
+              $userType = 'admin';
+              $userCanUpdate = true;
+            } else {
+              if ( isset($homeTeam->captainId) && $userid == $homeTeam->captainId ) {
+                $userType = 'captain';
+                $userTeam = 'home';
+              } elseif ( isset($awayTeam->captainId) && $userid == $awayTeam->captainId ) {
+                $userType = 'captain';
+                $userTeam = 'away';
+              } else {
+                $message = 'notCaptain';
+              }
+              if ($matchCapability == 'none') {
+                  $message = 'noMatchCapability';
+              } elseif ($matchCapability == 'captain' || $userType == 'captain') {
+                if ( $userType = 'captain' ) {
+                  if ( $userTeam == 'home' ) {
+                    $userCanUpdate = true;
+                  } else {
+                    if ( $resultEntry == 'home') {
+                      if ( $matchStatus == 'P' ) {
+                        $userCanUpdate = true;
+                      }
+                    } elseif ( $resultEntry == 'either' ) {
+                      $userCanUpdate = true;
+                    }
+                  }
+                } 
+              } elseif ($matchCapability == 'player') {
                 $club = get_club($homeTeam->affiliatedclub);
                 $homeClubPlayer = $club->getPlayers( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
-                if ( $homeClubPlayer != 0 ) {
+                if ( $homeClubPlayer ) {
                   if ( $club->matchsecretary == $userid ) {
                     $userType = 'matchsecretary';
                   } else {
                     $userType = 'player';
                   }
                   $userTeam = 'home';
-                  $userCanUpdate = true;
                 }
-                if ( $resultEntry == 'either' ) {
-                  $club = get_club($awayTeam->affiliatedclub);
-                  $awayClubPlayer = $club->getPlayers( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
-                  if ( $awayClubPlayer != 0 ) {
-                    if ( $club->matchsecretary == $userid ) {
-                      $userType = 'matchsecretary';
-                    } else {
-                      $userType = 'player';
+                $club = get_club($awayTeam->affiliatedclub);
+                $awayClubPlayer = $club->getPlayers( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
+                if ( $awayClubPlayer ) {
+                  if ( $club->matchsecretary == $userid ) {
+                    $userType = 'matchsecretary';
+                  } else {
+                    $userType = 'player';
+                  }
+                  if ($userTeam == 'home') {
+                    $userTeam = 'both';
+                  } else {
+                    $userTeam = 'away';
+                  }
+                }
+                if ( $resultEntry == 'home' ) {
+                  if ( in_array($userTeam, array('home','both'), true )) {
+                    if ($matchStatus == '' ) {
+                      $userCanUpdate = true;
                     }
-                    if ($userTeam == 'home') {
-                      $userTeam = 'both';
-                    } else {
-                      $userTeam = 'away';
+                  } elseif ($userTeam == 'away') {
+                    if ($matchStatus == 'P') {
+                      $userCanUpdate = true;
                     }
+                  }
+                } elseif ( $resultEntry == 'either' ) {
+                  if ($userTeam) {
                     $userCanUpdate = true;
                   }
                 }
                 if (!$userTeam) {
                   $message = 'notTeamPlayer';
                 }
-              } elseif ( $matchCapability == 'captain' ) {
-                if ( isset($homeTeam->captainId) && $userid == $homeTeam->captainId ) {
-                  $userType = 'captain';
-                  $userTeam = 'home';
-                  $userCanUpdate = true;
-                } elseif ( $resultEntry == 'home' && ( isset($awayTeam->captainId) && $userid == $awayTeam->captainId ) ) {
-                  if ( $matchStatus == 'P') {
-                    $userType = 'captain';
-                    $userTeam = 'away';
-                    $userCanUpdate = true;
-                  }
-                } elseif ( $resultEntry == 'either' && ( isset($awayTeam->captainId) && $userid == $awayTeam->captainId ) ) {
-                  $userType = 'captain';
-                  $userTeam = 'away';
-                  $userCanUpdate = true;
-                } else {
-                  $message = 'notCaptain';
-                }
               }
-            } else {
-              $userType = 'admin';
-              $userTeam = '';
-              $userCanUpdate = true;
             }
           } else {
             $message = 'notLoggedIn';
@@ -2561,15 +2577,23 @@ class RacketManager {
           </div>
           <?php if ( $userCanUpdate ) {
             if (current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == null) { ?>
-              <div class="row mb-3">
-                <div class="col-12">
-                  <input type="hidden" name="updateRubber" id="updateRubber" value="<?php if ( !$updatesAllowed ) { echo 'confirm';} else { echo 'results';} ?>" />
-                  <button tabindex="500" class="button button-primary" type="button" id="updateRubberResults" onclick="Racketmanager.updateResults(this)">Update Results</button>
+              <?php if (($userTeam != 'away' && !isset($match->home_captain)) || ($userTeam != 'home' && !isset($match->away_captain))) {?>
+                <div class="row mb-3">
+                  <div class="col-12">
+                    <input type="hidden" name="updateRubber" id="updateRubber" value="<?php if ( !$updatesAllowed ) { echo 'confirm';} else { echo 'results';} ?>" />
+                    <button tabindex="500" class="button button-primary" type="button" id="updateRubberResults" onclick="Racketmanager.updateResults(this)">Update Results</button>
+                  </div>
                 </div>
-              </div>
-              <div class="row mb-3">
-                <div id="updateResponse" class="updateResponse"></div>
-              </div>
+                <div class="row mb-3">
+                  <div id="updateResponse" class="updateResponse"></div>
+                </div>
+              <?php } else { ?>
+                <div class="row mb-3">
+                  <div class="col-12 updateResponse message-error">
+                    <?php _e('Team result already entered', 'racketmanager') ?>
+                  </div>
+                </div>
+              <?php } ?>
             <?php } else { ?>
               <div class="row mb-3">
                 <div class="col-12 updateResponse message-error">

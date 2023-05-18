@@ -56,11 +56,11 @@ namespace ns;
 										<input type="checkbox" value="<?php echo $roster->roster_id ?>" name="roster[<?php echo $roster->roster_id ?>]" />
 									<?php } ?>
 								</div>
-								<div class="col-6 col-md-2"><a href="admin.php?page=racketmanager-clubs&amp;view=player&amp;club_id=<?php echo $club->id ?>&amp;player_id=<?php echo $roster->player_id ?>"><?php echo $roster->fullname ?></a></div>
+								<div class="col-6 col-md-2"><?php if ( !isset($roster->removed_date) ) { echo '<a href="admin.php?page=racketmanager-clubs&amp;view=player&amp;club_id=<?php echo $club->id ?>&amp;player_id=<?php echo $roster->player_id ?>">'; } ?><?php echo $roster->fullname ?><?php if ( !isset($roster->removed_date) ) { echo '</a>'; } ?></div>
 								<div class="col-1 col-md-1"><?php echo $roster->gender ?></div>
 								<div class="col-4 col-md-1"><?php echo $roster->btm ?></div>
 								<div class="col-4 col-md-1" title="<?php if (!empty($roster->removedUserName)) { echo __('Removed by',' racketmanager').' '.$roster->removedUserName; } ?>"><?php if ( isset($roster->removed_date) ) { echo $roster->removed_date; } ?></div>
-								<div class="col-4 col-md-1" title="<?php if (!empty($roster->createdUserName)) { echo __('Created by',' racketmanager').' '.$roster->createdUserName; } ?>"><?php echo $roster->created_date ?></div>
+								<div class="col-4 col-md-1" title="<?php if (!empty($roster->createdUserName)) { echo __('Created by',' racketmanager').' '.$roster->createdUserName; } ?>"><?php echo substr($roster->created_date, 0, 10) ?></div>
 								<div class="col-4 col-md-1" title="<?php if (!empty($roster->lockedUserName)) { echo __('Locked by',' racketmanager').' '.$roster->lockedUserName; } ?>"><?php echo $roster->locked_date ?></div>
 							</div>
 						<?php } ?>

@@ -41,7 +41,7 @@ function setup_racketmanager_plugin() {
 
 	define( 'RACKETMANAGER', 'racketmanager');
 	define( 'RACKETMANAGER_VERSION', '7.5.0' );
-	define( 'RACKETMANAGER_DBVERSION', '7.4.0' );
+	define( 'RACKETMANAGER_DBVERSION', '7.6.0' );
 	define( 'RACKETMANAGER_URL', esc_url(plugin_dir_url(__FILE__)) );
 	define( 'RACKETMANAGER_PATH', plugin_dir_path(__FILE__) );
 	define( 'RACKETMANAGER_PLUGIN_FILE',  __FILE__ );

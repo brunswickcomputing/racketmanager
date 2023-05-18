@@ -700,6 +700,10 @@ function racketmanager_upgrade() {
 			$wpdb->query( "RENAME TABLE $wpdb_racketmanager_roster TO $wpdb->racketmanager_club_players" );
 			$wpdb->query( "RENAME TABLE $wpdb_racketmanager_roster_requests TO $wpdb->racketmanager_club_player_requests" );
 		}
+		if (version_compare($installed, '7.6.0', '<')) {
+			echo __('starting 7.6.0 upgrade', 'racketmanager') . "<br />\n";
+			$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_club_players} CHANGE `created_date` `created_date` DATETIME NULL DEFAULT NULL");
+		}
 	/*
 	* Update version and dbversion
 	*/

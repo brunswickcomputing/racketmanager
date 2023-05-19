@@ -934,12 +934,12 @@ class RacketManagerAJAX extends RacketManager {
 
 						$checkOptions = $options['checks'];
 						$playerOptions = $options['player'];
-						$rubberPlayers = array($homeplayer1, $homeplayer2, $awayplayer1, $awayplayer2);
-						foreach ( $rubberPlayers as $playerRef ) {
-							if ( !empty($playerRef) ) {
-								$this->checkPlayerResult($match, $rubberId, $playerRef, $match->home_team, $checkOptions, $playerOptions);
-							}
-						}
+						$team = $match->home_team;
+						$rubberPlayers = array($homeplayer1, $homeplayer2);
+						$this->checkTeamPlayers($team, $rubberPlayers, $match, $rubberId, $checkOptions, $playerOptions);
+						$team = $match->away_team;
+						$rubberPlayers = array($awayplayer1, $awayplayer2);
+						$this->checkTeamPlayers($team, $rubberPlayers, $match, $rubberId, $checkOptions, $playerOptions);
 						$updatedRubbers[$rubberId]['players']['home'][] = $homeplayer1;
 						$updatedRubbers[$rubberId]['players']['home'][] = $homeplayer2;
 						$updatedRubbers[$rubberId]['players']['away'][] = $awayplayer1;
@@ -952,6 +952,15 @@ class RacketManagerAJAX extends RacketManager {
 
 		array_push($return, $error, $matchConfirmed, $errMsg, $errField, $updatedRubbers);
 		return $return;
+	}
+
+	public function checkTeamPlayers($team, $players, $match, $rubber, $checkOptions, $playerOptions) {
+		foreach ( $players as $playerRef ) {
+			if ( !empty($playerRef) ) {
+				$this->checkPlayerResult($match, $rubber, $playerRef, $team, $checkOptions, $playerOptions);
+			}
+		}
+
 	}
 
 	/**

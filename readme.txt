@@ -50,6 +50,12 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 7.6.0 =
+* UPDATE: handle match updates when player registered to both teams
+* UPDATE: store time of cluyb player creation
+* UPDATE: calculate standings for completed matches only
+* BUGFIX: handle player checks correctly
+
 = 7.5.0 =
 * UPDATE: automatically chase missing results and confirmations
 * UPDATE: highlight overdue results and confirmations

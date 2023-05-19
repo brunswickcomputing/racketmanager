@@ -1340,7 +1340,7 @@ public function getMatches( $query_args ) {
 	$sql .= " AND DATEDIFF('". htmlspecialchars(strip_tags($match_date))."', `date`) = 0";
 
 	if ( $confirmed ) {
-		$sql .= " AND `confirmed` in ('P','A','C')";
+		$sql .= " AND `confirmed` = 'Y'";
 	}
 
 	// Force ordering by date ascending if next matches are queried
@@ -1461,8 +1461,10 @@ public function getStandings( $teams = false, $match_day = false, $mode = 'all',
 		$match_args['team_id'] = $team->id;
 
 		// get matches up to given match day
-		if ( $match_day )
-		$match_args['match_day'] = $match_day;
+		if ( $match_day ) {
+			$match_args['match_day'] = $match_day;
+		}
+		$match_args['confirmed'] = true;
 
 		// initialize team standings data
 		$team->done_matches = 0;
@@ -1473,10 +1475,6 @@ public function getStandings( $teams = false, $match_day = false, $mode = 'all',
 		$team->points_minus = 0;
 		$team->points2_plus = 0;
 		$team->points2_minus = 0;
-
-		$points = array( 'plus' => 0, 'minus' => 0 );
-		$points2 = array( 'plus' => 0, 'minus' => 0 );
-		$team_points = 0;
 
 		// get matches
 		$matches = $this->getMatches( $match_args );
@@ -2184,7 +2182,6 @@ private function calculatePoints( $team, $matches = false ) {
 	$season = $team->season;
 
 	$rule = $this->getPointRule($this->point_rule);
-	$team_id = $team->id;
 	$points = array( 'plus' => 0, 'minus' => 0 );
 	$team_points = 0;
 

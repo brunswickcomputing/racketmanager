@@ -12,7 +12,7 @@ $title = $organisationName.' Match Result - '.$competitionName;
           <div>
             <h1 class="align-center"><?php echo $competitionName; ?></h1>
             <h2 class="align-center"><?php echo the_match_title(); ?></h2>
-            <?php if ( isset($complete) && $complete ) { ?>
+            <?php if ( isset($override) && $override ) { ?>
               <p>The approval of this result was outstanding<?php if ($timePeriod) { echo ' for more than '.$timePeriod.' hours after the result was entered'; } ?>.</p>
               <p>The entered result of this match has therefore been confirmed.</p>
               <?php if ($timePeriod) { ?>

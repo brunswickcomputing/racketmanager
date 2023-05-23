@@ -100,7 +100,7 @@ class RacketManager {
   
   public function completeMatchResult($match, $confirmationTimeout) {
     global $league;
-    $this->_chaseMatchApproval($match->id, $confirmationTimeout, 'complete');
+    $this->_chaseMatchApproval($match->id, $confirmationTimeout, 'override');
     $league = get_league($match->league_id);
     $final = false;
     $league->setFinals($final);
@@ -120,7 +120,7 @@ class RacketManager {
     return $league->_updateResults( $resultMatches, $home_points, $away_points, $home_team, $away_team, $custom, $season, $final );
 	}
   
-	public function _chaseMatchApproval($matchId, $timePeriod = false, $complete = false) {
+	public function _chaseMatchApproval($matchId, $timePeriod = false, $override = false) {
 		global $racketmanager, $match;
 		$match = get_match($matchId);
 		$messageSent = false;
@@ -131,9 +131,9 @@ class RacketManager {
 		$messageArgs = array();
 		$messageArgs['outstanding'] = true;
     $messageArgs['timeperiod'] = $timePeriod;
-    $messageArgs['complete'] = $complete;
+    $messageArgs['override'] = $override;
     $title = "approval pending";
-    if ($complete) {
+    if ($override) {
       $title = "complete";
     }
 		$emailSubject = $racketmanager->site_name." - ".$match->league->title." - ".$match->getTitle()." ".$title;

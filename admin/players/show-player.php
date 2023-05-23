@@ -24,7 +24,7 @@ namespace ns;
 	<?php if ( isset($player_id) ) { ?>
 		<div class="">
 			<?php if ( isset($club_id) ) { ?>
-				<a href="admin.php?page=racketmanager-clubs&amp;view=roster&amp;club_id=<?php echo $club_id ?>" class="button button-secondary"><?php _e('Back to players', 'racketmanager'); ?></a>
+				<a href="admin.php?page=racketmanager-clubs&amp;view=players&amp;club_id=<?php echo $club_id ?>" class="button button-secondary"><?php _e('Back to players', 'racketmanager'); ?></a>
 			<?php } else { ?>
 				<a href="admin.php?page=racketmanager-players&amp;tab=players" class="button button-secondary"><?php _e('Back to players', 'racketmanager'); ?></a>
 			<?php } ?>

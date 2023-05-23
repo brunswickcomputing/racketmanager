@@ -369,7 +369,7 @@ final class RacketManagerAdmin extends RacketManager
 			$view = isset($_GET['view']) ? $_GET['view'] : '';
 			if ( $view == 'teams' ) {
 				$this->displayTeamsPage();
-			} elseif ( $view == 'roster' ) {
+			} elseif ( $view == 'players' ) {
 				$this->displayClubPlayersPage();
 			} elseif ( $view == 'player' ) {
 				$this->displayPlayerPage();
@@ -792,7 +792,7 @@ final class RacketManagerAdmin extends RacketManager
 
 						$home = isset( $_POST['home'] ) ? 1 : 0;
 						$custom = !isset($_POST['custom']) ? array() : $_POST['custom'];
-						$roster = isset($_POST['roster']) ? intval($_POST['roster']) : 0;
+						$roster = 0;
 						$profile = isset($_POST['profile']) ? intval($_POST['profile']) : 0;
 						$group = isset($_POST['group']) ? htmlspecialchars(strip_tags($_POST['group'])) : '';
 
@@ -1396,7 +1396,7 @@ final class RacketManagerAdmin extends RacketManager
 				}
 			} elseif ( isset($_POST['dorosterdel']) && $_POST['action'] == 'delete' ) {
 				check_admin_referer('roster-bulk');
-				foreach ( $_POST['roster'] as $roster_id ) {
+				foreach ( $_POST['clubPlayer'] as $roster_id ) {
 					$this->delClubPlayer( intval($roster_id) );
 				}
 			}

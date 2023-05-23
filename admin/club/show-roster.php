@@ -53,7 +53,7 @@ namespace ns;
 							<div class="row table-row <?php echo $class ?>">
 								<div class="col-1 col-md-1 check-column">
 									<?php if ( !isset($roster->removed_date) ) { ?>
-										<input type="checkbox" value="<?php echo $roster->roster_id ?>" name="roster[<?php echo $roster->roster_id ?>]" />
+										<input type="checkbox" value="<?php echo $roster->roster_id ?>" name="clubPlayer[<?php echo $roster->roster_id ?>]" />
 									<?php } ?>
 								</div>
 								<div class="col-6 col-md-2"><?php if ( !isset($roster->removed_date) ) { echo '<a href="admin.php?page=racketmanager-clubs&amp;view=player&amp;club_id=<?php echo $club->id ?>&amp;player_id=<?php echo $roster->player_id ?>">'; } ?><?php echo $roster->fullname ?><?php if ( !isset($roster->removed_date) ) { echo '</a>'; } ?></div>

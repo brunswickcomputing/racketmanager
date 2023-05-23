@@ -40,7 +40,7 @@ namespace ns;
 						<div class="d-none d-md-inline col-1 col-md-1 column-num"><?php echo $club->id ?></div>
 						<div class="col-11 col-md-3 clubname"><a href="admin.php?page=racketmanager&amp;subpage=club&amp;club_id=<?php echo $club->id ?> "><?php echo $club->name ?></a></div>
 						<div class="d-none d-md-inline col-12 col-md-3"><?php echo $club->matchSecretaryName ?></div>
-						<div class="col-auto"><a href="admin.php?page=racketmanager-clubs&amp;view=roster&amp;club_id=<?php echo $club->id ?> " class="btn btn-secondary"><?php _e( 'Players', 'racketmanager' ) ?></a></div>
+						<div class="col-auto"><a href="admin.php?page=racketmanager-clubs&amp;view=players&amp;club_id=<?php echo $club->id ?> " class="btn btn-secondary"><?php _e( 'Players', 'racketmanager' ) ?></a></div>
 						<div class="col-auto"><a href="admin.php?page=racketmanager-clubs&amp;view=teams&amp;club_id=<?php echo $club->id ?> " class="btn btn-secondary"><?php _e( 'Teams', 'racketmanager' ) ?></a></div>
 					</div>
 				<?php } ?>

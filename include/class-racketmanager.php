@@ -2577,7 +2577,7 @@ class RacketManager {
           </div>
           <?php if ( $userCanUpdate ) {
             if (current_user_can( 'update_results' ) || $match->confirmed == 'P' || $match->confirmed == null) { ?>
-              <?php if (($userTeam != 'away' && !isset($match->home_captain)) || ($userTeam != 'home' && !isset($match->away_captain))) {?>
+              <?php if ($userType == 'admin' || ($userTeam != 'away' && !isset($match->home_captain)) || ($userTeam != 'home' && !isset($match->away_captain))) {?>
                 <div class="row mb-3">
                   <div class="col-12">
                     <input type="hidden" name="updateRubber" id="updateRubber" value="<?php if ( !$updatesAllowed ) { echo 'confirm';} else { echo 'results';} ?>" />

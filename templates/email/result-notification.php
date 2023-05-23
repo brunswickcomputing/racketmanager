@@ -12,11 +12,17 @@ $title = $organisationName.' Match Result - '.$competitionName;
           <div>
             <h1 class="align-center"><?php echo $competitionName; ?></h1>
             <h2 class="align-center"><?php echo the_match_title(); ?></h2>
-            <?php if ( isset($outstanding) && $outstanding ) { ?>
+            <?php if ( isset($complete) && $complete ) { ?>
+              <p>The approval of this result was outstanding<?php if ($timePeriod) { echo ' for more than '.$timePeriod.' hours after the result was entered'; } ?>.</p>
+              <p>The entered result of this match has therefore been confirmed.</p>
+              <?php if ($timePeriod) { ?>
+                <p>Failure to approve or challenge future results within <?php echo $timePeriod; ?> hours of the result being entered may result in a point deduction.</p>
+              <?php } ?>
+            <?php } elseif ( isset($outstanding) && $outstanding ) { ?>
               <p>The approval of this result is outstanding<?php if ($timePeriod) { echo ' more than '.$timePeriod.' hours after the result was entered'; } ?>.</p>
               <p>Please either approval or challenge the result as soon as possible.</p>
               <?php if ($timePeriod) { echo '<p>Failure to do so may result in a point deduction.</p>'; } ?>
-              <?php } elseif ( isset($errors) && $errors ) { ?>
+            <?php } elseif ( isset($errors) && $errors ) { ?>
               <p>The result of this match has been confirmed and updated.</p>
               <p>There are player checks that need actioning.</p>
             <?php } elseif ( isset($complete) && $complete ) { ?>

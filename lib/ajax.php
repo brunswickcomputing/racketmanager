@@ -699,7 +699,7 @@ class RacketManagerAJAX extends RacketManager {
 							}
 						}
 						if ( $userType != 'admin' ) {
-							if ( $updated ) {
+							if ( $updated || $match->updated == 'Y' ) {
 								$matchConfirmed = 'Y';
 							}
 							$this->resultNotification($matchConfirmed, $matchMessage, $match, $matchUpdatedby);
@@ -1216,7 +1216,7 @@ class RacketManagerAJAX extends RacketManager {
 			}
 			if ( $confirmationEmail ) {
 				$emailTo = $confirmationEmail;
-				$headers[] = 'From: '.ucfirst($match->league->competitionType).' Secretary <'.$adminEmail.'>';
+				$headers[] = $racketmanager->getFromUserEmail();
 				$headers[] = 'cc: '.ucfirst($match->league->competitionType).' Secretary <'.$adminEmail.'>';
 				$subject = $racketmanager->site_name." - ".$match->league->title." - ".$match->match_title." - Result confirmation required";
 				$message = racketmanager_captain_result_notification($match->id, $messageArgs );

@@ -3334,6 +3334,7 @@ final class RacketManagerAdmin extends RacketManager
 					$options[$competitionType]['resultNotification'] = htmlspecialchars($_POST[$competitionType]['resultNotification']);
 					$options[$competitionType]['resultPending'] = htmlspecialchars($_POST[$competitionType]['resultPending']);
 					$options[$competitionType]['confirmationPending'] = htmlspecialchars($_POST[$competitionType]['confirmationPending']);
+					$options[$competitionType]['confirmationTimeout'] = htmlspecialchars($_POST[$competitionType]['confirmationTimeout']);
 					$this->scheduleResultChase($competitionType, $options[$competitionType]);
 				}
 				$options['colors']['headers'] = htmlspecialchars($_POST['color_headers']);

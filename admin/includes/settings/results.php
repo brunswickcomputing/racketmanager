@@ -68,6 +68,10 @@
             <input type="number" class="form-control" name='<?php echo $competitionType ?>[confirmationPending]' id='<?php echo $competitionType ?>-confirmationPending' value='<?php echo isset($options[$competitionType]['confirmationPending']) ? $options[$competitionType]['confirmationPending'] : '' ?>' />
             <label for='confirmationPending'><?php _e( 'Chase result confirmation (hours)', 'racketmanager' ) ?></label>
           </div>
+          <div class="form-floating col-12 col-lg-3 mb-3">
+            <input type="number" class="form-control" name='<?php echo $competitionType ?>[confirmationTimeout]' id='<?php echo $competitionType ?>-confirmationTimeout' value='<?php echo isset($options[$competitionType]['confirmationTimeout']) ? $options[$competitionType]['confirmationTimeout'] : '' ?>' />
+            <label for='confirmationTimeout'><?php _e( 'Result confirmation timeout (hours)', 'racketmanager' ) ?></label>
+          </div>
         </div>
       </div>
     <?php } ?>

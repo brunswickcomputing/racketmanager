@@ -1428,7 +1428,7 @@ class RacketManagerAJAX extends RacketManager {
 	}
 
 	/**
-	* save roster requests
+	* save club player requests
 	*
 	* @see templates/club.php
 	*/
@@ -1460,7 +1460,7 @@ class RacketManagerAJAX extends RacketManager {
 	}
 
 	/**
-	* remove roster entry
+	* remove club player entry
 	*
 	* @see admin/settings.php
 	*/

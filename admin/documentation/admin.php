@@ -23,7 +23,7 @@
       <p>The <a href="<?php echo get_admin_url() ?>admin.php?page=racketmanager-settings">Confirmation setting</a> on the "Club Players" tab can be set to either "none" or "automatic". If an email address is set on this screen, an email notification will be sent to this address whenever a player request is made.</p>
       <dl>
         <dt><?php _e( 'Automatic Confirmation', 'racketmanager' ) ?></dt>
-        <dd>With this set, the player will be automatically added to the club roster (and added to the list of players if a new player).</dd>
+        <dd>With this set, the player will be automatically added to the club's registered players (and added to the list of players if a new player).</dd>
       </dl>
       <h4 id="Updates"><?php _e( 'Approval/Deletion', 'racketmanager' ) ?></h4>
       <p>Player requests can be approved individually by selecting the checkbox next to the request.</p>

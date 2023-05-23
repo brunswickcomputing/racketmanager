@@ -215,7 +215,7 @@ class Racketmanager_Util
 	}
 
 	/**
-	 * gets roster requests from database
+	 * gets club player requests from database
 	 *
 	 * @param array $query_args
 	 * @return array

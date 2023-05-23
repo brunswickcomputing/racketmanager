@@ -3477,7 +3477,7 @@ final class RacketManagerAdmin extends RacketManager
 
 	/************
 	*
-	*   ROSTER SECTION
+	*   CLUB PLAYERS SECTION
 	*
 	*
 	*/
@@ -3773,7 +3773,7 @@ final class RacketManagerAdmin extends RacketManager
 	}
 
 	/**
-	* import roster from file
+	* import club players from file
 	*
 	* @param string $file
 	* @param string $delimiter

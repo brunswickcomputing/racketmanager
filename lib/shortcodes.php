@@ -1284,9 +1284,9 @@ class RacketManagerShortcodes extends RacketManager {
 	}
 
 	/**
-	* Function to show roster notification
+	* Function to show club player notification
 	*
-	*    [rostertnotification club=club template=X]
+	*    [clubplayernotification club=club template=X]
 	*
 	* @param array $atts
 	* @return the content

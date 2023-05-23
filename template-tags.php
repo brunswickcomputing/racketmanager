@@ -918,7 +918,7 @@
     }
 
     /**
-     * display roster request email
+     * display club player request email
      *
      * @param var $clubname Club Name
      * @category template-tags

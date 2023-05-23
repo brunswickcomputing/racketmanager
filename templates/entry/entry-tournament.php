@@ -70,8 +70,8 @@ The following variables are usable:
                         <label class="form-label" for="partner[<?php echo $competition->id ?>]"><?php _e( 'Partner', 'racketmanager' ) ?></label>
                             <select size="1" name="partner[<?php echo $competition->id ?>]" id="partner[<?php echo $competition->id ?>]" >
                                 <option value="0"><?php _e( 'Select partner' , 'racketmanager') ?></option>
-                                <?php foreach ( $partnerList AS $roster ) { ?>
-                                <option value="<?php echo $roster->roster_id ?>"><?php echo $roster->fullname." - ".get_club($roster->affiliatedclub)->name ?></option>
+                                <?php foreach ( $partnerList AS $partner ) { ?>
+                                <option value="<?php echo $partner->roster_id ?>"><?php echo $partner->fullname." - ".get_club($partner->affiliatedclub)->name ?></option>
                                 <?php } ?>
                             </select>
                         <?php } ?>

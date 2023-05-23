@@ -238,7 +238,7 @@ final class Club
   /**
    * approve Club Player Request
    *
-   * @param int $rosterRequst_id
+   * @param int $playerRequestId
    * @return boolean
    */
   public function approvePlayerRequest($playerRequestId)
@@ -344,7 +344,7 @@ final class Club
   }
 
   /**
-   * add new roster
+   * add new club player
    *
    * @param int $affiliatedclub
    * @param int $playerid
@@ -358,11 +358,11 @@ final class Club
     $userid = get_current_user_id();
     $sql = "INSERT INTO {$wpdb->racketmanager_club_players} (`affiliatedclub`, `player_id`, `created_date`, `created_user` ) VALUES ('%d', '%d', now(), %d)";
     $wpdb->query($wpdb->prepare($sql, $this->id, $player_id, $userid));
-    $roster_id = $wpdb->insert_id;
+    $clubPlayerId = $wpdb->insert_id;
 
     $racketmanager->setMessage(__('Club Player added', 'racketmanager'));
 
-    return $roster_id;
+    return $clubPlayerId;
   }
 
   /**
@@ -386,7 +386,7 @@ final class Club
   }
 
   /**
-   * gets roster from database
+   * gets club players from database
    *
    * @param array $query_args
    * @return array
@@ -557,7 +557,7 @@ final class Club
   /**
    * check if player is captain
    *
-   * @param int $rosterRequst_id
+   * @param int $player
    * @return boolean
    */
   public function isPlayerCaptain($player)

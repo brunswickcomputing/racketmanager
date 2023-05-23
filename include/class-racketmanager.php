@@ -1239,7 +1239,7 @@ class RacketManager {
   }
 
   /**
-  * gets roster from database
+  * gets club players from database
   *
   * @param array $query_args
   * @return array
@@ -1313,61 +1313,61 @@ class RacketManager {
       $sql .= " ORDER BY $order";
     }
 
-    $rosters = wp_cache_get( md5($sql), 'rosters' );
-    if ( !$rosters ) {
-      $rosters = $wpdb->get_results( $sql );
-      wp_cache_set( md5($sql), $rosters, 'rosters' );
+    $clubPlayers = wp_cache_get( md5($sql), 'clubPlayers' );
+    if ( !$clubPlayers ) {
+      $clubPlayers = $wpdb->get_results( $sql );
+      wp_cache_set( md5($sql), $clubPlayers, 'clubPlayers' );
     }
 
     $i = 0;
     $class = '';
-    foreach ( $rosters as $roster ) {
+    foreach ( $clubPlayers as $clubPlayer ) {
       $class = ( 'alternate' == $class ) ? '' : 'alternate';
-      $rosters[$i]->class = $class;
+      $clubPlayers[$i]->class = $class;
 
-      $rosters[$i] = (object)(array)$roster;
+      $clubPlayers[$i] = (object)(array)$clubPlayer;
 
-      $rosters[$i]->affiliatedclub = $roster->affiliatedclub;
-      $rosters[$i]->roster_id = $roster->roster_id;
-      $rosters[$i]->player_id = $roster->player_id;
-      $rosters[$i]->fullname = $roster->fullname;
-      $rosters[$i]->gender = get_user_meta($roster->player_id, 'gender', true );
-      $rosters[$i]->type = get_user_meta($roster->player_id, 'racketmanager_type', true );
-      $rosters[$i]->locked = get_user_meta($roster->player_id, 'locked', true );
-      $rosters[$i]->locked_date = get_user_meta($roster->player_id, 'locked_date', true );
-      $rosters[$i]->locked_user = get_user_meta($roster->player_id, 'locked_user', true );
-      if ( $rosters[$i]->locked_user ) {
-        $rosters[$i]->lockedUserName = get_userdata($rosters[$i]->locked_user)->display_name;
+      $clubPlayers[$i]->affiliatedclub = $clubPlayer->affiliatedclub;
+      $clubPlayers[$i]->roster_id = $clubPlayer->roster_id;
+      $clubPlayers[$i]->player_id = $clubPlayer->player_id;
+      $clubPlayers[$i]->fullname = $clubPlayer->fullname;
+      $clubPlayers[$i]->gender = get_user_meta($clubPlayer->player_id, 'gender', true );
+      $clubPlayers[$i]->type = get_user_meta($clubPlayer->player_id, 'racketmanager_type', true );
+      $clubPlayers[$i]->locked = get_user_meta($clubPlayer->player_id, 'locked', true );
+      $clubPlayers[$i]->locked_date = get_user_meta($clubPlayer->player_id, 'locked_date', true );
+      $clubPlayers[$i]->locked_user = get_user_meta($clubPlayer->player_id, 'locked_user', true );
+      if ( $clubPlayers[$i]->locked_user ) {
+        $clubPlayers[$i]->lockedUserName = get_userdata($clubPlayers[$i]->locked_user)->display_name;
       } else {
-        $rosters[$i]->lockedUserName = '';
+        $clubPlayers[$i]->lockedUserName = '';
       }
-      $rosters[$i]->removed_date = $roster->removed_date;
-      $rosters[$i]->removed_user = $roster->removed_user;
-      if ( $roster->removed_user ) {
-        $rosters[$i]->removedUserName = get_userdata($roster->removed_user)->display_name;
+      $clubPlayers[$i]->removed_date = $clubPlayer->removed_date;
+      $clubPlayers[$i]->removed_user = $clubPlayer->removed_user;
+      if ( $clubPlayer->removed_user ) {
+        $clubPlayers[$i]->removedUserName = get_userdata($clubPlayer->removed_user)->display_name;
       } else {
-        $rosters[$i]->removedUserName = '';
+        $clubPlayers[$i]->removedUserName = '';
       }
-      $rosters[$i]->btm = get_user_meta($roster->player_id, 'btm', true );
-      $rosters[$i]->created_date = $roster->created_date;
-      $rosters[$i]->created_user = $roster->created_user;
-      if ( $roster->created_user ) {
-        $rosters[$i]->createdUserName = get_userdata($roster->created_user)->display_name;
+      $clubPlayers[$i]->btm = get_user_meta($clubPlayer->player_id, 'btm', true );
+      $clubPlayers[$i]->created_date = $clubPlayer->created_date;
+      $clubPlayers[$i]->created_user = $clubPlayer->created_user;
+      if ( $clubPlayer->created_user ) {
+        $clubPlayers[$i]->createdUserName = get_userdata($clubPlayer->created_user)->display_name;
       } else {
-        $rosters[$i]->createdUserName = '';
+        $clubPlayers[$i]->createdUserName = '';
       }
-      if ( $gender && $gender != $rosters[$i]->gender ) {
-        unset($rosters[$i]);
+      if ( $gender && $gender != $clubPlayers[$i]->gender ) {
+        unset($clubPlayers[$i]);
       }
 
       $i++;
     }
 
-    return $rosters;
+    return $clubPlayers;
   }
 
   /**
-  * gets single roster entry from database
+  * gets single club player entry from database
   *
   * @param array $query_args
   * @return array
@@ -1377,25 +1377,25 @@ class RacketManager {
 
     $sql = "SELECT A.`player_id` as `player_id`, A.`system_record`, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_club_players} A WHERE A.`id`= '".intval($rosterId)."'";
 
-    $roster = wp_cache_get( md5($sql), 'rosterentry' );
-    if ( !$roster || !$cache ) {
-      $roster = $wpdb->get_row( $sql );
-      wp_cache_set( md5($sql), $roster, 'rosterentry' );
+    $clubplayer = wp_cache_get( md5($sql), 'clubplayer' );
+    if ( !$clubplayer || !$cache ) {
+      $clubplayer = $wpdb->get_row( $sql );
+      wp_cache_set( md5($sql), $clubplayer, 'clubplayer' );
     }
-    $roster->id = $rosterId;
-    $player = get_userdata($roster->player_id);
-    $roster->fullname = $player->display_name;
-    $roster->email = $player->user_email;
-    $player = get_user_meta($roster->player_id);
-    $roster->firstname = $player['first_name'][0];
-    $roster->surname = $player['last_name'][0];
-    $roster->gender = isset($player['gender']) ? $player['gender'][0] : '';
-    $roster->btm = isset($player['btm']) ? $player['btm'][0] : '';
-    $roster->locked = isset($player['locked']) ? $player['locked'][0] : '';
-    $roster->locked_date = isset($player['locked_date']) ? $player['locked_date'][0] : '';
-    $roster->locked_user = isset($player['locked_user']) ? $player['locked_user'][0] : '';
+    $clubplayer->id = $rosterId;
+    $player = get_userdata($clubplayer->player_id);
+    $clubplayer->fullname = $player->display_name;
+    $clubplayer->email = $player->user_email;
+    $player = get_user_meta($clubplayer->player_id);
+    $clubplayer->firstname = $player['first_name'][0];
+    $clubplayer->surname = $player['last_name'][0];
+    $clubplayer->gender = isset($player['gender']) ? $player['gender'][0] : '';
+    $clubplayer->btm = isset($player['btm']) ? $player['btm'][0] : '';
+    $clubplayer->locked = isset($player['locked']) ? $player['locked'][0] : '';
+    $clubplayer->locked_date = isset($player['locked_date']) ? $player['locked_date'][0] : '';
+    $clubplayer->locked_user = isset($player['locked_user']) ? $player['locked_user'][0] : '';
 
-    return $roster;
+    return $clubplayer;
   }
 
   /**

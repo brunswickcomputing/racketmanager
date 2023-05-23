@@ -866,8 +866,8 @@ class RacketManagerAJAX extends RacketManager {
 						$error = true;
 					} else {
 						$playerRef = $$type;
-						$rosterEntry = $racketmanager->getClubPlayer($playerRef);
-						if ( !$rosterEntry->system_record ) {
+						$clubPlayer = $racketmanager->getClubPlayer($playerRef);
+						if ( !$clubPlayer->system_record ) {
 							$playerFound = array_search($playerRef, $players);
 							if ( $playerFound === false ) {
 								if ( $playoff ) {

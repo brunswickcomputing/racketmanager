@@ -1247,7 +1247,7 @@ class RacketManager {
   public function getClubPlayers( $args ) {
     global $wpdb;
 
-    $defaults = array( 'count' => false, 'team' => false, 'club' => false, 'player' => false, 'gender' => false, 'inactive' => false, 'cache' => true, 'type' => false, 'orderby' => array("display_name" => "ASC" ));
+    $defaults = array( 'count' => false, 'team' => false, 'club' => false, 'player' => false, 'gender' => false, 'active' => false, 'cache' => true, 'type' => false, 'orderby' => array("display_name" => "ASC" ));
     $args = array_merge($defaults, (array)$args);
     extract($args, EXTR_SKIP);
 
@@ -1268,7 +1268,7 @@ class RacketManager {
       $searchTerms[] = "`system_record` IS NULL";
     }
 
-    if ($inactive) {
+    if ($active) {
       $searchTerms[] = "`removed_date` IS NULL";
     }
 
@@ -1877,7 +1877,7 @@ class RacketManager {
                 }
               } elseif ($matchCapability == 'player') {
                 $club = get_club($homeTeam->affiliatedclub);
-                $homeClubPlayer = $club->getPlayers( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
+                $homeClubPlayer = $club->getPlayers( array( 'count' => true, 'player' => $userid, 'active' => true ) );
                 if ( $homeClubPlayer ) {
                   if ( $club->matchsecretary == $userid ) {
                     $userType = 'matchsecretary';
@@ -1887,7 +1887,7 @@ class RacketManager {
                   $userTeam = 'home';
                 }
                 $club = get_club($awayTeam->affiliatedclub);
-                $awayClubPlayer = $club->getPlayers( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );
+                $awayClubPlayer = $club->getPlayers( array( 'count' => true, 'player' => $userid, 'active' => true ) );
                 if ( $awayClubPlayer ) {
                   if ( $club->matchsecretary == $userid ) {
                     $userType = 'matchsecretary';

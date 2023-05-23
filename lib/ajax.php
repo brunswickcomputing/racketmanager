@@ -615,7 +615,7 @@ class RacketManagerAJAX extends RacketManager {
 						}
 						if ( !$playerFound ) {
 							$club = get_club($clubId);
-							$clubPlayer = $club->getPlayers( array('player' => get_current_user_id(), 'inactive' => true) );
+							$clubPlayer = $club->getPlayers( array('player' => get_current_user_id(), 'active' => true) );
 							$clubPlayerId = $clubPlayer[0]->roster_id;
 							for ($ix = 1; $ix <= $numRubbers; $ix++) {
 								$homeplayer1    = isset($_POST['homeplayer1'][$ix]) ? $_POST['homeplayer1'][$ix] : null;

@@ -395,7 +395,7 @@ final class Club
   {
     global $wpdb;
 
-    $defaults = array('count' => false, 'team' => false, 'player' => false, 'gender' => false, 'inactive' => false, 'cache' => true, 'type' => false, 'orderby' => array("display_name" => "ASC"));
+    $defaults = array('count' => false, 'team' => false, 'player' => false, 'gender' => false, 'active' => false, 'cache' => true, 'type' => false, 'orderby' => array("display_name" => "ASC"));
     $args = array_merge($defaults, (array)$args);
     extract($args, EXTR_SKIP);
 
@@ -417,7 +417,7 @@ final class Club
       $search_terms[] = "`system_record` IS NULL";
     }
 
-    if ($inactive) {
+    if ($active) {
       $search_terms[] = "`removed_date` IS NULL";
     }
 

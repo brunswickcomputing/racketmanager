@@ -558,7 +558,7 @@ class RacketManagerShortcodes extends RacketManager {
 
 		if ( !$club ) return;
 
-		$clubPlayers = $club->getPlayers( array( 'inactive' => "Y", 'type' => 'real', 'cache' => false ) );
+		$clubPlayers = $club->getPlayers( array( 'active' => true, 'type' => 'real', 'cache' => false ) );
 		$playerRequests = Racketmanager_Util::getPlayerRequests( array('club' => $club->id, 'status' => 'outstanding') );
 		$keys = $racketmanager->getOptions('keys');
 		$googleMapsKey = isset($keys['googleMapsKey']) ? $keys['googleMapsKey'] : '';
@@ -974,9 +974,9 @@ class RacketManagerShortcodes extends RacketManager {
 		$player = wp_get_current_user();
 		$player->contactno = get_user_meta( $player->ID, 'contactno', true);
 		$player->gender = get_user_meta( $player->ID, 'gender', true);
-		$clubPlayers = $racketmanager->getClubPlayers( array('player' => $player->ID, 'inactive' => true) );
-		$malePartners = $racketmanager->getClubPlayers( array('gender' => 'M', 'inactive' => true, 'type' => true) );
-		$femalePartners = $racketmanager->getClubPlayers( array('gender' => 'F', 'inactive' => true, 'type' => true) );
+		$clubPlayers = $racketmanager->getClubPlayers( array('player' => $player->ID, 'active' => true) );
+		$malePartners = $racketmanager->getClubPlayers( array('gender' => 'M', 'active' => true, 'type' => true) );
+		$femalePartners = $racketmanager->getClubPlayers( array('gender' => 'F', 'active' => true, 'type' => true) );
 
 		$filename = ( !empty($template) ) ? 'entry-tournament-'.$template : 'entry-tournament';
 

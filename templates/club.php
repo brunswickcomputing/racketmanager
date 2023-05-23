@@ -122,7 +122,7 @@ if ( is_user_logged_in() ) {
   </details>
   <details id="club-players">
     <summary>
-      <h2 class="roster-header"><?php _e( 'Players', 'racketmanager' ) ?></h2>
+      <h2 class="club-players-header"><?php _e( 'Players', 'racketmanager' ) ?></h2>
     </summary>
     <div id="players" class="accordion accordion-flush">
       <?php if ( $userCanAddPlayer ) { ?>
@@ -231,7 +231,7 @@ if ( is_user_logged_in() ) {
             <div class="accordion-body">
               <?php if ( $clubPlayers ) { ?>
                 <form id="roster-<?php echo $key ?>-remove" method="post" action="">
-                  <?php wp_nonce_field( 'roster-remove' ) ?>
+                  <?php wp_nonce_field( 'club-player-remove' ) ?>
                   <table class="playerlist noborder" aria-describedby="<?php echo $club->name.' '.$key ?> Players">
                     <thead>
                       <tr>

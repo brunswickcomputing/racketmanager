@@ -1468,7 +1468,7 @@ class RacketManagerAJAX extends RacketManager {
 		global $racketmanager;
 
 		$return = array();
-		check_admin_referer('roster-remove');
+		check_admin_referer('club-player-remove');
 
 		foreach ( $_POST['clubPlayer'] as $roster_id ) {
 			$racketmanager->delClubPlayer( intval($roster_id) );

@@ -1306,7 +1306,7 @@ class RacketManagerShortcodes extends RacketManager {
 
 		$organisationname = $racketmanager->site_name;
 
-		$filename = ( !empty($template) ) ? 'roster-notification-'.$template : 'roster-notification';
+		$filename = ( !empty($template) ) ? 'club-player-notification-'.$template : 'club-player-notification';
 
 		return $this->loadTemplate( $filename, array( 'action' => $action, 'club' => $club, 'player' => $player, 'organisationName' => $organisationname, 'actionurl' => $actionurl ), 'email' );
 

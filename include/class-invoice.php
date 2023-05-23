@@ -109,7 +109,7 @@ final class Invoice {
 * get invoice object
 *
 * @param int|invoice|null invoice ID or invoice object. Defaults to global $invoice
-* @return invoice|null
+* @return object invoice|null
 */
 function get_invoice( $invoice = null ) {
   if ( empty( $invoice ) && isset( $GLOBALS['invoice'] ) ) {

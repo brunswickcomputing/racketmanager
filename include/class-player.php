@@ -201,7 +201,7 @@ final class Player {
 * get Player object
 *
 * @param int|Player|null Player ID or player object. Defaults to global $player
-* @return Player|null
+* @return object player|null
 */
 function get_player( $player = null, $queryTerm = "id") {
 	if ( empty( $player ) && isset( $GLOBALS['player'] ) ) {

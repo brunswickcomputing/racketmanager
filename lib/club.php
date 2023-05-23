@@ -578,7 +578,7 @@ final class Club
  * get Club object
  *
  * @param int|Club|null Club ID or club object. Defaults to global $club
- * @return Club|null
+ * @return object club|null
  */
 function get_club($club = null, $queryTerm = "id")
 {

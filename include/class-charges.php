@@ -165,7 +165,7 @@ final class Charges {
 * get Charges object
 *
 * @param int|charges|null Charges ID or charges object. Defaults to global $charges
-* @return Charges|null
+* @return object charges|null
 */
 function get_charges( $charges = null ) {
   if ( empty( $charges ) && isset( $GLOBALS['charges'] ) ) {

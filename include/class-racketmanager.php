@@ -50,7 +50,7 @@ class RacketManager {
 	}
   
 	public function _chaseMatchResult($matchId, $timePeriod = false) {
-		global $racketmanager, $racketmanager_shortcodes, $match;
+		global $racketmanager, $match;
 		$match = get_match($matchId);
 		$messageSent = false;
 		$headers = array();
@@ -59,7 +59,6 @@ class RacketManager {
 		$headers[] = 'cc: '.ucfirst($match->league->competitionType).' Secretary <'.$fromEmail.'>';
 		$messageArgs = array();
     $messageArgs['timeperiod'] = $timePeriod;
-		$organisationName = $racketmanager->site_name;
 
 		$emailSubject = $racketmanager->site_name." - ".$match->league->title." - ".$match->getTitle()." Match result pending";
 		$emailTo = '';
@@ -69,7 +68,6 @@ class RacketManager {
 			if ( isset($club->matchSecretaryEmail) ) {
 				$headers[] = 'cc: '.$club->matchSecretaryName.' <'.$club->matchSecretaryEmail.'>';
 			}
-			$actionURL = $racketmanager->site_url.'/match/'.seoUrl($match->league->title).'/'.$match->season.'/day'.$match->match_day.'/'.seoUrl($match->teams['home']->title).'-vs-'.seoUrl($match->teams['away']->title);
 			$emailMessage = racketmanager_result_outstanding_notification($match->id, $messageArgs );
 			wp_mail($emailTo, $emailSubject, $emailMessage, $headers);
 			$messageSent = true;
@@ -78,6 +76,16 @@ class RacketManager {
 	}
 
   public function chasePendingApprovals($competition) {
+    $confirmationTimeout = $this->getOptions($competition)['confirmationTimeout'];
+    $matchArgs = array();
+    $matchArgs['confirmed'] = 'true';
+    $matchArgs['competitiontype'] = 'league';
+    $matchArgs['orderby'] = array( 'date' => 'ASC', 'id' => 'ASC');
+    $matchArgs['timeOffset'] = $confirmationTimeout;
+    $matches = $this->getMatches( $matchArgs );
+    foreach($matches as $match) {
+      $this->completeMatchResult($match, $confirmationTimeout);
+    }
     $confirmationPending = $this->getOptions($competition)['confirmationPending'];
     $matchArgs = array();
     $matchArgs['confirmed'] = 'true';
@@ -90,7 +98,29 @@ class RacketManager {
     }
 	}
   
-	public function _chaseMatchApproval($matchId, $timePeriod = false) {
+  public function completeMatchResult($match, $confirmationTimeout) {
+    global $league;
+    $this->_chaseMatchApproval($match->id, $confirmationTimeout, 'complete');
+    $league = get_league($match->league_id);
+    $final = false;
+    $league->setFinals($final);
+    $resultMatches = array();
+    $home_points = array();
+    $away_points = array();
+    $home_team = array();
+    $away_team = array();
+    $custom = array();
+    $resultMatches[$match->id] = $match->id;
+    $home_points[$match->id] = $match->home_points;
+    $away_points[$match->id] = $match->away_points;
+    $home_team[$match->id] = $match->home_team;
+    $away_team[$match->id] = $match->away_team;
+    $custom[$match->id] = $match->custom;
+    $season = $match->season;
+    return $league->_updateResults( $resultMatches, $home_points, $away_points, $home_team, $away_team, $custom, $season, $final );
+	}
+  
+	public function _chaseMatchApproval($matchId, $timePeriod = false, $complete = false) {
 		global $racketmanager, $match;
 		$match = get_match($matchId);
 		$messageSent = false;
@@ -101,7 +131,12 @@ class RacketManager {
 		$messageArgs = array();
 		$messageArgs['outstanding'] = true;
     $messageArgs['timeperiod'] = $timePeriod;
-		$emailSubject = $racketmanager->site_name." - ".$match->league->title." - ".$match->getTitle()." Match approval pending";
+    $messageArgs['complete'] = $complete;
+    $title = "approval pending";
+    if ($complete) {
+      $title = "complete";
+    }
+		$emailSubject = $racketmanager->site_name." - ".$match->league->title." - ".$match->getTitle()." ".$title;
 		$emailTo = '';
 		if ( isset($match->home_captain) ) {
 			if ( isset($match->teams['away']->contactemail) ) {

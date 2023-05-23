@@ -1874,7 +1874,7 @@ class RacketManager {
                       $userCanUpdate = true;
                     }
                   }
-                } 
+                }
               } elseif ($matchCapability == 'player') {
                 $club = get_club($homeTeam->affiliatedclub);
                 $homeClubPlayer = $club->getPlayers( array( 'count' => true, 'player' => $userid, 'inactive' => true ) );

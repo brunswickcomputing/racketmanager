@@ -232,8 +232,7 @@ if ( is_user_logged_in() ) {
               <?php if ( $clubPlayers ) { ?>
                 <form id="roster-<?php echo $key ?>-remove" method="post" action="">
                   <?php wp_nonce_field( 'roster-remove' ) ?>
-                  <table class="playerlist noborder">
-                    <caption>"<?php echo $club->name.' '.$key ?> Players"</caption>
+                  <table class="playerlist noborder" aria-describedby="<?php echo $club->name.' '.$key ?> Players">
                     <thead>
                       <tr>
                         <th scope="col" class="check-column">
@@ -261,7 +260,7 @@ if ( is_user_logged_in() ) {
                             <td><a href="<?php echo sanitize_title($clubPlayer->fullname) ?>"><?php echo $clubPlayer->fullname; ?></a></td>
                             <td><?php echo $clubPlayer->btm; ?></td>
                             <td><?php echo $clubPlayer->email; ?></td>
-                            <td <?php if (!empty($clubPlayer->createdUserName)) { echo 'title="'.__('Created by',' racketmanager').' '.$clubPlayer->createdUserName.'"'; } ?>><?php echo $clubPlayer->created_date; ?></td>
+                            <td <?php if (!empty($clubPlayer->createdUserName)) { echo 'title="'.__('Created by',' racketmanager').' '.$clubPlayer->createdUserName.'"'; } ?>><?php echo substr($clubPlayer->created_date, 0, 10); ?></td>
                           </tr>
                         <?php }
                       } ?>

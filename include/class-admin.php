@@ -1401,8 +1401,13 @@ final class RacketManagerAdmin extends RacketManager
 				}
 			}
 			$this->printMessage();
-			if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
+			if (isset($_GET['club_id'])) {
+				$club_id = $_GET['club_id'];
+			}
 			$club = get_club($club_id);
+			$active = isset($_GET['active']) ? $_GET['active'] : false;
+			$gender = isset($_GET['gender']) ? $_GET['gender'] : false;
+			$players = $club->getPlayers(array('active' => $active, 'gender' => $gender));
 			include_once( RACKETMANAGER_PATH . '/admin/club/show-roster.php' );
 		}
 	}

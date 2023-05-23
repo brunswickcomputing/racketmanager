@@ -2437,10 +2437,10 @@ class RacketManager {
                             <select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="homeplayer<?php echo $p ?>[<?php echo $r ?>]" id="homeplayer<?php echo $p ?>_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
                               <?php if ($homeClubPlayer[$r][$p]['gender'] == 'm') { $select = 'Select male player'; } else { $select = 'Select female player'; } ?>
                               <option value="0"><?php _e( $select, 'racketmanager' ) ?></option>
-                              <?php foreach ( $homeClubPlayer[$r][$p]['players'] as $player ) {
-                                if ( isset($player->removed_date) && $player->removed_date != '' ) { $disabled = 'disabled'; } else { $disabled = ''; } ?>
-                                <option value="<?php echo $player->roster_id ?>"<?php $player = 'home_player_'.$p; if (isset($rubber->$player)) { selected($player->roster_id, $rubber->$player ); } echo $disabled; ?>>
-                                  <?php echo $player->fullname ?>
+                              <?php foreach ( $homeClubPlayer[$r][$p]['players'] as $clubPlayer ) {
+                                if ( isset($clubPlayer->removed_date) && $clubPlayer->removed_date != '' ) { $disabled = 'disabled'; } else { $disabled = ''; } ?>
+                                <option value="<?php echo $clubPlayer->roster_id ?>"<?php $player = 'home_player_'.$p; if (isset($rubber->$player)) { selected($clubPlayer->roster_id, $rubber->$player ); } echo $disabled; ?>>
+                                  <?php echo $clubPlayer->fullname ?>
                                 </option>
                               <?php } ?>
                             </select>
@@ -2475,10 +2475,10 @@ class RacketManager {
                             <select class="form-select" tabindex="<?php echo $tabindex ?>" required size="1" name="awayplayer<?php echo $p ?>[<?php echo $r ?>]" id="awayplayer<?php echo $p ?>_<?php echo $r ?>" <?php if ( !$updatesAllowed ) { echo 'disabled';} ?>>
                               <?php if ($awayClubPlayer[$r][$p]['gender'] == 'm') { $select = 'Select male player'; } else { $select = 'Select female player'; } ?>
                               <option value="0"><?php _e( $select, 'racketmanager' ) ?></option>
-                              <?php foreach ( $awayClubPlayer[$r][$p]['players'] as $player ) {
-                                if ( isset($player->removed_date) && $player->removed_date != '' ) { $disabled = 'disabled'; } else { $disabled = ''; } ?>
-                                <option value="<?php echo $player->roster_id ?>"<?php $player = 'away_player_'.$p; if (isset($rubber->$player)) { selected($player->roster_id, $rubber->$player ); }  echo $disabled; ?>>
-                                  <?php echo $player->fullname ?>
+                              <?php foreach ( $awayClubPlayer[$r][$p]['players'] as $clubPlayer ) {
+                                if ( isset($clubPlayer->removed_date) && $clubPlayer->removed_date != '' ) { $disabled = 'disabled'; } else { $disabled = ''; } ?>
+                                <option value="<?php echo $clubPlayer->roster_id ?>"<?php $player = 'away_player_'.$p; if (isset($rubber->$player)) { selected($clubPlayer->roster_id, $rubber->$player ); }  echo $disabled; ?>>
+                                  <?php echo $clubPlayer->fullname ?>
                                 </option>
                               <?php } ?>
                             </select>

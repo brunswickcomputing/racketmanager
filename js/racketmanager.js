@@ -527,8 +527,8 @@ Racketmanager.playerRequest = function(link) {
 	var $form = jQuery('#playerRequestFrm').serialize();
 	$form += "&action=racketmanager_club_player_request";
 	jQuery("#updateResponse").val("");
-	jQuery("#rosterUpdateSubmit").hide();
-	jQuery("#rosterUpdateSubmit").addClass("disabled");
+	jQuery("#clubPlayerUpdateSubmit").hide();
+	jQuery("#clubPlayerUpdateSubmit").addClass("disabled");
 	jQuery("#updateResponse").removeClass("message-success");
 	jQuery("#updateResponse").removeClass("message-error");
 	jQuery(".is-invalid").removeClass("is-invalid");
@@ -567,15 +567,15 @@ Racketmanager.playerRequest = function(link) {
 				jQuery("#updateResponse").html($message);
 				jQuery("#updateResponse").delay(10000).fadeOut('slow');
 			}
-			jQuery("#rosterUpdateSubmit").removeClass("disabled");
+			jQuery("#clubPlayerUpdateSubmit").removeClass("disabled");
 		},
 		error: function() {
 			alert("Ajax error on player add");
 		}
 	}) ;
-	jQuery("#rosterUpdateSubmit").show();
+	jQuery("#clubPlayerUpdateSubmit").show();
 };
-Racketmanager.rosterRemove = function(link) {
+Racketmanager.clubPlayerRemove = function(link) {
 
 	var $form = jQuery(link).serialize();
 	$form += "&action=racketmanager_club_players_remove";

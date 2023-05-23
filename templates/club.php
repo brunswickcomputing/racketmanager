@@ -172,7 +172,7 @@ if ( is_user_logged_in() ) {
                     <div id="emailFeedback" class="invalid-feedback"></div>
                   </div>
                 </fieldset>
-                <button class="btn" type="button" id="rosterUpdateSubmit" onclick="Racketmanager.playerRequest(this)"><?php _e( 'Add player', 'racketmanager' ) ?></button>
+                <button class="btn" type="button" id="clubPlayerUpdateSubmit" onclick="Racketmanager.playerRequest(this)"><?php _e( 'Add player', 'racketmanager' ) ?></button>
                 <div id="updateResponse"></div>
               </form>
             </div>
@@ -230,14 +230,14 @@ if ( is_user_logged_in() ) {
           <div id="collapse-<?php echo $key ?>" class="accordion-collapse collapse" aria-labelledby="heading-<?php echo $key ?>" data-bs-parent="#players">
             <div class="accordion-body">
               <?php if ( $clubPlayers ) { ?>
-                <form id="roster-<?php echo $key ?>-remove" method="post" action="">
+                <form id="club-player-<?php echo $key ?>-remove" method="post" action="">
                   <?php wp_nonce_field( 'club-player-remove' ) ?>
                   <table class="playerlist noborder" aria-describedby="<?php echo $club->name.' '.$key ?> Players">
                     <thead>
                       <tr>
                         <th scope="col" class="check-column">
                           <?php if ( $userCanUpdateClub ) { ?>
-                            <button class="btn" type="button" id="rosterRemoveSubmit" onclick="Racketmanager.rosterRemove('#roster-<?php echo $key ?>-remove')"><?php _e( 'Remove', 'racketmanager') ?></button>
+                            <button class="btn" type="button" id="clubPlayerRemoveSubmit" onclick="Racketmanager.clubPlayerRemove('#club-player-<?php echo $key ?>-remove')"><?php _e( 'Remove', 'racketmanager') ?></button>
                           <?php } ?>
                         </th>
                         <th scope="col"><?php _e( 'Name', 'racketmanager' ) ?></th>

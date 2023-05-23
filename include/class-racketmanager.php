@@ -1130,13 +1130,13 @@ class RacketManager {
     $status = "P";
     if ( $player2Id == 0 ) {
       $title = $player1;
-      $roster = array($player1Id);
+      $players = array($player1Id);
     } else {
       $title = $player1.' / '.$player2;
-      $roster = array($player1Id, $player2Id);
+      $players = array($player1Id, $player2Id);
     }
     $sql = "INSERT INTO {$wpdb->racketmanager_teams} (`title`, `affiliatedclub`, `roster`, `status`, `type` ) VALUES ('%s', '%d', '%s', '%s', '%s')";
-    $wpdb->query( $wpdb->prepare ( $sql, $title, $affiliatedclub, maybe_serialize($roster), $status, $type ) );
+    $wpdb->query( $wpdb->prepare ( $sql, $title, $affiliatedclub, maybe_serialize($players), $status, $type ) );
     $teamId = $wpdb->insert_id;
     $captain = $racketmanager->getClubPlayer($player1Id)->player_id;
     $league = get_league($leagueId);
@@ -1166,13 +1166,13 @@ class RacketManager {
 
     if ( $player2Id == 0 ) {
       $title = $player1;
-      $roster = array($player1Id);
+      $players = array($player1Id);
     } else {
       $title = $player1.' / '.$player2;
-      $roster = array($player1Id, $player2Id);
+      $players = array($player1Id, $player2Id);
     }
 
-    $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `roster` = '%s' WHERE `id` = %d", $title, $affiliatedclub, maybe_serialize($roster), $teamId ) );
+    $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `roster` = '%s' WHERE `id` = %d", $title, $affiliatedclub, maybe_serialize($players), $teamId ) );
 
     $teamCompetition = $wpdb->get_results( $wpdb->prepare("SELECT `id` FROM {$wpdb->racketmanager_team_competition} WHERE `team_id` = '%d' AND `competition_id` = '%d'", $teamId, $league->competition_id) );
     $captain = $racketmanager->getClubPlayer($player1Id)->player_id;

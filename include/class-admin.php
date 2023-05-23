@@ -1394,8 +1394,8 @@ final class RacketManagerAdmin extends RacketManager
 						$this->setMessage( $message, true);
 					}
 				}
-			} elseif ( isset($_POST['dorosterdel']) && $_POST['action'] == 'delete' ) {
-				check_admin_referer('roster-bulk');
+			} elseif ( isset($_POST['doClubPlayerdel']) && $_POST['action'] == 'delete' ) {
+				check_admin_referer('club-players-bulk');
 				foreach ( $_POST['clubPlayer'] as $roster_id ) {
 					$this->delClubPlayer( intval($roster_id) );
 				}
@@ -1408,7 +1408,7 @@ final class RacketManagerAdmin extends RacketManager
 			$active = isset($_GET['active']) ? $_GET['active'] : false;
 			$gender = isset($_GET['gender']) ? $_GET['gender'] : false;
 			$players = $club->getPlayers(array('active' => $active, 'gender' => $gender));
-			include_once( RACKETMANAGER_PATH . '/admin/club/show-roster.php' );
+			include_once( RACKETMANAGER_PATH . '/admin/club/show-club-players.php' );
 		}
 	}
 

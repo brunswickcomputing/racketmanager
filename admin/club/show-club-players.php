@@ -22,7 +22,7 @@ namespace ns;
 
 	<div class="mb-3">
 		<h2><?php _e( 'View Players', 'racketmanager' ) ?></h2>
-		<form id="roster-filter" method="get" action="" class="form-control mb-3">
+		<form id="players-filter" method="get" action="" class="form-control mb-3">
 			<input type="hidden" name="page" value="<?php echo 'racketmanager-clubs' ?>" />
 			<input type="hidden" name="view" value="<?php echo 'players' ?>" />
 			<input type="hidden" name="club_id" value="<?php echo $club->id ?>" />
@@ -37,8 +37,8 @@ namespace ns;
 			</select>
 			<button class="btn btn-primary"><?php _e('Filter') ?></button>
 		</form>
-		<form id="roster-action" method="post" action="" class="form-control">
-			<?php wp_nonce_field( 'roster-bulk' ) ?>
+		<form id="players-action" method="post" action="" class="form-control">
+			<?php wp_nonce_field( 'club-players-bulk' ) ?>
 
 			<div class="tablenav">
 				<!-- Bulk Actions -->
@@ -46,12 +46,12 @@ namespace ns;
 					<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
 					<option value="delete"><?php _e('Remove')?></option>
 				</select>
-				<input type="submit" value="<?php _e('Apply'); ?>" name="dorosterdel" id="dorosterdel" class="btn btn-secondary action" />
+				<input type="submit" value="<?php _e('Apply'); ?>" name="doClubPlayerdel" id="doClubPlayerdel" class="btn btn-secondary action" />
 			</div>
 
 			<div class="container">
 				<div class="row table-header">
-					<div class="col-1 col-md-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('roster-action'));" /></div>
+					<div class="col-1 col-md-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('players-action'));" /></div>
 					<div class="col-6 col-md-2"><?php _e( 'Name', 'racketmanager' ) ?></div>
 					<div class="col-2 col-md-1"><?php _e( 'Gender', 'racketmanager' ) ?></div>
 					<div class="col-2 col-md-1"><?php _e( 'LTA Tennis Number', 'racketmanager' ) ?></div>

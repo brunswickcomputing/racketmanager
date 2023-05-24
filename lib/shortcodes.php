@@ -1026,7 +1026,7 @@ class RacketManagerShortcodes extends RacketManager {
 			if (!$tournament) {
 				$tournament = $tournaments[0];
 			} else {
-				$tournament = $racketmanager->getTournament( array('name' => $tournament) );
+				$tournament = get_tournament( $tournament );
 			}
 			$season = $tournament->season;
 			$curr_entry = $tournament->name;
@@ -1116,7 +1116,7 @@ class RacketManagerShortcodes extends RacketManager {
 		$homeDtls = array();
 		$awayDtls = array();
 		if ( $competitiontype == 'tournament') {
-			$tournament = $racketmanager->getTournament( array('id' => $tournament) );
+			$tournament = get_tournament( $tournament );
 			if ( substr($match->league->competition_type,1,1) == 'D' ) {
 				$homeDtls['title'] = "Home Players";
 				$awayDtls['title'] = "Away Players";
@@ -1504,7 +1504,7 @@ class RacketManagerShortcodes extends RacketManager {
 		if (!$tournament) {
 			$tournament = $tournaments[0];
 		} else {
-			$tournament = $racketmanager->getTournament( array('name' => $tournament) );
+			$tournament = get_tournament( $tournament );
 		}
 
 		$matchTimes = array();

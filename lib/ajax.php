@@ -2224,7 +2224,7 @@ class RacketManagerAJAX extends RacketManager {
 		$return ='';
 
 		$tournamentId = $_POST['tournamentId'];
-		$tournament = $racketmanager->getTournament( array( 'id' => $tournamentId) );
+		$tournament = get_tournament( $tournamentId );
 		$latestSeason = $tournament->season;
 		$competitionSeason = $tournament->type;
 		$competitionType = 'tournament';

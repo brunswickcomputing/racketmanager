@@ -358,6 +358,7 @@ class RacketManager {
     require_once (RACKETMANAGER_PATH . '/lib/svg-icons.php');
     require_once (RACKETMANAGER_PATH . '/lib/team.php');
     require_once (RACKETMANAGER_PATH . '/include/class-player.php');
+    require_once (RACKETMANAGER_PATH . '/include/class-tournament.php');
 
     /*
     * load sports libraries
@@ -859,7 +860,7 @@ class RacketManager {
     }
     $orderby = $orderbyString;
 
-    $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`closingdate`, '%%Y-%%m-%%d') AS closingdate, `numcourts`, `starttime`, `timeincrement`, `orderofplay` FROM {$wpdb->racketmanager_tournaments} $search ORDER BY $orderby LIMIT %d, %d", intval($offset), intval($limit) );
+    $sql = $wpdb->prepare( "SELECT `id` FROM {$wpdb->racketmanager_tournaments} $search ORDER BY $orderby LIMIT %d, %d", intval($offset), intval($limit) );
 
     $tournaments = wp_cache_get( md5($sql), 'tournaments' );
     if ( !$tournaments ) {
@@ -870,7 +871,7 @@ class RacketManager {
     $i = 0;
     foreach ( $tournaments as $i => $tournament ) {
 
-      $tournament = $this->formatTournament($tournament);
+      $tournament = get_tournament($tournament->id);
 
       $tournaments[$i] = $tournament;
     }
@@ -878,64 +879,6 @@ class RacketManager {
     return $tournaments;
   }
 
-  /**
-  * get tournament from database
-  *
-  * @param int $tournament_id
-  * @return array
-  */
-  public function getTournament( $args = array() ) {
-    global $wpdb;
-
-    $defaults = array( 'id' => false, 'name' => false );
-    $args = array_merge($defaults, $args);
-    extract($args, EXTR_SKIP);
-
-    $searchString = '';
-
-    if ( $id ) {
-      $searchString = $wpdb->prepare(" WHERE `id` = '%s'", $id);
-    }
-    if ( $name ) {
-      $searchString = $wpdb->prepare("WHERE `name` = '%s'", $name);
-    }
-    $sql = $wpdb->prepare( "SELECT `id`, `name`, `type`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`closingdate`, '%%Y-%%m-%%d') AS closingdate, `numcourts`, `starttime`, `timeincrement`, `orderofplay` FROM {$wpdb->racketmanager_tournaments} $searchString" );
-
-    $tournament = wp_cache_get( md5($sql), 'tournament' );
-    if ( !$tournament ) {
-      $tournament = $wpdb->get_row( $sql );
-      wp_cache_set( md5($sql), $tournament, 'tournament' );
-    }
-
-    return $this->formatTournament($tournament);
-  }
-
-  public function formatTournament($tournament) {
-
-    $tournament->dateDisplay = ( substr($tournament->date, 0, 10) == '0000-00-00' ) ? 'TBC' : mysql2date($this->date_format, $tournament->date);
-    $tournament->closingDateDisplay = ( substr($tournament->closingdate, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date($this->date_format, $tournament->closingdate);
-
-    if ( $tournament->venue == 0 ) {
-      $tournament->venue = '';
-      $tournament->venueName = 'TBC';
-    } else {
-      $tournament->venueName = get_club($tournament->venue)->name;
-    }
-
-    if ( isset($tournament->closingdate) && $tournament->closingdate >= date("Y-m-d") ) {
-      $tournament->open = true;
-    } else {
-      $tournament->open = false;
-    }
-    if ( isset($tournament->date) && $tournament->date >= date("Y-m-d") ) {
-      $tournament->active = true;
-    } else {
-      $tournament->active = false;
-    }
-    $tournament->orderofplay = (array)maybe_unserialize($tournament->orderofplay);
-    return $tournament;
-
-  }
   /**
   * get clubs from database
   *

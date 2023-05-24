@@ -144,8 +144,8 @@ if ( !is_array($tournament->orderofplay) || count($tournament->orderofplay) != $
 					} ?>
 				</div>
 				<div class="mb-3">
-					<button class="btn btn-primary" name="saveTournamentPlanner" id="saveTournamentPlanner"><?php _e('Save schedule', 'racketmanager') ?></button>
-					<button class="btn btn-secondary" name="resetTournamentPlanner" id="resetTournamentPlanner"><?php _e('Reset schedule', 'racketmanager') ?></button>
+					<button class="btn btn-primary" name="saveTournamentPlan" id="saveTournamentPlan"><?php _e('Save schedule', 'racketmanager') ?></button>
+					<button class="btn btn-secondary" name="resetTournamentPlan" id="resetTournamentPlan"><?php _e('Reset schedule', 'racketmanager') ?></button>
 				</div>
 			</form>
 		<?php } ?>

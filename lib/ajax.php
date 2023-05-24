@@ -1620,7 +1620,7 @@ class RacketManagerAJAX extends RacketManager {
 	* @see templates/tournamententry.php
 	*/
 	public function tournamentEntryRequest() {
-		global $wpdb, $racketmanager, $racketmanager_shortcodes;
+		global $racketmanager, $racketmanager_shortcodes;
 
 		$return = array();
 		$msg = '';
@@ -1641,7 +1641,6 @@ class RacketManagerAJAX extends RacketManager {
 		}
 		$season = $_POST['season'];
 		$tournamentSeason = $_POST['tournamentSeason'];
-		$tournamentSecretaryEmail = $_POST['tournamentSecretaryEmail'];
 		$playerId = $_POST['playerId'];
 		$contactno = isset($_POST['contactno']) ? $_POST['contactno'] : '';
 		$contactemail = isset($_POST['contactemail']) ? $_POST['contactemail'] : '';
@@ -1695,7 +1694,7 @@ class RacketManagerAJAX extends RacketManager {
 		}
 
 		if ( !$error ) {
-			$emailTo = $tournamentSecretaryEmail;
+			$emailTo = $racketmanager->getConfirmationEmail('tournament');
 			$emailSubject = $racketmanager->site_name." ".ucfirst($tournamentSeason)." ".$season." Tournament Entry";
 			$tournamentEntries = array();
 			$i = 0;
@@ -1743,11 +1742,8 @@ class RacketManagerAJAX extends RacketManager {
 			$headers = array();
 			if ( isset($user->user_email) ) {
 				$headers[] = 'Cc: '.$user->display_name.' <'.$user->user_email.'>';
-				$emailFrom = $user->user_email;
-			} else {
-				$emailFrom = $racketmanager->admin_email;
 			}
-			$headers[] = 'From: '.$user->display_name.' <'.$emailFrom.'>';
+			$headers[] = $racketmanager->getFromUserEmail();
 			$organisationName = $racketmanager->site_name;
 			$emailMessage = $racketmanager_shortcodes->loadTemplate( 'tournament-entry', array( 'tournamentEntries' => $tournamentEntries, 'organisationName' => $organisationName, 'season' => $season, 'tournamentSeason' => $tournamentSeason, 'contactno' => $contactno, 'contactemail' => $contactemail, 'player' => $playerName, 'club' => $affiliatedClubName ), 'email' );
 			wp_mail($emailTo, $emailSubject, $emailMessage, $headers);

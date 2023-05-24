@@ -15,7 +15,6 @@ $awayCaptainEmail = $awayDtls['captainEmail'];
 $awayCaptainTel = $awayDtls['captainTel'];
 $matchDate = $match->match_date;
 $numSets = $match->league->num_sets;
-$tournamentSecretary = $tournament->tournamentSecretaryEmail;
 $title = $organisationName.' Match Details - '.$competitionName.' - '.$round;
 ?>
 <?php include('email-header.php'); ?>
@@ -93,7 +92,7 @@ $title = $organisationName.' Match Details - '.$competitionName.' - '.$round;
               <td>Play best of <?php echo $numSets; ?> tie-break sets</td>
             </tr>
             <tr class="wrapper">
-              <td>Home players are required to contact their opponents within <strong>3 days</strong> of this notice, failing which, their opponents may constitute themselves the home players and arrange the match accordingly. <a href="mailto: <?php echo $tournamentSecretary; ?>">Contact</a> the tournament organiser regarding any problems arising re playing by the deadline.</td>
+              <td>Home players are required to contact their opponents within <strong>3 days</strong> of this notice, failing which, their opponents may constitute themselves the home players and arrange the match accordingly. <a href="mailto:<?php echo $emailFrom; ?>">Contact</a> the tournament organiser regarding any problems arising re playing by the deadline.</td>
             </tr>
             <tr class="wrapper">
               <td><h4>Match cancellation</h4></td>
@@ -105,7 +104,7 @@ $title = $organisationName.' Match Details - '.$competitionName.' - '.$round;
               <td><h4>Winners</h4></td>
             </tr>
             <tr>
-              <td>Should <a href="mailto: <?php echo $emailFrom; ?>?subject=<?php echo $competitionName; ?>&nbsp;<?php echo $round; ?> Result">inform</a> the tournament organiser of the result</td>
+              <td>Should <a href="mailto:<?php echo $emailFrom; ?>?subject=<?php echo $competitionName; ?>&nbsp;<?php echo $round; ?> Result">inform</a> the tournament organiser of the result</td>
             </tr>
           </table>
         </td>

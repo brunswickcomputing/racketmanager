@@ -219,7 +219,7 @@ function racketmanager_upgrade() {
             if ( ! empty($wpdb->collate) )
                 $charset_collate .= " COLLATE $wpdb->collate";
         }
-        $wpdb->query( "CREATE TABLE {$wpdb->leaguemanager_tournaments} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `name` varchar( 100 ) NOT NULL default '', `type` varchar( 100 ) NOT NULL default '', `venue` int( 11 ) NULL, `date` date NULL, `closingdate` date NOT NULL, `tournamentsecretary` int( 11 ) NULL, PRIMARY KEY ( `id` )) $charset_collate;" );
+        $wpdb->query( "CREATE TABLE {$wpdb->leaguemanager_tournaments} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `name` varchar( 100 ) NOT NULL default '', `type` varchar( 100 ) NOT NULL default '', `venue` int( 11 ) NULL, `date` date NULL, `closingdate` date NOT NULL, PRIMARY KEY ( `id` )) $charset_collate;" );
     }
     if (version_compare($installed, '5.6.1', '<')) {
         echo __('starting 5.6.1 upgrade', 'leaguemanager') . "<br />\n";
@@ -703,6 +703,10 @@ function racketmanager_upgrade() {
 		if (version_compare($installed, '7.6.0', '<')) {
 			echo __('starting 7.6.0 upgrade', 'racketmanager') . "<br />\n";
 			$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_club_players} CHANGE `created_date` `created_date` DATETIME NULL DEFAULT NULL");
+		}
+		if (version_compare($installed, '7.7.0', '<')) {
+			echo __('starting 7.7.0 upgrade', 'racketmanager') . "<br />\n";
+			$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} DROP COLUMN `tournamentsecretary`");
 		}
 	/*
 	* Update version and dbversion

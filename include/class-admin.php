@@ -1170,11 +1170,11 @@ final class RacketManagerAdmin extends RacketManager
 		} else {
 			if ( isset($_POST['addTournament']) ) {
 				check_admin_referer('racketmanager_add-tournament');
-				$this->addTournament( htmlspecialchars($_POST['tournament']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['season']), htmlspecialchars($_POST['venue']),  htmlspecialchars($_POST['date']), htmlspecialchars($_POST['closingdate']), htmlspecialchars($_POST['tournamentSecretaryName']), htmlspecialchars($_POST['tournamentSecretary']), htmlspecialchars($_POST['tournamentSecretaryContactNo']), htmlspecialchars($_POST['tournamentSecretaryEmail']), intval($_POST['numcourts']), htmlspecialchars($_POST['starttime']) );
+				$this->addTournament( htmlspecialchars($_POST['tournament']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['season']), htmlspecialchars($_POST['venue']),  htmlspecialchars($_POST['date']), htmlspecialchars($_POST['closingdate']), intval($_POST['numcourts']), htmlspecialchars($_POST['starttime']) );
 				$this->printMessage();
 			} elseif ( isset($_POST['editTournament']) ) {
 				check_admin_referer('racketmanager_manage-tournament');
-				$this->editTournament( intval($_POST['tournament_id']), htmlspecialchars($_POST['tournament']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['season']), htmlspecialchars($_POST['venue']),  htmlspecialchars($_POST['date']), htmlspecialchars($_POST['closingdate']), htmlspecialchars($_POST['tournamentSecretaryName']), htmlspecialchars($_POST['tournamentSecretary']), htmlspecialchars($_POST['tournamentSecretaryContactNo']), htmlspecialchars($_POST['tournamentSecretaryEmail']), intval($_POST['numcourts']), htmlspecialchars($_POST['starttime']) );
+				$this->editTournament( intval($_POST['tournament_id']), htmlspecialchars($_POST['tournament']), htmlspecialchars($_POST['type']), htmlspecialchars($_POST['season']), htmlspecialchars($_POST['venue']),  htmlspecialchars($_POST['date']), htmlspecialchars($_POST['closingdate']), intval($_POST['numcourts']), htmlspecialchars($_POST['starttime']) );
 				$this->printMessage();
 			} elseif ( isset($_POST['doTournamentDel']) && $_POST['action'] == 'delete' ) {
 				check_admin_referer('tournaments-bulk');
@@ -1212,7 +1212,7 @@ final class RacketManagerAdmin extends RacketManager
 				$tournamentId = '';
 				$form_title = __( 'Add Tournament', 'racketmanager' );
 				$form_action = __( 'Add', 'racketmanager' );
-				$tournament = (object)array( 'name' => '', 'type' => '', 'id' => '', 'tournamentSecretary' => '', 'tournamentSecretaryName' => '', 'venue' => '', 'tournamentSecretaryContactNo' => '', 'tournamentSecretaryEmail' => '', 'date' => '', 'closingdate' => '', 'numcourts' => '', 'starttime' => '');
+				$tournament = (object)array( 'name' => '', 'type' => '', 'id' => '', 'venue' => '', 'date' => '', 'closingdate' => '', 'numcourts' => '', 'starttime' => '');
 			}
 
 			$clubs = $racketmanager->getClubs( );
@@ -3021,14 +3021,11 @@ final class RacketManagerAdmin extends RacketManager
 	* @param string $type
 	* @param string $season
 	* @param int $venue
-	* @param int $tournamentSecretary
-	* @param string $tournamentSecretaryContactNo
-	* @param string $tournamentSecretaryEmail
 	* @param string $date
 	* @param string $closingdate
 	* @return boolean
 	*/
-	private function addTournament( $name, $type, $season, $venue, $date, $closingdate, $tournamentSecretaryContactName, $tournamentSecretary, $tournamentSecretaryContactNo, $tournamentSecretaryEmail, $numcourts, $starttime ) {
+	private function addTournament( $name, $type, $season, $venue, $date, $closingdate, $numcourts, $starttime ) {
 		global $wpdb, $racketmanager;
 
 		if ( !current_user_can('edit_teams') ) {
@@ -3036,7 +3033,7 @@ final class RacketManagerAdmin extends RacketManager
 			return false;
 		}
 
-		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager_tournaments} (`name`, `type`, `season`, `venue`, `tournamentsecretary`, `date`, `closingdate`, `numcourts`, `starttime` ) VALUES ('%s', '%s', '%d', '%d', '%s', '%s', '%s', %d, '%s' )", $name, $type, $season, $venue, $tournamentSecretary, $date, $closingdate, $numcourts, $starttime ) );
+		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager_tournaments} (`name`, `type`, `season`, `venue`, `date`, `closingdate`, `numcourts`, `starttime` ) VALUES ('%s', '%s', '%d', '%d', '%s', '%s', %d, '%s' )", $name, $type, $season, $venue, $date, $closingdate, $numcourts, $starttime ) );
 
 		$this->setMessage( __('Tournament added','racketmanager') );
 
@@ -3051,16 +3048,13 @@ final class RacketManagerAdmin extends RacketManager
 	* @param string $type
 	* @param string $season
 	* @param int $venue
-	* @param int $tournamentSecretary
-	* @param string $tournamentSecretaryContactNo
-	* @param string $tournamentSecretaryEmail
 	* @param string $date
 	* @param string $closingdate
 	* @param int $numcourts
 	* @param string s$tarttime
 	* @return boolean
 	*/
-	private function editTournament( $tournament_id, $name, $type, $season, $venue, $date, $closingdate, $tournamentSecretaryContactName, $tournamentSecretary, $tournamentSecretaryContactNo, $tournamentSecretaryEmail, $numcourts, $starttime ) {
+	private function editTournament( $tournament_id, $name, $type, $season, $venue, $date, $closingdate, $numcourts, $starttime ) {
 		global $wpdb;
 
 		if ( !current_user_can('edit_teams') ) {
@@ -3068,25 +3062,7 @@ final class RacketManagerAdmin extends RacketManager
 			return false;
 		}
 
-		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_tournaments} SET `name` = '%s', `type` = '%s', `season` = '%s', `venue` = '%d',`tournamentsecretary` = '%d', `date` = '%s', `closingdate` = '%s', `numcourts` = %d, `starttime` = '%s' WHERE `id` = %d", $name, $type, $season, $venue, $tournamentSecretary, $date, $closingdate, $numcourts, $starttime, $tournament_id ) );
-
-		if ( $tournamentSecretary != '') {
-			$currentContactNo = get_user_meta( $tournamentSecretary, 'contactno', true);
-			$currentContactEmail = get_userdata($tournamentSecretary)->user_email;
-			if ($currentContactNo != $tournamentSecretaryContactNo ) {
-				update_user_meta( $tournamentSecretary, 'contactno', $tournamentSecretaryContactNo );
-			}
-			if ($currentContactEmail != $tournamentSecretaryEmail ) {
-				$userdata = array();
-				$userdata['ID'] = $tournamentSecretary;
-				$userdata['user_email'] = $tournamentSecretaryEmail;
-				$userId = wp_update_user( $userdata );
-				if ( is_wp_error($userId) ) {
-					$error_msg = $userId->get_error_message();
-					error_log('Unable to update user email '.$tournamentSecretary.' - '.$tournamentSecretaryEmail.' - '.$error_msg);
-				}
-			}
-		}
+		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_tournaments} SET `name` = '%s', `type` = '%s', `season` = '%s', `venue` = '%d', `date` = '%s', `closingdate` = '%s', `numcourts` = %d, `starttime` = '%s' WHERE `id` = %d", $name, $type, $season, $venue, $date, $closingdate, $numcourts, $starttime, $tournament_id ) );
 
 		$this->setMessage( __('Tournament updated','racketmanager') );
 

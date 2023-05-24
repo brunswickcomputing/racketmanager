@@ -134,7 +134,6 @@ The following variables are usable:
         <div>
         <input type="hidden" name="season" value="<?php echo $season ?>" />
         <input type="hidden" name="tournamentSeason" value="<?php echo $type ?>" />
-        <input type="hidden" name="tournamentSecretaryEmail" value="<?php echo $tournament->tournamentSecretaryEmail ?>" />
         <button class="btn" type="button" id="tournamentEntrySubmit" name="tournamentEntrySubmit" onclick="Racketmanager.tournamentEntryRequest(this)">Enter Tournament</button>
         <div class="updateResponse" id="tournamentEntryResponse" name="tournamentEntryResponse"></div>
     </form>

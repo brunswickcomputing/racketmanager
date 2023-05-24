@@ -62,18 +62,6 @@
 				<input type="number" class="form-control" name="numcourts" id="numcourts" value="<?php echo $tournament->numcourts ?>" />
 				<label for="numcourts"><?php _e( 'Number of courts', 'racketmanager' ) ?></label>
 		</div>
-		<div class="form-floating mb-3">
-				<input type="text" class="form-control" name="tournamentSecretaryName" id="tournamentSecretaryName" autocomplete="name off" value="<?php echo $tournament->tournamentSecretaryName ?>" size="40" /><input type="hidden" name="tournamentSecretary" id="tournamentSecretary" value="<?php if (isset($tournament->tournamentsecretary)) echo $tournament->tournamentsecretary ?>" />
-				<label for="tournamentSecretaryName"><?php _e( 'Tournament secretary', 'racketmanager' ) ?></label>
-		</div>
-		<div class="form-floating mb-3">
-				<input type="tel" class="form-control" name="tournamentSecretaryContactNo" id="tournamentSecretaryContactNo" autocomplete="tel" value="<?php echo $tournament->tournamentSecretaryContactNo ?>" size="20" />
-				<label for="tournamentSecretaryContactNo"><?php _e( 'Tournament secretary contact', 'racketmanager' ) ?></label>
-		</div>
-		<div class="form-floating mb-3">
-				<input type="email" class="form-control" name="tournamentSecretaryEmail" id="tournamentSecretaryEmail" autocomplete="email" value="<?php echo $tournament->tournamentSecretaryEmail ?>" size="60" />
-				<label for="tournamentSecretaryEmail"><?php _e( 'Tournament secretary email', 'racketmanager' ) ?></label>
-		</div>
 		<?php do_action( 'tournament_edit_form', $tournament ) ?>
 
 		<input type="hidden" name="tournament_id" id="tournament_id" value="<?php echo $tournament->id ?>" />

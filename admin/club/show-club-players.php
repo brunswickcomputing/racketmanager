@@ -71,7 +71,7 @@ namespace ns;
 										<input type="checkbox" value="<?php echo $player->roster_id ?>" name="clubPlayer[<?php echo $player->roster_id ?>]" />
 									<?php } ?>
 								</div>
-								<div class="col-6 col-md-2"><?php if ( !isset($player->removed_date) ) { echo '<a href="admin.php?page=racketmanager-clubs&amp;view=player&amp;club_id=<?php echo $club->id ?>&amp;player_id=<?php echo $player->player_id ?>">'; } ?><?php echo $player->fullname ?><?php if ( !isset($player->removed_date) ) { echo '</a>'; } ?></div>
+								<div class="col-6 col-md-2"><?php if ( !isset($player->removed_date) ) { echo '<a href="admin.php?page=racketmanager-clubs&amp;view=player&amp;club_id='.$club->id.'&amp;player_id='.$player->player_id.'">'; } ?><?php echo $player->fullname ?><?php if ( !isset($player->removed_date) ) { echo '</a>'; } ?></div>
 								<div class="col-1 col-md-1"><?php echo $player->gender ?></div>
 								<div class="col-4 col-md-1"><?php echo $player->btm ?></div>
 								<div class="col-4 col-md-1" title="<?php if (!empty($player->removedUserName)) { echo __('Removed by','racketmanager').' '.$player->removedUserName; } ?>"><?php if ( isset($player->removed_date) ) { echo $player->removed_date; } ?></div>

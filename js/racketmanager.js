@@ -13,7 +13,7 @@ jQuery(document).ready(function($) {
 		var season = jQuery('#season').val();
 
 		var cleanUrl = window.location.protocol + '//' + window.location.host + '/leagues/' + league.toLowerCase() + '/' + season + '/';
-		window.location = cleanUrl;
+		window.location = encodeURIComponent(cleanUrl);
 
 		return false;  // Prevent default button behaviour
 	});
@@ -24,7 +24,7 @@ jQuery(document).ready(function($) {
 		var season = jQuery('#season').val();
 
 		var cleanUrl = window.location.protocol + '//' + window.location.host + '/' + pagename.toLowerCase() + '/' + season + '/';
-		window.location = cleanUrl;
+		window.location = encodeURIComponent(cleanUrl);
 
 		return false;  // Prevent default button behaviour
 	});
@@ -41,7 +41,7 @@ jQuery(document).ready(function($) {
 		team = team.replace(/\s/g, "-"); // Replace space with a '-' symbol */
 
 		var cleanUrl = window.location.protocol + '//' + window.location.host + '/leagues/' + league.toLowerCase() + '/' + season + '/day' + matchday + '/' + team + '/';
-		window.location = cleanUrl;
+		window.location = encodeURIComponent(cleanUrl);
 
 		return false;  // Prevent default button behaviour
 	});
@@ -54,7 +54,7 @@ jQuery(document).ready(function($) {
 		var competitionType = jQuery(`#competitionType`).val();
 
 		var cleanUrl = window.location.protocol + '//' + window.location.host + '/' + competitionType + 's/' + competitionSeason + '/winners/' + selection.toLowerCase() + '/';
-		window.location = cleanUrl;
+		window.location = encodeURIComponent(cleanUrl);
 
 		return false;  // Prevent default button behaviour
 	});
@@ -65,14 +65,14 @@ jQuery(document).ready(function($) {
 		var season = jQuery(`#season`).val();
 
 		var cleanUrl = window.location.protocol + '//' + window.location.host + '/tournaments/' + season + '/' + season + '-order-of-play/' + tournament.toLowerCase() + '/' ;
-		window.location = cleanUrl;
+		window.location = encodeURIComponent(cleanUrl);
 
 		return false;  // Prevent default button behaviour
 	});
 	jQuery('#racketmanager_daily_matches').submit(function() {
 		var matchDate = jQuery(`#match_date`).val();
 		var cleanUrl = window.location.protocol + '//' + window.location.host + '/leagues/daily-matches/' + matchDate + '/';
-		window.location = cleanUrl;
+		window.location = encodeURIComponent(cleanUrl);
 
 		return false;  // Prevent default button behaviour
 	});

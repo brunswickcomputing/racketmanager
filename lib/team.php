@@ -20,21 +20,26 @@ final class Team {
 	*/
 	public static function get_instance($team_id) {
 		global $wpdb;
-		$team_id = (int) $team_id;
+		if ( is_numeric($team_id) ) {
+			$search = "`id` = '%d'";
+		} else {
+			$search = "`title` = '%s'";
+		}
 		if ( ! $team_id ) {
 			return false;
 		}
-		if ( $team_id == -1) {
-			$team = (object)array( 'id' => $team_id, 'title' => __( 'Bye', 'racketmanager' ) );
-			return $team;
-		}
-
 		$team = wp_cache_get( $team_id, 'teams' );
 
 		if ( ! $team ) {
-			$team = $wpdb->get_row( $wpdb->prepare( "SELECT `id`, `title`, `stadium`, `home`, `roster`, `profile`, `status`, `affiliatedclub`, `type` FROM {$wpdb->racketmanager_teams} WHERE `id` = '%d' LIMIT 1", $team_id ) );
+			if ( $team_id == -1) {
+				$team = (object)array( 'id' => $team_id, 'title' => __( 'Bye', 'racketmanager' ) );
+			} else {
+				$team = $wpdb->get_row( $wpdb->prepare( "SELECT `id`, `title`, `stadium`, `home`, `roster`, `profile`, `status`, `affiliatedclub`, `type` FROM {$wpdb->racketmanager_teams} WHERE ".$search." LIMIT 1", $team_id ) );
+			}
 
-			if ( !$team ) return false;
+			if ( !$team ) {
+				return false;
+			}
 
 			$team = new Team( $team );
 
@@ -50,7 +55,6 @@ final class Team {
 	* @param object $team Team object.
 	*/
 	public function __construct( $team = null ) {
-		global $racketmanager;
 
 		if ( !is_null($team) ) {
 			foreach ( get_object_vars( $team ) as $key => $value ) {
@@ -60,20 +64,39 @@ final class Team {
 			$this->title = htmlspecialchars(stripslashes($this->title), ENT_QUOTES);
 			$this->stadium = stripslashes($this->stadium);
 
-			$this->roster = intval($this->roster);
+			$this->roster = maybe_unserialize($this->roster);
 			$this->profile = intval($this->profile);
 
 			$this->affiliatedclubname = get_club( $this->affiliatedclub )->name;
 			if ( $this->status == 'P' && $this->roster != null ) {
 				$i = 1;
 				foreach ($this->roster AS $player) {
-					$teamplayer = $this->getClubPlayer($player);
+					$teamplayer = get_player($player);
 					$this->player[$i] = $teamplayer->fullname;
 					$this->playerId[$i] = $player;
 					$i++;
-				};
+				}
 			}
 		}
+	}
+
+	/**
+	* delete team
+	*
+	* @return none
+	*/
+	public function delete() {
+		global $wpdb;
+
+		// remove matches and rubbers
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` in (select `id` from {$wpdb->racketmanager_matches} WHERE `home_team` = '%d' OR `away_team` = '%d')", $this->id, $this->id) );
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `home_team` = '%d' OR `away_team` = '%d'", $this->id, $this->id) );
+		// remove tables
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_table} WHERE `team_id` = '%d'", $this->id) );
+		// remove team competition
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_team_competition} WHERE `team_id` = '%d'", $this->id) );
+		// remove team
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_teams} WHERE `id` = '%d'", $this->id) );
 	}
 
   	/**
@@ -92,11 +115,12 @@ final class Team {
 * get Team object
 *
 * @param int|Team|null Team ID or team object. Defaults to global $team
-* @return Team|null
+* @return object Team|null
 */
 function get_team( $team = null ) {
-	if ( empty( $team ) && isset( $GLOBALS['team'] ) )
-	$team = $GLOBALS['team'];
+	if ( empty( $team ) && isset( $GLOBALS['team'] ) ) {
+		$team = $GLOBALS['team'];
+	}
 
 	if ( $team instanceof Team ) {
 		$_team = $team;
@@ -106,9 +130,9 @@ function get_team( $team = null ) {
 		$_team = Team::get_instance( $team );
 	}
 
-	if ( ! $_team )
-	return null;
+	if ( ! $_team ) {
+		return null;
+	}
 
 	return $_team;
 }
-?>

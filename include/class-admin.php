@@ -700,7 +700,8 @@ final class RacketManagerAdmin extends RacketManager
 						$team = isset($teams[$tableId]) ? $teams[$tableId] : 0;
 						$league = isset($leagues[$tableId]) ? $leagues[$tableId] : 0;
 						if ( isset($team) && isset($league) ) {
-							$this->delTeamFromLeague( $team, $league, $_POST['latestSeason']);
+							$league = get_league($league);
+							$league->deleteTeam($team, $_POST['latestSeason']);
 						}
 					}
 				} else {
@@ -904,8 +905,10 @@ final class RacketManagerAdmin extends RacketManager
 				if ( $_POST['action'] == "delete" ) {
 					if ( current_user_can('del_teams') ) {
 						check_admin_referer('teams-bulk');
-						foreach ( $_POST['team'] as $team_id )
-						$this->delTeamFromLeague( intval($team_id), intval($_GET['league_id']), $season );
+						foreach ( $_POST['team'] as $team_id ) {
+							$league = get_league(intval($_GET['league_id']));
+							$league->deleteTeam(intval($team_id), $season);
+						}
 					} else {
 						$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
 					}
@@ -1593,15 +1596,27 @@ final class RacketManagerAdmin extends RacketManager
 				check_admin_referer('racketmanager_manage-teams');
 				$this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), $_POST['affiliatedclub'], $_POST['team_type']);
 			} elseif ( isset($_POST['doteamdel']) && $_POST['action'] == 'delete' ) {
-				check_admin_referer('teams-bulk');
-				foreach ( $_POST['team'] as $team_id ) {
-					$this->delTeam( intval($team_id) );
+				if ( !current_user_can('del_teams') ) {
+					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+				} else {
+					check_admin_referer('teams-bulk');
+					$messages = array();
+					$messageError= false;
+					foreach ( $_POST['team'] as $team_id ) {
+						$team = get_team($team_id);
+						$team->delete();
+						$messages[] = $team->title.' '.__('deleted', 'racketmanager');
+					}
+					$message = implode('<br>', $messages);
+					$this->setMessage( $message, $messageError );
 				}
 			}
 			$this->printMessage();
-			if (isset($_GET['club_id'])) $club_id = $_GET['club_id'];
+			if (isset($_GET['club_id'])) {
+				$club_id = $_GET['club_id'];
+			}
 			$club = get_club($club_id);
-			include_once( RACKETMANAGER_PATH . '/admin/club/show-teams.php' );
+			include_once  RACKETMANAGER_PATH . '/admin/club/show-teams.php';
 		}
 	}
 
@@ -2671,14 +2686,14 @@ final class RacketManagerAdmin extends RacketManager
 				wp_mail($emailAddr, $subject, $emailMessage, $headers);
 				$teams = $competition->getTeams( array('status' => 3) );
 				foreach ($teams as $team) {
-					$this->delTeamFromLeague($team->teamId, $team->leagueId, $season);
+					$league = get_league($team->leagueId);
+					$league->deleteTeam($team->teamId, $season);
 				}
 				$this->setMessage( sprintf(__('Season <strong>%s</strong> saved and constitution emailed','racketmanager'), $season ) );
 			} else {
 				$this->setMessage( sprintf(__('Season <strong>%s</strong> saved','racketmanager'), $season ) );
 			}
 		}
-		return;
 	}
 
 	/**
@@ -2918,29 +2933,6 @@ final class RacketManagerAdmin extends RacketManager
 		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `home_team` = '%d' OR `away_team` = '%d'", $team_id, $team_id) );
 		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_team_competition} WHERE `team_id` = '%d'", $team_id) );
 		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_teams} WHERE `id` = '%d'", $team_id) );
-
-		return true;
-	}
-
-	/**
-	* delete Team from League
-	*
-	* @param int $team_id
-	* @return boolean
-	*/
-	private function delTeamFromLeague( $team_id, $league_id, $season ) {
-		global $wpdb;
-
-		if ( !current_user_can('del_teams') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` in (select `id` from {$wpdb->racketmanager_matches} WHERE `season` = '%d' AND `league_id` = '%d' AND (`home_team` = '%d' OR `away_team` = '%d'))", $season, $league_id, $team_id, $team_id) );
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `season` = '%d' AND `league_id` = '%d' AND (`home_team` = '%d' OR `away_team` = '%d')", $season, $league_id, $team_id, $team_id) );
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_table} WHERE `team_id` = '%d' AND `league_id` = '%d' and `season` = '%s'", $team_id, $league_id, $season) );
-
-		$this->setMessage( __('Team Deleted','racketmanager') );
 
 		return true;
 	}

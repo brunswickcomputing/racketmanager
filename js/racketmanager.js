@@ -738,6 +738,7 @@ Racketmanager.tournamentEntryRequest = function(link) {
 			} else {
 				jQuery("#tournamentEntryResponse").show();
 				jQuery("#tournamentEntryResponse").addClass('message-success');
+				jQuery("#tournamentEntrySubmit").removeClass("disabled");
 				jQuery("#tournamentEntryResponse").html($message);
 				jQuery("#tournamentEntryResponse").delay(10000).fadeOut('slow');
 			}

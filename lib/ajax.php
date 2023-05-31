@@ -1692,7 +1692,6 @@ class RacketManagerAJAX extends RacketManager {
 			$errorMsg[$errorId] = __('You must agree to the rules', 'racketmanager');
 			$errorId ++;
 		}
-
 		if ( !$error ) {
 			$emailTo = $racketmanager->getConfirmationEmail('tournament');
 			$emailSubject = $racketmanager->site_name." ".ucfirst($tournamentSeason)." ".$season." Tournament Entry";
@@ -1702,6 +1701,7 @@ class RacketManagerAJAX extends RacketManager {
 				$tournamentEntry = array();
 				$partner = '';
 				$partnerName = '';
+				$partnerId = '';
 				$newTeam = false;
 				$competition = get_competition($competitionId);
 				$tournamentEntry['competitionName'] = $competition->name;
@@ -1714,16 +1714,17 @@ class RacketManagerAJAX extends RacketManager {
 				$teamName = $playerName;
 				if ( substr($competition->type,1,1) == 'D' ) {
 					$partnerId = isset($partners[$competition->id]) ? $partners[$competition->id] : 0;
-					$partner = $racketmanager->getClubPlayer($partnerId);
+					$partner = get_player($partnerId);
 					$partnerName = $partner->fullname;
 					$teamName .= ' / '.$partnerName;
 					$tournamentEntry['partner'] = $partnerName;
 				}
-				$teamId = $racketmanager->getTeamId($teamName);
-				if (!$teamId) {
+
+				$team = get_team($teamName);
+				if (!$team && substr($competition->type,1,1) == 'D' ) {
 					if ( $partnerName != '' ) {
 						$teamName2 = $partnerName.' / '.$playerName;
-						$teamId = $racketmanager->getTeamId($teamName2);
+						$teamId = get_team($teamName2);
 						if (!$teamId) {
 							$newTeam = true;
 						}
@@ -1732,11 +1733,12 @@ class RacketManagerAJAX extends RacketManager {
 					}
 				}
 				if ($newTeam) {
-					$teamId = $racketmanager->addPlayerTeam( $playerName, $clubPlayerId, $partnerName, $partnerId, $contactno, $contactemail, $affiliatedclub, $league );
+					$team = new stdClass();
+					$team->id = $racketmanager->addPlayerTeam( $playerName, $playerId, $partnerName, $partnerId, $contactno, $contactemail, $affiliatedclub, $league );
 				} else {
-					$racketmanager->editTeamPlayer( $teamId, $playerName, $clubPlayerId, $partnerName, $partnerId, $contactno, $contactemail, $affiliatedclub, $league );
+					$racketmanager->editPlayerTeam( $team->id, $playerName, $playerId, $partnerName, $partnerId, $contactno, $contactemail, $affiliatedclub, $league );
 				}
-				$racketmanager->addTeamtoTable($league, $teamId, $season);
+				$racketmanager->addTeamtoTable($league, $team->id, $season);
 				$tournamentEntries[$i] = $tournamentEntry;
 			}
 			$headers = array();

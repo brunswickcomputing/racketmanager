@@ -1070,7 +1070,7 @@ class RacketManager {
     $sql = "INSERT INTO {$wpdb->racketmanager_teams} (`title`, `affiliatedclub`, `roster`, `status`, `type` ) VALUES ('%s', '%d', '%s', '%s', '%s')";
     $wpdb->query( $wpdb->prepare ( $sql, $title, $affiliatedclub, maybe_serialize($players), $status, $type ) );
     $teamId = $wpdb->insert_id;
-    $captain = $racketmanager->getClubPlayer($player1Id)->player_id;
+    $captain = get_player($player1Id)->ID;
     $league = get_league($leagueId);
     $racketmanager->addTeamCompetition( $teamId, $league->competition_id, $captain, $contactno, $contactemail );
 
@@ -1096,7 +1096,7 @@ class RacketManager {
 
     $league = get_league($leagueId);
 
-    if ( $player2Id == 0 ) {
+    if ( !$player2Id  ) {
       $title = $player1;
       $players = array($player1Id);
     } else {
@@ -1107,7 +1107,7 @@ class RacketManager {
     $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `roster` = '%s' WHERE `id` = %d", $title, $affiliatedclub, maybe_serialize($players), $teamId ) );
 
     $teamCompetition = $wpdb->get_results( $wpdb->prepare("SELECT `id` FROM {$wpdb->racketmanager_team_competition} WHERE `team_id` = '%d' AND `competition_id` = '%d'", $teamId, $league->competition_id) );
-    $captain = $racketmanager->getClubPlayer($player1Id)->player_id;
+    $captain = get_player($player1Id)->ID;
     if (!isset($teamCompetition[0])) {
       $racketmanager->addTeamCompetition( $teamId, $league->competition_id, $captain, $contactno, $contactemail );
     } else {

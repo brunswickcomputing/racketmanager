@@ -707,6 +707,21 @@ function racketmanager_upgrade() {
 		if (version_compare($installed, '7.7.0', '<')) {
 			echo __('starting 7.7.0 upgrade', 'racketmanager') . "<br />\n";
 			$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} DROP COLUMN `tournamentsecretary`");
+			$teams = $wpdb->get_results(("SELECT `id`, `roster` FROM {$wpdb->racketmanager_teams} WHERE `status` = 'P' AND `id` in (SELECT team_id from {$wpdb->racketmanager_table})"));
+			foreach ($teams as $team) {
+				$team->roster = maybe_unserialize($team->roster);
+				$newRoster = array();
+				foreach ($team->roster as $teamPlayer) {
+					$player = $wpdb->get_row("SELECT `player_id` FROM {$wpdb->racketmanager_club_players} WHERE `id` = $teamPlayer");
+					if ( $player ) {
+						$newRoster[] = $player->player_id;
+					} else {
+						echo __('error', 'racketmanager').' '.$teamPlayer->id.' '.$teamPlayer->roster;
+					}
+				}
+				$team->roster = maybe_serialize($newRoster);
+				$wpdb->query($wpdb->prepare( "UPDATE {$wpdb->racketmanager_teams} SET `roster` = '%s' WHERE `id` = $team->id", $team->roster));
+			}
 		}
 	/*
 	* Update version and dbversion

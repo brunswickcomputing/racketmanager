@@ -641,6 +641,25 @@ class League {
 	}
 
 	/**
+	* delete team from League
+	*
+	* @param integer team
+	* @param string season
+	* @return none
+	*/
+	public function deleteTeam($team, $season) {
+		global $wpdb, $racketmanager;
+
+		// remove matches and rubbers
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` in (select `id` from {$wpdb->racketmanager_matches} WHERE `season` = '%d' AND `league_id` = '%d' AND (`home_team` = '%d' OR `away_team` = '%d'))", $season, $this->id, $team, $team) );
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `season` = '%d' AND `league_id` = '%d' AND (`home_team` = '%d' OR `away_team` = '%d')", $season, $this->id, $team, $team) );
+		// remove tables
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_table} WHERE `team_id` = '%d' AND `league_id` = '%d' and `season` = '%s'", $team, $this->id, $season) );
+
+		$racketmanager->setMessage( __('Team Deleted','racketmanager') );
+	}
+
+	/**
 	* set detault dataset query arguments
 	*/
 	private function setMatchQueryArgs() {
@@ -1148,7 +1167,7 @@ public function getLeagueTeam( $team_id ) {
 * @return object
 */
 public function getTeamDtls( $team_id ) {
-	global $wpdb, $racketmanager;
+	global $wpdb;
 
 	if ( $team_id == -1 ) {
 		$team = (object) ['id' => -1, 'title' => 'Bye'];
@@ -1187,7 +1206,7 @@ public function getTeamDtls( $team_id ) {
 	if ( $team->status == 'P' && $team->roster != null ) {
 		$i = 1;
 		foreach ($team->roster AS $player) {
-			$teamplayer = $racketmanager->getClubPlayer($player);
+			$teamplayer = get_player($player);
 			$team->player[$i] =  isset($teamplayer->fullname) ? $teamplayer->fullname : '';
 			$team->playerId[$i] = $player;
 			$i++;

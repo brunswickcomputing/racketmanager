@@ -71,7 +71,7 @@ The following variables are usable:
                             <select size="1" name="partner[<?php echo $competition->id ?>]" id="partner[<?php echo $competition->id ?>]" >
                                 <option value="0"><?php _e( 'Select partner' , 'racketmanager') ?></option>
                                 <?php foreach ( $partnerList AS $partner ) { ?>
-                                <option value="<?php echo $partner->roster_id ?>"><?php echo $partner->fullname." - ".get_club($partner->affiliatedclub)->name ?></option>
+                                <option value="<?php echo $partner->player_id ?>"><?php echo $partner->fullname." - ".get_club($partner->affiliatedclub)->name ?></option>
                                 <?php } ?>
                             </select>
                         <?php } ?>

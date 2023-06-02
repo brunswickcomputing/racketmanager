@@ -9,7 +9,7 @@ namespace ns;
 <div class="wrap league-block">
   <div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
-			<a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a></a><?php if ( !$noleague ) { ?> &raquo; <a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a><?php } ?> &raquo; <?php echo $form_title ?>
+			<a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a></a><?php if ( $league ) { ?> &raquo; <a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id ?>"><?php echo $league->title ?></a><?php } ?> &raquo; <?php echo $form_title ?>
 		</div>
   </div>
   <h1><?php printf( "%s - %s",  $league->title, $form_title ); ?></h1>

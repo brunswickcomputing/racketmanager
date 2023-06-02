@@ -790,13 +790,11 @@ final class RacketManagerAdmin extends RacketManager
 				if ( 'team' == $_POST['updateLeague'] ) {
 					if ( current_user_can('edit_teams') ) {
 						check_admin_referer('racketmanager_manage-teams');
-
 						$home = isset( $_POST['home'] ) ? 1 : 0;
 						$custom = !isset($_POST['custom']) ? array() : $_POST['custom'];
 						$roster = 0;
 						$profile = isset($_POST['profile']) ? intval($_POST['profile']) : 0;
 						$group = isset($_POST['group']) ? htmlspecialchars(strip_tags($_POST['group'])) : '';
-
 						if ( 'Add' == $_POST['action'] ) {
 							if ( '' == $_POST['team_id'] ) {
 								$team_id = $this->addNewTeamToLeague( htmlspecialchars($_POST['league_id']), $_POST['affiliatedclub'], ($_POST['team_type']), htmlspecialchars($_POST['captainId']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']), htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), $home, $roster, $profile, $custom );
@@ -806,7 +804,13 @@ final class RacketManagerAdmin extends RacketManager
 								$this->addTableEntry( htmlspecialchars($_POST['league_id']), intval($_POST['team_id']), htmlspecialchars($_POST['season']) );
 							}
 						} else {
-							$this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), $_POST['affiliatedclub'], $_POST['team_type'], htmlspecialchars($_POST['captainId']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']),  htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']), $home, $group, $roster, $profile, $custom, intval($_POST['league_id']), );
+							if ( $_POST['league_id'] && $_POST['editTeam'] ) {
+								$league = get_league(intval($_POST['league_id']));
+								$this->setTeamCompetition(intval($_POST['team_id']), $league->competition_id, htmlspecialchars($_POST['captainId']), htmlspecialchars($_POST['contactno']), htmlspecialchars($_POST['contactemail']),  htmlspecialchars($_POST['matchday']), htmlspecialchars($_POST['matchtime']));
+							} else {
+								$team = get_team(intval($_POST['team_id']));
+								$team->update(htmlspecialchars(strip_tags($_POST['team'])), $_POST['affiliatedclub'], $_POST['team_type']);
+							}
 						}
 					} else {
 						$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
@@ -814,7 +818,6 @@ final class RacketManagerAdmin extends RacketManager
 				} elseif ( 'teamPlayer' == $_POST['updateLeague'] ) {
 					if ( current_user_can('edit_teams') ) {
 						check_admin_referer('racketmanager_manage-teams');
-
 						$teamPlayer2 = isset($_POST['teamPlayer2']) ? htmlspecialchars(strip_tags($_POST['teamPlayer2'])) : '';
 						$teamPlayer2Id = isset($_POST['teamPlayerId2']) ? $_POST['teamPlayerId2'] : 0;
 
@@ -1378,7 +1381,6 @@ final class RacketManagerAdmin extends RacketManager
 			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
 		} else {
 			$edit = false;
-			$noleague = true;
 			$league_id = '';
 			$season = '';
 			if ( isset( $_GET['club_id'] ) ) {
@@ -1594,7 +1596,12 @@ final class RacketManagerAdmin extends RacketManager
 				$this->addTeam( $_POST['affiliatedClub'], $_POST['team_type'] );
 			} elseif ( isset($_POST['editTeam']) ) {
 				check_admin_referer('racketmanager_manage-teams');
-				$this->editTeam( intval($_POST['team_id']), htmlspecialchars(strip_tags($_POST['team'])), $_POST['affiliatedclub'], $_POST['team_type']);
+				if ( !current_user_can('edit_teams') ) {
+					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
+				} else {
+					$team = get_team(intval($_POST['team_id']));
+					$team->update(htmlspecialchars(strip_tags($_POST['team'])), $_POST['affiliatedclub'], $_POST['team_type']);
+				}
 			} elseif ( isset($_POST['doteamdel']) && $_POST['action'] == 'delete' ) {
 				if ( !current_user_can('del_teams') ) {
 					$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
@@ -1632,8 +1639,8 @@ final class RacketManagerAdmin extends RacketManager
 		} else {
 			$file = "team.php";
 			$edit = false;
+			$league = false;
 			if ( isset( $_GET['league_id'] ) ) {
-				$noleague = false ;
 				$league_id = intval($_GET['league_id']);
 				$league = get_league( $league_id );
 				$season = isset($_GET['season']) ? htmlspecialchars(strip_tags($_GET['season'])) : '';
@@ -1642,7 +1649,6 @@ final class RacketManagerAdmin extends RacketManager
 					$file = "playerteam.php";
 				}
 			} else {
-				$noleague = true;
 				$league_id = '';
 				$season = '';
 				if ( isset( $_GET['club_id'] ) ) {
@@ -1654,20 +1660,28 @@ final class RacketManagerAdmin extends RacketManager
 
 			if ( isset( $_GET['edit'] ) ) {
 				$edit = true;
-				if ( $noleague ) {
-					$team = get_team(intval($_GET['edit']));
-				} else {
+				if ( $league ) {
 					$team = $league->getTeamDtls(intval($_GET['edit']));
+				} else {
+					$team = get_team(intval($_GET['edit']));
 				}
-
-				if ( !isset($team->roster) ) $team->roster = array();
-
+				if ( !isset($team->roster) ) {
+					$team->roster = array();
+				}
 				$form_title = __( 'Edit Team', 'racketmanager' );
 				$form_action = __( 'Update', 'racketmanager' );
 			} else {
 				$form_title = __( 'Add Team', 'racketmanager' );
 				$form_action = __( 'Add', 'racketmanager' );
-				$team = (object)array( 'title' => '', 'home' => 0, 'id' => '', 'website' => '', 'captain' => '', 'captainId' => '', 'contactno' => '', 'contactemail' => '', 'stadium' => '', 'match_day' => '', 'match_time' => '', 'roster' => array('id' => '', 'cat_id' => '' ) );
+				$team = new stdClass();
+				$team->id = '';
+				$team->title = '';
+				$team->captain = '';
+				$team->captainId = '';
+				$team->contactno = '';
+				$team->contactemail = '';
+				$team->match_day = '';
+				$team->match_time = '';
 			}
 			$clubs = $racketmanager->getClubs( );
 
@@ -2959,13 +2973,14 @@ final class RacketManagerAdmin extends RacketManager
 
 		$team_competition = $wpdb->get_results( $wpdb->prepare("SELECT `id` FROM {$wpdb->racketmanager_team_competition} WHERE `team_id` = '%d' AND `competition_id` = '%d'", $teamId, $competitionId) );
 		if (!isset($team_competition[0])) {
-			$racketmanager->addTeamCompetition( $teamId, $competitionId, $captain, $contactNo, $contactEmail, $matchDay, $matchTime );
-		} else {
 			if ( isset($captain) ) {
 				$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_team_competition} SET `captain` = '%s', `match_day` = '%s', `match_time` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captain, $matchDay, $matchTime, $teamId, $competitionId ) );
 				$racketmanager->updatePlayerDetails($captain,$contactNo,$contactEmail);
 			}
+		} else {
+			$racketmanager->addTeamCompetition( $teamId, $competitionId, $captain, $contactNo, $contactEmail, $matchDay, $matchTime );
 		}
+		$racketmanager->setMessage( __('Team updated', 'racketmanager') );
 
 		return true;
 	}

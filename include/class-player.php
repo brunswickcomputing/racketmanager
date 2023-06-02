@@ -57,11 +57,9 @@ final class Player {
 			foreach ( $player as $key => $value ) {
 				$this->$key = $value;
 			}
-
 			if ( !isset($this->ID) ) {
 				$this->ID = $this->add();
-			  }
-		
+			}
 			$this->id = $this->ID;
 			$this->email = $this->user_email;
 			$this->fullname = $this->display_name;

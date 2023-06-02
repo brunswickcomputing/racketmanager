@@ -81,6 +81,33 @@ final class Team {
 	}
 
 	/**
+	* update team
+	* @param string $title team name
+	* @param int $clubId affiliated club id
+	* @param string $type team type (mens/ladies/mixed/singles/doubles)
+	*
+	* @return none
+	*/
+	public function update($title, $clubId, $type) {
+		global $wpdb, $racketmanager;
+
+		$club = get_club($clubId);
+		$stadium = $club->name;
+		if ( $this->title != $title || $this->affiliatedclub != $clubId || $this->type != $type || $this->stadium != $stadium ) {
+			$result = $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `stadium` = '%s', `type` = '%s' WHERE `id` = %d", $title, $clubId, $stadium, $type, $this->id ) );
+			if ( $result ) {
+				wp_cache_delete( $this->id, 'teams' );
+				$racketmanager->setMessage( __('Team updated', 'racketmanager') );
+			} else {
+				$racketmanager->setMessage( __('Error with team update', 'racketmanager'), true );
+				error_log($wpdb->last_error);
+			}
+		} else {
+			$racketmanager->setMessage( __('No updates', 'racketmanager') );
+		}
+	}
+
+	/**
 	* delete team
 	*
 	* @return none

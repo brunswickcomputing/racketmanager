@@ -323,7 +323,6 @@ final class RacketManagerAdmin extends RacketManager
 			$menu['match']['show'] = false;
 			if ( $league->entryType == 'player' ) {
 				$menu['team']['show'] = true;
-			} else {
 			}
 		} else {
 			$menu['match']['show'] = true;

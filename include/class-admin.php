@@ -317,9 +317,15 @@ final class RacketManagerAdmin extends RacketManager
 
 		$menu = array();
 		$menu['teams'] = array( 'title' => __('Add Teams', 'racketmanager'), 'callback' => array(&$this, 'displayTeamsList'), 'cap' => 'edit_teams', 'show' => true );
-		$menu['team'] = array( 'title' => __('Add Team', 'racketmanager'), 'callback' => array(&$this, 'displayTeamPage'), 'cap' => 'edit_teams', 'show' => true );
+		$menu['team'] = array( 'title' => __('Add Team', 'racketmanager'), 'callback' => array(&$this, 'displayTeamPage'), 'cap' => 'edit_teams', 'show' => false );
 		$menu['match'] = array( 'title' => __('Add Matches', 'racketmanager'), 'callback' => array(&$this, 'displayMatchPage'), 'cap' => 'edit_matches' );
-		if ( !$league->is_championship ) {
+		if ( $league->is_championship ) {
+			$menu['match']['show'] = false;
+			if ( $league->entryType == 'player' ) {
+				$menu['team']['show'] = true;
+			} else {
+			}
+		} else {
 			$menu['match']['show'] = true;
 		}
 		$menu['contact'] = array( 'title' => __('Contact', 'racketmanager'), 'callback' => array(&$this, 'displayContactPage'), 'cap' => 'edit_teams', 'show' => true );

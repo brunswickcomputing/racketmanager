@@ -491,7 +491,9 @@ final class RacketManagerAdmin extends RacketManager
 		} else {
 			$tab = 'competitionsleague';
 			$club_id = isset($_GET['club_id']) ? $_GET['club_id'] : 0;
-			if ( $club_id ) $club = get_club($club_id);
+			if ( $club_id ) {
+				$club = get_club($club_id);
+			}
 			if ( isset($_POST['addCompetition']) ) {
 				if ( current_user_can('edit_leagues') ) {
 					check_admin_referer('racketmanager_add-competition');
@@ -788,7 +790,6 @@ final class RacketManagerAdmin extends RacketManager
 			$league->setSeason();
 			$season = $league->getSeason();
 			$league_mode = (isset($league->mode) ? ($league->mode) : '' );
-
 			$tab = 'standings';
 			$matchDay = false;
 			if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POST['delmatches']) && !isset($_POST['doaction-match_day']) )  {
@@ -1020,30 +1021,35 @@ final class RacketManagerAdmin extends RacketManager
 
 			$group = isset($_GET['group']) ? htmlspecialchars(strip_tags($_GET['group'])) : '';
 			$team_id = isset($_GET['team_id']) ? intval($_GET['team_id']) : false;
+			$match_day = isset($_GET['match_day']) ? intval($_GET['match_day']) : false;
 			$options = $this->options;
 
 			$match_args = array("final" => "", "cache" => false);
-			if ( $season )
-			$match_args["season"] = $season;
-			if ( $group )
-			$match_args["group"] = $group;
-			if ( $team_id )
-			$match_args['team_id'] = $team_id;
+			if ( $season ) {
+				$match_args["season"] = $season;
+			}
+			if ( $group ) {
+				$match_args["group"] = $group;
+			}
+			if ( $team_id ) {
+				$match_args['team_id'] = $team_id;
+			}
 
-			if (intval($league->num_matches_per_page) > 0)
-			$match_args['limit'] = intval($league->num_matches_per_page);
-
-			if ( isset($_GET['doaction-match_day'])) {
+			if (intval($league->num_matches_per_page) > 0) {
+				$match_args['limit'] = intval($league->num_matches_per_page);
+			}
+			if ( isset($_GET['match_day'])) {
 				if ($_GET['match_day'] != -1) {
 					$matchDay = intval($_GET['match_day']);
 					$league->setMatchDay($matchDay);
 				}
 				$tab = 'matches';
 			} else {
-				if ( $league->match_display == 'current_match_day' )
-				$league->setMatchDay('current');
-				elseif ( $league->match_display == 'all' )
-				$league->setMatchDay(-1);
+				if ( $league->match_display == 'current_match_day' ) {
+					$league->setMatchDay('current');
+				} elseif ( $league->match_display == 'all' ) {
+					$league->setMatchDay(-1);
+				}
 			}
 
 			if ( empty($league->competition->seasons)  ) {
@@ -1057,8 +1063,9 @@ final class RacketManagerAdmin extends RacketManager
 				$league->setNumMatches();
 			}
 
-			if ( isset($_GET['match_paged']) )
-			$tab = 'matches';
+			if ( isset($_GET['match_paged']) ) {
+				$tab = 'matches';
+			}
 
 			if ( isset($_GET['standingstable']) ) {
 				$get = $_GET['standingstable'];

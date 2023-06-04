@@ -107,6 +107,7 @@ namespace ns;
     <input type="hidden" name="team_id" id="team_id" value="<?php echo $team->id ?>" />
     <input type="hidden" name="league_id" value="<?php echo $league_id ?>" />
     <input type="hidden" name="updateLeague" value="team" />
+    <input type="hidden" name="league-tab" value="preliminary" />
     <input type="hidden" name="season" value="<?php echo $season ?>" />
     <?php if ( isset($clubId) ) { ?>
       <input type="hidden" name="clubId" value="<?php echo $clubId ?>" />

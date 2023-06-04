@@ -73,6 +73,7 @@ namespace ns;
     <input type="hidden" name="team_id" id="team_id" value="<?php echo $team->id ?>" />
     <input type="hidden" name="league_id" value="<?php echo $league_id ?>" />
     <input type="hidden" name="updateLeague" value="teamPlayer" />
+    <input type="hidden" name="league-tab" value="preliminary" />
     <input type="hidden" name="season" value="<?php echo $season ?>" />
 
     <input type="submit" id="actionPlayerTeam" name="action" value="<?php echo $form_action ?>" class="btn btn-primary" />

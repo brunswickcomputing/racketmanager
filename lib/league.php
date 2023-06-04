@@ -1193,7 +1193,7 @@ public function getTeamDtls( $team_id ) {
 		$team->contactno = get_user_meta($captain->ID, 'contactno', true);
 		$team->contactemail = $captain->user_email;
 	} else {
-		$team->captainId = 0;
+		$team->captainId = '';
 		$team->captain = '';
 		$team->contactno = '';
 		$team->contactemail = '';

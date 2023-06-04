@@ -1,22 +1,3 @@
-<?php if ( !empty($season['num_match_days']) ) { ?>
-	<!-- Bulk Editing of Matches -->
-	<form action="admin.php" method="get" style="float: right;">
-		<input type="hidden" name="page" value="racketmanager" />
-		<input type="hidden" name="subpage" value="match" />
-		<input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
-		<input type="hidden" name="season" value="<?php echo $season['name'] ?>" />
-		<input type="hidden" name="group" value="<?php echo $group ?>" />
-
-		<select size="1" name="match_day">
-			<?php for ($i = 1; $i <= $season['num_match_days']; $i++) { ?>
-				<option value="<?php echo $i ?>"><?php printf(__( '%d. Match Day', 'racketmanager'), $i) ?></option>
-			<?php } ?>
-		</select>
-		<input type="hidden" name="league-tab" value="matches" />
-		<input type="submit" value="<?php _e('Edit Matches', 'racketmanager'); ?>" class="btn btn-secondary action" />
-	</form>
-<?php } ?>
-
 <form id="matches-filter" method="get">
 	<input type="hidden" name="page" value="racketmanager" />
 	<input type="hidden" name="subpage" value="show-league" />
@@ -38,6 +19,25 @@
 	<?php } ?>
 	<button class="btn btn-primary"><?php _e('Filter','racketmanager') ?></button>
 </form>
+<?php if ( !empty($league->current_season['num_match_days']) ) { ?>
+	<!-- Bulk Editing of Matches -->
+	<form action="admin.php" method="get" style="float: right;">
+		<input type="hidden" name="page" value="racketmanager" />
+		<input type="hidden" name="subpage" value="match" />
+		<input type="hidden" name="league_id" value="<?php echo $league->id ?>" />
+		<input type="hidden" name="season" value="<?php echo $league->current_season['name'] ?>" />
+		<input type="hidden" name="group" value="<?php echo $group ?>" />
+		<div class="tablenav">
+			<select size="1" name="match_day">
+				<?php for ($i = 1; $i <= $league->current_season['num_match_days']; $i++) { ?>
+					<option value='<?php echo $i ?>'<?php selected($league->match_day, $i) ?>><?php printf(__( '%d. Match Day', 'racketmanager'), $i) ?></option>
+				<?php } ?>
+			</select>
+			<input type="hidden" name="league-tab" value="matches" />
+			<input type="submit" value="<?php _e('Edit Matches', 'racketmanager'); ?>" class="btn btn-secondary action" />
+		</div>
+	</form>
+<?php } ?>
 <form id="matches-action" action="admin.php?page=racketmanager&subpage=show-league&league_id=<?php echo $league->id ?>&season=<?php echo $season ?>" method="post">
 	<?php wp_nonce_field( 'matches-bulk' ) ?>
 

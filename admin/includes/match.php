@@ -6,7 +6,7 @@
 		<?php echo $form_title ?>
 	</p>
 	<h1><?php printf( "%s - %s",  $league->title, $form_title ); ?></h1>
-	<form action="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id?>&amp;season=<?php echo $season ?><?php if (isset($finalkey) && $finalkey > '') echo '&amp;final=' . $finalkey . '&amp;league-tab=matches'; ?>" method="post">
+	<form action="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo $league->id?>&amp;season=<?php echo $season ?><?php if (isset($match_day)) { echo '&amp;match_day='.$match_day; } ?><?php if (isset($finalkey) && $finalkey > '') { echo '&amp;final=' . $finalkey . '&amp;league-tab=matches'; } ?>" method="post">
 		<?php wp_nonce_field( 'racketmanager_manage-matches' ) ?>
 		<?php if ( !$edit ) { ?>
 			<p class="match_info"><?php _e( 'Note: Matches with different Home and Guest Teams will be added to the database.', 'racketmanager' ) ?></p>

@@ -56,7 +56,7 @@ jQuery(document).ready(function($) {
 			});
 		},
 		select: function(event, ui) {
-			$("#teamPlayerId1").val(ui.item.id);
+			$("#teamPlayerId1").val(ui.item.playerId);
 			$("#affiliatedclub").val(ui.item.clubId);
 			$("#captain").val(ui.item.value);
 			$("#captainId").val(ui.item.playerId);
@@ -74,7 +74,7 @@ jQuery(document).ready(function($) {
 				$("#contactemail").val('');
 				$("#team").val('');
 			} else {
-				$("#teamPlayerId1").val(ui.item.id);
+				$("#teamPlayerId1").val(ui.item.playerId);
 				$("#captain").val(ui.item.value);
 				$("#captainId").val(ui.item.playerId);
 				$("#affiliatedclub").val(ui.item.clubId);
@@ -114,7 +114,7 @@ jQuery(document).ready(function($) {
 				$("#teamPlayerId2").val('');
 				$("#team").val('');
 			} else {
-				$("#teamPlayerId2").val(ui.item.id);
+				$("#teamPlayerId2").val(ui.item.playerId);
 				$team1 = $("#teamPlayer1").val();
 				$team2 = $("#teamPlayer2").val();
 				$team = $team1 + ' \/ ' + $team2;

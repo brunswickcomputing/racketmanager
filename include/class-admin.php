@@ -3367,7 +3367,7 @@ final class RacketManagerAdmin extends RacketManager
 						$tabledtls = $this->checkTableEntry( $this->league_id, $team_id, $season );
 						if ( $tabledtls == 0 ) {
 
-							$table_id = $this->addTableEntry( $this->league_id, $team_id, $season, $custom, false );
+							$table_id = $racketmanager->addTeamtoTable( $this->league_id, $team_id, $season, $custom, false );
 
 							$teams[$team_id] = $team_id;
 							$pld[$team_id] = isset($line[2]) ? $line[2] : 0;

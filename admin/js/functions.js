@@ -196,30 +196,32 @@ jQuery(document).ready(function($) {
 	});
 	
 	$("#teamPlayerFrm").submit(function( event ) {
-		var $error = false;
-		var $msg = '';
+		let $error = false;
+		let $msg = '';
 		if ( $("#team").val() == '' ) {
 			$error = true;
 			$msg += 'Team name not set\n';
 		} else {
-			$.ajax({
-				type: 'POST',
-				datatype: 'json',
-				url: RacketManagerAjaxL10n.requestUrl,
-				async: false,
-				data: {"name": $("#team").val(),
-				"action": "racketmanager_checkTeamExists"},
-				success: function(response) {
-					if ( response == true ) {
+			if ( $("#team_id").val() == '' ) {
+				$.ajax({
+					type: 'POST',
+					datatype: 'json',
+					url: RacketManagerAjaxL10n.requestUrl,
+					async: false,
+					data: {"name": $("#team").val(),
+					"action": "racketmanager_checkTeamExists"},
+					success: function(response) {
+						if ( response == true ) {
+							$error = true;
+							$msg += 'Team already exists\n';
+						}
+					},
+					error: function() {
 						$error = true;
-						$msg += 'Team already exists\n';
+						$msg += 'Error with team name check\n';
 					}
-				},
-				error: function() {
-					$error = true;
-					$msg += 'Error with team name check\n';
-				}
-			});
+				});
+			}
 		}
 		if ( $("#teamPlayerId1").val() == '' ) {
 			$error = true;

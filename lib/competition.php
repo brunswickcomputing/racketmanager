@@ -1033,7 +1033,7 @@ class Competition {
 * get Competition object
 *
 * @param int|Competition|null Competition ID or competition object. Defaults to global $competition
-* @return League|null
+* @return object competition|null
 */
 function get_competition( $competition = null ) {
 	if ( empty( $competition ) && isset( $GLOBALS['competition'] ) ) {

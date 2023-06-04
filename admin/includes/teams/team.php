@@ -92,7 +92,7 @@ namespace ns;
         <label for="matchday"><?php _e( 'Match Day', 'racketmanager' ) ?></label>
         <div class="input">
           <select size="1" name="matchday" id="matchday" >
-            <option><?php _e( 'Select match day' , 'racketmanager') ?></option>
+            <option value=""><?php _e( 'Select match day' , 'racketmanager') ?></option>
             <?php foreach ( $matchdays as $matchday ) { ?>
               <option value="<?php echo $matchday ?>"<?php if(isset($team->match_day)) { selected($matchday, $team->match_day ); } ?>><?php echo $matchday ?></option>
             <?php } ?>

@@ -936,7 +936,7 @@ final class RacketManagerAdmin extends RacketManager
 				}
 			} elseif ( isset($_POST['action']) && $_POST['action'] == 'addTeamsToLeague' ) {
 				foreach ( $_POST['team'] as $i => $team_id ) {
-					$this->addTableEntry( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
+					$racketmanager->addTeamtoTable( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );
 					$this->setTeamCompetition( $team_id, $_POST['competition_id'] );
 				}
 			} elseif ( isset($_POST['contactTeam']) ) {

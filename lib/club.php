@@ -157,17 +157,52 @@ final class Club
   }
 
   /**
+   * create club in database
+   *
+   */
+  public function addTeam($type)
+  {
+    global $racketmanager;
+
+    switch (substr($type,0,1)) {
+			case 'W': $typeName = 'Ladies'; break;
+			case 'M': $typeName = 'Mens';break;
+			case 'X': $typeName = 'Mixed';break;
+			default: $typeName = 'error';break;
+		}
+
+		if ( $typeName == 'error' ) {
+			$racketmanager->setMessage( __('Type not selected','racketmanager'), 'error' );
+			return false;
+		}
+    /** @var int $teamCount */
+    $teamCount = $this->hasTeams($type);
+    $teamCount ++;
+    $team = new stdClass();
+    $team->title = $this->shortcode.' '.$typeName.' '.$teamCount;
+		$team->stadium = $this->name;
+    $team->affiliatedclub = $this->id;
+    $team->team_type = $type;
+    return new Team($team);
+  }
+
+  /**
    * get teams from database
    *
+   * @param string $type the type of team to count. If this is specified, only non-player teams will be counted
    * @return count number of teams
    */
-  public function hasTeams()
+  public function hasTeams($type=false)
   {
     global $wpdb;
 
     $args = array();
-    $sql = "SELECT count(*) FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d'";
     $args[] = intval($this->id);
+    $sql = "SELECT count(*) FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d'";
+    if ( $type ) {
+      $sql .= " AND `type` = '%s' AND `status` != 'P'";
+      $args[] = $type;
+    }
     $sql = $wpdb->prepare($sql, $args);
 
     return $wpdb->get_var($sql);

@@ -40,9 +40,7 @@ final class Team {
 			if ( !$team ) {
 				return false;
 			}
-
 			$team = new Team( $team );
-
 			wp_cache_set( $team->id, $team, 'teams' );
 		}
 
@@ -60,13 +58,13 @@ final class Team {
 			foreach ( get_object_vars( $team ) as $key => $value ) {
 				$this->$key = $value;
 			}
-
+			if ( !isset($this->id) || $this->id == '' ) {
+				$this->add();
+			}
 			$this->title = htmlspecialchars(stripslashes($this->title), ENT_QUOTES);
 			$this->stadium = stripslashes($this->stadium);
-
 			$this->roster = maybe_unserialize($this->roster);
 			$this->profile = intval($this->profile);
-
 			$this->affiliatedclubname = get_club( $this->affiliatedclub )->name;
 			if ( $this->status == 'P' && $this->roster != null ) {
 				$i = 1;
@@ -78,6 +76,22 @@ final class Team {
 				}
 			}
 		}
+	}
+
+	/**
+	* add new Team
+	*
+	* @return boolean
+	*/
+	private function add() {
+		global $wpdb, $racketmanager;
+		$sql = "INSERT INTO {$wpdb->racketmanager_teams} (`title`, `stadium`, `affiliatedclub`, `type`) VALUES ('%s', '%s', '%d', '%s')";
+		$wpdb->query( $wpdb->prepare ( $sql, $this->title, $this->stadium, $this->affiliatedclub, $this->team_type) );
+		$this->id = $wpdb->insert_id;
+		$this->roster = '';
+		$this->profile = '';
+		$this->status = '';
+		$racketmanager->setMessage( __('Team added','racketmanager') );
 	}
 
 	/**

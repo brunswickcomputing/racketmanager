@@ -1598,7 +1598,8 @@ final class RacketManagerAdmin extends RacketManager
 		} else {
 			if ( isset($_POST['addTeam']) ) {
 				check_admin_referer('racketmanager_add-team');
-				$this->addTeam( $_POST['affiliatedClub'], $_POST['team_type'] );
+				$club = get_club($_POST['affiliatedClub']);
+				$club->addTeam($_POST['team_type']);
 			} elseif ( isset($_POST['editTeam']) ) {
 				check_admin_referer('racketmanager_manage-teams');
 				if ( !current_user_can('edit_teams') ) {

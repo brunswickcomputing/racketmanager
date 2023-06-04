@@ -12,7 +12,7 @@
 			<p class="match_info"><?php _e( 'Note: Matches with different Home and Guest Teams will be added to the database.', 'racketmanager' ) ?></p>
 		<?php } ?>
 
-		<table class="widefat">
+		<table class="widefat" aria-label="<?php _e('match edit', 'racketmanager') ?>">
 			<thead>
 				<tr>
 					<th scope="col"><?php _e( 'Id', 'racketmanager') ?></th>
@@ -26,8 +26,7 @@
 					<th scope="col"><?php if ( $cup ) { _e( 'Team', 'racketmanager' ); } else { _e( 'Home', 'racketmanager' ); } ?></th>
 					<th scope="col"><?php if ( $cup ) { _e( 'Team', 'racketmanager' ); } else { _e( 'Away', 'racketmanager' ); } ?></th>
 					<th scope="col"><?php _e( 'Location','racketmanager' ) ?></th>
-					<?php if ( isset($league->entryType) && $league->entryType == 'player' ) {
-					} else { ?>
+					<?php if ( !isset($league->entryType) || $league->entryType != 'player' ) { ?>
 						<th scope="col"><?php _e( 'Begin','racketmanager' ) ?></th>
 					<?php } ?>
 					<?php do_action('edit_matches_header_'.$league->sport) ?>
@@ -48,7 +47,7 @@
 							<td>
 								<select size="1" name="match_day[<?php echo $i ?>]" id="match_day_<?php echo $i ?>" onChange="Racketmanager.setMatchDayPopUp(this.value, <?php echo $i ?>, <?php echo $max_matches ?>, '<?php echo $mode ?>');">
 									<?php for ($d = 1; $d <= $league->current_season['num_match_days']; $d++) { ?>
-										<option value="<?php echo $d ?>"<?php if(isset($match_day) && $d == $match_day) echo ' selected="selected"' ?>><?php echo $d ?></option>
+										<option value="<?php echo $d ?>"<?php if (isset($match_day) && $d == $match_day) { echo ' selected'; } ?>><?php echo $d ?></option>
 									<?php } ?>
 								</select>
 							</td>
@@ -62,7 +61,7 @@
 								<select size="1" name="home_team[<?php echo $i ?>]" id="home_team_<?php echo $i ?>" <?php if ( !$finalkey ) { echo 'onChange="Racketmanager.insertHomeStadium(document.getElementById(\'home_team_'.$i.'\').value, '.$i.');"'; } ?>>
 									<?php $myTeam = 0; ?>
 									<?php foreach ( $teams AS $team ) { ?>
-										<option value="<?php echo $team->id ?>"<?php if(isset($matches[$i]->home_team)) selected($team->id, $matches[$i]->home_team ) ?>><?php echo $team->title ?></option>
+										<option value="<?php echo $team->id ?>"<?php if (isset($matches[$i]->home_team)) { selected($team->id, $matches[$i]->home_team ); } ?>><?php echo $team->title ?></option>
 										<?php if ( $myTeam==0 ) { $myHomeTeam = $team->id; } ?>
 										<?php $myTeam++; ?>
 									<?php } ?>
@@ -85,7 +84,7 @@
 
 										<?php foreach ( $teams AS $team ) { ?>
 											<?php if ( isset($matches[$i]->away_team) ) { ?>
-												<option value="<?php echo $team->id ?>"<?php if(isset($matches[$i]->away_team)) selected( $team->id, $matches[$i]->away_team ) ?>><?php echo $team->title ?></option>
+												<option value="<?php echo $team->id ?>"<?php if (isset($matches[$i]->away_team)) { selected( $team->id, $matches[$i]->away_team ); } ?>><?php echo $team->title ?></option>
 											<?php } elseif ( $team->id == $myHomeTeam ) { ?>
 												<!-- BUILD THE 'SELECTED' ITEM IN THE POP-UP -->
 												<option value="<?php echo $team->id ?>" selected='selected'><?php echo $team->title ?></option>
@@ -98,7 +97,7 @@
 								<?php } else { ?>
 									<select size="1" name="away_team[<?php echo $i ?>]" id="away_team_<?php echo $i ?>" <?php if ( !$finalkey ) { echo 'onChange="Racketmanager.insertHomeStadium(document.getElementById(\'home_team_'.$i.'\').value, '.$i.');"'; } ?>>
 										<?php foreach ( $teams AS $team ) { ?>
-											<option value="<?php echo $team->id ?>"<?php if (isset($matches[$i]->away_team)) selected( $team->id, $matches[$i]->away_team ) ?>><?php echo  $team->title ?></option>
+											<option value="<?php echo $team->id ?>"<?php if (isset($matches[$i]->away_team)) { selected( $team->id, $matches[$i]->away_team ); } ?>><?php echo  $team->title ?></option>
 										<?php } ?>
 									</select>
 								<?php } ?>
@@ -109,9 +108,7 @@
 							<?php } ?>
 						</td>
 						<td><input type="text" name="location[<?php echo $i ?>]" id="location[<?php echo $i ?>]" size="20" value="<?php if(isset($matches[$i]->location)) echo $matches[$i]->location ?>" size="30" /></td>
-						<?php if ( isset($league->entryType) && $league->entryType == 'player' ) {
-
-						} else { ?>
+						<?php if ( !isset($league->entryType) || $league->entryType != 'player' ) { ?>
 							<td>
 								<select size="1" name="begin_hour[<?php echo $i ?>]">
 									<?php for ( $hour = 0; $hour <= 23; $hour++ ) { ?>

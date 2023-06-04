@@ -70,7 +70,6 @@
 		<?php do_action( 'club_edit_form', $club ) ?>
 
 		<input type="hidden" name="club_id" id="club_id" value="<?php echo $club->id ?>" />
-		<input type="hidden" name="updateLeague" value="club" />
 
 		<?php if ( $edit ) { ?>
 			<input type="hidden" name="editClub" value="club" />

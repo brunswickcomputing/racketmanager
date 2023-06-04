@@ -24,17 +24,15 @@
 	<input type="hidden" name="season" value="<?php echo $season ?>" />
 	<?php if ( !empty($league->current_season['num_match_days']) ) { ?>
 		<select size='1' name='match_day'>
-			<?php $selected = ( isset($_GET['doaction-match_day']) && $_GET['match_day'] == -1 ) ? ' selected="selected"' : ''; ?>
-			<option value="-1"<?php echo $selected ?>><?php _e( 'Show all Matches', 'racketmanager' ) ?></option>
+			<option value="-1"><?php _e( 'Show all Matches', 'racketmanager' ) ?></option>
 			<?php for ($i = 1; $i <= $league->current_season['num_match_days']; $i++) { ?>
-				<option value='<?php echo $i ?>'<?php selected($league->match_day, $i)  ?>><?php printf(__( '%d. Match Day', 'racketmanager'), $i) ?></option>
+				<option value='<?php echo $i ?>'<?php selected($league->match_day, $i) ?>><?php printf(__( '%d. Match Day', 'racketmanager'), $i) ?></option>
 			<?php } ?>
 		</select>
 		<select size="1" name="team_id">
 			<option value=""><?php _e( 'Choose Team', 'racketmanager' ) ?></option>
-			<?php foreach ( $teams AS $team ) { ?>
-				<?php $selected = (isset($_GET['team_id']) && intval($_GET['team_id']) == $team->id) ? ' selected="selected"' : ''; ?>
-				<option value="<?php echo $team->id ?>"<?php echo $selected ?>><?php echo $team->title ?></option>
+			<?php foreach ( $teams as $team ) { ?>
+				<option value="<?php echo $team->id ?>"<?php echo selected($team->id, $team_id) ?>><?php echo $team->title ?></option>
 			<?php } ?>
 		</select>
 	<?php } ?>
@@ -57,7 +55,7 @@
 		<input type='submit' name="delmatches" id="delmatches" class="btn btn-secondary action" value='<?php _e( 'Apply' ) ?>' />
 	</div>
 
-	<table class="widefat" summary="" title="<?php _e( 'Match Plan','racketmanager' ) ?>" style="margin-bottom: 2em;">
+	<table class="widefat" title="<?php _e( 'Match Plan','racketmanager' ) ?>" aria-label="<?php _e('matches', 'racketmanager'); ?>">
 		<thead>
 			<tr>
 				<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('matches-action'));" /></th>
@@ -87,12 +85,12 @@
 					<td><?php echo $match->id ?></td>
 					<td><?php echo ( substr($match->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date($this->date_format, $match->date) ?></td>
 					<?php if ( !empty($league->groups) && $league->mode == 'championship' ) { ?><td class="column-num"><?php echo $match->group ?></td><?php } ?>
-					<td class="match-title"><a href="admin.php?page=racketmanager&amp;subpage=match&amp;league_id=<?php echo $league->id ?>&amp;edit=<?php echo $match->id ?>&amp;season=<?php echo $season ?><?php if(isset($group)) echo '&amp;group=' . $group; ?>"><?php echo $match->match_title ?></a></td>
+					<td class="match-title"><a href="admin.php?page=racketmanager&amp;subpage=match&amp;league_id=<?php echo $league->id ?>&amp;edit=<?php echo $match->id ?>&amp;season=<?php echo $season ?><?php if (isset($group)) { echo '&amp;group=' . $group; } ?>"><?php echo $match->match_title ?></a></td>
 					<td><?php echo ( empty($match->location) ) ? 'N/A' : $match->location ?></td>
 					<td><?php echo ( '00:00' == $match->hour.":".$match->minutes ) ? 'N/A' : mysql2date($this->time_format, $match->date) ?></td>
 					<?php do_action( 'matchtable_columns_'.(isset($league->sport) ? $league->sport : '' ), $match ) ?>
 					<td class="score">
-						<input class="points" type="text" size="2" style="text-align: center;" id="home_points[<?php echo $match->id ?>]" name="home_points[<?php echo $match->id ?>]" value="<?php echo (isset($match->home_points) ? $match->home_points : '') ?>" /> : <input class="points" type="text" size="2" style="text-align: center;" id="away_points[<?php echo $match->id ?>]" name="away_points[<?php echo $match->id ?>]" value="<?php echo (isset($match->away_points) ? $match->away_points : '') ?>" />
+						<input class="points" type="text" size="2" style="text-align: center;" id="home_points[<?php echo $match->id ?>]" name="home_points[<?php echo $match->id ?>]" value="<?php echo isset($match->home_points) ? $match->home_points : ''; ?>" /> : <input class="points" type="text" size="2" style="text-align: center;" id="away_points[<?php echo $match->id ?>]" name="away_points[<?php echo $match->id ?>]" value="<?php echo (isset($match->away_points) ? $match->away_points : '') ?>" />
 					</td>
 				</tr>
 			<?php } ?>

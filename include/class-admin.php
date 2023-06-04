@@ -781,7 +781,7 @@ final class RacketManagerAdmin extends RacketManager
 	*
 	*/
 	private function displayLeaguePage() {
-		global $league, $championship, $competition ;
+		global $league, $championship, $competition, $racketmanager ;
 
 		if ( !current_user_can( 'view_leagues' ) ) {
 			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.").'</p></div>';
@@ -792,7 +792,30 @@ final class RacketManagerAdmin extends RacketManager
 			$league_mode = (isset($league->mode) ? ($league->mode) : '' );
 			$tab = 'standings';
 			$matchDay = false;
-			if ( isset($_POST['updateLeague']) && !isset($_POST['doaction']) && !isset($_POST['delmatches']) && !isset($_POST['doaction-match_day']) )  {
+			if ( isset($_POST['doaction']) ) {
+				if ( $_POST['action'] == "delete" ) {
+					if ( current_user_can('del_teams') ) {
+						check_admin_referer('teams-bulk');
+						foreach ( $_POST['team'] as $team_id ) {
+							$league->deleteTeam(intval($team_id), $season);
+						}
+					} else {
+						$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
+					}
+				}
+			}  elseif ( isset($_POST['delmatches']) ) {
+				if ( $_POST['delMatchOption'] == "delete" ) {
+					if ( current_user_can('del_matches') ) {
+						check_admin_referer('matches-bulk');
+						foreach ( $_POST['match'] as $match_id ) {
+							$this->delMatch( intval($match_id) );
+						}
+						$tab = 'matches';
+					} else {
+						$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
+					}
+				}
+			} elseif ( isset($_POST['updateLeague']) )  {
 				if ( 'team' == $_POST['updateLeague'] ) {
 					if ( current_user_can('edit_teams') ) {
 						check_admin_referer('racketmanager_manage-teams');
@@ -910,30 +933,6 @@ final class RacketManagerAdmin extends RacketManager
 				}
 
 				$this->printMessage();
-			}  elseif ( isset($_POST['doaction']) ) {
-				if ( $_POST['action'] == "delete" ) {
-					if ( current_user_can('del_teams') ) {
-						check_admin_referer('teams-bulk');
-						foreach ( $_POST['team'] as $team_id ) {
-							$league = get_league(intval($_GET['league_id']));
-							$league->deleteTeam(intval($team_id), $season);
-						}
-					} else {
-						$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
-					}
-				}
-			}  elseif ( isset($_POST['delmatches']) ) {
-				if ( $_POST['delMatchOption'] == "delete" ) {
-					if ( current_user_can('del_matches') ) {
-						check_admin_referer('matches-bulk');
-						foreach ( $_POST['match'] as $match_id )
-						$this->delMatch( intval($match_id) );
-
-						$tab = 'matches';
-					} else {
-						$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
-					}
-				}
 			} elseif ( isset($_POST['action']) && $_POST['action'] == 'addTeamsToLeague' ) {
 				foreach ( $_POST['team'] as $i => $team_id ) {
 					$racketmanager->addTeamtoTable( htmlspecialchars($_POST['league_id']), $team_id, htmlspecialchars($_POST['season']) );

@@ -111,7 +111,7 @@ class Competition {
 	public $num_descend = 0;
 
 	/**
-	* number of teams for relegationnum_relegation
+	* number of teams for relegation
 	*
 	* @var int
 	*/
@@ -160,6 +160,76 @@ class Competition {
 	public $is_championship = false;
 
 	/**
+	* num_rubbers
+	*
+	* @var int
+	*/
+	public $num_rubbers = '';
+
+	/**
+	* num_sets
+	*
+	* @var int
+	*/
+	public $num_sets = '';
+
+	/**
+	* type
+	*
+	* @var string
+	*/
+	public $type = '';
+
+	/**
+	* current season
+	*
+	* @var array
+	*/
+	public $current_season = '';
+
+	/**
+	* number of match days
+	*
+	* @var int
+	*/
+	public $num_match_days = '';
+
+	/**
+	* number of leagues
+	*
+	* @var int
+	*/
+	public $num_leagues = '';
+
+	/**
+	* leagues
+	*
+	* @var array
+	*/
+	public $leagues = '';
+
+	/**
+	* settings keys
+	*
+	* @var array
+	*/
+	public $settings_keys = '';
+
+	/**
+	* constitutions
+	*
+	* @var array
+	*/
+	public $constitutions = '';
+
+	/**
+	* competition Teams
+	*
+	* @var array
+	*/
+	public $competitionTeams = '';
+
+	/**
 	* retrieve competition instance
 	*
 	* @param int $competition_id
@@ -206,7 +276,6 @@ class Competition {
 	* @param object $competition Competition object.
 	*/
 	public function __construct( $competition ) {
-		global $racketmanager;
 
 		if ( !isset($competition->id) ) {
 			$this->add($competition);
@@ -282,7 +351,7 @@ class Competition {
 	* @return none
 	*/
 	private function add($competition) {
-		global $wpdb, $racketmanager;
+		global $wpdb;
 
 		if ( $competition->competitionType == 'league' ) {
 			$mode = 'default';
@@ -363,7 +432,7 @@ class Competition {
 	public function setSettings($settings) {
 		global $wpdb, $racketmanager;
 
-		foreach ( $racketmanager->getStandingsDisplayOptions() as $key => $label ) {
+		foreach ( $racketmanager->getStandingsDisplayOptions() as $key ) {
 			$settings['standings'][$key] = isset($settings['standings'][$key]) ? 1 : 0;
 		}
 
@@ -567,7 +636,6 @@ class Competition {
 		$sql1 = "SELECT p.ID AS `player_id`, p.`display_name` AS `fullname`, ro.`id` AS `roster_id`,  ro.`affiliatedclub` FROM {$wpdb->racketmanager_club_players} AS ro, {$wpdb->users} AS p WHERE ro.`player_id` = p.`ID`";
 		$sql2 = "FROM {$wpdb->racketmanager_teams} AS t, {$wpdb->racketmanager_rubbers} AS r, {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager_club_players} AS ro WHERE r.`winner_id` != 0 AND (((r.`home_player_1` = ro.`id` OR r.`home_player_2` = ro.`id`) AND  m.`home_team` = t.`id`) OR ((r.`away_player_1` = ro.`id` OR r.`away_player_2` = ro.`id`) AND m.`away_team` = t.`id`)) AND ro.`affiliatedclub` = t.`affiliatedclub` AND r.`match_id` = m.`id` AND m.`league_id` IN (SELECT `id` FROM {$wpdb->racketmanager} WHERE `competition_id` = '%d') ";
 
-		$search_terms1 = array();
 		$search_terms2 = array($this->id);
 
 		if ($season) {
@@ -640,7 +708,7 @@ class Competition {
 	* @return array database results
 	*/
 	public function getTeamsInfo( $args = array() ) {
-		global $wpdb, $racketmanager;
+		global $wpdb;
 
 		$defaults = array( 'leagueId' => false, 'group' => false, 'rank' => false, 'orderby' => array("rank" => "ASC", "title" => "ASC"), "home" => false, "cache" => true, 'affiliatedclub' => false );
 		$args = array_merge($defaults, $args);
@@ -845,7 +913,6 @@ class Competition {
 			wp_cache_set( md5($sql), $constitutions, 'constitution' );
 		}
 
-		$leagues = $this->getLeagues();
 		foreach ( $constitutions as $i => $constitution ) {
 			if ( isset($constitution->oldLeagueId) ) {
 				$constitution->oldLeagueTitle = get_league($constitution->oldLeagueId)->title;
@@ -1017,7 +1084,6 @@ class Competition {
 	* @return none
 	*/
 	public function addTeamToCompetition( $team, $season ) {
-		global $racketmanager;
 
 		$leagues = $this->getLeagues( array('orderby' => array("title" => "DESC")));
 		$leagueId = $leagues[0]->id;
@@ -1063,4 +1129,3 @@ function get_competition( $competition = null ) {
 
 	return $_competition;
 }
-?>

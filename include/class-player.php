@@ -196,6 +196,33 @@ final class Player {
 		}
 	}
 
+	/**
+	* update player contact details
+	*
+	* @param string $contactNo
+	* @param string $contactEmail
+	* @return boolean
+	*/
+	public function updateContact( $contactNo, $contactEmail ) {
+		$currentContactNo = get_user_meta( $this->ID, 'contactno', true);
+		$currentContactEmail = $this->user_email;
+		if ($currentContactNo != $contactNo ) {
+		  	update_user_meta( $this->ID, 'contactno', $contactNo );
+		}
+		if ($currentContactEmail != $contactEmail ) {
+			$userdata = array();
+			$userdata['ID'] = $this->ID;
+			$userdata['user_email'] = $contactEmail;
+			$userId = wp_update_user( $userdata );
+			if ( is_wp_error($userId) ) {
+				$errorMsg = $userId->get_error_message();
+				error_log('Unable to update user email '.$this->ID.' - '.$contactEmail.' - '.$errorMsg);
+				return false;
+			}
+		}
+		return true;
+	  }
+
   	/**
 	* delete player
 	*/

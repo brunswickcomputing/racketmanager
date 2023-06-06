@@ -125,21 +125,8 @@ final class Club
       }
     }
     if ($club->matchsecretary != '') {
-      $currentContactNo = get_user_meta($club->matchsecretary, 'contactno', true);
-      $currentContactEmail = get_userdata($club->matchsecretary)->user_email;
-      if ($currentContactNo != $club->matchSecretaryContactNo) {
-        update_user_meta($club->matchsecretary, 'contactno', $club->matchSecretaryContactNo);
-      }
-      if ($currentContactEmail != $club->matchSecretaryEmail) {
-        $userdata = array();
-        $userdata['ID'] = $club->matchsecretary;
-        $userdata['user_email'] = $club->matchSecretaryEmail;
-        $userId = wp_update_user($userdata);
-        if (is_wp_error($userId)) {
-          $errorMsg = $userId->get_error_message();
-          error_log('Unable to update user email ' . $club->matchsecretary . ' - ' . $club->matchSecretaryEmail . ' - ' . $errorMsg);
-        }
-      }
+      $player = get_player($club->matchsecretary);
+      $player->updateContact($club->matchSecretaryContactNo, $club->matchSecretaryEmail);
     }
   }
 
@@ -182,7 +169,7 @@ final class Club
     $team->title = $this->shortcode.' '.$typeName.' '.$teamCount;
 		$team->stadium = $this->name;
     $team->affiliatedclub = $this->id;
-    $team->team_type = $type;
+    $team->type = $type;
     return new Team($team);
   }
 

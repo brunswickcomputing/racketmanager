@@ -85,13 +85,38 @@ final class Team {
 	*/
 	private function add() {
 		global $wpdb, $racketmanager;
-		$sql = "INSERT INTO {$wpdb->racketmanager_teams} (`title`, `stadium`, `affiliatedclub`, `type`) VALUES ('%s', '%s', '%d', '%s')";
-		$wpdb->query( $wpdb->prepare ( $sql, $this->title, $this->stadium, $this->affiliatedclub, $this->team_type) );
-		$this->id = $wpdb->insert_id;
-		$this->roster = '';
-		$this->profile = '';
-		$this->status = '';
-		$racketmanager->setMessage( __('Team added','racketmanager') );
+		if ( isset($this->status) && $this->status == 'P' ) {
+			if ( $this->type == 'LD' ) { $this->type = 'XD'; }
+			$players = array();
+			$this->title = $this->player1;
+			$players[] = $this->player1Id;
+			if ( $this->player2Id ) {
+			  $this->title .= ' / '.$this->player2;
+			  $players[] = $this->player2Id;
+			}
+			$this->roster = $players;
+			$this->stadium = '';
+			$this->profile = '';
+			$sql = "INSERT INTO {$wpdb->racketmanager_teams} (`title`, `affiliatedclub`, `roster`, `status`, `type` ) VALUES ('%s', '%d', '%s', '%s', '%s')";
+			$result = $wpdb->query( $wpdb->prepare ( $sql, $this->title, $this->affiliatedclub, maybe_serialize($players), $this->status, $this->type ) );
+			$this->id = $wpdb->insert_id;
+		
+		} else {
+			$this->roster = '';
+			$this->profile = '';
+			$this->status = '';
+			$sql = "INSERT INTO {$wpdb->racketmanager_teams} (`title`, `stadium`, `affiliatedclub`, `type`) VALUES ('%s', '%s', '%d', '%s')";
+			$result = $wpdb->query( $wpdb->prepare ( $sql, $this->title, $this->stadium, $this->affiliatedclub, $this->type) );
+			$this->id = $wpdb->insert_id;
+		}
+		if ( $result ) {
+			$racketmanager->setMessage( __('Team added','racketmanager') );
+		} else {
+			$racketmanager->setMessage( __('Error with team creation', 'racketmanager'), true );
+			error_log('error with team creation');
+			error_log($wpdb->last_error);
+
+		}
 	}
 
 	/**

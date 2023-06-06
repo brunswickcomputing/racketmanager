@@ -147,6 +147,45 @@ final class Team {
 	}
 
 	/**
+	* update team for players
+	* @param string $player1 player 1 name
+	* @param int $player1Id player 1 id
+	* @param string $player2 player 2 name
+	* @param int $player2Id player 2 id
+	* @param int $clubId affiliated club id
+	*
+	* @return none
+	*/
+	public function updatePlayer($player1, $player1Id, $player2, $player2Id, $clubId) {
+		global $wpdb, $racketmanager;
+
+		$players = array();
+		$players[] = $player1Id;
+		$title = $player1;
+		if ( $player2Id  ) {
+			$title .= ' / '.$player2;
+			$players[] = $player2Id;
+		}
+	  
+		$club = get_club($clubId);
+		$stadium = $club->name;
+		if ( $this->title != $title || $this->affiliatedclub != $clubId || $this->roster != $players || $this->stadium != $stadium ) {
+			$result = $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `stadium` = '%s', `roster` = '%s' WHERE `id` = %d", $title, $clubId, $stadium, maybe_serialize($players), $this->id ) );
+			if ( $result ) {
+				wp_cache_delete( $this->id, 'teams' );
+				$racketmanager->setMessage( __('Team updated', 'racketmanager') );
+			} else {
+				$racketmanager->setMessage( __('Error with team update', 'racketmanager'), true );
+				error_log('Error with player team update');
+				error_log($wpdb->last_error);
+			}
+		} else {
+			$racketmanager->setMessage( __('No updates', 'racketmanager') );
+		}
+	}
+
+	/**
+	/**
 	* delete team
 	*
 	* @return none

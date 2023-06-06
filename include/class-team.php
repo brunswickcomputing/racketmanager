@@ -185,6 +185,96 @@ final class Team {
 	}
 
 	/**
+	* set Competition
+	*
+	* @param int $competitionId
+	* @param string $captain optional
+	* @param string $contactno optional
+	* @param string $contactemail optional
+	* @param int $matchday optional
+	* @param int $matchtime optional
+	* @return boolean
+	*/
+	public function setCompetition( $competitionId, $captain = null, $contactNo = null, $contactEmail = null , $matchDay = null, $matchTime = null) {
+		global $wpdb, $racketmanager;
+
+		$count = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->racketmanager_team_competition} WHERE `team_id` = '%d' AND `competition_id` = '%d'", $this->id, $competitionId) );
+		if ($count) {
+			$msg = $this->updateCompetition($competitionId, $captain, $contactNo, $contactEmail, $matchDay, $matchTime);
+			$racketmanager->setMessage($msg);
+		} else {
+			$this->addCompetition( $competitionId, $captain, $contactNo, $contactEmail, $matchDay, $matchTime );
+			$racketmanager->setMessage( __('Team added', 'racketmanager') );
+		}
+
+		return true;
+	}
+
+	/**
+	 * add team to competition
+	*
+	* @param int $competitionId
+	* @param string $captain
+	* @param string $contactno
+	* @param string $contactemail
+	* @param int $matchday
+	* @param int $matchtime
+	* @return $teamCompetitionId
+	*/
+	public function addCompetition( $competitionId, $captain = null, $contactno = null, $contactemail = null, $matchday = '', $matchtime = null ) {
+		global $wpdb;
+
+		$sql = "INSERT INTO {$wpdb->racketmanager_team_competition} (`team_id`, `competition_id`, `captain`, `match_day`, `match_time`) VALUES ('%d', '%d', '%d', '%s', '%s')";
+		$wpdb->query( $wpdb->prepare ( $sql, $this->id, $competitionId, $captain, $matchday, $matchtime ) );
+		$teamCompetitionId = $wpdb->insert_id;
+		if ( $captain ) {
+			$player = get_player($captain);
+			$player->updateContact($contactno, $contactemail);
+		}
+		return $teamCompetitionId;
+	}
+
+	/**
+	 * update competition details
+	*
+	* @param int $competitionId
+	* @param string $captain
+	* @param string $contactno
+	* @param string $contactemail
+	* @param int $matchday
+	* @param int $matchtime
+	* @return $teamCompetitionId
+	*/
+	public function updateCompetition( $competitionId, $captain, $contactno, $contactemail, $matchday, $matchtime ) {
+		global $wpdb;
+		$updates = false;
+		$msg = false;
+		$competition = get_competition($competitionId);
+		$current = $competition->getTeamInfo($this->id);
+		if ( $current->captainId != $captain || $current->match_day != $matchday || $current->match_time != $matchtime ) {
+			if ( $captain && ( ($competition->entryType == 'team' && $matchday && $matchtime) || $competition->entryType == 'player') ) {
+				$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_team_competition} SET `captain` = '%s', `match_day` = '%s', `match_time` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captain, $matchday, $matchtime, $this->id, $competitionId ) );
+				$updates = true;
+			} else {
+				$msg = __('Team details missing', 'racketmanager');
+			}
+		}
+		if ( $current->contactno != $contactno || $current->contactemail != $contactemail ) {
+			$player = get_player($captain);
+			$updates = $player->updateContact($contactno,$contactemail);
+			if ( !$updates ) {
+				$msg = __('Error updating team contact', 'racketmanager');
+			}
+		}
+		if ( $updates ) {
+			$msg = __('Team updated', 'racketmanager');
+		} elseif ( empty($msg) ) {
+			$msg = __('Nothing to update', 'racketmanager');
+		}
+
+		return $msg;
+	}
+
 	/**
 	* delete team
 	*

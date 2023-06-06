@@ -1090,7 +1090,8 @@ class Competition {
 		$rank = 99;
 		$status = 'NT';
 		$profile = 2;
-		$racketmanager->addTeamtoTable( $leagueId, $team, $season, array(), true, $rank, $status, $profile );
+		$league = get_league($leagueId);
+		$league->addTeam($team, $season, $rank, $status, $profile);
 	}
 
 }

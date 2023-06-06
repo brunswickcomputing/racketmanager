@@ -72,7 +72,7 @@ class RacketManagerAJAX extends RacketManager {
 	*
 	*/
 	public function getPlayerDetails() {
-		global $wpdb, $racketmanager;
+		global $wpdb;
 		$name = $wpdb->esc_like(stripslashes($_POST['name']['term'])).'%';
 
 		$sql = "SELECT  P.`display_name` AS `fullname`, C.`name` as club, R.`id` as rosterId, C.`id` as clubId, P.`id` as playerId, P.`user_email` FROM $wpdb->racketmanager_club_players R, $wpdb->users P, $wpdb->racketmanager_clubs C WHERE R.`player_id` = P.`ID` AND R.`removed_date` IS NULL AND C.`id` = R.`affiliatedclub` AND `display_name` like '%s' ORDER BY 1,2,3";
@@ -1493,44 +1493,13 @@ class RacketManagerAJAX extends RacketManager {
 		$contactemail = $_POST['contactemail-'.$competitionId.'-'.$teamId];
 		$matchday = $_POST['matchday-'.$competitionId.'-'.$teamId];
 		$matchtime = $_POST['matchtime-'.$competitionId.'-'.$teamId];
+		$team = get_team($teamId);
 
-		$msg = $this->updateTeamCompetition($competitionId, $teamId, $captainId, $contactno, $contactemail, $matchday, $matchtime);
+		$msg = $team->updateCompetition($competitionId, $captainId, $contactno, $contactemail, $matchday, $matchtime);
 
 		array_push($return, $msg);
 		die(json_encode($return));
 
-	}
-
-	public function updateTeamCompetition($competitionId, $teamId, $captainId, $contactno, $contactemail, $matchday, $matchtime) {
-		global $wpdb, $racketmanager, $competition;
-
-		$updates = false;
-		$msg = '';
-
-		$competition = get_competition($competitionId);
-		$team = $competition->getTeamInfo($teamId);
-
-		if ( $team->captainId != $captainId || $team->match_day != $matchday || $team->match_time != $matchtime ) {
-			$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_team_competition} SET `captain` = '%s', `match_day` = '%s', `match_time` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captainId, $matchday, $matchtime, $teamId, $competitionId ) );
-			$updates = true;
-		}
-		if ( $team->contactno != $contactno || $team->contactemail != $contactemail ) {
-			$update = $racketmanager->updatePlayerDetails($captainId, $contactno, $contactemail);
-			if ($update) {
-				$updates = true;
-			} else {
-				$updates = false;
-				$msg = "Error updating team";
-			}
-		}
-
-		if ( $updates ) {
-			$msg = "Team updated";
-		} elseif ( empty($msg) ) {
-			$msg = "Nothing to update";
-		}
-
-		return $msg;
 	}
 
 	/**
@@ -1539,7 +1508,6 @@ class RacketManagerAJAX extends RacketManager {
 	* @see templates/club.php
 	*/
 	public function updateClub() {
-		global $wpdb, $racketmanager;
 
 		$updates = false;
 		$return = array();
@@ -1587,7 +1555,7 @@ class RacketManagerAJAX extends RacketManager {
 	* @see templates/player.php
 	*/
 	public function updatePlayer() {
-		global $wpdb, $racketmanager;
+		global $racketmanager;
 
 		$errorField = array();
 		$errorMsg = array();
@@ -1659,8 +1627,6 @@ class RacketManagerAJAX extends RacketManager {
 		} else {
 			$playerName = $user->display_name;
 			$club = get_club($affiliatedclub);
-			$clubPlayers = $club->getPlayers(array('player' => $playerId));
-			$clubPlayerId = $clubPlayers[0]->roster_id;
 			$affiliatedClubName = $club->name;
 		}
 		$competitions = isset($_POST['competition']) ? $_POST['competition'] : array();
@@ -1706,10 +1672,10 @@ class RacketManagerAJAX extends RacketManager {
 				$competition = get_competition($competitionId);
 				$tournamentEntry['competitionName'] = $competition->name;
 				if (isset($competition->primary_league)) {
-					$league = $competition->primary_league;
+					$league = get_league($competition->primary_league);
 				} else {
 					$leagues = $competition->getLeagues();
-					$league = $leagues[0]->id;
+					$league = $leagues[0];
 				}
 				$teamName = $playerName;
 				if ( substr($competition->type,1,1) == 'D' ) {
@@ -1734,11 +1700,19 @@ class RacketManagerAJAX extends RacketManager {
 				}
 				if ($newTeam) {
 					$team = new stdClass();
-					$team->id = $racketmanager->addPlayerTeam( $playerName, $playerId, $partnerName, $partnerId, $contactno, $contactemail, $affiliatedclub, $league );
+					$team->player1 = $playerName;
+					$team->player1Id = $_POST['teamPlayerId1'];
+					$team->player2 = $playerId;
+					$team->player2Id = $partnerId;
+					$team->type = $league->type;
+					$team->status = 'P';
+					$team->affiliatedclub = $affiliatedclub;
+					$team = new Team($team);
 				} else {
-					$racketmanager->editPlayerTeam( $team->id, $playerName, $playerId, $partnerName, $partnerId, $contactno, $contactemail, $affiliatedclub, $league );
+					$team->updatePlayer($playerName, $playerId, $partnerName, $partnerId, $affiliatedclub);
 				}
-				$racketmanager->addTeamtoTable($league, $team->id, $season);
+				$team->setCompetition($league->competition_id, $playerId, $contactno, $contactemail);
+				$league->addTeam($team->id, $season);
 				$tournamentEntries[$i] = $tournamentEntry;
 			}
 			$headers = array();
@@ -1787,7 +1761,6 @@ class RacketManagerAJAX extends RacketManager {
 	*
 	*/
 	public function getTeamCompetitionInfo() {
-		global $wpdb;
 
 		$teamInfo = array();
 		$teamId = isset($_POST['team']) ? $_POST['team'] : '';
@@ -1813,7 +1786,7 @@ class RacketManagerAJAX extends RacketManager {
 	* @see templates/cupentry.php
 	*/
 	public function cupEntryRequest() {
-		global $wpdb, $racketmanager, $racketmanager_shortcodes;
+		global $racketmanager, $racketmanager_shortcodes;
 
 		$return = array();
 		$msg = '';
@@ -1917,9 +1890,9 @@ class RacketManagerAJAX extends RacketManager {
 				$cupEntry = array();
 				$competition = get_competition($competitionId);
 				if (isset($competition->primary_league)) {
-					$league = $competition->primary_league;
+					$league = get_league($competition->primary_league);
 				} else {
-					$league = get_league(array_key_first($competition->league_index))->id;
+					$league = get_league(array_key_first($competition->league_index));
 				}
 				$teamId = isset($teams[$competition->id]) ? $teams[$competition->id] : 0;
 				if ( $teamId ) {
@@ -1932,12 +1905,12 @@ class RacketManagerAJAX extends RacketManager {
 					$matchtime = isset($matchtimes[$competition->id]) ? $matchtimes[$competition->id] : '';
 					$teamInfo = $competition->getTeamInfo($teamId);
 					if ( !$teamInfo ) {
-						$racketmanager->addTeamCompetition( $teamId, $competitionId, $captainId, $contactno, $contactemail, $matchday, $matchtime );
+						$team->addCompetition($competitionId, $captainId, $contactno, $contactemail, $matchday, $matchtime);
 					} else {
-						$this->updateTeamCompetition($competitionId, $teamId, $captainId, $contactno, $contactemail, $matchday, $matchtime);
+						$team->updateCompetition($competitionId, $captainId, $contactno, $contactemail, $matchday, $matchtime);
 					}
 				}
-				$racketmanager->addTeamtoTable($league, $teamId, $season);
+				$league->addTeam($teamId, $season);
 				$cupEntry['competitionName'] = $competition->name;
 				$cupEntry['teamName'] = $team->title;
 				$cupEntry['captain'] = $captain;
@@ -2116,7 +2089,7 @@ class RacketManagerAJAX extends RacketManager {
 			$competitionEntries = array();
 			$competitionDetails = array();
 			$competitionEntries['numCourtsAvailable'] = $numCourtsAvailable;
-		foreach ($competitions as $competitionId) {
+			foreach ($competitions as $competitionId) {
 				if (($key = array_search($competitionId, $leagueCompetitions)) !== false) {
     			unset($leagueCompetitions[$key]);
 				}
@@ -2139,11 +2112,12 @@ class RacketManagerAJAX extends RacketManager {
 					$matchday = isset($matchdays[$competition->id][$teamId]) ? $matchdays[$competition->id][$teamId] : '';
 					$matchtime = isset($matchtimes[$competition->id][$teamId]) ? $matchtimes[$competition->id][$teamId] : '';
 					$leagueId = isset($teamCompetitionLeague[$competition->id][$teamId]) ? $teamCompetitionLeague[$competition->id][$teamId] : '';
+					$team = get_team($teamId);
 					$teamInfo = $competition->getTeamInfo($teamId);
 					if ( !$teamInfo ) {
-						$racketmanager->addTeamCompetition( $teamId, $competitionId, $captainId, $contactno, $contactemail, $matchday, $matchtime );
+						$team->addCompetition($competitionId, $captainId, $contactno, $contactemail, $matchday, $matchtime);
 					} else {
-						$this->updateTeamCompetition($competitionId, $teamId, $captainId, $contactno, $contactemail, $matchday, $matchtime);
+						$team->updateCompetition($competitionId, $captainId, $contactno, $contactemail, $matchday, $matchtime);
 					}
 					if ( $leagueId ) {
 						$competition->markTeamsEntered($teamId, $season);

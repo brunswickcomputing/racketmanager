@@ -1219,28 +1219,65 @@ class League
 		return $teams;
 	}
 
-/**
-* get single team from League cache
-*
-* @param int $team_id
-* @return Team object
-*/
-public function getLeagueTeam( $team_id ) {
-	if (isset($this->team_index[$team_id])) {
-		return $this->teams[$this->team_index[$team_id]];
-	} else {
-		return $this->getTeamDtls($team_id);
-	}
-}
+	/**
+	 * add team to league
+	 *
+	 * @param int $teamId
+	 * @param string $season
+	 * @return int $table_id
+	 */
+	public function addTeam($teamId, $season, $rank = null, $status = null, $profile = null)
+	{
+		global $wpdb, $racketmanager;
 
-/**
-* get single team
-*
-* @param int $team_id
-* @return object
-*/
-public function getTeamDtls( $team_id ) {
-	global $wpdb;
+		$error = false;
+		$tableId = $wpdb->get_var( $wpdb->prepare ( "SELECT `id` FROM {$wpdb->racketmanager_table} WHERE `team_id` = '%d' AND `season` = '%s' AND `league_id` = '%d'", $teamId, $season, $this->id) );
+		if ( $tableId ) {
+			$messageText = 'Team already in table';
+			$error = true;
+		} else {
+			if ( !$rank ) {
+				$sql = "INSERT INTO {$wpdb->racketmanager_table} (`team_id`, `season`, `league_id`) VALUES ('%d', '%s', '%d')";
+				$result = $wpdb->query( $wpdb->prepare ( $sql, $teamId, $season, $this->id) );
+		  	} else {
+				$sql = "INSERT INTO {$wpdb->racketmanager_table} (`team_id`, `season`, `league_id`, `rank`, `status`, `profile`) VALUES ('%d', '%s', '%d', '%d', '%s', '%d')";
+				$result = $wpdb->query( $wpdb->prepare ( $sql, $teamId, $season, $this->id, $rank, $status, $profile ) );
+		  	}
+			if ( $result ) {
+				$tableId = $wpdb->insert_id;
+				$messageText = 'Table entry added';
+			} else {
+				$messageText = 'Error adding team to table';
+				$error = true;
+				error_log(messageText);
+				error_log($wpdb->last_error);
+			}
+		}
+	  	$racketmanager->setMessage( __($messageText,'racketmanager'), $error );
+	
+		if ( $error ) {
+			return $error;
+		} else {
+			return $tableId;
+		}
+	}
+
+	/**
+	 * get single team from League cache
+	 *
+	 * @param int $team_id
+	 * @return Team object
+	 */
+	public function getLeagueTeam($team_id)
+	{
+		if (isset($this->team_index[$team_id])) {
+			return $this->teams[$this->team_index[$team_id]];
+		} else {
+			return $this->getTeamDtls($team_id);
+		}
+	}
+
+	/**
 	 * get single team
 	 *
 	 * @param int $team_id

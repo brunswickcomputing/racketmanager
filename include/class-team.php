@@ -13,6 +13,22 @@
 */
 final class Team {
 
+	public $id;
+	public $title;
+	public $stadium;
+	public $roster;
+	public $profile;
+	public $affiliatedclub;
+	public $affiliatedclubname;
+	public $status;
+	public $player;
+	public $playerId;
+	public $player1;
+	public $player2;
+	public $player1Id;
+	public $player2Id;
+	public $type;
+
 	/**
 	* retrieve team instance
 	*
@@ -68,7 +84,7 @@ final class Team {
 			$this->affiliatedclubname = get_club( $this->affiliatedclub )->name;
 			if ( $this->status == 'P' && $this->roster != null ) {
 				$i = 1;
-				foreach ($this->roster AS $player) {
+				foreach ($this->roster as $player) {
 					$teamplayer = get_player($player);
 					$this->player[$i] = $teamplayer->fullname;
 					$this->playerId[$i] = $player;
@@ -139,6 +155,7 @@ final class Team {
 				$racketmanager->setMessage( __('Team updated', 'racketmanager') );
 			} else {
 				$racketmanager->setMessage( __('Error with team update', 'racketmanager'), true );
+				error_log('error with team update');
 				error_log($wpdb->last_error);
 			}
 		} else {

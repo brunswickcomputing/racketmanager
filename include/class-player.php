@@ -12,7 +12,25 @@
 *
 */
 final class Player {
-
+	public $ID;
+	public $id;
+	public $email;
+	public $user_email;
+	public $fullname;
+	public $display_name;
+	public $created_date;
+	public $user_registered;
+	public $firstname;
+	public $surname;
+	public $gender;
+	public $type;
+	public $btm;
+	public $removed_date;
+	public $removed_user;
+	public $locked;
+	public $locked_date;
+	public $locked_user;
+	public $lockedUserName;
 	/**
 	* retrieve player instance
 	*
@@ -220,4 +238,4 @@ function get_player( $player = null, $queryTerm = "id") {
 
 	return $_player;
 }
-?>
+

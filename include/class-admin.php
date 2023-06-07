@@ -1799,7 +1799,7 @@ final class RacketManagerAdmin extends RacketManager
 				if ( 'add' == $mode ) {
 					$form_title = $submit_title = sprintf(__( 'Add Matches - %s', 'racketmanager' ), $league->championship->getFinalname($finalkey));
 					for ( $h = 0; $h < $max_matches; $h++ ) {
-						$matches[$h] = new Match();
+						$matches[$h] = new RM_Match();
 						$matches[$h]->hour = $league->default_match_start_time['hour'];
 						$matches[$h]->minutes = $league->default_match_start_time['minutes'];
 					}
@@ -1841,7 +1841,7 @@ final class RacketManagerAdmin extends RacketManager
 				if ($max_matches > 50) $max_matches = 50;
 
 				for ( $i = 0; $i < $max_matches; $i++ ) {
-					$matches[] = new Match();
+					$matches[] = new RM_Match();
 					$matches[$i]->hour = $league->default_match_start_time['hour'];
 					$matches[$i]->minutes = $league->default_match_start_time['minutes'];
 				}

@@ -1,17 +1,17 @@
 <?php
 /**
-* Match API: Match class
+* RM_Match API: RM_Match class
 *
 * @author Kolja Schleich
 * @package RacketManager
-* @subpackage Match
+* @subpackage RM_Match
 */
 
 /**
-* Class to implement the Match object
+* Class to implement the RM_Match object
 *
 */
-final class Match {
+final class RM_Match {
 
   /**
   * final flag
@@ -36,9 +36,7 @@ final class Match {
     if ( ! $match ) {
       $match = $wpdb->get_row( $wpdb->prepare("SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `updated`, `updated_user`, `confirmed`, `home_captain`, `away_captain`, `comments` FROM {$wpdb->racketmanager_matches} WHERE `id` = '%d' LIMIT 1", $match_id) );
 
-      if ( !$match ) return false;
-
-      $match = new Match( $match );
+      $match = new RM_Match( $match );
 
       wp_cache_set( $match->id, $match, 'matches' );
     }
@@ -49,7 +47,7 @@ final class Match {
   /**
   * Constructor
   *
-  * @param object $match Match object.
+  * @param object $match RM_Match object.
   */
   public function __construct( $match = null ) {
     if ( !is_null($match) ) {
@@ -383,25 +381,27 @@ final class Match {
 }
 
 /**
-* get Match object
+* get RM_Match object
 *
-* @param int|Match|null Match ID or match object. Defaults to global $match
-* @return Match|null
+* @param int|RM_Match|null Match ID or match object. Defaults to global $match
+* @return object RM_Match|null
 */
 function get_match( $match = null ) {
-  if ( empty( $match ) && isset( $GLOBALS['match'] ) )
-  $match = $GLOBALS['match'];
-
-  if ( $match instanceof Match ) {
-    $_match = $match;
-  } elseif ( is_object( $match ) ) {
-    $_match = new Match( $match );
-  } else {
-    $_match = Match::get_instance( $match );
+  if ( empty( $match ) && isset( $GLOBALS['match'] ) ) {
+    $match = $GLOBALS['match'];
   }
 
-  if ( ! $_match )
-  return null;
+  if ( $match instanceof RM_Match ) {
+    $_match = $match;
+  } elseif ( is_object( $match ) ) {
+    $_match = new RM_Match( $match );
+  } else {
+    $_match = RM_Match::get_instance( $match );
+  }
+
+  if ( ! $_match ) {
+    return null;
+  }
 
   return $_match;
 }

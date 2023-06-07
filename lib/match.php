@@ -105,7 +105,6 @@ final class RM_Match {
       $this->setDate();
       $this->setTime();
 
-      $this->is_home = $this->isHome();
       $this->match_title = $this->getTitle();
 
       // set selected marker
@@ -167,21 +166,6 @@ final class RM_Match {
     }
 
     return $title;
-  }
-
-  /**
-  * test if it's a match of home team
-  *
-  * @return boolean
-  */
-  private function isHome() {
-    if ( !isset($this->teams) ) return false;
-    if ( isset($this->teams['home']) && $this->teams['home'] && isset($this->teams['home']->home) && $this->teams['home']->home == 1 )
-    return true;
-    elseif ( isset($this->teams['away']) && $this->teams['away'] && isset($this->teams['away']->home) && $this->teams['away']->home == 1 )
-    return true;
-    else
-    return false;
   }
 
   /**

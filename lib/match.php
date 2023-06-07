@@ -19,6 +19,34 @@ final class RM_Match {
   * @var string
   */
   public $final_round = '';
+  public $id;
+  public $league_id;
+  public $league;
+  public $location;
+  public $report;
+  public $post_id;
+  public $home_points;
+  public $away_points;
+  public $homeScore;
+  public $awayScore;
+  public $score;
+  public $confirmed;
+  public $confirmedDisplay;
+  public $pageURL;
+  public $is_home;
+  public $is_selected;
+  public $match_title;
+  public $home_team;
+  public $away_team;
+  public $teams;
+  public $title;
+  public $match_date;
+  public $date;
+  public $custom;
+  public $start_time;
+  public $tooltipTitle;
+  public $winner_id;
+  public $loser_id;
 
   /**
   * retrieve match instance
@@ -29,13 +57,17 @@ final class RM_Match {
     global $wpdb;
 
     $match_id = (int) $match_id;
-    if ( ! $match_id )
-    return false;
+    if ( ! $match_id ) {
+      return false;
+    }
 
     $match = wp_cache_get( $match_id, 'matches' );
     if ( ! $match ) {
       $match = $wpdb->get_row( $wpdb->prepare("SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `updated`, `updated_user`, `confirmed`, `home_captain`, `away_captain`, `comments` FROM {$wpdb->racketmanager_matches} WHERE `id` = '%d' LIMIT 1", $match_id) );
 
+      if ( !$match ) {
+        return false;
+      }
       $match = new RM_Match( $match );
 
       wp_cache_set( $match->id, $match, 'matches' );
@@ -56,13 +88,15 @@ final class RM_Match {
         $match = (object)array_merge((array)$match, (array)$match->custom);
       }
 
-      foreach ( get_object_vars( $match ) as $key => $value )
-      $this->$key = $value;
+      foreach ( get_object_vars( $match ) as $key => $value ) {
+        $this->$key = $value;
+      }
 
       // get League Object
       $this->league = get_league();
-      if ( is_null($this->league) || (!is_null($this->league) && $this->league->id != $this->league_id) )
-      $this->league = get_league($this->league_id);
+      if ( is_null($this->league) || (!is_null($this->league) && $this->league->id != $this->league_id) ) {
+        $this->league = get_league($this->league_id);
+      }
 
       $this->location = $this->location != '' ? stripslashes($this->location) : '';
       $this->report = ( $this->post_id != 0 ) ? '<a href="'.get_permalink($this->post_id).'">'.__('Report', 'racketmanager').'</a>' : '';
@@ -93,7 +127,7 @@ final class RM_Match {
       } else {
         $url = esc_url(get_permalink());
         $url = add_query_arg( 'match_'.$this->league_id, $this->id, $url );
-        foreach ( $_GET AS $key => $value ) {
+        foreach ( $_GET as $key => $value ) {
           $url = add_query_arg( $key, htmlspecialchars(strip_tags($value)), $url );
         }
         $url = remove_query_arg( 'team_'.$this->league_id, $url );
@@ -108,7 +142,9 @@ final class RM_Match {
       $this->match_title = $this->getTitle();
 
       // set selected marker
-      if (isset($_GET['match_'.$this->league_id])) $this->is_selected = true;
+      if (isset($_GET['match_'.$this->league_id])) {
+        $this->is_selected = true;
+      }
     }
   }
 
@@ -118,10 +154,9 @@ final class RM_Match {
   */
   private function setTeams() {
     // get championship final rounds teams
-    if ( $this->league->championship instanceof League_Championship ) {
-      if ( $this->final_round ) {
-        $teams = $this->league->championship->getFinalTeams($this->final_round);
-      }
+    if ( $this->league->championship instanceof League_Championship &&  $this->final_round ) {
+      $teams = $this->league->championship->getFinalTeams($this->final_round);
+
     }
     if ( is_numeric($this->home_team) ) {
       if ( $this->home_team == -1 ) {
@@ -149,10 +184,6 @@ final class RM_Match {
   * @return string
   */
   public function getTitle() {
-
-    // set default title
-    $title = "N/A";
-
     $homeTeam = $this->teams['home'];
     $awayTeam = $this->teams['away'];
 
@@ -188,7 +219,6 @@ final class RM_Match {
   public function setTime($time_format = '') {
     global $racketmanager;
     if ($time_format == '') { $time_format = $racketmanager->time_format; }
-    //$this->start_time = ( '00:00' == $this->hour.":".$this->minutes ) ? '' : mysql2date($time_format, $this->date);
     $this->start_time = mysql2date($time_format, $this->date);
   }
 
@@ -198,35 +228,30 @@ final class RM_Match {
   */
   private function setTooltipTitle() {
     // make tooltip title for last-5 standings
-    if ( $this->home_points == "" && $this->away_points == "")
-    $tooltipTitle = 'Next Match: '.$this->teams['home']->title.' - '.$this->teams['away']->title.' ['.$this->match_date.']';
-    elseif ( isset($this->title) )
-    $tooltipTitle = stripslashes($this->title) .' ['.$this->match_date.']';
-    else
-    $tooltipTitle = $this->homeScore.':'.$this->awayScore. ' - '.$this->teams['home']->title.' - '.$this->teams['away']->title.' ['.$this->match_date.']';
-
+    if ( $this->home_points == "" && $this->away_points == "") {
+      $tooltipTitle = 'Next Match: '.$this->teams['home']->title.' - '.$this->teams['away']->title.' ['.$this->match_date.']';
+    } elseif ( isset($this->title) ) {
+      $tooltipTitle = stripslashes($this->title) .' ['.$this->match_date.']';
+    } else {
+      $tooltipTitle = $this->homeScore.':'.$this->awayScore. ' - '.$this->teams['home']->title.' - '.$this->teams['away']->title.' ['.$this->match_date.']';
+    }
     $this->tooltipTitle = $tooltipTitle;
   }
 
   public function updateResults( $home_points, $away_points, $custom ) {
 
-    if ( empty($home_points) ) {
-      if ( $this->home_team == -1 ) {
-        $home_points = 0;
-        $away_points = 2;
-      }
+    if ( empty($home_points) && $this->home_team == -1 ) {
+      $home_points = 0;
+      $away_points = 2;
     }
-    if ( empty($away_points) ) {
-      if ( $this->away_team == -1 ) {
-        $home_points = 2;
-        $away_points = 0;
-      }
+    if ( empty($away_points) && $this->away_team == -1 ) {
+      $home_points = 2;
+      $away_points = 0;
     }
 
     $score = array( 'home' => $home_points, 'away' => $away_points );
 
     if ( isset($home_points) && isset($away_points) ) {
-      $points = $score;
       $this->getMatchResult( $score['home'], $score['away'] );
       // save original score points
       $this->home_points = $home_points;
@@ -237,7 +262,7 @@ final class RM_Match {
     }
 
     $this->custom = array_merge( (array)$this->custom, (array)$custom );
-    foreach ( $this->custom AS $key => $value ) {
+    foreach ( $this->custom as $key => $value ) {
       $this->{$key} = $value;
     }
   }
@@ -273,7 +298,6 @@ final class RM_Match {
     }
     $this->winner_id = $match['winner'];
     $this->loser_id = $match['loser'];
-    return;
   }
 
   /**
@@ -294,7 +318,7 @@ final class RM_Match {
     }
 
     $class = '';
-    foreach ( $rubbers AS $i => $rubber ) {
+    foreach ( $rubbers as $i => $rubber ) {
       $class = ( 'alternate' == $class ) ? '' : 'alternate';
       $rubber->class = $class;
 
@@ -304,14 +328,14 @@ final class RM_Match {
       $rubber->start_time = ( '00:00' == $rubber->hour.":".$rubber->minutes ) ? '' : mysql2date($racketmanager->time_format, $rubber->date);
       $rubber->rubber_date = ( substr($rubber->date, 0, 10) == '0000-00-00' ) ? 'N/A' : mysql2date($racketmanager->date_format, $rubber->date);
 
-      if ( $rubber->home_points != NULL && $rubber->away_points != NULL ) {
+      if ( $rubber->home_points != null && $rubber->away_points != null ) {
         $rubber->homeScore = $rubber->home_points;
         $rubber->awayScore = $rubber->away_points;
-        $rubber->score = sprintf("%s - %s", $rubber->homeScore, $rubber->awayScore);
+        $rubber->score = sprintf("%d - %d", $rubber->homeScore, $rubber->awayScore);
       } else {
         $rubber->homeScore = "-";
         $rubber->awayScore = "-";
-        $rubber->score = sprintf("%s:%s", $rubber->homeScore, $rubber->awayScore);
+        $rubber->score = sprintf("%d:%d", $rubber->homeScore, $rubber->awayScore);
       }
 
       $rubber->homePlayer1 = $rubber->home_player_1;
@@ -332,7 +356,7 @@ final class RM_Match {
   * @return null
   */
   public function delResultCheck() {
-    global $wpdb, $racketmanager;
+    global $wpdb;
     $wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_results_checker} WHERE `match_id` = %d", $this->id) );
   }
 
@@ -389,4 +413,4 @@ function get_match( $match = null ) {
 
   return $_match;
 }
-?>
+

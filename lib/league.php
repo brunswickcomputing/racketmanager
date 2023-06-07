@@ -2273,7 +2273,7 @@ class League
 
 				// update match results, also updating match object for subsequent custom updates
 				$c = isset($custom[$match_id]) ? $custom[$match_id] : array();
-				$match->updateResults($this->sport, $home_points[$match_id], $away_points[$match_id], $c);
+				$match->updateResults($home_points[$match_id], $away_points[$match_id], $c);
 				// custom results update
 				$match = $this->updateResults($match);
 				if ($match->home_points > 0 || $match->away_points > 0) {

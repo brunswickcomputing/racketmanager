@@ -226,7 +226,7 @@ final class Match {
     $this->tooltipTitle = $tooltipTitle;
   }
 
-  public function updateResults( $sport, $home_points, $away_points, $custom ) {
+  public function updateResults( $home_points, $away_points, $custom ) {
 
     if ( empty($home_points) ) {
       if ( $this->home_team == -1 ) {

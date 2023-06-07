@@ -28,6 +28,13 @@ final class Team {
 	public $player1Id;
 	public $player2Id;
 	public $type;
+	private $msgTeamUpdated = 'Team updated';
+	private $msgTeamAdded = 'Team added';
+	private $msgTeamUpdateError = 'Team update error';
+	private $msgTeamAddError = 'Team add error';
+	private $msgNoUpdate = 'No updates';
+	private $msgDetailsMissing = 'Team details missing';
+	private $msgTeamContactError = 'Error updating team contact';
 
 	/**
 	* retrieve team instance
@@ -126,9 +133,9 @@ final class Team {
 			$this->id = $wpdb->insert_id;
 		}
 		if ( $result ) {
-			$racketmanager->setMessage( __('Team added','racketmanager') );
+			$racketmanager->setMessage( __($this->msgTeamAdded,'racketmanager') );
 		} else {
-			$racketmanager->setMessage( __('Error with team creation', 'racketmanager'), true );
+			$racketmanager->setMessage( __($this->msgTeamAddError, 'racketmanager'), true );
 			error_log('error with team creation');
 			error_log($wpdb->last_error);
 
@@ -152,14 +159,14 @@ final class Team {
 			$result = $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `stadium` = '%s', `type` = '%s' WHERE `id` = %d", $title, $clubId, $stadium, $type, $this->id ) );
 			if ( $result ) {
 				wp_cache_delete( $this->id, 'teams' );
-				$racketmanager->setMessage( __('Team updated', 'racketmanager') );
+				$racketmanager->setMessage( __($this->msgTeamUpdated, 'racketmanager') );
 			} else {
-				$racketmanager->setMessage( __('Error with team update', 'racketmanager'), true );
+				$racketmanager->setMessage( __($this->msgTeamUpdateError, 'racketmanager'), true );
 				error_log('error with team update');
 				error_log($wpdb->last_error);
 			}
 		} else {
-			$racketmanager->setMessage( __('No updates', 'racketmanager') );
+			$racketmanager->setMessage( __($this->msgNoUpdate, 'racketmanager') );
 		}
 	}
 
@@ -190,14 +197,14 @@ final class Team {
 			$result = $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_teams} SET `title` = '%s', `affiliatedclub` = '%d', `stadium` = '%s', `roster` = '%s' WHERE `id` = %d", $title, $clubId, $stadium, maybe_serialize($players), $this->id ) );
 			if ( $result ) {
 				wp_cache_delete( $this->id, 'teams' );
-				$racketmanager->setMessage( __('Team updated', 'racketmanager') );
+				$racketmanager->setMessage( __($this->msgTeamUpdated, 'racketmanager') );
 			} else {
-				$racketmanager->setMessage( __('Error with team update', 'racketmanager'), true );
+				$racketmanager->setMessage( __($this->msgTeamUpdateError, 'racketmanager'), true );
 				error_log('Error with player team update');
 				error_log($wpdb->last_error);
 			}
 		} else {
-			$racketmanager->setMessage( __('No updates', 'racketmanager') );
+			$racketmanager->setMessage( __($this->msgNoUpdate, 'racketmanager') );
 		}
 	}
 
@@ -221,7 +228,7 @@ final class Team {
 			$racketmanager->setMessage($msg);
 		} else {
 			$this->addCompetition( $competitionId, $captain, $contactNo, $contactEmail, $matchDay, $matchTime );
-			$racketmanager->setMessage( __('Team added', 'racketmanager') );
+			$racketmanager->setMessage( __($this->msgTeamAdded, 'racketmanager') );
 		}
 
 		return true;
@@ -273,20 +280,20 @@ final class Team {
 				$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_team_competition} SET `captain` = '%s', `match_day` = '%s', `match_time` = '%s' WHERE `team_id` = %d AND `competition_id` = %d", $captain, $matchday, $matchtime, $this->id, $competitionId ) );
 				$updates = true;
 			} else {
-				$msg = __('Team details missing', 'racketmanager');
+				$msg = __($this->msgDetailsMissing, 'racketmanager');
 			}
 		}
 		if ( $current->contactno != $contactno || $current->contactemail != $contactemail ) {
 			$player = get_player($captain);
 			$updates = $player->updateContact($contactno,$contactemail);
 			if ( !$updates ) {
-				$msg = __('Error updating team contact', 'racketmanager');
+				$msg = __($this->msgTeamContactError, 'racketmanager');
 			}
 		}
 		if ( $updates ) {
-			$msg = __('Team updated', 'racketmanager');
+			$msg = __($this->msgTeamUpdated, 'racketmanager');
 		} elseif ( empty($msg) ) {
-			$msg = __('Nothing to update', 'racketmanager');
+			$msg = __($this->msgNoUpdate, 'racketmanager');
 		}
 
 		return $msg;

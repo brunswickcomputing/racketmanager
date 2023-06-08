@@ -12,6 +12,16 @@
 *
 */
 final class Invoice {
+  public $id;
+  public $invoiceNumber;
+  public $club;
+  public $club_id;
+  public $charge;
+  public $charge_id;
+  public $status;
+  public $date;
+  public $date_due;
+
   public static function get_instance($invoice_id) {
     global $wpdb;
     if ( !$invoice_id ) {
@@ -83,7 +93,6 @@ final class Invoice {
   public function send($resend = false) {
 		global $racketmanager_shortcodes, $racketmanager;
 
-    if ( $resend) { $resent = true;}
     $billing = $racketmanager->getOptions('billing');
 		$headers = array();
 		$fromEmail = $racketmanager->getConfirmationEmail($this->charge->competitionType);

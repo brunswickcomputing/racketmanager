@@ -109,13 +109,13 @@ final class Club
    * @param string $oldShortcode
    * @return null
    */
-  public function update($club, $oldShortcode)
+  public function update($club, $oldShortcode = false)
   {
     global $wpdb;
 
     $wpdb->query($wpdb->prepare("UPDATE {$wpdb->racketmanager_clubs} SET `name` = '%s', `type` = '%s', `shortcode` = '%s',`matchsecretary` = '%d', `contactno` = '%s', `website` = '%s', `founded`= '%s', `facilities` = '%s', `address` = '%s', `latitude` = '%s', `longitude` = '%s' WHERE `id` = %d", $club->name, $club->type, $club->shortcode, $club->matchsecretary, $club->contactno, $club->website, $club->founded, $club->facilities, $club->address, $club->latitude, $club->longitude, $this->id));
 
-    if ($oldShortcode != $this->shortcode) {
+    if ($oldShortcode && $oldShortcode != $this->shortcode) {
       $teams = $this->getTeams();
       foreach ($teams as $team) {
         $team = get_team($team->id);

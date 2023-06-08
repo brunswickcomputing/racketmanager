@@ -7,9 +7,7 @@ if ( empty($this->seasons) ) { ?>
 		<p><?php _e('No pending seasons for competition', 'racketmanager') ?>
 	<?php } else {
 		foreach (array_reverse($competition->seasons) as $season) {
-			if ( isset($season['status']) && $season['status'] == 'draft' ) {
-				continue;
-			} else {
+			if ( !isset($season['status']) || $season['status'] != 'draft' ) {
 				$latestCompetitionSeason = $season['name'];
 				break;
 			}
@@ -47,7 +45,7 @@ if ( empty($this->seasons) ) { ?>
 				<input type="submit" value="<?php _e('Apply'); ?>" name="doactionconstitution" id="doactionconstitution" class="btn btn-secondary action" />
 			</div>
 
-			<table class="widefat" summary="" title="RacketManager">
+			<table class="widefat" title="RacketManager" aria-label="constitution table">
 				<thead>
 					<tr>
 						<th scope="col" class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('leagues-filter'));" /></th>
@@ -66,7 +64,7 @@ if ( empty($this->seasons) ) { ?>
 					<?php
 					if ( $teams ) {
 						$class = '';
-						foreach ( $teams AS $team ) {
+						foreach ( $teams as $team ) {
 							$class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 							<tr class="<?php echo $class ?>">
 								<th scope="row" class="check-column">

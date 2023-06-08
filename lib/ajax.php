@@ -568,7 +568,6 @@ class RacketManagerAJAX extends RacketManager {
 	*/
 	public function updateRubbers() {
 		global $racketmanager, $league, $match, $matchRubbers;
-
 		if ( isset($_POST['updateRubber'])) {
 			check_admin_referer('rubbers-match');
 			$updatedRubbers = '';
@@ -622,15 +621,11 @@ class RacketManagerAJAX extends RacketManager {
 								$homeplayer2    = isset($_POST['homeplayer2'][$ix]) ? $_POST['homeplayer2'][$ix] : null;
 								$awayplayer1    = isset($_POST['awayplayer1'][$ix]) ? $_POST['awayplayer1'][$ix] : null;
 								$awayplayer2    = isset($_POST['awayplayer2'][$ix]) ? $_POST['awayplayer2'][$ix] : null;
-								if ( $userTeam == 'home' || $userTeam == 'both' ) {
-									if ( $clubPlayerId == $homeplayer1 || $clubPlayerId == $homeplayer2 ) {
-										$playerFound = true;
-									}
+								if ( ( $userTeam == 'home' || $userTeam == 'both' ) && ( $clubPlayerId == $homeplayer1 || $clubPlayerId == $homeplayer2 ) ) {
+									$playerFound = true;
 								}
-								if ( $userTeam == 'away' || $userTeam == 'both' ) {
-									if ( $clubPlayerId == $awayplayer1 || $clubPlayerId == $awayplayer2 ) {
-										$playerFound = true;
-									}
+								if ( ( $userTeam == 'away' || $userTeam == 'both' ) && ( $clubPlayerId == $awayplayer1 || $clubPlayerId == $awayplayer2 ) ) {
+									$playerFound = true;
 								}
 							}
 						}
@@ -653,7 +648,6 @@ class RacketManagerAJAX extends RacketManager {
 			} elseif ( $_POST['updateRubber'] == 'confirm' ) {
 				$matchConfirmed = $this->confirmRubberResults();
 			}
-
 			if ( !$error ) {
 				if ( $matchConfirmed ) {
 					$matchUpdatedby = $this->updateMatchStatus( $matchId, $matchConfirmed, $homeClub, $awayClub, $matchComments, $userTeam );
@@ -711,11 +705,9 @@ class RacketManagerAJAX extends RacketManager {
 					} elseif ( !current_user_can( 'manage_racketmanager' ) && $matchConfirmed == 'P' ) {
 						$this->resultNotification($matchConfirmed, $matchMessage, $match, $matchUpdatedby);
 					}
-				} else {
-					if ( !$msg ) {
-						$msg = __('No results to save','racketmanager');
-						$error = true;
-					}
+				} elseif ( !$msg ) {
+					$msg = __('No results to save','racketmanager');
+					$error = true;
 				}
 			}
 			array_push($return,$msg,$error,$matchRubbers['homepoints'],$matchRubbers['awaypoints'], $errField, $updatedRubbers);

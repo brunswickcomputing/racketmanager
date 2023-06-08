@@ -1356,7 +1356,7 @@ class League
 	 * gets matches from database
 	 *
 	 * @param array $query_args
-	 * @return array
+	 * @return object
 	 */
 	public function getMatches($query_args)
 	{

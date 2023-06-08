@@ -15,6 +15,23 @@
 final class Club
 {
 
+  public $id;
+  public $matchSecretaryName;
+  public $matchSecretaryEmail;
+  public $matchSecretaryContactNo;
+  public $matchsecretary;
+  public $desc;
+  public $name;
+  public $shortcode;
+  public $type;
+  public $website;
+  public $contactno;
+  public $founded;
+  public $facilities;
+  public $address;
+  public $longitude;
+  public $latitude;
+  public $num_players;
   /**
    * retrieve club instance
    *
@@ -151,23 +168,31 @@ final class Club
   {
     global $racketmanager;
 
-    switch (substr($type,0,1)) {
-			case 'W': $typeName = 'Ladies'; break;
-			case 'M': $typeName = 'Mens';break;
-			case 'X': $typeName = 'Mixed';break;
-			default: $typeName = 'error';break;
-		}
+    switch (substr($type, 0, 1)) {
+      case 'W':
+        $typeName = 'Ladies';
+        break;
+      case 'M':
+        $typeName = 'Mens';
+        break;
+      case 'X':
+        $typeName = 'Mixed';
+        break;
+      default:
+        $typeName = 'error';
+        break;
+    }
 
-		if ( $typeName == 'error' ) {
-			$racketmanager->setMessage( __('Type not selected','racketmanager'), 'error' );
-			return false;
-		}
+    if ($typeName == 'error') {
+      $racketmanager->setMessage(__('Type not selected', 'racketmanager'), 'error');
+      return false;
+    }
     /** @var int $teamCount */
     $teamCount = $this->hasTeams($type);
-    $teamCount ++;
+    $teamCount++;
     $team = new stdClass();
-    $team->title = $this->shortcode.' '.$typeName.' '.$teamCount;
-		$team->stadium = $this->name;
+    $team->title = $this->shortcode . ' ' . $typeName . ' ' . $teamCount;
+    $team->stadium = $this->name;
     $team->affiliatedclub = $this->id;
     $team->type = $type;
     return new Team($team);
@@ -179,14 +204,14 @@ final class Club
    * @param string $type the type of team to count. If this is specified, only non-player teams will be counted
    * @return count number of teams
    */
-  public function hasTeams($type=false)
+  public function hasTeams($type = false)
   {
     global $wpdb;
 
     $args = array();
     $args[] = intval($this->id);
     $sql = "SELECT count(*) FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d'";
-    if ( $type ) {
+    if ($type) {
       $sql .= " AND `type` = '%s' AND `status` != 'P'";
       $args[] = $type;
     }
@@ -242,7 +267,7 @@ final class Club
    * get single player request
    *
    * @param int $playerRequestId
-   * @return array
+   * @return object
    */
   private function getPlayerRequest($playerRequestId)
   {
@@ -286,7 +311,7 @@ final class Club
   {
     global $racketmanager;
     $player = get_player($newPlayer->user_login, 'name');
-    if ( !$player ) {
+    if (!$player) {
       $player = new Player($newPlayer);
     }
     $playerActive = $this->playerActive($player->id);

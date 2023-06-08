@@ -86,6 +86,15 @@ final class LeagueTeam
   public $prev_match;
   public $season;
   public $custom;
+  public $class;
+  public $captain;
+  public $pointsFormatted;
+  public $captainId;
+  public $contactno;
+  public $contactemail;
+  public $match_day;
+  public $match_time;
+  public $oldRank;
 
   public static function get_instance($leagueTeam_id)
   {

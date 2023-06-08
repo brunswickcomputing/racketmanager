@@ -12,6 +12,16 @@
 *
 */
 final class Charges {
+
+  public $id;
+  public $season;
+  public $type;
+  public $competitionType;
+  public $status;
+  public $date;
+  public $feeClub;
+  public $feeTeam;
+  
   public static function get_instance($charges_id) {
     global $wpdb;
     if ( !$charges_id ) {

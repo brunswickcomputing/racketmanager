@@ -85,6 +85,7 @@ final class LeagueTeam
   public $next_match;
   public $prev_match;
   public $season;
+  public $custom;
 
   public static function get_instance($leagueTeam_id)
   {

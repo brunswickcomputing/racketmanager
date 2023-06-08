@@ -28,6 +28,7 @@ final class Team {
 	public $player1Id;
 	public $player2Id;
 	public $type;
+	public $home;
 	private $msgTeamUpdated = 'Team updated';
 	private $msgTeamAdded = 'Team added';
 	private $msgTeamUpdateError = 'Team update error';

@@ -228,7 +228,13 @@ class Competition {
 	* @var array
 	*/
 	public $competitionTeams = '';
-
+	public $settings;
+	public $groups;
+	public $teams_per_group;
+	public $num_advance;
+	public $match_place3;
+	public $non_group;
+	public $entry_open;
 	/**
 	* retrieve competition instance
 	*

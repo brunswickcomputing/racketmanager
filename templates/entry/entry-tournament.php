@@ -124,17 +124,17 @@ The following variables are usable:
                 <li>Competitors unavailable to play on finals day must retire at match point in the semi-finals</li>
             </ol>
         </div>
-        <div class="form-checkboxes">
-            <div class="form-checkboxes__item">
-                <input class="form-checkboxes__input" id="acceptance" name="acceptance" type="checkbox">
-                <label class="form-label form-checkboxes__label" for="acceptance">
-                    <?php _e('I agree to abide by the rules of the tournament', 'racketmanager') ?>
-                </label>
-            </div>
-        <div>
-        <input type="hidden" name="season" value="<?php echo $season ?>" />
-        <input type="hidden" name="tournamentSeason" value="<?php echo $type ?>" />
-        <button class="btn" type="button" id="tournamentEntrySubmit" name="tournamentEntrySubmit" onclick="Racketmanager.tournamentEntryRequest(this)">Enter Tournament</button>
+        <div class="form-check form-switch mb-3">
+            <input class="form-check-input switch" id="acceptance" name="acceptance" type="checkbox" role="switch">
+            <label class="form-check-label switch" for="acceptance">
+                <?php _e('I agree to abide by the rules of the tournament', 'racketmanager') ?>
+            </label>
+        </div>
+        <div class="mb-3">
+            <input type="hidden" name="season" value="<?php echo $season ?>" />
+            <input type="hidden" name="tournamentSeason" value="<?php echo $type ?>" />
+            <button class="btn" type="button" id="tournamentEntrySubmit" name="tournamentEntrySubmit" onclick="Racketmanager.tournamentEntryRequest(this)">Enter Tournament</button>
+        </div>
         <div class="updateResponse" id="tournamentEntryResponse" name="tournamentEntryResponse"></div>
     </form>
 <?php } else { ?>

@@ -557,6 +557,15 @@ div.tm-team-content div.team {
 .form-checkboxes__conditional--hidden {
     display: none
 }
+.form-check-input.switch:focus {
+    border-color: #00b700;
+    outline: 0;
+    box-shadow: 0 0 0 .25rem rgba(00,110,00,.25)
+}
+.form-check-input.switch:checked {
+    background-color: #006800;
+    border-color: #006800;
+}
 input[type="text"]:disabled, input[type="email"]:disabled, input[type="tel"]:disabled, input[type="url"]:disabled, input[type="number"]:disabled, input[type="time"]:disabled {
     border: none;
     background: none;

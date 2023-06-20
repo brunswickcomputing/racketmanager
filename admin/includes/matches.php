@@ -73,7 +73,7 @@
 		</thead>
 		<tbody id="the-list-matches-<?php echo $group ?>" class="lm-form-table">
 			<?php if ( $matches ) { $class = ''; ?>
-			<?php foreach ( $matches AS $match ) { $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
+			<?php foreach ( $matches as $match ) { $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 				<tr class="<?php echo $class ?>">
 					<th scope="row" class="check-column">
 						<input type="hidden" name="matches[<?php echo $match->id ?>]" value="<?php echo $match->id ?>" />
@@ -90,7 +90,7 @@
 					<td><?php echo ( '00:00' == $match->hour.":".$match->minutes ) ? 'N/A' : mysql2date($this->time_format, $match->date) ?></td>
 					<?php do_action( 'matchtable_columns_'.(isset($league->sport) ? $league->sport : '' ), $match ) ?>
 					<td class="score">
-						<input class="points" type="text" size="2" style="text-align: center;" id="home_points[<?php echo $match->id ?>]" name="home_points[<?php echo $match->id ?>]" value="<?php echo isset($match->home_points) ? $match->home_points : ''; ?>" /> : <input class="points" type="text" size="2" style="text-align: center;" id="away_points[<?php echo $match->id ?>]" name="away_points[<?php echo $match->id ?>]" value="<?php echo (isset($match->away_points) ? $match->away_points : '') ?>" />
+						<input class="points" type="text" size="2" style="text-align: center;" id="home_points[<?php echo $match->id ?>]" name="home_points[<?php echo $match->id ?>]" value="<?php echo isset($match->home_points) ? $match->home_points : ''; ?>" /> : <input class="points" type="text" size="2" style="text-align: center;" id="away_points[<?php echo $match->id ?>]" name="away_points[<?php echo $match->id ?>]" value="<?php echo isset($match->away_points) ? $match->away_points : ''; ?>" />
 					</td>
 				</tr>
 			<?php } ?>
@@ -113,4 +113,4 @@
 	<?php } ?>
 </div>
 </form>
-<?php require('match-modal.php'); ?>
+<?php require_once 'match-modal.php'; ?>

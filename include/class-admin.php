@@ -14,6 +14,7 @@
 */
 final class RacketManagerAdmin extends RacketManager
 {
+	private $league_id;
 	/**
 	* Constructor
 	*/
@@ -225,7 +226,7 @@ final class RacketManagerAdmin extends RacketManager
 
 	public function custom_user_profile_fields( $user ) {
 		?>
-		<table class="form-table">
+		<table class="form-table" aria-label="<?php _e('racketmanager_fields','racketmanager') ?>">
 			<tr>
 				<th>
 					<label for="gender"><?php _e( 'Gender','racketmanager' ); ?></label>
@@ -734,7 +735,7 @@ final class RacketManagerAdmin extends RacketManager
 						$profile = '0';
 						$league->addTeam($team, $_POST['latestSeason'], $rank, $status, $profile);
 					} elseif ( $_POST['constitutionAction'] == 'update' ) {
-						$this->updateTable( $tableId, $league, $team, $_POST['latestSeason'], $rank, $status, $profile );
+						$this->updateTable( $tableId, $leagueId, $rank, $status, $profile );
 					}
 				}
 			} elseif ( isset($_POST['action']) && $_POST['action'] == 'addTeamsToLeague' ) {
@@ -963,7 +964,16 @@ final class RacketManagerAdmin extends RacketManager
 			} elseif ( isset($_POST['updateLeague']) && 'teams_manual' == $_POST['updateLeague'] ) {
 				if ( current_user_can('update_results') ) {
 					check_admin_referer('teams-bulk');
-					$league->saveStandingsManually( $_POST['team_id'], $_POST['points_plus'], $_POST['points_minus'], $_POST['num_done_matches'], $_POST['num_won_matches'], $_POST['num_draw_matches'], $_POST['num_lost_matches'], $_POST['add_points'], $_POST['custom'] );
+					$points = array();
+					$points['points_plus'] = $_POST['points_plus'];
+					$points['points_minus'] = $_POST['points_minus'];
+					$points['add_points'] = $_POST['add_points'];
+					$matches = array();
+					$matches['num_done_matches'] = $_POST['num_done_matches'];
+					$matches['num_won_matches'] = $_POST['num_won_matches'];
+					$matches['num_draw_matches'] = $_POST['num_draw_matches'];
+					$matches['num_lost_matches'] = $_POST['num_lost_matches'];
+					$league->saveStandingsManually( $_POST['team_id'], $points, $matches, $_POST['custom'] );
 
 					$this->setMessage(__('Standings Table updated','racketmanager'));
 				} else {
@@ -1127,8 +1137,9 @@ final class RacketManagerAdmin extends RacketManager
 			$league_id = intval($_GET['league_id']);
 			$league = get_league( $league_id );
 			$leagueType = $league->type;
-			if ( $leagueType == 'LD' ) $leagueType = 'XD';
-
+			if ( $leagueType == 'LD' ) {
+				$leagueType = 'XD';
+			}
 			if ( $league->entryType == 'player' ) {
 				$entryType = 'player';
 			} else {
@@ -1755,8 +1766,7 @@ final class RacketManagerAdmin extends RacketManager
 			// select first group if none is selected and league is cup championship
 			if ( $cup && empty($group) && !$is_finals ) {
 				$groups = ( isset($league->groups) ? $league->groups : '');
-				if ( is_array($groups) ) {
-				} else {
+				if ( !is_array($groups) ) {
 					$groups = explode(";", $groups);
 				}
 				if (isset($groups[0])) {
@@ -1844,8 +1854,7 @@ final class RacketManagerAdmin extends RacketManager
 
 				$maxMatchDay = $wpdb->get_var( "SELECT MAX(match_day) FROM {$wpdb->racketmanager_matches} WHERE  ".$search."" );
 
-				if ( isset($_GET['final']) ) {
-				} else {
+				if ( !isset($_GET['final']) ) {
 					if ( $cup ) {
 						$form_title = sprintf(__( 'Add Matches - Group %s', 'racketmanager' ), $group);
 						$submit_title = __( 'Add Matches', 'racketmanager' );
@@ -1860,8 +1869,9 @@ final class RacketManagerAdmin extends RacketManager
 				}
 
 				// Simply limit the number of matches to add to 50
-				if ($max_matches > 50) $max_matches = 50;
-
+				if ($max_matches > 50) {
+					$max_matches = 50;
+				}
 				for ( $i = 0; $i < $max_matches; $i++ ) {
 					$matches[] = new RM_Match();
 					$matches[$i]->hour = $league->default_match_start_time['hour'];
@@ -2503,45 +2513,6 @@ final class RacketManagerAdmin extends RacketManager
 	}
 
 	/**
-	* delete Competition
-	*
-	* @param int $competition_id
-	* @return boolean
-	*/
-	private function delCompetition( $competition_id ) {
-		global $wpdb;
-
-		if ( !current_user_can('del_leagues') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		$competition = get_competition($competition_id);
-		foreach ( $competition->getLeagues() as $league ) {
-
-			$league_id = $league->id;
-
-			// remove tables
-			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_table} WHERE `league_id` = '%d'", $league_id) );
-			// remove matches and rubbers
-			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` IN ( SELECT `id` from {$wpdb->racketmanager_matches} WHERE `league_id` = '%d')", $league_id) );
-			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `league_id` = '%d'", $league_id) );
-
-			$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager} WHERE `id` = '%d'", $league_id) );
-
-		}
-
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_team_competition} WHERE `competition_id` = '%d'", $competition_id) );
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_competitions_seasons} WHERE `competition_id` = '%d'", $competition_id) );
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_competitions} WHERE `id` = '%d'", $competition_id) );
-
-		$this->deleteCompetitionPages($competition->name);
-
-		$this->setMessage( __('Competition deleted', 'racketmanager') );
-		return true;
-	}
-
-	/**
 	* delete all Competition Pages
 	*
 	* @pageName string $competitionName
@@ -2590,16 +2561,19 @@ final class RacketManagerAdmin extends RacketManager
 	/**
 	* update Table
 	*
-	* @param string $title
+	* @param int $tableId
+	* @param int $leagueId
+	* @param int $rank
+	* @param string $status
+	* @param string $profile
 	* @return int
 	*/
-	private function updateTable( $tableId, $leagueId, $teamId, $season , $rank, $status, $profile ) {
-		global $wpdb, $racketmanager;
+	private function updateTable( $tableId, $leagueId, $rank, $status, $profile ) {
+		global $wpdb;
 
 		$sql = "UPDATE {$wpdb->racketmanager_table} SET `league_id` = '%d', `rank` = '%d', `status` = '%s', `profile` = '%d' WHERE `id` = '%d'";
 		$wpdb->query( $wpdb->prepare ( $sql, $leagueId, $rank, $status, $profile, $tableId ) );
 		$this->setMessage( __('Updated', 'racketmanager') );
-		return;
 	}
 
 	/**
@@ -2615,11 +2589,8 @@ final class RacketManagerAdmin extends RacketManager
 			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
 			return false;
 		}
-
-		$settings = array();
 		$wpdb->query( $wpdb->prepare ( "INSERT INTO {$wpdb->racketmanager_seasons} (name) VALUES ('%s')", $name) );
 		$this->setMessage( __('Season added', 'racketmanager') );
-
 		return true;
 	}
 
@@ -2659,12 +2630,10 @@ final class RacketManagerAdmin extends RacketManager
 		}
 
 		$competition = get_competition($competition_id);
-		if ( !$num_match_days ) {
-			if ( $competition->competitiontype == 'cup' || $competition->competitiontype == 'tournament' ) {
-				$options = $racketmanager->getOptions();
-				$rm_options = $options['championship'];
-				$num_match_days = isset($rm_options['numRounds']) ? $rm_options['numRounds'] : 0;
-			}
+		if ( !$num_match_days  && ( $competition->competitiontype == 'cup' || $competition->competitiontype == 'tournament' ) ) {
+			$options = $racketmanager->getOptions();
+			$rm_options = $options['championship'];
+			$num_match_days = isset($rm_options['numRounds']) ? $rm_options['numRounds'] : 0;
 		}
 
 		if ( !$num_match_days ) {
@@ -2690,7 +2659,7 @@ final class RacketManagerAdmin extends RacketManager
 	* @param int $season_id
 	* @param string $season
 	* @param int $competition_id
-	* @param array $matchDate
+	* @param array $matchDates
 	* @param boolean $homeAway
 	* @param string $status
 	* @return boolean
@@ -3078,7 +3047,7 @@ final class RacketManagerAdmin extends RacketManager
 			if ( "TAB" == $delimiter ) {
 				$delimiter = "\t"; // correct tabular delimiter
 			}
-			$teams = $points_plus = $points_minus = $points2_plus = $points2_minus = $pld = $won = $draw = $lost = $custom = $add_points = array();
+			$teams = $points_plus = $points_minus = $pld = $won = $draw = $lost = $custom = $add_points = array();
 			$i = $x = 0;
 			while (!feof($handle)) {
 				$buffer = fgets($handle, 4096);
@@ -3086,7 +3055,7 @@ final class RacketManagerAdmin extends RacketManager
 				// ignore header and empty lines
 				if ( $i > 0 && count($line) > 1 ) {
 					$season = $line[0];
-					$team	= utf8_encode($line[1]);
+					$team	= $line[1];
 					$team_id = $this->getTeamID($team);
 					if ( $team_id != 0 ) {
 						$table_id = $league->addTeam($team_id, $season);
@@ -3218,11 +3187,11 @@ final class RacketManagerAdmin extends RacketManager
 
 				// ignore header and empty lines
 				if ( $i > 0 && count($line) > 1 ) {
-					$_POST['firstname']	= isset($line[0]) ? utf8_encode($line[0]) : '';
-					$_POST['surname']	= isset($line[1]) ? utf8_encode($line[1]) : '';
-					$_POST['gender']	= isset($line[2]) ? utf8_encode($line[2]) : '';
-					$_POST['btm']		= isset($line[3]) ? utf8_encode($line[3]) : '';
-					$_POST['email']		= isset($line[4]) ? utf8_encode($line[4]) : '';
+					$_POST['firstname']	= isset($line[0]) ? $line[0] : '';
+					$_POST['surname']	= isset($line[1]) ? $line[1] : '';
+					$_POST['gender']	= isset($line[2]) ? $line[2] : '';
+					$_POST['btm']		= isset($line[3]) ? $line[3] : '';
+					$_POST['email']		= isset($line[4]) ? $line[4] : '';
 					$playerValid = $this->validatePlayer();
 					if ($playerValid[0]) {
 						$newPlayer = $playerValid[1];
@@ -3272,8 +3241,6 @@ final class RacketManagerAdmin extends RacketManager
 			if ( "TAB" == $delimiter ) $delimiter = "\t"; // correct tabular delimiter
 
 			$club = get_club( $affiliatedClub );
-			$players = array();
-
 			$i = $x = 0;
 			while (!feof($handle)) {
 				$buffer = fgets($handle, 4096);
@@ -3281,11 +3248,11 @@ final class RacketManagerAdmin extends RacketManager
 
 				// ignore header and empty lines
 				if ( $i > 0 && count($line) > 1 ) {
-					$_POST['firstname']	= isset($line[0]) ? utf8_encode($line[0]) : '';
-					$_POST['surname']	= isset($line[1]) ? utf8_encode($line[1]) : '';
-					$_POST['gender']	= isset($line[2]) ? utf8_encode($line[2]) : '';
-					$_POST['btm']		= isset($line[3]) ? utf8_encode($line[3]) : '';
-					$_POST['email']		= isset($line[4]) ? utf8_encode($line[4]) : '';
+					$_POST['firstname']	= isset($line[0]) ? $line[0] : '';
+					$_POST['surname']	= isset($line[1]) ? $line[1] : '';
+					$_POST['gender']	= isset($line[2]) ? $line[2] : '';
+					$_POST['btm']		= isset($line[3]) ? $line[3] : '';
+					$_POST['email']		= isset($line[4]) ? $line[4] : '';
 					$playerValid = $this->validatePlayer();
 					if ($playerValid[0]) {
 						$newPlayer = $playerValid[1];
@@ -3383,10 +3350,11 @@ final class RacketManagerAdmin extends RacketManager
 	* @param mixed $competition
 	* @return void|string
 	*/
-	function getLeagueDropdown( $competition_id = false ) {
+	public function getLeagueDropdown( $competition_id = false ) {
 		global $racketmanager;
-
-		$competition_id = (int)$_POST['competition_id'];
+		if (!$competition_id) {
+			$competition_id = intval($_POST['competition_id']);
+		}
 		$competition = get_competition($competition_id);
 		$leagues = $competition->getLeagues(); ?>
 
@@ -3413,8 +3381,6 @@ final class RacketManagerAdmin extends RacketManager
 		$defaults = array( 'season' => false, 'status' => false, 'competition' => false );
 		$args = array_merge($defaults, $args);
 		extract($args, EXTR_SKIP);
-
-		$searchTerms = array();
 		$sql = "SELECT `id`, `league_id`, `match_id`, `team_id`, `player_id`, `updated_date`, `updated_user`, `description`, `status` FROM {$wpdb->racketmanager_results_checker} WHERE 1 = 1"  ;
 
 		if ( $status ) {
@@ -3431,10 +3397,8 @@ final class RacketManagerAdmin extends RacketManager
 				$sql .= $wpdb->prepare(" AND `match_id` IN (SELECT `id` FROM {$wpdb->racketmanager_matches} WHERE `season` = '%s')", $season);
 			}
 		}
-		if ( $competition ) {
-			if ( $competition != 'all' ) {
-				$sql .= $wpdb->prepare(" AND `match_id` IN (SELECT m.`id` FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l WHERE m.`league_id` = l.`id` AND l.`competition_id` = %d)", $competition);
-			}
+		if ( $competition && $competition != 'all' ) {
+			$sql .= $wpdb->prepare(" AND `match_id` IN (SELECT m.`id` FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l WHERE m.`league_id` = l.`id` AND l.`competition_id` = %d)", $competition);
 		}
 
 		$sql .= " ORDER BY `match_id` DESC, `league_id` ASC, `team_id` ASC, `player_id` ASC";
@@ -3488,17 +3452,11 @@ final class RacketManagerAdmin extends RacketManager
 	* get single results checker
 	*
 	* @param int $resultsCheckerId
-	* @return array
+	* @return object
 	*/
 	private function getResultsCheckerEntry( $resultsCheckerId ) {
 		global $wpdb;
-
-		$resultsChecker = $wpdb->get_row("SELECT `league_id`, `match_id`, `team_id`, `player_id`, `updated_date`, `updated_user`, `description`, `status` FROM {$wpdb->racketmanager_results_checker} WHERE `id` = '".intval($resultsCheckerId)."'");
-
-		if ( !$resultsChecker ) return false;
-
-		$this->resultsChecker[$resultsCheckerId] = $resultsChecker;
-		return $this->resultsChecker[$resultsCheckerId];
+		return $wpdb->get_row("SELECT `league_id`, `match_id`, `team_id`, `player_id`, `updated_date`, `updated_user`, `description`, `status` FROM {$wpdb->racketmanager_results_checker} WHERE `id` = '".intval($resultsCheckerId)."'");
 	}
 
 	/**
@@ -3595,8 +3553,7 @@ final class RacketManagerAdmin extends RacketManager
 	public function getLatestSeason() {
 		global $wpdb;
 
-		$season = $wpdb->get_var( "SELECT MAX(name) FROM {$wpdb->racketmanager_seasons}" );
-		return $season;
+		return $wpdb->get_var( "SELECT MAX(name) FROM {$wpdb->racketmanager_seasons}" );
 	}
 
 	/**
@@ -3612,7 +3569,7 @@ final class RacketManagerAdmin extends RacketManager
 		do {
 			$result = $this->validateSchedule($competitions);
 			$i ++;
-		} while ( $result == false || $i > 20 );
+		} while ( !$result || $i > 20 );
 
 		if ( $result ) {
 			foreach ($competitions as $competitionId) {
@@ -3638,6 +3595,8 @@ final class RacketManagerAdmin extends RacketManager
 		$success = true;
 		$messages = array();
 		$c = 0;
+		$numMatchDays = 0;
+		$homeAway = '';
 		foreach ($competitions as $competitionId) {
 			$competition = get_competition($competitionId);
 			$season = $competition->getSeason();
@@ -3705,6 +3664,11 @@ final class RacketManagerAdmin extends RacketManager
 				$sql = "SELECT tbl.`id`, tbl.`team_id`, tbl.`league_id` FROM {$wpdb->racketmanager_team_competition} tc, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} tbl WHERE tc.`team_id` = t.`id` AND tc.`competition_id` = l.`competition_id` AND l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND tc.`competition_id` in (".$competitionIds.") AND tbl.`season` = ".$season." AND t.`affiliatedclub` = ".$clubLeague->affiliatedclub." AND tbl.`league_id` = '".$clubLeague->league_id."'  ORDER BY tbl.`team_id`";
 				$teams = $wpdb->get_results( $sql );
 				$counter = 1;
+				$altRefs = array();
+				$refs = array();
+				$table1 = '';
+				$league1 = '';
+				$team1 = '';
 				foreach ($teams as $team) {
 					if ( $counter & 1 ) {
 						$team1 = $team->team_id;
@@ -3787,7 +3751,6 @@ final class RacketManagerAdmin extends RacketManager
 						}
 					} else {
 						/* for second of pair */
-						$team2 = $team->team_id;
 						$table2 = $team->id;
 						$league2 = $team->league_id;
 						$group2 = $team->group;
@@ -3909,7 +3872,7 @@ final class RacketManagerAdmin extends RacketManager
 	*
 	* @return array $charges
 	*/
-	private function getCharges() {
+	public function getCharges() {
 		global $wpdb;
 
 		return $wpdb->get_results( "SELECT `id`, `status`, `competitionType`, `type`, `season`, `date` FROM {$wpdb->racketmanager_charges} order by `season`, `type`");
@@ -3928,10 +3891,8 @@ final class RacketManagerAdmin extends RacketManager
 		extract($args, EXTR_SKIP);
 
 		$searchTerms = array();
-		if ( $club ) {
-			if ( $club != 'all') {
-				$searchTerms[] = $wpdb->prepare("`club_id` = %d", $club);
-			}
+		if ( $club && $club != 'all') {
+			$searchTerms[] = $wpdb->prepare("`club_id` = %d", $club);
 		}
 		if ( $status ) {
 			if ( $status == 'paid') {
@@ -3985,7 +3946,6 @@ final class RacketManagerAdmin extends RacketManager
   }
 
 	private function scheduleResultChase($competitionType, $options) {
-		$current_timestamp = current_time('timestamp');
 		$day = intval(date('d'));
 		$month = intval(date('m'));
 		$year = intval(date('Y'));

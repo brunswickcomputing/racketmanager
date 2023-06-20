@@ -1,68 +1,70 @@
 <?php
+/**
+ * RacketManagerShortcodes API: RacketManagerShortcodes class
+ *
+ * @author Kolja Schleich
+ * @author Paul Moffat
+ * @package RacketManager
+ * @subpackage RacketManagerShortcodes
+ */
 
 /**
-* RacketManagerShortcodes API: RacketManagerShortcodes class
-*
-* @author Kolja Schleich
-* @author Paul Moffat
-* @package RacketManager
-* @subpackage RacketManagerShortcodes
-*/
-
-/**
-* Class to implement shortcode functions
-*
-*/
-class RacketManagerShortcodes extends RacketManager {
+ * Class to implement shortcode functions
+ *
+ */
+class RacketManagerShortcodes extends RacketManager
+{
 
 	/**
-	* initialize shortcodes
-	*
-	*/
-	public function __construct() {
-		add_shortcode( 'standings', array(&$this, 'showStandings') );
-		add_shortcode( 'dailymatches', array(&$this, 'showDailyMatches') );
-		add_shortcode( 'latestresults', array(&$this, 'showLatestResults') );
-		add_shortcode( 'matches', array(&$this, 'showMatches') );
-		add_shortcode( 'match', array(&$this, 'showMatch') );
-		add_shortcode( 'championship', array(&$this, 'showChampionship') );
-		add_shortcode( 'crosstable', array(&$this, 'showCrosstable') );
-		add_shortcode( 'teams', array(&$this, 'showTeams') );
-		add_shortcode( 'team', array(&$this, 'showTeam') );
-		add_shortcode( 'leaguearchive', array(&$this, 'showArchive') );
-		add_shortcode( 'competition', array(&$this, 'showCompetition') );
-		add_shortcode( 'players', array(&$this, 'showPlayers') );
-		add_shortcode( 'player', array(&$this, 'showPlayer') );
-		add_shortcode( 'clubs', array(&$this, 'showClubs') );
-		add_shortcode( 'club', array(&$this, 'showClub') );
-		add_shortcode( 'tournament-entry', array(&$this, 'showTournamentEntry') );
-		add_shortcode( 'winners', array(&$this, 'showWinners') );
-		add_shortcode( 'matchnotification', array(&$this, 'showMatchNotification') );
-		add_shortcode( 'resultnotification', array(&$this, 'showResultNotification') );
-		add_shortcode( 'resultnotificationcaptain', array(&$this, 'showCaptainResultNotification') );
-		add_shortcode( 'resultoutstandingnotification', array(&$this, 'showResultOutstandingNotification') );
-		add_shortcode( 'clubplayernotification', array(&$this, 'showClubPlayerNotification') );
-		add_shortcode( 'cupentry', array(&$this, 'showCupEntry') );
-		add_shortcode( 'leagueentry', array(&$this, 'showLeagueEntry') );
-		add_shortcode( 'orderofplay', array(&$this, 'showOrderOfPlay') );
-		add_shortcode( 'favourites', array(&$this, 'showFavourites') );
-		add_shortcode( 'invoice', array(&$this, 'showInvoice') );
+	 * initialize shortcodes
+	 *
+	 */
+	public function __construct()
+	{
+		add_shortcode('standings', array(&$this, 'showStandings'));
+		add_shortcode('dailymatches', array(&$this, 'showDailyMatches'));
+		add_shortcode('latestresults', array(&$this, 'showLatestResults'));
+		add_shortcode('matches', array(&$this, 'showMatches'));
+		add_shortcode('match', array(&$this, 'showMatch'));
+		add_shortcode('championship', array(&$this, 'showChampionship'));
+		add_shortcode('crosstable', array(&$this, 'showCrosstable'));
+		add_shortcode('teams', array(&$this, 'showTeams'));
+		add_shortcode('team', array(&$this, 'showTeam'));
+		add_shortcode('leaguearchive', array(&$this, 'showArchive'));
+		add_shortcode('competition', array(&$this, 'showCompetition'));
+		add_shortcode('players', array(&$this, 'showPlayers'));
+		add_shortcode('player', array(&$this, 'showPlayer'));
+		add_shortcode('clubs', array(&$this, 'showClubs'));
+		add_shortcode('club', array(&$this, 'showClub'));
+		add_shortcode('tournament-entry', array(&$this, 'showTournamentEntry'));
+		add_shortcode('winners', array(&$this, 'showWinners'));
+		add_shortcode('matchnotification', array(&$this, 'showMatchNotification'));
+		add_shortcode('resultnotification', array(&$this, 'showResultNotification'));
+		add_shortcode('resultnotificationcaptain', array(&$this, 'showCaptainResultNotification'));
+		add_shortcode('resultoutstandingnotification', array(&$this, 'showResultOutstandingNotification'));
+		add_shortcode('clubplayernotification', array(&$this, 'showClubPlayerNotification'));
+		add_shortcode('cupentry', array(&$this, 'showCupEntry'));
+		add_shortcode('leagueentry', array(&$this, 'showLeagueEntry'));
+		add_shortcode('orderofplay', array(&$this, 'showOrderOfPlay'));
+		add_shortcode('favourites', array(&$this, 'showFavourites'));
+		add_shortcode('invoice', array(&$this, 'showInvoice'));
 	}
 
 	/**
-	* Display League Standings
-	*
-	*    [standings league_id="1" template="name"]
-	*
-	* - league_id is the ID of league
-	* - season: display specific season (optional). default is current season
-	* - template is the template used for displaying. Replace name appropriately. Templates must be named "standings-template.php" (optional)
-	* - group: optional group
-	*
-	* @param array $atts shortcode attributes
-	* @return string
-	*/
-	public function showStandings( $atts, $widget = false ) {
+	 * Display League Standings
+	 *
+	 *    [standings league_id="1" template="name"]
+	 *
+	 * - league_id is the ID of league
+	 * - season: display specific season (optional). default is current season
+	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "standings-template.php" (optional)
+	 * - group: optional group
+	 *
+	 * @param array $atts shortcode attributes
+	 * @return string
+	 */
+	public function showStandings($atts, $widget = false)
+	{
 		global $league;
 
 		extract(shortcode_atts(array(
@@ -72,46 +74,48 @@ class RacketManagerShortcodes extends RacketManager {
 			'season' => false,
 			'group' => false,
 			'home' => 0,
-		), $atts ));
+		), $atts));
 
 		$league = $this->getleague($league_id);
 
-		if ( !$league ) return;
-
+		if (!$league) {
+			return false;
+		}
 		$league->setTemplate('standingstable', $template);
 		$league->setSeason($season);
 		$league->setGroup($group);
 
-		$team_args = array( "orderby" => array('rank' => 'ASC') );
-		if ( $group ) $team_args["group"] = $group;
-		$teams = $league->getLeagueTeams( $team_args );
+		$team_args = array("orderby" => array('rank' => 'ASC'));
+		if ($group) {
+			$team_args["group"] = $group;
+		}
+		$teams = $league->getLeagueTeams($team_args);
 
-		if (empty($template))
-		$filename = 'standings';
-		elseif ( !$widget && $this->checkTemplate('standings-'.$league->sport) )
-		$filename = 'standings-'.$league->sport;
-		else
-		$filename = 'standings-'.$template;
-
-		$out = $this->loadTemplate( $filename, array('league' => $league, 'teams' => $teams, 'widget' => $widget, 'season' => $season ) );
-
-		return $out;
+		if (empty($template)) {
+			$filename = 'standings';
+		} elseif (!$widget && $this->checkTemplate('standings-' . $league->sport)) {
+			$filename = 'standings-' . $league->sport;
+		} else {
+			$filename = 'standings-' . $template;
+		}
+		return $this->loadTemplate($filename, array('league' => $league, 'teams' => $teams, 'widget' => $widget, 'season' => $season));
 	}
 
 	/**
-	* Display Daily Matches
-	*
-	*    [dailymatches league_id="1" competition_id="1" match_date="dd/mm/yyyy" template="name"]
-	*
-	* - league_id is the ID of league (optional)
-	* - competition_id is the ID of the competition (optional)
-	* - season: display specific season (optional)
-	* - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
-	*
-	* @param array $atts shorcode attributes
-	* @return string
-	*/
-	public function showDailyMatches( $atts ) {
+	 * Display Daily Matches
+	 *
+	 *    [dailymatches league_id="1" competition_id="1" match_date="dd/mm/yyyy" template="name"]
+	 *
+	 * - league_id is the ID of league (optional)
+	 * - competition_id is the ID of the competition (optional)
+	 * - season: display specific season (optional)
+	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
+	 *
+	 * @param array $atts shorcode attributes
+	 * @return string
+	 */
+	public function showDailyMatches($atts)
+	{
 		global $racketmanager, $wpdb;
 
 		extract(shortcode_atts(array(
@@ -120,42 +124,40 @@ class RacketManagerShortcodes extends RacketManager {
 			'competition_type' => 'league',
 			'template' => 'daily',
 			'match_date' => false,
-		), $atts ));
+		), $atts));
 
 		$matches = false;
 
 		$match_date = get_query_var('match_date');
-		if ( $match_date == '' ) {
-			if (isset($_GET['match_date'])) {
-				$match_date = $_GET['match_date'];
-			}
+		if ($match_date == ''  && isset($_GET['match_date'])) {
+			$match_date = $_GET['match_date'];
 		}
-		if ( $match_date == '' ) {
+		if ($match_date == '') {
 			$match_date = date("Y-m-d");
 		}
 
-		$matches = $racketmanager->getMatches( array('match_date' => $match_date, 'competition_type' => $competition_type) );
+		$matches = $racketmanager->getMatches(array('match_date' => $match_date, 'competition_type' => $competition_type));
 
-		$filename = ( !empty($template) ) ? 'matches-'.$template : 'matches';
+		$filename = (!empty($template)) ? 'matches-' . $template : 'matches';
 
-		$out = $this->loadTemplate( $filename, array('matches' => $matches, 'match_date' => $match_date ) );
-		return $out;
+		return $this->loadTemplate($filename, array('matches' => $matches, 'match_date' => $match_date));
 	}
 
 	/**
-	* Display Latest Match results
-	*
-	*    [latestresults league_id="1" competition_id="1" match_date="dd/mm/yyyy" template="name"]
-	*
-	* - league_id is the ID of league (optional)
-	* - competition_id is the ID of the competition (optional)
-	* - season: display specific season (optional)
-	* - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
-	*
-	* @param array $atts shorcode attributes
-	* @return string
-	*/
-	public function showLatestResults( $atts ) {
+	 * Display Latest Match results
+	 *
+	 *    [latestresults league_id="1" competition_id="1" match_date="dd/mm/yyyy" template="name"]
+	 *
+	 * - league_id is the ID of league (optional)
+	 * - competition_id is the ID of the competition (optional)
+	 * - season: display specific season (optional)
+	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
+	 *
+	 * @param array $atts shorcode attributes
+	 * @return string
+	 */
+	public function showLatestResults($atts)
+	{
 		global $racketmanager, $wpdb;
 
 		extract(shortcode_atts(array(
@@ -165,45 +167,45 @@ class RacketManagerShortcodes extends RacketManager {
 			'template' => 'results',
 			'days' => 7,
 			'affiliatedclub' => '',
-		), $atts ));
+		), $atts));
 
 		$matches = false;
 
 		$time = 'latest';
-		$matches = $racketmanager->getMatches( array('days' => $days, 'competition_type' => $competition_type, 'time' => 'latest', 'history' => $days, 'affiliatedClub' => $affiliatedclub) );
+		$matches = $racketmanager->getMatches(array('days' => $days, 'competition_type' => $competition_type, 'time' => $time, 'history' => $days, 'affiliatedClub' => $affiliatedclub));
 
-		foreach ( $matches AS $i => $match ) {
-				$matches[$i]->score = $this->getMatchScore($match);
-				$i++;
+		foreach ($matches as $i => $match) {
+			$matches[$i]->score = $this->getMatchScore($match);
+			$i++;
 		}
-		if (empty($template))
-		$filename = 'matches';
-		elseif ( isset($league) && $this->checkTemplate('matches-'.$league->sport) )
-		$filename = 'matches-'.$league->sport;
-		else
-		$filename = 'matches-'.$template;
-
-		$out = $this->loadTemplate( $filename, array('matches' => $matches ) );
-		return $out;
+		if (empty($template)) {
+			$filename = 'matches';
+		} elseif (isset($league) && $this->checkTemplate('matches-' . $league->sport)) {
+			$filename = 'matches-' . $league->sport;
+		} else {
+			$filename = 'matches-' . $template;
+		}
+		return $this->loadTemplate($filename, array('matches' => $matches));
 	}
 
 	/**
-	* Display League Matches
-	*
-	*    [matches league_id="1" mode="all|home|racing" template="name" roster=ID]
-	*
-	* - league_id is the ID of league
-	* - league_name: get league by name and not ID (optional)
-	* - mode can be either "all" or "home". For racing it must be "racing". If it is not specified the matches are displayed on a weekly basis
-	* - season: display specific season (optional)
-	* - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
-	* - roster is the ID of individual team member (currently only works with racing)
-	* - match_day: specific match day (integer)
-	*
-	* @param array $atts shorcode attributes
-	* @return string
-	*/
-	public function showMatches( $atts ) {
+	 * Display League Matches
+	 *
+	 *    [matches league_id="1" mode="all|home|racing" template="name" roster=ID]
+	 *
+	 * - league_id is the ID of league
+	 * - league_name: get league by name and not ID (optional)
+	 * - mode can be either "all" or "home". For racing it must be "racing". If it is not specified the matches are displayed on a weekly basis
+	 * - season: display specific season (optional)
+	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
+	 * - roster is the ID of individual team member (currently only works with racing)
+	 * - match_day: specific match day (integer)
+	 *
+	 * @param array $atts shorcode attributes
+	 * @return string
+	 */
+	public function showMatches($atts)
+	{
 		global $league, $racketmanager;
 
 		extract(shortcode_atts(array(
@@ -224,17 +226,19 @@ class RacketManagerShortcodes extends RacketManager {
 			'timeformat' => '',
 			'show_team_selection' => '',
 			'show_match_day_selection' => ''
-		), $atts ));
+		), $atts));
 
 		$league = $this->getleague($league_id);
 
-		if ( !$league ) return;
-
+		if (!$league) {
+			return false;
+		}
 		$league->setTemplate('matches', $template);
 
 		// Always disable match day in template to show matches by matchday
-		if ( in_array($template, array("by_matchday")) || !empty($time) )
-		$match_day = -1;
+		if (in_array($template, array("by_matchday")) || !empty($time)) {
+			$match_day = -1;
+		}
 
 		$league->setMatchesSelection($show_match_day_selection, $match_day, $show_team_selection, $team);
 
@@ -247,92 +251,101 @@ class RacketManagerShortcodes extends RacketManager {
 
 		// get matches of specific team
 		$team_name = str_replace('-', ' ', get_query_var('team'));
-		if ( !$team_name == null ) {
+		if (!$team_name == null) {
 			$team_id = $racketmanager->getTeamID($team_name);
-		} elseif ( !empty($team) || (isset($_GET['team_id']) && !empty($_GET['team_id'])) ) {
+		} elseif (!empty($team) || (isset($_GET['team_id']) && !empty($_GET['team_id']))) {
 			$team_id = !empty($team) ? $team : (int)$_GET['team_id'];
 		}
-		if ( !empty($team_id) ) {
+		if (!empty($team_id)) {
 			$match_args['team_id'] = $team_id;
-		} elseif ( !empty($group) ) {
+		} elseif (!empty($group)) {
 			$match_args['group'] = $group;
 		}
 
-		if ( $limit === 'false' )  {
+		if ($limit === 'false') {
 			$match_args['limit'] = false;
-		} elseif ( $limit && is_numeric($limit) ) {
+		} elseif ($limit && is_numeric($limit)) {
 			$match_args['limit'] = intval($limit);
 		}
 
 		$match_args['time'] = $time;
-		$match_args['home_only'] = ( $home_only == 1 || $home_only == 'true' ) ? true : false;
+		$match_args['home_only'] = ($home_only == 1 || $home_only == 'true') ? true : false;
 
 		// get matches
-		$matches = $league->getMatches( $match_args );
+		$matches = $league->getMatches($match_args);
 		$league->setNumMatches();
 
-		if ( !$matches ) return;
-
-		foreach ( $matches AS $i => $match ) {
+		if (!$matches) {
+			return false;
+		}
+		foreach ($matches as $i => $match) {
 
 			$match = get_match($match);
 			$matches[$i] = $match;
-			$matches[$i]->num_rubbers = ( isset($league->num_rubbers) ? $league->num_rubbers : NULL );
-			$matches[$i]->num_sets = ( isset($league->num_sets) ? $league->num_sets : NULL );
+			$matches[$i]->num_rubbers = (isset($league->num_rubbers) ? $league->num_rubbers : null);
+			$matches[$i]->num_sets = (isset($league->num_sets) ? $league->num_sets : null);
 
-			if ( isset($matches[$i]->num_rubbers) ) {
+			if (isset($matches[$i]->num_rubbers)) {
 				$rubbers = $match->getRubbers();
-				$r=1;
+				$r = 1;
 				foreach ($rubbers as $rubber) {
 					$rubber->home_player_1_name = $rubber->home_player_2_name = $rubber->away_player_1_name = $rubber->away_player_2_name = '';
-					if ( isset($rubber->home_player_1) ) $rubber->home_player_1_name = $this->getClubPlayerName($rubber->home_player_1);
-					if ( isset($rubber->home_player_2) ) $rubber->home_player_2_name = $this->getClubPlayerName($rubber->home_player_2);
-					if ( isset($rubber->away_player_1) ) $rubber->away_player_1_name = $this->getClubPlayerName($rubber->away_player_1);
-					if ( isset($rubber->away_player_2) ) $rubber->away_player_2_name = $this->getClubPlayerName($rubber->away_player_2);
+					if (isset($rubber->home_player_1)) {
+						$rubber->home_player_1_name = $this->getClubPlayerName($rubber->home_player_1);
+					}
+					if (isset($rubber->home_player_2)) {
+						$rubber->home_player_2_name = $this->getClubPlayerName($rubber->home_player_2);
+					}
+					if (isset($rubber->away_player_1)) {
+						$rubber->away_player_1_name = $this->getClubPlayerName($rubber->away_player_1);
+					}
+					if (isset($rubber->away_player_2)) {
+						$rubber->away_player_2_name = $this->getClubPlayerName($rubber->away_player_2);
+					}
 					$matches[$i]->rubbers[$r] = $rubber;
-					$r ++;
+					$r++;
 				}
 			}
-
 		}
 
 		/*
 		* get teams
 		*/
-		$teams = $league->getLeagueTeams( array("season" => $season, "orderby" => array("title" => "ASC")), 'ARRAY' );
+		$teams = $league->getLeagueTeams(array("season" => $season, "orderby" => array("title" => "ASC")), 'ARRAY');
 
-		if ( empty($template) && $this->checkTemplate('matches-'.$league->sport) )
-		$filename = 'matches-'.$league->sport;
-		elseif ($this->checkTemplate('matches-'.$template.'-'.$league->sport) )
-		$filename = 'matches-'.$template.'-'.$league->sport;
-		else
-		$filename = ( !empty($template) ) ? 'matches-'.$template : 'matches';
+		if (empty($template) && $this->checkTemplate('matches-' . $league->sport)) {
+			$filename = 'matches-' . $league->sport;
+		} elseif ($this->checkTemplate('matches-' . $template . '-' . $league->sport)) {
+			$filename = 'matches-' . $template . '-' . $league->sport;
+		} else {
+			$filename = (!empty($template)) ? 'matches-' . $template : 'matches';
+		}
 
-		$out = $this->loadTemplate( $filename, array('league' => $league, 'matches' => $matches, 'teams' => $teams, 'season' => $season ) );
-		return $out;
+		return $this->loadTemplate($filename, array('league' => $league, 'matches' => $matches, 'teams' => $teams, 'season' => $season));
 	}
 
 	/**
-	* Display single match
-	*
-	* [match id="1" template="name"]
-	*
-	* - id is the ID of the match to display
-	* - template is the template used for displaying. Replace name appropriately. Templates must be named "match-template.php" (optional)
-	*
-	* @param array $atts shorcode attributes
-	* @return string
-	*/
-	public function showMatch( $atts ) {
+	 * Display single match
+	 *
+	 * [match id="1" template="name"]
+	 *
+	 * - id is the ID of the match to display
+	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "match-template.php" (optional)
+	 *
+	 * @param array $atts shorcode attributes
+	 * @return string
+	 */
+	public function showMatch($atts)
+	{
 		global $racketmanager, $match;
 
 		extract(shortcode_atts(array(
 			'match_id' => 0,
 			'template' => '',
-		), $atts ));
+		), $atts));
 
 		// Get Match ID from shortcode or $_GET
-		if ( !$match_id ) {
+		if (!$match_id) {
 			$homeTeam = $racketmanager->getTeamID(str_replace('-', ' ', get_query_var('teamHome')));
 			$awayTeam = $racketmanager->getTeamID(str_replace('-', ' ', get_query_var('teamAway')));
 			$leagueName = str_replace('-', ' ', get_query_var('league_name'));
@@ -363,6 +376,9 @@ class RacketManagerShortcodes extends RacketManager {
 				$matchArgs['season'] = $season;
 			}
 			$matches = $racketmanager->getMatches($matchArgs);
+			if (!$matches) {
+				return _e('Match not found', 'racketmanager');
+			}
 			$match_id = $matches[0]->id;
 		}
 		$match = get_match($match_id);
@@ -370,29 +386,29 @@ class RacketManagerShortcodes extends RacketManager {
 		$seasons = $competition->seasons;
 		$leagues = $competition->getLeagues();
 
-		if ( empty($template) && $this->checkTemplate('match-'.$match->league->sport) ) {
-			$filename = 'match-'.$match->league->sport;
-		} elseif ($this->checkTemplate('match-'.$template.'-'.$match->league->sport) ) {
-			$filename = 'match-'.$template.'-'.$match->league->sport;
+		if (empty($template) && $this->checkTemplate('match-' . $match->league->sport)) {
+			$filename = 'match-' . $match->league->sport;
+		} elseif ($this->checkTemplate('match-' . $template . '-' . $match->league->sport)) {
+			$filename = 'match-' . $template . '-' . $match->league->sport;
 		} else {
-			$filename = ( !empty($template) ) ? 'match-'.$template : 'match';
+			$filename = (!empty($template)) ? 'match-' . $template : 'match';
 		}
 
-		$out = $this->loadTemplate( $filename, array('match' => $match, 'leagues' => $leagues, 'seasons' => $seasons, 'league' => $match->league ) );
-		return $out;
+		return $this->loadTemplate($filename, array('match' => $match, 'leagues' => $leagues, 'seasons' => $seasons, 'league' => $match->league));
 	}
 
 	/**
-	* get Player name
-	*
-	* @param int $roster_id
-	* @return string $playerName
-	*/
-	function getClubPlayerName( $player ) {
+	 * get Player name
+	 *
+	 * @param int $roster_id
+	 * @return string $playerName
+	 */
+	private function getClubPlayerName($player)
+	{
 		global $racketmanager;
 
-		$roster_dtls = $racketmanager->getClubPlayer( intval($player));
-		if ( $roster_dtls ) {
+		$roster_dtls = $racketmanager->getClubPlayer(intval($player));
+		if ($roster_dtls) {
 			$playerName = $roster_dtls->fullname;
 		} else {
 			$playerName = '';
@@ -401,18 +417,19 @@ class RacketManagerShortcodes extends RacketManager {
 	}
 
 	/**
-	* Display Championship
-	*
-	*    [championship league_id="1" template="name"]
-	*
-	* - league_id is the ID of league
-	* - season: display specific season (optional)
-	* - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
-	*
-	* @param array $atts shorcode attributes
-	* @return string
-	*/
-	public function showChampionship( $atts ) {
+	 * Display Championship
+	 *
+	 *    [championship league_id="1" template="name"]
+	 *
+	 * - league_id is the ID of league
+	 * - season: display specific season (optional)
+	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
+	 *
+	 * @param array $atts shorcode attributes
+	 * @return string
+	 */
+	public function showChampionship($atts)
+	{
 		global $league;
 
 		extract(shortcode_atts(array(
@@ -420,36 +437,36 @@ class RacketManagerShortcodes extends RacketManager {
 			'league_name' => '',
 			'template' => '',
 			'season' => false,
-		), $atts ));
+		), $atts));
 
 
 		$league = $this->getleague($league_id);
-		if ( !$league ) return;
-
-		$competition = get_competition($league->competition_id);
+		if (!$league) {
+			return false;
+		}
 		$league->setTemplate('championship', $template);
-		if ( !$season ) {
+		if (!$season) {
 			$season = $league->getSeason();
 			$season = $season['name'];
 		}
 		$league->season = $season;
 		$finals = array();
-		foreach ( array_reverse($league->championship->getFinals()) AS $final ) {
+		foreach (array_reverse($league->championship->getFinals()) as $final) {
 			$class = 'alternate';
 			$data['key'] = $final['key'];
 			$data['name'] = $final['name'];
 			$data['num_matches'] = $final['num_matches'];
-			$data['rowspan'] = ( $league->championship->num_teams_first_round/2 >= 4 ) ? ceil(4/$final['num_matches']) : ceil(($league->championship->num_teams_first_round/2)/$final['num_matches']);
+			$data['rowspan'] = ($league->championship->num_teams_first_round / 2 >= 4) ? ceil(4 / $final['num_matches']) : ceil(($league->championship->num_teams_first_round / 2) / $final['num_matches']);
 
-			$matches_raw = $league->getMatches( array("final" => $final['key'], "orderby" => array("id" => "ASC")) );
+			$matches_raw = $league->getMatches(array("final" => $final['key'], "orderby" => array("id" => "ASC")));
 
 			$matches = array();
-			for ( $i = 1; $i <= $final['num_matches']; $i++ ) {
-				$match = isset($matches_raw[$i-1]) ? $matches_raw[$i-1] : NULL;
+			for ($i = 1; $i <= $final['num_matches']; $i++) {
+				$match = isset($matches_raw[$i - 1]) ? $matches_raw[$i - 1] : null;
 
-				if ( $match ) {
+				if ($match) {
 					$match = get_match($match);
-					$class = ( !isset($class) || 'alternate' == $class ) ? '' : 'alternate';
+					$class = (!isset($class) || 'alternate' == $class) ? '' : 'alternate';
 					$match->class = $class;
 					$home_title = $match->teams['home']->title;
 					$away_title = $match->teams['away']->title;
@@ -457,33 +474,41 @@ class RacketManagerShortcodes extends RacketManager {
 					$match->home_title = $home_title;
 					$match->away_title = $away_title;
 
-					$match->num_rubbers = ( isset($league->num_rubbers) ? $league->num_rubbers : NULL );
-					$match->num_sets = ( isset($league->num_sets) ? $league->num_sets : NULL );
+					$match->num_rubbers = (isset($league->num_rubbers) ? $league->num_rubbers : null);
+					$match->num_sets = (isset($league->num_sets) ? $league->num_sets : null);
 
-					if ( isset($match->num_rubbers) && $match->num_rubbers > 0 ) {
+					if (isset($match->num_rubbers) && $match->num_rubbers > 0) {
 						$rubbers = $match->getRubbers();
-						$r=1;
+						$r = 1;
 						foreach ($rubbers as $rubber) {
 							$rubber->home_player_1_name = $rubber->home_player_2_name = $rubber->away_player_1_name = $rubber->away_player_2_name = '';
-							if ( isset($rubber->home_player_1) && $rubber->home_player_1 > 0 ) $rubber->home_player_1_name = $this->getClubPlayerName($rubber->home_player_1);
-							if ( isset($rubber->home_player_2) && $rubber->home_player_2 > 0) $rubber->home_player_2_name = $this->getClubPlayerName($rubber->home_player_2);
-							if ( isset($rubber->away_player_1) && $rubber->away_player_1 > 0) $rubber->away_player_1_name = $this->getClubPlayerName($rubber->away_player_1);
-							if ( isset($rubber->away_player_2) && $rubber->away_player_2 > 0) $rubber->away_player_2_name = $this->getClubPlayerName($rubber->away_player_2);
+							if (isset($rubber->home_player_1) && $rubber->home_player_1 > 0) {
+								$rubber->home_player_1_name = $this->getClubPlayerName($rubber->home_player_1);
+							}
+							if (isset($rubber->home_player_2) && $rubber->home_player_2 > 0) {
+								$rubber->home_player_2_name = $this->getClubPlayerName($rubber->home_player_2);
+							}
+							if (isset($rubber->away_player_1) && $rubber->away_player_1 > 0) {
+								$rubber->away_player_1_name = $this->getClubPlayerName($rubber->away_player_1);
+							}
+							if (isset($rubber->away_player_2) && $rubber->away_player_2 > 0) {
+								$rubber->away_player_2_name = $this->getClubPlayerName($rubber->away_player_2);
+							}
 							$match->rubbers[$r] = $rubber;
-							$r ++;
+							$r++;
 						}
 					}
 
 					$match->score = $this->getMatchScore($match);
 
-					if ( $final['key'] == 'final' ) {
+					if ($final['key'] == 'final') {
 						$data['isFinal'] = true;
-						$data['field_id'] = ( $match->winner_id == $match->home_team ) ? "final_home" : "final_away";
+						$data['field_id'] = ($match->winner_id == $match->home_team) ? "final_home" : "final_away";
 					} else {
 						$data['isFinal'] = false;
 					}
 
-					if ( empty($match->location) ) {
+					if (empty($match->location)) {
 						$match->location = '';
 					}
 					$matches[$i] = $match;
@@ -494,180 +519,182 @@ class RacketManagerShortcodes extends RacketManager {
 			$finals[] = (object)$data;
 		}
 
-		if ( empty($template) && $this->checkTemplate('championship-'.$league->sport) ) {
-			$filename = 'championship-'.$league->sport;
+		if (empty($template) && $this->checkTemplate('championship-' . $league->sport)) {
+			$filename = 'championship-' . $league->sport;
 		} else {
-			$filename = ( !empty($template) ) ? 'championship-'.$template : 'championship';
+			$filename = (!empty($template)) ? 'championship-' . $template : 'championship';
 		}
 
-		$out = $this->loadTemplate( $filename, array('league' => $league, 'finals' => $finals) );
-
-		return $out;
+		return $this->loadTemplate($filename, array('league' => $league, 'finals' => $finals));
 	}
 
 
 	/**
-	* Function to display Clubs Info Page
-	*
-	*    [clubs template=X]
-	*
-	* @param array $atts
-	* @return the content
-	*/
-	public function showClubs( $atts ) {
+	 * Function to display Clubs Info Page
+	 *
+	 *    [clubs template=X]
+	 *
+	 * @param array $atts
+	 * @return the content
+	 */
+	public function showClubs($atts)
+	{
 		global $racketmanager;
 		extract(shortcode_atts(array(
 			'type' => '',
 			'template' => '',
 			'echo' => 0,
-		), $atts ));
+		), $atts));
 
 		$clubs = $racketmanager->getClubs();
 
-		$filename = ( !empty($template) ) ? 'clubs-'.$template : 'clubs';
+		$filename = (!empty($template)) ? 'clubs-' . $template : 'clubs';
 
-		$out = $this->loadTemplate( $filename, array( 'clubs' => $clubs) );
+		$out = $this->loadTemplate($filename, array('clubs' => $clubs));
 
-		if ( $echo )
-		echo $out;
-		else
-		return $out;
+		if ($echo) {
+			echo $out;
+		} else {
+			return $out;
+		}
 	}
 
 	/**
-	* Function to display Club Info Page
-	*
-	*    [club id=ID template=X]
-	*
-	* @param array $atts
-	* @return the content
-	*/
-	public function showClub( $atts ) {
+	 * Function to display Club Info Page
+	 *
+	 *    [club id=ID template=X]
+	 *
+	 * @param array $atts
+	 * @return the content
+	 */
+	public function showClub($atts)
+	{
 		global $racketmanager;
 		extract(shortcode_atts(array(
 			'id' => 0,
 			'template' => '',
 			'echo' => 0,
-		), $atts ));
+		), $atts));
 
 		// Get League by Name
 		$club_name = get_query_var('club_name');
-		$club_name = str_replace('-',' ',$club_name);
+		$club_name = str_replace('-', ' ', $club_name);
 
-		$club = get_Club( $club_name, 'shortcode' );
+		$club = get_Club($club_name, 'shortcode');
 
-		if ( !$club ) return;
-
-		$clubPlayers = $club->getPlayers( array( 'active' => true, 'type' => 'real', 'cache' => false ) );
-		$playerRequests = Racketmanager_Util::getPlayerRequests( array('club' => $club->id, 'status' => 'outstanding') );
+		if (!$club) {
+			return false;
+		}
+		$clubPlayers = $club->getPlayers(array('active' => true, 'type' => 'real', 'cache' => false));
+		$playerRequests = Racketmanager_Util::getPlayerRequests(array('club' => $club->id, 'status' => 'outstanding'));
 		$keys = $racketmanager->getOptions('keys');
 		$googleMapsKey = isset($keys['googleMapsKey']) ? $keys['googleMapsKey'] : '';
 
 		$club->single = true;
 
-		$filename = ( !empty($template) ) ? 'club-'.$template : 'club';
+		$filename = (!empty($template)) ? 'club-' . $template : 'club';
 
-		$out = $this->loadTemplate( $filename, array( 'club' => $club, 'clubPlayers' => $clubPlayers, 'playerRequests' => $playerRequests, 'googleMapsKey' => $googleMapsKey ) );
+		$out = $this->loadTemplate($filename, array('club' => $club, 'clubPlayers' => $clubPlayers, 'playerRequests' => $playerRequests, 'googleMapsKey' => $googleMapsKey));
 
-		if ( $echo )
-		echo $out;
-		else
-		return $out;
+		if ($echo) {
+			echo $out;
+		} else {
+			return $out;
+		}
 	}
 
 	/**
-	* Display Team list
-	*
-	*    [teams league_id=ID template=X season=x]
-	*
-	* - league_id is the ID of league
-	* - season: use specific season (optional)
-	* - template is the template used for displaying. Replace name appropriately. Templates must be named "teams-template.php" (optional)
-	* - group: show teams only from specific group
-	*
-	* @param array $atts shorcode attributes
-	* @return string
-	*/
-	public function showTeams( $atts ) {
+	 * Display Team list
+	 *
+	 *    [teams league_id=ID template=X season=x]
+	 *
+	 * - league_id is the ID of league
+	 * - season: use specific season (optional)
+	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "teams-template.php" (optional)
+	 * - group: show teams only from specific group
+	 *
+	 * @param array $atts shorcode attributes
+	 * @return string
+	 */
+	public function showTeams($atts)
+	{
 		global $league;
 		extract(shortcode_atts(array(
 			'league_id' => 0,
 			'template' => '',
 			'season' => false,
 			'group' => false
-		), $atts ));
+		), $atts));
 
 		$league = $this->getleague($league_id);
-
-		$competition = get_competition($league->competition_id);
 
 		$league->setTemplate('teams', $template);
 		$league->setGroup($group);
 
-		$team_args = array( "orderby" => array('rank' => 'ASC') );
-		if ( $group ) $team_args["group"] = $group;
-		$teams = $league->getLeagueTeams( $team_args );
+		$team_args = array("orderby" => array('rank' => 'ASC'));
+		if ($group) {
+			$team_args["group"] = $group;
+		}
+		$teams = $league->getLeagueTeams($team_args);
 
-		if ( empty($template) && $this->checkTemplate('teams-'.$league->sport) )
-		$filename = 'teams-'.$league->sport;
-		else
-		$filename = ( !empty($template) ) ? 'teams-'.$template : 'teams-list';
-
-		$out = $this->loadTemplate( $filename, array('league' => $league, 'teams' => $teams) );
-
-		return $out;
+		if (empty($template) && $this->checkTemplate('teams-' . $league->sport)) {
+			$filename = 'teams-' . $league->sport;
+		} else {
+			$filename = (!empty($template)) ? 'teams-' . $template : 'teams-list';
+		}
+		return $this->loadTemplate($filename, array('league' => $league, 'teams' => $teams));
 	}
 
 	/**
-	* Display Team Info Page
-	*
-	*    [team id=ID template=X]
-	*
-	* - id: the team ID
-	* - template is the template used for displaying. Replace name appropriately. Templates must be named "team-template.php" (optional)
-	*
-	* @param array $atts shorcode attributes
-	* @return string
-	*/
-	public function showTeam( $atts ) {
+	 * Display Team Info Page
+	 *
+	 *    [team id=ID template=X]
+	 *
+	 * - id: the team ID
+	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "team-template.php" (optional)
+	 *
+	 * @param array $atts shorcode attributes
+	 * @return string
+	 */
+	public function showTeam($atts)
+	{
 		global $league, $leagueTeam;
 		extract(shortcode_atts(array(
 			'id' => 0,
 			'template' => '',
 			'echo' => 0,
-		), $atts ));
+		), $atts));
 
 		$league = get_league();
-		if ( !is_null($league) )
-		$team = $league->getLeagueTeam(intval($id));
-		else
-		$team = get_leagueTeam(intval($id));
-
-		if ( empty($template) && $this->checkTemplate('team-'.$league->sport) )
-		$filename = 'team-'.$league->sport;
-		else
-		$filename = ( !empty($template) ) ? 'team-'.$template : 'team';
-
-		$out = $this->loadTemplate( $filename, array('league' => $league, 'team' => $team) );
-
-		return $out;
+		if (!is_null($league)) {
+			$team = $league->getLeagueTeam(intval($id));
+		} else {
+			$team = get_leagueTeam(intval($id));
+		}
+		if (empty($template) && $this->checkTemplate('team-' . $league->sport)) {
+			$filename = 'team-' . $league->sport;
+		} else {
+			$filename = (!empty($template)) ? 'team-' . $template : 'team';
+		}
+		return $this->loadTemplate($filename, array('league' => $league, 'team' => $team));
 	}
 
 	/**
-	* Display Crosstable
-	*
-	* [crosstable league_id="1" mode="popup" template="name"]
-	*
-	* - league_id is the ID of league to display
-	* - mode set to "popup" makes the crosstable be displayed in a thickbox popup window.
-	* - template is the template used for displaying. Replace name appropriately. Templates must be named "crosstable-template.php" (optional)
-	* - season: display crosstable of given season (optional)
-	* - group: show crosstable for specific group
-	*
-	* @param array $atts shorcode attributes
-	* @return string
-	*/
-	public function showCrosstable( $atts ) {
+	 * Display Crosstable
+	 *
+	 * [crosstable league_id="1" mode="popup" template="name"]
+	 *
+	 * - league_id is the ID of league to display
+	 * - mode set to "popup" makes the crosstable be displayed in a thickbox popup window.
+	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "crosstable-template.php" (optional)
+	 * - season: display crosstable of given season (optional)
+	 * - group: show crosstable for specific group
+	 *
+	 * @param array $atts shorcode attributes
+	 * @return string
+	 */
+	public function showCrosstable($atts)
+	{
 		global $league;
 		extract(shortcode_atts(array(
 			'league_id' => 0,
@@ -676,39 +703,39 @@ class RacketManagerShortcodes extends RacketManager {
 			'template' => '',
 			'mode' => '',
 			'season' => false
-		), $atts ));
+		), $atts));
 
 		$league = $this->getleague($league_id);
 
-		if ( !$league ) return;
-
+		if (!$league) {
+			return false;
+		}
 		$league->setTemplate('crosstable', $template);
 		$league->setSeason($season);
 		$league->setGroup($group);
 
-		$teams = $league->getLeagueTeams( array('orderby' => array('rank' => 'ASC')) );
+		$teams = $league->getLeagueTeams(array('orderby' => array('rank' => 'ASC')));
 
-		if ( empty($template) && $this->checkTemplate('crosstable-'.$league->sport) )
-		$filename = 'crosstable-'.$league->sport;
-		else
-		$filename = ( !empty($template) ) ? 'crosstable-'.$template : 'crosstable';
-
-		$out = $this->loadTemplate( $filename, array('league' => $league, 'teams' => $teams, 'mode' => $mode, 'season' => $season ) );
-
-		return $out;
+		if (empty($template) && $this->checkTemplate('crosstable-' . $league->sport)) {
+			$filename = 'crosstable-' . $league->sport;
+		} else {
+			$filename = (!empty($template)) ? 'crosstable-' . $template : 'crosstable';
+		}
+		return $this->loadTemplate($filename, array('league' => $league, 'teams' => $teams, 'mode' => $mode, 'season' => $season));
 	}
 
 	/**
-	* show Competition
-	*
-	* [competition_id=ID season=X template=X]
-	*
-	* id: ID of competition
-	* season: season to show
-	* template: teamplate to use
-	*/
-	public function showCompetition( $atts ) {
-		global $racketmanager, $competition;
+	 * show Competition
+	 *
+	 * [competition_id=ID season=X template=X]
+	 *
+	 * id: ID of competition
+	 * season: season to show
+	 * template: teamplate to use
+	 */
+	public function showCompetition($atts)
+	{
+		global $competition;
 
 		extract(shortcode_atts(array(
 			'id' => 0,
@@ -718,56 +745,57 @@ class RacketManagerShortcodes extends RacketManager {
 			'crosstable' => '',
 			'matches' => '',
 			'teams' => 'list'
-		), $atts ));
-		$competition = get_competition( $id );
+		), $atts));
+		$competition = get_competition($id);
 
-		if ( !$competition ) return;
-
+		if (!$competition) {
+			return false;
+		}
 		$leagues = $competition->getLeagues();
 
-		if ( isset($_GET['season']) && !empty($_GET['season']) ) {
+		if (isset($_GET['season']) && !empty($_GET['season'])) {
 			$season = htmlspecialchars(strip_tags($_GET['season']));
-		} elseif ( isset($_GET['season']) ) {
+		} elseif (isset($_GET['season'])) {
 			$season = htmlspecialchars(strip_tags($_GET['season']));
 		} else {
 			$season = null !== get_query_var('season') ? get_query_var('season') : false;
 		}
 
-		if ( empty($template) && $this->checkTemplate('competition-'.$competition->sport) ) {
-			$filename = 'competition-'.$competition->sport;
+		if (empty($template) && $this->checkTemplate('competition-' . $competition->sport)) {
+			$filename = 'competition-' . $competition->sport;
 		} else {
-			$filename = ( !empty($template) ) ? 'competition-'.$template : 'competition';
+			$filename = (!empty($template)) ? 'competition-' . $template : 'competition';
 		}
 
 		$seasons = $competition->seasons;
-		if ( !$season ) {
-			if ( $seasons ) {
+		if (!$season) {
+			if ($seasons) {
 				$season = $competition->current_season['name'];
 			} else {
 				$season = '';
 			}
 		}
 
-		$out = $this->loadTemplate( $filename, array('competition' => $competition, 'leagues' => $leagues, 'seasons' => $seasons, 'curr_season' => $season, 'standingsTemplate' => $standingstable) );
-		return $out;
+		return $this->loadTemplate($filename, array('competition' => $competition, 'leagues' => $leagues, 'seasons' => $seasons, 'curr_season' => $season, 'standingsTemplate' => $standingstable));
 	}
 
 	/**
-	* Display Archive
-	*
-	*    [leaguearchive template=X]
-	*
-	* - template: teamplate to use
-	* - standingstable: template for standings table
-	* - crosstable: template for crosstable
-	* - matches: template for matches
-	* - teams: template for teams
-	* - matches_template_type: type of match template
-	*
-	* @param array $atts shorcode attributes
-	* @return string
-	*/
-	public function showArchive( $atts ) {
+	 * Display Archive
+	 *
+	 *    [leaguearchive template=X]
+	 *
+	 * - template: teamplate to use
+	 * - standingstable: template for standings table
+	 * - crosstable: template for crosstable
+	 * - matches: template for matches
+	 * - teams: template for teams
+	 * - matches_template_type: type of match template
+	 *
+	 * @param array $atts shorcode attributes
+	 * @return string
+	 */
+	public function showArchive($atts)
+	{
 		global $league;
 
 		extract(shortcode_atts(array(
@@ -780,94 +808,96 @@ class RacketManagerShortcodes extends RacketManager {
 			'teams' => 'list',
 			'template' => '',
 			'matches_template_type' => ''
-		), $atts ));
+		), $atts));
 
 		// get all leagues, needed for dropdown
-		$competition = get_competition( $competition_id);
+		$competition = get_competition($competition_id);
 
-		if ( !$competition ) return;
-
+		if (!$competition) {
+			return false;
+		}
 		$seasons = $competition->seasons;
 		$leagues = $competition->getLeagues();
 
 		// Get League by Name
 		$league_name = get_query_var('league_name');
-		$league_name = str_replace('-',' ',$league_name);
+		$league_name = str_replace('-', ' ', $league_name);
 
 		if (!empty($league_name)) {
 			$league_id = $competition->getLeagueId($league_name);
 		}
 
 		// Get League ID from shortcode or $_GET
-		if ( $league_id ) {
+		if ($league_id) {
 			$league = get_league($league_id);
 		}
 
 		if ($league) {
 			$league->setTab(true);
-			$league->setTemplates(array( 'standingstable' => $standingstable, 'crosstable' => $crosstable, 'matches' => $matches, 'teams' => $teams ));
+			$league->setTemplates(array('standingstable' => $standingstable, 'crosstable' => $crosstable, 'matches' => $matches, 'teams' => $teams));
 			$league->matches_template_type = $matches_template_type;
 
-			if ( empty($template) && $this->checkTemplate('archive-'.$league->sport) )
-			$filename = 'archive-'.$league->sport;
-			else
-			$filename = ( !empty($template) ) ? 'archive-'.$template : 'archive';
-
-			$out = $this->loadTemplate( $filename, array('leagues' => $leagues, 'league' => $league, 'seasons' => $seasons) );
-			return $out;
+			if (empty($template) && $this->checkTemplate('archive-' . $league->sport)) {
+				$filename = 'archive-' . $league->sport;
+			} else {
+				$filename = (!empty($template)) ? 'archive-' . $template : 'archive';
+			}
+			return $this->loadTemplate($filename, array('leagues' => $leagues, 'league' => $league, 'seasons' => $seasons));
 		}
 	}
 
 	/**
-	* Function to display Players
-	*
-	*	[teams league_id=ID template=X season=x]
-	*
-	* @param array $atts
-	* @return the content
-	*/
-	public function showPlayers( $atts ) {
+	 * Function to display Players
+	 *
+	 *	[teams league_id=ID template=X season=x]
+	 *
+	 * @param array $atts
+	 * @return the content
+	 */
+	public function showPlayers($atts)
+	{
 		global $league;
 		extract(shortcode_atts(array(
 			'league_id' => 0,
 			'template' => '',
 			'season' => false,
 			'group' => false
-		), $atts ));
+		), $atts));
 
 		$league = $this->getleague($league_id);
 
-		if ( !$league ) return;
-
+		if (!$league) {
+			return false;
+		}
 		$competition = get_competition($league->competition_id);
 		$league->setSeason($season);
 
 		$player_args = array("leagueId" => $league->id, "season" => $season, "orderby" => array("title" => "ASC"));
-		$players = $competition->getPlayerStats( $player_args );
+		$players = $competition->getPlayerStats($player_args);
 
 		$playerstats	= array();
 
-		foreach ( $players AS $p => $player ) {
+		foreach ($players as $p => $player) {
 
 			$matches = $player->matchdays;
 			$played = $won = $lost = $drawn = $setsWon = $setsConceded = $gamesWon = $gamesConceded = $setsDiff = $gamesDiff = 0;
 			$playername = $player->fullname;
 
-			foreach ( $matches AS $match ) {
+			foreach ($matches as $match) {
 
-				$played ++;
+				$played++;
 				$player->team_title	= $match->team_title;
 				$team				= $match->team_title;
 
-				if ( $match->rubber_winner == $match->team_id ) {
-					$won ++;
-				} elseif ( $match->rubber_loser == $match->team_id ) {
-					$lost ++;
+				if ($match->rubber_winner == $match->team_id) {
+					$won++;
+				} elseif ($match->rubber_loser == $match->team_id) {
+					$lost++;
 				} else {
-					$drawn ++;
+					$drawn++;
 				}
 
-				if ( $player->roster_id == $match->home_player_1 || $player->roster_id == $match->home_player_2 ) {
+				if ($player->roster_id == $match->home_player_1 || $player->roster_id == $match->home_player_2) {
 					$setPlayer		= 'player1';
 					$setOpponent	= 'player2';
 				} else {
@@ -877,123 +907,129 @@ class RacketManagerShortcodes extends RacketManager {
 
 				$sets				= $match->custom['sets'];
 				$setCount			= count($sets);
-				for ( $s = 1; $s <= $setCount; $s++  ) {
+				for ($s = 1; $s <= $setCount; $s++) {
 
-					if ( is_numeric($sets[$s][$setPlayer]) ) $gamesWon		+= $sets[$s][$setPlayer];
-					if ( is_numeric($sets[$s][$setOpponent]) ) $gamesConceded	+= $sets[$s][$setOpponent];
-					if ( $sets[$s][$setPlayer] > $sets[$s][$setOpponent] ) {
-						$setsWon ++;
-					} elseif ( $sets[$s][$setPlayer] < $sets[$s][$setOpponent] ) {
-						$setsConceded ++;
+					if (is_numeric($sets[$s][$setPlayer])) {
+						$gamesWon += $sets[$s][$setPlayer];
+					}
+					if (is_numeric($sets[$s][$setOpponent])) {
+						$gamesConceded	+= $sets[$s][$setOpponent];
+					}
+					if ($sets[$s][$setPlayer] > $sets[$s][$setOpponent]) {
+						$setsWon++;
+					} elseif ($sets[$s][$setPlayer] < $sets[$s][$setOpponent]) {
+						$setsConceded++;
 					}
 				}
 			}
 
-			$winpct = $won*100/$played;
+			$winpct = $won * 100 / $played;
 			$setsDiff = $setsWon - $setsConceded;
 			$gamesDiff = $gamesWon - $gamesConceded;
-			$playerstats[$p]		= array('playername' => $playername, 'team' => $team, 'played' => $played, 'won' => $won, 'lost' => $lost, 'drawn' => $drawn, 'setsWon' => $setsWon, 'setsConceded' => $setsConceded, 'gamesWon' => $gamesWon, 'gamesConceded' => $gamesConceded, 'winpct' => $winpct, 'setsDiff' => $setsDiff, 'gamesDiff' => $gamesDiff );
-
+			$playerstats[$p] = array('playername' => $playername, 'team' => $team, 'played' => $played, 'won' => $won, 'lost' => $lost, 'drawn' => $drawn, 'setsWon' => $setsWon, 'setsConceded' => $setsConceded, 'gamesWon' => $gamesWon, 'gamesConceded' => $gamesConceded, 'winpct' => $winpct, 'setsDiff' => $setsDiff, 'gamesDiff' => $gamesDiff);
 		}
 
-		$playerstats = array_msort($playerstats, array('won'=>SORT_DESC, 'winpct'=>SORT_DESC, 'setsDiff'=>SORT_DESC, 'gamesDiff'=>SORT_DESC,  'playername'=>SORT_ASC));
+		$playerstats = array_msort($playerstats, array('won' => SORT_DESC, 'winpct' => SORT_DESC, 'setsDiff' => SORT_DESC, 'gamesDiff' => SORT_DESC,  'playername' => SORT_ASC));
 		$playerstats = (object)$playerstats;
 
-		if ( empty($template) && $this->checkTemplate('players-'.$league->sport) ) {
-			$filename = 'players-'.$league->sport;
+		if (empty($template) && $this->checkTemplate('players-' . $league->sport)) {
+			$filename = 'players-' . $league->sport;
 		} else {
-			$filename = ( !empty($template) ) ? 'players-'.$template : 'players';
+			$filename = (!empty($template)) ? 'players-' . $template : 'players';
 		}
 
-		$out = $this->loadTemplate( $filename, array('league' => $league, 'playerstats' => $playerstats) );
-		return $out;
+		return $this->loadTemplate($filename, array('league' => $league, 'playerstats' => $playerstats));
 	}
 
 	/**
-	* Function to display Player
-	*
-	*	[[player] player_id=ID template=X]
-	*
-	* @param array $atts
-	* @return the content
-	*/
-	public function showPlayer( $atts ) {
+	 * Function to display Player
+	 *
+	 *	[[player] player_id=ID template=X]
+	 *
+	 * @param array $atts
+	 * @return the content
+	 */
+	public function showPlayer($atts)
+	{
 		extract(shortcode_atts(array(
 			'template' => '',
-		), $atts ));
+		), $atts));
 
 		// Get Club by Name
 		$club_name = get_query_var('club_name');
-		$club_name = str_replace('-',' ',$club_name);
-		$club = get_Club( $club_name, 'shortcode' );
-		if ( !$club ) {
-			return;
+		$club_name = str_replace('-', ' ', $club_name);
+		$club = get_Club($club_name, 'shortcode');
+		if (!$club) {
+			return false;
 		}
 		// Get Player by Name
 		$player_name = get_query_var('player_id');
-		$player_name = str_replace('-','.',$player_name);
+		$player_name = str_replace('-', '.', $player_name);
 		$player = get_player($player_name, 'name');
-		if ( !$player ) {
-			return;
+		if (!$player) {
+			return false;
 		}
-		$filename = ( !empty($template) ) ? 'player-'.$template : 'player';
-		return $this->loadTemplate( $filename, array('club' => $club, 'player' => $player) );
+		$filename = (!empty($template)) ? 'player-' . $template : 'player';
+		return $this->loadTemplate($filename, array('club' => $club, 'player' => $player));
 	}
 
 	/**
-	* Function to display Tournament Entry Page
-	*
-	*    [tournament-entry id=ID template=X]
-	*
-	* @param array $atts
-	* @return the content
-	*/
-	public function showTournamentEntry( $atts ) {
+	 * Function to display Tournament Entry Page
+	 *
+	 *    [tournament-entry id=ID template=X]
+	 *
+	 * @param array $atts
+	 * @return the content
+	 */
+	public function showTournamentEntry($atts)
+	{
 		global $racketmanager;
 		extract(shortcode_atts(array(
 			'type' => '',
 			'template' => '',
-		), $atts ));
+		), $atts));
 
 		// get competition list
-		if ($type != "") {
-			$type = $type;
-		} elseif ( isset($_GET['type']) && !empty($_GET['type']) ) {
-			$type = htmlspecialchars(strip_tags($_GET['type']));
-		} elseif ( isset($wp->query_vars['type']) ) {
-			$type = get_query_var('type');
+		if (!$type) {
+			if (isset($_GET['type']) && !empty($_GET['type'])) {
+				$type = htmlspecialchars(strip_tags($_GET['type']));
+			} elseif (isset($wp->query_vars['type'])) {
+				$type = get_query_var('type');
+			}
 		}
-		if ( !$type ) return _e('No tournament open for entries', 'racketmanager');
-
-		$tournaments = $racketmanager->getTournaments( array( 'type' => $type, 'entryopen' => true ) );
-		if ( !$tournaments ) return _e('No tournament open for entries', 'racketmanager');
+		if (!$type) {
+			return _e('No tournament open for entries', 'racketmanager');
+		}
+		$tournaments = $racketmanager->getTournaments(array('type' => $type, 'entryopen' => true));
+		if (!$tournaments) {
+			return _e('No tournament open for entries', 'racketmanager');
+		}
 		$tournament = $tournaments[0];
 
-		$competitions = $racketmanager->getCompetitions( array('type' => 'tournament', 'name' => $type, 'season' => $tournament->season, 'orderby' => array("id" => "ASC")) );
+		$competitions = $racketmanager->getCompetitions(array('type' => 'tournament', 'name' => $type, 'season' => $tournament->season, 'orderby' => array("id" => "ASC")));
 
 		$player = wp_get_current_user();
-		$player->contactno = get_user_meta( $player->ID, 'contactno', true);
-		$player->gender = get_user_meta( $player->ID, 'gender', true);
-		$clubPlayers = $racketmanager->getClubPlayers( array('player' => $player->ID, 'active' => true) );
-		$malePartners = $racketmanager->getClubPlayers( array('gender' => 'M', 'active' => true, 'type' => true) );
-		$femalePartners = $racketmanager->getClubPlayers( array('gender' => 'F', 'active' => true, 'type' => true) );
+		$player->contactno = get_user_meta($player->ID, 'contactno', true);
+		$player->gender = get_user_meta($player->ID, 'gender', true);
+		$clubPlayers = $racketmanager->getClubPlayers(array('player' => $player->ID, 'active' => true));
+		$malePartners = $racketmanager->getClubPlayers(array('gender' => 'M', 'active' => true, 'type' => true));
+		$femalePartners = $racketmanager->getClubPlayers(array('gender' => 'F', 'active' => true, 'type' => true));
 
-		$filename = ( !empty($template) ) ? 'entry-tournament-'.$template : 'entry-tournament';
+		$filename = (!empty($template)) ? 'entry-tournament-' . $template : 'entry-tournament';
 
-		$out = $this->loadTemplate( $filename, array( 'tournament' => $tournament, 'competitions' => $competitions, 'player' => $player, 'clubPlayers' => $clubPlayers, 'season' => $tournament->season, 'type' => $type, 'malePartners' => $malePartners, 'femalePartners' => $femalePartners ), 'entry' );
-
-		return $out;
+		return $this->loadTemplate($filename, array('tournament' => $tournament, 'competitions' => $competitions, 'player' => $player, 'clubPlayers' => $clubPlayers, 'season' => $tournament->season, 'type' => $type, 'malePartners' => $malePartners, 'femalePartners' => $femalePartners), 'entry');
 	}
 
 	/**
-	* Function to display Tournament winner
-	*
-	*    [winners id=ID template=X]
-	*
-	* @param array $atts
-	* @return the content
-	*/
-	public function showWinners( $atts ) {
+	 * Function to display Tournament winner
+	 *
+	 *    [winners id=ID template=X]
+	 *
+	 * @param array $atts
+	 * @return the content
+	 */
+	public function showWinners($atts)
+	{
 		global $racketmanager, $wp;
 		extract(shortcode_atts(array(
 			'type' => '',
@@ -1001,84 +1037,85 @@ class RacketManagerShortcodes extends RacketManager {
 			'template' => '',
 			'competitiontype' => 'tournament',
 			'season' => false,
-		), $atts ));
+		), $atts));
 
 		// get competition list
-		if ($type != "") {
-			$type = $type;
-		} elseif ( isset($_GET['type']) && !empty($_GET['type']) ) {
-			$type = htmlspecialchars(strip_tags($_GET['type']));
-		} elseif ( isset($wp->query_vars['type']) ) {
-			$type = get_query_var('type');
+		if (!$type) {
+			if (isset($_GET['type']) && !empty($_GET['type'])) {
+				$type = htmlspecialchars(strip_tags($_GET['type']));
+			} elseif (isset($wp->query_vars['type'])) {
+				$type = get_query_var('type');
+			}
 		}
-		if ( !$type ) return _e('No type set', 'racketmanager');
-		if ( $competitiontype == 'tournament' ) {
-			$tournaments = $racketmanager->getTournaments( array( 'type' => $type ) );
-			if ($tournament != "") {
-				$tournament = $tournament;
-			} elseif ( isset($_GET['tournament']) && !empty($_GET['tournament']) ) {
-				$tournament = htmlspecialchars(strip_tags($_GET['tournament']));
-				$tournament = str_replace('-',' ',$tournament);
-			} elseif ( isset($wp->query_vars['tournament']) ) {
-				$tournament = get_query_var('tournament');
-				$tournament = str_replace('_',' ',$tournament);
+		if (!$type) {
+			return _e('No type set', 'racketmanager');
+		}
+		if ($competitiontype == 'tournament') {
+			$tournaments = $racketmanager->getTournaments(array('type' => $type));
+			if (!$tournament) {
+				if (isset($_GET['tournament']) && !empty($_GET['tournament'])) {
+					$tournament = htmlspecialchars(strip_tags($_GET['tournament']));
+					$tournament = str_replace('-', ' ', $tournament);
+				} elseif (isset($wp->query_vars['tournament'])) {
+					$tournament = get_query_var('tournament');
+					$tournament = str_replace('_', ' ', $tournament);
+				}
 			}
 			if (!$tournament) {
 				$tournament = $tournaments[0];
 			} else {
-				$tournament = get_tournament( $tournament );
+				$tournament = get_tournament($tournament);
 			}
 			$season = $tournament->season;
 			$curr_entry = $tournament->name;
 			$selections = $tournaments;
-		} elseif ( $competitiontype == 'cup' ) {
-			$seasons = $racketmanager->getSeasons( "DESC" );
-			if ( $season != '' ) {
-				$season = $season;
-			} elseif ( isset($_GET['season']) && !empty($_GET['season']) ) {
-				$season = htmlspecialchars(strip_tags($_GET['season']));
-			} elseif ( isset($_GET['season']) ) {
-				$season = htmlspecialchars(strip_tags($_GET['season']));
-			} else {
-				$season = null !== get_query_var('season') ? get_query_var('season') : false;
+		} elseif ($competitiontype == 'cup') {
+			$seasons = $racketmanager->getSeasons("DESC");
+			if (!$season) {
+				if (isset($_GET['season']) && !empty($_GET['season'])) {
+					$season = htmlspecialchars(strip_tags($_GET['season']));
+				} elseif (isset($_GET['season'])) {
+					$season = htmlspecialchars(strip_tags($_GET['season']));
+				} else {
+					$season = null !== get_query_var('season') ? get_query_var('season') : false;
+				}
 			}
 			$curr_entry = $season;
 			$selections = $seasons;
 		}
 
-		$winners = $racketmanager->getWinners( $season, $type, $competitiontype );
+		$winners = $racketmanager->getWinners($season, $type, $competitiontype);
 
-		$filename = ( !empty($template) ) ? 'winners-'.$template : 'winners';
+		$filename = (!empty($template)) ? 'winners-' . $template : 'winners';
 
-		$out = $this->loadTemplate( $filename, array( 'winners' => $winners, 'competitiontype' => $competitiontype, 'selections' => $selections, 'curr_entry' => $curr_entry, 'season' => $type) );
-
-		return $out;
+		return $this->loadTemplate($filename, array('winners' => $winners, 'competitiontype' => $competitiontype, 'selections' => $selections, 'curr_entry' => $curr_entry, 'season' => $type));
 	}
 
 	/**
-	* Get match score
-	*
-	* @param object $match match details
-	* @return the score
-	*/
-	public function getMatchScore($match) {
-		if ( $match->home_points != NULL && $match->away_points != NULL ) {
-			if ( isset($match->league->num_rubbers) && $match->league->num_rubbers > 0 ) {
+	 * Get match score
+	 *
+	 * @param object $match match details
+	 * @return the score
+	 */
+	public function getMatchScore($match)
+	{
+		if ($match->home_points != null && $match->away_points != null) {
+			if (isset($match->league->num_rubbers) && $match->league->num_rubbers > 0) {
 				$score = sprintf("%s - %s", $match->home_points, $match->away_points);
 			} else {
 				$score = '';
 				$sets = $match->custom['sets'];
-				foreach ( $sets AS $set ) {
-					if ( $set['player1'] != null && $set['player2'] != null )  {
-						$score .= $set['player1'].'-'.$set['player2'].' ';
+				foreach ($sets as $set) {
+					if ($set['player1'] != null && $set['player2'] != null) {
+						$score .= $set['player1'] . '-' . $set['player2'] . ' ';
 					}
 				}
-				if ( $score == '' ) {
+				if ($score == '') {
 					$score = __('Walkover', 'racketmanager');
 				}
 			}
-		} elseif ( $match->winner_id != 0 ) {
-			if ( $match->home_team == -1 || $match->away_team == -1 ) {
+		} elseif ($match->winner_id != 0) {
+			if ($match->home_team == -1 || $match->away_team == -1) {
 				$score = '';
 			} else {
 				$score = __('Walkover', 'racketmanager');
@@ -1090,14 +1127,15 @@ class RacketManagerShortcodes extends RacketManager {
 	}
 
 	/**
-	* Function to show match notification
-	*
-	*    [matchnotification id=ID template=X]
-	*
-	* @param array $atts
-	* @return the content
-	*/
-	public function showMatchNotification( $atts ) {
+	 * Function to show match notification
+	 *
+	 *    [matchnotification id=ID template=X]
+	 *
+	 * @param array $atts
+	 * @return the content
+	 */
+	public function showMatchNotification($atts)
+	{
 		global $racketmanager;
 
 		extract(shortcode_atts(array(
@@ -1108,28 +1146,28 @@ class RacketManagerShortcodes extends RacketManager {
 			'emailfrom' => '',
 			'round' => '',
 			'competitiontype' => ''
-		), $atts ));
+		), $atts));
 
 		$organisationname = $racketmanager->site_name;
 		$match = get_match($match);
 
 		$homeDtls = array();
 		$awayDtls = array();
-		if ( $competitiontype == 'tournament') {
-			$tournament = get_tournament( $tournament );
-			if ( substr($match->league->competition_type,1,1) == 'D' ) {
+		if ($competitiontype == 'tournament') {
+			$tournament = get_tournament($tournament);
+			if (substr($match->league->competition_type, 1, 1) == 'D') {
 				$homeDtls['title'] = "Home Players";
 				$awayDtls['title'] = "Away Players";
 			} else {
 				$homeDtls['title'] = "Home Player";
 				$awayDtls['title'] = "Away Player";
 			}
-		} elseif ( $competitiontype == 'cup' ) {
+		} elseif ($competitiontype == 'cup') {
 			$template = 'cup';
 			$homeDtls['title'] = "Home Team";
 			$awayDtls['title'] = "Away Team";
 		}
-		if ( $match->custom['host'] == 'home') {
+		if ($match->custom['host'] == 'home') {
 			$homeDtls['name'] = $match->teams['home']->title;
 			$homeDtls['club'] = $match->teams['home']->affiliatedclubname;
 			$homeDtls['captain'] = $match->teams['home']->captain;
@@ -1157,22 +1195,21 @@ class RacketManagerShortcodes extends RacketManager {
 			$homeDtls['matchTime'] = $match->teams['away']->match_time;
 		}
 
-		$filename = ( !empty($template) ) ? 'match-notification-'.$template : 'match-notification';
+		$filename = (!empty($template)) ? 'match-notification-' . $template : 'match-notification';
 
-		$out = $this->loadTemplate( $filename, array( 'tournament' => $tournament, 'competition' => $competition, 'match' => $match, 'homeDtls' => $homeDtls, 'awayDtls' => $awayDtls, 'round' => $round, 'organisationName' => $organisationname, 'emailFrom' => $emailfrom ), 'email' );
-
-		return $out;
+		return $this->loadTemplate($filename, array('tournament' => $tournament, 'competition' => $competition, 'match' => $match, 'homeDtls' => $homeDtls, 'awayDtls' => $awayDtls, 'round' => $round, 'organisationName' => $organisationname, 'emailFrom' => $emailfrom), 'email');
 	}
 
 	/**
-	* Function to show result notification
-	*
-	*    [resultnotification id=ID template=X]
-	*
-	* @param array $atts
-	* @return the content
-	*/
-	public function showResultNotification( $atts ) {
+	 * Function to show result notification
+	 *
+	 *    [resultnotification id=ID template=X]
+	 *
+	 * @param array $atts
+	 * @return the content
+	 */
+	public function showResultNotification($atts)
+	{
 		global $racketmanager;
 
 		extract(shortcode_atts(array(
@@ -1184,41 +1221,75 @@ class RacketManagerShortcodes extends RacketManager {
 			'organisationname' => false,
 			'complete' => false,
 			'errors' => false
-		), $atts ));
+		), $atts));
 
 		$match = get_match($match);
 
-		$actionurl = admin_url().'?page=racketmanager&view=results';
-		if ( $league ) {
-			$actionurl .= '&subpage=show-league&league_id='.$league;
+		$actionurl = admin_url() . '?page=racketmanager&view=results';
+		if ($league) {
+			$actionurl .= '&subpage=show-league&league_id=' . $league;
 		}
-		if ( $matchday ) {
-			$actionurl .= '&match_day='.$matchday;
+		if ($matchday) {
+			$actionurl .= '&match_day=' . $matchday;
 		}
-		if ( $round ) {
-			$actionurl .= '&final='.$round.'&league-tab=matches';
+		if ($round) {
+			$actionurl .= '&final=' . $round . '&league-tab=matches';
 		}
 
-		if ( !$organisationname ) {
+		if (!$organisationname) {
 			$organisationname = $racketmanager->site_name;
 		}
 
-		$filename = ( !empty($template) ) ? 'result-notification-'.$template : 'result-notification';
+		$filename = (!empty($template)) ? 'result-notification-' . $template : 'result-notification';
 
-		$out = $this->loadTemplate( $filename, array( 'match' => $match, 'organisationName' => $organisationname, 'actionurl' => $actionurl, 'complete' => $complete, 'errors' => $errors ), 'email' );
-
-		return $out;
+		return $this->loadTemplate($filename, array('match' => $match, 'organisationName' => $organisationname, 'actionurl' => $actionurl, 'complete' => $complete, 'errors' => $errors), 'email');
 	}
 
 	/**
-	* Function to show result notification
-	*
-	*    [resultnotificationcaptain id=ID template=X]
-	*
-	* @param array $atts
-	* @return the content
-	*/
-	public function showCaptainResultNotification( $atts ) {
+	 * Function to show result notification
+	 *
+	 *    [resultnotificationcaptain id=ID template=X]
+	 *
+	 * @param array $atts
+	 * @return the content
+	 */
+	public function showCaptainResultNotification($atts)
+	{
+		global $racketmanager;
+
+		extract(shortcode_atts(array(
+			'match' => '',
+			'template' => '',
+			'outstanding' => false,
+			'timeperiod' => false, 'override' => false
+		), $atts));
+
+		$match = get_match($match);
+
+		$actionurl = $racketmanager->site_url;
+		if ($match->league->mode == 'championship') {
+			$actionurl .= "/" . __('match', 'racketmanager') . "/" . sanitize_title($match->league->title) . "/" . $match->league->current_season['name'] . "/" . $match->final_round . "/" . sanitize_title($match->teams['home']->title) . "-vs-" . sanitize_title($match->teams['away']->title);
+		} else {
+			$actionurl .= "/" . __('match', 'racketmanager') . "/" . sanitize_title($match->league->title) . "/" . $match->league->current_season['name'] . "/day" . $match->match_day . "/" . sanitize_title($match->teams['home']->title) . "-vs-" . sanitize_title($match->teams['away']->title);
+		}
+
+		$organisationname = $racketmanager->site_name;
+
+		$filename = (!empty($template)) ? 'result-notification-' . $template : 'result-notification';
+
+		return $this->loadTemplate($filename, array('match' => $match, 'organisationName' => $organisationname, 'actionurl' => $actionurl, 'outstanding' => $outstanding, 'timePeriod' => $timeperiod, 'override' => $override), 'email');
+	}
+
+	/**
+	 * Function to show result outstanding notification
+	 *
+	 *    [resultoutstandingnotification id=ID template=X]
+	 *
+	 * @param array $atts
+	 * @return the content
+	 */
+	public function showResultOutstandingNotification($atts)
+	{
 		global $racketmanager;
 
 		extract(shortcode_atts(array(
@@ -1226,73 +1297,35 @@ class RacketManagerShortcodes extends RacketManager {
 			'template' => '',
 			'outstanding' => false,
 			'timeperiod' => false
-			,'override' => false
-		), $atts ));
+		), $atts));
 
 		$match = get_match($match);
 
 		$actionurl = $racketmanager->site_url;
-		if ( $match->league->mode == 'championship' ) {
-			$actionurl .= "/".__('match', 'racketmanager')."/".sanitize_title($match->league->title)."/".$match->league->current_season['name']."/".$match->final_round."/".sanitize_title($match->teams['home']->title)."-vs-".sanitize_title($match->teams['away']->title);
+		if ($match->league->mode == 'championship') {
+			$actionurl .= "/" . __('match', 'racketmanager') . "/" . sanitize_title($match->league->title) . "/" . $match->league->current_season['name'] . "/" . $match->final_round . "/" . sanitize_title($match->teams['home']->title) . "-vs-" . sanitize_title($match->teams['away']->title);
 		} else {
-			$actionurl .= "/".__('match', 'racketmanager')."/".sanitize_title($match->league->title)."/".$match->league->current_season['name']."/day".$match->match_day."/".sanitize_title($match->teams['home']->title)."-vs-".sanitize_title($match->teams['away']->title);
+			$actionurl .= "/" . __('match', 'racketmanager') . "/" . sanitize_title($match->league->title) . "/" . $match->league->current_season['name'] . "/day" . $match->match_day . "/" . sanitize_title($match->teams['home']->title) . "-vs-" . sanitize_title($match->teams['away']->title);
 		}
 
 		$organisationname = $racketmanager->site_name;
 
-		$filename = ( !empty($template) ) ? 'result-notification-'.$template : 'result-notification';
+		$filename = (!empty($template)) ? 'match-result-pending-' . $template : 'match-result-pending';
 
-		$out = $this->loadTemplate( $filename, array( 'match' => $match, 'organisationName' => $organisationname, 'actionurl' => $actionurl, 'outstanding' => $outstanding, 'timePeriod' => $timeperiod, 'override' => $override ), 'email' );
-
-		return $out;
+		return $this->loadTemplate($filename, array('match' => $match, 'organisationName' => $organisationname, 'actionurl' => $actionurl, 'timePeriod' => $timeperiod), 'email');
 	}
 
 	/**
-	* Function to show result outstanding notification
-	*
-	*    [resultoutstandingnotification id=ID template=X]
-	*
-	* @param array $atts
-	* @return the content
-	*/
-	public function showResultOutstandingNotification( $atts ) {
-		global $racketmanager;
+	 * Function to show club player notification
+	 *
+	 *    [clubplayernotification club=club template=X]
+	 *
+	 * @param array $atts
+	 * @return the content
+	 */
 
-		extract(shortcode_atts(array(
-			'match' => '',
-			'template' => '',
-			'outstanding' => false,
-			'timeperiod' => false
-		), $atts ));
-
-		$match = get_match($match);
-
-		$actionurl = $racketmanager->site_url;
-		if ( $match->league->mode == 'championship' ) {
-			$actionurl .= "/".__('match', 'racketmanager')."/".sanitize_title($match->league->title)."/".$match->league->current_season['name']."/".$match->final_round."/".sanitize_title($match->teams['home']->title)."-vs-".sanitize_title($match->teams['away']->title);
-		} else {
-			$actionurl .= "/".__('match', 'racketmanager')."/".sanitize_title($match->league->title)."/".$match->league->current_season['name']."/day".$match->match_day."/".sanitize_title($match->teams['home']->title)."-vs-".sanitize_title($match->teams['away']->title);
-		}
-
-		$organisationname = $racketmanager->site_name;
-
-		$filename = ( !empty($template) ) ? 'match-result-pending-'.$template : 'match-result-pending';
-
-		$out = $this->loadTemplate( $filename, array( 'match' => $match, 'organisationName' => $organisationname, 'actionurl' => $actionurl, 'timePeriod' => $timeperiod ), 'email' );
-
-		return $out;
-	}
-
-	/**
-	* Function to show club player notification
-	*
-	*    [clubplayernotification club=club template=X]
-	*
-	* @param array $atts
-	* @return the content
-	*/
-
-	public function showClubPlayerNotification( $atts ) {
+	public function showClubPlayerNotification($atts)
+	{
 		global $racketmanager;
 
 		extract(shortcode_atts(array(
@@ -1300,239 +1333,258 @@ class RacketManagerShortcodes extends RacketManager {
 			'action' => false,
 			'player' => false,
 			'template' => ''
-		), $atts ));
+		), $atts));
 
-		$actionurl = admin_url().'admin.php?page=racketmanager-admin&view=playerRequest';
+		$actionurl = admin_url() . 'admin.php?page=racketmanager-admin&view=playerRequest';
 
 		$organisationname = $racketmanager->site_name;
 
-		$filename = ( !empty($template) ) ? 'club-player-notification-'.$template : 'club-player-notification';
+		$filename = (!empty($template)) ? 'club-player-notification-' . $template : 'club-player-notification';
 
-		return $this->loadTemplate( $filename, array( 'action' => $action, 'club' => $club, 'player' => $player, 'organisationName' => $organisationname, 'actionurl' => $actionurl ), 'email' );
-
+		return $this->loadTemplate($filename, array('action' => $action, 'club' => $club, 'player' => $player, 'organisationName' => $organisationname, 'actionurl' => $actionurl), 'email');
 	}
 
 	/**
-	* Function to display Cup Entry Page
-	*
-	*    [cupentry id=ID template=X]
-	*
-	* @param array $atts
-	* @return the content
-	*/
-	public function showCupEntry( $atts ) {
+	 * Function to display Cup Entry Page
+	 *
+	 *    [cupentry id=ID template=X]
+	 *
+	 * @param array $atts
+	 * @return the content
+	 */
+	public function showCupEntry($atts)
+	{
 		global $racketmanager;
 		extract(shortcode_atts(array(
 			'type' => false,
 			'season' => false,
 			'template' => '',
-		), $atts ));
+		), $atts));
 
-		if ( !is_user_logged_in() ) {
-			return '<p class="contact-login-msg">You need to <a href="'.wp_login_url().'">login</a> to enter cups</p>';
+		if (!is_user_logged_in()) {
+			return '<p class="contact-login-msg">You need to <a href="' . wp_login_url() . '">login</a> to enter cups</p>';
 		}
 		$club_name = get_query_var('club_name');
-		$club_name = str_replace('-',' ',$club_name);
+		$club_name = str_replace('-', ' ', $club_name);
 
-		$club = get_Club( $club_name, 'shortcode' );
+		$club = get_Club($club_name, 'shortcode');
 
-		if ( !$club ) {
-			return _e('No club selected', 'racketmanager');
-		}
-		$user = wp_get_current_user();
-		$userid = $user->ID;
-		$userCanUpdateClub = false;
-		if ( current_user_can( 'manage_racketmanager' ) ) {
-		    $userCanUpdateClub = true;
+		$valid = true;
+		if (!$club) {
+			$valid = false;
+			$msg = _e('No club selected', 'racketmanager');
 		} else {
-		    if ( $club->matchsecretary !=null && $club->matchsecretary == $userid ) {
-		        $userCanUpdateClub = true;
-		    }
-		}
-		if ( !$userCanUpdateClub ) {
-			return _e('User not authorised for club', 'racketmanager');
-		}
-
-		// get competition list
-		$type = get_query_var('type');
-		if ( !$type ) {
-			return _e('No cups open for entries', 'racketmanager');
-		}
-		$season = get_query_var('season');
-		if ( !$season ) {
-			return _e('No season specified', 'racketmanager');
-		}
-		$competitions = $racketmanager->getCompetitions( array('type' => 'cup', 'name' => $type, 'season' => $season, 'orderby' => array("name" => "ASC")) );
-		$ladiesTeams = $club->getTeams(false, 'WD');
-		$mensTeams = $club->getTeams(false, 'MD');
-		$mixedTeams = $club->getTeams(false, 'XD');
-
-		$filename = ( !empty($template) ) ? 'entry-cup-'.$template : 'entry-cup';
-
-		$out = $this->loadTemplate( $filename, array( 'club' => $club, 'competitions' => $competitions, 'ladiesTeams' => $ladiesTeams, 'mensTeams' => $mensTeams, 'mixedTeams' => $mixedTeams, 'season' => $season, 'type' => $type ), 'entry' );
-
-		return $out;
-	}
-
-	/**
-	* Function to display league Entry Page
-	*
-	*    [leagueentry id=ID template=X]
-	*
-	* @param array $atts
-	* @return the content
-	*/
-	public function showLeagueEntry( $atts ) {
-		global $racketmanager;
-		extract(shortcode_atts(array(
-			'type' => false,
-			'season' => false,
-			'template' => '',
-		), $atts ));
-
-		if ( !is_user_logged_in() ) {
-			return '<p class="contact-login-msg">You need to <a href="'.wp_login_url().'">login</a> to enter leagues</p>';
-		}
-		$club_name = get_query_var('club_name');
-		$club_name = str_replace('-',' ',$club_name);
-
-		$club = get_Club( $club_name, 'shortcode' );
-
-		if ( !$club ) {
-			return _e('No club selected', 'racketmanager');
-		}
-		$user = wp_get_current_user();
-		$userid = $user->ID;
-		$userCanUpdateClub = false;
-		if ( current_user_can( 'manage_racketmanager' ) ) {
-		    $userCanUpdateClub = true;
-		} else {
-		    if ( $club->matchsecretary !=null && $club->matchsecretary == $userid ) {
-		        $userCanUpdateClub = true;
-		    }
-		}
-		if ( !$userCanUpdateClub ) {
-			return _e('User not authorised for club', 'racketmanager');
-		}
-
-		// get competition list
-		$type = get_query_var('type');
-		if ( !$type ) {
-			return _e('No leagues open for entries', 'racketmanager');
-		}
-		$season = get_query_var('season');
-		if ( !$season ) {
-			return _e('No season specified', 'racketmanager');
-		}
-		$competitions = $racketmanager->getCompetitions( array('type' => 'league', 'name' => $type, 'orderby' => array("name" => "ASC")) );
-		foreach ($competitions AS $i => $competition) {
-			$competition = get_competition($competition->id);
-			$competitionTeams = $competition->getTeams(array('season' => $season, 'club' => $club->id));
-			foreach ($competitionTeams as $c => $competitionTeam) {
-				$competitionTeam->teamInfo = $competition->getTeamInfo($competitionTeam->teamId);
-				$competitionTeams[$c] = $competitionTeam;
-			}
-			$competition->competitionTeams = $competitionTeams;
-			if ( $competition->type == 'WD' ) {
-				$competition->teams = $club->getTeams(false, 'WD');
-			} elseif ( $competition->type == 'MD' ) {
-				$competition->teams = $club->getTeams(false, 'MD');
-			} elseif ( $competition->type == 'XD' || $competition->type == 'LD' ) {
-				$competition->teams = $club->getTeams(false, 'XD');
-			}
-			$key = 0;
-			foreach ($competition->teams as $team ) {
-				$found = array_search($team->id, array_column($competition->competitionTeams, 'teamId'));
-				if ( $found !== false ) {
-					unset($competition->teams[$key]);
-				} else {
-					$competitionTeam = (object)array();
-					$competitionTeam->teamId = $team->id;
-					$competitionTeam->title = $team->title;
-					$competitionTeam->leagueId = 0;
-					$competition->competitionTeams[] = $competitionTeam;
+			$user = wp_get_current_user();
+			$userid = $user->ID;
+			$userCanUpdateClub = false;
+			if (current_user_can('manage_racketmanager')) {
+				$userCanUpdateClub = true;
+			} else {
+				if ($club->matchsecretary != null && $club->matchsecretary == $userid) {
+					$userCanUpdateClub = true;
 				}
-				$key ++;
 			}
-			$competitions[$i] = $competition;
+			if (!$userCanUpdateClub) {
+				$valid = $false;
+				$msg = _e('User not authorised for club', 'racketmanager');
+			}
 		}
 
-		$filename = ( !empty($template) ) ? 'entry-league-'.$template : 'entry-league';
+		// get competition list
+		$type = get_query_var('type');
+		if (!$type) {
+			$valid = false;
+			$msg = _e('No cups open for entries', 'racketmanager');
+		}
+		$season = get_query_var('season');
+		if (!$season) {
+			$valid = false;
+			$msg = _e('No season specified', 'racketmanager');
+		}
+		if ($valid) {
+			$competitions = $racketmanager->getCompetitions(array('type' => 'cup', 'name' => $type, 'season' => $season, 'orderby' => array("name" => "ASC")));
+			$ladiesTeams = $club->getTeams(false, 'WD');
+			$mensTeams = $club->getTeams(false, 'MD');
+			$mixedTeams = $club->getTeams(false, 'XD');
 
-		$out = $this->loadTemplate( $filename, array( 'club' => $club, 'competitions' => $competitions, 'season' => $season, 'type' => $type ), 'entry' );
+			$filename = (!empty($template)) ? 'entry-cup-' . $template : 'entry-cup';
 
-		return $out;
+			return $this->loadTemplate($filename, array('club' => $club, 'competitions' => $competitions, 'ladiesTeams' => $ladiesTeams, 'mensTeams' => $mensTeams, 'mixedTeams' => $mixedTeams, 'season' => $season, 'type' => $type), 'entry');
+		} else {
+			return $msg;
+		}
 	}
 
 	/**
-	* Function to display Tournament finals order of play
-	*
-	*    [orderofplay id=ID template=X]
-	*
-	* @param array $atts
-	* @return the content
-	*/
-	public function showOrderOfPlay( $atts ) {
+	 * Function to display league Entry Page
+	 *
+	 *    [leagueentry id=ID template=X]
+	 *
+	 * @param array $atts
+	 * @return the content
+	 */
+	public function showLeagueEntry($atts)
+	{
+		global $racketmanager;
+		extract(shortcode_atts(array(
+			'type' => false,
+			'season' => false,
+			'template' => '',
+		), $atts));
+
+		if (!is_user_logged_in()) {
+			return '<p class="contact-login-msg">You need to <a href="' . wp_login_url() . '">login</a> to enter leagues</p>';
+		}
+		$club_name = get_query_var('club_name');
+		$club_name = str_replace('-', ' ', $club_name);
+		$valid = true;
+		$club = get_Club($club_name, 'shortcode');
+
+		if (!$club) {
+			$valid = false;
+			$msg = _e('No club selected', 'racketmanager');
+		} else {
+			$user = wp_get_current_user();
+			$userid = $user->ID;
+			$userCanUpdateClub = false;
+			if (current_user_can('manage_racketmanager')) {
+				$userCanUpdateClub = true;
+			} else {
+				if ($club->matchsecretary != null && $club->matchsecretary == $userid) {
+					$userCanUpdateClub = true;
+				}
+			}
+			if (!$userCanUpdateClub) {
+				$valid = false;
+				$msg = _e('User not authorised for club', 'racketmanager');
+			}
+		}
+
+		// get competition list
+		$type = get_query_var('type');
+		if (!$type) {
+			$valid = false;
+			$msg = _e('No leagues open for entries', 'racketmanager');
+		}
+		$season = get_query_var('season');
+		if (!$season) {
+			$valid = false;
+			$msg = _e('No season specified', 'racketmanager');
+		}
+		if ($valid) {
+			$competitions = $racketmanager->getCompetitions(array('type' => 'league', 'name' => $type, 'orderby' => array("name" => "ASC")));
+			foreach ($competitions as $i => $competition) {
+				$competition = get_competition($competition->id);
+				$competitionTeams = $competition->getTeams(array('season' => $season, 'club' => $club->id));
+				foreach ($competitionTeams as $c => $competitionTeam) {
+					$competitionTeam->teamInfo = $competition->getTeamInfo($competitionTeam->teamId);
+					$competitionTeams[$c] = $competitionTeam;
+				}
+				$competition->competitionTeams = $competitionTeams;
+				if ($competition->type == 'WD') {
+					$competition->teams = $club->getTeams(false, 'WD');
+				} elseif ($competition->type == 'MD') {
+					$competition->teams = $club->getTeams(false, 'MD');
+				} elseif ($competition->type == 'XD' || $competition->type == 'LD') {
+					$competition->teams = $club->getTeams(false, 'XD');
+				}
+				$key = 0;
+				foreach ($competition->teams as $team) {
+					$found = array_search($team->id, array_column($competition->competitionTeams, 'teamId'));
+					if ($found !== false) {
+						unset($competition->teams[$key]);
+					} else {
+						$competitionTeam = (object)array();
+						$competitionTeam->teamId = $team->id;
+						$competitionTeam->title = $team->title;
+						$competitionTeam->leagueId = 0;
+						$competition->competitionTeams[] = $competitionTeam;
+					}
+					$key++;
+				}
+				$competitions[$i] = $competition;
+			}
+
+			$filename = (!empty($template)) ? 'entry-league-' . $template : 'entry-league';
+
+			return $this->loadTemplate($filename, array('club' => $club, 'competitions' => $competitions, 'season' => $season, 'type' => $type), 'entry');
+		} else {
+			return $msg;
+		}
+	}
+
+	/**
+	 * Function to display Tournament finals order of play
+	 *
+	 *    [orderofplay id=ID template=X]
+	 *
+	 * @param array $atts
+	 * @return the content
+	 */
+	public function showOrderOfPlay($atts)
+	{
 		global $racketmanager, $wp;
 		extract(shortcode_atts(array(
 			'type' => '',
 			'tournament' => false,
 			'template' => '',
-		), $atts ));
+		), $atts));
 
 		// get competition list
-		if ($type != "") {
-			$type = $type;
-		} elseif ( isset($_GET['type']) && !empty($_GET['type']) ) {
-			$type = htmlspecialchars(strip_tags($_GET['type']));
-		} elseif ( isset($wp->query_vars['type']) ) {
-			$type = get_query_var('type');
+		if (!$type) {
+			if (isset($_GET['type']) && !empty($_GET['type'])) {
+				$type = htmlspecialchars(strip_tags($_GET['type']));
+			} elseif (isset($wp->query_vars['type'])) {
+				$type = get_query_var('type');
+			}
 		}
-		if ( !$type ) return _e('No tournament final day', 'racketmanager');
-		$tournaments = $racketmanager->getTournaments( array( 'type' => $type ) );
+		if (!$type) {
+			return _e('No tournament final day', 'racketmanager');
+		}
+		$tournaments = $racketmanager->getTournaments(array('type' => $type));
 
-		if ($tournament != "") {
-			$tournament = $tournament;
-		} elseif ( isset($_GET['tournament']) && !empty($_GET['tournament']) ) {
-			$tournament = htmlspecialchars(strip_tags($_GET['tournament']));
-			$tournament = str_replace('_',' ',$tournament);
-		} elseif ( isset($wp->query_vars['tournament']) ) {
-			$tournament = get_query_var('tournament');
-			$tournament = str_replace('_',' ',$tournament);
+		if (!$tournament) {
+			if (isset($_GET['tournament']) && !empty($_GET['tournament'])) {
+				$tournament = htmlspecialchars(strip_tags($_GET['tournament']));
+				$tournament = str_replace('_', ' ', $tournament);
+			} elseif (isset($wp->query_vars['tournament'])) {
+				$tournament = get_query_var('tournament');
+				$tournament = str_replace('_', ' ', $tournament);
+			}
 		}
 
 		if (!$tournament) {
 			$tournament = $tournaments[0];
 		} else {
-			$tournament = get_tournament( $tournament );
+			$tournament = get_tournament($tournament);
 		}
 
 		$matchTimes = array();
 		$courts = array();
 		$numMatches = 0;
 		$orderofplay = array();
-		foreach ( $tournament->orderofplay AS $matchList ) {
+		foreach ($tournament->orderofplay as $matchList) {
 			$court = array();
 			$court['name'] = $matchList['court'];
 			$court['matches'] = array();
-			foreach ( $matchList['matches'] AS $matchId ) {
+			foreach ($matchList['matches'] as $matchId) {
 				$finalMatch = array();
 				$finalMatch = (object)array();
-				if ( $matchId != '') {
-					$numMatches ++;
+				if ($matchId != '') {
+					$numMatches++;
 					$match = get_match($matchId);
 					$finalMatch->id = $matchId;
-					$finalMatch->time = $match->hour.':'.$match->minutes;
+					$finalMatch->time = $match->hour . ':' . $match->minutes;
 					$finalMatch->league = $match->league->title;
 					$finalMatch->location = $match->location;
-					if ( is_numeric($match->home_team) ) {
+					if (is_numeric($match->home_team)) {
 						$finalMatch->team1 = $match->teams['home']->title;
 						$finalMatch->team1Club = $match->teams['home']->affiliatedclubname;
 					} else {
 						$prevMatch = $racketmanager->getPrevRoundMatches($match->home_team, $match->season, $match->league);
 						$finalMatch->team1 = $prevMatch->match_title;
 					}
-					if ( is_numeric($match->away_team) ) {
+					if (is_numeric($match->away_team)) {
 						$finalMatch->team2 = $match->teams['away']->title;
 						$finalMatch->team2Club = $match->teams['away']->affiliatedclubname;
 					} else {
@@ -1542,7 +1594,7 @@ class RacketManagerShortcodes extends RacketManager {
 					$finalMatch->team1Id = $match->home_team;
 					$finalMatch->team2Id = $match->away_team;
 					$finalMatch->winner = $match->winner_id;
-					if ( !is_numeric(array_search($finalMatch->time, $matchTimes, true)) ) {
+					if (!is_numeric(array_search($finalMatch->time, $matchTimes, true))) {
 						array_push($matchTimes, $finalMatch->time);
 					}
 				}
@@ -1555,58 +1607,57 @@ class RacketManagerShortcodes extends RacketManager {
 		array_multisort($matchTimes);
 		$startTimes = array();
 		$startTime = strtotime($tournament->starttime);
-		if ($tournament->numcourts > 0 ) {
+		if ($tournament->numcourts > 0) {
 			$maxSchedules = ceil($numMatches / $tournament->numcourts);
-			for ($i=0; $i < $maxSchedules; $i++) {
+			for ($i = 0; $i < $maxSchedules; $i++) {
 				$startTimes[$i] = date('H:i', $startTime);
 				$startTime = $startTime + strtotime($tournament->timeincrement);
 			}
-	
+
 			$numSlots = count($matchTimes);
-			for ($i=0; $i < $numSlots; $i++) {
-				if ( !in_array($matchTimes[$i],$startTimes) ) {
+			for ($i = 0; $i < $numSlots; $i++) {
+				if (!in_array($matchTimes[$i], $startTimes)) {
 					unset($matchTimes[$i]);
 				}
 			}
 			$matchTimes = array_values($matchTimes);
-			}
+		}
 
-		$filename = ( !empty($template) ) ? 'orderofplay-'.$template : 'orderofplay';
+		$filename = (!empty($template)) ? 'orderofplay-' . $template : 'orderofplay';
 
-		$out = $this->loadTemplate( $filename, array( 'tournaments' => $tournaments, 'currTournament' => $tournament, 'matchTimes' => $matchTimes, 'orderofplay' => $orderofplay, 'season' => $type) );
-
-		return $out;
+		return $this->loadTemplate($filename, array('tournaments' => $tournaments, 'currTournament' => $tournament, 'matchTimes' => $matchTimes, 'orderofplay' => $orderofplay, 'season' => $type));
 	}
 
 	/**
-	* Function to show favourites
-	*
-	*    [favourites template=X]
-	*
-	* @param array $atts
-	* @return the content
-	*/
+	 * Function to show favourites
+	 *
+	 *    [favourites template=X]
+	 *
+	 * @param array $atts
+	 * @return the content
+	 */
 
-	public function showFavourites( $atts ) {
+	public function showFavourites($atts)
+	{
 		global $racketmanager;
 
 		extract(shortcode_atts(array(
 			'template' => ''
-		), $atts ));
+		), $atts));
 
 		$userid = get_current_user_id();
-		$favouritesTypes = array('league','club');
+		$favouritesTypes = array('league', 'club');
 		foreach ($favouritesTypes as $f => $favouritesType) {
 			$favouriteTypes[$f]['name'] = $favouritesType;
-			$metaKey = 'favourite-'.$favouritesType;
+			$metaKey = 'favourite-' . $favouritesType;
 			$metaFavourites = get_user_meta($userid, $metaKey);
 			$favourites = array();
 			foreach ($metaFavourites as $i => $favourite) {
 				$favouriteItem = (object)array();
-				if ( $favouritesType == 'league' ) {
+				if ($favouritesType == 'league') {
 					$league = get_league($favourite);
 					$favouriteItem->name = $league->title;
-				} elseif ( $favouritesType == 'club' ) {
+				} elseif ($favouritesType == 'club') {
 					$club = get_club($favourite);
 					$favouriteItem->name = $club->name;
 				}
@@ -1617,26 +1668,25 @@ class RacketManagerShortcodes extends RacketManager {
 			$favouriteTypes[$f]['favourites'] = $favourites;
 		}
 
-		$filename = ( !empty($template) ) ? 'form-favourites-'.$template : 'form-favourites';
+		$filename = (!empty($template)) ? 'form-favourites-' . $template : 'form-favourites';
 
-		$out = $this->loadTemplate( $filename, array( 'favouriteTypes' => $favouriteTypes), 'form' );
-
-		return $out;
+		return $this->loadTemplate($filename, array('favouriteTypes' => $favouriteTypes), 'form');
 	}
 
-	public function showInvoice( $atts ) {
+	public function showInvoice($atts)
+	{
 		global $racketmanager;
 
 		extract(shortcode_atts(array(
 			'template' => '',
 			'id' => ''
-		), $atts ));
+		), $atts));
 
 		$invoice = '';
 		$invoice = get_query_var('id');
-		if ( $invoice ) {
+		if ($invoice) {
 			$invoice = get_invoice($invoice);
-			if ( $invoice ) {
+			if ($invoice) {
 				return $invoice->generate();
 			}
 		}
@@ -1644,51 +1694,52 @@ class RacketManagerShortcodes extends RacketManager {
 	}
 
 	/**
-	* Load template for user display. First the current theme directory is checked for a template
-	* before defaulting to the plugin
-	*
-	* @param string $template Name of the template file (without extension)
-	* @param array $vars Array of variables name=>value available to display code (optional)
-	* @param string $type Type of content template (email, page)
-	* @return the content
-	*/
-	public function loadTemplate( $template, $vars = array(), $templateType = false ) {
+	 * Load template for user display. First the current theme directory is checked for a template
+	 * before defaulting to the plugin
+	 *
+	 * @param string $template Name of the template file (without extension)
+	 * @param array $vars Array of variables name=>value available to display code (optional)
+	 * @param string $type Type of content template (email, page)
+	 * @return the content
+	 */
+	public function loadTemplate($template, $vars = array(), $templateType = false)
+	{
 		global $league, $team, $match, $racketmanager;
 
 		extract($vars);
 
-		if ( $templateType ) {
-			switch ( $templateType ) {
+		if ($templateType) {
+			switch ($templateType) {
 				case 'email':
-				$templateDir = 'templates/email';
-				break;
+					$templateDir = 'templates/email';
+					break;
 				case 'entry':
-				$templateDir = 'templates/entry';
-				break;
+					$templateDir = 'templates/entry';
+					break;
 				case 'form':
-				$templateDir = 'templates/forms';
-				break;
+					$templateDir = 'templates/forms';
+					break;
 				case 'page':
-				$templateDir = 'templates/page';
-				break;
+					$templateDir = 'templates/page';
+					break;
 				default:
-				$templateDir = 'templates';
-				break;
+					$templateDir = 'templates';
+					break;
 			}
 		} else {
 			$templateDir = 'templates';
 		}
 		ob_start();
 
-		if ( file_exists( get_stylesheet_directory() . "/racketmanager/$template.php")) {
-			include(get_stylesheet_directory() . "/racketmanager/$template.php");
-		} elseif ( file_exists( get_template_directory() . "/racketmanager/$template.php")) {
-			include(get_template_directory() . "/racketmanager/$template.php");
-		} elseif ( file_exists(RACKETMANAGER_PATH.$templateDir."/".$template.".php") ) {
-			include(RACKETMANAGER_PATH.$templateDir."/".$template.".php");
+		if (file_exists(get_stylesheet_directory() . "/racketmanager/$template.php")) {
+			include_once get_stylesheet_directory() . "/racketmanager/$template.php";
+		} elseif (file_exists(get_template_directory() . "/racketmanager/$template.php")) {
+			include_once get_template_directory() . "/racketmanager/$template.php";
+		} elseif (file_exists(RACKETMANAGER_PATH . $templateDir . "/" . $template . ".php")) {
+			include_once RACKETMANAGER_PATH . $templateDir . "/" . $template . ".php";
 		} else {
-			$this->setMessage( sprintf(__('Could not load template %s.php', 'racketmanager'), $template), true );
-			$this->printMessage();
+			$racketmanager->setMessage(sprintf(__('Could not load template %s.php', 'racketmanager'), $template), true);
+			$racketmanager->printMessage();
 		}
 		$output = ob_get_contents();
 		ob_end_clean();
@@ -1697,35 +1748,31 @@ class RacketManagerShortcodes extends RacketManager {
 
 
 	/**
-	* check if template exists
-	*
-	* @param string $template
-	* @return boolean
-	*/
-	private function checkTemplate( $template ) {
-		if ( file_exists( get_stylesheet_directory() . "/racketmanager/$template.php")) {
-			return true;
-		} elseif  ( file_exists( get_template_directory() . "/racketmanager/$template.php")) {
-			return true;
-		} elseif ( file_exists(RACKETMANAGER_PATH . "templates/".$template.".php") ) {
-			return true;
-		}
-
-		return false;
+	 * check if template exists
+	 *
+	 * @param string $template
+	 * @return boolean
+	 */
+	private function checkTemplate($template)
+	{
+		return file_exists(get_stylesheet_directory() . "/racketmanager/$template.php") || file_exists(get_template_directory() . "/racketmanager/$template.php") || file_exists(RACKETMANAGER_PATH . "templates/" . $template . ".php");
 	}
 
 	/**
-	* get league
-	*
-	* @param int $league_id
-	* @return null|League
-	*/
-	private function getLeague( $league_id ) {
+	 * get league
+	 *
+	 * @param int $league_id
+	 * @return null|League
+	 */
+	private function getLeague($league_id)
+	{
 		global $league;
 
-		if ($league_id == 0) $league = get_league();
-		else $league = get_league(intval($league_id));
+		if ($league_id == 0) {
+			$league = get_league();
+		} else {
+			$league = get_league(intval($league_id));
+		}
 		return $league;
 	}
 }
-?>

@@ -822,8 +822,13 @@ final class RacketManagerAdmin extends RacketManager
 				if ( $_POST['delMatchOption'] == "delete" ) {
 					if ( current_user_can('del_matches') ) {
 						check_admin_referer('matches-bulk');
+						$messages = array();
 						foreach ( $_POST['match'] as $match_id ) {
-							$this->delMatch( intval($match_id) );
+							$match = get_match($match_id);
+							$match->delete();
+							$messages[] = (sprintf(__( 'Match id %d deleted', 'racketmanager' ), $match_id));
+							$message = implode('<br>', $messages);
+							$this->setMessage($message);
 						}
 						$tab = 'matches';
 					} else {
@@ -890,40 +895,57 @@ final class RacketManagerAdmin extends RacketManager
 					if ( 'add' == $_POST['mode'] ) {
 						$num_matches = count($_POST['match']);
 						foreach ( $_POST['match'] as $i => $match_id ) {
+							$match = new stdClass();
 							if ( isset($_POST['add_match'][$i]) || $_POST['away_team'][$i] != $_POST['home_team'][$i]  ) {
 								$index = ( isset($_POST['mydatepicker'][$i]) ) ? $i : 0;
 								if (!isset($_POST['begin_hour'][$i])) { $_POST['begin_hour'][$i] = 0; }
 								if (!isset($_POST['begin_minutes'][$i])) { $_POST['begin_minutes'][$i] = 0; }
-								$date = $_POST['mydatepicker'][$index].' '.intval($_POST['begin_hour'][$i]).':'.intval($_POST['begin_minutes'][$i]).':00';
-								$match_day = ( isset($_POST['match_day'][$i]) ? $_POST['match_day'][$i] : (!empty($_POST['match_day']) ? intval($_POST['match_day']) : '' )) ;
-								$custom = isset($_POST['custom']) ? $_POST['custom'][$i] : array();
-
-								$this->addMatch( $date, $_POST['home_team'][$i], $_POST['away_team'][$i], $match_day, htmlspecialchars(strip_tags($_POST['location'][$i])), intval($_POST['league_id']), htmlspecialchars(strip_tags($_POST['season'])), $group, htmlspecialchars(strip_tags($_POST['final'])), $custom, intval($_POST['num_rubbers']) );
+								$match->date = $_POST['mydatepicker'][$index].' '.intval($_POST['begin_hour'][$i]).':'.intval($_POST['begin_minutes'][$i]).':00';
+								$match->match_day = ( isset($_POST['match_day'][$i]) ? $_POST['match_day'][$i] : (!empty($_POST['match_day']) ? intval($_POST['match_day']) : '' )) ;
+								$match->custom = isset($_POST['custom']) ? $_POST['custom'][$i] : array();
+								$match->home_team = $_POST['home_team'][$i];
+								$match->away_team = $_POST['away_team'][$i];
+								$match->location = htmlspecialchars(strip_tags($_POST['location'][$i]));
+								$match->league_id = intval($_POST['league_id']);
+								$match->season = htmlspecialchars(strip_tags($_POST['season']));
+								$match->group = $group;
+								$match->final = htmlspecialchars(strip_tags($_POST['final']));
+								$match->num_rubbers = intval($_POST['num_rubbers']);
+								$match = new RM_Match($match);
 							} else {
 								$num_matches -= 1;
 							}
 						}
 						$this->setMessage(sprintf(_n('%d Match added', '%d Matches added', $num_matches, 'racketmanager'), $num_matches));
 					} else {
-						$num_matches = count($_POST['match']);
-						$post_match = $this->htmlspecialchars_array($_POST['match']);
-						foreach ( $post_match as $i => $match_id ) {
-							$begin_hour = isset($_POST['begin_hour'][$i]) ? intval($_POST['begin_hour'][$i]) : "00";
-							$begin_minutes = isset($_POST['begin_minutes'][$i]) ? intval($_POST['begin_minutes'][$i]) : "00";
-							if( isset($_POST['mydatepicker'][$i]) ) {
-								$index = ( isset($_POST['mydatepicker'][$i]) ) ? $i : 0;
-								$date = htmlspecialchars(strip_tags($_POST['mydatepicker'][$index])).' '.$begin_hour.':'.$begin_minutes.':00';
-							} else {
-								$index = ( isset($_POST['year'][$i]) && isset($_POST['month'][$i]) && isset($_POST['day'][$i]) ) ? $i : 0;
-								$date = intval($_POST['year'][$index]).'-'.intval($_POST['month'][$index]).'-'.intval($_POST['day'][$index]).' '.$begin_hour.':'.$begin_minutes.':00';
+						if ( current_user_can('edit_matches') ) {
+							$num_matches = count($_POST['match']);
+							$post_match = $this->htmlspecialchars_array($_POST['match']);
+							foreach ( $post_match as $i => $match_id ) {
+								$match = get_match($match_id);
+								$begin_hour = isset($_POST['begin_hour'][$i]) ? intval($_POST['begin_hour'][$i]) : "00";
+								$begin_minutes = isset($_POST['begin_minutes'][$i]) ? intval($_POST['begin_minutes'][$i]) : "00";
+								if( isset($_POST['mydatepicker'][$i]) ) {
+									$index = ( isset($_POST['mydatepicker'][$i]) ) ? $i : 0;
+									$date = htmlspecialchars(strip_tags($_POST['mydatepicker'][$index])).' '.$begin_hour.':'.$begin_minutes.':00';
+								} else {
+									$index = ( isset($_POST['year'][$i]) && isset($_POST['month'][$i]) && isset($_POST['day'][$i]) ) ? $i : 0;
+									$date = intval($_POST['year'][$index]).'-'.intval($_POST['month'][$index]).'-'.intval($_POST['day'][$index]).' '.$begin_hour.':'.$begin_minutes.':00';
+								}
+								$match->date = $date;
+								$match->league_id = $league->id;
+								$match->match_day = (isset($_POST['match_day']) && is_array($_POST['match_day'])) ? intval($_POST['match_day'][$i]) : (isset($_POST['match_day']) && !empty($_POST['match_day']) ? intval($_POST['match_day']) : '' ) ;
+								$match->custom = isset($_POST['custom']) ? $_POST['custom'][$i] : array();
+								$match->home_team = isset($_POST['home_team'][$i]) ? htmlspecialchars(strip_tags($_POST['home_team'][$i])) : '';
+								$match->away_team = isset($_POST['away_team'][$i]) ? htmlspecialchars(strip_tags($_POST['away_team'][$i])) : '';
+								$match->location = htmlspecialchars($_POST['location'][$i]);
+								$match->final = htmlspecialchars(strip_tags($_POST['final']));
+								$match->update();
 							}
-							$match_day = (isset($_POST['match_day']) && is_array($_POST['match_day'])) ? intval($_POST['match_day'][$i]) : (isset($_POST['match_day']) && !empty($_POST['match_day']) ? intval($_POST['match_day']) : '' ) ;
-							$custom = isset($_POST['custom']) ? $_POST['custom'][$i] : array();
-							$home_team = isset($_POST['home_team'][$i]) ? htmlspecialchars(strip_tags($_POST['home_team'][$i])) : '';
-							$away_team = isset($_POST['away_team'][$i]) ? htmlspecialchars(strip_tags($_POST['away_team'][$i])) : '';
-							$this->editMatch( $date, $home_team, $away_team, $match_day, htmlspecialchars($_POST['location'][$i]), intval($_POST['league_id']), $match_id, $group, htmlspecialchars(strip_tags($_POST['final'])), $custom );
+							$this->setMessage(sprintf(_n('%d Match updated', '%d Matches updated', $num_matches, 'racketmanager'), $num_matches));
+						} else {
+							$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
 						}
-						$this->setMessage(sprintf(_n('%d Match updated', '%d Matches updated', $num_matches, 'racketmanager'), $num_matches));
 					}
 				} else {
 					$this->setMessage(__("You don't have permission to perform this task", 'racketmanager'), true);
@@ -2784,201 +2806,6 @@ final class RacketManagerAdmin extends RacketManager
 	}
 
 	/**
-	* display dropdon menu of teams (cleaned from double entries)
-	*
-	*/
-	private function teamsDropdownCleaned() {
-		global $wpdb;
-		$all_teams = $wpdb->get_results( "SELECT `title`, `id` FROM {$wpdb->racketmanager_teams} WHERE `status` != 'P' ORDER BY `title` ASC" );
-		$teams = array();
-		foreach ( $all_teams as $team ) {
-			if ( !in_array($team->title, $teams) )
-			$teams[$team->id] = htmlspecialchars(stripslashes($team->title), ENT_QUOTES);
-		}
-		foreach ( $teams as $team_id => $name )
-		echo "<option value='".$team_id."'>".$name."</option>";
-	}
-
-	/**
-	* display dropdon menu of team players (cleaned from double entries)
-	*
-	*/
-	function teamPlayersDropdownCleaned() {
-		global $wpdb;
-		$all_teams = $wpdb->get_results( "SELECT `title`, `id` FROM {$wpdb->racketmanager_teams} WHERE `status` = 'P' ORDER BY `title` ASC" );
-		$teams = array();
-		foreach ( $all_teams as $team ) {
-			if ( !in_array($team->title, $teams) )
-			$teams[$team->id] = htmlspecialchars(stripslashes($team->title), ENT_QUOTES);
-		}
-		foreach ( $teams as $team_id => $name )
-		echo "<option value='".$team_id."'>".$name."</option>";
-	}
-
-	/************
-	*
-	*   MATCH SECTION
-	*
-	*
-	*/
-
-	/**
-	* add Match
-	*
-	* @param string $date
-	* @param int $home_team
-	* @param int $away_team
-	* @param int $match_day
-	* @param string $location
-	* @param int $league_id
-	* @param mixed $season
-	* @param mixed $group
-	* @param string $final
-	* @param array $custom
-	* @param array $num_rubbers
-	* @return int | false
-	*/
-	public function addMatch( $date, $home_team, $away_team, $match_day, $location, $league_id, $season, $group = '', $final = '', $custom = array(), $num_rubbers = 0  ) {
-		global $wpdb;
-
-		if ( !current_user_can('edit_matches') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		$sql = "INSERT INTO {$wpdb->racketmanager_matches} (date, home_team, away_team, match_day, location, league_id, season, final, custom, `group`) VALUES ('%s', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s')";
-		$wpdb->query ( $wpdb->prepare ( $sql, $date, $home_team, $away_team, $match_day, $location, $league_id, $season, $final, maybe_serialize($custom), $group ) );
-		$match_id = $wpdb->insert_id;
-		$league = get_league($league_id);
-		if ($league->num_rubbers > 1) {
-			for ($ix = 1; $ix <= $league->num_rubbers; $ix++) {
-				$type = $league->competition_type;
-				if ( $league->competition_type == 'MD' ) {
-					$type = 'MD';
-				} elseif ( $league->competition_type == 'WD' ) {
-					$type = 'WD';
-				} elseif ( $league->competition_type == 'XD' ) {
-					$type = 'XD';
-				} elseif ( $league->competition_type == 'LD' ) {
-					if ( $ix == 1 ) {
-						$type = 'WD';
-					} elseif ( $ix == 2 ) {
-						$type = 'MD';
-					} elseif ( $ix == 3 ) {
-						$type = 'XD';
-					}
-				}
-				$rubber_id = $this->addRubber($date, $match_id, $ix, $type);
-			}
-		}
-
-		return $match_id;
-	}
-
-	/**
-	* edit Match
-	*
-	* @param string $date
-	* @param int $home_team
-	* @param int $away_team
-	* @param int $match_day
-	* @param string $location
-	* @param int $league_id
-	* @param int $match_id
-	* @param mixed $group
-	* @param string $final
-	* @param array $custom
-	* @return boolean
-	*/
-	private function editMatch( $date, $home_team, $away_team, $match_day, $location, $league_id, $match_id, $group, $final, $custom ) {
-		global $wpdb;
-
-		if ( !current_user_can('edit_matches') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		$this->league_id = $league_id;
-		$home_points = (!isset($home_points)) ? 'NULL' : $home_points;
-		$away_points = (!isset($away_points)) ? 'NULL' : $away_points;
-
-		$match = $wpdb->get_results( $wpdb->prepare("SELECT `custom` FROM {$wpdb->racketmanager_matches} WHERE `id` = '%d'", $match_id) );
-		$custom = (!empty($match) ? array_merge( (array)maybe_unserialize($match[0]->custom), $custom ) : '' );
-		$wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_matches} SET `date` = '%s', `home_team` = '%s', `away_team` = '%s', `match_day` = '%d', `location` = '%s', `league_id` = '%d', `group` = '%s', `final` = '%s', `custom` = '%s' WHERE `id` = %d", $date, $home_team, $away_team, $match_day, $location, $league_id, $group, $final, maybe_serialize($custom), $match_id ) );
-
-		return true;
-	}
-
-	/**
-	* delete Match
-	*
-	* @param int $match_id
-	* @return boolean
-	*/
-	private function delMatch( $match_id ) {
-		global $wpdb;
-
-		if ( !current_user_can('del_matches') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` = '%d'", $match_id) );
-		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `id` = '%d'", $match_id) );
-
-		return true;
-	}
-
-	/**
-	* get date selection.
-	*
-	* @param int $day
-	* @param int $month
-	* @param int $year
-	* @param int $index default 0
-	* @return string
-	*/
-	public function getDateSelection( $day, $month, $year, $index = 0 ) {
-		$out = '<select size="1" name="day['.$index.']" class="date">';
-		$out .= "<option value='00'>".__('Day','racketmanager')."</option>";
-		for ( $d = 1; $d <= 31; $d++ ) {
-			$selected = ( $d == $day ) ? ' selected="selected"' : '';
-			$out .= '<option value="'.str_pad($d, 2, 0, STR_PAD_LEFT).'"'.$selected.'>'.$d.'</option>';
-		}
-		$out .= '</select>';
-		$out .= '<select size="1" name="month['.$index.']" class="date">';
-		$out .= "<option value='00'>".__('Month','racketmanager')."</option>";
-		foreach ( $this->getMonths() as $key => $m ) {
-			$selected = ( $key == $month ) ? ' selected="selected"' : '';
-			$out .= '<option value="'.str_pad($key, 2, 0, STR_PAD_LEFT).'"'.$selected.'>'.$m.'</option>';
-		}
-		$out .= '</select>';
-		$out .= '<select size="1" name="year['.$index.']" class="date">';
-		$out .= "<option value='0000'>".__('Year','racketmanager')."</option>";
-		for ( $y = date("Y")-20; $y <= date("Y")+10; $y++ ) {
-			$selected =  ( $y == $year ) ? ' selected="selected"' : '';
-			$out .= '<option value="'.$y.'"'.$selected.'>'.$y.'</option>';
-		}
-		$out .= '</select>';
-		return $out;
-	}
-
-	/**
-	* get months
-	*
-	* @param none
-	* @return void
-	*/
-	public function getMonths() {
-		$locale = get_locale();
-		setlocale(LC_ALL, $locale);
-		for ( $month = 1; $month <= 12; $month++ )
-		$months[$month] = htmlentities( strftime( "%B", mktime( 0,0,0, $month, date("m"), date("Y") ) ) );
-
-		return $months;
-	}
-
-	/**
 	* display global settings page (e.g. color scheme options)
 	*
 	*/
@@ -3325,28 +3152,28 @@ final class RacketManagerAdmin extends RacketManager
 			if ( is_null($rubbers) ) { $rubbers = 1; }
 			$matches = $home_points = $away_points = $home_teams = $away_teams = $custom = array();
 
-			$i = $x = $r = 0;
+			$i = $x = 0;
 			while (!feof($handle)) {
 				$buffer = fgets($handle, 4096);
 				$line = explode($delimiter, $buffer);
 				// ignore header and empty lines
 				if ( $i > 0 && count($line) > 1 ) {
+					$match = new stdClass();
 					$date = ( !empty($line[6]) ) ? $line[0]." ".$line[6] : $line[0]. " 00:00";
-					$season = $this->season = isset($line[1]) ? $line[1] : '';
-					$match_day = isset($line[2]) ? $line[2] : '';
-					$date = trim($date);
-					$home_team = $this->getTeamID(utf8_encode($line[3]));
-					$away_team = $this->getTeamID(utf8_encode($line[4]));
-					if ( $home_team != 0 && $away_team != 0 ) {
+					$match->season = isset($line[1]) ? $line[1] : '';
+					$match->match_day = isset($line[2]) ? $line[2] : '';
+					$match->date = trim($date);
+					$match->home_team = $this->getTeamID($line[3]);
+					$match->away_team = $this->getTeamID($line[4]);
+					if ( $match->home_team != 0 && $match->away_team != 0 ) {
 
-						$location = isset($line[5]) ? utf8_encode($line[5]) : '';
-						$group = isset($line[7]) ? $line[7] : '';
-
-						$match_id = $this->addMatch($date, $home_team, $away_team, $match_day, $location, $this->league_id, $season, $group,'', array(), $rubbers);
-
+						$match->location = isset($line[5]) ? $line[5] : '';
+						$match->group = isset($line[7]) ? $line[7] : '';
+						$match = new RM_Match($match);
+						$match_id = $match->id;
 						$matches[$match_id] = $match_id;
-						$home_teams[$match_id] = $home_team;
-						$away_teams[$match_id] = $away_team;
+						$home_teams[$match_id] = $match->home_team;
+						$away_teams[$match_id] = $match->away_team;
 						$home_points[$match_id] = $away_points[$match_id] = '';
 
 						$custom = apply_filters( 'racketmanager_import_fixtures_'.$league->sport, $custom, $match_id );

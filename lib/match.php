@@ -101,6 +101,9 @@ final class RM_Match
       if (is_null($this->league) || (!is_null($this->league) && $this->league->id != $this->league_id)) {
         $this->league = get_league($this->league_id);
       }
+      if (!isset($this->id)) {
+        $this->id = $this->add();
+      }
 
       $this->location = $this->location != '' ? stripslashes($this->location) : '';
       $this->report = ($this->post_id != 0) ? '<a href="' . get_permalink($this->post_id) . '">' . __('Report', 'racketmanager') . '</a>' : '';
@@ -150,6 +153,68 @@ final class RM_Match
         $this->is_selected = true;
       }
     }
+  }
+
+  /**
+   * add match
+   *
+   */
+  public function add()
+  {
+    global $wpdb;
+		$sql = "INSERT INTO {$wpdb->racketmanager_matches} (date, home_team, away_team, match_day, location, league_id, season, final, custom, `group`) VALUES ('%s', '%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s')";
+		$wpdb->query ( $wpdb->prepare ( $sql, $this->date, $this->home_team, $this->away_team, $this->match_day, $this->location, $this->league_id, $this->season, $this->final, maybe_serialize($this->custom), $this->group ) );
+		$this->id = $wpdb->insert_id;
+    if ($this->league->num_rubbers > 1) {
+			for ($ix = 1; $ix <= $this->league->num_rubbers; $ix++) {
+				$type = $this->league->competition_type;
+				if ( $this->league->competition_type == 'MD' ) {
+					$type = 'MD';
+				} elseif ( $this->league->competition_type == 'WD' ) {
+					$type = 'WD';
+				} elseif ( $this->league->competition_type == 'XD' ) {
+					$type = 'XD';
+				} elseif ( $this->league->competition_type == 'LD' ) {
+					if ( $ix == 1 ) {
+						$type = 'WD';
+					} elseif ( $ix == 2 ) {
+						$type = 'MD';
+					} elseif ( $ix == 3 ) {
+						$type = 'XD';
+					}
+				}
+				$this->addRubber($ix, $type);
+			}
+		}
+    return $this->id;
+  }
+
+  /**
+   * update match
+   *
+   */
+  public function update()
+  {
+    global $wpdb;
+    $updateCount = $wpdb->query( $wpdb->prepare ( "UPDATE {$wpdb->racketmanager_matches} SET `date` = '%s', `home_team` = '%s', `away_team` = '%s', `match_day` = '%d', `location` = '%s', `league_id` = '%d', `group` = '%s', `final` = '%s', `custom` = '%s' WHERE `id` = %d", $this->date, $this->home_team, $this->away_team, $this->match_day, $this->location, $this->league_id, $this->group, $this->final, maybe_serialize($this->custom), $this->id ) );
+    if ($updateCount == 0) {
+      $msg = __('No updates', 'racketmanager');
+    } else {
+      $msg = __('Match updated', 'racketmanager');
+    }
+    return $msg;
+  }
+
+  /**
+   * delete match
+   *
+   */
+  public function delete()
+  {
+    global $wpdb;
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` = '%d'", $this->id) );
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->racketmanager_matches} WHERE `id` = '%d'", $this->id) );
+    return true;
   }
 
   /**
@@ -313,6 +378,20 @@ final class RM_Match
     $this->winner_id = $match['winner'];
     $this->loser_id = $match['loser'];
   }
+
+	/**
+ 	 * add Rubber
+	 *
+	 * @param int $rubber_no
+	 * @param string $type
+	 * @return int $rubber_id
+	 */
+	private function addRubber($rubberno, $type) {
+		global $wpdb;
+		$sql = "INSERT INTO {$wpdb->racketmanager_rubbers} (`date`, `match_id`, `rubber_number`, `type`) VALUES ('%s', '%d', '%d', '%s')";
+		$wpdb->query ( $wpdb->prepare ( $sql, $this->date, $this->id, $rubberno, $type ) );
+		return $wpdb->insert_id;
+	}
 
   /**
    * gets rubbers from database

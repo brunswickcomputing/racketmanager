@@ -3085,15 +3085,24 @@ class League {
 				$homeTeamDtls = $teams[ $fixture['home'] - 1 ];
 				$awayTeamDtls = $teams[ $fixture['away'] - 1 ];
 				if ( $homeTeamDtls->id != -1 && $awayTeamDtls->id != -1 ) {
-					$matchDay                    = $homeTeamDtls->match_day;
-					$matchTime                   = $homeTeamDtls->match_time;
-					$fixtures[ $f ]['matchDay']  = $matchDay;
-					$day                         = getMatchDay( $matchDay );
-					$matchDate                   = date( 'Y-m-d', strtotime( $startDate . " +$day day" ) ) . ' ' . $matchTime;
+					$match = new stdClass();
+					$matchDay = $homeTeamDtls->match_day;
+					$matchTime = $homeTeamDtls->match_time;
+					$day = getMatchDay( $matchDay );
+					$matchDate = date( 'Y-m-d', strtotime( $startDate . " +$day day" ) ) . ' ' . $matchTime;
+					$fixtures[ $f ]['matchDay'] = $matchDay;
 					$fixtures[ $f ]['matchDate'] = $matchDate;
-					$fixtures[ $f ]['homeTeam']  = $homeTeamDtls;
-					$fixtures[ $f ]['awayTeam']  = $awayTeamDtls;
-					$racketmanager->addMatch( $matchDate, $homeTeamDtls->id, $awayTeamDtls->id, $roundNumber, $homeTeamDtls->affiliatedclubname, $this->id, $season );
+					$fixtures[ $f ]['homeTeam'] = $homeTeamDtls;
+					$fixtures[ $f ]['awayTeam'] = $awayTeamDtls;
+					$match->date = $matchDate;
+					$match->home_team = $homeTeamDtls->id;
+					$match->away_team = $awayTeamDtls->id;
+					$match->match_day = $roundNumber;
+					$match->location = $homeTeamDtls->affiliatedclubname;
+					$match->season = $season;
+					$match->league_id = $this->id;
+					$match = new RM_Match($match);
+//					$racketmanager->addMatch( $matchDate, $homeTeamDtls->id, $awayTeamDtls->id, $roundNumber, $homeTeamDtls->affiliatedclubname, $this->id, $season );
 				}
 				$f++;
 			}
@@ -3106,7 +3115,7 @@ class League {
  * get League object
  *
  * @param int|League|null League ID or league object. Defaults to global $league
- * @return League|null
+ * @return object League|null
  */
 function get_league( $league = null ) {
 	if ( empty( $league ) && isset( $GLOBALS['league'] ) ) {

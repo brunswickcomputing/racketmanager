@@ -354,7 +354,7 @@ class RacketManager {
     require_once (RACKETMANAGER_PATH . '/lib/competition.php');
     require_once (RACKETMANAGER_PATH . '/lib/league.php');
     require_once (RACKETMANAGER_PATH . '/lib/leagueteam.php');
-    require_once (RACKETMANAGER_PATH . '/lib/match.php');
+    require_once (RACKETMANAGER_PATH . '/include/class-match.php');
     require_once (RACKETMANAGER_PATH . '/lib/svg-icons.php');
     require_once (RACKETMANAGER_PATH . 'include/class-team.php');
     require_once (RACKETMANAGER_PATH . '/include/class-player.php');

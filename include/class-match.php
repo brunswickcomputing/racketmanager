@@ -22,33 +22,37 @@ final class RM_Match
    */
   public $final_round = '';
   public $id;
-  public $league_id;
-  public $league;
+  public $group;
+  public $date;
+  public $home_team;
+  public $away_team;
+  public $match_day;
   public $location;
-  public $report;
-  public $post_id;
+  public $league_id;
+  public $season;
   public $home_points;
   public $away_points;
+  public $winner_id;
+  public $loser_id;
+  public $post_id;
+  public $final;
+  public $custom;
+  public $confirmed;
   public $homeScore;
   public $awayScore;
   public $score;
-  public $confirmed;
   public $confirmedDisplay;
   public $pageURL;
   public $is_home;
   public $is_selected;
   public $match_title;
-  public $home_team;
-  public $away_team;
   public $teams;
   public $title;
   public $match_date;
-  public $date;
-  public $custom;
   public $start_time;
   public $tooltipTitle;
-  public $winner_id;
-  public $loser_id;
+  public $report;
+  public $league;
 
   /**
    * retrieve match instance

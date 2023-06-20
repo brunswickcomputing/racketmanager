@@ -78,7 +78,6 @@ final class Club {
 	 */
 	public function __construct( $club = null ) {
 		if ( ! is_null( $club ) ) {
-
 			foreach ( get_object_vars( $club ) as $key => $value ) {
 				$this->$key = $value;
 			}

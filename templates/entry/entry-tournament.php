@@ -23,7 +23,7 @@ The following variables are usable:
         <?php wp_nonce_field( 'tournament-entry' ) ?>
         <div class="input">
             <label for "venueName"><?php _e( 'Finals Venue', 'racketmanager' ) ?></label>
-            <input type="text" class="form-control" id="venueName" name="venueName" value="<?php if ( $tournament->venueName != '' ) echo $tournament->venueName; else _e('TBC', 'racketmanager'); ?>" disabled />
+            <input type="text" class="form-control" id="venueName" name="venueName" value="<?php if ( $tournament->venueName != '' ) { echo $tournament->venueName; } else { _e('TBC', 'racketmanager'); } ?>" disabled />
         </div>
         <div class="input">
             <label for "date"><?php _e( 'Finals Date', 'racketmanager' ) ?></label>
@@ -42,7 +42,7 @@ The following variables are usable:
                     Select all events that you would like to enter.
                 </div>
                 <div class="form-checkboxes">
-                    <?php foreach ($competitions AS $competition) { ?>
+                    <?php foreach ($competitions as $competition) { ?>
                         <?php if ( ( $player->gender == 'M' && substr($competition->type,0,1) != 'W' ) || ( $player->gender == 'F' && substr($competition->type,0,1) != 'M' ) ) { ?>
                     <div class="form-checkboxes__item">
                         <input class="form-checkboxes__input" id="competition[<?php echo $competition->id ?>]" name="competition[<?php echo $competition->id ?>]" type="checkbox" value=<?php echo $competition->id ?> aria-controls="conditional-competition-<?php echo $competition->id ?>">
@@ -70,7 +70,7 @@ The following variables are usable:
                         <label class="form-label" for="partner[<?php echo $competition->id ?>]"><?php _e( 'Partner', 'racketmanager' ) ?></label>
                             <select size="1" name="partner[<?php echo $competition->id ?>]" id="partner[<?php echo $competition->id ?>]" >
                                 <option value="0"><?php _e( 'Select partner' , 'racketmanager') ?></option>
-                                <?php foreach ( $partnerList AS $partner ) { ?>
+                                <?php foreach ( $partnerList as $partner ) { ?>
                                 <option value="<?php echo $partner->player_id ?>"><?php echo $partner->fullname." - ".get_club($partner->affiliatedclub)->name ?></option>
                                 <?php } ?>
                             </select>
@@ -95,7 +95,7 @@ The following variables are usable:
             <?php } else { ?>
                 <select size="1" name="affiliatedclub" id="affiliatedclub" >
                     <option value="0"><?php _e( 'Select club' , 'racketmanager') ?></option>
-                    <?php foreach ( $clubPlayers AS $clubPlayer ) {
+                    <?php foreach ( $clubPlayers as $clubPlayer ) {
                         $club = get_club($clubPlayer->affiliatedclub); ?>
                     <option value="<?php echo $club->id ?>"><?php echo $club->name ?></option>
                     <?php } ?>

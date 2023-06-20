@@ -38,9 +38,9 @@
 			<tbody id="the-list" class="lm-form-table">
 				<?php for ( $i = 0; $i < $max_matches; $i++ ) { $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
 					<tr class="<?php echo $class; ?>">
-						<td><?php if (isset($matches[$i]->id)) echo $matches[$i]->id ?></td>
+						<td><?php if (isset($matches[$i]->id)) { echo $matches[$i]->id; } ?></td>
 						<?php if ( $bulk || $is_finals || ($mode=="add") || $mode == "edit" ) { ?>
-							<td><input type="date" name="mydatepicker[<?php echo $i ?>]" id="mydatepicker[<?php echo $i ?>]" class="" value="<?php if(isset($matches[$i]->date)) echo ( substr($matches[$i]->date, 0, 10) ) ?>" onChange="Racketmanager.setMatchDate(this.value, <?php echo $i ?>, <?php echo $max_matches ?>, '<?php echo $mode ?>');" /></td>
+							<td><input type="date" name="mydatepicker[<?php echo $i ?>]" id="mydatepicker[<?php echo $i ?>]" class="" value="<?php if (isset($matches[$i]->date)) { echo substr($matches[$i]->date, 0, 10); } ?>" onChange="Racketmanager.setMatchDate(this.value, <?php echo $i ?>, <?php echo $max_matches ?>, '<?php echo $mode ?>');" /></td>
 						<?php } ?>
 						<?php if ( (isset($match->final_round) && $match->final_round != null) || $is_finals ) { ?>
 						<?php } else { ?>
@@ -60,7 +60,7 @@
 							<?php } else { ?>
 								<select size="1" name="home_team[<?php echo $i ?>]" id="home_team_<?php echo $i ?>" <?php if ( !$finalkey ) { echo 'onChange="Racketmanager.insertHomeStadium(document.getElementById(\'home_team_'.$i.'\').value, '.$i.');"'; } ?>>
 									<?php $myTeam = 0; ?>
-									<?php foreach ( $teams AS $team ) { ?>
+									<?php foreach ( $teams as $team ) { ?>
 										<option value="<?php echo $team->id ?>"<?php if (isset($matches[$i]->home_team)) { selected($team->id, $matches[$i]->home_team ); } ?>><?php echo $team->title ?></option>
 										<?php if ( $myTeam==0 ) { $myHomeTeam = $team->id; } ?>
 										<?php $myTeam++; ?>
@@ -68,7 +68,7 @@
 								</select>
 							<?php } ?>
 							<?php if ( $cup ) { ?>
-								<input type="radio" name="custom[<?php echo $i ?>][host]" id="team_host[<?php echo $i ?>]" value="home" <?php if ( isset($matches[$i]->custom['host']) && $matches[$i]->custom['host'] == 'home' ) echo 'checked' ?> />
+								<input type="radio" name="custom[<?php echo $i ?>][host]" id="team_host[<?php echo $i ?>]" value="home" <?php if ( isset($matches[$i]->custom['host']) && $matches[$i]->custom['host'] == 'home' ) { echo 'checked'; } ?> />
 							<?php } ?>
 						</td>
 						<!-- Away team pop up -->
@@ -82,7 +82,7 @@
 
 									<select size="1" name="away_team[<?php echo $i ?>]" id="away_team_<?php echo $i ?>" <?php if ( !$finalkey ) { echo 'onChange="Racketmanager.insertHomeStadium(document.getElementById(\'home_team_'.$i.'\').value, '.$i.');"'; } ?>>
 
-										<?php foreach ( $teams AS $team ) { ?>
+										<?php foreach ( $teams as $team ) { ?>
 											<?php if ( isset($matches[$i]->away_team) ) { ?>
 												<option value="<?php echo $team->id ?>"<?php if (isset($matches[$i]->away_team)) { selected( $team->id, $matches[$i]->away_team ); } ?>><?php echo $team->title ?></option>
 											<?php } elseif ( $team->id == $myHomeTeam ) { ?>
@@ -96,7 +96,7 @@
 									</select>
 								<?php } else { ?>
 									<select size="1" name="away_team[<?php echo $i ?>]" id="away_team_<?php echo $i ?>" <?php if ( !$finalkey ) { echo 'onChange="Racketmanager.insertHomeStadium(document.getElementById(\'home_team_'.$i.'\').value, '.$i.');"'; } ?>>
-										<?php foreach ( $teams AS $team ) { ?>
+										<?php foreach ( $teams as $team ) { ?>
 											<option value="<?php echo $team->id ?>"<?php if (isset($matches[$i]->away_team)) { selected( $team->id, $matches[$i]->away_team ); } ?>><?php echo  $team->title ?></option>
 										<?php } ?>
 									</select>
@@ -104,10 +104,10 @@
 
 							<?php } ?>
 							<?php if ( $cup ) { ?>
-								<input type="radio" name="custom[<?php echo $i ?>][host]" id="team_host[<?php echo $i ?>]" value="away" <?php if ( isset($matches[$i]->custom['host']) && $matches[$i]->custom['host'] == 'away') echo 'checked' ?> />
+								<input type="radio" name="custom[<?php echo $i ?>][host]" id="team_host[<?php echo $i ?>]" value="away" <?php if ( isset($matches[$i]->custom['host']) && $matches[$i]->custom['host'] == 'away') { echo 'checked'; } ?> />
 							<?php } ?>
 						</td>
-						<td><input type="text" name="location[<?php echo $i ?>]" id="location[<?php echo $i ?>]" size="20" value="<?php if(isset($matches[$i]->location)) echo $matches[$i]->location ?>" size="30" /></td>
+						<td><input type="text" name="location[<?php echo $i ?>]" id="location[<?php echo $i ?>]" size="20" value="<?php if (isset($matches[$i]->location)) { echo $matches[$i]->location; } ?>" size="30" /></td>
 						<?php if ( !isset($league->entryType) || $league->entryType != 'player' ) { ?>
 							<td>
 								<select size="1" name="begin_hour[<?php echo $i ?>]">
@@ -131,7 +131,7 @@
 							</td>
 						<?php } ?>
 					</tr>
-					<input type="hidden" name="match[<?php echo $i ?>]" value="<?php if (isset($matches[$i]->id)) echo $matches[$i]->id; else echo ""; ?>" />
+					<input type="hidden" name="match[<?php echo $i ?>]" value="<?php if (isset($matches[$i]->id)) { echo $matches[$i]->id; } else { echo "";} ?>" />
 				<?php } ?>
 			</tbody>
 		</table>

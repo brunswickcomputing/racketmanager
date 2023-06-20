@@ -1,8 +1,8 @@
 <?php
 /**
-* Main class to implement RacketManager
-*
-*/
+ * Main class to implement RacketManager
+ *
+ */
 class RacketManager {
 
   /**

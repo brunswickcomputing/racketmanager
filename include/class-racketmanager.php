@@ -356,18 +356,18 @@ class RacketManager {
     global $racketmanager_shortcodes, $racketmanager_login;
 
     // Objects
-    require_once RACKETMANAGER_PATH . '/include/class-charges.php';
-    require_once RACKETMANAGER_PATH . '/include/class-invoice.php';
-    require_once RACKETMANAGER_PATH . '/include/class-club.php';
+    require_once RACKETMANAGER_PATH . 'include/class-charges.php';
+    require_once RACKETMANAGER_PATH . 'include/class-invoice.php';
+    require_once RACKETMANAGER_PATH . 'include/class-club.php';
     require_once RACKETMANAGER_PATH . 'include/class-championship.php';
     require_once RACKETMANAGER_PATH . 'include/class-competition.php';
     require_once RACKETMANAGER_PATH . 'include/class-league.php';
     require_once RACKETMANAGER_PATH . 'include/class-leagueteam.php';
-    require_once RACKETMANAGER_PATH . '/include/class-match.php';
+    require_once RACKETMANAGER_PATH . 'include/class-match.php';
     require_once RACKETMANAGER_PATH . 'include/class-svg-icons.php';
     require_once RACKETMANAGER_PATH . 'include/class-team.php';
-    require_once RACKETMANAGER_PATH . '/include/class-player.php';
-    require_once RACKETMANAGER_PATH . '/include/class-tournament.php';
+    require_once RACKETMANAGER_PATH . 'include/class-player.php';
+    require_once RACKETMANAGER_PATH . 'include/class-tournament.php';
 
     /*
     * load sports libraries

@@ -294,7 +294,6 @@ class RacketManagerAJAX extends RacketManager {
 	*
 	*/
 	public function printMatchCardTeam() {
-		global $racketmanager, $championship;
 		$matchId = $_POST['matchId'];
 		$match = get_match($matchId);
 		$league = get_league($match->league_id);
@@ -404,7 +403,6 @@ class RacketManagerAJAX extends RacketManager {
 	*
 	*/
 	public function printMatchCardPlayer() {
-		global $racketmanager, $championship;
 		$matchId = $_POST['matchId'];
 		$match = get_match($matchId);
 		$league = get_league($match->league_id);

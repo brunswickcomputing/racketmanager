@@ -249,15 +249,19 @@ class League_Tennis extends League {
 			$team_sets_won     = isset( $team->sets_won ) ? $team->sets_won : 0;
 			$team_sets_allowed = isset( $team->sets_allowed ) ? $team->sets_allowed : 0;
 			if ( ! is_numeric( $team_sets_won ) ) {
-				$team_sets_won = 0; }
+				$team_sets_won = 0;
+			}
 			if ( ! is_numeric( $team_sets_allowed ) ) {
-				$team_sets_allowed = 0; }
+				$team_sets_allowed = 0;
+			}
 			$team_games_won     = isset( $team->games_won ) ? $team->games_won : 0;
 			$team_games_allowed = isset( $team->games_allowed ) ? $team->games_allowed : 0;
 			if ( ! is_numeric( $team_games_won ) ) {
-				$team_games_won = 0; }
+				$team_games_won = 0;
+			}
 			if ( ! is_numeric( $team_games_allowed ) ) {
-				$team_games_allowed = 0; }
+				$team_games_allowed = 0;
+			}
 			$points[ $key ]        = $team->points['plus'];
 			$sets_diff[ $key ]     = $team_sets_won - $team_sets_allowed;
 			$sets_won[ $key ]      = $team_sets_won;
@@ -299,34 +303,20 @@ class League_Tennis extends League {
 
 		if ( ! $matches ) {
 			$matches = $league->getMatches(
-				array(
-					'season'           => $season,
-					'team_id'          => $team_id,
-					'final'            => '',
-					'limit'            => false,
-					'cache'            => false,
-					'home_points'      => 'not null',
-					'away_points'      => 'not null',
-					'reset_query_args' => true,
-					'confirmed'        => true,
-				)
+				array('season' => $season, 'team_id' => $team_id, 'final' => '', 'limit' => false, 'cache' => false, 'home_points' => 'not null', 'away_points' => 'not null', 'reset_query_args' => true, 'confirmed' => true)
 			);
 		}
 
 		foreach ( $matches as $match ) {
-
 			$index = ( $team_id == $match->home_team ) ? 'player2' : 'player1';
 			$match = get_match( $match );
-
 			if ( isset( $league->num_rubbers ) ) {
 				$rubbers   = $match->getRubbers();
 				$walkovers = array();
 				$walkovers = 0;
 				foreach ( $rubbers as $rubber ) {
-
 					if ( $rubber->winner_id == $team_id ) {               // winning team
 						if ( $match->home_team == $team_id ) {           // home team
-
 							for ( $j = 1; $j <= $league->num_sets; $j++ ) {
 								if ( $rubber->sets[ $j ]['player1'] != null ) {
 									$set = $rubber->sets[ $j ];
@@ -559,7 +549,8 @@ class League_Tennis extends League {
 		global $league;
 
 		if ( empty( $league ) ) {
-			$league = $match->league_id; }
+			$league = $match->league_id;
+		}
 		$league = get_league( $league );
 
 		if ( isset( $league->num_rubbers ) && $league->num_rubbers > 0 ) {
@@ -607,9 +598,11 @@ class League_Tennis extends League {
 
 				foreach ( $rubbers as $rubber ) {
 					if ( is_numeric( $rubber->home_points ) ) {
-						$score['home'] += intval( $rubber->home_points ); }
+						$score['home'] += intval( $rubber->home_points );
+					}
 					if ( is_numeric( $rubber->away_points ) ) {
-						$score['away'] += intval( $rubber->away_points ); }
+						$score['away'] += intval( $rubber->away_points );
+					}
 				}
 			} else {
 				foreach ( $match->sets as $set ) {

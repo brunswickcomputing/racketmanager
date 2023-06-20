@@ -1286,7 +1286,7 @@ class League {
 			$team->affiliatedclub     = stripslashes( $team->affiliatedclub );
 			$team->affiliatedclubname = get_club( $team->affiliatedclub )->name;
 			$team->stadium            = stripslashes( $team->stadium );
-			$team->class              = implode( ' ', $cssClass );
+			$team->class              = implode( ' ', $class );
 
 			if ( 1 == $team->home ) {
 				$team->title = '<strong>' . $team->title . '</strong>';

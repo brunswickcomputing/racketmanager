@@ -3102,7 +3102,6 @@ class League {
 					$match->season = $season;
 					$match->league_id = $this->id;
 					$match = new RM_Match($match);
-//					$racketmanager->addMatch( $matchDate, $homeTeamDtls->id, $awayTeamDtls->id, $roundNumber, $homeTeamDtls->affiliatedclubname, $this->id, $season );
 				}
 				$f++;
 			}

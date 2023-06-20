@@ -9,7 +9,16 @@ class RacketManager {
   * The array of templates that this plugin tracks.
   */
   protected $templates;
-
+  public $site_name;
+  public $message;
+  public $error = false;
+  public $options;
+  public $date_format;
+  public $time_format;
+  public $admin_email;
+  public $site_url;
+  public $seasons;
+  public $num_players;
   /**
   * constructor
   *
@@ -347,18 +356,18 @@ class RacketManager {
     global $racketmanager_shortcodes, $racketmanager_login;
 
     // Objects
-    require_once (RACKETMANAGER_PATH . '/include/class-charges.php');
-    require_once (RACKETMANAGER_PATH . '/include/class-invoice.php');
-    require_once (RACKETMANAGER_PATH . '/lib/club.php');
-    require_once (RACKETMANAGER_PATH . '/lib/championship.php');
-    require_once (RACKETMANAGER_PATH . '/lib/competition.php');
-    require_once (RACKETMANAGER_PATH . '/lib/league.php');
-    require_once (RACKETMANAGER_PATH . '/lib/leagueteam.php');
-    require_once (RACKETMANAGER_PATH . '/include/class-match.php');
-    require_once (RACKETMANAGER_PATH . '/lib/svg-icons.php');
-    require_once (RACKETMANAGER_PATH . 'include/class-team.php');
-    require_once (RACKETMANAGER_PATH . '/include/class-player.php');
-    require_once (RACKETMANAGER_PATH . '/include/class-tournament.php');
+    require_once RACKETMANAGER_PATH . '/include/class-charges.php';
+    require_once RACKETMANAGER_PATH . '/include/class-invoice.php';
+    require_once RACKETMANAGER_PATH . '/lib/club.php';
+    require_once RACKETMANAGER_PATH . '/lib/championship.php';
+    require_once RACKETMANAGER_PATH . '/lib/competition.php';
+    require_once RACKETMANAGER_PATH . '/lib/league.php';
+    require_once RACKETMANAGER_PATH . '/lib/leagueteam.php';
+    require_once RACKETMANAGER_PATH . '/include/class-match.php';
+    require_once RACKETMANAGER_PATH . '/lib/svg-icons.php';
+    require_once RACKETMANAGER_PATH . 'include/class-team.php';
+    require_once RACKETMANAGER_PATH . '/include/class-player.php';
+    require_once RACKETMANAGER_PATH . '/include/class-tournament.php';
 
     /*
     * load sports libraries
@@ -368,22 +377,22 @@ class RacketManager {
 
     // load files
     foreach ( $files as $file ) {
-      require_once($file);
+      require_once $file;
     }
 
     // Global libraries
-    require_once (RACKETMANAGER_PATH . '/lib/ajax.php');
-    require_once (RACKETMANAGER_PATH . '/lib/login.php');
-    require_once (RACKETMANAGER_PATH . '/lib/shortcodes.php');
-    require_once (RACKETMANAGER_PATH . '/lib/widget.php');
+    require_once RACKETMANAGER_PATH . '/lib/ajax.php';
+    require_once RACKETMANAGER_PATH . '/lib/login.php';
+    require_once RACKETMANAGER_PATH . '/lib/shortcodes.php';
+    require_once RACKETMANAGER_PATH . '/lib/widget.php';
 
     // template tags & functions
-    require_once (RACKETMANAGER_PATH . '/template-tags.php');
-    require_once (RACKETMANAGER_PATH . '/functions.php');
+    require_once RACKETMANAGER_PATH . '/template-tags.php';
+    require_once RACKETMANAGER_PATH . '/functions.php';
 
     $racketmanager_ajax = new RacketManagerAJAX();
 
-    include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+    include_once ABSPATH . 'wp-admin/includes/plugin.php';
 
     $racketmanager_shortcodes = new RacketManagerShortcodes();
     $racketmanager_login = new RacketManagerLogin();
@@ -524,7 +533,7 @@ class RacketManager {
     wp_enqueue_style('jquery-ui-theme');
 
     ob_start();
-    require_once(RACKETMANAGER_PATH.'css/colors.css.php');
+    require_once RACKETMANAGER_PATH.'css/colors.css.php';
     $css = ob_get_contents();
     ob_end_clean();
 
@@ -1220,40 +1229,13 @@ class RacketManager {
   }
 
   /**
-  * get single player
-  *
-  * @param array $query_args
-  * @return array
-  */
-  public function getPlayer( $args ) {
-    $defaults = array( 'player_id' => false, 'fullname' => false, 'cache' => true );
-    $args = array_merge($defaults, (array)$args);
-    extract($args, EXTR_SKIP);
-
-    if ($player_id) {
-      $player = get_user_by( 'id', $player_id );
-    } elseif ($fullname) {
-      $player = get_user_by( 'slug', sanitize_title($fullname) );
-    }
-
-    if ( !$player ) {
-      return false;
-    }
-
-    $player = (object)(array)$player;
-
-    $this->player[$player->ID] = $player;
-    return $this->player[$player->ID];
-  }
-
-  /**
   * get player name
   *
   * @param int $playerId
   * @return string | false
   */
   public function getPlayerName( $playerId ) {
-    $player = get_userdata( $playerId );
+    $player = get_player( $playerId );
     if ( !$player ) {
       return false;
     }

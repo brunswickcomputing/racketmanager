@@ -413,18 +413,16 @@ final class League_Championship extends RacketManager {
   * @param array $matches
   * @param array $home_poinsts
   * @param array $away_points
-  * @param array $home_team
-  * @param array $away_team
   * @param array $custom
   * @param int $round
   * @param int $season
   */
-  public function updateFinalResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $round, $season ) {
+  public function updateFinalResults( $matches, $home_points, $away_points, $custom, $round, $season ) {
     global $racketmanager;
 
     $league = get_league();
     $league->setFinals(true);
-    $num_matches = $league->_updateResults($matches, $home_points, $away_points, $home_team, $away_team, $custom, $season, $round);
+    $num_matches = $league->_updateResults($matches, $home_points, $away_points, $custom, $season, $round);
 
     if ( $round < $this->num_rounds )
     $this->proceed($this->getFinalKeys($round), $this->getFinalKeys($round+1));
@@ -615,7 +613,7 @@ final class League_Championship extends RacketManager {
       if ( isset($_POST['updateFinalResults']) ) {
         if ( current_user_can( 'update_results' ) ) {
           $custom = isset($_POST['custom']) ? $_POST['custom'] : '';
-          $this->updateFinalResults( $_POST['matches'], $_POST['home_points'], $_POST['away_points'], $_POST['home_team'], $_POST['away_team'], $custom, $_POST['round'], $_POST['season']);
+          $this->updateFinalResults( $_POST['matches'], $_POST['home_points'], $_POST['away_points'], $custom, $_POST['round'], $_POST['season']);
         } else {
           $racketmanager->setMessage(__("You do not have sufficient permissions to access this page."), true);
         }

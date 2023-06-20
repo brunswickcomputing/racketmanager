@@ -117,7 +117,7 @@ class RacketManager {
     $away_team[$match->id] = $match->away_team;
     $custom[$match->id] = $match->custom;
     $season = $match->season;
-    return $league->_updateResults( $resultMatches, $home_points, $away_points, $home_team, $away_team, $custom, $season, $final );
+    return $league->_updateResults( $resultMatches, $home_points, $away_points, $custom, $season, $final );
 	}
   
 	public function _chaseMatchApproval($matchId, $timePeriod = false, $override = false) {

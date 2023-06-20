@@ -529,7 +529,7 @@ class RacketManagerAJAX extends RacketManager {
 			$matchMessage = implode('<br>', $errMsg);
 
 			if ( !$error ) {
-				$matchCount = $league->_updateResults( $matches, $homePoints, $awayPoints, $homeTeam, $awayTeam, $custom, $season, $_POST['match_round'], $matchConfirmed );
+				$matchCount = $league->_updateResults( $matches, $homePoints, $awayPoints, $custom, $season, $_POST['match_round'], $matchConfirmed );
 				if ( $matchCount > 0 ) {
 					$matchMessage = __( 'Result saved', 'racketmanager' );
 					$match = get_match($matchId);
@@ -679,11 +679,11 @@ class RacketManagerAJAX extends RacketManager {
 						$season = $_POST['current_season'];
 						if ( $league->is_championship ) {
 							$round = $league->championship->getFinals($_POST['match_round'])['round'];
-							$league->championship->updateFinalResults( $matches, $homePoints, $awayPoints, $homeTeam, $awayTeam, $custom, $round, $season  );
+							$league->championship->updateFinalResults( $matches, $homePoints, $awayPoints, $custom, $round, $season  );
 							$msg = __('Match saved','racketmanager');
 							$updated = true;
 						} else {
-							$matchCount = $league->_updateResults( $matches, $homePoints, $awayPoints, $homeTeam, $awayTeam, $custom, $season );
+							$matchCount = $league->_updateResults( $matches, $homePoints, $awayPoints, $custom, $season );
 							if ( $matchCount > 0 ) {
 								$msg = sprintf(__('Saved Results of %d matches','racketmanager'), $matchCount);
 								$updated = true;
@@ -1305,7 +1305,7 @@ class RacketManagerAJAX extends RacketManager {
 
 		foreach ( $_POST['league'] as $league_id ) {
 			$league = get_league($league_id);
-			$matchCount = $league->_updateResults( $_POST['matches'][$league_id], $_POST['home_points'][$league_id], $_POST['away_points'][$league_id], $_POST['home_team'][$league_id], $_POST['away_team'][$league_id], $custom, $_POST['season'][$league_id] );
+			$matchCount = $league->_updateResults( $_POST['matches'][$league_id], $_POST['home_points'][$league_id], $_POST['away_points'][$league_id], $custom, $_POST['season'][$league_id] );
 			$updateCount += $matchCount;
 		}
 		if ( $updateCount == 0 ) {

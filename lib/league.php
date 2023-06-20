@@ -2307,13 +2307,11 @@ class League
 	 * @param array $matches
 	 * @param array $home_points
 	 * @param array $away_points
-	 * @param array $home_team
-	 * @param array $away_team
 	 * @param array $status
 	 * @param array $custom
 	 * @return boolean
 	 */
-	public function _updateResults($matches, $home_points, $away_points, $home_team, $away_team, $custom, $season, $final = false, $confirmed = "Y")
+	public function _updateResults($matches, $home_points, $away_points, $custom, $season, $final = false, $confirmed = "Y")
 	{
 		global $wpdb, $racketmanager;
 

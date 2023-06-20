@@ -932,7 +932,7 @@ final class RacketManagerAdmin extends RacketManager
 				if ( current_user_can('update_results') ) {
 					check_admin_referer('matches-bulk');
 					$custom = isset($_POST['custom']) ? $_POST['custom'] : array();
-					$this->updateResults( $_POST['matches'], $_POST['home_points'], $_POST['away_points'], $_POST['home_team'], $_POST['away_team'], $custom, $_POST['season'] );
+					$this->updateResults( $_POST['matches'], $_POST['home_points'], $_POST['away_points'], $custom, $_POST['season'] );
 					$tab = 'matches';
 					$matchDay = intval($_POST['current_match_day']);
 				} else {
@@ -2423,15 +2423,13 @@ final class RacketManagerAdmin extends RacketManager
 	* @param array $matches
 	* @param array $home_points
 	* @param array $away_points
-	* @param array $home_team
-	* @param array $away_team
 	* @param array $custom
 	* @param string $season
 	* @param boolean $final
 	* @param boolean $message
 	* @return int $num_matches
 	*/
-	private function updateResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $season, $final = false, $message = true ) {
+	private function updateResults( $matches, $home_points, $away_points, $custom, $season, $final = false, $message = true ) {
 		if ( !current_user_can('update_results') ) {
 			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
 			return false;
@@ -2439,7 +2437,7 @@ final class RacketManagerAdmin extends RacketManager
 
 		$league = get_league();
 		$league->setFinals($final);
-		$num_matches = $league->_updateResults( $matches, $home_points, $away_points, $home_team, $away_team, $custom, $season, $final );
+		$num_matches = $league->_updateResults( $matches, $home_points, $away_points, $custom, $season, $final );
 
 		if ( $message ) {
 			$this->setMessage( sprintf(__('Updated Results of %d matches','racketmanager'), $num_matches) );

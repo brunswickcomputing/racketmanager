@@ -358,7 +358,7 @@ class RacketManager {
     // Objects
     require_once RACKETMANAGER_PATH . '/include/class-charges.php';
     require_once RACKETMANAGER_PATH . '/include/class-invoice.php';
-    require_once RACKETMANAGER_PATH . '/lib/club.php';
+    require_once RACKETMANAGER_PATH . '/include/class-club.php';
     require_once RACKETMANAGER_PATH . '/lib/championship.php';
     require_once RACKETMANAGER_PATH . '/lib/competition.php';
     require_once RACKETMANAGER_PATH . '/lib/league.php';

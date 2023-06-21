@@ -122,10 +122,7 @@ table.racketmanager .score {
 }
 table.racketmanager .score, table.racketmanager .ap {
 	text-align: center;
-	}
-table.racketmanager tr.divider {
-	/*border-bottom: 1px solid;*/
-	}
+}
 table.racketmanager a {
 	text-decoration: none;
 }
@@ -153,8 +150,6 @@ table.racketmanager a {
 /*--- Crosstable Popup ---*/
 div#racketmanager_crosstable div { text-align: center; padding-top: 1em;}
 
-table.racketmanager.crosstable {
-}
 table.racketmanager.crosstable th {
 	vertical-align: middle;
 	border: 1px solid;
@@ -585,10 +580,6 @@ input[type="text"]:disabled, input[type="email"]:disabled, input[type="tel"]:dis
 .playerlist td.playername {
     text-align: left;
 }
-div.teamlist .header .ui-icon {
-/*	background-image: none;*/
-}
-
 .club-teams dl.team {
     width: 60%;
 }
@@ -653,21 +644,14 @@ div.teamlist .header .ui-icon {
 .racketmanager_widget table.racketmanager {
 	margin: 0;
 	padding: 0;
-	}
-.racketmanager_widget table.racketmanager th {
-	/*background-color: transparent;*/
-	}
+}
 .racketmanager_widget table.racketmanager th, .racketmanager_widget table.racketmanager td {
 	padding: 4px;
 	margin: 0;
 	border: 0;
 	border-bottom: 1px solid;
 	/*background-color: transparent;*/
-	}
-
-.racketmanager_widget table.racketmanager tr, .racketmanager_widget table.racketmanager tr.alternate {
-	/*background-color: transparent;*/
-	}
+}
 input[type="checkbox"].checkbox:checked {
     filter: hue-rotate(236deg);
 }
@@ -1085,7 +1069,6 @@ h4.header {
 }
 .archive {
 	min-height: 35vw;
-}
 }
 /*  START OF MEDIA QUERIES */
 

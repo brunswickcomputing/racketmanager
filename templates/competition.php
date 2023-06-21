@@ -26,8 +26,8 @@ $pagename = isset($wp_query->query['pagename']) ? $wp_query->query['pagename'] :
 				<div class="row g-1 align-items-center">
 					<div class="form-floating col-auto">
 						<select class="form-select" size="1" name="season" id="season">
-							<?php foreach ( array_reverse($seasons) AS $key => $season ) { ?>
-								<option value="<?php echo $season['name'] ?>"<?php if ( $season['name'] == $curr_season ) echo ' selected="selected"' ?>><?php echo $season['name'] ?></option>
+							<?php foreach ( array_reverse($seasons) as $key => $season ) { ?>
+								<option value="<?php echo $season['name'] ?>"<?php if ( $season['name'] == $curr_season ) { echo ' selected="selected"'; } ?>><?php echo $season['name'] ?></option>
 							<?php } ?>
 						</select>
 						<label for="season"><?php _e('Season', 'racketmanager') ?></label>
@@ -42,7 +42,7 @@ $pagename = isset($wp_query->query['pagename']) ? $wp_query->query['pagename'] :
 
 	<?php if ( $competition->mode == 'default' ) { ?>
 		<div id="leagues">
-			<?php foreach ( $leagues AS $league ) { ?>
+			<?php foreach ( $leagues as $league ) { ?>
 				<!-- Standings Table -->
 				<div id="standings-archive">
 					<h4 class="header">
@@ -65,7 +65,7 @@ $pagename = isset($wp_query->query['pagename']) ? $wp_query->query['pagename'] :
 		</div>
 	<?php } else { ?>
 		<div id="cups">
-			<?php foreach ( $leagues AS $league ) { ?>
+			<?php foreach ( $leagues as $league ) { ?>
 				<!-- Brackets -->
 				<div id="brackets">
 					<h4 class="header"><?php echo $league->title ?></h4>

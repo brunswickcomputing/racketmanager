@@ -1,4 +1,3 @@
-let $mathCardWindow;
 jQuery(document).ready(function ($) {
 	jQuery("tr.match-rubber-row").slideToggle('fast', 'linear');
 	jQuery("i", "td.angle-dir", "tr.match-row").toggleClass("angle-right angle-down");

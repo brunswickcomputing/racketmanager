@@ -4,11 +4,8 @@
 */
 namespace ns;
 ?>
-<?php if ( isset($_GET['team']) && !$widget ) { ?>
-  //    <?php the_single_team(); ?>
-<?php } elseif ( have_teams() ) { ?>
   <div class="table-responsive">
-    <table class="table table-striped" summary="" title="<?php _e( 'Standings', 'racketmanager' ) .' '.get_league_title(); ?>">
+    <table class="table table-striped" aria-label="<?php _e('League Standings', 'racketmanager') ?>" title="<?php _e( 'Standings', 'racketmanager' ) .' '.get_league_title(); ?>">
       <thead class="table-dark">
         <tr>
           <th class="num"><?php echo _e( 'Pos', 'racketmanager' ) ?></th>
@@ -44,4 +41,3 @@ namespace ns;
     </table>
   </div>
 
-<?php } ?>

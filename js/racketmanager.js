@@ -1,4 +1,4 @@
-var $mathCardWindow;
+let $mathCardWindow;
 jQuery(document).ready(function($) {
 	jQuery("tr.match-rubber-row").slideToggle('fast','linear');
 	jQuery ("i", "td.angle-dir", "tr.match-row").toggleClass("angle-right angle-down");
@@ -12,8 +12,8 @@ jQuery(document).ready(function($) {
 		var league = jQuery('#league_id').val(); //
 		var season = jQuery('#season').val();
 
-		var cleanUrl = window.location.protocol + '//' + window.location.host + '/leagues/' + league.toLowerCase() + '/' + season + '/';
-		window.location = encodeURIComponent(cleanUrl);
+		var cleanUrl = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/leagues/' + league.toLowerCase() + '/' + season + '/';
+		window.location = cleanUrl;
 
 		return false;  // Prevent default button behaviour
 	});
@@ -23,8 +23,8 @@ jQuery(document).ready(function($) {
 		var pagename = jQuery('#pagename').val();
 		var season = jQuery('#season').val();
 
-		var cleanUrl = window.location.protocol + '//' + window.location.host + '/' + pagename.toLowerCase() + '/' + season + '/';
-		window.location = encodeURIComponent(cleanUrl);
+		var cleanUrl = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/' + pagename.toLowerCase() + '/' + season + '/';
+		window.location = cleanUrl;
 
 		return false;  // Prevent default button behaviour
 	});
@@ -40,8 +40,8 @@ jQuery(document).ready(function($) {
 		var team = jQuery('#team_id').val();
 		team = team.replace(/\s/g, "-"); // Replace space with a '-' symbol */
 
-		var cleanUrl = window.location.protocol + '//' + window.location.host + '/leagues/' + league.toLowerCase() + '/' + season + '/day' + matchday + '/' + team + '/';
-		window.location = encodeURIComponent(cleanUrl);
+		var cleanUrl = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/leagues/' + league.toLowerCase() + '/' + season + '/day' + matchday + '/' + team + '/';
+		window.location = cleanUrl;
 
 		return false;  // Prevent default button behaviour
 	});
@@ -53,8 +53,8 @@ jQuery(document).ready(function($) {
 		var competitionSeason = jQuery(`#competitionSeason`).val();
 		var competitionType = jQuery(`#competitionType`).val();
 
-		var cleanUrl = window.location.protocol + '//' + window.location.host + '/' + competitionType + 's/' + competitionSeason + '/winners/' + selection.toLowerCase() + '/';
-		window.location = encodeURIComponent(cleanUrl);
+		var cleanUrl = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/' + competitionType + 's/' + competitionSeason + '/winners/' + selection.toLowerCase() + '/';
+		window.location = cleanUrl;
 
 		return false;  // Prevent default button behaviour
 	});
@@ -64,15 +64,15 @@ jQuery(document).ready(function($) {
 		tournament = tournament.replace(/\s/g, "_"); // Replace space with a '-' symbol */
 		var season = jQuery(`#season`).val();
 
-		var cleanUrl = window.location.protocol + '//' + window.location.host + '/tournaments/' + season + '/' + season + '-order-of-play/' + tournament.toLowerCase() + '/' ;
-		window.location = encodeURIComponent(cleanUrl);
+		var cleanUrl = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/tournaments/' + season + '/' + season + '-order-of-play/' + tournament.toLowerCase() + '/' ;
+		window.location = cleanUrl;
 
 		return false;  // Prevent default button behaviour
 	});
 	jQuery('#racketmanager_daily_matches').submit(function() {
 		var matchDate = jQuery(`#match_date`).val();
-		var cleanUrl = window.location.protocol + '//' + window.location.host + '/leagues/daily-matches/' + matchDate + '/';
-		window.location = encodeURIComponent(cleanUrl);
+		var cleanUrl = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/leagues/daily-matches/' + encodeURIComponent(matchDate) + '/';
+		window.location = cleanUrl;
 
 		return false;  // Prevent default button behaviour
 	});

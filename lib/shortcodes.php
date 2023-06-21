@@ -90,7 +90,6 @@ class RacketManagerShortcodes extends RacketManager
 			$team_args["group"] = $group;
 		}
 		$teams = $league->getLeagueTeams($team_args);
-
 		if (empty($template)) {
 			$filename = 'standings';
 		} elseif (!$widget && $this->checkTemplate('standings-' . $league->sport)) {
@@ -1732,11 +1731,11 @@ class RacketManagerShortcodes extends RacketManager
 		ob_start();
 
 		if (file_exists(get_stylesheet_directory() . "/racketmanager/$template.php")) {
-			include_once get_stylesheet_directory() . "/racketmanager/$template.php";
+			include get_stylesheet_directory() . "/racketmanager/$template.php";
 		} elseif (file_exists(get_template_directory() . "/racketmanager/$template.php")) {
-			include_once get_template_directory() . "/racketmanager/$template.php";
+			include get_template_directory() . "/racketmanager/$template.php";
 		} elseif (file_exists(RACKETMANAGER_PATH . $templateDir . "/" . $template . ".php")) {
-			include_once RACKETMANAGER_PATH . $templateDir . "/" . $template . ".php";
+			include RACKETMANAGER_PATH . $templateDir . "/" . $template . ".php";
 		} else {
 			$racketmanager->setMessage(sprintf(__('Could not load template %s.php', 'racketmanager'), $template), true);
 			$racketmanager->printMessage();

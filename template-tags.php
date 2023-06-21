@@ -671,8 +671,9 @@
         $args['league_id'] = $league_id;
 
         $shortcode = "[standings";
-        foreach ($args AS $key => $value)
+        foreach ($args AS $key => $value) {
             $shortcode .= " ".$key."='".$value."'";
+        }
         $shortcode .= "]";
         echo do_shortcode($shortcode);
     }

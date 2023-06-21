@@ -93,9 +93,9 @@
     function get_league_template($template = "" ) {
         global $league;
 
-        if (!empty($template) && isset($league->templates[$template]))
+        if (!empty($template) && isset($league->templates[$template])){
             return $league->templates[$template];
-
+        }
         return "";
     }
 
@@ -118,9 +118,9 @@
     function show_standings($key) {
         global $league;
 
-        if (isset($league->standings[$key]) && $league->standings[$key] == 1)
+        if (isset($league->standings[$key]) && $league->standings[$key] == 1) {
             return true;
-
+        }
         return false;
     }
 
@@ -192,9 +192,6 @@
 
         $league->in_the_team_loop = true;
 
-        // Loop start
-        if ( $league->current_team == -1 ) {
-        }
         // Increment team count
         $league->current_team++;
         $team = $league->teams[$league->current_team];
@@ -357,9 +354,9 @@
 
         $match = $team->getNextMatch();
 
-        if ($match)
+        if ($match) {
             return true;
-
+        }
         return false;
     }
     /**
@@ -373,9 +370,9 @@
 
         $match = $team->getPrevMatch();
 
-        if ($match)
+        if ($match) {
             return true;
-
+        }
         return false;
     }
 
@@ -409,8 +406,9 @@
     function have_matches() {
         global $league;
 
-        if (!isset($league->matches)) return false;
-
+        if (!isset($league->matches)) {
+            return false;
+        }
         if ( $league->current_match + 1 < count($league->matches) ) {
             return true;
         } elseif ( $league->current_match == count($league->matches)-1 && count($league->matches) > 0 ) {
@@ -429,12 +427,6 @@
         global $league, $match;
 
         $league->in_the_match_loop = true;
-
-        // Loop start
-        if ( $league->current_match == -1 ) {
-
-        }
-
         // Increment dataset count
         $league->current_match++;
         $match = $league->matches[$league->current_match];
@@ -460,8 +452,9 @@
     function the_matches_pagination($start_el = "<p class='racketmanager-pagination page-numbers'>", $end_el = "</p>") {
         global $league;
 
-        if ( !empty($league->pagination_matches) )
+        if ( !empty($league->pagination_matches) ) {
             echo $start_el . $league->pagination_matches . $end_el;
+        }
     }
 
     /**
@@ -514,10 +507,11 @@
     function the_match_date($format = '') {
         global $match;
 
-        if ($format == '')
+        if ($format == '') {
             echo $match->match_date;
-        else
+        } else {
             echo mysql2date($format, $match->date);
+        }
     }
 
     /**
@@ -572,9 +566,9 @@
     function match_has_report() {
         global $match;
 
-        if ($match->post_id != 0)
+        if ($match->post_id != 0) {
             return true;
-
+        }
         return false;
     }
     /**
@@ -628,8 +622,9 @@
        $args['club_id'] = intval($club_id);
 
        $shortcode = "[club";
-       foreach ($args AS $key => $value)
+       foreach ($args as $key => $value) {
            $shortcode .= " ".$key."='".$value."'";
+       }
        $shortcode .= "]";
        echo do_shortcode($shortcode);
    }
@@ -650,8 +645,9 @@
         $args['league_id'] = intval($league_id);
 
         $shortcode = "[players";
-        foreach ($args AS $key => $value)
+        foreach ($args as $key => $value) {
             $shortcode .= " ".$key."='".$value."'";
+        }
         $shortcode .= "]";
         echo do_shortcode($shortcode);
     }
@@ -671,7 +667,7 @@
         $args['league_id'] = $league_id;
 
         $shortcode = "[standings";
-        foreach ($args AS $key => $value) {
+        foreach ($args as $key => $value) {
             $shortcode .= " ".$key."='".$value."'";
         }
         $shortcode .= "]";
@@ -693,8 +689,9 @@
         $args['league_id'] = $league_id;
 
         $shortcode = "[crosstable";
-        foreach ($args AS $key => $value)
+        foreach ($args as $key => $value) {
             $shortcode .= " ".$key."='".$value."'";
+        }
         $shortcode .= "]";
         echo do_shortcode($shortcode);
     }
@@ -714,8 +711,9 @@
         $args['league_id'] = $league_id;
 
         $shortcode = "[matches";
-        foreach ($args AS $key => $value)
+        foreach ($args as $key => $value) {
             $shortcode .= " ".$key."='".$value."'";
+        }
         $shortcode .= "]";
 
         echo do_shortcode($shortcode);
@@ -733,8 +731,9 @@
         $args['id'] = $match_id;
 
         $shortcode = "[match";
-        foreach ($args AS $key => $value)
+        foreach ($args as $key => $value) {
             $shortcode .= " ".$key."='".$value."'";
+        }
         $shortcode .= "]";
         echo do_shortcode($shortcode);
     }
@@ -754,8 +753,9 @@
         $args['league_id'] = intval($league_id);
 
         $shortcode = "[teams";
-        foreach ($args AS $key => $value)
+        foreach ($args as $key => $value) {
             $shortcode .= " ".$key."='".$value."'";
+        }
         $shortcode .= "]";
         echo do_shortcode($shortcode);
     }
@@ -773,8 +773,9 @@
         $args['id'] = $team_id;
 
         $shortcode = "[team";
-        foreach ($args AS $key => $value)
+        foreach ($args as $key => $value) {
             $shortcode .= " ".$key."='".$value."'";
+        }
         $shortcode .= "]";
         echo do_shortcode($shortcode);
     }
@@ -794,8 +795,9 @@
         $args['league_id'] = $league_id;
 
         $shortcode = "[championship";
-        foreach ($args AS $key => $value)
+        foreach ($args as $key => $value) {
             $shortcode .= " ".$key."='".$value."'";
+        }
         $shortcode .= "]";
         echo do_shortcode($shortcode);
     }
@@ -813,8 +815,9 @@
         $args['league_id'] = $league_id;
 
         $shortcode = "[leaguearchive";
-        foreach ($args AS $key => $value)
+        foreach ($args as $key => $value) {
             $shortcode .= " ".$key."='".$value."'";
+        }
         $shortcode .= "]";
         echo do_shortcode($shortcode);
     }
@@ -833,8 +836,9 @@
         $args['days'] = 3;
 
         $shortcode = "[latestresults";
-        foreach ($args AS $key => $value)
+        foreach ($args as $key => $value) {
             $shortcode .= " ".$key."='".$value."'";
+        }
         $shortcode .= "]";
         echo do_shortcode($shortcode);
     }
@@ -851,11 +855,11 @@
         $args['match'] = $matchId;
 
         $shortcode = "[matchnotification";
-        foreach ($args AS $key => $value)
+        foreach ($args as $key => $value) {
             $shortcode .= " ".$key."='".$value."'";
+        }
         $shortcode .= "]";
-        $matchMessage = do_shortcode($shortcode);
-        return $matchMessage;
+        return do_shortcode($shortcode);
     }
 
     /**
@@ -871,11 +875,11 @@
         $args['match'] = $matchId;
 
         $shortcode = "[resultnotification";
-        foreach ($args AS $key => $value)
+        foreach ($args as $key => $value) {
             $shortcode .= " ".$key."='".$value."'";
+        }
         $shortcode .= "]";
-        $matchMessage = do_shortcode($shortcode);
-        return $matchMessage;
+        return do_shortcode($shortcode);
     }
 
     /**
@@ -891,11 +895,11 @@
         $args['match'] = $matchId;
 
         $shortcode = "[resultnotificationcaptain";
-        foreach ($args AS $key => $value)
+        foreach ($args as $key => $value) {
             $shortcode .= " ".$key."='".$value."'";
+        }
         $shortcode .= "]";
-        $matchMessage = do_shortcode($shortcode);
-        return $matchMessage;
+        return do_shortcode($shortcode);
     }
 
     /**
@@ -911,11 +915,11 @@
         $args['match'] = $matchId;
 
         $shortcode = "[resultoutstandingnotification";
-        foreach ($args AS $key => $value)
+        foreach ($args as $key => $value) {
             $shortcode .= " ".$key."='".$value."'";
+        }
         $shortcode .= "]";
-        $matchMessage = do_shortcode($shortcode);
-        return $matchMessage;
+        return do_shortcode($shortcode);
     }
 
     /**
@@ -928,11 +932,11 @@
         global $racketmanager;
 
         $shortcode = "[clubplayernotification";
-        foreach ($args AS $key => $value)
+        foreach ($args as $key => $value) {
             $shortcode .= " ".$key."='".$value."'";
+        }
         $shortcode .= "]";
-        $rosterMessage = do_shortcode($shortcode);
-        return $rosterMessage;
+        return do_shortcode($shortcode);
     }
 
     /**
@@ -949,11 +953,9 @@
         $args['standingstable'] = 'constitution';
 
         $shortcode = "[competition";
-        foreach ($args AS $key => $value)
+        foreach ($args as $key => $value) {
             $shortcode .= " ".$key."='".$value."'";
+        }
         $shortcode .= "]";
-        $emailMessage = do_shortcode($shortcode);
-        return $emailMessage;
+        return do_shortcode($shortcode);
     }
-
-?>

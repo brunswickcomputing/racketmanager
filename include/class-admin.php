@@ -2439,9 +2439,10 @@ final class RacketManagerAdmin extends RacketManager
 		wp_enqueue_style('racketmanager', plugins_url("/css/admin.css", dirname(__FILE__)), false, RACKETMANAGER_VERSION, 'screen');
 		wp_enqueue_style('racketmanager-modal', plugins_url("/css/modal.css", dirname(__FILE__)), false, RACKETMANAGER_VERSION, 'screen');
 
-		wp_register_style('jquery-ui', plugins_url("/css/jquery/jquery-ui.min.css", dirname(__FILE__)), false, '1.11.4', 'all');
-		wp_register_style('jquery-ui-structure', plugins_url("/css/jquery/jquery-ui.structure.min.css", dirname(__FILE__)), array('jquery-ui'), '1.11.4', 'all');
-		wp_register_style('jquery-ui-theme', plugins_url("/css/jquery/jquery-ui.theme.min.css", dirname(__FILE__)), array('jquery-ui', 'jquery-ui-structure'), '1.11.4', 'all');
+        $jquery_ui_version = '1.13.2';
+		wp_register_style('jquery-ui', plugins_url("/css/jquery/jquery-ui.min.css", dirname(__FILE__)), false, $jquery_ui_version, 'all');
+		wp_register_style('jquery-ui-structure', plugins_url("/css/jquery/jquery-ui.structure.min.css", dirname(__FILE__)), array('jquery-ui'), $jquery_ui_version, 'all');
+		wp_register_style('jquery-ui-theme', plugins_url("/css/jquery/jquery-ui.theme.min.css", dirname(__FILE__)), array('jquery-ui', 'jquery-ui-structure'), $jquery_ui_version, 'all');
 
 		wp_enqueue_style('jquery-ui-structure');
 		wp_enqueue_style('jquery-ui-theme');

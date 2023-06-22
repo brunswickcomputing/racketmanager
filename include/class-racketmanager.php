@@ -523,10 +523,11 @@ class RacketManager {
     wp_enqueue_style('racketmanager-modal', RACKETMANAGER_URL . "css/modal.css", false, RACKETMANAGER_VERSION, 'screen');
     wp_enqueue_style('racketmanager', RACKETMANAGER_URL . "css/style.css", false, RACKETMANAGER_VERSION, 'screen');
 
-    wp_register_style('jquery-ui', RACKETMANAGER_URL . "css/jquery/jquery-ui.min.css", false, '1.11.4', 'all');
-    wp_register_style('jquery-ui-structure', RACKETMANAGER_URL . "css/jquery/jquery-ui.structure.min.css", array('jquery-ui'), '1.11.4', 'all');
-    wp_register_style('jquery-ui-theme', RACKETMANAGER_URL . "css/jquery/jquery-ui.theme.min.css", array('jquery-ui', 'jquery-ui-structure'), '1.11.4', 'all');
-    wp_register_style('jquery-ui-autocomplete', RACKETMANAGER_URL . "css/jquery/jquery-ui.autocomplete.min.css", array('jquery-ui', 'jquery-ui-autocomplete'), '1.11.4', 'all');
+    $jquery_ui_version = '1.13.2';
+    wp_register_style('jquery-ui', RACKETMANAGER_URL . "css/jquery/jquery-ui.min.css", false, $jquery_ui_version, 'all');
+    wp_register_style('jquery-ui-structure', RACKETMANAGER_URL . "css/jquery/jquery-ui.structure.min.css", array('jquery-ui'), $jquery_ui_version, 'all');
+    wp_register_style('jquery-ui-theme', RACKETMANAGER_URL . "css/jquery/jquery-ui.theme.min.css", array('jquery-ui', 'jquery-ui-structure'), $jquery_ui_version, 'all');
+    wp_register_style('jquery-ui-autocomplete', RACKETMANAGER_URL . "css/jquery/jquery-ui.autocomplete.min.css", array('jquery-ui', 'jquery-ui-autocomplete'), $jquery_ui_version, 'all');
     wp_register_style('datatables-style', 'https://cdn.datatables.net/v/ju/dt-1.11.3/fh-3.2.0/datatables.min.css');
 
     wp_enqueue_style('jquery-ui-structure');

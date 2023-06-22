@@ -3,15 +3,6 @@ jQuery(document).ready(function($) {
 	/* hide top-links in documentation */
 	jQuery(".top-link").css("display", "none");
 
-	// Datepicker
-	$('.mydatepicker').datepicker({
-		numberOfMonths: 3,
-		showButtonPanel: false,
-		dateFormat  :  'yy-mm-dd',
-		changeMonth: true,
-		changeYear: true
-	});
-
 	// Enable iris colorpicker
 	jQuery(document).ready(function() {
 		jQuery('.racketmanager-colorpicker').iris();

@@ -902,7 +902,12 @@ final class RacketManagerAdmin extends RacketManager
 								if (!isset($_POST['begin_hour'][$i])) { $_POST['begin_hour'][$i] = 0; }
 								if (!isset($_POST['begin_minutes'][$i])) { $_POST['begin_minutes'][$i] = 0; }
 								$match->date = $_POST['mydatepicker'][$index].' '.intval($_POST['begin_hour'][$i]).':'.intval($_POST['begin_minutes'][$i]).':00';
-								$match->match_day = ( isset($_POST['match_day'][$i]) ? $_POST['match_day'][$i] : (!empty($_POST['match_day']) ? intval($_POST['match_day']) : '' )) ;
+                                $match->match_day = '';
+                                if (isset($_POST['match_day'][$i])) {
+                                    $match->match_day = $_POST['match_day'][$i];
+                                } elseif (!empty($_POST['match_day'])) {
+                                    $match->match_day = intval($_POST['match_day']);
+                                }
 								$match->custom = isset($_POST['custom']) ? $_POST['custom'][$i] : array();
 								$match->home_team = $_POST['home_team'][$i];
 								$match->away_team = $_POST['away_team'][$i];
@@ -935,7 +940,14 @@ final class RacketManagerAdmin extends RacketManager
 								}
 								$match->date = $date;
 								$match->league_id = $league->id;
-								$match->match_day = (isset($_POST['match_day']) && is_array($_POST['match_day'])) ? intval($_POST['match_day'][$i]) : (isset($_POST['match_day']) && !empty($_POST['match_day']) ? intval($_POST['match_day']) : '' ) ;
+                                $match->match_day = '';
+                                if (isset($_POST['match_day'])) {
+                                    if (is_array($_POST['match_day'])) {
+                                        $match->match_day = intval($_POST['match_day'][$i]);
+                                    } elseif (!empty($_POST['match_day'])) {
+                                        $match->match_day = intval($_POST['match_day']);
+                                    }
+                                }
 								$match->custom = isset($_POST['custom']) ? $_POST['custom'][$i] : array();
 								$match->home_team = isset($_POST['home_team'][$i]) ? htmlspecialchars(strip_tags($_POST['home_team'][$i])) : '';
 								$match->away_team = isset($_POST['away_team'][$i]) ? htmlspecialchars(strip_tags($_POST['away_team'][$i])) : '';
@@ -2368,7 +2380,7 @@ final class RacketManagerAdmin extends RacketManager
 			echo '<div class="error"><p style="text-align: center;">'.__("You do not have sufficient permissions to access this page.", 'racketmanager').'</p></div>';
 		} else {
 			if ( isset($_POST['doScheduleCompetitions']) ) {
-				$schedule = $this->scheduleLeagueMatches( $_POST['competition'] );
+				$this->scheduleLeagueMatches( $_POST['competition'] );
 				$this->printMessage();
 			} elseif ( isset($_POST['doDeleteCompetitionMatches']) ) {
 				foreach ($_POST['competition'] as $competitionId) {
@@ -2879,12 +2891,14 @@ final class RacketManagerAdmin extends RacketManager
 			echo "</select>";
 
 			echo "<div id='seasons'>";
-			if ( $match )
-			echo $curr_league->getSeasonDropdown($curr_league->getSeason());
+			if ( $match ) {
+    			echo $curr_league->getSeasonDropdown($curr_league->getSeason());
+            }
 			echo '</div>';
 			echo "<div id='matches'>";
-			if ( $match )
-			echo $curr_league->getMatchDropdown($match->id);
+			if ( $match ) {
+    			echo $curr_league->getMatchDropdown($match->id);
+            }
 			echo '</div>';
 
 			echo '<br style="clear: both;" />';
@@ -2905,40 +2919,11 @@ final class RacketManagerAdmin extends RacketManager
 
 			if ( $match_ID && $curr_match_ID != $match_ID ) {
 				$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_matches} SET `post_id` = '%d' WHERE `id` = '%d'", $post_ID, $match_ID ) );
-				if ( $curr_match_ID != 0 )
-				$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_matches} SET `post_id` = 0 WHERE `id` = '%d'", $curr_match_ID ) );
+				if ( $curr_match_ID != 0 ) {
+				    $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->racketmanager_matches} SET `post_id` = 0 WHERE `id` = '%d'", $curr_match_ID ) );
+                }
 			}
 		}
-	}
-
-	/************
-	*
-	*   RUBBER SECTION
-	*
-	*
-	*/
-
-	/**
-	* add Rubber
-	*
-	* @param string $date
-	* @param int $match_id
-	* @param int $rubber_no
-	* @param array $custom
-	* @return int | false
-	*/
-	private function addRubber( $date, $match_id, $rubberno, $type, $custom=array() ) {
-		global $wpdb;
-
-		if ( !current_user_can('edit_matches') ) {
-			$this->setMessage( __("You don't have permission to perform this task", 'racketmanager'), true );
-			return false;
-		}
-
-		$sql = "INSERT INTO {$wpdb->racketmanager_rubbers} (`date`, `match_id`, `rubber_number`, `type`, `custom`) VALUES ('%s', '%d', '%d', '%s', '%s')";
-		$wpdb->query ( $wpdb->prepare ( $sql, $date, $match_id, $rubberno, $type, maybe_serialize($custom) ) );
-
-		return $wpdb->insert_id;
 	}
 
 	/************
@@ -3115,8 +3100,9 @@ final class RacketManagerAdmin extends RacketManager
 
 		$handle = @fopen($file, "r");
 		if ($handle) {
-			if ( "TAB" == $delimiter ) $delimiter = "\t"; // correct tabular delimiter
-
+			if ( "TAB" == $delimiter ) {
+                $delimiter = "\t"; // correct tabular delimiter
+            }
 			$league = get_league( $league_id );
 			$rubbers = $league->num_rubbers;
 			if ( is_null($rubbers) ) { $rubbers = 1; }
@@ -3177,8 +3163,9 @@ final class RacketManagerAdmin extends RacketManager
 
 		$handle = @fopen($file, "r");
 		if ($handle) {
-			if ( "TAB" == $delimiter ) $delimiter = "\t"; // correct tabular delimiter
-
+			if ( "TAB" == $delimiter ) {
+                $delimiter = "\t"; // correct tabular delimiter
+            }
 			$errorMessages = array();
 
 			$i = $x = 0;
@@ -3239,8 +3226,9 @@ final class RacketManagerAdmin extends RacketManager
 
 		$handle = @fopen($file, "r");
 		if ($handle) {
-			if ( "TAB" == $delimiter ) $delimiter = "\t"; // correct tabular delimiter
-
+			if ( "TAB" == $delimiter ) {
+                $delimiter = "\t"; // correct tabular delimiter
+            }
 			$club = get_club( $affiliatedClub );
 			$i = $x = 0;
 			while (!feof($handle)) {
@@ -3294,14 +3282,14 @@ final class RacketManagerAdmin extends RacketManager
 	*/
 	public function checkUserRole( $role, $user_id = null ) {
 
-		if ( is_numeric( $user_id ) )
+		if ( is_numeric( $user_id ) ) {
 		$user = get_userdata( $user_id );
-		else
-		$user = wp_get_current_user();
-
-		if ( empty( $user ) )
-		return false;
-
+        } else {
+		    $user = wp_get_current_user();
+        }
+		if ( empty( $user ) ) {
+		    return false;
+        }
 		return in_array( $role, (array) $user->roles );
 	}
 
@@ -3320,27 +3308,6 @@ final class RacketManagerAdmin extends RacketManager
 			}
 		}
 		return $rs;
-	}
-
-
-	/**
-	* show database columns of RacketManager
-	*/
-	private function showDatabaseColumns() {
-		global  $wpdb;
-
-		$tables = array($wpdb->racketmanager, $wpdb->racketmanager_teams, $wpdb->racketmanager_matches, $wpdb->racketmanager_club_players, $wpdb->racketmanager_rubbers);
-
-		foreach( $tables as $table ) {
-			$results = $wpdb->get_results("SHOW COLUMNS FROM {$table}");
-			$columns = array();
-			foreach ( $results as $result ) {
-				$columns[] = "<li>".$result->Field." ".$result->Type.", NULL: ".$result->Null.", Default: ".$result->Default.", Extra: ".$result->Extra."</li>";
-			}
-			echo "<p>Table ".$table."<ul>";
-			echo implode("", $columns);
-			echo "</ul></p>";
-		}
 	}
 
 	//  Move to racketmanager.php
@@ -3384,19 +3351,15 @@ final class RacketManagerAdmin extends RacketManager
 		extract($args, EXTR_SKIP);
 		$sql = "SELECT `id`, `league_id`, `match_id`, `team_id`, `player_id`, `updated_date`, `updated_user`, `description`, `status` FROM {$wpdb->racketmanager_results_checker} WHERE 1 = 1"  ;
 
-		if ( $status ) {
-			if ( $status != 'all' ) {
-				if ( $status == 'outstanding' ) {
-					$sql .= " AND `status` IS NULL";
-				} else {
-					$sql .= $wpdb->prepare(" AND `status` = %d", $status);
-				}
-			}
+		if ( $status && $status != 'all' ) {
+            if ( $status == 'outstanding' ) {
+                $sql .= " AND `status` IS NULL";
+            } else {
+                $sql .= $wpdb->prepare(" AND `status` = %d", $status);
+            }
 		}
-		if ( $season ) {
-			if ( $season != 'all' ) {
-				$sql .= $wpdb->prepare(" AND `match_id` IN (SELECT `id` FROM {$wpdb->racketmanager_matches} WHERE `season` = '%s')", $season);
-			}
+		if ( $season && $season != 'all' ) {
+			$sql .= $wpdb->prepare(" AND `match_id` IN (SELECT `id` FROM {$wpdb->racketmanager_matches} WHERE `season` = '%s')", $season);
 		}
 		if ( $competition && $competition != 'all' ) {
 			$sql .= $wpdb->prepare(" AND `match_id` IN (SELECT m.`id` FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l WHERE m.`league_id` = l.`id` AND l.`competition_id` = %d)", $competition);

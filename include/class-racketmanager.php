@@ -353,7 +353,7 @@ class RacketManager {
   *
   */
   private function loadLibraries() {
-    global $racketmanager_shortcodes, $racketmanager_login;
+    global $racketmanager_shortcodes, $racketmanager_login, $racketmanager_ajax;
 
     // Objects
     require_once RACKETMANAGER_PATH . 'include/class-charges.php';
@@ -922,7 +922,7 @@ class RacketManager {
   *
   * @param int $competitionId (default: false)
   * @param string $search
-  * @return array
+  * @return object
   */
   public function getCompetitions( $args = array() ) {
     global $wpdb;

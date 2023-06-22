@@ -11,17 +11,12 @@ You can check the content of a variable when you insert the tag <?php var_dump($
 global $wp_query;
 $postID = $wp_query->post->ID;
 wp_enqueue_script('jquery-ui-datepicker');
-wp_enqueue_style('jquery-style', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
 ?>
 <script type="text/javascript">
 jQuery(document).ready(function($) {
   $('.date_picker').datepicker({
     dateFormat : 'yy-mm-dd',
     firstDay: 1,
-    showOtherMonths: true,
-    selectOtherMonths: true,
-    changeYear: true,
-    changeMonth: true
   });
 });
 </script>

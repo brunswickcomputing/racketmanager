@@ -25,7 +25,7 @@ jQuery(document).ready(function($) {
     <input type="hidden" name="page_id" value="<?php echo $postID ?>" />
 
     <div class="form-group mb-3">
-      <input type="text" name="match_date" id="match_date" class="form-control date_picker" value="<?php echo($match_date) ?>" />
+      <input type="text" name="match_date" id="match_date" class="form-control date_picker" value="<?php echo $match_date ?>" />
     </div>
     <div class="form-group mb-3">
       <input type="submit" class="submit" value="<?php _e( 'Show' ) ?>" />
@@ -38,7 +38,7 @@ jQuery(document).ready(function($) {
     </thead>
     <tbody>
       <?php $leagueTitle = '';
-      foreach ( $matches AS $match ) {
+      foreach ( $matches as $match ) {
         if ( $match->league->title != $leagueTitle ) { ?>
           <tr class='table-dark'>
             <th class='league-title'><?php echo $match->league->title ?></th>

@@ -1001,9 +1001,13 @@ Racketmanager.SetCalculator = function (inputdata) {
 			if ('' == teamScoreAlt) {
 				teamScoreAlt = minWin;
 			}
-		} else if ('' !== teamScore && teamScore < minWin) {
+		} else if ('' !== teamScore) {
 			if ('' === teamScoreAlt) {
-				teamScoreAlt = minWin;
+				if (teamScore === maxLoss) {
+					teamScoreAlt = maxWin;
+				} else if (teamScore < minWin) {
+					teamScoreAlt = minWin;
+				}
 			}
 		}
 	} else if (teamRef == 2) {

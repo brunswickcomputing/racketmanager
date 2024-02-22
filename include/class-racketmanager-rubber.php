@@ -335,6 +335,7 @@ final class Racketmanager_Rubber {
 				$this->id,
 			)
 		);
+		wp_cache_delete( $this->id, 'rubbers' );
 	}
 	/**
 	 * Update rubber date function

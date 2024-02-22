@@ -40,6 +40,9 @@ Go to top button
         visibility: visible;
         bottom : 11px;
     }
+.racketmanager-svg-icon {
+	fill: white;
+}
 /*
 * @section: Backend
 */
@@ -91,40 +94,12 @@ button[readonly], html input[readonly] {
     background-color: #FFFFFF;
     border-color: #50575e;
 }
+legend.form-check-label {
+	font-size: 1rem;
+}
 #club-location-picker {
     height: 320px;
 }
-#lm_admin {
-    width:92%;
-    margin-top:10px;
-}
-
-#lm_head {
-    font-family:Verdana;
-    font-size:18px;
-    position: relative;
-    top: -2px;
-}
-#lm_admin .lm_head_strong {
-    font-family:Verdana;
-    font-size:18px;
-    font-weight:bold;
-}
-
-#lm_version {
-    font-family:Verdana;
-    font-size:14px;
-    position: relative;
-    top: -20px;
-    float: right;
-}
-
-#lm_admin .lm_version_strong {
-    font-family:Verdana;
-    font-size:14px;
-    font-weight:bold;
-}
-
 .check-column {
     vertical-align: middle;
 }
@@ -174,15 +149,9 @@ tbody.sortable tr:hover td {
     border-top: 1px solid #585858;
     border-bottom: 1px solid #585858;
 }
-tbody.sortable th,
-tbody.sortable td {
-    background-color: #fff;
+.seeded {
+	background-color: rgba(36, 126, 0, .15);
 }
-tbody.sortable tr.alternate th,
-tbody.sortable tr.alternate td {
-    background-color: #f9f9f9;
-}
-
 .league-block-container {
     overflow: auto;
 }
@@ -206,8 +175,6 @@ th.score, td.score {
     text-align: center;
 }
 /*--- Documentation ---*/
-dl.racketmanager {
-    }
 dl.racketmanager dt {
     clear: both;
     font-weight: bold;
@@ -258,15 +225,6 @@ p.match_info {
     margin: 0;
     padding: 0;
     }
-a.colorpicker {
-    border: 1px solid #000000;
-    font-family:Verdana;
-    font-size:10px;
-    width: 20px;
-    height: 12px;
-    text-decoration: none;
-    margin: 1.4em 0.5em 0 1em;
-    }
 p.table_rows {
     float: left;
     padding: 0;
@@ -274,9 +232,6 @@ p.table_rows {
     }
 
 p.info { margin: 0; padding: 0; float: right; }
-
-/*table#standings tr { cursor: move; }*/
-
 span.loading { margin-left: 5px; }
 span.loading img { vertical-align: middle; }
 
@@ -316,7 +271,22 @@ div.racketmanager_widget_control select {
     margin-left: 0.5em;
     vertical-align: middle;
 }
+.xtooltip-outline {
+	position: relative;
+	display: inline-block;
+}
 
+.xtooltip-text {
+	display: block;
+	top: -5px;
+	left: -10px;
+	position: absolute;
+	background: #000;
+	color: #FFF;
+	width: 200px;
+	padding: 5px;
+	text-align: center;
+}
 .playername {
     width: 20%;
 }
@@ -365,8 +335,7 @@ div.racketmanager_widget_control select {
 }
 
 #lm_admin .pagination li{
-    display: inline-block;
-    *display: inline;
+	display: inline-block;
     zoom: 1;
     margin: 0 0 0 5px;
     height: 25px
@@ -377,11 +346,9 @@ div.racketmanager_widget_control select {
 }
 
 #lm_admin .pagination li a{
-    display: inline-block;
-    *display: inline;
+	display: inline-block;
     zoom: 1;
     font-size: 12px;
-    /*color: #5d666c;*/
     border: solid 1px;/* #dedede;*/
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
@@ -390,23 +357,16 @@ div.racketmanager_widget_control select {
     padding: 4px 8px;
     height: 15px
 }
-
-#lm_admin .pagination li.active a{
-    /*border-color: #5d666c*/
-}
-
 #lm_admin .pagination li a:hover{
     text-decoration: none
 }
 
 #lm_admin .pagination li span{
-    display: inline-block;
-    *display: inline;
+	display: inline-block;
     zoom: 1;
     width: 25px;
     text-align: center;
     font-size: 12px;
-    /*color: #5d666c;*/
     margin: 4px 0
 }
 
@@ -609,8 +569,6 @@ span.error {
     opacity: .4;
     pointer-events: none;
 }
-.roundName {
-}
 .finalmatch {
   float: left;
   min-height: 100px;
@@ -708,4 +666,55 @@ input.points {
 }
 form .table-responsive {
     overflow-x: inherit;
+}
+.match__result-wrapper {
+	display: flex;
+}
+
+.match__result {
+	display: flex;
+	padding: 24px 0 0;
+	position: relative;
+}
+
+.set-points {
+	padding: 0 24px;
+}
+
+ul.match-points.set-points {
+	padding: 0;
+	margin-bottom: 0;
+}
+
+.tie-break {
+	text-align: center;
+}
+.points.tie-break {
+	margin-left: 28px;
+	margin-top: 10px;
+}
+.match-points {
+	display: flex;
+	justify-content: space-around;
+}
+
+.match-points__cell {
+	padding: 0 0.25rem;
+}
+
+.match {
+	border: 1px solid;
+	margin-bottom: 15px;
+}
+
+.match__body {
+	padding: 0 5px;
+}
+
+ul.match__header-title {
+	padding-left: 5PX;
+}
+
+.match__row-title-value {
+	padding-bottom: 5px;
 }

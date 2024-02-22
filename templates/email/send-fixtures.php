@@ -1,80 +1,104 @@
 <?php
-$title = $organisationName.' Fixtures';
-?>
-<?php include('email-header.php'); ?>
-<tr>
-  <td class="wrapper">
-    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-      <tr>
-        <td>
-          <div>
-            <h1 class="align-left">Dear captain</h1>
-            <p>Please find attached your fixture list for the <?php echo $competition ?> <?php echo $season ?> season.  If you could check your details and notify me of errors.</p>
-            <table class="fixtures">
-              <thead>
-                <tr class="align-center bold">
-                  <td><?php _e('Round', 'racketmanager') ?></td>
-                  <td><?php _e('Date', 'racketmanager') ?></td>
-                  <td><?php _e('Day', 'racketmanager') ?></td>
-                  <td><?php _e('Time', 'racketmanager') ?></td>
-                  <td class="align-right"><?php _e('Home', 'racketmanager') ?></td>
-                  <td></td>
-                  <td class="align-left"><?php _e('Away', 'racketmanager') ?></td>
-                </tr>
-              </thead>
-              <tbody>
-                <?php foreach ($matches as $match) { ?>
-                  <tr class="align-center">
-                    <td><?php the_match_day() ?></td>
-                    <td><?php $format = 'd M y'; the_match_date($format); ?></td>
-                    <td><?php the_match_date('D') ?></td>
-                    <td><?php the_match_time() ?></td>
-                    <td class="align-right <?php if ($match->home_team == $team->id) { echo 'bold'; } ?>"><?php echo $match->teams['home']->title ?></td>
-                    <td>-</td>
-                    <td class="align-left <?php if ($match->away_team == $team->id) { echo 'bold'; } ?>"><?php echo $match->teams['away']->title ?></td>
-                  </tr>
-                <?php } ?>
-              </tbody>
-            </table>
-            <!-- Action -->
-            <table class="body-action" align="center" width="100%" cellpadding="0" cellspacing="0">
-              <tr>
-                <td class="align-center">
-                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                    <tr>
-                      <td align="align-center">
-                        <table border="0" cellspacing="0" cellpadding="0">
-                          <tr>
-                            <td>
-                              <a href="<?php echo $actionURL ?>" class="button button--green" target="_blank">View fixtures</a>
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-            <p>Thanks</p>
-            <p>The <?php echo $organisationName ?> Team</p>
-            <!-- Sub copy -->
-            <table class="body-sub">
-              <tr>
-                <td>
-                  <p class="sub">If you’re having trouble with the button above, copy and paste the URL below into your web browser.</p>
-                  <p class="sub"><?php echo $actionURL ?></p>
-                </td>
-              </tr>
-            </table>
-          </div>
-        </td>
-      </tr>
-    </table>
-  </td>
-</tr>
+/**
+ * Send fixtures email body
+ *
+ * @package Racketmanager/Templates/Email
+ */
 
-<!-- END MAIN CONTENT AREA -->
-</table>
-<!-- END CENTERED WHITE CONTAINER -->
-<?php include('email-footer.php'); ?>
+namespace Racketmanager;
+
+$email_subject = $organisation . ' Fixtures';
+require 'email-header.php';
+?>
+			<?php $salutation_link = $captain; ?>
+			<?php require 'components/salutation.php'; ?>
+			<!-- introduction -->
+			<div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
+				<table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">
+					<tbody>
+						<tr>
+							<td role="presentation" cellspacing="0" cellpadding="0" bgcolor="#fff">
+								<table style="width: 100%; border-collapse: collapse;" role="presentation" cellspacing="0" cellpadding="0">
+									<tbody>
+										<tr>
+											<td style="font-weight: 400; min-width: 5px; width: 600px; height: 0;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
+												<table width="100%" style="height: 100%;" role="presentation" cellspacing="0" cellpadding="0">
+													<tbody>
+														<tr>
+															<td style="min-width: 5px; font-weight: 400;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
+																<div style="font-size: 16px; color: #000; background-color: transparent; margin: 10px;">
+																	<p style="line-height: 1.25; mso-line-height-rule: at-least; margin: 0 0 20px; padding: 0;">
+																		Please find attached your fixture list for the <?php echo esc_html( $competition ); ?> <?php echo esc_html( $season ); ?> season.  If you could check your details and notify me of errors.
+																	</p>
+																	<table class="fixtures" aria-describedby="<?php esc_html_e( 'Fixtures', 'racketmanager' ); ?>">
+																		<thead>
+																			<tr class="align-center bold">
+																			<th><?php esc_html_e( 'Round', 'racketmanager' ); ?></th>
+																			<th><?php esc_html_e( 'Date', 'racketmanager' ); ?></th>
+																			<th><?php esc_html_e( 'Day', 'racketmanager' ); ?></th>
+																			<th><?php esc_html_e( 'Time', 'racketmanager' ); ?></th>
+																			<th class="align-right"><?php esc_html_e( 'Home', 'racketmanager' ); ?></th>
+																			<th></th>
+																			<th class="align-left"><?php esc_html_e( 'Away', 'racketmanager' ); ?></th>
+																			</tr>
+																		</thead>
+																		<tbody>
+																			<?php foreach ( $matches as $match ) { ?>
+																			<tr class="align-center">
+																				<td><?php the_match_day(); ?></td>
+																				<td>
+																					<?php
+																					$format = 'd M y';
+																					the_match_date( $format );
+																					?>
+																				</td>
+																				<td><?php the_match_date( 'D' ); ?></td>
+																				<td><?php the_match_time(); ?></td>
+																				<td class="align-right
+																				<?php
+																				if ( $match->home_team === $team->id ) {
+																					echo ' bold';
+																				}
+																				?>
+																				">
+																					<?php echo esc_html( $match->teams['home']->title ); ?>
+																				</td>
+																				<td>-</td>
+																				<td class="align-left
+																				<?php
+																				if ( $match->away_team === $team->id ) {
+																					echo ' bold';
+																				}
+																				?>
+																				">
+																					<?php echo esc_html( $match->teams['away']->title ); ?>
+																				</td>
+																			</tr>
+																			<?php } ?>
+																		</tbody>
+																	</table>
+																</div>
+															</td>
+														</tr>
+													</tbody>
+												</table>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<?php $action_link_text = __( 'View fixtures', 'racketmanager' ); ?>
+			<?php require 'components/action-link.php'; ?>
+			<?php
+			if ( ! empty( $contact_email ) ) {
+				require 'components/contact.php';
+			}
+			?>
+			<?php require 'components/closing.php'; ?>
+			<?php require 'components/link-text.php'; ?>
+<?php
+require 'email-footer.php';

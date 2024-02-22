@@ -1,68 +1,49 @@
 <?php
 /**
-Template page for the specific match date match table in tennis
+ * Template page for the specific match date match table in tennis
+ *
+ * @package Racketmanager/Templates
+ *
+ * The following variables are usable:
+ *  $matches_list: contains all matches for current league
+ *
+ * You can check the content of a variable when you insert the tag <?php var_dump($variable)
+ */
 
-The following variables are usable:
+namespace Racketmanager;
 
-$matches: contains all matches for current league
-
-You can check the content of a variable when you insert the tag <?php var_dump($variable)
-*/
 global $wp_query;
-$postID = $wp_query->post->ID;
-wp_enqueue_script('jquery-ui-datepicker');
+$post_id = $wp_query->post->ID; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 ?>
-<script type="text/javascript">
-jQuery(document).ready(function($) {
-  $('.date_picker').datepicker({
-    dateFormat : 'yy-mm-dd',
-    firstDay: 1,
-  });
-});
-</script>
 <div id="racketmanager_match_selections container" class="">
-  <form method="get" action="<?php echo get_permalink($postID); ?>" id="racketmanager_daily_matches">
-    <input type="hidden" name="page_id" value="<?php echo $postID ?>" />
+	<form method="get" action="<?php echo esc_html( get_permalink( $post_id ) ); ?>" id="racketmanager_daily_matches">
+		<?php wp_nonce_field( 'matches-daily' ); ?>
+		<input type="hidden" name="page_id" value="<?php echo esc_html( $post_id ); ?>" />
 
-    <div class="form-group mb-3">
-      <input type="text" name="match_date" id="match_date" class="form-control date_picker" value="<?php echo $match_date ?>" />
-    </div>
-    <div class="form-group mb-3">
-      <input type="submit" class="submit" value="<?php _e( 'Show' ) ?>" />
-    </div>
-  </form>
+		<div class="form-group mb-3">
+			<input type="date" name="match_date" id="match_date" class="form-control match-date" value="<?php echo esc_html( $match_date ); ?>" />
+		</div>
+	</form>
 </div>
-<?php if ( $matches ) { ?>
-  <table class="table">
-    <thead>
-    </thead>
-    <tbody>
-      <?php $leagueTitle = '';
-      foreach ( $matches as $match ) {
-        if ( $match->league->title != $leagueTitle ) { ?>
-          <tr class='table-dark'>
-            <th class='league-title'><?php echo $match->league->title ?></th>
-          </tr>
-          <?php $leagueTitle = $match->league->title; ?>
-        <?php } ?>
-        <tr class='<?php echo $match->class ?>'>
-          <td class="match-heading col-12">
-            <?php echo $match->start_time." ".$match->location ?>
-          </td>
-          <td class="match-title col-12">
-            <?php $matchTitle = get_matchTitle($match); ?>
-            <a href="/<?php _e('leagues', 'racketmanager') ?>/<?php echo sanitize_title($match->league->title) ?>/<?php echo $match->league->current_season['name'] ?>/day<?php echo $match->match_day ?>"><?php echo $matchTitle ?></a>
-          </td>
-          <?php if ( isset($match->home_points) ) { ?>
-            <td class="match-score col-12">
-              <?php echo $match->score ?>
-            </td>
-          <?php } ?>
-        </tr>
-      <?php } ?>
-    </tbody>
-  </table>
-
-<?php } else { ?>
-  <p><?php echo __( 'No Matches on selected day', 'racketmanager' ) ?></p>
-<?php }?>
+<?php
+if ( $matches_list ) {
+	?>
+	<div class="module module--card">
+		<div class="module__content">
+			<div class="module-container">
+				<div class="module">
+					<?php
+					$matches_key = 'league';
+					require RACKETMANAGER_PATH . 'templates/includes/matches-team-list-group.php';
+					?>
+				</div>
+			</div>
+		</div>
+	</div>
+	<?php
+} else {
+	?>
+	<p><?php esc_html_e( 'No Matches on selected day', 'racketmanager' ); ?></p>
+	<?php
+}
+?>

@@ -1,97 +1,122 @@
 <?php
-$competitionName = $competition;
-$homeTeam = $homeDtls['name'];
-$homeCaptain = $homeDtls['captain'];
-$homeCaptainEmail = $homeDtls['captainEmail'];
-$homeCaptainTel = $homeDtls['captainTel'];
-$awayTeam = $awayDtls['name'];
-$awayCaptain = $awayDtls['captain'];
-$awayCaptainEmail = $awayDtls['captainEmail'];
-$awayCaptainTel = $awayDtls['captainTel'];
-$matchDate = $match->match_date;
-$numSets = $match->league->num_sets;
-$title = $organisationName.' Match Details - '.$competitionName.' - '.$round;
-?>
-<?php include('email-header.php'); ?>
-<!-- START MAIN CONTENT AREA -->
-<tr>
-  <td class="wrapper">
-    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-      <tr>
-        <td>
-          <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-            <tr>
-              <td><h1 class="align-center"><?php echo $competitionName; ?></h1></td>
-            </tr>
-            <tr>
-              <td><h2 class="align-center"><?php echo $round; ?></h2></td>
-            </tr>
-            <tr>
-              <td>
-                <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="">
-                  <tbody>
-                    <tr>
-                      <td align="left">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                          <tbody>
-                            <tr>
-                              <td>
-                                <h4><?php echo $homeDtls['title']; ?></h4>
-                                <ul>
-                                  <li><?php echo $homeTeam; ?></li>
-                                </ul>
-                                <ul>
-                                  <li><?php echo $homeCaptain; ?></li>
-                                  <?php if ( $homeCaptainEmail > '' ) { ?>
-                                    <li><?php echo $homeCaptainEmail; ?></li>
-                                  <?php } ?>
-                                  <?php if ( $homeCaptainTel > '' ) { ?>
-                                    <li><?php echo $homeCaptainTel; ?></li>
-                                  <?php } ?>
-                                </ul>
-                              </td>
-                              <td>
-                                <h4><?php echo $awayDtls['title']; ?></h4>
-                                <ul>
-                                  <li><?php echo $awayTeam; ?></li>
-                                </ul>
-                                <ul>
-                                  <li><?php echo $awayCaptain; ?></li>
-                                  <?php if ( $homeCaptainEmail > '' ) { ?>
-                                    <li><?php echo $awayCaptainEmail; ?></li>
-                                  <?php } ?>
-                                  <li><?php echo $awayCaptainTel; ?></li>
-                                </ul>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </td>
-            </tr>
-            <tr class="wrapper">
-              <td class="strong">Match to be played week commencing <?php echo $matchDate; ?></td>
-            </tr>
-            <tr>
-              <td><?php echo $homeDtls['matchDay']; ?> at <?php echo $homeDtls['matchTime']; ?></td>
-            </tr>
-            <tr class="wrapper">
-              <td><h4>Winners</h4></td>
-            </tr>
-            <tr>
-              <td>Should <a href="mailto: <?php echo $emailFrom; ?>?subject=<?php echo $competitionName; ?>&nbsp;<?php echo $round; ?> Result">inform</a> the cup secretary of the result</td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </td>
-</tr>
+/**
+ * Template for email notification for cup match
+ *
+ * @package Racketmanager/Templates/Email
+ */
 
-<!-- END MAIN CONTENT AREA -->
-</table>
-<!-- END CENTERED WHITE CONTAINER -->
-<?php include('email-footer.php'); ?>
+namespace Racketmanager;
+
+$competition_name = $competition;
+$match_date       = $match->match_date;
+$email_subject    = $organisation . ' Match Details - ' . $competition_name . ' - ' . $round;
+?>
+<?php require 'email-header.php'; ?>
+			<?php
+			$title_text = sprintf(
+				/* translators: %1$s: competition name %2$s: round name */
+				__( '%1$s %2$s Match Confirmation', 'racketmanager' ),
+				$match->league->title,
+				$round,
+			);
+			$title_level = '1';
+			$title_align = 'center';
+			require 'components/title.php';
+			$title_align = '';
+			?>
+			<?php
+			$paragraph_text = sprintf(
+				/* translators: $s: cup link */
+				__( 'Please find below details of your next match in the %s.', 'racketmanager' ),
+				$cup_link,
+			);
+			$paragraph_imbed = true;
+			require 'components/paragraph.php';
+			$paragraph_imbed = false;
+			?>
+			<?php
+			$paragraph_text = __( 'Click the following button to view the match.', 'racketmanager' );
+			require 'components/paragraph.php';
+			?>
+			<?php
+			$action_link_text = __( 'View match', 'racketmanager' );
+			require 'components/action-link.php';
+			?>
+			<?php require 'components/hr.php'; ?>
+			<?php
+			$title_text  = __( 'Match Details', 'racketmanager' );
+			$title_level = '2';
+			require 'components/title.php';
+			?>
+			<?php
+			$paragraph_text = __( 'Match to be played on', 'racketmanager' ) . ' ' . $match_date . ' ' . __( 'at', 'racketmanager' ) . ' ' . $match->start_time . '.';
+			require 'components/paragraph.php';
+			?>
+			<?php
+			$opponents = array( 'home', 'away' );
+			foreach ( $opponents as $opponent ) {
+				$team        = $teams[ $opponent ];
+				$title_text  = $team->title . ' - ' . $team->name;
+				$title_level = '3';
+				require 'components/title.php';
+				?>
+				<div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
+					<table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">
+						<tbody>
+							<tr>
+								<td role="presentation" cellspacing="0" cellpadding="0" bgcolor="#fff">
+									<table style="width: 100%; border-collapse: collapse;" role="presentation" cellspacing="0" cellpadding="0">
+										<tbody>
+											<tr>
+												<td style="font-weight: 400; min-width: 5px; width: 600px; height: 0;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
+													<table width="100%" style="height: 100%; text-align: left; margin-left: 10px;" role="presentation" cellspacing="0" cellpadding="0">
+														<tbody>
+															<tr style="line-height: 22px;">
+																<td style="width: 150px; font-size: 14px; font-weight: 500;"><?php esc_html_e( 'Captain', 'racketmanager' ); ?>:</td>
+																<td><?php echo esc_html( $team->captain ); ?></td>
+															</tr>
+															<tr style="line-height: 22px;">
+																<td style="width: 150px; font-size: 14px; font-weight: 500;"><?php esc_html_e( 'Telephone', 'racketmanager' ); ?>:</td>
+																<td><?php echo esc_html( $team->captain_tel ); ?></td>
+															</tr>
+															<tr style="line-height: 22px;">
+																<td style="width: 150px; font-size: 14px; font-weight: 500;"><?php esc_html_e( 'Email', 'racketmanager' ); ?>:</td>
+																<td><?php echo esc_html( $team->captain_email ); ?></td>
+															</tr>
+														</tbody>
+													</table>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<?php
+			}
+			?>
+			<?php require 'components/hr.php'; ?>
+			<?php
+			$title_text  = __( 'Rules', 'racketmanager' );
+			$title_level = '2';
+			require 'components/title.php';
+			?>
+			<?php
+			$paragraph_text  = __( 'The rules for the cup can be found', 'racketmanager' ) . ' <a href="' . $rules_link . '">' . __( 'here', 'racketmanager' ) . '</a>.';
+			$paragraph_imbed = true;
+			require 'components/paragraph.php';
+			$paragraph_imbed = false;
+			?>
+			<?php require 'components/hr.php'; ?>
+			<?php
+			if ( ! empty( $email_from ) ) {
+				$contact_email = $email_from;
+				require 'components/contact.php';
+			}
+			?>
+			<?php require 'components/closing.php'; ?>
+			<?php require 'components/link-text.php'; ?>
+<?php
+require 'email-footer.php';

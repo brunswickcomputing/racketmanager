@@ -1,63 +1,95 @@
+<?php
+/**
+ * Template for Final results
+ *
+ * @package Racketmanager/Admin/Templates
+ */
+
+namespace Racketmanager;
+
+?>
 <div class="championship-block">
-  <div class="container draw">
-    <div class="row">
-      <?php foreach ($league->championship->getFinals() as $key => $final) {
-        $class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-        <div class="finalround <?php echo $class ?>">
-          <div class="roundName">
-            <?php echo $final['name'] ?>
-          </div>
-          <div class="container roundmatches">
-            <div class="row row-cols-1 row-cols-sm-<?php if ( $final['num_matches'] < 4 ) { echo $final['num_matches'];} else { echo 2;} ?> row-cols-lg-<?php if ( $final['num_matches'] < 4 ) { echo $final['num_matches'];} else { echo 4;} ?> finalmatches justify-content-center">
-              <?php
-              $matches = $league->getMatches( array("final" => $final['key'], "orderby" => array("id" => "ASC")));
-              foreach ($matches as $i => $match) { ?>
-                <div class="finalmatch">
-                  <div class="row">
-                    <?php if ( isset($match) ) {
-                      $homeClass = '';
-                      $awayClass = '';
-                      $homeTip = '';
-                      $awayTip = '';
-                      if ( $match->winner_id == $match->teams['home']->id ) {
-                        $homeClass = 'winner';
-                        $homeTip = 'Match winner';
-                      } elseif ( $match->winner_id == $match->teams['away']->id ) {
-                        $awayClass = 'winner';
-                        $awayTip = 'Match winner';
-                      } elseif ( isset( $match->custom['host'] ) ) {
-                        if ( $match->custom['host'] == 'home' ) {
-                          $homeClass = 'host';
-                          $homeTip = 'Home team';
-                        } elseif ( $match->custom['host'] == 'away' ) {
-                          $awayClass = 'host';
-                          $awayTip = 'Home team';
-                        }
-                      }
-                      $homeTeam = $match->teams['home']->title;
-                      $awayTeam = $match->teams['away']->title; ?>
-                      <div title="<?php echo $homeTip ?>" class="col-5 col-sm-5 team team-left <?php echo $homeClass ?>">
-                        <?php echo $homeTeam ?>
-                      </div>
-                      <div class="col-2 col-sm-2 score">
-                        <?php if ( $match->home_points != NULL && $match->away_points != NULL ) {
-                          $match->score = sprintf("%d:%d", $match->home_points, $match->away_points);?>
-                          <strong><?php echo $match->score ?></strong>
-                        <?php } else { ?>
-                          -
-                        <?php } ?>
-                      </div>
-                      <div title="<?php echo $awayTip ?>" class="col-5 col-sm-5 team team-right <?php echo $awayClass?>">
-                        <?php echo $awayTeam; ?>
-                      </div>
-                    </div>
-                  <?php } ?>
-                </div>
-              <?php } ?>
-            </div>
-          </div>
-        </div>
-      <?php } ?>
-    </div>
-  </div>
+	<div class="container draw">
+		<div class="row">
+			<?php
+			foreach ( $league->championship->get_finals() as $key => $final ) {
+				$class = ( 'alternate' === $class ) ? '' : 'alternate';
+				?>
+				<div class="finalround <?php echo esc_html( $class ); ?>">
+					<div class="roundName">
+						<?php echo esc_html( $final['name'] ); ?>
+					</div>
+					<div class="container roundmatches">
+						<?php
+						if ( $final['num_matches'] < 4 ) {
+							$sm_size = $final['num_matches'];
+							$lg_size = $sm_size;
+						} else {
+							$sm_size = 2;
+							$lg_size = 4;
+						}
+
+						?>
+						<div class="row row-cols-1 row-cols-sm-<?php echo esc_html( $sm_size ); ?> row-cols-lg-<?php echo esc_html( $lg_size ); ?> finalmatches justify-content-center">
+							<?php
+							$matches = $league->get_matches(
+								array(
+									'final'   => $final['key'],
+									'orderby' => array( 'id' => 'ASC' ),
+								)
+							);
+							foreach ( $matches as $i => $match ) {
+								?>
+								<div class="finalmatch">
+									<div class="row">
+										<?php
+										if ( isset( $match ) ) {
+											$home_class = '';
+											$away_class = '';
+											$home_tip   = '';
+											$away_tip   = '';
+											if ( $match->winner_id === $match->teams['home']->id ) {
+												$home_class = 'winner';
+												$home_tip   = 'Match winner';
+											} elseif ( $match->winner_id === $match->teams['away']->id ) {
+												$away_class = 'winner';
+												$away_tip   = 'Match winner';
+											} elseif ( isset( $match->host ) ) {
+												if ( 'home' === $match->host ) {
+													$home_class = 'host';
+													$home_tip   = 'Home team';
+												} elseif ( 'away' === $match->host ) {
+													$away_class = 'host';
+													$away_tip   = 'Home team';
+												}
+											}
+											$home_team = $match->teams['home']->title;
+											$away_team = $match->teams['away']->title;
+											?>
+											<div title="<?php echo esc_html( $home_tip ); ?>" class="col-5 col-sm-5 team team-left <?php echo esc_html( $home_class ); ?>">
+												<?php echo esc_html( $home_team ); ?>
+											</div>
+											<div class="col-2 col-sm-2 score">
+												<?php
+												if ( null !== $match->home_points && null !== $match->away_points ) {
+													$match->score = sprintf( '%d:%d', $match->home_points, $match->away_points );
+													?>
+													<strong><?php echo esc_html( $match->score ); ?></strong>
+												<?php } else { ?>
+													-
+												<?php } ?>
+											</div>
+											<div title="<?php echo esc_html( $away_tip ); ?>" class="col-5 col-sm-5 team team-right <?php echo esc_html( $away_class ); ?>">
+												<?php echo esc_html( $away_team ); ?>
+											</div>
+										</div>
+									<?php } ?>
+								</div>
+							<?php } ?>
+						</div>
+					</div>
+				</div>
+			<?php } ?>
+		</div>
+	</div>
 </div>

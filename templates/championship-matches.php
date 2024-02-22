@@ -1,22 +1,42 @@
+<?php
+/**
+ * Template for Championship matches
+ *
+ * @package Racketmanager/Templates
+ */
+
+namespace Racketmanager;
+
+?>
 <!-- Nav tabs -->
-<ul class="nav nav-tabs frontend" id="myTab-<?php echo $league->id ?>" role="tablist">
-  <?php $i = 0;
-  foreach ( $finals AS $final ) { ?>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link <?php if ( $i == 0 ) { echo 'active'; } ?>" id="final-<?php echo $final->key ?>-<?php echo $league->id ?>-tab" data-bs-toggle="pill" data-bs-target="#final-<?php echo $final->key ?>-<?php echo $league->id ?>" type="button" role="tab" aria-controls="final-<?php echo $final->key ?>-<?php echo $league->id ?>" aria-selected="true"><?php echo $final->name ?></button>
-    </li>
-    <?php $i ++;
-    } ?>
+<ul class="nav nav-tabs frontend" id="myTab-<?php echo esc_html( $league->id ); ?>" role="tablist">
+	<?php
+	$i = 0;
+	foreach ( $finals as $final ) {
+		?>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link <?php echo empty( $i ) ? 'active' : ''; ?>" id="final-<?php echo esc_html( $final->key ); ?>-<?php echo esc_html( $league->id ); ?>-tab" data-bs-toggle="pill" data-bs-target="#final-<?php echo esc_html( $final->key ); ?>-<?php echo esc_html( $league->id ); ?>" type="button" role="tab" aria-controls="final-<?php echo esc_html( $final->key ); ?>-<?php echo esc_html( $league->id ); ?>" aria-selected="true"><?php echo esc_html( $final->name ); ?></button>
+		</li>
+		<?php
+		++$i;
+	}
+	?>
 </ul>
 <!-- Tab panes -->
 <div class="tab-content">
-  <?php $i = 0;
-  foreach ( $finals AS $final ) { ?>
-	<div class="tab-pane fade <?php if ( $i == 0 ) { echo 'show active'; } ?>" id="final-<?php echo $final->key ?>-<?php echo $league->id ?>" role="tabpanel" aria-labelledby="final-<?php echo $final->key ?>-<?php echo $league->id ?>-tab">
-    <?php $matches = $final->matches; ?>
-    <?php include('matches-tennis-scores.php'); ?>
-	</div>
-  <?php $i ++;
-  } ?>
+	<?php
+	$i = 0;
+	foreach ( $finals as $final ) {
+		?>
+		<div class="tab-pane fade <?php echo empty( $i ) ? 'show active' : ''; ?>" id="final-<?php echo esc_html( $final->key ); ?>-<?php echo esc_html( $league->id ); ?>" role="tabpanel" aria-labelledby="final-<?php echo esc_html( $final->key ); ?>-<?php echo esc_html( $league->id ); ?>-tab">
+			<?php
+			$matches     = $final->matches;
+			$show_header = false;
+			require RACKETMANAGER_PATH . 'templates/includes/matches-team-list.php';
+			?>
+		</div>
+		<?php
+		++$i;
+	}
+	?>
 </div>
-<?php include('matches-tennis-modal.php'); ?>

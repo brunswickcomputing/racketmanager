@@ -50,6 +50,13 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 8.0.0 =
+* NEW:    introduce events between competitions and leagues
+* NEW:    tournament Features
+* UPDATE: look and feel for pages with background colour
+* UPDATE: numerous code quality changes
+* UPDATE: cups with home and away ability
+
 = 7.6.0 =
 * UPDATE: handle match updates when player registered to both teams
 * UPDATE: store time of cluyb player creation
@@ -120,7 +127,7 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 * UPDATE: allow invoice reprint
 * UPDATE: expand invoice search criteria
 * UPDATE: remove club location picker
-* BUGFIX: use correct class for addRacketManagerPage
+* BUGFIX: use correct class for add_racketmanager_page
 
 = 7.0.0 =
 * UPDATE: restructure code
@@ -191,7 +198,7 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 = 6.24.0 =
 * UPDATE: handle scheduling of teams from same club in first round
 * UPDATE: send fixtures to team captains and match secretaries
-* BUGFIX: add missing query option to getMatches
+* BUGFIX: add missing query option to get_matches
 
 = 6.23.0 =
 * NEW: allow scheduling of league matches
@@ -206,7 +213,7 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 = 6.22.0 =
 * BUGFIX: use correct colour for playdown class in striped table
-* UPDATE: remove competition id from getLeagues calls
+* UPDATE: remove competition id from get_leagues calls
 * UPDATE: allow new teams to be added for league entry
 * UPDATE: check enough courts available for league entry
 
@@ -303,7 +310,7 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 = 6.10.1 =
 * BUGFIX: add email column to select for rosterrequests
-* BUGFIX: use club->approvePlayerRequest
+* BUGFIX: use club->approve_player_request
 * BUGFIX: remove check for authorised to addplayer
 * BUGFIX: use correct label for showRubbers
 * BUGFIX: use correct season key for archive
@@ -397,7 +404,7 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 * UPDATE: use bootstrap v5 for admin screens
 
 = 6.3.0 =
-* BUGFIX: check team found in competition->getTeamInfo
+* BUGFIX: check team found in competition->get_team_info
 * BUGFIX: correct html element in email_welcome template
 * BUGFIX: get roster request auto confirmation working correctly
 * UPDATE: allow cup entries by match secretaries
@@ -448,20 +455,20 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 * UPDATE: style welcome and reset password emails
 * UPDATE: use competitiontype
 * UPDATE: use league-tab rather than jquery-ui-tab
-* UPDATE: use standard getTournaments for all tournament queries
+* UPDATE: use standard get_tournaments for all tournament queries
 
 = 6.1.0 =
 * UPDATE: allow non-rubber match results to be entered
 * UPDATE: add result confirmation email addresses for cups and tournaments
 * UPDATE: replace &#8211; with -
-* UPDATE: make match confirmation status able to be passed in league->_updateResults
+* UPDATE: make match confirmation status able to be passed in league->update_match_results
 * UPDATE: make tournament bracket header flexible width to allow headings to appear correctly
 * UPDATE: make modal close button not overflow
 * UPDATE: make modal fit screens correctly
 * UPDATE: remove number incrementors on modal screen
 * UPDATE: rename updateRubbers to updateResults
 * UPDATE: make function to get confirmation email address
-* BUGFIX: remove extra parameter from $league->_updateResults in championship->updateFinalResults
+* BUGFIX: remove extra parameter from $league->update_match_results in championship->update_final_results
 * BUGFIX: user correct variables for num_sets and num_rubbers
 * BUGFIX: ensure correct parameters passed to getMatchUpdateAllowed function
 
@@ -573,7 +580,7 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 = 5.6.8 =
 * BUGFIX: do not exit when no matches for daily match check
-* BUGFIX: pull details from correct table in getClubPlayer
+* BUGFIX: pull details from correct table in get_club_player
 * BUGFIX: make addTeamCompetition function public
 * BUGFIX: use correct path for match.php in admin.php
 * BUGFIX: handle no time in match edit
@@ -584,7 +591,7 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 * BUGFIX: check result on played rounds when in relevant timeframe
 
 = 5.6.6 =
-* UPDATE: add tennis specific isTie for ranking
+* UPDATE: add tennis specific is_tie for ranking
 
 = 5.6.5 =
 * UPDATE: change wp_cache_add to wp_cache_add
@@ -691,7 +698,7 @@ This is release contains major restructuring on the technical level to improve p
 * BUGFIX: ensure user match updates are reflected in tables
 
 = 5.4.5 =
-* BUGFIX: change getMatches to return all results when final parameter not specified
+* BUGFIX: change get_matches to return all results when final parameter not specified
 * UPDATE: display drawn matches in player stats if a draw is possible
 * UPDATE: make additional points handle half points
 * UPDATE: show pending player requests on club page
@@ -849,14 +856,14 @@ This is release contains major restructuring on the technical level to improve p
 = 3.9.1.7 =
 * UPDATED: updated french translation
 * BUGFIX: fixed setting getting stuck on user-defined point rule
-* BUGFIX: fixed an SQL query error in getMatches()
+* BUGFIX: fixed an SQL query error in get_matches()
 
 = 3.9.1.6 =
 * BUGFIX: fixed team selection in matches template
 * BUGFIX: fixed getting league by name
 
 = 3.9.1.5 =
-* SECURITY: major change in retrieving teams (getTeams() in core.php) and matches (getMatches() in core.php) to avoid sql injections
+* SECURITY: major change in retrieving teams (get_teams() in core.php) and matches (get_matches() in core.php) to avoid sql injections
 * SECURITY: fixed multiple possible sql injection vulnerabilities
 * BUGFIX: add stripslashes
 * BUGFIX: correctly load stylesheet and javascript scripts

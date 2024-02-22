@@ -1,56 +1,66 @@
 <?php
-global $racketmanager;
-$title = $emailSubject;
+/**
+ * Template for sending invoice by email
+ *
+ * @package Racketmanager/Templates
+ */
+
+namespace Racketmanager;
+
+require 'email-header.php';
 ?>
-<?php include('email-header.php'); ?>
-<!-- START MAIN CONTENT AREA -->
-<tr>
-  <td class="wrapper">
-    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-      <tr>
-        <td>
-          <div>
-            <h1 class="align-left">Dear Match Secretary</h1>
-            <p>Please find attached <?php if ( $resend ) { echo 'another copy of ';} ?>your invoice for the <?php echo ucfirst($invoice->charge->type) ?> <?php echo ucfirst($invoice->charge->competitionType) ?> <?php echo $invoice->charge->season ?> season.  If you could check your details and notify me of errors.</p>
-            <!-- Action -->
-            <table class="body-action" align="center" width="100%" cellpadding="0" cellspacing="0">
-              <tr>
-                <td class="align-center">
-                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                    <tr>
-                      <td align="align-center">
-                        <table border="0" cellspacing="0" cellpadding="0">
-                          <tr>
-                            <td>
-                              <a href="<?php echo $actionURL ?>" class="button button--green" target="_blank">View Invoice</a>
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-            <p>Thanks</p>
-            <p>The <?php echo $organisationName ?> Team</p>
-            <!-- Sub copy -->
-            <table class="body-sub">
-              <tr>
-                <td>
-                  <p class="sub">If you’re having trouble with the button above, copy and paste the URL below into your web browser.</p>
-                  <p class="sub"><?php echo $actionURL ?></p>
-                </td>
-              </tr>
-            </table>
-            <?php echo $invoiceView ?>
-          </div>
-        </td>
-      </tr>
-    </table>
-  </td>
-</tr>
-<!-- END MAIN CONTENT AREA -->
-</table>
-<!-- END CENTERED WHITE CONTAINER -->
-<?php require('email-footer.php'); ?>
+			<?php $salutation_link = __( 'Match Secretary', 'racketmanager' ); ?>
+			<?php require 'components/salutation.php'; ?>
+			<!-- introduction -->
+			<div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
+				<table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">
+					<tbody>
+						<tr>
+							<td role="presentation" cellspacing="0" cellpadding="0" bgcolor="#fff">
+								<table style="width: 100%; border-collapse: collapse;" role="presentation" cellspacing="0" cellpadding="0">
+									<tbody>
+										<tr>
+											<td style="font-weight: 400; min-width: 5px; width: 600px; height: 0;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
+												<table width="100%" style="height: 100%;" role="presentation" cellspacing="0" cellpadding="0">
+													<tbody>
+														<tr>
+															<td style="min-width: 5px; font-weight: 400;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
+																<div style="font-size: 16px; color: #000; background-color: transparent; margin: 10px;">
+																	<p style="line-height: 1.25; mso-line-height-rule: at-least; margin: 0 0 20px; padding: 0;">
+																		Please find attached
+																		<?php
+																		if ( $resend ) {
+																			echo ' another copy of ';
+																		}
+																		?>
+																		your invoice for the <?php echo esc_html( ucfirst( $invoice->charge->competition->name ) ); ?> <?php echo esc_html( $invoice->charge->season ); ?> season.
+																	</p>
+																	<p style="line-height: 1.25; mso-line-height-rule: at-least; margin: 0 0 20px; padding: 0;">
+																		Could you please check your details and notify me of errors?
+																	</p>
+																</div>
+															</td>
+														</tr>
+													</tbody>
+												</table>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<?php $action_link_text = __( 'View invoice', 'racketmanager' ); ?>
+			<?php require 'components/action-link.php'; ?>
+			<?php
+			if ( ! empty( $from_email ) ) {
+				$contact_email = $from_email;
+				require 'components/contact.php';
+			}
+			?>
+			<?php require 'components/closing.php'; ?>
+			<?php require 'components/link-text.php'; ?>
+<?php
+require 'email-footer.php';

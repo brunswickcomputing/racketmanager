@@ -2,7 +2,9 @@
 /**
  * Slim standings table template
  */
- namespace ns;
+
+namespace Racketmanager;
+
 ?>
 <?php if ( isset($_GET['team']) && !$widget ) { ?>
 //    <?php the_single_team(); ?>

@@ -1,119 +1,123 @@
 <?php
-$competitionName = $match->league->title;
-$tournamentName = $tournament->name;
-$tournamentDate = $tournament->date;
-$tournamentVenue = $tournament->venueName;
-$homeTeam = $homeDtls['name'];
-$homeClub = $homeDtls['club'];
-$homeCaptain = $homeDtls['captain'];
-$homeCaptainEmail = $homeDtls['captainEmail'];
-$homeCaptainTel = $homeDtls['captainTel'];
-$awayTeam = $awayDtls['name'];
-$awayClub = $awayDtls['club'];
-$awayCaptain = $awayDtls['captain'];
-$awayCaptainEmail = $awayDtls['captainEmail'];
-$awayCaptainTel = $awayDtls['captainTel'];
-$matchDate = $match->match_date;
-$numSets = $match->league->num_sets;
-$title = $organisationName.' Match Details - '.$competitionName.' - '.$round;
-?>
-<?php include('email-header.php'); ?>
-<!-- START MAIN CONTENT AREA -->
-<tr>
-  <td class="wrapper">
-    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-      <tr>
-        <td>
-          <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-            <tr>
-              <td><h1 class="align-center"><?php echo $tournamentName; ?></h1></td>
-            </tr>
-            <tr>
-              <td class="align-center">Finals date <?php echo $tournamentDate; ?></td>
-            </tr>
-            <tr>
-              <td class="align-center">at <?php echo $tournamentVenue; ?></td>
-            </tr>
-            <tr>
-              <td><h2 class="align-center"><?php echo $competitionName; ?> <?php echo $round; ?></h2></td>
-            </tr>
-            <tr>
-              <td>
-                <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="">
-                  <tbody>
-                    <tr>
-                      <td align="left">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                          <tbody>
-                            <tr>
-                              <td>
-                                <h4><?php echo $homeDtls['title']; ?></h4>
-                                <ul>
-                                  <li><?php echo $homeTeam; ?></li>
-                                  <li>(<?php echo $homeClub; ?>)</li>
-                                </ul>
-                                <ul>
-                                  <li><?php echo $homeCaptain; ?></li>
-                                  <?php if ( $homeCaptainEmail > '' ) { ?>
-                                    <li><?php echo $homeCaptainEmail; ?></li>
-                                  <?php } ?>
-                                  <?php if ( $homeCaptainTel > '' ) { ?>
-                                    <li><?php echo $homeCaptainTel; ?></li>
-                                  <?php } ?>
-                                </ul>
-                              </td>
-                              <td>
-                                <h4><?php echo $awayDtls['title']; ?></h4>
-                                <ul>
-                                  <li><?php echo $awayTeam; ?></li>
-                                  <li>(<?php echo $awayClub; ?>)</li>
-                                </ul>
-                                <ul>
-                                  <li><?php echo $awayCaptain; ?></li>
-                                  <?php if ( $homeCaptainEmail > '' ) { ?>
-                                    <li><?php echo $awayCaptainEmail; ?></li>
-                                  <?php } ?>
-                                  <li><?php echo $awayCaptainTel; ?></li>
-                                </ul>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </td>
-            </tr>
-            <tr class="wrapper">
-              <td class="strong">Match to be played by <?php echo $matchDate; ?></td>
-            </tr>
-            <tr>
-              <td>Play best of <?php echo $numSets; ?> tie-break sets</td>
-            </tr>
-            <tr class="wrapper">
-              <td>Home players are required to contact their opponents within <strong>3 days</strong> of this notice, failing which, their opponents may constitute themselves the home players and arrange the match accordingly. <a href="mailto:<?php echo $emailFrom; ?>">Contact</a> the tournament organiser regarding any problems arising re playing by the deadline.</td>
-            </tr>
-            <tr class="wrapper">
-              <td><h4>Match cancellation</h4></td>
-            </tr>
-            <tr class="wrapper">
-              <td>24 hours clear notice should be given if you need to cancel, otherwise your opponents can claim the match i.e. match due to be played 2pm Sunday – cancel by 2pm Saturday. This has been implemented to cover players giving up work to play their matches, and being let down at the last minute.</td>
-            </tr>
-            <tr class="wrapper">
-              <td><h4>Winners</h4></td>
-            </tr>
-            <tr>
-              <td>Should <a href="mailto:<?php echo $emailFrom; ?>?subject=<?php echo $competitionName; ?>&nbsp;<?php echo $round; ?> Result">inform</a> the tournament organiser of the result</td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </td>
-</tr>
+/**
+ * Template for email notification for match
+ *
+ * @package Racketmanager/Templates
+ */
 
-<!-- END MAIN CONTENT AREA -->
-</table>
-<!-- END CENTERED WHITE CONTAINER -->
-<?php include('email-footer.php'); ?>
+namespace Racketmanager;
+
+$competition_name = $match->league->title;
+$tournament_name  = $tournament->name;
+$tournament_date  = $tournament->date;
+$tournament_venue = $tournament->venue_name;
+$match_date       = $match->match_date;
+$email_subject    = $organisation . ucfirst( $tournament_name ) . ' ' . __( 'Next match confirmation', 'racketmanager' );
+?>
+<?php require 'email-header.php'; ?>
+			<?php
+			$title_text = sprintf(
+				/* translators: %1$s: league name %2$s: round name */
+				__( '%1$s %2$s Match Confirmation', 'racketmanager' ),
+				$match->league->title,
+				$round,
+			);
+			$title_level = '1';
+			$title_align = 'center';
+			require 'components/title.php';
+			$title_align = '';
+			?>
+			<?php
+			$paragraph_text = sprintf(
+				/* translators: %1$s: draw link %2$s: tournament link */
+				__( 'Please find below details of your next match in the %1$s event in the %2$s tournament.', 'racketmanager' ),
+				$draw_link,
+				$tournament->link,
+			);
+			$paragraph_imbed = true;
+			require 'components/paragraph.php';
+			$paragraph_imbed = false;
+			?>
+			<?php
+			$paragraph_text = __( 'Click the following button to view the match.', 'racketmanager' );
+			require 'components/paragraph.php';
+			?>
+			<?php
+			$action_link_text = __( 'View match', 'racketmanager' );
+			require 'components/action-link.php';
+			?>
+			<?php require 'components/hr.php'; ?>
+			<?php
+			$title_text  = __( 'Match Details', 'racketmanager' );
+			$title_level = '2';
+			require 'components/title.php';
+			?>
+			<?php
+			$paragraph_text = __( 'Match to be played by', 'racketmanager' ) . ' ' . $match_date;
+			require 'components/paragraph.php';
+			?>
+			<?php
+			$opponents = array( 'home', 'away' );
+			foreach ( $opponents as $opponent ) {
+				$title_text  = $teams[ $opponent ]->title;
+				$title_level = '3';
+				require 'components/title.php';
+				?>
+				<div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
+					<table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">
+						<tbody>
+							<tr>
+								<td role="presentation" cellspacing="0" cellpadding="0" bgcolor="#fff">
+									<table style="width: 100%; border-collapse: collapse;" role="presentation" cellspacing="0" cellpadding="0">
+										<tbody>
+											<tr>
+												<td style="font-weight: 400; min-width: 5px; width: 600px; height: 0;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
+													<table width="100%" style="height: 100%; text-align: left; margin-left: 10px;" role="presentation" cellspacing="0" cellpadding="0">
+														<tbody>
+															<?php
+															foreach ( $teams[ $opponent ]->player as $player ) {
+																?>
+																<tr style="line-height: 22px;">
+																	<td style="width: 50%; font-weight: normal;"><?php echo esc_html( $player ); ?></td>
+																	<td><?php echo esc_html( $teams[ $opponent ]->club ); ?></td>
+																</tr>
+																<?php
+															}
+															?>
+														</tbody>
+													</table>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<?php
+			}
+			?>
+			<?php require 'components/hr.php'; ?>
+			<?php
+			$title_text  = __( 'Rules', 'racketmanager' );
+			$title_level = '2';
+			require 'components/title.php';
+			?>
+			<?php
+			$paragraph_text  = __( 'The rules for the tournament can be found', 'racketmanager' ) . ' <a href="' . $rules_link . '">' . __( 'here', 'racketmanager' ) . '</a>.';
+			$paragraph_imbed = true;
+			require 'components/paragraph.php';
+			$paragraph_imbed = false;
+			?>
+			<?php require 'components/hr.php'; ?>
+			<?php
+			if ( ! empty( $email_from ) ) {
+				$contact_email = $email_from;
+				require 'components/contact.php';
+			}
+			?>
+			<?php require 'components/closing.php'; ?>
+			<?php require 'components/link-text.php'; ?>
+<?php
+require 'email-footer.php';

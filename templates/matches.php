@@ -1,8 +1,10 @@
 <?php
 /**
-* Matches table template
-*/
-    namespace ns;
+ * Matches table template
+ */
+
+namespace Racketmanager;
+
 ?>
 <div class="racketmanager-container">
 

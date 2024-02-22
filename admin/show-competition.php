@@ -1,106 +1,125 @@
 <?php
-?>
+/**
+ * Competition administration panel
+ *
+ * @package Racketmanager_admin
+ */
 
+namespace Racketmanager;
+
+?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){
-	activaTab('<?php echo $tab ?>');
+	activaTab('<?php echo esc_html( $tab ); ?>');
 });
 </script>
 <div class="container">
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
-			<a href="admin.php?page=racketmanager"><?php _e( 'RacketManager', 'racketmanager' ) ?></a> &raquo; <?php echo $competition->name ?>
+			<?php
+			if ( empty( $tournament ) ) {
+				?>
+				<a href="admin.php?page=racketmanager"><?php esc_html_e( 'RacketManager', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $competition->name ); ?>
+				<?php
+			} else {
+				?>
+				<a href="admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'Tournaments', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $tournament->name ); ?>
+				<?php
+			}
+			?>
 		</div>
 	</div>
 	<div class="row justify-content-between">
 		<div class="col-auto">
-			<h1><?php echo $competition->name ?></h1>
+			<?php
+			if ( empty( $tournament ) ) {
+				?>
+				<h1><?php echo esc_html( $competition->name ); ?></h1>
+				<?php
+			} else {
+				?>
+				<h1><?php echo esc_html( $page_title ); ?></h1>
+				<?php
+			}
+			?>
 		</div>
-	<?php if ( !empty($competition->seasons) ) { ?>
+	<?php
+	if ( ! empty( $competition->seasons ) && empty( $tournament ) ) {
+		?>
 		<!-- Season Dropdown -->
 		<div class="col-auto">
 			<form action="admin.php" method="get" class="form-control">
 				<input type="hidden" name="page" value="racketmanager" />
 				<input type="hidden" name="subpage" value="show-competition" />
-				<input type="hidden" name="competition_id" value="<?php echo $competition->id ?>" />
-				<label for="season" style="vertical-align: middle;"><?php _e( 'Season', 'racketmanager' ) ?></label>
+				<input type="hidden" name="competition_id" value="<?php echo esc_html( $competition->id ); ?>" />
+				<label for="season" style="vertical-align: middle;"><?php esc_html_e( 'Season', 'racketmanager' ); ?></label>
 				<select size="1" name="season" id="season">
-					<?php foreach ( $competition->seasons AS $s ) { ?>
-						<option value="<?php echo htmlspecialchars($s['name']) ?>"<?php if ( $s['name'] == $season ) { echo ' selected="selected"'; } ?>><?php echo $s['name'] ?></option>
+					<?php foreach ( $competition->seasons as $competition_season ) { ?>
+						<option value="<?php echo esc_html( htmlspecialchars( $competition_season['name'] ) ); ?>" <?php selected( $competition_season['name'], $season ); ?>>
+							<?php echo esc_html( $competition_season['name'] ); ?>
+						</option>
 					<?php } ?>
 				</select>
-				<input type="submit" value="<?php _e( 'Show', 'racketmanager' ) ?>" class="btn btn-secondary" />
+				<button type="submit"  class="btn btn-secondary">
+					<?php esc_html_e( 'Show', 'racketmanager' ); ?>
+				</button>
 			</form>
 		</div>
-	<?php } ?>
+		<?php
+	}
+	?>
 </div>
 
 	<?php $this->printMessage(); ?>
 	<div class="container">
-		<!-- Nav tabs -->
-		<ul class="nav nav-tabs" id="myTab" role="tablist">
-			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="leagues-tab" data-bs-toggle="tab" data-bs-target="#leagues" type="button" role="tab" aria-controls="leagues" aria-selected="true"><?php _e( 'Leagues', 'racketmanager' ) ?></button>
-			</li>
-			<?php if ( $competition->competitiontype != 'tournament' ) { ?>
+		<?php
+		if ( empty( $tournament ) ) {
+			?>
+			<!-- Nav tabs -->
+			<ul class="nav nav-tabs" id="myTab" role="tablist">
 				<li class="nav-item" role="presentation">
-					<button class="nav-link" id="playerstats-tab" data-bs-toggle="tab" data-bs-target="#playerstats" type="button" role="tab" aria-controls="playerstats" aria-selected="false"><?php _e( 'Players Stats', 'racketmanager' ) ?></button>
+					<button class="nav-link" id="events-tab" data-bs-toggle="tab" data-bs-target="#events" type="button" role="tab" aria-controls="events" aria-selected="true"><?php esc_html_e( 'Events', 'racketmanager' ); ?></button>
 				</li>
-			<?php } ?>
-			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="seasons-tab" data-bs-toggle="tab" data-bs-target="#seasons" type="button" role="tab" aria-controls="seasons" aria-selected="false"><?php _e( 'Seasons', 'racketmanager' ) ?></button>
-			</li>
-			<?php if ( current_user_can( 'manage_racketmanager' ) ) { ?>
 				<li class="nav-item" role="presentation">
-					<button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false"><?php _e( 'Settings', 'racketmanager' ) ?></button>
+					<button class="nav-link" id="seasons-tab" data-bs-toggle="tab" data-bs-target="#seasons" type="button" role="tab" aria-controls="seasons" aria-selected="false"><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></button>
 				</li>
-			<?php } ?>
-			<?php if ( $competition->competitiontype == 'league' ) { ?>
-				<li class="nav-item" role="presentation">
-					<button class="nav-link" id="constitution-tab" data-bs-toggle="tab" data-bs-target="#constitution" type="button" role="tab" aria-controls="constitution" aria-selected="false"><?php _e( 'Constitution', 'racketmanager' ) ?></button>
-				</li>
-			<?php } ?>
-			<?php if ( $competition->competitiontype == 'league' ) { ?>
-				<li class="nav-item" role="presentation">
-					<button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="false"><?php _e( 'Matches', 'racketmanager' ) ?></button>
-				</li>
-			<?php } ?>
-
-		</ul>
-		<!-- Tab panes -->
-		<div class="tab-content">
-			<div class="tab-pane fade" id="leagues" role="tabpanel" aria-labelledby="leagues-tab">
-				<h2><?php _e( 'Leagues', 'racketmanager' ) ?></h2>
-				<?php include('competition/leagues.php'); ?>
-			</div>
-			<?php if ( $competition->competitiontype != 'tournament' ) { ?>
-				<div class="tab-pane fade" id="playerstats" role="tabpanel" aria-labelledby="playerstats-tab">
-					<h2><?php _e( 'Player Statistics', 'racketmanager' ) ?></h2>
-					<?php include('competition/player-stats.php'); ?>
-				</div>
-			<?php } ?>
-			<div class="tab-pane fade" id="seasons" role="tabpanel" aria-labelledby="seasons-tab">
-				<h2><?php _e( 'Seasons', 'racketmanager' ) ?></h2>
-				<?php include('competition/seasons.php'); ?>
-			</div>
-			<?php if ( current_user_can( 'manage_racketmanager' ) ) { ?>
-				<div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
-					<?php include('competition/settings.php'); ?>
-				</div>
-			<?php } ?>
-			<?php if ( $competition->competitiontype == 'league' ) { ?>
-				<div class="tab-pane fade" id="constitution" role="tabpanel" aria-labelledby="constitution-tab">
-					<div id="constitution" class="league-block-container">
-						<?php include('competition/constitution.php'); ?>
-					</div>
-				</div>
-			<?php } ?>
-			<?php if ( $competition->competitiontype == 'league' ) { ?>
-				<div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
-					<div id="matches" class="league-block-container">
-						<?php include('competition/matches.php'); ?>
-					</div>
-				</div>
-			<?php } ?>
+				<?php
+				if ( current_user_can( 'manage_racketmanager' ) ) {
+					?>
+					<li class="nav-item" role="presentation">
+						<button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false"><?php esc_html_e( 'Settings', 'racketmanager' ); ?></button>
+					</li>
+					<?php
+				}
+				?>
+			</ul>
+			<!-- Tab panes -->
+			<div class="tab-content">
+			<?php
+		}
+		?>
+		<div class="tab-pane" id="events" role="tabpanel" aria-labelledby="events-tab">
+			<h2><?php esc_html_e( 'Events', 'racketmanager' ); ?></h2>
+			<?php require_once 'competition/events.php'; ?>
 		</div>
+		<?php
+		if ( empty( $tournament ) ) {
+			?>
+				<div class="tab-pane fade" id="seasons" role="tabpanel" aria-labelledby="seasons-tab">
+					<h2><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></h2>
+					<?php require_once 'competition/seasons.php'; ?>
+				</div>
+				<?php
+				if ( current_user_can( 'manage_racketmanager' ) ) {
+					?>
+					<div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+						<?php include_once 'competition/settings.php'; ?>
+					</div>
+					<?php
+				}
+				?>
+			</div>
+			<?php
+		}
+		?>
 	</div>

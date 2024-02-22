@@ -1,51 +1,66 @@
 <?php
 /**
-* Tournaments main page administration panel
-*
-*/
-namespace ns;
+ * Tournaments main page administration panel
+ *
+ * @package Racketmanager/Admin/Templates
+ */
+
+namespace Racketmanager;
+
 ?>
 <div class="container">
-	<h1><?php _e( 'Tournaments', 'racketmanager' ) ?></h1>
+	<h1><?php esc_html_e( 'Tournaments', 'racketmanager' ); ?></h1>
 
 	<div class="form-control mb-3">
 		<form id="tournaments-filter" method="post" action="">
-			<?php wp_nonce_field( 'tournaments-bulk' ) ?>
+			<?php wp_nonce_field( 'tournaments-bulk' ); ?>
 			<div class="tablenav">
 				<!-- Bulk Actions -->
 				<select name="action" size="1">
-					<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
-					<option value="delete"><?php _e('Delete')?></option>
+					<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
+					<option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
 				</select>
-				<input type="submit" value="<?php _e('Apply'); ?>" name="doTournamentDel" id="doTournamentDel" class="btn btn-secondary action" />
+				<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doTournamentDel" id="doTournamentDel" class="btn btn-secondary action" />
 			</div>
 			<div class="container">
 				<div class="row table-header">
-					<div class="col-12 col-md-auto check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('tournaments-filter'));" /></div>
-					<div class="col-12 col-md-2"><?php _e( 'Name', 'racketmanager' ) ?></div>
-					<div class="col-12 col-md-1"><?php _e( 'Season', 'racketmanager' ) ?></div>
-					<div class="col-12 col-md-2"><?php _e( 'Venue', 'racketmanager' ) ?></div>
-					<div class="col-12 col-md-1"><?php _e( 'Date', 'racketmanager' ) ?></div>
+					<div class="col-12 col-md-auto check-column"><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('tournaments-filter'));" /></div>
+					<div class="col-12 col-md-2"><?php esc_html_e( 'Name', 'racketmanager' ); ?></div>
+					<div class="col-12 col-md-1"><?php esc_html_e( 'Season', 'racketmanager' ); ?></div>
+					<div class="col-12 col-md-2"><?php esc_html_e( 'Venue', 'racketmanager' ); ?></div>
+					<div class="col-12 col-md-1"><?php esc_html_e( 'Date', 'racketmanager' ); ?></div>
 				</div>
-				<?php if ( $tournaments = $racketmanager->getTournaments( array( 'orderby' => array('date' => 'desc', 'name' => 'asc')) ) ) {
-					$class = ''; ?>
-					<?php foreach ( $tournaments AS $tournament ) {
-						$class = ( 'alternate' == $class ) ? '' : 'alternate'; ?>
-						<div class="row table-row <?php echo $class ?>">
+				<?php
+				$tournaments = $this->get_tournaments(
+					array(
+						'orderby' => array(
+							'date' => 'desc',
+							'name' => 'asc',
+						),
+					)
+				);
+				if ( $tournaments ) {
+					$class = '';
+					?>
+					<?php
+					foreach ( $tournaments as $tournament ) {
+						$class = ( 'alternate' === $class ) ? '' : 'alternate';
+						?>
+						<div class="row table-row <?php echo esc_html( $class ); ?>">
 							<div class="col-12 col-md-auto check-column">
-								<input type="checkbox" value="<?php echo $tournament->id ?>" name="tournament[<?php echo $tournament->id ?>]" />
+								<input type="checkbox" value="<?php echo esc_html( $tournament->id ); ?>" name="tournament[<?php echo esc_html( $tournament->id ); ?>]" />
 							</div>
-							<div class="col-12 col-md-2"><a href="admin.php?page=racketmanager&amp;subpage=tournament&amp;tournament=<?php echo $tournament->id ?> "><?php echo $tournament->name ?></a></div>
-							<div class="col-12 col-md-1"><?php echo $tournament->season ?></div>
-							<div class="col-12 col-md-2"><?php echo $tournament->venueName ?></div>
-							<div class="col-12 col-md-1"><?php echo $tournament->date ?></div>
-							<div class="col-12 col-md-2"><a href="admin.php?page=racketmanager&amp;subpage=show-competitions&amp;season=<?php echo $tournament->season ?>&amp;type=<?php echo $tournament->type ?>&amp;competitiontype=tournament&amp;tournament=<?php echo $tournament->id ?>" class="btn btn-secondary"><?php _e( 'Competitions', 'racketmanager' ) ?></a></div>
+							<div class="col-12 col-md-2"><a href="admin.php?page=racketmanager&amp;subpage=tournament&amp;tournament=<?php echo esc_html( $tournament->id ); ?> "><?php echo esc_html( $tournament->name ); ?></a></div>
+							<div class="col-12 col-md-1"><?php echo esc_html( $tournament->season ); ?></div>
+							<div class="col-12 col-md-2"><?php echo esc_html( $tournament->venue_name ); ?></div>
+							<div class="col-12 col-md-1"><?php echo esc_html( $tournament->date ); ?></div>
+							<div class="col-12 col-md-auto"><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;season=<?php echo esc_html( $tournament->season ); ?>&amp;competition_id=<?php echo esc_html( $tournament->competition_id ); ?>&amp;tournament=<?php echo esc_html( $tournament->id ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Events', 'racketmanager' ); ?></a></div>
 							<?php if ( $tournament->open ) { ?>
-								<div class="col-12 col-md-auto"><a class="btn btn-secondary" onclick="Racketmanager.notifyTournamentEntryOpen('<?php echo ($tournament->id) ?>');"><?php _e( 'Notify open', 'racketmanager' ) ?></a></div>
-								<div class="col-12 col-md-auto"><span id="notifyMessage-<?php echo $tournament->id ?>"></span></div>
+								<div class="col-12 col-md-auto"><a class="btn btn-secondary" onclick="Racketmanager.notifyTournamentEntryOpen('<?php echo esc_html( $tournament->id ); ?>');"><?php esc_html_e( 'Notify open', 'racketmanager' ); ?></a></div>
+								<div class="col-12 col-md-auto"><span id="notifyMessage-<?php echo esc_html( $tournament->id ); ?>"></span></div>
 							<?php } elseif ( $tournament->active ) { ?>
 								<div class="col-12 col-md-auto">
-									<a href="admin.php?page=racketmanager&amp;subpage=tournament-plan&amp;tournament=<?php echo $tournament->id ?>" class="btn btn-secondary"><?php _e( 'Plan Finals', 'racketmanager' ) ?></a>
+									<a href="admin.php?page=racketmanager&amp;subpage=tournament-plan&amp;tournament=<?php echo esc_html( $tournament->id ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Plan Finals', 'racketmanager' ); ?></a>
 								</div>
 							<?php } ?>
 						</div>
@@ -56,6 +71,6 @@ namespace ns;
 	</div>
 	<div class="mb-3">
 		<!-- Add New Tournament -->
-		<a href="admin.php?page=racketmanager&amp;subpage=tournament" name="addTournament" class="btn btn-primary submit"><?php _e( 'Add Tournament','racketmanager' ) ?></a>
+		<a href="admin.php?page=racketmanager&amp;subpage=tournament" class="btn btn-primary submit"><?php esc_html_e( 'Add Tournament', 'racketmanager' ); ?></a>
 	</div>
 </div>

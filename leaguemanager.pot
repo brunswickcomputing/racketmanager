@@ -211,7 +211,7 @@ msgstr ""
 
 #: admin/admin.php:555
 #, php-format
-msgid "Season <strong>%s</strong> added"
+msgid "Season %s added"
 msgstr ""
 
 #: admin/admin.php:636
@@ -1820,7 +1820,7 @@ msgstr ""
 #: lib/widget.php:180 lib/widget.php:261 templates/team.php:42
 #: templates/team.php:53
 #, php-format
-msgid "<strong>%d.</strong> Match Day"
+msgid "Match Day %d"
 msgstr ""
 
 #: lib/widget.php:232 templates/team.php:51

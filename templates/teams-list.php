@@ -58,7 +58,7 @@ if ( empty( $object->team ) ) {
 												<?php
 												if ( ! $object->is_championship ) {
 													?>
-													<a href=<?php echo esc_attr( $item_link ) . '/team/' . esc_attr( seo_url( $team->title ) ) . '/'; ?>">
+													<a href=<?php echo esc_attr( $item_link ) . '/team/' . esc_attr( seo_url( $team->title ) ) . '/'; ?>>
 													<?php
 												}
 												?>

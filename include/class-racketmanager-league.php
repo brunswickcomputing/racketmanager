@@ -1597,9 +1597,11 @@ class Racketmanager_League {
 		$matches = array();
 		$args    = array( intval( $this->id ) );
 		if ( $count ) {
-			$sql = "SELECT COUNT(ID) FROM {$wpdb->racketmanager_matches} WHERE `league_id` = %d";
+			$sql_start = "SELECT COUNT(*) FROM {$wpdb->racketmanager_matches} m";
+			$sql       = ' WHERE `league_id` = %d';
 		} else {
-			$sql = "SELECT  `id` FROM {$wpdb->racketmanager_matches} WHERE `league_id` = %d";
+			$sql_start = "SELECT  DISTINCT m.`id` FROM {$wpdb->racketmanager_matches} m";
+			$sql       = ' WHERE `league_id` = %d';
 		}
 
 		// disable limit for championship mode.
@@ -1620,16 +1622,16 @@ class Racketmanager_League {
 		if ( $final ) {
 			if ( 'all' !== $final ) {
 				if ( $this->final_exists( htmlspecialchars( wp_strip_all_tags( $final ) ) ) ) {
-					$sql      .= ' AND `final` = %s';
+					$sql      .= ' AND m.`final` = %s';
 					$args[]    = htmlspecialchars( wp_strip_all_tags( $final ) );
 					$match_day = -1;
 					$limit     = 0;
 				} else {
-					$sql .= " AND `final` != ''";
+					$sql .= " AND m.`final` != ''";
 				}
 			}
 		} else {
-			$sql .= " AND ( `final` = '' OR `final` IS NULL )";
+			$sql .= " AND ( m.`final` = '' OR m.`final` IS NULL )";
 		}
 
 		if ( $team_id ) {
@@ -1666,57 +1668,58 @@ class Racketmanager_League {
 		if ( 'latest' === $time ) {
 			$home_points = false;
 			$away_points = false;
-			$sql        .= " AND (`home_points` != '' OR `away_points` != '')";
+			$sql        .= " AND (m.`home_points` != '' OR m.`away_points` != '')";
 		}
 
 		if ( '' !== $home_points ) {
 			if ( 'null' === $home_points ) {
-				$sql .= ' AND `home_points` IS NULL';
+				$sql .= ' AND m.`home_points` IS NULL';
 			} elseif ( 'not_null' === $home_points ) {
-				$sql .= ' AND `home_points` IS NOT NULL';
+				$sql .= ' AND m.`home_points` IS NOT NULL';
 			} elseif ( 'not_empty' === $home_points ) {
-				$sql .= " AND `home_points` != ''";
+				$sql .= " AND m.`home_points` != ''";
 			}
 		}
 		if ( $away_points ) {
 			if ( 'null' === $away_points ) {
-				$sql .= ' AND `away_points` IS NULL';
+				$sql .= ' AND m.`away_points` IS NULL';
 			} elseif ( 'not_null' === $away_points ) {
-				$sql .= ' AND `away_points` IS NOT NULL';
+				$sql .= ' AND m.`away_points` IS NOT NULL';
 			} elseif ( 'not_empty' === $away_points ) {
-				$sql .= " AND `away_points` != ''";
+				$sql .= " AND m.`away_points` != ''";
 			}
 		}
 
 		if ( $winner_id ) {
-			$sql   .= ' AND `winner_id` = %d';
+			$sql   .= ' AND m.`winner_id` = %d';
 			$args[] = $winner_id;
 		}
 		if ( $loser_id ) {
-			$sql   .= ' AND `loser_id` = %d';
+			$sql   .= ' AND m.`loser_id` = %d';
 			$args[] = $loser_id;
 		}
 
 		if ( 'next' === $time ) {
-			$sql .= ' AND TIMESTAMPDIFF(MINUTE, NOW(), `date`) >= 0';
+			$sql .= ' AND TIMESTAMPDIFF(MINUTE, NOW(), m.`date`) >= 0';
 		} elseif ( 'prev' === $time || 'latest' === $time ) {
-			$sql .= ' AND TIMESTAMPDIFF(MINUTE, NOW(), `date`) < 0';
+			$sql .= ' AND TIMESTAMPDIFF(MINUTE, NOW(), m.`date`) < 0';
 		} elseif ( 'prev1' === $time ) {
-			$sql .= ' AND TIMESTAMPDIFF(MINUTE, NOW(), `date`) < 0) AND (`winner_id` != 0) ';
+			$sql .= ' AND TIMESTAMPDIFF(MINUTE, NOW(), m.`date`) < 0) AND (m.`winner_id` != 0) ';
 		} elseif ( 'today' === $time ) {
-			$sql .= ' AND DATEDIFF(NOW(), `date`) = 0';
+			$sql .= ' AND DATEDIFF(NOW(), m.`date`) = 0';
 		} elseif ( 'day' === $time ) {
-			$sql .= " AND DATEDIFF('" . htmlspecialchars( wp_strip_all_tags( $match_date ) ) . "', `date`) = 0";
+			$sql .= " AND DATEDIFF('" . htmlspecialchars( wp_strip_all_tags( $match_date ) ) . "', m.`date`) = 0";
 		}
 		if ( $confirmed ) {
-			$sql .= " AND `confirmed` = 'Y'";
+			$sql .= " AND m.`confirmed` = 'Y'";
 		}
 		if ( $leg ) {
-			$sql   .= ' AND `leg` = %s';
+			$sql   .= ' AND m.`leg` = %s';
 			$args[] = $leg;
 		}
 		if ( $player ) {
-			$sql .= " AND `id` in ( SELECT `match_id` FROM {$wpdb->racketmanager_rubbers} WHERE ( `home_player_1` = '$player' OR `home_player_2` = '$player' OR `away_player_1` = '$player' OR `away_player_2` = '$player') )";
+			$sql_start .= " ,{$wpdb->racketmanager_rubbers} r, {$wpdb->racketmanager_rubber_players} rp";
+			$sql       .= " AND m.`id` = r.`match_id` AND r.`id` = rp.`rubber_id` AND `player_id` = '$player'";
 		}
 		// Force ordering by date ascending if next matches are queried.
 		if ( 'next' === $time ) {
@@ -1730,6 +1733,7 @@ class Racketmanager_League {
 		// get number of matches.
 		if ( $count ) {
 			$this->set_match_query_arg( 'count', false );
+			$sql = $sql_start . $sql;
 			$sql = $wpdb->prepare(
 				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				$sql,
@@ -1753,11 +1757,9 @@ class Racketmanager_League {
 				if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
 					$direction = 'ASC';
 				}
-				if ( $this->database_column_exists( 'matches', $order ) ) {
-					$orderby_string .= '`' . $order . '` ' . $direction;
-					if ( $i < ( count( $orderby ) - 1 ) ) {
-						$orderby_string .= ',';
-					}
+				$orderby_string .= 'm.`' . $order . '` ' . $direction;
+				if ( $i < ( count( $orderby ) - 1 ) ) {
+					$orderby_string .= ',';
 				}
 				++$i;
 			}
@@ -1767,6 +1769,7 @@ class Racketmanager_League {
 			if ( intval( $limit > 0 ) ) {
 				$sql .= ' LIMIT ' . intval( $offset ) . ',' . intval( $limit ) . '';
 			}
+			$sql = $sql_start . $sql;
 			$sql = $wpdb->prepare(
 				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				$sql,
@@ -3401,7 +3404,7 @@ class Racketmanager_League {
 	 * @return array
 	 */
 	public function get_players( $args = array() ) {
-		global $wpdb, $racketmanager;
+		global $wpdb;
 
 		$defaults = array(
 			'offset'  => 0,
@@ -3436,9 +3439,18 @@ class Racketmanager_League {
 			$search_args[]  = $season;
 		}
 		if ( $team ) {
-			$search_terms[] .= '(`home_team` = %d OR `away_team` = %d)';
+			$search_terms[] .= '(( `home_team` = %d AND `player_team` = %s) OR (`away_team` = %d AND `player_team` = %s))';
 			$search_args[]   = $team;
+			$search_args[]   = 'home';
 			$search_args[]   = $team;
+			$search_args[]   = 'away';
+		}
+		if ( $club ) {
+			$search_terms[] .= "(( `home_team` in (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = %d) AND `player_team` = %s) OR (`away_team` in (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = %d) AND `player_team` = %s))";
+			$search_args[]   = $club;
+			$search_args[]   = 'home';
+			$search_args[]   = $club;
+			$search_args[]   = 'away';
 		}
 		$search = '';
 		if ( ! empty( $search_terms ) ) {
@@ -3461,7 +3473,7 @@ class Racketmanager_League {
 		if ( $orderby_string ) {
 			$order = ' ORDER BY ' . $orderby_string;
 		}
-		$sql = "SELECT `home_player_1`, `home_player_2`, `away_player_1`, `away_player_2` FROM {$wpdb->racketmanager_rubbers} r, {$wpdb->racketmanager_matches} m  WHERE r.`match_id` = m.`id` AND m.`league_id` = %d" . $search . $order;
+		$sql = "SELECT DISTINCT `player_id`, `club_player_id` FROM {$wpdb->racketmanager_rubber_players} rp, {$wpdb->racketmanager_rubbers} r, {$wpdb->racketmanager_matches} m  WHERE rp.`rubber_id` = r.`id` AND r.`match_id` = m.`id` AND m.`league_id` = %d" . $search . $order;
 		if ( intval( $limit > 0 ) ) {
 			$sql          .= ' LIMIT %d, %d';
 			$search_args[] = $offset;
@@ -3472,42 +3484,20 @@ class Racketmanager_League {
 			$sql,
 			$search_args,
 		);
-		$league_rubber_players = wp_cache_get( md5( $sql ), 'league_rubber_players' );
-		if ( ! $league_rubber_players ) {
-			$league_rubber_players = $wpdb->get_results(
+		$players = wp_cache_get( md5( $sql ), 'league_rubber_players' );
+		if ( ! $players ) {
+			$players = $wpdb->get_results(
 			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				$sql
 			); // db call ok.
-			wp_cache_set( md5( $sql ), $league_rubber_players, 'league_rubber_players' );
+			wp_cache_set( md5( $sql ), $players, 'league_rubber_players' );
 		}
-		$club_players = array();
-		foreach ( $league_rubber_players as $rubber_players ) {
-			$club_players[] = $rubber_players->home_player_1;
-			$club_players[] = $rubber_players->home_player_2;
-			$club_players[] = $rubber_players->away_player_1;
-			$club_players[] = $rubber_players->away_player_2;
-		}
-		$club_players = array_unique( $club_players );
-		$players      = array();
-		$sql          = "SELECT DISTINCT `player_id` FROM {$wpdb->racketmanager_club_players} WHERE `id` in ( 0";
-		foreach ( $club_players as $i => $club_player ) {
-			if ( is_numeric( $club_player ) ) {
-				$sql .= ',' . $club_player;
-			}
-		}
-		$sql .= ')';
-		$sql .= ' AND `system_record` IS NULL';
-		if ( $club ) {
-			$sql .= ' AND `affiliatedclub` = ' . $club;
-		}
-		$sql    .= ' ORDER BY `player_id`';
-		$players = $wpdb->get_results(
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-			$sql,
-		); // db call ok, no cache ok.
 		$league_players = array();
-		foreach ( $players as $player ) {
-			$player = get_player( $player->player_id );
+		foreach ( $players as $rubber_player ) {
+			$player = get_player( $rubber_player->player_id );
+			if ( $player->system_record ) {
+				continue;
+			}
 			if ( ! $stats ) {
 				$league_players[] = $player->fullname;
 			} else {
@@ -3515,20 +3505,18 @@ class Racketmanager_League {
 				$player_matches = array();
 				$opponents_pt   = array( 'player1', 'player2' );
 				$opponents      = array( 'home', 'away' );
-				$player_clubs   = $racketmanager->get_club_players( array( 'player' => $player->id ) );
-				foreach ( $player_clubs as $player_club ) {
-					$matches        = $this->get_matches(
-						array(
-							'season'    => $this->current_season['name'],
-							'player'    => $player_club->roster_id,
-							'match_day' => false,
-							'orderby'   => array(
-								'date' => 'ASC',
-							),
-						)
-					);
-					$player_matches = array_merge( $player_matches, $matches );
-				}
+				$player_matches = $this->get_matches(
+					array(
+						'season'           => $this->current_season['name'],
+						'player'           => $player->id,
+						'match_day'        => false,
+						'reset_query_args' => true,
+						'orderby'          => array(
+							'date' => 'ASC',
+						),
+					)
+				);
+
 				$league_player->statistics = array();
 				$league_player->matches    = array();
 				foreach ( $player_matches as $match ) {
@@ -3636,7 +3624,7 @@ class Racketmanager_League {
 					$league_player->win_pct = ceil( ( $league_player->matches_won / $league_player->played ) * 100 );
 				}
 				if ( ! $team ) {
-					$league_player->team = $this->get_player_team( array( 'player' => $league_player->id ) );
+					$league_player->team = $this->get_player_team( array( 'player' => $rubber_player->player_id ) );
 				}
 				$league_players[] = $league_player;
 			}
@@ -3704,7 +3692,7 @@ class Racketmanager_League {
 			$search  = ' AND ';
 			$search .= implode( ' AND ', $search_terms );
 		}
-		$sql = "SELECT distinct t.`id`, t.`title` FROM {$wpdb->racketmanager_teams} AS t, {$wpdb->racketmanager_rubbers} AS r, {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager_club_players} AS ro WHERE r.`winner_id` != 0 AND (((r.`home_player_1` = ro.`id` OR r.`home_player_2` = ro.`id`) AND  m.`home_team` = t.`id`) OR ((r.`away_player_1` = ro.`id` OR r.`away_player_2` = ro.`id`) AND m.`away_team` = t.`id`)) AND ro.`affiliatedclub` = t.`affiliatedclub` AND r.`match_id` = m.`id` AND m.`league_id` = %d " . $search;
+		$sql = "SELECT distinct t.`id`, t.`title` FROM {$wpdb->racketmanager_teams} AS t, {$wpdb->racketmanager_rubbers} AS r, {$wpdb->racketmanager_rubber_players} AS rp, {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager_club_players} AS ro WHERE r.`winner_id` != 0 AND r.`id` = rp.`rubber_id` AND rp.`club_player_id` = ro.`id` AND ((rp.`player_team` = 'home' AND m.`home_team` = t.`id`) OR (rp.`player_team` = 'away' AND m.`away_team` = t.`id`)) AND ro.`affiliatedclub` = t.`affiliatedclub` AND r.`match_id` = m.`id` AND m.`league_id` = %d " . $search;
 		$sql = $wpdb->prepare(
 			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			$sql,
@@ -3716,7 +3704,7 @@ class Racketmanager_League {
 			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				$sql
 			); // db call ok.
-			wp_cache_set( md5( $sql ), $teams, 'league_rubbplayer_teamer_players' );
+			wp_cache_set( md5( $sql ), $teams, 'player_team' );
 		}
 		if ( $teams ) {
 			$team = $teams[0];

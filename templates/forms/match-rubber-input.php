@@ -180,8 +180,7 @@ if ( ! empty( $match->winner_id ) ) {
 										</div>
 										<?php
 										foreach ( $rubber_players as $player_number => $player ) {
-											$player_ref = $opponent . '_player_' . $player_number;
-											$tabindex   = $tabbase + 1;
+											$tabindex = $tabbase + 1;
 											?>
 											<div class="match__row-title-value">
 												<span class="match__row-title-value-content">
@@ -204,7 +203,7 @@ if ( ! empty( $match->winner_id ) ) {
 																	$disabled = '';
 																}
 																?>
-																<option value="<?php echo esc_attr( $player_option->roster_id ); ?>" <?php selected( $player_option->roster_id, $rubber->$player_ref ); ?> <?php echo esc_html( $disabled ); ?>>
+																<option value="<?php echo esc_attr( $player_option->roster_id ); ?>" <?php selected( $player_option->roster_id, $rubber->players[ $opponent ][ $player_number ]->club_player_id ); ?> <?php echo esc_html( $disabled ); ?>>
 																	<?php echo esc_html( $player_option->fullname ); ?>
 																</option>
 																<?php

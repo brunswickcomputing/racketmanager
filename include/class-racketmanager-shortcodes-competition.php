@@ -103,22 +103,6 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 					$rubbers = $match->get_rubbers();
 					$r       = 1;
 					foreach ( $rubbers as $rubber ) {
-						$rubber->home_player_1_name = '';
-						$rubber->home_player_2_name = '';
-						$rubber->away_player_1_name = '';
-						$rubber->away_player_2_name = '';
-						if ( isset( $rubber->home_player_1 ) && $rubber->home_player_1 > 0 ) {
-							$rubber->home_player_1_name = $this->getClubPlayerName( $rubber->home_player_1 );
-						}
-						if ( isset( $rubber->home_player_2 ) && $rubber->home_player_2 > 0 ) {
-							$rubber->home_player_2_name = $this->getClubPlayerName( $rubber->home_player_2 );
-						}
-						if ( isset( $rubber->away_player_1 ) && $rubber->away_player_1 > 0 ) {
-							$rubber->away_player_1_name = $this->getClubPlayerName( $rubber->away_player_1 );
-						}
-						if ( isset( $rubber->away_player_2 ) && $rubber->away_player_2 > 0 ) {
-							$rubber->away_player_2_name = $this->getClubPlayerName( $rubber->away_player_2 );
-						}
 						$match->rubbers[ $r ] = $rubber;
 						++$r;
 					}
@@ -865,14 +849,14 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				}
 				$team->matches = $league->get_matches(
 					array(
-						'team_id'   => $team->id,
-						'match_day' => false,
-						'limit'     => 'false',
+						'team_id'          => $team->id,
+						'match_day'        => false,
+						'limit'            => 'false',
+						'reset_query_args' => true,
 					)
 				);
 				$team->players = $league->get_players(
 					array(
-						'club'  => $team->affiliatedclub,
 						'team'  => $team->id,
 						'stats' => true,
 					)
@@ -984,22 +968,18 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			$opponents     = array( 'home', 'away' );
 			$league_player = get_player( $player, 'name' ); // get player by name.
 			if ( $league_player ) {
-				$player_clubs = $racketmanager->get_club_players( array( 'player' => $league_player->id ) );
-				foreach ( $player_clubs as $player_club ) {
-					$matches        = $league->get_matches(
-						array(
-							'season'    => $league->current_season['name'],
-							'player'    => $player_club->roster_id,
-							'match_day' => false,
-							'final'     => 'all',
-							'orderby'   => array(
-								'date' => 'ASC',
-							),
-						)
-					);
-					$player_matches = array_merge( $player_matches, $matches );
-				}
-				foreach ( $player_matches as $match ) {
+				$matches = $league->get_matches(
+					array(
+						'season'    => $league->current_season['name'],
+						'player'    => $league_player->id,
+						'match_day' => false,
+						'final'     => 'all',
+						'orderby'   => array(
+							'date' => 'ASC',
+						),
+					)
+				);
+				foreach ( $matches as $match ) {
 					$league_player->matches[] = $match;
 					foreach ( $match->rubbers as $rubber ) {
 						$player_team        = null;
@@ -1231,23 +1211,19 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			$opponents    = array( 'home', 'away' );
 			$event_player = get_player( $player, 'name' ); // get player by name.
 			if ( $event_player ) {
-				$player_clubs = $racketmanager->get_club_players( array( 'player' => $event_player->id ) );
-				foreach ( $player_clubs as $player_club ) {
-					$matches        = $event->get_matches(
-						array(
-							'season'  => $event->current_season['name'],
-							'player'  => $player_club->roster_id,
-							'orderby' => array(
-								'date'      => 'ASC',
-								'league_id' => 'DESC',
-							),
-						)
-					);
-					$player_matches = array_merge( $player_matches, $matches );
-				}
+				$matches                  = $event->get_matches(
+					array(
+						'season'  => $event->current_season['name'],
+						'player'  => $event_player->id,
+						'orderby' => array(
+							'date'      => 'ASC',
+							'league_id' => 'DESC',
+						),
+					)
+				);
 				$event_player->statistics = array();
 				$event->matches           = array();
-				foreach ( $player_matches as $match ) {
+				foreach ( $matches as $match ) {
 					$key = $match->league->title;
 					if ( false === array_key_exists( $key, $event->matches ) ) {
 						$event->matches[ $key ]                   = array();

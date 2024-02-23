@@ -702,16 +702,14 @@ class Racketmanager_Ajax extends RacketManager {
 						$match->home_points                         += $homescore;
 						$match->away_points                         += $awayscore;
 
-						$rubber->home_points   = $homescore;
-						$rubber->away_points   = $awayscore;
-						$rubber->home_player_1 = $players['home']['1'];
-						$rubber->home_player_2 = $players['home']['2'];
-						$rubber->away_player_1 = $players['away']['1'];
-						$rubber->away_player_2 = $players['away']['2'];
-						$rubber->winner_id     = $winner;
-						$rubber->loser_id      = $loser;
-						$rubber->custom        = $custom;
-						$rubber->status        = $status;
+						$rubber->players = $players;
+						$rubber->set_players();
+						$rubber->home_points = $homescore;
+						$rubber->away_points = $awayscore;
+						$rubber->winner_id   = $winner;
+						$rubber->loser_id    = $loser;
+						$rubber->custom      = $custom;
+						$rubber->status      = $status;
 						$rubber->update_result();
 						$match_confirmed = 'P';
 						$check_options   = $options['checks'];
@@ -1202,15 +1200,12 @@ class Racketmanager_Ajax extends RacketManager {
 			if ( isset( $match->match_day ) ) {
 				$count = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 					$wpdb->prepare(
-						"SELECT count(*) FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager_rubbers} r WHERE m.`id` = r.`match_id` AND m.`season` = %s AND m.`match_day` = %d AND  m.`league_id` != %d AND m.`league_id` in (SELECT l.`id` from {$wpdb->racketmanager} l, {$wpdb->racketmanager_events} c WHERE l.`event_id` = (SELECT `event_id` FROM {$wpdb->racketmanager} WHERE `id` = %d)) AND (`home_player_1` = %d or `home_player_2` = %d or `away_player_1` = %d or `away_player_2` = %d)",
+						"SELECT count(*) FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager_rubbers} r, {$wpdb->racketmanager_rubber_players} rp WHERE m.`id` = r.`match_id` AND r.`id` = rp.`rubber_id` AND m.`season` = %s AND m.`match_day` = %d AND  m.`league_id` != %d AND m.`league_id` in (SELECT l.`id` from {$wpdb->racketmanager} l, {$wpdb->racketmanager_events} c WHERE l.`event_id` = (SELECT `event_id` FROM {$wpdb->racketmanager} WHERE `id` = %d)) AND rp.`club_player_id` = %d",
 						$match->season,
 						$match->match_day,
 						$match->league_id,
 						$match->league_id,
 						$roster_id,
-						$roster_id,
-						$roster_id,
-						$roster_id
 					)
 				);
 				if ( $count > 0 ) {
@@ -1225,13 +1220,10 @@ class Racketmanager_Ajax extends RacketManager {
 					if ( $match->match_day > ( $num_match_days - $options['playedRounds'] ) ) {
 						$count = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 							$wpdb->prepare(
-								"SELECT count(*) FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager_rubbers} r WHERE m.`id` = r.`match_id` AND m.`season` = %s AND m.`match_day` < %d AND m.`league_id` in (SELECT l.`id` from {$wpdb->racketmanager} l, {$wpdb->racketmanager_events} e WHERE l.`event_id` = (SELECT `event_id` FROM {$wpdb->racketmanager} WHERE `id` = %d)) AND (`home_player_1` = %d or `home_player_2` = %d or `away_player_1` = %d or `away_player_2` = %d)",
+								"SELECT count(*) FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager_rubbers} r, {$wpdb->racketmanager_rubber_players} rp WHERE m.`id` = r.`match_id` AND r.`id` = rp.`rubber_id` AND m.`season` = %s AND m.`match_day` < %d AND m.`league_id` in (SELECT l.`id` from {$wpdb->racketmanager} l, {$wpdb->racketmanager_events} e WHERE l.`event_id` = (SELECT `event_id` FROM {$wpdb->racketmanager} WHERE `id` = %d)) AND rp.`club_player_id` = %d",
 								$match->season,
 								$match->match_day,
 								$match->league_id,
-								$roster_id,
-								$roster_id,
-								$roster_id,
 								$roster_id
 							)
 						);

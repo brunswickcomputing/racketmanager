@@ -1142,10 +1142,13 @@ final class Racketmanager_Match {
 			}
 			return $rubbers;
 		}
-		$sql = "SELECT `id` FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` = " . $this->id;
+		$sql_start = "SELECT r.`id` FROM {$wpdb->racketmanager_rubbers} r";
+		$sql       = ' WHERE `match_id` = ' . $this->id;
 		if ( $player ) {
-			$sql .= " AND ( `home_player_1` = '$player' OR `home_player_2` = '$player' OR `away_player_1` = '$player' OR `away_player_2` = '$player')";
+			$sql_start .= ", {$wpdb->racketmanager_rubber_players} rp";
+			$sql       .= " AND r.`id` = rp.`rubber_id` AND `player_id` = '$player'";
 		}
+		$sql  = $sql_start . $sql;
 		$sql .= ' ORDER BY `date` ASC, `id` ASC';
 
 		$rubbers = wp_cache_get( md5( $sql ), 'rubbers' );

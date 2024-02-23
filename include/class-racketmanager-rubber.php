@@ -128,30 +128,6 @@ final class Racketmanager_Rubber {
 	 */
 	public $players;
 	/**
-	 * Home player 1 variable
-	 *
-	 * @var int
-	 */
-	public $home_player_1;
-	/**
-	 * Home player 2 variable
-	 *
-	 * @var int
-	 */
-	public $home_player_2;
-	/**
-	 * Away player 1 variable
-	 *
-	 * @var int
-	 */
-	public $away_player_1;
-	/**
-	 * Away player 2 variable
-	 *
-	 * @var int
-	 */
-	public $away_player_2;
-	/**
 	 * Rubber type variable
 	 *
 	 * @var string
@@ -197,7 +173,7 @@ final class Racketmanager_Rubber {
 		if ( ! $rubber ) {
 			$rubber = $wpdb->get_row(
 				$wpdb->prepare(
-					"SELECT `match_id`, `group`, `home_player_1`, `home_player_2`, `away_player_1`, `away_player_2`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `id`, `type`, `custom`, `rubber_number`, `status` FROM {$wpdb->racketmanager_rubbers} WHERE `id` =  %d",
+					"SELECT `match_id`, `group`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `id`, `type`, `custom`, `rubber_number`, `status` FROM {$wpdb->racketmanager_rubbers} WHERE `id` =  %d",
 					$rubber_id,
 				)
 			);
@@ -257,26 +233,7 @@ final class Racketmanager_Rubber {
 				$this->is_retired = true;
 			}
 			$this->players = array();
-			if ( ! empty( $this->home_player_1 ) ) {
-				$this->players['home'][1] = $racketmanager->get_club_player( $this->home_player_1 );
-			} else {
-				$this->players['home'][1] = null;
-			}
-			if ( ! empty( $this->home_player_2 ) ) {
-				$this->players['home'][2] = $racketmanager->get_club_player( $this->home_player_2 );
-			} else {
-				$this->players['home'][2] = null;
-			}
-			if ( ! empty( $this->away_player_1 ) ) {
-				$this->players['away'][1] = $racketmanager->get_club_player( $this->away_player_1 );
-			} else {
-				$this->players['away'][1] = null;
-			}
-			if ( ! empty( $this->away_player_2 ) ) {
-				$this->players['away'][2] = $racketmanager->get_club_player( $this->away_player_2 );
-			} else {
-				$this->players['away'][2] = null;
-			}
+			$this->get_players();
 			$this->title = $this->type . $this->rubber_number;
 		}
 	}
@@ -321,13 +278,9 @@ final class Racketmanager_Rubber {
 		global $wpdb;
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_rubbers} SET `home_points` = %f,`away_points` = %f,`home_player_1` = %s,`home_player_2` = %s,`away_player_1` = %s,`away_player_2` = %s,`winner_id` = %d,`loser_id` = %d,`custom` = %s, `status`= %d WHERE `id` = %d",
+				"UPDATE {$wpdb->racketmanager_rubbers} SET `home_points` = %f,`away_points` = %f, `winner_id` = %d,`loser_id` = %d,`custom` = %s, `status`= %d WHERE `id` = %d",
 				$this->home_points,
 				$this->away_points,
-				$this->home_player_1,
-				$this->home_player_2,
-				$this->away_player_1,
-				$this->away_player_2,
 				$this->winner_id,
 				$this->loser_id,
 				maybe_serialize( $this->custom ),
@@ -336,6 +289,29 @@ final class Racketmanager_Rubber {
 			)
 		);
 		wp_cache_delete( $this->id, 'rubbers' );
+	}
+	/**
+	 * Set players function
+	 */
+	public function set_players() {
+		global $racketmanager, $wpdb;
+		foreach ( $this->players as $player_team => $player_ref ) {
+			foreach ( $player_ref as $player_num => $player ) {
+				$club_player = $racketmanager->get_club_player( $player );
+				if ( $club_player ) {
+					$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+						$wpdb->prepare(
+							"REPLACE INTO {$wpdb->racketmanager_rubber_players} ( `rubber_id`, `player_ref`, `player_team`, `player_id`, `club_player_id` ) VALUES ( %d, %d, %s, %d, %d )",
+							$this->id,
+							$player_num,
+							$player_team,
+							$club_player->player_id,
+							$club_player->id,
+						)
+					);
+				}
+			}
+		}
 	}
 	/**
 	 * Update rubber date function
@@ -433,5 +409,21 @@ final class Racketmanager_Rubber {
 		$return->winner = $winner;
 		$return->loser  = $loser;
 		return $return;
+	}
+	/**
+	 * Get players for rubber function
+	 */
+	public function get_players() {
+		global $wpdb;
+		$players = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"SELECT `id`, `player_ref`, `player_team`, `player_id`, `club_player_id` FROM {$wpdb->racketmanager_rubber_players} WHERE `rubber_id` = %s",
+				$this->id
+			)
+		);
+		foreach ( $players as $player ) {
+			$this->players[ $player->player_team ][ $player->player_ref ]                 = get_player( $player->player_id );
+			$this->players[ $player->player_team ][ $player->player_ref ]->club_player_id = $player->club_player_id;
+		}
 	}
 }

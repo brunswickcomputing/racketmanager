@@ -917,6 +917,31 @@ function racketmanager_upgrade() {
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_charges} DROP `type` " );
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_charges} DROP `competitionType` " );
 	}
+	if ( version_compare( $installed, '8.2.1', '<' ) ) {
+		echo esc_html__( 'starting 8.2.1 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "CREATE TABLE {$wpdb->racketmanager_rubber_players} (`id` int( 11 ) NOT NULL AUTO_INCREMENT, `rubber_id` int( 11 ) NOT NULL, `player_ref` int( 11 ) NULL, `player_team` varchar( 4 ) NULL, `player_id` int( 11 ) NULL, `club_player_id` int( 11 ) NULL, PRIMARY KEY ( `id` ), INDEX( `rubber_id` ))" );
+		$rubbers = $wpdb->get_results( "SELECT `id`, `home_player_1`, `home_player_2`, `away_player_1`, `away_player_2` FROM {$wpdb->racketmanager_rubbers} WHERE `home_player_1` IS NOT NULL " );
+		foreach ( $rubbers as $rubber ) {
+			$player = $racketmanager->get_club_player( $rubber->home_player_1 );
+			if ( $player ) {
+				$wpdb->query( " INSERT INTO {$wpdb->racketmanager_rubber_players} ( `rubber_id`, `player_ref`, `player_team`, `player_id`, `club_player_id` ) VALUES( $rubber->id, 1, 'home', $player->player_id, $player->id  )" );
+			}
+			$player = $racketmanager->get_club_player( $rubber->home_player_2 );
+			if ( $player ) {
+				$wpdb->query( " INSERT INTO {$wpdb->racketmanager_rubber_players} ( `rubber_id`, `player_ref`, `player_team`, `player_id`, `club_player_id` ) VALUES( $rubber->id, 2, 'home', $player->player_id, $player->id  )" );
+			}
+			$player = $racketmanager->get_club_player( $rubber->away_player_1 );
+			if ( $player ) {
+				$wpdb->query( " INSERT INTO {$wpdb->racketmanager_rubber_players} ( `rubber_id`, `player_ref`, `player_team`, `player_id`, `club_player_id` ) VALUES( $rubber->id, 1, 'away', $player->player_id, $player->id  )" );
+			}
+			$player = $racketmanager->get_club_player( $rubber->away_player_2 );
+			if ( $player ) {
+				$wpdb->query( " INSERT INTO {$wpdb->racketmanager_rubber_players} ( `rubber_id`, `player_ref`, `player_team`, `player_id`, `club_player_id` ) VALUES( $rubber->id, 2, 'away', $player->player_id, $player->id  )" );
+			}
+		}
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_rubber_players} ADD UNIQUE(`rubber_id`, `player_ref`, `player_team`)" );
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_rubber_players} DROP(`home_player_1`, `home_player_2`, `away_player_1`, `away_player_2`)" );
+	}
 	/*
 	* Update version and dbversion
 	*/

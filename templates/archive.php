@@ -66,7 +66,15 @@ wp_enqueue_script( 'datatables' );
 		});
 	});
 	</script>
-	<h1><?php echo esc_html( $league->title ) . ' - ' . esc_html__( 'Season', 'racketmanager' ) . ' ' . esc_html( $league->current_season['name'] ); ?></h1>
+	<div class="module module--card module--dark">
+		<div class="module__content">
+			<div class="module__banner">
+				<div class="banner__title">
+					<h1><?php echo esc_html( $league->title ) . ' - ' . esc_html__( 'Season', 'racketmanager' ) . ' ' . esc_html( $league->current_season['name'] ); ?></h1>
+				</div>
+			</div>
+		</div>
+	</div>
 	<?php require 'league-selections.php'; ?>
 
 	<?php if ( 'championship' === $league->mode ) { ?>

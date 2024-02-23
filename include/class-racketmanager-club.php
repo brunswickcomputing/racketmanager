@@ -165,7 +165,7 @@ final class Racketmanager_Club {
 
 			$club = new Racketmanager_Club( $club );
 
-			wp_cache_set( $club->id, $club, 'clubs' );
+			wp_cache_set( $club_id, $club, 'clubs' );
 		}
 
 		return $club;

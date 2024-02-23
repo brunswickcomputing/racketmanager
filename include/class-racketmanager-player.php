@@ -128,11 +128,17 @@ final class Racketmanager_Player {
 	 */
 	public $locked_user;
 	/**
-	 * Locked uiser name.
+	 * Locked user name.
 	 *
 	 * @var string
 	 */
 	public $locked_user_name;
+	/**
+	 * System record.
+	 *
+	 * @var string
+	 */
+	public $system_record;
 	/**
 	 * Retrieve player instance
 	 *
@@ -231,6 +237,7 @@ final class Racketmanager_Player {
 			} else {
 				$this->locked_user_name = '';
 			}
+			$this->system_record = get_user_meta( $this->ID, 'leaguemanager_type', true );
 		}
 	}
 

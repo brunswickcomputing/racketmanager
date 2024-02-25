@@ -402,6 +402,27 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 						}
 					}
 				}
+				$total_stats = array();
+				$stat_types  = array( 'winner', 'loser', 'draw' );
+				foreach ( $stat_types as $stat_type ) {
+					$total_stats[ $stat_type ] = 0;
+					if ( ! empty( $player->statistics['played'][ $stat_type ] ) ) {
+						foreach ( $player->statistics['played'][ $stat_type ] as $stats ) {
+							if ( is_array( $stats ) ) {
+								$total_stats[ $stat_type ] += array_sum( $stats );
+							} else {
+								$total_stats[ $stat_type ] += $stats;
+							}
+						}
+					}
+				}
+				$player->matches_won  = $total_stats['winner'];
+				$player->matches_lost = $total_stats['loser'];
+				$player->matches_tie  = $total_stats['draw'];
+				$player->played       = $player->matches_won + $player->matches_lost + $player->matches_tie;
+				if ( $player->played ) {
+					$player->win_pct = ceil( ( $player->matches_won / $player->played ) * 100 );
+				}
 			}
 		} else {
 			$tournament->players = RacketManager_Util::get_players_list( $tournament->get_players() );

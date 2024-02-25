@@ -1060,6 +1060,27 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 						}
 					}
 				}
+				$total_stats = array();
+				$stat_types  = array( 'winner', 'loser', 'draw' );
+				foreach ( $stat_types as $stat_type ) {
+					$total_stats[ $stat_type ] = 0;
+					if ( ! empty( $league_player->statistics['played'][ $stat_type ] ) ) {
+						foreach ( $league_player->statistics['played'][ $stat_type ] as $stats ) {
+							if ( is_array( $stats ) ) {
+								$total_stats[ $stat_type ] += array_sum( $stats );
+							} else {
+								$total_stats[ $stat_type ] += $stats;
+							}
+						}
+					}
+				}
+				$league_player->matches_won  = $total_stats['winner'];
+				$league_player->matches_lost = $total_stats['loser'];
+				$league_player->matches_tie  = $total_stats['draw'];
+				$league_player->played       = $league_player->matches_won + $league_player->matches_lost + $league_player->matches_tie;
+				if ( $league_player->played ) {
+					$league_player->win_pct = ceil( ( $league_player->matches_won / $league_player->played ) * 100 );
+				}
 				$league->player = $league_player;
 			} else {
 				esc_html_e( 'Player not found', 'racketmanager' );
@@ -1309,6 +1330,27 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 							}
 						}
 					}
+				}
+				$total_stats = array();
+				$stat_types  = array( 'winner', 'loser', 'draw' );
+				foreach ( $stat_types as $stat_type ) {
+					$total_stats[ $stat_type ] = 0;
+					if ( ! empty( $event_player->statistics['played'][ $stat_type ] ) ) {
+						foreach ( $event_player->statistics['played'][ $stat_type ] as $stats ) {
+							if ( is_array( $stats ) ) {
+								$total_stats[ $stat_type ] += array_sum( $stats );
+							} else {
+								$total_stats[ $stat_type ] += $stats;
+							}
+						}
+					}
+				}
+				$event_player->matches_won  = $total_stats['winner'];
+				$event_player->matches_lost = $total_stats['loser'];
+				$event_player->matches_tie  = $total_stats['draw'];
+				$event_player->played       = $event_player->matches_won + $event_player->matches_lost + $event_player->matches_tie;
+				if ( $event_player->played ) {
+					$event_player->win_pct = ceil( ( $event_player->matches_won / $event_player->played ) * 100 );
 				}
 				asort( $event->matches );
 			} else {

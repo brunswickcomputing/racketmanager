@@ -942,6 +942,11 @@ function racketmanager_upgrade() {
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_rubber_players} ADD UNIQUE(`rubber_id`, `player_ref`, `player_team`)" );
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_rubber_players} DROP(`home_player_1`, `home_player_2`, `away_player_1`, `away_player_2`)" );
 	}
+	if ( version_compare( $installed, '8.2.2', '<' ) ) {
+		echo esc_html__( 'starting 8.2.2 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_rubbers} ADD INDEX(`match_id`);" );
+	}
+
 	/*
 	* Update version and dbversion
 	*/

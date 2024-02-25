@@ -780,7 +780,6 @@ class RacketManager {
 	 * Create formatted url
 	 */
 	public function racketmanager_rewrites() {
-		$this->rewrite_league();
 		$this->rewrite_tournament();
 		// league type info.
 		add_rewrite_rule(
@@ -806,6 +805,7 @@ class RacketManager {
 			'index.php?pagename=leagues%2Flatest-results',
 			'top'
 		);
+		$this->rewrite_league();
 		// cup - season - player.
 		add_rewrite_rule(
 			'cups/(.+?)/([0-9]{4})/player/(.+?)/?$',

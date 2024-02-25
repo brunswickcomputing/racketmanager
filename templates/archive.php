@@ -38,8 +38,6 @@ if ( isset( $_GET['match_day'] ) || isset( $_GET['team_id'] ) ) { //phpcs:ignore
 if ( $match_day ) {
 	$tab = 'matches'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 }
-wp_enqueue_style( 'datatables-style' );
-wp_enqueue_script( 'datatables' );
 ?>
 <div id="archive-<?php echo esc_html( $league->id ); ?>" class="archive">
 	<script type="text/javascript">
@@ -48,22 +46,6 @@ wp_enqueue_script( 'datatables' );
 	if (hash == 'teams') tab = 'teams';
 	jQuery(function() {
 		activaTab('<?php echo esc_html( $tab ); ?>');
-	});
-	jQuery(document).ready(function(){
-		jQuery('#playerstats').DataTable( {
-			"columnDefs": [
-				{ "visible": false, "targets": 7 },
-				{ "visible": false, "targets": 10 }
-			],
-			order: [[ 3, 'desc' ], [ 11, 'desc' ], [ 7, 'desc' ], [ 5, 'desc' ], [ 10, 'desc' ], [ 8, 'desc' ], [ 0, 'asc' ]],
-			fixedHeader: {
-				header: true,
-				footer: true
-			},
-			"pageLength":25,
-			"lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
-			"autoWidth": false
-		});
 	});
 	</script>
 	<div class="module module--card module--dark">

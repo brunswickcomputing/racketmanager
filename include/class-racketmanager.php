@@ -703,7 +703,6 @@ class RacketManager {
 	 * Load Javascript
 	 */
 	public function load_scripts() {
-		wp_register_script( 'datatables', 'https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js', array( 'jquery' ), '1.13.6', array( 'in_footer' => true ) );
 		wp_register_script( 'racketmanager', RACKETMANAGER_URL . 'js/racketmanager.js', array( 'jquery', 'jquery-ui-core', 'jquery-ui-autocomplete', 'jquery-effects-core', 'jquery-effects-slide', 'thickbox' ), RACKETMANAGER_VERSION, array( 'in_footer' => true ) );
 		wp_enqueue_script( 'racketmanager' );
 		wp_localize_script(
@@ -764,7 +763,6 @@ class RacketManager {
 		wp_register_style( 'jquery-ui-structure', RACKETMANAGER_URL . 'css/jquery/jquery-ui.structure.min.css', array( 'jquery-ui' ), $jquery_ui_version, 'all' );
 		wp_register_style( 'jquery-ui-theme', RACKETMANAGER_URL . 'css/jquery/jquery-ui.theme.min.css', array( 'jquery-ui', 'jquery-ui-structure' ), $jquery_ui_version, 'all' );
 		wp_register_style( 'jquery-ui-autocomplete', RACKETMANAGER_URL . 'css/jquery/jquery-ui.autocomplete.min.css', array( 'jquery-ui', 'jquery-ui-autocomplete' ), $jquery_ui_version, 'all' );
-		wp_register_style( 'datatables-style', 'https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css', '', '1.13.6', 'screen' );
 
 		wp_enqueue_style( 'jquery-ui-structure' );
 		wp_enqueue_style( 'jquery-ui-theme' );

@@ -203,7 +203,7 @@ if ( ! empty( $match->winner_id ) ) {
 																	$disabled = '';
 																}
 																?>
-																<option value="<?php echo esc_attr( $player_option->roster_id ); ?>" <?php selected( $player_option->roster_id, $rubber->players[ $opponent ][ $player_number ]->club_player_id ); ?> <?php echo esc_html( $disabled ); ?>>
+																<option value="<?php echo esc_attr( $player_option->roster_id ); ?>" <?php selected( $player_option->roster_id, isset( $rubber->players[ $opponent ][ $player_number ]->club_player_id ) ? $rubber->players[ $opponent ][ $player_number ]->club_player_id : null ); ?> <?php echo esc_html( $disabled ); ?>>
 																	<?php echo esc_html( $player_option->fullname ); ?>
 																</option>
 																<?php

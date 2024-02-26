@@ -830,8 +830,8 @@ final class Racketmanager_Match {
 	/**
 	 * Update result
 	 *
-	 * @param int    $home_points_input home points.
-	 * @param int    $away_points_input away points.
+	 * @param float  $home_points_input home points.
+	 * @param float  $away_points_input away points.
 	 * @param string $custom custom.
 	 * @param string $confirmed match status field.
 	 * @return boolean
@@ -1069,11 +1069,10 @@ final class Racketmanager_Match {
 	/**
 	 * Determine match result
 	 *
-	 * @param int $home_points home points.
-	 * @param int $away_points away_points.
+	 * @param float $home_points home points.
+	 * @param float $away_points away_points.
 	 */
 	public function get_result( $home_points, $away_points ) {
-
 		$match = array();
 		if ( ! empty( $this->custom['walkover'] ) || 1 === $this->status ) {
 			if ( 'home' === $this->custom['walkover'] ) {

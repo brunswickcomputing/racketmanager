@@ -3523,136 +3523,22 @@ class Racketmanager_League {
 			if ( ! $stats ) {
 				$league_players[] = $player->fullname;
 			} else {
-				$player_matches = array();
-				$opponents_pt   = array( 'player1', 'player2' );
-				$opponents      = array( 'home', 'away' );
-				$player_matches = $this->get_matches(
-					array(
-						'season'           => $this->current_season['name'],
-						'player'           => $player->id,
-						'match_day'        => false,
-						'reset_query_args' => true,
-						'orderby'          => array(
-							'date' => 'ASC',
-						),
-					)
-				);
-
-				$player->statistics = array();
-				$player->matches    = array();
-				foreach ( $player_matches as $match ) {
-					$player->matches[] = $match;
-					foreach ( $match->rubbers as $rubber ) {
-						$player_team        = null;
-						$player_ref         = null;
-						$player_team_status = null;
-						$winner             = null;
-						$loser              = null;
-						if ( ! empty( $rubber->winner_id ) ) {
-							if ( $rubber->winner_id === $match->home_team ) {
-								$winner = 'home';
-								$loser  = 'away';
-							} elseif ( $rubber->winner_id === $match->away_team ) {
-								$winner = 'away';
-								$loser  = 'home';
-							}
-						}
-						$match_type               = strtolower( substr( $rubber->type, 1, 1 ) );
-						$rubber_players_list['1'] = array();
-						if ( 'd' === $match_type ) {
-							$rubber_players_list['2'] = array();
-						}
-						foreach ( $opponents as $opponent ) {
-							foreach ( $rubber_players_list as $p => $rubber_player ) {
-								if ( $rubber->players[ $opponent ][ $p ]->fullname === $player->fullname ) {
-									$player_team = $opponent;
-									if ( 'home' === $player_team ) {
-										$player_ref = 'player1';
-									} else {
-										$player_ref = 'player2';
-									}
-									break 2;
-								}
-							}
-						}
-						if ( $winner === $player_team ) {
-							$player_team_status = 'winner';
-						} elseif ( $loser === $player_team ) {
-							$player_team_status = 'loser';
-						} else {
-							$player_team_status = 'draw';
-						}
-						if ( ! isset( $player->statistics['played'][ $player_team_status ][ $match_type ][ $rubber->title ] ) ) {
-							$player->statistics['played'][ $player_team_status ][ $match_type ][ $rubber->title ] = 0;
-						}
-						++$player->statistics['played'][ $player_team_status ][ $match_type ][ $rubber->title ];
-						$sets = ! empty( $rubber->custom['sets'] ) ? $rubber->custom['sets'] : array();
-						foreach ( $sets as $set ) {
-							if ( isset( $set['player1'] ) && '' !== $set['player1'] && isset( $set['player2'] ) && '' !== $set['player2'] ) {
-								if ( $set['player1'] > $set['player2'] ) {
-									if ( 'player1' === $player_ref ) {
-										$stat_ref = 'winner';
-									} else {
-										$stat_ref = 'loser';
-									}
-								} elseif ( 'player1' === $player_ref ) {
-										$stat_ref = 'loser';
-								} else {
-									$stat_ref = 'winner';
-								}
-								if ( ! isset( $player->statistics['sets'][ $stat_ref ][ $match_type ][ $rubber->title ] ) ) {
-									$player->statistics['sets'][ $stat_ref ][ $match_type ][ $rubber->title ] = 0;
-								}
-								++$player->statistics['sets'][ $stat_ref ][ $match_type ][ $rubber->title ];
-								foreach ( $opponents_pt as $opponent ) {
-									if ( is_numeric( $set[ $opponent ] ) ) {
-										if ( $player_ref === $opponent ) {
-											if ( ! isset( $player->statistics['games']['winner'][ $match_type ][ $rubber->title ] ) ) {
-												$player->statistics['games']['winner'][ $match_type ][ $rubber->title ] = 0;
-											}
-											$player->statistics['games']['winner'][ $match_type ][ $rubber->title ] += $set[ $opponent ];
-										} else {
-											if ( ! isset( $player->statistics['games']['loser'][ $match_type ][ $rubber->title ] ) ) {
-												$player->statistics['games']['loser'][ $match_type ][ $rubber->title ] = 0;
-											}
-											$player->statistics['games']['loser'][ $match_type ][ $rubber->title ] += $set[ $opponent ];
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-				$total_stats = array();
-				$stat_types  = array( 'winner', 'loser', 'draw' );
-				foreach ( $stat_types as $stat_type ) {
-					$total_stats[ $stat_type ] = 0;
-					if ( ! empty( $player->statistics['played'][ $stat_type ] ) ) {
-						foreach ( $player->statistics['played'][ $stat_type ] as $stats ) {
-							if ( is_array( $stats ) ) {
-								$total_stats[ $stat_type ] += array_sum( $stats );
-							} else {
-								$total_stats[ $stat_type ] += $stats;
-							}
-						}
-					}
-				}
-				$player->matches_won  = $total_stats['winner'];
-				$player->matches_lost = $total_stats['loser'];
-				$player->matches_tie  = $total_stats['draw'];
-				$player->played       = $player->matches_won + $player->matches_lost + $player->matches_tie;
-				if ( $player->played ) {
-					$player->win_pct = ceil( ( $player->matches_won / $player->played ) * 100 );
-				}
+				$player->matches = $player->get_matches( $this, $this->current_season['name'], 'league' );
+				$player->stats   = $player->get_stats();
 				if ( ! $team ) {
 					$player->team = $this->get_player_team( array( 'player' => $player->id ) );
 				}
-				$league_players[] = $player;
+				$player->win_pct      = $player->stats['total']->win_pct;
+				$player->matches_won  = $player->stats['total']->matches_won;
+				$player->matches_lost = $player->stats['total']->matches_lost;
+				$player->played       = $player->stats['total']->played;
+				$league_players[]     = $player;
 			}
 		}
 		if ( ! $stats ) {
 			asort( $league_players );
 		} else {
+
 			$won    = array_column( $league_players, 'matches_won' );
 			$played = array_column( $league_players, 'played' );
 			array_multisort( $won, SORT_DESC, $played, SORT_ASC, $league_players );

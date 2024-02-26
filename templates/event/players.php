@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-if ( empty( $event_player ) ) {
+if ( empty( $event->player ) ) {
 	if ( ! empty( $event->players ) ) {
 		?>
 		<div class="module module--card">
@@ -46,7 +46,7 @@ if ( empty( $event_player ) ) {
 	?>
 	<?php
 } else {
-	$player = $event_player;
+	$player = $event->player;
 	require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
 	?>
 	<div class="page_content row">
@@ -59,7 +59,7 @@ if ( empty( $event_player ) ) {
 					<div class="module-container">
 						<div class="module">
 							<?php
-							foreach ( $event->matches as $key => $player_matches ) {
+							foreach ( $player->matches as $key => $player_matches ) {
 								$league = $player_matches['league'];
 								?>
 								<h4 class="module-divider">
@@ -78,7 +78,7 @@ if ( empty( $event_player ) ) {
 								</h4>
 								<?php
 								foreach ( $player_matches['matches'] as $match ) {
-									echo $racketmanager->show_match_screen( $match, false, $event_player ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+									echo $racketmanager->show_match_screen( $match, false, $event->player ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								}
 							}
 							?>
@@ -89,12 +89,12 @@ if ( empty( $event_player ) ) {
 		</div>
 		<div class="page-content__sidebar col-12 col-lg-4">
 			<?php
-			if ( ! empty( $event_player->statistics ) ) {
+			if ( ! empty( $event->player->statistics ) ) {
 				?>
 				<div class="module module--card">
 					<div class="module__banner">
 						<h3 class="module__title"><?php esc_html_e( 'Player statistics', 'racketmanager' ); ?></h3>
-											</div>
+					</div>
 					<div class="module__content">
 						<div class="module-container">
 							<div class="module">
@@ -120,7 +120,7 @@ if ( empty( $event_player ) ) {
 										</thead>
 										<tbody>
 											<?php
-											$player_statistics = $event_player->statistics;
+											$player_statistics = $event->player->statistics;
 											$stat_rows         = array(
 												__( 'Doubles', 'racketmanager' ) => 'd',
 											);

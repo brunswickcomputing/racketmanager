@@ -45,14 +45,14 @@ namespace Racketmanager;
 				<div class="media__aside">
 					<div class="progress-bar-container">
 						<?php
-						if ( $player->played ) {
+						if ( $player->statistics['total']->played ) {
 							?>
 							<div class="clearfix">
 								<span class="pull-left"><?php esc_html_e( 'Win-Loss', 'racketmanager' ); ?></span>
-								<span class="pull-right"><?php echo esc_html( $player->matches_won ) . '-' . esc_html( $player->matches_lost ) . ' (' . esc_html( $player->played ) . ')'; ?></span>
+								<span class="pull-right"><?php echo esc_html( $player->statistics['total']->matches_won ) . '-' . esc_html( $player->statistics['total']->matches_lost ) . ' (' . esc_html( $player->statistics['total']->played ) . ')'; ?></span>
 							</div>
 							<div class="progress">
-								<div class="progress-bar bg-success" role="progress-bar" style="width: <?php echo esc_html( $player->win_pct ); ?>%" aria-valuenow="<?php echo esc_html( $player->win_pct ); ?>" aria-valuemin="0" aria-valuemax="100" data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_html( $player->win_pct ) . ' ' . esc_html__( 'won', 'racketmanager' ); ?>%"></div>
+								<div class="progress-bar bg-success" role="progress-bar" style="width: <?php echo esc_html( $player->statistics['total']->win_pct ); ?>%" aria-valuenow="<?php echo esc_html( $player->statistics['total']->win_pct ); ?>" aria-valuemin="0" aria-valuemax="100" data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_html( $player->statistics['total']->win_pct ) . ' ' . esc_html__( 'won', 'racketmanager' ); ?>%"></div>
 							</div>
 							<?php
 						}

@@ -140,6 +140,18 @@ final class Racketmanager_Player {
 	 */
 	public $system_record;
 	/**
+	 * Matches.
+	 *
+	 * @var array
+	 */
+	public $matches = array();
+	/**
+	 * Statistics.
+	 *
+	 * @var array
+	 */
+	public $statistics = array();
+	/**
 	 * Retrieve player instance
 	 *
 	 * @param int    $player_id player id.
@@ -431,5 +443,171 @@ final class Racketmanager_Player {
 			$player_clubs[ $i ]     = $player_club;
 		}
 		return $player_clubs;
+	}
+	/**
+	 * Get matches for player
+	 *
+	 * @param object $grouping source of matches.
+	 * @param string $season season for matches.
+	 * @param string $match_source source of matches - either 'league' or 'event'.
+	 * @return array of matches.
+	 */
+	public function get_matches( $grouping, $season, $match_source ) {
+		if ( 'league' === $match_source ) {
+			$league  = get_league( $grouping );
+			$matches = $league->get_matches(
+				array(
+					'season'    => $season,
+					'player'    => $this->id,
+					'match_day' => false,
+					'final'     => 'all',
+					'orderby'   => array(
+						'date' => 'ASC',
+					),
+				)
+			);
+		} elseif ( 'event' === $match_source ) {
+			$event   = get_event( $grouping );
+			$matches = $event->get_matches(
+				array(
+					'season'  => $season,
+					'player'  => $this->id,
+					'orderby' => array(
+						'date'      => 'ASC',
+						'league_id' => 'DESC',
+					),
+				)
+			);
+		} else {
+			$matches = array();
+		}
+		$opponents_pt = array( 'player1', 'player2' );
+		$opponents    = array( 'home', 'away' );
+		$m            = 0;
+		foreach ( $matches as $match ) {
+			if ( 'event' === $match_source ) {
+				$key = $match->league->title;
+				if ( false === array_key_exists( $key, $this->matches ) ) {
+					$this->matches[ $key ]                   = array();
+					$this->matches[ $key ]['league']         = $match->league;
+					$this->matches[ $key ]['league']->season = $match->season;
+				}
+				$this->matches[ $key ]['matches'][] = $match;
+			} else {
+				$this->matches[] = $match;
+			}
+			foreach ( $match->rubbers as $rubber ) {
+				$player_team        = null;
+				$player_ref         = null;
+				$player_team_status = null;
+				$winner             = null;
+				$loser              = null;
+				if ( ! empty( $rubber->winner_id ) ) {
+					if ( $rubber->winner_id === $match->home_team ) {
+						$winner = 'home';
+						$loser  = 'away';
+					} elseif ( $rubber->winner_id === $match->away_team ) {
+						$winner = 'away';
+						$loser  = 'home';
+					}
+				}
+				$match_type          = strtolower( substr( $rubber->type, 1, 1 ) );
+				$rubber_players['1'] = array();
+				if ( 'd' === $match_type ) {
+					$rubber_players['2'] = array();
+				}
+				foreach ( $opponents as $opponent ) {
+					foreach ( $rubber_players as $p => $rubber_player ) {
+						if ( $rubber->players[ $opponent ][ $p ]->fullname === $this->display_name ) {
+							$player_team = $opponent;
+							if ( 'home' === $player_team ) {
+								$player_ref = 'player1';
+							} else {
+								$player_ref = 'player2';
+							}
+							break 2;
+						}
+					}
+				}
+				if ( $winner === $player_team ) {
+					$player_team_status = 'winner';
+				} elseif ( $loser === $player_team ) {
+					$player_team_status = 'loser';
+				} else {
+					$player_team_status = 'draw';
+				}
+				if ( ! isset( $this->statistics['played'][ $player_team_status ][ $match_type ][ $rubber->title ] ) ) {
+					$this->statistics['played'][ $player_team_status ][ $match_type ][ $rubber->title ] = 0;
+				}
+				++$this->statistics['played'][ $player_team_status ][ $match_type ][ $rubber->title ];
+				$sets = ! empty( $rubber->custom['sets'] ) ? $rubber->custom['sets'] : array();
+				foreach ( $sets as $set ) {
+					if ( isset( $set['player1'] ) && '' !== $set['player1'] && isset( $set['player2'] ) && '' !== $set['player2'] ) {
+						if ( $set['player1'] > $set['player2'] ) {
+							if ( 'player1' === $player_ref ) {
+								$stat_ref = 'winner';
+							} else {
+								$stat_ref = 'loser';
+							}
+						} elseif ( 'player1' === $player_ref ) {
+								$stat_ref = 'loser';
+						} else {
+							$stat_ref = 'winner';
+						}
+						if ( ! isset( $this->statistics['sets'][ $stat_ref ][ $match_type ][ $rubber->title ] ) ) {
+							$this->statistics['sets'][ $stat_ref ][ $match_type ][ $rubber->title ] = 0;
+						}
+						++$this->statistics['sets'][ $stat_ref ][ $match_type ][ $rubber->title ];
+						foreach ( $opponents_pt as $opponent ) {
+							if ( is_numeric( $set[ $opponent ] ) ) {
+								if ( $player_ref === $opponent ) {
+									if ( ! isset( $this->statistics['games']['winner'][ $match_type ][ $rubber->title ] ) ) {
+										$this->statistics['games']['winner'][ $match_type ][ $rubber->title ] = 0;
+									}
+									$this->statistics['games']['winner'][ $match_type ][ $rubber->title ] += $set[ $opponent ];
+								} else {
+									if ( ! isset( $this->statistics['games']['loser'][ $match_type ][ $rubber->title ] ) ) {
+										$this->statistics['games']['loser'][ $match_type ][ $rubber->title ] = 0;
+									}
+									$this->statistics['games']['loser'][ $match_type ][ $rubber->title ] += $set[ $opponent ];
+								}
+							}
+						}
+					}
+				}
+				++$m;
+			}
+		}
+		return $this->matches;
+	}
+	/**
+	 * Get player statistics function
+	 *
+	 * @return array of statistics
+	 */
+	public function get_stats() {
+		$total_stats = array();
+		$stat_types  = array( 'winner', 'loser', 'draw' );
+		foreach ( $stat_types as $stat_type ) {
+			$total_stats[ $stat_type ] = 0;
+			if ( ! empty( $this->statistics['played'][ $stat_type ] ) ) {
+				foreach ( $this->statistics['played'][ $stat_type ] as $stats ) {
+					if ( is_array( $stats ) ) {
+						$total_stats[ $stat_type ] += array_sum( $stats );
+					} else {
+						$total_stats[ $stat_type ] += $stats;
+					}
+				}
+			}
+		}
+		$this->statistics['total']               = new \stdClass();
+		$this->statistics['total']->matches_won  = $total_stats['winner'];
+		$this->statistics['total']->matches_lost = $total_stats['loser'];
+		$this->statistics['total']->matches_tie  = $total_stats['draw'];
+		$this->statistics['total']->played       = $this->statistics['total']->matches_won + $this->statistics['total']->matches_lost + $this->statistics['total']->matches_tie;
+		if ( $this->statistics['total']->played ) {
+			$this->statistics['total']->win_pct = ceil( ( $this->statistics['total']->matches_won / $this->statistics['total']->played ) * 100 );
+		}
+		return $this->statistics;
 	}
 }

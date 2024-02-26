@@ -2060,19 +2060,23 @@ class Racketmanager_League {
 	 * @return string
 	 */
 	public function get_crosstable_field( $team_id, $opponent_id, $home = 0 ) {
-		$match = $this->get_matches(
-			array(
-				'home_team'        => $team_id,
-				'away_team'        => $opponent_id,
-				'match_day'        => -1,
-				'limit'            => false,
-				'reset_query_args' => true,
-			)
-		);
-		if ( $match ) {
-			$score = $this->get_score( $team_id, $opponent_id, $match[0], $home );
+		if ( $team_id === $opponent_id ) {
+				$score = '&nbsp;';
 		} else {
-			$score = 'n/a';
+			$match = $this->get_matches(
+				array(
+					'home_team'        => $team_id,
+					'away_team'        => $opponent_id,
+					'match_day'        => -1,
+					'limit'            => false,
+					'reset_query_args' => true,
+				)
+			);
+			if ( $match ) {
+				$score = $this->get_score( $team_id, $opponent_id, $match[0], $home );
+			} else {
+				$score = '&nbsp;';
+			}
 		}
 
 		return $score;
@@ -2091,21 +2095,39 @@ class Racketmanager_League {
 		// unplayed match.
 		if ( ! $match || ( null === $match->home_points && null === $match->away_points ) ) {
 			$date      = ( '0000-00-00' === substr( $match->date, 0, 10 ) ) ? 'N/A' : mysql2date( 'D d/m/Y', $match->date );
-			$time      = ( '00' === $match->hour && '00' === $match->minutes ) ? '' : mysql2date( 'G:i', $match->date );
 			$match_day = isset( $match->match_day ) ? __( 'Match Day', 'racketmanager' ) . ' ' . $match->match_day : '';
-			$out       = "<span class='unplayedMatch'>" . $match_day . '<br/>' . $date . '<br/>' . $time . '</span>';
+			$out       = "<span class='unplayedMatch'>" . $match_day . '<br/>' . $date . '</span>';
 			// match at home.
 		} elseif ( $team_id === $match->home_team ) {
-			$score  = sprintf( '%g:%g', $match->home_points, $match->away_points );
-			$result = $this->get_result( $team_id, $match->winner_id, $match->loser_id );
-			$out    = $score . '<br/>' . $result;
+			$score_team_1 = $match->home_points;
+			$score_team_2 = $match->away_points;
+			$score        = sprintf( '%g - %g', $match->home_points, $match->away_points );
 			// match away.
 		} elseif ( $opponent_id === $match->home_team ) {
-			$score  = sprintf( '%g:%g', $match->away_points, $match->home_points );
-			$result = $this->get_result( $team_id, $match->winner_id, $match->loser_id );
-			$out    = $score . '<br/>' . $result;
-		} else {
-			$out = '';
+			$score_team_1 = $match->away_points;
+			$score_team_2 = $match->home_points;
+			$score        = sprintf( '%g - %g', $match->away_points, $match->home_points );
+		}
+		if ( isset( $score_team_1 ) ) {
+			if ( $team_id === $match->winner_id ) {
+				$score_class = 'winner';
+			} elseif ( $team_id === $match->loser_id ) {
+				$score_class = 'loser';
+			} elseif ( '-1' === $match->winner_id ) {
+				$score_class = 'tie';
+			}
+			ob_start();
+			?>
+			<a href="<?php echo esc_html( $match->link ); ?>"
+				<span class="score <?php echo esc_attr( $score_class ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_attr( __( 'Match Day', 'racketmanager' ) . ' ' . $match->match_day ); ?>">
+					<span class="is-team-1"><?php echo esc_html( sprintf( '%g', $score_team_1 ) ); ?></span>
+					<span class="score-separator">-</span>
+					<span class="is-team-2"><?php echo esc_html( sprintf( '%g', $score_team_2 ) ); ?></span>
+				</span>
+			</a>
+			<?php
+			$out = ob_get_contents();
+			ob_end_clean();
 		}
 
 		return $out;

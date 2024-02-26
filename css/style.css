@@ -2935,17 +2935,17 @@ ul.match-points {
 	width: 12px
 }
 
-.match__status.winner {
+.match__status.winner, .score.winner {
 	background-color: #4abf33 !important;
 	color: #fff;
 }
 
-.match__status.loser {
+.match__status.loser, .score.loser {
 	background-color: #bd3b2a !important;
 	color: #fff;
 }
 
-.match__status.tie {
+.match__status.tie, .score.tie {
 	background-color: #ff9c00 !important;
 	color: #fff;
 }

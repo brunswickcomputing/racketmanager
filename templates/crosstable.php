@@ -19,8 +19,8 @@ namespace Racketmanager;
 				?>
 				<?php $rank = 0; ?>
 				<div class="table-responsive">
-					<table class='table table-striped align-middle' aria-describedby='<?php esc_html_e( 'Crosstable', 'racketmanager' ); ?> <?php the_league_title(); ?>'>
-						<thead class="table-dark">
+					<table class='table table-striped table-borderless align-middle' aria-describedby='<?php esc_html_e( 'Crosstable', 'racketmanager' ); ?> <?php the_league_title(); ?>'>
+						<thead class="">
 							<tr>
 								<th colspan='2' class="team" scope="col"><?php esc_html_e( 'Club', 'racketmanager' ); ?></th>
 								<?php
@@ -39,7 +39,7 @@ namespace Racketmanager;
 								the_team();
 								?>
 								<tr>
-									<th scope='row' class='rank'><?php the_team_rank(); ?></th>
+									<th scope="row" class="rank"><?php the_team_rank(); ?></th>
 									<td><?php the_team_name(); ?></td>
 									<?php
 									for ( $i = 1; $i <= $num_teams; $i++ ) {

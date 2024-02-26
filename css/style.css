@@ -3743,6 +3743,7 @@ h4.module__title {
 	margin: 1rem 0;
 }
 
+h4.subheading,
 h5.subheading {
 	font-size: 1.3rem;
 	font-weight: 600;

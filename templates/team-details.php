@@ -118,22 +118,15 @@ namespace Racketmanager;
 			<div class="module module--card">
 				<div class="module__banner">
 					<h3 class="module__title">
-						<?php esc_html_e( 'Details', 'racketmanager' ); ?>
+						<?php esc_html_e( 'Team captain', 'racketmanager' ); ?>
 					</h3>
 				</div>
 				<div class="module__content">
 					<div class="module-container">
+						<h4 class="subheading">
+							<?php echo esc_html( $league->team->info->captain ); ?>
+						</h4>
 						<ul class="list list--naked">
-							<li class="list__item">
-								<span class="nav--link">
-									<svg width="16" height="16" class="icon-team">
-										<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/lta-icons-extra.svg#icon-team' ); ?>"></use>
-									</svg>
-									<span class="nav-link__value">
-										<?php echo esc_html( $league->team->info->captain ); ?>
-									</span>
-								</span>
-							</li>
 							<?php
 							if ( is_user_logged_in() ) {
 								if ( ! empty( $league->team->info->contactno ) ) {

@@ -483,7 +483,6 @@ final class Racketmanager_Player {
 		}
 		$opponents_pt = array( 'player1', 'player2' );
 		$opponents    = array( 'home', 'away' );
-		$m            = 0;
 		foreach ( $matches as $match ) {
 			if ( 'event' === $match_source ) {
 				$key = $match->league->title;
@@ -575,7 +574,6 @@ final class Racketmanager_Player {
 						}
 					}
 				}
-				++$m;
 			}
 		}
 		return $this->matches;
@@ -583,9 +581,13 @@ final class Racketmanager_Player {
 	/**
 	 * Get player statistics function
 	 *
+	 * @param array $stats optional array of statistics to use.
 	 * @return array of statistics
 	 */
-	public function get_stats() {
+	public function get_stats( $stats = false ) {
+		if ( $stats ) {
+			$this->statistics = $stats;
+		}
 		$total_stats = array();
 		$stat_types  = array( 'winner', 'loser', 'draw' );
 		foreach ( $stat_types as $stat_type ) {

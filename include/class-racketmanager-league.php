@@ -2134,26 +2134,6 @@ class Racketmanager_League {
 	}
 
 	/**
-	 * Get result for match
-	 *
-	 * @param int $team team.
-	 * @param int $winner winner.
-	 * @param int $loser loser.
-	 * @return string
-	 */
-	private function get_result( $team, $winner, $loser ) {
-		if ( $winner === $team ) {
-			$result = 'won';
-		} elseif ( $loser === $team ) {
-			$result = 'lost';
-		} else {
-			$result = 'drew';
-		}
-
-		return $result;
-	}
-
-	/**
 	 * Default ranking function. Re-defined in sports-specific class
 	 * 1) Primary points DESC
 	 * 2) Games Allowed ASC

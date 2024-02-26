@@ -55,7 +55,7 @@ namespace Racketmanager;
 									<?php
 								}
 								?>
-								<h2 class="team-match__name is_team_1" title="<?php echo esc_html( $match->teams['home']->title ); ?>">
+								<h2 class="team-match__name is-team-1" title="<?php echo esc_html( $match->teams['home']->title ); ?>">
 									<a href="/<?php echo esc_attr( $match->league->event->competition->type ); ?>/<?php echo esc_html( seo_url( $match->league->title ) ); ?>/<?php echo esc_attr( $match->season ); ?>/team/<?php echo esc_attr( seo_url( $match->teams['home']->title ) ); ?>/" class="nav--link">
 										<span class="nav-link__value">
 											<?php echo esc_html( $match->teams['home']->title ); ?>
@@ -99,7 +99,7 @@ namespace Racketmanager;
 									<?php
 								}
 								?>
-								<h2 class="team-match__name is_team_2" title="<?php echo esc_html( $match->teams['away']->title ); ?>">
+								<h2 class="team-match__name is-team-2" title="<?php echo esc_html( $match->teams['away']->title ); ?>">
 									<a href="/<?php echo esc_attr( $match->league->event->competition->type ); ?>/<?php echo esc_html( seo_url( $match->league->title ) ); ?>/<?php echo esc_attr( $match->season ); ?>/team/<?php echo esc_attr( seo_url( $match->teams['away']->title ) ); ?>/" class="nav--link">
 										<span class="nav-link__value">
 											<?php echo esc_html( $match->teams['away']->title ); ?>

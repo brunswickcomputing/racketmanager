@@ -34,7 +34,7 @@ namespace Racketmanager;
 						<div class="media__wrapper">
 							<div class="media__content">
 								<div><?php esc_html_e( 'Home', 'racketmanager' ); ?></div>
-								<h2 class="team-match__name is_team_1" title="<?php echo esc_html( $home_team ); ?>">
+								<h2 class="team-match__name is-team-1" title="<?php echo esc_html( $home_team ); ?>">
 									<a href="" class="nav--link">
 										<span class="nav-link__value">
 											<?php echo esc_html( $home_team ); ?>
@@ -48,7 +48,7 @@ namespace Racketmanager;
 						<div class="media__wrapper">
 							<div class="media__content">
 								<div><?php esc_html_e( 'Away', 'racketmanager' ); ?></div>
-								<h2 class="team-match__name is_team_2" title="<?php echo esc_html( $away_team ); ?>">
+								<h2 class="team-match__name is-team-2" title="<?php echo esc_html( $away_team ); ?>">
 									<a href="" class="nav--link">
 										<span class="nav-link__value">
 											<?php echo esc_html( $away_team ); ?>

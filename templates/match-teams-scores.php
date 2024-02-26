@@ -89,7 +89,7 @@ if ( ! empty( $match->winner_id ) ) {
 					<div class="match__body">
 						<div class="team-match">
 							<div
-								class="team-match__name <?php echo esc_attr( 'home' === $winner ? 'winner' : '' ); ?> is_team_1">
+								class="team-match__name <?php echo esc_attr( 'home' === $winner ? 'winner' : '' ); ?> is-team-1">
 								<span class="nav--link">
 									<span class="nav-link__value">
 										<?php echo esc_html( $match->teams['home']->title ); ?>
@@ -102,7 +102,7 @@ if ( ! empty( $match->winner_id ) ) {
 								<span class="is-team-2"><?php echo esc_html( sprintf( '%g', $match->away_points ) ); ?></span>
 							</div>
 							<div
-								class="team-match__name <?php echo esc_attr( 'away' === $winner ? 'winner' : '' ); ?> is_team_2">
+								class="team-match__name <?php echo esc_attr( 'away' === $winner ? 'winner' : '' ); ?> is-team-2">
 								<span class="nav--link">
 									<span class="nav-link__value">
 										<?php echo esc_html( $match->teams['away']->title ); ?>

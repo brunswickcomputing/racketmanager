@@ -128,7 +128,7 @@ foreach ( $matches as $match ) {
 					</div>
 					<div class="match__body">
 						<div class="team-match">
-							<div class="team-match__name is_team_1">
+							<div class="team-match__name is-team-1">
 								<span class="nav--link">
 									<span class="nav-link__value"><?php echo esc_html( $match->teams['home']->title ); ?></span>
 								</span>
@@ -148,7 +148,7 @@ foreach ( $matches as $match ) {
 								}
 								?>
 							</div>
-							<div class="team-match__name is_team_2">
+							<div class="team-match__name is-team-2">
 								<span class="nav--link">
 									<span class="nav-link__value"><?php echo esc_html( $match->teams['away']->title ); ?></span>
 								</span>

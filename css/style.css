@@ -2395,11 +2395,11 @@ ul.module {
 	min-height: 8rem
 }
 
-.match__row.is_team_1 {
+.match__row.is-team-1 {
 	margin-left: 10px;
 }
 
-.match__row.is_team_2 {
+.match__row.is-team-2 {
 	margin-right: 10px;
 	text-align: right;
 }
@@ -3882,7 +3882,7 @@ h2.team-match__name {
 	width: 42%;
 }
 
-.team-match__name.is_team_1 {
+.team-match__name.is-team-1 {
 	justify-content: flex-end;
 }
 
@@ -3890,7 +3890,7 @@ h2.team-match__name {
 	padding-right: 0.5rem;
 }
 
-.team-match__name.is_team_2 {
+.team-match__name.is-team-2 {
 	padding-left: 0.5rem;
 	padding-right: 0;
 }

@@ -787,23 +787,6 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		return $team_name;
 	}
 	/**
-	 * Get Player name
-	 *
-	 * @param int $player player id.
-	 * @return string $playerName
-	 */
-	private function getClubPlayerName( $player ) {
-		global $racketmanager;
-
-		$roster_dtls = $racketmanager->get_club_player( intval( $player ) );
-		if ( $roster_dtls ) {
-			$player_name = $roster_dtls->fullname;
-		} else {
-			$player_name = '';
-		}
-		return $player_name;
-	}
-	/**
 	 * Display Team list
 	 *
 	 *    [teams league_id=ID template=X season=x]

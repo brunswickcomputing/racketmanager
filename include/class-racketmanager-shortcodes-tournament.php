@@ -484,6 +484,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 					array(
 						'season'        => $tournament->season,
 						'competitionId' => $tournament->competition->id,
+						'final'         => 'all',
 					)
 				);
 		$match_dates                = array();
@@ -509,6 +510,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 						'season'         => $tournament->season,
 						'competition_id' => $tournament->competition_id,
 						'match_date'     => $match_date,
+						'final'          => 'all',
 						'orderby'        => array(
 							'event_id'  => 'ASC',
 							'league_id' => 'DESC',

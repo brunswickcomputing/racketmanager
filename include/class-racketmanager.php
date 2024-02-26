@@ -2108,7 +2108,11 @@ class RacketManager {
 			$sql .= " AND `season`  = '" . $season . "'";
 		}
 		if ( $final ) {
-			$sql .= " AND `final`  = '" . $final . "'";
+			if ( 'all' === $final ) {
+				$sql .= " AND `final` != ''";
+			} else {
+				$sql .= " AND `final`  = '" . $final . "'";
+			}
 		}
 		if ( $competitiontype ) {
 			$sql .= " AND `league_id` in (select `id` from {$wpdb->racketmanager} WHERE `event_id` in (select e.`id` from {$wpdb->racketmanager_events} e, {$wpdb->racketmanager_competitions} c WHERE e.`competition_id` = c.`id` AND c.`type` = '" . $competitiontype . "'))";

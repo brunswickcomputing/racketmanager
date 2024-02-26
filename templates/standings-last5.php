@@ -108,7 +108,7 @@ namespace Racketmanager;
 								<?php
 								if ( show_standings( 'last5' ) ) {
 									?>
-									<th class="last5 d-none d-md-table-cell" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_attr_e( 'History', 'racketmanager' ); ?>">
+									<th class="d-none d-md-table-cell" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_attr_e( 'History', 'racketmanager' ); ?>">
 										<?php esc_html_e( 'Last 5', 'racketmanager' ); ?>
 									</th>
 									<?php
@@ -215,7 +215,7 @@ namespace Racketmanager;
 									<?php
 									if ( show_standings( 'last5' ) ) {
 										?>
-										<td class="last5Icon last5 d-none d-md-table-cell">
+										<td class="standing-form d-none d-md-table-cell">
 											<?php the_last5_matches(); ?>
 										</td>
 										<?php

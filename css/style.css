@@ -84,25 +84,6 @@ table.table a.N:hover,
 table.table span.N:hover {
 	background-position: 0 -700px;
 }
-table.table .last5 {
-	text-align: center;
-	width: 12.5%;
-}
-
-table.table .last5Icon a,
-table.table .last5Icon span {
-	border: 0;
-	background-image: url(images/last5.png);
-	position: relative;
-	top: 0px;
-}
-
-table.table .last5-bg {
-	float: left;
-		width: 18px;
-		height: 18px;
-}
-
 table.racketmanager,
 div.matchlist table.racketmanager {
 	text-align: left;
@@ -125,13 +106,6 @@ div.matchlist table.racketmanager td {
 	border: 0;
 	padding: 5px;
 	margin: 0;
-}
-
-table.racketmanager.matchtable a,
-table.racketmanager.matchtable span,
-table.racketmanager .last5 a,
-table.racketmanager .last5 span {
-	border: 0;
 }
 
 table.racketmanager a.W,
@@ -174,29 +148,12 @@ table.racketmanager span.N:hover {
 	background-position: 0 -700px;
 }
 
-table.racketmanager .last5Icon a,
-table.racketmanager .last5Icon span {
-	border: 0;
-	background-image: url(images/last5.png);
-	position: relative;
-	top: 0px;
-}
-
-table.racketmanager .last5-bg {
-	float: left;
-	width: 20px;
-	height: 17px;
-}
 
 table.racketmanager .num,
 table.racketmanager .fixture {
 	text-align: center;
 }
 
-table.racketmanager .last5 {
-	text-align: center;
-	width: 12.5%;
-}
 
 table.racketmanager .logo,
 table .racketmanager .match-title.logo {
@@ -4942,4 +4899,30 @@ ol.list {
 	counter-increment: li;
 	padding-left: 1rem;
 	position: relative;
+}
+.standing-form {
+	width: 1rem;
+}
+
+.standing-form .match__status {
+	font-size: 12px;
+	height: 1.5rem;
+	text-indent: 0;
+	width: 1.5rem;
+}
+
+.standing-form .list__item {
+	align-self: center;
+}
+
+.list--inline>.list__item,
+.message-page .message-page__modal .message-page__removal-tips ul .list--inline>li {
+	padding-bottom: 0;
+	display: inline-flex;
+}
+
+ul.list--inline {
+	display: flex;
+	margin: 0;
+	padding-left:0;
 }

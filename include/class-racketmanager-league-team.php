@@ -450,33 +450,16 @@ final class Racketmanager_League_Team {
 	}
 
 	/**
-	 * Get last 5 icons for standings table. original code by LaMonte Forthun
+	 * Get last 5 icons for standings table
 	 *
 	 * @return string
 	 */
 	public function last5() {
 		$league = get_league( $this->league_id );
 		$league->set_season();
-
-		$last5 = '<span>';
-		// get next scheduled match.
-		$next_result = $league->get_matches(
-			array(
-				'time'             => 'next',
-				'team_id'          => $this->id,
-				'match_day'        => -1,
-				'limit'            => 1,
-				'reset_query_args' => true,
-			)
-		);
-		if ( $next_result ) {
-			$last5 .= '<span  class="N last5-bg" title="' . $next_result->tooltip_title . '">&nbsp;</span>';
-		} else {
-			$last5 .= '<span class="N last5-bg" data-bs-toggle="tooltip" data-bs-placement="top" title="' . __( 'Next Match: No Game Scheduled', 'racketmanager' ) . '">&nbsp;</span>';
-		}
-
+		ob_start();
 		// get last 5 match results.
-		$last_results = $league->get_matches(
+		$matches = $league->get_matches(
 			array(
 				'time'             => 'prev',
 				'team_id'          => $this->id,
@@ -485,27 +468,37 @@ final class Racketmanager_League_Team {
 				'reset_query_args' => true,
 			)
 		);
-		foreach ( $last_results as $key => $match ) {
-			$class = array();
-			if ( $this->id === $match->winner_id ) {
-				$class[] = 'W';
-			} elseif ( $this->id === $match->loser_id ) {
-				$class[] = 'L';
-			} elseif ( -1 === $match->winner_id && -1 === $match->loser_id ) {
-				$class[] = 'D';
-			} else {
-				$class[] = 'N';
+		?>
+		<ul class="list--inline list">
+			<?php
+			foreach ( $matches as $match ) {
+				if ( $this->id === $match->winner_id ) {
+					$match_status_class = 'winner';
+					$match_status_text  = 'W';
+				} elseif ( $this->id === $match->loser_id ) {
+					$match_status_class = 'loser';
+					$match_status_text  = 'L';
+				} elseif ( '-1' === $match->winner_id && '-1' === $match->loser_id ) {
+					$match_status_class = 'tie';
+					$match_status_text  = 'T';
+				} else {
+					$match_status_class = 'unknown';
+					$match_status_text  = '?';
+				}
+				?>
+				<li class="list__item">
+					<span class="match__status <?php echo esc_attr( $match_status_class ); ?>"  data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_attr( $match->tooltip_title ); ?>">
+						<?php echo esc_html( $match_status_text ); ?>
+					</span>
+				</li>
+				<?php
 			}
-
-			if ( 2 === $key ) {
-				$class[] = 'clear';
-			}
-			$last5 .= '<span class="' . implode( ' ', $class ) . ' last5-bg" data-bs-toggle="tooltip" data-bs-placement="top" title="' . $match->tooltip_title . '">&nbsp;</span>';
-		}
-
-		$last5 .= '</span>';
-
-		return $last5;
+			?>
+		</ul>
+		<?php
+		$output = ob_get_contents();
+		ob_end_clean();
+		return $output;
 	}
 
 	/**

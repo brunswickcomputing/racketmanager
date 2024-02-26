@@ -82,15 +82,7 @@ class Racketmanager_League {
 	 *
 	 * @var array
 	 */
-	public $standings = array(
-		'status'     => 1,
-		'pld'        => 1,
-		'won'        => 1,
-		'tie'        => 1,
-		'lost'       => 1,
-		'winPercent' => 1,
-		'last5'      => 1,
-	);
+	public $standings;
 
 	/**
 	 * Number of teams ascending
@@ -759,8 +751,6 @@ class Racketmanager_League {
 		}
 
 		// add actions & filter.
-		add_filter( 'league_standings_options', array( &$this, 'standings_table_display_options' ) );
-
 		add_filter( 'racketmanager_import_matches_' . $this->sport, array( &$this, 'import_matches' ), 10, 4 );
 		add_filter( 'racketmanager_import_teams_' . $this->sport, array( &$this, 'import_teams' ), 10, 3 );
 	}
@@ -2897,23 +2887,6 @@ class Racketmanager_League {
 	protected function get_standings_data( $team, $data, $matches = array() ) {
 		return $data;
 	}
-
-	/**
-	 * Add custom standings table display options
-	 *
-	 * @param array $options options.
-	 * @return array
-	 */
-	public function standings_table_display_options( $options ) {
-		if ( count( $this->fields_team ) > 0 ) {
-			foreach ( $this->fields_team as $key => $data ) {
-				$options[ $key ] = isset( $data['desc'] ) ? $data['desc'] : $data['label'];
-			}
-		}
-
-		return $options;
-	}
-
 	/**
 	 * Display custom standings header
 	 */

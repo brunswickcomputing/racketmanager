@@ -40,7 +40,7 @@ if ( count( $league->teams ) ) {
 					<?php
 					if ( show_standings( 'won' ) ) {
 						?>
-						<th class="num">
+						<th class="num d-none d-md-table-cell">
 							<?php esc_html_e( 'W', 'racketmanager' ); ?>
 						</th>
 						<?php
@@ -49,7 +49,7 @@ if ( count( $league->teams ) ) {
 					<?php
 					if ( show_standings( 'tie' ) ) {
 						?>
-						<th class="num">
+						<th class="num d-none d-md-table-cell">
 							<?php esc_html_e( 'T', 'racketmanager' ); ?>
 						</th>
 						<?php
@@ -58,7 +58,7 @@ if ( count( $league->teams ) ) {
 					<?php
 					if ( show_standings( 'lost' ) ) {
 						?>
-						<th class="num">
+						<th class="num d-none d-md-table-cell">
 							<?php esc_html_e( 'L', 'racketmanager' ); ?>
 						</th>
 						<?php
@@ -67,13 +67,30 @@ if ( count( $league->teams ) ) {
 					<?php
 					if ( show_standings( 'winPercent' ) ) {
 						?>
-						<th class="num">
+						<th class="num d-none d-md-table-cell">
 							<?php esc_html_e( 'PCT', 'racketmanager' ); ?>
 						</th>
 						<?php
 					}
 					?>
-					<?php the_standings_header(); ?>
+					<?php
+					if ( show_standings( 'sets' ) ) {
+						?>
+						<th class='num'>
+							<?php esc_html_e( 'Sets', 'racketmanager' ); ?>
+						</th>
+						<?php
+					}
+					?>
+					<?php
+					if ( show_standings( 'games' ) ) {
+						?>
+						<th class='num'>
+							<?php esc_html_e( 'Games', 'racketmanager' ); ?>
+						</th>
+						<?php
+					}
+					?>
 					<th class="num">
 						<?php esc_html_e( 'Pts', 'racketmanager' ); ?>
 					</th>
@@ -114,7 +131,7 @@ if ( count( $league->teams ) ) {
 						<?php
 						if ( show_standings( 'won' ) ) {
 							?>
-							<td class='num'>
+							<td class='num d-none d-md-table-cell'>
 								<?php num_won_matches(); ?>
 							</td>
 							<?php
@@ -123,7 +140,7 @@ if ( count( $league->teams ) ) {
 						<?php
 						if ( show_standings( 'tie' ) ) {
 							?>
-							<td class='num'>
+							<td class='num d-none d-md-table-cell'>
 								<?php num_draw_matches(); ?>
 							</td>
 							<?php
@@ -132,7 +149,7 @@ if ( count( $league->teams ) ) {
 						<?php
 						if ( show_standings( 'lost' ) ) {
 							?>
-							<td class='num'>
+							<td class='num d-none d-md-table-cell'>
 								<?php num_lost_matches(); ?>
 							</td>
 							<?php
@@ -141,13 +158,30 @@ if ( count( $league->teams ) ) {
 						<?php
 						if ( show_standings( 'winPercent' ) ) {
 							?>
-							<td class="num">
+							<td class="num d-none d-md-table-cell">
 								<?php win_percentage(); ?>
 							</td>
 							<?php
 						}
 						?>
-						<?php the_standings_columns(); ?>
+						<?php
+						if ( show_standings( 'sets' ) ) {
+							?>
+							<td class='num'>
+								<?php num_sets(); ?>
+							</td>
+							<?php
+						}
+						?>
+						<?php
+						if ( show_standings( 'games' ) ) {
+							?>
+							<td class='num'>
+								<?php num_games(); ?>
+							</td>
+							<?php
+						}
+						?>
 						<td class='num'>
 							<?php the_team_points(); ?>
 						</td>

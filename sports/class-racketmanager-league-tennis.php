@@ -33,20 +33,6 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 	 * @return void
 	 */
 	public function __construct( $league ) {
-		$this->fields_team['sets_won']      = array( 'label' => __( 'Sets Won', 'racketmanager' ) );
-		$this->fields_team['sets_allowed']  = array( 'label' => __( 'Sets Lost', 'racketmanager' ) );
-		$this->fields_team['sets_shared']   = array( 'label' => __( 'Sets Shared', 'racketmanager' ) );
-		$this->fields_team['straight_set']  = array(
-			'label' => __( 'Straight Set', 'racketmanager' ),
-			'keys'  => array( 'win', 'lost' ),
-		);
-		$this->fields_team['split_set']     = array(
-			'label' => __( 'Split Set', 'racketmanager' ),
-			'keys'  => array( 'win', 'lost' ),
-		);
-		$this->fields_team['games_won']     = array( 'label' => __( 'Games Won', 'racketmanager' ) );
-		$this->fields_team['games_allowed'] = array( 'label' => __( 'Games Lost', 'racketmanager' ) );
-
 		parent::__construct( $league );
 
 		add_filter( 'racketmanager_team_points_' . $this->sport, array( &$this, 'calculate_points' ), 10, 4 );

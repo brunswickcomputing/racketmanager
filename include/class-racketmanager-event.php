@@ -403,16 +403,6 @@ class Racketmanager_Event {
 		$this->num_seasons = count( $this->seasons );
 		$this->set_num_leagues( true );
 		$this->standings = $this->competition->standings;
-
-		// set default standings display options for additional team fields.
-		if ( count( $this->fields_team ) > 0 ) {
-			foreach ( $this->fields_team as $key => $data ) {
-				if ( ! isset( $this->standings[ $key ] ) ) {
-					$this->standings[ $key ] = 1;
-				}
-			}
-		}
-
 		// set season to latest.
 		if ( $this->num_seasons > 0 ) {
 			$this->set_season();
@@ -422,9 +412,6 @@ class Racketmanager_Event {
 		if ( 'championship' === $this->competition->mode ) {
 			$this->is_championship = true;
 		}
-
-		// add actions & filter.
-		add_filter( 'racketmanager_event_standings_options', array( &$this, 'standings_table_display_options' ) );
 	}
 
 	/**
@@ -980,23 +967,6 @@ class Racketmanager_Event {
 			$this->$key = $value;
 		}
 	}
-
-	/**
-	 * Add custom standings table display options
-	 *
-	 * @param array $options options.
-	 * @return array
-	 */
-	public function standings_table_display_options( $options ) {
-		if ( count( $this->fields_team ) > 0 ) {
-			foreach ( $this->fields_team as $key => $data ) {
-				$options[ $key ] = isset( $data['desc'] ) ? $data['desc'] : $data['label'];
-			}
-		}
-
-		return $options;
-	}
-
 	/**
 	 * Get constitution from database
 	 *

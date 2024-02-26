@@ -106,6 +106,8 @@ class Racketmanager_Competition {
 		'lost'       => 1,
 		'winPercent' => 1,
 		'last5'      => 1,
+		'sets'       => 1,
+		'games'      => 1,
 	);
 
 	/**
@@ -156,13 +158,6 @@ class Racketmanager_Competition {
 	 * @var int
 	 */
 	public $league_team = -1;
-
-	/**
-	 * Custom team input field keys and translated labels
-	 *
-	 * @var array
-	 */
-	public $fields_team = array();
 
 	/**
 	 * Championship flag
@@ -375,15 +370,6 @@ class Racketmanager_Competition {
 		}
 		$this->num_seasons = count( $this->seasons );
 		$this->set_num_events( true );
-		// set default standings display options for additional team fields.
-		if ( count( $this->fields_team ) > 0 ) {
-			foreach ( $this->fields_team as $key => $data ) {
-				if ( ! isset( $this->standings[ $key ] ) ) {
-					$this->standings[ $key ] = 1;
-				}
-			}
-		}
-
 		// set season to latest.
 		if ( $this->num_seasons > 0 ) {
 			$this->set_season();
@@ -393,9 +379,6 @@ class Racketmanager_Competition {
 		if ( 'championship' === $this->mode ) {
 			$this->is_championship = true;
 		}
-
-		// add actions & filter.
-		add_filter( 'racketmanager_competition_standings_options', array( &$this, 'standings_table_display_options' ) );
 	}
 
 	/**
@@ -914,21 +897,5 @@ class Racketmanager_Competition {
 		foreach ( maybe_unserialize( $result->settings ) as $key => $value ) {
 			$this->$key = $value;
 		}
-	}
-
-	/**
-	 * Add custom standings table display options
-	 *
-	 * @param array $options options.
-	 * @return array
-	 */
-	public function standings_table_display_options( $options ) {
-		if ( count( $this->fields_team ) > 0 ) {
-			foreach ( $this->fields_team as $key => $data ) {
-				$options[ $key ] = isset( $data['desc'] ) ? $data['desc'] : $data['label'];
-			}
-		}
-
-		return $options;
 	}
 }

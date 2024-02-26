@@ -329,6 +329,24 @@ function num_done_matches() {
 	echo $team->done_matches;
 }
 	/**
+	 * Print number of sets of team
+	 *
+	 * @category template-tags
+	 */
+function num_sets() {
+	global $team;
+	echo esc_html( $team->sets_won . '-' . $team->sets_allowed );
+}
+	/**
+	 * Print number of games of team
+	 *
+	 * @category template-tags
+	 */
+function num_games() {
+	global $team;
+	echo esc_html( $team->games_won . '-' . $team->games_allowed );
+}
+	/**
 	 * Print number of won matches of team
 	 *
 	 * @category template-tags

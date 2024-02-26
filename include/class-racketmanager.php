@@ -638,6 +638,8 @@ class RacketManager {
 			'lost'       => __( 'Lost Games', 'racketmanager' ),
 			'winPercent' => __( 'Win Percentage', 'racketmanager' ),
 			'last5'      => __( 'Last 5 Matches', 'racketmanager' ),
+			'sets'       => __( 'Sets', 'racketmanager' ),
+			'games'      => __( 'Games', 'racketmanager' ),
 		);
 
 		/**

@@ -18,8 +18,8 @@ namespace Racketmanager;
 			if ( have_teams() ) {
 				?>
 				<div class="table-responsive">
-					<table class="table table-striped align-middle" aria-describedby="<?php esc_html_e( 'Standings table', 'racketmanager' ) . ' ' . get_league_title(); ?>">
-						<thead class="table-dark">
+					<table class="table table-striped table-borderless align-middle" aria-describedby="<?php esc_html_e( 'Standings table', 'racketmanager' ) . ' ' . get_league_title(); ?>">
+						<thead class="">
 							<tr>
 								<th class="num">
 									<?php echo esc_html_e( 'Pos', 'racketmanager' ); ?>
@@ -104,7 +104,7 @@ namespace Racketmanager;
 							while ( have_teams() ) {
 								the_team();
 								?>
-								<tr class='<?php the_team_class(); ?>'>
+								<tr class="">
 									<td class='num'>
 										<span class="rank">
 											<?php the_team_rank(); ?>

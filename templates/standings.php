@@ -10,8 +10,8 @@ namespace Racketmanager;
 if ( count( $league->teams ) ) {
 	?>
 	<div class="table-responsive">
-		<table class="table table-striped" aria-label="<?php esc_html_e( 'League Standings', 'racketmanager' ); ?>" aria-describedby="<?php esc_html_e( 'Standings', 'racketmanager' ) . ' ' . get_league_title(); ?>">
-			<thead class="table-dark">
+		<table class="table table-striped table-borderless" aria-label="<?php esc_html_e( 'League Standings', 'racketmanager' ); ?>" aria-describedby="<?php esc_html_e( 'Standings', 'racketmanager' ) . ' ' . get_league_title(); ?>">
+			<thead class="">
 				<tr>
 					<th class="num">
 						<?php echo esc_html_e( 'Pos', 'racketmanager' ); ?>
@@ -22,7 +22,9 @@ if ( count( $league->teams ) ) {
 						<th class="num d-none d-md-table-cell">
 							&#160;
 						</th>
-					<?php } ?>
+						<?php
+					}
+					?>
 					<th class="team">
 						<?php esc_html_e( 'Team', 'racketmanager' ); ?>
 					</th>
@@ -32,35 +34,45 @@ if ( count( $league->teams ) ) {
 						<th class="num">
 							<?php esc_html_e( 'Pld', 'racketmanager' ); ?>
 						</th>
-					<?php } ?>
+						<?php
+					}
+					?>
 					<?php
 					if ( show_standings( 'won' ) ) {
 						?>
 						<th class="num">
 							<?php esc_html_e( 'W', 'racketmanager' ); ?>
 						</th>
-						<?php } ?>
+						<?php
+					}
+					?>
 					<?php
 					if ( show_standings( 'tie' ) ) {
 						?>
 						<th class="num">
 							<?php esc_html_e( 'T', 'racketmanager' ); ?>
 						</th>
-					<?php } ?>
+						<?php
+					}
+					?>
 					<?php
 					if ( show_standings( 'lost' ) ) {
 						?>
 						<th class="num">
 							<?php esc_html_e( 'L', 'racketmanager' ); ?>
 						</th>
-						<?php } ?>
+						<?php
+					}
+					?>
 					<?php
 					if ( show_standings( 'winPercent' ) ) {
 						?>
 						<th class="num">
 							<?php esc_html_e( 'PCT', 'racketmanager' ); ?>
 						</th>
-					<?php } ?>
+						<?php
+					}
+					?>
 					<?php the_standings_header(); ?>
 					<th class="num">
 						<?php esc_html_e( 'Pts', 'racketmanager' ); ?>
@@ -72,7 +84,7 @@ if ( count( $league->teams ) ) {
 				while ( have_teams() ) {
 					the_team();
 					?>
-					<tr class='<?php the_team_class(); ?>'>
+					<tr class="">
 						<td class='num'><span class="rank"><?php the_team_rank(); ?></span></td>
 						<?php
 						if ( show_standings( 'status' ) ) {
@@ -82,7 +94,9 @@ if ( count( $league->teams ) ) {
 									<?php racketmanager_the_svg( the_team_status_icon() ); ?>
 								</i>
 							</td>
-						<?php } ?>
+							<?php
+						}
+						?>
 						<td>
 							<a href="/<?php echo esc_attr( $league->event->competition->type ); ?>/<?php echo esc_html( seo_url( $league->title ) ); ?>/<?php echo esc_attr( $league->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->title ) ); ?>/">
 								<?php the_team_name(); ?>
@@ -94,41 +108,53 @@ if ( count( $league->teams ) ) {
 							<td class='num'>
 								<?php num_done_matches(); ?>
 							</td>
-						<?php } ?>
+							<?php
+						}
+						?>
 						<?php
 						if ( show_standings( 'won' ) ) {
 							?>
 							<td class='num'>
 								<?php num_won_matches(); ?>
 							</td>
-						<?php } ?>
+							<?php
+						}
+						?>
 						<?php
 						if ( show_standings( 'tie' ) ) {
 							?>
 							<td class='num'>
 								<?php num_draw_matches(); ?>
 							</td>
-						<?php } ?>
+							<?php
+						}
+						?>
 						<?php
 						if ( show_standings( 'lost' ) ) {
 							?>
 							<td class='num'>
 								<?php num_lost_matches(); ?>
 							</td>
-						<?php } ?>
+							<?php
+						}
+						?>
 						<?php
 						if ( show_standings( 'winPercent' ) ) {
 							?>
 							<td class="num">
 								<?php win_percentage(); ?>
 							</td>
-						<?php } ?>
+							<?php
+						}
+						?>
 						<?php the_standings_columns(); ?>
 						<td class='num'>
 							<?php the_team_points(); ?>
 						</td>
 					</tr>
-				<?php } ?>
+					<?php
+				}
+				?>
 			</tbody>
 		</table>
 	</div>

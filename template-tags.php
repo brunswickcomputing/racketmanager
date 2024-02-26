@@ -658,8 +658,6 @@ function racketmanager_club( $club_id, $args = array() ) {
  * @category template-tags
  */
 function racketmanager_players( $league_id, $args = array() ) {
-	global $league;
-
 	$defaults          = array(
 		'season'   => false,
 		'template' => '',

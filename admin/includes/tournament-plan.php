@@ -8,7 +8,7 @@
 namespace Racketmanager;
 
 $num_matches = count( $final_matches );
-if ( 0 === $tournament->num_courts ) {
+if ( 0 === intval( $tournament->num_courts ) ) {
 	$num_courts    = 1;
 	$max_schedules = 0;
 } else {
@@ -20,7 +20,7 @@ if ( '01:00:00' === $tournament->time_increment ) {
 }
 $column_width = floor( 12 / $num_courts );
 $match_length = strtotime( $tournament->time_increment );
-if ( ! is_array( $tournament->orderofplay ) || count( $tournament->orderofplay ) !== $tournament->num_courts ) {
+if ( ! is_array( $tournament->orderofplay ) || count( $tournament->orderofplay ) !== intval( $tournament->num_courts ) ) {
 	for ( $i = 0; $i < $tournament->num_courts; $i++ ) {
 		$orderofplay[ $i ]['court']     = 'Court ' . ( $i + 1 );
 		$orderofplay[ $i ]['starttime'] = $tournament->starttime;
@@ -166,18 +166,21 @@ if ( ! is_array( $tournament->orderofplay ) || count( $tournament->orderofplay )
 							</div>
 							<div class="col-10 col-sm-11">
 								<div class="row">
-									<?php for ( $c = 0; $c < $tournament->num_courts; $c++ ) { ?>
+									<?php
+									for ( $c = 0; $c < $tournament->num_courts; $c++ ) {
+										if ( isset( $orderofplay[ $c ]['matches'][ $i ] ) ) {
+											$match_id = ( $orderofplay[ $c ]['matches'][ $i ] );
+										} else {
+											$match_id = null;
+										}
+										?>
 										<div class="col-<?php echo esc_html( $column_width ); ?> tournament-match" name="schedule[<?php echo esc_html( $c ); ?>][<?php echo esc_html( $i ); ?>]" id="schedule-<?php echo esc_html( $c ); ?>-<?php echo esc_html( $i ); ?>">
-											<input type="hidden" class="matchId" name="match[<?php echo esc_html( $c ); ?>][<?php echo esc_html( $i ); ?>]" id="match-<?php echo esc_html( $c ); ?>-<?php echo esc_html( $i ); ?>" value="
-											<?php
-											if ( isset( $orderofplay[ $c ]['matches'][ $i ] ) ) {
-												echo esc_html( $orderofplay[ $c ]['matches'][ $i ] );
-											}
-											?>
-											" />
+											<input type="hidden" class="matchId" name="match[<?php echo esc_html( $c ); ?>][<?php echo esc_html( $i ); ?>]" id="match-<?php echo esc_html( $c ); ?>-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $match_id ); ?>" />
 											<input type="hidden" class="" name="matchtime[<?php echo esc_html( $c ); ?>][<?php echo esc_html( $i ); ?>]" id="matchtime-<?php echo esc_html( $c ); ?>-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $time_offset ); ?>" />
 										</div>
-									<?php } ?>
+										<?php
+									}
+									?>
 								</div>
 							</div>
 						</div>
@@ -195,6 +198,6 @@ if ( ! is_array( $tournament->orderofplay ) || count( $tournament->orderofplay )
 		<?php } ?>
 	</div>
 </div>
-<?php wp_register_script( 'racketmanager-draggable', plugins_url( '/js/draggable.js', dirname( __FILE__ ) ), array(), RACKETMANAGER_VERSION, true );
+<?php wp_register_script( 'racketmanager-draggable', plugins_url( '/js/draggable.js', __DIR__ ), array(), RACKETMANAGER_VERSION, true );
 wp_enqueue_script( 'racketmanager-draggable' );
 ?>

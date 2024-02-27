@@ -422,23 +422,25 @@ final class Racketmanager_Tournament {
 			$orderofplay[ $i ]['matches']   = $matches[ $i ];
 			$num_matches                    = count( $matches[ $i ] );
 			for ( $m = 0; $m < $num_matches; $m++ ) {
-				$match_id = $matches[ $i ][ $m ];
-				if ( '' !== $match_id ) {
-					$time     = strtotime( $start_times[ $i ] ) + $match_times[ $i ][ $m ];
-					$match    = get_match( $match_id );
-					$month    = str_pad( $match->month, 2, '0', STR_PAD_LEFT );
-					$day      = str_pad( $match->day, 2, '0', STR_PAD_LEFT );
-					$date     = $match->year . '-' . $month . '-' . $day . ' ' . gmdate( 'H:i', $time );
-					$location = $courts[ $i ];
-					if ( $date !== $match->date || $location !== $match->location ) {
-						$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-							$wpdb->prepare(
-								"UPDATE {$wpdb->racketmanager_matches} SET `date` = %s, `location` = %s WHERE `id` = %d",
-								$date,
-								$location,
-								$match_id
-							)
-						);
+				$match_id = trim( $matches[ $i ][ $m ] );
+				if ( ! empty( $match_id ) ) {
+					$time  = strtotime( $start_times[ $i ] ) + $match_times[ $i ][ $m ];
+					$match = get_match( $match_id );
+					if ( $match ) {
+						$month    = str_pad( $match->month, 2, '0', STR_PAD_LEFT );
+						$day      = str_pad( $match->day, 2, '0', STR_PAD_LEFT );
+						$date     = $match->year . '-' . $month . '-' . $day . ' ' . gmdate( 'H:i', $time );
+						$location = $courts[ $i ];
+						if ( $date !== $match->date || $location !== $match->location ) {
+							$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+								$wpdb->prepare(
+									"UPDATE {$wpdb->racketmanager_matches} SET `date` = %s, `location` = %s WHERE `id` = %d",
+									$date,
+									$location,
+									$match_id
+								)
+							);
+						}
 					}
 				}
 			}

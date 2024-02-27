@@ -82,8 +82,21 @@ if ( 'championship' !== $league->mode ) {
 						<th class="column-num" scope="column"><?php esc_html_e( 'PCT', 'racketmanager' ); ?></th>
 						<?php
 					}
+					if ( ! empty( $league->standings['sets'] ) ) {
+						?>
+						<th class="column-num" scope="column">
+							<?php esc_html_e( 'Sets', 'racketmanager' ); ?>
+						</th>
+						<?php
+					}
+					if ( ! empty( $league->standings['games'] ) ) {
+						?>
+						<th class="column-num" scope="column">
+							<?php esc_html_e( 'Games', 'racketmanager' ); ?>
+						</th>
+						<?php
+					}
 					?>
-					<?php $league->display_standings_header(); ?>
 					<th class="column-num" scope="column"><?php esc_html_e( 'Pts', 'racketmanager' ); ?></th>
 					<th class="column-num" scope="column"><?php esc_html_e( '+/- Points', 'racketmanager' ); ?></th>
 					<th class="column-num" scope="column"><?php esc_html_e( 'ID', 'racketmanager' ); ?></th>
@@ -213,6 +226,20 @@ if ( 'championship' !== $league->mode ) {
 								<?php } else { ?>
 									<input type="hidden" name="num_lost_matches[<?php echo esc_html( $team->id ); ?>]" value="0" />
 								<?php } ?>
+							</td>
+							<?php
+						}
+						if ( ! empty( $league->standings['sets'] ) ) {
+							?>
+							<td class="column-num">
+								<?php echo esc_html( $team->sets_won . '-' . $team->sets_allowed ); ?>
+							</td>
+							<?php
+						}
+						if ( ! empty( $league->standings['games'] ) ) {
+							?>
+							<td class="column-num">
+								<?php echo esc_html( $team->games_won . '-' . $team->games_allowed ); ?>
 							</td>
 							<?php
 						}

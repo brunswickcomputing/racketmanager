@@ -18,7 +18,7 @@ jQuery(document).ready(function ($) {
 		jQuery(this).find("i.angledir").toggleClass("angle-right angle-down");
 	});
 	/* Friendly URL rewrite */
-	jQuery('#racketmanager_archive').submit(function () {
+	jQuery('#racketmanager_archive').on('change', function () {
 		let league = jQuery('#league_id').val(); //
 		let season = jQuery('#season').val();
 

@@ -17,6 +17,7 @@ namespace Racketmanager;
 
 global $wp_query, $wp;
 $post_id   = $wp_query->post->ID; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+$pagename  = '/' . $league->event->competition->type . '/' . seo_url( $league->title ) . '/';
 $archive   = true;
 $match_day = \get_query_var( 'match_day' );
 if ( '0' === $match_day ) {
@@ -53,6 +54,32 @@ if ( $match_day ) {
 			<div class="module__banner">
 				<div class="banner__title">
 					<h1><?php echo esc_html( $league->title ) . ' - ' . esc_html__( 'Season', 'racketmanager' ) . ' ' . esc_html( $league->current_season['name'] ); ?></h1>
+				</div>
+				<div id="racketmanager_archive_selections" class="module__aside">
+					<form method="get" action="<?php echo esc_html( get_permalink( $post_id ) ); ?>" id="racketmanager_competititon_archive">
+						<input type="hidden" name="page_id" value="<?php echo esc_html( $post_id ); ?>" />
+						<input type="hidden" name="pagename" id="pagename" value="<?php echo esc_html( $pagename ); ?>" />
+						<div class="row g-1 align-items-center">
+							<div class="form-floating col-auto">
+								<select class="form-select" size="1" name="season" id="season">
+									<?php
+									foreach ( array_reverse( $seasons ) as $key => $season ) {
+										?>
+										<option value="<?php echo esc_attr( $season['name'] ); ?>"
+											<?php
+											if ( $season['name'] === $league->current_season['name'] ) {
+												echo ' selected="selected"';
+											}
+											?>
+										><?php echo esc_html( $season['name'] ); ?></option>
+										<?php
+									}
+									?>
+								</select>
+								<label for="season"><?php esc_html_e( 'Season', 'racketmanager' ); ?></label>
+							</div>
+						</div>
+					</form>
 				</div>
 			</div>
 		</div>

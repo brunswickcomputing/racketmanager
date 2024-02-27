@@ -118,7 +118,8 @@ if ( ! empty( $match->winner_id ) ) {
 						<span class="nav--link" title="<?php echo esc_attr( $rubber_title ); ?>">
 							<span class="nav-link__value"><?php echo esc_html( $rubber_title ); ?></span>
 						</span>
-						<input type="hidden" name="id[<?php echo esc_html( $r ); ?>]" value="<?php echo esc_html( $rubber->id ); ?>" </>
+						<input type="hidden" name="id[<?php echo esc_attr( $r ); ?>]" value="<?php echo esc_attr( $rubber->id ); ?>" </>
+						<input type="hidden" name="type[<?php echo esc_attr( $rubber->rubber_number ); ?>]" value="<?php echo esc_html( $rubber->type ); ?>" </>
 					</li>
 				</ul>
 			</div>

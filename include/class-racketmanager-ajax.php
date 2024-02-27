@@ -1227,7 +1227,7 @@ class Racketmanager_Ajax extends RacketManager {
 								$roster_id
 							)
 						);
-						if ( 0 === $count ) {
+						if ( 0 === intval( $count ) ) {
 							/* translators: %d: number of played rounds */
 							$error = sprintf( __( 'not played before the final %d match days', 'racketmanager' ), $options['playedRounds'] );
 							$match->add_result_check( $team, $player->player_id, $error );

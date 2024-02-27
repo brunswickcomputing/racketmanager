@@ -38,7 +38,7 @@ if ( 'championship' !== $league->mode ) {
 		</select>
 		<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doaction" id="doaction" class="btn btn-secondary action" />
 	</div>
-	<table id="standings" class="table table-striped" aria-describedby="<?php esc_html_e( 'Standings table', 'racketmanager' ); ?>">
+	<table id="standings" class="table table-striped table-borderless" aria-describedby="<?php esc_html_e( 'Standings table', 'racketmanager' ); ?>">
 		<thead>
 			<tr>
 				<th scope="col" class="check-column">

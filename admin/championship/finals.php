@@ -73,7 +73,7 @@ $subpage = isset( $_GET['subpage'] ) ? sanitize_text_field( wp_unslash( $_GET['s
 		<?php
 		if ( $matches ) {
 			?>
-			<table class="widefat" aria-describedby="<?php esc_html_e( 'Finals', 'racketmanager' ); ?>">
+			<table class="table table-striped table-borderless" aria-describedby="<?php esc_html_e( 'Finals', 'racketmanager' ); ?>">
 				<thead>
 					<tr>
 						<th><?php esc_html_e( '#', 'racketmanager' ); ?></th>
@@ -104,9 +104,8 @@ $subpage = isset( $_GET['subpage'] ) ? sanitize_text_field( wp_unslash( $_GET['s
 					<?php
 					$m = 1; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 					foreach ( $matches as $match ) {
-						$class = ( 'alternate' === $class ) ? '' : 'alternate';
 						?>
-						<tr class="<?php echo esc_html( $class ); ?>">
+						<tr class="">
 							<td>
 								<?php echo esc_html( $m ); ?><input type="hidden" name="matches[<?php echo esc_html( $match->id ); ?>]" value="<?php echo esc_html( $match->id ); ?>" /><input type="hidden" name="home_team[<?php echo esc_html( $match->id ); ?>]" value="<?php echo esc_html( $match->home_team ); ?>" /><input type="hidden" name="away_team[<?php echo esc_html( $match->id ); ?>]" value="<?php echo esc_html( $match->away_team ); ?>" />
 							</td>

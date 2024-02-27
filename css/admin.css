@@ -614,6 +614,9 @@ span.error {
     line-height: 1.5em;
     border: 1px solid #f6f7f7;
 }
+.table tr {
+	vertical-align: middle;
+}
 dl dl {
     padding-left: 1rem;
 }
@@ -717,4 +720,31 @@ ul.match__header-title {
 
 .match__row-title-value {
 	padding-bottom: 5px;
+}
+.score.winner {
+	background-color: #4abf33 !important;
+	color: #FFF;
+}
+
+.score.tie {
+	background-color: #ff9c00 !important;
+	color: #FFF;
+}
+
+.score.loser {
+	color: #FFF;
+	background-color: #bd3b2a !important;
+}
+
+.fixture .score {
+	padding: 8px;
+	border-radius: 5px;
+}
+
+a.score {
+	text-decoration: none;
+}
+
+.fixture .unplayedMatch {
+	font-size: .8rem;
 }

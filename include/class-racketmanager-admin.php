@@ -2474,8 +2474,8 @@ final class RacketManager_Admin extends RacketManager {
 
 				for ( $i = 0; $i < $max_matches; $i++ ) {
 					$matches[]              = new \stdClass();
-					$matches[ $i ]->hour    = $league->default_match_start_time['hour'];
-					$matches[ $i ]->minutes = $league->default_match_start_time['minutes'];
+					$matches[ $i ]->hour    = $league->event->competition->default_match_start_time['hour'];
+					$matches[ $i ]->minutes = $league->event->competition->default_match_start_time['minutes'];
 				}
 			}
 

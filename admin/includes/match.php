@@ -38,7 +38,7 @@ namespace Racketmanager;
 			}
 			?>
 
-			<table class="widefat" aria-label="<?php esc_html_e( 'match edit', 'racketmanager' ); ?>">
+			<table class="table table-striped table-borderless" aria-label="<?php esc_html_e( 'match edit', 'racketmanager' ); ?>">
 				<thead>
 					<tr>
 						<th scope="col"><?php esc_html_e( 'Id', 'racketmanager' ); ?></th>
@@ -98,9 +98,8 @@ namespace Racketmanager;
 				<tbody id="the-list" class="lm-form-table">
 					<?php
 					for ( $i = 0; $i < $max_matches; $i++ ) {
-						$class = ( 'alternate' === $class ) ? '' : 'alternate';
 						?>
-						<tr class="<?php echo esc_html( $class ); ?>">
+						<tr class="">
 							<td>
 								<?php
 								if ( isset( $matches[ $i ]->id ) ) {

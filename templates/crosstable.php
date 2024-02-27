@@ -22,7 +22,7 @@ namespace Racketmanager;
 					<table class='table table-striped table-borderless align-middle' aria-describedby='<?php esc_html_e( 'Crosstable', 'racketmanager' ); ?> <?php the_league_title(); ?>'>
 						<thead class="">
 							<tr>
-								<th colspan='2' class="team" scope="col"><?php esc_html_e( 'Club', 'racketmanager' ); ?></th>
+								<th colspan='2' class="team" scope="col"><?php esc_html_e( 'Team', 'racketmanager' ); ?></th>
 								<?php
 								$num_teams = get_num_teams_total();
 								for ( $i = 1; $i <= $num_teams; $i++ ) {

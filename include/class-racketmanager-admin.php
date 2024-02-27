@@ -4398,10 +4398,47 @@ final class RacketManager_Admin extends RacketManager {
 	 * @return boolean
 	 */
 	private function handleResultsChecker( $results_checker_id ) {
-		global $wpdb, $racketmanager;
+		global $wpdb, $racketmanager_shortcodes;
 
 		$results_checker = $this->getResultsCheckerEntry( $results_checker_id );
 		if ( empty( $results_checker->updated_date ) ) {
+			$match = get_match( $results_checker->match_id );
+			if ( $match ) {
+				$organisation_name = $this->site_name;
+				$player            = get_player( $results_checker->player_id );
+				$headers           = array();
+				$email_from        = $this->get_confirmation_email( $match->league->event->competition->type );
+				$headers[]         = 'From: ' . ucfirst( $match->league->event->competition->type ) . ' Secretary <' . $email_from . '>';
+				$headers[]         = 'cc: ' . ucfirst( $match->league->event->competition->type ) . ' Secretary <' . $email_from . '>';
+				$email_subject     = $this->site_name . ' - ' . $match->teams['home']->title . ' - ' . $match->teams['away']->title . ' - ' . __( 'invalid player', 'racketmanager' );
+				if ( $results_checker->team_id === $match->home_team ) {
+					$captain   = $match->teams['home']->captain;
+					$opponent  = $match->teams['away']->title;
+					$email_to  = $match->teams['home']->captain . ' <' . $match->teams['home']->contactemail . '>';
+					$headers[] = 'cc: ' . $match->teams['away']->captain . ' <' . $match->teams['away']->contactemail . '>';
+				} elseif ( $results_checker->team_id === $match->away_team ) {
+					$captain   = $match->teams['away']->captain;
+					$opponent  = $match->teams['home']->title;
+					$email_to  = $match->teams['away']->captain . ' <' . $match->teams['away']->contactemail . '>';
+					$headers[] = 'cc: ' . $match->teams['home']->captain . ' <' . $match->teams['home']->contactemail . '>';
+				}
+				$headers[]     = 'cc: ' . $match->teams['home']->club->match_secretary_name . ' <' . $match->teams['home']->club->match_secretary_email . '>';
+				$headers[]     = 'cc: ' . $match->teams['away']->club->match_secretary_name . ' <' . $match->teams['away']->club->match_secretary_email . '>';
+				$email_message = $racketmanager_shortcodes->load_template(
+					'result-check',
+					array(
+						'email_subject' => $email_subject,
+						'organisation'  => $organisation_name,
+						'captain'       => $captain,
+						'opponent'      => $opponent,
+						'player'        => $player->display_name,
+						'reason'        => $results_checker->description,
+						'contact_email' => $email_from,
+					),
+					'email'
+				);
+				wp_mail( $email_to, $email_subject, $email_message, $headers );
+			}
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
 					"UPDATE {$wpdb->racketmanager_results_checker} SET `updated_date` = now(), `updated_user` = %d, `status` = 2 WHERE `id` = %d ",
@@ -4409,7 +4446,7 @@ final class RacketManager_Admin extends RacketManager {
 					$results_checker_id
 				)
 			);
-			$racketmanager->set_message( __( 'Results checker updated', 'racketmanager' ) );
+			$this->set_message( __( 'Results checker updated', 'racketmanager' ) );
 		}
 
 		return true;

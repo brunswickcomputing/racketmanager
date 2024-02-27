@@ -2396,7 +2396,11 @@ class Racketmanager_League {
 			);
 			wp_cache_set( md5( $sql ), $team_rank, 'team_rank' );
 		}
-		return $team_rank->rank;
+		if ( $team_rank ) {
+			return $team_rank->rank;
+		} else {
+			return null;
+		}
 	}
 	/**
 	 * Gets ranking of teams

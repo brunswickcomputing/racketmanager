@@ -472,9 +472,9 @@ final class Racketmanager_Tournament {
 		$orderofplay   = array();
 		$final_matches = $racketmanager->get_matches(
 			array(
-				'season'        => $this->season,
-				'final'         => 'final',
-				'competitionId' => $this->competition_id,
+				'season'         => $this->season,
+				'final'          => 'final',
+				'competition_id' => $this->competition_id,
 			)
 		);
 

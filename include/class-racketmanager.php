@@ -2039,7 +2039,7 @@ class RacketManager {
 			'league_id' => 'ASC',
 			'id'        => 'ASC',
 		),
-		'competitionId'       => false,
+		'competition_id'      => false,
 		'event_id'            => false,
 		'confirmed'           => false,
 		'match_date'          => false,
@@ -2077,7 +2077,7 @@ class RacketManager {
 		$final                = $match_args['final'];
 		$competitiontype      = $match_args['competition_type'];
 		$orderby              = $match_args['orderby'];
-		$competition_id       = $match_args['competitionId'];
+		$competition_id       = $match_args['competition_id'];
 		$event_id             = $match_args['event_id'];
 		$confirmed            = $match_args['confirmed'];
 		$match_date           = $match_args['match_date'];

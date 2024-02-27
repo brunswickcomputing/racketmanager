@@ -317,10 +317,10 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 					}
 					$tournament->matches = $racketmanager->get_matches(
 						array(
-							'season'        => $tournament->season,
-							'competitionId' => $tournament->competition_id,
-							'team_name'     => esc_sql( $player->display_name ),
-							'orderby'       => array(
+							'season'         => $tournament->season,
+							'competition_id' => $tournament->competition_id,
+							'team_name'      => esc_sql( $player->display_name ),
+							'orderby'        => array(
 								'date'      => 'ASC',
 								'event_id'  => 'ASC',
 								'league_id' => 'DESC',
@@ -485,9 +485,9 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		}
 				$tournament_matches = $racketmanager->get_matches(
 					array(
-						'season'        => $tournament->season,
-						'competitionId' => $tournament->competition->id,
-						'final'         => 'all',
+						'season'         => $tournament->season,
+						'competition_id' => $tournament->competition->id,
+						'final'          => 'all',
 					)
 				);
 		$match_dates                = array();

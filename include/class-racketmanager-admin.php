@@ -4333,10 +4333,12 @@ final class RacketManager_Admin extends RacketManager {
 			} else {
 				$results_checker->player = '';
 			}
+			$results_checker->updated_user_name = '';
 			if ( '' !== $results_checker->updated_user ) {
-				$results_checker->updated_user_name = get_userdata( $results_checker->updated_user )->display_name;
-			} else {
-				$results_checker->updated_user_name = '';
+				$user = get_userdata( $results_checker->updated_user );
+				if ( $user ) {
+					$results_checker->updated_user_name = $user->fullname;
+				}
 			}
 			if ( 1 === $results_checker->status ) {
 				$results_checker->status = 'Approved';

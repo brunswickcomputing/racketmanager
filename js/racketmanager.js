@@ -957,7 +957,6 @@ Racketmanager.SetCalculator = function (inputdata) {
 		setLength = 5;
 	}
 	let setRef = fieldRef.substring(0, setLength);
-	let set = setRef.substr(setRef.length - 1, 1);
 	let teamRefAlt = '';
 	let teamRef = fieldRef.substr(fieldRef.length - 1, 1);
 	if (teamRef == 1) {
@@ -983,7 +982,6 @@ Racketmanager.SetCalculator = function (inputdata) {
 		tieBreakScore = parseInt(tieBreakData.value);
 	}
 	let setGroup = '#' + setRef;
-	let setType = jQuery(setGroup).data('settype');
 	let maxWin = jQuery(setGroup).data('maxwin');
 	let minWin = jQuery(setGroup).data('minwin');
 	let maxLoss = jQuery(setGroup).data('maxloss');

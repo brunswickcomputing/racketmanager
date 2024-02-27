@@ -1200,10 +1200,28 @@ class RacketManager {
 			'index.php?pagename=tournaments%2F$matches[1]%2F$matches[1]-order-of-play&type=$matches[1]',
 			'top'
 		);
-		// tournament competition - season.
+		// tournament event - season - players.
+		add_rewrite_rule(
+			'tournaments/(.+?)/([0-9]{4})/players?$',
+			'index.php?pagename=tournaments%2Fevent&event=$matches[1]&season=$matches[2]&tab=players',
+			'top'
+		);
+		// tournament event - season - player.
+		add_rewrite_rule(
+			'tournaments/(.+?)/([0-9]{4})/player/(.+?)?$',
+			'index.php?pagename=tournaments%2Fevent&event=$matches[1]&season=$matches[2]&player_id=$matches[3]',
+			'top'
+		);
+		// tournament event - season.
 		add_rewrite_rule(
 			'tournaments/(.+?)/(.+?)-(.+?)-(.+?)/([0-9]{4})?$',
 			'index.php?pagename=tournaments%2F$matches[1]%2F$matches[2]-$matches[3]-$matches[4]&season=$matches[5]',
+			'top'
+		);
+		// tournament event.
+		add_rewrite_rule(
+			'tournaments/(.+?)/(.+?)-(.+?)-(.+?)/?$',
+			'index.php?pagename=tournaments%2F$matches[1]%2F$matches[2]-$matches[3]-$matches[4]',
 			'top'
 		);
 	}

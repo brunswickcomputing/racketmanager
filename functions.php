@@ -425,14 +425,14 @@ function get_rubber( $rubber = null ) {
 	}
 
 	if ( $rubber instanceof Racketmanager_Rubber ) {
-		$_mrubber = $rubber;
+		$_rubber = $rubber;
 	} elseif ( is_object( $rubber ) ) {
 		$_rubber = new Racketmanager_Rubber( $rubber );
 	} else {
 		$_rubber = Racketmanager_Rubber::get_instance( $rubber );
 	}
 
-	if ( ! $rubber ) {
+	if ( ! $_rubber ) {
 		return null;
 	}
 

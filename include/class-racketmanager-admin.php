@@ -3110,7 +3110,7 @@ final class RacketManager_Admin extends RacketManager {
 					$season_data->season         = $season_id;
 					$season_data->num_match_days = $num_match_days;
 					$season_data->object_id      = $item_id;
-					$season_data->match_date     = $match_date;
+					$season_data->match_dates    = $match_date;
 					$season_data->home_away      = $home_away;
 					$season_data->status         = $status;
 					$season_data->date_closing   = $date_closing;

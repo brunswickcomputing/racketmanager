@@ -901,6 +901,12 @@ final class Racketmanager_Match {
 			}
 			if ( 'league' === $this->league->event->competition->type ) {
 				if ( $home_walkover === $this->num_rubbers || $away_walkover === $this->num_rubbers ) {
+					if ( $home_walkover === $this->num_rubbers ) {
+						$custom['walkover'] = 'home';
+					} elseif ( $away_walkover === $this->num_rubbers ) {
+						$custom['walkover'] = 'away';
+					}
+					$this->custom     = array_merge( (array) $this->custom, (array) $custom );
 					$this->status     = 1;
 					$player_options   = $racketmanager->get_options( 'player' );
 					$walkover_penalty = ! empty( $player_options['walkover']['match'] ) ? $player_options['walkover']['match'] : 0;

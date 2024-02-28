@@ -678,7 +678,7 @@ final class Racketmanager_Match {
 				} else {
 					$this->teams['home'] = $this->league->get_team_dtls( $this->home_team );
 					if ( $this->league->is_championship && is_object( $this->teams['home'] ) ) {
-							$this->teams['home']->rank = $this->league->get_rank( $this->home_team, $this->season );
+						$this->teams['home']->rank = $this->league->get_rank( $this->home_team, $this->season );
 					}
 				}
 			} else {
@@ -696,7 +696,7 @@ final class Racketmanager_Match {
 				} else {
 					$this->teams['away'] = $this->league->get_team_dtls( $this->away_team );
 					if ( $this->league->is_championship && is_object( $this->teams['away'] ) ) {
-							$this->teams['away']->rank = $this->league->get_rank( $this->away_team, $this->season );
+						$this->teams['away']->rank = $this->league->get_rank( $this->away_team, $this->season );
 					}
 				}
 			} else {
@@ -837,7 +837,7 @@ final class Racketmanager_Match {
 	 * @return boolean
 	 */
 	public function update_result( $home_points_input, $away_points_input, $custom, $confirmed = 'Y' ) {
-		global $racketmanager, $wpdb;
+		global $racketmanager;
 		$bye            = false;
 		$updated        = false;
 		$home_win       = 0;
@@ -972,20 +972,7 @@ final class Racketmanager_Match {
 				foreach ( $this->custom as $key => $value ) {
 					$this->{$key} = $value;
 				}
-				$wpdb->query(
-					$wpdb->prepare(
-						"UPDATE {$wpdb->racketmanager_matches} SET `home_points` = %f, `away_points` = %f, `winner_id` = %d, `loser_id` = %d, `custom` = %s, `updated_user` = %d, `updated` = now(), `confirmed` = %s WHERE `id` = %d",
-						$this->home_points,
-						$this->away_points,
-						intval( $this->winner_id ),
-						intval( $this->loser_id ),
-						maybe_serialize( $this->custom ),
-						get_current_user_id(),
-						$this->confirmed,
-						$this->id
-					)
-				);
-				wp_cache_delete( $this->id, 'matches' );
+				$this->update_result_database();
 				$updated = true;
 				if ( ! empty( $this->leg ) && '2' === $this->leg ) {
 					$this->update_result_tie();
@@ -994,7 +981,28 @@ final class Racketmanager_Match {
 		}
 		return $updated;
 	}
-
+	/**
+	 * Update result in database function
+	 *
+	 * @return void
+	 */
+	private function update_result_database() {
+		global $wpdb;
+		$wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$wpdb->racketmanager_matches} SET `home_points` = %f, `away_points` = %f, `winner_id` = %d, `loser_id` = %d, `custom` = %s, `updated_user` = %d, `updated` = now(), `confirmed` = %s WHERE `id` = %d",
+				$this->home_points,
+				$this->away_points,
+				intval( $this->winner_id ),
+				intval( $this->loser_id ),
+				maybe_serialize( $this->custom ),
+				get_current_user_id(),
+				$this->confirmed,
+				$this->id
+			)
+		);
+		wp_cache_delete( $this->id, 'matches' );
+	}
 	/**
 	 * Update match status
 	 *

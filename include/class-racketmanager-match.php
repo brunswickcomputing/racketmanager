@@ -677,10 +677,8 @@ final class Racketmanager_Match {
 					);
 				} else {
 					$this->teams['home'] = $this->league->get_team_dtls( $this->home_team );
-					if ( $this->league->is_championship ) {
-						if ( is_object( $this->teams['home'] ) ) {
+					if ( $this->league->is_championship && is_object( $this->teams['home'] ) ) {
 							$this->teams['home']->rank = $this->league->get_rank( $this->home_team, $this->season );
-						}
 					}
 				}
 			} else {
@@ -697,10 +695,8 @@ final class Racketmanager_Match {
 					);
 				} else {
 					$this->teams['away'] = $this->league->get_team_dtls( $this->away_team );
-					if ( $this->league->is_championship ) {
-						if ( is_object( $this->teams['away'] ) ) {
+					if ( $this->league->is_championship && is_object( $this->teams['away'] ) ) {
 							$this->teams['away']->rank = $this->league->get_rank( $this->away_team, $this->season );
-						}
 					}
 				}
 			} else {

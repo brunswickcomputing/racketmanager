@@ -447,7 +447,7 @@ class Racketmanager_Event {
 		}
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_team_event} WHERE `event_id` = %d",
+				"DELETE FROM {$wpdb->racketmanager_team_events} WHERE `event_id` = %d",
 				$this->id
 			)
 		);

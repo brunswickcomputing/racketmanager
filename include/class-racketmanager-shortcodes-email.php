@@ -338,10 +338,12 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 
 		$args       = shortcode_atts(
 			array(
-				'club'     => '',
-				'action'   => false,
-				'player'   => false,
-				'template' => '',
+				'club'      => '',
+				'action'    => false,
+				'player'    => false,
+				'requestor' => false,
+				'btm'       => false,
+				'template'  => '',
 			),
 			$atts
 		);
@@ -349,18 +351,23 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 		$action     = $args['action'];
 		$player     = $args['player'];
 		$template   = $args['template'];
-		$action_url = admin_url() . 'admin.php?page=racketmanager-admin&view=playerRequest';
+		$requestor  = $args['requestor'];
+		$btm        = $args['btm'];
+		$action_url = $racketmanager->site_url . '/clubs/' . seo_url( $club ) . '/' . seo_url( $player ) . '/';
 
 		$filename = ( ! empty( $template ) ) ? 'club-player-notification-' . $template : 'club-player-notification';
 
 		return $this->load_template(
 			$filename,
 			array(
-				'action'       => $action,
-				'club'         => $club,
-				'player'       => $player,
-				'organisation' => $racketmanager->site_name,
-				'action_url'   => $action_url,
+				'action'        => $action,
+				'club'          => $club,
+				'player'        => $player,
+				'organisation'  => $racketmanager->site_name,
+				'action_url'    => $action_url,
+				'requestor'     => $requestor,
+				'btm'           => $btm,
+				'email_subject' => $racketmanager->site_name . ' - ' . __( 'Club Player Request', 'racketmanager' ) . ' - ' . $club,
 			),
 			'email'
 		);

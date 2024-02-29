@@ -7,10 +7,9 @@
 
 namespace Racketmanager;
 
-$email_subject = $organisation . ' Club Player Request - ' . $club;
 require 'email-header.php';
 ?>
-			<?php $salutation_link = ''; ?>
+			<?php $salutation_link = $requestor; ?>
 			<?php require 'components/salutation.php'; ?>
 			<!-- introduction -->
 			<div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
@@ -34,6 +33,11 @@ require 'email-header.php';
 																	<?php if ( $player ) { ?>
 																		<p style="line-height: 1.25; mso-line-height-rule: at-least; margin: 0 0 20px; padding: 0;">
 																			<?php echo esc_html( $player ); ?>
+																			<?php
+																			if ( $btm ) {
+																				echo ' - ' . esc_html( $btm );
+																			}
+																			?>
 																		</p>
 																	<?php } ?>
 																</div>
@@ -51,16 +55,12 @@ require 'email-header.php';
 				</table>
 			</div>
 			<?php
-			if ( 'request' === $action ) {
-				$action_link_text = __( 'View request', 'racketmanager' );
-				require 'components/action-link.php';
-			}
+			$action_link_text = __( 'View player', 'racketmanager' );
+			require 'components/action-link.php';
 			?>
 			<?php require 'components/closing.php'; ?>
 			<?php
-			if ( 'request' === $action ) {
-				require 'components/link-text.php';
-			}
+			require 'components/link-text.php';
 			?>
 <?php
 require 'email-footer.php';

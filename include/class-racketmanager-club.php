@@ -486,32 +486,34 @@ final class Racketmanager_Club {
 					$racketmanager->set_message( __( 'Player registration already pending', 'racketmanager' ), true );
 				} else {
 					$player_request_id = $this->add_player_request( $player->id );
-					if ( current_user_can( 'edit_teams' ) ) {
+					$options           = $racketmanager->get_options( 'rosters' );
+					if ( 'auto' === $options['rosterConfirmation'] || current_user_can( 'edit_teams' ) ) {
 						$this->approve_player_request( $player_request_id );
+						$action = 'add';
+						$msg    = __( 'Player added to club', 'racketmanager' );
 					} else {
-						$options = $racketmanager->get_options( 'rosters' );
-						if ( 'auto' === $options['rosterConfirmation'] ) {
-							$this->approve_player_request( $player_request_id );
-							$action = 'add';
-							$msg    = __( 'Player added to club', 'racketmanager' );
-						} else {
-							$action = 'request';
-							$msg    = __( 'Player registration pending', 'racketmanager' );
-						}
-						if ( isset( $options['rosterConfirmationEmail'] ) && ! is_null( $options['rosterConfirmationEmail'] ) ) {
-							$email_to               = $options['rosterConfirmationEmail'];
-							$message_args           = array();
-							$message_args['action'] = $action;
-							$message_args['club']   = $this->name;
-							$message_args['player'] = $player->fullname;
-							$headers                = array();
-							$headers['from']        = $racketmanager->get_from_user_email();
-							$subject                = $racketmanager->site_name . ' - ' . $msg . ' - ' . $this->name;
-							$message                = racketmanager_club_players_notification( $message_args );
-							wp_mail( $email_to, $subject, $message, $headers );
-						}
-						$racketmanager->set_message( $msg );
+						$action = 'request';
+						$msg    = __( 'Player registration pending', 'racketmanager' );
 					}
+					if ( ! empty( $options['rosterConfirmationEmail'] ) ) {
+						$headers = array();
+						$user    = wp_get_current_user();
+						if ( $this->matchsecretary !== $user->ID ) {
+							$headers[] = 'cc: ' . $this->match_secretary_name . ' <' . $this->match_secretary_email . '>';
+						}
+						$email_to                  = $user->display_name . ' <' . $user->user_email . '>';
+						$message_args              = array();
+						$message_args['requestor'] = $user->display_name;
+						$message_args['action']    = $action;
+						$message_args['club']      = $this->shortcode;
+						$message_args['player']    = $player->fullname;
+						$message_args['btm']       = empty( $player->btm ) ? null : $player->btm;
+						$headers[]                 = 'from: ' . $racketmanager->site_name . ' <' . $options['rosterConfirmationEmail'] . '>';
+						$subject                   = $racketmanager->site_name . ' - ' . $msg . ' - ' . $this->shortcode;
+						$message                   = racketmanager_club_players_notification( $message_args );
+						wp_mail( $email_to, $subject, $message, $headers );
+					}
+					$racketmanager->set_message( $msg );
 				}
 			} else {
 				$valid = false;
@@ -820,7 +822,7 @@ final class Racketmanager_Club {
 		global $wpdb;
 		return $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT count(*) FROM {$wpdb->racketmanager_team_event} te, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager_clubs} c WHERE c.`id` = %d AND c.`id` = t.`affiliatedclub` AND t.`status` != 'P' AND t.`id` = te.`team_id` AND te.`captain` = %d",
+				"SELECT count(*) FROM {$wpdb->racketmanager_team_events} te, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager_clubs} c WHERE c.`id` = %d AND c.`id` = t.`affiliatedclub` AND t.`status` != 'P' AND t.`id` = te.`team_id` AND te.`captain` = %d",
 				intval( $this->id ),
 				intval( $player )
 			)

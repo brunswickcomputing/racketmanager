@@ -50,6 +50,29 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 8.1.0 =
+* BUGFIX: remove extraneous '"'
+* BUGFIX: delete cached rubber after update
+* BUGFIX: ensure rewrites work
+* BUGFIX: only get championship matches 
+* BUGFIX: set walkover correctly
+* BUGFIX: fix get_rubber
+* BUGFIX: use correct field
+* UPDATE: set correct set score
+* UPDATE: use banner header for archive
+* UPDATE: get system record indicator for player
+* UPDATE: use separate table for rubber players
+* UPDATE: remove datatables javascript
+* UPDATE: add index in match_id to speed up queries
+* UPDATE: make count players more efficient
+* UPDATE: move player stats totals calculations
+* UPDATE: move player get_matches to player class
+* UPDATE: improve standings display
+* UPDATE: improve crosstable view
+* UPDATE: send email when handling result check
+* UPDATE: fix tournament plan display
+* UPDATE: send player registration emails to requestor
+
 = 8.0.0 =
 * NEW:    introduce events between competitions and leagues
 * NEW:    tournament Features

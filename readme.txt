@@ -50,6 +50,11 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 8.1.1 =
+* BUGFIX: handle empty match status
+* BUGFIX: set update allowed correctly if team player
+* BUGFIX: allow match comments on team match result entry
+
 = 8.1.0 =
 * BUGFIX: remove extraneous '"'
 * BUGFIX: delete cached rubber after update

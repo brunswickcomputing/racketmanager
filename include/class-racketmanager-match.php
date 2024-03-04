@@ -1020,11 +1020,14 @@ final class Racketmanager_Match {
 		} elseif ( ! empty( $actioned_by ) && 'away' === $actioned_by ) {
 			$captain = 'away';
 		} elseif ( 'home' === $user_team ) {
-			$captain = 'home';
+			$captain     = 'home';
+			$actioned_by = 'home';
 		} elseif ( 'away' === $user_team ) {
-			$captain = 'away';
+			$captain     = 'away';
+			$actioned_by = 'away';
 		} elseif ( 'both' === $user_team ) {
-			$captain = 'home';
+			$captain     = 'home';
+			$actioned_by = 'home';
 		} else {
 			$captain = 'admin';
 		}

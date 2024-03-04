@@ -967,7 +967,7 @@ class RacketManager {
 		// league - season - matchday - team.
 		add_rewrite_rule(
 			'league/(.+?)/([0-9]{4})/day([0-9]{1,2})/(.+?)/?$',
-			'index.php?pagename=leagues%2Fleague&&league_name=$matches[1]&season=$matches[2]&match_day=$matches[3]&team=$matches[4]',
+			'index.php?pagename=leagues%2Fleague&league_name=$matches[1]&season=$matches[2]&match_day=$matches[3]&team=$matches[4]',
 			'top'
 		);
 		// league - season - matchday.

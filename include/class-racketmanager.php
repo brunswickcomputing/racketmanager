@@ -2443,7 +2443,7 @@ class RacketManager {
 									}
 								}
 							} elseif ( 'either' === $result_entry ) {
-								if ( $user_team && ( '' === $match_status || 'P' === $match_status ) ) {
+								if ( $user_team && ( empty( $match_status ) || 'P' === $match_status ) ) {
 									$user_can_update = true;
 								}
 							}

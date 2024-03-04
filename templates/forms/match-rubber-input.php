@@ -174,7 +174,7 @@ if ( ! empty( $match->winner_id ) ) {
 						foreach ( $opponents as $opponent ) {
 							?>
 							<div class="col-6 col-sm-4 <?php echo 0 === $o ? '' : 'order-2 order-sm-3'; ?>">
-								<div class="match__row is_team_<?php echo esc_attr( $o + 1 ); ?>">
+								<div class="match__row is-team-<?php echo esc_attr( $o + 1 ); ?>">
 									<div class="match__row-title">
 										<div class="match__row-title-header">
 											<?php echo esc_html( $match->teams[ $opponent ]->title ); ?>

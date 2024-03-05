@@ -21,9 +21,9 @@ if ( is_user_logged_in() ) {
 	if ( current_user_can( 'manage_racketmanager' ) ) {
 		$user_can_update = true;
 	} else {
-		if ( null !== $player->ID && $player->ID === $userid ) {
+		if ( null !== $player->ID && intval( $player->ID ) === $userid ) {
 			$user_can_update = true;
-		} elseif ( null !== $club->matchsecretary && $club->matchsecretary === $userid ) {
+		} elseif ( null !== $club->matchsecretary && intval( $club->matchsecretary ) === $userid ) {
 			$user_can_update = true;
 		} else {
 			$user_can_update = false;

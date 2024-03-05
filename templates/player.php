@@ -86,7 +86,7 @@ if ( is_user_logged_in() ) {
 		<?php } ?>
 		<?php if ( null !== $player->email || $user_can_update ) { ?>
 			<div class="form-floating mb-3">
-				<input type="email" class="form-control" id="email" name="email" autocomplete="off" ="<?php echo esc_html( $player->email ); ?>" <?php disabled( $user_can_update, false ); ?> />
+				<input type="email" class="form-control" id="email" name="email" autocomplete="off" value="<?php echo esc_html( $player->email ); ?>" <?php disabled( $user_can_update, false ); ?> />
 				<label for="email"><?php esc_html_e( 'Email address', 'racketmanager' ); ?></label>
 				<div id="emailFeedback" class="invalid-feedback"></div>
 			</div>

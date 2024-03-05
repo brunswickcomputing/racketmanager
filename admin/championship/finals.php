@@ -120,7 +120,7 @@ $subpage = isset( $_GET['subpage'] ) ? sanitize_text_field( wp_unslash( $_GET['s
 									<?php echo esc_html( $match->get_title() ); ?>
 								</a>
 							</td>
-							<td>
+							<td class="match-location">
 								<?php echo ( isset( $match->location ) ) ? esc_html( $match->location ) : 'N/A'; ?>
 							</td>
 							<?php
@@ -155,7 +155,7 @@ $subpage = isset( $_GET['subpage'] ) ? sanitize_text_field( wp_unslash( $_GET['s
 									?>
 									<td>
 										<input class="points" type="text" size="2" id="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_player1" name="custom[<?php echo esc_html( $match->id ); ?>][sets][<?php echo esc_html( $i ); ?>][player1]" value="<?php echo esc_html( $match->sets[ $i ]['player1'] ); ?>" />
-										&nbsp;:&nbsp;
+										<span>:</span>
 										<input class="points" type="text" size="2" id="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_player2" name="custom[<?php echo esc_html( $match->id ); ?>][sets][<?php echo esc_html( $i ); ?>][player2]" value="<?php echo esc_html( $match->sets[ $i ]['player2'] ); ?>" />
 										<br>
 										<input class="points tie-break" type="text" size="2" id="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" name="custom[<?php echo esc_html( $match->id ); ?>][sets][<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo esc_html( $match->sets[ $i ]['tiebreak'] ); ?>" />

@@ -440,7 +440,12 @@ div.racketmanager_widget_control select {
     display: block;
     margin: 3px 0 0 8px;
 }
-
+td.match-title {
+    width: 30%;
+}
+td.match-location {
+    width: 10%;
+}
 .tablenav {
   height:auto;
     clear: none;

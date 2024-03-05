@@ -712,7 +712,7 @@ class Racketmanager_Event {
 		$player    = $args['player'];
 
 		$sql1 = "SELECT p.ID AS `player_id`, p.`display_name` AS `fullname`, ro.`id` AS `roster_id`,  ro.`affiliatedclub` FROM {$wpdb->racketmanager_club_players} AS ro, {$wpdb->users} AS p WHERE ro.`player_id` = p.`ID`";
-		$sql2 = "FROM {$wpdb->racketmanager_teams} AS t, {$wpdb->racketmanager_rubbers} AS r, {$wpdb->racketmanager_rubber_players} AS rp, {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager_club_players} AS ro WHERE r.`winner_id` != 0 AND r.`id` = rp.`rubber_id` AND ((rp.`player_team` = 'home' AND rp.`player_id` = ro.`player_id` AND  m.`home_team` = t.`id`) OR (rp.`player_team` = 'away' AND rp.`player_id` = ro.`player_id` AND m.`away_team` = t.`id`)) AND ro.`affiliatedclub` = t.`affiliatedclub` AND r.`match_id` = m.`id` AND m.`league_id` IN (SELECT `id` FROM {$wpdb->racketmanager} WHERE `event_id` = '%d') ";
+		$sql2 = "FROM {$wpdb->racketmanager_teams} AS t, {$wpdb->racketmanager_rubbers} AS r, {$wpdb->racketmanager_rubber_players} AS rp, {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager_club_players} AS ro WHERE r.`winner_id` != 0 AND r.`id` = rp.`rubber_id` AND ((rp.`player_team` = 'home' AND rp.`club_player_id` = ro.`id` AND  m.`home_team` = t.`id`) OR (rp.`player_team` = 'away' AND rp.`club_player_id` = ro.`id` AND m.`away_team` = t.`id`)) AND ro.`affiliatedclub` = t.`affiliatedclub` AND r.`match_id` = m.`id` AND m.`league_id` IN (SELECT `id` FROM {$wpdb->racketmanager} WHERE `event_id` = '%d') ";
 
 		$search_terms2 = array( $this->id );
 

@@ -1441,7 +1441,7 @@ class Racketmanager_Event {
 				$order = ' ORDER BY ' . $orderby_string;
 			}
 			if ( $count ) {
-				$sql = 'SELECT COUNT(*)';
+				$sql = 'SELECT COUNT(distinct(`player_id`))';
 			} else {
 				$sql = 'SELECT DISTINCT `player_id`, `club_player_id`';
 			}

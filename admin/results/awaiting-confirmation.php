@@ -77,7 +77,7 @@ $racketmanager_prev_league = 0;
 					<?php echo esc_html( $racketmanager_match->score ); ?>
 				</div>
 				<div class="col-auto">
-					<a href="admin.php?page=racketmanager-results&amp;subpage=match&amp;match_id=<?php echo esc_html( $racketmanager_match->id ); ?>&amp;referrer=results" class="btn btn-secondary"><?php esc_html_e( 'View result', 'racketmanager' ); ?></a>
+					<a href="admin.php?page=racketmanager-results&amp;subpage=match&amp;match_id=<?php echo esc_html( $racketmanager_match->id ); ?>&amp;referrer=awaitingconfirmation" class="btn btn-secondary"><?php esc_html_e( 'View result', 'racketmanager' ); ?></a>
 				</div>
 				<?php if ( 'P' === $racketmanager_match->confirmed ) { ?>
 					<div class="col-auto">

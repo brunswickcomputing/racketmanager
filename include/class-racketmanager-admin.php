@@ -632,6 +632,7 @@ final class RacketManager_Admin extends RacketManager {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
 		} else {
+			$referrer = empty( $_GET['referrer'] ) ? null : $_GET['referrer'];
 			$match = isset( $_GET['match_id'] ) ? get_match( intval( $_GET['match_id'] ) ) : null;  //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( $match ) {
 				include_once RACKETMANAGER_PATH . '/admin/show-match.php';

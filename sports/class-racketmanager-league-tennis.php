@@ -281,11 +281,11 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 	/**
 	 * Update match results and automatically calculate score
 	 *
-	 * @param object $match match details.
+	 * @param object $match_object match details.
 	 * @return object $match
 	 */
-	protected function update_results( $match ) {
-		$match = get_match( $match );
+	protected function update_results( $match_object ) {
+		$match = get_match( $match_object );
 
 		// exit if only one team is set.
 		if ( -1 === $match->home_team || -1 === $match->away_team ) {

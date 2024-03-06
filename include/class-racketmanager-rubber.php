@@ -333,25 +333,24 @@ final class Racketmanager_Rubber {
 	 * @return object points data for home and away.
 	 */
 	public function calculate_result( $points ) {
-		global $racketmanager;
-		$home_points   = 0;
-		$away_points   = 0;
-		$home_team     = $points['home']['team'];
-		$home_sets     = $points['home']['sets'];
-		$home_walkover = isset( $points['home']['walkover'] ) ? 1 : 0;
-		$home_retired  = isset( $points['home']['retired'] ) ? 1 : 0;
-		$away_team     = $points['away']['team'];
-		$away_sets     = $points['away']['sets'];
-		$away_walkover = isset( $points['away']['walkover'] ) ? 1 : 0;
-		$away_retired  = isset( $points['away']['retired'] ) ? 1 : 0;
-		$shared_sets   = $points['shared']['sets'];
-		$match         = get_match( $this->match_id );
-		$league        = get_league( $match->league_id );
-		$point_rule    = $league->get_point_rule();
-		$forwin        = $point_rule['forwin'];
-		$forwin_split  = $point_rule['forwin_split'];
-		$forshare      = $point_rule['forshare'];
-		$point_options = $racketmanager->get_options( 'player' );
+		$home_points        = 0;
+		$away_points        = 0;
+		$home_team          = $points['home']['team'];
+		$home_sets          = $points['home']['sets'];
+		$home_walkover      = isset( $points['home']['walkover'] ) ? 1 : 0;
+		$home_retired       = isset( $points['home']['retired'] ) ? 1 : 0;
+		$away_team          = $points['away']['team'];
+		$away_sets          = $points['away']['sets'];
+		$away_walkover      = isset( $points['away']['walkover'] ) ? 1 : 0;
+		$away_retired       = isset( $points['away']['retired'] ) ? 1 : 0;
+		$shared_sets        = $points['shared']['sets'];
+		$match              = get_match( $this->match_id );
+		$league             = get_league( $match->league_id );
+		$point_rule         = $league->get_point_rule();
+		$forwin             = $point_rule['forwin'];
+		$forwin_split       = $point_rule['forwin_split'];
+		$forshare           = $point_rule['forshare'];
+		$forwalkover_rubber = empty( $point_rule['forwalkover_rubber'] ) ? 0 : $point_rule['forwalkover_rubber'];
 		if ( empty( $home_sets ) || empty( $away_sets ) ) {
 			if ( empty( $home_sets ) ) {
 				$straight_sets_home = 0;
@@ -375,8 +374,8 @@ final class Racketmanager_Rubber {
 			$split_sets_home    = 1;
 			$split_sets_away    = 0;
 		}
-		$home_points = $home_sets + ( $straight_sets_home * $forwin ) + ( $split_sets_home * $forwin_split ) + ( $shared_sets * $forshare ) - ( $home_walkover * $point_options['walkover']['rubber'] );
-		$away_points = $away_sets + ( $straight_sets_away * $forwin ) + ( $split_sets_away * $forwin_split ) + ( $shared_sets * $forshare ) - ( $away_walkover * $point_options['walkover']['rubber'] );
+		$home_points = $home_sets + ( $straight_sets_home * $forwin ) + ( $split_sets_home * $forwin_split ) + ( $shared_sets * $forshare ) - ( $home_walkover * $forwalkover_rubber );
+		$away_points = $away_sets + ( $straight_sets_away * $forwin ) + ( $split_sets_away * $forwin_split ) + ( $shared_sets * $forshare ) - ( $away_walkover * $forwalkover_rubber );
 		if ( $home_walkover || $away_walkover ) {
 			if ( $home_walkover ) {
 				$winner = $away_team;

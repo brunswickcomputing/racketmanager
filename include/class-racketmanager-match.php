@@ -902,27 +902,27 @@ final class Racketmanager_Match {
 					} elseif ( $away_walkover === $this->num_rubbers ) {
 						$custom['walkover'] = 'away';
 					}
-					$this->custom     = array_merge( (array) $this->custom, (array) $custom );
-					$this->status     = 1;
-					$player_options   = $racketmanager->get_options( 'player' );
-					$walkover_penalty = ! empty( $player_options['walkover']['match'] ) ? $player_options['walkover']['match'] : 0;
+					$this->custom = array_merge( (array) $this->custom, (array) $custom );
+					$this->status = 1;
 				} elseif ( $shared === $this->num_rubbers ) {
 					$this->status = 3;
 				}
-				$point_rule   = $this->league->get_point_rule();
-				$rubber_win   = ! empty( $point_rule['rubber_win'] ) ? $point_rule['rubber_win'] : 0;
-				$rubber_draw  = ! empty( $point_rule['rubber_draw'] ) ? $point_rule['rubber_draw'] : 0;
-				$shared_match = ! empty( $point_rule['shared_match'] ) ? $point_rule['shared_match'] : 0;
+				$point_rule         = $this->league->get_point_rule();
+				$rubber_win         = ! empty( $point_rule['rubber_win'] ) ? $point_rule['rubber_win'] : 0;
+				$rubber_draw        = ! empty( $point_rule['rubber_draw'] ) ? $point_rule['rubber_draw'] : 0;
+				$shared_match       = ! empty( $point_rule['shared_match'] ) ? $point_rule['shared_match'] : 0;
+				$forwalkover_rubber = empty( $point_rule['forwalkover_rubber'] ) ? 0 : $point_rule['forwalkover_rubber'];
+				$walkover_penalty   = empty( $point_rule['forwalkover_match'] ) ? 0 : $point_rule['forwalkover_match'];
 				if ( ! empty( $point_rule['match_result'] ) && 'rubber_count' === $point_rule['match_result'] ) {
 					if ( 1 === $this->status ) {
-						$home_points = $home_win * $rubber_win - $walkover_penalty * $home_walkover;
-						$away_points = $away_win * $rubber_win - $walkover_penalty * $away_walkover;
+						$home_points = $home_win * $rubber_win - $forwalkover_rubber * $home_walkover - $walkover_penalty * $home_walkover;
+						$away_points = $away_win * $rubber_win - $forwalkover_rubber * $away_walkover - $walkover_penalty * $away_walkover;
 					} elseif ( 3 === $this->status ) {
 						$home_points = $shared_match * $this->num_rubbers;
 						$away_points = $shared_match * $this->num_rubbers;
 					} else {
-						$home_points = $home_win * $rubber_win + $draw * $rubber_draw;
-						$away_points = $away_win * $rubber_win + $draw * $rubber_draw;
+						$home_points = $home_win * $rubber_win + $draw * $rubber_draw - $forwalkover_rubber * $home_walkover;
+						$away_points = $away_win * $rubber_win + $draw * $rubber_draw - $forwalkover_rubber * $away_walkover;
 					}
 				} else {
 					$home_points -= $walkover_penalty * $home_walkover;

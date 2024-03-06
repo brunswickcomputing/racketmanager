@@ -49,22 +49,22 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 	 */
 	public function calculate_points( $points, $team_id, $point_rule, $matches ) {
 		global $racketmanager;
-		$point_options    = $racketmanager->get_options( 'player' );
-		$forwin           = $point_rule['forwin'];
-		$fordraw          = $point_rule['fordraw'];
-		$forloss          = $point_rule['forloss'];
-		$forwin_split     = $point_rule['forwin_split'];
-		$forloss_split    = $point_rule['forloss_split'];
-		$forshare         = $point_rule['forshare'];
-		$rubber_win       = ! empty( $point_rule['rubber_win'] ) ? $point_rule['rubber_win'] : 0;
-		$rubber_draw      = ! empty( $point_rule['rubber_draw'] ) ? $point_rule['rubber_draw'] : 0;
-		$shared_match     = ! empty( $point_rule['shared_match'] ) ? $point_rule['shared_match'] : 0;
-		$walkover_penalty = ! empty( $point_options['walkover']['match'] ) ? $point_options['walkover']['match'] : 0;
-		$data             = $this->get_standings_data( $team_id, array(), $matches );
+		$forwin             = $point_rule['forwin'];
+		$fordraw            = $point_rule['fordraw'];
+		$forloss            = $point_rule['forloss'];
+		$forwin_split       = $point_rule['forwin_split'];
+		$forloss_split      = $point_rule['forloss_split'];
+		$forshare           = $point_rule['forshare'];
+		$forwalkover_rubber = empty( $point_rule['forwalkover_rubber'] ) ? 0 : $point_rule['forwalkover_rubber'];
+		$walkover_penalty   = empty( $point_rule['forwalkover_match'] ) ? 0 : $point_rule['forwalkover_match'];
+		$rubber_win         = ! empty( $point_rule['rubber_win'] ) ? $point_rule['rubber_win'] : 0;
+		$rubber_draw        = ! empty( $point_rule['rubber_draw'] ) ? $point_rule['rubber_draw'] : 0;
+		$shared_match       = ! empty( $point_rule['shared_match'] ) ? $point_rule['shared_match'] : 0;
+		$data               = $this->get_standings_data( $team_id, array(), $matches );
 		if ( ! empty( $point_rule['match_result'] ) && 'rubber_count' === $point_rule['match_result'] ) {
-			$points['plus'] = $data['rubbers_won'] * $rubber_win + $data['rubbers_shared'] * $rubber_draw - $data['no_team'] * $walkover_penalty + $data['matches_shared'] * $shared_match;
+			$points['plus'] = $data['rubbers_won'] * $rubber_win + $data['rubbers_shared'] * $rubber_draw - ( $data['no_player'] * $forwalkover_rubber ) - $data['no_team'] * $walkover_penalty + $data['matches_shared'] * $shared_match;
 		} else {
-			$points['plus']  = $data['sets_won'] + ( $data['straight_set']['win'] * $forwin ) + ( $data['split_set']['win'] * $forwin_split ) + ( $data['split_set']['lost'] * $forloss_split ) + ( $data['sets_shared'] * $forshare ) - ( $data['no_player'] * $point_options['walkover']['rubber'] ) - ( $data['no_team'] * $walkover_penalty );
+			$points['plus']  = $data['sets_won'] + ( $data['straight_set']['win'] * $forwin ) + ( $data['split_set']['win'] * $forwin_split ) + ( $data['split_set']['lost'] * $forloss_split ) + ( $data['sets_shared'] * $forshare ) - ( $data['no_player'] * $forwalkover_rubber ) - ( $data['no_team'] * $walkover_penalty );
 			$points['minus'] = $data['sets_allowed'] + ( $data['straight_set']['lost'] * $forwin ) + ( $data['split_set']['win'] * $forloss_split ) + ( $data['split_set']['lost'] * $forwin_split ) + ( $data['sets_shared'] * $forshare );
 		}
 

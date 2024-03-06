@@ -428,7 +428,7 @@ if ( ! empty( $match->winner_id ) ) {
 		</div>
 		<?php
 	}
-	if ( ( $is_edit_mode && 'admin' === $user_type ) || ( empty( $match->home_captain) && empty( $match->away_captain ) ) ) {
+	if ( ( $is_edit_mode && 'admin' === $user_type ) || ( empty( $match->home_captain ) && empty( $match->away_captain ) ) ) {
 		?>
 		<div class="row mt-3 mb-3">
 			<div>

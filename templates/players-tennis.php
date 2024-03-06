@@ -78,7 +78,6 @@ if ( ! empty( $league->player ) ) {
 										<tbody>
 											<?php
 											$player_statistics = $league->player->statistics;
-											debug_to_console( $player_statistics );
 											$stat_rows         = array(
 												__( 'Doubles', 'racketmanager' ) => 'd',
 											);

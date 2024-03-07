@@ -702,4 +702,3 @@ final class Racketmanager_Championship extends RacketManager {
 		}
 	}
 }
-?>

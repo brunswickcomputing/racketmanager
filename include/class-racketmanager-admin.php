@@ -586,6 +586,7 @@ final class RacketManager_Admin extends RacketManager {
 		} else {
 			$season_select        = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : '';
 			$competition_select   = isset( $_GET['competition'] ) ? intval( $_GET['competition'] ) : '';
+			$event_select         = isset( $_GET['event'] ) ? intval( $_GET['event'] ) : '';
 			$results_check_filter = isset( $_GET['filterResultsChecker'] ) ? sanitize_text_field( wp_unslash( $_GET['filterResultsChecker'] ) ) : 'outstanding';
 			$tab                  = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'resultschecker';
 			if ( isset( $_POST['doResultsChecker'] ) ) {
@@ -615,6 +616,7 @@ final class RacketManager_Admin extends RacketManager {
 				array(
 					'season'      => $season_select,
 					'competition' => $competition_select,
+					'event'       => $event_select,
 					'status'      => $results_check_filter,
 				)
 			);
@@ -4275,11 +4277,13 @@ final class RacketManager_Admin extends RacketManager {
 			'season'      => false,
 			'status'      => false,
 			'competition' => false,
+			'event'       => false,
 		);
 		$args        = array_merge( $defaults, $args );
 		$season      = $args['season'];
 		$status      = $args['status'];
 		$competition = $args['competition'];
+		$event       = $args['event'];
 		$sql         = "SELECT `id`, `league_id`, `match_id`, `team_id`, `player_id`, `updated_date`, `updated_user`, `description`, `status` FROM {$wpdb->racketmanager_results_checker} WHERE 1 = 1";
 
 		if ( $status && 'all' !== $status ) {
@@ -4293,7 +4297,9 @@ final class RacketManager_Admin extends RacketManager {
 			$sql .= $wpdb->prepare( " AND `match_id` IN (SELECT `id` FROM {$wpdb->racketmanager_matches} WHERE `season` = %s)", $season );
 		}
 		if ( $competition && 'all' !== $competition ) {
-			$sql .= $wpdb->prepare( " AND `match_id` IN (SELECT m.`id` FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l WHERE m.`league_id` = l.`id` AND l.`competition_id` = %d)", $competition );
+			$sql .= $wpdb->prepare( " AND `match_id` IN (SELECT m.`id` FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l WHERE m.`league_id` = l.`id` AND l.`event_id` IN (SELECT `id` FROM {$wpdb->racketmanager_events} WHERE `competition_id` = %d))", $competition );
+		} elseif ( $event && 'all' !== $event ) {
+			$sql .= $wpdb->prepare( " AND `match_id` IN (SELECT m.`id` FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l WHERE m.`league_id` = l.`id` AND l.`event_id` = %d)", $event );
 		}
 
 		$sql .= ' ORDER BY `match_id` DESC, `league_id` ASC, `team_id` ASC, `player_id` ASC';

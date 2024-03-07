@@ -9,6 +9,16 @@ namespace Racketmanager;
 
 $seasons      = $this->get_seasons( 'DESC' );
 $competitions = $this->get_competitions( array( 'type' => 'league' ) );
+$events       = array();
+foreach ( $competitions as $competition ) {
+	$competition = get_competition( $competition );
+	if ( $competition ) {
+		$competition_events = $competition->get_events();
+		foreach ( $competition_events as $event ) {
+			$events[] = $event;
+		}
+	}
+}
 ?>
 <!-- Results Checker -->
 
@@ -20,15 +30,33 @@ $competitions = $this->get_competitions( array( 'type' => 'league' ) );
 			<div class="col-auto">
 				<select class="form-select-1" size="1" name="season" id="season">
 					<option value="all"><?php esc_html_e( 'All seasons', 'racketmanager' ); ?></option>
-					<?php foreach ( $seasons as $season ) { ?>
+					<?php
+					foreach ( $seasons as $season ) {
+						?>
 						<option value="<?php echo esc_html( $season->name ); ?>" <?php echo esc_html( $season->name === $season_select ? 'selected' : '' ); ?>><?php echo esc_html( $season->name ); ?></option>
-					<?php } ?>
+						<?php
+					}
+					?>
 				</select>
 				<select class="form-select-1" size="1" name="competition" id="competition">
 					<option value="all"><?php esc_html_e( 'All competitions', 'racketmanager' ); ?></option>
-					<?php foreach ( $competitions as $competition ) { ?>
-						<option value="<?php echo esc_html( $competition->id ); ?>" <?php echo esc_html( $competition->id === $competition_select ? 'selected' : '' ); ?>><?php echo esc_html( $competition->name ); ?></option>
-					<?php } ?>
+					<?php
+					foreach ( $competitions as $competition ) {
+						?>
+						<option value="<?php echo esc_html( $competition->id ); ?>" <?php selected( $competition->id, $competition_select ); ?>><?php echo esc_html( $competition->name ); ?></option>
+						<?php
+					}
+					?>
+				</select>
+				<select class="form-select-1" size="1" name="event" id="event">
+					<option value="all"><?php esc_html_e( 'All events', 'racketmanager' ); ?></option>
+					<?php
+					foreach ( $events as $event ) {
+						?>
+						<option value="<?php echo esc_html( $event->id ); ?>" <?php selected( $event->id, $event_select ); ?>><?php echo esc_html( $event->name ); ?></option>
+						<?php
+					}
+					?>
 				</select>
 				<select name="filterResultsChecker" size="1">
 					<option value="-1" selected="selected"><?php esc_html_e( 'Filter results', 'racketmanager' ); ?></option>
@@ -87,12 +115,16 @@ $competitions = $this->get_competitions( array( 'type' => 'league' ) );
 				<div class="col-6 col-md-2"><?php esc_html_e( 'Team', 'racketmanager' ); ?></div>
 				<div class="col-6 col-sm-2"><?php esc_html_e( 'Player', 'racketmanager' ); ?></div>
 				<div class="col-12 col-md-2"><?php esc_html_e( 'Description', 'racketmanager' ); ?></div>
-				<?php if ( 'outstanding' !== $results_check_filter ) { ?>
+				<?php
+				if ( 'outstanding' !== $results_check_filter ) {
+					?>
 					<div class="d-none d-md-block col-md-3 col-lg-6"></div>
 					<div class="col-4 col-md-3 col-lg-2"><?php esc_html_e( 'Status', 'racketmanager' ); ?></div>
 					<div class="col-4 col-md-3 col-lg-2"><?php esc_html_e( 'Updated Date', 'racketmanager' ); ?></div>
 					<div class="col-4 col-md-3 col-lg-2"><?php esc_html_e( 'Updated User', 'racketmanager' ); ?></div>
-				<?php } ?>
+					<?php
+				}
+				?>
 			</div>
 
 			<?php
@@ -110,19 +142,25 @@ $competitions = $this->get_competitions( array( 'type' => 'league' ) );
 						<div class="col-auto col-md-2"><?php echo esc_html( $results_checker->team ); ?></div>
 						<div class="col-auto col-sm-2"><?php echo esc_html( $results_checker->player ); ?></div>
 						<div class="col-12 col-md-3"><?php echo esc_html( $results_checker->description ); ?></div>
-						<?php if ( 'outstanding' !== $results_check_filter ) { ?>
+						<?php
+						if ( 'outstanding' !== $results_check_filter ) {
+							?>
 							<div class="d-none d-md-block col-md-3 col-lg-6"></div>
 							<div class="col-4 col-md-3 col-lg-2"><?php echo esc_html( $results_checker->status ); ?></div>
 							<div class="col-4 col-md-3 col-lg-2"><?php echo esc_html( $results_checker->updated_date ); ?></div>
 							<div class="col-4 col-md-3 col-lg-2"><?php echo esc_html( $results_checker->updated_user_name ); ?></div>
-						<?php } ?>
+							<?php
+						}
+						?>
 					</div>
 					<?php
 				}
 			} else {
 				?>
 				<div class="col-auto my-3"><?php esc_html_e( 'No player checks found', 'racketmanager' ); ?></div>
-			<?php } ?>
+				<?php
+			}
+			?>
 		</div>
 	</form>
 </div>

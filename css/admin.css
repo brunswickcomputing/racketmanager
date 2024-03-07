@@ -753,3 +753,13 @@ a.score {
 .fixture .unplayedMatch {
 	font-size: .8rem;
 }
+.match-points__cell-input.match-points__cell-input--won:not(disabled) {
+    border-bottom-color: #4abf33;
+    border-bottom-width: 2px;
+    font-weight: 700;
+}
+.match-points__cell-input.input-validation-error:not(:disabled) {
+	border-bottom-color: #bd3b2a;
+	border-bottom-width: 2px;
+	font-weight: 700
+}

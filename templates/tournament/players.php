@@ -46,12 +46,10 @@ namespace Racketmanager;
 					</div>
 				</div>
 			</div>
-		<?php } ?>
-		<?php
+			<?php
+		}
 	} else {
-		require 'player.php'
-		?>
-		<?php
+		require 'player.php';
 	}
 	?>
 </div>

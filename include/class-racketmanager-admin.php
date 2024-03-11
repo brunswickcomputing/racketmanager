@@ -1195,7 +1195,7 @@ final class RacketManager_Admin extends RacketManager {
 				if ( ! empty( $_POST['league_id'] ) && ! empty( $_POST['editTeam'] ) ) {
 					$league       = get_league( $league );
 					$captain      = isset( $_POST['captainId'] ) ? intval( $_POST['captainId'] ) : null;
-					$contactno    = isset( $_POST['contactno'] ) ? intval( $_POST['contactno'] ) : null;
+					$contactno    = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
 					$contactemail = isset( $_POST['contactemail'] ) ? sanitize_text_field( wp_unslash( $_POST['contactemail'] ) ) : null;
 					$matchday     = isset( $_POST['matchday'] ) ? sanitize_text_field( wp_unslash( $_POST['matchday'] ) ) : null;
 					$matchtime    = isset( $_POST['matchtime'] ) ? sanitize_text_field( wp_unslash( $_POST['matchtime'] ) ) : null;
@@ -1224,7 +1224,7 @@ final class RacketManager_Admin extends RacketManager {
 				$team_player_2_id = isset( $_POST['teamPlayerId2'] ) ? intval( $_POST['teamPlayerId2'] ) : 0;
 				$club             = isset( $_POST['affiliatedclub'] ) ? intval( $_POST['affiliatedclub'] ) : '';
 				$captain          = isset( $_POST['captainId'] ) ? intval( $_POST['captainId'] ) : null;
-				$contactno        = isset( $_POST['contactno'] ) ? intval( $_POST['contactno'] ) : null;
+				$contactno        = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
 				$contactemail     = isset( $_POST['contactemail'] ) ? sanitize_text_field( wp_unslash( $_POST['contactemail'] ) ) : null;
 			if ( isset( $_POST['action'] ) && 'Add' === $_POST['action'] ) {
 				$league               = get_league( $league );
@@ -1895,7 +1895,7 @@ final class RacketManager_Admin extends RacketManager {
 					$club->name       = isset( $_POST['club'] ) ? sanitize_text_field( wp_unslash( $_POST['club'] ) ) : null;
 					$club->type       = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : null;
 					$club->shortcode  = isset( $_POST['shortcode'] ) ? sanitize_text_field( wp_unslash( $_POST['shortcode'] ) ) : null;
-					$club->contactno  = isset( $_POST['contactno'] ) ? intval( $_POST['contactno'] ) : null;
+					$club->contactno  = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
 					$club->website    = isset( $_POST['website'] ) ? sanitize_text_field( wp_unslash( $_POST['website'] ) ) : null;
 					$club->founded    = isset( $_POST['founded'] ) ? intval( $_POST['founded'] ) : null;
 					$club->facilities = isset( $_POST['facilities'] ) ? sanitize_text_field( wp_unslash( $_POST['facilities'] ) ) : null;
@@ -1921,7 +1921,7 @@ final class RacketManager_Admin extends RacketManager {
 						$club->matchsecretary             = isset( $_POST['matchsecretary'] ) ? intval( $_POST['matchsecretary'] ) : null;
 						$club->match_secretary_contact_no = isset( $_POST['match_secretary_contact_no'] ) ? intval( $_POST['match_secretary_contact_no'] ) : null;
 						$club->match_secretary_email      = isset( $_POST['match_secretary_email'] ) ? sanitize_text_field( wp_unslash( $_POST['match_secretary_email'] ) ) : null;
-						$club->contactno                  = isset( $_POST['contactno'] ) ? intval( $_POST['contactno'] ) : null;
+						$club->contactno                  = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
 						$club->website                    = isset( $_POST['website'] ) ? sanitize_text_field( wp_unslash( $_POST['website'] ) ) : null;
 						$club->founded                    = isset( $_POST['founded'] ) ? intval( $_POST['founded'] ) : null;
 						$club->facilities                 = isset( $_POST['facilities'] ) ? sanitize_text_field( wp_unslash( $_POST['facilities'] ) ) : null;

@@ -4404,7 +4404,8 @@ p.media__subheading {
 .draws-score-row.carousel-index-2:after {
 	height: 131px;
 	top: -52%;
-	margin-left: 2px;
+	margin-left: 3px;
+	width: 14px;
 }
 
 .draws-score-row.carousel-index-2:nth-child(2n):after {
@@ -4412,27 +4413,37 @@ p.media__subheading {
 }
 
 .draws-score-row.carousel-index-3:after {
-	height: 260px;
+	height: 261px;
 	top: -52%;
 	margin-left: 3px;
-	width: 12px;
+	width: 13px;
 }
 
 .draws-score-row.carousel-index-3:nth-child(2n):after {
 	top: calc(-50% - 262px);
-	width: 12px;
+	width: 13px;
 }
 
 .draws-score-row.carousel-index-4:after {
 	height: 521px;
 	top: -52%;
 	margin-left: 3px;
-	width: 12px;
+	width: 13px;
 }
 
 .draws-score-row.carousel-index-4:nth-child(2n):after {
-	top: calc(-50% - 521px);
-	width: 12px;
+	top: calc(-50% - 522px);
+	width: 13px;
+}
+.draws-score-row.carousel-index-5:after {
+    height: 1041px;
+    top: -52%;
+    margin-left: 3px;
+    width: 13px;
+}
+.draws-score-row.carousel-index-5:nth-child(2n):after {
+	top: calc(-50% - 1042px);
+	width: 13px;
 }
 
 .score-row__wrapper {

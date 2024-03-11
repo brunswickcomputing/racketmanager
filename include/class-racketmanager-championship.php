@@ -676,8 +676,6 @@ final class Racketmanager_Championship extends RacketManager {
 					} else {
 						$racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 					}
-				} else {
-						$racketmanager->set_message( __( 'No action specified', 'racketmanager' ), true );
 				}
 				$racketmanager->printMessage();
 			}

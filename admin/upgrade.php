@@ -946,6 +946,36 @@ function racketmanager_upgrade() {
 		echo esc_html__( 'starting 8.2.2 upgrade', 'racketmanager' ) . "<br />\n";
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_rubbers} ADD INDEX(`match_id`);" );
 	}
+	if ( version_compare( $installed, '8.2.3', '<' ) ) {
+		echo esc_html__( 'starting 8.2.3 upgrade', 'racketmanager' ) . "<br />\n";
+		$competitions = $racketmanager->get_competitions( array() );
+		foreach ( $competitions as $competition ) {
+			$update = false;
+			if ( isset( $competition->settings['entryType'] ) ) {
+				if ( ! isset( $competition->settings['entry_type'] ) ) {
+					$competition->settings['entry_type'] = $competition->settings['entryType'];
+				}
+				unset( $competition->settings['entryType'] );
+				$update = true;
+			}
+			if ( isset( $competition->settings['numCourtsAvailable'] ) ) {
+				if ( ! isset( $competition->settings['num_courts_available'] ) ) {
+					$competition->settings['num_courts_available'] = $competition->settings['numCourtsAvailable'];
+				}
+				unset( $competition->settings['numCourtsAvailable'] );
+				$update = true;
+			}
+			if ( $update ) {
+				$wpdb->query(
+					$wpdb->prepare(
+						"UPDATE {$wpdb->racketmanager_competitions} SET `settings` = %s WHERE `id` = %d",
+						maybe_serialize( $competition->settings ),
+						$competition->id
+					)
+				);
+			}
+		}
+	}
 
 	/*
 	* Update version and dbversion

@@ -779,12 +779,15 @@ class RacketManager_Shortcodes {
 	 * @return the content
 	 */
 	public function show_favourites( $atts ) {
-		$args             = shortcode_atts(
+		$args = shortcode_atts(
 			array(
 				'template' => '',
 			),
 			$atts
 		);
+		if ( ! is_user_logged_in() ) {
+			return esc_html__( 'You must be logged in to view favourites', 'racketmanager' );
+		}
 		$template         = $args['template'];
 		$userid           = get_current_user_id();
 		$favourites_types = array( 'competition', 'league', 'club' );

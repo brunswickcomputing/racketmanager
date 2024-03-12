@@ -9,7 +9,7 @@ namespace Racketmanager;
 
 global $racketmanager;
 
-$email_subject = $organisation . ' Match Result - ' . $favourite_title;
+$email_subject = $organisation . ' Match Result - Favourite Notification';
 require 'email-header.php';
 ?>
 			<?php

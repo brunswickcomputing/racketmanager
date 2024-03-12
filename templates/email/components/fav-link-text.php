@@ -24,7 +24,7 @@ namespace Racketmanager;
 																<div style="font-size: 16px; color: #6b6e76; background-color: transparent; margin: 10px;">
 																	<p style="line-height: 1.25; mso-line-height-rule: at-least; margin: 0 0 20px; padding: 0;">
 																		<span style="color: #6b6e76;">
-																			You are receiving this message because you follow <?php echo esc_html( $favourite_title ); ?>. If you wish to stop further emails, please update your <a href="<?php echo esc_html( $favourite_url ); ?>" style="text-decoration: none; color: #006800;">favourites</a>.
+																			You are receiving this message because you follow something related to this match. If you wish to stop further emails, please update your <a href="<?php echo esc_html( $favourite_url ); ?>" style="text-decoration: none; color: #006800;">favourites</a>.
 																		</span>
 																	</p>
 																</div>

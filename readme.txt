@@ -50,6 +50,18 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 8.2.0 =
+* BUGFIX: count distinct players
+* BUGFIX: make display fit easier
+* BUGFIX: allow updates by match secretary or player
+* BUGFIX: fix email address value
+* BUGFIX: show only one comments box
+* BUGFIX: use correct referrer
+* UPDATE: speed up query
+* UPDATE: use walkover values from point rules
+* UPDATE: move championship event settings
+* UPDATE: add team as favourite and change favourite displays
+
 = 8.1.1 =
 * BUGFIX: handle empty match status
 * BUGFIX: set update allowed correctly if team player

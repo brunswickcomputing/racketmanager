@@ -294,17 +294,16 @@ jQuery(document).ready(function ($) {
 				"security": ajax_var.ajax_nonce,
 			},
 			success: function (response) {
-				let $message = response.data.msg;
 				let $action = response.data.action;
 				if ($action == 'del') {
+					jQuery(favourite_field).attr("data-bs-original-title", "Add favourite");
+					jQuery(favourite_field).removeClass('is-favourite');
 					jQuery(favourite_field).find('i').removeClass('fav-icon-svg-selected');
 				} else if ($action == 'add') {
+					jQuery(favourite_field).attr("data-bs-original-title", "Remove favourite");
+					jQuery(favourite_field).addClass('is-favourite');
 					jQuery(favourite_field).find('i').addClass('fav-icon-svg-selected');
 				}
-				jQuery(notifyField).show();
-				jQuery(notifyField).addClass('message-success');
-				jQuery(notifyField).html($message);
-				jQuery(notifyField).delay(10000).fadeOut('slow');
 			},
 			error: function (response) {
 				if (response.responseJSON) {

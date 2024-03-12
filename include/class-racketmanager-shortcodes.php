@@ -794,7 +794,7 @@ class RacketManager_Shortcodes {
 		}
 		$template         = $args['template'];
 		$userid           = get_current_user_id();
-		$favourites_types = array( 'competition', 'league', 'club' );
+		$favourites_types = array( 'competition', 'league', 'club', 'team', 'players' );
 		foreach ( $favourites_types as $f => $favourites_type ) {
 			$favourite_types[ $f ]['name'] = $favourites_type;
 			$meta_key                      = 'favourite-' . $favourites_type;
@@ -803,14 +803,25 @@ class RacketManager_Shortcodes {
 			foreach ( $meta_favourites as $i => $favourite ) {
 				$favourite_item = new \stdClass();
 				if ( 'league' === $favourites_type ) {
-					$league               = get_league( $favourite );
-					$favourite_item->name = $league->title;
+					$league                 = get_league( $favourite );
+					$favourite_item->name   = $league->title;
+					$favourite_item->detail = $league;
 				} elseif ( 'club' === $favourites_type ) {
-					$club                 = get_club( $favourite );
-					$favourite_item->name = $club->name;
+					$club                   = get_club( $favourite );
+					$favourite_item->name   = $club->name;
+					$favourite_item->detail = $club;
 				} elseif ( 'competition' === $favourites_type ) {
-					$competition          = get_competition( $favourite );
-					$favourite_item->name = $competition->name;
+					$event                  = get_event( $favourite );
+					$favourite_item->name   = $event->name;
+					$favourite_item->detail = $event;
+				} elseif ( 'player' === $favourites_type ) {
+					$player                 = get_player( $favourite );
+					$favourite_item->name   = $player->display_name;
+					$favourite_item->detail = $player;
+				} elseif ( 'team' === $favourites_type ) {
+					$team                   = get_team( $favourite );
+					$favourite_item->name   = $team->title;
+					$favourite_item->detail = $team;
 				}
 				$favourite_item->id = $favourite;
 				$favourites[ $i ]   = $favourite_item;

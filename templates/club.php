@@ -44,49 +44,55 @@ if ( $standalone ) {
 
 }
 ?>
-<div class="module module--card">
-	<div class="module__banner">
-		<<?php echo esc_html( $heading_type ); ?> class="club-name">
-			<?php
-			if ( ! $standalone ) {
-				?>
-				<a href="/clubs/<?php echo esc_html( sanitize_title( $club->shortcode ) ); ?>/">
-			<?php } ?>
-				<?php echo esc_html( $club->name ); ?>
-			<?php
-			if ( ! $standalone ) {
-				?>
-				</a>
-			<?php } ?>
-		<?php
-		if ( is_user_logged_in() ) {
-			$is_favourite = $racketmanager->is_user_favourite( 'club', $club->id );
-			?>
-			<div class="fav-icon">
-				<a href="" id="fav-<?php echo esc_html( $club->id ); ?>" title="
-				<?php
-				if ( $is_favourite ) {
-					esc_html_e( 'Remove favourite', 'racketmanager' );
-				} else {
-					esc_html_e( 'Add favourite', 'racketmanager' );
-				}
-				?>
-				" data-js="add-favourite" data-type="club" data-favourite="<?php echo esc_html( $club->id ); ?>">
-					<i class="fav-icon-svg racketmanager-svg-icon
+<div class="page-subhead">
+	<div class="media">
+		<div class="media__wrapper">
+			<div class="media__img">
+				<span class="profile-icon">
+					<span class="profile-icon__abbr">
+						<?php
+						$words    = explode( ' ', $club->shortcode );
+						$initials = null;
+						foreach ( $words as $w ) {
+							$initials .= $w[0];
+						}
+						echo esc_html( $initials );
+						?>
+					</span>
+				</span>
+			</div>
+			<div class="media__content">
+				<<?php echo esc_html( $heading_type ); ?> class="media__title">
 					<?php
-					if ( $is_favourite ) {
-						echo esc_html( ' fav-icon-svg-selected' );
+					if ( ! $standalone ) {
+						?>
+						<a href="/clubs/<?php echo esc_html( sanitize_title( $club->shortcode ) ); ?>/">
+						<?php
 					}
 					?>
-					">
-						<?php racketmanager_the_svg( 'icon-star' ); ?>
-					</i>
-				</a>
-				<div class="fav-msg" id="fav-msg-<?php echo esc_html( $club->id ); ?>"></div>
+						<?php echo esc_html( $club->name ); ?>
+					<?php
+					if ( ! $standalone ) {
+						?>
+						</a>
+						<?php
+					}
+					?>
+				</<?php echo esc_html( $heading_type ); ?>>
 			</div>
-		<?php } ?>
-		</<?php echo esc_html( $heading_type ); ?>>
+			<ul class="media__icons">
+				<li class="media__icons-item">
+					<?php
+					$favourite_type = 'club';
+					$favourite_id   = $club->id;
+					require RACKETMANAGER_PATH . '/templates/includes/favourite-button.php';
+					?>
+				</li>
+			</ul>
+		</div>
 	</div>
+</div>
+<div class="module module--card">
 	<div class="module__content">
 		<div class="module-container">
 			<div class="entry-content">

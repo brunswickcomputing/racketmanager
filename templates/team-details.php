@@ -198,7 +198,9 @@ namespace Racketmanager;
 				<div class="module__content">
 					<div class="module-container">
 						<h4 class="subheading">
-							<?php echo esc_html( $league->team->info->club->name ); ?>
+							<a href="/clubs/<?php echo esc_attr( seo_url( $league->team->info->club->shortcode ) ); ?>/">
+								<span><?php echo esc_html( $league->team->info->club->name ); ?></span>
+							</a>
 						</h4>
 						<ul class="list list--naked">
 							<li class="list__item">

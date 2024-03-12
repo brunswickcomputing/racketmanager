@@ -2621,7 +2621,6 @@ class Racketmanager_League {
 		}
 
 		if ( $num_matches > 0 ) {
-			$racketmanager->notify_favourites( $matches_updated, $this );
 			if ( ! $final_round ) {
 				// update Standings for each team.
 				$league_teams = $this->get_league_teams(

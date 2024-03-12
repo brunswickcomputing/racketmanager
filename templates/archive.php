@@ -53,7 +53,14 @@ if ( $match_day ) {
 		<div class="module__content">
 			<div class="module__banner">
 				<div class="banner__title">
-					<h1><?php echo esc_html( $league->title ) . ' - ' . esc_html__( 'Season', 'racketmanager' ) . ' ' . esc_html( $league->current_season['name'] ); ?></h1>
+					<h1>
+						<span><?php echo esc_html( $league->title ) . ' - ' . esc_html__( 'Season', 'racketmanager' ) . ' ' . esc_html( $league->current_season['name'] ); ?></span>
+						<?php
+						$favourite_type = 'league';
+						$favourite_id   = $league->id;
+						require 'includes/favourite-button.php';
+						?>
+					</h1>
 				</div>
 				<div id="racketmanager_archive_selections" class="module__aside">
 					<form method="get" action="<?php echo esc_html( get_permalink( $post_id ) ); ?>" id="racketmanager_competititon_archive">

@@ -32,7 +32,14 @@ namespace Racketmanager;
 					</span>
 				</div>
 				<div class="media__content">
-					<h3 class="media__title"><?php echo esc_html( $league->team->title ); ?></h3>
+					<h3 class="media__title">
+						<span><?php echo esc_html( $league->team->title ); ?></span>
+						<?php
+						$favourite_type = 'team';
+						$favourite_id   = $league->team->id;
+						require 'includes/favourite-button.php';
+						?>
+					</h3>
 				</div>
 			</div>
 		</div>

@@ -606,4 +606,20 @@ class Racketmanager_Util {
 		$match_days = self::get_match_days();
 		return empty( $match_days[ intval( $match_day_num ) ] ) ? __( 'Unknown', 'racketmanager' ) : $match_days[ $match_day_num ];
 	}
+	/**
+	 * Get users for favourite
+	 *
+	 * @param string $type type of favourite.
+	 * @param string $key key of favourite.
+	 * @return array list of users
+	 */
+	public static function get_users_for_favourite( $type, $key ) {
+		return get_users(
+			array(
+				'meta_key'   => 'favourite-' . $type, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_value' => $key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'fields'     => 'ids',
+			)
+		);
+	}
 }

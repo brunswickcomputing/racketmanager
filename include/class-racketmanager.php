@@ -1075,7 +1075,7 @@ class RacketManager {
 		);
 	}
 	/**
-	 * Rwrite tournament urls function
+	 * Rewrite tournament urls function
 	 *
 	 * @return void
 	 */

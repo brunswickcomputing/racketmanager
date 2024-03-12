@@ -216,32 +216,10 @@ if ( empty( $tab ) ) {
 											<?php echo esc_html( $league->title ); ?>
 										</a>
 										<?php
-										if ( is_user_logged_in() && 'constitution' !== $standings_template ) {
-											$is_favourite = $racketmanager->is_user_favourite( 'league', $league->id );
-											?>
-											<div class="fav-icon">
-												<a href="" id="fav-<?php echo esc_html( $league->id ); ?>" title="
-												<?php
-												if ( $is_favourite ) {
-													esc_html_e( 'Remove favourite', 'racketmanager' );
-												} else {
-													esc_html_e( 'Add favourite', 'racketmanager' );
-												}
-												?>
-												" data-js="add-favourite" data-type="league" data-favourite="<?php echo esc_html( $league->id ); ?>">
-													<i class="fav-icon-svg racketmanager-svg-icon
-													<?php
-													if ( $is_favourite ) {
-														echo ' fav-icon-svg-selected';
-													}
-													?>
-													">
-														<?php racketmanager_the_svg( 'icon-star' ); ?>
-													</i>
-												</a>
-												<div class="fav-msg" id="fav-msg-<?php echo esc_html( $league->id ); ?>"></div>
-											</div>
-										<?php } ?>
+										$favourite_type = 'league';
+										$favourite_id   = $league->id;
+										require 'includes/favourite.php';
+										?>
 									</h4>
 									<?php
 									racketmanager_standings(

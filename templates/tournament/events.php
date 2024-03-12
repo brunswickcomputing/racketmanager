@@ -34,8 +34,10 @@ if ( empty( $event ) ) {
 						<div class="row mb-2 row-list">
 							<div class="col-1" name="<?php esc_html_e( 'Favourite', 'racketmanager' ); ?>">
 							<?php
-							$hidden = true;
-							require RACKETMANAGER_PATH . 'templates/includes/favourite-competition.php';
+							$hidden         = true;
+							$favourite_type = 'competition';
+							$favourite_id   = $event->id;
+							require RACKETMANAGER_PATH . 'templates/includes/favourite.php';
 							?>
 							</div>
 							<div class="col-8" name="<?php esc_html_e( 'Event', 'racketmanager' ); ?>">
@@ -66,8 +68,10 @@ if ( empty( $event ) ) {
 			<h3 class="module__title">
 				<?php echo esc_html( $event->name ); ?>
 				<?php
-				$competition = $event;
-				require RACKETMANAGER_PATH . 'templates/includes/favourite-competition.php';
+				$competition    = $event;
+				$favourite_type = 'competition';
+				$favourite_id   = $event->id;
+				require RACKETMANAGER_PATH . 'templates/includes/favourite.php';
 				?>
 			</h3>
 		</div>

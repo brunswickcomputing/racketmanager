@@ -32,8 +32,10 @@ if ( empty( $draw ) ) {
 							<div class="row mb-2 row-list">
 								<div class="col-1" name="<?php esc_html_e( 'Favourite', 'racketmanager' ); ?>">
 									<?php
-									$hidden = true;
-									require RACKETMANAGER_PATH . 'templates/includes/favourite-competition.php';
+									$hidden         = true;
+									$favourite_type = 'competition';
+									$favourite_id   = $event->id;
+									require RACKETMANAGER_PATH . 'templates/includes/favourite.php';
 									?>
 								</div>
 								<div class="col-8" name="<?php esc_html_e( 'Draw', 'racketmanager' ); ?>">
@@ -57,15 +59,18 @@ if ( empty( $draw ) ) {
 			</div>
 		</div>
 	</div>
-
-<?php } else { ?>
+	<?php
+} else {
+	?>
 	<div class="module module--card">
 		<div class="module__banner">
 			<h3 class="module__title">
 				<?php echo esc_html( $draw->name ); ?>
 				<?php
-				$event = $draw;
-				require RACKETMANAGER_PATH . 'templates/includes/favourite-competition.php';
+				$event          = $draw;
+				$favourite_type = 'competition';
+				$favourite_id   = $event->id;
+				require RACKETMANAGER_PATH . 'templates/includes/favourite.php';
 				?>
 			</h3>
 		</div>
@@ -73,4 +78,6 @@ if ( empty( $draw ) ) {
 		require 'draw-body.php';
 		?>
 	</div>
-<?php } ?>
+	<?php
+}
+?>

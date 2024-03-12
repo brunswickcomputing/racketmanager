@@ -104,9 +104,11 @@ require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
 									<div class="row mb-2 row-list">
 										<div class="col-1" name="<?php esc_html_e( 'Favourite', 'racketmanager' ); ?>">
 											<?php
-											$hidden = true;
-											$event  = $entry;
-											require RACKETMANAGER_PATH . 'templates/includes/favourite-competition.php';
+											$hidden         = true;
+											$event          = $entry;
+											$favourite_type = 'competition';
+											$favourite_id   = $event->id;
+											require RACKETMANAGER_PATH . 'templates/includes/favourite.php';
 											?>
 										</div>
 										<div class="col-6" name="<?php esc_html_e( 'Event', 'racketmanager' ); ?>">

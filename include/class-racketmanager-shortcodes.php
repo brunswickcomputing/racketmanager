@@ -184,7 +184,11 @@ class RacketManager_Shortcodes {
 			$atts
 		);
 		$template = $args['template'];
-		$clubs    = $racketmanager->get_clubs();
+		$clubs    = $racketmanager->get_clubs(
+			array(
+				'type' => 'current',
+			)
+		);
 
 		$filename = ( ! empty( $template ) ) ? 'clubs-' . $template : 'clubs';
 

@@ -1509,10 +1509,14 @@ class RacketManager {
 		$orderby      = $args['orderby'];
 		$search_terms = array();
 		if ( $type && 'all' !== $type ) {
-			$search_terms[] = $wpdb->prepare(
-				'`type` = %s',
-				$type
-			);
+			if ( 'current' === $type ) {
+				$search_terms[] = "`type` != 'past'";
+			} else {
+				$search_terms[] = $wpdb->prepare(
+					'`type` = %s',
+					$type
+				);
+			}
 		}
 		$search = '';
 		if ( ! empty( $search_terms ) ) {

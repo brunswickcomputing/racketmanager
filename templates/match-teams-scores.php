@@ -213,7 +213,22 @@ if ( ! empty( $match->winner_id ) ) {
 							<div class="match__row">
 								<div class="match__row-title">
 									<div class="match__row-title-header">
+										<?php
+										if ( 'W' === $match->teams[ $opponent ]->status ) {
+											$title_text = $match->teams[ $opponent ]->title . ' ' . __( 'has withdrawn', 'racketmanager' );
+											?>
+											<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
+											<?php
+										}
+										?>
 										<?php echo esc_html( $match->teams[ $opponent ]->title ); ?>
+										<?php
+										if ( 'W' === $match->teams[ $opponent ]->status ) {
+											?>
+											</s> 
+											<?php
+										}
+										?>
 									</div>
 									<?php
 									foreach ( $rubber_players as $player_number => $player ) {

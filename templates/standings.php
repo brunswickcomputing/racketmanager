@@ -115,9 +115,24 @@ if ( count( $league->teams ) ) {
 						}
 						?>
 						<td>
+							<?php
+							if ( 'W' === $team->status ) {
+								$title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );
+								?>
+								<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
+								<?php
+							}
+							?>
 							<a href="/<?php echo esc_attr( $league->event->competition->type ); ?>/<?php echo esc_html( seo_url( $league->title ) ); ?>/<?php echo esc_attr( $league->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->title ) ); ?>/">
 								<?php the_team_name(); ?>
 							</a>
+							<?php
+							if ( 'W' === $team->status ) {
+								?>
+								</s> 
+								<?php
+							}
+							?>
 						</td>
 						<?php
 						if ( show_standings( 'pld' ) ) {

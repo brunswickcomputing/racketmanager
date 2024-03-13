@@ -130,7 +130,24 @@ foreach ( $matches as $match ) {
 						<div class="team-match">
 							<div class="team-match__name is-team-1">
 								<span class="nav--link">
-									<span class="nav-link__value"><?php echo esc_html( $match->teams['home']->title ); ?></span>
+									<span class="nav-link__value">
+										<?php
+										if ( 'W' === $match->teams['home']->status ) {
+											$title_text = $match->teams['home']->title . ' ' . __( 'has withdrawn', 'racketmanager' );
+											?>
+											<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
+											<?php
+										}
+										?>
+										<?php echo esc_html( $match->teams['home']->title ); ?>
+										<?php
+										if ( 'W' === $match->teams['home']->status ) {
+											?>
+											</s> 
+											<?php
+										}
+										?>
+									</span>
 								</span>
 							</div>
 							<div class="score <?php echo esc_attr( $score_class ); ?>">
@@ -150,7 +167,24 @@ foreach ( $matches as $match ) {
 							</div>
 							<div class="team-match__name is-team-2">
 								<span class="nav--link">
-									<span class="nav-link__value"><?php echo esc_html( $match->teams['away']->title ); ?></span>
+									<span class="nav-link__value">
+										<?php
+										if ( 'W' === $match->teams['away']->status ) {
+											$title_text = $match->teams['away']->title . ' ' . __( 'has withdrawn', 'racketmanager' );
+											?>
+											<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
+											<?php
+										}
+										?>
+										<?php echo esc_html( $match->teams['away']->title ); ?>
+										<?php
+										if ( 'W' === $match->teams['away']->status ) {
+											?>
+											</s> 
+											<?php
+										}
+										?>
+									</span>
 								</span>
 							</div>
 						</div>

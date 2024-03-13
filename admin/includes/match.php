@@ -149,7 +149,7 @@ namespace Racketmanager;
 											?>
 											<option value="<?php echo esc_html( $d ); ?>"
 												<?php
-												if ( $d === intval( $match_day ) ) {
+												if ( intval( $match_day ) === $d ) {
 													echo ' selected';
 												}
 												?>

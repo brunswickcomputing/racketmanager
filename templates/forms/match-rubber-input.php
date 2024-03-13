@@ -281,7 +281,7 @@ if ( ! empty( $match->winner_id ) ) {
 												?>
 												>
 													<?php ++$tabindex; ?>
-													<input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points match-points__cell-input" type="text"
+													<input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points match-points__cell-input" type="number" min="0"
 														<?php
 														if ( ! $updates_allowed ) {
 															echo esc_html( ' readonly' );

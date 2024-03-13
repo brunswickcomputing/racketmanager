@@ -1027,6 +1027,9 @@ class Racketmanager_Ajax extends RacketManager {
 				if ( ! $set['tiebreak'] > '' ) {
 					$err_msg[]   = __( 'Tie break score required', 'racketmanager' );
 					$err_field[] = $set_prefix . 'tiebreak';
+				} elseif ( ! is_numeric( $set['tiebreak'] ) || strval( round( $set['tiebreak'] ) ) !== $set['tiebreak'] ) {
+					$err_msg[]   = __( 'Tie break score must be whole number', 'racketmanager' );
+					$err_field[] = $set_prefix . 'tiebreak';
 				}
 			} elseif ( $tiebreak_required && '' === $set['tiebreak'] ) {
 				$err_msg[]   = __( 'Tie break score required', 'racketmanager' );
@@ -1044,9 +1047,14 @@ class Racketmanager_Ajax extends RacketManager {
 				$err_msg[]   = __( 'Tie break score should be empty', 'racketmanager' );
 				$err_field[] = $set_prefix . 'tiebreak';
 			}
-		} elseif ( $tiebreak_required && '' === $set['tiebreak'] ) {
-			$err_msg[]   = __( 'Tie break score required', 'racketmanager' );
-			$err_field[] = $set_prefix . 'tiebreak';
+		} elseif ( $tiebreak_required ) {
+			if ( '' === $set['tiebreak'] ) {
+				$err_msg[]   = __( 'Tie break score required', 'racketmanager' );
+				$err_field[] = $set_prefix . 'tiebreak';
+			} elseif ( ! is_numeric( $set['tiebreak'] ) || strval( round( $set['tiebreak'] ) ) !== $set['tiebreak'] ) {
+				$err_msg[]   = __( 'Tie break score must be whole number', 'racketmanager' );
+				$err_field[] = $set_prefix . 'tiebreak';
+			}
 		}
 		$return_data->msg   = $err_msg;
 		$return_data->field = $err_field;

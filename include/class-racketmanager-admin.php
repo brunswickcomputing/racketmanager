@@ -1919,7 +1919,7 @@ final class RacketManager_Admin extends RacketManager {
 						$club->shortcode = isset( $_POST['shortcode'] ) ? sanitize_text_field( wp_unslash( $_POST['shortcode'] ) ) : null;
 					}
 						$club->matchsecretary             = isset( $_POST['matchsecretary'] ) ? intval( $_POST['matchsecretary'] ) : null;
-						$club->match_secretary_contact_no = isset( $_POST['match_secretary_contact_no'] ) ? intval( $_POST['match_secretary_contact_no'] ) : null;
+						$club->match_secretary_contact_no = isset( $_POST['match_secretary_contact_no'] ) ? sanitize_text_field( wp_unslash( $_POST['match_secretary_contact_no'] ) ) : null;
 						$club->match_secretary_email      = isset( $_POST['match_secretary_email'] ) ? sanitize_text_field( wp_unslash( $_POST['match_secretary_email'] ) ) : null;
 						$club->contactno                  = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
 						$club->website                    = isset( $_POST['website'] ) ? sanitize_text_field( wp_unslash( $_POST['website'] ) ) : null;

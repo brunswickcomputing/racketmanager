@@ -121,9 +121,10 @@ class Racketmanager_Util {
 	/**
 	 * Get available league standing status
 	 *
-	 * @return array
+	 * @param string $status status value.
+	 * @return array||string
 	 */
-	public static function get_standing_status() {
+	public static function get_standing_status( $status = null ) {
 		$standing_status       = array();
 		$standing_status['C']  = __( 'Champions', 'racketmanager' );
 		$standing_status['P1'] = __( 'Promoted in first place', 'racketmanager' );
@@ -132,13 +133,25 @@ class Racketmanager_Util {
 		$standing_status['P4'] = __( 'Promoted in fourth place', 'racketmanager' );
 		$standing_status['W1'] = __( 'League winners but league locked', 'racketmanager' );
 		$standing_status['W2'] = __( 'Second place but league locked', 'racketmanager' );
+		$standing_status['W3'] = __( 'Third place but league locked', 'racketmanager' );
 		$standing_status['RB'] = __( 'Relegated in bottom place', 'racketmanager' );
 		$standing_status['RQ'] = __( 'Relegated by request', 'racketmanager' );
 		$standing_status['RT'] = __( 'Relegated as team in division above', 'racketmanager' );
 		$standing_status['BT'] = __( 'Finished bottom but not relegated', 'racketmanager' );
 		$standing_status['NT'] = __( 'New team', 'racketmanager' );
 		$standing_status['W']  = __( 'Withdrawn', 'racketmanager' );
-		return $standing_status;
+		$standing_status['+']  = __( 'Move up', 'racketmanager' );
+		$standing_status['-']  = __( 'Move down', 'racketmanager' );
+		$standing_status['=']  = __( 'No movement', 'racketmanager' );
+		if ( ! is_null( $status ) ) {
+			if ( ! empty( $standing_status[ $status ] ) ) {
+				return $standing_status[ $status ];
+			} else {
+				return null;
+			}
+		} else {
+			return $standing_status;
+		}
 	}
 
 	/**

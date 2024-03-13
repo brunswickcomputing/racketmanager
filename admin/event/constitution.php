@@ -105,9 +105,13 @@ if ( empty( $this->seasons ) ) { ?>
 								<td>
 									<select size=1 name="status[<?php echo esc_html( $team->table_id ); ?>]">
 										<option value="" <?php selected( '', $team->status ); ?>></option>
-										<?php foreach ( $standing_status as $key => $value ) { ?>
+										<?php
+										foreach ( $standing_status as $key => $value ) {
+											?>
 											<option value="<?php echo esc_html( $key ); ?>" <?php selected( $key, $team->status ); ?>><?php echo esc_html( $value ); ?></option>
-										<?php } ?>
+											<?php
+										}
+										?>
 									</select>
 								</td>
 								<td class="column-num">
@@ -142,10 +146,10 @@ if ( empty( $this->seasons ) ) { ?>
 		<?php
 		if ( $latest_event_season >= $latest_season ) {
 			?>
-	<script>
-	jQuery("#constitution").find("*").prop('disabled', true);
-	jQuery("#constitution").addClass("disabledButton");
-	</script>
+			<script>
+			jQuery("#constitution").find("*").prop('disabled', true);
+			jQuery("#constitution").addClass("disabledButton");
+			</script>
 			<?php
 		}
 	}

@@ -345,6 +345,7 @@ class Racketmanager_League {
 		'confirmed'        => false,
 		'leg'              => false,
 		'player'           => false,
+		'withdrawn'        => true,
 	);
 
 	/**
@@ -380,6 +381,7 @@ class Racketmanager_League {
 		'confirmed'        => 'boolean',
 		'leg'              => 'numeric',
 		'player'           => 'numeric',
+		'withdrawn'        => 'boolean',
 	);
 
 	/**
@@ -1583,15 +1585,16 @@ class Racketmanager_League {
 		$confirmed        = $this->match_query_args['confirmed'];
 		$leg              = $this->match_query_args['leg'];
 		$player           = $this->match_query_args['player'];
+		$withdrawn        = $this->match_query_args['withdrawn'];
 
 		$matches = array();
 		$args    = array( intval( $this->id ) );
 		if ( $count ) {
 			$sql_start = "SELECT COUNT(*) FROM {$wpdb->racketmanager_matches} m";
-			$sql       = ' WHERE `league_id` = %d';
+			$sql       = ' WHERE m.`league_id` = %d';
 		} else {
 			$sql_start = "SELECT  DISTINCT m.`id` FROM {$wpdb->racketmanager_matches} m";
-			$sql       = ' WHERE `league_id` = %d';
+			$sql       = ' WHERE m.`league_id` = %d';
 		}
 
 		// disable limit for championship mode.
@@ -1599,12 +1602,12 @@ class Racketmanager_League {
 			$limit = false;
 		}
 		if ( '' === $season ) {
-			$sql   .= ' AND `season` = %s';
+			$sql   .= ' AND m.`season` = %s';
 			$args[] = $this->current_season['name'];
 		} elseif ( 'any' === $season ) {
-			$sql .= " AND `season` != ''";
+			$sql .= " AND m.`season` != ''";
 		} elseif ( $this->season_exists( htmlspecialchars( $season ) ) ) {
-			$sql   .= ' AND `season` = %s';
+			$sql   .= ' AND m.`season` = %s';
 			$args[] = htmlspecialchars( $season );
 		} else {
 			return $matches;
@@ -1718,6 +1721,11 @@ class Racketmanager_League {
 		// Force ordering by date descending if previous/latest matches are queried.
 		if ( 'prev' === $time || 'latest' === $time ) {
 			$orderby['date'] = 'DESC';
+		}
+		if ( ! $withdrawn ) {
+			$sql_start .= " ,{$wpdb->racketmanager_table} t1, {$wpdb->racketmanager_table} t2";
+			$sql       .= " AND `home_team` = t1.`team_id` AND t1.`league_id` = m.`league_id` and t1.`season` = m.`season` AND t1.`status` != 'W'";
+			$sql       .= " AND `away_team` = t2.`team_id` AND t2.`league_id` = m.`league_id` and t2.`season` = m.`season` AND t2.`status` != 'W'";
 		}
 
 		// get number of matches.
@@ -2405,6 +2413,35 @@ class Racketmanager_League {
 		}
 	}
 	/**
+	 * Get team league table function
+	 *
+	 * @param int    $team team id.
+	 * @param string $season season.
+	 * @return int team ranking.
+	 */
+	public function get_status( $team, $season ) {
+		global $wpdb;
+		$sql         = $wpdb->prepare(
+			"SELECT `status` FROM {$wpdb->racketmanager_table} WHERE `league_id` = %d AND `season` = %s AND `team_id` = %d",
+			$this->id,
+			$season,
+			intval( $team ),
+		);
+		$team_status = wp_cache_get( md5( $sql ), 'team_status' );
+		if ( ! $team_status ) {
+			$team_status = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql,
+			);
+			wp_cache_set( md5( $sql ), $team_status, 'team_status' );
+		}
+		if ( $team_status ) {
+			return $team_status->status;
+		} else {
+			return null;
+		}
+	}
+	/**
 	 * Gets ranking of teams
 	 *
 	 * @param array $teams teams.
@@ -2426,8 +2463,10 @@ class Racketmanager_League {
 				}
 			}
 
-			$team->rank   = $rank;
-			$team->status = $this->get_team_status( $team, $rank );
+			$team->rank = $rank;
+			if ( 'W' !== $team->status ) {
+				$team->status = $this->get_team_status( $team, $rank );
+			}
 
 			$new_teams[ $key ] = $team;
 		}

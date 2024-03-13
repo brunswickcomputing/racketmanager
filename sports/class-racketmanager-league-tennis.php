@@ -48,7 +48,6 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 	 * @return array
 	 */
 	public function calculate_points( $points, $team_id, $point_rule, $matches ) {
-		global $racketmanager;
 		$forwin             = $point_rule['forwin'];
 		$fordraw            = $point_rule['fordraw'];
 		$forloss            = $point_rule['forloss'];
@@ -153,7 +152,7 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 			$player_ref     = ( $team_id === $match->home_team ) ? 'player1' : 'player2';
 			$player_ref_alt = ( 'player1' === $player_ref ) ? 'player2' : 'player1';
 			$match          = get_match( $match );
-			if ( ! empty( $match->winner_id ) && ! empty( $match->loser_id ) ) {
+			if ( ! empty( $match->winner_id ) && ! empty( $match->loser_id ) && 'W' !== $match->teams['home']->status && 'W' !== $match->teams['away']->status ) {
 				if ( ! empty( $match->status && 3 === $match->status ) ) {
 					++$data['matches_shared'];
 				}
@@ -275,6 +274,7 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 				'away_points'      => 'not null',
 				'reset_query_args' => true,
 				'confirmed'        => true,
+				'withdrawn'        => false,
 			)
 		);
 	}

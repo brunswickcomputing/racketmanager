@@ -513,6 +513,7 @@ final class Racketmanager_League_Team {
 				'cache'            => false,
 				'match_day'        => -1,
 				'reset_query_args' => true,
+				'withdrawn'        => false,
 			)
 		);
 		$num_matches = apply_filters( 'racketmanager_done_matches_' . $league->sport, $num_matches, $this->id, $league->id );
@@ -543,6 +544,7 @@ final class Racketmanager_League_Team {
 				'cache'            => false,
 				'match_day'        => -1,
 				'reset_query_args' => true,
+				'withdrawn'        => false,
 			)
 		);
 		$num_won = apply_filters( 'racketmanager_won_matches_' . $league->sport, $num_won, $this->id, $league->id );
@@ -575,6 +577,7 @@ final class Racketmanager_League_Team {
 				'cache'            => false,
 				'match_day'        => -1,
 				'reset_query_args' => true,
+				'withdrawn'        => false,
 			)
 		);
 		$num_draw = apply_filters( 'racketmanager_tie_matches_' . $league->sport, $num_draw, $this->id, $league->id );
@@ -605,6 +608,7 @@ final class Racketmanager_League_Team {
 				'cache'            => false,
 				'match_day'        => -1,
 				'reset_query_args' => true,
+				'withdrawn'        => false,
 			)
 		);
 		$num_lost = apply_filters( 'racketmanager_lost_matches_' . $league->sport, $num_lost, $this->id, $league->id );

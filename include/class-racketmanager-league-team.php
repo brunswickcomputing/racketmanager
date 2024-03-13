@@ -370,10 +370,7 @@ final class Racketmanager_League_Team {
 
 			$this->profile = intval( $this->profile );
 
-			$standing_status = Racketmanager_Util::get_standing_status();
-			if ( isset( $standing_status[ $this->status ] ) ) {
-				$this->status = $standing_status[ $this->status ];
-			}
+			$this->status_text        = Racketmanager_Util::get_standing_status( $this->status );
 			$this->club               = get_club( $this->affiliatedclub );
 			$this->affiliatedclubname = $this->club->name;
 			if ( 'P' === $this->status && null !== $this->roster ) {
@@ -385,18 +382,13 @@ final class Racketmanager_League_Team {
 					++$i;
 				}
 			}
+			$this->status_icon = '';
 			if ( '+' === $this->status ) {
-				$this->status_text = __( 'Move up', 'racketmanager' );
 				$this->status_icon = 'icon-arrow-up';
 			} elseif ( '-' === $this->status ) {
-				$this->status_text = __( 'Move down', 'racketmanager' );
 				$this->status_icon = 'icon-arrow-down';
 			} elseif ( '=' === $this->status ) {
-				$this->status_text = __( 'No movement', 'racketmanager' );
 				$this->status_icon = 'icon-dot';
-			} else {
-				$this->status_text = '';
-				$this->status_icon = '';
 			}
 		}
 	}

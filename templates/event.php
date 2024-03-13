@@ -216,9 +216,11 @@ if ( empty( $tab ) ) {
 											<?php echo esc_html( $league->title ); ?>
 										</a>
 										<?php
-										$favourite_type = 'league';
-										$favourite_id   = $league->id;
-										require 'includes/favourite.php';
+										if ( 'constitution' !== $standings_template ) {
+											$favourite_type = 'league';
+											$favourite_id   = $league->id;
+											require 'includes/favourite.php';
+										}
 										?>
 									</h4>
 									<?php

@@ -25,15 +25,15 @@ if ( have_teams() ) {
 					<td>
 						<?php the_team_name(); ?>
 					</td>
-					<?php
-					if ( show_standings( 'status' ) ) {
-						?>
-						<td class="num">
-							<?php the_team_status(); ?>
-						</td>
-					<?php } ?>
+					<td class="num">
+						<?php the_team_status_text(); ?>
+					</td>
 				</tr>
-			<?php } ?>
+				<?php
+			}
+			?>
 		</tbody>
 	</table>
-<?php } ?>
+	<?php
+}
+?>

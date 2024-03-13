@@ -29,13 +29,14 @@ $email_subject    = $organisation . ' Match Result Pending - ' . $competition_na
 														<tr>
 															<td style="min-width: 5px; font-weight: 400;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
 																<div style="font-size: 16px; color: #000; background-color: transparent; margin: 10px;">
-																	<p>The result of this match is outstanding
 																	<?php
+																	$message_detail = 'The result of this match is outstanding';
 																	if ( $time_period ) {
-																		echo ' more than ' . esc_html( $time_period ) . ' hours after the match was played';
+																		$message_detail .= ' more than ' . $time_period . ' hours after the match was played';
 																	}
+																	$message_detail .= '.';
 																	?>
-																	.</p>
+																	<p><?php echo esc_html( $message_detail ); ?></p>
 																	<p>Please provide the result as soon as possible.</p>
 																	<?php
 																	if ( $time_period ) {

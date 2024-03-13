@@ -239,7 +239,7 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 				'match'       => '',
 				'template'    => '',
 				'outstanding' => false,
-				'timeperiod'  => false,
+				'time_period' => false,
 				'override'    => false,
 				'from_email'  => false,
 			),
@@ -248,7 +248,7 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 		$match       = $args['match'];
 		$template    = $args['template'];
 		$outstanding = $args['outstanding'];
-		$time_period = $args['timeperiod'];
+		$time_period = $args['time_period'];
 		$override    = $args['override'];
 		$from_email  = $args['from_email'];
 		$match       = get_match( $match );
@@ -290,16 +290,16 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 
 		$args        = shortcode_atts(
 			array(
-				'match'      => '',
-				'template'   => '',
-				'timeperiod' => false,
-				'from_email' => null,
+				'match'       => '',
+				'template'    => '',
+				'time_period' => false,
+				'from_email'  => null,
 			),
 			$atts
 		);
 		$match       = $args['match'];
 		$template    = $args['template'];
-		$time_period = $args['timeperiod'];
+		$time_period = $args['time_period'];
 		$from_email  = $args['from_email'];
 		$match       = get_match( $match );
 

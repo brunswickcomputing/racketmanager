@@ -2035,16 +2035,18 @@ class Racketmanager_League {
 		if ( true === $total ) {
 			$this->num_matches_total = $this->get_matches(
 				array(
-					'count'  => true,
-					'season' => '',
+					'count'            => true,
+					'season'           => '',
+					'reset_query_args' => true,
 				)
 			);
 		} else {
 			$this->get_matches(
 				array(
-					'limit'  => 0,
-					'count'  => true,
-					'season' => '',
+					'limit'            => 0,
+					'count'            => true,
+					'season'           => '',
+					'reset_query_args' => true,
 				)
 			);
 			$this->pagination_matches = $this->get_page_links( 'matches' );

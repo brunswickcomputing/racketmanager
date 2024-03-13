@@ -1132,7 +1132,8 @@ final class RacketManager_Admin extends RacketManager {
 				)
 			);
 			if ( 'championship' !== $league_mode ) {
-				$matches = $league->get_matches( $match_args );
+				$match_args['reset_query_args'] = true;
+				$matches                        = $league->get_matches( $match_args );
 				$league->set_num_matches();
 			}
 			if ( isset( $_GET['match_paged'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended

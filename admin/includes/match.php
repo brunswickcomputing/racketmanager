@@ -50,7 +50,7 @@ namespace Racketmanager;
 						}
 						?>
 						<?php
-						if ( ( isset( $match->final_round ) && null !== $match->final_round ) || $is_finals ) {
+						if ( ! empty( $match->final_round ) || $is_finals ) {
 							?>
 							<?php
 						} else {
@@ -130,22 +130,33 @@ namespace Racketmanager;
 							}
 							?>
 							<?php
-							if ( ( isset( $match->final_round ) && null !== $match->final_round ) || $is_finals ) {
+							if ( ! empty( $matches[ $i ]->final_round ) || $is_finals ) {
 								?>
 								<?php
 							} else {
+								if ( empty( $match_day ) ) {
+									if ( ! empty( $matches[ $i ]->match_day ) ) {
+										$match_day = $match[ $i ]->match_day;
+									} else {
+										$match_day = null;
+									}
+								}
 								?>
 								<td>
 									<select size="1" name="match_day[<?php echo esc_html( $i ); ?>]" id="match_day_<?php echo esc_html( $i ); ?>" onChange="Racketmanager.setMatchDayPopUp(this.value, <?php echo esc_html( $i ); ?>, <?php echo esc_html( $max_matches ); ?>, '<?php echo esc_html( $mode ); ?>');">
-										<?php for ( $d = 1; $d <= $league->current_season['num_match_days']; $d++ ) { ?>
+										<?php
+										for ( $d = 1; $d <= $league->current_season['num_match_days']; $d++ ) {
+											?>
 											<option value="<?php echo esc_html( $d ); ?>"
 												<?php
-												if ( isset( $match_day ) && $d === $match_day ) {
+												if ( $d === intval( $match_day ) ) {
 													echo ' selected';
 												}
 												?>
 											><?php echo esc_html( $d ); ?></option>
-										<?php } ?>
+											<?php
+										}
+										?>
 									</select>
 								</td>
 								<?php

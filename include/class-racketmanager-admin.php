@@ -1044,47 +1044,57 @@ final class RacketManager_Admin extends RacketManager {
 			$league_mode = ( isset( $league->event->competition->mode ) ? ( $league->event->competition->mode ) : '' );
 			$tab         = 'standings';
 			$match_day   = false;
-			if ( isset( $_POST['doaction'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				$this->delete_teams_from_league( $league );
+			// phpcs:disable WordPress.Security.NonceVerification.Missing
+			if ( isset( $_POST['doaction'] ) ) {
+				if ( isset( $_POST['action'] ) ) {
+					if ( 'delete' === $_POST['action'] ) {
+						$this->delete_teams_from_league( $league );
+					} elseif ( 'withdraw' === $_POST['action'] ) {
+						$this->withdraw_teams_from_league( $league );
+					} else {
+						$this->set_message( __( 'No action selected', 'racketmanager' ), true );
+					}
+				}
 				if ( $league->is_championship ) {
 					$tab = 'preliminary';
 				}
-			} elseif ( isset( $_POST['delmatches'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			} elseif ( isset( $_POST['delmatches'] ) ) {
 				$this->delete_matches_from_league();
 				$tab = 'matches';
-			} elseif ( isset( $_POST['updateLeague'] ) && 'team' === $_POST['updateLeague'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			} elseif ( isset( $_POST['updateLeague'] ) && 'team' === $_POST['updateLeague'] ) {
 				$this->league_manage_team( $league );
 				if ( $league->is_championship ) {
 					$tab = 'preliminary';
 				}
-			} elseif ( isset( $_POST['updateLeague'] ) && 'teamPlayer' === $_POST['updateLeague'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			} elseif ( isset( $_POST['updateLeague'] ) && 'teamPlayer' === $_POST['updateLeague'] ) {
 				$this->add_player_team_to_league( $league );
 				if ( $league->is_championship ) {
 					$tab = 'preliminary';
 				}
-			} elseif ( isset( $_POST['updateLeague'] ) && 'match' === $_POST['updateLeague'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			} elseif ( isset( $_POST['updateLeague'] ) && 'match' === $_POST['updateLeague'] ) {
 				$this->manage_matches_in_league( $league );
-			} elseif ( isset( $_POST['updateLeague'] ) && 'results' === $_POST['updateLeague'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			} elseif ( isset( $_POST['updateLeague'] ) && 'results' === $_POST['updateLeague'] ) {
 				$this->update_results_in_league();
 				$tab = 'matches';
-			} elseif ( isset( $_POST['updateLeague'] ) && 'teams_manual' === $_POST['updateLeague'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			} elseif ( isset( $_POST['updateLeague'] ) && 'teams_manual' === $_POST['updateLeague'] ) {
 				$this->league_manual_rank( $league );
-			} elseif ( isset( $_POST['action'] ) && 'addTeamsToLeague' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			} elseif ( isset( $_POST['action'] ) && 'addTeamsToLeague' === $_POST['action'] ) {
 				$this->league_add_teams( $league );
 				if ( $league->is_championship ) {
 					$tab = 'preliminary';
 				}
-			} elseif ( isset( $_POST['contactTeam'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			} elseif ( isset( $_POST['contactTeam'] ) ) {
 				$this->league_contact_teams();
 				$tab = 'standings';
-			} elseif ( isset( $_POST['saveRanking'] ) ) {  // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			} elseif ( isset( $_POST['saveRanking'] ) ) {
 				$this->league_manual_rank_teams( $league );
 				$tab = 'standings';
-			} elseif ( isset( $_POST['randomRanking'] ) ) {  // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			} elseif ( isset( $_POST['randomRanking'] ) ) {
 				$this->league_random_rank_teams( $league );
 				$tab = 'standings';
 			}
 			$this->printMessage();
+			// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 			// check if league is a cup championship.
 			$cup = ( 'championship' === $league_mode ) ? true : false;
@@ -1282,7 +1292,34 @@ final class RacketManager_Admin extends RacketManager {
 			}
 		}
 	}
-
+	/**
+	 * Withdraw teams from league in admin screen
+	 *
+	 * @param object $league league object.
+	 */
+	private function withdraw_teams_from_league( $league ) {
+		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
+			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+		} elseif ( isset( $_POST['action'] ) && 'withdraw' === $_POST['action'] ) {
+			if ( current_user_can( 'del_teams' ) ) {
+				$league        = get_league( $league );
+				$season        = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
+				$messages      = array();
+				$message_error = false;
+				if ( isset( $_POST['team'] ) ) {
+					foreach ( $_POST['team'] as $team_id ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+						$team = get_team( $team_id );
+						$league->withdraw_team( intval( $team_id ), $season );
+						$messages[] = $team->title . ' ' . __( 'withdrawn', 'racketmanager' );
+					}
+					$message = implode( '<br>', $messages );
+					$this->set_message( $message, $message_error );
+				}
+			} else {
+				$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
+			}
+		}
+	}
 	/**
 	 * Manage matches in league in admin screen
 	 *

@@ -850,7 +850,27 @@ class Racketmanager_League {
 
 		$racketmanager->set_message( __( 'Team Deleted', 'racketmanager' ) );
 	}
+	/**
+	 * Withdraw team from League
+	 *
+	 * @param integer $team team id.
+	 * @param string  $season season.
+	 */
+	public function withdraw_team( $team, $season ) {
+		global $wpdb, $racketmanager;
 
+		// remove tables.
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"UPDATE {$wpdb->racketmanager_table} SET `status` = 'W' WHERE `team_id` = %d AND `league_id` = %d and `season` = %s",
+				$team,
+				$this->id,
+				$season
+			)
+		);
+		$this->update_standings( $season );
+		$racketmanager->set_message( __( 'Team withdrawn', 'racketmanager' ) );
+	}
 	/**
 	 * Set detault dataset query arguments
 	 */
@@ -2663,24 +2683,30 @@ class Racketmanager_League {
 
 		if ( $num_matches > 0 ) {
 			if ( ! $final_round ) {
-				// update Standings for each team.
-				$league_teams = $this->get_league_teams(
-					array(
-						'season' => $season,
-						'cache'  => false,
-					)
-				);
-				foreach ( $league_teams as $i => $league_team ) {
-					$league_teams[ $i ] = $this->save_standings( $league_team );
-				}
-
-				// Update Teams Rank and Status.
-				$this->set_teams_rank( $season );
+				$this->update_standings( $season );
 			}
 		}
 		return $num_matches;
 	}
-
+	/**
+	 * Update standings function
+	 *
+	 * @param string $season season.
+	 */
+	private function update_standings( $season ) {
+		// update Standings for each team.
+		$league_teams = $this->get_league_teams(
+			array(
+				'season' => $season,
+				'cache'  => false,
+			)
+		);
+		foreach ( $league_teams as $i => $league_team ) {
+			$league_teams[ $i ] = $this->save_standings( $league_team );
+		}
+		// Update Teams Rank and Status.
+		$this->set_teams_rank( $season );
+	}
 	/**
 	 * Update points for given team
 	 *

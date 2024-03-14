@@ -35,6 +35,7 @@ if ( 'championship' !== $league->mode ) {
 		<select name="action" size="1">
 			<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
 			<option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
+			<option value="withdraw"><?php esc_html_e( 'Withdraw', 'racketmanager' ); ?></option>
 		</select>
 		<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doaction" id="doaction" class="btn btn-secondary action" />
 	</div>

@@ -51,10 +51,15 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 == Changelog ==
 
 = 8.3.0 =
+
+
+= 8.3.0 =
 * BUGFIX: use time period in result emails correctly
 * BUGFIX: validate tiebreak score
 * BUGFIX: display match_day
 * BUGFIX: display crossfield correctly when selecting by team
+* BUGFIX: ensure first round identified correctly
+* BUGFIX handle home and away correctly
 * UPDATE: handle withdrawn team
 
 = 8.2.0 =

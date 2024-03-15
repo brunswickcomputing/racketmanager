@@ -2537,7 +2537,7 @@ final class RacketManager_Admin extends RacketManager {
 				$teams = $league->championship->get_final_teams( $finalkey );
 				if ( 'add' === $mode ) {
 					$round = $final['round'];
-					if ( 1 !== $round ) {
+					if ( 1 !== intval( $round ) ) {
 						$prev_round      = $final['round'] - 1;
 						$prev_round_name = $league->championship->get_final_keys( $prev_round );
 						$first_round     = false;

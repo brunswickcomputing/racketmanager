@@ -71,7 +71,7 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 		if ( 'tournament' === $competitiontype ) {
 			$tournament       = get_tournament( $tournament );
 			$tournament->link = '<a href="' . $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/">' . $tournament->name . '</a>';
-			$draw_link        = '<a href="' . $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $match->league->event->competition->name ) . '/">' . $match->league->event->competition->name . '</a>';
+			$draw_link        = '<a href="' . $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $match->league->event->name ) . '/">' . $match->league->event->name . '</a>';
 			$match_link       = $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/match/' . $match->id . '/';
 			if ( substr( $match->league->type, 1, 1 ) === 'D' ) {
 				$teams['home']->title = __( 'Home Players', 'racketmanager' );

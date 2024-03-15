@@ -43,7 +43,7 @@ namespace Racketmanager;
 						<div class="col-2 col-lg-1">
 						<?php
 						if ( isset( $season['homeAway'] ) ) {
-							if ( $season['homeAway'] ) {
+							if ( 'true' === $season['homeAway'] ) {
 								echo 'both';
 							} else {
 								echo 'home only';

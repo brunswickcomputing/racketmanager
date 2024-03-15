@@ -3409,7 +3409,7 @@ class Racketmanager_League {
 	 */
 	public function add_match( $match ) {
 		$match = new Racketmanager_Match( $match );
-		if ( $this->is_championship && ! empty( $this->current_season['homeAway'] ) && 'final' !== $match->final_round ) {
+		if ( $this->is_championship && ! empty( $this->current_season['homeAway'] ) && 'true' === $this->current_season['homeAway'] && 'final' !== $match->final_round ) {
 			$match->leg              = 1;
 			$new_match               = clone $match;
 			$new_match->date         = gmdate( 'Y-m-d H:i:s', strtotime( $match->date . ' +14 day' ) );

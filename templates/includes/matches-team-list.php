@@ -132,7 +132,7 @@ foreach ( $matches as $match ) {
 								<span class="nav--link">
 									<span class="nav-link__value">
 										<?php
-										if ( 'W' === $match->teams['home']->status ) {
+										if ( ! empty( $match->teams['home']->status ) && 'W' === $match->teams['home']->status ) {
 											$title_text = $match->teams['home']->title . ' ' . __( 'has withdrawn', 'racketmanager' );
 											?>
 											<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
@@ -141,7 +141,7 @@ foreach ( $matches as $match ) {
 										?>
 										<?php echo esc_html( $match->teams['home']->title ); ?>
 										<?php
-										if ( 'W' === $match->teams['home']->status ) {
+										if ( ! empty( $match->teams['home']->status ) && 'W' === $match->teams['home']->status ) {
 											?>
 											</s> 
 											<?php
@@ -169,7 +169,7 @@ foreach ( $matches as $match ) {
 								<span class="nav--link">
 									<span class="nav-link__value">
 										<?php
-										if ( 'W' === $match->teams['away']->status ) {
+										if ( ! empty( $match->teams['away']->status ) && 'W' === $match->teams['away']->status ) {
 											$title_text = $match->teams['away']->title . ' ' . __( 'has withdrawn', 'racketmanager' );
 											?>
 											<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
@@ -178,7 +178,7 @@ foreach ( $matches as $match ) {
 										?>
 										<?php echo esc_html( $match->teams['away']->title ); ?>
 										<?php
-										if ( 'W' === $match->teams['away']->status ) {
+										if ( ! empty( $match->teams['away']->status ) && 'W' === $match->teams['away']->status ) {
 											?>
 											</s> 
 											<?php

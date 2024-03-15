@@ -162,18 +162,34 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 					$walkovers = 0;
 					foreach ( $rubbers as $rubber ) {
 						if ( ! $rubber->is_walkover && ! $rubber->is_shared ) {
+							$num_sets    = count( $rubber->sets );
+							$set_retired = null;
+							if ( isset( $rubber->custom['retired'] ) ) {
+								for ( $s1 = $num_sets - 1; $s1 >= 0; $s1-- ) {
+									if ( null !== $rubber->sets[ $s1 ]['player1'] || null !== $rubber->sets[ $s1 ]['player2'] ) {
+										$set_retired = $s1;
+										break;
+									}
+								}
+							}
 							for ( $j = 1; $j <= $league->num_sets; $j++ ) {
 								if ( isset( $rubber->sets[ $j ]['player1'] ) && null !== $rubber->sets[ $j ]['player1'] ) {
-									$set = $rubber->sets[ $j ];
+									$set        = $rubber->sets[ $j ];
+									$set_status = null;
+									if ( isset( $rubber->custom['retired'] ) ) {
+										if ( $set_retired === $j ) {
+											$set_status = $rubber->custom['retired'];
+										}
+									}
 									if ( is_numeric( trim( $set[ $player_ref_alt ] ) ) ) {
 										$data['games_allowed'] += intval( $set[ $player_ref_alt ] );
 									}
 									if ( is_numeric( trim( $set[ $player_ref ] ) ) ) {
 										$data['games_won'] += intval( $set[ $player_ref ] );
 									}
-									if ( $set[ $player_ref ] > $set[ $player_ref_alt ] ) {
+									if ( ( $set[ $player_ref ] > $set[ $player_ref_alt ] && empty( $set_status ) ) || 'home' === $set_status ) {
 										$data['sets_won'] += 1;
-									} elseif ( $set[ $player_ref ] < $set[ $player_ref_alt ] ) {
+									} elseif ( ( $set[ $player_ref ] < $set[ $player_ref_alt ] && empty( $set_status ) ) || 'away' === $set_status ) {
 										$data['sets_allowed'] += 1;
 									} elseif ( 'S' === strtoupper( $set[ $player_ref ] ) ) {
 										$data['sets_shared'] += 1;

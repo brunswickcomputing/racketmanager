@@ -784,13 +784,31 @@ class Racketmanager_Ajax extends RacketManager {
 		$points['shared']['sets'] = 0;
 		$points['split']['sets']  = 0;
 		if ( ! empty( $sets ) ) {
+			$num_sets    = count( $sets );
+			$set_retired = null;
+			if ( 'retired_player1' === $match_status || 'retired_player2' === $match_status ) {
+				for ( $s1 = $num_sets - 1; $s1 >= 0; $s1-- ) {
+					if ( null !== $sets[ $s1 ]['player1'] || null !== $sets[ $s1 ]['player2'] ) {
+						$set_retired = $s1;
+						break;
+					}
+				}
+			}
 			foreach ( $sets as $set ) {
 				$set_prefix = $set_prefix_start . $s . '_';
 				$set_type   = Racketmanager_Util::get_set_type( $scoring, $match->final_round, $match->league->num_sets, $s, $rubber_number, $match->num_rubbers, $match->leg );
-				if ( $s > $num_sets_to_win && $homescore === $num_sets_to_win || $awayscore === $num_sets_to_win ) {
+				if ( ( $s > $num_sets_to_win ) && $homescore === $num_sets_to_win || $awayscore === $num_sets_to_win ) {
 					$set_type = 'null';
 				}
-				$set_validate        = $this->validate_set( $set, $set_prefix, $errors['err_msg'], $errors['err_field'], $set_type, $match_status );
+				$set_status = null;
+				if ( 'retired_player1' === $match_status || 'retired_player2' === $match_status ) {
+					if ( $set_retired === $s ) {
+						$set_status = $match_status;
+					} elseif ( $s > $set_retired ) {
+						$set_type = 'null';
+					}
+				}
+				$set_validate        = $this->validate_set( $set, $set_prefix, $errors['err_msg'], $errors['err_field'], $set_type, $set_status );
 				$set                 = $set_validate[2];
 				$errors['err_msg']   = $set_validate[0];
 				$errors['err_field'] = $set_validate[1];
@@ -800,14 +818,14 @@ class Racketmanager_Ajax extends RacketManager {
 				$set_player_1 = strtoupper( $set['player1'] );
 				$set_player_2 = strtoupper( $set['player2'] );
 				if ( null !== $set_player_1 && null !== $set_player_2 ) {
-					if ( $set_player_1 > $set_player_2 ) {
+					if ( ( $set_player_1 > $set_player_2 && empty( $set_status ) ) || ( 'retired_player2' ) === $set_status ) {
 						++$points['home']['sets'];
 						++$stats['sets']['home'];
 						++$homescore;
 						if ( 'MTB' === $set['settype'] ) {
 							++$stats['games']['home'];
 						}
-					} elseif ( $set_player_1 < $set_player_2 ) {
+					} elseif ( ( $set_player_1 < $set_player_2 && empty( $set_status ) ) || ( 'retired_player1' ) === $set_status ) {
 						++$points['away']['sets'];
 						++$stats['sets']['away'];
 						++$awayscore;
@@ -909,20 +927,6 @@ class Racketmanager_Ajax extends RacketManager {
 				$set['player1']  = '';
 				$set['player2']  = '';
 				$set['tiebreak'] = '';
-			} elseif ( 'retired_player2' === $match_status ) {
-				if ( $set['player2'] < $max_loss ) {
-					$set['player1'] = strval( $min_win );
-				} else {
-					$set['player1'] = strval( $max_win );
-				}
-				$set['tiebreak'] = '';
-			} elseif ( 'retired_player1' === $match_status ) {
-				if ( $set['player1'] < $max_win ) {
-					$set['player2'] = strval( $min_win );
-				} else {
-					$set['player2'] = strval( $max_win );
-				}
-				$set['tiebreak'] = '';
 			}
 		} elseif ( null !== $set['player1'] && null !== $set['player2'] ) {
 			if ( 'null' === $set_type ) {
@@ -952,7 +956,7 @@ class Racketmanager_Ajax extends RacketManager {
 					$err_field[] = $set_prefix . 'player2';
 				}
 			} elseif ( $set['player1'] === $set['player2'] ) {
-				if ( 'retired_player1' !== 'match_status' && 'retired_player2' !== 'match_status' ) {
+				if ( 'retired_player1' !== $match_status && 'retired_player2' !== $match_status ) {
 					$err_msg[]   = __( 'Set scores must be different', 'racketmanager' );
 					$err_field[] = $set_prefix . 'player1';
 					$err_field[] = $set_prefix . 'player2';
@@ -961,18 +965,18 @@ class Racketmanager_Ajax extends RacketManager {
 				$set_data        = new \stdClass();
 				$set_data->msg   = $err_msg;
 				$set_data->field = $err_field;
-				$set_data        = $this->validate_set_score( $set, $set_prefix, 'player1', 'player2', $set_data, $set_info );
+				$set_data        = $this->validate_set_score( $set, $set_prefix, 'player1', 'player2', $set_data, $set_info, $match_status );
 				$err_msg         = $set_data->msg;
 				$err_field       = $set_data->field;
 			} elseif ( $set['player1'] < $set['player2'] ) {
 				$set_data        = new \stdClass();
 				$set_data->msg   = $err_msg;
 				$set_data->field = $err_field;
-				$set_data        = $this->validate_set_score( $set, $set_prefix, 'player2', 'player1', $set_data, $set_info );
+				$set_data        = $this->validate_set_score( $set, $set_prefix, 'player2', 'player1', $set_data, $set_info, $match_status );
 				$err_msg         = $set_data->msg;
 				$err_field       = $set_data->field;
 			} elseif ( '' === $set['player1'] || '' === $set['player2'] ) {
-				if ( 'retired_player1' !== 'match_status' && 'retired_player2' !== 'match_status' ) {
+				if ( 'retired_player1' !== $match_status && 'retired_player2' !== $match_status ) {
 					$err_msg[] = __( 'Set score not entered', 'racketmanager' );
 					if ( '' === $set['player1'] ) {
 						$err_field[] = $set_prefix . 'player1';
@@ -996,9 +1000,10 @@ class Racketmanager_Ajax extends RacketManager {
 	 * @param string $team_2 team 2.
 	 * @param object $return_data return data.
 	 * @param object $set_info set info.
+	 * @param string $match_status match status.
 	 * @return object
 	 */
-	private function validate_set_score( $set, $set_prefix, $team_1, $team_2, $return_data, $set_info ) {
+	private function validate_set_score( $set, $set_prefix, $team_1, $team_2, $return_data, $set_info, $match_status = null ) {
 		$tiebreak_allowed  = $set_info->tiebreak_allowed;
 		$tiebreak_required = $set_info->tiebreak_required;
 		$max_win           = $set_info->max_win;
@@ -1008,13 +1013,13 @@ class Racketmanager_Ajax extends RacketManager {
 		$err_msg           = $return_data->msg;
 		$err_field         = $return_data->field;
 		$retired_player    = 'retired_' . $team_2;
-		if ( $set[ $team_1 ] < $min_win && 'match_status' !== $retired_player ) {
+		if ( $set[ $team_1 ] < $min_win && $match_status !== $retired_player ) {
 			$err_msg[]   = __( 'Winning set score too low', 'racketmanager' );
 			$err_field[] = $set_prefix . $team_1;
 		} elseif ( $set[ $team_1 ] > $max_win ) {
 			$err_msg[]   = __( 'Winning set score too high', 'racketmanager' );
 			$err_field[] = $set_prefix . $team_1;
-		} elseif ( $set[ $team_1 ] === $min_win && $set[ $team_2 ] > $min_loss && 'match_status' !== $retired_player ) {
+		} elseif ( $set[ $team_1 ] === $min_win && $set[ $team_2 ] > $min_loss && $match_status !== $retired_player ) {
 			$err_msg[]   = __( 'Games difference must be at least 2', 'racketmanager' );
 			$err_field[] = $set_prefix . $team_1;
 			$err_field[] = $set_prefix . $team_2;

@@ -3129,6 +3129,8 @@ final class RacketManager_Admin extends RacketManager {
 					if ( isset( $_POST['num_match_days'] ) ) {
 						$num_match_days = intval( $_POST['num_match_days'] );
 					}
+					$date_closing     = isset( $_POST['date_closing'] ) ? sanitize_text_field( wp_unslash( $_POST['date_closing'] ) ) : null;
+					$competition_code = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
 					if ( isset( $_POST['matchDate'] ) ) {
 						$match_date = $_POST['matchDate']; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					} else {
@@ -3144,18 +3146,16 @@ final class RacketManager_Admin extends RacketManager {
 					} else {
 						$status = 'draft';
 					}
-					if ( isset( $_POST['date_closing'] ) ) {
-						$date_closing = sanitize_text_field( wp_unslash( $_POST['date_closing'] ) );
-					}
-					$season_data                 = new \stdclass();
-					$season_data->season         = $season_id;
-					$season_data->num_match_days = $num_match_days;
-					$season_data->object_id      = $item_id;
-					$season_data->match_dates    = $match_date;
-					$season_data->home_away      = $home_away;
-					$season_data->status         = $status;
-					$season_data->date_closing   = $date_closing;
-					$season_data->type           = $item;
+					$season_data                   = new \stdclass();
+					$season_data->season           = $season_id;
+					$season_data->num_match_days   = $num_match_days;
+					$season_data->object_id        = $item_id;
+					$season_data->match_dates      = $match_date;
+					$season_data->home_away        = $home_away;
+					$season_data->status           = $status;
+					$season_data->date_closing     = $date_closing;
+					$season_data->type             = $item;
+					$season_data->competition_code = $competition_code;
 					$this->edit_season( $season_data );
 				}
 				$this->printMessage();
@@ -3561,7 +3561,7 @@ final class RacketManager_Admin extends RacketManager {
 			$this->set_message( __( 'Fixtures must be set', 'racketmanager' ), true );
 			$error = true;
 		}
-		if ( ! $season_data->date_closing ) {
+		if ( 'competition' === $season_data->type && ! $season_data->date_closing ) {
 			$this->set_message( __( 'Closing date must be set', 'racketmanager' ), true );
 			$error = true;
 		}
@@ -3578,12 +3578,13 @@ final class RacketManager_Admin extends RacketManager {
 				$object = $event;
 			}
 			$object->seasons[ $season_data->season ] = array(
-				'name'           => $season_data->season,
-				'num_match_days' => $season_data->num_match_days,
-				'matchDates'     => $season_data->match_dates,
-				'homeAway'       => $season_data->home_away,
-				'status'         => $season_data->status,
-				'date_closing'   => $season_data->date_closing,
+				'name'             => $season_data->season,
+				'num_match_days'   => $season_data->num_match_days,
+				'matchDates'       => $season_data->match_dates,
+				'homeAway'         => $season_data->home_away,
+				'status'           => $season_data->status,
+				'date_closing'     => $season_data->date_closing,
+				'competition_code' => $season_data->competition_code,
 			);
 			ksort( $object->seasons );
 			if ( 'competition' === $season_data->type ) {

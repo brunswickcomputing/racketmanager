@@ -39,6 +39,18 @@ namespace Racketmanager;
 			?>
 			</label>
 		</div>
+		<?php
+		if ( empty( $event ) ) {
+			?>
+			<div class="form-floating mb-3">
+				<input type="text" class="form-control" name="competition_code" id="competition_code" value="<?php echo empty( $season_data['competition_code'] ) ? '' : esc_html( $season_data['competition_code'] ); ?>" />
+				<label for="competition_code">
+				<?php esc_html_e( 'Competition code', 'racketmanager' ); ?>
+				</label>
+			</div>
+			<?php
+		}
+		?>
 		<div class="form-control mb-3">
 			<fieldset class="mb-1">
 				<legend class="form-check-label"><?php esc_html_e( 'Status', 'racketmanager' ); ?></legend>
@@ -75,12 +87,18 @@ namespace Racketmanager;
 				?>
 			</fieldset>
 		</div>
-		<div class="form-floating mb-3">
-			<input type="date" class="form-control" name="date_closing" id="date_closing" value="<?php echo isset( $season_data['date_closing'] ) ? esc_html( $season_data['date_closing'] ) : ''; ?>" size="2" />
-			<label for="date_closing">
-				<?php esc_html_e( 'Closing date', 'racketmanager' ); ?>
-			</label>
-		</div>
+		<?php
+		if ( empty( $event ) ) {
+			?>
+			<div class="form-floating mb-3">
+				<input type="date" class="form-control" name="date_closing" id="date_closing" value="<?php echo isset( $season_data['date_closing'] ) ? esc_html( $season_data['date_closing'] ) : ''; ?>" size="2" />
+				<label for="date_closing">
+					<?php esc_html_e( 'Closing date', 'racketmanager' ); ?>
+				</label>
+			</div>
+			<?php
+		}
+		?>
 		<div class="form-control mb-3">
 			<fieldset class="mb-1">
 				<legend class="form-check-label"><?php esc_html_e( 'Fixtures', 'racketmanager' ); ?></legend>

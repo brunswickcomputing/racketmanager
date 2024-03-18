@@ -351,7 +351,12 @@ final class Racketmanager_Rubber {
 		$forwin_split       = $point_rule['forwin_split'];
 		$forshare           = $point_rule['forshare'];
 		$forwalkover_rubber = empty( $point_rule['forwalkover_rubber'] ) ? 0 : $point_rule['forwalkover_rubber'];
-		if ( empty( $home_sets ) || empty( $away_sets ) ) {
+		if ( $shared_sets === $league->num_sets ) {
+			$straight_sets_home = 0;
+			$straight_sets_away = 0;
+			$split_sets_home    = 0;
+			$split_sets_away    = 0;
+		} elseif ( empty( $home_sets ) || empty( $away_sets ) ) {
 			if ( empty( $home_sets ) ) {
 				$straight_sets_home = 0;
 				$straight_sets_away = 1;

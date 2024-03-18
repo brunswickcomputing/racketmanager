@@ -807,6 +807,8 @@ class Racketmanager_Ajax extends RacketManager {
 					} elseif ( $s > $set_retired ) {
 						$set_type = 'null';
 					}
+				} else {
+					$set_status = $match_status;
 				}
 				$set_validate        = $this->validate_set( $set, $set_prefix, $errors['err_msg'], $errors['err_field'], $set_type, $set_status );
 				$set                 = $set_validate[2];
@@ -884,11 +886,10 @@ class Racketmanager_Ajax extends RacketManager {
 			$stats['sets']['home']     = $num_sets_to_win;
 			$homescore                 = $num_sets_to_win;
 		} elseif ( 'share' === $match_status ) {
-			$shared_sets             = $match->league->num_sets / 2;
-			$points['home']['sets'] += $shared_sets;
-			$points['away']['sets'] += $shared_sets;
-			$homescore              += $shared_sets;
-			$awayscore              += $shared_sets;
+			$shared_sets              = $match->league->num_sets / 2;
+			$points['shared']['sets'] = $match->league->num_sets;
+			$homescore               += $shared_sets;
+			$awayscore               += $shared_sets;
 		}
 		array_push( $return, $error, $errors['err_msg'], $errors['err_field'], $homescore, $awayscore, $sets_updated, $stats, $points );
 		return $return;

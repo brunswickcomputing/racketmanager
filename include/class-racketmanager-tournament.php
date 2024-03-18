@@ -539,8 +539,9 @@ final class Racketmanager_Tournament {
 	public function get_events() {
 		$competition = get_competition( $this->competition_id );
 		if ( $competition ) {
-			$players = array();
-			$events  = $competition->get_events();
+			$players      = array();
+			$events       = $competition->get_events();
+			$this->events = array();
 			foreach ( $events as $event ) {
 				$event        = get_event( $event );
 				$event->teams = $event->get_teams(

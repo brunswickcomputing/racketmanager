@@ -87,12 +87,16 @@ class Racketmanager_Competition_Tennis extends Racketmanager_Competition {
 			'forwalkover_match'  => 0,
 		);
 		$rules['tennisSummer'] = array(
-			'forwin'        => 0,
-			'fordraw'       => 0,
-			'forloss'       => 0,
-			'forwin_split'  => 0,
-			'forloss_split' => 0,
-			'forshare'      => 0.5,
+			'forwin'             => 1,
+			'fordraw'            => 0,
+			'forloss'            => 0,
+			'forwin_split'       => 0,
+			'forloss_split'      => 0,
+			'forshare'           => 0.5,
+			'matches_win'        => 3,
+			'matches_draw'       => 1.5,
+			'forwalkover_rubber' => 1,
+			'forwalkover_match'  => 1,
 		);
 
 		return $rules;

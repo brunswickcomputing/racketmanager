@@ -58,12 +58,14 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 		$walkover_penalty   = empty( $point_rule['forwalkover_match'] ) ? 0 : $point_rule['forwalkover_match'];
 		$rubber_win         = ! empty( $point_rule['rubber_win'] ) ? $point_rule['rubber_win'] : 0;
 		$rubber_draw        = ! empty( $point_rule['rubber_draw'] ) ? $point_rule['rubber_draw'] : 0;
+		$matches_win        = ! empty( $point_rule['matches_win'] ) ? $point_rule['matches_win'] : 0;
+		$matches_draw       = ! empty( $point_rule['matches_draw'] ) ? $point_rule['matches_draw'] : 0;
 		$shared_match       = ! empty( $point_rule['shared_match'] ) ? $point_rule['shared_match'] : 0;
 		$data               = $this->get_standings_data( $team_id, array(), $matches );
 		if ( ! empty( $point_rule['match_result'] ) && 'rubber_count' === $point_rule['match_result'] ) {
 			$points['plus'] = $data['rubbers_won'] * $rubber_win + $data['rubbers_shared'] * $rubber_draw - ( $data['no_player'] * $forwalkover_rubber ) - $data['no_team'] * $walkover_penalty + $data['matches_shared'] * $shared_match;
 		} else {
-			$points['plus']  = $data['sets_won'] + ( $data['straight_set']['win'] * $forwin ) + ( $data['split_set']['win'] * $forwin_split ) + ( $data['split_set']['lost'] * $forloss_split ) + ( $data['sets_shared'] * $forshare ) - ( $data['no_player'] * $forwalkover_rubber ) - ( $data['no_team'] * $walkover_penalty );
+			$points['plus']  = $data['sets_won'] + ( $data['straight_set']['win'] * $forwin ) + ( $data['split_set']['win'] * $forwin_split ) + ( $data['split_set']['lost'] * $forloss_split ) + ( $data['sets_shared'] * $forshare ) - ( $data['no_player'] * $forwalkover_rubber ) - ( $data['no_team'] * $walkover_penalty ) + ( $data['matches_won'] * $matches_win ) + ( $data['matches_shared'] * $matches_draw );
 			$points['minus'] = $data['sets_allowed'] + ( $data['straight_set']['lost'] * $forwin ) + ( $data['split_set']['win'] * $forloss_split ) + ( $data['split_set']['lost'] * $forwin_split ) + ( $data['sets_shared'] * $forshare );
 		}
 
@@ -133,6 +135,7 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 		$data['no_team']        = 0;
 		$data['rubbers_won']    = 0;
 		$data['rubbers_shared'] = 0;
+		$data['matches_won']    = 0;
 		$data['matches_shared'] = 0;
 
 		$league         = get_league( $this->id );
@@ -157,9 +160,12 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 					++$data['matches_shared'];
 				}
 				if ( isset( $league->num_rubbers ) ) {
-					$rubbers   = $match->get_rubbers();
-					$walkovers = array();
-					$walkovers = 0;
+					$rubbers_won    = 0;
+					$rubbers_lost   = 0;
+					$rubbers_shared = 0;
+					$rubbers        = $match->get_rubbers();
+					$walkovers      = array();
+					$walkovers      = 0;
 					foreach ( $rubbers as $rubber ) {
 						if ( ! $rubber->is_walkover && ! $rubber->is_shared ) {
 							$num_sets    = count( $rubber->sets );
@@ -199,10 +205,12 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 						} elseif ( $rubber->is_shared ) {
 							$data['sets_shared'] += $league->num_sets;
 							++$data['rubbers_shared'];
+							++$rubbers_shared;
 						}
 						if ( $rubber->winner_id === $team_id || -1 === intval( $rubber->winner_id ) ) { // winning team.
 							if ( $rubber->winner_id === $team_id ) {
 								++$data['rubbers_won'];
+								++$rubbers_won;
 							}
 							if ( $rubber->is_walkover ) {
 								$data['sets_won']  += $walkover_sets;
@@ -220,6 +228,7 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 								$data['straight_set']['win'] += 1;
 							}
 						} elseif ( $rubber->loser_id === $team_id ) { // losing team.
+							++$rubbers_lost;
 							if ( $rubber->is_walkover ) {
 								$data['sets_allowed']  += $walkover_sets;
 								$data['games_allowed'] += $walkover_games;
@@ -241,6 +250,15 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 					}
 					if ( intval( $match->league->num_rubbers ) === $walkovers ) {
 						$data['no_team'] += $walkovers;
+					}
+					if ( $rubbers_shared ) {
+						if ( $rubbers_won === $rubbers_lost ) {
+							++$data['matches_shared'];
+						} elseif ( $rubbers_won > $rubbers_lost ) {
+							++$data['matches_won'];
+						}
+					} elseif ( $rubbers_won > $rubbers_lost ) {
+						++$data['matches_won'];
 					}
 				} elseif ( '' !== $match->sets[ $league->num_sets ]['player1'] && '' !== $match->sets[ $league->num_sets ]['player2'] ) {
 					if ( $match->winner_id === $team_id ) {

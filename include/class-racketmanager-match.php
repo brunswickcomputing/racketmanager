@@ -918,6 +918,8 @@ final class Racketmanager_Match {
 				$point_rule         = $this->league->get_point_rule();
 				$rubber_win         = ! empty( $point_rule['rubber_win'] ) ? $point_rule['rubber_win'] : 0;
 				$rubber_draw        = ! empty( $point_rule['rubber_draw'] ) ? $point_rule['rubber_draw'] : 0;
+				$matches_win        = ! empty( $point_rule['matches_win'] ) ? $point_rule['matches_win'] : 0;
+				$matches_draw       = ! empty( $point_rule['matches_draw'] ) ? $point_rule['matches_draw'] : 0;
 				$shared_match       = ! empty( $point_rule['shared_match'] ) ? $point_rule['shared_match'] : 0;
 				$forwalkover_rubber = empty( $point_rule['forwalkover_rubber'] ) ? 0 : $point_rule['forwalkover_rubber'];
 				$walkover_penalty   = empty( $point_rule['forwalkover_match'] ) ? 0 : $point_rule['forwalkover_match'];
@@ -933,6 +935,14 @@ final class Racketmanager_Match {
 						$away_points = $away_win * $rubber_win + $draw * $rubber_draw - $forwalkover_rubber * $away_walkover;
 					}
 				} else {
+					if ( $home_win > $away_win ) {
+						$home_points += $matches_win;
+					} elseif ( $home_win < $away_win ) {
+						$away_points += $matches_win;
+					} else {
+						$home_points += $matches_draw;
+						$away_points += $matches_draw;
+					}
 					$home_points -= $walkover_penalty * $home_walkover;
 					$away_points -= $walkover_penalty * $away_walkover;
 				}

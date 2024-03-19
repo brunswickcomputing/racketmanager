@@ -181,7 +181,7 @@ class RacketManager {
 			} else {
 				$title = $competition;
 			}
-			$title     .= ' - ' . __( 'Tournament Entry Form', 'racketmanager' ) . ' - ' . $site_name;
+			$title .= ' - ' . __( 'Tournament Entry Form', 'racketmanager' ) . ' - ' . $site_name;
 		}
 		if ( 'tournament' === $slug ) {
 			$tournament = un_seo_url( isset( $wp->query_vars['tournament'] ) ? ucwords( $wp->query_vars['tournament'] ) : __( 'Latest', 'racketmanager' ) );

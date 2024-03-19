@@ -39,10 +39,10 @@ $winner_set         = null;
 $player_team        = null;
 $player_team_status = null;
 if ( ! empty( $tournament_player ) ) {
-	if ( array_search( $tournament_player->display_name, $match->teams['home']->player, true ) ) {
+	if ( isset( $match->teams['home']->player ) && array_search( $tournament_player->display_name, $match->teams['home']->player, true ) ) {
 		$player_team = 'home';
 		$player_ref  = 'player1';
-	} elseif ( array_search( $tournament_player->display_name, $match->teams['away']->player, true ) ) {
+	} elseif ( isset( $match->teams['away']->player ) && array_search( $tournament_player->display_name, $match->teams['away']->player, true ) ) {
 		$player_team = 'away';
 		$player_ref  = 'player2';
 	}

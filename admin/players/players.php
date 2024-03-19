@@ -95,7 +95,7 @@ namespace Racketmanager;
 					<div class="row table-row <?php echo esc_html( $class ); ?>">
 						<div class="col-2 col-md-1 check-column">
 							<?php if ( empty( $player->removed_date ) ) { ?>
-								<input type="checkbox" name="check-<?php echo esc_html( $player->id ); ?>" value="<?php echo esc_html( $player->id ); ?>" name="player[<?php echo esc_html( $player->id ); ?>]" />
+								<input type="checkbox" value="<?php echo esc_html( $player->id ); ?>" name="player[<?php echo esc_html( $player->id ); ?>]" />
 							<?php } ?>
 						</div>
 						<div class="col-2 col-md-1 column-num"><?php echo esc_html( $player->id ); ?></div>

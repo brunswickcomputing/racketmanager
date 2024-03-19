@@ -348,7 +348,7 @@ final class RacketManager_Admin extends RacketManager {
 		);
 		if ( $league->is_championship ) {
 			$menu['match']['show'] = false;
-			if ( 'player' === $league->entry_type && empty( $league->championship->is_consolation ) ) {
+			if ( 'player' === $league->event->competition->entry_type && empty( $league->championship->is_consolation ) ) {
 				$menu['team']['show'] = true;
 			}
 		} else {
@@ -1252,9 +1252,9 @@ final class RacketManager_Admin extends RacketManager {
 				$team->set_event( $league->event->id, $captain, $contactno, $contactemail );
 				$league->add_team( $team->id, $season );
 			} elseif ( isset( $_POST['team_id'] ) ) {
-					$team = get_team( intval( $_POST['team_id'] ) );
+				$team = get_team( intval( $_POST['team_id'] ) );
 				if ( 'P' === $team->status ) {
-					$team->updatePlayer( $team_player_1, $team_player_1_id, $team_player_2, $team_player_2_id, $club );
+					$team->update_player( $team_player_1, $team_player_1_id, $team_player_2, $team_player_2_id, $club );
 					$team->set_event( $league->event->id, $captain, $contactno, $contactemail );
 				} else {
 					$this->set_message( __( 'Team is not a player team', 'racketmanager' ), true );
@@ -1647,7 +1647,7 @@ final class RacketManager_Admin extends RacketManager {
 			if ( 'LD' === $league_type ) {
 				$league_type = 'XD';
 			}
-			if ( 'player' === $league->entry_type ) {
+			if ( 'player' === $league->event->competition->entry_type ) {
 				$entry_type = 'player';
 			} else {
 				$entry_type = '';
@@ -2318,7 +2318,7 @@ final class RacketManager_Admin extends RacketManager {
 				$league    = get_league( $league_id );
 				$season    = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : '';
 				$matchdays = array( 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday' );
-				if ( isset( $league->entry_type ) && 'player' === $league->entry_type ) {
+				if ( isset( $league->event->competition->entry_type ) && 'player' === $league->event->competition->entry_type ) {
 					$file = 'playerteam.php';
 				}
 			} else {

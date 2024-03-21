@@ -153,11 +153,11 @@ if ( ! empty( $match->winner_id ) ) {
 				$doubles        = false;
 			}
 			if ( 'M' === substr( $rubber->type, 0, 1 ) ) {
-				foreach ( $rubber_players as $p => $player ) {
+				foreach ( $rubber_players as $p => $rubber_player ) {
 					$rubber_players[ $p ]['gender'] = 'm';
 				}
 			} elseif ( 'W' === substr( $rubber->type, 0, 1 ) ) {
-				foreach ( $rubber_players as $p => $player ) {
+				foreach ( $rubber_players as $p => $rubber_player ) {
 					$rubber_players[ $p ]['gender'] = 'f';
 				}
 			} elseif ( 'X' === substr( $rubber->type, 0, 1 ) ) {
@@ -166,7 +166,7 @@ if ( ! empty( $match->winner_id ) ) {
 			}
 			if ( ! empty( $match->player ) ) {
 				foreach ( $opponents as $opponent ) {
-					foreach ( $rubber_players as $p => $player ) {
+					foreach ( $rubber_players as $p => $rubber_player ) {
 						if ( $rubber->players[ $opponent ][ $p ]->fullname === $match->player->display_name ) {
 							$player_team = $opponent;
 							$player_ref  = 'player' . $p;
@@ -231,7 +231,7 @@ if ( ! empty( $match->winner_id ) ) {
 										?>
 									</div>
 									<?php
-									foreach ( $rubber_players as $player_number => $player ) {
+									foreach ( $rubber_players as $player_number => $rubber_player ) {
 										$player_ref = $opponent . '_player' . $player_number;
 										?>
 										<div class="match__row-title-value">
@@ -379,59 +379,59 @@ if ( ! empty( $match->winner_id ) ) {
 	<?php
 	if ( empty( $player ) && ( ! empty( $match->home_captain ) || ! empty( $match->away_captain ) ) ) {
 		?>
-	<div class="mt-3" id="approvals">
-		<div class="match">
-			<div class="match__header">
-				<ul class="match__header-title">
-					<li class="match__header-title-item">
-						<span class="nav-link__value"><?php esc_html_e( 'Approvals', 'racketmanager' ); ?></span>
-					</li>
-				</ul>
-			</div>
-			<div class="match__body">
-				<div class="match__row-wrapper">
-					<?php
-					foreach ( $opponents as $opponent ) {
-						?>
-					<div class="match__row">
-						<div class="match__row-title">
-							<div class="match__row-title-header">
-							<?php echo esc_html( $match->teams[ $opponent ]->title ); ?>
-							</div>
-							<div class="match__row-title-value">
-							<?php
-									$approval_captain = $opponent . '_captain';
-							if ( isset( $match->$approval_captain ) ) {
-								?>
-								<span class="match__row-title-value-content">
-									<span
-										class="nav-link__value"><?php echo esc_html( $racketmanager->get_player_name( $match->$approval_captain ) ); ?></span>
-								</span>
+		<div class="mt-3" id="approvals">
+			<div class="match">
+				<div class="match__header">
+					<ul class="match__header-title">
+						<li class="match__header-title-item">
+							<span class="nav-link__value"><?php esc_html_e( 'Approvals', 'racketmanager' ); ?></span>
+						</li>
+					</ul>
+				</div>
+				<div class="match__body">
+					<div class="match__row-wrapper">
+						<?php
+						foreach ( $opponents as $opponent ) {
+							?>
+						<div class="match__row">
+							<div class="match__row-title">
+								<div class="match__row-title-header">
+								<?php echo esc_html( $match->teams[ $opponent ]->title ); ?>
+								</div>
+								<div class="match__row-title-value">
 								<?php
-								if ( ! empty( $match->comments ) ) {
+										$approval_captain = $opponent . '_captain';
+								if ( isset( $match->$approval_captain ) ) {
 									?>
-							</div>
-							<div class="match__row-title-value">
-								<span class="match__row-title-value-content">
-									<span class="nav-link__value match-comments"
-										title="<?php esc_attr_e( 'Match comments', 'racketmanager' ); ?>"><?php echo esc_html( $match->comments[ $opponent ] ); ?></span>
-								</span>
-										<?php
+									<span class="match__row-title-value-content">
+										<span
+											class="nav-link__value"><?php echo esc_html( $racketmanager->get_player_name( $match->$approval_captain ) ); ?></span>
+									</span>
+									<?php
+									if ( ! empty( $match->comments ) ) {
+										?>
+								</div>
+								<div class="match__row-title-value">
+									<span class="match__row-title-value-content">
+										<span class="nav-link__value match-comments"
+											title="<?php esc_attr_e( 'Match comments', 'racketmanager' ); ?>"><?php echo esc_html( $match->comments[ $opponent ] ); ?></span>
+									</span>
+											<?php
+									}
+									?>
+									<?php
 								}
 								?>
-								<?php
-							}
-							?>
+								</div>
 							</div>
 						</div>
+							<?php
+						}
+						?>
 					</div>
-						<?php
-					}
-					?>
 				</div>
 			</div>
 		</div>
-	</div>
 		<?php
 	}
 	?>

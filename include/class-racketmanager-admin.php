@@ -669,7 +669,13 @@ final class RacketManager_Admin extends RacketManager {
 				$club_id        = 0;
 				if ( isset( $_POST['saveSeason'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 					$tab = 'seasons';
-					$this->add_season_to_competition();
+					if ( ! current_user_can( 'edit_leagues' ) ) {
+						$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
+					} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-season' ) ) {
+						$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+					} elseif ( ! empty( $_POST['season'] ) && empty( $_POST['season_id'] ) && isset( $_POST['num_match_days'] ) && isset( $_POST['competition_id'] ) ) {
+						$this->add_season_to_competition( sanitize_text_field( wp_unslash( $_POST['season'] ) ), intval( $_POST['num_match_days'] ), intval( $_POST['competition_id'] ) );
+					}
 					$this->printMessage();
 				} elseif ( isset( $_POST['doactionseason'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 					$tab = 'seasons';
@@ -744,7 +750,13 @@ final class RacketManager_Admin extends RacketManager {
 					$this->printMessage();
 				} elseif ( isset( $_POST['saveSeason'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 					$tab = 'seasons';
-					$this->add_season_to_event();
+					if ( ! current_user_can( 'edit_leagues' ) ) {
+						$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
+					} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-season' ) ) {
+						$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+					} elseif ( ! empty( $_POST['season'] ) && empty( $_POST['season_id'] && isset( $_POST['num_match_days'] ) && isset( $_POST['event_id'] ) ) ) {
+						$this->add_season_to_event( sanitize_text_field( wp_unslash( $_POST['season'] ) ), intval( $_POST['num_match_days'] ), intval( $_POST['event_id'] ) );
+					}
 					$this->printMessage();
 				} elseif ( isset( $_POST['doactionseason'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 					$tab = 'seasons';
@@ -815,31 +827,6 @@ final class RacketManager_Admin extends RacketManager {
 				$league->update( sanitize_text_field( wp_unslash( $_POST['league_title'] ) ) );
 				$this->set_message( __( 'League Updated', 'racketmanager' ) );
 			}
-		}
-	}
-
-	/**
-	 * Add season to competition via admin
-	 */
-	private function add_season_to_competition() {
-		if ( ! current_user_can( 'edit_leagues' ) ) {
-			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
-		} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-season' ) ) {
-				$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-		} elseif ( ! empty( $_POST['season'] ) && empty( $_POST['season_id'] ) && isset( $_POST['num_match_days'] ) && isset( $_POST['competition_id'] ) ) {
-				$this->addSeasonToCompetition( sanitize_text_field( wp_unslash( $_POST['season'] ) ), intval( $_POST['num_match_days'] ), intval( $_POST['competition_id'] ) );
-		}
-	}
-	/**
-	 * Add season to event via admin
-	 */
-	private function add_season_to_event() {
-		if ( ! current_user_can( 'edit_leagues' ) ) {
-			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
-		} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-season' ) ) {
-				$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-		} elseif ( ! empty( $_POST['season'] ) && empty( $_POST['season_id'] && isset( $_POST['num_match_days'] ) && isset( $_POST['event_id'] ) ) ) {
-				$this->addSeasonToEvent( sanitize_text_field( wp_unslash( $_POST['season'] ) ), intval( $_POST['num_match_days'] ), intval( $_POST['event_id'] ) );
 		}
 	}
 	/**
@@ -2638,7 +2625,7 @@ final class RacketManager_Admin extends RacketManager {
 				} elseif ( isset( $_POST['competition'] ) ) {
 					foreach ( $_POST['competition'] as $competition_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 						if ( isset( $_POST['num_match_days'] ) ) {
-							$this->addSeasonToCompetition( sanitize_text_field( wp_unslash( $_POST['season'] ) ), intval( $_POST['num_match_days'] ), $competition_id );
+							$this->add_season_to_competition( sanitize_text_field( wp_unslash( $_POST['season'] ) ), intval( $_POST['num_match_days'] ), $competition_id );
 						}
 					}
 				}
@@ -3439,7 +3426,7 @@ final class RacketManager_Admin extends RacketManager {
 	 * @param int    $competition_id competition id.
 	 * @return boolean
 	 */
-	private function addSeasonToCompetition( $season, $num_match_days, $competition_id ) {
+	private function add_season_to_competition( $season, $num_match_days, $competition_id ) {
 		global $racketmanager, $competition;
 
 		$competition = get_competition( $competition_id );
@@ -3468,7 +3455,7 @@ final class RacketManager_Admin extends RacketManager {
 		foreach ( $events as $event ) {
 			$event = get_event( $event );
 			if ( ! isset( $event->seasons[ $season ] ) ) {
-				$event_season = $this->addSeasonToEvent( $season, $num_match_days, $event->id );
+				$event_season = $this->add_season_to_event( $season, $num_match_days, $event->id );
 			}
 		}
 		/* translators: %s: season name */
@@ -3484,7 +3471,7 @@ final class RacketManager_Admin extends RacketManager {
 	 * @param int    $event_id event_id.
 	 * @return boolean
 	 */
-	private function addSeasonToEvent( $season, $num_match_days, $event_id ) {
+	private function add_season_to_event( $season, $num_match_days, $event_id ) {
 		global $racketmanager, $event;
 
 		$event = get_event( $event_id );

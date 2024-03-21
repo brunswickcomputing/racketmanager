@@ -101,4 +101,5 @@ function racketmanager_define_tables() {
 	$wpdb->racketmanager_invoices             = $wpdb->prefix . 'racketmanager_invoices';
 	$wpdb->racketmanager_events               = $wpdb->prefix . 'racketmanager_events';
 	$wpdb->racketmanager_rubber_players       = $wpdb->prefix . 'racketmanager_rubber_players';
+	$wpdb->racketmanager_results_report       = $wpdb->prefix . 'racketmanager_results_report';
 }

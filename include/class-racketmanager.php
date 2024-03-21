@@ -603,6 +603,7 @@ class RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-validator.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-entry-form-validator.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-exporter.php';
+		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-results-report.php';
 
 		/*
 		* load sports libraries

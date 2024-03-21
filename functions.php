@@ -589,3 +589,28 @@ function get_league_team( $league_team = null ) {
 
 	return $_league_team;
 }
+/**
+ * Get results report object
+ *
+ * @param int|null $results_report results_report ID or results_report object. Defaults to global $results_report.
+ * @return object results_report|null
+ */
+function get_results_report( $results_report = null ) {
+	if ( empty( $results_report ) && isset( $GLOBALS['results_report'] ) ) {
+		$results_report = $GLOBALS['results_report'];
+	}
+
+	if ( $results_report instanceof Racketmanager_Results_Report ) {
+		$_results_report = $results_report;
+	} elseif ( is_object( $results_report ) ) {
+		$_results_report = new Racketmanager_Results_Report( $results_report );
+	} else {
+		$_results_report = Racketmanager_Invoice::get_instance( $results_report );
+	}
+
+	if ( ! $_results_report ) {
+		return null;
+	}
+
+	return $_results_report;
+}

@@ -1538,9 +1538,11 @@ class Racketmanager_League {
 		$team->stadium            = stripslashes( $team->stadium );
 		$team->roster             = maybe_unserialize( $team->roster );
 		if ( 'P' === $team->status && null !== $team->roster ) {
-			$i = 1;
+			$team->players = array();
+			$i             = 1;
 			foreach ( $team->roster as $player ) {
 				$teamplayer            = get_player( $player );
+				$team->players [ $i ]  = $teamplayer;
 				$team->player[ $i ]    = isset( $teamplayer->fullname ) ? $teamplayer->fullname : '';
 				$team->player_id[ $i ] = $player;
 				++$i;

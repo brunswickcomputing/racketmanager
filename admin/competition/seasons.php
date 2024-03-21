@@ -41,23 +41,36 @@ namespace Racketmanager;
 						<div class="col-3 col-lg-1"><a href="admin.php?page=racketmanager&amp;subpage=show-season&amp;competition_id=<?php echo esc_html( $competition->id ); ?>&amp;season=<?php echo esc_html( $key ); ?>"><?php echo esc_html( $season['name'] ); ?></a></div>
 						<div class="col-2 col-lg-1"><?php echo esc_html( $season['num_match_days'] ); ?></div>
 						<div class="col-2 col-lg-1">
-						<?php
-						if ( isset( $season['homeAway'] ) ) {
-							if ( $season['homeAway'] ) {
-								echo 'both';
-							} else {
-								echo 'home only';
+							<?php
+							if ( isset( $season['homeAway'] ) ) {
+								if ( $season['homeAway'] ) {
+									echo 'both';
+								} else {
+									echo 'home only';
+								}
 							}
-						}
-						?>
+							?>
 						</div>
 						<div class="col-auto">
+							<?php
+							if ( isset( $season['status'] ) ) {
+								echo esc_html( $season['status'] );
+							}
+							?>
+						</div>
 						<?php
-						if ( isset( $season['status'] ) ) {
-							echo esc_html( $season['status'] );
+						if ( ! empty( $season['competition_code'] ) ) {
+							?>
+							<div class="col-auto">
+								<a href="/index.php?competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $key ); ?>&racketmanager_export=report_results" class="btn btn-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Report results', 'racketmanager' ); ?>" >
+									<span class="nav-link__value text-uppercase">
+										<?php esc_html_e( 'Report results', 'racketmanager' ); ?>
+									</span>
+								</a>
+							</div>
+							<?php
 						}
 						?>
-						</div>
 					</div>
 				<?php } ?>
 			<?php } ?>

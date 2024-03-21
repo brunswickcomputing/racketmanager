@@ -377,7 +377,7 @@ if ( ! empty( $match->winner_id ) ) {
 		?>
 	</ul>
 	<?php
-	if ( empty( $player ) && ( ! empty( $match->home_captain ) || ! empty( $match->away_captain ) ) ) {
+	if ( empty( $match_player ) && ( ! empty( $match->home_captain ) || ! empty( $match->away_captain ) ) ) {
 		?>
 		<div class="mt-3" id="approvals">
 			<div class="match">

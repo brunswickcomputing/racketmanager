@@ -342,4 +342,140 @@ class Racketmanager_Exporter {
 		}
 		return $contents;
 	}
+	/**
+	 * Report results
+	 */
+	public function report_results() {
+		global $racketmanager;
+		$contents  = 'Tournament';
+		$contents .= ',"Code"';
+		$contents .= ',"Organiser"';
+		$contents .= ',"Venue"';
+		$contents .= ',"Event Name"';
+		$contents .= ',"Grade"';
+		$contents .= ',"Event Start Date"';
+		$contents .= ',"Event End Date"';
+		$contents .= ',"Age Group"';
+		$contents .= ',"Event Type"';
+		$contents .= ',"Gender"';
+		$contents .= ',"Draw Name"';
+		$contents .= ',"Draw Type"';
+		$contents .= ',"Draw Stage"';
+		$contents .= ',"Draw Size"';
+		$contents .= ',"Round"';
+		$contents .= ',"Match"';
+		$contents .= ',"Winner Name"';
+		$contents .= ',"Winner LTA No"';
+		$contents .= ',"WinnerPartner"';
+		$contents .= ',"WinnerPartner LTA No"';
+		$contents .= ',"Loser Name"';
+		$contents .= ',"Loser LTA No"';
+		$contents .= ',"LoserPartner"';
+		$contents .= ',"LoserPartner LTA No"';
+		$contents .= ',"Score"';
+		$contents .= ',"Score Code"';
+		$contents .= ',"Match Date"';
+		$contents .= ',"Team1Set1"';
+		$contents .= ',"Team1Set2"';
+		$contents .= ',"Team2Set1"';
+		$contents .= ',"Team2Set2"';
+		$contents .= ',"Team3Set1"';
+		$contents .= ',"Team3Set2"';
+		$contents .= ',"Team4Set1"';
+		$contents .= ',"Team4Set2"';
+		$contents .= ',"Team5Set1"';
+		$contents .= ',"Team5Set2"';
+		$contents .= ',"Tiebreak1"';
+		$contents .= ',"Tiebreak2"';
+		$contents .= ',"Tiebreak3"';
+		$contents .= ',"Tiebreak4"';
+		$contents .= ',"Tiebreak5"';
+		$contents .= "\n";
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
+		$event_id       = isset( $_GET['event_id'] ) ? intval( $_GET['event_id'] ) : null;
+		$season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
+		$match_day      = isset( $_GET['match_day'] ) ? intval( $_GET['match_day'] ) : null;
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		$filename   = 'report-results';
+		$match_args = array();
+		if ( $competition_id ) {
+			$match_args['competition_id'] = $competition_id;
+			$competition                  = get_competition( $competition_id );
+			$filename                    .= '-' . seo_url( $competition->name );
+		} elseif ( $event_id ) {
+			$match_args['event_id'] = $event_id;
+			$event                  = get_event( $event_id );
+			$filename              .= '-' . seo_url( $event->name );
+		}
+		if ( $season ) {
+			$match_args['season'] = $season;
+			$filename            .= '-' . $season;
+		}
+		if ( $match_day ) {
+			$match_args['match_day'] = $match_day;
+			$filename               .= '-' . $match_day;
+		}
+		$filename          .= '.csv';
+		$match_args['time'] = 'latest';
+		$matches            = $racketmanager->get_matches( $match_args );
+		foreach ( $matches as $match ) {
+			$match   = get_match( $match );
+			$results = $match->report_result();
+			if ( $results ) {
+				$common_contents  = $results->tournament;
+				$common_contents .= ',' . $results->code;
+				$common_contents .= ',' . $results->organiser;
+				$common_contents .= ',' . $results->venue;
+				$common_contents .= ',' . $results->event_name;
+				$common_contents .= ',' . $results->grade;
+				$common_contents .= ',' . $results->event_start_date;
+				$common_contents .= ',' . $results->event_end_date;
+				$common_contents .= ',' . $results->age_group;
+				$common_contents .= ',' . $results->event_type;
+				$common_contents .= ',' . $results->gender;
+				$common_contents .= ',' . $results->draw_name;
+				$common_contents .= ',' . $results->draw_type;
+				$common_contents .= ',' . $results->draw_stage;
+				$common_contents .= ',' . $results->draw_size;
+				$common_contents .= ',' . $results->round;
+				foreach ( $results->matches as $result ) {
+					$match_contents  = $common_contents;
+					$match_contents .= ',' . $result->match;
+					$match_contents .= ',' . $result->winner_name;
+					$match_contents .= ',' . $result->winner_lta_no;
+					$match_contents .= ',' . $result->winnerpartner;
+					$match_contents .= ',' . $result->winnerpartner_lta_no;
+					$match_contents .= ',' . $result->loser_name;
+					$match_contents .= ',' . $result->loser_lta_no;
+					$match_contents .= ',' . $result->loserpartner;
+					$match_contents .= ',' . $result->loserpartner_lta_no;
+					$match_contents .= ',' . $result->score;
+					$match_contents .= ',' . $result->score_code;
+					$match_contents .= ',' . $result->match_date;
+					$match_contents .= ',' . $result->set1team1;
+					$match_contents .= ',' . $result->set1team2;
+					$match_contents .= ',' . $result->set2team1;
+					$match_contents .= ',' . $result->set2team2;
+					$match_contents .= ',' . $result->set3team1;
+					$match_contents .= ',' . $result->set3team2;
+					$match_contents .= ',' . $result->set4team1;
+					$match_contents .= ',' . $result->set4team2;
+					$match_contents .= ',' . $result->set5team1;
+					$match_contents .= ',' . $result->set5team2;
+					$match_contents .= ',' . $result->tiebreak1;
+					$match_contents .= ',' . $result->tiebreak2;
+					$match_contents .= ',' . $result->tiebreak3;
+					$match_contents .= ',' . $result->tiebreak4;
+					$match_contents .= ',' . $result->tiebreak5;
+					$match_contents .= "\n";
+					$contents       .= $match_contents;
+				}
+			}
+		}
+		header( 'Content-Type: text/csv' );
+		header( 'Content-Disposition: inline; filename="' . $filename . '"' );
+		echo $contents; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		exit();
+	}
 }

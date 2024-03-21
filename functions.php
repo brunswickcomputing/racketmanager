@@ -167,6 +167,8 @@ function racketmanager_download() {
 			$exporter->results();
 		} elseif ( 'standings' === $_GET['racketmanager_export'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$exporter->standings();
+		} elseif ( 'report_results' === $_GET['racketmanager_export'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$exporter->report_results();
 		} else {
 			echo esc_html_e( 'Export function not found', 'racketmanager' );
 			exit();

@@ -1521,4 +1521,212 @@ final class Racketmanager_Match {
 		wp_mail( $to, $subject, $email_message, $headers );
 		return true;
 	}
+	/**
+	 * Report result
+	 *
+	 * @return object || null
+	 */
+	public function report_result() {
+		global $racketmanager;
+		if ( ! empty( $this->league->event->competition->seasons[ $this->season ]['competition_code'] ) ) {
+			$result                   = new \stdClass();
+			$result->tournament       = $racketmanager->site_name . ' ' . $this->league->event->competition->name;
+			$result->code             = $this->league->event->competition->seasons[ $this->season ]['competition_code'];
+			$result->organiser        = '';
+			$result->venue            = '';
+			$result->event_name       = $this->league->event->name;
+			$result->grade            = '6';
+			$result->event_start_date = $this->league->event->competition->seasons[ $this->season ]['matchDates'][0];
+			$result->age_group        = 'Open';
+			if ( 'D' === substr( $this->league->event->type, 1, 1 ) ) {
+				$result->event_type = 'Doubles';
+			} else {
+				$result->event_type = 'Singles';
+			}
+			if ( 'M' === substr( $this->league->event->type, 0, 1 ) ) {
+				$result->gender = 'Male';
+			} elseif ( 'W' === substr( $this->league->event->type, 0, 1 ) ) {
+				$result->gender = 'Female';
+			} else {
+				$result->gender = 'Mixed';
+			}
+			$result->draw_name = $this->league->title;
+			if ( 'league' === $this->league->event->competition->type ) {
+				$result->draw_type      = 'Round Robin';
+				$result->draw_stage     = 'MD - Main draw';
+				$result->draw_size      = $this->league->num_teams_total;
+				$result->round          = 'RR' . $this->match_day;
+				$end_date               = end( $this->league->event->competition->seasons[ $this->season ]['matchDates'] );
+				$end_date               = gmdate( 'Y-m-d', strtotime( $end_date . ' +14 day' ) );
+				$result->event_end_date = $end_date;
+			} else {
+				$result->draw_type = 'Elimination';
+				if ( $this->league_id === $this->league->event->primary_league ) {
+					$result->draw_stage = 'MD - Main draw';
+				} else {
+					$result->draw_stage = 'CD - Consolation draw';
+				}
+				$result->draw_size = $this->league->championship->num_teams_first_round;
+				switch ( $this->final_round ) {
+					case 'final':
+						$result->round = 'F';
+						break;
+					case 'semi':
+						$result->round = 'SF';
+						break;
+					case 'quarter':
+						$result->round = 'QF';
+						break;
+					case 'last-16':
+						$result->round = 'R16';
+						break;
+					case 'last-32':
+						$result->round = 'R32';
+						break;
+					case 'last-64':
+						$result->round = 'R64';
+						break;
+					default:
+						$result->round = 'RR1';
+				}
+				$result->event_end_date = end( $this->league->event->competition->seasons[ $this->season ]['matchDates'] );
+			}
+			$result->matches = array();
+			if ( $this->league->num_rubbers ) {
+				$rubbers = $this->get_rubbers();
+				foreach ( $rubbers as $rubber ) {
+					if ( ! $rubber->is_walkover && ! $rubber->is_shared ) {
+						$result_match        = new \stdClass();
+						$result_match->match = $rubber->id;
+						if ( $rubber->winner_id === $this->home_team ) {
+							$winning_team   = 'home';
+							$winning_player = 'player1';
+							$losing_team    = 'away';
+							$losing_player  = 'player2';
+						} else {
+							$winning_team   = 'away';
+							$winning_player = 'player2';
+							$losing_team    = 'home';
+							$losing_player  = 'player1';
+						}
+						$result_match->winner_name   = $rubber->players[ $winning_team ]['1']->display_name;
+						$result_match->winner_lta_no = $rubber->players[ $winning_team ]['1']->btm;
+						$result_match->loser_name    = $rubber->players[ $losing_team ]['1']->display_name;
+						$result_match->loser_lta_no  = $rubber->players[ $losing_team ]['1']->btm;
+						if ( 'D' === substr( $this->league->event->type, 1, 1 ) ) {
+							$result_match->winnerpartner        = $rubber->players[ $winning_team ]['2']->display_name;
+							$result_match->winnerpartner_lta_no = $rubber->players[ $winning_team ]['2']->btm;
+							$result_match->loserpartner         = $rubber->players[ $losing_team ]['2']->display_name;
+							$result_match->loserpartner_lta_no  = $rubber->players[ $losing_team ]['2']->btm;
+						}
+						$result_match->score      = '';
+						$result_match->score_code = '';
+						if ( $rubber->is_retired ) {
+							$result_match->score_code = 'Retired';
+						}
+						$result_match->match_date = mysql2date( 'Y-m-d', $this->match_date );
+						$result_match             = $this->report_result_scores( $result_match, $rubber->sets, $winning_player, $losing_player );
+						$result->matches[]        = $result_match;
+					}
+				}
+			} else {
+				$result_match = new \stdClass();
+				if ( ! $this->is_walkover ) {
+					$result_match->match = $this->id;
+					if ( $this->winner_id === $this->home_team ) {
+						$winning_team   = 'home';
+						$winning_player = 'player1';
+						$losing_team    = 'away';
+						$losing_player  = 'player2';
+					} else {
+						$winning_team   = 'away';
+						$winning_player = 'player2';
+						$losing_team    = 'home';
+						$losing_player  = 'player1';
+					}
+					$result_match->winner_name   = $this->teams[ $winning_team ]->players['1']->display_name;
+					$result_match->winner_lta_no = $this->teams[ $winning_team ]->players['1']->btm;
+					$result_match->loser_name    = $this->teams[ $losing_team ]->players['1']->display_name;
+					$result_match->loser_lta_no  = $this->teams[ $losing_team ]->players['1']->btm;
+					if ( 'D' === substr( $this->league->event->type, 1, 1 ) ) {
+						$result_match->winnerpartner        = $this->teams[ $winning_team ]->players['2']->display_name;
+						$result_match->winnerpartner_lta_no = $this->teams[ $winning_team ]->players['2']->btm;
+						$result_match->loserpartner         = $this->teams[ $losing_team ]->players['2']->display_name;
+						$result_match->loserpartner_lta_no  = $this->teams[ $losing_team ]->players['2']->btm;
+					} else {
+						$result_match->winnerpartner        = '';
+						$result_match->winnerpartner_lta_no = '';
+						$result_match->loserpartner         = '';
+						$result_match->loserpartner_lta_no  = '';
+					}
+					$result_match->score      = '';
+					$result_match->score_code = '';
+					if ( $this->is_retired ) {
+						$result_match->score_code = 'Retired';
+					}
+					$result_match->match_date = mysql2date( 'Y-m-d', $this->match_date );
+					$result_match             = $this->report_result_scores( $result_match, $this->sets, $winning_player, $losing_player );
+					$result->matches[]        = $result_match;
+				}
+			}
+		}
+		if ( count( $result->matches ) ) {
+			return $result;
+		}
+	}
+	/**
+	 * Produce scores for reporting results
+	 *
+	 * @param object $result_match match result object.
+	 * @param array  $sets sets.
+	 * @param string $winning_player winning player reference.
+	 * @param string $losing_player losing player reference.
+	 * @return object updated result_match object.
+	 */
+	private function report_result_scores( $result_match, $sets, $winning_player, $losing_player ) {
+		for ( $s = 1; $s <= 5; $s++ ) {
+			$team1set = 'set' . $s . 'team1';
+			$team2set = 'set' . $s . 'team2';
+			$tiebreak = 'tiebreak' . $s;
+			if ( ! empty( $sets[ $s ][ $winning_player ] ) || ! empty( $sets[ $s ][ $losing_player ] ) ) {
+				$set = $sets[ $s ];
+				if ( $s > 1 ) {
+					$result_match->score .= ' ';
+				}
+				$match_tiebreak = false;
+				if ( ( isset( $set['settype'] ) && 'MTB' === $set['settype'] ) || ( 3 === $s && '1' === $set[ $winning_player ] && '0' === $set[ $losing_player ] ) ) {
+					$result_match->score .= '[';
+					$match_tiebreak       = true;
+				}
+				if ( $match_tiebreak ) {
+					if ( empty( $set['settype'] ) || 'MTB' !== $set['settype'] ) {
+						$set[ $winning_player ] = 10;
+						$set[ $losing_player ]  = 8;
+					}
+				}
+				if ( '7' === $set[ $winning_player ] && '6' === $set[ $losing_player ] ) {
+					if ( empty( $set['tiebreak'] ) ) {
+						$set['tiebreak'] = 5;
+					}
+				}
+				$result_match->score .= $set[ $winning_player ] . '-' . $set[ $losing_player ];
+				if ( ! empty( $set['tiebreak'] ) ) {
+					$result_match->score    .= '(' . $set['tiebreak'] . ')';
+					$result_match->$tiebreak = $set['tiebreak'];
+				} else {
+					$result_match->$tiebreak = '';
+				}
+				if ( $match_tiebreak ) {
+					$result_match->score .= ']';
+				}
+				$result_match->$team1set = $set[ $winning_player ];
+				$result_match->$team2set = $set[ $losing_player ];
+			} else {
+				$result_match->$team1set = '';
+				$result_match->$team2set = '';
+				$result_match->$tiebreak = '';
+			}
+		}
+		return $result_match;
+	}
 }

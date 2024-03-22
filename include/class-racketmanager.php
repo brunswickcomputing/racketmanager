@@ -531,10 +531,11 @@ class RacketManager {
 		$user_meta = get_user_meta( $user->ID );
 
 		$user_prop_to_export = array(
-			'gender'            => __( 'User Gender', 'racketmanager' ),
-			'LTA Tennis Number' => __( 'User LTA Tennis Number', 'racketmanager' ),
-			'remove_date'       => __( 'User Removed Date', 'racketmanager' ),
-			'contactno'         => __( 'User Contact Number', 'racketmanager' ),
+			'gender'        => __( 'Gender', 'racketmanager' ),
+			'year_of_birth' => __( 'Year of birth', 'racketmanager' ),
+			'btm'           => __( 'LTA Tennis Number', 'racketmanager' ),
+			'remove_date'   => __( 'User Removed Date', 'racketmanager' ),
+			'contactno'     => __( 'Telephone Number', 'racketmanager' ),
 		);
 
 		$user_data_to_export = array();
@@ -542,7 +543,8 @@ class RacketManager {
 		foreach ( $user_prop_to_export as $key => $name ) {
 			switch ( $key ) {
 				case 'gender':
-				case 'LTA Tennis Number':
+				case 'btm':
+				case 'year_of_birth':
 				case 'remove_date':
 				case 'contactno':
 					$value = isset( $user_meta[ $key ][0] ) ? $user_meta[ $key ][0] : '';
@@ -1902,9 +1904,10 @@ class RacketManager {
 			} else {
 				$club_players[ $i ]->removed_user_name = '';
 			}
-			$club_players[ $i ]->btm          = get_user_meta( $club_player->player_id, 'btm', true );
-			$club_players[ $i ]->created_date = $club_player->created_date;
-			$club_players[ $i ]->created_user = $club_player->created_user;
+			$club_players[ $i ]->btm           = get_user_meta( $club_player->player_id, 'btm', true );
+			$club_players[ $i ]->year_of_birth = get_user_meta( $club_player->player_id, 'year_of_birth', true );
+			$club_players[ $i ]->created_date  = $club_player->created_date;
+			$club_players[ $i ]->created_user  = $club_player->created_user;
 			if ( $club_player->created_user ) {
 				$club_players[ $i ]->created_user_name = get_userdata( $club_player->created_user )->display_name;
 			} else {
@@ -1941,18 +1944,19 @@ class RacketManager {
 			wp_cache_set( md5( $sql ), $club_player, 'clubplayer' );
 		}
 		if ( $club_player ) {
-			$club_player->id          = $club_player_id;
-			$player                   = get_userdata( $club_player->player_id );
-			$club_player->fullname    = $player->display_name;
-			$club_player->email       = $player->user_email;
-			$player                   = get_user_meta( $club_player->player_id );
-			$club_player->firstname   = $player['first_name'][0];
-			$club_player->surname     = $player['last_name'][0];
-			$club_player->gender      = isset( $player['gender'] ) ? $player['gender'][0] : '';
-			$club_player->btm         = isset( $player['btm'] ) ? $player['btm'][0] : '';
-			$club_player->locked      = isset( $player['locked'] ) ? $player['locked'][0] : '';
-			$club_player->locked_date = isset( $player['locked_date'] ) ? $player['locked_date'][0] : '';
-			$club_player->locked_user = isset( $player['locked_user'] ) ? $player['locked_user'][0] : '';
+			$club_player->id            = $club_player_id;
+			$player                     = get_userdata( $club_player->player_id );
+			$club_player->fullname      = $player->display_name;
+			$club_player->email         = $player->user_email;
+			$player                     = get_user_meta( $club_player->player_id );
+			$club_player->firstname     = $player['first_name'][0];
+			$club_player->surname       = $player['last_name'][0];
+			$club_player->gender        = isset( $player['gender'] ) ? $player['gender'][0] : '';
+			$club_player->btm           = isset( $player['btm'] ) ? $player['btm'][0] : '';
+			$club_player->year_of_birth = isset( $player['year_of_birth'] ) ? $player['year_of_birth'][0] : '';
+			$club_player->locked        = isset( $player['locked'] ) ? $player['locked'][0] : '';
+			$club_player->locked_date   = isset( $player['locked_date'] ) ? $player['locked_date'][0] : '';
+			$club_player->locked_user   = isset( $player['locked_user'] ) ? $player['locked_user'][0] : '';
 		}
 
 		return $club_player;

@@ -64,6 +64,23 @@ namespace Racketmanager;
 									<div id="btmFeedback" class="invalid-feedback"></div>
 								</div>
 								<div class="form-floating mb-3">
+									<select class="form-select" name="year_of_birth" id="year_of_birth" aria-describedby="year_of_birthFeedback">
+										<option value=""><?php esc_html_e( 'Enter year of birth', 'racketmanager' ); ?></option>
+										<?php
+										$current_year = gmdate( 'Y' );
+										$start_year   = $current_year - 5;
+										$end_year     = $start_year - 100;
+										for ( $i = $start_year; $i > $end_year; $i-- ) {
+											?>
+											<option value="<?php echo esc_attr( $i ); ?>"><?php echo esc_html( $i ); ?></option>
+											<?php
+										}
+										?>
+									</select>
+									<label for="year_of_birth"><?php esc_html_e( 'Year of birth', 'racketmanager' ); ?></label>
+									<div id="year_of_birthFeedback" class="invalid-feedback"></div>
+								</div>
+								<div class="form-floating mb-3">
 									<input type="email" class="form-control" placeholder="<?php esc_html_e( 'Enter email address', 'racketmanager' ); ?>" name="email" id="email" class="form-control" aria-describedby="emailFeedback" autocomplete="off" />
 									<label for="email"><?php esc_html_e( 'Email address', 'racketmanager' ); ?></label>
 									<div id="emailFeedback" class="invalid-feedback"></div>

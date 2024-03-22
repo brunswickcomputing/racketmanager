@@ -578,6 +578,7 @@ Racketmanager.club_player_request = function (link) {
 			jQuery("#genderMale").prop('checked', false);
 			jQuery("#genderFemale").prop('checked', false);
 			jQuery("#btm").val("");
+			jQuery("#year_of_birth").val("");
 			jQuery("#email").val("");
 			jQuery(notifyField).addClass("message-success");
 			jQuery(notifyField).show();

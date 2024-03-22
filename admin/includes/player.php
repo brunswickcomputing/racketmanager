@@ -93,6 +93,28 @@ if ( isset( $player->btm ) ) {
 		<label for="btm"><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></label>
 	</div>
 	<div class="form-floating mb-3">
+		<select class="form-select" name="year_of_birth" id="year_of_birth"
+		<?php
+		if ( isset( $form_valid ) && ! $form_valid && is_numeric( array_search( 'year_of_birth', $error_fields, true ) ) ) {
+			echo ' ' . esc_html( RACKETMANAGER_IS_INVALID );
+		}
+		?>
+		" placeholder="<?php esc_html_e( 'Enter year of birth', 'racketmanager' ); ?>">
+			<option value=""><?php esc_html_e( 'Enter year of birth', 'racketmanager' ); ?></option>
+			<?php
+			$current_year = gmdate( 'Y' );
+			$start_year   = $current_year - 5;
+			$end_year     = $start_year - 100;
+			for ( $i = $start_year; $i > $end_year; $i-- ) {
+				?>
+				<option value="<?php echo esc_attr( $i ); ?>" <?php isset( $player->year_of_birth ) ? selected( $i, $player->year_of_birth ) : null; ?>><?php echo esc_html( $i ); ?></option>
+				<?php
+			}
+			?>
+		</select>
+		<label for="year_of_birth"><?php esc_html_e( 'Year of birth', 'racketmanager' ); ?></label>
+	</div>
+	<div class="form-floating mb-3">
 		<input type="email" class="form-control
 		<?php
 		if ( isset( $form_valid ) && ! $form_valid && is_numeric( array_search( 'email', $error_fields, true ) ) ) {

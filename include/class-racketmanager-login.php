@@ -893,14 +893,15 @@ class RacketManager_Login {
 			if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 				if ( isset( $_POST['racketmanager_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'member_account' ) ) {
 					$user_data = array(
-						'user_name'  => isset( $_POST['username'] ) ? sanitize_email( wp_unslash( $_POST['username'] ) ) : '',
-						'first_name' => isset( $_POST['firstname'] ) ? sanitize_text_field( wp_unslash( $_POST['firstname'] ) ) : '',
-						'last_name'  => isset( $_POST['lastname'] ) ? sanitize_text_field( wp_unslash( $_POST['lastname'] ) ) : '',
-						'password'   => isset( $_POST['password'] ) ? sanitize_text_field( wp_unslash( $_POST['password'] ) ) : '',
-						'rePassword' => isset( $_POST['rePassword'] ) ? sanitize_text_field( wp_unslash( $_POST['rePassword'] ) ) : '',
-						'contactno'  => isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : '',
-						'gender'     => isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : '',
-						'btm'        => isset( $_POST['btm'] ) ? sanitize_text_field( wp_unslash( $_POST['btm'] ) ) : '',
+						'user_name'     => isset( $_POST['username'] ) ? sanitize_email( wp_unslash( $_POST['username'] ) ) : '',
+						'first_name'    => isset( $_POST['firstname'] ) ? sanitize_text_field( wp_unslash( $_POST['firstname'] ) ) : '',
+						'last_name'     => isset( $_POST['lastname'] ) ? sanitize_text_field( wp_unslash( $_POST['lastname'] ) ) : '',
+						'password'      => isset( $_POST['password'] ) ? sanitize_text_field( wp_unslash( $_POST['password'] ) ) : '',
+						'rePassword'    => isset( $_POST['rePassword'] ) ? sanitize_text_field( wp_unslash( $_POST['rePassword'] ) ) : '',
+						'contactno'     => isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : '',
+						'gender'        => isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : '',
+						'btm'           => ! empty( $_POST['btm'] ) ? intval( $_POST['btm'] ) : '',
+						'year_of_birth' => ! empty( $_POST['year_of_birth'] ) ? intval( $_POST['year_of_birth'] ) : '',
 					);
 				} else {
 					return __( 'You are not authorised for this action', 'racketmanager' );
@@ -910,12 +911,13 @@ class RacketManager_Login {
 				}
 			} elseif ( 'GET' === $_SERVER['REQUEST_METHOD'] ) {
 				$user_data = array(
-					'user_name'  => $current_user->user_email,
-					'first_name' => get_user_meta( $current_user->ID, 'first_name', true ),
-					'last_name'  => get_user_meta( $current_user->ID, 'last_name', true ),
-					'contactno'  => get_user_meta( $current_user->ID, 'contactno', true ),
-					'gender'     => get_user_meta( $current_user->ID, 'gender', true ),
-					'btm'        => get_user_meta( $current_user->ID, 'btm', true ),
+					'user_name'     => $current_user->user_email,
+					'first_name'    => get_user_meta( $current_user->ID, 'first_name', true ),
+					'last_name'     => get_user_meta( $current_user->ID, 'last_name', true ),
+					'contactno'     => get_user_meta( $current_user->ID, 'contactno', true ),
+					'gender'        => get_user_meta( $current_user->ID, 'gender', true ),
+					'btm'           => get_user_meta( $current_user->ID, 'btm', true ),
+					'year_of_birth' => get_user_meta( $current_user->ID, 'year_of_birth', true ),
 				);
 			}
 		}
@@ -965,6 +967,13 @@ class RacketManager_Login {
 		} elseif ( get_user_meta( $current_user->ID, 'btm', true ) !== $user_data['btm'] ) {
 			$updates = true;
 		}
+		if ( empty( $user_data['year_of_birth'] ) ) {
+			if ( ! empty( get_user_meta( $current_user->ID, 'year_of_birth', true ) ) ) {
+				$updates = true;
+			}
+		} elseif ( get_user_meta( $current_user->ID, 'year_of_birth', true ) !== $user_data['year_of_birth'] ) {
+			$updates = true;
+		}
 		if ( ! empty( $user_data['password'] ) ) {
 			unset( $user_data['rePassword'] );
 			$updates = true;
@@ -979,6 +988,8 @@ class RacketManager_Login {
 			if ( 'contactno' === $key ) {
 				update_user_meta( $current_user->ID, $key, $value );
 			} elseif ( 'btm' === $key ) {
+				update_user_meta( $current_user->ID, $key, $value );
+			} elseif ( 'year_of_birth' === $key ) {
 				update_user_meta( $current_user->ID, $key, $value );
 			} elseif ( 'gender' === $key ) {
 				update_user_meta( $current_user->ID, $key, $value );

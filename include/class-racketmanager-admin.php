@@ -266,6 +266,14 @@ final class RacketManager_Admin extends RacketManager {
 			</tr>
 			<tr>
 				<th>
+					<label for="year_of_birth"><?php esc_html_e( 'Year of birth', 'racketmanager' ); ?></label>
+				</th>
+				<td>
+					<input type="number" name="year_of_birth" value="<?php echo esc_attr( get_the_author_meta( 'year_of_birth', $user->ID ) ); ?>">
+				</td>
+			</tr>
+			<tr>
+				<th>
 					<label for="remove_date"><?php esc_html_e( 'Date Removed', 'racketmanager' ); ?></label>
 				</th>
 				<td>
@@ -302,7 +310,10 @@ final class RacketManager_Admin extends RacketManager {
 				update_user_meta( $user_id, 'contactno', sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) );
 			}
 			if ( isset( $_POST['btm'] ) ) {
-				update_user_meta( $user_id, 'btm', sanitize_text_field( wp_unslash( $_POST['btm'] ) ) );
+				update_user_meta( $user_id, 'btm', intval( $_POST['btm'] ) );
+			}
+			if ( isset( $_POST['year_of_birth'] ) ) {
+				update_user_meta( $user_id, 'year_of_birth', intval( $_POST['year_of_birth'] ) );
 			}
 			if ( isset( $_POST['remove_date'] ) ) {
 				update_user_meta( $user_id, 'remove_date', sanitize_text_field( wp_unslash( $_POST['remove_date'] ) ) );
@@ -2166,7 +2177,7 @@ final class RacketManager_Admin extends RacketManager {
 		} else {
 			$gender = sanitize_text_field( wp_unslash( $_POST['gender'] ) );
 		}
-		if ( ! isset( $_POST['btm'] ) || '' === intval( $_POST['btm'] ) ) {
+		if ( ! isset( $_POST['btm'] ) || 0 === intval( $_POST['btm'] ) ) {
 			if ( $btm_required ) {
 				$valid                      = false;
 				$error_field[ $error_id ]   = 'btm';
@@ -2181,7 +2192,7 @@ final class RacketManager_Admin extends RacketManager {
 		if ( ! isset( $_POST['contactno'] ) || '' === intval( $_POST['contactno'] ) ) {
 			$contactno = '';
 		} else {
-			$contactno = intval( $_POST['contactno'] );
+			$contactno = sanitize_text_field( wp_unslash( $_POST['contactno'] ) );
 		}
 		if ( ! isset( $_POST['email'] ) || '' === sanitize_text_field( wp_unslash( $_POST['email'] ) ) ) {
 			$email = '';
@@ -2193,19 +2204,25 @@ final class RacketManager_Admin extends RacketManager {
 		} else {
 			$locked = sanitize_text_field( wp_unslash( $_POST['locked'] ) );
 		}
+		if ( ! isset( $_POST['year_of_birth'] ) || 0 === intval( $_POST['year_of_birth'] ) ) {
+			$year_of_birth = '';
+		} else {
+			$year_of_birth = intval( $_POST['year_of_birth'] );
+		}
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 		if ( $valid ) {
-			$player             = new \stdClass();
-			$player->data       = array();
-			$player->firstname  = $firstname;
-			$player->surname    = $surname;
-			$player->fullname   = $firstname . ' ' . $surname;
-			$player->user_login = strtolower( $firstname ) . '.' . strtolower( $surname );
-			$player->email      = $email;
-			$player->btm        = $btm;
-			$player->contactno  = $contactno;
-			$player->gender     = $gender;
-			$player->locked     = $locked;
+			$player                = new \stdClass();
+			$player->data          = array();
+			$player->firstname     = $firstname;
+			$player->surname       = $surname;
+			$player->fullname      = $firstname . ' ' . $surname;
+			$player->user_login    = strtolower( $firstname ) . '.' . strtolower( $surname );
+			$player->email         = $email;
+			$player->btm           = $btm;
+			$player->contactno     = $contactno;
+			$player->gender        = $gender;
+			$player->locked        = $locked;
+			$player->year_of_birth = $year_of_birth;
 			array_push( $return, $valid, $player );
 		} else {
 			array_push( $return, $valid, $error_field, $error_message );
@@ -4143,13 +4160,14 @@ final class RacketManager_Admin extends RacketManager {
 			$line = explode( $delimiter, $record );
 			// ignore header and empty lines.
 			if ( $i > 0 && count( $line ) > 1 ) {
-				$_POST['firstname'] = isset( $line[0] ) ? $line[0] : '';
-				$_POST['surname']   = isset( $line[1] ) ? $line[1] : '';
-				$_POST['gender']    = isset( $line[2] ) ? $line[2] : '';
-				$_POST['btm']       = isset( $line[3] ) ? $line[3] : '';
-				$_POST['email']     = isset( $line[4] ) ? $line[4] : '';
-				$_POST['contactno'] = isset( $line[5] ) ? $line[5] : '';
-				$player_valid       = $this->validatePlayer();
+				$_POST['firstname']     = isset( $line[0] ) ? $line[0] : '';
+				$_POST['surname']       = isset( $line[1] ) ? $line[1] : '';
+				$_POST['gender']        = isset( $line[2] ) ? $line[2] : '';
+				$_POST['btm']           = isset( $line[3] ) ? $line[3] : '';
+				$_POST['email']         = isset( $line[4] ) ? $line[4] : '';
+				$_POST['contactno']     = isset( $line[5] ) ? $line[5] : '';
+				$_POST['year_of_birth'] = isset( $line[6] ) ? $line[6] : '';
+				$player_valid           = $this->validatePlayer();
 				if ( $player_valid[0] ) {
 					$new_player = $player_valid[1];
 					$player     = get_player( $new_player->user_login, 'login' );  // get player by login.
@@ -4195,13 +4213,14 @@ final class RacketManager_Admin extends RacketManager {
 			$line = explode( $delimiter, $record );
 			// ignore header and empty lines.
 			if ( $i > 0 && count( $line ) > 1 ) {
-				$_POST['firstname'] = isset( $line[0] ) ? $line[0] : '';
-				$_POST['surname']   = isset( $line[1] ) ? $line[1] : '';
-				$_POST['gender']    = isset( $line[2] ) ? $line[2] : '';
-				$_POST['btm']       = isset( $line[3] ) ? $line[3] : '';
-				$_POST['email']     = isset( $line[4] ) ? $line[4] : '';
-				$_POST['contactno'] = isset( $line[5] ) ? $line[5] : '';
-				$player_valid       = $this->validatePlayer();
+				$_POST['firstname']     = isset( $line[0] ) ? $line[0] : '';
+				$_POST['surname']       = isset( $line[1] ) ? $line[1] : '';
+				$_POST['gender']        = isset( $line[2] ) ? $line[2] : '';
+				$_POST['btm']           = isset( $line[3] ) ? $line[3] : '';
+				$_POST['email']         = isset( $line[4] ) ? $line[4] : '';
+				$_POST['contactno']     = isset( $line[5] ) ? $line[5] : '';
+				$_POST['year_of_birth'] = isset( $line[6] ) ? $line[6] : '';
+				$player_valid           = $this->validatePlayer();
 				if ( $player_valid[0] ) {
 					$new_player = $player_valid[1];
 					$club->register_player( $new_player );

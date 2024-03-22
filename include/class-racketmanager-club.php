@@ -751,6 +751,7 @@ final class Racketmanager_Club {
 					$players[ $i ]->locked_date      = $player->locked_date;
 					$players[ $i ]->locked_user      = $player->locked_user;
 					$players[ $i ]->locked_user_name = $player->locked_user_name;
+					$players[ $i ]->year_of_birth    = $player->year_of_birth;
 				}
 
 				++$i;
@@ -807,6 +808,7 @@ final class Racketmanager_Club {
 			} else {
 				$player->locked_user_name = '';
 			}
+			$player->year_of_birth = get_user_meta( $player->player_id, 'year_of_birth', true );
 		}
 
 		return $player;

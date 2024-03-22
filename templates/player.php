@@ -91,6 +91,13 @@ if ( is_user_logged_in() ) {
 				<div id="emailFeedback" class="invalid-feedback"></div>
 			</div>
 		<?php } ?>
+		<?php if ( null !== $player->contactno || $user_can_update ) { ?>
+			<div class="form-floating mb-3">
+				<input type="tel" class="form-control" id="contactno" name="contactno" autocomplete="off" value="<?php echo esc_html( $player->contactno ); ?>" <?php disabled( $user_can_update, false ); ?> />
+				<label for="contactno"><?php esc_html_e( 'Telephone number', 'racketmanager' ); ?></label>
+				<div id="contactnoFeedback" class="invalid-feedback"></div>
+			</div>
+		<?php } ?>
 		<?php if ( $user_can_update ) { ?>
 			<button class="btn mb-3" type="button" id="updatePlayerSubmit" name="updatePlayerSubmit" onclick="Racketmanager.updatePlayer(this)"><?php esc_html_e( 'Update details', 'racketmanager' ); ?></button>
 			<div class="updateResponse" id="updatePlayer" name="updatePlayer"></div>

@@ -326,9 +326,9 @@ final class Racketmanager_Player {
 			$update                  = true;
 			$user_data['user_email'] = $player->email;
 		}
-		if ( $this->contactno !== $player->contact_no ) {
+		if ( $this->contactno !== $player->contactno ) {
 			$update = true;
-			update_user_meta( $this->ID, 'contactno', $player->contact_no );
+			update_user_meta( $this->ID, 'contactno', $player->contactno );
 		}
 		if ( $this->locked !== $player->locked ) {
 			$update = true;

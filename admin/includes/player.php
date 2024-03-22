@@ -108,6 +108,22 @@ if ( isset( $player->email ) ) {
 />
 		<label for="email"><?php esc_html_e( 'Email address', 'racketmanager' ); ?></label>
 	</div>
+	<div class="form-floating mb-3">
+		<input type="tel" class="form-control
+		<?php
+		if ( isset( $form_valid ) && ! $form_valid && is_numeric( array_search( 'email', $error_fields, true ) ) ) {
+			echo ' ' . esc_html( RACKETMANAGER_IS_INVALID );
+		}
+		?>
+		" placeholder="<?php esc_html_e( 'Enter telephone number', 'racketmanager' ); ?>" name="contactno" id="contactno"
+<?php
+if ( isset( $player->contactno ) ) {
+	echo ' value = "' . esc_html( $player->contactno ) . '" ';
+}
+?>
+/>
+		<label for="contactno"><?php esc_html_e( 'Telephone number', 'racketmanager' ); ?></label>
+	</div>
 	<?php if ( isset( $player_id ) ) { ?>
 		<div class="form-check">
 			<input class="form-check-input

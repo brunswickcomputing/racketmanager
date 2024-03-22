@@ -22,10 +22,12 @@ namespace Racketmanager;
 														<tr>
 															<td style="min-width: 5px; font-weight: 400;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
 																<div style="font-size: 16px; color: #000; background-color: transparent; margin: 10px;">
-																	<?php esc_html_e( 'Dear', 'racketmanager' ); ?>
 																	<?php
 																	if ( ! empty( $salutation_link ) ) {
+																		esc_html_e( 'Dear', 'racketmanager' );
 																		echo ' ' . esc_html( $salutation_link );
+																	} else {
+																		esc_html_e( 'Hi', 'racketmanager' );
 																	}
 																	?>
 																</div>

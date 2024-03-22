@@ -332,8 +332,8 @@ final class Racketmanager_Charges {
 				$club_event->fee   = $this->fee_team * $num_teams;
 				$club_events[]     = $club_event;
 			}
+			$club_teams += $num_teams;
 		}
-		$club_teams += $num_teams;
 		if ( $club_teams > 0 ) {
 			$club_entry            = new \stdClass();
 			$club_entry->id        = $club->id;

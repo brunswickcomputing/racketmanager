@@ -336,7 +336,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				if ( $player_valid[0] ) {
 					$player     = get_player( $player_id );
 					$new_player = $player_valid[1];
-					$player->update( $new_player->firstname, $new_player->surname, $new_player->gender, $new_player->btm, $new_player->email, $new_player->locked, $new_player->contactno );
+					$player->update( $new_player );
 					$error = $racketmanager->error;
 					$msg   = $racketmanager->message;
 				} else {

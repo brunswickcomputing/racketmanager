@@ -289,52 +289,51 @@ final class Racketmanager_Player {
 	/**
 	 * Update player
 	 *
-	 * @param string $firstname first name.
-	 * @param string $surname surname.
-	 * @param string $gender gender.
-	 * @param string $btm lta tennis number.
-	 * @param string $email email address.
-	 * @param string $locked locked indicator.
-	 * @param string $contact_no telephone number.
+	 * @param object $player player object with updated data.
+
 	 * @return null
 	 */
-	public function update( $firstname, $surname, $gender, $btm, $email, $locked, $contact_no ) {
+	public function update( $player ) {
 		global $racketmanager;
 
 		$update    = false;
 		$user_data = array();
-		if ( $this->firstname !== $firstname ) {
+		if ( $this->firstname !== $player->firstname ) {
 			$update                     = true;
-			$user_data['first_name']    = $firstname;
-			$user_data['display_name']  = $firstname . ' ' . $surname;
+			$user_data['first_name']    = $player->firstname;
+			$user_data['display_name']  = $player->firstname . ' ' . $player->surname;
 			$user_data['user_nicename'] = sanitize_title( $user_data['display_name'] );
 		}
-		if ( $this->surname !== $surname ) {
+		if ( $this->surname !== $player->surname ) {
 			$update                     = true;
-			$user_data['last_name']     = $surname;
-			$user_data['display_name']  = $firstname . ' ' . $surname;
+			$user_data['last_name']     = $player->surname;
+			$user_data['display_name']  = $player->firstname . ' ' . $player->surname;
 			$user_data['user_nicename'] = sanitize_title( $user_data['display_name'] );
 		}
-		if ( $this->gender !== $gender ) {
+		if ( $this->gender !== $player->gender ) {
 			$update = true;
-			update_user_meta( $this->ID, 'gender', $gender );
+			update_user_meta( $this->ID, 'gender', $player->gender );
+		}
+		if ( $this->btm !== $player->btm ) {
+			$update = true;
+			update_user_meta( $this->ID, 'btm', $player->btm );
 		}
 		if ( $this->btm !== $btm ) {
 			$update = true;
 			update_user_meta( $this->ID, 'btm', $btm );
 		}
-		if ( $this->user_email !== $email ) {
+		if ( $this->user_email !== $player->email ) {
 			$update                  = true;
-			$user_data['user_email'] = $email;
+			$user_data['user_email'] = $player->email;
 		}
-		if ( $this->contactno !== $contact_no ) {
+		if ( $this->contactno !== $player->contact_no ) {
 			$update = true;
-			update_user_meta( $this->ID, 'contactno', $contact_no );
+			update_user_meta( $this->ID, 'contactno', $player->contact_no );
 		}
-		if ( $this->locked !== $locked ) {
+		if ( $this->locked !== $player->locked ) {
 			$update = true;
-			if ( $locked ) {
-				update_user_meta( $this->ID, 'locked', $locked );
+			if ( $player->locked ) {
+				update_user_meta( $this->ID, 'locked', $player->locked );
 				update_user_meta( $this->ID, 'locked_date', gmdate( 'Y-m-d' ) );
 				update_user_meta( $this->ID, 'locked_user', get_current_user_id() );
 			} else {

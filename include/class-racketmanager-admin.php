@@ -2098,7 +2098,7 @@ final class RacketManager_Admin extends RacketManager {
 					if ( isset( $_POST['player_id'] ) ) {
 						$player     = get_player( intval( $_POST['player_id'] ) );
 						$new_player = $player_valid[1];
-						$player->update( $new_player->firstname, $new_player->surname, $new_player->gender, $new_player->btm, $new_player->email, $new_player->locked, $new_player->contactno );
+						$player->update( $new_player );
 					}
 				} else {
 					$form_valid     = false;

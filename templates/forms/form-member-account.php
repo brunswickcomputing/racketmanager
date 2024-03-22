@@ -24,7 +24,7 @@ namespace Racketmanager;
 		<?php } ?>
 
 		<form name="memberaccountform" id="memberaccountform" action="<?php echo esc_url( site_url( 'member-account' ) ); ?>" method="post" autocomplete="off">
-			<?php wp_nonce_field( 'member_account_nonce', 'member_account_nonce_field' ); ?>
+			<?php wp_nonce_field( 'member_account', 'racketmanager_nonce' ); ?>
 
 			<div>
 			<h2><?php esc_html_e( 'Personal Information', 'racketmanager' ); ?></h2>

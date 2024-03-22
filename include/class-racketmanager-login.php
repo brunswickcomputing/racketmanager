@@ -891,7 +891,7 @@ class RacketManager_Login {
 		$current_user = wp_get_current_user();
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) ) {
 			if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
-				if ( isset( $_POST['member_account_nonce_field'] ) && wp_verify_nonce( sanitize_email( wp_unslash( $_POST['member_account_nonce_field'], 'member_account_nonce' ) ) ) ) {
+				if ( isset( $_POST['racketmanager_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'member_account' ) ) {
 					$user_data = array(
 						'user_name'  => isset( $_POST['username'] ) ? sanitize_email( wp_unslash( $_POST['username'] ) ) : '',
 						'first_name' => isset( $_POST['firstname'] ) ? sanitize_text_field( wp_unslash( $_POST['firstname'] ) ) : '',

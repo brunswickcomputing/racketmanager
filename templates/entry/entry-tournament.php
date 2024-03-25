@@ -100,6 +100,13 @@ namespace Racketmanager;
 											}
 											?>
 											<span><?php echo esc_html( $gender ); ?></span>
+											<?php
+											if ( ! empty( $player->age ) ) {
+												?>
+												<span>, <?php echo esc_html( $player->age ); ?></span>
+												<?php
+											}
+											?>
 										</span>
 									</div>
 								</div>
@@ -191,8 +198,13 @@ namespace Racketmanager;
 										<h4 class="hgroup__heading"><?php esc_html_e( 'Events', 'racketmanager' ); ?></h4>
 										<p class="hgroup__subheading">
 											<?php
-											/* Translators: %s: gender. */
-											echo esc_html( sprintf( __( 'Events are filtered by your gender (%s)', 'racketmanager' ), $gender ) );
+											if ( empty( $player->age ) ) {
+												$age = 'unknown';
+											} else {
+												$age = $player->age;
+											}
+											/* Translators: %1$s: gender %2$s age. */
+											echo esc_html( sprintf( __( 'Events are filtered by your gender (%1$s) and playing age (%2$s)', 'racketmanager' ), $gender, $age ) );
 											?>
 										</p>
 									</div>

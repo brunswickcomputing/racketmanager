@@ -411,7 +411,7 @@ if ( ! empty( $match->winner_id ) ) {
 										?>
 									</div>
 									<?php
-									if ( ! empty( $match->comments ) ) {
+									if ( ! empty( $match->comments[ $opponent ] ) ) {
 										?>
 										<div class="match__row-title-value">
 											<span class="match__row-title-value-content">

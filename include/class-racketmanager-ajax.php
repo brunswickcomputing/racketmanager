@@ -636,6 +636,7 @@ class Racketmanager_Ajax extends RacketManager {
 						}
 					}
 				}
+				$status              = null;
 				$rubber_number       = $ix;
 				$errors['err_msg']   = $err_msg;
 				$errors['err_field'] = $err_field;

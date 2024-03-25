@@ -57,6 +57,25 @@ $event->offset      = isset( $event->offset ) ? $event->offset : '0';
 			</select>
 			<label for='offset'><?php esc_html_e( 'Offset week', 'racketmanager' ); ?></label>
 		</div>
+		<div class="form-floating mb-3 col-12 col-xl-2">
+			<select class="form-select" size='1' name='settings[age_limit]' id='age_limit'>
+				<option value='open' <?php selected( $event->age_limit, 'open' ); ?>><?php esc_html_e( 'Open', 'racketmanager' ); ?></option>
+				<option value='40' <?php selected( $event->age_limit, '40' ); ?>><?php esc_html_e( '40+', 'racketmanager' ); ?></option>
+				<option value='45' <?php selected( $event->age_limit, '45' ); ?>><?php esc_html_e( '45+', 'racketmanager' ); ?></option>
+				<option value='50' <?php selected( $event->age_limit, '50' ); ?>><?php esc_html_e( '50+', 'racketmanager' ); ?></option>
+				<option value='55' <?php selected( $event->age_limit, '55' ); ?>><?php esc_html_e( '55+', 'racketmanager' ); ?></option>
+				<option value='60' <?php selected( $event->age_limit, '60' ); ?>><?php esc_html_e( '60+', 'racketmanager' ); ?></option>
+				<option value='65' <?php selected( $event->age_limit, '65' ); ?>><?php esc_html_e( '65+', 'racketmanager' ); ?></option>
+			</select>
+			<label for='age_limit'><?php esc_html_e( 'Age limit', 'racketmanager' ); ?></label>
+		</div>
+		<div class="form-floating mb-3 col-12 col-xl-2">
+			<select class="form-select" size='1' name='settings[age_offset]' id='age_offset'>
+				<option value='none' <?php selected( $event->age_offset, 'none' ); ?>><?php esc_html_e( 'None', 'racketmanager' ); ?></option>
+				<option value='5' <?php selected( $event->age_offset, '5' ); ?>><?php esc_html_e( '5 years for ladies', 'racketmanager' ); ?></option>
+			</select>
+			<label for='age_offset'><?php esc_html_e( 'Mixed age offset', 'racketmanager' ); ?></label>
+		</div>
 		<div class="form-group">
 			<div class="form-label">
 				<?php esc_html_e( 'Match days allowed', 'racketmanager' ); ?>

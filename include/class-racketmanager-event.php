@@ -298,6 +298,18 @@ class Racketmanager_Event {
 	 */
 	public $competition_id;
 	/**
+	 * Age limit
+	 *
+	 * @var int
+	 */
+	public $age_limit;
+	/**
+	 * Age offset
+	 *
+	 * @var int
+	 */
+	public $age_offset;
+	/**
 	 * Retrieve event instance
 	 *
 	 * @param int    $event_id event id.

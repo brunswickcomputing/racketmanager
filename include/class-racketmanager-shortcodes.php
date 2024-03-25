@@ -370,27 +370,45 @@ class RacketManager_Shortcodes {
 		foreach ( $events as $event ) {
 			$event = get_event( $event );
 			if ( ( 'M' === $player->gender && substr( $event->type, 0, 1 ) !== 'W' ) || ( 'F' === $player->gender && substr( $event->type, 0, 1 ) !== 'M' ) ) {
-				$player_entry = new \stdClass();
-				$teams        = $event->get_teams(
-					array(
-						'name'   => $player->display_name,
-						'season' => $tournament->season,
-					)
-				);
-				if ( $teams ) {
-					$team                  = $teams[0];
-					$player_entry->team_id = $team->id;
-					$p                     = 1;
-					foreach ( $team->player as $team_player ) {
-						if ( $team_player !== $player->display_name ) {
-							$player_entry->partner    = $team_player;
-							$player_entry->partner_id = $team->player_id[ $p ];
-							break;
+				if ( empty( $event->age_limit ) || 'open' === $event->age_limit ) {
+					$entry_valid = true;
+				} elseif ( empty( $player->age ) ) {
+					$entry_valid = false;
+				} elseif ( $player->age < $event->age_limit ) {
+					if ( 'F' === $player->gender && ! empty( $event->age_offset ) ) {
+						$age_limit = $event->age_limit - $event->age_offset;
+						if ( $player->age < $age_limit ) {
+							$entry_valid = false;
 						}
-						++$p;
+					} else {
+						$entry_valid = false;
 					}
-					$player_entry->event         = $event->name;
-					$player->entry[ $event->id ] = $player_entry;
+				}
+				if ( $entry_valid ) {
+					$player_entry = new \stdClass();
+					$teams        = $event->get_teams(
+						array(
+							'name'   => $player->display_name,
+							'season' => $tournament->season,
+						)
+					);
+					if ( $teams ) {
+						$team                  = $teams[0];
+						$player_entry->team_id = $team->id;
+						$p                     = 1;
+						foreach ( $team->player as $team_player ) {
+							if ( $team_player !== $player->display_name ) {
+								$player_entry->partner    = $team_player;
+								$player_entry->partner_id = $team->player_id[ $p ];
+								break;
+							}
+							++$p;
+						}
+						$player_entry->event         = $event->name;
+						$player->entry[ $event->id ] = $player_entry;
+					}
+				} else {
+					unset( $events[ $c ] );
 				}
 			} else {
 				unset( $events[ $c ] );

@@ -98,6 +98,12 @@ final class Racketmanager_Player {
 	 */
 	public $year_of_birth;
 	/**
+	 * Age.
+	 *
+	 * @var int
+	 */
+	public $age;
+	/**
 	 * Contact Number.
 	 *
 	 * @var string
@@ -245,12 +251,17 @@ final class Racketmanager_Player {
 			$this->type          = get_user_meta( $this->ID, 'racketmanager_type', true );
 			$this->btm           = get_user_meta( $this->ID, 'btm', true );
 			$this->year_of_birth = get_user_meta( $this->ID, 'year_of_birth', true );
-			$this->contactno     = get_user_meta( $this->ID, 'contactno', true );
-			$this->removed_date  = get_user_meta( $this->ID, 'remove_date', true );
-			$this->removed_user  = get_user_meta( $this->ID, 'remove_user', true );
-			$this->locked        = get_user_meta( $this->ID, 'locked', true );
-			$this->locked_date   = get_user_meta( $this->ID, 'locked_date', true );
-			$this->locked_user   = get_user_meta( $this->ID, 'locked_user', true );
+			if ( $this->year_of_birth ) {
+				$this->age = gmdate( 'Y' ) - intval( $this->year_of_birth );
+			} else {
+				$this->age = 0;
+			}
+			$this->contactno    = get_user_meta( $this->ID, 'contactno', true );
+			$this->removed_date = get_user_meta( $this->ID, 'remove_date', true );
+			$this->removed_user = get_user_meta( $this->ID, 'remove_user', true );
+			$this->locked       = get_user_meta( $this->ID, 'locked', true );
+			$this->locked_date  = get_user_meta( $this->ID, 'locked_date', true );
+			$this->locked_user  = get_user_meta( $this->ID, 'locked_user', true );
 			if ( $this->locked_user ) {
 				$this->locked_user_name = get_userdata( $this->locked_user )->display_name;
 			} else {

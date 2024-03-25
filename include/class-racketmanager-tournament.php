@@ -253,11 +253,11 @@ final class Racketmanager_Tournament {
 				$this->current_phase = 'end';
 			} else {
 				$this->current_phase = '';
-				if ( ! empty( $this->date_start ) && $today > $this->date_start ) {
+				if ( ! empty( $this->date_start ) && $today >= $this->date_start ) {
 					$this->current_phase = 'start';
-				} elseif ( ! empty( $this->closing_date ) && $today > $this->closing_date ) {
+				} elseif ( ! empty( $this->closing_date ) && $today >= $this->closing_date ) {
 					$this->current_phase = 'close';
-				} elseif ( ! empty( $this->date_open ) && $today > $this->date_open ) {
+				} elseif ( ! empty( $this->date_open ) && $today >= $this->date_open ) {
 					$this->current_phase = 'open';
 				}
 			}

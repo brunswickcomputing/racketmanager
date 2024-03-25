@@ -943,8 +943,10 @@ final class Racketmanager_Match {
 						$home_points += $matches_draw;
 						$away_points += $matches_draw;
 					}
-					$home_points -= $walkover_penalty * $home_walkover;
-					$away_points -= $walkover_penalty * $away_walkover;
+					if ( 1 === $this->status ) {
+						$home_points -= $walkover_penalty * $home_walkover;
+						$away_points -= $walkover_penalty * $away_walkover;
+					}
 				}
 			} else {
 				$this->status = 0;

@@ -179,6 +179,7 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 								}
 							}
 							for ( $j = 1; $j <= $league->num_sets; $j++ ) {
+								$set_type = Racketmanager_Util::get_set_type( $league->scoring, null, $league->num_sets, $j );
 								if ( isset( $rubber->sets[ $j ]['player1'] ) && null !== $rubber->sets[ $j ]['player1'] ) {
 									$set        = $rubber->sets[ $j ];
 									$set_status = null;
@@ -188,10 +189,18 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 										}
 									}
 									if ( is_numeric( trim( $set[ $player_ref_alt ] ) ) ) {
-										$data['games_allowed'] += intval( $set[ $player_ref_alt ] );
+										if ( 'MTB' === $set_type ) {
+											++$data['games_allowed'];
+										} else {
+											$data['games_allowed'] += intval( $set[ $player_ref_alt ] );
+										}
 									}
 									if ( is_numeric( trim( $set[ $player_ref ] ) ) ) {
-										$data['games_won'] += intval( $set[ $player_ref ] );
+										if ( 'MTB' === $set_type ) {
+											++$data['games_won'];
+										} else {
+											$data['games_won'] += intval( $set[ $player_ref ] );
+										}
 									}
 									if ( ( $set[ $player_ref ] > $set[ $player_ref_alt ] && empty( $set_status ) ) || 'home' === $set_status ) {
 										$data['sets_won'] += 1;

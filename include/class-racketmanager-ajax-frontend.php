@@ -395,7 +395,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						$partner_id = isset( $partners[ $event->id ] ) ? $partners[ $event->id ] : 0;
 						$field_ref  = $event->id;
 						$field_name = $event->name;
-						$validator  = $validator->partner( $partner_id, $field_ref, $field_name );
+						$validator  = $validator->partner( $partner_id, $field_ref, $field_name, $event );
 					}
 				}
 				$validator      = $validator->telephone( $contactno );

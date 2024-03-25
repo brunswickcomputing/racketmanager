@@ -393,38 +393,54 @@ if ( ! empty( $match->winner_id ) ) {
 						<?php
 						foreach ( $opponents as $opponent ) {
 							?>
-						<div class="match__row">
-							<div class="match__row-title">
-								<div class="match__row-title-header">
-								<?php echo esc_html( $match->teams[ $opponent ]->title ); ?>
-								</div>
-								<div class="match__row-title-value">
-								<?php
+							<div class="match__row">
+								<div class="match__row-title">
+									<div class="match__row-title-header">
+										<?php echo esc_html( $match->teams[ $opponent ]->title ); ?>
+									</div>
+									<div class="match__row-title-value">
+										<?php
 										$approval_captain = $opponent . '_captain';
-								if ( isset( $match->$approval_captain ) ) {
-									?>
-									<span class="match__row-title-value-content">
-										<span
-											class="nav-link__value"><?php echo esc_html( $racketmanager->get_player_name( $match->$approval_captain ) ); ?></span>
-									</span>
+										if ( isset( $match->$approval_captain ) ) {
+											?>
+											<span class="match__row-title-value-content">
+												<span class="nav-link__value"><?php echo esc_html( $racketmanager->get_player_name( $match->$approval_captain ) ); ?></span>
+											</span>
+											<?php
+										}
+										?>
+									</div>
 									<?php
 									if ( ! empty( $match->comments ) ) {
 										?>
-								</div>
-								<div class="match__row-title-value">
-									<span class="match__row-title-value-content">
-										<span class="nav-link__value match-comments"
-											title="<?php esc_attr_e( 'Match comments', 'racketmanager' ); ?>"><?php echo esc_html( $match->comments[ $opponent ] ); ?></span>
-									</span>
-											<?php
+										<div class="match__row-title-value">
+											<span class="match__row-title-value-content">
+												<span class="nav-link__value match-comments"title="<?php esc_attr_e( 'Match comments', 'racketmanager' ); ?>"><?php echo esc_html( $match->comments[ $opponent ] ); ?></span>
+											</span>
+										</div>
+										<?php
 									}
 									?>
-									<?php
-								}
-								?>
 								</div>
 							</div>
-						</div>
+							<?php
+						}
+						?>
+						<?php
+						if ( ! empty( $match->comments['result'] ) ) {
+							?>
+							<div class="match__row match__row-comments">
+								<div class="match__row-title">
+									<div class="match__row-title-header">
+										<?php esc_html_e( 'Comments', 'racketmanager' ); ?>
+									</div>
+									<div class="match__row-title-value">
+										<span class="match__row-title-value-content">
+											<span class="nav-link__value match-comments"title="<?php esc_attr_e( 'Match comments', 'racketmanager' ); ?>"><?php echo esc_html( $match->comments['result'] ); ?></span>
+										</span>
+									</div>
+								</div>
+							</div>
 							<?php
 						}
 						?>

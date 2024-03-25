@@ -2404,7 +2404,11 @@ ul.module {
 	padding-bottom: 3px;
 	padding-top: 0
 }
-
+.match__row-comments {
+    border-top: 1px solid #e1e2e5;
+    margin-top: 3px;
+    padding-top: 0;
+}
 @media (min-width: 768px) {
 	.match__row {
 		min-height: 1.9rem

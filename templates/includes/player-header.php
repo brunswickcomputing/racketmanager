@@ -36,7 +36,7 @@ namespace Racketmanager;
 							<?php
 							if ( isset( $player->club_name ) ) {
 								?>
-								<span><?php echo esc_html( $tournament_player->club_name ); ?></span>
+								<span><?php echo esc_html( $player->club_name ); ?></span>
 								<?php
 							}
 							?>
@@ -45,7 +45,7 @@ namespace Racketmanager;
 				<div class="media__aside">
 					<div class="progress-bar-container">
 						<?php
-						if ( $player->statistics['total']->played ) {
+						if ( isset( $player->statistics['total'] ) && $player->statistics['total']->played ) {
 							?>
 							<div class="clearfix">
 								<span class="pull-left"><?php esc_html_e( 'Win-Loss', 'racketmanager' ); ?></span>

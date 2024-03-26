@@ -21,7 +21,7 @@ namespace Racketmanager;
 		</summary>
 		<div id="players" class="accordion accordion-flush">
 			<?php
-			if ( $user_can_add_player ) {
+			if ( $user_can_update_player ) {
 				?>
 				<div class="accordion-item">
 					<h3 class="accordion-header" id="heading-addplayer">

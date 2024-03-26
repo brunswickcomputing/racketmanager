@@ -15,26 +15,6 @@
 
 namespace Racketmanager;
 
-$user_can_update_club = false;
-$user_can_add_player  = false;
-if ( ! empty( $club_list ) ) {
-	$standalone = false;
-} else {
-	$standalone = true;
-}
-if ( ! empty( $standalone ) && is_user_logged_in() ) {
-	$user   = wp_get_current_user();
-	$userid = $user->ID;
-	if ( current_user_can( 'manage_racketmanager' ) || ( null !== $club->matchsecretary && intval( $club->matchsecretary ) === $userid ) ) {
-		$user_can_update_club = true;
-		$user_can_add_player  = true;
-	} else {
-		$options = $racketmanager->get_options( 'rosters' );
-		if ( isset( $options['rosterEntry'] ) && 'captain' === $options['rosterEntry'] && $club->is_player_captain( $userid ) ) {
-			$user_can_add_player = true;
-		}
-	}
-}
 ?>
 <?php
 if ( $standalone ) {

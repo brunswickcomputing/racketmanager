@@ -190,9 +190,19 @@ class RacketManager_Shortcodes {
 			)
 		);
 
-		$filename = ( ! empty( $template ) ) ? 'clubs-' . $template : 'clubs';
+		$user_can_update_club   = false;
+		$user_can_update_player = false;
+		$filename               = ( ! empty( $template ) ) ? 'clubs-' . $template : 'clubs';
 
-		return $this->load_template( $filename, array( 'clubs' => $clubs ) );
+		return $this->load_template(
+			$filename,
+			array(
+				'clubs'                  => $clubs,
+				'user_can_update_club'   => $user_can_update_club,
+				'user_can_update_player' => $user_can_update_player,
+				'standalone'             => false,
+			)
+		);
 	}
 
 	/**
@@ -221,6 +231,23 @@ class RacketManager_Shortcodes {
 		if ( ! $club ) {
 			return false;
 		}
+		$user_can_update_club   = false;
+		$user_can_update_player = false;
+		if ( is_user_logged_in() ) {
+			$user   = wp_get_current_user();
+			$userid = $user->ID;
+			if ( current_user_can( 'manage_racketmanager' ) || ( null !== $club->matchsecretary && intval( $club->matchsecretary ) === $userid ) ) {
+				$user_can_update_club   = true;
+				$user_can_update_player = true;
+			} else {
+				$options = $racketmanager->get_options( 'rosters' );
+				if ( isset( $options['rosterEntry'] ) && 'captain' === $options['rosterEntry'] && $club->is_player_captain( $userid ) ) {
+					$user_can_update_player = true;
+				}
+			}
+		}
+		debug_to_console( $club->is_player_captain( wp_get_current_user()->ID ) );
+		debug_to_console( $user_can_update_player );
 		$club_players    = $club->get_players(
 			array(
 				'active' => true,
@@ -240,14 +267,16 @@ class RacketManager_Shortcodes {
 		$club->single = true;
 
 		$filename = ( ! empty( $template ) ) ? 'club-' . $template : 'club';
-
 		return $this->load_template(
 			$filename,
 			array(
-				'club'            => $club,
-				'club_players'    => $club_players,
-				'player_requests' => $player_requests,
-				'google_maps_key' => $google_maps_key,
+				'club'                   => $club,
+				'club_players'           => $club_players,
+				'player_requests'        => $player_requests,
+				'google_maps_key'        => $google_maps_key,
+				'user_can_update_club'   => $user_can_update_club,
+				'user_can_update_player' => $user_can_update_player,
+				'standalone'             => true,
 			)
 		);
 	}
@@ -261,6 +290,7 @@ class RacketManager_Shortcodes {
 	 * @return the content
 	 */
 	public function show_player( $atts ) {
+		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
 				'template' => '',
@@ -282,12 +312,31 @@ class RacketManager_Shortcodes {
 		if ( ! $player ) {
 			return false;
 		}
+		$player->club_name = $club->shortcode;
+		$user_can_update   = false;
+		if ( is_user_logged_in() ) {
+			$user   = wp_get_current_user();
+			$userid = $user->ID;
+			if ( current_user_can( 'manage_racketmanager' ) ) {
+				$user_can_update = true;
+			} elseif ( null !== $club->matchsecretary && intval( $club->matchsecretary ) === $userid ) {
+				$user_can_update = true;
+			} elseif ( null !== $player->ID && intval( $player->ID ) === $userid ) {
+				$user_can_update = true;
+			} else {
+				$options = $racketmanager->get_options( 'rosters' );
+				if ( isset( $options['rosterEntry'] ) && 'captain' === $options['rosterEntry'] && $club->is_player_captain( $userid ) ) {
+					$user_can_update = true;
+				}
+			}
+		}
 		$filename = ( ! empty( $template ) ) ? 'player-' . $template : 'player';
 		return $this->load_template(
 			$filename,
 			array(
-				'club'   => $club,
-				'player' => $player,
+				'club'            => $club,
+				'player'          => $player,
+				'user_can_update' => $user_can_update,
 			)
 		);
 	}

@@ -50,8 +50,20 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
-= 8.3.0 =
-
+= 8.4.0 =
+* BUGFIX: check for team status
+* BUGFIX: set correct number of events
+* BUGFIX: set points correctly for shared matches
+* BUGFIX: handle only one player through to next round
+* BUGFIX: apply walkover penalties to match correctly
+* BUGFIX: handle MTB games correctly
+* UPDATE: add page titles
+* UPDATE: handle retired team scores
+* UPDATE: handle new match scoring
+* UPDATE: handle LTA competition code
+* UPDATE: add player year of birth
+* UPDATE: restrict tournament entries by age
+* UPDATE: allow team captains to amend player details
 
 = 8.3.0 =
 * BUGFIX: use time period in result emails correctly

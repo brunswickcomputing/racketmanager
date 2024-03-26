@@ -141,17 +141,6 @@ final class RacketManager_Admin extends RacketManager {
 
 		$page = add_submenu_page(
 			'racketmanager',
-			__( 'Schedule', 'racketmanager' ),
-			__( 'Schedule', 'racketmanager' ),
-			'racket_manager',
-			'racketmanager-schedule',
-			array( &$this, 'display' )
-		);
-		add_action( "admin_print_scripts-$page", array( &$this, 'loadScripts' ) );
-		add_action( "admin_print_scripts-$page", array( &$this, 'loadStyles' ) );
-
-		$page = add_submenu_page(
-			'racketmanager',
 			__( 'Players', 'racketmanager' ),
 			__( 'Players', 'racketmanager' ),
 			'racket_manager',
@@ -467,9 +456,6 @@ final class RacketManager_Admin extends RacketManager {
 			case 'racketmanager-documentation':
 				include_once RACKETMANAGER_PATH . '/admin/documentation.php';
 				break;
-			case 'racketmanager-schedule':
-				$this->displaySchedulePage();
-				break;
 			case 'racketmanager':
 			default:
 				if ( isset( $_GET['subpage'] ) ) {  //phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -708,6 +694,28 @@ final class RacketManager_Admin extends RacketManager {
 					$tab = 'settings';
 					$this->update_competition_settings( $competition );
 					$this->printMessage();
+				} elseif ( isset( $_POST['scheduleAction'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+					$tab = 'schedule';
+					if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_schedule-matches' ) ) {
+						$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+						$this->printMessage();
+						return;
+					}
+					if ( isset( $_POST['actionSchedule'] ) ) {
+						if ( 'schedule' === $_POST['actionSchedule'] ) {
+							if ( isset( $_POST['event'] ) ) {
+								$this->scheduleLeagueMatches( $_POST['event'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+								$this->printMessage();
+							}
+						} elseif ( 'delete' === $_POST['actionSchedule'] ) {
+							if ( isset( $_POST['event'] ) ) {
+								foreach ( $_POST['event'] as $event_id ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+									$this->delete_event_matches( $event_id );
+								}
+							}
+						}
+						$this->printMessage();
+					}
 				} elseif ( isset( $_GET['editleague'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					$league_id    = intval( $_GET['editleague'] );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					$league       = get_league( $league_id );
@@ -3178,49 +3186,6 @@ final class RacketManager_Admin extends RacketManager {
 			}
 		}
 	}
-
-	/**
-	 * Display schedule page
-	 */
-	private function displaySchedulePage() {
-		global $racketmanager;
-
-		if ( ! current_user_can( 'edit_leagues' ) ) {
-			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
-			$this->printMessage();
-		} else {
-			if ( isset( $_POST['doScheduleEvents'] ) || isset( $_POST['doDeleteEventMatches'] ) ) {
-				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_schedule-matches' ) ) {
-					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-					$this->printMessage();
-					return;
-				}
-				if ( isset( $_POST['doScheduleEvents'] ) ) {
-					if ( isset( $_POST['event'] ) ) {
-						$this->scheduleLeagueMatches( $_POST['event'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-						$this->printMessage();
-					}
-				} elseif ( isset( $_POST['doDeleteEventMatches'] ) ) {
-					if ( isset( $_POST['event'] ) ) {
-						foreach ( $_POST['event'] as $event_id ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-							$this->delete_event_matches( $event_id );
-						}
-					}
-					$this->printMessage();
-				}
-			}
-			$competitions = $racketmanager->get_competitions( array( 'type' => 'league' ) );
-			$i            = 0;
-			foreach ( $competitions as $competition ) {
-				$competition         = get_competition( $competition->id );
-				$competition->events = $competition->get_events();
-				$competitions[ $i ]  = $competition;
-				++$i;
-			}
-			include_once RACKETMANAGER_PATH . '/admin/show-schedule.php';
-		}
-	}
-
 	/**
 	 * Display link to settings page in plugin table
 	 *

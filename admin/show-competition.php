@@ -84,6 +84,15 @@ jQuery(document).ready(function(){
 					<button class="nav-link" id="seasons-tab" data-bs-toggle="tab" data-bs-target="#seasons" type="button" role="tab" aria-controls="seasons" aria-selected="false"><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></button>
 				</li>
 				<?php
+				if ( 'league' === $competition->type ) {
+					?>
+					<li class="nav-item" role="presentation">
+						<button class="nav-link" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule" type="button" role="tab" aria-controls="schedule" aria-selected="false"><?php esc_html_e( 'Schedule', 'racketmanager' ); ?></button>
+					</li>
+					<?php
+				}
+				?>
+				<?php
 				if ( current_user_can( 'manage_racketmanager' ) ) {
 					?>
 					<li class="nav-item" role="presentation">
@@ -109,6 +118,16 @@ jQuery(document).ready(function(){
 					<h2><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></h2>
 					<?php require_once 'competition/seasons.php'; ?>
 				</div>
+				<?php
+				if ( 'league' === $competition->type ) {
+					?>
+					<div class="tab-pane fade" id="schedule" role="tabpanel" aria-labelledby="schedule-tab">
+						<h2><?php esc_html_e( 'Schedule', 'racketmanager' ); ?></h2>
+						<?php require_once 'competition/schedule.php'; ?>
+					</div>
+					<?php
+				}
+				?>
 				<?php
 				if ( current_user_can( 'manage_racketmanager' ) ) {
 					?>

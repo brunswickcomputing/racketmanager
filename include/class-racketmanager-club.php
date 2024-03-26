@@ -891,6 +891,7 @@ final class Racketmanager_Club {
 	 */
 	public function league_entry( $club_entry ) {
 		global $racketmanager;
+		$competition = get_competition( $club_entry->competition );
 		foreach ( $club_entry->event as $event_entry ) {
 			$event                       = get_event( $event_entry->id );
 			$league_event_entry['event'] = $event_entry->name;
@@ -923,9 +924,8 @@ final class Racketmanager_Club {
 					$event->mark_teams_withdrawn( $club_entry->season, $this->id, $team );
 				}
 			}
-			$league_event_entry['teams']                          = $league_entries;
-			$event_details[]                                      = $league_event_entry;
-			$event->settings['num_courts_available'][ $this->id ] = $club_entry->num_courts_available;
+			$league_event_entry['teams'] = $league_entries;
+			$event_details[]             = $league_event_entry;
 		}
 		$event_entries['events']               = $event_details;
 		$event_entries['num_courts_available'] = $club_entry->num_courts_available;
@@ -935,6 +935,8 @@ final class Racketmanager_Club {
 				$event->mark_teams_withdrawn( $club_entry->season, $this->id );
 			}
 		}
+		$competition->settings['num_courts_available'][ $this->id ] = $club_entry->num_courts_available;
+		$competition->set_settings( $competition->settings );
 		$email_to        = $this->match_secretary_name . ' <' . $this->match_secretary_email . '>';
 		$email_from      = $racketmanager->get_confirmation_email( 'league' );
 		$email_subject   = $racketmanager->site_name . ' - ' . ucfirst( $club_entry->competition->name ) . ' ' . $club_entry->season . ' League Entry - ' . $this->shortcode;

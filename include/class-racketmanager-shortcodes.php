@@ -246,8 +246,6 @@ class RacketManager_Shortcodes {
 				}
 			}
 		}
-		debug_to_console( $club->is_player_captain( wp_get_current_user()->ID ) );
-		debug_to_console( $user_can_update_player );
 		$club_players    = $club->get_players(
 			array(
 				'active' => true,

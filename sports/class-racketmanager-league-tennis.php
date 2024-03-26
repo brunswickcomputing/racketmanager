@@ -190,14 +190,18 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 									}
 									if ( is_numeric( trim( $set[ $player_ref_alt ] ) ) ) {
 										if ( 'MTB' === $set_type ) {
-											++$data['games_allowed'];
+											if ( $rubber->loser_id === $team_id ) {
+												++$data['games_allowed'];
+											}
 										} else {
 											$data['games_allowed'] += intval( $set[ $player_ref_alt ] );
 										}
 									}
 									if ( is_numeric( trim( $set[ $player_ref ] ) ) ) {
 										if ( 'MTB' === $set_type ) {
-											++$data['games_won'];
+											if ( $rubber->winner_id === $team_id ) {
+												++$data['games_won'];
+											}
 										} else {
 											$data['games_won'] += intval( $set[ $player_ref ] );
 										}

@@ -1612,7 +1612,7 @@ final class Racketmanager_Match {
 			if ( $this->league->num_rubbers ) {
 				$rubbers = $this->get_rubbers();
 				foreach ( $rubbers as $rubber ) {
-					if ( ! $rubber->is_walkover && ! $rubber->is_shared ) {
+					if ( ! $rubber->is_walkover && ! $rubber->is_shared && ! empty( $rubber->winner_id ) && ! empty( $rubber->loser_id ) ) {
 						$result_match        = new \stdClass();
 						$result_match->match = $rubber->id;
 						if ( $rubber->winner_id === $this->home_team ) {

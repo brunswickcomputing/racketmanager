@@ -135,7 +135,7 @@ jQuery(document).ready(function ($) {
 		},
 		select: function (event, ui) {
 			$("#match_secretary_name").val(ui.item.value);
-			$("#matchsecretary").val(ui.item.playerId);
+			$("#match_secretary").val(ui.item.playerId);
 			$("#match_secretary_contact_no").val(ui.item.contactno);
 			$("#match_secretary_email").val(ui.item.user_email);
 		},
@@ -143,12 +143,12 @@ jQuery(document).ready(function ($) {
 			if (ui.item === null) {
 				$(this).val('');
 				$("#match_secretary_name").val('');
-				$("#matchsecretary").val('');
+				$("#match_secretary").val('');
 				$("#match_secretary_contact_no").val('');
 				$("#match_secretary_email").val('');
 			} else {
 				$("#match_secretary_name").val(ui.item.value);
-				$("#matchsecretary").val(ui.item.playerId);
+				$("#match_secretary").val(ui.item.playerId);
 				$("#match_secretary_contact_no").val(ui.item.contactno);
 				$("#match_secretary_email").val(ui.item.user_email);
 			}

@@ -47,8 +47,8 @@ namespace Racketmanager;
 		</div>
 		<?php if ( $edit ) { ?>
 			<div class="form-floating mb-3">
-				<input type="text" class="form-control" name="matchSecretaryName" id="matchSecretaryName" autocomplete="name off" value="<?php echo esc_html( $club->match_secretary_name ); ?>" size="40" /><input type="hidden" name="matchsecretary" id="matchsecretary" value="<?php echo esc_html( $club->matchsecretary ); ?>" />
-				<label for="matchSecretaryName"><?php esc_html_e( 'Match secretary', 'racketmanager' ); ?></label>
+				<input type="text" class="form-control" name="match_secretary_name" id="match_secretary_name" autocomplete="name off" value="<?php echo esc_html( $club->match_secretary_name ); ?>" size="40" /><input type="hidden" name="match_secretary" id="match_secretary" value="<?php echo esc_html( $club->matchsecretary ); ?>" />
+				<label for="match_secretary_name"><?php esc_html_e( 'Match secretary', 'racketmanager' ); ?></label>
 				<div id="match-secretary-feedback"></div>
 			</div>
 			<div class="form-floating mb-3">

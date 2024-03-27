@@ -7,8 +7,13 @@
 
 namespace Racketmanager;
 
-if ( empty( $this->seasons ) ) { ?>
+if ( empty( $this->seasons ) ) {
+	?>
 	<p><?php esc_html_e( 'No seasons defined', 'racketmanager' ); ?>
+	<?php
+} elseif ( empty( $event->get_leagues ) ) {
+	?>
+	<p><?php esc_html_e( 'No leagues defined', 'racketmanager' ); ?>
 	<?php
 } else {
 	$latest_season = reset( $this->seasons )->name;
@@ -17,6 +22,7 @@ if ( empty( $this->seasons ) ) { ?>
 		<p><?php esc_html_e( 'No pending seasons for event', 'racketmanager' ); ?>
 		<?php
 	} else {
+		$latest_event_season = null;
 		foreach ( array_reverse( $event->seasons ) as $season ) {
 			if ( ! isset( $season['status'] ) || 'draft' !== $season['status'] ) {
 				$latest_event_season = $season['name'];

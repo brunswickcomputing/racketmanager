@@ -68,6 +68,21 @@ class Racketmanager_Util {
 			}
 		}
 	}
+	/**
+	 * Get event types
+	 *
+	 * @return array event types.
+	 */
+	public static function get_event_types() {
+		$event_types       = array();
+		$event_types['WS'] = __( 'Ladies Singles', 'racketmanager' );
+		$event_types['MS'] = __( 'Mens Singles', 'racketmanager' );
+		$event_types['WD'] = __( 'Ladies Doubles', 'racketmanager' );
+		$event_types['MD'] = __( 'Mens Doubles', 'racketmanager' );
+		$event_types['XD'] = __( 'Mixed Doubles', 'racketmanager' );
+		$event_types['LD'] = __( 'The League', 'racketmanager' );
+		return $event_types;
+	}
 
 	/**
 	 * Get event type
@@ -76,6 +91,12 @@ class Racketmanager_Util {
 	 * @return string event description.
 	 */
 	public static function get_event_type( $type ) {
+		$event_types = self::get_event_types();
+		if ( empty( $event_types[ $type ] ) ) {
+			return __( 'Unknown', 'racketmanager' );
+		} else {
+			return $event_types[ $type ];
+		}
 		switch ( $type ) {
 			case 'WS':
 				$desc = __( 'Ladies Singles', 'racketmanager' );

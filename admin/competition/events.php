@@ -51,31 +51,7 @@ namespace Racketmanager;
 						<div class="col-4"><a href="<?php echo esc_html( $event_link ); ?>"><?php echo esc_html( $event->name ); ?></a></div>
 						<div class="col-3 col-lg-1 text-center"><?php echo esc_html( $event->num_sets ); ?></div>
 						<div class="col-3 col-lg-1 text-center"><?php echo esc_html( $event->num_rubbers ); ?></div>
-						<div class="col-3 centered">
-							<?php
-							switch ( $event->type ) {
-								case 'WS':
-									esc_html_e( 'Ladies Singles', 'racketmanager' );
-									break;
-								case 'WD':
-									esc_html_e( 'Ladies Doubles', 'racketmanager' );
-									break;
-								case 'MS':
-									esc_html_e( 'Mens Singles', 'racketmanager' );
-									break;
-								case 'MD':
-									esc_html_e( 'Mens Doubles', 'racketmanager' );
-									break;
-								case 'XD':
-									esc_html_e( 'Mixed Doubles', 'racketmanager' );
-									break;
-								case 'LD':
-									esc_html_e( 'The League', 'racketmanager' );
-									break;
-								default:
-									break;
-							}
-							?>
+						<div class="col-3 centered"><?php echo esc_html( Racketmanager_Util::get_event_type( $event->type ) ); ?>
 						</div>
 					</div>
 				<?php } ?>

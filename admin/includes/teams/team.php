@@ -5,6 +5,8 @@
  * @package Racketmanager_admin
  */
 
+namespace Racketmanager;
+
 ?>
 <div class="container league-block">
 	<div class="row justify-content-end">
@@ -85,51 +87,14 @@
 					<option>
 						<?php esc_html_e( 'Select', 'racketmanager' ); ?>
 					</option>
-					<option value='WS' 
 					<?php
-					if ( isset( $team->type ) ) {
-						selected( $team->type, 'WS' );
+					$event_types = Racketmanager_Util::get_event_types();
+					foreach ( $event_types as $key => $event_type ) {
+						?>
+						<option value="<?php echo esc_attr( $key ); ?>"<?php selected( $team->type, $key ); ?>><?php echo esc_html( $event_type ); ?></option>
+						<?php
 					}
 					?>
-					>
-						<?php esc_html_e( 'Ladies Singles', 'racketmanager' ); ?>
-					</option>
-					<option value='WD' 
-					<?php
-					if ( isset( $team->type ) ) {
-						selected( $team->type, 'WD' );
-					}
-					?>
-					>
-						<?php esc_html_e( 'Ladies Doubles', 'racketmanager' ); ?>
-					</option>
-					<option value='MD' 
-					<?php
-					if ( isset( $team->type ) ) {
-						selected( $team->type, 'MD' );
-					}
-					?>
-					>
-						<?php esc_html_e( 'Mens Doubles', 'racketmanager' ); ?>
-					</option>
-					<option value='MS' 
-					<?php
-					if ( isset( $team->type ) ) {
-						selected( $team->type, 'MS' );
-					}
-					?>
-					>
-						<?php esc_html_e( 'Mens Singles', 'racketmanager' ); ?>
-					</option>
-					<option value='XD' 
-					<?php
-					if ( isset( $team->type ) ) {
-						selected( $team->type, 'XD' );
-					}
-					?>
-					>
-						<?php esc_html_e( 'Mixed Doubles', 'racketmanager' ); ?>
-					</option>
 				</select>
 			</div>
 		</div>

@@ -28,12 +28,14 @@ $event->offset      = isset( $event->offset ) ? $event->offset : '0';
 		</div>
 		<div class="form-floating mb-3 col-12 col-xl-2">
 			<select class="form-select" size='1' name='settings[type]' id='type'>
-				<option value='WS' <?php selected( $event->type, 'WS' ); ?>><?php esc_html_e( 'Ladies Singles', 'racketmanager' ); ?></option>
-				<option value='WD' <?php selected( $event->type, 'WD' ); ?>><?php esc_html_e( 'Ladies Doubles', 'racketmanager' ); ?></option>
-				<option value='MS' <?php selected( $event->type, 'MS' ); ?>><?php esc_html_e( 'Mens Singles', 'racketmanager' ); ?></option>
-				<option value='MD' <?php selected( $event->type, 'MD' ); ?>><?php esc_html_e( 'Mens Doubles', 'racketmanager' ); ?></option>
-				<option value='XD' <?php selected( $event->type, 'XD' ); ?>><?php esc_html_e( 'Mixed Doubles', 'racketmanager' ); ?></option>
-				<option value='LD' <?php selected( $event->type, 'LD' ); ?>><?php esc_html_e( 'The League', 'racketmanager' ); ?></option>
+				<?php
+				$event_types = Racketmanager_Util::get_event_types();
+				foreach ( $event_types as $key => $event_type ) {
+					?>
+					<option value="<?php echo esc_attr( $key ); ?>"<?php selected( $event->type, $key ); ?>><?php echo esc_html( $event_type ); ?></option>
+					<?php
+				}
+				?>
 			</select>
 			<label for='type'><?php esc_html_e( 'Type', 'racketmanager' ); ?></label>
 		</div>

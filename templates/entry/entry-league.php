@@ -96,7 +96,7 @@ $match_days = Racketmanager_Util::get_match_days();
 													<div class="list__item">
 														<dt class="list__label"><?php esc_html_e( 'Number available', 'racketmanager' ); ?></dt>
 														<dd class="list__value">
-															<input type="number" class="form-control" id="numCourtsAvailable" name="numCourtsAvailable" value="<?php echo esc_html( $competition->num_courts_available[ $club->id ] ); ?>" />
+															<input type="number" class="form-control" id="numCourtsAvailable" name="numCourtsAvailable" value="<?php echo empty( $competition->num_courts_available[ $club->id ] ) ? null : esc_html( $competition->num_courts_available[ $club->id ] ); ?>" />
 														</dd>
 													</div>
 												</dl>

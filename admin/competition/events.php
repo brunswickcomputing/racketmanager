@@ -11,7 +11,7 @@ namespace Racketmanager;
 <div class='container' >
 
 	<form id='events-filter' method='post' action='' class='form-control mb-3'>
-		<?php wp_nonce_field( 'events-bulk', 'racketmanager_nonce' ); ?>
+		<?php wp_nonce_field( 'racketmanager__events-bulk', 'racketmanager_nonce' ); ?>
 
 		<input type="hidden" name="competition_id" value="<?php echo esc_html( $competition_id ); ?>" />
 		<div class="tablenav">
@@ -79,6 +79,34 @@ namespace Racketmanager;
 			<div class="form-floating mb-3">
 				<input type="text" class="form-control" required="required" placeholder="<?php esc_html_e( 'Enter new event name', 'racketmanager' ); ?>"name="event_title" id="event_title" value="<?php echo esc_html( $event_title ); ?>" size="30" />
 				<label for="event_title"><?php esc_html_e( 'Event name', 'racketmanager' ); ?></label>
+			</div>
+			<div class="row g-1">
+				<div class="col-md">
+					<div class="form-floating mb-3">
+						<input class="form-control" required="required" placeholder="<?php esc_html_e( 'How many sets', 'racketmanager' ); ?>" type='number' name='num_sets' id='num_sets' value='' size='3' />
+						<label for='num_sets'><?php esc_html_e( 'Number of Sets', 'racketmanager' ); ?></label>
+					</div>
+				</div>
+				<div class="col-md">
+					<div class="form-floating mb-3">
+						<input class="form-control" required="required" placeholder="<?php esc_html_e( 'How many rubbers', 'racketmanager' ); ?>" type='number' name='num_rubbers' id='num_rubbers' value='' size='3' />
+						<label for='num_rubbers'><?php esc_html_e( 'Number of Rubbers', 'racketmanager' ); ?></label>
+					</div>
+				</div>
+			</div>
+			<div class="form-floating mb-3">
+				<select class="form-select" size='1' required="required" name='type' id='type'>
+					<option value=""><?php esc_html_e( 'Select event type', 'racketmanager' ); ?></option>
+					<?php
+					$event_types = Racketmanager_Util::get_event_types();
+					foreach ( $event_types as $key => $event_type ) {
+						?>
+						<option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $event_type ); ?></option>
+						<?php
+					}
+					?>
+				</select>
+				<label for='type'><?php esc_html_e( 'Competition Type', 'racketmanager' ); ?></label>
 			</div>
 			<div class="form-group mb-3">
 				<input type="submit" name="addEvent" value="<?php echo esc_html( $form_action ); ?>" class="btn btn-primary" />

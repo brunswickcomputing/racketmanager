@@ -436,8 +436,9 @@ class Racketmanager_Event {
 		$settings = array();
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"INSERT INTO {$wpdb->racketmanager_events} (`name`, `num_rubbers`, `num_sets`, `type`, `settings`) VALUES (%s, %d, %d, %s, %s)",
+				"INSERT INTO {$wpdb->racketmanager_events} (`name`, `competition_id`, `num_rubbers`, `num_sets`, `type`, `settings`) VALUES (%s, %d, %d, %d, %s, %s)",
 				$event->name,
+				$event->competition_id,
 				$event->num_rubbers,
 				$event->num_sets,
 				$event->type,
@@ -460,12 +461,6 @@ class Racketmanager_Event {
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"DELETE FROM {$wpdb->racketmanager_team_events} WHERE `event_id` = %d",
-				$this->id
-			)
-		);
-		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_events_seasons} WHERE `event_id` = %d",
 				$this->id
 			)
 		);
@@ -571,7 +566,11 @@ class Racketmanager_Event {
 	 * @return string
 	 */
 	public function get_season() {
-		return stripslashes( $this->current_season['name'] );
+		if ( empty( $this->current_season['name'] ) ) {
+			return null;
+		} else {
+			return stripslashes( $this->current_season['name'] );
+		}
 	}
 
 	/**

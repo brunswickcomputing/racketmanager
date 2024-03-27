@@ -649,6 +649,7 @@ final class RacketManager_Admin extends RacketManager {
 	 */
 	private function display_competition_page() {
 		global $competition;
+		$this->set_message( '' );
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -718,20 +719,58 @@ final class RacketManager_Admin extends RacketManager {
 						}
 						$this->printMessage();
 					}
+				} elseif ( isset( $_POST['addEvent'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+					if ( isset( $_POST['event_title'] ) ) {  // phpcs:ignore WordPress.Security.NonceVerification.Missing
+						$event       = new \stdClass();
+						$event->name = sanitize_text_field( wp_unslash( $_POST['event_title'] ) );  // phpcs:ignore WordPress.Security.NonceVerification.Missing
+						if ( isset( $_POST['num_rubbers'] ) ) {
+							$event->num_rubbers = intval( $_POST['num_rubbers'] );
+						} else {
+							$this->set_message( __( 'Missing number of rubbers', 'racketmanager' ), true );
+						}
+						if ( ! empty( $_POST['num_sets'] ) ) {
+							$event->num_sets = intval( $_POST['num_sets'] );
+						} else {
+							$this->set_message( __( 'Missing numer of sets', 'racketmanager' ), true );
+						}
+						if ( ! empty( $_POST['type'] ) ) {
+							$event->type = sanitize_text_field( wp_unslash( $_POST['type'] ) );
+						} else {
+							$this->set_message( __( 'No event type', 'racketmanager' ), true );
+						}
+						$event->competition_id = $competition->id;
+						$event                 = new Racketmanager_Event( $event );
+						$this->set_message( __( 'Event created', 'racketmanager' ) );
+					} else {
+						$this->set_message( __( 'No event title', 'racketmanager' ), true );
+					}
+					$this->printMessage();
+				} elseif ( isset( $_POST['doactionevent'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+					if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager__events-bulk' ) ) {
+						$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+						$this->printMessage();
+						return;
+					}
+					if ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
+						if ( isset( $_POST['event'] ) ) {
+							foreach ( $_POST['event'] as $event_id ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+								$event = get_event( $event_id );
+								$event->delete();
+								$message = $event->name . ' deleted';
+							}
+							$this->printMessage();
+						}
+					}
 				} elseif ( isset( $_GET['editleague'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					$league_id    = intval( $_GET['editleague'] );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					$league       = get_league( $league_id );
 					$league_title = $league->title;
-				} elseif ( isset( $_GET['statsseason'] ) && 'Show' === $_GET['statsseason'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-					if ( isset( $_GET['club_id'] ) ) {  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-						$club_id = intval( $_GET['club_id'] );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-					}
-					$tab = 'playerstats';
 				} elseif ( isset( $_GET['view'] ) && 'matches' === $_GET['view'] ) {  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					$tab = 'matches';
 				}
 				if ( ! isset( $season ) ) {
-					$season = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $competition->current_season['name'] );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					$competition_season = isset( $competition->current_season['name'] ) ? $competition->current_season['name'] : null;
+					$season             = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $competition_season;  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				}
 				if ( isset( $_GET['tournament'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					$tournament = get_tournament( intval( $_GET['tournament'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended

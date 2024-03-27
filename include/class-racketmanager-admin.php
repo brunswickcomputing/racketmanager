@@ -541,6 +541,8 @@ final class RacketManager_Admin extends RacketManager {
 					}
 					if ( $validation['error'] ) {
 						$this->set_message( __( 'Error in competition creation', 'racketmanager' ), true );
+					} else {
+						$competition = new Racketmanager_Competition( $competition );
 					}
 				} else {
 					$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );

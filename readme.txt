@@ -50,6 +50,12 @@ The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiy
 
 == Changelog ==
 
+= 8.5.0 =
+* BUGFIX: only use event days when match day restriction
+* BUGFIX: prevent notification when no leagues
+* UPDATE: introduce boys and girls events
+* UPDATE: allow new team entry for league
+
 = 8.4.0 =
 * BUGFIX: check for team status
 * BUGFIX: set correct number of events

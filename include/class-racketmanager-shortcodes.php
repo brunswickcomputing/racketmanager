@@ -818,7 +818,13 @@ class RacketManager_Shortcodes {
 					}
 					++$key;
 				}
-				$events[ $i ] = $event;
+				$event_team            = new \stdClass();
+				$event_team->team_id   = 0;
+				$event_team->name      = __( 'New team', 'racketmanager' );
+				$event_team->league_id = 0;
+				$event_team->status    = null;
+				$event->event_teams[]  = $event_team;
+				$events[ $i ]          = $event;
 			}
 			$filename = ( ! empty( $template ) ) ? 'entry-league-' . $template : 'entry-league';
 			return $this->load_template(

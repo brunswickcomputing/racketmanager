@@ -2533,15 +2533,20 @@ class RacketManager {
 				if ( 'league' === $competition_type ) {
 					$events = $competition->get_events();
 					foreach ( $events as $event ) {
-						$constitution = $event->get_constitution(
-							array(
-								'season' => $season,
-								'count'  => true,
-							)
-						);
-						if ( ! $constitution ) {
+						if ( empty( $event->get_leagues() ) ) {
 							$return->error = true;
-							$msg[]         = __( 'Constitution not set', 'racketmanager' ) . ' ' . $event->name;
+							$msg[]         = __( 'No leagues found for event', 'racketmanager' ) . ' ' . $event->name;
+						} else {
+							$constitution = $event->get_constitution(
+								array(
+									'season' => $season,
+									'count'  => true,
+								)
+							);
+							if ( ! $constitution ) {
+								$return->error = true;
+								$msg[]         = __( 'Constitution not set', 'racketmanager' ) . ' ' . $event->name;
+							}
 						}
 					}
 				}

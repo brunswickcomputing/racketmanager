@@ -301,6 +301,12 @@ final class Racketmanager_Club {
 		global $racketmanager;
 
 		switch ( substr( $type, 0, 1 ) ) {
+			case 'B':
+				$type_name = 'Boys';
+				break;
+			case 'G':
+				$type_name = 'Girls';
+				break;
 			case 'W':
 				$type_name = 'Ladies';
 				break;
@@ -898,7 +904,11 @@ final class Racketmanager_Club {
 			$league_entries              = array();
 			foreach ( $event_entry->team as $team_entry ) {
 				$match_day = Racketmanager_Util::get_match_day( $team_entry->match_day );
-				$team      = get_team( $team_entry->id );
+				if ( empty( $team_entry->id ) ) {
+					$team = $this->add_team( $event->type );
+				} else {
+					$team = get_team( $team_entry->id );
+				}
 				$team_info = $event->get_team_info( $team->id );
 				if ( ! $team_info ) {
 					$team->add_event( $event_entry->id, $team_entry->captain_id, $team_entry->telephone, $team_entry->email, $match_day, $team_entry->match_time );

@@ -19,7 +19,7 @@ jQuery(document).ready(function(){
 			<?php
 			if ( empty( $tournament ) ) {
 				?>
-				<a href="admin.php?page=racketmanager&subpage=show-competition&competition_id=<?php echo esc_attr( $event->competition->id ); ?>"><?php echo esc_html( $event->competition->name ); ?></a> &raquo; <?php echo esc_html( $event->name ); ?>
+				<a href="admin.php?page=racketmanager-<?php echo esc_html( $event->competition->type ); ?>s"><?php echo esc_html( ucfirst( $event->competition->type ) ); ?>s</a> &raquo; <a href="admin.php?page=racketmanager&subpage=show-competition&competition_id=<?php echo esc_attr( $event->competition->id ); ?>"><?php echo esc_html( $event->competition->name ); ?></a> &raquo; <?php echo esc_html( $event->name ); ?>
 				<?php
 			} else {
 				?>

@@ -798,12 +798,10 @@ class RacketManager_Shortcodes {
 					$event_teams[ $c ] = $event_team;
 				}
 				$event->event_teams = $event_teams;
-				if ( 'WD' === $event->type ) {
-					$event->teams = $club->get_teams( false, 'WD' );
-				} elseif ( 'MD' === $event->type ) {
-					$event->teams = $club->get_teams( false, 'MD' );
-				} elseif ( 'XD' === $event->type || 'LD' === $event->type ) {
+				if ( 'LD' === $event->type ) {
 					$event->teams = $club->get_teams( false, 'XD' );
+				} else {
+					$event->teams = $club->get_teams( false, $event->type );
 				}
 				$key = 0;
 				foreach ( $event->teams as $team ) {

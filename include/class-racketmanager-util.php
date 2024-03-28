@@ -97,29 +97,6 @@ class Racketmanager_Util {
 		} else {
 			return $event_types[ $type ];
 		}
-		switch ( $type ) {
-			case 'WS':
-				$desc = __( 'Ladies Singles', 'racketmanager' );
-				break;
-			case 'WD':
-				$desc = __( 'Ladies Doubles', 'racketmanager' );
-				break;
-			case 'MS':
-				$desc = __( 'Mens Singles', 'racketmanager' );
-				break;
-			case 'MD':
-				$desc = __( 'Mens Doubles', 'racketmanager' );
-				break;
-			case 'XD':
-				$desc = __( 'Mixed Doubles', 'racketmanager' );
-				break;
-			case 'LD':
-				$desc = __( 'The League', 'racketmanager' );
-				break;
-			default:
-				$desc = __( 'Unknown', 'racketmanager' );
-		}
-		return $desc;
 	}
 
 	/**

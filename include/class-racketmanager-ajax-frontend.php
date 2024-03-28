@@ -712,7 +712,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				}
 				$weekend_matches[ $event->type ] = 0;
 				$event_days                      = isset( $event->match_days_allowed ) ? $event->match_days_allowed : array();
-				if ( ! empty( $event_days ) ) {
+				if ( $match_day_restriction && ! empty( $event_days ) ) {
 					foreach ( $event_days as $event_day => $value ) {
 						if ( ! isset( $competition_days['teams'][ $event_day ][ $event->type ] ) ) {
 							$competition_days['teams'][ $event_day ][ $event->type ] = 0;
@@ -757,8 +757,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 							}
 						}
 						if ( ! $validator->error ) {
-							++$competition_days['teams'][ $match_day ][ $event->type ];
-							$competition_days['available'][ $match_day ] = $num_courts_available / $event->num_rubbers;
+							if ( $match_day_restriction ) {
+								++$competition_days['teams'][ $match_day ][ $event->type ];
+								$competition_days['available'][ $match_day ] = $num_courts_available / $event->num_rubbers;
+							}
 							if ( strlen( $match_time ) === 5 ) {
 								$match_time = $match_time . ':00';
 							}

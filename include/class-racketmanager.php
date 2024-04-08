@@ -2536,7 +2536,7 @@ class RacketManager {
 						if ( empty( $event->get_leagues() ) ) {
 							$return->error = true;
 							$msg[]         = __( 'No leagues found for event', 'racketmanager' ) . ' ' . $event->name;
-						} else {
+						} elseif ( count( $event->seasons ) > 1 ) {
 							$constitution = $event->get_constitution(
 								array(
 									'season' => $season,

@@ -54,7 +54,7 @@ global $racketmanager;
 						)
 					);
 					$class                  = ( 'alternate' === $class ) ? '' : 'alternate';
-					$event_link             = 'admin.php?page=racketmanager&amp;subpage=show-event&amp;event_id=' . $event->id . '&amp;season=' . $season;
+					$event_link             = 'admin.php?page=racketmanager&amp;subpage=show-event&amp;event_id=' . $event->id . '&amp;season=' . $event->get_season();
 					if ( ! empty( $tournament ) ) {
 						$event_link .= '&amp;tournament=' . $tournament->id;
 					}

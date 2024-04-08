@@ -1954,9 +1954,14 @@ class RacketManager {
 			$club_player->gender        = isset( $player['gender'] ) ? $player['gender'][0] : '';
 			$club_player->btm           = isset( $player['btm'] ) ? $player['btm'][0] : '';
 			$club_player->year_of_birth = isset( $player['year_of_birth'] ) ? $player['year_of_birth'][0] : '';
-			$club_player->locked        = isset( $player['locked'] ) ? $player['locked'][0] : '';
-			$club_player->locked_date   = isset( $player['locked_date'] ) ? $player['locked_date'][0] : '';
-			$club_player->locked_user   = isset( $player['locked_user'] ) ? $player['locked_user'][0] : '';
+			if ( $club_player->year_of_birth ) {
+				$club_player->age = gmdate( 'Y' ) - intval( $club_player->year_of_birth );
+			} else {
+				$club_player->age = 0;
+			}
+			$club_player->locked      = isset( $player['locked'] ) ? $player['locked'][0] : '';
+			$club_player->locked_date = isset( $player['locked_date'] ) ? $player['locked_date'][0] : '';
+			$club_player->locked_user = isset( $player['locked_user'] ) ? $player['locked_user'][0] : '';
 		}
 
 		return $club_player;

@@ -1211,6 +1211,30 @@ class Racketmanager_Ajax extends RacketManager {
 				$error = __( 'locked', 'racketmanager' );
 				$match->add_result_check( $team, $player->player_id, $error );
 			}
+			if ( ! empty( $match->league->event->age_limit ) && 'open' !== $match->league->event->age_limit ) {
+				if ( empty( $player->age ) ) {
+					$error = __( 'no age provided', 'racketmanager' );
+					$match->add_result_check( $team, $player->player_id, $error );
+				} else {
+					$age_limit = $match->league->event->age_limit;
+					if ( $age_limit >= 30 ) {
+						if ( ! empty( $match->league->event->age_offset ) && 'F' === $player->gender ) {
+							$age_limit -= $match->league->event->age_offset;
+						}
+						if ( $player->age < $age_limit ) {
+							/* translators: %1$d: player age, %2$d: event age limit */
+							$error = sprintf( __( 'player age (%1$d) less than event age limit (%2$d)', 'racketmanager' ), $player->age, $age_limit );
+							$match->add_result_check( $team, $player->player_id, $error );
+							$age_error = true;
+						}
+					} elseif ( $player->age > $age_limit ) {
+						/* translators: %1$d: player age, %2$d: event age limit */
+						$error = sprintf( __( 'player age (%1$d) greater than event age limit (%2$d)', 'racketmanager' ), $player->age, $age_limit );
+						$match->add_result_check( $team, $player->player_id, $error );
+						$age_error = true;
+					}
+				}
+			}
 			$player_options = $racketmanager->get_options( 'rosters' );
 			if ( isset( $player_options['btm'] ) && '1' === $player_options['btm'] && empty( $player->btm ) ) {
 				$error = __( 'LTA tennis number missing', 'racketmanager' );
@@ -1277,30 +1301,6 @@ class Racketmanager_Ajax extends RacketManager {
 								$error = sprintf( __( 'locked to team %d', 'racketmanager' ), $team_num );
 								$match->add_result_check( $team, $player->player_id, $error );
 							}
-						}
-					}
-				}
-				if ( ! empty( $match->league->event->age_limit ) && 'open' !== $match->league->event->age_limit ) {
-					if ( empty( $player->age ) ) {
-						$error = __( 'no age provided', 'racketmanager' );
-						$match->add_result_check( $team, $player->player_id, $error );
-					} else {
-						$age_limit = $match->league->event->age_limit;
-						if ( $age_limit >= 30 ) {
-							if ( ! empty( $match->league->event->age_offset ) && 'F' === $player->gender ) {
-								$age_limit -= $match->league->event->age_offset;
-							}
-							if ( $player->age < $age_limit ) {
-								/* translators: %1$d: player age, %2$d: event age limit */
-								$error = sprintf( __( 'player age (%1$d) less than event age limit (%2$d)', 'racketmanager' ), $player->age, $age_limit );
-								$match->add_result_check( $team, $player->player_id, $error );
-								$age_error = true;
-							}
-						} elseif ( $player->age > $age_limit ) {
-							/* translators: %1$d: player age, %2$d: event age limit */
-							$error = sprintf( __( 'player age (%1$d) greater than event age limit (%2$d)', 'racketmanager' ), $player->age, $age_limit );
-							$match->add_result_check( $team, $player->player_id, $error );
-							$age_error = true;
 						}
 					}
 				}

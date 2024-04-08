@@ -95,7 +95,7 @@ namespace Racketmanager;
 					<div class="module__banner">
 						<h3 class="module__title"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></h3>
 						<div class="module__aside">
-							<a href="/index.php?league_id=<?php echo esc_html( $league->id ); ?>&team_id=<?php echo esc_html( the_team_id() ); ?>&team=<?php echo esc_html( the_team_name() ); ?>&season=<?php echo esc_html( $league->current_season['name'] ); ?>&racketmanager_export=calendar" class="btn btn--link calendar-add" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Add Matches to Calendar', 'racketmanager' ); ?>" >
+							<a href="/index.php?league_id=<?php echo esc_html( $league->id ); ?>&team_id=<?php echo esc_html( $league->team->id ); ?>&team=<?php echo esc_html( seo_url( $league->team->title ) ); ?>&season=<?php echo esc_html( $league->current_season['name'] ); ?>&racketmanager_export=calendar" class="btn btn--link calendar-add" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Add Matches to Calendar', 'racketmanager' ); ?>" >
 								<i class="racketmanager-svg-icon">
 									<?php racketmanager_the_svg( 'icon-calendar' ); ?>
 								</i>
@@ -250,7 +250,7 @@ namespace Racketmanager;
 								}
 								?>
 								<?php
-								if ( ! empty( $match->teams[ $opponent ]->club->match_secretary_email ) ) {
+								if ( ! empty( $league->team->info->club->match_secretary_email ) ) {
 									?>
 									<li class="list__item">
 										<a href="mailto:<?php echo esc_html( $league->team->info->club->match_secretary_email ); ?>" class="nav--link"">
@@ -269,7 +269,7 @@ namespace Racketmanager;
 							}
 							?>
 							<?php
-							if ( ! empty( $match->teams[ $opponent ]->club->website ) ) {
+							if ( ! empty( $league->team->info->club->website ) ) {
 								?>
 								<li class="list__item">
 									<a href="<?php echo esc_html( $league->team->info->club->website ); ?>" class="nav--link" target="_blank" rel="noopener nofollow">

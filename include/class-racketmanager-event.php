@@ -809,6 +809,9 @@ class Racketmanager_Event {
 	public function get_teams_info( $args = array() ) {
 		global $wpdb;
 
+		if ( empty( $this->get_season() ) ) {
+			return array();
+		}
 		$defaults       = array(
 			'league_id'      => false,
 			'rank'           => false,

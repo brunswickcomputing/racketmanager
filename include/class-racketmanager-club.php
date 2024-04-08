@@ -931,7 +931,9 @@ final class Racketmanager_Club {
 			}
 			if ( ! empty( $event_entry->withdrawn_teams ) ) {
 				foreach ( $event_entry->withdrawn_teams as $team ) {
-					$event->mark_teams_withdrawn( $club_entry->season, $this->id, $team );
+					if ( $team ) {
+						$event->mark_teams_withdrawn( $club_entry->season, $this->id, $team );
+					}
 				}
 			}
 			$league_event_entry['teams'] = $league_entries;

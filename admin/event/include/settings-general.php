@@ -68,6 +68,14 @@ $event->offset      = isset( $event->offset ) ? $event->offset : '0';
 				<option value='55' <?php selected( $event->age_limit, '55' ); ?>><?php esc_html_e( '55+', 'racketmanager' ); ?></option>
 				<option value='60' <?php selected( $event->age_limit, '60' ); ?>><?php esc_html_e( '60+', 'racketmanager' ); ?></option>
 				<option value='65' <?php selected( $event->age_limit, '65' ); ?>><?php esc_html_e( '65+', 'racketmanager' ); ?></option>
+				<option value='8' <?php selected( $event->age_limit, '8' ); ?>><?php esc_html_e( '8U', 'racketmanager' ); ?></option>
+				<option value='9' <?php selected( $event->age_limit, '9' ); ?>><?php esc_html_e( '9U', 'racketmanager' ); ?></option>
+				<option value='10' <?php selected( $event->age_limit, '10' ); ?>><?php esc_html_e( '10U', 'racketmanager' ); ?></option>
+				<option value='11' <?php selected( $event->age_limit, '11' ); ?>><?php esc_html_e( '11U', 'racketmanager' ); ?></option>
+				<option value='12' <?php selected( $event->age_limit, '12' ); ?>><?php esc_html_e( '12U', 'racketmanager' ); ?></option>
+				<option value='14' <?php selected( $event->age_limit, '14' ); ?>><?php esc_html_e( '14U', 'racketmanager' ); ?></option>
+				<option value='16' <?php selected( $event->age_limit, '16' ); ?>><?php esc_html_e( '16U', 'racketmanager' ); ?></option>
+				<option value='18' <?php selected( $event->age_limit, '18' ); ?>><?php esc_html_e( '18U', 'racketmanager' ); ?></option>
 			</select>
 			<label for='age_limit'><?php esc_html_e( 'Age limit', 'racketmanager' ); ?></label>
 		</div>

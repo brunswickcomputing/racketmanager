@@ -734,7 +734,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					foreach ( $teams as $team_id ) {
 						$pos = array_search( $team_id, $event_teams, true );
 						if ( false !== $pos ) {
-							unset( $event_teams[ $pos ] );
+							array_splice( $event_teams, $pos, 1 );
 						}
 						$team_event_title = isset( $team_event_titles[ $event->id ][ $team_id ] ) ? $team_event_titles[ $event->id ][ $team_id ] : '';
 						$captain          = isset( $captains[ $event->id ][ $team_id ] ) ? $captains[ $event->id ][ $team_id ] : '';

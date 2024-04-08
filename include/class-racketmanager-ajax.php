@@ -1211,7 +1211,11 @@ class Racketmanager_Ajax extends RacketManager {
 				$error = __( 'locked', 'racketmanager' );
 				$match->add_result_check( $team, $player->player_id, $error );
 			}
-
+			$player_options = $racketmanager->get_options( 'rosters' );
+			if ( isset( $player_options['btm'] ) && '1' === $player_options['btm'] && empty( $player->btm ) ) {
+				$error = __( 'LTA tennis number missing', 'racketmanager' );
+				$match->add_result_check( $team, $player->player_id, $error );
+			}
 			if ( isset( $match->match_day ) ) {
 				$count = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 					$wpdb->prepare(

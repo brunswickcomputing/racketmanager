@@ -2190,7 +2190,7 @@ final class RacketManager_Admin extends RacketManager {
 	 */
 	public function validatePlayer() {
 		$options = $this->get_options( 'rosters' );
-		if ( isset( $options['btm'] ) && 1 === $options['btm'] ) {
+		if ( isset( $options['btm'] ) && '1' === $options['btm'] ) {
 			$btm_required = true;
 		} else {
 			$btm_required = false;

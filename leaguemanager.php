@@ -2,29 +2,15 @@
 /**
  * Plugin Name: Racketmanager
  * Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
- * Description: Manage and present sports league results.
- * Version: 8.5.0
+ * Description: Manage and present racketsports league and tournament results.
+ * Version: 8.5.1
  * Author: Paul Moffat
  * Text Domain: racketmanager
  *
  * @package plugin Racketmanager
  *
- * Copyright 2008-2023  Paul Moffat (email: paul@paarcs.com)
- * Kolja Schleich  (email : kolja.schleich@googlemail.com)
- * LaMonte Forthun (email : lamontef@collegefundsoftware.com, lamontef@yahoo.com)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright 2024  Paul Moffat (email: paul@paarcs.com)
+ * Based initially on leaguemanager plugin.
  */
 
 namespace Racketmanager;
@@ -35,9 +21,8 @@ namespace Racketmanager;
  *
  * @author Paul Moffat
  * @package RacketManager
- * @version 8.5.0
- * @copyright 2008-2022
- * @license GPL-3
+ * @version 8.5.1
+ * @copyright 2024
  */
 racketmanager_setup_plugin();
 
@@ -48,7 +33,7 @@ function racketmanager_setup_plugin() {
 	global $racketmanager;
 
 	define( 'RACKETMANAGER', 'racketmanager' );
-	define( 'RACKETMANAGER_VERSION', '8.5.0' );
+	define( 'RACKETMANAGER_VERSION', '8.5.1' );
 	define( 'RACKETMANAGER_DBVERSION', '8.4.0' );
 	define( 'RACKETMANAGER_URL', esc_url( plugin_dir_url( __FILE__ ) ) );
 	define( 'RACKETMANAGER_PATH', plugin_dir_path( __FILE__ ) );

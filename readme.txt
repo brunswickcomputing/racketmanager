@@ -1,11 +1,9 @@
 === Racketmanager ===
-Contributors: Paul Moffat, Kolja Schleich, LaMonte Forthun
-Donate link:
-Tags: league management, sport, widget, basketball, football, hockey, league, soccer, volleyball, gymnastics, tennis, baseball, rugby
+Contributors: Paul Moffat
+Tags: league management, sport, widget, league, tennis, tournament
 Requires at least: 5.4
 Tested up to: 5.4.2
 Stable tag: 5.4.2
-License: LGPLv2.1 or later
 
 Plugin to manage and present Sports Leagues
 
@@ -16,14 +14,12 @@ This Plugin is designed to manage rackets leagues and tournaments and display th
 **Features**
 
 * easy adding of teams and matches
-* numerous point-rules implemented to also support special rules (e.g. Hockey, Pool, Baseball, Cornhole)
 * weekly-based ordering of matches with bulk editing mechanism
 * automatic or manual saving of standings table
 * automatic or drag & drop ranking of teams
 * link posts with specific match for match reports
 * unlimited number of widgets
 * modular setup for easy implementation of sport types
-* separate capability to control access and compatibility with Role Manager
 * dynamic match statistics
 * Championship mode with preliminary and k/o rounds
 
@@ -47,8 +43,13 @@ To install the plugin to the following steps
 
 == Credits ==
 The RacketManager icons were designed by Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)
+Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
+
+= 8.5.1 =
+* BUGFIX: mark team withdrawn when team id set
+* BUGFIX: handle first season for entry notification
 
 = 8.5.0 =
 * BUGFIX: only use event days when match day restriction

@@ -11,7 +11,7 @@ if ( empty( $this->seasons ) ) {
 	?>
 	<p><?php esc_html_e( 'No seasons defined', 'racketmanager' ); ?>
 	<?php
-} elseif ( empty( $event->get_leagues ) ) {
+} elseif ( empty( $event->leagues ) ) {
 	?>
 	<p><?php esc_html_e( 'No leagues defined', 'racketmanager' ); ?>
 	<?php

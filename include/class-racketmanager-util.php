@@ -79,6 +79,7 @@ class Racketmanager_Util {
 		$event_types['GS'] = __( 'Girls Singles', 'racketmanager' );
 		$event_types['WS'] = __( 'Ladies Singles', 'racketmanager' );
 		$event_types['MS'] = __( 'Mens Singles', 'racketmanager' );
+		$event_types['OS'] = __( 'Open Singles', 'racketmanager' );
 		$event_types['BD'] = __( 'Boys Doubles', 'racketmanager' );
 		$event_types['GD'] = __( 'Girls Doubles', 'racketmanager' );
 		$event_types['WD'] = __( 'Ladies Doubles', 'racketmanager' );

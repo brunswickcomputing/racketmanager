@@ -379,8 +379,13 @@ final class Racketmanager_Club {
 			$sql .= " AND `status` = 'P'";
 		}
 		if ( $type ) {
-			$sql   .= " AND `type` = '%s'";
-			$args[] = $type;
+			if ( 'OS' === $type ) {
+				$sql   .= " AND `type` like '%%%s%%'";
+				$args[] = 'S';
+			} else {
+				$sql   .= " AND `type` = '%s'";
+				$args[] = $type;
+			}
 		}
 
 		$sql .= ' ORDER BY `title`';

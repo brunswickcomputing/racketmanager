@@ -244,10 +244,12 @@ final class Racketmanager_Team {
 			if ( 'P' === $this->status && ! empty( $this->roster ) ) {
 				$i = 1;
 				foreach ( $this->roster as $player ) {
-					$teamplayer            = get_player( $player );
-					$this->player[ $i ]    = $teamplayer->fullname;
-					$this->player_id[ $i ] = $player;
-					++$i;
+					$teamplayer = get_player( $player );
+					if ( $teamplayer ) {
+						$this->player[ $i ]    = $teamplayer->fullname;
+						$this->player_id[ $i ] = $player;
+						++$i;
+					}
 				}
 			}
 		}

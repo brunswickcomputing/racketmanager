@@ -851,7 +851,8 @@ final class RacketManager_Admin extends RacketManager {
 					$tab = 'matches';
 				}
 				if ( ! isset( $season ) ) {
-					$season = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $event->current_season['name'] );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					$event_season = isset( $event->current_season['name'] ) ? $event->current_season['name'] : '';
+					$season       = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $event_season );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				}
 				if ( isset( $_GET['tournament'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					$tournament = get_tournament( intval( $_GET['tournament'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended

@@ -526,6 +526,8 @@ final class Racketmanager_Match {
 			$max_rubbers = $this->league->num_rubbers;
 			if ( $this->league->is_championship && ! empty( $this->league->current_season['homeAway'] && 'true' === $this->league->current_season['homeAway'] ) && ! empty( $this->leg ) && 2 === $this->leg && 'MPL' === $this->league->event->scoring ) {
 				++$max_rubbers;
+			} elseif ( '1' === $this->league->event->reverse_rubbers ) {
+				$max_rubbers = $max_rubbers * 2;
 			}
 		}
 		$sql = $wpdb->prepare(

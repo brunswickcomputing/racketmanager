@@ -26,6 +26,14 @@ $event->offset      = isset( $event->offset ) ? $event->offset : '0';
 			<input class="form-control" type='number' name='settings[num_rubbers]' id='num_rubbers' value='<?php echo esc_html( $event->num_rubbers ); ?>' size='3' />
 			<label for='num_rubbers'><?php esc_html_e( 'Number of Rubbers', 'racketmanager' ); ?></label>
 		</div>
+		<div class="form-check form-check-inline mb-3">
+			<input class="form-check-input" type="radio" name='settings[reverse_rubbers]' id='reverse_rubbers_false' value="0" <?php checked( '0', $event->reverse_rubbers ); ?>>
+			<label for='reverse_rubbers_false'><?php esc_html_e( 'Single rubbers', 'racketmanager' ); ?></label>
+		</div>
+		<div class="form-check form-check-inline mb-3">
+			<input class="form-check-input" type="radio" name='settings[reverse_rubbers]' id='reverse_rubbers_true' value= "1" <?php checked( '1', $event->reverse_rubbers ); ?>>
+			<label for='reverse_rubbers_true'><?php esc_html_e( 'Reverse rubbers', 'racketmanager' ); ?></label>
+		</div>
 		<div class="form-floating mb-3 col-12 col-xl-2">
 			<select class="form-select" size='1' name='settings[type]' id='type'>
 				<?php

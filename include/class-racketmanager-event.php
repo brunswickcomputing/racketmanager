@@ -310,6 +310,12 @@ class Racketmanager_Event {
 	 */
 	public $age_offset;
 	/**
+	 * Reverse rubbers
+	 *
+	 * @var boolean
+	 */
+	public $reverse_rubbers;
+	/**
 	 * Retrieve event instance
 	 *
 	 * @param int    $event_id event id.
@@ -393,6 +399,9 @@ class Racketmanager_Event {
 		$this->num_sets    = stripslashes( $this->num_sets );
 		$this->type        = stripslashes( $this->type );
 		$this->competition = get_competition( $this->competition_id );
+		if ( ! isset( $this->reverse_rubbers ) ) {
+			$this->reverse_rubbers = '0';
+		}
 
 		// set seasons.
 		if ( '' === $this->seasons ) {

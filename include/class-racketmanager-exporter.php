@@ -228,28 +228,40 @@ class Racketmanager_Exporter {
 			} else {
 				$events[] = $event;
 			}
-			$contents = '';
+			$x        = 0;
+			$contents = '[';
 			foreach ( $events as $event ) {
-				$event   = get_event( $event );
-				$leagues = $event->get_leagues();
-				foreach ( $leagues as $league ) {
-					$league = get_league( $league->id );
-					$teams  = $league->get_league_teams(
-						array(
-							'season' => $season,
-							'club'   => $club_id,
-						)
-					);
-					foreach ( $teams as $i => $team ) {
-						$team->league = $league->title;
-						$teams[ $i ]  = $team;
+				$event = get_event( $event );
+				if ( $event ) {
+					$leagues = $event->get_leagues();
+					foreach ( $leagues as $league ) {
+						$league = get_league( $league->id );
+						$teams  = $league->get_league_teams(
+							array(
+								'season' => $season,
+								'club'   => $club_id,
+							)
+						);
+						$i      = 0;
+						foreach ( $teams as $team ) {
+							$team->league = $league->title;
+							$teams[ $i ]  = $team;
+							++$i;
+						}
+						if ( $teams ) {
+							if ( $x ) {
+								$contents .= ',';
+							}
+							$contents .= $this->standings_output( $club, $teams, $contents );
+							++$x;
+						}
 					}
-					$contents .= $this->standings_output( $club, $teams, $contents );
 				}
 			}
-				header( 'Content-Type: application/json; charset=utf-8' );
-				echo $contents; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				exit();
+			$contents .= ']';
+			header( 'Content-Type: application/json; charset=utf-8' );
+			echo $contents; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			exit();
 		} else {
 			$message = __( 'Error with export', 'racketmanager' );
 			foreach ( $validator->error_msg as $err_msg ) {
@@ -295,7 +307,8 @@ class Racketmanager_Exporter {
 	 * @param array  $matches array of matches to download.
 	 */
 	private function match_output( $club, $matches ) {
-		$contents = '';
+		$contents = '[';
+		$i        = 0;
 		foreach ( $matches as $match ) {
 			$json_result = new \stdClass();
 			if ( ! empty( $club ) ) {
@@ -308,8 +321,13 @@ class Racketmanager_Exporter {
 			if ( $match->winner_id ) {
 				$json_result->score = str_replace( '"', '', $match->score );
 			}
+			if ( $i ) {
+				$contents .= ',';
+			}
 			$contents .= wp_json_encode( $json_result ) . "\n";
+			++$i;
 		}
+		$contents .= ']';
 		header( 'Content-Type: application/json; charset=utf-8' );
 		echo $contents; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		exit();
@@ -323,6 +341,7 @@ class Racketmanager_Exporter {
 	 */
 	private function standings_output( $club, $teams ) {
 		$contents = '';
+		$i        = 0;
 		foreach ( $teams as $team ) {
 			$json_result = new \stdClass();
 			if ( ! empty( $club ) ) {
@@ -338,7 +357,12 @@ class Racketmanager_Exporter {
 			$json_result->drawn  = $team->draw_matches;
 			$json_result->lost   = $team->lost_matches;
 			$json_result->points = $team->points['plus'];
-			$contents            = wp_json_encode( $json_result ) . "\n";
+			if ( $i ) {
+				$contents .= ',';
+			}
+			$contents .= wp_json_encode( $json_result );
+			$contents .= "\n";
+			++$i;
 		}
 		return $contents;
 	}

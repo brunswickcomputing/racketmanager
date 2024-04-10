@@ -1688,9 +1688,9 @@ final class Racketmanager_Match {
 					$result->matches[]        = $result_match;
 				}
 			}
-		}
-		if ( count( $result->matches ) ) {
-			return $result;
+			if ( count( $result->matches ) ) {
+				return $result;
+			}
 		}
 	}
 	/**

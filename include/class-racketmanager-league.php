@@ -346,6 +346,7 @@ class Racketmanager_League {
 		'leg'              => false,
 		'player'           => false,
 		'withdrawn'        => true,
+		'affiliatedClub'   => false,
 	);
 
 	/**
@@ -382,6 +383,7 @@ class Racketmanager_League {
 		'leg'              => 'numeric',
 		'player'           => 'numeric',
 		'withdrawn'        => 'boolean',
+		'affiliatedClub'   => 'numeric',
 	);
 
 	/**
@@ -1608,6 +1610,7 @@ class Racketmanager_League {
 		$leg              = $this->match_query_args['leg'];
 		$player           = $this->match_query_args['player'];
 		$withdrawn        = $this->match_query_args['withdrawn'];
+		$club             = $this->match_query_args['affiliatedClub'];
 
 		$matches = array();
 		$args    = array( intval( $this->id ) );
@@ -1749,7 +1752,9 @@ class Racketmanager_League {
 			$sql       .= " AND `home_team` = t1.`team_id` AND t1.`league_id` = m.`league_id` and t1.`season` = m.`season` AND t1.`status` != 'W'";
 			$sql       .= " AND `away_team` = t2.`team_id` AND t2.`league_id` = m.`league_id` and t2.`season` = m.`season` AND t2.`status` != 'W'";
 		}
-
+		if ( $club ) {
+			$sql .= " AND (`home_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = " . $club . ") OR `away_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = " . $club . '))';
+		}
 		// get number of matches.
 		if ( $count ) {
 			$this->set_match_query_arg( 'count', false );

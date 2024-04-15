@@ -60,6 +60,32 @@ namespace Racketmanager;
 			<label for="non_group" class="form-check-label"><?php esc_html_e( 'Allow Non-Group Games', 'racketmanager' ); ?></label>
 		</div>
 		<?php
+	} elseif ( $event->is_box ) {
+		?>
+		<div class="form-floating mb-3 col-2">
+			<input class="form-control" type="text" name="settings[teams_per_group]" id="teams_per_group" size="3" value="<?php echo isset( $event->teams_per_group ) ? esc_html( $event->teams_per_group ) : ''; ?>" />
+			<label for="teams_per_group"><?php esc_html_e( 'Teams per group', 'racketmanager' ); ?></label>
+		</div>
+		<div class="form-floating mb-3">
+			<select class="form-select" size="1" name="settings[duration] ?>" id="duration">;
+				<option value="" disabled <?php echo isset( $event->settings['duration'] ) ? '' : 'selected'; ?> ><?php esc_html_e( 'Select duration', 'racketmanager' ); ?></option>
+					<?php
+					for ( $i = 1; $i <= 10; $i++ ) {
+						$duration = $i * 7;
+						?>
+						<option value="<?php echo esc_html( $duration ); ?>" <?php isset( $event->settings['duration'] ) ? selected( $event->settings['duration'], $duration ) : ''; ?> >
+							<?php
+							/* translators: %d: week number */
+							printf( esc_html( _n( '%d week', '%d weeks', $i, 'racketmanager' ) ), esc_html( $i ) );
+							?>
+						</option>
+						<?php
+					}
+					?>
+			</select>
+			<label for='duration'><?php esc_html_e( 'Duration', 'racketmanager' ); ?></label>
+		</div>
+		<?php
 	}
 	?>
 </div>

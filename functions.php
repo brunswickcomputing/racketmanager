@@ -614,3 +614,28 @@ function get_results_report( $results_report = null ) {
 
 	return $_results_report;
 }
+/**
+ * Enable Cross Origin Resource Sharing
+ *
+ * @param string $value value item.
+ */
+function init_cors( $value ) {
+	$origin_url = '*';
+	// Check if it's production environment.
+	if ( 'production' === wp_get_environment_type() ) {
+		$origin_url = 'https://www.leighandwestclifftennis.org.uk';
+	}
+
+	header( 'Access-Control-Allow-Origin: ' . $origin_url );
+	header( 'Access-Control-Allow-Methods: GET' );
+	header( 'Access-Control-Allow-Credentials: true' );
+	return $value;
+}
+add_action(
+	'rest_api_init',
+	function () {
+		remove_filter( 'rest_pre_serve_request', 'rest_send_cors_headers' );
+		add_filter( 'rest_pre_serve_request', 'Racketmanager\init_cors' );
+	},
+	15
+);

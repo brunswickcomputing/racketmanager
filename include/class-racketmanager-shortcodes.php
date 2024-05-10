@@ -754,8 +754,15 @@ class RacketManager_Shortcodes {
 			$user                 = wp_get_current_user();
 			$userid               = $user->ID;
 			$user_can_update_club = false;
-			if ( current_user_can( 'manage_racketmanager' ) || ( null !== $club->matchsecretary && intval( $club->matchsecretary ) === $userid ) ) {
+			if ( current_user_can( 'manage_racketmanager' ) ) {
+				$user_can_update_club = true;
+			} elseif ( null !== $club->matchsecretary && intval( $club->matchsecretary ) === $userid ) {
+				$user_can_update_club = true;
+			} else {
+				$player = $club->get_player( $userid );
+				if ( $player ) {
 					$user_can_update_club = true;
+				}
 			}
 			if ( ! $user_can_update_club ) {
 				$valid = false;

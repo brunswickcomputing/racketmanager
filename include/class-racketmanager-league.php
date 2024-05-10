@@ -2093,7 +2093,6 @@ class Racketmanager_League {
 	 *
 	 * @param int $team_id team.
 	 * @param int $opponent_id opponent.
-	 * @param int $home home indicator.
 	 * @return string
 	 */
 	public function get_crosstable_field( $team_id, $opponent_id ) {

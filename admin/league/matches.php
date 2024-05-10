@@ -31,19 +31,19 @@ namespace Racketmanager;
 			}
 			?>
 		</select>
-		<select size="1" name="team_id">
-			<option value=""><?php esc_html_e( 'Choose Team', 'racketmanager' ); ?></option>
-			<?php
-			foreach ( $teams as $racketmanager_team ) {
-				?>
-				<option value="<?php echo esc_html( $racketmanager_team->id ); ?>"<?php echo selected( $racketmanager_team->id, $team_id ); ?>><?php echo esc_html( $racketmanager_team->title ); ?></option>
-				<?php
-			}
-			?>
-		</select>
 		<?php
 	}
 	?>
+	<select size="1" name="team_id">
+		<option value=""><?php esc_html_e( 'Choose Team', 'racketmanager' ); ?></option>
+		<?php
+		foreach ( $teams as $racketmanager_team ) {
+			?>
+			<option value="<?php echo esc_html( $racketmanager_team->id ); ?>"<?php echo selected( $racketmanager_team->id, $team_id ); ?>><?php echo esc_html( $racketmanager_team->title ); ?></option>
+			<?php
+		}
+		?>
+	</select>
 	<button class="btn btn-primary"><?php esc_html_e( 'Filter', 'racketmanager' ); ?></button>
 </form>
 <?php

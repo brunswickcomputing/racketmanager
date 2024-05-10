@@ -33,7 +33,9 @@ jQuery(document).ready(function(){
 		<div class="col-auto">
 			<h1><?php echo esc_html( $event->name ); ?></h1>
 		</div>
-	<?php if ( ! empty( $event->seasons ) && empty( $tournament ) ) { ?>
+	<?php
+	if ( ! empty( $event->seasons ) && empty( $tournament ) ) {
+		?>
 		<!-- Season Dropdown -->
 		<div class="col-auto">
 			<form action="admin.php" method="get" class="form-control">
@@ -42,18 +44,24 @@ jQuery(document).ready(function(){
 				<input type="hidden" name="event_id" value="<?php echo esc_html( $event->id ); ?>" />
 				<label for="season" style="vertical-align: middle;"><?php esc_html_e( 'Season', 'racketmanager' ); ?></label>
 				<select size="1" name="season" id="season">
-					<?php foreach ( $event->seasons as $event_season ) { ?>
+					<?php
+					foreach ( $event->seasons as $event_season ) {
+						?>
 						<option value="<?php echo esc_html( htmlspecialchars( $event_season['name'] ) ); ?>" <?php selected( $event_season['name'], $season ); ?>>
 							<?php echo esc_html( $event_season['name'] ); ?>
 						</option>
-					<?php } ?>
+						<?php
+					}
+					?>
 				</select>
 				<button type="submit"  class="btn btn-secondary">
 					<?php esc_html_e( 'Show', 'racketmanager' ); ?>
 				</button>
 			</form>
 		</div>
-	<?php } ?>
+		<?php
+	}
+	?>
 </div>
 
 	<?php $this->printMessage(); ?>
@@ -66,11 +74,15 @@ jQuery(document).ready(function(){
 				<li class="nav-item" role="presentation">
 					<button class="nav-link" id="leagues-tab" data-bs-toggle="tab" data-bs-target="#leagues" type="button" role="tab" aria-controls="leagues" aria-selected="true"><?php esc_html_e( 'Leagues', 'racketmanager' ); ?></button>
 				</li>
-				<?php if ( 'tournament' !== $event->competition->type ) { ?>
+				<?php
+				if ( 'tournament' !== $event->competition->type ) {
+					?>
 					<li class="nav-item" role="presentation">
 						<button class="nav-link" id="playerstats-tab" data-bs-toggle="tab" data-bs-target="#playerstats" type="button" role="tab" aria-controls="playerstats" aria-selected="false"><?php esc_html_e( 'Players Stats', 'racketmanager' ); ?></button>
 					</li>
-				<?php } ?>
+					<?php
+				}
+				?>
 				<li class="nav-item" role="presentation">
 					<?php
 					if ( $event->is_box ) {
@@ -94,22 +106,33 @@ jQuery(document).ready(function(){
 					?>
 					<button class="nav-link" id="seasons-tab" data-bs-toggle="tab" data-bs-target="#seasons" type="button" role="tab" aria-controls="seasons" aria-selected="false"><?php echo esc_html( $season_title ); ?></button>
 				</li>
-				<?php if ( current_user_can( 'manage_racketmanager' ) ) { ?>
+				<?php
+				if ( current_user_can( 'manage_racketmanager' ) ) {
+					?>
 					<li class="nav-item" role="presentation">
 						<button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false"><?php esc_html_e( 'Settings', 'racketmanager' ); ?></button>
 					</li>
-				<?php } ?>
-				<?php if ( 'league' === $event->competition->type ) { ?>
+					<?php
+				}
+				?>
+				<?php
+				if ( 'league' === $event->competition->type ) {
+					?>
 					<li class="nav-item" role="presentation">
 						<button class="nav-link" id="constitution-tab" data-bs-toggle="tab" data-bs-target="#constitution" type="button" role="tab" aria-controls="constitution" aria-selected="false"><?php esc_html_e( 'Constitution', 'racketmanager' ); ?></button>
 					</li>
-				<?php } ?>
-				<?php if ( 'league' === $event->competition->type ) { ?>
+					<?php
+				}
+				?>
+				<?php
+				if ( 'league' === $event->competition->type ) {
+					?>
 					<li class="nav-item" role="presentation">
 						<button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="false"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></button>
 					</li>
-				<?php } ?>
-
+					<?php
+				}
+				?>
 			</ul>
 			<!-- Tab panes -->
 			<div class="tab-content">
@@ -123,12 +146,16 @@ jQuery(document).ready(function(){
 		<?php
 		if ( empty( $tournament ) ) {
 			?>
-			<?php if ( 'tournament' !== $event->competition->type ) { ?>
+			<?php
+			if ( 'tournament' !== $event->competition->type ) {
+				?>
 				<div class="tab-pane fade" id="playerstats" role="tabpanel" aria-labelledby="playerstats-tab">
 					<h2><?php esc_html_e( 'Player Statistics', 'racketmanager' ); ?></h2>
 					<?php include_once 'event/player-stats.php'; ?>
 				</div>
-			<?php } ?>
+				<?php
+			}
+			?>
 			<div class="tab-pane fade" id="seasons" role="tabpanel" aria-labelledby="seasons-tab">
 				<?php
 				if ( $event->is_box ) {
@@ -143,25 +170,37 @@ jQuery(document).ready(function(){
 				?>
 				<?php require_once 'event/seasons.php'; ?>
 			</div>
-			<?php if ( current_user_can( 'manage_racketmanager' ) ) { ?>
+			<?php
+			if ( current_user_can( 'manage_racketmanager' ) ) {
+				?>
 				<div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
 					<?php include_once 'event/settings.php'; ?>
 				</div>
-			<?php } ?>
-			<?php if ( 'league' === $event->competition->type ) { ?>
+				<?php
+			}
+			?>
+			<?php
+			if ( 'league' === $event->competition->type ) {
+				?>
 				<div class="tab-pane fade" id="constitution" role="tabpanel" aria-labelledby="constitution-tab">
 					<div id="constitution" class="league-block-container">
 						<?php include_once 'event/constitution.php'; ?>
 					</div>
 				</div>
-			<?php } ?>
-			<?php if ( 'league' === $event->competition->type ) { ?>
+				<?php
+			}
+			?>
+			<?php
+			if ( 'league' === $event->competition->type ) {
+				?>
 				<div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
 					<div id="matches" class="league-block-container">
 						<?php include_once 'event/matches.php'; ?>
 					</div>
 				</div>
-			<?php } ?>
+				<?php
+			}
+			?>
 			</div>
 			<?php
 		}

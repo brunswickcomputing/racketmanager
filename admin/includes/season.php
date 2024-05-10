@@ -126,7 +126,7 @@ namespace Racketmanager;
 			if ( empty( $event ) ) {
 				?>
 				<div class="form-floating mb-3">
-					<input type="date" class="form-control" name="date_closing" id="date_closing" value="<?php echo isset( $season_data['closing_date'] ) ? esc_html( $season_data['date_closing'] ) : ''; ?>" size="2" />
+					<input type="date" class="form-control" name="date_closing" id="date_closing" value="<?php echo isset( $season_data['closing_date'] ) ? esc_html( $season_data['closing_date'] ) : ''; ?>" size="2" />
 					<label for="date_closing">
 						<?php esc_html_e( 'Closing date', 'racketmanager' ); ?>
 					</label>

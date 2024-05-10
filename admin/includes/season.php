@@ -134,6 +134,35 @@ namespace Racketmanager;
 				<?php
 			}
 			?>
+			<?php
+			if ( empty( $event ) ) {
+				?>
+				<div class="form-control mb-3">
+					<legend class="form-check-label"><?php esc_html_e( 'Fixed match dates', 'racketmanager' ); ?></legend>
+					<div class="form-check form-check-inline">
+						<input type="radio" class="form-check-input" name="fixedMatchDates" id="fixedMatchDatesTrue" value="true"
+						<?php
+						if ( isset( $season_data['fixedMatchDates'] ) ) {
+							echo ( 'true' === $season_data['fixedMatchDates'] ) ? ' checked' : '';
+						}
+						?>
+						/>
+						<label class="form-check-label" for="fixedMatchDatesTrue"><?php esc_html_e( 'True', 'racketmanager' ); ?></label>
+					</div>
+					<div class="form-check form-check-inline">
+						<input type="radio" class="form-check-input" name="fixedMatchDates" id="fixedMatchDatesFalse" value="false"
+						<?php
+						if ( isset( $season_data['fixedMatchDates'] ) ) {
+							echo ( 'false' === $season_data['fixedMatchDates'] ) ? ' checked' : '';
+						}
+						?>
+						/>
+						<label class="form-check-label" for="fixedMatchDatesFalse"><?php esc_html_e( 'False', 'racketmanager' ); ?></label>
+					</div>
+				</div>
+				<?php
+			}
+			?>
 			<div class="form-control mb-3">
 				<fieldset class="mb-1">
 					<legend class="form-check-label"><?php esc_html_e( 'Fixtures', 'racketmanager' ); ?></legend>

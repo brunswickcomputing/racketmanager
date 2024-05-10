@@ -3211,6 +3211,11 @@ final class RacketManager_Admin extends RacketManager {
 					} else {
 						$match_date = array();
 					}
+					if ( isset( $_POST['fixedMatchDates'] ) ) {
+						$fixed_dates = sanitize_text_field( wp_unslash( $_POST['fixedMatchDates'] ) );
+					} else {
+						$fixed_dates = true;
+					}
 					if ( isset( $_POST['homeAway'] ) ) {
 						$home_away = sanitize_text_field( wp_unslash( $_POST['homeAway'] ) );
 					} else {
@@ -3226,6 +3231,7 @@ final class RacketManager_Admin extends RacketManager {
 					$season_data->num_match_days = $num_match_days;
 					$season_data->object_id      = $item_id;
 					$season_data->match_dates    = $match_date;
+					$season_data->fixed_dates    = $fixed_dates;
 					$season_data->home_away      = $home_away;
 					$season_data->status         = $status;
 					$season_data->closing_date   = $closing_date;
@@ -3622,12 +3628,13 @@ final class RacketManager_Admin extends RacketManager {
 				$object = $event;
 			}
 			$object->seasons[ $season_data->season ] = array(
-				'name'           => $season_data->season,
-				'num_match_days' => $season_data->num_match_days,
-				'matchDates'     => $season_data->match_dates,
-				'homeAway'       => $season_data->home_away,
-				'status'         => $season_data->status,
-				'closing_date'   => $season_data->closing_date,
+				'name'            => $season_data->season,
+				'num_match_days'  => $season_data->num_match_days,
+				'matchDates'      => $season_data->match_dates,
+				'homeAway'        => $season_data->home_away,
+				'fixedMatchDates' => $season_data->fixed_dates,
+				'status'          => $season_data->status,
+				'closing_date'    => $season_data->closing_date,
 			);
 			ksort( $object->seasons );
 			if ( 'competition' === $season_data->type ) {

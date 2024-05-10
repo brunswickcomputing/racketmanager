@@ -81,7 +81,7 @@ if ( ! empty( $match->winner_id ) ) {
 
 						</li>
 						<?php
-					} elseif ( empty( $match_complete ) ) {
+					} elseif ( empty( $match_complete ) && ! empty( $match->date ) ) {
 						?>
 						<li class="match__header-title-item">
 							<?php

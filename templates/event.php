@@ -39,6 +39,15 @@ if ( empty( $tab ) ) {
 		$tab = 'standings'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 	}
 }
+if ( $event->is_box ) {
+	$event_title      = $event->name . ' - ' . __( 'Round', 'racketmanager' ) . ' ' . $curr_season;
+	$season_label     = __( 'Round', 'racketmanager' );
+	$season_selection = __( 'Rounds', 'racketmanager' );
+} else {
+	$event_title      = $event->name . ' - ' . __( 'Season', 'racketmanager' ) . ' ' . $curr_season;
+	$season_label     = __( 'Season', 'racketmanager' );
+	$season_selection = __( 'Seasons', 'racketmanager' );
+}
 ?>
 <div id="leaguetables">
 	<script type="text/javascript">
@@ -51,7 +60,7 @@ if ( empty( $tab ) ) {
 		<div class="module__content">
 			<div class="module__banner">
 				<div class="banner__title">
-					<h1><?php echo esc_html( $event->name ) . ' - ' . esc_html__( 'Season', 'racketmanager' ) . ' ' . esc_html( $curr_season ); ?></h1>
+					<h1><?php echo esc_html( $event_title ); ?></h1>
 				</div>
 				<?php
 				if ( 'constitution' !== $standings_template ) {
@@ -65,13 +74,21 @@ if ( empty( $tab ) ) {
 									<select class="form-select" size="1" name="season" id="season">
 										<?php
 										foreach ( array_reverse( $seasons ) as $key => $season ) {
+											if ( $event->is_box ) {
+												$option_name = $season_label . ' - ';
+											} else {
+												$option_name = '';
+											}
+											$option_name .= $season['name'];
 											?>
 											<option value="<?php echo esc_html( $season['name'] ); ?>" <?php selected( $season['name'], $curr_season ); ?>>
-												<?php echo esc_html( $season['name'] ); ?>
+												<?php echo esc_html( $option_name ); ?>
 											</option>
-										<?php } ?>
+											<?php
+										}
+										?>
 									</select>
-									<label for="season"><?php esc_html_e( 'Season', 'racketmanager' ); ?></label>
+									<label for="season"><?php echo esc_html( $season_selection ); ?></label>
 								</div>
 							</div>
 						</form>
@@ -109,7 +126,7 @@ if ( empty( $tab ) ) {
 						<button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="true"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></button>
 					</li>
 					<?php
-				} else {
+				} elseif ( ! $event->is_box ) {
 					?>
 					<li class="nav-item" role="presentation">
 						<?php
@@ -134,23 +151,29 @@ if ( empty( $tab ) ) {
 				<li class="nav-item" role="presentation">
 					<button class="nav-link" id="teams-tab" data-bs-toggle="tab" data-bs-target="#teams" type="button" role="tab" aria-controls="teams" aria-selected="false"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></button>
 				</li>
-				<li class="nav-item" role="presentation">
-					<?php
-					if ( ! empty( $wp->query_vars['player_id'] ) ) {
-						?>
-						<a href="/<?php echo esc_attr( $event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $event->name ) ); ?>/<?php echo esc_html( $curr_season ); ?>/players">
-						<?php
-					}
+				<?php
+				if ( ! $event->is_box ) {
 					?>
-					<button class="nav-link" id="players-tab" data-bs-toggle="tab" data-bs-target="#players" type="button" role="tab" aria-controls="players" aria-selected="false"><?php esc_html_e( 'Players', 'racketmanager' ); ?></button>
-					<?php
-					if ( ! empty( $wp->query_vars['player_id'] ) ) {
-						?>
-						</a>
+					<li class="nav-item" role="presentation">
 						<?php
-					}
-					?>
-				</li>
+						if ( ! empty( $wp->query_vars['player_id'] ) ) {
+							?>
+							<a href="/<?php echo esc_attr( $event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $event->name ) ); ?>/<?php echo esc_html( $curr_season ); ?>/players">
+							<?php
+						}
+						?>
+						<button class="nav-link" id="players-tab" data-bs-toggle="tab" data-bs-target="#players" type="button" role="tab" aria-controls="players" aria-selected="false"><?php esc_html_e( 'Players', 'racketmanager' ); ?></button>
+						<?php
+						if ( ! empty( $wp->query_vars['player_id'] ) ) {
+							?>
+							</a>
+							<?php
+						}
+						?>
+					</li>
+					<?php
+				}
+				?>
 			</ul>
 		</div>
 		<?php
@@ -210,7 +233,11 @@ if ( empty( $tab ) ) {
 										if ( 'constitution' === $standings_template ) {
 											$href = esc_url( $racketmanager->site_url );
 										}
-										$href .= '/' . __( 'league', 'racketmanager' ) . '/' . seo_url( $league->title ) . '/' . $curr_season . '/';
+										$href .= '/' . __( 'league', 'racketmanager' ) . '/' . seo_url( $league->title ) . '/';
+										if ( $event->is_box ) {
+											$href .= __( 'round', 'racketmanager' ) . '-';
+										}
+										$href .= $curr_season . '/';
 										?>
 										<a href="<?php echo esc_url( $href ); ?>">
 											<?php echo esc_html( $league->title ); ?>
@@ -276,7 +303,7 @@ if ( empty( $tab ) ) {
 					</div>
 				</div>
 				<?php
-			} else {
+			} elseif ( ! $event->is_box ) {
 				?>
 				<div class="tab-pane fade" id="clubs" role="tabpanel" aria-labelledby="clubs-tab">
 					<?php echo do_shortcode( '[event-clubs event_id=' . $event->id . ']' ); ?>
@@ -297,9 +324,15 @@ if ( empty( $tab ) ) {
 			}
 			?>
 			</div>
-			<div class="tab-pane fade" id="players" role="tabpanel" aria-labelledby="players-tab">
-				<?php echo do_shortcode( '[event-players event_id=' . $event->id . ']' ); ?>
-			</div>
+			<?php
+			if ( ! $event->is_box ) {
+				?>
+				<div class="tab-pane fade" id="players" role="tabpanel" aria-labelledby="players-tab">
+					<?php echo do_shortcode( '[event-players event_id=' . $event->id . ']' ); ?>
+				</div>
+				<?php
+			}
+			?>
 		</div>
 		<?php
 	}

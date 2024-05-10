@@ -512,7 +512,11 @@ final class Racketmanager_Match {
 			} else {
 				$match_ref = 'day' . $this->match_day;
 			}
+			if ( $this->league->event->is_box ) {
+				$this->link = '/league/' . seo_url( $this->league->title ) . '/match/' . $this->id . '/';
+			} else {
 			$this->link = '/match/' . seo_url( $this->league->title ) . '/' . $this->season . '/' . $match_ref . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/';
+			}
 		}
 	}
 

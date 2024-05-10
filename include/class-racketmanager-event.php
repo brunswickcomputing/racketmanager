@@ -1784,4 +1784,13 @@ class Racketmanager_Event {
 		'resultPending'       => false,
 		'status'              => false,
 	);
+	/**
+	 * Generate box league schedule
+	 */
+	public function generate_box_league_matches() {
+		foreach ( $this->get_leagues() as $league ) {
+			$league = get_league( $league );
+			$league->schedule_matches();
+		}
+	}
 }

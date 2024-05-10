@@ -26,6 +26,12 @@ use Racketmanager\Racketmanager_Util as util;
 	</select>
 	<label for="settings-type"><?php esc_html_e( 'Type', 'racketmanager' ); ?></label>
 </div>
+<div class="form-floating mb-3">
+	<input type="text" class="form-control" name="settings[competition_code]" id="competition_code" value="<?php echo empty( $competition->competition_code ) ? '' : esc_html( $competition->competition_code ); ?>" />
+	<label for="competition_code">
+		<?php esc_html_e( 'Competition code', 'racketmanager' ); ?>
+	</label>
+</div>
 <div class="form-floating mb-3 col-12 col-xl-2">
 	<select class="form-select" size="1" name="settings[sport]" id="sport">
 		<?php

@@ -75,7 +75,7 @@ namespace Racketmanager;
 							?>
 						</div>
 						<?php
-						if ( ! empty( $event->competition->seasons[ $key ]['competition_code'] ) ) {
+						if ( ! empty( $event->competition->competition_code ) ) {
 							?>
 							<div class="col-auto">
 								<a href="/index.php?event_id=<?php echo esc_html( $event->id ); ?>&season=<?php echo esc_html( $key ); ?>&racketmanager_export=report_results" class="btn btn-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Report results', 'racketmanager' ); ?>" >

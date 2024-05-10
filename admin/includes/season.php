@@ -54,18 +54,6 @@ namespace Racketmanager;
 			<?php
 		}
 		?>
-		<?php
-		if ( empty( $event ) ) {
-			?>
-			<div class="form-floating mb-3">
-				<input type="text" class="form-control" name="competition_code" id="competition_code" value="<?php echo empty( $season_data['competition_code'] ) ? '' : esc_html( $season_data['competition_code'] ); ?>" />
-				<label for="competition_code">
-					<?php esc_html_e( 'Competition code', 'racketmanager' ); ?>
-				</label>
-			</div>
-			<?php
-		}
-		?>
 		<div class="form-control mb-3">
 			<fieldset class="mb-1">
 				<legend class="form-check-label"><?php esc_html_e( 'Status', 'racketmanager' ); ?></legend>

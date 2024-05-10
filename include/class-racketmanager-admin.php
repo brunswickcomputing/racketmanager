@@ -3203,10 +3203,9 @@ final class RacketManager_Admin extends RacketManager {
 						$item_id = intval( $_POST['eventId'] );
 						$item    = 'event';
 					}
-					$num_match_days   = isset( $_POST['num_match_days'] ) ? intval( $_POST['num_match_days'] ) : null;
-					$closing_date     = isset( $_POST['date_closing'] ) ? sanitize_text_field( wp_unslash( $_POST['date_closing'] ) ) : null;
-					$competition_code = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
-					$is_box           = isset( $_POST['is_box'] ) ? sanitize_text_field( wp_unslash( $_POST['is_box'] ) ) : false;
+					$num_match_days = isset( $_POST['num_match_days'] ) ? intval( $_POST['num_match_days'] ) : null;
+					$closing_date   = isset( $_POST['date_closing'] ) ? sanitize_text_field( wp_unslash( $_POST['date_closing'] ) ) : null;
+					$is_box         = isset( $_POST['is_box'] ) ? sanitize_text_field( wp_unslash( $_POST['is_box'] ) ) : false;
 					if ( isset( $_POST['matchDate'] ) ) {
 						$match_date = $_POST['matchDate']; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					} else {
@@ -3222,17 +3221,16 @@ final class RacketManager_Admin extends RacketManager {
 					} else {
 						$status = 'draft';
 					}
-					$season_data                   = new \stdclass();
-					$season_data->season           = $season_id;
-					$season_data->num_match_days   = $num_match_days;
-					$season_data->object_id        = $item_id;
-					$season_data->match_dates      = $match_date;
-					$season_data->home_away        = $home_away;
-					$season_data->status           = $status;
-					$season_data->closing_date     = $closing_date;
-					$season_data->type             = $item;
-					$season_data->competition_code = $competition_code;
-					$season_data->is_box           = $is_box;
+					$season_data                 = new \stdclass();
+					$season_data->season         = $season_id;
+					$season_data->num_match_days = $num_match_days;
+					$season_data->object_id      = $item_id;
+					$season_data->match_dates    = $match_date;
+					$season_data->home_away      = $home_away;
+					$season_data->status         = $status;
+					$season_data->closing_date   = $closing_date;
+					$season_data->type           = $item;
+					$season_data->is_box         = $is_box;
 					$this->edit_season( $season_data );
 				}
 				$this->printMessage();
@@ -3624,13 +3622,12 @@ final class RacketManager_Admin extends RacketManager {
 				$object = $event;
 			}
 			$object->seasons[ $season_data->season ] = array(
-				'name'             => $season_data->season,
-				'num_match_days'   => $season_data->num_match_days,
-				'matchDates'       => $season_data->match_dates,
-				'homeAway'         => $season_data->home_away,
-				'status'           => $season_data->status,
-				'closing_date'     => $season_data->closing_date,
-				'competition_code' => $season_data->competition_code,
+				'name'           => $season_data->season,
+				'num_match_days' => $season_data->num_match_days,
+				'matchDates'     => $season_data->match_dates,
+				'homeAway'       => $season_data->home_away,
+				'status'         => $season_data->status,
+				'closing_date'   => $season_data->closing_date,
 			);
 			ksort( $object->seasons );
 			if ( 'competition' === $season_data->type ) {

@@ -106,9 +106,17 @@ namespace Racketmanager;
 		<?php wp_nonce_field( 'racketmanager_add-season', 'racketmanager_nonce' ); ?>
 		<input type="hidden" name="event_id" value="<?php echo esc_html( $event_id ); ?>" />
 			<div class="form-floating mb-3">
-				<?php if ( $season_id ) { ?>
+				<?php
+				if ( $season_id ) {
+					?>
 					<input type="number" class="form-control" name="season" id="season" value="<?php echo esc_html( $season_data['name'] ); ?>" size="4" />
-				<?php } else { ?>
+					<?php
+				} elseif ( $event->is_box ) {
+					?>
+					<input type="number" class="form-control" name="season" id="season" value="<?php echo esc_html( $next_round_num ); ?>" />
+					<?php
+				} else {
+					?>
 					<select size="1" name="season" id="season" class="form-select">
 						<option>
 							<?php
@@ -126,7 +134,9 @@ namespace Racketmanager;
 							<option value="<?php echo esc_html( $season->name ); ?>"><?php echo esc_html( $season->name ); ?></option>
 						<?php } ?>
 					</select>
-				<?php } ?>
+					<?php
+				}
+				?>
 				<label for="season">
 					<?php
 					if ( $event->is_box ) {
@@ -151,6 +161,35 @@ namespace Racketmanager;
 					}
 					?>
 					</label>
+				</div>
+				<?php
+			} else {
+				?>
+				<div class="form-floating mb-3">
+					<select name="homeAway" id="homeAway" class="form-select">
+						<option disabled <?php echo isset( $event->settings['homeAway'] ) ? '' : 'selected'; ?>><?php esc_html_e( 'Choose format', 'racketmanager' ); ?></option>
+						<option value="false"<?php isset( $event->settings['homeAway'] ) ? selected( 'false', $event->settings['homeAway'] ) : ''; ?>><?php esc_html_e( 'Round Robin', 'racketmanager' ); ?></option>
+						<option value="true"<?php isset( $event->settings['homeAway'] ) ? selected( 'true', $event->settings['homeAway'] ) : ''; ?>><?php echo esc_html__( 'Round Robin', 'racketmanager' ) . ' - ' . esc_html__( 'Home and Away', 'racketmanager' ); ?></option>
+					</select>
+					<label for="homeAway"><?php esc_html_e( 'Format', 'racketmanager' ); ?></label>
+				</div>
+				<div class="row g-3">
+					<div class="col">
+						<div class="form-floating mb-3">
+							<input type="date" class="form-control" name="matchDate[0]" id="matchDate-0" value="<?php echo esc_html( $next_round_start ); ?>"/>
+							<label for="matchDate-0"><?php esc_html_e( 'Start Date', 'racketmanager' ); ?></label>
+						</div>
+					</div>
+					<div class="col">
+						<div class="form-floating mb-3">
+							<input type="date" class="form-control" name="matchDate[1]" id="matchDate-1" value="<?php echo esc_html( $next_round_end ); ?>"/>
+							<label for="matchDate-1"><?php esc_html_e( 'End Date', 'racketmanager' ); ?></label>
+						</div>
+					</div>
+				</div>
+				<div class="form-floating mb-3">
+					<input type="date" class="form-control" name="date_closing" id="date_closing" />
+					<label for="date_closing"><?php esc_html_e( 'Closing Date', 'racketmanager' ); ?></label>
 				</div>
 				<?php
 			}

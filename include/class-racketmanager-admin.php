@@ -681,18 +681,6 @@ final class RacketManager_Admin extends RacketManager {
 					$tab = 'seasons';
 					$this->delete_seasons_from_competition();
 					$this->printMessage();
-				} elseif ( isset( $_POST['doactionconstitution'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-					$tab = 'constitution';
-					$this->delete_constitution_teams();
-					$this->printMessage();
-				} elseif ( isset( $_POST['saveconstitution'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-					$tab = 'constitution';
-					$this->save_constitution();
-					$this->printMessage();
-				} elseif ( isset( $_POST['action'] ) && 'addTeamsToLeague' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-					$tab = 'constitution';
-					$this->add_teams_to_constitution();
-					$this->printMessage();
 				} elseif ( isset( $_POST['updateSettings'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 					$tab = 'settings';
 					$this->update_competition_settings( $competition );
@@ -814,8 +802,16 @@ final class RacketManager_Admin extends RacketManager {
 						$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 					} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-season' ) ) {
 						$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-					} elseif ( ! empty( $_POST['season'] ) && empty( $_POST['season_id'] && isset( $_POST['num_match_days'] ) && isset( $_POST['event_id'] ) ) ) {
-						$this->add_season_to_event( sanitize_text_field( wp_unslash( $_POST['season'] ) ), intval( $_POST['num_match_days'] ), intval( $_POST['event_id'] ) );
+					} elseif ( ! empty( $_POST['season'] ) && empty( $_POST['season_id'] && isset( $_POST['event_id'] ) ) ) {
+						if ( $event->is_box ) {
+							$home_away    = isset( $_POST['homeAway'] ) ? sanitize_text_field( wp_unslash( $_POST['homeAway'] ) ) : null;
+							$match_dates  = isset( $_POST['matchDate'] ) ? $_POST['matchDate'] : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+							$closing_date = isset( $_POST['date_closing'] ) ? sanitize_text_field( wp_unslash( $_POST['date_closing'] ) ) : null;
+							$this->add_season_to_event( sanitize_text_field( wp_unslash( $_POST['season'] ) ), intval( $_POST['event_id'] ), null, $closing_date, $home_away, $match_dates );
+						} elseif ( isset( $_POST['num_match_days'] ) ) {
+							$this->add_season_to_event( sanitize_text_field( wp_unslash( $_POST['season'] ) ), intval( $_POST['event_id'] ), intval( $_POST['num_match_days'] ) );
+						}
+						$event = get_event( $event_id );
 					}
 					$this->printMessage();
 				} elseif ( isset( $_POST['doactionseason'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -833,6 +829,10 @@ final class RacketManager_Admin extends RacketManager {
 				} elseif ( isset( $_POST['action'] ) && 'addTeamsToLeague' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 					$tab = 'constitution';
 					$this->add_teams_to_constitution();
+					$this->printMessage();
+				} elseif ( isset( $_POST['generate_matches'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+					$tab = 'constitution';
+					$this->generate_box_league_matches();
 					$this->printMessage();
 				} elseif ( isset( $_POST['updateSettings'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 					$tab = 'settings';
@@ -1029,7 +1029,30 @@ final class RacketManager_Admin extends RacketManager {
 			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 		}
 	}
-
+	/**
+	 * Generate matches
+	 */
+	private function generate_box_league_matches() {
+		if ( ! current_user_can( 'edit_leagues' ) ) {
+			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
+		} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'constitution-bulk' ) ) {
+			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+		} else {
+			$event_id = isset( $_POST['event_id'] ) ? intval( $_POST['event_id'] ) : null;
+			$season   = isset( $_POST['latest_season'] ) ? intval( $_POST['latest_season'] ) : null;
+			if ( $event_id ) {
+				if ( $season ) {
+					$event = get_event( $event_id );
+					$event->generate_box_league_matches( $season );
+					$this->set_message( __( 'Matches generated', 'racketmanager' ) );
+				} else {
+					$this->set_message( __( 'No season set', 'racketmanager' ), true );
+				}
+			} else {
+				$this->set_message( __( 'No event set', 'racketmanager' ), true );
+			}
+		}
+	}
 	/**
 	 * Update competition settings via admin
 	 *
@@ -2528,7 +2551,7 @@ final class RacketManager_Admin extends RacketManager {
 							'id' => 'ASC',
 						),
 					);
-					if ( ! empty( $league->current_season['homeAway'] ) ) {
+					if ( ! empty( $league->current_season['homeAway'] ) && 'true' === $league->current_season['homeAway'] ) {
 						$match_args['leg'] = 1;
 					}
 					$matches = $league->get_matches( $match_args );
@@ -3180,11 +3203,10 @@ final class RacketManager_Admin extends RacketManager {
 						$item_id = intval( $_POST['eventId'] );
 						$item    = 'event';
 					}
-					if ( isset( $_POST['num_match_days'] ) ) {
-						$num_match_days = intval( $_POST['num_match_days'] );
-					}
-					$date_closing     = isset( $_POST['date_closing'] ) ? sanitize_text_field( wp_unslash( $_POST['date_closing'] ) ) : null;
+					$num_match_days   = isset( $_POST['num_match_days'] ) ? intval( $_POST['num_match_days'] ) : null;
+					$closing_date     = isset( $_POST['date_closing'] ) ? sanitize_text_field( wp_unslash( $_POST['date_closing'] ) ) : null;
 					$competition_code = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
+					$is_box           = isset( $_POST['is_box'] ) ? sanitize_text_field( wp_unslash( $_POST['is_box'] ) ) : false;
 					if ( isset( $_POST['matchDate'] ) ) {
 						$match_date = $_POST['matchDate']; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					} else {
@@ -3207,9 +3229,10 @@ final class RacketManager_Admin extends RacketManager {
 					$season_data->match_dates      = $match_date;
 					$season_data->home_away        = $home_away;
 					$season_data->status           = $status;
-					$season_data->date_closing     = $date_closing;
+					$season_data->closing_date     = $closing_date;
 					$season_data->type             = $item;
 					$season_data->competition_code = $competition_code;
+					$season_data->is_box           = $is_box;
 					$this->edit_season( $season_data );
 				}
 				$this->printMessage();
@@ -3479,7 +3502,7 @@ final class RacketManager_Admin extends RacketManager {
 		foreach ( $events as $event ) {
 			$event = get_event( $event );
 			if ( ! isset( $event->seasons[ $season ] ) ) {
-				$event_season = $this->add_season_to_event( $season, $num_match_days, $event->id );
+				$event_season = $this->add_season_to_event( $season, $event->id, $num_match_days );
 			}
 		}
 		/* translators: %s: season name */
@@ -3491,33 +3514,45 @@ final class RacketManager_Admin extends RacketManager {
 	 * Add new season to event
 	 *
 	 * @param string $season season.
-	 * @param int    $num_match_days number of match days.
 	 * @param int    $event_id event_id.
+	 * @param int    $num_match_days number of match days.
+	 * @param string $closing_date (optional) closing date.
+	 * @param string $home_away (optional) match format.
+	 * @param array  $match_dates (optional) match dates.
 	 * @return boolean
 	 */
-	private function add_season_to_event( $season, $num_match_days, $event_id ) {
+	private function add_season_to_event( $season, $event_id, $num_match_days, $closing_date = null, $home_away = null, $match_dates = null ) {
 		global $racketmanager, $event;
 
 		$event = get_event( $event_id );
-		if ( ! $num_match_days && ( 'cup' === $event->competition->type || 'tournament' === $event->competition->type ) ) {
-			$options        = $racketmanager->get_options();
-			$rm_options     = $options['championship'];
-			$num_match_days = isset( $rm_options['numRounds'] ) ? $rm_options['numRounds'] : 0;
-		}
-
-		if ( ! $num_match_days ) {
-			$this->set_message( 'Number of match days not specified', 'racketmanager', 'error' );
-			return false;
-		}
-
 		if ( '' === $event->seasons ) {
 			$event->seasons = array();
 		}
-		$event->seasons[ $season ] = array(
-			'name'           => $season,
-			'num_match_days' => $num_match_days,
-			'status'         => 'draft',
-		);
+		if ( $event->is_box ) {
+			$event->seasons[ $season ] = array(
+				'name'           => $season,
+				'closing_date'   => $closing_date,
+				'matchDates'     => $match_dates,
+				'homeAway'       => $home_away,
+				'num_match_days' => 0,
+				'status'         => 'draft',
+			);
+		} else {
+			if ( ! $num_match_days && ( 'cup' === $event->competition->type || 'tournament' === $event->competition->type ) ) {
+				$options        = $racketmanager->get_options();
+				$rm_options     = $options['championship'];
+				$num_match_days = isset( $rm_options['numRounds'] ) ? $rm_options['numRounds'] : 0;
+			}
+			if ( ! $num_match_days ) {
+				$this->set_message( 'Number of match days not specified', 'racketmanager', 'error' );
+				return false;
+			}
+			$event->seasons[ $season ] = array(
+				'name'           => $season,
+				'num_match_days' => $num_match_days,
+				'status'         => 'draft',
+			);
+		}
 		ksort( $event->seasons );
 		$this->save_event_seasons( $event->seasons, $event->id );
 		/* translators: %s: season name */
@@ -3560,7 +3595,7 @@ final class RacketManager_Admin extends RacketManager {
 				}
 			}
 		}
-		if ( ! $season_data->num_match_days ) {
+		if ( ! $season_data->num_match_days && ! $season_data->is_box ) {
 			$this->set_message( __( 'Number of match days must be set', 'racketmanager' ), true );
 			$error = true;
 		}
@@ -3572,7 +3607,7 @@ final class RacketManager_Admin extends RacketManager {
 			$this->set_message( __( 'Fixtures must be set', 'racketmanager' ), true );
 			$error = true;
 		}
-		if ( 'competition' === $season_data->type && ! $season_data->date_closing ) {
+		if ( 'competition' === $season_data->type && ! $season_data->closing_date ) {
 			$this->set_message( __( 'Closing date must be set', 'racketmanager' ), true );
 			$error = true;
 		}
@@ -3594,7 +3629,7 @@ final class RacketManager_Admin extends RacketManager {
 				'matchDates'       => $season_data->match_dates,
 				'homeAway'         => $season_data->home_away,
 				'status'           => $season_data->status,
-				'date_closing'     => $season_data->date_closing,
+				'closing_date'     => $season_data->closing_date,
 				'competition_code' => $season_data->competition_code,
 			);
 			ksort( $object->seasons );

@@ -75,6 +75,19 @@ jQuery(document).ready(function(){
 					<?php
 					if ( $event->is_box ) {
 						$season_title = __( 'Rounds', 'racketmanager' );
+						if ( ! empty( $event->seasons ) ) {
+							$prev_round       = end( $event->seasons );
+							$prev_round_num   = $prev_round['name'];
+							$prev_round_end   = $prev_round['matchDates'][1];
+							$next_round_start = gmdate( 'Y-m-d', strtotime( $prev_round_end . ' +1 day' ) );
+							$event_duration   = $event->duration - 1;
+							$next_round_end   = gmdate( 'Y-m-d', strtotime( $next_round_start . ' +' . $event_duration . ' day' ) );
+						} else {
+							$prev_round_num   = 0;
+							$next_round_start = null;
+							$next_round_end   = null;
+						}
+						$next_round_num = $prev_round_num + 1;
 					} else {
 						$season_title = __( 'Seasons', 'racketmanager' );
 					}

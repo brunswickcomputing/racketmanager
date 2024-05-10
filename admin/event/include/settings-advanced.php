@@ -63,8 +63,16 @@ namespace Racketmanager;
 	} elseif ( $event->is_box ) {
 		?>
 		<div class="form-floating mb-3 col-2">
-			<input class="form-control" type="text" name="settings[teams_per_group]" id="teams_per_group" size="3" value="<?php echo isset( $event->teams_per_group ) ? esc_html( $event->teams_per_group ) : ''; ?>" />
+			<input class="form-control" type="text" name="settings[teams_per_group]" id="teams_per_group" value="<?php echo isset( $event->teams_per_group ) ? esc_html( $event->teams_per_group ) : ''; ?>" />
 			<label for="teams_per_group"><?php esc_html_e( 'Teams per group', 'racketmanager' ); ?></label>
+		</div>
+		<div class="form-floating mb-3">
+			<select name="settings[homeAway]" id="homeAway" class="form-select">
+				<option disabled <?php echo isset( $event->settings['homeAway'] ) ? '' : 'selected'; ?>><?php esc_html_e( 'Choose format', 'racketmanager' ); ?></option>
+				<option value="false" <?php isset( $event->settings['homeAway'] ) ? selected( 'false', $event->settings['homeAway'] ) : ''; ?>><?php esc_html_e( 'Round Robin', 'racketmanager' ); ?></option>
+				<option value="true" <?php isset( $event->settings['homeAway'] ) ? selected( 'true', $event->settings['homeAway'] ) : ''; ?>><?php echo esc_html__( 'Round Robin', 'racketmanager' ) . ' - ' . esc_html__( 'Home and Away', 'racketmanager' ); ?></option>
+			</select>
+			<label for="homeAway"><?php esc_html_e( 'Format', 'racketmanager' ); ?></label>
 		</div>
 		<div class="form-floating mb-3">
 			<select class="form-select" size="1" name="settings[duration] ?>" id="duration">;

@@ -26,15 +26,31 @@ namespace Racketmanager;
 			if ( is_single_match() ) {
 				the_single_match();
 			} else {
-				include 'matches-selections.php';
+				if ( ! $league->event->is_box ) {
+					include 'matches-selections.php';
+				}
 				if ( $matches ) {
 					$show_header = false;
-					if ( -1 === $league->match_day ) {
-						$matches_list = $matches;
-						$matches_key  = 'match_day';
-						require RACKETMANAGER_PATH . 'templates/includes/matches-team-list-group.php';
+					if ( 'team' === $league->event->competition->entry_type ) {
+						if ( -1 === $league->match_day ) {
+							$matches_list = $matches;
+							$matches_key  = 'match_day';
+							require RACKETMANAGER_PATH . 'templates/includes/matches-team-list-group.php';
+						} else {
+							require RACKETMANAGER_PATH . 'templates/includes/matches-team-list.php';
+						}
 					} else {
-						require RACKETMANAGER_PATH . 'templates/includes/matches-team-list.php';
+						?>
+						<div class="tournament-matches">
+							<?php
+							foreach ( $matches as $no => $match ) {
+								?>
+								<?php require RACKETMANAGER_PATH . 'templates/tournament/match.php'; ?>
+								<?php
+							}
+							?>
+						</div>
+						<?php
 					}
 				}
 			}

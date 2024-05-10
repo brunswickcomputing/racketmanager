@@ -122,8 +122,13 @@ if ( count( $league->teams ) ) {
 								<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
 								<?php
 							}
+							if ( $league->event->is_box ) {
+								$season_link = __( 'round', 'racketmanager' ) . '-' . $league->current_season['name'];
+							} else {
+								$season_link = $league->current_season['name'];
+							}
 							?>
-							<a href="/<?php echo esc_attr( $league->event->competition->type ); ?>/<?php echo esc_html( seo_url( $league->title ) ); ?>/<?php echo esc_attr( $league->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->title ) ); ?>/">
+							<a href="/<?php echo esc_attr( $league->event->competition->type ); ?>/<?php echo esc_html( seo_url( $league->title ) ); ?>/<?php echo esc_attr( $season_link ); ?>/team/<?php echo esc_attr( seo_url( $team->title ) ); ?>/">
 								<?php the_team_name(); ?>
 							</a>
 							<?php

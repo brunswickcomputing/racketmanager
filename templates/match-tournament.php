@@ -71,49 +71,76 @@ if ( $match ) {
 			<div class="row">
 				<div class="col-6 col-sm-4">
 					<svg width="20" height="20" class="match-info-meta__icon">
-						<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/lta-icons.svg#icon-bracket' ); ?>"></use>
+						<?php
+						if ( $match->league->is_championship ) {
+							$svg_link_text     = __( 'Draw', 'racketmanager' );
+							$svg_link          = $match->league->event->name;
+							$svg_link_location = $tournament_link . 'draw/' . seo_url( $match->league->event->name ) . '/';
+							?>
+							<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/lta-icons.svg#icon-bracket' ); ?>"></use>
+							<?php
+						} else {
+							if ( $match->league->event->is_box ) {
+								$season_text = __( 'round', 'racketmanager' ) . '-' . $match->season;
+							} else {
+								$season_text = $match->season;
+							}
+							$svg_link_text     = __( 'League', 'racketmanager' );
+							$svg_link          = $match->league->title;
+							$svg_link_location = '/league/' . seo_url( $match->league->title ) . '/' . $season_text . '/';
+							?>
+							<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#table' ); ?>"></use>
+							<?php
+						}
+						?>
 					</svg>
 					<div class="match-info-meta__content">
 						<span>
 							<strong>
-								<?php esc_html_e( 'Draw', 'racketmanager' ); ?>
+								<?php echo esc_html( $svg_link_text ); ?>
 							</strong>
 						</span>
 						<span class="text--muted-small">
-							<a href="<?php echo esc_html( $tournament_link ) . 'draw/' . esc_html( seo_url( $match->league->event->name ) ) . '/'; ?>">
-								<?php echo esc_html( $match->league->event->name ); ?>
+							<a href="<?php echo esc_attr( $svg_link_location ); ?>">
+								<?php echo esc_html( $svg_link ); ?>
 							</a>
 						</span>
 					</div>
 				</div>
-				<div class="col-6 col-sm-4">
-					<svg width="20" height="20" class="match-info-meta__icon">
-						<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#calendar' ); ?>"></use>
-					</svg>
-					<div class="match-info-meta__content">
-						<span>
-							<strong>
-								<?php esc_html_e( 'Time', 'racketmanager' ); ?>
-							</strong>
-						</span>
-						<span class="text--muted-small">
-							<time datetime="<?php echo esc_html( $match->date ); ?>">
-								<span class="match_date">
-									<?php echo esc_html( mysql2date( 'D j M', $match->date ) ); ?>
-								</span>
-								<?php
-								if ( ! empty( $match->start_time ) ) {
-									?>
-									<span class="match_time">
-										<?php echo esc_html__( 'at', 'racketmanager' ) . ' ' . esc_html( mysql2date( 'G:i', $match->date ) ); ?>
+				<?php
+				if ( ! empty( $match->date ) ) {
+					?>
+					<div class="col-6 col-sm-4">
+						<svg width="20" height="20" class="match-info-meta__icon">
+							<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#calendar' ); ?>"></use>
+						</svg>
+						<div class="match-info-meta__content">
+							<span>
+								<strong>
+									<?php esc_html_e( 'Time', 'racketmanager' ); ?>
+								</strong>
+							</span>
+							<span class="text--muted-small">
+								<time datetime="<?php echo esc_html( $match->date ); ?>">
+									<span class="match_date">
+										<?php echo esc_html( mysql2date( 'D j M', $match->date ) ); ?>
 									</span>
 									<?php
-								}
-								?>
-							</time>
-						</span>
+									if ( ! empty( $match->start_time ) ) {
+										?>
+										<span class="match_time">
+											<?php echo esc_html__( 'at', 'racketmanager' ) . ' ' . esc_html( mysql2date( 'G:i', $match->date ) ); ?>
+										</span>
+										<?php
+									}
+									?>
+								</time>
+							</span>
+						</div>
 					</div>
-				</div>
+					<?php
+				}
+				?>
 				<?php
 				$location = $match->location;
 				if ( empty( $location ) && isset( $match->host ) ) {
@@ -161,9 +188,15 @@ if ( $match ) {
 				<div class="match <?php echo esc_attr( $match_editable ); ?> tournament-match">
 					<div class="match__header">
 						<ul class="match__header-title">
-							<li class="match__header-title-item">
-								<?php echo esc_html( $match->league->championship->get_final_name( $match->final_round ) ); ?>
-							</li>
+							<?php
+							if ( $match->league->is_championship ) {
+								?>
+								<li class="match__header-title-item">
+									<?php echo esc_html( $match->league->championship->get_final_name( $match->final_round ) ); ?>
+								</li>
+								<?php
+							}
+							?>
 							<li class="match__header-title-item">
 								<?php echo esc_html( $match->league->title ); ?>
 							</li>
@@ -385,46 +418,50 @@ if ( $match ) {
 					<div class="match__footer">
 						<ul class="match__footer-title">
 						</ul>
-								<?php
-								if ( $match_editable ) {
-									?>
+						<?php
+						if ( $match_editable ) {
+							?>
 							<div class="match__footer-aside text-uppercase">
 								<a href="" onclick="Racketmanager.resetMatchScores(event, '<?php echo esc_html( $form_id ); ?>')">
 									<?php echo esc_html_e( 'Reset scores', 'racketmanager' ); ?>
 								</a>
 							</div>
-									<?php
-								}
-								?>
+							<?php
+						}
+						?>
 					</div>
 				</div>
-								<?php
-								if ( $user_can_update ) {
-									?>
+				<?php
+				if ( $user_can_update ) {
+					?>
 					<div class="row mb-3">
 						<div id="updateResponse" class="updateResponse"></div>
 					</div>
-									<?php
-								} else {
-									?>
+					<?php
+				} else {
+					?>
 					<div class="row mb-3 justify-content-center">
 						<div class="col-auto">
-											<?php if ( 'notLoggedIn' === $user_message ) { ?>
-							You need to <a href="<?php echo esc_html( wp_login_url( wp_get_current_url() ) ); ?>">login</a> to update the result.
-												<?php
-											} else {
-												esc_html_e( 'User not allowed to update result', 'racketmanager' );
-											}
-											?>
+							<?php
+							if ( 'notLoggedIn' === $user_message ) {
+								?>
+								You need to <a href="<?php echo esc_html( wp_login_url( wp_get_current_url() ) ); ?>">login</a> to update the result.
+								<?php
+							} else {
+								esc_html_e( 'User not allowed to update result', 'racketmanager' );
+							}
+							?>
 						</div>
 					</div>
-									<?php
-								}
-								$page_referrer = wp_get_referer();
-								if ( ! $page_referrer ) {
-									$page_referrer = $tournament->link . 'matches/';
-								}
-								?>
+					<?php
+				}
+				$page_referrer = wp_get_referer();
+				if ( ! $page_referrer ) {
+					if ( ! empty( $tournament ) ) {
+						$page_referrer = $tournament->link . 'matches/';
+					}
+				}
+				?>
 				<div class="col-6">
 					<a href="<?php echo esc_url( $page_referrer ); ?>">
 						<button tabindex="500" class="btn btn-secondary" type="button"><?php esc_html_e( 'Return', 'racketmanager' ); ?></button>
@@ -433,6 +470,6 @@ if ( $match ) {
 			</form>
 		</div>
 	</div>
-								<?php
+	<?php
 }
 ?>

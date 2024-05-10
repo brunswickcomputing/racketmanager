@@ -2093,14 +2093,14 @@ class Racketmanager_League {
 	 *
 	 * @param int $team_id team.
 	 * @param int $opponent_id opponent.
-	 * @param int $home home indicator.
 	 * @return string
 	 */
-	public function get_crosstable_field( $team_id, $opponent_id, $home = 0 ) {
+	public function get_crosstable_field( $team_id, $opponent_id ) {
+		$score = '&nbsp;';
 		if ( $team_id === $opponent_id ) {
 				$score = '&nbsp;';
 		} else {
-			$match = $this->get_matches(
+			$matches   = $this->get_matches(
 				array(
 					'home_team'        => $team_id,
 					'away_team'        => $opponent_id,
@@ -2109,10 +2109,35 @@ class Racketmanager_League {
 					'reset_query_args' => true,
 				)
 			);
-			if ( $match ) {
-				$score = $this->get_score( $team_id, $opponent_id, $match[0], $home );
+			$home_away = isset( $this->current_season['homeAway'] ) ? $this->current_season['homeAway'] : 'true';
+			if ( 'true' === $home_away ) {
+				if ( $matches ) {
+					$score = '';
+					foreach ( $matches as $match ) {
+						$score .= $this->get_score( $team_id, $opponent_id, $match, $home_away );
+					}
 			} else {
 				$score = '&nbsp;';
+				}
+			} elseif ( $matches ) {
+				$match = $matches[0];
+				$score = $this->get_score( $team_id, $opponent_id, $match, $home_away );
+			} else {
+				$matches = $this->get_matches(
+					array(
+						'home_team'        => $opponent_id,
+						'away_team'        => $team_id,
+						'match_day'        => -1,
+						'limit'            => false,
+						'reset_query_args' => true,
+					)
+				);
+				if ( $matches ) {
+					$match = $matches[0];
+					$score = $this->get_score( $team_id, $opponent_id, $match, $home_away );
+				} else {
+					$score = '&nbsp;';
+				}
 			}
 		}
 
@@ -2125,15 +2150,20 @@ class Racketmanager_League {
 	 * @param int    $team_id team.
 	 * @param int    $opponent_id opponent.
 	 * @param object $match match.
+	 * @param string $home_away home & away matches.
 	 * @return string
 	 */
-	public function get_score( $team_id, $opponent_id, $match ) {
+	public function get_score( $team_id, $opponent_id, $match, $home_away ) {
 
 		// unplayed match.
 		if ( ! $match || ( null === $match->home_points && null === $match->away_points ) ) {
 			$date      = ( '0000-00-00' === substr( $match->date, 0, 10 ) ) ? 'N/A' : mysql2date( 'D d/m/Y', $match->date );
 			$match_day = isset( $match->match_day ) ? __( 'Match Day', 'racketmanager' ) . ' ' . $match->match_day : '';
-			$out       = "<span class='unplayedMatch'>" . $match_day . '<br/>' . $date . '</span>';
+			if ( 'true' === $home_away ) {
+				$out = "<span class='unplayedMatch'>" . $match_day . '<br/>' . $date . '</span><br/>';
+			} else {
+				$out = "<span class='unplayedMatch'>&nbsp;</span>";
+			}
 			// match at home.
 		} elseif ( $team_id === $match->home_team ) {
 			$score_team_1 = $match->home_points;
@@ -2153,13 +2183,24 @@ class Racketmanager_League {
 			} elseif ( '-1' === $match->winner_id ) {
 				$score_class = 'tie';
 			}
+			if ( 'true' === $home_away ) {
+				$link_title = __( 'Match Day', 'racketmanager' ) . ' ' . $match->match_day;
+			} else {
+				$link_title = '';
+			}
 			ob_start();
 			?>
 			<a href="<?php echo esc_html( $match->link ); ?>"
-				<span class="score <?php echo esc_attr( $score_class ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_attr( __( 'Match Day', 'racketmanager' ) . ' ' . $match->match_day ); ?>">
+				<span class="score <?php echo esc_attr( $score_class ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_attr( $link_title ); ?>">
 					<span class="is-team-1"><?php echo esc_html( sprintf( '%g', $score_team_1 ) ); ?></span>
+					<?php
+					if ( 'true' === $home_away ) {
+						?>
 					<span class="score-separator">-</span>
 					<span class="is-team-2"><?php echo esc_html( sprintf( '%g', $score_team_2 ) ); ?></span>
+						<?php
+					}
+					?>
 				</span>
 			</a>
 			<?php
@@ -3171,13 +3212,23 @@ class Racketmanager_League {
 				),
 			)
 		);
-		$num_rounds     = $this->current_season['num_match_days'];
-		$home_away      = isset( $this->current_season['homeAway'] ) ? $this->current_season['homeAway'] : 'true';
+		if ( $this->event->is_box ) {
+			$num_teams = $this->num_teams;
+			if ( 0 !== $this->num_teams % 2 ) {
+				++$num_teams;
+			}
+			$num_rounds    = $num_teams - 1;
+			$num_teams_max = $num_teams;
+			$home_away     = false;
+		} else {
+			$num_rounds = $this->current_season['num_match_days'];
+			$home_away  = isset( $this->current_season['homeAway'] ) ? $this->current_season['homeAway'] : 'true';
 		if ( $home_away ) {
 			$num_rounds = $num_rounds / 2;
 		}
 		$num_teams_max = $num_rounds + 1;
-		$refs          = array();
+		}
+		$refs = array();
 		for ( $i = 1; $i <= $num_teams_max; $i++ ) {
 			$refs[] = $i;
 		}
@@ -3220,23 +3271,23 @@ class Racketmanager_League {
 				}
 				usort( $schedule_teams, fn ( $a, $b ) => $a->group <=> $b->group );
 			}
-			$this->create_schedule( $schedule_teams );
+			$this->create_schedule( $schedule_teams, $num_rounds, $home_away );
 		}
 	}
 
 	/**
 	 * Schedule matches
 	 *
-	 * @param object $teams teams to create schedule for.
+	 * @param object  $teams teams to create schedule for.
+	 * @param string  $num_rounds number of rounds.
+	 * @param boolean $home_away home and away indicator.
 	 */
-	public function create_schedule( $teams ) {
+	public function create_schedule( $teams, $num_rounds, $home_away ) {
 		$season      = $this->current_season['name'];
 		$match_dates = $this->current_season['matchDates'];
 		$num_teams   = count( $teams );
-		$num_rounds  = $this->current_season['num_match_days'];
-		$home_away   = isset( $this->current_season['homeAway'] ) ? $this->current_season['homeAway'] : 'true';
-		if ( $home_away ) {
-			$num_rounds = $num_rounds / 2;
+		if ( ! $num_rounds ) {
+			$num_rounds = $this->current_season['num_match_days'];
 		}
 		if ( $num_teams & 1 ) {
 			++$num_teams;
@@ -3251,7 +3302,7 @@ class Racketmanager_League {
 		}
 		$rounds = $this->make_first_row( $rounds, $num_teams, $num_rounds, $num_fixtures_per_round, $home_away );
 		$rounds = $this->make_other_rows( $rounds, $num_teams, $num_rounds, $num_fixtures_per_round, $home_away );
-		$this->create_match_schedule( $rounds, $teams, $match_dates, $season );
+		$this->create_match_schedule( $rounds, $teams, $match_dates, $season, $this->event->is_box );
 	}
 
 	/**
@@ -3366,46 +3417,48 @@ class Racketmanager_League {
 	}
 
 	/**
-	 * Decrement the left number
+	 * Create match schedule with teams
 	 *
-	 * @param array  $rounds rounds.
-	 * @param array  $teams array of teams.
-	 * @param array  $match_dates array of match dates.
-	 * @param string $season season.
+	 * @param array   $rounds rounds.
+	 * @param array   $teams array of teams.
+	 * @param array   $match_dates array of match dates.
+	 * @param string  $season season.
+	 * @param boolean $is_box is this a box league.
 	 */
-	public function create_match_schedule( $rounds, $teams, $match_dates, $season ) {
+	public function create_match_schedule( $rounds, $teams, $match_dates, $season, $is_box ) {
 		$num_rounds = count( $rounds );
 		for ( $i = 0; $i < $num_rounds; $i++ ) {
+			if ( ! $is_box ) {
 			$round_number              = $i + 1;
 			$start_date                = $match_dates[ $i ];
 			$rounds[ $i ]['startDate'] = $start_date;
-			$fixtures                  = $rounds[ $i ]['fixtures'];
-			$f                         = 0;
+			}
+			$fixtures = $rounds[ $i ]['fixtures'];
 			foreach ( $fixtures as $fixture ) {
 				$home_team_dtls = $teams[ $fixture['home'] - 1 ];
 				$away_team_dtls = $teams[ $fixture['away'] - 1 ];
 				if ( -1 !== $home_team_dtls->id && -1 !== $away_team_dtls->id ) {
-					$match                       = new \stdClass();
-					$match_day                   = $home_team_dtls->match_day;
-					$match_time                  = $home_team_dtls->match_time;
-					$day                         = Racketmanager_Util::get_match_day_number( $match_day );
-					$match_date                  = gmdate( 'Y-m-d', strtotime( $start_date . " +$day day" ) ) . ' ' . $match_time;
-					$fixtures[ $f ]['matchDay']  = $match_day;
-					$fixtures[ $f ]['matchDate'] = $match_date;
-					$fixtures[ $f ]['homeTeam']  = $home_team_dtls;
-					$fixtures[ $f ]['awayTeam']  = $away_team_dtls;
-					$match->date                 = $match_date;
-					$match->home_team            = $home_team_dtls->id;
-					$match->away_team            = $away_team_dtls->id;
-					$match->match_day            = $round_number;
-					$match->location             = $home_team_dtls->club->shortcode;
-					$match->season               = $season;
-					$match->league_id            = $this->id;
-					$match                       = new Racketmanager_Match( $match );
+					$match            = new \stdClass();
+					$match->season    = $season;
+					$match->league_id = $this->id;
+					$match->home_team = $home_team_dtls->id;
+					$match->away_team = $away_team_dtls->id;
+					if ( $is_box ) {
+						$match->date      = null;
+						$match->match_day = 1;
+						$match->location  = '';
+					} else {
+						$match_day        = $home_team_dtls->match_day;
+						$match_time       = $home_team_dtls->match_time;
+						$day              = Racketmanager_Util::get_match_day_number( $match_day );
+						$match_date       = gmdate( 'Y-m-d', strtotime( $start_date . " +$day day" ) ) . ' ' . $match_time;
+						$match->date      = $match_date;
+						$match->match_day = $round_number;
+						$match->location  = $home_team_dtls->club->shortcode;
+					}
+					$match = new Racketmanager_Match( $match );
 				}
-				++$f;
 			}
-			$rounds[ $i ]['fixtures'] = $fixtures;
 		}
 	}
 	/**

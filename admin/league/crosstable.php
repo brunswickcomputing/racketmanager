@@ -36,7 +36,7 @@ $team_count = count( $teams );
 						<?php
 						for ( $i = 1; $i <= $league->num_teams; $i++ ) {
 							?>
-							<td class="fixture"><?php echo $league->get_crosstable_field( $team->id, $teams[ $i - 1 ]->id, $team->home ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+							<td class="fixture"><?php echo $league->get_crosstable_field( $team->id, $teams[ $i - 1 ]->id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
 							<?php
 						}
 						?>

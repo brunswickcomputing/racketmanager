@@ -39,6 +39,13 @@ if ( isset( $_GET['match_day'] ) || isset( $_GET['team_id'] ) ) { //phpcs:ignore
 if ( $match_day ) {
 	$tab = 'matches'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 }
+if ( $league->event->is_box ) {
+	$season_title     = __( 'Round', 'racketmanager' );
+	$season_selection = __( 'Rounds', 'racketmanager' );
+} else {
+	$season_title     = __( 'Season', 'racketmanager' );
+	$season_selection = __( 'Seasons', 'racketmanager' );
+}
 ?>
 <div id="archive-<?php echo esc_html( $league->id ); ?>" class="archive">
 	<script type="text/javascript">
@@ -54,7 +61,7 @@ if ( $match_day ) {
 			<div class="module__banner">
 				<div class="banner__title">
 					<h1>
-						<span><?php echo esc_html( $league->title ) . ' - ' . esc_html__( 'Season', 'racketmanager' ) . ' ' . esc_html( $league->current_season['name'] ); ?></span>
+						<span><?php echo esc_html( $league->title ) . ' - ' . esc_html( $season_title ) . ' ' . esc_html( $league->current_season['name'] ); ?></span>
 						<?php
 						$favourite_type = 'league';
 						$favourite_id   = $league->id;
@@ -71,6 +78,12 @@ if ( $match_day ) {
 								<select class="form-select" size="1" name="season" id="season">
 									<?php
 									foreach ( array_reverse( $seasons ) as $key => $season ) {
+										if ( $league->event->is_box ) {
+											$option_name = $season_title . ' - ';
+										} else {
+											$option_name = '';
+										}
+										$option_name .= $season['name'];
 										?>
 										<option value="<?php echo esc_attr( $season['name'] ); ?>"
 											<?php
@@ -78,12 +91,12 @@ if ( $match_day ) {
 												echo ' selected="selected"';
 											}
 											?>
-										><?php echo esc_html( $season['name'] ); ?></option>
+										><?php echo esc_html( $option_name ); ?></option>
 										<?php
 									}
 									?>
 								</select>
-								<label for="season"><?php esc_html_e( 'Season', 'racketmanager' ); ?></label>
+								<label for="season"><?php echo esc_html( $season_selection ); ?></label>
 							</div>
 						</div>
 					</form>
@@ -93,7 +106,9 @@ if ( $match_day ) {
 	</div>
 	<?php require 'league-selections.php'; ?>
 
-	<?php if ( 'championship' === $league->mode ) { ?>
+	<?php
+	if ( 'championship' === $league->mode ) {
+		?>
 		<?php racketmanager_championship( 0, array( 'season' => $league->season ) ); ?>
 		<?php
 	} else {
@@ -112,8 +127,13 @@ if ( $match_day ) {
 			<li class="nav-item" role="presentation">
 				<?php
 				if ( ! empty( $wp->query_vars['team'] ) ) {
+					if ( $league->event->is_box ) {
+						$season_ref = __( 'round', 'racketmanager' ) . '-' . $league->current_season['name'];
+					} else {
+						$season_ref = $league->current_season['name'];
+					}
 					?>
-					<a href="/<?php echo esc_attr( $league->event->competition->type ); ?>/<?php echo esc_attr( seo_url( $league->title ) ); ?>/<?php echo esc_html( $league->current_season['name'] ); ?>/teams">
+					<a href="/<?php echo esc_attr( $league->event->competition->type ); ?>/<?php echo esc_attr( seo_url( $league->title ) ); ?>/<?php echo esc_html( $season_ref ); ?>/teams">
 					<?php
 				}
 				?>
@@ -126,23 +146,29 @@ if ( $match_day ) {
 				}
 				?>
 			</li>
-			<li class="nav-item" role="presentation">
-				<?php
-				if ( ! empty( $wp->query_vars['player_id'] ) ) {
-					?>
-					<a href="/<?php echo esc_attr( $league->event->competition->type ); ?>/<?php echo esc_attr( seo_url( $league->title ) ); ?>/<?php echo esc_html( $league->current_season['name'] ); ?>/players">
-					<?php
-				}
+			<?php
+			if ( 'player' !== $league->event->competition->entry_type ) {
 				?>
-				<button class="nav-link" id="players-tab" data-bs-toggle="pill" data-bs-target="#players" type="button" role="tab" aria-controls="players" aria-selected="false"><?php esc_html_e( 'Players', 'racketmanager' ); ?></button>
-				<?php
-				if ( ! empty( $wp->query_vars['player_id'] ) ) {
-					?>
-					</a>
+				<li class="nav-item" role="presentation">
 					<?php
-				}
-				?>
-			</li>
+					if ( ! empty( $wp->query_vars['player_id'] ) ) {
+						?>
+						<a href="/<?php echo esc_attr( $league->event->competition->type ); ?>/<?php echo esc_attr( seo_url( $league->title ) ); ?>/<?php echo esc_html( $league->current_season['name'] ); ?>/players">
+						<?php
+					}
+					?>
+					<button class="nav-link" id="players-tab" data-bs-toggle="pill" data-bs-target="#players" type="button" role="tab" aria-controls="players" aria-selected="false"><?php esc_html_e( 'Players', 'racketmanager' ); ?></button>
+					<?php
+					if ( ! empty( $wp->query_vars['player_id'] ) ) {
+						?>
+						</a>
+						<?php
+					}
+					?>
+				</li>
+				<?php
+			}
+			?>
 		</ul>
 		<!-- Tab panes -->
 		<div class="tab-content">
@@ -193,9 +219,17 @@ if ( $match_day ) {
 				);
 				?>
 			</div>
-			<div class="tab-pane fade" id="players" role="tabpanel" aria-labelledby="players-tab">
-				<?php racketmanager_players( 0, array( 'season' => get_current_season() ) ); ?>
-			</div>
+			<?php
+			if ( 'player' !== $league->event->competition->entry_type ) {
+				?>
+				<div class="tab-pane fade" id="players" role="tabpanel" aria-labelledby="players-tab">
+					<?php racketmanager_players( 0, array( 'season' => get_current_season() ) ); ?>
+				</div>
+				<?php
+			}
+			?>
 		</div>
-	<?php } ?>
+		<?php
+	}
+	?>
 </div>

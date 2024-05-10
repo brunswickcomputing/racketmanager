@@ -53,8 +53,6 @@ if ( $match ) {
 			</div>
 		</div>
 	</div>
-
-
 	<?php
 }
 ?>

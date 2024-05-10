@@ -766,7 +766,12 @@ class Racketmanager_Ajax extends RacketManager {
 	 */
 	public function validate_match_score( $match, $sets, $set_prefix_start, $errors, $rubber_number = false, $match_status = false ) {
 		global $racketmanager;
-		$num_sets_to_win        = intval( $match->league->num_sets_to_win );
+		$num_sets_to_win = intval( $match->league->num_sets_to_win );
+		$point_rule      = $match->league->get_point_rule();
+		$points_format   = null;
+		if ( 1 === $num_sets_to_win && ! empty( $point_rule['match_result'] ) && 'games' === $point_rule['match_result'] ) {
+			$points_format = 'games';
+		}
 		$return                 = array();
 		$homescore              = 0;
 		$awayscore              = 0;
@@ -798,7 +803,7 @@ class Racketmanager_Ajax extends RacketManager {
 			foreach ( $sets as $set ) {
 				$set_prefix = $set_prefix_start . $s . '_';
 				$set_type   = Racketmanager_Util::get_set_type( $scoring, $match->final_round, $match->league->num_sets, $s, $rubber_number, $match->num_rubbers, $match->leg );
-				if ( ( $s > $num_sets_to_win ) && $homescore === $num_sets_to_win || $awayscore === $num_sets_to_win ) {
+				if ( ( $s > $num_sets_to_win ) && ( $homescore === $num_sets_to_win || $awayscore === $num_sets_to_win ) ) {
 					$set_type = 'null';
 				}
 				$set_status = null;
@@ -822,18 +827,28 @@ class Racketmanager_Ajax extends RacketManager {
 				$set_player_2 = strtoupper( $set['player2'] );
 				if ( null !== $set_player_1 && null !== $set_player_2 ) {
 					if ( ( $set_player_1 > $set_player_2 && empty( $set_status ) ) || ( 'retired_player2' ) === $set_status ) {
+						if ( empty( $points_format ) ) {
 						++$points['home']['sets'];
 						++$stats['sets']['home'];
 						++$homescore;
 						if ( 'MTB' === $set['settype'] ) {
 							++$stats['games']['home'];
+							}
+						} else {
+							$homescore = $set_player_1;
+							$awayscore = $set_player_2;
 						}
 					} elseif ( ( $set_player_1 < $set_player_2 && empty( $set_status ) ) || ( 'retired_player1' ) === $set_status ) {
+						if ( empty( $points_format ) ) {
 						++$points['away']['sets'];
 						++$stats['sets']['away'];
 						++$awayscore;
 						if ( 'MTB' === $set['settype'] ) {
 							++$stats['games']['away'];
+							}
+						} else {
+							$homescore = $set_player_1;
+							$awayscore = $set_player_2;
 						}
 					} elseif ( 'S' === $set_player_1 ) {
 						++$points['shared']['sets'];

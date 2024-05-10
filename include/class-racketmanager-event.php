@@ -155,7 +155,12 @@ class Racketmanager_Event {
 	 * @var boolean
 	 */
 	public $is_championship = false;
-
+	/**
+	 * Box flag
+	 *
+	 * @var boolean
+	 */
+	public $is_box = false;
 	/**
 	 * Num_rubbers
 	 *
@@ -432,6 +437,9 @@ class Racketmanager_Event {
 		// Championship.
 		if ( 'championship' === $this->competition->mode ) {
 			$this->is_championship = true;
+		}
+		if ( 'league' === $this->competition->type && 'player' === $this->competition->entry_type ) {
+			$this->is_box = true;
 		}
 	}
 
@@ -1776,4 +1784,13 @@ class Racketmanager_Event {
 		'resultPending'       => false,
 		'status'              => false,
 	);
+	/**
+	 * Generate box league schedule
+	 */
+	public function generate_box_league_matches() {
+		foreach ( $this->get_leagues() as $league ) {
+			$league = get_league( $league );
+			$league->schedule_matches();
+		}
+	}
 }

@@ -98,51 +98,97 @@ if ( empty( $object->team ) ) {
 									</div>
 
 									<ul class="list list--flex">
-										<li class="list__item">
-											<span class="nav--link">
-												<svg width="16" height="16" class="icon-team">
-													<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/lta-icons-extra.svg#icon-team' ); ?>"></use>
-												</svg>
-												<span class="nav-link__value">
-													<?php echo esc_html( $team->info->captain ); ?>
+										<?php
+										if ( 'player' !== $league->event->competition->entry_type ) {
+											?>
+											<li class="list__item">
+												<span class="nav--link">
+													<svg width="16" height="16" class="icon-team">
+														<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/lta-icons-extra.svg#icon-team' ); ?>"></use>
+													</svg>
+													<span class="nav-link__value">
+														<?php echo esc_html( $team->info->captain ); ?>
+													</span>
 												</span>
-											</span>
-										</li>
+											</li>
+											<?php
+										}
+										?>
 										<?php
 										if ( is_user_logged_in() ) {
-											if ( ! empty( $team->info->contactno ) ) {
-												?>
-												<li class="list__item">
-													<a href="tel:<?php echo esc_html( $team->info->contactno ); ?>" class="nav--link" rel="nofollow">
-														<svg width="16" height="16" class="">
-															<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#telephone-fill' ); ?>"></use>
-														</svg>
-														<span class="nav--link">
-															<span class="nav-link__value">
-																<?php echo esc_html( $team->info->contactno ); ?>
+											if ( 'player' === $league->event->competition->entry_type ) {
+												foreach ( $team->info->players as $team_player ) {
+													?>
+													<h4 class="subheading">
+														<?php echo esc_html( $team_player->display_name ); ?>
+													</h4>
+													<?php
+													if ( ! empty( $team_player->contactno ) ) {
+														?>
+														<li class="list__item">
+															<a href="tel:<?php echo esc_html( $team_player->contactno ); ?>" class="nav--link" rel="nofollow">
+																<svg width="16" height="16" class="">
+																	<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#telephone-fill' ); ?>"></use>
+																</svg>
+																<span class="nav--link">
+																	<span class="nav-link__value">
+																		<?php echo esc_html( $team_player->contactno ); ?>
+																	</span>
+																</span>
+															</a>
+														</li>
+														<?php
+													}
+													if ( ! empty( $team_player->email ) ) {
+														?>
+														<li class="list__item">
+															<a href="mailto:<?php echo esc_html( $team_player->email ); ?>" class="nav--link"">
+																<svg width="16" height="16" class="">
+																	<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
+																</svg>
+																<span class="nav--link">
+																	<span class="nav-link__value">
+																		<?php echo esc_html( $team_player->email ); ?>
+																	</span>
+																</span>
+															</a>
+														</li>
+														<?php
+													}
+												}
+											} else {
+												if ( ! empty( $team->info->contactno ) ) {
+													?>
+													<li class="list__item">
+														<a href="tel:<?php echo esc_html( $team->info->contactno ); ?>" class="nav--link" rel="nofollow">
+															<svg width="16" height="16" class="">
+																<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#telephone-fill' ); ?>"></use>
+															</svg>
+															<span class="nav--link">
+																<span class="nav-link__value">
+																	<?php echo esc_html( $team->info->contactno ); ?>
+																</span>
 															</span>
-														</span>
-													</a>
-												</li>
-												<?php
-											}
-											?>
-											<?php
-											if ( ! empty( $team->info->contactemail ) ) {
-												?>
-												<li class="list__item">
-													<a href="mailto:<?php echo esc_html( $team->info->contactemail ); ?>" class="nav--link"">
-														<svg width="16" height="16" class="">
-															<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
-														</svg>
-														<span class="nav--link">
-															<span class="nav-link__value">
-																<?php echo esc_html( $team->info->contactemail ); ?>
+														</a>
+													</li>
+													<?php
+												}
+												if ( ! empty( $team->info->contactemail ) ) {
+													?>
+													<li class="list__item">
+														<a href="mailto:<?php echo esc_html( $team->info->contactemail ); ?>" class="nav--link"">
+															<svg width="16" height="16" class="">
+																<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
+															</svg>
+															<span class="nav--link">
+																<span class="nav-link__value">
+																	<?php echo esc_html( $team->info->contactemail ); ?>
+																</span>
 															</span>
-														</span>
-													</a>
-												</li>
-												<?php
+														</a>
+													</li>
+													<?php
+												}
 											}
 										}
 										?>

@@ -21,18 +21,35 @@ if ( empty( $event_team ) ) {
 							<div class="col-4">
 								<?php esc_html_e( 'Team', 'racketmanager' ); ?>
 							</div>
-							<div class="col-4">
-								<?php esc_html_e( 'Club', 'racketmanager' ); ?>
-							</div>
+							<?php
+							if ( ! $event->is_box ) {
+								?>
+								<div class="col-4">
+									<?php esc_html_e( 'Club', 'racketmanager' ); ?>
+								</div>
+								<?php
+							}
+							?>
 							<div class="col-3">
 								<?php esc_html_e( 'League', 'racketmanager' ); ?>
 							</div>
-							<div class="col-1 text-end">
-								<?php esc_html_e( 'Players', 'racketmanager' ); ?>
-							</div>
+							<?php
+							if ( ! $event->is_box ) {
+								?>
+								<div class="col-1 text-end">
+									<?php esc_html_e( 'Players', 'racketmanager' ); ?>
+								</div>
+								<?php
+							}
+							?>
 						</div>
 						<?php
 						foreach ( $event->teams as $team ) {
+							if ( $event->is_box ) {
+								$league_link = $event->competition->type . '/' . seo_url( $team->league_title ) . '/' . __( 'round', 'racketmanager' ) . '-' . $event->current_season['name'] . '/';
+							} else {
+								$league_link = $event->competition->type . '/' . seo_url( $team->league_title ) . '/' . $event->current_season['name'] . '/';
+							}
 							?>
 							<div class="row mb-2 row-list">
 								<div class="col-4" name="<?php esc_html_e( 'Team', 'racketmanager' ); ?>">
@@ -40,19 +57,31 @@ if ( empty( $event_team ) ) {
 										<?php echo esc_html( $team->name ); ?>
 									</a>
 								</div>
-								<div class="col-4" name="<?php esc_html_e( 'club', 'racketmanager' ); ?>">
-									<a href="/<?php echo esc_attr( $event->competition->type ); ?>/<?php echo esc_html( seo_url( $event->name ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/club/<?php echo esc_attr( seo_url( $team->club->shortcode ) ); ?>/">
-										<?php echo esc_html( $team->club->name ); ?>
-									</a>
-								</div>
+								<?php
+								if ( ! $event->is_box ) {
+									?>
+									<div class="col-4" name="<?php esc_html_e( 'club', 'racketmanager' ); ?>">
+										<a href="/<?php echo esc_attr( $event->competition->type ); ?>/<?php echo esc_html( seo_url( $event->name ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/club/<?php echo esc_attr( seo_url( $team->club->shortcode ) ); ?>/">
+											<?php echo esc_html( $team->club->name ); ?>
+										</a>
+									</div>
+									<?php
+								}
+								?>
 								<div class="col-3" name="<?php esc_html_e( 'league', 'racketmanager' ); ?>">
-									<a href="/<?php echo esc_attr( $event->competition->type ); ?>/<?php echo esc_html( seo_url( $team->league_title ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/">
+									<a href="/<?php echo esc_attr( $league_link ); ?>">
 										<?php echo esc_html( $team->league_title ); ?>
 									</a>
 								</div>
-								<div class="col-1 text-end">
-									<?php echo esc_html( $team->player_count ); ?>
-								</div>
+								<?php
+								if ( ! $event->is_box ) {
+									?>
+									<div class="col-1 text-end">
+										<?php echo esc_html( $team->player_count ); ?>
+									</div>
+									<?php
+								}
+								?>
 							</div>
 							<?php
 						}

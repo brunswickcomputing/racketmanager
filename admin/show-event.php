@@ -72,7 +72,27 @@ jQuery(document).ready(function(){
 					</li>
 				<?php } ?>
 				<li class="nav-item" role="presentation">
-					<button class="nav-link" id="seasons-tab" data-bs-toggle="tab" data-bs-target="#seasons" type="button" role="tab" aria-controls="seasons" aria-selected="false"><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></button>
+					<?php
+					if ( $event->is_box ) {
+						$season_title = __( 'Rounds', 'racketmanager' );
+						if ( ! empty( $event->seasons ) ) {
+							$prev_round       = end( $event->seasons );
+							$prev_round_num   = $prev_round['name'];
+							$prev_round_end   = $prev_round['matchDates'][1];
+							$next_round_start = gmdate( 'Y-m-d', strtotime( $prev_round_end . ' +1 day' ) );
+							$event_duration   = $event->duration - 1;
+							$next_round_end   = gmdate( 'Y-m-d', strtotime( $next_round_start . ' +' . $event_duration . ' day' ) );
+						} else {
+							$prev_round_num   = 0;
+							$next_round_start = null;
+							$next_round_end   = null;
+						}
+						$next_round_num = $prev_round_num + 1;
+					} else {
+						$season_title = __( 'Seasons', 'racketmanager' );
+					}
+					?>
+					<button class="nav-link" id="seasons-tab" data-bs-toggle="tab" data-bs-target="#seasons" type="button" role="tab" aria-controls="seasons" aria-selected="false"><?php echo esc_html( $season_title ); ?></button>
 				</li>
 				<?php if ( current_user_can( 'manage_racketmanager' ) ) { ?>
 					<li class="nav-item" role="presentation">
@@ -110,7 +130,17 @@ jQuery(document).ready(function(){
 				</div>
 			<?php } ?>
 			<div class="tab-pane fade" id="seasons" role="tabpanel" aria-labelledby="seasons-tab">
-				<h2><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></h2>
+				<?php
+				if ( $event->is_box ) {
+					?>
+					<h2><?php esc_html_e( 'Rounds', 'racketmanager' ); ?></h2>
+					<?php
+				} else {
+					?>
+					<h2><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></h2>
+					<?php
+				}
+				?>
 				<?php require_once 'event/seasons.php'; ?>
 			</div>
 			<?php if ( current_user_can( 'manage_racketmanager' ) ) { ?>

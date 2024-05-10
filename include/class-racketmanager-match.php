@@ -515,7 +515,7 @@ final class Racketmanager_Match {
 			if ( $this->league->event->is_box ) {
 				$this->link = '/league/' . seo_url( $this->league->title ) . '/match/' . $this->id . '/';
 			} else {
-			$this->link = '/match/' . seo_url( $this->league->title ) . '/' . $this->season . '/' . $match_ref . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/';
+				$this->link = '/match/' . seo_url( $this->league->title ) . '/' . $this->season . '/' . $match_ref . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/';
 			}
 		}
 	}
@@ -957,19 +957,22 @@ final class Racketmanager_Match {
 			} else {
 				$this->status = 0;
 			}
-		} else {
+		} elseif ( empty( $home_points_input ) && empty( $away_points_input ) ) {
 			if ( isset( $custom['sets'] ) ) {
 				$this->sets = $custom['sets'];
-			}
-			foreach ( $this->sets as $set ) {
-				if ( isset( $set['player1'] ) && isset( $set['player2'] ) ) {
-					if ( $set['player1'] > $set['player2'] ) {
-						++$home_points;
-					} elseif ( $set['player1'] < $set['player2'] ) {
-						++$away_points;
+				foreach ( $this->sets as $set ) {
+					if ( isset( $set['player1'] ) && isset( $set['player2'] ) ) {
+						if ( $set['player1'] > $set['player2'] ) {
+							++$home_points;
+						} elseif ( $set['player1'] < $set['player2'] ) {
+							++$away_points;
+						}
 					}
 				}
 			}
+		} else {
+			$home_points = $home_points_input;
+			$away_points = $away_points_input;
 		}
 		if ( empty( $home_points ) && empty( $away_points ) ) {
 			if ( ! empty( $home_points_input ) ) {

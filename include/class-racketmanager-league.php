@@ -1550,7 +1550,6 @@ class Racketmanager_League {
 				++$i;
 			}
 		}
-
 		return $team;
 	}
 
@@ -2098,7 +2097,7 @@ class Racketmanager_League {
 	public function get_crosstable_field( $team_id, $opponent_id ) {
 		$score = '&nbsp;';
 		if ( $team_id === $opponent_id ) {
-				$score = '&nbsp;';
+			$score = '&nbsp;';
 		} else {
 			$matches   = $this->get_matches(
 				array(
@@ -2116,8 +2115,8 @@ class Racketmanager_League {
 					foreach ( $matches as $match ) {
 						$score .= $this->get_score( $team_id, $opponent_id, $match, $home_away );
 					}
-			} else {
-				$score = '&nbsp;';
+				} else {
+					$score = '&nbsp;';
 				}
 			} elseif ( $matches ) {
 				$match = $matches[0];
@@ -2196,8 +2195,8 @@ class Racketmanager_League {
 					<?php
 					if ( 'true' === $home_away ) {
 						?>
-					<span class="score-separator">-</span>
-					<span class="is-team-2"><?php echo esc_html( sprintf( '%g', $score_team_2 ) ); ?></span>
+						<span class="score-separator">-</span>
+						<span class="is-team-2"><?php echo esc_html( sprintf( '%g', $score_team_2 ) ); ?></span>
 						<?php
 					}
 					?>
@@ -2431,7 +2430,7 @@ class Racketmanager_League {
 	 */
 	public function set_teams_rank( $season = false ) {
 		if ( ! isset( $season ) ) {
-			$season = $this->get_season();
+			$season = $this->current_season;
 		}
 		$season = is_array( $season ) ? $season['name'] : $season;
 
@@ -3223,10 +3222,10 @@ class Racketmanager_League {
 		} else {
 			$num_rounds = $this->current_season['num_match_days'];
 			$home_away  = isset( $this->current_season['homeAway'] ) ? $this->current_season['homeAway'] : 'true';
-		if ( $home_away ) {
-			$num_rounds = $num_rounds / 2;
-		}
-		$num_teams_max = $num_rounds + 1;
+			if ( $home_away ) {
+				$num_rounds = $num_rounds / 2;
+			}
+			$num_teams_max = $num_rounds + 1;
 		}
 		$refs = array();
 		for ( $i = 1; $i <= $num_teams_max; $i++ ) {
@@ -3429,9 +3428,9 @@ class Racketmanager_League {
 		$num_rounds = count( $rounds );
 		for ( $i = 0; $i < $num_rounds; $i++ ) {
 			if ( ! $is_box ) {
-			$round_number              = $i + 1;
-			$start_date                = $match_dates[ $i ];
-			$rounds[ $i ]['startDate'] = $start_date;
+				$round_number              = $i + 1;
+				$start_date                = $match_dates[ $i ];
+				$rounds[ $i ]['startDate'] = $start_date;
 			}
 			$fixtures = $rounds[ $i ]['fixtures'];
 			foreach ( $fixtures as $fixture ) {

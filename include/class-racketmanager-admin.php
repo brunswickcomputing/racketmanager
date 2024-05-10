@@ -3583,10 +3583,10 @@ final class RacketManager_Admin extends RacketManager {
 					if ( empty( $match_date ) ) {
 						$this->set_message( __( 'Match date not set', 'racketmanager' ), true );
 						$error = true;
-					} else {
+					} elseif ( 'true' === $season_data->fixed_dates ) {
 						$valid_match_date = array_search( $match_date, $match_date_values, true );
 						if ( false !== $valid_match_date ) {
-							$this->set_message( __( 'Match date already used', 'racketmanager' ), true );
+							$this->set_message( __( 'Match dates must be unique', 'racketmanager' ), true );
 							$error = true;
 						} elseif ( $match_date <= $prev_match_date ) {
 								$this->set_message( __( 'Match date must be later than previous date', 'racketmanager' ), true );
@@ -3644,6 +3644,22 @@ final class RacketManager_Admin extends RacketManager {
 			}
 			/* translators: %s: season */
 			$this->set_message( sprintf( __( 'Season %s saved', 'racketmanager' ), $season_data->season ) );
+			if ( 'competition' === $season_data->type ) {
+				$events = $competition->get_events();
+				foreach ( $events as $event ) {
+					$event_season                 = new \stdClass();
+					$event_season->object_id      = $event->id;
+					$event_season->type           = 'event';
+					$event_season->season         = $season_data->season;
+					$event_season->num_match_days = $season_data->num_match_days;
+					$event_season->match_dates    = $season_data->match_dates;
+					$event_season->home_away      = $season_data->home_away;
+					$event_season->fixed_dates    = $season_data->fixed_dates;
+					$event_season->status         = $season_data->status;
+					$event_season->closing_date   = $season_data->closing_date;
+					$this->edit_season( $event_season );
+				}
+			}
 			if ( 'live' === $season_data->status && 'event' === $season_data->type && 'league' === $object->competition->type ) {
 				$email_address                 = $racketmanager->get_confirmation_email( $object->competition->type );
 				$organisation                  = $racketmanager->site_name;

@@ -946,6 +946,12 @@ class RacketManager {
 			'index.php?pagename=leagues%2Fevent&event=$matches[1]&season=$matches[2]',
 			'top'
 		);
+		// league event - round.
+		add_rewrite_rule(
+			'leagues/(.+?)/round-([0-9]{1,2,3})/?$',
+			'index.php?pagename=leagues%2Fevent&event=$matches[1]&season=$matches[2]',
+			'top'
+		);
 		// league event - season - club.
 		add_rewrite_rule(
 			'leagues/(.+?)/([0-9]{4})/club/(.+?)/?$',
@@ -1013,10 +1019,34 @@ class RacketManager {
 			'index.php?pagename=leagues%2Fleague&league_name=$matches[1]&season=$matches[2]&tab=teams',
 			'top'
 		);
+		// league - round - teams.
+		add_rewrite_rule(
+			'league/(.+?)/round-([0-9]{1,2})/teams/?$',
+			'index.php?pagename=leagues%2Fleague&league_name=$matches[1]&season=$matches[2]&tab=teams',
+			'top'
+		);
 		// league - season - team.
 		add_rewrite_rule(
 			'league/(.+?)/([0-9]{4})/team/(.+?)/?$',
 			'index.php?pagename=leagues%2Fleague&&league_name=$matches[1]&season=$matches[2]&team=$matches[3]',
+			'top'
+		);
+		// league - round - team.
+		add_rewrite_rule(
+			'league/(.+?)/round-([0-9]{1,2})/team/(.+?)/?$',
+			'index.php?pagename=leagues%2Fleague&&league_name=$matches[1]&season=$matches[2]&team=$matches[3]',
+			'top'
+		);
+		// league - round.
+		add_rewrite_rule(
+			'league/(.+?)/round-([0-9]{1})\/?$',
+			'index.php?pagename=leagues%2Fleague&&league_name=$matches[1]&season=$matches[2]',
+			'top'
+		);
+		// league - match.
+		add_rewrite_rule(
+			'league\/(.+?)\/match\/(.+?)\/?$',
+			'index.php?pagename=leagues%2Fleague%2Fmatch&league_name=$matches[1]&match_id=$matches[2]',
 			'top'
 		);
 		// league - season.
@@ -1078,6 +1108,12 @@ class RacketManager {
 		add_rewrite_rule(
 			'match/(.+?)/([0-9]{4})/(.+?)/(.+?)-vs-(.+?)/leg-([0-9]{1})/?$',
 			'index.php?pagename=match%2F&league_name=$matches[1]&season=$matches[2]&round=$matches[3]&teamHome=$matches[4]&teamAway=$matches[5]&leg=$matches[6]',
+			'top'
+		);
+		// league - season - matchday - match.
+		add_rewrite_rule(
+			'match/(.+?)/round-([0-9]{1})/day([0-9]{1,2})/(.+?)-vs-(.+?)/?$',
+			'index.php?pagename=match%2F&league_name=$matches[1]&season=$matches[2]&match_day=$matches[3]&teamHome=$matches[4]&teamAway=$matches[5]',
 			'top'
 		);
 		// league - season - matchday - match.

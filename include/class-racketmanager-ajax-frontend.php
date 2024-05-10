@@ -445,11 +445,15 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					$tournament_entry['partner'] = $partner_name;
 				}
 				$team = get_team( $team_name );
-				if ( ! $team && substr( $event->type, 1, 1 ) === 'D' ) {
-					if ( '' !== $partner_name ) {
-						$team_name2 = $partner_name . ' / ' . $player_name;
-						$team_id    = get_team( $team_name2 );
-						if ( ! $team_id ) {
+				if ( ! $team ) {
+					if ( substr( $event->type, 1, 1 ) === 'D' ) {
+						if ( '' !== $partner_name ) {
+							$team_name2 = $partner_name . ' / ' . $player_name;
+							$team       = get_team( $team_name2 );
+							if ( ! $team ) {
+								$new_team = true;
+							}
+						} else {
 							$new_team = true;
 						}
 					} else {

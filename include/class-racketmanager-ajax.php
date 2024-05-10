@@ -1208,17 +1208,19 @@ class Racketmanager_Ajax extends RacketManager {
 		}
 
 		if ( $player ) {
-			if ( isset( $options['rosterLeadTime'] ) && isset( $player->created_date ) ) {
+			if ( isset( $options['leadTimecheck'] ) && 'true' === $options['leadTimecheck'] && isset( $options['rosterLeadTime'] ) && isset( $player->created_date ) ) {
 				$match_date  = new \DateTime( $match->date );
 				$roster_date = new \DateTime( $player->created_date );
-				$interval    = $roster_date->diff( $match_date );
-				if ( $interval->days < intval( $options['rosterLeadTime'] ) ) {
-					/* translators: %d: number of days */
-					$error = sprintf( __( 'registered with club only %d days before match', 'racketmanager' ), $interval->days );
+				$date_diff   = $roster_date->diff( $match_date );
+				$interval    = $date_diff->days * 24;
+				$interval   += $date_diff->h;
+				if ( $interval < intval( $options['rosterLeadTime'] ) ) {
+					/* translators: %d: number of hours */
+					$error = sprintf( __( 'registered with club only %d hours before match', 'racketmanager' ), $interval );
 					$match->add_result_check( $team, $player->player_id, $error );
-				} elseif ( $interval->invert ) {
-					/* translators: %d: number of days */
-					$error = sprintf( __( 'registered with club %d days after match', 'racketmanager' ), $interval->days );
+				} elseif ( $date_diff->invert ) {
+					/* translators: %d: number of hours */
+					$error = sprintf( __( 'registered with club %d hours after match', 'racketmanager' ), $interval );
 					$match->add_result_check( $team, $player->player_id, $error );
 				}
 			}

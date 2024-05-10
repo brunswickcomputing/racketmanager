@@ -641,7 +641,7 @@ function get_match_template_type() {
 function the_crosstable_field( $i ) {
 	global $league, $team;
 
-	echo $league->get_crosstable_field( $team->id, $league->teams[ $i - 1 ]->id, $team->home );
+	echo $league->get_crosstable_field( $team->id, $league->teams[ $i - 1 ]->id );
 }
 
 	/**

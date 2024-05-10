@@ -94,6 +94,7 @@ if ( ! empty( $league->current_season['num_match_days'] ) ) {
 		</select>
 		<input type='submit' name="delmatches" id="delmatches" class="btn btn-secondary action" value='<?php esc_html_e( 'Apply', 'racketmanager' ); ?>' />
 	</div>
+
 	<table class="table table-striped table-borderless" title="<?php esc_html_e( 'Match Plan', 'racketmanager' ); ?>" aria-label="<?php esc_html_e( 'matches', 'racketmanager' ); ?>">
 		<thead>
 			<tr>
@@ -119,7 +120,7 @@ if ( ! empty( $league->current_season['num_match_days'] ) ) {
 					<?php
 				} else {
 					?>
-					<th scope="col" colspan="<?php echo esc_html( $league->num_sets ); ?>" style="text-align: center;"><?php echo esc_html__( 'Sets', 'racketmanager' ); ?></th>';
+					<th scope="col" colspan="<?php echo esc_html( $league->num_sets ); ?>" style="text-align: center;"><?php echo esc_html__( 'Sets', 'racketmanager' ); ?></th>
 					<?php
 				}
 				?>

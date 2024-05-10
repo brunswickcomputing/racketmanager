@@ -189,7 +189,7 @@ class Racketmanager_Ajax extends RacketManager {
 			$home_team[ $match_id ]      = isset( $_POST['home_team'] ) ? intval( $_POST['home_team'] ) : null;
 			$away_team[ $match_id ]      = isset( $_POST['away_team'] ) ? intval( $_POST['away_team'] ) : null;
 			$custom[ $match_id ]['sets'] = isset( $_POST['sets'] ) ? $_POST['sets'] : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			$season[ $match_id ]         = isset( $_POST['current_season'] ) ? sanitize_text_field( wp_unslash( $_POST['current_season'] ) ) : null;
+			$season                      = isset( $_POST['current_season'] ) ? sanitize_text_field( wp_unslash( $_POST['current_season'] ) ) : null;
 			$match_status                = isset( $_POST['match_status'] ) ? sanitize_text_field( wp_unslash( $_POST['match_status'] ) ) : null;
 			$set_prefix                  = 'set_';
 			$errors['err_msg']           = $err_msg;
@@ -198,8 +198,8 @@ class Racketmanager_Ajax extends RacketManager {
 			$match_validate              = $this->validate_match_score( $match, $sets, $set_prefix, $errors, false, null, null, $match_status );
 			$error                       = $match_validate[0];
 			$err_msg                     = $match_validate[1];
-			$home_points[ $match_id ]    = $match_validate[2];
-			$away_points[ $match_id ]    = $match_validate[2];
+			$home_points[ $match_id ]    = $match_validate[3];
+			$away_points[ $match_id ]    = $match_validate[4];
 			$err_field                   = $match_validate[2];
 			$sets                        = $match_validate[5];
 			$custom[ $match_id ]['sets'] = $sets;
@@ -828,11 +828,11 @@ class Racketmanager_Ajax extends RacketManager {
 				if ( null !== $set_player_1 && null !== $set_player_2 ) {
 					if ( ( $set_player_1 > $set_player_2 && empty( $set_status ) ) || ( 'retired_player2' ) === $set_status ) {
 						if ( empty( $points_format ) ) {
-						++$points['home']['sets'];
-						++$stats['sets']['home'];
-						++$homescore;
-						if ( 'MTB' === $set['settype'] ) {
-							++$stats['games']['home'];
+							++$points['home']['sets'];
+							++$stats['sets']['home'];
+							++$homescore;
+							if ( 'MTB' === $set['settype'] ) {
+								++$stats['games']['home'];
 							}
 						} else {
 							$homescore = $set_player_1;
@@ -840,11 +840,11 @@ class Racketmanager_Ajax extends RacketManager {
 						}
 					} elseif ( ( $set_player_1 < $set_player_2 && empty( $set_status ) ) || ( 'retired_player1' ) === $set_status ) {
 						if ( empty( $points_format ) ) {
-						++$points['away']['sets'];
-						++$stats['sets']['away'];
-						++$awayscore;
-						if ( 'MTB' === $set['settype'] ) {
-							++$stats['games']['away'];
+							++$points['away']['sets'];
+							++$stats['sets']['away'];
+							++$awayscore;
+							if ( 'MTB' === $set['settype'] ) {
+								++$stats['games']['away'];
 							}
 						} else {
 							$homescore = $set_player_1;
@@ -1046,7 +1046,7 @@ class Racketmanager_Ajax extends RacketManager {
 				$err_field[] = $set_prefix . $team_1;
 				$err_field[] = $set_prefix . $team_2;
 			} elseif ( $tiebreak_allowed && $set[ $team_2 ] > $max_loss ) {
-				if ( ! $set['tiebreak'] > '' ) {
+				if ( ! strlen( $set['tiebreak'] ) > 0 ) {
 					$err_msg[]   = __( 'Tie break score required', 'racketmanager' );
 					$err_field[] = $set_prefix . 'tiebreak';
 				} elseif ( ! is_numeric( $set['tiebreak'] ) || strval( round( $set['tiebreak'] ) ) !== $set['tiebreak'] ) {

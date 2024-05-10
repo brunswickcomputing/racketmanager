@@ -3212,13 +3212,23 @@ class Racketmanager_League {
 				),
 			)
 		);
-		$num_rounds     = $this->current_season['num_match_days'];
-		$home_away      = isset( $this->current_season['homeAway'] ) ? $this->current_season['homeAway'] : 'true';
+		if ( $this->event->is_box ) {
+			$num_teams = $this->num_teams;
+			if ( 0 !== $this->num_teams % 2 ) {
+				++$num_teams;
+			}
+			$num_rounds    = $num_teams - 1;
+			$num_teams_max = $num_teams;
+			$home_away     = false;
+		} else {
+			$num_rounds = $this->current_season['num_match_days'];
+			$home_away  = isset( $this->current_season['homeAway'] ) ? $this->current_season['homeAway'] : 'true';
 		if ( $home_away ) {
 			$num_rounds = $num_rounds / 2;
 		}
 		$num_teams_max = $num_rounds + 1;
-		$refs          = array();
+		}
+		$refs = array();
 		for ( $i = 1; $i <= $num_teams_max; $i++ ) {
 			$refs[] = $i;
 		}

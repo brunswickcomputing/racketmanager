@@ -1327,17 +1327,19 @@ final class Racketmanager_Match {
 	 * @param int    $team team.
 	 * @param int    $player player.
 	 * @param string $error error.
+	 * @param int    $rubber_id rubber id.
 	 */
-	public function add_result_check( $team, $player, $error ) {
+	public function add_result_check( $team, $player, $error, $rubber_id ) {
 		global $wpdb;
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"INSERT INTO {$wpdb->racketmanager_results_checker} (`league_id`, `match_id`, `team_id`, `player_id`, `description`) values ( %d, %d, %d, %d, %s) ",
+				"INSERT INTO {$wpdb->racketmanager_results_checker} (`league_id`, `match_id`, `team_id`, `player_id`, `rubber_id`, `description`) values ( %d, %d, %d, %d, %d, %s) ",
 				$this->league_id,
 				$this->id,
 				$team,
 				$player,
+				$rubber_id,
 				$error
 			)
 		);

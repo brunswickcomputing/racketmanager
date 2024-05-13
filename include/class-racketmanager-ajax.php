@@ -723,7 +723,7 @@ class Racketmanager_Ajax extends RacketManager {
 								$rubber_players[]                                        = $players[ $opponent ][ $player_number ];
 								$updated_rubbers[ $rubber_id ]['players'][ $opponent ][] = $players[ $opponent ][ $player_number ];
 							}
-							$this->check_team_players( $team, $rubber_players, $match, $check_options, $player_options );
+							$this->check_team_players( $team, $rubber_players, $match, $check_options, $player_options, $rubber_id );
 						}
 						$updated_rubbers[ $rubber_id ]['sets']   = $sets;
 						$updated_rubbers[ $rubber_id ]['winner'] = $winner;
@@ -746,11 +746,12 @@ class Racketmanager_Ajax extends RacketManager {
 	 * @param object $match match details.
 	 * @param array  $check_options check option details.
 	 * @param array  $player_options player option details.
+	 * @param int    $rubber_id rubber id.
 	 */
-	private function check_team_players( $team, $players, $match, $check_options, $player_options ) {
+	private function check_team_players( $team, $players, $match, $check_options, $player_options, $rubber_id ) {
 		foreach ( $players as $player_ref ) {
 			if ( ! empty( $player_ref ) ) {
-				$this->check_player_result( $match, $player_ref, $team, $check_options, $player_options );
+				$this->check_player_result( $match, $player_ref, $team, $check_options, $player_options, $rubber_id );
 			}
 		}
 	}
@@ -1178,9 +1179,10 @@ class Racketmanager_Ajax extends RacketManager {
 	 * @param int    $team team id.
 	 * @param array  $options options.
 	 * @param array  $player_options player options.
+	 * @param int    $rubber_id rubber id.
 	 * @return none
 	 */
-	public function check_player_result( $match, $roster_id, $team, $options, $player_options ) {
+	public function check_player_result( $match, $roster_id, $team, $options, $player_options, $rubber_id ) {
 		global $wpdb, $racketmanager, $match;
 
 		$match  = get_match( $match->id );
@@ -1195,7 +1197,7 @@ class Racketmanager_Ajax extends RacketManager {
 			}
 			if ( isset( $player_options['unregistered'][ $gender ] ) && intval( $player->player_id ) === intval( $player_options['unregistered'][ $gender ] ) ) {
 				$error = __( 'Unregistered player', 'racketmanager' );
-				$match->add_result_check( $team, $player->player_id, $error );
+				$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
 			}
 			return;
 		}
@@ -1205,7 +1207,7 @@ class Racketmanager_Ajax extends RacketManager {
 
 		if ( ! is_numeric( $roster_id ) ) {
 			$error = __( 'Player not selected', 'racketmanager' );
-			$match->add_result_check( $team, 0, $error );
+			$match->add_result_check( $team, 0, $error, $rubber_id );
 		}
 
 		if ( $player ) {
@@ -1218,21 +1220,21 @@ class Racketmanager_Ajax extends RacketManager {
 				if ( $interval < intval( $options['rosterLeadTime'] ) ) {
 					/* translators: %d: number of hours */
 					$error = sprintf( __( 'registered with club only %d hours before match', 'racketmanager' ), $interval );
-					$match->add_result_check( $team, $player->player_id, $error );
+					$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
 				} elseif ( $date_diff->invert ) {
 					/* translators: %d: number of hours */
 					$error = sprintf( __( 'registered with club %d hours after match', 'racketmanager' ), $interval );
-					$match->add_result_check( $team, $player->player_id, $error );
+					$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
 				}
 			}
 			if ( ! empty( $player->locked ) ) {
 				$error = __( 'locked', 'racketmanager' );
-				$match->add_result_check( $team, $player->player_id, $error );
+				$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
 			}
 			if ( ! empty( $match->league->event->age_limit ) && 'open' !== $match->league->event->age_limit ) {
 				if ( empty( $player->age ) ) {
 					$error = __( 'no age provided', 'racketmanager' );
-					$match->add_result_check( $team, $player->player_id, $error );
+					$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
 				} else {
 					$age_limit = $match->league->event->age_limit;
 					if ( $age_limit >= 30 ) {
@@ -1242,13 +1244,13 @@ class Racketmanager_Ajax extends RacketManager {
 						if ( $player->age < $age_limit ) {
 							/* translators: %1$d: player age, %2$d: event age limit */
 							$error = sprintf( __( 'player age (%1$d) less than event age limit (%2$d)', 'racketmanager' ), $player->age, $age_limit );
-							$match->add_result_check( $team, $player->player_id, $error );
+							$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
 							$age_error = true;
 						}
 					} elseif ( $player->age > $age_limit ) {
 						/* translators: %1$d: player age, %2$d: event age limit */
 						$error = sprintf( __( 'player age (%1$d) greater than event age limit (%2$d)', 'racketmanager' ), $player->age, $age_limit );
-						$match->add_result_check( $team, $player->player_id, $error );
+						$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
 						$age_error = true;
 					}
 				}
@@ -1256,7 +1258,7 @@ class Racketmanager_Ajax extends RacketManager {
 			$player_options = $racketmanager->get_options( 'rosters' );
 			if ( isset( $player_options['btm'] ) && '1' === $player_options['btm'] && empty( $player->btm ) ) {
 				$error = __( 'LTA tennis number missing', 'racketmanager' );
-				$match->add_result_check( $team, $player->player_id, $error );
+				$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
 			}
 			if ( isset( $match->match_day ) ) {
 				$count = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -1272,7 +1274,7 @@ class Racketmanager_Ajax extends RacketManager {
 				if ( $count > 0 ) {
 					/* translators: %d: match day */
 					$error = sprintf( __( 'already played on match day %d', 'racketmanager' ), $match->match_day );
-					$match->add_result_check( $team, $player->player_id, $error );
+					$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
 				}
 
 				if ( isset( $options['playedRounds'] ) ) {
@@ -1291,7 +1293,7 @@ class Racketmanager_Ajax extends RacketManager {
 						if ( 0 === intval( $count ) ) {
 							/* translators: %d: number of played rounds */
 							$error = sprintf( __( 'not played before the final %d match days', 'racketmanager' ), $options['playedRounds'] );
-							$match->add_result_check( $team, $player->player_id, $error );
+							$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
 						}
 					}
 				}
@@ -1317,7 +1319,7 @@ class Racketmanager_Ajax extends RacketManager {
 							if ( $team_num < $current_team_number && $played > $options['playerLocked'] ) {
 								/* translators: %d: team number */
 								$error = sprintf( __( 'locked to team %d', 'racketmanager' ), $team_num );
-								$match->add_result_check( $team, $player->player_id, $error );
+								$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
 							}
 						}
 					}

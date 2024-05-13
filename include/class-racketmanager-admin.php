@@ -4478,7 +4478,7 @@ final class RacketManager_Admin extends RacketManager {
 	private function getResultsCheckerEntry( $results_checker_id ) {
 		global $wpdb;
 		return $wpdb->get_row( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-			"SELECT `league_id`, `match_id`, `team_id`, `player_id`, `updated_date`, `updated_user`, `description`, `status` FROM {$wpdb->racketmanager_results_checker} WHERE `id` = '" . intval( $results_checker_id ) . "'"
+			"SELECT `league_id`, `match_id`, `team_id`, `player_id`, `rubber_id`, `updated_date`, `updated_user`, `description`, `status` FROM {$wpdb->racketmanager_results_checker} WHERE `id` = '" . intval( $results_checker_id ) . "'"
 		);
 	}
 

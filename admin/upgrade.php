@@ -984,6 +984,10 @@ function racketmanager_upgrade() {
 		echo esc_html__( 'starting 8.6.0 upgrade', 'racketmanager' ) . "<br />\n";
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_matches} CHANGE `date` `date` DATETIME NULL" );
 	}
+	if ( version_compare( $installed, '8.6.1', '<' ) ) {
+		echo esc_html__( 'starting 8.6.1 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_results_checker} ADD `rubber_id` INT( 11 ) NULL AFTER `player_id`" );
+	}
 	/*
 	* Update version and dbversion
 	*/

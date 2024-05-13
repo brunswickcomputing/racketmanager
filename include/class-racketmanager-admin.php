@@ -4520,8 +4520,74 @@ final class RacketManager_Admin extends RacketManager {
 			$player = get_player( $results_checker->player_id );
 			$match  = get_match( $results_checker->match_id );
 			if ( $match ) {
+				$rubber = get_rubber( $results_checker->rubber_id );
+				if ( $rubber ) {
+					$num_sets_to_win  = $match->league->num_sets_to_win;
+					$num_games_to_win = 1;
+					$set_type         = isset( $rubber->sets[1]['settype'] ) ? $rubber->sets[1]['settype'] : null;
+					if ( $set_type ) {
+						$set_info = Racketmanager_Util::get_set_info( $set_type );
+						if ( $set_info ) {
+							$num_games_to_win = $set_info->min_win;
+						}
+					}
+					$points = array();
+					if ( $results_checker->team_id === $match->home_team ) {
+						$points['home']['walkover'] = true;
+						if ( 'home' === $rubber->custom['walkover'] ) {
+							$points['away']['walkover'] = true;
+							$rubber->custom['walkover'] = 'both';
+							$points['away']['sets']     = 0;
+							$stats['sets']['away']      = 0;
+							$stats['games']['away']     = 0;
+						} else {
+							$rubber->custom['walkover'] = 'away';
+							$points['away']['sets']     = $num_sets_to_win;
+							$stats['sets']['away']      = $num_sets_to_win;
+							$stats['games']['away']     = $num_games_to_win * $num_sets_to_win;
+						}
+						$points['home']['sets'] = 0;
+						$stats['sets']['home']  = 0;
+						$stats['games']['home'] = 0;
+					} else {
+						$points['away']['walkover'] = true;
+						if ( 'away' === $rubber->custom['walkover'] ) {
+							$points['home']['walkover'] = true;
+							$rubber->custom['walkover'] = 'both';
+							$points['home']['sets']     = 0;
+							$stats['sets']['home']      = 0;
+							$stats['games']['home']     = 0;
+						} else {
+							$rubber->custom['walkover'] = 'home';
+							$points['home']['sets']     = $num_sets_to_win;
+							$stats['sets']['home']      = $num_sets_to_win;
+							$stats['games']['home']     = $num_games_to_win * $num_sets_to_win;
+						}
+						$points['away']['sets'] = 0;
+						$stats['sets']['away']  = 0;
+						$stats['games']['away'] = 0;
+					}
+					$points['home']['team']  = $match->home_team;
+					$points['away']['team']  = $match->away_team;
+					$result                  = $rubber->calculate_result( $points );
+					$rubber->home_points     = $result->home;
+					$rubber->away_points     = $result->away;
+					$rubber->winner_id       = $result->winner;
+					$rubber->loser_id        = $result->loser;
+					$rubber->custom['stats'] = $stats;
+					$rubber->status          = '1';
+					$rubber->update_result();
+				}
+				$comments = $match->comments;
+				$comment  = $rubber->title . ': ' . __( 'invalid player', 'racketmanager' ) . ' ' . $player->display_name . ' - ' . $results_checker->description;
+				if ( empty( $comments['result'] ) ) {
+					$comments['result'] = $comment;
+				} else {
+					$comments['result'] .= "\n" . $comment;
+				}
+				$match->set_comments( $comments );
+				$match->update_result( $match->home_points, $match->away_points, $match->custom, $match->confirmed );
 				$organisation_name = $this->site_name;
-				$player            = get_player( $results_checker->player_id );
 				$headers           = array();
 				$email_from        = $this->get_confirmation_email( $match->league->event->competition->type );
 				$headers[]         = 'From: ' . ucfirst( $match->league->event->competition->type ) . ' Secretary <' . $email_from . '>';

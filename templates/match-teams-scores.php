@@ -246,7 +246,15 @@ if ( ! empty( $match->winner_id ) ) {
 															<?php
 														}
 														?>
-														<?php echo esc_html( $player_detail->fullname ); ?>
+														<span class="<?php echo empty( $player_detail->description ) ? '' : 'is-invalid'; ?>"
+														<?php
+														if ( ! empty( $player_detail->description ) ) {
+															?>
+															data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="<?php echo esc_attr( $player_detail->description ); ?>"
+															<?php
+														}
+														?>
+														><?php echo esc_html( $player_detail->fullname ); ?></span>
 														<?php
 														if ( empty( $player_detail->system_record ) ) {
 															?>
@@ -286,8 +294,8 @@ if ( ! empty( $match->winner_id ) ) {
 											$match_status_text  = 'L';
 										}
 									} elseif ( 'loser' === $team_status ) {
-											$match_status_class = 'loser';
-											$match_status_text  = 'L';
+										$match_status_class = 'loser';
+										$match_status_text  = 'L';
 									} else {
 										$match_status_class = 'd-none';
 										$match_status_text  = '';

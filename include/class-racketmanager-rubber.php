@@ -343,7 +343,7 @@ final class Racketmanager_Rubber {
 		$away_sets          = $points['away']['sets'];
 		$away_walkover      = isset( $points['away']['walkover'] ) ? 1 : 0;
 		$away_retired       = isset( $points['away']['retired'] ) ? 1 : 0;
-		$shared_sets        = $points['shared']['sets'];
+		$shared_sets        = isset( $points['shared']['sets'] ) ? $points['shared']['sets'] : 0;
 		$match              = get_match( $this->match_id );
 		$league             = get_league( $match->league_id );
 		$point_rule         = $league->get_point_rule();

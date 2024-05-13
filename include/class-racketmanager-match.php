@@ -1773,4 +1773,19 @@ final class Racketmanager_Match {
 		}
 		return $result_match;
 	}
+	/**
+	 * Set match comments
+	 *
+	 * @param string $comments match comments.
+	 */
+	public function set_comments( $comments ) {
+		global $wpdb;
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"UPDATE {$wpdb->racketmanager_matches} SET `comments` =%s WHERE `id` = %d",
+				maybe_serialize( $comments ),
+				$this->id
+			)
+		);
+	}
 }

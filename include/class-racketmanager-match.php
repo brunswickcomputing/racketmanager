@@ -877,7 +877,14 @@ final class Racketmanager_Match {
 		$away_walkover    = 0;
 		$walkover_penalty = 0;
 		if ( ! empty( $this->num_rubbers ) ) {
-			$rubbers = $this->get_rubbers();
+			$stats                    = array();
+			$stats['rubbers']['home'] = 0;
+			$stats['rubbers']['away'] = 0;
+			$stats['sets']['home']    = 0;
+			$stats['sets']['away']    = 0;
+			$stats['games']['home']   = 0;
+			$stats['games']['away']   = 0;
+			$rubbers                  = $this->get_rubbers();
 			foreach ( $rubbers as $rubber ) {
 				switch ( $rubber->status ) {
 					case 1:
@@ -895,12 +902,16 @@ final class Racketmanager_Match {
 				}
 				if ( $this->home_team === $rubber->winner_id ) {
 					++$home_win;
+					++$stats['rubbers']['home'];
 				}
 				if ( $this->away_team === $rubber->winner_id ) {
 					++$away_win;
+					++$stats['rubbers']['away'];
 				}
 				if ( '-1' === $rubber->winner_id ) {
 					++$draw;
+					$stats['rubbers']['home'] += 0.5;
+					$stats['rubbers']['away'] += 0.5;
 				}
 				if ( is_numeric( $rubber->home_points ) ) {
 					$home_points += floatval( $rubber->home_points );
@@ -908,7 +919,12 @@ final class Racketmanager_Match {
 				if ( is_numeric( $rubber->away_points ) ) {
 					$away_points += floatval( $rubber->away_points );
 				}
+				$stats['sets']['home']  += $rubber->custom['stats']['sets']['home'];
+				$stats['sets']['away']  += $rubber->custom['stats']['sets']['away'];
+				$stats['games']['home'] += $rubber->custom['stats']['games']['home'];
+				$stats['games']['away'] += $rubber->custom['stats']['games']['away'];
 			}
+			$custom['stats'] = $stats;
 			if ( 'league' === $this->league->event->competition->type ) {
 				if ( $home_walkover === $this->num_rubbers || $away_walkover === $this->num_rubbers ) {
 					if ( $home_walkover === $this->num_rubbers ) {

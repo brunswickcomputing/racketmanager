@@ -4517,7 +4517,8 @@ final class RacketManager_Admin extends RacketManager {
 
 		$results_checker = $this->getResultsCheckerEntry( $results_checker_id );
 		if ( empty( $results_checker->updated_date ) ) {
-			$match = get_match( $results_checker->match_id );
+			$player = get_player( $results_checker->player_id );
+			$match  = get_match( $results_checker->match_id );
 			if ( $match ) {
 				$organisation_name = $this->site_name;
 				$player            = get_player( $results_checker->player_id );

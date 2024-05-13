@@ -1192,7 +1192,7 @@ class Racketmanager_Ajax extends RacketManager {
 			} else {
 				$gender = 'unknown';
 			}
-			if ( isset( $player_options['unregistered'][ $gender ] ) && $player->player_id === $player_options['unregistered'][ $gender ] ) {
+			if ( isset( $player_options['unregistered'][ $gender ] ) && intval( $player->player_id ) === intval( $player_options['unregistered'][ $gender ] ) ) {
 				$error = __( 'Unregistered player', 'racketmanager' );
 				$match->add_result_check( $team, $player->player_id, $error );
 			}

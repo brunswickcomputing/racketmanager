@@ -315,10 +315,15 @@ if ( ! empty( $match->winner_id ) ) {
 										$match_message_text  = __( 'Retired', 'racketmanager' );
 									}
 								} elseif ( $is_tie ) {
-									$match_status_class = 'tie';
-									$match_status_text  = 'T';
-									if ( $rubber->is_shared ) {
+									if ( $rubber->is_walkover ) {
 										$match_message_class = 'match-warning';
+										$match_message_text  = __( 'Walkover', 'racketmanager' );
+										$match_status_class  = 'd-none';
+										$match_status_text   = '';
+									} elseif ( $rubber->is_shared ) {
+										$match_status_class  = 'tie';
+										$match_message_class = 'match-warning';
+										$match_status_text   = 'T';
 										$match_message_text  = __( 'Shared', 'racketmanager' );
 									}
 								}

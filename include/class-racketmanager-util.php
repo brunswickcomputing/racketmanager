@@ -549,6 +549,7 @@ class Racketmanager_Util {
 			$min_loss = 0;
 		}
 		$set_info                    = new \stdClass();
+		$set_info->set_type          = $set_type;
 		$set_info->max_win           = $max_win;
 		$set_info->min_win           = $min_win;
 		$set_info->max_loss          = $max_loss;

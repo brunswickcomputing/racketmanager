@@ -667,6 +667,7 @@ class Racketmanager_Ajax extends RacketManager {
 					if ( empty( $status ) ) {
 						$status = 0;
 					}
+					$custom['stats']         = $match_stats;
 					$stats['sets']['home']  += $match_stats['sets']['home'];
 					$stats['sets']['away']  += $match_stats['sets']['away'];
 					$stats['games']['home'] += $match_stats['games']['home'];

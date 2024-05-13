@@ -288,6 +288,9 @@ if ( ! empty( $match->winner_id ) ) {
 									} elseif ( 'loser' === $team_status ) {
 											$match_status_class = 'loser';
 											$match_status_text  = 'L';
+									} else {
+										$match_status_class = 'd-none';
+										$match_status_text  = '';
 									}
 									if ( $rubber->is_walkover ) {
 										$match_message_class = 'match-warning';

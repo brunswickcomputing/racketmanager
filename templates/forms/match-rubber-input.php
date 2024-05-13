@@ -135,7 +135,7 @@ if ( ! empty( $match->winner_id ) ) {
 								<label for="walkover<?php echo esc_attr( ucfirst( $opponent ) ); ?>_<?php echo esc_attr( $r ); ?>"><?php echo esc_attr( ucfirst( $opponent ) . ' ' . __( 'walkover', 'racketmanager' ) ); ?></label>
 								<input type="radio" class="form-check-input" name="match_status[<?php echo esc_attr( $r ); ?>]" id="walkover<?php echo esc_attr( ucfirst( $opponent ) ); ?>_<?php echo esc_attr( $r ); ?>" value="walkover_<?php echo esc_attr( $opponent_players[ $o ] ); ?>"
 									<?php
-									if ( isset( $rubber->walkover ) && $opponent === $rubber->walkover ) {
+									if ( isset( $rubber->walkover ) && ( $opponent === $rubber->walkover || 'both' === $rubber->walkover ) ) {
 										echo esc_html( ' checked' );
 									}
 									?>

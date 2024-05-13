@@ -768,9 +768,10 @@ class Racketmanager_Ajax extends RacketManager {
 	 */
 	public function validate_match_score( $match, $sets, $set_prefix_start, $errors, $rubber_number = false, $match_status = false ) {
 		global $racketmanager;
-		$num_sets_to_win = intval( $match->league->num_sets_to_win );
-		$point_rule      = $match->league->get_point_rule();
-		$points_format   = null;
+		$num_sets_to_win  = intval( $match->league->num_sets_to_win );
+		$num_games_to_win = 1;
+		$point_rule       = $match->league->get_point_rule();
+		$points_format    = null;
 		if ( 1 === $num_sets_to_win && ! empty( $point_rule['match_result'] ) && 'games' === $point_rule['match_result'] ) {
 			$points_format = 'games';
 		}
@@ -805,20 +806,24 @@ class Racketmanager_Ajax extends RacketManager {
 			foreach ( $sets as $set ) {
 				$set_prefix = $set_prefix_start . $s . '_';
 				$set_type   = Racketmanager_Util::get_set_type( $scoring, $match->final_round, $match->league->num_sets, $s, $rubber_number, $match->num_rubbers, $match->leg );
+				$set_info   = Racketmanager_Util::get_set_info( $set_type );
+				if ( 1 === $s ) {
+					$num_games_to_win = $set_info->min_win;
+				}
 				if ( ( $s > $num_sets_to_win ) && ( $homescore === $num_sets_to_win || $awayscore === $num_sets_to_win ) ) {
-					$set_type = 'null';
+					$set_info->set_type = 'null';
 				}
 				$set_status = null;
 				if ( 'retired_player1' === $match_status || 'retired_player2' === $match_status ) {
 					if ( $set_retired === $s ) {
 						$set_status = $match_status;
 					} elseif ( $s > $set_retired ) {
-						$set_type = 'null';
+						$set_info->set_type = 'null';
 					}
 				} else {
 					$set_status = $match_status;
 				}
-				$set_validate        = $this->validate_set( $set, $set_prefix, $errors['err_msg'], $errors['err_field'], $set_type, $set_status );
+				$set_validate        = $this->validate_set( $set, $set_prefix, $errors['err_msg'], $errors['err_field'], $set_info, $set_status );
 				$set                 = $set_validate[2];
 				$errors['err_msg']   = $set_validate[0];
 				$errors['err_field'] = $set_validate[1];
@@ -885,14 +890,14 @@ class Racketmanager_Ajax extends RacketManager {
 			$points['away']['walkover'] = true;
 			$homescore                 += $num_sets_to_win;
 			$awayscore                 -= $walkover_rubber_penalty;
-			$stats['games']['home']    += $num_sets_to_win * 6;
+			$stats['games']['home']    += $num_games_to_win * $num_sets_to_win;
 		} elseif ( 'walkover_player2' === $match_status ) {
 			$stats['sets']['away']     += $num_sets_to_win;
 			$points['away']['sets']    += $num_sets_to_win;
 			$points['home']['walkover'] = true;
 			$awayscore                 += $num_sets_to_win;
 			$homescore                 -= $walkover_rubber_penalty;
-			$stats['games']['away']    += $num_sets_to_win * 6;
+			$stats['games']['away']    += $num_games_to_win * $num_sets_to_win;
 		} elseif ( 'retired_player1' === $match_status ) {
 			$points['home']['retired'] = true;
 			$points['away']['sets']    = $num_sets_to_win;
@@ -920,12 +925,12 @@ class Racketmanager_Ajax extends RacketManager {
 	 * @param string $set_prefix sert prefix.
 	 * @param array  $err_msg error messages.
 	 * @param array  $err_field error fields.
-	 * @param string $set_type type of set.
+	 * @param object $set_info type of set.
 	 * @param string $match_status match_status setting.
 	 */
-	public function validate_set( $set, $set_prefix, $err_msg, $err_field, $set_type, $match_status ) {
+	public function validate_set( $set, $set_prefix, $err_msg, $err_field, $set_info, $match_status ) {
 		$return         = array();
-		$set_info       = Racketmanager_Util::get_set_info( $set_type );
+		$set_type       = $set_info->set_type;
 		$max_win        = $set_info->max_win;
 		$min_win        = $set_info->min_win;
 		$max_loss       = $set_info->max_loss;

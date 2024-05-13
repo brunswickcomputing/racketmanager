@@ -803,3 +803,14 @@ Racketmanager.SetCalculatorTieBreak = function (inputdata) {
 		jQuery(tieBreak).removeClass('is-invalid');
 	}
 };
+Racketmanager.resetMatchScores = function (e, formId) {
+	e.preventDefault();
+	formId = '#'.concat(formId);
+	jQuery(':input', formId)
+		.not(':button, :submit, :reset, :hidden, :radio')
+		.val('')
+	jQuery(':input', formId)
+		.not(':button, :submit, :reset, :hidden')
+		.prop('checked', false)
+		.prop('selected', false);
+};

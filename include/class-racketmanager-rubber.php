@@ -357,7 +357,12 @@ final class Racketmanager_Rubber {
 			$split_sets_home    = 0;
 			$split_sets_away    = 0;
 		} elseif ( empty( $home_sets ) || empty( $away_sets ) ) {
-			if ( empty( $home_sets ) ) {
+			if ( empty( $home_sets ) && empty( $away_sets ) ) {
+				$straight_sets_home = 0;
+				$straight_sets_away = 0;
+				$split_sets_home    = 0;
+				$split_sets_away    = 0;
+			} elseif ( empty( $home_sets ) ) {
 				$straight_sets_home = 0;
 				$straight_sets_away = 1;
 				$split_sets_home    = 0;
@@ -382,7 +387,10 @@ final class Racketmanager_Rubber {
 		$home_points = $home_sets + ( $straight_sets_home * $forwin ) + ( $split_sets_home * $forwin_split ) + ( $shared_sets * $forshare ) - ( $home_walkover * $forwalkover_rubber );
 		$away_points = $away_sets + ( $straight_sets_away * $forwin ) + ( $split_sets_away * $forwin_split ) + ( $shared_sets * $forshare ) - ( $away_walkover * $forwalkover_rubber );
 		if ( $home_walkover || $away_walkover ) {
-			if ( $home_walkover ) {
+			if ( $home_walkover && $away_walkover ) {
+				$winner = -1;
+				$loser  = -1;
+			} elseif ( $home_walkover ) {
 				$winner = $away_team;
 				$loser  = $home_team;
 			} else {

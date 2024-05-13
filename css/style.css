@@ -825,9 +825,9 @@ input[type="checkbox"].checkbox.is-invalid {
 	text-align: center;
 }
 
-.points.is-invalid {
+.points.is-invalid, span.is-invalid {
 	border-color: #dc3545;
-		color: #dc3545;
+	color: #dc3545;
 }
 
 .row input.points {
@@ -2449,7 +2449,6 @@ ul.module {
 	font-size: .8rem;
 	font-weight: 600;
 	margin: 0 0.7rem;
-	margin-right: 1rem;
 	padding: 0.07rem 0.4rem;
 	text-align: center;
 	z-index: 10;

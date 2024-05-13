@@ -1965,7 +1965,7 @@ class RacketManager {
 	 *
 	 * @param int     $club_player_id club player ref.
 	 * @param boolean $cache use cache flag.
-	 * @return array
+	 * @return object
 	 */
 	public function get_club_player( $club_player_id, $cache = true ) {
 		global $wpdb;

@@ -448,7 +448,7 @@ class Racketmanager_Ajax extends RacketManager {
 	 * @param array  $options options for match.
 	 */
 	public function update_rubber_results( $match, $options ) {
-		global $wpdb, $racketmanager, $league, $match;
+		global $racketmanager, $league, $match;
 		$return              = array();
 		$error               = false;
 		$err_msg             = array();
@@ -797,7 +797,7 @@ class Racketmanager_Ajax extends RacketManager {
 			$set_retired = null;
 			if ( 'retired_player1' === $match_status || 'retired_player2' === $match_status ) {
 				for ( $s1 = $num_sets - 1; $s1 >= 0; $s1-- ) {
-					if ( null !== $sets[ $s1 ]['player1'] || null !== $sets[ $s1 ]['player2'] ) {
+					if ( '' !== $sets[ $s1 ]['player1'] || '' !== $sets[ $s1 ]['player2'] ) {
 						$set_retired = $s1;
 						break;
 					}

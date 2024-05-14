@@ -513,10 +513,33 @@ class Racketmanager_Event {
 	 * @param array $settings settings array.
 	 */
 	public function set_settings( $settings ) {
-		global $wpdb;
+		global $wpdb, $racketmanager, $match;
 		$num_rubbers = $settings['num_rubbers'];
 		$num_sets    = $settings['num_sets'];
 		$type        = $settings['type'];
+		if ( isset( $settings['reverse_rubbers'] ) && '1' === $settings['reverse_rubbers'] ) {
+			$match_args             = array();
+			$match_args['season']   = $this->current_season['name'];
+			$match_args['event_id'] = $this->id;
+			if ( ! isset( $this->settings['reverse_rubbers'] ) || $this->settings['reverse_rubbers'] !== $settings['reverse_rubbers'] ) {
+				$matches = $racketmanager->get_matches( $match_args );
+				foreach ( $matches as $match ) {
+					$match         = get_match( $match->id );
+					$rubber_count  = $match->get_rubbers( false, true );
+					$total_rubbers = $rubber_count * 2;
+					if ( intval( $rubber_count ) === intval( $match->league->num_rubbers ) ) {
+						for ( $ix = $rubber_count + 1; $ix <= $total_rubbers; $ix++ ) {
+							$rubber                = new \stdClass();
+							$rubber->type          = $this->type;
+							$rubber->rubber_number = $ix;
+							$rubber->date          = $match->date;
+							$rubber->match_id      = $match->id;
+							$rubber                = new Racketmanager_rubber( $rubber );
+						}
+					}
+				}
+			}
+		}
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(

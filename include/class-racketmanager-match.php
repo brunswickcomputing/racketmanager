@@ -556,7 +556,7 @@ final class Racketmanager_Match {
 		$this->id = $wpdb->insert_id;
 		if ( $this->league->num_rubbers ) {
 			for ( $ix = 1; $ix <= $max_rubbers; $ix++ ) {
-				$rubber = new stdClass();
+				$rubber = new \stdClass();
 				$type   = $this->league->type;
 				if ( 'MD' === $this->league->type ) {
 					$type = 'MD';

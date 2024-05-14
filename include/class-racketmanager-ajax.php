@@ -931,9 +931,6 @@ class Racketmanager_Ajax extends RacketManager {
 	public function validate_set( $set, $set_prefix, $err_msg, $err_field, $set_info, $match_status ) {
 		$return         = array();
 		$set_type       = $set_info->set_type;
-		$max_win        = $set_info->max_win;
-		$min_win        = $set_info->min_win;
-		$max_loss       = $set_info->max_loss;
 		$set['player1'] = strtoupper( $set['player1'] );
 		$set['player2'] = strtoupper( $set['player2'] );
 		if ( 'walkover_player1' === $match_status || 'walkover_player2' === $match_status ) {

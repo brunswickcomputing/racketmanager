@@ -623,10 +623,14 @@ class Racketmanager_Ajax extends RacketManager {
 											$err_field[] = 'players_' . $ix . '_' . $opponent . '_' . $player_number;
 											$err_msg[]   = __( 'Player for playoff must have played', 'racketmanager' );
 											$error       = true;
+										} elseif ( $rubber->reverse_rubber ) {
+											$err_field[] = 'players_' . $ix . '_' . $opponent . '_' . $player_number;
+											$err_msg[]   = __( 'Player for reverse rubber must have played', 'racketmanager' );
+											$error       = true;
 										} else {
 											$match_players[] = $player_ref;
 										}
-									} elseif ( ! $playoff ) {
+									} elseif ( ! $playoff && ! $rubber->reverse_rubber ) {
 										$err_field[] = 'players_' . $ix . '_' . $opponent . '_' . $player_number;
 										$err_msg[]   = __( 'Player already selected', 'racketmanager' );
 										$error       = true;

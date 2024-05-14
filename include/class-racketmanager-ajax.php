@@ -1051,7 +1051,7 @@ class Racketmanager_Ajax extends RacketManager {
 			$err_field[] = $set_prefix . $team_1;
 			$err_field[] = $set_prefix . $team_2;
 		} elseif ( intval( $set[ $team_1 ] ) === $max_win ) {
-			if ( $set[ $team_2 ] < $max_loss ) {
+			if ( $set[ $team_2 ] < $max_loss && $max_win !== $min_win ) {
 				$err_msg[]   = __( 'Games difference incorrect', 'racketmanager' );
 				$err_field[] = $set_prefix . $team_1;
 				$err_field[] = $set_prefix . $team_2;

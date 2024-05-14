@@ -506,7 +506,7 @@ class Racketmanager_Ajax extends RacketManager {
 			$sets         = isset( $_POST['sets'][ $ix ] ) ? ( wp_unslash( $_POST['sets'][ $ix ] ) ) : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$match_status = isset( $_POST['match_status'][ $ix ] ) ? sanitize_text_field( wp_unslash( $_POST['match_status'][ $ix ] ) ) : null;
 			// phpcs:enable WordPress.Security.NonceVerification.Missing
-
+			$rubber    = get_rubber( $rubber_id );
 			$winner    = '';
 			$loser     = '';
 			$opponents = array( 'home', 'away' );
@@ -672,7 +672,6 @@ class Racketmanager_Ajax extends RacketManager {
 					$stats['sets']['away']  += $match_stats['sets']['away'];
 					$stats['games']['home'] += $match_stats['games']['home'];
 					$stats['games']['away'] += $match_stats['games']['away'];
-					$rubber                  = get_rubber( $rubber_id );
 					$points['home']['team']  = $match->home_team;
 					$points['away']['team']  = $match->away_team;
 					$result                  = $rubber->calculate_result( $points );

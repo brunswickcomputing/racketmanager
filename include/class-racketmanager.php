@@ -2716,10 +2716,12 @@ class RacketManager {
 			$home_club = get_club( $match->teams['home']->affiliatedclub );
 			$away_club = get_club( $match->teams['away']->affiliatedclub );
 			switch ( $match->league->type ) {
+				case 'BD':
 				case 'MD':
 					$home_club_player['m'] = $home_club->get_players( array( 'gender' => 'M' ) );
 					$away_club_player['m'] = $away_club->get_players( array( 'gender' => 'M' ) );
 					break;
+				case 'GD':
 				case 'WD':
 					$home_club_player['f'] = $home_club->get_players( array( 'gender' => 'F' ) );
 					$away_club_player['f'] = $away_club->get_players( array( 'gender' => 'F' ) );

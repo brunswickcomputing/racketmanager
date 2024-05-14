@@ -975,6 +975,12 @@ class Racketmanager_Ajax extends RacketManager {
 					$err_msg[]   = __( 'Both scores must be shared', 'racketmanager' );
 					$err_field[] = $set_prefix . 'player2';
 				}
+			} elseif ( empty( $set['player1'] ) && empty( $set['player2'] ) ) {
+				if ( 'retired_player1' !== $match_status && 'retired_player2' !== $match_status ) {
+					$err_msg[]   = __( 'Set scores must entered', 'racketmanager' );
+					$err_field[] = $set_prefix . 'player1';
+					$err_field[] = $set_prefix . 'player2';
+				}
 			} elseif ( $set['player1'] === $set['player2'] ) {
 				if ( 'retired_player1' !== $match_status && 'retired_player2' !== $match_status ) {
 					$err_msg[]   = __( 'Set scores must be different', 'racketmanager' );

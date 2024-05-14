@@ -158,6 +158,18 @@ final class Racketmanager_Rubber {
 	 */
 	public $loser_id;
 	/**
+	 * Reverse rubbers variable
+	 *
+	 * @var boolean
+	 */
+	public $reverse_rubbers;
+	/**
+	 * Reverse rubber variable
+	 *
+	 * @var boolean
+	 */
+	public $reverse_rubber;
+	/**
 	 * Get rubber instance function
 	 *
 	 * @param int $rubber_id rubber id.
@@ -234,7 +246,17 @@ final class Racketmanager_Rubber {
 			}
 			$this->players = array();
 			$this->get_players();
-			$this->title = $this->type . $this->rubber_number;
+			$this->title          = $this->type . $this->rubber_number;
+			$match                = get_match( $rubber->match_id );
+			$this->reverse_rubber = false;
+			if ( $match->league->event->reverse_rubbers ) {
+				$this->reverse_rubbers = true;
+				if ( $this->rubber_number > $match->league->num_rubbers ) {
+					$this->reverse_rubber = true;
+				}
+			} else {
+				$this->reverse_rubbers = false;
+			}
 		}
 	}
 	/**

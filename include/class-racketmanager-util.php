@@ -515,9 +515,11 @@ class Racketmanager_Util {
 	public static function get_set_info( $set_type ) {
 		$tiebreak_allowed  = false;
 		$tiebreak_required = false;
+		$tiebreak_set      = 6;
 		if ( 'TB' === $set_type ) {
 			$max_win          = 7;
 			$min_win          = 6;
+			$tiebreak_set     = 6;
 			$max_loss         = $max_win - 2;
 			$min_loss         = $min_win - 2;
 			$tiebreak_allowed = true;
@@ -529,8 +531,9 @@ class Racketmanager_Util {
 		} elseif ( 'fast4' === $set_type ) {
 			$max_win          = 4;
 			$min_win          = 4;
-			$max_loss         = $max_win - 1;
-			$min_loss         = $min_win - 1;
+			$tiebreak_set     = 3;
+			$max_loss         = $max_win - 2;
+			$min_loss         = $min_win - 2;
 			$tiebreak_allowed = true;
 		} elseif ( 'standard' === $set_type ) {
 			$max_win  = 99;
@@ -538,10 +541,11 @@ class Racketmanager_Util {
 			$max_loss = $max_win - 2;
 			$min_loss = $min_win - 2;
 		} elseif ( 'pro' === $set_type ) {
-			$max_win  = 9;
-			$min_win  = 8;
-			$max_loss = $max_win - 2;
-			$min_loss = $min_win - 2;
+			$max_win      = 9;
+			$min_win      = 8;
+			$max_loss     = $max_win - 2;
+			$min_loss     = $min_win - 2;
+			$tiebreak_set = 7;
 		} elseif ( 'null' === $set_type ) {
 			$max_win  = 0;
 			$min_win  = 0;
@@ -554,6 +558,7 @@ class Racketmanager_Util {
 		$set_info->min_win           = $min_win;
 		$set_info->max_loss          = $max_loss;
 		$set_info->min_loss          = $min_loss;
+		$set_info->tiebreak_set      = $tiebreak_set;
 		$set_info->tiebreak_allowed  = $tiebreak_allowed;
 		$set_info->tiebreak_required = $tiebreak_required;
 		return $set_info;

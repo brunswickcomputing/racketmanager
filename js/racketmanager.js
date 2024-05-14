@@ -986,6 +986,7 @@ Racketmanager.SetCalculator = function (inputdata) {
 	let minWin = jQuery(setGroup).data('minwin');
 	let maxLoss = jQuery(setGroup).data('maxloss');
 	let minLoss = jQuery(setGroup).data('minloss');
+	let tiebreakSet = jQuery(setGroup).data('tiebreakset');
 	if (teamRef == 1) {
 		if (teamScore == minWin) {
 			if ('' === teamScoreAlt) {
@@ -1009,7 +1010,7 @@ Racketmanager.SetCalculator = function (inputdata) {
 			}
 		}
 	} else if (teamRef == 2) {
-		if ((teamScore == maxWin && teamScoreAlt == minWin) || (teamScoreAlt == maxWin && teamScore == minWin)) {
+		if ((teamScore == maxWin && teamScoreAlt == tiebreakSet) || (teamScoreAlt == maxWin && teamScore == tiebreakSet)) {
 			jQuery(tieBreakWrapper).show();
 			jQuery(tieBreak).focus();
 		} else {
@@ -1047,11 +1048,11 @@ Racketmanager.SetValidator = function (team1, team2, team1Score, team2Score, tie
 	}
 	if (team1Score > maxWin) {
 		jQuery(team1).addClass(classes.inputError);
-	} else if (team1Score == minWin && team2Score > minLoss) {
+	} else if (team1Score == minWin && team2Score > minLoss && maxWin != minWin) {
 		jQuery(team1).addClass(classes.inputError);
 		jQuery(team2).addClass(classes.inputError);
 	} else if (team1Score === maxWin) {
-		if (team2Score < maxLoss) {
+		if (team2Score < maxLoss && maxWin != minWin) {
 			jQuery(team1).addClass(classes.inputError);
 			jQuery(team2).addClass(classes.inputError);
 		} else if (team2Score > maxLoss) {
@@ -1059,6 +1060,8 @@ Racketmanager.SetValidator = function (team1, team2, team1Score, team2Score, tie
 			if ('' === tieBreakScore) {
 				jQuery(tieBreak).addClass(classes.inputError);
 			}
+		} else {
+			jQuery(team1).addClass(classes.won)
 		}
 	} else if (team1Score > minWin && team2Score < minLoss) {
 		jQuery(team1).addClass(classes.inputError);

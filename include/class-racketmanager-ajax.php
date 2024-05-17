@@ -314,10 +314,16 @@ class Racketmanager_Ajax extends RacketManager {
 								if ( 'home' === $user_team || 'both' === $user_team ) {
 									$home_players = (array) $players['home'];
 									$player_found = array_search( $club_player_id, $home_players, true );
+									if ( $player_found ) {
+										break;
+									}
 								}
 								if ( ! $player_found && ( 'away' === $user_team || 'both' === $user_team ) ) {
 									$away_players = (array) $players['away'];
 									$player_found = array_search( $club_player_id, $away_players, true );
+									if ( $player_found ) {
+										break;
+									}
 								}
 							}
 						}

@@ -47,6 +47,16 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.6.0 =
+* BUGFIX: fix new player doubles team name
+* NEW:    allow box leagues
+* NEW:    user rest_api
+* UPDATE: add check for lta tennis number on result entry
+* UPDATE: add age limit checks on result entry
+* UPDATE: allow any club player to submit league entry
+* UPDATE: move competition code to competition not season
+* UPDATE: handle invalid players automatically
+
 = 8.5.1 =
 * BUGFIX: mark team withdrawn when team id set
 * BUGFIX: handle first season for entry notification

@@ -464,7 +464,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					$team                 = new \stdClass();
 					$team->player1        = $player_name;
 					$team->player1_id     = isset( $_POST['playerId'] ) ? sanitize_text_field( wp_unslash( $_POST['playerId'] ) ) : 0;
-					$team->partner_name   = $player_id;
+					$team->player2        = $partner_name;
 					$team->player2_id     = $partner_id;
 					$team->type           = $league->type;
 					$team->status         = 'P';

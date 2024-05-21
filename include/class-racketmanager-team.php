@@ -230,6 +230,9 @@ final class Racketmanager_Team {
 			foreach ( get_object_vars( $team ) as $key => $value ) {
 				$this->$key = $value;
 			}
+			if ( empty( $this->id ) ) {
+				$this->add();
+			}
 			$this->title   = htmlspecialchars( stripslashes( $this->title ), ENT_QUOTES );
 			$this->stadium = stripslashes( $this->stadium );
 			$this->roster  = maybe_unserialize( $this->roster );
@@ -249,9 +252,6 @@ final class Racketmanager_Team {
 					}
 				}
 			}
-			if ( empty( $this->id ) ) {
-				$this->add();
-			}
 		}
 	}
 
@@ -267,7 +267,7 @@ final class Racketmanager_Team {
 			$players     = array();
 			$this->title = $this->player1;
 			$players[]   = $this->player1_id;
-			if ( $this->player2_id ) {
+			if ( substr( $this->type, 1, 1 ) === 'D' ) {
 				$this->title .= ' / ' . $this->player2;
 				$players[]    = $this->player2_id;
 			}

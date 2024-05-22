@@ -29,11 +29,13 @@ if ( ! isset( $by_date ) ) {
 }
 $highlight_match = false;
 foreach ( $matches as $match ) {
-	$match_link         = $match->link;
-	$match_status_class = null;
-	$match_status_text  = null;
-	$score_class        = null;
-	$match_pending      = false;
+	$user_can_update_array = $racketmanager->is_match_update_allowed( $match->teams['home'], $match->teams['away'], $match->league->event->competition->type, $match->confirmed );
+	$user_can_update       = $user_can_update_array[0];
+	$match_link            = $match->link;
+	$match_status_class    = null;
+	$match_status_text     = null;
+	$score_class           = null;
+	$match_pending         = false;
 	if ( empty( $match->winner_id ) ) {
 		$score_class   = 'is-not-played';
 		$match_pending = true;
@@ -88,107 +90,107 @@ foreach ( $matches as $match ) {
 					<?php
 				}
 				?>
-					<div class="match__header">
-						<span class="match__header-title">
-							<?php
-							if ( ! empty( $match->final_round ) ) {
-								?>
-							<span><?php echo esc_html( $match->league->championship->get_final_name( $match->final_round ) ); ?></span>
-								<?php
-							} elseif ( ! empty( $match->match_day ) ) {
-								?>
-							<span><?php echo esc_html__( 'Match Day', 'racketmanager' ) . ' ' . esc_html( $match->match_day ); ?></span>
-								<?php
-							}
-							if ( ! empty( $match->leg ) ) {
-								?>
-								<span>&nbsp;&#8226&nbsp;<?php echo esc_html__( 'Leg', 'racketmanager' ) . ' ' . esc_html( $match->leg ); ?></span>
-								<?php
-							}
-							?>
-							<?php
-							if ( ! $by_date ) {
-								?>
-								&nbsp;&#8226;&nbsp;
-								<span>
-									<time
-										datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( 'j. F Y', the_match_date() ) ); ?></time>
-								</span>
-								<?php
-							}
-							?>
-						</span>
+				<div class="match__header">
+					<span class="match__header-title">
 						<?php
-						if ( ! $match_pending && $highlight_match ) {
+						if ( ! empty( $match->final_round ) ) {
 							?>
-							<span class="match__status <?php echo esc_attr( $match_status_class ); ?>"><?php echo esc_attr( $match_status_text ); ?></span>
+						<span><?php echo esc_html( $match->league->championship->get_final_name( $match->final_round ) ); ?></span>
+							<?php
+						} elseif ( ! empty( $match->match_day ) ) {
+							?>
+						<span><?php echo esc_html__( 'Match Day', 'racketmanager' ) . ' ' . esc_html( $match->match_day ); ?></span>
+							<?php
+						}
+						if ( ! empty( $match->leg ) ) {
+							?>
+							<span>&nbsp;&#8226&nbsp;<?php echo esc_html__( 'Leg', 'racketmanager' ) . ' ' . esc_html( $match->leg ); ?></span>
 							<?php
 						}
 						?>
-					</div>
-					<div class="match__body">
-						<div class="team-match">
-							<div class="team-match__name is-team-1">
-								<span class="nav--link">
-									<span class="nav-link__value">
-										<?php
-										if ( ! empty( $match->teams['home']->status ) && 'W' === $match->teams['home']->status ) {
-											$title_text = $match->teams['home']->title . ' ' . __( 'has withdrawn', 'racketmanager' );
-											?>
-											<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
-											<?php
-										}
+						<?php
+						if ( ! $by_date ) {
+							?>
+							&nbsp;&#8226;&nbsp;
+							<span>
+								<time
+									datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( 'j. F Y', the_match_date() ) ); ?></time>
+							</span>
+							<?php
+						}
+						?>
+					</span>
+					<?php
+					if ( ! $match_pending && $highlight_match ) {
+						?>
+						<span class="match__status <?php echo esc_attr( $match_status_class ); ?>"><?php echo esc_attr( $match_status_text ); ?></span>
+						<?php
+					}
+					?>
+				</div>
+				<div class="match__body">
+					<div class="team-match">
+						<div class="team-match__name is-team-1">
+							<span class="nav--link">
+								<span class="nav-link__value">
+									<?php
+									if ( ! empty( $match->teams['home']->status ) && 'W' === $match->teams['home']->status ) {
+										$title_text = $match->teams['home']->title . ' ' . __( 'has withdrawn', 'racketmanager' );
 										?>
-										<?php echo esc_html( $match->teams['home']->title ); ?>
+										<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
 										<?php
-										if ( ! empty( $match->teams['home']->status ) && 'W' === $match->teams['home']->status ) {
-											?>
-											</s> 
-											<?php
-										}
+									}
+									?>
+									<?php echo esc_html( $match->teams['home']->title ); ?>
+									<?php
+									if ( ! empty( $match->teams['home']->status ) && 'W' === $match->teams['home']->status ) {
 										?>
-									</span>
+										</s> 
+										<?php
+									}
+									?>
 								</span>
-							</div>
-							<div class="score <?php echo esc_attr( $score_class ); ?>">
-								<?php
-								if ( $match_pending ) {
-									?>
-									<time datetime="<?php echo esc_attr( $match->date ); ?>"><?php the_match_time(); ?></time>
-									<?php
-								} else {
-									?>
-									<span class="is-team-1"><?php echo esc_html( sprintf( '%g', $match->home_points ) ); ?></span>
-									<span class="score-separator">-</span>
-									<span class="is-team-2"><?php echo esc_html( sprintf( '%g', $match->away_points ) ); ?></span>
-									<?php
-								}
+							</span>
+						</div>
+						<div class="score <?php echo esc_attr( $score_class ); ?>">
+							<?php
+							if ( $match_pending ) {
 								?>
-							</div>
-							<div class="team-match__name is-team-2">
-								<span class="nav--link">
-									<span class="nav-link__value">
-										<?php
-										if ( ! empty( $match->teams['away']->status ) && 'W' === $match->teams['away']->status ) {
-											$title_text = $match->teams['away']->title . ' ' . __( 'has withdrawn', 'racketmanager' );
-											?>
-											<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
-											<?php
-										}
+								<time datetime="<?php echo esc_attr( $match->date ); ?>"><?php the_match_time(); ?></time>
+								<?php
+							} else {
+								?>
+								<span class="is-team-1"><?php echo esc_html( sprintf( '%g', $match->home_points ) ); ?></span>
+								<span class="score-separator">-</span>
+								<span class="is-team-2"><?php echo esc_html( sprintf( '%g', $match->away_points ) ); ?></span>
+								<?php
+							}
+							?>
+						</div>
+						<div class="team-match__name is-team-2">
+							<span class="nav--link">
+								<span class="nav-link__value">
+									<?php
+									if ( ! empty( $match->teams['away']->status ) && 'W' === $match->teams['away']->status ) {
+										$title_text = $match->teams['away']->title . ' ' . __( 'has withdrawn', 'racketmanager' );
 										?>
-										<?php echo esc_html( $match->teams['away']->title ); ?>
+										<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
 										<?php
-										if ( ! empty( $match->teams['away']->status ) && 'W' === $match->teams['away']->status ) {
-											?>
-											</s> 
-											<?php
-										}
+									}
+									?>
+									<?php echo esc_html( $match->teams['away']->title ); ?>
+									<?php
+									if ( ! empty( $match->teams['away']->status ) && 'W' === $match->teams['away']->status ) {
 										?>
-									</span>
+										</s> 
+										<?php
+									}
+									?>
 								</span>
-							</div>
+							</span>
 						</div>
 					</div>
+				</div>
 				<?php
 				if ( is_numeric( $match->home_team ) && $match->home_team >= 1 && is_numeric( $match->away_team ) && $match->away_team >= 1 ) {
 					?>
@@ -196,6 +198,20 @@ foreach ( $matches as $match ) {
 					<?php
 				} else {
 					?>
+					</div>
+					<?php
+				}
+				?>
+				<?php
+				if ( $user_can_update && empty( $match->confirmed ) ) {
+					$match_link_result = $match_link . 'result/';
+					?>
+					<div class="match__button">
+						<a href="<?php echo esc_url( $match_link_result ); ?>" class="btn match__btn">
+							<i class="racketmanager-svg-icon">
+								<?php racketmanager_the_svg( 'icon-pencil' ); ?>
+							</i>
+						</a>
 					</div>
 					<?php
 				}

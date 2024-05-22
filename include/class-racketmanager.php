@@ -1116,6 +1116,12 @@ class RacketManager {
 			'index.php?pagename=match%2F&league_name=$matches[1]&season=$matches[2]&match_day=$matches[3]&teamHome=$matches[4]&teamAway=$matches[5]',
 			'top'
 		);
+		// league - season - matchday - match - result.
+		add_rewrite_rule(
+			'match/(.+?)/([0-9]{4})/day([0-9]{1,2})/(.+?)-vs-(.+?)/result/?$',
+			'index.php?pagename=match%2F&league_name=$matches[1]&season=$matches[2]&match_day=$matches[3]&teamHome=$matches[4]&teamAway=$matches[5]&action=result',
+			'top'
+		);
 		// league - season - matchday - match.
 		add_rewrite_rule(
 			'match/(.+?)/([0-9]{4})/day([0-9]{1,2})/(.+?)-vs-(.+?)/?$',

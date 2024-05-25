@@ -607,7 +607,7 @@ final class Racketmanager_Match {
 		global $wpdb;
 		$update_count = $wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_matches} SET `date` = %s, `home_team` = %s, `away_team` = %s, `match_day` = %d, `location` = %s, `league_id` = %d, `group` = %s, `final` = %s, `custom` = %s WHERE `id` = %d",
+				"UPDATE {$wpdb->racketmanager_matches} SET `date` = %s, `home_team` = %s, `away_team` = %s, `match_day` = %d, `location` = %s, `league_id` = %d, `group` = %s, `final` = %s, `custom` = %s, `host` = %s WHERE `id` = %d",
 				$this->date,
 				$this->home_team,
 				$this->away_team,
@@ -617,6 +617,7 @@ final class Racketmanager_Match {
 				$this->group,
 				$this->final_round,
 				maybe_serialize( $this->custom ),
+				$this->host,
 				$this->id
 			)
 		);

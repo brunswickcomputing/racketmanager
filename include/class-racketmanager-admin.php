@@ -1659,25 +1659,15 @@ final class RacketManager_Admin extends RacketManager {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'update_results' ) ) {
 				$league = get_league( $league );
-			if ( isset( $_POST['js-active'] ) && 1 === $_POST['js-active'] ) {
-				$js = true;
-			} else {
-				$js = false;
-			}
-				$team_ranks = array();
+			$team_ranks = array();
 			if ( isset( $_POST['table_id'] ) ) {
 				$team_ids = array_values( $_POST['table_id'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				shuffle( $team_ids );
 				foreach ( $team_ids as $key => $team_id ) {
-					if ( $js ) {
-						$rank = $key + 1;
-					} else {
-						$rank = isset( $_POST['rank'][ $team_id ] ) ? intval( $_POST['rank'][ $team_id ] ) : 0;
-					}
+					$rank                    = $key + 1;
 					$team                    = get_league_team( $team_id );
 					$team_ranks[ $rank - 1 ] = $team;
 				}
-				ksort( $team_ranks );
 				$team_ranks = $league->get_ranking( $team_ranks );
 				$league->update_ranking( $team_ranks );
 				$this->set_message( __( 'Team ranking saved', 'racketmanager' ) );

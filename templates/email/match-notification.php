@@ -78,10 +78,60 @@ $email_subject    = $organisation . ucfirst( $tournament_name ) . ' ' . __( 'Nex
 															foreach ( $teams[ $opponent ]->player as $player ) {
 																?>
 																<tr style="line-height: 22px;">
-																	<td style="width: 50%; font-weight: normal;"><?php echo esc_html( $player ); ?></td>
+																	<td style="width: 50%; font-weight: normal;"><?php echo esc_html( $player->fullname ); ?></td>
 																	<td><?php echo esc_html( $teams[ $opponent ]->club ); ?></td>
 																</tr>
 																<?php
+															}
+															?>
+														</tbody>
+													</table>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<?php
+			}
+			?>
+			<?php require 'components/hr.php'; ?>
+			<?php
+			$title_text  = __( 'Contact Details', 'racketmanager' );
+			$title_level = '2';
+			require 'components/title.php';
+			?>
+			<?php
+			$opponents = array( 'home', 'away' );
+			foreach ( $opponents as $opponent ) {
+				$title_text  = $teams[ $opponent ]->title;
+				$title_level = '3';
+				require 'components/title.php';
+				?>
+				<div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
+					<table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">
+						<tbody>
+							<tr>
+								<td role="presentation" cellspacing="0" cellpadding="0" bgcolor="#fff">
+									<table style="width: 100%; border-collapse: collapse;" role="presentation" cellspacing="0" cellpadding="0">
+										<tbody>
+											<tr>
+												<td style="font-weight: 400; min-width: 5px; width: 600px; height: 0;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
+													<table width="100%" style="height: 100%; text-align: left; margin-left: 10px;" role="presentation" cellspacing="0" cellpadding="0">
+														<tbody>
+															<?php
+															foreach ( $teams[ $opponent ]->player as $player ) {
+																if ( $player->contactno ) {
+																	?>
+																	<tr style="line-height: 22px;">
+																		<td style="width: 50%; font-weight: normal;"><?php echo esc_html( $player->fullname ); ?></td>
+																		<td><a href="tel:<?php echo esc_html( $player->contactno ); ?>"><?php echo esc_html( $player->contactno ); ?></a></td>
+																	</tr>
+																	<?php
+																}
 															}
 															?>
 														</tbody>

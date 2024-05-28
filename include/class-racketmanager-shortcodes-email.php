@@ -120,10 +120,10 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 			$teams[ $opponent_1 ]->club = __( 'Unknown', 'racketmanager' );
 		}
 		if ( 'P' === $match->teams['home']->status ) {
-			foreach ( $match->teams[ $team_2 ]->player as $player ) {
+			foreach ( $match->teams[ $team_2 ]->players as $player ) {
 				$teams[ $team_1 ]->player[] = $player;
 			}
-			foreach ( $match->teams[ $opponent_2 ]->player as $player ) {
+			foreach ( $match->teams[ $opponent_2 ]->players as $player ) {
 				$teams[ $opponent_1 ]->player[] = $player;
 			}
 		} else {

@@ -178,15 +178,15 @@ final class Racketmanager_Championship extends RacketManager {
 				}
 			}
 		}
-		if ( $this->num_teams_first_round > 64 ) {
+		if ( $league->num_teams_total > 96 ) {
 			$this->num_seeds = 32;
-		} elseif ( $this->num_teams_first_round > 32 ) {
+		} elseif ( $league->num_teams_total > 48 ) {
 			$this->num_seeds = 16;
-		} elseif ( $this->num_teams_first_round > 16 ) {
+		} elseif ( $league->num_teams_total > 24 ) {
 			$this->num_seeds = 8;
-		} elseif ( $this->num_teams_first_round > 8 ) {
+		} elseif ( $league->num_teams_total > 12 ) {
 			$this->num_seeds = 4;
-		} elseif ( $this->num_teams_first_round > 4 ) {
+		} elseif ( $league->num_teams_total > 6 ) {
 			$this->num_seeds = 2;
 		} else {
 			$this->num_seeds = 0;

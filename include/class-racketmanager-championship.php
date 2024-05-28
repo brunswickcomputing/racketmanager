@@ -164,7 +164,6 @@ final class Racketmanager_Championship extends RacketManager {
 					array(
 						'final'            => true,
 						'count'            => true,
-						'time'             => 'latest',
 						'season'           => $league->current_season['name'],
 						'reset_query_args' => true,
 					)

@@ -1386,8 +1386,12 @@ class Racketmanager_Event {
 			if ( 'P' === $event_team->team_type && ! empty( $event_team->roster ) ) {
 				$p = 1;
 				foreach ( $event_team->roster as $player ) {
-					$teamplayer                  = get_player( $player );
-					$event_team->player[ $p ]    = $teamplayer->fullname;
+					$teamplayer = get_player( $player );
+					if ( $teamplayer ) {
+						$event_team->player[ $p ] = $teamplayer->fullname;
+					} else {
+						$event_team->player[ $p ] = __( 'Unknown player', 'racketmanager' );
+					}
 					$event_team->player_id[ $p ] = $player;
 					++$p;
 				}

@@ -3993,6 +3993,7 @@ h2.team-match__name {
 	font-style: italic;
 	font-size: small;
 	min-width: 50%;
+	text-wrap: intial;
 }
 
 @media (max-width: 479px) {

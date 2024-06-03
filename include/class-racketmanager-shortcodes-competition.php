@@ -748,13 +748,6 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			} elseif ( $match->league->event->is_box ) {
 				$template = 'tournament';
 			}
-			if ( empty( $template ) && $this->check_template( 'match-' . $match->league->sport ) ) {
-				$filename = 'match-' . $match->league->sport;
-			} elseif ( $this->check_template( 'match-' . $template . '-' . $match->league->sport ) ) {
-				$filename = 'match-' . $template . '-' . $match->league->sport;
-			} else {
-				$filename = ( ! empty( $template ) ) ? 'match-' . $template : 'match';
-			}
 			$template_array = array(
 				'match'                 => $match,
 				'leagues'               => $leagues,
@@ -762,6 +755,45 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				'league'                => $match->league,
 				'user_can_update_array' => $user_can_update_array,
 			);
+			$action         = get_query_var( 'action' );
+			if ( 'result' === $action ) {
+				$template .= '-' . $action;
+				$home_club = get_club( $match->teams['home']->affiliatedclub );
+				$away_club = get_club( $match->teams['away']->affiliatedclub );
+				switch ( $match->league->type ) {
+					case 'BD':
+					case 'MD':
+						$home_club_player['m'] = $home_club->get_players( array( 'gender' => 'M' ) );
+						$away_club_player['m'] = $away_club->get_players( array( 'gender' => 'M' ) );
+						break;
+					case 'GD':
+					case 'WD':
+						$home_club_player['f'] = $home_club->get_players( array( 'gender' => 'F' ) );
+						$away_club_player['f'] = $away_club->get_players( array( 'gender' => 'F' ) );
+						break;
+					case 'XD':
+					case 'LD':
+						$home_club_player['m'] = $home_club->get_players( array( 'gender' => 'M' ) );
+						$home_club_player['f'] = $home_club->get_players( array( 'gender' => 'F' ) );
+						$away_club_player['m'] = $away_club->get_players( array( 'gender' => 'M' ) );
+						$away_club_player['f'] = $away_club->get_players( array( 'gender' => 'F' ) );
+						break;
+					default:
+						$home_club_player['m'] = array();
+						$home_club_player['f'] = array();
+						$away_club_player['m'] = array();
+						$away_club_player['f'] = array();
+				}
+				$template_array['home_club_player'] = $home_club_player;
+				$template_array['away_club_player'] = $away_club_player;
+			}
+			if ( empty( $template ) && $this->check_template( 'match-' . $match->league->sport ) ) {
+				$filename = 'match-' . $match->league->sport;
+			} elseif ( $this->check_template( 'match-' . $template . '-' . $match->league->sport ) ) {
+				$filename = 'match-' . $template . '-' . $match->league->sport;
+			} else {
+				$filename = ( ! empty( $template ) ) ? 'match-' . $template : 'match';
+			}
 		} elseif ( $num_matches ) {
 			$filename       = 'match-list';
 			$template_array = array(

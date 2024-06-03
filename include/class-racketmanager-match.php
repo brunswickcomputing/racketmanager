@@ -257,6 +257,12 @@ final class Racketmanager_Match {
 	 */
 	public $is_retired = false;
 	/**
+	 * Is shared variable
+	 *
+	 * @var boolean
+	 */
+	public $is_shared = false;
+	/**
 	 * Sets variable
 	 *
 	 * @var array
@@ -454,6 +460,16 @@ final class Racketmanager_Match {
 					}
 				}
 				$this->set_score = $set_score;
+			}
+			switch ( $this->status ) {
+				case 1:
+					$this->is_walkover = true;
+					break;
+				case 3:
+					$this->is_shared = true;
+					break;
+				default:
+					break;
 			}
 			if ( 'Y' === $this->confirmed ) {
 				$this->confirmed_display = __( 'Complete', 'racketmanager' );
@@ -1097,7 +1113,7 @@ final class Racketmanager_Match {
 		global $wpdb;
 		$wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_matches} SET `home_points` = %f, `away_points` = %f, `winner_id` = %d, `loser_id` = %d, `custom` = %s, `updated_user` = %d, `updated` = now(), `confirmed` = %s WHERE `id` = %d",
+				"UPDATE {$wpdb->racketmanager_matches} SET `home_points` = %f, `away_points` = %f, `winner_id` = %d, `loser_id` = %d, `custom` = %s, `updated_user` = %d, `updated` = now(), `confirmed` = %s, `status` = %d WHERE `id` = %d",
 				$this->home_points,
 				$this->away_points,
 				intval( $this->winner_id ),
@@ -1105,6 +1121,7 @@ final class Racketmanager_Match {
 				maybe_serialize( $this->custom ),
 				get_current_user_id(),
 				$this->confirmed,
+				$this->status,
 				$this->id
 			)
 		);

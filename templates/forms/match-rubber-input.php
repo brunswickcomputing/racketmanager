@@ -291,7 +291,9 @@ if ( ! empty( $match->winner_id ) ) {
 												</div>
 											</div>
 										</div>
-									<?php } ?>
+										<?php
+									}
+									?>
 								</div>
 							</div>
 						</div>

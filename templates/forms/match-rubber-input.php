@@ -18,15 +18,23 @@ $opponents        = array( 'home', 'away' );
 $opponent_players = array( 'player1', 'player2' );
 if ( ! empty( $home_club_player['m'] ) ) {
 	$club_players['home']['m'] = $home_club_player['m'];
+} else {
+	$club_players['home']['m'] = array();
 }
 if ( ! empty( $home_club_player['f'] ) ) {
 	$club_players['home']['f'] = $home_club_player['f'];
+} else {
+	$club_players['home']['f'] = array();
 }
 if ( ! empty( $away_club_player['m'] ) ) {
 	$club_players['away']['m'] = $away_club_player['m'];
+} else {
+	$club_players['away']['m'] = array();
 }
 if ( ! empty( $away_club_player['f'] ) ) {
 	$club_players['away']['f'] = $away_club_player['f'];
+} else {
+	$club_players['away']['f'] = array();
 }
 if ( 'P' === $match->confirmed && 'admin' !== $user_type ) {
 	$updates_allowed = false;

@@ -1056,7 +1056,7 @@ class Racketmanager_Ajax extends RacketManager {
 		} elseif ( $set[ $team_1 ] > $max_win ) {
 			$err_msg[]   = __( 'Winning set score too high', 'racketmanager' );
 			$err_field[] = $set_prefix . $team_1;
-		} elseif ( intval( $set[ $team_1 ] ) === intval( $min_win ) && $set[ $team_2 ] > $min_loss && $match_status !== $retired_player ) {
+		} elseif ( intval( $set[ $team_1 ] ) === intval( $min_win ) && $max_win !== $min_win && $set[ $team_2 ] > $min_loss && $match_status !== $retired_player ) {
 			$err_msg[]   = __( 'Games difference must be at least 2', 'racketmanager' );
 			$err_field[] = $set_prefix . $team_1;
 			$err_field[] = $set_prefix . $team_2;

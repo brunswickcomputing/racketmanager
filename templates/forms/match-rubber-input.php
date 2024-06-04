@@ -203,9 +203,13 @@ if ( ! empty( $match->winner_id ) ) {
 																} else {
 																	$disabled = '';
 																}
+																$player_display = $player_option->fullname;
+																if ( ! empty( $player_option->btm ) ) {
+																	$player_display .= ' - ' . $player_option->btm;
+																}
 																?>
 																<option value="<?php echo esc_attr( $player_option->roster_id ); ?>" <?php selected( $player_option->roster_id, isset( $rubber->players[ $opponent ][ $player_number ]->club_player_id ) ? $rubber->players[ $opponent ][ $player_number ]->club_player_id : null ); ?> <?php echo esc_html( $disabled ); ?>>
-																	<?php echo esc_html( $player_option->fullname ); ?>
+																	<?php echo esc_html( $player_display ); ?>
 																</option>
 																<?php
 															}

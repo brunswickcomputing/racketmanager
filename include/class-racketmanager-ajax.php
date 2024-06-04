@@ -1249,7 +1249,7 @@ class Racketmanager_Ajax extends RacketManager {
 				$error = __( 'locked', 'racketmanager' );
 				$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
 			}
-			if ( ! empty( $match->league->event->age_limit ) && 'open' !== $match->league->event->age_limit ) {
+			if ( isset( $options['ageLimitcheck'] ) && 'true' === $options['leadTimecheck'] && ! empty( $match->league->event->age_limit ) && 'open' !== $match->league->event->age_limit ) {
 				if ( empty( $player->age ) ) {
 					$error = __( 'no age provided', 'racketmanager' );
 					$match->add_result_check( $team, $player->player_id, $error, $rubber_id );

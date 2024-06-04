@@ -10,6 +10,29 @@ namespace Racketmanager;
 ?>
 <div class="form-control">
 	<div class="form-control mb-3">
+		<legend class="form-check-label"><?php esc_html_e( 'Age Limit Check', 'racketmanager' ); ?></legend>
+		<div class="form-check form-check-inline">
+			<input type="radio" class="form-check-input" name="ageLimitCheck" id="ageLimitCheckTrue" value="true"
+			<?php
+			if ( isset( $options['checks']['ageLimitCheck'] ) ) {
+				echo ( 'true' === $options['checks']['ageLimitCheck'] ) ? ' checked' : '';
+			}
+			?>
+			/>
+			<label class="form-check-label" for="ageLimitCheckTrue"><?php esc_html_e( 'True', 'racketmanager' ); ?></label>
+		</div>
+		<div class="form-check form-check-inline">
+			<input type="radio" class="form-check-input" name="ageLimitCheck" id="ageLimitCheckFalse" value="false"
+			<?php
+			if ( isset( $options['checks']['ageLimitCheck'] ) ) {
+				echo ( 'false' === $options['checks']['ageLimitCheck'] ) ? ' checked' : '';
+			}
+			?>
+			/>
+			<label class="form-check-label" for="ageLimitCheckFalse"><?php esc_html_e( 'False', 'racketmanager' ); ?></label>
+		</div>
+	</div>
+	<div class="form-control mb-3">
 		<legend class="form-check-label"><?php esc_html_e( 'Lead Time Check', 'racketmanager' ); ?></legend>
 		<div class="form-check form-check-inline">
 			<input type="radio" class="form-check-input" name="leadTimeCheck" id="leadTimeCheckTrue" value="true"

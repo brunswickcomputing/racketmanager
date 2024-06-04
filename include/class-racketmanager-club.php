@@ -621,27 +621,31 @@ final class Racketmanager_Club {
 	 * @return object
 	 */
 	public function get_players( $args ) {
-		global $wpdb;
-
-		$defaults = array(
-			'count'   => false,
-			'team'    => false,
-			'player'  => false,
-			'gender'  => false,
-			'active'  => false,
-			'cache'   => true,
-			'type'    => false,
-			'orderby' => array( 'display_name' => 'ASC' ),
+		global $racketmanager, $wpdb;
+		$options    = $racketmanager->get_options( 'rosters' );
+		$defaults   = array(
+			'count'      => false,
+			'team'       => false,
+			'player'     => false,
+			'gender'     => false,
+			'active'     => true,
+			'cache'      => true,
+			'type'       => false,
+			'age_offset' => false,
+			'age_limit'  => false,
+			'orderby'    => array( 'display_name' => 'ASC' ),
 		);
-		$args     = array_merge( $defaults, (array) $args );
-		$count    = $args['count'];
-		$team     = $args['team'];
-		$player   = $args['player'];
-		$gender   = $args['gender'];
-		$active   = $args['active'];
-		$cache    = $args['cache'];
-		$type     = $args['type'];
-		$orderby  = $args['orderby'];
+		$args       = array_merge( $defaults, (array) $args );
+		$count      = $args['count'];
+		$team       = $args['team'];
+		$player     = $args['player'];
+		$gender     = $args['gender'];
+		$active     = $args['active'];
+		$cache      = $args['cache'];
+		$type       = $args['type'];
+		$orderby    = (array) $args['orderby'];
+		$age_limit  = $args['age_limit'];
+		$age_offset = $args['age_offset'];
 
 		$search_terms = array();
 		if ( $team ) {
@@ -763,6 +767,29 @@ final class Racketmanager_Club {
 					$players[ $i ]->locked_user      = $player->locked_user;
 					$players[ $i ]->locked_user_name = $player->locked_user_name;
 					$players[ $i ]->year_of_birth    = $player->year_of_birth;
+					if ( $player->year_of_birth ) {
+						$player->age = gmdate( 'Y' ) - intval( $player->year_of_birth );
+					} else {
+						$player->age = null;
+					}
+					$players[ $i ]->age = $player->age;
+					if ( isset( $options['ageLimitCheck'] ) && 'true' === $options['ageLimitCheck'] && $age_limit && 'open' !== $age_limit ) {
+						if ( ! empty( $player->age ) ) {
+							if ( $age_limit >= 30 ) {
+								$age_limit_check = $age_limit;
+								if ( ! empty( $age_offset ) && 'F' === $player->gender ) {
+									$age_limit_check -= $age_offset;
+								}
+								if ( $player->age < $age_limit_check ) {
+									unset( $players[ $i ] );
+								}
+							} elseif ( $player->age > $age_limit ) {
+								unset( $players[ $i ] );
+							}
+						} else {
+							unset( $players[ $i ] );
+						}
+					}
 				}
 
 				++$i;

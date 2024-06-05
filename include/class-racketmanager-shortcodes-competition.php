@@ -757,26 +757,76 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			);
 			$action         = get_query_var( 'action' );
 			if ( 'result' === $action ) {
-				$template .= '-' . $action;
-				$home_club = get_club( $match->teams['home']->affiliatedclub );
-				$away_club = get_club( $match->teams['away']->affiliatedclub );
+				$age_limit  = isset( $match->league->event->age_limit ) ? sanitize_text_field( wp_unslash( $match->league->event->age_limit ) ) : null;
+				$age_offset = isset( $match->league->event->age_offset ) ? intval( $match->league->event->age_offset ) : null;
+				$template  .= '-' . $action;
+				$home_club  = get_club( $match->teams['home']->affiliatedclub );
+				$away_club  = get_club( $match->teams['away']->affiliatedclub );
 				switch ( $match->league->type ) {
 					case 'BD':
 					case 'MD':
-						$home_club_player['m'] = $home_club->get_players( array( 'gender' => 'M' ) );
-						$away_club_player['m'] = $away_club->get_players( array( 'gender' => 'M' ) );
+						$home_club_player['m'] = $home_club->get_players(
+							array(
+								'gender'     => 'M',
+								'age_limit'  => $age_limit,
+								'age_offset' => $age_offset,
+							)
+						);
+						$away_club_player['m'] = $away_club->get_players(
+							array(
+								'gender'     => 'M',
+								'age_limit'  => $age_limit,
+								'age_offset' => $age_offset,
+							)
+						);
 						break;
 					case 'GD':
 					case 'WD':
-						$home_club_player['f'] = $home_club->get_players( array( 'gender' => 'F' ) );
-						$away_club_player['f'] = $away_club->get_players( array( 'gender' => 'F' ) );
+						$home_club_player['f'] = $home_club->get_players(
+							array(
+								'gender'     => 'F',
+								'age_limit'  => $age_limit,
+								'age_offset' => $age_offset,
+							)
+						);
+						$away_club_player['f'] = $away_club->get_players(
+							array(
+								'gender'     => 'F',
+								'age_limit'  => $age_limit,
+								'age_offset' => $age_offset,
+							)
+						);
 						break;
 					case 'XD':
 					case 'LD':
-						$home_club_player['m'] = $home_club->get_players( array( 'gender' => 'M' ) );
-						$home_club_player['f'] = $home_club->get_players( array( 'gender' => 'F' ) );
-						$away_club_player['m'] = $away_club->get_players( array( 'gender' => 'M' ) );
-						$away_club_player['f'] = $away_club->get_players( array( 'gender' => 'F' ) );
+						$home_club_player['m'] = $home_club->get_players(
+							array(
+								'gender'     => 'M',
+								'age_limit'  => $age_limit,
+								'age_offset' => $age_offset,
+							)
+						);
+						$home_club_player['f'] = $home_club->get_players(
+							array(
+								'gender'     => 'F',
+								'age_limit'  => $age_limit,
+								'age_offset' => $age_offset,
+							)
+						);
+						$away_club_player['m'] = $away_club->get_players(
+							array(
+								'gender'     => 'M',
+								'age_limit'  => $age_limit,
+								'age_offset' => $age_offset,
+							)
+						);
+						$away_club_player['f'] = $away_club->get_players(
+							array(
+								'gender'     => 'F',
+								'age_limit'  => $age_limit,
+								'age_offset' => $age_offset,
+							)
+						);
 						break;
 					default:
 						$home_club_player['m'] = array();

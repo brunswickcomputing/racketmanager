@@ -1104,6 +1104,12 @@ class RacketManager {
 			'index.php?pagename=leagues/$matches[1]/$matches[2]&league_name=$matches[1]-$matches[2]-$matches[3]&season=$matches[4]',
 			'top'
 		);
+		// league - season - round - match - leg - result.
+		add_rewrite_rule(
+			'match/(.+?)/([0-9]{4})/(.+?)/(.+?)-vs-(.+?)/leg-([0-9]{1})/result/?$',
+			'index.php?pagename=match%2F&league_name=$matches[1]&season=$matches[2]&round=$matches[3]&teamHome=$matches[4]&teamAway=$matches[5]&leg=$matches[6]&action=result',
+			'top'
+		);
 		// league - season - round - match - leg.
 		add_rewrite_rule(
 			'match/(.+?)/([0-9]{4})/(.+?)/(.+?)-vs-(.+?)/leg-([0-9]{1})/?$',
@@ -1126,6 +1132,12 @@ class RacketManager {
 		add_rewrite_rule(
 			'match/(.+?)/([0-9]{4})/day([0-9]{1,2})/(.+?)-vs-(.+?)/?$',
 			'index.php?pagename=match%2F&league_name=$matches[1]&season=$matches[2]&match_day=$matches[3]&teamHome=$matches[4]&teamAway=$matches[5]',
+			'top'
+		);
+		// league - season - round - match - result.
+		add_rewrite_rule(
+			'match/(.+?)/([0-9]{4})/(.+?)/(.+?)-vs-(.+?)/result/?$',
+			'index.php?pagename=match%2F&league_name=$matches[1]&season=$matches[2]&round=$matches[3]&teamHome=$matches[4]&teamAway=$matches[5]&action=result',
 			'top'
 		);
 		// league - season - round - match.

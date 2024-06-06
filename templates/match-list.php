@@ -74,6 +74,9 @@ namespace Racketmanager;
 				foreach ( $matches as $match ) {
 					if ( ! empty( $match->leg ) ) {
 						$match_link = $match->link . 'leg-' . $match->leg . '/';
+						if ( $action ) {
+							$match_link .= $action . '/';
+						}
 					}
 					?>
 					<div class="match-row row justify-content-center">

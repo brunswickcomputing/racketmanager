@@ -454,12 +454,33 @@ Racketmanager.updateResults = function (link) {
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();
 	$form += "&action=racketmanager_update_rubbers";
+	let match_id = jQuery('#current_match_id').val();
+	let match_status_link_id = jQuery('#matchStatusButton');
+	let match_edit = false;
+	if (match_status_link_id.length === 0) {
+		match_edit = false;
+	} else {
+		match_edit = true;
+	}
+	let alert_id = jQuery('#matchAlert');
+	let use_alert = false;
+	if ( alert_id.length == 0 ) {
+		use_alert = false;
+	} else {
+		use_alert = true;
+	}
+	if (use_alert) {
+		jQuery(alert_id).hide();
+		jQuery(alert_id).removeClass('alert--success alert--warning alert--danger');
+		alert_response = '#alertResponse';
+	} else {
 	let notifyField = '#updateResponse';
-	jQuery(".is-invalid").removeClass("is-invalid");
 	jQuery(notifyField).removeClass("message-success");
 	jQuery(notifyField).removeClass("message-error");
 	jQuery(notifyField).val("");
 	jQuery(notifyField).hide();
+	}
+	jQuery(".is-invalid").removeClass("is-invalid");
 	jQuery("#splash").css('opacity', 1);
 	jQuery("#splash").removeClass("d-none");
 	jQuery("#splash").show();
@@ -472,10 +493,16 @@ Racketmanager.updateResults = function (link) {
 		success: function (response) {
 			let $response = response.data;
 			let $message = $response[0];
+			if (use_alert) {
+				jQuery(alert_id).show();
+				jQuery(alert_id).addClass('alert--success');
+				jQuery(alert_response).html($message);
+			} else {
 			jQuery("#updateResponse").show();
 			jQuery("#updateResponse").addClass('message-success');
 			jQuery("#updateResponse").html($message);
 			jQuery("#updateResponse").delay(10000).fadeOut('slow');
+			}
 			let $homepoints = $response[1];
 			let $matchhome = 0;
 			let $matchaway = 0;
@@ -524,8 +551,10 @@ Racketmanager.updateResults = function (link) {
 				}
 				rubberNo++;
 			}
+			Racketmanager.matchHeader(match_id, match_edit);
 		},
 		error: function (response) {
+			let feedback = '';
 			if (response.responseJSON) {
 				let data = response.responseJSON.data;
 				let $message = data[0];
@@ -537,13 +566,19 @@ Racketmanager.updateResults = function (link) {
 					let $id = '#'.concat($errorField);
 					jQuery($id).addClass("is-invalid");
 				}
-				jQuery(notifyField).show();
-				jQuery(notifyField).html($message);
+				feedback = $message;
 			} else {
-				jQuery(notifyField).text(response.statusText);
+				feedback = response.statusText;
 			}
+			if (use_alert) {
+				jQuery(alert_id).show();
+				jQuery(alert_id).addClass('alert--danger');
+				jQuery(alert_response).html(feedback);
+			} else {
+				jQuery(notifyField).html(feedback); 
 			jQuery(notifyField).show();
 			jQuery(notifyField).addClass('message-error');
+			}
 		},
 		complete: function () {
 			jQuery("#splash").css('opacity', 0);

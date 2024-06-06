@@ -20,7 +20,7 @@ $user_message    = $user_can_update_array[3];
 			<div class="module module--card">
 				<div class="module__banner">
 					<h4 class="module__title">
-						<?php esc_html_e( 'Matches', 'racketmanager' ); ?>
+						<?php esc_html_e( 'Rubbers', 'racketmanager' ); ?>
 					</h4>
 					<div class="module__aside">
 						<?php

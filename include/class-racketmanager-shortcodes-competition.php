@@ -674,6 +674,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$match_id = $args['match_id'];
 		$player   = $args['player'];
 		$template = $args['template'];
+		$action   = get_query_var( 'action' );
 		// Get Match ID from shortcode or $_GET.
 		if ( ! $match_id ) {
 			$match_id = get_query_var( 'match_id' );
@@ -755,7 +756,6 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				'league'                => $match->league,
 				'user_can_update_array' => $user_can_update_array,
 			);
-			$action         = get_query_var( 'action' );
 			if ( 'result' === $action ) {
 				$age_limit  = isset( $match->league->event->age_limit ) ? sanitize_text_field( wp_unslash( $match->league->event->age_limit ) ) : null;
 				$age_offset = isset( $match->league->event->age_offset ) ? intval( $match->league->event->age_offset ) : null;
@@ -854,6 +854,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				'match_day' => $match_day,
 				'round'     => $round,
 				'season'    => $season,
+				'action'    => $action,
 			);
 		} else {
 			return esc_html__( 'Match not found', 'racketmanager' );

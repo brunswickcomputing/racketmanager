@@ -439,10 +439,10 @@ class Racketmanager_Ajax extends RacketManager {
 			$match_count = $league->update_match_results( $matches, $home_points, $away_points, array(), $match->season );
 			if ( $match_count > 0 ) {
 				/* translators: %s: match count */
-				$return->msg     = sprintf( __( 'Saved Results of %d matches', 'racketmanager' ), $match_count );
+				$return->msg     = __( 'Result saved', 'racketmanager' );
 				$return->updated = true;
 			} else {
-				$return->msg     = __( 'No matches to save', 'racketmanager' );
+				$return->msg     = __( 'No result to save', 'racketmanager' );
 				$return->updated = false;
 			}
 		}

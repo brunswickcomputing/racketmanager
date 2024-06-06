@@ -147,7 +147,8 @@ class Racketmanager_Ajax extends RacketManager {
 			if ( ! empty( $match_id ) ) {
 				$match = get_match( $match_id );
 				if ( $match ) {
-					$match_header = $racketmanager->show_match_header( $match );
+					$edit_mode    = isset( $_POST['edit_mode'] ) ? sanitize_text_field( wp_unslash( $_POST['edit_mode'] ) ) : false;
+					$match_header = $racketmanager->show_match_header( $match, $edit_mode );
 					wp_send_json_success( $match_header );
 				} else {
 					$valid   = false;

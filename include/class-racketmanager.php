@@ -2691,13 +2691,15 @@ class RacketManager {
 	/**
 	 * Show match header
 	 *
-	 * @param object $match match object.
+	 * @param object  $match match object.
+	 * @param boolean $edit edit indicator.
 	 * @return string
 	 */
-	public function show_match_header( $match ) {
+	public function show_match_header( $match, $edit = false ) {
 		global $racketmanager_shortcodes;
-		$match_args['match'] = $match;
-		$template            = 'match-header';
+		$match_args['match']     = $match;
+		$match_args['edit_mode'] = $edit;
+		$template                = 'match-header';
 		return $racketmanager_shortcodes->load_template(
 			$template,
 			$match_args,

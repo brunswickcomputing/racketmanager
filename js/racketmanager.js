@@ -902,7 +902,7 @@ Racketmanager.matchMode = function (match_id, mode) {
 	});
 
 };
-Racketmanager.matchHeader = function (match_id) {
+Racketmanager.matchHeader = function (match_id, edit_mode=false) {
 	let notifyField = "#match-header";
 	jQuery(notifyField).val("");
 
@@ -911,6 +911,7 @@ Racketmanager.matchHeader = function (match_id) {
 		type: "POST",
 		data: {
 			"match_id": match_id,
+			"edit_mode": edit_mode,
 			"action": "racketmanager_update_match_header",
 			"security": ajax_var.ajax_nonce,
 		},

@@ -36,14 +36,14 @@ $user_message    = $user_can_update_array[3];
 						if ( $user_can_update ) {
 							?>
 							<div class="match-mode" id="editMatchMode">
-								<a role="button" class="btn btn--link" onclick="Racketmanager.matchMode('<?php echo esc_html( $match->id ); ?>', 'edit');" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit', 'racketmanager' ); ?>">
+								<a role="button" class="btn btn--link" onclick="Racketmanager.matchMode(event, '<?php echo esc_html( $match->id ); ?>', 'edit');" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit', 'racketmanager' ); ?>">
 									<svg width="16" height="16" class="icon ">
 										<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
 									</svg>
 								</a>
 							</div>
 							<div class="d-none match-mode" id="viewMatchMode">
-								<a role="button" class="btn btn--link" onclick="Racketmanager.matchMode('<?php echo esc_html( $match->id ); ?>', 'view');" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Close', 'racketmanager' ); ?>">
+								<a role="button" class="btn btn--link" onclick="Racketmanager.matchMode(event, '<?php echo esc_html( $match->id ); ?>', 'view');" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Close', 'racketmanager' ); ?>">
 									<svg width="16" height="16" class="icon ">
 										<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#x-lg' ); ?>"></use>
 									</svg>

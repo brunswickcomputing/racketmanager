@@ -887,7 +887,8 @@ Racketmanager.resetMatchScores = function (e, formId) {
 		.prop('checked', false)
 		.prop('selected', false);
 };
-Racketmanager.matchMode = function (match_id, mode) {
+Racketmanager.matchMode = function (e, match_id, mode) {
+	e.preventDefault();
 	let notifyField = "#showMatchRubbers";
 	jQuery(notifyField).val("");
 	jQuery(notifyField).hide();

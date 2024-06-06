@@ -474,11 +474,11 @@ Racketmanager.updateResults = function (link) {
 		jQuery(alert_id).removeClass('alert--success alert--warning alert--danger');
 		alert_response = '#alertResponse';
 	} else {
-	let notifyField = '#updateResponse';
-	jQuery(notifyField).removeClass("message-success");
-	jQuery(notifyField).removeClass("message-error");
-	jQuery(notifyField).val("");
-	jQuery(notifyField).hide();
+		let notifyField = '#updateResponse';
+		jQuery(notifyField).removeClass("message-success");
+		jQuery(notifyField).removeClass("message-error");
+		jQuery(notifyField).val("");
+		jQuery(notifyField).hide();
 	}
 	jQuery(".is-invalid").removeClass("is-invalid");
 	jQuery("#splash").css('opacity', 1);
@@ -498,10 +498,10 @@ Racketmanager.updateResults = function (link) {
 				jQuery(alert_id).addClass('alert--success');
 				jQuery(alert_response).html($message);
 			} else {
-			jQuery("#updateResponse").show();
-			jQuery("#updateResponse").addClass('message-success');
-			jQuery("#updateResponse").html($message);
-			jQuery("#updateResponse").delay(10000).fadeOut('slow');
+				jQuery("#updateResponse").show();
+				jQuery("#updateResponse").addClass('message-success');
+				jQuery("#updateResponse").html($message);
+				jQuery("#updateResponse").delay(10000).fadeOut('slow');
 			}
 			let $homepoints = $response[1];
 			let $matchhome = 0;
@@ -576,8 +576,8 @@ Racketmanager.updateResults = function (link) {
 				jQuery(alert_response).html(feedback);
 			} else {
 				jQuery(notifyField).html(feedback); 
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-error');
+				jQuery(notifyField).show();
+				jQuery(notifyField).addClass('message-error');
 			}
 		},
 		complete: function () {
@@ -881,11 +881,25 @@ Racketmanager.resetMatchScores = function (e, formId) {
 	formId = '#'.concat(formId);
 	jQuery(':input', formId)
 		.not(':button, :submit, :reset, :hidden, :radio')
-		.val('')
+		.val('');
 	jQuery(':input', formId)
 		.not(':button, :submit, :reset, :hidden')
 		.prop('checked', false)
 		.prop('selected', false);
+	let selector = formId + ' .match__message'; 
+	jQuery(selector)
+		.removeClass('match-warning')
+		.addClass('d-none')
+		.html('');
+	selector = formId + ' .winner';
+	jQuery(selector)
+		.removeClass('winner');
+	selector = formId + ' .loser';
+	jQuery(selector)
+		.removeClass('loser');
+	selector = formId + ' .tie';
+	jQuery(selector)
+		.removeClass('tie');
 };
 Racketmanager.matchMode = function (e, match_id, mode) {
 	e.preventDefault();
@@ -1122,6 +1136,240 @@ Racketmanager.SetCalculatorTieBreak = function (inputdata) {
 		jQuery(tieBreak).removeClass('is-invalid');
 	}
 };
+Racketmanager.matchStatusModal = function (event, match_id) {
+	event.preventDefault();
+	let notifyField = "#scoreStatusModal";
+	let matchStatus = jQuery('#match_status').val();
+	let modal = 'scoreStatusModal';
+	jQuery(notifyField).val("");
+
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: {
+			"match_id": match_id,
+			"modal": modal,
+			"match_status": matchStatus,
+			"action": "racketmanager_match_status",
+			"security": ajax_var.ajax_nonce,
+		},
+		success: function (response) {
+			jQuery(notifyField).empty();
+			jQuery(notifyField).html(response.data);
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				let message = response.responseJSON.data;
+				jQuery(notifyField).show();
+				jQuery(notifyField).html(message);
+			} else {
+				jQuery(notifyField).text(response.statusText);
+			}
+			jQuery(notifyField).show();
+			jQuery(notifyField).addClass('message-error');
+		},
+		complete: function () {
+			jQuery(notifyField).show();
+			jQuery(notifyField).modal('show');
+		}
+	});
+};
+Racketmanager.setMatchStatus = function (link) {
+	let formId = '#'.concat(link.form.id);
+	let $form = jQuery(formId).serialize();
+	$form += "&action=racketmanager_set_match_status";
+	let notifyField = '#updateStatusResponse';
+	jQuery(".is-invalid").removeClass("is-invalid");
+	jQuery(notifyField).removeClass("message-success");
+	jQuery(notifyField).removeClass("message-error");
+	jQuery(notifyField).val("");
+	jQuery(notifyField).hide();
+
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: $form,
+		success: function (response) {
+			let message = response.data[0];
+			let matchId = response.data[1];
+			let scoreStatus = response.data[2];
+			let statusMessages = Object.entries(response.data[3]);
+			let statusClasses = Object.entries(response.data[4]);
+			let numRubbers = response.data[6];
+			if (numRubbers) {
+				for (let x=1; x<= numRubbers; x++) {
+					let rubberNumber = x;
+					for (let i in statusMessages) {
+						let statusMessage = statusMessages[i];
+						let teamRef = statusMessage[0];
+						let teamMessage = statusMessage[1];
+						let messageRef = '#match-message-' + rubberNumber + '-' + teamRef;
+						if ( teamMessage ) {
+							jQuery(messageRef).html(teamMessage);
+							jQuery(messageRef).removeClass('d-none');
+							jQuery(messageRef).addClass('match-warning');
+						} else {
+							jQuery(messageRef).addClass('d-none');
+							jQuery(messageRef).removeClass('match-warning');
+							jQuery(messageRef).html('');
+						}
+					}
+					for (let i in statusClasses) {
+						let statusClass = statusClasses[i];
+						let teamRef = statusClass[0];
+						let teamClass = statusClass[1];
+						let statusRef = '#match-status-' + rubberNumber + '-' + teamRef;
+						jQuery(statusRef).removeClass('winner loser tie');
+						if ( teamClass ) {
+							jQuery(statusRef).addClass(teamClass);
+						}
+					}
+					let matchStatusRef = '#match_status_' + rubberNumber;
+					jQuery(matchStatusRef).attr('value', scoreStatus);
+				}
+			}
+			let matchStatusRef = '#match_status';
+			jQuery(matchStatusRef).attr('value', scoreStatus);
+			let modal = '#' + response.data[5];
+			jQuery(modal).modal('hide')
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				let data = response.responseJSON.data;
+				let $message = data[0];
+				for (let errorMsg of data[1]) {
+					$message += '<br />' + errorMsg;
+				}
+				let $errorFields = data[2];
+				for (let $errorField of $errorFields) {
+					let $id = '#'.concat($errorField);
+					jQuery($id).addClass("is-invalid");
+				}
+				jQuery(notifyField).show();
+				jQuery(notifyField).html($message);
+			} else {
+				jQuery(notifyField).text(response.statusText);
+			}
+			jQuery(notifyField).show();
+			jQuery(notifyField).addClass('message-error');
+		},
+		complete: function () {
+		}
+	});
+}
+Racketmanager.scoreStatusModal = function (event, rubber_id, rubber_number) {
+	event.preventDefault();
+	let notifyField = "#scoreStatusModal";
+	let modal = 'scoreStatusModal';
+	let scoreStatus = jQuery('#match_status_' + rubber_number).val();
+	jQuery(notifyField).val("");
+
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: {
+			"rubber_id": rubber_id,
+			"score_status": scoreStatus,
+			"modal": modal,
+			"action": "racketmanager_match_rubber_status",
+			"security": ajax_var.ajax_nonce,
+		},
+		success: function (response) {
+			jQuery(notifyField).empty();
+			jQuery(notifyField).html(response.data);
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				let message = response.responseJSON.data;
+				jQuery(notifyField).show();
+				jQuery(notifyField).html(message);
+			} else {
+				jQuery(notifyField).text(response.statusText);
+			}
+			jQuery(notifyField).show();
+			jQuery(notifyField).addClass('message-error');
+		},
+		complete: function () {
+			jQuery(notifyField).show();
+			jQuery(notifyField).modal('show');
+		}
+	});
+};
+Racketmanager.setMatchRubberStatus = function (link) {
+	let formId = '#'.concat(link.form.id);
+	let $form = jQuery(formId).serialize();
+	$form += "&action=racketmanager_set_match_rubber_status";
+	let notifyField = '#updateStatusResponse';
+	jQuery(".is-invalid").removeClass("is-invalid");
+	jQuery(notifyField).removeClass("message-success");
+	jQuery(notifyField).removeClass("message-error");
+	jQuery(notifyField).val("");
+	jQuery(notifyField).hide();
+
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: $form,
+		success: function (response) {
+			let message = response.data[0];
+			let rubberNumber = response.data[1];
+			let scoreStatus = response.data[2];
+			let statusMessages = Object.entries(response.data[3]);
+			for (let i in statusMessages) {
+				let statusMessage = statusMessages[i];
+				let teamRef = statusMessage[0];
+				let teamMessage = statusMessage[1];
+				let messageRef = '#match-message-' + rubberNumber + '-' + teamRef;
+				if ( teamMessage ) {
+					jQuery(messageRef).html(teamMessage);
+					jQuery(messageRef).removeClass('d-none');
+					jQuery(messageRef).addClass('match-warning');
+				} else {
+					jQuery(messageRef).addClass('d-none');
+					jQuery(messageRef).removeClass('match-warning');
+					jQuery(messageRef).html('');
+				}
+			}
+			let statusClasses = Object.entries(response.data[4]);
+			for (let i in statusClasses) {
+				let statusClass = statusClasses[i];
+				let teamRef = statusClass[0];
+				let teamClass = statusClass[1];
+				let statusRef = '#match-status-' + rubberNumber + '-' + teamRef;
+				jQuery(statusRef).removeClass('winner loser tie');
+				if ( teamClass ) {
+					jQuery(statusRef).addClass(teamClass);
+				}
+			}
+			let modal = '#' + response.data[5];
+			let matchStatusRef = '#' + 'match_status_' + rubberNumber;
+			jQuery(matchStatusRef).attr('value', scoreStatus);
+			jQuery(modal).modal('hide')
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				let data = response.responseJSON.data;
+				let $message = data[0];
+				for (let errorMsg of data[1]) {
+					$message += '<br />' + errorMsg;
+				}
+				let $errorFields = data[2];
+				for (let $errorField of $errorFields) {
+					let $id = '#'.concat($errorField);
+					jQuery($id).addClass("is-invalid");
+				}
+				jQuery(notifyField).show();
+				jQuery(notifyField).html($message);
+			} else {
+				jQuery(notifyField).text(response.statusText);
+			}
+			jQuery(notifyField).show();
+			jQuery(notifyField).addClass('message-error');
+		},
+		complete: function () {
+		}
+	});
+}
 function activaTab(tab) {
 	jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');
 	jQuery('.nav-pills button[data-bs-target="#' + tab + '"]').tab('show');

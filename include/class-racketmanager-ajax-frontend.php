@@ -35,6 +35,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 
 		add_action( 'wp_ajax_racketmanager_matchcard', array( &$this, 'print_match_card' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_matchcard', array( &$this, 'print_match_card' ) );
+		add_action( 'wp_ajax_racketmanager_match_rubber_status', array( &$this, 'match_rubber_status' ) );
+		add_action( 'wp_ajax_racketmanager_set_match_rubber_status', array( &$this, 'set_match_rubber_status' ) );
+		add_action( 'wp_ajax_racketmanager_match_status', array( &$this, 'match_status' ) );
+		add_action( 'wp_ajax_racketmanager_set_match_status', array( &$this, 'set_match_status' ) );
 	}
 	/**
 	 * Add item as favourite
@@ -898,5 +902,469 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		} else {
 			wp_send_json_error( $message, '500' );
 		}
+	}
+	/**
+	 * Build screen to match status to be captured
+	 */
+	public function match_status() {
+		$valid   = true;
+		$message = null;
+		if ( isset( $_POST['security'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
+				$valid   = false;
+				$message = __( 'Security token invalid', 'racketmanager' );
+			}
+		} else {
+			$valid   = false;
+			$message = __( 'No security token found in request', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : 0;
+			$modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+			$match    = get_match( $match_id );
+			if ( $match ) {
+				$status = isset( $_POST['match_status'] ) ? sanitize_text_field( wp_unslash( $_POST['match_status'] ) ) : null;
+				if ( empty( $status ) ) {
+					if ( $match->is_walkover ) {
+						if ( 'home' === $match->walkover ) {
+							$status = 'walkover_player2';
+						} else {
+							$status = 'walkover_player1';
+						}
+					} elseif ( $match->is_retired ) {
+						if ( 'home' === $match->retired ) {
+							$status = 'retired_player1';
+						} else {
+							$status = 'retired_player2';
+						}
+					} elseif ( $match->is_shared ) {
+						$status = 'share';
+					} else {
+						$status = null;
+					}
+				}
+				$home_name = $match->teams['home']->title;
+				$away_name = $match->teams['away']->title;
+				ob_start();
+				?>
+				<div class="modal-dialog modal-dialog-centered modal-lg">
+					<div class="modal-content">
+						<form id="match-status" class="" action="#" method="post" onsubmit="return checkSelect(this)">
+							<?php wp_nonce_field( 'match-status', 'racketmanager_nonce' ); ?>
+							<input type="hidden" name="match_id" value="<?php echo esc_attr( $match->id ); ?>" />
+							<input type="hidden" name="home_team" value="<?php echo esc_attr( $match->home_team ); ?>" />
+							<input type="hidden" name="away_team" value="<?php echo esc_attr( $match->away_team ); ?>" />
+							<input type="hidden" name="modal" value="<?php echo esc_attr( $modal ); ?>" />
+							<div class="modal-header modal__header">
+								<h4 class="modal-title"><?php esc_html_e( 'Match status', 'racketmanager' ); ?></h4>
+								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+							</div>
+							<div class="modal-body">
+								<div class="container-fluid">
+									<div class="row mb-3">
+										<div id="updateStatusResponse" class="updateResponse"></div>
+									</div>
+									<div class="row">
+										<div class="col-sm-6">
+											<select class="form-select" name="match_status" id="match_status">
+												<option value="" disabled selected><?php esc_html_e( 'Status', 'racketmanager' ); ?></option>
+												<?php /* translators: %s: Home team name */ ?>
+												<option value="walkover_player2" <?php selected( 'walkover_player2', $status ); ?>><?php printf( esc_html__( 'Match not played - no %s team', 'racketmanager' ), esc_html( $home_name ) ); ?></option>
+												<?php /* translators: %s: Away team name */ ?>
+												<option value="walkover_player1" <?php selected( 'walkover_player1', $status ); ?>><?php printf( esc_html__( 'Match not played - no %s team', 'racketmanager' ), esc_html( $away_name ) ); ?></option>
+												<option value="share" <?php selected( 'share', $status ); ?>><?php esc_html_e( 'Not played', 'racketmanager' ); ?></option>
+												<option value="postponed"><?php esc_html_e( 'Postponed', 'racketmanager' ); ?></option>
+											</select>
+										</div>
+										<div class="col-sm-6">
+											<ul class="list list--naked">
+												<li class="list__item">
+													<dt class=""><?php esc_html_e( 'Match not played and one team did not show', 'racketmanager' ); ?></dt>
+													<dd class=""><?php esc_html_e( 'The match has not started and at least one team cannot play.', 'racketmanager' ); ?></dd>
+												</li>
+												<li class="list__item">
+													<dt class=""><?php esc_html_e( 'Not played', 'racketmanager' ); ?></dt>
+													<dd class=""><?php esc_html_e( 'Not played (and will not be played)', 'racketmanager' ); ?></dd>
+												</li>
+												<li class="list__item">
+													<dt class=""><?php esc_html_e( 'Postponed', 'racketmanager' ); ?></dt>
+													<dd class=""><?php esc_html_e( 'The match has not started and will be played another time.', 'racketmanager' ); ?></dd>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="modal-footer">
+							<button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
+									<button type="button" class="btn btn-primary" onclick="Racketmanager.setMatchStatus(this)"><?php esc_html_e( 'Save', 'racketmanager' ); ?></button>
+							</div>
+						</form>
+					</div>
+				</div>
+				<?php
+				$output = ob_get_contents();
+				ob_end_clean();
+			} else {
+				$valid   = false;
+				$message = __( 'Match not found', 'racketmanager' );
+			}
+		}
+		if ( $valid ) {
+			wp_send_json_success( $output );
+		} else {
+			wp_send_json_error( $message, '500' );
+		}
+	}
+	/**
+	 * Set match status
+	 */
+	public function set_match_status() {
+		$return    = array();
+		$err_msg   = array();
+		$err_field = array();
+		$valid     = true;
+		$msg       = null;
+		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'match-status' ) ) {
+			$valid       = false;
+			$err_field[] = '';
+			$err_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$modal = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+			if ( $modal ) {
+				$match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
+				if ( $match_id ) {
+					$match        = get_match( $match_id );
+					$match_status = isset( $_POST['match_status'] ) ? sanitize_text_field( wp_unslash( $_POST['match_status'] ) ) : null;
+					if ( $match_status ) {
+						$match_status_values = explode( '_', $match_status );
+						$status_value        = $match_status_values[0];
+						if ( isset( $match_status_values[1] ) ) {
+							$player_ref = $match_status_values[1];
+						} else {
+							$player_ref = null;
+						}
+						switch ( $match_status_values[0] ) {
+							case 'walkover':
+								if ( 'player1' !== $player_ref && 'player2' !== $player_ref ) {
+									$valid       = false;
+									$err_field[] = 'score_status';
+									$err_msg[]   = __( 'Score status team selection not valid', 'racketmanager' );
+								}
+								break;
+							case 'postponed':
+								break;
+							case 'share':
+								break;
+							default:
+								$valid       = false;
+								$err_field[] = 'match_status';
+								$err_msg[]   = __( 'Match status not valid', 'racketmanager' );
+								break;
+						}
+						if ( $valid ) {
+							$status_dtls    = $this->set_status_details( $match_status, $match->home_team, $match->away_team );
+							$status_message = $status_dtls->message;
+							$status_class   = $status_dtls->class;
+							$match_status   = $status_dtls->status;
+						}
+					} else {
+						$valid       = false;
+						$err_field[] = 'match_status';
+						$err_msg[]   = __( 'No match status selected', 'racketmanager' );
+					}
+				} else {
+					$valid       = false;
+					$err_field[] = 'match_status';
+					$err_msg[]   = __( 'Match id not supplied', 'racketmanager' );
+				}
+			} else {
+				$valid       = false;
+				$err_field[] = 'match_status';
+				$err_msg[]   = __( 'Modal name not supplied', 'racketmanager' );
+			}
+		}
+		if ( $valid ) {
+			array_push( $return, $msg, $match_id, $match_status, $status_message, $status_class, $modal, $match->num_rubbers );
+			wp_send_json_success( $return );
+		} else {
+			$msg = __( 'Unable to set match status', 'racketmanager' );
+			array_push( $return, $msg, $err_msg, $err_field );
+			wp_send_json_error( $return, '500' );
+		}
+	}
+	/**
+	 * Build screen to match rubber status to be captured
+	 */
+	public function match_rubber_status() {
+		$valid   = true;
+		$message = null;
+		if ( isset( $_POST['security'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
+				$valid   = false;
+				$message = __( 'Security token invalid', 'racketmanager' );
+			}
+		} else {
+			$valid   = false;
+			$message = __( 'No security token found in request', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$rubber_id = isset( $_POST['rubber_id'] ) ? intval( $_POST['rubber_id'] ) : 0;
+			$modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+			$rubber    = get_rubber( $rubber_id );
+			if ( $rubber ) {
+				$status = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
+				if ( empty( $status ) ) {
+					switch ( $rubber->status ) {
+						case 1:
+							if ( 'home' === $rubber->walkover ) {
+								$status = 'walkover_player2';
+							} else {
+								$status = 'walkover_player1';
+							}
+							break;
+						case 2:
+							if ( 'home' === $rubber->retired ) {
+								$status = 'retired_player1';
+							} else {
+								$status = 'retired_player2';
+							}
+							break;
+						case 3:
+							$status = 'share';
+							break;
+						default:
+							$status = null;
+							break;
+					}
+				}
+				$match     = get_match( $rubber->match_id );
+				$home_name = $match->teams['home']->title;
+				$away_name = $match->teams['away']->title;
+				if ( $match ) {
+					ob_start();
+					?>
+					<div class="modal-dialog modal-dialog-centered modal-lg">
+						<div class="modal-content">
+							<form id="match-rubber-status" class="" action="#" method="post" onsubmit="return checkSelect(this)">
+								<?php wp_nonce_field( 'match-rubber-status', 'racketmanager_nonce' ); ?>
+								<input type="hidden" name="rubber_id" value="<?php echo esc_attr( $rubber->id ); ?>" />
+								<input type="hidden" name="rubber_number" value="<?php echo esc_attr( $rubber->rubber_number ); ?>" />
+								<input type="hidden" name="home_team" value="<?php echo esc_attr( $match->home_team ); ?>" />
+								<input type="hidden" name="away_team" value="<?php echo esc_attr( $match->away_team ); ?>" />
+								<input type="hidden" name="modal" value="<?php echo esc_attr( $modal ); ?>" />
+								<div class="modal-header modal__header">
+									<h4 class="modal-title"><?php esc_html_e( 'Score status', 'racketmanager' ); ?> - <?php echo esc_html( $rubber->title ); ?></h4>
+									<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+								</div>
+								<div class="modal-body">
+									<div class="container-fluid">
+										<div class="row mb-3">
+											<div id="updateStatusResponse" class="updateResponse"></div>
+										</div>
+										<div class="row">
+											<div class="col-sm-6">
+												<select class="form-select" name="score_status" id="score_status">
+													<option value="" disabled selected><?php esc_html_e( 'Status', 'racketmanager' ); ?></option>
+													<?php /* translators: %s: Home team name */ ?>
+													<option value="walkover_player1" <?php selected( 'walkover_player1', $status ); ?>><?php printf( esc_html__( 'Walkover - no %s team', 'racketmanager' ), esc_html( $home_name ) ); ?></option>
+													<?php /* translators: %s: Away team name */ ?>
+													<option value="walkover_player2" <?php selected( 'walkover_player2', $status ); ?>><?php printf( esc_html__( 'Walkover - no %s team', 'racketmanager' ), esc_html( $away_name ) ); ?></option>
+													<?php /* translators: %s: Home team name */ ?>
+													<option value="retired_player1" <?php selected( 'retired_player1', $status ); ?>><?php printf( esc_html__( 'Retired - %s player', 'racketmanager' ), esc_html( $home_name ) ); ?></option>
+													<?php /* translators: %s: Away team name */ ?>
+													<option value="retired_player2" <?php selected( 'retired_player2', $status ); ?>><?php printf( esc_html__( 'Retired - %s player', 'racketmanager' ), esc_html( $away_name ) ); ?></option>
+													<option value="share" <?php selected( 'share', $status ); ?>><?php esc_html_e( 'Shared - not played', 'racketmanager' ); ?></option>
+												</select>
+											</div>
+											<div class="col-sm-6">
+												<ul class="list list--naked">
+													<li class="list__item">
+														<dt class=""><?php esc_html_e( 'Walkover', 'racketmanager' ); ?></dt>
+														<dd class=""><?php esc_html_e( 'The match has not started and at least one team cannot play.', 'racketmanager' ); ?></dd>
+													</li>
+													<li class="list__item">
+														<dt class=""><?php esc_html_e( 'Retired', 'racketmanager' ); ?></dt>
+														<dd class=""><?php esc_html_e( 'A player retired from a match in progress.', 'racketmanager' ); ?></dd>
+													</li>
+													<li class="list__item">
+														<dt class=""><?php esc_html_e( 'Shared', 'racketmanager' ); ?></dt>
+														<dd class=""><?php esc_html_e( 'Not played (and will not be played)', 'racketmanager' ); ?></dd>
+													</li>
+												</ul>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
+									<button type="button" class="btn btn-primary" onclick="Racketmanager.setMatchRubberStatus(this)"><?php esc_html_e( 'Save', 'racketmanager' ); ?></button>
+								</div>
+							</form>
+						</div>
+					</div>
+					<?php
+					$output = ob_get_contents();
+					ob_end_clean();
+				} else {
+					$valid   = false;
+					$message = __( 'Match not found', 'racketmanager' );
+				}
+			} else {
+				$valid   = false;
+				$message = __( 'Rubber not found', 'racketmanager' );
+			}
+		}
+		if ( $valid ) {
+			wp_send_json_success( $output );
+		} else {
+			wp_send_json_error( $message, '500' );
+		}
+	}
+	/**
+	 * Set match rubber status
+	 */
+	public function set_match_rubber_status() {
+		$return    = array();
+		$err_msg   = array();
+		$err_field = array();
+		$valid     = true;
+		$msg       = null;
+		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'match-rubber-status' ) ) {
+			$valid       = false;
+			$err_field[] = '';
+			$err_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$modal = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+			if ( $modal ) {
+				$rubber_number = isset( $_POST['rubber_number'] ) ? intval( $_POST['rubber_number'] ) : null;
+				if ( $rubber_number ) {
+					$score_status = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
+					$home_team    = isset( $_POST['home_team'] ) ? intval( $_POST['home_team'] ) : null;
+					$away_team    = isset( $_POST['away_team'] ) ? intval( $_POST['away_team'] ) : null;
+					if ( $score_status ) {
+						$score_status_values = explode( '_', $score_status );
+						$status_value        = $score_status_values[0];
+						if ( isset( $score_status_values[1] ) ) {
+							$player_ref = $score_status_values[1];
+						} else {
+							$player_ref = null;
+						}
+						switch ( $status_value ) {
+							case 'walkover':
+								if ( 'player1' !== $player_ref && 'player2' !== $player_ref ) {
+									$valid       = false;
+									$err_field[] = 'score_status';
+									$err_msg[]   = __( 'Score status team selection not valid', 'racketmanager' );
+								}
+								break;
+							case 'retired':
+								if ( 'player1' !== $player_ref && 'player2' !== $player_ref ) {
+									$valid       = false;
+									$err_field[] = 'score_status';
+									$err_msg[]   = __( 'Score status team selection not valid', 'racketmanager' );
+								}
+								break;
+							case 'share':
+								break;
+							default:
+								$valid       = false;
+								$err_field[] = 'score_status';
+								$err_msg[]   = __( 'Score status not valid', 'racketmanager' );
+								break;
+						}
+						if ( $valid ) {
+							$status_dtls    = $this->set_status_details( $score_status, $home_team, $away_team );
+							$status_message = $status_dtls->message;
+							$status_class   = $status_dtls->class;
+							$score_status   = $status_dtls->status;
+						}
+					} else {
+						$valid       = false;
+						$err_field[] = 'score_status';
+						$err_msg[]   = __( 'No score status selected', 'racketmanager' );
+					}
+				} else {
+					$valid       = false;
+					$err_field[] = 'score_status';
+					$err_msg[]   = __( 'Rubber number not supplied', 'racketmanager' );
+				}
+			} else {
+				$valid       = false;
+				$err_field[] = 'score_status';
+				$err_msg[]   = __( 'Modal name not supplied', 'racketmanager' );
+			}
+		}
+		if ( $valid ) {
+			array_push( $return, $msg, $rubber_number, $score_status, $status_message, $status_class, $modal );
+			wp_send_json_success( $return );
+		} else {
+			$msg = __( 'Unable to set score status', 'racketmanager' );
+			array_push( $return, $msg, $err_msg, $err_field );
+			wp_send_json_error( $return, '500' );
+		}
+	}
+	/**
+	 * Function to set match or rubber status details
+	 *
+	 * @param string $status status value.
+	 * @param int    $home_team home team id.
+	 * @param int    $away_team away_team id.
+	 */
+	public function set_status_details( $status, $home_team, $away_team ) {
+		$status_message = array();
+		$status_class   = array();
+		$status_values  = explode( '_', $status );
+		$status_value   = $status_values[0];
+		if ( isset( $status_values[1] ) ) {
+			$player_ref = $status_values[1];
+		}
+		switch ( $status_value ) {
+			case 'walkover':
+				$score_message = __( 'Walkover', 'racketmanager' );
+				if ( 'player2' === $player_ref ) {
+					$winner = $away_team;
+					$loser  = $home_team;
+				} elseif ( 'player1' === $player_ref ) {
+					$winner = $home_team;
+					$loser  = $away_team;
+				}
+				break;
+			case 'retired':
+				$score_message = __( 'Retired', 'racketmanager' );
+				if ( 'player1' === $player_ref ) {
+					$winner = $away_team;
+					$loser  = $home_team;
+				} elseif ( 'player2' === $player_ref ) {
+					$winner = $home_team;
+					$loser  = $away_team;
+				}
+				break;
+			case 'share':
+				$score_message = __( 'Shared', 'racketmanager' );
+				$winner        = null;
+				$loser         = null;
+				break;
+			default:
+				break;
+		}
+		if ( $winner ) {
+			$status_message[ $winner ] = '';
+			$status_message[ $loser ]  = $score_message;
+			$status_class[ $winner ]   = 'winner';
+			$status_class[ $loser ]    = 'loser';
+		} else {
+			$status_message[ $home_team ] = $score_message;
+			$status_message[ $away_team ] = $score_message;
+			$status_class[ $home_team ]   = 'tie';
+			$status_class[ $away_team ]   = 'tie';
+		}
+		$status_dtls          = new \stdClass();
+		$status_dtls->message = $status_message;
+		$status_dtls->class   = $status_class;
+		$status_dtls->status  = $status;
+		return $status_dtls;
 	}
 }

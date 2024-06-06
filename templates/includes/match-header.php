@@ -25,22 +25,22 @@ namespace Racketmanager;
 					}
 					?>
 					<div class="text-center mb-3">
-							<?php
-							if ( ! empty( $match->final_round ) ) {
-								?>
-								<span><?php echo esc_html( $match->league->championship->get_final_name( $match->final_round ) ); ?>&nbsp;&#8226</span>
-								<?php
-							} elseif ( ! empty( $match->match_day ) ) {
-								?>
-								<span><?php echo esc_html__( 'Match Day', 'racketmanager' ) . ' ' . esc_html( $match->match_day ); ?>&nbsp;&#8226</span>
-								<?php
-							}
-							if ( ! empty( $match->leg ) ) {
-								?>
-								<span><?php echo esc_html__( 'Leg', 'racketmanager' ) . ' ' . esc_html( $match->leg ); ?>&nbsp;&#8226</span>
-								<?php
-							}
+						<?php
+						if ( ! empty( $match->final_round ) ) {
 							?>
+							<span><?php echo esc_html( $match->league->championship->get_final_name( $match->final_round ) ); ?>&nbsp;&#8226</span>
+							<?php
+						} elseif ( ! empty( $match->match_day ) ) {
+							?>
+							<span><?php echo esc_html__( 'Match Day', 'racketmanager' ) . ' ' . esc_html( $match->match_day ); ?>&nbsp;&#8226</span>
+							<?php
+						}
+						if ( ! empty( $match->leg ) ) {
+							?>
+							<span><?php echo esc_html__( 'Leg', 'racketmanager' ) . ' ' . esc_html( $match->leg ); ?>&nbsp;&#8226</span>
+							<?php
+						}
+						?>
 						<span><time datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( 'j. F Y', the_match_date() ) ); ?></time></span>
 					</div>
 				</div>
@@ -145,6 +145,19 @@ namespace Racketmanager;
 					?>
 					<div class="text-center">
 						<?php esc_html_e( 'Start', 'racketmanager' ); ?>: <time datetime="<?php echo esc_attr( $match->date ); ?>"><?php the_match_time(); ?></time>
+					</div>
+					<?php
+				}
+				if ( $edit_mode && 'false' !== $edit_mode ) {
+					?>
+					<div class="text-center mt-2">
+						<a href="" class="nav__link btn btn-outline" id="matchStatusButton" onclick="Racketmanager.matchStatusModal(event, '<?php echo esc_attr( $match->id ); ?>')">
+							<svg width="16" height="16" class="icon-plus nav-link__prefix">
+								<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#plus-lg' ); ?>"></use>
+							</svg>
+							<span class="nav-link__value"><?php esc_html_e( 'Match status', 'racketmanager' ); ?></span>
+						</a>
+
 					</div>
 					<?php
 				}

@@ -76,7 +76,46 @@ if ( ! empty( $match->winner_id ) ) {
 	<div class="row mb-3">
 		<div id="updateResponse" class="updateResponse"></div>
 	</div>
-
+	<div class="alert_rm" id="matchAlert" style="display:none;">
+		<div class="alert__body">
+			<div class="alert__body-inner" id="alertResponse">
+			</div>
+		</div>
+	</div>
+	<?php
+	if ( $is_edit_mode && ( ( ! $match_complete || 'admin' === $user_type ) || $match_approval_mode ) ) {
+		if ( 'admin' === $user_type || ( 'away' !== $user_team && ! isset( $match->home_captain ) ) || ( 'home' !== $user_team && ! isset( $match->away_captain ) ) ) {
+			if ( $match_approval_mode ) {
+				$update_rubber = 'confirm';
+				$action_text   = __( 'Confirm Result', 'racketmanager' );
+			} else {
+				$update_rubber = 'results';
+				$action_text   = __( 'Save Result', 'racketmanager' );
+			}
+			?>
+			<div class="row mb-3">
+				<div class="col-12 match__buttons">
+					<input type="hidden" name="updateRubber" id="updateRubber" value="<?php echo esc_html( esc_html( $update_rubber ) ); ?>" />
+					<a tabindex="999" class="btn btn-plain text-uppercase" type="button" id="cancelResults" href="" onclick="Racketmanager.matchMode(event, '<?php echo esc_html( $match->id ); ?>', 'view');"><?php echo esc_html_e( 'Cancel', 'racketmanager' ); ?></a>
+					<button tabindex="500" class="btn btn-primary" type="button" id="updateRubberResults" onclick="Racketmanager.updateResults(this)"><?php echo esc_html( $action_text ); ?></button>
+				</div>
+			</div>
+			<?php
+		} else {
+			?>
+			<div class="mb-3">
+				<div class="alert_rm alert--warning">
+					<div class="alert__body">
+						<div class="alert__body-inner">
+							<span><?php esc_html_e( 'Team result already entered', 'racketmanager' ); ?></span>
+						</div>
+					</div>
+				</div>
+			</div>
+			<?php
+		}
+	}
+	?>
 	<input type="hidden" name="current_league_id" id="current_league_id" value="<?php echo esc_html( $match->league_id ); ?>" />
 	<input type="hidden" name="current_match_id" id="current_match_id" value="<?php echo esc_html( $match->id ); ?>" />
 	<input type="hidden" name="current_season" id="current_season" value="<?php echo esc_html( $match->season ); ?>" />
@@ -453,35 +492,6 @@ if ( ! empty( $match->winner_id ) ) {
 			</div>
 		</div>
 		<?php
-	}
-	?>
-	<?php
-	if ( $is_edit_mode && ( ( ! $match_complete || 'admin' === $user_type ) || $match_approval_mode ) ) {
-		if ( 'admin' === $user_type || ( 'away' !== $user_team && ! isset( $match->home_captain ) ) || ( 'home' !== $user_team && ! isset( $match->away_captain ) ) ) {
-			if ( $match_approval_mode ) {
-				$update_rubber = 'confirm';
-				$action_text   = __( 'Confirm Result', 'racketmanager' );
-			} else {
-				$update_rubber = 'results';
-				$action_text   = __( 'Save Result', 'racketmanager' );
-			}
-			?>
-			<div class="row mb-3">
-				<div class="col-12">
-					<input type="hidden" name="updateRubber" id="updateRubber" value="<?php echo esc_html( esc_html( $update_rubber ) ); ?>" />
-					<button tabindex="500" class="button button-primary" type="button" id="updateRubberResults" onclick="Racketmanager.updateResults(this)"><?php echo esc_html( $action_text ); ?></button>
-				</div>
-			</div>
-			<?php
-		} else {
-			?>
-			<div class="row mb-3">
-				<div class="col-12 updateResponse message-error">
-					<?php esc_html_e( 'Team result already entered', 'racketmanager' ); ?>
-				</div>
-			</div>
-			<?php
-		}
 	}
 	?>
 </form>

@@ -413,7 +413,7 @@ class Racketmanager_Ajax extends RacketManager {
 	/**
 	 * Update league with results of match
 	 *
-	 * @param object $match matach object.
+	 * @param object $match match object.
 	 * @return object
 	 */
 	public function update_league_with_result( $match ) {

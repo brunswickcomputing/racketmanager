@@ -138,7 +138,7 @@ $user_message    = $user_can_update_array[3];
 										<?php wp_nonce_field( 'rubbers-match', 'racketmanager_nonce' ); ?>
 										<input type="hidden" name="updated_form" value="new" />
 										<input type="hidden" name="current_match_id" id="current_match_id" value="<?php echo esc_html( $match->id ); ?>" />
-										<input type="hidden" name="match_status" id="match_status" value="<?php echo esc_html( $match_status ); ?>" />
+										<input type="hidden" name="new_match_status" id="match_status" value="<?php echo esc_html( $match_status ); ?>" />
 										<div class="alert_rm" id="matchAlert" style="display:none;">
 											<div class="alert__body">
 												<div class="alert__body-inner" id="alertResponse">

@@ -1045,7 +1045,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						} else {
 							$player_ref = null;
 						}
-						switch ( $match_status_values[0] ) {
+						switch ( $status_value ) {
 							case 'walkover':
 								if ( 'player1' !== $player_ref && 'player2' !== $player_ref ) {
 									$valid       = false;
@@ -1321,6 +1321,9 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		if ( isset( $status_values[1] ) ) {
 			$player_ref = $status_values[1];
 		}
+		$winner        = null;
+		$loser         = null;
+		$score_message = null;
 		switch ( $status_value ) {
 			case 'walkover':
 				$score_message = __( 'Walkover', 'racketmanager' );
@@ -1344,8 +1347,9 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				break;
 			case 'share':
 				$score_message = __( 'Shared', 'racketmanager' );
-				$winner        = null;
-				$loser         = null;
+				break;
+			case 'share':
+				$score_message = __( 'Postponed', 'racketmanager' );
 				break;
 			default:
 				break;
@@ -1355,11 +1359,14 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$status_message[ $loser ]  = $score_message;
 			$status_class[ $winner ]   = 'winner';
 			$status_class[ $loser ]    = 'loser';
-		} else {
+		} elseif ( 'shared' === $status_value ) {
 			$status_message[ $home_team ] = $score_message;
 			$status_message[ $away_team ] = $score_message;
 			$status_class[ $home_team ]   = 'tie';
 			$status_class[ $away_team ]   = 'tie';
+		} else {
+			$status_class[ $home_team ] = '';
+			$status_class[ $away_team ] = '';
 		}
 		$status_dtls          = new \stdClass();
 		$status_dtls->message = $status_message;

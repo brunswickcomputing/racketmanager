@@ -336,12 +336,17 @@ class Racketmanager_Ajax extends RacketManager {
 					}
 				}
 				if ( $user_can_update ) {
-					$rubber_result   = $this->update_rubber_results( $match, $rm_options );
-					$error           = $rubber_result[0];
-					$match_confirmed = $rubber_result[1];
-					$err_msg         = $rubber_result[2];
-					$err_field       = $rubber_result[3];
-					$updated_rubbers = $rubber_result[4];
+					$match_status = isset( $_POST['new_match_status'] ) ? sanitize_text_field( wp_unslash( $_POST['new_match_status'] ) ) : null;
+					if ( 'postponed' === $match_status ) {
+						$match_confirmed = 'D';
+					} else {
+						$rubber_result   = $this->update_rubber_results( $match, $rm_options, $match_status );
+						$error           = $rubber_result[0];
+						$match_confirmed = $rubber_result[1];
+						$err_msg         = $rubber_result[2];
+						$err_field       = $rubber_result[3];
+						$updated_rubbers = $rubber_result[4];
+					}
 				}
 			} elseif ( 'confirm' === $_POST['updateRubber'] ) {
 				$result_confirm  = isset( $_POST['resultConfirm'] ) ? sanitize_text_field( wp_unslash( $_POST['resultConfirm'] ) ) : null;
@@ -376,11 +381,15 @@ class Racketmanager_Ajax extends RacketManager {
 					$match_message = __( 'Result Challenged', 'racketmanager' );
 				} elseif ( 'P' === $match_confirmed ) {
 					$match_message = __( 'Result Saved', 'racketmanager' );
+				} elseif ( 'D' === $match_confirmed ) {
+					$match_message = __( 'Match postponed', 'racketmanager' );
 				} else {
 					$match_confirmed = '';
 				}
 				$msg = $match_message;
-				if ( ( 'A' === $match_confirmed && 'auto' === $result_confirmation ) || ( 'admin' === $user_type ) ) {
+				if ( 'D' === $match_confirmed ) {
+					$this->result_notification( $match_confirmed, $match_message, $match, $match_updated_by );
+				} elseif ( ( 'A' === $match_confirmed && 'auto' === $result_confirmation ) || ( 'admin' === $user_type ) ) {
 					$update = $this->update_league_with_result( $match );
 					$msg    = $update->msg;
 					if ( 'admin' !== $user_type ) {
@@ -453,8 +462,9 @@ class Racketmanager_Ajax extends RacketManager {
 	 *
 	 * @param object $match match details.
 	 * @param array  $options options for match.
+	 * @param string $new_match_status match status.
 	 */
-	public function update_rubber_results( $match, $options ) {
+	public function update_rubber_results( $match, $options, $new_match_status ) {
 		global $racketmanager, $league, $match;
 		$return              = array();
 		$error               = false;

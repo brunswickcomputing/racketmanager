@@ -2465,13 +2465,13 @@ class RacketManager {
 							$message = 'notCaptain';
 						}
 						if ( 'none' === $match_capability ) {
-								$message = 'noMatchCapability';
+							$message = 'noMatchCapability';
 						} elseif ( 'captain' === $match_capability || 'captain' === $user_type ) {
 							if ( 'captain' === $user_type ) {
 								if ( 'home' === $user_team ) {
 									$user_can_update = true;
 								} elseif ( 'home' === $result_entry ) {
-									if ( 'P' === $match_status ) {
+									if ( 'P' === $match_status || 'D' === $match_status ) {
 										$user_can_update = true;
 									}
 								} elseif ( 'either' === $result_entry ) {
@@ -2488,7 +2488,7 @@ class RacketManager {
 								)
 							);
 							if ( $home_club_player ) {
-								if ( $club->matchsecretary === $userid ) {
+								if ( (int) $club->matchsecretary === $userid ) {
 									$user_type = 'matchsecretary';
 								} else {
 									$user_type = 'player';
@@ -2504,7 +2504,7 @@ class RacketManager {
 								)
 							);
 							if ( $away_club_player ) {
-								if ( $club->matchsecretary === $userid ) {
+								if ( (int) $club->matchsecretary === $userid ) {
 									$user_type = 'matchsecretary';
 								} else {
 									$user_type = 'player';
@@ -2517,16 +2517,16 @@ class RacketManager {
 							}
 							if ( 'home' === $result_entry ) {
 								if ( in_array( $user_team, array( 'home', 'both' ), true ) ) {
-									if ( '' === $match_status ) {
+									if ( '' === $match_status || 'D' === $match_status ) {
 										$user_can_update = true;
 									}
 								} elseif ( 'away' === $user_team ) {
-									if ( 'P' === $match_status ) {
+									if ( 'P' === $match_status || 'D' === $match_status ) {
 										$user_can_update = true;
 									}
 								}
 							} elseif ( 'either' === $result_entry ) {
-								if ( $user_team && ( empty( $match_status ) || 'P' === $match_status ) ) {
+								if ( $user_team && ( empty( $match_status ) || 'P' === $match_status || 'D' === $match_status ) ) {
 									$user_can_update = true;
 								}
 							}

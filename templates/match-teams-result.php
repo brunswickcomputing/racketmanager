@@ -110,7 +110,7 @@ $user_message    = $user_can_update_array[3];
 								$match_approval_mode = false;
 								$match_editable      = false;
 								if ( $user_can_update && $is_edit_mode ) {
-									if ( empty( $match->confirmed ) || 'admin' === $user_type ) {
+									if ( empty( $match->confirmed ) || 'D' === $match->confirmed || 'admin' === $user_type ) {
 										$match_editable = 'is-editable';
 									} elseif ( 'P' === $match->confirmed ) {
 										$match_approval_mode = true;

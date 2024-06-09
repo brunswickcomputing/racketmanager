@@ -1208,7 +1208,9 @@ final class Racketmanager_Match {
 			);
 			return 'away';
 		} else {
-			$match_confirmed = 'A'; // Admin user.
+			if ( 'D' !== $match_confirmed ) {
+				$match_confirmed = 'A'; // Admin user.
+			}
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
 					"UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = %s, `comments` =%s WHERE `id` = %d",

@@ -367,14 +367,17 @@ class Racketmanager_Ajax extends RacketManager {
 		}
 		if ( ! $error ) {
 			if ( $match_confirmed ) {
-				if ( isset( $_POST['result_home'] ) ) {
-					$actioned_by = 'home';
-				} elseif ( isset( $_POST['result_away'] ) ) {
-					$actioned_by = 'away';
+				$actioned_by = '';
+				if ( 'D' !== $match_confirmed ) {
+					if ( isset( $_POST['result_home'] ) ) {
+						$actioned_by = 'home';
+					} elseif ( isset( $_POST['result_away'] ) ) {
+						$actioned_by = 'away';
+					}
+					$match_updated_by = $match->update_match_status( $match_confirmed, $match_comments, $confirm_comments, $user_team, $actioned_by );
 				} else {
-					$actioned_by = '';
+					$match_updated_by = $match->update_match_status( $match_confirmed, null, null, null, null );
 				}
-				$match_updated_by = $match->update_match_status( $match_confirmed, $match_comments, $confirm_comments, $user_team, $actioned_by );
 				if ( 'A' === $match_confirmed ) {
 					$match_message = __( 'Result Approved', 'racketmanager' );
 				} elseif ( 'C' === $match_confirmed ) {

@@ -1231,14 +1231,14 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 												<select class="form-select" name="score_status" id="score_status">
 													<option value="" disabled selected><?php esc_html_e( 'Status', 'racketmanager' ); ?></option>
 													<?php /* translators: %s: Home team name */ ?>
-													<option value="walkover_player1" <?php selected( 'walkover_player1', $status ); ?>><?php printf( esc_html__( 'Walkover - no %s team', 'racketmanager' ), esc_html( $home_name ) ); ?></option>
+													<option value="walkover_player2" <?php selected( 'walkover_player2', $status ); ?>><?php printf( esc_html__( 'Walkover - %s player(s) did not show', 'racketmanager' ), esc_html( $home_name ) ); ?></option>
 													<?php /* translators: %s: Away team name */ ?>
-													<option value="walkover_player2" <?php selected( 'walkover_player2', $status ); ?>><?php printf( esc_html__( 'Walkover - no %s team', 'racketmanager' ), esc_html( $away_name ) ); ?></option>
+													<option value="walkover_player1" <?php selected( 'walkover_player1', $status ); ?>><?php printf( esc_html__( 'Walkover - %s player(s) did not show', 'racketmanager' ), esc_html( $away_name ) ); ?></option>
 													<?php /* translators: %s: Home team name */ ?>
 													<option value="retired_player1" <?php selected( 'retired_player1', $status ); ?>><?php printf( esc_html__( 'Retired - %s player', 'racketmanager' ), esc_html( $home_name ) ); ?></option>
 													<?php /* translators: %s: Away team name */ ?>
 													<option value="retired_player2" <?php selected( 'retired_player2', $status ); ?>><?php printf( esc_html__( 'Retired - %s player', 'racketmanager' ), esc_html( $away_name ) ); ?></option>
-													<option value="share" <?php selected( 'share', $status ); ?>><?php esc_html_e( 'Shared - not played', 'racketmanager' ); ?></option>
+													<option value="share" <?php selected( 'share', $status ); ?>><?php esc_html_e( 'Not played', 'racketmanager' ); ?></option>
 												</select>
 											</div>
 											<div class="col-sm-6">

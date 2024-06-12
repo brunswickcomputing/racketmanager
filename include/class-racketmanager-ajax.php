@@ -241,11 +241,13 @@ class Racketmanager_Ajax extends RacketManager {
 				if ( 'auto' === $result_confirmation || ( current_user_can( 'manage_racketmanager' ) ) ) {
 					$update = $this->update_league_with_result( $match );
 					$msg    = $update->msg;
-					if ( current_user_can( 'manage_racketmanager' ) ) {
+					if ( ! current_user_can( 'manage_racketmanager' ) ) {
+						$match_confirmed = 'Y';
 						$this->result_notification( $match_confirmed, $match_message, $match );
 					}
+				} else {
+					$this->result_notification( $match_confirmed, $match_message, $match );
 				}
-				$this->result_notification( $match_confirmed, $match_message, $match );
 			} else {
 				$msg = __( 'No result to save', 'racketmanager' );
 			}

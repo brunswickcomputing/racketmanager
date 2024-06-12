@@ -129,7 +129,7 @@ if ( isset( $league->event->competition->entry_type ) && 'player' === $league->e
 																			<?php
 																			if ( isset( $team->rank ) && intval( $team->rank ) <= intval( $match->league->championship->num_seeds ) ) {
 																				?>
-																				<span><?php echo esc_html( $team->rank ); ?></span>
+																				<span class="seeding"><?php echo esc_html( $team->rank ); ?></span>
 																				<?php
 																			}
 																			?>
@@ -164,7 +164,7 @@ if ( isset( $league->event->competition->entry_type ) && 'player' === $league->e
 																		<?php
 																		if ( isset( $team->rank ) && intval( $team->rank ) <= intval( $match->league->championship->num_seeds ) ) {
 																			?>
-																			<span><?php echo esc_html( $team->rank ); ?></span>
+																			<span class="seeding"><?php echo esc_html( $team->rank ); ?></span>
 																			<?php
 																		}
 																		?>

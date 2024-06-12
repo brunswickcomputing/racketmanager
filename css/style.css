@@ -4632,7 +4632,13 @@ p.media__subheading {
 	text-transform: uppercase;
 	color: grey;
 }
-
+.seeding {
+    position: relative;
+    top: -8px;
+    letter-spacing: -0.2em;
+    font-size: 0.625rem;
+    line-height: 0.75rem;
+}
 .draws-score-row.round-1:before,
 .draws-score-row.last-round:after {
 	border: none;

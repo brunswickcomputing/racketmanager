@@ -54,7 +54,7 @@ namespace Racketmanager;
 							}
 							?>
 							<li class="nav-item nav-link <?php echo esc_html( $selected_class ); ?>" role="presentation">
-								<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/matches/<?php echo esc_html( $match_date ); ?>/" data-value="<?php echo esc_html( $match_date ); ?>" class="nav--link">
+								<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/matches/<?php echo esc_html( $match_date ); ?>/" data-value="<?php echo esc_html( $match_date ); ?>" class="nav-link__value">
 									<span class="date__weekday">
 										<?php echo esc_html( mysql2date( 'D', $match_date ) ); ?>
 									</span>

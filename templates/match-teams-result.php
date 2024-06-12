@@ -357,7 +357,7 @@ $user_message    = $user_can_update_array[3];
 																				$match_status_class  = 'tie';
 																				$match_message_class = 'match-warning';
 																				$match_status_text   = 'T';
-																				$match_message_text  = __( 'Shared', 'racketmanager' );
+																				$match_message_text  = __( 'Not played', 'racketmanager' );
 																			}
 																		}
 																		?>

@@ -581,7 +581,7 @@ class Racketmanager_Util {
 				$status_value = __( 'Retired', 'racketmanager' );
 				break;
 			case 3:
-				$status_value = __( 'Shared', 'racketmanager' );
+				$status_value = __( 'Not played', 'racketmanager' );
 				break;
 			default:
 				$status_value = __( 'Unknown', 'racketmanager' );

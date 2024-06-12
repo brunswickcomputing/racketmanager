@@ -376,6 +376,24 @@ Racketmanager.updateMatchResults = function (link) {
 	$form += "&action=racketmanager_update_match";
 	let notifyField = '#updateResponse';
 	let splash = '#splash';
+	let alert_id = jQuery('#matchAlert');
+	let use_alert = false;
+	if ( alert_id.length == 0 ) {
+		use_alert = false;
+	} else {
+		use_alert = true;
+	}
+	if (use_alert) {
+		jQuery(alert_id).hide();
+		jQuery(alert_id).removeClass('alert--success alert--warning alert--danger');
+		alert_response = '#alertResponse';
+	} else {
+		let notifyField = '#updateResponse';
+		jQuery(notifyField).removeClass("message-success");
+		jQuery(notifyField).removeClass("message-error");
+		jQuery(notifyField).val("");
+		jQuery(notifyField).hide();
+	}
 	jQuery(".is-invalid").removeClass("is-invalid");
 	jQuery(".winner").val("");
 	jQuery(".winner").removeClass("winner");
@@ -394,10 +412,16 @@ Racketmanager.updateMatchResults = function (link) {
 		success: function (response) {
 			let $response = response.data;
 			let $message = $response[0];
-			jQuery(notifyField).show();
-			jQuery(notifyField).html($message);
-			jQuery(notifyField).addClass('message-success');
-			jQuery(notifyField).delay(10000).fadeOut('slow');
+			if (use_alert) {
+				jQuery(alert_id).show();
+				jQuery(alert_id).addClass('alert--success');
+				jQuery(alert_response).html($message);
+			} else {
+				jQuery("#updateResponse").show();
+				jQuery("#updateResponse").addClass('message-success');
+				jQuery("#updateResponse").html($message);
+				jQuery("#updateResponse").delay(10000).fadeOut('slow');
+			}
 			let homepoints = $response[1];
 			let formfield = "#home_points";
 			let fieldval = homepoints;
@@ -422,6 +446,7 @@ Racketmanager.updateMatchResults = function (link) {
 			}
 		},
 		error: function (response) {
+			let feedback = '';
 			if (response.responseJSON) {
 				let data = response.responseJSON.data;
 				let $message = data[0];
@@ -433,13 +458,19 @@ Racketmanager.updateMatchResults = function (link) {
 					let $id = '#'.concat($errorField);
 					jQuery($id).addClass("is-invalid");
 				}
-				jQuery(notifyField).show();
-				jQuery(notifyField).html($message);
+				feedback = $message;
 			} else {
-				jQuery(notifyField).text(response.statusText);
+				feedback = response.statusText;
 			}
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-error');
+			if (use_alert) {
+				jQuery(alert_id).show();
+				jQuery(alert_id).addClass('alert--danger');
+				jQuery(alert_response).html(feedback);
+			} else {
+				jQuery(notifyField).html(feedback); 
+				jQuery(notifyField).show();
+				jQuery(notifyField).addClass('message-error');
+			}
 		},
 		complete: function () {
 			jQuery(splash).css('opacity', 0);
@@ -1227,6 +1258,32 @@ Racketmanager.setMatchStatus = function (link) {
 					let matchStatusRef = '#match_status_' + rubberNumber;
 					jQuery(matchStatusRef).attr('value', scoreStatus);
 				}
+			} else {
+				for (let i in statusMessages) {
+					let statusMessage = statusMessages[i];
+					let teamRef = statusMessage[0];
+					let teamMessage = statusMessage[1];
+					let messageRef = '#match-message-' + teamRef;
+					if ( teamMessage ) {
+						jQuery(messageRef).html(teamMessage);
+						jQuery(messageRef).removeClass('d-none');
+						jQuery(messageRef).addClass('match-warning');
+					} else {
+						jQuery(messageRef).addClass('d-none');
+						jQuery(messageRef).removeClass('match-warning');
+						jQuery(messageRef).html('');
+					}
+				}
+				for (let i in statusClasses) {
+					let statusClass = statusClasses[i];
+					let teamRef = statusClass[0];
+					let teamClass = statusClass[1];
+					let statusRef = '#match-status-' + teamRef;
+					jQuery(statusRef).removeClass('winner loser tie');
+					if ( teamClass ) {
+						jQuery(statusRef).addClass(teamClass);
+					}
+				}
 			}
 			let matchStatusRef = '#match_status';
 			jQuery(matchStatusRef).attr('value', scoreStatus);
@@ -1370,6 +1427,44 @@ Racketmanager.setMatchRubberStatus = function (link) {
 		}
 	});
 }
+Racketmanager.statusModal = function (event, match_id) {
+	event.preventDefault();
+	let notifyField = "#scoreStatusModal";
+	let matchStatus = jQuery('#match_status').val();
+	let modal = 'scoreStatusModal';
+	jQuery(notifyField).val("");
+
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: {
+			"match_id": match_id,
+			"modal": modal,
+			"match_status": matchStatus,
+			"action": "racketmanager_match_status",
+			"security": ajax_var.ajax_nonce,
+		},
+		success: function (response) {
+			jQuery(notifyField).empty();
+			jQuery(notifyField).html(response.data);
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				let message = response.responseJSON.data;
+				jQuery(notifyField).show();
+				jQuery(notifyField).html(message);
+			} else {
+				jQuery(notifyField).text(response.statusText);
+			}
+			jQuery(notifyField).show();
+			jQuery(notifyField).addClass('message-error');
+		},
+		complete: function () {
+			jQuery(notifyField).show();
+			jQuery(notifyField).modal('show');
+		}
+	});
+};
 function activaTab(tab) {
 	jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');
 	jQuery('.nav-pills button[data-bs-target="#' + tab + '"]').tab('show');

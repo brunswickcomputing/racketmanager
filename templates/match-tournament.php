@@ -17,6 +17,7 @@ $tournament_link    = empty( $tournament ) ? null : '/tournament/' . seo_url( $t
 $winner             = null;
 $winner_set         = null;
 $loser              = null;
+$is_tie             = false;
 $user_can_update    = $user_can_update_array[0];
 $user_type          = $user_can_update_array[1];
 $user_message       = $user_can_update_array[3];
@@ -32,6 +33,7 @@ if ( $user_can_update ) {
 ?>
 <?php
 if ( $match ) {
+	$match_status = null;
 	if ( ! empty( $match->winner_id ) ) {
 		$match_complete = true;
 		if ( $match->winner_id === $match->teams['home']->id ) {
@@ -40,11 +42,28 @@ if ( $match ) {
 		} elseif ( $match->winner_id === $match->teams['away']->id ) {
 			$winner = 'away';
 			$loser  = 'home';
+		} elseif ( '-1' === $match->winner_id ) {
+			$is_tie = true;
 		}
 		if ( $winner === $player_team ) {
 			$player_team_status = 'winner';
 		} elseif ( $loser === $player_team ) {
 			$player_team_status = 'loser';
+		}
+		if ( $match->is_walkover ) {
+			if ( 'home' === $match->custom['walkover'] ) {
+				$match_status = 'walkover_player1';
+			} elseif ( 'away' === $match->custom['walkover'] ) {
+				$match_status = 'walkover_player2';
+			}
+		} elseif ( $match->is_retired ) {
+			if ( 'home' === $match->custom['retired'] ) {
+				$match_status = 'retired_player1';
+			} elseif ( 'away' === $match->custom['retired'] ) {
+				$match_status = 'retired_player2';
+			}
+		} elseif ( $match->is_shared ) {
+			$match_status = 'share';
 		}
 	}
 	?>
@@ -185,6 +204,33 @@ if ( $match ) {
 				<input type="hidden" name="match_type" value="tournament" />
 				<input type="hidden" name="match_round" value="<?php echo esc_html( $match->final_round ); ?>" />
 				<input type="hidden" name="updateMatch" id="updateMatch" value="results" />
+				<input name="match_status" type="hidden" id="match_status" value="<?php echo esc_attr( $match_status ); ?>" />
+				<?php
+				$page_referrer = wp_get_referer();
+				if ( ! $page_referrer ) {
+					if ( ! empty( $tournament ) ) {
+						$page_referrer = $tournament->link . 'matches/';
+					}
+				}
+				?>
+				<div class="alert_rm" id="matchAlert" style="display:none;">
+					<div class="alert__body">
+						<div class="alert__body-inner" id="alertResponse">
+						</div>
+					</div>
+				</div>
+				<div class="match__buttons mb-3">
+					<a href="<?php echo esc_url( $page_referrer ); ?>">
+						<button tabindex="500" class="btn btn-plain" type="button"><?php esc_html_e( 'Return', 'racketmanager' ); ?></button>
+					</a>
+					<?php
+					if ( $user_can_update ) {
+						?>
+						<button tabindex="500" class="btn btn-primary" type="button" id="updateMatchResults" onclick="Racketmanager.updateMatchResults(this)"><?php esc_html_e( 'Save', 'racketmanager' ); ?></button>
+						<?php
+					}
+					?>
+				</div>
 				<div class="match <?php echo esc_attr( $match_editable ); ?> tournament-match">
 					<div class="match__header">
 						<ul class="match__header-title">
@@ -201,15 +247,22 @@ if ( $match ) {
 								<?php echo esc_html( $match->league->title ); ?>
 							</li>
 						</ul>
-						<div class="match__header-aside">
-							<?php
-							if ( $user_can_update ) {
-								?>
-								<button tabindex="500" class="button button-primary" type="button" id="updateMatchResults" onclick="Racketmanager.updateMatchResults(this)"><?php esc_html_e( 'Save', 'racketmanager' ); ?></button>
-								<?php
-							}
+						<?php
+						if ( $user_can_update ) {
 							?>
-						</div>
+							<div class="match__header-aside text-uppercase">
+								<div class="match__header-aside-block">
+									<a href="" class="nav__link" onclick="Racketmanager.statusModal(event, '<?php echo esc_attr( $match->id ); ?>')">
+										<svg width="16" height="16" class="icon-plus nav-link__prefix">
+											<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#plus-lg' ); ?>"></use>
+										</svg>
+										<span class="nav-link__value"><?php esc_html_e( 'Match status', 'racketmanager' ); ?></span>
+									</a>
+								</div>
+							</div>
+							<?php
+						}
+						?>
 					</div>
 					<div id="splash" class="d-none">
 						<div class="d-flex justify-content-center">
@@ -223,17 +276,14 @@ if ( $match ) {
 							<?php
 							$opponents = array( 'home', 'away' );
 							foreach ( $opponents as $opponent ) {
+								$is_winner    = false;
+								$is_loser     = false;
+								$winner_class = null;
 								if ( $winner === $opponent ) {
 									$is_winner    = true;
 									$winner_class = ' winner';
-								} else {
-									$is_winner    = false;
-									$winner_class = '';
-								}
-								if ( $loser === $opponent ) {
+								} elseif ( $loser === $opponent ) {
 									$is_loser = true;
-								} else {
-									$is_loser = false;
 								}
 								?>
 								<div class="match__row <?php echo esc_html( $winner_class ); ?>">
@@ -293,6 +343,11 @@ if ( $match ) {
 											$match_message_class = 'match-warning';
 											$match_message_text  = __( 'Retired', 'racketmanager' );
 										}
+									} elseif ( $is_tie ) {
+										$match_status_class  = 'tie';
+										$match_message_class = 'match-warning';
+										$match_status_text   = 'T';
+										$match_message_text  = __( 'Not played', 'racketmanager' );
 									}
 									?>
 									<span class="match__message <?php echo esc_attr( $match_message_class ); ?>" id="match-message-<?php echo esc_attr( $match->teams[ $opponent ]->id ); ?>">
@@ -307,21 +362,6 @@ if ( $match ) {
 							?>
 						</div>
 						<div class="match__result">
-							<?php
-							if ( 'admin' === $user_type ) {
-								?>
-								<div class="walkover" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_html_e( 'Walkover', 'racketmanager' ); ?>">
-									<div class="form-check">
-										<input class="form-check-input" name="match_status" type="radio" value="walkover_player1" id="walkover_player1" aria-describedby="<?php esc_html_e( 'Team 1 walkover', 'racketmanager' ); ?>">
-									</div>
-									<div class="match__result-status"><?php echo esc_html_e( 'W/O', 'racketmanager' ); ?></div>
-									<div class="form-check">
-										<input class="form-check-input" name="match_status" type="radio" value="walkover_player2" id="walkover_player2" aria-describedby="<?php esc_html_e( 'Team 2 walkover', 'racketmanager' ); ?>">
-									</div>
-								</div>
-								<?php
-							}
-							?>
 							<?php
 							$sets = $match->sets;
 							for ( $i = 1; $i <= $match->league->num_sets; $i++ ) {
@@ -404,15 +444,6 @@ if ( $match ) {
 								<?php
 							}
 							?>
-							<div class="walkover" data-bs-toggle="tooltip" data-bs-placement="right" title="<?php echo esc_html_e( 'Retired', 'racketmanager' ); ?>">
-								<div class="form-check">
-									<input class="form-check-input" name="match_status" type="radio" value="retired_player1" id="retired_player1" aria-describedby="<?php esc_html_e( 'Team 1 retirement', 'racketmanager' ); ?>">
-								</div>
-								<div class="match__result-status">Ret</div>
-								<div class="form-check">
-									<input class="form-check-input" name="match_status" type="radio" value="retired_player2" id="retired_player2" aria-describedby="<?php esc_html_e( 'Team 2 retirement', 'racketmanager' ); ?>">
-								</div>
-							</div>
 						</div>
 					</div>
 					<div class="match__footer">
@@ -431,45 +462,10 @@ if ( $match ) {
 						?>
 					</div>
 				</div>
-				<?php
-				if ( $user_can_update ) {
-					?>
-					<div class="row mb-3">
-						<div id="updateResponse" class="updateResponse"></div>
-					</div>
-					<?php
-				} else {
-					?>
-					<div class="row mb-3 justify-content-center">
-						<div class="col-auto">
-							<?php
-							if ( 'notLoggedIn' === $user_message ) {
-								?>
-								You need to <a href="<?php echo esc_html( wp_login_url( wp_get_current_url() ) ); ?>">login</a> to update the result.
-								<?php
-							} else {
-								esc_html_e( 'User not allowed to update result', 'racketmanager' );
-							}
-							?>
-						</div>
-					</div>
-					<?php
-				}
-				$page_referrer = wp_get_referer();
-				if ( ! $page_referrer ) {
-					if ( ! empty( $tournament ) ) {
-						$page_referrer = $tournament->link . 'matches/';
-					}
-				}
-				?>
-				<div class="col-6">
-					<a href="<?php echo esc_url( $page_referrer ); ?>">
-						<button tabindex="500" class="btn btn-secondary" type="button"><?php esc_html_e( 'Return', 'racketmanager' ); ?></button>
-					</a>
-				</div>
 			</form>
 		</div>
 	</div>
+	<?php require RACKETMANAGER_PATH . 'templates/includes/modal-score.php'; ?>
 	<?php
 }
 ?>

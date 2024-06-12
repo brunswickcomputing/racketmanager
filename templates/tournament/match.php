@@ -35,6 +35,7 @@ if ( isset( $match->teams['home'] ) && isset( $match->teams['away'] ) ) {
 $match_type         = strtolower( substr( $match->league->type, 1, 1 ) );
 $winner             = null;
 $loser              = null;
+$is_tie             = null;
 $winner_set         = null;
 $player_team        = null;
 $player_team_status = null;
@@ -57,6 +58,8 @@ if ( ! empty( $match->winner_id ) ) {
 		$winner     = 'away';
 		$loser      = 'home';
 		$winner_set = 'player2';
+	} elseif ( '-1' === $match->winner_id ) {
+		$is_tie = true;
 	}
 	if ( $winner === $player_team ) {
 		$player_team_status = 'winner';
@@ -186,6 +189,10 @@ if ( ! empty( $match->winner_id ) ) {
 									<span class="match__status loser">L</span>
 									<?php
 								}
+							} elseif ( $is_tie ) {
+								?>
+								<span class="match__message match-warning"><?php esc_html_e( 'Not played', 'racketmanager' ); ?></span>
+								<?php
 							}
 							?>
 						</div>

@@ -464,9 +464,18 @@ final class Racketmanager_Match {
 			switch ( $this->status ) {
 				case 1:
 					$this->is_walkover = true;
+					$this->is_shared   = false;
+					$this->is_retired  = false;
+					break;
+				case 2:
+					$this->is_retired  = true;
+					$this->is_walkover = false;
+					$this->is_shared   = false;
 					break;
 				case 3:
-					$this->is_shared = true;
+					$this->is_shared   = true;
+					$this->is_walkover = false;
+					$this->is_retired  = false;
 					break;
 				default:
 					break;

@@ -1039,10 +1039,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 												<?php
 												if ( 'player' !== $match->league->event->competition->entry_type ) {
 													?>
-												<li class="list__item">
-													<dt class=""><?php esc_html_e( 'Postponed', 'racketmanager' ); ?></dt>
-													<dd class=""><?php esc_html_e( 'The match has not started and will be played another time.', 'racketmanager' ); ?></dd>
-												</li>
+													<li class="list__item">
+														<dt class=""><?php esc_html_e( 'Postponed', 'racketmanager' ); ?></dt>
+														<dd class=""><?php esc_html_e( 'The match has not started and will be played another time.', 'racketmanager' ); ?></dd>
+													</li>
 													<?php
 												}
 												?>
@@ -1052,8 +1052,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 								</div>
 							</div>
 							<div class="modal-footer">
-							<button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
-									<button type="button" class="btn btn-primary" onclick="Racketmanager.setMatchStatus(this)"><?php esc_html_e( 'Save', 'racketmanager' ); ?></button>
+								<button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
+								<button type="button" class="btn btn-primary" onclick="Racketmanager.setMatchStatus(this)"><?php esc_html_e( 'Save', 'racketmanager' ); ?></button>
 							</div>
 						</form>
 					</div>
@@ -1252,7 +1252,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 														<dd class=""><?php esc_html_e( 'A player retired from a match in progress.', 'racketmanager' ); ?></dd>
 													</li>
 													<li class="list__item">
-														<dt class=""><?php esc_html_e( 'Shared', 'racketmanager' ); ?></dt>
+														<dt class=""><?php esc_html_e( 'Not played', 'racketmanager' ); ?></dt>
 														<dd class=""><?php esc_html_e( 'Not played (and will not be played)', 'racketmanager' ); ?></dd>
 													</li>
 												</ul>
@@ -1409,9 +1409,9 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				}
 				break;
 			case 'share':
-				$score_message = __( 'Shared', 'racketmanager' );
+				$score_message = __( 'Not played', 'racketmanager' );
 				break;
-			case 'share':
+			case 'postponed':
 				$score_message = __( 'Postponed', 'racketmanager' );
 				break;
 			default:
@@ -1422,7 +1422,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$status_message[ $loser ]  = $score_message;
 			$status_class[ $winner ]   = 'winner';
 			$status_class[ $loser ]    = 'loser';
-		} elseif ( 'shared' === $status_value ) {
+		} elseif ( 'share' === $status_value ) {
 			$status_message[ $home_team ] = $score_message;
 			$status_message[ $away_team ] = $score_message;
 			$status_class[ $home_team ]   = 'tie';

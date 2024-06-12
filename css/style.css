@@ -3515,12 +3515,6 @@ span.match_time {
 	padding: 1.0rem 15px !important
 }
 
-@media (min-width: 768px) {
-	.wrapper--padding-medium {
-		padding: 2rem !important
-	}
-}
-
 .walkover {
 	align-self: center;
 	background-color: rgba(36, 126, 0, .2);

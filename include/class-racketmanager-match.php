@@ -539,6 +539,8 @@ final class Racketmanager_Match {
 			}
 			if ( $this->league->event->is_box ) {
 				$this->link = '/league/' . seo_url( $this->league->title ) . '/match/' . $this->id . '/';
+			} elseif ( 'tournament' === $this->league->event->competition->type ) {
+				$this->link = '/league/' . seo_url( $this->league->title ) . '/match/' . $this->id . '/';
 			} else {
 				$this->link = '/match/' . seo_url( $this->league->title ) . '/' . $this->season . '/' . $match_ref . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/';
 			}

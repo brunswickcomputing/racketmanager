@@ -1234,11 +1234,11 @@ final class Racketmanager_Match {
 		$match = array();
 		if ( ! empty( $this->custom['walkover'] ) || 1 === $this->status ) {
 			if ( 'home' === $this->custom['walkover'] ) {
-				$match['loser']  = $this->home_team;
-				$match['winner'] = $this->away_team;
-			} elseif ( 'away' === $this->custom['walkover'] ) {
-				$match['loser']  = $this->away_team;
 				$match['winner'] = $this->home_team;
+				$match['loser']  = $this->away_team;
+			} elseif ( 'away' === $this->custom['walkover'] ) {
+				$match['winner'] = $this->away_team;
+				$match['loser']  = $this->home_team;
 			}
 		} elseif ( ! empty( $this->custom['retired'] ) ) {
 			if ( 'away' === $this->custom['retired'] ) {

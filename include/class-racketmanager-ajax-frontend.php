@@ -943,8 +943,47 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						$status = null;
 					}
 				}
-				$home_name = $match->teams['home']->title;
-				$away_name = $match->teams['away']->title;
+				$home_name      = $match->teams['home']->title;
+				$away_name      = $match->teams['away']->title;
+				$select         = array();
+				$option         = new \stdClass();
+				$option->value  = 'walkover_player2';
+				$option->select = 'walkover_player2';
+				/* translators: %s: Home team name */
+				$option->desc   = sprintf( __( 'Match not played - %s did not show', 'racketmanager' ), $home_name );
+				$select[]       = $option;
+				$option         = new \stdClass();
+				$option->value  = 'walkover_player1';
+				$option->select = 'walkover_player1';
+				/* translators: %s: Away team name */
+				$option->desc = sprintf( __( 'Match not played - %s did not show', 'racketmanager' ), $away_name );
+				$select[]     = $option;
+				if ( 'player' === $match->league->event->competition->entry_type ) {
+					$option         = new \stdClass();
+					$option->value  = 'retired_player1';
+					$option->select = 'retired_player1';
+					/* translators: %s: Home team name */
+					$option->desc   = sprintf( __( 'Retired - %s', 'racketmanager' ), $home_name );
+					$select[]       = $option;
+					$option         = new \stdClass();
+					$option->value  = 'retired_player2';
+					$option->select = 'retired_player2';
+					/* translators: %s: Away team name */
+					$option->desc = sprintf( __( 'Retired - %s', 'racketmanager' ), $away_name );
+					$select[]     = $option;
+				}
+				$option         = new \stdClass();
+				$option->value  = 'share';
+				$option->select = 'share';
+				$option->desc   = __( 'Not played', 'racketmanager' );
+				$select[]       = $option;
+				if ( 'player' !== $match->league->event->competition->entry_type ) {
+					$option         = new \stdClass();
+					$option->value  = 'postponed';
+					$option->select = 'postponed';
+					$option->desc   = __( 'Postponed', 'racketmanager' );
+					$select[]       = $option;
+				}
 				ob_start();
 				?>
 				<div class="modal-dialog modal-dialog-centered modal-lg">
@@ -968,12 +1007,13 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 										<div class="col-sm-6">
 											<select class="form-select" name="match_status" id="match_status">
 												<option value="" disabled selected><?php esc_html_e( 'Status', 'racketmanager' ); ?></option>
-												<?php /* translators: %s: Home team name */ ?>
-												<option value="walkover_player2" <?php selected( 'walkover_player2', $status ); ?>><?php printf( esc_html__( 'Match not played - no %s team', 'racketmanager' ), esc_html( $home_name ) ); ?></option>
-												<?php /* translators: %s: Away team name */ ?>
-												<option value="walkover_player1" <?php selected( 'walkover_player1', $status ); ?>><?php printf( esc_html__( 'Match not played - no %s team', 'racketmanager' ), esc_html( $away_name ) ); ?></option>
-												<option value="share" <?php selected( 'share', $status ); ?>><?php esc_html_e( 'Not played', 'racketmanager' ); ?></option>
-												<option value="postponed"><?php esc_html_e( 'Postponed', 'racketmanager' ); ?></option>
+												<?php
+												foreach ( $select as $option ) {
+													?>
+													<option value="<?php echo esc_attr( $option->value ); ?>" <?php selected( $option->select, $status ); ?>><?php echo esc_html( $option->desc ); ?></option>
+													<?php
+												}
+												?>
 											</select>
 										</div>
 										<div class="col-sm-6">
@@ -982,14 +1022,30 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 													<dt class=""><?php esc_html_e( 'Match not played and one team did not show', 'racketmanager' ); ?></dt>
 													<dd class=""><?php esc_html_e( 'The match has not started and at least one team cannot play.', 'racketmanager' ); ?></dd>
 												</li>
+												<?php
+												if ( ! $match->league->num_rubbers ) {
+													?>
+														<li class="list__item">
+															<dt class=""><?php esc_html_e( 'Retired', 'racketmanager' ); ?></dt>
+															<dd class=""><?php esc_html_e( 'A player retired from a match in progress.', 'racketmanager' ); ?></dd>
+														</li>
+														<?php
+												}
+												?>
 												<li class="list__item">
 													<dt class=""><?php esc_html_e( 'Not played', 'racketmanager' ); ?></dt>
 													<dd class=""><?php esc_html_e( 'Not played (and will not be played)', 'racketmanager' ); ?></dd>
 												</li>
+												<?php
+												if ( 'player' !== $match->league->event->competition->entry_type ) {
+													?>
 												<li class="list__item">
 													<dt class=""><?php esc_html_e( 'Postponed', 'racketmanager' ); ?></dt>
 													<dd class=""><?php esc_html_e( 'The match has not started and will be played another time.', 'racketmanager' ); ?></dd>
 												</li>
+													<?php
+												}
+												?>
 											</ul>
 										</div>
 									</div>

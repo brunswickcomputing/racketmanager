@@ -179,44 +179,47 @@ class Racketmanager_Ajax extends RacketManager {
 			$err_field[] = '';
 			$err_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
 		} else {
-			$match_id                    = isset( $_POST['current_match_id'] ) ? intval( $_POST['current_match_id'] ) : 0;
-			$match                       = get_match( $match_id );
-			$league                      = get_league( $match->league_id );
-			$match_round                 = isset( $_POST['match_round'] ) ? sanitize_text_field( wp_unslash( $_POST['match_round'] ) ) : null;
-			$match_confirmed             = 'P';
-			$matches[ $match_id ]        = $match_id;
-			$home_points[ $match_id ]    = 0;
-			$away_points[ $match_id ]    = 0;
-			$home_team[ $match_id ]      = isset( $_POST['home_team'] ) ? intval( $_POST['home_team'] ) : null;
-			$away_team[ $match_id ]      = isset( $_POST['away_team'] ) ? intval( $_POST['away_team'] ) : null;
-			$custom[ $match_id ]['sets'] = isset( $_POST['sets'] ) ? $_POST['sets'] : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			$season                      = isset( $_POST['current_season'] ) ? sanitize_text_field( wp_unslash( $_POST['current_season'] ) ) : null;
-			$match_status                = isset( $_POST['match_status'] ) ? sanitize_text_field( wp_unslash( $_POST['match_status'] ) ) : null;
-			$set_prefix                  = 'set_';
-			$errors['err_msg']           = $err_msg;
-			$errors['err_field']         = $err_field;
-			$sets                        = isset( $custom[ $match_id ]['sets'] ) ? $custom[ $match_id ]['sets'] : null;
-			$match_validate              = $this->validate_match_score( $match, $sets, $set_prefix, $errors, false, $match_status );
-			$error                       = $match_validate[0];
-			$err_msg                     = $match_validate[1];
-			$home_points[ $match_id ]    = $match_validate[3];
-			$away_points[ $match_id ]    = $match_validate[4];
-			$err_field                   = $match_validate[2];
-			$sets                        = $match_validate[5];
-			$custom[ $match_id ]['sets'] = $sets;
+			$match_id            = isset( $_POST['current_match_id'] ) ? intval( $_POST['current_match_id'] ) : 0;
+			$match               = get_match( $match_id );
+			$league              = get_league( $match->league_id );
+			$match_round         = isset( $_POST['match_round'] ) ? sanitize_text_field( wp_unslash( $_POST['match_round'] ) ) : null;
+			$match_confirmed     = 'P';
+			$matches             = $match_id;
+			$home_points         = 0;
+			$away_points         = 0;
+			$home_team           = isset( $_POST['home_team'] ) ? intval( $_POST['home_team'] ) : null;
+			$away_team           = isset( $_POST['away_team'] ) ? intval( $_POST['away_team'] ) : null;
+			$custom['sets']      = isset( $_POST['sets'] ) ? $_POST['sets'] : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$season              = isset( $_POST['current_season'] ) ? sanitize_text_field( wp_unslash( $_POST['current_season'] ) ) : null;
+			$match_status        = isset( $_POST['match_status'] ) ? sanitize_text_field( wp_unslash( $_POST['match_status'] ) ) : null;
+			$set_prefix          = 'set_';
+			$errors['err_msg']   = $err_msg;
+			$errors['err_field'] = $err_field;
+			$sets                = isset( $custom['sets'] ) ? $custom['sets'] : null;
+			$match_validate      = $this->validate_match_score( $match, $sets, $set_prefix, $errors, false, $match_status );
+			$error               = $match_validate[0];
+			$err_msg             = $match_validate[1];
+			$home_points         = $match_validate[3];
+			$away_points         = $match_validate[4];
+			$err_field           = $match_validate[2];
+			$sets                = $match_validate[5];
+			$custom['sets']      = $sets;
 			if ( $match_status ) {
 				switch ( $match_status ) {
 					case 'walkover_player1':
-						$custom[ $match_id ]['walkover'] = 'home';
+						$custom['walkover'] = 'home';
 						break;
 					case 'walkover_player2':
-						$custom[ $match_id ]['walkover'] = 'away';
+						$custom['walkover'] = 'away';
 						break;
 					case 'retired_player1':
-						$custom[ $match_id ]['retired'] = 'home';
+						$custom['retired'] = 'home';
 						break;
 					case 'retired_player2':
-						$custom[ $match_id ]['retired'] = 'away';
+						$custom['retired'] = 'away';
+						break;
+					case 'share':
+						$custom['share'] = 'true';
 						break;
 					default:
 						break;
@@ -226,15 +229,15 @@ class Racketmanager_Ajax extends RacketManager {
 
 		if ( ! $error ) {
 			$match->update_sets( $sets );
-			$match_count = $league->update_match_results( $matches, $home_points, $away_points, $custom, $season, $match_round, $match_confirmed );
-			if ( $match_count > 0 ) {
-				$match_message            = __( 'Result saved', 'racketmanager' );
-				$match                    = get_match( $match_id );
-				$home_points[ $match_id ] = $match->home_points;
-				$away_points[ $match_id ] = $match->away_points;
-				$msg                      = $match_message;
-				$rm_options               = $racketmanager->get_options();
-				$result_confirmation      = $rm_options[ $match->league->event->competition->type ]['resultConfirmation'];
+			$match_updated = $match->update_result( $home_points, $away_points, $custom, $match_confirmed );
+			if ( $match_updated ) {
+				$match_message       = __( 'Result saved', 'racketmanager' );
+				$match               = get_match( $match_id );
+				$home_points         = $match->home_points;
+				$away_points         = $match->away_points;
+				$msg                 = $match_message;
+				$rm_options          = $racketmanager->get_options();
+				$result_confirmation = $rm_options[ $match->league->event->competition->type ]['resultConfirmation'];
 				if ( 'auto' === $result_confirmation || ( current_user_can( 'manage_racketmanager' ) ) ) {
 					$update = $this->update_league_with_result( $match );
 					$msg    = $update->msg;

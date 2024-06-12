@@ -121,6 +121,27 @@ foreach ( $matches as $match ) {
 						?>
 					</span>
 					<?php
+					if ( $match->status ) {
+						switch ( $match->status ) {
+							case '1':
+								$match_message = __( 'No show', 'racketmanager' );
+								break;
+							case '2':
+								$match_message = __( 'Retired', 'racketmanager' );
+								break;
+							case '3':
+								$match_message = __( 'Not played', 'racketmanager' );
+								break;
+							default:
+								$match_message = __( 'Unknown', 'racketmanager' );
+								break;
+						}
+						?>
+						<span class="match__message match-warning"><?php echo esc_html( $match_message ); ?></span>
+						<?php
+					}
+					?>
+					<?php
 					if ( ! $match_pending && $highlight_match ) {
 						?>
 						<span class="match__status <?php echo esc_attr( $match_status_class ); ?>"><?php echo esc_attr( $match_status_text ); ?></span>

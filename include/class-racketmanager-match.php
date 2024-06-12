@@ -877,7 +877,6 @@ final class Racketmanager_Match {
 	 * @return boolean
 	 */
 	public function update_result( $home_points_input, $away_points_input, $custom, $confirmed = 'Y' ) {
-		global $racketmanager;
 		$bye            = false;
 		$updated        = false;
 		$home_win       = 0;
@@ -1249,6 +1248,7 @@ final class Racketmanager_Match {
 				$match['winner'] = $this->away_team;
 				$match['loser']  = $this->home_team;
 			}
+			$this->status = 1;
 		} elseif ( ! empty( $this->custom['retired'] ) ) {
 			if ( 'away' === $this->custom['retired'] ) {
 				$match['winner'] = $this->home_team;
@@ -1257,6 +1257,11 @@ final class Racketmanager_Match {
 				$match['winner'] = $this->away_team;
 				$match['loser']  = $this->home_team;
 			}
+			$this->status = 2;
+		} elseif ( ! empty( $this->custom['shared'] ) && 'true' === $this->custom['shared'] ) {
+			$match['winner'] = -1;
+			$match['loser']  = -1;
+			$this->status    = 3;
 		} elseif ( $home_points > $away_points ) {
 			$match['winner'] = $this->home_team;
 			$match['loser']  = $this->away_team;
@@ -1275,6 +1280,7 @@ final class Racketmanager_Match {
 		} else {
 			$match['winner'] = -1;
 			$match['loser']  = -1;
+			$this->status    = 3;
 		}
 		$this->winner_id = $match['winner'];
 		$this->loser_id  = $match['loser'];

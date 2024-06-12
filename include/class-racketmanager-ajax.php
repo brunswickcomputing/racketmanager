@@ -196,7 +196,7 @@ class Racketmanager_Ajax extends RacketManager {
 			$errors['err_msg']           = $err_msg;
 			$errors['err_field']         = $err_field;
 			$sets                        = isset( $custom[ $match_id ]['sets'] ) ? $custom[ $match_id ]['sets'] : null;
-			$match_validate              = $this->validate_match_score( $match, $sets, $set_prefix, $errors, false, null, null, $match_status );
+			$match_validate              = $this->validate_match_score( $match, $sets, $set_prefix, $errors, false, $match_status );
 			$error                       = $match_validate[0];
 			$err_msg                     = $match_validate[1];
 			$home_points[ $match_id ]    = $match_validate[3];

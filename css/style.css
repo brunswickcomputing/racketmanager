@@ -4687,6 +4687,9 @@ p.media__subheading {
 a:hover .nav-link__value, a:focus .nav-link__value {
 	color: #006800;
 }
+.module--dark a:hover .nav-link__value, a:focus .nav-link__value {
+	color: #FFF;
+}
 .nav-link__prefix {
     margin-bottom: 0.375rem;
 }

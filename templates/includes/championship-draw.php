@@ -50,6 +50,7 @@ if ( isset( $league->event->competition->entry_type ) && 'player' === $league->e
 							if ( empty( $match->leg ) || '2' === $match->leg ) {
 								$winner = null;
 								$loser  = null;
+								$is_tie = false;
 								if ( empty( $match->leg ) ) {
 									if ( ! empty( $match->winner_id ) ) {
 										$match_complete = true;
@@ -59,6 +60,8 @@ if ( isset( $league->event->competition->entry_type ) && 'player' === $league->e
 										} elseif ( $match->winner_id === $match->teams['away']->id ) {
 											$winner = 'away';
 											$loser  = 'home';
+										} elseif ( '-1' === $match->winner_id ) {
+											$is_tie = true;
 										}
 									}
 								} elseif ( ! empty( $match->winner_id_tie ) ) {
@@ -193,6 +196,10 @@ if ( isset( $league->event->competition->entry_type ) && 'player' === $league->e
 																<span class="match__status winner">W</span>
 																	<?php
 																}
+															} elseif ( $is_tie ) {
+																?>
+																<span class="match__status tie">T</span>
+																<?php
 															} elseif ( empty( $match->leg ) && ! empty( $match->host ) && $team_ref === $match->host ) {
 																?>
 																<span><?php esc_html_e( 'H', 'racketmanager' ); ?></span>

@@ -255,12 +255,15 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 
 		$action_url = $racketmanager->site_url;
 		if ( 'championship' === $match->league->mode ) {
-			$action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ) . '/' . $match->league->current_season['name'] . '/' . $match->final_round . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title );
+			$action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ) . '/' . $match->league->current_season['name'] . '/' . $match->final_round . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title ) . '/';
+			if ( ! empty( $match->leg ) ) {
+				$action_url .= 'leg-' . $match->leg . '/';
+			}
 		} else {
-			$action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ) . '/' . $match->league->current_season['name'] . '/day' . $match->match_day . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title );
+			$action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ) . '/' . $match->league->current_season['name'] . '/day' . $match->match_day . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title ) . '/';
 		}
-
-		$filename = ( ! empty( $template ) ) ? 'result-notification-' . $template : 'result-notification';
+		$action_url .= 'result/';
+		$filename    = ( ! empty( $template ) ) ? 'result-notification-' . $template : 'result-notification';
 
 		return $this->load_template(
 			$filename,

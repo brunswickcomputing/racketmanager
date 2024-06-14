@@ -5419,3 +5419,8 @@ h4.modal-title {
     display: flex;
     justify-content: space-between;
 }
+.match__button {
+	height: 100%;
+	position: absolute;
+	right: 0;
+}

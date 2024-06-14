@@ -1660,11 +1660,13 @@ class Racketmanager_Event {
 		$confirmation_pending = $match_args['confirmationPending'];
 		$result_pending       = $match_args['resultPending'];
 		$status               = $match_args['status'];
+		$sql_from             = " FROM {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager} AS l, {$wpdb->racketmanager_rubbers} AS r";
 		if ( $count ) {
-			$sql = "SELECT COUNT(*) FROM {$wpdb->racketmanager_matches} WHERE 1 = 1 AND l.`event_id` = $this->id";
+			$sql_fields = 'SELECT COUNT(*)';
+			$sql        = " WHERE 1 = 1 AND l.`event_id` = $this->id";
 		} else {
 			$sql_fields = "SELECT DISTINCT m.`final` AS final_round, m.`group`, `home_team`, `away_team`, DATE_FORMAT(m.`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(m.`date`, '%e') AS day, DATE_FORMAT(m.`date`, '%c') AS month, DATE_FORMAT(m.`date`, '%Y') AS year, DATE_FORMAT(m.`date`, '%H') AS `hour`, DATE_FORMAT(m.`date`, '%i') AS `minutes`, `match_day`, `location`, l.`id` AS `league_id`, m.`home_points`, m.`away_points`, m.`winner_id`, .m.`loser_id`, m.`post_id`, `season`, m.`id` AS `id`, m.`custom`, `confirmed`, `home_captain`, `away_captain`, `comments`, `updated`";
-			$sql        = " FROM {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager} AS l, {$wpdb->racketmanager_rubbers} AS r, {$wpdb->racketmanager_rubber_players} AS rp WHERE m.`league_id` = l.`id` AND m.`id` = r.`match_id` AND r.`id` = rp.`rubber_id` AND l.`event_id` = $this->id";
+			$sql        = " WHERE m.`league_id` = l.`id` AND m.`id` = r.`match_id` AND l.`event_id` = $this->id";
 		}
 
 		if ( $match_date ) {
@@ -1697,7 +1699,9 @@ class Racketmanager_Event {
 			}
 		}
 		if ( $player ) {
-			$sql .= " AND rp.`player_id` = '$player'";
+			$sql_from .= ", {$wpdb->racketmanager_rubber_players} AS rp";
+			$sql      .= ' AND r.`id` = rp.`rubber_id`';
+			$sql      .= " AND rp.`player_id` = '$player'";
 		}
 		if ( $confirmation_pending ) {
 			$confirmation_pending = intval( $confirmation_pending ) . ':00:00';
@@ -1739,7 +1743,7 @@ class Racketmanager_Event {
 		if ( $match_day && intval( $match_day ) > 0 ) {
 			$sql .= ' AND `match_day` = ' . $match_day . ' ';
 		}
-
+		$sql = $sql_fields . $sql_from . $sql;
 		if ( $count ) {
 			$matches = intval(
 				$wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -1759,7 +1763,7 @@ class Racketmanager_Event {
 					++$i;
 				}
 			}
-			$sql = $sql_fields . $sql . ' ORDER BY ' . $orderby_string;
+			$sql = $sql . ' ORDER BY ' . $orderby_string;
 			// get matches.
 			$matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared

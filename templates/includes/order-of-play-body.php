@@ -10,7 +10,7 @@ namespace Racketmanager;
 ?>
 		<?php require RACKETMANAGER_PATH . 'templates/includes/nav-pills.php'; ?>
 		<div id="order-of-play">
-			<ol class="match-group">
+			<ul class="match-group">
 				<?php
 				foreach ( $order_of_play as $match_time => $court_matches ) {
 					?>

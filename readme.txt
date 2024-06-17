@@ -47,6 +47,19 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.7.0 =
+* BUGFIX: allow upcoming matches to be returned
+* BUGFIX: fix random sorting
+* BUGFIX: get players for boys and girls events
+* BUGFIX: handle no players found
+* BUGFIX: handle tie break for fast4
+* BUGFIX: send correct message when result entered
+* BUGFIX: set correct match link
+* BUGFIX: set correct winner for walkover
+* BUGFIX: update host
+* UPDATE: allow match and rubber status to be set
+* UPDATE: handle postponed status
+
 = 8.6.0 =
 * BUGFIX: fix new player doubles team name
 * NEW:    allow box leagues

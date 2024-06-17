@@ -8,6 +8,7 @@
 namespace Racketmanager;
 
 ?>
+		<?php require RACKETMANAGER_PATH . 'templates/includes/nav-pills.php'; ?>
 		<div id="order-of-play">
 			<ol class="match-group">
 				<?php

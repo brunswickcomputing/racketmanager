@@ -3277,7 +3277,24 @@ span.date__month {
 .nav-tabs .nav-item.nav-link.is_selected a.nav__link {
 	color: #FFFFFF;
 }
-
+.module .nav-pills {
+	cursor: pointer;
+}
+.module .nav-pills .nav-link {
+	border: 1px solid #006800;
+}
+.module .nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+    color: #FFF;
+    background-color: #006800;
+}
+.module .nav-pills .nav-link:focus, .module .nav-pills .nav-link:hover {
+    border: #006800 1px solid;
+	color: #006800
+}
+.module .nav-pills .nav-link.active:focus, .module .nav-pills .nav-link.active:hover {
+    border: #006800 1px solid;
+	color: #FFF
+}
 .form-wrapper {
 	display: flex;
 	justify-content: center;
@@ -3669,7 +3686,9 @@ h4.media__title {
 	cursor: pointer;
 	display: inline-flex;
 }
-
+.nav-pills svg.icon {
+    bottom: 0;
+}
 .nav--link svg,
 .btn--link svg,
 .media__subheading svg {

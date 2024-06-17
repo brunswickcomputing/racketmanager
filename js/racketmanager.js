@@ -1465,6 +1465,24 @@ Racketmanager.statusModal = function (event, match_id) {
 		}
 	});
 };
+Racketmanager.switchTab = function (elem) {
+    var selectedTab = jQuery(elem).data('tabid').toLowerCase();
+    switch (selectedTab) {
+      case 'tab-grid':
+        jQuery('.match-group').addClass('match-group--grid');
+        jQuery('.match').removeClass('match--list');
+        jQuery('.match .match--list').removeClass('match--list');
+        jQuery('#tab-list').removeClass('active');
+        jQuery('#tab-grid').addClass('active');
+        break;
+      case 'tab-list':
+        jQuery('.match-group').removeClass('match-group--grid');
+        jQuery('.match').addClass("match--list");
+        jQuery('#tab-list').addClass('active');
+        jQuery('#tab-grid').removeClass('active');
+        break;
+    }
+};
 function activaTab(tab) {
 	jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');
 	jQuery('.nav-pills button[data-bs-target="#' + tab + '"]').tab('show');

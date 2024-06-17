@@ -86,6 +86,7 @@ namespace Racketmanager;
 				} else {
 					?>
 					<h3 class="header"><?php echo esc_html_e( 'Match Schedule', 'racketmanager' ); ?></h3>
+					<?php require RACKETMANAGER_PATH . 'templates/includes/nav-pills.php'; ?>
 					<ul class="match-group">
 						<?php
 						foreach ( $tournament_matches as $match ) {

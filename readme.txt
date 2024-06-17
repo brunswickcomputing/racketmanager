@@ -47,6 +47,11 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.8.0 =
+* BUGFIX: esnure match status button always visible
+* UPDATE: allow grid and list views for tournament matches
+* UPDATE: make result entry button thinner
+
 = 8.7.0 =
 * BUGFIX: allow upcoming matches to be returned
 * BUGFIX: fix random sorting

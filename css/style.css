@@ -3139,7 +3139,9 @@ span.header {
 		grid-template-columns: repeat(auto-fit, minmax(350px, 1fr))
 	}
 }
-
+.match-group--grid>.match-group__item .match:last-of-type{
+	margin-bottom: 0 !important
+}
 .match-group--grid>.match-group__item {
 	margin-bottom: 0 !important
 }

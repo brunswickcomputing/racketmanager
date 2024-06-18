@@ -5261,3 +5261,7 @@ h4.modal-title {
 	position: absolute;
 	right: 0;
 }
+.tournament-match .match__button {
+    height: auto;
+    position: relative;
+}

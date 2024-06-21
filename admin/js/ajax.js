@@ -603,11 +603,13 @@ Racketmanager.getImportOption = function(option) {
 		jQuery("#competitions").hide();
 		jQuery("#events").hide();
 		jQuery("#leagues").hide();
+		jQuery("#seasons").hide();
 	} else if (selectedOption == 'players') {
 		jQuery("#clubs").hide();
 		jQuery("#competitions").hide();
 		jQuery("#events").hide();
 		jQuery("#leagues").hide();
+		jQuery("#seasons").hide();
 	}
 };
 Racketmanager.checkAll = function(form) {

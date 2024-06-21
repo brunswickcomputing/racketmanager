@@ -3242,7 +3242,9 @@ span.date__month {
 	justify-content: center;
 	line-height: 1rem;
 }
-
+.nav-item button.nav-link {
+    background: transparent;
+}
 .nav-tabs .nav-item.is_selected {
 	background-color: #006800;
 }

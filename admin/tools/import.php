@@ -39,14 +39,14 @@ namespace Racketmanager;
 			$competitions = parent::get_competitions(
 				array(
 					'orderby' => array(
-						'competition_type' => 'ASC',
-						'name'             => 'ASC',
+						'type' => 'ASC',
+						'name' => 'ASC',
 					),
 				)
 			);
 			if ( $competitions ) {
 				?>
-				<select class="form-select" size="1" name="competition_id" id="competition_id" onChange='Racketmanager.getLeagueDropdown(this.value)'>
+				<select class="form-select" size="1" name="competition_id" id="competition_id" onChange='Racketmanager.getEventDropdown(this.value)'>
 					<option><?php esc_html_e( 'Select Competition', 'racketmanager' ); ?></option>
 					<?php foreach ( $competitions as $competition ) { ?>
 						<option value="<?php echo esc_html( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></option>
@@ -54,6 +54,8 @@ namespace Racketmanager;
 				</select>
 			<?php } ?>
 			<label for="competition_id"><?php esc_html_e( 'Competition', 'racketmanager' ); ?></label>
+		</div>
+		<div id="events" class="form-floating mb-3" style="display:none">
 		</div>
 		<div id="leagues" class="form-floating mb-3" style="display:none">
 		</div>
@@ -84,7 +86,7 @@ namespace Racketmanager;
 	<p>
 		<?php
 		/* translators: %s: link to doucmentation*/
-		echo sprintf( __( "The required structure of the file to import is described in the <a href='%s'>Documentation</a>", 'racketmanager' ), 'admin.php?page=racketmanager-doc' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		sprintf( __( "The required structure of the file to import is described in the <a href='%s'>Documentation</a>", 'racketmanager' ), 'admin.php?page=racketmanager-doc' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		?>
 	</p>
 </div>

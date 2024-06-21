@@ -1,12 +1,42 @@
 let Racketmanager = new Object();
-Racketmanager.getLeagueDropdown = function (competition_id) {
-	let notifyField = "#leagues";
+Racketmanager.getEventDropdown = function (competition_id) {
+	let notifyField = "#events";
+	jQuery('#leagues').hide();
+	jQuery('#seasons').hide();
 	jQuery(notifyField).removeClass('message-error');
 	jQuery.ajax({
 		url: ajaxurl,
 		type: "POST",
 		data: {
 			"competition_id": competition_id,
+			"action": "racketmanager_get_event_dropdown",
+			"security": ajax_var.ajax_nonce,
+		},
+		success: function (response) {
+			jQuery(notifyField).html(response.data);
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				jQuery(notifyField).text(response.responseJSON.data);
+			} else {
+				jQuery(notifyField).text(response.statusText);
+			}
+			jQuery(notifyField).addClass('message-error');
+		},
+		complete: function () {
+			jQuery(notifyField).show();
+		}
+	});
+};
+Racketmanager.getLeagueDropdown = function (event_id) {
+	let notifyField = "#leagues";
+	jQuery('#seasons').hide();
+	jQuery(notifyField).removeClass('message-error');
+	jQuery.ajax({
+		url: ajaxurl,
+		type: "POST",
+		data: {
+			"event_id": event_id,
 			"action": "racketmanager_get_league_dropdown",
 			"security": ajax_var.ajax_nonce,
 		},
@@ -19,8 +49,10 @@ Racketmanager.getLeagueDropdown = function (competition_id) {
 			} else {
 				jQuery(notifyField).text(response.statusText);
 			}
-			jQuery(notifyField).show();
 			jQuery(notifyField).addClass('message-error');
+		},
+		complete: function () {
+			jQuery(notifyField).show();
 		}
 	});
 };
@@ -44,8 +76,10 @@ Racketmanager.getSeasonDropdown = function (league_id) {
 			} else {
 				jQuery(notifyField).text(response.statusText);
 			}
-			jQuery(notifyField).show();
 			jQuery(notifyField).addClass('message-error');
+		},
+		complete: function () {
+			jQuery(notifyField).show();
 		}
 	});
 };
@@ -560,16 +594,19 @@ Racketmanager.getImportOption = function(option) {
 	let selectedOption = option;
 	if (selectedOption == 'table' || selectedOption == 'fixtures') {
 		jQuery("#competitions").show();
+		jQuery("#events").show();
 		jQuery("#leagues").show();
 		jQuery("#seasons").show();
 		jQuery("#clubs").hide();
 	} else if (selectedOption == 'clubplayers') {
 		jQuery("#clubs").show();
 		jQuery("#competitions").hide();
+		jQuery("#events").hide();
 		jQuery("#leagues").hide();
 	} else if (selectedOption == 'players') {
 		jQuery("#clubs").hide();
 		jQuery("#competitions").hide();
+		jQuery("#events").hide();
 		jQuery("#leagues").hide();
 	}
 };

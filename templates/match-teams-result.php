@@ -218,11 +218,11 @@ $user_message    = $user_can_update_array[3];
 													$rubber_players = array( '1' => array() );
 													$doubles        = false;
 												}
-												if ( 'M' === substr( $rubber->type, 0, 1 ) ) {
+												if ( 'M' === substr( $rubber->type, 0, 1 ) || 'B' === substr( $rubber->type, 0, 1 ) ) {
 													foreach ( $rubber_players as $p => $player ) {
 														$rubber_players[ $p ]['gender'] = 'm';
 													}
-												} elseif ( 'W' === substr( $rubber->type, 0, 1 ) ) {
+												} elseif ( 'W' === substr( $rubber->type, 0, 1 ) || 'G' === substr( $rubber->type, 0, 1 ) ) {
 													foreach ( $rubber_players as $p => $player ) {
 														$rubber_players[ $p ]['gender'] = 'f';
 													}

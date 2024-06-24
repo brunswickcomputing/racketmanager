@@ -36,8 +36,11 @@ if ( empty( $event_team ) ) {
 							<?php
 							if ( ! $event->is_box ) {
 								?>
-								<div class="col-1 text-end">
+								<div class="d-none d-sm-block col-1 text-end">
 									<?php esc_html_e( 'Players', 'racketmanager' ); ?>
+								</div>
+								<div class="d-sm-none col-1 text-end">
+									<?php esc_html_e( 'Pls', 'racketmanager' ); ?>
 								</div>
 								<?php
 							}

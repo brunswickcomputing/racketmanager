@@ -2058,7 +2058,7 @@ tc-modal .message-page .message-page__modal .message-page__removal-tips ul .list
 }
 
 .tournament-head h1,
-.banner__title h1 {
+.module__title h1 {
 	color: #FFFFFF;
 	margin: 0;
 }
@@ -3574,8 +3574,8 @@ ul.list.list--naked {
 
 @media (max-width: 479px) {
 	.module--card {
-		margin-left: -15px;
-		margin-right: -15px;
+		margin-left: -12px;
+		margin-right: -12px;
 	}
 }
 
@@ -3627,7 +3627,7 @@ module--dark .mail-media,
 	color: #FFF;
 }
 
-.module--dark .banner__title h1 {
+.module--dark .module__title h1 {
 	color: #FFF;
 }
 

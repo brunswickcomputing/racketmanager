@@ -59,7 +59,7 @@ if ( $league->event->is_box ) {
 	<div class="module module--card module--dark">
 		<div class="module__content">
 			<div class="module__banner">
-				<div class="banner__title">
+				<div class="module__title">
 					<h1>
 						<span><?php echo esc_html( $league->title ) . ' - ' . esc_html( $season_title ) . ' ' . esc_html( $league->current_season['name'] ); ?></span>
 						<?php

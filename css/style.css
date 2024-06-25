@@ -4839,6 +4839,9 @@ ol.list {
         max-width: calc(50% - 30px);
     }
 }
+ul.list {
+	padding-left: 0;
+}
 ul.list--inline {
 	display: flex;
 	margin: 0;

@@ -208,6 +208,7 @@ jQuery(document).ready(function ($) {
 tb_init('a.thickbox, area.thickbox, input.thickbox');
 
 function activaTab(tab) {
+	jQuery('.navbar-nav button[data-bs-target="#' + tab + '"]').tab('show');
 	jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');
 	jQuery('.nav-pills button[data-bs-target="#' + tab + '"]').tab('show');
 }

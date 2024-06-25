@@ -75,33 +75,42 @@ jQuery(document).ready(function(){
 		<?php
 		if ( empty( $tournament ) ) {
 			?>
-			<!-- Nav tabs -->
-			<ul class="nav nav-tabs" id="myTab" role="tablist">
-				<li class="nav-item" role="presentation">
-					<button class="nav-link" id="events-tab" data-bs-toggle="tab" data-bs-target="#events" type="button" role="tab" aria-controls="events" aria-selected="true"><?php esc_html_e( 'Events', 'racketmanager' ); ?></button>
-				</li>
-				<li class="nav-item" role="presentation">
-					<button class="nav-link" id="seasons-tab" data-bs-toggle="tab" data-bs-target="#seasons" type="button" role="tab" aria-controls="seasons" aria-selected="false"><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></button>
-				</li>
-				<?php
-				if ( 'league' === $competition->type ) {
-					?>
-					<li class="nav-item" role="presentation">
-						<button class="nav-link" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule" type="button" role="tab" aria-controls="schedule" aria-selected="false"><?php esc_html_e( 'Schedule', 'racketmanager' ); ?></button>
-					</li>
-					<?php
-				}
-				?>
-				<?php
-				if ( current_user_can( 'manage_racketmanager' ) ) {
-					?>
-					<li class="nav-item" role="presentation">
-						<button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false"><?php esc_html_e( 'Settings', 'racketmanager' ); ?></button>
-					</li>
-					<?php
-				}
-				?>
-			</ul>
+			<nav class="navbar navbar-expand-lg bg-body-tertiary">
+				<div class="">
+					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+						<span class="navbar-toggler-icon"></span>
+					</button>
+					<div class="collapse navbar-collapse mt-3" id="navbarSupportedContent">
+						<!-- Nav tabs -->
+						<ul class="nav nav-pills" id="myTab" role="tablist">
+							<li class="nav-item" role="presentation">
+								<button class="nav-link" id="events-tab" data-bs-toggle="tab" data-bs-target="#events" type="button" role="tab" aria-controls="events" aria-selected="true"><?php esc_html_e( 'Events', 'racketmanager' ); ?></button>
+							</li>
+							<li class="nav-item" role="presentation">
+								<button class="nav-link" id="seasons-tab" data-bs-toggle="tab" data-bs-target="#seasons" type="button" role="tab" aria-controls="seasons" aria-selected="false"><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></button>
+							</li>
+							<?php
+							if ( 'league' === $competition->type ) {
+								?>
+								<li class="nav-item" role="presentation">
+									<button class="nav-link" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule" type="button" role="tab" aria-controls="schedule" aria-selected="false"><?php esc_html_e( 'Schedule', 'racketmanager' ); ?></button>
+								</li>
+								<?php
+							}
+							?>
+							<?php
+							if ( current_user_can( 'manage_racketmanager' ) ) {
+								?>
+								<li class="nav-item" role="presentation">
+									<button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false"><?php esc_html_e( 'Settings', 'racketmanager' ); ?></button>
+								</li>
+								<?php
+							}
+							?>
+						</ul>
+					</div>
+				</div>
+			</nav>
 			<!-- Tab panes -->
 			<div class="tab-content">
 			<?php

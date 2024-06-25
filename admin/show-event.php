@@ -69,71 +69,80 @@ jQuery(document).ready(function(){
 		<?php
 		if ( empty( $tournament ) ) {
 			?>
-			<!-- Nav tabs -->
-			<ul class="nav nav-tabs" id="myTab" role="tablist">
-				<li class="nav-item" role="presentation">
-					<button class="nav-link" id="leagues-tab" data-bs-toggle="tab" data-bs-target="#leagues" type="button" role="tab" aria-controls="leagues" aria-selected="true"><?php esc_html_e( 'Leagues', 'racketmanager' ); ?></button>
-				</li>
-				<?php
-				if ( 'tournament' !== $event->competition->type ) {
-					?>
-					<li class="nav-item" role="presentation">
-						<button class="nav-link" id="playerstats-tab" data-bs-toggle="tab" data-bs-target="#playerstats" type="button" role="tab" aria-controls="playerstats" aria-selected="false"><?php esc_html_e( 'Players Stats', 'racketmanager' ); ?></button>
-					</li>
-					<?php
-				}
-				?>
-				<li class="nav-item" role="presentation">
-					<?php
-					if ( $event->is_box ) {
-						$season_title = __( 'Rounds', 'racketmanager' );
-						if ( ! empty( $event->seasons ) ) {
-							$prev_round       = end( $event->seasons );
-							$prev_round_num   = $prev_round['name'];
-							$prev_round_end   = $prev_round['matchDates'][1];
-							$next_round_start = gmdate( 'Y-m-d', strtotime( $prev_round_end . ' +1 day' ) );
-							$event_duration   = $event->duration - 1;
-							$next_round_end   = gmdate( 'Y-m-d', strtotime( $next_round_start . ' +' . $event_duration . ' day' ) );
-						} else {
-							$prev_round_num   = 0;
-							$next_round_start = null;
-							$next_round_end   = null;
-						}
-						$next_round_num = $prev_round_num + 1;
-					} else {
-						$season_title = __( 'Seasons', 'racketmanager' );
-					}
-					?>
-					<button class="nav-link" id="seasons-tab" data-bs-toggle="tab" data-bs-target="#seasons" type="button" role="tab" aria-controls="seasons" aria-selected="false"><?php echo esc_html( $season_title ); ?></button>
-				</li>
-				<?php
-				if ( current_user_can( 'manage_racketmanager' ) ) {
-					?>
-					<li class="nav-item" role="presentation">
-						<button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false"><?php esc_html_e( 'Settings', 'racketmanager' ); ?></button>
-					</li>
-					<?php
-				}
-				?>
-				<?php
-				if ( 'league' === $event->competition->type ) {
-					?>
-					<li class="nav-item" role="presentation">
-						<button class="nav-link" id="constitution-tab" data-bs-toggle="tab" data-bs-target="#constitution" type="button" role="tab" aria-controls="constitution" aria-selected="false"><?php esc_html_e( 'Constitution', 'racketmanager' ); ?></button>
-					</li>
-					<?php
-				}
-				?>
-				<?php
-				if ( 'league' === $event->competition->type ) {
-					?>
-					<li class="nav-item" role="presentation">
-						<button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="false"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></button>
-					</li>
-					<?php
-				}
-				?>
-			</ul>
+			<nav class="navbar navbar-expand-lg bg-body-tertiary">
+				<div class="">
+					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+						<span class="navbar-toggler-icon"></span>
+					</button>
+					<div class="collapse navbar-collapse mt-3" id="navbarSupportedContent">
+						<!-- Nav tabs -->
+						<ul class="nav nav-pills" id="myTab" role="tablist">
+							<li class="nav-item" role="presentation">
+								<button class="nav-link" id="leagues-tab" data-bs-toggle="tab" data-bs-target="#leagues" type="button" role="tab" aria-controls="leagues" aria-selected="true"><?php esc_html_e( 'Leagues', 'racketmanager' ); ?></button>
+							</li>
+							<?php
+							if ( 'tournament' !== $event->competition->type ) {
+								?>
+								<li class="nav-item" role="presentation">
+									<button class="nav-link" id="playerstats-tab" data-bs-toggle="tab" data-bs-target="#playerstats" type="button" role="tab" aria-controls="playerstats" aria-selected="false"><?php esc_html_e( 'Players Stats', 'racketmanager' ); ?></button>
+								</li>
+								<?php
+							}
+							?>
+							<li class="nav-item" role="presentation">
+								<?php
+								if ( $event->is_box ) {
+									$season_title = __( 'Rounds', 'racketmanager' );
+									if ( ! empty( $event->seasons ) ) {
+										$prev_round       = end( $event->seasons );
+										$prev_round_num   = $prev_round['name'];
+										$prev_round_end   = $prev_round['matchDates'][1];
+										$next_round_start = gmdate( 'Y-m-d', strtotime( $prev_round_end . ' +1 day' ) );
+										$event_duration   = $event->duration - 1;
+										$next_round_end   = gmdate( 'Y-m-d', strtotime( $next_round_start . ' +' . $event_duration . ' day' ) );
+									} else {
+										$prev_round_num   = 0;
+										$next_round_start = null;
+										$next_round_end   = null;
+									}
+									$next_round_num = $prev_round_num + 1;
+								} else {
+									$season_title = __( 'Seasons', 'racketmanager' );
+								}
+								?>
+								<button class="nav-link" id="seasons-tab" data-bs-toggle="tab" data-bs-target="#seasons" type="button" role="tab" aria-controls="seasons" aria-selected="false"><?php echo esc_html( $season_title ); ?></button>
+							</li>
+							<?php
+							if ( current_user_can( 'manage_racketmanager' ) ) {
+								?>
+								<li class="nav-item" role="presentation">
+									<button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false"><?php esc_html_e( 'Settings', 'racketmanager' ); ?></button>
+								</li>
+								<?php
+							}
+							?>
+							<?php
+							if ( 'league' === $event->competition->type ) {
+								?>
+								<li class="nav-item" role="presentation">
+									<button class="nav-link" id="constitution-tab" data-bs-toggle="tab" data-bs-target="#constitution" type="button" role="tab" aria-controls="constitution" aria-selected="false"><?php esc_html_e( 'Constitution', 'racketmanager' ); ?></button>
+								</li>
+								<?php
+							}
+							?>
+							<?php
+							if ( 'league' === $event->competition->type ) {
+								?>
+								<li class="nav-item" role="presentation">
+									<button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="false"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></button>
+								</li>
+								<?php
+							}
+							?>
+						</ul>
+					</div>
+				</div>
+			</nav>
 			<!-- Tab panes -->
 			<div class="tab-content">
 			<?php

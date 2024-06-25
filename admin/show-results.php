@@ -16,27 +16,37 @@ jQuery(document).ready(function(){
 <div class="container">
 	<h1><?php esc_html_e( 'Results', 'racketmanager' ); ?></h1>
 	<div class="container">
-		<!-- Nav tabs -->
-		<ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
-			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="resultschecker-tab" data-bs-toggle="tab" data-bs-target="#resultschecker" type="button" role="tab" aria-controls="resultschecker" aria-selected="false">Results Checker</button>
-			</li>
-			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="pendingresults-tab" data-bs-toggle="tab" data-bs-target="#pendingresults" type="button" role="tab" aria-controls="pendingresults" aria-selected="true">Pending Results</button>
-			</li>
-			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="awaitingconfirmation-tab" data-bs-toggle="tab" data-bs-target="#awaitingconfirmation" type="button" role="tab" aria-controls="awaitingconfirmation" aria-selected="true">Awaiting confirmation</button>
-			</li>
-			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="challangeresults-tab" data-bs-toggle="tab" data-bs-target="#challangeresults" type="button" role="tab" aria-controls="challangeresults" aria-selected="true">Challenged Results</button>
-			</li>
-			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="results-tab" data-bs-toggle="tab" data-bs-target="#results" type="button" role="tab" aria-controls="results" aria-selected="true">Results</button>
-			</li>
-			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="postponed-tab" data-bs-toggle="tab" data-bs-target="#postponed" type="button" role="tab" aria-controls="postponed" aria-selected="true">Postponed</button>
-			</li>
-		</ul>
+		<nav class="navbar navbar-expand-lg bg-body-tertiary">
+			<div class="container-fluid">
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarSupportedContent">
+					<!-- Nav tabs -->
+					<ul class="navbar-nav nav-pills" id="myTab" role="tablist">
+						<li class="nav-item" role="presentation">
+							<button class="nav-link" id="resultschecker-tab" data-bs-toggle="tab" data-bs-target="#resultschecker" type="button" role="tab" aria-controls="resultschecker" aria-selected="false">Results Checker</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button class="nav-link" id="pendingresults-tab" data-bs-toggle="tab" data-bs-target="#pendingresults" type="button" role="tab" aria-controls="pendingresults" aria-selected="true">Pending Results</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button class="nav-link" id="awaitingconfirmation-tab" data-bs-toggle="tab" data-bs-target="#awaitingconfirmation" type="button" role="tab" aria-controls="awaitingconfirmation" aria-selected="true">Awaiting confirmation</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button class="nav-link" id="challangeresults-tab" data-bs-toggle="tab" data-bs-target="#challangeresults" type="button" role="tab" aria-controls="challangeresults" aria-selected="true">Challenged Results</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button class="nav-link" id="results-tab" data-bs-toggle="tab" data-bs-target="#results" type="button" role="tab" aria-controls="results" aria-selected="true">Results</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button class="nav-link" id="postponed-tab" data-bs-toggle="tab" data-bs-target="#postponed" type="button" role="tab" aria-controls="postponed" aria-selected="true">Postponed</button>
+						</li>
+					</ul>
+				</div>
+
+			</div>
+		</nav>
 		<!-- Tab panes -->
 		<div class="tab-content">
 			<div class="tab-pane fade" id="resultschecker" role="tabpanel" aria-labelledby="resultschecker-tab">

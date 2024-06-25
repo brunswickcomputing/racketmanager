@@ -85,90 +85,98 @@ if ( empty( $tab ) ) {
 			</div>
 		</div>
 		<?php require 'tournament-selections.php'; ?>
-
-		<!-- Nav tabs -->
-		<ul class="nav nav-tabs frontend" id="myTab" role="tablist">
-			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="overview-tab" data-bs-toggle="pill" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true"><?php esc_html_e( 'Overview', 'racketmanager' ); ?></button>
-			</li>
-			<li class="nav-item" role="presentation">
-				<?php
-				if ( ! empty( $wp->query_vars['event'] ) ) {
-					?>
-					<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/events/">
-					<?php
-				}
-				?>
-				<button class="nav-link" id="events-tab" data-bs-toggle="pill" data-bs-target="#events" type="button" role="tab" aria-controls="events" aria-selected="false"><?php esc_html_e( 'Events', 'racketmanager' ); ?></button>
-				<?php
-				if ( ! empty( $wp->query_vars['event'] ) ) {
-					?>
-					</a>
-					<?php
-				}
-				?>
-			</li>
-			<li class="nav-item" role="presentation">
-				<?php
-				if ( ! empty( $wp->query_vars['draw'] ) ) {
-					?>
-					<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/draws/">
-					<?php
-				}
-				?>
-				<button class="nav-link" id="draws-tab" data-bs-toggle="pill" data-bs-target="#draws" type="button" role="tab" aria-controls="draws" aria-selected="false"><?php esc_html_e( 'Draws', 'racketmanager' ); ?></button>
-				<?php
-				if ( ! empty( $wp->query_vars['draw'] ) ) {
-					?>
-					</a>
-					<?php
-				}
-				?>
-			</li>
-			<li class="nav-item" role="presentation">
-				<?php
-				if ( 'matches' !== $tab ) {
-					?>
-					<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/matches/">
-					<?php
-				}
-				?>
-				<button class="nav-link" id="matches-tab" data-bs-toggle="pill" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="false"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></button>
-				<?php
-				if ( 'matches' !== $tab ) {
-					?>
-					</a>
-					<?php
-				}
-				?>
-			</li>
-			<li class="nav-item" role="presentation">
-				<?php
-				if ( ! empty( $wp->query_vars['player'] ) ) {
-					?>
-					<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/players/">
-					<?php
-				}
-				?>
-				<button class="nav-link" id="players-tab" data-bs-toggle="pill" data-bs-target="#players" type="button" role="tab" aria-controls="players" aria-selected="false"><?php esc_html_e( 'Players', 'racketmanager' ); ?></button>
-				<?php
-				if ( ! empty( $wp->query_vars['player'] ) ) {
-					?>
-					</a>
-					<?php
-				}
-				?>
-			</li>
-			<?php
-			if ( ! empty( $tournament->date ) && gmdate( 'Y-m-d' ) > $tournament->date ) {
-				?>
-				<li class="nav-item" role="presentation">
-					<button class="nav-link" id="winners-tab" data-bs-toggle="pill" data-bs-target="#winners" type="button" role="tab" aria-controls="winners" aria-selected="false"><?php esc_html_e( 'Winners', 'racketmanager' ); ?></button>
-				</li>
-				<?php
-			}
-			?>
-		</ul>
+		<nav class="navbar navbar-expand-lg">
+			<div class="">
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse mt-3" id="navbarSupportedContent">
+					<!-- Nav tabs -->
+					<ul class="nav nav-pills frontend" id="myTab" role="tablist">
+						<li class="nav-item" role="presentation">
+							<button class="nav-link" id="overview-tab" data-bs-toggle="pill" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true"><?php esc_html_e( 'Overview', 'racketmanager' ); ?></button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<?php
+							if ( ! empty( $wp->query_vars['event'] ) ) {
+								?>
+								<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/events/">
+								<?php
+							}
+							?>
+							<button class="nav-link" id="events-tab" data-bs-toggle="pill" data-bs-target="#events" type="button" role="tab" aria-controls="events" aria-selected="false"><?php esc_html_e( 'Events', 'racketmanager' ); ?></button>
+							<?php
+							if ( ! empty( $wp->query_vars['event'] ) ) {
+								?>
+								</a>
+								<?php
+							}
+							?>
+						</li>
+						<li class="nav-item" role="presentation">
+							<?php
+							if ( ! empty( $wp->query_vars['draw'] ) ) {
+								?>
+								<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/draws/">
+								<?php
+							}
+							?>
+							<button class="nav-link" id="draws-tab" data-bs-toggle="pill" data-bs-target="#draws" type="button" role="tab" aria-controls="draws" aria-selected="false"><?php esc_html_e( 'Draws', 'racketmanager' ); ?></button>
+							<?php
+							if ( ! empty( $wp->query_vars['draw'] ) ) {
+								?>
+								</a>
+								<?php
+							}
+							?>
+						</li>
+						<li class="nav-item" role="presentation">
+							<?php
+							if ( 'matches' !== $tab ) {
+								?>
+								<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/matches/">
+								<?php
+							}
+							?>
+							<button class="nav-link" id="matches-tab" data-bs-toggle="pill" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="false"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></button>
+							<?php
+							if ( 'matches' !== $tab ) {
+								?>
+								</a>
+								<?php
+							}
+							?>
+						</li>
+						<li class="nav-item" role="presentation">
+							<?php
+							if ( ! empty( $wp->query_vars['player'] ) ) {
+								?>
+								<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/players/">
+								<?php
+							}
+							?>
+							<button class="nav-link" id="players-tab" data-bs-toggle="pill" data-bs-target="#players" type="button" role="tab" aria-controls="players" aria-selected="false"><?php esc_html_e( 'Players', 'racketmanager' ); ?></button>
+							<?php
+							if ( ! empty( $wp->query_vars['player'] ) ) {
+								?>
+								</a>
+								<?php
+							}
+							?>
+						</li>
+						<?php
+						if ( ! empty( $tournament->date ) && gmdate( 'Y-m-d' ) > $tournament->date ) {
+							?>
+							<li class="nav-item" role="presentation">
+								<button class="nav-link" id="winners-tab" data-bs-toggle="pill" data-bs-target="#winners" type="button" role="tab" aria-controls="winners" aria-selected="false"><?php esc_html_e( 'Winners', 'racketmanager' ); ?></button>
+							</li>
+							<?php
+						}
+						?>
+					</ul>
+				</div>
+			</div>
+		</nav>
 	</div>
 	<!-- Tab panes -->
 	<div class="tab-content">

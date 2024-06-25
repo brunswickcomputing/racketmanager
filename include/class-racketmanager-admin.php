@@ -1301,15 +1301,15 @@ final class RacketManager_Admin extends RacketManager {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-teams' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'edit_teams' ) ) {
-				$team_player_1    = isset( $_POST['teamPlayer1'] ) ? sanitize_text_field( wp_unslash( $_POST['teamPlayer1'] ) ) : '';
-				$team_player_1_id = isset( $_POST['teamPlayerId1'] ) ? intval( $_POST['teamPlayerId1'] ) : 0;
-				$team_player_2    = isset( $_POST['teamPlayer2'] ) ? sanitize_text_field( wp_unslash( $_POST['teamPlayer2'] ) ) : '';
-				$team_player_2_id = isset( $_POST['teamPlayerId2'] ) ? intval( $_POST['teamPlayerId2'] ) : 0;
-				$club             = isset( $_POST['affiliatedclub'] ) ? intval( $_POST['affiliatedclub'] ) : '';
-				$captain          = isset( $_POST['captainId'] ) ? intval( $_POST['captainId'] ) : null;
-				$contactno        = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
-				$contactemail     = isset( $_POST['contactemail'] ) ? sanitize_text_field( wp_unslash( $_POST['contactemail'] ) ) : null;
-			if ( isset( $_POST['action'] ) && 'Add' === $_POST['action'] ) {
+			$team_player_1    = isset( $_POST['teamPlayer1'] ) ? sanitize_text_field( wp_unslash( $_POST['teamPlayer1'] ) ) : '';
+			$team_player_1_id = isset( $_POST['teamPlayerId1'] ) ? intval( $_POST['teamPlayerId1'] ) : 0;
+			$team_player_2    = isset( $_POST['teamPlayer2'] ) ? sanitize_text_field( wp_unslash( $_POST['teamPlayer2'] ) ) : '';
+			$team_player_2_id = isset( $_POST['teamPlayerId2'] ) ? intval( $_POST['teamPlayerId2'] ) : 0;
+			$club             = isset( $_POST['affiliatedclub'] ) ? intval( $_POST['affiliatedclub'] ) : '';
+			$captain          = isset( $_POST['captainId'] ) ? intval( $_POST['captainId'] ) : null;
+			$contactno        = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
+			$contactemail     = isset( $_POST['contactemail'] ) ? sanitize_text_field( wp_unslash( $_POST['contactemail'] ) ) : null;
+			if ( isset( $_POST['action'] ) ) {
 				$league               = get_league( $league );
 				$team                 = new \stdClass();
 				$team->player1        = $team_player_1;

@@ -29,7 +29,7 @@ namespace Racketmanager;
 				<div class="col-4"><?php esc_html_e( 'Event', 'racketmanager' ); ?></div>
 				<div class="col-3 col-lg-1 text-center"><?php esc_html_e( 'Number of sets', 'racketmanager' ); ?></div>
 				<div class="col-3 col-lg-1 text-center"><?php esc_html_e( 'Number of rubbers', 'racketmanager' ); ?></div>
-				<div class="col-3 centered"><?php esc_html_e( 'Type', 'racketmanager' ); ?></div>
+				<div class="d-none d-lg-1 col-3 centered"><?php esc_html_e( 'Type', 'racketmanager' ); ?></div>
 			</div>
 
 			<?php
@@ -50,7 +50,7 @@ namespace Racketmanager;
 						<div class="col-4"><a href="<?php echo esc_html( $event_link ); ?>"><?php echo esc_html( $event->name ); ?></a></div>
 						<div class="col-3 col-lg-1 text-center"><?php echo esc_html( $event->num_sets ); ?></div>
 						<div class="col-3 col-lg-1 text-center"><?php echo esc_html( $event->num_rubbers ); ?></div>
-						<div class="col-3 centered"><?php echo esc_html( Racketmanager_Util::get_event_type( $event->type ) ); ?>
+						<div class="d-none d-lg-1 col-3 centered"><?php echo esc_html( Racketmanager_Util::get_event_type( $event->type ) ); ?>
 						</div>
 					</div>
 				<?php } ?>

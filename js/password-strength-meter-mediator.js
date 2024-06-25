@@ -26,6 +26,7 @@ function wdmChkPwdStrength( $pwd,  $confirmPwd, $strengthStatus, $submitBtn, bla
   // disable the submit button
   $submitBtn.attr( 'disabled', 'disabled' );
   $strengthStatus.removeClass( 'short bad good strong' );
+  jQuery('#password-strength').show();
 
   if ( ! pwd ) {
   			$strengthStatus.addClass( 'empty' ).html( pwsL10n.empty );

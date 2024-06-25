@@ -449,6 +449,9 @@ class RacketManager_Login {
 			case 'form_has_timedout':
 				$message = __( 'The form has timed out.', 'racketmanager' );
 				break;
+			case 'btm_field_empty':
+				$message = __( 'LTA tennis number missing', 'racketmanager' );
+				break;
 			default:
 				$message = $error_code;
 		}
@@ -941,49 +944,58 @@ class RacketManager_Login {
 			$user_data['message'] = __( 'Errors in form', 'racketmanager' );
 			return $user_data;
 		}
-
+		$updated_user = array();
 		if ( $current_user->user_email !== $user_data['user_name'] ) {
-			$updates = true;
+			$updates                    = true;
+			$updated_user['user_email'] = $user_data['user_name'];
 		}
 		if ( get_user_meta( $current_user->ID, 'first_name', true ) !== $user_data['first_name'] ) {
-			$updates = true;
+			$updates                    = true;
+			$updated_user['first_name'] = $user_data['first_name'];
 		}
 		if ( get_user_meta( $current_user->ID, 'last_name', true ) !== $user_data['last_name'] ) {
-			$updates = true;
+			$updates                   = true;
+			$updated_user['last_name'] = $user_data['last_name'];
 		}
 		if ( empty( $user_data['contactno'] ) && ! empty( get_user_meta( $current_user->ID, 'contactno', true ) ) ) {
-			$updates = true;
+			$updates                   = true;
+			$updated_user['contactno'] = $user_data['contactno'];
 		}
 		if ( get_user_meta( $current_user->ID, 'contactno', true ) !== $user_data['contactno'] ) {
-			$updates = true;
+			$updates                   = true;
+			$updated_user['contactno'] = $user_data['contactno'];
 		}
 		if ( get_user_meta( $current_user->ID, 'gender', true ) !== $user_data['gender'] ) {
-			$updates = true;
+			$updates                = true;
+			$updated_user['gender'] = $user_data['gender'];
 		}
 		if ( empty( $user_data['btm'] ) ) {
 			if ( ! empty( get_user_meta( $current_user->ID, 'btm', true ) ) ) {
-				$updates = true;
+				$updates             = true;
+				$updated_user['btm'] = $user_data['btm'];
 			}
 		} elseif ( get_user_meta( $current_user->ID, 'btm', true ) !== $user_data['btm'] ) {
-			$updates = true;
+			$updates             = true;
+			$updated_user['btm'] = $user_data['btm'];
 		}
 		if ( empty( $user_data['year_of_birth'] ) ) {
 			if ( ! empty( get_user_meta( $current_user->ID, 'year_of_birth', true ) ) ) {
-				$updates = true;
+				$updates                       = true;
+				$updated_user['year_of_birth'] = $user_data['year_of_birth'];
 			}
-		} elseif ( get_user_meta( $current_user->ID, 'year_of_birth', true ) !== $user_data['year_of_birth'] ) {
-			$updates = true;
+		} elseif ( intval( get_user_meta( $current_user->ID, 'year_of_birth', true ) ) !== $user_data['year_of_birth'] ) {
+			$updates                       = true;
+			$updated_user['year_of_birth'] = $user_data['year_of_birth'];
 		}
 		if ( ! empty( $user_data['password'] ) ) {
-			unset( $user_data['rePassword'] );
-			$updates = true;
+			$updates                  = true;
+			$updated_user['password'] = $user_data['password'];
 		}
-
 		if ( ! $updates ) {
 			$user_data['message'] = $this->get_error_message( 'no_updates' );
 			return $user_data;
 		}
-		foreach ( $user_data as $key => $value ) {
+		foreach ( $updated_user as $key => $value ) {
 			// http://codex.wordpress.org/Function_Reference/wp_update_user.
 			if ( 'contactno' === $key ) {
 				update_user_meta( $current_user->ID, $key, $value );
@@ -994,32 +1006,28 @@ class RacketManager_Login {
 			} elseif ( 'gender' === $key ) {
 				update_user_meta( $current_user->ID, $key, $value );
 			} elseif ( 'first_name' === $key ) {
-				if ( get_user_meta( $current_user->ID, 'first_name', true ) !== $user_data['first_name'] ) {
+				if ( get_user_meta( $current_user->ID, 'first_name', true ) !== $updated_user['first_name'] ) {
 					update_user_meta( $current_user->ID, $key, $value );
 					wp_update_user(
 						array(
 							'ID'           => $current_user->ID,
-							'display_name' => $value . ' ' . sanitize_text_field( $user_data['last_name'] ),
+							'display_name' => $value . ' ' . sanitize_text_field( $updated_user['last_name'] ),
 						)
 					);
 				}
 			} elseif ( 'last_name' === $key ) {
-				if ( get_user_meta( $current_user->ID, 'last_name', true ) !== $user_data['last_name'] ) {
+				if ( get_user_meta( $current_user->ID, 'last_name', true ) !== $updated_user['last_name'] ) {
 					update_user_meta( $current_user->ID, $key, $value );
 					wp_update_user(
 						array(
 							'ID'           => $current_user->ID,
-							'display_name' => sanitize_text_field( $user_data['first_name'] ) . ' ' . $value,
+							'display_name' => sanitize_text_field( $updated_user['first_name'] ) . ' ' . $value,
 						)
 					);
 				}
 			} elseif ( 'password' === $key ) {
-				wp_update_user(
-					array(
-						'ID'        => $current_user->ID,
-						'user_pass' => $value,
-					)
-				);
+				wp_set_password( $value, $current_user->ID );
+				wp_set_auth_cookie( $current_user->ID, 1, true );
 			} else {
 				wp_update_user(
 					array(
@@ -1039,6 +1047,7 @@ class RacketManager_Login {
 	 * @return array updated user data.
 	 */
 	private function validate_user_profile( $user_data ) {
+		global $racketmanager;
 		if ( empty( $user_data['user_name'] ) ) {
 			$user_data['user_name_error'] = $this->get_error_message( 'empty_username' );
 			$user_data['error']           = true;
@@ -1054,6 +1063,13 @@ class RacketManager_Login {
 		if ( empty( $user_data['gender'] ) ) {
 			$user_data['gender_error'] = $this->get_error_message( 'gender_field_empty' );
 			$user_data['error']        = true;
+		}
+		if ( empty( $user_data['btm'] ) ) {
+			$player_options = $racketmanager->get_options( 'rosters' );
+			if ( isset( $player_options['btm'] ) && '1' === $player_options['btm'] ) {
+				$user_data['btm_error'] = $this->get_error_message( 'btm_field_empty' );
+				$user_data['error']     = true;
+			}
 		}
 		if ( $user_data['password'] !== $user_data['rePassword'] ) {
 			$user_data['rePassword_error'] = $this->get_error_message( 'password_reset_mismatch' );

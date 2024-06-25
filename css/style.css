@@ -2079,6 +2079,7 @@ tc-modal .message-page .message-page__modal .message-page__removal-tips ul .list
 ul.player-list,
 ul.match_time-list {
 	list-style: none;
+	padding-left: 0;
 }
 
 li.alphabet-list-item,

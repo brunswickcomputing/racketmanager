@@ -47,7 +47,7 @@ jQuery(document).ready(function(){
 	if ( ! empty( $competition->seasons ) && empty( $tournament ) ) {
 		?>
 		<!-- Season Dropdown -->
-		<div class="col-auto">
+		<div class="col-auto mb-3">
 			<form action="admin.php" method="get" class="form-control">
 				<input type="hidden" name="page" value="racketmanager" />
 				<input type="hidden" name="subpage" value="show-competition" />

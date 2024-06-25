@@ -71,7 +71,7 @@ jQuery(document).ready(function(){
 </div>
 
 	<?php $this->printMessage(); ?>
-	<div class="container">
+	<div class="">
 		<?php
 		if ( empty( $tournament ) ) {
 			?>

@@ -8,7 +8,7 @@
 namespace Racketmanager;
 
 ?>
-<div class=container>
+<div>
 	<form id="seasons-filter" action="" method="post" class="form-control mb-3">
 		<?php wp_nonce_field( 'seasons-bulk', 'racketmanager_nonce' ); ?>
 

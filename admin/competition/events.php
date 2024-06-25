@@ -8,8 +8,7 @@
 namespace Racketmanager;
 
 ?>
-<div class='container' >
-
+<div>
 	<form id='events-filter' method='post' action='' class='form-control mb-3'>
 		<?php wp_nonce_field( 'racketmanager__events-bulk', 'racketmanager_nonce' ); ?>
 

@@ -30,7 +30,7 @@ if ( $event->is_championship ) {
 $clubs = $this->get_clubs();
 if ( ! empty( $event->seasons ) ) { ?>
 	<!-- Season Dropdown -->
-	<div class="container">
+	<div class="mb-3">
 		<div class="row  justify-content-end">
 			<div class="col-auto">
 				<form action="admin.php" method="get" class="form-control">
@@ -74,7 +74,7 @@ if ( ! empty( $event->seasons ) ) { ?>
 <?php } ?>
 
 <!-- View Player Stats -->
-<div class="container">
+<div>
 	<form id="player-stats-filter" method="post" action="">
 		<table class="table table-striped" aria-describedby="<?php esc_html_e( 'Player statistics', 'racketmanager' ); ?>">
 			<thead class="table-dark">

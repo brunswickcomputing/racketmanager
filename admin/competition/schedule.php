@@ -9,7 +9,7 @@ namespace Racketmanager;
 
 global $racketmanager;
 ?>
-<div class='container' >
+<div>
 
 	<form id='schedule-filter' method='post' action='' class='form-control mb-3'>
 		<?php wp_nonce_field( 'racketmanager_schedule-matches', 'racketmanager_nonce' ); ?>

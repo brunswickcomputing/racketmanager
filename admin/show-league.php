@@ -21,7 +21,7 @@ namespace Racketmanager;
 	</div>
 	<h1><?php echo esc_html( $league->title ); ?></h1>
 	<!-- League Menu -->
-	<div class="container">
+	<div>
 		<div class="row justify-content-between">
 			<div class="col-auto">
 				<?php foreach ( $this->get_menu() as $key => $menu_item ) { ?>
@@ -65,7 +65,7 @@ namespace Racketmanager;
 		$league->championship->display_admin_page();
 	} else {
 		?>
-		<div class="container">
+		<div>
 			<!-- Nav tabs -->
 			<ul class="nav nav-tabs" id="myTab" role="tablist">
 				<li class="nav-item" role="presentation">

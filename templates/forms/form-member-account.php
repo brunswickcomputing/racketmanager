@@ -15,19 +15,18 @@ namespace Racketmanager;
 		</div>
 		<div class="module__content">
 			<div class="module-container">
-			<?php
-			if ( isset( $user_data['message'] ) ) {
-				if ( isset( $user_data['error'] ) ) {
-					$class = 'login-error';
-				} else {
-					$class = 'login-info';
+				<?php
+				if ( isset( $user_data['message'] ) ) {
+					if ( isset( $user_data['error'] ) ) {
+						$class = 'login-error';
+					} else {
+						$class = 'login-info';
+					}
+					?>
+					<div id="profile-message" class="<?php echo esc_html( $class ); ?>"><?php echo esc_html( $user_data['message'] ); ?></div>
+					<?php
 				}
 				?>
-				<div id="profile-message" class="<?php echo esc_html( $class ); ?>"><?php echo esc_html( $user_data['message'] ); ?></div>
-				<?php
-			}
-			?>
-
 				<form name="memberaccountform" id="memberaccountform" action="<?php echo esc_url( site_url( 'member-account' ) ); ?>" method="post" autocomplete="off">
 					<?php wp_nonce_field( 'member_account', 'racketmanager_nonce' ); ?>
 

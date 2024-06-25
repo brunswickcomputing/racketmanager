@@ -11,7 +11,7 @@ if ( empty( $selection_id ) ) {
 	$selection_id = 'racketmanager_tournament';
 }
 ?>
-<div id="racketmanager_tournament_selections" class="mb-3">
+<div id="racketmanager_tournament_selections">
 	<form method="get" action="<?php echo esc_url( get_permalink( $post_id ) ); ?>" id="<?php echo esc_html( $selection_id ); ?>">
 		<div class="row g-1 align-items-center">
 			<input type="hidden" name="page_id" value="<?php echo esc_html( $post_id ); ?>" />

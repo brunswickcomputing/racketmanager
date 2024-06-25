@@ -19,7 +19,7 @@ $post_id = isset( $wp_query->post->ID ) ? $wp_query->post->ID : ''; //phpcs:igno
 ?>
 <div id="winners">
 	<h1><?php echo esc_html( sprintf( '%s %s', $curr_entry, __( 'Winners', 'racketmanager' ) ) ); ?></h1>
-	<div id="racketmanager_archive_selections" class="">
+	<div id="racketmanager_archive_selections" class="mt-3">
 		<form method="get" action="<?php echo esc_html( get_permalink( $post_id ) ); ?>" id="racketmanager_winners">
 			<input type="hidden" name="page_id" value="<?php echo esc_html( $post_id ); ?>" />
 			<input type="hidden" name="competitionSeason" id="competitionSeason" value="<?php echo esc_html( $season ); ?>" />

@@ -10,7 +10,7 @@ namespace Racketmanager;
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){
-	activaTab('<?php echo $tab; ?>');
+	activaTab('<?php echo esc_attr( $tab ); ?>');
 });
 </script>
 <div class="container">

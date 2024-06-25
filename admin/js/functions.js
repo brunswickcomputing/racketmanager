@@ -169,15 +169,16 @@ jQuery(document).ready(function ($) {
 				async: false,
 				data: {
 					"name": $("#team").val(),
-					"action": "racketmanager_check_team_exists"
+					"action": "racketmanager_check_team_exists",
+					"security": ajax_var.ajax_nonce,
 				},
 				success: function (response) {
-					if (response) {
+					if (response.data) {
 						$error = true;
 						$msg += 'Team already exists\n';
 					}
 				},
-				error: function () {
+				error: function (data) {
 					$error = true;
 					$msg += 'Error with team name check\n';
 				}

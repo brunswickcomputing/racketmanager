@@ -8,7 +8,7 @@
 namespace Racketmanager;
 
 ?>
-					<div class="module mt-3">
+					<div class="d-none d-md-block module mt-3">
 						<ul class="nav nav-pills justify-content-center">
 							<li class="nav-item">
 								<a class="nav-link active" onclick="Racketmanager.switchTab(this)" id="tab-list" data-tabid="tab-list">

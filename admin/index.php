@@ -10,19 +10,16 @@ namespace Racketmanager;
 use Racketmanager\Racketmanager_Util as util;
 ?>
 <div class="container">
-
 	<h1><?php esc_html_e( 'Racketmanager Competitions', 'racketmanager' ); ?></h1>
-
 	<div id="competitions-table" class="league-block-container mb-3">
-		<div class="container">
+		<div class="">
 			<?php
 			$competition_query = array();
-			include 'includes/competitions.php';
+			require 'includes/competitions.php';
 			?>
 		</div>
 	</div>
-
-	<div class="container">
+	<div class="">
 		<h3><?php esc_html_e( 'Add Competition', 'racketmanager' ); ?></h3>
 		<!-- Add New Competition -->
 		<form action="" method="post" class="form-control">
@@ -34,9 +31,13 @@ use Racketmanager\Racketmanager_Util as util;
 			<div class="form-floating mb-3">
 				<select class="form-select" size="1" name="type" id="type">
 					<option><?php esc_html_e( 'Select', 'racketmanager' ); ?></option>
-					<?php foreach ( Util::get_competition_types() as $racketmanager_id => $type ) { ?>
-						<option value="<?php echo esc_html( $racketmanager_id ); ?>"><?php echo esc_html( ucfirst( $type ) ); ?></option>
-					<?php } ?>
+					<?php
+					foreach ( Util::get_competition_types() as $racketmanager_id => $competition_type ) {
+						?>
+						<option value="<?php echo esc_html( $racketmanager_id ); ?>"><?php echo esc_html( ucfirst( $competition_type ) ); ?></option>
+						<?php
+					}
+					?>
 				</select>
 				<label for="competition_type"><?php esc_html_e( 'Type', 'racketmanager' ); ?></label>
 			</div>

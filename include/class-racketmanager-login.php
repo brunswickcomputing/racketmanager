@@ -611,7 +611,6 @@ class RacketManager_Login {
 				$redirect_url = home_url( 'member-login' );
 				$redirect_url = add_query_arg( 'registered', $email, $redirect_url );
 			}
-			$errors = $result->get_error_codes();
 		}
 		if ( $errors ) {
 			$error_msgs   = join( ',', $errors );

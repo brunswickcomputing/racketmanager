@@ -19,8 +19,23 @@ $site_url = $racketmanager->site_url;
 		<meta name="supported-color-schemes" content="light dark" />
 		<title><?php echo esc_html( $email_subject ); ?></title>
 	<style>
-body {
+body#email-body {
 font-size: 16px; font-family:Arial,Helvetica,sans-serif; color: #1d8057ed; background-color: #e6e6e6;
+}
+#email-body h1 {
+	font-size: 2em;
+	color: #000;
+}
+#email-body h2 {
+	font-size: 1.5em;
+	color: #000;
+}
+#email-body h3 {
+	font-size: 1.17em;
+	color: #000;
+}
+#email-body th, #email-body td {
+	text-align: left;
 }
 .button--green:hover {
 color: #006800; background-color: #fff; border-color: #006800;
@@ -50,7 +65,8 @@ table.fixtures {
 @media only screen and (max-width:768px) {
 .tbContainer {
 	display: block !important;
-}a span {
+}
+#email-body a span {
 	line-height: inherit !important;
 }
 .multi table {
@@ -182,7 +198,7 @@ a[x-apple-data-detectors] {
 }
 </style>
 </head>
-	<body style="font-size: 16px; color: #1d8057ed; margin: 0; padding: 0;" bgcolor="#e6e6e6">
+	<body id="email-body" style="font-size: 16px; color: #1d8057ed; margin: 0; padding: 0;" bgcolor="#e6e6e6">
 		<div style="display: none; max-height: 0px; overflow: hidden; font-size: 16px; color: #1d8057ed; background-color: #e6e6e6;">
 		</div>
 		<div style="font-size: 16px; color: #006800; background-color: #e6e6e6; max-width: 600px; margin: auto;">

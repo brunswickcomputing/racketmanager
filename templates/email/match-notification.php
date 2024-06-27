@@ -12,7 +12,7 @@ $tournament_name  = $tournament->name;
 $tournament_date  = $tournament->date;
 $tournament_venue = $tournament->venue_name;
 $match_date       = $match->match_date;
-$email_subject    = $organisation . ucfirst( $tournament_name ) . ' ' . __( 'Next match confirmation', 'racketmanager' );
+$email_subject    = __( 'Next match confirmation', 'racketmanager' ) . ' - ' . ucfirst( $tournament_name );
 ?>
 <?php require 'email-header.php'; ?>
 			<?php

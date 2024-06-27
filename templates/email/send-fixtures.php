@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-$email_subject = $organisation . ' Fixtures';
+$email_subject = __( 'Fixtures', 'racketmanager' );
 require 'email-header.php';
 ?>
 			<?php $salutation_link = $captain; ?>

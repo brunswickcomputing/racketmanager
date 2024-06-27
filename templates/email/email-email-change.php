@@ -1,10 +1,18 @@
 <?php
+/**
+ * Template for email change email
+ *
+ * @package Racketmanager/Templates
+ */
+
+namespace Racketmanager;
+
 $organisation  = $vars['site_name'];
 $sitename      = $vars['site_name'];
 $siteurl       = $vars['site_url'];
 $userlogin     = $vars['user_login'];
 $username      = $vars['display_name'];
-$email_subject = 'Email Change';
+$email_subject = __( 'Email Change', 'racketmanager' );
 $emaillink     = $vars['email_link'];
 require 'email-header.php';
 ?>

@@ -8,7 +8,7 @@
 namespace Racketmanager;
 
 $organisation  = $vars['site_name'];
-$email_subject = 'Request Action Confirmation';
+$email_subject = __( 'Request Action Confirmation', 'racketmanager' );
 $action_url    = '###CONFIRM_URL###';
 ?>
 <?php require 'email-header.php'; ?>

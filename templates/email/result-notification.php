@@ -9,7 +9,7 @@ namespace Racketmanager;
 
 $competition_name = $match->league->title;
 $match_date       = $match->match_date;
-$email_subject    = $organisation . ' Match Result - ' . $competition_name;
+$email_subject    = __( 'Match Result', 'racketmanager' ) . ' - ' . $competition_name;
 ?>
 <?php require 'email-header.php'; ?>
 			<?php require 'components/match-heading.php'; ?>

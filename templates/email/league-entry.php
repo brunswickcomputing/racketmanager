@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-$email_subject = $organisation . ' - ' . ucfirst( $competition_name ) . ' ' . __( 'League Entry', 'racketmanager' ) . ' - ' . $season;
+$email_subject = __( 'League Entry', 'racketmanager' ) . ' - ' . ucfirst( $competition_name ) . ' - ' . $season;
 require 'email-header.php';
 ?>
 			<?php

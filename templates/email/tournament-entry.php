@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-$email_subject = $organisation . ' - ' . ucfirst( $tournament_name ) . ' ' . __( 'Tournament Entry', 'racketmanager' );
+$email_subject = __( 'Tournament Entry', 'racketmanager' ) . ' - ' . ucfirst( $tournament_name );
 require 'email-header.php';
 ?>
 			<?php

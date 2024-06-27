@@ -1,13 +1,13 @@
 <?php
 /**
- * Send fixtures email body
+ * Cup entry email
  *
  * @package Racketmanager/Templates/Email
  */
 
 namespace Racketmanager;
 
-$email_subject = $organisation . ' - ' . ucfirst( $competition_name ) . ' ' . __( 'Cup Entry', 'racketmanager' ) . ' - ' . $season;
+$email_subject = __( 'Cup Entry', 'racketmanager' ) . ' - ' . ucfirst( $competition_name ) . ' - ' . $season;
 require 'email-header.php';
 ?>
 			<?php

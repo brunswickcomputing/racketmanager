@@ -12,7 +12,7 @@ $sitename      = $vars['site_name'];
 $siteurl       = $vars['site_url'];
 $userlogin     = $vars['user_login'];
 $username      = $vars['display_name'];
-$email_subject = 'Password Change';
+$email_subject = __( 'Password Change', 'racketmanager' );
 $emaillink     = $vars['email_link'];
 require 'email-header.php';
 ?>

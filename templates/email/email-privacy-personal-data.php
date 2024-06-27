@@ -10,7 +10,7 @@ namespace Racketmanager;
 $organisation  = $vars['site_name'];
 $sitename      = $vars['site_name'];
 $siteurl       = $vars['site_url'];
-$email_subject = 'Personal Data Export';
+$email_subject = __( 'Personal Data Export', 'racketmanager' );
 $action_url    = '###LINK###';
 ?>
 <?php require 'email-header.php'; ?>

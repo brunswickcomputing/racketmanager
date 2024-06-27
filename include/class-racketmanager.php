@@ -258,7 +258,7 @@ class RacketManager {
 		$message_args['time_period'] = $time_period;
 		$message_args['from_email']  = $from_email;
 
-		$email_subject = $racketmanager->site_name . ' - ' . $match->league->title . ' - ' . $match->get_title() . ' Match result pending';
+		$email_subject = __( 'Match result pending', 'racketmanager' ) . ' - ' . $match->get_title() . ' - ' . $match->league->title;
 		$email_to      = '';
 		if ( isset( $match->teams['home']->contactemail ) ) {
 			$email_to = $match->teams['home']->captain . ' <' . $match->teams['home']->contactemail . '>';

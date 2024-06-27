@@ -10,7 +10,7 @@ namespace Racketmanager;
 global $match;
 $competition_name = $match->league->title;
 $match_date       = $match->match_date;
-$email_subject    = $organisation . ' Match Result Pending - ' . $competition_name;
+$email_subject    = __( 'Match Result Pending', 'racketmanager' ) . ' - ' . $competition_name . ' - ' . $organisation;
 ?>
 <?php require 'email-header.php'; ?>
 			<?php require 'components/match-heading.php'; ?>

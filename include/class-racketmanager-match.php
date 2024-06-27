@@ -1595,10 +1595,11 @@ final class Racketmanager_Match {
 		$headers                   = array();
 		$headers[]                 = 'From: ' . ucfirst( $this->league->event->competition->type ) . ' Secretary <' . $email_from . '>';
 		$headers[]                 = 'cc: ' . ucfirst( $this->league->event->competition->type ) . ' Secretary <' . $email_from . '>';
-		$subject                   = $organisation_name . ' - ' . $this->league->title . ' - ' . $round_name . ' - Match Details';
+		$subject                   = __( 'Match Details', 'racketmanager' ) . ' - ' . $round_name;
 		if ( ! empty( $this->leg ) ) {
 			$subject .= ' - ' . __( 'Leg', 'racketmanager' ) . ' ' . $this->leg;
 		}
+		$subject .= ' - ' . $this->league->title;
 		wp_mail( $to, $subject, $email_message, $headers );
 		return true;
 	}

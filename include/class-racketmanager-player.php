@@ -632,4 +632,81 @@ final class Racketmanager_Player {
 		}
 		return $this->statistics;
 	}
+	/**
+	 * Get messages function
+	 *
+	 * @param array $args seartcy arguments.
+	 * @return array||false
+	 */
+	public function get_messages( $args ) {
+		global $wpdb;
+
+		$defaults = array(
+			'count'   => false,
+			'status'  => false,
+			'orderby' => array( 'date' => 'DESC' ),
+		);
+		$args     = array_merge( $defaults, (array) $args );
+		$count    = $args['count'];
+		$status   = $args['status'];
+		$orderby  = $args['orderby'];
+
+		$search_terms = array();
+		if ( $status ) {
+			$search_terms[] = $wpdb->prepare( '`status` = %s', intval( $status ) );
+		}
+		$search = '';
+		if ( ! empty( $search_terms ) ) {
+			$search = implode( ' AND ', $search_terms );
+		}
+
+		$orderby_string = '';
+		$i              = 0;
+		foreach ( $orderby as $order => $direction ) {
+			if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
+				$direction = 'ASC';
+			}
+			$orderby_string .= '`' . $order . '` ' . $direction;
+			if ( $i < ( count( $orderby ) - 1 ) ) {
+				$orderby_string .= ',';
+			}
+			++$i;
+		}
+		$order = $orderby_string;
+
+		if ( $count ) {
+			$sql = "SELECT COUNT(ID) FROM {$wpdb->racketmanager_messages} WHERE `userid` = $this->ID";
+			if ( '' !== $search ) {
+				$sql .= " AND $search";
+			}
+			return $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			);
+		}
+
+		$sql = "SELECT `id` FROM {$wpdb->racketmanager_messages}";
+		if ( '' !== $search ) {
+			$sql .= " WHERE $search";
+		}
+		if ( '' !== $order ) {
+			$sql .= " ORDER BY $order";
+		}
+
+		$messages = wp_cache_get( md5( $sql ), 'messages' );
+		if ( ! $messages ) {
+			$messages = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			);
+			wp_cache_set( md5( $sql ), $messages, 'messages' );
+		}
+		$i = 0;
+		foreach ( $messages as $message ) {
+			$message_dtl    = get_message( $message->id );
+			$messages[ $i ] = $message_dtl;
+			++$i;
+		}
+		return $messages;
+	}
 }

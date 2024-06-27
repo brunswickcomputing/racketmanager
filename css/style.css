@@ -3234,6 +3234,7 @@ span.header {
 	justify-content: center;
 }
 
+span.date__year,
 span.date__day,
 span.date__weekday,
 span.date__month {
@@ -5351,4 +5352,89 @@ h4.modal-title {
 .info-msg {
 	font-size: 0.8rem;
 	font-style: italic;
+}
+.message-summary {
+    border: 1px solid #F6F2F7;
+	cursor: pointer;
+	color: #000;
+    display: flex;
+	font-size: 0.85rem;
+    padding: 0.5rem;
+	background-color: rgb(0, 104, 0, .05);
+}
+.message-summary.selected {
+    color: #FFFF;
+    background: #000;
+    border-color: #000;
+}
+.subject {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 14rem;
+    white-space: nowrap;
+}
+.message-summary .subject {
+	width: 12rem;
+}
+.message_header .subject {
+	width: 75%;
+}
+.description_wrapper {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+.sender {
+    font-weight: 700;
+}
+.message_date {
+    align-content: center;
+}
+.message_date .date__month, .message_date .date__year {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+.message_date .date__day {
+    font-size: 1.2rem;
+}
+.message_body td {
+    border: none;
+}
+.message_body {
+    background-color: rgb(0, 104, 0, .05);
+	border: 1px solid #F6F2F7;
+}
+.message_header {
+    display: flex;
+}
+@media (max-width: 768px) {
+	.message_header {
+		display: block;
+	}
+}
+.prefix_wrapper {
+    padding-right: 2rem;
+}
+.header-prefix {
+	font-weight: 700;
+}
+.suffix_wrapper .time {
+	font-size: 0.85rem;
+	text-align: right;
+}
+.suffix_wrapper {
+    display: block;
+    position: relative;
+}
+.message_header_wrapper {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+.message-button {
+	display: flex;
+    flex-direction: row-reverse;
+}
+.unread {
+	background-color: #FFF !important;
 }

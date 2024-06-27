@@ -1483,6 +1483,83 @@ Racketmanager.switchTab = function (elem) {
         break;
     }
 };
+Racketmanager.getMessage = function (event, message_id) {
+	event.preventDefault();
+	jQuery('.selected').removeClass('selected');
+	let message_ref = '#message-summary-' + message_id;
+	jQuery(message_ref).addClass('selected');
+	jQuery(message_ref).removeClass('unread');
+	let notifyField = "#message_detail";
+	jQuery(notifyField).removeClass('message-error');
+	jQuery(notifyField).val("");
+
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: {
+			"message_id": message_id,
+			"action": "racketmanager_get_message",
+			"security": ajax_var.ajax_nonce,
+		},
+		success: function (response) {
+			jQuery(notifyField).empty();
+			jQuery(notifyField).html(response.data);
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				let message = response.responseJSON.data;
+				jQuery(notifyField).html(message);
+			} else {
+				jQuery(notifyField).text(response.statusText);
+			}
+			jQuery(notifyField).addClass('message-error');
+		},
+		complete: function () {
+			jQuery(notifyField).show();
+		}
+	});
+};
+Racketmanager.deleteMessage = function (event, message_id) {
+	event.preventDefault();
+	if ( confirm('Are you sure you want to delete this message?') !== true ) {
+		return;
+	};
+	jQuery('.selected').removeClass('selected');
+	let message_ref = '#message-summary-' + message_id;
+	jQuery(message_ref).addClass('deleted');
+	let notifyField = "#message_detail";
+	jQuery(notifyField).removeClass('message-error');
+	jQuery(notifyField).val("");
+
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: {
+			"message_id": message_id,
+			"action": "racketmanager_delete_message",
+			"security": ajax_var.ajax_nonce,
+		},
+		success: function (response) {
+			jQuery(notifyField).empty();
+			if (response.data.success !== false) {
+				jQuery(message_ref).hide();
+			}
+			jQuery(notifyField).html(response.data.output);
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				let message = response.responseJSON.data;
+				jQuery(notifyField).html(message);
+			} else {
+				jQuery(notifyField).text(response.statusText);
+			}
+			jQuery(notifyField).addClass('message-error');
+		},
+		complete: function () {
+			jQuery(notifyField).show();
+		}
+	});
+};
 function activaTab(tab) {
 	jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');
 	jQuery('.nav-pills button[data-bs-target="#' + tab + '"]').tab('show');

@@ -606,7 +606,7 @@ function get_results_report( $results_report = null ) {
 	} elseif ( is_object( $results_report ) ) {
 		$_results_report = new Racketmanager_Results_Report( $results_report );
 	} else {
-		$_results_report = Racketmanager_Invoice::get_instance( $results_report );
+		$_results_report = Racketmanager_Results_Report::get_instance( $results_report );
 	}
 
 	if ( ! $_results_report ) {
@@ -614,6 +614,31 @@ function get_results_report( $results_report = null ) {
 	}
 
 	return $_results_report;
+}
+/**
+ * Get message object
+ *
+ * @param int|null $message message ID or message object. Defaults to global $message.
+ * @return object message|null
+ */
+function get_message( $message = null ) {
+	if ( empty( $message ) && isset( $GLOBALS['message'] ) ) {
+		$message = $GLOBALS['message'];
+	}
+
+	if ( $message instanceof Racketmanager_Message ) {
+		$_message = $message;
+	} elseif ( is_object( $message ) ) {
+		$_message = new Racketmanager_Message( $message );
+	} else {
+		$_message = Racketmanager_Message::get_instance( $message );
+	}
+
+	if ( ! $_message ) {
+		return null;
+	}
+
+	return $_message;
 }
 /**
  * Enable Cross Origin Resource Sharing

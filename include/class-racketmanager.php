@@ -609,6 +609,7 @@ class RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-exporter.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-results-report.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-rest-routes.php';
+		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-message.php';
 
 		/*
 		* load sports libraries
@@ -1307,12 +1308,125 @@ class RacketManager {
 	 * @return args
 	 */
 	public function racketmanager_mail( $args ) {
+		global $wpdb;
 		$headers = $args['headers'];
 		if ( ! $headers ) {
 			$headers = array();
+		} elseif ( ! is_array( $headers ) ) {
+			$temp_headers = explode( "\n", str_replace( "\r\n", "\n", $headers ) );
+			$headers      = array();
+			$headers      = $temp_headers;
 		}
 		$headers[]       = 'Content-Type: text/html; charset=UTF-8';
 		$args['headers'] = $headers;
+		$subject         = $args['subject'];
+		$message         = $args['message'];
+		$headers         = $args['headers'];
+		if ( is_array( $args['to'] ) ) {
+			$to = $args['to'];
+		} else {
+			$to = explode( ',', $args['to'] );
+		}
+		$cc       = array();
+		$bcc      = array();
+		$reply_to = array();
+		foreach ( $headers as $header ) {
+			if ( ! str_contains( $header, ':' ) ) {
+				if ( false !== stripos( $header, 'boundary=' ) ) {
+					$parts    = preg_split( '/boundary=/i', trim( $header ) );
+					$boundary = trim( str_replace( array( "'", '"' ), '', $parts[1] ) );
+				}
+				continue;
+			}
+			// Explode them out.
+			list( $name, $content ) = explode( ':', trim( $header ), 2 );
+
+			// Cleanup crew.
+			$name    = trim( $name );
+			$content = trim( $content );
+
+			switch ( strtolower( $name ) ) {
+				// Mainly for legacy -- process a "From:" header if it's there.
+				case 'from':
+					$from        = $content;
+					$bracket_pos = strpos( $content, '<' );
+					if ( false !== $bracket_pos ) {
+						// Text before the bracketed email is the "From" name.
+						if ( $bracket_pos > 0 ) {
+							$from_name = substr( $content, 0, $bracket_pos );
+							$from_name = str_replace( '"', '', $from_name );
+							$from_name = trim( $from_name );
+						}
+
+						$from_email = substr( $content, $bracket_pos + 1 );
+						$from_email = str_replace( '>', '', $from_email );
+						$from_email = trim( $from_email );
+
+						// Avoid setting an empty $from_email.
+					} elseif ( '' !== trim( $content ) ) {
+						$from_email = trim( $content );
+					}
+					break;
+				case 'content-type':
+					if ( str_contains( $content, ';' ) ) {
+						list( $type, $charset_content ) = explode( ';', $content );
+						$content_type                   = trim( $type );
+						if ( false !== stripos( $charset_content, 'charset=' ) ) {
+							$charset = trim( str_replace( array( 'charset=', '"' ), '', $charset_content ) );
+						} elseif ( false !== stripos( $charset_content, 'boundary=' ) ) {
+							$boundary = trim( str_replace( array( 'BOUNDARY=', 'boundary=', '"' ), '', $charset_content ) );
+							$charset  = '';
+						}
+
+						// Avoid setting an empty $content_type.
+					} elseif ( '' !== trim( $content ) ) {
+						$content_type = trim( $content );
+					}
+					break;
+				case 'cc':
+					$cc = array_merge( (array) $cc, explode( ',', $content ) );
+					break;
+				case 'bcc':
+					$bcc = array_merge( (array) $bcc, explode( ',', $content ) );
+					break;
+				case 'reply-to':
+					$reply_to = array_merge( (array) $reply_to, explode( ',', $content ) );
+					break;
+				default:
+					// Add it to our grand headers array.
+					$headers[ trim( $name ) ] = trim( $content );
+					break;
+			}
+		}
+		if ( ! empty( $from ) ) {
+			$address_headers = compact( 'to', 'cc', 'bcc' );
+
+			foreach ( $address_headers as $address_header => $addresses ) {
+				if ( empty( $addresses ) ) {
+					continue;
+				}
+				foreach ( $addresses as $address ) {
+					$recipient_name = '';
+					if ( preg_match( '/(.*)<(.+)>/', $address, $matches ) ) {
+						if ( 3 === count( $matches ) ) {
+							$recipient_name = $matches[1];
+							$address        = $matches[2];
+						}
+					}
+					$user = get_user_by( 'email', $address );
+					if ( $user ) {
+						$message_object                 = new \stdClass();
+						$message_object->subject        = $subject;
+						$message_object->userid         = $user->ID;
+						$message_object->date           = current_time( 'mysql', false );
+						$message_object->message_object = $message;
+						$message_object->sender         = $from;
+						$message_object->status         = 1;
+						$message_dtl                    = new Racketmanager_Message( $message_object );
+					}
+				}
+			}
+		}
 		return $args;
 	}
 

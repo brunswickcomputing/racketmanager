@@ -34,6 +34,7 @@ class RacketManager_Shortcodes {
 
 		add_shortcode( 'favourites', array( &$this, 'show_favourites' ) );
 		add_shortcode( 'invoice', array( &$this, 'show_invoice' ) );
+		add_shortcode( 'messages', array( &$this, 'show_messages' ) );
 	}
 
 	/**
@@ -938,7 +939,31 @@ class RacketManager_Shortcodes {
 		}
 		return esc_html_e( 'No invoice found', 'racketmanager' );
 	}
+	/**
+	 * Function to show messages
+	 *
+	 *    [messages template=X]
+	 *
+	 * @param array $atts shortcode attributes.
+	 * @return the content
+	 */
+	public function show_messages( $atts ) {
+		$args = shortcode_atts(
+			array(
+				'template' => '',
+			),
+			$atts
+		);
+		if ( ! is_user_logged_in() ) {
+			return esc_html__( 'You must be logged in to view messages', 'racketmanager' );
+		}
+		$template = $args['template'];
+		$user     = get_player( get_current_user_id() );
+		$messages = $user->get_messages( array() );
+		$filename = ( ! empty( $template ) ) ? 'messages-' . $template : 'messages';
 
+		return $this->load_template( $filename, array( 'messages' => $messages ), 'account' );
+	}
 	/**
 	 * Load template for user display. First the current theme directory is checked for a template
 	 * before defaulting to the plugin
@@ -976,6 +1001,9 @@ class RacketManager_Shortcodes {
 					break;
 				case 'tournament':
 					$template_dir = 'templates/tournament';
+					break;
+				case 'account':
+					$template_dir = 'templates/account';
 					break;
 				default:
 					$template_dir = 'templates';

@@ -988,6 +988,19 @@ function racketmanager_upgrade() {
 		echo esc_html__( 'starting 8.6.1 upgrade', 'racketmanager' ) . "<br />\n";
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_results_checker} ADD `rubber_id` INT( 11 ) NULL AFTER `player_id`" );
 	}
+	if ( version_compare( $installed, '8.9.0', '<' ) ) {
+		echo esc_html__( 'starting 8.9.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$charset_collate = '';
+		if ( $wpdb->has_cap( 'collation' ) ) {
+			if ( ! empty( $wpdb->charset ) ) {
+				$charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
+			}
+			if ( ! empty( $wpdb->collate ) ) {
+				$charset_collate .= " COLLATE $wpdb->collate";
+			}
+		}
+		$wpdb->query( "CREATE TABLE {$wpdb->racketmanager_messages} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `subject` varchar( 255 ) NOT NULL, `userid` int( 11 ) NOT NULL, `date` DATETIME NOT NULL, `sender` varchar( 255 ) NOT NULL, `status` varchar( 1 ) NULL, `message_object` BLOB NOT NULL, PRIMARY KEY ( `id` )) $charset_collate;" );
+	}
 	/*
 	* Update version and dbversion
 	*/

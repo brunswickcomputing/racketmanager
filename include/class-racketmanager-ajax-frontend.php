@@ -39,6 +39,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_racketmanager_set_match_rubber_status', array( &$this, 'set_match_rubber_status' ) );
 		add_action( 'wp_ajax_racketmanager_match_status', array( &$this, 'match_status' ) );
 		add_action( 'wp_ajax_racketmanager_set_match_status', array( &$this, 'set_match_status' ) );
+		add_action( 'wp_ajax_racketmanager_get_message', array( &$this, 'get_message' ) );
+		add_action( 'wp_ajax_racketmanager_delete_message', array( &$this, 'delete_message' ) );
 	}
 	/**
 	 * Add item as favourite
@@ -1436,5 +1438,138 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		$status_dtls->class   = $status_class;
 		$status_dtls->status  = $status;
 		return $status_dtls;
+	}
+	/**
+	 * Build screen to show message
+	 */
+	public function get_message() {
+		$valid   = true;
+		$message = null;
+		if ( isset( $_POST['security'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
+				$valid   = false;
+				$message = __( 'Security token invalid', 'racketmanager' );
+			}
+		} else {
+			$valid   = false;
+			$message = __( 'No security token found in request', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$message_id = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
+			if ( ! $message_id ) {
+				$valid   = false;
+				$message = __( 'No message id found in request', 'racketmanager' );
+			} else {
+				$message_dtl = get_message( $message_id );
+				if ( $message_dtl ) {
+					if ( '1' === $message_dtl->status ) {
+						$status = '0';
+						$message_dtl->set_status( $status );
+					}
+					ob_start();
+					?>
+					<div class="message_header">
+						<div class="message_header_wrapper">
+							<dl class="list list--flex">
+								<div class="list__item">
+									<dt class="list__label"><?php esc_html_e( 'From', 'racketmanager' ); ?></dt>
+									<dd class="list__value">
+										<?php
+										if ( $message_dtl->from_name ) {
+											echo esc_html( $message_dtl->from_name ) . ' ';
+										}
+										echo '[<a href="mailto:' . esc_attr( $message_dtl->from_email ) . '">' . esc_html( $message_dtl->from_email ) . '</a>]';
+										?>
+									</dd>
+								</div>
+								<div class="list__item">
+									<dt class="list__label"><?php esc_html_e( 'Subject', 'racketmanager' ); ?></dt>
+									<dd class="list__value">
+										<?php echo esc_html( $message_dtl->subject ); ?>
+									</dd>
+								</div>
+							</dl>
+						</div>
+						<div class="suffix_wrapper">
+							<div class="time"><?php echo esc_html( mysql2date( 'd-m-Y G:i:s', $message_dtl->date ) ); ?></div>
+							<div class="message-button"><a onclick="Racketmanager.deleteMessage(event, '<?php echo esc_attr( $message_dtl->id ); ?>')" class="btn btn-primary"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></a></div>
+						</div>
+					</div>
+					<div class="message_body ratio" style="--bs-aspect-ratio: 100%;">
+						<?php $frame_source = $message_dtl->message_object; ?>
+						<iframe srcdoc='<?php echo $frame_source; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>'></iframe>
+					</div>
+					<?php
+					$output = ob_get_contents();
+					ob_end_clean();
+				} else {
+					$valid   = false;
+					$message = __( 'Message not found', 'racketmanager' );
+				}
+			}
+		}
+		if ( $valid ) {
+			wp_send_json_success( $output );
+		} else {
+			wp_send_json_error( $message, '500' );
+		}
+	}
+	/**
+	 * Delete message
+	 */
+	public function delete_message() {
+		$valid   = true;
+		$message = null;
+		if ( isset( $_POST['security'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
+				$valid   = false;
+				$message = __( 'Security token invalid', 'racketmanager' );
+			}
+		} else {
+			$valid   = false;
+			$message = __( 'No security token found in request', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$message_id = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
+			if ( ! $message_id ) {
+				$valid   = false;
+				$message = __( 'No message id found in request', 'racketmanager' );
+			} else {
+				$message_dtl = get_message( $message_id );
+				if ( $message_dtl ) {
+					$success = $message_dtl->delete();
+					if ( $success ) {
+						$alert_class = 'success';
+						$alert_text  = __( 'Message deleted', 'racketmanager' );
+					} else {
+						$alert_class = 'danger';
+						$alert_text  = __( 'Unable to delete message', 'racketmanager' );
+					}
+					ob_start();
+					?>
+					<div class="alert_rm alert--<?php echo esc_attr( $alert_class ); ?>">
+						<div class="alert__body">
+							<div class="alert__body-inner">
+								<span><?php echo esc_html( $alert_text ); ?></span>
+							</div>
+						</div>
+					</div>
+					<?php
+					$output = ob_get_contents();
+					ob_end_clean();
+				} else {
+					$valid   = false;
+					$message = __( 'Message not found', 'racketmanager' );
+				}
+			}
+		}
+		if ( $valid ) {
+			$return            = array();
+			$return['output']  = $output;
+			$return['success'] = $success;
+			wp_send_json_success( $return );
+		} else {
+			wp_send_json_error( $message, '500' );
+		}
 	}
 }

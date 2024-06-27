@@ -1,6 +1,8 @@
 <?php
 /**
-Template page for the match modal in tennis
+ * Template page for the match modal in tennis
+ *
+ * @package Racketmanager/Templates
  */
 
 ?>
@@ -8,7 +10,7 @@ Template page for the match modal in tennis
 	<div class="modal-dialog modal-dialog-centered modal-xl">
 	<div class="modal-content">
 		<div class="modal-header">
-			<h5>Match Details</h5>
+			<h5><?php esc_html_e( 'Match Details', 'racketmanager' ); ?></h5>
 			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 		</div>
 		<div class="modal-body">

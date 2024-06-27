@@ -155,8 +155,10 @@ class RacketManager {
 			}
 			if ( $team_home && $team_away ) {
 				$title = $team_home . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $team_away . ' - ' . $league . ' - ' . $site_name;
-			} else {
+			} elseif ( $league ) {
 				$title = __( 'Match', 'racketmanager' ) . ' - ' . $league . ' - ' . $site_name;
+			} else {
+				$title = __( 'Match', 'racketmanager' ) . ' - ' . $site_name;
 			}
 		}
 		if ( 'league-entry' === $slug || 'cup-entry' === $slug ) {

@@ -3264,7 +3264,7 @@ final class RacketManager_Admin extends RacketManager {
 	 * Load Javascript
 	 */
 	public function loadScripts() {
-		wp_register_script( 'racketmanager-bootstrap', plugins_url( '/admin/js/bootstrap/bootstrap.bundle.min.js', __DIR__ ), array(), RACKETMANAGER_VERSION, false );
+		wp_register_script( 'racketmanager-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js', array(), RACKETMANAGER_VERSION, false );
 		wp_enqueue_script( 'racketmanager-bootstrap' );
 		wp_register_script( 'racketmanager-functions', plugins_url( '/admin/js/functions.js', __DIR__ ), array( 'thickbox', 'jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'jquery-ui-sortable', 'jquery-ui-tooltip', 'jquery-effects-core', 'jquery-effects-slide', 'jquery-effects-explode', 'jquery-ui-autocomplete', 'iris' ), RACKETMANAGER_VERSION, false );
 		wp_enqueue_script( 'racketmanager-functions' );
@@ -3315,7 +3315,7 @@ final class RacketManager_Admin extends RacketManager {
 	 * Load CSS styles
 	 */
 	public function loadStyles() {
-		wp_enqueue_style( 'racketmanager-bootstrap', plugins_url( '/css/bootstrap.min.css', __DIR__ ), false, RACKETMANAGER_VERSION, 'screen' );
+		wp_enqueue_style( 'racketmanager-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css', false, RACKETMANAGER_VERSION, 'screen' );
 		wp_enqueue_style( 'racketmanager', plugins_url( '/css/admin.css', __DIR__ ), false, RACKETMANAGER_VERSION, 'screen' );
 		wp_enqueue_style( 'racketmanager-modal', plugins_url( '/css/modal.css', __DIR__ ), false, RACKETMANAGER_VERSION, 'screen' );
 

@@ -653,7 +653,17 @@ final class Racketmanager_Player {
 
 		$search_terms = array();
 		if ( $status ) {
-			$search_terms[] = $wpdb->prepare( '`status` = %s', intval( $status ) );
+			switch ( $status ) {
+				case 'unread':
+					$status = '1';
+					break;
+				case 'read':
+					$status = '0';
+					break;
+				default:
+					break;
+			}
+			$search_terms[] = $wpdb->prepare( '`status` = %s', $status );
 		}
 		$search = '';
 		if ( ! empty( $search_terms ) ) {

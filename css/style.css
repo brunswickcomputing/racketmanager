@@ -4547,7 +4547,7 @@ a:hover .nav-link__value, a:focus .nav-link__value {
 .module--dark a.btn:hover .nav-link__value, .module--dark a.btn:focus .nav-link__value {
 	color: #006800;
 }
-.module--dark a:hover .nav-link__value, a:focus .nav-link__value {
+.module--dark a:hover .nav-link__value, .module--dark a:focus .nav-link__value {
 	color: #FFF;
 }
 .nav-link__prefix {

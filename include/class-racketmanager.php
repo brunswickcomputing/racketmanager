@@ -1463,7 +1463,15 @@ class RacketManager {
 				case 'cup-entry':
 					wp_safe_redirect( wp_login_url( $redirect_page ) );
 					exit;
+				case 'match':
+					$action = get_query_var( 'action' );
+					if ( 'result' === $action ) {
+						wp_safe_redirect( wp_login_url( $redirect_page ) );
+						exit;
+					}
+					break;
 				default:
+					break;
 			}
 		}
 	}

@@ -451,7 +451,7 @@ final class Racketmanager_Rubber {
 		global $wpdb;
 		$players = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT rp.`id`, `player_ref`, `player_team`, rp.`player_id`, `club_player_id`, `description` FROM {$wpdb->racketmanager_rubber_players} rp LEFT OUTER JOIN {$wpdb->racketmanager_results_checker} rc ON rp.`rubber_id` = rc.`rubber_id` AND rp.`player_id` = rc.`player_id` WHERE rp.`rubber_id` = %s",
+				"SELECT rp.`id`, `player_ref`, `player_team`, rp.`player_id`, `club_player_id`, `description`, `status` FROM {$wpdb->racketmanager_rubber_players} rp LEFT OUTER JOIN {$wpdb->racketmanager_results_checker} rc ON rp.`rubber_id` = rc.`rubber_id` AND rp.`player_id` = rc.`player_id` WHERE rp.`rubber_id` = %s",
 				$this->id
 			)
 		);
@@ -459,9 +459,12 @@ final class Racketmanager_Rubber {
 		foreach ( $players as $player ) {
 			$this->players[ $player->player_team ][ $player->player_ref ]                 = get_player( $player->player_id );
 			$this->players[ $player->player_team ][ $player->player_ref ]->club_player_id = $player->club_player_id;
-			$this->players[ $player->player_team ][ $player->player_ref ]->description    = null;
-			if ( $player->description ) {
+			if ( empty( $player->description ) || '1' === $player->status ) {
+				$this->players[ $player->player_team ][ $player->player_ref ]->description = null;
+				$this->players[ $player->player_team ][ $player->player_ref ]->class       = null;
+			} else {
 				$this->players[ $player->player_team ][ $player->player_ref ]->description = $player->description;
+				$this->players[ $player->player_team ][ $player->player_ref ]->class       = 'is-invalid';
 			}
 		}
 	}

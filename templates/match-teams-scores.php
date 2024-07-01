@@ -246,9 +246,9 @@ if ( ! empty( $match->winner_id ) ) {
 															<?php
 														}
 														?>
-														<span class="<?php echo empty( $player_detail->description ) ? '' : 'is-invalid'; ?>"
+														<span class="<?php echo esc_attr( $player_detail->class ); ?>"
 														<?php
-														if ( ! empty( $player_detail->description ) ) {
+														if ( ! empty( $player_detail->class ) ) {
 															?>
 															data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="<?php echo esc_attr( $player_detail->description ); ?>"
 															<?php

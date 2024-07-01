@@ -1733,13 +1733,29 @@ final class RacketManager_Admin extends RacketManager {
 				$teams          = $primary_league->get_league_teams( array() );
 				$t              = 0;
 				foreach ( $teams as $team ) {
-					$match_array             = array();
-					$match_array['loser_id'] = $team->id;
-					$match_array['count']    = true;
-					$match_array['final']    = 'all';
-					$matches                 = $primary_league->get_matches( $match_array );
+					$match_array                     = array();
+					$match_array['loser_id']         = $team->id;
+					$match_array['count']            = true;
+					$match_array['final']            = 'all';
+					$match_array['reset_query_args'] = true;
+					$matches                         = $primary_league->get_matches( $match_array );
 					if ( ! $matches ) {
 						unset( $teams[ $t ] );
+					} else {
+						$match_array['loser_id'] = null;
+						$match_array['team_id']  = $team->id;
+						$matches                 = $primary_league->get_matches( $match_array );
+						if ( $matches > 2 ) {
+							unset( $teams[ $t ] );
+						} elseif ( 2 === $matches ) {
+							$match_array['count'] = false;
+							$matches              = $primary_league->get_matches( $match_array );
+							if ( $matches ) {
+								if ( '-1' !== $matches[0]->home_team && '-1' !== $matches[0]->away_team ) {
+									unset( $teams[ $t ] );
+								}
+							}
+						}
 					}
 					++$t;
 				}

@@ -41,7 +41,9 @@ namespace Racketmanager;
 					?>
 				</div>
 				<div class="col-12 col-md-9">
-					<div id="message_detail"></div>
+					<div id="message_detail">
+						<p class="text-center"><?php esc_html_e( 'Select message to read', 'racketmanager' ); ?></p>
+					</div>
 				</div>
 			</div>
 		</div>

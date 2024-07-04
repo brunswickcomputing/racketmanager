@@ -32,7 +32,7 @@ $email_subject    = __( 'Match Result Pending', 'racketmanager' ) . ' - ' . $com
 																	<?php
 																	$message_detail = 'The result of this match is outstanding';
 																	if ( $time_period ) {
-																		$message_detail .= ' more than ' . $time_period . ' hours after the match was played';
+																		$message_detail .= ' more than ' . $time_period . ' hours after the match was due to be played';
 																	}
 																	$message_detail .= '.';
 																	?>

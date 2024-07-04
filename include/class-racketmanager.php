@@ -225,11 +225,11 @@ class RacketManager {
 	 * @param int $competition Competiton id.
 	 * @return void
 	 */
-	public function chase_pending_results( $competition ) {
+	public function chase_pending_results( $competition = 'league' ) {
 		$result_pending                 = $this->get_options( $competition )['resultPending'];
 		$match_args                     = array();
 		$match_args['time']             = 'outstanding';
-		$match_args['competition_type'] = 'league';
+		$match_args['competition_type'] = $competition;
 		$match_args['orderby']          = array(
 			'date' => 'ASC',
 			'id'   => 'ASC',
@@ -249,7 +249,6 @@ class RacketManager {
 	 * @return boolean $message_sent Indicator to show if message was sent.
 	 */
 	public function chase_match_result( $match_id, $time_period = false ) {
-		global $racketmanager;
 		$match                       = get_match( $match_id );
 		$message_sent                = false;
 		$headers                     = array();
@@ -261,13 +260,25 @@ class RacketManager {
 		$message_args['from_email']  = $from_email;
 
 		$email_subject = __( 'Match result pending', 'racketmanager' ) . ' - ' . $match->get_title() . ' - ' . $match->league->title;
-		$email_to      = '';
-		if ( isset( $match->teams['home']->contactemail ) ) {
-			$email_to = $match->teams['home']->captain . ' <' . $match->teams['home']->contactemail . '>';
-			$club     = get_club( $match->teams['home']->affiliatedclub );
+		$email_to      = array();
+		if ( $match->league->event->competition->is_tournament ) {
+			$opponents = array( 'home', 'away' );
+			foreach ( $opponents as $opponent ) {
+				$players = $match->teams[ $opponent ]->players;
+				foreach ( $players as $player ) {
+					if ( ! empty( $player->email ) ) {
+						$email_to[] = $player->fullname . '<' . $player->email . '>';
+					}
+				}
+			}
+		} else {
+			$email_to[] = $match->teams['home']->captain . ' <' . $match->teams['home']->contactemail . '>';
+			$club       = get_club( $match->teams['home']->affiliatedclub );
 			if ( isset( $club->match_secretary_email ) ) {
 				$headers[] = 'cc: ' . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
 			}
+		}
+		if ( $email_to ) {
 			$email_message = racketmanager_result_outstanding_notification( $match->id, $message_args );
 			wp_mail( $email_to, $email_subject, $email_message, $headers );
 			$message_sent = true;

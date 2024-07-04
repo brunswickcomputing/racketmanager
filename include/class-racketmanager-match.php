@@ -107,7 +107,7 @@ final class Racketmanager_Match {
 	 */
 	public $post_id;
 	/**
-	 * Rounf for championship
+	 * Round for championship
 	 *
 	 * @var string
 	 */

@@ -190,12 +190,12 @@ final class Racketmanager_Tournament {
 				);
 				break;
 			case 'shortcode':
-				$search_terms = explode( ' ', $tournament_id );
-				$type         = $search_terms[0];
-				$season       = $search_terms[1];
-				$search       = $wpdb->prepare(
-					'`type` = %s AND `season` = %s',
-					$type,
+				$search_terms   = explode( ',', $tournament_id );
+				$competition_id = $search_terms[0];
+				$season         = $search_terms[1];
+				$search         = $wpdb->prepare(
+					'`competition_id` = %d AND `season` = %s',
+					intval( $competition_id ),
 					$season,
 				);
 				break;

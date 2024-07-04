@@ -153,7 +153,7 @@ if ( $league->event->is_box ) {
 							?>
 						</li>
 						<?php
-						if ( 'player' !== $league->event->competition->entry_type ) {
+						if ( $league->event->competition->is_team_entry ) {
 							?>
 							<li class="nav-item" role="presentation">
 								<?php
@@ -229,7 +229,7 @@ if ( $league->event->is_box ) {
 				?>
 			</div>
 			<?php
-			if ( 'player' !== $league->event->competition->entry_type ) {
+			if ( $league->event->competition->is_team_entry ) {
 				?>
 				<div class="tab-pane fade" id="players" role="tabpanel" aria-labelledby="players-tab">
 					<?php racketmanager_players( 0, array( 'season' => get_current_season() ) ); ?>

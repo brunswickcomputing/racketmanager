@@ -99,7 +99,7 @@ if ( empty( $object->team ) ) {
 
 									<ul class="list list--flex">
 										<?php
-										if ( 'player' !== $league->event->competition->entry_type ) {
+										if ( $league->event->competition->is_team_entry ) {
 											?>
 											<li class="list__item">
 												<span class="nav--link">
@@ -116,7 +116,7 @@ if ( empty( $object->team ) ) {
 										?>
 										<?php
 										if ( is_user_logged_in() ) {
-											if ( 'player' === $league->event->competition->entry_type ) {
+											if ( $league->event->competition->is_player_entry ) {
 												foreach ( $team->info->players as $team_player ) {
 													?>
 													<h4 class="subheading">

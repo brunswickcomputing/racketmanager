@@ -57,7 +57,7 @@ jQuery(function() {
 		</button>
 	</li>
 	<?php
-	if ( ! isset( $league->event->competition->entry_type ) || 'player' !== $league->event->competition->entry_type ) {
+	if ( $league->event->competition->is_team_entry ) {
 		?>
 		<?php
 		if ( ! empty( $wp->query_vars['player_id'] ) ) {
@@ -104,7 +104,7 @@ jQuery(function() {
 		?>
 	</div>
 	<?php
-	if ( ! isset( $league->event->competition->entry_type ) || 'player' !== $league->event->competition->entry_type ) {
+	if ( $league->event->competition->is_team_entry ) {
 		?>
 		<div class="tab-pane fade" id="players-<?php echo esc_html( $league->id ); ?>" role="tabpanel" aria-labelledby="players-tab">
 			<?php racketmanager_players( $league->id, array( 'season' => get_current_season() ) ); ?>

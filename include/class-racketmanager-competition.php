@@ -270,6 +270,36 @@ class Racketmanager_Competition {
 	 */
 	public $entry_type;
 	/**
+	 * Cup flag
+	 *
+	 * @var boolean
+	 */
+	public $is_cup = false;
+	/**
+	 * Tournament flag
+	 *
+	 * @var boolean
+	 */
+	public $is_tournament = false;
+	/**
+	 * League flag
+	 *
+	 * @var boolean
+	 */
+	public $is_league = false;
+	/**
+	 * Team entry flag
+	 *
+	 * @var boolean
+	 */
+	public $is_team_entry = false;
+	/**
+	 * Player entry flag
+	 *
+	 * @var boolean
+	 */
+	public $is_player_entry = false;
+	/**
 	 * Retrieve competition instance
 	 *
 	 * @param int    $competition_id competition id.
@@ -378,6 +408,27 @@ class Racketmanager_Competition {
 		// Championship.
 		if ( 'championship' === $this->mode ) {
 			$this->is_championship = true;
+		} else {
+			$this->is_championship = false;
+		}
+		$this->is_league       = false;
+		$this->is_cup          = false;
+		$this->is_tournament   = false;
+		$this->is_team_entry   = false;
+		$this->is_player_entry = false;
+		switch ( $this->type ) {
+			case 'league':
+				$this->is_league     = true;
+				$this->is_team_entry = true;
+				break;
+			case 'cup':
+				$this->is_cup        = true;
+				$this->is_team_entry = true;
+				break;
+			case 'tournament':
+				$this->is_tournament   = true;
+				$this->is_player_entry = true;
+				break;
 		}
 	}
 

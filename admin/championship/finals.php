@@ -82,7 +82,7 @@ $subpage = isset( $_GET['subpage'] ) ? sanitize_text_field( wp_unslash( $_GET['s
 						<th style="text-align: center;"><?php esc_html_e( 'Match', 'racketmanager' ); ?></th>
 						<th><?php esc_html_e( 'Location', 'racketmanager' ); ?></th>
 						<?php
-						if ( ! isset( $league->event->competition->entry_type ) || 'player' !== $league->event->competition->entry_type ) {
+						if ( $league->event->competition->is_team_entry ) {
 							?>
 							<th><?php esc_html_e( 'Begin', 'racketmanager' ); ?></th>
 							<?php
@@ -124,7 +124,7 @@ $subpage = isset( $_GET['subpage'] ) ? sanitize_text_field( wp_unslash( $_GET['s
 								<?php echo ( isset( $match->location ) ) ? esc_html( $match->location ) : 'N/A'; ?>
 							</td>
 							<?php
-							if ( ! isset( $league->event->competition->entry_type ) || 'player' !== $league->event->competition->entry_type ) {
+							if ( $league->event->competition->is_team_entry ) {
 								?>
 								<td>
 									<?php echo ( isset( $match->hour ) ) ? esc_html( mysql2date( $racketmanager->time_format, $match->date ) ) : 'N/A'; ?>

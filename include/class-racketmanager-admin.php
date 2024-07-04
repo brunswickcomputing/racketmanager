@@ -349,7 +349,7 @@ final class RacketManager_Admin extends RacketManager {
 		);
 		if ( $league->is_championship ) {
 			$menu['match']['show'] = false;
-			if ( 'player' === $league->event->competition->entry_type && empty( $league->championship->is_consolation ) ) {
+			if ( $league->event->competition->is_player_entry && empty( $league->championship->is_consolation ) ) {
 				$menu['team']['show'] = true;
 			}
 		} else {
@@ -1709,7 +1709,7 @@ final class RacketManager_Admin extends RacketManager {
 			if ( 'LD' === $league_type ) {
 				$league_type = 'XD';
 			}
-			if ( 'player' === $league->event->competition->entry_type ) {
+			if ( $league->event->competition->is_player_entry ) {
 				$entry_type = 'player';
 			} else {
 				$entry_type = '';
@@ -2402,7 +2402,7 @@ final class RacketManager_Admin extends RacketManager {
 				$league    = get_league( $league_id );
 				$season    = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : '';
 				$matchdays = array( 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday' );
-				if ( isset( $league->event->competition->entry_type ) && 'player' === $league->event->competition->entry_type ) {
+				if ( $league->event->competition->is_player_entry ) {
 					$file = 'playerteam.php';
 				}
 			} else {

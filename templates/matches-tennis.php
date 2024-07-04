@@ -31,7 +31,7 @@ namespace Racketmanager;
 				}
 				if ( $matches ) {
 					$show_header = false;
-					if ( 'team' === $league->event->competition->entry_type ) {
+					if ( $league->event->competition->is_team_entry ) {
 						if ( -1 === $league->match_day ) {
 							$matches_list = $matches;
 							$matches_key  = 'match_day';

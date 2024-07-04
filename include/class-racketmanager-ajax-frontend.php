@@ -960,7 +960,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				/* translators: %s: Away team name */
 				$option->desc = sprintf( __( 'Match not played - %s did not show', 'racketmanager' ), $away_name );
 				$select[]     = $option;
-				if ( 'player' === $match->league->event->competition->entry_type ) {
+				if ( $match->league->event->competition->is_player_entry ) {
 					$option         = new \stdClass();
 					$option->value  = 'retired_player1';
 					$option->select = 'retired_player1';
@@ -979,7 +979,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$option->select = 'share';
 				$option->desc   = __( 'Not played', 'racketmanager' );
 				$select[]       = $option;
-				if ( 'player' !== $match->league->event->competition->entry_type ) {
+				if ( $match->league->event->competition->is_team_entry ) {
 					$option         = new \stdClass();
 					$option->value  = 'postponed';
 					$option->select = 'postponed';
@@ -1039,7 +1039,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 													<dd class=""><?php esc_html_e( 'Not played (and will not be played)', 'racketmanager' ); ?></dd>
 												</li>
 												<?php
-												if ( 'player' !== $match->league->event->competition->entry_type ) {
+												if ( $match->league->event->competition->is_team_entry ) {
 													?>
 													<li class="list__item">
 														<dt class=""><?php esc_html_e( 'Postponed', 'racketmanager' ); ?></dt>

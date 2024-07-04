@@ -110,7 +110,7 @@ namespace Racketmanager;
 							<div class="module">
 								<?php
 								$matches = $league->team->matches;
-								if ( 'player' === $league->event->competition->entry_type ) {
+								if ( $league->event->competition->is_player_entry ) {
 									foreach ( $matches as $match ) {
 										require RACKETMANAGER_PATH . 'templates/tournament/match.php';
 									}
@@ -132,7 +132,7 @@ namespace Racketmanager;
 				<div class="module__banner">
 					<h3 class="module__title">
 						<?php
-						if ( 'player' === $league->event->competition->entry_type ) {
+						if ( $league->event->competition->is_player_entry ) {
 							esc_html_e( 'Contact details', 'racketmanager' );
 						} else {
 							esc_html_e( 'Team captain', 'racketmanager' );
@@ -143,7 +143,7 @@ namespace Racketmanager;
 				<div class="module__content">
 					<div class="module-container">
 						<?php
-						if ( 'player' !== $league->event->competition->entry_type ) {
+						if ( $league->event->competition->is_team_entry ) {
 							?>
 							<h4 class="subheading">
 								<?php echo esc_html( $league->team->info->captain ); ?>
@@ -154,7 +154,7 @@ namespace Racketmanager;
 						<ul class="list list--naked">
 							<?php
 							if ( is_user_logged_in() ) {
-								if ( 'player' === $league->event->competition->entry_type ) {
+								if ( $league->event->competition->is_player_entry ) {
 									foreach ( $league->team->info->players as $team_player ) {
 										?>
 										<h4 class="subheading">
@@ -233,7 +233,7 @@ namespace Racketmanager;
 							}
 							?>
 							<?php
-							if ( 'player' !== $league->event->competition->entry_type ) {
+							if ( $league->event->competition->is_team_entry ) {
 								?>
 								<li class="list__item">
 									<span class="nav--link">
@@ -263,7 +263,7 @@ namespace Racketmanager;
 				</div>
 			</div>
 			<?php
-			if ( 'player' !== $league->event->competition->entry_type ) {
+			if ( $league->event->competition->is_team_entry ) {
 				?>
 				<div class="module module--card">
 					<div class="module__banner">

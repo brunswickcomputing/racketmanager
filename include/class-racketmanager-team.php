@@ -476,7 +476,7 @@ final class Racketmanager_Team {
 		$event   = get_event( $event_id );
 		$current = $event->get_team_info( $this->id );
 		if ( $current->captain_id !== $captain || $current->match_day !== $matchday || $current->match_time !== $matchtime ) {
-			if ( $captain && ( ( 'team' === $event->competition->entry_type && $matchday && $matchtime ) || 'player' === $event->competition->entry_type ) ) {
+			if ( $captain && ( ( $event->competition->is_team_entry && $matchday && $matchtime ) || $event->competition->is_player_entry ) ) {
 				$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 					$wpdb->prepare(
 						"UPDATE {$wpdb->racketmanager_team_events} SET `captain` = %s, `match_day` = %s, `match_time` = %s WHERE `team_id` = %d AND `event_id` = %d",

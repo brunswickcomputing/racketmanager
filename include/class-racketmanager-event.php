@@ -438,7 +438,7 @@ class Racketmanager_Event {
 		if ( 'championship' === $this->competition->mode ) {
 			$this->is_championship = true;
 		}
-		if ( 'league' === $this->competition->type && 'player' === $this->competition->entry_type ) {
+		if ( 'league' === $this->competition->type && $this->competition->is_player_entry ) {
 			$this->is_box = true;
 		}
 	}
@@ -1440,7 +1440,7 @@ class Racketmanager_Event {
 		$count    = $args['count'];
 		$group    = $args['group'];
 
-		if ( 'player' === $this->competition->entry_type ) {
+		if ( $this->competition->is_player_entry ) {
 			$teams = $this->get_teams(
 				array(
 					'season' => $season,

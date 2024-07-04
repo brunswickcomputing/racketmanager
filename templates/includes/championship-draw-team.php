@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-if ( -1 === $team->id && 'player' === $match->league->event->competition->entry_type ) {
+if ( -1 === $team->id && $match->league->event->competition->is_player_entry ) {
 	echo '&nbsp;<br/>' . esc_html( $team->title );
 } elseif ( empty( $team->player ) ) {
 	if ( ! empty( $tournament ) ) {

@@ -693,14 +693,14 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				$leg            = get_query_var( 'leg' );
 				$match_args     = array();
 				if ( $home_team_name ) {
-					if ( 'player' === $league->event->competition->entry_type ) {
+					if ( $league->event->competition->is_player_entry ) {
 						$home_team_name = $this->get_player_team_name( $home_team_name );
 					}
 					$home_team               = $racketmanager->getteam_id( $home_team_name );
 					$match_args['home_team'] = $home_team;
 				}
 				if ( $away_team_name ) {
-					if ( 'player' === $league->event->competition->entry_type ) {
+					if ( $league->event->competition->is_player_entry ) {
 						$away_team_name = $this->get_player_team_name( $away_team_name );
 					}
 					$away_team               = $racketmanager->getteam_id( $away_team_name );

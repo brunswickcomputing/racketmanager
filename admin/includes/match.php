@@ -79,7 +79,7 @@ namespace Racketmanager;
 						</th>
 						<th scope="col"><?php esc_html_e( 'Location', 'racketmanager' ); ?></th>
 						<?php
-						if ( ! isset( $league->event->competition->entry_type ) || 'player' !== $league->event->competition->entry_type ) {
+						if ( $league->event->competition->is_team_entry ) {
 							?>
 							<th scope="col"><?php esc_html_e( 'Begin', 'racketmanager' ); ?></th>
 							<?php
@@ -319,7 +319,7 @@ namespace Racketmanager;
 								<input type="text" name="location[<?php echo esc_html( $i ); ?>]" id="location_<?php echo esc_html( $i ); ?>" size="20" value="<?php echo esc_html( $location ); ?>" size="30" />
 							</td>
 							<?php
-							if ( ! isset( $league->event->competition->entry_type ) || 'player' !== $league->event->competition->entry_type ) {
+							if ( $league->event->competition->is_team_entry ) {
 								?>
 								<td>
 									<select size="1" name="begin_hour[<?php echo esc_html( $i ); ?>]">

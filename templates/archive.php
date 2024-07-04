@@ -107,7 +107,7 @@ if ( $league->event->is_box ) {
 	<?php require 'league-selections.php'; ?>
 
 	<?php
-	if ( 'championship' === $league->mode ) {
+	if ( $league->event->competition->is_championship ) {
 		?>
 		<?php racketmanager_championship( 0, array( 'season' => $league->season ) ); ?>
 		<?php

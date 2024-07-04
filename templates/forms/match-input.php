@@ -17,7 +17,7 @@ $tabbase         = 0;
 				<div class="col-auto leaguetitle"><?php echo esc_html( $match->league->title ); ?></div>
 				<div class="col-auto matchday">
 				<?php
-				if ( 'championship' === $match->league->mode ) {
+				if ( $match->league->is_championship ) {
 					echo esc_html( $match->league->championship->get_final_name( $match->final_round ) );
 				} else {
 					echo esc_html( 'Week' . $match->match_day );
@@ -27,7 +27,7 @@ $tabbase         = 0;
 				<div class="col-auto matchdate"><?php echo esc_html( substr( $match->date, 0, 10 ) ); ?></div>
 			</div>
 			<div class="row justify-content-center" id="match-header-2">
-				<?php if ( 'championship' !== $match->league->mode ) { ?>
+				<?php if ( ! $match->league->is_championship ) { ?>
 				<div class="col-auto matchtitle"><?php echo esc_html( $match->match_title ); ?></div>
 				<?php } ?>
 			</div>

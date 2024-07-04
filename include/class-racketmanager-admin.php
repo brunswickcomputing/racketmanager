@@ -2470,7 +2470,7 @@ final class RacketManager_Admin extends RacketManager {
 				$non_group = ( isset( $league->non_group ) ? $league->non_group : 0 );
 
 				// check if league is a cup championship.
-				$cup = ( 'championship' === $league->mode ) ? true : false;
+				$cup = ( $league->event->competition->is_championship ) ? true : false;
 			}
 			$season = $league->current_season['name'];
 

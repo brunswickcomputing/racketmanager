@@ -1622,7 +1622,7 @@ class Racketmanager_League {
 		}
 
 		// disable limit for championship mode.
-		if ( 'championship' === $this->mode ) {
+		if ( $this->is_championship ) {
 			$limit = false;
 		}
 		if ( '' === $season ) {
@@ -2280,7 +2280,7 @@ class Racketmanager_League {
 		$this->set_match_day_selection( $show_match_day_selection, $match_day );
 		$this->set_team_selection( $show_team_selection, $team_id );
 
-		if ( ( $this->show_match_day_selection || $this->show_team_selection ) && 'championship' !== $this->mode ) {
+		if ( ( $this->show_match_day_selection || $this->show_team_selection ) && ! $this->is_championship ) {
 			$this->show_matches_selection = true;
 		} else {
 			$this->show_matches_selection = false;

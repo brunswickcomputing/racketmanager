@@ -104,7 +104,7 @@ if ( ! empty( $league->current_season['num_match_days'] ) ) {
 				<th scope="col"><?php esc_html_e( 'ID', 'racketmanager' ); ?></th>
 				<th scope="col"><?php esc_html_e( 'Date', 'racketmanager' ); ?></th>
 				<?php
-				if ( ! empty( $league->groups ) && 'championship' === $league->mode ) {
+				if ( ! empty( $league->groups ) && $league->event->competition->is_championship ) {
 					?>
 					<th scope="col" class="column-num"><?php esc_html_e( 'Group', 'racketmanager' ); ?></th>
 					<?php
@@ -147,7 +147,7 @@ if ( ! empty( $league->current_season['num_match_days'] ) ) {
 						<td><?php echo esc_html( $match->id ); ?></td>
 						<td><?php echo esc_html( ( substr( $match->date, 0, 10 ) === '0000-00-00' ) ? 'N/A' : mysql2date( $this->date_format, $match->date ) ); ?></td>
 						<?php
-						if ( ! empty( $league->groups ) && 'championship' === $league->mode ) {
+						if ( ! empty( $league->groups ) && $league->event->competition->is_championship ) {
 							?>
 							<td class="column-num"><?php echo esc_html( $match->group ); ?></td>
 							<?php
@@ -209,7 +209,7 @@ if ( ! empty( $league->current_season['num_match_days'] ) ) {
 
 	<div class="tablenav">
 		<?php
-		if ( isset( $league->mode ) && 'championship' !== $league->mode && $league->get_page_links( 'matches' ) ) {
+		if ( ! $league->event->competition->is_championship && $league->get_page_links( 'matches' ) ) {
 			?>
 			<div class="tablenav-pages"><?php echo esc_html( $league->get_page_links( 'matches' ) ); ?></div>
 			<?php

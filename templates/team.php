@@ -27,7 +27,7 @@ $racketmanager_teaminfo = $league->get_team_dtls( get_team_id() );
 	<div id="collapse<?php the_team_id(); ?>" class="accordion-collapse collapse" aria-labelledby="heading<?php the_team_id(); ?>" data-bs-parent="#teamsList">
 		<div class="accordion-body">
 			<div class="tm-team-content">
-				<?php if ( 'championship' !== $league->mode ) { ?>
+				<?php if ( ! $league->is_championship ) { ?>
 					<div style='float: right; margin-top: 1em;'>
 						<a href="/index.php?league_id=<?php echo esc_html( $league->id ); ?>&team_id=<?php echo esc_html( the_team_id() ); ?>&team=<?php echo esc_html( the_team_name() ); ?>&season=<?php echo esc_html( $racketmanager_season ); ?>&racketmanager_export=calendar" class="roll-button calendar-add" title="<?php esc_html_e( 'Add Matches to Calendar', 'racketmanager' ); ?>" >
 							<i class="racketmanager-svg-icon">
@@ -70,7 +70,7 @@ $racketmanager_teaminfo = $league->get_team_dtls( get_team_id() );
 					<?php } ?>
 				</dl>
 
-				<?php if ( 'championship' !== $league->mode ) { ?>
+				<?php if ( ! $league->is_championship ) { ?>
 					<div class="matches">
 						<?php if ( has_next_match() ) { ?>
 							<div class="matches-container">

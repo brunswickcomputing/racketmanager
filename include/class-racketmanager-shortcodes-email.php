@@ -254,7 +254,7 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 		$match       = get_match( $match );
 
 		$action_url = $racketmanager->site_url;
-		if ( 'championship' === $match->league->mode ) {
+		if ( $match->league->event->competition->is_championship ) {
 			$action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ) . '/' . $match->league->current_season['name'] . '/' . $match->final_round . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title ) . '/';
 			if ( ! empty( $match->leg ) ) {
 				$action_url .= 'leg-' . $match->leg . '/';
@@ -307,7 +307,7 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 		$match       = get_match( $match );
 
 		$action_url = $racketmanager->site_url;
-		if ( 'championship' === $match->league->mode ) {
+		if ( $match->league->is_championship ) {
 			$action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ) . '/' . $match->league->current_season['name'] . '/' . $match->final_round . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title );
 		} else {
 			$action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ) . '/' . $match->league->current_season['name'] . '/day' . $match->match_day . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title );

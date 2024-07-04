@@ -15,7 +15,7 @@ $points_span = 2 + intval( $match->league->num_sets );
 		<div class="matchdate"><?php echo esc_html( substr( $match->date, 0, 10 ) ); ?></div>
 		<div class="matchday">
 			<?php
-			if ( 'championship' === $match->league->mode ) {
+			if ( $match->league->event->competition->is_championship ) {
 				echo esc_html( $match->league->championship->get_final_name( $match->final_round ) );
 			} else {
 				echo 'Week' . esc_html( $match->match_day );
@@ -24,7 +24,7 @@ $points_span = 2 + intval( $match->league->num_sets );
 		</div>
 		<div class="matchtitle">
 			<?php
-			if ( 'championship' !== $match->league->mode ) {
+			if ( ! $match->league->event->competition->is_championship ) {
 				echo esc_html( $match->match_title );
 			}
 			?>

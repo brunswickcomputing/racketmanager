@@ -9,7 +9,7 @@ namespace Racketmanager;
 
 ?>
 <?php
-if ( ( $league->show_match_day_selection ) && 'championship' !== $league->mode ) {
+if ( ( $league->show_match_day_selection ) && ! $league->event->competition->is_championship ) {
 	?>
 	<div class="matches-selections wp-clearfix mb-3 row">
 		<form method='get' action='<?php the_permalink( get_the_ID() ); ?>' id='racketmanager_match_day_selection'>

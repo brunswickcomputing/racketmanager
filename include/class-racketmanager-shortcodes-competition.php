@@ -212,7 +212,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				'players' => true,
 			)
 		);
-		if ( 'championship' === $event->competition->mode ) {
+		if ( $event->competition->is_championship ) {
 			$event->leagues = $this->get_draw( $event, $season );
 			$i              = 0;
 			foreach ( $event->teams as $team ) {

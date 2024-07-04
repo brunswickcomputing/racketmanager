@@ -9,7 +9,7 @@ namespace Racketmanager;
 
 ?>
 <?php
-if ( 'championship' !== $league->mode ) {
+if ( ! $league->event->competition->is_championship ) {
 	?>
 	<div class="alignright">
 		<form action="admin.php" method="get">
@@ -47,13 +47,13 @@ if ( 'championship' !== $league->mode ) {
 				</th>
 				<th class="column-num" scope="column"><?php esc_html_e( 'Rank', 'racketmanager' ); ?></th>
 				<?php
-				if ( 'championship' !== $league->mode ) {
+				if ( ! $league->event->competition->is_championship ) {
 					?>
 					<th class="column-num" scope="column">&#160;</th><?php } ?>
 				<th scope="column"><?php esc_html_e( 'Club', 'racketmanager' ); ?></th>
 				<?php
-				if ( 'championship' !== $league->mode ) {
-					if ( ! empty( $league->groups ) && 'championship' === $league->mode ) {
+				if ( ! $league->event->competition->is_championship ) {
+					if ( ! empty( $league->groups ) ) {
 						?>
 						<th class="column-num" scope="column"><?php esc_html_e( 'Group', 'racketmanager' ); ?></th>
 						<?php
@@ -140,7 +140,7 @@ if ( 'championship' !== $league->mode ) {
 						?>
 					</td>
 					<?php
-					if ( 'championship' !== $league->mode ) {
+					if ( ! $league->event->competition->is_championship ) {
 						?>
 						<td class="column-num">
 							<?php echo esc_html( $team->status ); ?>
@@ -171,12 +171,12 @@ if ( 'championship' !== $league->mode ) {
 						</a>
 					</td>
 					<?php
-					if ( ! empty( $league->groups ) && 'championship' === $league->mode ) {
+					if ( ! empty( $league->groups ) && $league->event->competition->is_championship ) {
 						?>
 						<td class="column-num"><?php echo esc_html( $team->group ); ?></td>
 						<?php
 					}
-					if ( 'championship' !== $league->mode ) {
+					if ( ! $league->event->competition->is_championship ) {
 						if ( 'manual' !== $league->point_rule ) {
 							if ( isset( $league->standings['pld'] ) && 1 === $league->standings['pld'] ) {
 								?>
@@ -291,7 +291,7 @@ if ( 'championship' !== $league->mode ) {
 		</tbody>
 	</table>
 	<?php
-	if ( isset( $league->event->competition->team_ranking ) && 'manual' === $league->event->competition->team_ranking && 'championship' === $league->mode ) {
+	if ( isset( $league->event->competition->team_ranking ) && 'manual' === $league->event->competition->team_ranking && $league->event->competition->is_championship ) {
 		?>
 		<script type='text/javascript'>
 		</script>

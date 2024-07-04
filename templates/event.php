@@ -111,7 +111,7 @@ if ( $event->is_box ) {
 					<div class="collapse navbar-collapse mt-3" id="navbarSupportedContent">
 						<ul class="nav nav-pills frontend" id="myTab" role="tablist">
 							<?php
-							if ( 'championship' === $event->competition->mode ) {
+							if ( $event->competition->is_championship ) {
 								?>
 								<li class="nav-item" role="presentation">
 									<button class="nav-link" id="standings-tab" data-bs-toggle="tab" data-bs-target="#standings" type="button" role="tab" aria-controls="standings" aria-selected="true"><?php esc_html_e( 'Draw', 'racketmanager' ); ?></button>
@@ -126,7 +126,7 @@ if ( $event->is_box ) {
 							}
 							?>
 							<?php
-							if ( 'championship' === $event->competition->mode ) {
+							if ( $event->competition->is_championship ) {
 								?>
 								<li class="nav-item" role="presentation">
 									<button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="true"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></button>
@@ -196,7 +196,7 @@ if ( $event->is_box ) {
 	}
 	?>
 	<?php
-	if ( 'championship' === $event->competition->mode ) {
+	if ( $event->competition->is_championship ) {
 		?>
 		<div class="tab-pane fade" id="standings" role="tabpanel" aria-labelledby="standings-tab">
 			<div class="module module--card">
@@ -284,7 +284,7 @@ if ( $event->is_box ) {
 	if ( 'constitution' !== $standings_template ) {
 		?>
 			<?php
-			if ( 'championship' === $event->competition->mode ) {
+			if ( $event->competition->is_championship ) {
 				?>
 				<div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
 					<div class="module module--card">
@@ -322,7 +322,7 @@ if ( $event->is_box ) {
 			?>
 			<div class="tab-pane fade" id="teams" role="tabpanel" aria-labelledby="teams-tab">
 			<?php
-			if ( 'championship' === $event->competition->mode ) {
+			if ( $event->competition->is_championship ) {
 				?>
 				<?php require 'teams-list.php'; ?>
 				<?php

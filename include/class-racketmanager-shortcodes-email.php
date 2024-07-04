@@ -22,7 +22,7 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 		add_shortcode( 'matchnotification', array( &$this, 'showMatchNotification' ) );
 		add_shortcode( 'resultnotification', array( &$this, 'showResultNotification' ) );
 		add_shortcode( 'resultnotificationcaptain', array( &$this, 'showCaptainResultNotification' ) );
-		add_shortcode( 'resultoutstandingnotification', array( &$this, 'showResultOutstandingNotification' ) );
+		add_shortcode( 'resultoutstandingnotification', array( &$this, 'show_result_outstanding_notification' ) );
 		add_shortcode( 'clubplayernotification', array( &$this, 'showClubPlayerNotification' ) );
 	}
 	/**
@@ -288,7 +288,7 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 	 * @param array $atts shortcode attributes.
 	 * @return the content
 	 */
-	public function showResultOutstandingNotification( $atts ) {
+	public function show_result_outstanding_notification( $atts ) {
 		global $racketmanager;
 
 		$args        = shortcode_atts(
@@ -307,12 +307,21 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 		$match       = get_match( $match );
 
 		$action_url = $racketmanager->site_url;
-		if ( $match->league->is_championship ) {
+		if ( $match->league->event->competition->is_cup ) {
 			$action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ) . '/' . $match->league->current_season['name'] . '/' . $match->final_round . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title );
+		} elseif ( $match->league->event->competition->is_tournament ) {
+			$tournament_code = $match->league->event->competition->id . ',' . $match->season;
+			$tournament      = get_tournament( $tournament_code, 'shortcode' );
+			if ( $tournament ) {
+				$action_url .= '/' . __( 'tournament', 'racketmanager' ) . '/' . sanitize_title( $tournament->name ) . '/' . __( 'match', 'racketmanager' ) . '/' . $match->id . '/';
+			}
 		} else {
 			$action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ) . '/' . $match->league->current_season['name'] . '/day' . $match->match_day . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title );
 		}
 
+		if ( empty( $template ) && 'tournament' === $match->league->event->competition->type ) {
+			$template = 'tournament';
+		}
 		$filename = ( ! empty( $template ) ) ? 'match-result-pending-' . $template : 'match-result-pending';
 
 		return $this->load_template(

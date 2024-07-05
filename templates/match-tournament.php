@@ -50,7 +50,7 @@ if ( $match ) {
 		} elseif ( $loser === $player_team ) {
 			$player_team_status = 'loser';
 		}
-		if ( $match->is_walkover ) {
+		if ( $match->is_walkover && ! empty( $match->custom['walkover'] ) ) {
 			if ( 'home' === $match->custom['walkover'] ) {
 				$match_status = 'walkover_player1';
 			} elseif ( 'away' === $match->custom['walkover'] ) {

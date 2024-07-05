@@ -47,6 +47,27 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.9.0 =
+* BUGFIX: allow file uploads with events
+* BUGFIX: fix match edit button
+* BUGFIX: handle boys/girls teams
+* BUGFIX: ensure banner header correct width on small screen
+* BUGFIX: handle security and correct response
+* BUGFIX: handle no event found for league
+* BUGFIX: handle walkover not set
+* BUGFIX: handle league not found
+* BUGFIX: allow add team
+* UPDATE: use Bootstrap 5.3 on CDN
+* UPDATE: format draws to show on smaller screen
+* UPDATE: use menu bar for smaller screens
+* UPDATE: tidy up account page
+* UPDATE: tidy up favourites page
+* UPDATE: store/view emails for user
+* UPDATE: to play in plate must had at most 2 matches one of which was a bye
+* UPDATE: allow result chase for any competition type
+* UPDATE: handle tournament result outstanding
+* UPDATE: only check played rounds for fixed match days
+
 = 8.8.0 =
 * BUGFIX: esnure match status button always visible
 * UPDATE: allow grid and list views for tournament matches

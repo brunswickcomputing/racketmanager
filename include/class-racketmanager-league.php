@@ -649,7 +649,10 @@ class Racketmanager_League {
 				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				"SELECT `title`, `id`, `settings`, `event_id` FROM {$wpdb->racketmanager} WHERE " . $search . ' LIMIT 1'
 			);  // db call ok.
-			$event            = get_event( $league->event_id );
+			$event = get_event( $league->event_id );
+			if ( $event ) {
+				return false;
+			}
 			$league->settings = (array) maybe_unserialize( $league->settings );
 			$league           = (object) array_merge( (array) $league, $league->settings );
 

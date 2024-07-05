@@ -683,55 +683,55 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			$league_name = un_seo_url( get_query_var( 'league_name' ) );
 			if ( $league_name ) {
 				$league = get_league( $league_name, 'name' );
-			}
-			if ( $league ) {
-				$home_team_name = un_seo_url( get_query_var( 'teamHome' ) );
-				$away_team_name = un_seo_url( get_query_var( 'teamAway' ) );
-				$match_day      = get_query_var( 'match_day' );
-				$season         = get_query_var( 'season' );
-				$round          = get_query_var( 'round' );
-				$leg            = get_query_var( 'leg' );
-				$match_args     = array();
-				if ( $home_team_name ) {
-					if ( $league->event->competition->is_player_entry ) {
-						$home_team_name = $this->get_player_team_name( $home_team_name );
+				if ( $league ) {
+					$home_team_name = un_seo_url( get_query_var( 'teamHome' ) );
+					$away_team_name = un_seo_url( get_query_var( 'teamAway' ) );
+					$match_day      = get_query_var( 'match_day' );
+					$season         = get_query_var( 'season' );
+					$round          = get_query_var( 'round' );
+					$leg            = get_query_var( 'leg' );
+					$match_args     = array();
+					if ( $home_team_name ) {
+						if ( $league->event->competition->is_player_entry ) {
+							$home_team_name = $this->get_player_team_name( $home_team_name );
+						}
+						$home_team               = $racketmanager->getteam_id( $home_team_name );
+						$match_args['home_team'] = $home_team;
 					}
-					$home_team               = $racketmanager->getteam_id( $home_team_name );
-					$match_args['home_team'] = $home_team;
-				}
-				if ( $away_team_name ) {
-					if ( $league->event->competition->is_player_entry ) {
-						$away_team_name = $this->get_player_team_name( $away_team_name );
+					if ( $away_team_name ) {
+						if ( $league->event->competition->is_player_entry ) {
+							$away_team_name = $this->get_player_team_name( $away_team_name );
+						}
+						$away_team               = $racketmanager->getteam_id( $away_team_name );
+						$match_args['away_team'] = $away_team;
 					}
-					$away_team               = $racketmanager->getteam_id( $away_team_name );
-					$match_args['away_team'] = $away_team;
-				}
-				if ( $match_day ) {
-					$match_args['match_day'] = $match_day;
-				}
-				if ( $round ) {
-					if ( $league->is_championship ) {
-						$match_args['final'] = $round;
-					} else {
-						$match_args['match_day'] = $round;
+					if ( $match_day ) {
+						$match_args['match_day'] = $match_day;
 					}
-				}
-				if ( $season ) {
-					$match_args['season'] = $season;
-				}
-				if ( $leg ) {
-					$match_args['leg'] = $leg;
-				}
-				$matches = $league->get_matches( $match_args );
-				if ( ! $matches ) {
-					return esc_html_e( 'Match not found', 'racketmanager' );
-				}
-				$num_matches = count( $matches );
-				if ( 1 === $num_matches ) {
-					$match_id = $matches[0]->id;
-				}
-				if ( $player ) {
-					$match->player = get_player( $player );
+					if ( $round ) {
+						if ( $league->is_championship ) {
+							$match_args['final'] = $round;
+						} else {
+							$match_args['match_day'] = $round;
+						}
+					}
+					if ( $season ) {
+						$match_args['season'] = $season;
+					}
+					if ( $leg ) {
+						$match_args['leg'] = $leg;
+					}
+					$matches = $league->get_matches( $match_args );
+					if ( ! $matches ) {
+						return esc_html_e( 'Match not found', 'racketmanager' );
+					}
+					$num_matches = count( $matches );
+					if ( 1 === $num_matches ) {
+						$match_id = $matches[0]->id;
+					}
+					if ( $player ) {
+						$match->player = get_player( $player );
+					}
 				}
 			}
 		}

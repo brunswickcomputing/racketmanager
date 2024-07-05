@@ -1221,7 +1221,6 @@ class Racketmanager_Ajax extends RacketManager {
 	 */
 	public function check_player_result( $match, $roster_id, $team, $options, $player_options, $rubber_id ) {
 		global $wpdb, $racketmanager, $match;
-
 		$match  = get_match( $match->id );
 		$player = $racketmanager->get_club_player( $roster_id, $team );
 		if ( ! empty( $player->system_record ) ) {
@@ -1315,22 +1314,30 @@ class Racketmanager_Ajax extends RacketManager {
 				}
 
 				if ( isset( $options['playedRounds'] ) ) {
-					$league         = get_league( $match->league_id );
-					$num_match_days = $league->seasons[ $match->season ]['num_match_days'];
-					if ( $match->match_day > ( $num_match_days - $options['playedRounds'] ) ) {
-						$count = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-							$wpdb->prepare(
-								"SELECT count(*) FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager_rubbers} r, {$wpdb->racketmanager_rubber_players} rp WHERE m.`id` = r.`match_id` AND r.`id` = rp.`rubber_id` AND m.`season` = %s AND m.`match_day` < %d AND m.`league_id` in (SELECT l.`id` from {$wpdb->racketmanager} l, {$wpdb->racketmanager_events} e WHERE l.`event_id` = (SELECT `event_id` FROM {$wpdb->racketmanager} WHERE `id` = %d)) AND rp.`club_player_id` = %d",
-								$match->season,
-								$match->match_day,
-								$match->league_id,
-								$roster_id
-							)
-						);
-						if ( 0 === intval( $count ) ) {
-							/* translators: %d: number of played rounds */
-							$error = sprintf( __( 'not played before the final %d match days', 'racketmanager' ), $options['playedRounds'] );
-							$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
+					$competition = get_competition( $match->league->event->competition->id );
+					if ( $competition ) {
+						$competition_season = $competition->seasons[ $match->season ];
+						if ( $competition_season ) {
+							if ( ! isset( $competition_season['fixedMatchDates'] ) || 'false' === $competition_season['fixedMatchDates'] ) {
+								$league         = get_league( $match->league_id );
+								$num_match_days = $league->seasons[ $match->season ]['num_match_days'];
+								if ( $match->match_day > ( $num_match_days - $options['playedRounds'] ) ) {
+									$count = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+										$wpdb->prepare(
+											"SELECT count(*) FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager_rubbers} r, {$wpdb->racketmanager_rubber_players} rp WHERE m.`id` = r.`match_id` AND r.`id` = rp.`rubber_id` AND m.`season` = %s AND m.`match_day` < %d AND m.`league_id` in (SELECT l.`id` from {$wpdb->racketmanager} l, {$wpdb->racketmanager_events} e WHERE l.`event_id` = (SELECT `event_id` FROM {$wpdb->racketmanager} WHERE `id` = %d)) AND rp.`club_player_id` = %d",
+											$match->season,
+											$match->match_day,
+											$match->league_id,
+											$roster_id
+										)
+									);
+									if ( 0 === intval( $count ) ) {
+										/* translators: %d: number of played rounds */
+										$error = sprintf( __( 'not played before the final %d match days', 'racketmanager' ), $options['playedRounds'] );
+										$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
+									}
+								}
+							}
 						}
 					}
 				}

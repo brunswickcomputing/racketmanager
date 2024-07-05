@@ -750,6 +750,16 @@ final class RacketManager_Admin extends RacketManager {
 							$this->printMessage();
 						}
 					}
+				} elseif ( isset( $_POST['contactTeam'] ) ) {
+					if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_contact-teams-preview' ) ) {
+						$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+					} elseif ( current_user_can( 'edit_teams' ) ) {
+						if ( isset( $_POST['competition_id'] ) && isset( $_POST['season'] ) && isset( $_POST['emailMessage'] ) ) {
+							$this->contact_competition_teams( intval( $_POST['competition_id'] ), sanitize_text_field( wp_unslash( $_POST['season'] ) ), htmlspecialchars_decode( $_POST['emailMessage'] ) ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+						}
+					} else {
+						$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
+					}
 				} elseif ( isset( $_GET['editleague'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					$league_id    = intval( $_GET['editleague'] );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					$league       = get_league( $league_id );
@@ -2879,7 +2889,19 @@ final class RacketManager_Admin extends RacketManager {
 					return;
 				}
 				if ( isset( $_POST['league_id'] ) ) {
-					$league = get_league( intval( $_POST['league_id'] ) );
+					$league      = get_league( intval( $_POST['league_id'] ) );
+					$title       = $league->title;
+					$object_type = 'league';
+					$object      = $league;
+					$object_name = 'league_id';
+					$object_id   = $league->id;
+				} elseif ( isset( $_POST['competition_id'] ) ) {
+					$competition = get_competition( intval( $_POST['competition_id'] ) );
+					$title       = $competition->name;
+					$object_type = 'competition';
+					$object      = $competition;
+					$object_name = 'competition_id';
+					$object_id   = $competition->id;
 				}
 				if ( isset( $_POST['season'] ) ) {
 					$season = sanitize_text_field( wp_unslash( $_POST['season'] ) );
@@ -2888,12 +2910,12 @@ final class RacketManager_Admin extends RacketManager {
 				$email_intro   = isset( $_POST['contactIntro'] ) ? sanitize_textarea_field( wp_unslash( $_POST['contactIntro'] ) ) : null;
 				$email_body    = isset( $_POST['contactBody'] ) ? $_POST['contactBody'] : null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				$email_close   = isset( $_POST['contactClose'] ) ? sanitize_textarea_field( wp_unslash( $_POST['contactClose'] ) ) : null;
-				$email_subject = $this->site_name . ' - ' . $league->title . ' ' . $season . ' - Important Message';
+				$email_subject = $this->site_name . ' - ' . $title . ' ' . $season . ' - Important Message';
 
 				$email_message = $racketmanager_shortcodes->load_template(
 					'contact-teams',
 					array(
-						'league'        => $league,
+						$object_type    => $object,
 						'organisation'  => $racketmanager->site_name,
 						'season'        => $season,
 						'title_text'    => $email_title,
@@ -2907,7 +2929,15 @@ final class RacketManager_Admin extends RacketManager {
 				$tab           = 'preview';
 			} else {
 				if ( isset( $_GET['league_id'] ) ) {
-					$league = get_league( intval( $_GET['league_id'] ) );
+					$league      = get_league( intval( $_GET['league_id'] ) );
+					$object_type = 'league';
+					$object_name = 'league_id';
+					$object_id   = $league->id;
+				} elseif ( isset( $_GET['competition_id'] ) ) {
+					$competition = get_competition( intval( $_GET['competition_id'] ) );
+					$object_type = 'competition';
+					$object_name = 'competition_id';
+					$object_id   = $competition->id;
 				}
 				if ( isset( $_GET['season'] ) ) {
 					$season = sanitize_text_field( wp_unslash( $_GET['season'] ) );
@@ -4744,7 +4774,65 @@ final class RacketManager_Admin extends RacketManager {
 		}
 		return true;
 	}
-
+	/**
+	 * Contact Competition Teams
+	 *
+	 * @param int    $competition competition.
+	 * @param string $season season.
+	 * @param string $email_message message.
+	 * @return boolean
+	 */
+	private function contact_competition_teams( $competition, $season, $email_message ) {
+		$competition = get_competition( $competition );
+		if ( $competition ) {
+			$email_message = str_replace( '\"', '"', $email_message );
+			$headers       = array();
+			$email_from    = $this->get_confirmation_email( $competition->type );
+			$headers[]     = 'From: ' . ucfirst( $competition->type ) . ' Secretary <' . $email_from . '>';
+			$headers[]     = 'cc: ' . ucfirst( $competition->type ) . ' Secretary <' . $email_from . '>';
+			$email_subject = $this->site_name . ' - ' . $competition->name . ' ' . $season . ' - Important Message';
+			$email_to      = array();
+			if ( $competition->is_player_entry ) {
+				if ( $competition->is_tournament ) {
+					$tournament_key = $competition->id . ',' . $competition->current_season['name'];
+					$tournament     = get_tournament( $tournament_key, 'shortcode' );
+					if ( $tournament ) {
+						$players = $tournament->get_players();
+						foreach ( $players as $player_name ) {
+							$player = get_player( $player_name, 'name' );
+							if ( $player && ! empty( $player->email ) ) {
+								$headers[] = 'bcc: ' . $player->display_name . ' <' . $player->email . '>';
+							}
+						}
+					}
+				}
+			} else {
+				$teams  = array();
+				$events = $competition->get_events();
+				foreach ( $events as $event ) {
+					$event = get_event( $event );
+					if ( $event ) {
+						$event_teams = $event->get_teams( array( 'season' => $event->current_season['name'] ) );
+						if ( $event_teams ) {
+							$teams = array_merge( $teams, $event_teams );
+						}
+					}
+				}
+				foreach ( $teams as $team ) {
+					$league = get_league( $team->league_id );
+					if ( $league ) {
+						$team_dtls = $league->get_team_dtls( $team->team_id );
+						if ( $team_dtls ) {
+							$headers[] = 'bcc: ' . $team_dtls->captain . ' <' . $team_dtls->contactemail . '>';
+						}
+					}
+				}
+			}
+			wp_mail( $email_to, $email_subject, $email_message, $headers );
+			$this->set_message( __( 'Message sent', 'racketmanager' ) );
+		}
+		return true;
+	}
 	/**
 	 * Get latest season
 	 *

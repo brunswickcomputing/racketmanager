@@ -72,20 +72,20 @@ jQuery(document).ready(function(){
 
 	<?php $this->printMessage(); ?>
 	<div class="">
-		<?php
-		if ( empty( $tournament ) ) {
-			?>
-			<nav class="navbar navbar-expand-lg bg-body-tertiary">
-				<div class="">
-					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-						<span class="navbar-toggler-icon"></span>
-					</button>
-					<div class="collapse navbar-collapse mt-3" id="navbarSupportedContent">
-						<!-- Nav tabs -->
-						<ul class="nav nav-pills" id="myTab" role="tablist">
-							<li class="nav-item" role="presentation">
-								<button class="nav-link" id="events-tab" data-bs-toggle="tab" data-bs-target="#events" type="button" role="tab" aria-controls="events" aria-selected="true"><?php esc_html_e( 'Events', 'racketmanager' ); ?></button>
-							</li>
+		<nav class="navbar navbar-expand-lg bg-body-tertiary">
+			<div class="">
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse mt-3" id="navbarSupportedContent">
+					<!-- Nav tabs -->
+					<ul class="nav nav-pills" id="myTab" role="tablist">
+						<li class="nav-item" role="presentation">
+							<button class="nav-link" id="events-tab" data-bs-toggle="tab" data-bs-target="#events" type="button" role="tab" aria-controls="events" aria-selected="true"><?php esc_html_e( 'Events', 'racketmanager' ); ?></button>
+						</li>
+						<?php
+						if ( empty( $tournament ) ) {
+							?>
 							<li class="nav-item" role="presentation">
 								<button class="nav-link" id="seasons-tab" data-bs-toggle="tab" data-bs-target="#seasons" type="button" role="tab" aria-controls="seasons" aria-selected="false"><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></button>
 							</li>
@@ -107,22 +107,25 @@ jQuery(document).ready(function(){
 								<?php
 							}
 							?>
-						</ul>
-					</div>
+							<?php
+						}
+						?>
+						<li class="nav-item" role="presentation">
+							<a class="nav-link" id="contact-tab" type="button" href="admin.php?page=racketmanager&subpage=contact&competition_id=<?php echo esc_attr( $competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>"><?php esc_html_e( 'Contact', 'racketmanager' ); ?></a>
+						</li>
+					</ul>
 				</div>
-			</nav>
-			<!-- Tab panes -->
-			<div class="tab-content">
+			</div>
+		</nav>
+		<!-- Tab panes -->
+		<div class="tab-content">
+			<div class="tab-pane" id="events" role="tabpanel" aria-labelledby="events-tab">
+				<h2><?php esc_html_e( 'Events', 'racketmanager' ); ?></h2>
+				<?php require_once 'competition/events.php'; ?>
+			</div>
 			<?php
-		}
-		?>
-		<div class="tab-pane" id="events" role="tabpanel" aria-labelledby="events-tab">
-			<h2><?php esc_html_e( 'Events', 'racketmanager' ); ?></h2>
-			<?php require_once 'competition/events.php'; ?>
-		</div>
-		<?php
-		if ( empty( $tournament ) ) {
-			?>
+			if ( empty( $tournament ) ) {
+				?>
 				<div class="tab-pane fade" id="seasons" role="tabpanel" aria-labelledby="seasons-tab">
 					<h2><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></h2>
 					<?php require_once 'competition/seasons.php'; ?>
@@ -146,8 +149,8 @@ jQuery(document).ready(function(){
 					<?php
 				}
 				?>
-			</div>
-			<?php
-		}
-		?>
+				<?php
+			}
+			?>
+		</div>
 	</div>

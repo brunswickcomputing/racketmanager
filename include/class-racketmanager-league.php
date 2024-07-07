@@ -650,7 +650,7 @@ class Racketmanager_League {
 				"SELECT `title`, `id`, `settings`, `event_id` FROM {$wpdb->racketmanager} WHERE " . $search . ' LIMIT 1'
 			);  // db call ok.
 			$event = get_event( $league->event_id );
-			if ( $event ) {
+			if ( ! $event ) {
 				return false;
 			}
 			$league->settings = (array) maybe_unserialize( $league->settings );

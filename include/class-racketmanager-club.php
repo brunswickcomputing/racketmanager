@@ -468,17 +468,20 @@ final class Racketmanager_Club {
 	 */
 	public function register_player( $new_player ) {
 		global $racketmanager;
-		$valid  = true;
-		$player = get_player( $new_player->user_login, 'login' ); // get player by login.
+		$valid      = true;
+		$old_player = false;
+		$player     = get_player( $new_player->user_login, 'login' ); // get player by login.
 		if ( ! $player ) {
 			$player = get_player( $new_player->email, 'email' );
 			if ( $player ) {
-				$valid = false;
+				$old_player = true;
+				$valid      = false;
 				$racketmanager->set_message( __( 'Email address already used', 'racketmanager' ), true );
 			} else {
 				$player = get_player( $new_player->btm, 'btm' );
 				if ( $player ) {
-					$valid = false;
+					$old_player = true;
+					$valid      = false;
 					$racketmanager->set_message( __( 'LTA Tennis Number already used', 'racketmanager' ), true );
 				} else {
 					$player = new Racketmanager_Player( $new_player );
@@ -488,8 +491,54 @@ final class Racketmanager_Club {
 					}
 				}
 			}
+		} else {
+			$old_player = true;
 		}
 		if ( $valid ) {
+			if ( $old_player ) {
+				$updated_player = clone $player;
+				if ( empty( $player->email ) ) {
+					if ( ! empty( $new_player->email ) ) {
+						$player_change         = true;
+						$updated_player->email = $new_player->email;
+					}
+				} elseif ( ! empty( $new_player->email ) && $player->email !== $new_player->email ) {
+					$valid = false;
+					$racketmanager->set_message( __( 'Email address is different from existing', 'racketmanager' ), true );
+				}
+				if ( empty( $player->btm ) ) {
+					if ( ! empty( $new_player->btm ) ) {
+						$player_change       = true;
+						$updated_player->btm = $new_player->btm;
+					}
+				} elseif ( ! empty( $new_player->btm ) && $player->btm !== $new_player->btm ) {
+					$valid = false;
+					$racketmanager->set_message( __( 'LTA Tennis Number is different from existing', 'racketmanager' ), true );
+				}
+				if ( empty( $player->gender ) ) {
+					if ( ! empty( $new_player->gender ) ) {
+						$player_change          = true;
+						$updated_player->gender = $new_player->gender;
+					}
+				} elseif ( ! empty( $new_player->gender ) && $player->gender !== $new_player->gender ) {
+					$valid = false;
+					$racketmanager->set_message( __( 'Gender is different from existing', 'racketmanager' ), true );
+				}
+				if ( empty( $player->year_of_birth ) ) {
+					if ( ! empty( $new_player->year_of_birth ) ) {
+						$player_change                 = true;
+						$updated_player->year_of_birth = $new_player->year_of_birth;
+					}
+				} elseif ( ! empty( $new_player->year_of_birth ) && $player->year_of_birth !== $new_player->year_of_birth ) {
+					$valid = false;
+					$racketmanager->set_message( __( 'Year of birth is different from existing', 'racketmanager' ), true );
+				}
+			}
+		}
+		if ( $valid ) {
+			if ( $player_change ) {
+				$player->update( $updated_player );
+			}
 			$player_active = $this->player_active( $player->id );
 			if ( ! $player_active ) {
 				$player_pending = $this->is_player_pending( $player->id );

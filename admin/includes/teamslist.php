@@ -26,7 +26,7 @@ $main_title = $page_link . ' - ' . $page_title;
 		</div>
 	</div>
 	<h1><?php echo esc_html( $main_title ); ?></h1>
-	<form action="admin.php?page=racketmanager&amp;subpage=<?php echo esc_html( $breadcrumb ); ?>&amp;season=<?php echo esc_html( $season ); ?>" method="post" enctype="multipart/form-data" name="teams_add">
+	<form id="teams-filter" action="admin.php?page=racketmanager&amp;subpage=<?php echo esc_html( $breadcrumb ); ?>&amp;season=<?php echo esc_html( $season ); ?>" method="post" enctype="multipart/form-data" name="teams_add">
 		<?php wp_nonce_field( 'racketmanager_add-teams-bulk', 'racketmanager_nonce' ); ?>
 		<input type="hidden" name="event_id" value="<?php echo esc_html( $league->event->id ); ?>" />
 		<input type="hidden" name="league_id" value="<?php echo esc_html( $league_id ); ?>" />

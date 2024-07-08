@@ -695,9 +695,9 @@ final class Racketmanager_Player {
 			);
 		}
 
-		$sql = "SELECT `id` FROM {$wpdb->racketmanager_messages}";
+		$sql = "SELECT `id` FROM {$wpdb->racketmanager_messages} WHERE `userid` = $this->ID";
 		if ( '' !== $search ) {
-			$sql .= " WHERE $search";
+			$sql .= " AND $search";
 		}
 		if ( '' !== $order ) {
 			$sql .= " ORDER BY $order";

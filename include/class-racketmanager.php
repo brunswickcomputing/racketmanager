@@ -1999,7 +1999,7 @@ class RacketManager {
 
 		$search_terms = array();
 		if ( $team ) {
-			$search_terms[] = $wpdb->prepare( '`affiliatedclub` in (select `affiliatedclub` from {$wpdb->racketmanager_teams} where `id` = %d)', intval( $team ) );
+			$search_terms[] = $wpdb->prepare( "`affiliatedclub` in (select `affiliatedclub` from {$wpdb->racketmanager_teams} where `id` = %d)", intval( $team ) );
 		}
 
 		if ( $club ) {

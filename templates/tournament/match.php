@@ -48,6 +48,14 @@ if ( ! empty( $tournament_player ) ) {
 		$player_ref  = 'player2';
 	}
 }
+$match_selected = false;
+if ( is_user_logged_in() ) {
+	if ( isset( $match->teams['home']->player ) && array_search( wp_get_current_user()->display_name, $match->teams['home']->player, true ) ) {
+		$match_selected = true;
+	} elseif ( isset( $match->teams['away']->player ) && array_search( wp_get_current_user()->display_name, $match->teams['away']->player, true ) ) {
+		$match_selected = true;
+	}
+}
 if ( ! empty( $match->winner_id ) ) {
 	$match_complete = true;
 	if ( $match->winner_id === $match->teams['home']->id ) {
@@ -68,7 +76,7 @@ if ( ! empty( $match->winner_id ) ) {
 	}
 }
 ?>
-		<div class="match <?php echo esc_html( $match_display ); ?> tournament-match">
+		<div class="match tournament-match <?php echo esc_html( $match_display ); ?> <?php echo empty( $match_selected ) ? '' : 'is-selected'; ?>">
 			<div class="match__header">
 				<ul class="match__header-title">
 					<?php

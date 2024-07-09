@@ -65,7 +65,7 @@ if ( ! empty( $match->winner_id ) ) {
 			}
 			$match_link = $match->link;
 			?>
-			<div class="match--team-match match">
+			<div class="match match--team-match">
 				<a class="team-match__wrapper" href="<?php echo esc_attr( $match_link ); ?>">
 					<div class="match__header">
 						<span class="match__header-title">

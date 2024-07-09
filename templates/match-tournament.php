@@ -231,7 +231,7 @@ if ( $match ) {
 					}
 					?>
 				</div>
-				<div class="match <?php echo esc_attr( $match_editable ); ?> tournament-match">
+				<div class="match tournament-match" <?php echo esc_attr( $match_editable ); ?>>
 					<div class="match__header">
 						<ul class="match__header-title">
 							<?php

@@ -3186,7 +3186,9 @@ span.header {
 	margin-bottom: 1.4em;
 	position: relative
 }
-
+.match.is-selected {
+    box-shadow: 0 0 0 2px #006800;
+}
 @media (max-width: 767px) {
 	.match {
 		font-size: 0.8rem;

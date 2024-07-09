@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
 if ( empty( $matches_key ) ) {
 	$matches_key = null;
 }
@@ -27,7 +28,7 @@ if ( ! isset( $show_header ) ) {
 if ( ! isset( $by_date ) ) {
 	$by_date = false;
 }
-$highlight_match = false;
+$selected_match = false;
 foreach ( $matches as $match ) {
 	$user_can_update_array = $racketmanager->is_match_update_allowed( $match->teams['home'], $match->teams['away'], $match->league->event->competition->type, $match->confirmed );
 	$user_can_update       = $user_can_update_array[0];
@@ -36,6 +37,7 @@ foreach ( $matches as $match ) {
 	$match_status_text     = null;
 	$score_class           = null;
 	$match_pending         = false;
+	$highlight_match       = false;
 	if ( empty( $match->winner_id ) ) {
 		$score_class   = 'is-not-played';
 		$match_pending = true;
@@ -44,6 +46,7 @@ foreach ( $matches as $match ) {
 		foreach ( $opponents as $opponent ) {
 			if ( ( ! empty( $current_club ) && $match->teams[ $opponent ]->club->id === $current_club ) || ( ! empty( $current_team ) && $match->teams[ $opponent ]->id === $current_team ) ) {
 				$highlight_match = true;
+				$selected_match  = true;
 				if ( $match->teams[ $opponent ]->id === $match->winner_id ) {
 					$match_status_class = 'winner';
 					$match_status_text  = 'W';
@@ -60,10 +63,28 @@ foreach ( $matches as $match ) {
 			}
 		}
 	}
+	$selected_match = false;
+	if ( ! $highlight_match && is_user_logged_in() ) {
+		$player_args           = array();
+		$player_args['count']  = true;
+		$player_args['player'] = get_current_user_id();
+		$player_args['team']   = $match->home_team;
+		$player_args['active'] = true;
+		$player_selected       = $racketmanager->get_club_players( $player_args );
+		if ( $player_selected ) {
+			$selected_match = true;
+		} else {
+			$player_args['team'] = $match->away_team;
+			$player_selected     = $racketmanager->get_club_players( $player_args );
+			if ( $player_selected ) {
+				$selected_match = true;
+			}
+		}
+	}
 	?>
 	<ul class="match-group">
 		<li class="match-group__item">
-			<div class="match--team-match match">
+			<div class="match match--team-match <?php echo empty( $selected_match ) ? '' : 'is-selected'; ?>">
 				<?php
 				if ( $show_header ) {
 					?>

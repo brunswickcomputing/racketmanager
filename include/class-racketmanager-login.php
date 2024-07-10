@@ -462,7 +462,7 @@ class RacketManager_Login {
 	 * Redirect to custom login page after the user has been logged out.
 	 */
 	public function redirect_after_logout() {
-		$redirect_url = home_url( 'member-login?logged_out=true' );
+		$redirect_url = home_url();
 		wp_safe_redirect( $redirect_url );
 		exit;
 	}

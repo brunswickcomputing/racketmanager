@@ -5102,69 +5102,8 @@ svg[class*=icon] {
     position: relative
 }
 
-.modal-backdrop {
-    background-color: #000;
-    bottom: 0;
-    left: 0;
-    position: fixed;
-    right: 0;
-    top: 0;
-    z-index: 1040
-}
-
-.modal-backdrop.fade {
-    filter: alpha(opacity=0);
-    opacity: 0
-}
-
-.modal-backdrop.in {
-    filter: alpha(opacity=50);
-    opacity: .5
-}
-
-.modal-header {
-    border-bottom: 1px solid #e5e5e5;
-    padding: 15px
-}
-
-.modal-header:after,.modal-header:before {
-    content: " ";
-    display: table
-}
-
-.modal-header:after {
-    clear: both
-}
-
-.modal-header .close {
-    margin-top: -2px
-}
-
-.modal-title {
-    line-height: 1.428571429;
-    margin: 0
-}
 h4.modal-title {
     color: #FFF;
-}
-.modal-body {
-    padding: 15px;
-    position: relative
-}
-
-.modal-footer {
-    border-top: 1px solid #e5e5e5;
-    padding: 15px;
-    text-align: right
-}
-
-.modal-footer:after,.modal-footer:before {
-    content: " ";
-    display: table
-}
-
-.modal-footer:after {
-    clear: both
 }
 
 .modal-scrollbar-measure {
@@ -5188,14 +5127,6 @@ h4.modal-title {
     .modal-sm {
         width: 400px
     }
-}
-.modal {
-    padding-right: 0!important;
-    z-index: 1550
-}
-
-.modal-content {
-    border-radius: .5rem
 }
 
 .modal-content .modal__header {

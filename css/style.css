@@ -4444,7 +4444,7 @@ p.media__subheading {
 }
 .player-row__tie-break {
 	position: absolute;
-	left: 12px;
+	left: 1rem;
 	top: 0px;
 	letter-spacing: -0.2em;
 	font-size: 0.625rem;

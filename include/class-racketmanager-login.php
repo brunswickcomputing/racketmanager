@@ -224,16 +224,32 @@ class RacketManager_Login {
 	 */
 	public function render_login_form( $vars ) {
 		global $racketmanager;
+		if ( is_user_logged_in() ) {
+			$redirect_to = null;
+			if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'GET' === $_SERVER['REQUEST_METHOD'] ) {
+				$redirect_to = isset( $_REQUEST['redirect_to'] ) ? esc_url_raw( wp_unslash( $_REQUEST['redirect_to'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			}
+			?>
+			<div class="text-center">
+				<?php
+				if ( $redirect_to ) {
+					?>
+					<a href="<?php echo esc_url( $redirect_to ); ?>" class="btn btn-primary"><?php esc_html_e( 'Proceed', 'racketmanager' ); ?></a>
+					<?php
+				} else {
+					echo esc_html( $this->already_signed_in );
+				}
+				?>
+			</div>
+			<?php
+			return;
+		}
 
 		// Parse shortcode vars.
 		$default_vars      = array( 'show_title' => false );
 		$vars              = shortcode_atts( $default_vars, $vars );
 		$vars['site_name'] = $racketmanager->site_name;
 		$vars['site_url']  = $racketmanager->site_url;
-
-		if ( is_user_logged_in() ) {
-			return $this->already_signed_in;
-		}
 		// Retrieve recaptcha key.
 		$keys                       = $racketmanager->get_options( 'keys' );
 		$recaptcha_site_key         = isset( $keys['recaptchaSiteKey'] ) ? $keys['recaptchaSiteKey'] : '';

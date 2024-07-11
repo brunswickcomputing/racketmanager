@@ -22,25 +22,40 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_racketmanager_add_favourite', array( &$this, 'add_favourite' ) );
 
 		add_action( 'wp_ajax_racketmanager_club_player_request', array( &$this, 'club_player_request' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_club_player_request', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_racketmanager_club_players_remove', array( &$this, 'club_player_remove' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_club_players_remove', array( &$this, 'logged_out' ) );
 
 		add_action( 'wp_ajax_racketmanager_update_team', array( &$this, 'update_team' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_update_team', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_racketmanager_update_club', array( &$this, 'update_club' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_update_club', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_racketmanager_update_player', array( &$this, 'update_player' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_update_player', array( &$this, 'logged_out' ) );
 
 		add_action( 'wp_ajax_racketmanager_get_team_info', array( &$this, 'get_team_event_info' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_get_team_info', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_racketmanager_cup_entry', array( &$this, 'cup_entry_request' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_cup_entry', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_racketmanager_league_entry', array( &$this, 'league_entry_request' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_league_entry', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_racketmanager_tournament_entry', array( &$this, 'tournament_entry_request' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_tournament_entry', array( &$this, 'logged_out' ) );
 
 		add_action( 'wp_ajax_racketmanager_matchcard', array( &$this, 'print_match_card' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_matchcard', array( &$this, 'print_match_card' ) );
 		add_action( 'wp_ajax_racketmanager_match_rubber_status', array( &$this, 'match_rubber_status' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_match_rubber_status', array( &$this, 'logged_out_modal' ) );
 		add_action( 'wp_ajax_racketmanager_set_match_rubber_status', array( &$this, 'set_match_rubber_status' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_set_match_rubber_status', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_racketmanager_match_status', array( &$this, 'match_status' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_match_status', array( &$this, 'logged_out_modal' ) );
 		add_action( 'wp_ajax_racketmanager_set_match_status', array( &$this, 'set_match_status' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_set_match_status', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_racketmanager_get_message', array( &$this, 'get_message' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_get_message', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_racketmanager_delete_message', array( &$this, 'delete_message' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_delete_message', array( &$this, 'logged_out' ) );
 	}
 	/**
 	 * Add item as favourite
@@ -1571,5 +1586,43 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		} else {
 			wp_send_json_error( $message, '500' );
 		}
+	}
+	/**
+	 * Logged out user for modal function
+	 *
+	 * @return void
+	 */
+	public function logged_out_modal() {
+		$return    = array();
+		$err_msg   = array();
+		$err_field = array();
+		$msg       = __( 'Must be logged in to access this feature', 'racketmanager' );
+		ob_start();
+		?>
+		<div class="modal-dialog modal-dialog-centered modal-lg">
+			<div class="modal-content">
+				<div class="modal-header modal__header modal-danger">
+					<h4 class="modal-title"><?php esc_html_e( 'Error', 'racketmanager' ); ?></h4>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="alert_rm alert--danger">
+						<div class="alert__body">
+							<div class="alert__body-inner">
+								<span><?php esc_html_e( 'Must be logged in to access this feature', 'racketmanager' ); ?></span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
+				</div>
+			</div>
+		</div>
+		<?php
+		$output = ob_get_contents();
+		ob_end_clean();
+		array_push( $return, $msg, $output );
+		wp_send_json_error( $return, '401' );
 	}
 }

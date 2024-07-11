@@ -5211,7 +5211,9 @@ h4.modal-title {
     background-color: #bd3b2a;
     color: #fff
 }
-
+.modal-header.modal__header.modal-danger {
+    background-color: #bd3b2a;
+}
 
 .modal-content .modal__header .hgroup {
     margin-bottom: 0

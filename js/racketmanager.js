@@ -1191,13 +1191,10 @@ Racketmanager.matchStatusModal = function (event, match_id) {
 		error: function (response) {
 			if (response.responseJSON) {
 				let message = response.responseJSON.data;
-				jQuery(notifyField).show();
 				jQuery(notifyField).html(message);
 			} else {
 				jQuery(notifyField).text(response.statusText);
 			}
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-error');
 		},
 		complete: function () {
 			jQuery(notifyField).show();
@@ -1337,14 +1334,11 @@ Racketmanager.scoreStatusModal = function (event, rubber_id, rubber_number) {
 		},
 		error: function (response) {
 			if (response.responseJSON) {
-				let message = response.responseJSON.data;
-				jQuery(notifyField).show();
-				jQuery(notifyField).html(message);
+				let output = response.responseJSON.data[1];
+				jQuery(notifyField).html(output);
 			} else {
 				jQuery(notifyField).text(response.statusText);
 			}
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-error');
 		},
 		complete: function () {
 			jQuery(notifyField).show();
@@ -1450,14 +1444,60 @@ Racketmanager.statusModal = function (event, match_id) {
 		},
 		error: function (response) {
 			if (response.responseJSON) {
-				let message = response.responseJSON.data;
-				jQuery(notifyField).show();
-				jQuery(notifyField).html(message);
+				let output = response.responseJSON.data[1];
+				jQuery(notifyField).html(output);
 			} else {
 				jQuery(notifyField).text(response.statusText);
 			}
+		},
+		complete: function () {
 			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-error');
+			jQuery(notifyField).modal('show');
+		}
+	});
+};
+Racketmanager.matchOptions = function (event, match_id, option) {
+	event.preventDefault();
+	let notifyField = "#matchModal";
+	let modal = 'matchModal';
+	jQuery(notifyField).val("");
+	let action = 'racketmanager_match_option';
+
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: {
+			"match_id": match_id,
+			"modal": modal,
+			"option": option,
+			"action": action,
+			"security": ajax_var.ajax_nonce,
+		},
+		success: function (response) {
+			jQuery(notifyField).empty();
+			jQuery(notifyField).html(response.data);
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				if (response.status == '401') {
+					let output = response.responseJSON.data[1];
+					jQuery(notifyField).html(output);
+				} else {
+					let message = response.responseJSON.data;
+					jQuery(notifyField).html(message);
+				}
+				jQuery(notifyField).addClass('message-error');
+			} else {
+				jQuery(notifyField).text(response.statusText);
+			}
+		},
+		complete: function () {
+			jQuery(notifyField).show();
+			jQuery(notifyField).modal('show');
+		}
+	});
+};
+Racketmanager.matchOptions = function (event, match_id, option) {
 		},
 		complete: function () {
 			jQuery(notifyField).show();

@@ -23,8 +23,21 @@ class Racketmanager_Ajax extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_update_match_header', array( &$this, 'update_match_header' ) );
 		add_action( 'wp_ajax_racketmanager_update_match', array( &$this, 'update_match' ) );
 		add_action( 'wp_ajax_racketmanager_update_rubbers', array( &$this, 'update_rubbers' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_update_rubbers', array( &$this, 'logged_out' ) );
 	}
-
+	/**
+	 * Undocumented function
+	 *
+	 * @return void
+	 */
+	public function logged_out() {
+		$return    = array();
+		$err_msg   = array();
+		$err_field = array();
+		$msg       = __( 'Must be logged in to access this feature', 'racketmanager' );
+		array_push( $return, $msg, $err_msg, $err_field );
+		wp_send_json_error( $return, '401' );
+	}
 	/**
 	 * Ajax Response to get player information
 	 */

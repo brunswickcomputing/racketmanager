@@ -378,7 +378,7 @@ final class Racketmanager_Rubber {
 			$straight_sets_away = 0;
 			$split_sets_home    = 0;
 			$split_sets_away    = 0;
-		} elseif ( empty( $home_sets ) || empty( $away_sets ) ) {
+		} elseif ( ( empty( $home_sets ) || empty( $away_sets ) ) && empty( $shared_sets ) ) {
 			if ( empty( $home_sets ) && empty( $away_sets ) ) {
 				$straight_sets_home = 0;
 				$straight_sets_away = 0;

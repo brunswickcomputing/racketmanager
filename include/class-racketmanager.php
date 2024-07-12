@@ -2590,10 +2590,16 @@ class RacketManager {
 						$user_type       = 'admin';
 						$user_can_update = true;
 					} else {
-						if ( isset( $home_team->captain_id ) && $userid === $home_team->captain_id ) {
+						if ( isset( $home_team->club->matchsecretary ) && intval( $home_team->club->matchsecretary ) === $userid ) {
+							$user_type = 'matchsecretary';
+							$user_team = 'home';
+						} elseif ( isset( $away_team->club->matchsecretary ) && intval( $away_team->club->matchsecretary ) === $userid ) {
+							$user_type = 'matchsecretary';
+							$user_team = 'away';
+						} elseif ( isset( $home_team->captain_id ) && intval( $home_team->captain_id ) === $userid ) {
 							$user_type = 'captain';
 							$user_team = 'home';
-						} elseif ( isset( $away_team->captain_id ) && $userid === $away_team->captain_id ) {
+						} elseif ( isset( $away_team->captain_id ) && intval( $away_team->captain_id ) === $userid ) {
 							$user_type = 'captain';
 							$user_team = 'away';
 						} else {
@@ -2601,8 +2607,8 @@ class RacketManager {
 						}
 						if ( 'none' === $match_capability ) {
 							$message = 'noMatchCapability';
-						} elseif ( 'captain' === $match_capability || 'captain' === $user_type ) {
-							if ( 'captain' === $user_type ) {
+						} elseif ( 'captain' === $match_capability ) {
+							if ( 'captain' === $user_type || 'matchsecretary' === $user_type ) {
 								if ( 'home' === $user_team ) {
 									$user_can_update = true;
 								} elseif ( 'home' === $result_entry ) {
@@ -2614,59 +2620,63 @@ class RacketManager {
 								}
 							}
 						} elseif ( 'player' === $match_capability ) {
-							$club             = get_club( $home_team->affiliatedclub );
-							$home_club_player = $club->get_players(
-								array(
-									'count'  => true,
-									'player' => $userid,
-									'active' => true,
-								)
-							);
-							if ( $home_club_player ) {
-								if ( (int) $club->matchsecretary === $userid ) {
-									$user_type = 'matchsecretary';
-								} else {
-									$user_type = 'player';
-								}
-								$user_team = 'home';
-							}
-							$club             = get_club( $away_team->affiliatedclub );
-							$away_club_player = $club->get_players(
-								array(
-									'count'  => true,
-									'player' => $userid,
-									'active' => true,
-								)
-							);
-							if ( $away_club_player ) {
-								if ( (int) $club->matchsecretary === $userid ) {
-									$user_type = 'matchsecretary';
-								} else {
-									$user_type = 'player';
-								}
+							if ( 'captain' === $user_type || 'matchsecretary' === $user_type ) {
 								if ( 'home' === $user_team ) {
-									$user_team = 'both';
-								} else {
-									$user_team = 'away';
-								}
-							}
-							if ( 'home' === $result_entry ) {
-								if ( in_array( $user_team, array( 'home', 'both' ), true ) ) {
-									if ( '' === $match_status || 'D' === $match_status ) {
+									$user_can_update = true;
+								} elseif ( 'home' === $result_entry ) {
+									if ( 'P' === $match_status ) {
 										$user_can_update = true;
 									}
-								} elseif ( 'away' === $user_team ) {
-									if ( 'P' === $match_status || 'D' === $match_status ) {
-										$user_can_update = true;
-									}
-								}
-							} elseif ( 'either' === $result_entry ) {
-								if ( $user_team && ( empty( $match_status ) || 'P' === $match_status || 'D' === $match_status ) ) {
+								} elseif ( 'either' === $result_entry ) {
 									$user_can_update = true;
 								}
-							}
-							if ( ! $user_team ) {
-								$message = 'notTeamPlayer';
+							} else {
+								$club             = get_club( $home_team->affiliatedclub );
+								$home_club_player = $club->get_players(
+									array(
+										'count'  => true,
+										'player' => $userid,
+										'active' => true,
+									)
+								);
+								if ( $home_club_player ) {
+									$user_type = 'player';
+									$user_team = 'home';
+								}
+								$club             = get_club( $away_team->affiliatedclub );
+								$away_club_player = $club->get_players(
+									array(
+										'count'  => true,
+										'player' => $userid,
+										'active' => true,
+									)
+								);
+								if ( $away_club_player ) {
+									$user_type = 'player';
+									if ( 'home' === $user_team ) {
+										$user_team = 'both';
+									} else {
+										$user_team = 'away';
+									}
+								}
+								if ( 'home' === $result_entry ) {
+									if ( in_array( $user_team, array( 'home', 'both' ), true ) ) {
+										if ( '' === $match_status || 'D' === $match_status ) {
+											$user_can_update = true;
+										}
+									} elseif ( 'away' === $user_team ) {
+										if ( 'P' === $match_status || 'D' === $match_status ) {
+											$user_can_update = true;
+										}
+									}
+								} elseif ( 'either' === $result_entry ) {
+									if ( $user_team && ( empty( $match_status ) || 'P' === $match_status || 'D' === $match_status ) ) {
+										$user_can_update = true;
+									}
+								}
+								if ( ! $user_team ) {
+									$message = 'notTeamPlayer';
+								}
 							}
 						}
 					}

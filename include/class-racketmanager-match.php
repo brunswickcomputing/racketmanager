@@ -1182,15 +1182,15 @@ final class Racketmanager_Match {
 		}
 		if ( 'P' === $match_confirmed ) {
 			if ( 'home' === $actioned_by || 'away' === $actioned_by ) {
-				$this->comments[ $actioned_by ] = $comments['result'];
+				$this->comments[ $actioned_by ] = isset( $comments['result'] ) ? $comments['result'] : null;
 			} else {
-				$this->comments['result'] = $comments['result'];
+				$this->comments['result'] = isset( $comments['result'] ) ? $comments['result'] : null;
 			}
 		} elseif ( 'A' === $match_confirmed || 'C' === $match_confirmed ) {
 			if ( 'home' === $actioned_by || 'away' === $actioned_by ) {
 				$this->comments[ $actioned_by ] = $confirm_comments;
 			} else {
-				$this->comments['result'] = $comments['result'];
+				$this->comments['result'] = isset( $comments['result'] ) ? $comments['result'] : null;
 			}
 		}
 		if ( 'home' === $captain ) { // Home captain.

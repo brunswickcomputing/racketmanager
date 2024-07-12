@@ -22,6 +22,7 @@ class Racketmanager_Ajax extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_match_mode', array( &$this, 'match_mode' ) );
 		add_action( 'wp_ajax_racketmanager_update_match_header', array( &$this, 'update_match_header' ) );
 		add_action( 'wp_ajax_racketmanager_update_match', array( &$this, 'update_match' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_update_match', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_racketmanager_update_rubbers', array( &$this, 'update_rubbers' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_update_rubbers', array( &$this, 'logged_out' ) );
 	}

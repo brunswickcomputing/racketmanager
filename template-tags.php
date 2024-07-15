@@ -994,7 +994,23 @@ function racketmanager_result_notification( $match_id, $args = array() ) {
 	$shortcode .= ']';
 	return do_shortcode( $shortcode );
 }
+/**
+ * Match date change notification function
+ *
+ * @param int   $match_id match id.
+ * @param array $args array of arguments.
+ * @return string
+ */
+function racketmanager_match_date_change_notification( $match_id, $args = array() ) {
+	$args['match'] = $match_id;
 
+	$shortcode = '[match_date_change_notification';
+	foreach ( $args as $key => $value ) {
+		$shortcode .= ' ' . $key . "='" . $value . "'";
+	}
+	$shortcode .= ']';
+	return do_shortcode( $shortcode );
+}
 	/**
 	 * Display result email for captain
 	 *

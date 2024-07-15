@@ -24,6 +24,7 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 		add_shortcode( 'resultnotificationcaptain', array( &$this, 'showCaptainResultNotification' ) );
 		add_shortcode( 'resultoutstandingnotification', array( &$this, 'show_result_outstanding_notification' ) );
 		add_shortcode( 'clubplayernotification', array( &$this, 'showClubPlayerNotification' ) );
+		add_shortcode( 'match_date_change_notification', array( &$this, 'show_match_date_change_notification' ) );
 	}
 	/**
 	 * Function to show match notification
@@ -72,7 +73,7 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 			$tournament       = get_tournament( $tournament );
 			$tournament->link = '<a href="' . $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/">' . $tournament->name . '</a>';
 			$draw_link        = '<a href="' . $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $match->league->event->name ) . '/">' . $match->league->event->name . '</a>';
-			$match_link       = $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/match/' . $match->id . '/';
+			$match_link       = $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/match/' . seo_url( $match->league->title ) . '/' . seo_url( $match->teams['home']->title ) . '-vs-' . seo_url( $match->teams['away']->title ) . '/' . $match->id . '/';
 			if ( substr( $match->league->type, 1, 1 ) === 'D' ) {
 				$teams['home']->title = __( 'Home Players', 'racketmanager' );
 				$teams['away']->title = __( 'Away Players', 'racketmanager' );
@@ -380,6 +381,89 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 				'requestor'     => $requestor,
 				'btm'           => $btm,
 				'email_subject' => $racketmanager->site_name . ' - ' . __( 'Club Player Request', 'racketmanager' ) . ' - ' . $club,
+			),
+			'email'
+		);
+	}
+	/**
+	 * Function to show match date change notification
+	 *
+	 *    [matchnotification id=ID template=X]
+	 *
+	 * @param array $atts shortcode attributes.
+	 * @return the content
+	 */
+	public function show_match_date_change_notification( $atts ) {
+		global $racketmanager;
+		$args            = shortcode_atts(
+			array(
+				'match'           => '',
+				'template'        => '',
+				'tournament'      => false,
+				'competition'     => '',
+				'emailfrom'       => '',
+				'round'           => '',
+				'competitiontype' => '',
+				'original_date'   => '',
+				'new_date'        => '',
+				'delay'           => false,
+				'email_subject'   => '',
+			),
+			$atts
+		);
+		$match           = $args['match'];
+		$template        = $args['template'];
+		$tournament      = $args['tournament'];
+		$competition     = $args['competition'];
+		$email_from      = $args['emailfrom'];
+		$round           = $args['round'];
+		$competitiontype = $args['competitiontype'];
+		$original_date   = $args['original_date'];
+		$new_date        = $args['new_date'];
+		$delay           = $args['delay'];
+		$email_subject   = $args['email_subject'];
+		$organisation    = $racketmanager->site_name;
+		$match           = get_match( $match );
+
+		$match_link       = '';
+		$competition_link = '';
+		$draw_link        = '';
+		$rules_link       = $racketmanager->site_url . '/rules/' . $competitiontype . '-rules/';
+		if ( 'tournament' === $competitiontype ) {
+			$tournament       = get_tournament( $tournament );
+			$tournament->link = '<a href="' . $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/">' . $tournament->name . '</a>';
+			$draw_link        = '<a href="' . $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $match->league->event->name ) . '/">' . $match->league->event->name . '</a>';
+			$match_link       = $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/match/' . seo_url( $match->league->title ) . '/' . seo_url( $match->teams['home']->title ) . '-vs-' . seo_url( $match->teams['away']->title ) . '/' . $match->id . '/';
+		} elseif ( 'cup' === $competitiontype ) {
+			$competition_link = '<a href="' . $racketmanager->site_url . '/cups/' . seo_url( $match->league->title ) . '/' . $match->season . '/">' . $match->league->title . '</a>';
+			$match_link       = $racketmanager->site_url . $match->link;
+			if ( ! empty( $match->leg ) ) {
+				$match_link .= 'leg-' . $match->leg . '/';
+			}
+		} elseif ( 'league' === $competitiontype ) {
+			$competition_link = '<a href="' . $racketmanager->site_url . '/leagues/' . seo_url( $match->league->event->name ) . '/' . $match->season . '/">' . $match->league->title . '</a>';
+			$match_link       = $racketmanager->site_url . $match->link;
+		}
+
+		$filename = ( ! empty( $template ) ) ? 'match-date-change-notification-' . $template : 'match-date-change-notification';
+
+		return $this->load_template(
+			$filename,
+			array(
+				'tournament'       => $tournament,
+				'competition'      => $competition,
+				'match'            => $match,
+				'round'            => $round,
+				'organisation'     => $organisation,
+				'email_from'       => $email_from,
+				'draw_link'        => $draw_link,
+				'action_url'       => $match_link,
+				'rules_link'       => $rules_link,
+				'competition_link' => $competition_link,
+				'new_date'         => $new_date,
+				'original_date'    => $original_date,
+				'delay'            => $delay,
+				'email_subject'    => $email_subject,
 			),
 			'email'
 		);

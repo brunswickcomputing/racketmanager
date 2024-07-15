@@ -1432,7 +1432,7 @@ final class Racketmanager_Match {
 			)
 		);
 		wp_cache_delete( $this->id, 'matches' );
-		if ( isset( $this->host ) && is_numeric( $this->home_team ) && is_numeric( $this->away_team ) ) {
+		if ( ( $this->league->event->competition->is_league || isset( $this->host ) ) && is_numeric( $this->home_team ) && is_numeric( $this->away_team ) ) {
 			$this->set_date_and_location();
 		}
 	}
@@ -1442,7 +1442,7 @@ final class Racketmanager_Match {
 	 * @return void
 	 */
 	public function set_date_and_location() {
-		if ( 'home' === $this->host ) {
+		if ( empty( $this->host ) || 'home' === $this->host ) {
 			if ( is_numeric( $this->home_team ) && '-1' !== $this->home_team ) {
 				$this_day  = isset( $this->teams['home']->match_day ) ? $this->teams['home']->match_day : null;
 				$this_time = isset( $this->teams['home']->match_time ) ? $this->teams['home']->match_time : null;

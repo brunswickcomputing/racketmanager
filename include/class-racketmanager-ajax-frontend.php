@@ -1729,6 +1729,24 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		}
 	}
 	/**
+	 * Logged out user for modal function
+	 *
+	 * @return void
+	 */
+	public function logged_out_modal() {
+		$return = array();
+		$msg    = __( 'Must be logged in to access this feature', 'racketmanager' );
+		$output = $this->modal_error( $msg );
+		array_push( $return, $msg, $output );
+		wp_send_json_error( $return, '401' );
+	}
+	/**
+	 * Modal error function
+	 *
+	 * @param string $msg mesage to display.
+	 * @return string output html modal
+	 */
+	private function modal_error( $msg ) {
 		ob_start();
 		?>
 		<div class="modal-dialog modal-dialog-centered modal-lg">
@@ -1741,7 +1759,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					<div class="alert_rm alert--danger">
 						<div class="alert__body">
 							<div class="alert__body-inner">
-								<span><?php esc_html_e( 'Must be logged in to access this feature', 'racketmanager' ); ?></span>
+								<span><?php echo esc_html( $msg ); ?></span>
 							</div>
 						</div>
 					</div>
@@ -1754,7 +1772,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		<?php
 		$output = ob_get_contents();
 		ob_end_clean();
-		array_push( $return, $msg, $output );
-		wp_send_json_error( $return, '401' );
+		return $output;
 	}
 }

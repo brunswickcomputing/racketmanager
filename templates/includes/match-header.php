@@ -87,6 +87,93 @@ if ( $match_pending ) {
 		}
 		?>
 		<div class="text-center">
+			<a href="/<?php echo esc_attr( $match->league->event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $match->league->event->name ) ); ?>/<?php echo esc_attr( $match->season ); ?>/">
+				<span class="nav-link__value"><?php echo esc_html( $match->league->event->name ); ?></span>
+			</a>
+			<?php
+			if ( 'cup' !== $match->league->event->competition->type ) {
+				?>
+				&nbsp;&#8226;&nbsp;
+				<a href="/<?php echo esc_attr( $match->league->event->competition->type ); ?>/<?php echo esc_attr( seo_url( $match->league->title ) ); ?>/<?php echo esc_attr( $match->season ); ?>/">
+					<span class="nav-link__value"><?php echo esc_html( $match->league->title ); ?></span>
+				</a>
+				<?php
+			}
+			?>
+			<div class="text-center">
+				<?php
+				if ( ! empty( $match->final_round ) ) {
+					?>
+					<span><?php echo esc_html( $match->league->championship->get_final_name( $match->final_round ) ); ?>&nbsp;&#8226</span>
+					<?php
+				} elseif ( ! empty( $match->match_day ) ) {
+					?>
+					<span><?php echo esc_html__( 'Match Day', 'racketmanager' ) . ' ' . esc_html( $match->match_day ); ?>&nbsp;&#8226</span>
+					<?php
+				}
+				if ( ! empty( $match->leg ) ) {
+					?>
+					<span><?php echo esc_html__( 'Leg', 'racketmanager' ) . ' ' . esc_html( $match->leg ); ?>&nbsp;&#8226</span>
+					<?php
+				}
+				?>
+				<span><time datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( 'j F Y', the_match_date() ) ); ?></time></span>
+			</div>
+			<?php
+			if ( ! empty( $match->date_original ) ) {
+				?>
+				<div class="text-center info-msg">
+					<span>(<?php esc_html_e( 'Original scheduled time', 'racketmanager' ); ?>: <?php echo esc_html( mysql2date( 'j F Y H:i', $match->date_original ) ); ?>)</span>
+			</div>
+				<?php
+			}
+			?>
+			<?php
+			if ( is_user_logged_in() && ! $edit_mode && ( $allow_amend_score || $allow_schedule_match || $allow_switch_match ) ) {
+				?>
+				<div class="match__change">
+					<div class="dropdown">
+						<a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+							<svg width="16" height="16" class="icon ">
+								<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
+							</svg>
+						</a>
+						<ul class="dropdown-menu dropdown-menu-end">
+							<?php
+							if ( $allow_amend_score ) {
+								$match_link = $match->link . 'result/';
+								?>
+								<li>
+									<a class="dropdown-item" href="<?php echo esc_url( $match_link ); ?>">
+										<?php esc_html_e( 'Adjust team score', 'racketmanager' ); ?>
+									</a>
+								</li>
+								<?php
+							}
+							?>
+							<?php
+							if ( $allow_schedule_match ) {
+								?>
+								<li>
+									<a class="dropdown-item" href="" onclick="Racketmanager.matchOptions(event, '<?php echo esc_attr( $match->id ); ?>', 'schedule_match')">
+										<?php esc_html_e( '(Re)schedule match', 'racketmanager' ); ?>
+									</a>
+								</li>
+								<?php
+							}
+							?>
+							<?php
+							if ( $allow_switch_match ) {
+								?>
+								<li>
+									<a class="dropdown-item" href="" onclick="Racketmanager.matchOptions(event, '<?php echo esc_attr( $match->id ); ?>', 'switch_home')">
+										<?php esc_html_e( 'Switch home and away', 'racketmanager' ); ?>
+									</a>
+								</li>
+								<?php
+							}
+							?>
+						</ul>
 					</div>
 				</div>
 				<?php

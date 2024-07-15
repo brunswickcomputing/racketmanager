@@ -932,10 +932,12 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		if ( isset( $_POST['security'] ) ) {
 			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
 				$valid   = false;
+				$status  = 403;
 				$message = __( 'Security token invalid', 'racketmanager' );
 			}
 		} else {
 			$valid   = false;
+			$status  = 403;
 			$message = __( 'No security token found in request', 'racketmanager' );
 		}
 		if ( $valid ) {
@@ -1084,12 +1086,16 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			} else {
 				$valid   = false;
 				$message = __( 'Match not found', 'racketmanager' );
+				$status  = 404;
 			}
 		}
 		if ( $valid ) {
 			wp_send_json_success( $output );
 		} else {
-			wp_send_json_error( $message, '500' );
+			$return = array();
+			$output = $this->modal_error( $message );
+			array_push( $return, $message, $output );
+			wp_send_json_error( $return, $status );
 		}
 	}
 	/**
@@ -1187,10 +1193,12 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
 				$valid   = false;
 				$message = __( 'Security token invalid', 'racketmanager' );
+				$status  = 403;
 			}
 		} else {
 			$valid   = false;
 			$message = __( 'No security token found in request', 'racketmanager' );
+			$status  = 403;
 		}
 		if ( $valid ) {
 			$rubber_id = isset( $_POST['rubber_id'] ) ? intval( $_POST['rubber_id'] ) : 0;
@@ -1293,16 +1301,21 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				} else {
 					$valid   = false;
 					$message = __( 'Match not found', 'racketmanager' );
+					$status  = 404;
 				}
 			} else {
 				$valid   = false;
 				$message = __( 'Rubber not found', 'racketmanager' );
+				$status  = 404;
 			}
 		}
 		if ( $valid ) {
 			wp_send_json_success( $output );
 		} else {
-			wp_send_json_error( $message, '500' );
+			$return = array();
+			$output = $this->modal_error( $message );
+			array_push( $return, $message, $output );
+			wp_send_json_error( $return, $status );
 		}
 	}
 	/**

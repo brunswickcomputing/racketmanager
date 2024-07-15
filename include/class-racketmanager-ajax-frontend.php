@@ -56,6 +56,9 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_nopriv_racketmanager_get_message', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_racketmanager_delete_message', array( &$this, 'delete_message' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_delete_message', array( &$this, 'logged_out' ) );
+		add_action( 'wp_ajax_racketmanager_set_match_date', array( &$this, 'set_match_date' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_set_match_date', array( &$this, 'logged_out' ) );
+		add_action( 'wp_ajax_racketmanager_switch_home_away', array( &$this, 'switch_home_away' ) );
 	}
 	/**
 	 * Add item as favourite
@@ -1588,15 +1591,71 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		}
 	}
 	/**
-	 * Logged out user for modal function
+	/**
+	 * Set match date function
 	 *
 	 * @return void
 	 */
-	public function logged_out_modal() {
+	public function set_match_date() {
 		$return    = array();
 		$err_msg   = array();
 		$err_field = array();
-		$msg       = __( 'Must be logged in to access this feature', 'racketmanager' );
+		$valid     = true;
+		$msg       = null;
+		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'match-option' ) ) {
+			$valid       = false;
+			$err_field[] = '';
+			$err_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$modal = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+			if ( $modal ) {
+				$match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
+				if ( $match_id ) {
+					$match = get_match( $match_id );
+					if ( $match ) {
+						$schedule_date = isset( $_POST['schedule-date'] ) ? sanitize_text_field( wp_unslash( $_POST['schedule-date'] ) ) : null;
+						if ( $schedule_date ) {
+							$schedule_date = substr( $schedule_date, 0, 10 ) . ' ' . substr( $schedule_date, 11, 5 );
+							if ( $schedule_date === $match->date ) {
+								$valid       = false;
+								$err_field[] = 'schedule-date';
+								$err_msg[]   = __( 'Date not changed', 'racketmanager' );
+							} else {
+								$match->update_match_date( $schedule_date, $match->date );
+								$msg = __( 'Match schedule updated', 'racketmanager' );
+							}
+						} else {
+							$valid       = false;
+							$err_field[] = 'schedule-date';
+							$err_msg[]   = __( 'New date not set', 'racketmanager' );
+						}
+					} else {
+						$valid       = false;
+						$err_field[] = 'schedule-date';
+						$err_msg[]   = __( 'Match not found', 'racketmanager' );
+					}
+				} else {
+					$valid       = false;
+					$err_field[] = 'schedule-date';
+					$err_msg[]   = __( 'Match id not supplied', 'racketmanager' );
+				}
+			} else {
+				$valid       = false;
+				$err_field[] = 'schedule-date';
+				$err_msg[]   = __( 'Modal name not supplied', 'racketmanager' );
+			}
+		}
+		if ( $valid ) {
+			array_push( $return, $msg, $modal, $match_id );
+			wp_send_json_success( $return );
+		} else {
+			$msg = __( 'Unable to update match schedule', 'racketmanager' );
+			array_push( $return, $msg, $err_msg, $err_field );
+			wp_send_json_error( $return, '500' );
+		}
+	}
+	/**
 		ob_start();
 		?>
 		<div class="modal-dialog modal-dialog-centered modal-lg">

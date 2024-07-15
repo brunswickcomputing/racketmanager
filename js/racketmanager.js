@@ -506,8 +506,7 @@ Racketmanager.updateResults = function (link) {
 		alert_response = '#alertResponse';
 	} else {
 		let notifyField = '#updateResponse';
-		jQuery(notifyField).removeClass("message-success");
-		jQuery(notifyField).removeClass("message-error");
+		jQuery(notifyField).removeClass("message-success message-error message-warning");
 		jQuery(notifyField).val("");
 		jQuery(notifyField).hide();
 	}
@@ -526,11 +525,13 @@ Racketmanager.updateResults = function (link) {
 			let $message = $response[0];
 			if (use_alert) {
 				jQuery(alert_id).show();
-				jQuery(alert_id).addClass('alert--success');
+				let alertClass = 'alert--' + $response[4];
+				jQuery(alert_id).addClass(alertClass);
 				jQuery(alert_response).html($message);
 			} else {
+				let alertClass = 'message-' + $response[4];
 				jQuery("#updateResponse").show();
-				jQuery("#updateResponse").addClass('message-success');
+				jQuery("#updateResponse").addClass(alertClass);
 				jQuery("#updateResponse").html($message);
 				jQuery("#updateResponse").delay(10000).fadeOut('slow');
 			}

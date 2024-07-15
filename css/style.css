@@ -1227,6 +1227,12 @@ input#memberaccount-button:hover:disabled {
 		box-sizing: border-box;
 		border: 5px solid red;
 }
+.message-warning {
+	color: #ff9c00;
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+		border: 5px solid #ff9c00;
 
 .message-success {
 	display: block;

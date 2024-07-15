@@ -430,9 +430,15 @@ class Racketmanager_Ajax extends RacketManager {
 			} elseif ( ! $msg ) {
 				$msg = __( 'No results to save', 'racketmanager' );
 			}
+			if ( $match->has_result_check() ) {
+				$msg          .= '<br>' . __( 'Match has player warnings', 'racketmanager' );
+				$result_status = 'warning';
+			} else {
+				$result_status = 'success';
+			}
 			$home_points = isset( $updated_rubbers['homepoints'] ) ? $updated_rubbers['homepoints'] : null;
 			$away_points = isset( $updated_rubbers['awaypoints'] ) ? $updated_rubbers['awaypoints'] : null;
-			array_push( $return, $msg, $home_points, $away_points, $updated_rubbers );
+			array_push( $return, $msg, $home_points, $away_points, $updated_rubbers, $result_status );
 			wp_send_json_success( $return );
 		} else {
 			$msg = __( 'Unable to save result', 'racketmanager' );

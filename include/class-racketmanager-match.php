@@ -1475,7 +1475,6 @@ final class Racketmanager_Match {
 	 * @return void
 	 */
 	public function set_match_date( $start_date, $match_day, $match_time ) {
-		global $wpdb;
 		if ( ! empty( $match_day ) ) {
 			$day = Racketmanager_Util::get_match_day_number( $match_day );
 			if ( ! empty( $match_time ) ) {

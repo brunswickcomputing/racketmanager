@@ -2331,7 +2331,7 @@ class RacketManager {
 		if ( $count ) {
 			$sql = "SELECT COUNT(*) FROM {$wpdb->racketmanager_matches} WHERE 1 = 1";
 		} else {
-			$sql_fields = 'SELECT m.`id`';
+			$sql_fields = "SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(`date`, '%e') AS day, DATE_FORMAT(`date`, '%c') AS month, DATE_FORMAT(`date`, '%Y') AS year, DATE_FORMAT(`date`, '%H') AS `hour`, DATE_FORMAT(`date`, '%i') AS `minutes`, `match_day`, `location`, l.`id` AS `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, m.`id` AS `id`, `custom`, `confirmed`, `home_captain`, `away_captain`, `comments`, `updated`, `event_id`, `status`";
 			$sql        = " FROM {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager} AS l WHERE m.`league_id` = l.`id`";
 		}
 
@@ -2448,7 +2448,7 @@ class RacketManager {
 		$class = '';
 		foreach ( $matches as $i => $match ) {
 			$class = ( 'alternate' === $class ) ? '' : 'alternate';
-			$match = get_match( $match->id );
+			$match = get_match( $match );
 			if ( 'final' === $match->final_round ) {
 				if ( ! is_numeric( $match->home_team ) ) {
 					$match->prev_home_match = $this->get_prev_round_matches( $match->home_team, $match->season, $match->league );

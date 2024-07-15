@@ -3018,7 +3018,14 @@ ul.match-points {
 .match__btn svg {
 	fill: white;
 }
-
+.btn.match__btn:hover, .btn.match__btn:focus-visible, .btn.match__btn:active {
+    background-color: #006800;
+}
+.match__change {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+}
 .draw-team-body {
 	display: flex;
 }
@@ -3627,7 +3634,9 @@ module--dark .mail-media,
 	background-color: #006800;
 	color: #FFF;
 }
-
+.module--dark a.dropdown-item, .tournament-head a.dropdown-item {
+	color: #006800 !important;
+}
 .module--dark .module__title h1 {
 	color: #FFF;
 }
@@ -3818,7 +3827,7 @@ h2.team-match__name {
 	text-align: right;
 }
 
-.module--dark a {
+.module--dark a, .tournament-head a {
 	color: #fff !important;
 }
 .module--dark a.btn.btn-outline {
@@ -5368,4 +5377,37 @@ h4.modal-title {
 }
 .unread {
 	background-color: #FFF !important;
+}
+.strike {
+    display: block;
+    text-align: center;
+    overflow: hidden;
+    white-space: nowrap;
+    font-style: italic;
+	color: var(--sydney-grey-color);
+}
+
+.strike > span {
+    position: relative;
+    display: inline-block;
+}
+
+.strike > span:before,
+.strike > span:after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 9999px;
+    height: 1px;
+    background: var(--sydney-grey-color);
+}
+
+.strike > span:before {
+    right: 100%;
+    margin-right: 15px;
+}
+
+.strike > span:after {
+    left: 100%;
+    margin-left: 15px;
 }

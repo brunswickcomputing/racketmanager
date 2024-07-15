@@ -56,9 +56,12 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_nopriv_racketmanager_get_message', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_racketmanager_delete_message', array( &$this, 'delete_message' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_delete_message', array( &$this, 'logged_out' ) );
+		add_action( 'wp_ajax_racketmanager_match_option', array( &$this, 'match_option' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_match_option', array( &$this, 'logged_out_modal' ) );
 		add_action( 'wp_ajax_racketmanager_set_match_date', array( &$this, 'set_match_date' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_set_match_date', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_racketmanager_switch_home_away', array( &$this, 'switch_home_away' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_switch_home_away', array( &$this, 'logged_out' ) );
 	}
 	/**
 	 * Add item as favourite
@@ -1604,6 +1607,121 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		}
 	}
 	/**
+	 * Build screen to to show selected match option
+	 */
+	public function match_option() {
+		$valid   = true;
+		$message = null;
+		if ( isset( $_POST['security'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
+				$valid   = false;
+				$message = __( 'Security token invalid', 'racketmanager' );
+			}
+		} else {
+			$valid   = false;
+			$message = __( 'No security token found in request', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : 0;
+			$modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+			$match    = get_match( $match_id );
+			if ( $match ) {
+				$option = isset( $_POST['option'] ) ? sanitize_text_field( wp_unslash( $_POST['option'] ) ) : null;
+				switch ( $option ) {
+					case 'schedule_match':
+						$title  = __( '(Re)schedule match', 'racketmanager' );
+						$button = __( 'Save', 'racketmanager' );
+						$action = 'setMatchDate';
+						break;
+					case 'adjust_team_score':
+						$title  = __( 'Adjust team score', 'racketmanager' );
+						$button = __( 'Change Results', 'racketmanager' );
+						$action = 'adjustTeamScore';
+						break;
+					case 'switch_home':
+						$title  = __( 'Switch home and away', 'racketmanager' );
+						$button = __( 'Switch', 'racketmanager' );
+						$action = 'switchHomeAway';
+						break;
+					default:
+						$valid   = false;
+						$message = __( 'Invalid match option', 'racketmanager' );
+						$title   = __( 'Unknown option', 'racketmanager' );
+						break;
+				}
+				ob_start();
+				?>
+				<div class="modal-dialog modal-dialog-centered modal-lg">
+					<div class="modal-content">
+						<form id="match-option" class="" action="#" method="post" onsubmit="return checkSelect(this)">
+							<?php wp_nonce_field( 'match-option', 'racketmanager_nonce' ); ?>
+							<input type="hidden" name="match_id" value="<?php echo esc_attr( $match->id ); ?>" />
+							<input type="hidden" name="home_team" value="<?php echo esc_attr( $match->home_team ); ?>" />
+							<input type="hidden" name="away_team" value="<?php echo esc_attr( $match->away_team ); ?>" />
+							<input type="hidden" name="modal" value="<?php echo esc_attr( $modal ); ?>" />
+							<div class="modal-header modal__header">
+								<h4 class="modal-title"><?php echo esc_html( $title ); ?></h4>
+								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+							</div>
+							<div class="modal-body">
+								<div class="container">
+									<?php
+									$show_header = true;
+									require RACKETMANAGER_PATH . 'templates/includes/matches-teams-match.php';
+									if ( 'schedule_match' === $option ) {
+										if ( empty( $match->start_time ) ) {
+											$date_input_type = 'date';
+											$date_input      = substr( $match->date, 0, 10 );
+										} else {
+											$date_input_type = 'datetime-local';
+											$date_input      = $match->date;
+										}
+										?>
+										<div class="strike mb-3">
+											<span><?php esc_html_e( '(Re)schedule match', 'racketmanager' ); ?></span>
+										</div>
+										<div class="mb-3">
+											<label for="schedule-date" class="visually-hidden"><?php esc_html_e( 'New date', 'racketmanager' ); ?></label>
+											<input type="<?php echo esc_attr( $date_input_type ); ?>" class="form-control" id="schedule-date" name="schedule-date" value="<?php echo esc_html( $date_input ); ?>" />
+										</div>
+										<div class="alert_rm" id="matchDateAlert" style="display:none;">
+											<div class="alert__body">
+												<div class="alert__body-inner" id="alertMatchDateResponse">
+												</div>
+											</div>
+										</div>
+										<?php
+									} elseif ( 'switch_home' === $option ) {
+										?>
+										<div class="mb-3">
+											<span><?php esc_html_e( 'Switch home and away?', 'racketmanager' ); ?></span>
+										</div>
+										<?php
+									}
+									?>
+								</div>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
+								<button type="button" class="btn btn-primary" onclick="Racketmanager.<?php echo esc_attr( $action ); ?>(this)"><?php echo esc_html( $button ); ?></button>
+							</div>
+						</form>
+					</div>
+				</div>
+				<?php
+				$output = ob_get_contents();
+				ob_end_clean();
+			} else {
+				$valid   = false;
+				$message = __( 'Match not found', 'racketmanager' );
+			}
+		}
+		if ( $valid ) {
+			wp_send_json_success( $output );
+		} else {
+			wp_send_json_error( $message, '500' );
+		}
+	}
 	/**
 	 * Set match date function
 	 *

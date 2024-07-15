@@ -8,40 +8,42 @@
 namespace Racketmanager;
 
 ?>
-		<div class="module__content">
-			<div class="module-container">
-				<div class="text-center">
-					<a href="/<?php echo esc_attr( $match->league->event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $match->league->event->name ) ); ?>/<?php echo esc_attr( $match->season ); ?>/">
-						<span class="nav-link__value"><?php echo esc_html( $match->league->event->name ); ?></span>
-					</a>
-					<?php
-					if ( 'cup' !== $match->league->event->competition->type ) {
-						?>
-						&nbsp;&#8226;&nbsp;
-						<a href="/<?php echo esc_attr( $match->league->event->competition->type ); ?>/<?php echo esc_attr( seo_url( $match->league->title ) ); ?>/<?php echo esc_attr( $match->season ); ?>/">
-							<span class="nav-link__value"><?php echo esc_html( $match->league->title ); ?></span>
-						</a>
-						<?php
+		<?php
+		if ( ! empty( $match->status ) ) {
+			$match_status = RacketManager_Util::get_match_status( $match->status );
+			$info_msg     = $match_status;
+			switch ( $match->status ) {
+				case 1:
+					$team_ref = empty( $match->custom['walkover'] ) ? null : $match->custom['walkover'];
+					if ( $team_ref ) {
+						$team = empty( $match->teams[ $team_ref ] ) ? null : $match->teams[ $team_ref ];
+						if ( $team ) {
+							$info_msg = $match_status . ' - ' . $team->title . ' ' . __( 'did not show', 'racketmanager' );
+						}
 					}
-					?>
-					<div class="text-center mb-3">
-						<?php
-						if ( ! empty( $match->final_round ) ) {
-							?>
-							<span><?php echo esc_html( $match->league->championship->get_final_name( $match->final_round ) ); ?>&nbsp;&#8226</span>
-							<?php
-						} elseif ( ! empty( $match->match_day ) ) {
-							?>
-							<span><?php echo esc_html__( 'Match Day', 'racketmanager' ) . ' ' . esc_html( $match->match_day ); ?>&nbsp;&#8226</span>
-							<?php
-						}
-						if ( ! empty( $match->leg ) ) {
-							?>
-							<span><?php echo esc_html__( 'Leg', 'racketmanager' ) . ' ' . esc_html( $match->leg ); ?>&nbsp;&#8226</span>
-							<?php
-						}
-						?>
-						<span><time datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( 'j. F Y', the_match_date() ) ); ?></time></span>
+					break;
+				case 2:
+					break;
+				case 3:
+					break;
+				case 4:
+					break;
+				case 5:
+					if ( ! empty( $match->$original_date ) ) {
+						$info_msg = __( 'Match rescheduled from', 'racketmanager' ) . ' ' . mysql2date( 'j F Y H:i', $match->date_original );
+					}
+					break;
+				default:
+					break;
+			}
+			?>
+			<div class="text-center">
+				<span class="match__message match-warning" data-bs-toggle="tooltip" data-bs-title="<?php echo esc_attr( $info_msg ); ?>"><?php echo esc_html( $match_status ); ?></span>
+			</div>
+			<?php
+		}
+		?>
+		<div class="text-center">
 					</div>
 				</div>
 		<div class="team-match mt-3">

@@ -1669,6 +1669,66 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		}
 	}
 	/**
+	 * Switch home and away teams function
+	 *
+	 * @return void
+	 */
+	public function switch_home_away() {
+		$return    = array();
+		$err_msg   = array();
+		$err_field = array();
+		$valid     = true;
+		$msg       = null;
+		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'match-option' ) ) {
+			$valid       = false;
+			$err_field[] = '';
+			$err_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$modal = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+			if ( $modal ) {
+				$match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
+				if ( $match_id ) {
+					$match = get_match( $match_id );
+					if ( $match ) {
+						$old_home   = $match->home_team;
+						$old_away   = $match->away_team;
+						$match_date = $match->league->event->seasons[ $match->season ]['matchDates'][ $match->match_day - 1 ];
+						if ( $match_date ) {
+							$match->update_match_date( $match_date );
+							$match->set_teams( $old_away, $old_home );
+							$msg = __( 'Home and away teams switched', 'racketmanager' );
+						} else {
+							$valid       = false;
+							$err_field[] = 'schedule-date';
+							$err_msg[]   = __( 'Match day not found', 'racketmanager' );
+						}
+					} else {
+						$valid       = false;
+						$err_field[] = 'schedule-date';
+						$err_msg[]   = __( 'Match not found', 'racketmanager' );
+					}
+				} else {
+					$valid       = false;
+					$err_field[] = 'schedule-date';
+					$err_msg[]   = __( 'Match id not supplied', 'racketmanager' );
+				}
+			} else {
+				$valid       = false;
+				$err_field[] = 'schedule-date';
+				$err_msg[]   = __( 'Modal name not supplied', 'racketmanager' );
+			}
+		}
+		if ( $valid ) {
+			array_push( $return, $msg, $modal, $match_id );
+			wp_send_json_success( $return );
+		} else {
+			$msg = __( 'Unable to update match schedule', 'racketmanager' );
+			array_push( $return, $msg, $err_msg, $err_field );
+			wp_send_json_error( $return, '500' );
+		}
+	}
+	/**
 		ob_start();
 		?>
 		<div class="modal-dialog modal-dialog-centered modal-lg">

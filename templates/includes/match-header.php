@@ -7,7 +7,50 @@
 
 namespace Racketmanager;
 
+if ( empty( $match->winner_id ) ) {
+	$score_class   = 'is-not-played';
+	$match_pending = true;
+} else {
+	$score_class   = '';
+	$match_pending = false;
+}
+if ( 'false' === $edit_mode ) {
+	$edit_mode = false;
+}
+$user_can_update_array = $racketmanager->is_match_update_allowed( $match->teams['home'], $match->teams['away'], $match->league->event->competition->type, $match->confirmed );
+$user_can_update       = $user_can_update_array[0];
+$user_type             = $user_can_update_array[1];
+$user_team             = $user_can_update_array[2];
+$allow_schedule_match  = false;
+$allow_switch_match    = false;
+$allow_amend_score     = false;
+if ( $match_pending ) {
+	if ( $user_can_update ) {
+		if ( 'admin' === $user_type || 'matchsecretary' === $user_type || 'captain' === $user_type ) {
+			if ( 'admin' === $user_type || 'both' === $user_team || 'home' === $user_team ) {
+				$allow_schedule_match = true;
+			}
+		}
+		if ( 'admin' === $user_type || ( 'matchsecretary' === $user_type && ( 'both' === $user_team || 'home' === $user_team ) ) ) {
+			if ( 'false' === $match->league->event->seasons[ $match->season ]['homeAway'] ) {
+				$allow_switch_match = true;
+			}
+		}
+	}
+} elseif ( 'P' === $match->confirmed ) {
+	if ( $user_can_update ) {
+		if ( 'admin' === $user_type || 'matchsecretary' === $user_type || 'captain' === $user_type ) {
+			if ( 'admin' === $user_type || 'both' === $user_team || 'home' === $user_team ) {
+				$allow_amend_score = true;
+			}
+		}
+	}
+} elseif ( 'admin' === $user_type ) {
+	$allow_amend_score = true;
+}
 ?>
+<div class="module__content">
+	<div class="module-container">
 		<?php
 		if ( ! empty( $match->status ) ) {
 			$match_status = RacketManager_Util::get_match_status( $match->status );
@@ -46,6 +89,10 @@ namespace Racketmanager;
 		<div class="text-center">
 					</div>
 				</div>
+				<?php
+			}
+			?>
+		</div>
 		<div class="team-match mt-3">
 			<div class="media">
 				<div class="media__wrapper">

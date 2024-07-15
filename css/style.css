@@ -2190,12 +2190,12 @@ ol.match-group {
 	padding-right: 20px;
 	text-align: center
 }
-
-.match__header-title .match__header-title-item,
-.match__header-title .match__header-title-item span {
-	display: inline;
+@media (min-width: 768px) {
+	.match__header-title .match__header-title-item,
+	.match__header-title .match__header-title-item span {
+		display: inline;
+	}
 }
-
 .match__header-title .match__header-title-item a,
 .match__header-title .match__header-title-item button {
 	color: #2a2c32 !important

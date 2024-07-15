@@ -1497,9 +1497,60 @@ Racketmanager.matchOptions = function (event, match_id, option) {
 		}
 	});
 };
-Racketmanager.matchOptions = function (event, match_id, option) {
+Racketmanager.setMatchDate = function (link) {
+	let formId = '#'.concat(link.form.id);
+	let $form = jQuery(formId).serialize();
+	$form += "&action=racketmanager_set_match_date";
+	let notifyField = '#updateStatusResponse';
+	let alert_id_1 = jQuery('#matchOptionsAlert');
+	jQuery(alert_id_1).hide();
+	jQuery(alert_id_1).removeClass('alert--success alert--warning alert--danger');
+	let alert_response_1 = '#alertMatchOptionsResponse';
+	let alert_id_2 = jQuery('#matchDateAlert');
+	jQuery(alert_id_2).hide();
+	jQuery(alert_id_2).removeClass('alert--success alert--warning alert--danger');
+	let alert_response_2 = '#alertMatchDateResponse';
+	jQuery(".is-invalid").removeClass("is-invalid");
+	jQuery(notifyField).val("");
+	jQuery(notifyField).hide();
+
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: $form,
+		success: function (response) {
+			let message = response.data[0];
+			let modal = '#' + response.data[1];
+			let match_id = response.data[2];
+			jQuery(alert_id_1).show();
+			jQuery(alert_id_1).addClass('alert--success');
+			jQuery(alert_response_1).html(message);
+			jQuery(modal).modal('hide')
+			Racketmanager.matchHeader(match_id);
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				let data = response.responseJSON.data;
+				let message = '';
+				for (let errorMsg of data[1]) {
+					message += errorMsg + '<br />';
+				}
+				let errorFields = data[2];
+				for (let errorField of errorFields) {
+					let id = '#'.concat(errorField);
+					jQuery(id).addClass("is-invalid");
+				}
+				jQuery(alert_response_2).html(message);
+			} else {
+				jQuery(alert_response_2).text(response.statusText);
+			}
+			jQuery(alert_id_2).show();
+			jQuery(alert_id_2).addClass('alert--danger');
 		},
 		complete: function () {
+		}
+	});
+}
 Racketmanager.switchHomeAway = function (link) {
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();

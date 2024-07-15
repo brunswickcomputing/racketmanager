@@ -30,8 +30,7 @@ $is_edit_mode       = isset( $is_edit_mode ) ? $is_edit_mode : false;
 if ( $user_can_update ) {
 	$match_editable = 'is-editable';
 }
-?>
-<?php
+$allow_schedule_match = false;
 if ( $match ) {
 	$match_status = null;
 	if ( ! empty( $match->winner_id ) ) {
@@ -65,6 +64,8 @@ if ( $match ) {
 		} elseif ( $match->is_shared ) {
 			$match_status = 'share';
 		}
+	} elseif ( $user_can_update ) {
+		$allow_schedule_match = true;
 	}
 	?>
 	<div class="tournament__match">
@@ -83,7 +84,35 @@ if ( $match ) {
 						<?php
 					}
 					?>
-			</p>
+				</p>
+				<?php
+				if ( is_user_logged_in() && $match_editable && ( $allow_schedule_match ) ) {
+					?>
+					<div class="match__change">
+						<div class="dropdown">
+							<a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+								<svg width="16" height="16" class="icon ">
+									<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
+								</svg>
+							</a>
+							<ul class="dropdown-menu dropdown-menu-end">
+								<?php
+								if ( $allow_schedule_match ) {
+									?>
+									<li>
+										<a class="dropdown-item" href="" onclick="Racketmanager.matchOptions(event, '<?php echo esc_attr( $match->id ); ?>', 'schedule_match')">
+											<?php esc_html_e( '(Re)schedule match', 'racketmanager' ); ?>
+										</a>
+									</li>
+									<?php
+								}
+								?>
+							</ul>
+						</div>
+					</div>
+					<?php
+				}
+				?>
 			</div>
 		</div>
 		<div class="match-info-meta wrapper--padding-medium">
@@ -231,7 +260,7 @@ if ( $match ) {
 					}
 					?>
 				</div>
-				<div class="match tournament-match" <?php echo esc_attr( $match_editable ); ?>>
+				<div class="match tournament-match <?php echo esc_attr( $match_editable ); ?>">
 					<div class="match__header">
 						<ul class="match__header-title">
 							<?php
@@ -466,6 +495,7 @@ if ( $match ) {
 		</div>
 	</div>
 	<?php require RACKETMANAGER_PATH . 'templates/includes/modal-score.php'; ?>
+	<?php require RACKETMANAGER_PATH . 'templates/includes/match-modal.php'; ?>
 	<?php
 }
 ?>

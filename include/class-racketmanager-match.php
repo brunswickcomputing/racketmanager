@@ -41,6 +41,12 @@ final class Racketmanager_Match {
 	 */
 	public $date;
 	/**
+	 * Orginal date
+	 *
+	 * @var string
+	 */
+	public $date_original;
+	/**
 	 * Home team
 	 *
 	 * @var string
@@ -357,7 +363,7 @@ final class Racketmanager_Match {
 		if ( ! $match ) {
 			$match = $wpdb->get_row(
 				$wpdb->prepare(
-					"SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `updated`, `updated_user`, `confirmed`, `home_captain`, `away_captain`, `comments`, `status`, `host`, `linked_match`, `leg`, `winner_id_tie`, `loser_id_tie`, `home_points_tie`, `away_points_tie` FROM {$wpdb->racketmanager_matches} WHERE `id` = %d LIMIT 1",
+					"SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date_original`, '%%Y-%%m-%%d %%H:%%i') AS date_original, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `updated`, `updated_user`, `confirmed`, `home_captain`, `away_captain`, `comments`, `status`, `host`, `linked_match`, `leg`, `winner_id_tie`, `loser_id_tie`, `home_points_tie`, `away_points_tie` FROM {$wpdb->racketmanager_matches} WHERE `id` = %d LIMIT 1",
 					$match_id
 				)
 			);
@@ -1472,21 +1478,43 @@ final class Racketmanager_Match {
 			$day = Racketmanager_Util::get_match_day_number( $match_day );
 			if ( ! empty( $match_time ) ) {
 				$match_date = gmdate( 'Y-m-d', strtotime( $start_date . " +$day day" ) ) . ' ' . $match_time;
+				$this->update_match_date( $match_date );
+			}
+		}
+	}
+	/**
+	 * Update match date function
+	 *
+	 * @param string $match_date original match date.
+	 * @param string $original_date original match date (optional).
+	 * @return void
+	 */
+	public function update_match_date( $match_date, $original_date = null ) {
+		global $wpdb;
+		if ( ! empty( $match_date ) ) {
+			$wpdb->query(
+				$wpdb->prepare(
+					"UPDATE {$wpdb->racketmanager_matches} SET `date` = %s WHERE `id` = %d",
+					$match_date,
+					$this->id
+				)
+			);
+			if ( ! empty( $original_date ) && empty( $this->date_original ) ) {
 				$wpdb->query(
 					$wpdb->prepare(
-						"UPDATE {$wpdb->racketmanager_matches} SET `date` = %s WHERE `id` = %d",
-						$match_date,
+						"UPDATE {$wpdb->racketmanager_matches} SET `date_original` = %s WHERE `id` = %d",
+						$original_date,
 						$this->id
 					)
 				);
-				wp_cache_delete( $this->id, 'matches' );
-				if ( $this->num_rubbers ) {
-					$rubbers = $this->get_rubbers();
-					foreach ( $rubbers as $rubber ) {
-						$rubber       = get_rubber( $rubber );
-						$rubber->date = $match_date;
-						$rubber->update_date();
-					}
+			}
+			wp_cache_delete( $this->id, 'matches' );
+			if ( $this->num_rubbers ) {
+				$rubbers = $this->get_rubbers();
+				foreach ( $rubbers as $rubber ) {
+					$rubber       = get_rubber( $rubber );
+					$rubber->date = $match_date;
+					$rubber->update_date();
 				}
 			}
 		}

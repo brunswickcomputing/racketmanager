@@ -1001,6 +1001,10 @@ function racketmanager_upgrade() {
 		}
 		$wpdb->query( "CREATE TABLE {$wpdb->racketmanager_messages} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `subject` varchar( 255 ) NOT NULL, `userid` int( 11 ) NOT NULL, `date` DATETIME NOT NULL, `sender` varchar( 255 ) NOT NULL, `status` varchar( 1 ) NULL, `message_object` BLOB NOT NULL, PRIMARY KEY ( `id` )) $charset_collate;" );
 	}
+	if ( version_compare( $installed, '8.10.0', '<' ) ) {
+		echo esc_html__( 'starting 8.10.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_matches} ADD `date_original` DATETIME NULL AFTER `date`" );
+	}
 	/*
 	* Update version and dbversion
 	*/

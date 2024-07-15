@@ -11,6 +11,66 @@ $user_can_update = $user_can_update_array[0];
 $user_type       = $user_can_update_array[1];
 $user_team       = $user_can_update_array[2];
 $user_message    = $user_can_update_array[3];
+$is_edit_mode    = true;
+if ( ! $user_can_update ) {
+	$is_edit_mode = false;
+}
+$updates_allowed = true;
+if ( 'P' === $match->confirmed && 'admin' !== $user_type ) {
+	$updates_allowed = false;
+}
+$opponents        = array( 'home', 'away' );
+$opponent_players = array( 'player1', 'player2' );
+$winner_set       = null;
+if ( ! empty( $home_club_player['m'] ) ) {
+	$club_players['home']['m'] = $home_club_player['m'];
+} else {
+	$club_players['home']['m'] = array();
+}
+if ( ! empty( $home_club_player['f'] ) ) {
+	$club_players['home']['f'] = $home_club_player['f'];
+} else {
+	$club_players['home']['f'] = array();
+}
+if ( ! empty( $away_club_player['m'] ) ) {
+	$club_players['away']['m'] = $away_club_player['m'];
+} else {
+	$club_players['away']['m'] = array();
+}
+if ( ! empty( $away_club_player['f'] ) ) {
+	$club_players['away']['f'] = $away_club_player['f'];
+} else {
+	$club_players['away']['f'] = array();
+}
+$rubbers             = $match->get_rubbers();
+$team                = null;
+$team_status         = null;
+$match_complete      = false;
+$match_approval_mode = false;
+$match_editable      = false;
+if ( $user_can_update && $is_edit_mode ) {
+	if ( empty( $match->confirmed ) || 'D' === $match->confirmed || 'admin' === $user_type ) {
+		$match_editable = 'is-editable';
+	} elseif ( 'P' === $match->confirmed ) {
+		$match_approval_mode = true;
+	}
+}
+$match_status = null;
+if ( $match->is_walkover ) {
+	if ( 'home' === $match->walkover ) {
+		$match_status = 'walkover_player1';
+	} else {
+		$match_status = 'walkover_player2';
+	}
+} elseif ( $match->is_shared ) {
+	$match_status = 'share';
+} elseif ( $match->is_retired ) {
+	if ( 'home' === $match->retired ) {
+		$match_status = 'retired_player1';
+	} else {
+		$match_status = 'retired_player2';
+	}
+}
 ?>
 	<div id="match-header" class="team-match-header module module--dark module--card">
 		<?php echo $racketmanager->show_match_header( $match, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -67,72 +127,6 @@ $user_message    = $user_can_update_array[3];
 								</div>
 							</div>
 							<div id="showMatchRubbers">
-								<?php
-								$is_edit_mode    = true;
-								$user_can_update = $user_can_update_array[0];
-								$user_type       = $user_can_update_array[1];
-								$user_team       = $user_can_update_array[2];
-								$user_message    = $user_can_update_array[3];
-								if ( ! $user_can_update ) {
-									$is_edit_mode = false;
-								}
-								$updates_allowed = true;
-								if ( 'P' === $match->confirmed && 'admin' !== $user_type ) {
-									$updates_allowed = false;
-								}
-								$opponents        = array( 'home', 'away' );
-								$opponent_players = array( 'player1', 'player2' );
-								$winner_set       = null;
-								if ( ! empty( $home_club_player['m'] ) ) {
-									$club_players['home']['m'] = $home_club_player['m'];
-								} else {
-									$club_players['home']['m'] = array();
-								}
-								if ( ! empty( $home_club_player['f'] ) ) {
-									$club_players['home']['f'] = $home_club_player['f'];
-								} else {
-									$club_players['home']['f'] = array();
-								}
-								if ( ! empty( $away_club_player['m'] ) ) {
-									$club_players['away']['m'] = $away_club_player['m'];
-								} else {
-									$club_players['away']['m'] = array();
-								}
-								if ( ! empty( $away_club_player['f'] ) ) {
-									$club_players['away']['f'] = $away_club_player['f'];
-								} else {
-									$club_players['away']['f'] = array();
-								}
-								$rubbers             = $match->get_rubbers();
-								$team                = null;
-								$team_status         = null;
-								$match_complete      = false;
-								$match_approval_mode = false;
-								$match_editable      = false;
-								if ( $user_can_update && $is_edit_mode ) {
-									if ( empty( $match->confirmed ) || 'D' === $match->confirmed || 'admin' === $user_type ) {
-										$match_editable = 'is-editable';
-									} elseif ( 'P' === $match->confirmed ) {
-										$match_approval_mode = true;
-									}
-								}
-								$match_status = null;
-								if ( $match->is_walkover ) {
-									if ( 'home' === $match->walkover ) {
-										$match_status = 'walkover_player1';
-									} else {
-										$match_status = 'walkover_player2';
-									}
-								} elseif ( $match->is_shared ) {
-									$match_status = 'share';
-								} elseif ( $match->is_retired ) {
-									if ( 'home' === $match->retired ) {
-										$match_status = 'retired_player1';
-									} else {
-										$match_status = 'retired_player2';
-									}
-								}
-								?>
 								<div id="matchrubbers">
 									<form id="match-rubbers" class="team-match-result" action="#" method="post" onsubmit="return checkSelect(this)">
 										<?php wp_nonce_field( 'rubbers-match', 'racketmanager_nonce' ); ?>

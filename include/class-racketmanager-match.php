@@ -969,7 +969,9 @@ final class Racketmanager_Match {
 					$this->custom = array_merge( (array) $this->custom, (array) $custom );
 					$this->status = 1;
 				} elseif ( $shared === $this->num_rubbers ) {
-					$this->status = 3;
+					$custom['shared'] = 'true';
+					$this->custom     = array_merge( (array) $this->custom, (array) $custom );
+					$this->status     = 3;
 				}
 				$point_rule         = $this->league->get_point_rule();
 				$rubber_win         = ! empty( $point_rule['rubber_win'] ) ? $point_rule['rubber_win'] : 0;

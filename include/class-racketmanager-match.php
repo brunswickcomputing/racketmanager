@@ -959,6 +959,7 @@ final class Racketmanager_Match {
 			}
 			$custom['stats'] = $stats;
 			if ( 'league' === $this->league->event->competition->type ) {
+				$this->status = 0;
 				if ( $home_walkover === $this->num_rubbers || $away_walkover === $this->num_rubbers ) {
 					if ( $home_walkover === $this->num_rubbers ) {
 						$custom['walkover'] = 'home';
@@ -1288,7 +1289,6 @@ final class Racketmanager_Match {
 		} else {
 			$match['winner'] = -1;
 			$match['loser']  = -1;
-			$this->status    = 3;
 		}
 		$this->winner_id = $match['winner'];
 		$this->loser_id  = $match['loser'];

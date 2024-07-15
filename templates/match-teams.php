@@ -17,6 +17,12 @@ $user_message    = $user_can_update_array[3];
 	</div>
 	<div class="page-content row">
 		<div class="page-content__main col-12 col-lg-8">
+			<div class="alert_rm" id="matchOptionsAlert" style="display:none;">
+				<div class="alert__body">
+					<div class="alert__body-inner" id="alertMatchOptionsResponse">
+					</div>
+				</div>
+			</div>
 			<div class="module module--card">
 				<div class="module__banner">
 					<h4 class="module__title">
@@ -246,3 +252,4 @@ $user_message    = $user_can_update_array[3];
 			</div>
 		</div>
 	</div>
+	<?php require 'includes/match-modal.php'; ?>

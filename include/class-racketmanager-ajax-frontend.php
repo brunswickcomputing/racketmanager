@@ -1747,8 +1747,14 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					if ( $match ) {
 						$schedule_date = isset( $_POST['schedule-date'] ) ? sanitize_text_field( wp_unslash( $_POST['schedule-date'] ) ) : null;
 						if ( $schedule_date ) {
-							$schedule_date = substr( $schedule_date, 0, 10 ) . ' ' . substr( $schedule_date, 11, 5 );
-							if ( $schedule_date === $match->date ) {
+							if ( strlen( $schedule_date ) === 10 ) {
+								$schedule_date = substr( $schedule_date, 0, 10 );
+								$match_date    = substr( $match->date, 0, 10 );
+							} else {
+								$schedule_date = substr( $schedule_date, 0, 10 ) . ' ' . substr( $schedule_date, 11, 5 );
+								$match_date    = $match->date;
+							}
+							if ( $schedule_date === $match_date ) {
 								$valid       = false;
 								$err_field[] = 'schedule-date';
 								$err_msg[]   = __( 'Date not changed', 'racketmanager' );

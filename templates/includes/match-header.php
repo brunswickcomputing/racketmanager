@@ -72,7 +72,7 @@ if ( $match_pending ) {
 				case 4:
 					break;
 				case 5:
-					if ( ! empty( $match->$original_date ) ) {
+					if ( ! empty( $match->date_original ) ) {
 						$info_msg = __( 'Match rescheduled from', 'racketmanager' ) . ' ' . mysql2date( 'j F Y H:i', $match->date_original );
 					}
 					break;

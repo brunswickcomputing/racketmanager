@@ -4665,7 +4665,7 @@ final class RacketManager_Admin extends RacketManager {
 					$rubber->update_result();
 				}
 				$comments = $match->comments;
-				$comment  = $rubber->title . ': ' . __( 'invalid player', 'racketmanager' ) . ' ' . $player->display_name . ' - ' . $results_checker->description;
+				$comment  = $rubber->title . ': ' . __( 'ineligible player', 'racketmanager' ) . ' ' . $player->display_name . ' - ' . $results_checker->description;
 				if ( empty( $comments['result'] ) ) {
 					$comments['result'] = $comment;
 				} else {
@@ -4678,7 +4678,7 @@ final class RacketManager_Admin extends RacketManager {
 				$email_from        = $this->get_confirmation_email( $match->league->event->competition->type );
 				$headers[]         = 'From: ' . ucfirst( $match->league->event->competition->type ) . ' Secretary <' . $email_from . '>';
 				$headers[]         = 'cc: ' . ucfirst( $match->league->event->competition->type ) . ' Secretary <' . $email_from . '>';
-				$email_subject     = $this->site_name . ' - ' . $match->teams['home']->title . ' - ' . $match->teams['away']->title . ' - ' . __( 'invalid player', 'racketmanager' );
+				$email_subject     = $this->site_name . ' - ' . $match->teams['home']->title . ' - ' . $match->teams['away']->title . ' - ' . __( 'ineligible player', 'racketmanager' );
 				if ( $results_checker->team_id === $match->home_team ) {
 					$captain   = $match->teams['home']->captain;
 					$opponent  = $match->teams['away']->title;

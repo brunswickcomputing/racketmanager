@@ -14,7 +14,7 @@ require 'email-header.php';
 			require 'components/salutation.php';
 			?>
 			<?php
-			$paragraph_text = __( 'You fielded an invalid player in this match.', 'racketmanager' );
+			$paragraph_text = __( 'You fielded an ineligible player in this match.', 'racketmanager' );
 			require 'components/paragraph.php';
 			?>
 			<div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">

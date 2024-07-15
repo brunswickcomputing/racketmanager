@@ -1754,6 +1754,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 								$err_msg[]   = __( 'Date not changed', 'racketmanager' );
 							} else {
 								$match->update_match_date( $schedule_date, $match->date );
+								$match->status = 5;
+								$match->set_status( $match->status );
 								$msg = __( 'Match schedule updated', 'racketmanager' );
 							}
 						} else {

@@ -1855,4 +1855,19 @@ final class Racketmanager_Match {
 			)
 		);
 	}
+	/**
+	 * Set match status
+	 *
+	 * @param int $status match status.
+	 */
+	public function set_status( $status ) {
+		global $wpdb;
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"UPDATE {$wpdb->racketmanager_matches} SET `status` =%s WHERE `id` = %d",
+				$status,
+				$this->id
+			)
+		);
+	}
 }

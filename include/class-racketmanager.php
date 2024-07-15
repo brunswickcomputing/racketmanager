@@ -146,20 +146,26 @@ class RacketManager {
 			}
 		}
 		if ( 'match' === $slug ) {
-			$league    = un_seo_url( isset( $wp->query_vars['league_name'] ) ? $wp->query_vars['league_name'] : '' );
-			$season    = un_seo_url( isset( $wp->query_vars['season'] ) ? $wp->query_vars['season'] : '' );
-			$team_home = un_seo_url( isset( $wp->query_vars['teamHome'] ) ? $wp->query_vars['teamHome'] : '' );
-			$team_away = un_seo_url( isset( $wp->query_vars['teamAway'] ) ? $wp->query_vars['teamAway'] : '' );
+			$tournament = un_seo_url( isset( $wp->query_vars['tournament'] ) ? $wp->query_vars['tournament'] : '' );
+			$league     = un_seo_url( isset( $wp->query_vars['league_name'] ) ? $wp->query_vars['league_name'] : '' );
+			$season     = un_seo_url( isset( $wp->query_vars['season'] ) ? $wp->query_vars['season'] : '' );
+			$team_home  = un_seo_url( isset( $wp->query_vars['teamHome'] ) ? $wp->query_vars['teamHome'] : '' );
+			$team_away  = un_seo_url( isset( $wp->query_vars['teamAway'] ) ? $wp->query_vars['teamAway'] : '' );
 			if ( $season ) {
 				$league .= ' - ' . $season;
 			}
 			if ( $team_home && $team_away ) {
-				$title = $team_home . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $team_away . ' - ' . $league . ' - ' . $site_name;
-			} elseif ( $league ) {
-				$title = __( 'Match', 'racketmanager' ) . ' - ' . $league . ' - ' . $site_name;
+				$title = $team_home . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $team_away . ' - ';
 			} else {
-				$title = __( 'Match', 'racketmanager' ) . ' - ' . $site_name;
+				$title .= __( 'Match', 'racketmanager' ) . ' - ';
 			}
+			if ( $league ) {
+				$title .= $league . ' - ';
+			}
+			if ( $tournament ) {
+				$title .= $tournament . ' - ';
+			}
+			$title .= $site_name;
 		}
 		if ( 'league-entry' === $slug || 'cup-entry' === $slug ) {
 			$competition_name = un_seo_url( isset( $wp->query_vars['competition_name'] ) ? ucwords( $wp->query_vars['competition_name'] ) : '' );
@@ -1167,6 +1173,12 @@ class RacketManager {
 	 * @return void
 	 */
 	private function rewrite_tournament() {
+		// tournament - match.
+		add_rewrite_rule(
+			'tournament/(.+?)/match/(.+?)/(.+?)-vs-(.+?)/(.+?)/?$',
+			'index.php?pagename=tournaments%2Ftournament%2Fmatch&tournament=$matches[1]&league_name=$matches[2]&teamHome=$matches[3]&teamAway=$matches[4]&match_id=$matches[5]',
+			'top'
+		);
 		// tournament - match.
 		add_rewrite_rule(
 			'tournament/(.+?)/match/(.+?)/?$',

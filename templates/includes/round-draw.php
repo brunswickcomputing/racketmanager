@@ -43,7 +43,7 @@ foreach ( $final->matches as $match ) {
 					if ( empty( $tournament ) ) {
 						$match_link = $match->link;
 					} else {
-						$match_link = '/tournament/' . seo_url( $tournament->name ) . '/match/' . $match->id . '/';
+						$match_link = '/tournament/' . seo_url( $tournament->name ) . '/match/' . seo_url( $match->league->title ) . '/' . seo_url( $match->teams['home']->title ) . '-vs-' . seo_url( $match->teams['away']->title ) . '/' . $match->id . '/';
 					}
 					?>
 					<a href="<?php echo esc_url( ( $match_link ) ); ?>" class="score-row__anchor" aria-label="<?php esc_html_e( 'Match Link', 'racketmanager' ); ?>">

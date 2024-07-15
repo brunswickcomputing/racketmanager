@@ -7,8 +7,6 @@
 
 namespace RacketManager;
 
-use function Racketmanager\debug_to_console;
-
 $match_pending = false;
 if ( empty( $match->winner_id ) ) {
 	$match_pending = true;

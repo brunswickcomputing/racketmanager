@@ -569,7 +569,7 @@ class Racketmanager_Util {
 	 * @param int $status status.
 	 * @return string status text
 	 */
-	public function get_match_status( $status ) {
+	public static function get_match_status( $status ) {
 		switch ( $status ) {
 			case 0:
 				$status_value = __( 'Complete', 'racketmanager' );
@@ -582,6 +582,12 @@ class Racketmanager_Util {
 				break;
 			case 3:
 				$status_value = __( 'Not played', 'racketmanager' );
+				break;
+			case 4:
+				$status_value = __( 'Postponed', 'racketmanager' );
+				break;
+			case 5:
+				$status_value = __( 'Rescheduled', 'racketmanager' );
 				break;
 			default:
 				$status_value = __( 'Unknown', 'racketmanager' );

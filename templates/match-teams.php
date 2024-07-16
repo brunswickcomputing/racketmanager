@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+global $wp;
 $user_can_update = $user_can_update_array[0];
 $user_type       = $user_can_update_array[1];
 $user_team       = $user_can_update_array[2];
@@ -40,9 +41,11 @@ $user_message    = $user_can_update_array[3];
 							<?php
 						}
 						if ( $user_can_update ) {
+							$target_url  = home_url( add_query_arg( array(), $wp->request ) );
+							$target_url .= '/result/';
 							?>
 							<div class="match-mode" id="editMatchMode">
-								<a role="button" class="btn btn--link" onclick="Racketmanager.matchMode(event, '<?php echo esc_html( $match->id ); ?>', 'edit');" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit', 'racketmanager' ); ?>">
+								<a role="button" class="btn btn--link" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit', 'racketmanager' ); ?>" href="<?php echo esc_url( $target_url ); ?>">
 									<svg width="16" height="16" class="icon ">
 										<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
 									</svg>

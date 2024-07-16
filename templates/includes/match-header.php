@@ -14,9 +14,7 @@ if ( empty( $match->winner_id ) ) {
 	$score_class   = '';
 	$match_pending = false;
 }
-if ( 'false' === $edit_mode ) {
-	$edit_mode = false;
-}
+$edit_mode             = false;
 $user_can_update_array = $racketmanager->is_match_update_allowed( $match->teams['home'], $match->teams['away'], $match->league->event->competition->type, $match->confirmed );
 $user_can_update       = $user_can_update_array[0];
 $user_type             = $user_can_update_array[1];
@@ -29,11 +27,13 @@ if ( $match_pending ) {
 		if ( 'admin' === $user_type || 'matchsecretary' === $user_type || 'captain' === $user_type ) {
 			if ( 'admin' === $user_type || 'both' === $user_team || 'home' === $user_team ) {
 				$allow_schedule_match = true;
+				$edit_mode            = true;
 			}
 		}
 		if ( 'admin' === $user_type || ( 'matchsecretary' === $user_type && ( 'both' === $user_team || 'home' === $user_team ) ) ) {
 			if ( 'false' === $match->league->event->seasons[ $match->season ]['homeAway'] ) {
 				$allow_switch_match = true;
+				$edit_mode          = true;
 			}
 		}
 	}
@@ -42,11 +42,13 @@ if ( $match_pending ) {
 		if ( 'admin' === $user_type || 'matchsecretary' === $user_type || 'captain' === $user_type ) {
 			if ( 'admin' === $user_type || 'both' === $user_team || 'home' === $user_team ) {
 				$allow_amend_score = true;
+				$edit_mode         = true;
 			}
 		}
 	}
 } elseif ( 'admin' === $user_type ) {
 	$allow_amend_score = true;
+	$edit_mode         = true;
 }
 ?>
 <div class="module__content">
@@ -275,7 +277,7 @@ if ( $match_pending ) {
 			</div>
 			<?php
 		}
-		if ( $edit_mode && 'false' !== $edit_mode ) {
+		if ( $edit_mode ) {
 			?>
 			<div class="text-center mt-2">
 				<a href="" class="nav__link btn btn-outline" id="matchStatusButton" onclick="Racketmanager.matchStatusModal(event, '<?php echo esc_attr( $match->id ); ?>')">

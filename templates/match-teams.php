@@ -96,23 +96,19 @@ $user_message    = $user_can_update_array[3];
 								</h5>
 								<ul class="list list--naked">
 									<li class="list__item">
-										<span class="nav--link">
-											<svg width="16" height="16" class="icon icon-marker">
-												<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/lta-icons.svg#icon-marker' ); ?>"></use>
-											</svg>
-											<span class="nav-link__value">
-												<?php echo esc_html( $match->teams[ $opponent ]->club->address ); ?>
-											</span>
+										<svg width="16" height="16" class="icon icon-marker">
+											<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/lta-icons.svg#icon-marker' ); ?>"></use>
+										</svg>
+										<span class="nav-link__value">
+											<?php echo esc_html( $match->teams[ $opponent ]->club->address ); ?>
 										</span>
 									</li>
 									<li class="list__item">
-										<span class="nav--link">
-											<svg width="16" height="16" class="icon icon-captain">
-												<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/lta-icons.svg#icon-captain' ); ?>"></use>
-											</svg>
-											<span class="nav-link__value">
-												<?php echo esc_html( $match->teams[ $opponent ]->club->match_secretary_name ); ?>
-											</span>
+										<svg width="16" height="16" class="icon icon-captain">
+											<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/lta-icons.svg#icon-captain' ); ?>"></use>
+										</svg>
+										<span class="">
+											<?php echo esc_html( $match->teams[ $opponent ]->club->match_secretary_name ); ?>
 										</span>
 									</li>
 									<?php
@@ -161,10 +157,8 @@ $user_message    = $user_can_update_array[3];
 												<svg width="16" height="16" class="icon icon-globe">
 													<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#globe' ); ?>"></use>
 												</svg>
-												<span class="nav--link">
-													<span class="nav-link__value">
-														<?php echo esc_html( $match->teams[ $opponent ]->club->website ); ?>
-													</span>
+												<span class="">
+													<?php echo esc_html( $match->teams[ $opponent ]->club->website ); ?>
 												</span>
 											</a>
 										</li>
@@ -194,13 +188,11 @@ $user_message    = $user_can_update_array[3];
 									</h5>
 									<ul class="list list--naked">
 										<li class="list__item">
-											<span class="nav--link">
-												<svg width="16" height="16" class="icon-team">
-													<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/lta-icons-extra.svg#icon-team' ); ?>"></use>
-												</svg>
-												<span class="nav-link__value">
-													<?php echo esc_html( $match->teams[ $opponent ]->title ); ?>
-												</span>
+											<svg width="16" height="16" class="icon-team">
+												<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/lta-icons-extra.svg#icon-team' ); ?>"></use>
+											</svg>
+											<span class="">
+												<?php echo esc_html( $match->teams[ $opponent ]->title ); ?>
 											</span>
 										</li>
 										<?php

@@ -165,7 +165,7 @@ if ( empty( $match->winner_id ) ) {
 	}
 	?>
 	<?php
-	if ( ! empty( $user_can_update ) && empty( $match->confirmed ) ) {
+	if ( $user_can_update ) {
 		$match_link_result = $match_link . 'result/';
 		?>
 		<div class="match__button">

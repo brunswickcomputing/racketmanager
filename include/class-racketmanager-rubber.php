@@ -451,7 +451,7 @@ final class Racketmanager_Rubber {
 		global $wpdb;
 		$players = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT rp.`id`, `player_ref`, `player_team`, rp.`player_id`, `club_player_id`, `description`, `status` FROM {$wpdb->racketmanager_rubber_players} rp LEFT OUTER JOIN {$wpdb->racketmanager_results_checker} rc ON rp.`rubber_id` = rc.`rubber_id` AND rp.`player_id` = rc.`player_id` WHERE rp.`rubber_id` = %s",
+				"SELECT `id`, `player_ref`, `player_team`, `player_id`, `club_player_id` FROM {$wpdb->racketmanager_rubber_players} WHERE `rubber_id` = %s",
 				$this->id
 			)
 		);
@@ -460,14 +460,22 @@ final class Racketmanager_Rubber {
 			$this->players[ $player->player_team ][ $player->player_ref ]                 = get_player( $player->player_id );
 			$this->players[ $player->player_team ][ $player->player_ref ]->club_player_id = $player->club_player_id;
 			$this->players[ $player->player_team ][ $player->player_ref ]->description    = null;
-			if ( empty( $player->description ) || '1' === $player->status ) {
-				$this->players[ $player->player_team ][ $player->player_ref ]->class = null;
-			} else {
-				if ( ! empty( $this->players[ $player->player_team ][ $player->player_ref ]->description ) ) {
-					$this->players[ $player->player_team ][ $player->player_ref ]->description .= ', ';
+			$this->players[ $player->player_team ][ $player->player_ref ]->class          = null;
+			$player_errors = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->prepare(
+					"SELECT `description` FROM {$wpdb->racketmanager_results_checker} WHERE `rubber_id` = %d AND `player_id` = %d AND (`status` IS NULL OR `status` != 1)",
+					$this->id,
+					$player->player_id,
+				)
+			);
+			if ( $player_errors ) {
+				$this->players[ $player->player_team ][ $player->player_ref ]->class = 'is-ineligible';
+				foreach ( $player_errors as $player_error ) {
+					if ( ! empty( $this->players[ $player->player_team ][ $player->player_ref ]->description ) ) {
+						$this->players[ $player->player_team ][ $player->player_ref ]->description .= ', ';
+					}
+					$this->players[ $player->player_team ][ $player->player_ref ]->description .= $player_error->description;
 				}
-				$this->players[ $player->player_team ][ $player->player_ref ]->description .= $player->description;
-				$this->players[ $player->player_team ][ $player->player_ref ]->class        = 'is-ineligible';
 			}
 		}
 	}

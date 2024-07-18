@@ -459,10 +459,14 @@ final class Racketmanager_Rubber {
 		foreach ( $players as $player ) {
 			$this->players[ $player->player_team ][ $player->player_ref ]                 = get_player( $player->player_id );
 			$this->players[ $player->player_team ][ $player->player_ref ]->club_player_id = $player->club_player_id;
+			$this->players[ $player->player_team ][ $player->player_ref ]->description    = null;
 			if ( empty( $player->description ) || '1' === $player->status ) {
-				$this->players[ $player->player_team ][ $player->player_ref ]->description = null;
-				$this->players[ $player->player_team ][ $player->player_ref ]->class       = null;
+				$this->players[ $player->player_team ][ $player->player_ref ]->class = null;
 			} else {
+				if ( ! empty( $this->players[ $player->player_team ][ $player->player_ref ]->description ) ) {
+					$this->players[ $player->player_team ][ $player->player_ref ]->description .= ', ';
+				}
+				$this->players[ $player->player_team ][ $player->player_ref ]->description .= $player->description;
 				$this->players[ $player->player_team ][ $player->player_ref ]->class        = 'is-ineligible';
 			}
 		}

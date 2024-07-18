@@ -821,7 +821,7 @@ input[type="checkbox"].checkbox.is-invalid {
 	text-align: center;
 }
 
-.points.is-invalid, span.is-invalid {
+.points.is-invalid, span.is-ineligible {
 	border-color: #dc3545;
 	color: #dc3545;
 }

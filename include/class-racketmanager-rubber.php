@@ -463,8 +463,7 @@ final class Racketmanager_Rubber {
 				$this->players[ $player->player_team ][ $player->player_ref ]->description = null;
 				$this->players[ $player->player_team ][ $player->player_ref ]->class       = null;
 			} else {
-				$this->players[ $player->player_team ][ $player->player_ref ]->description = $player->description;
-				$this->players[ $player->player_team ][ $player->player_ref ]->class       = 'is-invalid';
+				$this->players[ $player->player_team ][ $player->player_ref ]->class        = 'is-ineligible';
 			}
 		}
 	}

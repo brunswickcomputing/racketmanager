@@ -736,12 +736,11 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			}
 		}
 		if ( $match_id ) {
-			$match                 = get_match( $match_id );
-			$event                 = get_event( $match->league->event_id );
-			$seasons               = $event->seasons;
-			$leagues               = $event->get_leagues();
-			$user_can_update_array = $racketmanager->is_match_update_allowed( $match->teams['home'], $match->teams['away'], $match->league->event->competition->type, $match->confirmed );
-			$user_can_update       = $user_can_update_array[0];
+			$match             = get_match( $match_id );
+			$event             = get_event( $match->league->event_id );
+			$seasons           = $event->seasons;
+			$leagues           = $event->get_leagues();
+			$is_update_allowed = $match->is_update_allowed();
 			if ( ! empty( $match->league->num_rubbers ) ) {
 				$template = 'teams';
 			} elseif ( 'tournament' === $match->league->event->competition->type ) {
@@ -750,11 +749,11 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				$template = 'tournament';
 			}
 			$template_array = array(
-				'match'                 => $match,
-				'leagues'               => $leagues,
-				'seasons'               => $seasons,
-				'league'                => $match->league,
-				'user_can_update_array' => $user_can_update_array,
+				'match'             => $match,
+				'leagues'           => $leagues,
+				'seasons'           => $seasons,
+				'league'            => $match->league,
+				'is_update_allowed' => $is_update_allowed,
 			);
 			if ( 'result' === $action ) {
 				$age_limit  = isset( $match->league->event->age_limit ) ? sanitize_text_field( wp_unslash( $match->league->event->age_limit ) ) : null;

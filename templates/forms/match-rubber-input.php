@@ -8,10 +8,10 @@
 namespace Racketmanager;
 
 global $racketmanager;
-$user_can_update  = $user_can_update_array[0];
-$user_type        = $user_can_update_array[1];
-$user_team        = $user_can_update_array[2];
-$user_message     = $user_can_update_array[3];
+$user_can_update  = $is_update_allowed->user_can_update;
+$user_type        = $is_update_allowed->user_type;
+$user_team        = $is_update_allowed->user_team;
+$user_message     = $is_update_allowed->message;
 $updates_allowed  = true;
 $match_complete   = false;
 $opponents        = array( 'home', 'away' );

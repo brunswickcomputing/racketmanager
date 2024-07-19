@@ -7,17 +7,16 @@
 
 namespace Racketmanager;
 
-$user_can_update = $user_can_update_array[0];
-$user_type       = $user_can_update_array[1];
-$user_team       = $user_can_update_array[2];
-$user_message    = $user_can_update_array[3];
-$is_edit_mode    = true;
-if ( ! $user_can_update ) {
-	$is_edit_mode = false;
-}
-$updates_allowed = true;
-if ( 'P' === $match->confirmed && 'admin' !== $user_type ) {
-	$updates_allowed = false;
+$user_can_update     = $is_update_allowed->user_can_update;
+$user_type           = $is_update_allowed->user_type;
+$user_team           = $is_update_allowed->user_team;
+$match_approval_mode = $is_update_allowed->match_approval_mode;
+$match_update        = $is_update_allowed->match_update;
+$match_editable      = false;
+if ( $user_can_update ) {
+	if ( ! $match_approval_mode ) {
+		$match_editable = 'is-editable';
+	}
 }
 $opponents        = array( 'home', 'away' );
 $opponent_players = array( 'player1', 'player2' );
@@ -42,19 +41,9 @@ if ( ! empty( $away_club_player['f'] ) ) {
 } else {
 	$club_players['away']['f'] = array();
 }
-$rubbers             = $match->get_rubbers();
-$team                = null;
-$team_status         = null;
-$match_complete      = false;
-$match_approval_mode = false;
-$match_editable      = false;
-if ( $user_can_update && $is_edit_mode ) {
-	if ( empty( $match->confirmed ) || 'D' === $match->confirmed || 'admin' === $user_type ) {
-		$match_editable = 'is-editable';
-	} elseif ( 'P' === $match->confirmed ) {
-		$match_approval_mode = true;
-	}
-}
+$rubbers      = $match->get_rubbers();
+$team         = null;
+$team_status  = null;
 $match_status = null;
 if ( $match->is_walkover ) {
 	if ( 'home' === $match->walkover ) {
@@ -140,44 +129,148 @@ if ( $match->is_walkover ) {
 											</div>
 										</div>
 										<?php
-										if ( $is_edit_mode && ( ( ! $match_complete || 'admin' === $user_type ) || $match_approval_mode ) ) {
-											if ( 'admin' === $user_type || ( 'away' !== $user_team && ! isset( $match->home_captain ) ) || ( 'home' !== $user_team && ! isset( $match->away_captain ) ) ) {
-												if ( $match_approval_mode ) {
-													$update_rubber = 'confirm';
-													$action_text   = __( 'Confirm Result', 'racketmanager' );
-												} else {
-													$update_rubber = 'results';
-													$action_text   = __( 'Save Result', 'racketmanager' );
-												}
-												$page_referrer = wp_get_referer();
-												if ( ! $page_referrer ) {
-													$page_referrer = $match->league->event->competition->type . '/' . seo_url( $match->league->title ) . '/' . $match->season . '/';
-													if ( ! empty( $tournament ) ) {
-														$page_referrer = $tournament->link . 'matches/';
-													}
-												}
-												?>
-												<div class="row mb-3">
-													<div class="col-12 match__buttons">
-														<input type="hidden" name="updateRubber" id="updateRubber" value="<?php echo esc_html( esc_html( $update_rubber ) ); ?>" />
-														<a tabindex="999" class="btn btn-plain" type="button" id="cancelResults" href="<?php echo esc_html( $page_referrer ); ?>"><?php echo esc_html_e( 'Cancel', 'racketmanager' ); ?></a>
-														<button tabindex="500" class="btn btn-primary" type="button" id="updateRubberResults" onclick="Racketmanager.updateResults(this)"><?php echo esc_html( $action_text ); ?></button>
-													</div>
-												</div>
-												<?php
+										if ( $match_editable || $match_approval_mode ) {
+											if ( $match_approval_mode ) {
+												$update_rubber = 'confirm';
+												$action_text   = __( 'Confirm Result', 'racketmanager' );
+											} elseif ( $match_update ) {
+												$update_rubber = 'results';
+												$action_text   = __( 'Update Result', 'racketmanager' );
 											} else {
-												?>
-												<div class="mb-3">
-													<div class="alert_rm alert--warning">
-														<div class="alert__body">
-															<div class="alert__body-inner">
-																<span><?php esc_html_e( 'Team result already entered', 'racketmanager' ); ?></span>
-															</div>
+												$update_rubber = 'results';
+												$action_text   = __( 'Save Result', 'racketmanager' );
+											}
+											$page_referrer = wp_get_referer();
+											if ( ! $page_referrer ) {
+												$page_referrer = $match->league->event->competition->type . '/' . seo_url( $match->league->title ) . '/' . $match->season . '/';
+												if ( ! empty( $tournament ) ) {
+													$page_referrer = $tournament->link . 'matches/';
+												}
+											}
+											?>
+											<div class="row mb-3">
+												<div class="col-12 match__buttons">
+													<input type="hidden" name="updateRubber" id="updateRubber" value="<?php echo esc_html( esc_html( $update_rubber ) ); ?>" />
+													<a tabindex="999" class="btn btn-plain" type="button" id="cancelResults" href="<?php echo esc_html( $page_referrer ); ?>"><?php echo esc_html_e( 'Cancel', 'racketmanager' ); ?></a>
+													<button tabindex="500" class="btn btn-primary" type="button" id="updateRubberResults" onclick="Racketmanager.updateResults(this)"><?php echo esc_html( $action_text ); ?></button>
+												</div>
+											</div>
+											<?php
+										} else {
+											?>
+											<div class="mb-3">
+												<div class="alert_rm alert--warning">
+													<div class="alert__body">
+														<div class="alert__body-inner">
+															<span><?php esc_html_e( 'Unable to update match', 'racketmanager' ); ?></span>
 														</div>
 													</div>
 												</div>
-												<?php
-											}
+											</div>
+											<?php
+										}
+										?>
+										<?php
+										if ( 'admin' === $user_type ) {
+											?>
+											<div class="row mt-3 mb-3">
+												<div>
+													<div class="form-floating">
+														<textarea class="form-control result-comments" tabindex="490" placeholder="Leave a comment here" name="matchComments[result]" id="matchComments"><?php echo esc_html( $match->comments['result'] ); ?></textarea>
+														<label for="matchComments"><?php esc_html_e( 'Match Comments', 'racketmanager' ); ?></label>
+													</div>
+												</div>
+											</div>
+											<?php
+										}
+										if ( ! empty( $match->home_captain ) || ! empty( $match->away_captain ) ) {
+											?>
+											<div class="mt-3" id="approvals">
+												<div class="match <?php echo esc_attr( $match_editable ); ?>">
+													<div class="match__header">
+														<ul class="match__header-title">
+															<li class="match__header-title-item">
+																<span class="nav-link__value"><?php esc_html_e( 'Approvals', 'racketmanager' ); ?></span>
+															</li>
+														</ul>
+													</div>
+													<div class="match__body">
+														<div class="match__row-wrapper">
+															<?php
+															foreach ( $opponents as $opponent ) {
+																?>
+																<div class="match__row">
+																	<div class="match__row-title">
+																		<div class="match__row-title-header">
+																			<?php echo esc_html( $match->teams[ $opponent ]->title ); ?>
+																		</div>
+																		<div class="match__row-title-value">
+																			<?php
+																			$approval_captain = $opponent . '_captain';
+																			if ( isset( $match->$approval_captain ) ) {
+																				?>
+																				<span class="match__row-title-value-content">
+																					<span class="nav-link__value"><?php echo esc_html( $racketmanager->get_player_name( $match->$approval_captain ) ); ?></span>
+																				</span>
+																				<?php
+																			} else {
+																				if ( 'admin' !== $user_type && ( $opponent === $user_team || 'both' === $user_team ) ) {
+																					?>
+																					<div class="approval-check">
+																						<div class="form-check">
+																							<input type="hidden" name="result_<?php echo esc_attr( $opponent ); ?>" />
+																							<input class="form-check-input" type="radio" name="resultConfirm" id="resultConfirm" value="confirm" required />
+																							<label class="form-check-label"><?php esc_html_e( 'Confirm', 'racketmanager' ); ?></label>
+																						</div>
+																						<div class="form-check">
+																							<input class="form-check-input" type="radio" name="resultConfirm" id="resultChallenge" value="challenge" required />
+																							<label class="form-check-label"><?php esc_html_e( 'Challenge', 'racketmanager' ); ?></label>
+																						</div>
+																					</div>
+																					<?php
+																				}
+																				?>
+																				<?php
+																			}
+																			?>
+																		</div>
+																	</div>
+																	<?php
+																	if ( isset( $match->$approval_captain ) ) {
+																		if ( $match_update && 'admin' !== $user_type ) {
+																			?>
+																			<div class="match-comments form-floating">
+																				<textarea class="form-control result-comments" placeholder="Leave a comment here" name="matchComments[result]" id="matchComments"><?php echo esc_html( $match->comments['result'] ); ?></textarea>
+																				<label for="matchComments"><?php esc_html_e( 'Comments', 'racketmanager' ); ?></label>
+																			</div>
+																			<?php
+																		} elseif ( ! empty( $match->comments ) ) {
+																			?>
+																			<div class="match-comments">
+																				<span class="nav-link__value match-comments" title="<?php esc_attr_e( 'Match comments', 'racketmanager' ); ?>"><?php echo esc_html( $match->comments[ $opponent ] ); ?></span>
+																			</div>
+																			<?php
+																		}
+																		?>
+																		<?php
+																	} elseif ( 'admin' !== $user_type && ( $opponent === $user_team || 'both' === $user_team ) ) {
+																		?>
+																		<div class="match-comments form-floating">
+																			<textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmComments" id="resultConfirmComments"></textarea>
+																			<label for="resultConfirmComments"><?php esc_html_e( 'Challenge comments', 'racketmanager' ); ?></label>
+																		</div>
+																		<?php
+																	}
+																	?>
+																</div>
+																<?php
+															}
+															?>
+														</div>
+													</div>
+												</div>
+											</div>
+											<?php
 										}
 										?>
 										<ul class="match-group">
@@ -310,7 +403,30 @@ if ( $match->is_walkover ) {
 																								</select>
 																								<?php
 																							} elseif ( ! empty( $rubber->players[ $opponent ][ $player_number ] ) ) {
-																								echo esc_html( $rubber->players[ $opponent ][ $player_number ]->fullname );
+																								$player_detail = $rubber->players[ $opponent ][ $player_number ];
+																								if ( empty( $player_detail->system_record ) ) {
+																									?>
+																									<a href="/<?php echo esc_attr( $match->league->event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $match->league->event->name ) ); ?>/<?php echo esc_attr( $match->season ); ?>/player/<?php echo esc_attr( seo_url( $player_detail->fullname ) ); ?>/">
+																									<?php
+																								}
+																								?>
+																								<span class="<?php echo esc_attr( $player_detail->class ); ?>"
+																								<?php
+																								if ( ! empty( $player_detail->class ) ) {
+																									?>
+																									data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="<?php echo esc_attr( $player_detail->description ); ?>"
+																									<?php
+																								}
+																								?>
+																								><?php echo esc_html( $player_detail->fullname ); ?></span>
+																								<?php
+																								if ( empty( $player_detail->system_record ) ) {
+																									?>
+																									</a>
+																									<?php
+																								}
+																								?>
+																								<?php
 																							}
 																							?>
 																						</span>
@@ -423,7 +539,7 @@ if ( $match->is_walkover ) {
 																					?>
 																					<input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points match-points__cell-input <?php echo esc_html( $winner_class ); ?>" type="text"
 																						<?php
-																						if ( ! $updates_allowed ) {
+																						if ( ! $match_editable ) {
 																							echo esc_html( ' readonly' );
 																						}
 																						?>
@@ -456,7 +572,7 @@ if ( $match->is_walkover ) {
 																			<?php ++$tabindex; ?>
 																			<input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points match-points__cell-input" type="number" min="0"
 																				<?php
-																				if ( ! $updates_allowed ) {
+																				if ( ! $match_editable ) {
 																					echo esc_html( ' readonly' );
 																				}
 																				?>
@@ -492,101 +608,6 @@ if ( $match->is_walkover ) {
 											}
 											?>
 										</ul>
-										<?php
-										if ( ! empty( $match->home_captain ) || ! empty( $match->away_captain ) ) {
-											?>
-											<div class="mt-3" id="approvals">
-												<div class="match <?php echo esc_attr( $match_editable ); ?>">
-													<div class="match__header">
-														<ul class="match__header-title">
-															<li class="match__header-title-item">
-																<span class="nav-link__value"><?php esc_html_e( 'Approvals', 'racketmanager' ); ?></span>
-															</li>
-														</ul>
-													</div>
-													<div class="match__body">
-														<div class="match__row-wrapper">
-															<?php
-															foreach ( $opponents as $opponent ) {
-																?>
-																<div class="match__row">
-																	<div class="match__row-title">
-																		<div class="match__row-title-header">
-																			<?php echo esc_html( $match->teams[ $opponent ]->title ); ?>
-																		</div>
-																		<div class="match__row-title-value">
-																			<?php
-																			$approval_captain = $opponent . '_captain';
-																			if ( isset( $match->$approval_captain ) ) {
-																				?>
-																				<span class="match__row-title-value-content">
-																					<span class="nav-link__value"><?php echo esc_html( $racketmanager->get_player_name( $match->$approval_captain ) ); ?></span>
-																				</span>
-																				<?php
-																			} else {
-																				if ( 'admin' !== $user_type && ( $opponent === $user_team || 'both' === $user_team ) ) {
-																					?>
-																					<div class="approval-check">
-																						<div class="form-check">
-																							<input type="hidden" name="result_<?php echo esc_attr( $opponent ); ?>" />
-																							<input class="form-check-input" type="radio" name="resultConfirm" id="resultConfirm" value="confirm" required />
-																							<label class="form-check-label"><?php esc_html_e( 'Confirm', 'racketmanager' ); ?></label>
-																						</div>
-																						<div class="form-check">
-																							<input class="form-check-input" type="radio" name="resultConfirm" id="resultChallenge" value="challenge" required />
-																							<label class="form-check-label"><?php esc_html_e( 'Challenge', 'racketmanager' ); ?></label>
-																						</div>
-																					</div>
-																					<?php
-																				}
-																				?>
-																				<?php
-																			}
-																			?>
-																		</div>
-																	</div>
-																	<?php
-																	if ( isset( $match->$approval_captain ) && ! empty( $match->comments ) ) {
-																		?>
-																		<div class="match-comments">
-																			<span class="nav-link__value match-comments" title="<?php esc_attr_e( 'Match comments', 'racketmanager' ); ?>"><?php echo esc_html( $match->comments[ $opponent ] ); ?></span>
-																		</div>
-																		<?php
-																	} elseif ( 'admin' !== $user_type && ( $opponent === $user_team || 'both' === $user_team ) ) {
-																		?>
-																		<div class="match-comments form-floating">
-																			<textarea class="form-control result-comments" placeholder="Leave a comment here" name="resultConfirmComments" id="resultConfirmComments"></textarea>
-																			<label for="resultConfirmComments"><?php esc_html_e( 'Challenge comments', 'racketmanager' ); ?></label>
-																		</div>
-																		<?php
-																	}
-																	?>
-																</div>
-																<?php
-															}
-															?>
-														</div>
-													</div>
-												</div>
-											</div>
-											<?php
-										} else {
-											if ( $is_edit_mode ) {
-												?>
-												<div class="row mt-3 mb-3">
-													<div>
-														<div class="form-floating">
-															<textarea class="form-control result-comments" tabindex="490" placeholder="Leave a comment here" name="matchComments[result]" id="matchComments"><?php echo esc_html( $match->comments['result'] ); ?></textarea>
-															<label for="matchComments"><?php esc_html_e( 'Match Comments', 'racketmanager' ); ?></label>
-														</div>
-													</div>
-												</div>
-												<?php
-											}
-											?>
-											<?php
-										}
-										?>
 									</form>
 								</div>
 							</div>

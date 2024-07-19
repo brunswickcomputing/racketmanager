@@ -580,8 +580,8 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			$match_id = get_query_var( 'match_id' );
 		}
 		if ( $match_id ) {
-			$match                 = get_match( $match_id );
-			$user_can_update_array = $racketmanager->is_match_update_allowed( $match->teams['home'], $match->teams['away'], $match->league->event->competition->type, $match->confirmed );
+			$match             = get_match( $match_id );
+			$is_update_allowed = $match->is_update_allowed();
 			if ( empty( $template ) && $this->check_template( 'match-tournament' . $match->league->sport ) ) {
 				$filename = 'match-tournament' . $match->league->sport;
 			} elseif ( $this->check_template( 'match-tournament' . $template . '-' . $match->league->sport ) ) {
@@ -593,9 +593,9 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			return $this->load_template(
 				$filename,
 				array(
-					'tournament'            => $tournament,
-					'match'                 => $match,
-					'user_can_update_array' => $user_can_update_array,
+					'tournament'        => $tournament,
+					'match'             => $match,
+					'is_update_allowed' => $is_update_allowed,
 				)
 			);
 		}

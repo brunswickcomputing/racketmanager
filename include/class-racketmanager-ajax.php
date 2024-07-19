@@ -290,20 +290,20 @@ class Racketmanager_Ajax extends RacketManager {
 			$err_field[] = '';
 			$err_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
 		} elseif ( isset( $_POST['updateRubber'] ) ) {
-			$updated_rubbers       = '';
-			$match_id              = isset( $_POST['current_match_id'] ) ? intval( $_POST['current_match_id'] ) : 0;
-			$match                 = get_match( $match_id );
-			$home_points           = array();
-			$away_points           = array();
-			$rm_options            = $racketmanager->get_options();
-			$match_confirmed       = '';
-			$user_can_update_array = $racketmanager->is_match_update_allowed( $match->teams['home'], $match->teams['away'], $match->league->event->competition->type, $match->confirmed );
-			$user_can_update       = $user_can_update_array[0];
-			$user_type             = $user_can_update_array[1];
-			$user_team             = $user_can_update_array[2];
-			$result_confirmation   = $rm_options[ $match->league->event->competition->type ]['resultConfirmation'];
-			$match_comments        = isset( $_POST['matchComments'] ) ? wp_unslash( $_POST['matchComments'] ) : ''; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			$confirm_comments      = isset( $_POST['resultConfirmComments'] ) ? sanitize_text_field( wp_unslash( $_POST['resultConfirmComments'] ) ) : '';
+			$updated_rubbers     = '';
+			$match_id            = isset( $_POST['current_match_id'] ) ? intval( $_POST['current_match_id'] ) : 0;
+			$match               = get_match( $match_id );
+			$home_points         = array();
+			$away_points         = array();
+			$rm_options          = $racketmanager->get_options();
+			$match_confirmed     = '';
+			$is_update_allowed   = $match->is_update_allowed();
+			$user_can_update     = $is_update_allowed->user_can_update;
+			$user_type           = $is_update_allowed->user_type;
+			$user_team           = $is_update_allowed->user_team;
+			$result_confirmation = $rm_options[ $match->league->event->competition->type ]['resultConfirmation'];
+			$match_comments      = isset( $_POST['matchComments'] ) ? wp_unslash( $_POST['matchComments'] ) : ''; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$confirm_comments    = isset( $_POST['resultConfirmComments'] ) ? sanitize_text_field( wp_unslash( $_POST['resultConfirmComments'] ) ) : '';
 			if ( 'results' === $_POST['updateRubber'] ) {
 				$user_can_update = true;
 				if ( $user_can_update ) {

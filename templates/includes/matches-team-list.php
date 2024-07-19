@@ -30,18 +30,16 @@ if ( ! isset( $by_date ) ) {
 }
 $selected_match = false;
 foreach ( $matches as $match ) {
-	$user_can_update_array = $racketmanager->is_match_update_allowed( $match->teams['home'], $match->teams['away'], $match->league->event->competition->type, $match->confirmed );
-	$user_can_update       = $user_can_update_array[0];
-	$match_link            = $match->link;
-	$match_status_class    = null;
-	$match_status_text     = null;
-	$score_class           = null;
-	$match_pending         = false;
-	$highlight_match       = false;
-	$selected_match        = false;
-	if ( empty( $match->winner_id ) ) {
-		$score_class   = 'is-not-played';
-		$match_pending = true;
+	$is_update_allowed  = $match->is_update_allowed();
+	$user_can_update    = $is_update_allowed->user_can_update;
+	$match_link         = $match->link;
+	$match_status_class = null;
+	$match_status_text  = null;
+	$score_class        = null;
+	$highlight_match    = false;
+	$selected_match     = false;
+	if ( $match->is_pending ) {
+		$score_class = 'is-not-played';
 	} elseif ( ! empty( $current_club ) || ! empty( $current_team ) ) {
 		$opponents = array( 'home', 'away' );
 		foreach ( $opponents as $opponent ) {

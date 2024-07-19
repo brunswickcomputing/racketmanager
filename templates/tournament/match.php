@@ -27,8 +27,8 @@ if ( isset( $match->teams['home'] ) && isset( $match->teams['away'] ) ) {
 	} else {
 		$match_link = '/tournament/' . seo_url( $tournament->name ) . '/match/' . seo_url( $match->league->title ) . '/' . seo_url( $match->teams['home']->title ) . '-vs-' . seo_url( $match->teams['away']->title ) . '/' . $match->id . '/';
 	}
-	$user_can_update_array = $racketmanager->is_match_update_allowed( $match->teams['home'], $match->teams['away'], $match->league->event->competition->type, $match->confirmed );
-	$user_can_update       = $user_can_update_array[0];
+	$is_update_allowed = $match->is_update_allowed();
+	$user_can_update   = $is_update_allowed->user_can_update;
 } else {
 	$user_can_update = false;
 }

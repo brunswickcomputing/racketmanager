@@ -2881,10 +2881,10 @@ class RacketManager {
 			$match->round = $match->final_round;
 			$match->type  = 'tournament';
 		}
-		$user_can_update_array               = $this->is_match_update_allowed( $match->teams['home'], $match->teams['away'], $match->league->event->competition->type, $match->confirmed );
-		$match_args['match']                 = $match;
-		$match_args['user_can_update_array'] = $user_can_update_array;
-		$match_args['is_edit_mode']          = $is_edit_mode;
+		$is_update_allowed               = $match->is_update_allowed();
+		$match_args['match']             = $match;
+		$match_args['is_update_allowed'] = $is_update_allowed;
+		$match_args['is_edit_mode']      = $is_edit_mode;
 		if ( $player ) {
 			$match_args['match_player'] = $player;
 		}

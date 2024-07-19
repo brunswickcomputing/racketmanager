@@ -7,8 +7,8 @@
 
 namespace Racketmanager;
 
-$user_can_update = $user_can_update_array[0];
-$user_message    = $user_can_update_array[3];
+$user_can_update = $is_update_allowed->user_can_update;
+$user_message    = $is_update_allowed->message;
 $tabbase         = 0;
 ?>
 	<div id="matchrubbers">

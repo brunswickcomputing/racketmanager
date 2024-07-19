@@ -8,10 +8,7 @@
 namespace Racketmanager;
 
 global $wp;
-$user_can_update = $user_can_update_array[0];
-$user_type       = $user_can_update_array[1];
-$user_team       = $user_can_update_array[2];
-$user_message    = $user_can_update_array[3];
+$user_can_update = $is_update_allowed->user_can_update;
 ?>
 	<div id="match-header" class="team-match-header module module--dark module--card">
 		<?php echo $racketmanager->show_match_header( $match ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>

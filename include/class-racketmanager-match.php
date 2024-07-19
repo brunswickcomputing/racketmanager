@@ -347,6 +347,18 @@ final class Racketmanager_Match {
 	 */
 	public $loser_id_tie;
 	/**
+	 * Home captain variable
+	 *
+	 * @var int
+	 */
+	public $home_captain;
+	/**
+	 * Away captain variable
+	 *
+	 * @var int
+	 */
+	public $away_captain;
+	/**
 	 * Pending status variable
 	 *
 	 * @var boolean
@@ -1960,5 +1972,216 @@ final class Racketmanager_Match {
 		$email_message                 = racketmanager_match_date_change_notification( $this->id, $message_args );
 		wp_mail( $email_to, $subject, $email_message, $headers );
 		return true;
+	}
+	/**
+	 * Check whether match update allowed function
+	 *
+	 * @return object
+	 */
+	public function is_update_allowed() {
+		global $racketmanager;
+		$home_team           = $this->teams['home'];
+		$away_team           = $this->teams['away'];
+		$competition_type    = $this->league->event->competition->type;
+		$result_status       = $this->confirmed;
+		$user_can_update     = false;
+		$user_type           = '';
+		$user_team           = '';
+		$message             = '';
+		$match_approval_mode = false;
+		$match_update        = false;
+		if ( is_user_logged_in() ) {
+			$userid = get_current_user_id();
+			if ( $userid ) {
+				if ( current_user_can( 'manage_racketmanager' ) ) {
+					$user_type       = 'admin';
+					$user_can_update = true;
+					if ( 'P' === $result_status ) {
+						$match_update = true;
+					}
+				} elseif ( empty( $home_team ) || empty( $away_team ) || empty( $home_team->affiliatedclub ) || empty( $away_team->affiliatedclub ) ) {
+					$message = 'notTeamSet';
+				} else {
+					if ( isset( $home_team->club->matchsecretary ) && intval( $home_team->club->matchsecretary ) === $userid ) {
+						$user_type = 'matchsecretary';
+						$user_team = 'home';
+					} elseif ( isset( $away_team->club->matchsecretary ) && intval( $away_team->club->matchsecretary ) === $userid ) {
+						$user_type = 'matchsecretary';
+						$user_team = 'away';
+					} elseif ( isset( $home_team->captain_id ) && intval( $home_team->captain_id ) === $userid ) {
+						$user_type = 'captain';
+						$user_team = 'home';
+					} elseif ( isset( $away_team->captain_id ) && intval( $away_team->captain_id ) === $userid ) {
+						$user_type = 'captain';
+						$user_team = 'away';
+					} else {
+						$message = 'notCaptain';
+					}
+					$options          = $racketmanager->get_options();
+					$match_capability = $options[ $competition_type ]['matchCapability'];
+					$result_entry     = $options[ $competition_type ]['resultEntry'];
+					if ( 'none' === $match_capability ) {
+						$message = 'noMatchCapability';
+					} elseif ( 'captain' === $match_capability ) {
+						if ( 'captain' === $user_type || 'matchsecretary' === $user_type ) {
+							if ( 'home' === $user_team ) {
+								if ( 'P' === $result_status || $this->is_pending ) {
+									$user_can_update = true;
+									$match_update    = true;
+								}
+							} elseif ( 'away' === $user_team && 'home' === $result_entry ) {
+								if ( 'P' === $result_status ) {
+									$user_can_update     = true;
+									$match_approval_mode = true;
+								}
+							} elseif ( 'either' === $result_entry ) {
+								$user_can_update = true;
+							}
+						}
+					} elseif ( 'player' === $match_capability ) {
+						if ( 'captain' === $user_type || 'matchsecretary' === $user_type ) {
+							if ( 'home' === $user_team ) {
+								if ( 'P' === $result_status ) {
+									$user_can_update = true;
+									if ( 'home' === $user_team || 'both' === $user_team ) {
+										if ( empty( $this->away_captain ) ) {
+											$match_update = true;
+										} elseif ( empty( $this->home_captain ) ) {
+											$match_approval_mode = true;
+										}
+									} elseif ( 'away' === $user_team ) {
+										if ( empty( $this->home_captain ) ) {
+											$match_update = true;
+										} elseif ( empty( $this->away_captain ) ) {
+											$match_approval_mode = true;
+										}
+									}
+								} elseif ( $this->is_pending ) {
+									$user_can_update = true;
+								}
+							} elseif ( 'away' === $user_team && 'home' === $result_entry ) {
+								if ( 'P' === $result_status ) {
+									$user_can_update = true;
+									if ( 'home' === $user_team || 'both' === $user_team ) {
+										if ( empty( $this->away_captain ) ) {
+											$match_update = true;
+										} elseif ( empty( $this->home_captain ) ) {
+											$match_approval_mode = true;
+										}
+									} elseif ( 'away' === $user_team ) {
+										if ( empty( $this->home_captain ) ) {
+											$match_update = true;
+										} elseif ( empty( $this->away_captain ) ) {
+											$match_approval_mode = true;
+										}
+									}
+								} elseif ( $this->is_pending ) {
+									$user_can_update = true;
+								}
+							} elseif ( 'either' === $result_entry ) {
+								if ( 'P' === $result_status ) {
+									$user_can_update = true;
+									if ( 'home' === $user_team || 'both' === $user_team ) {
+										if ( empty( $this->away_captain ) ) {
+											$match_update = true;
+										} elseif ( empty( $this->home_captain ) ) {
+											$match_approval_mode = true;
+										}
+									} elseif ( 'away' === $user_team ) {
+										if ( empty( $this->home_captain ) ) {
+											$match_update = true;
+										} elseif ( empty( $this->away_captain ) ) {
+											$match_approval_mode = true;
+										}
+									}
+								} elseif ( $this->is_pending ) {
+									$user_can_update = true;
+								}
+							}
+						} else {
+							$club             = get_club( $home_team->affiliatedclub );
+							$home_club_player = $club->get_players(
+								array(
+									'count'  => true,
+									'player' => $userid,
+									'active' => true,
+								)
+							);
+							if ( $home_club_player ) {
+								$user_type = 'player';
+								$user_team = 'home';
+							}
+							$club             = get_club( $away_team->affiliatedclub );
+							$away_club_player = $club->get_players(
+								array(
+									'count'  => true,
+									'player' => $userid,
+									'active' => true,
+								)
+							);
+							if ( $away_club_player ) {
+								$user_type = 'player';
+								if ( 'home' === $user_team ) {
+									$user_team = 'both';
+								} else {
+									$user_team = 'away';
+								}
+							}
+							if ( $user_team ) {
+								if ( 'home' === $result_entry ) {
+									if ( $this->is_pending ) {
+										if ( 'home' === $user_team || 'both' === $user_team ) {
+											$user_can_update     = true;
+											$match_approval_mode = false;
+										}
+									} elseif ( 'P' === $result_status ) {
+										if ( 'away' === $user_team || 'both' === $user_team ) {
+											$user_can_update     = true;
+											$match_approval_mode = true;
+										}
+									}
+								} elseif ( 'either' === $result_entry ) {
+									if ( $user_team ) {
+										if ( 'P' === $result_status ) {
+											if ( 'home' === $user_team || 'both' === $user_team ) {
+												if ( empty( $this->home_captain ) ) {
+													$user_can_update     = true;
+													$match_approval_mode = true;
+												} else {
+													$user_can_update = false;
+												}
+											} elseif ( 'away' === $user_team ) {
+												if ( empty( $this->away_captain ) ) {
+													$user_can_update     = true;
+													$match_approval_mode = true;
+												} else {
+													$user_can_update = false;
+												}
+											}
+										} elseif ( $this->is_pending ) {
+											$user_can_update = true;
+										}
+									}
+								}
+							} else {
+								$message = 'notTeamPlayer';
+							}
+						}
+					}
+				}
+			} else {
+				$message = 'notLoggedIn';
+			}
+		} else {
+			$message = 'notLoggedIn';
+		}
+		$return                      = new \stdClass();
+		$return->user_can_update     = $user_can_update;
+		$return->user_type           = $user_type;
+		$return->user_team           = $user_team;
+		$return->message             = $message;
+		$return->match_approval_mode = $match_approval_mode;
+		$return->match_update        = $match_update;
+		return $return;
 	}
 }

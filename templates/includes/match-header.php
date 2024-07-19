@@ -7,33 +7,34 @@
 
 namespace Racketmanager;
 
-if ( empty( $match->winner_id ) ) {
-	$score_class   = 'is-not-played';
-	$match_pending = true;
+if ( $match->is_pending ) {
+	$score_class = 'is-not-played';
 } else {
-	$score_class   = '';
-	$match_pending = false;
+	$score_class = '';
 }
-$edit_mode             = false;
-$user_can_update_array = $racketmanager->is_match_update_allowed( $match->teams['home'], $match->teams['away'], $match->league->event->competition->type, $match->confirmed );
-$user_can_update       = $user_can_update_array[0];
-$user_type             = $user_can_update_array[1];
-$user_team             = $user_can_update_array[2];
-$allow_schedule_match  = false;
-$allow_switch_match    = false;
-$allow_amend_score     = false;
-if ( $match_pending ) {
+if ( empty( $edit_mode ) || 'false' === $edit_mode ) {
+	$edit_mode = false;
+} else {
+	$edit_mode = true;
+}
+$is_update_allowed    = $match->is_update_allowed();
+$user_can_update      = $is_update_allowed->user_can_update;
+$user_type            = $is_update_allowed->user_type;
+$user_team            = $is_update_allowed->user_team;
+$match_approval_mode  = $is_update_allowed->match_approval_mode;
+$allow_schedule_match = false;
+$allow_switch_match   = false;
+$allow_amend_score    = false;
+if ( $match->is_pending ) {
 	if ( $user_can_update ) {
 		if ( 'admin' === $user_type || 'matchsecretary' === $user_type || 'captain' === $user_type ) {
 			if ( 'admin' === $user_type || 'both' === $user_team || 'home' === $user_team ) {
 				$allow_schedule_match = true;
-				$edit_mode            = true;
 			}
 		}
 		if ( 'admin' === $user_type || ( 'matchsecretary' === $user_type && ( 'both' === $user_team || 'home' === $user_team ) ) ) {
 			if ( 'false' === $match->league->event->seasons[ $match->season ]['homeAway'] ) {
 				$allow_switch_match = true;
-				$edit_mode          = true;
 			}
 		}
 	}
@@ -42,13 +43,11 @@ if ( $match_pending ) {
 		if ( 'admin' === $user_type || 'matchsecretary' === $user_type || 'captain' === $user_type ) {
 			if ( 'admin' === $user_type || 'both' === $user_team || 'home' === $user_team ) {
 				$allow_amend_score = true;
-				$edit_mode         = true;
 			}
 		}
 	}
 } elseif ( 'admin' === $user_type ) {
 	$allow_amend_score = true;
-	$edit_mode         = true;
 }
 ?>
 <div class="module__content">
@@ -220,7 +219,7 @@ if ( $match_pending ) {
 			</div>
 			<div class="score score--large <?php echo esc_attr( $score_class ); ?>">
 				<?php
-				if ( $match_pending ) {
+				if ( $match->is_pending ) {
 					?>
 					<time datetime="<?php echo esc_attr( $match->date ); ?>"><?php the_match_time(); ?></time>
 					<?php
@@ -270,14 +269,14 @@ if ( $match_pending ) {
 			</div>
 		</div>
 		<?php
-		if ( ! $match_pending ) {
+		if ( ! $match->is_pending ) {
 			?>
 			<div class="text-center">
 				<?php esc_html_e( 'Start', 'racketmanager' ); ?>: <time datetime="<?php echo esc_attr( $match->date ); ?>"><?php the_match_time(); ?></time>
 			</div>
 			<?php
 		}
-		if ( $edit_mode ) {
+		if ( $edit_mode && $user_can_update && ! $match_approval_mode ) {
 			?>
 			<div class="text-center mt-2">
 				<a href="" class="nav__link btn btn-outline" id="matchStatusButton" onclick="Racketmanager.matchStatusModal(event, '<?php echo esc_attr( $match->id ); ?>')">

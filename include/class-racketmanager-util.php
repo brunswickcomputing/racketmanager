@@ -650,4 +650,23 @@ class Racketmanager_Util {
 			)
 		);
 	}
+	/**
+	 * Get message type function
+	 *
+	 * @param int $status status.
+	 * @return string status text
+	 */
+	public static function get_message_type( $status ) {
+		switch ( $status ) {
+			case '0':
+				$status_value = __( 'read', 'racketmanager' );
+				break;
+			case '1':
+				$status_value = __( 'unread', 'racketmanager' );
+				break;
+			default:
+				$status_value = __( 'Unknown', 'racketmanager' );
+		}
+		return $status_value;
+	}
 }

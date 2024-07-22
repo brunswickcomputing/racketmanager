@@ -524,14 +524,14 @@ final class Racketmanager_Championship extends RacketManager {
 	 */
 	private function set_teams( $match, $home, $away ) {
 		$match = get_match( $match );
-		$match->set_teams( $home, $away );
-		if ( ! empty( $home ) && is_numeric( $home ) && ! empty( $away ) && is_numeric( $away ) ) {
+		$match = $match->set_teams( $home, $away );
+		if ( is_numeric( $match->home_team ) && is_numeric( $match->away_team ) ) {
 			$match->notify_next_match_teams();
 		}
 		if ( ! empty( $match->linked_match ) ) {
 			$linked_match = get_match( $match->linked_match );
-			$linked_match->set_teams( $home, $away );
-			if ( is_numeric( $home ) && is_numeric( $away ) ) {
+			$linked_match = $linked_match->set_teams( $home, $away );
+			if ( is_numeric( $linked_match->home_team ) && is_numeric( $linked_match->away_team ) ) {
 				$linked_match->notify_next_match_teams();
 			}
 		}

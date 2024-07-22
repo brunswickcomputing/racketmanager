@@ -1430,7 +1430,7 @@ final class Racketmanager_Match {
 	 *
 	 * @param int $home home team id.
 	 * @param int $away away team id.
-	 * @return void
+	 * @return object
 	 */
 	public function set_teams( $home, $away ) {
 		global $wpdb;
@@ -1458,6 +1458,7 @@ final class Racketmanager_Match {
 		if ( ( $this->league->event->competition->is_league || isset( $this->host ) ) && is_numeric( $this->home_team ) && is_numeric( $this->away_team ) ) {
 			$this->set_date_and_location();
 		}
+		return $this;
 	}
 	/**
 	 * Set date and location function

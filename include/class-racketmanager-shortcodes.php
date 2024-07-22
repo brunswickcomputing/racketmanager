@@ -957,9 +957,20 @@ class RacketManager_Shortcodes {
 		if ( ! is_user_logged_in() ) {
 			return esc_html__( 'You must be logged in to view messages', 'racketmanager' );
 		}
-		$template = $args['template'];
-		$user     = get_player( get_current_user_id() );
-		$messages = $user->get_messages( array() );
+		$messages       = array();
+		$template       = $args['template'];
+		$user           = get_player( get_current_user_id() );
+		$messages_total = $user->get_messages( array( 'count' => true ) );
+		if ( $messages_total ) {
+			$messages['total']  = $messages_total;
+			$messages['detail'] = $user->get_messages( array() );
+			$messages['unread'] = $user->get_messages(
+				array(
+					'count'  => true,
+					'status' => 'unread',
+				)
+			);
+		}
 		$filename = ( ! empty( $template ) ) ? 'messages-' . $template : 'messages';
 
 		return $this->load_template( $filename, array( 'messages' => $messages ), 'account' );

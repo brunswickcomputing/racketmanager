@@ -38,16 +38,14 @@ if ( $match->is_pending ) {
 			}
 		}
 	}
-} elseif ( 'P' === $match->confirmed ) {
-	if ( $user_can_update ) {
-		if ( 'admin' === $user_type || 'matchsecretary' === $user_type || 'captain' === $user_type ) {
-			if ( 'admin' === $user_type || 'both' === $user_team || 'home' === $user_team ) {
-				$allow_amend_score = true;
-			}
-		}
-	}
 } elseif ( 'admin' === $user_type ) {
 	$allow_amend_score = true;
+} elseif ( 'P' === $match->confirmed ) {
+	if ( $user_can_update ) {
+		if ( ! $match_approval_mode ) {
+			$allow_amend_score = true;
+		}
+	}
 }
 ?>
 <div class="module__content">

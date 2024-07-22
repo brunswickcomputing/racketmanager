@@ -1185,7 +1185,7 @@ final class Racketmanager_Match {
 		}
 	}
 	/**
-	 * Update match status
+	 * Update match result status
 	 *
 	 * @param string $match_confirmed match confirmed status.
 	 * @param string $comments match comments.
@@ -1193,7 +1193,7 @@ final class Racketmanager_Match {
 	 * @param string $user_team team of user.
 	 * @param string $actioned_by actioned by team.
 	 */
-	public function update_match_status( $match_confirmed, $comments, $confirm_comments, $user_team, $actioned_by ) {
+	public function update_match_result_status( $match_confirmed, $comments, $confirm_comments, $user_team, $actioned_by ) {
 		global $wpdb;
 		$userid = get_current_user_id();
 		if ( ! empty( $actioned_by ) && 'home' === $actioned_by ) {

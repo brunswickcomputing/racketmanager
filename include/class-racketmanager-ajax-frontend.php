@@ -56,6 +56,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_nopriv_racketmanager_get_message', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_racketmanager_delete_message', array( &$this, 'delete_message' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_delete_message', array( &$this, 'logged_out' ) );
+		add_action( 'wp_ajax_racketmanager_delete_messages', array( &$this, 'delete_messages' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_deletes_message', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_racketmanager_match_option', array( &$this, 'match_option' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_match_option', array( &$this, 'logged_out_modal' ) );
 		add_action( 'wp_ajax_racketmanager_set_match_date', array( &$this, 'set_match_date' ) );
@@ -1543,7 +1545,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			}
 		}
 		if ( $valid ) {
-			wp_send_json_success( $output );
+			$return           = array();
+			$return['output'] = $output;
+			$return['status'] = $message_dtl->status;
+			wp_send_json_success( $return );
 		} else {
 			wp_send_json_error( $message, '500' );
 		}
@@ -1601,6 +1606,75 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$return            = array();
 			$return['output']  = $output;
 			$return['success'] = $success;
+			wp_send_json_success( $return );
+		} else {
+			wp_send_json_error( $message, '500' );
+		}
+	}
+	/**
+	 * Delete messages
+	 */
+	public function delete_messages() {
+		$valid   = true;
+		$message = null;
+		if ( isset( $_POST['racketmanager_nonce'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_delete-messages' ) ) {
+				$valid   = false;
+				$message = __( 'Security token invalid', 'racketmanager' );
+			}
+		} else {
+			$valid   = false;
+			$message = __( 'No security token found in request', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$message_type = isset( $_POST['message_type'] ) ? sanitize_text_field( wp_unslash( $_POST['message_type'] ) ) : null;
+			if ( ! isset( $message_type ) ) {
+				$valid   = false;
+				$message = __( 'You must select the type of messages to delete', 'racketmanager' );
+			} else {
+				$message_type_name = Racketmanager_Util::get_message_type( $message_type );
+				$userid            = get_current_user_id();
+				if ( $userid ) {
+					$user = get_player( $userid );
+					if ( $user ) {
+						$success = $user->delete_messages( $message_type );
+						if ( $success ) {
+							$alert_class = 'success';
+							$alert_text  = __( 'Messages deleted', 'racketmanager' );
+						} elseif ( 0 === $success ) {
+							$alert_class = 'warning';
+							$alert_text  = __( 'No messages to delete', 'racketmanager' );
+						} else {
+							$alert_class = 'danger';
+							$alert_text  = __( 'Unable to delete messages', 'racketmanager' );
+						}
+						ob_start();
+						?>
+						<div class="alert_rm alert--<?php echo esc_attr( $alert_class ); ?>">
+							<div class="alert__body">
+								<div class="alert__body-inner">
+									<span><?php echo esc_html( $alert_text ); ?></span>
+								</div>
+							</div>
+						</div>
+						<?php
+						$output = ob_get_contents();
+						ob_end_clean();
+					} else {
+						$valid   = false;
+						$message = __( 'User not found', 'racketmanager' );
+					}
+				} else {
+					$valid   = false;
+					$message = __( 'User not found', 'racketmanager' );
+				}
+			}
+		}
+		if ( $valid ) {
+			$return            = array();
+			$return['output']  = $output;
+			$return['success'] = $success;
+			$return['type']    = $message_type_name;
 			wp_send_json_success( $return );
 		} else {
 			wp_send_json_error( $message, '500' );

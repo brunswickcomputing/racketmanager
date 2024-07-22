@@ -719,4 +719,18 @@ final class Racketmanager_Player {
 		}
 		return $messages;
 	}
+	/**
+	 * Delete messages function
+	 *
+	 * @param string $type type of messages to delete.
+	 * @return int||error object
+	 */
+	public function delete_messages( $type ) {
+		global $wpdb;
+		return $wpdb->delete( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->racketmanager_messages,
+			array( 'status' => $type ),
+			array( '%s' ),
+		);
+	}
 }

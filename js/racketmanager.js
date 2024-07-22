@@ -1628,11 +1628,15 @@ Racketmanager.getMessage = function (event, message_id) {
 	event.preventDefault();
 	jQuery('.selected').removeClass('selected');
 	let message_ref = '#message-summary-' + message_id;
-	jQuery(message_ref).addClass('selected');
+	jQuery(message_ref).addClass('selected read');
 	jQuery(message_ref).removeClass('unread');
 	let notifyField = "#message_detail";
 	jQuery(notifyField).removeClass('message-error');
 	jQuery(notifyField).val("");
+	jQuery(notifyField).hide();
+	let errorField = '#messages-alert';
+	let errorResponse = '#messages-alert-response';
+	jQuery(errorResponse).hide();
 
 	jQuery.ajax({
 		url: ajax_var.url,
@@ -1644,19 +1648,29 @@ Racketmanager.getMessage = function (event, message_id) {
 		},
 		success: function (response) {
 			jQuery(notifyField).empty();
-			jQuery(notifyField).html(response.data);
+			jQuery(notifyField).html(response.data.output);
+			if (response.data.status == '1') {
+				let readMessagesRef = '#read-messages';
+				let readMessages = jQuery(readMessagesRef).html();
+				readMessages++;
+				jQuery(readMessagesRef).html(readMessages);
+				let unreadMessagesRef = '#unread-messages';
+				let unreadMessages = jQuery(unreadMessagesRef).html();
+				unreadMessages--;
+				jQuery(unreadMessagesRef).html(unreadMessages);
+			}
+			jQuery(notifyField).show();
 		},
 		error: function (response) {
 			if (response.responseJSON) {
 				let message = response.responseJSON.data;
-				jQuery(notifyField).html(message);
+				jQuery(errorField).html(message);
 			} else {
-				jQuery(notifyField).text(response.statusText);
+				jQuery(errorField).text(response.statusText);
 			}
-			jQuery(notifyField).addClass('message-error');
+			jQuery(errorResponse).show();
 		},
 		complete: function () {
-			jQuery(notifyField).show();
 		}
 	});
 };
@@ -1671,6 +1685,10 @@ Racketmanager.deleteMessage = function (event, message_id) {
 	let notifyField = "#message_detail";
 	jQuery(notifyField).removeClass('message-error');
 	jQuery(notifyField).val("");
+	jQuery(notifyField).hide();
+	let errorField = '#messages-alert';
+	let errorResponse = '#messages-alert-response';
+	jQuery(errorResponse).hide();
 
 	jQuery.ajax({
 		url: ajax_var.url,
@@ -1686,18 +1704,65 @@ Racketmanager.deleteMessage = function (event, message_id) {
 				jQuery(message_ref).hide();
 			}
 			jQuery(notifyField).html(response.data.output);
+			jQuery(notifyField).show();
 		},
 		error: function (response) {
 			if (response.responseJSON) {
 				let message = response.responseJSON.data;
-				jQuery(notifyField).html(message);
+				jQuery(errorField).html(message);
 			} else {
-				jQuery(notifyField).text(response.statusText);
+				jQuery(errorField).text(response.statusText);
 			}
-			jQuery(notifyField).addClass('message-error');
+			jQuery(errorResponse).show();
 		},
 		complete: function () {
+		}
+	});
+};
+Racketmanager.deleteMessages = function (event, link) {
+	event.preventDefault();
+	if ( confirm('Are you sure you want to delete these messages?') !== true ) {
+		return;
+	};
+	let formId = '#'.concat(link.form.id);
+	let form = jQuery(formId).serialize();
+	form += "&action=racketmanager_delete_messages";
+	jQuery('.selected').removeClass('selected');
+	let notifyField = "#message_detail";
+	let errorField = '#messages-alert';
+	let errorResponse = '#messages-alert-response';
+	jQuery(errorResponse).hide();
+	jQuery(notifyField).removeClass('message-error');
+	jQuery(notifyField).val("");
+	jQuery(notifyField).hide();
+
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: form,
+		success: function (response) {
+			jQuery(notifyField).empty();
+			if (response.data.success !== false) {
+				let messagesRef = '.' + response.data.type;
+				jQuery(messagesRef).hide();
+				let messageCountRef = '#' + response.data.type + '-messages';
+				let messageCount = jQuery(messageCountRef).html();
+				messageCount = 0;
+				jQuery(messageCountRef).html(messageCount);
+			}
+			jQuery(notifyField).html(response.data.output);
 			jQuery(notifyField).show();
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				let message = response.responseJSON.data;
+				jQuery(errorField).html(message);
+			} else {
+				jQuery(errorField).text(response.statusText);
+			}
+			jQuery(errorResponse).show();
+		},
+		complete: function () {
 		}
 	});
 };

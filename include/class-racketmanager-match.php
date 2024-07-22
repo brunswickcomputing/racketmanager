@@ -2148,6 +2148,8 @@ final class Racketmanager_Match {
 												if ( empty( $this->home_captain ) ) {
 													$user_can_update     = true;
 													$match_approval_mode = true;
+												} elseif ( intval( $this->home_captain ) === $userid ) {
+													$user_can_update = true;
 												} else {
 													$user_can_update = false;
 												}
@@ -2155,6 +2157,8 @@ final class Racketmanager_Match {
 												if ( empty( $this->away_captain ) ) {
 													$user_can_update     = true;
 													$match_approval_mode = true;
+												} elseif ( intval( $this->away_captain ) === $userid ) {
+													$user_can_update = true;
 												} else {
 													$user_can_update = false;
 												}

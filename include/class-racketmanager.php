@@ -270,7 +270,7 @@ class RacketManager {
 		if ( $match->league->event->competition->is_tournament ) {
 			$opponents = array( 'home', 'away' );
 			foreach ( $opponents as $opponent ) {
-				$players = $match->teams[ $opponent ]->players;
+				$players = isset( $match->teams[ $opponent ]->players ) ? $match->teams[ $opponent ]->players : array();
 				foreach ( $players as $player ) {
 					if ( ! empty( $player->email ) ) {
 						$email_to[] = $player->fullname . '<' . $player->email . '>';

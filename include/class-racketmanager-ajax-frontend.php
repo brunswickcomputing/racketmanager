@@ -1011,6 +1011,11 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					$option->desc   = __( 'Postponed', 'racketmanager' );
 					$select[]       = $option;
 				}
+				$option         = new \stdClass();
+				$option->value  = 'none';
+				$option->select = 'None';
+				$option->desc   = __( 'Reset', 'racketmanager' );
+				$select[]       = $option;
 				ob_start();
 				?>
 				<div class="modal-dialog modal-dialog-centered modal-lg">
@@ -1077,6 +1082,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 													<?php
 												}
 												?>
+												<li class="list__item">
+													<dt class=""><?php esc_html_e( 'Reset', 'racketmanager' ); ?></dt>
+													<dd class=""><?php esc_html_e( 'Clear match status', 'racketmanager' ); ?></dd>
+												</li>
 											</ul>
 										</div>
 									</div>
@@ -1154,6 +1163,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 							case 'postponed':
 								break;
 							case 'share':
+								break;
+							case 'none':
 								break;
 							default:
 								$valid       = false;
@@ -1469,6 +1480,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				break;
 			case 'abandoned':
 				$score_message = __( 'Abandoned', 'racketmanager' );
+				break;
+			case 'none':
 				break;
 			default:
 				break;

@@ -589,6 +589,9 @@ class Racketmanager_Util {
 			case 5:
 				$status_value = __( 'Rescheduled', 'racketmanager' );
 				break;
+			case 6:
+				$status_value = __( 'Abandoned', 'racketmanager' );
+				break;
 			default:
 				$status_value = __( 'Unknown', 'racketmanager' );
 		}

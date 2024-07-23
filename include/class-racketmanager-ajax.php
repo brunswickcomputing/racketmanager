@@ -761,17 +761,12 @@ class Racketmanager_Ajax extends RacketManager {
 						$rubber->custom      = $custom;
 						$rubber->status      = $status;
 						$rubber->update_result();
+						$rubber->check_players();
 						$match_confirmed = 'P';
-						$check_options   = $options['checks'];
-						$player_options  = $options['player'];
 						foreach ( $opponents as $opponent ) {
-							$team           = $match->teams[ $opponent ]->id;
-							$rubber_players = array();
 							foreach ( $player_numbers as $player_number ) {
-								$rubber_players[]                                        = $players[ $opponent ][ $player_number ];
 								$updated_rubbers[ $rubber_id ]['players'][ $opponent ][] = $players[ $opponent ][ $player_number ];
 							}
-							$this->check_team_players( $team, $rubber_players, $match, $check_options, $player_options, $rubber_id );
 						}
 						$updated_rubbers[ $rubber_id ]['sets']   = $sets;
 						$updated_rubbers[ $rubber_id ]['winner'] = $winner;
@@ -786,24 +781,6 @@ class Racketmanager_Ajax extends RacketManager {
 		array_push( $return, $error, $match_confirmed, $err_msg, $err_field, $updated_rubbers );
 		return $return;
 	}
-	/**
-	 * Check team players
-	 *
-	 * @param array  $team team to check.
-	 * @param array  $players players within team.
-	 * @param object $match match details.
-	 * @param array  $check_options check option details.
-	 * @param array  $player_options player option details.
-	 * @param int    $rubber_id rubber id.
-	 */
-	private function check_team_players( $team, $players, $match, $check_options, $player_options, $rubber_id ) {
-		foreach ( $players as $player_ref ) {
-			if ( ! empty( $player_ref ) ) {
-				$this->check_player_result( $match, $player_ref, $team, $check_options, $player_options, $rubber_id );
-			}
-		}
-	}
-
 	/**
 	 * Validate Match Score
 	 *
@@ -1226,169 +1203,5 @@ class Racketmanager_Ajax extends RacketManager {
 		}
 
 		return $match_confirmed;
-	}
-
-	/**
-	 * Update match results and automatically calculate score
-	 *
-	 * @param object $match match object.
-	 * @param int    $roster_id roster id.
-	 * @param int    $team team id.
-	 * @param array  $options options.
-	 * @param array  $player_options player options.
-	 * @param int    $rubber_id rubber id.
-	 * @return none
-	 */
-	public function check_player_result( $match, $roster_id, $team, $options, $player_options, $rubber_id ) {
-		global $wpdb, $racketmanager, $match;
-		$match  = get_match( $match->id );
-		$player = $racketmanager->get_club_player( $roster_id, $team );
-		if ( ! empty( $player->system_record ) ) {
-			if ( 'M' === $player->gender ) {
-				$gender = 'male';
-			} elseif ( 'F' === $player->gender ) {
-				$gender = 'female';
-			} else {
-				$gender = 'unknown';
-			}
-			if ( isset( $player_options['unregistered'][ $gender ] ) && intval( $player->player_id ) === intval( $player_options['unregistered'][ $gender ] ) ) {
-				$error = __( 'Unregistered player', 'racketmanager' );
-				$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
-			}
-			return;
-		}
-
-		$team_name           = get_team( $team )->title;
-		$current_team_number = substr( $team_name, -1 );
-
-		if ( ! is_numeric( $roster_id ) ) {
-			$error = __( 'Player not selected', 'racketmanager' );
-			$match->add_result_check( $team, 0, $error, $rubber_id );
-		}
-
-		if ( $player ) {
-			if ( isset( $options['leadTimecheck'] ) && 'true' === $options['leadTimecheck'] && isset( $options['rosterLeadTime'] ) && isset( $player->created_date ) ) {
-				$match_date  = new \DateTime( $match->date );
-				$roster_date = new \DateTime( $player->created_date );
-				$date_diff   = $roster_date->diff( $match_date );
-				$interval    = $date_diff->days * 24;
-				$interval   += $date_diff->h;
-				if ( $interval < intval( $options['rosterLeadTime'] ) ) {
-					/* translators: %d: number of hours */
-					$error = sprintf( __( 'registered with club only %d hours before match', 'racketmanager' ), $interval );
-					$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
-				} elseif ( $date_diff->invert ) {
-					/* translators: %d: number of hours */
-					$error = sprintf( __( 'registered with club %d hours after match', 'racketmanager' ), $interval );
-					$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
-				}
-			}
-			if ( ! empty( $player->locked ) ) {
-				$error = __( 'locked', 'racketmanager' );
-				$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
-			}
-			if ( isset( $options['ageLimitCheck'] ) && 'true' === $options['ageLimitCheck'] && ! empty( $match->league->event->age_limit ) && 'open' !== $match->league->event->age_limit ) {
-				if ( empty( $player->age ) ) {
-					$error = __( 'no age provided', 'racketmanager' );
-					$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
-				} else {
-					$age_limit = $match->league->event->age_limit;
-					if ( $age_limit >= 30 ) {
-						if ( ! empty( $match->league->event->age_offset ) && 'F' === $player->gender ) {
-							$age_limit -= $match->league->event->age_offset;
-						}
-						if ( $player->age < $age_limit ) {
-							/* translators: %1$d: player age, %2$d: event age limit */
-							$error = sprintf( __( 'player age (%1$d) less than event age limit (%2$d)', 'racketmanager' ), $player->age, $age_limit );
-							$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
-							$age_error = true;
-						}
-					} elseif ( $player->age > $age_limit ) {
-						/* translators: %1$d: player age, %2$d: event age limit */
-						$error = sprintf( __( 'player age (%1$d) greater than event age limit (%2$d)', 'racketmanager' ), $player->age, $age_limit );
-						$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
-						$age_error = true;
-					}
-				}
-			}
-			$player_options = $racketmanager->get_options( 'rosters' );
-			if ( isset( $player_options['btm'] ) && '1' === $player_options['btm'] && empty( $player->btm ) ) {
-				$error = __( 'LTA tennis number missing', 'racketmanager' );
-				$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
-			}
-			if ( isset( $match->match_day ) ) {
-				$count = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-					$wpdb->prepare(
-						"SELECT count(*) FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager_rubbers} r, {$wpdb->racketmanager_rubber_players} rp WHERE m.`id` = r.`match_id` AND r.`id` = rp.`rubber_id` AND m.`season` = %s AND m.`match_day` = %d AND  m.`league_id` != %d AND m.`league_id` in (SELECT l.`id` from {$wpdb->racketmanager} l, {$wpdb->racketmanager_events} c WHERE l.`event_id` = (SELECT `event_id` FROM {$wpdb->racketmanager} WHERE `id` = %d)) AND rp.`club_player_id` = %d",
-						$match->season,
-						$match->match_day,
-						$match->league_id,
-						$match->league_id,
-						$roster_id,
-					)
-				);
-				if ( $count > 0 ) {
-					/* translators: %d: match day */
-					$error = sprintf( __( 'already played on match day %d', 'racketmanager' ), $match->match_day );
-					$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
-				}
-
-				if ( isset( $options['playedRounds'] ) ) {
-					$competition = get_competition( $match->league->event->competition->id );
-					if ( $competition ) {
-						$competition_season = $competition->seasons[ $match->season ];
-						if ( $competition_season ) {
-							if ( ! isset( $competition_season['fixedMatchDates'] ) || 'false' === $competition_season['fixedMatchDates'] ) {
-								$league         = get_league( $match->league_id );
-								$num_match_days = $league->seasons[ $match->season ]['num_match_days'];
-								if ( $match->match_day > ( $num_match_days - $options['playedRounds'] ) ) {
-									$count = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-										$wpdb->prepare(
-											"SELECT count(*) FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager_rubbers} r, {$wpdb->racketmanager_rubber_players} rp WHERE m.`id` = r.`match_id` AND r.`id` = rp.`rubber_id` AND m.`season` = %s AND m.`match_day` < %d AND m.`league_id` in (SELECT l.`id` from {$wpdb->racketmanager} l, {$wpdb->racketmanager_events} e WHERE l.`event_id` = (SELECT `event_id` FROM {$wpdb->racketmanager} WHERE `id` = %d)) AND rp.`club_player_id` = %d",
-											$match->season,
-											$match->match_day,
-											$match->league_id,
-											$roster_id
-										)
-									);
-									if ( 0 === intval( $count ) ) {
-										/* translators: %d: number of played rounds */
-										$error = sprintf( __( 'not played before the final %d match days', 'racketmanager' ), $options['playedRounds'] );
-										$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
-									}
-								}
-							}
-						}
-					}
-				}
-				if ( isset( $options['playerLocked'] ) ) {
-					$event        = get_event( $match->league->event_id );
-					$player_stats = $event->get_player_stats(
-						array(
-							'season' => $match->season,
-							'player' => $roster_id,
-						)
-					);
-					$teamplay     = array();
-					foreach ( $player_stats as $player_stat ) {
-						foreach ( $player_stat->matchdays as $match_day ) {
-							$team_num = substr( $match_day->team_title, -1 );
-							if ( isset( $teamplay[ $team_num ] ) ) {
-								++$teamplay[ $team_num ];
-							} else {
-								$teamplay[ $team_num ] = 1;
-							}
-						}
-						foreach ( $teamplay as $team_num => $played ) {
-							if ( $team_num < $current_team_number && $played > $options['playerLocked'] ) {
-								/* translators: %d: team number */
-								$error = sprintf( __( 'locked to team %d', 'racketmanager' ), $team_num );
-								$match->add_result_check( $team, $player->player_id, $error, $rubber_id );
-							}
-						}
-					}
-				}
-			}
-		}
 	}
 }

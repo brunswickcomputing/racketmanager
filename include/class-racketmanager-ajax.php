@@ -715,20 +715,16 @@ class Racketmanager_Ajax extends RacketManager {
 					if ( $walkover ) {
 						$status             = 1;
 						$custom['walkover'] = $walkover;
-					}
-					if ( $share ) {
+					} elseif ( $share ) {
 						$status          = 3;
 						$custom['share'] = true;
-					}
-					if ( $retired ) {
+					} elseif ( $retired ) {
 						$status            = 2;
 						$custom['retired'] = $retired;
-					}
-					if ( $abandoned ) {
+					} elseif ( $abandoned ) {
 						$status              = 6;
 						$custom['abandoned'] = true;
-					}
-					if ( empty( $status ) ) {
+					} elseif ( empty( $status ) ) {
 						$status = 0;
 					}
 					$custom['stats']         = $match_stats;

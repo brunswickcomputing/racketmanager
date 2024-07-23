@@ -495,10 +495,7 @@ final class Racketmanager_Rubber {
 		if ( $match ) {
 			$options        = $racketmanager->get_options( 'checks' );
 			$player_options = $racketmanager->get_options( 'rosters' );
-			if ( empty( $this->players ) ) {
-				$this->get_players();
-			}
-			$opponents = array( 'home', 'away' );
+			$opponents      = array( 'home', 'away' );
 			foreach ( $opponents as $opponent ) {
 				$team_ref = $opponent . '_team';
 				$team_id  = $match->$team_ref;

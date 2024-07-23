@@ -122,6 +122,12 @@ final class Racketmanager_Rubber {
 	 */
 	public $is_shared;
 	/**
+	 * Is abandoned variable
+	 *
+	 * @var boolean
+	 */
+	public $is_abandoned;
+	/**
 	 * Players variable
 	 *
 	 * @var array
@@ -232,9 +238,10 @@ final class Racketmanager_Rubber {
 				$this->away_score = '-';
 				$this->score      = sprintf( '%g:%g', $this->home_score, $this->away_score );
 			}
-			$this->is_walkover = false;
-			$this->is_retired  = false;
-			$this->is_shared   = false;
+			$this->is_walkover  = false;
+			$this->is_retired   = false;
+			$this->is_shared    = false;
+			$this->is_abandoned = false;
 			if ( ! empty( $this->custom['walkover'] ) ) {
 				$this->is_walkover = true;
 			}
@@ -243,6 +250,9 @@ final class Racketmanager_Rubber {
 			}
 			if ( ! empty( $this->custom['retired'] ) ) {
 				$this->is_retired = true;
+			}
+			if ( ! empty( $this->custom['abandoned'] ) ) {
+				$this->is_abandoned = true;
 			}
 			$this->players = array();
 			$this->get_players();

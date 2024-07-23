@@ -1207,12 +1207,11 @@ Racketmanager.setMatchStatus = function (link) {
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();
 	$form += "&action=racketmanager_set_match_status";
-	let notifyField = '#updateStatusResponse';
-	jQuery(".is-invalid").removeClass("is-invalid");
-	jQuery(notifyField).removeClass("message-success");
-	jQuery(notifyField).removeClass("message-error");
-	jQuery(notifyField).val("");
+	let notifyField = '#matchStatusResponse';
 	jQuery(notifyField).hide();
+	let alertTextField = '#matchStatusResponseText';
+	jQuery(alertTextField).html("");
+	jQuery(".is-invalid").removeClass("is-invalid");
 
 	jQuery.ajax({
 		url: ajax_var.url,
@@ -1295,19 +1294,17 @@ Racketmanager.setMatchStatus = function (link) {
 				for (let errorMsg of data[1]) {
 					$message += '<br />' + errorMsg;
 				}
-				let $errorFields = data[2];
-				for (let $errorField of $errorFields) {
-					let $id = '#'.concat($errorField);
+				let errorFields = data[2];
+				for (let errorField of errorFields) {
+					let $id = '#'.concat(errorField);
 					jQuery($id).addClass("is-invalid");
 				}
-				jQuery(notifyField).show();
-				jQuery(notifyField).html($message);
+				jQuery(alertTextField).html($message);
 			} else {
-				jQuery(notifyField).text(response.statusText);
+				jQuery(alertTextField).html(response.statusText);
 			}
 			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-error');
-		},
+	},
 		complete: function () {
 		}
 	});
@@ -1351,12 +1348,11 @@ Racketmanager.setMatchRubberStatus = function (link) {
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();
 	$form += "&action=racketmanager_set_match_rubber_status";
-	let notifyField = '#updateStatusResponse';
-	jQuery(".is-invalid").removeClass("is-invalid");
-	jQuery(notifyField).removeClass("message-success");
-	jQuery(notifyField).removeClass("message-error");
-	jQuery(notifyField).val("");
+	let notifyField = '#scoreStatusResponse';
 	jQuery(notifyField).hide();
+	let alertTextField = '#scoreStatusResponseText';
+	jQuery(alertTextField).html("");
+	jQuery(".is-invalid").removeClass("is-invalid");
 
 	jQuery.ajax({
 		url: ajax_var.url,
@@ -1405,18 +1401,16 @@ Racketmanager.setMatchRubberStatus = function (link) {
 				for (let errorMsg of data[1]) {
 					$message += '<br />' + errorMsg;
 				}
-				let $errorFields = data[2];
-				for (let $errorField of $errorFields) {
-					let $id = '#'.concat($errorField);
+				let errorFields = data[2];
+				for (let errorField of errorFields) {
+					let $id = '#'.concat(errorField);
 					jQuery($id).addClass("is-invalid");
 				}
-				jQuery(notifyField).show();
-				jQuery(notifyField).html($message);
+				jQuery(alertTextField).html($message);
 			} else {
-				jQuery(notifyField).text(response.statusText);
+				jQuery(alertTextField).html(response.statusText);
 			}
 			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-error');
 		},
 		complete: function () {
 		}

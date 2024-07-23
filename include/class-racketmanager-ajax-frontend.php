@@ -1027,8 +1027,12 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 							</div>
 							<div class="modal-body">
 								<div class="container-fluid">
-									<div class="row mb-3">
-										<div id="updateStatusResponse" class="updateResponse"></div>
+									<div id="matchStatusResponse" class="alert_rm alert--danger" style="display: none;">
+										<div class="alert__body">
+											<div class="alert__body-inner">
+												<span id="matchStatusResponseText"></span>
+											</div>
+										</div>
 									</div>
 									<div class="row">
 										<div class="col-sm-6">
@@ -1256,8 +1260,12 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 								</div>
 								<div class="modal-body">
 									<div class="container-fluid">
-										<div class="row mb-3">
-											<div id="updateStatusResponse" class="updateResponse"></div>
+										<div id="scoreStatusResponse" class="alert_rm alert--danger" style="display: none;">
+											<div class="alert__body">
+												<div class="alert__body-inner">
+													<span id="scoreStatusResponseText"></span>
+												</div>
+											</div>
 										</div>
 										<div class="row">
 											<div class="col-sm-6">

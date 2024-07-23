@@ -752,8 +752,7 @@ class Racketmanager_Ajax extends RacketManager {
 						$match->home_points                         += $homescore;
 						$match->away_points                         += $awayscore;
 
-						$rubber->players = $players;
-						$rubber->set_players();
+						$rubber->set_players( $players );
 						$rubber->home_points = $homescore;
 						$rubber->away_points = $awayscore;
 						$rubber->winner_id   = $winner;

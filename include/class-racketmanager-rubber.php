@@ -314,10 +314,12 @@ final class Racketmanager_Rubber {
 	}
 	/**
 	 * Set players function
+	 *
+	 * @param array $players array of players.
 	 */
-	public function set_players() {
+	public function set_players( $players ) {
 		global $racketmanager, $wpdb;
-		foreach ( $this->players as $player_team => $player_ref ) {
+		foreach ( $players as $player_team => $player_ref ) {
 			foreach ( $player_ref as $player_num => $player ) {
 				$club_player = $racketmanager->get_club_player( $player );
 				if ( $club_player ) {
@@ -331,6 +333,11 @@ final class Racketmanager_Rubber {
 							$club_player->id,
 						)
 					);
+					$player = get_player( $club_player->player_id );
+					if ( $player ) {
+						$this->players[ $player_team ][ $player_num ]                 = $player;
+						$this->players[ $player_team ][ $player_num ]->club_player_id = $club_player->id;
+					}
 				}
 			}
 		}

@@ -1271,6 +1271,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 													<option value="retired_player1" <?php selected( 'retired_player1', $status ); ?>><?php printf( esc_html__( 'Retired - %s player', 'racketmanager' ), esc_html( $home_name ) ); ?></option>
 													<?php /* translators: %s: Away team name */ ?>
 													<option value="retired_player2" <?php selected( 'retired_player2', $status ); ?>><?php printf( esc_html__( 'Retired - %s player', 'racketmanager' ), esc_html( $away_name ) ); ?></option>
+													<option value="abandoned" <?php selected( 'abandoned', $status ); ?>><?php esc_html_e( 'Abandonded', 'racketmanager' ); ?></option>
 													<option value="share" <?php selected( 'share', $status ); ?>><?php esc_html_e( 'Not played', 'racketmanager' ); ?></option>
 												</select>
 											</div>
@@ -1283,6 +1284,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 													<li class="list__item">
 														<dt class=""><?php esc_html_e( 'Retired', 'racketmanager' ); ?></dt>
 														<dd class=""><?php esc_html_e( 'A player retired from a match in progress.', 'racketmanager' ); ?></dd>
+													</li>
+													<li class="list__item">
+														<dt class=""><?php esc_html_e( 'Abandoned', 'racketmanager' ); ?></dt>
+														<dd class=""><?php esc_html_e( 'The match is partially played (and will not be finished)', 'racketmanager' ); ?></dd>
 													</li>
 													<li class="list__item">
 														<dt class=""><?php esc_html_e( 'Not played', 'racketmanager' ); ?></dt>
@@ -1368,6 +1373,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 									$err_msg[]   = __( 'Score status team selection not valid', 'racketmanager' );
 								}
 								break;
+							case 'abandoned':
+								break;
 							case 'share':
 								break;
 							default:
@@ -1452,6 +1459,9 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			case 'postponed':
 				$score_message = __( 'Postponed', 'racketmanager' );
 				break;
+			case 'abandoned':
+				$score_message = __( 'Abandoned', 'racketmanager' );
+				break;
 			default:
 				break;
 		}
@@ -1465,6 +1475,11 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$status_message[ $away_team ] = $score_message;
 			$status_class[ $home_team ]   = 'tie';
 			$status_class[ $away_team ]   = 'tie';
+		} elseif ( 'abandoned' === $status_value ) {
+			$status_message[ $home_team ] = $score_message;
+			$status_message[ $away_team ] = $score_message;
+			$status_class[ $home_team ]   = '';
+			$status_class[ $away_team ]   = '';
 		} else {
 			$status_class[ $home_team ] = '';
 			$status_class[ $away_team ] = '';

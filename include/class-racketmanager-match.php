@@ -981,6 +981,10 @@ final class Racketmanager_Match {
 				$stats['games']['away'] += $rubber->custom['stats']['games']['away'];
 			}
 			$custom['stats'] = $stats;
+			unset( $this->custom['walkover'] );
+			unset( $this->custom['share'] );
+			unset( $this->custom['retired'] );
+			unset( $this->custom['abandoned'] );
 			if ( 'league' === $this->league->event->competition->type ) {
 				$this->status = 0;
 				if ( $home_walkover === $this->num_rubbers || $away_walkover === $this->num_rubbers ) {

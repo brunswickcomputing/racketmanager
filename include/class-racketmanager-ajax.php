@@ -382,6 +382,13 @@ class Racketmanager_Ajax extends RacketManager {
 						$err_msg[]   = __( 'You must enter a reason for challenging the result', 'racketmanager' );
 					}
 				}
+				if ( ! $error ) {
+					$match->delete_result_check();
+					$rubbers = $match->get_rubbers();
+					foreach ( $rubbers as $rubber ) {
+						$rubber->check_players();
+					}
+				}
 			}
 		}
 		if ( ! $error ) {

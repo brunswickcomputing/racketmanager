@@ -444,6 +444,10 @@ if ( $match->is_walkover ) {
 																		if ( $is_winner ) {
 																			$match_status_class = 'winner';
 																			$match_status_text  = 'W';
+																			if ( $rubber->is_abandoned ) {
+																				$match_message_class = 'match-warning';
+																				$match_message_text  = __( 'Abandoned', 'racketmanager' );
+																			}
 																		} elseif ( $is_loser ) {
 																			$match_status_class = 'loser';
 																			$match_status_text  = 'L';
@@ -456,6 +460,9 @@ if ( $match->is_walkover ) {
 																			} elseif ( $rubber->is_retired ) {
 																				$match_message_class = 'match-warning';
 																				$match_message_text  = __( 'Retired', 'racketmanager' );
+																			} elseif ( $rubber->is_abandoned ) {
+																				$match_message_class = 'match-warning';
+																				$match_message_text  = __( 'Abandoned', 'racketmanager' );
 																			}
 																		} elseif ( $is_tie ) {
 																			if ( $rubber->is_walkover ) {
@@ -468,6 +475,11 @@ if ( $match->is_walkover ) {
 																				$match_message_class = 'match-warning';
 																				$match_status_text   = 'T';
 																				$match_message_text  = __( 'Not played', 'racketmanager' );
+																			} elseif ( $rubber->is_abandoned ) {
+																				$match_status_class  = 'tie';
+																				$match_message_class = 'match-warning';
+																				$match_status_text   = 'T';
+																				$match_message_text  = __( 'Abandoned', 'racketmanager' );
 																			}
 																		}
 																		?>
@@ -491,6 +503,8 @@ if ( $match->is_walkover ) {
 																	}
 																} elseif ( $rubber->is_shared ) {
 																	$rubber_status = 'share';
+																} elseif ( $rubber->is_abandoned ) {
+																	$rubber_status = 'abandoned';
 																} elseif ( $rubber->is_retired ) {
 																	if ( 'home' === $rubber->retired ) {
 																		$rubber_status = 'retired_player1';

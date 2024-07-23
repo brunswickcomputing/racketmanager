@@ -287,6 +287,10 @@ if ( ! empty( $match->winner_id ) ) {
 										$match_status_class = 'winner';
 										$match_status_text  = 'W';
 									}
+									if ( $rubber->is_abandoned ) {
+										$match_message_class = 'match-warning';
+										$match_message_text  = __( 'Abandoned', 'racketmanager' );
+									}
 								} elseif ( $is_loser ) {
 									if ( ! empty( $match->player ) ) {
 										if ( 'loser' === $player_team_status ) {
@@ -313,6 +317,13 @@ if ( ! empty( $match->winner_id ) ) {
 									} elseif ( $rubber->is_retired ) {
 										$match_message_class = 'match-warning';
 										$match_message_text  = __( 'Retired', 'racketmanager' );
+									} elseif ( $rubber->is_abandoned ) {
+										$match_message_class = 'match-warning';
+										$match_message_text  = __( 'Abandoned', 'racketmanager' );
+										if ( empty( $match_status_text ) ) {
+											$match_status_class = 'loser';
+											$match_status_text  = 'L';
+										}
 									}
 								} elseif ( $is_tie ) {
 									if ( $rubber->is_walkover ) {
@@ -325,6 +336,11 @@ if ( ! empty( $match->winner_id ) ) {
 										$match_message_class = 'match-warning';
 										$match_status_text   = 'T';
 										$match_message_text  = __( 'Not played', 'racketmanager' );
+									} elseif ( $rubber->is_abandoned ) {
+										$match_status_class  = 'tie';
+										$match_message_class = 'match-warning';
+										$match_status_text   = 'T';
+										$match_message_text  = __( 'Abandoned', 'racketmanager' );
 									}
 								}
 								?>

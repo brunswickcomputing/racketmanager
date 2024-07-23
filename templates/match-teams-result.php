@@ -551,7 +551,7 @@ if ( $match->is_walkover ) {
 																				<?php
 																				if ( $match_editable ) {
 																					?>
-																					<input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points match-points__cell-input <?php echo esc_html( $winner_class ); ?>" type="text"
+																					<input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points match-points__cell-input <?php echo esc_html( $winner_class ); ?>" type="number"
 																						<?php
 																						if ( ! $match_editable ) {
 																							echo esc_html( ' readonly' );

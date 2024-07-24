@@ -47,6 +47,9 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.11.0 =
+* UPDATE: update tournament match header when date changed
+
 = 8.10.0 =
 * BUGFIX: check for event not found
 * UPDATE: update player details when registering at new club (#15)

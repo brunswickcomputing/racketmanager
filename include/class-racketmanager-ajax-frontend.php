@@ -1482,6 +1482,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$score_message = __( 'Abandoned', 'racketmanager' );
 				break;
 			case 'none':
+				$status = '';
 				break;
 			default:
 				break;
@@ -1502,8 +1503,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$status_class[ $home_team ]   = '';
 			$status_class[ $away_team ]   = '';
 		} else {
-			$status_class[ $home_team ] = '';
-			$status_class[ $away_team ] = '';
+			$status_message[ $home_team ] = '';
+			$status_message[ $away_team ] = '';
+			$status_class[ $home_team ]   = '';
+			$status_class[ $away_team ]   = '';
 		}
 		$status_dtls          = new \stdClass();
 		$status_dtls->message = $status_message;

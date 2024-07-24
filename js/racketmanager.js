@@ -1252,10 +1252,8 @@ Racketmanager.setMatchStatus = function (link) {
 							jQuery(statusRef).addClass(teamClass);
 						}
 					}
-					if (scoreStatus !== 'none' ) {
-						let matchStatusRef = '#match_status_' + rubberNumber;
-						jQuery(matchStatusRef).attr('value', scoreStatus);
-					}
+					let matchStatusRef = '#match_status_' + rubberNumber;
+					jQuery(matchStatusRef).attr('value', scoreStatus);
 				}
 			} else {
 				for (let i in statusMessages) {

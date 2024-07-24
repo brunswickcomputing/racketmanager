@@ -28,8 +28,7 @@ if ( empty( $match->start_time ) ) {
 			if ( $delay ) {
 				$paragraph_format = 'bold';
 				/* translators: $s: match date */
-				$paragraph_text  = sprintf( __( 'This is now after the round end date (%s). ', 'racketmanager' ), $original_date );
-				$message_detail .= ' (' . $original_date . ')';
+				$paragraph_text = sprintf( __( 'This is now after the round end date (%s). ', 'racketmanager' ), $original_date );
 				require 'components/paragraph.php';
 				$paragraph_format = '';
 			}

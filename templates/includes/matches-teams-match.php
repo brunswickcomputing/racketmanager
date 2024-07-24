@@ -63,7 +63,7 @@ if ( empty( $match->winner_id ) ) {
 				&nbsp;&#8226;&nbsp;
 				<span>
 					<time
-						datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( 'j. F Y', $match->date ) ); ?></time>
+						datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( 'j F Y', $match->date ) ); ?></time>
 				</span>
 				<?php
 			}

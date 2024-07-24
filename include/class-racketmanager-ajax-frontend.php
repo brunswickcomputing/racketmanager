@@ -1827,7 +1827,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 							</div>
 							<div class="modal-footer">
 								<button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
-								<button type="button" class="btn btn-primary" onclick="Racketmanager.<?php echo esc_attr( $action ); ?>(this)"><?php echo esc_html( $button ); ?></button>
+								<button type="button" class="btn btn-primary" onclick="Racketmanager.<?php echo esc_attr( $action ); ?>(this, <?php echo esc_attr( $match->league->event->competition->is_tournament ); ?>)"><?php echo esc_html( $button ); ?></button>
 							</div>
 						</form>
 					</div>

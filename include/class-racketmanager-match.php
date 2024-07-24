@@ -1536,7 +1536,7 @@ final class Racketmanager_Match {
 	 *
 	 * @param string $match_date original match date.
 	 * @param string $original_date original match date (optional).
-	 * @return void
+	 * @return object
 	 */
 	public function update_match_date( $match_date, $original_date = null ) {
 		global $wpdb;
@@ -1572,6 +1572,7 @@ final class Racketmanager_Match {
 				$this->notify_date_change();
 			}
 		}
+		return $this;
 	}
 	/**
 	 * Set location function

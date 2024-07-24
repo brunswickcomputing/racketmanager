@@ -1492,15 +1492,22 @@ Racketmanager.matchOptions = function (event, match_id, option) {
 		}
 	});
 };
-Racketmanager.setMatchDate = function (link) {
+Racketmanager.setMatchDate = function (link, is_tournament) {
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();
 	$form += "&action=racketmanager_set_match_date";
 	let notifyField = '#updateStatusResponse';
-	let alert_id_1 = jQuery('#matchOptionsAlert');
+	let alert_id_1;
+	let alert_response_1 = '';
+	if (is_tournament) {
+		alert_id_1 = jQuery('#matchAlert');
+		alert_response_1 = '#alertResponse';
+	} else {
+		alert_id_1 = jQuery('#matchOptionsAlert');
+		alert_response_1 = '#alertMatchOptionsResponse';
+	}
 	jQuery(alert_id_1).hide();
 	jQuery(alert_id_1).removeClass('alert--success alert--warning alert--danger');
-	let alert_response_1 = '#alertMatchOptionsResponse';
 	let alert_id_2 = jQuery('#matchDateAlert');
 	jQuery(alert_id_2).hide();
 	jQuery(alert_id_2).removeClass('alert--success alert--warning alert--danger');
@@ -1517,11 +1524,18 @@ Racketmanager.setMatchDate = function (link) {
 			let message = response.data[0];
 			let modal = '#' + response.data[1];
 			let match_id = response.data[2];
+			let matchDate = response.data[4];
 			jQuery(alert_id_1).show();
 			jQuery(alert_id_1).addClass('alert--success');
 			jQuery(alert_response_1).html(message);
 			jQuery(modal).modal('hide')
-			Racketmanager.matchHeader(match_id);
+			if (matchDate) {
+				if (is_tournament) {
+					jQuery('#match-tournament-date-header').html(matchDate);
+				} else {
+					Racketmanager.matchHeader(match_id);
+				}
+			}
 		},
 		error: function (response) {
 			if (response.responseJSON) {

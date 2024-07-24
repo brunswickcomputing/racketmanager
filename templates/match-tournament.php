@@ -168,7 +168,7 @@ if ( $match ) {
 							</span>
 							<span class="text--muted-small">
 								<time datetime="<?php echo esc_html( $match->date ); ?>">
-									<span class="match_date">
+									<span class="match_date" id="match-tournament-date-header">
 										<?php echo esc_html( mysql2date( 'D j M', $match->date ) ); ?>
 									</span>
 									<?php

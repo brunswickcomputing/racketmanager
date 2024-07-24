@@ -1006,6 +1006,11 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$select[]       = $option;
 				if ( $match->league->event->competition->is_team_entry ) {
 					$option         = new \stdClass();
+					$option->value  = 'abandoned';
+					$option->select = 'abandoned';
+					$option->desc   = __( 'Abandoned', 'racketmanager' );
+					$select[]       = $option;
+					$option         = new \stdClass();
 					$option->value  = 'postponed';
 					$option->select = 'postponed';
 					$option->desc   = __( 'Postponed', 'racketmanager' );
@@ -1075,6 +1080,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 												<?php
 												if ( $match->league->event->competition->is_team_entry ) {
 													?>
+													<li class="list__item">
+														<dt class=""><?php esc_html_e( 'Abandoned', 'racketmanager' ); ?></dt>
+														<dd class=""><?php esc_html_e( 'The match is partially played (and will not be finished)', 'racketmanager' ); ?></dd>
+													</li>
 													<li class="list__item">
 														<dt class=""><?php esc_html_e( 'Postponed', 'racketmanager' ); ?></dt>
 														<dd class=""><?php esc_html_e( 'The match has not started and will be played another time.', 'racketmanager' ); ?></dd>
@@ -1165,6 +1174,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 							case 'share':
 								break;
 							case 'none':
+								break;
+							case 'abandoned':
 								break;
 							default:
 								$valid       = false;

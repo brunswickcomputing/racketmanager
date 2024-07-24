@@ -235,6 +235,9 @@ class Racketmanager_Ajax extends RacketManager {
 					case 'share':
 						$custom['share'] = 'true';
 						break;
+					case 'abandoned':
+						$custom['abandoned'] = 'true';
+						break;
 					default:
 						break;
 				}
@@ -480,7 +483,7 @@ class Racketmanager_Ajax extends RacketManager {
 				$return->updated = false;
 			}
 		} else {
-			$match_count = $league->update_match_results( $matches, $home_points, $away_points, array(), $match->season );
+			$match_count = $league->update_match_results( $matches, $home_points, $away_points, array(), $match->season, $match->confirmed, $match->status );
 			if ( $match_count > 0 ) {
 				/* translators: %s: match count */
 				$return->msg     = __( 'Result saved', 'racketmanager' );
@@ -786,7 +789,8 @@ class Racketmanager_Ajax extends RacketManager {
 		}
 		if ( ! $error ) {
 			$match_custom['stats'] = $stats;
-			$match->update_result( $home_team_score, $away_team_score, $match_custom, $match_confirmed );
+			$status                = Racketmanager_Util::get_match_status_code( $new_match_status );
+			$match->update_result( $home_team_score, $away_team_score, $match_custom, $match_confirmed, $status );
 		}
 		array_push( $return, $error, $match_confirmed, $err_msg, $err_field, $updated_rubbers );
 		return $return;

@@ -2714,14 +2714,13 @@ class Racketmanager_League {
 	 * @return int
 	 */
 	public function update_match_results( $matches, $home_points, $away_points, $custom, $season, $final_round = false, $confirmed = 'Y' ) {
-		global $racketmanager;
 		$num_matches = 0;
 		if ( ! empty( $matches ) ) {
 			$matches_updated = array();
 			foreach ( $matches as $match_id ) {
 				$match         = get_match( $match_id );
 				$c             = isset( $custom[ $match_id ] ) ? $custom[ $match_id ] : array();
-				$match_updated = $match->update_result( $home_points[ $match_id ], $away_points[ $match_id ], $c, $confirmed );
+				$match_updated = $match->update_result( $home_points[ $match_id ], $away_points[ $match_id ], $c, $confirmed, $match->status );
 				if ( $match_updated ) {
 					++$num_matches;
 					if ( '-1' !== $match->loser_id ) {

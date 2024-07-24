@@ -269,6 +269,12 @@ final class Racketmanager_Match {
 	 */
 	public $is_shared = false;
 	/**
+	 * Is abandoned variable
+	 *
+	 * @var boolean
+	 */
+	public $is_abandoned = false;
+	/**
 	 * Sets variable
 	 *
 	 * @var array
@@ -487,19 +493,28 @@ final class Racketmanager_Match {
 			}
 			switch ( $this->status ) {
 				case 1:
-					$this->is_walkover = true;
-					$this->is_shared   = false;
-					$this->is_retired  = false;
+					$this->is_walkover  = true;
+					$this->is_shared    = false;
+					$this->is_retired   = false;
+					$this->is_abandoned = false;
 					break;
 				case 2:
-					$this->is_retired  = true;
-					$this->is_walkover = false;
-					$this->is_shared   = false;
+					$this->is_retired   = true;
+					$this->is_walkover  = false;
+					$this->is_shared    = false;
+					$this->is_abandoned = false;
 					break;
 				case 3:
-					$this->is_shared   = true;
-					$this->is_walkover = false;
-					$this->is_retired  = false;
+					$this->is_shared    = true;
+					$this->is_walkover  = false;
+					$this->is_retired   = false;
+					$this->is_abandoned = false;
+					break;
+				case 6:
+					$this->is_abandoned = true;
+					$this->is_shared    = false;
+					$this->is_walkover  = false;
+					$this->is_retired   = false;
 					break;
 				default:
 					break;
@@ -905,9 +920,10 @@ final class Racketmanager_Match {
 	 * @param float  $away_points_input away points.
 	 * @param string $custom custom.
 	 * @param string $confirmed match status field.
+	 * @param string $match_status match status.
 	 * @return boolean
 	 */
-	public function update_result( $home_points_input, $away_points_input, $custom, $confirmed = 'Y' ) {
+	public function update_result( $home_points_input, $away_points_input, $custom, $confirmed = 'Y', $match_status = '' ) {
 		$bye            = false;
 		$updated        = false;
 		$home_win       = 0;
@@ -999,6 +1015,10 @@ final class Racketmanager_Match {
 					$custom['shared'] = 'true';
 					$this->custom     = array_merge( (array) $this->custom, (array) $custom );
 					$this->status     = 3;
+				} elseif ( 6 === intval( $match_status ) ) {
+					$custom['abandoned'] = true;
+					$this->status        = 6;
+					$this->is_abandoned  = true;
 				}
 				$point_rule         = $this->league->get_point_rule();
 				$rubber_win         = ! empty( $point_rule['rubber_win'] ) ? $point_rule['rubber_win'] : 0;

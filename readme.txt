@@ -47,6 +47,45 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.10.0 =
+* BUGFIX: check for event not found
+* UPDATE: update player details when registering at new club (#15)
+* BUGFIX: allow all selection
+* BUGFIX: only show messages for current user
+* UPDATE: highlight match where player has interest
+* BUGFIX: use correct delimiter to allow wpdb substitution
+* UPDATE: redirect to homepage after logout
+* UPDATE: use capability not role
+* UPDATE: handle logged in user redirect
+* UPDATE: handle errors better
+* BUGFIX: handle result comment not set
+* BUGFIX: handle shared sets correctly
+* UPDATE: handle errors better
+* BUGFIX: set team and role correctly
+* UPDATE: remove link formating
+* UPDATE: use data from match object
+* UPDATE: add original match date
+* BUGFIX: set match status correctly
+* UPDATE: allow tournament match date setting
+* UPDATE: allow match changes menu
+* UPDATE: allow match date update
+* UPDATE: set correct html status on error
+* UPDATE: allow swapping of home and away teams
+* UPDATE: display match header correctly for small screens
+* UPDATE: display more information in title for tournament match
+* UPDATE: use correct term
+* UPDATE: send email when match date changes
+* UPDATE: highlight when match has player warnings
+* UPDATE: enter result on result screen
+* UPDATE: use ineligible class for player errors
+* UPDATE: allow match entry when result unconfirmed
+* UPDATE: show all player errors
+* BUGFIX: notify teams of next match correctly
+* UPDATE: allow user to delete messages by read/unread
+* UPDATE: check player checks at confirmation
+* UPDATE: allow reset of match status
+* UPDATE: use abandoned status for team matches
+
 = 8.9.0 =
 * BUGFIX: allow file uploads with events
 * BUGFIX: fix match edit button

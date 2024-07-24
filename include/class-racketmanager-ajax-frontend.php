@@ -1872,18 +1872,20 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						$schedule_date = isset( $_POST['schedule-date'] ) ? sanitize_text_field( wp_unslash( $_POST['schedule-date'] ) ) : null;
 						if ( $schedule_date ) {
 							if ( strlen( $schedule_date ) === 10 ) {
-								$schedule_date = substr( $schedule_date, 0, 10 );
-								$match_date    = substr( $match->date, 0, 10 );
+								$schedule_date          = substr( $schedule_date, 0, 10 );
+								$match_date             = substr( $match->date, 0, 10 );
+								$schedule_date_formated = mysql2date( 'D j M', $schedule_date );
 							} else {
-								$schedule_date = substr( $schedule_date, 0, 10 ) . ' ' . substr( $schedule_date, 11, 5 );
-								$match_date    = $match->date;
+								$schedule_date          = substr( $schedule_date, 0, 10 ) . ' ' . substr( $schedule_date, 11, 5 );
+								$match_date             = $match->date;
+								$schedule_date_formated = mysql2date( 'j F Y H:i', $schedule_date );
 							}
 							if ( $schedule_date === $match_date ) {
 								$valid       = false;
 								$err_field[] = 'schedule-date';
 								$err_msg[]   = __( 'Date not changed', 'racketmanager' );
 							} else {
-								$match->update_match_date( $schedule_date, $match->date );
+								$match         = $match->update_match_date( $schedule_date, $match->date );
 								$match->status = 5;
 								$match->set_status( $match->status );
 								$msg = __( 'Match schedule updated', 'racketmanager' );
@@ -1910,7 +1912,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			}
 		}
 		if ( $valid ) {
-			array_push( $return, $msg, $modal, $match_id );
+			array_push( $return, $msg, $modal, $match_id, $schedule_date, $schedule_date_formated );
 			wp_send_json_success( $return );
 		} else {
 			$msg = __( 'Unable to update match schedule', 'racketmanager' );

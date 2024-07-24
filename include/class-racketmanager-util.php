@@ -564,38 +564,44 @@ class Racketmanager_Util {
 		return $set_info;
 	}
 	/**
-	 * Get match satus value function
+	 * Get match status values function
+	 *
+	 * @return array
+	 */
+	private static function get_match_statuses() {
+		$match_status      = array();
+		$match_status['0'] = __( 'Complete', 'racketmanager' );
+		$match_status['1'] = __( 'Walkover', 'racketmanager' );
+		$match_status['2'] = __( 'Retired', 'racketmanager' );
+		$match_status['3'] = __( 'Not played', 'racketmanager' );
+		$match_status['4'] = __( 'Postponed', 'racketmanager' );
+		$match_status['5'] = __( 'Rescheduled', 'racketmanager' );
+		$match_status['6'] = __( 'Abandoned', 'racketmanager' );
+		return $match_status;
+	}
+	/**
+	 * Get match status value function
 	 *
 	 * @param int $status status.
 	 * @return string status text
 	 */
 	public static function get_match_status( $status ) {
-		switch ( $status ) {
-			case 0:
-				$status_value = __( 'Complete', 'racketmanager' );
-				break;
-			case 1:
-				$status_value = __( 'Walkover', 'racketmanager' );
-				break;
-			case 2:
-				$status_value = __( 'Retired', 'racketmanager' );
-				break;
-			case 3:
-				$status_value = __( 'Not played', 'racketmanager' );
-				break;
-			case 4:
-				$status_value = __( 'Postponed', 'racketmanager' );
-				break;
-			case 5:
-				$status_value = __( 'Rescheduled', 'racketmanager' );
-				break;
-			case 6:
-				$status_value = __( 'Abandoned', 'racketmanager' );
-				break;
-			default:
-				$status_value = __( 'Unknown', 'racketmanager' );
+		$match_statuses = self::get_match_statuses();
+		return empty( $match_statuses[ intval( $status ) ] ) ? __( 'Unknown', 'racketmanager' ) : $match_statuses[ intval( $status ) ];
+	}
+	/**
+	 * Get match status code function
+	 *
+	 * @param int $status_value status description.
+	 * @return int
+	 */
+	public static function get_match_status_code( $status_value ) {
+		$match_statuses = self::get_match_statuses();
+		$status         = array_search( ucwords( $status_value ), $match_statuses, true );
+		if ( false === $status ) {
+			$status = 0;
 		}
-		return $status_value;
+		return intval( $status );
 	}
 	/**
 	 * Get match days function

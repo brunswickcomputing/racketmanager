@@ -318,7 +318,7 @@ if ( ! empty( $match->winner_id ) ) {
 																	echo esc_html( ' readonly' );
 																}
 																?>
-																size="2" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_<?php echo esc_attr( $opponent ); ?>" name="sets[<?php echo esc_html( $r ); ?>][<?php echo esc_html( $i ); ?>][<?php echo esc_attr( $opponent ); ?>]" value="<?php echo esc_html( $rubber->sets[ $i ][ $opponent ] ); ?>" onblur="Racketmanager.SetCalculator(this)" />
+																size="2" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_<?php echo esc_attr( $opponent ); ?>" name="sets[<?php echo esc_html( $r ); ?>][<?php echo esc_html( $i ); ?>][<?php echo esc_attr( $opponent ); ?>]" value="<?php echo esc_html( $rubber->sets[ $i ][ $opponent ] ); ?>" onblur="SetCalculator(this)" />
 															</li>
 														<?php
 													}
@@ -338,7 +338,7 @@ if ( ! empty( $match->winner_id ) ) {
 															echo esc_html( ' readonly' );
 														}
 														?>
-														size="2" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" name="sets[<?php echo esc_html( $r ); ?>][<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo isset( $rubber->sets[ $i ]['tiebreak'] ) ? esc_html( $rubber->sets[ $i ]['tiebreak'] ) : ''; ?>"  onblur="Racketmanager.SetCalculatorTieBreak(this)"/>
+														size="2" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" name="sets[<?php echo esc_html( $r ); ?>][<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo isset( $rubber->sets[ $i ]['tiebreak'] ) ? esc_html( $rubber->sets[ $i ]['tiebreak'] ) : ''; ?>"  onblur="SetCalculatorTieBreak(this)"/>
 												</div>
 											</div>
 										</div>
@@ -495,4 +495,7 @@ if ( ! empty( $match->winner_id ) ) {
 	}
 	?>
 </form>
+<script>
+	<?php require RACKETMANAGER_PATH . 'js/setcalculator.js'; ?>
+</script>
 <?php

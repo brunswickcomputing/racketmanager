@@ -1835,7 +1835,11 @@ final class Racketmanager_Match {
 					$result_match->score      = '';
 					$result_match->score_code = '';
 					if ( $this->is_retired ) {
-						$result_match->score_code = 'Retired';
+						$result_match->score_code = 'R';
+					} elseif ( $this->is_walkover ) {
+						$result_match->score_code = 'W';
+					} elseif ( $this->is_shared ) {
+						$result_match->score_code = 'N';
 					}
 					$result_match->match_date = mysql2date( 'Y-m-d', $this->match_date );
 					$result_match             = $this->report_result_scores( $result_match, $this->sets, $winning_player, $losing_player );

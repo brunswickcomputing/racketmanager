@@ -427,7 +427,7 @@ if ( $match ) {
 													<?php
 													if ( $match_editable ) {
 														?>
-														<input type="text" class="points match-points__cell-input <?php echo esc_html( $winner_point_class ); ?>" id="set_<?php echo esc_html( $i ); ?>_<?php echo esc_html( $opponent ); ?>" name="sets[<?php echo esc_html( $i ); ?>][<?php echo esc_html( $opponent ); ?>]" value="<?php echo isset( $set[ $opponent ] ) ? esc_html( $set[ $opponent ] ) : ''; ?>" onblur="Racketmanager.SetCalculator(this)" />
+														<input type="text" class="points match-points__cell-input <?php echo esc_html( $winner_point_class ); ?>" id="set_<?php echo esc_html( $i ); ?>_<?php echo esc_html( $opponent ); ?>" name="sets[<?php echo esc_html( $i ); ?>][<?php echo esc_html( $opponent ); ?>]" value="<?php echo isset( $set[ $opponent ] ) ? esc_html( $set[ $opponent ] ) : ''; ?>" onblur="SetCalculator(this)" />
 														<?php
 													} else {
 														?>
@@ -458,7 +458,7 @@ if ( $match ) {
 											?>
 											>
 												<li class="match-points__cell">
-													<input type="text" class="points match-points__cell-input" id="set_<?php echo esc_html( $i ); ?>_tiebreak" name="sets[<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo isset( $set['tiebreak'] ) ? esc_html( $set['tiebreak'] ) : ''; ?>" onblur="Racketmanager.SetCalculatorTieBreak(this)" />
+													<input type="text" class="points match-points__cell-input" id="set_<?php echo esc_html( $i ); ?>_tiebreak" name="sets[<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo isset( $set['tiebreak'] ) ? esc_html( $set['tiebreak'] ) : ''; ?>" onblur="SetCalculatorTieBreak(this)" />
 												</li>
 											</ul>
 											<?php
@@ -492,6 +492,9 @@ if ( $match ) {
 			</form>
 		</div>
 	</div>
+	<script>
+		<?php require RACKETMANAGER_PATH . 'js/setcalculator.js'; ?>
+	</script>
 	<?php require RACKETMANAGER_PATH . 'templates/includes/modal-score.php'; ?>
 	<?php require RACKETMANAGER_PATH . 'templates/includes/match-modal.php'; ?>
 	<?php

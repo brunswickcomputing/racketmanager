@@ -1749,21 +1749,35 @@ final class RacketManager_Admin extends RacketManager {
 					$match_array['final']            = 'all';
 					$match_array['reset_query_args'] = true;
 					$matches                         = $primary_league->get_matches( $match_array );
-					if ( ! $matches ) {
+					if ( ! $matches ) { // team did not lose a match.
 						unset( $teams[ $t ] );
 					} else {
 						$match_array['loser_id'] = null;
 						$match_array['team_id']  = $team->id;
 						$matches                 = $primary_league->get_matches( $match_array );
-						if ( $matches > 2 ) {
+						$last_match              = null;
+						if ( $matches > 2 ) { // team lost more than 2 matches.
 							unset( $teams[ $t ] );
-						} elseif ( 2 === $matches ) {
+						} elseif ( 2 === $matches ) { // team played 2 matches in main league.
 							$match_array['count'] = false;
 							$matches              = $primary_league->get_matches( $match_array );
 							if ( $matches ) {
-								if ( '-1' !== $matches[0]->home_team && '-1' !== $matches[0]->away_team ) {
+								$first_match = $matches[0];
+								$last_match  = null;
+								if ( '-1' !== $first_match->home_team && '-1' !== $first_match->away_team ) { // first match not a bye.
 									unset( $teams[ $t ] );
+								} else {
+									$last_match = $matches[1];
 								}
+							}
+						} elseif ( 1 === $matches ) {
+							$match_array['count'] = false;
+							$matches              = $primary_league->get_matches( $match_array );
+							$last_match           = $matches[0];
+						}
+						if ( $last_match ) {
+							if ( $last_match->is_walkover ) {
+								unset( $teams[ $t ] );
 							}
 						}
 					}

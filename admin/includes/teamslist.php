@@ -51,6 +51,7 @@ $main_title = $page_link . ' - ' . $page_title;
 			if ( $teams ) {
 				$class = '';
 				foreach ( $teams as $team ) {
+					$club_name = isset( $team->club->shortcode ) ? $team->club->shortcode : null;
 					?>
 					<?php $class = ( 'alternate' === $class ) ? '' : 'alternate'; ?>
 					<div class="row table-row <?php echo esc_html( $class ); ?>">
@@ -59,7 +60,7 @@ $main_title = $page_link . ' - ' . $page_title;
 						</div>
 						<div class="col-1 column-num"><?php echo esc_html( $team->id ); ?></div>
 						<div class="col-3"><?php echo esc_html( $team->title ); ?></div>
-						<div class="col-3"><?php echo esc_html( $team->club->shortcode ); ?></div>
+						<div class="col-3"><?php echo esc_html( $club_name ); ?></div>
 						<div class="col-3"><?php echo esc_html( $team->stadium ); ?></div>
 					</div>
 					<?php

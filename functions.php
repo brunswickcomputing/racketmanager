@@ -496,10 +496,10 @@ function get_team( $team = null ) {
  * Get Player object
  *
  * @param int    $player Player ID or player object. Defaults to global $player.
- * @param string $search_type search type term (defaults to id).
+ * @param string $search_term search type term (defaults to id).
  * @return object player|null
  */
-function get_player( $player = null, $search_type = 'id' ) {
+function get_player( $player = null, $search_term = 'id' ) {
 	if ( empty( $player ) && isset( $GLOBALS['player'] ) ) {
 		$player = $GLOBALS['player'];
 	}
@@ -508,7 +508,7 @@ function get_player( $player = null, $search_type = 'id' ) {
 	} elseif ( is_object( $player ) ) {
 		$_player = new Racketmanager_Player( $player );
 	} else {
-		$_player = Racketmanager_Player::get_instance( $player, $search_type );
+		$_player = Racketmanager_Player::get_instance( $player, $search_term );
 	}
 	if ( ! $_player ) {
 		return null;

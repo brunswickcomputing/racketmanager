@@ -370,9 +370,14 @@ final class Racketmanager_League_Team {
 
 			$this->profile = intval( $this->profile );
 
-			$this->status_text        = Racketmanager_Util::get_standing_status( $this->status );
-			$this->club               = get_club( $this->affiliatedclub );
-			$this->affiliatedclubname = $this->club->name;
+			$this->status_text = Racketmanager_Util::get_standing_status( $this->status );
+			if ( ! empty( $this->affiliatedclub ) ) {
+				$this->club               = get_club( $this->affiliatedclub );
+				$this->affiliatedclubname = $this->club->name;
+			} else {
+				$this->club               = null;
+				$this->affiliatedclubname = null;
+			}
 			if ( 'P' === $this->status && null !== $this->roster ) {
 				$i = 1;
 				foreach ( $this->roster as $player ) {

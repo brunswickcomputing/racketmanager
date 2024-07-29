@@ -1756,7 +1756,7 @@ final class RacketManager_Admin extends RacketManager {
 						$match_array['team_id']  = $team->id;
 						$matches                 = $primary_league->get_matches( $match_array );
 						$last_match              = null;
-						if ( $matches > 2 ) { // team lost more than 2 matches.
+						if ( $matches > 2 ) { // team played more than 2 matches.
 							unset( $teams[ $t ] );
 						} elseif ( 2 === $matches ) { // team played 2 matches in main league.
 							$match_array['count'] = false;

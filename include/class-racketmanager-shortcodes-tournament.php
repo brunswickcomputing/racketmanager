@@ -158,11 +158,13 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 				);
 				if ( $teams ) {
 					foreach ( $teams as $team ) {
-						$new_team                 = new \stdClass();
-						$new_team->player         = $team->player;
-						$new_team->player_id      = $team->player_id;
-						$new_team->title          = $team->name;
-						$new_teams[ $team->name ] = $new_team;
+						if ( ! empty( $team->player ) ) {
+							$new_team                 = new \stdClass();
+							$new_team->player         = $team->player;
+							$new_team->player_id      = $team->player_id;
+							$new_team->title          = $team->name;
+							$new_teams[ $team->name ] = $new_team;
+						}
 					}
 					$new_teams = array_unique( $new_teams, SORT_REGULAR );
 					asort( $new_teams );

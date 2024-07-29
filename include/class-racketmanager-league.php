@@ -1416,17 +1416,33 @@ class Racketmanager_League {
 	/**
 	 * Add team to league
 	 *
-	 * @param int    $team_id team identifier.
-	 * @param string $season season.
-	 * @param string $rank rank.
-	 * @param string $status status.
-	 * @param string $profile profile.
+	 * @param string|int $team_id team identifier.
+	 * @param string     $season season.
+	 * @param string     $rank rank.
+	 * @param string     $status status.
+	 * @param string     $profile profile.
 	 * @return int $table_id
 	 */
 	public function add_team( $team_id, $season, $rank = null, $status = null, $profile = null ) {
 		global $wpdb, $racketmanager;
-
-		$error    = false;
+		$error = false;
+		if ( ! is_numeric( $team_id ) ) {
+			$team = get_team( $team_id );
+			if ( $team ) {
+				$team_id = $team->id;
+			} else {
+				$team        = new \stdClass();
+				$team->title = $team_id;
+				$team->type  = $this->type;
+				if ( $this->event->competition->is_tournament ) {
+					$team->status = 'S';
+				}
+				$team = new Racketmanager_Team( $team );
+				if ( $team ) {
+					$team_id = $team->id;
+				}
+			}
+		}
 		$table_id = $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				"SELECT `id` FROM {$wpdb->racketmanager_table} WHERE `team_id` = %d AND `season` = %s AND `league_id` = %d",

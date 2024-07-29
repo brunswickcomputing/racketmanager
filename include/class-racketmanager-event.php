@@ -681,18 +681,23 @@ class Racketmanager_Event {
 	public function get_leagues( $args = array() ) {
 		global $wpdb;
 
-		$defaults = array(
-			'offset'  => 0,
-			'limit'   => 99999999,
-			'orderby' => array( 'title' => 'ASC' ),
+		$defaults    = array(
+			'offset'      => 0,
+			'limit'       => 99999999,
+			'orderby'     => array( 'title' => 'ASC' ),
+			'consolation' => false,
 		);
-		$args     = array_merge( $defaults, $args );
-		$offset   = $args['offset'];
-		$limit    = $args['limit'];
-		$orderby  = $args['orderby'];
+		$args        = array_merge( $defaults, $args );
+		$offset      = $args['offset'];
+		$limit       = $args['limit'];
+		$orderby     = $args['orderby'];
+		$consolation = $args['consolation'];
 
 		$search_terms   = array();
 		$search_terms[] = $wpdb->prepare( '`event_id` = %d', intval( $this->id ) );
+		if ( $consolation ) {
+			$search_terms[] = "'consolation' = 'consolation'";
+		}
 
 		$search = '';
 		if ( ! empty( $search_terms ) ) {
@@ -732,10 +737,19 @@ class Racketmanager_Event {
 		foreach ( $leagues as $i => $league ) {
 			$league_index[ $league->id ] = $i;
 			$league                      = get_league( $league->id );
-			$leagues[ $i ]               = $league;
+			if ( $consolation ) {
+				if ( ! $league->championship->is_consolation ) {
+					unset( $leagues[ $i ] );
+				}
+			}
+			if ( isset( $leagues[ $i ] ) ) {
+				$leagues[ $i ] = $league;
+			}
 		}
-		$this->leagues      = $leagues;
-		$this->league_index = $league_index;
+		if ( ! $consolation ) {
+			$this->leagues      = $leagues;
+			$this->league_index = $league_index;
+		}
 
 		return $leagues;
 	}

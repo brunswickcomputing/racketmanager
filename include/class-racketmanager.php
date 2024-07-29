@@ -838,6 +838,12 @@ class RacketManager {
 			'index.php?pagename=leagues%2Fdaily-matches',
 			'top'
 		);
+		// latest results - competition.
+		add_rewrite_rule(
+			'leagues/latest-results/(.+?)/?$',
+			'index.php?pagename=leagues%2Flatest-results&competition_name=$matches[1]',
+			'top'
+		);
 		// latest results.
 		add_rewrite_rule(
 			'leagues/latest-results/?$',

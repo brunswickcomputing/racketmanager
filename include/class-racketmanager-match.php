@@ -1660,6 +1660,9 @@ final class Racketmanager_Match {
 		if ( ( -1 === $this->teams['home']->id || -1 === $this->teams['away']->id ) || ( ! isset( $this->host ) ) ) {
 			return false;
 		}
+		if ( 'S' === $this->teams['home']->status || 'S' === $this->teams['away']->status ) {
+			return false;
+		}
 		$email_to = $this->get_email_to();
 		if ( empty( $email_to ) ) {
 			return false;

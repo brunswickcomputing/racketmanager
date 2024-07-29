@@ -1360,14 +1360,19 @@ class Racketmanager_League {
 			if ( 1 === $team->home ) {
 				$class[] = 'homeTeam';
 			}
-			$team->custom             = stripslashes_deep( maybe_unserialize( $team->custom ) );
-			$team->roster             = maybe_unserialize( $team->roster );
-			$team->title              = htmlspecialchars( stripslashes( $team->title ), ENT_QUOTES );
-			$team->affiliatedclub     = stripslashes( $team->affiliatedclub );
-			$team->club               = get_club( $team->affiliatedclub );
-			$team->affiliatedclubname = $team->club->name;
-			$team->stadium            = stripslashes( $team->stadium );
-			$team->class              = implode( ' ', $class );
+			$team->custom = stripslashes_deep( maybe_unserialize( $team->custom ) );
+			$team->roster = maybe_unserialize( $team->roster );
+			$team->title  = htmlspecialchars( stripslashes( $team->title ), ENT_QUOTES );
+			if ( ! empty( $team->affilatedclub ) ) {
+				$team->affiliatedclub     = stripslashes( $team->affiliatedclub );
+				$team->club               = get_club( $team->affiliatedclub );
+				$team->affiliatedclubname = $team->club->name;
+			} else {
+				$team->club               = null;
+				$team->affiliatedclubname = null;
+			}
+			$team->stadium = stripslashes( $team->stadium );
+			$team->class   = implode( ' ', $class );
 			if ( 1 === $team->home ) {
 				$team->title = '<strong>' . $team->title . '</strong>';
 			}
@@ -1543,12 +1548,21 @@ class Racketmanager_League {
 			$team->contactno    = '';
 			$team->contactemail = '';
 		}
-
-		$team->affiliatedclub     = stripslashes( $team->affiliatedclub );
-		$team->club               = get_club( $team->affiliatedclub );
-		$team->affiliatedclubname = $team->club->name;
-		$team->stadium            = stripslashes( $team->stadium );
-		$team->roster             = maybe_unserialize( $team->roster );
+		if ( ! empty( $team->affiliatedclub ) ) {
+			$team->affiliatedclub = stripslashes( $team->affiliatedclub );
+			$team->club           = get_club( $team->affiliatedclub );
+			if ( $team->club ) {
+				$team->affiliatedclubname = $team->club->name;
+			} else {
+				$team->affiliatedclubname = null;
+			}
+		} else {
+			$team->affiliatedclub     = null;
+			$team->club               = null;
+			$team->affiliatedclubname = null;
+		}
+		$team->stadium = stripslashes( $team->stadium );
+		$team->roster  = maybe_unserialize( $team->roster );
 		if ( 'P' === $team->status && null !== $team->roster ) {
 			$team->players = array();
 			$i             = 1;

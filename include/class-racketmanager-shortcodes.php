@@ -124,6 +124,7 @@ class RacketManager_Shortcodes {
 				'template'         => 'results',
 				'days'             => 7,
 				'affiliatedclub'   => '',
+				'competition_id'   => '',
 			),
 			$atts
 		);
@@ -131,6 +132,7 @@ class RacketManager_Shortcodes {
 		$template         = $args['template'];
 		$days             = $args['days'];
 		$affiliatedclub   = $args['affiliatedclub'];
+		$competition_id   = $args['competition_id'];
 		if ( isset( $wp->query_vars['club_name'] ) ) {
 			$club_name      = str_replace( '-', ' ', get_query_var( 'club_name' ) );
 			$club           = get_club( $club_name, 'shortcode' );
@@ -138,6 +140,13 @@ class RacketManager_Shortcodes {
 		}
 		if ( isset( $wp->query_vars['days'] ) ) {
 			$days = str_replace( '-', ' ', get_query_var( 'days' ) );
+		}
+		if ( isset( $wp->query_vars['competition_name'] ) ) {
+			$competition_name = un_seo_url( get_query_var( 'competition_name' ) );
+			$competition      = get_competition( $competition_name, 'name' );
+			if ( $competition ) {
+				$competition_id = $competition->id;
+			}
 		}
 		$matches      = false;
 		$time         = 'latest';
@@ -148,6 +157,7 @@ class RacketManager_Shortcodes {
 				'time'             => $time,
 				'history'          => $days,
 				'affiliatedClub'   => $affiliatedclub,
+				'competition_id'   => $competition_id,
 			)
 		);
 		$matches_list = array();

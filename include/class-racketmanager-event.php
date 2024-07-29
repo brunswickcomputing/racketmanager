@@ -1383,7 +1383,6 @@ class Racketmanager_Event {
 			intval( $offset ),
 			intval( $limit )
 		);
-
 		$event_teams = wp_cache_get( md5( $sql ), 'event_teams' );
 		if ( ! $event_teams ) {
 			$event_teams = $wpdb->get_results(
@@ -1392,11 +1391,28 @@ class Racketmanager_Event {
 			); // db call ok.
 			wp_cache_set( md5( $sql ), $event_teams, 'event_teams' );
 		}
-
 		foreach ( $event_teams as $i => $event_team ) {
 			$event_team->roster = maybe_unserialize( $event_team->roster );
 			$event_team->club   = get_club( $event_team->affiliatedclub );
-			$event_team->title  = $event_team->name;
+			if ( strpos( $event_team->name, '_' ) !== false ) {
+				$team_name  = null;
+				$name_array = explode( '_', $event_team->name );
+				if ( '1' === $name_array[0] ) {
+					$team_name = __( 'Winner of', 'racketmanager' );
+				} elseif ( '2' === $name_array[0] ) {
+					$team_name = __( 'Loser of', 'racketmanager' );
+				}
+				if ( ! empty( $team_name ) && is_numeric( $name_array[2] ) ) {
+					$match = get_match( $name_array[2] );
+					if ( $match ) {
+						$team_name .= ' ' . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;
+					}
+				}
+				if ( ! empty( $team_name ) ) {
+					$event_team->title = $team_name;
+				}
+			}
+			$event_team->title = $event_team->name;
 			if ( 'P' === $event_team->team_type && ! empty( $event_team->roster ) ) {
 				$p = 1;
 				foreach ( $event_team->roster as $player ) {

@@ -116,6 +116,12 @@ final class Racketmanager_Team {
 	 */
 	public $player_id;
 	/**
+	 * Team ref variable
+	 *
+	 * @var string
+	 */
+	public $team_ref;
+	/**
 	 * Team updated variable
 	 *
 	 * @var string
@@ -250,6 +256,25 @@ final class Racketmanager_Team {
 						$this->player_id[ $i ] = $player;
 						++$i;
 					}
+				}
+			}
+			if ( strpos( $this->title, '_' ) !== false ) {
+				$team_name  = null;
+				$name_array = explode( '_', $this->title );
+				if ( '1' === $name_array[0] ) {
+					$team_name = __( 'Winner of', 'racketmanager' );
+				} elseif ( '2' === $name_array[0] ) {
+					$team_name = __( 'Loser of', 'racketmanager' );
+				}
+				if ( ! empty( $team_name ) && is_numeric( $name_array[2] ) ) {
+					$match = get_match( $name_array[2] );
+					if ( $match ) {
+						$team_name .= ' ' . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;
+					}
+				}
+				if ( ! empty( $team_name ) ) {
+					$this->team_ref = $this->title;
+					$this->title    = $team_name;
 				}
 			}
 		}

@@ -303,6 +303,12 @@ final class Racketmanager_League_Team {
 	 */
 	public $old_rank;
 	/**
+	 * Team ref variable
+	 *
+	 * @var string
+	 */
+	public $team_ref;
+	/**
 	 * Get instance function
 	 *
 	 * @param int $league_team_id league team id.
@@ -394,6 +400,25 @@ final class Racketmanager_League_Team {
 				$this->status_icon = 'icon-arrow-down';
 			} elseif ( '=' === $this->status ) {
 				$this->status_icon = 'icon-dot';
+			}
+			if ( strpos( $this->title, '_' ) !== false ) {
+				$team_name  = null;
+				$name_array = explode( '_', $this->title );
+				if ( '1' === $name_array[0] ) {
+					$team_name = __( 'Winner of', 'racketmanager' );
+				} elseif ( '2' === $name_array[0] ) {
+					$team_name = __( 'Loser of', 'racketmanager' );
+				}
+				if ( ! empty( $team_name ) && is_numeric( $name_array[2] ) ) {
+					$match = get_match( $name_array[2] );
+					if ( $match ) {
+						$team_name .= ' ' . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;
+					}
+				}
+				if ( ! empty( $team_name ) ) {
+					$this->team_ref = $this->title;
+					$this->title    = $team_name;
+				}
 			}
 		}
 	}

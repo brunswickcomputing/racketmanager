@@ -47,6 +47,13 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.12.0 =
+* BUGFIX: check for fixed match dates correctly
+* UPDATE: move set calculation javascript inline (#17)
+* UPDATE: giving a walkover does not qualify for a plate competition
+* UPDATE: allow latest result by competition
+* UPDATE: enable unplayed main draw tams in consolation
+
 = 8.11.0 =
 * UPDATE: update tournament match header when date changed
 

@@ -3,7 +3,7 @@
  * Plugin Name: Racketmanager
  * Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
  * Description: Manage and present racketsports league and tournament results.
- * Version: 8.11.0
+ * Version: 8.12.0
  * Author: Paul Moffat
  * Text Domain: racketmanager
  *
@@ -21,7 +21,7 @@ namespace Racketmanager;
  *
  * @author Paul Moffat
  * @package RacketManager
- * @version 8.11.0
+ * @version 8.12.0
  * @copyright 2024
  */
 racketmanager_setup_plugin();
@@ -33,8 +33,8 @@ function racketmanager_setup_plugin() {
 	global $racketmanager;
 
 	define( 'RACKETMANAGER', 'racketmanager' );
-	define( 'RACKETMANAGER_VERSION', '8.11.0' );
-	define( 'RACKETMANAGER_DBVERSION', '8.10.0' );
+	define( 'RACKETMANAGER_VERSION', '8.12.0' );
+	define( 'RACKETMANAGER_DBVERSION', '8.12.0' );
 	define( 'RACKETMANAGER_URL', esc_url( plugin_dir_url( __FILE__ ) ) );
 	define( 'RACKETMANAGER_PATH', plugin_dir_path( __FILE__ ) );
 	define( 'RACKETMANAGER_PLUGIN_FILE', __FILE__ );

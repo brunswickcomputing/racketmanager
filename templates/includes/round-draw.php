@@ -82,7 +82,7 @@ foreach ( $final->matches as $match ) {
 									<div class="player-row__team">
 										<?php
 										if ( is_numeric( $team->id ) ) {
-											if ( -1 !== $team->id ) {
+											if ( -1 !== $team->id && ! $match->league->event->competition->is_tournament ) {
 												?>
 												<a class="" href="/<?php echo esc_attr( seo_url( $match->league->event->competition->type ) ); ?>s/<?php echo esc_attr( seo_url( $match->league->event->competition->name ) ); ?>/<?php echo esc_attr( seo_url( $match->league->title ) ); ?>/<?php echo esc_attr( seo_url( $team->title ) ); ?>">
 												<?php

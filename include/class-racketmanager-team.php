@@ -264,14 +264,16 @@ final class Racketmanager_Team {
 			if ( 'LD' === $this->type ) {
 				$this->type = 'XD';
 			}
-			$players     = array();
-			$this->title = $this->player1;
-			$players[]   = $this->player1_id;
-			if ( substr( $this->type, 1, 1 ) === 'D' ) {
-				$this->title .= ' / ' . $this->player2;
-				$players[]    = $this->player2_id;
+			$players = array();
+			if ( empty( $this->title ) ) {
+				$this->title = $this->player1;
+				$players[]   = $this->player1_id;
+				if ( substr( $this->type, 1, 1 ) === 'D' ) {
+					$this->title .= ' / ' . $this->player2;
+					$players[]    = $this->player2_id;
+				}
+				$this->roster = $players;
 			}
-			$this->roster  = $players;
 			$this->stadium = '';
 			$this->profile = '';
 			$result        = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching

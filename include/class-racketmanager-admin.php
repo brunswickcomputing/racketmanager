@@ -1785,6 +1785,35 @@ final class RacketManager_Admin extends RacketManager {
 					}
 					++$t;
 				}
+				$pending_teams                   = array();
+				$match_array                     = array();
+				$match_array['reset_query_args'] = true;
+				$final_name                      = $primary_league->championship->get_final_keys( 1 );
+				$match_array['final']            = $final_name;
+				$match_array['pending']          = true;
+				$matches                         = $primary_league->get_matches( $match_array );
+				if ( $matches ) {
+					foreach ( $matches as $match ) {
+						$team          = new \stdClass();
+						$team->id      = '2_' . $final_name . '_' . $match->id;
+						$team->title   = __( 'Loser of ', 'racketmanager' ) . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;
+						$team->stadium = '';
+						$teams[]       = $team;
+					}
+				} else {
+					$final_name           = $primary_league->championship->get_final_keys( 2 );
+					$match_array['final'] = $final_name;
+					$matches              = $primary_league->get_matches( $match_array );
+					if ( $matches ) {
+						foreach ( $matches as $match ) {
+							$team          = new \stdClass();
+							$team->id      = '2_' . $final_name . '_' . $match->id;
+							$team->title   = __( 'Loser of ', 'racketmanager' ) . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;
+							$team->stadium = '';
+							$teams[]       = $team;
+						}
+					}
+				}
 			}
 			$season = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : '';
 			$view   = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] ) ) : '';

@@ -1262,9 +1262,11 @@ final class RacketManager_Admin extends RacketManager {
 			if ( isset( $_POST['team'] ) && isset( $_POST['event_id'] ) && isset( $_POST['season'] ) ) {
 				$league = get_league( $league );
 				foreach ( $_POST['team'] as $i => $team_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-					$league->add_team( intval( $team_id ), sanitize_text_field( wp_unslash( $_POST['season'] ) ) );
-					$team = get_team( $team_id );
-					$team->set_event( intval( $_POST['event_id'] ) );
+					$league->add_team( $team_id, sanitize_text_field( wp_unslash( $_POST['season'] ) ) );
+					if ( is_numeric( $team_id ) ) {
+						$team = get_team( $team_id );
+						$team->set_event( intval( $_POST['event_id'] ) );
+					}
 				}
 			}
 		} else {

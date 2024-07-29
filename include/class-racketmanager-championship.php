@@ -615,6 +615,16 @@ final class Racketmanager_Championship extends RacketManager {
 				}
 				if ( $update ) {
 					$this->set_teams( $match, $home_team, $away_team );
+					if ( isset( $league->event->primary_league ) && $league->event->primary_league === $league->id ) {
+						if ( $round < 3 ) {
+							if ( ! empty( $prev_home ) ) {
+								$this->set_consolation_team( $prev_home, $current, $league );
+							}
+							if ( ! empty( $prev_away ) ) {
+								$this->set_consolation_team( $prev_away, $current, $league );
+							}
+						}
+					}
 					// Set winners on final.
 					if ( 'third' === $next ) {
 						$match     = $league->get_matches(
@@ -635,7 +645,68 @@ final class Racketmanager_Championship extends RacketManager {
 			}
 		}
 	}
-
+	/**
+	 * Set consolation teams function
+	 *
+	 * @param object $match match.
+	 * @param string $round round name.
+	 * @param object $league league.
+	 * @return void
+	 */
+	private function set_consolation_team( $match, $round, $league ) {
+		if ( empty( $match->loser_id ) ) {
+			return;
+		}
+		if ( $match->is_walkover ) {
+			$team_switch = '-1';
+		} else {
+			$team_switch                     = $match->loser_id;
+			$match_array                     = array();
+			$match_array['team_id']          = $match->loser_id;
+			$match_array['final']            = 'all';
+			$match_array['reset_query_args'] = true;
+			$matches                         = $league->get_matches( $match_array );
+			if ( count( $matches ) === 2 ) {
+				if ( $matches[0]->id === $match->id ) {
+					$first_match = $matches[1];
+				} else {
+					$first_match = $matches[0];
+				}
+				if ( '-1' !== $first_match->home_team && '-1' !== $first_match->away_team ) {
+					$team_switch = '-1';
+				}
+			}
+		}
+		$team_ref = '2_' . $round . '_' . $match->id;
+		$event    = get_event( $league->event->id );
+		if ( $event ) {
+			$event_leagues = $event->get_leagues( array( 'consolation' => true ) );
+			if ( $event_leagues ) {
+				foreach ( $event_leagues as $event_league ) {
+					$consolation_league = get_league( $event_league );
+					$consolation_teams  = $consolation_league->get_league_teams( array( 'team_name' => $team_ref ) );
+					if ( $consolation_teams ) {
+						$consolation_team    = $consolation_teams[0];
+						$consolation_matches = $consolation_league->get_matches(
+							array(
+								'team_id' => $consolation_team->id,
+								'final'   => 'all',
+							)
+						);
+						if ( $consolation_matches ) {
+							foreach ( $consolation_matches as $consolation_match ) {
+								if ( $consolation_match->home_team === $consolation_team->id ) {
+									$this->set_teams( $consolation_match, $team_switch, null );
+								} elseif ( $consolation_match->away_team === $consolation_team->id ) {
+									$this->set_teams( $consolation_match, null, $team_switch );
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 	/**
 	 * Display administration panel
 	 */

@@ -106,14 +106,16 @@ if ( empty( $event ) ) {
 						<div class="row row-list">
 							<div class="col-12" name="<?php esc_html_e( 'Player', 'racketmanager' ); ?>">
 								<?php
-								foreach ( $entry->player as $player ) {
-									?>
-									<div class="team-player">
-										<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/players/<?php echo esc_html( seo_url( $player ) ); ?>">
-											<?php echo esc_html( wp_unslash( $player ) ); ?>
-										</a>
-									</div>
-									<?php
+								if ( ! empty( $entry->player ) ) {
+									foreach ( $entry->player as $player ) {
+										?>
+										<div class="team-player">
+											<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/players/<?php echo esc_html( seo_url( $player ) ); ?>">
+												<?php echo esc_html( wp_unslash( $player ) ); ?>
+											</a>
+										</div>
+										<?php
+									}
 								}
 								?>
 							</div>

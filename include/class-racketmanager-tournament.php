@@ -552,12 +552,14 @@ final class Racketmanager_Tournament {
 				if ( $event->teams ) {
 					$event_teams = array();
 					foreach ( $event->teams as $team ) {
-						foreach ( $team->player as $player ) {
-							$players[] = $player;
+						$event_team = new \stdClass();
+						if ( ! empty( $team->player ) ) {
+							foreach ( $team->player as $player ) {
+								$players[]             = $player;
+								$event_team->player    = $team->player;
+								$event_team->player_id = $team->player_id;
+							}
 						}
-						$event_team                 = new \stdClass();
-						$event_team->player         = $team->player;
-						$event_team->player_id      = $team->player_id;
 						$event_team->title          = $team->name;
 						$event_teams[ $team->name ] = $event_team;
 					}

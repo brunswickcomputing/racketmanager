@@ -2663,14 +2663,34 @@ final class RacketManager_Admin extends RacketManager {
 				$final       = $league->championship->get_finals( $finalkey );
 				$final_teams = $league->championship->get_final_teams( $final['key'], 'ARRAY' );
 				if ( is_numeric( $match->home_team ) ) {
-					$home_title = get_team( $match->home_team )->title;
+					$home_team = get_team( $match->home_team );
+					if ( $home_team ) {
+						$home_title = $home_team->title;
+					} else {
+						$home_title = null;
+					}
 				} else {
-					$home_title = $final_teams[ $match->home_team ]->title;
+					$home_team = $final_teams[ $match->home_team ];
+					if ( $home_team ) {
+						$home_title = $home_team->title;
+					} else {
+						$home_title = null;
+					}
 				}
 				if ( is_numeric( $match->away_team ) ) {
-					$away_title = get_team( $match->away_team )->title;
+					$away_team = get_team( $match->away_team );
+					if ( $away_team ) {
+						$away_title = $away_team->title;
+					} else {
+						$away_title = null;
+					}
 				} else {
-					$away_title = $final_teams[ $match->away_team ]->title;
+					$away_team = $final_teams[ $match->away_team ];
+					if ( $away_team ) {
+						$away_title = $away_team->title;
+					} else {
+						$away_title = null;
+					}
 				}
 			} elseif ( $is_finals ) {
 				$teams = $league->championship->get_final_teams( $finalkey );

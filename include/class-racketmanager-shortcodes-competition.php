@@ -663,7 +663,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 	 */
 	public function show_match( $atts ) {
 		global $racketmanager, $match;
-		$args     = shortcode_atts(
+		$args        = shortcode_atts(
 			array(
 				'match_id' => 0,
 				'player'   => '',
@@ -671,10 +671,11 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			),
 			$atts
 		);
-		$match_id = $args['match_id'];
-		$player   = $args['player'];
-		$template = $args['template'];
-		$action   = get_query_var( 'action' );
+		$match_id    = $args['match_id'];
+		$player      = $args['player'];
+		$template    = $args['template'];
+		$action      = get_query_var( 'action' );
+		$num_matches = null;
 		// Get Match ID from shortcode or $_GET.
 		if ( ! $match_id ) {
 			$match_id = get_query_var( 'match_id' );

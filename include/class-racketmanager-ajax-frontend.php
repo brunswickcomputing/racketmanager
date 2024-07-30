@@ -496,7 +496,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					$team->player2        = $partner_name;
 					$team->player2_id     = $partner_id;
 					$team->type           = $league->type;
-					$team->status         = 'P';
+					$team->team_type      = 'P';
 					$team->affiliatedclub = $affiliatedclub;
 					$team                 = new Racketmanager_Team( $team );
 				} else {

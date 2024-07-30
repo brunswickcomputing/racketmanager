@@ -1329,7 +1329,7 @@ final class RacketManager_Admin extends RacketManager {
 				$team->player2        = $team_player_2;
 				$team->player2_id     = $team_player_2_id;
 				$team->type           = $league->type;
-				$team->status         = 'P';
+				$team->team_type      = 'P';
 				$team->affiliatedclub = $club;
 				$team                 = new Racketmanager_Team( $team );
 				$season               = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
@@ -1337,7 +1337,7 @@ final class RacketManager_Admin extends RacketManager {
 				$league->add_team( $team->id, $season );
 			} elseif ( isset( $_POST['team_id'] ) ) {
 				$team = get_team( intval( $_POST['team_id'] ) );
-				if ( 'P' === $team->status ) {
+				if ( 'P' === $team->team_type ) {
 					$team->update_player( $team_player_1, $team_player_1_id, $team_player_2, $team_player_2_id, $club );
 					$team->set_event( $league->event->id, $captain, $contactno, $contactemail );
 				} else {

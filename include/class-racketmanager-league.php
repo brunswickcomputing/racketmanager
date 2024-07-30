@@ -1298,7 +1298,7 @@ class Racketmanager_League {
 		$team_name        = $this->team_query_args['team_name'];
 
 		$args = array( $this->id );
-		$sql  = "SELECT B.`id` AS `id`, B.`title`, B.`affiliatedclub`, B.`stadium`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`group`, A.`points_plus`, A.`points_minus`, A.`points2_plus`, A.`points2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom` FROM {$wpdb->racketmanager_teams} B INNER JOIN {$wpdb->racketmanager_table} A ON B.id = A.team_id WHERE `league_id` = %d";
+		$sql  = "SELECT B.`id` AS `id`, B.`title`, B.`affiliatedclub`, B.`stadium`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`group`, A.`points_plus`, A.`points_minus`, A.`points2_plus`, A.`points2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom`, B.`team_type` FROM {$wpdb->racketmanager_teams} B INNER JOIN {$wpdb->racketmanager_table} A ON B.id = A.team_id WHERE `league_id` = %d";
 
 		if ( '' === $season ) {
 			$sql   .= ' AND A.`season` = %s';
@@ -1439,7 +1439,7 @@ class Racketmanager_League {
 				$team->title = $team_id;
 				$team->type  = $this->type;
 				if ( $this->event->competition->is_tournament ) {
-					$team->status = 'S';
+					$team->team_type = 'S';
 				}
 				$team = new Racketmanager_Team( $team );
 				if ( $team ) {
@@ -1540,7 +1540,7 @@ class Racketmanager_League {
 		}
 
 		$sql = $wpdb->prepare(
-			"SELECT A.`title`, B.`captain`, A.`affiliatedclub`, B.`match_day`, B.`match_time`, A.`stadium`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status`, A.`type` FROM {$wpdb->racketmanager_teams} A LEFT JOIN {$wpdb->racketmanager_team_events} B ON A.`id` = B.`team_id` and B.`event_id` IN (select `event_id` FROM {$wpdb->racketmanager} WHERE `id` = %d) WHERE A.`id` = %d",
+			"SELECT A.`title`, B.`captain`, A.`affiliatedclub`, B.`match_day`, B.`match_time`, A.`stadium`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status`, A.`type`, A.`team_type` FROM {$wpdb->racketmanager_teams} A LEFT JOIN {$wpdb->racketmanager_team_events} B ON A.`id` = B.`team_id` and B.`event_id` IN (select `event_id` FROM {$wpdb->racketmanager} WHERE `id` = %d) WHERE A.`id` = %d",
 			intval( $this->id ),
 			intval( $team_id )
 		);
@@ -1604,7 +1604,7 @@ class Racketmanager_League {
 		}
 		$team->stadium = stripslashes( $team->stadium );
 		$team->roster  = maybe_unserialize( $team->roster );
-		if ( 'P' === $team->status && null !== $team->roster ) {
+		if ( 'P' === $team->team_type && null !== $team->roster ) {
 			$team->players = array();
 			$i             = 1;
 			foreach ( $team->roster as $player ) {

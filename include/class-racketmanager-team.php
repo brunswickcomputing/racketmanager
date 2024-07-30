@@ -104,6 +104,12 @@ final class Racketmanager_Team {
 	 */
 	public $type;
 	/**
+	 * Team type variable
+	 *
+	 * @var string
+	 */
+	public $team_type;
+	/**
 	 * Home variable
 	 *
 	 * @var string
@@ -204,7 +210,7 @@ final class Racketmanager_Team {
 			} else {
 				$team = $wpdb->get_row(
 					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-					"SELECT `id`, `title`, `stadium`, `home`, `roster`, `profile`, `status`, `affiliatedclub`, `type` FROM {$wpdb->racketmanager_teams} WHERE " . $search . ' LIMIT 1',
+					"SELECT `id`, `title`, `stadium`, `home`, `roster`, `profile`, `status`, `affiliatedclub`, `type`, `team_type` FROM {$wpdb->racketmanager_teams} WHERE " . $search . ' LIMIT 1',
 				); // db call ok.
 			}
 			if ( ! $team ) {
@@ -247,7 +253,7 @@ final class Racketmanager_Team {
 				$this->club               = get_club( $this->affiliatedclub );
 				$this->affiliatedclubname = $this->club->name;
 			}
-			if ( 'P' === $this->status && ! empty( $this->roster ) ) {
+			if ( 'P' === $this->team_type && ! empty( $this->roster ) ) {
 				$i = 1;
 				foreach ( $this->roster as $player ) {
 					$teamplayer = get_player( $player );
@@ -285,7 +291,7 @@ final class Racketmanager_Team {
 	 */
 	private function add() {
 		global $wpdb, $racketmanager;
-		if ( isset( $this->status ) && 'P' === $this->status ) {
+		if ( isset( $this->team_type ) && 'P' === $this->team_type ) {
 			if ( 'LD' === $this->type ) {
 				$this->type = 'XD';
 			}
@@ -303,12 +309,13 @@ final class Racketmanager_Team {
 			$this->profile = '';
 			$result        = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"INSERT INTO {$wpdb->racketmanager_teams} (`title`, `affiliatedclub`, `roster`, `status`, `type` ) VALUES (%s, %d, %s, %s, %s)",
+					"INSERT INTO {$wpdb->racketmanager_teams} (`title`, `affiliatedclub`, `roster`, `status`, `type`, `team_type` ) VALUES (%s, %d, %s, %s, %s, %s)",
 					$this->title,
 					$this->affiliatedclub,
 					maybe_serialize( $players ),
 					$this->status,
-					$this->type
+					$this->type,
+					$this->team_type,
 				)
 			);
 			$this->id      = $wpdb->insert_id;

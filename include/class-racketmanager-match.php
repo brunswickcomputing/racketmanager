@@ -1635,7 +1635,7 @@ final class Racketmanager_Match {
 		$opponents = array( 'home', 'away' );
 		foreach ( $opponents as $opponent ) {
 			$team = $this->teams[ $opponent ];
-			if ( 'P' === $team->status ) {
+			if ( 'P' === $team->team_type ) {
 				$player_id = $team->player_id;
 				foreach ( $player_id as $player ) {
 					$player = get_player( $player );
@@ -1660,7 +1660,7 @@ final class Racketmanager_Match {
 		if ( ( -1 === $this->teams['home']->id || -1 === $this->teams['away']->id ) || ( ! isset( $this->host ) ) ) {
 			return false;
 		}
-		if ( 'S' === $this->teams['home']->status || 'S' === $this->teams['away']->status ) {
+		if ( 'S' === $this->teams['home']->team_type || 'S' === $this->teams['away']->team_type ) {
 			return false;
 		}
 		$email_to = $this->get_email_to();

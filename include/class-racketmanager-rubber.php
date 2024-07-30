@@ -503,9 +503,10 @@ final class Racketmanager_Rubber {
 		global $racketmanager, $wpdb;
 		$match = get_match( $this->match_id );
 		if ( $match ) {
-			$options        = $racketmanager->get_options( 'checks' );
-			$player_options = $racketmanager->get_options( 'rosters' );
-			$opponents      = array( 'home', 'away' );
+			$options          = $racketmanager->get_options( 'checks' );
+			$register_options = $racketmanager->get_options( 'rosters' );
+			$player_options   = $racketmanager->get_options( 'player' );
+			$opponents        = array( 'home', 'away' );
 			foreach ( $opponents as $opponent ) {
 				$team_ref = $opponent . '_team';
 				$team_id  = $match->$team_ref;
@@ -581,7 +582,7 @@ final class Racketmanager_Rubber {
 								}
 							}
 						}
-						if ( isset( $player_options['btm'] ) && '1' === $player_options['btm'] && empty( $player->btm ) ) {
+						if ( isset( $register_options['btm'] ) && '1' === $register_options['btm'] && empty( $player->btm ) ) {
 							$error = __( 'LTA tennis number missing', 'racketmanager' );
 							$match->add_result_check( $team->id, $player->id, $error, $this->id );
 						}

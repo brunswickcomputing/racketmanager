@@ -1005,6 +1005,13 @@ function racketmanager_upgrade() {
 		echo esc_html__( 'starting 8.10.0 upgrade', 'racketmanager' ) . "<br />\n";
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_matches} ADD `date_original` DATETIME NULL AFTER `date`" );
 	}
+	if ( version_compare( $installed, '8.13.0', '<' ) ) {
+		echo esc_html__( 'starting 8.13.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_teams} ADD `team_type` VARCHAR(1) NULL AFTER `type`" );
+		$wpdb->query( "UPDATE {$wpdb->racketmanager_teams} SET `team_type` = 'P' WHERE `status` = 'P'" );
+		$wpdb->query( "UPDATE {$wpdb->racketmanager_teams} SET `team_type` = 'S' WHERE `status` = 'S'" );
+		$wpdb->query( "UPDATE {$wpdb->racketmanager_teams} SET `team_type` = 'S' WHERE `title` like '2_%'" );
+	}
 	/*
 	* Update version and dbversion
 	*/

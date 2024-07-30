@@ -191,9 +191,9 @@ if ( $match ) {
 				$location = $match->location;
 				if ( empty( $location ) && isset( $match->host ) ) {
 					if ( 'home' === $match->host ) {
-						$location = $match->teams['home']->club->shortcode;
+						$location = empty( $match->teams['home']->club->shortcode ) ? null : $match->teams['home']->club->shortcode;
 					} elseif ( 'away' === $match->host ) {
-						$location = $match->teams['away']->club->shortcode;
+						$location = empty( $match->teams['away']->club->shortcode ) ? null : $match->teams['away']->club->shortcode;
 					}
 				}
 

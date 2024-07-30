@@ -171,7 +171,7 @@ if ( $match->is_walkover ) {
 										}
 										?>
 										<?php
-										if ( 'admin' === $user_type ) {
+										if ( 'admin' === $user_type || ( empty( $match->home_captain ) && empty( $match->away_captain ) ) ) {
 											?>
 											<div class="row mt-3 mb-3">
 												<div>

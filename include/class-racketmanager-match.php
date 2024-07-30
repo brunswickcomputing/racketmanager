@@ -991,10 +991,10 @@ final class Racketmanager_Match {
 				if ( is_numeric( $rubber->away_points ) ) {
 					$away_points += floatval( $rubber->away_points );
 				}
-				$stats['sets']['home']  += $rubber->custom['stats']['sets']['home'];
-				$stats['sets']['away']  += $rubber->custom['stats']['sets']['away'];
-				$stats['games']['home'] += $rubber->custom['stats']['games']['home'];
-				$stats['games']['away'] += $rubber->custom['stats']['games']['away'];
+				$stats['sets']['home']  += empty( $rubber->custom['stats']['sets']['home'] ) ? 0 : $rubber->custom['stats']['sets']['home'];
+				$stats['sets']['away']  += empty( $rubber->custom['stats']['sets']['away'] ) ? 0 : $rubber->custom['stats']['sets']['away'];
+				$stats['games']['home'] += empty( $rubber->custom['stats']['games']['home'] ) ? 0 : $rubber->custom['stats']['games']['home'];
+				$stats['games']['away'] += empty( $rubber->custom['stats']['games']['away'] ) ? 0 : $rubber->custom['stats']['games']['away'];
 			}
 			$custom['stats'] = $stats;
 			unset( $this->custom['walkover'] );

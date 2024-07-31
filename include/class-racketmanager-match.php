@@ -577,6 +577,9 @@ final class Racketmanager_Match {
 			} else {
 				$this->link = '/match/' . seo_url( $this->league->title ) . '/' . $this->season . '/' . $match_ref . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/';
 			}
+			if ( ! empty( $this->leg ) ) {
+				$this->link .= 'leg-' . $this->leg . '/';
+			}
 			if ( empty( $this->winner_id ) ) {
 				$this->is_pending = true;
 			} else {

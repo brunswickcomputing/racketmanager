@@ -209,21 +209,22 @@ if ( ! empty( $match->winner_id ) ) {
 								} else {
 									$is_loser = false;
 								}
+								$team = $match->teams[ $opponent ];
 								?>
 							<div class="match__row">
 								<div class="match__row-title">
 									<div class="match__row-title-header">
 										<?php
-										if ( 'W' === $match->teams[ $opponent ]->status ) {
-											$title_text = $match->teams[ $opponent ]->title . ' ' . __( 'has withdrawn', 'racketmanager' );
+										if ( $team->is_withdrawn ) {
+											$title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );
 											?>
-											<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
+											<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="<?php echo esc_attr( $title_text ); ?>">
 											<?php
 										}
 										?>
-										<?php echo esc_html( $match->teams[ $opponent ]->title ); ?>
+										<?php echo esc_html( $team->title ); ?>
 										<?php
-										if ( 'W' === $match->teams[ $opponent ]->status ) {
+										if ( $team->is_withdrawn ) {
 											?>
 											</s> 
 											<?php
@@ -345,11 +346,11 @@ if ( ! empty( $match->winner_id ) ) {
 								}
 								?>
 								<span class="match__message <?php echo esc_attr( $match_message_class ); ?>"
-									id="match-message-<?php echo esc_attr( $rubber->rubber_number ); ?>-<?php echo esc_attr( $match->teams[ $opponent ]->id ); ?>">
+									id="match-message-<?php echo esc_attr( $rubber->rubber_number ); ?>-<?php echo esc_attr( $team->id ); ?>">
 									<?php echo esc_html( $match_message_text ); ?>
 								</span>
 								<span class="match__status <?php echo esc_attr( $match_status_class ); ?>"
-									id="match-status-<?php echo esc_attr( $rubber->rubber_number ); ?>-<?php echo esc_attr( $match->teams[ $opponent ]->id ); ?>">
+									id="match-status-<?php echo esc_attr( $rubber->rubber_number ); ?>-<?php echo esc_attr( $team->id ); ?>">
 									<?php echo esc_html( $match_status_text ); ?>
 								</span>
 							</div>
@@ -424,11 +425,12 @@ if ( ! empty( $match->winner_id ) ) {
 					<div class="match__row-wrapper">
 						<?php
 						foreach ( $opponents as $opponent ) {
+							$team = $match->teams[ $opponent ];
 							?>
 							<div class="match__row">
 								<div class="match__row-title">
 									<div class="match__row-title-header">
-										<?php echo esc_html( $match->teams[ $opponent ]->title ); ?>
+										<?php echo esc_html( $team->title ); ?>
 									</div>
 									<div class="match__row-title-value">
 										<?php

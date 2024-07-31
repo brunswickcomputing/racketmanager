@@ -334,7 +334,22 @@ if ( $match ) {
 														<?php
 													}
 													?>
+													<?php
+													if ( ! empty( $team->is_withdrawn ) ) {
+														$title_text = $match->teams['home']->title . ' ' . __( 'has withdrawn', 'racketmanager' );
+														?>
+														<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="<?php echo esc_attr( $title_text ); ?>">
+														<?php
+													}
+													?>
 													<?php echo esc_html( trim( $team_player ) ); ?>
+													<?php
+													if ( ! empty( $team->is_withdrawn ) ) {
+														?>
+														</s>
+														<?php
+													}
+													?>
 													<?php
 													if ( ! empty( $tournament ) ) {
 														?>

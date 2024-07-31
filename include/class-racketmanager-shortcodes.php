@@ -141,6 +141,9 @@ class RacketManager_Shortcodes {
 		if ( isset( $wp->query_vars['days'] ) ) {
 			$days = str_replace( '-', ' ', get_query_var( 'days' ) );
 		}
+		if ( isset( $wp->query_vars['type'] ) ) {
+			$competition_type = un_seo_url( get_query_var( 'type' ) );
+		}
 		if ( isset( $wp->query_vars['competition_name'] ) ) {
 			$competition_name = un_seo_url( get_query_var( 'competition_name' ) );
 			$competition      = get_competition( $competition_name, 'name' );

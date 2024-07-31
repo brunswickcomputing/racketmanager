@@ -81,7 +81,14 @@ foreach ( $matches as $match ) {
 	?>
 	<ul class="match-group">
 		<li class="match-group__item">
-			<?php require RACKETMANAGER_PATH . 'templates/includes/matches-teams-match.php'; ?>
+			<?php
+			if ( 'tournament' === $match->league->event->competition->type ) {
+				$match_display = 'list';
+				require RACKETMANAGER_PATH . 'templates/tournament/match.php';
+			} else {
+				require RACKETMANAGER_PATH . 'templates/includes/matches-teams-match.php';
+			}
+			?>
 		</li>
 	</ul>
 	<?php

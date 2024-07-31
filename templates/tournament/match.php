@@ -79,17 +79,16 @@ if ( ! empty( $match->winner_id ) ) {
 		<div class="match tournament-match <?php echo esc_html( $match_display ); ?> <?php echo empty( $match_selected ) ? '' : 'is-selected'; ?>">
 			<div class="match__header">
 				<ul class="match__header-title">
+					<li class="match__header-title-item">
+						<?php echo esc_html( $match->league->championship->get_final_name( $match->final_round ) ); ?>
+					</li>
 					<?php
 					if ( ! empty( $tournament ) ) {
 						?>
 						<li class="match__header-title-item">
-							<?php echo esc_html( $match->league->championship->get_final_name( $match->final_round ) ); ?>
-						</li>
-						<li class="match__header-title-item">
 							<a href="<?php echo esc_html( $tournament->link ) . 'draw/' . esc_html( seo_url( $match->league->event->name ) ) . '/'; ?>">
 								<?php echo esc_html( $match->league->title ); ?>
 							</a>
-
 						</li>
 						<?php
 					} elseif ( empty( $match_complete ) && ! empty( $match->date ) ) {

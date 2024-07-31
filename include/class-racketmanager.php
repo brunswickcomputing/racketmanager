@@ -2337,7 +2337,7 @@ class RacketManager {
 		if ( $count ) {
 			$sql = "SELECT COUNT(*) FROM {$wpdb->racketmanager_matches} WHERE 1 = 1";
 		} else {
-			$sql_fields = "SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(`date`, '%e') AS day, DATE_FORMAT(`date`, '%c') AS month, DATE_FORMAT(`date`, '%Y') AS year, DATE_FORMAT(`date`, '%H') AS `hour`, DATE_FORMAT(`date`, '%i') AS `minutes`, `match_day`, `location`, l.`id` AS `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, m.`id` AS `id`, `custom`, `confirmed`, `home_captain`, `away_captain`, `comments`, `updated`, `event_id`, `status`";
+			$sql_fields = "SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(`date`, '%e') AS day, DATE_FORMAT(`date`, '%c') AS month, DATE_FORMAT(`date`, '%Y') AS year, DATE_FORMAT(`date`, '%H') AS `hour`, DATE_FORMAT(`date`, '%i') AS `minutes`, `match_day`, `location`, l.`id` AS `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, m.`id` AS `id`, `custom`, `confirmed`, `home_captain`, `away_captain`, `comments`, `updated`, `event_id`, `status`, `leg`";
 			$sql        = " FROM {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager} AS l WHERE m.`league_id` = l.`id`";
 		}
 

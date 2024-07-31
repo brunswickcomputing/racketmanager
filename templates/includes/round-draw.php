@@ -89,7 +89,22 @@ foreach ( $final->matches as $match ) {
 											}
 											?>
 												<p>
+													<?php
+													if ( ! empty( $team->is_withdrawn ) ) {
+														$title_text = $match->teams['home']->title . ' ' . __( 'has withdrawn', 'racketmanager' );
+														?>
+														<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="<?php echo esc_attr( $title_text ); ?>">
+														<?php
+													}
+													?>
 													<?php echo esc_html( $team_name ); ?>
+													<?php
+													if ( ! empty( $team->is_withdrawn ) ) {
+														?>
+														</s>
+														<?php
+													}
+													?>
 													<?php
 													if ( isset( $team->rank ) && intval( $team->rank ) <= intval( $match->league->championship->num_seeds ) ) {
 														?>
@@ -124,7 +139,22 @@ foreach ( $final->matches as $match ) {
 											}
 											?>
 											<p>
+												<?php
+												if ( ! empty( $team->is_withdrawn ) ) {
+													$title_text = $match->teams['home']->title . ' ' . __( 'has withdrawn', 'racketmanager' );
+													?>
+													<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="<?php echo esc_attr( $title_text ); ?>">
+													<?php
+												}
+												?>
 												<?php echo esc_html( trim( $player ) ); ?>
+												<?php
+												if ( ! empty( $team->is_withdrawn ) ) {
+													?>
+													</s>
+													<?php
+												}
+												?>
 												<?php
 												if ( isset( $team->rank ) && intval( $team->rank ) <= intval( $match->league->championship->num_seeds ) ) {
 													?>

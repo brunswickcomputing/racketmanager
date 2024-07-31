@@ -73,7 +73,7 @@ namespace Racketmanager;
 				<?php
 				foreach ( $matches as $match ) {
 					if ( ! empty( $match->leg ) ) {
-						$match_link = $match->link . 'leg-' . $match->leg . '/';
+						$match_link = $match->link;
 						if ( $action ) {
 							$match_link .= $action . '/';
 						}

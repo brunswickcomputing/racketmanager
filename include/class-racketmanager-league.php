@@ -288,6 +288,7 @@ class Racketmanager_League {
 		'status'           => false,
 		'club'             => false,
 		'team_name'        => '',
+		'team_id'          => '',
 	);
 
 	/**
@@ -309,6 +310,7 @@ class Racketmanager_League {
 		'status'           => 'string',
 		'club'             => 'numeric',
 		'team_name'        => 'string',
+		'team_id'          => 'numeric',
 	);
 
 	/**
@@ -1296,6 +1298,7 @@ class Racketmanager_League {
 		$get_details      = $this->team_query_args['get_details'];
 		$status           = $this->team_query_args['status'];
 		$team_name        = $this->team_query_args['team_name'];
+		$team_id          = $this->team_query_args['team_id'];
 
 		$args = array( $this->id );
 		$sql  = "SELECT B.`id` AS `id`, B.`title`, B.`affiliatedclub`, B.`stadium`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`group`, A.`points_plus`, A.`points_minus`, A.`points2_plus`, A.`points2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom`, B.`team_type` FROM {$wpdb->racketmanager_teams} B INNER JOIN {$wpdb->racketmanager_table} A ON B.id = A.team_id WHERE `league_id` = %d";
@@ -1327,6 +1330,10 @@ class Racketmanager_League {
 		if ( $team_name ) {
 			$sql   .= ' AND B.`title` = %s';
 			$args[] = $team_name;
+		}
+		if ( $team_id ) {
+			$sql   .= ' AND B.`id` = %d';
+			$args[] = $team_id;
 		}
 		$orderby_string = '';
 		$i              = 0;

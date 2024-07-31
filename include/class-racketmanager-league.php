@@ -1387,13 +1387,14 @@ class Racketmanager_League {
 				'secondary' => sprintf( $this->point_format2, $team->points2_plus, $team->points2_minus ),
 			);
 			if ( $get_details ) {
-				$team_dtls          = $this->get_team_dtls( $team->id );
-				$team->match_day    = $team_dtls->match_day;
-				$team->match_time   = $team_dtls->match_time;
-				$team->captain_id   = $team_dtls->captain_id;
-				$team->captain      = $team_dtls->captain;
-				$team->contactno    = $team_dtls->contactno;
-				$team->contactemail = $team_dtls->contactemail;
+				$team_dtls           = $this->get_team_dtls( $team->id );
+				$team->match_day     = $team_dtls->match_day;
+				$team->match_time    = $team_dtls->match_time;
+				$team->captain_id    = $team_dtls->captain_id;
+				$team->captain       = $team_dtls->captain;
+				$team->contactno     = $team_dtls->contactno;
+				$team->contactemail  = $team_dtls->contactemail;
+				$team->league_status = $team_dtls->league_status;
 			}
 
 			$team_index[ $team->id ] = $i;
@@ -1540,9 +1541,11 @@ class Racketmanager_League {
 		}
 
 		$sql = $wpdb->prepare(
-			"SELECT A.`title`, B.`captain`, A.`affiliatedclub`, B.`match_day`, B.`match_time`, A.`stadium`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status`, A.`type`, A.`team_type` FROM {$wpdb->racketmanager_teams} A LEFT JOIN {$wpdb->racketmanager_team_events} B ON A.`id` = B.`team_id` and B.`event_id` IN (select `event_id` FROM {$wpdb->racketmanager} WHERE `id` = %d) WHERE A.`id` = %d",
+			"SELECT A.`title`, B.`captain`, A.`affiliatedclub`, B.`match_day`, B.`match_time`, A.`stadium`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status`, A.`type`, A.`team_type`, C.`status` as `league_status` FROM {$wpdb->racketmanager_table} C INNER JOIN  {$wpdb->racketmanager_teams} A ON A.`id` = C.`team_id` AND C.`league_id` = %d LEFT JOIN {$wpdb->racketmanager_team_events} B ON A.`id` = B.`team_id` and B.`event_id` IN (select `event_id` FROM {$wpdb->racketmanager} WHERE `id` = %d) WHERE A.`id` = %d AND c.`season` = %s",
 			intval( $this->id ),
-			intval( $team_id )
+			intval( $this->id ),
+			intval( $team_id ),
+			$this->current_season['name']
 		);
 
 		$team = wp_cache_get( md5( $sql ), 'teamdetails' );
@@ -1614,6 +1617,10 @@ class Racketmanager_League {
 				$team->player_id[ $i ] = $player;
 				++$i;
 			}
+		}
+		$team->is_withdrawn = false;
+		if ( 'W' === $team->league_status ) {
+			$team->is_withdrawn = true;
 		}
 		return $team;
 	}

@@ -194,16 +194,16 @@ if ( $match->is_pending ) {
 							<a href="/<?php echo esc_attr( $match->league->event->competition->type ); ?>/<?php echo esc_html( seo_url( $match->league->title ) ); ?>/<?php echo esc_attr( $match->season ); ?>/team/<?php echo esc_attr( seo_url( $match->teams['home']->title ) ); ?>/" class="nav--link">
 								<span class="nav-link__value">
 									<?php
-									if ( 'W' === $match->teams['home']->status ) {
+									if ( $match->teams['home']->is_withdrawn ) {
 										$title_text = $match->teams['home']->title . ' ' . __( 'has withdrawn', 'racketmanager' );
 										?>
-										<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
+										<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_attr( $title_text ); ?>">
 										<?php
 									}
 									?>
 									<?php echo esc_html( $match->teams['home']->title ); ?>
 									<?php
-									if ( 'W' === $match->teams['home']->status ) {
+									if ( $match->teams['home']->is_withdrawn ) {
 										?>
 										</s> 
 										<?php
@@ -244,16 +244,16 @@ if ( $match->is_pending ) {
 							<a href="/<?php echo esc_attr( $match->league->event->competition->type ); ?>/<?php echo esc_html( seo_url( $match->league->title ) ); ?>/<?php echo esc_attr( $match->season ); ?>/team/<?php echo esc_attr( seo_url( $match->teams['away']->title ) ); ?>/" class="nav--link">
 								<span class="nav-link__value">
 									<?php
-									if ( 'W' === $match->teams['away']->status ) {
+									if ( $match->teams['away']->is_withdrawn ) {
 										$title_text = $match->teams['away']->title . ' ' . __( 'has withdrawn', 'racketmanager' );
 										?>
-										<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
+										<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_attr( $title_text ); ?>">
 										<?php
 									}
 									?>
 									<?php echo esc_html( $match->teams['away']->title ); ?>
 									<?php
-									if ( 'W' === $match->teams['away']->status ) {
+									if ( $match->teams['away']->is_withdrawn ) {
 										?>
 										</s> 
 										<?php

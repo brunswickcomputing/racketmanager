@@ -91,16 +91,16 @@ if ( empty( $match->winner_id ) ) {
 				<span class="nav--link">
 					<span class="nav-link__value">
 						<?php
-						if ( ! empty( $match->teams['home']->status ) && 'W' === $match->teams['home']->status ) {
+						if ( $match->teams['home']->is_withdrawn ) {
 							$title_text = $match->teams['home']->title . ' ' . __( 'has withdrawn', 'racketmanager' );
 							?>
-							<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
+							<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="<?php echo esc_attr( $title_text ); ?>">
 							<?php
 						}
 						?>
 						<?php echo esc_html( $match->teams['home']->title ); ?>
 						<?php
-						if ( ! empty( $match->teams['home']->status ) && 'W' === $match->teams['home']->status ) {
+						if ( $match->teams['home']->is_withdrawn ) {
 							?>
 							</s> 
 							<?php
@@ -133,7 +133,7 @@ if ( empty( $match->winner_id ) ) {
 				<span class="nav--link">
 					<span class="nav-link__value">
 						<?php
-						if ( ! empty( $match->teams['away']->status ) && 'W' === $match->teams['away']->status ) {
+						if ( $match->teams['away']->is_withdrawn ) {
 							$title_text = $match->teams['away']->title . ' ' . __( 'has withdrawn', 'racketmanager' );
 							?>
 							<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
@@ -142,7 +142,7 @@ if ( empty( $match->winner_id ) ) {
 						?>
 						<?php echo esc_html( $match->teams['away']->title ); ?>
 						<?php
-						if ( ! empty( $match->teams['away']->status ) && 'W' === $match->teams['away']->status ) {
+						if ( $match->teams['away']->is_withdrawn ) {
 							?>
 							</s> 
 							<?php

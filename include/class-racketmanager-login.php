@@ -209,7 +209,7 @@ class RacketManager_Login {
 	public function disable_dashboard() {
 		if ( is_user_logged_in() ) {
 			$user = wp_get_current_user();
-			if ( $user->has_cap( 'subscriber' ) && is_admin() && ! DOING_AJAX ) {
+			if ( $user->has_cap( 'subscriber' ) && is_admin() && ! wp_doing_ajax() ) {
 				wp_safe_redirect( home_url() );
 				exit;
 			}

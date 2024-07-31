@@ -684,7 +684,23 @@ final class Racketmanager_Championship extends RacketManager {
 			if ( $event_leagues ) {
 				foreach ( $event_leagues as $event_league ) {
 					$consolation_league = get_league( $event_league );
-					$consolation_teams  = $consolation_league->get_league_teams( array( 'team_name' => $team_ref ) );
+					if ( '-1' !== $team_switch ) {
+						$switch_teams = $consolation_league->get_league_teams(
+							array(
+								'team_id'          => $team_switch,
+								'reset_query_args' => true,
+							)
+						);
+						if ( ! $switch_teams ) {
+							$consolation_league->add_team( $team_switch, $consolation_league->current_season['name'] );
+						}
+					}
+					$consolation_teams = $consolation_league->get_league_teams(
+						array(
+							'team_name'        => $team_ref,
+							'reset_query_args' => true,
+						)
+					);
 					if ( $consolation_teams ) {
 						$consolation_team    = $consolation_teams[0];
 						$consolation_matches = $consolation_league->get_matches(

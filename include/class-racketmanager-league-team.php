@@ -315,6 +315,12 @@ final class Racketmanager_League_Team {
 	 */
 	public $team_type;
 	/**
+	 * Is withdrawn variable
+	 *
+	 * @var boolean
+	 */
+	public $is_withdrawn;
+	/**
 	 * Get instance function
 	 *
 	 * @param int $league_team_id league team id.
@@ -399,6 +405,11 @@ final class Racketmanager_League_Team {
 					$this->player_id[ $i ] = $player;
 					++$i;
 				}
+			}
+			if ( 'W' === $this->status ) {
+				$this->is_withdrawn = true;
+			} else {
+				$this->is_withdrawn = false;
 			}
 			$this->status_icon = '';
 			if ( '+' === $this->status ) {

@@ -165,7 +165,7 @@ if ( empty( $match->winner_id ) ) {
 	}
 	?>
 	<?php
-	if ( ! empty( $user_can_update ) ) {
+	if ( is_numeric( $match->home_team ) && $match->home_team >= 1 && is_numeric( $match->away_team ) && $match->away_team >= 1 && ! empty( $user_can_update ) ) {
 		$match_link_result = $match_link . 'result/';
 		?>
 		<div class="match__button">

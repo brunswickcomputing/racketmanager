@@ -149,10 +149,10 @@ if ( ! $league->event->competition->is_championship ) {
 					<td>
 						<a href="admin.php?page=racketmanager&amp;subpage=team&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;edit=<?php echo esc_html( $team->id ); ?>">
 							<?php
-							if ( 'W' === $team->status ) {
+							if ( $team->is_withdrawn ) {
 								$title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );
 								?>
-								<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
+								<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="<?php echo esc_attr( $title_text ); ?>">
 								<?php
 							}
 							if ( 1 === $team->home ) {
@@ -162,7 +162,7 @@ if ( ! $league->event->competition->is_championship ) {
 							}
 							?>
 							<?php
-							if ( 'W' === $team->status ) {
+							if ( $team->is_withdrawn ) {
 								?>
 								</s>
 								<?php

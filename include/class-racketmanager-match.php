@@ -179,12 +179,6 @@ final class Racketmanager_Match {
 	 */
 	public $page_url;
 	/**
-	 * Home flag
-	 *
-	 * @var boolean
-	 */
-	public $is_home;
-	/**
 	 * Selected flag
 	 *
 	 * @var boolean
@@ -803,8 +797,8 @@ final class Racketmanager_Match {
 		if ( isset( $this->title ) && ( ! $home_team || ! $away_team || $this->home_team === $this->away_team ) ) {
 			$title = stripslashes( $this->title );
 		} else {
-			$home_team_name = $this->is_home ? '<strong>' . $home_team->title . '</strong>' : $home_team->title;
-			$away_team_name = $this->is_home ? '<strong>' . $away_team->title . '</strong>' : $away_team->title;
+			$home_team_name = isset( $home_team->title ) ? $home_team->title : __( 'Unknown', 'racketmanager' );
+			$away_team_name = isset( $away_team->title ) ? $away_team->title : __( 'Unknown', 'racketmanager' );
 
 			$title = sprintf( '%s - %s', $home_team_name, $away_team_name );
 		}

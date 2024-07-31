@@ -140,10 +140,10 @@ namespace Racketmanager;
 									?>
 									<td>
 										<?php
-										if ( 'W' === $team->status ) {
+										if ( $team->is_withdrawn ) {
 											$title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );
 											?>
-											<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
+											<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_attr( $title_text ); ?>">
 											<?php
 										}
 										if ( $league->event->is_box ) {
@@ -156,7 +156,7 @@ namespace Racketmanager;
 											<?php the_team_name(); ?>
 										</a>
 										<?php
-										if ( 'W' === $team->status ) {
+										if ( $team->is_withdrawn ) {
 											?>
 											</s> 
 											<?php

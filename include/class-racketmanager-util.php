@@ -571,7 +571,7 @@ class Racketmanager_Util {
 	private static function get_match_statuses() {
 		$match_status      = array();
 		$match_status['0'] = __( 'Complete', 'racketmanager' );
-		$match_status['1'] = __( 'Walkover', 'racketmanager' );
+		$match_status['1'] = __( 'Not played', 'racketmanager' );
 		$match_status['2'] = __( 'Retired', 'racketmanager' );
 		$match_status['3'] = __( 'Not played', 'racketmanager' );
 		$match_status['4'] = __( 'Postponed', 'racketmanager' );

@@ -607,7 +607,7 @@ final class Racketmanager_Rubber {
 								if ( $competition ) {
 									$competition_season = $competition->seasons[ $match->season ];
 									if ( $competition_season ) {
-										if ( isset( $competition_season['fixedMatchDates'] ) && 'true' === $competition_season['fixedMatchDates'] ) {
+										if ( ! empty( $competition_season['fixedMatchDates'] ) ) {
 											$league         = get_league( $match->league_id );
 											$num_match_days = $league->seasons[ $match->season ]['num_match_days'];
 											if ( $match->match_day > ( $num_match_days - $options['playedRounds'] ) ) {

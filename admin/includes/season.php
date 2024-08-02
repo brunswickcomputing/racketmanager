@@ -96,8 +96,8 @@ namespace Racketmanager;
 			<div class="form-floating mb-3">
 				<select name="homeAway" id="homeAway" class="form-select">
 					<option disabled <?php echo isset( $season_data['homeAway'] ) ? '' : 'selected'; ?>><?php esc_html_e( 'Choose format', 'racketmanager' ); ?></option>
-					<option value="false"<?php isset( $season_data['homeAway'] ) ? selected( 'false', $season_data['homeAway'] ) : ''; ?>><?php esc_html_e( 'Round Robin', 'racketmanager' ); ?></option>
-					<option value="true"<?php isset( $season_data['homeAway'] ) ? selected( 'true', $season_data['homeAway'] ) : ''; ?>><?php echo esc_html__( 'Round Robin', 'racketmanager' ) . ' - ' . esc_html__( 'Home and Away', 'racketmanager' ); ?></option>
+					<option value="false"<?php isset( $season_data['homeAway'] ) ? selected( false, $season_data['homeAway'] ) : ''; ?>><?php esc_html_e( 'Round Robin', 'racketmanager' ); ?></option>
+					<option value="true"<?php isset( $season_data['homeAway'] ) ? selected( true, $season_data['homeAway'] ) : ''; ?>><?php echo esc_html__( 'Round Robin', 'racketmanager' ) . ' - ' . esc_html__( 'Home and Away', 'racketmanager' ); ?></option>
 				</select>
 				<label for="homeAway"><?php esc_html_e( 'Format', 'racketmanager' ); ?></label>
 			</div>
@@ -143,7 +143,7 @@ namespace Racketmanager;
 						<input type="radio" class="form-check-input" name="fixedMatchDates" id="fixedMatchDatesTrue" value="true"
 						<?php
 						if ( isset( $season_data['fixedMatchDates'] ) ) {
-							echo ( 'true' === $season_data['fixedMatchDates'] ) ? ' checked' : '';
+							echo ( true === $season_data['fixedMatchDates'] ) ? ' checked' : '';
 						}
 						?>
 						/>
@@ -153,7 +153,7 @@ namespace Racketmanager;
 						<input type="radio" class="form-check-input" name="fixedMatchDates" id="fixedMatchDatesFalse" value="false"
 						<?php
 						if ( isset( $season_data['fixedMatchDates'] ) ) {
-							echo ( 'false' === $season_data['fixedMatchDates'] ) ? ' checked' : '';
+							echo ( false === $season_data['fixedMatchDates'] ) ? ' checked' : '';
 						}
 						?>
 						/>
@@ -170,7 +170,7 @@ namespace Racketmanager;
 						<input type="radio" class="form-check-input" name="homeAway" id="homeAwayTrue" value="true"
 						<?php
 						if ( isset( $season_data['homeAway'] ) ) {
-							echo ( 'true' === $season_data['homeAway'] ) ? ' checked' : '';
+							echo ( true === $season_data['homeAway'] ) ? ' checked' : '';
 						}
 						?>
 						/>
@@ -181,7 +181,7 @@ namespace Racketmanager;
 					<input type="radio" class="form-check-input" name="homeAway" id="homeAwayFalse" value="false"
 					<?php
 					if ( isset( $season_data['homeAway'] ) ) {
-						echo ( 'false' === $season_data['homeAway'] ) ? ' checked' : '';
+						echo ( false === $season_data['homeAway'] ) ? ' checked' : '';
 					}
 					?>
 					/>

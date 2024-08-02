@@ -3314,12 +3314,12 @@ final class RacketManager_Admin extends RacketManager {
 						$match_date = array();
 					}
 					if ( isset( $_POST['fixedMatchDates'] ) ) {
-						$fixed_dates = sanitize_text_field( wp_unslash( $_POST['fixedMatchDates'] ) );
+						$fixed_dates = 'true' === $_POST['fixedMatchDates'] ? true : false;
 					} else {
 						$fixed_dates = true;
 					}
 					if ( isset( $_POST['homeAway'] ) ) {
-						$home_away = sanitize_text_field( wp_unslash( $_POST['homeAway'] ) );
+						$home_away = 'true' === $_POST['homeAway'] ? true : false;
 					} else {
 						$home_away = true;
 					}

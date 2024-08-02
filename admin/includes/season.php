@@ -131,6 +131,20 @@ namespace Racketmanager;
 						<?php esc_html_e( 'Closing date', 'racketmanager' ); ?>
 					</label>
 				</div>
+				<div class="row g-3">
+					<div class="col">
+						<div class="form-floating mb-3">
+							<input type="date" class="form-control" name="date_start" id="date_start-0" value="<?php echo isset( $season_data['dateStart'] ) ? esc_html( $season_data['dateStart'] ) : ''; ?>"/>
+							<label for="matchDate-0"><?php esc_html_e( 'Start Date', 'racketmanager' ); ?></label>
+						</div>
+					</div>
+					<div class="col">
+						<div class="form-floating mb-3">
+							<input type="date" class="form-control" name="date_end" id="date_end" value="<?php echo isset( $season_data['dateEnd'] ) ? esc_html( $season_data['dateEnd'] ) : ''; ?>"/>
+							<label for="matchDate-1"><?php esc_html_e( 'End Date', 'racketmanager' ); ?></label>
+						</div>
+					</div>
+				</div>
 				<?php
 			}
 			?>

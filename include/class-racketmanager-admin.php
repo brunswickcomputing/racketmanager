@@ -1877,7 +1877,6 @@ final class RacketManager_Admin extends RacketManager {
 			$competition_query = array( 'type' => $competition_type );
 			$page_title        = ucfirst( $competition_type ) . ' ' . __( 'Competitions', 'racketmanager' );
 			include_once RACKETMANAGER_PATH . '/admin/show-competitions.php';
-			include_once RACKETMANAGER_PATH . '/admin/show-competition-entry.php';
 		}
 	}
 

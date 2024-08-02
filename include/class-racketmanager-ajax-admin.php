@@ -28,6 +28,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_racketmanager_show_match_header', array( &$this, 'show_admin_match_header' ) );
 		add_action( 'wp_ajax_racketmanager_show_rubbers', array( &$this, 'show_rubbers' ) );
 
+		add_action( 'wp_ajax_racketmanager_notify_competition_entries_open', array( &$this, 'notify_competition_entries_open' ) );
 		add_action( 'wp_ajax_racketmanager_notify_tournament_entries_open', array( &$this, 'notify_tournament_entries_open' ) );
 
 		add_action( 'wp_ajax_racketmanager_notify_teams', array( &$this, 'notify_teams_fixture' ) );
@@ -292,6 +293,50 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 			wp_send_json_success( $output );
 		} else {
 			wp_send_json_error( __( 'Match not found', 'racketmanager' ), 500 );
+		}
+	}
+	/**
+	 * Notify match secretaries of competition entries open
+	 *
+	 * @see templates/email/competition-entry-open.php
+	 */
+	public function notify_competition_entries_open() {
+		global $racketmanager;
+		$return = new \stdClass();
+		if ( isset( $_POST['security'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
+				$return->error = true;
+				$return->msg   = __( 'Security token invalid', 'racketmanager' );
+			}
+		} else {
+			$return->error = true;
+			$return->msg   = __( 'No security token found in request', 'racketmanager' );
+		}
+		if ( ! isset( $return->error ) ) {
+			$competition_id = isset( $_POST['competitionId'] ) ? intval( $_POST['competitionId'] ) : null;
+			if ( ! $competition_id ) {
+				$return->error = true;
+				$return->msg   = __( 'Competition not specified', 'racketmanager' );
+			} else {
+				$season = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+				if ( ! $season ) {
+					$return->error = true;
+					$return->msg   = __( 'Season not specified', 'racketmanager' );
+				} else {
+					$competition = get_competition( $competition_id );
+					if ( ! $competition ) {
+						$return->error = true;
+						$return->msg   = __( 'Competition not found', 'racketmanager' );
+					} else {
+						$return = $racketmanager->notify_entry_open( $competition->type, $season, $competition->id );
+					}
+				}
+			}
+		}
+		if ( isset( $return->error ) ) {
+			wp_send_json_error( $return->msg, 500 );
+		} else {
+			wp_send_json_success( $return->msg );
 		}
 	}
 	/**

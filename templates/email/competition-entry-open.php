@@ -16,6 +16,25 @@ require 'email-header.php';
 			$paragraph_text = sprintf( __( 'The entry form for the %1$s %2$s is now available.', 'racketmanager' ), ucfirst( $competition_name ), $season );
 			require 'components/paragraph.php';
 			?>
+			<?php
+			if ( ! empty( $date_start ) ) {
+				/* translators: $s: start date */
+				$paragraph_text = sprintf( __( 'The competition will run from %s', 'racketmanager' ), $date_start );
+				if ( ! empty( $date_end ) ) {
+					/* translators: $s: end date */
+					$paragraph_text .= ' ' . sprintf( __( 'until %s', 'racketmanager' ), $date_end );
+				}
+				$paragraph_text .= '.';
+				require 'components/paragraph.php';
+			}
+			?>
+			<?php
+			if ( ! empty( $date_closing ) ) {
+				/* translators: $s: clsoing date */
+				$paragraph_text = sprintf( __( 'The closing date for entries is %s.', 'racketmanager' ), $date_closing );
+				require 'components/paragraph.php';
+			}
+			?>
 			<?php $action_link_text = __( 'Entry Form', 'racketmanager' ); ?>
 			<?php require 'components/action-link.php'; ?>
 			<?php

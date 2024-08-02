@@ -59,14 +59,25 @@ namespace Racketmanager;
 							?>
 						</div>
 						<?php
-						if ( ! empty( $competition->competition_code ) ) {
+						if ( ! empty( $season['status'] ) && 'live' === $season['status'] ) {
+							if ( ! empty( $competition->competition_code ) ) {
+								?>
+								<div class="col-auto">
+									<a href="/index.php?competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $key ); ?>&racketmanager_export=report_results" class="btn btn-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Report results', 'racketmanager' ); ?>" >
+										<span class="nav-link__value text-uppercase">
+											<?php esc_html_e( 'Report results', 'racketmanager' ); ?>
+										</span>
+									</a>
+								</div>
+								<?php
+							}
+						} elseif ( ! empty( $season['closing_date'] ) && ! empty( $season['dateStart'] ) && ! empty( $season['dateStart'] ) ) {
 							?>
 							<div class="col-auto">
-								<a href="/index.php?competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $key ); ?>&racketmanager_export=report_results" class="btn btn-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Report results', 'racketmanager' ); ?>" >
-									<span class="nav-link__value text-uppercase">
-										<?php esc_html_e( 'Report results', 'racketmanager' ); ?>
-									</span>
-								</a>
+								<button href="" /index.php?competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $key ); ?> class="btn btn-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Notify open', 'racketmanager' ); ?>" onclick="Racketmanager.notify_open(event, <?php echo esc_html( $competition->id ) . ',' . esc_html( $key ); ?> )">
+									<?php esc_html_e( 'Notify open', 'racketmanager' ); ?>
+								</button>
+								<span class="notifymessage" id="notifyMessage-<?php echo esc_html( $key ); ?>"></span>
 							</div>
 							<?php
 						}

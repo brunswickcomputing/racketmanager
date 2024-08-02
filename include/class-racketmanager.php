@@ -2649,7 +2649,10 @@ class RacketManager {
 			}
 		}
 		if ( empty( $return->error ) ) {
-			$clubs = $this->get_clubs(
+			$date_closing = isset( $competition->seasons[ $season ]['closing_date'] ) ? mysql2date( 'j F Y', $competition->seasons[ $season ]['closing_date'] ) : null;
+			$date_start   = isset( $competition->seasons[ $season ]['dateStart'] ) ? mysql2date( 'j F Y', $competition->seasons[ $season ]['dateStart'] ) : null;
+			$date_end     = isset( $competition->seasons[ $season ]['dateEnd'] ) ? mysql2date( 'j F Y', $competition->seasons[ $season ]['dateEnd'] ) : null;
+			$clubs        = $this->get_clubs(
 				array(
 					'type' => 'affiliated',
 				)
@@ -2676,6 +2679,9 @@ class RacketManager {
 							'season'           => $season,
 							'competition_name' => $competition->name,
 							'club'             => $club,
+							'date_closing'     => $date_closing,
+							'date_start'       => $date_start,
+							'date_end'         => $date_end,
 						),
 						'email'
 					);

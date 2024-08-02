@@ -496,6 +496,37 @@ Racketmanager.notifyTeams = function(matchId) {
 		}
 	});
 };
+Racketmanager.notify_open = function(e, competitionId, season) {
+	e.preventDefault();
+	let notifyField = "#notifyMessage-" + season;
+	jQuery(notifyField).hide();
+	jQuery(notifyField).removeClass();
+	jQuery.ajax({
+		url: ajaxurl,
+		type: "POST",
+		data: {
+			"competitionId": competitionId,
+			"season": season,
+			"action": "racketmanager_notify_competition_entries_open",
+			"security": ajax_var.ajax_nonce,
+		},
+		success: function (response) {
+			jQuery(notifyField).text(response.data);
+			jQuery(notifyField).show();
+			jQuery(notifyField).addClass('message-success');
+			jQuery(notifyField).delay(10000).fadeOut('slow');
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				jQuery(notifyField).text(response.responseJSON.data);
+			} else {
+				jQuery(notifyField).text(response.statusText);
+			}
+			jQuery(notifyField).show();
+			jQuery(notifyField).addClass('message-error');
+		}
+	});
+};
 Racketmanager.notifyTournamentEntryOpen = function(tournamentId) {
 	let notifyField = "#notifyMessage-" + tournamentId;
 	jQuery(notifyField).removeClass();

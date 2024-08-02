@@ -3335,6 +3335,8 @@ final class RacketManager_Admin extends RacketManager {
 					$season_data->home_away      = $home_away;
 					$season_data->status         = $status;
 					$season_data->closing_date   = $closing_date;
+					$season_data->date_start     = $date_start;
+					$season_data->date_end       = $date_end;
 					$season_data->type           = $item;
 					$season_data->is_box         = $is_box;
 					$this->edit_season( $season_data );
@@ -3707,13 +3709,23 @@ final class RacketManager_Admin extends RacketManager {
 			$this->set_message( __( 'Status must be set', 'racketmanager' ), true );
 			$error = true;
 		}
-		if ( ! $season_data->home_away ) {
-			$this->set_message( __( 'Fixtures must be set', 'racketmanager' ), true );
+		if ( true !== $season_data->home_away && false !== $season_data->home_away ) {
+			$this->set_message( __( 'Fixture type must be set', 'racketmanager' ), true );
 			$error = true;
 		}
-		if ( 'competition' === $season_data->type && ! $season_data->closing_date ) {
-			$this->set_message( __( 'Closing date must be set', 'racketmanager' ), true );
-			$error = true;
+		if ( 'competition' === $season_data->type ) {
+			if ( ! $season_data->closing_date ) {
+				$this->set_message( __( 'Closing date must be set', 'racketmanager' ), true );
+				$error = true;
+			}
+			if ( ! $season_data->date_start ) {
+				$this->set_message( __( 'Start date must be set', 'racketmanager' ), true );
+				$error = true;
+			}
+			if ( ! $season_data->date_end ) {
+				$this->set_message( __( 'End date must be set', 'racketmanager' ), true );
+				$error = true;
+			}
 		}
 		if ( ! $season_data->type ) {
 			$this->set_message( __( 'Type must be set', 'racketmanager' ), true );
@@ -3736,6 +3748,10 @@ final class RacketManager_Admin extends RacketManager {
 				'status'          => $season_data->status,
 				'closing_date'    => $season_data->closing_date,
 			);
+			if ( 'competition' === $season_data->type ) {
+				$object->seasons[ $season_data->season ]['dateStart'] = $season_data->date_start;
+				$object->seasons[ $season_data->season ]['dateEnd']   = $season_data->date_end;
+			}
 			ksort( $object->seasons );
 			if ( 'competition' === $season_data->type ) {
 				$this->save_competition_seasons( $object->seasons, $season_data->object_id );

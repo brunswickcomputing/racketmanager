@@ -3683,8 +3683,10 @@ final class RacketManager_Admin extends RacketManager {
 			} else {
 				$match_date_values = array();
 				$prev_match_date   = '';
+				$match_date_empty  = 0;
 				foreach ( $season_data->match_dates as $match_date ) {
 					if ( empty( $match_date ) ) {
+						++$match_date_empty;
 						$this->set_message( __( 'Match date not set', 'racketmanager' ), true );
 						$error = true;
 					} elseif ( 'true' === $season_data->fixed_dates ) {
@@ -3699,6 +3701,12 @@ final class RacketManager_Admin extends RacketManager {
 							$match_date_values[] = $match_date;
 							$prev_match_date     = $match_date;
 						}
+					}
+				}
+				if ( $error ) {
+					if ( count( $season_data->match_dates ) === $match_date_empty ) {
+						$error = false;
+						$this->set_message( null );
 					}
 				}
 			}

@@ -2649,10 +2649,20 @@ class RacketManager {
 			}
 		}
 		if ( empty( $return->error ) ) {
-			$date_closing = isset( $competition->seasons[ $season ]['closing_date'] ) ? mysql2date( 'j F Y', $competition->seasons[ $season ]['closing_date'] ) : null;
-			$date_start   = isset( $competition->seasons[ $season ]['dateStart'] ) ? mysql2date( 'j F Y', $competition->seasons[ $season ]['dateStart'] ) : null;
-			$date_end     = isset( $competition->seasons[ $season ]['dateEnd'] ) ? mysql2date( 'j F Y', $competition->seasons[ $season ]['dateEnd'] ) : null;
-			$clubs        = $this->get_clubs(
+			if ( 'tournament' === $competition->type ) {
+				$tournament_key = $competition->id . ',' . $competition->seasons[ $season ]['name'];
+				$tournament     = get_tournament( $tournament_key, 'shortcode' );
+				if ( $tournament ) {
+					$date_closing = $tournament->closing_date_display;
+					$date_start   = $tournament->date_open_display;
+					$date_end     = null;
+				}
+			} else {
+				$date_closing = isset( $competition->seasons[ $season ]['closing_date'] ) ? mysql2date( 'j F Y', $competition->seasons[ $season ]['closing_date'] ) : null;
+				$date_start   = isset( $competition->seasons[ $season ]['dateStart'] ) ? mysql2date( 'j F Y', $competition->seasons[ $season ]['dateStart'] ) : null;
+				$date_end     = isset( $competition->seasons[ $season ]['dateEnd'] ) ? mysql2date( 'j F Y', $competition->seasons[ $season ]['dateEnd'] ) : null;
+			}
+			$clubs = $this->get_clubs(
 				array(
 					'type' => 'affiliated',
 				)

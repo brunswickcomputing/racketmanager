@@ -3616,7 +3616,7 @@ final class RacketManager_Admin extends RacketManager {
 		/* translators: %s: season name */
 		$this->set_message( sprintf( __( 'Season %s added', 'racketmanager' ), $season ) );
 
-		return true;
+		return $competition->seasons[ $season ];
 	}
 	/**
 	 * Add new season to event

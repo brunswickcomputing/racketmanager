@@ -13,7 +13,7 @@ require 'email-header.php';
 			<?php require 'components/salutation.php'; ?>
 			<?php
 			/* translators: %1$s: competition name, %2$s: season */
-			$paragraph_text = sprintf( __( 'The entry form for the %1$s %2$s is now available.', 'racketmanager' ), ucfirst( $competition_name ), $season );
+			$paragraph_text = sprintf( __( 'The entry form for the %1$s %2$s is now available.', 'racketmanager' ), ucfirst( $competition->name ), $season );
 			require 'components/paragraph.php';
 			?>
 			<?php

@@ -1834,7 +1834,7 @@ final class RacketManager_Admin extends RacketManager {
 				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_notify-league-open' ) ) {
 					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 				} elseif ( isset( $_POST['competition_id'] ) && isset( $_POST['season'] ) ) {
-						$notification = $this->notify_entry_open( 'league', sanitize_text_field( wp_unslash( $_POST['season'] ) ), intval( $_POST['competition_id'] ) );
+						$notification = $this->notify_entry_open( intval( $_POST['competition_id'] ), sanitize_text_field( wp_unslash( $_POST['season'] ) ) );
 						$this->set_message( $notification->msg, isset( $notification->error ) ? $notification->error : false );
 				} else {
 					$this->set_message( __( 'Competition not selected', 'racketmanager' ), true );
@@ -1863,7 +1863,7 @@ final class RacketManager_Admin extends RacketManager {
 				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_notify-cup-open' ) ) {
 					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 				} elseif ( isset( $_POST['competition_id'] ) && isset( $_POST['season'] ) ) {
-						$notification = $this->notify_entry_open( 'cup', sanitize_text_field( wp_unslash( $_POST['season'] ) ), sanitize_text_field( wp_unslash( $_POST['competition_id'] ) ) );
+						$notification = $this->notify_entry_open( intval( $_POST['competition_id'] ), sanitize_text_field( wp_unslash( $_POST['season'] ) ) );
 						$this->set_message( $notification->msg, isset( $notification->error ) ? $notification->error : false );
 				} else {
 					$this->set_message( __( 'Competition not selected', 'racketmanager' ), true );

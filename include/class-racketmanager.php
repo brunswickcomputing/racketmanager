@@ -2594,20 +2594,15 @@ class RacketManager {
 	/**
 	 * Notify clubs entries open
 	 *
-	 * @param string $competition_type competition type.
-	 * @param string $season season.
 	 * @param string $competition_id competition id.
+	 * @param string $season season.
 	 * @return object notifivation status
 	 */
-	public function notify_entry_open( $competition_type, $season, $competition_id ) {
+	public function notify_entry_open( $competition_id, $season ) {
 		global $racketmanager_shortcodes, $racketmanager;
 
 		$return = new \stdClass();
 		$msg    = array();
-		if ( ! $competition_type ) {
-			$return->error = true;
-			$msg[]         = __( 'Competition type not set', 'racketmanager' );
-		}
 		if ( ! $season ) {
 			$return->error = true;
 			$msg[]         = __( 'Season not set', 'racketmanager' );
@@ -2623,7 +2618,7 @@ class RacketManager {
 					$return->error = true;
 					$msg[]         = __( 'Season not set for competition', 'racketmanager' );
 				}
-				if ( 'league' === $competition_type ) {
+				if ( 'league' === $competition->type ) {
 					$events = $competition->get_events();
 					foreach ( $events as $event ) {
 						if ( empty( $event->get_leagues() ) ) {
@@ -2682,16 +2677,16 @@ class RacketManager {
 					$email_message = $racketmanager_shortcodes->load_template(
 						'competition-entry-open',
 						array(
-							'email_subject'    => $email_subject,
-							'from_email'       => $from_email,
-							'action_url'       => $action_url,
-							'organisation'     => $organisation_name,
-							'season'           => $season,
-							'competition_name' => $competition->name,
-							'club'             => $club,
-							'date_closing'     => $date_closing,
-							'date_start'       => $date_start,
-							'date_end'         => $date_end,
+							'email_subject' => $email_subject,
+							'from_email'    => $from_email,
+							'action_url'    => $action_url,
+							'organisation'  => $organisation_name,
+							'season'        => $season,
+							'competition'   => $competition,
+							'club'          => $club,
+							'date_closing'  => $date_closing,
+							'date_start'    => $date_start,
+							'date_end'      => $date_end,
 						),
 						'email'
 					);

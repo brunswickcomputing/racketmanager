@@ -328,7 +328,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 						$return->error = true;
 						$return->msg   = __( 'Competition not found', 'racketmanager' );
 					} else {
-						$return = $racketmanager->notify_entry_open( $competition->type, $season, $competition->id );
+						$return = $racketmanager->notify_entry_open( $competition->id, $season );
 					}
 				}
 			}
@@ -361,7 +361,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 			$tournament       = get_tournament( $tournament_id );
 			$latest_season    = $tournament->season;
 			$competition_type = 'tournament';
-			$return           = $racketmanager->notify_entry_open( $competition_type, $latest_season, $tournament->competition_id );
+			$return           = $racketmanager->notify_entry_open( $tournament->competition->id, $latest_season );
 		}
 		if ( isset( $return->error ) ) {
 			wp_send_json_error( $return->msg, 500 );

@@ -2655,7 +2655,7 @@ class RacketManager {
 				if ( $tournament ) {
 					$date_closing = $tournament->closing_date_display;
 					$date_start   = $tournament->date_open_display;
-					$date_end     = null;
+					$date_end     = $tournament->date_display;
 				}
 			} else {
 				$date_closing = isset( $competition->seasons[ $season ]['closing_date'] ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['closing_date'] ) : null;

@@ -290,24 +290,68 @@ final class Racketmanager_Tournament {
 	 */
 	private function add() {
 		global $wpdb, $racketmanager;
-		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare(
-				"INSERT INTO {$wpdb->racketmanager_tournaments} (`name`, `competition_id`, `season`, `venue`, `date_open`, `closingdate`, `date_start`, `date`, `starttime` ) VALUES (%s, %s, %d, %d, %s, %s, %s, %s, %s )",
-				$this->name,
-				$this->competition_id,
-				$this->season,
-				$this->venue,
-				$this->date_open,
-				$this->closing_date,
-				$this->date_start,
-				$this->date,
-				$this->starttime
-			)
-		);
-		$racketmanager->set_message( __( 'Tournament added', 'racketmanager' ) );
-		$this->id          = $wpdb->insert_id;
-		$this->orderofplay = '';
-		return $this->id;
+		$valid   = true;
+		$err_msg = array();
+		if ( empty( $this->name ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Name is required', 'racketmanager' );
+		}
+		if ( empty( $this->competition_id ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Competition is required', 'racketmanager' );
+		}
+		if ( empty( $this->season ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Season is required', 'racketmanager' );
+		}
+		if ( empty( $this->date_open ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Opening date is required', 'racketmanager' );
+		}
+		if ( empty( $this->closing_date ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Closing date is required', 'racketmanager' );
+		} elseif ( ! empty( $this->date_open ) && $this->closing_date <= $this->date_open ) {
+			$valid     = false;
+			$err_msg[] = __( 'Closing date must be after open date', 'racketmanager' );
+		}
+		if ( empty( $this->date_start ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Start date is required', 'racketmanager' );
+		} elseif ( ! empty( $this->closing_date ) && $this->date_start <= $this->closing_date ) {
+			$valid     = false;
+			$err_msg[] = __( 'Start date must be after closing date', 'racketmanager' );
+		}
+		if ( empty( $this->date ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'End date is required', 'racketmanager' );
+		} elseif ( ! empty( $this->date_start ) && $this->date <= $this->date_start ) {
+			$valid     = false;
+			$err_msg[] = __( 'End date must be after start date', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->prepare(
+					"INSERT INTO {$wpdb->racketmanager_tournaments} (`name`, `competition_id`, `season`, `venue`, `date_open`, `closingdate`, `date_start`, `date`, `starttime` ) VALUES (%s, %s, %d, %d, %s, %s, %s, %s, %s )",
+					$this->name,
+					$this->competition_id,
+					$this->season,
+					$this->venue,
+					$this->date_open,
+					$this->closing_date,
+					$this->date_start,
+					$this->date,
+					$this->starttime
+				)
+			);
+			$racketmanager->set_message( __( 'Tournament added', 'racketmanager' ) );
+			$this->id          = $wpdb->insert_id;
+			$this->orderofplay = '';
+			return $this->id;
+		} else {
+			$racketmanager->set_message( implode( '<br>', $err_msg ), true );
+			return false;
+		}
 	}
 
 	/**
@@ -318,36 +362,37 @@ final class Racketmanager_Tournament {
 	 */
 	public function update( $updated ) {
 		global $wpdb, $racketmanager;
-		$valid = true;
+		$valid   = true;
+		$err_msg = array();
 		if ( ! empty( $updated->date_open ) ) {
 			if ( ! empty( $updated->closing_date ) ) {
 				if ( $updated->closing_date <= $updated->date_open ) {
-					$valid = false;
-					$racketmanager->set_message( __( 'Closing date not after open date', 'racketmanager' ), true );
+					$valid     = false;
+					$err_msg[] = __( 'Closing date must be after open date', 'racketmanager' );
 				} elseif ( ! empty( $updated->date_start ) ) {
 					if ( $updated->date_start < $updated->closing_date ) {
-						$valid = false;
-						$racketmanager->set_message( __( 'Start date not after closing date', 'racketmanager' ), true );
+						$valid     = false;
+						$err_msg[] = __( 'Start date must be after closing date', 'racketmanager' );
 					} elseif ( ! empty( $updated->date ) ) {
 						if ( $updated->date <= $updated->closing_date ) {
-							$valid = false;
-							$racketmanager->set_message( __( 'End date not after start date', 'racketmanager' ), true );
+							$valid     = false;
+							$err_msg[] = __( 'End date must be after start date', 'racketmanager' );
 						}
 					} else {
-						$valid = false;
-						$racketmanager->set_message( __( 'End date not set', 'racketmanager' ), true );
+						$valid     = false;
+						$err_msg[] = __( 'End date is rquired', 'racketmanager' );
 					}
 				} else {
-					$valid = false;
-					$racketmanager->set_message( __( 'Start date not set', 'racketmanager' ), true );
+					$valid     = false;
+					$err_msg[] = __( 'Start date is required', 'racketmanager' );
 				}
 			} else {
-				$valid = false;
-				$racketmanager->set_message( __( 'Closing date not set', 'racketmanager' ), true );
+				$valid     = false;
+				$err_msg[] = __( 'Closing date is required', 'racketmanager' );
 			}
 		} else {
-			$valid = false;
-			$racketmanager->set_message( __( 'Open date not set', 'racketmanager' ), true );
+			$valid     = false;
+			$err_msg[] = __( 'Opening date is required', 'racketmanager' );
 		}
 		if ( $valid ) {
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -368,6 +413,7 @@ final class Racketmanager_Tournament {
 			$racketmanager->set_message( __( 'Tournament updated', 'racketmanager' ) );
 			return true;
 		} else {
+			$racketmanager->set_message( implode( '<br>', $err_msg ), true );
 			return false;
 		}
 	}

@@ -675,7 +675,7 @@ final class RacketManager_Admin extends RacketManager {
 					} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-season' ) ) {
 						$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 					} elseif ( ! empty( $_POST['season'] ) && empty( $_POST['season_id'] ) && isset( $_POST['num_match_days'] ) && isset( $_POST['competition_id'] ) ) {
-						$this->add_season_to_competition( sanitize_text_field( wp_unslash( $_POST['season'] ) ), intval( $_POST['num_match_days'] ), intval( $_POST['competition_id'] ) );
+						$this->add_season_to_competition( sanitize_text_field( wp_unslash( $_POST['season'] ) ), intval( $_POST['competition_id'] ), intval( $_POST['num_match_days'] ) );
 					}
 					$this->printMessage();
 				} elseif ( isset( $_POST['doactionseason'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -2795,7 +2795,7 @@ final class RacketManager_Admin extends RacketManager {
 				} elseif ( isset( $_POST['competition'] ) ) {
 					foreach ( $_POST['competition'] as $competition_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 						if ( isset( $_POST['num_match_days'] ) ) {
-							$this->add_season_to_competition( sanitize_text_field( wp_unslash( $_POST['season'] ) ), intval( $_POST['num_match_days'] ), $competition_id );
+							$this->add_season_to_competition( sanitize_text_field( wp_unslash( $_POST['season'] ) ), $competition_id, intval( $_POST['num_match_days'] ) );
 						}
 					}
 				}
@@ -3577,11 +3577,11 @@ final class RacketManager_Admin extends RacketManager {
 	 * Add new season to competition
 	 *
 	 * @param string $season season.
-	 * @param int    $num_match_days number of match days.
 	 * @param int    $competition_id competition id.
+	 * @param int    $num_match_days number of match days.
 	 * @return boolean
 	 */
-	private function add_season_to_competition( $season, $num_match_days, $competition_id ) {
+	private function add_season_to_competition( $season, $competition_id, $num_match_days = null ) {
 		global $racketmanager, $competition;
 
 		$competition = get_competition( $competition_id );

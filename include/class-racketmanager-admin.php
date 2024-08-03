@@ -1953,41 +1953,70 @@ final class RacketManager_Admin extends RacketManager {
 		if ( ! current_user_can( 'edit_teams' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
-		} else {
-			$edit = false;
-			if ( isset( $_GET['tournament'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$tournament_id = intval( $_GET['tournament'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$edit          = true;
-				$tournament    = get_tournament( $tournament_id );
-				$form_title    = __( 'Edit Tournament', 'racketmanager' );
-				$form_action   = __( 'Update', 'racketmanager' );
+		} elseif ( isset( $_POST['editTournament'] ) ) {
+			if ( ! current_user_can( 'edit_teams' ) ) {
+				$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 			} else {
-				$tournament_id = '';
-				$form_title    = __( 'Add Tournament', 'racketmanager' );
-				$form_action   = __( 'Add', 'racketmanager' );
-				$tournament    = (object) array(
-					'name'           => '',
-					'competition_id' => '',
-					'id'             => '',
-					'venue'          => '',
-					'date'           => '',
-					'closingdate'    => '',
-					'numcourts'      => '',
-					'starttime'      => '',
-					'date_open'      => '',
-					'closing_date'   => '',
-					'date_start'     => '',
-				);
+				check_admin_referer( 'racketmanager_manage-tournament' );
+				if ( isset( $_POST['tournament_id'] ) ) {
+					$tournament_id = intval( $_POST['tournament_id'] );
+					$tournament    = get_tournament( $tournament_id );
+					if ( $tournament ) {
+						$tournament_updates               = clone $tournament;
+						$tournament_updates->name         = isset( $_POST['tournament'] ) ? sanitize_text_field( wp_unslash( $_POST['tournament'] ) ) : null;
+						$tournament_updates->season       = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
+						$tournament_updates->venue        = isset( $_POST['venue'] ) ? intval( $_POST['venue'] ) : null;
+						$tournament_updates->date         = isset( $_POST['date'] ) ? sanitize_text_field( wp_unslash( $_POST['date'] ) ) : null;
+						$tournament_updates->date_open    = isset( $_POST['date_open'] ) ? sanitize_text_field( wp_unslash( $_POST['date_open'] ) ) : null;
+						$tournament_updates->closing_date = isset( $_POST['closingdate'] ) ? sanitize_text_field( wp_unslash( $_POST['closingdate'] ) ) : null;
+						$tournament_updates->date_start   = isset( $_POST['date_start'] ) ? sanitize_text_field( wp_unslash( $_POST['date_start'] ) ) : null;
+						$tournament_updates->starttime    = isset( $_POST['starttime'] ) ? sanitize_text_field( wp_unslash( $_POST['starttime'] ) ) : null;
+						$success                          = $tournament->update( $tournament_updates );
+						if ( $success ) {
+							$this->set_competition_dates( $tournament_updates );
+						}
+					} else {
+						$this->set_message( __( 'Tournament not found', 'racketmanager' ), true );
+					}
+				}
 			}
-			$clubs             = $this->get_clubs(
-				array(
-					'type' => 'affiliated',
-				)
-			);
-			$competition_query = array( 'type' => 'tournament' );
-			$competitions      = $this->get_competitions( $competition_query );
-			include_once RACKETMANAGER_PATH . '/admin/show-tournament.php';
+			$this->printMessage();
+		} elseif ( isset( $_GET['tournament_id'] ) ) {
+			$tournament_id = intval( $_GET['tournament_id'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$tournament    = get_tournament( $tournament_id );
+		} else {
+			$tournament_id = null;
 		}
+		$edit = false;
+		if ( $tournament_id ) {
+			$edit        = true;
+			$form_title  = __( 'Edit Tournament', 'racketmanager' );
+			$form_action = __( 'Update', 'racketmanager' );
+		} else {
+			$form_title  = __( 'Add Tournament', 'racketmanager' );
+			$form_action = __( 'Add', 'racketmanager' );
+			$tournament  = (object) array(
+				'name'           => '',
+				'competition_id' => '',
+				'id'             => '',
+				'venue'          => '',
+				'date'           => '',
+				'closingdate'    => '',
+				'numcourts'      => '',
+				'starttime'      => '',
+				'date_open'      => '',
+				'closing_date'   => '',
+				'date_start'     => '',
+			);
+		}
+		$clubs             = $this->get_clubs(
+			array(
+				'type' => 'affiliated',
+			)
+		);
+		$competition_query = array( 'type' => 'tournament' );
+		$competitions      = $this->get_competitions( $competition_query );
+		include_once RACKETMANAGER_PATH . '/admin/show-tournament.php';
 	}
 
 	/**

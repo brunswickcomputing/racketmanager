@@ -20,11 +20,16 @@ require 'email-header.php';
 			if ( ! empty( $date_start ) ) {
 				/* translators: $s: start date */
 				$paragraph_text = sprintf( __( 'The competition will run from %s', 'racketmanager' ), $date_start );
-				if ( ! empty( $date_end ) ) {
+				if ( ! empty( $date_end ) && ! $competition->is_championship ) {
 					/* translators: $s: end date */
 					$paragraph_text .= ' ' . sprintf( __( 'until %s', 'racketmanager' ), $date_end );
 				}
 				$paragraph_text .= '.';
+				require 'components/paragraph.php';
+			}
+			if ( ! empty( $date_end ) && $competition->is_championship ) {
+				/* translators: $s: end date */
+				$paragraph_text = ' ' . sprintf( __( 'Finals day will be on %s.', 'racketmanager' ), $date_end );
 				require 'components/paragraph.php';
 			}
 			?>

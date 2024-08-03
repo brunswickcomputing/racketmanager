@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
 if ( empty( $matches_key ) ) {
 	$matches_key = null;
 }
@@ -25,7 +26,7 @@ foreach ( $matches_list as $key => $matches ) {
 		<span class="module-divider__body">
 			<?php
 			if ( empty( $matches_key ) ) {
-				echo esc_html( mysql2date( 'j F Y', $key ) );
+				echo esc_html( mysql2date( $racketmanager->date_format, $key ) );
 			} elseif ( 'match_day' === $matches_key ) {
 				echo esc_html__( 'Match Day', 'racketmanager' ) . ' ' . esc_html( $key );
 			} else {

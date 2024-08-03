@@ -15,6 +15,7 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
 $racketmanager_season   = end( $league->seasons )['name'];
 $racketmanager_teaminfo = $league->get_team_dtls( get_team_id() );
 ?>
@@ -84,7 +85,7 @@ $racketmanager_teaminfo = $league->get_team_dtls( get_team_id() );
 											echo esc_html( sprintf( __( 'Match Day %d', 'racketmanager' ), get_match_day() ) );
 											?>
 										</p>
-										<p class='match_date'><?php echo esc_html( mysql2date( 'j. F Y', the_match_date() ) ); ?>&#160;<span class='time'><?php echo esc_html( the_match_time() ); ?></span> <span class='location'><?php echo esc_html( the_match_location() ); ?></span></p>
+										<p class='match_date'><?php echo esc_html( mysql2date( $racketmanager->date_format, the_match_date() ) ); ?>&#160;<span class='time'><?php echo esc_html( the_match_time() ); ?></span> <span class='location'><?php echo esc_html( the_match_location() ); ?></span></p>
 										<p class="score">&#160;</p>
 									</div>
 								</div>
@@ -103,7 +104,7 @@ $racketmanager_teaminfo = $league->get_team_dtls( get_team_id() );
 											echo esc_html( sprintf( __( 'Match Day %d', 'racketmanager' ), get_match_day() ) );
 											?>
 										</p>
-										<p class='match_date'><?php echo esc_html( mysql2date( 'j. F Y', the_match_date() ) ); ?>&#160;<span class='time'><?php echo esc_html( the_match_time() ); ?></span> <span class='location'><?php echo esc_html( the_match_location() ); ?></span></p>
+										<p class='match_date'><?php echo esc_html( mysql2date( $racketmanager->date_format, the_match_date() ) ); ?>&#160;<span class='time'><?php echo esc_html( the_match_time() ); ?></span> <span class='location'><?php echo esc_html( the_match_location() ); ?></span></p>
 										<p class="score"><?php echo esc_html( the_match_score() ); ?></p>
 									</div>
 								</div>

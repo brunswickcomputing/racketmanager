@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
 ?>
 	<div id="match-header" class="team-match-header module module--dark module--card row">
 		<div class="module__content">
@@ -80,7 +81,7 @@ namespace Racketmanager;
 					}
 					?>
 					<div class="match-row row justify-content-center">
-						<div class="col-3"><time datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( 'j. F Y', the_match_date() ) ); ?></time></div>
+						<div class="col-3"><time datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, the_match_date() ) ); ?></time></div>
 						<?php
 						if ( ! empty( $match->leg ) ) {
 							?>

@@ -61,7 +61,7 @@ namespace Racketmanager;
 							</h3>
 							<span class="hgroup__subheading">
 								<?php esc_html_e( 'Entry deadline', 'racketmanager' ); ?>
-								<time datetime="<?php echo esc_attr( $tournament->closing_date ); ?>"><?php echo esc_html( mysql2date( 'j M Y', $tournament->closing_date ) ); ?></time>
+								<time datetime="<?php echo esc_attr( $tournament->closing_date ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, $tournament->closing_date ) ); ?></time>
 							</span>
 						</div>
 						<div class="entry-subhead__aside">

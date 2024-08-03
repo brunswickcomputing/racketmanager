@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
 if ( $match->is_pending ) {
 	$score_class = 'is-not-played';
 } else {
@@ -116,7 +117,7 @@ if ( $match->is_pending ) {
 					<?php
 				}
 				?>
-				<span><time datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( 'j F Y', the_match_date() ) ); ?></time></span>
+				<span><time datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, the_match_date() ) ); ?></time></span>
 			</div>
 			<?php
 			if ( ! empty( $match->date_original ) ) {

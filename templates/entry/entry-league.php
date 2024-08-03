@@ -44,7 +44,7 @@ $match_days = Racketmanager_Util::get_match_days();
 								?>
 								<span class="hgroup__subheading">
 									<?php esc_html_e( 'Entry deadline', 'racketmanager' ); ?>
-									<time datetime="<?php echo esc_attr( $competition->closing_date ); ?>"><?php echo esc_html( mysql2date( 'j M Y', $competition->closing_date ) ); ?></time>
+									<time datetime="<?php echo esc_attr( $competition->closing_date ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, $competition->closing_date ) ); ?></time>
 								</span>
 								<?php
 							}

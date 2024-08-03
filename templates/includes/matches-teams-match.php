@@ -7,6 +7,7 @@
 
 namespace RacketManager;
 
+global $racketmanager;
 $match_pending = false;
 if ( empty( $match->winner_id ) ) {
 	$match_pending = true;
@@ -63,7 +64,7 @@ if ( empty( $match->winner_id ) ) {
 				&nbsp;&#8226;&nbsp;
 				<span>
 					<time
-						datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( 'j F Y', $match->date ) ); ?></time>
+						datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, $match->date ) ); ?></time>
 				</span>
 				<?php
 			}

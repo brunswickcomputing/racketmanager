@@ -2600,7 +2600,7 @@ class RacketManager {
 	 * @return object notifivation status
 	 */
 	public function notify_entry_open( $competition_type, $season, $competition_id ) {
-		global $racketmanager_shortcodes;
+		global $racketmanager_shortcodes, $racketmanager;
 
 		$return = new \stdClass();
 		$msg    = array();
@@ -2658,9 +2658,9 @@ class RacketManager {
 					$date_end     = null;
 				}
 			} else {
-				$date_closing = isset( $competition->seasons[ $season ]['closing_date'] ) ? mysql2date( 'j F Y', $competition->seasons[ $season ]['closing_date'] ) : null;
-				$date_start   = isset( $competition->seasons[ $season ]['dateStart'] ) ? mysql2date( 'j F Y', $competition->seasons[ $season ]['dateStart'] ) : null;
-				$date_end     = isset( $competition->seasons[ $season ]['dateEnd'] ) ? mysql2date( 'j F Y', $competition->seasons[ $season ]['dateEnd'] ) : null;
+				$date_closing = isset( $competition->seasons[ $season ]['closing_date'] ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['closing_date'] ) : null;
+				$date_start   = isset( $competition->seasons[ $season ]['dateStart'] ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['dateStart'] ) : null;
+				$date_end     = isset( $competition->seasons[ $season ]['dateEnd'] ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['dateEnd'] ) : null;
 			}
 			$clubs = $this->get_clubs(
 				array(

@@ -7,11 +7,11 @@
 
 namespace Racketmanager;
 
-global $match;
+global $match, $racketmanager;
 $competition_name = $match->league->title;
 if ( empty( $match->start_time ) ) {
-	$match_date    = mysql2date( 'j F Y', $match->date );
-	$original_date = mysql2date( 'j F Y', $match->date_original );
+	$match_date    = mysql2date( $racketmanager->date_format, $match->date );
+	$original_date = mysql2date( $racketmanager->date_format, $match->date_original );
 } else {
 	$match_date    = mysql2date( 'j F Y H:i', $match->date );
 	$original_date = mysql2date( 'j F Y H:i', $match->date_original );

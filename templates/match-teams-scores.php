@@ -82,7 +82,7 @@ if ( ! empty( $match->winner_id ) ) {
 							?>
 							<span>
 								<time
-									datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( 'j. F Y', the_match_date() ) ); ?></time>
+									datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, the_match_date() ) ); ?></time>
 							</span>
 						</span>
 					</div>

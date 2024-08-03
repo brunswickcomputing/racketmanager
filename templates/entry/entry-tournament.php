@@ -22,31 +22,10 @@
 namespace Racketmanager;
 
 ?>
-	<div class="media tournament-head">
-		<div class="media__wrapper">
-			<div class="media__img"></div>
-			<div class="media__content">
-				<h1 class="media__title"><?php echo esc_html( $tournament->name ) . ' - ' . esc_html__( 'Tournament', 'racketmanager' ); ?></h1>
-				<div class="media__content-subinfo">
-					<small class="media__subheading">
-						<?php echo esc_html( $tournament->venue_name ); ?>
-					</small>
-					<?php
-					if ( ! empty( $tournament->date_start ) && ! empty( $tournament->date ) ) {
-						?>
-						<small class="media__subheading">
-							<i class="racketmanager-svg-icon small">
-								<?php racketmanager_the_svg( 'icon-calendar' ); ?>
-							</i>
-							<?php echo esc_html( mysql2date( 'j M', $tournament->date_start ) ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( mysql2date( 'j M', $tournament->date ) ); ?>
-						</small>
-						<?php
-					}
-					?>
-				</div>
-			</div>
-		</div>
-	</div>
+	<?php
+	$entry_option = false;
+	require RACKETMANAGER_PATH . 'templates/includes/tournament-header.php';
+	?>
 	<form id="form-entry" action="" method="post">
 		<?php wp_nonce_field( 'tournament-entry' ); ?>
 		<input type="hidden" name="tournamentId" value="<?php echo esc_html( $tournament->id ); ?>" />

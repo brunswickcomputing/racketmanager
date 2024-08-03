@@ -50,7 +50,7 @@ namespace Racketmanager;
 							<div class="col-12 col-md-auto check-column">
 								<input type="checkbox" value="<?php echo esc_html( $tournament->id ); ?>" name="tournament[<?php echo esc_html( $tournament->id ); ?>]" />
 							</div>
-							<div class="col-12 col-md-2"><a href="admin.php?page=racketmanager&amp;subpage=tournament&amp;tournament=<?php echo esc_html( $tournament->id ); ?> "><?php echo esc_html( $tournament->name ); ?></a></div>
+							<div class="col-12 col-md-2"><a href="admin.php?page=racketmanager&amp;subpage=tournament&amp;tournament_id=<?php echo esc_html( $tournament->id ); ?> "><?php echo esc_html( $tournament->name ); ?></a></div>
 							<div class="col-12 col-md-1"><?php echo esc_html( $tournament->season ); ?></div>
 							<div class="col-12 col-md-2"><?php echo esc_html( $tournament->venue_name ); ?></div>
 							<div class="col-12 col-md-1"><?php echo esc_html( $tournament->date ); ?></div>

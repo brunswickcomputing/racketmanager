@@ -3523,7 +3523,7 @@ span.module__aside {
 }
 
 .btn.btn-primary.reverse {
-	color: #006800;
+	color: #006800 !important;
 	background-color: #FFF;
 	border-color: #FFF;
 }

@@ -17,7 +17,7 @@ namespace Racketmanager;
 	<h1><?php echo esc_html( $form_title ); ?></h1>
 	<?php
 	$action_form = 'admin.php?page=racketmanager-tournaments';
-	if ( '' !== $tournament->id ) {
+	if ( ! empty( $tournament->id ) ) {
 		$action_form .= '&amp;tournament_id=' . $tournament->id;
 	}
 	?>

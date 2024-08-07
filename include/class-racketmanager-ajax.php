@@ -688,7 +688,7 @@ class Racketmanager_Ajax extends RacketManager {
 				}
 			}
 			if ( $validate_match ) {
-				if ( empty( $share ) && empty( $walkover ) ) {
+				if ( empty( $share ) ) {
 					foreach ( $opponents as $opponent ) {
 						$team_players = isset( $players[ $opponent ] ) ? $players[ $opponent ] : array();
 						foreach ( $player_numbers as $player_number ) {

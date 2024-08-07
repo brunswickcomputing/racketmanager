@@ -603,18 +603,30 @@ class Racketmanager_Ajax extends RacketManager {
 				case 'walkover_player1':
 					$walkover = 'home';
 					if ( 'MD' === $match->league->type ) {
-						$players['home']['1'] = $player['walkover']['male']['home']->roster_id;
-						$players['home']['2'] = $players['home']['1'];
+						if ( empty( $players['home']['1'] ) ) {
+							$players['home']['1'] = $player['walkover']['male']['home']->roster_id;
+						}
+						if ( empty( $players['home']['2'] ) ) {
+							$players['home']['2'] = $player['walkover']['male']['home']->roster_id;
+						}
 						$players['away']['1'] = $player['noplayer']['male']['away']->roster_id;
 						$players['away']['2'] = $players['away']['1'];
 					} elseif ( 'WD' === $match->league->type ) {
-						$players['home']['1'] = $player['walkover']['female']['home']->roster_id;
-						$players['home']['2'] = $players['home']['1'];
+						if ( empty( $players['home']['1'] ) ) {
+							$players['home']['1'] = $player['walkover']['female']['home']->roster_id;
+						}
+						if ( empty( $players['home']['2'] ) ) {
+							$players['home']['2'] = $$player['walkover']['female']['home']->roster_id;
+						}
 						$players['away']['1'] = $player['noplayer']['female']['away']->roster_id;
 						$players['away']['2'] = $players['away']['1'];
 					} elseif ( 'XD' === $match->league->type ) {
-						$players['home']['1'] = $player['walkover']['male']['home']->roster_id;
-						$players['home']['2'] = $player['walkover']['female']['home']->roster_id;
+						if ( empty( $players['home']['1'] ) ) {
+							$players['home']['1'] = $player['walkover']['male']['home']->roster_id;
+						}
+						if ( empty( $players['home']['2'] ) ) {
+							$players['home']['2'] = $player['walkover']['female']['home']->roster_id;
+						}
 						$players['away']['1'] = $player['noplayer']['male']['away']->roster_id;
 						$players['away']['2'] = $player['noplayer']['female']['away']->roster_id;
 					}
@@ -624,18 +636,30 @@ class Racketmanager_Ajax extends RacketManager {
 					if ( 'MD' === $match->league->type ) {
 						$players['home']['1'] = $player['noplayer']['male']['home']->roster_id;
 						$players['home']['2'] = $players['home']['1'];
-						$players['away']['1'] = $player['walkover']['male']['away']->roster_id;
-						$players['away']['2'] = $players['away']['1'];
+						if ( empty( $players['away']['1'] ) ) {
+							$players['away']['1'] = $player['walkover']['male']['away']->roster_id;
+						}
+						if ( empty( $players['away']['2'] ) ) {
+							$players['away']['2'] = $$player['walkover']['male']['away']->roster_id;
+						}
 					} elseif ( 'WD' === $match->league->type ) {
 						$players['home']['1'] = $player['noplayer']['female']['home']->roster_id;
 						$players['home']['2'] = $players['home']['1'];
-						$players['away']['1'] = $player['walkover']['female']['away']->roster_id;
-						$players['away']['2'] = $players['away']['1'];
+						if ( empty( $players['away']['1'] ) ) {
+							$players['away']['1'] = $player['walkover']['female']['away']->roster_id;
+						}
+						if ( empty( $players['away']['2'] ) ) {
+							$players['away']['2'] = $player['walkover']['female']['away']->roster_id;
+						}
 					} elseif ( 'XD' === $match->league->type ) {
 						$players['home']['1'] = $player['noplayer']['male']['home']->roster_id;
 						$players['home']['2'] = $player['noplayer']['female']['home']->roster_id;
-						$players['home']['1'] = $player['walkover']['male']['away']->roster_id;
-						$players['away']['2'] = $player['walkover']['female']['away']->roster_id;
+						if ( empty( $players['away']['1'] ) ) {
+							$players['away']['1'] = $player['walkover']['male']['away']->roster_id;
+						}
+						if ( empty( $players['away']['2'] ) ) {
+							$players['away']['2'] = $player['walkover']['female']['away']->roster_id;
+						}
 					}
 					break;
 				case 'retired_player1':

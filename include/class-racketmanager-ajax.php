@@ -483,7 +483,7 @@ class Racketmanager_Ajax extends RacketManager {
 				$return->updated = false;
 			}
 		} else {
-			$match_count = $league->update_match_results( $matches, $home_points, $away_points, array(), $match->season, $match->confirmed, $match->status );
+			$match_count = $league->update_match_results( $matches, $home_points, $away_points, array(), $match->season, $match->final_round, $match->confirmed );
 			if ( $match_count > 0 ) {
 				/* translators: %s: match count */
 				$return->msg     = __( 'Result saved', 'racketmanager' );

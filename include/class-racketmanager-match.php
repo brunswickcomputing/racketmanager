@@ -347,6 +347,12 @@ final class Racketmanager_Match {
 	 */
 	public $loser_id_tie;
 	/**
+	 * Match tie Link variable
+	 *
+	 * @var string
+	 */
+	public $link_tie;
+	/**
 	 * Home captain variable
 	 *
 	 * @var int
@@ -577,6 +583,7 @@ final class Racketmanager_Match {
 			} else {
 				$this->link = '/match/' . seo_url( $this->league->title ) . '/' . $this->season . '/' . $match_ref . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/';
 			}
+			$this->link_tie = $this->link;
 			if ( ! empty( $this->leg ) ) {
 				$this->link .= 'leg-' . $this->leg . '/';
 			}

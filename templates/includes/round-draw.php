@@ -41,7 +41,7 @@ foreach ( $final->matches as $match ) {
 				<?php
 				if ( is_numeric( $match->home_team ) && $match->home_team >= 1 && is_numeric( $match->away_team ) && $match->away_team >= 1 ) {
 					if ( empty( $tournament ) ) {
-						$match_link = $match->link;
+						$match_link = $match->link_tie;
 					} else {
 						$match_link = '/tournament/' . seo_url( $tournament->name ) . '/match/' . seo_url( $match->league->title ) . '/' . seo_url( $match->teams['home']->title ) . '-vs-' . seo_url( $match->teams['away']->title ) . '/' . $match->id . '/';
 					}

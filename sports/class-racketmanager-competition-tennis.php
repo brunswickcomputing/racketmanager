@@ -99,14 +99,14 @@ class Racketmanager_Competition_Tennis extends Racketmanager_Competition {
 			'forwalkover_match'  => 1,
 		);
 		$rules['score']        = array(
-			'forwin'             => 1,
+			'forwin'             => 0,
 			'fordraw'            => 0,
 			'forloss'            => 0,
 			'forwin_split'       => 0,
 			'forloss_split'      => 0,
-			'forshare'           => 0.5,
-			'matches_win'        => 3,
-			'matches_draw'       => 1.5,
+			'forshare'           => 0,
+			'matches_win'        => 0,
+			'matches_draw'       => 0,
 			'match_result'       => 'games',
 			'forwalkover_rubber' => 1,
 			'forwalkover_match'  => 1,

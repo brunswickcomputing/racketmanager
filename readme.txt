@@ -47,6 +47,21 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.13.0 =
+* BUGFIX: club details already returned by league_team class (#21)
+* BUGFIX: cup matches should not use bonus for straight sets (#20)
+* BUGFIX: update league tables when match complete (#19)
+* BUGFIX: show comments for match result input
+* BUGFIX: handle no club set
+* BUGFIX: handle league not found
+* BUGFIX: handle match not found
+* BUGFIX: use correct option
+* BUGFIX: allow for missing values
+* UPDATE: show latest results format based on competition type
+* UPDATE: show when team withdrawn in tournament
+* UPDATE: competition entry open by season
+* UPDATE: use player name when entered for walkover (#18)
+
 = 8.12.0 =
 * BUGFIX: check for fixed match dates correctly
 * UPDATE: move set calculation javascript inline (#17)

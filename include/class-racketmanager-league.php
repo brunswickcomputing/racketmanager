@@ -1373,17 +1373,9 @@ class Racketmanager_League {
 			if ( 1 === $team->home ) {
 				$class[] = 'homeTeam';
 			}
-			$team->custom = stripslashes_deep( maybe_unserialize( $team->custom ) );
-			$team->roster = maybe_unserialize( $team->roster );
-			$team->title  = htmlspecialchars( stripslashes( $team->title ), ENT_QUOTES );
-			if ( ! empty( $team->affilatedclub ) ) {
-				$team->affiliatedclub     = stripslashes( $team->affiliatedclub );
-				$team->club               = get_club( $team->affiliatedclub );
-				$team->affiliatedclubname = $team->club->name;
-			} else {
-				$team->club               = null;
-				$team->affiliatedclubname = null;
-			}
+			$team->custom  = stripslashes_deep( maybe_unserialize( $team->custom ) );
+			$team->roster  = maybe_unserialize( $team->roster );
+			$team->title   = htmlspecialchars( stripslashes( $team->title ), ENT_QUOTES );
 			$team->stadium = stripslashes( $team->stadium );
 			$team->class   = implode( ' ', $class );
 			if ( 1 === $team->home ) {

@@ -138,6 +138,7 @@ class Racketmanager_Util {
 		$standing_status['W2'] = __( 'Second place but league locked', 'racketmanager' );
 		$standing_status['W3'] = __( 'Third place but league locked', 'racketmanager' );
 		$standing_status['RB'] = __( 'Relegated in bottom place', 'racketmanager' );
+		$standing_status['R2'] = __( 'Relegated in second bottom place', 'racketmanager' );
 		$standing_status['RQ'] = __( 'Relegated by request', 'racketmanager' );
 		$standing_status['RT'] = __( 'Relegated as team in division above', 'racketmanager' );
 		$standing_status['BT'] = __( 'Finished bottom but not relegated', 'racketmanager' );

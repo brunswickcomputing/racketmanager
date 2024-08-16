@@ -59,6 +59,8 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
 			if ( $constitution_exists ) {
 				?>
 				<input type="submit" value="<?php esc_html_e( 'Generate Matches', 'racketmanager' ); ?>" name="generate_matches" id="generate_matches" class="btn btn-secondary action" />
+				<button id="emailConstitution" class="btn btn-secondary" onclick="Racketmanager.emailConstitution(event, <?php echo esc_attr( $event->id ); ?> )"><?php esc_html_e( 'Email Constitution', 'racketmanager' ); ?></button>
+				<span class="notifymessage" id="notifyMessage-constitution"></span>
 				<?php
 			}
 			?>

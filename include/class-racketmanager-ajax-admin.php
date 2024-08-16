@@ -28,6 +28,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_racketmanager_show_match_header', array( &$this, 'show_admin_match_header' ) );
 		add_action( 'wp_ajax_racketmanager_show_rubbers', array( &$this, 'show_rubbers' ) );
 
+		add_action( 'wp_ajax_racketmanager_email_constitution', array( &$this, 'email_constitution' ) );
 		add_action( 'wp_ajax_racketmanager_notify_competition_entries_open', array( &$this, 'notify_competition_entries_open' ) );
 		add_action( 'wp_ajax_racketmanager_notify_tournament_entries_open', array( &$this, 'notify_tournament_entries_open' ) );
 
@@ -293,6 +294,46 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 			wp_send_json_success( $output );
 		} else {
 			wp_send_json_error( __( 'Match not found', 'racketmanager' ), 500 );
+		}
+	}
+	/**
+	 * Notify match secretaries of competition entries open
+	 *
+	 * @see templates/email/competition-entry-open.php
+	 */
+	public function email_constitution() {
+		global $racketmanager;
+		$return = new \stdClass();
+		if ( isset( $_POST['security'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
+				$return->error = true;
+				$return->msg   = __( 'Security token invalid', 'racketmanager' );
+			}
+		} else {
+			$return->error = true;
+			$return->msg   = __( 'No security token found in request', 'racketmanager' );
+		}
+		if ( ! isset( $return->error ) ) {
+			$event_id = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : null;
+			if ( ! $event_id ) {
+				$return->error = true;
+				$return->msg   = __( 'Event not specified', 'racketmanager' );
+			} else {
+				$event = get_event( $event_id );
+				if ( ! $event ) {
+					$return->error = true;
+					$return->msg   = __( 'Event not found', 'racketmanager' );
+				} else {
+					$season = $event->current_season;
+					$event->send_constitution( $season );
+					$return->msg = __( 'Constitution emailed', 'racketmanager' );
+				}
+			}
+		}
+		if ( isset( $return->error ) ) {
+			wp_send_json_error( $return->msg, 500 );
+		} else {
+			wp_send_json_success( $return->msg );
 		}
 	}
 	/**

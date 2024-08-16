@@ -3858,28 +3858,7 @@ final class RacketManager_Admin extends RacketManager {
 				}
 			}
 			if ( 'live' === $season_data->status && 'event' === $season_data->type && 'league' === $object->competition->type ) {
-				$email_address                 = $racketmanager->get_confirmation_email( $object->competition->type );
-				$organisation                  = $racketmanager->site_name;
-				$message_args                  = array();
-				$message_args['organisation']  = $organisation;
-				$message_args['event']         = $object->name;
-				$message_args['emailfrom']     = $email_address;
-				$message_args['template_type'] = 'email';
-				$email_message                 = racketmanager_constitution_notification( $object->id, $message_args );
-				$headers                       = array();
-				$headers[]                     = 'From: ' . ucfirst( $object->competition->type ) . ' Secretary <' . $email_address . '>';
-				$clubs                         = $racketmanager->get_clubs(
-					array(
-						'type' => 'affiliated',
-					)
-				);
-				foreach ( $clubs as $club ) {
-					if ( ! empty( $club->match_secretary_email ) ) {
-						$headers[] = 'bcc: ' . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
-					}
-				}
-				$subject = $organisation . ' - ' . $object->name . ' ' . $season_data->season . ' - Constitution';
-				wp_mail( $email_address, $subject, $email_message, $headers );
+				$object->send_constitution( $object->seasons[ $season_data->season ] );
 				$teams = $object->get_teams( array( 'status' => 3 ) );
 				foreach ( $teams as $team ) {
 					$league = get_league( $team->league_id );

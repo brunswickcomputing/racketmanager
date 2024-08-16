@@ -563,22 +563,32 @@ final class Racketmanager_Rubber {
 								$error = __( 'no age provided', 'racketmanager' );
 								$match->add_result_check( $team->id, $player->id, $error, $this->id );
 							} else {
+								if ( ! empty( $match->league->event->competition->seasons[ $match->season ]['dateEnd'] ) ) {
+									$date_end = $match->league->event->competition->seasons[ $match->season ]['dateEnd'];
+								} elseif ( ! empty( $match->league->event->seasons[ $match->season ]['matchDates'] ) ) {
+									$date_end = end( $match->league->event->seasons[ $match->season ]['matchDates'] );
+								} else {
+									$date_end = null;
+								}
+								if ( empty( $date_end ) ) {
+									$player_age = $player->age;
+								} else {
+									$player_age = substr( $date_end, 0, 4 ) - intval( $player->year_of_birth );
+								}
 								$age_limit = $match->league->event->age_limit;
 								if ( $age_limit >= 30 ) {
 									if ( ! empty( $match->league->event->age_offset ) && 'F' === $player->gender ) {
 										$age_limit -= $match->league->event->age_offset;
 									}
-									if ( $player->age < $age_limit ) {
+									if ( $player_age < $age_limit ) {
 										/* translators: %1$d: player age, %2$d: event age limit */
-										$error = sprintf( __( 'player age (%1$d) less than event age limit (%2$d)', 'racketmanager' ), $player->age, $age_limit );
+										$error = sprintf( __( 'player age (%1$d) less than event age limit (%2$d)', 'racketmanager' ), $player_age, $age_limit );
 										$match->add_result_check( $team->id, $player->id, $error, $this->id );
-										$age_error = true;
 									}
-								} elseif ( $player->age > $age_limit ) {
+								} elseif ( $player_age > $age_limit ) {
 									/* translators: %1$d: player age, %2$d: event age limit */
-									$error = sprintf( __( 'player age (%1$d) greater than event age limit (%2$d)', 'racketmanager' ), $player->age, $age_limit );
+									$error = sprintf( __( 'player age (%1$d) greater than event age limit (%2$d)', 'racketmanager' ), $player_age, $age_limit );
 									$match->add_result_check( $team->id, $player->id, $error, $this->id );
-									$age_error = true;
 								}
 							}
 						}

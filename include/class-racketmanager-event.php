@@ -1848,4 +1848,38 @@ class Racketmanager_Event {
 			$league->schedule_matches();
 		}
 	}
+	/**
+	 * Send constitution
+	 *
+	 * @param array $season season data.
+	 */
+	public function send_constitution( $season ) {
+		global $racketmanager;
+		$email_address                 = $racketmanager->get_confirmation_email( $this->competition->type );
+		$organisation                  = $racketmanager->site_name;
+		$message_args                  = array();
+		$message_args['organisation']  = $organisation;
+		$message_args['event']         = $this->name;
+		$message_args['emailfrom']     = $email_address;
+		$message_args['template_type'] = 'email';
+		$email_message                 = racketmanager_constitution_notification( $this->id, $message_args );
+		$headers                       = array();
+		$headers[]                     = 'From: ' . ucfirst( $this->competition->type ) . ' Secretary <' . $email_address . '>';
+		$clubs                         = $racketmanager->get_clubs(
+			array(
+				'type' => 'affiliated',
+			)
+		);
+		$subject                       = $organisation . ' - ' . $this->name . ' ' . $season['name'] . ' - Constitution';
+		if ( 'live' === $season['status'] ) {
+			foreach ( $clubs as $club ) {
+				if ( ! empty( $club->match_secretary_email ) ) {
+					$headers[] = 'bcc: ' . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
+				}
+			}
+		} else {
+			$subject .= ' - ' . __( 'Draft', 'racketmanager' );
+		}
+		wp_mail( $email_address, $subject, $email_message, $headers );
+	}
 }

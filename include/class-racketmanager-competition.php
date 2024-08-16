@@ -335,8 +335,9 @@ class Racketmanager_Competition {
 			if ( ! $competition ) {
 				return false;
 			}
-			$competition->settings = (array) maybe_unserialize( $competition->settings );
-			$competition           = (object) ( $competition->settings + (array) $competition );
+			$competition->settings         = (array) maybe_unserialize( $competition->settings );
+			$competition->settings['type'] = $competition->type;
+			$competition                   = (object) ( $competition->settings + (array) $competition );
 			// check if specific sports class exists.
 			if ( ! isset( $competition->sport ) ) {
 				$competition->sport = '';

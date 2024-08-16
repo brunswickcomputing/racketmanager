@@ -23,7 +23,21 @@ if ( have_teams() ) {
 				?>
 				<tr class='<?php the_team_class(); ?>'>
 					<td>
+						<?php
+						if ( $team->is_withdrawn ) {
+							?>
+							<s>
+							<?php
+						}
+						?>
 						<?php the_team_name(); ?>
+						<?php
+						if ( $team->is_withdrawn ) {
+							?>
+							</s> 
+							<?php
+						}
+						?>
 					</td>
 					<td class="num">
 						<?php the_team_status_text(); ?>

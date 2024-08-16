@@ -47,6 +47,17 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.14.0 =
+* BUGFIX: return non player teams
+* BUGFIX: ensure headers and footers always included for emails
+* BUGFIX: prevent sql error
+* BUGFIX: set type in settings
+* UPDATE: use player age at end of event
+* UPDATE: new relegation type for finishing 2nd bottom
+* UPDATE: strikethrough withdrawn teams in constitution
+* UPDATE: allow constitution to be sent from admin and in draft
+* UPDATE: do not show seeds in consolation draws
+
 = 8.13.0 =
 * BUGFIX: club details already returned by league_team class (#21)
 * BUGFIX: cup matches should not use bonus for straight sets (#20)

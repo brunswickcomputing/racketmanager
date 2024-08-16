@@ -106,7 +106,7 @@ foreach ( $final->matches as $match ) {
 													}
 													?>
 													<?php
-													if ( isset( $team->rank ) && intval( $team->rank ) <= intval( $match->league->championship->num_seeds ) ) {
+													if ( ! $match->league->championship->is_consolation && isset( $team->rank ) && intval( $team->rank ) <= intval( $match->league->championship->num_seeds ) ) {
 														?>
 														<span class="seeding"><?php echo esc_html( $team->rank ); ?></span>
 														<?php
@@ -156,7 +156,7 @@ foreach ( $final->matches as $match ) {
 												}
 												?>
 												<?php
-												if ( isset( $team->rank ) && intval( $team->rank ) <= intval( $match->league->championship->num_seeds ) ) {
+												if ( ! $match->league->championship->is_consolation && isset( $team->rank ) && intval( $team->rank ) <= intval( $match->league->championship->num_seeds ) ) {
 													?>
 													<span class="seeding"><?php echo esc_html( $team->rank ); ?></span>
 													<?php

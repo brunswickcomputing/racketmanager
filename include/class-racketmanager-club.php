@@ -374,7 +374,7 @@ final class Racketmanager_Club {
 		$sql    = "SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d'";
 		$args[] = intval( $this->id );
 		if ( ! $players ) {
-			$sql .= " AND `team_type` != 'P'";
+			$sql .= " AND (`team_type` is null OR `team_type` != 'P')";
 		} else {
 			$sql .= " AND `team_type` = 'P'";
 		}

@@ -1080,10 +1080,10 @@ final class RacketManager_Admin extends RacketManager {
 			if ( sanitize_text_field( wp_unslash( $_POST['competition_title'] ) ) !== $competition->name ) {
 				$competition->set_name( sanitize_text_field( wp_unslash( $_POST['competition_title'] ) ) );
 			}
-				$competition->set_settings( $settings );
-				$competition->reload_settings();
-				$competition = get_competition( $competition );
-				$this->set_message( __( 'Settings saved', 'racketmanager' ) );
+			$competition->set_settings( $settings );
+			$competition->reload_settings();
+			$competition = get_competition( $competition );
+			$this->set_message( __( 'Settings saved', 'racketmanager' ) );
 		}
 	}
 	/**

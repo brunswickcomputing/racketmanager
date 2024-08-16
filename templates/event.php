@@ -25,8 +25,8 @@ if ( 'tournament' === $event->competition->type ) {
 }
 if ( 'email' === $template_type ) {
 	$email_subject = $event->name;
-	require_once 'email/email-header.php';
-	require_once 'email/div-top.php';
+	require 'email/email-header.php';
+	require 'email/div-top.php';
 	?>
 	<?php
 }
@@ -352,6 +352,6 @@ if ( $event->is_box ) {
 if ( 'email' === $template_type ) {
 	?>
 	<?php
-	require_once 'email/div-bottom.php';
-	require_once 'email/email-footer.php';
+	require 'email/div-bottom.php';
+	require 'email/email-footer.php';
 } ?>

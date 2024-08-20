@@ -1426,8 +1426,14 @@ class Racketmanager_Event {
 					++$p;
 				}
 			} else {
-				$event_team->player_count = 0;
-			}
+				$event_team->player_count = $this->get_players(
+					array(
+						'season' => $season,
+						'count'  => true,
+						'team'   => $event_team->team_id,
+					)
+				);
+				}
 			$event_teams[ $i ] = $event_team;
 		}
 

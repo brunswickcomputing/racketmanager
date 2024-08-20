@@ -47,6 +47,13 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.15.0 =
+* BUGFIX: set match completed when admin updates
+* BUGFIX: use correct reference for away walkover player
+* BUGFIX: handle boys and girls teams
+* BUGFIX: link to correct page
+* UPDATE: get count of players
+
 = 8.14.0 =
 * BUGFIX: return non player teams
 * BUGFIX: ensure headers and footers always included for emails

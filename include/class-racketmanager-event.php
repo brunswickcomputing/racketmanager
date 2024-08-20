@@ -1425,7 +1425,7 @@ class Racketmanager_Event {
 					$event_team->player_id[ $p ] = $player;
 					++$p;
 				}
-			} else {
+			} elseif ( $event_team->club ) {
 				$event_team->player_count = $this->get_players(
 					array(
 						'season' => $season,
@@ -1433,7 +1433,9 @@ class Racketmanager_Event {
 						'team'   => $event_team->team_id,
 					)
 				);
-				}
+			} else {
+				$event_team->player_count = 0;
+			}
 			$event_teams[ $i ] = $event_team;
 		}
 

@@ -640,7 +640,7 @@ class Racketmanager_Ajax extends RacketManager {
 							$players['away']['1'] = $player['walkover']['male']['away']->roster_id;
 						}
 						if ( empty( $players['away']['2'] ) ) {
-							$players['away']['2'] = $$player['walkover']['male']['away']->roster_id;
+							$players['away']['2'] = $player['walkover']['male']['away']->roster_id;
 						}
 					} elseif ( 'WD' === $match->league->type || 'GD' === $match->league->type ) {
 						$players['home']['1'] = $player['noplayer']['female']['home']->roster_id;

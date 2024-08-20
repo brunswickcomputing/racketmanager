@@ -256,6 +256,7 @@ class Racketmanager_Ajax extends RacketManager {
 				$rm_options          = $racketmanager->get_options();
 				$result_confirmation = $rm_options[ $match->league->event->competition->type ]['resultConfirmation'];
 				if ( 'auto' === $result_confirmation || ( current_user_can( 'manage_racketmanager' ) ) ) {
+					$match->confirmed = 'Y';
 					$update = $this->update_league_with_result( $match );
 					$msg    = $update->msg;
 					if ( ! current_user_can( 'manage_racketmanager' ) ) {
@@ -422,8 +423,9 @@ class Racketmanager_Ajax extends RacketManager {
 				if ( 'D' === $match_confirmed ) {
 					$this->result_notification( $match_confirmed, $match_message, $match, $match_updated_by );
 				} elseif ( ( 'A' === $match_confirmed && 'auto' === $result_confirmation ) || ( 'admin' === $user_type ) ) {
-					$update = $this->update_league_with_result( $match );
-					$msg    = $update->msg;
+					$match->confirmed = 'Y';
+					$update           = $this->update_league_with_result( $match );
+					$msg              = $update->msg;
 					if ( 'admin' !== $user_type ) {
 						if ( $update->updated || 'Y' === $match->updated ) {
 							$match_confirmed = 'Y';

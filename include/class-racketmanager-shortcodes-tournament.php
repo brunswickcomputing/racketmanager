@@ -117,7 +117,6 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		);
 	}
 	/**
-	/**
 	 * Show event function
 	 *
 	 * @param array $atts function attributes.
@@ -582,7 +581,10 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			$match_id = get_query_var( 'match_id' );
 		}
 		if ( $match_id ) {
-			$match             = get_match( $match_id );
+			$match = get_match( $match_id );
+			if ( ! $match ) {
+				return __( 'Match not found', 'racketmanager' );
+			}
 			$is_update_allowed = $match->is_update_allowed();
 			if ( empty( $template ) && $this->check_template( 'match-tournament' . $match->league->sport ) ) {
 				$filename = 'match-tournament' . $match->league->sport;

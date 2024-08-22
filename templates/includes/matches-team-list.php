@@ -43,7 +43,7 @@ foreach ( $matches as $match ) {
 	} elseif ( ! empty( $current_club ) || ! empty( $current_team ) ) {
 		$opponents = array( 'home', 'away' );
 		foreach ( $opponents as $opponent ) {
-			if ( ( ! empty( $current_club ) && $match->teams[ $opponent ]->club->id === $current_club ) || ( ! empty( $current_team ) && $match->teams[ $opponent ]->id === $current_team ) ) {
+			if ( ( ! empty( $current_club ) && ! empty( $match->teams[ $opponent ]->club ) && $match->teams[ $opponent ]->club->id === $current_club ) || ( ! empty( $current_team ) && $match->teams[ $opponent ]->id === $current_team ) ) {
 				$highlight_match = true;
 				if ( $match->teams[ $opponent ]->id === $match->winner_id ) {
 					$match_status_class = 'winner';

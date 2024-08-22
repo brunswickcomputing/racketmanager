@@ -850,13 +850,15 @@ final class Racketmanager_Match {
 	 * Set tooltip title
 	 */
 	private function set_tooltip_title() {
+		$home_title = isset( $this->teams['home']->title ) ? $this->teams['home']->title : null;
+		$away_title = isset( $this->teams['away']->title ) ? $this->teams['away']->title : null;
 		// make tooltip title for last-5 standings.
 		if ( '' === $this->home_points && '' === $this->away_points ) {
-			$tooltip_title = 'Next Match: ' . $this->teams['home']->title . ' - ' . $this->teams['away']->title . ' [' . $this->match_date . ']';
+			$tooltip_title = 'Next Match: ' . $home_title . ' - ' . $away_title . ' [' . $this->match_date . ']';
 		} elseif ( isset( $this->title ) ) {
 			$tooltip_title = stripslashes( $this->title ) . ' [' . $this->match_date . ']';
 		} else {
-			$tooltip_title = $this->score . ' - ' . $this->teams['home']->title . ' - ' . $this->teams['away']->title . ' [' . $this->match_date . ']';
+			$tooltip_title = $this->score . ' - ' . $home_title . ' - ' . $away_title . ' [' . $this->match_date . ']';
 		}
 		$this->tooltip_title = $tooltip_title;
 	}

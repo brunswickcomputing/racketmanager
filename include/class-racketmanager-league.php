@@ -1518,12 +1518,15 @@ class Racketmanager_League {
 	/**
 	 * Get single team
 	 *
-	 * @param int $team_id team id.
+	 * @param int    $team_id team id.
+	 * @param string $season season name (optional).
 	 * @return object
 	 */
-	public function get_team_dtls( $team_id ) {
+	public function get_team_dtls( $team_id, $season = null ) {
 		global $wpdb;
-
+		if ( empty( $season ) ) {
+			$season = $this->current_season['name'];
+		}
 		if ( -1 === $team_id ) {
 			$team                 = (object) array(
 				'id'     => -1,
@@ -1544,7 +1547,7 @@ class Racketmanager_League {
 			intval( $this->id ),
 			intval( $this->id ),
 			intval( $team_id ),
-			$this->current_season['name']
+			$season
 		);
 
 		$team = wp_cache_get( md5( $sql ), 'teamdetails' );

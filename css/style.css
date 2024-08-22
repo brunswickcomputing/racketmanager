@@ -1499,7 +1499,10 @@ ul [class*=list--] li,
 ol.list-winners li {
 	list-style-type: decimal;
 }
-
+.list-winners .player-club {
+    font-size: 0.8rem;
+    font-style: italic;
+}
 .list--timeline>.list__item,
 .message-page .message-page__modal .message-page__removal-tips ul .list--timeline>li {
 	margin-bottom: 0;

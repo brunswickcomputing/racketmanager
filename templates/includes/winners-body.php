@@ -39,8 +39,10 @@ if ( ! $winners ) {
 												require 'championship-draw-team.php';
 											?>
 											<?php
-											if ( ! empty( $tournament ) ) {
-												echo '(' . esc_html( $winner->winner_club ) . ')';
+											if ( ! empty( $tournament ) && $winner->winner_club ) {
+												?>
+												<span class="player-club">(<?php echo esc_html( $winner->winner_club ); ?>)</span>
+												<?php
 											}
 											?>
 										</li>
@@ -53,8 +55,10 @@ if ( ! $winners ) {
 												require 'championship-draw-team.php';
 											?>
 											<?php
-											if ( ! empty( $tournament ) ) {
-												echo '(' . esc_html( $winner->loser_club ) . ')';
+											if ( ! empty( $tournament ) && $winner->loser_club ) {
+												?>
+												<span class="player-club">(<?php echo esc_html( $winner->loser_club ); ?>)</span>
+												<?php
 											}
 											?>
 										</li>
@@ -77,16 +81,20 @@ if ( ! $winners ) {
 				<dd><?php esc_html_e( 'Winner', 'racketmanager' ); ?></dd>
 				<dt><?php echo esc_html( $winner->winner ); ?>
 				<?php
-				if ( ! empty( $tournament ) ) {
-					echo ' (' . esc_html( $winner->winner_club ) . ')';
+				if ( ! empty( $tournament ) && $winner->winner_club ) {
+					?>
+					<span class="player-club">(<?php echo esc_html( $winner->winner_club ); ?>)</span>
+					<?php
 				}
 				?>
 				</dt>
 				<dd><?php esc_html_e( 'Runner-up', 'racketmanager' ); ?></dd>
 				<dt><?php echo esc_html( $winner->loser ); ?>
 					<?php
-					if ( ! empty( $tournament ) ) {
-						echo ' (' . esc_html( $winner->loser_club ) . ')';
+					if ( ! empty( $tournament ) && $winner->loser_club ) {
+						?>
+						<span class="player-club">(<?php echo esc_html( $winner->loser_club ); ?>)</span>
+						<?php
 					}
 					?>
 				</dt>

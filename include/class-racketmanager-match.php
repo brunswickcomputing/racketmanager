@@ -758,7 +758,7 @@ final class Racketmanager_Match {
 						'player' => array(),
 					);
 				} else {
-					$this->teams['home'] = $this->league->get_team_dtls( $this->home_team );
+					$this->teams['home'] = $this->league->get_team_dtls( $this->home_team, $this->season );
 					if ( is_object( $this->teams['home'] ) ) {
 						if ( $this->league->is_championship ) {
 							$this->teams['home']->rank = $this->league->get_rank( $this->home_team, $this->season );
@@ -780,7 +780,7 @@ final class Racketmanager_Match {
 						'player' => array(),
 					);
 				} else {
-					$this->teams['away'] = $this->league->get_team_dtls( $this->away_team );
+					$this->teams['away'] = $this->league->get_team_dtls( $this->away_team, $this->season );
 					if ( is_object( $this->teams['away'] ) ) {
 						if ( $this->league->is_championship ) {
 							$this->teams['away']->rank = $this->league->get_rank( $this->away_team, $this->season );

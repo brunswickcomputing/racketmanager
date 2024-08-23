@@ -3724,7 +3724,6 @@ class Racketmanager_League {
 		if ( ! $stats ) {
 			asort( $league_players );
 		} else {
-
 			$won    = array_column( $league_players, 'matches_won' );
 			$played = array_column( $league_players, 'played' );
 			array_multisort( $won, SORT_DESC, $played, SORT_ASC, $league_players );

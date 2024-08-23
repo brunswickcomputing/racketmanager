@@ -35,6 +35,8 @@ if ( empty( $tab ) ) {
 		$tab = 'players'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 	} elseif ( isset( $wp->query_vars['club_name'] ) ) {
 		$tab = 'clubs'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+	} elseif ( isset( $wp->query_vars['team'] ) ) {
+		$tab = 'teams'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 	} else {
 		$tab = 'standings'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 	}
@@ -155,7 +157,21 @@ if ( $event->is_box ) {
 							}
 							?>
 							<li class="nav-item" role="presentation">
+								<?php
+								if ( ! empty( $wp->query_vars['team'] ) ) {
+									?>
+									<a href="/<?php echo esc_attr( $event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $event->name ) ); ?>/<?php echo esc_html( $curr_season ); ?>/teams">
+									<?php
+								}
+								?>
 								<button class="nav-link" id="teams-tab" data-bs-toggle="tab" data-bs-target="#teams" type="button" role="tab" aria-controls="teams" aria-selected="false"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></button>
+								<?php
+								if ( ! empty( $wp->query_vars['team'] ) ) {
+									?>
+									</a>
+									<?php
+								}
+								?>
 							</li>
 							<?php
 							if ( ! $event->is_box ) {
@@ -324,7 +340,7 @@ if ( $event->is_box ) {
 			<?php
 			if ( $event->competition->is_championship ) {
 				?>
-				<?php require 'teams-list.php'; ?>
+				<?php echo do_shortcode( '[event-teams event_id=' . $event->id . ']' ); ?>
 				<?php
 			} else {
 				?>

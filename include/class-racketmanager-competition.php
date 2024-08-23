@@ -430,6 +430,8 @@ class Racketmanager_Competition {
 				$this->is_tournament   = true;
 				$this->is_player_entry = true;
 				break;
+			default:
+				break;
 		}
 	}
 

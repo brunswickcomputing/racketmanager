@@ -1681,6 +1681,7 @@ class Racketmanager_Event {
 		$history              = $match_args['history'];
 		$club                 = $match_args['club'];
 		$league_name          = $match_args['league_name'];
+		$team_id              = $match_args['team_id'];
 		$team_name            = $match_args['team_name'];
 		$home_team            = $match_args['home_team'];
 		$home_club            = $match_args['home_club'];
@@ -1767,6 +1768,9 @@ class Racketmanager_Event {
 		if ( ! empty( $away_team ) ) {
 			$sql .= ' AND `away_team` = ' . $away_team . ' ';
 		}
+		if ( ! empty( $team_id ) ) {
+			$sql .= ' AND (`home_team` = ' . $team_id . ' OR `away_team` = ' . $team_id . ')';
+		}
 		if ( ! empty( $team_name ) ) {
 			$sql .= " AND (`home_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `title` LIKE '%" . $team_name . "%') OR `away_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `title` LIKE '%" . $team_name . "%'))";
 		}
@@ -1835,6 +1839,7 @@ class Racketmanager_Event {
 		'history'             => false,
 		'club'                => false,
 		'league_name'         => false,
+		'team_id'             => false,
 		'team_name'           => false,
 		'home_team'           => false,
 		'away_team'           => false,

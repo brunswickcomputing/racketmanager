@@ -31,6 +31,13 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		add_shortcode( 'event-clubs', array( &$this, 'show_event_clubs' ) );
 		add_shortcode( 'event-teams', array( &$this, 'show_event_teams' ) );
 		add_shortcode( 'event-players', array( &$this, 'show_event_players' ) );
+		add_shortcode( 'competition', array( &$this, 'show_competition' ) );
+		add_shortcode( 'competition-overview', array( &$this, 'show_competition_overview' ) );
+		add_shortcode( 'competition-events', array( &$this, 'show_competition_events' ) );
+		add_shortcode( 'competition-teams', array( &$this, 'show_competition_teams' ) );
+		add_shortcode( 'competition-clubs', array( &$this, 'show_competition_clubs' ) );
+		add_shortcode( 'competition-players', array( &$this, 'show_competition_players' ) );
+		add_shortcode( 'competition-winners', array( &$this, 'show_competition_winners' ) );
 	}
 	/**
 	 * Display Championship
@@ -1274,6 +1281,373 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				'event' => $event,
 			),
 			'event'
+		);
+	}
+	/**
+	 * Show competition function
+	 *
+	 * @param array $atts atrributes.
+	 * @return string display output
+	 */
+	public function show_competition( $atts ) {
+		global $wp;
+		$args        = shortcode_atts(
+			array(
+				'competition' => false,
+				'tab'         => false,
+				'season'      => false,
+				'template'    => '',
+			),
+			$atts
+		);
+		$competition = $args['competition'];
+		$tab         = $args['tab'];
+		$season      = $args['season'];
+		$template    = $args['template'];
+		if ( ! $competition ) {
+			if ( isset( $_GET['competition'] ) && ! empty( $_GET['competition'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$competition = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['competition'] ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			} elseif ( isset( $wp->query_vars['competition'] ) ) {
+				$competition = get_query_var( 'competition' );
+			}
+			$competition = un_seo_url( $competition );
+		}
+		if ( $competition ) {
+			$competition = get_competition( $competition, 'name' );
+		}
+		if ( ! $competition ) {
+			return esc_html_e( 'Competition not found', 'racketmanager' );
+		}
+		if ( ! $season ) {
+			if ( isset( $_GET['season'] ) && ! empty( $_GET['season'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$season = wp_strip_all_tags( wp_unslash( $_GET['season'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			} elseif ( isset( $wp->query_vars['season'] ) ) {
+				$season = get_query_var( 'season' );
+			}
+		}
+		if ( $season ) {
+			$competition_season = isset( $competition->seasons[ $season ] ) ? $competition->seasons[ $season ] : null;
+			if ( ! $competition_season ) {
+				return esc_html_e( 'Season not found', 'racketmanager' );
+			}
+		} else {
+			$competition_season = end( $competition->seasons );
+			$season             = $competition_season['name'];
+		}
+		if ( ! $tab ) {
+			if ( isset( $_GET['tab'] ) && ! empty( $_GET['tab'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$tab = wp_strip_all_tags( wp_unslash( $_GET['tab'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			} elseif ( isset( $wp->query_vars['tab'] ) ) {
+				$tab = get_query_var( 'tab' );
+			}
+		}
+		$filename = ( ! empty( $template ) ) ? 'competition-' . $template : 'competition';
+
+		return $this->load_template(
+			$filename,
+			array(
+				'competition'        => $competition,
+				'competition_season' => $competition_season,
+				'tab'                => $tab,
+			)
+		);
+	}
+	/**
+	 * Show competition overview function
+	 *
+	 * @param array $atts function attributes.
+	 * @return string
+	 */
+	public function show_competition_overview( $atts ) {
+		$args           = shortcode_atts(
+			array(
+				'id'       => false,
+				'template' => '',
+			),
+			$atts
+		);
+		$competition_id = $args['id'];
+		$template       = $args['template'];
+		$competition    = get_competition( $competition_id );
+		if ( ! $competition ) {
+			return esc_html_e( 'Competition not found', 'racketmanager' );
+		}
+		$competition->events  = $competition->get_events();
+		$competition->entries = $competition->get_teams(
+			array(
+				'count'  => true,
+				'season' => $competition->current_season['name'],
+			)
+		);
+
+		$filename = ( ! empty( $template ) ) ? 'overview-' . $template : 'overview';
+
+		return $this->load_template(
+			$filename,
+			array(
+				'competition'        => $competition,
+				'competition_season' => $competition->current_season,
+			),
+			'competition'
+		);
+	}
+	/**
+	 * Show events function
+	 *
+	 * @param array $atts function attributes.
+	 * @return string
+	 */
+	public function show_competition_events( $atts ) {
+		$args           = shortcode_atts(
+			array(
+				'id'       => false,
+				'template' => '',
+			),
+			$atts
+		);
+		$competition_id = $args['id'];
+		$template       = $args['template'];
+		$competition    = get_competition( $competition_id );
+		if ( ! $competition ) {
+			return __( 'Competition not found', 'racketmanager' );
+		}
+		$competition->events = $competition->get_events();
+		$i                   = 0;
+		foreach ( $competition->events as $event ) {
+			$event->entries            = $event->get_teams(
+				array(
+					'count'  => true,
+					'season' => $competition->current_season['name'],
+				)
+			);
+			$competition->events[ $i ] = $event;
+			++$i;
+		}
+
+		$tab      = 'events';
+		$filename = ( ! empty( $template ) ) ? 'events-' . $template : 'events';
+
+		return $this->load_template(
+			$filename,
+			array(
+				'competition' => $competition,
+				'tab'         => $tab,
+			),
+			'competition'
+		);
+	}
+	/**
+	 * Show teams function
+	 *
+	 * @param array $atts function attributes.
+	 * @return string
+	 */
+	public function show_competition_teams( $atts ) {
+		$args           = shortcode_atts(
+			array(
+				'id'       => false,
+				'template' => '',
+			),
+			$atts
+		);
+		$competition_id = $args['id'];
+		$template       = $args['template'];
+		$competition    = get_competition( $competition_id );
+		if ( ! $competition ) {
+			return esc_html_e( 'Competition not found', 'racketmanager' );
+		}
+		$competition->teams = $competition->get_teams(
+			array(
+				'season'  => $competition->current_season['name'],
+				'orderby' => array( 'name' => 'ASC' ),
+			)
+		);
+
+		$tab      = 'teams';
+		$filename = ( ! empty( $template ) ) ? 'teams-' . $template : 'teams';
+
+		return $this->load_template(
+			$filename,
+			array(
+				'competition' => $competition,
+				'tab'         => $tab,
+			),
+			'competition'
+		);
+	}
+	/**
+	 * Function to display competition Clubs
+	 *
+	 * @param array $atts shortcode attributes.
+	 * @return the content
+	 */
+	public function show_competition_clubs( $atts ) {
+		global $wp;
+		$args           = shortcode_atts(
+			array(
+				'id'       => 0,
+				'template' => '',
+				'season'   => false,
+			),
+			$atts
+		);
+		$competition_id = $args['id'];
+		$template       = $args['template'];
+		$competition    = get_competition( $competition_id );
+		if ( ! $competition ) {
+			return esc_html_e( 'Competition not found', 'racketmanager' );
+		}
+		$competition->clubs = $competition->get_clubs( array() );
+		$competition_club   = null;
+		$club               = null;
+		if ( isset( $wp->query_vars['club_name'] ) ) {
+			$club = get_query_var( 'club_name' );
+			$club = str_replace( '-', ' ', $club );
+		}
+		if ( $club ) {
+			$competition_club = get_club( $club, 'shortcode' );
+			if ( $competition_club ) {
+				$competition_club->teams   = $competition->get_teams(
+					array(
+						'club'   => $competition_club->id,
+						'season' => $competition->current_season['name'],
+					)
+				);
+				$competition_club->matches = array();
+				$matches                   = $competition->get_matches(
+					array(
+						'season'  => $competition->current_season['name'],
+						'club'    => $competition_club->id,
+						'time'    => 'next',
+						'orderby' => array(
+							'date'      => 'ASC',
+							'league_id' => 'DESC',
+						),
+					)
+				);
+				foreach ( $matches as $match ) {
+					$key = substr( $match->date, 0, 10 );
+					if ( false === array_key_exists( $key, $competition_club->matches ) ) {
+						$competition_club->matches[ $key ] = array();
+					}
+					$competition_club->matches[ $key ][] = $match;
+				}
+				$competition_club->results = array();
+				$matches                   = $competition->get_matches(
+					array(
+						'season'  => $competition->current_season['name'],
+						'club'    => $competition_club->id,
+						'time'    => 'latest',
+						'orderby' => array(
+							'date'      => 'ASC',
+							'league_id' => 'DESC',
+						),
+					)
+				);
+				foreach ( $matches as $match ) {
+					$key = substr( $match->date, 0, 10 );
+					if ( false === array_key_exists( $key, $competition_club->results ) ) {
+						$competition_club->results[ $key ] = array();
+					}
+					$competition_club->results[ $key ][] = $match;
+				}
+				$competition_club->players = $competition->get_players(
+					array(
+						'club'   => $competition_club->id,
+						'season' => $competition->current_season['name'],
+					)
+				);
+			} else {
+				return esc_html__( 'Club not found', 'racketmanager' );
+			}
+		}
+		$filename = ( ! empty( $template ) ) ? 'clubs-' . $template : 'clubs';
+		return $this->load_template(
+			$filename,
+			array(
+				'competition'      => $competition,
+				'competition_club' => $competition_club,
+			),
+			'competition'
+		);
+	}
+	/**
+	 * Function to display competition Players
+	 *
+	 * @param array $atts shortcode attributes.
+	 * @return the content
+	 */
+	public function show_competition_players( $atts ) {
+		global $wp;
+		$args           = shortcode_atts(
+			array(
+				'id'       => 0,
+				'template' => '',
+			),
+			$atts
+		);
+		$competition_id = $args['id'];
+		$template       = $args['template'];
+		$competition    = get_competition( $competition_id );
+		if ( ! $competition ) {
+			return esc_html_e( 'Competition not found', 'racketmanager' );
+		}
+		$player               = null;
+		$competition->players = array();
+		if ( isset( $wp->query_vars['player_id'] ) ) {
+			$player = un_seo_url( get_query_var( 'player_id' ) );
+		}
+		if ( $player ) {
+			$player = get_player( $player, 'name' ); // get player by name.
+			if ( $player ) {
+				$player->matches = $player->get_matches( $competition, $competition->current_season['name'], 'competition' );
+				asort( $player->matches );
+				$player->stats       = $player->get_stats();
+				$competition->player = $player;
+			} else {
+				esc_html_e( 'Player not found', 'racketmanager' );
+			}
+		} else {
+			$players              = $competition->get_players( array( 'season' => $competition->current_season['name'] ) );
+			$competition->players = RacketManager_Util::get_players_list( $players );
+		}
+		$filename = ( ! empty( $template ) ) ? 'players-' . $template : 'players';
+		return $this->load_template(
+			$filename,
+			array(
+				'competition' => $competition,
+			),
+			'competition'
+		);
+	}
+	/**
+	 * Function to display competition winners
+	 *
+	 * @param array $atts shortcode attributes.
+	 * @return the content
+	 */
+	public function show_competition_winners( $atts ) {
+		$args           = shortcode_atts(
+			array(
+				'id'       => 0,
+				'template' => '',
+			),
+			$atts
+		);
+		$competition_id = $args['id'];
+		$template       = $args['template'];
+		$competition    = get_competition( $competition_id );
+		if ( ! $competition ) {
+			return __( 'Competition not found', 'racketmanager' );
+		}
+		$competition->winners = $competition->get_winners( true );
+		$filename             = ( ! empty( $template ) ) ? 'winners-' . $template : 'winners';
+		return $this->load_template(
+			$filename,
+			array(
+				'competition' => $competition,
+			),
+			'competition'
 		);
 	}
 }

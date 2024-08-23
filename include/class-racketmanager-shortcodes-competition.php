@@ -29,6 +29,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		add_shortcode( 'team', array( &$this, 'show_team' ) );
 		add_shortcode( 'players', array( &$this, 'show_players' ) );
 		add_shortcode( 'event-clubs', array( &$this, 'show_event_clubs' ) );
+		add_shortcode( 'event-teams', array( &$this, 'show_event_teams' ) );
 		add_shortcode( 'event-players', array( &$this, 'show_event_players' ) );
 	}
 	/**
@@ -1158,6 +1159,74 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				'event_club' => $event_club,
 			),
 			'event'
+		);
+	}
+	/**
+	 * Function to display event teams
+	 *
+	 * @param array $atts shortcode attributes.
+	 * @return the content
+	 */
+	public function show_event_teams( $atts ) {
+		global $wp;
+		$args     = shortcode_atts(
+			array(
+				'event_id' => false,
+				'template' => '',
+			),
+			$atts
+		);
+		$event_id = $args['event_id'];
+		$template = $args['template'];
+		$event    = get_event( $event_id );
+		if ( ! $event ) {
+			return esc_html_e( 'Event not found', 'racketmanager' );
+		}
+		$event->teams = $event->get_teams(
+			array(
+				'season'  => $event->current_season['name'],
+				'orderby' => array( 'name' => 'ASC' ),
+			)
+		);
+		$team         = null;
+		if ( isset( $wp->query_vars['team'] ) ) {
+			$team = get_query_var( 'team' );
+			$team = str_replace( '-', ' ', $team );
+		}
+		if ( $team ) {
+			$team = get_team( $team );
+			if ( $team ) {
+				$team->info    = $event->get_team_info( $team->id );
+				$team->matches = $event->get_matches(
+					array(
+						'team_id'          => $team->id,
+						'match_day'        => false,
+						'limit'            => 'false',
+						'reset_query_args' => true,
+						'season'           => $event->current_season['name'],
+						'orderby'          => array( 'date' => 'ASC' ),
+					)
+				);
+				$players       = $event->get_players(
+					array(
+						'team'  => $team->id,
+						'stats' => true,
+					)
+				);
+				$team->players = $players;
+				$event->team   = $team;
+			}
+		}
+		$tab      = 'teams';
+		$filename = ( ! empty( $template ) ) ? 'teams-list' . $template : 'teams-list';
+
+		return $this->load_template(
+			$filename,
+			array(
+				'event'       => $event,
+				'tab'         => $tab,
+				'curr_season' => $event->current_season['name'],
+			)
 		);
 	}
 	/**

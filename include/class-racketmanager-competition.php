@@ -868,4 +868,89 @@ class Racketmanager_Competition {
 			$this->$key = $value;
 		}
 	}
+	/**
+	 * Get winners function
+	 *
+	 * @param boolean $group_by group by flag.
+	 * @return array
+	 */
+	public function get_winners( $group_by = false ) {
+		global $wpdb;
+
+		if ( $this->is_league ) {
+			$winners = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->prepare(
+					"SELECT l.`title` ,wt.`title` AS `winner` ,e.`type`, e.`name` AS `event_name`, e.`id` AS `event_id` FROM {$wpdb->racketmanager_table} t, {$wpdb->racketmanager} l, {$wpdb->racketmanager_teams} wt, {$wpdb->racketmanager_events} e WHERE t.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = %d AND t.`season` = %d AND t.rank = 1 AND t.team_id = wt.id order by e.`name`, l.`title`",
+					$this->id,
+					$this->current_season['name']
+				)
+			);
+		} else {
+			$winners = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->prepare(
+					"SELECT l.`title` ,wt.`title` AS `winner` ,lt.`title` AS `loser`, m.`id`, m.`home_team`, m.`away_team`, m.`winner_id` AS `winner_id`, m.`loser_id` AS `loser_id`, e.`type`, e.`name` AS `event_name`, e.`id` AS `event_id`, wt.`roster` AS `winner_roster`, lt.`roster` AS `loser_roster`, wt.`status` AS `team_type` FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l, {$wpdb->racketmanager_teams} wt, {$wpdb->racketmanager_teams} lt, {$wpdb->racketmanager_events} e WHERE `league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = %d AND m.`final` = 'FINAL' AND m.`season` = %d AND m.`winner_id` = wt.`id` AND m.`loser_id` = lt.`id` order by e.`name`, l.`title`",
+					$this->id,
+					$this->current_season['name']
+				)
+			);
+		}
+
+		if ( ! $winners ) {
+			return false;
+		}
+
+		$return = array();
+		foreach ( $winners as $winner ) {
+			if ( ! $this->is_league ) {
+				$match = get_match( $winner->id );
+			}
+			if ( $this->is_player_entry ) {
+				$winner->winner_roster = maybe_unserialize( $winner->winner_roster );
+				$winner->loser_roster  = maybe_unserialize( $winner->loser_roster );
+				if ( $winner->winner_id === $winner->home_team ) {
+					$winner_club = isset( $match->teams['home']->club ) ? $match->teams['home']->club->shortcode : null;
+				} else {
+					$winner_club = isset( $match->teams['away']->club ) ? $match->teams['away']->club->shortcode : null;
+				}
+				if ( $winner->loser_id === $winner->home_team ) {
+					$loser_club = isset( $match->teams['home']->club ) ? $match->teams['home']->club->shortcode : null;
+				} else {
+					$loser_club = isset( $match->teams['away']->club ) ? $match->teams['away']->club->shortcode : null;
+				}
+				if ( ! empty( $winner->winner_roster ) ) {
+					$rosters['winner'] = $winner->winner_roster;
+				}
+				if ( ! empty( $winner->loser_roster ) ) {
+					$rosters['loser'] = $winner->loser_roster;
+				}
+				foreach ( $rosters as $key => $roster ) {
+					$p = 1;
+					foreach ( $roster as $player ) {
+						$teamplayer                      = get_player( $player );
+						$winner->player[ $key ][ $p ]    = $teamplayer->fullname;
+						$winner->player_id[ $key ][ $p ] = $player;
+						++$p;
+					}
+				}
+				$winner->winner_club = $winner_club;
+				$winner->loser_club  = $loser_club;
+			}
+			$winner->league           = $winner->title;
+			$winner->competition_name = $this->name;
+			$winner->competition_type = $this->type;
+			$winner->season           = $this->current_season['name'];
+			$winner->is_team_entry    = $this->is_team_entry;
+			if ( $group_by ) {
+				$key = strtoupper( $winner->type );
+				if ( false === array_key_exists( $key, $return ) ) {
+					$return[ $key ] = array();
+				}
+				// now just add the row data.
+				$return[ $key ][] = $winner;
+			} else {
+				$return[] = $winner;
+			}
+		}
+		return $return;
+	}
 }

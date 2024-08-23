@@ -221,7 +221,7 @@ foreach ( $final->matches as $match ) {
 										} else {
 											$points = $match->away_points_tie;
 										}
-										if ( ! empty( $winner ) ) {
+										if ( ! empty( $winner ) && '-1' !== $match->home_team && '-1' !== $match->away_team ) {
 											?>
 											<div class="player-row__score-game <?php echo esc_html( $winner_class ); ?>">
 												<?php echo esc_html( sprintf( '%g', $points ) ); ?>

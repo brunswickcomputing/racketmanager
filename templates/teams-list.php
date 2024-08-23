@@ -56,21 +56,9 @@ if ( empty( $object->team ) ) {
 											</div>
 											<div class="media__content">
 												<h4 class="media__title">
-													<?php
-													if ( ! $object->is_championship ) {
-														?>
-														<a class="nav--link" href=<?php echo esc_attr( $item_link ) . '/team/' . esc_attr( seo_url( $team->title ) ) . '/'; ?>>
-														<?php
-													}
-													?>
-													<span><?php echo esc_html( $team->title ); ?></span>
-													<?php
-													if ( ! $object->is_championship ) {
-														?>
-														</a>
-														<?php
-													}
-													?>
+													<a class="nav--link" href=<?php echo esc_attr( $item_link ) . '/team/' . esc_attr( seo_url( $team->title ) ) . '/'; ?>>
+														<span><?php echo esc_html( $team->title ); ?></span>
+													</a>
 													<?php
 													$favourite_type = 'team';
 													$favourite_id   = $team->id;

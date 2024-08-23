@@ -61,7 +61,7 @@ if ( $league->event->is_box ) {
 			<div class="module__banner">
 				<div class="module__title">
 					<h1>
-						<span><?php echo esc_html( $league->title ) . ' - ' . esc_html( $season_title ) . ' ' . esc_html( $league->current_season['name'] ); ?></span>
+						<span><?php echo esc_html( $league->title ); ?></span>
 						<?php
 						$favourite_type = 'league';
 						$favourite_id   = $league->id;

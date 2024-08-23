@@ -44,7 +44,7 @@ if ( $event->is_box ) {
 	$season_label     = __( 'Round', 'racketmanager' );
 	$season_selection = __( 'Rounds', 'racketmanager' );
 } else {
-	$event_title      = $event->name . ' - ' . __( 'Season', 'racketmanager' ) . ' ' . $curr_season;
+	$event_title      = $event->name;
 	$season_label     = __( 'Season', 'racketmanager' );
 	$season_selection = __( 'Seasons', 'racketmanager' );
 }

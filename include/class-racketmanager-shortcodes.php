@@ -51,7 +51,7 @@ class RacketManager_Shortcodes {
 	 * @return string
 	 */
 	public function show_daily_matches( $atts ) {
-		global $racketmanager;
+		global $racketmanager, $wp;
 		wp_verify_nonce( 'matches-daily' );
 		$args             = shortcode_atts(
 			array(
@@ -75,6 +75,9 @@ class RacketManager_Shortcodes {
 		}
 		if ( '' === $match_date ) {
 			$match_date = gmdate( 'Y-m-d' );
+		}
+		if ( isset( $wp->query_vars['competition_type'] ) ) {
+			$competition_type = un_seo_url( get_query_var( 'competition_type' ) );
 		}
 		$matches      = $racketmanager->get_matches(
 			array(
@@ -141,8 +144,8 @@ class RacketManager_Shortcodes {
 		if ( isset( $wp->query_vars['days'] ) ) {
 			$days = str_replace( '-', ' ', get_query_var( 'days' ) );
 		}
-		if ( isset( $wp->query_vars['type'] ) ) {
-			$competition_type = un_seo_url( get_query_var( 'type' ) );
+		if ( isset( $wp->query_vars['competition_type'] ) ) {
+			$competition_type = un_seo_url( get_query_var( 'competition_type' ) );
 		}
 		if ( isset( $wp->query_vars['competition_name'] ) ) {
 			$competition_name = un_seo_url( get_query_var( 'competition_name' ) );

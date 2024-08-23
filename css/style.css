@@ -1495,9 +1495,17 @@ ul [class*=list--] li,
 [class*=list--] .list__item {
 	list-style-type: none
 }
-
 ol.list-winners li {
 	list-style-type: decimal;
+}
+ul.list--winner {
+    padding-left: 0;
+}
+ol.list-winners {
+    padding-left: 1rem;
+}
+ul.list-winners {
+    padding-left: 0;
 }
 .list-winners .player-club {
     font-size: 0.8rem;

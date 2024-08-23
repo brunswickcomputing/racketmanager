@@ -103,7 +103,7 @@ if ( empty( $match->winner_id ) ) {
 						<?php
 						if ( ! empty( $match->teams['home']->is_withdrawn ) ) {
 							?>
-							</s> 
+							</s>
 							<?php
 						}
 						?>
@@ -145,7 +145,7 @@ if ( empty( $match->winner_id ) ) {
 						<?php
 						if ( ! empty( $match->teams['away']->is_withdrawn ) ) {
 							?>
-							</s> 
+							</s>
 							<?php
 						}
 						?>

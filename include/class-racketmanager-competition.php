@@ -294,6 +294,12 @@ class Racketmanager_Competition {
 	 */
 	public $is_team_entry = false;
 	/**
+	 * Current phase string
+	 *
+	 * @var string
+	 */
+	public $current_phase = false;
+	/**
 	 * Player entry flag
 	 *
 	 * @var boolean
@@ -607,6 +613,20 @@ class Racketmanager_Competition {
 			$data = end( $this->seasons );
 		}
 
+		$count_matchdates = isset( $data['matchDates'] ) ? count( $data['matchDates'] ) : 0;
+		if ( empty( $data['dateEnd'] ) && $count_matchdates >= 2 ) {
+			$data['dateEnd'] = end( $data['matchDates'] );
+		}
+		if ( empty( $data['dateStart'] ) && $count_matchdates >= 2 ) {
+			$data['dateStart'] = $data['matchDates'][0];
+		}
+		$today               = gmdate( 'Y-m-d' );
+		$this->current_phase = 'complete';
+		if ( ! empty( $data['dateEnd'] ) && $today > $data['dateEnd'] ) {
+			$this->current_phase = 'end';
+		} elseif ( ! empty( $data['dateStart'] ) && $today >= $data['dateStart'] ) {
+			$this->current_phase = 'start';
+		}
 		$this->current_season = $data;
 		$this->num_match_days = $data['num_match_days'];
 	}

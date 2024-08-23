@@ -14,25 +14,28 @@
 namespace Racketmanager;
 
 ?>
-<?php
-if ( $matches_list ) {
-	?>
-	<div class="module module--card">
-		<div class="module__content">
-			<div class="module-container">
-				<div class="module">
+<div class="module module--card">
+	<div class="module__banner">
+		<h1 class="module__title"><?php esc_html_e( 'Latest Results', 'racketmanager' ); ?></h1>
+	</div>
+	<div class="module__content">
+		<div class="module-container">
+			<div class="module">
+				<?php
+				if ( $matches_list ) {
+					?>
 					<?php
 					$matches_key = 'league';
 					require RACKETMANAGER_PATH . 'templates/includes/matches-team-list-group.php';
 					?>
-				</div>
+					<?php
+				} else {
+					?>
+					<p><?php echo esc_html_e( 'No recent results', 'racketmanager' ); ?></p>
+					<?php
+				}
+				?>
 			</div>
 		</div>
 	</div>
-	<?php
-} else {
-	?>
-	<p><?php echo esc_html_e( 'No recent results', 'racketmanager' ); ?></p>
-	<?php
-}
-?>
+</div>

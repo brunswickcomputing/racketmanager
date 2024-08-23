@@ -2812,10 +2812,8 @@ class Racketmanager_League {
 			}
 		}
 
-		if ( $num_matches > 0 ) {
-			if ( ! $final_round ) {
-				$this->update_standings( $season );
-			}
+		if ( $num_matches > 0 && ! $final_round ) {
+			$this->update_standings( $season );
 		}
 		return $num_matches;
 	}

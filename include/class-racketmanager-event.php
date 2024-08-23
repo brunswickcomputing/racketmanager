@@ -1459,6 +1459,7 @@ class Racketmanager_Event {
 			'team'    => false,
 			'count'   => false,
 			'group'   => false,
+			'stats'   => false,
 		);
 		$args     = array_merge( $defaults, $args );
 		$offset   = $args['offset'];
@@ -1469,6 +1470,7 @@ class Racketmanager_Event {
 		$team     = $args['team'];
 		$count    = $args['count'];
 		$group    = $args['group'];
+		$stats    = $args['stats'];
 
 		if ( $this->competition->is_player_entry ) {
 			$teams = $this->get_teams(
@@ -1572,12 +1574,29 @@ class Racketmanager_Event {
 			$event_players = array();
 			foreach ( $players as $player ) {
 				$player = get_player( $player->player_id );
-				if ( ! $player->system_record ) {
+				if ( $player->system_record ) {
+					continue;
+				}
+				if ( $stats ) {
+					$player->matches      = $player->get_matches( $this, $this->current_season['name'], 'event' );
+					$player->stats        = $player->get_stats();
+					$player->win_pct      = $player->stats['total']->win_pct;
+					$player->matches_won  = $player->stats['total']->matches_won;
+					$player->matches_lost = $player->stats['total']->matches_lost;
+					$player->played       = $player->stats['total']->played;
+					$event_players[]      = $player;
+				} else {
 					$event_players[] = $player->fullname;
 				}
 			}
 		}
-		asort( $event_players );
+		if ( $stats ) {
+			$won    = array_column( $event_players, 'matches_won' );
+			$played = array_column( $event_players, 'played' );
+			array_multisort( $won, SORT_DESC, $played, SORT_ASC, $event_players );
+		} else {
+			asort( $event_players );
+		}
 		if ( $group ) {
 			$this->players = array();
 			foreach ( $event_players as $player ) {

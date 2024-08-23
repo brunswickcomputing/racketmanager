@@ -294,6 +294,12 @@ class Racketmanager_Competition {
 	 */
 	public $is_team_entry = false;
 	/**
+	 * Teams
+	 *
+	 * @var array
+	 */
+	public $teams = array();
+	/**
 	 * Current phase string
 	 *
 	 * @var string
@@ -879,6 +885,139 @@ class Racketmanager_Competition {
 		foreach ( maybe_unserialize( $result->settings ) as $key => $value ) {
 			$this->$key = $value;
 		}
+	}
+	/**
+	 * Get teams from database
+	 *
+	 * @param string $args search arguments.
+	 * @return array
+	 */
+	public function get_teams( $args = array() ) {
+		global $wpdb;
+
+		$defaults = array(
+			'offset'  => 0,
+			'limit'   => 99999999,
+			'season'  => false,
+			'orderby' => array(
+				'league_title' => 'ASC',
+				'name'         => 'ASC',
+			),
+			'club'    => false,
+			'status'  => false,
+			'count'   => false,
+			'name'    => false,
+		);
+		$args     = array_merge( $defaults, $args );
+		$offset   = $args['offset'];
+		$limit    = $args['limit'];
+		$season   = $args['season'];
+		$orderby  = $args['orderby'];
+		$club     = $args['club'];
+		$status   = $args['status'];
+		$count    = $args['count'];
+		$name     = $args['name'];
+
+		$search_terms   = array();
+		$search_terms[] = $wpdb->prepare( 'e.`competition_id` = %d', $this->id );
+
+		if ( $season ) {
+			$search_terms[] = $wpdb->prepare( 't1.`season` = %s', $season );
+		}
+
+		if ( $club ) {
+			$search_terms[] = $wpdb->prepare( 't2.`affiliatedclub` = %d', intval( $club ) );
+		}
+
+		if ( $status ) {
+			$search_terms[] = $wpdb->prepare( 't1.`profile` = %d', intval( $status ) );
+		}
+		if ( $name ) {
+			$search_terms[] = $wpdb->prepare( 't2.`title` like %s', '%' . $name . '%' );
+		}
+
+		$search = '';
+		if ( ! empty( $search_terms ) ) {
+			$search  = ' AND ';
+			$search .= implode( ' AND ', $search_terms );
+		}
+
+		if ( $count ) {
+			$sql = 'SELECT COUNT(*)';
+		} else {
+			$sql = 'SELECT `l`.`title` AS `league_title`, l.`id` AS `league_id`, t2.`id` AS `team_id`, t1.`id` AS `tableId`, `t2`.`title` as `name`,`t1`.`rank`, l.`id`, t1.`status`, t1.`profile`, t1.`group`, t2.`roster`, t2.`affiliatedclub`, t2.`status` AS `team_type`';
+		}
+		$sql .= " FROM {$wpdb->racketmanager_events} e, {$wpdb->racketmanager} l, {$wpdb->racketmanager_teams} t2, {$wpdb->racketmanager_table} t1 WHERE e.`id` = l.`event_id` AND t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` " . $search;
+
+		if ( $count ) {
+			return $wpdb->get_var(
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			); // db call ok.
+		}
+		$orderby_string = '';
+		$i              = 0;
+		foreach ( $orderby as $order => $direction ) {
+			if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
+				$direction = 'ASC';
+			}
+			$orderby_string .= '`' . $order . '` ' . $direction;
+			if ( $i < ( count( $orderby ) - 1 ) ) {
+				$orderby_string .= ',';
+			}
+			++$i;
+		}
+		$orderby = $orderby_string;
+		$sql    .= ' ORDER BY ' . $orderby;
+		$sql     = $wpdb->prepare(
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			$sql . ' LIMIT %d, %d',
+			intval( $offset ),
+			intval( $limit )
+		);
+		$teams = wp_cache_get( md5( $sql ), 'teams' );
+		if ( ! $teams ) {
+			$teams = $wpdb->get_results(
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			); // db call ok.
+			wp_cache_set( md5( $sql ), $teams, 'teams' );
+		}
+		foreach ( $teams as $i => $team ) {
+			$team->roster = maybe_unserialize( $team->roster );
+			$team->club   = get_club( $team->affiliatedclub );
+			if ( strpos( $team->name, '_' ) !== false ) {
+				$team_name  = null;
+				$name_array = explode( '_', $team->name );
+				if ( '1' === $name_array[0] ) {
+					$team_name = __( 'Winner of', 'racketmanager' );
+				} elseif ( '2' === $name_array[0] ) {
+					$team_name = __( 'Loser of', 'racketmanager' );
+				}
+				if ( ! empty( $team_name ) && is_numeric( $name_array[2] ) ) {
+					$match = get_match( $name_array[2] );
+					if ( $match ) {
+						$team_name .= ' ' . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;
+					}
+				}
+				if ( ! empty( $team_name ) ) {
+					$team->title = $team_name;
+				}
+			}
+			$team->title        = $team->name;
+			$team->player_count = $this->get_players(
+				array(
+					'season' => $season,
+					'count'  => true,
+					'team'   => $team->team_id,
+				)
+			);
+			$teams[ $i ]        = $team;
+		}
+
+		$this->teams = $teams;
+
+		return $teams;
 	}
 	/**
 	 * Get players for competition

@@ -306,6 +306,12 @@ class Racketmanager_Competition {
 	 */
 	public $is_player_entry = false;
 	/**
+	 * Players array
+	 *
+	 * @var array
+	 */
+	public $players = array();
+	/**
 	 * Clubs array
 	 *
 	 * @var array
@@ -873,6 +879,159 @@ class Racketmanager_Competition {
 		foreach ( maybe_unserialize( $result->settings ) as $key => $value ) {
 			$this->$key = $value;
 		}
+	}
+	/**
+	 * Get players for competition
+	 *
+	 * @param string $args search arguments.
+	 * @return array
+	 */
+	public function get_players( $args = array() ) {
+		global $wpdb;
+
+		$defaults = array(
+			'offset'  => 0,
+			'limit'   => 99999999,
+			'season'  => false,
+			'orderby' => array(),
+			'club'    => false,
+			'team'    => false,
+			'count'   => false,
+			'group'   => false,
+		);
+		$args     = array_merge( $defaults, $args );
+		$offset   = $args['offset'];
+		$limit    = $args['limit'];
+		$season   = $args['season'];
+		$orderby  = $args['orderby'];
+		$club     = $args['club'];
+		$team     = $args['team'];
+		$count    = $args['count'];
+		$group    = $args['group'];
+
+		if ( $this->is_player_entry ) {
+			$teams = $this->get_teams(
+				array(
+					'season' => $season,
+				)
+			);
+			foreach ( $teams as $team ) {
+				foreach ( $team->player as $player ) {
+					$players[] = $player;
+				}
+			}
+			$event_players = array_unique( $players );
+		} else {
+			$search_terms  = array();
+			$search_args   = array();
+			$search_args[] = $this->id;
+			if ( ! $season ) {
+				$season = $this->current_season['name'];
+			}
+			if ( $season ) {
+				$search_terms[] = '`season` = %s';
+				$search_args[]  = $season;
+			}
+			if ( $team ) {
+				$search_terms[] .= '(( `home_team` = %d AND `player_team` = %s) OR (`away_team` = %d AND `player_team` = %s))';
+				$search_args[]   = $team;
+				$search_args[]   = 'home';
+				$search_args[]   = $team;
+				$search_args[]   = 'away';
+			}
+			if ( $club ) {
+				$search_terms[] .= "(( `home_team` in (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = %d) AND `player_team` = %s) OR (`away_team` in (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = %d) AND `player_team` = %s))";
+				$search_args[]   = $club;
+				$search_args[]   = 'home';
+				$search_args[]   = $club;
+				$search_args[]   = 'away';
+			}
+			$search = '';
+			if ( ! empty( $search_terms ) ) {
+				$search  = ' AND ';
+				$search .= implode( ' AND ', $search_terms );
+			}
+			$orderby_string = '';
+			$order          = '';
+			$i              = 0;
+			foreach ( $orderby as $order => $direction ) {
+				if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
+					$direction = 'ASC';
+				}
+				$orderby_string .= '`' . $order . '` ' . $direction;
+				if ( $i < ( count( $orderby ) - 1 ) ) {
+					$orderby_string .= ',';
+				}
+				++$i;
+			}
+			if ( $orderby_string ) {
+				$order = ' ORDER BY ' . $orderby_string;
+			}
+			if ( $count ) {
+				$sql = 'SELECT COUNT(distinct(`player_id`))';
+			} else {
+				$sql = 'SELECT DISTINCT `player_id`, `club_player_id`';
+			}
+			$sql .= " FROM {$wpdb->racketmanager_rubber_players} rp, {$wpdb->racketmanager_rubbers} r, {$wpdb->racketmanager_matches} m  WHERE rp.`rubber_id` = r.`id` AND r.`match_id` = m.`id` AND m.`league_id` IN (SELECT l.`id` FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_events} e WHERE l.`event_id` = e.`id` AND e.`competition_id` = %d)" . $search;
+			if ( $count ) {
+				$sql = $wpdb->prepare(
+					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+					$sql,
+					$search_args,
+				);
+				$num_players = wp_cache_get( md5( $sql ), 'competition_rubber_players' );
+				if ( ! $num_players ) {
+					$num_players = $wpdb->get_var(
+					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+						$sql
+					); // db call ok.
+					wp_cache_set( md5( $sql ), $num_players, 'competition_rubber_players' );
+				}
+				return $num_players;
+			}
+			$sql .= $order;
+			if ( intval( $limit > 0 ) ) {
+				$sql          .= ' LIMIT %d, %d';
+				$search_args[] = $offset;
+				$search_args[] = $limit;
+			}
+			$sql = $wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql,
+				$search_args,
+			);
+			$players = wp_cache_get( md5( $sql ), 'competition_rubber_players' );
+			if ( ! $players ) {
+				$players = $wpdb->get_results(
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+					$sql
+				); // db call ok.
+				wp_cache_set( md5( $sql ), $players, 'competition_rubber_players' );
+			}
+			$competition_players = array();
+			foreach ( $players as $player ) {
+				$player = get_player( $player->player_id );
+				if ( ! $player->system_record ) {
+					$competition_players[] = $player->fullname;
+				}
+			}
+		}
+		asort( $competition_players );
+		if ( $group ) {
+			$this->players = array();
+			foreach ( $competition_players as $player ) {
+				$key = strtoupper( substr( $player, 0, 1 ) );
+				if ( false === array_key_exists( $key, $this->players ) ) {
+					$this->players[ $key ] = array();
+				}
+				// now just add the row data.
+				$this->players[ $key ][] = $player;
+			}
+		} else {
+			$this->players = $competition_players;
+		}
+
+		return $this->players;
 	}
 	/**
 	 * Get clubs for competition

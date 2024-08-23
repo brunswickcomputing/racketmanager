@@ -1142,6 +1142,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 					array(
 						'club'   => $event_club->id,
 						'season' => $event->current_season['name'],
+						'stats'  => true,
 					)
 				);
 			} else {

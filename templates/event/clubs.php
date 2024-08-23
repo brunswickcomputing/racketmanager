@@ -186,26 +186,58 @@ if ( empty( $event_club ) ) {
 				</div>
 				<div class="module__content">
 					<div class="module-container">
-						<div class="col-12">
-							<div class="row mb-2 row-header">
-								<div class="col-12">
-									<?php esc_html_e( 'Player', 'racketmanager' ); ?>
-								</div>
-							</div>
+						<ol class="list list--bordered list--count">
 							<?php
 							foreach ( $event_club->players as $player ) {
 								?>
-								<div class="row mb-2 row-list">
-									<div class="col-12">
-										<a href="/<?php echo esc_attr( $event->competition->type ); ?>s/<?php echo esc_html( seo_url( $event->name ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/player/<?php echo esc_attr( seo_url( $player ) ); ?>/">
-											<?php echo esc_html( $player ); ?>
-										</a>
+								<li class="list__item">
+									<div class="media">
+										<div class="media__wrapper">
+											<div class="media__img">
+												<div class="profile-icon">
+													<span class="profile-icon__abbr">
+														<?php
+														$player_initials = substr( $player->firstname, 0, 1 ) . substr( $player->surname, 0, 1 );
+														echo esc_html( $player_initials );
+														?>
+													</span>
+												</div>
+											</div>
+											<div class="media__content">
+												<div class="flex-container">
+													<div class="flex-item flex-item--grow">
+														<p class="media__title">
+															<a href="/<?php echo esc_attr( $event->competition->type ); ?>/<?php echo esc_html( seo_url( $event->name ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/player/<?php echo esc_attr( seo_url( $player->fullname ) ); ?>/" class="nav--link">
+																<span class="nav-link__value">
+																	<?php echo esc_html( $player->fullname ); ?>
+																</span>
+															</a>
+														</p>
+													</div>
+													<div class="progress-bar-container">
+														<?php
+														if ( $player->played ) {
+															?>
+															<div class="clearfix">
+																<span class="pull-left"><?php esc_html_e( 'Win-Loss', 'racketmanager' ); ?></span>
+																<span class="pull-right"><?php echo esc_html( $player->matches_won ) . '-' . esc_html( $player->matches_lost ) . ' (' . esc_html( $player->played ) . ')'; ?></span>
+															</div>
+															<div class="progress">
+																<div class="progress-bar bg-success" role="progressbar" style="width: <?php echo esc_html( $player->win_pct ); ?>%" aria-valuenow="<?php echo esc_html( $player->win_pct ); ?>" aria-valuemin="0" aria-valuemax="100" data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_html( $player->win_pct ) . ' ' . esc_html__( 'won', 'racketmanager' ); ?>%"></div>
+															</div>
+															<?php
+														}
+														?>
+													</div>
+												</div>
+											</div>
+										</div>
 									</div>
-								</div>
+								</li>
 								<?php
 							}
 							?>
-						</div>
+						</ol>
 					</div>
 				</div>
 			</div>

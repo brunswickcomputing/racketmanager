@@ -128,9 +128,10 @@ function un_seo_url( $string_field ) {
  * Create formatted url
  */
 function create_new_url_querystring() {
-	add_rewrite_tag( '%competition_name%', '([^/]*)' );
+	add_rewrite_tag( '%competition_name%', '(.+?)' );
+	add_rewrite_tag( '%competition_type%', '(.+?)' );
 	add_rewrite_tag( '%round%', '(.+?)' );
-	add_rewrite_tag( '%league_name%', '([^/]*)' );
+	add_rewrite_tag( '%league_name%', '(.+?)' );
 	add_rewrite_tag( '%league_id%', '([^/]*)' );
 	add_rewrite_tag( '%match_id%', '([^/]*)' );
 	add_rewrite_tag( '%season%', '([0-9]{4})' );
@@ -151,6 +152,7 @@ function create_new_url_querystring() {
 	add_rewrite_tag( '%player%', '(.+?)' );
 	add_rewrite_tag( '%leg%', '([0-9]{1})' );
 	add_rewrite_tag( '%action%', '(.+?)' );
+	add_rewrite_tag( '%competition%', '(.+?)' );
 }
 add_action( 'init', 'Racketmanager\create_new_url_querystring' );
 

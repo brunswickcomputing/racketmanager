@@ -2526,14 +2526,14 @@ class RacketManager {
 			$winner->loser_roster  = maybe_unserialize( $winner->loser_roster );
 			$match                 = get_match( $winner->id );
 			if ( $winner->winner_id === $winner->home_team ) {
-				$winner_club = $match->teams['home']->club->shortcode;
+				$winner_club = isset( $match->teams['home']->club ) ? $match->teams['home']->club->shortcode : null;
 			} else {
-				$winner_club = $match->teams['away']->club->shortcode;
+				$winner_club = isset( $match->teams['away']->club ) ? $match->teams['away']->club->shortcode : null;
 			}
 			if ( $winner->loser_id === $winner->home_team ) {
-				$loser_club = $match->teams['home']->club->shortcode;
+				$loser_club = isset( $match->teams['home']->club ) ? $match->teams['home']->club->shortcode : null;
 			} else {
-				$loser_club = $match->teams['away']->club->shortcode;
+				$loser_club = isset( $match->teams['away']->club ) ? $match->teams['away']->club->shortcode : null;
 			}
 			$winner->league      = $winner->title;
 			$winner->winner_club = $winner_club;

@@ -1436,11 +1436,9 @@ class RacketManager {
 				}
 				foreach ( $addresses as $address ) {
 					$recipient_name = '';
-					if ( preg_match( '/(.*)<(.+)>/', $address, $matches ) ) {
-						if ( 3 === count( $matches ) ) {
-							$recipient_name = $matches[1];
-							$address        = $matches[2];
-						}
+					if ( preg_match( '/(.*)<(.+)>/', $address, $matches ) && 3 === count( $matches ) ) {
+						$recipient_name = $matches[1];
+						$address        = $matches[2];
 					}
 					$user = get_user_by( 'email', $address );
 					if ( $user ) {

@@ -306,6 +306,12 @@ class Racketmanager_Competition {
 	 */
 	public $is_player_entry = false;
 	/**
+	 * Clubs array
+	 *
+	 * @var array
+	 */
+	public $clubs = array();
+	/**
 	 * Retrieve competition instance
 	 *
 	 * @param int    $competition_id competition id.
@@ -867,6 +873,104 @@ class Racketmanager_Competition {
 		foreach ( maybe_unserialize( $result->settings ) as $key => $value ) {
 			$this->$key = $value;
 		}
+	}
+	/**
+	 * Get clubs for competition
+	 *
+	 * @param string $args search arguments.
+	 * @return array
+	 */
+	public function get_clubs( $args = array() ) {
+		global $wpdb;
+
+		$defaults = array(
+			'offset'  => 0,
+			'limit'   => 99999999,
+			'season'  => false,
+			'orderby' => false,
+			'status'  => false,
+			'count'   => false,
+			'name'    => false,
+		);
+		$args     = array_merge( $defaults, $args );
+		$offset   = $args['offset'];
+		$limit    = $args['limit'];
+		$season   = $args['season'];
+		$orderby  = $args['orderby'];
+		$status   = $args['status'];
+		$count    = $args['count'];
+		$name     = $args['name'];
+
+		$search_terms   = array();
+		$search_terms[] = $wpdb->prepare( '`competition_id` = %d', $this->id );
+		if ( ! $season ) {
+			$season = $this->current_season['name'];
+		}
+		if ( $season ) {
+			$search_terms[] = $wpdb->prepare( 't1.`season` = %s', $season );
+		}
+
+		if ( $status ) {
+			$search_terms[] = $wpdb->prepare( 't1.`profile` = %d', intval( $status ) );
+		}
+		if ( $name ) {
+			$search_terms[] = $wpdb->prepare( 't2.`title` like %s', '%' . $name . '%' );
+		}
+
+		$search = '';
+		if ( ! empty( $search_terms ) ) {
+			$search  = ' AND ';
+			$search .= implode( ' AND ', $search_terms );
+		}
+
+		if ( $count ) {
+			$sql = 'SELECT COUNT(*)';
+		} else {
+			$sql = 'SELECT t2.`affiliatedclub`, count(t2.`id`) as `team_count`';
+		}
+		$sql .= " FROM {$wpdb->racketmanager_events} e,{$wpdb->racketmanager} l, {$wpdb->racketmanager_teams} t2, {$wpdb->racketmanager_table} t1, {$wpdb->racketmanager_clubs} c WHERE e.`id` = l.`event_id` AND t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` AND t2.`affiliatedclub` = c.`id`" . $search;
+
+		if ( $count ) {
+			return $wpdb->get_var(
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			); // db call ok.
+		} else {
+			$sql .= ' GROUP BY t2.`affiliatedclub`';
+		}
+		$sql = $wpdb->prepare(
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			$sql . ' ORDER BY c.`name` ASC LIMIT %d, %d',
+			intval( $offset ),
+			intval( $limit )
+		);
+
+		$competition_clubs = wp_cache_get( md5( $sql ), 'competition_clubs' );
+		if ( ! $competition_clubs ) {
+			$competition_clubs = $wpdb->get_results(
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			); // db call ok.
+			wp_cache_set( md5( $sql ), $competition_clubs, 'competition_clubs' );
+		}
+
+		foreach ( $competition_clubs as $i => $competition_club ) {
+			$team_count                     = $competition_club->team_count;
+			$competition_club               = get_club( $competition_club->affiliatedclub );
+			$competition_club->team_count   = $team_count;
+			$competition_club->player_count = $this->get_players(
+				array(
+					'season' => $season,
+					'count'  => true,
+					'club'   => $competition_club->id,
+				)
+			);
+			$competition_clubs[ $i ]        = $competition_club;
+		}
+
+		$this->clubs = $competition_clubs;
+
+		return $competition_clubs;
 	}
 	/**
 	 * Get matches for competition

@@ -45,11 +45,11 @@ if ( empty( $match->winner_id ) ) {
 			<?php
 			if ( ! empty( $match->final_round ) ) {
 				?>
-			<span><?php echo esc_html( $match->league->championship->get_final_name( $match->final_round ) ); ?></span>
+				<span><?php echo esc_html( $match->league->championship->get_final_name( $match->final_round ) ); ?></span>
 				<?php
 			} elseif ( ! empty( $match->match_day ) ) {
 				?>
-			<span><?php echo esc_html__( 'Match Day', 'racketmanager' ) . ' ' . esc_html( $match->match_day ); ?></span>
+				<span><?php echo esc_html__( 'Match Day', 'racketmanager' ) . ' ' . esc_html( $match->match_day ); ?></span>
 				<?php
 			}
 			if ( ! empty( $match->leg ) ) {

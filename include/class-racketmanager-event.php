@@ -737,10 +737,8 @@ class Racketmanager_Event {
 		foreach ( $leagues as $i => $league ) {
 			$league_index[ $league->id ] = $i;
 			$league                      = get_league( $league->id );
-			if ( $consolation ) {
-				if ( ! $league->championship->is_consolation ) {
-					unset( $leagues[ $i ] );
-				}
+			if ( $consolation && ! $league->championship->is_consolation ) {
+				unset( $leagues[ $i ] );
 			}
 			if ( isset( $leagues[ $i ] ) ) {
 				$leagues[ $i ] = $league;

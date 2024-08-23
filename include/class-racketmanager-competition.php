@@ -869,6 +869,192 @@ class Racketmanager_Competition {
 		}
 	}
 	/**
+	 * Get matches for competition
+	 *
+	 * @param array $match_args query arguments.
+	 * @return array $matches
+	 */
+	public function get_matches( $match_args ) {
+		global $wpdb;
+
+		$match_args           = array_merge( $this->match_query_args, (array) $match_args );
+		$league_id            = $match_args['leagueId'];
+		$season               = $match_args['season'];
+		$final                = $match_args['final'];
+		$orderby              = $match_args['orderby'];
+		$confirmed            = $match_args['confirmed'];
+		$player               = $match_args['player'];
+		$match_date           = $match_args['match_date'];
+		$time                 = $match_args['time'];
+		$time_offset          = $match_args['timeOffset'];
+		$history              = $match_args['history'];
+		$club                 = $match_args['club'];
+		$league_name          = $match_args['league_name'];
+		$team_name            = $match_args['team_name'];
+		$home_team            = $match_args['home_team'];
+		$home_club            = $match_args['home_club'];
+		$away_team            = $match_args['away_team'];
+		$match_day            = $match_args['match_day'];
+		$count                = $match_args['count'];
+		$confirmation_pending = $match_args['confirmationPending'];
+		$result_pending       = $match_args['resultPending'];
+		$status               = $match_args['status'];
+		$sql_from             = " FROM {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager} AS l, {$wpdb->racketmanager_events} AS e, {$wpdb->racketmanager_rubbers} AS r";
+		if ( $count ) {
+			$sql_fields = 'SELECT COUNT(*)';
+			$sql        = " WHERE 1 = 1 AND l.`event_id` = e.`id` AND e.`competition_id` = $this->id";
+		} else {
+			$sql_fields = "SELECT DISTINCT m.`final` AS final_round, m.`group`, `home_team`, `away_team`, DATE_FORMAT(m.`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(m.`date`, '%e') AS day, DATE_FORMAT(m.`date`, '%c') AS month, DATE_FORMAT(m.`date`, '%Y') AS year, DATE_FORMAT(m.`date`, '%H') AS `hour`, DATE_FORMAT(m.`date`, '%i') AS `minutes`, `match_day`, `location`, l.`id` AS `league_id`, m.`home_points`, m.`away_points`, m.`winner_id`, .m.`loser_id`, m.`post_id`, `season`, m.`id` AS `id`, m.`custom`, `confirmed`, `home_captain`, `away_captain`, `comments`, `updated`, m.`leg`";
+			$sql        = " WHERE m.`league_id` = l.`id` AND m.`id` = r.`match_id` AND l.`event_id` = e.`id` AND e.`competition_id` = $this->id";
+		}
+
+		if ( $match_date ) {
+			$sql .= " AND DATEDIFF('" . htmlspecialchars( wp_strip_all_tags( $match_date ) ) . "', `date`) = 0";
+		}
+		if ( $league_id ) {
+			$sql .= " AND `league_id`  = '" . $league_id . "'";
+		}
+		if ( $league_name ) {
+			$sql .= " AND `league_id` in (select `id` from {$wpdb->racketmanager} WHERE `title` = '" . $league_name . "')";
+		}
+		if ( $season ) {
+			$sql .= " AND `season`  = '" . $season . "'";
+		}
+		if ( $final ) {
+			$sql .= " AND `final`  = '" . $final . "'";
+		}
+		if ( $time_offset ) {
+			$time_offset = intval( $time_offset ) . ':00:00';
+		} else {
+			$time_offset = '00:00:00';
+		}
+		if ( $status ) {
+			$sql .= " AND `confirmed` = '" . $status . "'";
+		}
+		if ( $confirmed ) {
+			$sql .= " AND `confirmed` in ('P','A','C')";
+			if ( $time_offset ) {
+				$sql .= " AND ADDTIME(`updated`,'" . $time_offset . "') <= NOW()";
+			}
+		}
+		if ( $player ) {
+			$sql_from .= ", {$wpdb->racketmanager_rubber_players} AS rp";
+			$sql      .= ' AND r.`id` = rp.`rubber_id`';
+			$sql      .= " AND rp.`player_id` = '$player'";
+		}
+		if ( $confirmation_pending ) {
+			$confirmation_pending = intval( $confirmation_pending ) . ':00:00';
+			$sql_fields          .= ",ADDTIME(`updated`,'" . $confirmation_pending . "') as confirmation_overdue_date, TIME_FORMAT(TIMEDIFF(now(),ADDTIME(`updated`,'" . $confirmation_pending . "')), '%H')/24 as overdue_time";
+		}
+		if ( $result_pending ) {
+			$result_pending = intval( $result_pending ) . ':00:00';
+			$sql_fields    .= ",ADDTIME(`date`,'" . $result_pending . "') as result_overdue_date, TIME_FORMAT(TIMEDIFF(now(),ADDTIME(`date`,'" . $result_pending . "')), '%H')/24 as overdue_time";
+		}
+
+		// get only finished matches with score for time 'latest'.
+		if ( 'latest' === $time ) {
+			$sql .= " AND (m.`home_points` != '' OR m.`away_points` != '')";
+		} elseif ( 'outstanding' === $time ) {
+			$sql .= " AND ADDTIME(m.`date`,'" . $time_offset . "') <= NOW() AND m.`winner_id` = 0 AND `confirmed` IS NULL";
+		} elseif ( 'next' === $time ) {
+			$sql .= ' AND TIMESTAMPDIFF(MINUTE, NOW(), m.`date`) >= 0';
+		}
+		// get only updated matches in specified period for history.
+		if ( $history ) {
+			$sql .= ' AND `updated` >= NOW() - INTERVAL ' . $history . ' DAY';
+		}
+
+		if ( $club ) {
+			$sql .= " AND (`home_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = " . $club . ") OR `away_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = " . $club . '))';
+		}
+		if ( $home_club ) {
+			$sql .= " AND `home_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = " . $home_club . ')';
+		}
+		if ( ! empty( $home_team ) ) {
+			$sql .= ' AND `home_team` = ' . $home_team . ' ';
+		}
+		if ( ! empty( $away_team ) ) {
+			$sql .= ' AND `away_team` = ' . $away_team . ' ';
+		}
+		if ( ! empty( $team_name ) ) {
+			$sql .= " AND (`home_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `title` LIKE '%" . $team_name . "%') OR `away_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `title` LIKE '%" . $team_name . "%'))";
+		}
+		if ( $match_day && intval( $match_day ) > 0 ) {
+			$sql .= ' AND `match_day` = ' . $match_day . ' ';
+		}
+		$sql = $sql_fields . $sql_from . $sql;
+		if ( $count ) {
+			$matches = intval(
+				$wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+					$sql
+				)
+			);
+		} else {
+			$orderby_string = '';
+			$i              = 0;
+			if ( is_array( $orderby ) ) {
+				foreach ( $orderby as $order => $direction ) {
+					$orderby_string .= '`' . $order . '` ' . $direction;
+					if ( $i < ( count( $orderby ) - 1 ) ) {
+						$orderby_string .= ',';
+					}
+					++$i;
+				}
+			}
+			$sql = $sql . ' ORDER BY ' . $orderby_string;
+			// get matches.
+			$matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			);
+			$class = '';
+
+			foreach ( $matches as $i => $match ) {
+				$class        = ( 'alternate' === $class ) ? '' : 'alternate';
+				$match        = get_match( $match );
+				$match->class = $class;
+				if ( $player ) {
+					$match->rubbers = $match->get_rubbers( $player );
+				}
+				$matches[ $i ] = $match;
+			}
+		}
+
+		return $matches;
+	}
+	/**
+	 * Match query arguments
+	 *
+	 * @var array
+	 */
+	private $match_query_args = array(
+		'leagueId'            => false,
+		'season'              => false,
+		'final'               => false,
+		'orderby'             => array(
+			'league_id' => 'ASC',
+			'id'        => 'ASC',
+		),
+		'confirmed'           => false,
+		'player'              => false,
+		'match_date'          => false,
+		'time'                => false,
+		'timeOffset'          => false,
+		'history'             => false,
+		'club'                => false,
+		'league_name'         => false,
+		'team_name'           => false,
+		'home_team'           => false,
+		'away_team'           => false,
+		'match_day'           => false,
+		'home_club'           => false,
+		'count'               => false,
+		'confirmationPending' => false,
+		'resultPending'       => false,
+		'status'              => false,
+	);
+	/**
 	 * Get winners function
 	 *
 	 * @param boolean $group_by group by flag.

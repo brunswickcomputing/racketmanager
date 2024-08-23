@@ -691,50 +691,6 @@ function racketmanager_players( $league_id, $args = array() ) {
 	$shortcode .= ']';
 	echo do_shortcode( $shortcode );
 }
-/**
- * Display competition clubs
- *
- * @param int|string $competition_id league.
- * @param array      $args additional arguments as associative array (optional).
- * @category template-tags
- */
-function racketmanager_competition_clubs( $competition_id, $args = array() ) {
-	$defaults               = array(
-		'season'   => false,
-		'template' => '',
-	);
-	$args                   = array_merge( $defaults, $args );
-	$args['competition_id'] = intval( $competition_id );
-
-	$shortcode = '[competition-clubs';
-	foreach ( $args as $key => $value ) {
-		$shortcode .= ' ' . $key . "='" . $value . "'";
-	}
-	$shortcode .= ']';
-	echo do_shortcode( $shortcode );
-}
-/**
- * Display competition players
- *
- * @param int|string $competition_id league.
- * @param array      $args additional arguments as associative array (optional).
- * @category template-tags
- */
-function racketmanager_competition_players( $competition_id, $args = array() ) {
-	$defaults               = array(
-		'season'   => false,
-		'template' => '',
-	);
-	$args                   = array_merge( $defaults, $args );
-	$args['competition_id'] = intval( $competition_id );
-
-	$shortcode = '[competition-players';
-	foreach ( $args as $key => $value ) {
-		$shortcode .= ' ' . $key . "='" . $value . "'";
-	}
-	$shortcode .= ']';
-	echo do_shortcode( $shortcode );
-}
 	/**
 	 * Display standings table
 	 *
@@ -1170,6 +1126,111 @@ function racketmanager_tournament_matches( $tournament_id, $args = array() ) {
 function racketmanager_tournament_winners( $tournament_id, $args = array() ) {
 	$args['id'] = $tournament_id;
 	$shortcode  = '[tournament-winners';
+	foreach ( $args as $key => $value ) {
+		$shortcode .= ' ' . $key . "='" . $value . "'";
+	}
+	$shortcode .= ']';
+	echo do_shortcode( $shortcode );
+}
+/**
+ * Display competition overview function
+ *
+ * @param int   $competition_id competition.
+ * @param array $args array of arguments.
+ */
+function racketmanager_competition_overview( $competition_id, $args = array() ) {
+	$args['id'] = $competition_id;
+	$shortcode  = '[competition-overview';
+	foreach ( $args as $key => $value ) {
+		$shortcode .= ' ' . $key . "='" . $value . "'";
+	}
+	$shortcode .= ']';
+	echo do_shortcode( $shortcode );
+}
+/**
+ * Display competition events function
+ *
+ * @param int   $competition_id competition.
+ * @param array $args array of arguments.
+ */
+function racketmanager_competition_events( $competition_id, $args = array() ) {
+	$args['id'] = $competition_id;
+	$shortcode  = '[competition-events';
+	foreach ( $args as $key => $value ) {
+		$shortcode .= ' ' . $key . "='" . $value . "'";
+	}
+	$shortcode .= ']';
+	echo do_shortcode( $shortcode );
+}
+/**
+ * Display competition clubs function
+ *
+ * @param int   $competition_id competition.
+ * @param array $args array of arguments.
+ */
+function racketmanager_competition_clubs( $competition_id, $args = array() ) {
+	$args['id'] = $competition_id;
+	$shortcode  = '[competition-clubs';
+	foreach ( $args as $key => $value ) {
+		$shortcode .= ' ' . $key . "='" . $value . "'";
+	}
+	$shortcode .= ']';
+	echo do_shortcode( $shortcode );
+}
+/**
+ * Display competition teams function
+ *
+ * @param int   $competition_id competition.
+ * @param array $args array of arguments.
+ */
+function racketmanager_competition_teams( $competition_id, $args = array() ) {
+	$args['id'] = $competition_id;
+	$shortcode  = '[competition-teams';
+	foreach ( $args as $key => $value ) {
+		$shortcode .= ' ' . $key . "='" . $value . "'";
+	}
+	$shortcode .= ']';
+	echo do_shortcode( $shortcode );
+}
+/**
+ * Display competition players function
+ *
+ * @param int   $competition_id competition.
+ * @param array $args array of arguments.
+ */
+function racketmanager_competition_players( $competition_id, $args = array() ) {
+	$args['id'] = $competition_id;
+	$shortcode  = '[competition-players';
+	foreach ( $args as $key => $value ) {
+		$shortcode .= ' ' . $key . "='" . $value . "'";
+	}
+	$shortcode .= ']';
+	echo do_shortcode( $shortcode );
+}
+/**
+ * Display competition matches function
+ *
+ * @param int   $competition_id competition.
+ * @param array $args array of arguments.
+ */
+function racketmanager_competition_matches( $competition_id, $args = array() ) {
+	$args['id'] = $competition_id;
+	$shortcode  = '[competition-matches';
+	foreach ( $args as $key => $value ) {
+		$shortcode .= ' ' . $key . "='" . $value . "'";
+	}
+	$shortcode .= ']';
+	echo do_shortcode( $shortcode );
+}
+/**
+ * Display competition winners function
+ *
+ * @param int   $competition_id competition.
+ * @param array $args array of arguments.
+ */
+function racketmanager_competition_winners( $competition_id, $args = array() ) {
+	$args['id'] = $competition_id;
+	$shortcode  = '[competition-winners';
 	foreach ( $args as $key => $value ) {
 		$shortcode .= ' ' . $key . "='" . $value . "'";
 	}

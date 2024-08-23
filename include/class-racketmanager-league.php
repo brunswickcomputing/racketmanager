@@ -27,6 +27,12 @@ class Racketmanager_League {
 	 * @var string
 	 */
 	public $title;
+	/**
+	 * League name
+	 *
+	 * @var string
+	 */
+	public $name;
 
 	/**
 	 * Seasons data
@@ -712,6 +718,7 @@ class Racketmanager_League {
 			$this->add();
 		}
 		$this->title = stripslashes( $this->title );
+		$this->name  = $this->title;
 		$event       = get_event( $this->event_id );
 
 		$this->seasons = $event->seasons;

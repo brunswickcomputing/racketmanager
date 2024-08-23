@@ -1496,18 +1496,18 @@ class Racketmanager_Event {
 				$search_args[]  = $season;
 			}
 			if ( $team ) {
-				$search_terms[] .= '(( `home_team` = %d AND `player_team` = %s) OR (`away_team` = %d AND `player_team` = %s))';
-				$search_args[]   = $team;
-				$search_args[]   = 'home';
-				$search_args[]   = $team;
-				$search_args[]   = 'away';
+				$search_terms[] = '(( `home_team` = %d AND `player_team` = %s) OR (`away_team` = %d AND `player_team` = %s))';
+				$search_args[]  = $team;
+				$search_args[]  = 'home';
+				$search_args[]  = $team;
+				$search_args[]  = 'away';
 			}
 			if ( $club ) {
-				$search_terms[] .= "(( `home_team` in (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = %d) AND `player_team` = %s) OR (`away_team` in (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = %d) AND `player_team` = %s))";
-				$search_args[]   = $club;
-				$search_args[]   = 'home';
-				$search_args[]   = $club;
-				$search_args[]   = 'away';
+				$search_terms[] = "(( `home_team` in (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = %d) AND `player_team` = %s) OR (`away_team` in (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = %d) AND `player_team` = %s))";
+				$search_args[]  = $club;
+				$search_args[]  = 'home';
+				$search_args[]  = $club;
+				$search_args[]  = 'away';
 			}
 			$search = '';
 			if ( ! empty( $search_terms ) ) {

@@ -469,7 +469,7 @@ final class Racketmanager_Player {
 	 *
 	 * @param object $grouping source of matches.
 	 * @param string $season season for matches.
-	 * @param string $match_source source of matches - either 'league' or 'event'.
+	 * @param string $match_source source of matches - either 'league' / 'event' / 'competition'.
 	 * @return array of matches.
 	 */
 	public function get_matches( $grouping, $season, $match_source ) {
@@ -498,13 +498,25 @@ final class Racketmanager_Player {
 					),
 				)
 			);
+		} elseif ( 'competition' === $match_source ) {
+			$competition = get_competition( $grouping );
+			$matches     = $competition->get_matches(
+				array(
+					'season'  => $season,
+					'player'  => $this->id,
+					'orderby' => array(
+						'date'      => 'ASC',
+						'league_id' => 'DESC',
+					),
+				)
+			);
 		} else {
 			$matches = array();
 		}
 		$opponents_pt = array( 'player1', 'player2' );
 		$opponents    = array( 'home', 'away' );
 		foreach ( $matches as $match ) {
-			if ( 'event' === $match_source ) {
+			if ( 'competition' === $match_source || 'event' === $match_source ) {
 				$key = $match->league->title;
 				if ( false === array_key_exists( $key, $this->matches ) ) {
 					$this->matches[ $key ]                   = array();

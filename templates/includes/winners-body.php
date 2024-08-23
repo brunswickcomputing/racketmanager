@@ -9,9 +9,9 @@ namespace Racketmanager;
 
 if ( ! $winners ) {
 	esc_html_e( 'No winners', 'racketmanager' );
-} elseif ( ! empty( $tournament ) ) {
+} else {
 	?>
-	<div id="tournament-winners">
+	<div id="competition-winners">
 		<ul class="list--winner winner-list">
 			<?php
 			foreach ( $winners as $key => $winner_group ) {
@@ -24,82 +24,64 @@ if ( ! $winners ) {
 							?>
 							<li class="winner-list-item col-12 col-sm-6 col-md-4">
 								<div>
-									<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/draws/<?php echo esc_html( seo_url( $winner->event_name ) ); ?>">
+									<?php
+									if ( empty( $tournament ) ) {
+										$link_ref = '/' . seo_url( $winner->competition_type ) . '/' . seo_url( $winner->event_name ) . '/' . seo_url( $winner->season ) . '/';
+									} else {
+										$link_ref = '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $winner->event_name ) . '/';
+									}
+									?>
+									<a href="<?php echo esc_html( $link_ref ); ?>">
 										<span class="header">
 											<?php echo esc_html( $winner->league ); ?>
 										</span>
 									</a>
-									<ol class="list-winners">
+									<?php
+									if ( empty( $winner->loser ) ) {
+										$list_type = 'ul';
+									} else {
+										$list_type = 'ol';
+									}
+									?>
+									<<?php echo esc_html( $list_type ); ?> class="list-winners">
 										<li>
+											<span class="team-name"><?php echo esc_html( $winner->winner ); ?></span>
 											<?php
-												$team         = new \stdclass();
-												$team->title  = $winner->winner;
-												$team->id     = $winner->winner_id;
-												$team->player = $winner->player['winner'];
-												require 'championship-draw-team.php';
-											?>
-											<?php
-											if ( ! empty( $tournament ) && $winner->winner_club ) {
+											if ( ( ! empty( $tournament ) || ! $winner->is_team_entry ) && $winner->winner_club ) {
 												?>
 												<span class="player-club">(<?php echo esc_html( $winner->winner_club ); ?>)</span>
 												<?php
 											}
 											?>
 										</li>
-										<li>
-											<?php
-												$team         = new \stdclass();
-												$team->title  = $winner->loser;
-												$team->id     = $winner->loser_id;
-												$team->player = $winner->player['loser'];
-												require 'championship-draw-team.php';
+										<?php
+										if ( ! empty( $winner->loser ) ) {
 											?>
-											<?php
-											if ( ! empty( $tournament ) && $winner->loser_club ) {
-												?>
-												<span class="player-club">(<?php echo esc_html( $winner->loser_club ); ?>)</span>
+											<li>
+												<span class="team-name"><?php echo esc_html( $winner->loser ); ?></span>
 												<?php
-											}
-											?>
-										</li>
-									</dl>
+												if ( ( ! empty( $tournament ) || ! $winner->is_team_entry ) && $winner->winner_club ) {
+													?>
+													<span class="player-club">(<?php echo esc_html( $winner->loser_club ); ?>)</span>
+													<?php
+												}
+												?>
+											</li>
+											<?php
+										}
+										?>
+									</<?php echo esc_html( $list_type ); ?>>
 								</div>
 							</li>
-						<?php } ?>
+							<?php
+						}
+						?>
 					</ul>
 				</li>
-			<?php } ?>
+				<?php
+			}
+			?>
 		</ul>
 	</div>
 	<?php
-} else {
-	foreach ( $winners as $winner ) {
-		?>
-		<div id="winners-list">
-			<h4 class="header"><?php echo esc_html( $winner->league ); ?></h4>
-			<dl>
-				<dd><?php esc_html_e( 'Winner', 'racketmanager' ); ?></dd>
-				<dt><?php echo esc_html( $winner->winner ); ?>
-				<?php
-				if ( ! empty( $tournament ) && $winner->winner_club ) {
-					?>
-					<span class="player-club">(<?php echo esc_html( $winner->winner_club ); ?>)</span>
-					<?php
-				}
-				?>
-				</dt>
-				<dd><?php esc_html_e( 'Runner-up', 'racketmanager' ); ?></dd>
-				<dt><?php echo esc_html( $winner->loser ); ?>
-					<?php
-					if ( ! empty( $tournament ) && $winner->loser_club ) {
-						?>
-						<span class="player-club">(<?php echo esc_html( $winner->loser_club ); ?>)</span>
-						<?php
-					}
-					?>
-				</dt>
-			</dl>
-		</div>
-		<?php
-	}
 }

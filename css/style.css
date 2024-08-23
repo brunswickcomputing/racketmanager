@@ -2099,6 +2099,7 @@ ul.player-list-letter,
 ul.match_list-court {
 	list-style: none;
 	display: flex;
+	padding-left: 0;
 }
 
 .match__header {

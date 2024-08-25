@@ -30,7 +30,7 @@ jQuery(function() {
 });
 </script>
 <div class="container">
-		<div class="media tournament-head">
+		<div class="media competition-head">
 			<div class="media__wrapper">
 				<div class="media__img"></div>
 				<div class="media__content">

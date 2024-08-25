@@ -2053,14 +2053,14 @@ tc-modal .message-page .message-page__modal .message-page__removal-tips ul .list
 	border-image: linear-gradient(90deg, #4abf33 50%, #d0d2d8) 1
 }
 
-.tournament-head {
+.tournament-head, .competition-head {
 	background: #006800;
 	color: #FFFFFF;
 	margin-bottom: 0;
 	padding: 1rem;
 }
 
-.tournament-head svg {
+.tournament-head svg, .competition-head svg {
 	fill: #FFFFFF;
 }
 
@@ -2068,12 +2068,13 @@ tc-modal .message-page .message-page__modal .message-page__removal-tips ul .list
 	fill: #006800;
 }
 
-.tournament-head .reverse svg {
+.tournament-head .reverse svg, .competition-head .reverse svg {
 	fill: #006800;
 }
 
 .tournament-head h1,
-.module__title h1 {
+.module__title h1,
+.competition-head h1 {
 	color: #FFFFFF;
 	margin: 0;
 }
@@ -3652,7 +3653,7 @@ module--dark .mail-media,
 	background-color: #006800;
 	color: #FFF;
 }
-.module--dark a.dropdown-item, .tournament-head a.dropdown-item {
+.module--dark a.dropdown-item, .tournament-head a.dropdown-item, .competition-head a.dropdown-item {
 	color: #006800 !important;
 }
 .module--dark .module__title h1 {
@@ -3715,7 +3716,6 @@ h4.media__title {
 
 .nav--link {
 	align-items: center;
-	cursor: pointer;
 	display: inline-flex;
 }
 .nav-pills svg.icon {
@@ -3845,7 +3845,12 @@ h2.team-match__name {
 	text-align: right;
 }
 
-.module--dark a, .tournament-head a {
+.module--dark a, .tournament-head a, .competition-head a {
+	color: #fff !important;
+}
+.module--dark a:hover,
+.tournament-head a:hover,
+.competition-head a:hover {
 	color: #fff !important;
 }
 .module--dark a.btn.btn-outline {
@@ -3971,11 +3976,11 @@ h2.team-match__name {
 	font-size: 0.8rem
 }
 
-.tournament-head .hgroup {
+.tournament-head .hgroup, .competition-head .hgroup {
 	padding: 0 1rem;
 }
 
-.tournament-head .hgroup__subheading a {
+.tournament-head .hgroup__subheading a, .competition-head .hgroup__subheading a {
 	color: #FFF;
 }
 
@@ -4099,17 +4104,17 @@ h1.media__title {
 	font-size: 2.5rem;
 }
 
-.tournament-head .media__subheading {
+.tournament-head .media__subheading, .competition-head .media__subheading {
 	color: #FFF;
 }
 
-.media.tournament-head {
+.media.tournament-head, .media.competition-head {
 	margin-bottom: 1rem !important;
 	padding: 1rem 0;
 }
 
 @media (max-width: 767px) {
-	.media.tournament-head {
+	.media.tournament-head, .media.competition-head {
 		padding-left: 0.5rem;
 		padding-right: 0.5rem;
 	}

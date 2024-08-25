@@ -633,10 +633,12 @@ class Racketmanager_Competition {
 
 		$count_matchdates = isset( $data['matchDates'] ) ? count( $data['matchDates'] ) : 0;
 		if ( empty( $data['dateEnd'] ) && $count_matchdates >= 2 ) {
-			$data['dateEnd'] = end( $data['matchDates'] );
+			$data['dateEnd']                = end( $data['matchDates'] );
+			$this->seasons[ $data['name'] ] = $data;
 		}
 		if ( empty( $data['dateStart'] ) && $count_matchdates >= 2 ) {
-			$data['dateStart'] = $data['matchDates'][0];
+			$data['dateStart']              = $data['matchDates'][0];
+			$this->seasons[ $data['name'] ] = $data;
 		}
 		$today               = gmdate( 'Y-m-d' );
 		$this->current_phase = 'complete';

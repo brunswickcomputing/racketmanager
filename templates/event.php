@@ -58,39 +58,67 @@ if ( $event->is_box ) {
 		activaTab('<?php echo esc_html( $tab ); ?>');
 	});
 	</script>
-	<div class="module module--card module--dark">
-		<div class="module__content">
-			<div class="module__banner">
-				<div class="module__title">
-					<h1><?php echo esc_html( $event_title ); ?></h1>
+		<div class="media competition-head">
+			<div class="media__wrapper">
+				<div class="media__img"></div>
+				<div class="media__content">
+					<h1 class="media__title"><?php echo esc_html( $event->name ); ?></h1>
+					<div class="media__content-subinfo">
+						<?php
+						if ( ! empty( $event->competition->name ) ) {
+							?>
+							<small class="media__subheading">
+								<span class="nav--link">
+									<a href="/<?php echo esc_html( seo_url( $event->competition->name ) ); ?>/<?php echo esc_html( $curr_season ); ?>/">
+										<span class="nav-link__value">
+											<?php echo esc_html( $event->competition->name ); ?>
+										</span>
+									</a>
+								</span>
+							</small>
+							<?php
+						}
+						?>
+						<?php
+						if ( ! empty( $event->competition->current_season['dateStart'] ) && ! empty( $event->competition->current_season['dateEnd'] ) ) {
+							?>
+							<small class="media__subheading">
+								<span class="nav--link">
+									<span class="nav-link__value">
+										<?php racketmanager_the_svg( 'icon-calendar' ); ?>
+										<?php echo esc_html( mysql2date( 'j M', $event->competition->current_season['dateStart'] ) ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( mysql2date( 'j M', $event->competition->current_season['dateEnd'] ) ); ?>
+									</span>
+								</span>
+							</small>
+							<?php
+						}
+						?>
+					</div>
 				</div>
 				<?php
 				if ( 'constitution' !== $standings_template ) {
 					?>
-					<div id="racketmanager_archive_selections" class="module__aside">
+					<div class="media__aside">
 						<form method="get" action="<?php echo esc_html( get_permalink( $post_id ) ); ?>" id="racketmanager_competititon_archive">
 							<input type="hidden" name="page_id" value="<?php echo esc_html( $post_id ); ?>" />
 							<input type="hidden" name="pagename" id="pagename" value="<?php echo esc_html( $pagename ); ?>" />
 							<div class="row g-1 align-items-center">
-								<div class="form-floating col-auto">
-									<select class="form-select" size="1" name="season" id="season">
-										<?php
-										foreach ( array_reverse( $seasons ) as $key => $season ) {
-											if ( $event->is_box ) {
-												$option_name = $season_label . ' - ';
-											} else {
-												$option_name = '';
-											}
-											$option_name .= $season['name'];
-											?>
-											<option value="<?php echo esc_html( $season['name'] ); ?>" <?php selected( $season['name'], $curr_season ); ?>>
-												<?php echo esc_html( $option_name ); ?>
-											</option>
+								<div class="col-md">
+									<div class="form-floating">
+										<select class="form-select" size="1" name="season" id="season">
 											<?php
-										}
-										?>
-									</select>
-									<label for="season"><?php echo esc_html( $season_selection ); ?></label>
+											foreach ( array_reverse( $seasons ) as $key => $season ) {
+												$option_name = $season['name'];
+												?>
+												<option value="<?php echo esc_html( $season['name'] ); ?>" <?php selected( $season['name'], $curr_season ); ?>>
+													<?php echo esc_html( $option_name ); ?>
+												</option>
+												<?php
+											}
+											?>
+										</select>
+										<label for="season"><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></label>
+									</div>
 								</div>
 							</div>
 						</form>
@@ -100,7 +128,6 @@ if ( $event->is_box ) {
 				?>
 			</div>
 		</div>
-	</div>
 	<?php
 	if ( 'constitution' !== $standings_template ) {
 		?>

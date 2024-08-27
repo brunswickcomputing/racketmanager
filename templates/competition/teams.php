@@ -24,15 +24,33 @@ if ( empty( $event_team ) ) {
 							<div class="col-4">
 								<?php esc_html_e( 'Club', 'racketmanager' ); ?>
 							</div>
+						<?php
+						if ( $competition->is_championship ) {
+							?>
+							<div class="col-3">
+								<?php esc_html_e( 'Draw', 'racketmanager' ); ?>
+							</div>
+							<?php
+						} else {
+							?>
 							<div class="col-3">
 								<?php esc_html_e( 'League', 'racketmanager' ); ?>
 							</div>
+							<?php
+						}
+						?>
+						<?php
+						if ( $competition->is_team_entry ) {
+							?>
 							<div class="d-none d-sm-block col-1 text-end">
 								<?php esc_html_e( 'Players', 'racketmanager' ); ?>
 							</div>
 							<div class="d-sm-none col-1 text-end">
 								<?php esc_html_e( 'Pls', 'racketmanager' ); ?>
 							</div>
+							<?php
+						}
+						?>
 						</div>
 						<?php
 						foreach ( $competition->teams as $team ) {
@@ -49,14 +67,26 @@ if ( empty( $event_team ) ) {
 										<?php echo esc_html( $team->club->name ); ?>
 									</a>
 								</div>
-								<div class="col-3" name="<?php esc_html_e( 'league', 'racketmanager' ); ?>">
-									<a href="/<?php echo esc_attr( $league_link ); ?>">
-										<?php echo esc_html( $team->league_title ); ?>
-									</a>
-								</div>
-								<div class="col-1 text-end">
-									<?php echo esc_html( $team->player_count ); ?>
-								</div>
+								<?php
+								if ( $competition->is_championship ) {
+									?>
+									<div class="col-3" name="<?php esc_html_e( 'league', 'racketmanager' ); ?>">
+										<a href="/<?php echo esc_attr( $league_link ); ?>">
+											<?php echo esc_html( $team->league_title ); ?>
+										</a>
+									</div>
+									<?php
+								}
+								?>
+								<?php
+								if ( $competition->is_team_entry ) {
+									?>
+									<div class="col-1 text-end">
+										<?php echo esc_html( $team->player_count ); ?>
+									</div>
+									<?php
+								}
+								?>
 							</div>
 							<?php
 						}

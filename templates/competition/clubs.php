@@ -148,9 +148,21 @@ if ( empty( $competition_club ) ) {
 								<div class="col-6">
 									<?php esc_html_e( 'Team', 'racketmanager' ); ?>
 								</div>
-								<div class="col-3">
-									<?php esc_html_e( 'League', 'racketmanager' ); ?>
-								</div>
+								<?php
+								if ( $competition->is_championship ) {
+									?>
+									<div class="col-3">
+										<?php esc_html_e( 'Draw', 'racketmanager' ); ?>
+									</div>
+									<?php
+								} else {
+									?>
+									<div class="col-3">
+										<?php esc_html_e( 'League', 'racketmanager' ); ?>
+									</div>
+									<?php
+								}
+								?>
 								<?php
 								if ( 'league' === $competition->type ) {
 									?>
@@ -166,14 +178,38 @@ if ( empty( $competition_club ) ) {
 								?>
 								<div class="row mb-2 row-list">
 									<div class="col-6">
-										<a href="/<?php echo esc_attr( $competition->type ); ?>/<?php echo esc_html( seo_url( $team->league_title ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->name ) ); ?>/">
-											<?php echo esc_html( $team->name ); ?>
-										</a>
+										<?php
+										if ( $competition->is_championship ) {
+											?>
+											<a href="/<?php echo esc_attr( $competition->type ); ?>/<?php echo esc_html( seo_url( $team->event_name ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->name ) ); ?>/">
+												<?php echo esc_html( $team->name ); ?>
+											</a>
+											<?php
+										} else {
+											?>
+											<a href="/<?php echo esc_attr( $competition->type ); ?>/<?php echo esc_html( seo_url( $team->league_title ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->name ) ); ?>/">
+												<?php echo esc_html( $team->name ); ?>
+											</a>
+											<?php
+										}
+										?>
 									</div>
 									<div class="col-5">
-										<a href="/<?php echo esc_attr( $competition->type ); ?>/<?php echo esc_html( seo_url( $team->league_title ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/">
-											<?php echo esc_html( $team->league_title ); ?>
-										</a>
+										<?php
+										if ( $competition->is_championship ) {
+											?>
+											<a href="/<?php echo esc_attr( $competition->type ); ?>s/<?php echo esc_html( seo_url( $team->event_name ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/">
+												<?php echo esc_html( $team->event_name ); ?>
+											</a>
+											<?php
+										} else {
+											?>
+											<a href="/<?php echo esc_attr( $competition->type ); ?>/<?php echo esc_html( seo_url( $team->league_title ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/">
+												<?php echo esc_html( $team->league_title ); ?>
+											</a>
+											<?php
+										}
+										?>
 									</div>
 									<?php
 									if ( 'league' === $competition->type ) {
@@ -198,26 +234,58 @@ if ( empty( $competition_club ) ) {
 				</div>
 				<div class="module__content">
 					<div class="module-container">
-						<div class="col-12">
-							<div class="row mb-2 row-header">
-								<div class="col-12">
-									<?php esc_html_e( 'Player', 'racketmanager' ); ?>
-								</div>
-							</div>
+						<ol class="list list--bordered list--count">
 							<?php
 							foreach ( $competition_club->players as $player ) {
 								?>
-								<div class="row mb-2 row-list">
-									<div class="col-12">
-										<a href="/<?php echo esc_html( seo_url( $competition->name ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/player/<?php echo esc_attr( seo_url( $player ) ); ?>/">
-											<?php echo esc_html( $player ); ?>
-										</a>
+								<li class="list__item">
+									<div class="media">
+										<div class="media__wrapper">
+											<div class="media__img">
+												<div class="profile-icon">
+													<span class="profile-icon__abbr">
+														<?php
+														$player_initials = substr( $player->firstname, 0, 1 ) . substr( $player->surname, 0, 1 );
+														echo esc_html( $player_initials );
+														?>
+													</span>
+												</div>
+											</div>
+											<div class="media__content">
+												<div class="flex-container">
+													<div class="flex-item flex-item--grow">
+														<p class="media__title">
+															<a href="/<?php echo esc_html( seo_url( $competition->name ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/player/<?php echo esc_attr( seo_url( $player->fullname ) ); ?>/" class="nav--link">
+																<span class="nav-link__value">
+																	<?php echo esc_html( $player->fullname ); ?>
+																</span>
+															</a>
+														</p>
+													</div>
+													<div class="progress-bar-container">
+														<?php
+														if ( $player->played ) {
+															?>
+															<div class="clearfix">
+																<span class="pull-left"><?php esc_html_e( 'Win-Loss', 'racketmanager' ); ?></span>
+																<span class="pull-right"><?php echo esc_html( $player->matches_won ) . '-' . esc_html( $player->matches_lost ) . ' (' . esc_html( $player->played ) . ')'; ?></span>
+															</div>
+															<div class="progress">
+																<div class="progress-bar bg-success" role="progressbar" style="width: <?php echo esc_html( $player->win_pct ); ?>%" aria-valuenow="<?php echo esc_html( $player->win_pct ); ?>" aria-valuemin="0" aria-valuemax="100" data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_html( $player->win_pct ) . ' ' . esc_html__( 'won', 'racketmanager' ); ?>%"></div>
+															</div>
+															<?php
+														}
+														?>
+													</div>
+												</div>
+											</div>
+										</div>
 									</div>
-								</div>
+								</li>
 								<?php
 							}
 							?>
-						</div>
+						</ol>
 					</div>
 				</div>
 			</div>

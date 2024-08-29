@@ -189,8 +189,12 @@ if ( empty( $event_club ) ) {
 						<ol class="list list--bordered list--count">
 							<?php
 							foreach ( $event_club->players as $player ) {
+								$selected_player = false;
+								if ( intval( $player->id ) === get_current_user_id() ) {
+									$selected_player = true;
+								}
 								?>
-								<li class="list__item">
+								<li class="list__item <?php echo empty( $selected_player ) ? null : 'is-selected'; ?>">
 									<div class="media">
 										<div class="media__wrapper">
 											<div class="media__img">

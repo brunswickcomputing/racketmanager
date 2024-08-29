@@ -324,6 +324,24 @@ class Racketmanager_Competition {
 	 */
 	public $clubs = array();
 	/**
+	 * Date Start
+	 *
+	 * @var string
+	 */
+	public $date_start;
+	/**
+	 * Date End
+	 *
+	 * @var string
+	 */
+	public $date_end;
+	/**
+	 * Venue
+	 *
+	 * @var string
+	 */
+	public $venue;
+	/**
 	 * Retrieve competition instance
 	 *
 	 * @param int    $competition_id competition id.
@@ -428,6 +446,15 @@ class Racketmanager_Competition {
 		// set season to latest.
 		if ( $this->num_seasons > 0 ) {
 			$this->set_season();
+			if ( ! empty( $this->current_season['dateStart'] ) ) {
+				$this->date_start = $this->current_season['dateStart'];
+			}
+			if ( ! empty( $this->current_season['dateEnd'] ) ) {
+				$this->date_end = $this->current_season['dateEnd'];
+			}
+			if ( ! empty( $this->current_season['venue_name'] ) ) {
+				$this->venue = $this->current_season['venue_name'];
+			}
 		}
 
 		// Championship.

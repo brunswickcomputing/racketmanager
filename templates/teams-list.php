@@ -85,7 +85,7 @@ if ( empty( $object->team ) ) {
 										</div>
 									</div>
 
-									<ul class="list list--flex">
+									<ul class="list list--flex list__indent">
 										<?php
 										if ( $league->event->competition->is_team_entry ) {
 											?>

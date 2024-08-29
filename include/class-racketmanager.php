@@ -819,6 +819,22 @@ class RacketManager {
 	 * Create formatted url
 	 */
 	public function racketmanager_rewrites() {
+		// competition list.
+		add_rewrite_rule(
+			'leagues/?$',
+			'index.php?pagename=competitions&type=league',
+			'top'
+		);
+		add_rewrite_rule(
+			'cups/?$',
+			'index.php?pagename=competitions&type=cup',
+			'top'
+		);
+		add_rewrite_rule(
+			'tournaments/?$',
+			'index.php?pagename=competitions&type=tournament',
+			'top'
+		);
 		$this->rewrite_tournament();
 		// cup entry form - type - season - club.
 		add_rewrite_rule(

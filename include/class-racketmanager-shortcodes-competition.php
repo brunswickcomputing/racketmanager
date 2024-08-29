@@ -31,6 +31,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		add_shortcode( 'event-clubs', array( &$this, 'show_event_clubs' ) );
 		add_shortcode( 'event-teams', array( &$this, 'show_event_teams' ) );
 		add_shortcode( 'event-players', array( &$this, 'show_event_players' ) );
+		add_shortcode( 'competitions', array( &$this, 'show_competitions' ) );
 		add_shortcode( 'competition', array( &$this, 'show_competition' ) );
 		add_shortcode( 'competition-overview', array( &$this, 'show_competition_overview' ) );
 		add_shortcode( 'competition-events', array( &$this, 'show_competition_events' ) );
@@ -1281,6 +1282,69 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				'event' => $event,
 			),
 			'event'
+		);
+	}
+	/**
+	 * Show competitions function
+	 *
+	 * @param array $atts atrributes.
+	 * @return string display output
+	 */
+	public function show_competitions( $atts ) {
+		global $wp, $racketmanager;
+		$args     = shortcode_atts(
+			array(
+				'type'     => false,
+				'template' => '',
+			),
+			$atts
+		);
+		$type     = $args['type'];
+		$template = $args['template'];
+		if ( ! $type ) {
+			if ( isset( $_GET['competition_type'] ) && ! empty( $_GET['type'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$type = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['type'] ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			} elseif ( isset( $wp->query_vars['type'] ) ) {
+				$type = get_query_var( 'type' );
+			}
+			$type = un_seo_url( $type );
+		}
+		if ( ! $type ) {
+			return esc_html_e( 'Competition type not set', 'racketmanager' );
+		}
+		if ( 'tournament' === $type ) {
+			$tournaments  = $racketmanager->get_tournaments( array( 'orderby' => array( 'date' => 'DESC' ) ) );
+			$competitions = array();
+			foreach ( $tournaments as $tournament ) {
+				$tournament->type     = $type;
+				$tournament->date_end = $tournament->date;
+				$competitions[]       = $tournament;
+			}
+		} else {
+			$competitions = $racketmanager->get_competitions( array( 'type' => $type ) );
+		}
+		switch ( $type ) {
+			case 'league':
+				$competition_type = __( 'Leagues', 'racketmanager' );
+				break;
+			case 'cup':
+				$competition_type = __( 'Cups', 'racketmanager' );
+				break;
+			case 'tournament':
+				$competition_type = __( 'Tournaments', 'racketmanager' );
+				break;
+			default:
+				$competition_type = __( 'Competitions', 'racketmanager' );
+				break;
+		}
+		$filename = ( ! empty( $template ) ) ? 'competitions-' . $template : 'competitions';
+
+		return $this->load_template(
+			$filename,
+			array(
+				'competitions' => $competitions,
+				'type'         => $competition_type,
+			)
 		);
 	}
 	/**

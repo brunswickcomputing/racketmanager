@@ -495,6 +495,7 @@ final class Racketmanager_Club {
 			$old_player = true;
 		}
 		if ( $valid ) {
+			$player_change = false;
 			if ( $old_player ) {
 				$updated_player = clone $player;
 				if ( empty( $player->email ) ) {

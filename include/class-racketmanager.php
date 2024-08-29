@@ -2024,12 +2024,7 @@ class RacketManager {
 
 		$i = 0;
 		foreach ( $competitions as $i => $competition ) {
-			$competition->name     = stripslashes( $competition->name );
-			$competition->seasons  = maybe_unserialize( $competition->seasons );
-			$competition->settings = maybe_unserialize( $competition->settings );
-
-			$competition = (object) array_merge( (array) $competition, $competition->settings );
-
+			$competition = get_competition( $competition->id );
 			if ( $season ) {
 				if ( array_search( $season, array_column( $competition->seasons, 'name' ), false ) ) {
 					$competitions[ $i ] = $competition;

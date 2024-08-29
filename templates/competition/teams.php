@@ -68,7 +68,7 @@ if ( empty( $event_team ) ) {
 									</a>
 								</div>
 								<?php
-								if ( $competition->is_championship ) {
+								if ( ! $competition->is_championship ) {
 									?>
 									<div class="col-3" name="<?php esc_html_e( 'league', 'racketmanager' ); ?>">
 										<a href="/<?php echo esc_attr( $league_link ); ?>">

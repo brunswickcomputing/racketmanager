@@ -239,16 +239,16 @@ table.crosstable img {
 
 /*--- Archive ---*/
 .nav-pills button.nav-link {
-	color: #006800;
+	color: var(--e-global-color-global_color_1);
 }
 
 .nav-tabs button.nav-link {
-	color: #006800;
+	color: var(--e-global-color-global_color_1);
 }
 .nav-pills.frontend .nav-link.active,
 .nav-pills .show>.nav-link {
 	color: #fff;
-	background-color: #006800;
+	background-color: var(--e-global-color-global_color_1);
 }
 
 /*--- Single Match ---*/
@@ -498,12 +498,12 @@ div.tm-team-content .team-projectmanager {
 .frontend.accordion-button:not(.collapsed),
 .frontend.accordion-button.collapsed:hover {
 	color: #FFFFFF;
-		background-color: #006800;
+	background-color: var(--e-global-color-global_color_1);
 }
 
 .frontend.accordion-button.collapsed {
-	color: #006800;
-		background-color: #FFFFFF;
+	color: var(--e-global-color-global_color_1);
+	background-color: #FFFFFF;
 }
 
 .frontend.accordion-button:focus {
@@ -686,8 +686,8 @@ div.tm-team-content div.team {
 }
 
 .form-check-input.switch:checked {
-	background-color: #006800;
-		border-color: #006800;
+	background-color: var(--e-global-color-global_color_1);
+		border-color: var(--e-global-color-global_color_1);
 }
 .form-check.form-checkboxes__item {
 	padding-left: 2.5em;
@@ -1055,7 +1055,7 @@ summary>* {
 }
 .btn--link svg,
 .calendar-add svg {
-	fill: #006800;
+	fill: var(--e-global-color-global_color_1);
 }
 .btn--link svg,
 .calendar-add:hover svg {
@@ -1063,7 +1063,7 @@ summary>* {
 }
 
 .passwordShow svg {
-	fill: #006800;
+	fill: var(--e-global-color-global_color_1);
 }
 
 .passwordShow:hover svg {
@@ -1217,7 +1217,7 @@ input#memberaccount-button:disabled {
 input#resetpassButton:hover:disabled,
 input#memberaccount-button:hover:disabled {
 	color: white;
-	background-color: #006800;
+	background-color: var(--e-global-color-global_color_1);
 }
 
 .message-error {
@@ -1283,9 +1283,11 @@ h4.header {
 	fill: gold;
 }
 .btn-favourite .fav-icon-svg {
-    stroke: #006800;
+    stroke: var(--e-global-color-global_color_1);
 }
-.page-subhead .btn-favourite .fav-icon-svg, .module--dark .btn-favourite .fav-icon-svg {
+.page-subhead .btn-favourite .fav-icon-svg,
+.module--dark .btn-favourite .fav-icon-svg,
+.media competition-head .btn-favourite .fav-icon-svg {
     stroke: #FFF;
 }
 .btn-favourite .fav-icon-svg-selected {
@@ -1318,10 +1320,19 @@ h4.header {
 .btn-favourite:not(.is-favourite) .fav-icon-svg:hover {
 	opacity: 1;
 }
-.btn-favourite:not(.is-favourite):hover svg, .page-subhead .btn-favourite:not(.is-favourite) .fav-icon-svg:hover, .btn-favourite:not(.is-favourite):hover svg, .module--dark .btn-favourite:not(.is-favourite) .fav-icon-svg:hover {
-    fill: #006800;
+.btn-favourite:not(.is-favourite):hover svg,
+.page-subhead .btn-favourite:not(.is-favourite) .fav-icon-svg:hover,
+.btn-favourite:not(.is-favourite):hover svg,
+.module--dark .btn-favourite:not(.is-favourite) .fav-icon-svg:hover,
+.media.competition-head .btn-favourite:not(.is-favourite) .fav-icon-svg:hover {
+    fill: var(--e-global-color-global_color_1);
 }
-.page-subhead .btn-favourite:not(.is-favourite):hover svg, .page-subhead .btn-favourite:not(.is-favourite) .fav-icon-svg:hover, .module--dark .btn-favourite:not(.is-favourite):hover svg, .module--dark .btn-favourite:not(.is-favourite) .fav-icon-svg:hover {
+.page-subhead .btn-favourite:not(.is-favourite):hover svg,
+.page-subhead .btn-favourite:not(.is-favourite) .fav-icon-svg:hover,
+.module--dark .btn-favourite:not(.is-favourite):hover svg,
+.module--dark .btn-favourite:not(.is-favourite) .fav-icon-svg:hover,
+.media.competition-head .btn-favourite:not(.is-favourite):hover svg,
+.media.competition-head .btn-favourite:not(.is-favourite) .fav-icon-svg:hover {
     fill: #FFF;
 }
 .btn-favourite:hover {
@@ -1333,16 +1344,20 @@ h4.header {
 	font-size: 0.8rem;
 }
 .btn.btn-favourite {
-    border: 1px solid #006800;
+    border: 1px solid var(--e-global-color-global_color_1);
     text-transform: uppercase;
 }
 .btn-favourite .nav-link__value {
-    color: #006800;
+    color: var(--e-global-color-global_color_1);
 }
-.page-subhead .btn.btn-favourite, .module--dark .btn.btn-favourite {
+.page-subhead .btn.btn-favourite,
+.module--dark .btn.btn-favourite,
+.media.competition-head .btn.btn-favourite {
     border-color: #FFF;
 }
-.page-subhead .btn-favourite .nav-link__value, .module--dark .btn-favourite .nav-link__value {
+.page-subhead .btn-favourite .nav-link__value,
+.module--dark .btn-favourite .nav-link__value,
+.media.competition-head .nav-link__value {
     color: #FFF;
 }
 .btn-favourite .fav-icon {
@@ -2054,10 +2069,8 @@ tc-modal .message-page .message-page__modal .message-page__removal-tips ul .list
 }
 
 .tournament-head, .competition-head {
-	background: #006800;
 	color: #FFFFFF;
 	margin-bottom: 0;
-	padding: 1rem;
 }
 
 .tournament-head svg, .competition-head svg {
@@ -2065,11 +2078,11 @@ tc-modal .message-page .message-page__modal .message-page__removal-tips ul .list
 }
 
 .reverse .racketmanager-svg-icon {
-	fill: #006800;
+	fill: var(--e-global-color-global_color_1);
 }
 
 .tournament-head .reverse svg, .competition-head .reverse svg {
-	fill: #006800;
+	fill: var(--e-global-color-global_color_1);
 }
 
 .tournament-head h1,
@@ -2306,7 +2319,7 @@ ul.module {
 .match__header-aside .match__header-aside-block {
 	border-radius: 3px;
 	box-shadow: none;
-	color: #006800;
+	color: var(--e-global-color-global_color_1);
 	font-size: 0.8rem;
 	font-weight: bold;
 	height: 1.5rem;
@@ -2330,7 +2343,7 @@ ul.module {
 
 .match__header-aside .match__header-aside-block--primary {
 	align-items: center;
-	background-color: #006800;
+	background-color: var(--e-global-color-global_color_1);
 	color: #fff;
 	text-transform: none
 }
@@ -2341,7 +2354,7 @@ ul.module {
 
 .match__header-aside .match__header-aside-block--primary:focus,
 .match__header-aside .match__header-aside-block--primary:hover {
-	background-color: #006800;
+	background-color: var(--e-global-color-global_color_1);
 	color: #fff
 }
 
@@ -3023,7 +3036,7 @@ ul.match-points {
 }
 
 .btn.match__btn {
-	background: #006800;
+	background: var(--e-global-color-global_color_1);
 	display: flex;
 	height: 100%;
 	padding-left: 0.25rem;
@@ -3038,7 +3051,7 @@ ul.match-points {
 	fill: white;
 }
 .btn.match__btn:hover, .btn.match__btn:focus-visible, .btn.match__btn:active {
-    background-color: #006800;
+    background-color: var(--e-global-color-global_color_1);
 }
 .match__change {
     position: absolute;
@@ -3213,7 +3226,7 @@ span.header {
 	position: relative
 }
 .match.is-selected {
-    box-shadow: 0 0 0 2px #006800;
+    box-shadow: 0 0 0 2px var(--e-global-color-global_color_1);
 }
 @media (max-width: 767px) {
 	.match {
@@ -3281,13 +3294,13 @@ span.date__month {
     background: transparent;
 }
 .nav-tabs .nav-item.is_selected {
-	background-color: #006800;
+	background-color: var(--e-global-color-global_color_1);
 }
 
 .nav-tabs.match-date-list .nav-item.nav-link {
 	border: 0;
-	border-top: 1px solid #006800;
-	border-bottom: 1px solid #006800;
+	border-top: 1px solid var(--e-global-color-global_color_1);
+	border-bottom: 1px solid var(--e-global-color-global_color_1);
 	border-top-left-radius: 0;
 	border-top-right-radius: 0;
 }
@@ -3295,13 +3308,13 @@ span.date__month {
 .nav-tabs.match-date-list .nav-link:first-child {
 	border-top-left-radius: 0.25rem;
 	border-bottom-left-radius: 0.25rem;
-	border-left: 1px solid #006800;
+	border-left: 1px solid var(--e-global-color-global_color_1);
 }
 
 .nav-tabs.match-date-list .nav-link:last-child {
 	border-top-right-radius: 0.25em;
 	border-bottom-right-radius: 0.25rem;
-	border-right: 1px solid #006800;
+	border-right: 1px solid var(--e-global-color-global_color_1);
 }
 .is_selected .nav-link__value {
     color: #FFF;
@@ -3320,18 +3333,18 @@ span.date__month {
 	cursor: pointer;
 }
 .module .nav-pills .nav-link {
-	border: 1px solid #006800;
+	border: 1px solid var(--e-global-color-global_color_1);
 }
 .module .nav-pills .nav-link.active, .nav-pills .show>.nav-link {
     color: #FFF;
-    background-color: #006800;
+    background-color: var(--e-global-color-global_color_1);
 }
 .module .nav-pills .nav-link:focus, .module .nav-pills .nav-link:hover {
-    border: #006800 1px solid;
-	color: #006800
+    border: var(--e-global-color-global_color_1) 1px solid;
+	color: var(--e-global-color-global_color_1)
 }
 .module .nav-pills .nav-link.active:focus, .module .nav-pills .nav-link.active:hover {
-    border: #006800 1px solid;
+    border: var(--e-global-color-global_color_1) 1px solid;
 	color: #FFF
 }
 .form-wrapper {
@@ -3396,7 +3409,7 @@ span.match_time {
 .walkover {
 	align-self: center;
 	background-color: rgba(36, 126, 0, .2);
-	color: #006800;
+	color: var(--e-global-color-global_color_1);
 	display: none;
 	flex-direction: column;
 	font-size: 0.8rem;
@@ -3522,6 +3535,15 @@ span.match_time {
 	padding-left: .75rem;
 	padding-right: 2.25rem;
 }
+.season-select {
+	width: 5rem;
+}
+
+@media (min-width: 768px) {
+	.season-select {
+		width: 10rem;
+	}
+}
 
 div#racketmanager_archive_selections .module__aside {
 	margin-bottom: 0;
@@ -3536,14 +3558,14 @@ span.module__aside {
 }
 
 .btn.btn-primary.reverse {
-	color: #006800 !important;
+	color: var(--e-global-color-global_color_1) !important;
 	background-color: #FFF;
 	border-color: #FFF;
 }
 button.btn.btn-plain {
     background: #FFF;
     border: none;
-    color: #006800;
+    color: var(--e-global-color-global_color_1);
 }
 button.btn.btn-plain:hover {
 	border: none;
@@ -3571,7 +3593,6 @@ h5.subheading {
 	font-weight: 600;
 	margin: 0;
 }
-
 ul.list.list--naked {
 	padding-left: 0;
 	margin-bottom: 0;
@@ -3650,11 +3671,11 @@ module--dark .mail-media,
 }
 
 .module--dark.module--card {
-	background-color: #006800;
+	background-color: var(--e-global-color-global_color_1);
 	color: #FFF;
 }
 .module--dark a.dropdown-item, .tournament-head a.dropdown-item, .competition-head a.dropdown-item {
-	color: #006800 !important;
+	color: var(--e-global-color-global_color_1) !important;
 }
 .module--dark .module__title h1 {
 	color: #FFF;
@@ -3787,7 +3808,7 @@ h2.team-match__name {
 }
 
 .score {
-	background-color: #006800;
+	background-color: var(--e-global-color-global_color_1);
 	border-radius: 0.3rem;
 	color: #fff;
 	display: inline-block;
@@ -3800,13 +3821,13 @@ h2.team-match__name {
 
 .score.is-not-played {
 	background-color: transparent;
-	border: 2px solid #006800;
-	color: #006800;
+	border: 2px solid var(--e-global-color-global_color_1);
+	color: var(--e-global-color-global_color_1);
 }
 
 .team-match-header .score {
 	background-color: #fff;
-	color: #006800;
+	color: var(--e-global-color-global_color_1);
 }
 
 .team-match-header .score.is-not-played {
@@ -3854,7 +3875,7 @@ h2.team-match__name {
 	color: #fff !important;
 }
 .module--dark a.btn.btn-outline {
-    color: #006800 !important;
+    color: var(--e-global-color-global_color_1) !important;
     background: #FFF;
 }
 .team-match .score .is-team-1 {
@@ -4069,7 +4090,7 @@ club-entry__panel {
 }
 
 .profile-icon__abbr {
-	background-color: #006800;
+	background-color: var(--e-global-color-global_color_1);
 	color: #fff;
 	font-size: 1.2rem;
 	line-height: 4.20rem;
@@ -4107,12 +4128,6 @@ h1.media__title {
 .tournament-head .media__subheading, .competition-head .media__subheading {
 	color: #FFF;
 }
-
-.media.tournament-head, .media.competition-head {
-	margin-bottom: 1rem !important;
-	padding: 1rem 0;
-}
-
 @media (max-width: 767px) {
 	.media.tournament-head, .media.competition-head {
 		padding-left: 0.5rem;
@@ -4196,7 +4211,10 @@ h1.media__title {
 	margin-bottom: 1rem;
 	padding: 1rem;
 }
+.page-subhead.competition {
+	background-color: var(--e-global-color-global_color_1);
 
+}
 .media__title-aside {
 	color: #707585;
 	font-size: 0.75rem;
@@ -4211,7 +4229,18 @@ h1.media__title {
 .page-subhead .media__subheading {
 	color: #FFF;
 }
+@media (max-width: 767px) {
+	.page-subhead .media__wrapper {
+		display: block;
+		margin-top: 1.5rem;
+		text-align: center;
+	}
 
+	.page-subhead .media__img {
+		margin-bottom: 1.5rem;
+		margin-right: 0;
+	}
+}
 .media__title a:not(.nav--link),
 .media__title a:not(.nav--link):hover {
 	color: #FFF;
@@ -4419,7 +4448,7 @@ p.media__subheading {
 }
 
 .score-row:hover {
-	border: 3px solid #006800;
+	border: 3px solid var(--e-global-color-global_color_1);
 }
 
 .score-row__players-wrapper {
@@ -4576,10 +4605,10 @@ p.media__subheading {
 	word-wrap: break-word;
 }
 a:hover .nav-link__value, a:focus .nav-link__value {
-	color: #006800;
+	color: var(--e-global-color-global_color_1);
 }
 .module--dark a.btn:hover .nav-link__value, .module--dark a.btn:focus .nav-link__value {
-	color: #006800;
+	color: var(--e-global-color-global_color_1);
 }
 .module--dark a:hover .nav-link__value, .module--dark a:focus .nav-link__value {
 	color: #FFF;
@@ -4872,6 +4901,9 @@ ol.list {
 	padding-bottom: 0;
 	display: inline-flex;
 }
+.list__item.is-selected {
+	background-color: rgba(36, 126, 0, .25);
+}
 @media (min-width: 768px) {
     .col-sm-6.list__item {
         flex-basis: calc(50% - 30px);
@@ -4894,7 +4926,7 @@ ul.list.list__indent {
 .media__img-element--icon {
     background-color: transparent;
     border: 0;
-    color: #006800;
+    color: var(--e-global-color-global_color_1);
     font-size: 300%;
 }
 svg[class*=icon] {
@@ -4905,6 +4937,9 @@ svg[class*=icon] {
     width: 1em;
     fill: currentColor;
     transition: all .2s;
+}
+.page-subhead svg[class*=icon] {
+	fill: #FFF;
 }
 .alert_rm {
     background-color: #fff;
@@ -4920,7 +4955,7 @@ svg[class*=icon] {
     position: relative
 }
 
-.module:not(.module--card) _rm {
+.module:not(.module--card) .alert_rm {
     box-shadow: var(--box-shadow);
 }
 
@@ -5171,7 +5206,7 @@ h4.modal-title {
 }
 
 .modal-content .modal__header {
-    background-color: #006800;
+    background-color: var(--e-global-color-global_color_1);
     border-top-left-radius: .3rem;
     border-top-right-radius: .3rem;
     color: #fff;

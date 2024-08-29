@@ -108,10 +108,10 @@ class RacketManager {
 		$slug      = get_post_field( 'post_name' );
 		$site_name = $this->site_name;
 		if ( 'event' === $slug ) {
-			$event  = un_seo_url( isset( $wp->query_vars['event'] ) ? $wp->query_vars['event'] : '' );
-			$season = un_seo_url( isset( $wp->query_vars['season'] ) ? $wp->query_vars['season'] : '' );
-			$club   = un_seo_url( isset( $wp->query_vars['club_name'] ) ? $wp->query_vars['club_name'] : '' );
-			$player = un_seo_url( isset( $wp->query_vars['player_id'] ) ? $wp->query_vars['player_id'] : '' );
+			$event  = isset( $wp->query_vars['event'] ) ? ucwords( un_seo_url( $wp->query_vars['event'] ) ) : '';
+			$season = isset( $wp->query_vars['season'] ) ? ucwords( un_seo_url( $wp->query_vars['season'] ) ) : '';
+			$club   = isset( $wp->query_vars['club_name'] ) ? ucwords( un_seo_url( $wp->query_vars['club_name'] ) ) : '';
+			$player = isset( $wp->query_vars['player_id'] ) ? ucwords( un_seo_url( $wp->query_vars['player_id'] ) ) : '';
 			if ( $season ) {
 				$event .= ' ' . $season;
 			}
@@ -124,8 +124,8 @@ class RacketManager {
 			}
 		}
 		if ( 'cup' === $slug ) {
-			$event  = un_seo_url( isset( $wp->query_vars['event'] ) ? $wp->query_vars['event'] : '' );
-			$season = un_seo_url( isset( $wp->query_vars['season'] ) ? $wp->query_vars['season'] : '' );
+			$event  = isset( $wp->query_vars['event'] ) ? ucwords( un_seo_url( $wp->query_vars['event'] ) ) : '';
+			$season = isset( $wp->query_vars['season'] ) ? ucwords( un_seo_url( $wp->query_vars['season'] ) ) : '';
 			$title  = $event;
 			if ( $season ) {
 				$title .= ' - ' . $season;
@@ -133,9 +133,9 @@ class RacketManager {
 			$title .= ' - ' . $site_name;
 		}
 		if ( 'league' === $slug ) {
-			$league = un_seo_url( isset( $wp->query_vars['league_name'] ) ? $wp->query_vars['league_name'] : '' );
-			$season = un_seo_url( isset( $wp->query_vars['season'] ) ? $wp->query_vars['season'] : '' );
-			$team   = un_seo_url( isset( $wp->query_vars['team'] ) ? $wp->query_vars['team'] : '' );
+			$league = isset( $wp->query_vars['league_name'] ) ? ucwords( un_seo_url( $wp->query_vars['league_name'] ) ) : '';
+			$season = isset( $wp->query_vars['season'] ) ? ucwords( un_seo_url( $wp->query_vars['season'] ) ) : '';
+			$team   = isset( $wp->query_vars['team'] ) ? ucwords( un_seo_url( $wp->query_vars['team'] ) ) : '';
 			if ( $season ) {
 				$league .= ' - ' . $season;
 			}
@@ -146,11 +146,11 @@ class RacketManager {
 			}
 		}
 		if ( 'match' === $slug ) {
-			$tournament = un_seo_url( isset( $wp->query_vars['tournament'] ) ? $wp->query_vars['tournament'] : '' );
-			$league     = un_seo_url( isset( $wp->query_vars['league_name'] ) ? $wp->query_vars['league_name'] : '' );
-			$season     = un_seo_url( isset( $wp->query_vars['season'] ) ? $wp->query_vars['season'] : '' );
-			$team_home  = un_seo_url( isset( $wp->query_vars['teamHome'] ) ? $wp->query_vars['teamHome'] : '' );
-			$team_away  = un_seo_url( isset( $wp->query_vars['teamAway'] ) ? $wp->query_vars['teamAway'] : '' );
+			$tournament = isset( $wp->query_vars['tournament'] ) ? ucwords( un_seo_url( $wp->query_vars['tournament'] ) ) : '';
+			$league     = isset( $wp->query_vars['league_name'] ) ? ucwords( un_seo_url( $wp->query_vars['league_name'] ) ) : '';
+			$season     = isset( $wp->query_vars['season'] ) ? ucwords( un_seo_url( $wp->query_vars['season'] ) ) : '';
+			$team_home  = isset( $wp->query_vars['teamHome'] ) ? ucwords( un_seo_url( $wp->query_vars['teamHome'] ) ) : '';
+			$team_away  = isset( $wp->query_vars['teamAway'] ) ? ucwords( un_seo_url( $wp->query_vars['teamAway'] ) ) : '';
 			if ( $season ) {
 				$league .= ' - ' . $season;
 			}
@@ -168,9 +168,9 @@ class RacketManager {
 			$title .= $site_name;
 		}
 		if ( 'league-entry' === $slug || 'cup-entry' === $slug ) {
-			$competition_name = un_seo_url( isset( $wp->query_vars['competition_name'] ) ? ucwords( $wp->query_vars['competition_name'] ) : '' );
-			$season           = un_seo_url( isset( $wp->query_vars['season'] ) ? $wp->query_vars['season'] : '' );
-			$club             = un_seo_url( isset( $wp->query_vars['club_name'] ) ? $wp->query_vars['club_name'] : '' );
+			$competition_name = isset( $wp->query_vars['competition_name'] ) ? ucwords( un_seo_url( $wp->query_vars['competition_name'] ) ) : '';
+			$season           = isset( $wp->query_vars['season'] ) ? ucwords( un_seo_url( $wp->query_vars['season'] ) ) : '';
+			$club             = isset( $wp->query_vars['club_name'] ) ? ucwords( un_seo_url( $wp->query_vars['club_name'] ) ) : '';
 			$title            = $competition_name;
 			if ( $season ) {
 				$title .= ' - ' . $season;
@@ -182,8 +182,8 @@ class RacketManager {
 			$title .= ' - ' . $site_name;
 		}
 		if ( 'tournament-entry' === $slug ) {
-			$tournament  = un_seo_url( isset( $wp->query_vars['tournament'] ) ? ucwords( $wp->query_vars['tournament'] ) : '' );
-			$competition = un_seo_url( isset( $wp->query_vars['competition_name'] ) ? ucwords( $wp->query_vars['competition_name'] ) : '' );
+			$tournament  = isset( $wp->query_vars['tournament'] ) ? ucwords( un_seo_url( $wp->query_vars['tournament'] ) ) : '';
+			$competition = isset( $wp->query_vars['competition_name'] ) ? ucwords( un_seo_url( $wp->query_vars['competition_name'] ) ) : '';
 			if ( $tournament ) {
 				$title = $tournament;
 			} else {
@@ -192,11 +192,11 @@ class RacketManager {
 			$title .= ' - ' . __( 'Tournament Entry Form', 'racketmanager' ) . ' - ' . $site_name;
 		}
 		if ( 'tournament' === $slug ) {
-			$tournament = un_seo_url( isset( $wp->query_vars['tournament'] ) ? ucwords( $wp->query_vars['tournament'] ) : __( 'Latest', 'racketmanager' ) );
-			$draw       = un_seo_url( isset( $wp->query_vars['draw'] ) ? $wp->query_vars['draw'] : '' );
-			$event      = un_seo_url( isset( $wp->query_vars['event'] ) ? $wp->query_vars['event'] : '' );
-			$player     = un_seo_url( isset( $wp->query_vars['player'] ) ? $wp->query_vars['player'] : '' );
-			$tab        = un_seo_url( isset( $wp->query_vars['tab'] ) ? $wp->query_vars['tab'] : '' );
+			$tournament = isset( $wp->query_vars['tournament'] ) ? ucwords( un_seo_url( $wp->query_vars['tournament'] ) ) : __( 'Latest', 'racketmanager' );
+			$draw       = isset( $wp->query_vars['draw'] ) ? ucwords( un_seo_url( $wp->query_vars['draw'] ) ) : '';
+			$event      = isset( $wp->query_vars['event'] ) ? ucwords( un_seo_url( $wp->query_vars['event'] ) ) : '';
+			$player     = isset( $wp->query_vars['player'] ) ? ucwords( un_seo_url( $wp->query_vars['player'] ) ) : '';
+			$tab        = isset( $wp->query_vars['tab'] ) ? ucwords( un_seo_url( $wp->query_vars['tab'] ) ) : '';
 			$title      = '';
 			if ( $player ) {
 				$title .= $player . ' - ' . __( 'Player', 'racketmanager' ) . ' - ';
@@ -214,7 +214,7 @@ class RacketManager {
 			$title .= ' - ' . $site_name;
 		}
 		if ( 'club' === $slug ) {
-			$club  = un_seo_url( isset( $wp->query_vars['club_name'] ) ? $wp->query_vars['club_name'] : '' );
+			$club  = isset( $wp->query_vars['club_name'] ) ? ucwords( un_seo_url( $wp->query_vars['club_name'] ) ) : '';
 			$title = '';
 			if ( $club ) {
 				$title = $club;

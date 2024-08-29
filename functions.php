@@ -121,7 +121,7 @@ function un_seo_url( $string_field ) {
 	// Convert underscore to dash.
 	$string_field = str_replace( '_', '-', $string_field );
 	// Lower case everything.
-	$string_field = ucwords( $string_field );
+	$string_field = strtolower( $string_field );
 	return $string_field;
 }
 /**

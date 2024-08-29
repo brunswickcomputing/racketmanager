@@ -9,9 +9,14 @@
 namespace Racketmanager;
 
 ?>
+	<div class="page-subhead competition">
 		<div class="media tournament-head">
 			<div class="media__wrapper">
-				<div class="media__img"></div>
+				<div class="media__img">
+					<svg width="16" height="16" class="media__img-element--icon">
+						<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/lta-icons.svg#icon-bracket' ); ?>"></use>
+					</svg>
+				</div>
 				<div class="media__content">
 					<h1 class="media__title"><?php echo esc_html( $tournament->name ) . ' - ' . esc_html__( 'Tournament', 'racketmanager' ); ?></h1>
 					<div class="media__content-subinfo">
@@ -54,3 +59,4 @@ namespace Racketmanager;
 				</div>
 			</div>
 		</div>
+	</div>

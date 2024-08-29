@@ -46,6 +46,20 @@ if ( $league->event->is_box ) {
 	$season_title     = __( 'Season', 'racketmanager' );
 	$season_selection = __( 'Seasons', 'racketmanager' );
 }
+switch ( $league->event->competition->type ) {
+	case 'league':
+		$image = 'images/bootstrap-icons.svg#table';
+		break;
+	case 'cup':
+		$image = 'images/bootstrap-icons.svg#trophy-fill';
+		break;
+	case 'tournament':
+		$image = 'images/lta-icons.svg#icon-bracket';
+		break;
+	default:
+		$image = null;
+		break;
+}
 ?>
 <div id="archive-<?php echo esc_html( $league->id ); ?>" class="archive">
 	<script type="text/javascript">
@@ -56,25 +70,62 @@ if ( $league->event->is_box ) {
 		activaTab('<?php echo esc_html( $tab ); ?>');
 	});
 	</script>
-	<div class="module module--card module--dark">
-		<div class="module__content">
-			<div class="module__banner">
-				<div class="module__title">
-					<h1>
-						<span><?php echo esc_html( $league->title ); ?></span>
-						<?php
-						$favourite_type = 'league';
-						$favourite_id   = $league->id;
-						require 'includes/favourite-button.php';
-						?>
-					</h1>
+	<div class="page-subhead competition">
+		<div class="media competition-head">
+			<div class="media__wrapper">
+				<div class="media__img">
+					<svg width="16" height="16" class="media__img-element--icon">
+						<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . $image ); ?>"></use>
+					</svg>
 				</div>
-				<div id="racketmanager_archive_selections" class="module__aside">
-					<form method="get" action="<?php echo esc_html( get_permalink( $post_id ) ); ?>" id="racketmanager_competititon_archive">
+				<div class="media__content">
+					<h1 class="media__title"><?php echo esc_html( $league->title ); ?></h1>
+					<div class="media__content-subinfo">
+						<?php
+						if ( ! empty( $league->event->name ) ) {
+							?>
+							<small class="media__subheading">
+								<span class="nav--link">
+									<a href="/<?php echo esc_html( seo_url( $league->event->competition->type ) ); ?>s/<?php echo esc_html( seo_url( $league->event->name ) ); ?>/<?php echo esc_html( $league->current_season['name'] ); ?>/">
+										<span class="nav-link__value">
+											<?php echo esc_html( $league->event->name ); ?>
+										</span>
+									</a>
+								</span>
+								<span>&nbsp;&#8226&nbsp;</span>
+								<span class="nav--link">
+									<a href="/<?php echo esc_html( seo_url( $league->event->competition->name ) ); ?>/<?php echo esc_html( $league->current_season['name'] ); ?>/">
+										<span class="nav-link__value">
+											<?php echo esc_html( $league->event->competition->name ); ?>
+										</span>
+									</a>
+								</span>
+							</small>
+							<?php
+						}
+						?>
+						<?php
+						if ( ! empty( $league->event->competition->date_start ) && ! empty( $league->event->competition->date_end ) ) {
+							?>
+						<small class="media__subheading">
+							<span class="nav--link">
+								<span class="nav-link__value">
+									<?php racketmanager_the_svg( 'icon-calendar' ); ?>
+									<?php echo esc_html( mysql2date( 'j M Y', $league->event->competition->date_start ) ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( mysql2date( 'j M Y', $league->event->competition->date_end ) ); ?>
+								</span>
+							</span>
+						</small>
+							<?php
+						}
+						?>
+					</div>
+				</div>
+				<div class="media__aside">
+					<form method="get" action="<?php echo esc_html( get_permalink( $post_id ) ); ?>" id="racketmanager_competititon_archive" class="season-select">
 						<input type="hidden" name="page_id" value="<?php echo esc_html( $post_id ); ?>" />
 						<input type="hidden" name="pagename" id="pagename" value="<?php echo esc_html( $pagename ); ?>" />
 						<div class="row g-1 align-items-center">
-							<div class="form-floating col-auto">
+							<div class="form-floating">
 								<select class="form-select" size="1" name="season" id="season">
 									<?php
 									foreach ( array_reverse( $seasons ) as $key => $season ) {
@@ -100,12 +151,16 @@ if ( $league->event->is_box ) {
 							</div>
 						</div>
 					</form>
+					<?php
+					$favourite_type = 'league';
+					$favourite_id   = $league->id;
+					require 'includes/favourite-button.php';
+					?>
 				</div>
 			</div>
 		</div>
 	</div>
 	<?php require 'league-selections.php'; ?>
-
 	<?php
 	if ( $league->event->competition->is_championship ) {
 		?>

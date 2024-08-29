@@ -50,6 +50,20 @@ if ( $event->is_box ) {
 	$season_label     = __( 'Season', 'racketmanager' );
 	$season_selection = __( 'Seasons', 'racketmanager' );
 }
+switch ( $event->competition->type ) {
+	case 'league':
+		$image = 'images/bootstrap-icons.svg#table';
+		break;
+	case 'cup':
+		$image = 'images/bootstrap-icons.svg#trophy-fill';
+		break;
+	case 'tournament':
+		$image = 'images/lta-icons.svg#icon-bracket';
+		break;
+	default:
+		$image = null;
+		break;
+}
 ?>
 <div id="leaguetables">
 	<script type="text/javascript">
@@ -58,9 +72,14 @@ if ( $event->is_box ) {
 		activaTab('<?php echo esc_html( $tab ); ?>');
 	});
 	</script>
+	<div class="page-subhead competition">
 		<div class="media competition-head">
 			<div class="media__wrapper">
-				<div class="media__img"></div>
+				<div class="media__img">
+					<svg width="16" height="16" class="media__img-element--icon">
+						<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . $image ); ?>"></use>
+					</svg>
+				</div>
 				<div class="media__content">
 					<h1 class="media__title"><?php echo esc_html( $event->name ); ?></h1>
 					<div class="media__content-subinfo">
@@ -99,7 +118,7 @@ if ( $event->is_box ) {
 				if ( 'constitution' !== $standings_template ) {
 					?>
 					<div class="media__aside">
-						<form method="get" action="<?php echo esc_html( get_permalink( $post_id ) ); ?>" id="racketmanager_competititon_archive">
+						<form method="get" action="<?php echo esc_html( get_permalink( $post_id ) ); ?>" id="racketmanager_competititon_archive" class="season-select">
 							<input type="hidden" name="page_id" value="<?php echo esc_html( $post_id ); ?>" />
 							<input type="hidden" name="pagename" id="pagename" value="<?php echo esc_html( $pagename ); ?>" />
 							<div class="row g-1 align-items-center">
@@ -128,6 +147,7 @@ if ( $event->is_box ) {
 				?>
 			</div>
 		</div>
+	</div>
 	<?php
 	if ( 'constitution' !== $standings_template ) {
 		?>

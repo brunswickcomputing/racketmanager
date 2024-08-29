@@ -2278,7 +2278,7 @@ class Racketmanager_League {
 				<span class="score <?php echo esc_attr( $score_class ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_attr( $link_title ); ?>">
 					<span class="is-team-1"><?php echo esc_html( sprintf( '%g', $score_team_1 ) ); ?></span>
 					<?php
-					if ( 'true' === $home_away ) {
+					if ( $home_away ) {
 						?>
 						<span class="score-separator">-</span>
 						<span class="is-team-2"><?php echo esc_html( sprintf( '%g', $score_team_2 ) ); ?></span>

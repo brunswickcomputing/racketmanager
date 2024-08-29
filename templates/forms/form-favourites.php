@@ -132,7 +132,7 @@ namespace Racketmanager;
 												}
 											}
 											?>
-										</ul> 
+										</ul>
 									</div>
 								</div>
 							</div>

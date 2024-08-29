@@ -874,8 +874,33 @@ class RacketManager {
 		);
 		// league news info.
 		add_rewrite_rule(
+			'league-news/?$',
+			'index.php?pagename=leagues',
+			'top'
+		);
+		add_rewrite_rule(
 			'leagues/(.+?)-news/?$',
 			'index.php?pagename=leagues%2F$matches[1]',
+			'top'
+		);
+		add_rewrite_rule(
+			'cup-news/?$',
+			'index.php?pagename=cups',
+			'top'
+		);
+		add_rewrite_rule(
+			'cups/(.+?)-news/?$',
+			'index.php?pagename=cups%2F$matches[1]',
+			'top'
+		);
+		add_rewrite_rule(
+			'tournament-news/?$',
+			'index.php?pagename=tournaments',
+			'top'
+		);
+		add_rewrite_rule(
+			'tournaments/(.+?)-news/?$',
+			'index.php?pagename=tournaments%2F$matches[1]',
 			'top'
 		);
 		// daily matches - date.

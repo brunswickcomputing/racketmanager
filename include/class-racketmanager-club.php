@@ -348,7 +348,7 @@ final class Racketmanager_Club {
 		$args[] = intval( $this->id );
 		$sql    = "SELECT count(*) FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d'";
 		if ( $type ) {
-			$sql   .= " AND `type` = '%s' AND `team_type` != 'P'";
+			$sql   .= " AND `type` = '%s' AND (`team_type` IS NULL OR `team_type` != 'P')";
 			$args[] = $type;
 		}
 		return $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -912,7 +912,7 @@ final class Racketmanager_Club {
 		global $wpdb;
 		return $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT count(*) FROM {$wpdb->racketmanager_team_events} te, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager_clubs} c WHERE c.`id` = %d AND c.`id` = t.`affiliatedclub` AND t.`team_type` != 'P' AND t.`id` = te.`team_id` AND te.`captain` = %d",
+				"SELECT count(*) FROM {$wpdb->racketmanager_team_events} te, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager_clubs} c WHERE c.`id` = %d AND c.`id` = t.`affiliatedclub` AND (t.`team_type` IS NULL OR t.`team_type` != 'P') AND t.`id` = te.`team_id` AND te.`captain` = %d",
 				intval( $this->id ),
 				intval( $player )
 			)

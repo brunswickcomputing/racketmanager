@@ -388,7 +388,7 @@ Racketmanager.updateMatchResults = function (link) {
 		jQuery(alert_id).removeClass('alert--success alert--warning alert--danger');
 		alert_response = '#alertResponse';
 	} else {
-		let notifyField = '#updateResponse';
+		notifyField = '#updateResponse';
 		jQuery(notifyField).removeClass("message-success");
 		jQuery(notifyField).removeClass("message-error");
 		jQuery(notifyField).val("");
@@ -1075,8 +1075,6 @@ Racketmanager.setMatchStatus = function (link) {
 		type: "POST",
 		data: $form,
 		success: function (response) {
-			let message = response.data[0];
-			let matchId = response.data[1];
 			let scoreStatus = response.data[2];
 			let statusMessages = Object.entries(response.data[3]);
 			let statusClasses = Object.entries(response.data[4]);
@@ -1216,7 +1214,6 @@ Racketmanager.setMatchRubberStatus = function (link) {
 		type: "POST",
 		data: $form,
 		success: function (response) {
-			let message = response.data[0];
 			let rubberNumber = response.data[1];
 			let scoreStatus = response.data[2];
 			let statusMessages = Object.entries(response.data[3]);
@@ -1472,7 +1469,7 @@ Racketmanager.switchHomeAway = function (link) {
 	});
 }
 Racketmanager.switchTab = function (elem) {
-    var selectedTab = jQuery(elem).data('tabid').toLowerCase();
+    let selectedTab = jQuery(elem).data('tabid').toLowerCase();
     switch (selectedTab) {
       case 'tab-grid':
         jQuery('.match-group').addClass('match-group--grid');
@@ -1611,7 +1608,6 @@ Racketmanager.deleteMessages = function (event, link) {
 				let messagesRef = '.' + response.data.type;
 				jQuery(messagesRef).hide();
 				let messageCountRef = '#' + response.data.type + '-messages';
-				let messageCount = jQuery(messageCountRef).html();
 				messageCount = 0;
 				jQuery(messageCountRef).html(messageCount);
 			}
@@ -1626,6 +1622,57 @@ Racketmanager.deleteMessages = function (event, link) {
 				jQuery(errorField).text(response.statusText);
 			}
 			jQuery(errorResponse).show();
+		},
+		complete: function () {
+		}
+	});
+};
+Racketmanager.resetPassword = function (link) {
+	let formId = '#'.concat(link.form.id);
+	let $form = jQuery(formId).serialize();
+	$form += "&action=racketmanager_reset_password";
+	let alert_id_1;
+	let alert_response_1 = '';
+	alert_id_1 = jQuery('#loginAlert');
+	alert_response_1 = '#loginAlertResponse';
+	jQuery(alert_id_1).hide();
+	jQuery(alert_id_1).removeClass('alert--success alert--warning alert--danger');
+	let alert_id_2 = jQuery('#resetAlert');
+	jQuery(alert_id_2).hide();
+	jQuery(alert_id_2).removeClass('alert--success alert--warning alert--danger');
+	let alert_response_2 = '#resetAlertResponse';
+	jQuery(".is-invalid").removeClass("is-invalid");
+
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: $form,
+		success: function (response) {
+			let message = response.data[0];
+			let modal = '#resetPasswordModal';
+			jQuery(alert_id_1).show();
+			jQuery(alert_id_1).addClass('alert--success');
+			jQuery(alert_response_1).html(message);
+			jQuery(modal).modal('hide')
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				let data = response.responseJSON.data;
+				let message = '';
+				for (let errorMsg of data[1]) {
+					message += errorMsg + '<br />';
+				}
+				let errorFields = data[2];
+				for (let errorField of errorFields) {
+					let id = '#'.concat(errorField);
+					jQuery(id).addClass("is-invalid");
+				}
+				jQuery(alert_response_2).html(message);
+			} else {
+				jQuery(alert_response_2).text(response.statusText);
+			}
+			jQuery(alert_id_2).show();
+			jQuery(alert_id_2).addClass('alert--danger');
 		},
 		complete: function () {
 		}

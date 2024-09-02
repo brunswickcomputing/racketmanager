@@ -64,6 +64,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_nopriv_racketmanager_set_match_date', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_racketmanager_switch_home_away', array( &$this, 'switch_home_away' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_switch_home_away', array( &$this, 'logged_out' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_reset_password', array( &$this, 'reset_password' ) );
 	}
 	/**
 	 * Add item as favourite
@@ -2025,5 +2026,47 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		$output = ob_get_contents();
 		ob_end_clean();
 		return $output;
+	}
+	/**
+	 * Reset password function
+	 *
+	 * @return void
+	 */
+	public function reset_password() {
+		$return    = array();
+		$err_msg   = array();
+		$err_field = array();
+		$valid     = true;
+		$msg       = null;
+		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'reset_password' ) ) {
+			$valid       = false;
+			$err_field[] = '';
+			$err_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$user_login = isset( $_POST['user_login'] ) ? sanitize_text_field( wp_unslash( $_POST['user_login'] ) ) : null;
+			if ( $user_login ) {
+				$reset = retrieve_password( $user_login );
+				if ( is_wp_error( $reset ) ) {
+					$valid       = false;
+					$err_msg[]   = $reset->get_error_message();
+					$err_field[] = 'user_login';
+				} else {
+					$msg = __( 'Check your email for a link to reset your password', 'racketmanager' );
+				}
+			} else {
+				$valid       = false;
+				$err_field[] = 'user_login';
+				$err_msg[]   = __( 'Email address not supplied', 'racketmanager' );
+			}
+		}
+		if ( $valid ) {
+			array_push( $return, $msg );
+			wp_send_json_success( $return );
+		} else {
+			$msg = __( 'Unable to request password reset', 'racketmanager' );
+			array_push( $return, $msg, $err_msg, $err_field );
+			wp_send_json_error( $return, '500' );
+		}
 	}
 }

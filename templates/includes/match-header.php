@@ -57,9 +57,10 @@ if ( $match->is_pending ) {
 			$info_msg     = $match_status;
 			switch ( $match->status ) {
 				case 1:
-					$team_ref = empty( $match->custom['walkover'] ) ? null : $match->custom['walkover'];
-					if ( $team_ref ) {
-						$team = empty( $match->teams[ $team_ref ] ) ? null : $match->teams[ $team_ref ];
+					$team_ref_alt = empty( $match->custom['walkover'] ) ? null : $match->custom['walkover'];
+					if ( $team_ref_alt ) {
+						$team_ref = 'home' === $team_ref_alt ? 'away' : 'home';
+						$team     = empty( $match->teams[ $team_ref ] ) ? null : $match->teams[ $team_ref ];
 						if ( $team ) {
 							$info_msg = $match_status . ' - ' . $team->title . ' ' . __( 'did not show', 'racketmanager' );
 						}

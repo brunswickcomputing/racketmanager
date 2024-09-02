@@ -1230,15 +1230,12 @@ final class Racketmanager_Match {
 			$captain = 'home';
 		} elseif ( ! empty( $actioned_by ) && 'away' === $actioned_by ) {
 			$captain = 'away';
-		} elseif ( 'home' === $user_team ) {
+		} elseif ( 'home' === $user_team || 'both' === $user_team ) {
 			$captain     = 'home';
 			$actioned_by = 'home';
 		} elseif ( 'away' === $user_team ) {
 			$captain     = 'away';
 			$actioned_by = 'away';
-		} elseif ( 'both' === $user_team ) {
-			$captain     = 'home';
-			$actioned_by = 'home';
 		} else {
 			$captain = 'admin';
 		}
@@ -1663,10 +1660,7 @@ final class Racketmanager_Match {
 	public function notify_next_match_teams() {
 		global $racketmanager;
 
-		if ( ( -1 === $this->teams['home']->id || -1 === $this->teams['away']->id ) || ( ! isset( $this->host ) ) ) {
-			return false;
-		}
-		if ( 'S' === $this->teams['home']->team_type || 'S' === $this->teams['away']->team_type ) {
+		if ( ( ( -1 === $this->teams['home']->id || -1 === $this->teams['away']->id ) || ( ! isset( $this->host ) ) ) || ( 'S' === $this->teams['home']->team_type || 'S' === $this->teams['away']->team_type ) ) {
 			return false;
 		}
 		$email_to = $this->get_email_to();
@@ -1720,10 +1714,9 @@ final class Racketmanager_Match {
 			$result->grade            = '6';
 			$result->event_start_date = $this->league->event->competition->seasons[ $this->season ]['matchDates'][0];
 			$result->age_group        = 'Open';
+			$result->event_type       = 'Singles';
 			if ( 'D' === substr( $this->league->event->type, 1, 1 ) ) {
 				$result->event_type = 'Doubles';
-			} else {
-				$result->event_type = 'Singles';
 			}
 			if ( 'M' === substr( $this->league->event->type, 0, 1 ) ) {
 				$result->gender = 'Male';
@@ -1826,20 +1819,19 @@ final class Racketmanager_Match {
 						$losing_team    = 'home';
 						$losing_player  = 'player1';
 					}
-					$result_match->winner_name   = $this->teams[ $winning_team ]->players['1']->display_name;
-					$result_match->winner_lta_no = $this->teams[ $winning_team ]->players['1']->btm;
-					$result_match->loser_name    = $this->teams[ $losing_team ]->players['1']->display_name;
-					$result_match->loser_lta_no  = $this->teams[ $losing_team ]->players['1']->btm;
+					$result_match->winner_name          = $this->teams[ $winning_team ]->players['1']->display_name;
+					$result_match->winner_lta_no        = $this->teams[ $winning_team ]->players['1']->btm;
+					$result_match->loser_name           = $this->teams[ $losing_team ]->players['1']->display_name;
+					$result_match->loser_lta_no         = $this->teams[ $losing_team ]->players['1']->btm;
+					$result_match->winnerpartner        = '';
+					$result_match->winnerpartner_lta_no = '';
+					$result_match->loserpartner         = '';
+					$result_match->loserpartner_lta_no  = '';
 					if ( 'D' === substr( $this->league->event->type, 1, 1 ) ) {
 						$result_match->winnerpartner        = $this->teams[ $winning_team ]->players['2']->display_name;
 						$result_match->winnerpartner_lta_no = $this->teams[ $winning_team ]->players['2']->btm;
 						$result_match->loserpartner         = $this->teams[ $losing_team ]->players['2']->display_name;
 						$result_match->loserpartner_lta_no  = $this->teams[ $losing_team ]->players['2']->btm;
-					} else {
-						$result_match->winnerpartner        = '';
-						$result_match->winnerpartner_lta_no = '';
-						$result_match->loserpartner         = '';
-						$result_match->loserpartner_lta_no  = '';
 					}
 					$result_match->score      = '';
 					$result_match->score_code = '';
@@ -1884,16 +1876,12 @@ final class Racketmanager_Match {
 					$result_match->score .= '[';
 					$match_tiebreak       = true;
 				}
-				if ( $match_tiebreak ) {
-					if ( empty( $set['settype'] ) || 'MTB' !== $set['settype'] ) {
-						$set[ $winning_player ] = 10;
-						$set[ $losing_player ]  = 8;
-					}
+				if ( $match_tiebreak && ( empty( $set['settype'] ) || 'MTB' !== $set['settype'] ) ) {
+					$set[ $winning_player ] = 10;
+					$set[ $losing_player ]  = 8;
 				}
-				if ( '7' === $set[ $winning_player ] && '6' === $set[ $losing_player ] ) {
-					if ( empty( $set['tiebreak'] ) ) {
-						$set['tiebreak'] = 5;
-					}
+				if ( '7' === $set[ $winning_player ] && '6' === $set[ $losing_player ] && empty( $set['tiebreak'] ) ) {
+					$set['tiebreak'] = 5;
 				}
 				$result_match->score .= $set[ $winning_player ] . '-' . $set[ $losing_player ];
 				if ( ! empty( $set['tiebreak'] ) ) {
@@ -1990,11 +1978,9 @@ final class Racketmanager_Match {
 		$message_args['original_date']   = $this->date_original;
 		$message_args['competitiontype'] = $this->league->event->competition->type;
 		$message_args['emailfrom']       = $email_from;
-		if ( $this->league->event->competition->is_tournament ) {
-			if ( $this->date > $this->date_original ) {
-				$message_args['delay'] = true;
-				$delay                 = true;
-			}
+		if ( $this->league->event->competition->is_tournament && $this->date > $this->date_original ) {
+			$message_args['delay'] = true;
+			$delay                 = true;
 		}
 		$subject = __( 'Match Date Change', 'racketmanager' );
 		if ( $delay ) {
@@ -2079,45 +2065,7 @@ final class Racketmanager_Match {
 						}
 					} elseif ( 'player' === $match_capability ) {
 						if ( 'captain' === $user_type || 'matchsecretary' === $user_type ) {
-							if ( 'home' === $user_team ) {
-								if ( 'P' === $result_status ) {
-									$user_can_update = true;
-									if ( 'home' === $user_team || 'both' === $user_team ) {
-										if ( empty( $this->away_captain ) ) {
-											$match_update = true;
-										} elseif ( empty( $this->home_captain ) ) {
-											$match_approval_mode = true;
-										}
-									} elseif ( 'away' === $user_team ) {
-										if ( empty( $this->home_captain ) ) {
-											$match_update = true;
-										} elseif ( empty( $this->away_captain ) ) {
-											$match_approval_mode = true;
-										}
-									}
-								} elseif ( $this->is_pending ) {
-									$user_can_update = true;
-								}
-							} elseif ( 'away' === $user_team && 'home' === $result_entry ) {
-								if ( 'P' === $result_status ) {
-									$user_can_update = true;
-									if ( 'home' === $user_team || 'both' === $user_team ) {
-										if ( empty( $this->away_captain ) ) {
-											$match_update = true;
-										} elseif ( empty( $this->home_captain ) ) {
-											$match_approval_mode = true;
-										}
-									} elseif ( 'away' === $user_team ) {
-										if ( empty( $this->home_captain ) ) {
-											$match_update = true;
-										} elseif ( empty( $this->away_captain ) ) {
-											$match_approval_mode = true;
-										}
-									}
-								} elseif ( $this->is_pending ) {
-									$user_can_update = true;
-								}
-							} elseif ( 'either' === $result_entry ) {
+							if ( 'home' === $user_team || ( 'away' === $user_team && 'home' === $result_entry ) || 'either' === $result_entry ) {
 								if ( 'P' === $result_status ) {
 									$user_can_update = true;
 									if ( 'home' === $user_team || 'both' === $user_team ) {

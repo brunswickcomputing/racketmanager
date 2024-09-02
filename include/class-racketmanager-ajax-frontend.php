@@ -955,9 +955,9 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				if ( empty( $status ) ) {
 					if ( $match->is_walkover ) {
 						if ( 'home' === $match->walkover ) {
-							$status = 'walkover_player2';
-						} else {
 							$status = 'walkover_player1';
+						} else {
+							$status = 'walkover_player2';
 						}
 					} elseif ( $match->is_retired ) {
 						if ( 'home' === $match->retired ) {

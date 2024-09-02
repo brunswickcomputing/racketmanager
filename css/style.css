@@ -1219,7 +1219,10 @@ input#memberaccount-button:hover:disabled {
 	color: white;
 	background-color: var(--e-global-color-global_color_1);
 }
-
+.resetpass-submit {
+	display: flex;
+	justify-content: flex-end;
+}
 .message-error {
 	color: red;
 		display: block;
@@ -5178,6 +5181,10 @@ svg[class*=icon] {
     position: relative
 }
 
+h2.modal-title {
+	color: #FFF;
+	font-size: 1.5rem;
+}
 h4.modal-title {
     color: #FFF;
 }

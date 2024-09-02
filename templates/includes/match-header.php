@@ -28,24 +28,18 @@ $allow_switch_match   = false;
 $allow_amend_score    = false;
 if ( $match->is_pending ) {
 	if ( $user_can_update ) {
-		if ( 'admin' === $user_type || 'matchsecretary' === $user_type || 'captain' === $user_type ) {
-			if ( 'admin' === $user_type || 'both' === $user_team || 'home' === $user_team ) {
-				$allow_schedule_match = true;
-			}
+		if ( ( 'admin' === $user_type || 'matchsecretary' === $user_type || 'captain' === $user_type ) && ( 'admin' === $user_type || 'both' === $user_team || 'home' === $user_team ) ) {
+			$allow_schedule_match = true;
 		}
-		if ( 'admin' === $user_type || ( 'matchsecretary' === $user_type && ( 'both' === $user_team || 'home' === $user_team ) ) ) {
-			if ( 'false' === $match->league->event->seasons[ $match->season ]['homeAway'] ) {
-				$allow_switch_match = true;
-			}
+		if ( ( 'admin' === $user_type || ( 'matchsecretary' === $user_type && ( 'both' === $user_team || 'home' === $user_team ) ) ) && ( 'false' === $match->league->event->seasons[ $match->season ]['homeAway'] ) ) {
+			$allow_switch_match = true;
 		}
 	}
 } elseif ( 'admin' === $user_type ) {
 	$allow_amend_score = true;
 } elseif ( 'P' === $match->confirmed ) {
-	if ( $user_can_update ) {
-		if ( ! $match_approval_mode ) {
-			$allow_amend_score = true;
-		}
+	if ( $user_can_update && ! $match_approval_mode ) {
+		$allow_amend_score = true;
 	}
 }
 ?>
@@ -207,7 +201,7 @@ if ( $match->is_pending ) {
 									<?php
 									if ( $match->teams['home']->is_withdrawn ) {
 										?>
-										</s> 
+										</s>
 										<?php
 									}
 									?>
@@ -257,7 +251,7 @@ if ( $match->is_pending ) {
 									<?php
 									if ( $match->teams['away']->is_withdrawn ) {
 										?>
-										</s> 
+										</s>
 										<?php
 									}
 									?>

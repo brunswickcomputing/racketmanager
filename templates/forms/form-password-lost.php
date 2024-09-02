@@ -14,6 +14,10 @@ if ( count( $vars['errors'] ) > 0 ) {
 	$valid = false;
 	foreach ( $vars['error_codes'] as $error_code ) {
 		switch ( $error_code ) {
+			case 'empty_username':
+				$email_error   = true;
+				$email_message = __( 'Email address must be entered', 'racketmanager' );
+				break;
 			case 'invalid_email':
 				$email_error   = true;
 				$email_message = __( 'No user found with that email address', 'racketmanager' );
@@ -30,21 +34,31 @@ if ( count( $vars['errors'] ) > 0 ) {
 }
 ?>
 <div class="row justify-content-center">
-	<div class="col-12 col-md-9 col-lg-6">
-		<h1><?php echo esc_html_e( 'Recover Password', 'racketmanager' ); ?></h1>
-		<?php if ( ! $valid ) { ?>
-			<div class="login-error">
-				<?php esc_html_e( 'Error in password reset', 'racketmanager' ); ?>
+	<div class="col-12">
+		<h1><?php echo esc_html_e( 'Reset Password', 'racketmanager' ); ?></h1>
+		<?php
+		if ( ! $valid ) {
+			?>
+			<div class="alert_rm mt-3 alert--danger" id="resetAlert">
+				<div class="alert__body">
+					<div class="alert__body-inner" id="resetAlertResponse">
+						<?php esc_html_e( 'Error in password reset', 'racketmanager' ); ?>
+					</div>
+				</div>
 			</div>
-		<?php } ?>
-		<?php if ( isset( $vars['lost_password_sent'] ) && $vars['lost_password_sent'] ) { ?>
+			<?php
+		}
+		?>
+		<?php
+		if ( isset( $vars['lost_password_sent'] ) && $vars['lost_password_sent'] ) {
+			?>
 			<div class="login-info">
 				<?php esc_html_e( 'Check your email for a link to reset your password', 'racketmanager' ); ?>
 			</div>
-		<?php } else { ?>
-			<div class="form-info"><?php esc_html_e( "Don't worry, happens to the best of us", 'racketmanager' ); ?></div>
-			<p><?php esc_html_e( "Enter your email address and we'll send you a link to create a new password", 'racketmanager' ); ?></p>
-
+			<?php
+		} else {
+			?>
+			<div class="form-info"><?php esc_html_e( "Enter your email address and click 'Send'. You will receive a link to create a new password", 'racketmanager' ); ?></div>
 			<form id="lostpasswordform" action="<?php echo esc_url( wp_lostpassword_url() ); ?>" method="post">
 				<div class="form-floating mb-3">
 					<input type="email" class="form-control
@@ -69,11 +83,12 @@ if ( count( $vars['errors'] ) > 0 ) {
 						?>
 					</div>
 				</div>
-				<div class="form-floating mb-3">
-					<input type="submit" name="submit" class="lostpassword-button" value="<?php esc_html_e( 'Email me a recovery link', 'racketmanager' ); ?>" />
+				<div class="resetpass-submit">
+					<button type="submit" class="btn btn-primary"><?php esc_html_e( 'Send', 'racketmanager' ); ?></button>
 				</div>
 			</form>
-		<?php } ?>
-
+			<?php
+		}
+		?>
 	</div>
 </div>

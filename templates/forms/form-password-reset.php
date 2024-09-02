@@ -33,17 +33,25 @@ if ( count( $vars['errors'] ) > 0 ) {
 }
 ?>
 <div class="row justify-content-center">
-	<div id="tabs-login" class="col-12 col-md-9 col-lg-6">
-		<h1><?php esc_html_e( 'Change Password', 'racketmanager' ); ?></h1>
+	<div id="tabs-login" class="col-12">
+		<h1><?php esc_html_e( 'Reset Password', 'racketmanager' ); ?></h1>
 		<form name="resetpassform" id="resetpassform" action="<?php echo esc_url( site_url( 'wp-login.php?action=resetpass' ) ); ?>" method="post" autocomplete="off">
 			<?php wp_nonce_field( 'racketmanager_reset-password', 'racketmanager_nonce' ); ?>
-			<input type="hidden" id="user_login" name="rp_login" value="<?php echo esc_attr( $vars['login'] ); ?>" autocomplete="off" />
+			<input type="hidden" id="user_login" name="rp_login" value="<?php echo esc_attr( $vars['login'] ); ?>" />
 			<input type="hidden" name="rp_key" value="<?php echo esc_attr( $vars['key'] ); ?>" />
-			<?php if ( $error_found ) { ?>
-				<p class="login-error">
-					<?php echo wp_kses( $login_error_msg, array( 'br' => array() ) ); ?>
-				</p>
-			<?php } ?>
+			<?php
+			if ( $error_found ) {
+				?>
+				<div class="alert_rm mt-3 alert--danger" id="loginAlert">
+					<div class="alert__body">
+						<div class="alert__body-inner" id="loginAlertResponse">
+							<?php echo wp_kses( $login_error_msg, array( 'br' => array() ) ); ?>
+						</div>
+					</div>
+				</div>
+				<?php
+			}
+			?>
 			<div class="mb-3"><?php echo esc_html( wp_get_password_hint() ); ?></div>
 			<div class="form-floating mb-3">
 				<input class="form-control password
@@ -97,13 +105,12 @@ if ( count( $vars['errors'] ) > 0 ) {
 					?>
 				</div>
 			</div>
-			<div class="form-group mb-3">
+			<div class="resetpass-submit">
+				<button id="resetpassButton" class="btn btn-primary"><?php esc_html_e( 'Reset Password', 'racketmanager' ); ?></button>
+			</div>
+			<div class="form-group mt-3">
 				<span id="password-strength"></span>
 			</div>
-			<p class="resetpass-submit">
-				<input type="submit" name="submit" id="resetpassButton"
-				class="button" value="<?php esc_html_e( 'Reset Password', 'racketmanager' ); ?>" />
-			</p>
 		</form>
 	</div>
 </div>

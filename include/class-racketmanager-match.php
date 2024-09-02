@@ -1011,9 +1011,9 @@ final class Racketmanager_Match {
 				$this->status = 0;
 				if ( $home_walkover === $this->num_rubbers || $away_walkover === $this->num_rubbers ) {
 					if ( $home_walkover === $this->num_rubbers ) {
-						$custom['walkover'] = 'home';
-					} elseif ( $away_walkover === $this->num_rubbers ) {
 						$custom['walkover'] = 'away';
+					} elseif ( $away_walkover === $this->num_rubbers ) {
+						$custom['walkover'] = 'home';
 					}
 					$this->custom = array_merge( (array) $this->custom, (array) $custom );
 					$this->status = 1;

@@ -1238,30 +1238,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$rubber    = get_rubber( $rubber_id );
 			if ( $rubber ) {
 				$status = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
-				if ( empty( $status ) ) {
-					switch ( $rubber->status ) {
-						case 1:
-							if ( 'home' === $rubber->walkover ) {
-								$status = 'walkover_player2';
-							} else {
-								$status = 'walkover_player1';
-							}
-							break;
-						case 2:
-							if ( 'home' === $rubber->retired ) {
-								$status = 'retired_player1';
-							} else {
-								$status = 'retired_player2';
-							}
-							break;
-						case 3:
-							$status = 'share';
-							break;
-						default:
-							$status = null;
-							break;
-					}
-				}
 				$match     = get_match( $rubber->match_id );
 				$home_name = $match->teams['home']->title;
 				$away_name = $match->teams['away']->title;

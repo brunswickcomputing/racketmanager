@@ -13,10 +13,8 @@ $user_team           = $is_update_allowed->user_team;
 $match_approval_mode = $is_update_allowed->match_approval_mode;
 $match_update        = $is_update_allowed->match_update;
 $match_editable      = false;
-if ( $user_can_update ) {
-	if ( ! $match_approval_mode ) {
-		$match_editable = 'is-editable';
-	}
+if ( $user_can_update && ! $match_approval_mode ) {
+	$match_editable = 'is-editable';
 }
 $opponents        = array( 'home', 'away' );
 $opponent_players = array( 'player1', 'player2' );

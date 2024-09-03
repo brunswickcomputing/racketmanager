@@ -1061,40 +1061,52 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 										<div class="col-sm-6">
 											<ul class="list list--naked">
 												<li class="list__item">
-													<dt class=""><?php esc_html_e( 'Match not played and one team did not show', 'racketmanager' ); ?></dt>
-													<dd class=""><?php esc_html_e( 'The match has not started and at least one team cannot play.', 'racketmanager' ); ?></dd>
+													<dl>
+														<dt class=""><?php esc_html_e( 'Match not played and one team did not show', 'racketmanager' ); ?></dt>
+														<dd class=""><?php esc_html_e( 'The match has not started and at least one team cannot play.', 'racketmanager' ); ?></dd>
+													</dl>
 												</li>
 												<?php
 												if ( ! $match->league->num_rubbers ) {
 													?>
 														<li class="list__item">
-															<dt class=""><?php esc_html_e( 'Retired', 'racketmanager' ); ?></dt>
-															<dd class=""><?php esc_html_e( 'A player retired from a match in progress.', 'racketmanager' ); ?></dd>
+															<dl>
+																<dt class=""><?php esc_html_e( 'Retired', 'racketmanager' ); ?></dt>
+																<dd class=""><?php esc_html_e( 'A player retired from a match in progress.', 'racketmanager' ); ?></dd>
+															</dl>
 														</li>
 														<?php
 												}
 												?>
 												<li class="list__item">
-													<dt class=""><?php esc_html_e( 'Not played', 'racketmanager' ); ?></dt>
-													<dd class=""><?php esc_html_e( 'Not played (and will not be played)', 'racketmanager' ); ?></dd>
+													<dl>
+														<dt class=""><?php esc_html_e( 'Not played', 'racketmanager' ); ?></dt>
+														<dd class=""><?php esc_html_e( 'Not played (and will not be played)', 'racketmanager' ); ?></dd>
+													</dl>
 												</li>
 												<?php
 												if ( $match->league->event->competition->is_team_entry ) {
 													?>
 													<li class="list__item">
-														<dt class=""><?php esc_html_e( 'Abandoned', 'racketmanager' ); ?></dt>
-														<dd class=""><?php esc_html_e( 'The match is partially played (and will not be finished)', 'racketmanager' ); ?></dd>
+														<dl>
+															<dt class=""><?php esc_html_e( 'Abandoned', 'racketmanager' ); ?></dt>
+															<dd class=""><?php esc_html_e( 'The match is partially played (and will not be finished)', 'racketmanager' ); ?></dd>
+														</dl>
 													</li>
 													<li class="list__item">
-														<dt class=""><?php esc_html_e( 'Postponed', 'racketmanager' ); ?></dt>
-														<dd class=""><?php esc_html_e( 'The match has not started and will be played another time.', 'racketmanager' ); ?></dd>
+														<dl>
+															<dt class=""><?php esc_html_e( 'Postponed', 'racketmanager' ); ?></dt>
+															<dd class=""><?php esc_html_e( 'The match has not started and will be played another time.', 'racketmanager' ); ?></dd>
+														</dl>
 													</li>
 													<?php
 												}
 												?>
 												<li class="list__item">
-													<dt class=""><?php esc_html_e( 'Reset', 'racketmanager' ); ?></dt>
-													<dd class=""><?php esc_html_e( 'Clear match status', 'racketmanager' ); ?></dd>
+													<dl>
+														<dt class=""><?php esc_html_e( 'Reset', 'racketmanager' ); ?></dt>
+														<dd class=""><?php esc_html_e( 'Clear match status', 'racketmanager' ); ?></dd>
+													</dl>
 												</li>
 											</ul>
 										</div>
@@ -1237,7 +1249,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
 			$rubber    = get_rubber( $rubber_id );
 			if ( $rubber ) {
-				$status = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
+				$status    = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
 				$match     = get_match( $rubber->match_id );
 				$home_name = $match->teams['home']->title;
 				$away_name = $match->teams['away']->title;
@@ -1285,20 +1297,28 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 											<div class="col-sm-6">
 												<ul class="list list--naked">
 													<li class="list__item">
-														<dt class=""><?php esc_html_e( 'Walkover', 'racketmanager' ); ?></dt>
-														<dd class=""><?php esc_html_e( 'The match has not started and at least one team cannot play.', 'racketmanager' ); ?></dd>
+														<dl>
+															<dt class=""><?php esc_html_e( 'Walkover', 'racketmanager' ); ?></dt>
+															<dd class=""><?php esc_html_e( 'The match has not started and at least one team cannot play.', 'racketmanager' ); ?></dd>
+														</dl>
 													</li>
 													<li class="list__item">
-														<dt class=""><?php esc_html_e( 'Retired', 'racketmanager' ); ?></dt>
-														<dd class=""><?php esc_html_e( 'A player retired from a match in progress.', 'racketmanager' ); ?></dd>
+														<dl>
+															<dt class=""><?php esc_html_e( 'Retired', 'racketmanager' ); ?></dt>
+															<dd class=""><?php esc_html_e( 'A player retired from a match in progress.', 'racketmanager' ); ?></dd>
+														</dl>
 													</li>
 													<li class="list__item">
-														<dt class=""><?php esc_html_e( 'Abandoned', 'racketmanager' ); ?></dt>
-														<dd class=""><?php esc_html_e( 'The match is partially played (and will not be finished)', 'racketmanager' ); ?></dd>
+														<dl>
+															<dt class=""><?php esc_html_e( 'Abandoned', 'racketmanager' ); ?></dt>
+															<dd class=""><?php esc_html_e( 'The match is partially played (and will not be finished)', 'racketmanager' ); ?></dd>
+														</dl>
 													</li>
 													<li class="list__item">
-														<dt class=""><?php esc_html_e( 'Not played', 'racketmanager' ); ?></dt>
-														<dd class=""><?php esc_html_e( 'Not played (and will not be played)', 'racketmanager' ); ?></dd>
+														<dl>
+															<dt class=""><?php esc_html_e( 'Not played', 'racketmanager' ); ?></dt>
+															<dd class=""><?php esc_html_e( 'Not played (and will not be played)', 'racketmanager' ); ?></dd>
+														</dl>
 													</li>
 												</ul>
 											</div>
@@ -1560,7 +1580,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					</div>
 					<div class="message_body ratio" style="--bs-aspect-ratio: 100%;">
 						<?php $frame_source = $message_dtl->message_object; ?>
-						<iframe srcdoc='<?php echo $frame_source; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>'></iframe>
+						<iframe title="<?php esc_html_e( 'Message details', 'racketmanager' ); ?>" srcdoc='<?php echo $frame_source; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>'></iframe>
 					</div>
 					<?php
 					$output = ob_get_contents();

@@ -495,6 +495,8 @@ Racketmanager.updateResults = function (link) {
 	}
 	let alert_id = jQuery('#matchAlert');
 	let use_alert = false;
+	let notifyField = '';
+	let alert_response = '';
 	if ( alert_id.length == 0 ) {
 		use_alert = false;
 	} else {
@@ -505,7 +507,7 @@ Racketmanager.updateResults = function (link) {
 		jQuery(alert_id).removeClass('alert--success alert--warning alert--danger');
 		alert_response = '#alertResponse';
 	} else {
-		let notifyField = '#updateResponse';
+		notifyField = '#updateResponse';
 		jQuery(notifyField).removeClass("message-success message-error message-warning");
 		jQuery(notifyField).val("");
 		jQuery(notifyField).hide();
@@ -1621,7 +1623,7 @@ Racketmanager.deleteMessages = function (event, link) {
 				let messagesRef = '.' + response.data.type;
 				jQuery(messagesRef).hide();
 				let messageCountRef = '#' + response.data.type + '-messages';
-				messageCount = 0;
+				let messageCount = 0;
 				jQuery(messageCountRef).html(messageCount);
 			}
 			jQuery(notifyField).html(response.data.output);

@@ -257,8 +257,8 @@ class Racketmanager_Ajax extends RacketManager {
 				$result_confirmation = $rm_options[ $match->league->event->competition->type ]['resultConfirmation'];
 				if ( 'auto' === $result_confirmation || ( current_user_can( 'manage_racketmanager' ) ) ) {
 					$match->confirmed = 'Y';
-					$update = $this->update_league_with_result( $match );
-					$msg    = $update->msg;
+					$update           = $this->update_league_with_result( $match );
+					$msg              = $update->msg;
 					if ( ! current_user_can( 'manage_racketmanager' ) ) {
 						$match_confirmed = 'Y';
 						$this->result_notification( $match_confirmed, $match_message, $match );

@@ -1245,7 +1245,7 @@ Racketmanager.setMatchRubberStatus = function (link) {
 			}
 			let modal = '#' + response.data[5];
 			let matchStatusRef = '#' + 'match_status_' + rubberNumber;
-			jQuery(matchStatusRef).attr('value', scoreStatus);
+			jQuery(matchStatusRef).val(scoreStatus);
 			jQuery(modal).modal('hide')
 		},
 		error: function (response) {

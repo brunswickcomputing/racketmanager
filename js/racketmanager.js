@@ -375,6 +375,7 @@ Racketmanager.updateMatchResults = function (link) {
 	let $form = jQuery(formId).serialize();
 	$form += "&action=racketmanager_update_match";
 	let notifyField = '#updateResponse';
+	let alert_response = '#alertResponse';
 	let splash = '#splash';
 	let alert_id = jQuery('#matchAlert');
 	let use_alert = false;
@@ -386,7 +387,6 @@ Racketmanager.updateMatchResults = function (link) {
 	if (use_alert) {
 		jQuery(alert_id).hide();
 		jQuery(alert_id).removeClass('alert--success alert--warning alert--danger');
-		alert_response = '#alertResponse';
 	} else {
 		notifyField = '#updateResponse';
 		jQuery(notifyField).removeClass("message-success");

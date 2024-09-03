@@ -908,16 +908,29 @@ Racketmanager.entryRequest = function (event, type) {
 		}
 	});
 };
-Racketmanager.resetMatchScores = function (e, formId) {
+Racketmanager.resetMatchScores = function (e, formRef) {
 	e.preventDefault();
-	formId = '#'.concat(formId);
-	jQuery(':input', formId)
-		.not(':button, :submit, :reset, :hidden, :radio')
-		.val('');
-	jQuery(':input', formId)
-		.not(':button, :submit, :reset, :hidden')
-		.prop('checked', false)
-		.prop('selected', false);
+	let formId = '#'.concat(formRef);
+	jQuery(formId).find(':input').each(function () {
+		switch (this.type) {
+			case 'password':
+			case 'text':
+			case 'textarea':
+			case 'file':
+			case 'select-one':
+			case 'select-multiple':
+			case 'date':
+			case 'number':
+			case 'tel':
+			case 'email':
+				jQuery(this).val('');
+				break;
+			case 'checkbox':
+			case 'radio':
+				this.checked = false;
+				break;
+		}
+	});
 	let selector = formId + ' .match__message'; 
 	jQuery(selector)
 		.removeClass('match-warning')

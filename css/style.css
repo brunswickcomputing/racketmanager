@@ -1274,9 +1274,6 @@ h4.header {
 	fill: transparent;
 	stroke: black;
 }
-.fav-icon-svg {
-	fill: transparent;
-}
 .fav-icon-svg.fav-icon-svg-selected {
 	fill: gold;
 	stroke: black;
@@ -1325,7 +1322,6 @@ h4.header {
 }
 .btn-favourite:not(.is-favourite):hover svg,
 .page-subhead .btn-favourite:not(.is-favourite) .fav-icon-svg:hover,
-.btn-favourite:not(.is-favourite):hover svg,
 .module--dark .btn-favourite:not(.is-favourite) .fav-icon-svg:hover,
 .media.competition-head .btn-favourite:not(.is-favourite) .fav-icon-svg:hover {
     fill: var(--e-global-color-global_color_1);
@@ -3680,6 +3676,11 @@ module--dark .mail-media,
 .module--dark a.dropdown-item, .tournament-head a.dropdown-item, .competition-head a.dropdown-item {
 	color: var(--e-global-color-global_color_1) !important;
 }
+.module--dark a.dropdown-item:hover,
+.tournament-head a.dropdown-item:hover,
+.competition-head a.dropdown-item:hover {
+	color: var(--e-global-color-global_color_1) !important;
+}
 .module--dark .module__title h1 {
 	color: #FFF;
 }
@@ -4569,9 +4570,6 @@ p.media__subheading {
 
 .match-points.set-points {
 	flex-direction: row;
-}
-#match-rubbers.team-match-result .match-points.set-points {
-    flex-direction: column;
 }
 .row .set-points input.points {
 	width: 1.75rem;

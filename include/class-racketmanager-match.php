@@ -1007,6 +1007,7 @@ final class Racketmanager_Match {
 			unset( $this->custom['share'] );
 			unset( $this->custom['retired'] );
 			unset( $this->custom['abandoned'] );
+			unset( $this->custom['withdrawn'] );
 			if ( 'league' === $this->league->event->competition->type ) {
 				$this->status = 0;
 				if ( $home_walkover === $this->num_rubbers || $away_walkover === $this->num_rubbers ) {
@@ -1025,6 +1026,9 @@ final class Racketmanager_Match {
 					$custom['abandoned'] = true;
 					$this->status        = 6;
 					$this->is_abandoned  = true;
+				} elseif ( 7 === intval( $match_status ) ) {
+					$custom['withdrawn'] = true;
+					$this->status        = 7;
 				}
 				$point_rule         = $this->league->get_point_rule();
 				$rubber_win         = ! empty( $point_rule['rubber_win'] ) ? $point_rule['rubber_win'] : 0;
@@ -1095,7 +1099,7 @@ final class Racketmanager_Match {
 				}
 			}
 		}
-		if ( ! empty( $home_points ) || ! empty( $away_points ) ) {
+		if ( ! empty( $home_points ) || ! empty( $away_points ) || 'withdrawn' === $match_status || 7 === intval( $match_status ) ) {
 			$prev_winner = $this->winner_id;
 			$this->get_result( $home_points, $away_points );
 			if ( $prev_winner !== $this->winner_id || floatval( $home_points ) !== $this->home_points || floatval( $away_points ) !== $this->away_points || $custom !== $this->custom || $confirmed !== $this->confirmed ) {
@@ -1323,6 +1327,10 @@ final class Racketmanager_Match {
 			$match['winner'] = -1;
 			$match['loser']  = -1;
 			$this->status    = 3;
+		} elseif ( ! empty( $this->custom['withdrawn'] ) || 7 === $this->status ) {
+			$match['winner'] = -1;
+			$match['loser']  = -1;
+			$this->status    = 7;
 		} elseif ( $home_points > $away_points ) {
 			$match['winner'] = $this->home_team;
 			$match['loser']  = $this->away_team;

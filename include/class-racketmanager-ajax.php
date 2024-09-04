@@ -541,7 +541,12 @@ class Racketmanager_Ajax extends RacketManager {
 		$player['share']['female']['away']    = $club->get_player( $player_options['share']['female'] );
 		$updated_rubbers                      = array();
 
-		$match              = get_match( $match );
+		$match        = get_match( $match );
+		$is_withdrawn = false;
+		if ( $match->teams['home']->is_withdrawn || $match->teams['away']->is_withdrawn ) {
+			$is_withdrawn     = true;
+			$new_match_status = 'withdrawn';
+		}
 		$match->home_points = 0;
 		$match->away_points = 0;
 		$match->delete_result_check();
@@ -582,6 +587,9 @@ class Racketmanager_Ajax extends RacketManager {
 			$walkover       = null;
 			$retired        = null;
 			$abandoned      = null;
+			if ( $is_withdrawn ) {
+				$match_status = 'withdrawn';
+			}
 			switch ( $match_status ) {
 				case 'share':
 					$share = true;
@@ -690,7 +698,7 @@ class Racketmanager_Ajax extends RacketManager {
 				}
 			}
 			if ( $validate_match ) {
-				if ( empty( $share ) ) {
+				if ( empty( $share ) && empty( $is_withdrawn ) ) {
 					foreach ( $opponents as $opponent ) {
 						$team_players = isset( $players[ $opponent ] ) ? $players[ $opponent ] : array();
 						foreach ( $player_numbers as $player_number ) {
@@ -784,7 +792,7 @@ class Racketmanager_Ajax extends RacketManager {
 						$stats['rubbers']['home'] += 0.5;
 						$stats['rubbers']['away'] += 0.5;
 					}
-					if ( ! empty( $homescore ) || ! empty( $awayscore ) ) {
+					if ( ! empty( $homescore ) || ! empty( $awayscore ) || $is_withdrawn ) {
 						$homescore                                   = ! empty( $homescore ) ? $homescore : 0;
 						$awayscore                                   = ! empty( $awayscore ) ? $awayscore : 0;
 						$updated_rubbers['homepoints'][ $rubber_id ] = $homescore;
@@ -804,7 +812,7 @@ class Racketmanager_Ajax extends RacketManager {
 						$match_confirmed = 'P';
 						foreach ( $opponents as $opponent ) {
 							foreach ( $player_numbers as $player_number ) {
-								$updated_rubbers[ $rubber_id ]['players'][ $opponent ][] = $players[ $opponent ][ $player_number ];
+								$updated_rubbers[ $rubber_id ]['players'][ $opponent ][] = isset( $players[ $opponent ][ $player_number ] ) ? $players[ $opponent ][ $player_number ] : null;
 							}
 						}
 						$updated_rubbers[ $rubber_id ]['sets']   = $sets;
@@ -814,6 +822,11 @@ class Racketmanager_Ajax extends RacketManager {
 			}
 		}
 		if ( ! $error ) {
+			if ( $is_withdrawn ) {
+				$match_confirmed = 'P';
+				$home_team_score = 0;
+				$away_team_score = 0;
+			}
 			$match_custom['stats'] = $stats;
 			$status                = Racketmanager_Util::get_match_status_code( $new_match_status );
 			$match->update_result( $home_team_score, $away_team_score, $match_custom, $match_confirmed, $status );
@@ -979,6 +992,8 @@ class Racketmanager_Ajax extends RacketManager {
 			$points['shared']['sets'] = $match->league->num_sets;
 			$homescore               += $shared_sets;
 			$awayscore               += $shared_sets;
+		} elseif ( 'withdrawn' === $match_status ) {
+			$points['withdrawn'] = 1;
 		} elseif ( 'abandoned' === $match_status ) {
 			if ( $homescore !== $num_sets_to_win && $awayscore !== $num_sets_to_win ) {
 				$shared_sets              = $match->league->num_sets - $homescore - $awayscore;
@@ -1037,7 +1052,7 @@ class Racketmanager_Ajax extends RacketManager {
 					$err_msg[]   = __( 'Tie break should be empty', 'racketmanager' );
 					$err_field[] = $set_prefix . 'tiebreak';
 				}
-			} elseif ( 'share' === $match_status ) {
+			} elseif ( 'share' === $match_status || 'withdrawn' === $match_status ) {
 				$set['player1']  = '';
 				$set['player2']  = '';
 				$set['tiebreak'] = '';

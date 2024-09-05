@@ -1458,7 +1458,6 @@ class Racketmanager_Event {
 			'club'    => false,
 			'team'    => false,
 			'count'   => false,
-			'group'   => false,
 			'stats'   => false,
 		);
 		$args     = array_merge( $defaults, $args );
@@ -1469,7 +1468,6 @@ class Racketmanager_Event {
 		$club     = $args['club'];
 		$team     = $args['team'];
 		$count    = $args['count'];
-		$group    = $args['group'];
 		$stats    = $args['stats'];
 
 		if ( $this->competition->is_player_entry ) {
@@ -1597,20 +1595,7 @@ class Racketmanager_Event {
 		} else {
 			asort( $event_players );
 		}
-		if ( $group ) {
-			$this->players = array();
-			foreach ( $event_players as $player ) {
-				$key = strtoupper( substr( $player, 0, 1 ) );
-				if ( false === array_key_exists( $key, $this->players ) ) {
-					$this->players[ $key ] = array();
-				}
-				// now just add the row data.
-				$this->players[ $key ][] = $player;
-			}
-		} else {
-			$this->players = $event_players;
-		}
-
+		$this->players = $event_players;
 		return $this->players;
 	}
 	/**

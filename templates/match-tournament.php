@@ -29,6 +29,20 @@ if ( $user_can_update ) {
 	$match_editable = 'is-editable';
 }
 $allow_schedule_match = false;
+switch ( $match->league->event->competition->type ) {
+	case 'league':
+		$image = 'images/bootstrap-icons.svg#table';
+		break;
+	case 'cup':
+		$image = 'images/bootstrap-icons.svg#trophy-fill';
+		break;
+	case 'tournament':
+		$image = 'images/lta-icons.svg#icon-bracket';
+		break;
+	default:
+		$image = null;
+		break;
+}
 if ( $match ) {
 	$match_status = null;
 	if ( ! empty( $match->winner_id ) ) {
@@ -67,50 +81,90 @@ if ( $match ) {
 	}
 	?>
 	<div class="tournament__match">
-		<div class="tournament-head">
-			<div class="hgroup">
-				<h1 class="hgroup__heading">
-					<?php echo esc_html_e( 'Match details', 'racketmanager' ); ?>
-				</h1>
-				<p class="hgroup__subheading">
-					<?php
-					if ( ! empty( $tournament ) ) {
-						?>
-						<a href="<?php echo esc_html( $tournament->link ); ?>">
-							<?php echo esc_html( $tournament_head ); ?>
-						</a>
-						<?php
-					}
-					?>
-				</p>
-				<?php
-				if ( is_user_logged_in() && $match_editable && ( $allow_schedule_match ) ) {
-					?>
-					<div class="match__change">
-						<div class="dropdown">
-							<a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-								<svg width="16" height="16" class="icon ">
-									<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
-								</svg>
-							</a>
-							<ul class="dropdown-menu dropdown-menu-end">
-								<?php
-								if ( $allow_schedule_match ) {
-									?>
-									<li>
-										<a class="dropdown-item" href="" onclick="Racketmanager.matchOptions(event, '<?php echo esc_attr( $match->id ); ?>', 'schedule_match')">
-											<?php esc_html_e( '(Re)schedule match', 'racketmanager' ); ?>
-										</a>
-									</li>
+		<div class="page-subhead competition">
+			<div class="media tournament-head">
+				<div class="media__wrapper">
+					<div class="media__img">
+						<svg width="16" height="16" class="media__img-element--icon">
+							<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . $image ); ?>"></use>
+						</svg>
+					</div>
+					<div class="media__content">
+						<h1 class="media__title"><?php esc_html_e( 'Match details', 'racketmanager' ); ?></h1>
+						<div class="media__content-subinfo">
+							<small class="media__subheading">
+								<ul class="match__header-title">
 									<?php
-								}
+									if ( ! empty( $tournament ) ) {
+										?>
+										<li class="match__header-title-item">
+											<a href="<?php echo esc_html( $tournament->link ); ?>">
+												<span class="nav--link">
+													<span class="nav-link__value">
+														<?php echo esc_html( $tournament->name ) . ' ' . esc_html__( 'Tournament', 'racketmanager' ); ?>
+													</span>
+												</span>
+											</a>
+										</li>
+										<li class="match__header-title-item">
+											<span class="nav--link">
+												<span class="nav-link__value">
+													<?php echo esc_html( $tournament->venue_name ); ?>
+												</span>
+											</span>
+										</li>
+										<?php
+									}
+									?>
+								</ul>
+							</small>
+							<?php
+							if ( ! empty( $tournament->date_start ) && ! empty( $tournament->date ) ) {
 								?>
-							</ul>
+								<small class="media__subheading">
+									<span class="nav--link">
+										<span class="nav-link__value">
+											<?php racketmanager_the_svg( 'icon-calendar' ); ?>
+											<?php echo esc_html( mysql2date( 'j M', $tournament->date_start ) ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( mysql2date( 'j M', $tournament->date ) ); ?>
+										</span>
+									</span>
+								</small>
+								<?php
+							}
+							?>
 						</div>
 					</div>
-					<?php
-				}
-				?>
+					<div class="media__aside">
+						<?php
+						if ( is_user_logged_in() && $match_editable && ( $allow_schedule_match ) ) {
+							?>
+							<div class="match__change">
+								<div class="dropdown">
+									<a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+										<svg width="16" height="16" class="icon ">
+											<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
+										</svg>
+									</a>
+									<ul class="dropdown-menu dropdown-menu-end">
+										<?php
+										if ( $allow_schedule_match ) {
+											?>
+											<li>
+												<a class="dropdown-item" href="" onclick="Racketmanager.matchOptions(event, '<?php echo esc_attr( $match->id ); ?>', 'schedule_match')">
+													<?php esc_html_e( '(Re)schedule match', 'racketmanager' ); ?>
+												</a>
+											</li>
+											<?php
+										}
+										?>
+									</ul>
+								</div>
+							</div>
+							<?php
+						}
+						?>
+					</div>
+				</div>
 			</div>
 		</div>
 		<div class="match-info-meta wrapper--padding-medium">

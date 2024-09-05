@@ -2231,7 +2231,10 @@ ol.match-group {
 .match__header-title .match__header-title-item button {
 	color: #2a2c32 !important
 }
-
+.media .match__header-title .match__header-title-item a,
+.media .match__header-title .match__header-title-item button {
+	color: #FFF !important;
+}
 .match__header-title .match__header-title-item:not(:last-child):after {
 	content: "•";
 	margin: 0 0.14em
@@ -4617,7 +4620,9 @@ a:hover .nav-link__value, a:focus .nav-link__value {
 .module--dark a:hover .nav-link__value,
 .module--dark a:focus .nav-link__value,
 .competition-head a:hover .nav-link__value,
-.competition-head a:focus .nav-link__value {
+.competition-head a:focus .nav-link__value,
+.page-subhead a:hover .nav-link__value,
+.page-subhead a:focus .nav-link__value {
 	color: #FFF;
 }
 .nav-link__prefix {

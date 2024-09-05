@@ -745,4 +745,129 @@ final class Racketmanager_Player {
 			array( '%s' ),
 		);
 	}
+	/**
+	 * Get competitions for player function
+	 *
+	 * @param string $args search parameters.
+	 * @return array
+	 */
+	public function get_competitions( $args = array() ) {
+		global $wpdb;
+		$defaults     = array(
+			'count'  => false,
+			'type'   => false,
+			'season' => false,
+		);
+		$args         = array_merge( $defaults, (array) $args );
+		$count        = $args['count'];
+		$type         = $args['type'];
+		$season       = $args['season'];
+		$search_terms = array();
+		if ( $type ) {
+			$search_terms[] = $wpdb->prepare( 'c.`type` = %s', $type );
+		}
+		if ( $season ) {
+			$search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
+		}
+		$search = '';
+		if ( ! empty( $search_terms ) ) {
+			$search = implode( ' AND ', $search_terms );
+		}
+		$groupby_string = 'c.id, c.name, m.season';
+		$orderby_string = 'm.season DESC, c.name ASC';
+		$sql            = "SELECT c.id, c.name, m.season FROM {$wpdb->racketmanager_rubber_players} rp, {$wpdb->racketmanager_rubbers} r, {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l, {$wpdb->racketmanager_events} e, {$wpdb->racketmanager_competitions} c WHERE `player_id` = $this->ID AND rp.rubber_id = r.id AND r.match_id = m.id AND m.league_id = l.id AND l.event_id = e.id AND e.competition_id = c.id";
+		if ( '' !== $search ) {
+			$sql .= " AND $search";
+		}
+		if ( ! empty( $groupby_string ) ) {
+			$sql .= " GROUP BY $groupby_string";
+		}
+		if ( ! empty( $orderby_string ) ) {
+			$sql .= " ORDER BY $orderby_string";
+		}
+
+		$competitions = wp_cache_get( md5( $sql ), 'player_competitions' );
+		if ( ! $competitions ) {
+			$competitions = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			);
+			wp_cache_set( md5( $sql ), $competitions, 'player_competitions' );
+		}
+		$i = 0;
+		foreach ( $competitions as $competition ) {
+			$competition_dtl = get_competition( $competition->id );
+			if ( $competition_dtl ) {
+				$competition_dtl->season     = $competition->season;
+				$competition_season          = $competition_dtl->seasons[ $competition->season ];
+				$competition_dtl->date_start = isset( $competition_season['dateStart'] ) ? $competition_season['dateStart'] : null;
+				$competition_dtl->date_end   = isset( $competition_season['dateEnd'] ) ? $competition_season['dateEnd'] : null;
+				$competitions[ $i ]          = $competition_dtl;
+			}
+			++$i;
+		}
+		return $competitions;
+	}
+	/**
+	 * Get tournaments for player function
+	 *
+	 * @param string $args search parameters.
+	 * @return array
+	 */
+	public function get_tournaments( $args = array() ) {
+		global $wpdb;
+		$defaults     = array(
+			'count'  => false,
+			'type'   => false,
+			'season' => false,
+		);
+		$args         = array_merge( $defaults, (array) $args );
+		$count        = $args['count'];
+		$type         = $args['type'];
+		$season       = $args['season'];
+		$player       = '%' . $this->ID . '%';
+		$search_terms = array();
+		if ( $type ) {
+			$search_terms[] = $wpdb->prepare( 'c.`type` = %s', $type );
+		}
+		if ( $season ) {
+			$search_terms[] = $wpdb->prepare( 't2.`season` = %s', $season );
+		}
+		$search = '';
+		if ( ! empty( $search_terms ) ) {
+			$search = implode( ' AND ', $search_terms );
+		}
+		$groupby_string = 't3.id';
+		$orderby_string = 't3.season DESC, t3.name ASC';
+		$sql            = "SELECT t3.id FROM {$wpdb->racketmanager_teams} t1, {$wpdb->racketmanager_table} t2, {$wpdb->racketmanager} l, {$wpdb->racketmanager_events} e, {$wpdb->racketmanager_competitions} c, {$wpdb->racketmanager_tournaments} t3 WHERE t1.`roster` like '$player' AND t2.team_id = t1.id AND t2.league_id = l.id AND l.event_id = e.id AND e.competition_id = c.id AND t3.competition_id = c.id AND t3.season = t2.season";
+		if ( '' !== $search ) {
+			$sql .= " AND $search";
+		}
+		if ( ! empty( $groupby_string ) ) {
+			$sql .= " GROUP BY $groupby_string";
+		}
+		if ( ! empty( $orderby_string ) ) {
+			$sql .= " ORDER BY $orderby_string";
+		}
+
+		$tournaments = wp_cache_get( md5( $sql ), 'player_tournaments' );
+		if ( ! $tournaments ) {
+			$tournaments = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			);
+			wp_cache_set( md5( $sql ), $tournaments, 'player_tournaments' );
+		}
+		$i = 0;
+		foreach ( $tournaments as $tournament ) {
+			$tournament_dtl = get_tournament( $tournament->id );
+			if ( $tournament_dtl ) {
+				$tournament_dtl->type     = $type;
+				$tournament_dtl->date_end = $tournament_dtl->date;
+				$tournaments[ $i ]        = $tournament_dtl;
+			}
+			++$i;
+		}
+		return $tournaments;
+	}
 }

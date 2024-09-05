@@ -624,23 +624,87 @@ final class Racketmanager_Tournament {
 	 * @return array
 	 */
 	public function get_players( $args = array() ) {
+		global $wpdb;
+
 		$defaults = array(
-			'count' => false,
+			'orderby' => array(),
+			'count'   => false,
 		);
 		$args     = array_merge( $defaults, $args );
+		$orderby  = $args['orderby'];
 		$count    = $args['count'];
-		if ( empty( $this->players ) ) {
-			$this->get_events();
-			foreach ( $this->events as $event ) {
-				$this->players = array_merge( $this->players, $event->players );
-			}
-			$this->players = array_unique( $this->players );
-			asort( $this->players );
-		}
+
 		if ( $count ) {
-			return count( $this->players );
+			$sql = 'SELECT COUNT(distinct(`player_id`))';
 		} else {
-			return $this->players;
+			$sql = 'SELECT DISTINCT `player_id`';
 		}
+		$sql          .= " FROM {$wpdb->racketmanager_team_players} tp, {$wpdb->racketmanager_table} t, {$wpdb->racketmanager} l, {$wpdb->racketmanager_events} e  WHERE tp.`team_id` = t.`team_id` AND t.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = %d AND t.`season` = %d";
+		$search_terms  = array();
+		$search_args   = array();
+		$search_args[] = $this->competition_id;
+		$search_args[] = $this->season;
+		$search        = '';
+		if ( ! empty( $search_terms ) ) {
+			$search  = ' AND ';
+			$search .= implode( ' AND ', $search_terms );
+		}
+		$orderby_string = '';
+		$order          = '';
+		$i              = 0;
+		foreach ( $orderby as $order => $direction ) {
+			if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
+				$direction = 'ASC';
+			}
+			$orderby_string .= '`' . $order . '` ' . $direction;
+			if ( $i < ( count( $orderby ) - 1 ) ) {
+				$orderby_string .= ',';
+			}
+			++$i;
+		}
+		if ( $orderby_string ) {
+			$order = ' ORDER BY ' . $orderby_string;
+		}
+		$sql .= $search;
+		if ( $count ) {
+			$sql = $wpdb->prepare(
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql,
+				$search_args,
+			);
+			$num_players = wp_cache_get( md5( $sql ), 'tournament_players' );
+			if ( ! $num_players ) {
+				$num_players = $wpdb->get_var(
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+					$sql
+				); // db call ok.
+				wp_cache_set( md5( $sql ), $num_players, 'tournament_players' );
+			}
+			return $num_players;
+		}
+		$sql .= $order;
+		$sql  = $wpdb->prepare(
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			$sql,
+			$search_args,
+		);
+		$players = wp_cache_get( md5( $sql ), 'tournament_players' );
+		if ( ! $players ) {
+			$players = $wpdb->get_results(
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			); // db call ok.
+			wp_cache_set( md5( $sql ), $players, 'tournament_players' );
+		}
+		$i = 0;
+		foreach ( $players as $player ) {
+			$player = get_player( $player->player_id );
+			if ( $player ) {
+				$players[ $i ] = $player;
+			}
+			++$i;
+		}
+		$this->players = $players;
+		return $this->players;
 	}
 }

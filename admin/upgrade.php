@@ -1012,6 +1012,36 @@ function racketmanager_upgrade() {
 		$wpdb->query( "UPDATE {$wpdb->racketmanager_teams} SET `team_type` = 'S' WHERE `status` = 'S'" );
 		$wpdb->query( "UPDATE {$wpdb->racketmanager_teams} SET `team_type` = 'S' WHERE `title` like '2_%'" );
 	}
+	if ( version_compare( $installed, '8.16.0', '<' ) ) {
+		echo esc_html__( 'starting 8.16.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$competitions = $racketmanager->get_competitions( array() );
+		foreach ( $competitions as $competition ) {
+			$update = false;
+			$seasons = (array) maybe_unserialize( $competition->seasons );
+			foreach ( $seasons as $name => $data ) {
+				$count_matchdates = isset( $data['matchDates'] ) ? count( $data['matchDates'] ) : 0;
+				if ( empty( $data['dateEnd'] ) && $count_matchdates >= 2 ) {
+					$data['dateEnd']           = end( $data['matchDates'] );
+					$seasons[ $data['name'] ] = $data;
+					$update = true;
+				}
+				if ( empty( $data['dateStart'] ) && $count_matchdates >= 2 ) {
+					$data['dateStart']         = $data['matchDates'][0];
+					$seasons[ $data['name'] ] = $data;
+					$update = true;
+				}
+			}
+			if ( $update ) {
+				$wpdb->query(
+					$wpdb->prepare(
+						"UPDATE {$wpdb->racketmanager_competitions} SET `seasons` = %s WHERE `id` = %d",
+						maybe_serialize( $seasons ),
+						$competition->id
+					)
+				);
+			}
+		}
+	}
 	/*
 	* Update version and dbversion
 	*/

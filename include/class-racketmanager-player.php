@@ -837,9 +837,9 @@ final class Racketmanager_Player {
 		if ( ! empty( $search_terms ) ) {
 			$search = implode( ' AND ', $search_terms );
 		}
-		$groupby_string = 't3.id';
-		$orderby_string = 't3.season DESC, t3.name ASC';
-		$sql            = "SELECT t3.id FROM {$wpdb->racketmanager_teams} t1, {$wpdb->racketmanager_table} t2, {$wpdb->racketmanager} l, {$wpdb->racketmanager_events} e, {$wpdb->racketmanager_competitions} c, {$wpdb->racketmanager_tournaments} t3 WHERE t1.`roster` like '$player' AND t2.team_id = t1.id AND t2.league_id = l.id AND l.event_id = e.id AND e.competition_id = c.id AND t3.competition_id = c.id AND t3.season = t2.season";
+		$groupby_string = 't3.`id`';
+		$orderby_string = 't3.`season` DESC, t3.`name` ASC';
+		$sql            = "SELECT t3.id FROM {$wpdb->racketmanager_team_players} tp, {$wpdb->racketmanager_table} t, {$wpdb->racketmanager} l, {$wpdb->racketmanager_events} e, {$wpdb->racketmanager_competitions} c, {$wpdb->racketmanager_tournaments} t3 WHERE tp.`player_id` = $this->ID AND tp.`team_id` = t.`team_id` AND t.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.competition_id = c.`id` AND t3.`competition_id` = c.`id` AND t3.`season` = t.`season`";
 		if ( '' !== $search ) {
 			$sql .= " AND $search";
 		}

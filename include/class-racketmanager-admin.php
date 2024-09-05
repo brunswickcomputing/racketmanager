@@ -740,15 +740,13 @@ final class RacketManager_Admin extends RacketManager {
 						$this->printMessage();
 						return;
 					}
-					if ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
-						if ( isset( $_POST['event'] ) ) {
-							foreach ( $_POST['event'] as $event_id ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-								$event = get_event( $event_id );
-								$event->delete();
-								$message = $event->name . ' deleted';
-							}
-							$this->printMessage();
+					if ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] && isset( $_POST['event'] ) ) {
+						foreach ( $_POST['event'] as $event_id ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+							$event = get_event( $event_id );
+							$event->delete();
+							$message = $event->name . ' deleted';
 						}
+						$this->printMessage();
 					}
 				} elseif ( isset( $_POST['contactTeam'] ) ) {
 					if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_contact-teams-preview' ) ) {
@@ -1777,10 +1775,8 @@ final class RacketManager_Admin extends RacketManager {
 							$matches              = $primary_league->get_matches( $match_array );
 							$last_match           = $matches[0];
 						}
-						if ( $last_match ) {
-							if ( $last_match->is_walkover ) {
-								unset( $teams[ $t ] );
-							}
+						if ( $last_match && $last_match->is_walkover ) {
+							unset( $teams[ $t ] );
 						}
 					}
 					++$t;
@@ -3776,11 +3772,9 @@ final class RacketManager_Admin extends RacketManager {
 						}
 					}
 				}
-				if ( $error ) {
-					if ( count( $season_data->match_dates ) === $match_date_empty ) {
-						$error = false;
-						$this->set_message( null );
-					}
+				if ( $error && count( $season_data->match_dates ) === $match_date_empty ) {
+					$error = false;
+					$this->set_message( null );
 				}
 			}
 		}

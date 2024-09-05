@@ -280,49 +280,15 @@ class Racketmanager_Util {
 	 */
 	public static function get_players_list( $players ) {
 		$player_list = array();
-		$players_new = array();
-		foreach ( $players as $player_name ) {
-			$player_names = explode( ' ', $player_name );
-			$i            = 0;
-			$surname      = null;
-			foreach ( $player_names as $name ) {
-				if ( 0 === $i ) {
-					$firstname = $name;
-				} elseif ( 1 === $i ) {
-					$surname = $name;
-				} else {
-					$surname .= ' ' . $name;
-				}
-				++$i;
-			}
-			$player_index  = $surname . ' ' . $firstname;
-			$players_new[] = $player_index;
-		}
-		asort( $players_new );
-		foreach ( $players_new as $player_name ) {
-			$player_names = explode( ' ', $player_name );
-			$surname      = null;
-			$count        = count( $player_names );
-			$i            = 1;
-			foreach ( $player_names as $name ) {
-				if ( $count === $i ) {
-					$firstname = $name;
-				} elseif ( 1 === $i ) {
-					$surname = $name;
-				} else {
-					$surname .= ' ' . $name;
-				}
-				++$i;
-			}
-			$key = strtoupper( substr( $surname, 0, 1 ) );
+		$firstname   = array_column( $players, 'firstname' );
+		$surname     = array_column( $players, 'surname' );
+		array_multisort( $surname, SORT_ASC, $firstname, SORT_ASC, $players );
+		foreach ( $players as $player ) {
+			$key = strtoupper( substr( $player->surname, 0, 1 ) );
 			if ( false === array_key_exists( $key, $player_list ) ) {
 				$player_list[ $key ] = array();
 			}
-			$player                = new \stdClass();
-			$player->display_name  = $firstname . ' ' . $surname;
-			$player->firstname     = $firstname;
-			$player->surname       = $surname;
-			$player->index         = $surname . ', ' . $firstname;
+			$player->index         = $player->surname . ', ' . $player->firstname;
 			$player_list[ $key ][] = $player;
 		}
 		return $player_list;

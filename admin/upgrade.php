@@ -1012,23 +1012,23 @@ function racketmanager_upgrade() {
 		$wpdb->query( "UPDATE {$wpdb->racketmanager_teams} SET `team_type` = 'S' WHERE `status` = 'S'" );
 		$wpdb->query( "UPDATE {$wpdb->racketmanager_teams} SET `team_type` = 'S' WHERE `title` like '2_%'" );
 	}
-	if ( version_compare( $installed, '8.16.0', '<' ) ) {
-		echo esc_html__( 'starting 8.16.0 upgrade', 'racketmanager' ) . "<br />\n";
+	if ( version_compare( $installed, '8.15.0', '<' ) ) {
+		echo esc_html__( 'starting 8.15.0 upgrade', 'racketmanager' ) . "<br />\n";
 		$competitions = $racketmanager->get_competitions( array() );
 		foreach ( $competitions as $competition ) {
-			$update = false;
+			$update  = false;
 			$seasons = (array) maybe_unserialize( $competition->seasons );
 			foreach ( $seasons as $name => $data ) {
 				$count_matchdates = isset( $data['matchDates'] ) ? count( $data['matchDates'] ) : 0;
 				if ( empty( $data['dateEnd'] ) && $count_matchdates >= 2 ) {
-					$data['dateEnd']           = end( $data['matchDates'] );
+					$data['dateEnd']          = end( $data['matchDates'] );
 					$seasons[ $data['name'] ] = $data;
-					$update = true;
+					$update                   = true;
 				}
 				if ( empty( $data['dateStart'] ) && $count_matchdates >= 2 ) {
-					$data['dateStart']         = $data['matchDates'][0];
+					$data['dateStart']        = $data['matchDates'][0];
 					$seasons[ $data['name'] ] = $data;
-					$update = true;
+					$update                   = true;
 				}
 			}
 			if ( $update ) {
@@ -1041,6 +1041,31 @@ function racketmanager_upgrade() {
 				);
 			}
 		}
+	}
+	if ( version_compare( $installed, '8.16.0', '<' ) ) {
+		echo esc_html__( 'starting 8.16.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$charset_collate = '';
+		if ( $wpdb->has_cap( 'collation' ) ) {
+			if ( ! empty( $wpdb->charset ) ) {
+				$charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
+			}
+			if ( ! empty( $wpdb->collate ) ) {
+				$charset_collate .= " COLLATE $wpdb->collate";
+			}
+		}
+		$wpdb->query( "CREATE TABLE {$wpdb->racketmanager_team_players} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `team_id` int( 11 ) NOT NULL, `player_id` int( 11 ) NOT NULL, PRIMARY KEY ( `id` ), INDEX( `team_id` ), INDEX( `player_id` )) $charset_collate;" );
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_table} ADD INDEX(`team_id`);" );
+		$clubs = $racketmanager->get_clubs();
+		foreach ( $clubs as $club ) {
+			$teams = $club->get_teams( true );
+			foreach ( $teams as $team ) {
+				$team = Racketmanager\get_team( $team );
+				foreach ( $team->roster as $roster ) {
+					$team->add_team_player( $roster );
+				}
+			}
+		}
+		$teams = '';
 	}
 	/*
 	* Update version and dbversion

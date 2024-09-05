@@ -88,4 +88,5 @@ function racketmanager_define_tables() {
 	$wpdb->racketmanager_rubber_players       = $wpdb->prefix . 'racketmanager_rubber_players';
 	$wpdb->racketmanager_results_report       = $wpdb->prefix . 'racketmanager_results_report';
 	$wpdb->racketmanager_messages             = $wpdb->prefix . 'racketmanager_messages';
+	$wpdb->racketmanager_team_players         = $wpdb->prefix . 'racketmanager_team_players';
 }

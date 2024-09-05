@@ -1183,16 +1183,14 @@ class Racketmanager_Competition {
 					continue;
 				}
 				if ( $stats ) {
-					$player->matches       = $player->get_matches( $this, $this->current_season['name'], 'competition' );
-					$player->stats         = $player->get_stats();
-					$player->win_pct       = $player->stats['total']->win_pct;
-					$player->matches_won   = $player->stats['total']->matches_won;
-					$player->matches_lost  = $player->stats['total']->matches_lost;
-					$player->played        = $player->stats['total']->played;
-					$competition_players[] = $player;
-				} else {
-					$competition_players[] = $player->fullname;
+					$player->matches      = $player->get_matches( $this, $this->current_season['name'], 'competition' );
+					$player->stats        = $player->get_stats();
+					$player->win_pct      = $player->stats['total']->win_pct;
+					$player->matches_won  = $player->stats['total']->matches_won;
+					$player->matches_lost = $player->stats['total']->matches_lost;
+					$player->played       = $player->stats['total']->played;
 				}
+				$competition_players[] = $player;
 			}
 		}
 		if ( $stats ) {

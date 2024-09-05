@@ -319,6 +319,9 @@ final class Racketmanager_Team {
 				)
 			);
 			$this->id      = $wpdb->insert_id;
+			foreach ( $players as $player ) {
+				$this->add_team_player( $player );
+			}
 		} else {
 			$this->roster  = '';
 			$this->profile = '';
@@ -415,6 +418,15 @@ final class Racketmanager_Team {
 			if ( $result ) {
 				wp_cache_delete( $this->id, 'teams' );
 				$racketmanager->set_message( $this->msg_team_updated );
+				$result = $wpdb->query(
+					$wpdb->prepare(
+						"DELETE FROM {$wpdb->racketmanager_team_players} WHERE `id` = %d",
+						$this->id
+					)
+				); // db call ok, no cache ok.
+				foreach ( $players as $player ) {
+					$this->add_team_player( $player );
+				}
 			} else {
 				$racketmanager->set_message( $this->msg_team_update_error, true );
 				error_log( 'Error with player team update' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
@@ -593,6 +605,21 @@ final class Racketmanager_Team {
 				"UPDATE {$wpdb->racketmanager_teams} SET `title` = %s WHERE `id` = %d",
 				$title,
 				$this->id
+			)
+		);
+	}
+	/**
+	 * Add team player
+	 *
+	 * @param int $player player id.
+	 */
+	public function add_team_player( $player ) {
+		global $wpdb;
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"INSERT INTO {$wpdb->racketmanager_team_players} ( `team_id`, `player_id` ) VALUES ( %d, %d )",
+				$this->id,
+				$player,
 			)
 		);
 	}

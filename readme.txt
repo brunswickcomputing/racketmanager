@@ -47,6 +47,31 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.16.0 =
+* BUGFIX: handle system teams
+* BUGFIX: get team details for match season (#22)
+* BUGFIX: initialise variable
+* BUGFIX: ensure is_player_captain returns correct result
+* BUGFIX: set correct team name
+* BUGFIX: set correct walkover reference
+* BUGFIX: set correct match status for walkover
+* BUGFIX: set scorestatus correctly
+* BUGFIX: reset fields correctly* UPDATE: set dates and venue
+* BUGFIX: allow cup to proceed to final
+* UPDATE: do not display score for byes
+* UPDATE: show player stats for club in event view
+* UPDATE: redirect to latest tournament
+* UPDATE: add reset password modal
+* UPDATE: check flag correctly
+* UPDATE: update competition headers format
+* UPDATE: highlight when logged in player featured
+* UPDATE: indent team details display
+* UPDATE: format seo strings correctly
+* UPDATE: add competitions list pages
+* UPDATE: add new pages
+* UPDATE: handle withdrawn team matches
+* UPDATE: add team players table
+
 = 8.15.0 =
 * BUGFIX: set match completed when admin updates
 * BUGFIX: use correct reference for away walkover player

@@ -2668,8 +2668,10 @@ final class RacketManager_Admin extends RacketManager {
 					/* translators: %s: round name */
 					$form_title = sprintf( __( 'Add Matches - %s', 'racketmanager' ), $league->championship->get_final_name( $finalkey ) );
 					for ( $h = 0; $h < $max_matches; $h++ ) {
-						$matches[ $h ]          = new \stdClass();
-						$matches[ $h ]->host    = 'home';
+						$matches[ $h ] = new \stdClass();
+						if ( 'final' !== $finalkey ) {
+							$matches[ $h ]->host = 'home';
+						}
 						$matches[ $h ]->hour    = $league->event->competition->default_match_start_time['hour'];
 						$matches[ $h ]->minutes = $league->event->competition->default_match_start_time['minutes'];
 					}
@@ -2682,7 +2684,7 @@ final class RacketManager_Admin extends RacketManager {
 							'id' => 'ASC',
 						),
 					);
-					if ( ! empty( $league->current_season['homeAway'] ) && 'true' === $league->current_season['homeAway'] ) {
+					if ( 'final' !== $finalkey && ! empty( $league->current_season['homeAway'] ) && 'true' === $league->current_season['homeAway'] ) {
 						$match_args['leg'] = 1;
 					}
 					$matches = $league->get_matches( $match_args );

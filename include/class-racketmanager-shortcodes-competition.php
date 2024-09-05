@@ -1312,6 +1312,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		if ( ! $type ) {
 			return esc_html_e( 'Competition type not set', 'racketmanager' );
 		}
+		$user_competitions = null;
 		if ( 'tournament' === $type ) {
 			$tournaments  = $racketmanager->get_tournaments( array( 'orderby' => array( 'date' => 'DESC' ) ) );
 			$competitions = array();
@@ -1320,8 +1321,20 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				$tournament->date_end = $tournament->date;
 				$competitions[]       = $tournament;
 			}
+			if ( is_user_logged_in() ) {
+				$player = get_player( get_current_user_id() );
+				if ( $player ) {
+					$user_competitions = $player->get_tournaments( array( 'type' => $type ) );
+				}
+			}
 		} else {
 			$competitions = $racketmanager->get_competitions( array( 'type' => $type ) );
+			if ( is_user_logged_in() ) {
+				$player = get_player( get_current_user_id() );
+				if ( $player ) {
+					$user_competitions = $player->get_competitions( array( 'type' => $type ) );
+				}
+			}
 		}
 		switch ( $type ) {
 			case 'league':
@@ -1342,8 +1355,9 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		return $this->load_template(
 			$filename,
 			array(
-				'competitions' => $competitions,
-				'type'         => $competition_type,
+				'competitions'      => $competitions,
+				'type'              => $competition_type,
+				'user_competitions' => $user_competitions,
 			)
 		);
 	}

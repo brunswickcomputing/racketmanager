@@ -4132,7 +4132,9 @@ h1.media__title {
 	margin: 0;
 	font-size: 2.5rem;
 }
-
+h5.media__title {
+	margin: 0;
+}
 .tournament-head .media__subheading, .competition-head .media__subheading {
 	color: #FFF;
 }

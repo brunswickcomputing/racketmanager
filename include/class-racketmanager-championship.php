@@ -551,9 +551,11 @@ final class Racketmanager_Championship extends RacketManager {
 			'final' => $next,
 			'limit' => false,
 		);
-		if ( 'final' !== $next && ! empty( $league->current_season['homeAway'] && 'true' === $league->current_season['homeAway'] ) ) {
-			$match_args['leg'] = 1;
-			$legs              = true;
+		if ( ! empty( $league->current_season['homeAway'] ) ) {
+			$legs = true;
+			if ( 'final' !== $next ) {
+				$match_args['leg'] = 1;
+			}
 		}
 		$matches = $league->get_matches( $match_args );
 		foreach ( $matches as $match ) {

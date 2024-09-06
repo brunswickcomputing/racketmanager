@@ -31,28 +31,26 @@ global $racketmanager;
 					</div>
 				</div>
 				<div class="team-match">
-					<div class="media">
+					<div class="media no-score">
 						<div class="media__wrapper">
 							<div class="media__content">
-								<div><?php esc_html_e( 'Home', 'racketmanager' ); ?></div>
-								<h2 class="team-match__name is-team-1" title="<?php echo esc_html( $home_team ); ?>">
+								<h2 class="team-match__name is-team-1" title="<?php echo esc_html( ucwords( $home_team ) ); ?>">
 									<a href="" class="nav--link">
 										<span class="nav-link__value">
-											<?php echo esc_html( $home_team ); ?>
+											<?php echo esc_html( ucwords( $home_team ) ); ?>
 										</span>
 									</a>
 								</h2>
 							</div>
 						</div>
 					</div>
-					<div class="media media--reverse">
+					<div class="media media--reverse no-score">
 						<div class="media__wrapper">
 							<div class="media__content">
-								<div><?php esc_html_e( 'Away', 'racketmanager' ); ?></div>
-								<h2 class="team-match__name is-team-2" title="<?php echo esc_html( $away_team ); ?>">
+								<h2 class="team-match__name is-team-2" title="<?php echo esc_html( ucwords( $away_team ) ); ?>">
 									<a href="" class="nav--link">
 										<span class="nav-link__value">
-											<?php echo esc_html( $away_team ); ?>
+											<?php echo esc_html( ucwords( $away_team ) ); ?>
 										</span>
 									</a>
 								</h2>
@@ -81,11 +79,11 @@ global $racketmanager;
 					}
 					?>
 					<div class="match-row row justify-content-center">
-						<div class="col-3"><time datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, the_match_date() ) ); ?></time></div>
+						<div class="col-6 col-md-2"><time datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, the_match_date() ) ); ?></time></div>
 						<?php
 						if ( ! empty( $match->leg ) ) {
 							?>
-							<div class="col-1">
+							<div class="col-6 col-md-2">
 								<a style="display: flex;" href="<?php echo esc_attr( $match_link ); ?>">
 									<?php echo esc_html__( 'Leg', 'racketmanager' ) . ' ' . esc_html( $match->leg ); ?>
 								</a>

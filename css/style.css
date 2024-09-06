@@ -3862,13 +3862,14 @@ h2.team-match__name {
 		padding-right: 0;
 	}
 }
-
 @media (max-width: 767px) {
 	.team-match-header .media {
 		margin-top: 4.8rem;
 	}
+	.team-match-header .media.no-score {
+		margin-top: 0;
+	}
 }
-
 .media--reverse .media__content {
 	text-align: right;
 }

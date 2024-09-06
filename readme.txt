@@ -47,6 +47,10 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.16.1 =
+* BUGFIX: handle cup match semi final results correctly
+* BUGFIX: format match list screen correctly
+
 = 8.16.0 =
 * BUGFIX: handle system teams
 * BUGFIX: get team details for match season (#22)

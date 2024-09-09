@@ -1484,7 +1484,7 @@ class Racketmanager_Event {
 		$search_args   = array();
 		$search_args[] = $this->id;
 		if ( ! $season ) {
-			$season = $this->current_season['name'];
+			$season = isset( $this->current_season['name'] ) ? $this->current_season['name'] : null;
 		}
 		if ( $season ) {
 			$search_terms[] = '`season` = %s';

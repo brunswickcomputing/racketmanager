@@ -33,7 +33,7 @@ if ( empty( $event_club ) ) {
 							?>
 							<div class="row mb-2 row-list">
 								<div class="col-6" name="<?php esc_html_e( 'Club', 'racketmanager' ); ?>">
-									<a href="/<?php echo esc_attr( $event->competition->type ); ?>s/<?php echo esc_html( seo_url( $event->name ) ); ?>/<?php echo esc_attr( isset( $event->current_season['name'] ) ? $event->current_season['name'] : null ); ?>/club/<?php echo esc_attr( seo_url( $club->shortcode ) ); ?>/">
+									<a href="/<?php echo esc_attr( $event->competition->type ); ?>s/<?php echo esc_html( seo_url( $event->name ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/club/<?php echo esc_attr( seo_url( $club->shortcode ) ); ?>/">
 										<?php echo esc_html( $club->name ); ?>
 									</a>
 								</div>

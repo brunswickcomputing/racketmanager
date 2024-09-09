@@ -1221,7 +1221,7 @@ class Racketmanager_Event {
 		$search_terms   = array();
 		$search_terms[] = $wpdb->prepare( '`event_id` = %d', $this->id );
 		if ( ! $season ) {
-			$season = $this->current_season['name'];
+			$season = isset( $this->current_season['name'] ) ? $this->current_season['name'] : null;
 		}
 		if ( $season ) {
 			$search_terms[] = $wpdb->prepare( 't1.`season` = %s', $season );

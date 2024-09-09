@@ -597,7 +597,7 @@ class Racketmanager_Event {
 		}
 
 		$this->current_season = $data;
-		$this->num_match_days = $data['num_match_days'];
+		$this->num_match_days = isset( $data['num_match_days'] ) ? $data['num_match_days'] : 0;
 	}
 
 	/**

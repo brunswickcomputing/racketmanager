@@ -51,7 +51,7 @@ if ( empty( $event_team ) ) {
 							if ( $event->is_box ) {
 								$league_link = $event->competition->type . '/' . seo_url( $team->league_title ) . '/' . __( 'round', 'racketmanager' ) . '-' . $event->current_season['name'] . '/';
 							} else {
-								$league_link = $event->competition->type . '/' . seo_url( $team->league_title ) . '/' . $event->current_season['name'] . '/';
+								$league_link = $event->competition->type . '/' . seo_url( $team->league_title ) . '/' . isset( $event->current_season['name'] ) ? $event->current_season['name'] : null . '/';
 							}
 							?>
 							<div class="row mb-2 row-list">

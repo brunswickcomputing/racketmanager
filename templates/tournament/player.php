@@ -213,7 +213,7 @@ require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
 														echo esc_html( $matches_won ) . '-' . esc_html( $matches_lost );
 														?>
 														<div class="progress">
-															<div class="progress-bar bg-success" role="progress-bar" style="width: <?php echo esc_html( $win_pct ); ?>%" aria-valuenow="<?php echo esc_html( $win_pct ); ?>" aria-valuemin="0" aria-valuemax="100" data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_html( $win_pct ); ?>%"></div>
+															<div class="progress-bar bg-success" role="progressbar" style="width: <?php echo esc_html( $win_pct ); ?>%" aria-valuenow="<?php echo esc_html( $win_pct ); ?>" aria-valuemin="0" aria-valuemax="100" data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_html( $win_pct ); ?>%"></div>
 														</div>
 													</td>
 													<td>
@@ -233,7 +233,7 @@ require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
 														echo esc_html( $sets_won ) . '-' . esc_html( $sets_lost );
 														?>
 														<div class="progress">
-															<div class="progress-bar bg-success" role="progress-bar" style="width: <?php echo esc_html( $win_pct ); ?>%" aria-valuenow="<?php echo esc_html( $win_pct ); ?>" aria-valuemin="0" aria-valuemax="100" data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_html( $win_pct ); ?>%"></div>
+															<div class="progress-bar bg-success" role="progressbar" style="width: <?php echo esc_html( $win_pct ); ?>%" aria-valuenow="<?php echo esc_html( $win_pct ); ?>" aria-valuemin="0" aria-valuemax="100" data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_html( $win_pct ); ?>%"></div>
 														</div>
 													</td>
 													<td>
@@ -253,7 +253,7 @@ require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
 														echo esc_html( $games_won ) . '-' . esc_html( $games_lost );
 														?>
 														<div class="progress">
-															<div class="progress-bar bg-success" role="progress-bar" style="width: <?php echo esc_html( $win_pct ); ?>%" aria-valuenow="<?php echo esc_html( $win_pct ); ?>" aria-valuemin="0" aria-valuemax="100" data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_html( $win_pct ); ?>%"></div>
+															<div class="progress-bar bg-success" role="progressbar" style="width: <?php echo esc_html( $win_pct ); ?>%" aria-valuenow="<?php echo esc_html( $win_pct ); ?>" aria-valuemin="0" aria-valuemax="100" data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_html( $win_pct ); ?>%"></div>
 														</div>
 													</td>
 													<td>

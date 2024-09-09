@@ -56,7 +56,7 @@ namespace Racketmanager;
 					$alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 					for ( $i = 0; $i < 26; ++$i ) {
 						$alphabet_char = substr( $alphabet, $i, 1 );
-						if ( false === array_search( $alphabet_char, $alphabet_key, false ) ) {
+						if ( false === array_search( $alphabet_char, $alphabet_key, true ) ) {
 							$alphabet_class = 'is-disabled';
 						} else {
 							$alphabet_class = null;

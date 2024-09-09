@@ -1411,6 +1411,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			if ( ! $competition_season ) {
 				return esc_html_e( 'Season not found', 'racketmanager' );
 			}
+		} elseif ( empty( $competition->seasons ) ) {
+				return esc_html_e( 'No seasons found for competition', 'racketmanager' );
 		} else {
 			$competition_season = end( $competition->seasons );
 			$season             = $competition_season['name'];

@@ -17,9 +17,10 @@ namespace Racketmanager;
 			<ul class="player-list ">
 				<?php
 				foreach ( $player_list as $key => $players ) {
+					$alphabet_key[] = $key;
 					?>
 					<li class="player-list__cat" id="<?php echo esc_html( $key ); ?>">
-						<div class="list-divider"><?php echo esc_html( $key ); ?></div>
+						<div class="list-divider sticky is-sticky"><?php echo esc_html( $key ); ?></div>
 						<ul class="row player-list-letter">
 							<?php
 							foreach ( $players as $player ) {
@@ -49,6 +50,26 @@ namespace Racketmanager;
 				}
 				?>
 			</ul>
+			<div class="alphabet__wrapper">
+				<ul class="alphabet">
+					<?php
+					$alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+					for ( $i = 0; $i < 26; ++$i ) {
+						$alphabet_char = substr( $alphabet, $i, 1 );
+						if ( false === array_search( $alphabet_char, $alphabet_key, false ) ) {
+							$alphabet_class = 'is-disabled';
+						} else {
+							$alphabet_class = null;
+						}
+						?>
+						<li class="alphabet__char">
+							<a href="#<?php echo esc_attr( $alphabet_char ); ?>" class="alphabet__char-href <?php echo esc_attr( $alphabet_class ); ?>"><?php echo esc_attr( $alphabet_char ); ?></a>
+						</li>
+						<?php
+					}
+					?>
+				</ul>
+			</div>
 		</div>
 	</div>
 </div>

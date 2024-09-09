@@ -362,15 +362,15 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 							} elseif ( $loser === $player_team ) {
 								$player_team_status = 'loser';
 							}
-							if ( ! isset( $player->statistics['played'][ $player_team_status ][ $match_type ] ) ) {
-								$player->statistics['played'][ $player_team_status ][ $match_type ] = 0;
+							if ( ! isset( $player->statistics[ $match_type ]['played'][ $player_team_status ] ) ) {
+								$player->statistics[ $match_type ]['played'][ $player_team_status ] = 0;
 							}
-							++$player->statistics['played'][ $player_team_status ][ $match_type ];
+							++$player->statistics[ $match_type ]['played'][ $player_team_status ];
 							if ( $match->is_walkover && 'winner' === $player_team_status ) {
-								if ( ! isset( $player->statistics['walkover'][ $match_type ] ) ) {
-									$player->statistics['walkover'][ $match_type ] = 0;
+								if ( ! isset( $player->statistics[ $match_type ]['walkover'] ) ) {
+									$player->statistics[ $match_type ]['walkover'] = 0;
 								}
-								++$player->statistics['walkover'][ $match_type ];
+								++$player->statistics[ $match_type ]['walkover'];
 							}
 							$sets = ! empty( $match->custom['sets'] ) ? $match->custom['sets'] : array();
 							foreach ( $sets as $set ) {
@@ -386,21 +386,21 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 									} else {
 										$stat_ref = 'winner';
 									}
-									if ( ! isset( $player->statistics['sets'][ $stat_ref ][ $match_type ] ) ) {
-										$player->statistics['sets'][ $stat_ref ][ $match_type ] = 0;
+									if ( ! isset( $player->statistics[ $match_type ]['sets'][ $stat_ref ] ) ) {
+										$player->statistics[ $match_type ]['sets'][ $stat_ref ] = 0;
 									}
-									++$player->statistics['sets'][ $stat_ref ][ $match_type ];
+									++$player->statistics[ $match_type ]['sets'][ $stat_ref ];
 									foreach ( $opponents_pt as $opponent ) {
 										if ( $player_ref === $opponent ) {
-											if ( ! isset( $player->statistics['games']['winner'][ $match_type ] ) ) {
-												$player->statistics['games']['winner'][ $match_type ] = 0;
+											if ( ! isset( $player->statistics[ $match_type ]['games']['winner'] ) ) {
+												$player->statistics[ $match_type ]['games']['winner'] = 0;
 											}
-											$player->statistics['games']['winner'][ $match_type ] += $set[ $opponent ];
+											$player->statistics[ $match_type ]['games']['winner'] += $set[ $opponent ];
 										} else {
-											if ( ! isset( $player->statistics['games']['loser'][ $match_type ] ) ) {
-												$player->statistics['games']['loser'][ $match_type ] = 0;
+											if ( ! isset( $player->statistics[ $match_type ]['games']['loser'] ) ) {
+												$player->statistics[ $match_type ]['games']['loser'] = 0;
 											}
-											$player->statistics['games']['loser'][ $match_type ] += $set[ $opponent ];
+											$player->statistics[ $match_type ]['games']['loser'] += $set[ $opponent ];
 										}
 									}
 								}

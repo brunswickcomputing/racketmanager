@@ -567,10 +567,10 @@ final class Racketmanager_Player {
 				} else {
 					$player_team_status = 'draw';
 				}
-				if ( ! isset( $this->statistics['played'][ $player_team_status ][ $match_type ][ $rubber->title ] ) ) {
-					$this->statistics['played'][ $player_team_status ][ $match_type ][ $rubber->title ] = 0;
+				if ( ! isset( $this->statistics[ $rubber->title ]['played'][ $player_team_status ] ) ) {
+					$this->statistics[ $rubber->title ]['played'][ $player_team_status ] = 0;
 				}
-				++$this->statistics['played'][ $player_team_status ][ $match_type ][ $rubber->title ];
+				++$this->statistics[ $rubber->title ]['played'][ $player_team_status ];
 				$sets = ! empty( $rubber->custom['sets'] ) ? $rubber->custom['sets'] : array();
 				foreach ( $sets as $set ) {
 					if ( isset( $set['player1'] ) && '' !== $set['player1'] && isset( $set['player2'] ) && '' !== $set['player2'] ) {
@@ -585,22 +585,22 @@ final class Racketmanager_Player {
 						} else {
 							$stat_ref = 'winner';
 						}
-						if ( ! isset( $this->statistics['sets'][ $stat_ref ][ $match_type ][ $rubber->title ] ) ) {
-							$this->statistics['sets'][ $stat_ref ][ $match_type ][ $rubber->title ] = 0;
+						if ( ! isset( $this->statistics[ $rubber->title ]['sets'][ $stat_ref ] ) ) {
+							$this->statistics[ $rubber->title ]['sets'][ $stat_ref ] = 0;
 						}
-						++$this->statistics['sets'][ $stat_ref ][ $match_type ][ $rubber->title ];
+						++$this->statistics[ $rubber->title ]['sets'][ $stat_ref ];
 						foreach ( $opponents_pt as $opponent ) {
 							if ( is_numeric( $set[ $opponent ] ) ) {
 								if ( $player_ref === $opponent ) {
-									if ( ! isset( $this->statistics['games']['winner'][ $match_type ][ $rubber->title ] ) ) {
-										$this->statistics['games']['winner'][ $match_type ][ $rubber->title ] = 0;
+									if ( ! isset( $this->statistics[ $rubber->title ]['games']['winner'] ) ) {
+										$this->statistics[ $rubber->title ]['games']['winner'] = 0;
 									}
-									$this->statistics['games']['winner'][ $match_type ][ $rubber->title ] += $set[ $opponent ];
+									$this->statistics[ $rubber->title ]['games']['winner'] += $set[ $opponent ];
 								} else {
-									if ( ! isset( $this->statistics['games']['loser'][ $match_type ][ $rubber->title ] ) ) {
-										$this->statistics['games']['loser'][ $match_type ][ $rubber->title ] = 0;
+									if ( ! isset( $this->statistics[ $rubber->title ]['games']['loser'] ) ) {
+										$this->statistics[ $rubber->title ]['games']['loser'] = 0;
 									}
-									$this->statistics['games']['loser'][ $match_type ][ $rubber->title ] += $set[ $opponent ];
+									$this->statistics[ $rubber->title ]['games']['loser'] += $set[ $opponent ];
 								}
 							}
 						}
@@ -618,20 +618,49 @@ final class Racketmanager_Player {
 	 */
 	public function get_stats( $stats = false ) {
 		if ( $stats ) {
-			$this->statistics = $stats;
+			krsort( $stats );
+			$this->statistics           = array();
+			$this->statistics['detail'] = $stats;
+		} else {
+			$stats = $this->statistics;
+			ksort( $stats );
+			$this->statistics           = array();
+			$this->statistics['detail'] = $stats;
 		}
-		$total_stats = array();
-		$stat_types  = array( 'winner', 'loser', 'draw' );
+		$total_stats       = array();
+		$total_stats_sets  = array();
+		$total_stats_games = array();
+		$stat_types        = array( 'winner', 'loser', 'draw' );
 		foreach ( $stat_types as $stat_type ) {
-			$total_stats[ $stat_type ] = 0;
-			if ( ! empty( $this->statistics['played'][ $stat_type ] ) ) {
-				foreach ( $this->statistics['played'][ $stat_type ] as $stats ) {
-					if ( is_array( $stats ) ) {
-						$total_stats[ $stat_type ] += array_sum( $stats );
-					} else {
-						$total_stats[ $stat_type ] += $stats;
+			$total_stats[ $stat_type ]       = 0;
+			$total_stats_sets[ $stat_type ]  = 0;
+			$total_stats_games[ $stat_type ] = 0;
+		}
+		$total_stats_walkover = 0;
+		foreach ( $stats as $statistics ) {
+			if ( ! empty( $statistics['played'] ) ) {
+				foreach ( $stat_types as $stat_type ) {
+					if ( ! empty( $statistics['played'][ $stat_type ] ) ) {
+						$total_stats[ $stat_type ] += $statistics['played'][ $stat_type ];
 					}
 				}
+			}
+			if ( ! empty( $statistics['sets'] ) ) {
+				foreach ( $stat_types as $stat_type ) {
+					if ( ! empty( $statistics['sets'][ $stat_type ] ) ) {
+						$total_stats_sets[ $stat_type ] += $statistics['sets'][ $stat_type ];
+					}
+				}
+			}
+			if ( ! empty( $statistics['games'] ) ) {
+				foreach ( $stat_types as $stat_type ) {
+					if ( ! empty( $statistics['games'][ $stat_type ] ) ) {
+						$total_stats_games[ $stat_type ] += $statistics['games'][ $stat_type ];
+					}
+				}
+			}
+			if ( ! empty( $statistics['walkover'] ) ) {
+				$total_stats_walkover += $statistics['walkover'];
 			}
 		}
 		$this->statistics['total']               = new \stdClass();
@@ -642,6 +671,11 @@ final class Racketmanager_Player {
 		if ( $this->statistics['total']->played ) {
 			$this->statistics['total']->win_pct = ceil( ( $this->statistics['total']->matches_won / $this->statistics['total']->played ) * 100 );
 		}
+		$this->statistics['total']->sets_won   = $total_stats_sets['winner'];
+		$this->statistics['total']->sets_lost  = $total_stats_sets['loser'];
+		$this->statistics['total']->games_won  = $total_stats_games['winner'];
+		$this->statistics['total']->games_lost = $total_stats_games['loser'];
+		$this->statistics['total']->walkover   = empty( $total_stats_walkover ) ? '' : $total_stats_walkover;
 		return $this->statistics;
 	}
 	/**

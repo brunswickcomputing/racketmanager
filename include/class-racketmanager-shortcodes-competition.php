@@ -191,7 +191,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			}
 		}
 		if ( ! $event ) {
-			return false;
+			return __( 'Event not found', 'racketmanager' );
 		}
 		$leagues = $event->get_leagues();
 		if ( ! $season ) {
@@ -213,6 +213,9 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			} else {
 				$season = '';
 			}
+		}
+		if ( false === array_search( $season, $event->seasons, true ) ) {
+			return __( 'Season not found for event', 'racketmanager' );
 		}
 		$event->teams = $event->get_teams(
 			array(

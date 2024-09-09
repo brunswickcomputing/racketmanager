@@ -63,7 +63,7 @@ global $racketmanager;
 	</div>
 	<div class="module module--card">
 		<div class="module__banner">
-			<h4 class="module__title">
+			<h3 class="module__title">
 				<?php esc_html_e( 'Matches', 'racketmanager' ); ?>
 			</h4>
 		</div>

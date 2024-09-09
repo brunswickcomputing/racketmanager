@@ -58,7 +58,7 @@ require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
 		<div class="page-content__main col-12 col-lg-7">
 			<div class="module module--card">
 				<div class="module__banner">
-					<h4 class="module__title"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></h4>
+					<h3 class="module__title"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></h4>
 				</div>
 				<div class="module__content">
 					<div class="module-container">
@@ -81,7 +81,7 @@ require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
 		<div class="page-content__sidebar col-12 col-lg-5">
 			<div class="module module--card">
 				<div class="module__banner">
-					<h4 class="module__title"><?php esc_html_e( 'Entries', 'racketmanager' ); ?></h4>
+					<h3 class="module__title"><?php esc_html_e( 'Entries', 'racketmanager' ); ?></h4>
 				</div>
 				<div class="module__content">
 					<div class="module-container">

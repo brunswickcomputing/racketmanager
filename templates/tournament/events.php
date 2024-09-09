@@ -90,7 +90,7 @@ if ( empty( $event ) ) {
 	</div>
 	<div class="module module--card">
 		<div class="module__banner">
-			<h4 class="module__title"><?php echo esc_html__( 'Entries', 'racketmanager' ) . ' (' . esc_html( count( $event->teams ) ) . ')'; ?></h4>
+			<h3 class="module__title"><?php echo esc_html__( 'Entries', 'racketmanager' ) . ' (' . esc_html( count( $event->teams ) ) . ')'; ?></h4>
 		</div>
 		<div class="module__content">
 			<div class="module-container">

@@ -23,7 +23,7 @@ $user_can_update = $is_update_allowed->user_can_update;
 			</div>
 			<div class="module module--card">
 				<div class="module__banner">
-					<h4 class="module__title">
+					<h3 class="module__title">
 						<?php esc_html_e( 'Rubbers', 'racketmanager' ); ?>
 					</h4>
 					<div class="module__aside">
@@ -84,7 +84,7 @@ $user_can_update = $is_update_allowed->user_can_update;
 				<div class="col-12 col-sm-6 col-lg-12">
 					<div class="module module--card">
 						<div class="module__banner">
-							<h4 class="module__title">
+							<h3 class="module__title">
 								<?php esc_html_e( 'Location', 'racketmanager' ); ?>
 							</h4>
 						</div>
@@ -173,7 +173,7 @@ $user_can_update = $is_update_allowed->user_can_update;
 				<div class="col-12 col-sm-6 col-lg-12">
 					<div class="module module--card">
 						<div class="module__banner">
-							<h4 class="module__title">
+							<h3 class="module__title">
 								<?php esc_html_e( 'Team Captains', 'racketmanager' ); ?>
 							</h4>
 						</div>

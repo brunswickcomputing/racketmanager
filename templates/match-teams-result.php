@@ -68,7 +68,7 @@ if ( $match->is_walkover ) {
 				<div class="col-12 col-sm-6 col-lg-12">
 					<div class="module module--card">
 						<div class="module__banner">
-							<h4 class="module__title">
+							<h3 class="module__title">
 								<?php esc_html_e( 'How does it work?', 'racketmanager' ); ?>
 							</h4>
 						</div>
@@ -99,7 +99,7 @@ if ( $match->is_walkover ) {
 		<div class="page-content__main col-12 col-lg-8">
 			<div class="module module--card">
 				<div class="module__banner">
-					<h4 class="module__title">
+					<h3 class="module__title">
 						<?php esc_html_e( 'Rubber results', 'racketmanager' ); ?>
 					</h4>
 				</div>

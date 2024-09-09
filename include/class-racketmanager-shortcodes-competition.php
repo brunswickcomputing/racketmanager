@@ -214,7 +214,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				$season = '';
 			}
 		}
-		if ( false === array_search( $season, $event->seasons, true ) ) {
+		if ( empty( $event->seasons[ $season ] ) ) {
 			return __( 'Season not found for event', 'racketmanager' );
 		}
 		$event->teams = $event->get_teams(

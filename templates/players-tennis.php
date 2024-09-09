@@ -20,7 +20,7 @@ if ( ! empty( $league->player ) ) {
 	require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
 	?>
 	<div class="page_content row">
-		<div class="page-content__main col-12 col-lg-8">
+		<div class="page-content__main col-12 col-lg-6">
 			<div class="module module--card">
 				<div class="module__banner">
 					<h3 class="module__title"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></h3>
@@ -44,7 +44,7 @@ if ( ! empty( $league->player ) ) {
 				</div>
 			</div>
 		</div>
-		<div class="page-content__sidebar col-12 col-lg-4">
+		<div class="page-content__sidebar col-12 col-lg-6">
 			<?php
 			if ( ! empty( $league->player->statistics ) ) {
 				?>

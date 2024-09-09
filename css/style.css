@@ -5580,3 +5580,40 @@ h4.modal-title {
 		top: 10.5rem;
 	}
 }
+.collapsed svg.icon-stats {
+	-webkit-transform: rotate(180deg);
+	-moz-transform: rotate(180deg);
+	-o-transform: rotate(180deg);
+	-ms-transform: rotate(180deg);
+	transform: rotate(180deg);
+}
+svg.icon-stats {
+	top: -2px;
+}
+.stats-header {
+	font-weight: 600;
+	padding: 0.5rem 0;
+}
+.stats-title {
+	font-weight: 500;
+}
+a.stats-link {
+	color: #000;
+}
+.stats-summary {
+	font-weight: 600;
+}
+.stats-summary .stats-title {
+	font-weight: 600;
+}
+#team-player-stats-detail .row {
+	line-height: 2.5rem;
+}
+.player-stats {
+	font-size: 1rem;
+}
+@media (max-width: 1024px) {
+	.player-stats {
+		font-size: 0.8rem;
+	}
+}

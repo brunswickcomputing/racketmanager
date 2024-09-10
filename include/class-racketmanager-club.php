@@ -512,7 +512,7 @@ final class Racketmanager_Club {
 						$player_change       = true;
 						$updated_player->btm = $new_player->btm;
 					}
-				} elseif ( ! empty( $new_player->btm ) && $player->btm !== $new_player->btm ) {
+				} elseif ( ! empty( $new_player->btm ) && intval( $player->btm ) !== $new_player->btm ) {
 					$valid = false;
 					$racketmanager->set_message( __( 'LTA Tennis Number is different from existing', 'racketmanager' ), true );
 				}

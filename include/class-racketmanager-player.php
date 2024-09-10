@@ -88,7 +88,7 @@ final class Racketmanager_Player {
 	/**
 	 * LTA Membership Number.
 	 *
-	 * @var string
+	 * @var int
 	 */
 	public $btm;
 	/**

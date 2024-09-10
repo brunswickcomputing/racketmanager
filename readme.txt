@@ -47,6 +47,14 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.17.0 =
+* BUGFIX: fix entry page display 
+* BUGFIX: handle event season not set
+* BUGFIX: handle competition season not found
+* BUGFIX: unable to register a player with a new club with an existing lta number
+* UPDATE: add player name alphabet list lookup
+* UPDATE: show player stats for each rubber type
+
 = 8.16.1 =
 * BUGFIX: handle cup match semi final results correctly
 * BUGFIX: format match list screen correctly

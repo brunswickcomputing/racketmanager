@@ -70,7 +70,7 @@ if ( $match->is_walkover ) {
 						<div class="module__banner">
 							<h3 class="module__title">
 								<?php esc_html_e( 'How does it work?', 'racketmanager' ); ?>
-							</h4>
+							</h3>
 						</div>
 						<div class="module__content">
 							<div class="module-container">
@@ -101,7 +101,7 @@ if ( $match->is_walkover ) {
 				<div class="module__banner">
 					<h3 class="module__title">
 						<?php esc_html_e( 'Rubber results', 'racketmanager' ); ?>
-					</h4>
+					</h3>
 				</div>
 				<div class="module__content">
 					<div class="module-container">

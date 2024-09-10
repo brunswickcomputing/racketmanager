@@ -25,7 +25,7 @@ $user_can_update = $is_update_allowed->user_can_update;
 				<div class="module__banner">
 					<h3 class="module__title">
 						<?php esc_html_e( 'Rubbers', 'racketmanager' ); ?>
-					</h4>
+					</h3>
 					<div class="module__aside">
 						<?php
 						if ( ! $match->winner_id ) {
@@ -86,7 +86,7 @@ $user_can_update = $is_update_allowed->user_can_update;
 						<div class="module__banner">
 							<h3 class="module__title">
 								<?php esc_html_e( 'Location', 'racketmanager' ); ?>
-							</h4>
+							</h3>
 						</div>
 						<div class="module__content">
 							<?php $opponent = empty( $match->host ) ? 'home' : $match->host; ?>
@@ -175,7 +175,7 @@ $user_can_update = $is_update_allowed->user_can_update;
 						<div class="module__banner">
 							<h3 class="module__title">
 								<?php esc_html_e( 'Team Captains', 'racketmanager' ); ?>
-							</h4>
+							</h3>
 						</div>
 						<div class="module__content">
 							<div class="module-container">

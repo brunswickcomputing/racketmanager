@@ -18,14 +18,11 @@ namespace Racketmanager;
 
 $match_days = Racketmanager_Util::get_match_days();
 ?>
-	<div class="media tournament-head">
-		<div class="media__wrapper">
-			<div class="media__img"></div>
-			<div class="media__content">
-				<h1 class="media__title"><?php echo esc_html( ucwords( $competition->name ) ) . ' - ' . esc_html( $season ); ?></h1>
-			</div>
-		</div>
-	</div>
+
+	<?php
+	$competition_season = null;
+	require RACKETMANAGER_PATH . 'templates/includes/competition-header.php';
+	?>
 	<form id="form-entry" action="" method="post">
 		<?php wp_nonce_field( 'league-entry' ); ?>
 		<input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />

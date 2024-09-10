@@ -866,13 +866,13 @@ class RacketManager {
 		// cup entry form - type - season - club.
 		add_rewrite_rule(
 			'cups/(.+?)-entry/([0-9]{4})/(.+?)/?$',
-			'index.php?pagename=cups%2Fcup-entry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]',
+			'index.php?pagename=competition%2Fcup-entry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]',
 			'top'
 		);
 		// league entry form - competition - season - club.
 		add_rewrite_rule(
 			'leagues/(.+?)-entry/([0-9]{4})/(.+?)/?$',
-			'index.php?pagename=leagues%2Fleague-entry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]',
+			'index.php?pagename=competition%2Fleague-entry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]',
 			'top'
 		);
 		// tournament entry form - season - club.

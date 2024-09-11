@@ -1381,12 +1381,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						}
 						switch ( $status_value ) {
 							case 'walkover':
-								if ( 'player1' !== $player_ref && 'player2' !== $player_ref ) {
-									$valid       = false;
-									$err_field[] = 'score_status';
-									$err_msg[]   = __( 'Score status team selection not valid', 'racketmanager' );
-								}
-								break;
 							case 'retired':
 								if ( 'player1' !== $player_ref && 'player2' !== $player_ref ) {
 									$valid       = false;

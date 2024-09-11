@@ -238,6 +238,9 @@ class Racketmanager_Ajax extends RacketManager {
 					case 'abandoned':
 						$custom['abandoned'] = 'true';
 						break;
+					case 'cancelled':
+						$custom['cancelled'] = 'true';
+						break;
 					default:
 						break;
 				}
@@ -587,6 +590,7 @@ class Racketmanager_Ajax extends RacketManager {
 			$walkover       = null;
 			$retired        = null;
 			$abandoned      = null;
+			$is_cancelled   = null;
 			if ( $is_withdrawn ) {
 				$match_status = 'withdrawn';
 			}
@@ -681,6 +685,9 @@ class Racketmanager_Ajax extends RacketManager {
 				case 'abandoned':
 					$abandoned = true;
 					break;
+				case 'cancelled':
+					$is_cancelled = true;
+					break;
 				default:
 					break;
 			}
@@ -698,7 +705,7 @@ class Racketmanager_Ajax extends RacketManager {
 				}
 			}
 			if ( $validate_match ) {
-				if ( empty( $share ) && empty( $is_withdrawn ) ) {
+				if ( empty( $share ) && empty( $is_withdrawn ) && empty( $is_cancelled ) ) {
 					foreach ( $opponents as $opponent ) {
 						$team_players = isset( $players[ $opponent ] ) ? $players[ $opponent ] : array();
 						foreach ( $player_numbers as $player_number ) {
@@ -761,6 +768,9 @@ class Racketmanager_Ajax extends RacketManager {
 					} elseif ( $abandoned ) {
 						$status              = 6;
 						$custom['abandoned'] = true;
+					} elseif ( $is_cancelled ) {
+						$status              = 8;
+						$custom['cancelled'] = true;
 					} elseif ( empty( $status ) ) {
 						$status = 0;
 					}
@@ -792,7 +802,7 @@ class Racketmanager_Ajax extends RacketManager {
 						$stats['rubbers']['home'] += 0.5;
 						$stats['rubbers']['away'] += 0.5;
 					}
-					if ( ! empty( $homescore ) || ! empty( $awayscore ) || $is_withdrawn ) {
+					if ( ! empty( $homescore ) || ! empty( $awayscore ) || $is_withdrawn || $is_cancelled ) {
 						$homescore                                   = ! empty( $homescore ) ? $homescore : 0;
 						$awayscore                                   = ! empty( $awayscore ) ? $awayscore : 0;
 						$updated_rubbers['homepoints'][ $rubber_id ] = $homescore;
@@ -808,7 +818,9 @@ class Racketmanager_Ajax extends RacketManager {
 						$rubber->custom      = $custom;
 						$rubber->status      = $status;
 						$rubber->update_result();
-						$rubber->check_players();
+						if ( ! $is_cancelled && ! $is_withdrawn ) {
+							$rubber->check_players();
+						}
 						$match_confirmed = 'P';
 						foreach ( $opponents as $opponent ) {
 							foreach ( $player_numbers as $player_number ) {
@@ -822,7 +834,7 @@ class Racketmanager_Ajax extends RacketManager {
 			}
 		}
 		if ( ! $error ) {
-			if ( $is_withdrawn ) {
+			if ( $is_withdrawn || $is_cancelled ) {
 				$match_confirmed = 'P';
 				$home_team_score = 0;
 				$away_team_score = 0;
@@ -892,7 +904,7 @@ class Racketmanager_Ajax extends RacketManager {
 					$set_info->set_type = 'null';
 				}
 				$set_status = null;
-				if ( 'retired_player1' === $match_status || 'retired_player2' === $match_status || 'abandoned' === $match_status ) {
+				if ( 'retired_player1' === $match_status || 'retired_player2' === $match_status || 'abandoned' === $match_status || 'cancelled' === $match_status ) {
 					if ( $set_retired === $s ) {
 						$set_status = $match_status;
 					} elseif ( $s > $set_retired ) {
@@ -994,6 +1006,8 @@ class Racketmanager_Ajax extends RacketManager {
 			$awayscore               += $shared_sets;
 		} elseif ( 'withdrawn' === $match_status ) {
 			$points['withdrawn'] = 1;
+		} elseif ( 'cancelled' === $match_status ) {
+			$points['cancelled'] = 1;
 		} elseif ( 'abandoned' === $match_status ) {
 			if ( $homescore !== $num_sets_to_win && $awayscore !== $num_sets_to_win ) {
 				$shared_sets              = $match->league->num_sets - $homescore - $awayscore;

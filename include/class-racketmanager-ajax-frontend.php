@@ -1018,6 +1018,11 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					$select[]       = $option;
 				}
 				$option         = new \stdClass();
+				$option->value  = 'cancelled';
+				$option->select = 'cancelled';
+				$option->desc   = __( 'Cancelled', 'racketmanager' );
+				$select[]       = $option;
+				$option         = new \stdClass();
 				$option->value  = 'none';
 				$option->select = 'None';
 				$option->desc   = __( 'Reset', 'racketmanager' );
@@ -1184,6 +1189,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 								break;
 							case 'abandoned':
 								break;
+							case 'cancelled':
+								break;
 							default:
 								$valid       = false;
 								$err_field[] = 'match_status';
@@ -1284,7 +1291,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 													<option value="retired_player1" <?php selected( 'retired_player1', $status ); ?>><?php printf( esc_html__( 'Retired - %s player', 'racketmanager' ), esc_html( $home_name ) ); ?></option>
 													<?php /* translators: %s: Away team name */ ?>
 													<option value="retired_player2" <?php selected( 'retired_player2', $status ); ?>><?php printf( esc_html__( 'Retired - %s player', 'racketmanager' ), esc_html( $away_name ) ); ?></option>
-													<option value="abandoned" <?php selected( 'abandoned', $status ); ?>><?php esc_html_e( 'Abandonded', 'racketmanager' ); ?></option>
+													<option value="abandoned" <?php selected( 'abandoned', $status ); ?>><?php esc_html_e( 'Abandoned', 'racketmanager' ); ?></option>
 													<option value="share" <?php selected( 'share', $status ); ?>><?php esc_html_e( 'Not played', 'racketmanager' ); ?></option>
 												</select>
 											</div>
@@ -1477,6 +1484,9 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			case 'abandoned':
 				$score_message = __( 'Abandoned', 'racketmanager' );
 				break;
+			case 'cancelled':
+				$score_message = __( 'Cancelled', 'racketmanager' );
+				break;
 			case 'none':
 				$status = '';
 				break;
@@ -1488,7 +1498,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$status_message[ $loser ]  = $score_message;
 			$status_class[ $winner ]   = 'winner';
 			$status_class[ $loser ]    = 'loser';
-		} elseif ( 'share' === $status_value ) {
+		} elseif ( 'share' === $status_value || 'cancelled' === $status_value ) {
 			$status_message[ $home_team ] = $score_message;
 			$status_message[ $away_team ] = $score_message;
 			$status_class[ $home_team ]   = 'tie';

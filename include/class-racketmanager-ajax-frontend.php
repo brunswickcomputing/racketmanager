@@ -930,7 +930,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		}
 	}
 	/**
-	 * Build screen to match status to be captured
+	 * Build screen to allow match status to be captured
 	 */
 	public function match_status() {
 		$valid   = true;

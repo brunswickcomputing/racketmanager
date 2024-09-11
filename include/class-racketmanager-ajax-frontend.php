@@ -1001,6 +1001,11 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					$select[]     = $option;
 				}
 				$option         = new \stdClass();
+				$option->value  = 'cancelled';
+				$option->select = 'cancelled';
+				$option->desc   = __( 'Cancelled', 'racketmanager' );
+				$select[]       = $option;
+				$option         = new \stdClass();
 				$option->value  = 'share';
 				$option->select = 'share';
 				$option->desc   = __( 'Not played', 'racketmanager' );
@@ -1017,11 +1022,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					$option->desc   = __( 'Postponed', 'racketmanager' );
 					$select[]       = $option;
 				}
-				$option         = new \stdClass();
-				$option->value  = 'cancelled';
-				$option->select = 'cancelled';
-				$option->desc   = __( 'Cancelled', 'racketmanager' );
-				$select[]       = $option;
 				$option         = new \stdClass();
 				$option->value  = 'none';
 				$option->select = 'None';
@@ -1083,6 +1083,12 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 														<?php
 												}
 												?>
+												<li class="list__item">
+													<dl>
+														<dt class=""><?php esc_html_e( 'Cancelled', 'racketmanager' ); ?></dt>
+														<dd class=""><?php esc_html_e( 'Not played (and will not be played - no points awarded)', 'racketmanager' ); ?></dd>
+													</dl>
+												</li>
 												<li class="list__item">
 													<dl>
 														<dt class=""><?php esc_html_e( 'Not played', 'racketmanager' ); ?></dt>

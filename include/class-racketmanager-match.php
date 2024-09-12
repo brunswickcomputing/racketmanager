@@ -510,7 +510,7 @@ final class Racketmanager_Match {
 					$this->is_retired = true;
 					break;
 				case 3:
-					$this->is_shared  = true;
+					$this->is_shared = true;
 					break;
 				case 6:
 					$this->is_abandoned = true;

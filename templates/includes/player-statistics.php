@@ -13,9 +13,13 @@ $matches_won   = ! empty( $statistics->matches_won ) ? ( $statistics->matches_wo
 $matches_lost  = ! empty( $statistics->matches_lost ) ? ( $statistics->matches_lost ) : 0;
 $matches_drawn = ! empty( $statistics->matches_tie ) ? ( $statistics->matches_tie ) : 0;
 $played        = $matches_won + $matches_lost + $matches_drawn;
-$win_pct       = ceil( ( $matches_won / $played ) * 100 );
-$sets_won      = ! empty( $statistics->sets_won ) ? ( $statistics->sets_won ) : 0;
-$sets_lost     = ! empty( $statistics->sets_lost ) ? ( $statistics->sets_lost ) : 0;
+if ( $played ) {
+	$win_pct = ceil( ( $matches_won / $played ) * 100 );
+} else {
+	$win_pct = null;
+}
+$sets_won  = ! empty( $statistics->sets_won ) ? ( $statistics->sets_won ) : 0;
+$sets_lost = ! empty( $statistics->sets_lost ) ? ( $statistics->sets_lost ) : 0;
 if ( $sets_won || $sets_lost ) {
 	$win_pct_sets = ceil( ( $sets_won / ( $sets_won + $sets_lost ) ) * 100 );
 } else {

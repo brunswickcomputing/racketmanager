@@ -377,6 +377,18 @@ final class Racketmanager_Match {
 	 */
 	public $is_cancelled;
 	/**
+	 * Previous home match object
+	 *
+	 * @var object
+	 */
+	public $prev_home_match;
+	/**
+	 * Previous away match object
+	 *
+	 * @var object
+	 */
+	public $prev_away_match;
+	/**
 	 * Retrieve match instance
 	 *
 	 * @param int $match_id match id.
@@ -594,6 +606,39 @@ final class Racketmanager_Match {
 			} else {
 				$this->is_pending = false;
 			}
+			if ( 'final' === $this->final_round ) {
+				if ( ! is_numeric( $this->home_team ) ) {
+					$this->prev_home_match = $this->get_prev_round_matches( $this->home_team, $this->season, $this->league );
+				}
+				if ( ! is_numeric( $this->away_team ) ) {
+					$this->prev_away_match = $this->get_prev_round_matches( $this->away_team, $this->season, $this->league );
+				}
+			}
+		}
+	}
+	/**
+	 * Get details of previous round match
+	 *
+	 * @param string $team_ref round and team position.
+	 * @param string $season season.
+	 * @param string $league_id league.
+	 * @return array $prev_match previous match.
+	 */
+	private function get_prev_round_matches( $team_ref, $season, $league_id ) {
+		$team         = explode( '_', $team_ref );
+		$league       = get_league( $league_id );
+		$prev_matches = $league->get_matches(
+			array(
+				'final'   => $team[1],
+				'season'  => $season,
+				'orderby' => array( 'id' => 'ASC' ),
+			)
+		);
+		if ( $prev_matches ) {
+			$match_ref = $team[2] - 1;
+			return $prev_matches[ $match_ref ];
+		} else {
+			return false;
 		}
 	}
 

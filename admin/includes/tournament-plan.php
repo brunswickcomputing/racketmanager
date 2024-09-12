@@ -71,62 +71,57 @@ if ( ! is_array( $tournament->orderofplay ) || count( $tournament->orderofplay )
 		<div class="col-2 col-sm-1"></div>
 		<div class="col-10 col-sm-11">
 			<div class="row text-center">
-				<?php foreach ( $final_matches as $match ) { ?>
+				<?php
+				foreach ( $final_matches as $match ) {
+					if ( ! is_numeric( $match->home_team ) || ! is_numeric( $match->away_team ) ) {
+						$btn_type = 'warning';
+					} else {
+						$btn_type = 'success';
+					}
+					if ( is_numeric( $match->home_team ) ) {
+						$home_match_title = $match->teams['home']->title;
+					} else {
+						$home_match_title = $match->prev_home_match->match_title;
+					}
+					if ( is_numeric( $match->away_team ) ) {
+						$away_match_title = $match->teams['away']->title;
+					} else {
+						$away_match_title = $match->prev_away_match->match_title;
+					}
+					?>
 					<div class="col-3 mb-3">
-						<div class="btn
-						<?php
-						if ( ! is_numeric( $match->home_team ) || ! is_numeric( $match->away_team ) ) {
-							echo ' ' . esc_html( 'btn-warning' ) . ' ';
-						} else {
-							echo ' ' . esc_html( 'btn-success' ) . ' ';
-						}
-						?>
-						final-match" name="match-<?php echo esc_html( $match->id ); ?>" id="match-<?php echo esc_html( $match->id ); ?>" draggable="true">
+						<div class="btn btn-<?php echo esc_attr( $btn_type ); ?> final-match" name="match-<?php echo esc_html( $match->id ); ?>" id="match-<?php echo esc_html( $match->id ); ?>" draggable="true">
 							<div class="fw-bold">
 								<?php echo esc_html( $match->league->title ); ?>
 							</div>
-							<div
+							<div <?php echo is_numeric( $match->home_team ) ? null : 'class="fst-italic"'; ?>>
+								<?php echo esc_html( $home_match_title ); ?>
+							</div>
 							<?php
-							if ( ! is_numeric( $match->home_team ) ) {
-								echo ' ' . esc_html( 'class="fst-italic"' );
+							if ( is_numeric( $match->home_team ) ) {
+								?>
+								<div class="fst-italic">(<?php echo esc_html( $match->teams['home']->club->shortcode ); ?>)</div>
+								<?php
 							}
 							?>
-							>
-								<?php
-								if ( is_numeric( $match->home_team ) ) {
-									echo esc_html( $match->teams['home']->title );
-								} else {
-									echo esc_html( $match->prev_home_match->match_title );
-								}
-								?>
-							</div>
-							<?php if ( is_numeric( $match->home_team ) ) { ?>
-								<div class="fst-italic">(<?php echo esc_html( $match->teams['home']->club->shortcode ); ?>)</div>
-							<?php } ?>
 							<div>
 								<?php esc_html_e( 'vs', 'racketmanager' ); ?>
 							</div>
-							<div
+							<div <?php echo is_numeric( $match->away_team ) ? null : 'class="fst-italic"'; ?>>
+								<?php echo esc_html( $away_match_title ); ?>
+							</div>
 							<?php
-							if ( ! is_numeric( $match->away_team ) ) {
-								echo ' ' . esc_html( 'class="fst-italic"' );
+							if ( is_numeric( $match->away_team ) ) {
+								?>
+								<div class="fst-italic">(<?php echo esc_html( $match->teams['away']->club->shortcode ); ?>)</div>
+								<?php
 							}
 							?>
-							>
-								<?php
-								if ( is_numeric( $match->away_team ) ) {
-									echo esc_html( $match->teams['away']->title );
-								} else {
-									echo esc_html( $match->prev_away_match->match_title );
-								}
-								?>
-							</div>
-							<?php if ( is_numeric( $match->away_team ) ) { ?>
-								<div class="fst-italic">(<?php echo esc_html( $match->teams['away']->club->shortcode ); ?>)</div>
-							<?php } ?>
 						</div>
 					</div>
-				<?php } ?>
+					<?php
+				}
+				?>
 			</div>
 		</div>
 		<?php if ( $max_schedules ) { ?>
@@ -141,7 +136,9 @@ if ( ! is_array( $tournament->orderofplay ) || count( $tournament->orderofplay )
 					<div class="col-2 col-sm-1"><?php esc_html_e( 'Time', 'racketmanager' ); ?></div>
 					<div class="col-10 col-sm-11">
 						<div class="row">
-							<?php for ( $i = 0; $i < $tournament->num_courts; $i++ ) { ?>
+							<?php
+							for ( $i = 0; $i < $tournament->num_courts; $i++ ) {
+								?>
 								<div class="col-<?php echo esc_html( $column_width ); ?>">
 									<div class="form-group mb-2">
 										<input type="text" class="form-control" name="court[<?php echo esc_html( $i ); ?>]" value="<?php echo esc_html( $orderofplay[ $i ]['court'] ); ?>" />
@@ -150,15 +147,20 @@ if ( ! is_array( $tournament->orderofplay ) || count( $tournament->orderofplay )
 										<input type="time" class="form-control" name="starttime[<?php echo esc_html( $i ); ?>]" value="<?php echo esc_html( $orderofplay[ $i ]['starttime'] ); ?>" />
 									</div>
 								</div>
-							<?php } ?>
+								<?php
+							}
+							?>
 						</div>
 					</div>
 				</div>
 				<div class="mb-3">
 					<?php
+					$teams       = array( 'home', 'away' );
 					$start_time  = strtotime( $tournament->starttime );
 					$time_offset = 0;
 					for ( $i = 0; $i < $max_schedules; $i++ ) {
+						$scheduled_players = array();
+						$player_warnings   = array();
 						?>
 						<div class="row align-items-center text-center mb-3">
 							<div class="col-2 col-sm-1">
@@ -169,7 +171,34 @@ if ( ! is_array( $tournament->orderofplay ) || count( $tournament->orderofplay )
 									<?php
 									for ( $c = 0; $c < $tournament->num_courts; $c++ ) {
 										if ( isset( $orderofplay[ $c ]['matches'][ $i ] ) ) {
-											$match_id = ( $orderofplay[ $c ]['matches'][ $i ] );
+											$match_players = array();
+											$match_id      = ( $orderofplay[ $c ]['matches'][ $i ] );
+											$match         = get_match( $match_id );
+											if ( $match ) {
+												$match_players = match_add_players( $match_players, $match );
+												if ( ! empty( $match->prev_home_match ) ) {
+													$prev_match = get_match( $match->prev_home_match->id );
+													if ( $prev_match ) {
+														$match_players = match_add_players( $match_players, $prev_match );
+													}
+												}
+												if ( ! empty( $match->prev_away_match ) ) {
+													$prev_match = get_match( $match->prev_away_match->id );
+													if ( $prev_match ) {
+														$match_players = match_add_players( $match_players, $prev_match );
+													}
+												}
+												foreach ( $match_players as $player_id ) {
+													$player_found = array_search( $player_id, $scheduled_players, true );
+													if ( false !== $player_found ) {
+														$player = get_player( $player_id );
+														if ( $player ) {
+															$player_warnings[] = $player->fullname;
+														}
+													}
+													$scheduled_players[] = $player_id;
+												}
+											}
 										} else {
 											$match_id = null;
 										}
@@ -183,6 +212,24 @@ if ( ! is_array( $tournament->orderofplay ) || count( $tournament->orderofplay )
 									?>
 								</div>
 							</div>
+							<?php
+							if ( $player_warnings ) {
+								?>
+								<div class="mb-3 mt-3">
+									<span class="fw-bold"><?php esc_html_e( 'Potential clashes', 'racketmanager' ); ?></span>
+									<?php
+									foreach ( $player_warnings as $player_warning ) {
+										?>
+										<div class="">
+											<span><?php echo esc_html( $player_warning ); ?></span>
+										</div>
+										<?php
+									}
+									?>
+								</div>
+								<?php
+							}
+							?>
 						</div>
 						<?php
 						$start_time  = $start_time + $match_length;
@@ -198,6 +245,7 @@ if ( ! is_array( $tournament->orderofplay ) || count( $tournament->orderofplay )
 		<?php } ?>
 	</div>
 </div>
-<?php wp_register_script( 'racketmanager-draggable', plugins_url( '/js/draggable.js', __DIR__ ), array(), RACKETMANAGER_VERSION, true );
+<?php
+wp_register_script( 'racketmanager-draggable', plugins_url( '/js/draggable.js', __DIR__ ), array(), RACKETMANAGER_VERSION, true );
 wp_enqueue_script( 'racketmanager-draggable' );
 ?>

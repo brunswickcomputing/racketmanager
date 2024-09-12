@@ -667,3 +667,22 @@ add_action(
 	},
 	15
 );
+/**
+ * Undocumented function
+ *
+ * @param array  $match_players array of players.
+ * @param object $match match details.
+ * @return array
+ */
+function match_add_players( $match_players, $match ) {
+	$teams = array( 'home', 'away' );
+	foreach ( $teams as $team ) {
+		$team = $match->teams[ $team ];
+		if ( ! empty( $team->players ) ) {
+			foreach ( $team->players as $player ) {
+				$match_players[] = $player->ID;
+			}
+		}
+	}
+	return $match_players;
+}

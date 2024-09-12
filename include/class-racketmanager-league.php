@@ -1911,7 +1911,6 @@ class Racketmanager_League {
 				); // db call ok.
 				wp_cache_set( md5( $sql ), $matches, 'matches' );
 			}
-
 			$class = '';
 			foreach ( $matches as $i => $match ) {
 				$match        = get_match( $match->id );
@@ -1992,6 +1991,10 @@ class Racketmanager_League {
 				$match_args['match_day'] = $match_day;
 			}
 			$match_args['confirmed'] = true;
+			$match_args['status']    = array(
+				'status_code' => 'Cancelled',
+				'compare'     => 'not',
+			);
 
 			// initialize team standings data.
 			$team->done_matches  = 0;

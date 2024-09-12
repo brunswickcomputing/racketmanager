@@ -358,6 +358,7 @@ class Racketmanager_League {
 		'withdrawn'        => true,
 		'affiliatedClub'   => false,
 		'pending'          => false,
+		'status'           => array(),
 	);
 
 	/**
@@ -396,6 +397,7 @@ class Racketmanager_League {
 		'withdrawn'        => 'boolean',
 		'affiliatedClub'   => 'numeric',
 		'pending'          => 'boolean',
+		'status'           => 'array',
 	);
 
 	/**
@@ -1692,6 +1694,7 @@ class Racketmanager_League {
 		$withdrawn        = $this->match_query_args['withdrawn'];
 		$club             = $this->match_query_args['affiliatedClub'];
 		$pending          = $this->match_query_args['pending'];
+		$status           = $this->match_query_args['status'];
 
 		$matches = array();
 		$args    = array( intval( $this->id ) );
@@ -1838,6 +1841,22 @@ class Racketmanager_League {
 		}
 		if ( $pending ) {
 			$sql .= ' AND m.winner_id = 0';
+		}
+		if ( $status ) {
+			$status_code = isset( $status['status_code'] ) ? $status['status_code'] : null;
+			$compare     = isset( $status['compare'] ) ? $status['compare'] : null;
+			if ( $status_code ) {
+				$status_value = Racketmanager_Util::get_match_status_code( $status_code );
+				if ( $status_value ) {
+					if ( 'not' === $compare ) {
+						$sql   .= ' AND m.`status` != %d';
+						$args[] = $status_value;
+					} elseif ( '=' === $compare ) {
+						$sql   .= ' AND m.`status` = %d';
+						$args[] = $status_value;
+					}
+				}
+			}
 		}
 		// get number of matches.
 		if ( $count ) {

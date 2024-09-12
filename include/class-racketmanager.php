@@ -2661,48 +2661,11 @@ class RacketManager {
 			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			$sql
 		);
-		$class = '';
 		foreach ( $matches as $i => $match ) {
-			$class = ( 'alternate' === $class ) ? '' : 'alternate';
-			$match = get_match( $match );
-			if ( 'final' === $match->final_round ) {
-				if ( ! is_numeric( $match->home_team ) ) {
-					$match->prev_home_match = $this->get_prev_round_matches( $match->home_team, $match->season, $match->league );
-				}
-				if ( ! is_numeric( $match->away_team ) ) {
-					$match->prev_away_match = $this->get_prev_round_matches( $match->away_team, $match->season, $match->league );
-				}
-			}
-			$match->class  = $class;
+			$match         = get_match( $match );
 			$matches[ $i ] = $match;
 		}
 		return $matches;
-	}
-
-	/**
-	 * Get details of previous round match
-	 *
-	 * @param string $team_ref round and team position.
-	 * @param string $season season.
-	 * @param string $league_id league.
-	 * @return array $prev_match previous match.
-	 */
-	public function get_prev_round_matches( $team_ref, $season, $league_id ) {
-		$team         = explode( '_', $team_ref );
-		$league       = get_league( $league_id );
-		$prev_matches = $league->get_matches(
-			array(
-				'final'   => $team[1],
-				'season'  => $season,
-				'orderby' => array( 'id' => 'ASC' ),
-			)
-		);
-		if ( $prev_matches ) {
-			$match_ref = $team[2] - 1;
-			return $prev_matches[ $match_ref ];
-		} else {
-			return false;
-		}
 	}
 
 	/**

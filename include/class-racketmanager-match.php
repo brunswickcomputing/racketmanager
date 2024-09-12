@@ -371,6 +371,12 @@ final class Racketmanager_Match {
 	 */
 	public $is_pending;
 	/**
+	 * Cancelled status variable
+	 *
+	 * @var boolean
+	 */
+	public $is_cancelled;
+	/**
 	 * Retrieve match instance
 	 *
 	 * @param int $match_id match id.
@@ -491,30 +497,26 @@ final class Racketmanager_Match {
 				}
 				$this->set_score = $set_score;
 			}
+			$this->is_walkover  = false;
+			$this->is_shared    = false;
+			$this->is_retired   = false;
+			$this->is_abandoned = false;
+			$this->is_cancelled = false;
 			switch ( $this->status ) {
 				case 1:
-					$this->is_walkover  = true;
-					$this->is_shared    = false;
-					$this->is_retired   = false;
-					$this->is_abandoned = false;
+					$this->is_walkover = true;
 					break;
 				case 2:
-					$this->is_retired   = true;
-					$this->is_walkover  = false;
-					$this->is_shared    = false;
-					$this->is_abandoned = false;
+					$this->is_retired = true;
 					break;
 				case 3:
-					$this->is_shared    = true;
-					$this->is_walkover  = false;
-					$this->is_retired   = false;
-					$this->is_abandoned = false;
+					$this->is_shared  = true;
 					break;
 				case 6:
 					$this->is_abandoned = true;
-					$this->is_shared    = false;
-					$this->is_walkover  = false;
-					$this->is_retired   = false;
+					break;
+				case 8:
+					$this->is_cancelled = true;
 					break;
 				default:
 					break;

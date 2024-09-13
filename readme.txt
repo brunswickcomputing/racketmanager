@@ -47,6 +47,12 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.18.0 =
+* BUGFIX: calculate win pct only when played matches
+* UPDATE: notify admin when user added to club
+* UPDATE: allow cancelled status for matches
+* UPDATE: check for player clash when scheduling tournament finals
+
 = 8.17.0 =
 * BUGFIX: fix entry page display 
 * BUGFIX: handle event season not set

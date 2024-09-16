@@ -27,7 +27,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		add_shortcode( 'match', array( &$this, 'show_match' ) );
 		add_shortcode( 'teams', array( &$this, 'show_teams' ) );
 		add_shortcode( 'team', array( &$this, 'show_team' ) );
-		add_shortcode( 'players', array( &$this, 'show_players' ) );
+		add_shortcode( 'league-players', array( &$this, 'show_league_players' ) );
 		add_shortcode( 'event-clubs', array( &$this, 'show_event_clubs' ) );
 		add_shortcode( 'event-teams', array( &$this, 'show_event_teams' ) );
 		add_shortcode( 'event-players', array( &$this, 'show_event_players' ) );
@@ -1017,14 +1017,14 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		);
 	}
 	/**
-	 * Function to display Players
+	 * Function to display league Players
 	 *
 	 *  [teams league_id=ID template=X season=x]
 	 *
 	 * @param array $atts shortcode attributes.
 	 * @return the content
 	 */
-	public function show_players( $atts ) {
+	public function show_league_players( $atts ) {
 		global $league, $wp;
 		$args      = shortcode_atts(
 			array(
@@ -1065,7 +1065,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				)
 			);
 		}
-		if ( empty( $template ) && $this->check_template( 'players-' . $league->sport ) ) {
+		if ( empty( $template ) && $this->check_template( 'players-' . $league->sport, 'league' ) ) {
 			$filename = 'players-' . $league->sport;
 		} else {
 			$filename = ( ! empty( $template ) ) ? 'players-' . $template : 'players';
@@ -1075,7 +1075,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			$filename,
 			array(
 				'league' => $league,
-			)
+			),
+			'league'
 		);
 	}
 	/**

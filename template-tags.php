@@ -684,7 +684,7 @@ function racketmanager_players( $league_id, $args = array() ) {
 	$args              = array_merge( $defaults, $args );
 	$args['league_id'] = intval( $league_id );
 
-	$shortcode = '[players';
+	$shortcode = '[league-players';
 	foreach ( $args as $key => $value ) {
 		$shortcode .= ' ' . $key . "='" . $value . "'";
 	}

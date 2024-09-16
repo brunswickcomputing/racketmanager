@@ -530,7 +530,7 @@ final class Racketmanager_Club {
 						$player_change                 = true;
 						$updated_player->year_of_birth = $new_player->year_of_birth;
 					}
-				} elseif ( ! empty( $new_player->year_of_birth ) && $player->year_of_birth !== $new_player->year_of_birth ) {
+				} elseif ( ! empty( $new_player->year_of_birth ) && intval( $player->year_of_birth ) !== $new_player->year_of_birth ) {
 					$valid = false;
 					$racketmanager->set_message( __( 'Year of birth is different from existing', 'racketmanager' ), true );
 				}

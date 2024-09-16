@@ -704,22 +704,6 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 					$final_match->time     = $match->hour . ':' . $match->minutes;
 					$final_match->league   = $match->league->title;
 					$final_match->location = $match->location;
-					if ( is_numeric( $match->home_team ) ) {
-						$final_match->team1      = $match->teams['home']->title;
-						$final_match->team1_club = $match->teams['home']->club->shortcode;
-					} else {
-						$prev_match         = $racketmanager->get_prev_round_matches( $match->home_team, $match->season, $match->league );
-						$final_match->team1 = $prev_match->match_title;
-					}
-					if ( is_numeric( $match->away_team ) ) {
-						$final_match->team2      = $match->teams['away']->title;
-						$final_match->team2_club = $match->teams['away']->club->shortcode;
-					} else {
-						$prev_match         = $racketmanager->get_prev_round_matches( $match->away_team, $match->season, $match->league );
-						$final_match->team2 = $prev_match->match_title;
-					}
-					$final_match->team1_id = $match->home_team;
-					$final_match->team2_id = $match->away_team;
 					$final_match->winner   = $match->winner_id;
 
 					$time = $final_match->time;

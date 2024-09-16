@@ -1032,6 +1032,9 @@ class RacketManager_Shortcodes {
 				case 'account':
 					$template_dir = 'templates/account';
 					break;
+				case 'league':
+					$template_dir = 'templates/league';
+					break;
 				default:
 					$template_dir = 'templates';
 					break;
@@ -1049,8 +1052,8 @@ class RacketManager_Shortcodes {
 		} elseif ( file_exists( RACKETMANAGER_PATH . $template_dir . '/' . $template . '.php' ) ) {
 			require RACKETMANAGER_PATH . $template_dir . '/' . $template . '.php';
 		} else {
-			/* translators: %s: template */
-			echo esc_html( sprintf( __( 'Could not load template %s.php', 'racketmanager' ), $template ) );
+			/* translators: %1$s: template %2$s: directory */
+			echo esc_html( sprintf( __( 'Could not load template %1$s.php from %2$s directory', 'racketmanager' ), $template, $template_dir ) );
 		}
 		$output = ob_get_contents();
 		ob_end_clean();
@@ -1062,10 +1065,15 @@ class RacketManager_Shortcodes {
 	 * Check if template exists
 	 *
 	 * @param string $template template name.
+	 * @param string $directory optional directory name.
 	 * @return boolean
 	 */
-	public function check_template( $template ) {
-		return file_exists( get_stylesheet_directory() . "/racketmanager/$template.php" ) || file_exists( get_template_directory() . "/racketmanager/$template.php" ) || file_exists( RACKETMANAGER_PATH . 'templates/' . $template . '.php' );
+	public function check_template( $template, $directory = null ) {
+		$template_dir = 'templates/';
+		if ( $directory ) {
+			$template_dir .= $directory . '/';
+		}
+		return file_exists( get_stylesheet_directory() . "/racketmanager/$template.php" ) || file_exists( get_template_directory() . "/racketmanager/$template.php" ) || file_exists( RACKETMANAGER_PATH . $template_dir . $template . '.php' );
 	}
 
 	/**

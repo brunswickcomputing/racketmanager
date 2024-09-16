@@ -975,7 +975,7 @@ class RacketManager_Shortcodes {
 		}
 		$messages       = array();
 		$template       = $args['template'];
-		$user           = get_player( get_current_user_id() );
+		$user           = get_user( get_current_user_id() );
 		$messages_total = $user->get_messages( array( 'count' => true ) );
 		if ( $messages_total ) {
 			$messages['total']  = $messages_total;

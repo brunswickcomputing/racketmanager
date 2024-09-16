@@ -518,6 +518,30 @@ function get_player( $player = null, $search_term = 'id' ) {
 	return $_player;
 }
 /**
+ * Get User object
+ *
+ * @param int    $user User ID or user object. Defaults to global $user.
+ * @param string $search_term search type term (defaults to id).
+ * @return object user|null
+ */
+function get_user( $user = null, $search_term = 'id' ) {
+	if ( empty( $user ) && isset( $GLOBALS['user'] ) ) {
+		$user = $GLOBALS['user'];
+	}
+	if ( $user instanceof Racketmanager_User ) {
+		$_user = $user;
+	} elseif ( is_object( $user ) ) {
+		$_user = new Racketmanager_User( $user );
+	} else {
+		$_user = Racketmanager_User::get_instance( $user, $search_term );
+	}
+	if ( ! $_user ) {
+		return null;
+	}
+	return $_user;
+}
+
+/**
  * Get Racketmanager_Charges object
  *
  * @param int|null $charges Racketmanager_Charges ID or charges object. Defaults to global $charges.

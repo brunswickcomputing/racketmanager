@@ -47,6 +47,10 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.18.1 =
+* BUGFIX: unable to register a player with a new club with an existing date of birth
+* BUGFIX: remove redundant order of play code
+
 = 8.18.0 =
 * BUGFIX: calculate win pct only when played matches
 * UPDATE: notify admin when user added to club

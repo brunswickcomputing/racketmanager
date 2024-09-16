@@ -541,7 +541,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				'teams'  => $teams,
 				'mode'   => $mode,
 				'season' => $season,
-			)
+			),
+			'league'
 		);
 	}
 	/**
@@ -1011,7 +1012,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			array(
 				'league' => $league,
 				'team'   => $team,
-			)
+			),
+			'league'
 		);
 	}
 	/**

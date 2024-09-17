@@ -318,4 +318,67 @@ final class Racketmanager_User {
 			array( '%s' ),
 		);
 	}
+	/**
+	 * Get favourites function
+	 *
+	 * @param array $favourites_type optional favourites search criteria.
+	 * @return array
+	 */
+	public function get_favourites( $favourites_type = null ) {
+		$favourites_types = array( 'competition', 'league', 'club', 'team', 'player' );
+		if ( $favourites_type ) {
+			if ( false === array_search( $favourites_type, $favourites_types, true ) ) {
+				return null;
+			} else {
+				$favourites = $this->get_favourites_for_type( $favourites_type );
+			}
+		} else {
+			foreach ( $favourites_types as $f => $favourites_type ) {
+				$favourites[ $f ]['name'] = $favourites_type;
+				$favourites_type          = $this->get_favourites_for_type( $favourites_type );
+				array_multisort( $favourites_type );
+				$favourites[ $f ]['favourites'] = $favourites_type;
+			}
+		}
+		return $favourites;
+	}
+	/**
+	 * Get favourites for a type function
+	 *
+	 * @param string $favourites_type type of favourite.
+	 * @return array
+	 */
+	private function get_favourites_for_type( $favourites_type ) {
+		$userid          = $this->ID;
+		$meta_key        = 'favourite-' . $favourites_type;
+		$meta_favourites = get_user_meta( $userid, $meta_key );
+		$favourites      = array();
+		foreach ( $meta_favourites as $i => $favourite ) {
+			$favourite_item = new \stdClass();
+			if ( 'league' === $favourites_type ) {
+				$league                 = get_league( $favourite );
+				$favourite_item->name   = $league->title;
+				$favourite_item->detail = $league;
+			} elseif ( 'club' === $favourites_type ) {
+				$club                   = get_club( $favourite );
+				$favourite_item->name   = $club->name;
+				$favourite_item->detail = $club;
+			} elseif ( 'competition' === $favourites_type ) {
+				$event                  = get_event( $favourite );
+				$favourite_item->name   = $event->name;
+				$favourite_item->detail = $event;
+			} elseif ( 'player' === $favourites_type ) {
+				$player                 = get_player( $favourite );
+				$favourite_item->name   = $player->display_name;
+				$favourite_item->detail = $player;
+			} elseif ( 'team' === $favourites_type ) {
+				$team                   = get_team( $favourite );
+				$favourite_item->name   = $team->title;
+				$favourite_item->detail = $team;
+			}
+			$favourite_item->id = $favourite;
+			$favourites[ $i ]   = $favourite_item;
+		}
+		return $favourites;
+	}
 }

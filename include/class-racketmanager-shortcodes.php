@@ -885,47 +885,11 @@ class RacketManager_Shortcodes {
 		if ( ! is_user_logged_in() ) {
 			return esc_html__( 'You must be logged in to view favourites', 'racketmanager' );
 		}
-		$template         = $args['template'];
-		$userid           = get_current_user_id();
-		$favourites_types = array( 'competition', 'league', 'club', 'team', 'players' );
-		foreach ( $favourites_types as $f => $favourites_type ) {
-			$favourite_types[ $f ]['name'] = $favourites_type;
-			$meta_key                      = 'favourite-' . $favourites_type;
-			$meta_favourites               = get_user_meta( $userid, $meta_key );
-			$favourites                    = array();
-			foreach ( $meta_favourites as $i => $favourite ) {
-				$favourite_item = new \stdClass();
-				if ( 'league' === $favourites_type ) {
-					$league                 = get_league( $favourite );
-					$favourite_item->name   = $league->title;
-					$favourite_item->detail = $league;
-				} elseif ( 'club' === $favourites_type ) {
-					$club                   = get_club( $favourite );
-					$favourite_item->name   = $club->name;
-					$favourite_item->detail = $club;
-				} elseif ( 'competition' === $favourites_type ) {
-					$event                  = get_event( $favourite );
-					$favourite_item->name   = $event->name;
-					$favourite_item->detail = $event;
-				} elseif ( 'player' === $favourites_type ) {
-					$player                 = get_player( $favourite );
-					$favourite_item->name   = $player->display_name;
-					$favourite_item->detail = $player;
-				} elseif ( 'team' === $favourites_type ) {
-					$team                   = get_team( $favourite );
-					$favourite_item->name   = $team->title;
-					$favourite_item->detail = $team;
-				}
-				$favourite_item->id = $favourite;
-				$favourites[ $i ]   = $favourite_item;
-			}
-			array_multisort( $favourites );
-			$favourite_types[ $f ]['favourites'] = $favourites;
-		}
-
-		$filename = ( ! empty( $template ) ) ? 'form-favourites-' . $template : 'form-favourites';
-
-		return $this->load_template( $filename, array( 'favourite_types' => $favourite_types ), 'form' );
+		$template   = $args['template'];
+		$user       = get_user( get_current_user_id() );
+		$favourites = $user->get_favourites();
+		$filename   = ( ! empty( $template ) ) ? 'form-favourites-' . $template : 'form-favourites';
+		return $this->load_template( $filename, array( 'favourite_types' => $favourites ), 'form' );
 	}
 
 	/**

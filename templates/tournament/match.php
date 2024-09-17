@@ -146,7 +146,19 @@ if ( ! empty( $match->winner_id ) ) {
 								if ( empty( $team->player ) ) {
 									?>
 									<div class="match__row-title-value">
-										<?php echo esc_html( $team->title ); ?>
+										<?php
+										if ( 'final' === $match->final_round ) {
+											$prev_match = 'prev_' . $opponent . '_match';
+											if ( ! empty( $match->$prev_match->match_title ) ) {
+												$match_title = $match->$prev_match->match_title;
+											} else {
+												$match_title = $team->title;
+											}
+										} else {
+											$match_title = $team->title;
+										}
+										echo esc_html( $match_title );
+										?>
 									</div>
 									<?php
 								} else {

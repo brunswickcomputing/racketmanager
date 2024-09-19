@@ -105,13 +105,18 @@ class RacketManager {
 	 */
 	public function set_page_title( $title ) {
 		global $wp;
-		$slug      = get_post_field( 'post_name' );
-		$site_name = $this->site_name;
-		$event     = isset( $wp->query_vars['event'] ) ? ucwords( un_seo_url( $wp->query_vars['event'] ) ) : '';
-		$season    = isset( $wp->query_vars['season'] ) ? ucwords( un_seo_url( $wp->query_vars['season'] ) ) : '';
-		$club      = isset( $wp->query_vars['club_name'] ) ? ucwords( un_seo_url( $wp->query_vars['club_name'] ) ) : '';
+		$slug        = get_post_field( 'post_name' );
+		$site_name   = $this->site_name;
+		$event       = isset( $wp->query_vars['event'] ) ? ucwords( un_seo_url( $wp->query_vars['event'] ) ) : '';
+		$season      = isset( $wp->query_vars['season'] ) ? ucwords( un_seo_url( $wp->query_vars['season'] ) ) : '';
+		$club        = isset( $wp->query_vars['club_name'] ) ? ucwords( un_seo_url( $wp->query_vars['club_name'] ) ) : '';
+		$player      = isset( $wp->query_vars['player_id'] ) ? ucwords( un_seo_url( $wp->query_vars['player_id'] ) ) : '';
+		$competition = isset( $wp->query_vars['competition_name'] ) ? ucwords( un_seo_url( $wp->query_vars['competition_name'] ) ) : '';
+		$tournament  = isset( $wp->query_vars['tournament'] ) ? ucwords( un_seo_url( $wp->query_vars['tournament'] ) ) : '';
+		if ( 'player' === $slug && $player ) {
+			$title = $player . ' - ' . $site_name;
+		}
 		if ( 'event' === $slug ) {
-			$player = isset( $wp->query_vars['player_id'] ) ? ucwords( un_seo_url( $wp->query_vars['player_id'] ) ) : '';
 			if ( $season ) {
 				$event .= ' ' . $season;
 			}
@@ -145,8 +150,7 @@ class RacketManager {
 			$title .= ' - ' . $site_name;
 		}
 		if ( 'latest-results' === $slug ) {
-			$competition = isset( $wp->query_vars['competition_name'] ) ? ucwords( un_seo_url( $wp->query_vars['competition_name'] ) ) : '';
-			$type        = isset( $wp->query_vars['competition_type'] ) ? ucwords( un_seo_url( $wp->query_vars['competition_type'] ) ) : '';
+			$type = isset( $wp->query_vars['competition_type'] ) ? ucwords( un_seo_url( $wp->query_vars['competition_type'] ) ) : '';
 			if ( $type ) {
 				/* translators: %s: competition type */
 				$title = sprintf( __( 'Latest %s Results', 'racketmanager' ), $type );
@@ -178,10 +182,9 @@ class RacketManager {
 			}
 		}
 		if ( 'match' === $slug ) {
-			$tournament = isset( $wp->query_vars['tournament'] ) ? ucwords( un_seo_url( $wp->query_vars['tournament'] ) ) : '';
-			$league     = isset( $wp->query_vars['league_name'] ) ? ucwords( un_seo_url( $wp->query_vars['league_name'] ) ) : '';
-			$team_home  = isset( $wp->query_vars['teamHome'] ) ? ucwords( un_seo_url( $wp->query_vars['teamHome'] ) ) : '';
-			$team_away  = isset( $wp->query_vars['teamAway'] ) ? ucwords( un_seo_url( $wp->query_vars['teamAway'] ) ) : '';
+			$league    = isset( $wp->query_vars['league_name'] ) ? ucwords( un_seo_url( $wp->query_vars['league_name'] ) ) : '';
+			$team_home = isset( $wp->query_vars['teamHome'] ) ? ucwords( un_seo_url( $wp->query_vars['teamHome'] ) ) : '';
+			$team_away = isset( $wp->query_vars['teamAway'] ) ? ucwords( un_seo_url( $wp->query_vars['teamAway'] ) ) : '';
 			if ( $season ) {
 				$league .= ' - ' . $season;
 			}
@@ -199,8 +202,7 @@ class RacketManager {
 			$title .= $site_name;
 		}
 		if ( 'league-entry' === $slug || 'cup-entry' === $slug ) {
-			$competition = isset( $wp->query_vars['competition_name'] ) ? ucwords( un_seo_url( $wp->query_vars['competition_name'] ) ) : '';
-			$title       = $competition;
+			$title = $competition;
 			if ( $season ) {
 				$title .= ' - ' . $season;
 			}
@@ -211,8 +213,6 @@ class RacketManager {
 			$title .= ' - ' . $site_name;
 		}
 		if ( 'tournament-entry' === $slug ) {
-			$tournament  = isset( $wp->query_vars['tournament'] ) ? ucwords( un_seo_url( $wp->query_vars['tournament'] ) ) : '';
-			$competition = isset( $wp->query_vars['competition_name'] ) ? ucwords( un_seo_url( $wp->query_vars['competition_name'] ) ) : '';
 			if ( $tournament ) {
 				$title = $tournament;
 			} else {
@@ -953,10 +953,28 @@ class RacketManager {
 			'index.php?pagename=competition%2Fdaily-matches&competition_type=cup',
 			'top'
 		);
+		// player + btm.
+		add_rewrite_rule(
+			'player/(.+?)/([0-9]+)/?$',
+			'index.php?pagename=players%2Fplayer&player_id=$matches[1]&btm=$matches[2]',
+			'top'
+		);
+		// player.
+		add_rewrite_rule(
+			'player/(.+?)/?$',
+			'index.php?pagename=players%2Fplayer&player_id=$matches[1]',
+			'top'
+		);
+		// players.
+		add_rewrite_rule(
+			'players/?$',
+			'index.php?pagename=players',
+			'top'
+		);
 		$this->rewrite_competition();
 		$this->rewrite_league();
 		$this->rewrite_cups();
-		// player.
+		// club player.
 		add_rewrite_rule(
 			'clubs/(.+?)/(.+?)/?$',
 			'index.php?pagename=club%2Fplayer&club_name=$matches[1]&player_id=$matches[2]',

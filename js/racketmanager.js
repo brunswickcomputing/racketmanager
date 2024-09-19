@@ -1700,6 +1700,60 @@ Racketmanager.resetPassword = function (link) {
 		}
 	});
 };
+Racketmanager.playerSearch = function (event, link) {
+	event.preventDefault();
+	let notifyBlock = "#searchResultsContainer";
+	jQuery(notifyBlock).hide();
+	let resultTitle = "#searchTitle";
+	let notifyField = "#searchResults";
+	let errorField = '#search-alert';
+	let errorResponse = '#search-alert-response';
+	jQuery(errorResponse).hide();
+	jQuery(notifyField).empty();
+	let url = new URL(window.location.href);
+	let newURL = url.protocol + '//' + url.hostname + url.pathname;
+	let search_string = jQuery('#search_string').val();
+	if (search_string !== "") {
+		var newUri = newURL + '?q=' + search_string;
+		if (history.replaceState) {
+			history.replaceState('', document.title, newUri.toString());
+		}
+	} else {
+		return;
+	}
+	let formId = '#'.concat(event.currentTarget.id);
+	let form = jQuery(formId).serialize();
+	form += "&action=racketmanager_search_players";
+	let splash = '#splash';
+	jQuery(splash).removeClass("d-none");
+	jQuery(splash).css('opacity', 1);
+	jQuery(splash).show();
+
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: form,
+		success: function (response) {
+			jQuery(resultTitle).html(response.data[0]);
+			jQuery(notifyField).html(response.data[1]);
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				let message = response.responseJSON.data;
+				jQuery(errorField).html(message);
+			} else {
+				jQuery(errorField).text(response.statusText);
+			}
+			jQuery(errorResponse).show();
+		},
+		complete: function () {
+			jQuery("#splash").css('opacity', 0);
+			jQuery("#splash").hide();
+			jQuery(notifyBlock).show();
+		}
+	});
+};
+
 function activaTab(tab) {
 	jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');
 	jQuery('.nav-pills button[data-bs-target="#' + tab + '"]').tab('show');

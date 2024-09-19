@@ -2239,7 +2239,7 @@ ol.match-group {
 	content: "•";
 	margin: 0 0.14em
 }
-
+ul.media__subheading-info,
 ul.match__header-title,
 ul.match__footer-list,
 ul.match-points,
@@ -3721,7 +3721,9 @@ module--dark .mail-media,
 	justify-content: center;
 	min-width: 0;
 }
-
+.titles .media__content {
+	flex-basis: 10rem;
+}
 @media (min-width: 768px) {
 	.media__content {
 		padding-right: 0.75rem;
@@ -5616,4 +5618,54 @@ a.stats-link {
 	.player-stats {
 		font-size: 0.8rem;
 	}
+}
+.search-box {
+	padding: 0.5rem 0;
+}
+input.form-control.search-box__field {
+	border-bottom-right-radius: 6px;
+	border-top-right-radius: 6px;
+}
+.media__subheading-info {
+	flex-grow: 1;
+	font-size: 0.75rem;
+	list-style-type: none
+}
+
+@media (min-width: 768px) {
+	.media__subheading-info {
+		font-size: 0.8rem;
+	}
+}
+@media (min-width: 768px) {
+
+	.media__subheading-info .media__subheading-info-item,
+	.media__subheading-info .media__subheading-info-item span {
+		display: inline;
+	}
+}
+.media__subheading-info .media__subheading-info-item:not(:last-child):after {
+	content: "•";
+	margin: 0 0.14em
+}
+svg.media__img-element--icon.winner {
+	fill: gold;
+}
+svg.media__img-element--icon.runner-up {
+	fill: silver;
+}
+svg.media__img-element--icon.winner, svg.media__img-element--icon.runner-up {
+	font-size: 2rem;
+}
+.module-divider {
+	margin: 0.5rem 0;
+}
+.module-container.titles .module-container {
+	padding-top: 0rem;
+	padding-bottom: 0;
+}
+.media__subheading-info-item a,
+.media__subheading-info-item a:hover,
+.media__subheading-info-item a:focus {
+	color: #FFF;
 }

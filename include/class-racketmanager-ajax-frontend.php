@@ -65,6 +65,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_racketmanager_switch_home_away', array( &$this, 'switch_home_away' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_switch_home_away', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_reset_password', array( &$this, 'reset_password' ) );
+		add_action( 'wp_ajax_racketmanager_search_players', array( &$this, 'search_players' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_search_players', array( &$this, 'search_players' ) );
 	}
 	/**
 	 * Add item as favourite
@@ -2065,6 +2067,51 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			wp_send_json_success( $return );
 		} else {
 			$msg = __( 'Unable to request password reset', 'racketmanager' );
+			array_push( $return, $msg, $err_msg, $err_field );
+			wp_send_json_error( $return, '500' );
+		}
+	}
+	/**
+	 * Search players function
+	 *
+	 * @return void
+	 */
+	public function search_players() {
+		global $racketmanager, $racketmanager_shortcodes;
+		$return       = array();
+		$err_msg      = array();
+		$err_field    = array();
+		$valid        = true;
+		$msg          = null;
+		$result_count = 0;
+		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'search_players' ) ) {
+			$valid       = false;
+			$err_field[] = '';
+			$err_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$search_string = isset( $_POST['search_string'] ) ? sanitize_text_field( wp_unslash( $_POST['search_string'] ) ) : null;
+			if ( $search_string ) {
+				$players = $racketmanager->get_all_players( array( 'name' => $search_string ) );
+				if ( $players ) {
+					$result_count   = count( $players );
+					$search_results = $racketmanager_shortcodes->load_template( 'players-list', array( 'players' => $players ) );
+				} else {
+					$search_results = __( 'No players found', 'racketmanager' );
+				}
+				/* translators: %d: result count */
+				$result_title = sprintf( __( '%d results', 'racketmanager' ), $result_count );
+			} else {
+				$valid       = false;
+				$err_field[] = 'search_string';
+				$err_msg[]   = __( 'Search string not supplied', 'racketmanager' );
+			}
+		}
+		if ( $valid ) {
+			array_push( $return, $result_title, $search_results );
+			wp_send_json_success( $return );
+		} else {
+			$msg = __( 'Unable to search for players', 'racketmanager' );
 			array_push( $return, $msg, $err_msg, $err_field );
 			wp_send_json_error( $return, '500' );
 		}

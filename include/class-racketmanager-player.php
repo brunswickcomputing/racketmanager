@@ -170,6 +170,11 @@ final class Racketmanager_Player {
 	 */
 	public $clubs = array();
 	/**
+	 * Titles.
+	 *
+	 * @var array
+	 */
+	public $titles = array();
 	/**
 	 * Url link.
 	 *
@@ -777,13 +782,12 @@ final class Racketmanager_Player {
 		$count        = $args['count'];
 		$type         = $args['type'];
 		$season       = $args['season'];
-		$player       = '%' . $this->ID . '%';
 		$search_terms = array();
 		if ( $type ) {
 			$search_terms[] = $wpdb->prepare( 'c.`type` = %s', $type );
 		}
 		if ( $season ) {
-			$search_terms[] = $wpdb->prepare( 't2.`season` = %s', $season );
+			$search_terms[] = $wpdb->prepare( 't.`season` = %s', $season );
 		}
 		$search = '';
 		if ( ! empty( $search_terms ) ) {
@@ -821,5 +825,244 @@ final class Racketmanager_Player {
 			++$i;
 		}
 		return $tournaments;
+	}
+	/**
+	 * Get titles for player function
+	 *
+	 * @param string $args search parameters.
+	 * @return array
+	 */
+	public function get_titles( $args = array() ) {
+		global $wpdb;
+		$defaults     = array(
+			'count'  => false,
+			'season' => false,
+		);
+		$args         = array_merge( $defaults, (array) $args );
+		$count        = $args['count'];
+		$season       = $args['season'];
+		$search_terms = array();
+		if ( $season ) {
+			$search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
+		}
+		$search = '';
+		if ( ! empty( $search_terms ) ) {
+			$search = implode( ' AND ', $search_terms );
+		}
+		$orderby_string = 'm.`season` DESC, t.`name` ASC';
+		$sql            = "SELECT m.`season`, t.`name` as `tournament`, e.`name` as `draw`, l.`title` as `title`, tp.`team_id`, m.`winner_id`, m.`loser_id` FROM {$wpdb->racketmanager_team_players} tp, {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l, {$wpdb->racketmanager_events} e, {$wpdb->racketmanager_competitions} c, {$wpdb->racketmanager_tournaments} t WHERE tp.`player_id` = $this->ID AND (tp.`team_id` = m.`winner_id` OR tp.`team_id` = m.`loser_id`) AND m.`final` = 'final' AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.competition_id = c.`id` AND t.`competition_id` = c.`id` AND t.`season` = m.`season`";
+		if ( '' !== $search ) {
+			$sql .= " AND $search";
+		}
+		if ( ! empty( $orderby_string ) ) {
+			$sql .= " ORDER BY $orderby_string";
+		}
+
+		$matches = wp_cache_get( md5( $sql ), 'player_finals' );
+		if ( ! $matches ) {
+			$matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			);
+			wp_cache_set( md5( $sql ), $matches, 'player_finals' );
+		}
+		$seasons = array();
+		foreach ( $matches as $match ) {
+			$season     = $match->season;
+			$tournament = $match->tournament;
+			if ( false === array_key_exists( $season, $seasons ) ) {
+				$seasons[ $season ] = array();
+			}
+			if ( false === array_key_exists( $tournament, $seasons[ $season ] ) ) {
+				$seasons[ $season ][ $tournament ] = array();
+			}
+			$seasons[ $season ][ $tournament ][] = $match;
+		}
+		$this->titles = $seasons;
+		return $this->titles;
+	}
+	/**
+	 * Get player career statistics function
+	 *
+	 * @return array of statistics
+	 */
+	public function get_career_stats() {
+		$types          = array( 'S', 'D', 'X' );
+		$stat_types     = array( 'win', 'loss', 'tie' );
+		$team_matches   = $this->get_stats_teams();
+		$player_matches = $this->get_stats_players();
+		$matches        = array_merge( $team_matches, $player_matches );
+		$seasons        = array();
+		foreach ( $matches as $match ) {
+			if ( 'teams' === $match->stat_type ) {
+				if ( $match->winner_id ) {
+					if ( 'home' === $match->player_team ) {
+						if ( $match->winner_id === $match->home_team ) {
+							$result = 'win';
+						} elseif ( $match->winner_id === $match->away_team ) {
+							$result = 'loss';
+						} else {
+							$result = 'tie';
+						}
+					} elseif ( 'away' === $match->player_team ) {
+						if ( $match->winner_id === $match->away_team ) {
+							$result = 'win';
+						} elseif ( $match->winner_id === $match->home_team ) {
+							$result = 'loss';
+						} else {
+							$result = 'tie';
+						}
+					}
+				}
+			} elseif ( 'players' === $match->stat_type ) {
+				if ( $match->winner_id ) {
+					if ( $match->winner_id === $match->team_id ) {
+						$result = 'win';
+					} elseif ( $match->loser_id === $match->team_id ) {
+						$result = 'loss';
+					} else {
+						$result = 'tie';
+					}
+					if ( 'XD' === $match->type || 'LD' === $match->type ) {
+						$type = 'X';
+					} else {
+						$type = substr( $match->type, 1, 1 );
+					}
+				}
+			}
+			if ( 'XD' === $match->type || 'LD' === $match->type ) {
+				$type = 'X';
+			} else {
+				$type = substr( $match->type, 1, 1 );
+			}
+			$season = $match->season;
+			if ( false === array_key_exists( $season, $seasons ) ) {
+				$seasons[ $season ] = array();
+				foreach ( $types as $match_type ) {
+					$seasons [ $season ][ $match_type ] = array();
+					foreach ( $stat_types as $stat_type ) {
+						$seasons [ $season ][ $match_type ][ $stat_type ] = 0;
+					}
+				}
+			}
+			if ( false === array_key_exists( $type, $seasons[ $season ] ) ) {
+				$seasons[ $season ][ $type ] = array();
+			}
+			if ( false === array_key_exists( $result, $seasons[ $season ][ $type ] ) ) {
+				$seasons[ $season ][ $type ][ $result ] = 0;
+			}
+			++$seasons[ $season ][ $type ][ $result ];
+		}
+		krsort( $seasons );
+		$totals = array();
+		foreach ( $stat_types as $stat_type ) {
+			$totals['total'][ $stat_type ] = 0;
+		}
+		foreach ( $seasons as $season => $types ) {
+			unset( $seasons[ $season ] );
+			$seasons[ $season ]['breakdown'] = $types;
+			$seasons[ $season ]['total']     = array();
+			foreach ( $stat_types as $stat_type ) {
+				$seasons[ $season ]['total'][ $stat_type ] = 0;
+			}
+			foreach ( $types as $type => $results ) {
+				foreach ( $results as $result => $count ) {
+					if ( ! isset( $totals['breakdown'][ $type ][ $result ] ) ) {
+						$totals['breakdown'][ $type ][ $result ] = 0;
+					}
+					$totals['breakdown'][ $type ][ $result ] += $count;
+					$totals['total'][ $result ]              += $count;
+					$seasons[ $season ]['total'][ $result ]  += $count;
+				}
+			}
+		}
+		$statistics            = array();
+		$statistics['totals']  = $totals;
+		$statistics['seasons'] = $seasons;
+		return $statistics;
+	}
+	/**
+	 * Get stats for teams for player function
+	 *
+	 * @param string $args search parameters.
+	 * @return array
+	 */
+	public function get_stats_teams( $args = array() ) {
+		global $wpdb;
+		$defaults     = array(
+			'count'  => false,
+			'season' => false,
+		);
+		$args         = array_merge( $defaults, (array) $args );
+		$count        = $args['count'];
+		$season       = $args['season'];
+		$search_terms = array();
+		if ( $season ) {
+			$search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
+		}
+		$search = '';
+		if ( ! empty( $search_terms ) ) {
+			$search = implode( ' AND ', $search_terms );
+		}
+		$orderby_string = 'm.`season`, e.`type`';
+		$sql            = "SELECT 'teams' as `stat_type`, m.`season`, e.`type` ,rp.`player_team`, m.`home_team`, m.`away_team`, r.`winner_id`, r.`loser_id` FROM {$wpdb->racketmanager_rubber_players} rp, {$wpdb->racketmanager_rubbers} r, {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l, {$wpdb->racketmanager_events} e WHERE rp.`player_id` = $this->ID AND rp.`rubber_id` = r.`id` AND r.`match_id` = m.`id` AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` ";
+		if ( '' !== $search ) {
+			$sql .= " AND $search";
+		}
+		if ( ! empty( $orderby_string ) ) {
+			$sql .= " ORDER BY $orderby_string";
+		}
+
+		$matches = wp_cache_get( md5( $sql ), 'player_stats_teams' );
+		if ( ! $matches ) {
+			$matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			);
+			wp_cache_set( md5( $sql ), $matches, 'player_stats_teams' );
+		}
+		return $matches;
+	}
+	/**
+	 * Get stats for players for player function
+	 *
+	 * @param string $args search parameters.
+	 * @return array
+	 */
+	public function get_stats_players( $args = array() ) {
+		global $wpdb;
+		$defaults     = array(
+			'count'  => false,
+			'season' => false,
+		);
+		$args         = array_merge( $defaults, (array) $args );
+		$count        = $args['count'];
+		$season       = $args['season'];
+		$search_terms = array();
+		if ( $season ) {
+			$search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
+		}
+		$search = '';
+		if ( ! empty( $search_terms ) ) {
+			$search = implode( ' AND ', $search_terms );
+		}
+		$orderby_string = 'm.`season`, e.`type`';
+		$sql            = "SELECT 'players' as `stat_type`,m.`season`, e.`type` ,tp.`team_id`, m.`home_team`, m.`away_team`, m.`winner_id`, m.`loser_id` FROM {$wpdb->racketmanager_team_players} tp, {$wpdb->racketmanager_teams} t,{$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l, {$wpdb->racketmanager_events} e WHERE tp.`player_id` = $this->ID AND tp.`team_id` = t.`id` AND (m.`home_team` = t.`id` OR m.`away_team` = t.`id`) AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` ";
+		if ( '' !== $search ) {
+			$sql .= " AND $search";
+		}
+		if ( ! empty( $orderby_string ) ) {
+			$sql .= " ORDER BY $orderby_string";
+		}
+
+		$matches = wp_cache_get( md5( $sql ), 'player_stats_players' );
+		if ( ! $matches ) {
+			$matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			);
+			wp_cache_set( md5( $sql ), $matches, 'player_stats_players' );
+		}
+		return $matches;
 	}
 }

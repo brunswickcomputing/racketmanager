@@ -24,6 +24,8 @@ class RacketManager_Shortcodes {
 
 		add_shortcode( 'clubs', array( &$this, 'show_clubs' ) );
 		add_shortcode( 'club', array( &$this, 'show_club' ) );
+		add_shortcode( 'club-player', array( &$this, 'show_club_player' ) );
+		add_shortcode( 'players', array( &$this, 'show_players' ) );
 		add_shortcode( 'player', array( &$this, 'show_player' ) );
 
 		add_shortcode( 'cupentry', array( &$this, 'show_cup_entry' ) );
@@ -304,7 +306,7 @@ class RacketManager_Shortcodes {
 	 * @param array $atts shortcode attributes.
 	 * @return the content
 	 */
-	public function show_player( $atts ) {
+	public function show_club_player( $atts ) {
 		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
@@ -345,7 +347,7 @@ class RacketManager_Shortcodes {
 				}
 			}
 		}
-		$filename = ( ! empty( $template ) ) ? 'player-' . $template : 'player';
+		$filename = ( ! empty( $template ) ) ? 'club-player-' . $template : 'club-player';
 		return $this->load_template(
 			$filename,
 			array(
@@ -355,7 +357,86 @@ class RacketManager_Shortcodes {
 			)
 		);
 	}
+	/**
+	 * Function to display Players
+	 *
+	 *  [[players] template=X]
+	 *
+	 * @param array $atts shortcode attributes.
+	 * @return the content
+	 */
+	public function show_players( $atts ) {
+		global $racketmanager;
+		$args       = shortcode_atts(
+			array(
+				'template' => '',
+			),
+			$atts
+		);
+		$template   = $args['template'];
+		$favourites = array();
+		if ( is_user_logged_in() ) {
+			$userid     = get_current_user_id();
+			$user       = get_user( $userid );
+			$favourites = $user->get_favourites( 'player' );
+		}
+		$filename = ( ! empty( $template ) ) ? 'players-' . $template : 'players';
+		return $this->load_template(
+			$filename,
+			array(
+				'favourites' => $favourites,
+			)
+		);
+	}
+	/**
+	 * Function to display Player
+	 *
+	 *  [[player] template=X]
+	 *
+	 * @param array $atts shortcode attributes.
+	 * @return the content
+	 */
+	public function show_player( $atts ) {
+		global $racketmanager;
+		$args     = shortcode_atts(
+			array(
+				'template' => '',
+			),
+			$atts
+		);
+		$template = $args['template'];
+		// Get Player by Name.
+		$player_name = get_query_var( 'player_id' );
+		$player_name = un_seo_url( $player_name );
+		$btm         = get_query_var( 'btm' );
+		if ( $btm ) {
+			$player = get_player( $btm, 'btm' );
+		} else {
+			$player = get_player( $player_name, 'name' ); // get player by name.
+		}
+		if ( ! $player ) {
+			return __( 'Player not found', 'racketmanager' );
+		}
+		$player->clubs        = $player->get_clubs();
+		$player->titles       = $player->get_titles();
+		$player->stats        = $player->get_career_stats();
+		$player->competitions = array( 'cup', 'league', 'tournament' );
+		foreach ( $player->competitions as $competition_type ) {
+			if ( 'tournament' === $competition_type ) {
+				$player->$competition_type = $player->get_tournaments( array( 'type' => $competition_type ) );
+			} else {
+				$player->$competition_type = $player->get_competitions( array( 'type' => $competition_type ) );
+			}
+		}
 
+		$filename = ( ! empty( $template ) ) ? 'player-' . $template : 'player';
+		return $this->load_template(
+			$filename,
+			array(
+				'player' => $player,
+			)
+		);
+	}
 	/**
 	 * Function to display Tournament Entry Page
 	 *
@@ -590,7 +671,7 @@ class RacketManager_Shortcodes {
 			$selections = $seasons;
 		}
 
-		$winners = $racketmanager->get_winners( $season, $competition_id, $competitiontype );
+		$winners = $racketmanager->get_winners( $season, $competition_id, $competitiontype, true );
 
 		$filename = ( ! empty( $template ) ) ? 'winners-' . $template : 'winners';
 

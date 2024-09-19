@@ -277,12 +277,30 @@ jQuery(document).ready(function ($) {
 			}
 		});
 	});
+	FavouriteInit();
+});
+jQuery(document).ajaxComplete(function () {
+	FavouriteInit();
+});
+function FavouriteInit() {
 	jQuery('[data-js=add-favourite]').click(function (e) {
 		e.preventDefault();
-		let favouriteid = $(this).data('favourite');
-		let favouritetype = $(this).data('type');
+		let favouriteid = jQuery(this).data('favourite');
+		let favouritetype = jQuery(this).data('type');
+		let favouriteStatus = jQuery(this).data('status');
 		let favourite_field = "#".concat(e.currentTarget.id);
 		let notifyField = "#fav-msg-".concat(favouriteid);
+		if (favouriteStatus === 1) {
+			jQuery(favourite_field).attr("data-status", 0);
+			jQuery(favourite_field).attr("data-bs-original-title", "Add favourite");
+			jQuery(favourite_field).removeClass('is-favourite');
+			jQuery(favourite_field).find('i').removeClass('fav-icon-svg-selected');
+		} else {
+			jQuery(favourite_field).attr("data-status", 1);
+			jQuery(favourite_field).attr("data-bs-original-title", "Remove favourite");
+			jQuery(favourite_field).addClass('is-favourite');
+			jQuery(favourite_field).find('i').addClass('fav-icon-svg-selected');
+		}
 
 		jQuery.ajax({
 			url: ajax_var.url,
@@ -293,17 +311,7 @@ jQuery(document).ready(function ($) {
 				"action": "racketmanager_add_favourite",
 				"security": ajax_var.ajax_nonce,
 			},
-			success: function (response) {
-				let $action = response.data.action;
-				if ($action == 'del') {
-					jQuery(favourite_field).attr("data-bs-original-title", "Add favourite");
-					jQuery(favourite_field).removeClass('is-favourite');
-					jQuery(favourite_field).find('i').removeClass('fav-icon-svg-selected');
-				} else if ($action == 'add') {
-					jQuery(favourite_field).attr("data-bs-original-title", "Remove favourite");
-					jQuery(favourite_field).addClass('is-favourite');
-					jQuery(favourite_field).find('i').addClass('fav-icon-svg-selected');
-				}
+			success: function () {
 			},
 			error: function (response) {
 				if (response.responseJSON) {
@@ -316,8 +324,7 @@ jQuery(document).ready(function ($) {
 			}
 		});
 	});
-});
-
+}
 let Racketmanager = new Object();
 
 Racketmanager.printScoreCard = function (e, link) {

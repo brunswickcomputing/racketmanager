@@ -20,7 +20,7 @@ if ( is_user_logged_in() ) {
 		$tooltip_title = __( 'Add favourite', 'racketmanager' );
 	}
 	?>
-	<span type="button" class="btn btn-sm btn-favourite <?php echo $is_favourite ? ' is-favourite' : ''; ?>" data-bs-toggle="tooltip" data-bs-placement="top"  title="<?php echo esc_html( $tooltip_title ); ?>" id="fav-<?php echo esc_attr( $favourite_id ); ?>" data-js="add-favourite" data-type="<?php echo esc_attr( $favourite_type ); ?>" data-favourite="<?php echo esc_html( $favourite_id ); ?>"> 
+	<span type="button" class="btn btn-sm btn-favourite <?php echo $is_favourite ? ' is-favourite' : ''; ?>" data-bs-toggle="tooltip" data-bs-placement="top"  title="<?php echo esc_html( $tooltip_title ); ?>" id="fav-<?php echo esc_attr( $favourite_id ); ?>" data-js="add-favourite" data-type="<?php echo esc_attr( $favourite_type ); ?>" data-favourite="<?php echo esc_html( $favourite_id ); ?>" data-status="<?php echo esc_attr( $is_favourite ); ?>">
 		<div class="fav-icon">
 			<a href="" >
 				<i class="fav-icon-svg <?php echo esc_html( $visible ); ?> racketmanager-svg-icon <?php echo $is_favourite ? ' fav-icon-svg-selected' : ''; ?>

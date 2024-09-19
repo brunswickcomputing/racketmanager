@@ -658,7 +658,7 @@ class Racketmanager_Competition {
 			$data = end( $this->seasons );
 		}
 
-		$count_matchdates = isset( $data['matchDates'] ) ? count( $data['matchDates'] ) : 0;
+		$count_matchdates = isset( $data['matchDates'] ) && is_array( $data['matchDates'] ) ? count( $data['matchDates'] ) : 0;
 		if ( empty( $data['dateEnd'] ) && $count_matchdates >= 2 ) {
 			$data['dateEnd']                = end( $data['matchDates'] );
 			$this->seasons[ $data['name'] ] = $data;

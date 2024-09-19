@@ -164,6 +164,19 @@ final class Racketmanager_Player {
 	 */
 	public $statistics = array();
 	/**
+	 * Clubs.
+	 *
+	 * @var array
+	 */
+	public $clubs = array();
+	/**
+	/**
+	 * Url link.
+	 *
+	 * @var string
+	 */
+	public $link;
+	/**
 	 * Retrieve player instance
 	 *
 	 * @param int    $player_id player id.
@@ -268,6 +281,10 @@ final class Racketmanager_Player {
 				$this->locked_user_name = '';
 			}
 			$this->system_record = get_user_meta( $this->ID, 'leaguemanager_type', true );
+			$this->link          = '/player/' . seo_url( $player->display_name ) . '/';
+			if ( ! empty( $this->btm ) ) {
+				$this->link .= $this->btm . '/';
+			}
 		}
 	}
 
@@ -450,19 +467,21 @@ final class Racketmanager_Player {
 	 */
 	public function get_clubs() {
 		global $wpdb;
-
+		$this->clubs  = array();
 		$player_clubs = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT `affiliatedclub`, `player_id`, `created_date` FROM {$wpdb->racketmanager_club_players} WHERE `player_id` = %d AND `removed_date` IS NULL ORDER BY `created_date` ASC, `affiliatedclub` ASC",
+				"SELECT `affiliatedclub`, `created_date` FROM {$wpdb->racketmanager_club_players} cp, {$wpdb->racketmanager_clubs} c WHERE cp.`affiliatedclub` = c.`id` AND `player_id` = %d AND `removed_date` IS NULL ORDER BY c.`shortcode` ASC",
 				$this->id
 			)
 		);
 		foreach ( $player_clubs as $i => $player_club ) {
-			$club                   = get_club( $player_club->affiliatedclub );
-			$player_club->club_name = $club->shortcode;
-			$player_clubs[ $i ]     = $player_club;
+			$club = get_club( $player_club->affiliatedclub );
+			if ( $club ) {
+				$club->created_date = $player_club->created_date;
+				$this->clubs[]      = $club;
+			}
 		}
-		return $player_clubs;
+		return $this->clubs;
 	}
 	/**
 	 * Get matches for player

@@ -62,9 +62,28 @@ if ( empty( $is_page_header ) ) {
 								?>
 								<span><?php echo esc_html( $player->club_name ); ?></span>
 								<?php
+							} elseif ( ! empty( $player->clubs ) ) {
+								?>
+								<ul class="media__subheading-info">
+									<?php
+									foreach ( $player->clubs as $club ) {
+										?>
+										<li class="media__subheading-info-item">
+											<a href="<?php echo esc_html( $club->link ); ?>">
+												<span class="nav--link">
+													<span class="nav-link__value"><?php echo esc_html( $club->shortcode ); ?></span>
+												</span>
+											</a>
+										</li>
+										<?php
+									}
+									?>
+								</ul>
+								<?php
 							}
 							?>
 						</span>
+					</div>
 				</div>
 				<div class="media__aside">
 					<div class="progress-bar-container">

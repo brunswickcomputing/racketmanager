@@ -47,6 +47,12 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.19.0 =
+* BUGFIX: prevent competition warning message when no match dates
+* UPDATE: speed up favourites
+* UPDATE: add indexes to speed performance
+* UPDATE: allow player search and view
+
 = 8.18.1 =
 * BUGFIX: unable to register a player with a new club with an existing date of birth
 * BUGFIX: remove redundant order of play code

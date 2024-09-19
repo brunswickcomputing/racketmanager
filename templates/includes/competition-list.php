@@ -34,7 +34,7 @@ foreach ( $competition_list as $key => $competition ) {
 		$competition_name  = $competition->name . ' ' . $competition->season;
 	}
 	?>
-	<li class="list__item col-12 col-sm-6">
+	<li class="list__item col-12 <?php echo empty( $full_width ) ? 'col-sm-6' : null; ?>">
 		<div class="media">
 			<div class="media__wrapper">
 				<div class="media__img">

@@ -7,6 +7,13 @@
 
 namespace Racketmanager;
 
+if ( empty( $is_page_header ) ) {
+	$is_page_header = false;
+	$header_level   = 3;
+} else {
+	$is_page_header = true;
+	$header_level   = 1;
+}
 ?>
 	<div class="page-subhead">
 		<div class="media">
@@ -22,8 +29,24 @@ namespace Racketmanager;
 					</span>
 				</div>
 				<div class="media__content">
-					<h3 class="media__title">
-						<?php echo esc_html( $player->display_name ); ?>
+					<h<?php echo esc_attr( $header_level ); ?> class="media__title">
+						<?php
+						if ( ! $is_page_header ) {
+							?>
+							<a href="<?php echo esc_html( $player->link ); ?>">
+							<?php
+						}
+						?>
+						<span class="nav--link">
+							<span class="nav-link__value"><?php echo esc_html( $player->display_name ); ?></span>
+						</span>
+						<?php
+						if ( ! $is_page_header ) {
+							?>
+							</a>
+							<?php
+						}
+						?>
 						<?php
 						if ( ! empty( $player->btm ) ) {
 							?>
@@ -31,7 +54,8 @@ namespace Racketmanager;
 							<?php
 						}
 						?>
-					</h3>
+					</h<?php echo esc_attr( $header_level ); ?>>
+					<div class="media__content-subinfo">
 						<span class="media__subheading">
 							<?php
 							if ( isset( $player->club_name ) ) {

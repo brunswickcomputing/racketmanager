@@ -116,6 +116,12 @@ final class Racketmanager_Club {
 	 */
 	public $num_players;
 	/**
+	 * Url link.
+	 *
+	 * @var string
+	 */
+	public $link;
+	/**
 	 * Retrieve club instance
 	 *
 	 * @param int    $club_id club id or name.
@@ -197,6 +203,7 @@ final class Racketmanager_Club {
 				}
 			}
 			$this->desc = '';
+			$this->link = '/clubs/' . seo_url( $this->shortcode ) . '/';
 		}
 	}
 

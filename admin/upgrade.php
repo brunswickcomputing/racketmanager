@@ -1067,6 +1067,11 @@ function racketmanager_upgrade() {
 		}
 		$teams = '';
 	}
+	if ( version_compare( $installed, '8.19.0', '<' ) ) {
+		echo esc_html__( 'starting 8.19.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_messages} ADD INDEX(`userid`);" );
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_rubber_players} ADD INDEX(`player_id`);" );
+	}
 	/*
 	* Update version and dbversion
 	*/

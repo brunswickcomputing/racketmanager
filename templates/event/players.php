@@ -11,7 +11,7 @@ if ( empty( $event->player ) ) {
 	if ( ! empty( $event->players ) ) {
 		$player_list = $event->players;
 		$player_link = '/' . $event->competition->type . 's/' . seo_url( $event->name ) . '/' . $event->current_season['name'] . '/player/';
-		require RACKETMANAGER_PATH . 'templates/includes/player-list.php';
+		require RACKETMANAGER_PATH . 'templates/includes/player-list-names.php';
 	}
 } else {
 	$player = $event->player;

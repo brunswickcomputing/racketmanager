@@ -76,7 +76,7 @@ namespace Racketmanager;
 										<?php esc_html_e( 'Start competition', 'racketmanager' ); ?>
 									</div>
 									<div class="list__meta">
-										<?php echo esc_html( $competition_season['dateStart'] ); ?>
+										<?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['dateStart'] ) ); ?>
 									</div>
 								</li>
 								<?php

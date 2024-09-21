@@ -47,6 +47,10 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.20.0 =
+* UPDATE: format competition start date in overview
+* UPDATE: show first active tournament when none specified
+
 = 8.19.0 =
 * BUGFIX: prevent competition warning message when no match dates
 * UPDATE: speed up favourites

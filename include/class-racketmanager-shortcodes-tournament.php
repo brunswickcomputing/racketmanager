@@ -36,7 +36,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 	 * @return string
 	 */
 	public function show_tournament( $atts ) {
-		global $wp;
+		global $racketmanager, $wp;
 		$args        = shortcode_atts(
 			array(
 				'tournament' => false,
@@ -48,7 +48,14 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		$tournament  = $args['tournament'];
 		$tab         = $args['tab'];
 		$template    = $args['template'];
-		$tournaments = $this->get_tournaments();
+		$tournaments = $racketmanager->get_tournaments(
+			array(
+				'orderby' => array(
+					'season'         => 'DESC',
+					'competition_id' => 'DESC',
+				),
+			)
+		);
 		if ( ! $tournament ) {
 			if ( isset( $_GET['tournament'] ) && ! empty( $_GET['tournament'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$tournament = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['tournament'] ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -58,8 +65,9 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			$tournament = un_seo_url( $tournament );
 		}
 		if ( ! $tournament ) {
-			$tournament = $tournaments[0];
-			$new_url    = '/tournament/' . seo_url( $tournament->name ) . '/';
+			$active_tournaments = $racketmanager->get_tournaments( array( 'active' => true ) );
+			$tournament         = $active_tournaments[0];
+			$new_url            = '/tournament/' . seo_url( $tournament->name ) . '/';
 			echo '<script>location.href = "' . esc_url( $new_url ) . '"</script>';
 			exit;
 		} else {

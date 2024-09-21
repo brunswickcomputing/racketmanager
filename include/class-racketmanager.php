@@ -1876,6 +1876,7 @@ class RacketManager {
 			'name'           => false,
 			'entryopen'      => false,
 			'open'           => false,
+			'active'         => false,
 			'orderby'        => array( 'name' => 'DESC' ),
 		);
 		$args           = array_merge( $defaults, $args );
@@ -1885,6 +1886,7 @@ class RacketManager {
 		$season         = $args['season'];
 		$entry_open     = $args['entryopen'];
 		$open           = $args['open'];
+		$active         = $args['active'];
 		$orderby        = $args['orderby'];
 
 		$search_terms = array();
@@ -1898,9 +1900,11 @@ class RacketManager {
 		if ( $entry_open ) {
 			$search_terms[] = '`closingdate` >= CURDATE()';
 		}
-
 		if ( $open ) {
 			$search_terms[] = "(`date` >= CURDATE() OR `date` = '0000-00-00')";
+		}
+		if ( $active ) {
+			$search_terms[] = '`date` >= CURDATE() AND `date_start` <= CURDATE()';
 		}
 		$search = '';
 		if ( ! empty( $search_terms ) ) {

@@ -111,7 +111,7 @@ jQuery(function() {
 							?>
 						</li>
 						<?php
-						if ( empty( $competition_season['dateEnd'] ) || gmdate( 'Y-m-d' ) > $competition_season['dateEnd'] ) {
+						if ( empty( $competition_season['dateEnd'] ) || gmdate( 'Y-m-d' ) >= $competition_season['dateEnd'] ) {
 							?>
 							<li class="nav-item" role="presentation">
 								<button class="nav-link" id="winners-tab" data-bs-toggle="pill" data-bs-target="#winners" type="button" role="tab" aria-controls="winners" aria-selected="false"><?php esc_html_e( 'Winners', 'racketmanager' ); ?></button>

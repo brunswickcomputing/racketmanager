@@ -124,7 +124,7 @@ if ( empty( $tab ) ) {
 							?>
 						</li>
 						<?php
-						if ( ! empty( $tournament->date ) && gmdate( 'Y-m-d' ) > $tournament->date ) {
+						if ( ! empty( $tournament->date ) && gmdate( 'Y-m-d' ) >= $tournament->date ) {
 							?>
 							<li class="nav-item" role="presentation">
 								<button class="nav-link" id="winners-tab" data-bs-toggle="pill" data-bs-target="#winners" type="button" role="tab" aria-controls="winners" aria-selected="false"><?php esc_html_e( 'Winners', 'racketmanager' ); ?></button>

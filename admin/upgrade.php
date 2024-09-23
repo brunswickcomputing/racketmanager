@@ -1072,6 +1072,10 @@ function racketmanager_upgrade() {
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_messages} ADD INDEX(`userid`);" );
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_rubber_players} ADD INDEX(`player_id`);" );
 	}
+	if ( version_compare( $installed, '8.21.0', '<' ) ) {
+		$wpdb->query("ALTER TABLE {$wpdb->racketmanager_table} CHANGE `season` `season` VARCHAR(4) NOT NULL");
+		$wpdb->query("ALTER TABLE {$wpdb->racketmanager_table} ADD INDEX(`season`);");
+	}
 	/*
 	* Update version and dbversion
 	*/

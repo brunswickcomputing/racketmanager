@@ -66,8 +66,12 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		}
 		if ( ! $tournament ) {
 			$active_tournaments = $racketmanager->get_tournaments( array( 'active' => true ) );
-			$tournament         = $active_tournaments[0];
-			$new_url            = '/tournament/' . seo_url( $tournament->name ) . '/';
+			if ( $active_tournaments ) {
+				$tournament = $active_tournaments[0];
+				$new_url    = '/tournament/' . seo_url( $tournament->name ) . '/';
+			} else {
+				$new_url = '/tournaments/';
+			}
 			echo '<script>location.href = "' . esc_url( $new_url ) . '"</script>';
 			exit;
 		} else {

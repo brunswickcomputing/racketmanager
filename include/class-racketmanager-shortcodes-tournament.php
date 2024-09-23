@@ -283,7 +283,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 	 * @return string
 	 */
 	public function show_tournament_players( $atts ) {
-		global $racketmanager, $wp;
+		global $wp;
 		$args          = shortcode_atts(
 			array(
 				'id'       => false,
@@ -307,119 +307,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			if ( $player ) {
 				$player = get_player( $player, 'name' ); // get player by name.
 				if ( $player ) {
-					$tournament->events = $tournament->get_events();
-					foreach ( $tournament->events as $event ) {
-						$event = get_event( $event );
-						$teams = $event->get_teams(
-							array(
-								'name'   => $player->display_name,
-								'season' => $tournament->season,
-							)
-						);
-						if ( $teams ) {
-							$team = $teams[0];
-							foreach ( $team->player as $team_player ) {
-								if ( $team_player !== $player->display_name ) {
-									$team->partner = $team_player;
-								}
-							}
-							$team->event     = $event->name;
-							$player->teams[] = $team;
-						}
-					}
-					if ( ! empty( $team ) ) {
-						$player->club      = $team->affiliatedclub;
-						$player->club_name = get_club( $player->club )->name;
-					}
-					$tournament->matches = $racketmanager->get_matches(
-						array(
-							'season'         => $tournament->season,
-							'competition_id' => $tournament->competition_id,
-							'team_name'      => esc_sql( $player->display_name ),
-							'orderby'        => array(
-								'date'      => 'ASC',
-								'event_id'  => 'ASC',
-								'league_id' => 'DESC',
-							),
-						)
-					);
-					$opponents           = array( 'home', 'away' );
-					$opponents_pt        = array( 'player1', 'player2' );
-					foreach ( $tournament->matches as $match ) {
-						if ( ! empty( $match->winner_id ) ) {
-							$match_type         = strtolower( substr( $match->league->type, 1, 1 ) );
-							$winner             = null;
-							$loser              = null;
-							$player_ref         = null;
-							$player_team        = null;
-							$player_team_status = null;
-							foreach ( $opponents as $opponent ) {
-								if ( $match->winner_id === $match->teams[ $opponent ]->id ) {
-									$winner = $opponent;
-								}
-								if ( $match->loser_id === $match->teams[ $opponent ]->id ) {
-									$loser = $opponent;
-								}
-								if ( array_search( $player->display_name, $match->teams[ $opponent ]->player, true ) ) {
-									$player_team = $opponent;
-									if ( 'home' === $player_team ) {
-										$player_ref = 'player1';
-									} else {
-										$player_ref = 'player2';
-									}
-								}
-							}
-							if ( $winner === $player_team ) {
-								$player_team_status = 'winner';
-							} elseif ( $loser === $player_team ) {
-								$player_team_status = 'loser';
-							}
-							if ( ! isset( $player->statistics[ $match_type ]['played'][ $player_team_status ] ) ) {
-								$player->statistics[ $match_type ]['played'][ $player_team_status ] = 0;
-							}
-							++$player->statistics[ $match_type ]['played'][ $player_team_status ];
-							if ( $match->is_walkover && 'winner' === $player_team_status ) {
-								if ( ! isset( $player->statistics[ $match_type ]['walkover'] ) ) {
-									$player->statistics[ $match_type ]['walkover'] = 0;
-								}
-								++$player->statistics[ $match_type ]['walkover'];
-							}
-							$sets = ! empty( $match->custom['sets'] ) ? $match->custom['sets'] : array();
-							foreach ( $sets as $set ) {
-								if ( isset( $set['player1'] ) && '' !== $set['player1'] && isset( $set['player2'] ) && '' !== $set['player2'] ) {
-									if ( $set['player1'] > $set['player2'] ) {
-										if ( 'player1' === $player_ref ) {
-											$stat_ref = 'winner';
-										} else {
-											$stat_ref = 'loser';
-										}
-									} elseif ( 'player1' === $player_ref ) {
-										$stat_ref = 'loser';
-									} else {
-										$stat_ref = 'winner';
-									}
-									if ( ! isset( $player->statistics[ $match_type ]['sets'][ $stat_ref ] ) ) {
-										$player->statistics[ $match_type ]['sets'][ $stat_ref ] = 0;
-									}
-									++$player->statistics[ $match_type ]['sets'][ $stat_ref ];
-									foreach ( $opponents_pt as $opponent ) {
-										if ( $player_ref === $opponent ) {
-											if ( ! isset( $player->statistics[ $match_type ]['games']['winner'] ) ) {
-												$player->statistics[ $match_type ]['games']['winner'] = 0;
-											}
-											$player->statistics[ $match_type ]['games']['winner'] += $set[ $opponent ];
-										} else {
-											if ( ! isset( $player->statistics[ $match_type ]['games']['loser'] ) ) {
-												$player->statistics[ $match_type ]['games']['loser'] = 0;
-											}
-											$player->statistics[ $match_type ]['games']['loser'] += $set[ $opponent ];
-										}
-									}
-								}
-							}
-						}
-					}
-					$player->statistics = $player->get_stats( $player->statistics );
+					$player = $this->get_player_info( $player, $tournament );
 				}
 			} else {
 				$players             = $tournament->get_players();
@@ -435,6 +323,130 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 				'tournament'
 			);
 		}
+	}
+	/**
+	 * Get tournament player information function
+	 *
+	 * @param object $player player object.
+	 * @param object $tournament tournament object.
+	 * @return object
+	 */
+	public function get_player_info( $player, $tournament ) {
+		global $racketmanager;
+		$tournament->events = $tournament->get_events();
+		foreach ( $tournament->events as $event ) {
+			$event = get_event( $event );
+			$teams = $event->get_teams(
+				array(
+					'name'   => $player->display_name,
+					'season' => $tournament->season,
+				)
+			);
+			if ( $teams ) {
+				$team = $teams[0];
+				foreach ( $team->player as $team_player ) {
+					if ( $team_player !== $player->display_name ) {
+						$team->partner = $team_player;
+					}
+				}
+				$team->event     = $event->name;
+				$player->teams[] = $team;
+			}
+		}
+		if ( ! empty( $team ) ) {
+			$player->club      = $team->affiliatedclub;
+			$player->club_name = get_club( $player->club )->name;
+		}
+		$tournament->matches = $racketmanager->get_matches(
+			array(
+				'season'         => $tournament->season,
+				'competition_id' => $tournament->competition_id,
+				'team_name'      => esc_sql( $player->display_name ),
+				'orderby'        => array(
+					'date'      => 'ASC',
+					'event_id'  => 'ASC',
+					'league_id' => 'DESC',
+				),
+			)
+		);
+		$opponents           = array( 'home', 'away' );
+		$opponents_pt        = array( 'player1', 'player2' );
+		foreach ( $tournament->matches as $match ) {
+			if ( ! empty( $match->winner_id ) ) {
+				$match_type         = strtolower( substr( $match->league->type, 1, 1 ) );
+				$winner             = null;
+				$loser              = null;
+				$player_ref         = null;
+				$player_team        = null;
+				$player_team_status = null;
+				foreach ( $opponents as $opponent ) {
+					if ( $match->winner_id === $match->teams[ $opponent ]->id ) {
+						$winner = $opponent;
+					}
+					if ( $match->loser_id === $match->teams[ $opponent ]->id ) {
+						$loser = $opponent;
+					}
+					if ( array_search( $player->display_name, $match->teams[ $opponent ]->player, true ) ) {
+						$player_team = $opponent;
+						if ( 'home' === $player_team ) {
+							$player_ref = 'player1';
+						} else {
+							$player_ref = 'player2';
+						}
+					}
+				}
+				if ( $winner === $player_team ) {
+					$player_team_status = 'winner';
+				} elseif ( $loser === $player_team ) {
+					$player_team_status = 'loser';
+				}
+				if ( ! isset( $player->statistics[ $match_type ]['played'][ $player_team_status ] ) ) {
+					$player->statistics[ $match_type ]['played'][ $player_team_status ] = 0;
+				}
+				++$player->statistics[ $match_type ]['played'][ $player_team_status ];
+				if ( $match->is_walkover && 'winner' === $player_team_status ) {
+					if ( ! isset( $player->statistics[ $match_type ]['walkover'] ) ) {
+						$player->statistics[ $match_type ]['walkover'] = 0;
+					}
+					++$player->statistics[ $match_type ]['walkover'];
+				}
+				$sets = ! empty( $match->custom['sets'] ) ? $match->custom['sets'] : array();
+				foreach ( $sets as $set ) {
+					if ( isset( $set['player1'] ) && '' !== $set['player1'] && isset( $set['player2'] ) && '' !== $set['player2'] ) {
+						if ( $set['player1'] > $set['player2'] ) {
+							if ( 'player1' === $player_ref ) {
+								$stat_ref = 'winner';
+							} else {
+								$stat_ref = 'loser';
+							}
+						} elseif ( 'player1' === $player_ref ) {
+							$stat_ref = 'loser';
+						} else {
+							$stat_ref = 'winner';
+						}
+						if ( ! isset( $player->statistics[ $match_type ]['sets'][ $stat_ref ] ) ) {
+							$player->statistics[ $match_type ]['sets'][ $stat_ref ] = 0;
+						}
+						++$player->statistics[ $match_type ]['sets'][ $stat_ref ];
+						foreach ( $opponents_pt as $opponent ) {
+							if ( $player_ref === $opponent ) {
+								if ( ! isset( $player->statistics[ $match_type ]['games']['winner'] ) ) {
+									$player->statistics[ $match_type ]['games']['winner'] = 0;
+								}
+								$player->statistics[ $match_type ]['games']['winner'] += $set[ $opponent ];
+							} else {
+								if ( ! isset( $player->statistics[ $match_type ]['games']['loser'] ) ) {
+									$player->statistics[ $match_type ]['games']['loser'] = 0;
+								}
+								$player->statistics[ $match_type ]['games']['loser'] += $set[ $opponent ];
+							}
+						}
+					}
+				}
+			}
+		}
+		$player->statistics = $player->get_stats( $player->statistics );
+		return $player;
 	}
 	/**
 	 * Show tournament winners function

@@ -124,6 +124,15 @@ if ( empty( $tab ) ) {
 							?>
 						</li>
 						<?php
+						if ( ! empty( $tournament->date ) && gmdate( 'Y-m-d' ) <= $tournament->date && ! empty( $tournament->orderofplay ) ) {
+							?>
+							<li class="nav-item" role="presentation">
+								<button class="nav-link" id="orderofplay-tab" data-bs-toggle="pill" data-bs-target="#orderofplay" type="button" role="tab" aria-controls="orderofplay" aria-selected="false"><?php esc_html_e( 'Order of play', 'racketmanager' ); ?></button>
+							</li>
+							<?php
+						}
+						?>
+						<?php
 						if ( ! empty( $tournament->date ) && gmdate( 'Y-m-d' ) >= $tournament->date ) {
 							?>
 							<li class="nav-item" role="presentation">
@@ -168,6 +177,11 @@ if ( empty( $tab ) ) {
 		<div class="tab-pane fade" id="players" role="tabpanel" aria-labelledby="players-tab">
 			<?php
 			racketmanager_tournament_players( $tournament->id );
+			?>
+		</div>
+		<div class="tab-pane fade" id="orderofplay" role="tabpanel" aria-labelledby="orderofplay-tab">
+			<?php
+			racketmanager_tournament_order_of_play( $tournament->id );
 			?>
 		</div>
 		<div class="tab-pane fade" id="winners" role="tabpanel" aria-labelledby="winners-tab">

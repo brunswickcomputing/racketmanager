@@ -1439,6 +1439,12 @@ class RacketManager {
 	 * @return void
 	 */
 	private function rewrite_tournament() {
+		// tournament - order of play.
+		add_rewrite_rule(
+			'tournament/(.+?)/order-of-play/?$',
+			'index.php?pagename=tournaments%2Ftournament&tournament=$matches[1]&tab=orderofplay',
+			'top'
+		);
 		// tournament - match.
 		add_rewrite_rule(
 			'tournament/(.+?)/match/(.+?)/(.+?)-vs-(.+?)/(.+?)/?$',

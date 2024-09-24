@@ -1118,6 +1118,21 @@ function racketmanager_tournament_matches( $tournament_id, $args = array() ) {
 	echo do_shortcode( $shortcode );
 }
 /**
+ * Display tournament order of play function
+ *
+ * @param int   $tournament_id tournament.
+ * @param array $args array of arguments.
+ */
+function racketmanager_tournament_order_of_play( $tournament_id, $args = array() ) {
+	$args['id'] = $tournament_id;
+	$shortcode  = '[orderofplay';
+	foreach ( $args as $key => $value ) {
+		$shortcode .= ' ' . $key . "='" . $value . "'";
+	}
+	$shortcode .= ']';
+	echo do_shortcode( $shortcode );
+}
+/**
  * Display tournament winners function
  *
  * @param int   $tournament_id tournament.

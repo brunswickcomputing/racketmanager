@@ -7,8 +7,12 @@
 
 namespace Racketmanager;
 
-$num_courts  = count( $order_of_play['courts'] );
-$col_width   = floor( 12 / $num_courts );
+$num_courts = count( $order_of_play['courts'] );
+if ( $num_courts ) {
+	$col_width = floor( 12 / $num_courts );
+} else {
+	$col_width = 12;
+}
 $is_expanded = false;
 if ( 2 === intval( $col_width ) ) {
 	$is_expanded = true;

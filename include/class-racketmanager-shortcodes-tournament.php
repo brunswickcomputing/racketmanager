@@ -532,24 +532,19 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			$match_date = end( $tournament->match_dates );
 		}
 		if ( $match_date ) {
-			if ( $match_date === $tournament->date ) {
-				$order_of_play = $this->get_order_of_play_details( $tournament->orderofplay );
-			}
-			if ( ! $order_of_play ) {
-				$matches = $racketmanager->get_matches(
-					array(
-						'season'         => $tournament->season,
-						'competition_id' => $tournament->competition_id,
-						'match_date'     => $match_date,
-						'final'          => 'all',
-						'orderby'        => array(
-							'event_id'  => 'ASC',
-							'league_id' => 'DESC',
-							'date'      => 'DESC',
-						),
-					)
-				);
-			}
+			$matches = $racketmanager->get_matches(
+				array(
+					'season'         => $tournament->season,
+					'competition_id' => $tournament->competition_id,
+					'match_date'     => $match_date,
+					'final'          => 'all',
+					'orderby'        => array(
+						'event_id'  => 'ASC',
+						'league_id' => 'DESC',
+						'date'      => 'DESC',
+					),
+				)
+			);
 		}
 		$tab      = 'matches';
 		$filename = ( ! empty( $template ) ) ? 'matches-' . $template : 'matches';

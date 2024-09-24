@@ -61,15 +61,7 @@ namespace Racketmanager;
 					?>
 				</div>
 				<?php
-				if ( empty( $tournament_matches ) ) {
-					if ( empty( $order_of_play ) ) {
-						?>
-						<?php esc_html_e( 'No matches', 'racketmanager' ); ?>
-						<?php
-					} else {
-						require RACKETMANAGER_PATH . 'templates/includes/order-of-play-body.php';
-					}
-				} else {
+				if ( ! empty( $tournament_matches ) ) {
 					?>
 					<h3 class="header"><?php echo esc_html_e( 'Match Schedule', 'racketmanager' ); ?></h3>
 					<?php require RACKETMANAGER_PATH . 'templates/includes/nav-pills.php'; ?>
@@ -87,7 +79,11 @@ namespace Racketmanager;
 						}
 						?>
 					</ul>
-				<?php } ?>
+					<?php
+				} else {
+					esc_html_e( 'No matches', 'racketmanager' );
+				}
+				?>
 			</div>
 		</div>
 	</div>

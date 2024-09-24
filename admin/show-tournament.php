@@ -19,7 +19,7 @@ namespace Racketmanager;
 	if ( empty( $tournament->id ) ) {
 		$action_form = 'admin.php?page=racketmanager-tournaments';
 	} else {
-		$action_form = 'admin.php?page=racketmanager&amp;subpage=tournament&amp;tournament_id=' . $tournament->id;
+		$action_form = 'admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament_id=' . $tournament->id;
 	}
 	?>
 	<form action="<?php echo esc_html( $action_form ); ?>" method='post' enctype='multipart/form-data' name='tournament_edit' class='form-control'>

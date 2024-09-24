@@ -401,7 +401,13 @@ final class RacketManager_Admin extends RacketManager {
 				$this->displayCupsPage();
 				break;
 			case 'racketmanager-tournaments':
-				$this->displayTournamentsPage();
+				if ( 'tournament' === $view ) {
+					$this->displayTournamentPage();
+				} elseif ( 'tournament-plan' === $view ) {
+					$this->displayTournamentPlanPage();
+				} else {
+					$this->displayTournamentsPage();
+				}
 				break;
 			case 'racketmanager-clubs':
 				if ( 'teams' === $view ) {
@@ -475,12 +481,6 @@ final class RacketManager_Admin extends RacketManager {
 							break;
 						case 'show-season':
 							$this->displaySeasonPage();
-							break;
-						case 'tournament':
-							$this->displayTournamentPage();
-							break;
-						case 'tournament-plan':
-							$this->displayTournamentPlanPage();
 							break;
 						case 'contact':
 							$this->displayContactPage();

@@ -29,17 +29,37 @@ if ( 2 === intval( $col_width ) ) {
 				if ( ! empty( $order_of_play ) ) {
 					?>
 					<div id="order-of-play" class="container">
-						<div class="row">
-							<div class="col-2 col-md-1">
-								<div class="row">
-									<div class="col-12">
-										<h4 class="match-group__header">
-											<span><?php esc_html_e( 'Time', 'racketmanager' ); ?></span>
-										</h4>
-										<?php
-										foreach ( $order_of_play['times'] as $time ) {
+						<div class="d-none d-md-block">
+							<div class="row">
+								<div class="col-2 col-md-1">
+									<div class="row">
+										<div class="col-12">
+											<h4 class="match-group__header">
+												<span><?php esc_html_e( 'Time', 'racketmanager' ); ?></span>
+											</h4>
+											<?php
+											foreach ( $order_of_play['times'] as $time ) {
+												?>
+												<div class="match-group__item-wrapper time-display<?php echo empty( $is_expanded ) ? null : ' is-expanded'; ?>" id="<?php echo esc_html( $time ); ?>"><?php echo esc_html( $time ); ?>
+												</div>
+												<?php
+											}
 											?>
-											<div class="match-group__item-wrapper time-display<?php echo empty( $is_expanded ) ? null : ' is-expanded'; ?>" id="<?php echo esc_html( $time ); ?>"><?php echo esc_html( $time ); ?>
+										</div>
+									</div>
+								</div>
+								<div class="col-10 col-md-11">
+									<div class="row">
+										<?php
+										foreach ( $order_of_play['courts'] as $court => $court_times ) {
+											?>
+											<div class="col-12 col-md-<?php echo esc_attr( $col_width ); ?>" id="<?php echo esc_html( $court ); ?>">
+												<h4 class="match-group__header">
+													<span><?php echo esc_html( $court ); ?></span>
+												</h4>
+												<?php
+												require 'includes/order-of-play-court.php';
+												?>
 											</div>
 											<?php
 										}
@@ -47,54 +67,55 @@ if ( 2 === intval( $col_width ) ) {
 									</div>
 								</div>
 							</div>
-							<div class="col-10 col-md-11">
-								<div class="row">
+						</div>
+						<div class="d-block d-md-none">
+							<div class="row">
+								<div class="col-2">
+									<div class="match-group__header"></div>
 									<?php
-									foreach ( $order_of_play['courts'] as $court => $court_times ) {
+									foreach ( $order_of_play['times'] as $time ) {
 										?>
-										<div class="col-12 col-md-<?php echo esc_attr( $col_width ); ?>" id="<?php echo esc_html( $court ); ?>">
-											<h4 class="match-group__header">
-												<span><?php echo esc_html( $court ); ?></span>
-											</h4>
-											<?php
-											foreach ( $court_times as $court_time => $matches ) {
-												foreach ( $matches as $final_match ) {
-													$match = get_match( $final_match->id );
-													?>
-													<div class="match-group__item-wrapper<?php echo empty( $is_expanded ) ? null : ' is-expanded'; ?>">
-														<div class="match-group__item">
-															<div class="match__header-title">
-																<span><?php echo esc_html( $match->league->title ); ?></span>
-															</div>
-															<?php
-															if ( is_numeric( $match->home_team ) ) {
-																$home_match_title = $match->teams['home']->title;
-															} else {
-																$home_match_title = $match->prev_home_match->match_title;
-															}
-															if ( is_numeric( $match->away_team ) ) {
-																$away_match_title = $match->teams['away']->title;
-															} else {
-																$away_match_title = $match->prev_away_match->match_title;
-															}
-															?>
-															<div class="match__body-title<?php echo is_numeric( $match->home_team ) ? null : ' is_pending'; ?>">
-																<?php echo esc_html( $home_match_title ); ?>
-															</div>
-															<div class="team-separator"><?php esc_html_e( 'vs', 'racketmanager' ); ?></div>
-															<div class="match__body-title<?php echo is_numeric( $match->away_team ) ? null : ' is_pending'; ?>">
-																<?php echo esc_html( $away_match_title ); ?>
-															</div>
-														</div>
-														</div>
-													<?php
-												}
-											}
-											?>
+										<div class="match-group__item-wrapper time-display<?php echo empty( $is_expanded ) ? null : ' is-expanded'; ?>" id="<?php echo esc_html( $time ); ?>"><?php echo esc_html( $time ); ?>
 										</div>
 										<?php
 									}
 									?>
+								</div>
+								<div class="col-10">
+									<div class="carousel" id="orderofplay-carousel" data-bs-wrap="false">
+										<div class="court-navigation">
+											<button class="carousel-control-prev" type="button" data-bs-target="#orderofplay-carousel" data-bs-slide="prev">
+												<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+												<span class="visually-hidden">Previous</span>
+											</button>
+											<button class="carousel-control-next" type="button" data-bs-target="#orderofplay-carousel" data-bs-slide="next">
+												<span class="carousel-control-next-icon" aria-hidden="true"></span>
+												<span class="visually-hidden">Next</span>
+											</button>
+										</div>
+										<div class="carousel-inner">
+											<div class="row">
+												<?php
+												$c = 1;
+												foreach ( $order_of_play['courts'] as $court => $court_times ) {
+													?>
+													<div class="carousel-item <?php echo 1 === $c ? 'active' : ''; ?>">
+														<div class="row">
+															<h4 class="match-group__header">
+																<span><?php echo esc_html( $court ); ?></span>
+															</h4>
+														</div>
+														<?php
+														require 'includes/order-of-play-court.php';
+														?>
+													</div>
+													<?php
+													++$c;
+												}
+												?>
+											</div>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>

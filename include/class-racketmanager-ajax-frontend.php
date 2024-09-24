@@ -1688,7 +1688,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$message_type_name = Racketmanager_Util::get_message_type( $message_type );
 				$userid            = get_current_user_id();
 				if ( $userid ) {
-					$user = get_player( $userid );
+					$user = get_user( $userid );
 					if ( $user ) {
 						$success = $user->delete_messages( $message_type );
 						if ( $success ) {

@@ -653,69 +653,25 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 	public function show_order_of_play( $atts ) {
 		global $racketmanager, $wp;
 		wp_verify_nonce( 'order-of-play' );
-		$args       = shortcode_atts(
+		$args          = shortcode_atts(
 			array(
-				'type'       => '',
-				'tournament' => false,
-				'template'   => '',
+				'id'       => '',
+				'template' => '',
 			),
 			$atts
 		);
-		$type       = $args['type'];
-		$tournament = $args['tournament'];
-		$template   = $args['template'];
-		// get competition list.
-		if ( ! $type ) {
-			if ( isset( $_GET['type'] ) && ! empty( $_GET['type'] ) ) {
-				$type = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['type'] ) ) );
-			} elseif ( isset( $wp->query_vars['type'] ) ) {
-				$type = get_query_var( 'type' );
-			}
-		}
-		if ( ! $type ) {
-			return esc_html_e( 'No tournament final day', 'racketmanager' );
-		}
-		$tournaments = $racketmanager->get_tournaments( array( 'type' => $type ) );
-
+		$tournament_id = $args['id'];
+		$template      = $args['template'];
+		$tournament    = get_tournament( $tournament_id );
 		if ( ! $tournament ) {
-			if ( isset( $_GET['tournament'] ) && ! empty( $_GET['tournament'] ) ) {
-				$tournament = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['tournament'] ) ) );
-				$tournament = str_replace( '_', ' ', $tournament );
-			} elseif ( isset( $wp->query_vars['tournament'] ) ) {
-				$tournament = un_seo_url( get_query_var( 'tournament' ) );
-			}
+			return esc_html_e( 'Tournament not found', 'racketmanager' );
 		}
-
-		if ( ! $tournament ) {
-			$tournament = $tournaments[0];
-		} else {
-			$tournament = get_tournament( $tournament, 'name' );
-		}
-
-		$order_of_play = $this->get_order_of_play_details( $tournament->orderofplay );
-		$filename      = ( ! empty( $template ) ) ? 'orderofplay-' . $template : 'orderofplay';
-
-		return $this->load_template(
-			$filename,
-			array(
-				'tournaments'   => $tournaments,
-				'tournament'    => $tournament,
-				'order_of_play' => $order_of_play,
-				'season'        => $type,
-			)
-		);
-	}
-	/**
-	 * Get order of play details function
-	 *
-	 * @param array $matches array of matches for order of play.
-	 * @return array
-	 */
-	private function get_order_of_play_details( $matches ) {
-		global $racketmanager;
-		$order_of_play = array();
-		foreach ( $matches as $match_list ) {
-			foreach ( $match_list['matches'] as $match_id ) {
+		$order_of_play           = array();
+		$order_of_play['times']  = array();
+		$order_of_play['courts'] = array();
+		foreach ( $tournament->orderofplay as $courts ) {
+			$order_of_play['courts'][ $courts['court'] ] = array();
+			foreach ( $courts['matches'] as $match_id ) {
 				$final_match = new \stdClass();
 				if ( $match_id ) {
 					$match                 = get_match( $match_id );
@@ -726,14 +682,22 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 					$final_match->winner   = $match->winner_id;
 
 					$time = $final_match->time;
-					if ( false === array_key_exists( $time, $order_of_play ) ) {
-						$order_of_play[ $time ] = array();
+					if ( ! in_array( $time, $order_of_play['times'], true ) ) {
+						$order_of_play['times'][] = $time;
 					}
 					// now just add the row data.
-					$order_of_play[ $time ][] = $final_match;
+					$order_of_play['courts'][ $courts['court'] ][ $time ][] = $final_match;
 				}
 			}
 		}
-		return $order_of_play;
+		$filename = ( ! empty( $template ) ) ? 'orderofplay-' . $template : 'orderofplay';
+
+		return $this->load_template(
+			$filename,
+			array(
+				'tournament'    => $tournament,
+				'order_of_play' => $order_of_play,
+			)
+		);
 	}
 }

@@ -866,38 +866,38 @@ class RacketManager {
 		$this->rewrite_tournament();
 		// cup entry form - type - season - club.
 		add_rewrite_rule(
-			'cups/(.+?)-entry/([0-9]{4})/(.+?)/?$',
-			'index.php?pagename=competition%2Fcup-entry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]',
+			'cups/entry-form/(.+?)/([0-9]{4})/(.+?)/?$',
+			'index.php?pagename=competition%2Fentry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]&competition_type=cup',
 			'top'
 		);
 		// league entry form - competition - season - club.
 		add_rewrite_rule(
-			'leagues/(.+?)-entry/([0-9]{4})/(.+?)/?$',
-			'index.php?pagename=competition%2Fleague-entry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]',
+			'leagues/entry-form/(.+?)/([0-9]{4})/(.+?)/?$',
+			'index.php?pagename=competition%2Fentry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]&competition_type=league',
+			'top'
+		);
+		// tournament entry form - name - club.
+		add_rewrite_rule(
+			'tournaments/entry-form/(.+?)/(.+?)/?$',
+			'index.php?pagename=competition%2Fentry&competition_name=$matches[1]&club=$matches[2]&competition_type=tournament',
+			'top'
+		);
+		// tournament entry form - name.
+		add_rewrite_rule(
+			'tournaments/entry-form/(.+?)/?$',
+			'index.php?pagename=competition%2Fentry&&competition_name=$matches[1]&competition_type=tournament',
 			'top'
 		);
 		// tournament entry form - season - club.
 		add_rewrite_rule(
 			'tournaments/(.+?)-entry/([0-9]{4})/(.+?)/?$',
-			'index.php?pagename=tournaments%2Ftournament-entry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]',
+			'index.php?pagename=tournaments%2Fentry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]&competition_type=tournament',
 			'top'
 		);
 		// tournament entry form - season.
 		add_rewrite_rule(
 			'tournaments/(.+?)-entry/([0-9]{4})/?$',
 			'index.php?pagename=tournaments%2Ftournament-entry&season=$matches[2]&competition_name=$matches[1]',
-			'top'
-		);
-		// tournament entry form - name - club.
-		add_rewrite_rule(
-			'tournaments/entry-form/(.+?)/(.+?)/?$',
-			'index.php?pagename=tournaments%2Ftournament-entry&tournament=$matches[1]&club=$matches[2]',
-			'top'
-		);
-		// tournament entry form - name.
-		add_rewrite_rule(
-			'tournaments/entry-form/(.+?)/?$',
-			'index.php?pagename=tournaments%2Ftournament-entry&&tournament=$matches[1]',
 			'top'
 		);
 		// league news info.
@@ -1722,7 +1722,6 @@ class RacketManager {
 	 * Redirect users on certain pages to login function
 	 */
 	public function redirect_to_login() {
-		global $wp_query;
 		if ( ! is_user_logged_in() ) {
 			$redirect_page = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$slug          = get_post_field( 'post_name' );
@@ -1730,6 +1729,7 @@ class RacketManager {
 				case 'tournament-entry':
 				case 'league-entry':
 				case 'cup-entry':
+				case 'entry':
 					wp_safe_redirect( wp_login_url( $redirect_page ) );
 					exit;
 				case 'match':

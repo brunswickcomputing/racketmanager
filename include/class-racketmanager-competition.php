@@ -686,48 +686,6 @@ class Racketmanager_Competition {
 	public function get_season() {
 		return stripslashes( $this->current_season['name'] );
 	}
-
-	/**
-	 * Get current season
-	 *
-	 * @param mixed   $season season.
-	 * @param boolean $index lookup.
-	 * @return array
-	 */
-	public function get_season_competition( $season = false, $index = false ) {
-		if ( isset( $_GET['season'] ) && ! empty( $_GET['season'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$key = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['season'] ) ) );
-			if ( ! isset( $this->seasons[ $key ] ) ) {
-				$data = false;
-			} else {
-				$data = $this->seasons[ $key ];
-			}
-		} elseif ( isset( $_GET[ 'season_' . $this->id ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$key = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET[ 'season_' . $this->id ] ) ) );
-			if ( ! isset( $this->seasons[ $key ] ) ) {
-				$data = false;
-			} else {
-				$data = $this->seasons[ $key ];
-			}
-		} elseif ( $season ) {
-			$data = $this->seasons[ $season ];
-		} elseif ( ! empty( $this->seasons ) ) {
-			$data = end( $this->seasons );
-		} else {
-			$data = false;
-		}
-		if ( empty( $data ) ) {
-			$data = end( $this->seasons );
-		}
-		if ( $index ) {
-			return $data[ $index ];
-		} else {
-			return $data;
-		}
-	}
-
 	/**
 	 * Gets number of events
 	 *

@@ -766,3 +766,99 @@ a.score {
 	border-bottom-width: 2px;
 	font-weight: 700
 }
+.alert_rm {
+	background-color: #fff;
+	background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 32 32'%3E%3Cpath fill='%231A7BC0' d='M16.001 0c-8.837 0-16 7.164-16 16 0 8.834 7.163 16 16 16S32 24.836 32 16 24.837 0 16.001 0m2.508 21.886c-1.208 1.812-2.436 3.212-4.503 3.212-1.41-.23-1.989-1.241-1.684-2.27l2.66-8.807c.064-.216-.044-.446-.242-.515-.196-.069-.58.187-.913.549l-1.607 1.934c-.042-.324-.004-.862-.004-1.077 1.208-1.812 3.19-3.243 4.536-3.243 1.28.132 1.883 1.153 1.661 2.276l-2.676 8.848c-.036.2.07.405.251.467.199.07.611-.185.944-.549l1.607-1.932c.041.324-.03.892-.03 1.109zm-.358-11.499c-1.017 0-1.842-.74-1.842-1.831s.825-1.831 1.842-1.831c1.016 0 1.84.74 1.84 1.831s-.825 1.831-1.84 1.831'/%3E%3C/svg%3E");
+	background-position: 1.5rem;
+	background-repeat: no-repeat;
+	background-size: 2rem;
+	border-radius: .3rem;
+	display: flex;
+	flex-direction: column;
+	margin-bottom: 1.5rem;
+	padding: 2rem 2rem 2rem 5rem;
+	position: relative
+}
+
+.module:not(.module--card) .alert_rm {
+	box-shadow: var(--box-shadow);
+}
+
+@media (min-width: 768px) {
+	.alert_rm {
+		align-items: center;
+		flex-direction: row
+	}
+}
+
+.module-container--full-width .alert_rm {
+	min-height: 3rem
+}
+
+@media (min-width: 768px) {
+	.module-container--full-width .alert_rm {
+		min-height: 6rem
+	}
+}
+
+.module-container--full-width>.alert_rm {
+	margin-bottom: 0
+}
+alert_rm+.alert_rm {
+	margin-top: 1.5rem
+}
+
+.alert--danger {
+	background-color: #bd3b2a;
+	background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' xml:space='preserve' viewBox='0 0 32 32'%3E%3Cpath fill='rgba(255, 255, 255, 0.5)' d='M15.957.265C7.287.265.265 7.287.265 15.957s7.022 15.692 15.692 15.692 15.692-7.029 15.692-15.692S24.62.265 15.957.265m-2.058 8.074c0-1.251 1.019-2.27 2.27-2.27s2.27 1.019 2.27 2.27v9.08a2.269 2.269 0 1 1-4.54 0zm2.27 13.588c1.251 0 2.27 1.019 2.27 2.27s-1.019 2.27-2.27 2.27-2.27-1.019-2.27-2.27a2.265 2.265 0 0 1 2.27-2.27' class='path1'/%3E%3C/svg%3E");
+	color: #f6dad7
+}
+
+.alert--warning {
+	background-color: #ff9c00;
+	background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cpath fill='rgba(255, 255, 255, 0.5)' d='M31.763 28.129 17.805 1.976A2.01 2.01 0 0 0 16.033.912h-.002c-.742 0-1.422.408-1.772 1.062L.239 28.127a2.02 2.02 0 0 0 .046 1.984c.364.606 1.02.978 1.726.978h27.976a2.012 2.012 0 0 0 1.776-2.96m-15.732-1.064a2.012 2.012 0 1 1 0-4.025 2.012 2.012 0 0 1 0 4.025m2.014-8.015a2.012 2.012 0 0 1-4.024 0v-8.047a2.012 2.012 0 0 1 4.024 0z'/%3E%3C/svg%3E");
+	color: #fff5e6
+}
+
+.alert--success {
+	background-color: #4abf33;
+	background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='42' height='32'%3E%3Cpath fill='rgba(255, 255, 255, 0.5)' d='M16.65 27.959 36.713 7.972l-3.945-3.946-17.61 17.545-6.524-6.524-3.416 3.415 9.511 9.511.041-.041h1.854z'/%3E%3C/svg%3E");
+	color: #e4f7e1
+}
+
+.alert--info {
+	background-color: #c9eafc !important;
+	background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 32 32'%3E%3Cpath fill='%230c7eba' d='M16.001 0c-8.837 0-16 7.164-16 16 0 8.834 7.163 16 16 16S32 24.836 32 16 24.837 0 16.001 0m2.508 21.886c-1.208 1.812-2.436 3.212-4.503 3.212-1.41-.23-1.989-1.241-1.684-2.27l2.66-8.807c.064-.216-.044-.446-.242-.515-.196-.069-.58.187-.913.549l-1.607 1.934c-.042-.324-.004-.862-.004-1.077 1.208-1.812 3.19-3.243 4.536-3.243 1.28.132 1.883 1.153 1.661 2.276l-2.676 8.848c-.036.2.07.405.251.467.199.07.611-.185.944-.549l1.607-1.932c.041.324-.03.892-.03 1.109zm-.358-11.499c-1.017 0-1.842-.74-1.842-1.831s.825-1.831 1.842-1.831c1.016 0 1.84.74 1.84 1.831s-.825 1.831-1.84 1.831'/%3E%3C/svg%3E");
+	color: #0c7eba
+}
+
+.alert_rm p {
+	margin-bottom: 0
+}
+
+.alert_rm ul {
+	margin-left: 2rem
+}
+
+.alert__title {
+	font-size: 1.6rem;
+	font-weight: 600;
+	margin-bottom: .5rem;
+	margin-top: 0
+}
+
+[class*=alert--] .alert__title {
+	color: #fff
+}
+
+.alert__body {
+	flex-grow: 1;
+	flex-shrink: 1;
+	position: relative
+}
+
+@media (min-width: 768px) {
+	.alert__body {
+		flex-basis: 0px
+	}
+}

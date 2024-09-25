@@ -5497,13 +5497,26 @@ final class RacketManager_Admin extends RacketManager {
 	 */
 	public function printMessage() {
 		if ( ! empty( $this->message ) ) {
-			// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
 			if ( $this->error ) {
-				echo "<div class='error'><p>" . $this->message . '</p></div>';
+				$alert_class = 'danger';
 			} else {
-				echo "<div id='message' class='updated fade show'><p><strong>" . $this->message . '</strong></p></div>';
+				$alert_class = 'success';
 			}
-			// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
+			ob_start();
+			?>
+			<div class="alert_rm alert--<?php echo esc_attr( $alert_class ); ?>">
+				<div class="alert__body">
+					<div class="alert__body-inner">
+						<?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<span><?php echo $this->message; ?></span>
+					</div>
+				</div>
+			</div>
+			<?php
+			$output = ob_get_contents();
+			ob_end_clean();
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo $output;
 		}
 		$this->message = '';
 	}

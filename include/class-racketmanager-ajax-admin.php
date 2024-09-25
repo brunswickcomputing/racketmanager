@@ -369,7 +369,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 						$return->error = true;
 						$return->msg   = __( 'Competition not found', 'racketmanager' );
 					} else {
-						$return = $racketmanager->notify_entry_open( $competition->id, $season );
+						$return = $racketmanager->notify_entry_open( $competition->type, $competition->id, $season );
 					}
 				}
 			}
@@ -398,11 +398,16 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 			$return->msg   = __( 'No security token found in request', 'racketmanager' );
 		}
 		if ( ! isset( $return->error ) ) {
-			$tournament_id    = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : '';
-			$tournament       = get_tournament( $tournament_id );
-			$latest_season    = $tournament->season;
-			$competition_type = 'tournament';
-			$return           = $racketmanager->notify_entry_open( $tournament->competition->id, $latest_season );
+			$tournament_id = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : '';
+			$tournament    = get_tournament( $tournament_id );
+			if ( $tournament ) {
+				$latest_season    = $tournament->season;
+				$competition_type = 'tournament';
+				$return           = $racketmanager->notify_entry_open( $competition_type, $tournament->id, $latest_season, );
+			} else {
+				$return->error = true;
+				$return->msg   = __( 'Tournament not found', 'racketmanager' );
+			}
 		}
 		if ( isset( $return->error ) ) {
 			wp_send_json_error( $return->msg, 500 );

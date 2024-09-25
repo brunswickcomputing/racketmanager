@@ -557,7 +557,8 @@ Racketmanager.notify_open = function(e, competitionId, season) {
 		}
 	});
 };
-Racketmanager.notifyTournamentEntryOpen = function(tournamentId) {
+Racketmanager.notifyTournamentEntryOpen = function(e, tournamentId) {
+	e.preventDefault();
 	let notifyField = "#notifyMessage-" + tournamentId;
 	jQuery(notifyField).removeClass();
 	jQuery(notifyField).text('');

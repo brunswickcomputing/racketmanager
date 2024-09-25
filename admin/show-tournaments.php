@@ -56,7 +56,7 @@ namespace Racketmanager;
 							<div class="col-12 col-md-1"><?php echo esc_html( $tournament->date ); ?></div>
 							<div class="col-12 col-md-auto"><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;season=<?php echo esc_html( $tournament->season ); ?>&amp;competition_id=<?php echo esc_html( $tournament->competition_id ); ?>&amp;tournament=<?php echo esc_html( $tournament->id ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Events', 'racketmanager' ); ?></a></div>
 							<?php if ( $tournament->open ) { ?>
-								<div class="col-12 col-md-auto"><a class="btn btn-secondary" onclick="Racketmanager.notifyTournamentEntryOpen('<?php echo esc_html( $tournament->id ); ?>');"><?php esc_html_e( 'Notify open', 'racketmanager' ); ?></a></div>
+								<div class="col-12 col-md-auto"><button class="btn btn-secondary" onclick="Racketmanager.notifyTournamentEntryOpen(event, '<?php echo esc_html( $tournament->id ); ?>');"><?php esc_html_e( 'Notify open', 'racketmanager' ); ?></button></div>
 								<div class="col-12 col-md-auto"><span id="notifyMessage-<?php echo esc_html( $tournament->id ); ?>"></span></div>
 							<?php } elseif ( $tournament->active ) { ?>
 								<div class="col-12 col-md-auto">

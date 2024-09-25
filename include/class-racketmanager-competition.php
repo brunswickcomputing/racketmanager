@@ -651,13 +651,20 @@ class Racketmanager_Competition {
 		} elseif ( ! empty( $season ) ) {
 			$data = $this->seasons[ $season ];
 		} else {
-			$data = end( $this->seasons );
+			$data = false;
 		}
-
+		$today = gmdate( 'Y-m-d' );
+		if ( empty( $data ) ) {
+			foreach ( array_reverse( $this->seasons ) as $season ) {
+				if ( empty( $season['dateStart'] ) || $season['dateStart'] <= $today ) {
+					$data = $season;
+					break;
+				}
+			}
+		}
 		if ( empty( $data ) ) {
 			$data = end( $this->seasons );
 		}
-
 		$count_matchdates = isset( $data['matchDates'] ) && is_array( $data['matchDates'] ) ? count( $data['matchDates'] ) : 0;
 		if ( empty( $data['dateEnd'] ) && $count_matchdates >= 2 ) {
 			$data['dateEnd']                = end( $data['matchDates'] );
@@ -667,7 +674,6 @@ class Racketmanager_Competition {
 			$data['dateStart']              = $data['matchDates'][0];
 			$this->seasons[ $data['name'] ] = $data;
 		}
-		$today               = gmdate( 'Y-m-d' );
 		$this->current_phase = 'complete';
 		if ( ! empty( $data['dateEnd'] ) && $today > $data['dateEnd'] ) {
 			$this->current_phase = 'end';

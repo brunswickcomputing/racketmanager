@@ -528,9 +528,11 @@ Racketmanager.emailConstitution = function(e, eventId) {
 };
 Racketmanager.notify_open = function(e, competitionId, season) {
 	e.preventDefault();
-	let notifyField = "#notifyMessage-" + season;
-	jQuery(notifyField).hide();
-	jQuery(notifyField).removeClass();
+	let notifyField1 = "#alert-season";
+	jQuery(notifyField1).hide();
+	jQuery(notifyField1).removeClass('alert--success alert--danger');
+	let notifyField2 = "#alert-season-response";
+	jQuery(notifyField2).html('');
 	jQuery.ajax({
 		url: ajaxurl,
 		type: "POST",
@@ -541,27 +543,31 @@ Racketmanager.notify_open = function(e, competitionId, season) {
 			"security": ajax_var.ajax_nonce,
 		},
 		success: function (response) {
-			jQuery(notifyField).text(response.data);
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-success');
-			jQuery(notifyField).delay(10000).fadeOut('slow');
+			let message = response.data;
+			jQuery(notifyField2).text(message);
+			jQuery(notifyField1).addClass('alert--success');
 		},
 		error: function (response) {
 			if (response.responseJSON) {
-				jQuery(notifyField).text(response.responseJSON.data);
+				let message = response.responseJSON.data;
+				jQuery(notifyField2).html(message);
 			} else {
-				jQuery(notifyField).text(response.statusText);
+				jQuery(notifyField2).text(response.statusText);
 			}
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-error');
+			jQuery(notifyField1).addClass('alert--danger');
+		},
+		complete: function() {
+			jQuery(notifyField1).show();
 		}
 	});
 };
 Racketmanager.notifyTournamentEntryOpen = function(e, tournamentId) {
 	e.preventDefault();
-	let notifyField = "#notifyMessage-" + tournamentId;
-	jQuery(notifyField).removeClass();
-	jQuery(notifyField).text('');
+	let notifyField1 = "#alert-tournaments";
+	jQuery(notifyField1).hide();
+	jQuery(notifyField1).removeClass('alert--success alert--danger');
+	let notifyField2 = "#alert-tournaments-response";
+	jQuery(notifyField2).html('');
 	jQuery.ajax({
 		url: ajaxurl,
 		type: "POST",
@@ -572,21 +578,20 @@ Racketmanager.notifyTournamentEntryOpen = function(e, tournamentId) {
 		},
 		success: function (response) {
 			let message = response.data;
-			jQuery(notifyField).text(message);
-			jQuery(notifyField).show();
-			jQuery(notifyField).delay(10000).fadeOut('slow');
-			jQuery(notifyField).addClass('message-success');
+			jQuery(notifyField2).text(message);
+			jQuery(notifyField1).addClass('alert--success');
 		},
 		error: function (response) {
 			if (response.responseJSON) {
 				let message = response.responseJSON.data;
-				jQuery(notifyField).show();
-				jQuery(notifyField).html(message);
+				jQuery(notifyField2).html(message);
 			} else {
-				jQuery(notifyField).text(response.statusText);
+				jQuery(notifyField2).text(response.statusText);
 			}
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-error');
+			jQuery(notifyField1).addClass('alert--danger');
+		},
+		complete: function() {
+			jQuery(notifyField1).show();
 		}
 	});
 };

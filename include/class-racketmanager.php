@@ -113,6 +113,7 @@ class RacketManager {
 		$player      = isset( $wp->query_vars['player_id'] ) ? ucwords( un_seo_url( $wp->query_vars['player_id'] ) ) : '';
 		$competition = isset( $wp->query_vars['competition_name'] ) ? ucwords( un_seo_url( $wp->query_vars['competition_name'] ) ) : '';
 		$tournament  = isset( $wp->query_vars['tournament'] ) ? ucwords( un_seo_url( $wp->query_vars['tournament'] ) ) : '';
+		$type        = isset( $wp->query_vars['competition_type'] ) ? ucwords( un_seo_url( $wp->query_vars['competition_type'] ) ) : '';
 		if ( 'player' === $slug && $player ) {
 			$title = $player . ' - ' . $site_name;
 		}
@@ -150,7 +151,6 @@ class RacketManager {
 			$title .= ' - ' . $site_name;
 		}
 		if ( 'latest-results' === $slug ) {
-			$type = isset( $wp->query_vars['competition_type'] ) ? ucwords( un_seo_url( $wp->query_vars['competition_type'] ) ) : '';
 			if ( $type ) {
 				/* translators: %s: competition type */
 				$title = sprintf( __( 'Latest %s Results', 'racketmanager' ), $type );
@@ -201,24 +201,18 @@ class RacketManager {
 			}
 			$title .= $site_name;
 		}
-		if ( 'league-entry' === $slug || 'cup-entry' === $slug ) {
-			$title = $competition;
+		if ( 'entry' === $slug ) {
+			if ( $type ) {
+				$title = ucwords( $type ) . ' ';
+			}
+			$title .= __( 'Entry Form', 'racketmanager' );
+			if ( $competition ) {
+				$title .= ' - ' . $competition;
+			}
 			if ( $season ) {
 				$title .= ' - ' . $season;
 			}
-			$title .= ' - ' . __( 'Entry Form', 'racketmanager' );
-			if ( $club ) {
-				$title .= ' - ' . $club;
-			}
 			$title .= ' - ' . $site_name;
-		}
-		if ( 'tournament-entry' === $slug ) {
-			if ( $tournament ) {
-				$title = $tournament;
-			} else {
-				$title = $competition;
-			}
-			$title .= ' - ' . __( 'Tournament Entry Form', 'racketmanager' ) . ' - ' . $site_name;
 		}
 		if ( 'tournament' === $slug ) {
 			$tournament = isset( $wp->query_vars['tournament'] ) ? ucwords( un_seo_url( $wp->query_vars['tournament'] ) ) : __( 'Latest', 'racketmanager' );

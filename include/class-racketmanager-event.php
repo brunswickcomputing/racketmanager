@@ -589,9 +589,8 @@ class Racketmanager_Event {
 		} elseif ( ! empty( $season ) ) {
 			$data = $this->seasons[ $season ];
 		} else {
-			$data = end( $this->seasons );
+			$data = false;
 		}
-
 		if ( empty( $data ) ) {
 			$data = end( $this->seasons );
 		}

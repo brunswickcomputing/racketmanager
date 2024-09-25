@@ -8,14 +8,16 @@
 namespace Racketmanager;
 
 if ( empty( $competition_club ) ) {
-	if ( ! empty( $competition->clubs ) ) {
-		?>
-		<div class="module module--card">
-			<div class="module__banner">
-				<h3 class="module__title"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></h3>
-			</div>
-			<div class="module__content">
-				<div class="module-container">
+	?>
+	<div class="module module--card">
+		<div class="module__banner">
+			<h3 class="module__title"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></h3>
+		</div>
+		<div class="module__content">
+			<div class="module-container">
+				<?php
+				if ( ! empty( $competition->clubs ) ) {
+					?>
 					<div class="col-12 col-md-12 col-lg-6">
 						<div class="row mb-2 row-header">
 							<div class="col-6">
@@ -48,12 +50,14 @@ if ( empty( $competition_club ) ) {
 						}
 						?>
 					</div>
-				</div>
+					<?php
+				} else {
+					esc_html_e( 'No clubs found', 'racketmanager' );
+				}
+				?>
 			</div>
 		</div>
-		<?php
-	}
-	?>
+	</div>
 	<?php
 } else {
 	?>

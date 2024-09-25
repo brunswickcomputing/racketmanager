@@ -1826,17 +1826,6 @@ final class RacketManager_Admin extends RacketManager {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
 		} else {
-			if ( isset( $_POST['notifyOpen'] ) ) {
-				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_notify-league-open' ) ) {
-					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-				} elseif ( isset( $_POST['competition_id'] ) && isset( $_POST['season'] ) ) {
-						$notification = $this->notify_entry_open( intval( $_POST['competition_id'] ), sanitize_text_field( wp_unslash( $_POST['season'] ) ) );
-						$this->set_message( $notification->msg, isset( $notification->error ) ? $notification->error : false );
-				} else {
-					$this->set_message( __( 'Competition not selected', 'racketmanager' ), true );
-				}
-				$this->printMessage();
-			}
 			$competition_type  = 'league';
 			$type              = '';
 			$season            = '';
@@ -1855,17 +1844,6 @@ final class RacketManager_Admin extends RacketManager {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
 		} else {
-			if ( isset( $_POST['notifyOpen'] ) ) {
-				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_notify-cup-open' ) ) {
-					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-				} elseif ( isset( $_POST['competition_id'] ) && isset( $_POST['season'] ) ) {
-						$notification = $this->notify_entry_open( intval( $_POST['competition_id'] ), sanitize_text_field( wp_unslash( $_POST['season'] ) ) );
-						$this->set_message( $notification->msg, isset( $notification->error ) ? $notification->error : false );
-				} else {
-					$this->set_message( __( 'Competition not selected', 'racketmanager' ), true );
-				}
-				$this->printMessage();
-			}
 			$competition_type  = 'cup';
 			$type              = '';
 			$season            = '';

@@ -286,7 +286,7 @@ $entry_option = false;
 										printf( __( 'I agree to abide by %s.', 'racketmanager' ), $rules_link ); //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 										?>
 									</label>
-									<input class="form-check-input switch" id="acceptance" name="acceptance" type="checkbox" role="switch">
+									<input class="form-check-input switch" id="acceptance" name="acceptance" type="checkbox" role="switch" aria-checked="false">
 								</div>
 							</div>
 						</div>

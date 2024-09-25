@@ -804,7 +804,7 @@ a.score {
 .module-container--full-width>.alert_rm {
 	margin-bottom: 0
 }
-alert_rm+.alert_rm {
+.alert_rm+.alert_rm {
 	margin-top: 1.5rem
 }
 

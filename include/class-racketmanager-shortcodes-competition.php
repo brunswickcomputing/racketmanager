@@ -1463,6 +1463,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			array(
 				'count'  => true,
 				'season' => $competition->current_season['name'],
+				'status' => 1,
 			)
 		);
 
@@ -1504,6 +1505,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				array(
 					'count'  => true,
 					'season' => $competition->current_season['name'],
+					'status' => 1,
 				)
 			);
 			$competition->events[ $i ] = $event;
@@ -1544,6 +1546,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		}
 		$competition->teams = $competition->get_teams(
 			array(
+				'status'  => 1,
 				'season'  => $competition->current_season['name'],
 				'orderby' => array( 'name' => 'ASC' ),
 			)
@@ -1583,7 +1586,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		if ( ! $competition ) {
 			return esc_html_e( 'Competition not found', 'racketmanager' );
 		}
-		$competition->clubs = $competition->get_clubs( array() );
+		$competition->clubs = $competition->get_clubs( array( 'status' => 1 ) );
 		$competition_club   = null;
 		$club               = null;
 		if ( isset( $wp->query_vars['club_name'] ) ) {
@@ -1597,6 +1600,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 					array(
 						'club'   => $competition_club->id,
 						'season' => $competition->current_season['name'],
+						'status' => 1,
 					)
 				);
 				$competition_club->matches = array();

@@ -9,6 +9,12 @@ namespace Racketmanager;
 
 ?>
 <div>
+	<div class="alert_rm" id="alert-season" style="display:none;">
+		<div class="alert__body">
+			<div class="alert__body-inner" id="alert-season-response">
+			</div>
+		</div>
+	</div>
 	<form id="seasons-filter" action="" method="post" class="form-control mb-3">
 		<?php wp_nonce_field( 'seasons-bulk', 'racketmanager_nonce' ); ?>
 

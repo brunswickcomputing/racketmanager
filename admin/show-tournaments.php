@@ -10,7 +10,12 @@ namespace Racketmanager;
 ?>
 <div class="container">
 	<h1><?php esc_html_e( 'Tournaments', 'racketmanager' ); ?></h1>
-
+	<div class="alert_rm" id="alert-tournaments" style="display:none;">
+		<div class="alert__body">
+			<div class="alert__body-inner" id="alert-tournaments-response">
+			</div>
+		</div>
+	</div>
 	<div class="form-control mb-3">
 		<form id="tournaments-filter" method="post" action="">
 			<?php wp_nonce_field( 'tournaments-bulk' ); ?>

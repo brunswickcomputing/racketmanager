@@ -857,41 +857,28 @@ class RacketManager {
 			'index.php?pagename=competitions&type=tournament',
 			'top'
 		);
-		$this->rewrite_tournament();
 		// cup entry form - type - season - club.
 		add_rewrite_rule(
-			'cups/entry-form/(.+?)/([0-9]{4})/(.+?)/?$',
+			'cup/entry-form/(.+?)/([0-9]{4})/(.+?)/?$',
 			'index.php?pagename=competition%2Fentry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]&competition_type=cup',
 			'top'
 		);
 		// league entry form - competition - season - club.
 		add_rewrite_rule(
-			'leagues/entry-form/(.+?)/([0-9]{4})/(.+?)/?$',
+			'league/entry-form/(.+?)/([0-9]{4})/(.+?)/?$',
 			'index.php?pagename=competition%2Fentry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]&competition_type=league',
 			'top'
 		);
 		// tournament entry form - name - club.
 		add_rewrite_rule(
-			'tournaments/entry-form/(.+?)/(.+?)/?$',
+			'tournament/entry-form/(.+?)/(.+?)/?$',
 			'index.php?pagename=competition%2Fentry&competition_name=$matches[1]&club=$matches[2]&competition_type=tournament',
 			'top'
 		);
 		// tournament entry form - name.
 		add_rewrite_rule(
-			'tournaments/entry-form/(.+?)/?$',
+			'tournament/entry-form/(.+?)/?$',
 			'index.php?pagename=competition%2Fentry&&competition_name=$matches[1]&competition_type=tournament',
-			'top'
-		);
-		// tournament entry form - season - club.
-		add_rewrite_rule(
-			'tournaments/(.+?)-entry/([0-9]{4})/(.+?)/?$',
-			'index.php?pagename=tournaments%2Fentry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]&competition_type=tournament',
-			'top'
-		);
-		// tournament entry form - season.
-		add_rewrite_rule(
-			'tournaments/(.+?)-entry/([0-9]{4})/?$',
-			'index.php?pagename=tournaments%2Ftournament-entry&season=$matches[2]&competition_name=$matches[1]',
 			'top'
 		);
 		// league news info.
@@ -965,6 +952,7 @@ class RacketManager {
 			'index.php?pagename=players',
 			'top'
 		);
+		$this->rewrite_tournament();
 		$this->rewrite_competition();
 		$this->rewrite_league();
 		$this->rewrite_cups();

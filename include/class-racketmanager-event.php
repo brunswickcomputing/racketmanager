@@ -431,7 +431,8 @@ class Racketmanager_Event {
 		$this->standings = $this->competition->standings;
 		// set season to latest.
 		if ( $this->num_seasons > 0 ) {
-			$this->set_season();
+			$season = empty( $this->competition->current_season['name'] ) ? null : $this->competition->current_season['name'];
+			$this->set_season( $season );
 		}
 
 		// Championship.

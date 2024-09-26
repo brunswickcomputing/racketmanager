@@ -291,6 +291,9 @@ switch ( $event->competition->type ) {
 		?>
 		<div class="tab-pane fade" id="standings" role="tabpanel" aria-labelledby="standings-tab">
 			<div class="module module--card">
+				<div class="module__banner">
+					<h3 class="module__title"><?php esc_html_e( 'Standings', 'racketmanager' ); ?></h3>
+				</div>
 				<div class="module__content">
 					<div class="module-container">
 						<div id="leagues">

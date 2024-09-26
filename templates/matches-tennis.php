@@ -52,6 +52,8 @@ namespace Racketmanager;
 						</div>
 						<?php
 					}
+				} else {
+					esc_html_e( 'No matches found', 'racketmanager' );
 				}
 			}
 			?>

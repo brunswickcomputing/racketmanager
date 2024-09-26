@@ -125,7 +125,7 @@ if ( $match ) {
 									<span class="nav--link">
 										<span class="nav-link__value">
 											<?php racketmanager_the_svg( 'icon-calendar' ); ?>
-											<?php echo esc_html( mysql2date( 'j M', $tournament->date_start ) ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( mysql2date( 'j M', $tournament->date ) ); ?>
+											<?php echo esc_html( mysql2date( $racketmanager->date_format, $tournament->date_start ) ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( mysql2date( $racketmanager->date_format, $tournament->date ) ); ?>
 										</span>
 									</span>
 								</small>

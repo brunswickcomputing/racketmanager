@@ -105,7 +105,7 @@ switch ( $event->competition->type ) {
 								<span class="nav--link">
 									<span class="nav-link__value">
 										<?php racketmanager_the_svg( 'icon-calendar' ); ?>
-										<?php echo esc_html( mysql2date( 'j M', $event->competition->current_season['dateStart'] ) ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( mysql2date( 'j M', $event->competition->current_season['dateEnd'] ) ); ?>
+										<?php echo esc_html( mysql2date( $racketmanager->date_format, $event->competition->current_season['dateStart'] ) ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( mysql2date( $racketmanager->date_format, $event->competition->current_season['dateEnd'] ) ); ?>
 									</span>
 								</span>
 							</small>

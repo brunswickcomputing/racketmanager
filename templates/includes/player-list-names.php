@@ -15,7 +15,7 @@ namespace Racketmanager;
 	<div class="module__content">
 		<div class="module-container">
 			<?php
-			if ( ! empty( $competition->players ) ) {
+			if ( ! empty( $player_list ) ) {
 				?>
 				<ul class="player-list ">
 					<?php

@@ -56,22 +56,18 @@ if ( empty( $event_club ) ) {
 	?>
 	<?php
 } else {
+	$words    = explode( ' ', $event_club->shortcode );
+	$initials = null;
+	foreach ( $words as $w ) {
+		$initials .= $w[0];
+	}
 	?>
 	<div class="page-subhead">
 		<div class="media">
 			<div class="media__wrapper">
 				<div class="media__img">
 					<span class="profile-icon">
-						<span class="profile-icon__abbr">
-							<?php
-							$words    = explode( ' ', $event_club->shortcode );
-							$initials = null;
-							foreach ( $words as $w ) {
-								$initials .= $w[0];
-							}
-							echo esc_html( $initials );
-							?>
-						</span>
+						<span class="profile-icon__abbr"><?php echo esc_html( $initials ); ?></span>
 					</span>
 				</div>
 				<div class="media__content">

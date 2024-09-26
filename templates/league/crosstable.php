@@ -56,6 +56,8 @@ namespace Racketmanager;
 					</table>
 				</div>
 				<?php
+			} else {
+				esc_html_e( 'No teams found', 'racketmanager' );
 			}
 			?>
 		</div>

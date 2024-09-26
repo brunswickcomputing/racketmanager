@@ -221,6 +221,8 @@ if ( empty( $object->team ) ) {
 						?>
 					</ol>
 					<?php
+				} else {
+					esc_html_e( 'No teams found', 'racketmanager' );
 				}
 				?>
 			</div>

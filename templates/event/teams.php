@@ -8,14 +8,16 @@
 namespace Racketmanager;
 
 if ( empty( $event_team ) ) {
-	if ( ! empty( $event->teams ) ) {
-		?>
-		<div class="module module--card">
-			<div class="module__banner">
-				<h3 class="module__title"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></h3>
-			</div>
-			<div class="module__content">
-				<div class="module-container">
+	?>
+	<div class="module module--card">
+		<div class="module__banner">
+			<h3 class="module__title"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></h3>
+		</div>
+		<div class="module__content">
+			<div class="module-container">
+				<?php
+				if ( ! empty( $event->teams ) ) {
+					?>
 					<div class="col-12">
 						<div class="row mb-2 row-header">
 							<div class="col-4">
@@ -90,12 +92,14 @@ if ( empty( $event_team ) ) {
 						}
 						?>
 					</div>
-				</div>
+					<?php
+				} else {
+					esc_html_e( 'No teams found', 'racketmanager' );
+				}
+				?>
 			</div>
 		</div>
-		<?php
-	}
-	?>
+	</div>
 	<?php
 } else {
 	?>

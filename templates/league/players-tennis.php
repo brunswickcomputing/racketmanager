@@ -129,6 +129,8 @@ if ( ! empty( $league->player ) ) {
 						?>
 					</ol>
 					<?php
+				} else {
+					esc_html_e( 'No players found', 'racketmanager' );
 				}
 				?>
 			</div>

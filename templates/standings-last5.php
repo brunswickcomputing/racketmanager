@@ -158,7 +158,7 @@ namespace Racketmanager;
 										<?php
 										if ( $team->is_withdrawn ) {
 											?>
-											</s> 
+											</s>
 											<?php
 										}
 										?>
@@ -249,6 +249,8 @@ namespace Racketmanager;
 					</table>
 				</div>
 				<?php
+			} else {
+				esc_html_e( 'No teams found', 'racketmanager' );
 			}
 			?>
 		</div>

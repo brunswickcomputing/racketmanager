@@ -652,7 +652,17 @@ class RacketManager_Shortcodes {
 		}
 		if ( $valid ) {
 			$competition = get_competition( $competition_name, 'name' );
-			$events      = $competition->get_events();
+			if ( ! $competition ) {
+				$valid = false;
+				$msg   = esc_html_e( 'Competition not found', 'racketmanager' );
+			}
+		}
+		if ( $valid && empty( $competition->seasons[ $season ] ) ) {
+			$valid = false;
+			$msg   = esc_html_e( 'Season not found for competition', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$events = $competition->get_events();
 			foreach ( $events as $i => $event ) {
 				$event         = get_event( $event );
 				$event->status = '';

@@ -495,17 +495,11 @@ class RacketManager_Shortcodes {
 					$valid = false;
 					$msg   = esc_html_e( 'No season specified', 'racketmanager' );
 				} else {
-					$season = get_query_var( 'season' );
-					if ( ! $season ) {
+					$club_name = get_query_var( 'club_name' );
+					$club      = un_seo_url( $club_name );
+					if ( ! $club ) {
 						$valid = false;
-						$msg   = esc_html_e( 'No season specified', 'racketmanager' );
-					} else {
-						$club_name = get_query_var( 'club_name' );
-						$club      = un_seo_url( $club_name );
-						if ( ! $club ) {
-							$valid = false;
-							$msg   = esc_html_e( 'No club specified', 'racketmanager' );
-						}
+						$msg   = esc_html_e( 'No club specified', 'racketmanager' );
 					}
 				}
 			}

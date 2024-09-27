@@ -1653,7 +1653,7 @@ class Racketmanager_Event {
 		$league_id = $leagues[0]->id;
 		$rank      = 99;
 		$status    = 'NT';
-		$profile   = 2;
+		$profile   = 1;
 		$league    = get_league( $league_id );
 		$league->add_team( $team, $season, $rank, $status, $profile );
 	}

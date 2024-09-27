@@ -20,7 +20,7 @@ namespace Racketmanager;
 
 ?>
 	<?php
-	$competition_season = null;
+	$competition_season = $competition->current_season;
 	require RACKETMANAGER_PATH . 'templates/includes/competition-header.php';
 	?>
 	<form id="form-entry" action="" method="post">

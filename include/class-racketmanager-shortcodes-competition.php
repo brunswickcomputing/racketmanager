@@ -222,6 +222,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				'season'  => $season,
 				'orderby' => array( 'name' => 'ASC' ),
 				'players' => true,
+				'status'  => 1,
 			)
 		);
 		if ( $event->competition->is_championship ) {
@@ -465,7 +466,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$league->set_season( $season );
 		$league->set_group( $group );
 
-		$team_args = array( 'orderby' => array( 'rank' => 'ASC' ) );
+		$team_args           = array( 'orderby' => array( 'rank' => 'ASC' ) );
+		$team_args['status'] = 1;
 		if ( $group ) {
 			$team_args['group'] = $group;
 		}
@@ -1113,6 +1115,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 					array(
 						'club'   => $event_club->id,
 						'season' => $event->current_season['name'],
+						'status' => 1,
 					)
 				);
 				$event_club->matches = array();
@@ -1164,7 +1167,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				return esc_html__( 'Club not found', 'racketmanager' );
 			}
 		}
-		$event->clubs = $event->get_clubs( array() );
+		$event->clubs = $event->get_clubs( array( 'status' => 1 ) );
 		$filename     = ( ! empty( $template ) ) ? 'clubs-' . $template : 'clubs';
 		return $this->load_template(
 			$filename,

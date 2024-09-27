@@ -1329,8 +1329,13 @@ class Racketmanager_League {
 		if ( $home ) {
 			$sql .= ' AND B.`home` = 1';
 		}
-		if ( 'active' === $status && $status ) {
-			$sql .= ' AND A.`profile` != 3';
+		if ( $status ) {
+			if ( 'active' === $status ) {
+				$sql .= ' AND A.`profile` != 3';
+			} elseif ( 1 === $status ) {
+				$sql   .= ' AND A.`profile` = %d';
+				$args[] = $status;
+			}
 		}
 		if ( $club ) {
 			$sql   .= ' AND B.`affiliatedclub` = %d';

@@ -470,7 +470,6 @@ class RacketManager_Shortcodes {
 	 * @return the content
 	 */
 	public function show_competition_entry( $atts ) {
-		global $wp;
 		$args     = shortcode_atts(
 			array(
 				'template' => '',

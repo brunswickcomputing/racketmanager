@@ -20,7 +20,7 @@ $match_days = Racketmanager_Util::get_match_days();
 ?>
 
 	<?php
-	$competition_season = null;
+	$competition_season = $competition->current_season;
 	require RACKETMANAGER_PATH . 'templates/includes/competition-header.php';
 	?>
 	<form id="form-entry" action="" method="post">

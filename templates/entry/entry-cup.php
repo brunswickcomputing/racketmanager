@@ -19,6 +19,7 @@
 namespace Racketmanager;
 
 ?>
+<div class="container">
 	<?php
 	$competition_season = $competition->current_season;
 	require RACKETMANAGER_PATH . 'templates/includes/competition-header.php';
@@ -214,3 +215,4 @@ namespace Racketmanager;
 			</div>
 		</div>
 	</form>
+</div>

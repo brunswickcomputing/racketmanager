@@ -18,7 +18,7 @@ namespace Racketmanager;
 
 $match_days = Racketmanager_Util::get_match_days();
 ?>
-
+<div class="container">
 	<?php
 	$competition_season = $competition->current_season;
 	require RACKETMANAGER_PATH . 'templates/includes/competition-header.php';
@@ -271,3 +271,4 @@ $match_days = Racketmanager_Util::get_match_days();
 			</div>
 		</div>
 	</form>
+</div>

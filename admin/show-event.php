@@ -45,7 +45,7 @@ jQuery(document).ready(function(){
 				<label for="season" style="vertical-align: middle;"><?php esc_html_e( 'Season', 'racketmanager' ); ?></label>
 				<select size="1" name="season" id="season">
 					<?php
-					foreach ( $event->seasons as $event_season ) {
+					foreach ( array_reverse( $event->seasons ) as $event_season ) {
 						?>
 						<option value="<?php echo esc_html( htmlspecialchars( $event_season['name'] ) ); ?>" <?php selected( $event_season['name'], $season ); ?>>
 							<?php echo esc_html( $event_season['name'] ); ?>

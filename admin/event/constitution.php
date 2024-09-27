@@ -29,8 +29,8 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
 		$updateable = false;
 	}
 	$latest_event_season = $event->current_season['name'];
-	foreach ( array_reverse( $event->seasons ) as $season ) {
-		if ( ! isset( $season['status'] ) || 'draft' !== $season['status'] ) {
+	foreach ( array_reverse( $event->competition->seasons ) as $season ) {
+		if ( isset( $season['dateEnd'] ) && $season['dateEnd'] < $today ) {
 			$latest_event_season = $season['name'];
 			break;
 		}

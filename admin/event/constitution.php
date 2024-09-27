@@ -20,7 +20,7 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
 	<p><?php esc_html_e( 'No pending seasons for event', 'racketmanager' ); ?>
 	<?php
 } else {
-	$latest_season_dtls = end( $event->seasons );
+	$latest_season_dtls = $event->current_season;
 	$latest_season      = $latest_season_dtls['name'];
 	if ( 'draft' === $latest_season_dtls['status'] ) {
 		$updateable = true;

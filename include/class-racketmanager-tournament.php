@@ -165,6 +165,30 @@ final class Racketmanager_Tournament {
 	 */
 	public $current_phase;
 	/**
+	 * Is complete
+	 *
+	 * @var boolean
+	 */
+	public $is_complete = false;
+	/**
+	 * Is started
+	 *
+	 * @var boolean
+	 */
+	public $is_started = false;
+	/**
+	 * Is closed
+	 *
+	 * @var boolean
+	 */
+	public $is_closed = false;
+	/**
+	 * Is open
+	 *
+	 * @var boolean
+	 */
+	public $is_open = false;
+	/**
 	 * Link variable
 	 *
 	 * @var string
@@ -251,14 +275,18 @@ final class Racketmanager_Tournament {
 			$this->current_phase        = 'complete';
 			if ( $today > $this->date ) {
 				$this->current_phase = 'end';
+				$this->is_complete   = true;
 			} else {
 				$this->current_phase = '';
 				if ( ! empty( $this->date_start ) && $today >= $this->date_start ) {
 					$this->current_phase = 'start';
+					$this->is_started    = true;
 				} elseif ( ! empty( $this->closing_date ) && $today >= $this->closing_date ) {
 					$this->current_phase = 'close';
+					$this->is_closed     = true;
 				} elseif ( ! empty( $this->date_open ) && $today >= $this->date_open ) {
 					$this->current_phase = 'open';
+					$this->is_open       = true;
 				}
 			}
 			if ( empty( $this->venue ) ) {

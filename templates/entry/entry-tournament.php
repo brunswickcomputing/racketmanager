@@ -49,7 +49,7 @@ $entry_option = false;
 						</div>
 					</div>
 					<?php
-					if ( 'open' !== $tournament->current_phase ) {
+					if ( ! $tournament->is_open ) {
 						?>
 						<div class="alert_rm mt-3 alert--warning" id="loginAlert">
 							<div class="alert__body">

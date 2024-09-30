@@ -66,7 +66,7 @@ namespace Racketmanager;
 								?>
 								<li class="list__item is-started
 									<?php
-									if ( 'start' === $competition->current_phase ) {
+									if ( $competition->is_started ) {
 										echo ' is-current';
 										echo ' is-success';
 									}
@@ -87,7 +87,7 @@ namespace Racketmanager;
 								?>
 								<li class="list__item is-finished
 									<?php
-									if ( 'end' === $competition->current_phase ) {
+									if ( $competition->is_complete ) {
 										echo ' is-current';
 										echo ' is-danger';
 									}

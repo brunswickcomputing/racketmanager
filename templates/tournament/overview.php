@@ -58,7 +58,7 @@ namespace Racketmanager;
 						<ol class="list--timeline-labelled list--timeline list has-custom-icon">
 							<li class="list__item is-entry-open
 								<?php
-								if ( 'open' === $tournament->current_phase ) {
+								if ( $tournament->is_open ) {
 									echo ' is-current';
 									echo ' is-success';
 								}
@@ -73,7 +73,7 @@ namespace Racketmanager;
 							</li>
 							<li class="list__item is-entry-closed
 								<?php
-								if ( 'close' === $tournament->current_phase ) {
+								if ( $tournament->is_closed ) {
 									echo ' is-current';
 									echo ' is-danger';
 								}
@@ -88,7 +88,7 @@ namespace Racketmanager;
 							</li>
 							<li class="list__item is-started
 								<?php
-								if ( 'start' === $tournament->current_phase ) {
+								if ( $tournament->is_started ) {
 									echo ' is-current';
 									echo ' is-success';
 								}
@@ -103,7 +103,7 @@ namespace Racketmanager;
 							</li>
 							<li class="list__item is-finished
 								<?php
-								if ( 'end' === $tournament->current_phase ) {
+								if ( $tournament->is_complete ) {
 									echo ' is-current';
 									echo ' is-danger';
 								}

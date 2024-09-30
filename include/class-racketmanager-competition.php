@@ -324,6 +324,12 @@ class Racketmanager_Competition {
 	 */
 	public $clubs = array();
 	/**
+	 * Date Open
+	 *
+	 * @var string
+	 */
+	public $date_open;
+	/**
 	 * Date Start
 	 *
 	 * @var string
@@ -446,6 +452,9 @@ class Racketmanager_Competition {
 		// set season to latest.
 		if ( $this->num_seasons > 0 ) {
 			$this->set_season();
+			if ( ! empty( $this->current_season['dateOpen'] ) ) {
+				$this->date_open = $this->current_season['dateOpen'];
+			}
 			if ( ! empty( $this->current_season['dateStart'] ) ) {
 				$this->date_start = $this->current_season['dateStart'];
 			}

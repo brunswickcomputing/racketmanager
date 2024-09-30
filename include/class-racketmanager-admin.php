@@ -3352,6 +3352,7 @@ final class RacketManager_Admin extends RacketManager {
 					}
 					$num_match_days = isset( $_POST['num_match_days'] ) ? intval( $_POST['num_match_days'] ) : null;
 					$closing_date   = isset( $_POST['date_closing'] ) ? sanitize_text_field( wp_unslash( $_POST['date_closing'] ) ) : null;
+					$date_open      = isset( $_POST['date_open'] ) ? sanitize_text_field( wp_unslash( $_POST['date_open'] ) ) : null;
 					$date_start     = isset( $_POST['date_start'] ) ? sanitize_text_field( wp_unslash( $_POST['date_start'] ) ) : null;
 					$date_end       = isset( $_POST['date_end'] ) ? sanitize_text_field( wp_unslash( $_POST['date_end'] ) ) : null;
 					$is_box         = isset( $_POST['is_box'] ) ? sanitize_text_field( wp_unslash( $_POST['is_box'] ) ) : false;
@@ -3384,6 +3385,7 @@ final class RacketManager_Admin extends RacketManager {
 					$season_data->home_away      = $home_away;
 					$season_data->status         = $status;
 					$season_data->closing_date   = $closing_date;
+					$season_data->date_open      = $date_open;
 					$season_data->date_start     = $date_start;
 					$season_data->date_end       = $date_end;
 					$season_data->type           = $item;
@@ -3769,6 +3771,10 @@ final class RacketManager_Admin extends RacketManager {
 			$error = true;
 		}
 		if ( 'competition' === $season_data->type ) {
+			if ( ! $season_data->date_open ) {
+				$this->set_message( __( 'Open date must be set', 'racketmanager' ), true );
+				$error = true;
+			}
 			if ( ! $season_data->closing_date ) {
 				$this->set_message( __( 'Closing date must be set', 'racketmanager' ), true );
 				$error = true;
@@ -3804,6 +3810,7 @@ final class RacketManager_Admin extends RacketManager {
 				'closing_date'    => $season_data->closing_date,
 			);
 			if ( 'competition' === $season_data->type ) {
+				$object->seasons[ $season_data->season ]['dateOpen']  = $season_data->date_open;
 				$object->seasons[ $season_data->season ]['dateStart'] = $season_data->date_start;
 				$object->seasons[ $season_data->season ]['dateEnd']   = $season_data->date_end;
 			}

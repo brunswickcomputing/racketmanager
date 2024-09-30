@@ -78,6 +78,20 @@ foreach ( $competition_list as $key => $competition ) {
 						?>
 					</div>
 				</div>
+				<div class="media__aside">
+					<?php
+					if ( $competition->is_open ) {
+						?>
+						<a href="/<?php echo esc_attr( $competition->type ); ?>/entry-form/<?php echo esc_attr( seo_url( $competition->name ) ); ?>/" class="btn btn-primary">
+							<i class="racketmanager-svg-icon">
+								<?php racketmanager_the_svg( 'icon-pencil' ); ?>
+							</i>
+							<span class="btn__text"><?php esc_html_e( 'Enter', 'racketmanager' ); ?></span>
+						</a>
+						<?php
+					}
+					?>
+				</div>
 			</div>
 			<ul class="media__icons">
 				<li class="media__icons-item">

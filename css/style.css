@@ -2079,7 +2079,9 @@ tc-modal .message-page .message-page__modal .message-page__removal-tips ul .list
 .reverse .racketmanager-svg-icon {
 	fill: var(--e-global-color-global_color_1);
 }
-
+.racketmanager-svg-icon {
+	fill: #FFF;
+}
 .tournament-head .reverse svg, .competition-head .reverse svg {
 	fill: var(--e-global-color-global_color_1);
 }
@@ -3733,6 +3735,9 @@ module--dark .mail-media,
     display: flex;
     list-style-type: none;
 }
+ul.media__icons {
+	padding-left: 0;
+}
 h3.media__title,
 h4.media__title {
 	margin: 0;
@@ -4196,7 +4201,19 @@ h5.media__title {
 		padding-left: 0
 	}
 }
+.media__aside .btn__text {
+	display: none;
+}
 
+@media (min-width: 768px) {
+	.media__aside .btn__text {
+		display: inline-block;
+	}
+}
+
+.col-12 .media__aside {
+	padding-right: 0;
+}
 .btn.btn--link {
 	align-items: center;
 	background: transparent;
@@ -4841,7 +4858,7 @@ ol.list {
 	}
 
 	.media__content {
-		flex-basis: 14rem;
+		flex-basis: 12rem;
 	}
 }
 

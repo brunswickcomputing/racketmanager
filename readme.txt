@@ -47,6 +47,15 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.21.0 =
+* BUGFIX: show tournaments list when no active tournament
+* BUGFIX: use correct class for message deletion
+* UPDATE: show winners on last day of competition
+* UPDATE: show winners on last day of tournament
+* UPDATE: use button to trigger tournament open notifications
+* UPDATE: only retrieve confirmed teams for entries
+* UPDATE: allow competition entry from list if open
+
 = 8.20.0 =
 * UPDATE: format competition start date in overview
 * UPDATE: show first active tournament when none specified

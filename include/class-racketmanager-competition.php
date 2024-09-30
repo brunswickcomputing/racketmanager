@@ -348,6 +348,30 @@ class Racketmanager_Competition {
 	 */
 	public $venue;
 	/**
+	 * Is complete
+	 *
+	 * @var boolean
+	 */
+	public $is_complete = false;
+	/**
+	 * Is started
+	 *
+	 * @var boolean
+	 */
+	public $is_started = false;
+	/**
+	 * Is closed
+	 *
+	 * @var boolean
+	 */
+	public $is_closed = false;
+	/**
+	 * Is open
+	 *
+	 * @var boolean
+	 */
+	public $is_open = false;
+	/**
 	 * Retrieve competition instance
 	 *
 	 * @param int    $competition_id competition id.
@@ -684,10 +708,19 @@ class Racketmanager_Competition {
 			$this->seasons[ $data['name'] ] = $data;
 		}
 		$this->current_phase = 'complete';
+		$this->is_complete   = true;
 		if ( ! empty( $data['dateEnd'] ) && $today > $data['dateEnd'] ) {
 			$this->current_phase = 'end';
+			$this->is_complete   = true;
 		} elseif ( ! empty( $data['dateStart'] ) && $today >= $data['dateStart'] ) {
 			$this->current_phase = 'start';
+			$this->is_started    = true;
+		} elseif ( ! empty( $data['closing_date'] ) && $today >= $data['closing_date'] ) {
+			$this->current_phase = 'close';
+			$this->is_closed     = true;
+		} elseif ( ! empty( $data['dateOpen'] ) && $today >= $data['dateOpen'] ) {
+			$this->current_phase = 'open';
+			$this->is_open       = true;
 		}
 		$this->current_season = $data;
 		$this->num_match_days = $data['num_match_days'];

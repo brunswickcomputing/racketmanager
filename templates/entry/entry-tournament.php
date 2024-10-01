@@ -241,13 +241,7 @@ $entry_option = false;
 															<?php
 															foreach ( $partner_list as $partner ) {
 																?>
-																<option value="<?php echo esc_html( $partner->player_id ); ?>"
-																	<?php
-																	if ( $partner_id === $partner->player_id ) {
-																		echo ' selected';
-																	}
-																	?>
-																><?php echo esc_html( $partner->fullname . ' - ' . get_club( $partner->affiliatedclub )->name ); ?></option>
+																<option value="<?php echo esc_html( $partner->player_id ); ?>" <?php echo intval( $partner_id ) === intval( $partner->player_id ) ? 'selected' : null; ?>><?php echo esc_html( $partner->fullname . ' - ' . get_club( $partner->affiliatedclub )->name ); ?></option>
 																<?php
 															}
 															?>

@@ -44,28 +44,13 @@ function SetCalculator(inputdata) {
 	let minLoss = jQuery(setGroup).data('minloss');
 	let tiebreakSet = jQuery(setGroup).data('tiebreakset');
 	if (teamRef == 1) {
-		if (teamScore == minWin) {
-			if ('' === teamScoreAlt) {
-				if ((teamScore + 2) < maxWin) {
-					teamScoreAlt = teamScore + 2;
-				} else {
-					teamScoreAlt = maxWin;
-				}
-			}
-		} else if (teamScore == maxWin) {
-			if ('' == teamScoreAlt) {
-				teamScoreAlt = minWin;
-			}
-		} else if ('' !== teamScore) {
-			if ('' === teamScoreAlt) {
-				if (teamScore === maxLoss) {
-					teamScoreAlt = maxWin;
-				} else if (teamScore < minWin) {
-					teamScoreAlt = minWin;
-				}
-			}
+		if (teamScoreAlt === '') {
+			teamScoreAlt = CalculateAltScore(teamScore, maxWin, maxLoss, minWin);
 		}
 	} else if (teamRef == 2) {
+		if (teamScoreAlt === '') {
+			teamScoreAlt = CalculateAltScore(teamScore, maxWin, maxLoss, minWin);
+		}
 		if ((teamScore == maxWin && teamScoreAlt == tiebreakSet) || (teamScoreAlt == maxWin && teamScore == tiebreakSet)) {
 			jQuery(tieBreakWrapper).show();
 			jQuery(tieBreak).focus();
@@ -96,6 +81,25 @@ function SetCalculator(inputdata) {
 	if (!isNaN(tieBreakScore)) {
 		jQuery(tieBreak).val(tieBreakScore);
 	}
+};
+function CalculateAltScore(teamScore, maxWin, maxLoss, minWin) {
+	let teamScoreAlt = '';
+	if (teamScore == minWin) {
+		if ((teamScore + 2) < maxWin) {
+			teamScoreAlt = teamScore + 2;
+		} else {
+			teamScoreAlt = maxWin;
+		}
+	} else if (teamScore == maxWin) {
+		teamScoreAlt = minWin;
+	} else if ('' !== teamScore) {
+		if (teamScore === maxLoss) {
+			teamScoreAlt = maxWin;
+		} else if (teamScore < minWin) {
+			teamScoreAlt = minWin;
+		}
+	}
+	return teamScoreAlt
 };
 function SetValidator(team1, team2, team1Score, team2Score, tieBreak, tieBreakScore, maxLoss, maxWin, minLoss, minWin) {
 	let classes = {

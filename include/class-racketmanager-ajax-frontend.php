@@ -475,6 +475,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					$partner_name                = $partner->fullname;
 					$team_name                  .= ' / ' . $partner_name;
 					$tournament_entry['partner'] = $partner_name;
+					$this->set_tournament_entry( $tournament->id, $partner_id, false );
 				}
 				$team = get_team( $team_name );
 				if ( ! $team ) {
@@ -509,6 +510,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$league->add_team( $team->id, $season );
 				$tournament_entries[ $i ] = $tournament_entry;
 			}
+			$this->set_tournament_entry( $tournament->id, $player_id, true );
 			$action_url                          = $racketmanager->site_url . '/tournaments/entry-form/' . seo_url( $tournament->name ) . '/';
 			$tournament_link                     = '<a href="' . $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/">' . $tournament->name . '</a>';
 			$headers                             = array();
@@ -539,6 +541,32 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			wp_send_json_error( $return, '500' );
 		} else {
 			wp_send_json_success( $msg );
+		}
+	}
+	/**
+	 * Set tournament entry function
+	 *
+	 * @param int     $tournament tournament id.
+	 * @param int     $player player id.
+	 * @param boolean $entrant indicator if player submitting entry.
+	 * @return void
+	 */
+	private function set_tournament_entry( $tournament, $player, $entrant = false ) {
+		$search           = $tournament . '_' . $player;
+		$tournament_entry = get_tournament_entry( $search, 'key' );
+		if ( ! $tournament_entry ) {
+			if ( $entrant ) {
+				$status = 1;
+			} else {
+				$status = 0;
+			}
+			$tournament_entry                = new \stdClass();
+			$tournament_entry->status        = $status;
+			$tournament_entry->tournament_id = $tournament;
+			$tournament_entry->player_id     = $player;
+			$tournament_entry                = new Racketmanager_Tournament_Entry( $tournament_entry );
+		} elseif ( $entrant && ! $tournament_entry->status ) {
+			$tournament_entry->confirm();
 		}
 	}
 	/**

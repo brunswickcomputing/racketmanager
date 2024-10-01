@@ -34,7 +34,7 @@ function racketmanager_setup_plugin() {
 
 	define( 'RACKETMANAGER', 'racketmanager' );
 	define( 'RACKETMANAGER_VERSION', '8.21.0' );
-	define( 'RACKETMANAGER_DBVERSION', '8.21.0' );
+	define( 'RACKETMANAGER_DBVERSION', '8.22.0' );
 	define( 'RACKETMANAGER_URL', esc_url( plugin_dir_url( __FILE__ ) ) );
 	define( 'RACKETMANAGER_PATH', plugin_dir_path( __FILE__ ) );
 	define( 'RACKETMANAGER_PLUGIN_FILE', __FILE__ );
@@ -89,4 +89,5 @@ function racketmanager_define_tables() {
 	$wpdb->racketmanager_results_report       = $wpdb->prefix . 'racketmanager_results_report';
 	$wpdb->racketmanager_messages             = $wpdb->prefix . 'racketmanager_messages';
 	$wpdb->racketmanager_team_players         = $wpdb->prefix . 'racketmanager_team_players';
+	$wpdb->racketmanager_tournament_entries   = $wpdb->prefix . 'racketmanager_tournament_entries';
 }

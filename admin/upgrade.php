@@ -1077,6 +1077,18 @@ function racketmanager_upgrade() {
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_table} CHANGE `season` `season` VARCHAR(4) NOT NULL" );
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_table} ADD INDEX(`season`);" );
 	}
+	if ( version_compare( $installed, '8.22.0', '<' ) ) {
+		echo esc_html__( 'starting 8.22.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$charset_collate = '';
+		if ( $wpdb->has_cap( 'collation' ) ) {
+			if ( ! empty( $wpdb->charset ) ) {
+				$charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
+			}
+			if ( ! empty( $wpdb->collate ) ) {
+				$charset_collate .= " COLLATE $wpdb->collate";
+			}
+		}
+		$wpdb->query( "CREATE TABLE {$wpdb->racketmanager_tournament_entries} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `tournament_id` int( 11 ) NOT NULL, `player_id` int( 11 ) NOT NULL, `status` int( 1 ) NOT NULL, PRIMARY KEY ( `id` ), INDEX( `tournament_id` )) $charset_collate;" );
 	}
 	/*
 	* Update version and dbversion

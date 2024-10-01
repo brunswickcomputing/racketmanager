@@ -708,7 +708,6 @@ class Racketmanager_Competition {
 			$this->seasons[ $data['name'] ] = $data;
 		}
 		$this->current_phase = 'complete';
-		$this->is_complete   = true;
 		if ( ! empty( $data['dateEnd'] ) && $today > $data['dateEnd'] ) {
 			$this->current_phase = 'end';
 			$this->is_complete   = true;

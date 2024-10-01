@@ -471,6 +471,29 @@ function get_tournament( $tournament = null, $search_term = 'id' ) {
 	return $_tournament;
 }
 /**
+ * Get Tournament Entry object
+ *
+ * @param int    $tournament_entry tournament entry ID or tournament entry object. Defaults to global $tournament.
+ * @param string $search_term search term - defaults to id.
+ * @return object tournament|null
+ */
+function get_tournament_entry( $tournament_entry = null, $search_term = 'id' ) {
+	if ( empty( $tournament_entry ) && isset( $GLOBALS['tournament_entry'] ) ) {
+		$tournament_entry = $GLOBALS['tournament_entry'];
+	}
+	if ( $tournament_entry instanceof Racketmanager_Tournament_Entry ) {
+		$_tournament_entry = $tournament_entry;
+	} elseif ( is_object( $tournament_entry ) ) {
+		$_tournament_entry = new Racketmanager_Tournament_Entry( $tournament_entry );
+	} else {
+		$_tournament_entry = Racketmanager_Tournament_Entry::get_instance( $tournament_entry, $search_term );
+	}
+	if ( ! $_tournament_entry ) {
+		return null;
+	}
+	return $_tournament_entry;
+}
+/**
  * Get Team object
  *
  * @param int|object|null $team Team ID or team object. Defaults to global $team.

@@ -642,6 +642,7 @@ class RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-team.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-player.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-tournament.php';
+		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-tournament-entry.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-validator.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-entry-form-validator.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-exporter.php';

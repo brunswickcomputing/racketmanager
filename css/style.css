@@ -4158,7 +4158,6 @@ h5.media__title {
 	display: flex;
 	flex-direction: column;
 	padding-left: 1.0rem;
-	padding-right: 1.0rem;
 }
 
 @media (min-width: 768px) {

@@ -2523,7 +2523,12 @@ ul.module {
 .match__message~.match__result {
 	margin-left: 0
 }
-
+.match__header .match__message.match-warning {
+	top: 0;
+	left: 0;
+	right: unset;
+	margin: 0;
+}
 .match__row-title {
 	display: flex;
 	flex: 1;

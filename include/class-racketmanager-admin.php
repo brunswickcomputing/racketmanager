@@ -2644,7 +2644,12 @@ final class RacketManager_Admin extends RacketManager {
 					for ( $h = 0; $h < $max_matches; $h++ ) {
 						$matches[ $h ] = new \stdClass();
 						if ( 'final' !== $finalkey ) {
-							$matches[ $h ]->host = 'home';
+							$round = $final['round'];
+							if ( $round & 1 ) {
+								$matches[ $h ]->host = 'home';
+							} else {
+								$matches[ $h ]->host = 'away';
+							}
 						}
 						$matches[ $h ]->hour    = $league->event->competition->default_match_start_time['hour'];
 						$matches[ $h ]->minutes = $league->event->competition->default_match_start_time['minutes'];

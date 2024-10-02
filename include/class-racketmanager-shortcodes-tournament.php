@@ -119,7 +119,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			return esc_html_e( 'Tournament not found', 'racketmanager' );
 		}
 		$tournament->events  = $tournament->get_events();
-		$tournament->entries = $tournament->get_players( array( 'count' => true ) );
+		$tournament->entries = $tournament->get_entries( array( 'count' => true ) );
 
 		$filename = ( ! empty( $template ) ) ? 'overview-' . $template : 'overview';
 

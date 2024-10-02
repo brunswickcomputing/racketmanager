@@ -840,6 +840,22 @@ class Racketmanager_League {
 		);
 	}
 	/**
+	 * Delete matches from League for a season
+	 *
+	 * @param string $season season.
+	 */
+	public function delete_season_matches( $season ) {
+		$matches = $this->get_matches(
+			array(
+				'season' => $season,
+				'final'  => 'all',
+			)
+		);
+		if ( $matches ) {
+			$this->delete_matches( $matches );
+		}
+	}
+	/**
 	 * Delete matches from League
 	 *
 	 * @param array $matches array of matches.

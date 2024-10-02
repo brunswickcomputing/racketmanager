@@ -1089,6 +1089,8 @@ function racketmanager_upgrade() {
 			}
 		}
 		$wpdb->query( "CREATE TABLE {$wpdb->racketmanager_tournament_entries} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `tournament_id` int( 11 ) NOT NULL, `player_id` int( 11 ) NOT NULL, `status` int( 1 ) NOT NULL, PRIMARY KEY ( `id` ), INDEX( `tournament_id` )) $charset_collate;" );
+		$wpdb->query( "INSERT INTO {$wpdb->racketmanager_tournament_entries} (`tournament_id`, `player_id`, `status` ) SELECT DISTINCT t1.id, tp.player_id, 1 FROM {$wpdb->racketmanager_team_players} tp , {$wpdb->racketmanager_table} t , {$wpdb->racketmanager} l , {$wpdb->racketmanager_events} e , {$wpdb->racketmanager_competitions} c , {$wpdb->racketmanager_tournaments} t1 WHERE tp.team_id = t.team_id and t.league_id = l.id and l.event_id = e.id and e.competition_id = c.id and c.id = t1.competition_id and t1.season = t.season;" );
+		$wpdb->query("UPDATE {$wpdb->racketmanager_tournament_entries} SET `status` = 0 WHERE `player_id` NOT IN (SELECT um.user_id FROM wp_usermeta um WHERE um.meta_key = 'contactno');");
 	}
 	/*
 	* Update version and dbversion

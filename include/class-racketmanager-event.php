@@ -1891,4 +1891,22 @@ class Racketmanager_Event {
 		}
 		wp_mail( $email_address, $subject, $email_message, $headers );
 	}
+	/**
+	 * Update seasons
+	 *
+	 * @param array $seasons season data.
+	 */
+	public function update_seasons( $seasons ) {
+		global $wpdb;
+		if ( $this->seasons !== $seasons ) {
+			$this->seasons = $seasons;
+			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->prepare(
+					"UPDATE {$wpdb->racketmanager_events} SET `seasons` = %s WHERE `id` = %d",
+					maybe_serialize( $seasons ),
+					$this->id
+				)
+			);
+		}
+	}
 }

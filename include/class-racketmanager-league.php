@@ -841,7 +841,17 @@ class Racketmanager_League {
 			)
 		);
 	}
-
+	/**
+	 * Delete matches from League
+	 *
+	 * @param array $matches array of matches.
+	 */
+	public function delete_matches( $matches ) {
+		foreach ( $matches as $match ) {
+			$match = get_match( $match->id );
+			$match->delete();
+		}
+	}
 	/**
 	 * Delete team from League
 	 *

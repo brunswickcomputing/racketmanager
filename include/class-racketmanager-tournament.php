@@ -735,4 +735,101 @@ final class Racketmanager_Tournament {
 		$this->players = $players;
 		return $this->players;
 	}
+	/**
+	 * Get Tournament Entries function
+	 *
+	 * @param array $args optional arguments.
+	 * @return array
+	 */
+	public function get_entries( $args = array() ) {
+		global $wpdb;
+
+		$defaults = array(
+			'orderby' => array(),
+			'count'   => false,
+			'status'  => false,
+		);
+		$args     = array_merge( $defaults, $args );
+		$orderby  = $args['orderby'];
+		$count    = $args['count'];
+		$status   = $args['status'];
+		if ( $count ) {
+			$sql = 'SELECT COUNT(*)';
+		} else {
+			$sql = 'SELECT `player_id`, `status`';
+		}
+		$sql          .= " FROM {$wpdb->racketmanager_tournament_entries} WHERE `tournament_id` = %d";
+		$search_terms  = array();
+		$search_args   = array();
+		$search_args[] = $this->id;
+		if ( $status ) {
+			if ( 'pending' === $status ) {
+				$search_terms[] = '`status` = 0';
+			} elseif ( 'confirmed' === $status ) {
+				$search_terms[] = '`status` = 1';
+			}
+		}
+		$search = '';
+		if ( ! empty( $search_terms ) ) {
+			$search  = ' AND ';
+			$search .= implode( ' AND ', $search_terms );
+		}
+		$orderby_string = '';
+		$order          = '';
+		$i              = 0;
+		foreach ( $orderby as $order => $direction ) {
+			if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
+				$direction = 'ASC';
+			}
+			$orderby_string .= '`' . $order . '` ' . $direction;
+			if ( $i < ( count( $orderby ) - 1 ) ) {
+				$orderby_string .= ',';
+			}
+			++$i;
+		}
+		if ( $orderby_string ) {
+			$order = ' ORDER BY ' . $orderby_string;
+		}
+		$sql .= $search;
+		if ( $count ) {
+			$sql = $wpdb->prepare(
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql,
+				$search_args,
+			);
+			$num_players = wp_cache_get( md5( $sql ), 'tournament_entries' );
+			if ( ! $num_players ) {
+				$num_players = $wpdb->get_var(
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+					$sql
+				); // db call ok.
+				wp_cache_set( md5( $sql ), $num_players, 'tournament_entries' );
+			}
+			return $num_players;
+		}
+		$sql .= $order;
+		$sql  = $wpdb->prepare(
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			$sql,
+			$search_args,
+		);
+		$tournament_entries = wp_cache_get( md5( $sql ), 'tournament_entries' );
+		if ( ! $tournament_entries ) {
+			$tournament_entries = $wpdb->get_results(
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			); // db call ok.
+			wp_cache_set( md5( $sql ), $tournament_entries, 'tournament_entries' );
+		}
+		$i = 0;
+		foreach ( $tournament_entries as $tournament_entry ) {
+			$player = get_player( $tournament_entry->player_id );
+			if ( $player ) {
+				$player->status           = $tournament_entry->status;
+				$tournament_entries[ $i ] = $player;
+			}
+			++$i;
+		}
+		return $tournament_entries;
+	}
 }

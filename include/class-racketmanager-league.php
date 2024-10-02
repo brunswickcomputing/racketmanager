@@ -822,10 +822,8 @@ class Racketmanager_League {
 	public function delete() {
 		global $wpdb;
 		$matches = $this->get_matches( array() );
-		// remove matches and rubbers.
-		foreach ( $matches as $match ) {
-			$match = get_match( $match->id );
-			$match->delete();
+		if ( $matches ) {
+			$this->delete_matches( $matches );
 		}
 		// remove tables.
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -867,10 +865,8 @@ class Racketmanager_League {
 				'season'  => $season,
 			)
 		);
-		// remove matches and rubbers.
-		foreach ( $matches as $match ) {
-			$match = get_match( $match->id );
-			$match->delete();
+		if ( $matches ) {
+			$this->delete_matches( $matches );
 		}
 		// remove tables.
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching

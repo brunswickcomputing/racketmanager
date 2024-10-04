@@ -46,31 +46,5 @@ jQuery(document).ready(function(){
 		<?php
 	}
 	?>
-	<!-- Nav tabs -->
-	<ul class="nav nav-pills" id="myTab" role="tablist">
-		<li class="nav-item" role="presentation">
-			<button class="nav-link" id="finalresults-tab" data-bs-toggle="pill" data-bs-target="#finalresults" type="button" role="tab" aria-controls="finalresults" aria-selected="true"><?php esc_html_e( 'Final Results', 'racketmanager' ); ?></button>
-		</li>
-		<li class="nav-item" role="presentation">
-			<button class="nav-link" id="matches-tab" data-bs-toggle="pill" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="false"><?php esc_html_e( 'Finals', 'racketmanager' ); ?></button>
-		</li>
-		<li class="nav-item" role="presentation">
-			<button class="nav-link" id="preliminary-tab" data-bs-toggle="pill" data-bs-target="#preliminary" type="button" role="tab" aria-controls="preliminary" aria-selected="false"><?php esc_html_e( 'Preliminary Rounds', 'racketmanager' ); ?></button>
-		</li>
-	</ul>
-	<!-- Tab panes -->
-	<div class="tab-content">
-		<div class="tab-pane fade" id="finalresults" role="tabpanel" aria-labelledby="finalresults-tab">
-			<h2><?php esc_html_e( 'Final Results', 'racketmanager' ); ?></h2>
-			<?php require 'championship/finalresults.php'; ?>
-		</div>
-		<div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
-			<h2><?php echo esc_html( $league->championship->get_final_name() ); ?></h2>
-			<?php require 'championship/finals.php'; ?>
-		</div>
-		<div class="tab-pane fade" id="preliminary" role="tabpanel" aria-labelledby="preliminary-tab">
-			<h2><?php esc_html_e( 'Preliminary Rounds', 'racketmanager' ); ?></h2>
-			<?php require 'championship/preliminary.php'; ?>
-		</div>
-	</div>
+	<?php require RACKETMANAGER_PATH . 'admin/includes/championship-tabs.php'; ?>
 </div>

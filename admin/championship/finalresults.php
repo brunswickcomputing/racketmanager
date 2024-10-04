@@ -12,6 +12,7 @@ namespace Racketmanager;
 	<div class="container draw">
 		<div class="row">
 			<?php
+			$class = null;
 			foreach ( $league->championship->get_finals() as $key => $final ) {
 				$class = ( 'alternate' === $class ) ? '' : 'alternate';
 				?>

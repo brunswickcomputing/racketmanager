@@ -752,8 +752,14 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			}
 		}
 		if ( $match_id ) {
-			$match             = get_match( $match_id );
-			$event             = get_event( $match->league->event_id );
+			$match = get_match( $match_id );
+			if ( ! $match ) {
+				return __( 'Match not found', 'racketmanager' );
+			}
+			$event = get_event( $match->league->event_id );
+			if ( ! $event ) {
+				return __( 'Event not found', 'racketmanager' );
+			}
 			$seasons           = $event->seasons;
 			$leagues           = $event->get_leagues();
 			$is_update_allowed = $match->is_update_allowed();

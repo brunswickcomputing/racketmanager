@@ -1919,6 +1919,10 @@ final class RacketManager_Admin extends RacketManager {
 			$season = isset( $competition->seasons[ $tournament->season ] ) ? $competition->seasons[ $tournament->season ] : null;
 			if ( $season ) {
 				$updates = false;
+				if ( empty( $season['dateOpen'] ) || $season['dateOpen'] !== $tournament->date ) {
+					$updates            = true;
+					$season['dateOpen'] = $tournament->date;
+				}
 				if ( empty( $season['dateEnd'] ) || $season['dateEnd'] !== $tournament->date ) {
 					$updates           = true;
 					$season['dateEnd'] = $tournament->date;
@@ -1940,6 +1944,7 @@ final class RacketManager_Admin extends RacketManager {
 					$season_data->fixed_dates    = isset( $season['fixedMatchDates'] ) ? $season['fixedMatchDates'] : false;
 					$season_data->home_away      = isset( $season['homeAway'] ) ? $season['homeAway'] : false;
 					$season_data->status         = $season['status'];
+					$season_data->date_open      = $season['dateOpen'];
 					$season_data->closing_date   = $season['closing_date'];
 					$season_data->date_start     = $season['dateStart'];
 					$season_data->date_end       = $season['dateEnd'];

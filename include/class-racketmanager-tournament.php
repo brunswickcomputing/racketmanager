@@ -617,30 +617,20 @@ final class Racketmanager_Tournament {
 			$events       = $competition->get_events();
 			$this->events = array();
 			foreach ( $events as $event ) {
-				$event        = get_event( $event );
-				$event->teams = $event->get_teams(
+				$event               = get_event( $event );
+				$event->team_count   = $event->get_teams(
 					array(
 						'season' => $this->season,
+						'count'  => true,
 					)
 				);
-				if ( $event->teams ) {
-					$event_teams = array();
-					foreach ( $event->teams as $team ) {
-						$event_team = new \stdClass();
-						if ( ! empty( $team->player ) ) {
-							foreach ( $team->player as $player ) {
-								$players[]             = $player;
-								$event_team->player    = $team->player;
-								$event_team->player_id = $team->player_id;
-							}
-						}
-						$event_team->title          = $team->name;
-						$event_teams[ $team->name ] = $event_team;
-					}
-					$event->teams = array_unique( $event_teams, SORT_REGULAR );
-				}
-				$event->players = array_unique( $players );
-				$this->events[] = $event;
+				$event->player_count = $event->get_players(
+					array(
+						'season' => $this->season,
+						'count'  => true,
+					)
+				);
+				$this->events[]      = $event;
 			}
 		}
 		return $this->events;

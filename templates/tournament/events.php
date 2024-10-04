@@ -47,9 +47,7 @@ if ( empty( $event ) ) {
 							</div>
 							<div class="col-3" name="<?php esc_html_e( 'Draw size', 'racketmanager' ); ?>">
 								<?php
-								if ( ! empty( $event->teams ) ) {
-									echo esc_html( count( $event->teams ) );
-								}
+									echo esc_html( $event->team_count );
 								?>
 							</div>
 						</div>

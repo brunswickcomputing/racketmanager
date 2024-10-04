@@ -1203,7 +1203,7 @@ class RacketManager {
 		// league - match.
 		add_rewrite_rule(
 			'league\/(.+?)\/match\/(.+?)\/?$',
-			'index.php?pagename=competition%2Fevent%2Fleague&league_name=$matches[1]&match_id=$matches[2]',
+			'index.php?pagename=competition%2Fevent%2Fleague%2Fmatch&league_name=$matches[1]&match_id=$matches[2]',
 			'top'
 		);
 		// league - season.

@@ -32,7 +32,7 @@ namespace Racketmanager;
 		<div class="container">
 			<div class="row table-header">
 				<div class="col-2 col-lg-1 check-column"><input type="checkbox" id="check-all-leagues" onclick="Racketmanager.checkAll(document.getElementById('leagues-filter'));" /></div>
-				<div class="d-none d-lg-1 col-1 column-num">ID</div>
+				<div class="d-none d-lg-block col-1 column-num">ID</div>
 				<div class="col-4">
 					<?php
 					if ( $event->is_championship ) {
@@ -72,7 +72,7 @@ namespace Racketmanager;
 					?>
 					<div class="row table-row <?php echo esc_html( $class ); ?>">
 						<div class="col-2 col-lg-1 check-column"><input type="checkbox" value="<?php echo esc_html( $league->id ); ?>" name="league[<?php echo esc_html( $league->id ); ?>]" /></div>
-						<div class="d-none d-lg-1 col-1 column-num"><?php echo esc_html( $league->id ); ?></div>
+						<div class="d-none d-lg-block col-1 column-num"><?php echo esc_html( $league->id ); ?></div>
 						<div class="col-4"><a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>"><?php echo esc_html( $league->title ); ?></a></div>
 						<div class="col-3 col-lg-1 column-num">
 							<?php echo esc_html( $league->num_teams_total ); ?>

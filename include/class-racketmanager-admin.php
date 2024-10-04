@@ -2371,7 +2371,14 @@ final class RacketManager_Admin extends RacketManager {
 				$btm = '';
 			}
 		} else {
-			$btm = intval( $_POST['btm'] );
+			$btm    = intval( $_POST['btm'] );
+			$player = get_player( $btm, 'btm' );
+			if ( $player ) {
+				$valid                      = false;
+				$error_field[ $error_id ]   = 'btm';
+				$error_message[ $error_id ] = __( 'LTA Tennis Number already used', 'racketmanager' );
+				++$error_id;
+			}
 		}
 		if ( ! isset( $_POST['contactno'] ) || '' === intval( $_POST['contactno'] ) ) {
 			$contactno = '';

@@ -69,7 +69,7 @@ namespace Racketmanager;
 							} elseif ( $tournament->is_active ) {
 								?>
 								<div class="col-12 col-md-auto">
-									<a href="admin.php?page=racketmanager-tournaments&amp;view=tournament-plan&amp;tournament=<?php echo esc_html( $tournament->id ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Plan Finals', 'racketmanager' ); ?></a>
+									<a href="admin.php?page=racketmanager-tournaments&amp;view=plan&amp;tournament=<?php echo esc_html( $tournament->id ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Plan Finals', 'racketmanager' ); ?></a>
 								</div>
 								<?php
 							}

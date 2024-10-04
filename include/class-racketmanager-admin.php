@@ -2061,6 +2061,7 @@ final class RacketManager_Admin extends RacketManager {
 					$tournament->save_plan( $courts, $start_time, $matches, $match_time );
 					$this->printMessage();
 				}
+				$tab = 'matches';
 			} elseif ( isset( $_POST['resetTournamentPlan'] ) ) {
 				check_admin_referer( 'racketmanager_tournament-planner' );
 				if ( isset( $_POST['tournamentId'] ) ) {
@@ -2068,6 +2069,7 @@ final class RacketManager_Admin extends RacketManager {
 					$tournament->reset_plan();
 					$this->printMessage();
 				}
+				$tab = 'matches';
 			} elseif ( isset( $_POST['saveTournament'] ) ) {
 				check_admin_referer( 'racketmanager_tournament' );
 				if ( isset( $_POST['tournamentId'] ) ) {
@@ -2078,6 +2080,7 @@ final class RacketManager_Admin extends RacketManager {
 					$tournament->update_plan( $start_time, $num_courts, $time_increment );
 					$this->printMessage();
 				}
+				$tab = 'config';
 			}
 
 			if ( isset( $_GET['tournament'] ) ) {
@@ -2091,7 +2094,10 @@ final class RacketManager_Admin extends RacketManager {
 					)
 				);
 			}
-			include_once RACKETMANAGER_PATH . '/admin/includes/tournament-plan.php';
+			if ( empty( $tab ) ) {
+				$tab = 'matches';
+			}
+			include_once RACKETMANAGER_PATH . '/admin/tournament/plan.php';
 		}
 	}
 

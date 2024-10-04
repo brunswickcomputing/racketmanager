@@ -117,17 +117,11 @@ final class Racketmanager_Tournament {
 	 */
 	public $venue_name;
 	/**
-	 * Is tournament open for enties
-	 *
-	 * @var boolean
-	 */
-	public $open;
-	/**
 	 * Is tournament active
 	 *
 	 * @var boolean
 	 */
-	public $active;
+	public $is_active;
 	/**
 	 * Order of play
 	 *
@@ -295,16 +289,10 @@ final class Racketmanager_Tournament {
 			} else {
 				$this->venue_name = get_club( $tournament->venue )->name;
 			}
-
-			if ( isset( $this->closing_date ) && $this->closing_date >= gmdate( 'Y-m-d' ) ) {
-				$this->open = true;
+			if ( isset( $this->closing_date ) && $this->closing_date <= gmdate( 'Y-m-d' ) ) {
+				$this->is_active = true;
 			} else {
-				$this->open = false;
-			}
-			if ( isset( $this->date ) && $this->date >= gmdate( 'Y-m-d' ) ) {
-				$this->active = true;
-			} else {
-				$this->active = false;
+				$this->is_active = false;
 			}
 			$this->orderofplay = (array) maybe_unserialize( $this->orderofplay );
 			if ( $this->competition_id ) {

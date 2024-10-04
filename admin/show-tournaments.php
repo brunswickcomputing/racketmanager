@@ -60,17 +60,25 @@ namespace Racketmanager;
 							<div class="col-12 col-md-2"><?php echo esc_html( $tournament->venue_name ); ?></div>
 							<div class="col-12 col-md-1"><?php echo esc_html( $tournament->date ); ?></div>
 							<div class="col-12 col-md-auto"><a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;season=<?php echo esc_html( $tournament->season ); ?>&amp;competition_id=<?php echo esc_html( $tournament->competition_id ); ?>&amp;tournament=<?php echo esc_html( $tournament->id ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Events', 'racketmanager' ); ?></a></div>
-							<?php if ( $tournament->open ) { ?>
+							<?php
+							if ( $tournament->is_open ) {
+								?>
 								<div class="col-12 col-md-auto"><button class="btn btn-secondary" onclick="Racketmanager.notifyTournamentEntryOpen(event, '<?php echo esc_html( $tournament->id ); ?>');"><?php esc_html_e( 'Notify open', 'racketmanager' ); ?></button></div>
 								<div class="col-12 col-md-auto"><span id="notifyMessage-<?php echo esc_html( $tournament->id ); ?>"></span></div>
-							<?php } elseif ( $tournament->active ) { ?>
+								<?php
+							} elseif ( $tournament->is_active ) {
+								?>
 								<div class="col-12 col-md-auto">
 									<a href="admin.php?page=racketmanager-tournaments&amp;view=tournament-plan&amp;tournament=<?php echo esc_html( $tournament->id ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Plan Finals', 'racketmanager' ); ?></a>
 								</div>
-							<?php } ?>
+								<?php
+							}
+							?>
 						</div>
-					<?php } ?>
-				<?php } ?>
+						<?php
+					}
+				}
+				?>
 			</form>
 		</div>
 	</div>

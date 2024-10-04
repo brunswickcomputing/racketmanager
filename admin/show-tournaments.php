@@ -55,7 +55,7 @@ namespace Racketmanager;
 							<div class="col-12 col-md-auto check-column">
 								<input type="checkbox" value="<?php echo esc_html( $tournament->id ); ?>" name="tournament[<?php echo esc_html( $tournament->id ); ?>]" />
 							</div>
-							<div class="col-12 col-md-2"><a href="admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament_id=<?php echo esc_html( $tournament->id ); ?> "><?php echo esc_html( $tournament->name ); ?></a></div>
+							<div class="col-12 col-md-2"><a href="admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_html( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?> "><?php echo esc_html( $tournament->name ); ?></a></div>
 							<div class="col-12 col-md-1"><?php echo esc_html( $tournament->season ); ?></div>
 							<div class="col-12 col-md-2"><?php echo esc_html( $tournament->venue_name ); ?></div>
 							<div class="col-12 col-md-1"><?php echo esc_html( $tournament->date ); ?></div>
@@ -84,6 +84,6 @@ namespace Racketmanager;
 	</div>
 	<div class="mb-3">
 		<!-- Add New Tournament -->
-		<a href="admin.php?page=racketmanager_tournaments&amp;view=tournament" class="btn btn-primary submit"><?php esc_html_e( 'Add Tournament', 'racketmanager' ); ?></a>
+		<a href="admin.php?page=racketmanager-tournaments&amp;view=modify" class="btn btn-primary submit"><?php esc_html_e( 'Add Tournament', 'racketmanager' ); ?></a>
 	</div>
 </div>

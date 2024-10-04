@@ -401,9 +401,9 @@ final class RacketManager_Admin extends RacketManager {
 				$this->displayCupsPage();
 				break;
 			case 'racketmanager-tournaments':
-				if ( 'tournament' === $view ) {
+				if ( 'modify' === $view ) {
 					$this->displayTournamentPage();
-				} elseif ( 'tournament-plan' === $view ) {
+				} elseif ( 'plan' === $view ) {
 					$this->displayTournamentPlanPage();
 				} else {
 					$this->displayTournamentsPage();
@@ -1979,8 +1979,8 @@ final class RacketManager_Admin extends RacketManager {
 				$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 			} else {
 				check_admin_referer( 'racketmanager_manage-tournament' );
-				if ( isset( $_POST['tournament_id'] ) ) {
-					$tournament_id = intval( $_POST['tournament_id'] );
+				if ( isset( $_POST['tournament'] ) ) {
+					$tournament_id = intval( $_POST['tournament'] );
 					$tournament    = get_tournament( $tournament_id );
 					if ( $tournament ) {
 						$tournament_updates               = clone $tournament;
@@ -2002,8 +2002,8 @@ final class RacketManager_Admin extends RacketManager {
 				}
 			}
 			$this->printMessage();
-		} elseif ( isset( $_GET['tournament_id'] ) ) {
-			$tournament_id = intval( $_GET['tournament_id'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		} elseif ( isset( $_GET['tournament'] ) ) {
+			$tournament_id = intval( $_GET['tournament'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$tournament    = get_tournament( $tournament_id );
 		} else {
 			$tournament_id = null;
@@ -2037,7 +2037,7 @@ final class RacketManager_Admin extends RacketManager {
 		);
 		$competition_query = array( 'type' => 'tournament' );
 		$competitions      = $this->get_competitions( $competition_query );
-		include_once RACKETMANAGER_PATH . '/admin/show-tournament.php';
+		include_once RACKETMANAGER_PATH . '/admin/tournament-edit.php';
 	}
 
 	/**

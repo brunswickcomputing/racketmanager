@@ -1252,3 +1252,18 @@ function racketmanager_competition_winners( $competition_id, $args = array() ) {
 	$shortcode .= ']';
 	echo do_shortcode( $shortcode );
 }
+/**
+ * Display player search function
+ *
+ * @param string $search_string search string.
+ * @param array  $args array of arguments.
+ */
+function racketmanager_player_search( $search_string, $args = array() ) {
+	$args['search'] = $search_string;
+	$shortcode      = '[search-players';
+	foreach ( $args as $key => $value ) {
+		$shortcode .= ' ' . $key . "='" . $value . "'";
+	}
+	$shortcode .= ']';
+	return do_shortcode( $shortcode );
+}

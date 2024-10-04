@@ -2105,13 +2105,11 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * @return void
 	 */
 	public function search_players() {
-		global $racketmanager, $racketmanager_shortcodes;
-		$return       = array();
-		$err_msg      = array();
-		$err_field    = array();
-		$valid        = true;
-		$msg          = null;
-		$result_count = 0;
+		$return    = array();
+		$err_msg   = array();
+		$err_field = array();
+		$valid     = true;
+		$msg       = null;
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'search_players' ) ) {
 			$valid       = false;
 			$err_field[] = '';
@@ -2120,15 +2118,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		if ( $valid ) {
 			$search_string = isset( $_POST['search_string'] ) ? sanitize_text_field( wp_unslash( $_POST['search_string'] ) ) : null;
 			if ( $search_string ) {
-				$players = $racketmanager->get_all_players( array( 'name' => $search_string ) );
-				if ( $players ) {
-					$result_count   = count( $players );
-					$search_results = $racketmanager_shortcodes->load_template( 'players-list', array( 'players' => $players ) );
-				} else {
-					$search_results = __( 'No players found', 'racketmanager' );
-				}
-				/* translators: %d: result count */
-				$result_title = sprintf( __( '%d results', 'racketmanager' ), $result_count );
+				$search_results = racketmanager_player_search( $search_string );
 			} else {
 				$valid       = false;
 				$err_field[] = 'search_string';
@@ -2136,8 +2126,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			}
 		}
 		if ( $valid ) {
-			array_push( $return, $result_title, $search_results );
-			wp_send_json_success( $return );
+			wp_send_json_success( $search_results );
 		} else {
 			$msg = __( 'Unable to search for players', 'racketmanager' );
 			array_push( $return, $msg, $err_msg, $err_field );

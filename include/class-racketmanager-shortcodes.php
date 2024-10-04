@@ -33,6 +33,7 @@ class RacketManager_Shortcodes {
 		add_shortcode( 'favourites', array( &$this, 'show_favourites' ) );
 		add_shortcode( 'invoice', array( &$this, 'show_invoice' ) );
 		add_shortcode( 'messages', array( &$this, 'show_messages' ) );
+		add_shortcode( 'search-players', array( &$this, 'show_player_search' ) );
 	}
 	/**
 	 * Display Daily Matches
@@ -357,14 +358,17 @@ class RacketManager_Shortcodes {
 	 * @return the content
 	 */
 	public function show_players( $atts ) {
-		global $racketmanager;
-		$args       = shortcode_atts(
+		$args          = shortcode_atts(
 			array(
 				'template' => '',
 			),
 			$atts
 		);
-		$template   = $args['template'];
+		$template      = $args['template'];
+		$search_string = isset( $_GET['q'] ) ? sanitize_text_field( wp_unslash( $_GET['q'] ) ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( $search_string ) {
+			$search_results = racketmanager_player_search( $search_string );
+		}
 		$favourites = array();
 		if ( is_user_logged_in() ) {
 			$userid     = get_current_user_id();
@@ -375,7 +379,9 @@ class RacketManager_Shortcodes {
 		return $this->load_template(
 			$filename,
 			array(
-				'favourites' => $favourites,
+				'favourites'     => $favourites,
+				'search_string'  => $search_string,
+				'search_results' => $search_results,
 			)
 		);
 	}
@@ -921,6 +927,30 @@ class RacketManager_Shortcodes {
 		$filename = ( ! empty( $template ) ) ? 'messages-' . $template : 'messages';
 
 		return $this->load_template( $filename, array( 'messages' => $messages ), 'account' );
+	}
+	/**
+	 * Function to search players messages
+	 *
+	 *    [messages template=X]
+	 *
+	 * @param array $atts shortcode attributes.
+	 * @return the content
+	 */
+	public function show_player_search( $atts ) {
+		global $racketmanager;
+		$args          = shortcode_atts(
+			array(
+				'search'   => null,
+				'template' => '',
+			),
+			$atts
+		);
+		$template      = $args['template'];
+		$search_string = $args['search'];
+		$players       = $racketmanager->get_all_players( array( 'name' => $search_string ) );
+		$filename      = ( ! empty( $template ) ) ? 'players-list-' . $template : 'players-list';
+
+		return $this->load_template( $filename, array( 'players' => $players ) );
 	}
 	/**
 	 * Load template for user display. First the current theme directory is checked for a template

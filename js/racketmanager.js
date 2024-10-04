@@ -1704,12 +1704,10 @@ Racketmanager.playerSearch = function (event, link) {
 	event.preventDefault();
 	let notifyBlock = "#searchResultsContainer";
 	jQuery(notifyBlock).hide();
-	let resultTitle = "#searchTitle";
-	let notifyField = "#searchResults";
 	let errorField = '#search-alert';
 	let errorResponse = '#search-alert-response';
 	jQuery(errorResponse).hide();
-	jQuery(notifyField).empty();
+	jQuery(notifyBlock).empty();
 	let url = new URL(window.location.href);
 	let newURL = url.protocol + '//' + url.hostname + url.pathname;
 	let search_string = jQuery('#search_string').val();
@@ -1734,8 +1732,7 @@ Racketmanager.playerSearch = function (event, link) {
 		type: "POST",
 		data: form,
 		success: function (response) {
-			jQuery(resultTitle).html(response.data[0]);
-			jQuery(notifyField).html(response.data[1]);
+			jQuery(notifyBlock).html(response.data);
 		},
 		error: function (response) {
 			if (response.responseJSON) {

@@ -24,7 +24,7 @@ namespace Racketmanager;
 											<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#search' ); ?>"></use>
 										</svg>
 									</span>
-									<input type="search" name="search_string" id="search_string" class="form-control search-box__field" />
+									<input type="search" name="search_string" id="search_string" class="form-control search-box__field" value="<?php echo esc_attr( $search_string ); ?>" />
 								</div>
 							</div>
 						</form>
@@ -40,15 +40,12 @@ namespace Racketmanager;
 			</div>
 		</div>
 	</div>
-	<div class="module module--card" id="searchResultsContainer" style="display: none;">
-		<div class="module__banner">
-			<h4 class="module__title" id="searchTitle"><?php esc_html_e( 'Results', 'racketmanager' ); ?></h4>
-		</div>
-		<div class="module__content">
-			<div class="module-container">
-				<ul class="list list--bordered" id="searchResults"></ul>
-			</div>
-		</div>
+	<div class="module module--card" id="searchResultsContainer" <?php echo empty( $search_results ) ? 'style="display: none;' : null; ?>>
+		<?php
+		if ( ! empty( $search_results ) ) {
+			echo $search_results; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
+		?>
 	</div>
 	<div class="module module--card">
 		<div class="module__banner">

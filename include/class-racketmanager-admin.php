@@ -2388,7 +2388,14 @@ final class RacketManager_Admin extends RacketManager {
 		if ( ! isset( $_POST['email'] ) || '' === sanitize_text_field( wp_unslash( $_POST['email'] ) ) ) {
 			$email = '';
 		} else {
-			$email = sanitize_text_field( wp_unslash( $_POST['email'] ) );
+			$email  = sanitize_text_field( wp_unslash( $_POST['email'] ) );
+			$player = get_player( $email, 'email' );
+			if ( $player ) {
+				$valid                      = false;
+				$error_field[ $error_id ]   = 'btm';
+				$error_message[ $error_id ] = __( 'Email address already used', 'racketmanager' );
+				++$error_id;
+			}
 		}
 		if ( ! isset( $_POST['locked'] ) || '' === sanitize_text_field( wp_unslash( $_POST['locked'] ) ) ) {
 			$locked = '';

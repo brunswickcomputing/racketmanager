@@ -2425,17 +2425,11 @@ class RacketManager {
 	 * @return array
 	 */
 	public function get_all_players( $args ) {
-		$defaults = array(
+		$defaults       = array(
 			'name' => false,
 		);
-		$args     = array_merge( $defaults, (array) $args );
-		$name     = $args['name'];
-		$search   = '';
-		if ( $name ) {
-			$search       = '*' . $name . '*';
-			$search_terms = 'display_name';
-		}
-
+		$args           = array_merge( $defaults, (array) $args );
+		$name           = $args['name'];
 		$orderby_string = 'display_name';
 		$order          = 'ASC';
 
@@ -2446,9 +2440,14 @@ class RacketManager {
 		$user_args['meta_compare'] = 'IN';
 		$user_args['orderby']      = $orderby_string;
 		$user_args['order']        = $order;
-		if ( $search ) {
-			$user_args['search']         = $search;
-			$user_args['search_columns'] = array( $search_terms );
+		if ( $name ) {
+			if ( is_numeric( $name ) ) {
+				$user_args['meta_key']   = 'btm'; //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				$user_args['meta_value'] = $name; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			} else {
+				$user_args['search']         = '*' . $name . '*';
+				$user_args['search_columns'] = array( 'display_name' );
+			}
 		}
 		$user_search = wp_json_encode( $user_args );
 		$players     = wp_cache_get( md5( $user_search ), 'players' );

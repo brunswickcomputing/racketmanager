@@ -1434,6 +1434,7 @@ class Racketmanager_Event {
 			} else {
 				$event_team->player_count = 0;
 			}
+			$event_team->info  = $this->get_team_info( $event_team->team_id );
 			$event_teams[ $i ] = $event_team;
 		}
 

@@ -329,26 +329,20 @@ final class RacketManager_Admin extends RacketManager {
 		$season = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $league->current_season ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$sport  = ( isset( $league->sport ) ? ( $league->sport ) : '' );
 
-		$menu            = array();
-		$menu['matches'] = array(
-			'title'    => __( 'Add Matches', 'racketmanager' ),
-			'callback' => array( &$this, 'display_matches_add' ),
-			'cap'      => 'add_teams',
-			'show'     => true,
-		);
-		$menu['teams']   = array(
+		$menu          = array();
+		$menu['teams'] = array(
 			'title'    => __( 'Add Teams', 'racketmanager' ),
 			'callback' => array( &$this, 'display_teams_list' ),
 			'cap'      => 'edit_teams',
 			'show'     => true,
 		);
-		$menu['team']    = array(
+		$menu['team']  = array(
 			'title'    => __( 'Add Team', 'racketmanager' ),
 			'callback' => array( &$this, 'display_team_page' ),
 			'cap'      => 'edit_teams',
 			'show'     => false,
 		);
-		$menu['match']   = array(
+		$menu['match'] = array(
 			'title'    => __( 'Add Matches', 'racketmanager' ),
 			'callback' => array( &$this, 'display_match_page' ),
 			'cap'      => 'edit_matches',

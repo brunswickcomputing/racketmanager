@@ -23,12 +23,14 @@ namespace Racketmanager;
 </a>
 <div id="player-stats-detail-<?php echo esc_attr( $stats_type ); ?>" class="collapse">
 	<?php
-	foreach ( $player_stats['breakdown'] as $stat_title => $statistics ) {
-		?>
-		<div class="row stats-detail">
-			<?php require 'statistics-row.php'; ?>
-		</div>
-		<?php
+	if ( isset( $player_stats['breakdown'] ) ) {
+		foreach ( $player_stats['breakdown'] as $stat_title => $statistics ) {
+			?>
+			<div class="row stats-detail">
+				<?php require 'statistics-row.php'; ?>
+			</div>
+			<?php
+		}
 	}
 	?>
 </div>

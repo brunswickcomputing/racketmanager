@@ -166,7 +166,13 @@ namespace Racketmanager;
 												</th>
 												<th scope="col"><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
 												<th scope="col" class="colspan"><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></th>
-												<th scope="col" class="colspan"><?php esc_html_e( 'Email', 'racketmanager' ); ?></th>
+												<?php
+												if ( is_user_logged_in() ) {
+													?>
+													<th scope="col" class="colspan"><?php esc_html_e( 'Email', 'racketmanager' ); ?></th>
+													<?php
+												}
+												?>
 												<th scope="col" class="colspan"><?php esc_html_e( 'Created Date', 'racketmanager' ); ?></th>
 											</tr>
 										</thead>
@@ -187,18 +193,24 @@ namespace Racketmanager;
 														</th>
 														<td><a href="<?php echo esc_html( seo_url( $club_player->fullname ) ); ?>"><?php echo esc_html( $club_player->fullname ); ?></a></td>
 														<td><?php echo esc_html( $club_player->btm ); ?></td>
-														<td><?php echo esc_html( $club_player->email ); ?></td>
-														<td
-															<?php
-															if ( ! empty( $club_player->created_user_name ) ) {
-																echo 'title="' . esc_html( __( 'Created by', 'racketmanager' ) ) . ' ' . esc_html( $club_player->created_user_name ) . '"';
-															}
+														<?php
+														if ( is_user_logged_in() ) {
 															?>
+															<td><?php echo esc_html( $club_player->email ); ?></td>
+															<?php
+														}
+														?>
+														<td
+																<?php
+																if ( ! empty( $club_player->created_user_name ) ) {
+																	echo 'title="' . esc_html( __( 'Created by', 'racketmanager' ) ) . ' ' . esc_html( $club_player->created_user_name ) . '"';
+																}
+																?>
 															>
-															<?php echo esc_html( substr( $club_player->created_date, 0, 10 ) ); ?>
+																<?php echo esc_html( substr( $club_player->created_date, 0, 10 ) ); ?>
 														</td>
 													</tr>
-													<?php
+																<?php
 												}
 											}
 											?>

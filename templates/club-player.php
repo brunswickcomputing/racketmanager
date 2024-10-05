@@ -87,48 +87,50 @@ namespace Racketmanager;
 					}
 					?>
 					<?php
-					if ( ! empty( $player->year_of_birth ) || $user_can_update ) {
-						?>
-						<div class="form-floating mb-3">
-							<select class="form-select" id="year_of_birth" name="year_of_birth" <?php disabled( $user_can_update, false ); ?>>
-								<option value=""><?php esc_html_e( 'Enter year of birth', 'racketmanager' ); ?></option>
-								<?php
-								$current_year = gmdate( 'Y' );
-								$start_year   = $current_year - 5;
-								$end_year     = $start_year - 100;
-								for ( $i = $start_year; $i > $end_year; $i-- ) {
-									?>
-									<option value="<?php echo esc_attr( $i ); ?>" <?php selected( $i, $player->year_of_birth ); ?>><?php echo esc_html( $i ); ?></option>
+					if ( is_user_logged_in() ) {
+						if ( ! empty( $player->year_of_birth ) || $user_can_update ) {
+							?>
+							<div class="form-floating mb-3">
+								<select class="form-select" id="year_of_birth" name="year_of_birth" <?php disabled( $user_can_update, false ); ?>>
+									<option value=""><?php esc_html_e( 'Enter year of birth', 'racketmanager' ); ?></option>
 									<?php
-								}
-								?>
-							</select>
-							<label for="year_of_birth"><?php esc_html_e( 'Year of birth', 'racketmanager' ); ?></label>
-							<div id="year_of_birthFeedback" class="invalid-feedback"></div>
-						</div>
-						<?php
-					}
-					?>
-					<?php
-					if ( null !== $player->email || $user_can_update ) {
+									$current_year = gmdate( 'Y' );
+									$start_year   = $current_year - 5;
+									$end_year     = $start_year - 100;
+									for ( $i = $start_year; $i > $end_year; $i-- ) {
+										?>
+										<option value="<?php echo esc_attr( $i ); ?>" <?php selected( $i, $player->year_of_birth ); ?>><?php echo esc_html( $i ); ?></option>
+										<?php
+									}
+									?>
+								</select>
+								<label for="year_of_birth"><?php esc_html_e( 'Year of birth', 'racketmanager' ); ?></label>
+								<div id="year_of_birthFeedback" class="invalid-feedback"></div>
+							</div>
+							<?php
+						}
 						?>
-						<div class="form-floating mb-3">
-							<input type="email" class="form-control" id="email" name="email" autocomplete="off" value="<?php echo esc_html( $player->email ); ?>" <?php disabled( $user_can_update, false ); ?> />
-							<label for="email"><?php esc_html_e( 'Email address', 'racketmanager' ); ?></label>
-							<div id="emailFeedback" class="invalid-feedback"></div>
-						</div>
 						<?php
-					}
-					?>
-					<?php
-					if ( null !== $player->contactno || $user_can_update ) {
+						if ( null !== $player->email || $user_can_update ) {
+							?>
+							<div class="form-floating mb-3">
+								<input type="email" class="form-control" id="email" name="email" autocomplete="off" value="<?php echo esc_html( $player->email ); ?>" <?php disabled( $user_can_update, false ); ?> />
+								<label for="email"><?php esc_html_e( 'Email address', 'racketmanager' ); ?></label>
+								<div id="emailFeedback" class="invalid-feedback"></div>
+							</div>
+							<?php
+						}
 						?>
-						<div class="form-floating mb-3">
-							<input type="tel" class="form-control" id="contactno" name="contactno" autocomplete="off" value="<?php echo esc_html( $player->contactno ); ?>" <?php disabled( $user_can_update, false ); ?> />
-							<label for="contactno"><?php esc_html_e( 'Telephone number', 'racketmanager' ); ?></label>
-							<div id="contactnoFeedback" class="invalid-feedback"></div>
-						</div>
 						<?php
+						if ( null !== $player->contactno || $user_can_update ) {
+							?>
+							<div class="form-floating mb-3">
+								<input type="tel" class="form-control" id="contactno" name="contactno" autocomplete="off" value="<?php echo esc_html( $player->contactno ); ?>" <?php disabled( $user_can_update, false ); ?> />
+								<label for="contactno"><?php esc_html_e( 'Telephone number', 'racketmanager' ); ?></label>
+								<div id="contactnoFeedback" class="invalid-feedback"></div>
+							</div>
+							<?php
+						}
 					}
 					?>
 					<?php

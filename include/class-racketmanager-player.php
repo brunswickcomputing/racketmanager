@@ -286,7 +286,7 @@ final class Racketmanager_Player {
 				$this->locked_user_name = '';
 			}
 			$this->system_record = get_user_meta( $this->ID, 'leaguemanager_type', true );
-			$this->link          = '/player/' . seo_url( $player->display_name ) . '/';
+			$this->link          = '/player/' . seo_url( $this->display_name ) . '/';
 			if ( ! empty( $this->btm ) ) {
 				$this->link .= $this->btm . '/';
 			}

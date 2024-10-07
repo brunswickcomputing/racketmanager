@@ -261,12 +261,6 @@ class Racketmanager_Event {
 	 */
 	public $match_place3;
 	/**
-	 * Non group
-	 *
-	 * @var boolean
-	 */
-	public $non_group;
-	/**
 	 * Entry open
 	 *
 	 * @var boolean

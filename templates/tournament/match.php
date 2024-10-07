@@ -238,8 +238,13 @@ if ( ! empty( $match->winner_id ) ) {
 									<li class="match-points__cell <?php echo esc_html( $winner_class ); ?>">
 										<?php
 										echo esc_html( $set[ $opponent ] );
+										if ( isset( $set['tiebreak'] ) && ! empty( $winner_class ) ) {
+											?>
+											<span class="player-row__tie-break"><?php echo esc_html( $set['tiebreak'] ); ?></span>
+											<?php
+										}
 										?>
-									</li>
+										</li>
 									<?php
 								}
 								?>

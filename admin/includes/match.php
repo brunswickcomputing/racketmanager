@@ -11,16 +11,32 @@ namespace Racketmanager;
 <div class="container">
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
-			<a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a> &raquo;
-			<a href="admin.php?page=racketmanager&amp;subpage=show-event&amp;event_id=<?php echo esc_html( $league->event->id ); ?>&amp;season=<?php echo esc_html( $league->current_season['name'] ); ?>"><?php echo esc_html( $league->event->name ); ?></a> &raquo;
-			<a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $league->current_season['name'] ); ?>"><?php echo esc_html( $league->title ); ?></a> &raquo;
+			<?php
+			if ( empty( $tournament ) ) {
+				?>
+				<a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a> &raquo;
+				<a href="admin.php?page=racketmanager&amp;subpage=show-event&amp;event_id=<?php echo esc_html( $league->event->id ); ?>&amp;season=<?php echo esc_html( $league->current_season['name'] ); ?>"><?php echo esc_html( $league->event->name ); ?></a> &raquo;
+				<a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $league->current_season['name'] ); ?>"><?php echo esc_html( $league->title ); ?></a> &raquo;
+				<?php
+			} else {
+				?>
+				<a href='admin.php?page=racketmanager-tournaments'><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href='admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>'><?php echo esc_html( $tournament->name ); ?></a>  &raquo; <a href='admin.php?page=racketmanager-tournaments&amp;view=draw&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>&amp;league=<?php echo esc_attr( $league->id ); ?>'><?php echo esc_html( $league->title ); ?></a> &raquo;
+				<?php
+			}
+			?>
 			<?php echo esc_html( $form_title ); ?>
 		</div>
 	</div>
-	<h1><?php echo esc_html( $league->title ) . ' - ' . esc_html( $form_title ); ?></h1>
+	<h1><?php echo esc_html( $form_title ) . ' - ' . esc_html( $league->title ); ?></h1>
 	<?php
+	$form_action = 'admin.php?page=racketmanager';
 	if ( $matches ) {
-		$form_action = 'admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=' . $league->id . '&amp;season=' . $season;
+		if ( empty( $tournament ) ) {
+			$form_action .= '&amp;subpage=show-league&amp;league_id';
+		} else {
+			$form_action .= '-tournaments&amp;view=draw&amp;tournament=' . $tournament->id . '&amp;league';
+		}
+		$form_action .= '=' . $league->id . '&amp;season=' . $season;
 		if ( isset( $match_day ) ) {
 			$form_action .= '&amp;match_day=' . $match_day;
 		}
@@ -61,7 +77,7 @@ namespace Racketmanager;
 						?>
 						<th scope="col">
 							<?php
-							if ( $cup ) {
+							if ( $league->is_championship ) {
 								esc_html_e( 'Team', 'racketmanager' );
 							} else {
 								esc_html_e( 'Home', 'racketmanager' );
@@ -70,7 +86,7 @@ namespace Racketmanager;
 						</th>
 						<th scope="col">
 							<?php
-							if ( $cup ) {
+							if ( $league->is_championship ) {
 								esc_html_e( 'Team', 'racketmanager' );
 							} else {
 								esc_html_e( 'Away', 'racketmanager' );
@@ -172,24 +188,12 @@ namespace Racketmanager;
 									<?php
 								} else {
 									?>
-									<select size="1" name="home_team[<?php echo esc_html( $i ); ?>]" id="home_team_<?php echo esc_html( $i ); ?>"
-										<?php
-										if ( ! $finalkey ) {
-											echo ' onChange="Racketmanager.insertHomeStadium(document.getElementById(\'home_team_' . esc_html( $i ) . '\').value, ' . esc_html( $i ) . ');"';
-										}
-										?>
-									>
+									<select size="1" name="home_team[<?php echo esc_html( $i ); ?>]" id="home_team_<?php echo esc_html( $i ); ?>" <?php echo empty( $finalkey ) ? null : ' onChange="Racketmanager.insertHomeStadium(document.getElementById(\'home_team_' . esc_html( $i ) . '\').value, ' . esc_html( $i ) . ');"'; ?>>
 										<?php
 										$my_team = 0;
 										foreach ( $teams as $team ) {
 											?>
-											<option value="<?php echo esc_html( $team->id ); ?>"
-												<?php
-												if ( isset( $matches[ $i ]->home_team ) ) {
-													selected( $team->id, $matches[ $i ]->home_team );
-												}
-												?>
-											><?php echo esc_html( $team->title ); ?></option>
+											<option value="<?php echo esc_html( $team->id ); ?>" <?php echo isset( $matches[ $i ]->home_team ) ? selected( $team->id, $matches[ $i ]->home_team ) : null; ?>><?php echo esc_html( $team->title ); ?></option>
 											<?php
 											if ( 0 === $my_team ) {
 												$my_home_team = $team->id;
@@ -204,7 +208,7 @@ namespace Racketmanager;
 								}
 								?>
 								<?php
-								if ( $cup ) {
+								if ( $league->is_championship ) {
 									?>
 									<input type="radio" name="host[<?php echo esc_html( $i ); ?>]" id="team_host_home[<?php echo esc_html( $i ); ?>]" value="home"
 										<?php
@@ -227,75 +231,20 @@ namespace Racketmanager;
 									<?php
 								} else {
 									?>
-									<?php
-									if ( 1 === $non_group ) {
-										?>
-										<select size="1" name="away_team[<?php echo esc_html( $i ); ?>]" id="away_team_<?php echo esc_html( $i ); ?>"
-											<?php
-											if ( ! $finalkey ) {
-												echo ' onChange="Racketmanager.insertHomeStadium(document.getElementById(\'home_team_' . esc_html( $i ) . '\').value, ' . esc_html( $i ) . ');"';
-											}
-											?>
-										>
-											<?php
-											foreach ( $teams as $team ) {
-												?>
-												<?php
-												if ( isset( $matches[ $i ]->away_team ) ) {
-													?>
-													<option value="<?php echo esc_html( $team->id ); ?>"
-														<?php
-														if ( isset( $matches[ $i ]->away_team ) ) {
-															selected( $team->id, $matches[ $i ]->away_team );
-														}
-														?>
-													><?php echo esc_html( $team->title ); ?></option>
-													<?php
-												} elseif ( $team->id === $my_home_team ) {
-													?>
-													<!-- BUILD THE 'SELECTED' ITEM IN THE POP-UP -->
-													<option value="<?php echo esc_html( $team->id ); ?>" selected='selected'><?php echo esc_html( $team->title ); ?></option>
-													<?php
-												} else {
-													?>
-													<option value="<?php echo esc_html( $team->id ); ?>"><?php echo esc_html( $team->title ); ?></option>
-													<?php
-												}
-											}
-											?>
-										</select>
+									<select size="1" name="away_team[<?php echo esc_html( $i ); ?>]" id="away_team_<?php echo esc_html( $i ); ?>"<?php echo empty( $finalkey ) ? null : ' onChange="Racketmanager.insertHomeStadium(document.getElementById(\'home_team_' . esc_html( $i ) . '\').value, ' . esc_html( $i ) . ');"'; ?>>
 										<?php
-									} else {
+										foreach ( $teams as $team ) {
+											?>
+											<option value="<?php echo esc_html( $team->id ); ?>" <?php echo isset( $matches[ $i ]->away_team ) ? selected( $team->id, $matches[ $i ]->away_team ) : null; ?>><?php echo esc_html( $team->title ); ?></option>
+											<?php
+										}
 										?>
-										<select size="1" name="away_team[<?php echo esc_html( $i ); ?>]" id="away_team_<?php echo esc_html( $i ); ?>"
-											<?php
-											if ( ! $finalkey ) {
-												echo ' onChange="Racketmanager.insertHomeStadium(document.getElementById(\'home_team_' . esc_html( $i ) . '\').value, ' . esc_html( $i ) . ');"';
-											}
-											?>
-										>
-											<?php
-											foreach ( $teams as $team ) {
-												?>
-												<option value="<?php echo esc_html( $team->id ); ?>"
-													<?php
-													if ( isset( $matches[ $i ]->away_team ) ) {
-														selected( $team->id, $matches[ $i ]->away_team );
-													}
-													?>
-												><?php echo esc_html( $team->title ); ?></option>
-												<?php
-											}
-											?>
-										</select>
-										<?php
-									}
-									?>
+									</select>
 									<?php
 								}
 								?>
 								<?php
-								if ( $cup ) {
+								if ( $league->is_championship ) {
 									?>
 									<input type="radio" name="host[<?php echo esc_html( $i ); ?>]" id="team_host_away[<?php echo esc_html( $i ); ?>]" value="away"
 										<?php

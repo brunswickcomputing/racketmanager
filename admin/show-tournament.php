@@ -1,6 +1,6 @@
 <?php
 /**
- * Tournament administration panel
+ * Tournament view administration panel
  *
  * @package Racketmanager/Admin/Templates
  */
@@ -8,109 +8,58 @@
 namespace Racketmanager;
 
 ?>
+<script type='text/javascript'>
+jQuery(document).ready(function(){
+	activaTab('<?php echo esc_html( $tab ); ?>');
+});
+</script>
 <div class='container'>
 	<div class='row justify-content-end'>
 		<div class='col-auto racketmanager_breadcrumb'>
-			<a href='admin.php?page=racketmanager-tournaments'><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $form_title ); ?>
+			<a href='admin.php?page=racketmanager-tournaments'><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $tournament->name ); ?>
 		</div>
 	</div>
-	<h1><?php echo esc_html( $form_title ); ?></h1>
-	<?php
-	if ( empty( $tournament->id ) ) {
-		$action_form = 'admin.php?page=racketmanager-tournaments';
-	} else {
-		$action_form = 'admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament_id=' . $tournament->id;
-	}
-	?>
-	<form action="<?php echo esc_html( $action_form ); ?>" method='post' enctype='multipart/form-data' name='tournament_edit' class='form-control'>
-		<?php
-		if ( $edit ) {
-			wp_nonce_field( 'racketmanager_manage-tournament' );
-		} else {
-			wp_nonce_field( 'racketmanager_add-tournament' );
-		}
-		?>
-		<div class="form-floating mb-3">
-			<input type="text" class="form-control" id="tournament" name="tournament" value="<?php echo esc_html( $tournament->name ); ?>" size="30" placeholder="<?php esc_html_e( 'Add tournament', 'racketmanager' ); ?>" />
-			<label for="tournament"><?php esc_html_e( 'Name', 'racketmanager' ); ?></label>
-		</div>
-		<div class="form-floating mb-3">
-			<select class="form-select" size="1" name="competition_id" id="competition_id" >
-				<option><?php esc_html_e( 'Select competition', 'racketmanager' ); ?></option>
-				<?php
-				foreach ( $competitions as $competition ) {
-					?>
-					<option value="<?php echo esc_attr( $competition->id ); ?>" <?php selected( $competition->id, $tournament->competition_id ); ?>><?php echo esc_html( $competition->name ); ?></option>
+	<h1><?php echo esc_html( $tournament->name ); ?></h1>
+	<div class="row mb-3">
+		<nav class="navbar navbar-expand-lg bg-body-tertiary">
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTournament" aria-controls="navbarTournament" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarTournament">
+				<ul class="nav nav-pills">
+					<li class="nav-item">
+						<button class="nav-link" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true"><?php esc_html_e( 'Overview', 'racketmanager' ); ?></button>
+					</li>
+					<li class="nav-item">
+						<button class="nav-link" id="events-tab" data-bs-toggle="tab" data-bs-target="#events" type="button" role="tab" aria-controls="events" aria-selected="true"><?php esc_html_e( 'Events', 'racketmanager' ); ?></button>
+					</li>
+					<li class="nav-item">
+						<button class="nav-link" id="entries-tab" data-bs-toggle="tab" data-bs-target="#entries" type="button" role="tab" aria-controls="entries" aria-selected="true"><?php esc_html_e( 'Entries', 'racketmanager' ); ?></button>
+					</li>
 					<?php
-				}
-				?>
-			</select>
-			<label for="competition_id"><?php esc_html_e( 'Competition', 'racketmanager' ); ?></label>
-		</div>
-		<div class="form-floating mb-3">
-			<select class="form-select" size="1" name="season" id="season" >
-				<option><?php esc_html_e( 'Select season', 'racketmanager' ); ?></option>
-				<?php
-				$seasons = $this->get_seasons( 'DESC' );
-				foreach ( $seasons as $season ) {
-					?>
-					<option value="<?php echo esc_html( $season->name ); ?>" <?php selected( $season->name, isset( $tournament->season ) ? $tournament->season : '' ); ?>><?php echo esc_html( $season->name ); ?></option>
-				<?php } ?>
-			</select>
-			<label for="type"><?php esc_html_e( 'Season', 'racketmanager' ); ?></label>
-		</div>
-		<div class="form-floating mb-3">
-			<input type="date" class="form-control" name="date_open" id="date_open" value="<?php echo esc_html( $tournament->date_open ); ?>" size="20" />
-			<label for="date_open"><?php esc_html_e( 'Opening Date', 'racketmanager' ); ?></label>
-		</div>
-		<div class="form-floating mb-3">
-			<input type="date" class="form-control" name="closingdate" id="closingdate" value="<?php echo esc_html( $tournament->closing_date ); ?>" size="20" />
-			<label for="closingdate"><?php esc_html_e( 'Closing Date', 'racketmanager' ); ?></label>
-		</div>
-		<div class="form-floating mb-3">
-			<input type="date" class="form-control" name="date_start" id="date_start" value="<?php echo esc_html( $tournament->date_start ); ?>" size="20" />
-			<label for="date_start"><?php esc_html_e( 'Start Date', 'racketmanager' ); ?></label>
-		</div>
-		<div class="form-floating mb-3">
-			<input type="date" class="form-control" name="date" id="date" value="<?php echo esc_html( $tournament->date ); ?>" size="20" />
-			<label for="date"><?php esc_html_e( 'End Date', 'racketmanager' ); ?></label>
-		</div>
-		<div class="form-floating mb-3">
-			<select class="form-select" size="1" name="venue" id="venue" >
-				<option><?php esc_html_e( 'Select venue', 'racketmanager' ); ?></option>
-				<?php foreach ( $clubs as $club ) { ?>
-					<option value="<?php echo esc_html( $club->id ); ?>"
-						<?php
-						if ( isset( $tournament->venue ) ) {
-							selected( $tournament->venue, $club->id );
-						}
+					if ( $tournament->is_active ) {
 						?>
-					><?php echo esc_html( $club->name ); ?></option>
-				<?php } ?>
-			</select>
-			<label for="venue"><?php esc_html_e( 'Venue', 'racketmanager' ); ?></label>
+						<li class="nav-item">
+							<a class="nav-link" id="plan-tab" href="admin.php?page=racketmanager-tournaments&view=plan&tournament=<?php echo esc_attr( $tournament->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Plan', 'racketmanager' ); ?></a>
+						</li>
+						<?php
+					}
+					?>
+				</ul>
+			</div>
+		</nav>
+	</div>
+	<div class="tab-content">
+		<div class="tab-pane" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+			<h2><?php esc_html_e( 'Overview', 'racketmanager' ); ?></h2>
+			<?php require 'tournament/overview.php'; ?>
 		</div>
-		<div class="form-floating mb-3">
-			<input type="time" class="form-control" name="starttime" id="starttime" value="<?php echo esc_html( $tournament->starttime ); ?>" size="20" />
-			<label for="starttime"><?php esc_html_e( 'Start Time', 'racketmanager' ); ?></label>
+		<div class="tab-pane" id="events" role="tabpanel" aria-labelledby="events-tab">
+			<h2><?php esc_html_e( 'Events', 'racketmanager' ); ?></h2>
+			<?php require 'tournament/events.php'; ?>
 		</div>
-		<?php do_action( 'racketmanager_tournament_edit_form', $tournament ); ?>
-
-		<input type="hidden" name="tournament_id" id="tournament_id" value="<?php echo esc_html( $tournament->id ); ?>" />
-		<input type="hidden" name="updateLeague" value="tournament" />
-
-		<?php
-		if ( $edit ) {
-			?>
-			<input type="hidden" name="editTournament" value="tournament" />
-			<?php
-		} else {
-			?>
-			<input type="hidden" name="addTournament" value="tournament" />
-			<?php
-		}
-		?>
-		<input type="submit" name="action" value="<?php echo esc_html( $form_action ); ?>" class="btn btn-primary" />
-	</form>
-
-</div>
+		<div class="tab-pane" id="entries" role="tabpanel" aria-labelledby="entries-tab">
+			<h2><?php esc_html_e( 'Entries', 'racketmanager' ); ?></h2>
+			<?php require 'tournament/entries.php'; ?>
+		</div>
+	</div>

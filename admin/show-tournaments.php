@@ -7,9 +7,41 @@
 
 namespace Racketmanager;
 
+$seasons      = $this->get_seasons( 'DESC' );
+$competitions = $this->get_competitions( array( 'type' => 'tournament' ) );
 ?>
 <div class="container">
 	<h1><?php esc_html_e( 'Tournaments', 'racketmanager' ); ?></h1>
+	<div class="container">
+		<div class="row justify-content-between mb-3">
+			<form id="tournaments-list-filter" method="get" action="" class="form-control">
+				<input type="hidden" name="page" value="<?php echo esc_html( 'racketmanager-tournaments' ); ?>" />
+				<div class="col-auto">
+					<select class="form-select-1" size="1" name="season" id="season">
+						<option value=""><?php esc_html_e( 'All seasons', 'racketmanager' ); ?></option>
+						<?php
+						foreach ( $seasons as $season ) {
+							?>
+							<option value="<?php echo esc_html( $season->name ); ?>" <?php echo esc_html( $season->name === $season_select ? 'selected' : '' ); ?>><?php echo esc_html( $season->name ); ?></option>
+							<?php
+						}
+						?>
+					</select>
+					<select class="form-select-1" size="1" name="competition" id="competition">
+						<option value=""><?php esc_html_e( 'All competitions', 'racketmanager' ); ?></option>
+						<?php
+						foreach ( $competitions as $competition ) {
+							?>
+							<option value="<?php echo esc_html( $competition->id ); ?>" <?php selected( $competition->id, $competition_select ); ?>><?php echo esc_html( $competition->name ); ?></option>
+							<?php
+						}
+						?>
+					</select>
+					<button class="btn btn-primary"><?php esc_html_e( 'Filter', 'racketmanager' ); ?></button>
+				</div>
+			</form>
+		</div>
+	</div>
 	<div class="alert_rm" id="alert-tournaments" style="display:none;">
 		<div class="alert__body">
 			<div class="alert__body-inner" id="alert-tournaments-response">

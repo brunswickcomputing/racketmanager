@@ -441,7 +441,7 @@ final class Racketmanager_Championship extends RacketManager {
 	 */
 	private function start_final_rounds() {
 		if ( is_admin() && current_user_can( 'update_results' ) ) {
-			$league     = get_league();
+			$league     = get_league( $this->league_id );
 			$match_args = array(
 				'final'            => $this->get_final_keys( 1 ),
 				'limit'            => false,
@@ -726,66 +726,76 @@ final class Racketmanager_Championship extends RacketManager {
 		}
 	}
 	/**
+	 * Handle administration panel
+	 *
+	 * @param object $league league object.
+	 */
+	public function handle_admin_page( $league = null ) {
+		global $racketmanager, $tab;
+		$league = get_league( $league );
+		$season = $league->get_season();
+		if ( isset( $_POST['action'] ) ) {
+			$action = sanitize_text_field( wp_unslash( $_POST['action'] ) );
+			if ( 'startFinals' === $action ) {
+				if ( isset( $_POST['racketmanager_proceed_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_proceed_nonce'] ) ), 'racketmanager_championship_proceed' ) ) {
+					if ( current_user_can( 'update_results' ) ) {
+						$this->start_final_rounds( $league->id );
+						$racketmanager->set_message( __( 'First round started', 'racketmanager' ) );
+						$tab = 'finalresults'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+					} else {
+						$racketmanager->set_message( __( 'You do not have sufficient permissions to access this page.', 'racketmanager' ), true );
+					}
+				} else {
+					$racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+				}
+				$racketmanager->printMessage();
+			} elseif ( 'updateFinalResults' === $action ) {
+				if ( isset( $_POST['racketmanager_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_update-finals' ) ) {
+					if ( current_user_can( 'update_results' ) ) {
+						$custom      = isset( $_POST['custom'] ) ? $_POST['custom'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+						$matches     = isset( $_POST['matches'] ) ? $_POST['matches'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+						$home_points = isset( $_POST['home_points'] ) ? $_POST['home_points'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+						$away_points = isset( $_POST['away_points'] ) ? $_POST['away_points'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+						$round       = isset( $_POST['round'] ) ? intval( $_POST['round'] ) : null;
+						$season      = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
+						$this->update_final_results( $matches, $home_points, $away_points, $custom, $round, $season );
+					} else {
+						$racketmanager->set_message( __( 'You do not have sufficient permissions to access this page.', 'racketmanager' ), true );
+					}
+				} else {
+					$racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+				}
+			}
+			$racketmanager->printMessage();
+		}
+		$class = 'alternate';
+		if ( count( $this->groups ) > 0 ) {
+			$league->set_group( $this->groups[0] );
+		}
+
+		$tab = 'finalresults'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_REQUEST['league-tab'] ) ) {
+			$tab = sanitize_text_field( wp_unslash( $_REQUEST['league-tab'] ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		}
+		if ( isset( $_REQUEST['final'] ) ) {
+			$final = sanitize_text_field( wp_unslash( $_REQUEST['final'] ) );
+		}
+	}
+	/**
 	 * Display administration panel
 	 */
 	public function display_admin_page() {
-		global $racketmanager;
+		global $racketmanager, $league, $season, $tab;
 
-		if ( is_admin() && current_user_can( 'view_leagues' ) ) {
-			$league = get_league();
-			$season = $league->get_season();
-			if ( isset( $_POST['action'] ) ) {
-				$action = sanitize_text_field( wp_unslash( $_POST['action'] ) );
-				if ( 'startFinals' === $action ) {
-					if ( isset( $_POST['racketmanager_proceed_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_proceed_nonce'] ) ), 'racketmanager_championship_proceed' ) ) {
-						if ( current_user_can( 'update_results' ) ) {
-							$this->start_final_rounds( $league->id );
-							$racketmanager->set_message( __( 'First round started', 'racketmanager' ) );
-							$tab = 'finalresults';
-						} else {
-							$racketmanager->set_message( __( 'You do not have sufficient permissions to access this page.', 'racketmanager' ), true );
-						}
-					} else {
-						$racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-					}
-					$racketmanager->printMessage();
-				} elseif ( 'updateFinalResults' === $action ) {
-					if ( isset( $_POST['racketmanager_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_update-finals' ) ) {
-						if ( current_user_can( 'update_results' ) ) {
-							$custom      = isset( $_POST['custom'] ) ? $_POST['custom'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-							$matches     = isset( $_POST['matches'] ) ? $_POST['matches'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-							$home_points = isset( $_POST['home_points'] ) ? $_POST['home_points'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-							$away_points = isset( $_POST['away_points'] ) ? $_POST['away_points'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-							$round       = isset( $_POST['round'] ) ? intval( $_POST['round'] ) : null;
-							$season      = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
-							$this->update_final_results( $matches, $home_points, $away_points, $custom, $round, $season );
-						} else {
-							$racketmanager->set_message( __( 'You do not have sufficient permissions to access this page.', 'racketmanager' ), true );
-						}
-					} else {
-						$racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-					}
-				}
-				$racketmanager->printMessage();
-			}
-			$class = 'alternate';
-			if ( count( $this->groups ) > 0 ) {
-				$league->set_group( $this->groups[0] );
-			}
-
-			$tab = 'finalresults';
-			// phpcs:disable WordPress.Security.NonceVerification.Recommended
-			if ( isset( $_REQUEST['league-tab'] ) ) {
-				$tab = sanitize_text_field( wp_unslash( $_REQUEST['league-tab'] ) );
-			}
-			if ( isset( $_REQUEST['final'] ) ) {
-				$final = sanitize_text_field( wp_unslash( $_REQUEST['final'] ) );
-			}
-			// phpcs:enable WordPress.Security.NonceVerification.Recommended
-			include_once RACKETMANAGER_PATH . 'admin/championship.php';
-		} else {
+		if ( ! is_admin() || ! current_user_can( 'view_leagues' ) ) {
 			$racketmanager->set_message( __( 'You do not have sufficient permissions to access this page.', 'racketmanager' ), true );
 			$racketmanager->printMessage();
+			return;
 		}
+		$league = get_league( $league );
+		$this->handle_admin_page( $league );
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		include_once RACKETMANAGER_PATH . 'admin/championship.php';
 	}
 }

@@ -11,14 +11,27 @@ global $racketmanager, $wp;
 // phpcs:disable WordPress.Security.NonceVerification.Recommended
 $page    = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : null; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 $subpage = isset( $_GET['subpage'] ) ? sanitize_text_field( wp_unslash( $_GET['subpage'] ) ) : null;
+$view    = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] ) ) : null;
 // phpcs:enable WordPress.Security.NonceVerification.Recommended
 ?>
 <div class="championship-block">
 	<div class="row tablenav">
 		<form action="" method="get" class="col-auto">
 			<input type="hidden" name="page" value="<?php echo esc_html( $page ); ?>" />
-			<input type="hidden" name="subpage" value="<?php echo esc_html( $subpage ); ?>" />
-			<input type="hidden" name="league_id" value="<?php echo esc_html( $league->id ); ?>" />
+			<?php
+			if ( empty( $tournament ) ) {
+				?>
+				<input type="hidden" name="subpage" value="<?php echo esc_html( $subpage ); ?>" />
+				<input type="hidden" name="league_id" value="<?php echo esc_html( $league->id ); ?>" />
+				<?php
+			} else {
+				?>
+				<input type="hidden" name="view" value="<?php echo esc_html( $view ); ?>" />
+				<input type="hidden" name="tournament" value="<?php echo esc_attr( $tournament->id ); ?>" />
+				<input type="hidden" name="league" value="<?php echo esc_html( $league->id ); ?>" />
+				<?php
+			}
+			?>
 			<input type="hidden" name="season" value="<?php echo esc_html( $league->current_season['name'] ); ?>" />
 
 			<select size="1" name="final" id="final">
@@ -31,14 +44,24 @@ $subpage = isset( $_GET['subpage'] ) ? sanitize_text_field( wp_unslash( $_GET['s
 		</form>
 		<form action="" method="get" class="col-auto">
 			<input type="hidden" name="page" value="<?php echo esc_html( $page ); ?>" />
-			<input type="hidden" name="subpage" value="match" />
+			<?php
+			if ( empty( $tournament ) ) {
+				?>
+				<input type="hidden" name="subpage" value="match" />
+				<?php
+			} else {
+				?>
+				<input type="hidden" name="view" value="matches" />
+				<input type="hidden" name="tournament" value="<?php echo esc_attr( $tournament->id ); ?>" />
+				<?php
+			}
+			?>
 			<input type="hidden" name="league_id" value="<?php echo esc_html( $league->id ); ?>" />
 			<input type="hidden" name="season" value="<?php echo esc_html( $league->current_season['name'] ); ?>" />
 
 			<!-- Bulk Actions -->
 			<select name="mode" size="1">
 				<option value="-1" selected="selected"><?php esc_html_e( 'Actions', 'racketmanager' ); ?></option>
-				<option value="add"><?php esc_html_e( 'Add Matches', 'racketmanager' ); ?></option>
 				<option value="edit"><?php esc_html_e( 'Edit Matches', 'racketmanager' ); ?></option>
 			</select>
 
@@ -104,6 +127,11 @@ $subpage = isset( $_GET['subpage'] ) ? sanitize_text_field( wp_unslash( $_GET['s
 					<?php
 					$m = 1; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 					foreach ( $matches as $match ) {
+						if ( empty( $tournament ) ) {
+							$match_link = 'admin.php?page=racketmanager&amp;subpage=match&amp;league_id=' . $league->id . '&amp;edit=' . $match->id . '&amp;season=' . $match->season;
+						} else {
+							$match_link = 'admin.php?page=racketmanager-tournaments&amp;view=match&amp;tournament=' . $tournament->id . '&amp;league=' . $league->id . '&amp;edit=' . $match->id . '&amp;season=' . $match->season . '&amp;final=' . $match->final_round;
+						}
 						?>
 						<tr class="">
 							<td>
@@ -116,7 +144,7 @@ $subpage = isset( $_GET['subpage'] ) ? sanitize_text_field( wp_unslash( $_GET['s
 								<?php echo ( isset( $match->date ) ) ? esc_html( mysql2date( $racketmanager->date_format, $match->date ) ) : 'N/A'; ?>
 							</td>
 							<td class="match-title">
-								<a href="admin.php?page=racketmanager&amp;subpage=match&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;edit=<?php echo esc_html( $match->id ); ?>&amp;season=<?php echo esc_html( $match->season ); ?>">
+								<a href="<?php echo esc_html( $match_link ); ?>">
 									<?php echo esc_html( $match->get_title() ); ?>
 								</a>
 							</td>

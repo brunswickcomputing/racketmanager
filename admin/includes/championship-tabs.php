@@ -20,6 +20,14 @@ namespace Racketmanager;
 			<button class="nav-link" id="preliminary-tab" data-bs-toggle="pill" data-bs-target="#preliminary" type="button" role="tab" aria-controls="preliminary" aria-selected="false"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></button>
 		</li>
 		<?php
+		if ( $league->event->competition->is_tournament && ! empty( $tournament ) ) {
+			?>
+			<li class="nav-item">
+				<a class="nav-link" href="admin.php?page=racketmanager-tournaments&view=setup&tournament=<?php echo esc_attr( $tournament->id ); ?>&league=<?php echo esc_attr( $league->id ); ?>&season=<?php echo esc_attr( $tournament->season ); ?>" type="button" role="tab"><?php esc_html_e( 'Setup', 'racketmanager' ); ?></a>
+			</li>
+			<?php
+		}
+		?>
 	</ul>
 	<!-- Tab panes -->
 	<div class="tab-content">

@@ -55,10 +55,6 @@ namespace Racketmanager;
 			<input type="checkbox" class="form-check-input" id="match_place3" name="settings[match_place3]" value="1" <?php isset( $event->match_place3 ) ? checked( $event->match_place3, 1 ) : ''; ?> />
 			<label for="match_place3" class="form-check-label"><?php esc_html_e( 'Include 3rd place match', 'racketmanager' ); ?></label>
 		</div>
-		<div class="form-check">
-			<input type="checkbox" class="form-check-input" id="non_group" name="settings[non_group]" value="1" <?php isset( $event->non_group ) ? checked( $event->non_group, 1 ) : ''; ?> />
-			<label for="non_group" class="form-check-label"><?php esc_html_e( 'Allow Non-Group Games', 'racketmanager' ); ?></label>
-		</div>
 		<?php
 	} elseif ( $event->is_box ) {
 		?>

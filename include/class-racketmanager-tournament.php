@@ -287,7 +287,7 @@ final class Racketmanager_Tournament {
 				$this->venue      = '';
 				$this->venue_name = 'TBC';
 			} else {
-				$this->venue_name = get_club( $tournament->venue )->name;
+				$this->venue_name = get_club( $tournament->venue )->shortcode;
 			}
 			if ( isset( $this->closing_date ) && $this->closing_date <= gmdate( 'Y-m-d' ) ) {
 				$this->is_active = true;

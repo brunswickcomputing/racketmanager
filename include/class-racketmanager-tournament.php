@@ -348,7 +348,7 @@ final class Racketmanager_Tournament {
 		if ( $valid ) {
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"INSERT INTO {$wpdb->racketmanager_tournaments} (`name`, `competition_id`, `season`, `venue`, `date_open`, `closingdate`, `date_start`, `date`, `starttime` ) VALUES (%s, %s, %d, %d, %s, %s, %s, %s, %s )",
+					"INSERT INTO {$wpdb->racketmanager_tournaments} (`name`, `competition_id`, `season`, `venue`, `date_open`, `closingdate`, `date_start`, `date` ) VALUES (%s, %s, %d, %d, %s, %s, %s, %s )",
 					$this->name,
 					$this->competition_id,
 					$this->season,
@@ -357,7 +357,6 @@ final class Racketmanager_Tournament {
 					$this->closing_date,
 					$this->date_start,
 					$this->date,
-					$this->starttime
 				)
 			);
 			$racketmanager->set_message( __( 'Tournament added', 'racketmanager' ) );

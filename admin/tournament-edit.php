@@ -90,10 +90,6 @@ namespace Racketmanager;
 			</select>
 			<label for="venue"><?php esc_html_e( 'Venue', 'racketmanager' ); ?></label>
 		</div>
-		<div class="form-floating mb-3">
-			<input type="time" class="form-control" name="starttime" id="starttime" value="<?php echo esc_html( $tournament->starttime ); ?>" size="20" />
-			<label for="starttime"><?php esc_html_e( 'Start Time', 'racketmanager' ); ?></label>
-		</div>
 		<?php do_action( 'racketmanager_tournament_edit_form', $tournament ); ?>
 
 		<input type="hidden" name="tournament_id" id="tournament_id" value="<?php echo esc_html( $tournament->id ); ?>" />

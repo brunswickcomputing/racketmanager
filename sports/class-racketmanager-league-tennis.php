@@ -225,7 +225,7 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 										$data['sets_won'] += 1;
 									} elseif ( ( $set[ $player_ref ] < $set[ $player_ref_alt ] && empty( $set_winner ) ) || $team_ref_alt === $set_winner ) {
 										$data['sets_allowed'] += 1;
-									} elseif ( 'S' === strtoupper( $set[ $player_ref ] ) ) {
+									} elseif ( 'S' === strtoupper( $set[ $player_ref ] ) || $rubber->is_abandoned ) {
 										$data['sets_shared'] += 1;
 									}
 								}

@@ -1054,7 +1054,7 @@ class Racketmanager_Ajax extends RacketManager {
 				$set['player2']  = null;
 				$set['tiebreak'] = '';
 			}
-		} elseif ( 'retired_player1' === $match_status || 'retired_player2' === $match_status ) {
+		} elseif ( 'retired_player1' === $match_status || 'retired_player2' === $match_status || 'abandoned' === $match_status ) {
 			if ( 'null' === $set_type ) {
 				$set['player1']  = '';
 				$set['player2']  = '';

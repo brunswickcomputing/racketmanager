@@ -4744,17 +4744,21 @@ class RacketManager_Admin extends RacketManager {
 		$headers[]     = 'From: ' . ucfirst( $league->event->competition->type ) . ' Secretary <' . $email_from . '>';
 		$headers[]     = 'cc: ' . ucfirst( $league->event->competition->type ) . ' Secretary <' . $email_from . '>';
 		$email_subject = $this->site_name . ' - ' . $league->title . ' ' . $season . ' - Important Message';
-
+		$email_to      = array();
 		foreach ( $teams as $team ) {
 			$team_dtls = $league->get_team_dtls( $team->id );
-			$email_to  = $team_dtls->contactemail;
-			if ( $email_to ) {
-				wp_mail( $email_to, $email_subject, $email_message, $headers );
+			if ( ! empty( $team_dtls->contactemail ) ) {
+				$email_to[]   = ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
+				$message_sent = true;
+			}
+			if ( ! empty( $team_dtls->club->match_secretary_email ) ) {
+				$headers[]    = 'cc: ' . ucwords( $team_dtls->club->match_secretary_name ) . ' <' . $team_dtls->club->match_secretary_email . '>';
 				$message_sent = true;
 			}
 		}
 
 		if ( $message_sent ) {
+			wp_mail( $email_to, $email_subject, $email_message, $headers );
 			$this->set_message( __( 'Email sent to captains', 'racketmanager' ) );
 		}
 		return true;

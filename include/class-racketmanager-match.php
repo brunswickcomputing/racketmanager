@@ -1067,9 +1067,9 @@ final class Racketmanager_Match {
 					$this->custom = array_merge( (array) $this->custom, (array) $custom );
 					$this->status = 1;
 				} elseif ( $shared === $this->num_rubbers ) {
-					$custom['shared'] = 'true';
-					$this->custom     = array_merge( (array) $this->custom, (array) $custom );
-					$this->status     = 3;
+					$custom['share'] = 'true';
+					$this->custom    = array_merge( (array) $this->custom, (array) $custom );
+					$this->status    = 3;
 				} elseif ( 6 === intval( $match_status ) ) {
 					$custom['abandoned'] = true;
 					$this->status        = 6;

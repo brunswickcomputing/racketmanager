@@ -907,13 +907,13 @@ class Racketmanager_Ajax extends RacketManager {
 				switch ( $match_status ) {
 					case 'retired_player1':
 					case 'retired_player2':
+					case 'abandoned':
 						if ( $set_retired === $s ) {
 							$set_status = $match_status;
 						} elseif ( $s > $set_retired ) {
 							$set_info->set_type = 'null';
 						}
 						break;
-					case 'abandoned':
 					case 'cancelled':
 						$set_status = $match_status;
 						break;

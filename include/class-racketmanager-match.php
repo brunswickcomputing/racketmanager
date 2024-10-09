@@ -1356,7 +1356,10 @@ final class Racketmanager_Match {
 	 */
 	public function get_result( $home_points, $away_points ) {
 		$match = array();
-		if ( ! empty( $this->custom['walkover'] ) || 1 === $this->status ) {
+		if ( 7 === $this->status ) {
+			$match['winner'] = -1;
+			$match['loser']  = -1;
+		} elseif ( ! empty( $this->custom['walkover'] ) || 1 === $this->status ) {
 			if ( 'home' === $this->custom['walkover'] ) {
 				$match['winner'] = $this->home_team;
 				$match['loser']  = $this->away_team;

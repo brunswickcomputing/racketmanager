@@ -198,6 +198,11 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 											}
 										}
 									}
+									if ( $rubber->is_abandoned ) {
+										if ( $set_retired === $j ) {
+											$set_winner = 'abandoned';
+										}
+									}
 									if ( is_numeric( trim( $set[ $player_ref_alt ] ) ) ) {
 										if ( 'MTB' === $set_type ) {
 											if ( $rubber->loser_id === $team_id ) {

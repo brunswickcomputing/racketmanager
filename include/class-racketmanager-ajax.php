@@ -904,14 +904,22 @@ class Racketmanager_Ajax extends RacketManager {
 					$set_info->set_type = 'null';
 				}
 				$set_status = null;
-				if ( 'retired_player1' === $match_status || 'retired_player2' === $match_status || 'abandoned' === $match_status || 'cancelled' === $match_status ) {
-					if ( $set_retired === $s ) {
+				switch ( $match_status ) {
+					case 'retired_player1':
+					case 'retired_player2':
+						if ( $set_retired === $s ) {
+							$set_status = $match_status;
+						} elseif ( $s > $set_retired ) {
+							$set_info->set_type = 'null';
+						}
+						break;
+					case 'abandoned':
+					case 'cancelled':
 						$set_status = $match_status;
-					} elseif ( $s > $set_retired ) {
-						$set_info->set_type = 'null';
-					}
-				} else {
-					$set_status = $match_status;
+						break;
+					default:
+						$set_status = $match_status;
+						break;
 				}
 				$set_validate        = $this->validate_set( $set, $set_prefix, $errors['err_msg'], $errors['err_field'], $set_info, $set_status );
 				$set                 = $set_validate[2];

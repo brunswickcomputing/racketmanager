@@ -1374,7 +1374,7 @@ final class Racketmanager_Match {
 				$match['loser']  = $this->home_team;
 			}
 			$this->status = 2;
-		} elseif ( ! empty( $this->custom['shared'] ) && 'true' === $this->custom['shared'] ) {
+		} elseif ( ! empty( $this->custom['share'] ) ) {
 			$match['winner'] = -1;
 			$match['loser']  = -1;
 			$this->status    = 3;

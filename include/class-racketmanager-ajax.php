@@ -886,7 +886,7 @@ class Racketmanager_Ajax extends RacketManager {
 			$num_sets    = count( $sets );
 			$set_retired = null;
 			if ( 'retired_player1' === $match_status || 'retired_player2' === $match_status || 'abandoned' === $match_status ) {
-				for ( $s1 = $num_sets - 1; $s1 >= 0; $s1-- ) {
+				for ( $s1 = $num_sets; $s1 >= 1; $s1-- ) {
 					if ( '' !== $sets[ $s1 ]['player1'] || '' !== $sets[ $s1 ]['player2'] ) {
 						$set_retired = $s1;
 						break;

@@ -176,8 +176,8 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 						if ( ! $rubber->is_walkover && ! $rubber->is_shared ) {
 							$num_sets    = count( $rubber->sets );
 							$set_retired = null;
-							if ( isset( $rubber->custom['retired'] ) ) {
-								for ( $s1 = $num_sets - 1; $s1 >= 0; $s1-- ) {
+							if ( $rubber->is_retired || $rubber->is_abandoned ) {
+								for ( $s1 = $num_sets; $s1 > 0; $s1-- ) {
 									if ( null !== $rubber->sets[ $s1 ]['player1'] || null !== $rubber->sets[ $s1 ]['player2'] ) {
 										$set_retired = $s1;
 										break;
@@ -189,7 +189,7 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 								if ( isset( $rubber->sets[ $j ]['player1'] ) && null !== $rubber->sets[ $j ]['player1'] ) {
 									$set        = $rubber->sets[ $j ];
 									$set_winner = null;
-									if ( isset( $rubber->custom['retired'] ) ) {
+									if ( $rubber->is_retired ) {
 										if ( $set_retired === $j ) {
 											if ( $team_ref === $rubber->custom['retired'] ) {
 												$set_winner = $team_ref_alt;

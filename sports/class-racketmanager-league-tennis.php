@@ -106,9 +106,10 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 			$games_diff[ $key ]    = $team_games_won - $team_games_allowed;
 			$games_won[ $key ]     = $team_games_won;
 			$games_allowed[ $key ] = $team_games_allowed;
+			$status[ $key ]        = $team->status;
 			$title[ $key ]         = $team->title;
 		}
-		array_multisort( $points, SORT_DESC, $sets_diff, SORT_DESC, $games_diff, SORT_DESC, $sets_won, SORT_DESC, $sets_allowed, SORT_ASC, $games_won, SORT_DESC, $games_allowed, SORT_ASC, $title, SORT_ASC, $teams );
+		array_multisort( $points, SORT_DESC, $sets_diff, SORT_DESC, $games_diff, SORT_DESC, $sets_won, SORT_DESC, $sets_allowed, SORT_ASC, $games_won, SORT_DESC, $games_allowed, SORT_ASC, $status, SORT_ASC, $title, SORT_ASC, $teams );
 
 		return $teams;
 	}

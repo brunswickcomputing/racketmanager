@@ -1058,7 +1058,12 @@ final class Racketmanager_Match {
 			unset( $this->custom['cancelled'] );
 			if ( 'league' === $this->league->event->competition->type ) {
 				$this->status = 0;
-				if ( $home_walkover === $this->num_rubbers || $away_walkover === $this->num_rubbers ) {
+				if ( 7 === intval( $match_status ) ) {
+					$custom['withdrawn'] = true;
+					$this->status        = 7;
+					$home_points         = 0;
+					$away_points         = 0;
+				} elseif ( $home_walkover === $this->num_rubbers || $away_walkover === $this->num_rubbers ) {
 					if ( $home_walkover === $this->num_rubbers ) {
 						$custom['walkover'] = 'away';
 					} elseif ( $away_walkover === $this->num_rubbers ) {
@@ -1074,9 +1079,6 @@ final class Racketmanager_Match {
 					$custom['abandoned'] = true;
 					$this->status        = 6;
 					$this->is_abandoned  = true;
-				} elseif ( 7 === intval( $match_status ) ) {
-					$custom['withdrawn'] = true;
-					$this->status        = 7;
 				} elseif ( 8 === intval( $match_status ) ) {
 					$custom['cancelled'] = true;
 					$this->status        = 8;

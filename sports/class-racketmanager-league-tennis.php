@@ -162,7 +162,7 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 			$player_ref_alt = ( 'player1' === $player_ref ) ? 'player2' : 'player1';
 			$match          = get_match( $match );
 			if ( ! empty( $match->winner_id ) && ! empty( $match->loser_id ) && 'W' !== $match->teams['home']->status && 'W' !== $match->teams['away']->status && ! $match->is_cancelled ) {
-				if ( ! empty( $match->status && 3 === $match->status ) ) {
+				if ( ! empty( $match->status ) && 3 === $match->status ) {
 					++$data['matches_shared'];
 				}
 				if ( ! empty( $league->num_rubbers ) ) {

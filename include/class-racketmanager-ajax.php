@@ -1151,7 +1151,6 @@ class Racketmanager_Ajax extends RacketManager {
 	private function validate_set_score( $set, $set_prefix, $team_1, $team_2, $return_data, $set_info, $match_status = null ) {
 		$tiebreak_allowed  = $set_info->tiebreak_allowed;
 		$tiebreak_required = $set_info->tiebreak_required;
-		$tiebreak_set      = $set_info->tiebreak_set;
 		$max_win           = $set_info->max_win;
 		$min_win           = $set_info->min_win;
 		$max_loss          = $set_info->max_loss;

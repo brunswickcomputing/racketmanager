@@ -905,7 +905,19 @@ class Racketmanager_League {
 	public function withdraw_team( $team, $season ) {
 		global $wpdb, $racketmanager;
 
-		// remove tables.
+		// update matches.
+		$matches = $this->get_matches( array( 'team_id' => $team ) );
+		foreach ( $matches as $match ) {
+			$match = get_match( $match );
+			if ( $match ) {
+				$match_confirmed = 'Y';
+				$home_team_score = 0;
+				$away_team_score = 0;
+				$status          = Racketmanager_Util::get_match_status_code( 'withdrawn' );
+				$match->update_result( $home_team_score, $away_team_score, $match->custom, $match_confirmed, $status );
+			}
+		}
+		// update table.
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"UPDATE {$wpdb->racketmanager_table} SET `status` = 'W' WHERE `team_id` = %d AND `league_id` = %d and `season` = %s",

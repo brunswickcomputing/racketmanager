@@ -178,7 +178,7 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 							$set_retired = null;
 							if ( $rubber->is_retired || $rubber->is_abandoned ) {
 								for ( $s1 = $num_sets; $s1 > 0; $s1-- ) {
-									if ( null !== $rubber->sets[ $s1 ]['player1'] || null !== $rubber->sets[ $s1 ]['player2'] ) {
+									if ( '' !== $rubber->sets[ $s1 ]['player1'] || '' !== $rubber->sets[ $s1 ]['player2'] ) {
 										$set_retired = $s1;
 										break;
 									}

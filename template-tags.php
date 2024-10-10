@@ -1267,3 +1267,16 @@ function racketmanager_player_search( $search_string, $args = array() ) {
 	$shortcode .= ']';
 	return do_shortcode( $shortcode );
 }
+/**
+ * Display withdrawn team email
+ *
+ * @param array $args array of arguments.
+ */
+function racketmanager_withdrawn_team( $args = array() ) {
+	$shortcode = '[withdrawn-team';
+	foreach ( $args as $key => $value ) {
+		$shortcode .= ' ' . $key . "='" . $value . "'";
+	}
+	$shortcode .= ']';
+	return do_shortcode( $shortcode );
+}

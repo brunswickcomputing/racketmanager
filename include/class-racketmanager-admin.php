@@ -4811,8 +4811,11 @@ class RacketManager_Admin extends RacketManager {
 					$league = get_league( $team->league_id );
 					if ( $league ) {
 						$team_dtls = $league->get_team_dtls( $team->team_id );
-						if ( $team_dtls ) {
-							$headers[] = 'bcc: ' . $team_dtls->captain . ' <' . $team_dtls->contactemail . '>';
+						if ( ! empty( $team_dtls->contactemail ) ) {
+							$headers[] = 'bcc: ' . ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
+						}
+						if ( ! empty( $team_dtls->club->match_secretary_email ) ) {
+							$headers[] = 'bcc: ' . ucwords( $team_dtls->club->match_secretary_name ) . ' <' . $team_dtls->club->match_secretary_email . '>';
 						}
 					}
 				}

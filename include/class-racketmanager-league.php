@@ -743,8 +743,7 @@ class Racketmanager_League {
 		$this->event           = $event;
 		$this->scoring         = isset( $event->scoring ) ? $event->scoring : null;
 		$this->set_match_query_args();
-		$this->set_num_matches( true ); // get total number of matches.
-		$this->set_num_matches();
+		$this->set_num_matches(); // for pagination.
 		$this->set_num_teams( true ); // get total number of teams.
 		$this->standings     = $event->standings;
 		$this->point_format  = $event->competition->point_format;
@@ -2247,23 +2246,24 @@ class Racketmanager_League {
 	 * @param boolean $total total matches or matches per page.
 	 */
 	public function set_num_matches( $total = false ) {
+		$match_args                     = array();
+		$match_args['count']            = true;
+		$match_args['season']           = null;
+		$match_args['reset_query_args'] = true;
+		if ( true !== $total ) {
+			$match_args['limit'] = 0;
+		}
+		$num_matches = $this->get_matches(
+			array(
+				'limit'            => 0,
+				'count'            => true,
+				'season'           => '',
+				'reset_query_args' => true,
+			)
+		);
 		if ( true === $total ) {
-			$this->num_matches_total = $this->get_matches(
-				array(
-					'count'            => true,
-					'season'           => '',
-					'reset_query_args' => true,
-				)
-			);
+			$this->num_matches_total = $num_matches;
 		} else {
-			$this->get_matches(
-				array(
-					'limit'            => 0,
-					'count'            => true,
-					'season'           => '',
-					'reset_query_args' => true,
-				)
-			);
 			$this->pagination_matches = $this->get_page_links( 'matches' );
 		}
 	}

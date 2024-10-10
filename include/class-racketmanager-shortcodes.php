@@ -358,14 +358,15 @@ class RacketManager_Shortcodes {
 	 * @return the content
 	 */
 	public function show_players( $atts ) {
-		$args          = shortcode_atts(
+		$args           = shortcode_atts(
 			array(
 				'template' => '',
 			),
 			$atts
 		);
-		$template      = $args['template'];
-		$search_string = isset( $_GET['q'] ) ? sanitize_text_field( wp_unslash( $_GET['q'] ) ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$template       = $args['template'];
+		$search_string  = isset( $_GET['q'] ) ? sanitize_text_field( wp_unslash( $_GET['q'] ) ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$search_results = null;
 		if ( $search_string ) {
 			$search_results = racketmanager_player_search( $search_string );
 		}

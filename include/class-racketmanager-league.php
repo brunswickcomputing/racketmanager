@@ -930,6 +930,38 @@ class Racketmanager_League {
 			)
 		);
 		$this->update_standings( $season );
+		// send email confirmation.
+		$team          = get_team( $team_id );
+		$message_send  = false;
+		$teams         = $this->get_league_teams( array( 'season' => $season ) );
+		$headers       = array();
+		$email_from    = $racketmanager->get_confirmation_email( $this->event->competition->type );
+		$headers[]     = 'From: ' . ucfirst( $this->event->competition->type ) . ' Secretary <' . $email_from . '>';
+		$headers[]     = 'cc: ' . ucfirst( $this->event->competition->type ) . ' Secretary <' . $email_from . '>';
+		$email_subject = $this->title . ' ' . $season . ' - ' . __( 'Withdrawn team', 'racketmanager' ) . ' - ' . $team->title;
+		$email_to      = array();
+		foreach ( $teams as $team ) {
+			$team_dtls = $this->get_team_dtls( $team->id );
+			if ( ! empty( $team_dtls->contactemail ) ) {
+				$email_to[]   = ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
+				$message_send = true;
+			}
+			if ( ! empty( $team_dtls->club->match_secretary_email ) ) {
+				$headers[]    = 'cc: ' . ucwords( $team_dtls->club->match_secretary_name ) . ' <' . $team_dtls->club->match_secretary_email . '>';
+				$message_send = true;
+			}
+		}
+		$message_args            = array();
+		$message_args['team']    = $team_id;
+		$message_args['season']  = $season;
+		$message_args['league']  = $this->id;
+		$message_args['subject'] = $email_subject;
+		$message_args['from']    = $email_from;
+
+		if ( $message_send ) {
+			$email_message = racketmanager_withdrawn_team( $message_args );
+			wp_mail( $email_to, $email_subject, $email_message, $headers );
+		}
 		$racketmanager->set_message( __( 'Team withdrawn', 'racketmanager' ) );
 	}
 	/**

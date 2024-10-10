@@ -47,6 +47,29 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.22.0 =
+* BUGFIX: use input competition type
+* BUGFIX: do not set complete flag too early
+* BUGFIX: get team info
+* BUGFIX: handle player with no matches
+* BUGFIX: set date_open for tournament competition
+* BUGFIX: direct to correct page for match
+* BUGFIX: only show contact details when logged in
+* BUGFIX: prevent error when generating player link
+* UPDATE: move match message to left of match lists
+* UPDATE: add tournament entries
+* UPDATE: set first team set score when second team entered only
+* UPDATE: get team and player counts for event
+* UPDATE: allow player search by lta number
+* UPDATE: allow player search from query string
+* UPDATE: check if lta number is used
+* UPDATE: check if email address is used
+* UPDATE: show tie break score
+* UPDATE: update matches when team withdrawn
+* UPDATE: send email when team withdrawn
+* UPDATE: send single email when contacting teams including match secretaries
+* UPDATE: simplify tournament admin
+
 = 8.21.0 =
 * BUGFIX: show tournaments list when no active tournament
 * BUGFIX: use correct class for message deletion

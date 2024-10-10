@@ -910,11 +910,14 @@ class Racketmanager_League {
 		foreach ( $matches as $match ) {
 			$match = get_match( $match );
 			if ( $match ) {
-				$match_confirmed = 'Y';
-				$home_team_score = 0;
-				$away_team_score = 0;
-				$status          = Racketmanager_Util::get_match_status_code( 'withdrawn' );
-				$match->update_result( $home_team_score, $away_team_score, $match->custom, $match_confirmed, $status );
+				$status = Racketmanager_Util::get_match_status( $match->status );
+				if ( 'Withdrawn' !== $status ) {
+					$match_confirmed = 'Y';
+					$home_team_score = 0;
+					$away_team_score = 0;
+					$status          = Racketmanager_Util::get_match_status_code( 'withdrawn' );
+					$match->update_result( $home_team_score, $away_team_score, $match->custom, $match_confirmed, $status );
+				}
 			}
 		}
 		// update table.

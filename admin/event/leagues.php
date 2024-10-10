@@ -82,6 +82,7 @@ namespace Racketmanager;
 							if ( $league->is_championship ) {
 								echo esc_html( $league->championship->num_teams_first_round );
 							} else {
+								$league->set_num_matches( true );
 								echo esc_html( $league->num_matches_total );
 							}
 							?>

@@ -319,11 +319,11 @@ class RacketManager {
 	 * @param int $competition Competiton id.
 	 * @return void
 	 */
-	public function chase_pending_approvals( $competition ) {
+	public function chase_pending_approvals( $competition = 'league' ) {
 		$confirmation_timeout           = $this->get_options( $competition )['confirmationTimeout'];
 		$match_args                     = array();
 		$match_args['confirmed']        = 'true';
-		$match_args['competition_type'] = 'league';
+		$match_args['competition_type'] = $competition;
 		$match_args['orderby']          = array(
 			'date' => 'ASC',
 			'id'   => 'ASC',
@@ -336,7 +336,7 @@ class RacketManager {
 		$confirmation_pending           = $this->get_options( $competition )['confirmationPending'];
 		$match_args                     = array();
 		$match_args['confirmed']        = 'true';
-		$match_args['competition_type'] = 'league';
+		$match_args['competition_type'] = $competition;
 		$match_args['orderby']          = array(
 			'updated' => 'ASC',
 			'id'      => 'ASC',

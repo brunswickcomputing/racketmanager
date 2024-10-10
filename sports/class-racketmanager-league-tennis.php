@@ -243,16 +243,19 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 							if ( $rubber->is_walkover ) {
 								$data['sets_won']  += $walkover_sets;
 								$data['games_won'] += $walkover_games;
-							}
-							if ( $match->home_team === $team_id ) {   // home team.
-								if ( $rubber->away_points > '0' ) {
-									$data['split_set']['win'] += 1;
-								} else {
-									$data['straight_set']['win'] += 1;
+							} elseif ( $match->home_team === $team_id ) {   // home team.
+								if ( $data['sets_won'] > '0' ) {
+									if ( $rubber->away_points > '0' ) {
+										$data['split_set']['win'] += 1;
+									} else {
+										$data['straight_set']['win'] += 1;
+									}
 								}
 							} elseif ( $rubber->home_points > '0' ) { // away team split set win.
-								$data['split_set']['win'] += 1;       // home team got a set.
-							} else {                                  // home team straight set win.
+								if ( $data['sets_won'] > '0' ) {
+									$data['split_set']['win'] += 1;       // home team got a set.
+								}
+							} elseif ( $data['sets_won'] > '0' ) {                                  // home team straight set win.
 								$data['straight_set']['win'] += 1;
 							}
 						} elseif ( $rubber->loser_id === $team_id ) { // losing team.

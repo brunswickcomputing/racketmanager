@@ -899,14 +899,14 @@ class Racketmanager_League {
 	/**
 	 * Withdraw team from League
 	 *
-	 * @param integer $team team id.
+	 * @param integer $team_id team id.
 	 * @param string  $season season.
 	 */
-	public function withdraw_team( $team, $season ) {
+	public function withdraw_team( $team_id, $season ) {
 		global $wpdb, $racketmanager;
 
 		// update matches.
-		$matches = $this->get_matches( array( 'team_id' => $team ) );
+		$matches = $this->get_matches( array( 'team_id' => $team_id ) );
 		foreach ( $matches as $match ) {
 			$match = get_match( $match );
 			if ( $match ) {
@@ -921,7 +921,7 @@ class Racketmanager_League {
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"UPDATE {$wpdb->racketmanager_table} SET `status` = 'W' WHERE `team_id` = %d AND `league_id` = %d and `season` = %s",
-				$team,
+				$team_id,
 				$this->id,
 				$season
 			)

@@ -25,6 +25,7 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 		add_shortcode( 'resultoutstandingnotification', array( &$this, 'show_result_outstanding_notification' ) );
 		add_shortcode( 'clubplayernotification', array( &$this, 'showClubPlayerNotification' ) );
 		add_shortcode( 'match_date_change_notification', array( &$this, 'show_match_date_change_notification' ) );
+		add_shortcode( 'withdrawn-team', array( &$this, 'show_team_withdrawn' ) );
 	}
 	/**
 	 * Function to show match notification
@@ -467,5 +468,81 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 			),
 			'email'
 		);
+	}
+	/**
+	 * Function to show team withdrawn email
+	 *
+	 *    [team-withdrawn]
+	 *
+	 * @param array $atts shortcode attributes.
+	 * @return the content
+	 */
+	public function show_team_withdrawn( $atts ) {
+		global $racketmanager;
+
+		$args      = shortcode_atts(
+			array(
+				'team'     => false,
+				'league'   => false,
+				'season'   => false,
+				'subject'  => false,
+				'from'     => false,
+				'template' => '',
+			),
+			$atts
+		);
+		$team_id   = $args['team'];
+		$league_id = $args['league'];
+		$season    = $args['season'];
+		$subject   = $args['subject'];
+		$from      = $args['from'];
+		$template  = $args['template'];
+		$valid     = true;
+
+		if ( $team_id ) {
+			$team = get_team( $team_id );
+			if ( $team ) {
+				if ( $league_id ) {
+					$league = get_league( $league_id );
+					if ( $league ) {
+						if ( $season ) {
+							$league->set_season( $season );
+						} else {
+							$valid = false;
+							$msg   = __( 'Season not supplied', 'racketmanager' );
+						}
+					} else {
+						$valid = false;
+						$msg   = __( 'League not found', 'racketmanager' );
+					}
+				} else {
+					$valid = false;
+					$msg   = __( 'League not supplied', 'racketmanager' );
+				}
+			} else {
+				$valid = false;
+				$msg   = __( 'Team not found', 'racketmanager' );
+			}
+		} else {
+			$valid = false;
+			$msg   = __( 'Team not supplied', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$filename = ( ! empty( $template ) ) ? 'team-withdrawn-' . $template : 'team-withdrawn';
+			return $this->load_template(
+				$filename,
+				array(
+					'team'          => $team,
+					'league'        => $league,
+					'season'        => $season,
+					'organisation'  => $racketmanager->site_name,
+					'email_subject' => $subject,
+					'email_from'    => $from,
+				),
+				'email'
+			);
+		} else {
+			return $msg;
+		}
 	}
 }

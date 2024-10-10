@@ -1930,7 +1930,7 @@ final class Racketmanager_Match {
 			$team1set = 'set' . $s . 'team1';
 			$team2set = 'set' . $s . 'team2';
 			$tiebreak = 'tiebreak' . $s;
-			if ( ! empty( intval( $sets[ $s ][ $winning_player ] ) ) || ! empty( intval( $sets[ $s ][ $losing_player ] ) ) ) {
+			if ( ! empty( ( $sets[ $s ][ $winning_player ] ) ) || ! empty( $sets[ $s ][ $losing_player ] ) ) {
 				$set = $sets[ $s ];
 				if ( $s > 1 ) {
 					$result_match->score .= ' ';

@@ -2518,6 +2518,7 @@ class RacketManager {
 		'resultPending'       => false,
 		'status'              => false,
 		'team'                => false,
+		'tournament_id'       => false,
 	);
 
 	/**
@@ -2555,6 +2556,7 @@ class RacketManager {
 		$confirmation_pending = $match_args['confirmationPending'];
 		$result_pending       = $match_args['resultPending'];
 		$status               = $match_args['status'];
+		$tournament_id        = $match_args['tournament_id'];
 		if ( $count ) {
 			$sql = "SELECT COUNT(*) FROM {$wpdb->racketmanager_matches} WHERE 1 = 1";
 		} else {
@@ -2593,7 +2595,9 @@ class RacketManager {
 		if ( $competitiontype ) {
 			$sql .= " AND `league_id` in (select `id` from {$wpdb->racketmanager} WHERE `event_id` in (select e.`id` from {$wpdb->racketmanager_events} e, {$wpdb->racketmanager_competitions} c WHERE e.`competition_id` = c.`id` AND c.`type` = '" . $competitiontype . "'))";
 		}
-
+		if ( $tournament_id ) {
+			$sql .= " AND `league_id` in (select `id` from {$wpdb->racketmanager} WHERE `event_id` in (SELECT e.`id` FROM {$wpdb->racketmanager_events} e, {$wpdb->racketmanager_competitions} c, {$wpdb->racketmanager_tournaments} t WHERE e.`competition_id` = c.`id` AND c.`id` = t.`competition_id` AND t.`id` = " . $tournament_id . '))';
+		}
 		if ( $time_offset ) {
 			$time_offset = intval( $time_offset ) . ':00:00';
 		} else {

@@ -1350,10 +1350,16 @@ class Racketmanager_Event {
 		$sql .= " FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_teams} t2, {$wpdb->racketmanager_table} t1 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` " . $search;
 
 		if ( $count ) {
-			return $wpdb->get_var(
+			$event_teams = wp_cache_get( md5( $sql ), 'event_teams' );
+			if ( ! $event_teams ) {
+				$event_teams = $wpdb->get_var(
 				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-				$sql
-			); // db call ok.
+					$sql
+				); // db call ok.
+				wp_cache_set( md5( $sql ), $event_teams, 'event_teams' );
+
+			}
+			return $event_teams;
 		}
 		$orderby_string = '';
 		$i              = 0;

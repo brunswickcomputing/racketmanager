@@ -1092,6 +1092,10 @@ function racketmanager_upgrade() {
 		$wpdb->query( "INSERT INTO {$wpdb->racketmanager_tournament_entries} (`tournament_id`, `player_id`, `status` ) SELECT DISTINCT t1.id, tp.player_id, 1 FROM {$wpdb->racketmanager_team_players} tp , {$wpdb->racketmanager_table} t , {$wpdb->racketmanager} l , {$wpdb->racketmanager_events} e , {$wpdb->racketmanager_competitions} c , {$wpdb->racketmanager_tournaments} t1 WHERE tp.team_id = t.team_id and t.league_id = l.id and l.event_id = e.id and e.competition_id = c.id and c.id = t1.competition_id and t1.season = t.season;" );
 		$wpdb->query("UPDATE {$wpdb->racketmanager_tournament_entries} SET `status` = 0 WHERE `player_id` NOT IN (SELECT um.user_id FROM wp_usermeta um WHERE um.meta_key = 'contactno');");
 	}
+	if ( version_compare( $installed, '8.23.0', '<' ) ) {
+		echo esc_html__( 'starting 8.23.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} CHANGE `shortcode` `competition_code` VARCHAR(50) NULL" );
+	}
 	/*
 	* Update version and dbversion
 	*/

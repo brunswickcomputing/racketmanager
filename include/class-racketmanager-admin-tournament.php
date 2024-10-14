@@ -334,21 +334,22 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 				$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 			} else {
 				check_admin_referer( 'racketmanager_manage-tournament' );
-				if ( isset( $_POST['tournament'] ) ) {
-					$tournament_id = intval( $_POST['tournament'] );
+				if ( isset( $_POST['tournament_id'] ) ) {
+					$tournament_id = intval( $_POST['tournament_id'] );
 					$tournament    = get_tournament( $tournament_id );
 					if ( $tournament ) {
-						$tournament_updates               = clone $tournament;
-						$tournament_updates->name         = isset( $_POST['tournament'] ) ? sanitize_text_field( wp_unslash( $_POST['tournament'] ) ) : null;
-						$tournament_updates->season       = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
-						$tournament_updates->venue        = isset( $_POST['venue'] ) ? intval( $_POST['venue'] ) : null;
-						$tournament_updates->date         = isset( $_POST['date'] ) ? sanitize_text_field( wp_unslash( $_POST['date'] ) ) : null;
-						$tournament_updates->date_open    = isset( $_POST['date_open'] ) ? sanitize_text_field( wp_unslash( $_POST['date_open'] ) ) : null;
-						$tournament_updates->closing_date = isset( $_POST['closingdate'] ) ? sanitize_text_field( wp_unslash( $_POST['closingdate'] ) ) : null;
-						$tournament_updates->date_start   = isset( $_POST['date_start'] ) ? sanitize_text_field( wp_unslash( $_POST['date_start'] ) ) : null;
-						$success                          = $tournament->update( $tournament_updates );
+						$tournament->name             = isset( $_POST['tournament'] ) ? sanitize_text_field( wp_unslash( $_POST['tournament'] ) ) : null;
+						$tournament->season           = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
+						$tournament->venue            = isset( $_POST['venue'] ) ? intval( $_POST['venue'] ) : null;
+						$tournament->date             = isset( $_POST['date'] ) ? sanitize_text_field( wp_unslash( $_POST['date'] ) ) : null;
+						$tournament->date_open        = isset( $_POST['date_open'] ) ? sanitize_text_field( wp_unslash( $_POST['date_open'] ) ) : null;
+						$tournament->closing_date     = isset( $_POST['closingdate'] ) ? sanitize_text_field( wp_unslash( $_POST['closingdate'] ) ) : null;
+						$tournament->date_start       = isset( $_POST['date_start'] ) ? sanitize_text_field( wp_unslash( $_POST['date_start'] ) ) : null;
+						$tournament->competition_code = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
+						$success                      = $tournament->update( $tournament );
 						if ( $success ) {
-							$this->set_competition_dates( $tournament_updates );
+							$this->set_competition_dates( $tournament );
+							$this->set_message( __( 'Tournament updated', 'racketmanager' ) );
 						}
 					} else {
 						$this->set_message( __( 'Tournament not found', 'racketmanager' ), true );
@@ -371,16 +372,17 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 			$form_title  = __( 'Add Tournament', 'racketmanager' );
 			$form_action = __( 'Add', 'racketmanager' );
 			$tournament  = (object) array(
-				'name'           => '',
-				'competition_id' => '',
-				'id'             => '',
-				'venue'          => '',
-				'date'           => '',
-				'closingdate'    => '',
-				'numcourts'      => '',
-				'date_open'      => '',
-				'closing_date'   => '',
-				'date_start'     => '',
+				'name'             => '',
+				'competition_id'   => '',
+				'id'               => '',
+				'venue'            => '',
+				'date'             => '',
+				'closingdate'      => '',
+				'numcourts'        => '',
+				'date_open'        => '',
+				'closing_date'     => '',
+				'date_start'       => '',
+				'competition_code' => '',
 			);
 		}
 		$clubs             = $this->get_clubs(

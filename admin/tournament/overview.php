@@ -24,6 +24,10 @@ namespace Racketmanager;
 						<td class="col-6 col-md-3"><?php esc_html_e( 'Entries', 'racketmanager' ); ?></td>
 						<td class="col-auto"><?php echo esc_html( $tournament->entries ); ?></td>
 					</tr>
+					<tr>
+						<td class="col-6 col-md-3"><?php esc_html_e( 'Code', 'racketmanager' ); ?></td>
+						<td class="col-auto"><?php echo esc_html( $tournament->competition_code ); ?></td>
+					</tr>
 				</tbody>
 			</table>
 		</div>

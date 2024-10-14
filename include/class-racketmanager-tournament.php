@@ -189,6 +189,12 @@ final class Racketmanager_Tournament {
 	 */
 	public $link;
 	/**
+	 * Competition code variable
+	 *
+	 * @var string
+	 */
+	public $competition_code;
+	/**
 	 * Retrieve tournament instance
 	 *
 	 * @param int    $tournament_id tournament id.
@@ -232,7 +238,7 @@ final class Racketmanager_Tournament {
 			$tournament = $wpdb->get_row(
 				$wpdb->prepare(
 				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					"SELECT `id`, `name`, `competition_id`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`closingdate`, '%%Y-%%m-%%d') AS closing_date, `date_start`, `date_open`,`numcourts` AS `num_courts`, `starttime`, `timeincrement` AS `time_increment`, `orderofplay` FROM {$wpdb->racketmanager_tournaments} WHERE $search"
+					"SELECT `id`, `name`, `competition_id`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`closingdate`, '%%Y-%%m-%%d') AS closing_date, `date_start`, `date_open`,`numcourts` AS `num_courts`, `starttime`, `timeincrement` AS `time_increment`, `orderofplay`, `competition_code` FROM {$wpdb->racketmanager_tournaments} WHERE $search"
 				)
 			); // db call ok.
 			if ( ! $tournament ) {
@@ -345,10 +351,13 @@ final class Racketmanager_Tournament {
 			$valid     = false;
 			$err_msg[] = __( 'End date must be after start date', 'racketmanager' );
 		}
+		if ( empty( $this->competition_code ) ) {
+			$this->competition_code = '';
+		}
 		if ( $valid ) {
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"INSERT INTO {$wpdb->racketmanager_tournaments} (`name`, `competition_id`, `season`, `venue`, `date_open`, `closingdate`, `date_start`, `date` ) VALUES (%s, %s, %d, %d, %s, %s, %s, %s )",
+					"INSERT INTO {$wpdb->racketmanager_tournaments} (`name`, `competition_id`, `season`, `venue`, `date_open`, `closingdate`, `date_start`, `date`, `competition_code` ) VALUES (%s, %s, %d, %d, %s, %s, %s, %s, %s )",
 					$this->name,
 					$this->competition_id,
 					$this->season,
@@ -357,6 +366,7 @@ final class Racketmanager_Tournament {
 					$this->closing_date,
 					$this->date_start,
 					$this->date,
+					$this->competition_code,
 				)
 			);
 			$racketmanager->set_message( __( 'Tournament added', 'racketmanager' ) );
@@ -409,10 +419,13 @@ final class Racketmanager_Tournament {
 			$valid     = false;
 			$err_msg[] = __( 'Opening date is required', 'racketmanager' );
 		}
+		if ( empty( $updated->competition_code ) ) {
+			$updated->competition_code = '';
+		}
 		if ( $valid ) {
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_tournaments} SET `name` = %s, `competition_id` = %d, `season` = %s, `venue` = %d, `date_open` = %s, `closingdate` = %s, `date_start` = %s, `date` = %s, `starttime` = %s WHERE `id` = %d",
+					"UPDATE {$wpdb->racketmanager_tournaments} SET `name` = %s, `competition_id` = %d, `season` = %s, `venue` = %d, `date_open` = %s, `closingdate` = %s, `date_start` = %s, `date` = %s, `starttime` = %s, `competition_code` = %s WHERE `id` = %d",
 					$updated->name,
 					$updated->competition_id,
 					$updated->season,
@@ -422,9 +435,11 @@ final class Racketmanager_Tournament {
 					$updated->date_start,
 					$updated->date,
 					$updated->starttime,
+					$updated->competition_code,
 					$this->id
 				)
 			);
+			wp_cache_delete( $this->id, 'tournaments' );
 			$racketmanager->set_message( __( 'Tournament updated', 'racketmanager' ) );
 			return true;
 		} else {

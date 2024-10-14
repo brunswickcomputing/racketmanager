@@ -60,6 +60,10 @@ namespace Racketmanager;
 			<label for="type"><?php esc_html_e( 'Season', 'racketmanager' ); ?></label>
 		</div>
 		<div class="form-floating mb-3">
+			<input type="text" class="form-control" name="competition_code" id="competition_code" value="<?php echo esc_html( $tournament->competition_code ); ?>" />
+			<label for="competition_code"><?php esc_html_e( 'Competition code', 'racketmanager' ); ?></label>
+		</div>
+		<div class="form-floating mb-3">
 			<input type="date" class="form-control" name="date_open" id="date_open" value="<?php echo esc_html( $tournament->date_open ); ?>" size="20" />
 			<label for="date_open"><?php esc_html_e( 'Opening Date', 'racketmanager' ); ?></label>
 		</div>

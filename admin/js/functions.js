@@ -229,8 +229,8 @@ function getDocHeight(doc) {
 	let height = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
 	return height;
 }
-function showPlayerClubs() {
-	let id = this.id;
+function showPlayerClubs(link) {
+	let id = link.id;
 	let split_id = id.split('_');
 	let player = split_id[1];
 	let msg = '';
@@ -252,7 +252,7 @@ function showPlayerClubs() {
 					message = '';
 					let clubs = response.data;
 					for (let club of clubs) {
-						message += club.club_name + '<br />';
+						message += club.name + '<br />';
 					}
 				}
 			}

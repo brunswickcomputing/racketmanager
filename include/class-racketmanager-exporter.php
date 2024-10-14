@@ -416,6 +416,7 @@ class Racketmanager_Exporter {
 		$contents .= ',"Tiebreak5"';
 		$contents .= "\n";
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$tournament_id  = isset( $_GET['tournament_id'] ) ? intval( $_GET['tournament_id'] ) : null;
 		$competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
 		$event_id       = isset( $_GET['event_id'] ) ? intval( $_GET['event_id'] ) : null;
 		$season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
@@ -443,6 +444,10 @@ class Racketmanager_Exporter {
 				$match_args['event_id'] = $event_id;
 				$event                  = get_event( $event_id );
 				$filename              .= '-' . seo_url( $event->name );
+			} elseif ( $tournament_id ) {
+				$match_args['tournament_id'] = $tournament_id;
+				$tournament                  = get_tournament( $tournament_id );
+				$filename                   .= '-' . seo_url( $tournament->name );
 			}
 			if ( $season ) {
 				$match_args['season'] = $season;

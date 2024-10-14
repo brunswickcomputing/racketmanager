@@ -589,4 +589,81 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 			}
 		}
 	}
+	/**
+	 * Set competition dates for tournament function
+	 *
+	 * @param object $tournament tournament.
+	 * @return void
+	 */
+	private function set_competition_dates( $tournament ) {
+		$competition = get_competition( $tournament->competition_id );
+		if ( $competition ) {
+			$season = isset( $competition->seasons[ $tournament->season ] ) ? $competition->seasons[ $tournament->season ] : null;
+			if ( $season ) {
+				$updates = false;
+				if ( empty( $season['dateOpen'] ) || $season['dateOpen'] !== $tournament->date ) {
+					$updates            = true;
+					$season['dateOpen'] = $tournament->date;
+				}
+				if ( empty( $season['dateEnd'] ) || $season['dateEnd'] !== $tournament->date ) {
+					$updates           = true;
+					$season['dateEnd'] = $tournament->date;
+				}
+				if ( empty( $season['dateStart'] ) || $season['dateStart'] !== $tournament->date_start ) {
+					$updates             = true;
+					$season['dateStart'] = $tournament->date_start;
+				}
+				if ( empty( $season['closing_date'] ) || $season['closing_date'] !== $tournament->closing_date ) {
+					$updates                = true;
+					$season['closing_date'] = $tournament->closing_date;
+				}
+				if ( empty( $season['competition_code'] ) ) {
+					if ( ! empty( $tournament->competition_code ) ) {
+						$updates                    = true;
+						$season['competition_code'] = $tournament->competition_code;
+					}
+				} elseif ( $season['competition_code'] !== $tournament->competition_code ) {
+						$updates                    = true;
+						$season['competition_code'] = $tournament->competition_code;
+				}
+				if ( $updates ) {
+					$season_data                   = new \stdclass();
+					$season_data->season           = $season['name'];
+					$season_data->num_match_days   = $season['num_match_days'];
+					$season_data->object_id        = $competition->id;
+					$season_data->match_dates      = isset( $season['matchDates'] ) ? $season['matchDates'] : false;
+					$season_data->fixed_dates      = isset( $season['fixedMatchDates'] ) ? $season['fixedMatchDates'] : false;
+					$season_data->home_away        = isset( $season['homeAway'] ) ? $season['homeAway'] : false;
+					$season_data->status           = $season['status'];
+					$season_data->date_open        = $season['dateOpen'];
+					$season_data->closing_date     = $season['closing_date'];
+					$season_data->date_start       = $season['dateStart'];
+					$season_data->date_end         = $season['dateEnd'];
+					$season_data->competition_code = $season['competition_code'];
+					$season_data->type             = 'competition';
+					$season_data->is_box           = false;
+					$this->edit_season( $season_data );
+				}
+			} else {
+				$competition_season = $this->add_season_to_competition( $tournament->season, $tournament->competition_id );
+				if ( $competition_season ) {
+					$season_data                   = new \stdclass();
+					$season_data->season           = $competition_season['name'];
+					$season_data->num_match_days   = $competition_season['num_match_days'];
+					$season_data->object_id        = $competition->id;
+					$season_data->match_dates      = false;
+					$season_data->fixed_dates      = false;
+					$season_data->home_away        = false;
+					$season_data->status           = $competition_season['status'];
+					$season_data->closing_date     = $tournament->closing_date;
+					$season_data->date_start       = $tournament->date_start;
+					$season_data->date_end         = $tournament->date;
+					$season_data->type             = 'competition';
+					$season_data->is_box           = false;
+					$season_data->competition_code = $tournament->competition_code;
+					$this->edit_season( $season_data );
+				}
+			}
+		}
+	}
 }

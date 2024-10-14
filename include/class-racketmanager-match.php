@@ -263,6 +263,12 @@ final class Racketmanager_Match {
 	 */
 	public $is_shared = false;
 	/**
+	 * Is withdrawn variable
+	 *
+	 * @var boolean
+	 */
+	public $is_withdrawn = false;
+	/**
 	 * Is abandoned variable
 	 *
 	 * @var boolean
@@ -514,6 +520,7 @@ final class Racketmanager_Match {
 			$this->is_retired   = false;
 			$this->is_abandoned = false;
 			$this->is_cancelled = false;
+			$this->is_withdrawn = false;
 			switch ( $this->status ) {
 				case 1:
 					$this->is_walkover = true;
@@ -526,6 +533,9 @@ final class Racketmanager_Match {
 					break;
 				case 6:
 					$this->is_abandoned = true;
+					break;
+				case 7:
+					$this->is_withdrawn = true;
 					break;
 				case 8:
 					$this->is_cancelled = true;
@@ -1768,7 +1778,9 @@ final class Racketmanager_Match {
 	 */
 	public function report_result() {
 		global $racketmanager;
-		if ( ! empty( $this->league->event->competition->competition_code ) ) {
+		$competition_code = empty( $this->league->event->competition->seasons[ $this->season ]['competition_code'] ) ? $this->league->event->competition->competition_code : $this->league->event->competition->seasons[ $this->season ]['competition_code'];
+
+		if ( ! empty( $competition_code ) ) {
 			$result                   = new \stdClass();
 			$result->tournament       = $racketmanager->site_name . ' ' . $this->league->event->competition->name;
 			$result->code             = $this->league->event->competition->competition_code;
@@ -1777,8 +1789,38 @@ final class Racketmanager_Match {
 			$result->event_name       = $this->league->event->name;
 			$result->grade            = '6';
 			$result->event_start_date = $this->league->event->competition->seasons[ $this->season ]['matchDates'][0];
-			$result->age_group        = 'Open';
-			$result->event_type       = 'Singles';
+			switch ( $this->league->event->age_limit ) {
+				case 8:
+				case 9:
+				case 10:
+				case 11:
+				case 12:
+				case 14:
+				case 16:
+				case 18:
+				case 21:
+					$age_group = $this->league->event->age_limit . ' & Under';
+					break;
+				case 30:
+				case 35:
+				case 40:
+				case 45:
+				case 50:
+				case 55:
+				case 60:
+				case 65:
+				case 70:
+				case 75:
+				case 80:
+				case 85:
+					$age_group = $this->league->event->age_limit . ' & Over';
+					break;
+				default:
+					$age_group = 'Open';
+					break;
+			}
+			$result->age_group  = $age_group;
+			$result->event_type = 'Singles';
 			if ( 'D' === substr( $this->league->event->type, 1, 1 ) ) {
 				$result->event_type = 'Doubles';
 			}
@@ -1832,40 +1874,42 @@ final class Racketmanager_Match {
 			}
 			$result->matches = array();
 			if ( $this->league->num_rubbers ) {
-				$rubbers = $this->get_rubbers();
-				foreach ( $rubbers as $rubber ) {
-					if ( ! $rubber->is_walkover && ! $rubber->is_shared && ! empty( $rubber->winner_id ) && ! empty( $rubber->loser_id ) ) {
-						$result_match        = new \stdClass();
-						$result_match->match = $rubber->id;
-						if ( $rubber->winner_id === $this->home_team ) {
-							$winning_team   = 'home';
-							$winning_player = 'player1';
-							$losing_team    = 'away';
-							$losing_player  = 'player2';
-						} else {
-							$winning_team   = 'away';
-							$winning_player = 'player2';
-							$losing_team    = 'home';
-							$losing_player  = 'player1';
+				if ( ! $this->is_cancelled && ! $this->is_shared && ! $this->is_withdrawn ) {
+					$rubbers = $this->get_rubbers();
+					foreach ( $rubbers as $rubber ) {
+						if ( ! $rubber->is_walkover && ! $rubber->is_shared && ! empty( $rubber->winner_id ) && ! empty( $rubber->loser_id ) ) {
+							$result_match        = new \stdClass();
+							$result_match->match = $rubber->id;
+							if ( $rubber->winner_id === $this->home_team ) {
+								$winning_team   = 'home';
+								$winning_player = 'player1';
+								$losing_team    = 'away';
+								$losing_player  = 'player2';
+							} else {
+								$winning_team   = 'away';
+								$winning_player = 'player2';
+								$losing_team    = 'home';
+								$losing_player  = 'player1';
+							}
+							$result_match->winner_name   = $rubber->players[ $winning_team ]['1']->display_name;
+							$result_match->winner_lta_no = $rubber->players[ $winning_team ]['1']->btm;
+							$result_match->loser_name    = $rubber->players[ $losing_team ]['1']->display_name;
+							$result_match->loser_lta_no  = $rubber->players[ $losing_team ]['1']->btm;
+							if ( 'D' === substr( $this->league->event->type, 1, 1 ) ) {
+								$result_match->winnerpartner        = $rubber->players[ $winning_team ]['2']->display_name;
+								$result_match->winnerpartner_lta_no = $rubber->players[ $winning_team ]['2']->btm;
+								$result_match->loserpartner         = $rubber->players[ $losing_team ]['2']->display_name;
+								$result_match->loserpartner_lta_no  = $rubber->players[ $losing_team ]['2']->btm;
+							}
+							$result_match->score      = '';
+							$result_match->score_code = '';
+							if ( $rubber->is_retired ) {
+								$result_match->score_code = 'Retired';
+							}
+							$result_match->match_date = mysql2date( 'Y-m-d', $this->match_date );
+							$result_match             = $this->report_result_scores( $result_match, $rubber->sets, $winning_player, $losing_player );
+							$result->matches[]        = $result_match;
 						}
-						$result_match->winner_name   = $rubber->players[ $winning_team ]['1']->display_name;
-						$result_match->winner_lta_no = $rubber->players[ $winning_team ]['1']->btm;
-						$result_match->loser_name    = $rubber->players[ $losing_team ]['1']->display_name;
-						$result_match->loser_lta_no  = $rubber->players[ $losing_team ]['1']->btm;
-						if ( 'D' === substr( $this->league->event->type, 1, 1 ) ) {
-							$result_match->winnerpartner        = $rubber->players[ $winning_team ]['2']->display_name;
-							$result_match->winnerpartner_lta_no = $rubber->players[ $winning_team ]['2']->btm;
-							$result_match->loserpartner         = $rubber->players[ $losing_team ]['2']->display_name;
-							$result_match->loserpartner_lta_no  = $rubber->players[ $losing_team ]['2']->btm;
-						}
-						$result_match->score      = '';
-						$result_match->score_code = '';
-						if ( $rubber->is_retired ) {
-							$result_match->score_code = 'Retired';
-						}
-						$result_match->match_date = mysql2date( 'Y-m-d', $this->match_date );
-						$result_match             = $this->report_result_scores( $result_match, $rubber->sets, $winning_player, $losing_player );
-						$result->matches[]        = $result_match;
 					}
 				}
 			} else {
@@ -1898,17 +1942,17 @@ final class Racketmanager_Match {
 						$result_match->loserpartner_lta_no  = $this->teams[ $losing_team ]->players['2']->btm;
 					}
 					$result_match->score      = '';
+					$result_match->match_date = mysql2date( 'Y-m-d', $this->match_date );
+					$result_match             = $this->report_result_scores( $result_match, $this->sets, $winning_player, $losing_player );
 					$result_match->score_code = '';
 					if ( $this->is_retired ) {
 						$result_match->score_code = 'R';
-					} elseif ( $this->is_walkover ) {
+					} elseif ( $this->is_walkover || empty( $result_match->score ) ) {
 						$result_match->score_code = 'W';
-					} elseif ( $this->is_shared ) {
+					} elseif ( $this->is_shared || $this->is_cancelled ) {
 						$result_match->score_code = 'N';
 					}
-					$result_match->match_date = mysql2date( 'Y-m-d', $this->match_date );
-					$result_match             = $this->report_result_scores( $result_match, $this->sets, $winning_player, $losing_player );
-					$result->matches[]        = $result_match;
+					$result->matches[] = $result_match;
 				}
 			}
 			if ( count( $result->matches ) ) {

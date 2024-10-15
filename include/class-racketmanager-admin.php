@@ -2151,10 +2151,12 @@ class RacketManager_Admin extends RacketManager {
 			$btm    = intval( $_POST['btm'] );
 			$player = get_player( $btm, 'btm' );
 			if ( $player ) {
-				$valid                      = false;
-				$error_field[ $error_id ]   = 'btm';
-				$error_message[ $error_id ] = __( 'LTA Tennis Number already used', 'racketmanager' );
-				++$error_id;
+				if ( ! isset( $_POST['player_id'] ) || intval( $_POST['player_id'] ) === $player->id ) {
+					$valid                      = false;
+					$error_field[ $error_id ]   = 'btm';
+					$error_message[ $error_id ] = __( 'LTA Tennis Number already used', 'racketmanager' );
+					++$error_id;
+				}
 			}
 		}
 		if ( ! isset( $_POST['contactno'] ) || '' === intval( $_POST['contactno'] ) ) {
@@ -2168,10 +2170,12 @@ class RacketManager_Admin extends RacketManager {
 			$email  = sanitize_text_field( wp_unslash( $_POST['email'] ) );
 			$player = get_player( $email, 'email' );
 			if ( $player ) {
-				$valid                      = false;
-				$error_field[ $error_id ]   = 'btm';
-				$error_message[ $error_id ] = __( 'Email address already used', 'racketmanager' );
-				++$error_id;
+				if ( ! isset( $_POST['player_id'] ) || intval( $_POST['player_id'] ) === $player->id ) {
+					$valid                      = false;
+					$error_field[ $error_id ]   = 'btm';
+					$error_message[ $error_id ] = __( 'Email address already used', 'racketmanager' );
+					++$error_id;
+				}
 			}
 		}
 		if ( ! isset( $_POST['locked'] ) || '' === sanitize_text_field( wp_unslash( $_POST['locked'] ) ) ) {

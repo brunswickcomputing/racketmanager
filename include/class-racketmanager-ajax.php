@@ -978,8 +978,8 @@ class Racketmanager_Ajax extends RacketManager {
 			}
 		}
 		if ( 'league' === $match->league->event->competition->type ) {
-			$player_options          = $racketmanager->get_options( 'player' );
-			$walkover_rubber_penalty = ! empty( $player_options['walkover']['rubber'] ) ? $player_options['walkover']['rubber'] : 0;
+			$point_rule              = $match->league->get_point_rule();
+			$walkover_rubber_penalty = empty( $point_rule['forwalkover_rubber'] ) ? 0 : $point_rule['forwalkover_rubber'];
 		} else {
 			$walkover_rubber_penalty = 0;
 		}

@@ -366,6 +366,12 @@ class Racketmanager_Competition {
 	 */
 	public $is_open = false;
 	/**
+	 * Competition code
+	 *
+	 * @var string
+	 */
+	public $competition_code;
+	/**
 	 * Retrieve competition instance
 	 *
 	 * @param int    $competition_id competition id.
@@ -510,6 +516,9 @@ class Racketmanager_Competition {
 				break;
 			default:
 				break;
+		}
+		if ( empty( $this->competition_code ) ) {
+			$this->competition_code = null;
 		}
 	}
 

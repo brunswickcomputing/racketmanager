@@ -4544,7 +4544,7 @@ class RacketManager_Admin extends RacketManager {
 					$points = array();
 					if ( $results_checker->team_id === $match->home_team ) {
 						$points['home']['walkover'] = true;
-						if ( 'home' === $rubber->custom['walkover'] ) {
+						if ( isset( $rubber->custom['walkover'] ) && 'home' === $rubber->custom['walkover'] ) {
 							$points['away']['walkover'] = true;
 							$rubber->custom['walkover'] = 'both';
 							$points['away']['sets']     = 0;
@@ -4561,7 +4561,7 @@ class RacketManager_Admin extends RacketManager {
 						$stats['games']['home'] = 0;
 					} else {
 						$points['away']['walkover'] = true;
-						if ( 'away' === $rubber->custom['walkover'] ) {
+						if ( isset( $rubber->custom['walkover'] ) && 'away' === $rubber->custom['walkover'] ) {
 							$points['home']['walkover'] = true;
 							$rubber->custom['walkover'] = 'both';
 							$points['home']['sets']     = 0;

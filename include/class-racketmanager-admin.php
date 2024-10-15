@@ -4530,6 +4530,11 @@ class RacketManager_Admin extends RacketManager {
 			$player = get_player( $results_checker->player_id );
 			$match  = get_match( $results_checker->match_id );
 			if ( $match ) {
+				$penalty = false;
+				if ( 'league' === $match->league->event->competition->type ) {
+					$point_rule = $match->league->get_point_rule();
+					$penalty    = empty( $point_rule['forwalkover_rubber'] ) ? false : $point_rule['forwalkover_rubber'];
+				}
 				$rubber = get_rubber( $results_checker->rubber_id );
 				if ( $rubber ) {
 					$num_sets_to_win  = $match->league->num_sets_to_win;
@@ -4626,6 +4631,7 @@ class RacketManager_Admin extends RacketManager {
 						'player'        => $player->display_name,
 						'reason'        => $results_checker->description,
 						'contact_email' => $email_from,
+						'penalty'       => $penalty,
 					),
 					'email'
 				);

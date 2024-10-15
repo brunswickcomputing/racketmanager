@@ -52,8 +52,11 @@ require 'email-header.php';
 			require 'components/paragraph.php';
 			?>
 			<?php
-			$paragraph_text = __( 'You will also be deducted 1 point for fielding an ineligible pair.', 'racketmanager' );
-			require 'components/paragraph.php';
+			if ( $penalty ) {
+				/* translators: %s: penalty */
+				$paragraph_text = sprintf( __( 'You will also be deducted %s point for fielding an ineligible pair.', 'racketmanager' ), $penalty );
+				require 'components/paragraph.php';
+			}
 			?>
 			<?php
 			if ( ! empty( $contact_email ) ) {

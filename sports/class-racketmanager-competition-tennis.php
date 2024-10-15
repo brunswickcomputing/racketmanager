@@ -44,9 +44,11 @@ class Racketmanager_Competition_Tennis extends Racketmanager_Competition {
 	 * @return array
 	 */
 	public function getPointRuleList( $rules ) {
-		$rules['tennis']       = __( 'Tennis', 'racketmanager' );
-		$rules['tennisSummer'] = __( 'Tennis Summer', 'racketmanager' );
-		$rules['tennisRubber'] = __( 'Tennis Rubber', 'racketmanager' );
+		$rules['tennis']                = __( 'Tennis', 'racketmanager' );
+		$rules['tennisNoPenalty']       = __( 'Tennis No Penalty', 'racketmanager' );
+		$rules['tennisSummer']          = __( 'Tennis Summer', 'racketmanager' );
+		$rules['tennisSummerNoPenalty'] = __( 'Tennis Summer No Penalty', 'racketmanager' );
+		$rules['tennisRubber']          = __( 'Tennis Rubber', 'racketmanager' );
 
 		return $rules;
 	}
@@ -58,7 +60,7 @@ class Racketmanager_Competition_Tennis extends Racketmanager_Competition {
 	 * @return array
 	 */
 	public function get_point_rules( $rules ) {
-		$rules['tennis']       = array(
+		$rules['tennis']                = array(
 			'forwin'             => 1,
 			'fordraw'            => 0,
 			'forloss'            => 0,
@@ -72,7 +74,21 @@ class Racketmanager_Competition_Tennis extends Racketmanager_Competition {
 			'forwalkover_rubber' => 1,
 			'forwalkover_match'  => 1,
 		);
-		$rules['tennisRubber'] = array(
+		$rules['tennisNoPenalty']       = array(
+			'forwin'             => 1,
+			'fordraw'            => 0,
+			'forloss'            => 0,
+			'forwin_split'       => 0,
+			'forloss_split'      => 0,
+			'forshare'           => 0.5,
+			'rubber_win'         => 0,
+			'rubber_draw'        => 0,
+			'shared_match'       => 0.5,
+			'match_result'       => null,
+			'forwalkover_rubber' => 0,
+			'forwalkover_match'  => 0,
+		);
+		$rules['tennisRubber']          = array(
 			'forwin'             => 0,
 			'fordraw'            => 0,
 			'forloss'            => 0,
@@ -86,7 +102,7 @@ class Racketmanager_Competition_Tennis extends Racketmanager_Competition {
 			'forwalkover_rubber' => 2,
 			'forwalkover_match'  => 0,
 		);
-		$rules['tennisSummer'] = array(
+		$rules['tennisSummer']          = array(
 			'forwin'             => 1,
 			'fordraw'            => 0,
 			'forloss'            => 0,
@@ -98,7 +114,19 @@ class Racketmanager_Competition_Tennis extends Racketmanager_Competition {
 			'forwalkover_rubber' => 1,
 			'forwalkover_match'  => 1,
 		);
-		$rules['score']        = array(
+		$rules['tennisSummerNoPenalty'] = array(
+			'forwin'             => 1,
+			'fordraw'            => 0,
+			'forloss'            => 0,
+			'forwin_split'       => 0,
+			'forloss_split'      => 0,
+			'forshare'           => 0.5,
+			'matches_win'        => 3,
+			'matches_draw'       => 1.5,
+			'forwalkover_rubber' => 0,
+			'forwalkover_match'  => 0,
+		);
+		$rules['score']                 = array(
 			'forwin'             => 0,
 			'fordraw'            => 0,
 			'forloss'            => 0,

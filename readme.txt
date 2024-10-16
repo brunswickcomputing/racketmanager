@@ -47,6 +47,14 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.23.0 =
+* BUGFIX: set stopped set correctly
+* BUGFIX: initialise search results
+* BUGFIX: use correct team type
+* BUGFIX: pass link to popover for player clubs
+* BUGFIX: handle player update correctly
+* BUGFIX: handle walkovers correctly
+
 = 8.22.0 =
 * BUGFIX: use input competition type
 * BUGFIX: do not set complete flag too early

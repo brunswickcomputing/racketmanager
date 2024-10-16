@@ -260,7 +260,7 @@ class Racketmanager_Ajax extends RacketManager {
 				$result_confirmation = $rm_options[ $match->league->event->competition->type ]['resultConfirmation'];
 				if ( 'auto' === $result_confirmation || ( current_user_can( 'manage_racketmanager' ) ) ) {
 					$match->confirmed = 'Y';
-					$update           = $this->update_league_with_result( $match );
+					$update           = $match->update_league_with_result( $match );
 					$msg              = $update->msg;
 					if ( ! current_user_can( 'manage_racketmanager' ) ) {
 						$match_confirmed = 'Y';
@@ -427,7 +427,7 @@ class Racketmanager_Ajax extends RacketManager {
 					$this->result_notification( $match_confirmed, $match_message, $match, $match_updated_by );
 				} elseif ( ( 'A' === $match_confirmed && 'auto' === $result_confirmation ) || ( 'admin' === $user_type ) ) {
 					$match->confirmed = 'Y';
-					$update           = $this->update_league_with_result( $match );
+					$update           = $match->update_league_with_result( $match );
 					$msg              = $update->msg;
 					if ( 'admin' !== $user_type ) {
 						if ( $update->updated || 'Y' === $match->updated ) {
@@ -460,45 +460,6 @@ class Racketmanager_Ajax extends RacketManager {
 			array_push( $return, $msg, $err_msg, $err_field, $updated_rubbers );
 			wp_send_json_error( $return, 500 );
 		}
-	}
-
-	/**
-	 * Update league with results of match
-	 *
-	 * @param object $match match object.
-	 * @return object
-	 */
-	public function update_league_with_result( $match ) {
-		$return                    = new \stdClass();
-		$league                    = get_league( $match->league_id );
-		$matches[ $match->id ]     = $match->id;
-		$home_points[ $match->id ] = $match->home_points;
-		$away_points[ $match->id ] = $match->away_points;
-		$home_team[ $match->id ]   = $match->home_team;
-		$away_team[ $match->id ]   = $match->away_team;
-		if ( $league->is_championship ) {
-			if ( ! empty( $match->final_round ) ) {
-				$round_data = $league->championship->get_finals( $match->final_round );
-				$round      = $round_data['round'];
-				$league->championship->update_final_results( $matches, $home_points, $away_points, array(), $round, $match->season );
-				$return->msg     = __( 'Match saved', 'racketmanager' );
-				$return->updated = true;
-			} else {
-				$return->msg     = __( 'No round specified', 'racketmanager' );
-				$return->updated = false;
-			}
-		} else {
-			$match_count = $league->update_match_results( $matches, $home_points, $away_points, array(), $match->season, $match->final_round, $match->confirmed );
-			if ( $match_count > 0 ) {
-				/* translators: %s: match count */
-				$return->msg     = __( 'Result saved', 'racketmanager' );
-				$return->updated = true;
-			} else {
-				$return->msg     = __( 'No result to save', 'racketmanager' );
-				$return->updated = false;
-			}
-		}
-		return $return;
 	}
 	/**
 	 * Update results for each rubber

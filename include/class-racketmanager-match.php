@@ -2283,4 +2283,41 @@ final class Racketmanager_Match {
 		$return->match_update        = $match_update;
 		return $return;
 	}
+	/**
+	 * Update league with results of match
+	 *
+	 * @return object
+	 */
+	public function update_league_with_result() {
+		$return                   = new \stdClass();
+		$league                   = get_league( $this->league_id );
+		$matches[ $this->id ]     = $this->id;
+		$home_points[ $this->id ] = $this->home_points;
+		$away_points[ $this->id ] = $this->away_points;
+		$home_team[ $this->id ]   = $this->home_team;
+		$away_team[ $this->id ]   = $this->away_team;
+		if ( $league->is_championship ) {
+			if ( ! empty( $this->final_round ) ) {
+				$round_data = $league->championship->get_finals( $this->final_round );
+				$round      = $round_data['round'];
+				$league->championship->update_final_results( $matches, $home_points, $away_points, array(), $round, $this->season );
+				$return->msg     = __( 'Match saved', 'racketmanager' );
+				$return->updated = true;
+			} else {
+				$return->msg     = __( 'No round specified', 'racketmanager' );
+				$return->updated = false;
+			}
+		} else {
+			$match_count = $league->update_match_results( $matches, $home_points, $away_points, array(), $this->season, $this->final_round, $this->confirmed );
+			if ( $match_count > 0 ) {
+				/* translators: %s: match count */
+				$return->msg     = __( 'Result saved', 'racketmanager' );
+				$return->updated = true;
+			} else {
+				$return->msg     = __( 'No result to save', 'racketmanager' );
+				$return->updated = false;
+			}
+		}
+		return $return;
+	}
 }

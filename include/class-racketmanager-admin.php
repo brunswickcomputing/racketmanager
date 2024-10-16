@@ -4602,6 +4602,7 @@ class RacketManager_Admin extends RacketManager {
 				}
 				$match->set_comments( $comments );
 				$match->update_result( $match->home_points, $match->away_points, $match->custom, $match->confirmed );
+				$update            = $match->update_league_with_result( $match );
 				$organisation_name = $this->site_name;
 				$headers           = array();
 				$email_from        = $this->get_confirmation_email( $match->league->event->competition->type );

@@ -202,6 +202,8 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 										if ( $set_retired === $j ) {
 											$set_winner = 'abandoned';
 										}
+									} elseif ( $rubber->is_walkover ) {
+										$set_winner = 'walkover';
 									}
 									if ( is_numeric( trim( $set[ $player_ref_alt ] ) ) ) {
 										if ( 'MTB' === $set_type ) {
@@ -241,8 +243,9 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 								++$rubbers_won;
 							}
 							if ( $rubber->is_walkover ) {
-								$data['sets_won']  += $walkover_sets;
-								$data['games_won'] += $walkover_games;
+								$data['sets_won']            += $walkover_sets;
+								$data['games_won']           += $walkover_games;
+								$data['straight_set']['win'] += 1;
 							} elseif ( $match->home_team === $team_id ) {   // home team.
 								if ( $data['sets_won'] > '0' ) {
 									if ( $rubber->away_points > '0' ) {
@@ -261,12 +264,12 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 						} elseif ( $rubber->loser_id === $team_id ) { // losing team.
 							++$rubbers_lost;
 							if ( $rubber->is_walkover ) {
-								$data['sets_allowed']  += $walkover_sets;
-								$data['games_allowed'] += $walkover_games;
-								$data['no_player']     += 1;
+								$data['sets_allowed']         += $walkover_sets;
+								$data['games_allowed']        += $walkover_games;
+								$data['no_player']            += 1;
+								$data['straight_set']['lost'] += 1;
 								++$walkovers;
-							}
-							if ( $match->home_team === $team_id ) {   // team loss.
+							} elseif ( $match->home_team === $team_id ) {   // team loss.
 								if ( $rubber->home_points > '0' ) {
 									$data['split_set']['lost'] += 1;
 								} else {

@@ -1187,18 +1187,17 @@ class Racketmanager_Competition {
 			$competition_players = array();
 			foreach ( $players as $player ) {
 				$player = get_player( $player->player_id );
-				if ( $player->system_record ) {
-					continue;
+				if ( $player && ! $player->system_record ) {
+					if ( $stats ) {
+						$player->matches      = $player->get_matches( $this, $this->current_season['name'], 'competition' );
+						$player->stats        = $player->get_stats();
+						$player->win_pct      = $player->stats['total']->win_pct;
+						$player->matches_won  = $player->stats['total']->matches_won;
+						$player->matches_lost = $player->stats['total']->matches_lost;
+						$player->played       = $player->stats['total']->played;
+					}
+					$competition_players[] = $player;
 				}
-				if ( $stats ) {
-					$player->matches      = $player->get_matches( $this, $this->current_season['name'], 'competition' );
-					$player->stats        = $player->get_stats();
-					$player->win_pct      = $player->stats['total']->win_pct;
-					$player->matches_won  = $player->stats['total']->matches_won;
-					$player->matches_lost = $player->stats['total']->matches_lost;
-					$player->played       = $player->stats['total']->played;
-				}
-				$competition_players[] = $player;
 			}
 		}
 		if ( $stats ) {

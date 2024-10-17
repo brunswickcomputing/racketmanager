@@ -47,6 +47,9 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.23.1 =
+* BUGFIX: check player found
+
 = 8.23.0 =
 * BUGFIX: set stopped set correctly
 * BUGFIX: initialise search results

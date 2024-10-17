@@ -2697,7 +2697,7 @@ class RacketManager {
 
 		$winners = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT l.`title` ,wt.`title` AS `winner` ,lt.`title` AS `loser`, m.`id`, m.`home_team`, m.`away_team`, m.`winner_id` AS `winner_id`, m.`loser_id` AS `loser_id`, e.`type`, e.`name` AS `event_name`, e.`id` AS `event_id`, c.`name` AS `competition_name`, c.`id` AS `competition_id`, wt.`roster` AS `winner_roster`, lt.`roster` AS `loser_roster`, wt.`status` AS `team_type`  FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l, {$wpdb->racketmanager_competitions} c, {$wpdb->racketmanager_teams} wt, {$wpdb->racketmanager_teams} lt, {$wpdb->racketmanager_events} e WHERE `league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = c.`id` AND c.`type` = %s AND c.`id` = %d AND m.`final` = 'FINAL' AND m.`season` = %d AND m.`winner_id` = wt.`id` AND m.`loser_id` = lt.`id` order by c.`type`, l.`title`",
+				"SELECT l.`title` ,wt.`title` AS `winner` ,lt.`title` AS `loser`, m.`id`, m.`home_team`, m.`away_team`, m.`winner_id` AS `winner_id`, m.`loser_id` AS `loser_id`, e.`type`, e.`name` AS `event_name`, e.`id` AS `event_id`, c.`name` AS `competition_name`, c.`id` AS `competition_id`, wt.`status` AS `team_type`  FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l, {$wpdb->racketmanager_competitions} c, {$wpdb->racketmanager_teams} wt, {$wpdb->racketmanager_teams} lt, {$wpdb->racketmanager_events} e WHERE `league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = c.`id` AND c.`type` = %s AND c.`id` = %d AND m.`final` = 'FINAL' AND m.`season` = %d AND m.`winner_id` = wt.`id` AND m.`loser_id` = lt.`id` order by c.`type`, l.`title`",
 				$competition_type,
 				$competition_id,
 				$season
@@ -2710,9 +2710,7 @@ class RacketManager {
 
 		$return = array();
 		foreach ( $winners as $winner ) {
-			$winner->winner_roster = maybe_unserialize( $winner->winner_roster );
-			$winner->loser_roster  = maybe_unserialize( $winner->loser_roster );
-			$match                 = get_match( $winner->id );
+			$match = get_match( $winner->id );
 			if ( $winner->winner_id === $winner->home_team ) {
 				$winner_club = isset( $match->teams['home']->club ) ? $match->teams['home']->club->shortcode : null;
 			} else {
@@ -2726,23 +2724,6 @@ class RacketManager {
 			$winner->league      = $winner->title;
 			$winner->winner_club = $winner_club;
 			$winner->loser_club  = $loser_club;
-			if ( 'P' === $winner->team_type ) {
-				if ( ! empty( $winner->winner_roster ) ) {
-					$rosters['winner'] = $winner->winner_roster;
-				}
-				if ( ! empty( $winner->loser_roster ) ) {
-					$rosters['loser'] = $winner->loser_roster;
-				}
-				foreach ( $rosters as $key => $roster ) {
-					$p = 1;
-					foreach ( $roster as $player ) {
-						$teamplayer                      = get_player( $player );
-						$winner->player[ $key ][ $p ]    = $teamplayer->fullname;
-						$winner->player_id[ $key ][ $p ] = $player;
-						++$p;
-					}
-				}
-			}
 			if ( $group_by ) {
 				$key = strtoupper( $winner->type );
 				if ( false === array_key_exists( $key, $return ) ) {

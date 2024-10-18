@@ -168,7 +168,7 @@ if ( isset( $player->contactno ) ) {
 		<input type="hidden" name="club_Id" id="club_Id" value="<?php echo esc_html( $club_id ); ?>" />
 	<?php } ?>
 	<?php if ( isset( $player_id ) ) { ?>
-		<input type="hidden" name="player_id" id="player_id" value="<?php echo esc_html( $player->id ); ?>" />
+		<input type="hidden" name="playerId" id="playerId" value="<?php echo esc_html( $player->id ); ?>" />
 		<input type="submit" name="updatePlayer" value="<?php esc_html_e( 'Update Player', 'racketmanager' ); ?>" class="btn btn-primary" />
 	<?php } else { ?>
 		<input type="submit" name="addPlayer" value="<?php esc_html_e( 'Add Player', 'racketmanager' ); ?>" class="btn btn-primary" />

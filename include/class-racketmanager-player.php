@@ -469,24 +469,59 @@ final class Racketmanager_Player {
 
 	/**
 	 * Get clubs for player
+	 *
+	 * @param string $args search parameters.
+	 * @return array
 	 */
-	public function get_clubs() {
+	public function get_clubs( $args = array() ) {
 		global $wpdb;
-		$this->clubs  = array();
+		$defaults     = array(
+			'count' => false,
+			'type'  => 'active',
+		);
+		$args         = array_merge( $defaults, (array) $args );
+		$count        = $args['count'];
+		$type         = $args['type'];
+		$search_args  = array();
+		$search_terms = array();
+		if ( $type ) {
+			switch ( $type ) {
+				case 'active':
+					$search_terms[] = '`removed_date` is null';
+					break;
+				case 'inactive':
+					$search_terms[] = '`removed_date` is not null';
+					break;
+				case 'all':
+				default:
+					break;
+			}
+		}
+		$search_args[] = $this->id;
+		$search        = '';
+		if ( ! empty( $search_terms ) ) {
+			$search = implode( ' AND ', $search_terms );
+		}
+		$sql = "SELECT `affiliatedclub`, `created_date`, `removed_date` FROM {$wpdb->racketmanager_club_players} cp, {$wpdb->racketmanager_clubs} c WHERE cp.`affiliatedclub` = c.`id` AND `player_id` = %d";
+		if ( '' !== $search ) {
+			$sql .= " AND $search";
+		}
+		$clubs        = array();
 		$player_clubs = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT `affiliatedclub`, `created_date` FROM {$wpdb->racketmanager_club_players} cp, {$wpdb->racketmanager_clubs} c WHERE cp.`affiliatedclub` = c.`id` AND `player_id` = %d AND `removed_date` IS NULL ORDER BY c.`shortcode` ASC",
-				$this->id
+				$sql, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$search_args
 			)
 		);
 		foreach ( $player_clubs as $i => $player_club ) {
 			$club = get_club( $player_club->affiliatedclub );
 			if ( $club ) {
 				$club->created_date = $player_club->created_date;
-				$this->clubs[]      = $club;
+				$club->removed_date = $player_club->removed_date;
+				$clubs[]            = $club;
 			}
 		}
-		return $this->clubs;
+		return $clubs;
 	}
 	/**
 	 * Get matches for player

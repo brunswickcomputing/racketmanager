@@ -33,6 +33,7 @@ class RacketManager_Shortcodes {
 		add_shortcode( 'favourites', array( &$this, 'show_favourites' ) );
 		add_shortcode( 'invoice', array( &$this, 'show_invoice' ) );
 		add_shortcode( 'messages', array( &$this, 'show_messages' ) );
+		add_shortcode( 'memberships', array( &$this, 'show_memberships' ) );
 		add_shortcode( 'search-players', array( &$this, 'show_player_search' ) );
 	}
 	/**
@@ -928,6 +929,36 @@ class RacketManager_Shortcodes {
 		$filename = ( ! empty( $template ) ) ? 'messages-' . $template : 'messages';
 
 		return $this->load_template( $filename, array( 'messages' => $messages ), 'account' );
+	}
+	/**
+	 * Function to show memberships
+	 *
+	 *    [memberships template=X]
+	 *
+	 * @param array $atts shortcode attributes.
+	 * @return the content
+	 */
+	public function show_memberships( $atts ) {
+		$args = shortcode_atts(
+			array(
+				'template' => '',
+			),
+			$atts
+		);
+		if ( ! is_user_logged_in() ) {
+			return esc_html__( 'You must be logged in to view memberships', 'racketmanager' );
+		}
+		$template = $args['template'];
+		$player   = get_player( get_current_user_id() );
+		if ( $player ) {
+			$player->clubs         = $player->get_clubs( array( 'type' => 'active' ) );
+			$player->clubs_archive = $player->get_clubs( array( 'type' => 'inactive' ) );
+		} else {
+			return esc_html__( 'Player not found', 'racketmanager' );
+		}
+		$filename = ( ! empty( $template ) ) ? 'player-clubs-' . $template : 'player-clubs';
+
+		return $this->load_template( $filename, array( 'player' => $player ), 'account' );
 	}
 	/**
 	 * Function to search players messages

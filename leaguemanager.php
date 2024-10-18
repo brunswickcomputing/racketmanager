@@ -40,7 +40,7 @@ function racketmanager_setup_plugin() {
 	define( 'RACKETMANAGER_PLUGIN_FILE', __FILE__ );
 	define( 'RACKETMANAGER_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 	define( 'RACKETMANAGER_CHECKED', 'checked' );
-	define( 'RACKETMANAGER_IS_INVALID', 'is_invalid' );
+	define( 'RACKETMANAGER_IS_INVALID', 'is-invalid' );
 	racketmanager_define_tables();
 
 	require_once RACKETMANAGER_PATH . 'include/class-racketmanager-util.php';

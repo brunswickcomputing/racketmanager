@@ -387,7 +387,7 @@ class Racketmanager_Util {
 					$player_request->email      = $player->email;
 				}
 			}
-			$player_request->club_name         = get_club( $player_request->affiliatedclub )->name;
+			$player_request->club_name         = get_club( $player_request->affiliatedclub )->shortcode;
 			$player_request->requested_user_id = $player_request->requested_user;
 			$player_request->requested_user    = get_userdata( $player_request->requested_user )->display_name;
 			$player_request->completed_user_id = $player_request->completed_user;

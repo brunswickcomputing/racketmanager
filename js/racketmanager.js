@@ -687,15 +687,14 @@ Racketmanager.club_player_request = function (link) {
 		}
 	});
 };
-Racketmanager.clubPlayerRemove = function (link) {
-
-	let notifyField = '#playerRemove';
-	jQuery(notifyField).val("");
-	jQuery(notifyField).hide();
-	jQuery(notifyField).removeClass('message-error');
-	jQuery(notifyField).removeClass('message-success');
+Racketmanager.clubPlayerRemove = function (link, gender) {
 	let $form = jQuery(link).serialize();
 	$form += "&action=racketmanager_club_players_remove";
+	let notifyField = '#playerDel' + gender + 'Response';
+	jQuery(notifyField).removeClass('alert--success alert--warning alert--danger');
+	jQuery(notifyField).hide();
+	let alertTextField = '#playerDel' + gender + 'ResponseText';
+	jQuery(alertTextField).html("");
 
 	jQuery.ajax({
 		url: ajax_var.url,
@@ -709,6 +708,8 @@ Racketmanager.clubPlayerRemove = function (link) {
 					jQuery(rowId).remove();
 				}
 			});
+			jQuery(notifyField).addClass('alert--success');
+			jQuery(alertTextField).html(response.data);
 		},
 		error: function (response) {
 			if (response.responseJSON) {
@@ -716,11 +717,13 @@ Racketmanager.clubPlayerRemove = function (link) {
 				for (let errorMsg of response.responseJSON.data[1]) {
 					$message += '<br />' + errorMsg;
 				}
-				jQuery(notifyField).html($message);
+				jQuery(alertTextField).html($message);
 			} else {
-				jQuery(notifyField).text(response.statusText);
+				jQuery(alertTextField).text(response.statusText);
 			}
-			jQuery(notifyField).addClass('message-error');
+			jQuery(notifyField).addClass('alert--danger');
+		},
+		complete: function () {
 			jQuery(notifyField).show();
 		}
 	});

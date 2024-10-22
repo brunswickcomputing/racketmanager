@@ -5731,3 +5731,6 @@ svg.media__img-element--icon.winner, svg.media__img-element--icon.runner-up {
 #order-of-play .match-group__header {
 	text-align: center;
 }
+.row .form-floating>label {
+	left: initial;
+}

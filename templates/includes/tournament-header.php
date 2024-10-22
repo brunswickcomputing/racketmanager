@@ -47,7 +47,7 @@ namespace Racketmanager;
 					<?php
 					if ( $tournament->is_open && ! empty( $entry_option ) ) {
 						?>
-						<a href="/tournaments/entry-form/<?php echo esc_attr( seo_url( $tournament->name ) ); ?>/" class="btn btn-primary reverse">
+						<a href="/tournament/entry-form/<?php echo esc_attr( seo_url( $tournament->name ) ); ?>/" class="btn btn-primary reverse">
 							<i class="racketmanager-svg-icon">
 								<?php racketmanager_the_svg( 'icon-pencil' ); ?>
 							</i>

@@ -511,7 +511,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$tournament_entries[ $i ] = $tournament_entry;
 			}
 			$this->set_tournament_entry( $tournament->id, $player_id, true );
-			$action_url                          = $racketmanager->site_url . '/tournaments/entry-form/' . seo_url( $tournament->name ) . '/';
+			$action_url                          = $racketmanager->site_url . '/tournament/entry-form/' . seo_url( $tournament->name ) . '/';
 			$tournament_link                     = '<a href="' . $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/">' . $tournament->name . '</a>';
 			$headers                             = array();
 			$secretary_email                     = __( 'Tournament Secretary', 'racketmanager' ) . ' <' . $email_from . '>';

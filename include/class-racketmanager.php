@@ -878,6 +878,12 @@ class RacketManager {
 		);
 		// tournament entry form - name.
 		add_rewrite_rule(
+			'tournaments/entry-form/(.+?)/?$',
+			'index.php?pagename=competition%2Fentry&&competition_name=$matches[1]&competition_type=tournament',
+			'top'
+		);
+		// tournament entry form - name.
+		add_rewrite_rule(
 			'tournament/entry-form/(.+?)/?$',
 			'index.php?pagename=competition%2Fentry&&competition_name=$matches[1]&competition_type=tournament',
 			'top'

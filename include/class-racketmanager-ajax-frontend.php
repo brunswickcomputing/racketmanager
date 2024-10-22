@@ -165,10 +165,12 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$error_field[] = '';
 			$error_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
 		} elseif ( isset( $_POST['clubPlayer'] ) ) {
-				//phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-				$club_players = $_POST['clubPlayer'];
+			//phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$club_players = $_POST['clubPlayer'];
+			$deleted      = 0;
 			foreach ( $club_players as $roster_id ) {
 				$racketmanager->delete_club_player( intval( $roster_id ) );
+				++$deleted;
 			}
 		}
 		if ( $error ) {
@@ -176,7 +178,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			array_push( $return, $msg, $error_msg, $error_field );
 			wp_send_json_error( $return, '500' );
 		} else {
-			$msg = __( 'Player removed', 'racketmanager' );
+			$msg = _n( 'Player removed', 'Players removed', $deleted, 'racketmanager' );
 			wp_send_json_success( $msg );
 		}
 	}

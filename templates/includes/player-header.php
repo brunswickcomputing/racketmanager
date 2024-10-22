@@ -60,7 +60,13 @@ if ( empty( $is_page_header ) ) {
 							<?php
 							if ( isset( $player->club_name ) ) {
 								?>
-								<span><?php echo esc_html( $player->club_name ); ?></span>
+								<span class="media__subheading-info-item">
+									<a href="/clubs/<?php echo esc_attr( seo_url( $player->club_name ) ); ?>/">
+										<span class="nav--link">
+											<span class="nav-link__value"><?php echo esc_html( $player->club_name ); ?></span>
+										</span>
+									</a>
+								</span>
 								<?php
 							} elseif ( ! empty( $player->clubs ) ) {
 								?>

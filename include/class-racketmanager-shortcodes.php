@@ -322,6 +322,10 @@ class RacketManager_Shortcodes {
 		if ( ! $player ) {
 			return false;
 		}
+		$club_player = $club->get_players( array( 'player' => $player->id ) );
+		if ( ! $club_player ) {
+			return __( 'Player not found for club', 'racketmanager' );
+		}
 		$player->club_name = $club->shortcode;
 		$user_can_update   = false;
 		if ( is_user_logged_in() ) {

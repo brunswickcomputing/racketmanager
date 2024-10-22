@@ -632,14 +632,15 @@ Racketmanager.updateResults = function (link) {
 };
 Racketmanager.club_player_request = function (link) {
 
-	let notifyField = '#updateResponse';
 	let $form = jQuery('#playerRequestFrm').serialize();
 	$form += "&action=racketmanager_club_player_request";
-	jQuery(notifyField).val("");
 	jQuery("#clubPlayerUpdateSubmit").hide();
 	jQuery("#clubPlayerUpdateSubmit").addClass("disabled");
-	jQuery(notifyField).removeClass("message-success");
-	jQuery(notifyField).removeClass("message-error");
+	let notifyField = '#playerAddResponse';
+	jQuery(notifyField).removeClass('alert--success alert--warning alert--danger');
+	jQuery(notifyField).hide();
+	let alertTextField = '#playerAddResponseText';
+	jQuery(alertTextField).html("");
 	jQuery(".is-invalid").removeClass("is-invalid");
 	jQuery(".invalidFeedback").val("");
 
@@ -656,12 +657,8 @@ Racketmanager.club_player_request = function (link) {
 			jQuery("#btm").val("");
 			jQuery("#year_of_birth").val("");
 			jQuery("#email").val("");
-			jQuery(notifyField).addClass("message-success");
-			jQuery(notifyField).show();
-			jQuery(notifyField).html(response.data);
-			jQuery(notifyField).delay(10000).fadeOut('slow');
-			jQuery("#clubPlayerUpdateSubmit").removeClass("disabled");
-			jQuery("#clubPlayerUpdateSubmit").show();
+			jQuery(notifyField).addClass('alert--success');
+			jQuery(alertTextField).html(response.data);
 		},
 		error: function (response) {
 			if (response.responseJSON) {
@@ -675,15 +672,16 @@ Racketmanager.club_player_request = function (link) {
 					let $id2 = '#'.concat($errorField[$i], 'Feedback');
 					jQuery($id2).html($errorMsg[$i]);
 				}
-				jQuery(notifyField).show();
-				jQuery(notifyField).html($message);
-				jQuery("#clubPlayerUpdateSubmit").removeClass("disabled");
-				jQuery("#clubPlayerUpdateSubmit").show();
+				jQuery(alertTextField).html($message);
 			} else {
-				jQuery(notifyField).text(response.statusText);
+				jQuery(alertTextField).text(response.statusText);
 			}
+			jQuery(notifyField).addClass('alert--danger');
+		},
+		complete: function() {
+			jQuery("#clubPlayerUpdateSubmit").removeClass("disabled");
+			jQuery("#clubPlayerUpdateSubmit").show();
 			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-error');
 		}
 	});
 };

@@ -244,6 +244,17 @@ class RacketManager {
 			}
 			$title .= ' - ' . $site_name;
 		}
+		if ( 'players' === $slug ) {
+			if ( $player ) {
+				$title = $player;
+			} else {
+				$title = __( 'Players', 'racketmanager' );
+			}
+			if ( $club ) {
+				$title .= ' - ' . $club;
+			}
+			$title .= ' - ' . $site_name;
+		}
 		return $title;
 	}
 	/**

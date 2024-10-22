@@ -378,12 +378,14 @@ class Racketmanager_Util {
 			$class                 = ( 'alternate' === $class ) ? '' : 'alternate';
 			$player_request->class = $class;
 			if ( $player_request->player_id ) {
-				$player                     = get_player( $player_request->player_id );
-				$player_request->first_name = $player->firstname;
-				$player_request->surname    = $player->surname;
-				$player_request->gender     = $player->gender;
-				$player_request->btm        = $player->btm;
-				$player_request->email      = $player->email;
+				$player = get_player( $player_request->player_id );
+				if ( $player ) {
+					$player_request->first_name = $player->firstname;
+					$player_request->surname    = $player->surname;
+					$player_request->gender     = $player->gender;
+					$player_request->btm        = $player->btm;
+					$player_request->email      = $player->email;
+				}
 			}
 			$player_request->club_name         = get_club( $player_request->affiliatedclub )->name;
 			$player_request->requested_user_id = $player_request->requested_user;

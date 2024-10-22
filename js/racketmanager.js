@@ -827,14 +827,16 @@ Racketmanager.updatePlayer = function (link) {
 
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();
-	let notifyField = "#updatePlayer";
-	let submitButton = "#updatePlayerSubmit";
 	$form += "&action=racketmanager_update_player";
-	jQuery(notifyField).html("");
+	let submitButton = "#updatePlayerSubmit";
 	jQuery(submitButton).hide();
+	let notifyField = '#playerUpdateResponse';
+	jQuery(notifyField).removeClass('alert--success alert--warning alert--danger');
+	jQuery(notifyField).hide();
+	let alertTextField = '#playerUpdateResponseText';
+	jQuery(alertTextField).html("");
 	jQuery(".is-invalid").removeClass("is-invalid");
-	jQuery(notifyField).removeClass('message-error');
-	jQuery(notifyField).removeClass('message-success');
+	jQuery(".invalidFeedback").val("");
 
 	jQuery.ajax({
 		url: ajax_var.url,
@@ -842,10 +844,8 @@ Racketmanager.updatePlayer = function (link) {
 		data: $form,
 		async: false,
 		success: function (response) {
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass("message-success");
-			jQuery(notifyField).html(response.data);
-			jQuery(notifyField).delay(10000).fadeOut('slow');
+			jQuery(notifyField).addClass('alert--success');
+			jQuery(alertTextField).html(response.data);
 		},
 		error: function (response) {
 			if (response.responseJSON) {
@@ -853,7 +853,6 @@ Racketmanager.updatePlayer = function (link) {
 				if (response.responseJSON.data[1]) {
 					let $errorMsg = response.responseJSON.data[1];
 					let $errorField = response.responseJSON.data[2];
-					jQuery(notifyField).addClass('message-error');
 					for (let $i = 0; $i < $errorField.length; $i++) {
 						let $formfield = "#" + $errorField[$i];
 						jQuery($formfield).addClass('is-invalid');
@@ -861,11 +860,13 @@ Racketmanager.updatePlayer = function (link) {
 						jQuery($formfield).html($errorMsg[$i]);
 					}
 				}
-				jQuery(notifyField).html($message);
+				jQuery(alertTextField).html($message);
 			} else {
-				jQuery(notifyField).text(response.statusText);
+				jQuery(alertTextField).text(response.statusText);
 			}
-			jQuery(notifyField).addClass('message-error');
+			jQuery(notifyField).addClass('alert--danger');
+		},
+		complete: function () {
 			jQuery(notifyField).show();
 		}
 	});

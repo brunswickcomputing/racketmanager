@@ -340,14 +340,15 @@ class RacketManager_Shortcodes {
 				}
 			}
 		}
-		$filename = ( ! empty( $template ) ) ? 'club-player-' . $template : 'club-player';
+		$filename = ( ! empty( $template ) ) ? 'player-' . $template : 'player';
 		return $this->load_template(
 			$filename,
 			array(
 				'club'            => $club,
 				'player'          => $player,
 				'user_can_update' => $user_can_update,
-			)
+			),
+			'club'
 		);
 	}
 	/**

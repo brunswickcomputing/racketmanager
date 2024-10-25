@@ -4161,6 +4161,9 @@ h1.media__title {
 	margin: 0;
 	font-size: 2.5rem;
 }
+h2.media__title,
+h3.media__title,
+h4.media__title,
 h5.media__title {
 	margin: 0;
 }

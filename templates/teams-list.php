@@ -15,10 +15,10 @@ namespace Racketmanager;
 
 if ( ! empty( $event ) ) {
 	$object    = $event;
-	$item_link = '/' . $event->competition->type . '/' . seo_url( $event->name ) . '/' . $curr_season;
+	$item_link = '/' . $event->competition->type . '/' . seo_url( $event->name ) . '/' . $curr_season . '/';
 } elseif ( ! empty( $league ) ) {
 	$object    = $league;
-	$item_link = '/' . $league->event->competition->type . '/' . seo_url( $league->title ) . '/' . $league->current_season['name'];
+	$item_link = '/' . $league->event->competition->type . '/' . seo_url( $league->title ) . '/' . $league->current_season['name'] . '/';
 }
 if ( empty( $object->team ) ) {
 	?>

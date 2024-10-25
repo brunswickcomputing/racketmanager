@@ -4179,7 +4179,6 @@ h5.media__title {
 	align-self: flex-start;
 	display: flex;
 	flex-direction: column;
-	padding-left: 1.0rem;
 }
 
 @media (min-width: 768px) {
@@ -4188,6 +4187,7 @@ h5.media__title {
 		align-self: center;
 		flex-direction: column;
 		padding-top: 0;
+		padding-left: 1.0rem;
 	}
 }
 

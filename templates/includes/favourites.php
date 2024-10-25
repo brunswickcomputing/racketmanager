@@ -36,7 +36,7 @@ namespace Racketmanager;
 					$image    = 'images/lta-icons-extra.svg#icon-team';
 					break;
 				case 'team':
-					$fav_link = '/clubs/' . seo_url( $favourite->detail->club->shortcode ) . '/#club-teams';
+					$fav_link = '/clubs/' . seo_url( $favourite->detail->club->shortcode ) . '/competitions/';
 					$image    = 'images/lta-icons-extra.svg#icon-team';
 					break;
 				case 'competition':

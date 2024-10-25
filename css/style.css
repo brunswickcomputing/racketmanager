@@ -4263,13 +4263,13 @@ h5.media__title {
 	color: #FFF;
 }
 @media (max-width: 767px) {
-	.page-subhead .media__wrapper {
+	.media__wrapper {
 		display: block;
 		margin-top: 1.5rem;
 		text-align: center;
 	}
 
-	.page-subhead .media__img {
+	.media__img {
 		margin-bottom: 1.5rem;
 		margin-right: 0;
 	}

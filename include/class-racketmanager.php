@@ -974,6 +974,48 @@ class RacketManager {
 		$this->rewrite_competition();
 		$this->rewrite_league();
 		$this->rewrite_cups();
+		// club - players - player + btm.
+		add_rewrite_rule(
+			'clubs/(.+?)/players/(.+?)/([0-9]+)/?$',
+			'index.php?pagename=club%2Fplayers&club_name=$matches[1]&player_id=$matches[2]&btm=$matches[3]',
+			'top'
+		);
+		// club - players - player.
+		add_rewrite_rule(
+			'clubs/(.+?)/players/(.+?)/?$',
+			'index.php?pagename=club%2Fplayers&club_name=$matches[1]&player_id=$matches[2]',
+			'top'
+		);
+		// club - players.
+		add_rewrite_rule(
+			'clubs/(.+?)/players/?$',
+			'index.php?pagename=club%2Fplayers&club_name=$matches[1]',
+			'top'
+		);
+		// club - team - event.
+		add_rewrite_rule(
+			'clubs/(.+?)/team/(.+?)/(.+?)?$',
+			'index.php?pagename=club%2Fteam&club_name=$matches[1]&team=$matches[2]&event=$matches[3]',
+			'top'
+		);
+		// club - event - season.
+		add_rewrite_rule(
+			'clubs/(.+?)/event/(.+?)/([0-9]{4})?$',
+			'index.php?pagename=club%2Fevent&club_name=$matches[1]&event=$matches[2]&season=$matches[3]',
+			'top'
+		);
+		// club - event.
+		add_rewrite_rule(
+			'clubs/(.+?)/event/(.+?)/?$',
+			'index.php?pagename=club%2Fevent&club_name=$matches[1]&event=$matches[2]',
+			'top'
+		);
+		// club - competitions.
+		add_rewrite_rule(
+			'clubs/(.+?)/competitions/?$',
+			'index.php?pagename=club%2Fcompetitions&club_name=$matches[1]',
+			'top'
+		);
 		// club player.
 		add_rewrite_rule(
 			'clubs/(.+?)/(.+?)/?$',

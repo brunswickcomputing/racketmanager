@@ -790,11 +790,15 @@ final class Racketmanager_Player {
 		foreach ( $competitions as $competition ) {
 			$competition_dtl = get_competition( $competition->id );
 			if ( $competition_dtl ) {
-				$competition_dtl->season     = $competition->season;
-				$competition_season          = $competition_dtl->seasons[ $competition->season ];
-				$competition_dtl->date_start = isset( $competition_season['dateStart'] ) ? $competition_season['dateStart'] : null;
-				$competition_dtl->date_end   = isset( $competition_season['dateEnd'] ) ? $competition_season['dateEnd'] : null;
-				$competitions[ $i ]          = $competition_dtl;
+				$competition_dtl->season = $competition->season;
+				if ( isset( $competition_dtl->seasons[ $competition->season ] ) ) {
+					$competition_season          = $competition_dtl->seasons[ $competition->season ];
+					$competition_dtl->date_start = isset( $competition_season['dateStart'] ) ? $competition_season['dateStart'] : null;
+					$competition_dtl->date_end   = isset( $competition_season['dateEnd'] ) ? $competition_season['dateEnd'] : null;
+					$competitions[ $i ]          = $competition_dtl;
+				} else {
+					unset( $competitions [ $i ] );
+				}
 			}
 			++$i;
 		}

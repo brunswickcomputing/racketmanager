@@ -17,5 +17,9 @@ namespace Racketmanager;
 <?php
 $club_list = true;
 foreach ( $clubs as $club ) {
-	require 'club.php';
+	?>
+	<div class="mb-3">
+		<?php require 'club.php'; ?>
+	</div>
+	<?php
 }

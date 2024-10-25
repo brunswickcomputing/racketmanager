@@ -62,15 +62,15 @@ if ( ! empty( $header_level ) ) {
 					?>
 				</<?php echo esc_html( $heading_type ); ?>>
 			</div>
-			<ul class="media__icons">
-				<li class="media__icons-item">
-					<?php
-					$favourite_type = 'club';
-					$favourite_id   = $club->id;
-					require RACKETMANAGER_PATH . '/templates/includes/favourite-button.php';
-					?>
-				</li>
-			</ul>
 		</div>
+		<ul class="media__icons">
+			<li class="media__icons-item">
+				<?php
+				$favourite_type = 'club';
+				$favourite_id   = $club->id;
+				require RACKETMANAGER_PATH . '/templates/includes/favourite-button.php';
+				?>
+			</li>
+		</ul>
 	</div>
 </div>

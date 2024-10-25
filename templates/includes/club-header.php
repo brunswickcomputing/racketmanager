@@ -16,7 +16,11 @@
 namespace Racketmanager;
 
 if ( empty( $standalone ) ) {
-	$standalone   = false;
+	$standalone = false;
+}
+if ( ! empty( $header_level ) ) {
+	$heading_type = 'h' . $header_level;
+} elseif ( empty( $standalone ) ) {
 	$heading_type = 'h2';
 } else {
 	$heading_type = 'h1';

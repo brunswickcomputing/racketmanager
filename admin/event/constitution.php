@@ -23,7 +23,7 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
 	$today              = gmdate( 'Y-m-d' );
 	$latest_season_dtls = $event->current_season;
 	$latest_season      = $latest_season_dtls['name'];
-	if ( $event->competition->seasons[ $latest_season ]['dateStart'] > $today ) {
+	if ( ! empty( $event->competition->seasons[ $latest_season ]['dateStart'] ) && $event->competition->seasons[ $latest_season ]['dateStart'] > $today ) {
 		$updateable = true;
 	} else {
 		$updateable = false;

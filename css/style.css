@@ -4960,8 +4960,10 @@ ul.list--inline {
 	margin: 0;
 	padding-left:0;
 }
-ul.list.list__indent {
-	padding-left: 6rem;
+@media (min-width: 768px) {
+	ul.list.list__indent {
+		padding-left: 6rem;
+	}
 }
 .media__img-element--icon {
     background-color: transparent;

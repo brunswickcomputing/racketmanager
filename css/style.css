@@ -3747,6 +3747,19 @@ module--dark .mail-media,
 ul.media__icons {
 	padding-left: 0;
 }
+@media (max-width: 767px) {
+	.page-subhead ul.media__icons {
+		position: absolute;
+		right: 0;
+		top: 0;
+	}
+	.page-subhead .btn.btn-favourite {
+		border: 0;
+	}
+	.page-subhead .btn.btn-favourite .nav-link__value {
+		display: none;
+	}
+}
 h3.media__title,
 h4.media__title {
 	margin: 0;

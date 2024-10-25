@@ -3579,7 +3579,11 @@ button.btn.btn-plain {
 button.btn.btn-plain:hover {
 	border: none;
 }
-h1.module__title, h2.module__title, h3.module__title, h4.module__title {
+h1.module__title,
+h2.module__title,
+h3.module__title,
+h4.module__title,
+h5.module__title {
 	color: #707585;
 	flex-grow: 1;
 	font-weight: 400;

@@ -732,25 +732,24 @@ Racketmanager.updateTeam = function (link) {
 	let $form = jQuery(formId).serialize();
 	let event = link.form[3].value;
 	let team = link.form[2].value;
-	let notifyField = "#updateTeamResponse-".concat(event, "-", team);
 	let submitButton = "#teamUpdateSubmit-".concat(event, "-", team);
 	$form += "&action=racketmanager_update_team";
-	jQuery(notifyField).val("");
-	jQuery(notifyField).hide();
 	jQuery(submitButton).hide();
+	let notifyField = "#teamUpdateResponse-".concat(event, "-", team);
+	jQuery(notifyField).removeClass('alert--success alert--warning alert--danger');
+	jQuery(notifyField).hide();
+	let alertTextField = '#teamUpdateResponseText-'.concat(event, "-", team);
+	jQuery(alertTextField).html("");
 	jQuery(".is-invalid").removeClass("is-invalid");
-	jQuery(notifyField).removeClass('message-error');
-	jQuery(notifyField).removeClass('message-success');
+	jQuery(".invalidFeedback").val("");
 	jQuery.ajax({
 		url: ajax_var.url,
 		type: "POST",
 		async: false,
 		data: $form,
 		success: function (response) {
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass("message-success");
-			jQuery(notifyField).html(response.data);
-			jQuery(notifyField).delay(10000).fadeOut('slow');
+			jQuery(notifyField).addClass('alert--success');
+			jQuery(alertTextField).html(response.data);
 		},
 		error: function (response) {
 			if (response.responseJSON) {
@@ -766,11 +765,13 @@ Racketmanager.updateTeam = function (link) {
 						jQuery($formfield).html($errorMsg[$i]);
 					}
 				}
-				jQuery(notifyField).html($message);
+				jQuery(alertTextField).html($message);
 			} else {
-				jQuery(notifyField).text(response.statusText);
+				jQuery(alertTextField).text(response.statusText);
 			}
-			jQuery(notifyField).addClass('message-error');
+			jQuery(notifyField).addClass('alert--danger');
+		},
+		complete: function () {
 			jQuery(notifyField).show();
 		}
 	});
@@ -780,14 +781,16 @@ Racketmanager.updateClub = function (link) {
 
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();
-	let notifyField = "#updateClub";
 	let submitButton = "#updateClubSubmit";
 	$form += "&action=racketmanager_update_club";
-	jQuery(notifyField).html("");
 	jQuery(submitButton).hide();
+	let notifyField = "#clubUpdateResponse";
+	jQuery(notifyField).removeClass('alert--success alert--warning alert--danger');
+	jQuery(notifyField).hide();
+	let alertTextField = '#clubUpdateResponseText';
+	jQuery(alertTextField).html("");
 	jQuery(".is-invalid").removeClass("is-invalid");
-	jQuery(notifyField).removeClass('message-error');
-	jQuery(notifyField).removeClass('message-success');
+	jQuery(".invalidFeedback").val("");
 
 	jQuery.ajax({
 		url: ajax_var.url,
@@ -795,10 +798,8 @@ Racketmanager.updateClub = function (link) {
 		data: $form,
 		async: false,
 		success: function (response) {
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass("message-success");
-			jQuery(notifyField).html(response.data);
-			jQuery(notifyField).delay(10000).fadeOut('slow');
+			jQuery(notifyField).addClass('alert--success');
+			jQuery(alertTextField).html(response.data);
 		},
 		error: function (response) {
 			if (response.responseJSON) {
@@ -814,11 +815,13 @@ Racketmanager.updateClub = function (link) {
 						jQuery($formfield).html($errorMsg[$i]);
 					}
 				}
-				jQuery(notifyField).html($message);
+				jQuery(alertTextField).html($message);
 			} else {
-				jQuery(notifyField).text(response.statusText);
+				jQuery(alertTextField).text(response.statusText);
 			}
-			jQuery(notifyField).addClass('message-error');
+			jQuery(notifyField).addClass('alert--danger');
+		},
+		complete: function () {
 			jQuery(notifyField).show();
 		}
 	});

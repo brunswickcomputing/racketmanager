@@ -20,7 +20,7 @@ class RacketManager_Shortcodes {
 	 */
 	public function __construct() {
 		add_shortcode( 'dailymatches', array( &$this, 'show_daily_matches' ) );
-		add_shortcode( 'latestresults', array( &$this, 'show_latest_results' ) );
+		add_shortcode( 'latest_results', array( &$this, 'show_latest_results' ) );
 
 		add_shortcode( 'clubs', array( &$this, 'show_clubs' ) );
 		add_shortcode( 'club', array( &$this, 'show_club' ) );
@@ -106,7 +106,7 @@ class RacketManager_Shortcodes {
 	/**
 	 * Display Latest Match results
 	 *
-	 *    [latestresults league_id="1" competition_id="1" match_date="dd/mm/yyyy" template="name"]
+	 *    [latest_results league_id="1" competition_id="1" match_date="dd/mm/yyyy" template="name"]
 	 *
 	 * - league_id is the ID of league (optional)
 	 * - competition_id is the ID of the competition (optional)
@@ -126,6 +126,7 @@ class RacketManager_Shortcodes {
 				'days'             => 7,
 				'affiliatedclub'   => '',
 				'competition_id'   => '',
+				'header_level'     => 1,
 			),
 			$atts
 		);
@@ -134,6 +135,7 @@ class RacketManager_Shortcodes {
 		$days             = $args['days'];
 		$affiliatedclub   = $args['affiliatedclub'];
 		$competition_id   = $args['competition_id'];
+		$header_level     = $args['header_level'];
 		if ( isset( $wp->query_vars['club_name'] ) ) {
 			$club_name      = str_replace( '-', ' ', get_query_var( 'club_name' ) );
 			$club           = get_club( $club_name, 'shortcode' );
@@ -179,7 +181,13 @@ class RacketManager_Shortcodes {
 		} else {
 			$filename = 'matches-' . $template;
 		}
-		return $this->load_template( $filename, array( 'matches_list' => $matches_list ) );
+		return $this->load_template(
+			$filename,
+			array(
+				'matches_list' => $matches_list,
+				'header_level' => $header_level,
+			)
+		);
 	}
 	/**
 	 * Function to display Clubs Info Page

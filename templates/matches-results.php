@@ -16,7 +16,7 @@ namespace Racketmanager;
 ?>
 <div class="module module--card">
 	<div class="module__banner">
-		<h1 class="module__title"><?php esc_html_e( 'Latest Results', 'racketmanager' ); ?></h1>
+		<h<?php echo esc_attr( $header_level ); ?> class="module__title"><?php esc_html_e( 'Latest Results', 'racketmanager' ); ?></h<?php echo esc_attr( $header_level ); ?>>
 	</div>
 	<div class="module__content">
 		<div class="module-container">

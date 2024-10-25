@@ -138,7 +138,7 @@ class Racketmanager_Activator {
 			'latest-results-page' => array(
 				'title'         => __( 'Latest Results', 'racketmanager' ),
 				'page_template' => $no_title,
-				'content'       => '[latestresults]',
+				'content'       => '[latest_results]',
 			),
 			'clubs-page'          => array(
 				'title'         => __( 'Clubs', 'racketmanager' ),

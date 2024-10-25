@@ -136,6 +136,9 @@ class RacketManager {
 			} else {
 				$title = __( 'Competitions', 'racketmanager' );
 			}
+			if ( $club ) {
+				$title .= ' - ' . $club;
+			}
 			$title .= ' - ' . $site_name;
 		}
 		if ( 'competition' === $slug ) {
@@ -147,6 +150,9 @@ class RacketManager {
 			}
 			if ( $season ) {
 				$title .= ' ' . $season;
+			}
+			if ( $club ) {
+				$title .= ' - ' . $club;
 			}
 			$title .= ' - ' . $site_name;
 		}
@@ -180,6 +186,19 @@ class RacketManager {
 			} else {
 				$title = $league . ' - ' . $site_name;
 			}
+		}
+		if ( 'team' === $slug ) {
+			$team = isset( $wp->query_vars['team'] ) ? ucwords( un_seo_url( $wp->query_vars['team'] ) ) : '';
+			if ( $team ) {
+				$title = $team;
+			}
+			if ( $competition ) {
+				$title .= ' - ' . $competition;
+			}
+			if ( $event ) {
+				$title .= ' - ' . $event;
+			}
+			$title .= ' - ' . $site_name;
 		}
 		if ( 'match' === $slug ) {
 			$league    = isset( $wp->query_vars['league_name'] ) ? ucwords( un_seo_url( $wp->query_vars['league_name'] ) ) : '';

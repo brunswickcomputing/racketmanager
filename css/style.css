@@ -3522,7 +3522,6 @@ span.match_time {
 	display: flex;
 	padding: 1rem;
 }
-
 @media (min-width: 768px) {
 	.module__banner {
 		padding-left: 1rem;
@@ -4266,7 +4265,6 @@ h5.media__title {
 }
 .page-subhead.competition {
 	background-color: var(--e-global-color-global_color_1);
-
 }
 .media__title-aside {
 	color: #707585;

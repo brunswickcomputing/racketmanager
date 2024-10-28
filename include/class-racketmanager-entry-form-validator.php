@@ -301,7 +301,7 @@ final class Racketmanager_Entry_Form_Validator extends Racketmanager_Validator {
 			++$this->error_id;
 		} else {
 			$today = new DateTime( 'now' );
-			$close = new DateTime( $tournament_close );
+			$close = new DateTime( $tournament_close . ' 23:59:59' );
 			if ( $close < $today ) {
 				$this->error                          = true;
 				$this->error_field[ $this->error_id ] = 'tournament';

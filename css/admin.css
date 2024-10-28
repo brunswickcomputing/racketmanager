@@ -152,6 +152,10 @@ tbody.sortable tr:hover td {
 .seeded {
 	background-color: rgba(36, 126, 0, .15);
 }
+.seeded a {
+	font-weight: 900;
+	text-transform: uppercase;
+}
 .league-block-container {
     overflow: auto;
 }

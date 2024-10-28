@@ -281,7 +281,7 @@ final class Racketmanager_Tournament {
 				if ( ! empty( $this->date_start ) && $today >= $this->date_start ) {
 					$this->current_phase = 'start';
 					$this->is_started    = true;
-				} elseif ( ! empty( $this->closing_date ) && $today >= $this->closing_date ) {
+				} elseif ( ! empty( $this->closing_date ) && $today > $this->closing_date ) {
 					$this->current_phase = 'close';
 					$this->is_closed     = true;
 				} elseif ( ! empty( $this->date_open ) && $today >= $this->date_open ) {

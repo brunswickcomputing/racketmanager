@@ -8,9 +8,11 @@
 namespace Racketmanager;
 
 $match_dates     = $league->seasons[ $season ]['matchDates'];
-$num_match_dates = count( $match_dates );
+$num_match_dates = is_array( $match_dates ) ? count( $match_dates ) : 0;
 if ( $num_match_dates ) {
 	$match_date_index = $num_match_dates - 1;
+} else {
+	$match_date_index = null;
 }
 if ( $match_count ) {
 	$button_text  = __( 'Replace matches', 'racketmanager' );

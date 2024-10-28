@@ -1026,20 +1026,24 @@ class RacketManager_Login {
 			} elseif ( 'first_name' === $key ) {
 				if ( get_user_meta( $current_user->ID, 'first_name', true ) !== $updated_user['first_name'] ) {
 					update_user_meta( $current_user->ID, $key, $value );
+					$user_data[ $key ] = $value;
+					$display_name      = $value . ' ' . sanitize_text_field( $user_data['last_name'] );
 					wp_update_user(
 						array(
 							'ID'           => $current_user->ID,
-							'display_name' => $value . ' ' . sanitize_text_field( $updated_user['last_name'] ),
+							'display_name' => $display_name,
 						)
 					);
 				}
 			} elseif ( 'last_name' === $key ) {
 				if ( get_user_meta( $current_user->ID, 'last_name', true ) !== $updated_user['last_name'] ) {
 					update_user_meta( $current_user->ID, $key, $value );
+					$user_data[ $key ] = $value;
+					$display_name      = sanitize_text_field( $user_data['first_name'] ) . ' ' . $value;
 					wp_update_user(
 						array(
 							'ID'           => $current_user->ID,
-							'display_name' => sanitize_text_field( $updated_user['first_name'] ) . ' ' . $value,
+							'display_name' => $display_name,
 						)
 					);
 				}

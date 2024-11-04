@@ -378,6 +378,17 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 						}
 					}
 				}
+			} elseif ( isset( $_POST['rank'] ) ) {
+				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_calculate_ratings' ) ) {
+					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+					$this->printMessage();
+				} else {
+					$valid         = true;
+					$tournament_id = isset( $_POST['tournament_id'] ) ? intval( $_POST['tournament_id'] ) : null;
+					$league_id     = isset( $_POST['league_id'] ) ? intval( $_POST['league_id'] ) : null;
+					$season        = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+					$this->calculate_team_ratings( $tournament_id, $season, $league_id );
+				}
 			}
 			$season        = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
 			$tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
@@ -744,6 +755,25 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 					$season_data->competition_code = $tournament->competition_code;
 					$this->edit_season( $season_data );
 				}
+			}
+		}
+	}
+	/**
+	 * Calculate team ratings function
+	 *
+	 * @param int $tournament_id tournament id.
+	 * @return void
+	 */
+	private function calculate_team_ratings( $tournament_id ) {
+		$tournament = get_tournament( $tournament_id );
+		if ( ! $tournament ) {
+			return;
+		}
+		$players = $tournament->get_entries();
+		foreach ( $players as $player ) {
+			$player = get_player( $player );
+			if ( $player ) {
+				$player->set_tournament_rating();
 			}
 		}
 	}

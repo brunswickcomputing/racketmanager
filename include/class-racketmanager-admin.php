@@ -1987,6 +1987,14 @@ class RacketManager_Admin extends RacketManager {
 				}
 
 				$this->printMessage();
+			} elseif ( isset( $_POST['doSchedulePlayerRatings'] ) ) {
+				check_admin_referer( 'clubs-bulk' );
+				if ( ! current_user_can( 'del_teams' ) ) {
+					$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
+				} else {
+					$this->schedule_player_ratings();
+				}
+				$this->printMessage();
 			}
 			include_once RACKETMANAGER_PATH . '/admin/show-clubs.php';
 		}
@@ -2069,6 +2077,26 @@ class RacketManager_Admin extends RacketManager {
 				if ( isset( $_POST['clubPlayer'] ) ) {
 					foreach ( $_POST['clubPlayer'] as $roster_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 						$racketmanager->delete_club_player( intval( $roster_id ) );
+					}
+				}
+			} elseif ( isset( $_POST['doPlayerRatings'] ) ) {
+				check_admin_referer( 'club-players-bulk' );
+				if ( isset( $_POST['club_id'] ) ) {
+					$club_id = intval( $_POST['club_id'] );
+					$club    = get_club( $club_id );
+					if ( $club ) {
+						$players = $club->get_players(
+							array(
+								'active' => true,
+								'type'   => 'player',
+							)
+						);
+						foreach ( $players as $club_player ) {
+							$player = get_player( $club_player->player_id );
+							$player->set_team_rating();
+						}
+						$player = null;
+						$this->set_message( __( 'Player ratings set', 'racketmanager' ) );
 					}
 				}
 			}
@@ -5429,6 +5457,34 @@ class RacketManager_Admin extends RacketManager {
 			}
 			if ( ! wp_next_scheduled( $schedule_name, $schedule_args ) && ! wp_schedule_event( $schedule_start, $interval, $schedule_name, $schedule_args ) ) {
 				error_log( __( 'Error scheduling result confirmations', 'racketmanager' ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			}
+		}
+	}
+	/**
+	 * Schedule player ratings calculation
+	 */
+	public function schedule_player_ratings() {
+		$day            = intval( gmdate( 'd' ) );
+		$month          = intval( gmdate( 'm' ) );
+		$year           = intval( gmdate( 'Y' ) );
+		$schedule_start = mktime( 12, 0, 0, $month, $day, $year );
+		$interval       = 'weekly';
+		$schedule_name  = 'rm_calculate_player_ratings';
+		$clubs          = $this->get_clubs(
+			array(
+				'type' => 'affiliated',
+			)
+		);
+		foreach ( $clubs as $club ) {
+			$schedule_args = array( $club->id );
+			if ( ! wp_next_scheduled( $schedule_name, $schedule_args ) ) {
+				$success = wp_schedule_event( $schedule_start, $interval, $schedule_name, $schedule_args );
+				if ( $success ) {
+					$this->set_message( __( 'Player ratings calculation scheduled', 'racketmanager' ) );
+				} else {
+					/* translators: %s: club shortcode */
+					$this->set_message( sprintf( __( 'Error scheduling player ratings calculation for %s', 'racketmanager' ), $club->shortcode ), true );
+				}
 			}
 		}
 	}

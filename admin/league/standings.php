@@ -50,9 +50,13 @@ if ( ! $league->event->competition->is_championship ) {
 				if ( ! $league->event->competition->is_championship ) {
 					?>
 					<th class="column-num" scope="column">&#160;</th><?php } ?>
-				<th scope="column"><?php esc_html_e( 'Club', 'racketmanager' ); ?></th>
+				<th scope="column"><?php esc_html_e( 'Team', 'racketmanager' ); ?></th>
 				<?php
-				if ( ! $league->event->competition->is_championship ) {
+				if ( $league->event->competition->is_championship ) {
+					?>
+					<th scope="column"><?php esc_html_e( 'Rating', 'racketmanager' ); ?></th>
+					<?php
+				} else {
 					if ( ! empty( $league->groups ) ) {
 						?>
 						<th class="column-num" scope="column"><?php esc_html_e( 'Group', 'racketmanager' ); ?></th>
@@ -174,6 +178,12 @@ if ( ! $league->event->competition->is_championship ) {
 					if ( ! empty( $league->groups ) && $league->event->competition->is_championship ) {
 						?>
 						<td class="column-num"><?php echo esc_html( $team->group ); ?></td>
+						<?php
+					}
+					if ( $league->event->competition->is_championship ) {
+						?>
+						<td class="column-num"><?php echo esc_html( $team->profile ); ?></td>
+						<input type="hidden" name="ranking_points[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->profile ); ?>" />
 						<?php
 					}
 					if ( ! $league->event->competition->is_championship ) {

@@ -1167,4 +1167,67 @@ final class Racketmanager_Player {
 		}
 		return $matches;
 	}
+	/**
+	 * Set team rating function
+	 *
+	 * @return void
+	 */
+	public function set_team_rating() {
+		$match_types = array( 'D' );
+		foreach ( $match_types as $match_type ) {
+			$rating      = $this->calculate_team_rating( $match_type );
+			$rating_type = 'rating_' . $match_type . '_team';
+			update_user_meta( $this->ID, $rating_type, $rating );
+			$this->rating_detail[ $match_type ]['team'] = $rating;
+			$this->rating[ $match_type ]                = array_sum( $this->rating_detail[ $match_type ] );
+		}
+	}
+	/**
+	 * Calculate tournament rating function
+	 *
+	 * @param string $type match type.
+	 * @return int player points.
+	 */
+	public function calculate_team_rating( $type ) {
+		$player_points = 0;
+		$matches       = $this->get_matches( null, null, 'all', 365, $type );
+		if ( $matches ) {
+			$base_points = 42;
+			foreach ( $this->statistics as $league_ref => $rubbers ) {
+				$league_details = explode( '-', $league_ref );
+				$league_no      = $league_details[0];
+				$num_rubbers    = $league_details[1];
+				$age_limit      = $league_details[2];
+				$rubber_order   = $league_details[3];
+				if ( 'open' === $age_limit ) {
+					$event_points = 1;
+				} elseif ( $age_limit >= 30 ) {
+					$event_points = 0.26;
+				} elseif ( 16 === $age_limit ) {
+					$event_points = 0.4;
+				} elseif ( 14 === $age_limit ) {
+					$event_points = 0.26;
+				} elseif ( 12 === $age_limit ) {
+					$event_points = 0.17;
+				} else {
+					$event_points = 1;
+				}
+				$points_div = ( $league_no - 1 ) * ( $num_rubbers * 2 );
+				foreach ( $rubbers as $rubber_title => $statistics ) {
+					$won = isset( $statistics['played']['winner'] ) ? $statistics['played']['winner'] : 0;
+					if ( $won ) {
+						if ( 'false' === $rubber_order ) {
+							$points_rubber = 0;
+						} else {
+							$rubber_no     = substr( $rubber_title, 2, 1 );
+							$points_rubber = ( $rubber_no - 1 ) * 2;
+						}
+						$points         = $base_points - round( $points_div * $event_points ) - $points_rubber;
+						$player_points += $points;
+					}
+				}
+			}
+		}
+		return $player_points;
+	}
 }

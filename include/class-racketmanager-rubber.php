@@ -501,7 +501,8 @@ final class Racketmanager_Rubber {
 	 */
 	public function check_players() {
 		global $racketmanager, $wpdb;
-		$match = get_match( $this->match_id );
+		$player_ratings = array();
+		$match          = get_match( $this->match_id );
 		if ( $match ) {
 			$options          = $racketmanager->get_options( 'checks' );
 			$register_options = $racketmanager->get_options( 'rosters' );
@@ -516,7 +517,8 @@ final class Racketmanager_Rubber {
 					$team_name_array  = explode( ' ', $team_name );
 					$this_team_number = end( $team_name_array );
 				}
-				$players = $this->players[ $opponent ];
+				$player_ratings[ $opponent ] = 0;
+				$players                     = $this->players[ $opponent ];
 				foreach ( $players as $player ) {
 					if ( empty( $player ) ) {
 						$error = __( 'Player not selected', 'racketmanager' );
@@ -538,6 +540,9 @@ final class Racketmanager_Rubber {
 							}
 							break;
 						}
+						$type                         = substr( $match->league->event->type, 1, 1 );
+						$player_rating                = isset( $player->rating[ $type ] ) ? $player->rating[ $type ] : 0;
+						$player_ratings[ $opponent ] += $player_rating;
 						if ( ! empty( $player->locked ) ) {
 							$error = __( 'locked', 'racketmanager' );
 							$match->add_result_check( $team->id, $player->id, $error, $this->id );
@@ -672,5 +677,6 @@ final class Racketmanager_Rubber {
 				}
 			}
 		}
+		return $player_ratings;
 	}
 }

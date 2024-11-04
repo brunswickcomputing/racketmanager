@@ -2703,11 +2703,14 @@ class RacketManager {
 			$result_pending = intval( $result_pending ) . ':00:00';
 			$sql_fields    .= ",ADDTIME(`date`,'" . $result_pending . "') as result_overdue_date, TIME_FORMAT(TIMEDIFF(now(),ADDTIME(`date`,'" . $result_pending . "')), '%H')/24 as overdue_time";
 		}
-		if ( 'latest' === $time ) { // get only finished matches with score for time 'latest'.
-			$sql .= " AND (`home_points` != '' OR `away_points` != '')";
-		}
-		if ( 'outstanding' === $time ) {
-			$sql .= " AND ADDTIME(`date`,'" . $time_offset . "') <= NOW() AND `winner_id` = 0 AND `confirmed` IS NULL";
+		if ( $time ) {
+			if ( 'latest' === $time ) { // get only finished matches with score for time 'latest'.
+				$sql .= " AND (`home_points` != '' OR `away_points` != '')";
+			} elseif ( 'outstanding' === $time ) {
+				$sql .= " AND ADDTIME(`date`,'" . $time_offset . "') <= NOW() AND `winner_id` = 0 AND `confirmed` IS NULL";
+			} elseif ( is_numeric( $time ) ) {
+				$sql .= ' AND m.`date` > now() - INTERVAL ' . $time . ' DAY';
+			}
 		}
 		if ( $history ) { // get only updated matches in specified period for history.
 			$sql .= ' AND `updated` >= NOW() - INTERVAL ' . $history . ' DAY';

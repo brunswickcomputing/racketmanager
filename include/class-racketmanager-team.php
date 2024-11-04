@@ -122,6 +122,12 @@ final class Racketmanager_Team {
 	 */
 	public $player_id;
 	/**
+	 * Players variable
+	 *
+	 * @var array
+	 */
+	public $players = array();
+	/**
 	 * Team ref variable
 	 *
 	 * @var string
@@ -254,14 +260,12 @@ final class Racketmanager_Team {
 				$this->affiliatedclubname = $this->club->name;
 			}
 			if ( 'P' === $this->team_type && ! empty( $this->roster ) ) {
-				$i = 1;
-				foreach ( $this->roster as $player ) {
-					$teamplayer = get_player( $player );
-					if ( $teamplayer ) {
-						$this->player[ $i ]    = $teamplayer->fullname;
-						$this->player_id[ $i ] = $player;
-						++$i;
-					}
+				$players = $this->get_players();
+				$i       = 1;
+				foreach ( $players as $player ) {
+					$this->player[ $i ]    = $player->fullname;
+					$this->player_id[ $i ] = $player->id;
+					++$i;
 				}
 			}
 			if ( strpos( $this->title, '_' ) !== false ) {
@@ -622,5 +626,31 @@ final class Racketmanager_Team {
 				$player,
 			)
 		);
+	}
+	/**
+	 * Get team players
+	 *
+	 * @return array
+	 */
+	public function get_players() {
+		global $wpdb;
+		$players = $wpdb->get_results(  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"SELECT `player_id` FROM {$wpdb->racketmanager_team_players} WHERE `team_id` = %d",
+				$this->id,
+			)
+		);
+		$i       = 0;
+		foreach ( $players as $team_player ) {
+			$player = get_player( $team_player->player_id );
+			if ( $player ) {
+				$players[ $i ] = $player;
+			} else {
+				unset( $players[ $i ] );
+			}
+			++$i;
+		}
+		$this->players = $players;
+		return $players;
 	}
 }

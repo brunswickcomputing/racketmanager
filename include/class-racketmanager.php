@@ -2739,6 +2739,8 @@ class RacketManager {
 			$sql      .= " AND m.`id` = r.`match_id` AND r.`id` = rp.`rubber_id` AND `player_id` = '$player'";
 		}
 		if ( $type ) {
+			$sql .= " AND `league_id` in (select `id` from {$wpdb->racketmanager} WHERE `event_id` in (select e.`id` from {$wpdb->racketmanager_events} e WHERE e.`type` like '%%" . $type . "%%'))";
+		}
 		if ( $count ) {
 			return intval(
 				$wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching

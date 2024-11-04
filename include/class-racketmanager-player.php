@@ -1190,6 +1190,7 @@ final class Racketmanager_Player {
 			$this->rating_detail[ $match_type ]['player'] = $rating;
 			$this->rating[ $match_type ]                  = array_sum( $this->rating_detail[ $match_type ] );
 		}
+		wp_cache_set( $this->id, $this, 'players' );
 	}
 	/**
 	 * Calculate tournament rating function
@@ -1359,6 +1360,7 @@ final class Racketmanager_Player {
 			$this->rating_detail[ $match_type ]['team'] = $rating;
 			$this->rating[ $match_type ]                = array_sum( $this->rating_detail[ $match_type ] );
 		}
+		wp_cache_set( $this->id, $this, 'players' );
 	}
 	/**
 	 * Calculate tournament rating function

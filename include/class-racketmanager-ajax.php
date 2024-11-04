@@ -803,6 +803,23 @@ class Racketmanager_Ajax extends RacketManager {
 				$prev_ratings = array();
 				foreach ( $rubbers as $rubber ) {
 					$ratings = $rubber->check_players();
+					if ( isset( $check_options['ratingCheck'] ) && 'true' === $check_options['ratingCheck'] ) {
+						if ( ! empty( $prev_ratings ) ) {
+							foreach ( $ratings as $opponent => $rating ) {
+								if ( $rating > $prev_ratings[ $opponent ] ) {
+									$team_err = $opponent . '_team';
+									$team     = $match->$team_err;
+									/* translators: %1$d: rubber number, %2$d: rubber team rating, %3$d: previous rubber rating*/
+									$message = sprintf( __( 'Players out of order. Rubber %1$d has rating %2$d - previous rubber has rating %3$d', 'racketmanager' ), $rubber->rubber_number, $rating, $prev_ratings[ $opponent ] );
+									$players = $rubber->players[ $opponent ];
+									foreach ( $players as $player ) {
+										$match->add_result_check( $team, $player->id, $message, $rubber->id );
+									}
+								}
+							}
+						}
+						$prev_ratings = $ratings;
+					}
 				}
 			}
 			$match_custom['stats'] = $stats;

@@ -3849,6 +3849,7 @@ class RacketManager_Admin extends RacketManager {
 				$options['rosters']['ageLimitCheck']           = isset( $_POST['clubPlayerAgeLimitCheck'] ) ? sanitize_text_field( wp_unslash( $_POST['clubPlayerAgeLimitCheck'] ) ) : null;
 				$options['checks']['ageLimitCheck']            = isset( $_POST['ageLimitCheck'] ) ? sanitize_text_field( wp_unslash( $_POST['ageLimitCheck'] ) ) : null;
 				$options['checks']['leadTimeCheck']            = isset( $_POST['leadTimeCheck'] ) ? sanitize_text_field( wp_unslash( $_POST['leadTimeCheck'] ) ) : null;
+				$options['checks']['ratingCheck']              = isset( $_POST['ratingCheck'] ) ? sanitize_text_field( wp_unslash( $_POST['ratingCheck'] ) ) : null;
 				$options['checks']['rosterLeadTime']           = isset( $_POST['playerLeadTime'] ) ? intval( $_POST['playerLeadTime'] ) : null;
 				$options['checks']['playedRounds']             = isset( $_POST['playedRounds'] ) ? intval( $_POST['playedRounds'] ) : null;
 				$options['checks']['playerLocked']             = isset( $_POST['playerLocked'] ) ? sanitize_text_field( wp_unslash( $_POST['playerLocked'] ) ) : null;

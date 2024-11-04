@@ -55,6 +55,29 @@ namespace Racketmanager;
 			<label class="form-check-label" for="leadTimeCheckFalse"><?php esc_html_e( 'False', 'racketmanager' ); ?></label>
 		</div>
 	</div>
+	<div class="form-control mb-3">
+		<legend class="form-check-label"><?php esc_html_e( 'Player Rating Check', 'racketmanager' ); ?></legend>
+		<div class="form-check form-check-inline">
+			<input type="radio" class="form-check-input" name="ratingCheck" id="ratingCheckTrue" value="true"
+			<?php
+			if ( isset( $options['checks']['ratingCheck'] ) ) {
+				echo ( 'true' === $options['checks']['ratingCheck'] ) ? ' checked' : '';
+			}
+			?>
+			/>
+			<label class="form-check-label" for="ratingCheckTrue"><?php esc_html_e( 'True', 'racketmanager' ); ?></label>
+		</div>
+		<div class="form-check form-check-inline">
+			<input type="radio" class="form-check-input" name="ratingCheck" id="ratingCheckFalse" value="false"
+			<?php
+			if ( isset( $options['checks']['ratingCheck'] ) ) {
+				echo ( 'false' === $options['checks']['ratingCheck'] ) ? ' checked' : '';
+			}
+			?>
+			/>
+			<label class="form-check-label" for="ratingCheckFalse"><?php esc_html_e( 'False', 'racketmanager' ); ?></label>
+		</div>
+	</div>
 	<div class="form-floating mb-3">
 		<input type="number" class="form-control" name='playerLeadTime' id='playerLeadTime' value='<?php echo esc_html( isset( $options['checks']['rosterLeadTime'] ) ? $options['checks']['rosterLeadTime'] : '' ); ?>' />
 		<label for='playerLeadTime'><?php esc_html_e( 'Player Registration Lead Time (hours)', 'racketmanager' ); ?></label>

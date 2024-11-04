@@ -38,7 +38,7 @@ namespace Racketmanager;
 				<option value="F" <?php echo ( 'F' === $gender ) ? 'selected' : ''; ?>><?php esc_html_e( 'Female', 'racketmanager' ); ?></option>
 				<option value="M" <?php echo ( 'M' === $gender ) ? 'selected' : ''; ?>><?php esc_html_e( 'Male', 'racketmanager' ); ?></option>
 			</select>
-			<button class="btn btn-primary"><?php esc_html_e( 'Filter', 'racketmanager' ); ?></button>
+			<button class="btn btn-secondary"><?php esc_html_e( 'Filter', 'racketmanager' ); ?></button>
 		</form>
 		<form id="players-action" method="post" action="" class="form-control">
 			<?php wp_nonce_field( 'club-players-bulk' ); ?>
@@ -49,18 +49,17 @@ namespace Racketmanager;
 					<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
 					<option value="delete"><?php esc_html_e( 'Remove', 'racketmanager' ); ?></option>
 				</select>
+				<input type="hidden" name="club_id" value="<?php echo esc_html( $club->id ); ?>" />
+				<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doClubPlayerdel" id="doClubPlayerdel" class="btn btn-primary action" />
 				<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doClubPlayerdel" id="doClubPlayerdel" class="btn btn-secondary action" />
 			</div>
 
 			<div class="container">
 				<div class="row table-header">
 					<div class="col-1 col-md-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('players-action'));" /></div>
-					<div class="col-6 col-md-2"><?php esc_html_e( 'Name', 'racketmanager' ); ?></div>
-					<div class="col-2 col-md-1"><?php esc_html_e( 'Gender', 'racketmanager' ); ?></div>
+					<div class="col-4 col-md-2"><?php esc_html_e( 'Name', 'racketmanager' ); ?></div>
+					<div class="col-4 col-md-2"><?php esc_html_e( 'Rating', 'racketmanager' ); ?></div>
 					<div class="col-2 col-md-1"><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></div>
-					<div class="col-4 col-md-1"><?php esc_html_e( 'Removed', 'racketmanager' ); ?></div>
-					<div class="col-4 col-md-1"><?php esc_html_e( 'Created On', 'racketmanager' ); ?></div>
-					<div class="col-4 col-md-1"><?php esc_html_e( 'Locked On', 'racketmanager' ); ?></div>
 				</div>
 				<?php
 				if ( $club_id ) {
@@ -68,64 +67,54 @@ namespace Racketmanager;
 					if ( $players ) {
 						$class = '';
 						foreach ( $players as $player ) {
+							$class = ( 'alternate' === $class ) ? '' : 'alternate';
 							?>
-							<?php $class = ( 'alternate' === $class ) ? '' : 'alternate'; ?>
 							<div class="row table-row <?php echo esc_html( $class ); ?>">
 								<div class="col-1 col-md-1 check-column">
-									<?php if ( ! isset( $player->removed_date ) ) { ?>
+									<?php
+									if ( ! isset( $player->removed_date ) ) {
+										?>
 										<input type="checkbox" value="<?php echo esc_html( $player->roster_id ); ?>" name="clubPlayer[<?php echo esc_html( $player->roster_id ); ?>]" />
-									<?php } ?>
+										<?php
+									}
+									?>
 								</div>
-								<div class="col-6 col-md-2">
+								<div class="col-4 col-md-2">
 									<?php
 									if ( ! isset( $player->removed_date ) ) {
 										echo '<a href="admin.php?page=racketmanager-clubs&amp;view=player&amp;club_id=' . esc_html( $club->id ) . '&amp;player_id=' . esc_html( $player->player_id ) . '">';
 									}
-									?>
-									<?php echo esc_html( $player->fullname ); ?>
-									<?php
+									echo esc_html( $player->fullname );
 									if ( ! isset( $player->removed_date ) ) {
 										echo '</a>';
 									}
 									?>
 								</div>
-								<div class="col-1 col-md-1"><?php echo esc_html( $player->gender ); ?></div>
-								<div class="col-4 col-md-1"><?php echo esc_html( $player->btm ); ?></div>
-								<div class="col-4 col-md-1" title="
+								<div class="col-4 col-md-2">
 									<?php
-									if ( ! empty( $player->removed_user_name ) ) {
-										echo esc_html( __( 'Removed by', 'racketmanager' ) ) . ' ' . esc_html( $player->removed_user_name );
-									}
-									?>
-									">
-										<?php
-										if ( isset( $player->removed_date ) ) {
-											echo esc_html( $player->removed_date );
+									$rating         = $player->rating;
+									$match_types    = Racketmanager_Util::get_match_types();
+									$rating_display = '';
+									foreach ( $match_types as $match_type ) {
+										if ( ! empty( $rating_display ) ) {
+											$rating_display .= ' - ';
 										}
-										?>
-								</div>
-								<div class="col-4 col-md-1" title="
-									<?php
-									if ( ! empty( $player->created_user_name ) ) {
-										echo esc_html( __( 'Created by', 'racketmanager' ) ) . ' ' . esc_html( $player->created_user_name );
+										$rating_display .= '[' . $rating[ $match_type ] . ']';
 									}
+									echo ' ' . esc_html( $rating_display );
 									?>
-									">
-									<?php echo esc_html( substr( $player->created_date, 0, 10 ) ); ?>
 								</div>
-								<div class="col-4 col-md-1" title="
-									<?php
-									if ( ! empty( $player->locked_user_name ) ) {
-										echo esc_html( __( 'Locked by', 'racketmanager' ) ) . ' ' . esc_html( $player->locked_user_name );
-									}
-									?>
-									">
-									<?php echo esc_html( $player->locked_date ); ?>
-								</div>
+								<div class="col-2 col-md-1"><?php echo esc_html( $player->btm ); ?></div>
 							</div>
-						<?php } ?>
-					<?php } ?>
-				<?php } ?>
+							<?php
+						}
+						?>
+						<?php
+					}
+					?>
+					<?php
+				}
+				?>
 			</div>
 		</form>
 	</div>

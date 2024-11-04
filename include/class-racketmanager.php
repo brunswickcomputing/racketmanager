@@ -2597,6 +2597,8 @@ class RacketManager {
 		'status'              => false,
 		'team'                => false,
 		'tournament_id'       => false,
+		'player'              => false,
+		'type'                => false,
 	);
 
 	/**
@@ -2635,11 +2637,14 @@ class RacketManager {
 		$result_pending       = $match_args['resultPending'];
 		$status               = $match_args['status'];
 		$tournament_id        = $match_args['tournament_id'];
+		$player               = $match_args['player'];
+		$type                 = $match_args['type'];
+		$sql_from             = " FROM {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager} AS l";
 		if ( $count ) {
 			$sql = "SELECT COUNT(*) FROM {$wpdb->racketmanager_matches} WHERE 1 = 1";
 		} else {
-			$sql_fields = "SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(`date`, '%e') AS day, DATE_FORMAT(`date`, '%c') AS month, DATE_FORMAT(`date`, '%Y') AS year, DATE_FORMAT(`date`, '%H') AS `hour`, DATE_FORMAT(`date`, '%i') AS `minutes`, `match_day`, `location`, l.`id` AS `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, m.`id` AS `id`, `custom`, `confirmed`, `home_captain`, `away_captain`, `comments`, `updated`, `event_id`, `status`, `leg`";
-			$sql        = " FROM {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager} AS l WHERE m.`league_id` = l.`id`";
+			$sql_fields = "SELECT m.`final` AS final_round, m.`group`, `home_team`, `away_team`, DATE_FORMAT(m.`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(m.`date`, '%e') AS day, DATE_FORMAT(m.`date`, '%c') AS month, DATE_FORMAT(m.`date`, '%Y') AS year, DATE_FORMAT(m.`date`, '%H') AS `hour`, DATE_FORMAT(m.`date`, '%i') AS `minutes`, `match_day`, `location`, l.`id` AS `league_id`, m.`home_points`, m.`away_points`, m.`winner_id`, m.`loser_id`, m.`post_id`, `season`, m.`id` AS `id`, m.`custom`, m.`confirmed`, m.`home_captain`, m.`away_captain`, m.`comments`, m.`updated`, `event_id`, m.`status`, `leg`";
+			$sql        = ' WHERE m.`league_id` = l.`id`';
 		}
 
 		if ( $match_date ) {
@@ -2729,7 +2734,11 @@ class RacketManager {
 		if ( $match_day && intval( $match_day ) > 0 ) {
 			$sql .= ' AND `match_day` = ' . $match_day . ' ';
 		}
-
+		if ( $player ) {
+			$sql_from .= " ,{$wpdb->racketmanager_rubbers} r, {$wpdb->racketmanager_rubber_players} rp";
+			$sql      .= " AND m.`id` = r.`match_id` AND r.`id` = rp.`rubber_id` AND `player_id` = '$player'";
+		}
+		if ( $type ) {
 		if ( $count ) {
 			return intval(
 				$wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -2749,13 +2758,16 @@ class RacketManager {
 				++$i;
 			}
 		}
-		$sql     = $sql_fields . $sql . ' ORDER BY ' . $orderby_string;
+		$sql     = $sql_fields . $sql_from . $sql . ' ORDER BY ' . $orderby_string;
 		$matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			$sql
 		);
 		foreach ( $matches as $i => $match ) {
-			$match         = get_match( $match );
+			$match = get_match( $match );
+			if ( $player ) {
+				$match->rubbers = $match->get_rubbers( $player );
+			}
 			$matches[ $i ] = $match;
 		}
 		return $matches;

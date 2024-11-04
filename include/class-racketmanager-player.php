@@ -529,9 +529,13 @@ final class Racketmanager_Player {
 	 * @param object $grouping source of matches.
 	 * @param string $season season for matches.
 	 * @param string $match_source source of matches - either 'league' / 'event' / 'competition'.
+	 * @param int    $period optional time period for matches.
+	 * @param string $type match type.
 	 * @return array of matches.
 	 */
-	public function get_matches( $grouping, $season, $match_source ) {
+	public function get_matches( $grouping, $season, $match_source, $period = null, $type = null ) {
+		global $racketmanager;
+		$statistics = array();
 		if ( 'league' === $match_source ) {
 			$league  = get_league( $grouping );
 			$matches = $league->get_matches(
@@ -569,12 +573,40 @@ final class Racketmanager_Player {
 					),
 				)
 			);
+		} elseif ( 'all' === $match_source ) {
+			$matches = $racketmanager->get_matches(
+				array(
+					'season'  => $season,
+					'player'  => $this->id,
+					'time'    => $period,
+					'type'    => $type,
+					'status'  => 'Y',
+					'orderby' => array(
+						'date' => 'ASC',
+					),
+				)
+			);
 		} else {
 			$matches = array();
 		}
 		$opponents_pt = array( 'player1', 'player2' );
 		$opponents    = array( 'home', 'away' );
+		$stats_ref    = $statistics;
+		$league_ref   = 0;
 		foreach ( $matches as $match ) {
+			if ( 'all' === $match_source ) {
+				if ( $match->league->is_championship ) {
+					$league_no = 1;
+				} else {
+					$league_title = explode( ' ', $match->league->title );
+					$league_no    = end( $league_title );
+				}
+				$age_limit    = isset( $match->league->event->age_limit ) ? $match->league->event->age_limit : 'open';
+				$rubber_order = empty( $match->league->event->reverse_rubbers ) ? 'true' : 'false';
+				$league_ref   = $league_no . '-' . $match->league->num_rubbers . '-' . $age_limit . '-' . $rubber_order;
+			} else {
+				$league_ref = 0;
+			}
 			if ( 'competition' === $match_source || 'event' === $match_source ) {
 				$key = $match->league->title;
 				if ( false === array_key_exists( $key, $this->matches ) ) {
@@ -626,10 +658,10 @@ final class Racketmanager_Player {
 				} else {
 					$player_team_status = 'draw';
 				}
-				if ( ! isset( $this->statistics[ $rubber->title ]['played'][ $player_team_status ] ) ) {
-					$this->statistics[ $rubber->title ]['played'][ $player_team_status ] = 0;
+				if ( ! isset( $stats_ref[ $league_ref ][ $rubber->title ]['played'][ $player_team_status ] ) ) {
+					$stats_ref[ $league_ref ][ $rubber->title ]['played'][ $player_team_status ] = 0;
 				}
-				++$this->statistics[ $rubber->title ]['played'][ $player_team_status ];
+				++$stats_ref[ $league_ref ][ $rubber->title ]['played'][ $player_team_status ];
 				$sets = ! empty( $rubber->custom['sets'] ) ? $rubber->custom['sets'] : array();
 				foreach ( $sets as $set ) {
 					if ( isset( $set['player1'] ) && '' !== $set['player1'] && isset( $set['player2'] ) && '' !== $set['player2'] ) {
@@ -644,28 +676,33 @@ final class Racketmanager_Player {
 						} else {
 							$stat_ref = 'winner';
 						}
-						if ( ! isset( $this->statistics[ $rubber->title ]['sets'][ $stat_ref ] ) ) {
-							$this->statistics[ $rubber->title ]['sets'][ $stat_ref ] = 0;
+						if ( ! isset( $stats_ref[ $league_ref ][ $rubber->title ]['sets'][ $stat_ref ] ) ) {
+							$stats_ref[ $league_ref ][ $rubber->title ]['sets'][ $stat_ref ] = 0;
 						}
-						++$this->statistics[ $rubber->title ]['sets'][ $stat_ref ];
+						++$stats_ref[ $league_ref ][ $rubber->title ]['sets'][ $stat_ref ];
 						foreach ( $opponents_pt as $opponent ) {
 							if ( is_numeric( $set[ $opponent ] ) ) {
 								if ( $player_ref === $opponent ) {
-									if ( ! isset( $this->statistics[ $rubber->title ]['games']['winner'] ) ) {
-										$this->statistics[ $rubber->title ]['games']['winner'] = 0;
+									if ( ! isset( $stats_ref[ $league_ref ][ $rubber->title ]['games']['winner'] ) ) {
+										$stats_ref[ $league_ref ][ $rubber->title ]['games']['winner'] = 0;
 									}
-									$this->statistics[ $rubber->title ]['games']['winner'] += $set[ $opponent ];
+									$stats_ref[ $league_ref ][ $rubber->title ]['games']['winner'] += $set[ $opponent ];
 								} else {
-									if ( ! isset( $this->statistics[ $rubber->title ]['games']['loser'] ) ) {
-										$this->statistics[ $rubber->title ]['games']['loser'] = 0;
+									if ( ! isset( $stats_ref[ $league_ref ][ $rubber->title ]['games']['loser'] ) ) {
+										$stats_ref[ $league_ref ][ $rubber->title ]['games']['loser'] = 0;
 									}
-									$this->statistics[ $rubber->title ]['games']['loser'] += $set[ $opponent ];
+									$stats_ref[ $league_ref ][ $rubber->title ]['games']['loser'] += $set[ $opponent ];
 								}
 							}
 						}
 					}
 				}
 			}
+		}
+		if ( $league_ref ) {
+			$this->statistics = $stats_ref;
+		} else {
+			$this->statistics = isset( $stats_ref[0] ) ? $stats_ref[0] : array();
 		}
 		return $this->matches;
 	}

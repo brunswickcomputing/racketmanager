@@ -133,7 +133,7 @@ if ( empty( $club->player ) ) {
 										</th>
 										<th scope="col"><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
 										<th scope="col" class="colspan"><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></th>
-										<th scope="col" class="colspan"><?php esc_html_e( 'Created Date', 'racketmanager' ); ?></th>
+										<th scope="col" class="colspan"><?php esc_html_e( 'Rating Points', 'racketmanager' ); ?></th>
 									</tr>
 								</thead>
 								<tbody id="Club <?php echo esc_html( $key ); ?> Players">
@@ -151,19 +151,24 @@ if ( empty( $club->player ) ) {
 														<input type="checkbox" class="checkbox" value="<?php echo esc_html( $club_player->roster_id ); ?>" name="clubPlayer[<?php echo esc_html( $club_player->roster_id ); ?>]" />
 													<?php } ?>
 												</th>
-												<td><a href="<?php echo esc_html( seo_url( $club_player->fullname ) ); ?>"><?php echo esc_html( $club_player->fullname ); ?></a></td>
+												<td><a href="<?php echo esc_html( seo_url( $club_player->fullname ) ); ?>/"><?php echo esc_html( $club_player->fullname ); ?></a></td>
 												<td><?php echo esc_html( $club_player->btm ); ?></td>
-												<td
-														<?php
-														if ( ! empty( $club_player->created_user_name ) ) {
-															echo 'title="' . esc_html( __( 'Created by', 'racketmanager' ) ) . ' ' . esc_html( $club_player->created_user_name ) . '"';
+												<td>
+													<?php
+													$rating         = $club_player->rating;
+													$match_types    = Racketmanager_Util::get_match_types();
+													$rating_display = '';
+													foreach ( $match_types as $match_type ) {
+														if ( ! empty( $rating_display ) ) {
+															$rating_display .= ' - ';
 														}
-														?>
-													>
-														<?php echo esc_html( substr( $club_player->created_date, 0, 10 ) ); ?>
+														$rating_display .= '[' . $match_type . ':' . $rating[ $match_type ] . ']';
+													}
+													echo ' ' . esc_html( $rating_display );
+													?>
 												</td>
 											</tr>
-														<?php
+											<?php
 										}
 									}
 									?>

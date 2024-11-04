@@ -29,14 +29,23 @@ namespace Racketmanager;
 									<a href="#">
 									<?php
 								}
-								?>
-								<?php echo esc_html( $player->display_name ); ?>
-								<?php
+								if ( isset( $player->display_name ) ) {
+									echo esc_html( $player->display_name );
+								}
 								if ( ! empty( $player->email ) ) {
 									?>
 									</a>
 									<?php
 								}
+								?>
+								<?php
+								$rating         = $player->rating;
+								$match_types    = Racketmanager_Util::get_match_types();
+								$rating_display = '';
+								foreach ( $match_types as $match_type ) {
+									$rating_display .= '[' . $match_type . ' - ' . $rating[ $match_type ] . ']';
+								}
+								echo ' ' . esc_html( $rating_display );
 								?>
 							</td>
 						</tr>
@@ -60,7 +69,17 @@ namespace Racketmanager;
 					foreach ( $players as $player ) {
 						?>
 						<tr>
-							<td><?php echo esc_html( $player->display_name ); ?></td>
+							<td>
+								<?php
+								$rating         = $player->rating;
+								$match_types    = Racketmanager_Util::get_match_types();
+								$rating_display = '';
+								foreach ( $match_types as $match_type ) {
+									$rating_display .= '[' . $match_type . ' - ' . $rating[ $match_type ] . ']';
+								}
+								echo esc_html( $player->display_name ) . ' ' . esc_html( $rating_display );
+								?>
+							</td>
 						</tr>
 						<?php
 					}

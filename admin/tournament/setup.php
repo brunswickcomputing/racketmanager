@@ -7,14 +7,16 @@
 
 namespace Racketmanager;
 
-$match_dates     = $league->seasons[ $season ]['matchDates'];
 $num_match_dates = is_array( $match_dates ) ? count( $match_dates ) : 0;
 if ( $num_match_dates ) {
 	$match_date_index = $num_match_dates - 1;
 } else {
 	$match_date_index = null;
 }
-if ( $match_count ) {
+if ( empty( $league ) ) {
+	$button_text  = __( 'Set round dates', 'racketmanager' );
+	$match_action = null;
+} elseif ( $match_count ) {
 	$button_text  = __( 'Replace matches', 'racketmanager' );
 	$match_action = 'replace';
 } else {
@@ -22,30 +24,51 @@ if ( $match_count ) {
 	$match_action = 'add';
 }
 ?>
-<script type='text/javascript'>
-jQuery(document).ready(function(){
-	activaTab('<?php echo esc_html( $tab ); ?>');
-});
-</script>
 <div class="container">
 	<div class='row justify-content-end'>
 		<div class='col-auto racketmanager_breadcrumb'>
-			<a href='admin.php?page=racketmanager-tournaments'><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href='admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>'><?php echo esc_html( $tournament->name ); ?></a>  &raquo; <a href='admin.php?page=racketmanager-tournaments&amp;view=draw&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>&amp;league=<?php echo esc_attr( $league->id ); ?>'><?php echo esc_html( $league->title ); ?></a> &raquo; <?php esc_html_e( 'Setup', 'racketmanager' ); ?>
+			<?php
+			if ( empty( $league ) ) {
+				?>
+				<a href='admin.php?page=racketmanager-tournaments'><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href='admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>'><?php echo esc_html( $tournament->name ); ?></a> &raquo; <?php esc_html_e( 'Setup', 'racketmanager' ); ?>
+				<?php
+			} else {
+				?>
+				<a href='admin.php?page=racketmanager-tournaments'><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href='admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>'><?php echo esc_html( $tournament->name ); ?></a>  &raquo; <a href='admin.php?page=racketmanager-tournaments&amp;view=draw&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>&amp;league=<?php echo esc_attr( $league->id ); ?>'><?php echo esc_html( $league->title ); ?></a> &raquo; <?php esc_html_e( 'Setup', 'racketmanager' ); ?>
+				<?php
+			}
+			?>
 		</div>
 	</div>
-	<h1><?php esc_html_e( 'Setup', 'racketmanager' ); ?> - <?php echo esc_html( $league->title ); ?> - <?php echo esc_html( $tournament->name ); ?></h1>
-	<h1><?php echo esc_html( $league->title ) . ' - ' . esc_html( $season ); ?></h1>
-	<div class="row mb-3">
-		<div class="col-4"><?php esc_html_e( 'Entries', 'racketmanager' ); ?></div>
-		<div class="col-auto"><?php echo esc_html( $league->num_teams_total ); ?></div>
-	</div>
-	<div class="row mb-3">
-		<div class="col-4"><?php esc_html_e( 'Rounds', 'racketmanager' ); ?></div>
-		<div class="col-auto"><?php echo esc_html( $league->championship->num_rounds ); ?></div>
-	</div>
-	<form method="post" class="form-control">
+	<h1><?php esc_html_e( 'Setup', 'racketmanager' ); ?> <?php echo empty( $league ) ? null : ' - ' . esc_html( $league->title ); ?> - <?php echo esc_html( $tournament->name ); ?></h1>
+	<?php
+	if ( ! empty( $league ) ) {
+		?>
+		<h2><?php echo esc_html( $league->title ) . ' - ' . esc_html( $season ); ?></h2>
+		<div class="row mb-3">
+			<div class="col-4"><?php esc_html_e( 'Entries', 'racketmanager' ); ?></div>
+			<div class="col-auto"><?php echo esc_html( $league->num_teams_total ); ?></div>
+		</div>
+		<div class="row mb-3">
+			<div class="col-4"><?php esc_html_e( 'Rounds', 'racketmanager' ); ?></div>
+			<div class="col-auto"><?php echo esc_html( $league->championship->num_rounds ); ?></div>
+		</div>
+		<?php
+	}
+	?>
+	<form method="post" class="form-control mb-3">
 		<?php wp_nonce_field( 'racketmanager_add_championship-matches', 'racketmanager_nonce' ); ?>
-		<input type="hidden" name="league_id" value="<?php echo esc_attr( $league->id ); ?>" />
+		<?php
+		if ( empty( $league ) ) {
+			?>
+			<input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament->id ); ?>" />
+			<?php
+		} else {
+			?>
+			<input type="hidden" name="league_id" value="<?php echo esc_attr( $league->id ); ?>" />
+			<?php
+		}
+		?>
 		<input type="hidden" name="season" value="<?php echo esc_attr( $season ); ?>" />
 		<input type="hidden" name="action" value="<?php echo esc_attr( $match_action ); ?>" />
 		<div class="row mb-3 fw-bold">
@@ -54,7 +77,12 @@ jQuery(document).ready(function(){
 		</div>
 		<?php
 		$round = 0;
-		foreach ( $league->championship->finals as $final ) {
+		if ( empty( $league ) ) {
+			$object = $tournament;
+		} else {
+			$object = $league->championship;
+		}
+		foreach ( $object->finals as $final ) {
 			if ( ! empty( $match_dates[ $match_date_index ] ) ) {
 				$round_date = $match_dates[ $match_date_index ];
 			} else {
@@ -74,7 +102,7 @@ jQuery(document).ready(function(){
 			--$match_date_index;
 			++$round;
 		}
-		if ( $match_count ) {
+		if ( ! empty( $match_count ) ) {
 			?>
 			<div class="alert_rm alert--info">
 				<div class="alert__body">
@@ -88,5 +116,18 @@ jQuery(document).ready(function(){
 		?>
 		<button class="btn btn-primary"><?php echo esc_html( $button_text ); ?></button>
 	</form>
+	<?php
+	if ( empty( $league ) ) {
+		?>
+		<form method="post" class="mb-3">
+			<?php wp_nonce_field( 'racketmanager_calculate_ratings', 'racketmanager_nonce' ); ?>
+			<input type="hidden" name="season" value="<?php echo esc_attr( $season ); ?>" />
+			<input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament->id ); ?>" />
+			<input type="hidden" name="rank" value="calculate_rank" />
+			<button class="btn btn-primary"><?php esc_html_e( 'Generate ratings', 'racketmanager' ); ?></button>
+		</form>
+		<?php
+	}
+	?>
 
 </div>

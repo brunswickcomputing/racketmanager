@@ -1562,4 +1562,23 @@ class Racketmanager_Competition {
 		}
 		return $return;
 	}
+	/**
+	 * Update seasons
+	 *
+	 * @param array $seasons season data.
+	 */
+	public function update_seasons( $seasons ) {
+		global $wpdb;
+		if ( $this->seasons !== $seasons ) {
+			$this->seasons = $seasons;
+			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->prepare(
+					"UPDATE {$wpdb->racketmanager_competitions} SET `seasons` = %s WHERE `id` = %d",
+					maybe_serialize( $seasons ),
+					$this->id
+				)
+			);
+			wp_cache_delete( $this->id, 'competitions' );
+		}
+	}
 }

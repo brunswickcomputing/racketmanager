@@ -413,6 +413,8 @@ class RacketManager_Admin extends RacketManager {
 					$racketmanager_admin_tournament->display_tournament_draw_page();
 				} elseif ( 'setup' === $view ) {
 					$racketmanager_admin_tournament->display_tournament_setup_page();
+				} elseif ( 'setup-event' === $view ) {
+					$racketmanager_admin_tournament->display_tournament_setup_event_page();
 				} elseif ( 'matches' === $view ) {
 					$racketmanager_admin_tournament->display_tournament_matches_page();
 				} elseif ( 'match' === $view ) {

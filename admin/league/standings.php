@@ -315,8 +315,13 @@ if ( ! $league->event->competition->is_championship ) {
 	}
 	if ( isset( $league->event->competition->team_ranking ) && 'manual' === $league->event->competition->team_ranking ) {
 		?>
-		<input type="submit" name="saveRanking" value="<?php esc_html_e( 'Save Ranking', 'racketmanager' ); ?>" class="btn btn-primary" />
-		<input type="submit" name="randomRanking" value="<?php esc_html_e( 'Random Ranking', 'racketmanager' ); ?>" class="btn btn-primary" />
+		<div class="mb-3">
+			<input type="submit" name="saveRanking" value="<?php esc_html_e( 'Save Ranking', 'racketmanager' ); ?>" class="btn btn-primary" />
+		</div>
+		<div class="mb-3">
+			<input type="submit" name="randomRanking" value="<?php esc_html_e( 'Random Rank', 'racketmanager' ); ?>" class="btn btn-secondary" />
+			<input type="submit" name="ratingPointsRanking" value="<?php esc_html_e( 'Rating Points Rank', 'racketmanager' ); ?>" class="btn btn-secondary" />
+		</div>
 		<?php
 	}
 	if ( isset( $league->event->competition->team_ranking ) && 'manual' !== $league->event->competition->team_ranking ) {

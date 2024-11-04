@@ -1662,8 +1662,8 @@ class RacketManager_Admin extends RacketManager {
 			} else {
 				$js = false;
 			}
-				$team_ranks = array();
-				$league     = get_league( $league );
+			$team_ranks = array();
+			$league     = get_league( $league );
 			if ( isset( $_POST['table_id'] ) ) {
 				$team_ids = array_values( $_POST['table_id'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				foreach ( $team_ids as $key => $team_id ) {

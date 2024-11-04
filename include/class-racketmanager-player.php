@@ -1168,6 +1168,175 @@ final class Racketmanager_Player {
 		return $matches;
 	}
 	/**
+	 * Set tournament rating function
+	 *
+	 * @return void
+	 */
+	public function set_tournament_rating() {
+		$match_types = Racketmanager_Util::get_match_types();
+		foreach ( $match_types as $match_type ) {
+			$rating      = $this->calculate_tournament_rating( $match_type );
+			$rating_type = 'rating_' . $match_type;
+			update_user_meta( $this->ID, $rating_type, $rating );
+			$this->rating_detail[ $match_type ]['player'] = $rating;
+			$this->rating[ $match_type ]                  = array_sum( $this->rating_detail[ $match_type ] );
+		}
+	}
+	/**
+	 * Calculate tournament rating function
+	 *
+	 * @param string $type match type.
+	 * @return int player points.
+	 */
+	public function calculate_tournament_rating( $type ) {
+		$player_points = 0;
+		$matches       = $this->get_tournament_matches( array( 'type' => $type ) );
+		foreach ( $matches as $match_ref ) {
+			$match = get_match( $match_ref->id );
+			if ( $match ) {
+				if ( isset( $match->league->event->age_limit ) ) {
+					if ( 'open' === $match->league->event->age_limit ) {
+						$event_points = 1;
+					} elseif ( $match->league->event->age_limit >= 30 ) {
+						$event_points = 0.25;
+					} elseif ( 16 === $match->league->event->age_limit ) {
+						$event_points = 0.4;
+					} elseif ( 14 === $match->league->event->age_limit ) {
+						$event_points = 0.25;
+					} elseif ( 12 === $match->league->event->age_limit ) {
+						$event_points = 0.15;
+					}
+				} else {
+					$event_points = 1;
+				}
+				$base_points = 0;
+				switch ( $match->final_round ) {
+					case 'final':
+						if ( $match->winner_id === $match_ref->team_id ) {
+							if ( $match->league->championship->is_consolation ) {
+								$base_points = 88;
+							} else {
+								$base_points = 300;
+							}
+						} elseif ( $match->loser_id === $match_ref->team_id ) {
+							if ( $match->league->championship->is_consolation ) {
+								$points = 80;
+							} else {
+								$base_points = 240;
+							}
+						}
+						break;
+					case 'semi':
+						if ( $match->loser_id === $match_ref->team_id ) {
+							if ( $match->league->championship->is_consolation ) {
+								$base_points = 72;
+							} else {
+								$base_points = 180;
+							}
+						}
+						break;
+					case 'quarter':
+						if ( $match->loser_id === $match_ref->team_id ) {
+							if ( $match->league->championship->is_consolation ) {
+								$base_points = 56;
+							} else {
+								$base_points = 120;
+							}
+						}
+						break;
+					case 'last-16':
+						if ( $match->loser_id === $match_ref->team_id ) {
+							if ( $match->league->championship->is_consolation ) {
+								$base_points = 24;
+							} else {
+								$base_points = 88;
+							}
+						}
+						break;
+					case 'last-32':
+						if ( $match->loser_id === $match_ref->team_id ) {
+							if ( $match->league->championship->is_consolation ) {
+								$base_points = 24;
+							} else {
+								$base_points = 72;
+							}
+						}
+						break;
+					case 'last-64':
+						if ( $match->loser_id === $match_ref->team_id ) {
+							if ( $match->league->championship->is_consolation ) {
+								$base_points = 0;
+							} else {
+								$base_points = 20;
+							}
+						}
+						break;
+					default:
+						$base_points = 0;
+						break;
+				}
+				if ( ! empty( $base_points ) ) {
+					$last_year    = gmdate( 'Y-m-d H:i:s', strtotime( '-1 year' ) );
+					$point_adjust = 1;
+					if ( $match->date < $last_year ) {
+						$point_adjust = 0.5;
+					}
+					$points         = ceil( $base_points * $event_points * $point_adjust );
+					$player_points += $points;
+				}
+			}
+		}
+		return $player_points;
+	}
+	/**
+	 * Get tournament matches for player function
+	 *
+	 * @param array $args array of search arguments.
+	 * @return array of matches
+	 */
+	public function get_tournament_matches( $args = array() ) {
+		global $wpdb;
+		$defaults      = array(
+			'count'  => false,
+			'season' => false,
+			'type'   => false,
+			'period' => 730,
+		);
+		$args          = array_merge( $defaults, (array) $args );
+		$count         = $args['count'];
+		$season        = $args['season'];
+		$type          = $args['type'];
+		$period        = $args['period'];
+		$search_terms  = array();
+		$search_args   = array();
+		$search_args[] = $this->id;
+		if ( $type ) {
+			$search_terms[] = "t.`type` LIKE '%%%s'";
+			$search_args[]  = $type;
+		}
+		if ( $period ) {
+			$search_terms[] = 'm.`date` > now() - INTERVAL %d DAY';
+			$search_args[]  = $period;
+		}
+		$search = '';
+		if ( ! empty( $search_terms ) ) {
+			$search = ' AND ' . implode( ' AND ', $search_terms );
+		}
+		$sql          = "SELECT tp.`team_id`, m.`id` FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager_team_players} tp WHERE t.`id` = tp.`team_id` AND (m.`home_team` = t.`id` OR m.`away_team` = t.`id`) AND tp.`player_id` = %d" . $search . ' ORDER BY m.`league_id` ASC, m.`date` ASC';
+		$sql_prepared = $wpdb->prepare(
+			$sql, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			$search_args,
+		);
+		$matches      = wp_cache_get( md5( $sql_prepared ), 'matches' );
+		if ( ! $matches ) {
+			$matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
+				$sql_prepared, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			);
+			wp_cache_set( md5( $sql ), $matches, 'matches' );
+		}
+		return $matches;
+	}
+	/**
 	 * Set team rating function
 	 *
 	 * @return void

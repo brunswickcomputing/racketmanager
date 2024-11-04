@@ -51,7 +51,7 @@ namespace Racketmanager;
 				</select>
 				<input type="hidden" name="club_id" value="<?php echo esc_html( $club->id ); ?>" />
 				<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doClubPlayerdel" id="doClubPlayerdel" class="btn btn-primary action" />
-				<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doClubPlayerdel" id="doClubPlayerdel" class="btn btn-secondary action" />
+				<input type="submit" value="<?php esc_html_e( 'Player Ratings', 'racketmanager' ); ?>" name="doPlayerRatings" id="doPlayerRatings" class="btn btn-primary action" />
 			</div>
 
 			<div class="container">

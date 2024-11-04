@@ -779,9 +779,6 @@ class Racketmanager_Ajax extends RacketManager {
 						$rubber->custom      = $custom;
 						$rubber->status      = $status;
 						$rubber->update_result();
-						if ( ! $is_cancelled && ! $is_withdrawn ) {
-							$rubber->check_players();
-						}
 						$match_confirmed = 'P';
 						foreach ( $opponents as $opponent ) {
 							foreach ( $player_numbers as $player_number ) {
@@ -799,6 +796,14 @@ class Racketmanager_Ajax extends RacketManager {
 				$match_confirmed = 'P';
 				$home_team_score = 0;
 				$away_team_score = 0;
+			} else {
+				$check_options = $racketmanager->get_options( 'checks' );
+				$match->delete_result_check();
+				$rubbers      = $match->get_rubbers();
+				$prev_ratings = array();
+				foreach ( $rubbers as $rubber ) {
+					$ratings = $rubber->check_players();
+				}
 			}
 			$match_custom['stats'] = $stats;
 			$status                = Racketmanager_Util::get_match_status_code( $new_match_status );

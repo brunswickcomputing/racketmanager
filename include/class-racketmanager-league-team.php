@@ -321,6 +321,12 @@ final class Racketmanager_League_Team {
 	 */
 	public $is_withdrawn;
 	/**
+	 * Players variable
+	 *
+	 * @var array
+	 */
+	public $players = array();
+	/**
 	 * Get instance function
 	 *
 	 * @param int $league_team_id league team id.
@@ -398,11 +404,12 @@ final class Racketmanager_League_Team {
 			}
 			$this->roster = maybe_unserialize( $this->roster );
 			if ( 'P' === $this->team_type && null !== $this->roster ) {
-				$i = 1;
-				foreach ( $this->roster as $player ) {
-					$teamplayer            = get_player( $player );
-					$this->player[ $i ]    = $teamplayer->fullname;
-					$this->player_id[ $i ] = $player;
+				$team          = get_team( $this->id );
+				$this->players = $team->players;
+				$i             = 1;
+				foreach ( $this->players as $player ) {
+					$this->player[ $i ]    = $player->fullname;
+					$this->player_id[ $i ] = $player->id;
 					++$i;
 				}
 			}

@@ -195,6 +195,12 @@ final class Racketmanager_Tournament {
 	 */
 	public $competition_code;
 	/**
+	 * Fianls variable
+	 *
+	 * @var array
+	 */
+	public $finals;
+	/**
 	 * Retrieve tournament instance
 	 *
 	 * @param int    $tournament_id tournament id.
@@ -304,6 +310,25 @@ final class Racketmanager_Tournament {
 			if ( $this->competition_id ) {
 				$this->competition = get_competition( $this->competition_id );
 			}
+			$finals     = array();
+			$num_teams  = 64;
+			$max_rounds = 6;
+			$r          = $max_rounds;
+			for ( $round = 1; $round <= $max_rounds; ++$round ) {
+				$num_teams      = pow( 2, $round );
+				$num_matches    = $num_teams / 2;
+				$key            = Racketmanager_Util::get_final_key( $num_teams );
+				$name           = Racketmanager_Util::get_final_name( $key );
+				$finals[ $key ] = array(
+					'key'         => $key,
+					'name'        => $name,
+					'num_matches' => $num_matches,
+					'num_teams'   => $num_teams,
+					'round'       => $r,
+				);
+				--$r;
+			}
+			$this->finals = $finals;
 		}
 	}
 

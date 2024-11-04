@@ -182,6 +182,18 @@ final class Racketmanager_Player {
 	 */
 	public $link;
 	/**
+	 * Rating.
+	 *
+	 * @var array
+	 */
+	public $rating;
+	/**
+	 * Rating detail.
+	 *
+	 * @var array
+	 */
+	public $rating_detail;
+	/**
 	 * Retrieve player instance
 	 *
 	 * @param int    $player_id player id.
@@ -289,6 +301,14 @@ final class Racketmanager_Player {
 			$this->link          = '/player/' . seo_url( $this->display_name ) . '/';
 			if ( ! empty( $this->btm ) ) {
 				$this->link .= $this->btm . '/';
+			}
+			$match_types = Racketmanager_Util::get_match_types();
+			foreach ( $match_types as $match_type ) {
+				$rating_type                                  = 'rating_' . $match_type;
+				$this->rating_detail[ $match_type ]['player'] = get_user_meta( $this->ID, $rating_type, true );
+				$rating_type                                  = 'rating_' . $match_type . '_team';
+				$this->rating_detail[ $match_type ]['team']   = get_user_meta( $this->ID, $rating_type, true );
+				$this->rating[ $match_type ]                  = array_sum( $this->rating_detail[ $match_type ] );
 			}
 		}
 	}

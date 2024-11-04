@@ -855,7 +855,7 @@ final class Racketmanager_Club {
 					if ( $player->removed_user ) {
 						$players[ $i ]->removed_user_name = get_userdata( $player->removed_user )->display_name;
 					} else {
-						$players[ $i ]->removed_user_nName = '';
+						$players[ $i ]->removed_user_name = '';
 					}
 					$players[ $i ]->created_date = $player->created_date;
 					$players[ $i ]->created_user = $player->created_user;

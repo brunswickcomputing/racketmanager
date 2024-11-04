@@ -47,6 +47,27 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.24.0 =
+* BUGFIX: handle dates not set
+* BUGFIX: set display name correctly after only first or surname change
+* BUGFIX: set closed state only when past close date
+* BUGFIX: set close time to end of day
+* BUGFIX: set closed state only when past close date
+* BUGFIX: handle empty start date for event
+* BUGFIX: handle season not found
+* BUGFIX: use correct player reference
+* BUGFIX: use camelCase for player id to allow consistent checking
+* BUGFIX: set correct error class
+* BUGFIX: handle existing player
+* BUGFIX: use correct link for tournament entry
+* BUGFIX: handle old tournament entry links
+* BUGFIX: handle player not found
+* UPDATE: user bootstrap form error messages and highlighting
+* UPDATE: display player club memberships
+* UPDATE: change club page layout
+* UPDATE: set tournament round dates
+* UPDATE: use player ratings
+
 = 8.23.1 =
 * BUGFIX: check player found
 

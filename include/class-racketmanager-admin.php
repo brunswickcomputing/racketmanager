@@ -1174,6 +1174,9 @@ class RacketManager_Admin extends RacketManager {
 			} elseif ( isset( $_POST['randomRanking'] ) ) {
 				$this->league_random_rank_teams( $league );
 				$tab = 'standings';
+			} elseif ( isset( $_POST['ratingPointsRanking'] ) ) {
+				$this->league_rating_points_rank_teams( $league );
+				$tab = 'standings';
 			}
 			$this->printMessage();
 			// phpcs:enable WordPress.Security.NonceVerification.Missing
@@ -1696,6 +1699,36 @@ class RacketManager_Admin extends RacketManager {
 			if ( isset( $_POST['table_id'] ) ) {
 				$team_ids = array_values( $_POST['table_id'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				shuffle( $team_ids );
+				foreach ( $team_ids as $key => $team_id ) {
+					$rank                    = $key + 1;
+					$team                    = get_league_team( $team_id );
+					$team_ranks[ $rank - 1 ] = $team;
+				}
+				$team_ranks = $league->get_ranking( $team_ranks );
+				$league->update_ranking( $team_ranks );
+				$this->set_message( __( 'Team ranking saved', 'racketmanager' ) );
+			}
+		} else {
+			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
+		}
+	}
+	/**
+	 * Rating points rank teams league in admin screen
+	 *
+	 * @param object $league league object.
+	 */
+	protected function league_rating_points_rank_teams( $league ) {
+		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
+			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+		} elseif ( current_user_can( 'update_results' ) ) {
+			$league     = get_league( $league );
+			$team_ranks = array();
+			if ( isset( $_POST['table_id'] ) ) {
+				$team_ids = array_values( $_POST['table_id'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				if ( isset( $_POST['rating_points'] ) ) {
+					$rating_points = array_values( $_POST['rating_points'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+					array_multisort( $rating_points, SORT_DESC, $team_ids, SORT_ASC );
+				}
 				foreach ( $team_ids as $key => $team_id ) {
 					$rank                    = $key + 1;
 					$team                    = get_league_team( $team_id );

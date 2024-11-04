@@ -149,6 +149,9 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 								$this->league_random_rank_teams( $league );
 								$this->printMessage();
 								$tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+							} elseif ( isset( $_POST['ratingPointsRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+								$this->league_rating_points_rank_teams( $league );
+								$tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 							} elseif ( empty( $tab ) ) {
 								$tab = 'finalresults'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 							}

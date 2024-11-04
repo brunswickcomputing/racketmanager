@@ -22,6 +22,7 @@ namespace Racketmanager;
 					<option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
 				</select>
 				<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doClubDel" id="doClubDel" class="btn btn-secondary action" />
+				<input type="submit" value="<?php esc_html_e( 'Schedule Player Ratings', 'racketmanager' ); ?>" name="doSchedulePlayerRatings" id="doSchedulePlayerRatings" class="btn btn-primary action" />
 			</div>
 
 			<div class="container">

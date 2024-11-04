@@ -649,4 +649,15 @@ class Racketmanager_Util {
 		}
 		return $status_value;
 	}
+	/**
+	 * Get match types function
+	 *
+	 * @return array of match types
+	 */
+	public static function get_match_types() {
+		$match_types   = array();
+		$match_types[] = 'S';
+		$match_types[] = 'D';
+		return $match_types;
+	}
 }

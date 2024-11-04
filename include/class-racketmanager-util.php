@@ -650,6 +650,48 @@ class Racketmanager_Util {
 		return $status_value;
 	}
 	/**
+	 * Get key of final depending on number of teams
+	 *
+	 * @param int $num_teams number of teams in round.
+	 * @return string key
+	 */
+	public static function get_final_key( $num_teams ) {
+		if ( 2 === $num_teams ) {
+			$key = 'final';
+		} elseif ( 4 === $num_teams ) {
+			$key = 'semi';
+		} elseif ( 8 === $num_teams ) {
+			$key = 'quarter';
+		} else {
+			$key = 'last-' . $num_teams;
+		}
+		return $key;
+	}
+	/**
+	 * Get name of final depending on number of teams
+	 *
+	 * @param string $key final key.
+	 * @return the name of the round
+	 */
+	public static function get_final_name( $key = false ) {
+		if ( ! empty( $key ) ) {
+			if ( 'final' === $key ) {
+				$round = __( 'Final', 'racketmanager' );
+			} elseif ( 'third' === $key ) {
+				$round = __( 'Third Place', 'racketmanager' );
+			} elseif ( 'semi' === $key ) {
+				$round = __( 'Semi Final', 'racketmanager' );
+			} elseif ( 'quarter' === $key ) {
+				$round = __( 'Quarter Final', 'racketmanager' );
+			} else {
+				$tmp = explode( '-', $key );
+				/* translators: %d: round number of teams in round */
+				$round = sprintf( __( 'Round of %d', 'racketmanager' ), $tmp[1] );
+			}
+			return $round;
+		}
+	}
+	/**
 	 * Get match types function
 	 *
 	 * @return array of match types

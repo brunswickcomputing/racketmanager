@@ -1467,6 +1467,17 @@ class Racketmanager_League {
 				'primary'   => sprintf( $this->point_format, $team->points_plus, $team->points_minus ),
 				'secondary' => sprintf( $this->point_format2, $team->points2_plus, $team->points2_minus ),
 			);
+			if ( ! empty( $team->players ) ) {
+				$type        = substr( $this->event->type, 1, 1 );
+				$team_rating = 0;
+				foreach ( $team->players as $player ) {
+					$rating = $player->rating[ $type ];
+					if ( is_numeric( $rating ) ) {
+						$team_rating += $rating;
+					}
+				}
+				$team->profile = $team_rating;
+			}
 			if ( $get_details ) {
 				$team_dtls           = $this->get_team_dtls( $team->id );
 				$team->match_day     = $team_dtls->match_day;

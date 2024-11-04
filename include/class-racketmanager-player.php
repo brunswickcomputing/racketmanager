@@ -416,6 +416,7 @@ final class Racketmanager_Player {
 		$current_contact_email = $this->user_email;
 		if ( $current_contact_no !== $contact_no ) {
 			update_user_meta( $this->ID, 'contactno', $contact_no );
+			$this->contactno = $contact_no;
 		}
 		if ( $current_contact_email !== $contact_email ) {
 			$userdata               = array();
@@ -428,7 +429,10 @@ final class Racketmanager_Player {
 				error_log( 'Unable to update user email ' . $this->ID . ' - ' . $contact_email . ' - ' . $error_msg );
 				return false;
 			}
+			$this->user_email = $contact_email;
+			$this->email      = $this->user_email;
 		}
+		wp_cache_set( $this->id, $this, 'players' );
 		return true;
 	}
 	/**
@@ -441,6 +445,8 @@ final class Racketmanager_Player {
 		$current_btm = get_user_meta( $this->ID, 'btm', true );
 		if ( $current_btm !== $btm ) {
 			update_user_meta( $this->ID, 'btm', $btm );
+			$this->btm = $btm;
+			wp_cache_set( $this->id, $this, 'players' );
 			return true;
 		} else {
 			return false;

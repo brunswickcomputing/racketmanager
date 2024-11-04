@@ -1168,6 +1168,15 @@ final class Racketmanager_Player {
 		return $matches;
 	}
 	/**
+	 * Set player rating function
+	 *
+	 * @return void
+	 */
+	public function set_rating() {
+		$this->set_tournament_rating();
+		$this->set_team_rating();
+	}
+	/**
 	 * Set tournament rating function
 	 *
 	 * @return void

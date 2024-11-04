@@ -393,7 +393,7 @@ class Racketmanager_Ajax extends RacketManager {
 					$match->delete_result_check();
 					$rubbers = $match->get_rubbers();
 					foreach ( $rubbers as $rubber ) {
-						$rubber->check_players();
+						$ratings = $rubber->check_players();
 					}
 				}
 			}

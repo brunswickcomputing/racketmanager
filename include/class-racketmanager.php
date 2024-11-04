@@ -96,6 +96,7 @@ class RacketManager {
 		add_filter( 'wp_mail', array( &$this, 'racketmanager_mail' ) );
 		add_filter( 'email_change_email', array( &$this, 'racketmanager_change_email_address' ), 10, 3 );
 		add_filter( 'pre_get_document_title', array( &$this, 'set_page_title' ), 999, 1 );
+		add_action( 'rm_calculate_player_ratings', array( &$this, 'calculate_player_ratings' ), 1 );
 	}
 	/**
 	 * Set page title function
@@ -457,7 +458,29 @@ class RacketManager {
 		}
 		return $message_sent;
 	}
-
+	/**
+	 * Calculate player ratings
+	 *
+	 * @param int $club_id club id.
+	 * @return void
+	 */
+	public function calculate_player_ratings( $club_id = null ) {
+		if ( $club_id ) {
+			$club = get_club( $club_id );
+			if ( $club ) {
+				$players = $club->get_players(
+					array(
+						'active' => true,
+						'type'   => 'player',
+					)
+				);
+				foreach ( $players as $club_player ) {
+					$player = get_player( $club_player->player_id );
+					$player->set_team_rating();
+				}
+			}
+		}
+	}
 	/**
 	 * Adds our templates
 	 */

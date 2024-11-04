@@ -407,6 +407,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 								)
 							);
 							$tab         = 'matches';
+							$match_dates = empty( $league->event->seasons[ $season ]['matchDates'] ) ? $league->event->competition->seasons[ $season ]['matchDates'] : $league->event->seasons[ $season ]['matchDates'];
 							require RACKETMANAGER_PATH . 'admin/tournament/setup.php';
 						}
 					}

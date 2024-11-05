@@ -751,7 +751,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 					$season_data->match_dates      = false;
 					$season_data->fixed_dates      = false;
 					$season_data->home_away        = false;
-					$season_data->status           = $competition_season['status'];
+					$season_data->date_open        = $tournament->date_open;
 					$season_data->closing_date     = $tournament->closing_date;
 					$season_data->date_start       = $tournament->date_start;
 					$season_data->date_end         = $tournament->date;

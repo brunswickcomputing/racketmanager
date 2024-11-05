@@ -90,6 +90,24 @@ if ( empty( $is_page_header ) ) {
 							?>
 						</span>
 					</div>
+					<div class="media__content-subinfo">
+						<ul class="list list--inline">
+							<?php
+							$rating      = $player->rating;
+							$match_types = Racketmanager_Util::get_match_types();
+							foreach ( $match_types as $match_type => $description ) {
+								?>
+								<li class="list__item" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<?php /* translators: %s: rating type*/ printf( esc_html__( 'L&WLTA Tennis Rating for %s', 'racketmanager' ), esc_html( $description ) ); ?>">
+									<span class="tag tag-pair" >
+										<span class="tag-pair__title"><?php echo esc_html( $description ); ?></span>
+										<span class="tag-pair__value"><?php echo esc_html( $rating[ $match_type ] ); ?></span>
+									</span>
+								</li>
+								<?php
+							}
+							?>
+						</ul>
+					</div>
 				</div>
 				<div class="media__aside">
 					<div class="progress-bar-container">

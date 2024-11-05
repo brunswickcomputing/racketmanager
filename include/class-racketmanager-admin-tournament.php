@@ -731,7 +731,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 					$season_data->match_dates      = isset( $season['matchDates'] ) ? $season['matchDates'] : false;
 					$season_data->fixed_dates      = isset( $season['fixedMatchDates'] ) ? $season['fixedMatchDates'] : false;
 					$season_data->home_away        = isset( $season['homeAway'] ) ? $season['homeAway'] : false;
-					$season_data->status           = $season['status'];
+					$season_data->status           = 'live';
 					$season_data->date_open        = $season['dateOpen'];
 					$season_data->closing_date     = $season['closing_date'];
 					$season_data->date_start       = $season['dateStart'];
@@ -751,6 +751,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 					$season_data->match_dates      = false;
 					$season_data->fixed_dates      = false;
 					$season_data->home_away        = false;
+					$season_data->status           = 'live';
 					$season_data->date_open        = $tournament->date_open;
 					$season_data->closing_date     = $tournament->closing_date;
 					$season_data->date_start       = $tournament->date_start;

@@ -4979,7 +4979,7 @@ ul.list--inline {
 	padding-left:0;
 }
 @media (min-width: 768px) {
-	ul.list.list__indent {
+	ul.list.list--indent {
 		padding-left: 6rem;
 	}
 }

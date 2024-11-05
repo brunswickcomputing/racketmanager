@@ -53,7 +53,7 @@ foreach ( $club->competitions as $competition ) {
 						<?php
 						if ( $event->teams ) {
 							?>
-							<ol class="list list--naked list__indent">
+							<ol class="list list--naked list--indent">
 							<?php
 							foreach ( $event->teams as $team ) {
 								?>

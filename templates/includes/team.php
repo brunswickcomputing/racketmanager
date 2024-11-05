@@ -75,7 +75,7 @@ if ( isset( $team->info ) ) {
 		</div>
 	</div>
 
-	<ul class="list list--flex list__indent">
+	<ul class="list list--flex list--indent">
 		<?php
 		if ( $is_team_entry ) {
 			?>

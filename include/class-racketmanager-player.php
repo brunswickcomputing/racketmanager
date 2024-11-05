@@ -303,7 +303,7 @@ final class Racketmanager_Player {
 				$this->link .= $this->btm . '/';
 			}
 			$match_types = Racketmanager_Util::get_match_types();
-			foreach ( $match_types as $match_type ) {
+			foreach ( $match_types as $match_type => $description ) {
 				$rating_type                                  = 'rating_' . $match_type;
 				$this->rating_detail[ $match_type ]['player'] = get_user_meta( $this->ID, $rating_type, true );
 				$rating_type                                  = 'rating_' . $match_type . '_team';
@@ -1183,7 +1183,7 @@ final class Racketmanager_Player {
 	 */
 	public function set_tournament_rating() {
 		$match_types = Racketmanager_Util::get_match_types();
-		foreach ( $match_types as $match_type ) {
+		foreach ( $match_types as $match_type => $description ) {
 			$rating      = $this->calculate_tournament_rating( $match_type );
 			$rating_type = 'rating_' . $match_type;
 			update_user_meta( $this->ID, $rating_type, $rating );

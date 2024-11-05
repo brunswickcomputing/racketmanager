@@ -158,7 +158,7 @@ if ( empty( $club->player ) ) {
 													$rating         = $club_player->rating;
 													$match_types    = Racketmanager_Util::get_match_types();
 													$rating_display = '';
-													foreach ( $match_types as $match_type ) {
+													foreach ( $match_types as $match_type => $description ) {
 														if ( ! empty( $rating_display ) ) {
 															$rating_display .= ' - ';
 														}

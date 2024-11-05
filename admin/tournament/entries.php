@@ -42,7 +42,7 @@ namespace Racketmanager;
 								$rating         = $player->rating;
 								$match_types    = Racketmanager_Util::get_match_types();
 								$rating_display = '';
-								foreach ( $match_types as $match_type ) {
+								foreach ( $match_types as $match_type => $description ) {
 									$rating_display .= '[' . $match_type . ' - ' . $rating[ $match_type ] . ']';
 								}
 								echo ' ' . esc_html( $rating_display );
@@ -74,7 +74,7 @@ namespace Racketmanager;
 								$rating         = $player->rating;
 								$match_types    = Racketmanager_Util::get_match_types();
 								$rating_display = '';
-								foreach ( $match_types as $match_type ) {
+								foreach ( $match_types as $match_type => $description ) {
 									$rating_display .= '[' . $match_type . ' - ' . $rating[ $match_type ] . ']';
 								}
 								echo esc_html( $player->display_name ) . ' ' . esc_html( $rating_display );

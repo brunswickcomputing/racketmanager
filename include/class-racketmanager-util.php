@@ -697,9 +697,9 @@ class Racketmanager_Util {
 	 * @return array of match types
 	 */
 	public static function get_match_types() {
-		$match_types   = array();
-		$match_types[] = 'S';
-		$match_types[] = 'D';
+		$match_types      = array();
+		$match_types['S'] = __( 'Singles', 'racketmanager' );
+		$match_types['D'] = __( 'Doubles', 'racketmanager' );
 		return $match_types;
 	}
 }

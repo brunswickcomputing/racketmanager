@@ -91,7 +91,7 @@ foreach ( $final->matches as $match ) {
 												<p>
 													<?php
 													if ( ! empty( $team->is_withdrawn ) ) {
-														$title_text = $match->teams['home']->title . ' ' . __( 'has withdrawn', 'racketmanager' );
+														$title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );
 														?>
 														<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="<?php echo esc_attr( $title_text ); ?>">
 														<?php
@@ -141,7 +141,7 @@ foreach ( $final->matches as $match ) {
 											<p>
 												<?php
 												if ( ! empty( $team->is_withdrawn ) ) {
-													$title_text = $match->teams['home']->title . ' ' . __( 'has withdrawn', 'racketmanager' );
+													$title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );
 													?>
 													<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="<?php echo esc_attr( $title_text ); ?>">
 													<?php

@@ -183,7 +183,7 @@ if ( ! $league->event->competition->is_championship ) {
 					if ( $league->event->competition->is_championship ) {
 						?>
 						<td class="column-num"><?php echo esc_html( $team->profile ); ?></td>
-						<input type="hidden" name="ranking_points[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->profile ); ?>" />
+						<input type="hidden" name="rating_points[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->profile ); ?>" />
 						<?php
 					}
 					if ( ! $league->event->competition->is_championship ) {

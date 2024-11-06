@@ -47,6 +47,29 @@ class Racketmanager_Validator {
 		$this->error_id    = 0;
 	}
 	/**
+	 * Validate player
+	 *
+	 * @param int $player_id player id.
+	 * @return object $validation updated validation object.
+	 */
+	public function player( $player_id ) {
+		if ( empty( $player_id ) ) {
+			$this->error                          = true;
+			$this->error_field[ $this->error_id ] = 'contactno';
+			$this->error_msg[ $this->error_id ]   = __( 'Player id required', 'racketmanager' );
+			++$this->error_id;
+		} else {
+			$player = get_player( $player_id );
+			if ( ! $player ) {
+				$this->error                          = true;
+				$this->error_field[ $this->error_id ] = 'contactno';
+				$this->error_msg[ $this->error_id ]   = __( 'Player not found', 'racketmanager' );
+				++$this->error_id;
+			}
+		}
+		return $this;
+	}
+	/**
 	 * Validate telephone
 	 *
 	 * @param string $telephone telephone number.

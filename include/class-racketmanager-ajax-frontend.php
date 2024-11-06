@@ -410,7 +410,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			if ( ! is_user_logged_in() ) {
 				$validator = $validator->logged_in_entry();
 			} else {
-				$player        = get_player( wp_get_current_user()->ID );
 				$tournament_id = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : null;
 				$season        = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
 				$player_id     = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
@@ -432,6 +431,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						$validator  = $validator->partner( $partner_id, $field_ref, $field_name, $event );
 					}
 				}
+				$validator      = $validator->player( $player_id );
 				$validator      = $validator->telephone( $contactno );
 				$validator      = $validator->email( $contactemail );
 				$validator      = $validator->btm( $btm );
@@ -447,6 +447,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			}
 		}
 		if ( ! $validator->error ) {
+			$player = get_player( $player_id );
 			$player->update_btm( $btm );
 			$player->update_contact( $contactno, $contactemail );
 			$player_name        = $player->display_name;

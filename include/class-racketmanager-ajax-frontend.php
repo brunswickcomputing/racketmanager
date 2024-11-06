@@ -290,7 +290,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$match_secretary_id = sanitize_text_field( wp_unslash( $_POST['matchSecretaryId'] ) );
 			} else {
 				$error         = true;
-				$error_field[] = 'matchSecretaryId';
+				$error_field[] = 'matchSecretary';
 				$error_msg[]   = __( 'Match secretary missing', 'racketmanager' );
 			}
 			if ( ! empty( $_POST['matchSecretaryContactNo'] ) ) {

@@ -642,7 +642,7 @@ Racketmanager.club_player_request = function (link) {
 	let alertTextField = '#playerAddResponseText';
 	jQuery(alertTextField).html("");
 	jQuery(".is-invalid").removeClass("is-invalid");
-	jQuery(".invalidFeedback").val("");
+	jQuery(".invalid-feedback").val("");
 
 	jQuery.ajax({
 		url: ajax_var.url,
@@ -741,7 +741,7 @@ Racketmanager.updateTeam = function (link) {
 	let alertTextField = '#teamUpdateResponseText-'.concat(event, "-", team);
 	jQuery(alertTextField).html("");
 	jQuery(".is-invalid").removeClass("is-invalid");
-	jQuery(".invalidFeedback").val("");
+	jQuery(".invalid-feedback").val("");
 	jQuery.ajax({
 		url: ajax_var.url,
 		type: "POST",
@@ -790,7 +790,8 @@ Racketmanager.updateClub = function (link) {
 	let alertTextField = '#clubUpdateResponseText';
 	jQuery(alertTextField).html("");
 	jQuery(".is-invalid").removeClass("is-invalid");
-	jQuery(".invalidFeedback").val("");
+	jQuery(".invalid-feedback").val("");
+	jQuery(".invalid-tooltip").val("");
 
 	jQuery.ajax({
 		url: ajax_var.url,
@@ -840,7 +841,7 @@ Racketmanager.updatePlayer = function (link) {
 	let alertTextField = '#playerUpdateResponseText';
 	jQuery(alertTextField).html("");
 	jQuery(".is-invalid").removeClass("is-invalid");
-	jQuery(".invalidFeedback").val("");
+	jQuery(".invalid-feedback").val("");
 
 	jQuery.ajax({
 		url: ajax_var.url,
@@ -888,7 +889,8 @@ Racketmanager.entryRequest = function (event, type) {
 	let alertTextField = '#entryAlertResponse';
 	jQuery(alertTextField).html("");
 	jQuery(".is-invalid").removeClass("is-invalid");
-	jQuery(".invalidFeedback").val("");
+	jQuery(".invalid-feedback").val("");
+	jQuery(".invalid-tooltip").val("");
 
 	jQuery.ajax({
 		url: ajax_var.url,

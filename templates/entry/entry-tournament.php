@@ -22,6 +22,13 @@
 namespace Racketmanager;
 
 $entry_option = false;
+if ( get_current_user_id() !== $player->id && ! current_user_can( 'manage_racketmanager' ) ) {
+	$changes_allowed = false;
+} elseif ( ! $tournament->is_open ) {
+	$changes_allowed = false;
+} else {
+	$changes_allowed = true;
+}
 if ( ! empty( $player->entry ) ) {
 	$entered    = true;
 	$form_title = __( 'Entry details', 'racketmanager' );
@@ -56,14 +63,19 @@ if ( ! empty( $player->entry ) ) {
 						</div>
 					</div>
 					<?php
-					if ( ! $tournament->is_open ) {
-						if ( $entered ) {
-							$alert_class = 'info';
-							$alert_msg[] = __( 'Tournament entries are now closed.', 'racketmanager' );
-							$alert_msg[] = __( 'These are your entry details.', 'racketmanager' );
+					if ( ! $changes_allowed ) {
+						if ( ! $tournament->is_open ) {
+							if ( $entered ) {
+								$alert_class = 'info';
+								$alert_msg[] = __( 'Tournament entries are now closed.', 'racketmanager' );
+								$alert_msg[] = __( 'These are the latest entry details.', 'racketmanager' );
+							} else {
+								$alert_class = 'warning';
+								$alert_msg[] = __( 'Tournament not currently open for entries', 'racketmanager' );
+							}
 						} else {
-							$alert_class = 'warning';
-							$alert_msg[] = __( 'Tournament not currently open for entries', 'racketmanager' );
+							$alert_class = 'info';
+							$alert_msg[] = __( 'You can not make changes to a entry form for someone else.', 'racketmanager' );
 						}
 						?>
 						<div class="alert_rm mt-3 alert--<?php echo esc_attr( $alert_class ); ?>" id="loginAlert">
@@ -131,7 +143,7 @@ if ( ! empty( $player->entry ) ) {
 									<div class="hgroup">
 										<h4 class="hgroup__heading"><?php esc_html_e( 'My details', 'racketmanager' ); ?></h4>
 										<?php
-										if ( $tournament->is_open ) {
+										if ( $changes_allowed ) {
 											?>
 											<p class="hgroup__subheading"><?php esc_html_e( 'Check if your details are correct, and change them if necessary', 'racketmanager' ); ?></p>
 											<?php
@@ -146,13 +158,13 @@ if ( ! empty( $player->entry ) ) {
 													<div class="list__item">
 														<dt class="list__label"><?php esc_html_e( 'Phone', 'racketmanager' ); ?></dt>
 														<dd class="list__value">
-															<input type="tel" class="form-control" id="contactno" name="contactno" value="<?php echo esc_html( $player->contactno ); ?>" <?php echo $tournament->is_open ? null : 'disabled'; ?> />
+															<input type="tel" class="form-control" id="contactno" name="contactno" value="<?php echo esc_html( $player->contactno ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 														</dd>
 													</div>
 													<div class="list__item">
 														<dt class="list__label"><?php esc_html_e( 'Email', 'racketmanager' ); ?></dt>
 														<dd class="list__value">
-															<input type="email" class="form-control" id="contactemail" name="contactemail" value="<?php echo esc_html( $player->user_email ); ?>" <?php echo $tournament->is_open ? null : 'disabled'; ?> />
+															<input type="email" class="form-control" id="contactemail" name="contactemail" value="<?php echo esc_html( $player->user_email ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 														</dd>
 													</div>
 												</dl>
@@ -181,7 +193,7 @@ if ( ! empty( $player->entry ) ) {
 																	break;
 																default:
 																	?>
-																	<select class="form-select" size="1" name="affiliatedclub" id="affiliatedclub" <?php echo $tournament->is_open ? null : 'disabled'; ?>>
+																	<select class="form-select" size="1" name="affiliatedclub" id="affiliatedclub" <?php echo $changes_allowed ? null : 'disabled'; ?>>
 																		<option value="0"><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>
 																		<?php
 																		foreach ( $club_players as $club_player ) {
@@ -201,7 +213,7 @@ if ( ! empty( $player->entry ) ) {
 													<div class="list__item">
 														<dt class="list__label"><?php esc_html_e( 'LTA Number', 'racketmanager' ); ?></dt>
 														<dd class="list__value">
-															<input type="number" class="form-control" id="btm" name="btm" value="<?php echo esc_html( $player->btm ); ?>" <?php echo $tournament->is_open ? null : 'disabled'; ?> />
+															<input type="number" class="form-control" id="btm" name="btm" value="<?php echo esc_html( $player->btm ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 														</dd>
 													</div>
 												</dl>
@@ -238,7 +250,7 @@ if ( ! empty( $player->entry ) ) {
 											}
 											?>
 											<div class="form-check form-check-lg">
-												<input class="form-check-input " id="event-<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" type="checkbox" value=<?php echo esc_html( $event->id ); ?> aria-controls="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $entered ? 'checked' : ''; ?> <?php echo $tournament->is_open ? null : 'disabled'; ?>>
+												<input class="form-check-input " id="event-<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" type="checkbox" value=<?php echo esc_html( $event->id ); ?> aria-controls="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $entered ? 'checked' : ''; ?> <?php echo $changes_allowed ? null : 'disabled'; ?>>
 												<label class="form-check-label" for="event-<?php echo esc_html( $event->id ); ?>">
 													<?php echo esc_html( $event->name ); ?>
 												</label>
@@ -261,7 +273,7 @@ if ( ! empty( $player->entry ) ) {
 												?>
 												<div class="form-checkboxes__conditional <?php echo $partner_id ? '' : 'form-checkboxes__conditional--hidden'; ?>" id="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $partner_id ? 'aria-expanded="true"' : ''; ?>>
 													<label class="form-label" for="partner-<?php echo esc_html( $event->id ); ?>"><?php esc_html_e( 'Partner', 'racketmanager' ); ?></label>
-													<select class="form-select" size="1" name="partner[<?php echo esc_html( $event->id ); ?>]" id="partner-<?php echo esc_html( $event->id ); ?>" <?php echo $tournament->is_open ? null : 'disabled'; ?>>
+													<select class="form-select" size="1" name="partner[<?php echo esc_html( $event->id ); ?>]" id="partner-<?php echo esc_html( $event->id ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?>>
 														<option value="0"><?php esc_html_e( 'Select partner', 'racketmanager' ); ?></option>
 														<?php
 														foreach ( $partner_list as $partner ) {
@@ -289,7 +301,7 @@ if ( ! empty( $player->entry ) ) {
 									</div>
 									<div class="col-12 col-md-8">
 										<div class="form-floating">
-											<textarea class="form-control" placeholder="<?php echo esc_attr_e( 'Additional information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails" <?php echo $tournament->is_open ? null : 'disabled'; ?>></textarea>
+											<textarea class="form-control" placeholder="<?php echo esc_attr_e( 'Additional information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails" <?php echo $changes_allowed ? null : 'disabled'; ?>></textarea>
 											<label for="commentDetails"><?php esc_attr_e( 'Additional information', 'racketmanager' ); ?></label>
 										</div>
 									</div>
@@ -305,12 +317,12 @@ if ( ! empty( $player->entry ) ) {
 									printf( __( 'I agree to abide by %s.', 'racketmanager' ), $rules_link ); //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 									?>
 								</label>
-								<input class="form-check-input switch" id="acceptance" name="acceptance" type="checkbox" role="switch" aria-checked="false" <?php echo $tournament->is_open ? null : 'disabled'; ?>>
+								<input class="form-check-input switch" id="acceptance" name="acceptance" type="checkbox" role="switch" aria-checked="false" <?php echo $changes_allowed ? null : 'disabled'; ?>>
 							</div>
 						</div>
 					</div>
 					<?php
-					if ( ! $tournament->is_open ) {
+					if ( $changes_allowed ) {
 						?>
 						<div class="individual-entry__footer">
 							<div class="updateResponse mb-3" id="entryResponse" name="entryResponse"></div>

@@ -923,6 +923,12 @@ class RacketManager {
 			'index.php?pagename=competition%2Fentry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]&competition_type=league',
 			'top'
 		);
+		// tournament entry form - name - player.
+		add_rewrite_rule(
+			'tournament/entry-form/(.+?)/player/(.+?)/?$',
+			'index.php?pagename=competition%2Fentry&competition_name=$matches[1]&player_id=$matches[2]&competition_type=tournament',
+			'top'
+		);
 		// tournament entry form - name - club.
 		add_rewrite_rule(
 			'tournament/entry-form/(.+?)/(.+?)/?$',

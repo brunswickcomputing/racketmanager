@@ -84,7 +84,7 @@ final class Racketmanager_Entry_Form_Validator extends Racketmanager_Validator {
 	public function teams( $teams, $field_ref, $field_name ) {
 		if ( empty( $teams ) ) {
 			$this->error                          = true;
-			$this->error_field[ $this->error_id ] = 'competition-' . $field_ref;
+			$this->error_field[ $this->error_id ] = 'event-' . $field_ref;
 			/* translators: %s: competition name */
 			$this->error_msg[ $this->error_id ] = sprintf( __( 'No teams selected for %s', 'racketmanager' ), $field_name );
 			++$this->error_id;

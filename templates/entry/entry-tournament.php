@@ -159,12 +159,14 @@ if ( ! empty( $player->entry ) ) {
 														<dt class="list__label"><?php esc_html_e( 'Phone', 'racketmanager' ); ?></dt>
 														<dd class="list__value">
 															<input type="tel" class="form-control" id="contactno" name="contactno" value="<?php echo esc_html( $player->contactno ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
+															<div id="contactno-feedback" class="invalid-feedback"></div>
 														</dd>
 													</div>
 													<div class="list__item">
 														<dt class="list__label"><?php esc_html_e( 'Email', 'racketmanager' ); ?></dt>
 														<dd class="list__value">
 															<input type="email" class="form-control" id="contactemail" name="contactemail" value="<?php echo esc_html( $player->user_email ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
+															<div id="contactemail-feedback" class="invalid-feedback"></div>
 														</dd>
 													</div>
 												</dl>
@@ -204,6 +206,7 @@ if ( ! empty( $player->entry ) ) {
 																		}
 																		?>
 																	</select>
+																	<div id="affiliatedclub-feedback" class="invalid-feedback"></div>
 																	<?php
 																	break;
 															}
@@ -214,6 +217,7 @@ if ( ! empty( $player->entry ) ) {
 														<dt class="list__label"><?php esc_html_e( 'LTA Number', 'racketmanager' ); ?></dt>
 														<dd class="list__value">
 															<input type="number" class="form-control" id="btm" name="btm" value="<?php echo esc_html( $player->btm ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
+															<div id="btm-feedback" class="invalid-feedback"></div>
 														</dd>
 													</div>
 												</dl>
@@ -224,7 +228,7 @@ if ( ! empty( $player->entry ) ) {
 							</li>
 							<li id="liEventDetails" class="individual-entry__panel">
 								<div id="entryDetails">
-									<div class="hgroup">
+									<div class="hgroup" id="event">
 										<h4 class="hgroup__heading"><?php esc_html_e( 'Events', 'racketmanager' ); ?></h4>
 										<p class="hgroup__subheading">
 											<?php
@@ -237,6 +241,8 @@ if ( ! empty( $player->entry ) ) {
 											echo esc_html( sprintf( __( 'Events are filtered by your gender (%1$s) and playing age (%2$s)', 'racketmanager' ), $gender, $age ) );
 											?>
 										</p>
+									</div>
+									<div id="event-feedback" class="invalid-feedback"></div>
 									</div>
 									<div class="form-checkboxes">
 										<?php
@@ -254,6 +260,7 @@ if ( ! empty( $player->entry ) ) {
 												<label class="form-check-label" for="event-<?php echo esc_html( $event->id ); ?>">
 													<?php echo esc_html( $event->name ); ?>
 												</label>
+												<div id="event-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
 											</div>
 											<?php
 											if ( substr( $event->type, 1, 1 ) === 'D' ) {
@@ -283,6 +290,7 @@ if ( ! empty( $player->entry ) ) {
 														}
 														?>
 													</select>
+													<div id="partner-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
 												</div>
 												<?php
 											}
@@ -303,6 +311,7 @@ if ( ! empty( $player->entry ) ) {
 										<div class="form-floating">
 											<textarea class="form-control" placeholder="<?php echo esc_attr_e( 'Additional information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails" <?php echo $changes_allowed ? null : 'disabled'; ?>></textarea>
 											<label for="commentDetails"><?php esc_attr_e( 'Additional information', 'racketmanager' ); ?></label>
+											<div id="commentDetails-feedback" class="invalid-feedback"></div>
 										</div>
 									</div>
 								</div>
@@ -318,6 +327,7 @@ if ( ! empty( $player->entry ) ) {
 									?>
 								</label>
 								<input class="form-check-input switch" id="acceptance" name="acceptance" type="checkbox" role="switch" aria-checked="false" <?php echo $changes_allowed ? null : 'disabled'; ?>>
+								<div id="acceptance-feedback" class="invalid-feedback"></div>
 							</div>
 						</div>
 					</div>
@@ -325,7 +335,6 @@ if ( ! empty( $player->entry ) ) {
 					if ( $changes_allowed ) {
 						?>
 						<div class="individual-entry__footer">
-							<div class="updateResponse mb-3" id="entryResponse" name="entryResponse"></div>
 							<div class="alert_rm" id="entryAlert" style="display:none;">
 								<div class="alert__body">
 									<div class="alert__body-inner" id="entryAlertResponse">

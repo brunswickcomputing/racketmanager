@@ -669,12 +669,11 @@ div.tm-team-content div.team {
 }
 
 .form-checkboxes__conditional {
-	margin-bottom: 15px;
-		margin-left: 18px;
-		padding-left: 33px;
-		border-left: 4px solid #b1b4b6;
+	border-left: 4px solid #b1b4b6;
+	margin-bottom: 1rem;
+	margin-left: 1rem;
+	padding-left: 2rem;
 }
-
 .form-checkboxes__conditional--hidden {
 	display: none
 }
@@ -694,6 +693,9 @@ div.tm-team-content div.team {
 }
 .form-check.form-check-lg {
 	font-size: 2rem;
+}
+.form-check-lg .is-invalid~.invalid-feedback {
+	font-size: 0.875rem;
 }
 input[type="text"]:disabled,
 input[type="email"]:disabled,

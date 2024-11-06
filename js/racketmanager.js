@@ -903,15 +903,16 @@ Racketmanager.entryRequest = function (event, type) {
 		},
 		error: function (response) {
 			if (response.responseJSON) {
-				let $message = response.responseJSON.data[0];
-				for (let errorMsg of response.responseJSON.data[1]) {
-					$message += '<br />' + errorMsg;
-				}
-				for (let errorField of response.responseJSON.data[2]) {
-					let $formfield = '#'.concat(errorField);
+				let message = response.responseJSON.data[0];
+				let errorMsg = response.responseJSON.data[1];
+				let errorField = response.responseJSON.data[2];
+				for (let i = 0; i < errorField.length; i++) {
+					let $formfield = '#' + errorField[i];
 					jQuery($formfield).addClass('is-invalid');
+					$formfield = $formfield + '-feedback';
+					jQuery($formfield).html(errorMsg[i]);
 				}
-				jQuery(alertTextField).html($message);
+				jQuery(alertTextField).html(message);
 			} else {
 				jQuery(alertTextField).text(response.statusText);
 			}

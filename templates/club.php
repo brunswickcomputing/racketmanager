@@ -44,7 +44,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 										<input type="text" class="form-control" id="matchSecretary" name="matchSecretary" value="<?php echo esc_html( $club->match_secretary_name ); ?>" <?php disabled( $user_can_update_club, false ); ?> />
 										<label for="matchSecretary"><?php esc_html_e( 'Name', 'racketmanager' ); ?></label>
 										<input type="hidden" id="matchSecretaryId1 name="matchSecretaryId" value="<?php echo esc_html( $club->matchsecretary ); ?>" />
-										<div id="matchSecretary-feedback" class="invalid-feedback"></div>
+										<div id="matchSecretary-feedback" class="invalid-tooltip"></div>
 									</div>
 								</div>
 							</div>
@@ -59,7 +59,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 											<div class="form-floating mb-1">
 												<input type="email" class="form-control" id="matchSecretaryEmail" name="matchSecretaryEmail" value="<?php echo esc_html( $club->match_secretary_email ); ?>" <?php disabled( $user_can_update_club, false ); ?> />
 												<label for="matchSecretaryEmail"><?php esc_html_e( 'Email', 'racketmanager' ); ?></label>
-												<div id="matchSecretaryEmail-feedback" class="invalid-feedback"></div>
+												<div id="matchSecretaryEmail-feedback" class="invalid-tooltip"></div>
 											</div>
 										</div>
 										<?php
@@ -72,7 +72,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 											<div class="form-floating mb-1">
 												<input type="tel" class="form-control" id="matchSecretaryContactNo" name="matchSecretaryContactNo" value="<?php echo esc_html( $club->match_secretary_contact_no ); ?>" <?php disabled( $user_can_update_club, false ); ?> />
 												<label for="matchSecretaryContactNo"><?php esc_html_e( 'Telephone', 'racketmanager' ); ?></label>
-												<div id="matchSecretaryContactNo-feedback" class="invalid-feedback"></div>
+												<div id="matchSecretaryContactNo-feedback" class="invalid-tooltip"></div>
 											</div>
 										</div>
 										<?php
@@ -102,7 +102,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 									<div class="form-floating mb-1">
 										<input type="tel" class="form-control" id="clubContactNo" name="clubContactNo" value="<?php echo esc_html( $club->contactno ); ?>" <?php disabled( $user_can_update_club, false ); ?> />
 										<label for="clubContactNo"><?php esc_html_e( 'Telephone', 'racketmanager' ); ?></label>
-										<div id="clubContactNo-feedback" class="invalid-feedback"></div>
+										<div id="clubContactNo-feedback" class="invalid-tooltip"></div>
 									</div>
 									<?php
 								}
@@ -115,7 +115,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 									<div class="form-floating mb-1">
 										<input type="url" class="form-control" id="website" name="website" value="<?php echo esc_html( $club->website ); ?>" <?php disabled( $user_can_update_club, false ); ?> />
 										<label for="website"><?php esc_html_e( 'Website', 'racketmanager' ); ?></label>
-										<div id="website-feedback" class="invalid-feedback"></div>
+										<div id="website-feedback" class="invalid-tooltip"></div>
 									</div>
 									<?php
 								}
@@ -130,7 +130,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 									<div class="form-floating mb-1">
 										<input type="text" class="form-control" id="address" name="address" autocomplete="off" placeholder="<?php esc_html_e( 'Club address', 'racketmanager' ); ?>"  <?php disabled( $user_can_update_club, false ); ?> value="<?php echo esc_html( $club->address ); ?>" />
 										<label for="address"><?php esc_html_e( 'Address', 'racketmanager' ); ?></label>
-										<div id="address-feedback" class="invalid-feedback"></div>
+										<div id="address-feedback" class="invalid-tooltip"></div>
 									</div>
 									<?php
 								}
@@ -148,7 +148,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 									<div class="form-floating mb-1">
 										<input type="number" class="form-control" id="founded" name="founded" value="<?php echo esc_html( $club->founded ); ?>" <?php disabled( $user_can_update_club, false ); ?> />
 										<label for="founded"><?php esc_html_e( 'Founded', 'racketmanager' ); ?></label>
-										<div id="founded-feedback" class="invalid-feedback"></div>
+										<div id="founded-feedback" class="invalid-tooltip"></div>
 									</div>
 									<?php
 								}
@@ -161,7 +161,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 									<div class="form-floating mb-1">
 										<input type="text" class="form-control" id="facilities" name="facilities" value="<?php echo esc_html( $club->facilities ); ?>" <?php disabled( $user_can_update_club, false ); ?> />
 										<label for="facilities"><?php esc_html_e( 'Facilities', 'racketmanager' ); ?></label>
-										<div id="facilities-feedback" class="invalid-feedback"></div>
+										<div id="facilities-feedback" class="invalid-tooltip"></div>
 									</div>
 									<?php
 								}
@@ -170,7 +170,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 						</div>
 					</div>
 					<div id="club"></div>
-					<div id="club-feedback" class="invalid-feedback"></div>
+					<div id="club-feedback" class="invalid-tooltip"></div>
 					<?php
 					if ( $user_can_update_club ) {
 						?>

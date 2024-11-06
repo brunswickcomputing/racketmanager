@@ -808,11 +808,10 @@ Racketmanager.updateClub = function (link) {
 				if (response.responseJSON.data[1]) {
 					let $errorMsg = response.responseJSON.data[1];
 					let $errorField = response.responseJSON.data[2];
-					jQuery(notifyField).addClass('message-error');
 					for (let $i = 0; $i < $errorField.length; $i++) {
 						let $formfield = "#" + $errorField[$i];
 						jQuery($formfield).addClass('is-invalid');
-						$formfield = $formfield + '-feedback';
+						$formfield = $formfield + '-tooltip';
 						jQuery($formfield).html($errorMsg[$i]);
 					}
 				}

@@ -805,8 +805,11 @@ class RacketManager_Shortcodes {
 				if ( $player_id ) {
 					$player_id = un_seo_url( $player_id );
 					$player    = get_player( $player_id, 'name' );
-				}
-				if ( ! $player ) {
+					if ( ! $player ) {
+						$valid = false;
+						$msg   = esc_html_e( 'Player not found', 'racketmanager' );
+					}
+				} else {
 					$player = get_player( wp_get_current_user()->ID );
 				}
 			} else {

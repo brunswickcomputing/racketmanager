@@ -4067,7 +4067,9 @@ h4.hgroup__heading {
 .list--flex>.list__item:first-child {
 	padding-top: 0;
 }
-
+.list--flex .list__item {
+	align-items: center;
+}
 .list__label {
 	color: #707585;
 	display: block;
@@ -4686,7 +4688,9 @@ a:hover .nav-link__value, a:focus .nav-link__value {
 ol.list {
 	padding-left: 0;
 }
-
+dl.list {
+	margin-bottom: 0;
+}
 .list--grid {
 	display: flex;
 	flex-wrap: wrap;

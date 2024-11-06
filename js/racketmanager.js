@@ -876,18 +876,19 @@ Racketmanager.updatePlayer = function (link) {
 	});
 	jQuery(submitButton).show();
 };
-
 Racketmanager.entryRequest = function (event, type) {
 	event.preventDefault();
 	let $form = jQuery('#form-entry').serialize();
 	let action = "&action=racketmanager_" + type + "_entry";
 	$form += action;
-	let notifyField = '#entryResponse';
-	jQuery(notifyField).val("");
 	jQuery("#entrySubmit").hide();
+	let notifyField = '#entryAlert';
+	jQuery(notifyField).removeClass('alert--success alert--warning alert--danger');
+	jQuery(notifyField).hide();
+	let alertTextField = '#entryAlertResponse';
+	jQuery(alertTextField).html("");
 	jQuery(".is-invalid").removeClass("is-invalid");
-	jQuery(notifyField).removeClass('message-error');
-	jQuery(notifyField).removeClass('message-success');
+	jQuery(".invalidFeedback").val("");
 
 	jQuery.ajax({
 		url: ajax_var.url,
@@ -895,10 +896,8 @@ Racketmanager.entryRequest = function (event, type) {
 		type: "POST",
 		data: $form,
 		success: function (response) {
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-success');
-			jQuery(notifyField).html(response.data);
-			jQuery(notifyField).delay(10000).fadeOut('slow');
+			jQuery(notifyField).addClass('alert--success');
+			jQuery(alertTextField).html(response.data);
 		},
 		error: function (response) {
 			if (response.responseJSON) {
@@ -910,14 +909,14 @@ Racketmanager.entryRequest = function (event, type) {
 					let $formfield = '#'.concat(errorField);
 					jQuery($formfield).addClass('is-invalid');
 				}
-				jQuery(notifyField).html($message);
+				jQuery(alertTextField).html($message);
 			} else {
-				jQuery(notifyField).text(response.statusText);
+				jQuery(alertTextField).text(response.statusText);
 			}
-			jQuery(notifyField).addClass('message-error');
-			jQuery(notifyField).show();
+			jQuery(notifyField).addClass('alert--danger');
 		},
 		complete: function () {
+			jQuery(notifyField).show();
 			jQuery("#acceptance").prop("checked", false);
 		}
 	});

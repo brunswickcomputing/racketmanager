@@ -78,7 +78,7 @@ if ( ! empty( $player->entry ) ) {
 							$alert_msg[] = __( 'You can not make changes to a entry form for someone else.', 'racketmanager' );
 						}
 						?>
-						<div class="alert_rm mt-3 alert--<?php echo esc_attr( $alert_class ); ?>" id="loginAlert">
+						<div class="alert_rm mt-3 alert--<?php echo esc_attr( $alert_class ); ?>">
 							<div class="alert__body">
 								<?php
 								foreach ( $alert_msg as $msg ) {
@@ -326,6 +326,12 @@ if ( ! empty( $player->entry ) ) {
 						?>
 						<div class="individual-entry__footer">
 							<div class="updateResponse mb-3" id="entryResponse" name="entryResponse"></div>
+							<div class="alert_rm" id="entryAlert" style="display:none;">
+								<div class="alert__body">
+									<div class="alert__body-inner" id="entryAlertResponse">
+									</div>
+								</div>
+							</div>
 							<div class="btn__group">
 								<div class="individual-entry__submit">
 									<button type="submit" class="btn btn-primary" id="entrySubmit" name="entrySubmit" onclick="Racketmanager.entryRequest(event, 'tournament')"><?php esc_html_e( 'Enter', 'racketmanager' ); ?></button>

@@ -779,15 +779,17 @@ class RacketManager_Shortcodes {
 	 * @return the content
 	 */
 	public function show_competition_entry( $atts ) {
-		$args     = shortcode_atts(
+		$args      = shortcode_atts(
 			array(
-				'template' => '',
+				'player_id' => false,
+				'template'  => '',
 			),
 			$atts
 		);
-		$template = $args['template'];
-		$valid    = true;
-		$type     = get_query_var( 'competition_type' );
+		$player_id = $args['player_id'];
+		$template  = $args['template'];
+		$valid     = true;
+		$type      = get_query_var( 'competition_type' );
 		if ( ! $type ) {
 			$valid = false;
 			$msg   = esc_html_e( 'No competition type specified', 'racketmanager' );
@@ -797,7 +799,17 @@ class RacketManager_Shortcodes {
 			if ( ! $competition ) {
 				$valid = false;
 				$msg   = esc_html_e( 'No competition name specified', 'racketmanager' );
-			} elseif ( 'tournament' !== $type ) {
+			} elseif ( 'tournament' === $type ) {
+				$player    = null;
+				$player_id = get_query_var( 'player_id' );
+				if ( $player_id ) {
+					$player_id = un_seo_url( $player_id );
+					$player    = get_player( $player_id, 'name' );
+				}
+				if ( ! $player ) {
+					$player = get_player( wp_get_current_user()->ID );
+				}
+			} else {
 				$season = get_query_var( 'season' );
 				if ( ! $season ) {
 					$valid = false;
@@ -820,7 +832,7 @@ class RacketManager_Shortcodes {
 						$output = $this->show_cup_entry( $competition, $season, $club, $template );
 						break;
 					case 'tournament':
-						$output = $this->show_tournament_entry( $competition, $template );
+						$output = $this->show_tournament_entry( $competition, $player, $template );
 						break;
 					default:
 						$output = esc_html_e( 'Invalid competition type specified', 'racketmanager' );
@@ -1039,10 +1051,11 @@ class RacketManager_Shortcodes {
 	 * Function to display Tournament Entry Page
 	 *
 	 * @param string $tournament tournament name.
+	 * @param object $player player object.
 	 * @param string $template template name.
 	 * @return the content
 	 */
-	public function show_tournament_entry( $tournament, $template = null ) {
+	public function show_tournament_entry( $tournament, $player = null, $template = null ) {
 		global $racketmanager;
 		if ( $tournament ) {
 			$tournament = get_tournament( $tournament, 'name' );
@@ -1050,7 +1063,6 @@ class RacketManager_Shortcodes {
 		if ( ! $tournament ) {
 			return esc_html_e( 'Tournament not found', 'racketmanager' );
 		}
-		$player            = get_player( wp_get_current_user()->ID );
 		$player->firstname = get_user_meta( $player->ID, 'first_name', true );
 		$player->surname   = get_user_meta( $player->ID, 'last_name', true );
 		$player->contactno = get_user_meta( $player->ID, 'contactno', true );

@@ -249,39 +249,62 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	 * @param string $field_ref field reference.
 	 * @param string $field_name field name.
 	 * @param object $event event object.
+	 * @param string $season season name.
+	 * @param int    $player_id player id.
 	 * @return object $validation updated validation object.
 	 */
-	public function partner( $partner, $field_ref, $field_name, $event ) {
+	public function partner( $partner, $field_ref, $field_name, $event, $season, $player_id ) {
 		if ( empty( $partner ) ) {
 			$this->error                          = true;
 			$this->error_field[ $this->error_id ] = 'partner-' . $field_ref;
 			/* translators: %s: competition name */
 			$this->error_msg[ $this->error_id ] = sprintf( __( 'Partner not selected for %s', 'racketmanager' ), $field_name );
 			++$this->error_id;
-		} elseif ( ! empty( $event->age_limit ) && 'open' !== $event->age_limit ) {
-			$partner = get_player( $partner );
-			if ( empty( $partner->age ) ) {
+		} else {
+			$partner_found = false;
+			$partner_teams = $event->get_teams(
+				array(
+					'player' => $partner,
+					'season' => $season,
+				)
+			);
+			foreach ( $partner_teams as $partner_team ) {
+				if ( false === array_search( (string) $player_id, $partner_team->player_id, true ) ) {
+					$partner_found = true;
+				}
+			}
+			if ( $partner_found ) {
 				$this->error                          = true;
 				$this->error_field[ $this->error_id ] = 'partner-' . $field_ref;
-				/* translators: %s: competition name */
-				$this->error_msg[ $this->error_id ] = sprintf( __( 'Partner for %s has no age specified', 'racketmanager' ), $field_name );
+				/* translators: %s: event name */
+				$this->error_msg[ $this->error_id ] = sprintf( __( 'Partner for %s is playing', 'racketmanager' ), $field_name );
 				++$this->error_id;
-			} elseif ( $partner->age < $event->age_limit ) {
-				$entry_invalid = false;
-				if ( 'F' === $partner->gender && ! empty( $event->age_offset ) ) {
-					$age_limit = $event->age_limit - $event->age_offset;
-					if ( $partner->age < $age_limit ) {
-						$entry_invalid = true;
-					}
-				} else {
-					$entry_invalid = true;
-				}
-				if ( $entry_invalid ) {
+			}
+			if ( ! empty( $event->age_limit ) && 'open' !== $event->age_limit ) {
+				$partner = get_player( $partner );
+				if ( empty( $partner->age ) ) {
 					$this->error                          = true;
 					$this->error_field[ $this->error_id ] = 'partner-' . $field_ref;
 					/* translators: %s: competition name */
-					$this->error_msg[ $this->error_id ] = sprintf( __( 'Partner for %s is not eligibile due to age', 'racketmanager' ), $field_name );
+					$this->error_msg[ $this->error_id ] = sprintf( __( 'Partner for %s has no age specified', 'racketmanager' ), $field_name );
 					++$this->error_id;
+				} elseif ( $partner->age < $event->age_limit ) {
+					$entry_invalid = false;
+					if ( 'F' === $partner->gender && ! empty( $event->age_offset ) ) {
+						$age_limit = $event->age_limit - $event->age_offset;
+						if ( $partner->age < $age_limit ) {
+							$entry_invalid = true;
+						}
+					} else {
+						$entry_invalid = true;
+					}
+					if ( $entry_invalid ) {
+						$this->error                          = true;
+						$this->error_field[ $this->error_id ] = 'partner-' . $field_ref;
+						/* translators: %s: competition name */
+						$this->error_msg[ $this->error_id ] = sprintf( __( 'Partner for %s is not eligibile due to age', 'racketmanager' ), $field_name );
+						++$this->error_id;
+					}
 				}
 			}
 		}

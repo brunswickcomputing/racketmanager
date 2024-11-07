@@ -418,8 +418,14 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$btm           = isset( $_POST['btm'] ) ? intval( $_POST['btm'] ) : '';
 				$comments      = isset( $_POST['commentDetails'] ) ? sanitize_textarea_field( wp_unslash( $_POST['commentDetails'] ) ) : '';
 				// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-				$events   = isset( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : array();
-				$partners = isset( $_POST['partner'] ) ? wp_unslash( $_POST['partner'] ) : array();
+				$validator      = $validator->player( $player_id );
+				$validator      = $validator->telephone( $contactno );
+				$validator      = $validator->email( $contactemail, $player_id );
+				$validator      = $validator->btm( $btm, $player_id );
+				$affiliatedclub = isset( $_POST['affiliatedclub'] ) ? sanitize_text_field( wp_unslash( $_POST['affiliatedclub'] ) ) : '';
+				$validator      = $validator->club( $affiliatedclub );
+				$events         = isset( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : array();
+				$partners       = isset( $_POST['partner'] ) ? wp_unslash( $_POST['partner'] ) : array();
 				// phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				$validator = $validator->events_entry( $events );
 				foreach ( $events as $event ) {
@@ -428,18 +434,12 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						$partner_id = isset( $partners[ $event->id ] ) ? $partners[ $event->id ] : 0;
 						$field_ref  = $event->id;
 						$field_name = $event->name;
-						$validator  = $validator->partner( $partner_id, $field_ref, $field_name, $event );
+						$validator  = $validator->partner( $partner_id, $field_ref, $field_name, $event, $season, $player_id );
 					}
 				}
-				$validator      = $validator->player( $player_id );
-				$validator      = $validator->telephone( $contactno );
-				$validator      = $validator->email( $contactemail, $player_id );
-				$validator      = $validator->btm( $btm, $player_id );
-				$affiliatedclub = isset( $_POST['affiliatedclub'] ) ? sanitize_text_field( wp_unslash( $_POST['affiliatedclub'] ) ) : '';
-				$validator      = $validator->club( $affiliatedclub );
-				$acceptance     = isset( $_POST['acceptance'] ) ? sanitize_text_field( wp_unslash( $_POST['acceptance'] ) ) : '';
-				$validator      = $validator->entry_acceptance( $acceptance );
-				$validator      = $validator->tournament( $tournament_id );
+				$acceptance = isset( $_POST['acceptance'] ) ? sanitize_text_field( wp_unslash( $_POST['acceptance'] ) ) : '';
+				$validator  = $validator->entry_acceptance( $acceptance );
+				$validator  = $validator->tournament( $tournament_id );
 				if ( $tournament_id ) {
 					$tournament = get_tournament( $tournament_id );
 					$validator  = $validator->tournament_open( $tournament->closing_date );

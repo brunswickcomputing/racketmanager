@@ -1305,7 +1305,7 @@ class Racketmanager_Event {
 			'status'  => false,
 			'count'   => false,
 			'name'    => false,
-			'players' => false,
+			'player'  => false,
 		);
 		$args     = array_merge( $defaults, $args );
 		$offset   = $args['offset'];
@@ -1316,7 +1316,7 @@ class Racketmanager_Event {
 		$status   = $args['status'];
 		$count    = $args['count'];
 		$name     = $args['name'];
-		$players  = $args['players'];
+		$player   = $args['player'];
 
 		$search_terms   = array();
 		$search_terms[] = $wpdb->prepare( '`event_id` = %d', $this->id );
@@ -1335,7 +1335,9 @@ class Racketmanager_Event {
 		if ( $name ) {
 			$search_terms[] = $wpdb->prepare( 't2.`title` like %s', '%' . $name . '%' );
 		}
-
+		if ( $player ) {
+			$search_terms[] = $wpdb->prepare( "t2.`id` IN (SELECT `team_id` FROM {$wpdb->racketmanager_team_players} WHERE `player_id` = %d )", $player );
+		}
 		$search = '';
 		if ( ! empty( $search_terms ) ) {
 			$search  = ' AND ';
@@ -1412,16 +1414,13 @@ class Racketmanager_Event {
 			}
 			$event_team->title = $event_team->name;
 			if ( 'P' === $event_team->team_type && ! empty( $event_team->roster ) ) {
-				$p = 1;
-				foreach ( $event_team->roster as $player ) {
-					$teamplayer = get_player( $player );
-					if ( $teamplayer ) {
-						$event_team->player[ $p ] = $teamplayer->fullname;
-					} else {
-						$event_team->player[ $p ] = __( 'Unknown player', 'racketmanager' );
-					}
-					$event_team->player_id[ $p ] = $player;
-					++$p;
+				$team                = get_team( $event_team->team_id );
+				$event_team->players = $team->players;
+				$i                   = 1;
+				foreach ( $event_team->players as $player ) {
+					$event_team->player[ $i ]    = $player->fullname;
+					$event_team->player_id[ $i ] = $player->id;
+					++$i;
 				}
 			} elseif ( $event_team->club ) {
 				$event_team->player_count = $this->get_players(

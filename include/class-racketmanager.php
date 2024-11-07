@@ -2531,45 +2531,66 @@ class RacketManager {
 	 * @param array $args query arguments.
 	 * @return array
 	 */
-	public function get_all_players( $args ) {
+	public function get_all_players( $args = array() ) {
+		global $wpdb;
 		$defaults       = array(
-			'name' => false,
+			'active' => false,
+			'name'   => false,
 		);
 		$args           = array_merge( $defaults, (array) $args );
+		$active         = $args['active'];
 		$name           = $args['name'];
 		$orderby_string = 'display_name';
 		$order          = 'ASC';
-
-		$user_fields               = array( 'ID', 'display_name' );
-		$user_args                 = array();
-		$user_args['meta_key']     = 'gender'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-		$user_args['meta_value']   = 'M,F'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-		$user_args['meta_compare'] = 'IN';
-		$user_args['orderby']      = $orderby_string;
-		$user_args['order']        = $order;
-		if ( $name ) {
-			if ( is_numeric( $name ) ) {
-				$user_args['meta_key']   = 'btm'; //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				$user_args['meta_value'] = $name; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-			} else {
-				$user_args['search']         = '*' . $name . '*';
-				$user_args['search_columns'] = array( 'display_name' );
+		if ( $active ) {
+			$sql     = "SELECT DISTINCT `player_id` FROM {$wpdb->racketmanager_rubber_players} ORDER BY `player_id`";
+			$players = wp_cache_get( md5( $sql ), 'players' );
+			if ( ! $players ) {
+				$players = $wpdb->get_results(
+					$sql // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				);
+				if ( $players ) {
+					$i = 0;
+					foreach ( $players as $player ) {
+						$player        = get_player( $player->player_id );
+						$players[ $i ] = $player;
+						++$i;
+					}
+				}
+				wp_cache_set( md5( $sql ), $players, 'players' );
 			}
-		}
-		$user_search = wp_json_encode( $user_args );
-		$players     = wp_cache_get( md5( $user_search ), 'players' );
-		if ( ! $players ) {
-			$user_args['fields'] = $user_fields;
-			$players             = get_users( $user_args );
-			if ( $players ) {
-				$i = 0;
-				foreach ( $players as $player ) {
-					$player        = get_player( $player->ID );
-					$players[ $i ] = $player;
-					++$i;
+		} else {
+			$user_fields               = array( 'ID', 'display_name' );
+			$user_args                 = array();
+			$user_args['meta_key']     = 'gender'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			$user_args['meta_value']   = 'M,F'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			$user_args['meta_compare'] = 'IN';
+			$user_args['orderby']      = $orderby_string;
+			$user_args['order']        = $order;
+			if ( $name ) {
+				if ( is_numeric( $name ) ) {
+					$user_args['meta_key']   = 'btm'; //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+					$user_args['meta_value'] = $name; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				} else {
+					$user_args['search']         = '*' . $name . '*';
+					$user_args['search_columns'] = array( 'display_name' );
 				}
 			}
-			wp_cache_set( md5( $user_search ), $players, 'players' );
+			$user_search = wp_json_encode( $user_args );
+			$players     = wp_cache_get( md5( $user_search ), 'players' );
+			if ( ! $players ) {
+				$user_args['fields'] = $user_fields;
+				$players             = get_users( $user_args );
+				if ( $players ) {
+					$i = 0;
+					foreach ( $players as $player ) {
+						$player        = get_player( $player->ID );
+						$players[ $i ] = $player;
+						++$i;
+					}
+				}
+				wp_cache_set( md5( $user_search ), $players, 'players' );
+			}
 		}
 		return $players;
 	}

@@ -58,9 +58,10 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 					$tournament->date             = isset( $_POST['date'] ) ? sanitize_text_field( wp_unslash( $_POST['date'] ) ) : null;
 					$tournament->starttime        = isset( $_POST['starttime'] ) ? sanitize_text_field( wp_unslash( $_POST['starttime'] ) ) : null;
 					$tournament->competition_code = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
-					$success                      = new Racketmanager_Tournament( $tournament );
-					if ( $success ) {
+					$tournament                   = new Racketmanager_Tournament( $tournament );
+					if ( $tournament ) {
 						$this->set_competition_dates( $tournament );
+						$this->schedule_tournament_ratings( $tournament );
 					}
 					$this->printMessage();
 				}
@@ -780,6 +781,29 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 			$player = get_player( $player );
 			if ( $player ) {
 				$player->set_tournament_rating();
+			}
+		}
+	}
+	/**
+	 * Schedule tournament ratings setting function
+	 *
+	 * @param object $tournament tournament object.
+	 * @return void
+	 */
+	private function schedule_tournament_ratings( $tournament ) {
+		if ( $tournament ) {
+			$day            = intval( gmdate( 'd' ) );
+			$month          = intval( gmdate( 'm' ) );
+			$year           = intval( gmdate( 'Y' ) );
+			$hour           = intval( gmdate( 'H' ) );
+			$schedule_start = mktime( $hour, 0, 0, $month, $day, $year );
+			$schedule_name  = 'rm_calculate_tournament_ratings';
+			$schedule_args  = array( $tournament->id );
+			if ( ! wp_next_scheduled( $schedule_name, $schedule_args ) ) {
+				$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
+				if ( ! $success ) {
+					$this->set_message( __( 'Error scheduling tournament ratings calculation', 'racketmanager' ), true );
+				}
 			}
 		}
 	}

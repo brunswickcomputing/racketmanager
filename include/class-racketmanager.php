@@ -97,6 +97,7 @@ class RacketManager {
 		add_filter( 'email_change_email', array( &$this, 'racketmanager_change_email_address' ), 10, 3 );
 		add_filter( 'pre_get_document_title', array( &$this, 'set_page_title' ), 999, 1 );
 		add_action( 'rm_calculate_player_ratings', array( &$this, 'calculate_player_ratings' ), 1 );
+		add_action( 'rm_calculate_tournament_ratings', array( &$this, 'calculate_tournament_ratings' ), 1 );
 	}
 	/**
 	 * Set page title function
@@ -485,6 +486,28 @@ class RacketManager {
 				foreach ( $players as $player ) {
 					$player = get_player( $player->ID );
 					$player->set_team_rating();
+				}
+			}
+		}
+	}
+	/**
+	 * Calculate tournament ratings
+	 *
+	 * @param int $tournament_id tournament id.
+	 * @return void
+	 */
+	public function calculate_tournament_ratings( $tournament_id ) {
+		if ( $tournament_id ) {
+			$tournament = get_tournament( $tournament_id );
+			if ( $tournament ) {
+				$players = $this->get_tournament_entries();
+				foreach ( $players as $player ) {
+					if ( isset( $player->id ) ) {
+						$player = get_player( $player->id );
+						if ( $player ) {
+							$player->set_tournament_rating();
+						}
+					}
 				}
 			}
 		}
@@ -3238,5 +3261,42 @@ class RacketManager {
 			'email'
 		);
 		wp_mail( $email_to, $email_subject, $email_message, $headers );
+	}
+	/**
+	 * Get list of players from tournament entries
+	 *
+	 * @param array $args query arguments.
+	 * @return array
+	 */
+	public function get_tournament_entries( $args = array() ) {
+		global $wpdb;
+		$defaults       = array(
+			'tournament_id' => false,
+		);
+		$args           = array_merge( $defaults, (array) $args );
+		$tournament_id  = $args['tournament_id'];
+		$orderby_string = 'player_id';
+		$order          = 'ASC';
+		$sql            = "SELECT DISTINCT `player_id` FROM {$wpdb->racketmanager_tournament_entries}";
+		if ( $tournament_id ) {
+			$sql .= ' WHERE `tournament_id` = ' . intval( $tournament_id );
+		}
+		$sql    .= ' ORDER BY ' . $orderby_string . ' ' . $order;
+		$players = wp_cache_get( md5( $sql ), 'players' );
+		if ( ! $players ) {
+			$players = $wpdb->get_results(
+				$sql // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			);
+			if ( $players ) {
+				$i = 0;
+				foreach ( $players as $player ) {
+					$player        = get_player( $player->player_id );
+					$players[ $i ] = $player;
+					++$i;
+				}
+			}
+			wp_cache_set( md5( $sql ), $players, 'players' );
+		}
+		return $players;
 	}
 }

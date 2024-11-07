@@ -5812,3 +5812,14 @@ svg.media__img-element--icon.winner, svg.media__img-element--icon.runner-up {
 	background-color: transparent;
 	color: #fff;
 }
+.individual-entry__body .tag.tag-pair {
+	border-color: #2a2c32;
+}
+.individual-entry__body .tag-pair__title {
+	background-color: #2a2c32;
+	color: #FFF;
+}
+.individual-entry__body .tag-pair__value {
+	background-color: #fff;
+	color: #2a2c32;
+}

@@ -88,14 +88,25 @@ class Racketmanager_Validator {
 	 * Validate email
 	 *
 	 * @param string $email email address.
+	 * @param int    $player_id player id.
 	 * @return object $validation updated validation object.
 	 */
-	public function email( $email ) {
+	public function email( $email, $player_id ) {
 		if ( empty( $email ) ) {
 			$this->error                          = true;
 			$this->error_field[ $this->error_id ] = 'contactemail';
 			$this->error_msg[ $this->error_id ]   = __( 'Email address is required', 'racketmanager' );
 			++$this->error_id;
+		} else {
+			$player = get_player( $email, 'email' );
+			if ( $player ) {
+				if ( intval( $player_id ) !== intval( $player->ID ) ) {
+					$this->error                          = true;
+					$this->error_field[ $this->error_id ] = 'contactemail';
+					$this->error_msg[ $this->error_id ]   = __( 'Email address already used', 'racketmanager' );
+					++$this->error_id;
+				}
+			}
 		}
 		return $this;
 	}
@@ -103,14 +114,25 @@ class Racketmanager_Validator {
 	 * Validate btm
 	 *
 	 * @param int $btm lta tennis number.
+	 * @param int $player_id player id.
 	 * @return object $validation updated validation object.
 	 */
-	public function btm( $btm ) {
+	public function btm( $btm, $player_id ) {
 		if ( empty( $btm ) ) {
 			$this->error                          = true;
 			$this->error_field[ $this->error_id ] = 'btm';
 			$this->error_msg[ $this->error_id ]   = __( 'LTA Tennis Number is required', 'racketmanager' );
 			++$this->error_id;
+		} else {
+			$player = get_player( $btm, 'btm' );
+			if ( $player ) {
+				if ( intval( $player_id ) !== intval( $player->ID ) ) {
+					$this->error                          = true;
+					$this->error_field[ $this->error_id ] = 'btm';
+					$this->error_msg[ $this->error_id ]   = __( 'LTA Tennis Number already used', 'racketmanager' );
+					++$this->error_id;
+				}
+			}
 		}
 		return $this;
 	}

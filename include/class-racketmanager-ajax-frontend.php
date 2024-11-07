@@ -433,8 +433,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				}
 				$validator      = $validator->player( $player_id );
 				$validator      = $validator->telephone( $contactno );
-				$validator      = $validator->email( $contactemail );
-				$validator      = $validator->btm( $btm );
+				$validator      = $validator->email( $contactemail, $player_id );
+				$validator      = $validator->btm( $btm, $player_id );
 				$affiliatedclub = isset( $_POST['affiliatedclub'] ) ? sanitize_text_field( wp_unslash( $_POST['affiliatedclub'] ) ) : '';
 				$validator      = $validator->club( $affiliatedclub );
 				$acceptance     = isset( $_POST['acceptance'] ) ? sanitize_text_field( wp_unslash( $_POST['acceptance'] ) ) : '';

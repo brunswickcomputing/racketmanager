@@ -403,7 +403,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 
 		$return    = array();
 		$msg       = '';
-		$validator = new Racketmanager_Entry_Form_Validator();
+		$validator = new Racketmanager_Validator_Entry_Form();
 		//phpcs:disable WordPress.Security.NonceVerification.Missing
 		$validator = $validator->nonce( 'tournament-entry' );
 		if ( ! $validator->error ) {
@@ -617,7 +617,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	public function cup_entry_request() {
 		$return    = array();
 		$msg       = '';
-		$validator = new Racketmanager_Entry_Form_Validator();
+		$validator = new Racketmanager_Validator_Entry_Form();
 
 		//phpcs:disable WordPress.Security.NonceVerification.Missing
 		$validator = $validator->nonce( 'cup-entry' );
@@ -712,7 +712,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	public function league_entry_request() {
 		$return        = array();
 		$msg           = '';
-		$validator     = new Racketmanager_Entry_Form_Validator();
+		$validator     = new Racketmanager_Validator_Entry_Form();
 		$courts_needed = array();
 
 		check_admin_referer( 'league-entry' );

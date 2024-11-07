@@ -14,7 +14,7 @@ use DateTime;
 /**
  * Class to implement the Entry form Validator object
  */
-final class Racketmanager_Entry_Form_Validator extends Racketmanager_Validator {
+final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	/**
 	 * Validate nonce
 	 *

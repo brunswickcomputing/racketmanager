@@ -5470,21 +5470,13 @@ class RacketManager_Admin extends RacketManager {
 		$schedule_start = mktime( 12, 0, 0, $month, $day, $year );
 		$interval       = 'weekly';
 		$schedule_name  = 'rm_calculate_player_ratings';
-		$clubs          = $this->get_clubs(
-			array(
-				'type' => 'affiliated',
-			)
-		);
-		foreach ( $clubs as $club ) {
-			$schedule_args = array( $club->id );
-			if ( ! wp_next_scheduled( $schedule_name, $schedule_args ) ) {
-				$success = wp_schedule_event( $schedule_start, $interval, $schedule_name, $schedule_args );
-				if ( $success ) {
-					$this->set_message( __( 'Player ratings calculation scheduled', 'racketmanager' ) );
-				} else {
-					/* translators: %s: club shortcode */
-					$this->set_message( sprintf( __( 'Error scheduling player ratings calculation for %s', 'racketmanager' ), $club->shortcode ), true );
-				}
+		$schedule_args  = array();
+		if ( ! wp_next_scheduled( $schedule_name, $schedule_args ) ) {
+			$success = wp_schedule_event( $schedule_start, $interval, $schedule_name, $schedule_args );
+			if ( $success ) {
+				$this->set_message( __( 'Player ratings calculation scheduled', 'racketmanager' ) );
+			} else {
+				$this->set_message( __( 'Error scheduling player ratings calculation', 'racketmanager' ), true );
 			}
 		}
 	}

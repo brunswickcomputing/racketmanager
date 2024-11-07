@@ -110,28 +110,50 @@ if ( ! empty( $player->entry ) ) {
 									</div>
 									<div class="media__content">
 										<h4 class="media__title"><?php echo esc_html( $player->display_name ); ?></h4>
-										<span class="media__subheading">
-											<?php
-											switch ( $player->gender ) {
-												case 'M':
-													$gender = __( 'Male', 'racketmanager' );
-													break;
-												case 'F':
-													$gender = __( 'Female', 'racketmanager' );
-													break;
-												default:
-													$gender = '';
-											}
-											?>
-											<span><?php echo esc_html( $gender ); ?></span>
-											<?php
-											if ( ! empty( $player->age ) ) {
-												?>
-												<span>, <?php echo esc_html( $player->age ); ?></span>
+										<div class="media__content-subinfo">
+											<span class="media__subheading">
 												<?php
-											}
-											?>
-										</span>
+												switch ( $player->gender ) {
+													case 'M':
+														$gender = __( 'Male', 'racketmanager' );
+														break;
+													case 'F':
+														$gender = __( 'Female', 'racketmanager' );
+														break;
+													default:
+														$gender = '';
+												}
+												?>
+												<ul class="list list--inline">
+													<li class="list__item"><span><?php echo esc_html( $gender ); ?></span></li>
+													<?php
+													if ( ! empty( $player->age ) ) {
+														?>
+														<li class="list__item"><span><?php echo esc_html( $player->age ); ?></span></li>
+														<?php
+													}
+													?>
+												</ul>
+											</span>
+										</div>
+										<div class="media__content-subinfo">
+											<ul class="list list--inline">
+												<?php
+												$rating      = $player->rating;
+												$match_types = Racketmanager_Util::get_match_types();
+												foreach ( $match_types as $match_type => $description ) {
+													?>
+													<li class="list__item" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<?php /* translators: %s: rating type*/ printf( esc_html__( 'L&WLTA Tennis Rating for %s', 'racketmanager' ), esc_html( $description ) ); ?>">
+														<span class="tag tag-pair" >
+															<span class="tag-pair__title"><?php echo esc_html( $description ); ?></span>
+															<span class="tag-pair__value"><?php echo esc_html( $rating[ $match_type ] ); ?></span>
+														</span>
+													</li>
+													<?php
+												}
+												?>
+											</ul>
+										</div>
 									</div>
 								</div>
 							</div>

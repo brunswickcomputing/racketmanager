@@ -479,6 +479,14 @@ class RacketManager {
 					$player->set_team_rating();
 				}
 			}
+		} else {
+			$players = $this->get_all_players( array( 'active' => true ) );
+			if ( $players ) {
+				foreach ( $players as $player ) {
+					$player = get_player( $player->ID );
+					$player->set_team_rating();
+				}
+			}
 		}
 	}
 	/**

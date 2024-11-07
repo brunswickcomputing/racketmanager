@@ -878,10 +878,6 @@ Racketmanager.updatePlayer = function (link) {
 };
 Racketmanager.entryRequest = function (event, type) {
 	event.preventDefault();
-	let $form = jQuery('#form-entry').serialize();
-	let action = "&action=racketmanager_" + type + "_entry";
-	$form += action;
-	jQuery("#entrySubmit").hide();
 	let notifyField = '#entryAlert';
 	jQuery(notifyField).removeClass('alert--success alert--warning alert--danger');
 	jQuery(notifyField).hide();
@@ -890,6 +886,10 @@ Racketmanager.entryRequest = function (event, type) {
 	jQuery(".is-invalid").removeClass("is-invalid");
 	jQuery(".invalid-feedback").val("");
 	jQuery(".invalid-tooltip").val("");
+	jQuery("#entrySubmit").hide();
+	let $form = jQuery('#form-entry').serialize();
+	let action = "&action=racketmanager_" + type + "_entry";
+	$form += action;
 
 	jQuery.ajax({
 		url: ajax_var.url,

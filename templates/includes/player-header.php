@@ -15,7 +15,7 @@ if ( empty( $is_page_header ) ) {
 	$header_level   = 1;
 }
 ?>
-	<div class="page-subhead">
+	<div class="page-subhead player-header">
 		<div class="media">
 			<div class="media__wrapper">
 				<div class="media__img">

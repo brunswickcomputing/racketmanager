@@ -3717,7 +3717,10 @@ module--dark .mail-media,
 	flex-wrap: wrap;
 	min-width: 0;
 }
-
+.individual-entry__body .media__wrapper,
+.player-header .media__wrapper {
+	align-items: center;
+}
 .media__img {
 	display: inline-block;
 	margin-bottom: 0.25rem;

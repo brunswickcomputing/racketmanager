@@ -1200,7 +1200,12 @@ final class Racketmanager_Player {
 	 */
 	public function calculate_tournament_rating( $type ) {
 		$player_points = 0;
-		$matches       = $this->get_tournament_matches( array( 'type' => $type ) );
+		$matches       = $this->get_tournament_matches(
+			array(
+				'type'     => $type,
+				'complete' => true,
+			)
+		);
 		foreach ( $matches as $match_ref ) {
 			$match = get_match( $match_ref->id );
 			if ( $match ) {
@@ -1307,14 +1312,16 @@ final class Racketmanager_Player {
 	public function get_tournament_matches( $args = array() ) {
 		global $wpdb;
 		$defaults      = array(
-			'count'  => false,
-			'season' => false,
-			'type'   => false,
-			'period' => 730,
+			'count'    => false,
+			'season'   => false,
+			'type'     => false,
+			'complete' => false,
+			'period'   => 730,
 		);
 		$args          = array_merge( $defaults, (array) $args );
 		$count         = $args['count'];
 		$season        = $args['season'];
+		$complete      = $args['complete'];
 		$type          = $args['type'];
 		$period        = $args['period'];
 		$search_terms  = array();
@@ -1327,6 +1334,9 @@ final class Racketmanager_Player {
 		if ( $period ) {
 			$search_terms[] = 'm.`date` > now() - INTERVAL %d DAY';
 			$search_args[]  = $period;
+		}
+		if ( $complete ) {
+			$search_terms[] = 'm.`winner_id` != 0';
 		}
 		$search = '';
 		if ( ! empty( $search_terms ) ) {

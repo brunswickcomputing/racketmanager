@@ -410,22 +410,23 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			if ( ! is_user_logged_in() ) {
 				$validator = $validator->logged_in_entry();
 			} else {
-				$tournament_id = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : null;
-				$season        = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
-				$player_id     = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
-				$contactno     = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : '';
-				$contactemail  = isset( $_POST['contactemail'] ) ? sanitize_text_field( wp_unslash( $_POST['contactemail'] ) ) : '';
-				$btm           = isset( $_POST['btm'] ) ? intval( $_POST['btm'] ) : '';
-				$comments      = isset( $_POST['commentDetails'] ) ? sanitize_textarea_field( wp_unslash( $_POST['commentDetails'] ) ) : '';
-				// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				$tournament_id  = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : null;
+				$season         = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
+				$player_id      = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
+				$contactno      = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : '';
+				$contactemail   = isset( $_POST['contactemail'] ) ? sanitize_text_field( wp_unslash( $_POST['contactemail'] ) ) : '';
+				$btm            = isset( $_POST['btm'] ) ? intval( $_POST['btm'] ) : '';
+				$comments       = isset( $_POST['commentDetails'] ) ? sanitize_textarea_field( wp_unslash( $_POST['commentDetails'] ) ) : '';
 				$validator      = $validator->player( $player_id );
 				$validator      = $validator->telephone( $contactno );
 				$validator      = $validator->email( $contactemail, $player_id );
 				$validator      = $validator->btm( $btm, $player_id );
 				$affiliatedclub = isset( $_POST['affiliatedclub'] ) ? sanitize_text_field( wp_unslash( $_POST['affiliatedclub'] ) ) : '';
 				$validator      = $validator->club( $affiliatedclub );
-				$events         = isset( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : array();
-				$partners       = isset( $_POST['partner'] ) ? wp_unslash( $_POST['partner'] ) : array();
+				// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				$events            = isset( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : array();
+				$partners          = isset( $_POST['partner'] ) ? wp_unslash( $_POST['partner'] ) : array();
+				$tournament_events = isset( $_POST['tournamentEvents'] ) ? explode( ',', wp_unslash( $_POST['tournamentEvents'] ) ) : null;
 				// phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				$validator = $validator->events_entry( $events );
 				foreach ( $events as $event ) {
@@ -447,6 +448,26 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			}
 		}
 		if ( ! $validator->error ) {
+			foreach ( $tournament_events as $tournament_event ) {
+				$event = get_event( $tournament_event );
+				if ( $event ) {
+					if ( ! empty( $event->primary_league ) ) {
+						$league = get_league( $event->primary_league );
+					} else {
+						$leagues = $event->get_leagues();
+						$league  = get_league( $leagues[0] );
+					}
+					$teams = $event->get_teams(
+						array(
+							'player' => $player_id,
+							'season' => $tournament->season,
+						)
+					);
+					foreach ( $teams as $team ) {
+						$league->delete_team( $team->team_id, $tournament->season );
+					}
+				}
+			}
 			$player = get_player( $player_id );
 			$player->update_btm( $btm );
 			$player->update_contact( $contactno, $contactemail );

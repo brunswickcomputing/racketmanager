@@ -265,60 +265,61 @@ if ( ! empty( $player->entry ) ) {
 										</p>
 									</div>
 									<div id="event-feedback" class="invalid-feedback"></div>
-									</div>
-									<div class="form-checkboxes">
-										<?php
-										foreach ( $events as $event ) {
-											$entered    = false;
-											$partner_id = null;
-											if ( isset( $player->entry[ $event->id ] ) ) {
-												$entered      = true;
-												$player_entry = $player->entry[ $event->id ];
-												$partner_id   = ! empty( $player_entry->partner_id ) ? $player_entry->partner_id : null;
-											}
-											?>
-											<div class="form-check form-check-lg">
-												<input class="form-check-input " id="event-<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" type="checkbox" value=<?php echo esc_html( $event->id ); ?> aria-controls="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $entered ? 'checked' : ''; ?> <?php echo $changes_allowed ? null : 'disabled'; ?>>
-												<label class="form-check-label" for="event-<?php echo esc_html( $event->id ); ?>">
-													<?php echo esc_html( $event->name ); ?>
-												</label>
-												<div id="event-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
-											</div>
-											<?php
-											if ( substr( $event->type, 1, 1 ) === 'D' ) {
-												if ( 'M' === $player->gender ) {
-													if ( substr( $event->type, 0, 1 ) === 'M' ) {
-														$partner_list = $male_partners;
-													} else {
-														$partner_list = $female_partners;
-													}
-												} elseif ( 'F' === $player->gender ) {
-													if ( substr( $event->type, 0, 1 ) === 'W' ) {
-														$partner_list = $female_partners;
-													} else {
-														$partner_list = $male_partners;
-													}
-												}
-												?>
-												<div class="form-checkboxes__conditional <?php echo $partner_id ? '' : 'form-checkboxes__conditional--hidden'; ?>" id="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $partner_id ? 'aria-expanded="true"' : ''; ?>>
-													<label class="form-label" for="partner-<?php echo esc_html( $event->id ); ?>"><?php esc_html_e( 'Partner', 'racketmanager' ); ?></label>
-													<select class="form-select" size="1" name="partner[<?php echo esc_html( $event->id ); ?>]" id="partner-<?php echo esc_html( $event->id ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?>>
-														<option value="0"><?php esc_html_e( 'Select partner', 'racketmanager' ); ?></option>
-														<?php
-														foreach ( $partner_list as $partner ) {
-															?>
-															<option value="<?php echo esc_html( $partner->player_id ); ?>" <?php echo intval( $partner_id ) === intval( $partner->player_id ) ? 'selected' : null; ?>><?php echo esc_html( $partner->fullname . ' - ' . get_club( $partner->affiliatedclub )->name ); ?></option>
-															<?php
-														}
-														?>
-													</select>
-													<div id="partner-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
-												</div>
-												<?php
-											}
+								</div>
+								<div class="form-checkboxes">
+									<?php
+									foreach ( $events as $event ) {
+										$entered    = false;
+										$partner_id = null;
+										if ( isset( $player->entry[ $event->id ] ) ) {
+											$entered      = true;
+											$player_entry = $player->entry[ $event->id ];
+											$partner_id   = ! empty( $player_entry->partner_id ) ? $player_entry->partner_id : null;
 										}
 										?>
-									<div>
+										<div class="form-check form-check-lg">
+											<input class="form-check-input " id="event-<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" type="checkbox" value=<?php echo esc_html( $event->id ); ?> aria-controls="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $entered ? 'checked' : ''; ?> <?php echo $changes_allowed ? null : 'disabled'; ?>>
+											<label class="form-check-label" for="event-<?php echo esc_html( $event->id ); ?>">
+												<?php echo esc_html( $event->name ); ?>
+											</label>
+											<div id="event-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
+										</div>
+										<?php
+										if ( substr( $event->type, 1, 1 ) === 'D' ) {
+											if ( 'M' === $player->gender ) {
+												if ( substr( $event->type, 0, 1 ) === 'M' ) {
+													$partner_list = $male_partners;
+												} else {
+													$partner_list = $female_partners;
+												}
+											} elseif ( 'F' === $player->gender ) {
+												if ( substr( $event->type, 0, 1 ) === 'W' ) {
+													$partner_list = $female_partners;
+												} else {
+													$partner_list = $male_partners;
+												}
+											}
+											?>
+											<div class="form-checkboxes__conditional <?php echo $partner_id ? '' : 'form-checkboxes__conditional--hidden'; ?>" id="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $partner_id ? 'aria-expanded="true"' : ''; ?>>
+												<label class="form-label" for="partner-<?php echo esc_html( $event->id ); ?>"><?php esc_html_e( 'Partner', 'racketmanager' ); ?></label>
+												<select class="form-select" size="1" name="partner[<?php echo esc_html( $event->id ); ?>]" id="partner-<?php echo esc_html( $event->id ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?>>
+													<option value="0"><?php esc_html_e( 'Select partner', 'racketmanager' ); ?></option>
+													<?php
+													foreach ( $partner_list as $partner ) {
+														?>
+														<option value="<?php echo esc_html( $partner->player_id ); ?>" <?php echo intval( $partner_id ) === intval( $partner->player_id ) ? 'selected' : null; ?>><?php echo esc_html( $partner->fullname . ' - ' . get_club( $partner->affiliatedclub )->name ); ?></option>
+														<?php
+													}
+													?>
+												</select>
+												<div id="partner-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
+											</div>
+											<?php
+										}
+										$tournament_events[] = $event->id;
+									}
+									?>
+									<input type="hidden" name="tournamentEvents" value="<?php echo implode( ',', $tournament_events ); ?>" />
 								</div>
 							</li>
 							<li id="liCommentDetails" class="individual-entry__panel">

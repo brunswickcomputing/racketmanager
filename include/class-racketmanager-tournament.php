@@ -263,7 +263,7 @@ final class Racketmanager_Tournament {
 	 * @param object $tournament Tournament object.
 	 */
 	public function __construct( $tournament = null ) {
-		global $racketmanager;
+		global $racketmanager, $wp;
 		if ( ! is_null( $tournament ) ) {
 			foreach ( $tournament as $key => $value ) {
 				$this->$key = $value;
@@ -329,6 +329,7 @@ final class Racketmanager_Tournament {
 				--$r;
 			}
 			$this->finals = $finals;
+			$wp->set_query_var( 'season', $this->season );
 		}
 	}
 

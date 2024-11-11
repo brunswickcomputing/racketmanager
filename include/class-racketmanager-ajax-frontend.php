@@ -473,10 +473,26 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				}
 				$team_name = $player_name;
 				if ( substr( $event->type, 1, 1 ) === 'D' ) {
-					$partner_id                  = isset( $partners[ $event->id ] ) ? $partners[ $event->id ] : 0;
-					$partner                     = get_player( $partner_id );
-					$partner_name                = $partner->fullname;
-					$team_name                  .= ' / ' . $partner_name;
+					$partner_id        = isset( $partners[ $event->id ] ) ? $partners[ $event->id ] : 0;
+					$partner           = get_player( $partner_id );
+					$partner_name      = $partner->fullname;
+					$partner_team_name = null;
+					$partner_teams     = $event->get_teams(
+						array(
+							'player' => $partner,
+							'season' => $season,
+						)
+					);
+					foreach ( $partner_teams as $partner_team ) {
+						if ( false !== array_search( (string) $player_id, $partner_team->player_id, true ) ) {
+							$partner_team_name = $partner_team->title;
+						}
+					}
+					if ( empty( $partner_team_name ) ) {
+						$team_name .= ' / ' . $partner_name;
+					} else {
+						$team_name = $partner_team_name;
+					}
 					$tournament_entry['partner'] = $partner_name;
 					$this->set_tournament_entry( $tournament->id, $partner_id, false );
 				}
@@ -506,8 +522,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					$team->team_type      = 'P';
 					$team->affiliatedclub = $affiliatedclub;
 					$team                 = new Racketmanager_Team( $team );
-				} else {
-					$team->update_player( $player_name, $player_id, $partner_name, $partner_id, $affiliatedclub );
 				}
 				$team->set_event( $league->event_id, $player_id, $contactno, $contactemail );
 				$league->add_team( $team->id, $season );

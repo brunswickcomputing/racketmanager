@@ -905,7 +905,12 @@ class Racketmanager_League {
 		global $wpdb, $racketmanager;
 
 		// update matches.
-		$matches = $this->get_matches( array( 'team_id' => $team_id ) );
+		$matches = $this->get_matches(
+			array(
+				'team_id' => $team_id,
+				'season'  => $season,
+			)
+		);
 		foreach ( $matches as $match ) {
 			$match = get_match( $match );
 			if ( $match ) {

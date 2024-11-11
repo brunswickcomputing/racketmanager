@@ -257,8 +257,7 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 		if ( empty( $partner ) ) {
 			$this->error                          = true;
 			$this->error_field[ $this->error_id ] = 'partner-' . $field_ref;
-			/* translators: %s: competition name */
-			$this->error_msg[ $this->error_id ] = sprintf( __( 'Partner not selected for %s', 'racketmanager' ), $field_name );
+			$this->error_msg[ $this->error_id ]   = __( 'Partner not selected', 'racketmanager' );
 			++$this->error_id;
 		} else {
 			$partner_found = false;
@@ -276,8 +275,7 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 			if ( $partner_found ) {
 				$this->error                          = true;
 				$this->error_field[ $this->error_id ] = 'partner-' . $field_ref;
-				/* translators: %s: event name */
-				$this->error_msg[ $this->error_id ] = sprintf( __( 'Partner for %s is playing', 'racketmanager' ), $field_name );
+				$this->error_msg[ $this->error_id ]   = __( 'Partner is in another team in this event', 'racketmanager' );
 				++$this->error_id;
 			}
 			if ( ! empty( $event->age_limit ) && 'open' !== $event->age_limit ) {
@@ -285,8 +283,7 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 				if ( empty( $partner->age ) ) {
 					$this->error                          = true;
 					$this->error_field[ $this->error_id ] = 'partner-' . $field_ref;
-					/* translators: %s: competition name */
-					$this->error_msg[ $this->error_id ] = sprintf( __( 'Partner for %s has no age specified', 'racketmanager' ), $field_name );
+					$this->error_msg[ $this->error_id ]   = __( 'Partner has no age specified', 'racketmanager' );
 					++$this->error_id;
 				} elseif ( $partner->age < $event->age_limit ) {
 					$entry_invalid = false;
@@ -301,8 +298,7 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 					if ( $entry_invalid ) {
 						$this->error                          = true;
 						$this->error_field[ $this->error_id ] = 'partner-' . $field_ref;
-						/* translators: %s: competition name */
-						$this->error_msg[ $this->error_id ] = sprintf( __( 'Partner for %s is not eligibile due to age', 'racketmanager' ), $field_name );
+						$this->error_msg[ $this->error_id ]   = __( 'Partner is not eligibile due to age', 'racketmanager' );
 						++$this->error_id;
 					}
 				}

@@ -47,6 +47,30 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.25.0 =
+* BUGFIX: ensure messages displayed for tournament update
+* BUGFIX: set season from tournament
+* BUGFIX: do not set players when team entered
+* BUGFIX: use correct name for rating points field
+* BUGFIX: check season set
+* BUGFIX: handle competition code for tournament add
+* BUGFIX: set open date
+* BUGFIX: use correct team title for withdrawn message
+* UPDATE: set season to live when tournament created
+* UPDATE: show player ratings in player header
+* UPDATE: allow tournament entry form view when tournament no longer open
+* UPDATE: show inline error messages
+* UPDATE: check btm and email not used elsewhere
+* UPDATE: schedule player ratings for all players
+* UPDATE: show player ratings on tournament entry
+* UPDATE: run tournament ratings when tournament open
+* UPDATE: check partner not already entered
+* UPDATE: ensure players only entered into an tournament event once  
+* UPDATE: use scores from matches to calculate league points
+* UPDATE: only get matches for current season
+* UPDATE: store team rating against team in table
+* UPDATE: set team rating for tournament entry
+
 = 8.24.0 =
 * BUGFIX: handle dates not set
 * BUGFIX: set display name correctly after only first or surname change

@@ -424,6 +424,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 	 * Display tournament page
 	 */
 	public function displayTournamentPage() {
+		global $racketmanager;
 		if ( ! current_user_can( 'edit_teams' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -447,14 +448,13 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 						$success                      = $tournament->update( $tournament );
 						if ( $success ) {
 							$this->set_competition_dates( $tournament );
-							$this->set_message( __( 'Tournament updated', 'racketmanager' ) );
 						}
 					} else {
-						$this->set_message( __( 'Tournament not found', 'racketmanager' ), true );
+						$racketmanager->set_message( __( 'Tournament not found', 'racketmanager' ), true );
 					}
 				}
 			}
-			$this->printMessage();
+			$racketmanager->printMessage();
 		} elseif ( isset( $_GET['tournament'] ) ) {
 			$tournament_id = intval( $_GET['tournament'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$tournament    = get_tournament( $tournament_id );

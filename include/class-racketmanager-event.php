@@ -1416,11 +1416,11 @@ class Racketmanager_Event {
 			if ( 'P' === $event_team->team_type && ! empty( $event_team->roster ) ) {
 				$team                = get_team( $event_team->team_id );
 				$event_team->players = $team->players;
-				$i                   = 1;
+				$p                   = 1;
 				foreach ( $event_team->players as $player ) {
-					$event_team->player[ $i ]    = $player->fullname;
-					$event_team->player_id[ $i ] = $player->id;
-					++$i;
+					$event_team->player[ $p ]    = $player->fullname;
+					$event_team->player_id[ $p ] = $player->id;
+					++$p;
 				}
 			} elseif ( $event_team->club ) {
 				$event_team->player_count = $this->get_players(

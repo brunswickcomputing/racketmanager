@@ -340,42 +340,53 @@ final class Racketmanager_Tournament {
 		global $wpdb, $racketmanager;
 		$valid   = true;
 		$err_msg = array();
+		$err_fld = array();
 		if ( empty( $this->name ) ) {
 			$valid     = false;
 			$err_msg[] = __( 'Name is required', 'racketmanager' );
+			$err_fld[] = 'tournamentName';
 		}
 		if ( empty( $this->competition_id ) ) {
 			$valid     = false;
 			$err_msg[] = __( 'Competition is required', 'racketmanager' );
+			$err_fld[] = 'competition_id';
 		}
 		if ( empty( $this->season ) ) {
 			$valid     = false;
 			$err_msg[] = __( 'Season is required', 'racketmanager' );
+			$err_fld[] = 'season';
 		}
 		if ( empty( $this->date_open ) ) {
 			$valid     = false;
 			$err_msg[] = __( 'Opening date is required', 'racketmanager' );
+			$err_fld[] = 'date_open';
 		}
 		if ( empty( $this->closing_date ) ) {
 			$valid     = false;
 			$err_msg[] = __( 'Closing date is required', 'racketmanager' );
+			$err_fld[] = 'date_close';
 		} elseif ( ! empty( $this->date_open ) && $this->closing_date <= $this->date_open ) {
 			$valid     = false;
 			$err_msg[] = __( 'Closing date must be after open date', 'racketmanager' );
+			$err_fld[] = 'date_close';
 		}
 		if ( empty( $this->date_start ) ) {
 			$valid     = false;
 			$err_msg[] = __( 'Start date is required', 'racketmanager' );
+			$err_fld[] = 'date_start';
 		} elseif ( ! empty( $this->closing_date ) && $this->date_start <= $this->closing_date ) {
 			$valid     = false;
 			$err_msg[] = __( 'Start date must be after closing date', 'racketmanager' );
+			$err_fld[] = 'date_start';
 		}
 		if ( empty( $this->date ) ) {
 			$valid     = false;
 			$err_msg[] = __( 'End date is required', 'racketmanager' );
+			$err_fld[] = 'date_end';
 		} elseif ( ! empty( $this->date_start ) && $this->date <= $this->date_start ) {
 			$valid     = false;
 			$err_msg[] = __( 'End date must be after start date', 'racketmanager' );
+			$err_fld[] = 'date_end';
 		}
 		if ( empty( $this->competition_code ) ) {
 			$this->competition_code = '';
@@ -398,9 +409,13 @@ final class Racketmanager_Tournament {
 			$racketmanager->set_message( __( 'Tournament added', 'racketmanager' ) );
 			$this->id                      = $wpdb->insert_id;
 			$this->orderofplay             = '';
+			$racketmanager->error_fields   = null;
+			$racketmanager->error_messages = null;
 			return true;
 		} else {
-			$racketmanager->set_message( implode( '<br>', $err_msg ), true );
+			$racketmanager->error_fields   = $err_fld;
+			$racketmanager->error_messages = $err_msg;
+			$racketmanager->set_message( __( 'Error creating tournament', 'racketmanager' ), true );
 			return false;
 		}
 	}
@@ -415,35 +430,43 @@ final class Racketmanager_Tournament {
 		global $wpdb, $racketmanager;
 		$valid   = true;
 		$err_msg = array();
+		$err_fld = array();
 		if ( ! empty( $updated->date_open ) ) {
 			if ( ! empty( $updated->closing_date ) ) {
 				if ( $updated->closing_date <= $updated->date_open ) {
 					$valid     = false;
 					$err_msg[] = __( 'Closing date must be after open date', 'racketmanager' );
+					$err_fld[] = 'date_close';
 				} elseif ( ! empty( $updated->date_start ) ) {
 					if ( $updated->date_start < $updated->closing_date ) {
 						$valid     = false;
 						$err_msg[] = __( 'Start date must be after closing date', 'racketmanager' );
+						$err_fld[] = 'date_start';
 					} elseif ( ! empty( $updated->date ) ) {
 						if ( $updated->date <= $updated->closing_date ) {
 							$valid     = false;
 							$err_msg[] = __( 'End date must be after start date', 'racketmanager' );
+							$err_fld[] = 'date_end';
 						}
 					} else {
 						$valid     = false;
 						$err_msg[] = __( 'End date is rquired', 'racketmanager' );
+						$err_fld[] = 'date_end';
 					}
 				} else {
 					$valid     = false;
 					$err_msg[] = __( 'Start date is required', 'racketmanager' );
+					$err_fld[] = 'date_start';
 				}
 			} else {
 				$valid     = false;
 				$err_msg[] = __( 'Closing date is required', 'racketmanager' );
+				$err_fld[] = 'date_close';
 			}
 		} else {
 			$valid     = false;
 			$err_msg[] = __( 'Opening date is required', 'racketmanager' );
+			$err_fld[] = 'date_open';
 		}
 		if ( empty( $updated->competition_code ) ) {
 			$updated->competition_code = '';
@@ -467,9 +490,13 @@ final class Racketmanager_Tournament {
 			);
 			wp_cache_delete( $this->id, 'tournaments' );
 			$racketmanager->set_message( __( 'Tournament updated', 'racketmanager' ) );
+			$racketmanager->error_fields   = null;
+			$racketmanager->error_messages = null;
 			return true;
 		} else {
-			$racketmanager->set_message( implode( '<br>', $err_msg ), true );
+			$racketmanager->set_message( __( 'Error updating tournament', 'racketmanager' ), true );
+			$racketmanager->error_fields   = $err_fld;
+			$racketmanager->error_messages = $err_msg;
 			return false;
 		}
 	}

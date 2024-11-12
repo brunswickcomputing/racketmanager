@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+$is_invalid = false;
 ?>
 <div class='container'>
 	<div class='row justify-content-end'>
@@ -17,7 +18,7 @@ namespace Racketmanager;
 	<h1><?php echo esc_html( $form_title ); ?></h1>
 	<?php
 	if ( empty( $tournament->id ) ) {
-		$action_form = 'admin.php?page=racketmanager-tournaments';
+		$action_form = 'admin.php?page=racketmanager-tournaments&amp;view=modify';
 	} else {
 		$action_form = 'admin.php?page=racketmanager-tournaments&amp;view=modify&amp;tournament=' . $tournament->id;
 	}
@@ -34,15 +35,38 @@ namespace Racketmanager;
 			<legend><?php esc_html_e( 'Details', 'racketmanager' ); ?></legend>
 			<div class="row">
 				<div class="form-floating mb-3">
-					<input type="text" class="form-control" id="tournament" name="tournament" value="<?php echo esc_html( $tournament->name ); ?>" size="30" placeholder="<?php esc_html_e( 'Add tournament', 'racketmanager' ); ?>" />
-					<label class="form-label" for="tournament"><?php esc_html_e( 'Name', 'racketmanager' ); ?></label>
+					<?php
+					if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'tournamentName', $racketmanager->error_fields, true ) ) ) {
+						$is_invalid = true;
+						$msg_id     = array_search( 'tournamentName', $racketmanager->error_fields, true );
+						$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					}
+					?>
+					<input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" id="tournamentName" name="tournamentName" value="<?php echo esc_html( $tournament->name ); ?>" size="30" placeholder="<?php esc_html_e( 'Add tournament', 'racketmanager' ); ?>" />
+					<label class="form-label" for="tournamentName"><?php esc_html_e( 'Name', 'racketmanager' ); ?></label>
+					<?php
+					if ( $is_invalid ) {
+						?>
+						<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+						<?php
+						$is_invalid = false;
+						$msg        = null;
+					}
+					?>
 				</div>
 			</div>
 			<div class="row g-3">
 				<div class="col-md-6">
 					<div class="form-floating mb-3">
-						<select class="form-select" size="1" name="competition_id" id="competition_id" >
-							<option><?php esc_html_e( 'Select competition', 'racketmanager' ); ?></option>
+						<?php
+						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'competition_id', $racketmanager->error_fields, true ) ) ) {
+							$is_invalid = true;
+							$msg_id     = array_search( 'competition_id', $racketmanager->error_fields, true );
+							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						}
+						?>
+						<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" size="1" name="competition_id" id="competition_id" >
+							<option disabled <?php selected( null, empty( $tournament->competition_id ) ? null : $tournament->competition_id ); ?>><?php esc_html_e( 'Select competition', 'racketmanager' ); ?></option>
 							<?php
 							foreach ( $competitions as $competition ) {
 								?>
@@ -52,12 +76,28 @@ namespace Racketmanager;
 							?>
 						</select>
 						<label for="competition_id" class="form-label"><?php esc_html_e( 'Competition', 'racketmanager' ); ?></label>
+						<?php
+						if ( $is_invalid ) {
+							?>
+							<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+							<?php
+							$is_invalid = false;
+							$msg        = null;
+						}
+						?>
 					</div>
 				</div>
 				<div class="col-md-6">
 					<div class="form-floating mb-3">
-						<select class="form-select" size="1" name="season" id="season" >
-							<option><?php esc_html_e( 'Select season', 'racketmanager' ); ?></option>
+						<?php
+						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'season', $racketmanager->error_fields, true ) ) ) {
+							$is_invalid = true;
+							$msg_id     = array_search( 'season', $racketmanager->error_fields, true );
+							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						}
+						?>
+						<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" size="1" name="season" id="season" >
+							<option disabled <?php selected( null, empty( $tournament->season ) ? null : $tournament->season ); ?>><?php esc_html_e( 'Select season', 'racketmanager' ); ?></option>
 							<?php
 							$seasons = $this->get_seasons( 'DESC' );
 							foreach ( $seasons as $season ) {
@@ -66,31 +106,66 @@ namespace Racketmanager;
 							<?php } ?>
 						</select>
 						<label for="season" class="form-label"><?php esc_html_e( 'Season', 'racketmanager' ); ?></label>
+						<?php
+						if ( $is_invalid ) {
+							?>
+							<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+							<?php
+							$is_invalid = false;
+							$msg        = null;
+						}
+						?>
 					</div>
 				</div>
 			</div>
 			<div class="row g-3">
 				<div class="col-md-6">
 					<div class="form-floating mb-3">
-						<select class="form-select" size="1" name="venue" id="venue" >
-							<option><?php esc_html_e( 'Select venue', 'racketmanager' ); ?></option>
+						<?php
+						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'venue', $racketmanager->error_fields, true ) ) ) {
+							$is_invalid = true;
+							$msg_id     = array_search( 'venue', $racketmanager->error_fields, true );
+							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						}
+						?>
+						<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" size="1" name="venue" id="venue" >
+							<option disabled <?php selected( null, empty( $tournament->venue ) ? null : $tournament->venue ); ?>><?php esc_html_e( 'Select venue', 'racketmanager' ); ?></option>
 							<?php foreach ( $clubs as $club ) { ?>
-								<option value="<?php echo esc_html( $club->id ); ?>"
-									<?php
-									if ( isset( $tournament->venue ) ) {
-										selected( $tournament->venue, $club->id );
-									}
-									?>
-								><?php echo esc_html( $club->name ); ?></option>
+								<option value="<?php echo esc_html( $club->id ); ?>" <?php selected( $club->id, empty( $tournament->venue ) ? null : $tournament->venue ); ?>><?php echo esc_html( $club->name ); ?></option>
 							<?php } ?>
 						</select>
 						<label for="venue" class="form-label"><?php esc_html_e( 'Venue', 'racketmanager' ); ?></label>
+						<?php
+						if ( $is_invalid ) {
+							?>
+							<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+							<?php
+							$is_invalid = false;
+							$msg        = null;
+						}
+						?>
 					</div>
 				</div>
 				<div class="col-md-6">
 					<div class="form-floating mb-3">
-						<input type="text" class="form-control" name="competition_code" id="competition_code" value="<?php echo esc_html( $tournament->competition_code ); ?>" />
+						<?php
+						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'competition_code', $racketmanager->error_fields, true ) ) ) {
+							$is_invalid = true;
+							$msg_id     = array_search( 'competition_code', $racketmanager->error_fields, true );
+							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						}
+						?>
+						<input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="competition_code" id="competition_code" value="<?php echo esc_html( $tournament->competition_code ); ?>" />
 						<label for="competition_code" class="form-label"><?php esc_html_e( 'Competition code', 'racketmanager' ); ?></label>
+						<?php
+						if ( $is_invalid ) {
+							?>
+							<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+							<?php
+							$is_invalid = false;
+							$msg        = null;
+						}
+						?>
 					</div>
 				</div>
 			</div>
@@ -100,28 +175,92 @@ namespace Racketmanager;
 			<div class="row g-3">
 				<div class="col-md-6">
 					<div class="form-floating mb-3">
-						<input type="date" class="form-control" name="date_open" id="date_open" value="<?php echo esc_html( $tournament->date_open ); ?>" size="20" />
+						<?php
+						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'date_open', $racketmanager->error_fields, true ) ) ) {
+							$is_invalid = true;
+							$msg_id     = array_search( 'date_open', $racketmanager->error_fields, true );
+							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						}
+						?>
+						<input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="date_open" id="date_open" value="<?php echo esc_html( $tournament->date_open ); ?>" size="20" />
 						<label for="date_open" class="form-label"><?php esc_html_e( 'Opening Date', 'racketmanager' ); ?></label>
+						<?php
+						if ( $is_invalid ) {
+							?>
+							<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+							<?php
+							$is_invalid = false;
+							$msg        = null;
+						}
+						?>
 					</div>
 				</div>
 				<div class="col-md-6">
 					<div class="form-floating mb-3">
-						<input type="date" class="form-control" name="closingdate" id="closingdate" value="<?php echo esc_html( $tournament->closing_date ); ?>" size="20" />
-						<label for="closingdate" class="form-label"><?php esc_html_e( 'Closing Date', 'racketmanager' ); ?></label>
+						<?php
+						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'date_close', $racketmanager->error_fields, true ) ) ) {
+							$is_invalid = true;
+							$msg_id     = array_search( 'date_close', $racketmanager->error_fields, true );
+							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						}
+						?>
+						<input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="date_close" id="date_close" value="<?php echo esc_html( $tournament->closing_date ); ?>" size="20" />
+						<label for="date_close" class="form-label"><?php esc_html_e( 'Closing Date', 'racketmanager' ); ?></label>
+						<?php
+						if ( $is_invalid ) {
+							?>
+							<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+							<?php
+							$is_invalid = false;
+							$msg        = null;
+						}
+						?>
 					</div>
 				</div>
 			</div>
 			<div class="row g-3">
 				<div class="col-md-6">
 					<div class="form-floating mb-3">
-						<input type="date" class="form-control" name="date_start" id="date_start" value="<?php echo esc_html( $tournament->date_start ); ?>" size="20" />
+						<?php
+						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'date_start', $racketmanager->error_fields, true ) ) ) {
+							$is_invalid = true;
+							$msg_id     = array_search( 'date_start', $racketmanager->error_fields, true );
+							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						}
+						?>
+						<input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="date_start" id="date_start" value="<?php echo esc_html( $tournament->date_start ); ?>" size="20" />
 						<label for="date_start" class="form-label"><?php esc_html_e( 'Start Date', 'racketmanager' ); ?></label>
+						<?php
+						if ( $is_invalid ) {
+							?>
+							<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+							<?php
+							$is_invalid = false;
+							$msg        = null;
+						}
+						?>
 					</div>
 				</div>
 				<div class="col-md-6">
 					<div class="form-floating mb-3">
-						<input type="date" class="form-control" name="date" id="date" value="<?php echo esc_html( $tournament->date ); ?>" size="20" />
-						<label for="date" class="form-label"><?php esc_html_e( 'End Date', 'racketmanager' ); ?></label>
+						<?php
+						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'date_end', $racketmanager->error_fields, true ) ) ) {
+							$is_invalid = true;
+							$msg_id     = array_search( 'date_end', $racketmanager->error_fields, true );
+							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						}
+						?>
+						<input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="date_end" id="date_end" value="<?php echo esc_html( $tournament->date ); ?>" size="20" />
+						<label for="date_end" class="form-label"><?php esc_html_e( 'End Date', 'racketmanager' ); ?></label>
+						<?php
+						if ( $is_invalid ) {
+							?>
+							<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+							<?php
+							$is_invalid = false;
+							$msg        = null;
+						}
+						?>
 					</div>
 				</div>
 			</div>

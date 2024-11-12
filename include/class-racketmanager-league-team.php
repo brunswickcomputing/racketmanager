@@ -69,11 +69,17 @@ final class Racketmanager_League_Team {
 	 */
 	public $home;
 	/**
-	 * Id variable
+	 * Team id variable
 	 *
 	 * @var int
 	 */
 	public $id;
+	/**
+	 * Table id variable
+	 *
+	 * @var int
+	 */
+	public $table_id;
 	/**
 	 * Title variable
 	 *
@@ -344,7 +350,7 @@ final class Racketmanager_League_Team {
 		if ( ! $league_team ) {
 			$league_team = $wpdb->get_row(
 				$wpdb->prepare(
-					"SELECT B.`id` AS `id`, B.`title`, B.`affiliatedclub`, B.`stadium`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`points_plus`, A.`points_minus`, A.`points2_plus`, A.`points2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom`, B.`team_type` FROM {$wpdb->racketmanager_teams} B INNER JOIN {$wpdb->racketmanager_table} A ON B.id = A.team_id WHERE A.`id` = %d LIMIT 1",
+					"SELECT B.`id` AS `id`, B.`title`, B.`affiliatedclub`, B.`stadium`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`points_plus`, A.`points_minus`, A.`points2_plus`, A.`points2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom`, B.`team_type`, A.`rating` FROM {$wpdb->racketmanager_teams} B INNER JOIN {$wpdb->racketmanager_table} A ON B.id = A.team_id WHERE A.`id` = %d LIMIT 1",
 					$league_team_id
 				)
 			); // db call ok.
@@ -690,5 +696,31 @@ final class Racketmanager_League_Team {
 		$this->win_percent();
 
 		return $num_lost;
+	}
+	/**
+	 * Set rating
+	 *
+	 * @param object $team team object.
+	 * @param object $event event object.
+	 */
+	public function set_rating( $team, $event ) {
+		global $wpdb;
+		if ( ! empty( $team->players ) ) {
+			$type        = substr( $event->type, 1, 1 );
+			$team_rating = 0;
+			foreach ( $team->players as $player ) {
+				$rating = $player->rating[ $type ];
+				if ( is_numeric( $rating ) ) {
+					$team_rating += $rating;
+				}
+			}
+			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->prepare(
+					"UPDATE {$wpdb->racketmanager_table} SET `rating` = %d WHERE `id` = %d",
+					$team_rating,
+					$this->table_id
+				)
+			);
+		}
 	}
 }

@@ -472,6 +472,16 @@ final class Racketmanager_Tournament {
 			$updated->competition_code = '';
 		}
 		if ( $valid ) {
+			$this->name             = $updated->name;
+			$this->competition_id   = $updated->competition_id;
+			$this->season           = $updated->season;
+			$this->venue            = $updated->venue;
+			$this->date_open        = $updated->date_open;
+			$this->closing_date     = $updated->closing_date;
+			$this->date_start       = $updated->date_start;
+			$this->date             = $updated->date;
+			$this->starttime        = $updated->starttime;
+			$this->competition_code = $updated->competition_code;
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
 					"UPDATE {$wpdb->racketmanager_tournaments} SET `name` = %s, `competition_id` = %d, `season` = %s, `venue` = %d, `date_open` = %s, `closingdate` = %s, `date_start` = %s, `date` = %s, `starttime` = %s, `competition_code` = %s WHERE `id` = %d",
@@ -488,7 +498,7 @@ final class Racketmanager_Tournament {
 					$this->id
 				)
 			);
-			wp_cache_delete( $this->id, 'tournaments' );
+			wp_cache_set( $this->id, $this, 'tournaments' );
 			$racketmanager->set_message( __( 'Tournament updated', 'racketmanager' ) );
 			$racketmanager->error_fields   = null;
 			$racketmanager->error_messages = null;
@@ -514,7 +524,9 @@ final class Racketmanager_Tournament {
 
 		$update = false;
 		if ( $starttime !== $this->starttime || $num_courts !== $this->num_courts || $time_increment !== $this->time_increment ) {
-			wp_cache_flush_group( 'tournaments' );
+			$this->starttime      = $starttime;
+			$this->num_courts     = $num_courts;
+			$this->time_increment = $time_increment;
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
 					"UPDATE {$wpdb->racketmanager_tournaments} SET `starttime` = %s, `numcourts` = %d, `timeincrement` = %s WHERE `id` = %d",
@@ -524,6 +536,7 @@ final class Racketmanager_Tournament {
 					$this->id
 				)
 			);
+			wp_cache_set( $this->id, $this, 'tournaments' );
 			$racketmanager->set_message( __( 'Tournament updated', 'racketmanager' ) );
 			$update = true;
 		} else {
@@ -575,8 +588,8 @@ final class Racketmanager_Tournament {
 			}
 		}
 		if ( $orderofplay !== $this->orderofplay ) {
-			$orderofplay = maybe_serialize( $orderofplay );
-			wp_cache_flush_group( 'tournaments' );
+			$this->orderofplay = $orderofplay;
+			$orderofplay       = maybe_serialize( $orderofplay );
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
 					"UPDATE {$wpdb->racketmanager_tournaments} SET `orderofplay` = %s WHERE `id` = %d",
@@ -584,6 +597,7 @@ final class Racketmanager_Tournament {
 					$this->id
 				)
 			);
+			wp_cache_set( $this->id, $this, 'tournaments' );
 			$racketmanager->set_message( __( 'Tournament plan updated', 'racketmanager' ) );
 		} else {
 			$racketmanager->set_message( __( 'No updates', 'racketmanager' ) );
@@ -627,8 +641,8 @@ final class Racketmanager_Tournament {
 			}
 		}
 		if ( $orderofplay !== $this->orderofplay ) {
-			$orderofplay = maybe_serialize( $orderofplay );
-			wp_cache_flush_group( 'tournaments' );
+			$this->orderofplay = $orderofplay;
+			$orderofplay       = maybe_serialize( $orderofplay );
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
 					"UPDATE {$wpdb->racketmanager_tournaments} SET `orderofplay` = %s WHERE `id` = %d",
@@ -636,6 +650,7 @@ final class Racketmanager_Tournament {
 					$this->id
 				)
 			);
+			wp_cache_set( $this->id, $this, 'tournaments' );
 			$updates = true;
 		}
 		if ( $updates ) {
@@ -650,7 +665,9 @@ final class Racketmanager_Tournament {
 	 */
 	public function delete() {
 		global $wpdb, $racketmanager;
-
+		$schedule_name = 'rm_calculate_tournament_ratings';
+		$schedule_args = array( intval( $this->id ) );
+		Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"DELETE FROM {$wpdb->racketmanager_tournaments} WHERE `id` = %d",
@@ -658,7 +675,7 @@ final class Racketmanager_Tournament {
 			)
 		);
 		$racketmanager->set_message( __( 'Tournament Deleted', 'racketmanager' ) );
-		wp_cache_flush_group( 'tournaments' );
+		wp_cache_delete( $this->id, 'tournaments' );
 	}
 	/**
 	 * Get events function

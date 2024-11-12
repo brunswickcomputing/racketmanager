@@ -1096,6 +1096,9 @@ function racketmanager_upgrade() {
 		echo esc_html__( 'starting 8.23.0 upgrade', 'racketmanager' ) . "<br />\n";
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} CHANGE `shortcode` `competition_code` VARCHAR(50) NULL" );
 	}
+	if ( version_compare( $installed, '8.25.0', '<' ) ) {
+		echo esc_html__( 'starting 8.25.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_table} ADD `rating` int( 11 ) NULL AFTER `status`" );
 	/*
 	* Update version and dbversion
 	*/

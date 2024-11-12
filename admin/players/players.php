@@ -9,37 +9,7 @@ namespace Racketmanager;
 
 ?><!-- Add Player -->
 <div class="mb-3">
-	<form action="" method="post" class="form-control">
-		<?php wp_nonce_field( 'racketmanager_add-player' ); ?>
-		<div class="form-floating mb-3">
-			<input required="required" placeholder="<?php esc_html_e( 'Enter first name', 'racketmanager' ); ?>" type="text" name="firstname" id="firstname" value="" size="30" class="form-control"/>
-			<label for="firstname"><?php esc_html_e( 'First Name', 'racketmanager' ); ?></label>
-		</div>
-		<div class="form-floating mb-3">
-			<input required="required"  placeholder="<?php esc_html_e( 'Enter surname', 'racketmanager' ); ?>" type="text" name="surname" id="surname" value="" size="30" class="form-control" />
-			<label for="surname"><?php esc_html_e( 'Surname', 'racketmanager' ); ?></label>
-		</div>
-		<fieldset>
-		<legend class="form-check-label"><?php esc_html_e( 'Gender', 'racketmanager' ); ?></legend>
-		<div class="form-check">
-			<input type="radio" required="required" name="gender" id="genderMale" value="M" class="form-check-input" /><label=for "genderMale" class="form-check-label"><?php esc_html_e( 'Male', 'racketmanager' ); ?></label>
-		</div>
-		<div class="form-check">
-			<input type="radio" required="required" name="gender" id="genderFemale" value="F" class="form-check-input" /><label=for "genderFemale" class="form-check-label"><?php esc_html_e( 'Female', 'racketmanager' ); ?></label>
-		</div>
-		</fieldset>
-		<div class="form-floating mb-3">
-			<input type="number"  placeholder="<?php esc_html_e( 'Enter LTA Tennis Number', 'racketmanager' ); ?>" name="btm" id="btm" size="11" class="form-control" />
-			<label for="btm"><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></label>
-		</div>
-		<div class="form-floating mb-3">
-			<input type="email" placeholder="<?php esc_html_e( 'Enter email address', 'racketmanager' ); ?>" name="email" id="email" class="form-control" autocomplete="no" />
-			<label for="email"><?php esc_html_e( 'Email address', 'racketmanager' ); ?></label>
-		</div>
-		<input type="hidden" name="addPlayer" value="player" />
-		<input type="submit" name="addPlayer" value="<?php esc_html_e( 'Add Player', 'racketmanager' ); ?>" class="btn btn-primary" />
-
-	</form>
+	<?php require_once RACKETMANAGER_PATH . '/admin/includes/player.php'; ?>
 </div>
 <div class="mb-3">
 	<form id="player-filter" method="get">

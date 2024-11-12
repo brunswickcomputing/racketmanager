@@ -5769,7 +5769,8 @@ svg.media__img-element--icon.winner, svg.media__img-element--icon.runner-up {
 }
 .row .form-floating>label {
 	left: initial;
-}.page-subhead .row .form-floating>label {
+}
+.page-subhead .row .form-floating>label {
 	left: 0;
 }
 .list.list--inline .list__item .tag {

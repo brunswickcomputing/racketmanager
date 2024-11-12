@@ -877,4 +877,32 @@ final class Racketmanager_Tournament {
 		}
 		return $tournament_entries;
 	}
+	/**
+	 * Schedule tournament ratings setting function
+	 *
+	 * @return void
+	 */
+	public function schedule_tournament_ratings() {
+		global $racketmanager;
+		if ( empty( $this->date_open ) ) {
+			$day            = intval( gmdate( 'd' ) );
+			$month          = intval( gmdate( 'm' ) );
+			$year           = intval( gmdate( 'Y' ) );
+			$hour           = intval( gmdate( 'H' ) );
+			$schedule_start = mktime( $hour, 0, 0, $month, $day, $year );
+		} else {
+			$schedule_date  = strtotime( $this->date_open . ' -1 day' );
+			$day            = intval( gmdate( 'd', $schedule_date ) );
+			$month          = intval( gmdate( 'm', $schedule_date ) );
+			$year           = intval( gmdate( 'Y', $schedule_date ) );
+			$schedule_start = mktime( 12, 0, 0, $month, $day, $year );
+		}
+		$schedule_name = 'rm_calculate_tournament_ratings';
+		$schedule_args = array( intval( $this->id ) );
+		Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+		$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
+		if ( ! $success ) {
+			$racketmanager->set_message( __( 'Error scheduling tournament ratings calculation', 'racketmanager' ), true );
+		}
+	}
 }

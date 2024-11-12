@@ -455,6 +455,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 						$success                      = $tournament->update( $tournament );
 						if ( $success ) {
 							$this->set_competition_dates( $tournament );
+							$tournament->schedule_tournament_ratings();
 						}
 					} else {
 						$racketmanager->set_message( __( 'Tournament not found', 'racketmanager' ), true );
@@ -788,29 +789,6 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 			$player = get_player( $player );
 			if ( $player ) {
 				$player->set_tournament_rating();
-			}
-		}
-	}
-	/**
-	 * Schedule tournament ratings setting function
-	 *
-	 * @param object $tournament tournament object.
-	 * @return void
-	 */
-	private function schedule_tournament_ratings( $tournament ) {
-		if ( $tournament ) {
-			$day            = intval( gmdate( 'd' ) );
-			$month          = intval( gmdate( 'm' ) );
-			$year           = intval( gmdate( 'Y' ) );
-			$hour           = intval( gmdate( 'H' ) );
-			$schedule_start = mktime( $hour, 0, 0, $month, $day, $year );
-			$schedule_name  = 'rm_calculate_tournament_ratings';
-			$schedule_args  = array( $tournament->id );
-			if ( ! wp_next_scheduled( $schedule_name, $schedule_args ) ) {
-				$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
-				if ( ! $success ) {
-					$this->set_message( __( 'Error scheduling tournament ratings calculation', 'racketmanager' ), true );
-				}
 			}
 		}
 	}

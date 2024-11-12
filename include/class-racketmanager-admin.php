@@ -2754,7 +2754,7 @@ class RacketManager_Admin extends RacketManager {
 			$status  = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : null;
 			$tab     = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'playerrequest';
 			if ( isset( $_POST['addPlayer'] ) ) {
-				check_admin_referer( 'racketmanager_add-player' );
+				check_admin_referer( 'racketmanager_manage-player' );
 				$player_valid = $this->validatePlayer();
 				if ( $player_valid[0] ) {
 					$new_player = $player_valid[1];
@@ -2762,6 +2762,7 @@ class RacketManager_Admin extends RacketManager {
 					if ( ! $player ) {
 						$player = new Racketmanager_Player( $new_player );
 						$this->set_message( __( 'Player added', 'racketmanager' ) );
+						$player = null;
 					} else {
 						$this->set_message( __( 'Player already exists', 'racketmanager' ), true );
 					}

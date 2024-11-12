@@ -270,7 +270,7 @@ final class Racketmanager_Tournament {
 			}
 
 			if ( ! isset( $this->id ) ) {
-				$this->id = $this->add();
+				$this->add();
 			}
 			$this->link                 = '/tournament/' . seo_url( $this->name ) . '/';
 			$this->date_display         = ( substr( $this->date, 0, 10 ) === '0000-00-00' ) ? 'TBC' : mysql2date( $racketmanager->date_format, $this->date );
@@ -396,9 +396,9 @@ final class Racketmanager_Tournament {
 				)
 			);
 			$racketmanager->set_message( __( 'Tournament added', 'racketmanager' ) );
-			$this->id          = $wpdb->insert_id;
-			$this->orderofplay = '';
-			return $this->id;
+			$this->id                      = $wpdb->insert_id;
+			$this->orderofplay             = '';
+			return true;
 		} else {
 			$racketmanager->set_message( implode( '<br>', $err_msg ), true );
 			return false;

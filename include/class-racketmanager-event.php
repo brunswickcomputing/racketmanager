@@ -1302,6 +1302,7 @@ class Racketmanager_Event {
 				'name'         => 'ASC',
 			),
 			'club'    => false,
+			'league'  => false,
 			'status'  => false,
 			'count'   => false,
 			'name'    => false,
@@ -1313,6 +1314,7 @@ class Racketmanager_Event {
 		$season   = $args['season'];
 		$orderby  = $args['orderby'];
 		$club     = $args['club'];
+		$league   = $args['league'];
 		$status   = $args['status'];
 		$count    = $args['count'];
 		$name     = $args['name'];
@@ -1324,11 +1326,12 @@ class Racketmanager_Event {
 		if ( $season ) {
 			$search_terms[] = $wpdb->prepare( 't1.`season` = %s', $season );
 		}
-
 		if ( $club ) {
 			$search_terms[] = $wpdb->prepare( 't2.`affiliatedclub` = %d', intval( $club ) );
 		}
-
+		if ( $league ) {
+			$search_terms[] = $wpdb->prepare( 'l.`id` = %d', intval( $league ) );
+		}
 		if ( $status ) {
 			$search_terms[] = $wpdb->prepare( 't1.`profile` = %d', intval( $status ) );
 		}

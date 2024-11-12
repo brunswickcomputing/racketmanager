@@ -1383,7 +1383,7 @@ class Racketmanager_League {
 		$team_id          = $this->team_query_args['team_id'];
 
 		$args = array( $this->id );
-		$sql  = "SELECT B.`id` AS `id`, B.`title`, B.`affiliatedclub`, B.`stadium`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`group`, A.`points_plus`, A.`points_minus`, A.`points2_plus`, A.`points2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom`, B.`team_type` FROM {$wpdb->racketmanager_teams} B INNER JOIN {$wpdb->racketmanager_table} A ON B.id = A.team_id WHERE `league_id` = %d";
+		$sql  = "SELECT B.`id` AS `id`, B.`title`, B.`affiliatedclub`, B.`stadium`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`group`, A.`points_plus`, A.`points_minus`, A.`points2_plus`, A.`points2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom`, B.`team_type`, A.`rating` FROM {$wpdb->racketmanager_teams} B INNER JOIN {$wpdb->racketmanager_table} A ON B.id = A.team_id WHERE `league_id` = %d";
 
 		if ( '' === $season ) {
 			$sql   .= ' AND A.`season` = %s';
@@ -1641,7 +1641,7 @@ class Racketmanager_League {
 		}
 
 		$sql = $wpdb->prepare(
-			"SELECT A.`title`, B.`captain`, A.`affiliatedclub`, B.`match_day`, B.`match_time`, A.`stadium`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status`, A.`type`, A.`team_type`, C.`status` as `league_status` FROM {$wpdb->racketmanager_table} C INNER JOIN  {$wpdb->racketmanager_teams} A ON A.`id` = C.`team_id` AND C.`league_id` = %d LEFT JOIN {$wpdb->racketmanager_team_events} B ON A.`id` = B.`team_id` and B.`event_id` IN (select `event_id` FROM {$wpdb->racketmanager} WHERE `id` = %d) WHERE A.`id` = %d AND C.`season` = %s",
+			"SELECT A.`title`, B.`captain`, A.`affiliatedclub`, B.`match_day`, B.`match_time`, A.`stadium`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status`, A.`type`, A.`team_type`, C.`status` as `league_status`, c.`rating` FROM {$wpdb->racketmanager_table} C INNER JOIN  {$wpdb->racketmanager_teams} A ON A.`id` = C.`team_id` AND C.`league_id` = %d LEFT JOIN {$wpdb->racketmanager_team_events} B ON A.`id` = B.`team_id` and B.`event_id` IN (select `event_id` FROM {$wpdb->racketmanager} WHERE `id` = %d) WHERE A.`id` = %d AND C.`season` = %s",
 			intval( $this->id ),
 			intval( $this->id ),
 			intval( $team_id ),

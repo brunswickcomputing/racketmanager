@@ -702,4 +702,16 @@ class Racketmanager_Util {
 		$match_types['D'] = __( 'Doubles', 'racketmanager' );
 		return $match_types;
 	}
+	/**
+	 * Clear scheduled event function
+	 *
+	 * @param string $name name of scheduled event.
+	 * @param array  $args array of event arguments.
+	 * @return void
+	 */
+	public static function clear_scheduled_event( $name, $args ) {
+		if ( wp_next_scheduled( $name, $args ) ) {
+			wp_clear_scheduled_hook( $name, $args );
+		}
+	}
 }

@@ -5443,18 +5443,14 @@ class RacketManager_Admin extends RacketManager {
 		$schedule_args  = array( $competition_type );
 		if ( '' !== $options['resultPending'] ) {
 			$schedule_name = 'rm_resultPending';
-			if ( wp_next_scheduled( $schedule_name, $schedule_args ) ) {
-				wp_clear_scheduled_hook( $schedule_name, $schedule_args );
-			}
+			Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
 			if ( ! wp_next_scheduled( $schedule_name, $schedule_args ) && ! wp_schedule_event( $schedule_start, $interval, $schedule_name, $schedule_args ) ) {
 				error_log( __( 'Error scheduling pending results', 'racketmanager' ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			}
 		}
 		if ( '' !== $options['confirmationPending'] ) {
 			$schedule_name = 'rm_confirmationPending';
-			if ( wp_next_scheduled( $schedule_name, $schedule_args ) ) {
-				wp_clear_scheduled_hook( $schedule_name, $schedule_args );
-			}
+			Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
 			if ( ! wp_next_scheduled( $schedule_name, $schedule_args ) && ! wp_schedule_event( $schedule_start, $interval, $schedule_name, $schedule_args ) ) {
 				error_log( __( 'Error scheduling result confirmations', 'racketmanager' ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			}

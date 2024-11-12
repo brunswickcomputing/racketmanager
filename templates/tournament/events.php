@@ -92,17 +92,38 @@ if ( empty( $event ) ) {
 		</div>
 		<div class="module__content">
 			<div class="module-container">
-				<div class="col-12 col-md-6 col-lg-3">
+				<div class="col-12 col-md-6 col-lg-4">
 					<div class="row mb-2 row-header">
-						<div class="col-12">
+						<?php
+						if ( ! empty( $event->num_seeds ) ) {
+							?>
+							<div class="col-1" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="<?php esc_html_e( 'Seed', 'racketmanager' ); ?>">#</div>
+							<?php
+						}
+						?>
+						<div class="col-8">
 							<?php esc_html_e( 'Player', 'racketmanager' ); ?>
+						</div>
+						<div class="col-3 team-rating">
+							<?php esc_html_e( 'Rating', 'racketmanager' ); ?>
 						</div>
 					</div>
 					<?php
 					foreach ( $event->teams as $entry ) {
 						?>
 						<div class="row row-list">
-							<div class="col-12" name="<?php esc_html_e( 'Player', 'racketmanager' ); ?>">
+							<div class="col-1">
+								<?php
+								if ( ! empty( $event->num_seeds ) ) {
+									if ( intval( $entry->rank ) <= intval( $event->num_seeds ) ) {
+										echo esc_html( $entry->rank );
+									}
+									?>
+									<?php
+								}
+								?>
+							</div>
+							<div class="col-8" name="<?php esc_html_e( 'Player', 'racketmanager' ); ?>">
 								<?php
 								if ( ! empty( $entry->player ) ) {
 									foreach ( $entry->player as $player ) {
@@ -117,6 +138,9 @@ if ( empty( $event ) ) {
 								}
 								?>
 							</div>
+						<div class="col-3 team-rating">
+							<?php echo esc_html( $entry->rating ); ?>
+						</div>
 						</div>
 						<?php
 					}

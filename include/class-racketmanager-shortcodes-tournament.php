@@ -162,27 +162,26 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			}
 		}
 		if ( $event ) {
-			$new_teams = array();
-			$event     = get_event( $event, 'name' );
+			$event = get_event( $event, 'name' );
 			if ( $event ) {
+				$primary_league_id = $event->primary_league;
+				if ( $primary_league_id ) {
+					$league = get_league( $primary_league_id );
+					if ( $league ) {
+						$event->num_seeds = isset( $league->championship->num_seeds ) ? $league->championship->num_seeds : 0;
+					}
+				}
 				$teams = $event->get_teams(
 					array(
-						'season' => $tournament->season,
+						'season'  => $tournament->season,
+						'league'  => $event->primary_league,
+						'orderby' => array(
+							'rank' => 'ASC',
+						),
 					)
 				);
 				if ( $teams ) {
-					foreach ( $teams as $team ) {
-						if ( ! empty( $team->player ) ) {
-							$new_team                 = new \stdClass();
-							$new_team->player         = $team->player;
-							$new_team->player_id      = $team->player_id;
-							$new_team->title          = $team->name;
-							$new_teams[ $team->name ] = $new_team;
-						}
-					}
-					$new_teams = array_unique( $new_teams, SORT_REGULAR );
-					asort( $new_teams );
-					$event->teams = $new_teams;
+					$event->teams = $teams;
 				} else {
 					$event->teams = array();
 				}

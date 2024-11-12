@@ -5824,3 +5824,7 @@ svg.media__img-element--icon.winner, svg.media__img-element--icon.runner-up {
 	background-color: #fff;
 	color: #2a2c32;
 }
+.team-rating {
+	align-content: center;
+	text-align: end;
+}

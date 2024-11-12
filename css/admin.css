@@ -97,6 +97,15 @@ button[readonly], html input[readonly] {
 legend.form-check-label {
 	font-size: 1rem;
 }
+.row .form-floating>label {
+	left: initial;
+}
+.wp-core-ui select.form-select {
+	max-width: 100%;
+	font-size: 1rem;
+	padding-left: 0.75rem;
+	padding-right: 2.25rem;
+}
 #club-location-picker {
     height: 320px;
 }

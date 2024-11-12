@@ -1099,6 +1099,21 @@ function racketmanager_upgrade() {
 	if ( version_compare( $installed, '8.25.0', '<' ) ) {
 		echo esc_html__( 'starting 8.25.0 upgrade', 'racketmanager' ) . "<br />\n";
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_table} ADD `rating` int( 11 ) NULL AFTER `status`" );
+		$tournament = Racketmanager\get_tournament( 13 );
+		$events     = $tournament->get_events();
+		foreach ( $events as $event ) {
+			$leagues = $event->get_leagues();
+			foreach ( $leagues as $league ) {
+				$teams = $league->get_league_teams();
+				foreach ( $teams as $team ) {
+					$table_entry = Racketmanager\get_league_team( $team->table_id );
+					if ( $table_entry ) {
+						$table_entry->set_rating( $team, $event );
+					}
+				}
+			}
+		}
+	}
 	/*
 	* Update version and dbversion
 	*/

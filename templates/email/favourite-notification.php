@@ -38,7 +38,6 @@ require 'email-header.php';
 																<div style="font-size: 16px; color: #000; background-color: transparent; margin: 10px;">
 																	<p style="line-height: 1.25; mso-line-height-rule: at-least; margin: 0 0 20px; padding: 0;">
 																		<table class="body-action" aria-describedby="<?php esc_html_e( 'outside url wrapping action', 'racketmanager' ); ?>">
-																			<?php $match_url .= 'day' . $match->match_day . '/'; ?>
 																			<tr>
 																				<td class="align-right team"><a style="text-decoration: none; color: #006800;" href="<?php echo esc_html( $match_url ); ?>"><?php echo esc_html( $match->teams['home']->title ); ?></a></td>
 																				<td class="align-center"><a style="text-decoration: none; color: #006800;" href="<?php echo esc_html( $match_url ); ?>"><?php echo esc_html( $match->score ); ?></a></td>

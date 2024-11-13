@@ -970,25 +970,13 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		if ( $valid ) {
 			$match_id = isset( $_POST['matchId'] ) ? intval( $_POST['matchId'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$match    = get_match( $match_id );
-			if ( function_exists( '\sponsor_level_cat_func' ) ) {
-				$sponsor_html = \sponsor_level_cat_func(
-					array(
-						'columns' => 1,
-						'title'   => 'no',
-						'bio'     => 'no',
-						'link'    => 'no',
-					),
-					''
-				);
-			} else {
-				$sponsor_html = '';
-			}
 			if ( isset( $match->league->num_rubbers ) && $match->league->num_rubbers > 0 ) {
 				$match->rubbers = $match->get_rubbers();
 				$template       = 'match-card-rubbers';
 			} else {
 				$template = 'match-card';
 			}
+			$sponsor_html                 = '';
 			$template_args['match']       = $match;
 			$template_args['sponsorhtml'] = $sponsor_html;
 			$shortcode                    = new RacketManager_Shortcodes();

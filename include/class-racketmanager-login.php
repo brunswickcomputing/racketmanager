@@ -52,6 +52,7 @@ class RacketManager_Login {
 		add_action( 'login_form_rp', array( $this, 'do_password_reset' ) );
 		add_action( 'login_form_resetpass', array( $this, 'do_password_reset' ) );
 		add_action( 'member_account_update', array( $this, 'do_member_account_update' ) );
+		add_action( 'init', array( $this, 'rp_load_translations' ) );
 
 		add_filter( 'authenticate', array( $this, 'maybe_redirect_at_authenticate' ), 101, 3 );
 		add_filter( 'login_redirect', array( $this, 'redirect_after_login' ), 10, 3 );
@@ -62,7 +63,13 @@ class RacketManager_Login {
 		add_filter( 'wp_new_user_notification_email_admin', array( $this, 'my_wp_new_user_notification_email_admin' ), 10, 3 );
 		add_filter( 'wp_new_user_notification_email', array( $this, 'my_wp_new_user_notification_email' ), 10, 3 );
 		add_filter( 'password_hint', array( $this, 'racketmanager_change_password_hint' ), 10, 1 );
-
+	}
+	/**
+	 * Load translations function
+	 *
+	 * @return void
+	 */
+	public function rp_load_translations() {
 		$this->already_signed_in = __( 'You are already signed in', 'racketmanager' );
 	}
 	/**

@@ -1190,7 +1190,9 @@ final class Racketmanager_Match {
 			}
 		}
 		if ( $updated ) {
-			$this->notify_favourites();
+			if ( '-1' !== $this->home_team && '-1' !== $this->away_team ) {
+				$this->notify_favourites();
+			}
 		}
 		return $updated;
 	}

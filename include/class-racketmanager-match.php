@@ -1186,6 +1186,7 @@ final class Racketmanager_Match {
 				if ( ! empty( $this->leg ) && '2' === $this->leg ) {
 					$this->update_result_tie();
 				}
+				$this->set_score();
 			}
 		}
 		if ( $updated ) {

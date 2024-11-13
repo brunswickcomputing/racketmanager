@@ -462,59 +462,7 @@ final class Racketmanager_Match {
 			$this->report      = ( $this->post_id ) ? '<a href="' . get_permalink( $this->post_id ) . '">' . __( 'Report', 'racketmanager' ) . '</a>' : '';
 			$this->sets        = ! empty( $match->custom['sets'] ) ? $match->custom['sets'] : array();
 			$this->is_walkover = false;
-			if ( null !== $this->home_points && null !== $this->away_points ) {
-				$this->home_score = $this->home_points;
-				$this->away_score = $this->away_points;
-				$this->score      = sprintf( '%g - %g', $this->home_score, $this->away_score );
-				if ( ! empty( $this->league->num_rubbers ) ) {
-					if ( -1 === intval( $this->home_team ) || -1 === intval( $this->away_team ) ) {
-						$this->is_walkover = true;
-						$set_score         = __( 'Walkover', 'racketmanager' );
-					} else {
-						$set_score = $this->score;
-					}
-					$this->set_score = $set_score;
-				} else {
-					$set_score  = '';
-					$this->sets = ! empty( $match->custom['sets'] ) ? $match->custom['sets'] : array();
-					$s          = 1;
-					foreach ( $this->sets as $set ) {
-						if ( isset( $set['player1'] ) && '' !== $set['player1'] && isset( $set['player2'] ) && '' !== $set['player2'] ) {
-							$set_score .= $set['player1'] . '-' . $set['player2'] . ' ';
-							if ( $set['player1'] > $set['player2'] ) {
-								$set['winner'] = 'player1';
-							} elseif ( $set['player1'] < $set['player2'] ) {
-								$set['winner'] = 'player2';
-							}
-						}
-						$this->sets[ $s ] = $set;
-						++$s;
-					}
-					$this->custom['sets'] = $this->sets;
-					if ( '' === $set_score || ! empty( $this->custom['walkover'] ) ) {
-						$this->is_walkover = true;
-						$set_score         = __( 'Walkover', 'racketmanager' );
-					}
-					if ( ! empty( $this->custom['retired'] ) ) {
-						$this->is_retired = true;
-					}
-					$this->set_score = $set_score;
-				}
-			} else {
-				$this->home_score = '';
-				$this->away_score = '';
-				$this->score      = '';
-				$set_score        = '';
-				if ( $this->winner_id ) {
-					if ( '-1' === $this->home_team || '-1' === $this->away_team ) {
-						$set_score = $this->score;
-					} else {
-						$this->is_walkover = true;
-						$set_score         = __( 'Walkover', 'racketmanager' );
-					}
-				}
-				$this->set_score = $set_score;
-			}
+			$this->set_score();
 			$this->is_walkover  = false;
 			$this->is_shared    = false;
 			$this->is_retired   = false;
@@ -624,6 +572,66 @@ final class Racketmanager_Match {
 					$this->prev_away_match = $this->get_prev_round_matches( $this->away_team, $this->season, $this->league );
 				}
 			}
+		}
+	}
+	/**
+	 * Set score function
+	 *
+	 * @return void
+	 */
+	private function set_score() {
+		if ( null !== $this->home_points && null !== $this->away_points ) {
+			$this->home_score = $this->home_points;
+			$this->away_score = $this->away_points;
+			$this->score      = sprintf( '%g - %g', $this->home_score, $this->away_score );
+			if ( ! empty( $this->league->num_rubbers ) ) {
+				if ( -1 === intval( $this->home_team ) || -1 === intval( $this->away_team ) ) {
+					$this->is_walkover = true;
+					$set_score         = __( 'Walkover', 'racketmanager' );
+				} else {
+					$set_score = $this->score;
+				}
+				$this->set_score = $set_score;
+			} else {
+				$set_score  = '';
+				$this->sets = ! empty( $this->custom['sets'] ) ? $this->custom['sets'] : array();
+				$s          = 1;
+				foreach ( $this->sets as $set ) {
+					if ( isset( $set['player1'] ) && '' !== $set['player1'] && isset( $set['player2'] ) && '' !== $set['player2'] ) {
+						$set_score .= $set['player1'] . '-' . $set['player2'] . ' ';
+						if ( $set['player1'] > $set['player2'] ) {
+							$set['winner'] = 'player1';
+						} elseif ( $set['player1'] < $set['player2'] ) {
+							$set['winner'] = 'player2';
+						}
+					}
+					$this->sets[ $s ] = $set;
+					++$s;
+				}
+				$this->custom['sets'] = $this->sets;
+				if ( '' === $set_score || ! empty( $this->custom['walkover'] ) ) {
+					$this->is_walkover = true;
+					$set_score         = __( 'Walkover', 'racketmanager' );
+				}
+				if ( ! empty( $this->custom['retired'] ) ) {
+					$this->is_retired = true;
+				}
+				$this->set_score = $set_score;
+			}
+		} else {
+			$this->home_score = '';
+			$this->away_score = '';
+			$this->score      = '';
+			$set_score        = '';
+			if ( $this->winner_id ) {
+				if ( '-1' === $this->home_team || '-1' === $this->away_team ) {
+					$set_score = $this->score;
+				} else {
+					$this->is_walkover = true;
+					$set_score         = __( 'Walkover', 'racketmanager' );
+				}
+			}
+			$this->set_score = $set_score;
 		}
 	}
 	/**

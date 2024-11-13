@@ -551,7 +551,13 @@ final class Racketmanager_Match {
 			if ( $this->league->event->is_box ) {
 				$this->link = '/league/' . seo_url( $this->league->title ) . '/match/' . $this->id . '/';
 			} elseif ( 'tournament' === $this->league->event->competition->type ) {
-				$this->link = '/league/' . seo_url( $this->league->title ) . '/match/' . $this->id . '/';
+				$tournament_code = $this->league->event->competition->id . ',' . $this->season;
+				$tournament      = get_tournament( $tournament_code, 'shortcode' );
+				if ( $tournament ) {
+					$this->link = '/tournament/' . seo_url( $tournament->name ) . '/match/' . seo_url( $this->league->title ) . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/' . $this->id . '/';
+				} else {
+					$this->link = '/league/' . seo_url( $this->league->title ) . '/match/' . $this->id . '/';
+				}
 			} else {
 				$this->link = '/match/' . seo_url( $this->league->title ) . '/' . $this->season . '/' . $match_ref . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/';
 			}
@@ -1234,6 +1240,7 @@ final class Racketmanager_Match {
 			$email_subject     = $racketmanager->site_name . ' - ' . $this->league->title . ' Result Notification';
 			$favourite_url     = $racketmanager->site_url . '/member-account/favourites';
 			$match_url         = $racketmanager->site_url . '/' . $this->league->event->competition->type . '/' . seo_url( $this->league->title ) . '/' . $this->league->current_season['name'] . '/';
+			$match_url         = $racketmanager->site_url . $this->link;
 			foreach ( $favourited_users as $user ) {
 				$user_details  = get_userdata( $user );
 				$email_to      = $user_details->display_name . ' <' . $user_details->user_email . '>';

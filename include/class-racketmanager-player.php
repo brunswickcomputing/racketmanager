@@ -281,11 +281,7 @@ final class Racketmanager_Player {
 			$this->type          = get_user_meta( $this->ID, 'racketmanager_type', true );
 			$this->btm           = get_user_meta( $this->ID, 'btm', true );
 			$this->year_of_birth = get_user_meta( $this->ID, 'year_of_birth', true );
-			if ( $this->year_of_birth ) {
-				$this->age = gmdate( 'Y' ) - intval( $this->year_of_birth );
-			} else {
-				$this->age = 0;
-			}
+			$this->calculate_age();
 			$this->contactno    = get_user_meta( $this->ID, 'contactno', true );
 			$this->removed_date = get_user_meta( $this->ID, 'remove_date', true );
 			$this->removed_user = get_user_meta( $this->ID, 'remove_user', true );
@@ -348,7 +344,18 @@ final class Racketmanager_Player {
 		}
 		return $user_id;
 	}
-
+	/**
+	 * Calculate player age function
+	 *
+	 * @return void
+	 */
+	private function calculate_age() {
+		if ( $this->year_of_birth ) {
+			$this->age = gmdate( 'Y' ) - intval( $this->year_of_birth );
+		} else {
+			$this->age = 0;
+		}
+	}
 	/**
 	 * Update player
 	 *
@@ -381,9 +388,9 @@ final class Racketmanager_Player {
 			$update = true;
 			update_user_meta( $this->ID, 'btm', $player->btm );
 		}
-		if ( $this->year_of_birth !== $player->year_of_birth ) {
+		$year_of_birth_update = $this->update_year_of_birth( $player->year_of_birth );
+		if ( $year_of_birth_update ) {
 			$update = true;
-			update_user_meta( $this->ID, 'year_of_birth', $player->year_of_birth );
 		}
 		if ( $this->user_email !== $player->email ) {
 			$update                  = true;
@@ -467,6 +474,26 @@ final class Racketmanager_Player {
 			update_user_meta( $this->ID, 'btm', $btm );
 			$this->btm = $btm;
 			wp_cache_set( $this->id, $this, 'players' );
+			return true;
+		} else {
+			return false;
+		}
+	}
+	/**
+	 * Update player year of birth
+	 *
+	 * @param int $year_of_birth year of birth.
+	 * @return boolean
+	 */
+	public function update_year_of_birth( $year_of_birth ) {
+		if ( intval( $this->year_of_birth ) !== $year_of_birth ) {
+			if ( empty( $this->year_of_birth ) ) {
+				$this->check_results_warning( 'dob' );
+			}
+			update_user_meta( $this->ID, 'year_of_birth', $year_of_birth );
+			$this->year_of_birth = $year_of_birth;
+			wp_cache_set( $this->id, $this, 'players' );
+			$this->calculate_age();
 			return true;
 		} else {
 			return false;

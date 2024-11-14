@@ -4541,14 +4541,14 @@ class RacketManager_Admin extends RacketManager {
 			$results_checker->team  = '';
 			if ( $results_checker->team_id > 0 ) {
 				if ( $results_checker->team_id === $results_checker->match->home_team ) {
-					$results_checker->team = $results_checker->match->teams['home']->title;
+					$results_checker->team = $results_checker->match->teams['home'];
 				} elseif ( $results_checker->team_id === $results_checker->match->away_team ) {
-					$results_checker->team = $results_checker->match->teams['away']->title;
+					$results_checker->team = $results_checker->match->teams['away'];
 				}
 			}
-			$player = get_userdata( $results_checker->player_id );
+			$player = get_player( $results_checker->player_id );
 			if ( $player ) {
-				$results_checker->player = $player->display_name;
+				$results_checker->player = $player;
 			} else {
 				$results_checker->player = '';
 			}

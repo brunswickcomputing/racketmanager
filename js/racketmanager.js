@@ -1472,6 +1472,15 @@ Racketmanager.switchHomeAway = function (link) {
 			jQuery(alert_response_1).html(message);
 			jQuery(modal).modal('hide')
 			Racketmanager.matchHeader(match_id);
+			let newPath = response.data[3];
+			let url = new URL(window.location.href);
+			let newURL = url.protocol + '//' + url.hostname + newPath;
+			if (newPath !== "") {
+				var newUri = newURL;
+				if (history.replaceState) {
+					history.replaceState('', document.title, newUri.toString());
+				}
+			}
 		},
 		error: function (response) {
 			if (response.responseJSON) {

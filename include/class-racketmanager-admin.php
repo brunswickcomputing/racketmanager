@@ -2125,10 +2125,12 @@ class RacketManager_Admin extends RacketManager {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
 		} else {
-			$form_valid = true;
+			$form_valid    = true;
+			$page_referrer = null;
 			if ( isset( $_POST['updatePlayer'] ) ) {
 				check_admin_referer( 'racketmanager_manage-player' );
-				$player_valid = $this->validatePlayer();
+				$page_referrer = isset( $_POST['page_referrer'] ) ? $_POST['page_referrer'] : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				$player_valid  = $this->validatePlayer();
 				if ( $player_valid[0] ) {
 					if ( isset( $_POST['playerId'] ) ) {
 						$player     = get_player( intval( $_POST['playerId'] ) );
@@ -2141,6 +2143,8 @@ class RacketManager_Admin extends RacketManager {
 					$error_messages = $player_valid[2];
 					$this->set_message( __( 'Error with player details', 'racketmanager' ), true );
 				}
+			} else {
+				$page_referrer = wp_get_referer();
 			}
 			$this->printMessage();
 			if ( isset( $_GET['club_id'] ) ) {
@@ -2148,6 +2152,13 @@ class RacketManager_Admin extends RacketManager {
 			}
 			if ( isset( $_GET['player_id'] ) ) {
 				$player_id = intval( $_GET['player_id'] );
+			}
+			if ( ! $page_referrer ) {
+				if ( empty( $club_id ) ) {
+					$page_referrer = 'admin.php?page=racketmanager-players&amp;tab=players';
+				} else {
+					$page_referrer = 'admin.php?page=racketmanager-clubs&amp;view=players&amp;club_id=' . $club_id;
+				}
 			}
 			$player = get_player( $player_id );
 			include_once RACKETMANAGER_PATH . '/admin/players/show-player.php';

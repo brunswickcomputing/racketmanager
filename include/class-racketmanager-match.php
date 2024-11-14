@@ -1574,10 +1574,11 @@ final class Racketmanager_Match {
 				$this->id
 			)
 		);
-		wp_cache_delete( $this->id, 'matches' );
 		if ( ( $this->league->event->competition->is_league || isset( $this->host ) ) && is_numeric( $this->home_team ) && is_numeric( $this->away_team ) ) {
 			$this->set_date_and_location();
 		}
+		$this->set_link();
+		wp_cache_set( $this->id, $this, 'matches' );
 		return $this;
 	}
 	/**

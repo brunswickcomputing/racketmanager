@@ -469,8 +469,10 @@ final class Racketmanager_Player {
 	 * @return boolean
 	 */
 	public function update_btm( $btm ) {
-		$current_btm = get_user_meta( $this->ID, 'btm', true );
-		if ( $current_btm !== $btm ) {
+		if ( intval( $this->btm ) !== $btm ) {
+			if ( empty( $this->btm ) ) {
+				$this->check_results_warning( 'btm' );
+			}
 			update_user_meta( $this->ID, 'btm', $btm );
 			$this->btm = $btm;
 			wp_cache_set( $this->id, $this, 'players' );

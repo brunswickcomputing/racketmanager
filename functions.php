@@ -666,6 +666,31 @@ function get_results_report( $results_report = null ) {
 	return $_results_report;
 }
 /**
+ * Get results check object
+ *
+ * @param int|null $results_check results_check ID or results_check object. Defaults to global $results_check.
+ * @return object results_represults_checkort|null
+ */
+function get_result_check( $results_check = null ) {
+	if ( empty( $results_check ) && isset( $GLOBALS['results_check'] ) ) {
+		$results_check = $GLOBALS['results_check'];
+	}
+
+	if ( $results_check instanceof Racketmanager_Results_Checker ) {
+		$_results_check = $results_check;
+	} elseif ( is_object( $results_check ) ) {
+		$_results_check = new Racketmanager_Results_Checker( $results_check );
+	} else {
+		$_results_check = Racketmanager_Results_Checker::get_instance( $results_check );
+	}
+
+	if ( ! $_results_check ) {
+		return null;
+	}
+
+	return $_results_check;
+}
+/**
  * Get message object
  *
  * @param int|null $message message ID or message object. Defaults to global $message.

@@ -731,6 +731,7 @@ class RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-validator-entry-form.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-exporter.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-results-report.php';
+		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-results-checker.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-rest-routes.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-message.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-user.php';

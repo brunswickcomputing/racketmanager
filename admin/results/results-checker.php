@@ -157,7 +157,7 @@ foreach ( $competitions as $competition ) {
 							if ( 'outstanding' !== $results_check_filter ) {
 								?>
 								<div class="d-none d-md-block col-md-3 col-lg-6"></div>
-								<div class="col-4 col-md-3 col-lg-2"><?php echo esc_html( $results_checker->status ); ?></div>
+								<div class="col-4 col-md-3 col-lg-2"><?php echo esc_html( $results_checker->status_desc ); ?></div>
 								<div class="col-4 col-md-3 col-lg-2"><?php echo esc_html( $results_checker->updated_date ); ?></div>
 								<div class="col-4 col-md-3 col-lg-2"><?php echo esc_html( $results_checker->updated_user_name ); ?></div>
 								<?php

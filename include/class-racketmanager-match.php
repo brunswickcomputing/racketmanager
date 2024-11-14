@@ -1566,7 +1566,7 @@ final class Racketmanager_Match {
 			$this->away_team = $away;
 			$this->set_teams_details( 'away' );
 		}
-		$wpdb->query(
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"UPDATE {$wpdb->racketmanager_matches} SET `home_team` = %s, `away_team` = %s WHERE `id` = %d",
 				$home,

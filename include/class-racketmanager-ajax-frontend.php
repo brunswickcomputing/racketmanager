@@ -2035,7 +2035,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			}
 		}
 		if ( $valid ) {
-			array_push( $return, $msg, $modal, $match_id );
+			array_push( $return, $msg, $modal, $match_id, $match->link );
 			wp_send_json_success( $return );
 		} else {
 			$msg = __( 'Unable to update match schedule', 'racketmanager' );

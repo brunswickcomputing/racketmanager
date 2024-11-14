@@ -384,9 +384,9 @@ final class Racketmanager_Player {
 			$update = true;
 			update_user_meta( $this->ID, 'gender', $player->gender );
 		}
-		if ( $this->btm !== $player->btm ) {
+		$btm_update = $this->update_btm( $player->btm );
+		if ( $btm_update ) {
 			$update = true;
-			update_user_meta( $this->ID, 'btm', $player->btm );
 		}
 		$year_of_birth_update = $this->update_year_of_birth( $player->year_of_birth );
 		if ( $year_of_birth_update ) {

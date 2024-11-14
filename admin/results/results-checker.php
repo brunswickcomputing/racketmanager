@@ -143,18 +143,18 @@ foreach ( $competitions as $competition ) {
 							<div class="col-auto col-md-2"><?php echo esc_html( $results_checker->team->title ); ?></div>
 							<div class="col-auto col-sm-2"><?php echo esc_html( $results_checker->player->display_name ); ?></div>
 							<div class="col-12 col-md-3"><?php echo esc_html( $results_checker->description ); ?></div>
-								<?php
-								if ( 'outstanding' !== $results_check_filter ) {
-									?>
+							<?php
+							if ( 'outstanding' !== $results_check_filter ) {
+								?>
 								<div class="d-none d-md-block col-md-3 col-lg-6"></div>
 								<div class="col-4 col-md-3 col-lg-2"><?php echo esc_html( $results_checker->status ); ?></div>
 								<div class="col-4 col-md-3 col-lg-2"><?php echo esc_html( $results_checker->updated_date ); ?></div>
 								<div class="col-4 col-md-3 col-lg-2"><?php echo esc_html( $results_checker->updated_user_name ); ?></div>
-									<?php
-								}
-								?>
-						</div>
 								<?php
+							}
+							?>
+						</div>
+						<?php
 					}
 				} else {
 					?>

@@ -47,6 +47,17 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.26.0 =
+* BUGFIX: use correct database table alias
+* BUGFIX: do not overwrite details due to reuse of index key
+* UPDATE: show seeds and ratings for teams in tournament events
+* UPDATE: load translations after init
+* UPDATE: remove sponsor from matchcard
+* UPDATE: do not notify favourites when match involves a bye
+* UPDATE: set match link for tournament match
+* UPDATE: remove results warning when player updated btm / year of birth before match confirmed
+* UPDATE: change url when teams switched
+
 = 8.25.0 =
 * BUGFIX: ensure messages displayed for tournament update
 * BUGFIX: set season from tournament

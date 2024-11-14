@@ -308,7 +308,6 @@ final class Racketmanager_Player {
 			}
 		}
 	}
-
 	/**
 	 * Add player
 	 *
@@ -366,23 +365,29 @@ final class Racketmanager_Player {
 	public function update( $player ) {
 		global $racketmanager;
 
-		$update    = false;
-		$user_data = array();
+		$update               = false;
+		$user_data            = array();
+		$player->display_name = $player->firstname . ' ' . $player->surname;
 		if ( $this->firstname !== $player->firstname ) {
-			$update                     = true;
-			$user_data['first_name']    = $player->firstname;
-			$user_data['display_name']  = $player->firstname . ' ' . $player->surname;
-			$user_data['user_nicename'] = sanitize_title( $user_data['display_name'] );
+			$update                  = true;
+			$user_data['first_name'] = $player->firstname;
+			$this->firstname         = $player->firstname;
 		}
 		if ( $this->surname !== $player->surname ) {
+			$update                 = true;
+			$user_data['last_name'] = $player->surname;
+			$this->surname          = $player->surname;
+		}
+		if ( $this->display_name !== $player->display_name ) {
 			$update                     = true;
-			$user_data['last_name']     = $player->surname;
-			$user_data['display_name']  = $player->firstname . ' ' . $player->surname;
+			$user_data['display_name']  = $player->display_name;
 			$user_data['user_nicename'] = sanitize_title( $user_data['display_name'] );
+			$this->display_name         = $player->display_name;
 		}
 		if ( $this->gender !== $player->gender ) {
 			$update = true;
 			update_user_meta( $this->ID, 'gender', $player->gender );
+			$this->gender = $player->gender;
 		}
 		$btm_update = $this->update_btm( $player->btm );
 		if ( $btm_update ) {
@@ -395,10 +400,13 @@ final class Racketmanager_Player {
 		if ( $this->user_email !== $player->email ) {
 			$update                  = true;
 			$user_data['user_email'] = $player->email;
+			$this->user_email        = $player->email;
+			$this->email             = $this->user_email;
 		}
 		if ( $this->contactno !== $player->contactno ) {
 			$update = true;
 			update_user_meta( $this->ID, 'contactno', $player->contactno );
+			$this->contactno = $player->contactno;
 		}
 		if ( $this->locked !== $player->locked ) {
 			$update = true;
@@ -411,13 +419,14 @@ final class Racketmanager_Player {
 				delete_user_meta( $this->ID, 'locked_date' );
 				delete_user_meta( $this->ID, 'locked_user' );
 			}
+			$this->locked = $player->locked;
 		}
 
 		if ( ! $update ) {
 			$racketmanager->set_message( __( 'No updates', 'racketmanager' ) );
 			return;
 		}
-		wp_cache_delete( $this->id, 'players' );
+		wp_cache_set( $this->id, $this, 'players' );
 		if ( $user_data ) {
 			$user_data['ID'] = $this->ID;
 			$user_id         = wp_update_user( $user_data );

@@ -472,7 +472,39 @@ final class Racketmanager_Player {
 			return false;
 		}
 	}
-
+	/**
+	 * Handle outstanding results warnings function
+	 *
+	 * @param string $type type of check.
+	 * @return boolean
+	 */
+	private function check_results_warning( $type ) {
+		global $racketmanager;
+		$args = array();
+		switch ( $type ) {
+			case 'btm':
+				$description = __( 'LTA tennis number missing', 'racketmanager' );
+				break;
+			case 'dob':
+				$description = __( 'no age provided', 'racketmanager' );
+				break;
+			default:
+				return false;
+		}
+		$args['count']     = true;
+		$args['status']    = 'outstanding';
+		$args['player']    = $this->id;
+		$args['type']      = $description;
+		$args['confirmed'] = 'Y';
+		$count             = $racketmanager->get_result_warnings( $args );
+		if ( $count ) {
+			$args['count']    = false;
+			$results_warnings = $racketmanager->get_result_warnings( $args );
+			foreach ( $results_warnings as $result_warning ) {
+				$result_warning->delete();
+			}
+		}
+	}
 	/**
 	 * Delete player
 	 */

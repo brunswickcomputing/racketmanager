@@ -63,7 +63,7 @@ final class Racketmanager_Results_Report {
 
 			$results_report = new Racketmanager_Results_Report( $results_report );
 
-			wp_cache_set( $results_report->id, $results_report, 'charges' );
+			wp_cache_set( $results_report->id, $results_report, 'results_report' );
 		}
 
 		return $results_report;

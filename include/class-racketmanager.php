@@ -3300,4 +3300,92 @@ class RacketManager {
 		}
 		return $players;
 	}
+	/**
+	 * Gets results checker from database
+	 *
+	 * @param array $args query arguments.
+	 * @return array
+	 */
+	public function get_result_warnings( $args = array() ) {
+		global $wpdb;
+		$defaults    = array(
+			'season'      => false,
+			'status'      => false,
+			'competition' => false,
+			'event'       => false,
+			'count'       => false,
+			'player'      => false,
+			'type'        => false,
+			'confirmed'   => false,
+		);
+		$args        = array_merge( $defaults, $args );
+		$season      = $args['season'];
+		$status      = $args['status'];
+		$competition = $args['competition'];
+		$event       = $args['event'];
+		$count       = $args['count'];
+		$player_id   = $args['player'];
+		$type        = $args['type'];
+		$confirmed   = $args['confirmed'];
+		$sql         = " FROM {$wpdb->racketmanager_results_checker} rc WHERE 1";
+
+		if ( $status && 'all' !== $status ) {
+			if ( 'outstanding' === $status ) {
+				$sql .= ' AND `status` IS NULL';
+			} else {
+				$sql .= $wpdb->prepare( ' AND `status` = %d', $status );
+			}
+		}
+		if ( $season && 'all' !== $season ) {
+			$sql .= $wpdb->prepare( " AND `match_id` IN (SELECT `id` FROM {$wpdb->racketmanager_matches} WHERE `season` = %s)", $season );
+		}
+		if ( $competition && 'all' !== $competition ) {
+			$sql .= $wpdb->prepare( " AND `match_id` IN (SELECT m.`id` FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l WHERE m.`league_id` = l.`id` AND l.`event_id` IN (SELECT `id` FROM {$wpdb->racketmanager_events} WHERE `competition_id` = %d))", $competition );
+		} elseif ( $event && 'all' !== $event ) {
+			$sql .= $wpdb->prepare( " AND `match_id` IN (SELECT m.`id` FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l WHERE m.`league_id` = l.`id` AND l.`event_id` = %d)", $event );
+		}
+		if ( $player_id ) {
+			$sql .= $wpdb->prepare( ' AND `player_id` = %d', $player_id );
+		}
+		if ( $type ) {
+			$sql .= $wpdb->prepare( ' AND `description` = %s', $type );
+		}
+		if ( $confirmed ) {
+			$sql .= $wpdb->prepare( " AND `match_id` IN (SELECT `id` FROM {$wpdb->racketmanager_matches} WHERE `id` = rc.`match_id` AND `confirmed` != %s)", $confirmed );
+		}
+		if ( $count ) {
+			$sql = 'SELECT COUNT(*)' . $sql;
+			return $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			);
+		}
+		$sql  = 'SELECT `id`, `league_id`, `match_id`, `team_id`, `player_id`, `updated_date`, `updated_user`, `description`, `status`' . $sql;
+		$sql .= ' ORDER BY `match_id` DESC, `league_id` ASC, `team_id` ASC, `player_id` ASC';
+
+		$results_checkers = wp_cache_get(
+			md5( $sql ),
+			'results_checkers'
+		);
+		if ( ! $results_checkers ) {
+			$results_checkers = $wpdb->get_results(
+				//phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			); // db call ok.
+			wp_cache_set(
+				md5( $sql ),
+				$results_checkers,
+				'results_checkers'
+			);
+		}
+
+		$class = '';
+		foreach ( $results_checkers as $i => $results_checker ) {
+			$result_check = get_result_check( $results_checker->id );
+			if ( $result_check ) {
+				$results_checkers[ $i ] = $result_check;
+			}
+		}
+		return $results_checkers;
+	}
 }

@@ -609,12 +609,17 @@ class RacketManager_Admin extends RacketManager {
 					if ( isset( $_POST['resultsChecker'] ) && isset( $_POST['action'] ) ) {
 						// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 						foreach ( $_POST['resultsChecker'] as $i => $results_checker_id ) {
-							if ( 'approve' === $_POST['action'] ) {
-								$this->approveResultsChecker( intval( $results_checker_id ) );
-							} elseif ( 'handle' === $_POST['action'] ) {
-								$this->handleResultsChecker( intval( $results_checker_id ) );
-							} elseif ( 'delete' === $_POST['action'] ) {
-								$this->deleteResultsChecker( intval( $results_checker_id ) );
+							$result_check = get_result_check( $results_checker_id );
+							if ( $result_check ) {
+								if ( 'approve' === $_POST['action'] ) {
+									$result_check->approve();
+								} elseif ( 'handle' === $_POST['action'] ) {
+									$result_check->handle();
+								} elseif ( 'delete' === $_POST['action'] ) {
+									$result_check->delete();
+								}
+							} else {
+								$this->set_message( __( 'Result check not found', 'racketmanager' ), true );
 							}
 						}
 					} else {
@@ -626,7 +631,7 @@ class RacketManager_Admin extends RacketManager {
 				$this->printMessage();
 				$tab = 'resultschecker';
 			}
-			$results_checkers = $this->getResultsChecker(
+			$results_checkers = $this->get_result_warnings(
 				array(
 					'season'      => $season_select,
 					'competition' => $competition_select,
@@ -4474,295 +4479,6 @@ class RacketManager_Admin extends RacketManager {
 		} else {
 			wp_send_json_success( $output );
 		}
-	}
-
-	/**
-	 * Gets results checker from database
-	 *
-	 * @param array $args query arguments.
-	 * @return array
-	 */
-	public function getResultsChecker( $args = array() ) {
-		global $wpdb;
-
-		$defaults    = array(
-			'season'      => false,
-			'status'      => false,
-			'competition' => false,
-			'event'       => false,
-		);
-		$args        = array_merge( $defaults, $args );
-		$season      = $args['season'];
-		$status      = $args['status'];
-		$competition = $args['competition'];
-		$event       = $args['event'];
-		$sql         = "SELECT `id`, `league_id`, `match_id`, `team_id`, `player_id`, `updated_date`, `updated_user`, `description`, `status` FROM {$wpdb->racketmanager_results_checker} WHERE 1 = 1";
-
-		if ( $status && 'all' !== $status ) {
-			if ( 'outstanding' === $status ) {
-				$sql .= ' AND `status` IS NULL';
-			} else {
-				$sql .= $wpdb->prepare( ' AND `status` = %d', $status );
-			}
-		}
-		if ( $season && 'all' !== $season ) {
-			$sql .= $wpdb->prepare( " AND `match_id` IN (SELECT `id` FROM {$wpdb->racketmanager_matches} WHERE `season` = %s)", $season );
-		}
-		if ( $competition && 'all' !== $competition ) {
-			$sql .= $wpdb->prepare( " AND `match_id` IN (SELECT m.`id` FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l WHERE m.`league_id` = l.`id` AND l.`event_id` IN (SELECT `id` FROM {$wpdb->racketmanager_events} WHERE `competition_id` = %d))", $competition );
-		} elseif ( $event && 'all' !== $event ) {
-			$sql .= $wpdb->prepare( " AND `match_id` IN (SELECT m.`id` FROM {$wpdb->racketmanager_matches} m, {$wpdb->racketmanager} l WHERE m.`league_id` = l.`id` AND l.`event_id` = %d)", $event );
-		}
-
-		$sql .= ' ORDER BY `match_id` DESC, `league_id` ASC, `team_id` ASC, `player_id` ASC';
-
-		$results_checkers = wp_cache_get(
-			md5( $sql ),
-			'results_checkers'
-		);
-		if ( ! $results_checkers ) {
-			$results_checkers = $wpdb->get_results(
-				//phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-				$sql
-			); // db call ok.
-			wp_cache_set(
-				md5( $sql ),
-				$results_checkers,
-				'results_checkers'
-			);
-		}
-
-		$class = '';
-		foreach ( $results_checkers as $i => $results_checker ) {
-			$class                  = ( 'alternate' === $class ) ? '' : 'alternate';
-			$results_checker->class = $class;
-
-			$results_checker->match = get_match( $results_checker->match_id );
-			$results_checker->team  = '';
-			if ( $results_checker->team_id > 0 ) {
-				if ( $results_checker->team_id === $results_checker->match->home_team ) {
-					$results_checker->team = $results_checker->match->teams['home'];
-				} elseif ( $results_checker->team_id === $results_checker->match->away_team ) {
-					$results_checker->team = $results_checker->match->teams['away'];
-				}
-			}
-			$player = get_player( $results_checker->player_id );
-			if ( $player ) {
-				$results_checker->player = $player;
-			} else {
-				$results_checker->player = '';
-			}
-			$results_checker->updated_user_name = '';
-			if ( '' !== $results_checker->updated_user ) {
-				$user = get_userdata( $results_checker->updated_user );
-				if ( $user ) {
-					$results_checker->updated_user_name = $user->fullname;
-				}
-			}
-			if ( 1 === $results_checker->status ) {
-				$results_checker->status = 'Approved';
-			} elseif ( 2 === $results_checker->status ) {
-				$results_checker->status = 'Handled';
-			} else {
-				$results_checker->status = '';
-			}
-
-			$results_checkers[ $i ] = $results_checker;
-		}
-
-		return $results_checkers;
-	}
-
-	/**
-	 * Get single results checker
-	 *
-	 * @param int $results_checker_id id of entry to return.
-	 * @return object
-	 */
-	private function getResultsCheckerEntry( $results_checker_id ) {
-		global $wpdb;
-		return $wpdb->get_row( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-			"SELECT `league_id`, `match_id`, `team_id`, `player_id`, `rubber_id`, `updated_date`, `updated_user`, `description`, `status` FROM {$wpdb->racketmanager_results_checker} WHERE `id` = '" . intval( $results_checker_id ) . "'"
-		);
-	}
-
-	/**
-	 * Approve Results Checker entry
-	 *
-	 * @param int $results_checker_id id of entry to approve.
-	 * @return boolean
-	 */
-	private function approveResultsChecker( $results_checker_id ) {
-		global $wpdb, $racketmanager;
-
-		$results_checker = $this->getResultsCheckerEntry( $results_checker_id );
-		if ( empty( $results_checker->updated_date ) ) {
-			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_results_checker} SET `updated_date` = now(), `updated_user` = %d, `status` = 1 WHERE `id` = %d ",
-					get_current_user_id(),
-					$results_checker_id
-				)
-			);
-			$racketmanager->set_message( __( 'Results checker approved', 'racketmanager' ) );
-		}
-
-		return true;
-	}
-
-	/**
-	 * Handle Results Checker entry
-	 *
-	 * @param int $results_checker_id id of entry to handle.
-	 * @return boolean
-	 */
-	private function handleResultsChecker( $results_checker_id ) {
-		global $wpdb, $racketmanager_shortcodes;
-
-		$results_checker = $this->getResultsCheckerEntry( $results_checker_id );
-		if ( empty( $results_checker->updated_date ) ) {
-			$player = get_player( $results_checker->player_id );
-			$match  = get_match( $results_checker->match_id );
-			if ( $match ) {
-				$penalty = false;
-				if ( 'league' === $match->league->event->competition->type ) {
-					$point_rule = $match->league->get_point_rule();
-					$penalty    = empty( $point_rule['forwalkover_rubber'] ) ? false : $point_rule['forwalkover_rubber'];
-				}
-				$rubber = get_rubber( $results_checker->rubber_id );
-				if ( $rubber ) {
-					$num_sets_to_win  = $match->league->num_sets_to_win;
-					$num_games_to_win = 1;
-					$set_type         = isset( $rubber->sets[1]['settype'] ) ? $rubber->sets[1]['settype'] : null;
-					if ( $set_type ) {
-						$set_info = Racketmanager_Util::get_set_info( $set_type );
-						if ( $set_info ) {
-							$num_games_to_win = $set_info->min_win;
-						}
-					}
-					$points = array();
-					if ( $results_checker->team_id === $match->home_team ) {
-						$points['home']['walkover'] = true;
-						if ( isset( $rubber->custom['walkover'] ) && 'home' === $rubber->custom['walkover'] ) {
-							$points['away']['walkover'] = true;
-							$rubber->custom['walkover'] = 'both';
-							$points['away']['sets']     = 0;
-							$stats['sets']['away']      = 0;
-							$stats['games']['away']     = 0;
-						} else {
-							$rubber->custom['walkover'] = 'away';
-							$points['away']['sets']     = $num_sets_to_win;
-							$stats['sets']['away']      = $num_sets_to_win;
-							$stats['games']['away']     = $num_games_to_win * $num_sets_to_win;
-						}
-						$points['home']['sets'] = 0;
-						$stats['sets']['home']  = 0;
-						$stats['games']['home'] = 0;
-					} else {
-						$points['away']['walkover'] = true;
-						if ( isset( $rubber->custom['walkover'] ) && 'away' === $rubber->custom['walkover'] ) {
-							$points['home']['walkover'] = true;
-							$rubber->custom['walkover'] = 'both';
-							$points['home']['sets']     = 0;
-							$stats['sets']['home']      = 0;
-							$stats['games']['home']     = 0;
-						} else {
-							$rubber->custom['walkover'] = 'home';
-							$points['home']['sets']     = $num_sets_to_win;
-							$stats['sets']['home']      = $num_sets_to_win;
-							$stats['games']['home']     = $num_games_to_win * $num_sets_to_win;
-						}
-						$points['away']['sets'] = 0;
-						$stats['sets']['away']  = 0;
-						$stats['games']['away'] = 0;
-					}
-					$points['home']['team']  = $match->home_team;
-					$points['away']['team']  = $match->away_team;
-					$result                  = $rubber->calculate_result( $points );
-					$rubber->home_points     = $result->home;
-					$rubber->away_points     = $result->away;
-					$rubber->winner_id       = $result->winner;
-					$rubber->loser_id        = $result->loser;
-					$rubber->custom['stats'] = $stats;
-					$rubber->status          = '1';
-					$rubber->update_result();
-				}
-				$comments = $match->comments;
-				$comment  = $rubber->title . ': ' . __( 'ineligible player', 'racketmanager' ) . ' ' . $player->display_name . ' - ' . $results_checker->description;
-				if ( empty( $comments['result'] ) ) {
-					$comments['result'] = $comment;
-				} else {
-					$comments['result'] .= "\n" . $comment;
-				}
-				$match->set_comments( $comments );
-				$match->update_result( $match->home_points, $match->away_points, $match->custom, $match->confirmed );
-				$update            = $match->update_league_with_result( $match );
-				$organisation_name = $this->site_name;
-				$headers           = array();
-				$email_from        = $this->get_confirmation_email( $match->league->event->competition->type );
-				$headers[]         = 'From: ' . ucfirst( $match->league->event->competition->type ) . ' Secretary <' . $email_from . '>';
-				$headers[]         = 'cc: ' . ucfirst( $match->league->event->competition->type ) . ' Secretary <' . $email_from . '>';
-				$email_subject     = $this->site_name . ' - ' . $match->teams['home']->title . ' - ' . $match->teams['away']->title . ' - ' . __( 'ineligible player', 'racketmanager' );
-				if ( $results_checker->team_id === $match->home_team ) {
-					$captain   = $match->teams['home']->captain;
-					$opponent  = $match->teams['away']->title;
-					$email_to  = $match->teams['home']->captain . ' <' . $match->teams['home']->contactemail . '>';
-					$headers[] = 'cc: ' . $match->teams['away']->captain . ' <' . $match->teams['away']->contactemail . '>';
-				} elseif ( $results_checker->team_id === $match->away_team ) {
-					$captain   = $match->teams['away']->captain;
-					$opponent  = $match->teams['home']->title;
-					$email_to  = $match->teams['away']->captain . ' <' . $match->teams['away']->contactemail . '>';
-					$headers[] = 'cc: ' . $match->teams['home']->captain . ' <' . $match->teams['home']->contactemail . '>';
-				}
-				$headers[]     = 'cc: ' . $match->teams['home']->club->match_secretary_name . ' <' . $match->teams['home']->club->match_secretary_email . '>';
-				$headers[]     = 'cc: ' . $match->teams['away']->club->match_secretary_name . ' <' . $match->teams['away']->club->match_secretary_email . '>';
-				$email_message = $racketmanager_shortcodes->load_template(
-					'result-check',
-					array(
-						'email_subject' => $email_subject,
-						'organisation'  => $organisation_name,
-						'captain'       => $captain,
-						'opponent'      => $opponent,
-						'player'        => $player->display_name,
-						'reason'        => $results_checker->description,
-						'contact_email' => $email_from,
-						'penalty'       => $penalty,
-					),
-					'email'
-				);
-				wp_mail( $email_to, $email_subject, $email_message, $headers );
-			}
-			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_results_checker} SET `updated_date` = now(), `updated_user` = %d, `status` = 2 WHERE `id` = %d ",
-					get_current_user_id(),
-					$results_checker_id
-				)
-			);
-			$this->set_message( __( 'Results checker updated', 'racketmanager' ) );
-		}
-
-		return true;
-	}
-
-	/**
-	 * Delete Results Checker entry
-	 *
-	 * @param int $results_checker_id id of entry to delete.
-	 * @return boolean
-	 */
-	private function deleteResultsChecker( $results_checker_id ) {
-		global $wpdb;
-
-		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_results_checker} WHERE `id` = %d",
-				$results_checker_id
-			)
-		);
-		$this->set_message( __( 'Results checker deleted', 'racketmanager' ) );
-
-		return true;
 	}
 
 	/**

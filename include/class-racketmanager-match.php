@@ -543,28 +543,7 @@ final class Racketmanager_Match {
 			} elseif ( ! isset( $this->comments['result'] ) ) {
 				$this->comments['result'] = '';
 			}
-			if ( $this->league->is_championship ) {
-				$match_ref = $this->final_round;
-			} else {
-				$match_ref = 'day' . $this->match_day;
-			}
-			if ( $this->league->event->is_box ) {
-				$this->link = '/league/' . seo_url( $this->league->title ) . '/match/' . $this->id . '/';
-			} elseif ( 'tournament' === $this->league->event->competition->type ) {
-				$tournament_code = $this->league->event->competition->id . ',' . $this->season;
-				$tournament      = get_tournament( $tournament_code, 'shortcode' );
-				if ( $tournament ) {
-					$this->link = '/tournament/' . seo_url( $tournament->name ) . '/match/' . seo_url( $this->league->title ) . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/' . $this->id . '/';
-				} else {
-					$this->link = '/league/' . seo_url( $this->league->title ) . '/match/' . $this->id . '/';
-				}
-			} else {
-				$this->link = '/match/' . seo_url( $this->league->title ) . '/' . $this->season . '/' . $match_ref . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/';
-			}
-			$this->link_tie = $this->link;
-			if ( ! empty( $this->leg ) ) {
-				$this->link .= 'leg-' . $this->leg . '/';
-			}
+			$this->set_link();
 			if ( empty( $this->winner_id ) ) {
 				$this->is_pending = true;
 			} else {
@@ -578,6 +557,33 @@ final class Racketmanager_Match {
 					$this->prev_away_match = $this->get_prev_round_matches( $this->away_team, $this->season, $this->league );
 				}
 			}
+		}
+	}
+	/**
+	 * Function to set match link
+	 */
+	private function set_link() {
+		if ( $this->league->is_championship ) {
+			$match_ref = $this->final_round;
+		} else {
+			$match_ref = 'day' . $this->match_day;
+		}
+		if ( $this->league->event->is_box ) {
+			$this->link = '/league/' . seo_url( $this->league->title ) . '/match/' . $this->id . '/';
+		} elseif ( 'tournament' === $this->league->event->competition->type ) {
+			$tournament_code = $this->league->event->competition->id . ',' . $this->season;
+			$tournament      = get_tournament( $tournament_code, 'shortcode' );
+			if ( $tournament ) {
+				$this->link = '/tournament/' . seo_url( $tournament->name ) . '/match/' . seo_url( $this->league->title ) . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/' . $this->id . '/';
+			} else {
+				$this->link = '/league/' . seo_url( $this->league->title ) . '/match/' . $this->id . '/';
+			}
+		} else {
+			$this->link = '/match/' . seo_url( $this->league->title ) . '/' . $this->season . '/' . $match_ref . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/';
+		}
+			$this->link_tie = $this->link;
+		if ( ! empty( $this->leg ) ) {
+			$this->link .= 'leg-' . $this->leg . '/';
 		}
 	}
 	/**

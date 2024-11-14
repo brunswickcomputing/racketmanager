@@ -31,7 +31,7 @@ if ( $match->is_pending ) {
 		if ( ( 'admin' === $user_type || 'matchsecretary' === $user_type || 'captain' === $user_type ) && ( 'admin' === $user_type || 'both' === $user_team || 'home' === $user_team ) ) {
 			$allow_schedule_match = true;
 		}
-		if ( ( 'admin' === $user_type || ( 'matchsecretary' === $user_type && ( 'both' === $user_team || 'home' === $user_team ) ) ) && ( 'false' === $match->league->event->seasons[ $match->season ]['homeAway'] ) ) {
+		if ( ( 'admin' === $user_type || ( 'matchsecretary' === $user_type && ( 'both' === $user_team || 'home' === $user_team ) ) ) && ( $match->league->event->seasons[ $match->season ]['homeAway'] ) ) {
 			$allow_switch_match = true;
 		}
 	}

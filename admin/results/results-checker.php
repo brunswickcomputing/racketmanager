@@ -141,7 +141,17 @@ foreach ( $competitions as $competition ) {
 							<div class="col-5 col-sm-2 col-lg-1"><?php echo esc_html( mysql2date( 'Y-m-d', $results_checker->match->date ) ); ?></div>
 							<div class="col-12 col-md-2 col-lg-3"><a href="admin.php?page=racketmanager-results&amp;subpage=match&amp;match_id=<?php echo esc_html( $results_checker->match_id ); ?>&amp;referrer=resultschecker"><?php echo esc_html( $results_checker->match->match_title ); ?></a></div>
 							<div class="col-auto col-md-2"><?php echo esc_html( $results_checker->team->title ); ?></div>
-							<div class="col-auto col-sm-2"><?php echo esc_html( $results_checker->player->display_name ); ?></div>
+							<div class="col-auto col-sm-2">
+								<?php
+								if ( isset( $results_checker->player->display_name ) ) {
+									?>
+									<a href="/wp-admin/admin.php?page=racketmanager-clubs&view=player&club_id=<?php echo esc_attr( $results_checker->team->club->id ); ?>&player_id=<?php echo esc_attr( $results_checker->player->ID ); ?>">
+										<?php echo esc_html( $results_checker->player->display_name ); ?>
+									</a>
+										<?php
+								}
+								?>
+							</div>
 							<div class="col-12 col-md-3"><?php echo esc_html( $results_checker->description ); ?></div>
 							<?php
 							if ( 'outstanding' !== $results_check_filter ) {

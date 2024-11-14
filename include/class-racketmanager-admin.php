@@ -4490,8 +4490,6 @@ class RacketManager_Admin extends RacketManager {
 	 * @return boolean
 	 */
 	private function contactLeagueTeams( $league, $season, $email_message ) {
-		global $wpdb, $racketmanager;
-
 		$league        = get_league( $league );
 		$teams         = $league->get_league_teams( array( 'season' => $season ) );
 		$email_message = str_replace( '\"', '"', $email_message );

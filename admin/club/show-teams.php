@@ -87,7 +87,7 @@ namespace Racketmanager;
 				</select>
 				<label for="team_type"><?php esc_html_e( 'Type', 'racketmanager' ); ?></label>
 			</div>
-			<input type="hidden" name="affiliatedClub" value=<?php echo esc_html( $club->id ); ?> />
+			<input type="hidden" name="club" value=<?php echo esc_html( $club->id ); ?> />
 			<input type="hidden" name="addTeam" value="team" />
 			<input type="submit" name="addTeam" value="<?php esc_html_e( 'Add Team', 'racketmanager' ); ?>" class="btn btn-primary" />
 

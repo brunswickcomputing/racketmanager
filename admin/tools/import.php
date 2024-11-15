@@ -70,14 +70,14 @@ namespace Racketmanager;
 			);
 			if ( $clubs ) {
 				?>
-				<select class="form-select" size="1" name="affiliatedClub" id="affiliatedClub">
-					<option><?php esc_html_e( 'Select affiliated club', 'racketmanager' ); ?></option>
+				<select class="form-select" size="1" name="club" id="club">
+					<option><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>
 					<?php foreach ( $clubs as $club ) { ?>
 						<option value="<?php echo esc_html( $club->id ); ?>"><?php echo esc_html( $club->name ); ?></option>
 					<?php } ?>
 				</select>
 			<?php } ?>
-			<label for="affiliatedClub"><?php esc_html_e( 'Affiliated Club', 'racketmanager' ); ?></label>
+			<label for="club"><?php esc_html_e( 'Club', 'racketmanager' ); ?></label>
 		</div>
 		<div class="mb-3">
 			<input type="submit" name="import" value="<?php esc_html_e( 'Upload file and import', 'racketmanager' ); ?>" class="btn btn-primary" />

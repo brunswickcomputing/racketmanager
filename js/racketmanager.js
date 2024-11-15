@@ -112,7 +112,7 @@ jQuery(document).ready(function ($) {
 	jQuery('.teamcaptain').autocomplete({
 		minLength: 2,
 		source: function (request, response) {
-			let club = jQuery("#affiliatedClub").val();
+			let club = jQuery("#club").val();
 			let fieldref = this.element[0].id;
 			let ref = fieldref.substr(7);
 			let notifyField = '#updateTeamResponse'.concat(ref);
@@ -1779,7 +1779,7 @@ function get_player_details(name, club = null, notifyField = null) {
 		async: false,
 		data: {
 			"name": name,
-			"affiliatedClub": club,
+			"club": club,
 			"action": "racketmanager_get_player_details",
 			"security": ajax_var.ajax_nonce,
 		},

@@ -59,8 +59,8 @@ class Racketmanager_Ajax extends RacketManager {
 		if ( $valid ) {
 			$name = isset( $_POST['name'] ) ? stripslashes( sanitize_text_field( wp_unslash( $_POST['name'] ) ) ) : '';
 			$name = $wpdb->esc_like( $name ) . '%';
-			if ( ! empty( $_POST['affiliatedClub'] ) ) {
-				$affiliated_club = sanitize_text_field( wp_unslash( $_POST['affiliatedClub'] ) );
+			if ( ! empty( $_POST['club'] ) ) {
+				$affiliated_club = sanitize_text_field( wp_unslash( $_POST['club'] ) );
 				$search_term     = $wpdb->prepare(
 					' AND C.`id` = %s',
 					$affiliated_club

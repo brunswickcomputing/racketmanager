@@ -280,7 +280,7 @@ function get_player_details(name, club = null) {
 		async: false,
 		data: {
 			"name": name,
-			"affiliatedClub": club,
+			"club": club,
 			"security": ajax_var.ajax_nonce,
 			"action": "racketmanager_get_player_details",
 		},

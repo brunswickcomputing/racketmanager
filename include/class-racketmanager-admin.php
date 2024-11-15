@@ -2339,8 +2339,8 @@ class RacketManager_Admin extends RacketManager {
 		} else {
 			if ( isset( $_POST['addTeam'] ) ) {
 				check_admin_referer( 'racketmanager_add-team' );
-				if ( isset( $_POST['affiliatedClub'] ) && isset( $_POST['team_type'] ) ) {
-					$club = get_club( intval( $_POST['affiliatedClub'] ) );
+				if ( isset( $_POST['club'] ) && isset( $_POST['team_type'] ) ) {
+					$club = get_club( intval( $_POST['club'] ) );
 					$club->add_team( sanitize_text_field( wp_unslash( $_POST['team_type'] ) ) );
 				}
 			} elseif ( isset( $_POST['editTeam'] ) ) {
@@ -2871,7 +2871,7 @@ class RacketManager_Admin extends RacketManager {
 				} else {
 					$league_id = isset( $_POST['league_id'] ) ? intval( $_POST['league_id'] ) : null;
 					$season    = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
-					$club      = isset( $_POST['affiliatedClub'] ) ? intval( $_POST['affiliatedClub'] ) : null;
+					$club      = isset( $_POST['club'] ) ? intval( $_POST['club'] ) : null;
 					$files     = isset( $_FILES['racketmanager_import'] ) ? $_FILES['racketmanager_import'] : null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					$delimiter = isset( $_POST['delimiter'] ) ? $_POST['delimiter'] : null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					$mode      = isset( $_POST['mode'] ) ? sanitize_text_field( wp_unslash( $_POST['mode'] ) ) : null;

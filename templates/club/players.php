@@ -31,7 +31,7 @@ if ( empty( $club->player ) ) {
 				<div class="module-container">
 					<form id="playerRequestFrm" action="" method="post" onsubmit="return checkSelect(this)">
 						<?php wp_nonce_field( 'club-player-request' ); ?>
-						<input type="hidden" name="affiliatedClub" id="affiliatedClub" value="<?php echo esc_html( $club->id ); ?>" />
+						<input type="hidden" name="club" id="club" value="<?php echo esc_html( $club->id ); ?>" />
 						<div class="form-floating mb-3">
 							<input required="required" type="text" class="form-control" id="firstname" name="firstname" size="30" class="form-control" placeholder="First name" aria-describedby="firstnameFeedback" />
 							<label for="firstname"><?php esc_html_e( 'First name', 'racketmanager' ); ?></label>

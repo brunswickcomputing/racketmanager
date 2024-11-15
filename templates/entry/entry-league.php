@@ -80,7 +80,7 @@ $match_days = Racketmanager_Util::get_match_days();
 						<ol class="list list--naked">
 							<li id="liClubDetails" class="club-entry__panel">
 								<div id="clubDetails">
-									<input type="hidden" name="affiliatedClub" id="affiliatedClub" value="<?php echo esc_html( $club->id ); ?>" />
+									<input type="hidden" name="club" id="club" value="<?php echo esc_html( $club->id ); ?>" />
 									<div class="hgroup">
 										<h4 class="hgroup__heading"><?php esc_html_e( 'Club details', 'racketmanager' ); ?></h4>
 										<p class="hgroup__subheading"><?php esc_html_e( 'Check if your details are correct, and change them if necessary', 'racketmanager' ); ?></p>

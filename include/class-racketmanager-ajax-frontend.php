@@ -122,8 +122,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$player_valid = $racketmanager->validatePlayer();
 			if ( $player_valid[0] ) {
 				$new_player = $player_valid[1];
-				if ( isset( $_POST['affiliatedClub'] ) ) {
-					$club = get_club( intval( $_POST['affiliatedClub'] ) );
+				if ( isset( $_POST['club'] ) ) {
+					$club = get_club( intval( $_POST['club'] ) );
 					$club->register_player( $new_player );
 				} else {
 					$error_field = 'surname';
@@ -668,7 +668,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			} else {
 				$season         = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : '';
 				$competition_id = isset( $_POST['competitionId'] ) ? sanitize_text_field( wp_unslash( $_POST['competitionId'] ) ) : '';
-				$affiliatedclub = isset( $_POST['affiliatedClub'] ) ? sanitize_text_field( wp_unslash( $_POST['affiliatedClub'] ) ) : '';
+				$affiliatedclub = isset( $_POST['club'] ) ? sanitize_text_field( wp_unslash( $_POST['club'] ) ) : '';
 				//phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				$events        = isset( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : array();
 				$teams         = isset( $_POST['team'] ) ? wp_unslash( $_POST['team'] ) : array();
@@ -764,7 +764,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$season         = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : '';
 			$competition_id = isset( $_POST['competitionId'] ) ? sanitize_text_field( wp_unslash( $_POST['competitionId'] ) ) : '';
 			$validator      = $validator->competition( $competition_id );
-			$affiliatedclub = isset( $_POST['affiliatedClub'] ) ? sanitize_text_field( wp_unslash( $_POST['affiliatedClub'] ) ) : '';
+			$affiliatedclub = isset( $_POST['club'] ) ? sanitize_text_field( wp_unslash( $_POST['club'] ) ) : '';
 			$validator      = $validator->club( $affiliatedclub );
 			$events         = isset( $_POST['event'] ) ? array_map( 'intval', $_POST['event'] ) : array();
 			$validator      = $validator->events_entry( $events );

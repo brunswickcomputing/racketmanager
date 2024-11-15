@@ -858,22 +858,22 @@ class Racketmanager_Event {
 		if ( empty( $this->get_season() ) ) {
 			return array();
 		}
-		$defaults       = array(
-			'league_id'      => false,
-			'rank'           => false,
-			'orderby'        => array(
+		$defaults  = array(
+			'league_id' => false,
+			'rank'      => false,
+			'home'      => false,
+			'club'      => false,
+			'orderby'   => array(
 				'rank'  => 'ASC',
 				'title' => 'ASC',
 			),
-			'home'           => false,
-			'affiliatedclub' => false,
 		);
-		$args           = array_merge( $defaults, $args );
-		$league_id      = $args['league_id'];
-		$rank           = $args['rank'];
-		$orderby        = $args['orderby'];
-		$home           = $args['home'];
-		$affiliatedclub = $args['affiliatedclub'];
+		$args      = array_merge( $defaults, $args );
+		$league_id = $args['league_id'];
+		$rank      = $args['rank'];
+		$orderby   = $args['orderby'];
+		$home      = $args['home'];
+		$club      = $args['club'];
 
 		$search_terms = array();
 		if ( $league_id ) {
@@ -883,8 +883,8 @@ class Racketmanager_Event {
 				$search_terms[] = $wpdb->prepare( 'A.`league_id` = %d', intval( $league_id ) );
 			}
 		}
-		if ( $affiliatedclub ) {
-			$search_terms[] = $wpdb->prepare( '`affiliatedclub` = %d', intval( $affiliatedclub ) );
+		if ( $club ) {
+			$search_terms[] = $wpdb->prepare( '`affiliatedclub` = %d', intval( $club ) );
 		}
 		if ( $rank ) {
 			$search_terms[] = $wpdb->prepare( 'A.`rank` = %s', $rank );

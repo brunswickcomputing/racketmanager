@@ -356,7 +356,7 @@ class Racketmanager_League {
 		'leg'              => false,
 		'player'           => false,
 		'withdrawn'        => true,
-		'affiliatedClub'   => false,
+		'club'             => false,
 		'pending'          => false,
 		'status'           => array(),
 	);
@@ -1781,7 +1781,7 @@ class Racketmanager_League {
 		$leg              = $this->match_query_args['leg'];
 		$player           = $this->match_query_args['player'];
 		$withdrawn        = $this->match_query_args['withdrawn'];
-		$club             = $this->match_query_args['affiliatedClub'];
+		$club             = $this->match_query_args['club'];
 		$pending          = $this->match_query_args['pending'];
 		$status           = $this->match_query_args['status'];
 

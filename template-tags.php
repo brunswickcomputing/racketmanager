@@ -901,8 +901,8 @@ function racketmanager_archive( $league_id, $args = array() ) {
 	 * @category template-tags
 	 */
 function racketmanager_results( $club_id, $args = array() ) {
-	$args['affiliatedclub'] = $club_id;
-	$args['days']           = 3;
+	$args['club'] = $club_id;
+	$args['days'] = 3;
 
 	$shortcode = '[latest_results';
 	foreach ( $args as $key => $value ) {

@@ -48,10 +48,10 @@ class Racketmanager_Exporter {
 			);
 			$file_club_name = '';
 			if ( isset( $_GET['club_id'] ) ) {
-				$club_id                       = sanitize_text_field( wp_unslash( $_GET['club_id'] ) );
-				$club                          = get_club( $club_id );
-				$file_club_name                = '-' . seo_url( $club->name );
-				$match_array['affiliatedClub'] = $club_id;
+				$club_id             = sanitize_text_field( wp_unslash( $_GET['club_id'] ) );
+				$club                = get_club( $club_id );
+				$file_club_name      = '-' . seo_url( $club->name );
+				$match_array['club'] = $club_id;
 			}
 			$matches  = $racketmanager->get_matches( $match_array );
 			$filename = $season . '-' . sanitize_title( $competition->name ) . $file_club_name . '.ics';
@@ -100,7 +100,7 @@ class Racketmanager_Exporter {
 				'competition_name' => $competition,
 				'time'             => $time,
 				'history'          => $days,
-				'affiliatedClub'   => $club_id,
+				'club'             => $club_id,
 			)
 		);
 		$this->match_output( $club, $matches );
@@ -151,7 +151,7 @@ class Racketmanager_Exporter {
 				array(
 					'competition_name' => $competition,
 					'season'           => $season,
-					'affiliatedClub'   => $club_id,
+					'club'             => $club_id,
 				)
 			);
 			$this->match_output( $club, $matches );

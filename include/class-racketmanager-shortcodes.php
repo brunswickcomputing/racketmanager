@@ -128,7 +128,7 @@ class RacketManager_Shortcodes {
 				'competition_type' => 'league',
 				'template'         => 'results',
 				'days'             => 7,
-				'affiliatedclub'   => '',
+				'club'             => '',
 				'competition_id'   => '',
 				'header_level'     => 1,
 			),
@@ -137,13 +137,13 @@ class RacketManager_Shortcodes {
 		$competition_type = $args['competition_type'];
 		$template         = $args['template'];
 		$days             = $args['days'];
-		$affiliatedclub   = $args['affiliatedclub'];
+		$club_id          = $args['club'];
 		$competition_id   = $args['competition_id'];
 		$header_level     = $args['header_level'];
 		if ( isset( $wp->query_vars['club_name'] ) ) {
-			$club_name      = str_replace( '-', ' ', get_query_var( 'club_name' ) );
-			$club           = get_club( $club_name, 'shortcode' );
-			$affiliatedclub = $club->id;
+			$club_name = str_replace( '-', ' ', get_query_var( 'club_name' ) );
+			$club      = get_club( $club_name, 'shortcode' );
+			$club_id   = $club->id;
 		}
 		if ( isset( $wp->query_vars['days'] ) ) {
 			$days = str_replace( '-', ' ', get_query_var( 'days' ) );
@@ -166,7 +166,7 @@ class RacketManager_Shortcodes {
 				'competition_type' => $competition_type,
 				'time'             => $time,
 				'history'          => $days,
-				'affiliatedClub'   => $affiliatedclub,
+				'club'             => $club_id,
 				'competition_id'   => $competition_id,
 			)
 		);
@@ -426,8 +426,8 @@ class RacketManager_Shortcodes {
 					foreach ( $events as $event ) {
 						$teams        = $event->get_teams_info(
 							array(
-								'affiliatedclub' => $club->id,
-								'orderby'        => array( 'title' => 'ASC' ),
+								'club'    => $club->id,
+								'orderby' => array( 'title' => 'ASC' ),
 							)
 						);
 						$event->teams = $teams;

@@ -2665,7 +2665,7 @@ class RacketManager {
 		'time'                => false,
 		'timeOffset'          => false,
 		'history'             => false,
-		'affiliatedClub'      => false,
+		'club'                => false,
 		'league_name'         => false,
 		'team_name'           => false,
 		'home_team'           => false,
@@ -2705,7 +2705,7 @@ class RacketManager {
 		$time                 = $match_args['time'];
 		$time_offset          = $match_args['timeOffset'];
 		$history              = $match_args['history'];
-		$club                 = $match_args['affiliatedClub'];
+		$club                 = $match_args['club'];
 		$league_name          = $match_args['league_name'];
 		$team                 = $match_args['team'];
 		$team_name            = $match_args['team_name'];

@@ -395,7 +395,7 @@ class Racketmanager_League {
 		'leg'              => 'numeric',
 		'player'           => 'numeric',
 		'withdrawn'        => 'boolean',
-		'affiliatedClub'   => 'numeric',
+		'club'             => 'numeric',
 		'pending'          => 'boolean',
 		'status'           => 'array',
 	);

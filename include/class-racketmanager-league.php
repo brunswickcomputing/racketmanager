@@ -359,6 +359,8 @@ class Racketmanager_League {
 		'club'             => false,
 		'pending'          => false,
 		'status'           => array(),
+		'days'             => false,
+		'history'          => false,
 	);
 
 	/**
@@ -398,6 +400,8 @@ class Racketmanager_League {
 		'club'             => 'numeric',
 		'pending'          => 'boolean',
 		'status'           => 'array',
+		'days'             => 'numeric',
+		'history'          => 'boolean',
 	);
 
 	/**

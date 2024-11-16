@@ -668,7 +668,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			} else {
 				$season         = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : '';
 				$competition_id = isset( $_POST['competitionId'] ) ? sanitize_text_field( wp_unslash( $_POST['competitionId'] ) ) : '';
-				$affiliatedclub = isset( $_POST['club'] ) ? sanitize_text_field( wp_unslash( $_POST['club'] ) ) : '';
+				$club_id        = isset( $_POST['clubId'] ) ? sanitize_text_field( wp_unslash( $_POST['clubId'] ) ) : '';
 				//phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				$events        = isset( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : array();
 				$teams         = isset( $_POST['team'] ) ? wp_unslash( $_POST['team'] ) : array();
@@ -681,7 +681,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				//phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				$comments             = isset( $_POST['commentDetails'] ) ? sanitize_textarea_field( wp_unslash( $_POST['commentDetails'] ) ) : '';
 				$club_entry           = new \stdClass();
-				$club_entry->club     = $affiliatedclub;
+				$club_entry->club     = $club_id;
 				$club_entry->season   = $season;
 				$club_entry->comments = $comments;
 				if ( $competition_id ) {
@@ -692,7 +692,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					$club_entry->competition = $competition;
 				}
 
-				$validator = $validator->club( $affiliatedclub );
+				$validator = $validator->club( $club_id );
 				$validator = $validator->events_entry( $events );
 				foreach ( $events as $event_id ) {
 					$event      = get_event( $event_id );
@@ -731,7 +731,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			}
 		}
 		if ( ! $validator->error ) {
-			$club = get_club( $affiliatedclub );
+			$club = get_club( $club_id );
 			$club->cup_entry( $club_entry );
 			$msg = __( 'Cup entry complete', 'racketmanager' );
 		} else {
@@ -764,8 +764,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$season         = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : '';
 			$competition_id = isset( $_POST['competitionId'] ) ? sanitize_text_field( wp_unslash( $_POST['competitionId'] ) ) : '';
 			$validator      = $validator->competition( $competition_id );
-			$affiliatedclub = isset( $_POST['club'] ) ? sanitize_text_field( wp_unslash( $_POST['club'] ) ) : '';
-			$validator      = $validator->club( $affiliatedclub );
+			$club_id        = isset( $_POST['clubId'] ) ? sanitize_text_field( wp_unslash( $_POST['clubId'] ) ) : '';
+			$validator      = $validator->club( $club_id );
 			$events         = isset( $_POST['event'] ) ? array_map( 'intval', $_POST['event'] ) : array();
 			$validator      = $validator->events_entry( $events );
 			// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -784,7 +784,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$validator            = $validator->num_courts_available( $num_courts_available );
 
 			$club_entry           = new \stdClass();
-			$club_entry->club     = $affiliatedclub;
+			$club_entry->club     = $club_id;
 			$club_entry->season   = $season;
 			$club_entry->comments = $comments;
 			if ( $competition_id ) {
@@ -939,7 +939,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$validator  = $validator->entry_acceptance( $acceptance );
 		}
 		if ( ! $validator->error ) {
-			$club = get_club( $affiliatedclub );
+			$club = get_club( $club_id );
 			$club->league_entry( $club_entry );
 			$msg = __( 'League entry complete', 'racketmanager' );
 		} else {

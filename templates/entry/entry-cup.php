@@ -56,7 +56,7 @@ namespace Racketmanager;
 					</div>
 					<div class="club-entry__body">
 						<div id="club-details">
-							<input type="hidden" name="club" id="club" value="<?php echo esc_html( $club->id ); ?>" />
+							<input type="hidden" name="clubId" id="clubId" value="<?php echo esc_html( $club->id ); ?>" />
 							<div class="media">
 								<div class="media__wrapper">
 									<div class="media__img">

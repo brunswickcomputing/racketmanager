@@ -37,7 +37,7 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	 */
 	public function logged_in_entry() {
 		$this->error                          = true;
-		$this->error_field[ $this->error_id ] = 'affiliatedclub';
+		$this->error_field[ $this->error_id ] = 'clubId';
 		$this->error_msg[ $this->error_id ]   = __( 'You must be logged in to submit an entry', 'racketmanager' );
 		++$this->error_id;
 		return $this;
@@ -52,7 +52,7 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	public function club( $club ) {
 		if ( ! $club ) {
 			$this->error                          = true;
-			$this->error_field[ $this->error_id ] = 'affiliatedclub';
+			$this->error_field[ $this->error_id ] = 'clubId';
 			$this->error_msg[ $this->error_id ]   = __( 'Select the club you are a member of', 'racketmanager' );
 			++$this->error_id;
 		}

@@ -319,7 +319,7 @@ if ( ! empty( $player->entry ) ) {
 										$tournament_events[] = $event->id;
 									}
 									?>
-									<input type="hidden" name="tournamentEvents" value="<?php echo implode( ',', $tournament_events ); ?>" />
+									<input type="hidden" name="tournamentEvents" value="<?php echo esc_html( implode( ',', $tournament_events ) ); ?>" />
 								</div>
 							</li>
 							<li id="liCommentDetails" class="individual-entry__panel">

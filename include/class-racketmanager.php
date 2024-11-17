@@ -2326,6 +2326,86 @@ class RacketManager {
 		return $events;
 	}
 	/**
+	 * Get leagues from database
+	 *
+	 * @param array $args query arguements.
+	 * @return object
+	 */
+	public function get_leagues( $args = array() ) {
+		global $wpdb;
+
+		$defaults         = array(
+			'offset'           => 0,
+			'limit'            => 99999999,
+			'competition_type' => false,
+			'name'             => false,
+			'season'           => false,
+			'orderby'          => array( 'title' => 'ASC' ),
+		);
+		$args             = array_merge( $defaults, $args );
+		$offset           = $args['offset'];
+		$limit            = $args['limit'];
+		$competition_type = $args['competition_type'];
+		$name             = $args['name'];
+		$season           = $args['season'];
+		$orderby          = $args['orderby'];
+		$search_terms     = array();
+		if ( $name ) {
+			$name           = $wpdb->esc_like( stripslashes( $name ) ) . '%';
+			$search_terms[] = $wpdb->prepare( '`title` like %s', $name );
+		}
+		if ( $competition_type ) {
+			$search_terms[] = $wpdb->prepare( "`event_id` in (select e.`id` from {$wpdb->racketmanager_events} e, {$wpdb->racketmanager_competitions} c WHERE e.`competition_id` = c.id` AND c.`type` = %s)", $competition_type );
+		}
+		$search = '';
+		if ( ! empty( $search_terms ) ) {
+			$search  = ' WHERE ';
+			$search .= implode( ' AND ', $search_terms );
+		}
+		$orderby_string = '';
+		$i              = 0;
+		foreach ( $orderby as $order => $direction ) {
+			if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
+				$direction = 'ASC';
+			}
+			$orderby_string .= '`' . $order . '` ' . $direction;
+			if ( $i < ( count( $orderby ) - 1 ) ) {
+				$orderby_string .= ',';
+			}
+			++$i;
+		}
+		$orderby = $orderby_string;
+		$sql     = $wpdb->prepare(
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			"SELECT `id` FROM {$wpdb->racketmanager} $search ORDER BY $orderby LIMIT %d, %d",
+			intval( $offset ),
+			intval( $limit )
+		);
+		$leagues = wp_cache_get( md5( $sql ), 'leagues' );
+		if ( ! $leagues ) {
+			$leagues = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			);
+			wp_cache_set( md5( $sql ), $leagues, 'leagues' );
+		}
+
+		$i = 0;
+		foreach ( $leagues as $i => $league ) {
+			$league = get_league( $league->id );
+			if ( $season ) {
+				if ( array_search( $season, array_column( $league->seasons, 'name' ), false ) ) {
+					$leagues[ $i ] = $league;
+				} else {
+					unset( $leagues[ $i ] );
+				}
+			} else {
+				$leagues[ $i ] = $league;
+			}
+		}
+		return $leagues;
+	}
+	/**
 	 * Get Team ID for given string
 	 *
 	 * @param string $title title.

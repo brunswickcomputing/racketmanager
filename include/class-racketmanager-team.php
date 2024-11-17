@@ -48,19 +48,13 @@ final class Racketmanager_Team {
 	 *
 	 * @var int
 	 */
-	public $affiliatedclub;
+	public $club_id;
 	/**
 	 * Club object variable
 	 *
 	 * @var object
 	 */
 	public $club;
-	/**
-	 * Club name variable
-	 *
-	 * @var string
-	 */
-	public $affiliatedclubname;
 	/**
 	 * Status variable
 	 *
@@ -216,7 +210,7 @@ final class Racketmanager_Team {
 			} else {
 				$team = $wpdb->get_row(
 					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-					"SELECT `id`, `title`, `stadium`, `home`, `roster`, `profile`, `status`, `affiliatedclub`, `type`, `team_type` FROM {$wpdb->racketmanager_teams} WHERE " . $search . ' LIMIT 1',
+					"SELECT `id`, `title`, `stadium`, `home`, `roster`, `profile`, `status`, `club_id`, `type`, `team_type` FROM {$wpdb->racketmanager_teams} WHERE " . $search . ' LIMIT 1',
 				); // db call ok.
 			}
 			if ( ! $team ) {
@@ -255,9 +249,8 @@ final class Racketmanager_Team {
 			$this->stadium = stripslashes( $this->stadium );
 			$this->roster  = maybe_unserialize( $this->roster );
 			$this->profile = intval( $this->profile );
-			if ( $this->affiliatedclub ) {
-				$this->club               = get_club( $this->affiliatedclub );
-				$this->affiliatedclubname = $this->club->name;
+			if ( $this->club_id ) {
+				$this->club = get_club( $this->club_id );
 			}
 			if ( 'P' === $this->team_type && ! empty( $this->roster ) ) {
 				$players = $this->get_players();
@@ -313,9 +306,9 @@ final class Racketmanager_Team {
 			$this->profile = '';
 			$result        = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"INSERT INTO {$wpdb->racketmanager_teams} (`title`, `affiliatedclub`, `roster`, `status`, `type`, `team_type` ) VALUES (%s, %d, %s, %s, %s, %s)",
+					"INSERT INTO {$wpdb->racketmanager_teams} (`title`, `club_id`, `roster`, `status`, `type`, `team_type` ) VALUES (%s, %d, %s, %s, %s, %s)",
 					$this->title,
-					$this->affiliatedclub,
+					$this->club_id,
 					maybe_serialize( $players ),
 					$this->status,
 					$this->type,
@@ -332,10 +325,10 @@ final class Racketmanager_Team {
 			$this->status  = '';
 			$result        = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"INSERT INTO {$wpdb->racketmanager_teams} (`title`, `stadium`, `affiliatedclub`, `type`) VALUES (%s, %s, %d, %s)",
+					"INSERT INTO {$wpdb->racketmanager_teams} (`title`, `stadium`, `club_id`, `type`) VALUES (%s, %s, %d, %s)",
 					$this->title,
 					$this->stadium,
-					$this->affiliatedclub,
+					$this->club_id,
 					$this->type
 				)
 			);
@@ -362,10 +355,10 @@ final class Racketmanager_Team {
 
 		$club    = get_club( $club_id );
 		$stadium = $club->name;
-		if ( $this->title !== $title || $this->affiliatedclub !== $club_id || $this->type !== $type || $this->stadium !== $stadium ) {
+		if ( $this->title !== $title || $this->club_id !== $club_id || $this->type !== $type || $this->stadium !== $stadium ) {
 			$result = $wpdb->query(
 				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_teams} SET `title` = %s, `affiliatedclub` = %d, `stadium` = %s, `type` = %s WHERE `id` = %d",
+					"UPDATE {$wpdb->racketmanager_teams} SET `title` = %s, `club_id` = %d, `stadium` = %s, `type` = %s WHERE `id` = %d",
 					$title,
 					$club_id,
 					$stadium,
@@ -408,10 +401,10 @@ final class Racketmanager_Team {
 
 		$club    = get_club( $club_id );
 		$stadium = $club->name;
-		if ( $this->title !== $title || $this->affiliatedclub !== $club_id || $this->roster !== $players || $this->stadium !== $stadium ) {
+		if ( $this->title !== $title || $this->club_id !== $club_id || $this->roster !== $players || $this->stadium !== $stadium ) {
 			$result = $wpdb->query(
 				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_teams} SET `title` = %s, `affiliatedclub` = %d, `stadium` = %s, `roster` = %s WHERE `id` = %d",
+					"UPDATE {$wpdb->racketmanager_teams} SET `title` = %s, `club_id` = %d, `stadium` = %s, `roster` = %s WHERE `id` = %d",
 					$title,
 					$club_id,
 					$stadium,

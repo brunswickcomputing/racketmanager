@@ -410,19 +410,19 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			if ( ! is_user_logged_in() ) {
 				$validator = $validator->logged_in_entry();
 			} else {
-				$tournament_id  = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : null;
-				$season         = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
-				$player_id      = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
-				$contactno      = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : '';
-				$contactemail   = isset( $_POST['contactemail'] ) ? sanitize_text_field( wp_unslash( $_POST['contactemail'] ) ) : '';
-				$btm            = isset( $_POST['btm'] ) ? intval( $_POST['btm'] ) : '';
-				$comments       = isset( $_POST['commentDetails'] ) ? sanitize_textarea_field( wp_unslash( $_POST['commentDetails'] ) ) : '';
-				$validator      = $validator->player( $player_id );
-				$validator      = $validator->telephone( $contactno );
-				$validator      = $validator->email( $contactemail, $player_id );
-				$validator      = $validator->btm( $btm, $player_id );
-				$affiliatedclub = isset( $_POST['affiliatedclub'] ) ? sanitize_text_field( wp_unslash( $_POST['affiliatedclub'] ) ) : '';
-				$validator      = $validator->club( $affiliatedclub );
+				$tournament_id = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : null;
+				$season        = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
+				$player_id     = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
+				$contactno     = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : '';
+				$contactemail  = isset( $_POST['contactemail'] ) ? sanitize_text_field( wp_unslash( $_POST['contactemail'] ) ) : '';
+				$btm           = isset( $_POST['btm'] ) ? intval( $_POST['btm'] ) : '';
+				$comments      = isset( $_POST['commentDetails'] ) ? sanitize_textarea_field( wp_unslash( $_POST['commentDetails'] ) ) : '';
+				$validator     = $validator->player( $player_id );
+				$validator     = $validator->telephone( $contactno );
+				$validator     = $validator->email( $contactemail, $player_id );
+				$validator     = $validator->btm( $btm, $player_id );
+				$club_id       = isset( $_POST['clubId'] ) ? sanitize_text_field( wp_unslash( $_POST['clubId'] ) ) : '';
+				$validator     = $validator->club( $club_id );
 				// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				$events            = isset( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : array();
 				$partners          = isset( $_POST['partner'] ) ? wp_unslash( $_POST['partner'] ) : array();
@@ -472,7 +472,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$player->update_btm( $btm );
 			$player->update_contact( $contactno, $contactemail );
 			$player_name        = $player->display_name;
-			$club               = get_club( $affiliatedclub );
+			$club               = get_club( $club_id );
 			$email_to           = $player->display_name . ' <' . $player->email . '>';
 			$email_from         = $racketmanager->get_confirmation_email( 'tournament' );
 			$email_subject      = $racketmanager->site_name . ' - ' . $tournament->name . ' Tournament Entry';
@@ -534,15 +534,15 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					}
 				}
 				if ( $new_team ) {
-					$team                 = new \stdClass();
-					$team->player1        = $player_name;
-					$team->player1_id     = isset( $_POST['playerId'] ) ? sanitize_text_field( wp_unslash( $_POST['playerId'] ) ) : 0;
-					$team->player2        = $partner_name;
-					$team->player2_id     = $partner_id;
-					$team->type           = $league->type;
-					$team->team_type      = 'P';
-					$team->affiliatedclub = $affiliatedclub;
-					$team                 = new Racketmanager_Team( $team );
+					$team             = new \stdClass();
+					$team->player1    = $player_name;
+					$team->player1_id = isset( $_POST['playerId'] ) ? sanitize_text_field( wp_unslash( $_POST['playerId'] ) ) : 0;
+					$team->player2    = $partner_name;
+					$team->player2_id = $partner_id;
+					$team->type       = $league->type;
+					$team->team_type  = 'P';
+					$team->club_id    = $club_id;
+					$team             = new Racketmanager_Team( $team );
 				}
 				$team->set_event( $league->event_id, $player_id, $contactno, $contactemail );
 				$league_entry_id = $league->add_team( $team->id, $season );

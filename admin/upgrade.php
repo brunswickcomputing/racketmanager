@@ -1114,6 +1114,12 @@ function racketmanager_upgrade() {
 			}
 		}
 	}
+	if ( version_compare( $installed, '8.27.0', '<' ) ) {
+		echo esc_html__( 'starting 8.27.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_club_players} CHANGE `affiliatedclub` `club_id` INT NULL" );
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_club_player_requests} CHANGE `affiliatedclub` `club_id` INT NULL" );
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_teams} CHANGE `affiliatedclub` `club_id` INT NULL" );
+	}
 	/*
 	* Update version and dbversion
 	*/

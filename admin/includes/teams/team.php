@@ -46,7 +46,7 @@ namespace Racketmanager;
 		<div class="form-group">
 			<label for="affiliatedclub"><?php esc_html_e( 'Affiliated Club', 'racketmanager' ); ?></label>
 			<?php if ( $league && $edit ) { ?>
-				<input type="hidden" name="affiliatedclub" value="<?php echo esc_html( $team->affiliatedclub ); ?>" />
+				<input type="hidden" name="affiliatedclub" value="<?php echo esc_html( $team->club_id ); ?>" />
 			<?php } ?>
 			<div class="input">
 				<select size="1"
@@ -60,8 +60,8 @@ namespace Racketmanager;
 					<?php foreach ( $clubs as $club ) { ?>
 						<option value="<?php echo esc_html( $club->id ); ?>"
 						<?php
-						if ( isset( $team->affiliatedclub ) ) {
-							selected( $team->affiliatedclub, $club->id );
+						if ( isset( $team->club_id ) ) {
+							selected( $team->club_id, $club->id );
 						}
 						?>
 						>

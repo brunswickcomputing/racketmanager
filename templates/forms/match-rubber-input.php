@@ -120,9 +120,9 @@ if ( ! empty( $match->winner_id ) ) {
 	<input type="hidden" name="current_match_id" id="current_match_id" value="<?php echo esc_html( $match->id ); ?>" />
 	<input type="hidden" name="current_season" id="current_season" value="<?php echo esc_html( $match->season ); ?>" />
 	<input type="hidden" name="num_rubbers" value="<?php echo esc_html( $match->league->num_rubbers ); ?>" />
-	<input type="hidden" name="home_club" value="<?php echo esc_html( $match->teams['home']->affiliatedclub ); ?>" />
+	<input type="hidden" name="home_club" value="<?php echo esc_html( $match->teams['home']->club_id ); ?>" />
 	<input type="hidden" name="home_team" value="<?php echo esc_html( $match->home_team ); ?>" />
-	<input type="hidden" name="away_club" value="<?php echo esc_html( $match->teams['away']->affiliatedclub ); ?>" />
+	<input type="hidden" name="away_club" value="<?php echo esc_html( $match->teams['away']->club_id ); ?>" />
 	<input type="hidden" name="away_team" value="<?php echo esc_html( $match->away_team ); ?>" />
 	<input type="hidden" name="match_type" value="<?php echo esc_html( $match->league->type ); ?>" />
 	<input type="hidden" name="match_round" value="<?php echo esc_html( $match->round ); ?>" />

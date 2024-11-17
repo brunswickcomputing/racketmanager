@@ -562,7 +562,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 					$email_to      = '';
 					if ( isset( $team->contactemail ) ) {
 						$email_to = $team->captain . ' <' . $team->contactemail . '>';
-						$club     = get_club( $team->affiliatedclub );
+						$club     = get_club( $team->club_id );
 						if ( isset( $club->match_secretary_email ) ) {
 							$headers[] = 'cc: ' . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
 						}

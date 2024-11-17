@@ -2152,7 +2152,7 @@ final class Racketmanager_Match {
 					if ( 'P' === $result_status ) {
 						$match_update = true;
 					}
-				} elseif ( empty( $home_team ) || empty( $away_team ) || empty( $home_team->affiliatedclub ) || empty( $away_team->affiliatedclub ) ) {
+				} elseif ( empty( $home_team ) || empty( $away_team ) || empty( $home_team->club_id ) || empty( $away_team->club_id ) ) {
 					$message = 'notTeamSet';
 				} else {
 					if ( isset( $home_team->club->matchsecretary ) && intval( $home_team->club->matchsecretary ) === $userid ) {
@@ -2214,7 +2214,7 @@ final class Racketmanager_Match {
 								}
 							}
 						} else {
-							$club             = get_club( $home_team->affiliatedclub );
+							$club             = get_club( $home_team->club_id );
 							$home_club_player = $club->get_players(
 								array(
 									'count'  => true,
@@ -2226,7 +2226,7 @@ final class Racketmanager_Match {
 								$user_type = 'player';
 								$user_team = 'home';
 							}
-							$club             = get_club( $away_team->affiliatedclub );
+							$club             = get_club( $away_team->club_id );
 							$away_club_player = $club->get_players(
 								array(
 									'count'  => true,

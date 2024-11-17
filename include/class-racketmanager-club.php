@@ -281,13 +281,13 @@ final class Racketmanager_Club {
 
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_club_player_requests} WHERE `affiliatedclub` = %d",
+				"DELETE FROM {$wpdb->racketmanager_club_player_requests} WHERE `club_id` = %d",
 				$this->id
 			)
 		);
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_club_players} WHERE `affiliatedclub` = %d",
+				"DELETE FROM {$wpdb->racketmanager_club_players} WHERE `club_id` = %d",
 				$this->id
 			)
 		);
@@ -334,11 +334,11 @@ final class Racketmanager_Club {
 		}
 		$team_count = $this->has_teams( $type );
 		++$team_count;
-		$team                 = new \stdClass();
-		$team->title          = $this->shortcode . ' ' . $type_name . ' ' . $team_count;
-		$team->stadium        = $this->name;
-		$team->affiliatedclub = $this->id;
-		$team->type           = $type;
+		$team          = new \stdClass();
+		$team->title   = $this->shortcode . ' ' . $type_name . ' ' . $team_count;
+		$team->stadium = $this->name;
+		$team->club_id = $this->id;
+		$team->type    = $type;
 		return new Racketmanager_Team( $team );
 	}
 
@@ -353,7 +353,7 @@ final class Racketmanager_Club {
 
 		$args   = array();
 		$args[] = intval( $this->id );
-		$sql    = "SELECT count(*) FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d'";
+		$sql    = "SELECT count(*) FROM {$wpdb->racketmanager_teams} WHERE `club_id` = '%d'";
 		if ( $type ) {
 			$sql   .= " AND `type` = '%s' AND (`team_type` IS NULL OR `team_type` != 'P')";
 			$args[] = $type;
@@ -378,7 +378,7 @@ final class Racketmanager_Club {
 		global $wpdb;
 
 		$args   = array();
-		$sql    = "SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d'";
+		$sql    = "SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `club_id` = '%d'";
 		$args[] = intval( $this->id );
 		if ( ! $players ) {
 			$sql .= " AND (`team_type` is null OR `team_type` != 'P')";
@@ -431,7 +431,7 @@ final class Racketmanager_Club {
 		global $wpdb;
 
 		$args   = array();
-		$sql    = "SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = '%d'";
+		$sql    = "SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `club_id` = '%d'";
 		$args[] = intval( $this->id );
 		if ( ! $players ) {
 			$sql .= " AND (`team_type` is null OR `team_type` != 'P')";
@@ -650,7 +650,7 @@ final class Racketmanager_Club {
 		global $wpdb;
 		return $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT count(*) FROM {$wpdb->racketmanager_club_players} WHERE `affiliatedclub` = %d AND `player_id` = %d AND `removed_date` IS NULL",
+				"SELECT count(*) FROM {$wpdb->racketmanager_club_players} WHERE `club_id` = %d AND `player_id` = %d AND `removed_date` IS NULL",
 				intval( $this->id ),
 				intval( $player )
 			)
@@ -667,7 +667,7 @@ final class Racketmanager_Club {
 		global $wpdb;
 		return $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT count(*) FROM {$wpdb->racketmanager_club_player_requests} WHERE `affiliatedclub` = %d AND `player_id` = %d AND `completed_date` IS NULL",
+				"SELECT count(*) FROM {$wpdb->racketmanager_club_player_requests} WHERE `club_id` = %d AND `player_id` = %d AND `completed_date` IS NULL",
 				intval( $this->id ),
 				intval( $player )
 			)
@@ -684,7 +684,7 @@ final class Racketmanager_Club {
 		global $wpdb, $racketmanager;
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"INSERT INTO {$wpdb->racketmanager_club_players} (`affiliatedclub`, `player_id`, `created_date`, `created_user` ) VALUES (%d, %d, now(), %d)",
+				"INSERT INTO {$wpdb->racketmanager_club_players} (`club_id`, `player_id`, `created_date`, `created_user` ) VALUES (%d, %d, now(), %d)",
 				$this->id,
 				$player_id,
 				get_current_user_id()
@@ -706,7 +706,7 @@ final class Racketmanager_Club {
 		$userid = get_current_user_id();
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"INSERT INTO {$wpdb->racketmanager_club_player_requests} (`affiliatedClub`, `first_name`, `surname`, `gender`, `player_id`, `requested_date`, `requested_user`) values (%d, %s, %s, %s, %d, now(), %d)",
+				"INSERT INTO {$wpdb->racketmanager_club_player_requests} (`club_id`, `first_name`, `surname`, `gender`, `player_id`, `requested_date`, `requested_user`) values (%d, %s, %s, %s, %d, now(), %d)",
 				$this->id,
 				'',
 				'',
@@ -757,7 +757,7 @@ final class Racketmanager_Club {
 		$search_terms = array();
 		if ( $team ) {
 			$search_terms[] = $wpdb->prepare(
-				"`affiliatedclub` in (select `affiliatedclub` from {$wpdb->racketmanager_teams} where `id` = %d)",
+				"`club_id` in (select `club_id` from {$wpdb->racketmanager_teams} where `id` = %d)",
 				intval( $team )
 			);
 		}
@@ -806,7 +806,7 @@ final class Racketmanager_Club {
 		$order = $orderby_string;
 
 		if ( $count ) {
-			$sql = "SELECT COUNT(ID) FROM {$wpdb->racketmanager_club_players} WHERE `affiliatedclub` = " . $this->id;
+			$sql = "SELECT COUNT(ID) FROM {$wpdb->racketmanager_club_players} WHERE `club_id` = " . $this->id;
 			if ( '' !== $search ) {
 				$sql .= " AND $search";
 			}
@@ -823,7 +823,7 @@ final class Racketmanager_Club {
 		}
 
 		$sql = $wpdb->prepare(
-			"SELECT A.`id` as `roster_id`, A.`player_id`, `display_name` as fullname, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_club_players} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID` WHERE `affiliatedclub` = %d",
+			"SELECT A.`id` as `roster_id`, A.`player_id`, `display_name` as fullname, `club_id`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_club_players} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID` WHERE `club_id` = %d",
 			$this->id
 		);
 		if ( '' !== $search ) {
@@ -918,7 +918,7 @@ final class Racketmanager_Club {
 		global $wpdb;
 
 		$sql = $wpdb->prepare(
-			"SELECT A.`id` as `roster_id`, B.`ID` as `player_id`, `display_name` as fullname, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_club_players} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID` WHERE `affiliatedclub` = %d AND `player_id` = %d",
+			"SELECT A.`id` as `roster_id`, B.`ID` as `player_id`, `display_name` as fullname, `club_id`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_club_players} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID` WHERE `club_id` = %d AND `player_id` = %d",
 			$this->id,
 			intval( $player_id )
 		);
@@ -970,7 +970,7 @@ final class Racketmanager_Club {
 		global $wpdb;
 		return $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT count(*) FROM {$wpdb->racketmanager_team_events} te, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager_clubs} c WHERE c.`id` = %d AND c.`id` = t.`affiliatedclub` AND (t.`team_type` IS NULL OR t.`team_type` != 'P') AND t.`id` = te.`team_id` AND te.`captain` = %d",
+				"SELECT count(*) FROM {$wpdb->racketmanager_team_events} te, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager_clubs} c WHERE c.`id` = %d AND c.`id` = t.`club_id` AND (t.`team_type` IS NULL OR t.`team_type` != 'P') AND t.`id` = te.`team_id` AND te.`captain` = %d",
 				intval( $this->id ),
 				intval( $player )
 			)

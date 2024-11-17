@@ -121,13 +121,7 @@ final class Racketmanager_League_Team {
 	 *
 	 * @var int
 	 */
-	public $affiliatedclub;
-	/**
-	 * Club name variable
-	 *
-	 * @var string
-	 */
-	public $affiliatedclubname;
+	public $club_id;
 	/**
 	 * Club object variable
 	 *
@@ -350,7 +344,7 @@ final class Racketmanager_League_Team {
 		if ( ! $league_team ) {
 			$league_team = $wpdb->get_row(
 				$wpdb->prepare(
-					"SELECT B.`id` AS `id`, B.`title`, B.`affiliatedclub`, B.`stadium`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`points_plus`, A.`points_minus`, A.`points2_plus`, A.`points2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom`, B.`team_type`, A.`rating` FROM {$wpdb->racketmanager_teams} B INNER JOIN {$wpdb->racketmanager_table} A ON B.id = A.team_id WHERE A.`id` = %d LIMIT 1",
+					"SELECT B.`id` AS `id`, B.`title`, B.`club_id`, B.`stadium`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`points_plus`, A.`points_minus`, A.`points2_plus`, A.`points2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom`, B.`team_type`, A.`rating` FROM {$wpdb->racketmanager_teams} B INNER JOIN {$wpdb->racketmanager_table} A ON B.id = A.team_id WHERE A.`id` = %d LIMIT 1",
 					$league_team_id
 				)
 			); // db call ok.
@@ -401,12 +395,10 @@ final class Racketmanager_League_Team {
 			$this->profile = intval( $this->profile );
 
 			$this->status_text = Racketmanager_Util::get_standing_status( $this->status );
-			if ( ! empty( $this->affiliatedclub ) ) {
-				$this->club               = get_club( $this->affiliatedclub );
-				$this->affiliatedclubname = $this->club->name;
+			if ( ! empty( $this->club_id ) ) {
+				$this->club = get_club( $this->club_id );
 			} else {
-				$this->club               = null;
-				$this->affiliatedclubname = null;
+				$this->club = null;
 			}
 			$this->roster = maybe_unserialize( $this->roster );
 			if ( 'P' === $this->team_type && null !== $this->roster ) {

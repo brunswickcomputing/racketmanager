@@ -768,8 +768,8 @@ class Racketmanager_Event {
 		$system    = $args['system'];
 		$player    = $args['player'];
 
-		$sql1 = "SELECT p.ID AS `player_id`, p.`display_name` AS `fullname`, ro.`id` AS `roster_id`,  ro.`affiliatedclub` FROM {$wpdb->racketmanager_club_players} AS ro, {$wpdb->users} AS p WHERE ro.`player_id` = p.`ID`";
-		$sql2 = "FROM {$wpdb->racketmanager_teams} AS t, {$wpdb->racketmanager_rubbers} AS r, {$wpdb->racketmanager_rubber_players} AS rp, {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager_club_players} AS ro WHERE r.`winner_id` != 0 AND r.`id` = rp.`rubber_id` AND ((rp.`player_team` = 'home' AND rp.`club_player_id` = ro.`id` AND  m.`home_team` = t.`id`) OR (rp.`player_team` = 'away' AND rp.`club_player_id` = ro.`id` AND m.`away_team` = t.`id`)) AND ro.`affiliatedclub` = t.`affiliatedclub` AND r.`match_id` = m.`id` AND m.`league_id` IN (SELECT `id` FROM {$wpdb->racketmanager} WHERE `event_id` = '%d') ";
+		$sql1 = "SELECT p.ID AS `player_id`, p.`display_name` AS `fullname`, ro.`id` AS `roster_id`,  ro.`club_id` FROM {$wpdb->racketmanager_club_players} AS ro, {$wpdb->users} AS p WHERE ro.`player_id` = p.`ID`";
+		$sql2 = "FROM {$wpdb->racketmanager_teams} AS t, {$wpdb->racketmanager_rubbers} AS r, {$wpdb->racketmanager_rubber_players} AS rp, {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager_club_players} AS ro WHERE r.`winner_id` != 0 AND r.`id` = rp.`rubber_id` AND ((rp.`player_team` = 'home' AND rp.`club_player_id` = ro.`id` AND  m.`home_team` = t.`id`) OR (rp.`player_team` = 'away' AND rp.`club_player_id` = ro.`id` AND m.`away_team` = t.`id`)) AND ro.`club_id` = t.`club_id` AND r.`match_id` = m.`id` AND m.`league_id` IN (SELECT `id` FROM {$wpdb->racketmanager} WHERE `event_id` = '%d') ";
 
 		$search_terms2 = array( $this->id );
 
@@ -782,7 +782,7 @@ class Racketmanager_Event {
 			$search_terms2[] = intval( $league_id );
 		}
 		if ( $club ) {
-			$sql2           .= " AND ro.`affiliatedclub` = '%d'";
+			$sql2           .= " AND ro.`club_id` = '%d'";
 			$search_terms2[] = intval( $club );
 		}
 		if ( $player ) {
@@ -793,7 +793,7 @@ class Racketmanager_Event {
 			$sql2 .= ' AND ro.`system_record` IS NULL';
 		}
 
-		$order = '`affiliatedclub`, `fullname` ';
+		$order = '`club_id`, `fullname` ';
 
 		$sql = $sql1 . ' AND ro.`id` in (SELECT ro.id ' . $sql2 . ')';
 
@@ -884,7 +884,7 @@ class Racketmanager_Event {
 			}
 		}
 		if ( $club ) {
-			$search_terms[] = $wpdb->prepare( '`affiliatedclub` = %d', intval( $club ) );
+			$search_terms[] = $wpdb->prepare( '`club_id` = %d', intval( $club ) );
 		}
 		if ( $rank ) {
 			$search_terms[] = $wpdb->prepare( 'A.`rank` = %s', $rank );
@@ -914,7 +914,7 @@ class Racketmanager_Event {
 		}
 		$orderby = $orderby_string;
 
-		$sql = "SELECT DISTINCT B.`id`, B.`title`, C.`captain`, B.`affiliatedclub`, B.`stadium`, B.`home`, B.`roster`, B.`profile`, A.`group`, C.`match_day`, C.`match_time` FROM {$wpdb->racketmanager_teams} B, {$wpdb->racketmanager_table} A, {$wpdb->racketmanager_team_events} C WHERE B.id = A.team_id AND A.team_id = C.team_id and C.event_id in (select `event_id` from {$wpdb->racketmanager} WHERE `id` = A.league_id) AND C.`event_id` = " . $this->id . ' AND A.season = ' . $this->get_season() . " $search ORDER BY $orderby";
+		$sql = "SELECT DISTINCT B.`id`, B.`title`, C.`captain`, B.`club_id`, B.`stadium`, B.`home`, B.`roster`, B.`profile`, A.`group`, C.`match_day`, C.`match_time` FROM {$wpdb->racketmanager_teams} B, {$wpdb->racketmanager_table} A, {$wpdb->racketmanager_team_events} C WHERE B.id = A.team_id AND A.team_id = C.team_id and C.event_id in (select `event_id` from {$wpdb->racketmanager} WHERE `id` = A.league_id) AND C.`event_id` = " . $this->id . ' AND A.season = ' . $this->get_season() . " $search ORDER BY $orderby";
 
 		$teams = wp_cache_get( md5( $sql ), 'teams' );
 		if ( ! $teams ) {
@@ -942,12 +942,11 @@ class Racketmanager_Event {
 				$team->contactno    = '';
 				$team->contactemail = '';
 			}
-			$team->affiliatedclub     = stripslashes( $team->affiliatedclub );
-			$team->club               = get_club( $team->affiliatedclub );
-			$team->affiliatedclubname = $team->club->name;
-			$team->stadium            = stripslashes( $team->stadium );
-			$team->class              = $class;
-			$teams[ $i ]              = $team;
+			$team->club_id = stripslashes( $team->club_id );
+			$team->club    = get_club( $team->club_id );
+			$team->stadium = stripslashes( $team->stadium );
+			$team->class   = $class;
+			$teams[ $i ]   = $team;
 		}
 
 		return $teams;
@@ -1064,7 +1063,7 @@ class Racketmanager_Event {
 		}
 
 		if ( $club ) {
-			$search_terms[] = $wpdb->prepare( 't2.`affiliatedclub` = %d', intval( $club ) );
+			$search_terms[] = $wpdb->prepare( 't2.`club_id` = %d', intval( $club ) );
 		}
 
 		$search = '';
@@ -1148,7 +1147,7 @@ class Racketmanager_Event {
 		}
 
 		if ( $club ) {
-			$search_terms[] = $wpdb->prepare( 't2.`affiliatedclub` = %d', intval( $club ) );
+			$search_terms[] = $wpdb->prepare( 't2.`club_id` = %d', intval( $club ) );
 		}
 
 		$search = '';
@@ -1237,9 +1236,9 @@ class Racketmanager_Event {
 		if ( $count ) {
 			$sql = 'SELECT COUNT(*)';
 		} else {
-			$sql = 'SELECT t2.`affiliatedclub`, count(t2.`id`) as `team_count`';
+			$sql = 'SELECT t2.`club_id`, count(t2.`id`) as `team_count`';
 		}
-		$sql .= " FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_teams} t2, {$wpdb->racketmanager_table} t1, {$wpdb->racketmanager_clubs} c WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` AND t2.`affiliatedclub` = c.`id`" . $search;
+		$sql .= " FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_teams} t2, {$wpdb->racketmanager_table} t1, {$wpdb->racketmanager_clubs} c WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` AND t2.`club_id` = c.`id`" . $search;
 
 		if ( $count ) {
 			return $wpdb->get_var(
@@ -1247,7 +1246,7 @@ class Racketmanager_Event {
 				$sql
 			); // db call ok.
 		} else {
-			$sql .= ' GROUP BY t2.`affiliatedclub`';
+			$sql .= ' GROUP BY t2.`club_id`';
 		}
 		$sql = $wpdb->prepare(
 			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
@@ -1267,7 +1266,7 @@ class Racketmanager_Event {
 
 		foreach ( $event_clubs as $i => $event_club ) {
 			$team_count               = $event_club->team_count;
-			$event_club               = get_club( $event_club->affiliatedclub );
+			$event_club               = get_club( $event_club->club_id );
 			$event_club->team_count   = $team_count;
 			$event_club->player_count = $this->get_players(
 				array(
@@ -1327,7 +1326,7 @@ class Racketmanager_Event {
 			$search_terms[] = $wpdb->prepare( 't1.`season` = %s', $season );
 		}
 		if ( $club ) {
-			$search_terms[] = $wpdb->prepare( 't2.`affiliatedclub` = %d', intval( $club ) );
+			$search_terms[] = $wpdb->prepare( 't2.`club_id` = %d', intval( $club ) );
 		}
 		if ( $league ) {
 			$search_terms[] = $wpdb->prepare( 'l.`id` = %d', intval( $league ) );
@@ -1350,7 +1349,7 @@ class Racketmanager_Event {
 		if ( $count ) {
 			$sql = 'SELECT COUNT(distinct(`team_id`))';
 		} else {
-			$sql = 'SELECT `l`.`title` AS `league_title`, l.`id` AS `league_id`, t2.`id` AS `team_id`, t1.`id` AS `tableId`, `t2`.`title` as `name`,`t1`.`rank`, l.`id`, t1.`status`, t1.`profile`, t1.`group`, t2.`roster`, t2.`affiliatedclub`, t2.`team_type` AS `team_type`, t1.`rating`';
+			$sql = 'SELECT `l`.`title` AS `league_title`, l.`id` AS `league_id`, t2.`id` AS `team_id`, t1.`id` AS `tableId`, `t2`.`title` as `name`,`t1`.`rank`, l.`id`, t1.`status`, t1.`profile`, t1.`group`, t2.`roster`, t2.`club_id`, t2.`team_type` AS `team_type`, t1.`rating`';
 		}
 		$sql .= " FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_teams} t2, {$wpdb->racketmanager_table} t1 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` " . $search;
 
@@ -1396,7 +1395,7 @@ class Racketmanager_Event {
 		}
 		foreach ( $event_teams as $i => $event_team ) {
 			$event_team->roster = maybe_unserialize( $event_team->roster );
-			$event_team->club   = get_club( $event_team->affiliatedclub );
+			$event_team->club   = get_club( $event_team->club_id );
 			if ( strpos( $event_team->name, '_' ) !== false ) {
 				$team_name  = null;
 				$name_array = explode( '_', $event_team->name );
@@ -1506,7 +1505,7 @@ class Racketmanager_Event {
 			}
 		}
 		if ( $club ) {
-			$search_terms[] = "(( `home_team` in (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = %d) AND `player_team` = %s) OR (`away_team` in (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = %d) AND `player_team` = %s))";
+			$search_terms[] = "(( `home_team` in (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `club_id` = %d) AND `player_team` = %s) OR (`away_team` in (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `club_id` = %d) AND `player_team` = %s))";
 			$search_args[]  = $club;
 			$search_args[]  = 'home';
 			$search_args[]  = $club;
@@ -1618,7 +1617,7 @@ class Racketmanager_Event {
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				"UPDATE {$wpdb->racketmanager_table} SET `profile` = 3, `status` = 'W' WHERE `league_id` IN (select `id` FROM {$wpdb->racketmanager} WHERE `event_id` = %d) AND `season` = %s AND `team_id` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = %d) $search ",
+				"UPDATE {$wpdb->racketmanager_table} SET `profile` = 3, `status` = 'W' WHERE `league_id` IN (select `id` FROM {$wpdb->racketmanager} WHERE `event_id` = %d) AND `season` = %s AND `team_id` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `club_id` = %d) $search ",
 				$this->id,
 				$season,
 				$club
@@ -1758,10 +1757,10 @@ class Racketmanager_Event {
 		}
 
 		if ( $club ) {
-			$sql .= " AND (`home_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = " . $club . ") OR `away_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = " . $club . '))';
+			$sql .= " AND (`home_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `club_id` = " . $club . ") OR `away_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `club_id` = " . $club . '))';
 		}
 		if ( $home_club ) {
-			$sql .= " AND `home_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = " . $home_club . ')';
+			$sql .= " AND `home_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `club_id` = " . $home_club . ')';
 		}
 		if ( ! empty( $home_team ) ) {
 			$sql .= ' AND `home_team` = ' . $home_team . ' ';

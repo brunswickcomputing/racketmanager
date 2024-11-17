@@ -205,30 +205,30 @@ if ( ! empty( $player->entry ) ) {
 															switch ( count( $club_players ) ) {
 																case 1:
 																	?>
-																	<input type="text" class="form-control" id="affiliatedclubname" name="affiliatedclubname" value="<?php echo esc_html( get_club( $club_players[0]->affiliatedclub )->name ); ?>" disabled />
-																	<input type="hidden" id="affiliatedclub" name="affiliatedclub" value="<?php echo esc_html( $club_players[0]->affiliatedclub ); ?>" />
+																	<input type="text" class="form-control" id="clubName" name="clubName" value="<?php echo esc_html( get_club( $club_players[0]->club_id )->name ); ?>" disabled />
+																	<input type="hidden" id="clubId" name="clubId" value="<?php echo esc_html( $club_players[0]->club_id ); ?>" />
 																	<?php
 																	break;
 																case 0:
 																	esc_html_e( 'You must be a member of a club to enter a tournament', 'racketmanager' );
 																	?>
-																	<input type="hidden" id="affiliatedclub" name="affiliatedclub" value="" />
+																	<input type="hidden" id="clubId" name="clubId" value="" />
 																	<?php
 																	break;
 																default:
 																	?>
-																	<select class="form-select" size="1" name="affiliatedclub" id="affiliatedclub" <?php echo $changes_allowed ? null : 'disabled'; ?>>
+																	<select class="form-select" size="1" name="clubId" id="clubId" <?php echo $changes_allowed ? null : 'disabled'; ?>>
 																		<option value="0"><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>
 																		<?php
 																		foreach ( $club_players as $club_player ) {
-																			$club = get_club( $club_player->affiliatedclub );
+																			$club = get_club( $club_player->club_id );
 																			?>
 																			<option value="<?php echo esc_html( $club->id ); ?>"><?php echo esc_html( $club->name ); ?></option>
 																			<?php
 																		}
 																		?>
 																	</select>
-																	<div id="affiliatedclub-feedback" class="invalid-feedback"></div>
+																	<div id="clubId-feedback" class="invalid-feedback"></div>
 																	<?php
 																	break;
 															}
@@ -307,7 +307,7 @@ if ( ! empty( $player->entry ) ) {
 													<?php
 													foreach ( $partner_list as $partner ) {
 														?>
-														<option value="<?php echo esc_html( $partner->player_id ); ?>" <?php echo intval( $partner_id ) === intval( $partner->player_id ) ? 'selected' : null; ?>><?php echo esc_html( $partner->fullname . ' - ' . get_club( $partner->affiliatedclub )->name ); ?></option>
+														<option value="<?php echo esc_html( $partner->player_id ); ?>" <?php echo intval( $partner_id ) === intval( $partner->player_id ) ? 'selected' : null; ?>><?php echo esc_html( $partner->fullname . ' - ' . get_club( $partner->club_id )->name ); ?></option>
 														<?php
 													}
 													?>

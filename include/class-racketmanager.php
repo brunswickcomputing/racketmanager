@@ -332,7 +332,7 @@ class RacketManager {
 			}
 		} else {
 			$email_to[] = $match->teams['home']->captain . ' <' . $match->teams['home']->contactemail . '>';
-			$club       = get_club( $match->teams['home']->affiliatedclub );
+			$club       = get_club( $match->teams['home']->club_id );
 			if ( isset( $club->match_secretary_email ) ) {
 				$headers[] = 'cc: ' . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
 			}
@@ -438,7 +438,7 @@ class RacketManager {
 		if ( isset( $match->home_captain ) ) {
 			if ( isset( $match->teams['away']->contactemail ) ) {
 				$email_to = $match->teams['away']->captain . ' <' . $match->teams['away']->contactemail . '>';
-				$club     = get_club( $match->teams['away']->affiliatedclub );
+				$club     = get_club( $match->teams['away']->club_id );
 				if ( isset( $club->match_secretary_email ) ) {
 					$headers[] = 'cc: ' . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
 				}
@@ -446,7 +446,7 @@ class RacketManager {
 		} elseif ( isset( $match->away_captain ) ) {
 			if ( isset( $match->teams['home']->contactemail ) ) {
 				$email_to = $match->teams['home']->captain . ' <' . $match->teams['home']->contactemail . '>';
-				$club     = get_club( $match->teams['home']->affiliatedclub );
+				$club     = get_club( $match->teams['home']->club_id );
 				if ( isset( $club->match_secretary_email ) ) {
 					$headers[] = 'cc: ' . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
 				}
@@ -2378,11 +2378,11 @@ class RacketManager {
 
 		$search_terms = array();
 		if ( $team ) {
-			$search_terms[] = $wpdb->prepare( "`affiliatedclub` in (select `affiliatedclub` from {$wpdb->racketmanager_teams} where `id` = %d)", intval( $team ) );
+			$search_terms[] = $wpdb->prepare( "`club_id` in (select `club_id` from {$wpdb->racketmanager_teams} where `id` = %d)", intval( $team ) );
 		}
 
 		if ( $club ) {
-			$search_terms[] = $wpdb->prepare( '`affiliatedclub` = %d', intval( $club ) );
+			$search_terms[] = $wpdb->prepare( '`club_id` = %d', intval( $club ) );
 		}
 
 		if ( $player ) {
@@ -2427,7 +2427,7 @@ class RacketManager {
 			);
 		}
 
-		$sql = "SELECT A.`id` as `roster_id`, B.`ID` as `player_id`, `display_name` as fullname, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_club_players} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID`";
+		$sql = "SELECT A.`id` as `roster_id`, B.`ID` as `player_id`, `display_name` as fullname, `club_id`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_club_players} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID`";
 		if ( '' !== $search ) {
 			$sql .= " WHERE $search";
 		}
@@ -2452,15 +2452,15 @@ class RacketManager {
 
 			$club_players[ $i ] = (object) (array) $club_player;
 
-			$club_players[ $i ]->affiliatedclub = $club_player->affiliatedclub;
-			$club_players[ $i ]->roster_id      = $club_player->roster_id;
-			$club_players[ $i ]->player_id      = $club_player->player_id;
-			$club_players[ $i ]->fullname       = $club_player->fullname;
-			$club_players[ $i ]->gender         = get_user_meta( $club_player->player_id, 'gender', true );
-			$club_players[ $i ]->type           = get_user_meta( $club_player->player_id, 'racketmanager_type', true );
-			$club_players[ $i ]->locked         = get_user_meta( $club_player->player_id, 'locked', true );
-			$club_players[ $i ]->locked_date    = get_user_meta( $club_player->player_id, 'locked_date', true );
-			$club_players[ $i ]->locked_user    = get_user_meta( $club_player->player_id, 'locked_user', true );
+			$club_players[ $i ]->club_id     = $club_player->club_id;
+			$club_players[ $i ]->roster_id   = $club_player->roster_id;
+			$club_players[ $i ]->player_id   = $club_player->player_id;
+			$club_players[ $i ]->fullname    = $club_player->fullname;
+			$club_players[ $i ]->gender      = get_user_meta( $club_player->player_id, 'gender', true );
+			$club_players[ $i ]->type        = get_user_meta( $club_player->player_id, 'racketmanager_type', true );
+			$club_players[ $i ]->locked      = get_user_meta( $club_player->player_id, 'locked', true );
+			$club_players[ $i ]->locked_date = get_user_meta( $club_player->player_id, 'locked_date', true );
+			$club_players[ $i ]->locked_user = get_user_meta( $club_player->player_id, 'locked_user', true );
 			if ( $club_players[ $i ]->locked_user ) {
 				$club_players[ $i ]->locked_user_name = get_userdata( $club_players[ $i ]->locked_user )->display_name;
 			} else {
@@ -2502,7 +2502,7 @@ class RacketManager {
 	public function get_club_player( $club_player_id, $cache = true ) {
 		global $wpdb;
 
-		$sql = "SELECT A.`player_id` as `player_id`, A.`system_record`, `affiliatedclub`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_club_players} A WHERE A.`id`= '" . intval( $club_player_id ) . "'";
+		$sql = "SELECT A.`player_id` as `player_id`, A.`system_record`, `club_id`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_club_players} A WHERE A.`id`= '" . intval( $club_player_id ) . "'";
 
 		$club_player = wp_cache_get( md5( $sql ), 'clubplayer' );
 		if ( ! $club_player || ! $cache ) {
@@ -2799,13 +2799,13 @@ class RacketManager {
 		}
 
 		if ( $club ) {
-			$sql .= " AND (`home_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = " . $club . ") OR `away_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = " . $club . '))';
+			$sql .= " AND (`home_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `club_id` = " . $club . ") OR `away_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `club_id` = " . $club . '))';
 		}
 		if ( $team ) {
 			$sql .= ' AND (`home_team` = ' . $team . ' OR `away_team` = ' . $team . ')';
 		}
 		if ( $home_club ) {
-			$sql .= " AND `home_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `affiliatedclub` = " . $home_club . ')';
+			$sql .= " AND `home_team` IN (SELECT `id` FROM {$wpdb->racketmanager_teams} WHERE `club_id` = " . $home_club . ')';
 		}
 		if ( ! empty( $home_team ) ) {
 			$sql .= ' AND `home_team` = ' . $home_team . ' ';
@@ -3151,8 +3151,8 @@ class RacketManager {
 			$age_limit  = isset( $match->league->event->age_limit ) ? sanitize_text_field( wp_unslash( $match->league->event->age_limit ) ) : null;
 			$age_offset = isset( $match->league->event->age_offset ) ? intval( $match->league->event->age_offset ) : null;
 			$template   = 'match-rubber-input';
-			$home_club  = get_club( $match->teams['home']->affiliatedclub );
-			$away_club  = get_club( $match->teams['away']->affiliatedclub );
+			$home_club  = get_club( $match->teams['home']->club_id );
+			$away_club  = get_club( $match->teams['away']->club_id );
 			switch ( $match->league->type ) {
 				case 'BD':
 				case 'MD':

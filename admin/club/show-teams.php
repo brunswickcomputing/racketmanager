@@ -52,9 +52,9 @@ namespace Racketmanager;
 						<div class="col-3 teamname">
 							<a href="admin.php?page=racketmanager&amp;subpage=team&amp;edit=<?php echo esc_html( $team->id ); ?>
 							<?php
-							if ( ! empty( $team->affiliatedclub ) ) {
+							if ( ! empty( $team->club_id ) ) {
 								?>
-								&amp;club_id=<?php echo esc_html( $team->affiliatedclub ); ?>
+								&amp;club_id=<?php echo esc_html( $team->club_id ); ?>
 								<?php
 							}
 							?>

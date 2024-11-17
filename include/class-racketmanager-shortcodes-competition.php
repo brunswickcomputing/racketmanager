@@ -781,8 +781,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				$age_limit  = isset( $match->league->event->age_limit ) ? sanitize_text_field( wp_unslash( $match->league->event->age_limit ) ) : null;
 				$age_offset = isset( $match->league->event->age_offset ) ? intval( $match->league->event->age_offset ) : null;
 				$template  .= '-' . $action;
-				$home_club  = get_club( $match->teams['home']->affiliatedclub );
-				$away_club  = get_club( $match->teams['away']->affiliatedclub );
+				$home_club  = get_club( $match->teams['home']->club_id );
+				$away_club  = get_club( $match->teams['away']->club_id );
 				switch ( $match->league->type ) {
 					case 'BD':
 					case 'MD':

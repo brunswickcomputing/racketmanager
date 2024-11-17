@@ -53,8 +53,8 @@ namespace Racketmanager;
 					<?php foreach ( $clubs as $club ) { ?>
 						<option value="<?php echo esc_html( $club->id ); ?>"
 										<?php
-										if ( isset( $team->affiliatedclub ) ) {
-											selected( $club->id, $team->affiliatedclub );
+										if ( isset( $team->club_id ) ) {
+											selected( $club->id, $team->club_id );
 										}
 										?>
 						><?php echo esc_html( $club->name ); ?></option>

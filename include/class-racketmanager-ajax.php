@@ -69,7 +69,7 @@ class Racketmanager_Ajax extends RacketManager {
 			$results = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
 					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					"SELECT  P.`display_name` AS `fullname`, C.`name` as club, R.`id` as roster_id, C.`id` as club_id, P.`id` as player_id, P.`user_email` FROM $wpdb->racketmanager_club_players R, $wpdb->users P, $wpdb->racketmanager_clubs C WHERE R.`player_id` = P.`ID` AND R.`removed_date` IS NULL AND C.`id` = R.`affiliatedclub` $search_term AND `display_name` like %s ORDER BY 1,2,3",
+					"SELECT  P.`display_name` AS `fullname`, C.`name` as club, R.`id` as roster_id, C.`id` as club_id, P.`id` as player_id, P.`user_email` FROM $wpdb->racketmanager_club_players R, $wpdb->users P, $wpdb->racketmanager_clubs C WHERE R.`player_id` = P.`ID` AND R.`removed_date` IS NULL AND C.`id` = R.`club_id` $search_term AND `display_name` like %s ORDER BY 1,2,3",
 					$name
 				)
 			);
@@ -320,12 +320,12 @@ class Racketmanager_Ajax extends RacketManager {
 							if ( get_current_user_id() === intval( $match->teams['home']->captain_id ) || get_current_user_id() === intval( $match->teams['home']->club->matchsecretary ) ) {
 								$player_found = true;
 							}
-							$club_id = $match->teams['home']->affiliatedclub;
+							$club_id = $match->teams['home']->club_id;
 						} elseif ( 'away' === $user_team ) {
 							if ( get_current_user_id() === intval( $match->teams['away']->captain_id ) || get_current_user_id() === intval( $match->teams['away']->club->match_secretary ) ) {
 								$player_found = true;
 							}
-							$club_id = $match->teams['away']->affiliatedclub;
+							$club_id = $match->teams['away']->club_id;
 						}
 						if ( ! $player_found ) {
 							$club           = get_club( $club_id );
@@ -489,14 +489,14 @@ class Racketmanager_Ajax extends RacketManager {
 		$players                              = array();
 		$match_players                        = array();
 		$player_options                       = $racketmanager->get_options( 'player' );
-		$club                                 = get_club( $match->teams['home']->affiliatedclub );
+		$club                                 = get_club( $match->teams['home']->club_id );
 		$player['walkover']['male']['home']   = $club->get_player( $player_options['walkover']['male'] );
 		$player['walkover']['female']['home'] = $club->get_player( $player_options['walkover']['female'] );
 		$player['noplayer']['male']['home']   = $club->get_player( $player_options['noplayer']['male'] );
 		$player['noplayer']['female']['home'] = $club->get_player( $player_options['noplayer']['female'] );
 		$player['share']['male']['home']      = $club->get_player( $player_options['share']['male'] );
 		$player['share']['female']['home']    = $club->get_player( $player_options['share']['female'] );
-		$club                                 = get_club( $match->teams['away']->affiliatedclub );
+		$club                                 = get_club( $match->teams['away']->club_id );
 		$player['walkover']['male']['away']   = $club->get_player( $player_options['walkover']['male'] );
 		$player['walkover']['female']['away'] = $club->get_player( $player_options['walkover']['female'] );
 		$player['noplayer']['male']['away']   = $club->get_player( $player_options['noplayer']['male'] );
@@ -1229,13 +1229,13 @@ class Racketmanager_Ajax extends RacketManager {
 					if ( 'captain' === $result_notification ) {
 						$confirmation_email = $match->teams['away']->contactemail;
 					} elseif ( 'secretary' === $result_notification ) {
-						$club               = get_club( $match->teams['away']->affiliatedclub );
+						$club               = get_club( $match->teams['away']->club_id );
 						$confirmation_email = isset( $club->match_secretary_email ) ? $club->match_secretary_email : '';
 					}
 				} elseif ( 'captain' === $result_notification ) {
 					$confirmation_email = $match->teams['home']->contactemail;
 				} elseif ( 'secretary' === $result_notification ) {
-					$club               = get_club( $match->teams['away']->affiliatedclub );
+					$club               = get_club( $match->teams['away']->club_id );
 					$confirmation_email = isset( $club->match_secretary_email ) ? $club->match_secretary_email : '';
 				}
 			}

@@ -320,10 +320,10 @@ class Racketmanager_Util {
 		$orderby    = $query_args['orderby'];
 
 		$search_terms = array();
-		$sql          = "SELECT `id`, `first_name`, `surname`, `player_id`, `affiliatedclub`, `requested_date`, `requested_user`, `completed_date`, `completed_user`, `gender`, `btm`, `email` FROM {$wpdb->racketmanager_club_player_requests} WHERE 1 = 1";
+		$sql          = "SELECT `id`, `first_name`, `surname`, `player_id`, `club_id`, `requested_date`, `requested_user`, `completed_date`, `completed_user`, `gender`, `btm`, `email` FROM {$wpdb->racketmanager_club_player_requests} WHERE 1 = 1";
 
 		if ( $club && 'all' !== $club ) {
-			$search_terms[] = $wpdb->prepare( '`affiliatedclub` = %s', $club );
+			$search_terms[] = $wpdb->prepare( '`club_id` = %s', $club );
 		}
 		if ( $status && 'outstanding' === $status ) {
 			$search_terms[] = '`completed_date` IS NULL';
@@ -387,7 +387,7 @@ class Racketmanager_Util {
 					$player_request->email      = $player->email;
 				}
 			}
-			$player_request->club_name         = get_club( $player_request->affiliatedclub )->shortcode;
+			$player_request->club_name         = get_club( $player_request->club_id )->shortcode;
 			$player_request->requested_user_id = $player_request->requested_user;
 			$player_request->requested_user    = get_userdata( $player_request->requested_user )->display_name;
 			$player_request->completed_user_id = $player_request->completed_user;

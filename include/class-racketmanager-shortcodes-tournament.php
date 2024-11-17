@@ -353,7 +353,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			}
 		}
 		if ( ! empty( $team ) ) {
-			$player->club      = $team->affiliatedclub;
+			$player->club      = $team->club_id;
 			$player->club_name = get_club( $player->club )->name;
 		}
 		$tournament->matches = $racketmanager->get_matches(

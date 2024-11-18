@@ -47,6 +47,11 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.27.0 =
+* BUGFIX: remove extra '.' from select fields
+* UPDATE: use club_id in place of affiliatedclub
+* UPDATE: add validation to rest api
+
 = 8.26.0 =
 * BUGFIX: use correct database table alias
 * BUGFIX: do not overwrite details due to reuse of index key

@@ -109,7 +109,7 @@ class Racketmanager_Rest_Resources extends WP_REST_Controller {
 		} else {
 			$club_id = null;
 		}
-		$league = null;
+		$is_league = false;
 		if ( isset( $request['competition'] ) ) {
 			$competition = un_seo_url( sanitize_text_field( wp_unslash( $request['competition'] ) ) );
 			$competition = get_competition( $competition, 'name' );
@@ -136,7 +136,8 @@ class Racketmanager_Rest_Resources extends WP_REST_Controller {
 			$league = un_seo_url( sanitize_text_field( wp_unslash( $request['league'] ) ) );
 			$league = get_league( $league, 'name' );
 			if ( $league ) {
-				$events[] = $league->event;
+				$is_league = true;
+				$events[]  = $league->event;
 			}
 		} else {
 			return new WP_Error( 'rest_invalid_param', esc_html__( 'The standings grouping is missing', 'racketmanager' ), array( 'status' => 400 ) );
@@ -145,7 +146,7 @@ class Racketmanager_Rest_Resources extends WP_REST_Controller {
 		foreach ( $events as $event ) {
 			$event = get_event( $event );
 			if ( $event ) {
-				if ( empty( $league ) ) {
+				if ( empty( $is_league ) ) {
 					$leagues = $event->get_leagues();
 				} else {
 					$leagues[] = $league;

@@ -86,8 +86,9 @@ class Racketmanager_Rest_Resources extends WP_REST_Controller {
 			$namespace,
 			'/' . $base . '/schema',
 			array(
-				'methods'  => WP_REST_Server::READABLE,
-				'callback' => array( $this, 'get_public_item_schema' ),
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_public_item_schema' ),
+				'permission_callback' => '__return_true',
 			)
 		);
 	}

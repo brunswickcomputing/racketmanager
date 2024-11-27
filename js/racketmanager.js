@@ -204,18 +204,16 @@ jQuery(document).ready(function ($) {
 		input.attr('type', 'password');
 	});
 
-	jQuery(":checkbox").click(function (event) {
+	jQuery(".noModal:checkbox").click(function (event) {
 		let $target = event.target;
 
 		// If a checkbox with aria-controls, handle click
 		let isCheckbox = $target.getAttribute('type') === 'checkbox';
 		let hasAriaControls = $target.getAttribute('aria-controls');
 		if (isCheckbox && hasAriaControls) {
-			let $target2 = this.parentNode.parentNode.querySelector('#' + $target.getAttribute('aria-controls'));
-
+			let $target2 = $target.parentNode.parentNode.querySelector('#' + $target.getAttribute('aria-controls'));
 			if ($target2?.classList.contains('form-checkboxes__conditional')) {
 				let inputIsChecked = $target.checked;
-
 				$target2.setAttribute('aria-expanded', inputIsChecked);
 				$target2.classList.toggle('form-checkboxes__conditional--hidden', !inputIsChecked);
 			}

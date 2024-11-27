@@ -121,7 +121,7 @@ $match_days = Racketmanager_Util::get_match_days();
 											$competition_events[] = $event->id;
 											?>
 											<div class="form-check form-check-lg eventList">
-												<input class="form-check-input eventId" id="event-<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" type="checkbox" value=<?php echo esc_html( $event->id ); ?> aria-controls="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo esc_attr( $event->status ); ?>>
+												<input class="form-check-input eventId noModal" id="event-<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" type="checkbox" value=<?php echo esc_html( $event->id ); ?> aria-controls="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo esc_attr( $event->status ); ?>>
 												<label class="form-check-label" for="event-<?php echo esc_html( $event->id ); ?>">
 													<?php echo esc_html( $event->name ); ?>
 												</label>
@@ -138,7 +138,7 @@ $match_days = Racketmanager_Util::get_match_days();
 													$event_teams[] = $event_team->team_id;
 													?>
 													<div class="form-check form-check-lg teamEventList">
-														<input class="form-check-input teamEventId" id="teamEvent-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" name="teamEvent[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" type="checkbox" value=<?php echo esc_html( $event_team->team_id ); ?> aria-controls="conditional-team-event-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" <?php echo esc_attr( $event_team->status ); ?>>
+														<input class="form-check-input teamEventId noModal" id="teamEvent-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" name="teamEvent[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" type="checkbox" value=<?php echo esc_html( $event_team->team_id ); ?> aria-controls="conditional-team-event-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" <?php echo esc_attr( $event_team->status ); ?>>
 
 														<label class="form-check-label" for="teamEvent-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>">
 															<?php echo esc_html( $event_team->name ); ?>

@@ -254,9 +254,14 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	 * @return object $validation updated validation object.
 	 */
 	public function partner( $partner, $field_ref, $field_name, $event, $season, $player_id ) {
+		if ( empty( $field_name ) ) {
+			$error_field = 'partner';
+		} else {
+			$error_field = 'partner-' . $field_ref;
+		}
 		if ( empty( $partner ) ) {
 			$this->error                          = true;
-			$this->error_field[ $this->error_id ] = 'partner-' . $field_ref;
+			$this->error_field[ $this->error_id ] = $error_field;
 			$this->error_msg[ $this->error_id ]   = __( 'Partner not selected', 'racketmanager' );
 			++$this->error_id;
 		} else {
@@ -274,7 +279,7 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 			}
 			if ( $partner_found ) {
 				$this->error                          = true;
-				$this->error_field[ $this->error_id ] = 'partner-' . $field_ref;
+				$this->error_field[ $this->error_id ] = $error_field;
 				$this->error_msg[ $this->error_id ]   = __( 'Partner is in another team in this event', 'racketmanager' );
 				++$this->error_id;
 			}
@@ -282,7 +287,7 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 				$partner = get_player( $partner );
 				if ( empty( $partner->age ) ) {
 					$this->error                          = true;
-					$this->error_field[ $this->error_id ] = 'partner-' . $field_ref;
+					$this->error_field[ $this->error_id ] = $error_field;
 					$this->error_msg[ $this->error_id ]   = __( 'Partner has no age specified', 'racketmanager' );
 					++$this->error_id;
 				} elseif ( $partner->age < $event->age_limit ) {
@@ -297,7 +302,7 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 					}
 					if ( $entry_invalid ) {
 						$this->error                          = true;
-						$this->error_field[ $this->error_id ] = 'partner-' . $field_ref;
+						$this->error_field[ $this->error_id ] = $error_field;
 						$this->error_msg[ $this->error_id ]   = __( 'Partner is not eligibile due to age', 'racketmanager' );
 						++$this->error_id;
 					}

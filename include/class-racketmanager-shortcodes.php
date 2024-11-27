@@ -1102,10 +1102,10 @@ class RacketManager_Shortcodes {
 						$team                  = $teams[0];
 						$player_entry->team_id = $team->id;
 						$p                     = 1;
-						foreach ( $team->player as $team_player ) {
-							if ( $team_player !== $player->display_name ) {
+						foreach ( $team->players as $team_player ) {
+							if ( $team_player->id !== $player->ID ) {
 								$player_entry->partner    = $team_player;
-								$player_entry->partner_id = $team->player_id[ $p ];
+								$player_entry->partner_id = $team_player->id;
 								break;
 							}
 							++$p;

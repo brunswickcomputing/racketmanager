@@ -67,6 +67,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_nopriv_racketmanager_reset_password', array( &$this, 'reset_password' ) );
 		add_action( 'wp_ajax_racketmanager_search_players', array( &$this, 'search_players' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_search_players', array( &$this, 'search_players' ) );
+		add_action( 'wp_ajax_racketmanager_team_partner', array( &$this, 'team_partner' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_team_partner', array( &$this, 'logged_out_modal' ) );
+		add_action( 'wp_ajax_racketmanager_validate_partner', array( &$this, 'validate_partner' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_validate_partner', array( &$this, 'logged_out_modal' ) );
 	}
 	/**
 	 * Add item as favourite
@@ -425,7 +429,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$validator     = $validator->club( $club_id );
 				// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				$events            = isset( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : array();
-				$partners          = isset( $_POST['partner'] ) ? wp_unslash( $_POST['partner'] ) : array();
+				$partners          = isset( $_POST['partnerId'] ) ? wp_unslash( $_POST['partnerId'] ) : array();
 				$tournament_events = isset( $_POST['tournamentEvents'] ) ? explode( ',', wp_unslash( $_POST['tournamentEvents'] ) ) : null;
 				// phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				$validator = $validator->events_entry( $events );
@@ -2162,6 +2166,173 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		} else {
 			$msg = __( 'Unable to search for players', 'racketmanager' );
 			array_push( $return, $msg, $err_msg, $err_field );
+			wp_send_json_error( $return, '500' );
+		}
+	}
+	/**
+	 * Build screen to to show team partner
+	 */
+	public function team_partner() {
+		$valid   = true;
+		$message = null;
+		if ( isset( $_POST['security'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
+				$valid   = false;
+				$message = __( 'Security token invalid', 'racketmanager' );
+			}
+		} else {
+			$valid   = false;
+			$message = __( 'No security token found in request', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$event_id = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : 0;
+			$modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+			$gender   = isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : null;
+			$season   = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+			$event    = get_event( $event_id );
+			if ( $event ) {
+				if ( 'M' === $gender ) {
+					if ( substr( $event->type, 0, 1 ) === 'M' || substr( $event->type, 0, 1 ) === 'B' ) {
+						$partner_gender = 'M';
+					} else {
+						$partner_gender = 'F';
+					}
+				} elseif ( 'F' === $gender ) {
+					if ( substr( $event->type, 0, 1 ) === 'W' | substr( $event->type, 0, 1 ) === 'G' ) {
+						$partner_gender = 'F';
+					} else {
+						$partner_gender = 'M';
+					}
+				}
+				$partner_name = null;
+				$partner_btm  = null;
+				$partner_id   = isset( $_POST['partnerId'] ) ? intval( $_POST['partnerId'] ) : null;
+				if ( $partner_id ) {
+					$partner = get_player( $partner_id );
+					if ( $partner ) {
+						$partner_name = $partner->display_name;
+						$partner_btm  = $partner->btm;
+					}
+				}
+				ob_start();
+				?>
+				<div class="modal-dialog modal-dialog-centered modal-lg">
+					<div class="modal-content">
+						<form id="team-partner" class="" action="#" method="post" onsubmit="return checkSelect(this)">
+							<?php wp_nonce_field( 'team-partner', 'racketmanager_nonce' ); ?>
+							<input type="hidden" name="eventId" value="<?php echo esc_attr( $event->id ); ?>" />
+							<input type="hidden" name="season" value="<?php echo esc_attr( $season ); ?>" />
+							<input type="hidden" name="modal" value="<?php echo esc_attr( $modal ); ?>" />
+							<div class="modal-header modal__header">
+								<h4 class="modal-title"><?php echo esc_html__( 'Doubles partner', 'racketmanager' ) . ': ' . esc_html( $event->name ); ?></h4>
+								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+							</div>
+							<div class="modal-body ui-front">
+								<div class="container-fluid">
+									<div id="partnerResponse" class="alert_rm alert--danger" style="display: none;">
+										<div class="alert__body">
+											<div class="alert__body-inner">
+												<span id="partnerResponseText"></span>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="">
+											<p><?php esc_html_e( 'Specify your partner.', 'racketmanager' ); ?></p>
+										</div>
+										<div class="form-floating">
+											<input type="text" class="form-control partner-name" id="partner" name="partner" value="<?php echo esc_attr( $partner_name ); ?>" />
+											<label for="partner"><?php esc_html_e( 'Partner name', 'racketmanager' ); ?></label>
+											<div id="partnerFeedback" class="invalid-feedback"></div>
+										</div>
+										<div class="form-floating">
+											<input type="text" class="form-control partner-btm" id="partnerBTM" name="partnerBTM" value="<?php echo esc_attr( $partner_btm ); ?>" />
+											<label for="partnerBTM"><?php esc_html_e( 'Partner LTA Number', 'racketmanager' ); ?></label>
+											<div id="partnerBTM-feedback" class="invalid-feedback"></div>
+										</div>
+										<input type="hidden" name="partnerId" id="partnerId" value="<?php echo esc_html( $partner_id ); ?>" />
+										<input type="hidden" id="partnerGender" value="<?php echo esc_html( $partner_gender ); ?>" />
+									</div>
+								</div>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
+								<button type="button" class="btn btn-primary" onclick="Racketmanager.partnerSave(this)"><?php esc_html_e( 'Save', 'racketmanager' ); ?></button>
+							</div>
+						</form>
+					</div>
+				</div>
+				<?php
+				$output = ob_get_contents();
+				ob_end_clean();
+			} else {
+				$valid   = false;
+				$message = __( 'Event not found', 'racketmanager' );
+			}
+		}
+		if ( $valid ) {
+			wp_send_json_success( $output );
+		} else {
+			wp_send_json_error( $message, '500' );
+		}
+	}
+	/**
+	 * Validate tournament partner function
+	 */
+	public function validate_partner() {
+		$valid     = true;
+		$return    = array();
+		$validator = new Racketmanager_Validator_Entry_Form();
+		if ( isset( $_POST['racketmanager_nonce'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'team-partner' ) ) {
+				$valid                    = false;
+				$validator->error_field[] = 'partner';
+				$validator->error_msg[]   = __( 'Security token invalid', 'racketmanager' );
+			}
+		} else {
+			$valid                    = false;
+			$validator->error_field[] = 'partner';
+			$validator->error_msg[]   = __( 'No security token found in request', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$event_id   = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : 0;
+			$modal      = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+			$player_id  = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
+			$partner_id = isset( $_POST['partnerId'] ) ? intval( $_POST['partnerId'] ) : null;
+			$season     = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+			$event      = get_event( $event_id );
+			if ( $event ) {
+				if ( $partner_id ) {
+					$partner = get_player( $partner_id );
+					if ( $partner ) {
+						$validator = $validator->partner( $partner_id, $event_id, null, $event, $season, $player_id );
+						if ( ! $validator->error ) {
+							$partner_name = $partner->display_name;
+						} else {
+							$valid = false;
+						}
+					} else {
+						$valid                    = false;
+						$validator->error_field[] = 'partner';
+						$validator->error_msg[]   = __( 'Partner not found', 'racketmanager' );
+					}
+				} else {
+					$valid                    = false;
+					$validator->error_field[] = 'partner';
+					$validator->error_msg[]   = __( 'Partner id not found', 'racketmanager' );
+				}
+			} else {
+				$valid                    = false;
+				$validator->error_field[] = 'partner';
+				$validator->error_msg[]   = __( 'Event not found', 'racketmanager' );
+			}
+		}
+		if ( $valid ) {
+			array_push( $return, $modal, $partner_id, $partner_name, $event_id );
+			wp_send_json_success( $return );
+		} else {
+			$msg = __( 'Error with partner', 'racketmanager' );
+			array_push( $return, $msg, $validator->error_msg, $validator->error_field );
 			wp_send_json_error( $return, '500' );
 		}
 	}

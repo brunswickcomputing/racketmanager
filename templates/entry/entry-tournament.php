@@ -42,7 +42,9 @@ if ( ! empty( $player->entry ) ) {
 	<form id="form-entry" action="" method="post">
 		<?php wp_nonce_field( 'tournament-entry' ); ?>
 		<input type="hidden" name="tournamentId" value="<?php echo esc_html( $tournament->id ); ?>" />
-		<input type="hidden" name="season" value="<?php echo esc_html( $tournament->season ); ?>" />
+		<input type="hidden" name="season" id="season" value="<?php echo esc_html( $tournament->season ); ?>" />
+		<input type="hidden" name="playerId" value="<?php echo esc_attr( $player->id ); ?>" />
+		<input type="hidden" id="playerGender" value="<?php echo esc_attr( $player->gender ); ?>" />
 		<div class="module module--card">
 			<div class="module__content">
 				<div class="module-container">
@@ -161,7 +163,6 @@ if ( ! empty( $player->entry ) ) {
 						<ol class="list list--naked">
 							<li id="liPlayerDetails" class="individual-entry__panel">
 								<div id="playerDetails">
-									<input type="hidden" id="playerId" name="playerId" value="<?php echo esc_html( $player->ID ); ?>" />
 									<div class="hgroup">
 										<h4 class="hgroup__heading"><?php esc_html_e( 'My details', 'racketmanager' ); ?></h4>
 										<?php
@@ -266,19 +267,29 @@ if ( ! empty( $player->entry ) ) {
 									</div>
 									<div id="event-feedback" class="invalid-feedback"></div>
 								</div>
+								<div id="splash" class="d-none">
+									<div class="d-flex justify-content-center">
+										<div class="spinner-border" role="status">
+										<span class="visually-hidden">Loading...</span>
+										</div>
+									</div>
+								</div>
 								<div class="form-checkboxes">
 									<?php
 									foreach ( $events as $event ) {
-										$entered    = false;
-										$partner_id = null;
+										$entered      = false;
+										$partner_id   = null;
+										$partner_name = null;
 										if ( isset( $player->entry[ $event->id ] ) ) {
 											$entered      = true;
 											$player_entry = $player->entry[ $event->id ];
-											$partner_id   = ! empty( $player_entry->partner_id ) ? $player_entry->partner_id : null;
+											$partner_id   = ! empty( $player_entry->partner->id ) ? $player_entry->partner->id : null;
+											$partner_name = ! empty( $player_entry->partner->display_name ) ? $player_entry->partner->display_name : null;
 										}
+										$format = substr( $event->type, 1, 1 );
 										?>
 										<div class="form-check form-check-lg">
-											<input class="form-check-input " id="event-<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" type="checkbox" value=<?php echo esc_html( $event->id ); ?> aria-controls="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $entered ? 'checked' : ''; ?> <?php echo $changes_allowed ? null : 'disabled'; ?>>
+											<input class="form-check-input hasModal" id="event-<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" type="checkbox" value=<?php echo esc_html( $event->id ); ?> aria-controls="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $entered ? 'checked' : ''; ?> <?php echo $changes_allowed ? null : 'disabled'; ?> >
 											<label class="form-check-label" for="event-<?php echo esc_html( $event->id ); ?>">
 												<?php echo esc_html( $event->name ); ?>
 											</label>
@@ -301,17 +312,11 @@ if ( ! empty( $player->entry ) ) {
 											}
 											?>
 											<div class="form-checkboxes__conditional <?php echo $partner_id ? '' : 'form-checkboxes__conditional--hidden'; ?>" id="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $partner_id ? 'aria-expanded="true"' : ''; ?>>
-												<label class="form-label" for="partner-<?php echo esc_html( $event->id ); ?>"><?php esc_html_e( 'Partner', 'racketmanager' ); ?></label>
-												<select class="form-select" size="1" name="partner[<?php echo esc_html( $event->id ); ?>]" id="partner-<?php echo esc_html( $event->id ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?>>
-													<option value="0"><?php esc_html_e( 'Select partner', 'racketmanager' ); ?></option>
-													<?php
-													foreach ( $partner_list as $partner ) {
-														?>
-														<option value="<?php echo esc_html( $partner->player_id ); ?>" <?php echo intval( $partner_id ) === intval( $partner->player_id ) ? 'selected' : null; ?>><?php echo esc_html( $partner->fullname . ' - ' . get_club( $partner->club_id )->name ); ?></option>
-														<?php
-													}
-													?>
-												</select>
+												<input type="hidden" name="partner[<?php echo esc_attr( $event->id ); ?>]" id="partner-<?php echo esc_html( $event->id ); ?>" value="<?php echo esc_html( $partner_id ); ?>" />
+												<a href="/<?php echo esc_attr( seo_url( $event->name ) ); ?>-<?php echo esc_html( seo_url( __( 'set partner', 'racketmanager' ) ) ); ?>" onclick="Racketmanager.partnerModal(event, <?php echo esc_html( $event->id ); ?>)">
+													<span id="partnerName-<?php echo esc_html( $event->id ); ?>"><?php echo esc_html( $partner_name ); ?></span>
+													<input type="hidden" name="partnerId[<?php echo esc_attr( $event->id ); ?>]" id="partnerId-<?php echo esc_html( $event->id ); ?>" value="<?php echo esc_attr( $partner_id ); ?>" />
+												</a>
 												<div id="partner-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
 											</div>
 											<?php
@@ -379,3 +384,4 @@ if ( ! empty( $player->entry ) ) {
 		</div>
 	</form>
 </div>
+<div class="modal" id="partnerModal" tabindex="-1"></div>

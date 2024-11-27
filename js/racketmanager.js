@@ -219,6 +219,12 @@ jQuery(document).ready(function ($) {
 			}
 		}
 	});
+	jQuery(".hasModal:checkbox").click(function (event) {
+		jQuery('#liEventDetails').addClass('is-loading');
+		eventRef = '#' + this.id;
+		let $target = event.target;
+		checkToggle($target, event);
+	});
 
 	jQuery('select.cupteam').on('change', function (e) {
 		let team = this.value;
@@ -279,6 +285,7 @@ jQuery(document).ready(function ($) {
 });
 jQuery(document).ajaxComplete(function () {
 	FavouriteInit();
+	PartnerLookup();
 });
 function FavouriteInit() {
 	jQuery('[data-js=add-favourite]').click(function (e) {
@@ -321,6 +328,111 @@ function FavouriteInit() {
 				jQuery(notifyField).addClass('message-error');
 			}
 		});
+	});
+}
+function checkToggle($target, event) {
+	jQuery('#liEventDetails').addClass('is-loading');
+	// If a checkbox with aria-controls, handle click
+	let isCheckbox = $target.getAttribute('type') === 'checkbox';
+	let hasAriaControls = $target.getAttribute('aria-controls');
+	if (isCheckbox && hasAriaControls) {
+		let $target2 = $target.parentNode.parentNode.querySelector('#' + $target.getAttribute('aria-controls'));
+		if ($target2?.classList.contains('form-checkboxes__conditional')) {
+			let inputIsChecked = $target.checked;
+			$target2.setAttribute('aria-expanded', inputIsChecked);
+			$target2.classList.toggle('form-checkboxes__conditional--hidden', !inputIsChecked);
+			let event_id = $target.id.substring(6);
+			if (inputIsChecked) {
+				Racketmanager.partnerModal(event, event_id);
+			} else {
+				jQuery('#liEventDetails').removeClass('is-loading');
+			}
+		}
+	}
+	jQuery('#liEventDetails').removeClass('is-loading');
+};
+function PartnerLookup() {
+	jQuery('.partner-name').autocomplete({
+		minLength: 2,
+		source: function (request, response) {
+			let partnerGender = jQuery("#partnerGender").val();
+			let club = null;
+			let notifyField = '#partner-feedback';
+			response(get_player_details(request.term, club, notifyField, partnerGender));
+		},
+		select: function (event, ui) {
+			if (ui.item.value == 'null') {
+				ui.item.value = '';
+			}
+			let player = "#partnerName";
+			let playerId = "#partnerId";
+			let playerBTM = "#partnerBTM";
+			jQuery(player).val(ui.item.value);
+			jQuery(playerId).val(ui.item.playerId);
+			jQuery(playerBTM).val(ui.item.btm);
+		},
+		change: function (event, ui) {
+			let player = "#partnerName";
+			let playerId = "#partnerId";
+			let playerBTM = "#partnerBTM";
+			if (ui.item === null) {
+				jQuery(this).val('');
+				jQuery(player).val('');
+				jQuery(playerId).val('');
+				jQuery(playerBTM).val('');
+			} else {
+				jQuery(player).val(ui.item.value);
+				jQuery(playerId).val(ui.item.playerId);
+				jQuery(playerBTM).val(ui.item.btm);
+			}
+		}
+	});
+	jQuery('.partner-btm').autocomplete({
+		minLength: 2,
+		source: function (request, response) {
+			let club = null;
+			let notifyField = '#partnerBTM-feedback';
+			response(get_player_details(request.term, club, notifyField));
+		},
+		select: function (event, ui) {
+			if (ui.item.value == 'null') {
+				ui.item.value = '';
+			}
+			let player = "#partnerName";
+			let playerId = "#partnerId";
+			let playerBTM = "#partnerBTM";
+			jQuery(player).val(ui.item.value);
+			jQuery(playerId).val(ui.item.playerId);
+			jQuery(playerBTM).val(ui.item.btm);
+		},
+		change: function (event, ui) {
+			let player = "#partnerName";
+			let playerId = "#partnerId";
+			let playerBTM = "#partnerBTM";
+			if (ui.item === null) {
+				jQuery(this).val('');
+				jQuery(player).val('');
+				jQuery(playerId).val('');
+				jQuery(playerBTM).val('');
+			} else {
+				jQuery(player).val(ui.item.value);
+				jQuery(playerId).val(ui.item.playerId);
+				jQuery(playerBTM).val(ui.item.btm);
+			}
+		}
+	});
+	jQuery('#partnerModal').on('hidden.bs.modal', function (e) {
+		let eventId = jQuery(this).attr('data-event');
+		if (eventId) {
+			let partnerRef = '#partnerId-' + eventId;
+			let partnerId = jQuery(partnerRef).val();
+			if (!partnerId) {
+				eventRef = '#event-' + eventId;
+				jQuery(eventRef).prop('checked', false);
+				let target = jQuery(eventRef)[0];
+				checkToggle(target, e);
+			}
+		}
 	});
 }
 let Racketmanager = new Object();
@@ -1763,12 +1875,139 @@ Racketmanager.playerSearch = function (event, link) {
 		}
 	});
 };
+Racketmanager.partnerModal = function (event, event_id) {
+	jQuery('#liEventDetails').addClass('is-loading');
+	event.preventDefault();
+	let partnerRef = '#partnerId-' + event_id;
+	let partnerId = jQuery(partnerRef).val();
+	let eventRef = '#event-' + event_id;
+	jQuery(eventRef).prop('checked', true);
+	let genderRef = "#playerGender";
+	let gender = jQuery(genderRef).val();
+	let seasonRef = "#season";
+	let season = jQuery(seasonRef).val();
+	let notifyField = "#partnerModal";
+	let modal = 'partnerModal';
+	jQuery(notifyField).val("");
+	let action = 'racketmanager_team_partner';
 
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: {
+			"eventId": event_id,
+			"modal": modal,
+			"gender": gender,
+			"season": season,
+			"partnerId": partnerId,
+			"action": action,
+			"security": ajax_var.ajax_nonce,
+		},
+		success: function (response) {
+			jQuery(notifyField).empty();
+			jQuery(notifyField).html(response.data);
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				if (response.status == '401') {
+					let output = response.responseJSON.data[1];
+					jQuery(notifyField).html(output);
+				} else {
+					let message = response.responseJSON.data;
+					jQuery(notifyField).html(message);
+				}
+				jQuery(notifyField).addClass('message-error');
+			} else {
+				jQuery(notifyField).text(response.statusText);
+			}
+		},
+		complete: function () {
+			jQuery(eventRef).prop('checked', true);
+			jQuery('#liEventDetails').removeClass('is-loading');
+			jQuery(notifyField).show();
+			jQuery(notifyField).attr('data-event', event_id);
+			jQuery(notifyField).modal('show');
+		}
+	});
+};
+Racketmanager.partnerSave = function (link) {
+	let formId = '#'.concat(link.form.id);
+	let $form = jQuery(formId).serialize();
+	$form += "&action=racketmanager_validate_partner";
+	let alert_id;
+	let alert_response = '';
+	alert_id = jQuery('#partnerResponse');
+	alert_response = '#partnerResponseText';
+	jQuery(alert_id).hide();
+	jQuery(alert_id).removeClass('alert--success alert--warning alert--danger');
+	jQuery(".is-invalid").removeClass("is-invalid");
+
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: $form,
+		success: function (response) {
+			let modal = '#' + response.data[0];
+			let partnerId = response.data[1];
+			let partnerName = response.data[2];
+			let eventId = response.data[3];
+			let partnerIdLink = "#partnerId-" + eventId;
+			jQuery(partnerIdLink).val(partnerId);
+			let partnerNameLink = "#partnerName-" + eventId;
+			jQuery(partnerNameLink).html(partnerName);
+			jQuery(modal).modal('hide')
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				let message = response.responseJSON.data[0];
+				if (response.responseJSON.data[1]) {
+					let errorMsg = response.responseJSON.data[1];
+					let errorField = response.responseJSON.data[2];
+					for (let $i = 0; $i < errorField.length; $i++) {
+						let formfield = "#" + errorField[$i];
+						jQuery(formfield).addClass('is-invalid');
+						formfield = formfield + 'Feedback';
+						jQuery(formfield).html(errorMsg[$i]);
+					}
+				}
+				jQuery(alert_response).html(message);
+			} else {
+				jQuery(alert_response).text(response.statusText);
+			}
+			jQuery(alert_id).addClass('alert--danger');
+		},
+		complete: function () {
+		}
+	});
+};
+Racketmanager.updateTournamentEvent = function (event, type) {
+	jQuery('#liEventDetails').addClass('is-loading');
+	let $target = event.target;
+	jQuery('#liEventDetails').addClass('is-loading');
+	// If a checkbox with aria-controls, handle click
+	let isCheckbox = $target.getAttribute('type') === 'checkbox';
+	let hasAriaControls = $target.getAttribute('aria-controls');
+	if (isCheckbox && hasAriaControls) {
+		let $target2 = $target.parentNode.parentNode.querySelector('#' + $target.getAttribute('aria-controls'));
+		if ($target2?.classList.contains('form-checkboxes__conditional')) {
+			let inputIsChecked = $target.checked;
+			$target2.setAttribute('aria-expanded', inputIsChecked);
+			$target2.classList.toggle('form-checkboxes__conditional--hidden', !inputIsChecked);
+			let event_id = $target.id.substring(6);
+			if (inputIsChecked) {
+				Racketmanager.partnerModal(event, event_id);
+			} else {
+				jQuery('#liEventDetails').removeClass('is-loading');
+			}
+		}
+	}
+	jQuery('#liEventDetails').removeClass('is-loading');
+};
 function activaTab(tab) {
 	jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');
 	jQuery('.nav-pills button[data-bs-target="#' + tab + '"]').tab('show');
 }
-function get_player_details(name, club = null, notifyField = null) {
+function get_player_details(name, club = null, notifyField = null, partnerGender = null) {
 	let response = '';
 	jQuery.ajax({
 		type: 'POST',
@@ -1778,6 +2017,7 @@ function get_player_details(name, club = null, notifyField = null) {
 		data: {
 			"name": name,
 			"club": club,
+			"partnerGender": partnerGender,
 			"action": "racketmanager_get_player_details",
 			"security": ajax_var.ajax_nonce,
 		},

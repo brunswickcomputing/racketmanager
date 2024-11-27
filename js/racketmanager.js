@@ -384,7 +384,7 @@ Racketmanager.updateMatchResults = function (link) {
 	let splash = '#splash';
 	let alert_id = jQuery('#matchAlert');
 	let use_alert = false;
-	if ( alert_id.length == 0 ) {
+	if (alert_id.length == 0) {
 		use_alert = false;
 	} else {
 		use_alert = true;
@@ -472,7 +472,7 @@ Racketmanager.updateMatchResults = function (link) {
 				jQuery(alert_id).addClass('alert--danger');
 				jQuery(alert_response).html(feedback);
 			} else {
-				jQuery(notifyField).html(feedback); 
+				jQuery(notifyField).html(feedback);
 				jQuery(notifyField).show();
 				jQuery(notifyField).addClass('message-error');
 			}
@@ -502,7 +502,7 @@ Racketmanager.updateResults = function (link) {
 	let use_alert = false;
 	let notifyField = '';
 	let alert_response = '';
-	if ( alert_id.length == 0 ) {
+	if (alert_id.length == 0) {
 		use_alert = false;
 	} else {
 		use_alert = true;
@@ -614,7 +614,7 @@ Racketmanager.updateResults = function (link) {
 				jQuery(alert_id).addClass('alert--danger');
 				jQuery(alert_response).html(feedback);
 			} else {
-				jQuery(notifyField).html(feedback); 
+				jQuery(notifyField).html(feedback);
 				jQuery(notifyField).show();
 				jQuery(notifyField).addClass('message-error');
 			}
@@ -676,7 +676,7 @@ Racketmanager.club_player_request = function (link) {
 			}
 			jQuery(notifyField).addClass('alert--danger');
 		},
-		complete: function() {
+		complete: function () {
 			jQuery("#clubPlayerUpdateSubmit").removeClass("disabled");
 			jQuery("#clubPlayerUpdateSubmit").show();
 			jQuery(notifyField).show();
@@ -944,7 +944,7 @@ Racketmanager.resetMatchScores = function (e, formRef) {
 				break;
 		}
 	});
-	let selector = formId + ' .match__message'; 
+	let selector = formId + ' .match__message';
 	jQuery(selector)
 		.removeClass('match-warning')
 		.addClass('d-none')
@@ -1010,7 +1010,7 @@ Racketmanager.matchMode = function (e, match_id, mode) {
 	});
 
 };
-Racketmanager.matchHeader = function (match_id, edit_mode=false) {
+Racketmanager.matchHeader = function (match_id, edit_mode = false) {
 	let notifyField = "#match-header";
 	jQuery(notifyField).val("");
 
@@ -1106,14 +1106,14 @@ Racketmanager.setMatchStatus = function (link) {
 			let statusClasses = Object.entries(response.data[4]);
 			let numRubbers = response.data[6];
 			if (numRubbers) {
-				for (let x=1; x<= numRubbers; x++) {
+				for (let x = 1; x <= numRubbers; x++) {
 					let rubberNumber = x;
 					for (let i in statusMessages) {
 						let statusMessage = statusMessages[i];
 						let teamRef = statusMessage[0];
 						let teamMessage = statusMessage[1];
 						let messageRef = '#match-message-' + rubberNumber + '-' + teamRef;
-						if ( teamMessage ) {
+						if (teamMessage) {
 							jQuery(messageRef).html(teamMessage);
 							jQuery(messageRef).removeClass('d-none');
 							jQuery(messageRef).addClass('match-warning');
@@ -1129,7 +1129,7 @@ Racketmanager.setMatchStatus = function (link) {
 						let teamClass = statusClass[1];
 						let statusRef = '#match-status-' + rubberNumber + '-' + teamRef;
 						jQuery(statusRef).removeClass('winner loser tie');
-						if ( teamClass ) {
+						if (teamClass) {
 							jQuery(statusRef).addClass(teamClass);
 						}
 					}
@@ -1142,7 +1142,7 @@ Racketmanager.setMatchStatus = function (link) {
 					let teamRef = statusMessage[0];
 					let teamMessage = statusMessage[1];
 					let messageRef = '#match-message-' + teamRef;
-					if ( teamMessage ) {
+					if (teamMessage) {
 						jQuery(messageRef).html(teamMessage);
 						jQuery(messageRef).removeClass('d-none');
 						jQuery(messageRef).addClass('match-warning');
@@ -1158,7 +1158,7 @@ Racketmanager.setMatchStatus = function (link) {
 					let teamClass = statusClass[1];
 					let statusRef = '#match-status-' + teamRef;
 					jQuery(statusRef).removeClass('winner loser tie');
-					if ( teamClass ) {
+					if (teamClass) {
 						jQuery(statusRef).addClass(teamClass);
 					}
 				}
@@ -1185,7 +1185,7 @@ Racketmanager.setMatchStatus = function (link) {
 				jQuery(alertTextField).html(response.statusText);
 			}
 			jQuery(notifyField).show();
-	},
+		},
 		complete: function () {
 		}
 	});
@@ -1248,7 +1248,7 @@ Racketmanager.setMatchRubberStatus = function (link) {
 				let teamRef = statusMessage[0];
 				let teamMessage = statusMessage[1];
 				let messageRef = '#match-message-' + rubberNumber + '-' + teamRef;
-				if ( teamMessage ) {
+				if (teamMessage) {
 					jQuery(messageRef).html(teamMessage);
 					jQuery(messageRef).removeClass('d-none');
 					jQuery(messageRef).addClass('match-warning');
@@ -1265,7 +1265,7 @@ Racketmanager.setMatchRubberStatus = function (link) {
 				let teamClass = statusClass[1];
 				let statusRef = '#match-status-' + rubberNumber + '-' + teamRef;
 				jQuery(statusRef).removeClass('winner loser tie');
-				if ( teamClass ) {
+				if (teamClass) {
 					jQuery(statusRef).addClass(teamClass);
 				}
 			}
@@ -1504,22 +1504,22 @@ Racketmanager.switchHomeAway = function (link) {
 	});
 }
 Racketmanager.switchTab = function (elem) {
-    let selectedTab = jQuery(elem).data('tabid').toLowerCase();
-    switch (selectedTab) {
-      case 'tab-grid':
-        jQuery('.match-group').addClass('match-group--grid');
-        jQuery('.match').removeClass('match--list');
-        jQuery('.match .match--list').removeClass('match--list');
-        jQuery('#tab-list').removeClass('active');
-        jQuery('#tab-grid').addClass('active');
-        break;
-      case 'tab-list':
-        jQuery('.match-group').removeClass('match-group--grid');
-        jQuery('.match').addClass("match--list");
-        jQuery('#tab-list').addClass('active');
-        jQuery('#tab-grid').removeClass('active');
-        break;
-    }
+	let selectedTab = jQuery(elem).data('tabid').toLowerCase();
+	switch (selectedTab) {
+		case 'tab-grid':
+			jQuery('.match-group').addClass('match-group--grid');
+			jQuery('.match').removeClass('match--list');
+			jQuery('.match .match--list').removeClass('match--list');
+			jQuery('#tab-list').removeClass('active');
+			jQuery('#tab-grid').addClass('active');
+			break;
+		case 'tab-list':
+			jQuery('.match-group').removeClass('match-group--grid');
+			jQuery('.match').addClass("match--list");
+			jQuery('#tab-list').addClass('active');
+			jQuery('#tab-grid').removeClass('active');
+			break;
+	}
 };
 Racketmanager.getMessage = function (event, message_id) {
 	event.preventDefault();
@@ -1573,7 +1573,7 @@ Racketmanager.getMessage = function (event, message_id) {
 };
 Racketmanager.deleteMessage = function (event, message_id) {
 	event.preventDefault();
-	if ( confirm('Are you sure you want to delete this message?') !== true ) {
+	if (confirm('Are you sure you want to delete this message?') !== true) {
 		return;
 	};
 	jQuery('.selected').removeClass('selected');
@@ -1618,7 +1618,7 @@ Racketmanager.deleteMessage = function (event, message_id) {
 };
 Racketmanager.deleteMessages = function (event, link) {
 	event.preventDefault();
-	if ( confirm('Are you sure you want to delete these messages?') !== true ) {
+	if (confirm('Are you sure you want to delete these messages?') !== true) {
 		return;
 	};
 	let formId = '#'.concat(link.form.id);

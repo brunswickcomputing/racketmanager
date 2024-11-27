@@ -66,6 +66,7 @@ class Racketmanager_Ajax extends RacketManager {
 					$affiliated_club
 				);
 			}
+			$gender  = empty( $_POST['partnerGender'] ) ? null : sanitize_text_field( wp_unslash( $_POST['partnerGender'] ) );
 			$results = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
 					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
@@ -85,6 +86,13 @@ class Racketmanager_Ajax extends RacketManager {
 					$player['playerId']   = $r->player_id;
 					$player['user_email'] = $r->user_email;
 					$player['contactno']  = get_user_meta( $r->player_id, 'contactno', true );
+					$player['btm']        = get_user_meta( $r->player_id, 'btm', true );
+					if ( $gender ) {
+						$player['gender'] = get_user_meta( $r->player_id, 'gender', true );
+						if ( $gender !== $player['gender'] ) {
+							continue;
+						}
+					}
 					array_push( $players, $player );
 				}
 			} else {

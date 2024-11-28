@@ -311,10 +311,22 @@ if ( ! empty( $player->entry ) ) {
 											?>
 											<div class="form-checkboxes__conditional <?php echo $partner_id ? '' : 'form-checkboxes__conditional--hidden'; ?>" id="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $partner_id ? 'aria-expanded="true"' : ''; ?>>
 												<input type="hidden" name="partner[<?php echo esc_attr( $event->id ); ?>]" id="partner-<?php echo esc_html( $event->id ); ?>" value="<?php echo esc_html( $partner_id ); ?>" />
-												<a href="/<?php echo esc_attr( seo_url( $event->name ) ); ?>-<?php echo esc_html( seo_url( __( 'set partner', 'racketmanager' ) ) ); ?>" onclick="Racketmanager.partnerModal(event, <?php echo esc_html( $event->id ); ?>)">
-													<span id="partnerName-<?php echo esc_html( $event->id ); ?>"><?php echo esc_html( $partner_name ); ?></span>
-													<input type="hidden" name="partnerId[<?php echo esc_attr( $event->id ); ?>]" id="partnerId-<?php echo esc_html( $event->id ); ?>" value="<?php echo esc_attr( $partner_id ); ?>" />
-												</a>
+												<?php
+												if ( $changes_allowed ) {
+													?>
+													<a href="/<?php echo esc_attr( seo_url( $event->name ) ); ?>-<?php echo esc_html( seo_url( __( 'set partner', 'racketmanager' ) ) ); ?>" onclick="Racketmanager.partnerModal(event, <?php echo esc_html( $event->id ); ?>)">
+													<?php
+												}
+												?>
+												<span id="partnerName-<?php echo esc_html( $event->id ); ?>"><?php echo esc_html( $partner_name ); ?></span>
+												<input type="hidden" name="partnerId[<?php echo esc_attr( $event->id ); ?>]" id="partnerId-<?php echo esc_html( $event->id ); ?>" value="<?php echo esc_attr( $partner_id ); ?>" />
+												<?php
+												if ( $changes_allowed ) {
+													?>
+													</a>
+													<?php
+												}
+												?>
 												<div id="partner-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
 											</div>
 											<?php

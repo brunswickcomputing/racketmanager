@@ -1497,15 +1497,22 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$args           = shortcode_atts(
 			array(
 				'id'       => false,
+				'season'   => null,
 				'template' => '',
 			),
 			$atts
 		);
 		$competition_id = $args['id'];
+		$season         = $args['season'];
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
 			return __( 'Competition not found', 'racketmanager' );
+		}
+		if ( $season ) {
+			$competition->set_season( $season );
+		} else {
+			$season = $competition->current_season['name'];
 		}
 		$competition->events = $competition->get_events();
 		$i                   = 0;
@@ -1513,7 +1520,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			$event->entries            = $event->get_teams(
 				array(
 					'count'  => true,
-					'season' => $competition->current_season['name'],
+					'season' => $season,
 					'status' => 1,
 				)
 			);

@@ -697,7 +697,8 @@ div.tm-team-content div.team {
 .form-check-lg .is-invalid~.invalid-feedback {
 	font-size: 0.875rem;
 }
-.is-loading .form-checkboxes {
+.is-loading .form-checkboxes,
+.is-loading .tab-content {
 	opacity: 0.1;
 }
 .is-loading #splash {

@@ -1243,6 +1243,12 @@ class RacketManager {
 			'index.php?pagename=competition&season=$matches[2]&competition=$matches[1]-leagues',
 			'top'
 		);
+		// leagues - season - events.
+		add_rewrite_rule(
+			'(.+?)-leagues/([0-9]{4})/events/?$',
+			'index.php?pagename=competition&competition=$matches[1]-leagues&season=$matches[2]&tab=events',
+			'top'
+		);
 		// competition - season - winners.
 		add_rewrite_rule(
 			'(.+?)-leagues/([0-9]{4})/winners?$',

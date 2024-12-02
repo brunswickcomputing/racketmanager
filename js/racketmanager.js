@@ -2030,7 +2030,7 @@ Racketmanager.competitionData = function (e, competitionId, competitionSeason, c
 					"tab": tab,
 					"competitionId": competitionId,
 					"season": competitionSeason,
-					"action": "racketmanager_get_competition_data",
+					"action": "racketmanager_get_competition_tab_data",
 					"security": ajax_var.ajax_nonce,
 				},
 				success: function (response) {

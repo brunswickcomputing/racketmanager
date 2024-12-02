@@ -71,8 +71,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_nopriv_racketmanager_team_partner', array( &$this, 'logged_out_modal' ) );
 		add_action( 'wp_ajax_racketmanager_validate_partner', array( &$this, 'validate_partner' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_validate_partner', array( &$this, 'logged_out_modal' ) );
-		add_action( 'wp_ajax_racketmanager_get_competition_data', array( &$this, 'competition_data' ) );
-		add_action( 'wp_ajax_nopriv_racketmanager_get_competition_data', array( &$this, 'competition_data' ) );
+		add_action( 'wp_ajax_racketmanager_get_competition_tab_data', array( &$this, 'competition_tab_data' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_get_competition_tab_data', array( &$this, 'competition_tab_data' ) );
 	}
 	/**
 	 * Add item as favourite
@@ -2343,7 +2343,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 *
 	 * @return void
 	 */
-	public function competition_data() {
+	public function competition_tab_data() {
 		$valid   = true;
 		$message = null;
 		if ( isset( $_GET['security'] ) ) {

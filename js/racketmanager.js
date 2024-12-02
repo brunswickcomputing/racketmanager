@@ -2052,6 +2052,55 @@ Racketmanager.competitionData = function (e, competitionId, competitionSeason, c
 		}
 	}
 };
+Racketmanager.eventTabData = function (e, eventId, eventSeason, eventName, competitionType) {
+	e.preventDefault();
+	jQuery('#eventTabContent').addClass('is-loading');
+	let $target = e.target;
+	let tab = $target.getAttribute('aria-controls');
+	let is_singular = false;
+	if ($target?.classList.contains('is-singular')) {
+		is_singular = true;
+	}
+	//	let newPath = response.data[3];
+	let newPath = '/' + competitionType + 's/' + eventName + '/' + eventSeason + '/';
+	if (newPath !== "") {
+		let tabDataRef = '#' + tab;
+		let url = new URL(window.location.href);
+		let newURL = url.protocol + '//' + url.hostname + newPath + tab + '/';
+		if (newURL !== url.toString()) {
+			if (history.replaceState) {
+				history.replaceState('', document.title, newURL.toString());
+			}
+			jQuery(tabDataRef).html('');
+			jQuery.ajax({
+				type: 'GET',
+				url: ajax_var.url,
+				data: {
+					"tab": tab,
+					"eventId": eventId,
+					"season": eventSeason,
+					"action": "racketmanager_get_event_tab_data",
+					"security": ajax_var.ajax_nonce,
+				},
+				success: function (response) {
+					jQuery(tabDataRef).html(response.data);
+				},
+				error: function (response) {
+					if (response.responseJSON) {
+						jQuery(tabDataRef).text(response.responseJSON.data);
+					} else {
+						jQuery(tabDataRef).text(response.statusText);
+					}
+				},
+				complete: function () {
+					jQuery('#eventTabContent').removeClass('is-loading');
+				}
+			});
+		} else {
+			jQuery('#eventTabContent').removeClass('is-loading');
+		}
+	}
+};
 function activaTab(tab) {
 	jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');
 	jQuery('.nav-pills button[data-bs-target="#' + tab + '"]').tab('show');

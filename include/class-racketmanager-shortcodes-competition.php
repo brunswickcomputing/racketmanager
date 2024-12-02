@@ -28,6 +28,9 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		add_shortcode( 'teams', array( &$this, 'show_teams' ) );
 		add_shortcode( 'team', array( &$this, 'show_team' ) );
 		add_shortcode( 'league-players', array( &$this, 'show_league_players' ) );
+		add_shortcode( 'event-standings', array( &$this, 'show_event_standings' ) );
+		add_shortcode( 'event-draw', array( &$this, 'show_event_draw' ) );
+		add_shortcode( 'event-matches', array( &$this, 'show_event_matches' ) );
 		add_shortcode( 'event-clubs', array( &$this, 'show_event_clubs' ) );
 		add_shortcode( 'event-teams', array( &$this, 'show_event_teams' ) );
 		add_shortcode( 'event-players', array( &$this, 'show_event_players' ) );
@@ -193,7 +196,6 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		if ( ! $event ) {
 			return __( 'Event not found', 'racketmanager' );
 		}
-		$leagues = $event->get_leagues();
 		if ( ! $season ) {
 			// phpcs:disable WordPress.Security.NonceVerification.Recommended
 			if ( isset( $_GET['season'] ) && ! empty( $_GET['season'] ) ) {
@@ -217,23 +219,6 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		if ( empty( $event->seasons[ $season ] ) ) {
 			return __( 'Season not found for event', 'racketmanager' );
 		}
-		$event->teams = $event->get_teams(
-			array(
-				'season'  => $season,
-				'orderby' => array( 'name' => 'ASC' ),
-				'players' => true,
-				'status'  => 1,
-			)
-		);
-		if ( $event->competition->is_championship ) {
-			$event->leagues = $this->get_draw( $event, $season );
-			$i              = 0;
-			foreach ( $event->teams as $team ) {
-				$team->info         = $event->get_team_info( $team->team_id );
-				$event->teams[ $i ] = $team;
-				++$i;
-			}
-		}
 		if ( empty( $template ) && $this->check_template( 'event-' . $event->competition->sport ) ) {
 			$filename = 'event-' . $event->competition->sport;
 		} else {
@@ -243,7 +228,6 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			$filename,
 			array(
 				'event'              => $event,
-				'leagues'            => $leagues,
 				'seasons'            => $seasons,
 				'curr_season'        => $season,
 				'standings_template' => $standingstable,
@@ -1088,6 +1072,113 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		);
 	}
 	/**
+	 * Function to display event standings
+	 *
+	 * @param array $atts shortcode attributes.
+	 * @return the content
+	 */
+	public function show_event_standings( $atts ) {
+		$args     = shortcode_atts(
+			array(
+				'id'       => 0,
+				'template' => '',
+				'season'   => false,
+			),
+			$atts
+		);
+		$event_id = $args['id'];
+		$template = $args['template'];
+		$season   = $args['season'];
+		$event    = get_event( $event_id );
+		if ( ! $event ) {
+			return __( 'Event not found', 'racketmanager' );
+		}
+		$event->leagues = $event->get_leagues();
+		$event->set_season( $season );
+		$filename = ( ! empty( $template ) ) ? 'standings-' . $template : 'standings';
+		return $this->load_template(
+			$filename,
+			array(
+				'event' => $event,
+			),
+			'event'
+		);
+	}
+	/**
+	 * Function to display event draw
+	 *
+	 * @param array $atts shortcode attributes.
+	 * @return the content
+	 */
+	public function show_event_draw( $atts ) {
+		$args     = shortcode_atts(
+			array(
+				'id'       => 0,
+				'template' => '',
+				'season'   => false,
+			),
+			$atts
+		);
+		$event_id = $args['id'];
+		$template = $args['template'];
+		$season   = $args['season'];
+		$event    = get_event( $event_id );
+		if ( ! $event ) {
+			return __( 'Event not found', 'racketmanager' );
+		}
+		$event->set_season( $season );
+		if ( $event->competition->is_championship ) {
+			$event->leagues = $this->get_draw( $event, $season );
+		} else {
+			$event->leagues = $event->get_leagues();
+		}
+		$filename = ( ! empty( $template ) ) ? 'draw-' . $template : 'draw';
+		return $this->load_template(
+			$filename,
+			array(
+				'event' => $event,
+			),
+			'event'
+		);
+	}
+	/**
+	 * Function to display event matches
+	 *
+	 * @param array $atts shortcode attributes.
+	 * @return the content
+	 */
+	public function show_event_matches( $atts ) {
+		$args     = shortcode_atts(
+			array(
+				'id'       => 0,
+				'template' => '',
+				'season'   => false,
+			),
+			$atts
+		);
+		$event_id = $args['id'];
+		$template = $args['template'];
+		$season   = $args['season'];
+		$event    = get_event( $event_id );
+		if ( ! $event ) {
+			return __( 'Event not found', 'racketmanager' );
+		}
+		$event->set_season( $season );
+		if ( $event->competition->is_championship ) {
+			$event->leagues = $this->get_draw( $event, $season );
+		} else {
+			$event->leagues = $event->get_leagues();
+		}
+		$filename = ( ! empty( $template ) ) ? 'matches-' . $template : 'matches';
+		return $this->load_template(
+			$filename,
+			array(
+				'event' => $event,
+			),
+			'event'
+		);
+	}
+	/**
 	 * Function to display event Clubs
 	 *
 	 * @param array $atts shortcode attributes.
@@ -1095,21 +1186,24 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 	 */
 	public function show_event_clubs( $atts ) {
 		global $wp;
-		$args       = shortcode_atts(
+		$args     = shortcode_atts(
 			array(
-				'event_id' => 0,
+				'id'       => 0,
 				'template' => '',
 				'season'   => false,
 			),
 			$atts
 		);
-		$event_id   = $args['event_id'];
-		$template   = $args['template'];
-		$season     = $args['season'];
-		$event      = get_event( $event_id );
+		$event_id = $args['id'];
+		$template = $args['template'];
+		$season   = $args['season'];
+		$event    = get_event( $event_id );
+		if ( ! $event ) {
+			return __( 'Event not found', 'racketmanager' );
+		}
 		$club       = null;
 		$event_club = null;
-		$event->set_season();
+		$event->set_season( $season );
 		if ( isset( $wp->query_vars['club_name'] ) ) {
 			$club = get_query_var( 'club_name' );
 			$club = str_replace( '-', ' ', $club );
@@ -1194,12 +1288,12 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		global $wp;
 		$args     = shortcode_atts(
 			array(
-				'event_id' => false,
+				'id'       => false,
 				'template' => '',
 			),
 			$atts
 		);
-		$event_id = $args['event_id'];
+		$event_id = $args['id'];
 		$template = $args['template'];
 		$event    = get_event( $event_id );
 		if ( ! $event ) {
@@ -1239,9 +1333,13 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				$team->players = $players;
 				$event->team   = $team;
 			}
+		} elseif ( $event->competition->is_championship ) {
+			if ( empty( $template ) ) {
+				$template = 'list';
+			}
 		}
 		$tab      = 'teams';
-		$filename = ( ! empty( $template ) ) ? 'teams-list' . $template : 'teams-list';
+		$filename = ( empty( $template ) ) ? 'teams' : 'teams-' . $template;
 
 		return $this->load_template(
 			$filename,
@@ -1249,7 +1347,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				'event'       => $event,
 				'tab'         => $tab,
 				'curr_season' => $event->current_season['name'],
-			)
+			),
+			'event'
 		);
 	}
 	/**
@@ -1262,42 +1361,48 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		global $wp;
 		$args     = shortcode_atts(
 			array(
-				'event_id' => 0,
+				'id'       => 0,
+				'season'   => null,
 				'template' => '',
 			),
 			$atts
 		);
-		$event_id = $args['event_id'];
+		$event_id = $args['id'];
+		$season   = $args['season'];
 		$template = $args['template'];
 		$event    = get_event( $event_id );
-		$event->set_season();
-		$player         = null;
-		$event->players = array();
-		if ( isset( $wp->query_vars['player_id'] ) ) {
-			$player = un_seo_url( get_query_var( 'player_id' ) );
-		}
-		if ( $player ) {
-			$player = get_player( $player, 'name' ); // get player by name.
-			if ( $player ) {
-				$player->matches = $player->get_matches( $event, $event->current_season['name'], 'event' );
-				asort( $player->matches );
-				$player->stats = $player->get_stats();
-				$event->player = $player;
-			} else {
-				esc_html_e( 'Player not found', 'racketmanager' );
+		if ( $event ) {
+			$event->set_season( $season );
+			$player         = null;
+			$event->players = array();
+			if ( isset( $wp->query_vars['player_id'] ) ) {
+				$player = un_seo_url( get_query_var( 'player_id' ) );
 			}
+			if ( $player ) {
+				$player = get_player( $player, 'name' ); // get player by name.
+				if ( $player ) {
+					$player->matches = $player->get_matches( $event, $event->current_season['name'], 'event' );
+					asort( $player->matches );
+					$player->stats = $player->get_stats();
+					$event->player = $player;
+				} else {
+					esc_html_e( 'Player not found', 'racketmanager' );
+				}
+			} else {
+				$players        = $event->get_players( array( 'season' => $event->current_season['name'] ) );
+				$event->players = RacketManager_Util::get_players_list( $players );
+			}
+			$filename = ( ! empty( $template ) ) ? 'players-' . $template : 'players';
+			return $this->load_template(
+				$filename,
+				array(
+					'event' => $event,
+				),
+				'event'
+			);
 		} else {
-			$players        = $event->get_players( array( 'season' => $event->current_season['name'] ) );
-			$event->players = RacketManager_Util::get_players_list( $players );
+			return __( 'Event not found', 'racketmanager' );
 		}
-		$filename = ( ! empty( $template ) ) ? 'players-' . $template : 'players';
-		return $this->load_template(
-			$filename,
-			array(
-				'event' => $event,
-			),
-			'event'
-		);
 	}
 	/**
 	 * Show competitions function

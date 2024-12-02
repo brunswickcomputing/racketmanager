@@ -1221,6 +1221,96 @@ function racketmanager_competition_players( $competition_id, $args = array() ) {
 	echo do_shortcode( $shortcode );
 }
 /**
+ * Display event standings function
+ *
+ * @param int   $event_id event.
+ * @param array $args array of arguments.
+ */
+function racketmanager_event_standings( $event_id, $args = array() ) {
+	$args['id'] = $event_id;
+	$shortcode  = '[event-standings';
+	foreach ( $args as $key => $value ) {
+		$shortcode .= ' ' . $key . "='" . $value . "'";
+	}
+	$shortcode .= ']';
+	echo do_shortcode( $shortcode );
+}
+/**
+ * Display event draw function
+ *
+ * @param int   $event_id event.
+ * @param array $args array of arguments.
+ */
+function racketmanager_event_draw( $event_id, $args = array() ) {
+	$args['id'] = $event_id;
+	$shortcode  = '[event-draw';
+	foreach ( $args as $key => $value ) {
+		$shortcode .= ' ' . $key . "='" . $value . "'";
+	}
+	$shortcode .= ']';
+	echo do_shortcode( $shortcode );
+}
+/**
+ * Display event matches function
+ *
+ * @param int   $event_id event.
+ * @param array $args array of arguments.
+ */
+function racketmanager_event_matches( $event_id, $args = array() ) {
+	$args['id'] = $event_id;
+	$shortcode  = '[event-matches';
+	foreach ( $args as $key => $value ) {
+		$shortcode .= ' ' . $key . "='" . $value . "'";
+	}
+	$shortcode .= ']';
+	echo do_shortcode( $shortcode );
+}
+/**
+ * Display event clubs function
+ *
+ * @param int   $event_id event.
+ * @param array $args array of arguments.
+ */
+function racketmanager_event_clubs( $event_id, $args = array() ) {
+	$args['id'] = $event_id;
+	$shortcode  = '[event-clubs';
+	foreach ( $args as $key => $value ) {
+		$shortcode .= ' ' . $key . "='" . $value . "'";
+	}
+	$shortcode .= ']';
+	echo do_shortcode( $shortcode );
+}
+/**
+ * Display event teams function
+ *
+ * @param int   $event_id event.
+ * @param array $args array of arguments.
+ */
+function racketmanager_event_teams( $event_id, $args = array() ) {
+	$args['id'] = $event_id;
+	$shortcode  = '[event-teams';
+	foreach ( $args as $key => $value ) {
+		$shortcode .= ' ' . $key . "='" . $value . "'";
+	}
+	$shortcode .= ']';
+	echo do_shortcode( $shortcode );
+}
+/**
+ * Display event players function
+ *
+ * @param int   $event_id event.
+ * @param array $args array of arguments.
+ */
+function racketmanager_event_players( $event_id, $args = array() ) {
+	$args['id'] = $event_id;
+	$shortcode  = '[event-players';
+	foreach ( $args as $key => $value ) {
+		$shortcode .= ' ' . $key . "='" . $value . "'";
+	}
+	$shortcode .= ']';
+	echo do_shortcode( $shortcode );
+}
+/**
  * Display competition matches function
  *
  * @param int   $competition_id competition.

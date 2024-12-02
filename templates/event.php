@@ -18,13 +18,6 @@ namespace Racketmanager;
 
 global $racketmanager_shortcodes, $racketmanager, $wp;
 
-if ( 'email' === $template_type ) {
-	$email_subject = $event->name;
-	require 'email/email-header.php';
-	require 'email/div-top.php';
-	?>
-	<?php
-}
 $is_singular = false;
 if ( empty( $tab ) ) {
 	if ( isset( $wp->query_vars['player_id'] ) ) {
@@ -98,82 +91,65 @@ if ( ! $event->is_box ) {
 <div id="leaguetables">
 	<?php
 	require RACKETMANAGER_PATH . 'templates/includes/event-header.php';
-	if ( 'constitution' !== $standings_template ) {
-		?>
-		<div>
-			<nav class="navbar navbar-expand-lg">
-				<div class="">
-					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-						<span class="navbar-toggler-icon"></span>
-					</button>
-					<div class="collapse navbar-collapse mt-3" id="navbarSupportedContent">
-						<ul class="nav nav-pills frontend" id="myTab" role="tablist">
-							<?php
-							foreach ( $menu_options as $option ) {
-								if ( $option['available'] ) {
-									$singular_class = $option['selected'] && $is_singular ? 'is-singular' : null;
-									?>
-									<li class="nav-item" role="presentation">
-										<button class="nav-link <?php echo $option['selected'] ? 'active' : null; ?> <?php echo esc_attr( $singular_class ); ?>" id="<?php echo esc_attr( $option['name'] ); ?>-tab" data-bs-toggle="pill" data-bs-target="#<?php echo esc_attr( $option['name'] ); ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $option['name'] ); ?>" aria-selected="<?php echo esc_attr( $option['selected'] ); ?>" onclick="Racketmanager.eventTabData(event,<?php echo esc_attr( $event->id ); ?>,'<?php echo esc_attr( $event->current_season['name'] ); ?>','<?php echo esc_attr( seo_url( $event->name ) ); ?>','<?php echo esc_attr( $event->competition->type ); ?>')"><?php echo esc_attr( $option['description'] ); ?></button>
-									</li>
-									<?php
-								}
-							}
-							?>
-						</ul>
-					</div>
-				</div>
-			</nav>
-		</div>
-		<?php
-	}
 	?>
-	<?php
-	if ( 'constitution' !== $standings_template ) {
-		?>
-		<div class="tab-content" id="eventTabContent">
-			<div id="splash" class="d-none">
-				<div class="d-flex justify-content-center">
-					<div class="spinner-border" role="status">
-					<span class="visually-hidden">Loading...</span>
-					</div>
+	<div>
+		<nav class="navbar navbar-expand-lg">
+			<div class="">
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse mt-3" id="navbarSupportedContent">
+					<ul class="nav nav-pills frontend" id="myTab" role="tablist">
+						<?php
+						foreach ( $menu_options as $option ) {
+							if ( $option['available'] ) {
+								$singular_class = $option['selected'] && $is_singular ? 'is-singular' : null;
+								?>
+								<li class="nav-item" role="presentation">
+									<button class="nav-link <?php echo $option['selected'] ? 'active' : null; ?> <?php echo esc_attr( $singular_class ); ?>" id="<?php echo esc_attr( $option['name'] ); ?>-tab" data-bs-toggle="pill" data-bs-target="#<?php echo esc_attr( $option['name'] ); ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $option['name'] ); ?>" aria-selected="<?php echo esc_attr( $option['selected'] ); ?>" onclick="Racketmanager.eventTabData(event,<?php echo esc_attr( $event->id ); ?>,'<?php echo esc_attr( $event->current_season['name'] ); ?>','<?php echo esc_attr( seo_url( $event->name ) ); ?>','<?php echo esc_attr( $event->competition->type ); ?>')"><?php echo esc_attr( $option['description'] ); ?></button>
+								</li>
+								<?php
+							}
+						}
+						?>
+					</ul>
 				</div>
 			</div>
-		<?php
-		foreach ( $menu_options as $option ) {
-			if ( $option['available'] ) {
-				?>
-				<div class="tab-pane <?php echo $option['selected'] ? 'active' : 'fade'; ?>" id="<?php echo esc_attr( $option['name'] ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $option['name'] ); ?>-tab">
-					<?php
-					if ( $option['selected'] ) {
-						$function_name = 'Racketmanager\racketmanager_event_' . $option['name'];
-						if ( function_exists( $function_name ) ) {
-							$function_name(
-								$event->id,
-								array(
-									'season'   => $event->current_season['name'],
-									'template' => $option['template'],
-								)
-							);
-						} else {
-							/* translators: %s: function name */
-							printf( esc_html__( 'function %s does not exist', 'racketmanager' ), esc_attr( $function_name ) );
-						}
-					}
-					?>
+		</nav>
+	</div>
+	<div class="tab-content" id="eventTabContent">
+		<div id="splash" class="d-none">
+			<div class="d-flex justify-content-center">
+				<div class="spinner-border" role="status">
+				<span class="visually-hidden">Loading...</span>
 				</div>
+			</div>
+		</div>
+	<?php
+	foreach ( $menu_options as $option ) {
+		if ( $option['available'] ) {
+			?>
+			<div class="tab-pane <?php echo $option['selected'] ? 'active' : 'fade'; ?>" id="<?php echo esc_attr( $option['name'] ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $option['name'] ); ?>-tab">
 				<?php
-			}
+				if ( $option['selected'] ) {
+					$function_name = 'Racketmanager\racketmanager_event_' . $option['name'];
+					if ( function_exists( $function_name ) ) {
+						$function_name(
+							$event->id,
+							array(
+								'season'   => $event->current_season['name'],
+								'template' => $option['template'],
+							)
+						);
+					} else {
+						/* translators: %s: function name */
+						printf( esc_html__( 'function %s does not exist', 'racketmanager' ), esc_attr( $function_name ) );
+					}
+				}
+				?>
+			</div>
+			<?php
 		}
-		?>
-		<?php
 	}
 	?>
 </div>
-<?php
-if ( 'email' === $template_type ) {
-	?>
-	<?php
-	require 'email/div-bottom.php';
-	require 'email/email-footer.php';
-} ?>

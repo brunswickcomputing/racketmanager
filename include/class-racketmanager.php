@@ -1443,6 +1443,12 @@ class RacketManager {
 			'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&team=$matches[3]',
 			'top'
 		);
+		// league event - season - teams.
+		add_rewrite_rule(
+			'leagues/(.+?)/([0-9]{4})/teams/?$',
+			'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=teams',
+			'top'
+		);
 		// league event - season - player.
 		add_rewrite_rule(
 			'leagues/(.+?)/([0-9]{4})/player/(.+?)/?$',
@@ -1453,6 +1459,12 @@ class RacketManager {
 		add_rewrite_rule(
 			'leagues/(.+?)/([0-9]{4})/players/?$',
 			'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=players',
+			'top'
+		);
+		// league event - season - standings.
+		add_rewrite_rule(
+			'leagues/(.+?)/([0-9]{4})/standings/?$',
+			'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=standings',
 			'top'
 		);
 		// league event.
@@ -1490,7 +1502,7 @@ class RacketManager {
 		// cup - season - players.
 		add_rewrite_rule(
 			'cup/(.+?)/([0-9]{4})/players/?$',
-			'index.php?index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=players',
+			'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=players',
 			'top'
 		);
 		// cup - season.
@@ -1552,6 +1564,24 @@ class RacketManager {
 		add_rewrite_rule(
 			'cups/(.+?)/([0-9]{4})/players/?$',
 			'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=players',
+			'top'
+		);
+		// cup event - season - teams.
+		add_rewrite_rule(
+			'cups/(.+?)/([0-9]{4})/teams/?$',
+			'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=teams',
+			'top'
+		);
+		// cup event - season - matches.
+		add_rewrite_rule(
+			'cups/(.+?)/([0-9]{4})/matches/?$',
+			'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=matches',
+			'top'
+		);
+		// cup event - season - draw.
+		add_rewrite_rule(
+			'cups/(.+?)/([0-9]{4})/draw/?$',
+			'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=draw',
 			'top'
 		);
 		// cup event.

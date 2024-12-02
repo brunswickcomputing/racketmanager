@@ -26,6 +26,7 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 		add_shortcode( 'clubplayernotification', array( &$this, 'showClubPlayerNotification' ) );
 		add_shortcode( 'match_date_change_notification', array( &$this, 'show_match_date_change_notification' ) );
 		add_shortcode( 'withdrawn-team', array( &$this, 'show_team_withdrawn' ) );
+		add_shortcode( 'event-constitution', array( &$this, 'show_event_constitution' ) );
 	}
 	/**
 	 * Function to show match notification
@@ -544,5 +545,42 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 		} else {
 			return $msg;
 		}
+	}
+	/**
+	 * Function to show event constitution email
+	 *
+	 *    [event-constitution]
+	 *
+	 * @param array $atts shortcode attributes.
+	 * @return the content
+	 */
+	public function show_event_constitution( $atts ) {
+		global $racketmanager;
+		$args     = shortcode_atts(
+			array(
+				'id'       => false,
+				'season'   => null,
+				'template' => '',
+			),
+			$atts
+		);
+		$event_id = $args['id'];
+		$season   = $args['season'];
+		$template = $args['template'];
+		$event    = get_event( $event_id );
+		if ( ! $event ) {
+			return esc_html_e( 'Event not found', 'racketmanager' );
+		}
+		$event->leagues = $event->get_leagues();
+		$event->set_season( $season );
+		$filename = ( ! empty( $template ) ) ? 'constitution-' . $template : 'constitution';
+		return $this->load_template(
+			$filename,
+			array(
+				'event'        => $event,
+				'organisation' => $racketmanager->site_name,
+			),
+			'event'
+		);
 	}
 }

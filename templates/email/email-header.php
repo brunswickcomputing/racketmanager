@@ -47,8 +47,8 @@ color: #006800; background-color: #fff; border-color: #006800;
 width: 50%;
 text-align: left;
 }
-#standings-archive h4.header a {
-	font-size: 1.5em;
+.standings-archive h2.header a {
+	font-size: 1.5rem;
 	text-decoration: none;
 	color: #006800;
 }

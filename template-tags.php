@@ -1033,7 +1033,7 @@ function racketmanager_constitution_notification( $event_id, $args = array() ) {
 	$args['id']             = $event_id;
 	$args['standingstable'] = 'constitution';
 
-	$shortcode = '[event';
+	$shortcode = '[event-constitution';
 	foreach ( $args as $key => $value ) {
 		$shortcode .= ' ' . $key . "='" . $value . "'";
 	}

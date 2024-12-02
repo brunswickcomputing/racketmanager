@@ -96,17 +96,7 @@ jQuery(document).ready(function ($) {
 
 		return false;  // Prevent default button behaviour
 	});
-	jQuery('#match_date').on('change', function () {
-		let match_date = jQuery(`#match_date`).val().replace(/[^A-Za-z0-9 -]/g, ''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
-		let tournament = jQuery(`#tournament_id`).val();
-		tournament = tournament.replace(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
-		tournament = tournament.replace("-", "_"); // Replace space with a '_' symbol */
-		tournament = tournament.replace(/\s/g, "-"); // Replace space with a '_' symbol */
-		let cleanUrl = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/tournament/' + tournament.toLowerCase() + '/matches/' + match_date + '/';
-		window.location = cleanUrl;
-
-		return false;  // Prevent default button behaviour
-	});
+	TournamentDateChange();
 	jQuery('#tournament-match-date-form').submit(function () {
 	});
 	jQuery('.teamcaptain').autocomplete({
@@ -286,6 +276,7 @@ jQuery(document).ready(function ($) {
 jQuery(document).ajaxComplete(function () {
 	FavouriteInit();
 	PartnerLookup();
+	TournamentDateChange();
 });
 function FavouriteInit() {
 	jQuery('[data-js=add-favourite]').click(function (e) {
@@ -433,6 +424,19 @@ function PartnerLookup() {
 				checkToggle(target, e);
 			}
 		}
+	});
+}
+function TournamentDateChange() {
+	jQuery('#tournament-match-date-form #match_date').on('change', function () {
+		let match_date = jQuery(`#match_date`).val().replace(/[^A-Za-z0-9 -]/g, ''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
+		let tournament = jQuery(`#tournament_id`).val();
+		tournament = tournament.replace(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
+		tournament = tournament.replace("-", "_"); // Replace space with a '_' symbol */
+		tournament = tournament.replace(/\s/g, "-"); // Replace space with a '_' symbol */
+		let cleanUrl = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/tournament/' + tournament.toLowerCase() + '/matches/' + match_date + '/';
+		window.location = cleanUrl;
+
+		return false;  // Prevent default button behaviour
 	});
 }
 let Racketmanager = new Object();
@@ -2098,6 +2102,54 @@ Racketmanager.eventTabData = function (e, eventId, eventSeason, eventName, compe
 			});
 		} else {
 			jQuery('#eventTabContent').removeClass('is-loading');
+		}
+	}
+};
+Racketmanager.tournamentTabData = function (e, tournamentId, tournamentName) {
+	e.preventDefault();
+	jQuery('#tournamentabContent').addClass('is-loading');
+	let $target = e.target;
+	let tab = $target.getAttribute('aria-controls');
+	let is_singular = false;
+	if ($target?.classList.contains('is-singular')) {
+		is_singular = true;
+	}
+	//	let newPath = response.data[3];
+	let newPath = '/tournament/' + tournamentName + '/';
+	if (newPath !== "") {
+		let tabDataRef = '#' + tab;
+		let url = new URL(window.location.href);
+		let newURL = url.protocol + '//' + url.hostname + newPath + tab + '/';
+		if (newURL !== url.toString()) {
+			if (history.replaceState) {
+				history.replaceState('', document.title, newURL.toString());
+			}
+			jQuery(tabDataRef).html('');
+			jQuery.ajax({
+				type: 'GET',
+				url: ajax_var.url,
+				data: {
+					"tab": tab,
+					"tournamentId": tournamentId,
+					"action": "racketmanager_get_tournament_tab_data",
+					"security": ajax_var.ajax_nonce,
+				},
+				success: function (response) {
+					jQuery(tabDataRef).html(response.data);
+				},
+				error: function (response) {
+					if (response.responseJSON) {
+						jQuery(tabDataRef).text(response.responseJSON.data);
+					} else {
+						jQuery(tabDataRef).text(response.statusText);
+					}
+				},
+				complete: function () {
+					jQuery('#tournamentabContent').removeClass('is-loading');
+				}
+			});
+		} else {
+			jQuery('#tournamentabContent').removeClass('is-loading');
 		}
 	}
 };

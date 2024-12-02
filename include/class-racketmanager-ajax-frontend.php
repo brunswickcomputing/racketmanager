@@ -75,6 +75,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_nopriv_racketmanager_get_competition_tab_data', array( &$this, 'competition_tab_data' ) );
 		add_action( 'wp_ajax_racketmanager_get_event_tab_data', array( &$this, 'event_tab_data' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_get_event_tab_data', array( &$this, 'event_tab_data' ) );
+		add_action( 'wp_ajax_racketmanager_get_tournament_tab_data', array( &$this, 'tournament_tab_data' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_get_tournament_tab_data', array( &$this, 'tournament_tab_data' ) );
 	}
 	/**
 	 * Add item as favourite
@@ -2436,6 +2438,54 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			} else {
 				$valid   = false;
 				$message = __( 'Event not found', 'racketmanager' );
+			}
+		}
+		if ( $valid ) {
+			wp_send_json_success( $output );
+		} else {
+			wp_send_json_error( $message, '500' );
+		}
+	}
+	/**
+	 * Retrieve tournament tab data function
+	 *
+	 * @return void
+	 */
+	public function tournament_tab_data() {
+		$valid   = true;
+		$message = null;
+		if ( isset( $_GET['security'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['security'] ) ), 'ajax-nonce' ) ) {
+				$valid   = false;
+				$message = __( 'Security token invalid', 'racketmanager' );
+			}
+		} else {
+			$valid   = false;
+			$message = __( 'No security token found in request', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$tournament_id = isset( $_GET['tournamentId'] ) ? intval( $_GET['tournamentId'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$tournament    = get_tournament( $tournament_id );
+			if ( $tournament ) {
+				$tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : null;
+				if ( $tab ) {
+					$function_name = 'Racketmanager\racketmanager_tournament_' . $tab;
+					if ( function_exists( $function_name ) ) {
+						ob_start();
+						$function_name( $tournament->id, array() );
+						$output = ob_get_contents();
+						ob_end_clean();
+					} else {
+						$valid   = false;
+						$message = __( 'Tab not valid', 'racketmanager' );
+					}
+				} else {
+					$valid   = false;
+					$message = __( 'Tab not found', 'racketmanager' );
+				}
+			} else {
+				$valid   = false;
+				$message = __( 'Competition not found', 'racketmanager' );
 			}
 		}
 		if ( $valid ) {

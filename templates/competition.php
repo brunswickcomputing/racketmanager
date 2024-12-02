@@ -103,17 +103,17 @@ $menu_options['winners']  = array(
 			if ( $option['available'] ) {
 				?>
 				<div class="tab-pane <?php echo $option['selected'] ? 'active' : 'fade'; ?>" id="<?php echo esc_attr( $option['name'] ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $option['name'] ); ?>-tab">
-						<?php
-						if ( $option['selected'] ) {
-							$function_name = 'Racketmanager\racketmanager_competition_' . $option['name'];
-							if ( function_exists( $function_name ) ) {
-								$function_name( $competition->id, array( 'season' => $competition->current_season['name'] ) );
-							} else {
-								/* translators: %s: function name */
-								printf( esc_html__( 'function %s does not exist', 'racketmanager' ), esc_attr( $function_name ) );
-							}
+					<?php
+					if ( $option['selected'] ) {
+						$function_name = 'Racketmanager\racketmanager_competition_' . $option['name'];
+						if ( function_exists( $function_name ) ) {
+							$function_name( $competition->id, array( 'season' => $competition->current_season['name'] ) );
+						} else {
+							/* translators: %s: function name */
+							printf( esc_html__( 'function %s does not exist', 'racketmanager' ), esc_attr( $function_name ) );
 						}
-						?>
+					}
+					?>
 				</div>
 				<?php
 			}

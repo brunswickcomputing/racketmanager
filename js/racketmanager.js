@@ -2110,48 +2110,43 @@ Racketmanager.tournamentTabData = function (e, tournamentId, tournamentName) {
 	jQuery('#tournamentabContent').addClass('is-loading');
 	let $target = e.target;
 	let tab = $target.getAttribute('aria-controls');
-	let is_singular = false;
-	if ($target?.classList.contains('is-singular')) {
-		is_singular = true;
-	}
-	//	let newPath = response.data[3];
 	let newPath = '/tournament/' + tournamentName + '/';
 	if (newPath !== "") {
 		let tabDataRef = '#' + tab;
 		let url = new URL(window.location.href);
 		let newURL = url.protocol + '//' + url.hostname + newPath + tab + '/';
 		if (newURL !== url.toString()) {
-			if (history.replaceState) {
-				history.replaceState('', document.title, newURL.toString());
-			}
 			jQuery(tabDataRef).html('');
-			jQuery.ajax({
-				type: 'GET',
-				url: ajax_var.url,
-				data: {
-					"tab": tab,
-					"tournamentId": tournamentId,
-					"action": "racketmanager_get_tournament_tab_data",
-					"security": ajax_var.ajax_nonce,
-				},
-				success: function (response) {
-					jQuery(tabDataRef).html(response.data);
-				},
-				error: function (response) {
-					if (response.responseJSON) {
-						jQuery(tabDataRef).text(response.responseJSON.data);
-					} else {
-						jQuery(tabDataRef).text(response.statusText);
-					}
-				},
-				complete: function () {
+			let ajaxURL = ajax_var.url + '?tab=' + tab + '&tournamentId=' + tournamentId + '&action=racketmanager_get_tournament_tab_data&security=' + ajax_var.ajax_nonce;
+			jQuery(tabDataRef).load(
+				ajaxURL,
+				function () {
+					history.pushState(jQuery(tabDataRef).html(),'', newURL.toString());
 					jQuery('#tournamentabContent').removeClass('is-loading');
 				}
-			});
+			);
 		} else {
 			jQuery('#tournamentabContent').removeClass('is-loading');
 		}
 	}
+};
+Racketmanager.tournamentTabDataLink = function (e, tournamentId, tournamentLink = null, linkId = null, linkType = null) {
+	e.preventDefault();
+	jQuery('#tournamentTabContent').addClass('is-loading');
+	let tab = linkType;
+	let tabDataRef = '#' + tab;
+	let linkKey = 'link_id';
+	let url = new URL(window.location.href);
+	let newURL = url.protocol + '//' + url.hostname + tournamentLink;
+	jQuery(tabDataRef).html('');
+	let ajaxURL = ajax_var.url + '?tab=' + tab + '&tournamentId=' + tournamentId + '&action=racketmanager_get_tournament_tab_data&security=' + ajax_var.ajax_nonce + '&' + linkKey + '=' + linkId;
+	jQuery(tabDataRef).load(
+		ajaxURL,
+		function () {
+			history.pushState(jQuery(tabDataRef).html(), '', newURL.toString());
+			jQuery('#tournamentTabContent').removeClass('is-loading');
+		}
+	);
 };
 function activaTab(tab) {
 	jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');

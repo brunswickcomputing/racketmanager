@@ -2389,10 +2389,11 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			}
 		}
 		if ( $valid ) {
-			wp_send_json_success( $output );
+			echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		} else {
-			wp_send_json_error( $message, '500' );
+			echo esc_html( $message );
 		}
+		wp_die();
 	}
 	/**
 	 * Retrieve event tab data function

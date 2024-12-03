@@ -27,11 +27,17 @@ namespace Racketmanager;
 							<ul class="row player-list-letter">
 								<?php
 								foreach ( $players as $player ) {
+									$url_link = $player_link . seo_url( $player->display_name ) . '/';
+									if ( ! empty( $tournament ) ) {
+										$onclick = 'onclick=Racketmanager.tournamentTabDataLink(event,' . $tournament->id . ",'" . $url_link . "'," . $player->id . ",'players')";
+									} else {
+										$onclick = null;
+									}
 									?>
 									<li class="alphabet-list-item col-12 col-sm-6 col-md-4">
 										<div class="media__content">
 											<h5 class="media__title">
-												<a class="nav--link media__link" href="<?php echo esc_attr( $player_link ); ?><?php echo esc_attr( seo_url( $player->display_name ) ); ?>/">
+												<a class="nav--link media__link" href="<?php echo esc_attr( $url_link ); ?>" <?php echo esc_attr( $onclick ); ?>>
 													<span class="nav-link__value"><?php echo esc_html( $player->index ); ?></span>
 												</a>
 											</h5>

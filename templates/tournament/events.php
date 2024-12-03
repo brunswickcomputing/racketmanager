@@ -33,15 +33,16 @@ if ( empty( $event ) ) {
 						?>
 						<div class="row mb-2 row-list">
 							<div class="col-1" name="<?php esc_html_e( 'Favourite', 'racketmanager' ); ?>">
-							<?php
-							$hidden         = true;
-							$favourite_type = 'competition';
-							$favourite_id   = $event->id;
-							require RACKETMANAGER_PATH . 'templates/includes/favourite.php';
-							?>
+								<?php
+								$url_link       = '/tournament/' . seo_url( $tournament->name ) . '/event/' . seo_url( $event->name ) . '/';
+								$hidden         = true;
+								$favourite_type = 'competition';
+								$favourite_id   = $event->id;
+								require RACKETMANAGER_PATH . 'templates/includes/favourite.php';
+								?>
 							</div>
 							<div class="col-8" name="<?php esc_html_e( 'Event', 'racketmanager' ); ?>">
-								<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/event/<?php echo esc_html( seo_url( $event->name ) ); ?>">
+								<a href="<?php echo esc_url( $url_link ); ?>" onclick="Racketmanager.tournamentTabDataLink(event,<?php echo esc_attr( $tournament->id ); ?>,'<?php echo esc_attr( $url_link ); ?>',<?php echo esc_attr( $event->id ); ?>,'events')">
 									<?php echo esc_html( $event->name ); ?>
 								</a>
 							</div>
@@ -66,6 +67,7 @@ if ( empty( $event ) ) {
 			<h3 class="module__title">
 				<?php echo esc_html( $event->name ); ?>
 				<?php
+				$url_link       = '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $event->name ) . '/';
 				$competition    = $event;
 				$favourite_type = 'competition';
 				$favourite_id   = $event->id;

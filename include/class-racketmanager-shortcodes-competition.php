@@ -1785,11 +1785,13 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$args           = shortcode_atts(
 			array(
 				'id'       => 0,
+				'players'  => null,
 				'template' => '',
 			),
 			$atts
 		);
 		$competition_id = $args['id'];
+		$player_id      = $args['players'];
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
@@ -1797,11 +1799,17 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		}
 		$player               = null;
 		$competition->players = array();
-		if ( isset( $wp->query_vars['player_id'] ) ) {
-			$player = un_seo_url( get_query_var( 'player_id' ) );
+		if ( ! $player_id ) {
+			if ( isset( $wp->query_vars['player_id'] ) ) {
+				$player_id = un_seo_url( get_query_var( 'player_id' ) );
+			}
 		}
-		if ( $player ) {
-			$player = get_player( $player, 'name' ); // get player by name.
+		if ( $player_id ) {
+			if ( is_numeric( $player_id ) ) {
+				$player = get_player( $player_id ); // get player by id.
+			} else {
+				$player = get_player( $player_id, 'name' ); // get player by name.
+			}
 			if ( $player ) {
 				$player->matches = $player->get_matches( $competition, $competition->current_season['name'], 'competition' );
 				asort( $player->matches );

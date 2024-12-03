@@ -2033,6 +2033,24 @@ Racketmanager.competitionTabData = function (e, competitionId, competitionSeason
 		}
 	}
 };
+Racketmanager.competitionTabDataLink = function (e, competitionId, competitionLink = null, linkId = null, linkType = null) {
+	e.preventDefault();
+	jQuery('#competitionTabContent').addClass('is-loading');
+	let tab = linkType;
+	let tabDataRef = '#' + tab;
+	let linkKey = 'link_id';
+	let url = new URL(window.location.href);
+	let newURL = url.protocol + '//' + url.hostname + competitionLink;
+	jQuery(tabDataRef).html('');
+	let ajaxURL = ajax_var.url + '?tab=' + tab + '&competitionId=' + competitionId + '&action=racketmanager_get_competition_tab_data&security=' + ajax_var.ajax_nonce + '&' + linkKey + '=' + linkId;
+	jQuery(tabDataRef).load(
+		ajaxURL,
+		function () {
+			history.pushState(jQuery(tabDataRef).html(), '', newURL.toString());
+			jQuery('#competitionTabContent').removeClass('is-loading');
+		}
+	);
+};
 Racketmanager.eventTabData = function (e, eventId, eventSeason, eventName, competitionType) {
 	e.preventDefault();
 	jQuery('#eventTabContent').addClass('is-loading');

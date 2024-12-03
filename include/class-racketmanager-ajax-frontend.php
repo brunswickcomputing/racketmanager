@@ -2363,16 +2363,22 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$competition_id = isset( $_GET['competitionId'] ) ? intval( $_GET['competitionId'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$competition    = get_competition( $competition_id );
 			if ( $competition ) {
+				$args   = array();
 				$season = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
 				if ( ! $season ) {
 					$season = $competition->current_season['name'];
 				}
-				$tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : null;
+				$args['season'] = $season;
+				$tab            = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : null;
 				if ( $tab ) {
+					$link_id = isset( $_GET['link_id'] ) ? intval( $_GET['link_id'] ) : null;
+					if ( $link_id ) {
+						$args[ $tab ] = $link_id;
+					}
 					$function_name = 'Racketmanager\racketmanager_competition_' . $tab;
 					if ( function_exists( $function_name ) ) {
 						ob_start();
-						$function_name( $competition->id, array( 'season' => $season ) );
+						$function_name( $competition->id, $args );
 						$output = ob_get_contents();
 						ob_end_clean();
 					} else {

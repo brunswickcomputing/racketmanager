@@ -30,6 +30,8 @@ namespace Racketmanager;
 									$url_link = $player_link . seo_url( $player->display_name ) . '/';
 									if ( ! empty( $tournament ) ) {
 										$onclick = 'onclick=Racketmanager.tournamentTabDataLink(event,' . $tournament->id . ",'" . $url_link . "'," . $player->id . ",'players')";
+									} elseif ( ! empty( $competition ) ) {
+										$onclick = 'onclick=Racketmanager.competitionTabDataLink(event,' . $competition->id . ",'" . $url_link . "'," . $player->id . ",'players')";
 									} else {
 										$onclick = null;
 									}

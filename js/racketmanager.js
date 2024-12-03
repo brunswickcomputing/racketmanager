@@ -2007,7 +2007,7 @@ Racketmanager.updateTournamentEvent = function (event, type) {
 	}
 	jQuery('#liEventDetails').removeClass('is-loading');
 };
-Racketmanager.competitionData = function (e, competitionId, competitionSeason, competitionName) {
+Racketmanager.competitionTabData = function (e, competitionId, competitionSeason, competitionName) {
 	e.preventDefault();
 	jQuery('#competitionTabContent').addClass('is-loading');
 	let $target = e.target;

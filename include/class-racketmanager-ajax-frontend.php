@@ -2469,10 +2469,15 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			if ( $tournament ) {
 				$tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : null;
 				if ( $tab ) {
+					$args    = array();
+					$link_id = isset( $_GET['link_id'] ) ? intval( $_GET['link_id'] ) : null;
+					if ( $link_id ) {
+						$args[ $tab ] = $link_id;
+					}
 					$function_name = 'Racketmanager\racketmanager_tournament_' . $tab;
 					if ( function_exists( $function_name ) ) {
 						ob_start();
-						$function_name( $tournament->id, array() );
+						$function_name( $tournament->id, $args );
 						$output = ob_get_contents();
 						ob_end_clean();
 					} else {
@@ -2489,9 +2494,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			}
 		}
 		if ( $valid ) {
-			wp_send_json_success( $output );
+			echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		} else {
-			wp_send_json_error( $message, '500' );
+			echo esc_html( $message );
 		}
+		wp_die();
 	}
 }

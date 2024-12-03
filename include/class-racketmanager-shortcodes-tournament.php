@@ -142,13 +142,13 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		$args               = shortcode_atts(
 			array(
 				'id'       => false,
-				'event'    => false,
+				'events'   => false,
 				'template' => '',
 			),
 			$atts
 		);
 		$tournament_id      = $args['id'];
-		$event_id           = $args['event'];
+		$event_id           = $args['events'];
 		$template           = $args['template'];
 		$event              = null;
 		$tournament         = get_tournament( $tournament_id );
@@ -215,26 +215,30 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		$args          = shortcode_atts(
 			array(
 				'id'       => false,
-				'draw'     => false,
+				'draws'    => false,
 				'template' => '',
 			),
 			$atts
 		);
 		$tournament_id = $args['id'];
-		$draw          = $args['draw'];
+		$draw_id       = $args['draws'];
 		$template      = $args['template'];
+		$draw          = null;
 		$tournament    = get_tournament( $tournament_id );
-		if ( ! $draw ) {
+		if ( ! $draw_id ) {
 			if ( isset( $_GET['draw'] ) && ! empty( $_GET['draw'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$draw = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['draw'] ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$draw = str_replace( '-', ' ', $draw );
+				$draw_id = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['draw'] ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			} elseif ( isset( $wp->query_vars['draw'] ) ) {
-				$draw = get_query_var( 'draw' );
-				$draw = str_replace( '-', ' ', $draw );
+				$draw_id = get_query_var( 'draw' );
 			}
+			$draw_id = str_replace( '-', ' ', $draw_id );
 		}
-		if ( $draw ) {
-			$draw = get_event( $draw, 'name' );
+		if ( $draw_id ) {
+			if ( is_numeric( $draw_id ) ) {
+				$draw = get_event( $draw_id );
+			} else {
+				$draw = get_event( $draw_id, 'name' );
+			}
 			if ( $draw ) {
 				$draw->leagues = $this->get_draw( $draw, $tournament->season );
 			}
@@ -290,25 +294,31 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		$args          = shortcode_atts(
 			array(
 				'id'       => false,
-				'player'   => false,
+				'players'  => false,
 				'template' => '',
 			),
 			$atts
 		);
 		$tournament_id = $args['id'];
-		$player        = $args['player'];
+		$player_id     = $args['players'];
 		$template      = $args['template'];
+		$player        = null;
 		$tournament    = get_tournament( $tournament_id );
 		if ( $tournament ) {
-			if ( ! $player ) {
+			if ( ! $player_id ) {
 				if ( isset( $_GET['player'] ) && ! empty( $_GET['player'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-					$player = un_seo_url( htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['player'] ) ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					$player_id = un_seo_url( htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['player'] ) ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				} elseif ( isset( $wp->query_vars['player'] ) ) {
-					$player = un_seo_url( get_query_var( 'player' ) );
+					$player_id = un_seo_url( get_query_var( 'player' ) );
 				}
 			}
-			if ( $player ) {
-				$player = get_player( $player, 'name' ); // get player by name.
+			if ( $player_id ) {
+				if ( is_numeric( $player_id ) ) {
+					$player = get_player( $player_id ); // get player by name.
+
+				} else {
+					$player = get_player( $player_id, 'name' ); // get player by name.
+				}
 				if ( $player ) {
 					$player = $this->get_player_info( $player, $tournament );
 				}

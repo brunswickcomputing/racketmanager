@@ -2102,7 +2102,7 @@ Racketmanager.eventTabData = function (e, eventId, eventSeason, eventName, compe
 };
 Racketmanager.tournamentTabData = function (e, tournamentId, tournamentName) {
 	e.preventDefault();
-	jQuery('#tournamentabContent').addClass('is-loading');
+	jQuery('#tournamentTabContent').addClass('is-loading');
 	let $target = e.target;
 	let tab = $target.getAttribute('aria-controls');
 	let newPath = '/tournament/' + tournamentName + '/';
@@ -2117,11 +2117,11 @@ Racketmanager.tournamentTabData = function (e, tournamentId, tournamentName) {
 				ajaxURL,
 				function () {
 					history.pushState(jQuery(tabDataRef).html(),'', newURL.toString());
-					jQuery('#tournamentabContent').removeClass('is-loading');
+					jQuery('#tournamentTabContent').removeClass('is-loading');
 				}
 			);
 		} else {
-			jQuery('#tournamentabContent').removeClass('is-loading');
+			jQuery('#tournamentTabContent').removeClass('is-loading');
 		}
 	}
 };

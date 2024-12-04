@@ -1189,6 +1189,12 @@ class RacketManager {
 			'index.php?pagename=competition&competition=$matches[1]-cups&season=$matches[2]&club_name=$matches[3]',
 			'top'
 		);
+		// cup - season - overview.
+		add_rewrite_rule(
+			'(.+?)-cups/([0-9]{4})/overview/?$',
+			'index.php?pagename=competition&competition=$matches[1]-cups&season=$matches[2]&tab=overview',
+			'top'
+		);
 		// cups - season.
 		add_rewrite_rule(
 			'(.+?)-cups/([0-9]{4})?$',
@@ -1235,6 +1241,12 @@ class RacketManager {
 		add_rewrite_rule(
 			'(.+?)-leagues/([0-9]{4})/club/(.+?)/?$',
 			'index.php?pagename=competition&competition=$matches[1]-leagues&season=$matches[2]&club_name=$matches[3]',
+			'top'
+		);
+		// league - season - overview.
+		add_rewrite_rule(
+			'(.+?)-leagues/([0-9]{4})/overview/?$',
+			'index.php?pagename=competition&competition=$matches[1]-leagues&season=$matches[2]&tab=overview',
 			'top'
 		);
 		// leagues - season.

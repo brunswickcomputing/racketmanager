@@ -2012,7 +2012,6 @@ Racketmanager.competitionTabData = function (e, competitionId, competitionSeason
 	jQuery('#competitionTabContent').addClass('is-loading');
 	let $target = e.target;
 	let tab = $target.getAttribute('aria-controls');
-	//	let newPath = response.data[3];
 	let newPath = '/' + competitionName +'/' + competitionSeason + '/';
 	if (newPath !== "") {
 		let tabDataRef = '#' + tab;
@@ -2033,16 +2032,25 @@ Racketmanager.competitionTabData = function (e, competitionId, competitionSeason
 		}
 	}
 };
-Racketmanager.competitionTabDataLink = function (e, competitionId, competitionLink = null, linkId = null, linkType = null) {
+Racketmanager.competitionTabDataLink = function (e, competitionId, competitionSeason, competitionLink = null, linkId = null, linkType = null) {
 	e.preventDefault();
 	jQuery('#competitionTabContent').addClass('is-loading');
 	let tab = linkType;
 	let tabDataRef = '#' + tab;
+	let tabRef = tabDataRef + '-tab';
+	let activeTab = jQuery(".tab-pane.active");
+	let activeTabName = activeTab[0].id;
+	if (activeTabName !== tab) {
+		jQuery("#myTab li > button").removeClass("active");
+		jQuery(tabRef).addClass("active");
+		jQuery(".tab-pane").removeClass("active show").addClass("fade");
+		jQuery(tabDataRef).removeClass("fade").addClass("active").show();
+	}
 	let linkKey = 'link_id';
 	let url = new URL(window.location.href);
 	let newURL = url.protocol + '//' + url.hostname + competitionLink;
 	jQuery(tabDataRef).html('');
-	let ajaxURL = ajax_var.url + '?tab=' + tab + '&competitionId=' + competitionId + '&action=racketmanager_get_competition_tab_data&security=' + ajax_var.ajax_nonce + '&' + linkKey + '=' + linkId;
+	let ajaxURL = ajax_var.url + '?tab=' + tab + '&competitionId=' + competitionId + '&season=' + competitionSeason + '&action=racketmanager_get_competition_tab_data&security=' + ajax_var.ajax_nonce + '&' + linkKey + '=' + linkId;
 	jQuery(tabDataRef).load(
 		ajaxURL,
 		function () {
@@ -2056,49 +2064,52 @@ Racketmanager.eventTabData = function (e, eventId, eventSeason, eventName, compe
 	jQuery('#eventTabContent').addClass('is-loading');
 	let $target = e.target;
 	let tab = $target.getAttribute('aria-controls');
-	let is_singular = false;
-	if ($target?.classList.contains('is-singular')) {
-		is_singular = true;
-	}
-	//	let newPath = response.data[3];
 	let newPath = '/' + competitionType + 's/' + eventName + '/' + eventSeason + '/';
 	if (newPath !== "") {
 		let tabDataRef = '#' + tab;
 		let url = new URL(window.location.href);
 		let newURL = url.protocol + '//' + url.hostname + newPath + tab + '/';
 		if (newURL !== url.toString()) {
-			if (history.replaceState) {
-				history.replaceState('', document.title, newURL.toString());
-			}
 			jQuery(tabDataRef).html('');
-			jQuery.ajax({
-				type: 'GET',
-				url: ajax_var.url,
-				data: {
-					"tab": tab,
-					"eventId": eventId,
-					"season": eventSeason,
-					"action": "racketmanager_get_event_tab_data",
-					"security": ajax_var.ajax_nonce,
-				},
-				success: function (response) {
-					jQuery(tabDataRef).html(response.data);
-				},
-				error: function (response) {
-					if (response.responseJSON) {
-						jQuery(tabDataRef).text(response.responseJSON.data);
-					} else {
-						jQuery(tabDataRef).text(response.statusText);
-					}
-				},
-				complete: function () {
+			let ajaxURL = ajax_var.url + '?tab=' + tab + '&eventId=' + eventId + '&action=racketmanager_get_event_tab_data&season=' + eventSeason + '&security=' + ajax_var.ajax_nonce;
+			jQuery(tabDataRef).load(
+				ajaxURL,
+				function () {
+					history.pushState(jQuery(tabDataRef).html(), '', newURL.toString());
 					jQuery('#eventTabContent').removeClass('is-loading');
 				}
-			});
+			);
 		} else {
 			jQuery('#eventTabContent').removeClass('is-loading');
 		}
 	}
+};
+Racketmanager.eventTabDataLink = function (e, eventId, eventSeason, eventLink = null, linkId = null, linkType = null) {
+	e.preventDefault();
+	jQuery('#eventTabContent').addClass('is-loading');
+	let tab = linkType;
+	let tabDataRef = '#' + tab;
+	let tabRef = tabDataRef + '-tab';
+	let activeTab = jQuery(".tab-pane.active");
+	let activeTabName = activeTab[0].id;
+	if (activeTabName !== tab) {
+		jQuery("#myTab li > button").removeClass("active");
+		jQuery(tabRef).addClass("active");
+		jQuery(".tab-pane").removeClass("active show").addClass("fade");
+		jQuery(tabDataRef).removeClass("fade").addClass("active").show();
+	}
+	let linkKey = 'link_id';
+	let url = new URL(window.location.href);
+	let newURL = url.protocol + '//' + url.hostname + eventLink;
+	jQuery(tabDataRef).html('');
+	let ajaxURL = ajax_var.url + '?tab=' + tab + '&eventId=' + eventId + '&season=' + eventSeason + '&action=racketmanager_get_event_tab_data&security=' + ajax_var.ajax_nonce + '&' + linkKey + '=' + linkId;
+	jQuery(tabDataRef).load(
+		ajaxURL,
+		function () {
+			history.pushState(jQuery(tabDataRef).html(), '', newURL.toString());
+			jQuery('#eventTabContent').removeClass('is-loading');
+		}
+	);
 };
 Racketmanager.tournamentTabData = function (e, tournamentId, tournamentName) {
 	e.preventDefault();
@@ -2130,6 +2141,15 @@ Racketmanager.tournamentTabDataLink = function (e, tournamentId, tournamentLink 
 	jQuery('#tournamentTabContent').addClass('is-loading');
 	let tab = linkType;
 	let tabDataRef = '#' + tab;
+	let tabRef = tabDataRef + '-tab';
+	let activeTab = jQuery(".tab-pane.active");
+	let activeTabName = activeTab[0].id;
+	if (activeTabName !== tab) {
+		jQuery("#myTab li > button").removeClass("active");
+		jQuery(tabRef).addClass("active");
+		jQuery(".tab-pane").removeClass("active show").addClass("fade");
+		jQuery(tabDataRef).removeClass("fade").addClass("active").show();
+	}
 	let linkKey = 'link_id';
 	let url = new URL(window.location.href);
 	let newURL = url.protocol + '//' + url.hostname + tournamentLink;

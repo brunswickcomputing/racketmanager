@@ -67,7 +67,7 @@ if ( empty( $event ) ) {
 			<h3 class="module__title">
 				<?php echo esc_html( $event->name ); ?>
 				<?php
-				$url_link       = '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $event->name ) . '/';
+				$draw_link      = '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $event->name ) . '/';
 				$competition    = $event;
 				$favourite_type = 'competition';
 				$favourite_id   = $event->id;
@@ -80,7 +80,7 @@ if ( empty( $event ) ) {
 				<dl>
 					<dt><?php esc_html_e( 'Draw', 'racketmanager' ); ?></dt>
 					<dd>
-						<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/draw/<?php echo esc_html( seo_url( $event->name ) ); ?>">
+						<a href="<?php echo esc_html( $draw_link ); ?>" onclick="Racketmanager.tournamentTabDataLink(event,<?php echo esc_attr( $tournament->id ); ?>,'<?php echo esc_attr( $draw_link ); ?>',<?php echo esc_attr( $event->id ); ?>,'draws')">
 							<?php echo esc_html( $event->name ); ?>
 						</a>
 					</dd>

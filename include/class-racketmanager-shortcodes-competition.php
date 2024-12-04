@@ -1180,12 +1180,14 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$args     = shortcode_atts(
 			array(
 				'id'       => 0,
+				'clubs'    => null,
 				'template' => '',
 				'season'   => false,
 			),
 			$atts
 		);
 		$event_id = $args['id'];
+		$club_id  = $args['clubs'];
 		$template = $args['template'];
 		$season   = $args['season'];
 		$event    = get_event( $event_id );
@@ -1195,12 +1197,18 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$club       = null;
 		$event_club = null;
 		$event->set_season( $season );
-		if ( isset( $wp->query_vars['club_name'] ) ) {
-			$club = get_query_var( 'club_name' );
-			$club = str_replace( '-', ' ', $club );
+		if ( ! $club_id ) {
+			if ( isset( $wp->query_vars['club_name'] ) ) {
+				$club_id = get_query_var( 'club_name' );
+				$club_id = str_replace( '-', ' ', $club_id );
+			}
 		}
-		if ( $club ) {
-			$event_club = get_club( $club, 'shortcode' );
+		if ( $club_id ) {
+			if ( is_numeric( $club_id ) ) {
+				$event_club = get_club( $club_id );
+			} else {
+				$event_club = get_club( $club, 'shortcode' );
+			}
 			if ( $event_club ) {
 				$event_club->teams   = $event->get_teams(
 					array(
@@ -1350,27 +1358,35 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 	 */
 	public function show_event_players( $atts ) {
 		global $wp;
-		$args     = shortcode_atts(
+		$args      = shortcode_atts(
 			array(
 				'id'       => 0,
 				'season'   => null,
+				'players'  => null,
 				'template' => '',
 			),
 			$atts
 		);
-		$event_id = $args['id'];
-		$season   = $args['season'];
-		$template = $args['template'];
-		$event    = get_event( $event_id );
+		$event_id  = $args['id'];
+		$season    = $args['season'];
+		$player_id = $args['players'];
+		$template  = $args['template'];
+		$event     = get_event( $event_id );
 		if ( $event ) {
 			$event->set_season( $season );
 			$player         = null;
 			$event->players = array();
-			if ( isset( $wp->query_vars['player_id'] ) ) {
-				$player = un_seo_url( get_query_var( 'player_id' ) );
+			if ( ! $player_id ) {
+				if ( isset( $wp->query_vars['player_id'] ) ) {
+					$player_id = un_seo_url( get_query_var( 'player_id' ) );
+				}
 			}
-			if ( $player ) {
-				$player = get_player( $player, 'name' ); // get player by name.
+			if ( $player_id ) {
+				if ( is_numeric( $player_id ) ) {
+					$player = get_player( $player_id ); // get player by name.
+				} else {
+					$player = get_player( $player_id, 'name' ); // get player by name.
+				}
 				if ( $player ) {
 					$player->matches = $player->get_matches( $event, $event->current_season['name'], 'event' );
 					asort( $player->matches );

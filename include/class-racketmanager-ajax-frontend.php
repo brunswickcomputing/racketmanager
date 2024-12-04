@@ -2422,16 +2422,22 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$event_id = isset( $_GET['eventId'] ) ? intval( $_GET['eventId'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$event    = get_event( $event_id );
 			if ( $event ) {
+				$args   = array();
 				$season = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
 				if ( ! $season ) {
 					$season = $event->current_season['name'];
 				}
-				$tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : null;
+				$args['season'] = $season;
+				$tab            = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : null;
 				if ( $tab ) {
+					$link_id = isset( $_GET['link_id'] ) ? intval( $_GET['link_id'] ) : null;
+					if ( $link_id ) {
+						$args[ $tab ] = $link_id;
+					}
 					$function_name = 'Racketmanager\racketmanager_event_' . $tab;
 					if ( function_exists( $function_name ) ) {
 						ob_start();
-						$function_name( $event->id, array( 'season' => $season ) );
+						$function_name( $event->id, $args );
 						$output = ob_get_contents();
 						ob_end_clean();
 					} else {
@@ -2448,10 +2454,11 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			}
 		}
 		if ( $valid ) {
-			wp_send_json_success( $output );
+			echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		} else {
-			wp_send_json_error( $message, '500' );
+			echo esc_html( $message );
 		}
+		wp_die();
 	}
 	/**
 	 * Retrieve tournament tab data function

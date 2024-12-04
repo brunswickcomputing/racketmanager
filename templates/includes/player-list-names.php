@@ -31,7 +31,9 @@ namespace Racketmanager;
 									if ( ! empty( $tournament ) ) {
 										$onclick = 'onclick=Racketmanager.tournamentTabDataLink(event,' . $tournament->id . ",'" . $url_link . "'," . $player->id . ",'players')";
 									} elseif ( ! empty( $competition ) ) {
-										$onclick = 'onclick=Racketmanager.competitionTabDataLink(event,' . $competition->id . ",'" . $url_link . "'," . $player->id . ",'players')";
+										$onclick = 'onclick=Racketmanager.competitionTabDataLink(event,' . $competition->id . ',' . $competition->current_season['name'] . ",'" . $url_link . "'," . $player->id . ",'players')";
+									} elseif ( ! empty( $event ) ) {
+										$onclick = 'onclick=Racketmanager.eventTabDataLink(event,' . $event->id . ',' . $event->current_season['name'] . ",'" . $url_link . "'," . $player->id . ",'players')";
 									} else {
 										$onclick = null;
 									}

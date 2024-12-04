@@ -32,10 +32,11 @@ if ( empty( $competition_club ) ) {
 						</div>
 						<?php
 						foreach ( $competition->clubs as $club ) {
+							$url_link = '/' . seo_url( $competition->name ) . '/' . $competition->current_season['name'] . '/club/' . seo_url( $club->shortcode ) . '/';
 							?>
 							<div class="row mb-2 row-list">
 								<div class="col-6" name="<?php esc_html_e( 'Club', 'racketmanager' ); ?>">
-									<a href="/<?php echo esc_html( seo_url( $competition->name ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/club/<?php echo esc_attr( seo_url( $club->shortcode ) ); ?>/">
+									<a href="<?php echo esc_attr( $url_link ); ?>" onclick="Racketmanager.competitionTabDataLink(event,<?php echo esc_attr( $competition->id ); ?>,<?php echo esc_attr( $competition->current_season['name'] ); ?>,'<?php echo esc_attr( $url_link ); ?>',<?php echo esc_attr( $club->id ); ?>,'clubs')">
 										<?php echo esc_html( $club->name ); ?>
 									</a>
 								</div>

@@ -1687,12 +1687,14 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$args           = shortcode_atts(
 			array(
 				'id'       => 0,
+				'clubs'    => null,
 				'template' => '',
 				'season'   => false,
 			),
 			$atts
 		);
 		$competition_id = $args['id'];
+		$club_id        = $args['clubs'];
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
@@ -1701,12 +1703,18 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$competition->clubs = $competition->get_clubs( array( 'status' => 1 ) );
 		$competition_club   = null;
 		$club               = null;
-		if ( isset( $wp->query_vars['club_name'] ) ) {
-			$club = get_query_var( 'club_name' );
-			$club = str_replace( '-', ' ', $club );
+		if ( ! $club_id ) {
+			if ( isset( $wp->query_vars['club_name'] ) ) {
+				$club_id = get_query_var( 'club_name' );
+				$club_id = str_replace( '-', ' ', $club_id );
+			}
 		}
-		if ( $club ) {
-			$competition_club = get_club( $club, 'shortcode' );
+		if ( $club_id ) {
+			if ( is_numeric( $club_id ) ) {
+				$competition_club = get_club( $club_id );
+			} else {
+				$competition_club = get_club( $club_id, 'shortcode' );
+			}
 			if ( $competition_club ) {
 				$competition_club->teams   = $competition->get_teams(
 					array(

@@ -118,10 +118,12 @@ if ( ! $event->is_box ) {
 		</nav>
 	</div>
 	<div class="tab-content" id="eventTabContent">
-		<div id="splash" class="d-none">
-			<div class="d-flex justify-content-center">
-				<div class="spinner-border" role="status">
-				<span class="visually-hidden">Loading...</span>
+		<div id="splash" class="container d-none">
+			<div class="module module--card">
+				<div class="d-flex justify-content-center">
+					<div class="spinner-border" role="status">
+					<span class="visually-hidden">Loading...</span>
+					</div>
 				</div>
 			</div>
 		</div>

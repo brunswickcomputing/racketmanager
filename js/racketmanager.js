@@ -1844,52 +1844,27 @@ Racketmanager.resetPassword = function (link) {
 Racketmanager.playerSearch = function (event, link) {
 	event.preventDefault();
 	let notifyBlock = "#searchResultsContainer";
-	jQuery(notifyBlock).hide();
-	let errorField = '#search-alert';
-	let errorResponse = '#search-alert-response';
-	jQuery(errorResponse).hide();
 	jQuery(notifyBlock).empty();
 	let url = new URL(window.location.href);
 	let newURL = url.protocol + '//' + url.hostname + url.pathname;
 	let search_string = jQuery('#search_string').val();
 	if (search_string !== "") {
 		var newUri = newURL + '?q=' + search_string;
-		if (history.replaceState) {
-			history.replaceState('', document.title, newUri.toString());
-		}
-	} else {
-		return;
-	}
-	let formId = '#'.concat(event.currentTarget.id);
-	let form = jQuery(formId).serialize();
-	form += "&action=racketmanager_search_players";
-	let splash = '#splash';
-	jQuery(splash).removeClass("d-none");
-	jQuery(splash).css('opacity', 1);
-	jQuery(splash).show();
-
-	jQuery.ajax({
-		url: ajax_var.url,
-		type: "POST",
-		data: form,
-		success: function (response) {
-			jQuery(notifyBlock).html(response.data);
-		},
-		error: function (response) {
-			if (response.responseJSON) {
-				let message = response.responseJSON.data;
-				jQuery(errorField).html(message);
-			} else {
-				jQuery(errorField).text(response.statusText);
+		let formId = '#'.concat(event.currentTarget.id);
+		let form = jQuery(formId).serialize();
+		form += "&action=racketmanager_search_players";
+		let loadingArea = '#playerSearchContent';
+		jQuery(loadingArea).addClass('is-loading');
+		let ajaxURL = ajax_var.url + '?search_string=' + search_string + '&action=racketmanager_search_players&security=' + ajax_var.ajax_nonce;
+		jQuery(notifyBlock).load(
+			ajaxURL,
+			function () {
+				jQuery(notifyBlock).show();
+				jQuery(loadingArea).removeClass('is-loading');
+				history.pushState(jQuery('#pageContentTab').html(), '', newUri.toString());
 			}
-			jQuery(errorResponse).show();
-		},
-		complete: function () {
-			jQuery("#splash").css('opacity', 0);
-			jQuery("#splash").hide();
-			jQuery(notifyBlock).show();
-		}
-	});
+		);
+	}
 };
 Racketmanager.partnerModal = function (event, event_id) {
 	jQuery('#liEventDetails').addClass('is-loading');

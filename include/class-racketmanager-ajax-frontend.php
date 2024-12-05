@@ -2149,33 +2149,43 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * @return void
 	 */
 	public function search_players() {
-		$return    = array();
-		$err_msg   = array();
-		$err_field = array();
-		$valid     = true;
-		$msg       = null;
-		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'search_players' ) ) {
-			$valid       = false;
-			$err_field[] = '';
-			$err_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
+		$valid = true;
+		if ( isset( $_GET['security'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['security'] ) ), 'ajax-nonce' ) ) {
+				$valid   = false;
+				$message = __( 'Security token invalid', 'racketmanager' );
+			}
+		} else {
+			$valid   = false;
+			$message = __( 'No security token found in request', 'racketmanager' );
 		}
 		if ( $valid ) {
-			$search_string = isset( $_POST['search_string'] ) ? sanitize_text_field( wp_unslash( $_POST['search_string'] ) ) : null;
+			$search_string = isset( $_GET['search_string'] ) ? sanitize_text_field( wp_unslash( $_GET['search_string'] ) ) : null;
 			if ( $search_string ) {
 				$search_results = racketmanager_player_search( $search_string );
 			} else {
-				$valid       = false;
-				$err_field[] = 'search_string';
-				$err_msg[]   = __( 'Search string not supplied', 'racketmanager' );
+				$valid   = false;
+				$message = __( 'Search string not supplied', 'racketmanager' );
 			}
 		}
 		if ( $valid ) {
-			wp_send_json_success( $search_results );
+			echo $search_results; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		} else {
-			$msg = __( 'Unable to search for players', 'racketmanager' );
-			array_push( $return, $msg, $err_msg, $err_field );
-			wp_send_json_error( $return, '500' );
+			ob_start();
+			?>
+			<div class="alert_rm alert--danger">
+				<div class="alert__body">
+					<div class="alert__body-inner">
+						<span><?php echo esc_html( $message ); ?></span>
+					</div>
+				</div>
+			</div>
+			<?php
+			$output = ob_get_contents();
+			ob_end_clean();
+			echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
+		wp_die();
 	}
 	/**
 	 * Build screen to to show team partner

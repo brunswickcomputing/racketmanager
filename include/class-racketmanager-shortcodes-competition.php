@@ -1216,7 +1216,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			if ( is_numeric( $club_id ) ) {
 				$event_club = get_club( $club_id );
 			} else {
-				$event_club = get_club( $club, 'shortcode' );
+				$event_club = get_club( $club_id, 'shortcode' );
 			}
 			if ( $event_club ) {
 				$event_club->teams   = $event->get_teams(

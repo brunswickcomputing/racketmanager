@@ -2111,6 +2111,59 @@ Racketmanager.eventTabDataLink = function (e, eventId, eventSeason, eventLink = 
 		}
 	);
 };
+Racketmanager.leagueTabData = function (e, leagueId, leagueSeason, leagueName, competitionType) {
+	e.preventDefault();
+	jQuery('#leagueTabContent').addClass('is-loading');
+	let $target = e.target;
+	let tab = $target.getAttribute('aria-controls');
+	let newPath = '/' + competitionType + '/' + leagueName + '/' + leagueSeason + '/';
+	if (newPath !== "") {
+		let tabDataRef = '#' + tab;
+		let url = new URL(window.location.href);
+		let newURL = url.protocol + '//' + url.hostname + newPath + tab + '/';
+		if (newURL !== url.toString()) {
+			jQuery(tabDataRef).html('');
+			let ajaxURL = ajax_var.url + '?tab=' + tab + '&leagueId=' + leagueId + '&action=racketmanager_get_league_tab_data&season=' + leagueSeason + '&security=' + ajax_var.ajax_nonce;
+			jQuery(tabDataRef).load(
+				ajaxURL,
+				function () {
+					history.pushState(jQuery(tabDataRef).html(), '', newURL.toString());
+					jQuery('#leagueTabContent').removeClass('is-loading');
+				}
+			);
+		} else {
+			jQuery('#leagueTabContent').removeClass('is-loading');
+		}
+	}
+};
+Racketmanager.leagueTabDataLink = function (e, leagueId, leagueSeason, leagueLink = null, linkId = null, linkType = null) {
+	e.preventDefault();
+	jQuery('#leagueTabContent').addClass('is-loading');
+	let tab = linkType;
+	let tabDataRef = '#' + tab;
+	let tabRef = tabDataRef + '-tab';
+	let activeTab = jQuery(".tab-pane.active");
+	let activeTabName = activeTab[0].id;
+	if (activeTabName !== tab) {
+		jQuery("#myTab li > button").removeClass("active");
+		jQuery(tabRef).addClass("active");
+		jQuery(".tab-pane").removeClass("active show").addClass("fade");
+		jQuery(tabDataRef).removeClass("fade").addClass("active").show();
+	}
+	let linkKey = 'link_id';
+	let url = new URL(window.location.href);
+	let newURL = url.protocol + '//' + url.hostname + leagueLink;
+	jQuery(tabDataRef).html('');
+	let ajaxURL = ajax_var.url + '?tab=' + tab + '&leagueId=' + leagueId + '&season=' + leagueSeason + '&action=racketmanager_get_league_tab_data&security=' + ajax_var.ajax_nonce + '&' + linkKey + '=' + linkId;
+	jQuery(tabDataRef).load(
+		ajaxURL,
+		function () {
+			history.pushState(jQuery(tabDataRef).html(), '', newURL.toString());
+			jQuery('#leagueTabContent').removeClass('is-loading');
+		}
+	);
+};
+
 Racketmanager.tournamentTabData = function (e, tournamentId, tournamentName) {
 	e.preventDefault();
 	jQuery('#tournamentTabContent').addClass('is-loading');

@@ -7,17 +7,23 @@
 
 namespace Racketmanager;
 
-if ( empty( $item_link ) ) {
-	$team_link = '/clubs/' . seo_url( $club->shortcode ) . '/team/' . seo_url( $team->title ) . '/' . seo_url( $event->name ) . '/';
-} else {
-	$team_link = $item_link . '/team/' . esc_attr( seo_url( $team->title ) ) . '/';
-}
 if ( isset( $league ) ) {
 	$is_team_entry   = $league->event->competition->is_team_entry;
 	$is_player_entry = $league->event->competition->is_player_entry;
+	$object          = $league;
+	$object_type     = 'league';
 } elseif ( isset( $event ) ) {
 	$is_team_entry   = $event->competition->is_team_entry;
 	$is_player_entry = $event->competition->is_player_entry;
+	$object          = $event;
+	$object_type     = 'event';
+}
+if ( empty( $item_link ) ) {
+	$team_link = '/clubs/' . seo_url( $club->shortcode ) . '/team/' . seo_url( $team->title ) . '/' . seo_url( $object->name ) . '/';
+	$onclick   = null;
+} else {
+	$team_link = $item_link . '/team/' . esc_attr( seo_url( $team->title ) ) . '/';
+	$onclick   = 'onclick=Racketmanager.' . $object_type . 'TabDataLink(event,' . $object->id . ',' . $object->current_season['name'] . ",'" . $team_link . "'," . $team->id . ",'teams')";
 }
 if ( isset( $team->info ) ) {
 	$team->contactno    = isset( $team->info->contactno ) ? $team->info->contactno : null;
@@ -46,7 +52,7 @@ if ( isset( $team->info ) ) {
 			</div>
 			<div class="media__content">
 				<h4 class="media__title">
-					<a class="nav--link" href=<?php echo esc_attr( $team_link ); ?>>
+					<a class="nav--link" href=<?php echo esc_attr( $team_link ); ?> <?php echo esc_attr( $onclick ); ?>>
 						<span><?php echo esc_html( $team->title ); ?></span>
 					</a>
 				</h4>

@@ -72,6 +72,8 @@ if ( ! empty( $league->player ) ) {
 							if ( intval( $player->id ) === get_current_user_id() ) {
 								$selected_player = true;
 							}
+							$player_link = '/' . $league->event->competition->type . '/' . seo_url( $league->title ) . '/' . $league->current_season['name'] . '/player/' . seo_url( $player->fullname ) . '/';
+							$team_link   = '/' . $league->event->competition->type . '/' . seo_url( $league->title ) . '/' . $league->current_season['name'] . '/team/' . seo_url( $player->team->title ) . '/';
 							?>
 							<li class="list__item <?php echo empty( $selected_player ) ? null : 'is-selected'; ?>">
 								<div class="media">
@@ -90,14 +92,14 @@ if ( ! empty( $league->player ) ) {
 											<div class="flex-container">
 												<div class="flex-item flex-item--grow">
 													<p class="media__title">
-														<a href="/<?php echo esc_attr( $league->event->competition->type ); ?>/<?php echo esc_html( seo_url( $league->title ) ); ?>/<?php echo esc_attr( $league->current_season['name'] ); ?>/player/<?php echo esc_attr( seo_url( $player->fullname ) ); ?>/" class="nav--link">
+														<a href="/<?php echo esc_attr( $player_link ); ?>/" class="nav--link" onclick="Racketmanager.leagueTabDataLink(event,<?php echo esc_attr( $league->id ); ?>,<?php echo esc_attr( $league->current_season['name'] ); ?>,'<?php echo esc_attr( $player_link ); ?>',<?php echo esc_attr( $player->id ); ?>,'players')">
 															<span class="nav-link__value">
 																<?php echo esc_html( $player->fullname ); ?>
 															</span>
 														</a>
 													</p>
 													<p class="media__subheading">
-														<a href="/<?php echo esc_attr( $league->event->competition->type ); ?>/<?php echo esc_html( seo_url( $league->title ) ); ?>/<?php echo esc_attr( $league->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $player->team->title ) ); ?>/" class="nav--link">
+														<a href="<?php echo esc_attr( $team_link ); ?>" class="nav--link" onclick="Racketmanager.leagueTabDataLink(event,<?php echo esc_attr( $league->id ); ?>,<?php echo esc_attr( $league->current_season['name'] ); ?>,'<?php echo esc_attr( $team_link ); ?>',<?php echo esc_attr( $player->team->id ); ?>,'teams')">
 															<span class="nav-link__value">
 																<?php echo esc_html( $player->team->title ); ?>
 															</span>

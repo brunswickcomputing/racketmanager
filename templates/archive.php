@@ -39,6 +39,39 @@ if ( isset( $_GET['match_day'] ) || isset( $_GET['team_id'] ) ) { //phpcs:ignore
 if ( $match_day ) {
 	$tab = 'matches'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 }
+$menu_options               = array();
+$menu_options['standings']  = array(
+	'name'        => 'standings',
+	'selected'    => 'standings' === $tab ? true : false,
+	'available'   => true,
+	'description' => __( 'Standings', 'racketmanager' ),
+);
+$menu_options['crosstable'] = array(
+	'name'        => 'crosstable',
+	'selected'    => 'crosstable' === $tab ? true : false,
+	'available'   => true,
+	'description' => __( 'Crosstable', 'racketmanager' ),
+);
+$menu_options['matches']    = array(
+	'name'        => 'matches',
+	'selected'    => 'matches' === $tab ? true : false,
+	'available'   => true,
+	'description' => __( 'Matches', 'racketmanager' ),
+);
+$menu_options['teams']      = array(
+	'name'        => 'teams',
+	'selected'    => 'teams' === $tab ? true : false,
+	'available'   => true,
+	'description' => __( 'Teams', 'racketmanager' ),
+);
+if ( $league->event->competition->is_team_entry ) {
+	$menu_options['players'] = array(
+		'name'        => 'players',
+		'selected'    => 'players' === $tab ? true : false,
+		'available'   => true,
+		'description' => __( 'Players', 'racketmanager' ),
+	);
+}
 if ( $league->event->is_box ) {
 	$season_title     = __( 'Round', 'racketmanager' );
 	$season_selection = __( 'Rounds', 'racketmanager' );
@@ -62,14 +95,6 @@ switch ( $league->event->competition->type ) {
 }
 ?>
 <div id="archive-<?php echo esc_html( $league->id ); ?>" class="archive">
-	<script type="text/javascript">
-	var tab = '<?php echo esc_html( $tab ); ?>;'
-	var hash = window.location.hash.substr(1);
-	if (hash == 'teams') tab = 'teams';
-	jQuery(function() {
-		activaTab('<?php echo esc_html( $tab ); ?>');
-	});
-	</script>
 	<div class="page-subhead competition">
 		<div class="media competition-head">
 			<div class="media__wrapper">
@@ -176,58 +201,15 @@ switch ( $league->event->competition->type ) {
 				<div class="collapse navbar-collapse mt-3" id="navbarSupportedContent">
 					<!-- Nav tabs -->
 					<ul class="nav nav-pills frontend" id="myTab" role="tablist">
-						<li class="nav-item" role="presentation">
-							<button class="nav-link" id="standings-tab" data-bs-toggle="pill" data-bs-target="#standings" type="button" role="tab" aria-controls="standings" aria-selected="true"><?php esc_html_e( 'Standings', 'racketmanager' ); ?></button>
-						</li>
-						<li class="nav-item" role="presentation">
-							<button class="nav-link" id="crosstable-tab" data-bs-toggle="pill" data-bs-target="#crosstable" type="button" role="tab" aria-controls="crosstable" aria-selected="false"><?php esc_html_e( 'Crosstable', 'racketmanager' ); ?></button>
-						</li>
-						<li class="nav-item" role="presentation">
-							<button class="nav-link" id="matches-tab" data-bs-toggle="pill" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="false"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></button>
-						</li>
-						<li class="nav-item" role="presentation">
-							<?php
-							if ( ! empty( $wp->query_vars['team'] ) ) {
-								if ( $league->event->is_box ) {
-									$season_ref = __( 'round', 'racketmanager' ) . '-' . $league->current_season['name'];
-								} else {
-									$season_ref = $league->current_season['name'];
-								}
-								?>
-								<a href="/<?php echo esc_attr( $league->event->competition->type ); ?>/<?php echo esc_attr( seo_url( $league->title ) ); ?>/<?php echo esc_html( $season_ref ); ?>/teams">
-								<?php
-							}
-							?>
-								<button class="nav-link" id="teams-tab" data-bs-toggle="pill" data-bs-target="#teams" type="button" role="tab" aria-controls="teams" aria-selected="false"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></button>
-							<?php
-							if ( ! empty( $wp->query_vars['team'] ) ) {
-								?>
-								</a>
-								<?php
-							}
-							?>
-						</li>
 						<?php
-						if ( $league->event->competition->is_team_entry ) {
-							?>
-							<li class="nav-item" role="presentation">
-								<?php
-								if ( ! empty( $wp->query_vars['player_id'] ) ) {
-									?>
-									<a href="/<?php echo esc_attr( $league->event->competition->type ); ?>/<?php echo esc_attr( seo_url( $league->title ) ); ?>/<?php echo esc_html( $league->current_season['name'] ); ?>/players">
-									<?php
-								}
+						foreach ( $menu_options as $option ) {
+							if ( $option['available'] ) {
 								?>
-								<button class="nav-link" id="players-tab" data-bs-toggle="pill" data-bs-target="#players" type="button" role="tab" aria-controls="players" aria-selected="false"><?php esc_html_e( 'Players', 'racketmanager' ); ?></button>
+								<li class="nav-item" role="presentation">
+									<button class="nav-link <?php echo $option['selected'] ? 'active' : null; ?>" id="<?php echo esc_attr( $option['name'] ); ?>-tab" data-bs-toggle="pill" data-bs-target="#<?php echo esc_attr( $option['name'] ); ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $option['name'] ); ?>" aria-selected="<?php echo esc_attr( $option['selected'] ); ?>" onclick="Racketmanager.leagueTabData(event,<?php echo esc_attr( $league->id ); ?>,'<?php echo esc_attr( $league->current_season['name'] ); ?>','<?php echo esc_attr( seo_url( $league->title ) ); ?>','<?php echo esc_attr( $league->event->competition->type ); ?>')"><?php echo esc_attr( $option['description'] ); ?></button>
+								</li>
 								<?php
-								if ( ! empty( $wp->query_vars['player_id'] ) ) {
-									?>
-									</a>
-									<?php
-								}
-								?>
-							</li>
-							<?php
+							}
 						}
 						?>
 					</ul>
@@ -235,61 +217,38 @@ switch ( $league->event->competition->type ) {
 			</div>
 		</nav>
 		<!-- Tab panes -->
-		<div class="tab-content">
-			<div class="tab-pane fade" id="standings" role="tabpanel" aria-labelledby="standings-tab">
-				<?php
-				racketmanager_standings(
-					0,
-					array(
-						'season'   => get_current_season(),
-						'template' => get_league_template( 'standingstable' ),
-					)
-				);
-				?>
-			</div>
-			<div class="tab-pane fade" id="crosstable" role="tabpanel" aria-labelledby="crosstable-tab">
-				<?php
-				racketmanager_crosstable(
-					0,
-					array(
-						'season'   => get_current_season(),
-						'template' => get_league_template( 'crosstable' ),
-					)
-				);
-				?>
-			</div>
-			<div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
-				<?php
-				racketmanager_matches(
-					0,
-					array(
-						'season'                   => get_current_season(),
-						'match_day'                => 'current',
-						'show_match_day_selection' => 'true',
-						'template'                 => get_league_template( 'matches' ),
-						'template_type'            => get_match_template_type(),
-					)
-				);
-				?>
-			</div>
-			<div class="tab-pane fade" id="teams" role="tabpanel" aria-labelledby="teams-tab">
-				<?php
-				racketmanager_teams(
-					0,
-					array(
-						'season'   => get_current_season(),
-						'template' => get_league_template( 'teams' ),
-					)
-				);
-				?>
+		<div class="tab-content" id="leagueTabContent">
+			<div id="splash" class="container d-none">
+				<div class="module module--card">
+					<div class="d-flex justify-content-center">
+						<div class="spinner-border" role="status">
+						<span class="visually-hidden">Loading...</span>
+						</div>
+					</div>
+				</div>
 			</div>
 			<?php
-			if ( $league->event->competition->is_team_entry ) {
-				?>
-				<div class="tab-pane fade" id="players" role="tabpanel" aria-labelledby="players-tab">
-					<?php racketmanager_players( 0, array( 'season' => get_current_season() ) ); ?>
-				</div>
-				<?php
+			foreach ( $menu_options as $option ) {
+				if ( $option['available'] ) {
+					?>
+					<div class="tab-pane <?php echo $option['selected'] ? 'active' : 'fade'; ?>" id="<?php echo esc_attr( $option['name'] ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $option['name'] ); ?>-tab">
+						<?php
+						if ( $option['selected'] ) {
+							$function_name = 'Racketmanager\racketmanager_' . $option['name'];
+							if ( function_exists( $function_name ) ) {
+								$args             = array();
+								$args['season']   = $league->current_season['name'];
+								$args['template'] = get_league_template( $option['name'] );
+								$function_name( $league->id, $args );
+							} else {
+								/* translators: %s: function name */
+								printf( esc_html__( 'function %s does not exist', 'racketmanager' ), esc_attr( $function_name ) );
+							}
+						}
+						?>
+					</div>
+					<?php
+				}
 			}
 			?>
 		</div>

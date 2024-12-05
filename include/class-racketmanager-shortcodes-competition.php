@@ -888,7 +888,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			array(
 				'league_id' => 0,
 				'template'  => '',
-				'team'      => null,
+				'teams'     => null,
 				'group'     => false,
 			),
 			$atts
@@ -896,17 +896,21 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$league_id = $args['league_id'];
 		$template  = $args['template'];
 		$group     = $args['group'];
-		$team      = $args['team'];
-		$league    = $this->get_league( $league_id );
+		$team_id   = $args['teams'];
+		if ( $league_id ) {
+			$league = get_league( $league_id );
+		}
 
 		$league->set_template( 'teams', $template );
 		$league->set_group( $group );
 		$league_teams = array();
-		if ( isset( $wp->query_vars['team'] ) ) {
-			$team = un_seo_url( get_query_var( 'team' ) );
+		if ( ! $team_id ) {
+			if ( isset( $wp->query_vars['team'] ) ) {
+				$team_id = un_seo_url( get_query_var( 'team' ) );
+			}
 		}
-		if ( $team ) {
-			$team = get_team( $team );
+		if ( $team_id ) {
+			$team = get_team( $team_id );
 			if ( $team ) {
 				$team->info      = $league->get_team_dtls( $team->id );
 				$team->standings = $league->get_league_team( $team->id );
@@ -1009,12 +1013,14 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$args      = shortcode_atts(
 			array(
 				'league_id' => 0,
+				'players'   => null,
 				'template'  => '',
 				'season'    => false,
 			),
 			$atts
 		);
 		$league_id = $args['league_id'];
+		$player_id = $args['players'];
 		$template  = $args['template'];
 		$season    = $args['season'];
 		$league    = $this->get_league( $league_id );
@@ -1026,11 +1032,17 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$matches = array();
 		$player  = null;
 		$player  = null;
-		if ( isset( $wp->query_vars['player_id'] ) ) {
-			$player = un_seo_url( get_query_var( 'player_id' ) );
+		if ( ! $player_id ) {
+			if ( isset( $wp->query_vars['player_id'] ) ) {
+				$player_id = un_seo_url( get_query_var( 'player_id' ) );
+			}
 		}
-		if ( $player ) {
-			$player = get_player( $player, 'name' ); // get player by name.
+		if ( $player_id ) {
+			if ( is_numeric( $player_id ) ) {
+				$player = get_player( $player_id );
+			} else {
+				$player = get_player( $player_id, 'name' ); // get player by name.
+			}
 			if ( $player ) {
 				$player->matches = $player->get_matches( $league, $league->current_season['name'], 'league' );
 				$player->stats   = $player->get_stats();

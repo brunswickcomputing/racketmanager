@@ -15,8 +15,10 @@ namespace Racketmanager;
 
 if ( isset( $object->competition ) ) {
 	$object_competition = $object->competition;
+	$object_type        = 'event';
 } else {
 	$object_competition = $object->event->competition;
+	$object_type        = 'league';
 }
 ?>
 	<div class="page-subhead">
@@ -53,12 +55,13 @@ if ( isset( $object->competition ) ) {
 		<div class="page-content__main col-12 col-lg-7">
 			<?php
 			if ( ! $object->is_championship ) {
+				$standings_link = '/' . $object->event->competition->type . '/' . seo_url( $object->title ) . '/' . $object->current_season['name'] . '/';
 				?>
 				<div class="module module--card">
 					<div class="module__banner">
 						<h3 class="module__title"><?php esc_html_e( 'Standings', 'racketmanager' ); ?></h3>
 						<div class="module__aside">
-							<a role="button" class="btn btn--link calendar-add" href="/<?php echo esc_attr( $object->event->competition->type ); ?>/<?php echo esc_html( seo_url( $object->title ) ); ?>/<?php echo esc_attr( $object->current_season['name'] ); ?>/" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'View standings', 'racketmanager' ); ?>">
+							<a role="button" class="btn btn--link" href="<?php echo esc_attr( $standings_link ); ?>" onclick="Racketmanager.leagueTabDataLink(event,<?php echo esc_attr( $object->id ); ?>,<?php echo esc_attr( $object->current_season['name'] ); ?>,'<?php echo esc_attr( $standings_link ); ?>','','standings')"data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'View standings', 'racketmanager' ); ?>">
 								<i class="racketmanager-svg-icon">
 									<?php racketmanager_the_svg( 'icon-table' ); ?>
 								</i>
@@ -384,6 +387,8 @@ if ( isset( $object->competition ) ) {
 										if ( intval( $player->id ) === get_current_user_id() ) {
 											$selected_player = true;
 										}
+										$player_link = '/' . $object_competition->type . '/' . seo_url( $object->name ) . '/' . $object->current_season['name'] . '/player/' . seo_url( $player->fullname ) . '/';
+										$onclick     = 'onclick=Racketmanager.' . $object_type . 'TabDataLink(event,' . $object->id . ',' . $object->current_season['name'] . ",'" . $player_link . "'," . $player->id . ",'players')";
 										?>
 										<li class="list__item <?php echo empty( $selected_player ) ? null : 'is-selected'; ?>">
 											<div class="media">
@@ -402,7 +407,7 @@ if ( isset( $object->competition ) ) {
 														<div class="flex-container">
 															<div class="flex-item flex-item--grow">
 																<p class="media__title">
-																	<a href="/<?php echo esc_attr( $object_competition->type ); ?>/<?php echo esc_html( seo_url( $object->name ) ); ?>/<?php echo esc_attr( $object->current_season['name'] ); ?>/player/<?php echo esc_attr( seo_url( $player->fullname ) ); ?>/" class="nav--link">
+																	<a href="<?php echo esc_attr( $player_link ); ?>" class="nav--link" <?php echo esc_attr( $onclick ); ?>>
 																		<span class="nav-link__value">
 																			<?php echo esc_html( $player->fullname ); ?>
 																		</span>

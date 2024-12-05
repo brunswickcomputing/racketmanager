@@ -118,7 +118,7 @@ if ( ! $event->is_box ) {
 		</nav>
 	</div>
 	<div class="tab-content" id="eventTabContent">
-		<?php require RACKETMANAGER_PATH . 'templates/include/loading.php'; ?>
+		<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
 		<?php
 		foreach ( $menu_options as $option ) {
 			if ( $option['available'] ) {

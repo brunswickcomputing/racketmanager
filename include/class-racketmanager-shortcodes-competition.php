@@ -239,23 +239,21 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 	public function showCompetition( $atts ) {
 		global $competition;
 		wp_verify_nonce( 'crosstable' );
-		$args           = shortcode_atts(
+		$args          = shortcode_atts(
 			array(
-				'id'             => 0,
-				'season'         => false,
-				'template'       => '',
-				'standingstable' => '',
-				'template_type'  => null,
-				'organisation'   => null,
+				'id'            => 0,
+				'season'        => false,
+				'template'      => '',
+				'template_type' => null,
+				'organisation'  => null,
 			),
 			$atts
 		);
-		$id             = $args['id'];
-		$season         = $args['season'];
-		$template       = $args['template'];
-		$standingstable = $args['standingstable'];
-		$template_type  = $args['template_type'];
-		$organisation   = $args['organisation'];
+		$id            = $args['id'];
+		$season        = $args['season'];
+		$template      = $args['template'];
+		$template_type = $args['template_type'];
+		$organisation  = $args['organisation'];
 		if ( $id ) {
 			$event = get_event( $id );
 		} else {
@@ -297,13 +295,12 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		return $this->load_template(
 			$filename,
 			array(
-				'competition'        => $event,
-				'leagues'            => $leagues,
-				'seasons'            => $seasons,
-				'curr_season'        => $season,
-				'standings_template' => $standingstable,
-				'organisation'       => $organisation,
-				'template_type'      => $template_type,
+				'competition'   => $event,
+				'leagues'       => $leagues,
+				'seasons'       => $seasons,
+				'curr_season'   => $season,
+				'organisation'  => $organisation,
+				'template_type' => $template_type,
 			)
 		);
 	}

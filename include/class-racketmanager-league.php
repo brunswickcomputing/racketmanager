@@ -1645,7 +1645,7 @@ class Racketmanager_League {
 		}
 
 		$sql = $wpdb->prepare(
-			"SELECT A.`title`, B.`captain`, A.`club_id`, B.`match_day`, B.`match_time`, A.`stadium`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status`, A.`type`, A.`team_type`, C.`status` as `league_status`, C.`rating` FROM {$wpdb->racketmanager_table} C INNER JOIN  {$wpdb->racketmanager_teams} A ON A.`id` = C.`team_id` AND C.`league_id` = %d LEFT JOIN {$wpdb->racketmanager_team_events} B ON A.`id` = B.`team_id` and B.`event_id` IN (select `event_id` FROM {$wpdb->racketmanager} WHERE `id` = %d) WHERE A.`id` = %d AND C.`season` = %s",
+			"SELECT A.`title`, B.`captain`, A.`club_id`, B.`match_day`, B.`match_time`, A.`stadium`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status`, A.`type`, A.`team_type`, C.`status` as `league_status`, C.`rating`, C.`rank`, C.`points_plus`, C.`points_minus`, C.`points2_plus`, C.`points2_minus`, C.`add_points`, C.`done_matches`, C.`won_matches`, C.`draw_matches`, C.`lost_matches`, C.`diff` FROM {$wpdb->racketmanager_table} C INNER JOIN  {$wpdb->racketmanager_teams} A ON A.`id` = C.`team_id` AND C.`league_id` = %d LEFT JOIN {$wpdb->racketmanager_team_events} B ON A.`id` = B.`team_id` and B.`event_id` IN (select `event_id` FROM {$wpdb->racketmanager} WHERE `id` = %d) WHERE A.`id` = %d AND C.`season` = %s",
 			intval( $this->id ),
 			intval( $this->id ),
 			intval( $team_id ),
@@ -1703,8 +1703,12 @@ class Racketmanager_League {
 			$team->club_id = null;
 			$team->club    = null;
 		}
-		$team->stadium = stripslashes( $team->stadium );
-		$team->roster  = maybe_unserialize( $team->roster );
+		$team->stadium          = stripslashes( $team->stadium );
+		$team->roster           = maybe_unserialize( $team->roster );
+		$team->points_formatted = array(
+			'primary'   => sprintf( $this->point_format, $team->points_plus, $team->points_minus ),
+			'secondary' => sprintf( $this->point_format2, $team->points2_plus, $team->points2_minus ),
+		);
 		if ( 'P' === $team->team_type && null !== $team->roster ) {
 			$team->players = array();
 			$i             = 1;

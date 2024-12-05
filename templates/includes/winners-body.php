@@ -26,7 +26,7 @@ if ( ! $winners ) {
 								<div>
 									<?php
 									if ( empty( $tournament ) ) {
-										$link_ref = '/' . seo_url( $winner->competition_type ) . '/' . seo_url( $winner->event_name ) . '/' . seo_url( $winner->season ) . '/';
+										$link_ref = '/' . seo_url( $winner->competition_type ) . 's/' . seo_url( $winner->event_name ) . '/' . seo_url( $winner->season ) . '/';
 									} else {
 										$link_ref = '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $winner->event_name ) . '/';
 									}

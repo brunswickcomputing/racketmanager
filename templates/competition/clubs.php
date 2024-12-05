@@ -246,6 +246,7 @@ if ( empty( $competition_club ) ) {
 								if ( intval( $player->id ) === get_current_user_id() ) {
 									$selected_player = true;
 								}
+								$player_link = '/' . seo_url( $competition->name ) . '/' . $competition->current_season['name'] . '/player/' . seo_url( $player->fullname ) . '/';
 								?>
 								<li class="list__item <?php echo empty( $selected_player ) ? null : 'is-selected'; ?>">
 									<div class="media">
@@ -264,7 +265,7 @@ if ( empty( $competition_club ) ) {
 												<div class="flex-container">
 													<div class="flex-item flex-item--grow">
 														<p class="media__title">
-															<a href="/<?php echo esc_html( seo_url( $competition->name ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/player/<?php echo esc_attr( seo_url( $player->fullname ) ); ?>/" class="nav--link">
+															<a href="<?php echo esc_attr( $player_link ); ?>" onclick="Racketmanager.competitionTabDataLink(event,<?php echo esc_attr( $competition->id ); ?>,<?php echo esc_attr( $competition->current_season['name'] ); ?>,'<?php echo esc_attr( $player_link ); ?>',<?php echo esc_attr( $player->id ); ?>,'players')" class="nav--link">
 																<span class="nav-link__value">
 																	<?php echo esc_html( $player->fullname ); ?>
 																</span>

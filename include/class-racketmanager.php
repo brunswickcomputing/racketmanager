@@ -1363,6 +1363,18 @@ class RacketManager {
 			'index.php?pagename=competition%2Fevent%2Fleague%2Fmatch&league_name=$matches[1]&match_id=$matches[2]',
 			'top'
 		);
+		// league - season - crosstable.
+		add_rewrite_rule(
+			'league/(.+?)/([0-9]{4})\/crosstable/?$',
+			'index.php?pagename=competition%2Fevent%2Fleague&league_name=$matches[1]&season=$matches[2]&tab=crosstable',
+			'top'
+		);
+		// league - season - standings.
+		add_rewrite_rule(
+			'league/(.+?)/([0-9]{4})\/standings/?$',
+			'index.php?pagename=competition%2Fevent%2Fleague&league_name=$matches[1]&season=$matches[2]&tab=standings',
+			'top'
+		);
 		// league - season.
 		add_rewrite_rule(
 			'league/(.+?)/([0-9]{4})\/?$',

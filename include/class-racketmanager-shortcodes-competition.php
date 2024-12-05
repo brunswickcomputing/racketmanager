@@ -310,7 +310,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 	 *    [leaguearchive template=X]
 	 *
 	 * - template: teamplate to use
-	 * - standingstable: template for standings table
+	 * - standings: template for standings table
 	 * - crosstable: template for crosstable
 	 * - matches: template for matches
 	 * - teams: template for teams
@@ -327,7 +327,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				'league_id'             => false,
 				'competition_id'        => false,
 				'league_name'           => '',
-				'standingstable'        => 'last5',
+				'standings'             => 'last5',
 				'crosstable'            => '',
 				'matches'               => '',
 				'teams'                 => 'list',
@@ -340,7 +340,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$league_id             = $args['league_id'];
 		$competition_id        = $args['competition_id'];
 		$league_name           = $args['league_name'];
-		$standingstable        = $args['standingstable'];
+		$standings             = $args['standings'];
 		$crosstable            = $args['crosstable'];
 		$matches               = $args['matches'];
 		$teams                 = $args['teams'];
@@ -375,10 +375,10 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			$league->set_tab( true );
 			$league->set_templates(
 				array(
-					'standingstable' => $standingstable,
-					'crosstable'     => $crosstable,
-					'matches'        => $matches,
-					'teams'          => $teams,
+					'standings'  => $standings,
+					'crosstable' => $crosstable,
+					'matches'    => $matches,
+					'teams'      => $teams,
 				)
 			);
 			$league->matches_template_type = $matches_template_type;
@@ -434,7 +434,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		if ( ! $league ) {
 			return false;
 		}
-		$league->set_template( 'standingstable', $template );
+		$league->set_template( 'standings', $template );
 		$league->set_season( $season );
 		$league->set_group( $group );
 

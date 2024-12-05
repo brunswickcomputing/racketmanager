@@ -1030,8 +1030,8 @@ function racketmanager_club_players_notification( $args = array() ) {
 	 * @category template-tags
 	 */
 function racketmanager_constitution_notification( $event_id, $args = array() ) {
-	$args['id']             = $event_id;
-	$args['standingstable'] = 'constitution';
+	$args['id']        = $event_id;
+	$args['standings'] = 'constitution';
 
 	$shortcode = '[event-constitution';
 	foreach ( $args as $key => $value ) {

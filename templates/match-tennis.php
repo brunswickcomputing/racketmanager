@@ -27,13 +27,7 @@ if ( $match ) {
 					if ( is_user_logged_in() ) {
 						?>
 						<div id="viewMatchRubbers">
-							<div id="splash" class="d-none">
-								<div class="d-flex justify-content-center">
-									<div class="spinner-border" role="status">
-									<span class="visually-hidden">Loading...</span>
-									</div>
-								</div>
-							</div>
+							<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
 							<div id="showMatchRubbers">
 								<?php echo $racketmanager->show_match_screen( $match ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</div>

@@ -34,13 +34,7 @@ if ( ! empty( $referrer ) ) {
 		</div>
 	</div>
 	<div id="viewMatchRubbers">
-		<div id="splash" style="display:none">
-			<div class="d-flex justify-content-center">
-				<div class="spinner-border" role="status">
-				<span class="visually-hidden">Loading...</span>
-				</div>
-			</div>
-		</div>
+		<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
 		<div id="showMatchRubbers">
 			<?php echo $this->show_match_screen( $match ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</div>

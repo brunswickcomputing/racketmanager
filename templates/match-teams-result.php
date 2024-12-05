@@ -106,13 +106,7 @@ if ( $match->is_walkover ) {
 				<div class="module__content">
 					<div class="module-container">
 						<div id="viewMatchRubbers">
-							<div id="splash" class="d-none">
-								<div class="d-flex justify-content-center">
-									<div class="spinner-border" role="status">
-									<span class="visually-hidden">Loading...</span>
-									</div>
-								</div>
-							</div>
+							<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
 							<div id="showMatchRubbers">
 								<div id="matchrubbers">
 									<form id="match-rubbers" class="team-match-result" action="#" method="post" onsubmit="return checkSelect(this)">

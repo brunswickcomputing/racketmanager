@@ -63,13 +63,7 @@ $user_can_update = $is_update_allowed->user_can_update;
 				<div class="module__content">
 					<div class="module-container">
 						<div id="viewMatchRubbers">
-							<div id="splash" class="d-none">
-								<div class="d-flex justify-content-center">
-									<div class="spinner-border" role="status">
-									<span class="visually-hidden">Loading...</span>
-									</div>
-								</div>
-							</div>
+							<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
 							<div id="showMatchRubbers">
 								<?php echo $racketmanager->show_match_screen( $match, false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</div>

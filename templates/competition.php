@@ -91,15 +91,7 @@ $menu_options['winners']  = array(
 		</div>
 	</nav>
 	<div class="tab-content" id="competitionTabContent">
-		<div id="splash" class="container d-none">
-			<div class="module module--card">
-				<div class="d-flex justify-content-center">
-					<div class="spinner-border" role="status">
-					<span class="visually-hidden">Loading...</span>
-					</div>
-				</div>
-			</div>
-		</div>
+		<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
 		<?php
 		foreach ( $menu_options as $option ) {
 			if ( $option['available'] ) {

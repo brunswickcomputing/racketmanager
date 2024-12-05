@@ -345,13 +345,7 @@ if ( $match ) {
 						}
 						?>
 					</div>
-					<div id="splash" class="d-none">
-						<div class="d-flex justify-content-center">
-							<div class="spinner-border" role="status">
-							<span class="visually-hidden">Loading...</span>
-							</div>
-						</div>
-					</div>
+					<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
 					<div class="match__body">
 						<div class="match__row-wrapper">
 							<?php

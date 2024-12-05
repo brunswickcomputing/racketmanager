@@ -20,13 +20,7 @@ namespace Racketmanager;
 					<div id="matchHeader"></div>
 				</div>
 				<div id="viewMatchRubbers" style="display:none">
-					<div id="splash">
-						<div class="d-flex justify-content-center">
-							<div class="spinner-border" role="status">
-							<span class="visually-hidden">Loading...</span>
-							</div>
-						</div>
-					</div>
+					<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
 					<div id="showMatchRubbers"></div>
 				</div>
 			</div>

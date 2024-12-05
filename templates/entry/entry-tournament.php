@@ -267,13 +267,7 @@ if ( ! empty( $player->entry ) ) {
 									</div>
 									<div id="event-feedback" class="invalid-feedback"></div>
 								</div>
-								<div id="splash" class="d-none">
-									<div class="d-flex justify-content-center">
-										<div class="spinner-border" role="status">
-										<span class="visually-hidden">Loading...</span>
-										</div>
-									</div>
-								</div>
+								<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
 								<div class="form-checkboxes">
 									<?php
 									foreach ( $events as $event ) {

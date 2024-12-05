@@ -92,7 +92,7 @@ if ( ! $event->is_box ) {
 	<?php
 	require RACKETMANAGER_PATH . 'templates/includes/event-header.php';
 	?>
-	<div>
+	<div id="pageContentTab">
 		<nav class="navbar navbar-expand-lg">
 			<div class="">
 				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -116,35 +116,35 @@ if ( ! $event->is_box ) {
 				</div>
 			</div>
 		</nav>
-	</div>
-	<div class="tab-content" id="eventTabContent">
-		<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
-		<?php
-		foreach ( $menu_options as $option ) {
-			if ( $option['available'] ) {
-				?>
-				<div class="tab-pane <?php echo $option['selected'] ? 'active' : 'fade'; ?>" id="<?php echo esc_attr( $option['name'] ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $option['name'] ); ?>-tab">
-					<?php
-					if ( $option['selected'] ) {
-						$function_name = 'Racketmanager\racketmanager_event_' . $option['name'];
-						if ( function_exists( $function_name ) ) {
-							$function_name(
-								$event->id,
-								array(
-									'season'   => $event->current_season['name'],
-									'template' => $option['template'],
-								)
-							);
-						} else {
-							/* translators: %s: function name */
-							printf( esc_html__( 'function %s does not exist', 'racketmanager' ), esc_attr( $function_name ) );
-						}
-					}
+		<div class="tab-content" id="eventTabContent">
+			<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
+			<?php
+			foreach ( $menu_options as $option ) {
+				if ( $option['available'] ) {
 					?>
-				</div>
-				<?php
+					<div class="tab-pane <?php echo $option['selected'] ? 'active' : 'fade'; ?>" id="<?php echo esc_attr( $option['name'] ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $option['name'] ); ?>-tab">
+						<?php
+						if ( $option['selected'] ) {
+							$function_name = 'Racketmanager\racketmanager_event_' . $option['name'];
+							if ( function_exists( $function_name ) ) {
+								$function_name(
+									$event->id,
+									array(
+										'season'   => $event->current_season['name'],
+										'template' => $option['template'],
+									)
+								);
+							} else {
+								/* translators: %s: function name */
+								printf( esc_html__( 'function %s does not exist', 'racketmanager' ), esc_attr( $function_name ) );
+							}
+						}
+						?>
+					</div>
+					<?php
+				}
 			}
-		}
-		?>
+			?>
+		</div>
 	</div>
 </div>

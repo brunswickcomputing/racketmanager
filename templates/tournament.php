@@ -75,65 +75,61 @@ $menu_options['winners']     = array(
 );
 ?>
 <div id="tournament-<?php echo esc_html( $tournament->id ); ?>" class="tournament">
-	<script type="text/javascript">
-	var tab = '<?php echo esc_html( $tab ); ?>;'
-	jQuery(function() {
-		activaTab('<?php echo esc_html( $tab ); ?>');
-	});
-	</script>
-	<div class="container">
-		<?php
-		$entry_option = true;
-		require 'includes/tournament-header.php';
-		?>
-		<?php require 'tournament-selections.php'; ?>
-		<nav class="navbar navbar-expand-lg">
-			<div class="">
-				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-					<span class="navbar-toggler-icon"></span>
-				</button>
-				<div class="collapse navbar-collapse mt-3" id="navbarSupportedContent">
-					<!-- Nav tabs -->
-					<ul class="nav nav-pills frontend" id="myTab" role="tablist">
+	<div id="pageContentTab">
+		<div class="container">
+			<?php
+			$entry_option = true;
+			require 'includes/tournament-header.php';
+			?>
+			<?php require 'tournament-selections.php'; ?>
+			<nav class="navbar navbar-expand-lg">
+				<div class="">
+					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+						<span class="navbar-toggler-icon"></span>
+					</button>
+					<div class="collapse navbar-collapse mt-3" id="navbarSupportedContent">
+						<!-- Nav tabs -->
+						<ul class="nav nav-pills frontend" id="myTab" role="tablist">
+							<?php
+							foreach ( $menu_options as $option ) {
+								if ( $option['available'] ) {
+									?>
+									<li class="nav-item" role="presentation">
+										<button class="nav-link <?php echo $option['selected'] ? 'active' : null; ?>" id="<?php echo esc_attr( $option['name'] ); ?>-tab" data-bs-toggle="pill" data-bs-target="#<?php echo esc_attr( $option['name'] ); ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $option['name'] ); ?>" aria-selected="<?php echo esc_attr( $option['selected'] ); ?>" onclick="Racketmanager.tournamentTabData(event,<?php echo esc_attr( $tournament->id ); ?>,'<?php echo esc_attr( seo_url( $tournament->name ) ); ?>')"><?php echo esc_attr( $option['description'] ); ?></button>
+									</li>
+									<?php
+								}
+							}
+							?>
+						</ul>
+					</div>
+				</div>
+			</nav>
+		</div>
+		<!-- Tab panes -->
+		<div class="tab-content" id="tournamentTabContent">
+			<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
+			<?php
+			foreach ( $menu_options as $option ) {
+				if ( $option['available'] ) {
+					?>
+					<div class="tab-pane <?php echo $option['selected'] ? 'active' : 'fade'; ?>" id="<?php echo esc_attr( $option['name'] ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $option['name'] ); ?>-tab">
 						<?php
-						foreach ( $menu_options as $option ) {
-							if ( $option['available'] ) {
-								?>
-								<li class="nav-item" role="presentation">
-									<button class="nav-link <?php echo $option['selected'] ? 'active' : null; ?>" id="<?php echo esc_attr( $option['name'] ); ?>-tab" data-bs-toggle="pill" data-bs-target="#<?php echo esc_attr( $option['name'] ); ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $option['name'] ); ?>" aria-selected="<?php echo esc_attr( $option['selected'] ); ?>" onclick="Racketmanager.tournamentTabData(event,<?php echo esc_attr( $tournament->id ); ?>,'<?php echo esc_attr( seo_url( $tournament->name ) ); ?>')"><?php echo esc_attr( $option['description'] ); ?></button>
-								</li>
-								<?php
+						if ( $option['selected'] ) {
+							$function_name = 'Racketmanager\racketmanager_tournament_' . $option['name'];
+							if ( function_exists( $function_name ) ) {
+								$function_name( $tournament->id, array() );
+							} else {
+								/* translators: %s: function name */
+								printf( esc_html__( 'function %s does not exist', 'racketmanager' ), esc_attr( $function_name ) );
 							}
 						}
 						?>
-					</ul>
-				</div>
-			</div>
-		</nav>
-	</div>
-	<!-- Tab panes -->
-	<div class="tab-content" id="tournamentTabContent">
-		<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
-		<?php
-		foreach ( $menu_options as $option ) {
-			if ( $option['available'] ) {
-				?>
-				<div class="tab-pane <?php echo $option['selected'] ? 'active' : 'fade'; ?>" id="<?php echo esc_attr( $option['name'] ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $option['name'] ); ?>-tab">
+					</div>
 					<?php
-					if ( $option['selected'] ) {
-						$function_name = 'Racketmanager\racketmanager_tournament_' . $option['name'];
-						if ( function_exists( $function_name ) ) {
-							$function_name( $tournament->id, array() );
-						} else {
-							/* translators: %s: function name */
-							printf( esc_html__( 'function %s does not exist', 'racketmanager' ), esc_attr( $function_name ) );
-						}
-					}
-					?>
-				</div>
-				<?php
+				}
 			}
-		}
-		?>
+			?>
+		</div>
 	</div>
 </div>

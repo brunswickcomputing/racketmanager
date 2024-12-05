@@ -277,7 +277,19 @@ jQuery(document).ajaxComplete(function () {
 	FavouriteInit();
 	PartnerLookup();
 	TournamentDateChange();
+	PopstateHandler();
 });
+function PopstateHandler() {
+	// Handle forward/back buttons
+	window.addEventListener("popstate", (event) => {
+		// If a state has been provided, we have a "simulated" page
+		// and we update the current page.
+		if (event.state) {
+			// Simulate the loading of the previous page
+			jQuery('#pageContentTab').html(event.state);
+		}
+	});
+}
 function FavouriteInit() {
 	jQuery('[data-js=add-favourite]').click(function (e) {
 		e.preventDefault();
@@ -2023,8 +2035,8 @@ Racketmanager.competitionTabData = function (e, competitionId, competitionSeason
 			jQuery(tabDataRef).load(
 				ajaxURL,
 				function () {
-					history.pushState(jQuery(tabDataRef).html(), '', newURL.toString());
 					jQuery('#competitionTabContent').removeClass('is-loading');
+					history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
 				}
 			);
 		} else {
@@ -2054,8 +2066,8 @@ Racketmanager.competitionTabDataLink = function (e, competitionId, competitionSe
 	jQuery(tabDataRef).load(
 		ajaxURL,
 		function () {
-			history.pushState(jQuery(tabDataRef).html(), '', newURL.toString());
 			jQuery('#competitionTabContent').removeClass('is-loading');
+			history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
 		}
 	);
 };
@@ -2075,8 +2087,8 @@ Racketmanager.eventTabData = function (e, eventId, eventSeason, eventName, compe
 			jQuery(tabDataRef).load(
 				ajaxURL,
 				function () {
-					history.pushState(jQuery(tabDataRef).html(), '', newURL.toString());
 					jQuery('#eventTabContent').removeClass('is-loading');
+					history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
 				}
 			);
 		} else {
@@ -2106,8 +2118,8 @@ Racketmanager.eventTabDataLink = function (e, eventId, eventSeason, eventLink = 
 	jQuery(tabDataRef).load(
 		ajaxURL,
 		function () {
-			history.pushState(jQuery(tabDataRef).html(), '', newURL.toString());
 			jQuery('#eventTabContent').removeClass('is-loading');
+			history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
 		}
 	);
 };
@@ -2127,8 +2139,8 @@ Racketmanager.leagueTabData = function (e, leagueId, leagueSeason, leagueName, c
 			jQuery(tabDataRef).load(
 				ajaxURL,
 				function () {
-					history.pushState(jQuery(tabDataRef).html(), '', newURL.toString());
 					jQuery('#leagueTabContent').removeClass('is-loading');
+					history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
 				}
 			);
 		} else {
@@ -2158,8 +2170,8 @@ Racketmanager.leagueTabDataLink = function (e, leagueId, leagueSeason, leagueLin
 	jQuery(tabDataRef).load(
 		ajaxURL,
 		function () {
-			history.pushState(jQuery(tabDataRef).html(), '', newURL.toString());
 			jQuery('#leagueTabContent').removeClass('is-loading');
+			history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
 		}
 	);
 };
@@ -2180,8 +2192,8 @@ Racketmanager.tournamentTabData = function (e, tournamentId, tournamentName) {
 			jQuery(tabDataRef).load(
 				ajaxURL,
 				function () {
-					history.pushState(jQuery(tabDataRef).html(),'', newURL.toString());
 					jQuery('#tournamentTabContent').removeClass('is-loading');
+					history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
 				}
 			);
 		} else {
@@ -2211,8 +2223,8 @@ Racketmanager.tournamentTabDataLink = function (e, tournamentId, tournamentLink 
 	jQuery(tabDataRef).load(
 		ajaxURL,
 		function () {
-			history.pushState(jQuery(tabDataRef).html(), '', newURL.toString());
 			jQuery('#tournamentTabContent').removeClass('is-loading');
+			history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
 		}
 	);
 };

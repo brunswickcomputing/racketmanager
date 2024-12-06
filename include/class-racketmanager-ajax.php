@@ -370,17 +370,13 @@ class Racketmanager_Ajax extends RacketManager {
 					}
 				}
 				if ( $user_can_update ) {
-					$match_status = isset( $_POST['new_match_status'] ) ? sanitize_text_field( wp_unslash( $_POST['new_match_status'] ) ) : null;
-					if ( 'postponed' === $match_status ) {
-						$match_confirmed = 'D';
-					} else {
-						$rubber_result   = $this->update_rubber_results( $match, $rm_options, $match_status );
-						$error           = $rubber_result[0];
-						$match_confirmed = $rubber_result[1];
-						$err_msg         = $rubber_result[2];
-						$err_field       = $rubber_result[3];
-						$updated_rubbers = $rubber_result[4];
-					}
+					$match_status    = isset( $_POST['new_match_status'] ) ? sanitize_text_field( wp_unslash( $_POST['new_match_status'] ) ) : null;
+					$rubber_result   = $this->update_rubber_results( $match, $rm_options, $match_status );
+					$error           = $rubber_result[0];
+					$match_confirmed = $rubber_result[1];
+					$err_msg         = $rubber_result[2];
+					$err_field       = $rubber_result[3];
+					$updated_rubbers = $rubber_result[4];
 				}
 			} elseif ( 'confirm' === $_POST['updateRubber'] ) {
 				$result_confirm  = isset( $_POST['resultConfirm'] ) ? sanitize_text_field( wp_unslash( $_POST['resultConfirm'] ) ) : null;
@@ -425,8 +421,6 @@ class Racketmanager_Ajax extends RacketManager {
 					$match_message = __( 'Result Challenged', 'racketmanager' );
 				} elseif ( 'P' === $match_confirmed ) {
 					$match_message = __( 'Result Saved', 'racketmanager' );
-				} elseif ( 'D' === $match_confirmed ) {
-					$match_message = __( 'Match postponed', 'racketmanager' );
 				} else {
 					$match_confirmed = '';
 				}

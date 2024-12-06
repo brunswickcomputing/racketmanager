@@ -1090,11 +1090,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					$option->select = 'abandoned';
 					$option->desc   = __( 'Abandoned', 'racketmanager' );
 					$select[]       = $option;
-					$option         = new \stdClass();
-					$option->value  = 'postponed';
-					$option->select = 'postponed';
-					$option->desc   = __( 'Postponed', 'racketmanager' );
-					$select[]       = $option;
 				}
 				$option         = new \stdClass();
 				$option->value  = 'none';
@@ -1178,12 +1173,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 															<dd class=""><?php esc_html_e( 'The match is partially played (and will not be finished)', 'racketmanager' ); ?></dd>
 														</dl>
 													</li>
-													<li class="list__item">
-														<dl>
-															<dt class=""><?php esc_html_e( 'Postponed', 'racketmanager' ); ?></dt>
-															<dd class=""><?php esc_html_e( 'The match has not started and will be played another time.', 'racketmanager' ); ?></dd>
-														</dl>
-													</li>
 													<?php
 												}
 												?>
@@ -1260,8 +1249,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 									$err_field[] = 'score_status';
 									$err_msg[]   = __( 'Score status team selection not valid', 'racketmanager' );
 								}
-								break;
-							case 'postponed':
 								break;
 							case 'share':
 								break;
@@ -1557,9 +1544,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				break;
 			case 'share':
 				$score_message = __( 'Not played', 'racketmanager' );
-				break;
-			case 'postponed':
-				$score_message = __( 'Postponed', 'racketmanager' );
 				break;
 			case 'abandoned':
 				$score_message = __( 'Abandoned', 'racketmanager' );

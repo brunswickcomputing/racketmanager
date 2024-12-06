@@ -543,7 +543,6 @@ class Racketmanager_Util {
 		$match_status['1'] = __( 'Not played', 'racketmanager' );
 		$match_status['2'] = __( 'Retired', 'racketmanager' );
 		$match_status['3'] = __( 'Not played', 'racketmanager' );
-		$match_status['4'] = __( 'Postponed', 'racketmanager' );
 		$match_status['5'] = __( 'Rescheduled', 'racketmanager' );
 		$match_status['6'] = __( 'Abandoned', 'racketmanager' );
 		$match_status['7'] = __( 'Withdrawn', 'racketmanager' );

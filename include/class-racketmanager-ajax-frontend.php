@@ -2474,8 +2474,11 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$message = __( 'No security token found in request', 'racketmanager' );
 		}
 		if ( $valid ) {
-			$league_id = isset( $_GET['leagueId'] ) ? intval( $_GET['leagueId'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$league    = get_league( $league_id );
+			$league_id = isset( $_GET['leagueId'] ) ? sanitize_text_field( wp_unslash( $_GET['leagueId'] ) ) : 0;
+			if ( ! is_numeric( $league_id ) ) {
+				$league_id = un_seo_url( $league_id );
+			}
+			$league = get_league( $league_id );
 			if ( $league ) {
 				$args   = array();
 				$season = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;

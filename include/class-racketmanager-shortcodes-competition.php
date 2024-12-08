@@ -538,7 +538,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 	public function show_matches( $atts ) {
 		global $league, $racketmanager;
 		wp_verify_nonce( 'matches' );
-		$args                     = shortcode_atts(
+		$args          = shortcode_atts(
 			array(
 				'league_id'                => 0,
 				'team'                     => 0,
@@ -546,7 +546,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				'template_type'            => 'tabs',
 				'season'                   => '',
 				'limit'                    => 'true',
-				'match_day'                => -1,
+				'matches'                  => 'current',
 				'home_only'                => 'false',
 				'group'                    => false,
 				'time'                     => '',
@@ -555,20 +555,16 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			),
 			$atts
 		);
-		$league_id                = $args['league_id'];
-		$team                     = $args['team'];
-		$template                 = $args['template'];
-		$template_type            = $args['template_type'];
-		$season                   = $args['season'];
-		$limit                    = $args['limit'];
-		$match_day                = $args['match_day'];
-		$group                    = $args['group'];
-		$time                     = $args['time'];
-		$show_team_selection      = $args['show_team_selection'];
-		$show_match_day_selection = $args['show_match_day_selection'];
-		$league                   = $this->get_league( $league_id );
+		$league_id     = $args['league_id'];
+		$template      = $args['template'];
+		$template_type = $args['template_type'];
+		$season        = $args['season'];
+		$limit         = $args['limit'];
+		$match_day     = $args['matches'];
+		$time          = $args['time'];
+		$league        = get_league( $league_id );
 		if ( ! $league ) {
-			return false;
+			return __( 'League not found', 'racketmanager' );
 		}
 		$league->set_template( 'matches', $template );
 
@@ -576,8 +572,9 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		if ( in_array( $template, array( 'by_matchday' ), true ) || ! empty( $time ) ) {
 			$match_day = -1;
 		}
-
-		$league->set_matches_selection( $show_match_day_selection, $match_day, $show_team_selection, $team );
+		if ( empty( $match_day ) ) {
+			$match_day = -1;
+		}
 
 		$league->set_season( $season );
 		$league->set_match_day( $match_day );

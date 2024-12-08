@@ -38,21 +38,7 @@ jQuery(document).ready(function ($) {
 
 		return false;  // Prevent default button behaviour
 	});
-
-	/* Friendly URL rewrite */
-	jQuery('#racketmanager_match_day_selection').on('change', function () {
-		let league = jQuery('#league_id').val().replace(/[^A-Za-z0-9 -]/g, ''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
-		league = league.replace(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
-		league = league.replace(/\s/g, "-"); // Replace space with a '-' symbol */
-		let season = jQuery('#season').val();
-		let matchday = jQuery('#match_day').val();
-		if (matchday == -1) matchday = 0;
-
-		let cleanUrl = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/league/' + league.toLowerCase() + '/' + season + '/day' + matchday + '/';
-		window.location = cleanUrl;
-
-		return false;  // Prevent default button behaviour
-	});
+	MatchDayChange();
 	/* Friendly URL rewrite */
 	jQuery('#racketmanager_winners #selection').on('change', function () {
 		let selection = jQuery(`#selection`).val().replace(/[^A-Za-z0-9 -]/g, ''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
@@ -278,6 +264,7 @@ jQuery(document).ajaxComplete(function () {
 	PartnerLookup();
 	TournamentDateChange();
 	PopstateHandler();
+	MatchDayChange();
 });
 function PopstateHandler() {
 	// Handle forward/back buttons
@@ -436,6 +423,20 @@ function PartnerLookup() {
 				checkToggle(target, e);
 			}
 		}
+	});
+}
+function MatchDayChange() {
+	/* Friendly URL rewrite */
+	jQuery('#racketmanager_match_day_selection').on('change', function () {
+		let league = jQuery('#league_id').val();
+		league = league.replace(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
+		league = league.replace(/\s/g, "-"); // Replace space with a '-' symbol */
+		let season = jQuery('#season').val();
+		let matchday = jQuery('#match_day').val();
+		if (matchday == -1) matchday = 0;
+		let leagueLink = '/league/' + league.toLowerCase() + '/' + season + '/matches/day' + matchday + '/'
+		Racketmanager.leagueTabDataLink(event, league, season, leagueLink, matchday, 'matches');
+		return false;  // Prevent default button behaviour
 	});
 }
 function TournamentDateChange() {

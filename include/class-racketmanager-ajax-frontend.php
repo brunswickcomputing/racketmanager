@@ -2489,6 +2489,9 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					if ( $link_id ) {
 						$args[ $tab ] = $link_id;
 					}
+					if ( 'standings' === $tab ) {
+						$args['template'] = 'last5';
+					}
 					$function_name = 'Racketmanager\racketmanager_' . $tab;
 					if ( function_exists( $function_name ) ) {
 						ob_start();

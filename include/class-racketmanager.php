@@ -1315,6 +1315,12 @@ class RacketManager {
 			'index.php?pagename=competition%2Fevent%2Fleague&league_name=$matches[1]&season=$matches[2]&match_day=$matches[3]',
 			'top'
 		);
+		// league - season - matchday.
+		add_rewrite_rule(
+			'league/(.+?)/([0-9]{4})/matches/day([0-9]{1,2})/?$',
+			'index.php?pagename=competition%2Fevent%2Fleague&league_name=$matches[1]&season=$matches[2]&match_day=$matches[3]',
+			'top'
+		);
 		// league - season - player.
 		add_rewrite_rule(
 			'league/(.+?)/([0-9]{4})/player/(.+?)/?$',
@@ -1361,6 +1367,12 @@ class RacketManager {
 		add_rewrite_rule(
 			'league\/(.+?)\/match\/(.+?)\/?$',
 			'index.php?pagename=competition%2Fevent%2Fleague%2Fmatch&league_name=$matches[1]&match_id=$matches[2]',
+			'top'
+		);
+		// league - season - matches.
+		add_rewrite_rule(
+			'league/(.+?)/([0-9]{4})\/matches/?$',
+			'index.php?pagename=competition%2Fevent%2Fleague&league_name=$matches[1]&season=$matches[2]&tab=matches',
 			'top'
 		);
 		// league - season - crosstable.

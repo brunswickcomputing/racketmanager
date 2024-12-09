@@ -1110,6 +1110,9 @@ function racketmanager_tournament_matches( $tournament_id, $args = array() ) {
 	$args['id'] = $tournament_id;
 	$shortcode  = '[tournament-matches';
 	foreach ( $args as $key => $value ) {
+		if ( 'matches' === $key ) {
+			$key = 'match_date';
+		}
 		$shortcode .= ' ' . $key . "='" . $value . "'";
 	}
 	$shortcode .= ']';

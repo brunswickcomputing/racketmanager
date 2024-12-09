@@ -527,21 +527,12 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 				$match_date = get_query_var( 'match_date' );
 			}
 		}
-				$tournament_matches = $racketmanager->get_matches(
-					array(
-						'season'         => $tournament->season,
-						'competition_id' => $tournament->competition->id,
-						'final'          => 'all',
-					)
-				);
-		$match_dates                = array();
+		$tournament_matches = $tournament->get_match_dates();
+		$match_dates        = array();
 		foreach ( $tournament_matches as $match ) {
-			$key = substr( $match->date, 0, 10 );
-			if ( false === array_key_exists( $key, $match_dates ) ) {
-				$match_dates[ $key ] = substr( $match->date, 0, 10 );
-			}
+			$key                 = substr( $match->date, 0, 10 );
+			$match_dates[ $key ] = substr( $match->date, 0, 10 );
 		}
-		asort( $match_dates );
 		$tournament->match_dates = $match_dates;
 
 		if ( empty( $match_date ) && ! empty( $tournament->match_dates ) ) {

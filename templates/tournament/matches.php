@@ -20,6 +20,7 @@ namespace Racketmanager;
 		<div class="module__content">
 			<div class="module-container">
 				<div class="container">
+					<input type="hidden" id="tournamentId" value="<?php echo esc_attr( $tournament->id ); ?>" />
 					<?php
 					if ( count( $tournament->match_dates ) > 8 ) {
 						require RACKETMANAGER_PATH . 'templates/includes/tournament-date-selection.php';
@@ -38,9 +39,10 @@ namespace Racketmanager;
 								} else {
 									$selected_class = '';
 								}
+								$matches_link = '/tournament/' . seo_url( $tournament->name ) . '/matches/' . $match_date . '/';
 								?>
 								<li class="nav-item nav-link <?php echo esc_html( $selected_class ); ?>" role="presentation">
-									<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/matches/<?php echo esc_html( $match_date ); ?>/" data-value="<?php echo esc_html( $match_date ); ?>" class="nav-link__value">
+									<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/matches/<?php echo esc_html( $match_date ); ?>/" data-value="<?php echo esc_html( $match_date ); ?>" onclick="Racketmanager.tournamentTabDataLink(event,<?php echo esc_attr( $tournament->id ); ?>,'<?php echo esc_attr( $matches_link ); ?>','<?php echo esc_attr( $match_date ); ?>','matches')" class="nav-link__value">
 										<span class="date__weekday">
 											<?php echo esc_html( mysql2date( 'D', $match_date ) ); ?>
 										</span>

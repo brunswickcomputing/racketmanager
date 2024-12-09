@@ -444,9 +444,11 @@ function TournamentDateChange() {
 		tournament = tournament.replace(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
 		tournament = tournament.replace("-", "_"); // Replace space with a '_' symbol */
 		tournament = tournament.replace(/\s/g, "-"); // Replace space with a '_' symbol */
-		let cleanUrl = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/tournament/' + tournament.toLowerCase() + '/matches/' + match_date + '/';
-		window.location = cleanUrl;
-
+		let tournamentLink = '/tournament/' + tournament.toLowerCase() + '/matches/' + match_date + '/';
+		let linkId = match_date;
+		let linkType = 'matches';
+		let tournamentId = jQuery('#tournamentId').val();
+		Racketmanager.tournamentTabDataLink(event, tournamentId, tournamentLink, linkId, linkType)
 		return false;  // Prevent default button behaviour
 	});
 }

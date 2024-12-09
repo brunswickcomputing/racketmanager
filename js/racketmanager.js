@@ -83,8 +83,6 @@ jQuery(document).ready(function ($) {
 		return false;  // Prevent default button behaviour
 	});
 	TournamentDateChange();
-	jQuery('#tournament-match-date-form').submit(function () {
-	});
 	jQuery('.teamcaptain').autocomplete({
 		minLength: 2,
 		source: function (request, response) {

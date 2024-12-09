@@ -922,4 +922,21 @@ final class Racketmanager_Tournament {
 			$racketmanager->set_message( __( 'Error scheduling tournament ratings calculation', 'racketmanager' ), true );
 		}
 	}
+	/**
+	 * Get unique match dates function
+	 *
+	 * @return array
+	 */
+	public function get_match_dates() {
+		global $wpdb;
+		$matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"SELECT distinct DATE_FORMAT(m.`date`, %s) AS `date` FROM {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager} AS l, {$wpdb->racketmanager_events} e WHERE m.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = %d AND m.`season` = %d ORDER BY 1 ASC",
+				'%Y-%m-%d',
+				$this->competition_id,
+				$this->season,
+			)
+		);
+		return $matches;
+	}
 }

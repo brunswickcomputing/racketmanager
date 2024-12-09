@@ -2545,7 +2545,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : null;
 				if ( $tab ) {
 					$args    = array();
-					$link_id = isset( $_GET['link_id'] ) ? intval( $_GET['link_id'] ) : null;
+					$link_id = isset( $_GET['link_id'] ) ? sanitize_text_field( wp_unslash( $_GET['link_id'] ) ) : null;
 					if ( $link_id ) {
 						$args[ $tab ] = $link_id;
 					}

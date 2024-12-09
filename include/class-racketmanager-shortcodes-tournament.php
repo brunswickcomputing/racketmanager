@@ -515,6 +515,9 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		$match_date    = $args['match_date'];
 		$template      = $args['template'];
 		$tournament    = get_tournament( $tournament_id );
+		if ( ! $tournament ) {
+			return __( 'Tournament not found', 'racketmanager' );
+		}
 		$order_of_play = array();
 		$matches       = array();
 		if ( ! $match_date ) {

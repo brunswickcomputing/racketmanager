@@ -227,7 +227,7 @@ switch ( $league->event->competition->type ) {
 						<div class="tab-pane <?php echo $option['selected'] ? 'active' : 'fade'; ?>" id="<?php echo esc_attr( $option['name'] ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $option['name'] ); ?>-tab">
 							<?php
 							if ( $option['selected'] ) {
-								$function_name = 'Racketmanager\racketmanager_' . $option['name'];
+								$function_name = 'Racketmanager\racketmanager_league_' . $option['name'];
 								if ( function_exists( $function_name ) ) {
 									$args             = array();
 									$args['season']   = $league->current_season['name'];

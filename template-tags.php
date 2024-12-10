@@ -675,7 +675,7 @@ function racketmanager_club( $club_id, $args = array() ) {
  * @param array      $args additional arguments as associative array (optional).
  * @category template-tags
  */
-function racketmanager_players( $league_id, $args = array() ) {
+function racketmanager_league_players( $league_id, $args = array() ) {
 	$defaults          = array(
 		'season'   => false,
 		'template' => '',
@@ -698,10 +698,10 @@ function racketmanager_players( $league_id, $args = array() ) {
 	 * @param array $args associative array of parameters, see default values (optional).
 	 * @category template-tags
 	 */
-function racketmanager_standings( $league_id, $args = array() ) {
+function racketmanager_league_standings( $league_id, $args = array() ) {
 	$defaults          = array(
 		'season'   => false,
-		'template' => '',
+		'template' => 'last5',
 		'group'    => false,
 		'home'     => 0,
 	);
@@ -723,7 +723,7 @@ function racketmanager_standings( $league_id, $args = array() ) {
 	 * @param array $args associative array of parameters, see default values (optional).
 	 * @category template-tags
 	 */
-function racketmanager_crosstable( $league_id, $args = array() ) {
+function racketmanager_league_crosstable( $league_id, $args = array() ) {
 	global $league;
 
 	$defaults          = array(
@@ -750,7 +750,7 @@ function racketmanager_crosstable( $league_id, $args = array() ) {
 	 * @param array $args associative array of parameters, see default values (optional).
 	 * @category template-tags
 	 */
-function racketmanager_matches( $league_id, $args = array() ) {
+function racketmanager_league_matches( $league_id, $args = array() ) {
 	global $league;
 
 	$defaults          = array(
@@ -809,7 +809,7 @@ function racketmanager_match( $match_id, $args = array() ) {
 	 * @param array      $args additional arguments as associative array (optional).
 	 * @category template-tags
 	 */
-function racketmanager_teams( $league_id, $args = array() ) {
+function racketmanager_league_teams( $league_id, $args = array() ) {
 	global $league;
 
 	$defaults          = array(

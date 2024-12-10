@@ -38,10 +38,11 @@ namespace Racketmanager;
 							?>
 						</h4>
 						<?php
-						racketmanager_standings(
+						racketmanager_league_standings(
 							$league->id,
 							array(
-								'season' => $event->current_season['name'],
+								'season'   => $event->current_season['name'],
+								'template' => '',
 							)
 						);
 						?>

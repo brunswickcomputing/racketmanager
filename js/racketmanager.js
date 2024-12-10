@@ -425,7 +425,7 @@ function PartnerLookup() {
 }
 function MatchDayChange() {
 	/* Friendly URL rewrite */
-	jQuery('#racketmanager_match_day_selection').on('change', function () {
+	jQuery('#racketmanager_match_day_selection').on('change', function (e) {
 		let league = jQuery('#league_id').val();
 		league = league.replace(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
 		league = league.replace(/\s/g, "-"); // Replace space with a '-' symbol */
@@ -433,12 +433,13 @@ function MatchDayChange() {
 		let matchday = jQuery('#match_day').val();
 		if (matchday == -1) matchday = 0;
 		let leagueLink = '/league/' + league.toLowerCase() + '/' + season + '/matches/day' + matchday + '/'
-		Racketmanager.leagueTabDataLink(event, league, season, leagueLink, matchday, 'matches');
+		let leagueId = jQuery('#leagueId').val();
+		Racketmanager.tabDataLink(e, 'league', leagueId, season, leagueLink, matchday, 'matches');
 		return false;  // Prevent default button behaviour
 	});
 }
 function TournamentDateChange() {
-	jQuery('#tournament-match-date-form #match_date').on('change', function () {
+	jQuery('#tournament-match-date-form #match_date').on('change', function (e) {
 		let match_date = jQuery(`#match_date`).val().replace(/[^A-Za-z0-9 -]/g, ''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
 		let tournament = jQuery(`#tournament_id`).val();
 		tournament = tournament.replace(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
@@ -448,7 +449,7 @@ function TournamentDateChange() {
 		let linkId = match_date;
 		let linkType = 'matches';
 		let tournamentId = jQuery('#tournamentId').val();
-		Racketmanager.tournamentTabDataLink(event, tournamentId, tournamentLink, linkId, linkType)
+		Racketmanager.tabDataLink(e, 'tournament', tournamentId, null, tournamentLink, linkId, linkType)
 		return false;  // Prevent default button behaviour
 	});
 }
@@ -1995,34 +1996,52 @@ Racketmanager.updateTournamentEvent = function (event, type) {
 	}
 	jQuery('#liEventDetails').removeClass('is-loading');
 };
-Racketmanager.competitionTabData = function (e, competitionId, competitionSeason, competitionName) {
+Racketmanager.tabData = function (e, target, id, season, name, competitionType) {
 	e.preventDefault();
-	jQuery('#competitionTabContent').addClass('is-loading');
+	let tabContent = '#' + target + 'TabContent';
+	jQuery(tabContent).addClass('is-loading');
 	let $target = e.target;
 	let tab = $target.getAttribute('aria-controls');
-	let newPath = '/' + competitionName +'/' + competitionSeason + '/';
+	let newPath = '';
+	if (target == 'tournament') {
+		newPath = '/tournament/' + name + '/';
+	} else if (target == 'event') {
+		newPath = '/' + competitionType + 's/' + name + '/' + season + '/';
+	} else if (target == 'competition') {
+		newPath = '/' + name + '/' + season + '/';
+	} else if (target == 'league') {
+		newPath = '/' + competitionType + '/' + name + '/' + season + '/';
+	}
 	if (newPath !== "") {
 		let tabDataRef = '#' + tab;
 		let url = new URL(window.location.href);
 		let newURL = url.protocol + '//' + url.hostname + newPath + tab + '/';
 		if (newURL !== url.toString()) {
 			jQuery(tabDataRef).html('');
-			let ajaxURL = ajax_var.url + '?tab=' + tab + '&competitionId=' + competitionId + '&action=racketmanager_get_competition_tab_data&season=' + competitionSeason + '&security=' + ajax_var.ajax_nonce;
 			jQuery(tabDataRef).load(
-				ajaxURL,
+				ajax_var.url,
+				{
+					"action": 'racketmanager_get_tab_data',
+					"tab": tab,
+					"id": id,
+					"season": season,
+					"security": ajax_var.ajax_nonce,
+					"target": target,
+				},
 				function () {
-					jQuery('#competitionTabContent').removeClass('is-loading');
+					jQuery(tabContent).removeClass('is-loading');
 					history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
 				}
 			);
 		} else {
-			jQuery('#competitionTabContent').removeClass('is-loading');
+			jQuery(tabContent).removeClass('is-loading');
 		}
 	}
 };
-Racketmanager.competitionTabDataLink = function (e, competitionId, competitionSeason, competitionLink = null, linkId = null, linkType = null) {
+Racketmanager.tabDataLink = function (e, target, id, season = null, link = null, linkId = null, linkType = null) {
 	e.preventDefault();
-	jQuery('#competitionTabContent').addClass('is-loading');
+	let tabContent = '#' + target + 'TabContent';
+	jQuery(tabContent).addClass('is-loading');
 	let tab = linkType;
 	let tabDataRef = '#' + tab;
 	let tabRef = tabDataRef + '-tab';
@@ -2034,172 +2053,22 @@ Racketmanager.competitionTabDataLink = function (e, competitionId, competitionSe
 		jQuery(".tab-pane").removeClass("active show").addClass("fade");
 		jQuery(tabDataRef).removeClass("fade").addClass("active").show();
 	}
-	let linkKey = 'link_id';
 	let url = new URL(window.location.href);
-	let newURL = url.protocol + '//' + url.hostname + competitionLink;
+	let newURL = url.protocol + '//' + url.hostname + link;
 	jQuery(tabDataRef).html('');
-	let ajaxURL = ajax_var.url + '?tab=' + tab + '&competitionId=' + competitionId + '&season=' + competitionSeason + '&action=racketmanager_get_competition_tab_data&security=' + ajax_var.ajax_nonce + '&' + linkKey + '=' + linkId;
 	jQuery(tabDataRef).load(
-		ajaxURL,
+		ajax_var.url,
+		{
+			"action": 'racketmanager_get_tab_data',
+			"tab": tab,
+			"id": id,
+			"season": season,
+			"security": ajax_var.ajax_nonce,
+			"link_id": linkId,
+			"target": target,
+		},
 		function () {
-			jQuery('#competitionTabContent').removeClass('is-loading');
-			history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
-		}
-	);
-};
-Racketmanager.eventTabData = function (e, eventId, eventSeason, eventName, competitionType) {
-	e.preventDefault();
-	jQuery('#eventTabContent').addClass('is-loading');
-	let $target = e.target;
-	let tab = $target.getAttribute('aria-controls');
-	let newPath = '/' + competitionType + 's/' + eventName + '/' + eventSeason + '/';
-	if (newPath !== "") {
-		let tabDataRef = '#' + tab;
-		let url = new URL(window.location.href);
-		let newURL = url.protocol + '//' + url.hostname + newPath + tab + '/';
-		if (newURL !== url.toString()) {
-			jQuery(tabDataRef).html('');
-			let ajaxURL = ajax_var.url + '?tab=' + tab + '&eventId=' + eventId + '&action=racketmanager_get_event_tab_data&season=' + eventSeason + '&security=' + ajax_var.ajax_nonce;
-			jQuery(tabDataRef).load(
-				ajaxURL,
-				function () {
-					jQuery('#eventTabContent').removeClass('is-loading');
-					history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
-				}
-			);
-		} else {
-			jQuery('#eventTabContent').removeClass('is-loading');
-		}
-	}
-};
-Racketmanager.eventTabDataLink = function (e, eventId, eventSeason, eventLink = null, linkId = null, linkType = null) {
-	e.preventDefault();
-	jQuery('#eventTabContent').addClass('is-loading');
-	let tab = linkType;
-	let tabDataRef = '#' + tab;
-	let tabRef = tabDataRef + '-tab';
-	let activeTab = jQuery(".tab-pane.active");
-	let activeTabName = activeTab[0].id;
-	if (activeTabName !== tab) {
-		jQuery("#myTab li > button").removeClass("active");
-		jQuery(tabRef).addClass("active");
-		jQuery(".tab-pane").removeClass("active show").addClass("fade");
-		jQuery(tabDataRef).removeClass("fade").addClass("active").show();
-	}
-	let linkKey = 'link_id';
-	let url = new URL(window.location.href);
-	let newURL = url.protocol + '//' + url.hostname + eventLink;
-	jQuery(tabDataRef).html('');
-	let ajaxURL = ajax_var.url + '?tab=' + tab + '&eventId=' + eventId + '&season=' + eventSeason + '&action=racketmanager_get_event_tab_data&security=' + ajax_var.ajax_nonce + '&' + linkKey + '=' + linkId;
-	jQuery(tabDataRef).load(
-		ajaxURL,
-		function () {
-			jQuery('#eventTabContent').removeClass('is-loading');
-			history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
-		}
-	);
-};
-Racketmanager.leagueTabData = function (e, leagueId, leagueSeason, leagueName, competitionType) {
-	e.preventDefault();
-	jQuery('#leagueTabContent').addClass('is-loading');
-	let $target = e.target;
-	let tab = $target.getAttribute('aria-controls');
-	let newPath = '/' + competitionType + '/' + leagueName + '/' + leagueSeason + '/';
-	if (newPath !== "") {
-		let tabDataRef = '#' + tab;
-		let url = new URL(window.location.href);
-		let newURL = url.protocol + '//' + url.hostname + newPath + tab + '/';
-		if (newURL !== url.toString()) {
-			jQuery(tabDataRef).html('');
-			let ajaxURL = ajax_var.url + '?tab=' + tab + '&leagueId=' + leagueId + '&action=racketmanager_get_league_tab_data&season=' + leagueSeason + '&security=' + ajax_var.ajax_nonce;
-			jQuery(tabDataRef).load(
-				ajaxURL,
-				function () {
-					jQuery('#leagueTabContent').removeClass('is-loading');
-					history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
-				}
-			);
-		} else {
-			jQuery('#leagueTabContent').removeClass('is-loading');
-		}
-	}
-};
-Racketmanager.leagueTabDataLink = function (e, leagueId, leagueSeason, leagueLink = null, linkId = null, linkType = null) {
-	e.preventDefault();
-	jQuery('#leagueTabContent').addClass('is-loading');
-	let tab = linkType;
-	let tabDataRef = '#' + tab;
-	let tabRef = tabDataRef + '-tab';
-	let activeTab = jQuery(".tab-pane.active");
-	let activeTabName = activeTab[0].id;
-	if (activeTabName !== tab) {
-		jQuery("#myTab li > button").removeClass("active");
-		jQuery(tabRef).addClass("active");
-		jQuery(".tab-pane").removeClass("active show").addClass("fade");
-		jQuery(tabDataRef).removeClass("fade").addClass("active").show();
-	}
-	let linkKey = 'link_id';
-	let url = new URL(window.location.href);
-	let newURL = url.protocol + '//' + url.hostname + leagueLink;
-	jQuery(tabDataRef).html('');
-	let ajaxURL = ajax_var.url + '?tab=' + tab + '&leagueId=' + leagueId + '&season=' + leagueSeason + '&action=racketmanager_get_league_tab_data&security=' + ajax_var.ajax_nonce + '&' + linkKey + '=' + linkId;
-	jQuery(tabDataRef).load(
-		ajaxURL,
-		function () {
-			jQuery('#leagueTabContent').removeClass('is-loading');
-			history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
-		}
-	);
-};
-
-Racketmanager.tournamentTabData = function (e, tournamentId, tournamentName) {
-	e.preventDefault();
-	jQuery('#tournamentTabContent').addClass('is-loading');
-	let $target = e.target;
-	let tab = $target.getAttribute('aria-controls');
-	let newPath = '/tournament/' + tournamentName + '/';
-	if (newPath !== "") {
-		let tabDataRef = '#' + tab;
-		let url = new URL(window.location.href);
-		let newURL = url.protocol + '//' + url.hostname + newPath + tab + '/';
-		if (newURL !== url.toString()) {
-			jQuery(tabDataRef).html('');
-			let ajaxURL = ajax_var.url + '?tab=' + tab + '&tournamentId=' + tournamentId + '&action=racketmanager_get_tournament_tab_data&security=' + ajax_var.ajax_nonce;
-			jQuery(tabDataRef).load(
-				ajaxURL,
-				function () {
-					jQuery('#tournamentTabContent').removeClass('is-loading');
-					history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
-				}
-			);
-		} else {
-			jQuery('#tournamentTabContent').removeClass('is-loading');
-		}
-	}
-};
-Racketmanager.tournamentTabDataLink = function (e, tournamentId, tournamentLink = null, linkId = null, linkType = null) {
-	e.preventDefault();
-	jQuery('#tournamentTabContent').addClass('is-loading');
-	let tab = linkType;
-	let tabDataRef = '#' + tab;
-	let tabRef = tabDataRef + '-tab';
-	let activeTab = jQuery(".tab-pane.active");
-	let activeTabName = activeTab[0].id;
-	if (activeTabName !== tab) {
-		jQuery("#myTab li > button").removeClass("active");
-		jQuery(tabRef).addClass("active");
-		jQuery(".tab-pane").removeClass("active show").addClass("fade");
-		jQuery(tabDataRef).removeClass("fade").addClass("active").show();
-	}
-	let linkKey = 'link_id';
-	let url = new URL(window.location.href);
-	let newURL = url.protocol + '//' + url.hostname + tournamentLink;
-	jQuery(tabDataRef).html('');
-	let ajaxURL = ajax_var.url + '?tab=' + tab + '&tournamentId=' + tournamentId + '&action=racketmanager_get_tournament_tab_data&security=' + ajax_var.ajax_nonce + '&' + linkKey + '=' + linkId;
-	jQuery(tabDataRef).load(
-		ajaxURL,
-		function () {
-			jQuery('#tournamentTabContent').removeClass('is-loading');
+			jQuery(tabContent).removeClass('is-loading');
 			history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
 		}
 	);

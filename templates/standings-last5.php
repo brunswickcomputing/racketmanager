@@ -153,7 +153,7 @@ namespace Racketmanager;
 										}
 										$team_link = '/' . $league->event->competition->type . '/' . seo_url( $league->title ) . '/' . $season_link . '/team/' . seo_url( $team->title ) . '/';
 										?>
-										<a href="<?php echo esc_attr( $team_link ); ?>" onclick="Racketmanager.leagueTabDataLink(event,<?php echo esc_attr( $league->id ); ?>,<?php echo esc_attr( $league->current_season['name'] ); ?>,'<?php echo esc_attr( $team_link ); ?>',<?php echo esc_attr( $team->id ); ?>,'teams')">
+										<a href="<?php echo esc_attr( $team_link ); ?>" onclick="Racketmanager.tabDataLink(event,'league',<?php echo esc_attr( $league->id ); ?>,<?php echo esc_attr( $league->current_season['name'] ); ?>,'<?php echo esc_attr( $team_link ); ?>',<?php echo esc_attr( $team->id ); ?>,'teams')">
 											<?php the_team_name(); ?>
 										</a>
 										<?php

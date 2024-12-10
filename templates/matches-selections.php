@@ -17,6 +17,7 @@ if ( ( $league->show_match_day_selection ) && ! $league->event->competition->is_
 				<input type="hidden" name="page_id" value="<?php the_ID(); ?>" />
 				<input type="hidden" name="season" value="<?php echo esc_attr( $season ); ?>" />
 				<input type="hidden" name="league_id" value="<?php echo esc_attr( $league->title ); ?>" />
+				<input type="hidden" id="leagueId" value="<?php echo esc_attr( $league->id ); ?>" />
 
 				<?php
 				if ( $league->show_match_day_selection ) {

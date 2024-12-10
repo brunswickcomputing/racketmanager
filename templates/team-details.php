@@ -61,7 +61,7 @@ if ( isset( $object->competition ) ) {
 					<div class="module__banner">
 						<h3 class="module__title"><?php esc_html_e( 'Standings', 'racketmanager' ); ?></h3>
 						<div class="module__aside">
-							<a role="button" class="btn btn--link" href="<?php echo esc_attr( $standings_link ); ?>" onclick="Racketmanager.leagueTabDataLink(event,<?php echo esc_attr( $object->id ); ?>,<?php echo esc_attr( $object->current_season['name'] ); ?>,'<?php echo esc_attr( $standings_link ); ?>','','standings')"data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'View standings', 'racketmanager' ); ?>">
+							<a role="button" class="btn btn--link" href="<?php echo esc_attr( $standings_link ); ?>" onclick="Racketmanager.tabDataLink(event,'league',<?php echo esc_attr( $object->id ); ?>,<?php echo esc_attr( $object->current_season['name'] ); ?>,'<?php echo esc_attr( $standings_link ); ?>','','standings')"data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'View standings', 'racketmanager' ); ?>">
 								<i class="racketmanager-svg-icon">
 									<?php racketmanager_the_svg( 'icon-table' ); ?>
 								</i>

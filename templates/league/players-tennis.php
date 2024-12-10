@@ -92,14 +92,14 @@ if ( ! empty( $league->player ) ) {
 											<div class="flex-container">
 												<div class="flex-item flex-item--grow">
 													<p class="media__title">
-														<a href="/<?php echo esc_attr( $player_link ); ?>/" class="nav--link" onclick="Racketmanager.leagueTabDataLink(event,<?php echo esc_attr( $league->id ); ?>,<?php echo esc_attr( $league->current_season['name'] ); ?>,'<?php echo esc_attr( $player_link ); ?>',<?php echo esc_attr( $player->id ); ?>,'players')">
+														<a href="/<?php echo esc_attr( $player_link ); ?>/" class="nav--link" onclick="Racketmanager.tabDataLink(event,'league',<?php echo esc_attr( $league->id ); ?>,<?php echo esc_attr( $league->current_season['name'] ); ?>,'<?php echo esc_attr( $player_link ); ?>',<?php echo esc_attr( $player->id ); ?>,'players')">
 															<span class="nav-link__value">
 																<?php echo esc_html( $player->fullname ); ?>
 															</span>
 														</a>
 													</p>
 													<p class="media__subheading">
-														<a href="<?php echo esc_attr( $team_link ); ?>" class="nav--link" onclick="Racketmanager.leagueTabDataLink(event,<?php echo esc_attr( $league->id ); ?>,<?php echo esc_attr( $league->current_season['name'] ); ?>,'<?php echo esc_attr( $team_link ); ?>',<?php echo esc_attr( $player->team->id ); ?>,'teams')">
+														<a href="<?php echo esc_attr( $team_link ); ?>" class="nav--link" onclick="Racketmanager.tabDataLink(event,'league',<?php echo esc_attr( $league->id ); ?>,<?php echo esc_attr( $league->current_season['name'] ); ?>,'<?php echo esc_attr( $team_link ); ?>',<?php echo esc_attr( $player->team->id ); ?>,'teams')">
 															<span class="nav-link__value">
 																<?php echo esc_html( $player->team->title ); ?>
 															</span>

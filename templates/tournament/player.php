@@ -100,6 +100,7 @@ require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
 								</div>
 								<?php
 								foreach ( $tournament_player->teams as $entry ) {
+									$event_link = '/tournament/' . seo_url( $tournament->name ) . '/event/' . seo_url( $entry->event ) . '/';
 									?>
 									<div class="row mb-2 row-list">
 										<div class="col-1" name="<?php esc_html_e( 'Favourite', 'racketmanager' ); ?>">
@@ -112,16 +113,17 @@ require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
 											?>
 										</div>
 										<div class="col-6" name="<?php esc_html_e( 'Event', 'racketmanager' ); ?>">
-											<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/event/<?php echo esc_html( seo_url( $entry->event ) ); ?>">
+											<a href="<?php echo esc_attr( $event_link ); ?>" onclick="Racketmanager.tabDataLink(event,'tournament',<?php echo esc_attr( $tournament->id ); ?>,'','<?php echo esc_attr( $event_link ); ?>',<?php echo esc_attr( $entry->event_id ); ?>,'events')">
 												<?php echo esc_html( $entry->event ); ?>
 											</a>
 										</div>
 										<div class="col-5" name="<?php esc_html_e( 'Partner', 'racketmanager' ); ?>">
 											<?php
 											if ( ! empty( $entry->partner ) ) {
+												$player_link = '/tournament/' . seo_url( $tournament->name ) . '/players/' . seo_url( $entry->partner->display_name ) . '/';
 												?>
-												<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/players/<?php echo esc_html( seo_url( $entry->partner ) ); ?>">
-													<?php echo esc_html( wp_unslash( $entry->partner ) ); ?>
+												<a href="<?php echo esc_attr( $player_link ); ?>" onclick="Racketmanager.tabDataLink(event,'tournament',<?php echo esc_attr( $tournament->id ); ?>,'','<?php echo esc_attr( $player_link ); ?>','<?php echo esc_attr( $entry->partner->id ); ?>','players')">
+													<?php echo esc_html( wp_unslash( $entry->partner->display_name ) ); ?>
 												</a>
 												<?php
 											}

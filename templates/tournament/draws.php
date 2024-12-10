@@ -40,7 +40,7 @@ if ( empty( $draw ) ) {
 									?>
 								</div>
 								<div class="col-8" name="<?php esc_html_e( 'Draw', 'racketmanager' ); ?>">
-									<a href="<?php echo esc_url( $url_link ); ?>" onclick="Racketmanager.tournamentTabDataLink(event,<?php echo esc_attr( $tournament->id ); ?>,'<?php echo esc_attr( $url_link ); ?>',<?php echo esc_attr( $event->id ); ?>,'draws')">
+									<a href="<?php echo esc_url( $url_link ); ?>" onclick="Racketmanager.tabDataLink(event,'tournament',<?php echo esc_attr( $tournament->id ); ?>,'','<?php echo esc_attr( $url_link ); ?>',<?php echo esc_attr( $event->id ); ?>,'draws')">
 										<?php echo esc_html( $event->name ); ?>
 									</a>
 								</div>

@@ -42,7 +42,7 @@ if ( empty( $event ) ) {
 								?>
 							</div>
 							<div class="col-8" name="<?php esc_html_e( 'Event', 'racketmanager' ); ?>">
-								<a href="<?php echo esc_url( $url_link ); ?>" onclick="Racketmanager.tournamentTabDataLink(event,<?php echo esc_attr( $tournament->id ); ?>,'<?php echo esc_attr( $url_link ); ?>',<?php echo esc_attr( $event->id ); ?>,'events')">
+								<a href="<?php echo esc_url( $url_link ); ?>" onclick="Racketmanager.tabDataLink(event,'tournament',<?php echo esc_attr( $tournament->id ); ?>,'','<?php echo esc_attr( $url_link ); ?>',<?php echo esc_attr( $event->id ); ?>,'events')">
 									<?php echo esc_html( $event->name ); ?>
 								</a>
 							</div>
@@ -80,7 +80,7 @@ if ( empty( $event ) ) {
 				<dl>
 					<dt><?php esc_html_e( 'Draw', 'racketmanager' ); ?></dt>
 					<dd>
-						<a href="<?php echo esc_html( $draw_link ); ?>" onclick="Racketmanager.tournamentTabDataLink(event,<?php echo esc_attr( $tournament->id ); ?>,'<?php echo esc_attr( $draw_link ); ?>',<?php echo esc_attr( $event->id ); ?>,'draws')">
+						<a href="<?php echo esc_html( $draw_link ); ?>" onclick="Racketmanager.tabDataLink(event,'tournament',<?php echo esc_attr( $tournament->id ); ?>,'','<?php echo esc_attr( $draw_link ); ?>',<?php echo esc_attr( $event->id ); ?>,'draws')">
 							<?php echo esc_html( $event->name ); ?>
 						</a>
 					</dd>
@@ -127,12 +127,13 @@ if ( empty( $event ) ) {
 							</div>
 							<div class="col-8" name="<?php esc_html_e( 'Player', 'racketmanager' ); ?>">
 								<?php
-								if ( ! empty( $entry->player ) ) {
-									foreach ( $entry->player as $player ) {
+								if ( ! empty( $entry->players ) ) {
+									foreach ( $entry->players as $player ) {
+										$player_link = '/tournament/' . seo_url( $tournament->name ) . '/players/' . seo_url( $player->display_name ) . '/';
 										?>
 										<div class="team-player">
-											<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/players/<?php echo esc_html( seo_url( $player ) ); ?>">
-												<?php echo esc_html( wp_unslash( $player ) ); ?>
+											<a href="<?php echo esc_attr( $player_link ); ?>" onclick="Racketmanager.tabDataLink(event,'tournament',<?php echo esc_attr( $tournament->id ); ?>,'','<?php echo esc_attr( $player_link ); ?>','<?php echo esc_attr( $player->id ); ?>','players')">
+												<?php echo esc_html( wp_unslash( $player->display_name ) ); ?>
 											</a>
 										</div>
 										<?php

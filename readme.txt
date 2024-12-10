@@ -47,6 +47,15 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.28.0 =
+* BUGFIX: make standings work in API
+* BUGFIX: add missing permission_callback
+* UPDATE: remove cors set
+* UPDATE: use modal for partner in doubles event
+* UPDATE: adjust tiebreak points display
+* UPDATE: fetch tab data without page refresh
+* UPDATE: remove postponed option
+
 = 8.27.0 =
 * BUGFIX: remove extra '.' from select fields
 * UPDATE: use club_id in place of affiliatedclub

@@ -71,14 +71,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_nopriv_racketmanager_team_partner', array( &$this, 'logged_out_modal' ) );
 		add_action( 'wp_ajax_racketmanager_validate_partner', array( &$this, 'validate_partner' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_validate_partner', array( &$this, 'logged_out_modal' ) );
-		add_action( 'wp_ajax_racketmanager_get_competition_tab_data', array( &$this, 'competition_tab_data' ) );
-		add_action( 'wp_ajax_nopriv_racketmanager_get_competition_tab_data', array( &$this, 'competition_tab_data' ) );
-		add_action( 'wp_ajax_racketmanager_get_event_tab_data', array( &$this, 'event_tab_data' ) );
-		add_action( 'wp_ajax_nopriv_racketmanager_get_event_tab_data', array( &$this, 'event_tab_data' ) );
-		add_action( 'wp_ajax_racketmanager_get_league_tab_data', array( &$this, 'league_tab_data' ) );
-		add_action( 'wp_ajax_nopriv_racketmanager_get_league_tab_data', array( &$this, 'league_tab_data' ) );
-		add_action( 'wp_ajax_racketmanager_get_tournament_tab_data', array( &$this, 'tournament_tab_data' ) );
-		add_action( 'wp_ajax_nopriv_racketmanager_get_tournament_tab_data', array( &$this, 'tournament_tab_data' ) );
+		add_action( 'wp_ajax_racketmanager_get_tab_data', array( &$this, 'tab_data' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_get_tab_data', array( &$this, 'tab_data' ) );
 	}
 	/**
 	 * Add item as favourite
@@ -2339,15 +2333,15 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		}
 	}
 	/**
-	 * Retrieve competition data function
+	 * Retrieve tab data function
 	 *
 	 * @return void
 	 */
-	public function competition_tab_data() {
+	public function tab_data() {
 		$valid   = true;
 		$message = null;
-		if ( isset( $_GET['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['security'] ) ), 'ajax-nonce' ) ) {
+		if ( isset( $_POST['security'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
 				$valid   = false;
 				$message = __( 'Security token invalid', 'racketmanager' );
 			}
@@ -2356,216 +2350,57 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$message = __( 'No security token found in request', 'racketmanager' );
 		}
 		if ( $valid ) {
-			$competition_id = isset( $_GET['competitionId'] ) ? intval( $_GET['competitionId'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$competition    = get_competition( $competition_id );
-			if ( $competition ) {
-				$args   = array();
-				$season = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-				if ( ! $season ) {
-					$season = $competition->current_season['name'];
+			$target_ref = isset( $_POST['target'] ) ? sanitize_text_field( wp_unslash( $_POST['target'] ) ) : null;
+			if ( $target_ref ) {
+				$target_id = isset( $_POST['id'] ) ? intval( $_POST['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				switch ( $target_ref ) {
+					case 'competition':
+						$target = get_competition( $target_id );
+						break;
+					case 'event':
+						$target = get_event( $target_id );
+						break;
+					case 'league':
+						$target = get_league( $target_id );
+						break;
+					case 'tournament':
+						$target = get_tournament( $target_id );
+						break;
+					default:
+						$valid   = false;
+						$message = __( 'Invalid target', 'racketmanager' );
 				}
-				$args['season'] = $season;
-				$tab            = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : null;
-				if ( $tab ) {
-					$link_id = isset( $_GET['link_id'] ) ? intval( $_GET['link_id'] ) : null;
-					if ( $link_id ) {
-						$args[ $tab ] = $link_id;
-					}
-					$function_name = 'Racketmanager\racketmanager_competition_' . $tab;
-					if ( function_exists( $function_name ) ) {
-						ob_start();
-						$function_name( $competition->id, $args );
-						$output = ob_get_contents();
-						ob_end_clean();
+				if ( $valid ) {
+					if ( $target ) {
+						$tab = isset( $_POST['tab'] ) ? sanitize_text_field( wp_unslash( $_POST['tab'] ) ) : null;
+						if ( $tab ) {
+							$args    = array();
+							$link_id = isset( $_POST['link_id'] ) ? sanitize_text_field( wp_unslash( $_POST['link_id'] ) ) : null;
+							if ( $link_id ) {
+								$args[ $tab ] = $link_id;
+							}
+							$function_name = 'Racketmanager\racketmanager_' . $target_ref . '_' . $tab;
+							if ( function_exists( $function_name ) ) {
+								ob_start();
+								$function_name( $target->id, $args );
+								$output = ob_get_contents();
+								ob_end_clean();
+							} else {
+								$valid   = false;
+								$message = __( 'Tab not valid', 'racketmanager' );
+							}
+						} else {
+							$valid   = false;
+							$message = __( 'Tab not found', 'racketmanager' );
+						}
 					} else {
 						$valid   = false;
-						$message = __( 'Tab not valid', 'racketmanager' );
+						$message = __( 'Target not found', 'racketmanager' );
 					}
-				} else {
-					$valid   = false;
-					$message = __( 'Tab not found', 'racketmanager' );
 				}
 			} else {
 				$valid   = false;
-				$message = __( 'Competition not found', 'racketmanager' );
-			}
-		}
-		if ( $valid ) {
-			echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		} else {
-			echo esc_html( $message );
-		}
-		wp_die();
-	}
-	/**
-	 * Retrieve event tab data function
-	 *
-	 * @return void
-	 */
-	public function event_tab_data() {
-		$valid   = true;
-		$message = null;
-		if ( isset( $_GET['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['security'] ) ), 'ajax-nonce' ) ) {
-				$valid   = false;
-				$message = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$valid   = false;
-			$message = __( 'No security token found in request', 'racketmanager' );
-		}
-		if ( $valid ) {
-			$event_id = isset( $_GET['eventId'] ) ? intval( $_GET['eventId'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$event    = get_event( $event_id );
-			if ( $event ) {
-				$args   = array();
-				$season = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-				if ( ! $season ) {
-					$season = $event->current_season['name'];
-				}
-				$args['season'] = $season;
-				$tab            = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : null;
-				if ( $tab ) {
-					$link_id = isset( $_GET['link_id'] ) ? intval( $_GET['link_id'] ) : null;
-					if ( $link_id ) {
-						$args[ $tab ] = $link_id;
-					}
-					$function_name = 'Racketmanager\racketmanager_event_' . $tab;
-					if ( function_exists( $function_name ) ) {
-						ob_start();
-						$function_name( $event->id, $args );
-						$output = ob_get_contents();
-						ob_end_clean();
-					} else {
-						$valid   = false;
-						$message = __( 'Tab not valid', 'racketmanager' );
-					}
-				} else {
-					$valid   = false;
-					$message = __( 'Tab not found', 'racketmanager' );
-				}
-			} else {
-				$valid   = false;
-				$message = __( 'Event not found', 'racketmanager' );
-			}
-		}
-		if ( $valid ) {
-			echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		} else {
-			echo esc_html( $message );
-		}
-		wp_die();
-	}
-	/**
-	 * Retrieve league tab data function
-	 *
-	 * @return void
-	 */
-	public function league_tab_data() {
-		$valid   = true;
-		$message = null;
-		if ( isset( $_GET['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['security'] ) ), 'ajax-nonce' ) ) {
-				$valid   = false;
-				$message = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$valid   = false;
-			$message = __( 'No security token found in request', 'racketmanager' );
-		}
-		if ( $valid ) {
-			$league_id = isset( $_GET['leagueId'] ) ? sanitize_text_field( wp_unslash( $_GET['leagueId'] ) ) : 0;
-			if ( ! is_numeric( $league_id ) ) {
-				$league_id = un_seo_url( $league_id );
-			}
-			$league = get_league( $league_id );
-			if ( $league ) {
-				$args   = array();
-				$season = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-				if ( ! $season ) {
-					$season = $league->current_season['name'];
-				}
-				$args['season'] = $season;
-				$tab            = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : null;
-				if ( $tab ) {
-					$link_id = isset( $_GET['link_id'] ) ? intval( $_GET['link_id'] ) : null;
-					if ( $link_id ) {
-						$args[ $tab ] = $link_id;
-					}
-					if ( 'standings' === $tab ) {
-						$args['template'] = 'last5';
-					}
-					$function_name = 'Racketmanager\racketmanager_' . $tab;
-					if ( function_exists( $function_name ) ) {
-						ob_start();
-						$function_name( $league->id, $args );
-						$output = ob_get_contents();
-						ob_end_clean();
-					} else {
-						$valid   = false;
-						$message = __( 'Tab not valid', 'racketmanager' );
-					}
-				} else {
-					$valid   = false;
-					$message = __( 'Tab not found', 'racketmanager' );
-				}
-			} else {
-				$valid   = false;
-				$message = __( 'League not found', 'racketmanager' );
-			}
-		}
-		if ( $valid ) {
-			echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		} else {
-			echo esc_html( $message );
-		}
-		wp_die();
-	}
-	/**
-	 * Retrieve tournament tab data function
-	 *
-	 * @return void
-	 */
-	public function tournament_tab_data() {
-		$valid   = true;
-		$message = null;
-		if ( isset( $_GET['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['security'] ) ), 'ajax-nonce' ) ) {
-				$valid   = false;
-				$message = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$valid   = false;
-			$message = __( 'No security token found in request', 'racketmanager' );
-		}
-		if ( $valid ) {
-			$tournament_id = isset( $_GET['tournamentId'] ) ? intval( $_GET['tournamentId'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$tournament    = get_tournament( $tournament_id );
-			if ( $tournament ) {
-				$tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : null;
-				if ( $tab ) {
-					$args    = array();
-					$link_id = isset( $_GET['link_id'] ) ? sanitize_text_field( wp_unslash( $_GET['link_id'] ) ) : null;
-					if ( $link_id ) {
-						$args[ $tab ] = $link_id;
-					}
-					$function_name = 'Racketmanager\racketmanager_tournament_' . $tab;
-					if ( function_exists( $function_name ) ) {
-						ob_start();
-						$function_name( $tournament->id, $args );
-						$output = ob_get_contents();
-						ob_end_clean();
-					} else {
-						$valid   = false;
-						$message = __( 'Tab not valid', 'racketmanager' );
-					}
-				} else {
-					$valid   = false;
-					$message = __( 'Tab not found', 'racketmanager' );
-				}
-			} else {
-				$valid   = false;
-				$message = __( 'Competition not found', 'racketmanager' );
+				$message = __( 'Target ref not found', 'racketmanager' );
 			}
 		}
 		if ( $valid ) {

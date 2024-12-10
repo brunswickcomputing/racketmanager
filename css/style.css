@@ -2800,7 +2800,6 @@ ul.match-points {
 }
 
 .match-points__cell {
-	line-height: 1;
 	padding: 0;
 	position: relative;
 	text-align: center;
@@ -4583,14 +4582,17 @@ p.media__subheading {
 }
 .player-row__tie-break {
 	position: absolute;
-	left: 1rem;
+	left: 0.75rem;
 	top: 0px;
 	letter-spacing: -0.2em;
 	font-size: 0.625rem;
 	line-height: 0.75rem;
 }
-
-.player-row__team {
+@media (min-width: 768px) {
+	.player-row__tie-break {
+		left: 1rem;
+	}
+}.player-row__team {
 	padding: 0 1rem 0 0;
 	white-space: nowrap;
 	display: flex;

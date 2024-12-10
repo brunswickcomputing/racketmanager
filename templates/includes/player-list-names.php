@@ -29,11 +29,11 @@ namespace Racketmanager;
 								foreach ( $players as $player ) {
 									$url_link = $player_link . seo_url( $player->display_name ) . '/';
 									if ( ! empty( $tournament ) ) {
-										$onclick = 'onclick=Racketmanager.tournamentTabDataLink(event,' . $tournament->id . ",'" . $url_link . "'," . $player->id . ",'players')";
+										$onclick = "onclick=Racketmanager.tabDataLink(event,'tournament'," . $tournament->id . ",'','" . $url_link . "'," . $player->id . ",'players')";
 									} elseif ( ! empty( $competition ) ) {
-										$onclick = 'onclick=Racketmanager.competitionTabDataLink(event,' . $competition->id . ',' . $competition->current_season['name'] . ",'" . $url_link . "'," . $player->id . ",'players')";
+										$onclick = "onclick=Racketmanager.tabDataLink(event,'competition'," . $competition->id . ',' . $competition->current_season['name'] . ",'" . $url_link . "'," . $player->id . ",'players')";
 									} elseif ( ! empty( $event ) ) {
-										$onclick = 'onclick=Racketmanager.eventTabDataLink(event,' . $event->id . ',' . $event->current_season['name'] . ",'" . $url_link . "'," . $player->id . ",'players')";
+										$onclick = "onclick=Racketmanager.tabDataLink(event,'event'," . $event->id . ',' . $event->current_season['name'] . ",'" . $url_link . "'," . $player->id . ",'players')";
 									} else {
 										$onclick = null;
 									}

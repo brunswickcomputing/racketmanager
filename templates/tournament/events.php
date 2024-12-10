@@ -140,9 +140,9 @@ if ( empty( $event ) ) {
 								}
 								?>
 							</div>
-						<div class="col-3 team-rating">
-							<?php echo esc_html( $entry->rating ); ?>
-						</div>
+							<div class="col-3 team-rating">
+								<?php echo esc_html( $entry->rating ); ?>
+							</div>
 						</div>
 						<?php
 					}

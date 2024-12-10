@@ -162,17 +162,18 @@ if ( ! empty( $match->winner_id ) ) {
 									</div>
 									<?php
 								} else {
-									foreach ( $team->player as $team_player ) {
+									foreach ( $team->players as $team_player ) {
 										?>
 										<div class="match__row-title-value">
 											<?php
 											if ( ! empty( $tournament ) ) {
+												$player_link = '/tournament/' . seo_url( $tournament->name ) . '/players/' . seo_url( trim( $team_player->display_name ) ) . '/';
 												?>
-												<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/players/<?php echo esc_html( seo_url( trim( $team_player ) ) ); ?>">
+												<a href="<?php echo esc_attr( $player_link ); ?>" onclick="Racketmanager.tabDataLink(event,'tournament',<?php echo esc_attr( $tournament->id ); ?>,'','<?php echo esc_attr( $player_link ); ?>',<?php echo esc_attr( $team_player->id ); ?>,'players')">
 												<?php
 											}
 											?>
-											<?php echo esc_html( trim( $team_player ) ); ?>
+											<?php echo esc_html( trim( $team_player->display_name ) ); ?>
 											<?php
 											if ( ! empty( $tournament ) ) {
 												?>

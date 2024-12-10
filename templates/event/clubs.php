@@ -36,7 +36,7 @@ if ( empty( $event_club ) ) {
 							?>
 							<div class="row mb-2 row-list">
 								<div class="col-6" name="<?php esc_html_e( 'Club', 'racketmanager' ); ?>">
-									<a href="/<?php echo esc_attr( $club_link ); ?>/" onclick="Racketmanager.eventTabDataLink(event,<?php echo esc_attr( $event->id ); ?>,<?php echo esc_attr( $event->current_season['name'] ); ?>,'<?php echo esc_attr( $club_link ); ?>',<?php echo esc_attr( $club->id ); ?>,'clubs')">
+									<a href="/<?php echo esc_attr( $club_link ); ?>/" onclick="Racketmanager.tabDataLink(event,'event',<?php echo esc_attr( $event->id ); ?>,<?php echo esc_attr( $event->current_season['name'] ); ?>,'<?php echo esc_attr( $club_link ); ?>',<?php echo esc_attr( $club->id ); ?>,'clubs')">
 										<?php echo esc_html( $club->name ); ?>
 									</a>
 								</div>
@@ -213,7 +213,7 @@ if ( empty( $event_club ) ) {
 												<div class="flex-container">
 													<div class="flex-item flex-item--grow">
 														<p class="media__title">
-															<a href="<?php echo esc_attr( $player_link ); ?>" onclick="Racketmanager.eventTabDataLink(event,<?php echo esc_attr( $event->id ); ?>,<?php echo esc_attr( $event->current_season['name'] ); ?>,'<?php echo esc_attr( $player_link ); ?>',<?php echo esc_attr( $player->id ); ?>,'players')" class="nav--link">
+															<a href="<?php echo esc_attr( $player_link ); ?>" onclick="Racketmanager.tabDataLink(event,'event',<?php echo esc_attr( $event->id ); ?>,<?php echo esc_attr( $event->current_season['name'] ); ?>,'<?php echo esc_attr( $player_link ); ?>',<?php echo esc_attr( $player->id ); ?>,'players')" class="nav--link">
 																<span class="nav-link__value">
 																	<?php echo esc_html( $player->fullname ); ?>
 																</span>

@@ -67,7 +67,7 @@ if ( empty( $event_team ) ) {
 								if ( ! $event->is_box ) {
 									?>
 									<div class="col-4" name="<?php esc_html_e( 'club', 'racketmanager' ); ?>">
-										<a href="/<?php echo esc_attr( $club_link ); ?>/club/<?php echo esc_attr( seo_url( $team->club->shortcode ) ); ?>/" onclick="Racketmanager.eventTabDataLink(event,<?php echo esc_attr( $event->id ); ?>,<?php echo esc_attr( $event->current_season['name'] ); ?>,'<?php echo esc_attr( $club_link ); ?>',<?php echo esc_attr( $team->club->id ); ?>,'clubs')">
+										<a href="/<?php echo esc_attr( $club_link ); ?>/club/<?php echo esc_attr( seo_url( $team->club->shortcode ) ); ?>/" onclick="Racketmanager.tabDataLink(event,'event',<?php echo esc_attr( $event->id ); ?>,<?php echo esc_attr( $event->current_season['name'] ); ?>,'<?php echo esc_attr( $club_link ); ?>',<?php echo esc_attr( $team->club->id ); ?>,'clubs')">
 											<?php echo esc_html( $team->club->shortcode ); ?>
 										</a>
 									</div>

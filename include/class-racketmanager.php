@@ -1705,6 +1705,12 @@ class RacketManager {
 			'index.php?pagename=tournaments%2Ftournament&tournament=$matches[1]&event=$matches[2]&tab=events',
 			'top'
 		);
+		// tournament - name - overview.
+		add_rewrite_rule(
+			'tournament/(.+?)/overview/?$',
+			'index.php?pagename=tournaments%2Ftournament&tournament=$matches[1]&tab=overview',
+			'top'
+		);
 		// tournament - name.
 		add_rewrite_rule(
 			'tournament/(.+?)/?$',

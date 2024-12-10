@@ -66,7 +66,7 @@ if ( empty( $event_team ) ) {
 									</a>
 								</div>
 								<div class="col-4" name="<?php esc_html_e( 'club', 'racketmanager' ); ?>">
-									<a href="<?php echo esc_attr( $club_link ); ?>" onclick="Racketmanager.competitionTabDataLink(event,<?php echo esc_attr( $competition->id ); ?>,<?php echo esc_attr( $competition->current_season['name'] ); ?>,'<?php echo esc_attr( $club_link ); ?>',<?php echo esc_attr( $team->club->id ); ?>,'clubs')">
+									<a href="<?php echo esc_attr( $club_link ); ?>" onclick="Racketmanager.tabDataLink(event,'competition',<?php echo esc_attr( $competition->id ); ?>,<?php echo esc_attr( $competition->current_season['name'] ); ?>,'<?php echo esc_attr( $club_link ); ?>',<?php echo esc_attr( $team->club->id ); ?>,'clubs')">
 										<?php echo esc_html( $team->club->shortcode ); ?>
 									</a>
 								</div>

@@ -27,11 +27,13 @@ if ( ! $winners ) {
 									<?php
 									if ( empty( $tournament ) ) {
 										$link_ref = '/' . seo_url( $winner->competition_type ) . 's/' . seo_url( $winner->event_name ) . '/' . seo_url( $winner->season ) . '/';
+										$onclick  = null;
 									} else {
 										$link_ref = '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $winner->event_name ) . '/';
+										$onclick  = "onclick=Racketmanager.tabDataLink(event,'tournament'," . $tournament->id . ",'','" . $link_ref . "'," . $winner->event_id . ",'draws')";
 									}
 									?>
-									<a href="<?php echo esc_html( $link_ref ); ?>">
+									<a href="<?php echo esc_html( $link_ref ); ?>" <?php echo esc_attr( $onclick ); ?>>
 										<span class="header">
 											<?php echo esc_html( $winner->league ); ?>
 										</span>

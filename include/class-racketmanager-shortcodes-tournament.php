@@ -357,12 +357,13 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			);
 			if ( $teams ) {
 				$team = $teams[0];
-				foreach ( $team->player as $team_player ) {
-					if ( $team_player !== $player->display_name ) {
+				foreach ( $team->players as $team_player ) {
+					if ( $team_player->display_name !== $player->display_name ) {
 						$team->partner = $team_player;
 					}
 				}
 				$team->event     = $event->name;
+				$team->event_id  = $event->id;
 				$player->teams[] = $team;
 			}
 		}

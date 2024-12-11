@@ -335,9 +335,12 @@ function checkToggle($target, event) {
 			} else {
 				jQuery('#liEventDetails').removeClass('is-loading');
 			}
+		} else {
+			jQuery('#liEventDetails').removeClass('is-loading');
 		}
+	} else {
+		jQuery('#liEventDetails').removeClass('is-loading');
 	}
-	jQuery('#liEventDetails').removeClass('is-loading');
 };
 function PartnerLookup() {
 	jQuery('.partner-name').autocomplete({

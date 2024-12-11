@@ -138,40 +138,52 @@ namespace Racketmanager;
 													</div>
 												</div>
 												<div class="mb-3" id="team-dtls-<?php echo esc_html( $event->id ); ?>">
-													<div class="form-floating mb-3 form-group match-time">
-														<select class="form-select" name="matchday[<?php echo esc_html( $event->id ); ?>]" id="matchday-<?php echo esc_html( $event->id ); ?>">
-															<?php
-															foreach ( $weekdays as $key => $weekday ) {
-																?>
-																<option value="<?php echo esc_html( $key ); ?>" <?php ( ! empty( $event->team->team_id ) ? selected( $key, $event->team->team_info->match_day ) : '' ); ?>><?php echo esc_html( $weekday ); ?></option>
-																<?php
-															}
-															?>
-														</select>
-														<label class="form-label" for="matchday-<?php echo esc_html( $event->id ); ?>"><?php esc_html_e( 'Match Day', 'racketmanager' ); ?></label>
-														<div id="matchday-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
-													</div>
-													<div class="form-floating mb-3 form-group match-time">
-														<input type="time" class="form-control" name="matchtime[<?php echo esc_html( $event->id ); ?>]" id="matchtime-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->match_time ) ? esc_html( $event->team->team_info->match_time ) : ''; ?>" />
-														<label class="form-label" for="matchtime-<?php echo esc_html( $event->id ); ?>"><?php esc_html_e( 'Match Time', 'racketmanager' ); ?></label>
-														<div id="matchtime-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
-													</div>
-													<div id="captain-dtls-<?php echo esc_html( $event->id ); ?>">
-														<div class="form-floating mb-3">
-															<input type="text" class="form-control teamcaptain" name="captain[<?php echo esc_html( $event->id ); ?>]" id="captain-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->captain ) ? esc_html( $event->team->team_info->captain ) : ''; ?>" />
-															<input type="hidden" name="captainId[<?php echo esc_html( $event->id ); ?>]" id="captainId-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->captain_id ) ? esc_html( $event->team->team_info->captain_id ) : ''; ?>" />
-															<label class="form-label" for="captain-<?php echo esc_html( $event->id ); ?>"><?php esc_html_e( 'Captain', 'racketmanager' ); ?></label>
-															<div id="captain-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
+													<div class="row">
+														<div class="col-md-6">
+															<legend><?php esc_html_e( 'Captain', 'racketmanager' ); ?></legend>
+															<div id="captain-dtls-<?php echo esc_html( $event->id ); ?>">
+																<div class="row">
+																	<div class="form-floating mb-3">
+																		<input type="text" class="form-control teamcaptain" name="captain[<?php echo esc_html( $event->id ); ?>]" id="captain-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->captain ) ? esc_html( $event->team->team_info->captain ) : ''; ?>" />
+																		<input type="hidden" name="captainId[<?php echo esc_html( $event->id ); ?>]" id="captainId-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->captain_id ) ? esc_html( $event->team->team_info->captain_id ) : ''; ?>" />
+																		<label class="form-label" for="captain-<?php echo esc_html( $event->id ); ?>"><?php esc_html_e( 'Name', 'racketmanager' ); ?></label>
+																		<div id="captain-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
+																	</div>
+																	<div class="col-md-6 form-floating mb-3">
+																		<input type="tel" class="form-control" name="contactno[<?php echo esc_html( $event->id ); ?>]" id="contactno-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->contactno ) ? esc_html( $event->team->team_info->contactno ) : ''; ?>" />
+																		<label class="form-label" for="contactno-<?php echo esc_html( $event->id ); ?>"><?php esc_html_e( 'Telephone', 'racketmanager' ); ?></label>
+																		<div id="contactno-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
+																	</div>
+																	<div class="col-md-6 form-floating mb-3">
+																		<input type="email" class="form-control" name="contactemail[<?php echo esc_html( $event->id ); ?>]" id="contactemail-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->contactemail ) ? esc_html( $event->team->team_info->contactemail ) : ''; ?>" />
+																		<label class="form-label" for="contactemail-<?php echo esc_html( $event->id ); ?>"><?php esc_html_e( 'Email', 'racketmanager' ); ?></label>
+																		<div id="contactemail-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
+																	</div>
+																</div>
+															</div>
 														</div>
-														<div class="form-floating mb-3">
-															<input type="tel" class="form-control" name="contactno[<?php echo esc_html( $event->id ); ?>]" id="contactno-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->contactno ) ? esc_html( $event->team->team_info->contactno ) : ''; ?>" />
-															<label class="form-label" for="contactno-<?php echo esc_html( $event->id ); ?>"><?php esc_html_e( 'Contact Number', 'racketmanager' ); ?></label>
-															<div id="contactno-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
-														</div>
-														<div class="form-floating mb-3">
-															<input type="email" class="form-control" name="contactemail[<?php echo esc_html( $event->id ); ?>]" id="contactemail-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->contactemail ) ? esc_html( $event->team->team_info->contactemail ) : ''; ?>" />
-															<label class="form-label" for="contactemail-<?php echo esc_html( $event->id ); ?>"><?php esc_html_e( 'Contact Email', 'racketmanager' ); ?></label>
-															<div id="contactemail-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
+														<div class="col-md-6">
+															<legend><?php esc_html_e( 'Fixtures', 'racketmanager' ); ?></legend>
+															<div class="row">
+																<div class="col-md-6 form-floating mb-3 form-group match-time">
+																	<select class="form-select" name="matchday[<?php echo esc_html( $event->id ); ?>]" id="matchday-<?php echo esc_html( $event->id ); ?>">
+																		<?php
+																		foreach ( $weekdays as $key => $weekday ) {
+																			?>
+																			<option value="<?php echo esc_html( $key ); ?>" <?php ( ! empty( $event->team->team_id ) ? selected( $key, $event->team->team_info->match_day ) : '' ); ?>><?php echo esc_html( $weekday ); ?></option>
+																			<?php
+																		}
+																		?>
+																	</select>
+																	<label class="form-label" for="matchday-<?php echo esc_html( $event->id ); ?>"><?php esc_html_e( 'Match Day', 'racketmanager' ); ?></label>
+																	<div id="matchday-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
+																</div>
+																<div class="col-md-6 form-floating mb-3 form-group match-time">
+																	<input type="time" class="form-control" name="matchtime[<?php echo esc_html( $event->id ); ?>]" id="matchtime-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->match_time ) ? esc_html( $event->team->team_info->match_time ) : ''; ?>" />
+																	<label class="form-label" for="matchtime-<?php echo esc_html( $event->id ); ?>"><?php esc_html_e( 'Match Time', 'racketmanager' ); ?></label>
+																	<div id="matchtime-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
+																</div>
+															</div>
 														</div>
 													</div>
 												</div>

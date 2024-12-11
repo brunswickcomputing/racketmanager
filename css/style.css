@@ -4103,7 +4103,7 @@ dt.list__label::after {
 }
 
 .individual-entry__panel,
-club-entry__panel {
+.club-entry__panel {
 	counter-increment: li;
 	list-style-type: none;
 	padding-bottom: 2rem;

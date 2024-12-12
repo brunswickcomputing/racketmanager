@@ -17,10 +17,26 @@
 namespace Racketmanager;
 
 $match_days = Racketmanager_Util::get_match_days();
+if ( $competition->is_open ) {
+	$changes_allowed = true;
+} else {
+	$changes_allowed = false;
+}
+if ( ! empty( $club->entry ) ) {
+	$entered    = true;
+	$form_title = __( 'Entry details', 'racketmanager' );
+} else {
+	$entered    = false;
+	$form_title = __( 'Enter online', 'racketmanager' );
+}
 ?>
 <div class="container">
 	<?php
-	$competition_season = $competition->current_season;
+	if ( empty( $competition->seasons[ $season ] ) ) {
+		$competition_season = null;
+	} else {
+		$competition_season = $competition->seasons[ $season ];
+	}
 	require RACKETMANAGER_PATH . 'templates/includes/competition-header.php';
 	?>
 	<form id="form-entry" action="" method="post">
@@ -34,7 +50,7 @@ $match_days = Racketmanager_Util::get_match_days();
 					<div class="entry-subhead">
 						<div class="hgroup">
 							<h3 class="hgroup__heading">
-								<?php esc_html_e( 'Enter online', 'racketmanager' ); ?>
+								<?php echo esc_html( $form_title ); ?>
 							</h3>
 							<?php
 							if ( ! empty( $competition->closing_date ) ) {
@@ -53,6 +69,33 @@ $match_days = Racketmanager_Util::get_match_days();
 							</a>
 						</div>
 					</div>
+					<?php
+					if ( ! $changes_allowed ) {
+						if ( $entered ) {
+							$alert_class = 'info';
+							$alert_msg[] = __( 'League entries are now closed.', 'racketmanager' );
+							$alert_msg[] = __( 'These are the latest entry details.', 'racketmanager' );
+						} else {
+							$alert_class = 'warning';
+							$alert_msg[] = __( 'League not currently open for entries', 'racketmanager' );
+						}
+						?>
+						<div class="alert_rm mt-3 alert--<?php echo esc_attr( $alert_class ); ?>">
+							<div class="alert__body">
+								<?php
+								foreach ( $alert_msg as $msg ) {
+									?>
+									<div class="alert__body-inner">
+										<?php echo esc_html( $msg ); ?>
+									</div>
+									<?php
+								}
+								?>
+							</div>
+						</div>
+						<?php
+					}
+					?>
 					<div class="club-entry__body">
 						<div id="club-details">
 							<div class="media">
@@ -93,7 +136,7 @@ $match_days = Racketmanager_Util::get_match_days();
 													<div class="list__item">
 														<dt class="list__label"><?php esc_html_e( 'Number available', 'racketmanager' ); ?></dt>
 														<dd class="list__value">
-															<input type="number" class="form-control" id="numCourtsAvailable" name="numCourtsAvailable" value="<?php echo empty( $competition->num_courts_available[ $club->id ] ) ? null : esc_html( $competition->num_courts_available[ $club->id ] ); ?>" />
+															<input type="number" class="form-control" id="numCourtsAvailable" name="numCourtsAvailable" value="<?php echo empty( $competition->num_courts_available[ $club->id ] ) ? null : esc_html( $competition->num_courts_available[ $club->id ] ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 															<div id="numCourtsAvailable-feedback" class="invalid-feedback"></div>
 														</dd>
 													</div>
@@ -121,7 +164,7 @@ $match_days = Racketmanager_Util::get_match_days();
 											$competition_events[] = $event->id;
 											?>
 											<div class="form-check form-check-lg eventList">
-												<input class="form-check-input eventId noModal" id="event-<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" type="checkbox" value=<?php echo esc_html( $event->id ); ?> aria-controls="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo esc_attr( $event->status ); ?>>
+												<input class="form-check-input eventId noModal" id="event-<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" type="checkbox" value=<?php echo esc_html( $event->id ); ?> aria-controls="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo esc_attr( $event->status ); ?> <?php echo $changes_allowed ? null : 'disabled'; ?>>
 												<label class="form-check-label" for="event-<?php echo esc_html( $event->id ); ?>">
 													<?php echo esc_html( $event->name ); ?>
 												</label>
@@ -138,7 +181,7 @@ $match_days = Racketmanager_Util::get_match_days();
 													$event_teams[] = $event_team->team_id;
 													?>
 													<div class="form-check form-check-lg teamEventList">
-														<input class="form-check-input teamEventId noModal" id="teamEvent-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" name="teamEvent[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" type="checkbox" value=<?php echo esc_html( $event_team->team_id ); ?> aria-controls="conditional-team-event-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" <?php echo esc_attr( $event_team->status ); ?>>
+														<input class="form-check-input teamEventId noModal" id="teamEvent-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" name="teamEvent[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" type="checkbox" value=<?php echo esc_html( $event_team->team_id ); ?> aria-controls="conditional-team-event-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" <?php echo esc_attr( $event_team->status ); ?> <?php echo $changes_allowed ? null : 'disabled'; ?>>
 
 														<label class="form-check-label" for="teamEvent-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>">
 															<?php echo esc_html( $event_team->name ); ?>
@@ -163,7 +206,7 @@ $match_days = Racketmanager_Util::get_match_days();
 																			$captain = '';
 																		}
 																		?>
-																		<input type="text" class="form-control teamcaptain" name="captain[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" id="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" value="<?php echo esc_html( $captain ); ?>" />
+																		<input type="text" class="form-control teamcaptain" name="captain[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" id="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" value="<?php echo esc_html( $captain ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 																		<label class="form-label" for="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>"><?php esc_html_e( 'Name', 'racketmanager' ); ?></label>
 																		<div id="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>-feedback" class="invalid-feedback"></div>
 																		<?php
@@ -185,7 +228,7 @@ $match_days = Racketmanager_Util::get_match_days();
 																			$contact_no = '';
 																		}
 																		?>
-																		<input type="tel" class="form-control" name="contactno[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" id="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" value="<?php echo esc_html( $contact_no ); ?>" />
+																		<input type="tel" class="form-control" name="contactno[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" id="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" value="<?php echo esc_html( $contact_no ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 																		<label class="form-label" for="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>"><?php esc_html_e( 'Telephone', 'racketmanager' ); ?></label>
 																		<div id="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>-feedback" class="invalid-feedback"></div>
 																	</div>
@@ -197,7 +240,7 @@ $match_days = Racketmanager_Util::get_match_days();
 																			$contact_email = '';
 																		}
 																		?>
-																		<input type="email" class="form-control" name="contactemail[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" id="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" value="<?php echo esc_html( $contact_email ); ?>" />
+																		<input type="email" class="form-control" name="contactemail[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" id="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" value="<?php echo esc_html( $contact_email ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 																		<label class="form-label" for="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>"><?php esc_html_e( 'Email', 'racketmanager' ); ?></label>
 																		<div id="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>-feedback" class="invalid-feedback"></div>
 																	</div>
@@ -207,7 +250,7 @@ $match_days = Racketmanager_Util::get_match_days();
 																<legend><?php esc_html_e( 'Fixtures', 'racketmanager' ); ?></legend>
 																<div class="row">
 																	<div class="col-md-6 form-floating mb-3">
-																		<select class="form-select" name="matchday[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" id="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" size="1">
+																		<select class="form-select" name="matchday[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" id="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" size="1" <?php echo $changes_allowed ? null : 'disabled'; ?>>
 																			<?php
 																			foreach ( $match_days as $key => $match_day ) {
 																				?>
@@ -233,7 +276,7 @@ $match_days = Racketmanager_Util::get_match_days();
 																			$match_time = '';
 																		}
 																		?>
-																		<input type="time" class="form-control" name="matchtime[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" id="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" value="<?php echo esc_html( $match_time ); ?>" />
+																		<input type="time" class="form-control" name="matchtime[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" id="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" value="<?php echo esc_html( $match_time ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 																		<label class="form-label" for="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>"><?php esc_html_e( 'Match Time', 'racketmanager' ); ?></label>
 																		<div id="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>-feedback" class="invalid-feedback"></div>
 																	</div>
@@ -259,7 +302,7 @@ $match_days = Racketmanager_Util::get_match_days();
 									</div>
 									<div class="col-12 col-md-8">
 										<div class="form-floating">
-											<textarea class="form-control" placeholder="<?php echo esc_attr_e( 'Additional information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails"></textarea>
+											<textarea class="form-control" placeholder="<?php echo esc_attr_e( 'Additional information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails" <?php echo $changes_allowed ? null : 'disabled'; ?>></textarea>
 											<label for="commentDetails"><?php esc_attr_e( 'Additional information', 'racketmanager' ); ?></label>
 											<div id="commentDetails-feedback" class="invalid-feedback"></div>
 										</div>
@@ -276,7 +319,7 @@ $match_days = Racketmanager_Util::get_match_days();
 									printf( __( 'I agree to abide by %s.', 'racketmanager' ), $rules_link ); //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 									?>
 								</label>
-								<input class="form-check-input switch" id="acceptance" name="acceptance" type="checkbox" role="switch" aria-checked="false">
+								<input class="form-check-input switch" id="acceptance" name="acceptance" type="checkbox" role="switch" aria-checked="false" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 								<div id="acceptance-feedback" class="invalid-feedback"></div>
 							</div>
 						</div>

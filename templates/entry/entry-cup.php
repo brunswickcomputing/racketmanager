@@ -18,10 +18,26 @@
 
 namespace Racketmanager;
 
+if ( $competition->is_open ) {
+	$changes_allowed = true;
+} else {
+	$changes_allowed = false;
+}
+if ( ! empty( $club->entry ) ) {
+	$entered    = true;
+	$form_title = __( 'Entry details', 'racketmanager' );
+} else {
+	$entered    = false;
+	$form_title = __( 'Enter online', 'racketmanager' );
+}
 ?>
 <div class="container">
 	<?php
-	$competition_season = $competition->current_season;
+	if ( empty( $competition->seasons[ $season ] ) ) {
+		$competition_season = null;
+	} else {
+		$competition_season = $competition->seasons[ $season ];
+	}
 	require RACKETMANAGER_PATH . 'templates/includes/competition-header.php';
 	?>
 	<form id="form-entry" action="" method="post">
@@ -35,7 +51,7 @@ namespace Racketmanager;
 					<div class="entry-subhead">
 						<div class="hgroup">
 							<h3 class="hgroup__heading">
-								<?php esc_html_e( 'Enter online', 'racketmanager' ); ?>
+								<?php echo esc_html( $form_title ); ?>
 							</h3>
 							<?php
 							if ( ! empty( $competition->closing_date ) ) {
@@ -54,6 +70,33 @@ namespace Racketmanager;
 							</a>
 						</div>
 					</div>
+					<?php
+					if ( ! $changes_allowed ) {
+						if ( $entered ) {
+							$alert_class = 'info';
+							$alert_msg[] = __( 'Cup entries are now closed.', 'racketmanager' );
+							$alert_msg[] = __( 'These are the latest entry details.', 'racketmanager' );
+						} else {
+							$alert_class = 'warning';
+							$alert_msg[] = __( 'Cup not currently open for entries', 'racketmanager' );
+						}
+						?>
+						<div class="alert_rm mt-3 alert--<?php echo esc_attr( $alert_class ); ?>">
+							<div class="alert__body">
+								<?php
+								foreach ( $alert_msg as $msg ) {
+									?>
+									<div class="alert__body-inner">
+										<?php echo esc_html( $msg ); ?>
+									</div>
+									<?php
+								}
+								?>
+							</div>
+						</div>
+						<?php
+					}
+					?>
 					<div class="club-entry__body">
 						<div id="club-details">
 							<input type="hidden" name="clubId" id="clubId" value="<?php echo esc_html( $club->id ); ?>" />
@@ -99,7 +142,7 @@ namespace Racketmanager;
 											}
 											?>
 											<div class="form-check form-check-lg">
-												<input class="form-check-input eventId noModal" id="event-<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" type="checkbox" value=<?php echo esc_html( $event->id ); ?> aria-controls="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo esc_attr( $event->status ); ?>>
+												<input class="form-check-input eventId noModal" id="event-<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" type="checkbox" value=<?php echo esc_html( $event->id ); ?> aria-controls="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo esc_attr( $event->status ); ?> <?php echo $changes_allowed ? null : 'disabled'; ?>>
 												<label class="form-check-label" for="event-<?php echo esc_html( $event->id ); ?>">
 													<?php echo esc_html( $event->name ); ?>
 												</label>
@@ -116,7 +159,7 @@ namespace Racketmanager;
 											?>
 											<div class="form-checkboxes__conditional <?php echo $event->status ? '' : 'form-checkboxes__conditional--hidden'; ?>" id="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $event->status ? 'aria-expanded="true"' : ''; ?>>
 												<div class="form-floating mb-3">
-													<select size="1" class="cupteam form-select" name="team[<?php echo esc_html( $event->id ); ?>]" id="team-<?php echo esc_html( $event->id ); ?>" >
+													<select size="1" class="cupteam form-select" name="team[<?php echo esc_html( $event->id ); ?>]" id="team-<?php echo esc_html( $event->id ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?>>
 														<option value=""><?php esc_html_e( 'Select team', 'racketmanager' ); ?></option>
 														<?php
 														foreach ( $team_list as $team ) {
@@ -144,18 +187,18 @@ namespace Racketmanager;
 															<div id="captain-dtls-<?php echo esc_html( $event->id ); ?>">
 																<div class="row">
 																	<div class="form-floating mb-3">
-																		<input type="text" class="form-control teamcaptain" name="captain[<?php echo esc_html( $event->id ); ?>]" id="captain-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->captain ) ? esc_html( $event->team->team_info->captain ) : ''; ?>" />
+																		<input type="text" class="form-control teamcaptain" name="captain[<?php echo esc_html( $event->id ); ?>]" id="captain-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->captain ) ? esc_html( $event->team->team_info->captain ) : ''; ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 																		<input type="hidden" name="captainId[<?php echo esc_html( $event->id ); ?>]" id="captainId-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->captain_id ) ? esc_html( $event->team->team_info->captain_id ) : ''; ?>" />
 																		<label class="form-label" for="captain-<?php echo esc_html( $event->id ); ?>"><?php esc_html_e( 'Name', 'racketmanager' ); ?></label>
 																		<div id="captain-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
 																	</div>
 																	<div class="col-md-6 form-floating mb-3">
-																		<input type="tel" class="form-control" name="contactno[<?php echo esc_html( $event->id ); ?>]" id="contactno-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->contactno ) ? esc_html( $event->team->team_info->contactno ) : ''; ?>" />
+																		<input type="tel" class="form-control" name="contactno[<?php echo esc_html( $event->id ); ?>]" id="contactno-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->contactno ) ? esc_html( $event->team->team_info->contactno ) : ''; ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 																		<label class="form-label" for="contactno-<?php echo esc_html( $event->id ); ?>"><?php esc_html_e( 'Telephone', 'racketmanager' ); ?></label>
 																		<div id="contactno-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
 																	</div>
 																	<div class="col-md-6 form-floating mb-3">
-																		<input type="email" class="form-control" name="contactemail[<?php echo esc_html( $event->id ); ?>]" id="contactemail-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->contactemail ) ? esc_html( $event->team->team_info->contactemail ) : ''; ?>" />
+																		<input type="email" class="form-control" name="contactemail[<?php echo esc_html( $event->id ); ?>]" id="contactemail-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->contactemail ) ? esc_html( $event->team->team_info->contactemail ) : ''; ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 																		<label class="form-label" for="contactemail-<?php echo esc_html( $event->id ); ?>"><?php esc_html_e( 'Email', 'racketmanager' ); ?></label>
 																		<div id="contactemail-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
 																	</div>
@@ -166,7 +209,7 @@ namespace Racketmanager;
 															<legend><?php esc_html_e( 'Fixtures', 'racketmanager' ); ?></legend>
 															<div class="row">
 																<div class="col-md-6 form-floating mb-3 form-group match-time">
-																	<select class="form-select" name="matchday[<?php echo esc_html( $event->id ); ?>]" id="matchday-<?php echo esc_html( $event->id ); ?>">
+																	<select class="form-select" name="matchday[<?php echo esc_html( $event->id ); ?>]" id="matchday-<?php echo esc_html( $event->id ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?>>
 																		<?php
 																		foreach ( $weekdays as $key => $weekday ) {
 																			?>
@@ -179,7 +222,7 @@ namespace Racketmanager;
 																	<div id="matchday-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
 																</div>
 																<div class="col-md-6 form-floating mb-3 form-group match-time">
-																	<input type="time" class="form-control" name="matchtime[<?php echo esc_html( $event->id ); ?>]" id="matchtime-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->match_time ) ? esc_html( $event->team->team_info->match_time ) : ''; ?>" />
+																	<input type="time" class="form-control" name="matchtime[<?php echo esc_html( $event->id ); ?>]" id="matchtime-<?php echo esc_html( $event->id ); ?>" value="<?php echo ! empty( $event->team->team_info->match_time ) ? esc_html( $event->team->team_info->match_time ) : ''; ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 																	<label class="form-label" for="matchtime-<?php echo esc_html( $event->id ); ?>"><?php esc_html_e( 'Match Time', 'racketmanager' ); ?></label>
 																	<div id="matchtime-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
 																</div>
@@ -202,7 +245,7 @@ namespace Racketmanager;
 									</div>
 									<div class="col-12 col-md-8">
 										<div class="form-floating">
-											<textarea class="form-control" placeholder="<?php echo esc_attr_e( 'Additional information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails"></textarea>
+											<textarea class="form-control" placeholder="<?php echo esc_attr_e( 'Additional information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails" <?php echo $changes_allowed ? null : 'disabled'; ?>></textarea>
 											<label for="commentDetails"><?php esc_attr_e( 'Additional information', 'racketmanager' ); ?></label>
 											<div id="commentDetails-feedback" class="invalid-feedback"></div>
 										</div>
@@ -219,7 +262,7 @@ namespace Racketmanager;
 									printf( __( 'I agree to abide by %s.', 'racketmanager' ), $rules_link ); //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 									?>
 								</label>
-								<input class="form-check-input switch" id="acceptance" name="acceptance" type="checkbox" role="switch" aria-checked="false">
+								<input class="form-check-input switch" id="acceptance" name="acceptance" type="checkbox" role="switch" aria-checked="false" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 								<div id="acceptance-feedback" class="invalid-feedback"></div>
 							</div>
 						</div>

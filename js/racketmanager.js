@@ -1190,34 +1190,20 @@ Racketmanager.matchStatusModal = function (event, match_id) {
 	let matchStatus = jQuery('#match_status').val();
 	let modal = 'scoreStatusModal';
 	jQuery(notifyField).val("");
-
-	jQuery.ajax({
-		url: ajax_var.url,
-		type: "POST",
-		data: {
+	jQuery(notifyField).load(
+		ajax_var.url,
+		{
 			"match_id": match_id,
 			"modal": modal,
 			"match_status": matchStatus,
 			"action": "racketmanager_match_status",
 			"security": ajax_var.ajax_nonce,
 		},
-		success: function (response) {
-			jQuery(notifyField).empty();
-			jQuery(notifyField).html(response.data);
-		},
-		error: function (response) {
-			if (response.responseJSON) {
-				let message = response.responseJSON.data;
-				jQuery(notifyField).html(message);
-			} else {
-				jQuery(notifyField).text(response.statusText);
-			}
-		},
-		complete: function () {
+		function () {
 			jQuery(notifyField).show();
 			jQuery(notifyField).modal('show');
 		}
-	});
+	);
 };
 Racketmanager.setMatchStatus = function (link) {
 	let formId = '#'.concat(link.form.id);
@@ -1329,34 +1315,20 @@ Racketmanager.scoreStatusModal = function (event, rubber_id, rubber_number) {
 	let modal = 'scoreStatusModal';
 	let scoreStatus = jQuery('#match_status_' + rubber_number).val();
 	jQuery(notifyField).val("");
-
-	jQuery.ajax({
-		url: ajax_var.url,
-		type: "POST",
-		data: {
+	jQuery(notifyField).load(
+		ajax_var.url,
+		{
 			"rubber_id": rubber_id,
 			"score_status": scoreStatus,
 			"modal": modal,
 			"action": "racketmanager_match_rubber_status",
 			"security": ajax_var.ajax_nonce,
 		},
-		success: function (response) {
-			jQuery(notifyField).empty();
-			jQuery(notifyField).html(response.data);
-		},
-		error: function (response) {
-			if (response.responseJSON) {
-				let output = response.responseJSON.data[1];
-				jQuery(notifyField).html(output);
-			} else {
-				jQuery(notifyField).text(response.statusText);
-			}
-		},
-		complete: function () {
+		function () {
 			jQuery(notifyField).show();
 			jQuery(notifyField).modal('show');
 		}
-	});
+	);
 };
 Racketmanager.setMatchRubberStatus = function (link) {
 	let formId = '#'.concat(link.form.id);

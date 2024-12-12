@@ -1354,14 +1354,14 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$option->desc   = __( 'Reset', 'racketmanager' );
 				$select[]       = $option;
 				$option         = new \stdClass();
-				$option->value  = 'invalid_player2';
-				$option->select = 'invalid_player2';
+				$option->value  = 'invalid_player1';
+				$option->select = 'invalid_player1';
 				/* translators: %s: Home team name */
 				$option->desc   = sprintf( __( 'Invalid player - %s', 'racketmanager' ), $home_name );
 				$select[]       = $option;
 				$option         = new \stdClass();
-				$option->value  = 'invalid_player1';
-				$option->select = 'invalid_player1';
+				$option->value  = 'invalid_player2';
+				$option->select = 'invalid_player2';
 				/* translators: %s: Away team name */
 				$option->desc   = sprintf( __( 'Invalid player - %s', 'racketmanager' ), $away_name );
 				$select[]       = $option;
@@ -1511,6 +1511,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 								break;
 							case 'share':
 								break;
+							case 'none':
+								break;
+							case 'invalid':
+								break;
 							default:
 								$valid       = false;
 								$err_field[] = 'score_status';
@@ -1579,6 +1583,16 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				break;
 			case 'retired':
 				$score_message = __( 'Retired', 'racketmanager' );
+				if ( 'player1' === $player_ref ) {
+					$winner = $away_team;
+					$loser  = $home_team;
+				} elseif ( 'player2' === $player_ref ) {
+					$winner = $home_team;
+					$loser  = $away_team;
+				}
+				break;
+			case 'invalid':
+				$score_message = __( 'Invalid player', 'racketmanager' );
 				if ( 'player1' === $player_ref ) {
 					$winner = $away_team;
 					$loser  = $home_team;

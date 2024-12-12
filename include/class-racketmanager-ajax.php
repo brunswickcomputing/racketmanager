@@ -552,6 +552,7 @@ class Racketmanager_Ajax extends RacketManager {
 			$share          = null;
 			$walkover       = null;
 			$retired        = null;
+			$invalid        = null;
 			$abandoned      = null;
 			$is_cancelled   = null;
 			if ( $is_withdrawn ) {
@@ -645,6 +646,12 @@ class Racketmanager_Ajax extends RacketManager {
 				case 'retired_player2':
 					$retired = 'away';
 					break;
+				case 'invalid_player1':
+					$invalid = 'home';
+					break;
+				case 'invalid_player2':
+					$invalid = 'away';
+					break;
 				case 'abandoned':
 					$abandoned = true;
 					break;
@@ -734,6 +741,9 @@ class Racketmanager_Ajax extends RacketManager {
 					} elseif ( $is_cancelled ) {
 						$status              = 8;
 						$custom['cancelled'] = true;
+					} elseif ( $invalid ) {
+						$status            = 9;
+						$custom['invalid'] = $invalid;
 					} elseif ( empty( $status ) ) {
 						$status = 0;
 					}
@@ -917,7 +927,7 @@ class Racketmanager_Ajax extends RacketManager {
 				$set_player_2  = strtoupper( $set['player2'] );
 				$set_completed = $set['completed'];
 				if ( null !== $set_player_1 && null !== $set_player_2 ) {
-					if ( ( $set_player_1 > $set_player_2 && ( empty( $set_status ) || ( 'abandoned' === $set_status && $set_completed ) ) ) || ( 'retired_player2' ) === $set_status ) {
+					if ( ( $set_player_1 > $set_player_2 && ( empty( $set_status ) || ( 'abandoned' === $set_status && $set_completed ) ) ) || ( 'retired_player2' ) === $set_status || ( 'invalid_player2' ) === $set_status ) {
 						if ( empty( $points_format ) ) {
 							++$points['home']['sets'];
 							++$stats['sets']['home'];
@@ -929,7 +939,7 @@ class Racketmanager_Ajax extends RacketManager {
 							$homescore = $set_player_1;
 							$awayscore = $set_player_2;
 						}
-					} elseif ( ( $set_player_1 < $set_player_2 && ( empty( $set_status ) || ( 'abandoned' === $set_status && $set_completed ) ) ) || ( 'retired_player1' ) === $set_status ) {
+					} elseif ( ( $set_player_1 < $set_player_2 && ( empty( $set_status ) || ( 'abandoned' === $set_status && $set_completed ) ) ) || ( 'retired_player1' ) === $set_status || ( 'invalid_player1' ) === $set_status ) {
 						if ( empty( $points_format ) ) {
 							++$points['away']['sets'];
 							++$stats['sets']['away'];
@@ -992,6 +1002,22 @@ class Racketmanager_Ajax extends RacketManager {
 			$points['home']['sets']    = $num_sets_to_win;
 			$stats['sets']['home']     = $num_sets_to_win;
 			$homescore                 = $num_sets_to_win;
+		} elseif ( 'invalid_player2' === $match_status ) {
+			$stats['sets']['home']     = $num_sets_to_win;
+			$points['home']['sets']    = $num_sets_to_win;
+			$points['away']['invalid'] = true;
+			$homescore                 = $num_sets_to_win;
+			$awayscore                -= $walkover_rubber_penalty;
+			$stats['games']['home']    = $num_games_to_win * $num_sets_to_win;
+			$stats['games']['away']    = 0;
+		} elseif ( 'invalid_player1' === $match_status ) {
+			$stats['sets']['away']     = $num_sets_to_win;
+			$points['away']['sets']    = $num_sets_to_win;
+			$points['home']['invalid'] = true;
+			$awayscore                 = $num_sets_to_win;
+			$homescore                -= $walkover_rubber_penalty;
+			$stats['games']['away']    = $num_games_to_win * $num_sets_to_win;
+			$stats['games']['home']    = 0;
 		} elseif ( 'share' === $match_status ) {
 			$shared_sets              = $match->league->num_sets / 2;
 			$points['shared']['sets'] = $match->league->num_sets;

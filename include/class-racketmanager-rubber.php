@@ -128,6 +128,12 @@ final class Racketmanager_Rubber {
 	 */
 	public $is_abandoned;
 	/**
+	 * Is invalid variable
+	 *
+	 * @var boolean
+	 */
+	public $is_invalid;
+	/**
 	 * Players variable
 	 *
 	 * @var array
@@ -242,6 +248,7 @@ final class Racketmanager_Rubber {
 			$this->is_retired   = false;
 			$this->is_shared    = false;
 			$this->is_abandoned = false;
+			$this->is_invalid   = false;
 			if ( ! empty( $this->custom['walkover'] ) ) {
 				$this->is_walkover = true;
 			}
@@ -253,6 +260,9 @@ final class Racketmanager_Rubber {
 			}
 			if ( ! empty( $this->custom['abandoned'] ) ) {
 				$this->is_abandoned = true;
+			}
+			if ( ! empty( $this->custom['invalid'] ) ) {
+				$this->is_invalid = true;
 			}
 			$this->players = array();
 			$this->get_players();

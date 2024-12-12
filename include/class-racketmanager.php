@@ -948,6 +948,36 @@ class RacketManager {
 			'index.php?pagename=competitions&type=tournament',
 			'top'
 		);
+		// tournament entry form - name.
+		add_rewrite_rule(
+			'entry-form/(.+?)-tournament/?$',
+			'index.php?pagename=competition%2Fentry&tournament=$matches[1]&competition_type=tournament',
+			'top'
+		);
+		// tournament entry form - name - player.
+		add_rewrite_rule(
+			'entry-form/(.+?)-tournament/player/(.+?)/?$',
+			'index.php?pagename=competition%2Fentry&tournament=$matches[1]&player_id=$matches[2]&competition_type=tournament',
+			'top'
+		);
+		// entry form - competition - season - club.
+		add_rewrite_rule(
+			'entry-form/(.+?)/([0-9]{4})/(.+?)/?$',
+			'index.php?pagename=competition%2Fentry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]',
+			'top'
+		);
+		// entry form - competition - season.
+		add_rewrite_rule(
+			'entry-form/(.+?)/([0-9]{4})/?$',
+			'index.php?pagename=competition%2Fentry&season=$matches[2]&competition_name=$matches[1]',
+			'top'
+		);
+		// entry form - competition - club.
+		add_rewrite_rule(
+			'entry-form/(.+?)/(.+?)/?$',
+			'index.php?pagename=competition%2Fentry&club_name=$matches[2]&competition_name=$matches[1]',
+			'top'
+		);
 		// cup entry form - type - season - club.
 		add_rewrite_rule(
 			'cup/entry-form/(.+?)/([0-9]{4})/(.+?)/?$',
@@ -3161,7 +3191,7 @@ class RacketManager {
 								$date_closing     = isset( $competition->seasons[ $season ]['closing_date'] ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['closing_date'] ) : null;
 								$date_start       = isset( $competition->seasons[ $season ]['dateStart'] ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['dateStart'] ) : null;
 								$date_end         = isset( $competition->seasons[ $season ]['dateEnd'] ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['dateEnd'] ) : null;
-								$url              = $this->site_url . '/' . $type . '/entry-form/' . seo_url( $competition->name ) . '/' . $season . '/';
+								$url              = $this->site_url . '/entry-form/' . seo_url( $competition->name ) . '/' . $season . '/';
 								$competition_name = $competition->name . ' ' . $season;
 							}
 						} else {
@@ -3176,7 +3206,7 @@ class RacketManager {
 						$date_closing     = $tournament->closing_date_display;
 						$date_start       = $tournament->date_open_display;
 						$date_end         = $tournament->date_display;
-						$url              = $this->site_url . '/' . $type . '/entry-form/' . seo_url( $tournament->name ) . '/';
+						$url              = $this->site_url . '/entry-form/' . seo_url( $tournament->name ) . '-' .  $type . '/';
 						$competition_name = $tournament->name . ' ' . __( 'Tournament', 'racketmanager' );
 						$is_championship  = true;
 					} else {

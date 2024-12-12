@@ -561,8 +561,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$tournament_entries[ $i ] = $tournament_entry;
 			}
 			$this->set_tournament_entry( $tournament->id, $player_id, true );
-			$action_url                          = $racketmanager->site_url . '/tournament/entry-form/' . seo_url( $tournament->name ) . '/';
-			$tournament_link                     = '<a href="' . $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/">' . $tournament->name . '</a>';
+			$action_url                          = $racketmanager->site_url . '/entry-form/' . seo_url( $tournament->name ) . '-tournament/';
+			$tournament_link                     = '<a href="' . $racketmanager->site_url . '/' . seo_url( $tournament->name ) . '-tournament/">' . $tournament->name . '</a>';
 			$headers                             = array();
 			$secretary_email                     = __( 'Tournament Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
 			$headers[]                           = 'From: ' . $secretary_email;
@@ -1197,14 +1197,12 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$status  = 404;
 			}
 		}
-		if ( $valid ) {
-			wp_send_json_success( $output );
-		} else {
-			$return = array();
+		if ( ! $valid ) {
 			$output = $this->modal_error( $message );
-			array_push( $return, $message, $output );
-			wp_send_json_error( $return, $status );
+			status_header( $status );
 		}
+		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		wp_die();
 	}
 	/**
 	 * Set match status
@@ -1311,10 +1309,67 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
 			$rubber    = get_rubber( $rubber_id );
 			if ( $rubber ) {
-				$status    = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
-				$match     = get_match( $rubber->match_id );
-				$home_name = $match->teams['home']->title;
-				$away_name = $match->teams['away']->title;
+				$status         = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
+				$match          = get_match( $rubber->match_id );
+				$home_name      = $match->teams['home']->title;
+				$away_name      = $match->teams['away']->title;
+				$select         = array();
+				$option         = new \stdClass();
+				$option->value  = 'walkover_player2';
+				$option->select = 'walkover_player2';
+				/* translators: %s: Home team name */
+				$option->desc   = sprintf( __( 'Match not played - %s did not show', 'racketmanager' ), $home_name );
+				$select[]       = $option;
+				$option         = new \stdClass();
+				$option->value  = 'walkover_player1';
+				$option->select = 'walkover_player1';
+				/* translators: %s: Away team name */
+				$option->desc   = sprintf( __( 'Match not played - %s did not show', 'racketmanager' ), $away_name );
+				$select[]       = $option;
+				$option         = new \stdClass();
+				$option->value  = 'retired_player1';
+				$option->select = 'retired_player1';
+				/* translators: %s: Home team name */
+				$option->desc   = sprintf( __( 'Retired - %s', 'racketmanager' ), $home_name );
+				$select[]       = $option;
+				$option         = new \stdClass();
+				$option->value  = 'retired_player2';
+				$option->select = 'retired_player2';
+				/* translators: %s: Away team name */
+				$option->desc   = sprintf( __( 'Retired - %s', 'racketmanager' ), $away_name );
+				$select[]       = $option;
+				$option         = new \stdClass();
+				$option->value  = 'abandoned';
+				$option->select = 'abandoned';
+				$option->desc   = __( 'Abandoned', 'racketmanager' );
+				$select[]       = $option;
+				$option         = new \stdClass();
+				$option->value  = 'share';
+				$option->select = 'share';
+				$option->desc   = __( 'Not played', 'racketmanager' );
+				$select[]       = $option;
+				$option         = new \stdClass();
+				$option->value  = 'none';
+				$option->select = 'None';
+				$option->desc   = __( 'Reset', 'racketmanager' );
+				$select[]       = $option;
+				$option         = new \stdClass();
+				$option->value  = 'invalid_player2';
+				$option->select = 'invalid_player2';
+				/* translators: %s: Home team name */
+				$option->desc   = sprintf( __( 'Invalid player - %s', 'racketmanager' ), $home_name );
+				$select[]       = $option;
+				$option         = new \stdClass();
+				$option->value  = 'invalid_player1';
+				$option->select = 'invalid_player1';
+				/* translators: %s: Away team name */
+				$option->desc   = sprintf( __( 'Invalid player - %s', 'racketmanager' ), $away_name );
+				$select[]       = $option;
+				$option         = new \stdClass();
+				$option->value  = 'invalid_players';
+				$option->select = 'invalid_players';
+				$option->desc   = __( 'Invalid player on both teams', 'racketmanager' );
+				$select[]       = $option;
 				if ( $match ) {
 					ob_start();
 					?>
@@ -1344,17 +1399,15 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 											<div class="col-sm-6">
 												<select class="form-select" name="score_status" id="score_status">
 													<option value="" disabled selected><?php esc_html_e( 'Status', 'racketmanager' ); ?></option>
-													<?php /* translators: %s: Home team name */ ?>
-													<option value="walkover_player2" <?php selected( 'walkover_player2', $status ); ?>><?php printf( esc_html__( 'Walkover - %s player(s) did not show', 'racketmanager' ), esc_html( $home_name ) ); ?></option>
-													<?php /* translators: %s: Away team name */ ?>
-													<option value="walkover_player1" <?php selected( 'walkover_player1', $status ); ?>><?php printf( esc_html__( 'Walkover - %s player(s) did not show', 'racketmanager' ), esc_html( $away_name ) ); ?></option>
-													<?php /* translators: %s: Home team name */ ?>
-													<option value="retired_player1" <?php selected( 'retired_player1', $status ); ?>><?php printf( esc_html__( 'Retired - %s player', 'racketmanager' ), esc_html( $home_name ) ); ?></option>
-													<?php /* translators: %s: Away team name */ ?>
-													<option value="retired_player2" <?php selected( 'retired_player2', $status ); ?>><?php printf( esc_html__( 'Retired - %s player', 'racketmanager' ), esc_html( $away_name ) ); ?></option>
-													<option value="abandoned" <?php selected( 'abandoned', $status ); ?>><?php esc_html_e( 'Abandoned', 'racketmanager' ); ?></option>
-													<option value="share" <?php selected( 'share', $status ); ?>><?php esc_html_e( 'Not played', 'racketmanager' ); ?></option>
+													<?php
+													foreach ( $select as $option ) {
+														?>
+														<option value="<?php echo esc_attr( $option->value ); ?>" <?php selected( $option->select, $status ); ?>><?php echo esc_html( $option->desc ); ?></option>
+														<?php
+													}
+													?>
 												</select>
+												<div id="score_statusFeedback" class="invalid-feedback"></div>
 											</div>
 											<div class="col-sm-6">
 												<ul class="list list--naked">
@@ -1408,14 +1461,12 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$status  = 404;
 			}
 		}
-		if ( $valid ) {
-			wp_send_json_success( $output );
-		} else {
-			$return = array();
+		if ( ! $valid ) {
 			$output = $this->modal_error( $message );
-			array_push( $return, $message, $output );
-			wp_send_json_error( $return, $status );
+			status_header( $status );
 		}
+		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		wp_die();
 	}
 	/**
 	 * Set match rubber status

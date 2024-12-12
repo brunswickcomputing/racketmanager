@@ -223,15 +223,20 @@ class RacketManager {
 			$title .= $site_name;
 		}
 		if ( 'entry' === $slug ) {
-			if ( $type ) {
-				$title = ucwords( $type ) . ' ';
-			}
-			$title .= __( 'Entry Form', 'racketmanager' );
+			$title = __( 'Entry Form', 'racketmanager' );
 			if ( $competition ) {
 				$title .= ' - ' . $competition;
+			} elseif ( $tournament ) {
+				$title .= ' - ' . $tournament . ' - ' . __( 'Tournament', 'racketmanager' );
+				if ( $player ) {
+					$title .= ' - ' . $player;
+				}
 			}
 			if ( $season ) {
 				$title .= ' - ' . $season;
+			}
+			if ( $club ) {
+				$title .= ' - ' . $club;
 			}
 			$title .= ' - ' . $site_name;
 		}

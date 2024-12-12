@@ -547,6 +547,7 @@ class Racketmanager_Util {
 		$match_status['6'] = __( 'Abandoned', 'racketmanager' );
 		$match_status['7'] = __( 'Withdrawn', 'racketmanager' );
 		$match_status['8'] = __( 'Cancelled', 'racketmanager' );
+		$match_status['9'] = __( 'Invalid', 'racketmanager' );
 		return $match_status;
 	}
 	/**

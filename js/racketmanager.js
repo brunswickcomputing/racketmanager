@@ -1291,13 +1291,13 @@ Racketmanager.setMatchStatus = function (link) {
 			if (response.responseJSON) {
 				let data = response.responseJSON.data;
 				let $message = data[0];
-				for (let errorMsg of data[1]) {
-					$message += '<br />' + errorMsg;
-				}
-				let errorFields = data[2];
-				for (let errorField of errorFields) {
-					let $id = '#'.concat(errorField);
-					jQuery($id).addClass("is-invalid");
+				let errorMsg = data[1];
+				let errorField = data[2];
+				for (let i = 0; i < errorField.length; i++) {
+					let formfield = "#" + errorField[i];
+					jQuery(formfield).addClass('is-invalid');
+					formfield = formfield + 'Feedback';
+					jQuery($ = formfield).html(errorMsg[i]);
 				}
 				jQuery(alertTextField).html($message);
 			} else {
@@ -1383,13 +1383,13 @@ Racketmanager.setMatchRubberStatus = function (link) {
 			if (response.responseJSON) {
 				let data = response.responseJSON.data;
 				let $message = data[0];
-				for (let errorMsg of data[1]) {
-					$message += '<br />' + errorMsg;
-				}
-				let errorFields = data[2];
-				for (let errorField of errorFields) {
-					let $id = '#'.concat(errorField);
-					jQuery($id).addClass("is-invalid");
+				let errorMsg = data[1];
+				let errorField = data[2];
+				for (let i = 0; i < errorField.length; i++) {
+					let formfield = "#" + errorField[i];
+					jQuery(formfield).addClass('is-invalid');
+					formfield = formfield + 'Feedback';
+					jQuery($=formfield).html(errorMsg[i]);
 				}
 				jQuery(alertTextField).html($message);
 			} else {

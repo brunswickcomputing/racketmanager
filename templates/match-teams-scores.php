@@ -315,6 +315,16 @@ if ( ! empty( $match->winner_id ) ) {
 											++$team_statistics['walkover'][ $match_type ];
 											++$team_statistics['walkover']['t'];
 										}
+									} elseif ( $rubber->is_invalid ) {
+										$match_message_class = 'match-warning';
+										$match_message_text  = __( 'Invalid player', 'racketmanager' );
+										if ( empty( $match_status_class ) ) {
+											$match_status_class = 'd-none';
+										}
+										if ( isset( $team_statistics ) && 'winner' === $team_status ) {
+											++$team_statistics['walkover'][ $match_type ];
+											++$team_statistics['walkover']['t'];
+										}
 									} elseif ( $rubber->is_retired ) {
 										$match_message_class = 'match-warning';
 										$match_message_text  = __( 'Retired', 'racketmanager' );

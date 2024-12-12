@@ -455,11 +455,19 @@ if ( $match->is_walkover ) {
 																			} elseif ( $rubber->is_abandoned ) {
 																				$match_message_class = 'match-warning';
 																				$match_message_text  = __( 'Abandoned', 'racketmanager' );
+																			} elseif ( $rubber->is_invalid ) {
+																				$match_message_class = 'match-warning';
+																				$match_message_text  = __( 'Invalid player', 'racketmanager' );
 																			}
 																		} elseif ( $is_tie ) {
 																			if ( $rubber->is_walkover ) {
 																				$match_message_class = 'match-warning';
 																				$match_message_text  = __( 'Walkover', 'racketmanager' );
+																				$match_status_class  = 'd-none';
+																				$match_status_text   = '';
+																			} elseif ( $rubber->is_invalid ) {
+																				$match_message_class = 'match-warning';
+																				$match_message_text  = __( 'Invalid player', 'racketmanager' );
 																				$match_status_class  = 'd-none';
 																				$match_status_text   = '';
 																			} elseif ( $rubber->is_shared ) {
@@ -502,6 +510,12 @@ if ( $match->is_walkover ) {
 																		$rubber_status = 'retired_player1';
 																	} else {
 																		$rubber_status = 'retired_player2';
+																	}
+																} elseif ( $rubber->is_invalid ) {
+																	if ( 'home' === $rubber->invalid ) {
+																		$rubber_status = 'invalid_player1';
+																	} else {
+																		$rubber_status = 'invalid_player2';
 																	}
 																}
 																?>

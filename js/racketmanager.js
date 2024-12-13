@@ -723,6 +723,15 @@ Racketmanager.updateResults = function (link) {
 				}
 				rubberNo++;
 			}
+			let playerWarnings = $response[5];
+			if (playerWarnings) {
+				for (let w in playerWarnings) {
+					let playerRef = '#' + w;
+					jQuery(playerRef).addClass('is-invalid');
+					let playerRefFeedback = playerRef + 'Feedback';
+					jQuery(playerRefFeedback).html(playerWarnings[w])
+				}
+			}
 			Racketmanager.matchHeader(match_id, match_edit);
 		},
 		error: function (response) {

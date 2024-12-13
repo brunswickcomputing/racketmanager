@@ -1122,7 +1122,17 @@ function racketmanager_upgrade() {
 	}
 	if ( version_compare( $installed, '8.29.0', '<' ) ) {
 		echo esc_html__( 'starting 8.29.0 upgrade', 'racketmanager' ) . "<br />\n";
-		$wpdb->query( "UPDATE {$wpdb->racketmanager_rubbers} SET `status` = 9 WHERE ID in ( SELECT DISTINCT `rubber_id` FROM {$wpdb->racketmanager_results_checker} WHERE rubber_id IS NOT NULL AND `status` = 2)" );
+		$rubbers = $wpdb->get_results( " SELECT DISTINCT `rubber_id` FROM {$wpdb->racketmanager_results_checker} WHERE rubber_id IS NOT NULL AND `status` = 2;" );
+		foreach ( $rubbers as $rubber_id ) {
+			$rubber = Racketmanager\get_rubber( $rubber_id->rubber_id );
+			if ( $rubber ) {
+				if ( isset( $rubber->custom['walkover'] ) ) {
+					$rubber->custom['invalid'] = $rubber->custom['walkover'];
+					unset( $rubber->custom['walkover'] );
+				}
+				$wpdb->query( "UPDATE {$wpdb->racketmanager_rubbers} SET `status` = 9, `custom` = '" . maybe_serialize( $rubber->custom ) . "' WHERE ID = " . $rubber->id );
+			}
+		}
 	}
 	/*
 	* Update version and dbversion

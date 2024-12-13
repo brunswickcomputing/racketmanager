@@ -78,7 +78,8 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			$tournament = get_tournament( $tournament, 'name' );
 		}
 		if ( ! $tournament ) {
-			return esc_html_e( 'Tournament not found', 'racketmanager' );
+			$msg = __( 'Tournament not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		if ( ! $tab ) {
 			if ( isset( $_GET['tab'] ) && ! empty( $_GET['tab'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -116,7 +117,8 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		$template      = $args['template'];
 		$tournament    = get_tournament( $tournament_id );
 		if ( ! $tournament ) {
-			return esc_html_e( 'Tournament not found', 'racketmanager' );
+			$msg = __( 'Tournament not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		$tournament->events  = $tournament->get_events();
 		$tournament->entries = $tournament->get_entries( array( 'count' => true ) );
@@ -481,7 +483,8 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		$template      = $args['template'];
 		$tournament    = get_tournament( $tournament_id );
 		if ( ! $tournament ) {
-			return esc_html_e( 'Tournament not found', 'racketmanager' );
+			$msg = __( 'Tournament not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		$winners = $racketmanager->get_winners( $tournament->season, $tournament->competition_id, 'tournament', true );
 
@@ -517,7 +520,8 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		$template      = $args['template'];
 		$tournament    = get_tournament( $tournament_id );
 		if ( ! $tournament ) {
-			return __( 'Tournament not found', 'racketmanager' );
+			$msg = __( 'Tournament not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		$order_of_play = array();
 		$matches       = array();
@@ -603,7 +607,8 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			$tournament = un_seo_url( $tournament );
 		}
 		if ( ! $tournament ) {
-			return esc_html_e( 'Tournament not found', 'racketmanager' );
+			$msg = __( 'Tournament not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		$tournament = get_tournament( $tournament, 'name' );
 		// Get Match ID from shortcode or $_GET.
@@ -613,7 +618,8 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		if ( $match_id ) {
 			$match = get_match( $match_id );
 			if ( ! $match ) {
-				return __( 'Match not found', 'racketmanager' );
+				$msg = __( 'Match not found', 'racketmanager' );
+				return $this->return_error( $msg );
 			}
 			$is_update_allowed = $match->is_update_allowed();
 			if ( empty( $template ) && $this->check_template( 'match-tournament' . $match->league->sport ) ) {
@@ -672,7 +678,8 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		$template      = $args['template'];
 		$tournament    = get_tournament( $tournament_id );
 		if ( ! $tournament ) {
-			return esc_html_e( 'Tournament not found', 'racketmanager' );
+			$msg = __( 'Tournament not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		$order_of_play           = array();
 		$order_of_play['times']  = array();

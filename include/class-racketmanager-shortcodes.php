@@ -325,7 +325,7 @@ class RacketManager_Shortcodes {
 		$club_name = un_seo_url( $club_name );
 		$club      = get_club( $club_name, 'shortcode' );
 		if ( ! $club ) {
-			return __( 'Club not found', 'racketmanager' );
+			return $this->return_error( __( 'Club not found', 'racketmanager' ) );
 		}
 		// Get Player by Name.
 		$player_name = get_query_var( 'player_id' );
@@ -807,7 +807,7 @@ class RacketManager_Shortcodes {
 				$is_tournament   = true;
 			} else {
 				$valid = false;
-				$msg   = esc_html_e( 'No competition name specified', 'racketmanager' );
+				$msg   = __( 'No competition name specified', 'racketmanager' );
 			}
 		}
 		if ( $is_tournament ) {
@@ -816,7 +816,7 @@ class RacketManager_Shortcodes {
 				$is_tournament = true;
 			} else {
 				$valid = false;
-				$msg   = esc_html_e( 'Tournament not found specified', 'racketmanager' );
+				$msg   = __( 'Tournament not found specified', 'racketmanager' );
 			}
 		}
 		if ( $valid ) {
@@ -845,7 +845,7 @@ class RacketManager_Shortcodes {
 						}
 					} else {
 						$valid = false;
-						$msg   = esc_html_e( 'Player not found', 'racketmanager' );
+						$msg   = __( 'Player not found', 'racketmanager' );
 					}
 				} else {
 					$club_name = get_query_var( 'club_name' );
@@ -856,17 +856,20 @@ class RacketManager_Shortcodes {
 							$season = get_query_var( 'season' );
 							if ( ! $season ) {
 								$valid = false;
-								$msg   = esc_html_e( 'No season specified', 'racketmanager' );
+								$msg   = __( 'No season specified', 'racketmanager' );
 							}
 						} else {
 							$valid = false;
-							$msg   = esc_html_e( 'Club not found', 'racketmanager' );
+							$msg   = __( 'Club not found', 'racketmanager' );
 						}
 					} else {
 						$valid = false;
-						$msg   = esc_html_e( 'No club specified', 'racketmanager' );
+						$msg   = __( 'No club specified', 'racketmanager' );
 					}
 				}
+			} else {
+				$valid = false;
+				$msg   = __( 'Competition not found', 'racketmanager' );
 			}
 		}
 		if ( $valid ) {
@@ -881,73 +884,12 @@ class RacketManager_Shortcodes {
 					$output = $this->show_tournament_entry( $tournament, $player, $template );
 					break;
 				default:
-					$output = esc_html_e( 'Invalid competition type specified', 'racketmanager' );
+					$output = $this->return_error( __( 'Invalid competition type specified', 'racketmanager' ) );
 			}
 			return $output;
 		} else {
-			return $msg;
+			return $this->return_error( $msg );
 		}
-		$type = get_query_var( 'competition_type' );
-		if ( ! $type ) {
-			$valid = false;
-			$msg   = esc_html_e( 'No competition type specified', 'racketmanager' );
-		} else {
-			$competition_name = get_query_var( 'competition_name' );
-			$competition      = un_seo_url( $competition_name );
-			if ( ! $competition ) {
-				$valid = false;
-				$msg   = esc_html_e( 'No competition name specified', 'racketmanager' );
-			} elseif ( 'tournament' === $type ) {
-				$player    = null;
-				$player_id = get_query_var( 'player_id' );
-				if ( $player_id ) {
-					$player_id = un_seo_url( $player_id );
-					$player    = get_player( $player_id, 'name' );
-					if ( ! $player ) {
-						$valid = false;
-						$msg   = esc_html_e( 'Player not found', 'racketmanager' );
-					}
-				} else {
-					$player = get_player( wp_get_current_user()->ID );
-				}
-			} else {
-				$season = get_query_var( 'season' );
-				if ( ! $season ) {
-					$valid = false;
-					$msg   = esc_html_e( 'No season specified', 'racketmanager' );
-				} else {
-					$club_name = get_query_var( 'club_name' );
-					$club_name = un_seo_url( $club_name );
-					if ( $club_name ) {
-						$club = get_club( $club_name, 'shortcode' );
-						if ( ! $club ) {
-							$valid = false;
-							$msg   = esc_html_e( 'Club not found', 'racketmanager' );
-						}
-					} else {
-						$valid = false;
-						$msg   = esc_html_e( 'No club specified', 'racketmanager' );
-					}
-				}
-			}
-			if ( $valid ) {
-				switch ( $type ) {
-					case 'league':
-						$output = $this->show_league_entry( $competition, $season, $club, $template );
-						break;
-					case 'cup':
-						$output = $this->show_cup_entry( $competition, $season, $club, $template );
-						break;
-					case 'tournament':
-						$output = $this->show_tournament_entry( $competition, $player, $template );
-						break;
-					default:
-						$output = esc_html_e( 'Invalid competition type specified', 'racketmanager' );
-				}
-				return $output;
-			}
-		}
-		return $msg;
 	}
 	/**
 	 * Function to display Cup Entry Page
@@ -965,7 +907,7 @@ class RacketManager_Shortcodes {
 		$valid = true;
 		if ( ! $club ) {
 			$valid = false;
-			$msg   = esc_html_e( 'Club not found', 'racketmanager' );
+			$msg   = __( 'Club not found', 'racketmanager' );
 		} else {
 			$user                 = wp_get_current_user();
 			$userid               = $user->ID;
@@ -975,16 +917,16 @@ class RacketManager_Shortcodes {
 			}
 			if ( ! $user_can_update_club ) {
 				$valid = false;
-				$msg   = esc_html_e( 'User not authorised for club', 'racketmanager' );
+				$msg   = __( 'User not authorised for club', 'racketmanager' );
 			}
 		}
 		if ( ! $competition ) {
 			$valid = false;
-			$msg   = esc_html_e( 'Cup not found', 'racketmanager' );
+			$msg   = __( 'Cup not found', 'racketmanager' );
 		}
 		if ( ! $season ) {
 			$valid = false;
-			$msg   = esc_html_e( 'Season not found', 'racketmanager' );
+			$msg   = __( 'Season not found', 'racketmanager' );
 		}
 		if ( $valid ) {
 			$events = $competition->get_events();
@@ -1028,7 +970,7 @@ class RacketManager_Shortcodes {
 				'entry'
 			);
 		} else {
-			return $msg;
+			return $this->return_error( $msg );
 		}
 	}
 	/**
@@ -1049,7 +991,7 @@ class RacketManager_Shortcodes {
 
 		if ( ! $club ) {
 			$valid = false;
-			$msg   = esc_html_e( 'Club not found', 'racketmanager' );
+			$msg   = __( 'Club not found', 'racketmanager' );
 		} else {
 			$user                 = wp_get_current_user();
 			$userid               = $user->ID;
@@ -1066,22 +1008,22 @@ class RacketManager_Shortcodes {
 			}
 			if ( ! $user_can_update_club ) {
 				$valid = false;
-				$msg   = esc_html_e( 'User not authorised for club', 'racketmanager' );
+				$msg   = __( 'User not authorised for club', 'racketmanager' );
 			}
 		}
 		if ( ! $competition_name ) {
 			$valid = false;
-			$msg   = esc_html_e( 'League not found', 'racketmanager' );
+			$msg   = __( 'League not found', 'racketmanager' );
 		}
 		if ( ! $season ) {
 			$valid = false;
-			$msg   = esc_html_e( 'Season not found', 'racketmanager' );
+			$msg   = __( 'Season not found', 'racketmanager' );
 		}
 		if ( $valid ) {
 			$competition = get_competition( $competition_name, 'name' );
 			if ( ! $competition ) {
 				$valid = false;
-				$msg   = esc_html_e( 'Competition not found', 'racketmanager' );
+				$msg   = __( 'Competition not found', 'racketmanager' );
 			}
 		}
 		if ( $valid ) {
@@ -1149,7 +1091,7 @@ class RacketManager_Shortcodes {
 				'entry'
 			);
 		} else {
-			return $msg;
+			return $this->return_error( $msg );
 		}
 	}
 	/**
@@ -1163,7 +1105,7 @@ class RacketManager_Shortcodes {
 	public function show_tournament_entry( $tournament, $player = null, $template = null ) {
 		global $racketmanager;
 		if ( ! $tournament ) {
-			return esc_html_e( 'Tournament not found', 'racketmanager' );
+			return $this->return_error( __( 'Tournament not found', 'racketmanager' ) );
 		}
 		$player->firstname = get_user_meta( $player->ID, 'first_name', true );
 		$player->surname   = get_user_meta( $player->ID, 'last_name', true );
@@ -1274,7 +1216,7 @@ class RacketManager_Shortcodes {
 			$atts
 		);
 		if ( ! is_user_logged_in() ) {
-			return esc_html__( 'You must be logged in to view favourites', 'racketmanager' );
+			return $this->return_error( __( 'You must be logged in to view favourites', 'racketmanager' ) );
 		}
 		$template   = $args['template'];
 		$user       = get_user( get_current_user_id() );
@@ -1307,7 +1249,7 @@ class RacketManager_Shortcodes {
 				return $invoice->generate();
 			}
 		}
-		return esc_html_e( 'No invoice found', 'racketmanager' );
+		return $this->return_error( __( 'No invoice found', 'racketmanager' ) );
 	}
 	/**
 	 * Function to show messages
@@ -1325,7 +1267,7 @@ class RacketManager_Shortcodes {
 			$atts
 		);
 		if ( ! is_user_logged_in() ) {
-			return esc_html__( 'You must be logged in to view messages', 'racketmanager' );
+			return $this->return_error( __( 'You must be logged in to view messages', 'racketmanager' ) );
 		}
 		$messages       = array();
 		$template       = $args['template'];
@@ -1361,7 +1303,7 @@ class RacketManager_Shortcodes {
 			$atts
 		);
 		if ( ! is_user_logged_in() ) {
-			return esc_html__( 'You must be logged in to view memberships', 'racketmanager' );
+			return $this->return_error( __( 'You must be logged in to view memberships', 'racketmanager' ) );
 		}
 		$template = $args['template'];
 		$player   = get_player( get_current_user_id() );
@@ -1369,7 +1311,7 @@ class RacketManager_Shortcodes {
 			$player->clubs         = $player->get_clubs( array( 'type' => 'active' ) );
 			$player->clubs_archive = $player->get_clubs( array( 'type' => 'inactive' ) );
 		} else {
-			return esc_html__( 'Player not found', 'racketmanager' );
+			return $this->return_error( __( 'Player not found', 'racketmanager' ) );
 		}
 		$filename = ( ! empty( $template ) ) ? 'player-clubs-' . $template : 'player-clubs';
 
@@ -1533,5 +1475,28 @@ class RacketManager_Shortcodes {
 			$leagues[ $l ]  = $league;
 		}
 		return $leagues;
+	}
+	/**
+	 * Return error function
+	 *
+	 * @param string $msg mesage to display.
+	 * @return string output html modal
+	 */
+	protected function return_error( $msg ) {
+		ob_start();
+		?>
+		<div>
+			<div class="alert_rm alert--danger">
+				<div class="alert__body">
+					<div class="alert__body-inner">
+						<span><?php echo esc_html( $msg ); ?></span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<?php
+		$output = ob_get_contents();
+		ob_end_clean();
+		return $output;
 	}
 }

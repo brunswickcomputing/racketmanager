@@ -543,7 +543,7 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 				'email'
 			);
 		} else {
-			return $msg;
+			return $this->return_error( $msg );
 		}
 	}
 	/**
@@ -569,7 +569,8 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 		$template = $args['template'];
 		$event    = get_event( $event_id );
 		if ( ! $event ) {
-			return esc_html_e( 'Event not found', 'racketmanager' );
+			$msg = __( 'Event not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		$event->leagues = $event->get_leagues();
 		$event->set_season( $season );

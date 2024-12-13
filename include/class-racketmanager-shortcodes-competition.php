@@ -188,7 +188,9 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			}
 		}
 		if ( ! $event ) {
-			return __( 'Event not found', 'racketmanager' );
+			$msg = __( 'Event not found', 'racketmanager' );
+			return $this->return_error( $msg );
+
 		}
 		if ( ! $season ) {
 			// phpcs:disable WordPress.Security.NonceVerification.Recommended
@@ -211,7 +213,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			}
 		}
 		if ( empty( $event->seasons[ $season ] ) ) {
-			return __( 'Season not found for event', 'racketmanager' );
+			$msg = __( 'Season not found for event', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		if ( empty( $template ) && $this->check_template( 'event-' . $event->competition->sport ) ) {
 			$filename = 'event-' . $event->competition->sport;
@@ -564,7 +567,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$time          = $args['time'];
 		$league        = get_league( $league_id );
 		if ( ! $league ) {
-			return __( 'League not found', 'racketmanager' );
+			$msg = __( 'League not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		$league->set_template( 'matches', $template );
 
@@ -708,7 +712,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 					}
 					$matches = $league->get_matches( $match_args );
 					if ( ! $matches ) {
-						return esc_html_e( 'Match not found', 'racketmanager' );
+						$msg = __( 'Match not found', 'racketmanager' );
+						return $this->return_error( $msg );
 					}
 					$num_matches = count( $matches );
 					if ( 1 === $num_matches ) {
@@ -723,11 +728,13 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		if ( $match_id ) {
 			$match = get_match( $match_id );
 			if ( ! $match ) {
-				return __( 'Match not found', 'racketmanager' );
+				$msg = __( 'Match not found', 'racketmanager' );
+				return $this->return_error( $msg );
 			}
 			$event = get_event( $match->league->event_id );
 			if ( ! $event ) {
-				return __( 'Event not found', 'racketmanager' );
+				$msg = __( 'Event not found', 'racketmanager' );
+				return $this->return_error( $msg );
 			}
 			$seasons           = $event->seasons;
 			$leagues           = $event->get_leagues();
@@ -847,7 +854,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				'action'    => $action,
 			);
 		} else {
-			return esc_html__( 'Match not found', 'racketmanager' );
+			$msg = __( 'Match not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		return $this->load_template( $filename, $template_array );
 	}
@@ -912,7 +920,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				$team->info      = $league->get_team_dtls( $team->id );
 				$team->standings = $league->get_league_team( $team->id );
 				if ( empty( $team->standings->rank ) ) {
-					return __( 'Team not found in league', 'racketmanager' );
+					$msg = __( 'Team not found in league', 'racketmanager' );
+					return $this->return_error( $msg );
 				}
 				$team->matches = $league->get_matches(
 					array(
@@ -1088,7 +1097,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$season   = $args['season'];
 		$event    = get_event( $event_id );
 		if ( ! $event ) {
-			return __( 'Event not found', 'racketmanager' );
+			$msg = __( 'Event not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		$event->leagues = $event->get_leagues();
 		$event->set_season( $season );
@@ -1121,7 +1131,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$season   = $args['season'];
 		$event    = get_event( $event_id );
 		if ( ! $event ) {
-			return __( 'Event not found', 'racketmanager' );
+			$msg = __( 'Event not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		$event->set_season( $season );
 		if ( $event->competition->is_championship ) {
@@ -1158,7 +1169,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$season   = $args['season'];
 		$event    = get_event( $event_id );
 		if ( ! $event ) {
-			return __( 'Event not found', 'racketmanager' );
+			$msg = __( 'Event not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		$event->set_season( $season );
 		if ( $event->competition->is_championship ) {
@@ -1198,7 +1210,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$season   = $args['season'];
 		$event    = get_event( $event_id );
 		if ( ! $event ) {
-			return __( 'Event not found', 'racketmanager' );
+			$msg = __( 'Event not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		$club       = null;
 		$event_club = null;
@@ -1269,7 +1282,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 					)
 				);
 			} else {
-				return esc_html__( 'Club not found', 'racketmanager' );
+				$msg = __( 'Club not found', 'racketmanager' );
+				return $this->return_error( $msg );
 			}
 		}
 		$event->clubs = $event->get_clubs( array( 'status' => 1 ) );
@@ -1302,7 +1316,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$template = $args['template'];
 		$event    = get_event( $event_id );
 		if ( ! $event ) {
-			return esc_html_e( 'Event not found', 'racketmanager' );
+			$msg = __( 'Event not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		$event->teams = $event->get_teams(
 			array(
@@ -1414,7 +1429,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				'event'
 			);
 		} else {
-			return __( 'Event not found', 'racketmanager' );
+			$msg = __( 'Event not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 	}
 	/**
@@ -1443,7 +1459,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			$type = un_seo_url( $type );
 		}
 		if ( ! $type ) {
-			return esc_html_e( 'Competition type not set', 'racketmanager' );
+			$msg = __( 'Competition type not set', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		$user_competitions = null;
 		if ( 'tournament' === $type ) {
@@ -1527,7 +1544,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			$competition = get_competition( $competition, 'name' );
 		}
 		if ( ! $competition ) {
-			return esc_html_e( 'Competition not found', 'racketmanager' );
+			$msg = __( 'Competition not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		if ( ! $season ) {
 			if ( isset( $_GET['season'] ) && ! empty( $_GET['season'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -1539,10 +1557,12 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		if ( $season ) {
 			$competition_season = isset( $competition->seasons[ $season ] ) ? $competition->seasons[ $season ] : null;
 			if ( ! $competition_season ) {
-				return esc_html_e( 'Season not found', 'racketmanager' );
+				$msg = __( 'Season not found', 'racketmanager' );
+				return $this->return_error( $msg );
 			}
 		} elseif ( empty( $competition->seasons ) ) {
-				return esc_html_e( 'No seasons found for competition', 'racketmanager' );
+			$msg = __( 'No seasons found for competition', 'racketmanager' );
+			return $this->return_error( $msg );
 		} else {
 			$competition_season = $competition->current_season;
 			$season             = $competition_season['name'];
@@ -1583,7 +1603,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
-			return esc_html_e( 'Competition not found', 'racketmanager' );
+			$msg = __( 'Competition not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		$competition->events  = $competition->get_events();
 		$competition->entries = $competition->get_teams(
@@ -1625,7 +1646,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
-			return __( 'Competition not found', 'racketmanager' );
+			$msg = __( 'Competition not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		if ( $season ) {
 			$competition->set_season( $season );
@@ -1676,7 +1698,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
-			return esc_html_e( 'Competition not found', 'racketmanager' );
+			$msg = __( 'Competition not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		$competition->teams = $competition->get_teams(
 			array(
@@ -1720,7 +1743,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
-			return esc_html_e( 'Competition not found', 'racketmanager' );
+			$msg = __( 'Competition not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		$competition->clubs = $competition->get_clubs( array( 'status' => 1 ) );
 		$competition_club   = null;
@@ -1791,7 +1815,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 					)
 				);
 			} else {
-				return esc_html__( 'Club not found', 'racketmanager' );
+				$msg = __( 'Club not found', 'racketmanager' );
+				return $this->return_error( $msg );
 			}
 		}
 		$filename = ( ! empty( $template ) ) ? 'clubs-' . $template : 'clubs';
@@ -1825,7 +1850,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
-			return esc_html_e( 'Competition not found', 'racketmanager' );
+			$msg = __( 'Competition not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		$player               = null;
 		$competition->players = array();
@@ -1879,7 +1905,8 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
-			return __( 'Competition not found', 'racketmanager' );
+			$msg = __( 'Competition not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 		$competition->winners = $competition->get_winners( true );
 		$filename             = ( ! empty( $template ) ) ? 'winners-' . $template : 'winners';

@@ -139,7 +139,11 @@ foreach ( $competitions as $competition ) {
 								<input type="checkbox" value="<?php echo esc_html( $results_checker->id ); ?>" name="resultsChecker[<?php echo esc_html( $results_checker->id ); ?>]" />
 							</div>
 							<div class="col-5 col-sm-2 col-lg-1"><?php echo esc_html( mysql2date( 'Y-m-d', $results_checker->match->date ) ); ?></div>
-							<div class="col-12 col-md-2 col-lg-3"><a href="admin.php?page=racketmanager-results&amp;subpage=match&amp;match_id=<?php echo esc_html( $results_checker->match_id ); ?>&amp;referrer=resultschecker"><?php echo esc_html( $results_checker->match->match_title ); ?></a></div>
+							<div class="col-12 col-md-2 col-lg-3">
+								<a href="<?php echo esc_html( $results_checker->match->link ); ?>result/">
+									<?php echo esc_html( $results_checker->match->match_title ); ?>
+								</a>
+							</div>
 							<div class="col-auto col-md-2"><?php echo esc_html( $results_checker->team->title ); ?></div>
 							<div class="col-auto col-sm-2">
 								<?php

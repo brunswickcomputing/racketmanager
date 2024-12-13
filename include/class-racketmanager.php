@@ -3206,7 +3206,7 @@ class RacketManager {
 						$date_closing     = $tournament->closing_date_display;
 						$date_start       = $tournament->date_open_display;
 						$date_end         = $tournament->date_display;
-						$url              = $this->site_url . '/entry-form/' . seo_url( $tournament->name ) . '-' .  $type . '/';
+						$url              = $this->site_url . '/entry-form/' . seo_url( $tournament->name ) . '-' . $type . '/';
 						$competition_name = $tournament->name . ' ' . __( 'Tournament', 'racketmanager' );
 						$is_championship  = true;
 					} else {

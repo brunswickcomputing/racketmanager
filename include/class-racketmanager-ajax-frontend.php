@@ -1631,6 +1631,11 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$status_message[ $away_team ] = $score_message;
 			$status_class[ $home_team ]   = '';
 			$status_class[ $away_team ]   = '';
+		} elseif ( 'invalid' === $status_value ) {
+			$status_message[ $home_team ] = $score_message;
+			$status_message[ $away_team ] = $score_message;
+			$status_class[ $home_team ]   = 'tie';
+			$status_class[ $away_team ]   = 'tie';
 		} else {
 			$status_message[ $home_team ] = '';
 			$status_message[ $away_team ] = '';

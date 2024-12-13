@@ -388,10 +388,13 @@ final class Racketmanager_Rubber {
 		$home_sets          = $points['home']['sets'];
 		$home_walkover      = isset( $points['home']['walkover'] ) ? 1 : 0;
 		$home_retired       = isset( $points['home']['retired'] ) ? 1 : 0;
+		$home_invalid       = isset( $points['home']['invalid'] ) ? 1 : 0;
 		$away_team          = $points['away']['team'];
 		$away_sets          = $points['away']['sets'];
 		$away_walkover      = isset( $points['away']['walkover'] ) ? 1 : 0;
 		$away_retired       = isset( $points['away']['retired'] ) ? 1 : 0;
+		$away_invalid       = isset( $points['away']['invalid'] ) ? 1 : 0;
+		$both_invalid       = isset( $points['both']['invalid'] ) ? 1 : 0;
 		$shared_sets        = isset( $points['shared']['sets'] ) ? $points['shared']['sets'] : 0;
 		$match              = get_match( $this->match_id );
 		$league             = get_league( $match->league_id );
@@ -448,6 +451,17 @@ final class Racketmanager_Rubber {
 			}
 		} elseif ( $home_retired || $away_retired ) {
 			if ( $home_retired ) {
+				$winner = $away_team;
+				$loser  = $home_team;
+			} else {
+				$winner = $home_team;
+				$loser  = $away_team;
+			}
+		} elseif ( $both_invalid ) {
+			$winner = -1;
+			$loser  = -1;
+		} elseif ( $home_invalid || $away_invalid ) {
+			if ( $home_invalid ) {
 				$winner = $away_team;
 				$loser  = $home_team;
 			} else {

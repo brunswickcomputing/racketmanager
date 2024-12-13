@@ -514,8 +514,10 @@ if ( $match->is_walkover ) {
 																} elseif ( $rubber->is_invalid ) {
 																	if ( 'home' === $rubber->invalid ) {
 																		$rubber_status = 'invalid_player1';
-																	} else {
+																	} elseif ( 'away' === $rubber->invalid ) {
 																		$rubber_status = 'invalid_player2';
+																	} else {
+																		$rubber_status = 'invalid_players';
 																	}
 																}
 																?>

@@ -266,35 +266,35 @@ final class Racketmanager_Results_Checker {
 				}
 				$points = array();
 				if ( $this->team_id === $match->home_team ) {
-					$points['home']['walkover'] = true;
-					if ( isset( $rubber->custom['walkover'] ) && 'home' === $rubber->custom['walkover'] ) {
-						$points['away']['walkover'] = true;
-						$rubber->custom['walkover'] = 'both';
-						$points['away']['sets']     = 0;
-						$stats['sets']['away']      = 0;
-						$stats['games']['away']     = 0;
+					$points['home']['invalid'] = true;
+					if ( isset( $rubber->custom['invalid'] ) && 'away' === $rubber->custom['invalid'] ) {
+						$points['away']['invalid'] = true;
+						$rubber->custom['invalid'] = 'both';
+						$points['away']['sets']    = 0;
+						$stats['sets']['away']     = 0;
+						$stats['games']['away']    = 0;
 					} else {
-						$rubber->custom['walkover'] = 'away';
-						$points['away']['sets']     = $num_sets_to_win;
-						$stats['sets']['away']      = $num_sets_to_win;
-						$stats['games']['away']     = $num_games_to_win * $num_sets_to_win;
+						$rubber->custom['invalid'] = 'home';
+						$points['away']['sets']    = $num_sets_to_win;
+						$stats['sets']['away']     = $num_sets_to_win;
+						$stats['games']['away']    = $num_games_to_win * $num_sets_to_win;
 					}
 					$points['home']['sets'] = 0;
 					$stats['sets']['home']  = 0;
 					$stats['games']['home'] = 0;
 				} else {
-					$points['away']['walkover'] = true;
-					if ( isset( $rubber->custom['walkover'] ) && 'away' === $rubber->custom['walkover'] ) {
-						$points['home']['walkover'] = true;
-						$rubber->custom['walkover'] = 'both';
-						$points['home']['sets']     = 0;
-						$stats['sets']['home']      = 0;
-						$stats['games']['home']     = 0;
+					$points['away']['invalid'] = true;
+					if ( isset( $rubber->custom['invalid'] ) && 'home' === $rubber->custom['invalid'] ) {
+						$points['home']['invalid'] = true;
+						$rubber->custom['invalid'] = 'both';
+						$points['home']['sets']    = 0;
+						$stats['sets']['home']     = 0;
+						$stats['games']['home']    = 0;
 					} else {
-						$rubber->custom['walkover'] = 'home';
-						$points['home']['sets']     = $num_sets_to_win;
-						$stats['sets']['home']      = $num_sets_to_win;
-						$stats['games']['home']     = $num_games_to_win * $num_sets_to_win;
+						$rubber->custom['invalid'] = 'home';
+						$points['home']['sets']    = $num_sets_to_win;
+						$stats['sets']['home']     = $num_sets_to_win;
+						$stats['games']['home']    = $num_games_to_win * $num_sets_to_win;
 					}
 					$points['away']['sets'] = 0;
 					$stats['sets']['away']  = 0;

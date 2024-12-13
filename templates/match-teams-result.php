@@ -371,8 +371,9 @@ if ( $match->is_walkover ) {
 																						<span class="nav-link__value <?php echo esc_html( $winner_class ); ?>">
 																							<?php
 																							if ( $match_editable ) {
+																								$player_id_link = 'players_' . $rubber->rubber_number . '_' . $opponent . '_' . $player_number;
 																								?>
-																								<select class="form-select" tabindex="<?php echo esc_html( $tabindex ); ?>" name="players[<?php echo esc_attr( $rubber->rubber_number ); ?>][<?php echo esc_attr( $opponent ); ?>][<?php echo esc_attr( $player_number ); ?>]" id="players_<?php echo esc_attr( $rubber->rubber_number ); ?>_<?php echo esc_attr( $opponent ); ?>_<?php echo esc_attr( $player_number ); ?>">
+																								<select class="form-select <?php echo empty( $rubber->players[ $opponent ][ $player_number ]->class ) ? null : 'is-invalid'; ?>" tabindex="<?php echo esc_html( $tabindex ); ?>" name="players[<?php echo esc_attr( $rubber->rubber_number ); ?>][<?php echo esc_attr( $opponent ); ?>][<?php echo esc_attr( $player_number ); ?>]" id="<?php echo esc_attr( $player_id_link ); ?>">
 																									<option value="0">&nbsp;</option>
 																									<?php
 																									foreach ( $club_players[ $opponent ][ $player['gender'] ] as $player_option ) {
@@ -393,6 +394,7 @@ if ( $match->is_walkover ) {
 																									}
 																									?>
 																								</select>
+																								<div id="<?php echo esc_attr( $player_id_link ); ?>Feedback" class="invalid-feedback"><?php echo empty( $rubber->players[ $opponent ][ $player_number ]->description ) ? null : esc_html( $rubber->players[ $opponent ][ $player_number ]->description ); ?></div>
 																								<?php
 																							} elseif ( ! empty( $rubber->players[ $opponent ][ $player_number ] ) ) {
 																								$player_detail = $rubber->players[ $opponent ][ $player_number ];

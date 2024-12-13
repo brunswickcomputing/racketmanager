@@ -148,11 +148,12 @@ foreach ( $competitions as $competition ) {
 							<div class="col-auto col-sm-2">
 								<?php
 								if ( isset( $results_checker->player->display_name ) ) {
+									$player_link = '/clubs/' . seo_url( $results_checker->team->club->shortcode ) . '/players/' . seo_url( $results_checker->player->display_name ) . '/';
 									?>
-									<a href="/wp-admin/admin.php?page=racketmanager-clubs&view=player&club_id=<?php echo esc_attr( $results_checker->team->club->id ); ?>&player_id=<?php echo esc_attr( $results_checker->player->ID ); ?>">
+									<a href="<?php echo esc_attr( $player_link ); ?>">
 										<?php echo esc_html( $results_checker->player->display_name ); ?>
 									</a>
-										<?php
+									<?php
 								}
 								?>
 							</div>

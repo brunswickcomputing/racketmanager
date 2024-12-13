@@ -1441,41 +1441,20 @@ Racketmanager.matchOptions = function (event, match_id, option) {
 	let notifyField = "#matchModal";
 	let modal = 'matchModal';
 	jQuery(notifyField).val("");
-	let action = 'racketmanager_match_option';
-
-	jQuery.ajax({
-		url: ajax_var.url,
-		type: "POST",
-		data: {
+	jQuery(notifyField).load(
+		ajax_var.url,
+		{
 			"match_id": match_id,
 			"modal": modal,
 			"option": option,
-			"action": action,
+			"action": 'racketmanager_match_option',
 			"security": ajax_var.ajax_nonce,
 		},
-		success: function (response) {
-			jQuery(notifyField).empty();
-			jQuery(notifyField).html(response.data);
-		},
-		error: function (response) {
-			if (response.responseJSON) {
-				if (response.status == '401') {
-					let output = response.responseJSON.data[1];
-					jQuery(notifyField).html(output);
-				} else {
-					let message = response.responseJSON.data;
-					jQuery(notifyField).html(message);
-				}
-				jQuery(notifyField).addClass('message-error');
-			} else {
-				jQuery(notifyField).text(response.statusText);
-			}
-		},
-		complete: function () {
+		function () {
 			jQuery(notifyField).show();
 			jQuery(notifyField).modal('show');
 		}
-	});
+	);
 };
 Racketmanager.setMatchDate = function (link, is_tournament) {
 	let formId = '#'.concat(link.form.id);

@@ -1863,10 +1863,12 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
 				$valid   = false;
 				$message = __( 'Security token invalid', 'racketmanager' );
+				$status  = 403;
 			}
 		} else {
 			$valid   = false;
 			$message = __( 'No security token found in request', 'racketmanager' );
+			$status  = 403;
 		}
 		if ( $valid ) {
 			$match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : 0;
@@ -1961,13 +1963,15 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			} else {
 				$valid   = false;
 				$message = __( 'Match not found', 'racketmanager' );
+				$status  = 404;
 			}
 		}
-		if ( $valid ) {
-			wp_send_json_success( $output );
-		} else {
-			wp_send_json_error( $message, '500' );
+		if ( ! $valid ) {
+			$output = $this->modal_error( $message );
+			status_header( $status );
 		}
+		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		wp_die();
 	}
 	/**
 	 * Set match date function

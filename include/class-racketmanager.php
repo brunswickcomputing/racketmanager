@@ -3510,6 +3510,7 @@ class RacketManager {
 			'player'      => false,
 			'type'        => false,
 			'confirmed'   => false,
+			'match'       => false,
 		);
 		$args        = array_merge( $defaults, $args );
 		$season      = $args['season'];
@@ -3520,6 +3521,7 @@ class RacketManager {
 		$player_id   = $args['player'];
 		$type        = $args['type'];
 		$confirmed   = $args['confirmed'];
+		$match_id    = $args['match'];
 		$sql         = " FROM {$wpdb->racketmanager_results_checker} rc WHERE 1";
 
 		if ( $status && 'all' !== $status ) {
@@ -3545,6 +3547,9 @@ class RacketManager {
 		}
 		if ( $confirmed ) {
 			$sql .= $wpdb->prepare( " AND `match_id` IN (SELECT `id` FROM {$wpdb->racketmanager_matches} WHERE `id` = rc.`match_id` AND `confirmed` != %s)", $confirmed );
+		}
+		if ( $match_id ) {
+			$sql .= $wpdb->prepare( ' AND `match_id` = %d', $match_id );
 		}
 		if ( $count ) {
 			$sql = 'SELECT COUNT(*)' . $sql;

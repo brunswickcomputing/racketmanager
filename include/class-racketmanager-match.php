@@ -1898,9 +1898,27 @@ final class Racketmanager_Match {
 					$rubbers = $this->get_rubbers();
 					foreach ( $rubbers as $rubber ) {
 						if ( ! $rubber->is_walkover && ! $rubber->is_shared && ! empty( $rubber->winner_id ) && ! empty( $rubber->loser_id ) ) {
+							if ( $rubber->is_invalid ) {
+								$score_home = 0;
+								$score_away = 0;
+								foreach ( $rubber->sets as $set ) {
+									if ( $set['player1'] > $set['player2'] ) {
+										++$score_home;
+									} elseif ( $set['player2'] > $set['player1'] ) {
+										++$score_away;
+									}
+								}
+								if ( $score_home > $score_away ) {
+									$winner_id = $this->home_team;
+								} elseif ( $score_away > $score_home ) {
+									$winner_id = $this->away_team;
+								}
+							} else {
+								$winner_id = $rubber->winner_id;
+							}
 							$result_match        = new \stdClass();
 							$result_match->match = $rubber->id;
-							if ( $rubber->winner_id === $this->home_team ) {
+							if ( $winner_id === $this->home_team ) {
 								$winning_team   = 'home';
 								$winning_player = 'player1';
 								$losing_team    = 'away';

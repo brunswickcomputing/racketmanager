@@ -447,15 +447,36 @@ class Racketmanager_Ajax extends RacketManager {
 			} elseif ( ! $msg ) {
 				$msg = __( 'No results to save', 'racketmanager' );
 			}
+			$player_warnings = null;
 			if ( $match->has_result_check() ) {
-				$msg          .= '<br>' . __( 'Match has player warnings', 'racketmanager' );
-				$result_status = 'warning';
+				$msg            .= '<br>' . __( 'Match has player warnings', 'racketmanager' );
+				$result_status   = 'warning';
+				$result_warnings = $racketmanager->get_result_warnings( array( 'match' => $match->id ) );
+				foreach ( $result_warnings as $player_warning ) {
+					if ( $player_warning->rubber_id ) {
+						$rubber = get_rubber( $player_warning->rubber_id );
+						if ( $rubber ) {
+							if ( $player_warning->team_id === $match->home_team ) {
+								$team = 'home';
+							} else {
+								$team = 'away';
+							}
+							if ( intval( $player_warning->player_id ) === intval( $rubber->players[ $team ]['1']->id ) ) {
+								$player_number = 1;
+							} else {
+								$player_number = 2;
+							}
+							$player_ref                     = 'players_' . $rubber->rubber_number . '_' . $team . '_' . $player_number;
+							$player_warnings[ $player_ref ] = $player_warning->description;
+						}
+					}
+				}
 			} else {
 				$result_status = 'success';
 			}
 			$home_points = isset( $updated_rubbers['homepoints'] ) ? $updated_rubbers['homepoints'] : null;
 			$away_points = isset( $updated_rubbers['awaypoints'] ) ? $updated_rubbers['awaypoints'] : null;
-			array_push( $return, $msg, $home_points, $away_points, $updated_rubbers, $result_status );
+			array_push( $return, $msg, $home_points, $away_points, $updated_rubbers, $result_status, $player_warnings );
 			wp_send_json_success( $return );
 		} else {
 			$msg = __( 'Unable to save result', 'racketmanager' );

@@ -47,6 +47,13 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.29.0 =
+* BUGFIX: ensure partner loading indicator in place
+* BUGFIX: ensure club entry displays correctly
+* BUGFIX: ignore link_id when not provided
+* UPDATE: set invalid player status for handled results
+* UPDATE: show players with warnings on result entry
+
 = 8.28.0 =
 * BUGFIX: make standings work in API
 * BUGFIX: add missing permission_callback

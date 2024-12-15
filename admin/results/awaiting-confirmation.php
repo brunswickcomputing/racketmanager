@@ -77,19 +77,25 @@ $racketmanager_prev_league = 0;
 					<?php echo esc_html( $racketmanager_match->score ); ?>
 				</div>
 				<div class="col-auto">
-					<a href="admin.php?page=racketmanager-results&amp;subpage=match&amp;match_id=<?php echo esc_html( $racketmanager_match->id ); ?>&amp;referrer=awaitingconfirmation" class="btn btn-secondary"><?php esc_html_e( 'View result', 'racketmanager' ); ?></a>
+					<a href="<?php echo esc_html( $racketmanager_match->link ); ?>result/?referrer=awaitingconfirmation" class="btn btn-secondary"><?php esc_html_e( 'View result', 'racketmanager' ); ?></a>
 				</div>
-				<?php if ( 'P' === $racketmanager_match->confirmed ) { ?>
+				<?php
+				if ( 'P' === $racketmanager_match->confirmed ) {
+					?>
 					<div class="col-auto">
 						<a class="btn btn-secondary" onclick="Racketmanager.chaseMatchApproval('<?php echo esc_html( $racketmanager_match->id ); ?>');"><?php esc_html_e( 'Chase approval', 'racketmanager' ); ?></a>
 					</div>
 					<div class="col-12 col-md-auto"><span id="notifyMessage-<?php echo esc_html( $racketmanager_match->id ); ?>"></span></div>
-				<?php } ?>
+					<?php
+				}
+				?>
 			</div>
 			<?php
 		}
 	} else {
 		?>
-	<div class="col-auto my-3"><?php esc_html_e( 'No matches found for criteria', 'racketmanager' ); ?></div>
-	<?php } ?>
+		<div class="col-auto my-3"><?php esc_html_e( 'No matches found for criteria', 'racketmanager' ); ?></div>
+		<?php
+	}
+	?>
 </div>

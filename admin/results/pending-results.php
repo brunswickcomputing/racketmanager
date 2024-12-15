@@ -65,7 +65,7 @@ $racketmanager_prev_league = 0;
 					<a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo esc_html( $racketmanager_match->league->id ); ?>&amp;season=<?php echo esc_html( $racketmanager_match->season ); ?>&amp;<?php echo esc_html( $racketmanager_match_link ); ?> "><?php echo esc_html( $racketmanager_match->match_title ); ?></a>
 				</div>
 				<div class="col-auto">
-					<a href="admin.php?page=racketmanager-results&amp;subpage=match&amp;match_id=<?php echo esc_html( $racketmanager_match->id ); ?>&amp;referrer=pendingresults" class="btn btn-primary"><?php esc_html_e( 'Enter result', 'racketmanager' ); ?></a>
+					<a href="<?php echo esc_html( $racketmanager_match->link ); ?>result/?referrer=pendingresults" class="btn btn-primary"><?php esc_html_e( 'Enter result', 'racketmanager' ); ?></a>
 				</div>
 				<div class="col-auto">
 					<a class="btn btn-secondary" onclick="Racketmanager.chaseMatchResult('<?php echo esc_html( $racketmanager_match->id ); ?>');"><?php esc_html_e( 'Chase result', 'racketmanager' ); ?></a>
@@ -76,6 +76,8 @@ $racketmanager_prev_league = 0;
 		}
 	} else {
 		?>
-	<div class="col-auto my-3"><?php esc_html_e( 'No matches with pending results', 'racketmanager' ); ?></div>
-	<?php } ?>
+		<div class="col-auto my-3"><?php esc_html_e( 'No matches with pending results', 'racketmanager' ); ?></div>
+		<?php
+	}
+	?>
 </div>

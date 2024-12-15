@@ -67,7 +67,9 @@ $racketmanager_prev_league = 0;
 					$racketmanager_prev_league = $racketmanager_match->league_id;
 					?>
 					<div class="col-12"><?php echo esc_html( $racketmanager_match->league->title ); ?></div>
-				<?php } ?>
+					<?php
+				}
+				?>
 				<div class="col-4 col-sm-2"><?php echo esc_html( mysql2date( 'Y-m-d', $racketmanager_match->date ) ); ?></div>
 				<div class="col-8 col-md-4 match-title"><?php echo esc_html( $racketmanager_match->match_title ); ?></div>
 				<div class="col-4 col-md-2">
@@ -77,13 +79,15 @@ $racketmanager_prev_league = 0;
 					<?php echo esc_html( $racketmanager_match->score ); ?>
 				</div>
 				<div class="col-auto">
-					<a href="admin.php?page=racketmanager-results&amp;subpage=match&amp;match_id=<?php echo esc_html( $racketmanager_match->id ); ?>&amp;referrer=challangeresults" class="btn btn-secondary"><?php esc_html_e( 'View result', 'racketmanager' ); ?></a>
+					<a href="<?php echo esc_html( $racketmanager_match->link ); ?>result/?referrer=challangeresults" class="btn btn-secondary"><?php esc_html_e( 'View result', 'racketmanager' ); ?></a>
 				</div>
 			</div>
 			<?php
 		}
 	} else {
 		?>
-	<div class="col-auto my-3"><?php esc_html_e( 'No matches found for criteria', 'racketmanager' ); ?></div>
-	<?php } ?>
+		<div class="col-auto my-3"><?php esc_html_e( 'No matches found for criteria', 'racketmanager' ); ?></div>
+		<?php
+	}
+	?>
 </div>

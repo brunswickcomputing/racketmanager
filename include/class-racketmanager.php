@@ -3336,7 +3336,7 @@ class RacketManager {
 		$is_update_allowed               = $match->is_update_allowed();
 		$match_args['match']             = $match;
 		$match_args['is_update_allowed'] = $is_update_allowed;
-		$match_args['is_edit_mode']      = $is_edit_mode;
+		$match_args['is_edit_mode']      = false;
 		if ( $player ) {
 			$match_args['match_player'] = $player;
 		}

@@ -703,4 +703,34 @@ final class Racketmanager_Rubber {
 		}
 		return $player_ratings;
 	}
+	/**
+	 * Reset rubber result function
+	 *
+	 * @return void
+	 */
+	public function reset_result() {
+		global $wpdb;
+		$this->home_points = null;
+		$this->away_points = null;
+		$this->winner_id   = 0;
+		$this->loser_id    = 0;
+		$this->custom      = null;
+		$this->status      = null;
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"UPDATE {$wpdb->racketmanager_rubbers} SET `home_points` = null,`away_points` = null, `winner_id` = %d,`loser_id` = %d,`custom` = null, `status`= null WHERE `id` = %d",
+				$this->winner_id,
+				$this->loser_id,
+				$this->id,
+			)
+		);
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->racketmanager_rubber_players} WHERE `rubber_id` = %d",
+				$this->id,
+			)
+		);
+		$this->players = array();
+		wp_cache_set( $this->id, $this, 'rubbers' );
+	}
 }

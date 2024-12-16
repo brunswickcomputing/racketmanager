@@ -18,28 +18,35 @@ if ( empty( $edit_mode ) || 'false' === $edit_mode ) {
 } else {
 	$edit_mode = true;
 }
-$is_update_allowed    = $match->is_update_allowed();
-$user_can_update      = $is_update_allowed->user_can_update;
-$user_type            = $is_update_allowed->user_type;
-$user_team            = $is_update_allowed->user_team;
-$match_approval_mode  = $is_update_allowed->match_approval_mode;
-$allow_schedule_match = false;
-$allow_switch_match   = false;
-$allow_amend_score    = false;
+$is_update_allowed        = $match->is_update_allowed();
+$user_can_update          = $is_update_allowed->user_can_update;
+$user_type                = $is_update_allowed->user_type;
+$user_team                = $is_update_allowed->user_team;
+$match_approval_mode      = $is_update_allowed->match_approval_mode;
+$allow_schedule_match     = false;
+$allow_switch_match       = false;
+$allow_amend_score        = false;
+$allow_reset_match_result = true;
+$show_menu                = false;
 if ( $match->is_pending ) {
 	if ( $user_can_update ) {
 		if ( ( 'admin' === $user_type || 'matchsecretary' === $user_type || 'captain' === $user_type ) && ( 'admin' === $user_type || 'both' === $user_team || 'home' === $user_team ) ) {
 			$allow_schedule_match = true;
+			$show_menu            = true;
 		}
 		if ( ( 'admin' === $user_type || ( 'matchsecretary' === $user_type && ( 'both' === $user_team || 'home' === $user_team ) ) ) && ( $match->league->event->seasons[ $match->season ]['homeAway'] ) ) {
 			$allow_switch_match = true;
+			$show_menu          = true;
 		}
 	}
 } elseif ( 'admin' === $user_type ) {
-	$allow_amend_score = true;
+	$allow_amend_score        = true;
+	$allow_reset_match_result = true;
+	$show_menu                = true;
 } elseif ( 'P' === $match->confirmed ) {
 	if ( $user_can_update && ! $match_approval_mode ) {
 		$allow_amend_score = true;
+		$show_menu         = true;
 	}
 }
 ?>
@@ -124,7 +131,7 @@ if ( $match->is_pending ) {
 			}
 			?>
 			<?php
-			if ( is_user_logged_in() && ! $edit_mode && ( $allow_amend_score || $allow_schedule_match || $allow_switch_match ) ) {
+			if ( is_user_logged_in() && ! $edit_mode && ( $show_menu ) ) {
 				?>
 				<div class="match__change">
 					<div class="dropdown">

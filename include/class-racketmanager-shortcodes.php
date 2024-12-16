@@ -789,11 +789,11 @@ class RacketManager_Shortcodes {
 		$player_id        = $args['player_id'];
 		$template         = $args['template'];
 		$valid            = true;
+		$is_tournament    = false;
 		$competition_name = get_query_var( 'competition_name' );
 		$competition_name = un_seo_url( $competition_name );
 		if ( $competition_name ) {
-			$is_tournament = false;
-			$type          = get_query_var( 'competition_type' );
+			$type = get_query_var( 'competition_type' );
 			if ( $type ) {
 				if ( 'tournament' === $type ) {
 					$is_tournament   = true;

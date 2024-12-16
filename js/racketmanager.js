@@ -1519,7 +1519,7 @@ Racketmanager.setMatchDate = function (e, link, is_tournament) {
 		}
 	});
 }
-Racketmanager.switchHomeAway = function (link) {
+Racketmanager.switchHomeAway = function (e, link) {
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();
 	$form += "&action=racketmanager_switch_home_away";

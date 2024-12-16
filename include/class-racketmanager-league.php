@@ -2936,7 +2936,7 @@ class Racketmanager_League {
 	 *
 	 * @param string $season season.
 	 */
-	private function update_standings( $season ) {
+	public function update_standings( $season ) {
 		// update Standings for each team.
 		$league_teams = $this->get_league_teams(
 			array(

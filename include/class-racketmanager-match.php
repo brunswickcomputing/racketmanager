@@ -2367,4 +2367,62 @@ final class Racketmanager_Match {
 		}
 		return $return;
 	}
+	/**
+	 * Reset match result function
+	 *
+	 * @return boolean
+	 */
+	public function reset_result() {
+		global $wpdb;
+		$updated = false;
+		if ( ! empty( $this->num_rubbers ) ) {
+			$rubbers = $this->get_rubbers();
+			foreach ( $rubbers as $rubber ) {
+				$rubber->reset_result();
+			}
+		} else {
+			$this->sets = null;
+		}
+		$this->home_points  = null;
+		$this->away_points  = null;
+		$this->confirmed    = null;
+		$this->winner_id    = 0;
+		$this->loser_id     = 0;
+		$this->status       = null;
+		$this->custom       = array();
+		$this->confirmed    = null;
+		$this->home_captain = null;
+		$this->away_captain = null;
+		$wpdb->query(  //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"UPDATE {$wpdb->racketmanager_matches} SET `home_points` = null, `away_points` =null, `winner_id` = %d, `loser_id` = %d, `custom` = %s, `updated_user` = %d, `updated` = now(), `confirmed` = %s, `status` = %d, `home_captain` = null, `away_captain` = null WHERE `id` = %d",
+				intval( $this->winner_id ),
+				intval( $this->loser_id ),
+				maybe_serialize( $this->custom ),
+				get_current_user_id(),
+				$this->confirmed,
+				$this->status,
+				$this->id
+			)
+		);
+		if ( ! empty( $this->leg ) && '2' === $this->leg ) {
+			$this->update_result_tie();
+		}
+		$this->home_score   = '';
+		$this->away_score   = '';
+		$this->score        = '';
+		$this->is_walkover  = false;
+		$this->is_shared    = false;
+		$this->is_retired   = false;
+		$this->is_abandoned = false;
+		$this->is_cancelled = false;
+		$this->is_withdrawn = false;
+		$this->is_pending   = true;
+		wp_cache_set( $this->id, $this, 'match' );
+		$this->delete_result_check();
+		if ( 'league' === $this->league->event->competition->type ) {
+			$this->league->update_standings( $this->season );
+		}
+		return $updated;
+	}
 }

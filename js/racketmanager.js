@@ -1465,7 +1465,7 @@ Racketmanager.matchOptions = function (event, match_id, option) {
 		}
 	);
 };
-Racketmanager.setMatchDate = function (link, is_tournament) {
+Racketmanager.setMatchDate = function (e, link, is_tournament) {
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();
 	$form += "&action=racketmanager_set_match_date";

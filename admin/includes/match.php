@@ -141,7 +141,7 @@ namespace Racketmanager;
 									}
 								}
 								?>
-								<td><input type="date" name="mydatepicker[<?php echo esc_html( $i ); ?>]" id="mydatepicker[<?php echo esc_html( $i ); ?>]" class="" value="<?php echo esc_html( $date ); ?>" onChange="Racketmanager.setMatchDate(this.value, <?php echo esc_html( $i ); ?>, <?php echo esc_html( $max_matches ); ?>, '<?php echo esc_html( $mode ); ?>');" /></td>
+								<td><input type="date" name="mydatepicker[<?php echo esc_html( $i ); ?>]" id="mydatepicker[<?php echo esc_html( $i ); ?>]" class="" value="<?php echo esc_html( $date ); ?>" onChange="Racketmanager.setMatchDate(event, this.value, <?php echo esc_html( $i ); ?>, <?php echo esc_html( $max_matches ); ?>, '<?php echo esc_html( $mode ); ?>');" /></td>
 								<?php
 							}
 							?>

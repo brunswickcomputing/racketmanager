@@ -1416,34 +1416,20 @@ Racketmanager.statusModal = function (event, match_id) {
 	let matchStatus = jQuery('#match_status').val();
 	let modal = 'scoreStatusModal';
 	jQuery(notifyField).val("");
-
-	jQuery.ajax({
-		url: ajax_var.url,
-		type: "POST",
-		data: {
+	jQuery(notifyField).load(
+		ajax_var.url,
+		{
 			"match_id": match_id,
 			"modal": modal,
 			"match_status": matchStatus,
 			"action": "racketmanager_match_status",
 			"security": ajax_var.ajax_nonce,
 		},
-		success: function (response) {
-			jQuery(notifyField).empty();
-			jQuery(notifyField).html(response.data);
-		},
-		error: function (response) {
-			if (response.responseJSON) {
-				let output = response.responseJSON.data[1];
-				jQuery(notifyField).html(output);
-			} else {
-				jQuery(notifyField).text(response.statusText);
-			}
-		},
-		complete: function () {
+		function () {
 			jQuery(notifyField).show();
 			jQuery(notifyField).modal('show');
 		}
-	});
+	);
 };
 Racketmanager.matchOptions = function (event, match_id, option) {
 	event.preventDefault();

@@ -48,13 +48,6 @@ $user_can_update = $is_update_allowed->user_can_update;
 									</svg>
 								</a>
 							</div>
-							<div class="d-none match-mode" id="viewMatchMode">
-								<a role="button" class="btn btn--link" onclick="Racketmanager.matchMode(event, '<?php echo esc_html( $match->id ); ?>', 'view');" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Close', 'racketmanager' ); ?>">
-									<svg width="16" height="16" class="icon ">
-										<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#x-lg' ); ?>"></use>
-									</svg>
-								</a>
-							</div>
 							<?php
 						}
 						?>

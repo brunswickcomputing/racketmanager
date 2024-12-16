@@ -330,7 +330,7 @@ final class Racketmanager_Rubber {
 				$this->id,
 			)
 		);
-		wp_cache_delete( $this->id, 'rubbers' );
+		wp_cache_set( $this->id, $this, 'rubbers' );
 	}
 	/**
 	 * Set players function

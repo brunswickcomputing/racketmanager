@@ -28,7 +28,9 @@ $is_edit_mode       = isset( $is_edit_mode ) ? $is_edit_mode : false;
 if ( $user_can_update ) {
 	$match_editable = 'is-editable';
 }
-$allow_schedule_match = false;
+$allow_schedule_match     = false;
+$allow_reset_match_result = false;
+$show_menu                = false;
 switch ( $match->league->event->competition->type ) {
 	case 'league':
 		$image = 'images/bootstrap-icons.svg#table';
@@ -46,6 +48,10 @@ switch ( $match->league->event->competition->type ) {
 if ( $match ) {
 	$match_status = null;
 	if ( ! empty( $match->winner_id ) ) {
+		if ( 'admin' === $is_update_allowed->user_type ) {
+			$allow_reset_match_result = true;
+			$show_menu                = true;
+		}
 		$match_complete = true;
 		if ( $match->winner_id === $match->teams['home']->id ) {
 			$winner = 'home';
@@ -78,6 +84,7 @@ if ( $match ) {
 		}
 	} elseif ( $user_can_update ) {
 		$allow_schedule_match = true;
+		$show_menu            = true;
 	}
 	?>
 	<div class="tournament__match">
@@ -136,7 +143,7 @@ if ( $match ) {
 					</div>
 					<div class="media__aside">
 						<?php
-						if ( is_user_logged_in() && $match_editable && ( $allow_schedule_match ) ) {
+						if ( is_user_logged_in() && $match_editable && ( $show_menu ) ) {
 							?>
 							<div class="match__change">
 								<div class="dropdown">

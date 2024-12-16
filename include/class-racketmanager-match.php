@@ -1292,18 +1292,27 @@ final class Racketmanager_Match {
 		if ( 'Y' === $this->confirmed ) {
 			$report = $this->report_result();
 			if ( $report ) {
-				$wpdb->query(
-					$wpdb->prepare(
-						"DELETE FROM {$wpdb->racketmanager_results_report} WHERE `match_id` = %d",
-						$this->id,
-					)
-				);
+				$this->delete_results_report();
 				$results_report           = new \stdClass();
 				$results_report->match_id = $this->id;
 				$results_report->data     = $report;
 				$results_report           = new Racketmanager_Results_Report( $results_report );
 			}
 		}
+	}
+	/**
+	 * Delete results_report function
+	 *
+	 * @return void
+	 */
+	private function delete_results_report() {
+		global $wpdb;
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->racketmanager_results_report} WHERE `match_id` = %d",
+				$this->id,
+			)
+		);
 	}
 	/**
 	 * Update match result status

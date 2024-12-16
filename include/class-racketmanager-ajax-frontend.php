@@ -73,6 +73,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_nopriv_racketmanager_validate_partner', array( &$this, 'logged_out_modal' ) );
 		add_action( 'wp_ajax_racketmanager_get_tab_data', array( &$this, 'tab_data' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_get_tab_data', array( &$this, 'tab_data' ) );
+		add_action( 'wp_ajax_racketmanager_reset_match_result', array( &$this, 'reset_match_result' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_reset_match_result', array( &$this, 'logged_out' ) );
 	}
 	/**
 	 * Add item as favourite
@@ -1892,10 +1894,16 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						$button = __( 'Switch', 'racketmanager' );
 						$action = 'switchHomeAway';
 						break;
+					case 'reset_match_result':
+						$title  = __( 'Reset match result', 'racketmanager' );
+						$button = __( 'Save', 'racketmanager' );
+						$action = 'resetMatchResult';
+						break;
 					default:
 						$valid   = false;
 						$message = __( 'Invalid match option', 'racketmanager' );
 						$title   = __( 'Unknown option', 'racketmanager' );
+						$status  = 403;
 						break;
 				}
 				ob_start();
@@ -1946,13 +1954,34 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 											<span><?php esc_html_e( 'Switch home and away?', 'racketmanager' ); ?></span>
 										</div>
 										<?php
+									} elseif ( 'reset_match_result' === $option ) {
+										?>
+										<div class="strike mb-3">
+											<span><?php esc_html_e( 'Reset match result', 'racketmanager' ); ?></span>
+										</div>
+										<div class="mb-3">
+											<p class="text-center"><?php esc_html_e( 'This will remove scores and winner/loser', 'racketmanager' ); ?>.</p>
+										</div>
+										<div class="alert_rm" id="resetMatchAlert" style="display:none;">
+											<div class="alert__body">
+												<div class="alert__body-inner" id="alertresetMatchResponse">
+												</div>
+											</div>
+										</div>
+										<?php
 									}
 									?>
 								</div>
 							</div>
 							<div class="modal-footer">
 								<button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
-								<button type="button" class="btn btn-primary" onclick="Racketmanager.<?php echo esc_attr( $action ); ?>(this, <?php echo esc_attr( $match->league->event->competition->is_tournament ); ?>)"><?php echo esc_html( $button ); ?></button>
+								<?php
+								if ( ! empty( $button ) ) {
+									?>
+									<button type="button" class="btn btn-primary" onclick="Racketmanager.<?php echo esc_attr( $action ); ?>(event, this, <?php echo esc_attr( $match->league->event->competition->is_tournament ); ?>)"><?php echo esc_html( $button ); ?></button>
+									<?php
+								}
+								?>
 							</div>
 						</form>
 					</div>
@@ -2483,5 +2512,52 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			echo esc_html( $message );
 		}
 		wp_die();
+	}
+	/**
+	 * Reset match function
+	 *
+	 * @return void
+	 */
+	public function reset_match_result() {
+		$return    = array();
+		$err_msg   = array();
+		$err_field = array();
+		$valid     = true;
+		$msg       = null;
+		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'match-option' ) ) {
+			$valid       = false;
+			$err_field[] = '';
+			$err_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$modal = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+			if ( $modal ) {
+				$match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
+				if ( $match_id ) {
+					$match = get_match( $match_id );
+					if ( $match ) {
+						$match = $match->reset_result();
+						$msg   = __( 'Match result reset', 'racketmanager' );
+					} else {
+						$valid     = false;
+						$err_msg[] = __( 'Match not found', 'racketmanager' );
+					}
+				} else {
+					$valid     = false;
+					$err_msg[] = __( 'Match id not supplied', 'racketmanager' );
+				}
+			} else {
+				$valid     = false;
+				$err_msg[] = __( 'Modal name not supplied', 'racketmanager' );
+			}
+		}
+		if ( $valid ) {
+			array_push( $return, $msg, $modal, $match_id );
+			wp_send_json_success( $return );
+		} else {
+			$msg = __( 'Unable to reset match', 'racketmanager' );
+			array_push( $return, $msg, $err_msg, $err_field );
+			wp_send_json_error( $return, '500' );
+		}
 	}
 }

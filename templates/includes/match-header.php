@@ -175,6 +175,17 @@ if ( $match->is_pending ) {
 								<?php
 							}
 							?>
+							<?php
+							if ( $allow_reset_match_result ) {
+								?>
+								<li>
+									<a class="dropdown-item" href="" onclick="Racketmanager.matchOptions(event, '<?php echo esc_attr( $match->id ); ?>', 'reset_match_result')">
+										<?php esc_html_e( 'Reset match result', 'racketmanager' ); ?>
+									</a>
+								</li>
+								<?php
+							}
+							?>
 						</ul>
 					</div>
 				</div>

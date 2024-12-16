@@ -1519,6 +1519,70 @@ Racketmanager.setMatchDate = function (e, link, is_tournament) {
 		}
 	});
 }
+Racketmanager.resetMatchResult = function (e, link, is_tournament) {
+	let formId = '#'.concat(link.form.id);
+	let $form = jQuery(formId).serialize();
+	$form += "&action=racketmanager_reset_match_result";
+	let notifyField = '#updateStatusResponse';
+	let alert_id_1;
+	let alert_response_1 = '';
+	if (is_tournament) {
+		alert_id_1 = jQuery('#matchAlert');
+		alert_response_1 = '#alertResponse';
+	} else {
+		alert_id_1 = jQuery('#matchOptionsAlert');
+		alert_response_1 = '#alertMatchOptionsResponse';
+	}
+	jQuery(alert_id_1).hide();
+	jQuery(alert_id_1).removeClass('alert--success alert--warning alert--danger');
+	let alert_id_2 = jQuery('#resetMatchAlert');
+	jQuery(alert_id_2).hide();
+	jQuery(alert_id_2).removeClass('alert--success alert--warning alert--danger');
+	let alert_response_2 = '#alertresetMatchResponse';
+	jQuery(".is-invalid").removeClass("is-invalid");
+	jQuery(notifyField).val("");
+	jQuery(notifyField).hide();
+
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: $form,
+		success: function (response) {
+			let message = response.data[0];
+			let modal = '#' + response.data[1];
+			let match_id = response.data[2];
+			Racketmanager.matchMode(e, match_id, false);
+			if (!is_tournament) {
+				Racketmanager.matchHeader(match_id);
+			}
+			jQuery(alert_id_1).show();
+			jQuery(alert_id_1).addClass('alert--success');
+			jQuery(alert_response_1).html(message);
+			jQuery(modal).modal('hide')
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				let data = response.responseJSON.data;
+				let message = '';
+				for (let errorMsg of data[1]) {
+					message += errorMsg + '<br />';
+				}
+				let errorFields = data[2];
+				for (let errorField of errorFields) {
+					let id = '#'.concat(errorField);
+					jQuery(id).addClass("is-invalid");
+				}
+				jQuery(alert_response_2).html(message);
+			} else {
+				jQuery(alert_response_2).text(response.statusText);
+			}
+			jQuery(alert_id_2).show();
+			jQuery(alert_id_2).addClass('alert--danger');
+		},
+		complete: function () {
+		}
+	});
+}
 Racketmanager.switchHomeAway = function (e, link) {
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();

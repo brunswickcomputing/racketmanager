@@ -983,7 +983,7 @@ final class Racketmanager_Match {
 			$this->away_points_tie = $away_points_tie;
 			$this->winner_id_tie   = $winner_id_tie;
 			$this->loser_id_tie    = $loser_id_tie;
-			$wpdb->query(
+			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
 					"UPDATE {$wpdb->racketmanager_matches} SET `home_points_tie` = %f, `away_points_tie` = %f, `winner_id_tie` = %d, `loser_id_tie` = %d WHERE `id` = %d",
 					$home_points_tie,

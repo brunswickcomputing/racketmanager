@@ -801,6 +801,25 @@ function racketmanager_match( $match_id, $args = array() ) {
 	$shortcode .= ']';
 	echo do_shortcode( $shortcode );
 }
+	/**
+	 * Display tournament match
+	 *
+	 * @param int   $match_id match.
+	 * @param array $args additional arguments as associative array (optional).
+	 * @category template-tags
+	 */
+function racketmanager_tournament_match( $match_id, $args = array() ) {
+	$defaults         = array( 'template' => '' );
+	$args             = array_merge( $defaults, $args );
+	$args['match_id'] = $match_id;
+
+	$shortcode = '[tournamentmatch';
+	foreach ( $args as $key => $value ) {
+		$shortcode .= ' ' . $key . "='" . $value . "'";
+	}
+	$shortcode .= ']';
+	echo do_shortcode( $shortcode );
+}
 
 	/**
 	 * Display team list

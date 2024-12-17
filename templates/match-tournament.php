@@ -12,7 +12,6 @@
 namespace Racketmanager;
 
 global $wp_query;
-$post_id            = $wp_query->post->ID; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 $tournament_link    = empty( $tournament ) ? null : '/tournament/' . seo_url( $tournament->name ) . '/';
 $winner             = null;
 $winner_set         = null;
@@ -305,6 +304,13 @@ if ( $match ) {
 				<input type="hidden" name="updateMatch" id="updateMatch" value="results" />
 				<input name="match_status" type="hidden" id="match_status" value="<?php echo esc_attr( $match_status ); ?>" />
 				<?php
+				if ( ! empty( $tournament ) ) {
+					?>
+					<input type="hidden" id="tournamentName" value="<?php echo esc_attr( seo_url( $tournament->name ) ); ?>" />
+					<?php
+				}
+				?>
+				<?php
 				$page_referrer = wp_get_referer();
 				if ( ! $page_referrer ) {
 					if ( ! empty( $tournament ) ) {
@@ -312,9 +318,10 @@ if ( $match ) {
 					}
 				}
 				?>
-				<div class="alert_rm" id="matchAlert" style="display:none;">
+				<div class="alert_rm <?php echo empty( $message ) ? null : 'alert--success'; ?>" id="matchAlert" <?php echo empty( $message ) ? 'style="display:none;"' : null; ?>>
 					<div class="alert__body">
 						<div class="alert__body-inner" id="alertResponse">
+							<span><?php echo esc_html( $message ); ?></span>
 						</div>
 					</div>
 				</div>

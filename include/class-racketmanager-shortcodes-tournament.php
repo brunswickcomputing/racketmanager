@@ -590,12 +590,14 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			array(
 				'tournament' => false,
 				'match_id'   => 0,
+				'message'    => null,
 				'template'   => '',
 			),
 			$atts
 		);
 		$tournament = $args['tournament'];
 		$match_id   = $args['match_id'];
+		$message    = $args['message'];
 		$template   = $args['template'];
 
 		if ( ! $tournament ) {
@@ -636,6 +638,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 					'tournament'        => $tournament,
 					'match'             => $match,
 					'is_update_allowed' => $is_update_allowed,
+					'message'           => $message,
 				)
 			);
 		}

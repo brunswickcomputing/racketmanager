@@ -130,21 +130,43 @@ class Racketmanager_Ajax extends RacketManager {
 			$match_screen = '';
 			$match_id     = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
 			$mode         = isset( $_POST['mode'] ) ? sanitize_text_field( wp_unslash( $_POST['mode'] ) ) : null;
-			if ( ! empty( $match_id ) ) {
-				$match = get_match( $match_id );
-			}
 			if ( 'edit' === $mode ) {
 				$is_edit_mode = true;
 			} else {
 				$is_edit_mode = false;
 			}
-			if ( $match ) {
-				$match_screen = $racketmanager->show_match_screen( $match, $is_edit_mode );
+			if ( ! empty( $match_id ) ) {
+				$match = get_match( $match_id );
 			}
-			wp_send_json_success( $match_screen );
-		} else {
-			wp_send_json_error( $message, 500 );
+			if ( $match ) {
+				if ( $match->league->event->competition->is_tournament ) {
+					$args       = array();
+					$tournament = isset( $_POST['tournament'] ) ? sanitize_text_field( wp_unslash( $_POST['tournament'] ) ) : null;
+					if ( $tournament ) {
+						$tournament         = un_seo_url( $tournament );
+						$args['tournament'] = $tournament;
+					}
+					$message = isset( $_POST['message'] ) ? sanitize_text_field( wp_unslash( $_POST['message'] ) ) : null;
+					if ( $message ) {
+						$args['message'] = $message;
+					}
+					$match_screen = racketmanager_tournament_match( $match_id, $args );
+				} else {
+					$match_screen = $racketmanager->show_match_screen( $match, $is_edit_mode );
+				}
+			} else {
+				$valid   = false;
+				$message = __( 'Match not found', 'racketmanager' );
+			}
 		}
+		if ( $valid ) {
+			$output = $match_screen;
+		} else {
+			$output = $this->return_error( $message );
+			status_header( 404 );
+		}
+		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		wp_die();
 	}
 
 	/**
@@ -1346,5 +1368,28 @@ class Racketmanager_Ajax extends RacketManager {
 		}
 
 		return $match_confirmed;
+	}
+	/**
+	 * Return error function
+	 *
+	 * @param string $msg mesage to display.
+	 * @return string output html modal
+	 */
+	protected function return_error( $msg ) {
+		ob_start();
+		?>
+		<div>
+			<div class="alert_rm alert--danger">
+				<div class="alert__body">
+					<div class="alert__body-inner">
+						<span><?php echo esc_html( $msg ); ?></span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<?php
+		$output = ob_get_contents();
+		ob_end_clean();
+		return $output;
 	}
 }

@@ -1101,9 +1101,16 @@ Racketmanager.resetMatchScores = function (e, formRef) {
 	jQuery(selector)
 		.removeClass('tie');
 };
-Racketmanager.matchMode = function (e, match_id, mode) {
+Racketmanager.matchMode = function (e, match_id, mode, message) {
 	e.preventDefault();
-	let notifyField = "#showMatchRubbers";
+	let notifyField;
+	let tournament;
+	if (mode === 'tournament') {
+		notifyField = ".elementor-shortcode";
+		tournament = jQuery('#tournamentName').val();
+	} else {
+		notifyField = "#showMatchRubbers";
+	}
 	jQuery(notifyField).val("");
 	jQuery(notifyField).hide();
 	jQuery("#splash").css('opacity', 1);
@@ -1112,33 +1119,17 @@ Racketmanager.matchMode = function (e, match_id, mode) {
 	jQuery(".match-print").hide();
 	jQuery(".match-mode").hide();
 	jQuery(".match-mode").removeClass("d-none");
-
-	jQuery.ajax({
-		url: ajax_var.url,
-		type: "POST",
-		data: {
+	jQuery(notifyField).load(
+		ajax_var.url,
+		{
 			"match_id": match_id,
 			"mode": mode,
+			"tournament": tournament,
 			"action": "racketmanager_match_mode",
 			"security": ajax_var.ajax_nonce,
+			"message": message,
 		},
-		success: function (response) {
-			jQuery(notifyField).empty();
-			jQuery(notifyField).html(response.data);
-			Racketmanager.matchHeader(match_id);
-		},
-		error: function (response) {
-			if (response.responseJSON) {
-				let message = response.responseJSON.data;
-				jQuery(notifyField).show();
-				jQuery(notifyField).html(message);
-			} else {
-				jQuery(notifyField).text(response.statusText);
-			}
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-error');
-		},
-		complete: function () {
+		function () {
 			jQuery("#splash").css('opacity', 0);
 			jQuery("#splash").hide();
 			if ('view' === mode) {
@@ -1149,8 +1140,7 @@ Racketmanager.matchMode = function (e, match_id, mode) {
 			jQuery(hidefield).hide();
 			jQuery(notifyField).show();
 		}
-	});
-
+	);
 };
 Racketmanager.matchHeader = function (match_id, edit_mode = false) {
 	let notifyField = "#match-header";
@@ -1526,12 +1516,15 @@ Racketmanager.resetMatchResult = function (e, link, is_tournament) {
 	let notifyField = '#updateStatusResponse';
 	let alert_id_1;
 	let alert_response_1 = '';
+	let mode;
 	if (is_tournament) {
 		alert_id_1 = jQuery('#matchAlert');
 		alert_response_1 = '#alertResponse';
+		mode = 'tournament';
 	} else {
 		alert_id_1 = jQuery('#matchOptionsAlert');
 		alert_response_1 = '#alertMatchOptionsResponse';
+		mode = 'view';
 	}
 	jQuery(alert_id_1).hide();
 	jQuery(alert_id_1).removeClass('alert--success alert--warning alert--danger');
@@ -1551,7 +1544,7 @@ Racketmanager.resetMatchResult = function (e, link, is_tournament) {
 			let message = response.data[0];
 			let modal = '#' + response.data[1];
 			let match_id = response.data[2];
-			Racketmanager.matchMode(e, match_id, false);
+			Racketmanager.matchMode(e, match_id, mode, message);
 			if (!is_tournament) {
 				Racketmanager.matchHeader(match_id);
 			}

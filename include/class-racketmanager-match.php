@@ -2395,7 +2395,7 @@ final class Racketmanager_Match {
 		$this->away_captain = null;
 		$wpdb->query(  //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_matches} SET `home_points` = null, `away_points` =null, `winner_id` = %d, `loser_id` = %d, `custom` = %s, `updated_user` = %d, `updated` = now(), `confirmed` = %s, `status` = %d, `home_captain` = null, `away_captain` = null WHERE `id` = %d",
+				"UPDATE {$wpdb->racketmanager_matches} SET `home_points` = null, `away_points` = null, `winner_id` = %d, `loser_id` = %d, `custom` = %s, `updated_user` = %d, `updated` = now(), `confirmed` = %s, `status` = %d, `home_captain` = null, `away_captain` = null, `home_points_tie` = null, `away_points_tie` = null, `winner_id_tie` = null, `loser_id_tie` = null WHERE `id` = %d",
 				intval( $this->winner_id ),
 				intval( $this->loser_id ),
 				maybe_serialize( $this->custom ),
@@ -2406,7 +2406,10 @@ final class Racketmanager_Match {
 			)
 		);
 		if ( ! empty( $this->leg ) && '2' === $this->leg ) {
-			$this->update_result_tie();
+			$this->home_points_tie = null;
+			$this->away_points_tie = null;
+			$this->winner_id_tie   = null;
+			$this->loser_id_tie    = null;
 		}
 		$this->home_score   = '';
 		$this->away_score   = '';

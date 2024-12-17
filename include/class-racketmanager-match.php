@@ -993,7 +993,7 @@ final class Racketmanager_Match {
 					$this->id
 				)
 			);
-			wp_cache_delete( $this->id, 'matches' );
+			wp_cache_set( $this->id, $this, 'matches' );
 		}
 	}
 	/**

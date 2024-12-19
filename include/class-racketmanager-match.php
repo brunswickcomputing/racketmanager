@@ -2423,6 +2423,57 @@ final class Racketmanager_Match {
 		$this->delete_result_check();
 		if ( 'league' === $this->league->event->competition->type ) {
 			$this->league->update_standings( $this->season );
+		} elseif ( 'final' !== $this->final_round ) {
+			$this_round            = $this->league->championship->get_finals( $this->final_round );
+			$this_round_no         = $this_round['round'];
+			$next_round_no         = $this_round_no + 1;
+			$next_round            = $this->league->championship->get_final_keys( $next_round_no );
+			$match_args['final']   = $this->final_round;
+			$match_args['orderby'] = array( 'id' => 'ASC' );
+			if ( empty( $this->leg ) || '2' === $this->leg ) {
+				if ( ! empty( $this->leg ) ) {
+					$match_args['leg'] = $this->leg;
+				}
+				$current_round_matches = $this->league->get_matches( $match_args );
+				$i                     = 0;
+				$found                 = false;
+				foreach ( $current_round_matches as $match ) {
+					if ( $this->id === $match->id ) {
+						$found = true;
+						break;
+					}
+					++$i;
+				}
+				if ( $found ) {
+					$next_round_match_no = floor( $i / 2 );
+					$match_args['final'] = $next_round;
+					if ( ! empty( $this->leg ) ) {
+						$match_args['leg'] = 1;
+					}
+					$next_round_matches = $this->league->get_matches( $match_args );
+					if ( $next_round_matches ) {
+						$next_round_match = $next_round_matches[ $next_round_match_no ];
+						if ( $next_round_match ) {
+							if ( $next_round_match->is_pending ) {
+								$team_ref = $i + 1;
+								$new_team = '1_' . $this->final_round . '_' . $team_ref;
+								if ( $i & 1 ) {
+									$next_round_match->away_team = $new_team;
+								} else {
+									$next_round_match->home_team = $new_team;
+								}
+								$next_round_match->set_teams( $next_round_match->home_team, $next_round_match->away_team );
+								if ( ! empty( $next_round_match->linked_match ) ) {
+									$linked_match = get_match( $next_round_match->linked_match );
+									if ( $linked_match ) {
+										$linked_match->set_teams( $next_round_match->home_team, $next_round_match->away_team );
+									}
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 		return $updated;
 	}

@@ -2373,7 +2373,7 @@ final class Racketmanager_Match {
 	 * @return boolean
 	 */
 	public function reset_result() {
-		global $wpdb;
+		global $wpdb, $racketmanager;
 		$updated = false;
 		if ( ! empty( $this->num_rubbers ) ) {
 			$rubbers = $this->get_rubbers();

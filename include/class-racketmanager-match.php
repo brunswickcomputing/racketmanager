@@ -2395,13 +2395,11 @@ final class Racketmanager_Match {
 		$this->away_captain = null;
 		$wpdb->query(  //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_matches} SET `home_points` = null, `away_points` = null, `winner_id` = %d, `loser_id` = %d, `custom` = %s, `updated_user` = %d, `updated` = now(), `confirmed` = %s, `status` = %d, `home_captain` = null, `away_captain` = null, `home_points_tie` = null, `away_points_tie` = null, `winner_id_tie` = null, `loser_id_tie` = null WHERE `id` = %d",
+				"UPDATE {$wpdb->racketmanager_matches} SET `home_points` = null, `away_points` = null, `winner_id` = %d, `loser_id` = %d, `custom` = %s, `updated_user` = %d, `updated` = now(), `confirmed` = null, `status` = null, `home_captain` = null, `away_captain` = null, `home_points_tie` = null, `away_points_tie` = null, `winner_id_tie` = null, `loser_id_tie` = null WHERE `id` = %d",
 				intval( $this->winner_id ),
 				intval( $this->loser_id ),
 				maybe_serialize( $this->custom ),
 				get_current_user_id(),
-				$this->confirmed,
-				$this->status,
 				$this->id
 			)
 		);

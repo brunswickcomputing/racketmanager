@@ -2482,6 +2482,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 							if ( ! is_null( $link_id ) ) {
 								$args[ $tab ] = $link_id;
 							}
+							$season = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+							if ( $season ) {
+								$args['season'] = $season;
+							}
 							$function_name = 'Racketmanager\racketmanager_' . $target_ref . '_' . $tab;
 							if ( function_exists( $function_name ) ) {
 								ob_start();

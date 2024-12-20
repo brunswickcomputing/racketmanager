@@ -1308,17 +1308,20 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$args     = shortcode_atts(
 			array(
 				'id'       => false,
+				'season'   => false,
 				'template' => '',
 			),
 			$atts
 		);
 		$event_id = $args['id'];
+		$season   = $args['season'];
 		$template = $args['template'];
 		$event    = get_event( $event_id );
 		if ( ! $event ) {
 			$msg = __( 'Event not found', 'racketmanager' );
 			return $this->return_error( $msg );
 		}
+		$event->set_season( $season );
 		$event->teams = $event->get_teams(
 			array(
 				'season'  => $event->current_season['name'],

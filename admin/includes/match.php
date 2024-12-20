@@ -135,8 +135,8 @@ namespace Racketmanager;
 										} else {
 											$round_no = $final['round'] - 1;
 										}
-										if ( ! empty( $league->seasons[ $season ]['matchDates'][ $round_no ] ) ) {
-											$date = $league->seasons[ $season ]['matchDates'][ $round_no ];
+										if ( ! empty( $league->event->seasons[ $season ]['matchDates'][ $round_no ] ) ) {
+											$date = $league->event->seasons[ $season ]['matchDates'][ $round_no ];
 										}
 									}
 								}

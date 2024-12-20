@@ -648,7 +648,7 @@ final class Racketmanager_Rubber {
 									if ( $competition_season ) {
 										if ( ! empty( $competition_season['fixedMatchDates'] ) ) {
 											$league         = get_league( $match->league_id );
-											$num_match_days = $league->seasons[ $match->season ]['num_match_days'];
+											$num_match_days = $league->event->seasons[ $match->season ]['num_match_days'];
 											if ( $match->match_day > ( $num_match_days - $options['playedRounds'] ) ) {
 												$count = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 													$wpdb->prepare(

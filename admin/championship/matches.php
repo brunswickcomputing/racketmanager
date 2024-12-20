@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-$match_dates     = $league->seasons[ $season ]['matchDates'];
+$match_dates     = $league->event->seasons[ $season ]['matchDates'];
 $num_match_dates = count( $match_dates );
 if ( $num_match_dates ) {
 	$match_date_index = $num_match_dates - 1;

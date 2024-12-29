@@ -98,6 +98,9 @@ class RacketManager {
 		add_filter( 'pre_get_document_title', array( &$this, 'set_page_title' ), 999, 1 );
 		add_action( 'rm_calculate_player_ratings', array( &$this, 'calculate_player_ratings' ), 1 );
 		add_action( 'rm_calculate_tournament_ratings', array( &$this, 'calculate_tournament_ratings' ), 1 );
+		add_action( 'rm_calculate_cup_ratings', array( &$this, 'calculate_cup_ratings' ), 10, 3 );
+		add_action( 'rm_notify_team_entry_open', array( &$this, 'notify_team_entry_open' ), 10, 2 );
+		add_action( 'rm_notify_team_entry_reminder', array( &$this, 'notify_team_entry_reminder' ), 10, 2 );
 	}
 	/**
 	 * Set page title function
@@ -516,6 +519,223 @@ class RacketManager {
 				}
 			}
 		}
+	}
+	/**
+	 * Calculate cup ratings
+	 *
+	 * @param int $competition_id competition id.
+	 * @param int $season season name.
+	 * @return void
+	 */
+	public function calculate_cup_ratings( $competition_id, $season ) {
+		if ( $competition_id ) {
+			$competition = get_competition( $competition_id );
+			if ( $competition ) {
+				if ( $season ) {
+					if ( isset( $competition->seasons[ $season ] ) ) {
+						$teams = $competition->get_teams( array( 'season' => $season ) );
+						foreach ( $teams as $team ) {
+							$team_points = 0;
+							// set league ratings.
+							$prev_season      = $season - 1;
+							$league_standings = $this->get_league_standings(
+								array(
+									'season' => $prev_season,
+									'team'   => $team->team_id,
+								)
+							);
+							if ( $league_standings ) {
+								foreach ( $league_standings as $league_standing ) {
+									$points       = 0;
+									$league       = get_league( $league_standing->id );
+									$league_title = explode( ' ', $league->title );
+									$league_no    = end( $league_title );
+									if ( ! $league->event->competition->is_league ) {
+										$position = 0;
+									} elseif ( is_numeric( $league_no ) ) {
+										$position = $league_no * $league_standing->rank;
+									} else {
+										$position = $league_standing->rank;
+									}
+									if ( isset( $league->event->age_limit ) ) {
+										if ( 'open' === $league->event->age_limit ) {
+											$event_points = 1;
+										} elseif ( $league->event->age_limit >= 30 ) {
+											$event_points = 0.25;
+										} elseif ( 16 === $league->event->age_limit ) {
+											$event_points = 0.4;
+										} elseif ( 14 === $league->event->age_limit ) {
+											$event_points = 0.25;
+										} elseif ( 12 === $league->event->age_limit ) {
+											$event_points = 0.15;
+										}
+									} else {
+										$event_points = 1;
+									}
+									$position_points = array( 300, 240, 192, 180, 160, 140, 128, 120, 116, 112, 108, 104, 400, 96, 88, 80, 76, 72, 68, 64, 60, 65, 52, 48, 44, 40, 36, 32, 28, 24, 20 );
+									$base_points     = isset( $position_points[ $position - 1 ] ) ? $position_points[ $position - 1 ] : 0;
+									if ( ! empty( $base_points ) ) {
+										$points = ceil( $base_points * $event_points );
+									}
+									$team_points += $points;
+								}
+							}
+							// set cup rating.
+							$matches = $this->get_matches(
+								array(
+									'team'     => $team->team_id,
+									'final'    => 'all',
+									'time'     => 730,
+									'complete' => true,
+								)
+							);
+							foreach ( $matches as $match ) {
+								$team_points += Racketmanager_Util::calculate_championship_rating( $match, $team->team_id );
+							}
+							if ( $team_points ) {
+								$league_team = get_league_team( $team->tableId );
+								if ( $league_team ) {
+									$league_team->set_rating( $team_points );
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	/**
+	 * Notify team entry open
+	 *
+	 * @param int $competition_id competition id.
+	 * @param int $season season name.
+	 * @return void
+	 */
+	public function notify_team_entry_open( $competition_id, $season ) {
+		if ( $competition_id ) {
+			$competition = get_competition( $competition_id );
+			if ( $competition ) {
+				if ( isset( $competition->seasons[ $season ] ) ) {
+					$this->notify_entry_open( $competition->type, $competition->id, $season );
+				}
+			}
+		}
+	}
+	/**
+	 * Notify team entry reminder
+	 *
+	 * @param int $competition_id competition id.
+	 * @param int $season season name.
+	 * @return void
+	 */
+	public function notify_team_entry_reminder( $competition_id, $season ) {
+		global $racketmanager, $racketmanager_shortcodes;
+		if ( $competition_id ) {
+			$competition = get_competition( $competition_id );
+			if ( $competition ) {
+				if ( isset( $competition->seasons[ $season ] ) ) {
+					$clubs = $this->get_clubs(
+						array(
+							'type' => 'affiliated',
+						)
+					);
+					foreach ( $clubs as $c => $club ) {
+						$entry_found = $competition->get_clubs(
+							array(
+								'club_id' => $club->id,
+								'count'   => true,
+								'season'  => $season,
+							)
+						);
+						if ( $entry_found ) {
+							unset( $clubs[ $c ] );
+						}
+					}
+					if ( $clubs ) {
+						if ( $competition->is_league ) {
+							$is_championship = false;
+						} else {
+							$is_championship = true;
+						}
+						$date_closing     = date_create( $competition->seasons[ $season ]['closing_date'] );
+						$now              = date_create();
+						$remaining_time   = date_diff( $date_closing, $now, true );
+						$days_remaining   = $remaining_time->days;
+						$date_closing     = isset( $competition->seasons[ $season ]['closing_date'] ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['closing_date'] ) : null;
+						$date_start       = isset( $competition->seasons[ $season ]['dateStart'] ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['dateStart'] ) : null;
+						$date_end         = isset( $competition->seasons[ $season ]['dateEnd'] ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['dateEnd'] ) : null;
+						$url              = $this->site_url . '/entry-form/' . seo_url( $competition->name ) . '/' . $season . '/';
+						$competition_name = $competition->name . ' ' . $season;
+						$headers          = array();
+						$from_email       = $this->get_confirmation_email( $competition->type );
+						if ( $from_email ) {
+							$headers[]         = 'From: ' . ucfirst( $competition->type ) . 'Secretary <' . $from_email . '>';
+							$headers[]         = 'cc: ' . ucfirst( $competition->type ) . 'Secretary <' . $from_email . '>';
+							$organisation_name = $this->site_name;
+							foreach ( $clubs as $club ) {
+								$email_subject = $this->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entries Closing Soon', 'racketmanager' ) . ' - ' . $club->name;
+								$email_to      = $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
+								$action_url    = $url . seo_url( $club->shortcode ) . '/';
+								$email_message = $racketmanager_shortcodes->load_template(
+									'competition-entry-open',
+									array(
+										'email_subject'   => $email_subject,
+										'from_email'      => $from_email,
+										'action_url'      => $action_url,
+										'organisation'    => $organisation_name,
+										'is_championship' => $is_championship,
+										'competition'     => $competition_name,
+										'club'            => $club,
+										'date_closing'    => $date_closing,
+										'date_start'      => $date_start,
+										'date_end'        => $date_end,
+										'days_remaining'  => $days_remaining,
+									),
+									'email'
+								);
+								wp_mail( $email_to, $email_subject, $email_message, $headers );
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	/**
+	 * Get League standings function
+	 *
+	 * @param array $args array of query arguments.
+	 * @return array
+	 */
+	private function get_league_standings( $args = array() ) {
+		global $wpdb;
+		$defaults = array(
+			'season' => false,
+			'team'   => false,
+		);
+		$args     = array_merge( $defaults, $args );
+		$season   = $args['season'];
+		$team_id  = $args['team'];
+		$sql      = "SELECT l.id, t.`rank` FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} t WHERE l.`id` = t.`league_id`";
+		if ( $season ) {
+			$sql .= $wpdb->prepare(
+				' AND t.`season` = %d',
+				$season
+			);
+		}
+		if ( $team_id ) {
+			$sql .= $wpdb->prepare(
+				' AND t.`team_id` = %d',
+				$team_id
+			);
+		}
+		$sql             .= ' ORDER BY l.`id` ASC';
+		$league_standings = wp_cache_get( md5( $sql ), 'league_standings' );
+		if ( ! $league_standings ) {
+			$league_standings = $wpdb->get_results( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			wp_cache_set( md5( $sql ), $league_standings, 'league_standings' );
+		}
+		return $league_standings;
 	}
 	/**
 	 * Adds our templates
@@ -2874,6 +3094,7 @@ class RacketManager {
 		'tournament_id'       => false,
 		'player'              => false,
 		'type'                => false,
+		'complete'            => false,
 	);
 
 	/**
@@ -2914,6 +3135,7 @@ class RacketManager {
 		$tournament_id        = $match_args['tournament_id'];
 		$player               = $match_args['player'];
 		$type                 = $match_args['type'];
+		$complete             = $match_args['complete'];
 		$sql_from             = " FROM {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager} AS l";
 		if ( $count ) {
 			$sql = "SELECT COUNT(*) FROM {$wpdb->racketmanager_matches} WHERE 1 = 1";
@@ -3019,6 +3241,9 @@ class RacketManager {
 		if ( $type ) {
 			$sql .= " AND `league_id` in (select `id` from {$wpdb->racketmanager} WHERE `event_id` in (select e.`id` from {$wpdb->racketmanager_events} e WHERE e.`type` like '%%" . $type . "%%'))";
 		}
+		if ( $complete ) {
+			$search_terms[] = 'm.`winner_id` != 0';
+		}
 		if ( $count ) {
 			return intval(
 				$wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -3039,10 +3264,14 @@ class RacketManager {
 			}
 		}
 		$sql     = $sql_fields . $sql_from . $sql . ' ORDER BY ' . $orderby_string;
-		$matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-			$sql
-		);
+		$matches = wp_cache_get( md5( $sql ), 'matches' );
+		if ( ! $matches ) {
+			$matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			);
+			wp_cache_set( md5( $sql ), $matches, 'matches' );
+		}
 		foreach ( $matches as $i => $match ) {
 			$match = get_match( $match );
 			if ( $player ) {
@@ -3188,7 +3417,15 @@ class RacketManager {
 								$is_championship = true;
 							}
 							if ( empty( $return->error ) ) {
-								$date_closing     = isset( $competition->seasons[ $season ]['closing_date'] ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['closing_date'] ) : null;
+								$season_dtls             = (object) $competition->seasons[ $season ];
+								$season_dtls->venue_name = null;
+								if ( ! empty( $season_dtls->venue ) ) {
+									$venue_club = get_club( $season_dtls->venue );
+									if ( $venue_club ) {
+										$season_dtls->venue_name = $venue_club->shortcode;
+									}
+								}
+								$date_closing     = isset( $season_dtls->closing_date ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['closing_date'] ) : null;
 								$date_start       = isset( $competition->seasons[ $season ]['dateStart'] ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['dateStart'] ) : null;
 								$date_end         = isset( $competition->seasons[ $season ]['dateEnd'] ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['dateEnd'] ) : null;
 								$url              = $this->site_url . '/entry-form/' . seo_url( $competition->name ) . '/' . $season . '/';

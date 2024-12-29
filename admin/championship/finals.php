@@ -21,8 +21,9 @@ $view    = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view
 			<?php
 			if ( empty( $tournament ) ) {
 				?>
-				<input type="hidden" name="subpage" value="<?php echo esc_html( $subpage ); ?>" />
-				<input type="hidden" name="league_id" value="<?php echo esc_html( $league->id ); ?>" />
+				<input type="hidden" name="view" value="<?php echo esc_html( $view ); ?>" />
+				<input type="hidden" name="competition_id" value="<?php echo esc_attr( $competition->id ); ?>" />
+				<input type="hidden" name="league" value="<?php echo esc_html( $league->id ); ?>" />
 				<?php
 			} else {
 				?>
@@ -35,9 +36,13 @@ $view    = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view
 			<input type="hidden" name="season" value="<?php echo esc_html( $league->current_season['name'] ); ?>" />
 
 			<select size="1" name="final" id="final">
-				<?php foreach ( $league->championship->get_finals() as $final ) { ?>
+				<?php
+				foreach ( $league->championship->get_finals() as $final ) {
+					?>
 					<option value="<?php echo esc_html( $final['key'] ); ?>" <?php selected( $league->championship->get_current_final_key(), $final['key'] ); ?>><?php echo esc_html( $final['name'] ); ?></option>
-				<?php } ?>
+					<?php
+				}
+				?>
 			</select>
 			<input type="hidden" name="league-tab" value="matches" />
 			<input type="submit" class="btn btn-secondary" value="<?php esc_html_e( 'Show', 'racketmanager' ); ?>" />
@@ -47,7 +52,8 @@ $view    = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view
 			<?php
 			if ( empty( $tournament ) ) {
 				?>
-				<input type="hidden" name="subpage" value="match" />
+				<input type="hidden" name="view" value="matches" />
+				<input type="hidden" name="competition_id" value="<?php echo esc_attr( $competition->id ); ?>" />
 				<?php
 			} else {
 				?>
@@ -127,10 +133,12 @@ $view    = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view
 					<?php
 					$m = 1; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 					foreach ( $matches as $match ) {
-						if ( empty( $tournament ) ) {
-							$match_link = 'admin.php?page=racketmanager&amp;subpage=match&amp;league_id=' . $league->id . '&amp;edit=' . $match->id . '&amp;season=' . $match->season;
-						} else {
+						if ( $match->league->event->competition->is_tournament ) {
 							$match_link = 'admin.php?page=racketmanager-tournaments&amp;view=match&amp;tournament=' . $tournament->id . '&amp;league=' . $league->id . '&amp;edit=' . $match->id . '&amp;season=' . $match->season . '&amp;final=' . $match->final_round;
+						} elseif ( $match->league->event->competition->is_cup ) {
+							$match_link = 'admin.php?page=racketmanager-cups&amp;view=match&amp;competition_id=' . $competition->id . '&amp;league=' . $league->id . '&amp;edit=' . $match->id . '&amp;season=' . $match->season . '&amp;final=' . $match->final_round;
+						} else {
+							$match_link = 'admin.php?page=racketmanager&amp;subpage=match&amp;league_id=' . $league->id . '&amp;edit=' . $match->id . '&amp;season=' . $match->season;
 						}
 						?>
 						<tr class="">
@@ -160,14 +168,19 @@ $view    = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view
 								<?php
 							}
 							if ( ! empty( $league->num_rubbers ) ) {
-								if ( is_numeric( $match->home_team ) && is_numeric( $match->away_team ) ) {
-									?>
-									<td>
-										<button type="button" class="btn btn-secondary" id="<?php echo esc_html( $match->id ); ?>'" onclick="Racketmanager.showRubbers(this)"><?php echo esc_html__( 'View Rubbers', 'racketmanager' ); ?>
-										</button>
-									</td>
+								?>
+								<td>
 									<?php
-								}
+									if ( is_numeric( $match->home_team ) && is_numeric( $match->away_team ) ) {
+										if ( '-1' !== $match->home_team && '-1' !== $match->away_team ) {
+											?>
+											<a class="btn btn-secondary" href="<?php echo esc_attr( $match->link ); ?>/result/"><?php esc_html_e( 'View match', 'racketmanager' ); ?></a>
+											<?php
+										}
+									}
+									?>
+								</td>
+								<?php
 							} else {
 								for ( $i = 1; $i <= $league->num_sets; $i++ ) {
 									if ( ! isset( $match->sets[ $i ] ) ) {

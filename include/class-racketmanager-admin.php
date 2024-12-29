@@ -38,6 +38,7 @@ class RacketManager_Admin extends RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-ajax-admin.php';
 		$racketmanager_ajax_admin = new Racketmanager_Ajax_Admin();
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-tournament.php';
+		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-cup.php';
 
 		add_action( 'admin_enqueue_scripts', array( &$this, 'loadScripts' ) );
 		add_action( 'admin_enqueue_scripts', array( &$this, 'loadStyles' ) );
@@ -399,7 +400,28 @@ class RacketManager_Admin extends RacketManager {
 				$this->display_leagues_page();
 				break;
 			case 'racketmanager-cups':
-				$this->displayCupsPage();
+				$racketmanager_admin_cup = new RacketManager_Admin_Cup();
+				if ( 'modify' === $view ) {
+					$racketmanager_admin_cup->display_cup_page();
+				} elseif ( 'season' === $view ) {
+					$racketmanager_admin_cup->display_cup_overview_page();
+				} elseif ( 'setup' === $view ) {
+					$racketmanager_admin_cup->display_cup_setup_page();
+				} elseif ( 'setup-event' === $view ) {
+					$racketmanager_admin_cup->display_cup_setup_event_page();
+				} elseif ( 'cup' === $view ) {
+					$racketmanager_admin_cup->display_cup_seasons_page();
+				} elseif ( 'draw' === $view ) {
+					$racketmanager_admin_cup->display_cup_draw_page();
+				} elseif ( 'matches' === $view ) {
+					$racketmanager_admin_cup->display_cup_matches_page();
+				} elseif ( 'match' === $view ) {
+					$racketmanager_admin_cup->display_cup_match_page();
+				} elseif ( 'plan' === $view ) {
+					$racketmanager_admin_cup->display_cup_plan_page();
+				} else {
+					$racketmanager_admin_cup->display_cups_page();
+				}
 				break;
 			case 'racketmanager-tournaments':
 				$racketmanager_admin_tournament = new RacketManager_Admin_Tournament();
@@ -699,7 +721,7 @@ class RacketManager_Admin extends RacketManager {
 					$this->printMessage();
 				} elseif ( isset( $_POST['doactionseason'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 					$tab = 'seasons';
-					$this->delete_seasons_from_competition();
+					$this->delete_seasons_from_competition( $competition );
 					$this->printMessage();
 				} elseif ( isset( $_POST['updateSettings'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 					$tab = 'settings';
@@ -920,15 +942,38 @@ class RacketManager_Admin extends RacketManager {
 	}
 	/**
 	 * Delete season(s) from competition via admin
+	 *
+	 * @param object $competition competition object.
 	 */
-	private function delete_seasons_from_competition() {
+	protected function delete_seasons_from_competition( $competition ) {
+		global $racketmanager;
 		if ( ! current_user_can( 'del_seasons' ) ) {
-			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
+			$racketmanager->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 		} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'seasons-bulk' ) ) {
-				$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-		} elseif ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] && isset( $_POST['del_season'] ) && isset( $_POST['competition_id'] ) ) {
-				$this->delete_competition_season( $_POST['del_season'], intval( $_POST['competition_id'] ) ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-
+			$racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+		} elseif ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] && isset( $_POST['del_season'] ) && isset( $competition ) ) {
+			$msg = array();
+			foreach ( $_POST['del_season'] as $season ) {  //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+				$update = $competition->delete_season( $season );
+				if ( $competition->is_cup ) {
+					$schedule_args[] = intval( $competition->id );
+					$schedule_args[] = intval( $season );
+					$schedule_name   = 'rm_calculate_cup_ratings';
+					Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+					$schedule_name = 'notify_team_entry_open';
+					Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+					$schedule_name = 'rm_notify_team_entry_reminder';
+					Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+				}
+				if ( $update ) {
+					/* translators: %s: season name */
+					$msg[] = sprintf( __( 'Season %s deleted', 'racketmanager' ), $season );
+				} else {
+					/* translators: %s: season name */
+					$msg[] = sprintf( __( 'Season %s not deleted', 'racketmanager' ), $season );
+				}
+			}
+			$racketmanager->set_message( implode( '<br>', $msg ) );
 		}
 	}
 	/**
@@ -2484,12 +2529,16 @@ class RacketManager_Admin extends RacketManager {
 
 			$matches = array();
 			if ( isset( $_GET['edit'] ) ) {
+				$reset        = isset( $_GET['reset'] ) ? true : false;
 				$match_id     = intval( $_GET['edit'] );
 				$match        = get_match( $match_id );
 				$mode         = 'edit';
 				$edit         = true;
 				$form_title   = __( 'Edit Match', 'racketmanager' );
 				$submit_title = $form_title;
+				if ( $reset ) {
+					$match->reset_result();
+				}
 				if ( isset( $match->final_round ) && '' !== $match->final_round ) {
 					$cup             = true;
 					$single_cup_game = true;
@@ -3547,17 +3596,14 @@ class RacketManager_Admin extends RacketManager {
 			$this->set_message( 'Number of match days not specified', 'racketmanager', 'error' );
 			return false;
 		}
-
-		if ( '' === $competition->seasons ) {
-			$competition->seasons = array();
-		}
-		$competition->seasons[ $season ] = array(
+		$seasons            = empty( $competition->seasons ) ? array() : $competition->seasons;
+		$seasons[ $season ] = array(
 			'name'           => $season,
 			'num_match_days' => $num_match_days,
 			'status'         => 'draft',
 		);
-		ksort( $competition->seasons );
-		$this->save_competition_seasons( $competition->seasons, $competition->id );
+		ksort( $seasons );
+		$competition->update_seasons( $seasons );
 		$events = $competition->get_events();
 		foreach ( $events as $event ) {
 			$event = get_event( $event );
@@ -3626,11 +3672,12 @@ class RacketManager_Admin extends RacketManager {
 	 * @param object $season_data season data.
 	 */
 	protected function edit_season( $season_data ) {
+		global $racketmanager;
 		global $competition;
 		$error = false;
 		if ( false !== $season_data->match_dates ) {
 			if ( empty( $season_data->match_dates ) ) {
-				$this->set_message( __( 'Match dates not set', 'racketmanager' ), true );
+				$racketmanager->set_message( __( 'Match dates not set', 'racketmanager' ), true );
 				$error = true;
 			} else {
 				$match_date_values = array();
@@ -3639,16 +3686,16 @@ class RacketManager_Admin extends RacketManager {
 				foreach ( $season_data->match_dates as $match_date ) {
 					if ( empty( $match_date ) ) {
 						++$match_date_empty;
-						$this->set_message( __( 'Match date not set', 'racketmanager' ), true );
+						$racketmanager->set_message( __( 'Match date not set', 'racketmanager' ), true );
 						$error = true;
 					} elseif ( 'true' === $season_data->fixed_dates ) {
 						$valid_match_date = array_search( $match_date, $match_date_values, true );
 						if ( false !== $valid_match_date ) {
-							$this->set_message( __( 'Match dates must be unique', 'racketmanager' ), true );
+							$racketmanager->set_message( __( 'Match dates must be unique', 'racketmanager' ), true );
 							$error = true;
 						} elseif ( $match_date <= $prev_match_date ) {
-								$this->set_message( __( 'Match date must be later than previous date', 'racketmanager' ), true );
-								$error = true;
+							$racketmanager->set_message( __( 'Match date must be later than previous date', 'racketmanager' ), true );
+							$error = true;
 						} else {
 							$match_date_values[] = $match_date;
 							$prev_match_date     = $match_date;
@@ -3657,42 +3704,42 @@ class RacketManager_Admin extends RacketManager {
 				}
 				if ( $error && count( $season_data->match_dates ) === $match_date_empty ) {
 					$error = false;
-					$this->set_message( null );
+					$racketmanager->set_message( null );
 				}
 			}
 		}
 		if ( ! $season_data->num_match_days && ! $season_data->is_box ) {
-			$this->set_message( __( 'Number of match days must be set', 'racketmanager' ), true );
+			$racketmanager->set_message( __( 'Number of match days must be set', 'racketmanager' ), true );
 			$error = true;
 		}
 		if ( ! $season_data->status ) {
-			$this->set_message( __( 'Status must be set', 'racketmanager' ), true );
+			$racketmanager->set_message( __( 'Status must be set', 'racketmanager' ), true );
 			$error = true;
 		}
 		if ( true !== $season_data->home_away && false !== $season_data->home_away ) {
-			$this->set_message( __( 'Fixture type must be set', 'racketmanager' ), true );
+			$racketmanager->set_message( __( 'Fixture type must be set', 'racketmanager' ), true );
 			$error = true;
 		}
 		if ( 'competition' === $season_data->type ) {
-			if ( ! $season_data->date_open ) {
-				$this->set_message( __( 'Open date must be set', 'racketmanager' ), true );
+			if ( empty( $season_data->date_open ) ) {
+				$racketmanager->set_message( __( 'Open date must be set', 'racketmanager' ), true );
 				$error = true;
 			}
-			if ( ! $season_data->closing_date ) {
-				$this->set_message( __( 'Closing date must be set', 'racketmanager' ), true );
+			if ( empty( $season_data->closing_date ) ) {
+				$racketmanager->set_message( __( 'Closing date must be set', 'racketmanager' ), true );
 				$error = true;
 			}
-			if ( ! $season_data->date_start ) {
-				$this->set_message( __( 'Start date must be set', 'racketmanager' ), true );
+			if ( empty( $season_data->date_start ) ) {
+				$racketmanager->set_message( __( 'Start date must be set', 'racketmanager' ), true );
 				$error = true;
 			}
-			if ( ! $season_data->date_end ) {
-				$this->set_message( __( 'End date must be set', 'racketmanager' ), true );
+			if ( empty( $season_data->date_end ) ) {
+				$racketmanager->set_message( __( 'End date must be set', 'racketmanager' ), true );
 				$error = true;
 			}
 		}
-		if ( ! $season_data->type ) {
-			$this->set_message( __( 'Type must be set', 'racketmanager' ), true );
+		if ( empty( $season_data->type ) ) {
+			$racketmanager->set_message( __( 'Type must be set', 'racketmanager' ), true );
 			$error = true;
 		}
 		if ( ! $error ) {
@@ -3717,6 +3764,7 @@ class RacketManager_Admin extends RacketManager {
 				$object->seasons[ $season_data->season ]['dateStart']        = $season_data->date_start;
 				$object->seasons[ $season_data->season ]['dateEnd']          = $season_data->date_end;
 				$object->seasons[ $season_data->season ]['competition_code'] = $season_data->competition_code;
+				$object->seasons[ $season_data->season ]['venue']            = $season_data->venue;
 			}
 			ksort( $object->seasons );
 			if ( 'competition' === $season_data->type ) {
@@ -3725,7 +3773,7 @@ class RacketManager_Admin extends RacketManager {
 				$this->save_event_seasons( $object->seasons, $season_data->object_id );
 			}
 			/* translators: %s: season */
-			$this->set_message( sprintf( __( 'Season %s saved', 'racketmanager' ), $season_data->season ) );
+			$racketmanager->set_message( sprintf( __( 'Season %s saved', 'racketmanager' ), $season_data->season ) );
 			if ( 'competition' === $season_data->type ) {
 				$events = $competition->get_events();
 				foreach ( $events as $event ) {
@@ -3750,7 +3798,7 @@ class RacketManager_Admin extends RacketManager {
 					$league->delete_team( $team->team_id, $season_data->season );
 				}
 				/* translators: %s: season */
-				$this->set_message( sprintf( __( 'Season %s saved and constitution emailed', 'racketmanager' ), $season_data->season ) );
+				$racketmanager->set_message( sprintf( __( 'Season %s saved and constitution emailed', 'racketmanager' ), $season_data->season ) );
 			}
 		}
 	}
@@ -3803,7 +3851,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @return boolean
 	 */
 	private function save_competition_seasons( $seasons, $competition_id ) {
-		global $wpdb;
+		global $wpdb, $racketmanager;
 		$wpdb->query(
 			$wpdb->prepare(
 				"UPDATE {$wpdb->racketmanager_competitions} SET `seasons` = %s WHERE `id` = %d",
@@ -3812,6 +3860,7 @@ class RacketManager_Admin extends RacketManager {
 			)
 		); // db call ok, no cache ok.
 		wp_cache_delete( $competition_id, 'competitions' );
+		$racketmanager->set_message( 'Season deleted', 'racketmanager' );
 		return true;
 	}
 	/**
@@ -5203,6 +5252,139 @@ class RacketManager_Admin extends RacketManager {
 				$this->set_message( __( 'Error scheduling player ratings calculation', 'racketmanager' ), true );
 			}
 		}
+	}
+	/**
+	 * Set championship matches function
+	 *
+	 * @param object $league league object.
+	 * @param int    $season season name.
+	 * @param array  $input_rounds round details.
+	 * @param string $action action on matches.
+	 */
+	protected function set_championship_matches( $league, $season, $input_rounds, $action ) {
+		global $racketmanager;
+		$valid           = true;
+		$event_season    = $league->event->seasons[ $season ];
+		$num_first_round = $league->championship->num_teams_first_round;
+		$rounds          = array();
+		foreach ( $input_rounds as $round ) {
+			if ( empty( $round['match_date'] ) ) {
+				/* translators: $s: $round number */
+				$msg[] = sprintf( __( 'Match date missing for round %s', 'racketmanager' ), $round['round'] );
+				$valid = false;
+			} elseif ( ! empty( $next_round_date ) && $round['match_date'] >= $next_round_date ) {
+				/* translators: $s: $round number */
+				$msg[] = sprintf( __( 'Match date for round %s after next round date', 'racketmanager' ), $round['round'] );
+				$valid = false;
+			} else {
+				$round_date = $round['match_date'];
+				$teams      = $league->championship->get_final_teams( $round['key'] );
+				if ( 1 !== intval( $round['round'] ) ) {
+					$prev_round      = $round['round'] - 1;
+					$prev_round_name = $league->championship->get_final_keys( $prev_round );
+					$first_round     = false;
+					$home_team       = 1;
+					$away_team       = 2;
+				} else {
+					$first_round = true;
+					switch ( $round['num_matches'] ) {
+						case 1:
+							$team_array = array( 1 );
+							break;
+						case 2:
+							$team_array = array( 1, 3 );
+							break;
+						case 4:
+							$team_array = array( 1, 5, 3, 7 );
+							break;
+						case 8:
+							$team_array = array( 1, 9, 4, 12, 11, 14, 7, 15 );
+							break;
+						case 16:
+							$team_array = array( 1, 17, 9, 25, 4, 21, 13, 28, 6, 22, 14, 30, 7, 23, 15, 31 );
+							break;
+						case 32:
+							$team_array = array( 1, 33, 17, 49, 9, 41, 25, 57, 4, 36, 20, 52, 12, 44, 28, 60, 6, 38, 22, 54, 14, 46, 30, 62, 7, 39, 23, 55, 15, 47, 31, 63 );
+							break;
+						default:
+							$team_array = array();
+							break;
+					}
+				}
+				$matches[ $round_date ] = array();
+				for ( $i = 0; $i < $round['num_matches']; ++$i ) {
+					$match            = new \stdClass();
+					$match->date      = $round_date . ' 00:00:00';
+					$match->match_day = '';
+					if ( 'final' !== $round['key'] ) {
+						if ( $round['round'] & 1 ) {
+							$match->host = 'home';
+						} else {
+							$match->host = 'away';
+						}
+					}
+					if ( $first_round ) {
+						$home_team      = $team_array[ $i ];
+						$home_team_name = $home_team . '_';
+						$away_team      = $num_first_round + 1 - $home_team;
+						$away_team_name = $away_team . '_';
+					} else {
+						$home_team_name = '1_' . $prev_round_name . '_' . $home_team;
+						$away_team_name = '1_' . $prev_round_name . '_' . $away_team;
+					}
+					$match->home_team = $teams[ $home_team_name ]->id;
+					$match->away_team = $teams[ $away_team_name ]->id;
+					if ( $first_round ) {
+						++$home_team;
+						$away_team = $num_first_round + 1 - $home_team;
+					} else {
+						$home_team += 2;
+						$away_team += 2;
+					}
+					$match->location          = null;
+					$match->league_id         = $league->id;
+					$match->season            = $season;
+					$match->final_round       = $round['key'];
+					$match->num_rubbers       = $league->num_rubbers;
+					$matches[ $round_date ][] = $match;
+				}
+				$next_round_date               = $round['match_date'];
+				$rounds[ $round['key'] ]       = new \stdClass();
+				$rounds[ $round['key'] ]->name = $round['key'];
+				$rounds[ $round['key'] ]->num  = $round['round'];
+				$rounds[ $round['key'] ]->date = $round['match_date'];
+			}
+		}
+		if ( $valid ) {
+			$league->set_rounds( $season, $rounds );
+			if ( 'replace' === $action ) {
+				$league->delete_season_matches( $season );
+				$message = __( 'Matches replaced', 'racketmanager' );
+			} else {
+				$message = __( 'Matches added', 'racketmanager' );
+			}
+			$event_season['matchDates'] = array();
+			foreach ( array_reverse( $matches ) as $match_date => $round_matches ) {
+				$event_season['matchDates'][] = $match_date;
+				foreach ( $round_matches as $match ) {
+					$league->add_match( $match );
+				}
+			}
+			if ( ! $league->championship->is_consolation ) {
+				$event_season['num_match_days'] = count( $event_season['matchDates'] );
+				$event                          = get_event( $league->event_id );
+				if ( $event ) {
+					$event_seasons            = $event->seasons;
+					$event_seasons[ $season ] = $event_season;
+					$event->update_seasons( $event_seasons );
+				}
+			}
+			$racketmanager->set_message( $message );
+		} else {
+			$message = implode( '<br>', $msg );
+			$racketmanager->set_message( $message, true );
+		}
+		$racketmanager->printMessage();
 	}
 }
 ?>

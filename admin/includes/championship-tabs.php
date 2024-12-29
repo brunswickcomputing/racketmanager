@@ -26,6 +26,12 @@ namespace Racketmanager;
 				<a class="nav-link" href="admin.php?page=racketmanager-tournaments&view=setup-event&tournament=<?php echo esc_attr( $tournament->id ); ?>&league=<?php echo esc_attr( $league->id ); ?>&season=<?php echo esc_attr( $tournament->season ); ?>" type="button" role="tab"><?php esc_html_e( 'Setup', 'racketmanager' ); ?></a>
 			</li>
 			<?php
+		} elseif ( $league->event->competition->is_cup ) {
+			?>
+			<li class="nav-item">
+				<a class="nav-link" href="admin.php?page=racketmanager-cups&view=setup-event&competition_id=<?php echo esc_attr( $competition->id ); ?>&league=<?php echo esc_attr( $league->id ); ?>&season=<?php echo esc_attr( $season ); ?>" type="button" role="tab"><?php esc_html_e( 'Setup', 'racketmanager' ); ?></a>
+			</li>
+			<?php
 		}
 		?>
 	</ul>

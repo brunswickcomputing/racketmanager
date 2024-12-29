@@ -12,8 +12,13 @@ require 'email-header.php';
 			<?php $salutation_link = $club->match_secretary_name; ?>
 			<?php require 'components/salutation.php'; ?>
 			<?php
-			/* translators: %1$s: competition name */
-			$paragraph_text = sprintf( __( 'The entry form for the %1$s is now available.', 'racketmanager' ), ucfirst( $competition ) );
+			if ( empty( $days_remaining ) ) {
+				/* translators: %1$s: competition name */
+				$paragraph_text = sprintf( __( 'The entry form for the %1$s is now available.', 'racketmanager' ), ucfirst( $competition ) );
+			} else {
+				/* translators: %1$s: days remaining %2$s: competition name */
+				$paragraph_text = sprintf( __( 'There are now less than %1$s days left before the closing date of the %2$s.', 'racketmanager' ), $days_remaining, ucfirst( $competition ) );
+			}
 			require 'components/paragraph.php';
 			?>
 			<?php

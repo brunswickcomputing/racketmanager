@@ -92,6 +92,12 @@ class Racketmanager_Competition {
 		'hour'    => 19,
 		'minutes' => 30,
 	);
+	/**
+	 * Finals
+	 *
+	 * @var array
+	 */
+	public $finals = array();
 
 	/**
 	 * Standings table layout settings
@@ -509,6 +515,25 @@ class Racketmanager_Competition {
 			case 'cup':
 				$this->is_cup        = true;
 				$this->is_team_entry = true;
+				$finals              = array();
+				$num_teams           = 16;
+				$max_rounds          = 4;
+				$r                   = $max_rounds;
+				for ( $round = 1; $round <= $max_rounds; ++$round ) {
+					$num_teams      = pow( 2, $round );
+					$num_matches    = $num_teams / 2;
+					$key            = Racketmanager_Util::get_final_key( $num_teams );
+					$name           = Racketmanager_Util::get_final_name( $key );
+					$finals[ $key ] = array(
+						'key'         => $key,
+						'name'        => $name,
+						'num_matches' => $num_matches,
+						'num_teams'   => $num_teams,
+						'round'       => $r,
+					);
+					--$r;
+				}
+				$this->finals = $finals;
 				break;
 			case 'tournament':
 				$this->is_tournament   = true;
@@ -710,19 +735,24 @@ class Racketmanager_Competition {
 			$data['dateStart']              = $data['matchDates'][0];
 			$this->seasons[ $data['name'] ] = $data;
 		}
-		$this->current_phase = 'complete';
 		if ( ! empty( $data['dateEnd'] ) && $today > $data['dateEnd'] ) {
 			$this->current_phase = 'end';
 			$this->is_complete   = true;
+			$this->is_closed     = true;
 		} elseif ( ! empty( $data['dateStart'] ) && $today >= $data['dateStart'] ) {
 			$this->current_phase = 'start';
 			$this->is_started    = true;
+			$this->is_closed     = true;
 		} elseif ( ! empty( $data['closing_date'] ) && $today > $data['closing_date'] ) {
 			$this->current_phase = 'close';
 			$this->is_closed     = true;
 		} elseif ( ! empty( $data['dateOpen'] ) && $today >= $data['dateOpen'] ) {
 			$this->current_phase = 'open';
 			$this->is_open       = true;
+		} else {
+			$this->current_phase = 'complete';
+			$this->is_complete   = true;
+			$this->is_closed     = true;
 		}
 		$this->current_season = $data;
 		$this->num_match_days = $data['num_match_days'];
@@ -1227,6 +1257,7 @@ class Racketmanager_Competition {
 			'status'  => false,
 			'count'   => false,
 			'name'    => false,
+			'club_id' => false,
 		);
 		$args     = array_merge( $defaults, $args );
 		$offset   = $args['offset'];
@@ -1236,6 +1267,7 @@ class Racketmanager_Competition {
 		$status   = $args['status'];
 		$count    = $args['count'];
 		$name     = $args['name'];
+		$club_id  = $args['club_id'];
 
 		$search_terms   = array();
 		$search_terms[] = $wpdb->prepare( '`competition_id` = %d', $this->id );
@@ -1251,6 +1283,9 @@ class Racketmanager_Competition {
 		}
 		if ( $name ) {
 			$search_terms[] = $wpdb->prepare( 't2.`title` like %s', '%' . $name . '%' );
+		}
+		if ( $club_id ) {
+			$search_terms[] = $wpdb->prepare( 'c.`id` = %d', intval( $club_id ) );
 		}
 
 		$search = '';
@@ -1579,6 +1614,203 @@ class Racketmanager_Competition {
 				)
 			);
 			wp_cache_delete( $this->id, 'competitions' );
+		}
+	}
+	/**
+	 * Save plan
+	 *
+	 * @param int   $season season.
+	 * @param array $courts number of courts available.
+	 * @param array $start_times start times of matches.
+	 * @param array $matches matches.
+	 * @param array $match_times match times.
+	 * @return boolean updates performed
+	 */
+	public function save_plan( $season, $courts, $start_times, $matches, $match_times ) {
+		global $wpdb, $racketmanager;
+		$update      = false;
+		$valid       = true;
+		$err_msg     = array();
+		$seasons     = $this->seasons;
+		$season_dtls = isset( $this->seasons[ $season ] ) ? $this->seasons[ $season ] : null;
+		if ( $season_dtls ) {
+			$orderofplay = array();
+			$num_courts  = count( $courts );
+			for ( $i = 0; $i < $num_courts; $i++ ) {
+				$orderofplay[ $i ]['court']     = $courts[ $i ];
+				$orderofplay[ $i ]['starttime'] = $start_times[ $i ];
+				$orderofplay[ $i ]['matches']   = $matches[ $i ];
+				$num_matches                    = count( $matches[ $i ] );
+				for ( $m = 0; $m < $num_matches; $m++ ) {
+					$match_id = trim( $matches[ $i ][ $m ] );
+					if ( ! empty( $match_id ) ) {
+						$time  = strtotime( $start_times[ $i ] ) + $match_times[ $i ][ $m ];
+						$match = get_match( $match_id );
+						if ( $match ) {
+							$month    = str_pad( $match->month, 2, '0', STR_PAD_LEFT );
+							$day      = str_pad( $match->day, 2, '0', STR_PAD_LEFT );
+							$date     = $match->year . '-' . $month . '-' . $day . ' ' . gmdate( 'H:i', $time );
+							$location = $courts[ $i ];
+							if ( $date !== $match->date || $location !== $match->location ) {
+								$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+									$wpdb->prepare(
+										"UPDATE {$wpdb->racketmanager_matches} SET `date` = %s, `location` = %s WHERE `id` = %d",
+										$date,
+										$location,
+										$match_id
+									)
+								);
+							}
+						}
+					}
+				}
+			}
+			$curr_order_of_play = isset( $season_dtls['orderofplay'] ) ? $season_dtls['orderofplay'] : null;
+			if ( $orderofplay !== $curr_order_of_play ) {
+				$season_dtls['orderofplay'] = $orderofplay;
+				$seasons[ $season ]         = $season_dtls;
+				$this->update_seasons( $seasons );
+				$racketmanager->set_message( __( 'Cup plan updated', 'racketmanager' ) );
+			} else {
+				$racketmanager->set_message( __( 'No updates', 'racketmanager' ) );
+			}
+		}
+		return true;
+	}
+	/**
+	 * Update plan config
+	 *
+	 * @param int  $season season.
+	 * @param text $starttime start time.
+	 * @param int  $num_courts number of courts.
+	 * @param text $time_increment time increment for matches.
+	 * @return boolean updates performed
+	 */
+	public function update_plan( $season, $starttime, $num_courts, $time_increment ) {
+		global $racketmanager;
+		$update      = false;
+		$valid       = true;
+		$err_msg     = array();
+		$seasons     = $this->seasons;
+		$season_dtls = isset( $this->seasons[ $season ] ) ? $this->seasons[ $season ] : null;
+		if ( $season_dtls ) {
+			$curr_start_time     = isset( $season_dtls['starttime'] ) ? $season_dtls['starttime'] : null;
+			$curr_num_courts     = isset( $season_dtls['num_courts'] ) ? $season_dtls['num_courts'] : null;
+			$curr_time_increment = isset( $season_dtls['time_increment'] ) ? $season_dtls['time_increment'] : null;
+			if ( empty( $starttime ) ) {
+				$valid     = false;
+				$err_msg[] = __( 'Start time not set', 'racketmanager' );
+			}
+			if ( empty( $num_courts ) ) {
+				$valid     = false;
+				$err_msg[] = __( 'Number of courts not set', 'racketmanager' );
+			}
+			if ( empty( $time_increment ) ) {
+				$valid     = false;
+				$err_msg[] = __( 'Time increment not set', 'racketmanager' );
+			}
+			if ( $valid ) {
+				if ( $starttime !== $curr_start_time || $num_courts !== $curr_num_courts || $time_increment !== $curr_time_increment ) {
+					$season_dtls['starttime']      = $starttime;
+					$season_dtls['num_courts']     = $num_courts;
+					$season_dtls['time_increment'] = $time_increment;
+					$seasons[ $season ]            = $season_dtls;
+					$this->update_seasons( $seasons );
+					$racketmanager->set_message( __( 'Cup plan updated', 'racketmanager' ) );
+					$update = true;
+				} else {
+					$racketmanager->set_message( __( 'No updates', 'racketmanager' ) );
+				}
+			} else {
+				$racketmanager->set_message( implode( '<br>', $err_msg ), true );
+			}
+		} else {
+			$racketmanager->set_message( __( 'Season not found', 'racketmanager' ), true );
+		}
+		return $update;
+	}
+	/**
+	 * Reset plan config
+	 *
+	 * @param int   $season season.
+	 * @param array $matches matches.
+	 * @return boolean updates performed
+	 */
+	public function reset_plan( $season, $matches ) {
+		global $wpdb, $racketmanager;
+		$seasons     = $this->seasons;
+		$season_dtls = isset( $this->seasons[ $season ] ) ? $this->seasons[ $season ] : null;
+		if ( $season_dtls ) {
+			$updates = true;
+			if ( $matches ) {
+				foreach ( $matches as $match_id ) {
+					$match = get_match( $match_id );
+					if ( $match ) {
+						$month    = str_pad( $match->month, 2, '0', STR_PAD_LEFT );
+						$day      = str_pad( $match->day, 2, '0', STR_PAD_LEFT );
+						$date     = $match->year . '-' . $month . '-' . $day . ' 00:00';
+						$location = '';
+						if ( $date !== $match->date || $location !== $match->location ) {
+							$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+								$wpdb->prepare(
+									"UPDATE {$wpdb->racketmanager_matches} SET `date` = %s, `location` = %s WHERE `id` = %d",
+									$date,
+									$location,
+									$match->id
+								)
+							);
+							$updates = true;
+						}
+					}
+				}
+			}
+			if ( $updates ) {
+				$season_dtls['orderofplay'] = array();
+				$seasons[ $season ]         = $season_dtls;
+				$this->update_seasons( $seasons );
+				$racketmanager->set_message( __( 'Plan reset', 'racketmanager' ) );
+			} else {
+				$racketmanager->set_message( __( 'No updates', 'racketmanager' ) );
+			}
+		}
+		return $updates;
+	}
+	/**
+	 * Delete season function
+	 *
+	 * @param int $season season name.
+	 * @return boolean
+	 */
+	public function delete_season( $season ) {
+		global $wpdb;
+
+		if ( isset( $this->seasons[ $season ] ) ) {
+			$seasons = $this->seasons;
+			foreach ( $this->get_events() as $event ) {
+				foreach ( $event->get_leagues() as $league ) {
+					$league_id = $league->id;
+					$league    = get_league( $league->id );
+					// remove tables.
+					$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+						$wpdb->prepare(
+							"DELETE FROM {$wpdb->racketmanager_table} WHERE `league_id` = %d AND `season` = %s",
+							$league_id,
+							$season
+						)
+					);
+					// remove matches and rubbers.
+					$matches = $league->get_matches( array( 'season' => $season ) );
+					foreach ( $matches as $match ) {
+						$match = get_match( $match->id );
+						$match->delete();
+					}
+				}
+			}
+			unset( $seasons[ $season ] );
+			$this->update_seasons( $seasons );
+			return true;
+		} else {
+			return false;
 		}
 	}
 }

@@ -34,6 +34,25 @@ namespace Racketmanager;
 			foreach ( $competitions as $competition ) {
 				$competition = get_competition( $competition );
 				$class       = ( 'alternate' === $class ) ? '' : 'alternate';
+				$sub_page    = 'subpage=show-competition';
+				$page_ref    = 'racketmanager';
+				switch ( $competition->type ) {
+					case 'league':
+						$competition_type = __( 'League', 'racketmanager' );
+						break;
+					case 'cup':
+						if ( ! empty( $standalone ) ) {
+							$sub_page = 'view=cup';
+							$page_ref = 'racketmanager-' . $competition->type . 's';
+						}
+						$competition_type = __( 'Cup', 'racketmanager' );
+						break;
+					case 'tournament':
+						$competition_type = __( 'Tournament', 'racketmanager' );
+						break;
+					default:
+						$competition_type = __( 'Unknown', 'racketmanager' );
+				}
 				?>
 				<div class="row table-row <?php echo esc_html( $class ); ?>">
 					<div class="col-2 col-md-1 check-column">
@@ -43,7 +62,7 @@ namespace Racketmanager;
 						<?php echo esc_html( $competition->id ); ?>
 					</div>
 					<div class="col-5 col-md-3">
-						<a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo esc_html( $competition->id ); ?>">
+						<a href="admin.php?page=<?php echo esc_attr( $page_ref ); ?>&amp;<?php echo esc_attr( $sub_page ); ?>&amp;competition_id=<?php echo esc_html( $competition->id ); ?>">
 							<?php echo esc_html( $competition->name ); ?>
 						</a>
 					</div>
@@ -54,21 +73,7 @@ namespace Racketmanager;
 						<?php echo esc_html( $competition->num_events ); ?>
 					</div>
 					<div class="col-3 centered">
-						<?php
-						switch ( $competition->type ) {
-							case 'league':
-								esc_html_e( 'League', 'racketmanager' );
-								break;
-							case 'cup':
-								esc_html_e( 'Cup', 'racketmanager' );
-								break;
-							case 'tournament':
-								esc_html_e( 'Tournament', 'racketmanager' );
-								break;
-							default:
-								esc_html_e( 'Unknown', 'racketmanager' );
-						}
-						?>
+						<?php echo esc_html( $competition_type ); ?>
 					</div>
 				</div>
 			<?php } ?>

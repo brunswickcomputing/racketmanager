@@ -714,4 +714,104 @@ class Racketmanager_Util {
 			wp_clear_scheduled_hook( $name, $args );
 		}
 	}
+	/**
+	 * Calculate championship rating function
+	 *
+	 * @param object $match match object.
+	 * @param int    $team_id team id.
+	 * @return int
+	 */
+	public static function calculate_championship_rating( $match, $team_id ) {
+		$points = 0;
+		if ( isset( $match->league->event->age_limit ) ) {
+			if ( 'open' === $match->league->event->age_limit ) {
+				$event_points = 1;
+			} elseif ( $match->league->event->age_limit >= 30 ) {
+				$event_points = 0.25;
+			} elseif ( 16 === $match->league->event->age_limit ) {
+				$event_points = 0.4;
+			} elseif ( 14 === $match->league->event->age_limit ) {
+				$event_points = 0.25;
+			} elseif ( 12 === $match->league->event->age_limit ) {
+				$event_points = 0.15;
+			}
+		} else {
+			$event_points = 1;
+		}
+		$base_points = 0;
+		switch ( $match->final_round ) {
+			case 'final':
+				if ( $match->winner_id === $team_id ) {
+					if ( $match->league->championship->is_consolation ) {
+						$base_points = 88;
+					} else {
+						$base_points = 300;
+					}
+				} elseif ( $match->loser_id === $team_id ) {
+					if ( $match->league->championship->is_consolation ) {
+						$base_points = 80;
+					} else {
+						$base_points = 240;
+					}
+				}
+				break;
+			case 'semi':
+				if ( $match->loser_id === $team_id ) {
+					if ( $match->league->championship->is_consolation ) {
+						$base_points = 72;
+					} else {
+						$base_points = 180;
+					}
+				}
+				break;
+			case 'quarter':
+				if ( $match->loser_id === $team_id ) {
+					if ( $match->league->championship->is_consolation ) {
+						$base_points = 56;
+					} else {
+						$base_points = 120;
+					}
+				}
+				break;
+			case 'last-16':
+				if ( $match->loser_id === $team_id ) {
+					if ( $match->league->championship->is_consolation ) {
+						$base_points = 24;
+					} else {
+						$base_points = 88;
+					}
+				}
+				break;
+			case 'last-32':
+				if ( $match->loser_id === $team_id ) {
+					if ( $match->league->championship->is_consolation ) {
+						$base_points = 24;
+					} else {
+						$base_points = 72;
+					}
+				}
+				break;
+			case 'last-64':
+				if ( $match->loser_id === $team_id ) {
+					if ( $match->league->championship->is_consolation ) {
+						$base_points = 0;
+					} else {
+						$base_points = 20;
+					}
+				}
+				break;
+			default:
+				$base_points = 0;
+				break;
+		}
+		if ( ! empty( $base_points ) ) {
+			$last_year    = gmdate( 'Y-m-d H:i:s', strtotime( '-1 year' ) );
+			$point_adjust = 1;
+			if ( $match->date < $last_year ) {
+				$point_adjust = 0.5;
+			}
+			$points = ceil( $base_points * $event_points * $point_adjust );
+		}
+		return $points;
+	}
 }

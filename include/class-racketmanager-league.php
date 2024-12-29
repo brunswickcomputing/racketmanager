@@ -665,7 +665,7 @@ class Racketmanager_League {
 		if ( ! $league ) {
 			$league = $wpdb->get_row(
 				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-				"SELECT `title`, `id`, `settings`, `event_id` FROM {$wpdb->racketmanager} WHERE " . $search . ' LIMIT 1'
+				"SELECT `title`, `id`, `settings`, `event_id`, `seasons` FROM {$wpdb->racketmanager} WHERE " . $search . ' LIMIT 1'
 			);  // db call ok.
 			if ( $league ) {
 				$event = get_event( $league->event_id );
@@ -3911,5 +3911,28 @@ class Racketmanager_League {
 			$team = $teams[0];
 		}
 		return $team;
+	}
+	/**
+	 * Set rounds function
+	 *
+	 * @param string $season season name.
+	 * @param array  $rounds round details.
+	 * @return void
+	 */
+	public function set_rounds( $season, $rounds ) {
+		global $wpdb;
+		if ( empty( $this->seasons[ $season ] ) ) {
+			$this->seasons[ $season ] = array();
+		}
+		$this->seasons[ $season ]['rounds'] = $rounds;
+
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"UPDATE {$wpdb->racketmanager} SET `seasons` = %s WHERE `id` = %d",
+				maybe_serialize( $this->seasons ),
+				$this->id
+			)
+		);
+		wp_cache_set( $this->id, $this, 'leagues' );
 	}
 }

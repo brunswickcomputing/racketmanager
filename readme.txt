@@ -47,6 +47,13 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.30.0 =
+* BUGFIX: initialise variable
+* BUGFIX: pass season through to shortcode
+* BUGFIX: ensure season set correctly
+* BUGFIX: set correct points for share
+* NEW:    cup admin function revamp
+
 = 8.29.0 =
 * BUGFIX: ensure partner loading indicator in place
 * BUGFIX: ensure club entry displays correctly

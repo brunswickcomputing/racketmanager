@@ -7,18 +7,21 @@
 
 namespace Racketmanager;
 
+$form_action = 'admin.php?page=racketmanager';
 ?>
 <div class="container">
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
 			<?php
-			if ( empty( $tournament ) ) {
+			if ( $league->event->competition->is_league ) {
+				$form_action .= '&amp;subpage=show-league&amp;league_id';
 				?>
 				<a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a> &raquo;
 				<a href="admin.php?page=racketmanager&amp;subpage=show-event&amp;event_id=<?php echo esc_html( $league->event->id ); ?>&amp;season=<?php echo esc_html( $league->current_season['name'] ); ?>"><?php echo esc_html( $league->event->name ); ?></a> &raquo;
 				<a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $league->current_season['name'] ); ?>"><?php echo esc_html( $league->title ); ?></a> &raquo;
 				<?php
-			} else {
+			} elseif ( $league->event->competition->is_tournament ) {
+				$form_action .= '-tournaments&amp;view=draw&amp;tournament=' . $tournament->id . '&amp;league';
 				?>
 				<a href='admin.php?page=racketmanager-tournaments'><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href='admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>'><?php echo esc_html( $tournament->name ); ?></a>  &raquo; <a href='admin.php?page=racketmanager-tournaments&amp;view=draw&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>&amp;league=<?php echo esc_attr( $league->id ); ?>'><?php echo esc_html( $league->title ); ?></a> &raquo;
 				<?php
@@ -29,13 +32,7 @@ namespace Racketmanager;
 	</div>
 	<h1><?php echo esc_html( $form_title ) . ' - ' . esc_html( $league->title ); ?></h1>
 	<?php
-	$form_action = 'admin.php?page=racketmanager';
 	if ( $matches ) {
-		if ( empty( $tournament ) ) {
-			$form_action .= '&amp;subpage=show-league&amp;league_id';
-		} else {
-			$form_action .= '-tournaments&amp;view=draw&amp;tournament=' . $tournament->id . '&amp;league';
-		}
 		$form_action .= '=' . $league->id . '&amp;season=' . $season;
 		if ( isset( $match_day ) ) {
 			$form_action .= '&amp;match_day=' . $match_day;

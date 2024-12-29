@@ -557,7 +557,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				if ( $league_entry_id ) {
 					$league_entry = get_league_team( $league_entry_id );
 					if ( $league_entry ) {
-						$league_entry->set_rating( $team, $event );
+						$league_entry->set_player_rating( $team, $event );
 					}
 				}
 				$tournament_entries[ $i ] = $tournament_entry;

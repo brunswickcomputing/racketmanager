@@ -690,13 +690,12 @@ final class Racketmanager_League_Team {
 		return $num_lost;
 	}
 	/**
-	 * Set rating
+	 * Set player rating
 	 *
 	 * @param object $team team object.
 	 * @param object $event event object.
 	 */
-	public function set_rating( $team, $event ) {
-		global $wpdb;
+	public function set_player_rating( $team, $event ) {
 		if ( ! empty( $team->players ) ) {
 			$type        = substr( $event->type, 1, 1 );
 			$team_rating = 0;
@@ -706,13 +705,22 @@ final class Racketmanager_League_Team {
 					$team_rating += $rating;
 				}
 			}
-			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_table} SET `rating` = %d WHERE `id` = %d",
-					$team_rating,
-					$this->table_id
-				)
-			);
+			$this->set_rating( $team_rating );
 		}
+	}
+	/**
+	 * Set rating
+	 *
+	 * @param int $rating rating.
+	 */
+	public function set_rating( $rating ) {
+		global $wpdb;
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"UPDATE {$wpdb->racketmanager_table} SET `rating` = %d WHERE `id` = %d",
+				$rating,
+				$this->table_id
+			)
+		);
 	}
 }

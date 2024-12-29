@@ -707,9 +707,9 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 			$season = isset( $competition->seasons[ $tournament->season ] ) ? $competition->seasons[ $tournament->season ] : null;
 			if ( $season ) {
 				$updates = false;
-				if ( empty( $season['dateOpen'] ) || $season['dateOpen'] !== $tournament->date ) {
+				if ( empty( $season['dateOpen'] ) || $season['dateOpen'] !== $tournament->date_open ) {
 					$updates            = true;
-					$season['dateOpen'] = $tournament->date;
+					$season['dateOpen'] = $tournament->date_open;
 				}
 				if ( empty( $season['dateEnd'] ) || $season['dateEnd'] !== $tournament->date ) {
 					$updates           = true;

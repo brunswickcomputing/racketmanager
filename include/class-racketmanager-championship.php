@@ -169,12 +169,12 @@ final class Racketmanager_Championship extends RacketManager {
 					)
 				);
 				$this->num_advance = pow( 2, $league->current_season['num_match_days'] );
-				if ( 0 === $completed_matches && $num_teams < $this->num_advance ) {
-					$this->num_teams_first_round = $this->num_advance;
-					$this->num_rounds            = $league->current_season['num_match_days'];
-				} else {
+				if ( $league->event->competition->is_closed && $num_teams ) {
 					$this->num_rounds            = ceil( log( $num_teams, 2 ) );
 					$this->num_teams_first_round = pow( 2, $this->num_rounds );
+				} else {
+					$this->num_teams_first_round = $this->num_advance;
+					$this->num_rounds            = $league->current_season['num_match_days'];
 				}
 			}
 		}

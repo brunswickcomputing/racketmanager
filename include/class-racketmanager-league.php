@@ -726,14 +726,13 @@ class Racketmanager_League {
 		$this->title = stripslashes( $this->title );
 		$this->name  = $this->title;
 		$event       = get_event( $this->event_id );
-
-		$this->seasons = $event->seasons;
+		$this->event = $event;
 		// set seasons.
 		if ( '' === $this->seasons ) {
 			$this->seasons = array();
 		}
 		$this->seasons     = (array) maybe_unserialize( $this->seasons );
-		$this->num_seasons = count( $this->seasons );
+		$this->num_seasons = count( $this->event->seasons );
 		// set season to latest.
 		$this->set_season();
 		$this->groups          = trim( $this->groups );
@@ -744,7 +743,6 @@ class Racketmanager_League {
 		$this->type            = $event->type;
 		$this->point_rule      = $event->competition->point_rule;
 		$this->sport           = $event->competition->sport;
-		$this->event           = $event;
 		$this->scoring         = isset( $event->scoring ) ? $event->scoring : null;
 		$this->set_match_query_args();
 		$this->set_num_matches(); // for pagination.
@@ -1052,43 +1050,43 @@ class Racketmanager_League {
 		global $wp;
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if ( ! empty( $season ) && true === $force_overwrite ) {
-			$data = $this->seasons[ $season ];
+			$data = $this->event->seasons[ $season ];
 		} elseif ( isset( $_POST['season'] ) && ! empty( $_POST['season'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$key = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_POST['season'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			if ( ! isset( $this->seasons[ $key ] ) ) {
+			if ( ! isset( $this->event->seasons[ $key ] ) ) {
 				$data = false;
 			} else {
-				$data = $this->seasons[ $key ];
+				$data = $this->event->seasons[ $key ];
 			}
 		} elseif ( isset( $_GET['season'] ) && ! empty( $_GET['season'] ) ) {
 			$key = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['season'] ) ) );
-			if ( ! isset( $this->seasons[ $key ] ) ) {
+			if ( ! isset( $this->event->seasons[ $key ] ) ) {
 				$data = false;
 			} else {
-				$data = $this->seasons[ $key ];
+				$data = $this->event->seasons[ $key ];
 			}
 		} elseif ( isset( $_GET[ 'season_' . $this->id ] ) && ! empty( $_GET[ 'season_' . $this->id ] ) ) {
 			$key = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET[ 'season_' . $this->id ] ) ) );
-			if ( ! isset( $this->seasons[ $key ] ) ) {
+			if ( ! isset( $this->event->seasons[ $key ] ) ) {
 				$data = false;
 			} else {
-				$data = $this->seasons[ $key ];
+				$data = $this->event->seasons[ $key ];
 			}
 		} elseif ( isset( $wp->query_vars['season'] ) ) {
 			$key = $wp->query_vars['season'];
-			if ( ! isset( $this->seasons[ $key ] ) ) {
+			if ( ! isset( $this->event->seasons[ $key ] ) ) {
 				$data = false;
 			} else {
-				$data = $this->seasons[ $key ];
+				$data = $this->event->seasons[ $key ];
 			}
 		} elseif ( ! empty( $season ) ) {
-			$data = $this->seasons[ $season ];
+			$data = $this->event->seasons[ $season ];
 		} else {
-			$data = end( $this->seasons );
+			$data = end( $this->event->seasons );
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		if ( empty( $data ) ) {
-			$data = end( $this->seasons );
+			$data = end( $this->event->seasons );
 		}
 		if ( ! $data ) {
 			$data['name']           = '';
@@ -2307,7 +2305,7 @@ class Racketmanager_League {
 					'reset_query_args' => true,
 				)
 			);
-			$home_away = isset( $this->current_season['homeAway'] ) ? $this->current_season['homeAway'] : 'true';
+			$home_away = isset( $this->event->current_season['homeAway'] ) ? $this->event->current_season['homeAway'] : 'true';
 			if ( 'true' === $home_away ) {
 				if ( $matches ) {
 					$score = '';
@@ -2537,8 +2535,8 @@ class Racketmanager_League {
 	 * @return boolean
 	 */
 	private function season_exists( $season ) {
-		if ( is_array( $this->seasons ) ) {
-			return in_array( intval( $season ), array_keys( $this->seasons ), true );
+		if ( is_array( $this->event->seasons ) ) {
+			return in_array( intval( $season ), array_keys( $this->event->seasons ), true );
 		} else {
 			return false;
 		}
@@ -2796,7 +2794,7 @@ class Racketmanager_League {
 		<select size='1' name='season' id='season' class="form-select" onChange='Racketmanager.getMatchDropdown(<?php echo esc_html( $this->id ); ?>, this.value)'>
 			<option value="0"><?php esc_html_e( 'Choose Season', 'racketmanager' ); ?></option>
 			<?php
-			foreach ( array_reverse( $this->seasons ) as $season_entry ) {
+			foreach ( array_reverse( $this->event->seasons ) as $season_entry ) {
 				?>
 				<option value=<?php echo esc_html( $season_entry['name'] ); ?> <?php selected( $season, $season_entry['name'], false ); ?>><?php echo esc_html( $season_entry['name'] ); ?></option>
 			<?php } ?>
@@ -3417,7 +3415,7 @@ class Racketmanager_League {
 			$home_away     = false;
 		} else {
 			$num_rounds = $this->current_season['num_match_days'];
-			$home_away  = isset( $this->current_season['homeAway'] ) ? $this->current_season['homeAway'] : 'true';
+			$home_away  = isset( $this->event->current_season['homeAway'] ) ? $this->event->current_season['homeAway'] : 'true';
 			if ( $home_away ) {
 				$num_rounds = $num_rounds / 2;
 			}
@@ -3664,7 +3662,7 @@ class Racketmanager_League {
 	 */
 	public function add_match( $match ) {
 		$match = new Racketmanager_Match( $match );
-		if ( $this->is_championship && ! empty( $this->current_season['homeAway'] ) && 'true' === $this->current_season['homeAway'] && 'final' !== $match->final_round ) {
+		if ( $this->is_championship && ! empty( $this->event->current_season['homeAway'] ) && ( 'true' === $this->event->current_season['homeAway'] || true === $this->event->current_season['homeAway'] ) && 'final' !== $match->final_round ) {
 			$match->leg              = 1;
 			$new_match               = clone $match;
 			$new_match->date         = gmdate( 'Y-m-d H:i:s', strtotime( $match->date . ' +14 day' ) );

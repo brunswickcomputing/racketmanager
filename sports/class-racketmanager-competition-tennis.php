@@ -132,7 +132,7 @@ class Racketmanager_Competition_Tennis extends Racketmanager_Competition {
 			'forloss'            => 0,
 			'forwin_split'       => 0,
 			'forloss_split'      => 0,
-			'forshare'           => 0,
+			'forshare'           => 1,
 			'matches_win'        => 0,
 			'matches_draw'       => 0,
 			'match_result'       => 'games',

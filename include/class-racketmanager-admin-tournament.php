@@ -58,17 +58,17 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 			}
 			$club_id = 0;
 			$racketmanager->printMessage();
-			$clubs           = $this->get_clubs();
-				$tournaments = $this->get_tournaments(
-					array(
-						'season'         => $season_select,
-						'competition_id' => $competition_select,
-						'orderby'        => array(
-							'date' => 'desc',
-							'name' => 'asc',
-						),
-					)
-				);
+			$clubs       = $this->get_clubs();
+			$tournaments = $this->get_tournaments(
+				array(
+					'season'         => $season_select,
+					'competition_id' => $competition_select,
+					'orderby'        => array(
+						'date' => 'desc',
+						'name' => 'asc',
+					),
+				)
+			);
 			include_once RACKETMANAGER_PATH . '/admin/show-tournaments.php';
 		}
 	}

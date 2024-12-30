@@ -320,16 +320,20 @@ final class Racketmanager_Team {
 				$this->add_team_player( $player );
 			}
 		} else {
+			if ( empty( $this->team_type ) ) {
+				$this->team_type = null;
+			}
 			$this->roster  = '';
 			$this->profile = '';
 			$this->status  = '';
 			$result        = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"INSERT INTO {$wpdb->racketmanager_teams} (`title`, `stadium`, `club_id`, `type`) VALUES (%s, %s, %d, %s)",
+					"INSERT INTO {$wpdb->racketmanager_teams} (`title`, `stadium`, `club_id`, `type`, `team_type`) VALUES (%s, %s, %d, %s, %s)",
 					$this->title,
 					$this->stadium,
 					$this->club_id,
-					$this->type
+					$this->type,
+					$this->team_type,
 				)
 			);
 			$this->id      = $wpdb->insert_id;

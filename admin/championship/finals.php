@@ -22,7 +22,7 @@ $view    = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view
 			if ( empty( $tournament ) ) {
 				?>
 				<input type="hidden" name="view" value="<?php echo esc_html( $view ); ?>" />
-				<input type="hidden" name="competition_id" value="<?php echo esc_attr( $competition->id ); ?>" />
+				<input type="hidden" name="competition_id" value="<?php echo esc_attr( $league->event->competition->id ); ?>" />
 				<input type="hidden" name="league" value="<?php echo esc_html( $league->id ); ?>" />
 				<?php
 			} else {
@@ -53,7 +53,7 @@ $view    = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view
 			if ( empty( $tournament ) ) {
 				?>
 				<input type="hidden" name="view" value="matches" />
-				<input type="hidden" name="competition_id" value="<?php echo esc_attr( $competition->id ); ?>" />
+				<input type="hidden" name="competition_id" value="<?php echo esc_attr( $league->event->competition->id ); ?>" />
 				<?php
 			} else {
 				?>

@@ -178,7 +178,9 @@ final class Racketmanager_Championship extends RacketManager {
 				}
 			}
 		}
-		if ( $league->num_teams_total <= 10 ) {
+		if ( $this->is_consolation ) {
+			$this->num_seeds = 0;
+		} else if ( $league->num_teams_total <= 10 ) {
 			$this->num_seeds = 2;
 		} elseif ( $league->num_teams_total <= 20 ) {
 			$this->num_seeds = 4;
@@ -191,7 +193,6 @@ final class Racketmanager_Championship extends RacketManager {
 		} else {
 			$this->num_seeds = 0;
 		}
-
 		$num_teams = 2;
 		$i         = $this->num_rounds;
 		while ( $num_teams <= $this->num_teams_first_round ) {

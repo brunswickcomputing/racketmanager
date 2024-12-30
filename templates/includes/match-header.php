@@ -29,7 +29,7 @@ $allow_amend_score        = false;
 $allow_reset_match_result = true;
 $show_menu                = false;
 if ( $match->is_pending ) {
-	if ( $user_can_update ) {
+	if ( $user_can_update && ! $edit_mode ) {
 		if ( ( 'admin' === $user_type || 'matchsecretary' === $user_type || 'captain' === $user_type ) && ( 'admin' === $user_type || 'both' === $user_team || 'home' === $user_team ) ) {
 			$allow_schedule_match = true;
 			$show_menu            = true;
@@ -40,10 +40,12 @@ if ( $match->is_pending ) {
 		}
 	}
 } elseif ( 'admin' === $user_type ) {
-	$allow_amend_score        = true;
+	if ( ! $edit_mode ) {
+		$allow_amend_score = true;
+	}
 	$allow_reset_match_result = true;
 	$show_menu                = true;
-} elseif ( 'P' === $match->confirmed ) {
+} elseif ( 'P' === $match->confirmed && ! $edit_mode ) {
 	if ( $user_can_update && ! $match_approval_mode ) {
 		$allow_amend_score = true;
 		$show_menu         = true;
@@ -131,7 +133,7 @@ if ( $match->is_pending ) {
 			}
 			?>
 			<?php
-			if ( is_user_logged_in() && ! $edit_mode && ( $show_menu ) ) {
+			if ( is_user_logged_in() && $show_menu ) {
 				?>
 				<div class="match__change">
 					<div class="dropdown">

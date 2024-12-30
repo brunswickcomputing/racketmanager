@@ -47,6 +47,12 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.31.0 =
+* UPDATE: remove matach score reset from admin
+* UPDATE: allow reset of match score in result entry
+* UPDATE: allow teams to be added for consolation leagues
+* UPDATE: no seeds in consolation events
+
 = 8.30.0 =
 * BUGFIX: initialise variable
 * BUGFIX: pass season through to shortcode

@@ -596,7 +596,6 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 			$league_id      = isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null;
 			$finalkey       = isset( $_GET['final'] ) ? sanitize_text_field( wp_unslash( $_GET['final'] ) ) : null;
 			$match_id       = isset( $_GET['edit'] ) ? intval( $_GET['edit'] ) : null;
-			$reset          = isset( $_GET['reset'] ) ? true : false;
 			//phpcs:enable WordPress.Security.NonceVerification.Recommended
 			if ( $competition_id ) {
 				$competition = get_competition( $competition_id );
@@ -608,9 +607,6 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 							if ( $match_id ) {
 								$match = get_match( $match_id );
 								if ( $match ) {
-									if ( $reset ) {
-										$match->reset_result();
-									}
 									$single_cup_game = true;
 									$bulk            = false;
 									$mode            = 'edit';

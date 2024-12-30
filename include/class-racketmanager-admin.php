@@ -441,6 +441,8 @@ class RacketManager_Admin extends RacketManager {
 					$racketmanager_admin_tournament->display_tournament_matches_page();
 				} elseif ( 'match' === $view ) {
 					$racketmanager_admin_tournament->display_tournament_match_page();
+				} elseif ( 'teams' === $view ) {
+					$racketmanager_admin_tournament->display_tournament_teams_page();
 				} else {
 					$racketmanager_admin_tournament->display_tournaments_page();
 				}
@@ -1329,7 +1331,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	private function league_add_teams( $league ) {
+	protected function league_add_teams( $league ) {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-teams-bulk' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'edit_teams' ) ) {
@@ -1813,7 +1815,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display teams list page
 	 */
-	private function display_teams_list() {
+	protected function display_teams_list() {
 		global $racketmanager;
 		//phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if ( ! current_user_can( 'edit_teams' ) ) {
@@ -1920,6 +1922,10 @@ class RacketManager_Admin extends RacketManager {
 			}
 			$season = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : '';
 			$view   = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] ) ) : '';
+			$tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
+			if ( $tournament_id ) {
+				$tournament = get_tournament( $tournament_id );
+			}
 			//phpcs:enable WordPress.Security.NonceVerification.Recommended
 			include_once RACKETMANAGER_PATH . '/admin/includes/teamslist.php';
 		}

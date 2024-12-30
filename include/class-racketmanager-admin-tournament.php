@@ -103,7 +103,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 	 * Display tournament draw
 	 */
 	public function display_tournament_draw_page() {
-		global $tab;
+		global $tab, $racketmanager;
 		//phpcs:disable WordPress.Security.NonceVerification.Recommended
 		$season        = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
 		$tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
@@ -118,17 +118,23 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 						$this->handle_league_teams_action( $league );
 						if ( isset( $_POST['updateLeague'] ) && 'match' === $_POST['updateLeague'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 							$this->manage_matches_in_league( $league );
-							$this->printMessage();
+							$racketmanager->printMessage();
 							$tab = 'matches'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+						} elseif ( isset( $_POST['action'] ) && 'addTeamsToLeague' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+							$this->league_add_teams( $league );
+							if ( $league->is_championship ) {
+								$tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+							}
+							$racketmanager->printMessage();
 						} else {
 							$league->championship->handle_admin_page( $league, $season );
 							if ( isset( $_POST['saveRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 								$this->league_manual_rank_teams( $league );
-								$this->printMessage();
+								$racketmanager->printMessage();
 								$tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 							} elseif ( isset( $_POST['randomRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 								$this->league_random_rank_teams( $league );
-								$this->printMessage();
+								$racketmanager->printMessage();
 								$tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 							} elseif ( isset( $_POST['ratingPointsRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 								$this->league_rating_points_rank_teams( $league );
@@ -676,5 +682,11 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 				$player->set_tournament_rating();
 			}
 		}
+	}
+	/**
+	 * Display tournament teams page
+	 */
+	public function display_tournament_teams_page() {
+		$this->display_teams_list();
 	}
 }

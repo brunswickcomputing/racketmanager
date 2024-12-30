@@ -1556,7 +1556,7 @@ class Racketmanager_League {
 			)
 		);
 		if ( $table_id ) {
-			$message_text = 'Team already in table';
+			$message_text = __( 'Team already in table', 'racketmanager' );
 			$error        = true;
 		} else {
 			if ( ! $rank ) {

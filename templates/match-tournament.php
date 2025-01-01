@@ -321,7 +321,7 @@ if ( $match ) {
 				<div class="alert_rm <?php echo empty( $message ) ? null : 'alert--success'; ?>" id="matchAlert" <?php echo empty( $message ) ? 'style="display:none;"' : null; ?>>
 					<div class="alert__body">
 						<div class="alert__body-inner" id="alertResponse">
-							<span><?php echo esc_html( $message ); ?></span>
+							<span><?php echo empty( $message ) ? null : esc_html( $message ); ?></span>
 						</div>
 					</div>
 				</div>

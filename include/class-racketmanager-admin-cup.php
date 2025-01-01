@@ -799,8 +799,11 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 	 * @return void
 	 */
 	private function schedule_cup_activities( $competition_id, $season ) {
-		$this->schedule_cup_ratings( $competition_id, $season );
-		$this->schedule_cup_emails( $competition_id, $season );
+		$competition = get_competition( $competition_id );
+		if ( $competition && ! $competition->is_closed ) {
+			$this->schedule_cup_ratings( $competition_id, $season );
+			$this->schedule_cup_emails( $competition_id, $season );
+		}
 	}
 	/**
 	 * Schedule cup ratings setting function

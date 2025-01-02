@@ -63,15 +63,34 @@ namespace Racketmanager;
 						<ol class="list--timeline-labelled list--timeline list has-custom-icon">
 							<?php
 							if ( ! empty( $competition_season['dateEnd'] ) ) {
-								?>
-								<li class="list__item is-started
-									<?php
-									if ( $competition->is_started ) {
-										echo ' is-current';
-										echo ' is-success';
-									}
+								if ( ! empty( $competition_season['dateOpen'] ) ) {
 									?>
-									">
+									<li class="list__item is-entry-open <?php echo ( $competition->is_open ) ? 'is-current is-success' : null; ?>">
+										<div class="list__value">
+											<?php esc_html_e( 'Entry opens', 'racketmanager' ); ?>
+										</div>
+										<div class="list__meta">
+											<?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['dateOpen'] ) ); ?>
+										</div>
+									</li>
+									<?php
+								}
+								?>
+								<?php
+								if ( ! empty( $competition_season['closing_date'] ) ) {
+									?>
+									<li class="list__item is-entry-closed <?php echo ( $competition->is_closed ) ? 'is-current is-warning' : null; ?>">
+										<div class="list__value">
+											<?php esc_html_e( 'Closing deadline', 'racketmanager' ); ?>
+										</div>
+										<div class="list__meta">
+											<?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['closing_date'] ) ); ?>
+										</div>
+									</li>
+									<?php
+								}
+								?>
+								<li class="list__item is-started <?php echo $competition->is_started ? ' is-current is-success' : null; ?>">
 									<div class="list__value">
 										<?php esc_html_e( 'Start competition', 'racketmanager' ); ?>
 									</div>
@@ -79,20 +98,7 @@ namespace Racketmanager;
 										<?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['dateStart'] ) ); ?>
 									</div>
 								</li>
-								<?php
-							}
-							?>
-							<?php
-							if ( ! empty( $competition_season['dateEnd'] ) ) {
-								?>
-								<li class="list__item is-finished
-									<?php
-									if ( $competition->is_complete ) {
-										echo ' is-current';
-										echo ' is-danger';
-									}
-									?>
-									">
+								<li class="list__item is-finished <?php echo $competition->is_complete ? ' is-current is-danger' : null; ?>">
 									<div class="list__value">
 										<?php esc_html_e( 'End of competition', 'racketmanager' ); ?>
 									</div>

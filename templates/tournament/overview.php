@@ -56,14 +56,7 @@ namespace Racketmanager;
 					</ul>
 					<div class="tournament-meta__timeline">
 						<ol class="list--timeline-labelled list--timeline list has-custom-icon">
-							<li class="list__item is-entry-open
-								<?php
-								if ( $tournament->is_open ) {
-									echo ' is-current';
-									echo ' is-success';
-								}
-								?>
-								">
+							<li class="list__item is-entry-open <?php echo ( $tournament->is_open ) ? 'is-current is-success' : null; ?>">
 								<div class="list__value">
 									<?php esc_html_e( 'Entry opens', 'racketmanager' ); ?>
 								</div>
@@ -79,14 +72,7 @@ namespace Racketmanager;
 									<?php echo esc_html( $tournament->closing_date_display ); ?>
 								</div>
 							</li>
-							<li class="list__item is-started
-								<?php
-								if ( $tournament->is_started ) {
-									echo ' is-current';
-									echo ' is-success';
-								}
-								?>
-								">
+							<li class="list__item is-started <?php echo ( $tournament->is_started ) ? ' is-current is-success' : null; ?>">
 								<div class="list__value">
 									<?php esc_html_e( 'Start tournament', 'racketmanager' ); ?>
 								</div>
@@ -94,14 +80,7 @@ namespace Racketmanager;
 									<?php echo esc_html( $tournament->date_start_display ); ?>
 								</div>
 							</li>
-							<li class="list__item is-finished
-								<?php
-								if ( $tournament->is_complete ) {
-									echo ' is-current';
-									echo ' is-danger';
-								}
-								?>
-								">
+							<li class="list__item is-finished <?php echo ( $tournament->is_complete ) ? ' is-current is-danger' : null; ?>">
 								<div class="list__value">
 									<?php esc_html_e( 'End of tournament', 'racketmanager' ); ?>
 								</div>

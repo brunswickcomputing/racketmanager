@@ -180,7 +180,7 @@ final class Racketmanager_Championship extends RacketManager {
 		}
 		if ( $this->is_consolation ) {
 			$this->num_seeds = 0;
-		} else if ( $league->num_teams_total <= 10 ) {
+		} elseif ( $league->num_teams_total <= 10 ) {
 			$this->num_seeds = 2;
 		} elseif ( $league->num_teams_total <= 20 ) {
 			$this->num_seeds = 4;

@@ -1920,8 +1920,8 @@ class RacketManager_Admin extends RacketManager {
 					}
 				}
 			}
-			$season = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : '';
-			$view   = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] ) ) : '';
+			$season        = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : '';
+			$view          = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] ) ) : '';
 			$tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
 			if ( $tournament_id ) {
 				$tournament = get_tournament( $tournament_id );

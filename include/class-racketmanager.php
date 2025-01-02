@@ -1300,6 +1300,12 @@ class RacketManager {
 			'index.php?pagename=competitions&type=tournament',
 			'top'
 		);
+		// tournament entry form - name - club.
+		add_rewrite_rule(
+			'entry-form/(.+?)-tournament/(.+?)/?$',
+			'index.php?pagename=competition%2Fentry&tournament=$matches[1]&competition_type=tournament&club_name=$matches[2]',
+			'top'
+		);
 		// tournament entry form - name.
 		add_rewrite_rule(
 			'entry-form/(.+?)-tournament/?$',

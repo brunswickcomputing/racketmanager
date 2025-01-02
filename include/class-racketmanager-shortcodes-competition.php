@@ -1559,7 +1559,14 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		}
 		if ( $season ) {
 			$competition_season = isset( $competition->seasons[ $season ] ) ? $competition->seasons[ $season ] : null;
-			if ( ! $competition_season ) {
+			if ( $competition_season ) {
+				if ( ! empty( $competition_season['venue'] ) ) {
+					$venue_club = get_club( $competition_season['venue'] );
+					if ( $venue_club ) {
+						$competition_season['venue_name'] = $venue_club->shortcode;
+					}
+				}
+			} else {
 				$msg = __( 'Season not found', 'racketmanager' );
 				return $this->return_error( $msg );
 			}

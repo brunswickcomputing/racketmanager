@@ -988,4 +988,73 @@ final class Racketmanager_Tournament {
 			}
 		}
 	}
+	/**
+	 * Notify clubs entries open
+	 *
+	 * @return object notification status
+	 */
+	public function notify_entry_open() {
+		global $racketmanager_shortcodes, $racketmanager;
+
+		$return           = new \stdClass();
+		$msg              = array();
+		$date_closing     = $this->closing_date_display;
+		$date_start       = $this->date_open_display;
+		$date_end         = $this->date_display;
+		$url              = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
+		$competition_name = $this->name . ' ' . __( 'Tournament', 'racketmanager' );
+		$is_championship  = true;
+		if ( empty( $return->error ) ) {
+			$clubs = $racketmanager->get_clubs(
+				array(
+					'type' => 'affiliated',
+				)
+			);
+
+			$headers    = array();
+			$from_email = $racketmanager->get_confirmation_email( 'tournament' );
+			if ( $from_email ) {
+				$headers[]         = 'From: Tournament Secretary <' . $from_email . '>';
+				$headers[]         = 'cc: Tournament Secretary <' . $from_email . '>';
+				$organisation_name = $racketmanager->site_name;
+
+				foreach ( $clubs as $club ) {
+					$email_subject = $racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Open', 'racketmanager' ) . ' - ' . $club->name;
+					$email_to      = $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
+					$action_url    = $url . seo_url( $club->shortcode ) . '/';
+					$email_message = $racketmanager_shortcodes->load_template(
+						'tournament-entry-open',
+						array(
+							'email_subject' => $email_subject,
+							'from_email'    => $from_email,
+							'action_url'    => $action_url,
+							'organisation'  => $organisation_name,
+							'tournament'    => $this,
+							'addressee'     => $club->match_secretary_name,
+						),
+						'email'
+					);
+					wp_mail( $email_to, $email_subject, $email_message, $headers );
+					$message_sent = true;
+				}
+				if ( $message_sent ) {
+					$return->msg = __( 'Match secretaries notified', 'racketmanager' );
+				} else {
+					$return->error = true;
+					$msg[]         = __( 'No notification', 'racketmanager' );
+				}
+			} else {
+				$return->error = true;
+				$msg[]         = __( 'No secretary email', 'racketmanager' );
+			}
+		}
+		if ( ! empty( $return->error ) ) {
+			$return->msg = __( 'Notification error', 'racketmanager' );
+			foreach ( $msg as $error ) {
+				$return->msg .= '<br>' . $error;
+			}
+		}
+		return $return;
+	}
+	/**
 }

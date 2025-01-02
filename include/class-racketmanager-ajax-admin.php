@@ -401,9 +401,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 			$tournament_id = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : '';
 			$tournament    = get_tournament( $tournament_id );
 			if ( $tournament ) {
-				$latest_season    = $tournament->season;
-				$competition_type = 'tournament';
-				$return           = $racketmanager->notify_entry_open( $competition_type, $tournament->id, $latest_season, );
+				$return = $tournament->notify_entry_open();
 			} else {
 				$return->error = true;
 				$return->msg   = __( 'Tournament not found', 'racketmanager' );

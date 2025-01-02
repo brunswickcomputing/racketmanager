@@ -101,6 +101,8 @@ class RacketManager {
 		add_action( 'rm_calculate_cup_ratings', array( &$this, 'calculate_cup_ratings' ), 10, 3 );
 		add_action( 'rm_notify_team_entry_open', array( &$this, 'notify_team_entry_open' ), 10, 2 );
 		add_action( 'rm_notify_team_entry_reminder', array( &$this, 'notify_team_entry_reminder' ), 10, 2 );
+		add_action( 'rm_notify_tournament_entry_open', array( &$this, 'notify_tournament_entry_open' ), 10, 1 );
+		add_action( 'rm_notify_tournament_entry_reminder', array( &$this, 'notify_tournament_entry_reminder' ), 10, 1 );
 	}
 	/**
 	 * Set page title function
@@ -701,6 +703,21 @@ class RacketManager {
 			}
 		}
 	}
+	/**
+	 * Notify tournament entry open
+	 *
+	 * @param int $tournament_id tournament id.
+	 * @return void
+	 */
+	public function notify_tournament_entry_open( $tournament_id ) {
+		if ( $tournament_id ) {
+			$tournament = get_tournament( $tournament_id );
+			if ( $tournament ) {
+				$tournament->notify_entry_open();
+			}
+		}
+	}
+	/**
 	/**
 	 * Get League standings function
 	 *

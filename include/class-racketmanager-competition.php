@@ -366,6 +366,12 @@ class Racketmanager_Competition {
 	 */
 	public $is_closed = false;
 	/**
+	 * Is pending
+	 *
+	 * @var boolean
+	 */
+	public $is_pending = false;
+	/**
 	 * Is open
 	 *
 	 * @var boolean
@@ -752,6 +758,7 @@ class Racketmanager_Competition {
 				$this->is_open       = true;
 			} else {
 				$this->current_phase = 'pending';
+				$this->is_pending    = true;
 			}
 		} else {
 			$this->current_phase = 'complete';

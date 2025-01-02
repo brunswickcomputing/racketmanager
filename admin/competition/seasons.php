@@ -65,7 +65,8 @@ namespace Racketmanager;
 							?>
 						</div>
 						<?php
-						if ( ! empty( $season['status'] ) && 'live' === $season['status'] ) {
+						$today = gmdate( 'Y-m-d' );
+						if ( ! empty( $season['dateEnd'] ) && $today > $season['dateEnd'] ) {
 							if ( ! empty( $competition->competition_code ) ) {
 								?>
 								<div class="col-auto">
@@ -77,10 +78,10 @@ namespace Racketmanager;
 								</div>
 								<?php
 							}
-						} elseif ( ! empty( $season['closing_date'] ) && ! empty( $season['dateStart'] ) && ! empty( $season['dateStart'] ) ) {
+						} elseif ( ! empty( $season['closing_date'] ) && $today <= $season['closing_date'] && ! empty( $season['dateOpen'] ) && $today >= $season['dateOpen'] ) {
 							?>
 							<div class="col-auto">
-								<button href="" /index.php?competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $key ); ?> class="btn btn-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Notify open', 'racketmanager' ); ?>" onclick="Racketmanager.notify_open(event, <?php echo esc_html( $competition->id ) . ',' . esc_html( $key ); ?> )">
+								<button href="" /index.php?competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $key ); ?> class="btn btn-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Notify open', 'racketmanager' ); ?>" onclick="Racketmanager.notify_open(event, <?php echo esc_html( $competition->id ) . ',' . esc_html( $key ); ?> )">
 									<?php esc_html_e( 'Notify open', 'racketmanager' ); ?>
 								</button>
 								<span class="notifymessage" id="notifyMessage-<?php echo esc_html( $key ); ?>"></span>

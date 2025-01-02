@@ -668,6 +668,10 @@ final class Racketmanager_Tournament {
 		$schedule_name = 'rm_calculate_tournament_ratings';
 		$schedule_args = array( intval( $this->id ) );
 		Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+		$schedule_name = 'rm_notify_tournament_entry_open';
+		Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+		$schedule_name = 'rm_notify_tournament_entry_reminder';
+		Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"DELETE FROM {$wpdb->racketmanager_tournaments} WHERE `id` = %d",

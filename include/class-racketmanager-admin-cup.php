@@ -800,7 +800,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 	 */
 	private function schedule_cup_activities( $competition_id, $season ) {
 		$competition = get_competition( $competition_id );
-		if ( $competition && ! $competition->is_closed ) {
+		if ( $competition && ( $competition->is_pending || $competition->is_open ) ) {
 			$this->schedule_cup_ratings( $competition_id, $season );
 			$this->schedule_cup_emails( $competition_id, $season );
 		}

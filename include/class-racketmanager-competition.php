@@ -756,7 +756,13 @@ class Racketmanager_Competition {
 		} else {
 			$this->current_phase = 'complete';
 			$this->is_complete   = true;
-			$this->is_closed     = true;
+		}
+		$data['venue_name'] = null;
+		if ( ! empty( $data['venue'] ) ) {
+			$venue_club = get_club( $data['venue'] );
+			if ( $venue_club ) {
+				$data['venue_name'] = $venue_club->shortcode;
+			}
 		}
 		$this->current_season = $data;
 		$this->num_match_days = $data['num_match_days'];

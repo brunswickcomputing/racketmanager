@@ -71,14 +71,7 @@ namespace Racketmanager;
 									<?php echo esc_html( $tournament->date_open_display ); ?>
 								</div>
 							</li>
-							<li class="list__item is-entry-closed
-								<?php
-								if ( $tournament->is_closed ) {
-									echo ' is-current';
-									echo ' is-danger';
-								}
-								?>
-								">
+							<li class="list__item is-entry-closed <?php echo ( $tournament->is_closed ) ? 'is-current is-warning' : null; ?>">
 								<div class="list__value">
 									<?php esc_html_e( 'Closing deadline', 'racketmanager' ); ?>
 								</div>

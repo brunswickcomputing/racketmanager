@@ -320,7 +320,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 				} else {
 					if ( $tournament ) {
 						$this->set_competition_dates( $tournament );
-						$tournament->schedule_tournament_ratings();
+						$tournament->schedule_activities();
 					}
 					$this->display_tournaments_page();
 					return;
@@ -346,7 +346,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 						$success                      = $tournament->update( $tournament );
 						if ( $success ) {
 							$this->set_competition_dates( $tournament );
-							$tournament->schedule_tournament_ratings();
+							$tournament->schedule_activities();
 						}
 					} else {
 						$racketmanager->set_message( __( 'Tournament not found', 'racketmanager' ), true );

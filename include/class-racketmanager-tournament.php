@@ -943,4 +943,49 @@ final class Racketmanager_Tournament {
 		);
 		return $matches;
 	}
+	/**
+	 * Schedule tournament activities function
+	 *
+	 * @return void
+	 */
+	public function schedule_activities() {
+		if ( ! $this->is_closed && ! $this->is_active ) {
+			$this->schedule_tournament_ratings();
+			$this->schedule_emails();
+		}
+	}
+	/**
+	 * Schedule tournament emails function
+	 *
+	 * @return void
+	 */
+	private function schedule_emails() {
+		global $racketmanager;
+		if ( ! empty( $this->date_open ) ) {
+			$schedule_date  = strtotime( $this->date_open );
+			$day            = intval( gmdate( 'd', $schedule_date ) );
+			$month          = intval( gmdate( 'm', $schedule_date ) );
+			$year           = intval( gmdate( 'Y', $schedule_date ) );
+			$schedule_start = mktime( 00, 00, 01, $month, $day, $year );
+		}
+		$schedule_name   = 'rm_notify_tournament_entry_open';
+		$schedule_args[] = intval( $this->id );
+		Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+		$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
+		if ( ! $success ) {
+			$racketmanager->set_message( __( 'Error scheduling tournament open emails', 'racketmanager' ), true );
+		} elseif ( ! empty( $this->closing_date ) ) {
+			$chase_date     = strtotime( $this->closing_date . ' -7 day' );
+			$day            = intval( gmdate( 'd', $chase_date ) );
+			$month          = intval( gmdate( 'm', $chase_date ) );
+			$year           = intval( gmdate( 'Y', $chase_date ) );
+			$schedule_start = mktime( 00, 00, 01, $month, $day, $year );
+			$schedule_name  = 'rm_notify_tournament_entry_reminder';
+			Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+			$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
+			if ( ! $success ) {
+				$racketmanager->set_message( __( 'Error scheduling tournament reminder emails', 'racketmanager' ), true );
+			}
+		}
+	}
 }

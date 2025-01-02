@@ -595,7 +595,7 @@ class RacketManager {
 								$team_points += Racketmanager_Util::calculate_championship_rating( $match, $team->team_id );
 							}
 							if ( $team_points ) {
-								$league_team = get_league_team( $team->tableId );
+								$league_team = get_league_team( $team->table_id );
 								if ( $league_team ) {
 									$league_team->set_rating( $team_points );
 								}

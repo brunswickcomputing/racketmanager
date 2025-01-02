@@ -368,8 +368,16 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 					if ( ! $competition ) {
 						$return->error = true;
 						$return->msg   = __( 'Competition not found', 'racketmanager' );
+					} elseif ( isset( $competition->seasons[ $season ] ) ) {
+						if ( 'team' === $competition->entry_type ) {
+							$return = $racketmanager->notify_team_entry_open( $competition->id, $season );
+						} else {
+							$return->error = true;
+							$return->msg   = __( 'Invalid competition entry type', 'racketmanager' );
+						}
 					} else {
-						$return = $racketmanager->notify_entry_open( $competition->type, $competition->id, $season );
+						$return->error = true;
+						$return->msg   = __( 'Season not found for competition', 'racketmanager' );
 					}
 				}
 			}

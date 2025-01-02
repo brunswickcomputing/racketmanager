@@ -611,17 +611,116 @@ class RacketManager {
 	 *
 	 * @param int $competition_id competition id.
 	 * @param int $season season name.
-	 * @return void
+	 * @return object
 	 */
 	public function notify_team_entry_open( $competition_id, $season ) {
+		global $racketmanager_shortcodes, $racketmanager;
+		$return = new \stdClass();
 		if ( $competition_id ) {
 			$competition = get_competition( $competition_id );
 			if ( $competition ) {
 				if ( isset( $competition->seasons[ $season ] ) ) {
-					$this->notify_entry_open( $competition->type, $competition->id, $season );
+					$season_dtls = (object) $competition->seasons[ $season ];
+					if ( $competition->is_league ) {
+						$events = $competition->get_events();
+						foreach ( $events as $event ) {
+							if ( empty( $event->get_leagues() ) ) {
+								$return->error = true;
+								$msg[]         = __( 'No leagues found for event', 'racketmanager' ) . ' ' . $event->name;
+							} elseif ( count( $event->seasons ) > 1 ) {
+								$constitution = $event->get_constitution(
+									array(
+										'season' => $season,
+										'count'  => true,
+									)
+								);
+								if ( ! $constitution ) {
+									$return->error = true;
+									$msg[]         = __( 'Constitution not set', 'racketmanager' ) . ' ' . $event->name;
+								}
+							}
+						}
+						$is_championship         = false;
+						$season_dtls->venue_name = null;
+					} elseif ( $competition->is_cup ) {
+						$is_championship         = true;
+						$season_dtls->venue_name = null;
+						if ( ! empty( $season_dtls->venue ) ) {
+							$venue_club = get_club( $season_dtls->venue );
+							if ( $venue_club ) {
+								$season_dtls->venue_name = $venue_club->shortcode;
+							}
+						}
+					} else {
+						$return->error = true;
+						$return->msg   = __( 'Competition type not valid', 'racketmanager' );
+					}
+					if ( empty( $return->error ) ) {
+						$url              = $this->site_url . '/entry-form/' . seo_url( $competition->name ) . '/' . $season . '/';
+						$competition_name = $competition->name . ' ' . $season;
+						$clubs            = $this->get_clubs(
+							array(
+								'type' => 'affiliated',
+							)
+						);
+						$headers          = array();
+						$from_email       = $this->get_confirmation_email( $competition->type );
+						if ( $from_email ) {
+							$headers[]         = 'From: ' . ucfirst( $competition->type ) . 'Secretary <' . $from_email . '>';
+							$headers[]         = 'cc: ' . ucfirst( $competition->type ) . 'Secretary <' . $from_email . '>';
+							$organisation_name = $this->site_name;
+
+							foreach ( $clubs as $club ) {
+								$email_subject = $this->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Open', 'racketmanager' ) . ' - ' . $club->name;
+								$email_to      = $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
+								$action_url    = $url . seo_url( $club->shortcode ) . '/';
+								$email_message = $racketmanager_shortcodes->load_template(
+									'competition-entry-open',
+									array(
+										'email_subject'   => $email_subject,
+										'from_email'      => $from_email,
+										'action_url'      => $action_url,
+										'organisation'    => $organisation_name,
+										'is_championship' => $is_championship,
+										'competition'     => $competition_name,
+										'addressee'       => $club->match_secretary_name,
+										'season_dtls'     => $season_dtls,
+									),
+									'email'
+								);
+								wp_mail( $email_to, $email_subject, $email_message, $headers );
+								$message_sent = true;
+							}
+							if ( $message_sent ) {
+								$return->msg = __( 'Match secretaries notified', 'racketmanager' );
+							} else {
+								$return->error = true;
+								$msg[]         = __( 'No notification', 'racketmanager' );
+							}
+						} else {
+							$return->error = true;
+							$msg[]         = __( 'No secretary email', 'racketmanager' );
+						}
+					}
+				} else {
+					$return->error = true;
+					$msg[]         = __( 'Competition season not found', 'racketmanager' );
 				}
+			} else {
+				$return->error = true;
+				$msg[]         = __( 'Competition not found', 'racketmanager' );
+			}
+		} else {
+			$return->error = true;
+			$msg[]         = __( 'Competition id not found', 'racketmanager' );
+		}
+		if ( ! empty( $return->error ) ) {
+			$return->msg = __( 'Notification error', 'racketmanager' );
+			foreach ( $msg as $error ) {
+				$return->msg .= '<br>' . $error;
 			}
 		}
+		return $return;
 	}
 	/**
 	 * Notify team entry reminder
@@ -654,18 +753,23 @@ class RacketManager {
 						}
 					}
 					if ( $clubs ) {
+						$season_dtls             = (object) $competition->seasons[ $season ];
+						$season_dtls->venue_name = null;
 						if ( $competition->is_league ) {
 							$is_championship = false;
 						} else {
+							if ( ! empty( $season_dtls->venue ) ) {
+								$venue_club = get_club( $season_dtls->venue );
+								if ( $venue_club ) {
+									$season_dtls->venue_name = $venue_club->shortcode;
+								}
+							}
 							$is_championship = true;
 						}
-						$date_closing     = date_create( $competition->seasons[ $season ]['closing_date'] );
+						$date_closing     = date_create( $season_dtls->closing_date );
 						$now              = date_create();
 						$remaining_time   = date_diff( $date_closing, $now, true );
 						$days_remaining   = $remaining_time->days;
-						$date_closing     = isset( $competition->seasons[ $season ]['closing_date'] ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['closing_date'] ) : null;
-						$date_start       = isset( $competition->seasons[ $season ]['dateStart'] ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['dateStart'] ) : null;
-						$date_end         = isset( $competition->seasons[ $season ]['dateEnd'] ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['dateEnd'] ) : null;
 						$url              = $this->site_url . '/entry-form/' . seo_url( $competition->name ) . '/' . $season . '/';
 						$competition_name = $competition->name . ' ' . $season;
 						$headers          = array();
@@ -687,10 +791,8 @@ class RacketManager {
 										'organisation'    => $organisation_name,
 										'is_championship' => $is_championship,
 										'competition'     => $competition_name,
-										'club'            => $club,
-										'date_closing'    => $date_closing,
-										'date_start'      => $date_start,
-										'date_end'        => $date_end,
+										'addressee'       => $club->match_secretary_name,
+										'season_dtls'     => $season_dtls,
 										'days_remaining'  => $days_remaining,
 									),
 									'email'
@@ -3375,162 +3477,6 @@ class RacketManager {
 	public function get_from_user_email() {
 		return 'From: ' . wp_get_current_user()->display_name . ' <' . $this->admin_email . '>';
 	}
-
-	/**
-	 * Notify clubs entries open
-	 *
-	 * @param string $type competition type.
-	 * @param int    $competition_id competition id.
-	 * @param string $season season.
-	 * @return object notifivation status
-	 */
-	public function notify_entry_open( $type, $competition_id, $season ) {
-		global $racketmanager_shortcodes, $racketmanager;
-
-		$return = new \stdClass();
-		$msg    = array();
-		if ( ! $type ) {
-			$return->error = true;
-			$msg[]         = __( 'Competition type not set', 'racketmanager' );
-		} else {
-			if ( ! $competition_id ) {
-				$return->error = true;
-				$msg[]         = __( 'Competition not set', 'racketmanager' );
-			}
-			switch ( $type ) {
-				case 'league':
-				case 'cup':
-					if ( ! $season ) {
-						$return->error = true;
-						$msg[]         = __( 'Season not set', 'racketmanager' );
-					} else {
-						$competition = get_competition( $competition_id );
-						if ( $competition ) {
-							if ( empty( $competition->seasons[ $season ] ) ) {
-								$return->error = true;
-								$msg[]         = __( 'Season not set for competition', 'racketmanager' );
-							}
-							if ( 'league' === $type ) {
-								$events = $competition->get_events();
-								foreach ( $events as $event ) {
-									if ( empty( $event->get_leagues() ) ) {
-										$return->error = true;
-										$msg[]         = __( 'No leagues found for event', 'racketmanager' ) . ' ' . $event->name;
-									} elseif ( count( $event->seasons ) > 1 ) {
-										$constitution = $event->get_constitution(
-											array(
-												'season' => $season,
-												'count'  => true,
-											)
-										);
-										if ( ! $constitution ) {
-											$return->error = true;
-											$msg[]         = __( 'Constitution not set', 'racketmanager' ) . ' ' . $event->name;
-										}
-									}
-								}
-								$is_championship = false;
-							} else {
-								$is_championship = true;
-							}
-							if ( empty( $return->error ) ) {
-								$season_dtls             = (object) $competition->seasons[ $season ];
-								$season_dtls->venue_name = null;
-								if ( ! empty( $season_dtls->venue ) ) {
-									$venue_club = get_club( $season_dtls->venue );
-									if ( $venue_club ) {
-										$season_dtls->venue_name = $venue_club->shortcode;
-									}
-								}
-								$date_closing     = isset( $season_dtls->closing_date ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['closing_date'] ) : null;
-								$date_start       = isset( $competition->seasons[ $season ]['dateStart'] ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['dateStart'] ) : null;
-								$date_end         = isset( $competition->seasons[ $season ]['dateEnd'] ) ? mysql2date( $racketmanager->date_format, $competition->seasons[ $season ]['dateEnd'] ) : null;
-								$url              = $this->site_url . '/entry-form/' . seo_url( $competition->name ) . '/' . $season . '/';
-								$competition_name = $competition->name . ' ' . $season;
-							}
-						} else {
-							$return->error = true;
-							$msg[]         = __( 'Competition not found', 'racketmanager' );
-						}
-					}
-					break;
-				case 'tournament':
-					$tournament = get_tournament( $competition_id );
-					if ( $tournament ) {
-						$date_closing     = $tournament->closing_date_display;
-						$date_start       = $tournament->date_open_display;
-						$date_end         = $tournament->date_display;
-						$url              = $this->site_url . '/entry-form/' . seo_url( $tournament->name ) . '-' . $type . '/';
-						$competition_name = $tournament->name . ' ' . __( 'Tournament', 'racketmanager' );
-						$is_championship  = true;
-					} else {
-						$return->error = true;
-						$msg[]         = __( 'Tournament not found', 'racketmanager' );
-					}
-					break;
-				default:
-					$return->error = true;
-					$msg[]         = __( 'Invalid competition type', 'racketmanager' );
-					break;
-			}
-		}
-		if ( empty( $return->error ) ) {
-			$clubs = $this->get_clubs(
-				array(
-					'type' => 'affiliated',
-				)
-			);
-
-			$headers    = array();
-			$from_email = $this->get_confirmation_email( $type );
-			if ( $from_email ) {
-				$headers[]         = 'From: ' . ucfirst( $type ) . 'Secretary <' . $from_email . '>';
-				$headers[]         = 'cc: ' . ucfirst( $type ) . 'Secretary <' . $from_email . '>';
-				$organisation_name = $this->site_name;
-
-				foreach ( $clubs as $club ) {
-					$email_subject = $this->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Open', 'racketmanager' ) . ' - ' . $club->name;
-					$email_to      = $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
-					$action_url    = $url . seo_url( $club->shortcode ) . '/';
-					$email_message = $racketmanager_shortcodes->load_template(
-						'competition-entry-open',
-						array(
-							'email_subject'   => $email_subject,
-							'from_email'      => $from_email,
-							'action_url'      => $action_url,
-							'organisation'    => $organisation_name,
-							'is_championship' => $is_championship,
-							'competition'     => $competition_name,
-							'club'            => $club,
-							'date_closing'    => $date_closing,
-							'date_start'      => $date_start,
-							'date_end'        => $date_end,
-						),
-						'email'
-					);
-					wp_mail( $email_to, $email_subject, $email_message, $headers );
-					$message_sent = true;
-				}
-				if ( $message_sent ) {
-					$return->msg = __( 'Match secretaries notified', 'racketmanager' );
-				} else {
-					$return->error = true;
-					$msg[]         = __( 'No notification', 'racketmanager' );
-				}
-			} else {
-				$return->error = true;
-				$msg[]         = __( 'No secretary email', 'racketmanager' );
-			}
-		}
-		if ( ! empty( $return->error ) ) {
-			$return->msg = __( 'Notification error', 'racketmanager' );
-			foreach ( $msg as $error ) {
-				$return->msg .= '<br>' . $error;
-			}
-		}
-		return $return;
-	}
-
 	/**
 	 * User favourite
 	 *

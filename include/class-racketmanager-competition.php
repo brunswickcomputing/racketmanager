@@ -746,9 +746,13 @@ class Racketmanager_Competition {
 		} elseif ( ! empty( $data['closing_date'] ) && $today > $data['closing_date'] ) {
 			$this->current_phase = 'close';
 			$this->is_closed     = true;
-		} elseif ( ! empty( $data['dateOpen'] ) && $today >= $data['dateOpen'] ) {
-			$this->current_phase = 'open';
-			$this->is_open       = true;
+		} elseif ( ! empty( $data['dateOpen'] ) ) {
+			if ( $today >= $data['dateOpen'] ) {
+				$this->current_phase = 'open';
+				$this->is_open       = true;
+			} else {
+				$this->current_phase = 'pending';
+			}
 		} else {
 			$this->current_phase = 'complete';
 			$this->is_complete   = true;

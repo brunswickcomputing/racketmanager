@@ -1057,4 +1057,107 @@ final class Racketmanager_Tournament {
 		return $return;
 	}
 	/**
+	 * Notify previous entrants entries open reminder
+	 *
+	 * @return object notification status
+	 */
+	public function notify_entry_reminder() {
+		global $racketmanager_shortcodes, $racketmanager;
+
+		$return           = new \stdClass();
+		$msg              = array();
+		$date_closing     = $this->closing_date_display;
+		$date_start       = $this->date_open_display;
+		$date_end         = $this->date_display;
+		$url              = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
+		$competition_name = $this->name . ' ' . __( 'Tournament', 'racketmanager' );
+		$is_championship  = true;
+		$date_closing     = date_create( $this->closing_date );
+		$now              = date_create();
+		$remaining_time   = date_diff( $date_closing, $now, true );
+		$days_remaining   = $remaining_time->days;
+		$players          = $this->get_not_entered_player_list();
+		if ( $players ) {
+			$headers    = array();
+			$from_email = $racketmanager->get_confirmation_email( 'tournament' );
+			if ( $from_email ) {
+				$headers[]         = 'From: Tournament Secretary <' . $from_email . '>';
+				$headers[]         = 'cc: Tournament Secretary <' . $from_email . '>';
+				$organisation_name = $racketmanager->site_name;
+
+				foreach ( $players as $player ) {
+					$email_subject = $racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Open', 'racketmanager' ) . ' - ' . __( 'Reminder', 'racketmanager' );
+					$email_to      = $player->display_name . ' <' . $player->email . '>';
+					$action_url    = $url;
+					$email_message = $racketmanager_shortcodes->load_template(
+						'tournament-entry-open',
+						array(
+							'email_subject'  => $email_subject,
+							'from_email'     => $from_email,
+							'action_url'     => $action_url,
+							'organisation'   => $organisation_name,
+							'tournament'     => $this,
+							'addressee'      => $player->display_name,
+							'days_remaining' => $days_remaining,
+						),
+						'email'
+					);
+					wp_mail( $email_to, $email_subject, $email_message, $headers );
+					$message_sent = true;
+				}
+				if ( $message_sent ) {
+					$return->msg = __( 'Players notified', 'racketmanager' );
+				} else {
+					$return->error = true;
+					$msg[]         = __( 'No notification', 'racketmanager' );
+				}
+			} else {
+				$return->error = true;
+				$msg[]         = __( 'No secretary email', 'racketmanager' );
+			}
+		}
+		if ( ! empty( $return->error ) ) {
+			$return->msg = __( 'Notification error', 'racketmanager' );
+			foreach ( $msg as $error ) {
+				$return->msg .= '<br>' . $error;
+			}
+		}
+		return $return;
+	}
+	/**
+	 * Get list of players not yet entered into tournament function
+	 *
+	 * @return array array of player objects
+	 */
+	private function get_not_entered_player_list() {
+		global $wpdb;
+		$limit   = 1;
+		$sql     = $wpdb->prepare(
+			"SELECT DISTINCT(te.player_id) FROM {$wpdb->racketmanager_tournament_entries} te, {$wpdb->racketmanager_tournaments} t INNER JOIN (SELECT `id` FROM {$wpdb->racketmanager_tournaments} WHERE `competition_id` = %d AND `id` != %d ORDER BY `id` DESC LIMIT %d) t1 ON t.`id` = t1.`id` WHERE te.`tournament_id` = t.`id` AND t.`competition_id` = %d AND te.`player_id` IN (SELECT DISTINCT `player_id` FROM {$wpdb->racketmanager_club_players} WHERE `removed_date` IS NULL) AND te.`player_id` NOT IN (SELECT `player_id` FROM {$wpdb->racketmanager_tournament_entries} WHERE `tournament_id` = %d)",
+			$this->competition_id,
+			$this->id,
+			$limit,
+			$this->competition_id,
+			$this->id,
+		);
+		$players = wp_cache_get( md5( $sql ), 'tournament_players' );
+		if ( ! $players ) {
+			$players = $wpdb->get_results(
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			); // db call ok.
+			wp_cache_set( md5( $sql ), $players, 'tournament_players' );
+		}
+		foreach ( $players as $i => $player_ref ) {
+			$player = get_player( $player_ref->player_id );
+			if ( $player ) {
+				if ( empty( $player->email ) ) {
+					unset( $players[ $i ] );
+				} else {
+					$players[ $i ] = $player;
+				}
+			}
+		}
+		return $players;
+	}
 }

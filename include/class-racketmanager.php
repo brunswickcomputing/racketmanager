@@ -820,6 +820,19 @@ class RacketManager {
 		}
 	}
 	/**
+	 * Notify tournament entry reminder
+	 *
+	 * @param int $tournament_id tournament id.
+	 * @return void
+	 */
+	public function notify_tournament_entry_reminder( $tournament_id ) {
+		if ( $tournament_id ) {
+			$tournament = get_tournament( $tournament_id );
+			if ( $tournament ) {
+				$tournament->notify_entry_reminder();
+			}
+		}
+	}
 	/**
 	 * Get League standings function
 	 *

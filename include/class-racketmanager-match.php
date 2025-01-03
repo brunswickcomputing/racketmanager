@@ -1012,12 +1012,12 @@ final class Racketmanager_Match {
 		$home_win       = 0;
 		$away_win       = 0;
 		$winning_points = $this->league->num_sets_to_win;
-		if ( empty( $home_points_input ) && '-1' === $this->home_team ) {
+		if ( empty( $home_points_input ) && -1 === intval( $this->home_team ) ) {
 			$home_points_input = 0;
 			$away_points_input = $winning_points;
 			$bye               = true;
 		}
-		if ( empty( $away_points_input ) && '-1' === $this->away_team ) {
+		if ( empty( $away_points_input ) && -1 === intval( $this->away_team ) ) {
 			$home_points_input = $winning_points;
 			$away_points_input = 0;
 			$bye               = true;

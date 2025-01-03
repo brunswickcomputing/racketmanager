@@ -61,7 +61,7 @@ $main_title = $page_link . ' - ' . $page_title;
 		<input type="hidden" name="event_id" value="<?php echo esc_html( $league->event->id ); ?>" />
 		<input type="hidden" name="league_id" value="<?php echo esc_html( $league_id ); ?>" />
 		<input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />
-		<legend>Select Teams to Add</legend>
+		<legend><?php esc_html_e( 'Select Teams to Add', 'racketmanager' ); ?></legend>
 		<div class="tablenav">
 			<!-- Bulk Actions -->
 			<select name="action" size="1">

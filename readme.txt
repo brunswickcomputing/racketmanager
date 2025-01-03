@@ -47,6 +47,14 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.32.0 =
+* BUGFIX: check $message set
+* UPDATE: set cup scheduled events only when not closed
+* UPDATE: schedule competition open and reminder emails
+* UPDATE: show open and closing dates in competition overviews
+* UPDATE: check for possible 2nd round teams in consolation events
+* UPDATE: advance teams with bye on first round start
+
 = 8.31.0 =
 * UPDATE: remove matach score reset from admin
 * UPDATE: allow reset of match score in result entry

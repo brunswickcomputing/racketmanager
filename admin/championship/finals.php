@@ -136,7 +136,7 @@ $view    = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view
 						if ( $match->league->event->competition->is_tournament ) {
 							$match_link = 'admin.php?page=racketmanager-tournaments&amp;view=match&amp;tournament=' . $tournament->id . '&amp;league=' . $league->id . '&amp;edit=' . $match->id . '&amp;season=' . $match->season . '&amp;final=' . $match->final_round;
 						} elseif ( $match->league->event->competition->is_cup ) {
-							$match_link = 'admin.php?page=racketmanager-cups&amp;view=match&amp;competition_id=' . $competition->id . '&amp;league=' . $league->id . '&amp;edit=' . $match->id . '&amp;season=' . $match->season . '&amp;final=' . $match->final_round;
+							$match_link = 'admin.php?page=racketmanager-cups&amp;view=match&amp;competition_id=' . $match->league->event->competition->id . '&amp;league=' . $league->id . '&amp;edit=' . $match->id . '&amp;season=' . $match->season . '&amp;final=' . $match->final_round;
 						} else {
 							$match_link = 'admin.php?page=racketmanager&amp;subpage=match&amp;league_id=' . $league->id . '&amp;edit=' . $match->id . '&amp;season=' . $match->season;
 						}

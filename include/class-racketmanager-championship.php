@@ -442,19 +442,24 @@ final class Racketmanager_Championship extends RacketManager {
 	 */
 	private function start_final_rounds() {
 		if ( is_admin() && current_user_can( 'update_results' ) ) {
-			$league     = get_league( $this->league_id );
-			$match_args = array(
-				'final'            => $this->get_final_keys( 1 ),
+			$league        = get_league( $this->league_id );
+			$multiple_legs = false;
+			$round_name    = $this->get_final_keys( 1 );
+			$match_args    = array(
+				'final'            => $round_name,
 				'limit'            => false,
 				'match_day'        => -1,
 				'reset_query_args' => true,
 			);
 			// get first round matches.
-			if ( ! empty( $league->current_season['homeAway'] ) && 'true' === $league->current_season['homeAway'] ) {
+			if ( ! empty( $league->current_season['homeAway'] ) && ( 'true' === $league->current_season['homeAway'] || true === $league->current_season['homeAway'] ) ) {
+				$multiple_legs     = true;
 				$match_args['leg'] = 1;
 			}
-			$matches = $league->get_matches( $match_args );
+			$matches_list = array();
+			$matches      = $league->get_matches( $match_args );
 			foreach ( $matches as $match ) {
+				$matches_list[] = $match->id;
 				if ( '-1' === $match->home_team ) {
 					$home['team'] = -1;
 					$home_team    = array( 'id' => -1 );
@@ -512,6 +517,19 @@ final class Racketmanager_Championship extends RacketManager {
 				if ( $home_team && $away_team ) {
 					$this->set_teams( $match, $home['team'], $away['team'] );
 				}
+			}
+			if ( $matches_list ) {
+				if ( $multiple_legs ) {
+					foreach ( $matches_list as $match_id ) {
+						$match = get_match( $match_id );
+						if ( $match ) {
+							if ( $match->linked_match ) {
+								$matches_list[] = $match->linked_match;
+							}
+						}
+					}
+				}
+				$this->update_final_results( $matches_list, array(), array(), array(), 1, $league->current_season );
 			}
 		}
 	}

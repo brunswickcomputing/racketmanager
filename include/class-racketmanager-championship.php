@@ -448,6 +448,7 @@ final class Racketmanager_Championship extends RacketManager {
 	 * Start final rounds
 	 */
 	private function start_final_rounds() {
+		$updates = false;
 		if ( is_admin() && current_user_can( 'update_results' ) ) {
 			$league        = get_league( $this->league_id );
 			$multiple_legs = false;
@@ -523,6 +524,7 @@ final class Racketmanager_Championship extends RacketManager {
 				}
 				if ( $home_team && $away_team ) {
 					$this->set_teams( $match, $home['team'], $away['team'] );
+					$updates = true;
 				}
 			}
 			if ( $matches_list ) {
@@ -539,6 +541,7 @@ final class Racketmanager_Championship extends RacketManager {
 				$this->update_final_results( $matches_list, array(), array(), array(), 1, $league->current_season );
 			}
 		}
+		return $updates;
 	}
 	/**
 	 * Set teams for match function
@@ -765,8 +768,12 @@ final class Racketmanager_Championship extends RacketManager {
 			if ( 'startFinals' === $action ) {
 				if ( isset( $_POST['racketmanager_proceed_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_proceed_nonce'] ) ), 'racketmanager_championship_proceed' ) ) {
 					if ( current_user_can( 'update_results' ) ) {
-						$this->start_final_rounds( $league->id );
-						$racketmanager->set_message( __( 'First round started', 'racketmanager' ) );
+						$updates = $this->start_final_rounds( $league->id );
+						if ( $updates ) {
+							$racketmanager->set_message( __( 'First round started', 'racketmanager' ) );
+						} else {
+							$racketmanager->set_message( __( 'First round not started', 'racketmanager' ), true );
+						}
 						$tab = 'finalresults'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 					} else {
 						$racketmanager->set_message( __( 'You do not have sufficient permissions to access this page.', 'racketmanager' ), true );

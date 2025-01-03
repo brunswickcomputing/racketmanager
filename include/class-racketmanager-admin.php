@@ -1890,7 +1890,6 @@ class RacketManager_Admin extends RacketManager {
 					}
 					++$t;
 				}
-				$pending_teams                   = array();
 				$match_array                     = array();
 				$match_array['reset_query_args'] = true;
 				$final_name                      = $primary_league->championship->get_final_keys( 1 );
@@ -1905,12 +1904,29 @@ class RacketManager_Admin extends RacketManager {
 						$team->stadium = '';
 						$teams[]       = $team;
 					}
-				} else {
-					$final_name           = $primary_league->championship->get_final_keys( 2 );
-					$match_array['final'] = $final_name;
-					$matches              = $primary_league->get_matches( $match_array );
-					if ( $matches ) {
-						foreach ( $matches as $match ) {
+				}
+				$final_name           = $primary_league->championship->get_final_keys( 2 );
+				$match_array['final'] = $final_name;
+				$matches              = $primary_league->get_matches( $match_array );
+				if ( $matches ) {
+					foreach ( $matches as $match ) {
+						$possible   = 0;
+						$team_types = array( 'home', 'away' );
+						foreach ( $team_types as $team_type ) {
+							$team_ref = $team_type . '_team';
+							if ( is_numeric( $match->$team_ref ) ) {
+								$match_array['pending']   = false;
+								$match_array['final']     = 'all';
+								$match_array['winner_id'] = $match->$team_ref;
+								$team_matches             = $primary_league->get_matches( $match_array );
+								foreach ( $team_matches as $team_match ) {
+									if ( '-1' === $team_match->home_team || '-1' === $team_match->away_team ) {
+										++$possible;
+									}
+								}
+							}
+						}
+						if ( $possible ) {
 							$team          = new \stdClass();
 							$team->id      = '2_' . $final_name . '_' . $match->id;
 							$team->title   = __( 'Loser of ', 'racketmanager' ) . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;

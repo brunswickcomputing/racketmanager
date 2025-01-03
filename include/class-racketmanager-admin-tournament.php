@@ -127,7 +127,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 							}
 							$racketmanager->printMessage();
 						} else {
-							$league->championship->handle_admin_page( $league, $season );
+							$tab = $league->championship->handle_admin_page( $league, $season ); //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 							if ( isset( $_POST['saveRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 								$this->league_manual_rank_teams( $league );
 								$racketmanager->printMessage();

@@ -801,12 +801,13 @@ final class Racketmanager_Championship extends RacketManager {
 
 		$tab = 'finalresults'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		if ( isset( $_REQUEST['league-tab'] ) ) {
+		if ( empty( $tab ) && isset( $_REQUEST['league-tab'] ) ) {
 			$tab = sanitize_text_field( wp_unslash( $_REQUEST['league-tab'] ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		}
 		if ( isset( $_REQUEST['final'] ) ) {
 			$final = sanitize_text_field( wp_unslash( $_REQUEST['final'] ) );
 		}
+		return $tab;
 	}
 	/**
 	 * Display administration panel

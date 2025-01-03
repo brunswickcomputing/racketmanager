@@ -20,6 +20,7 @@ if ( 'constitution' === $view ) {
 	$link_ref   = 'admin.php?page=racketmanager-' . $league->event->competition->type . 's&amp;season=' . $season;
 	switch ( $league->event->competition->type ) {
 		case 'cup':
+			$link_ref .= '&amp;competition_id=' . $league->event->competition->id . '&amp;view=draw&amp;league=' . $league->id;
 			break;
 		case 'tournament':
 			$link_ref .= '&amp;tournament=' . $tournament_id . '&amp;view=draw&amp;league=' . $league->id;

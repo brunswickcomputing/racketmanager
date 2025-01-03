@@ -132,6 +132,12 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 							$this->manage_matches_in_league( $league );
 							$racketmanager->printMessage();
 							$tab = 'matches'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+						} elseif ( isset( $_POST['action'] ) && 'addTeamsToLeague' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+							$this->league_add_teams( $league );
+							if ( $league->is_championship ) {
+								$tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+							}
+							$racketmanager->printMessage();
 						} else {
 							$league->championship->handle_admin_page( $league, $season );
 							if ( isset( $_POST['saveRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing

@@ -19,7 +19,7 @@ if ( empty( $cup_season->name ) ) {
 	$modify_season = true;
 	$action_form   = 'admin.php?page=racketmanager-cups&amp;view=modify&amp;competition_id=' . $competition->id . '&amp;season=' . $cup_season->name;
 	$action_text   = __( 'Modify season', 'racketmanager' );
-	$breadcrumb   .= '<a href="admin.php?page=racketmanager-' . $competition->type . 's&amp;view=season&amp;competition_id=' . $competition->id . '&amp;season=' . $season . '<">' . $season . '</a> &raquo; ';
+	$breadcrumb   .= '<a href="admin.php?page=racketmanager-' . $competition->type . 's&amp;view=season&amp;competition_id=' . $competition->id . '&amp;season=' . $season . '">' . $season . '</a> &raquo; ';
 }
 $breadcrumb .= $action_text;
 ?>

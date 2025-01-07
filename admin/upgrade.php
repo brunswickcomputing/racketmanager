@@ -1136,6 +1136,7 @@ function racketmanager_upgrade() {
 	}
 	if ( version_compare( $installed, '8.33.0', '<' ) ) {
 		echo esc_html__( 'starting 8.33.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} ADD `grade` VARCHAR( 1 ) NULL AFTER `competition_code`" );
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} ADD `date_withdrawal` DATE NULL AFTER `closingdate`" );
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} CHANGE `closingdate` `date_closing` DATE NULL" );
 	}

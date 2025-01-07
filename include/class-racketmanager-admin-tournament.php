@@ -310,10 +310,12 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 				$tournament->venue            = isset( $_POST['venue'] ) ? intval( $_POST['venue'] ) : null;
 				$tournament->date_open        = isset( $_POST['date_open'] ) ? sanitize_text_field( wp_unslash( $_POST['date_open'] ) ) : null;
 				$tournament->date_closing     = isset( $_POST['date_close'] ) ? sanitize_text_field( wp_unslash( $_POST['date_close'] ) ) : null;
+				$tournament->date_withdrawal  = isset( $_POST['date_withdraw'] ) ? sanitize_text_field( wp_unslash( $_POST['date_withdraw'] ) ) : null;
 				$tournament->date_start       = isset( $_POST['date_start'] ) ? sanitize_text_field( wp_unslash( $_POST['date_start'] ) ) : null;
 				$tournament->date             = isset( $_POST['date_end'] ) ? sanitize_text_field( wp_unslash( $_POST['date_end'] ) ) : null;
 				$tournament->starttime        = isset( $_POST['starttime'] ) ? sanitize_text_field( wp_unslash( $_POST['starttime'] ) ) : null;
 				$tournament->competition_code = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
+				$tournament->grade            = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
 				$tournament                   = new Racketmanager_Tournament( $tournament );
 				if ( $racketmanager->error ) {
 					$racketmanager->printMessage();
@@ -341,8 +343,10 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 						$tournament->date             = isset( $_POST['date_end'] ) ? sanitize_text_field( wp_unslash( $_POST['date_end'] ) ) : null;
 						$tournament->date_open        = isset( $_POST['date_open'] ) ? sanitize_text_field( wp_unslash( $_POST['date_open'] ) ) : null;
 						$tournament->date_closing     = isset( $_POST['date_close'] ) ? sanitize_text_field( wp_unslash( $_POST['date_close'] ) ) : null;
+						$tournament->date_withdrawal  = isset( $_POST['date_withdraw'] ) ? sanitize_text_field( wp_unslash( $_POST['date_withdraw'] ) ) : null;
 						$tournament->date_start       = isset( $_POST['date_start'] ) ? sanitize_text_field( wp_unslash( $_POST['date_start'] ) ) : null;
 						$tournament->competition_code = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
+						$tournament->grade            = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
 						$success                      = $tournament->update( $tournament );
 						if ( $success ) {
 							$this->set_competition_dates( $tournament );

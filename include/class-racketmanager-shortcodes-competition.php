@@ -1605,22 +1605,29 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$args           = shortcode_atts(
 			array(
 				'id'       => false,
+				'season'   => null,
 				'template' => '',
 			),
 			$atts
 		);
 		$competition_id = $args['id'];
+		$season         = $args['season'];
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
 			$msg = __( 'Competition not found', 'racketmanager' );
 			return $this->return_error( $msg );
 		}
+		if ( $season ) {
+			$competition->set_season( $season );
+		} else {
+			$season = $competition->current_season['name'];
+		}
 		$competition->events  = $competition->get_events();
 		$competition->entries = $competition->get_teams(
 			array(
 				'count'  => true,
-				'season' => $competition->current_season['name'],
+				'season' => $season,
 				'status' => 1,
 			)
 		);
@@ -1700,21 +1707,28 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$args           = shortcode_atts(
 			array(
 				'id'       => false,
+				'season'   => null,
 				'template' => '',
 			),
 			$atts
 		);
 		$competition_id = $args['id'];
+		$season         = $args['season'];
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
 			$msg = __( 'Competition not found', 'racketmanager' );
 			return $this->return_error( $msg );
 		}
+		if ( $season ) {
+			$competition->set_season( $season );
+		} else {
+			$season = $competition->current_season['name'];
+		}
 		$competition->teams = $competition->get_teams(
 			array(
 				'status'  => 1,
-				'season'  => $competition->current_season['name'],
+				'season'  => $season,
 				'orderby' => array( 'name' => 'ASC' ),
 			)
 		);
@@ -1742,19 +1756,25 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$args           = shortcode_atts(
 			array(
 				'id'       => 0,
+				'season'   => null,
 				'clubs'    => null,
 				'template' => '',
-				'season'   => false,
 			),
 			$atts
 		);
 		$competition_id = $args['id'];
+		$season         = $args['season'];
 		$club_id        = $args['clubs'];
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
 			$msg = __( 'Competition not found', 'racketmanager' );
 			return $this->return_error( $msg );
+		}
+		if ( $season ) {
+			$competition->set_season( $season );
+		} else {
+			$season = $competition->current_season['name'];
 		}
 		$competition->clubs = $competition->get_clubs( array( 'status' => 1 ) );
 		$competition_club   = null;
@@ -1775,14 +1795,14 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				$competition_club->teams   = $competition->get_teams(
 					array(
 						'club'   => $competition_club->id,
-						'season' => $competition->current_season['name'],
+						'season' => $season,
 						'status' => 1,
 					)
 				);
 				$competition_club->matches = array();
 				$matches                   = $competition->get_matches(
 					array(
-						'season'  => $competition->current_season['name'],
+						'season'  => $season,
 						'club'    => $competition_club->id,
 						'time'    => 'next',
 						'orderby' => array(
@@ -1801,7 +1821,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				$competition_club->results = array();
 				$matches                   = $competition->get_matches(
 					array(
-						'season'  => $competition->current_season['name'],
+						'season'  => $season,
 						'club'    => $competition_club->id,
 						'time'    => 'latest',
 						'orderby' => array(
@@ -1820,7 +1840,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				$competition_club->players = $competition->get_players(
 					array(
 						'club'   => $competition_club->id,
-						'season' => $competition->current_season['name'],
+						'season' => $season,
 						'stats'  => true,
 					)
 				);
@@ -1850,18 +1870,25 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$args           = shortcode_atts(
 			array(
 				'id'       => 0,
+				'season'   => false,
 				'players'  => null,
 				'template' => '',
 			),
 			$atts
 		);
 		$competition_id = $args['id'];
+		$season         = $args['season'];
 		$player_id      = $args['players'];
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
 			$msg = __( 'Competition not found', 'racketmanager' );
 			return $this->return_error( $msg );
+		}
+		if ( $season ) {
+			$competition->set_season( $season );
+		} else {
+			$season = $competition->current_season['name'];
 		}
 		$player               = null;
 		$competition->players = array();
@@ -1907,16 +1934,23 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$args           = shortcode_atts(
 			array(
 				'id'       => 0,
+				'season'   => false,
 				'template' => '',
 			),
 			$atts
 		);
 		$competition_id = $args['id'];
+		$season         = $args['season'];
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
 			$msg = __( 'Competition not found', 'racketmanager' );
 			return $this->return_error( $msg );
+		}
+		if ( $season ) {
+			$competition->set_season( $season );
+		} else {
+			$season = $competition->current_season['name'];
 		}
 		$competition->winners = $competition->get_winners( true );
 		$filename             = ( ! empty( $template ) ) ? 'winners-' . $template : 'winners';

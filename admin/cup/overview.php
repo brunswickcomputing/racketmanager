@@ -28,6 +28,10 @@ namespace Racketmanager;
 						<td class="col-6 col-md-3"><?php esc_html_e( 'Code', 'racketmanager' ); ?></td>
 						<td class="col-auto"><?php echo esc_html( $competition->competition_code ); ?></td>
 					</tr>
+					<tr>
+						<td class="col-6 col-md-3"><?php esc_html_e( 'Grade', 'racketmanager' ); ?></td>
+						<td class="col-auto"><?php echo isset( $cup_season->grade ) ? esc_html( $cup_season->grade ) : null; ?></td>
+					</tr>
 				</tbody>
 			</table>
 		</div>

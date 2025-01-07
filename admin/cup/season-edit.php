@@ -55,7 +55,7 @@ $breadcrumb .= $action_text;
 							<?php
 						} else {
 							?>
-							<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" size="1" name="season" id="season">
+							<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="season" id="season">
 								<option disabled <?php selected( null, empty( $cup_season->name ) ? null : $cup_season->name ); ?>><?php esc_html_e( 'Select season', 'racketmanager' ); ?></option>
 								<?php
 								$seasons = $this->get_seasons( 'DESC' );
@@ -90,7 +90,7 @@ $breadcrumb .= $action_text;
 							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
 						}
 						?>
-						<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" size="1" name="venue" id="venue" >
+						<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="venue" id="venue" >
 							<option disabled <?php selected( null, empty( $cup_season->venue ) ? null : $cup_season->venue ); ?>><?php esc_html_e( 'Select venue', 'racketmanager' ); ?></option>
 							<?php foreach ( $clubs as $club ) { ?>
 								<option value="<?php echo esc_html( $club->id ); ?>" <?php selected( $club->id, empty( $cup_season->venue ) ? null : $cup_season->venue ); ?>><?php echo esc_html( $club->name ); ?></option>

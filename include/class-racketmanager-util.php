@@ -814,4 +814,21 @@ class Racketmanager_Util {
 		}
 		return $points;
 	}
+	/**
+	 * Get event grades function
+	 *
+	 * @return array of event grades
+	 */
+	public static function get_event_grades() {
+		$event_grades      = array();
+		$event_grades['1'] = __( 'National', 'racketmanager' );
+		$event_grades['2'] = __( 'National', 'racketmanager' );
+		$event_grades['3'] = __( 'Regional', 'racketmanager' );
+		$event_grades['4'] = __( 'County', 'racketmanager' );
+		$event_grades['5'] = __( 'Local', 'racketmanager' );
+		$event_grades['6'] = __( 'Matchplays', 'racketmanager' );
+		$event_grades['7'] = __( 'Interal', 'racketmanager' );
+		$event_grades['U'] = __( 'Ungraded', 'racketmanager' );
+		return $event_grades;
+	}
 }

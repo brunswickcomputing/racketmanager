@@ -3699,7 +3699,10 @@ class RacketManager_Admin extends RacketManager {
 		$error = false;
 		if ( false !== $season_data->match_dates ) {
 			if ( empty( $season_data->match_dates ) ) {
-				$racketmanager->set_message( __( 'Match dates not set', 'racketmanager' ), true );
+				$msg                             = __( 'Match dates not set', 'racketmanager' );
+				$racketmanager->error_fields[]   = 'matchDates';
+				$racketmanager->error_messages[] = $msg;
+				$racketmanager->set_message( $msg, true );
 				$error = true;
 			} else {
 				$match_date_values = array();
@@ -3744,11 +3747,17 @@ class RacketManager_Admin extends RacketManager {
 		}
 		if ( 'competition' === $season_data->type ) {
 			if ( empty( $season_data->date_open ) ) {
-				$racketmanager->set_message( __( 'Open date must be set', 'racketmanager' ), true );
+				$msg                             = __( 'Open date must be set', 'racketmanager' );
+				$racketmanager->error_fields[]   = 'date_open';
+				$racketmanager->error_messages[] = $msg;
+				$racketmanager->set_message( $msg, true );
 				$error = true;
 			}
 			if ( empty( $season_data->closing_date ) ) {
-				$racketmanager->set_message( __( 'Closing date must be set', 'racketmanager' ), true );
+				$msg                             = __( 'Closing date must be set', 'racketmanager' );
+				$racketmanager->error_fields[]   = 'date_open';
+				$racketmanager->error_messages[] = $msg;
+				$racketmanager->set_message( $msg, true );
 				$error = true;
 			}
 			if ( empty( $season_data->date_start ) ) {

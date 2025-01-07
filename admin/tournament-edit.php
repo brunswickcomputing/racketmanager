@@ -179,7 +179,7 @@ $is_invalid = false;
 						}
 						?>
 						<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="grade" id="grade" >
-							<option disabled <?php selected( null, empty( $tournament->grade ) ? null : $cup_season->grade ); ?>><?php esc_html_e( 'Select grade', 'racketmanager' ); ?></option>
+							<option disabled <?php selected( null, empty( $tournament->grade ) ? null : $tournament->grade ); ?>><?php esc_html_e( 'Select grade', 'racketmanager' ); ?></option>
 							<?php
 							foreach ( $grades as $grade => $grade_desc ) {
 								?>

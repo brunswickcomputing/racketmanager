@@ -73,13 +73,19 @@ final class Racketmanager_Tournament {
 	 *
 	 * @var string
 	 */
-	public $closing_date;
+	public $date_closing;
 	/**
 	 * Closing Date display
 	 *
 	 * @var string
 	 */
-	public $closing_date_display;
+	public $date_closing_display;
+	/**
+	 * Date withdrawal variable
+	 *
+	 * @var string
+	 */
+	public $date_withdrawal;
 	/**
 	 * Date open variable
 	 *
@@ -195,11 +201,17 @@ final class Racketmanager_Tournament {
 	 */
 	public $competition_code;
 	/**
-	 * Fianls variable
+	 * Finals variable
 	 *
 	 * @var array
 	 */
 	public $finals;
+	/**
+	 * Grade variable
+	 *
+	 * @var string
+	 */
+	public $grade;
 	/**
 	 * Retrieve tournament instance
 	 *
@@ -244,7 +256,7 @@ final class Racketmanager_Tournament {
 			$tournament = $wpdb->get_row(
 				$wpdb->prepare(
 				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					"SELECT `id`, `name`, `competition_id`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`closingdate`, '%%Y-%%m-%%d') AS closing_date, `date_start`, `date_open`,`numcourts` AS `num_courts`, `starttime`, `timeincrement` AS `time_increment`, `orderofplay`, `competition_code` FROM {$wpdb->racketmanager_tournaments} WHERE $search"
+					"SELECT `id`, `name`, `competition_id`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`date_closing`, '%%Y-%%m-%%d') AS `date_closing`, `date_start`, `date_open`,`numcourts` AS `num_courts`, `starttime`, `timeincrement` AS `time_increment`, `orderofplay`, `competition_code` FROM {$wpdb->racketmanager_tournaments} WHERE $search"
 				)
 			); // db call ok.
 			if ( ! $tournament ) {
@@ -274,7 +286,7 @@ final class Racketmanager_Tournament {
 			}
 			$this->link                 = '/tournament/' . seo_url( $this->name ) . '/';
 			$this->date_display         = ( substr( $this->date, 0, 10 ) === '0000-00-00' ) ? 'TBC' : mysql2date( $racketmanager->date_format, $this->date );
-			$this->closing_date_display = ( substr( $this->closing_date, 0, 10 ) === '0000-00-00' ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->closing_date );
+			$this->date_closing_display = ( substr( $this->date_closing, 0, 10 ) === '0000-00-00' ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_closing );
 			$this->date_open_display    = empty( $this->date_open ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_open );
 			$this->date_start_display   = empty( $this->date_start ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_start );
 			$today                      = gmdate( 'Y-m-d' );
@@ -287,7 +299,7 @@ final class Racketmanager_Tournament {
 				if ( ! empty( $this->date_start ) && $today >= $this->date_start ) {
 					$this->current_phase = 'start';
 					$this->is_started    = true;
-				} elseif ( ! empty( $this->closing_date ) && $today > $this->closing_date ) {
+				} elseif ( ! empty( $this->date_closing ) && $today > $this->date_closing ) {
 					$this->current_phase = 'close';
 					$this->is_closed     = true;
 				} elseif ( ! empty( $this->date_open ) && $today >= $this->date_open ) {
@@ -301,7 +313,7 @@ final class Racketmanager_Tournament {
 			} else {
 				$this->venue_name = get_club( $tournament->venue )->shortcode;
 			}
-			if ( isset( $this->closing_date ) && $this->closing_date <= gmdate( 'Y-m-d' ) ) {
+			if ( isset( $this->date_closing ) && $this->date_closing <= gmdate( 'Y-m-d' ) ) {
 				$this->is_active = true;
 			} else {
 				$this->is_active = false;
@@ -356,27 +368,46 @@ final class Racketmanager_Tournament {
 			$err_msg[] = __( 'Season is required', 'racketmanager' );
 			$err_fld[] = 'season';
 		}
+		if ( empty( $this->venue ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Venue is required', 'racketmanager' );
+			$err_fld[] = 'venue';
+		}
+		if ( empty( $this->grade ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Grade is required', 'racketmanager' );
+			$err_fld[] = 'grade';
+		}
 		if ( empty( $this->date_open ) ) {
 			$valid     = false;
 			$err_msg[] = __( 'Opening date is required', 'racketmanager' );
 			$err_fld[] = 'date_open';
 		}
-		if ( empty( $this->closing_date ) ) {
+		if ( empty( $this->date_closing ) ) {
 			$valid     = false;
 			$err_msg[] = __( 'Closing date is required', 'racketmanager' );
 			$err_fld[] = 'date_close';
-		} elseif ( ! empty( $this->date_open ) && $this->closing_date <= $this->date_open ) {
+		} elseif ( ! empty( $this->date_open ) && $this->date_closing <= $this->date_open ) {
 			$valid     = false;
 			$err_msg[] = __( 'Closing date must be after open date', 'racketmanager' );
+			$err_fld[] = 'date_close';
+		}
+		if ( empty( $this->date_withdrawal ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Withdrawal date is required', 'racketmanager' );
+			$err_fld[] = 'date_withdraw';
+		} elseif ( ! empty( $this->date_closing ) && $this->date_withdrawal <= $this->date_closing ) {
+			$valid     = false;
+			$err_msg[] = __( 'Withdrawal date must be after closing date', 'racketmanager' );
 			$err_fld[] = 'date_close';
 		}
 		if ( empty( $this->date_start ) ) {
 			$valid     = false;
 			$err_msg[] = __( 'Start date is required', 'racketmanager' );
 			$err_fld[] = 'date_start';
-		} elseif ( ! empty( $this->closing_date ) && $this->date_start <= $this->closing_date ) {
+		} elseif ( ! empty( $this->date_withdrawal ) && $this->date_start <= $this->date_withdrawal ) {
 			$valid     = false;
-			$err_msg[] = __( 'Start date must be after closing date', 'racketmanager' );
+			$err_msg[] = __( 'Start date must be after withdrawal date', 'racketmanager' );
 			$err_fld[] = 'date_start';
 		}
 		if ( empty( $this->date ) ) {
@@ -394,13 +425,14 @@ final class Racketmanager_Tournament {
 		if ( $valid ) {
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"INSERT INTO {$wpdb->racketmanager_tournaments} (`name`, `competition_id`, `season`, `venue`, `date_open`, `closingdate`, `date_start`, `date`, `competition_code` ) VALUES (%s, %s, %d, %d, %s, %s, %s, %s, %s )",
+					"INSERT INTO {$wpdb->racketmanager_tournaments} (`name`, `competition_id`, `season`, `venue`, `date_open`, `date_closing`, `date_withdrawal`, `date_start`, `date`, `competition_code` ) VALUES (%s, %s, %d, %d, %s, %s, %s, %s, %s, %s )",
 					$this->name,
 					$this->competition_id,
 					$this->season,
 					$this->venue,
 					$this->date_open,
-					$this->closing_date,
+					$this->date_closing,
+					$this->date_withdrawal,
 					$this->date_start,
 					$this->date,
 					$this->competition_code,
@@ -431,19 +463,45 @@ final class Racketmanager_Tournament {
 		$valid   = true;
 		$err_msg = array();
 		$err_fld = array();
+		if ( empty( $updated->venue ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Venue is required', 'racketmanager' );
+			$err_fld[] = 'venue';
+		}
+		if ( empty( $updated->grade ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Grade is required', 'racketmanager' );
+			$err_fld[] = 'grade';
+		}
 		if ( ! empty( $updated->date_open ) ) {
-			if ( ! empty( $updated->closing_date ) ) {
-				if ( $updated->closing_date <= $updated->date_open ) {
+			if ( ! empty( $updated->date_closing ) ) {
+				if ( $updated->date_closing <= $updated->date_open ) {
 					$valid     = false;
 					$err_msg[] = __( 'Closing date must be after open date', 'racketmanager' );
 					$err_fld[] = 'date_close';
-				} elseif ( ! empty( $updated->date_start ) ) {
-					if ( $updated->date_start < $updated->closing_date ) {
+				} elseif ( ! empty( $updated->date_withdrawal ) ) {
+					if ( $updated->date_withdrawal < $updated->date_closing ) {
 						$valid     = false;
-						$err_msg[] = __( 'Start date must be after closing date', 'racketmanager' );
-						$err_fld[] = 'date_start';
+						$err_msg[] = __( 'Withdrawal date must be after closing date', 'racketmanager' );
+						$err_fld[] = 'date_withdraw';
+					} elseif ( ! empty( $updated->date_start ) ) {
+						if ( $updated->date_start < $updated->date_withdrawal ) {
+							$valid     = false;
+							$err_msg[] = __( 'Start date must be after withdrawal date', 'racketmanager' );
+							$err_fld[] = 'date_start';
+						} elseif ( ! empty( $updated->date ) ) {
+							if ( $updated->date <= $updated->date_closing ) {
+								$valid     = false;
+								$err_msg[] = __( 'End date must be after start date', 'racketmanager' );
+								$err_fld[] = 'date_end';
+							}
+						} else {
+							$valid     = false;
+							$err_msg[] = __( 'End date is required', 'racketmanager' );
+							$err_fld[] = 'date_end';
+						}
 					} elseif ( ! empty( $updated->date ) ) {
-						if ( $updated->date <= $updated->closing_date ) {
+						if ( $updated->date <= $updated->date_closing ) {
 							$valid     = false;
 							$err_msg[] = __( 'End date must be after start date', 'racketmanager' );
 							$err_fld[] = 'date_end';
@@ -455,8 +513,8 @@ final class Racketmanager_Tournament {
 					}
 				} else {
 					$valid     = false;
-					$err_msg[] = __( 'Start date is required', 'racketmanager' );
-					$err_fld[] = 'date_start';
+					$err_msg[] = __( 'Withdrawal date is required', 'racketmanager' );
+					$err_fld[] = 'date_withdraw';
 				}
 			} else {
 				$valid     = false;
@@ -477,20 +535,22 @@ final class Racketmanager_Tournament {
 			$this->season           = $updated->season;
 			$this->venue            = $updated->venue;
 			$this->date_open        = $updated->date_open;
-			$this->closing_date     = $updated->closing_date;
+			$this->date_closing     = $updated->date_closing;
+			$this->date_withdrawal  = $updated->date_withdrawal;
 			$this->date_start       = $updated->date_start;
 			$this->date             = $updated->date;
 			$this->starttime        = $updated->starttime;
 			$this->competition_code = $updated->competition_code;
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_tournaments} SET `name` = %s, `competition_id` = %d, `season` = %s, `venue` = %d, `date_open` = %s, `closingdate` = %s, `date_start` = %s, `date` = %s, `starttime` = %s, `competition_code` = %s WHERE `id` = %d",
+					"UPDATE {$wpdb->racketmanager_tournaments} SET `name` = %s, `competition_id` = %d, `season` = %s, `venue` = %d, `date_open` = %s, `date_closing` = %s, `date_withdrawal` = %s, `date_start` = %s, `date` = %s, `starttime` = %s, `competition_code` = %s WHERE `id` = %d",
 					$updated->name,
 					$updated->competition_id,
 					$updated->season,
 					$updated->venue,
 					$updated->date_open,
-					$updated->closing_date,
+					$updated->date_closing,
+					$updated->date_withdrawal,
 					$updated->date_start,
 					$updated->date,
 					$updated->starttime,
@@ -974,8 +1034,8 @@ final class Racketmanager_Tournament {
 		$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
 		if ( ! $success ) {
 			$racketmanager->set_message( __( 'Error scheduling tournament open emails', 'racketmanager' ), true );
-		} elseif ( ! empty( $this->closing_date ) ) {
-			$chase_date     = strtotime( $this->closing_date . ' -7 day' );
+		} elseif ( ! empty( $this->date_closing ) ) {
+			$chase_date     = strtotime( $this->date_closing . ' -7 day' );
 			$day            = intval( gmdate( 'd', $chase_date ) );
 			$month          = intval( gmdate( 'm', $chase_date ) );
 			$year           = intval( gmdate( 'Y', $chase_date ) );
@@ -998,7 +1058,7 @@ final class Racketmanager_Tournament {
 
 		$return           = new \stdClass();
 		$msg              = array();
-		$date_closing     = $this->closing_date_display;
+		$date_closing     = $this->date_closing_display;
 		$date_start       = $this->date_open_display;
 		$date_end         = $this->date_display;
 		$url              = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
@@ -1066,13 +1126,13 @@ final class Racketmanager_Tournament {
 
 		$return           = new \stdClass();
 		$msg              = array();
-		$date_closing     = $this->closing_date_display;
+		$date_closing     = $this->date_closing_display;
 		$date_start       = $this->date_open_display;
 		$date_end         = $this->date_display;
 		$url              = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
 		$competition_name = $this->name . ' ' . __( 'Tournament', 'racketmanager' );
 		$is_championship  = true;
-		$date_closing     = date_create( $this->closing_date );
+		$date_closing     = date_create( $this->date_closing );
 		$now              = date_create();
 		$remaining_time   = date_diff( $date_closing, $now, true );
 		$days_remaining   = $remaining_time->days;

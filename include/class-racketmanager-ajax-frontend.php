@@ -451,7 +451,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$validator  = $validator->tournament( $tournament_id );
 				if ( $tournament_id ) {
 					$tournament = get_tournament( $tournament_id );
-					$validator  = $validator->tournament_open( $tournament->closing_date );
+					$validator  = $validator->tournament_open( $tournament->date_closing );
 				}
 			}
 		}

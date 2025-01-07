@@ -69,7 +69,7 @@ namespace Racketmanager;
 									<?php esc_html_e( 'Closing deadline', 'racketmanager' ); ?>
 								</div>
 								<div class="list__meta">
-									<?php echo esc_html( $tournament->closing_date_display ); ?>
+									<?php echo esc_html( $tournament->date_closing_display ); ?>
 								</div>
 							</li>
 							<li class="list__item is-started <?php echo ( $tournament->is_started ) ? ' is-current is-success' : null; ?>">

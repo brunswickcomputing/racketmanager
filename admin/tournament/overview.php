@@ -40,7 +40,7 @@ namespace Racketmanager;
 					</tr>
 					<tr>
 						<td class="col-6 col-md-3"><?php esc_html_e( 'Entry closed', 'racketmanager' ); ?></td>
-						<td class="col-auto"><?php echo esc_html( $tournament->closing_date ); ?></td>
+						<td class="col-auto"><?php echo esc_html( $tournament->date_closing ); ?></td>
 					</tr>
 					<tr>
 						<td class="col-6 col-md-3"><?php esc_html_e( 'Tournament start', 'racketmanager' ); ?></td>

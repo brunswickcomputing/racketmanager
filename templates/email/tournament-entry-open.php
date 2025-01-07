@@ -12,11 +12,11 @@ $salutation_link = $addressee;
 require 'components/salutation.php';
 if ( empty( $days_remaining ) ) {
 	/* translators: %1$s: tournament name %2$s: closing date */
-	$paragraph_text = sprintf( __( 'The entry form for the %1$s Tournament is now available. The closing date for entries is %2$s.', 'racketmanager' ), ucfirst( $tournament->name ), $tournament->closing_date_display );
+	$paragraph_text = sprintf( __( 'The entry form for the %1$s Tournament is now available. The closing date for entries is %2$s.', 'racketmanager' ), ucfirst( $tournament->name ), $tournament->date_closing_display );
 	require 'components/paragraph.php';
 } else {
 	/* translators: %1$s: days remaining %2$s: competition name %3$s: closing date */
-	$paragraph_text = sprintf( __( 'There are now less than %1$s days left before the %2$s Tournament closes on %3$s.', 'racketmanager' ), $days_remaining, ucfirst( $tournament->name ), $tournament->closing_date_display );
+	$paragraph_text = sprintf( __( 'There are now less than %1$s days left before the %2$s Tournament closes on %3$s.', 'racketmanager' ), $days_remaining, ucfirst( $tournament->name ), $tournament->date_closing_display );
 	require 'components/paragraph.php';
 	/* translators: %1$s: competition name */
 	$paragraph_text = sprintf( __( 'You have played in our previous %s but you have not yet entered this one.', 'racketmanager' ), $tournament->competition->name );

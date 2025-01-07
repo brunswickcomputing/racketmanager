@@ -2497,7 +2497,7 @@ class RacketManager {
 			$search_terms[] = $wpdb->prepare( '`season` = %s', $season );
 		}
 		if ( $entry_open ) {
-			$search_terms[] = '`closingdate` >= CURDATE()';
+			$search_terms[] = '`date_closing` >= CURDATE()';
 		}
 		if ( $open ) {
 			$search_terms[] = "(`date` >= CURDATE() OR `date` = '0000-00-00')";

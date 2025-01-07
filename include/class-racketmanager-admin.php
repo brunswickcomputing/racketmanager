@@ -3796,6 +3796,7 @@ class RacketManager_Admin extends RacketManager {
 				$object->seasons[ $season_data->season ]['dateEnd']          = $season_data->date_end;
 				$object->seasons[ $season_data->season ]['competition_code'] = $season_data->competition_code;
 				$object->seasons[ $season_data->season ]['venue']            = isset( $season_data->venue ) ? $season_data->venue : null;
+				$object->seasons[ $season_data->season ]['grade']            = isset( $season_data->grade ) ? $season_data->grade : null;
 			}
 			ksort( $object->seasons );
 			if ( 'competition' === $season_data->type ) {

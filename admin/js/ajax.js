@@ -780,3 +780,52 @@ Racketmanager.resetMatchScores = function (e, formId) {
 		.prop('checked', false)
 		.prop('selected', false);
 };
+Racketmanager.setTournamentOpenDate = function (e) {
+	let dateOpenField = "#date_open";
+	let dateCloseField = "#date_close";
+	let dateWithdrawfield = "#date_withdraw";
+	let gradeField = '#grade';
+	let grade = jQuery(gradeField).val();
+	let dateStartVal = jQuery('#date_start').val();
+	if (dateStartVal) {
+		let dateOpen = Racketmanager.amendDate(dateStartVal, -46);
+		jQuery(dateOpenField).val(dateOpen);
+		if (grade) {
+			let closingAdjust = -7;
+			let withdrawAdjust = -5;
+			if (grade === '1') {
+				closingAdjust = -21;
+				withdrawAdjust = -14;
+			} else if (grade === '2') {
+				closingAdjust = -21;
+				withdrawAdjust = -14;
+			} else if (grade === '3') {
+				closingAdjust = -14;
+				withdrawAdjust = -12;
+			} else if (grade === '4') {
+				closingAdjust = -10;
+				withdrawAdjust = -8;
+			} else if (grade === '5') {
+				closingAdjust = -7;
+				withdrawAdjust = -5;
+			}
+			if (closingAdjust) {
+				let dateClose = Racketmanager.amendDate(dateStartVal, closingAdjust);
+				jQuery(dateCloseField).val(dateClose);
+			}
+			if (withdrawAdjust) {
+				let dateWithdraw = Racketmanager.amendDate(dateStartVal, withdrawAdjust);
+				jQuery(dateWithdrawfield).val(dateWithdraw);
+			}
+		}
+	}
+};
+Racketmanager.amendDate = function (date, adjustment) {
+	let newDate = new Date(date);
+	newDate.setDate(newDate.getDate() + adjustment);
+	let year = newDate.toLocaleString("default", { year: "numeric" });
+	let month = newDate.toLocaleString("default", { month: "2-digit" });
+	let day = newDate.toLocaleString("default", { day: "2-digit" });
+	let returnDate = year + "-" + month + "-" + day;
+	return returnDate;
+};

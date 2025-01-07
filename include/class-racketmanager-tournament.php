@@ -450,7 +450,7 @@ final class Racketmanager_Tournament {
 						}
 					} else {
 						$valid     = false;
-						$err_msg[] = __( 'End date is rquired', 'racketmanager' );
+						$err_msg[] = __( 'End date is required', 'racketmanager' );
 						$err_fld[] = 'date_end';
 					}
 				} else {

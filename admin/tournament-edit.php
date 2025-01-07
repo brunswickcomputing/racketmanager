@@ -214,7 +214,7 @@ $is_invalid = false;
 							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
 						}
 						?>
-						<input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="date_start" id="date_start" value="<?php echo esc_html( $tournament->date_start ); ?>" />
+						<input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="date_start" id="date_start" value="<?php echo esc_html( $tournament->date_start ); ?>" onchange="Racketmanager.setTournamentOpenDate(event)" />
 						<label for="date_start" class="form-label"><?php esc_html_e( 'Start Date', 'racketmanager' ); ?></label>
 						<?php
 						if ( $is_invalid ) {
@@ -260,7 +260,7 @@ $is_invalid = false;
 							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
 						}
 						?>
-						<input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="date_open" id="date_open" value="<?php echo esc_html( $tournament->date_open ); ?>" />
+						<input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="date_open" id="date_open" value="<?php echo esc_html( $tournament->date_open ); ?>" readonly />
 						<label for="date_open" class="form-label"><?php esc_html_e( 'Opening Date', 'racketmanager' ); ?></label>
 						<?php
 						if ( $is_invalid ) {
@@ -282,7 +282,7 @@ $is_invalid = false;
 							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
 						}
 						?>
-						<input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="date_close" id="date_close" value="<?php echo esc_html( $tournament->date_closing ); ?>" />
+						<input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="date_close" id="date_close" value="<?php echo esc_html( $tournament->date_closing ); ?>" readonly />
 						<label for="date_close" class="form-label"><?php esc_html_e( 'Closing Date', 'racketmanager' ); ?></label>
 						<?php
 						if ( $is_invalid ) {
@@ -304,7 +304,7 @@ $is_invalid = false;
 							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
 						}
 						?>
-						<input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="date_withdraw" id="date_withdraw" value="<?php echo isset( $tournament->date_withdrawal ) ? esc_html( $tournament->date_withdrawal ) : null; ?>" />
+						<input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="date_withdraw" id="date_withdraw" value="<?php echo isset( $tournament->date_withdrawal ) ? esc_html( $tournament->date_withdrawal ) : null; ?>" readonly />
 						<label for="date_close" class="form-label"><?php esc_html_e( 'Withdrawal Date', 'racketmanager' ); ?></label>
 						<?php
 						if ( $is_invalid ) {

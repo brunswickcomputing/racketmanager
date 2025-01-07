@@ -139,6 +139,39 @@ $breadcrumb .= $action_text;
 		<div class="form-control mb-3">
 			<legend><?php esc_html_e( 'Configuration', 'racketmanager' ); ?></legend>
 			<div class="row mb-3">
+				<div class="col-md-4">
+					<div class="form-floating mb-3">
+						<?php
+						$grades = Racketmanager_Util::get_event_grades();
+						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'grade', $racketmanager->error_fields, true ) ) ) {
+							$is_invalid = true;
+							$msg_id     = array_search( 'grade', $racketmanager->error_fields, true );
+							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						}
+						?>
+						<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" size="1" name="grade" id="grade" >
+							<option disabled <?php selected( null, empty( $cup_season->grade ) ? null : $cup_season->grade ); ?>><?php esc_html_e( 'Select grade', 'racketmanager' ); ?></option>
+							<?php
+							foreach ( $grades as $grade => $grade_desc ) {
+								?>
+								<option value="<?php echo esc_html( $grade ); ?>" <?php selected( $grade, empty( $cup_season->grade ) ? null : $cup_season->grade ); ?>><?php echo esc_html__( 'Grade', 'racketmanager' ) . ' ' . esc_html( $grade ); ?></option>
+								<?php
+							}
+							?>
+						</select>
+						<label for="grade" class="form-label"><?php esc_html_e( 'Grade', 'racketmanager' ); ?></label>
+						<?php
+						if ( $is_invalid ) {
+							?>
+							<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+							<?php
+							$is_invalid = false;
+							$msg        = null;
+						}
+						?>
+					</div>
+				</div>
+				<div class="col-md-4">
 					<?php
 					if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'fixedMatchDates', $racketmanager->error_fields, true ) ) ) {
 						$is_invalid = true;
@@ -177,6 +210,7 @@ $breadcrumb .= $action_text;
 					}
 					?>
 				</div>
+				<div class="col-md-4">
 					<?php
 					if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'homeAway', $racketmanager->error_fields, true ) ) ) {
 						$is_invalid = true;

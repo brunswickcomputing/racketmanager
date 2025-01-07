@@ -92,9 +92,13 @@ $breadcrumb .= $action_text;
 						?>
 						<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="venue" id="venue" >
 							<option disabled <?php selected( null, empty( $cup_season->venue ) ? null : $cup_season->venue ); ?>><?php esc_html_e( 'Select venue', 'racketmanager' ); ?></option>
-							<?php foreach ( $clubs as $club ) { ?>
+							<?php
+							foreach ( $clubs as $club ) {
+								?>
 								<option value="<?php echo esc_html( $club->id ); ?>" <?php selected( $club->id, empty( $cup_season->venue ) ? null : $cup_season->venue ); ?>><?php echo esc_html( $club->name ); ?></option>
-							<?php } ?>
+								<?php
+							}
+							?>
 						</select>
 						<label for="venue" class="form-label"><?php esc_html_e( 'Venue', 'racketmanager' ); ?></label>
 						<?php

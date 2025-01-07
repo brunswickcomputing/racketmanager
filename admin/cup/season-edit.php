@@ -139,10 +139,16 @@ $breadcrumb .= $action_text;
 		<div class="form-control mb-3">
 			<legend><?php esc_html_e( 'Configuration', 'racketmanager' ); ?></legend>
 			<div class="row mb-3">
-				<div class="col-md-6">
-					<legend class="form-check-label"><?php esc_html_e( 'Fixed match dates', 'racketmanager' ); ?></legend>
+					<?php
+					if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'fixedMatchDates', $racketmanager->error_fields, true ) ) ) {
+						$is_invalid = true;
+						$msg_id     = array_search( 'fixedMatchDates', $racketmanager->error_fields, true );
+						$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					}
+					?>
+					<legend class="form-check-label <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Fixed match dates', 'racketmanager' ); ?></legend>
 					<div class="form-check form-check-inline">
-						<input type="radio" class="form-check-input" name="fixedMatchDates" id="fixedMatchDatesTrue" value="true"
+						<input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="fixedMatchDates" id="fixedMatchDatesTrue" value="true"
 						<?php
 						if ( isset( $cup_season->fixedMatchDates ) ) {
 							echo ( true === $cup_season->fixedMatchDates ) ? ' checked' : '';
@@ -152,7 +158,7 @@ $breadcrumb .= $action_text;
 						<label class="form-check-label" for="fixedMatchDatesTrue"><?php esc_html_e( 'True', 'racketmanager' ); ?></label>
 					</div>
 					<div class="form-check form-check-inline">
-						<input type="radio" class="form-check-input" name="fixedMatchDates" id="fixedMatchDatesFalse" value="false"
+						<input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="fixedMatchDates" id="fixedMatchDatesFalse" value="false"
 						<?php
 						if ( isset( $cup_season->fixedMatchDates ) ) {
 							echo ( false === $cup_season->fixedMatchDates ) ? ' checked' : '';
@@ -161,6 +167,15 @@ $breadcrumb .= $action_text;
 						/>
 						<label class="form-check-label" for="fixedMatchDatesFalse"><?php esc_html_e( 'False', 'racketmanager' ); ?></label>
 					</div>
+					<?php
+					if ( $is_invalid ) {
+						?>
+						<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+						<?php
+						$is_invalid = false;
+						$msg        = null;
+					}
+					?>
 				</div>
 					<?php
 					if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'homeAway', $racketmanager->error_fields, true ) ) ) {

@@ -1803,12 +1803,15 @@ final class Racketmanager_Match {
 	/**
 	 * Report result
 	 *
+	 * @param string $competition_code competition code (optional).
 	 * @return object || null
 	 */
-	public function report_result() {
+	public function report_result( $competition_code = null ) {
 		global $racketmanager;
-		$competition_code = empty( $this->league->event->competition->seasons[ $this->season ]['competition_code'] ) ? $this->league->event->competition->competition_code : $this->league->event->competition->seasons[ $this->season ]['competition_code'];
-
+		if ( empty( $competition_code ) ) {
+			$competition_season = isset( $this->league->event->competition->seasons[ $this->season ] ) ? $this->league->event->competition->seasons[ $this->season ] : null;
+			$competition_code   = empty( $competition_season['competition_code'] ) ? $this->league->event->competition->competition_code : $competition_season['competition_code'];
+		}
 		if ( ! empty( $competition_code ) ) {
 			$result                   = new \stdClass();
 			$result->tournament       = $racketmanager->site_name . ' ' . $this->league->event->competition->name;

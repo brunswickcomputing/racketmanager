@@ -256,7 +256,11 @@ final class Racketmanager_Championship extends RacketManager {
 	 */
 	public function get_final_keys( $round = false ) {
 		if ( $round ) {
-			return $this->keys[ $round ];
+			if ( isset( $this->keys[ $round ] ) ) {
+				return $this->keys[ $round ];
+			} else {
+				return false;
+			}
 		} else {
 			return $this->keys;
 		}

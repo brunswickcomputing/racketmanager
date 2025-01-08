@@ -1812,7 +1812,7 @@ final class Racketmanager_Match {
 		if ( ! empty( $competition_code ) ) {
 			$result                   = new \stdClass();
 			$result->tournament       = $racketmanager->site_name . ' ' . $this->league->event->competition->name;
-			$result->code             = $this->league->event->competition->competition_code;
+			$result->code             = $competition_code;
 			$result->organiser        = '';
 			$result->venue            = '';
 			$result->event_name       = $this->league->event->name;

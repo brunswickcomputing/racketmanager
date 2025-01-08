@@ -1863,10 +1863,10 @@ final class Racketmanager_Match {
 			}
 			$result->draw_name = $this->league->title;
 			if ( 'league' === $this->league->event->competition->type ) {
-				$result->draw_type      = 'Round Robin';
-				$result->draw_stage     = 'MD - Main draw';
-				$result->draw_size      = $this->league->num_teams_total;
-				$result->round          = 'RR' . $this->match_day;
+				$result->draw_type  = 'Round Robin';
+				$result->draw_stage = 'MD - Main draw';
+				$result->draw_size  = $this->league->num_teams_total;
+				$result->round      = 'RR' . $this->match_day;
 			} else {
 				$result->draw_type = 'Elimination';
 				if ( $this->league_id === $this->league->event->primary_league ) {

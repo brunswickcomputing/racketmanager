@@ -1817,7 +1817,8 @@ final class Racketmanager_Match {
 			$result->venue            = '';
 			$result->event_name       = $this->league->event->name;
 			$result->grade            = '6';
-			$result->event_start_date = $this->league->event->competition->seasons[ $this->season ]['matchDates'][0];
+			$result->event_end_date   = $this->league->event->competition->date_end;
+			$result->event_start_date = $this->league->event->competition->date_start;
 			switch ( $this->league->event->age_limit ) {
 				case 8:
 				case 9:
@@ -1866,9 +1867,6 @@ final class Racketmanager_Match {
 				$result->draw_stage     = 'MD - Main draw';
 				$result->draw_size      = $this->league->num_teams_total;
 				$result->round          = 'RR' . $this->match_day;
-				$end_date               = end( $this->league->event->competition->seasons[ $this->season ]['matchDates'] );
-				$end_date               = gmdate( 'Y-m-d', strtotime( $end_date . ' +14 day' ) );
-				$result->event_end_date = $end_date;
 			} else {
 				$result->draw_type = 'Elimination';
 				if ( $this->league_id === $this->league->event->primary_league ) {
@@ -1899,7 +1897,6 @@ final class Racketmanager_Match {
 					default:
 						$result->round = 'RR1';
 				}
-				$result->event_end_date = end( $this->league->event->competition->seasons[ $this->season ]['matchDates'] );
 			}
 			$result->matches = array();
 			if ( $this->league->num_rubbers ) {

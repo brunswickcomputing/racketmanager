@@ -461,76 +461,8 @@ final class Racketmanager_Tournament {
 	 */
 	public function update( $updated ) {
 		global $wpdb, $racketmanager;
-		$valid   = true;
-		$err_msg = array();
-		$err_fld = array();
-		if ( empty( $updated->venue ) ) {
-			$valid     = false;
-			$err_msg[] = __( 'Venue is required', 'racketmanager' );
-			$err_fld[] = 'venue';
-		}
-		if ( empty( $updated->grade ) ) {
-			$valid     = false;
-			$err_msg[] = __( 'Grade is required', 'racketmanager' );
-			$err_fld[] = 'grade';
-		}
-		if ( ! empty( $updated->date_open ) ) {
-			if ( ! empty( $updated->date_closing ) ) {
-				if ( $updated->date_closing <= $updated->date_open ) {
-					$valid     = false;
-					$err_msg[] = __( 'Closing date must be after open date', 'racketmanager' );
-					$err_fld[] = 'date_close';
-				} elseif ( ! empty( $updated->date_withdrawal ) ) {
-					if ( $updated->date_withdrawal < $updated->date_closing ) {
-						$valid     = false;
-						$err_msg[] = __( 'Withdrawal date must be after closing date', 'racketmanager' );
-						$err_fld[] = 'date_withdraw';
-					} elseif ( ! empty( $updated->date_start ) ) {
-						if ( $updated->date_start < $updated->date_withdrawal ) {
-							$valid     = false;
-							$err_msg[] = __( 'Start date must be after withdrawal date', 'racketmanager' );
-							$err_fld[] = 'date_start';
-						} elseif ( ! empty( $updated->date ) ) {
-							if ( $updated->date <= $updated->date_closing ) {
-								$valid     = false;
-								$err_msg[] = __( 'End date must be after start date', 'racketmanager' );
-								$err_fld[] = 'date_end';
-							}
-						} else {
-							$valid     = false;
-							$err_msg[] = __( 'End date is required', 'racketmanager' );
-							$err_fld[] = 'date_end';
-						}
-					} elseif ( ! empty( $updated->date ) ) {
-						if ( $updated->date <= $updated->date_closing ) {
-							$valid     = false;
-							$err_msg[] = __( 'End date must be after start date', 'racketmanager' );
-							$err_fld[] = 'date_end';
-						}
-					} else {
-						$valid     = false;
-						$err_msg[] = __( 'End date is required', 'racketmanager' );
-						$err_fld[] = 'date_end';
-					}
-				} else {
-					$valid     = false;
-					$err_msg[] = __( 'Withdrawal date is required', 'racketmanager' );
-					$err_fld[] = 'date_withdraw';
-				}
-			} else {
-				$valid     = false;
-				$err_msg[] = __( 'Closing date is required', 'racketmanager' );
-				$err_fld[] = 'date_close';
-			}
-		} else {
-			$valid     = false;
-			$err_msg[] = __( 'Opening date is required', 'racketmanager' );
-			$err_fld[] = 'date_open';
-		}
-		if ( empty( $updated->competition_code ) ) {
-			$updated->competition_code = '';
-		}
-		if ( $valid ) {
+		$validate = $this->validate( $updated );
+		if ( $validate->valid ) {
 			$this->name             = $updated->name;
 			$this->competition_id   = $updated->competition_id;
 			$this->season           = $updated->season;
@@ -567,8 +499,8 @@ final class Racketmanager_Tournament {
 			return true;
 		} else {
 			$racketmanager->set_message( __( 'Error updating tournament', 'racketmanager' ), true );
-			$racketmanager->error_fields   = $err_fld;
-			$racketmanager->error_messages = $err_msg;
+			$racketmanager->error_fields   = $validate->fld;
+			$racketmanager->error_messages = $validate->msg;
 			return false;
 		}
 	}

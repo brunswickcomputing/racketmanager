@@ -3373,8 +3373,13 @@ class RacketManager {
 			$sql .= ' AND `match_day` = ' . $match_day . ' ';
 		}
 		if ( $player ) {
-			$sql_from .= " ,{$wpdb->racketmanager_rubbers} r, {$wpdb->racketmanager_rubber_players} rp";
-			$sql      .= " AND m.`id` = r.`match_id` AND r.`id` = rp.`rubber_id` AND `player_id` = '$player'";
+			if ( $tournament_id ) {
+				$sql_from .= " ,{$wpdb->racketmanager_team_players} tp";
+				$sql      .= " AND ((m.`home_team` = tp.`team_id` AND tp.`player_id` = '$player') OR (m.`away_team` = tp.`team_id` AND tp.`player_id` = '$player'))";
+			} else {
+				$sql_from .= " ,{$wpdb->racketmanager_rubbers} r, {$wpdb->racketmanager_rubber_players} rp";
+				$sql      .= " AND m.`id` = r.`match_id` AND r.`id` = rp.`rubber_id` AND `player_id` = '$player'";
+			}
 		}
 		if ( $type ) {
 			$sql .= " AND `league_id` in (select `id` from {$wpdb->racketmanager} WHERE `event_id` in (select e.`id` from {$wpdb->racketmanager_events} e WHERE e.`type` like '%%" . $type . "%%'))";

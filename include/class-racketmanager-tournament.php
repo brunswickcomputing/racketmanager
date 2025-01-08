@@ -572,7 +572,92 @@ final class Racketmanager_Tournament {
 			return false;
 		}
 	}
-
+	/**
+	 * Fucntion to validate new or updated tournament
+	 *
+	 * @param object $tournament tournament details.
+	 * @return object
+	 */
+	private function validate( $tournament ) {
+		$return  = new \stdClass();
+		$valid   = true;
+		$err_msg = array();
+		$err_fld = array();
+		if ( empty( $tournament->name ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Name is required', 'racketmanager' );
+			$err_fld[] = 'tournamentName';
+		}
+		if ( empty( $tournament->competition_id ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Competition is required', 'racketmanager' );
+			$err_fld[] = 'competition_id';
+		}
+		if ( empty( $tournament->season ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Season is required', 'racketmanager' );
+			$err_fld[] = 'season';
+		}
+		if ( empty( $tournament->venue ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Venue is required', 'racketmanager' );
+			$err_fld[] = 'venue';
+		}
+		if ( empty( $tournament->grade ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Grade is required', 'racketmanager' );
+			$err_fld[] = 'grade';
+		}
+		if ( empty( $tournament->date_open ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Opening date is required', 'racketmanager' );
+			$err_fld[] = 'date_open';
+		}
+		if ( empty( $tournament->date_closing ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Closing date is required', 'racketmanager' );
+			$err_fld[] = 'date_close';
+		} elseif ( ! empty( $tournament->date_open ) && $tournament->date_closing <= $tournament->date_open ) {
+			$valid     = false;
+			$err_msg[] = __( 'Closing date must be after open date', 'racketmanager' );
+			$err_fld[] = 'date_close';
+		}
+		if ( empty( $tournament->date_withdrawal ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Withdrawal date is required', 'racketmanager' );
+			$err_fld[] = 'date_withdraw';
+		} elseif ( ! empty( $tournament->date_closing ) && $tournament->date_withdrawal <= $tournament->date_closing ) {
+			$valid     = false;
+			$err_msg[] = __( 'Withdrawal date must be after closing date', 'racketmanager' );
+			$err_fld[] = 'date_close';
+		}
+		if ( empty( $tournament->date_start ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Start date is required', 'racketmanager' );
+			$err_fld[] = 'date_start';
+		} elseif ( ! empty( $tournament->date_withdrawal ) && $tournament->date_start <= $tournament->date_withdrawal ) {
+			$valid     = false;
+			$err_msg[] = __( 'Start date must be after withdrawal date', 'racketmanager' );
+			$err_fld[] = 'date_start';
+		}
+		if ( empty( $tournament->date ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'End date is required', 'racketmanager' );
+			$err_fld[] = 'date_end';
+		} elseif ( ! empty( $tournament->date_start ) && $tournament->date <= $tournament->date_start ) {
+			$valid     = false;
+			$err_msg[] = __( 'End date must be after start date', 'racketmanager' );
+			$err_fld[] = 'date_end';
+		}
+		if ( $valid ) {
+			$return->valid = true;
+		} else {
+			$return->valid = false;
+			$return->msg   = $err_msg;
+			$return->fld   = $err_fld;
+		}
+		return $return;
+	}
 	/**
 	 * Update tournament plan
 	 *

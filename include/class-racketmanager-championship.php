@@ -169,7 +169,7 @@ final class Racketmanager_Championship extends RacketManager {
 					)
 				);
 				$this->num_advance = pow( 2, $league->current_season['num_match_days'] );
-				if ( $league->event->competition->is_active && $num_teams ) {
+				if ( $league->event->competition->is_active || $league->event->competition->is_complete ) {
 					$use_teams = true;
 				} elseif ( $num_teams > $this->num_advance ) {
 					$use_teams = true;

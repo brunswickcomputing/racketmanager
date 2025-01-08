@@ -786,46 +786,43 @@ Racketmanager.setTournamentOpenDate = function (e) {
 	let dateWithdrawfield = "#date_withdraw";
 	let gradeField = '#grade';
 	let grade = jQuery(gradeField).val();
-	let dateStartVal = jQuery('#date_start').val();
-	if (dateStartVal) {
-		let dateOpen = Racketmanager.amendDate(dateStartVal, -46);
-		jQuery(dateOpenField).val(dateOpen);
-		if (grade) {
-			let closingAdjust = -7;
-			let withdrawAdjust = -5;
-			if (grade === '1') {
-				closingAdjust = -21;
-				withdrawAdjust = -14;
-			} else if (grade === '2') {
-				closingAdjust = -21;
-				withdrawAdjust = -14;
-			} else if (grade === '3') {
-				closingAdjust = -14;
-				withdrawAdjust = -12;
-			} else if (grade === '4') {
-				closingAdjust = -10;
-				withdrawAdjust = -8;
-			} else if (grade === '5') {
-				closingAdjust = -7;
-				withdrawAdjust = -5;
+	let dateStart = jQuery('#date_start').val();
+	let notifyField1 = "#alert-dates";
+	jQuery(notifyField1).hide();
+	jQuery(notifyField1).removeClass('alert--success alert--danger');
+	let notifyField2 = "#alert-dates-response";
+	jQuery(notifyField2).html('');
+	jQuery.ajax({
+		url: ajaxurl,
+		type: "POST",
+		data: {
+			"date_start": dateStart,
+			"action": "racketmanager_set_tournament_dates",
+			"security": ajax_var.ajax_nonce,
+		},
+		success: function (response) {
+			let message = response.data.msg;
+			jQuery(notifyField2).text(message);
+			let dateOpen = response.data.date_open;
+			jQuery(dateOpenField).val(dateOpen);
+			let dateClose = response.data.date_close;
+			jQuery(dateCloseField).val(dateClose);
+			let dateWithdraw = response.data.date_withdraw;
+			jQuery(dateWithdrawfield).val(dateWithdraw);
+			jQuery(notifyField1).addClass('alert--success');
+			jQuery(notifyField1).delay(10000).fadeOut('slow');
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				let message = response.responseJSON.data;
+				jQuery(notifyField2).html(message);
+			} else {
+				jQuery(notifyField2).text(response.statusText);
 			}
-			if (closingAdjust) {
-				let dateClose = Racketmanager.amendDate(dateStartVal, closingAdjust);
-				jQuery(dateCloseField).val(dateClose);
-			}
-			if (withdrawAdjust) {
-				let dateWithdraw = Racketmanager.amendDate(dateStartVal, withdrawAdjust);
-				jQuery(dateWithdrawfield).val(dateWithdraw);
-			}
+			jQuery(notifyField1).addClass('alert--danger');
+		},
+		complete: function () {
+			jQuery(notifyField1).show();
 		}
-	}
-};
-Racketmanager.amendDate = function (date, adjustment) {
-	let newDate = new Date(date);
-	newDate.setDate(newDate.getDate() + adjustment);
-	let year = newDate.toLocaleString("default", { year: "numeric" });
-	let month = newDate.toLocaleString("default", { month: "2-digit" });
-	let day = newDate.toLocaleString("default", { day: "2-digit" });
-	let returnDate = year + "-" + month + "-" + day;
-	return returnDate;
+	});
 };

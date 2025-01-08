@@ -35,7 +35,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_racketmanager_notify_teams', array( &$this, 'notify_teams_fixture' ) );
 		add_action( 'wp_ajax_racketmanager_chase_match_result', array( &$this, 'chase_match_result_email' ) );
 		add_action( 'wp_ajax_racketmanager_chase_match_approval', array( &$this, 'chase_match_approval_email' ) );
-
+		add_action( 'wp_ajax_racketmanager_set_tournament_dates', array( &$this, 'set_tournament_dates' ) );
 		add_action( 'wp_ajax_racketmanager_send_fixtures', array( &$this, 'send_fixtures' ) );
 	}
 
@@ -602,6 +602,69 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 		if ( isset( $return->error ) ) {
 			wp_send_json_error( $return->msg, 500 );
 		} else {
+			wp_send_json_success( $return );
+		}
+	}
+	/**
+	 * Set tournament dates for open/close/withdrawal based on start date and grade
+	 *
+	 * @see templates/email/match-approval-pending.php
+	 */
+	public function set_tournament_dates() {
+		global $racketmanager;
+		$return = new \stdClass();
+		if ( isset( $_POST['security'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
+				$return->error = true;
+				$return->msg   = __( 'Security token invalid', 'racketmanager' );
+			}
+		} else {
+			$return->error = true;
+			$return->msg   = __( 'No security token found in request', 'racketmanager' );
+		}
+		if ( ! isset( $return->error ) ) {
+			$grade      = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : '';
+			$date_start = isset( $_POST['date_start'] ) ? sanitize_text_field( wp_unslash( $_POST['date_start'] ) ) : null;
+			if ( $date_start ) {
+				$entry_leadtime = 46;
+				$date_open      = gmdate( 'Y-m-d', strtotime( $date_start . ' -' . $entry_leadtime . ' day' ) );
+				switch ( $grade ) {
+					case '1':
+					case '2':
+						$closing_leadtime  = 21;
+						$withdraw_leadtime = 14;
+						break;
+					case '3':
+						$closing_leadtime  = 14;
+						$withdraw_leadtime = 12;
+						break;
+					case '4':
+						$closing_leadtime  = 10;
+						$withdraw_leadtime = 8;
+						break;
+					case '5':
+						$closing_leadtime  = 7;
+						$withdraw_leadtime = 5;
+						break;
+					default:
+						$closing_leadtime  = 7;
+						$withdraw_leadtime = 3;
+						break;
+				}
+				$date_close    = gmdate( 'Y-m-d', strtotime( $date_start . ' -' . $closing_leadtime . ' day' ) );
+				$date_withdraw = gmdate( 'Y-m-d', strtotime( $date_start . ' -' . $withdraw_leadtime . ' day' ) );
+			} else {
+				$return->error = true;
+				$return->msg   = __( 'No start date specified', 'racketmanager' );
+			}
+		}
+		if ( isset( $return->error ) ) {
+			wp_send_json_error( $return->msg, 500 );
+		} else {
+			$return->msg           = __( 'Dates set', 'racketmanager' );
+			$return->date_open     = $date_open;
+			$return->date_close    = $date_close;
+			$return->date_withdraw = $date_withdraw;
 			wp_send_json_success( $return );
 		}
 	}

@@ -416,12 +416,13 @@ class Racketmanager_Exporter {
 		$contents .= ',"Tiebreak5"';
 		$contents .= "\n";
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		$tournament_id  = isset( $_GET['tournament_id'] ) ? intval( $_GET['tournament_id'] ) : null;
-		$competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
-		$event_id       = isset( $_GET['event_id'] ) ? intval( $_GET['event_id'] ) : null;
-		$season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-		$match_day      = isset( $_GET['match_day'] ) ? intval( $_GET['match_day'] ) : null;
-		$latest         = isset( $_GET['latest'] ) ? true : false;
+		$tournament_id    = isset( $_GET['tournament_id'] ) ? intval( $_GET['tournament_id'] ) : null;
+		$competition_id   = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
+		$event_id         = isset( $_GET['event_id'] ) ? intval( $_GET['event_id'] ) : null;
+		$season           = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
+		$match_day        = isset( $_GET['match_day'] ) ? intval( $_GET['match_day'] ) : null;
+		$latest           = isset( $_GET['latest'] ) ? true : false;
+		$competition_code = isset( $_GET['competition_code'] ) ? sanitize_text_field( wp_unslash( $_GET['competition_code'] ) ) : null;
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		$filename = 'report-results';
 		if ( $latest ) {
@@ -461,7 +462,7 @@ class Racketmanager_Exporter {
 			$matches            = $racketmanager->get_matches( $match_args );
 			foreach ( $matches as $match ) {
 				$match   = get_match( $match );
-				$results = $match->report_result();
+				$results = $match->report_result( $competition_code );
 				if ( $results ) {
 					$contents .= $this->result_data( $results );
 				}

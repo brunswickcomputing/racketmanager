@@ -318,6 +318,12 @@ $is_invalid = false;
 					</div>
 				</div>
 			</div>
+			<div class="alert_rm" id="alert-dates" style="display:none;">
+				<div class="alert__body">
+					<div class="alert__body-inner" id="alert-dates-response">
+					</div>
+				</div>
+			</div>
 		</div>
 		<?php do_action( 'racketmanager_tournament_edit_form', $tournament ); ?>
 

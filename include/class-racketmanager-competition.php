@@ -499,9 +499,17 @@ class Racketmanager_Competition {
 			}
 			if ( ! empty( $this->current_season['dateStart'] ) ) {
 				$this->date_start = $this->current_season['dateStart'];
+			} else {
+				$this->date_start = isset( $this->current_season['matchDates'][0] ) ? $this->current_season['matchDates'][0] : null;
 			}
 			if ( ! empty( $this->current_season['dateEnd'] ) ) {
 				$this->date_end = $this->current_season['dateEnd'];
+			} else {
+				$end_date = isset( $this->current_season['matchDates'] ) ? end( $this->current_season['matchDates'] ) : null;
+				if ( $end_date ) {
+					$end_date       = gmdate( 'Y-m-d', strtotime( $end_date . ' +14 day' ) );
+					$this->date_end = $end_date;
+				}
 			}
 			if ( ! empty( $this->current_season['venue_name'] ) ) {
 				$this->venue = $this->current_season['venue_name'];

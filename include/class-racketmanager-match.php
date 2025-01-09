@@ -578,10 +578,12 @@ final class Racketmanager_Match {
 			} else {
 				$this->link = '/league/' . seo_url( $this->league->title ) . '/match/' . $this->id . '/';
 			}
-		} else {
+		} elseif ( ! empty( $this->teams['home']->title ) && ! empty( $this->teams['away']->title ) ) {
 			$this->link = '/match/' . seo_url( $this->league->title ) . '/' . $this->season . '/' . $match_ref . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/';
+		} else {
+			$this->link = null;
 		}
-			$this->link_tie = $this->link;
+		$this->link_tie = $this->link;
 		if ( ! empty( $this->leg ) ) {
 			$this->link .= 'leg-' . $this->leg . '/';
 		}

@@ -657,18 +657,24 @@ final class Racketmanager_Match {
 	 * @return array $prev_match previous match.
 	 */
 	private function get_prev_round_matches( $team_ref, $season, $league_id ) {
-		$team         = explode( '_', $team_ref );
-		$league       = get_league( $league_id );
-		$prev_matches = $league->get_matches(
-			array(
-				'final'   => $team[1],
-				'season'  => $season,
-				'orderby' => array( 'id' => 'ASC' ),
-			)
-		);
-		if ( $prev_matches ) {
-			$match_ref = $team[2] - 1;
-			return $prev_matches[ $match_ref ];
+		$team  = explode( '_', $team_ref );
+		$final = isset( $team[1] ) ? $team[1] : null;
+		if ( ! empty( $final ) ) {
+			$league = get_league( $league_id );
+			if ( $league ) {
+				$args['final']   = $final;
+				$args['season']  = $season;
+				$args['orderby'] = array( 'id' => 'ASC' );
+				$prev_matches    = $league->get_matches( $args );
+				if ( $prev_matches ) {
+					$match_ref = $team[2] - 1;
+					return $prev_matches[ $match_ref ];
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
 		} else {
 			return false;
 		}

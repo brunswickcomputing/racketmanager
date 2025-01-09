@@ -77,7 +77,7 @@ namespace Racketmanager;
 							if ( ! empty( $competition->competition_code ) ) {
 								?>
 								<div class="col-auto">
-									<a href="/index.php?competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $key ); ?>&racketmanager_export=report_results" class="btn btn-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Report results', 'racketmanager' ); ?>" >
+									<a href="/index.php?competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $key ); ?>&racketmanager_export=report_results" class="btn btn-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Report results', 'racketmanager' ); ?>" >
 										<span class="nav-link__value text-uppercase">
 											<?php esc_html_e( 'Report results', 'racketmanager' ); ?>
 										</span>

@@ -1360,8 +1360,10 @@ final class Racketmanager_Player {
 	 * @return int player points.
 	 */
 	public function calculate_team_rating( $type ) {
-		$player_points = 0;
-		$matches       = $this->get_matches( null, null, 'all', 365, $type );
+		$player_points     = 0;
+		$new_player_points = 0;
+		$team_points       = array();
+		$matches           = $this->get_matches( null, null, 'all', 365, $type );
 		if ( $matches ) {
 			$base_points = 42;
 			foreach ( $this->statistics as $league_ref => $rubbers ) {
@@ -1394,11 +1396,21 @@ final class Racketmanager_Player {
 							$points_rubber = ( $rubber_no - 1 ) * 2;
 						}
 						$points         = $base_points - round( $points_div * $event_points ) - $points_rubber;
+						$team_points[]  = $points;
 						$player_points += $points;
 					}
 				}
 			}
+			if ( $team_points ) {
+				rsort( $team_points );
+				for ( $i = 0; $i <= 9; ++$i ) {
+					if ( empty( $team_points[ $i ] ) ) {
+						break;
+					}
+					$new_player_points += $team_points[ $i ];
+				}
+			}
 		}
-		return $player_points;
+		return $new_player_points;
 	}
 }

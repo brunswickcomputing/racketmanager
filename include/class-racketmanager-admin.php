@@ -3605,15 +3605,12 @@ class RacketManager_Admin extends RacketManager {
 	 * @return boolean
 	 */
 	protected function add_season_to_competition( $season, $competition_id, $num_match_days = null ) {
-		global $racketmanager, $competition;
+		global $competition;
 
 		$competition = get_competition( $competition_id );
-		if ( ! $num_match_days && ( 'cup' === $competition->type || 'tournament' === $competition->type ) ) {
-			$options        = $racketmanager->get_options();
-			$rm_options     = $options['championship'];
-			$num_match_days = isset( $rm_options['numRounds'] ) ? $rm_options['numRounds'] : 0;
+		if ( ! $num_match_days ) {
+			$num_match_days = $this->get_default_match_days( $competition->type );
 		}
-
 		if ( ! $num_match_days ) {
 			$this->set_message( 'Number of match days not specified', 'racketmanager', 'error' );
 			return false;
@@ -3650,7 +3647,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @return boolean
 	 */
 	private function add_season_to_event( $season, $event_id, $num_match_days, $closing_date = null, $home_away = null, $match_dates = null ) {
-		global $racketmanager, $event;
+		global $event;
 
 		$event = get_event( $event_id );
 		if ( '' === $event->seasons ) {
@@ -3666,10 +3663,8 @@ class RacketManager_Admin extends RacketManager {
 				'status'         => 'draft',
 			);
 		} else {
-			if ( ! $num_match_days && ( 'cup' === $event->competition->type || 'tournament' === $event->competition->type ) ) {
-				$options        = $racketmanager->get_options();
-				$rm_options     = $options['championship'];
-				$num_match_days = isset( $rm_options['numRounds'] ) ? $rm_options['numRounds'] : 0;
+			if ( ! $num_match_days ) {
+				$num_match_days = $this->get_default_match_days( $event->competition->type );
 			}
 			if ( ! $num_match_days ) {
 				$this->set_message( 'Number of match days not specified', 'racketmanager', 'error' );
@@ -3687,6 +3682,37 @@ class RacketManager_Admin extends RacketManager {
 		$this->set_message( sprintf( __( 'Season %s added', 'racketmanager' ), $season ) );
 
 		return true;
+	}
+	/**
+	 * Get default numer of match days
+	 *
+	 * @param string $type competition type.
+	 * @return int default number of match days.
+	 */
+	private function get_default_match_days( $type ) {
+		global $racketmanager;
+		$options                = $racketmanager->get_options();
+		$rm_options             = $options['championship'];
+		$default_num_match_days = isset( $rm_options['numRounds'] ) ? $rm_options['numRounds'] : 1;
+		switch ( $type ) {
+			case 'cup':
+				$args['count'] = true;
+				$args['type']  = 'affiliated';
+				$num_clubs     = $racketmanager->get_clubs( $args );
+				if ( $num_clubs ) {
+					$num_match_days = ceil( log( $num_clubs, 2 ) );
+				} else {
+					$num_match_days = $default_num_match_days;
+				}
+				break;
+			case 'tournament':
+				$num_match_days = $default_num_match_days;
+				break;
+			default:
+				$num_match_days = 0;
+				break;
+		}
+		return $num_match_days;
 	}
 	/**
 	 * Edit season in object - competition or event

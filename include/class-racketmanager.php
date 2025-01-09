@@ -2563,12 +2563,14 @@ class RacketManager {
 			'limit'   => 99999999,
 			'type'    => false,
 			'name'    => false,
+			'count'   => false,
 			'orderby' => 'asc',
 		);
 		$args         = array_merge( $defaults, $args );
 		$offset       = $args['offset'];
 		$limit        = $args['limit'];
 		$type         = $args['type'];
+		$count        = $args['count'];
 		$orderby      = $args['orderby'];
 		$search_terms = array();
 		if ( $type && 'all' !== $type ) {
@@ -2603,6 +2605,13 @@ class RacketManager {
 		}
 		if ( $limit && -1 === $limit ) {
 			$limit = 99999999;
+		}
+		if ( $count ) {
+			$sql = "SELECT COUNT(ID) FROM {$wpdb->racketmanager_clubs} $search";
+			return $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			);
 		}
 
 		$sql = $wpdb->prepare(

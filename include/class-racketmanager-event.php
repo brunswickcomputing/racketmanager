@@ -681,6 +681,7 @@ class Racketmanager_Event {
 			'orderby'     => array( 'title' => 'ASC' ),
 			'consolation' => false,
 			'count'       => false,
+			'season'      => false,
 		);
 		$args        = array_merge( $defaults, $args );
 		$offset      = $args['offset'];
@@ -688,13 +689,16 @@ class Racketmanager_Event {
 		$orderby     = $args['orderby'];
 		$consolation = $args['consolation'];
 		$count       = $args['count'];
+		$season      = $args['season'];
 
 		$search_terms   = array();
 		$search_terms[] = $wpdb->prepare( '`event_id` = %d', intval( $this->id ) );
 		if ( $consolation ) {
 			$search_terms[] = "'consolation' = 'consolation'";
 		}
-
+		if ( $season ) {
+			$search_terms[] = $wpdb->prepare( "`id` IN (SELECT DISTINCT `league_id` FROM {$wpdb->racketmanager_table} t, {$wpdb->racketmanager} l WHERE t.`league_id` = l.`id` AND `season` = %d AND `event_id` = %d)", intval( $season ), intval( $this->id ) );
+		}
 		$search = '';
 		if ( ! empty( $search_terms ) ) {
 			$search  = ' WHERE ';

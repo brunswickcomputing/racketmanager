@@ -2567,9 +2567,14 @@ class Racketmanager_League {
 	private function final_exists( $final_round ) {
 		if ( ! $this->championship instanceof Racketmanager_Championship ) {
 			return false;
+		} else {
+			return true;
 		}
-		$finals = $this->championship->get_finals();
-		return in_array( $final_round, array_keys( $finals ), true );
+		if ( ! empty( $finals ) ) {
+			return in_array( $final_round, array_keys( $finals ), true );
+		} else {
+			return true;
+		}
 	}
 
 	/**

@@ -1234,7 +1234,7 @@ class Racketmanager_Event {
 		}
 
 		if ( $count ) {
-			$sql = 'SELECT COUNT(*)';
+			$sql = 'SELECT COUNT(DISTINCT(c.`id`))';
 		} else {
 			$sql = 'SELECT t2.`club_id`, count(t2.`id`) as `team_count`';
 		}

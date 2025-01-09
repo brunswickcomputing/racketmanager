@@ -853,7 +853,7 @@ final class Racketmanager_Match {
 					}
 				}
 			} else {
-				$this->teams['home'] = $teams[ $this->home_team ];
+				$this->teams['home'] = isset( $teams[ $this->home_team ] ) ? $teams[ $this->home_team ] : null;
 			}
 		}
 		if ( 'both' === $team || 'away' === $team ) {
@@ -875,7 +875,7 @@ final class Racketmanager_Match {
 					}
 				}
 			} else {
-				$this->teams['away'] = $teams[ $this->away_team ];
+				$this->teams['away'] = isset( $teams[ $this->away_team ] ) ? $teams[ $this->away_team ] : null;
 			}
 		}
 	}

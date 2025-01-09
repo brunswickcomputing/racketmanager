@@ -680,12 +680,14 @@ class Racketmanager_Event {
 			'limit'       => 99999999,
 			'orderby'     => array( 'title' => 'ASC' ),
 			'consolation' => false,
+			'count'       => false,
 		);
 		$args        = array_merge( $defaults, $args );
 		$offset      = $args['offset'];
 		$limit       = $args['limit'];
 		$orderby     = $args['orderby'];
 		$consolation = $args['consolation'];
+		$count       = $args['count'];
 
 		$search_terms   = array();
 		$search_terms[] = $wpdb->prepare( '`event_id` = %d', intval( $this->id ) );
@@ -698,7 +700,12 @@ class Racketmanager_Event {
 			$search  = ' WHERE ';
 			$search .= implode( ' AND ', $search_terms );
 		}
-
+		if ( $count ) {
+			$sql = "SELECT COUNT(*) FROM {$wpdb->racketmanager} $search ";
+			return $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+				$sql //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			);
+		}
 		$orderby_string = '';
 		$i              = 0;
 		foreach ( $orderby as $order => $direction ) {

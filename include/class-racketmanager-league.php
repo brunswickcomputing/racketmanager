@@ -2305,7 +2305,7 @@ class Racketmanager_League {
 					'reset_query_args' => true,
 				)
 			);
-			$home_away = isset( $this->event->current_season['homeAway'] ) ? $this->event->current_season['homeAway'] : 'true';
+			$home_away = isset( $this->event->current_season['home_away'] ) ? $this->event->current_season['home_away'] : 'true';
 			if ( 'true' === $home_away ) {
 				if ( $matches ) {
 					$score = '';
@@ -3422,7 +3422,7 @@ class Racketmanager_League {
 			$home_away     = false;
 		} else {
 			$num_rounds = $this->current_season['num_match_days'];
-			$home_away  = isset( $this->event->current_season['homeAway'] ) ? $this->event->current_season['homeAway'] : 'true';
+			$home_away  = isset( $this->event->current_season['home_away'] ) ? $this->event->current_season['home_away'] : 'true';
 			if ( $home_away ) {
 				$num_rounds = $num_rounds / 2;
 			}
@@ -3484,7 +3484,7 @@ class Racketmanager_League {
 	 */
 	public function create_schedule( $teams, $num_rounds, $home_away ) {
 		$season      = $this->current_season['name'];
-		$match_dates = $this->current_season['matchDates'];
+		$match_dates = $this->current_season['match_dates'];
 		$num_teams   = count( $teams );
 		if ( ! $num_rounds ) {
 			$num_rounds = $this->current_season['num_match_days'];
@@ -3669,7 +3669,7 @@ class Racketmanager_League {
 	 */
 	public function add_match( $match ) {
 		$match = new Racketmanager_Match( $match );
-		if ( $this->is_championship && ! empty( $this->event->current_season['homeAway'] ) && ( 'true' === $this->event->current_season['homeAway'] || true === $this->event->current_season['homeAway'] ) && 'final' !== $match->final_round ) {
+		if ( $this->is_championship && ! empty( $this->event->current_season['home_away'] ) && ( 'true' === $this->event->current_season['home_away'] || true === $this->event->current_season['home_away'] ) && 'final' !== $match->final_round ) {
 			$match->leg              = 1;
 			$new_match               = clone $match;
 			$new_match->date         = gmdate( 'Y-m-d H:i:s', strtotime( $match->date . ' +14 day' ) );

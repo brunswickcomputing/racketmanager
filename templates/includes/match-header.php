@@ -34,7 +34,7 @@ if ( $match->is_pending ) {
 			$allow_schedule_match = true;
 			$show_menu            = true;
 		}
-		if ( ( 'admin' === $user_type || ( 'matchsecretary' === $user_type && ( 'both' === $user_team || 'home' === $user_team ) ) ) && ( $match->league->event->seasons[ $match->season ]['homeAway'] ) ) {
+		if ( ( 'admin' === $user_type || ( 'matchsecretary' === $user_type && ( 'both' === $user_team || 'home' === $user_team ) ) ) && ( $match->league->event->seasons[ $match->season ]['home_away'] ) ) {
 			$allow_switch_match = true;
 			$show_menu          = true;
 		}

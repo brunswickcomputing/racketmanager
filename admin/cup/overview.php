@@ -40,7 +40,7 @@ namespace Racketmanager;
 				<tbody>
 					<tr>
 						<td class="col-6 col-md-3"><?php esc_html_e( 'Entry open', 'racketmanager' ); ?></td>
-						<td class="col-auto"><?php echo isset( $cup_season->dateOpen ) ? esc_html( $cup_season->dateOpen ) : null; ?></td>
+						<td class="col-auto"><?php echo isset( $cup_season->date_open ) ? esc_html( $cup_season->date_open ) : null; ?></td>
 					</tr>
 					<tr>
 						<td class="col-6 col-md-3"><?php esc_html_e( 'Entry closed', 'racketmanager' ); ?></td>
@@ -48,11 +48,11 @@ namespace Racketmanager;
 					</tr>
 					<tr>
 						<td class="col-6 col-md-3"><?php esc_html_e( 'Start', 'racketmanager' ); ?></td>
-						<td class="col-auto"><?php echo isset( $cup_season->dateStart ) ? esc_html( $cup_season->dateStart ) : null; ?></td>
+						<td class="col-auto"><?php echo isset( $cup_season->date_start ) ? esc_html( $cup_season->date_start ) : null; ?></td>
 					</tr>
 					<tr>
 						<td class="col-6 col-md-3"><?php esc_html_e( 'End', 'racketmanager' ); ?></td>
-						<td class="col-auto"><?php echo isset( $cup_season->dateEnd ) ? esc_html( $cup_season->dateEnd ) : null; ?></td>
+						<td class="col-auto"><?php echo isset( $cup_season->date_end ) ? esc_html( $cup_season->date_end ) : null; ?></td>
 					</tr>
 				</tbody>
 			</table>
@@ -69,7 +69,7 @@ namespace Racketmanager;
 			}
 			if ( ! empty( $competition->competition_code ) && $competition->is_complete ) {
 				?>
-				<a href="/index.php?competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $season ); ?>&racketmanager_export=report_results" class="btn btn-info" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Report results', 'racketmanager' ); ?>" >
+				<a href="/index.php?competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $season ); ?>&racketmanager_export=report_results" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Report results', 'racketmanager' ); ?>" >
 					<span class="nav-link__value">
 						<?php esc_html_e( 'Report results', 'racketmanager' ); ?>
 					</span>

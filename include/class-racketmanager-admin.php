@@ -2631,7 +2631,7 @@ class RacketManager_Admin extends RacketManager {
 							'id' => 'ASC',
 						),
 					);
-					if ( 'final' !== $finalkey && ! empty( $league->current_season['homeAway'] ) && 'true' === $league->current_season['homeAway'] ) {
+					if ( 'final' !== $finalkey && ! empty( $league->current_season['home_away'] ) && 'true' === $league->current_season['home_away'] ) {
 						$match_args['leg'] = 1;
 					}
 					$matches = $league->get_matches( $match_args );
@@ -3326,9 +3326,9 @@ class RacketManager_Admin extends RacketManager {
 					}
 					$num_match_days = isset( $_POST['num_match_days'] ) ? intval( $_POST['num_match_days'] ) : null;
 					$closing_date   = isset( $_POST['date_closing'] ) ? sanitize_text_field( wp_unslash( $_POST['date_closing'] ) ) : null;
-					$date_open      = isset( $_POST['date_open'] ) ? sanitize_text_field( wp_unslash( $_POST['date_open'] ) ) : null;
-					$date_start     = isset( $_POST['date_start'] ) ? sanitize_text_field( wp_unslash( $_POST['date_start'] ) ) : null;
-					$date_end       = isset( $_POST['date_end'] ) ? sanitize_text_field( wp_unslash( $_POST['date_end'] ) ) : null;
+					$date_open      = isset( $_POST['dateOpen'] ) ? sanitize_text_field( wp_unslash( $_POST['dateOpen'] ) ) : null;
+					$date_start     = isset( $_POST['dateStart'] ) ? sanitize_text_field( wp_unslash( $_POST['dateStart'] ) ) : null;
+					$date_end       = isset( $_POST['dateEnd'] ) ? sanitize_text_field( wp_unslash( $_POST['dateEnd'] ) ) : null;
 					$is_box         = isset( $_POST['is_box'] ) ? sanitize_text_field( wp_unslash( $_POST['is_box'] ) ) : false;
 					if ( isset( $_POST['matchDate'] ) ) {
 						$match_date = $_POST['matchDate']; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -3657,7 +3657,7 @@ class RacketManager_Admin extends RacketManager {
 			$event->seasons[ $season ] = array(
 				'name'           => $season,
 				'closing_date'   => $closing_date,
-				'matchDates'     => $match_dates,
+				'match_dates'    => $match_dates,
 				'homeAway'       => $home_away,
 				'num_match_days' => 0,
 				'status'         => 'draft',
@@ -3726,7 +3726,7 @@ class RacketManager_Admin extends RacketManager {
 		if ( false !== $season_data->match_dates ) {
 			if ( empty( $season_data->match_dates ) ) {
 				$msg                             = __( 'Match dates not set', 'racketmanager' );
-				$racketmanager->error_fields[]   = 'matchDates';
+				$racketmanager->error_fields[]   = 'match_dates';
 				$racketmanager->error_messages[] = $msg;
 				$racketmanager->set_message( $msg, true );
 				$error = true;
@@ -3810,16 +3810,16 @@ class RacketManager_Admin extends RacketManager {
 			$object->seasons[ $season_data->season ] = array(
 				'name'            => $season_data->season,
 				'num_match_days'  => $season_data->num_match_days,
-				'matchDates'      => $season_data->match_dates,
+				'match_dates'     => $season_data->match_dates,
 				'homeAway'        => $season_data->home_away,
 				'fixedMatchDates' => $season_data->fixed_dates,
 				'status'          => $season_data->status,
 				'closing_date'    => $season_data->closing_date,
 			);
 			if ( 'competition' === $season_data->type ) {
-				$object->seasons[ $season_data->season ]['dateOpen']         = $season_data->date_open;
-				$object->seasons[ $season_data->season ]['dateStart']        = $season_data->date_start;
-				$object->seasons[ $season_data->season ]['dateEnd']          = $season_data->date_end;
+				$object->seasons[ $season_data->season ]['date_open']        = $season_data->date_open;
+				$object->seasons[ $season_data->season ]['date_start']       = $season_data->date_start;
+				$object->seasons[ $season_data->season ]['date_end']         = $season_data->date_end;
 				$object->seasons[ $season_data->season ]['competition_code'] = $season_data->competition_code;
 				$object->seasons[ $season_data->season ]['venue']            = isset( $season_data->venue ) ? $season_data->venue : null;
 				$object->seasons[ $season_data->season ]['grade']            = isset( $season_data->grade ) ? $season_data->grade : null;
@@ -4767,12 +4767,12 @@ class RacketManager_Admin extends RacketManager {
 				break;
 			} elseif ( 0 === $c ) {
 				$num_match_days = $event->current_season['num_match_days'];
-				if ( ! isset( $event->current_season['matchDates'] ) ) {
+				if ( ! isset( $event->current_season['match_dates'] ) ) {
 					$validation->success = false;
 					/* translators: %s: event name */
 					$messages[] = sprintf( __( 'Events match dates not set for %s', 'racketmanager' ), $event->name );
 				}
-				$home_away = isset( $event->current_season['homeAway'] ) ? $event->current_season['homeAway'] : 'true';
+				$home_away = isset( $event->current_season['home_away'] ) ? $event->current_season['home_away'] : 'true';
 				if ( $home_away ) {
 					$validation->num_rounds = $num_match_days / 2;
 				} else {
@@ -4783,12 +4783,12 @@ class RacketManager_Admin extends RacketManager {
 					$validation->success = false;
 					$messages[]          = __( 'Events have different number of match days', 'racketmanager' );
 				}
-				if ( ! isset( $event->current_season['matchDates'] ) ) {
+				if ( ! isset( $event->current_season['match_dates'] ) ) {
 					$validation->success = false;
 					/* translators: %s: event name */
 					$messages[] = sprintf( __( 'Events match dates not set for %s', 'racketmanager' ), $event->name );
 				}
-				$home_away_new = isset( $event->current_season['homeAway'] ) ? $event->current_season['homeAway'] : 'true';
+				$home_away_new = isset( $event->current_season['home_away'] ) ? $event->current_season['home_away'] : 'true';
 				if ( $home_away_new !== $home_away ) {
 					$validation->success = false;
 					$messages[]          = __( 'Events have different home / away setting', 'racketmanager' );
@@ -5421,15 +5421,15 @@ class RacketManager_Admin extends RacketManager {
 			} else {
 				$message = __( 'Matches added', 'racketmanager' );
 			}
-			$event_season['matchDates'] = array();
+			$event_season['match_dates'] = array();
 			foreach ( array_reverse( $matches ) as $match_date => $round_matches ) {
-				$event_season['matchDates'][] = $match_date;
+				$event_season['match_dates'][] = $match_date;
 				foreach ( $round_matches as $match ) {
 					$league->add_match( $match );
 				}
 			}
 			if ( ! $league->championship->is_consolation ) {
-				$event_season['num_match_days'] = count( $event_season['matchDates'] );
+				$event_season['num_match_days'] = count( $event_season['match_dates'] );
 				$event                          = get_event( $league->event_id );
 				if ( $event ) {
 					$event_seasons            = $event->seasons;

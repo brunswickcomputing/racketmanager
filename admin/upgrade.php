@@ -1019,14 +1019,14 @@ function racketmanager_upgrade() {
 			$update  = false;
 			$seasons = (array) maybe_unserialize( $competition->seasons );
 			foreach ( $seasons as $name => $data ) {
-				$count_matchdates = isset( $data['matchDates'] ) ? count( $data['matchDates'] ) : 0;
-				if ( empty( $data['dateEnd'] ) && $count_matchdates >= 2 ) {
-					$data['dateEnd']          = end( $data['matchDates'] );
+				$count_matchdates = isset( $data['match_dates'] ) ? count( $data['match_dates'] ) : 0;
+				if ( empty( $data['date_end'] ) && $count_matchdates >= 2 ) {
+					$data['date_end']         = end( $data['match_dates'] );
 					$seasons[ $data['name'] ] = $data;
 					$update                   = true;
 				}
-				if ( empty( $data['dateStart'] ) && $count_matchdates >= 2 ) {
-					$data['dateStart']        = $data['matchDates'][0];
+				if ( empty( $data['date_start'] ) && $count_matchdates >= 2 ) {
+					$data['date_start']       = $data['match_dates'][0];
 					$seasons[ $data['name'] ] = $data;
 					$update                   = true;
 				}
@@ -1139,6 +1139,107 @@ function racketmanager_upgrade() {
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} ADD `grade` VARCHAR( 1 ) NULL AFTER `competition_code`" );
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} ADD `date_withdrawal` DATE NULL AFTER `closingdate`" );
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} CHANGE `closingdate` `date_closing` DATE NULL" );
+		$competitions = $racketmanager->get_competitions();
+		foreach ( $competitions as $competition ) {
+			$seasons = $competition->seasons;
+			foreach ( $seasons as $key => $season ) {
+				if ( ! isset( $season['date_open'] ) ) {
+					if ( isset( $season['openDate'] ) ) {
+						$season['date_open'] = $season['openDate'];
+						unset( $season['openDate'] );
+					}
+				}
+				if ( ! isset( $season['date_end'] ) ) {
+					if ( isset( $season['dateEnd'] ) ) {
+						$season['date_end'] = $season['dateEnd'];
+						unset( $season['dateEnd'] );
+					}
+				}
+				if ( ! isset( $season['date_start'] ) ) {
+					if ( isset( $season['dateStart'] ) ) {
+						$season['date_start'] = $season['dateStart'];
+						unset( $season['dateStart'] );
+					}
+				}
+				if ( ! isset( $season['date_close'] ) ) {
+					if ( isset( $season['closing_date'] ) ) {
+						$season['date_close'] = $season['closing_date'];
+						unset( $season['closing_date'] );
+					}
+				}
+				if ( ! isset( $season['fixed_match_dates'] ) ) {
+					if ( isset( $season['fixedMatchDates'] ) ) {
+						$season['fixed_match_dates'] = $season['fixedMatchDates'];
+						unset( $season['fixedMatchDates'] );
+					}
+				}
+				if ( ! isset( $season['home_away'] ) ) {
+					if ( isset( $season['homeAway'] ) ) {
+						$season['home_away'] = $season['homeAway'];
+						unset( $season['homeAway'] );
+					}
+				}
+				if ( ! isset( $season['match_dates'] ) ) {
+					if ( isset( $season['match_dates'] ) ) {
+						$season['match_dates'] = $season['match_dates'];
+						unset( $season['match_dates'] );
+					}
+				}
+				$seasons[ $key ] = $season;
+			}
+			$competition->update_seasons( $seasons );
+		$events = $racketmanager->get_events();
+		foreach ( $events as $event ) {
+			$event   = Racketmanager\get_event( $event->id );
+			$seasons = $event->seasons;
+			foreach ( $seasons as $key => $season ) {
+				if ( ! isset( $season['date_open'] ) ) {
+					if ( isset( $season['openDate'] ) ) {
+						$season['date_open'] = $season['openDate'];
+						unset( $season['openDate'] );
+					}
+				}
+				if ( ! isset( $season['date_end'] ) ) {
+					if ( isset( $season['dateEnd'] ) ) {
+						$season['date_end'] = $season['dateEnd'];
+						unset( $season['dateEnd'] );
+					}
+				}
+				if ( ! isset( $season['date_start'] ) ) {
+					if ( isset( $season['dateStart'] ) ) {
+						$season['date_start'] = $season['dateStart'];
+						unset( $season['dateStart'] );
+					}
+				}
+				if ( ! isset( $season['date_close'] ) ) {
+					if ( isset( $season['closing_date'] ) ) {
+						$season['date_close'] = $season['closing_date'];
+						unset( $season['closing_date'] );
+					}
+				}
+				if ( ! isset( $season['fixed_match_dates'] ) ) {
+					if ( isset( $season['fixedMatchDates'] ) ) {
+						$season['fixed_match_dates'] = $season['fixedMatchDates'];
+						unset( $season['fixedMatchDates'] );
+					}
+				}
+				if ( ! isset( $season['home_away'] ) ) {
+					if ( isset( $season['homeAway'] ) ) {
+						$season['home_away'] = $season['homeAway'];
+						unset( $season['homeAway'] );
+					}
+				}
+				if ( ! isset( $season['match_dates'] ) ) {
+					if ( isset( $season['match_dates'] ) ) {
+						$season['match_dates'] = $season['match_dates'];
+						unset( $season['match_dates'] );
+					}
+				}
+				$seasons[ $key ] = $season;
+			}
+			$event->update_seasons( $seasons );
+		}
+		}
 	}
 	/*
 	* Update version and dbversion

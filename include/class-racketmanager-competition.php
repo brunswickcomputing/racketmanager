@@ -494,18 +494,18 @@ class Racketmanager_Competition {
 		// set season to latest.
 		if ( $this->num_seasons > 0 ) {
 			$this->set_season();
-			if ( ! empty( $this->current_season['dateOpen'] ) ) {
-				$this->date_open = $this->current_season['dateOpen'];
+			if ( ! empty( $this->current_season['date_open'] ) ) {
+				$this->date_open = $this->current_season['date_open'];
 			}
-			if ( ! empty( $this->current_season['dateStart'] ) ) {
-				$this->date_start = $this->current_season['dateStart'];
+			if ( ! empty( $this->current_season['date_start'] ) ) {
+				$this->date_start = $this->current_season['date_start'];
 			} else {
-				$this->date_start = isset( $this->current_season['matchDates'][0] ) ? $this->current_season['matchDates'][0] : null;
+				$this->date_start = isset( $this->current_season['match_dates'][0] ) ? $this->current_season['match_dates'][0] : null;
 			}
-			if ( ! empty( $this->current_season['dateEnd'] ) ) {
-				$this->date_end = $this->current_season['dateEnd'];
+			if ( ! empty( $this->current_season['date_end'] ) ) {
+				$this->date_end = $this->current_season['date_end'];
 			} else {
-				$end_date = isset( $this->current_season['matchDates'] ) ? end( $this->current_season['matchDates'] ) : null;
+				$end_date = isset( $this->current_season['match_dates'] ) ? end( $this->current_season['match_dates'] ) : null;
 				if ( $end_date ) {
 					$end_date       = gmdate( 'Y-m-d', strtotime( $end_date . ' +14 day' ) );
 					$this->date_end = $end_date;
@@ -514,7 +514,7 @@ class Racketmanager_Competition {
 			if ( ! empty( $this->current_season['venue_name'] ) ) {
 				$this->venue = $this->current_season['venue_name'];
 			}
-			if ( isset( $this->current_season['closing_date'] ) && $this->current_season['closing_date'] < gmdate( 'Y-m-d' ) ) {
+			if ( isset( $this->current_season['date_close'] ) && $this->current_season['date_close'] < gmdate( 'Y-m-d' ) ) {
 				$this->is_active = true;
 			} else {
 				$this->is_active = false;
@@ -742,7 +742,7 @@ class Racketmanager_Competition {
 		$today = gmdate( 'Y-m-d' );
 		if ( empty( $data ) ) {
 			foreach ( array_reverse( $this->seasons ) as $season ) {
-				if ( empty( $season['dateStart'] ) || $season['dateStart'] <= $today ) {
+				if ( empty( $season['date_start'] ) || $season['date_start'] <= $today ) {
 					$data = $season;
 					break;
 				}
@@ -751,26 +751,26 @@ class Racketmanager_Competition {
 		if ( empty( $data ) ) {
 			$data = end( $this->seasons );
 		}
-		$count_matchdates = isset( $data['matchDates'] ) && is_array( $data['matchDates'] ) ? count( $data['matchDates'] ) : 0;
-		if ( empty( $data['dateEnd'] ) && $count_matchdates >= 2 ) {
-			$data['dateEnd']                = end( $data['matchDates'] );
+		$count_matchdates = isset( $data['match_dates'] ) && is_array( $data['match_dates'] ) ? count( $data['match_dates'] ) : 0;
+		if ( empty( $data['date_end'] ) && $count_matchdates >= 2 ) {
+			$data['date_end']               = end( $data['match_dates'] );
 			$this->seasons[ $data['name'] ] = $data;
 		}
-		if ( empty( $data['dateStart'] ) && $count_matchdates >= 2 ) {
-			$data['dateStart']              = $data['matchDates'][0];
+		if ( empty( $data['date_start'] ) && $count_matchdates >= 2 ) {
+			$data['date_start']             = $data['match_dates'][0];
 			$this->seasons[ $data['name'] ] = $data;
 		}
-		if ( ! empty( $data['dateEnd'] ) && $today > $data['dateEnd'] ) {
+		if ( ! empty( $data['date_end'] ) && $today > $data['date_end'] ) {
 			$this->current_phase = 'end';
 			$this->is_complete   = true;
-		} elseif ( ! empty( $data['dateStart'] ) && $today >= $data['dateStart'] ) {
+		} elseif ( ! empty( $data['date_start'] ) && $today >= $data['date_start'] ) {
 			$this->current_phase = 'start';
 			$this->is_started    = true;
-		} elseif ( ! empty( $data['closing_date'] ) && $today > $data['closing_date'] ) {
+		} elseif ( ! empty( $data['date_close'] ) && $today > $data['date_close'] ) {
 			$this->current_phase = 'close';
 			$this->is_closed     = true;
-		} elseif ( ! empty( $data['dateOpen'] ) ) {
-			if ( $today >= $data['dateOpen'] ) {
+		} elseif ( ! empty( $data['date_open'] ) ) {
+			if ( $today >= $data['date_open'] ) {
 				$this->current_phase = 'open';
 				$this->is_open       = true;
 			} else {

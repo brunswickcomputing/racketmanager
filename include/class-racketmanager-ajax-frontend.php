@@ -2101,7 +2101,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					if ( $match ) {
 						$old_home   = $match->home_team;
 						$old_away   = $match->away_team;
-						$match_date = $match->league->event->seasons[ $match->season ]['matchDates'][ $match->match_day - 1 ];
+						$match_date = $match->league->event->seasons[ $match->season ]['match_dates'][ $match->match_day - 1 ];
 						if ( $match_date ) {
 							$match->update_match_date( $match_date );
 							$match->set_teams( $old_away, $old_home );

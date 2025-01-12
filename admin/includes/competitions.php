@@ -38,11 +38,15 @@ namespace Racketmanager;
 				$page_ref    = 'racketmanager';
 				switch ( $competition->type ) {
 					case 'league':
+						if ( ! empty( $standalone ) ) {
+							$sub_page = 'view=seasons';
+							$page_ref = 'racketmanager-' . $competition->type . 's';
+						}
 						$competition_type = __( 'League', 'racketmanager' );
 						break;
 					case 'cup':
 						if ( ! empty( $standalone ) ) {
-							$sub_page = 'view=cup';
+							$sub_page = 'view=' . $competition->type;
 							$page_ref = 'racketmanager-' . $competition->type . 's';
 						}
 						$competition_type = __( 'Cup', 'racketmanager' );

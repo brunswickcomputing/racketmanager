@@ -592,10 +592,10 @@ final class Racketmanager_Rubber {
 								$error = __( 'no age provided', 'racketmanager' );
 								$match->add_result_check( $team->id, $player->id, $error, $this->id );
 							} else {
-								if ( ! empty( $match->league->event->competition->seasons[ $match->season ]['dateEnd'] ) ) {
-									$date_end = $match->league->event->competition->seasons[ $match->season ]['dateEnd'];
-								} elseif ( ! empty( $match->league->event->seasons[ $match->season ]['matchDates'] ) ) {
-									$date_end = end( $match->league->event->seasons[ $match->season ]['matchDates'] );
+								if ( ! empty( $match->league->event->competition->seasons[ $match->season ]['date_end'] ) ) {
+									$date_end = $match->league->event->competition->seasons[ $match->season ]['date_end'];
+								} elseif ( ! empty( $match->league->event->seasons[ $match->season ]['match_dates'] ) ) {
+									$date_end = end( $match->league->event->seasons[ $match->season ]['match_dates'] );
 								} else {
 									$date_end = null;
 								}
@@ -646,7 +646,7 @@ final class Racketmanager_Rubber {
 								if ( $competition ) {
 									$competition_season = $competition->seasons[ $match->season ];
 									if ( $competition_season ) {
-										if ( ! empty( $competition_season['fixedMatchDates'] ) ) {
+										if ( ! empty( $competition_season['fixed_match_dates'] ) ) {
 											$league         = get_league( $match->league_id );
 											$num_match_days = $league->event->seasons[ $match->season ]['num_match_days'];
 											if ( $match->match_day > ( $num_match_days - $options['playedRounds'] ) ) {

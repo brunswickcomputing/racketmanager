@@ -52,7 +52,7 @@ jQuery(document).ready(function(){
 					</tr>
 					<tr>
 						<td class="col-6 col-md-3"><?php esc_html_e( 'Date', 'racketmanager' ); ?></td>
-						<td class="col-auto"><?php echo esc_html( $cup_season->dateEnd ); ?></td>
+						<td class="col-auto"><?php echo esc_html( $cup_season->date_end ); ?></td>
 					</tr>
 					<tr>
 						<td class="col-6 col-md-3"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></td>

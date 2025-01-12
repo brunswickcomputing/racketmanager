@@ -624,7 +624,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 		}
 		if ( ! isset( $return->error ) ) {
 			$grade      = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : '';
-			$date_start = isset( $_POST['date_start'] ) ? sanitize_text_field( wp_unslash( $_POST['date_start'] ) ) : null;
+			$date_start = isset( $_POST['dateStart'] ) ? sanitize_text_field( wp_unslash( $_POST['dateStart'] ) ) : null;
 			if ( $date_start ) {
 				$entry_leadtime = 46;
 				$date_open      = gmdate( 'Y-m-d', strtotime( $date_start . ' -' . $entry_leadtime . ' day' ) );

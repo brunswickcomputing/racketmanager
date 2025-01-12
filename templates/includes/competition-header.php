@@ -50,13 +50,13 @@ namespace Racketmanager;
 						}
 						?>
 						<?php
-						if ( ! empty( $competition_season['dateStart'] ) && ! empty( $competition_season['dateEnd'] ) ) {
+						if ( ! empty( $competition_season['date_start'] ) && ! empty( $competition_season['date_end'] ) ) {
 							?>
 							<small class="media__subheading">
 								<span class="nav--link">
 									<span class="nav-link__value">
 										<?php racketmanager_the_svg( 'icon-calendar' ); ?>
-										<?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['dateStart'] ) ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['dateEnd'] ) ); ?>
+										<?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['date_start'] ) ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['date_end'] ) ); ?>
 									</span>
 								</span>
 							</small>

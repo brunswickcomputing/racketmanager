@@ -199,12 +199,12 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 									}
 								}
 								if ( $valid ) {
-									$cup_season['matchDates'] = array();
+									$cup_season['match_dates'] = array();
 									foreach ( array_reverse( $rounds ) as $match_date ) {
-										$cup_season['matchDates'][] = $match_date;
+										$cup_season['match_dates'][] = $match_date;
 									}
 									$cup_seasons                  = $competition->seasons;
-									$cup_season['num_match_days'] = count( $cup_season['matchDates'] );
+									$cup_season['num_match_days'] = count( $cup_season['match_dates'] );
 									$cup_seasons[ $season ]       = $cup_season;
 									$competition->update_seasons( $cup_seasons );
 									$this->set_message( __( 'Cup match dates updated', 'racketmanager' ) );
@@ -235,7 +235,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 			if ( $competition_id ) {
 				$competition = get_competition( $competition_id );
 				if ( $competition ) {
-					$match_dates = $competition->seasons[ $season ]['matchDates'];
+					$match_dates = $competition->seasons[ $season ]['match_dates'];
 					require RACKETMANAGER_PATH . 'admin/cup/setup.php';
 				}
 			}
@@ -295,7 +295,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 							);
 							$tab         = 'matches';
 							if ( empty( $league->seasons[ $season ]['rounds'] ) ) {
-								$match_dates = empty( $league->event->seasons[ $season ]['matchDates'] ) ? $league->event->competition->seasons[ $season ]['matchDates'] : $league->event->seasons[ $season ]['matchDates'];
+								$match_dates = empty( $league->event->seasons[ $season ]['match_dates'] ) ? $league->event->competition->seasons[ $season ]['match_dates'] : $league->event->seasons[ $season ]['match_dates'];
 							} else {
 								foreach ( array_reverse( $league->seasons[ $season ]['rounds'] ) as $round ) {
 									$match_dates[] = $round->date;
@@ -327,21 +327,21 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 				$competition_id = intval( $_POST['competition_id'] );
 				$competition    = get_competition( $competition_id );
 				if ( $competition ) {
-					$season                       = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-					$cup_season                   = new \stdClass();
-					$cup_season->name             = $season;
-					$cup_season->venue            = isset( $_POST['venue'] ) ? intval( $_POST['venue'] ) : null;
-					$cup_season->date_end         = isset( $_POST['date_end'] ) ? sanitize_text_field( wp_unslash( $_POST['date_end'] ) ) : null;
-					$cup_season->dateEnd          = $cup_season->date_end;
-					$cup_season->date_open        = isset( $_POST['date_open'] ) ? sanitize_text_field( wp_unslash( $_POST['date_open'] ) ) : null;
-					$cup_season->dateOpen         = $cup_season->date_open;
-					$cup_season->closing_date     = isset( $_POST['date_close'] ) ? sanitize_text_field( wp_unslash( $_POST['date_close'] ) ) : null;
-					$cup_season->date_start       = isset( $_POST['date_start'] ) ? sanitize_text_field( wp_unslash( $_POST['date_start'] ) ) : null;
-					$cup_season->dateStart        = $cup_season->date_start;
-					$cup_season->competition_code = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
-					$cup_season->fixedMatchDates  = isset( $_POST['fixedMatchDates'] ) ? ( 'true' === $_POST['fixedMatchDates'] ? true : false ) : false;
-					$cup_season->homeAway         = isset( $_POST['homeAway'] ) ? ( 'true' === $_POST['homeAway'] ? true : false ) : false;
-					$cup_season->grade            = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
+					$season                        = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+					$cup_season                    = new \stdClass();
+					$cup_season->name              = $season;
+					$cup_season->venue             = isset( $_POST['venue'] ) ? intval( $_POST['venue'] ) : null;
+					$cup_season->date_end          = isset( $_POST['dateEnd'] ) ? sanitize_text_field( wp_unslash( $_POST['dateEnd'] ) ) : null;
+					$cup_season->date_end          = $cup_season->date_end;
+					$cup_season->date_open         = isset( $_POST['dateOpen'] ) ? sanitize_text_field( wp_unslash( $_POST['dateOpen'] ) ) : null;
+					$cup_season->date_open         = $cup_season->date_open;
+					$cup_season->closing_date      = isset( $_POST['dateClose'] ) ? sanitize_text_field( wp_unslash( $_POST['dateClose'] ) ) : null;
+					$cup_season->date_start        = isset( $_POST['dateStart'] ) ? sanitize_text_field( wp_unslash( $_POST['dateStart'] ) ) : null;
+					$cup_season->date_start        = $cup_season->date_start;
+					$cup_season->competition_code  = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
+					$cup_season->fixed_match_dates = isset( $_POST['fixedMatchDates'] ) ? ( 'true' === $_POST['fixedMatchDates'] ? true : false ) : false;
+					$cup_season->home_away         = isset( $_POST['homeAway'] ) ? ( 'true' === $_POST['homeAway'] ? true : false ) : false;
+					$cup_season->grade             = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
 					$this->set_competition_dates( $cup_season, $competition );
 					if ( $racketmanager->error ) {
 						$racketmanager->printMessage();
@@ -365,20 +365,20 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 					if ( $competition ) {
 						$season = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
 						if ( $season ) {
-							$cup_season                   = new \stdClass();
-							$cup_season->name             = $season;
-							$cup_season->venue            = isset( $_POST['venue'] ) ? intval( $_POST['venue'] ) : null;
-							$cup_season->date_end         = isset( $_POST['date_end'] ) ? sanitize_text_field( wp_unslash( $_POST['date_end'] ) ) : null;
-							$cup_season->dateEnd          = $cup_season->date_end;
-							$cup_season->date_open        = isset( $_POST['date_open'] ) ? sanitize_text_field( wp_unslash( $_POST['date_open'] ) ) : null;
-							$cup_season->dateOpen         = $cup_season->date_open;
-							$cup_season->closing_date     = isset( $_POST['date_close'] ) ? sanitize_text_field( wp_unslash( $_POST['date_close'] ) ) : null;
-							$cup_season->date_start       = isset( $_POST['date_start'] ) ? sanitize_text_field( wp_unslash( $_POST['date_start'] ) ) : null;
-							$cup_season->dateStart        = $cup_season->date_start;
-							$cup_season->competition_code = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
-							$cup_season->fixedMatchDates  = isset( $_POST['fixedMatchDates'] ) ? ( 'true' === $_POST['fixedMatchDates'] ? true : false ) : false;
-							$cup_season->homeAway         = isset( $_POST['homeAway'] ) ? ( 'true' === $_POST['homeAway'] ? true : false ) : false;
-							$cup_season->grade            = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
+							$cup_season                    = new \stdClass();
+							$cup_season->name              = $season;
+							$cup_season->venue             = isset( $_POST['venue'] ) ? intval( $_POST['venue'] ) : null;
+							$cup_season->date_end          = isset( $_POST['dateEnd'] ) ? sanitize_text_field( wp_unslash( $_POST['dateEnd'] ) ) : null;
+							$cup_season->date_end          = $cup_season->date_end;
+							$cup_season->date_open         = isset( $_POST['dateOpen'] ) ? sanitize_text_field( wp_unslash( $_POST['dateOpen'] ) ) : null;
+							$cup_season->date_open         = $cup_season->date_open;
+							$cup_season->closing_date      = isset( $_POST['dateClose'] ) ? sanitize_text_field( wp_unslash( $_POST['dateClose'] ) ) : null;
+							$cup_season->date_start        = isset( $_POST['dateStart'] ) ? sanitize_text_field( wp_unslash( $_POST['dateStart'] ) ) : null;
+							$cup_season->date_start        = $cup_season->date_start;
+							$cup_season->competition_code  = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
+							$cup_season->fixed_match_dates = isset( $_POST['fixedMatchDates'] ) ? ( 'true' === $_POST['fixedMatchDates'] ? true : false ) : false;
+							$cup_season->home_away         = isset( $_POST['homeAway'] ) ? ( 'true' === $_POST['homeAway'] ? true : false ) : false;
+							$cup_season->grade             = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
 							$this->set_competition_dates( $cup_season, $competition );
 							$this->schedule_cup_activities( $competition->id, $cup_season );
 						} else {
@@ -572,7 +572,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 										'id' => 'ASC',
 									),
 								);
-								if ( 'final' !== $finalkey && ! empty( $league->current_season['homeAway'] ) && 'true' === $league->current_season['homeAway'] ) {
+								if ( 'final' !== $finalkey && ! empty( $league->current_season['home_away'] ) && 'true' === $league->current_season['home_away'] ) {
 									$match_args['leg'] = 1;
 								}
 								$matches      = $league->get_matches( $match_args );
@@ -681,15 +681,15 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 			$racketmanager->error_messages[] = __( 'Opening date must be set', 'racketmanager' );
 			$racketmanager->error_fields[]   = 'date_open';
 		}
-		if ( empty( $cup_season->date_open ) ) {
+		if ( empty( $cup_season->date_end ) ) {
 			$racketmanager->error_messages[] = __( 'End date must be set', 'racketmanager' );
 			$racketmanager->error_fields[]   = 'date_end';
 		}
-		if ( empty( $cup_season->date_open ) ) {
+		if ( empty( $cup_season->date_start ) ) {
 			$racketmanager->error_messages[] = __( 'Start date must be set', 'racketmanager' );
 			$racketmanager->error_fields[]   = 'date_start';
 		}
-		if ( empty( $cup_season->date_open ) ) {
+		if ( empty( $cup_season->closing_date ) ) {
 			$racketmanager->error_messages[] = __( 'Closing date must be set', 'racketmanager' );
 			$racketmanager->error_fields[]   = 'date_close';
 		}
@@ -697,11 +697,11 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 			$racketmanager->error_messages[] = __( 'Venue must be set', 'racketmanager' );
 			$racketmanager->error_fields[]   = 'venue';
 		}
-		if ( is_null( $cup_season->fixedMatchDates ) ) {
+		if ( is_null( $cup_season->fixed_match_dates ) ) {
 			$racketmanager->error_messages[] = __( 'Match date option must be set', 'racketmanager' );
 			$racketmanager->error_fields[]   = 'fixedMatchDates';
 		}
-		if ( is_null( $cup_season->homeAway ) ) {
+		if ( is_null( $cup_season->home_away ) ) {
 			$racketmanager->error_messages[] = __( 'Numer of legs must be set', 'racketmanager' );
 			$racketmanager->error_fields[]   = 'homeAway';
 		}
@@ -712,21 +712,21 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 		if ( empty( $racketmanager->error_fields ) ) {
 			$season = isset( $competition->seasons[ $cup_season->name ] ) ? $competition->seasons[ $cup_season->name ] : null;
 			if ( $season ) {
-				if ( empty( $season['dateOpen'] ) || $season['dateOpen'] !== $cup_season->date_open ) {
-					$updates            = true;
-					$season['dateOpen'] = $cup_season->date_open;
-				}
-				if ( empty( $season['dateEnd'] ) || $season['dateEnd'] !== $cup_season->date_end ) {
-					$updates           = true;
-					$season['dateEnd'] = $cup_season->date_end;
-				}
-				if ( empty( $season['dateStart'] ) || $season['dateStart'] !== $cup_season->date_start ) {
+				if ( empty( $season['date_open'] ) || $season['date_open'] !== $cup_season->date_open ) {
 					$updates             = true;
-					$season['dateStart'] = $cup_season->date_start;
+					$season['date_open'] = $cup_season->date_open;
 				}
-				if ( empty( $season['closing_date'] ) || $season['closing_date'] !== $cup_season->closing_date ) {
-					$updates                = true;
-					$season['closing_date'] = $cup_season->closing_date;
+				if ( empty( $season['date_end'] ) || $season['date_end'] !== $cup_season->date_end ) {
+					$updates            = true;
+					$season['date_end'] = $cup_season->date_end;
+				}
+				if ( empty( $season['date_start'] ) || $season['date_start'] !== $cup_season->date_start ) {
+					$updates              = true;
+					$season['date_start'] = $cup_season->date_start;
+				}
+				if ( empty( $season['date_close'] ) || $season['date_close'] !== $cup_season->closing_date ) {
+					$updates              = true;
+					$season['date_close'] = $cup_season->closing_date;
 				}
 				if ( $season['venue'] !== $cup_season->venue ) {
 					$updates         = true;
@@ -743,13 +743,13 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 					$updates                    = true;
 					$season['competition_code'] = $cup_season->competition_code;
 				}
-				if ( empty( $season['fixedMatchDates'] ) || $season['fixedMatchDates'] !== $cup_season->fixedMatchDates ) {
-					$updates                   = true;
-					$season['fixedMatchDates'] = $cup_season->fixedMatchDates;
+				if ( empty( $season['fixed_match_dates'] ) || $season['fixed_match_dates'] !== $cup_season->fixed_match_dates ) {
+					$updates                     = true;
+					$season['fixed_match_dates'] = $cup_season->fixed_match_dates;
 				}
-				if ( empty( $season['homeAway'] ) || $season['homeAway'] !== $cup_season->homeAway ) {
-					$updates            = true;
-					$season['homeAway'] = $cup_season->homeAway;
+				if ( empty( $season['home_away'] ) || $season['home_away'] !== $cup_season->home_away ) {
+					$updates             = true;
+					$season['home_away'] = $cup_season->home_away;
 				}
 				if ( empty( $season['grade'] ) || $season['grade'] !== $cup_season->grade ) {
 					$updates         = true;
@@ -760,14 +760,14 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 					$season_data->season           = $season['name'];
 					$season_data->num_match_days   = $season['num_match_days'];
 					$season_data->object_id        = $competition->id;
-					$season_data->match_dates      = isset( $season['matchDates'] ) ? $season['matchDates'] : false;
-					$season_data->fixed_dates      = isset( $season['fixedMatchDates'] ) ? $season['fixedMatchDates'] : false;
-					$season_data->home_away        = isset( $season['homeAway'] ) ? $season['homeAway'] : false;
+					$season_data->match_dates      = isset( $season['match_dates'] ) ? $season['match_dates'] : false;
+					$season_data->fixed_dates      = isset( $season['fixed_match_dates'] ) ? $season['fixed_match_dates'] : false;
+					$season_data->home_away        = isset( $season['home_away'] ) ? $season['home_away'] : false;
 					$season_data->status           = 'live';
-					$season_data->date_open        = $season['dateOpen'];
-					$season_data->closing_date     = $season['closing_date'];
-					$season_data->date_start       = $season['dateStart'];
-					$season_data->date_end         = $season['dateEnd'];
+					$season_data->date_open        = $season['date_open'];
+					$season_data->closing_date     = $season['date_close'];
+					$season_data->date_start       = $season['date_start'];
+					$season_data->date_end         = $season['date_end'];
 					$season_data->competition_code = $season['competition_code'];
 					$season_data->type             = 'competition';
 					$season_data->is_box           = false;

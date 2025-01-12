@@ -18,12 +18,12 @@ if ( empty( $days_remaining ) ) {
 	$paragraph_text = sprintf( __( 'There are now less than %1$s days left before the closing date of the %2$s.', 'racketmanager' ), $days_remaining, ucfirst( $competition ) );
 }
 require 'components/paragraph.php';
-if ( ! empty( $season_dtls->dateStart ) ) {
+if ( ! empty( $season_dtls->date_start ) ) {
 	/* translators: $s: start date */
-	$paragraph_text = sprintf( __( 'The competition will run from %s', 'racketmanager' ), mysql2date( $racketmanager->date_format, $season_dtls->dateStart ) );
-	if ( ! empty( $season_dtls->dateEnd ) ) {
+	$paragraph_text = sprintf( __( 'The competition will run from %s', 'racketmanager' ), mysql2date( $racketmanager->date_format, $season_dtls->date_start ) );
+	if ( ! empty( $season_dtls->date_end ) ) {
 		/* translators: $s: end date */
-		$paragraph_text .= ' ' . sprintf( __( 'until % s', 'racketmanager' ), mysql2date( $racketmanager->date_format, $season_dtls->dateEnd ) );
+		$paragraph_text .= ' ' . sprintf( __( 'until % s', 'racketmanager' ), mysql2date( $racketmanager->date_format, $season_dtls->date_end ) );
 	}
 	$paragraph_text .= '.';
 	require 'components/paragraph.php';

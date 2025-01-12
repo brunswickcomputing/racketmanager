@@ -48,8 +48,8 @@ namespace Racketmanager;
 						<div class="col-2 col-lg-1"><?php echo esc_html( $season['num_match_days'] ); ?></div>
 						<div class="col-2 col-lg-1">
 							<?php
-							if ( isset( $season['homeAway'] ) ) {
-								if ( $season['homeAway'] ) {
+							if ( isset( $season['home_away'] ) ) {
+								if ( $season['home_away'] ) {
 									echo 'both';
 								} else {
 									echo 'home only';
@@ -66,7 +66,7 @@ namespace Racketmanager;
 						</div>
 						<?php
 						$today = gmdate( 'Y-m-d' );
-						if ( ! empty( $season['dateEnd'] ) && $today > $season['dateEnd'] ) {
+						if ( ! empty( $season['date_end'] ) && $today > $season['date_end'] ) {
 							if ( ! empty( $competition->competition_code ) ) {
 								?>
 								<div class="col-auto">
@@ -78,7 +78,7 @@ namespace Racketmanager;
 								</div>
 								<?php
 							}
-						} elseif ( ! empty( $season['closing_date'] ) && $today <= $season['closing_date'] && ! empty( $season['dateOpen'] ) && $today >= $season['dateOpen'] ) {
+						} elseif ( ! empty( $season['date_close'] ) && $today <= $season['date_close'] && ! empty( $season['date_open'] ) && $today >= $season['date_open'] ) {
 							?>
 							<div class="col-auto">
 								<button href="" /index.php?competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $key ); ?> class="btn btn-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Notify open', 'racketmanager' ); ?>" onclick="Racketmanager.notify_open(event, <?php echo esc_html( $competition->id ) . ',' . esc_html( $key ); ?> )">

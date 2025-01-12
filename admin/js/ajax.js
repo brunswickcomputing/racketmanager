@@ -781,12 +781,12 @@ Racketmanager.resetMatchScores = function (e, formId) {
 		.prop('selected', false);
 };
 Racketmanager.setTournamentOpenDate = function (e) {
-	let dateOpenField = "#date_open";
+	let date_openField = "#date_open";
 	let dateCloseField = "#date_close";
 	let dateWithdrawfield = "#date_withdraw";
 	let gradeField = '#grade';
 	let grade = jQuery(gradeField).val();
-	let dateStart = jQuery('#date_start').val();
+	let date_start = jQuery('#date_start').val();
 	let notifyField1 = "#alert-dates";
 	jQuery(notifyField1).hide();
 	jQuery(notifyField1).removeClass('alert--success alert--danger');
@@ -796,15 +796,15 @@ Racketmanager.setTournamentOpenDate = function (e) {
 		url: ajaxurl,
 		type: "POST",
 		data: {
-			"date_start": dateStart,
+			"dateStart": date_start,
 			"action": "racketmanager_set_tournament_dates",
 			"security": ajax_var.ajax_nonce,
 		},
 		success: function (response) {
 			let message = response.data.msg;
 			jQuery(notifyField2).text(message);
-			let dateOpen = response.data.date_open;
-			jQuery(dateOpenField).val(dateOpen);
+			let date_open = response.data.date_open;
+			jQuery(date_openField).val(date_open);
 			let dateClose = response.data.date_close;
 			jQuery(dateCloseField).val(dateClose);
 			let dateWithdraw = response.data.date_withdraw;

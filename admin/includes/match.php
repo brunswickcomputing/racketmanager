@@ -137,8 +137,8 @@ $form_action = 'admin.php?page=racketmanager';
 										} else {
 											$round_no = $final['round'] - 1;
 										}
-										if ( ! empty( $league->event->seasons[ $season ]['matchDates'][ $round_no ] ) ) {
-											$date = $league->event->seasons[ $season ]['matchDates'][ $round_no ];
+										if ( ! empty( $league->event->seasons[ $season ]['match_dates'][ $round_no ] ) ) {
+											$date = $league->event->seasons[ $season ]['match_dates'][ $round_no ];
 										}
 									}
 								}

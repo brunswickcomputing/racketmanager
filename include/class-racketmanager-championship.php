@@ -464,7 +464,7 @@ final class Racketmanager_Championship extends RacketManager {
 				'reset_query_args' => true,
 			);
 			// get first round matches.
-			if ( ! empty( $league->current_season['homeAway'] ) && ( 'true' === $league->current_season['homeAway'] || true === $league->current_season['homeAway'] ) ) {
+			if ( ! empty( $league->current_season['home_away'] ) && ( 'true' === $league->current_season['home_away'] || true === $league->current_season['home_away'] ) ) {
 				$multiple_legs     = true;
 				$match_args['leg'] = 1;
 			}
@@ -584,7 +584,7 @@ final class Racketmanager_Championship extends RacketManager {
 			'final' => $next,
 			'limit' => false,
 		);
-		if ( ! empty( $league->current_season['homeAway'] ) ) {
+		if ( ! empty( $league->current_season['home_away'] ) ) {
 			$legs = true;
 			if ( 'final' !== $next ) {
 				$match_args['leg'] = 1;

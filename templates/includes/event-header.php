@@ -73,13 +73,13 @@ if ( empty( $header_level ) ) {
 					}
 					?>
 					<?php
-					if ( ! empty( $event->competition->current_season['dateStart'] ) && ! empty( $event->competition->current_season['dateEnd'] ) ) {
+					if ( ! empty( $event->competition->current_season['date_start'] ) && ! empty( $event->competition->current_season['date_end'] ) ) {
 						?>
 						<small class="media__subheading">
 							<span class="nav--link">
 								<span class="nav-link__value">
 									<?php racketmanager_the_svg( 'icon-calendar' ); ?>
-									<?php echo esc_html( mysql2date( $racketmanager->date_format, $event->competition->current_season['dateStart'] ) ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( mysql2date( $racketmanager->date_format, $event->competition->current_season['dateEnd'] ) ); ?>
+									<?php echo esc_html( mysql2date( $racketmanager->date_format, $event->competition->current_season['date_start'] ) ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( mysql2date( $racketmanager->date_format, $event->competition->current_season['date_end'] ) ); ?>
 								</span>
 							</span>
 						</small>

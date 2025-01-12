@@ -43,41 +43,32 @@ namespace Racketmanager;
 			<div class="row table-header">
 				<div class="col-1 col-md-auto me-1 check-column"><input type="checkbox" id="check-all-seasons" onclick="Racketmanager.checkAll(document.getElementById('seaons-filter'));" /></div>
 				<div class="col-2 col-lg-1"><?php esc_html_e( 'Season', 'racketmanager' ); ?></div>
-				<div class="col-4 col-lg-2"><?php esc_html_e( 'Venue', 'racketmanager' ); ?></div>
-				<div class="col-4 col-lg-1"><?php esc_html_e( 'Finals', 'racketmanager' ); ?></div>
+				<div class="col-4 col-lg-2"><?php esc_html_e( 'Start', 'racketmanager' ); ?></div>
+				<div class="col-4 col-lg-1"><?php esc_html_e( 'End', 'racketmanager' ); ?></div>
 			</div>
 			<?php
 			if ( ! empty( $competition->seasons ) ) {
 				$class = '';
 				foreach ( array_reverse( $competition->seasons ) as $season ) {
-					$class      = ( 'alternate' === $class ) ? '' : 'alternate';
-					$key        = $season['name'];
-					$venue_name = null;
-					if ( ! empty( $season['venue'] ) ) {
-						$venue_club = get_club( $season['venue'] );
-						if ( $venue_club ) {
-							$venue_name = $venue_club->shortcode;
-						}
-					}
+					$class = ( 'alternate' === $class ) ? '' : 'alternate';
+					$key   = $season['name'];
 					?>
 					<div class="row table-row <?php echo esc_html( $class ); ?>">
 						<div class="col-1 col-md-auto me-1 check-column"><input type="checkbox" value="<?php echo esc_html( $key ); ?>" name="del_season[<?php echo esc_html( $key ); ?>]" /></div>
-						<div class="col-2 col-lg-1"><a href="admin.php?page=racketmanager-cups&amp;view=season&amp;competition_id=<?php echo esc_html( $competition->id ); ?>&amp;season=<?php echo esc_html( $key ); ?>"><?php echo esc_html( $season['name'] ); ?></a></div>
-						<div class="col-4 col-lg-2"><?php echo esc_html( $venue_name ); ?></div>
-						<div class="col-4 col-lg-1">
-							<?php
-							if ( ! empty( $venue_name ) ) {
-								echo empty( $season['date_end'] ) ? null : esc_html( $season['date_end'] );
-							}
-							?>
-						</div>
+						<div class="col-2 col-lg-1"><a href="admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_html( $competition->id ); ?>&amp;season=<?php echo esc_html( $key ); ?>"><?php echo esc_html( $season['name'] ); ?></a></div>
+						<div class="col-4 col-lg-2"><?php echo empty( $season['date_start'] ) ? null : esc_html( $season['date_start'] ); ?></div>
+						<div class="col-4 col-lg-1"><?php echo empty( $season['date_end'] ) ? null : esc_html( $season['date_end'] ); ?></div>
 						<?php
 						$today = gmdate( 'Y-m-d' );
 						if ( ! empty( $season['date_end'] ) && $today > $season['date_end'] ) {
-							if ( ! empty( $competition->competition_code ) ) {
+							$competition_code = isset( $season->competition_code ) ? $season->competition_code : null;
+							if ( empty( $competition_code ) ) {
+								$competition_code = empty( $competition->competition_code ) ? null : $competition->competition_code;
+							}
+							if ( ! empty( $competition_code ) ) {
 								?>
 								<div class="col-auto">
-									<a href="/index.php?competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $key ); ?>&racketmanager_export=report_results" class="btn btn-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Report results', 'racketmanager' ); ?>" >
+									<a href="/index.php?competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $key ); ?>&competition_code=<?php echo esc_attr( $competition_code ); ?>&racketmanager_export=report_results" class="btn btn-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Report results', 'racketmanager' ); ?>" >
 										<span class="nav-link__value text-uppercase">
 											<?php esc_html_e( 'Report results', 'racketmanager' ); ?>
 										</span>

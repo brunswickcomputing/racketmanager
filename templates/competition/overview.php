@@ -62,29 +62,29 @@ namespace Racketmanager;
 					<div class="tournament-meta__timeline">
 						<ol class="list--timeline-labelled list--timeline list has-custom-icon">
 							<?php
-							if ( ! empty( $competition_season['dateEnd'] ) ) {
-								if ( ! empty( $competition_season['dateOpen'] ) ) {
+							if ( ! empty( $competition_season['date_end'] ) ) {
+								if ( ! empty( $competition_season['date_open'] ) ) {
 									?>
 									<li class="list__item is-entry-open <?php echo ( $competition->is_open ) ? 'is-current is-success' : null; ?>">
 										<div class="list__value">
 											<?php esc_html_e( 'Entry opens', 'racketmanager' ); ?>
 										</div>
 										<div class="list__meta">
-											<?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['dateOpen'] ) ); ?>
+											<?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['date_open'] ) ); ?>
 										</div>
 									</li>
 									<?php
 								}
 								?>
 								<?php
-								if ( ! empty( $competition_season['closing_date'] ) ) {
+								if ( ! empty( $competition_season['date_close'] ) ) {
 									?>
 									<li class="list__item is-entry-closed <?php echo ( $competition->is_closed ) ? 'is-current is-warning' : null; ?>">
 										<div class="list__value">
 											<?php esc_html_e( 'Closing deadline', 'racketmanager' ); ?>
 										</div>
 										<div class="list__meta">
-											<?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['closing_date'] ) ); ?>
+											<?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['date_close'] ) ); ?>
 										</div>
 									</li>
 									<?php
@@ -95,7 +95,7 @@ namespace Racketmanager;
 										<?php esc_html_e( 'Start competition', 'racketmanager' ); ?>
 									</div>
 									<div class="list__meta">
-										<?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['dateStart'] ) ); ?>
+										<?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['date_start'] ) ); ?>
 									</div>
 								</li>
 								<li class="list__item is-finished <?php echo $competition->is_complete ? ' is-current is-danger' : null; ?>">
@@ -103,7 +103,7 @@ namespace Racketmanager;
 										<?php esc_html_e( 'End of competition', 'racketmanager' ); ?>
 									</div>
 									<div class="list__meta">
-										<?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['dateEnd'] ) ); ?>
+										<?php echo esc_html( mysql2date( $racketmanager->date_format, $competition_season['date_end'] ) ); ?>
 									</div>
 								</li>
 								<?php

@@ -60,7 +60,7 @@ $menu_options['players']  = array(
 $menu_options['winners']  = array(
 	'name'        => 'winners',
 	'selected'    => 'winners' === $tab ? true : false,
-	'available'   => ( empty( $competition_season['dateEnd'] ) || gmdate( 'Y-m-d' ) >= $competition_season['dateEnd'] ) ? true : false,
+	'available'   => ( empty( $competition_season['date_end'] ) || gmdate( 'Y-m-d' ) >= $competition_season['date_end'] ) ? true : false,
 	'description' => __( 'Winners', 'racketmanager' ),
 );
 ?>

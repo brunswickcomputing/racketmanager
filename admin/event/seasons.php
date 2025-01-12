@@ -58,8 +58,8 @@ namespace Racketmanager;
 						?>
 						<div class="col-2 col-lg-1">
 							<?php
-							if ( isset( $season['homeAway'] ) ) {
-								if ( $season['homeAway'] ) {
+							if ( isset( $season['home_away'] ) ) {
+								if ( $season['home_away'] ) {
 									echo 'both';
 								} else {
 									echo 'home only';
@@ -167,9 +167,9 @@ namespace Racketmanager;
 				?>
 				<div class="form-floating mb-3">
 					<select name="homeAway" id="homeAway" class="form-select">
-						<option disabled <?php echo isset( $event->settings['homeAway'] ) ? '' : 'selected'; ?>><?php esc_html_e( 'Choose format', 'racketmanager' ); ?></option>
-						<option value="false"<?php isset( $event->settings['homeAway'] ) ? selected( 'false', $event->settings['homeAway'] ) : ''; ?>><?php esc_html_e( 'Round Robin', 'racketmanager' ); ?></option>
-						<option value="true"<?php isset( $event->settings['homeAway'] ) ? selected( 'true', $event->settings['homeAway'] ) : ''; ?>><?php echo esc_html__( 'Round Robin', 'racketmanager' ) . ' - ' . esc_html__( 'Home and Away', 'racketmanager' ); ?></option>
+						<option disabled <?php echo isset( $event->settings['home_away'] ) ? '' : 'selected'; ?>><?php esc_html_e( 'Choose format', 'racketmanager' ); ?></option>
+						<option value="false"<?php isset( $event->settings['home_away'] ) ? selected( 'false', $event->settings['home_away'] ) : ''; ?>><?php esc_html_e( 'Round Robin', 'racketmanager' ); ?></option>
+						<option value="true"<?php isset( $event->settings['home_away'] ) ? selected( 'true', $event->settings['home_away'] ) : ''; ?>><?php echo esc_html__( 'Round Robin', 'racketmanager' ) . ' - ' . esc_html__( 'Home and Away', 'racketmanager' ); ?></option>
 					</select>
 					<label for="homeAway"><?php esc_html_e( 'Format', 'racketmanager' ); ?></label>
 				</div>

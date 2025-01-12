@@ -186,11 +186,11 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 								}
 							}
 							if ( $valid ) {
-								$tournament_season['matchDates'] = array();
+								$tournament_season['match_dates'] = array();
 								foreach ( array_reverse( $rounds ) as $match_date ) {
-									$tournament_season['matchDates'][] = $match_date;
+									$tournament_season['match_dates'][] = $match_date;
 								}
-								$tournament_season['num_match_days'] = count( $tournament_season['matchDates'] );
+								$tournament_season['num_match_days'] = count( $tournament_season['match_dates'] );
 								$competition                         = get_competition( $tournament->competition->id );
 								if ( $competition ) {
 									$tournament_seasons            = $competition->seasons;
@@ -224,7 +224,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 			if ( $tournament_id ) {
 				$tournament = get_tournament( $tournament_id );
 				if ( $tournament ) {
-					$match_dates = $tournament->competition->seasons[ $season ]['matchDates'];
+					$match_dates = $tournament->competition->seasons[ $season ]['match_dates'];
 					require RACKETMANAGER_PATH . 'admin/tournament/setup.php';
 				}
 			}
@@ -282,7 +282,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 								)
 							);
 							$tab         = 'matches';
-							$match_dates = empty( $league->event->seasons[ $season ]['matchDates'] ) ? $league->event->competition->seasons[ $season ]['matchDates'] : $league->event->seasons[ $season ]['matchDates'];
+							$match_dates = empty( $league->event->seasons[ $season ]['match_dates'] ) ? $league->event->competition->seasons[ $season ]['match_dates'] : $league->event->seasons[ $season ]['match_dates'];
 							require RACKETMANAGER_PATH . 'admin/tournament/setup.php';
 						}
 					}
@@ -308,11 +308,11 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 				$tournament->competition_id   = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
 				$tournament->season           = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
 				$tournament->venue            = isset( $_POST['venue'] ) ? intval( $_POST['venue'] ) : null;
-				$tournament->date_open        = isset( $_POST['date_open'] ) ? sanitize_text_field( wp_unslash( $_POST['date_open'] ) ) : null;
-				$tournament->date_closing     = isset( $_POST['date_close'] ) ? sanitize_text_field( wp_unslash( $_POST['date_close'] ) ) : null;
+				$tournament->date_open        = isset( $_POST['dateOpen'] ) ? sanitize_text_field( wp_unslash( $_POST['dateOpen'] ) ) : null;
+				$tournament->date_closing     = isset( $_POST['dateClose'] ) ? sanitize_text_field( wp_unslash( $_POST['dateClose'] ) ) : null;
 				$tournament->date_withdrawal  = isset( $_POST['date_withdraw'] ) ? sanitize_text_field( wp_unslash( $_POST['date_withdraw'] ) ) : null;
-				$tournament->date_start       = isset( $_POST['date_start'] ) ? sanitize_text_field( wp_unslash( $_POST['date_start'] ) ) : null;
-				$tournament->date             = isset( $_POST['date_end'] ) ? sanitize_text_field( wp_unslash( $_POST['date_end'] ) ) : null;
+				$tournament->date_start       = isset( $_POST['dateStart'] ) ? sanitize_text_field( wp_unslash( $_POST['dateStart'] ) ) : null;
+				$tournament->date             = isset( $_POST['dateEnd'] ) ? sanitize_text_field( wp_unslash( $_POST['dateEnd'] ) ) : null;
 				$tournament->starttime        = isset( $_POST['starttime'] ) ? sanitize_text_field( wp_unslash( $_POST['starttime'] ) ) : null;
 				$tournament->competition_code = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
 				$tournament->grade            = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
@@ -340,11 +340,11 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 						$tournament->name             = isset( $_POST['tournamentName'] ) ? sanitize_text_field( wp_unslash( $_POST['tournamentName'] ) ) : null;
 						$tournament->season           = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
 						$tournament->venue            = isset( $_POST['venue'] ) ? intval( $_POST['venue'] ) : null;
-						$tournament->date             = isset( $_POST['date_end'] ) ? sanitize_text_field( wp_unslash( $_POST['date_end'] ) ) : null;
-						$tournament->date_open        = isset( $_POST['date_open'] ) ? sanitize_text_field( wp_unslash( $_POST['date_open'] ) ) : null;
-						$tournament->date_closing     = isset( $_POST['date_close'] ) ? sanitize_text_field( wp_unslash( $_POST['date_close'] ) ) : null;
+						$tournament->date             = isset( $_POST['dateEnd'] ) ? sanitize_text_field( wp_unslash( $_POST['dateEnd'] ) ) : null;
+						$tournament->date_open        = isset( $_POST['dateOpen'] ) ? sanitize_text_field( wp_unslash( $_POST['dateOpen'] ) ) : null;
+						$tournament->date_closing     = isset( $_POST['dateClose'] ) ? sanitize_text_field( wp_unslash( $_POST['dateClose'] ) ) : null;
 						$tournament->date_withdrawal  = isset( $_POST['date_withdraw'] ) ? sanitize_text_field( wp_unslash( $_POST['date_withdraw'] ) ) : null;
-						$tournament->date_start       = isset( $_POST['date_start'] ) ? sanitize_text_field( wp_unslash( $_POST['date_start'] ) ) : null;
+						$tournament->date_start       = isset( $_POST['dateStart'] ) ? sanitize_text_field( wp_unslash( $_POST['dateStart'] ) ) : null;
 						$tournament->competition_code = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
 						$tournament->grade            = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
 						$success                      = $tournament->update( $tournament );
@@ -499,7 +499,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 										'id' => 'ASC',
 									),
 								);
-								if ( 'final' !== $finalkey && ! empty( $league->current_season['homeAway'] ) && 'true' === $league->current_season['homeAway'] ) {
+								if ( 'final' !== $finalkey && ! empty( $league->current_season['home_away'] ) && 'true' === $league->current_season['home_away'] ) {
 									$match_args['leg'] = 1;
 								}
 								$matches      = $league->get_matches( $match_args );
@@ -602,21 +602,21 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 			$season = isset( $competition->seasons[ $tournament->season ] ) ? $competition->seasons[ $tournament->season ] : null;
 			if ( $season ) {
 				$updates = false;
-				if ( empty( $season['dateOpen'] ) || $season['dateOpen'] !== $tournament->date_open ) {
-					$updates            = true;
-					$season['dateOpen'] = $tournament->date_open;
-				}
-				if ( empty( $season['dateEnd'] ) || $season['dateEnd'] !== $tournament->date ) {
-					$updates           = true;
-					$season['dateEnd'] = $tournament->date;
-				}
-				if ( empty( $season['dateStart'] ) || $season['dateStart'] !== $tournament->date_start ) {
+				if ( empty( $season['date_open'] ) || $season['date_open'] !== $tournament->date_open ) {
 					$updates             = true;
-					$season['dateStart'] = $tournament->date_start;
+					$season['date_open'] = $tournament->date_open;
 				}
-				if ( empty( $season['closing_date'] ) || $season['closing_date'] !== $tournament->date_closing ) {
-					$updates                = true;
-					$season['closing_date'] = $tournament->date_closing;
+				if ( empty( $season['date_end'] ) || $season['date_end'] !== $tournament->date ) {
+					$updates            = true;
+					$season['date_end'] = $tournament->date;
+				}
+				if ( empty( $season['date_start'] ) || $season['date_start'] !== $tournament->date_start ) {
+					$updates              = true;
+					$season['date_start'] = $tournament->date_start;
+				}
+				if ( empty( $season['date_close'] ) || $season['date_close'] !== $tournament->date_closing ) {
+					$updates              = true;
+					$season['date_close'] = $tournament->date_closing;
 				}
 				if ( empty( $season['competition_code'] ) ) {
 					if ( ! empty( $tournament->competition_code ) ) {
@@ -632,14 +632,14 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 					$season_data->season           = $season['name'];
 					$season_data->num_match_days   = $season['num_match_days'];
 					$season_data->object_id        = $competition->id;
-					$season_data->match_dates      = isset( $season['matchDates'] ) ? $season['matchDates'] : false;
-					$season_data->fixed_dates      = isset( $season['fixedMatchDates'] ) ? $season['fixedMatchDates'] : false;
-					$season_data->home_away        = isset( $season['homeAway'] ) ? $season['homeAway'] : false;
+					$season_data->match_dates      = isset( $season['match_dates'] ) ? $season['match_dates'] : false;
+					$season_data->fixed_dates      = isset( $season['fixed_match_dates'] ) ? $season['fixed_match_dates'] : false;
+					$season_data->home_away        = isset( $season['home_away'] ) ? $season['home_away'] : false;
 					$season_data->status           = 'live';
-					$season_data->date_open        = $season['dateOpen'];
-					$season_data->closing_date     = $season['closing_date'];
-					$season_data->date_start       = $season['dateStart'];
-					$season_data->date_end         = $season['dateEnd'];
+					$season_data->date_open        = $season['date_open'];
+					$season_data->closing_date     = $season['date_close'];
+					$season_data->date_start       = $season['date_start'];
+					$season_data->date_end         = $season['date_end'];
 					$season_data->competition_code = $season['competition_code'];
 					$season_data->type             = 'competition';
 					$season_data->is_box           = false;

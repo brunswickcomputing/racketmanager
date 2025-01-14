@@ -73,7 +73,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 		}
 		$racketmanager->printMessage();
 		if ( $competition ) {
-			require RACKETMANAGER_PATH . 'admin/cup/show-seasons.php';
+			require RACKETMANAGER_PATH . 'admin/includes/show-seasons.php';
 		}
 	}
 	/**

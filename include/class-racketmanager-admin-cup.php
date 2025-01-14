@@ -347,7 +347,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 						$racketmanager->printMessage();
 					} else {
 						$racketmanager->set_message( __( 'Season added to cup', 'racketmanager' ) );
-						$this->schedule_cup_activities( $competition->id, $cup_season );
+						$this->schedule_open_activities( $competition->id, $cup_season );
 					}
 				} else {
 					$racketmanager->set_message( __( 'Competition not found', 'racketmanager' ), true );
@@ -380,7 +380,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 							$cup_season->home_away         = isset( $_POST['homeAway'] ) ? ( 'true' === $_POST['homeAway'] ? true : false ) : false;
 							$cup_season->grade             = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
 							$this->set_competition_dates( $cup_season, $competition );
-							$this->schedule_cup_activities( $competition->id, $cup_season );
+							$this->schedule_open_activities( $competition->id, $cup_season );
 						} else {
 							$racketmanager->set_message( __( 'Season not found', 'racketmanager' ), true );
 						}
@@ -829,11 +829,11 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 	 * @param object $season season name.
 	 * @return void
 	 */
-	private function schedule_cup_activities( $competition_id, $season ) {
+	private function schedule_open_activities( $competition_id, $season ) {
 		$competition = get_competition( $competition_id );
 		if ( $competition && ( $competition->is_pending || $competition->is_open ) ) {
 			$this->schedule_cup_ratings( $competition_id, $season );
-			$this->schedule_cup_emails( $competition_id, $season );
+			$this->schedule_team_competition_emails( $competition_id, $season );
 		}
 	}
 	/**
@@ -865,49 +865,6 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 		$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
 		if ( ! $success ) {
 			$racketmanager->set_message( __( 'Error scheduling cup ratings calculation', 'racketmanager' ), true );
-		}
-	}
-	/**
-	 * Schedule cup emails function
-	 *
-	 * @param int    $competition_id competition id.
-	 * @param object $season season name.
-	 * @return void
-	 */
-	private function schedule_cup_emails( $competition_id, $season ) {
-		global $racketmanager;
-		if ( empty( $season->date_open ) ) {
-			$day            = intval( gmdate( 'd' ) );
-			$month          = intval( gmdate( 'm' ) );
-			$year           = intval( gmdate( 'Y' ) );
-			$hour           = intval( gmdate( 'H' ) );
-			$schedule_start = mktime( $hour, 0, 0, $month, $day, $year );
-		} else {
-			$schedule_date  = strtotime( $season->date_open );
-			$day            = intval( gmdate( 'd', $schedule_date ) );
-			$month          = intval( gmdate( 'm', $schedule_date ) );
-			$year           = intval( gmdate( 'Y', $schedule_date ) );
-			$schedule_start = mktime( 00, 00, 01, $month, $day, $year );
-		}
-		$schedule_name   = 'rm_notify_team_entry_open';
-		$schedule_args[] = intval( $competition_id );
-		$schedule_args[] = intval( $season->name );
-		Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
-		$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
-		if ( ! $success ) {
-			$racketmanager->set_message( __( 'Error scheduling cup open emails', 'racketmanager' ), true );
-		} elseif ( ! empty( $season->closing_date ) ) {
-			$chase_date     = strtotime( $season->closing_date . ' -7 day' );
-			$day            = intval( gmdate( 'd', $chase_date ) );
-			$month          = intval( gmdate( 'm', $chase_date ) );
-			$year           = intval( gmdate( 'Y', $chase_date ) );
-			$schedule_start = mktime( 00, 00, 01, $month, $day, $year );
-			$schedule_name  = 'rm_notify_team_entry_reminder';
-			Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
-			$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
-			if ( ! $success ) {
-				$racketmanager->set_message( __( 'Error scheduling cup reminder emails', 'racketmanager' ), true );
-			}
 		}
 	}
 }

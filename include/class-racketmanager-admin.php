@@ -403,13 +403,13 @@ class RacketManager_Admin extends RacketManager {
 				$racketmanager_admin_cup = new RacketManager_Admin_Cup();
 				if ( 'modify' === $view ) {
 					$racketmanager_admin_cup->display_cup_page();
-				} elseif ( 'season' === $view ) {
+				} elseif ( 'overview' === $view ) {
 					$racketmanager_admin_cup->display_cup_overview_page();
 				} elseif ( 'setup' === $view ) {
 					$racketmanager_admin_cup->display_cup_setup_page();
 				} elseif ( 'setup-event' === $view ) {
 					$racketmanager_admin_cup->display_cup_setup_event_page();
-				} elseif ( 'cup' === $view ) {
+				} elseif ( 'seasons' === $view ) {
 					$racketmanager_admin_cup->display_cup_seasons_page();
 				} elseif ( 'draw' === $view ) {
 					$racketmanager_admin_cup->display_cup_draw_page();
@@ -5443,6 +5443,49 @@ class RacketManager_Admin extends RacketManager {
 			$racketmanager->set_message( $message, true );
 		}
 		$racketmanager->printMessage();
+	}
+	/**
+	 * Schedule emails function
+	 *
+	 * @param int    $competition_id competition id.
+	 * @param object $season season name.
+	 * @return void
+	 */
+	protected function schedule_team_competition_emails( $competition_id, $season ) {
+		global $racketmanager;
+		if ( empty( $season->date_open ) ) {
+			$day            = intval( gmdate( 'd' ) );
+			$month          = intval( gmdate( 'm' ) );
+			$year           = intval( gmdate( 'Y' ) );
+			$hour           = intval( gmdate( 'H' ) );
+			$schedule_start = mktime( $hour, 0, 0, $month, $day, $year );
+		} else {
+			$schedule_date  = strtotime( $season->date_open );
+			$day            = intval( gmdate( 'd', $schedule_date ) );
+			$month          = intval( gmdate( 'm', $schedule_date ) );
+			$year           = intval( gmdate( 'Y', $schedule_date ) );
+			$schedule_start = mktime( 00, 00, 01, $month, $day, $year );
+		}
+		$schedule_name   = 'rm_notify_team_entry_open';
+		$schedule_args[] = intval( $competition_id );
+		$schedule_args[] = intval( $season->name );
+		Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+		$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
+		if ( ! $success ) {
+			$racketmanager->set_message( __( 'Error scheduling team competition open emails', 'racketmanager' ), true );
+		} elseif ( ! empty( $season->date_closing ) ) {
+			$chase_date     = strtotime( $season->date_closing . ' -7 day' );
+			$day            = intval( gmdate( 'd', $chase_date ) );
+			$month          = intval( gmdate( 'm', $chase_date ) );
+			$year           = intval( gmdate( 'Y', $chase_date ) );
+			$schedule_start = mktime( 00, 00, 01, $month, $day, $year );
+			$schedule_name  = 'rm_notify_team_entry_reminder';
+			Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+			$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
+			if ( ! $success ) {
+				$racketmanager->set_message( __( 'Error scheduling team competition emails', 'racketmanager' ), true );
+			}
+		}
 	}
 }
 ?>

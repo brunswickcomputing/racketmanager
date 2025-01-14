@@ -477,11 +477,11 @@ final class Racketmanager_Tournament {
 		if ( empty( $tournament->date_closing ) ) {
 			$valid     = false;
 			$err_msg[] = __( 'Closing date is required', 'racketmanager' );
-			$err_fld[] = 'date_close';
+			$err_fld[] = 'date_closing';
 		} elseif ( ! empty( $tournament->date_open ) && $tournament->date_closing <= $tournament->date_open ) {
 			$valid     = false;
 			$err_msg[] = __( 'Closing date must be after open date', 'racketmanager' );
-			$err_fld[] = 'date_close';
+			$err_fld[] = 'date_closing';
 		}
 		if ( empty( $tournament->date_withdrawal ) ) {
 			$valid     = false;
@@ -490,7 +490,7 @@ final class Racketmanager_Tournament {
 		} elseif ( ! empty( $tournament->date_closing ) && $tournament->date_withdrawal <= $tournament->date_closing ) {
 			$valid     = false;
 			$err_msg[] = __( 'Withdrawal date must be after closing date', 'racketmanager' );
-			$err_fld[] = 'date_close';
+			$err_fld[] = 'date_closing';
 		}
 		if ( empty( $tournament->date_start ) ) {
 			$valid     = false;

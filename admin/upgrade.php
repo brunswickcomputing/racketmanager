@@ -1161,9 +1161,9 @@ function racketmanager_upgrade() {
 						unset( $season['dateStart'] );
 					}
 				}
-				if ( ! isset( $season['date_close'] ) ) {
+				if ( ! isset( $season['date_closing'] ) ) {
 					if ( isset( $season['closing_date'] ) ) {
-						$season['date_close'] = $season['closing_date'];
+						$season['date_closing'] = $season['closing_date'];
 						unset( $season['closing_date'] );
 					}
 				}
@@ -1211,9 +1211,9 @@ function racketmanager_upgrade() {
 						unset( $season['dateStart'] );
 					}
 				}
-				if ( ! isset( $season['date_close'] ) ) {
+				if ( ! isset( $season['date_closing'] ) ) {
 					if ( isset( $season['closing_date'] ) ) {
-						$season['date_close'] = $season['closing_date'];
+						$season['date_closing'] = $season['closing_date'];
 						unset( $season['closing_date'] );
 					}
 				}

@@ -78,7 +78,7 @@ namespace Racketmanager;
 								</div>
 								<?php
 							}
-						} elseif ( ! empty( $season['date_close'] ) && $today <= $season['date_close'] && ! empty( $season['date_open'] ) && $today >= $season['date_open'] ) {
+						} elseif ( ! empty( $season['date_closing'] ) && $today <= $season['date_closing'] && ! empty( $season['date_open'] ) && $today >= $season['date_open'] ) {
 							?>
 							<div class="col-auto">
 								<button href="" /index.php?competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $key ); ?> class="btn btn-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Notify open', 'racketmanager' ); ?>" onclick="Racketmanager.notify_open(event, <?php echo esc_html( $competition->id ) . ',' . esc_html( $key ); ?> )">

@@ -691,7 +691,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 		}
 		if ( empty( $cup_season->closing_date ) ) {
 			$racketmanager->error_messages[] = __( 'Closing date must be set', 'racketmanager' );
-			$racketmanager->error_fields[]   = 'date_close';
+			$racketmanager->error_fields[]   = 'date_closing';
 		}
 		if ( empty( $cup_season->venue ) ) {
 			$racketmanager->error_messages[] = __( 'Venue must be set', 'racketmanager' );
@@ -724,9 +724,9 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 					$updates              = true;
 					$season['date_start'] = $cup_season->date_start;
 				}
-				if ( empty( $season['date_close'] ) || $season['date_close'] !== $cup_season->closing_date ) {
-					$updates              = true;
-					$season['date_close'] = $cup_season->closing_date;
+				if ( empty( $season['date_closing'] ) || $season['date_closing'] !== $cup_season->closing_date ) {
+					$updates                = true;
+					$season['date_closing'] = $cup_season->closing_date;
 				}
 				if ( $season['venue'] !== $cup_season->venue ) {
 					$updates         = true;
@@ -765,7 +765,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 					$season_data->home_away        = isset( $season['home_away'] ) ? $season['home_away'] : false;
 					$season_data->status           = 'live';
 					$season_data->date_open        = $season['date_open'];
-					$season_data->closing_date     = $season['date_close'];
+					$season_data->closing_date     = $season['date_closing'];
 					$season_data->date_start       = $season['date_start'];
 					$season_data->date_end         = $season['date_end'];
 					$season_data->competition_code = $season['competition_code'];

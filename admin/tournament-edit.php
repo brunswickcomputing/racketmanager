@@ -276,9 +276,9 @@ $is_invalid = false;
 				<div class="col-md-4">
 					<div class="form-floating mb-3">
 						<?php
-						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'date_close', $racketmanager->error_fields, true ) ) ) {
+						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'date_closing', $racketmanager->error_fields, true ) ) ) {
 							$is_invalid = true;
-							$msg_id     = array_search( 'date_close', $racketmanager->error_fields, true );
+							$msg_id     = array_search( 'date_closing', $racketmanager->error_fields, true );
 							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
 						}
 						?>

@@ -651,7 +651,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 						$withdraw_leadtime = 3;
 						break;
 				}
-				$date_close    = gmdate( 'Y-m-d', strtotime( $date_start . ' -' . $closing_leadtime . ' day' ) );
+				$date_closing  = gmdate( 'Y-m-d', strtotime( $date_start . ' -' . $closing_leadtime . ' day' ) );
 				$date_withdraw = gmdate( 'Y-m-d', strtotime( $date_start . ' -' . $withdraw_leadtime . ' day' ) );
 			} else {
 				$return->error = true;
@@ -663,7 +663,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 		} else {
 			$return->msg           = __( 'Dates set', 'racketmanager' );
 			$return->date_open     = $date_open;
-			$return->date_close    = $date_close;
+			$return->date_closing  = $date_closing;
 			$return->date_withdraw = $date_withdraw;
 			wp_send_json_success( $return );
 		}

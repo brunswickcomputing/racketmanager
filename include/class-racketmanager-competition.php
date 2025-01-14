@@ -514,7 +514,7 @@ class Racketmanager_Competition {
 			if ( ! empty( $this->current_season['venue_name'] ) ) {
 				$this->venue = $this->current_season['venue_name'];
 			}
-			if ( isset( $this->current_season['date_close'] ) && $this->current_season['date_close'] < gmdate( 'Y-m-d' ) ) {
+			if ( isset( $this->current_season['date_closing'] ) && $this->current_season['date_closing'] < gmdate( 'Y-m-d' ) ) {
 				$this->is_active = true;
 			} else {
 				$this->is_active = false;
@@ -766,7 +766,7 @@ class Racketmanager_Competition {
 		} elseif ( ! empty( $data['date_start'] ) && $today >= $data['date_start'] ) {
 			$this->current_phase = 'start';
 			$this->is_started    = true;
-		} elseif ( ! empty( $data['date_close'] ) && $today > $data['date_close'] ) {
+		} elseif ( ! empty( $data['date_closing'] ) && $today > $data['date_closing'] ) {
 			$this->current_phase = 'close';
 			$this->is_closed     = true;
 		} elseif ( ! empty( $data['date_open'] ) ) {

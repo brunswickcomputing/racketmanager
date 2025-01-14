@@ -766,7 +766,7 @@ class RacketManager {
 							}
 							$is_championship = true;
 						}
-						$date_closing     = date_create( $season_dtls->closing_date );
+						$date_closing     = date_create( $season_dtls->date_closing );
 						$now              = date_create();
 						$remaining_time   = date_diff( $date_closing, $now, true );
 						$days_remaining   = $remaining_time->days;

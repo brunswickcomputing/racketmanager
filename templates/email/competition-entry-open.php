@@ -12,7 +12,7 @@ $salutation_link = $addressee;
 require 'components/salutation.php';
 if ( empty( $days_remaining ) ) {
 	/* translators: %1$s: competition name %2$s: closing date */
-	$paragraph_text = sprintf( __( 'The entry form for the %1$s is now available. The closing date for entries is %2$s.', 'racketmanager' ), ucfirst( $competition ), mysql2date( $racketmanager->date_format, $season_dtls->closing_date ) );
+	$paragraph_text = sprintf( __( 'The entry form for the %1$s is now available. The closing date for entries is %2$s.', 'racketmanager' ), ucfirst( $competition ), mysql2date( $racketmanager->date_format, $season_dtls->date_closing ) );
 } else {
 	/* translators: %1$s: days remaining %2$s: competition name */
 	$paragraph_text = sprintf( __( 'There are now less than %1$s days left before the closing date of the %2$s.', 'racketmanager' ), $days_remaining, ucfirst( $competition ) );

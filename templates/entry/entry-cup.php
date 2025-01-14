@@ -54,11 +54,11 @@ if ( ! empty( $club->entry ) ) {
 								<?php echo esc_html( $form_title ); ?>
 							</h3>
 							<?php
-							if ( ! empty( $competition->closing_date ) ) {
+							if ( ! empty( $competition->date_closing ) ) {
 								?>
 								<span class="hgroup__subheading">
 									<?php esc_html_e( 'Entry deadline', 'racketmanager' ); ?>
-									<time datetime="<?php echo esc_attr( $competition->closing_date ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, $competition->closing_date ) ); ?></time>
+									<time datetime="<?php echo esc_attr( $competition->date_closing ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, $competition->date_closing ) ); ?></time>
 								</span>
 								<?php
 							}

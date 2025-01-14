@@ -44,7 +44,7 @@ namespace Racketmanager;
 					</tr>
 					<tr>
 						<td class="col-6 col-md-3"><?php esc_html_e( 'Entry closed', 'racketmanager' ); ?></td>
-						<td class="col-auto"><?php echo isset( $cup_season->closing_date ) ? esc_html( $cup_season->closing_date ) : null; ?></td>
+						<td class="col-auto"><?php echo isset( $cup_season->date_closing ) ? esc_html( $cup_season->date_closing ) : null; ?></td>
 					</tr>
 					<tr>
 						<td class="col-6 col-md-3"><?php esc_html_e( 'Start', 'racketmanager' ); ?></td>

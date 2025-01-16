@@ -872,4 +872,20 @@ class Racketmanager_Util {
 		$age_limits = self::get_age_limits();
 		return empty( $age_limits[ $age_limit ] ) ? __( 'Unknown', 'racketmanager' ) : $age_limits[ $age_limit ];
 	}
+	/**
+	 * Amend date function
+	 *
+	 * @param string $date date.
+	 * @param int    $adjustment_value adjustment value.
+	 * @param string $adjustment_type adjustment type default to '+'.
+	 * @param string $adjustment_period adjustment period default to 'day'.
+	 * @return string new date.
+	 */
+	public static function amend_date( $date, $adjustment_value, $adjustment_type = '+', $adjustment_period = 'day' ) {
+		if ( $date && $adjustment_value ) {
+			return gmdate( 'Y-m-d', strtotime( $date . ' ' . $adjustment_type . $adjustment_value . $adjustment_period ) );
+		} else {
+			return $date;
+		}
+	}
 }

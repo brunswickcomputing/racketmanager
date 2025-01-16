@@ -1935,4 +1935,18 @@ class Racketmanager_Event {
 		$this->update_seasons( $seasons );
 		$racketmanager->set_message( __( 'Season added', 'racketmanager' ) );
 	}
+	/**
+	 * Update season
+	 *
+	 * @param array $season season data.
+	 */
+	public function update_season( $season ) {
+		global $racketmanager;
+		$seasons                 = $this->seasons;
+		$season_name             = $season['name'];
+		$seasons[ $season_name ] = $season;
+		ksort( $seasons );
+		$this->update_seasons( $seasons );
+		$racketmanager->set_message( __( 'Season updated', 'racketmanager' ) );
+	}
 }

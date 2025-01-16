@@ -1640,7 +1640,8 @@ final class Racketmanager_Match {
 		if ( ! empty( $match_day ) ) {
 			$day = Racketmanager_Util::get_match_day_number( $match_day );
 			if ( ! empty( $match_time ) ) {
-				$match_date = gmdate( 'Y-m-d', strtotime( $start_date . " +$day day" ) ) . ' ' . $match_time;
+				$match_date = Racketmanager_Util::amend_date( $start_date, $day );
+				$match_date = $match_date . ' ' . $match_time;
 				$this->update_match_date( $match_date );
 			}
 		}

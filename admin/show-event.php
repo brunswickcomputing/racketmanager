@@ -97,9 +97,9 @@ jQuery(document).ready(function(){
 										$prev_round       = end( $event->seasons );
 										$prev_round_num   = $prev_round['name'];
 										$prev_round_end   = $prev_round['match_dates'][1];
-										$next_round_start = gmdate( 'Y-m-d', strtotime( $prev_round_end . ' +1 day' ) );
+										$next_round_start = Racketmanager_Util::amend_date( $prev_round_end, 1 );
 										$event_duration   = $event->duration - 1;
-										$next_round_end   = gmdate( 'Y-m-d', strtotime( $next_round_start . ' +' . $event_duration . ' day' ) );
+										$next_round_end   = Racketmanager_Util::amend_date( $next_round_start, $event_duration );
 									} else {
 										$prev_round_num   = 0;
 										$next_round_start = null;

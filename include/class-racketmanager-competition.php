@@ -505,10 +505,7 @@ class Racketmanager_Competition {
 			if ( ! empty( $this->current_season['date_end'] ) ) {
 				$this->date_end = $this->current_season['date_end'];
 			} else {
-				$end_date = isset( $this->current_season['match_dates'] ) ? end( $this->current_season['match_dates'] ) : null;
-				if ( $end_date ) {
-					$end_date       = gmdate( 'Y-m-d', strtotime( $end_date . ' +14 day' ) );
-					$this->date_end = $end_date;
+					$this->date_end = Racketmanager_Util::amend_date( $last_round, 14 );
 				}
 			}
 			if ( ! empty( $this->current_season['venue_name'] ) ) {

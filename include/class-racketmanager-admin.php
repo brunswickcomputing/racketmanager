@@ -5474,7 +5474,7 @@ class RacketManager_Admin extends RacketManager {
 		if ( ! $success ) {
 			$racketmanager->set_message( __( 'Error scheduling team competition open emails', 'racketmanager' ), true );
 		} elseif ( ! empty( $season->date_closing ) ) {
-			$chase_date     = strtotime( $season->date_closing . ' -7 day' );
+			$chase_date     = Racketmanager_Util::amend_date( $season->date_closing, 7, '-' );
 			$day            = intval( gmdate( 'd', $chase_date ) );
 			$month          = intval( gmdate( 'm', $chase_date ) );
 			$year           = intval( gmdate( 'Y', $chase_date ) );

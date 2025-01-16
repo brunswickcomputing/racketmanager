@@ -920,7 +920,7 @@ final class Racketmanager_Tournament {
 			$hour           = intval( gmdate( 'H' ) );
 			$schedule_start = mktime( $hour, 0, 0, $month, $day, $year );
 		} else {
-			$schedule_date  = strtotime( $this->date_open . ' -1 day' );
+			$schedule_date  = Racketmanager_Util::amend_date( $this->date_open, 1, '-' );
 			$day            = intval( gmdate( 'd', $schedule_date ) );
 			$month          = intval( gmdate( 'm', $schedule_date ) );
 			$year           = intval( gmdate( 'Y', $schedule_date ) );
@@ -983,7 +983,7 @@ final class Racketmanager_Tournament {
 		if ( ! $success ) {
 			$racketmanager->set_message( __( 'Error scheduling tournament open emails', 'racketmanager' ), true );
 		} elseif ( ! empty( $this->date_closing ) ) {
-			$chase_date     = strtotime( $this->date_closing . ' -7 day' );
+			$chase_date     = Racketmanager_Util::amend_date( $this->date_closing, 7, '-' );
 			$day            = intval( gmdate( 'd', $chase_date ) );
 			$month          = intval( gmdate( 'm', $chase_date ) );
 			$year           = intval( gmdate( 'Y', $chase_date ) );

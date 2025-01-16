@@ -3651,8 +3651,8 @@ class Racketmanager_League {
 						$match_day        = $home_team_dtls->match_day;
 						$match_time       = $home_team_dtls->match_time;
 						$day              = Racketmanager_Util::get_match_day_number( $match_day );
-						$match_date       = gmdate( 'Y-m-d', strtotime( $start_date . " +$day day" ) ) . ' ' . $match_time;
-						$match->date      = $match_date;
+						$match_date       = Racketmanager_Util::amend_date( $start_date, $day );
+						$match->date      = $match_date . ' ' . $match_time;
 						$match->match_day = $round_number;
 						$match->location  = $home_team_dtls->club->shortcode;
 					}
@@ -3672,7 +3672,7 @@ class Racketmanager_League {
 		if ( $this->is_championship && ! empty( $this->event->current_season['home_away'] ) && ( 'true' === $this->event->current_season['home_away'] || true === $this->event->current_season['home_away'] ) && 'final' !== $match->final_round ) {
 			$match->leg              = 1;
 			$new_match               = clone $match;
-			$new_match->date         = gmdate( 'Y-m-d H:i:s', strtotime( $match->date . ' +14 day' ) );
+			$new_match_date          = Racketmanager_Util::amend_date( $match->date, $days_diff );
 			$new_match->id           = null;
 			$new_match->linked_match = $match->id;
 			$new_match->leg          = $match->leg + 1;

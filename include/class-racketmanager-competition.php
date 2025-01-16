@@ -1842,4 +1842,18 @@ class Racketmanager_Competition {
 			return false;
 		}
 	}
+	/**
+	 * Add season
+	 *
+	 * @param array $season season data.
+	 */
+	public function add_season( $season ) {
+		global $racketmanager;
+		$seasons                 = $this->seasons;
+		$season_name             = $season['name'];
+		$seasons[ $season_name ] = $season;
+		$this->update_seasons( $seasons );
+		$racketmanager->set_message( __( 'Season added', 'racketmanager' ) );
+	}
+	/**
 }

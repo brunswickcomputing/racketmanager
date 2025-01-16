@@ -627,7 +627,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 			$date_start = isset( $_POST['dateStart'] ) ? sanitize_text_field( wp_unslash( $_POST['dateStart'] ) ) : null;
 			if ( $date_start ) {
 				$entry_leadtime = 46;
-				$date_open      = gmdate( 'Y-m-d', strtotime( $date_start . ' -' . $entry_leadtime . ' day' ) );
+				$date_open      = Racketmanager_Util::amend_date( $date_start, $entry_leadtime, '-' );
 				switch ( $grade ) {
 					case '1':
 					case '2':
@@ -651,8 +651,8 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 						$withdraw_leadtime = 3;
 						break;
 				}
-				$date_closing  = gmdate( 'Y-m-d', strtotime( $date_start . ' -' . $closing_leadtime . ' day' ) );
-				$date_withdraw = gmdate( 'Y-m-d', strtotime( $date_start . ' -' . $withdraw_leadtime . ' day' ) );
+				$date_closing  = Racketmanager_Util::amend_date( $date_start, $closing_leadtime, '-' );
+				$date_withdraw = Racketmanager_Util::amend_date( $date_start, $withdraw_leadtime, '-' );
 			} else {
 				$return->error = true;
 				$return->msg   = __( 'No start date specified', 'racketmanager' );

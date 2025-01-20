@@ -46,7 +46,7 @@ namespace Racketmanager;
 						break;
 					case 'cup':
 						if ( ! empty( $standalone ) ) {
-							$sub_page = 'view=' . $competition->type;
+							$sub_page = 'view=seasons';
 							$page_ref = 'racketmanager-' . $competition->type . 's';
 						}
 						$competition_type = __( 'Cup', 'racketmanager' );

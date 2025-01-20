@@ -285,7 +285,7 @@ $breadcrumb .= $action_text;
 							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
 						}
 						?>
-						<input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateClose" id="dateClose" value="<?php echo isset( $cup_season->closing_date ) ? esc_html( $cup_season->closing_date ) : null; ?>" size="20" />
+						<input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateClose" id="dateClose" value="<?php echo isset( $cup_season->date_closing ) ? esc_html( $cup_season->date_closing ) : null; ?>" size="20" />
 						<label for="dateClose" class="form-label"><?php esc_html_e( 'Closing Date', 'racketmanager' ); ?></label>
 						<?php
 						if ( $is_invalid ) {

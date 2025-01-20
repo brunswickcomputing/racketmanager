@@ -2835,7 +2835,7 @@ class RacketManager {
 			$search_terms[] = $wpdb->prepare( '`title` like %s', $name );
 		}
 		if ( $competition_type ) {
-			$search_terms[] = $wpdb->prepare( "`event_id` in (select e.`id` from {$wpdb->racketmanager_events} e, {$wpdb->racketmanager_competitions} c WHERE e.`competition_id` = c.id` AND c.`type` = %s)", $competition_type );
+			$search_terms[] = $wpdb->prepare( "`event_id` in (select e.`id` from {$wpdb->racketmanager_events} e, {$wpdb->racketmanager_competitions} c WHERE e.`competition_id` = c.`id` AND c.`type` = %s)", $competition_type );
 		}
 		$search = '';
 		if ( ! empty( $search_terms ) ) {

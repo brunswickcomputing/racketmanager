@@ -8,7 +8,7 @@
 namespace Racketmanager;
 
 $is_invalid = false;
-$breadcrumb = '<a href="admin.php?page=racketmanager-' . $competition->type . 's">' . ucfirst( $competition->type ) . 's</a> &raquo; <a href="admin.php?page=racketmanager-' . $competition->type . 's&amp;view=cup&amp;competition_id=' . $competition->id . '">' . $competition->name . '</a> &raquo; ';
+$breadcrumb = '<a href="admin.php?page=racketmanager-' . $competition->type . 's">' . ucfirst( $competition->type ) . 's</a> &raquo; <a href="admin.php?page=racketmanager-' . $competition->type . 's&amp;view=seasons&amp;competition_id=' . $competition->id . '">' . $competition->name . '</a> &raquo; ';
 if ( empty( $cup_season->name ) ) {
 	$add_season    = true;
 	$modify_season = false;

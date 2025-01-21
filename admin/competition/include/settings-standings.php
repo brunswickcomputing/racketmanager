@@ -6,11 +6,13 @@
  * @package Racketmanager_admin
  */
 
+namespace Racketmanager;
+
 ?>
 <div class="form-group">
 	<?php
 	$i = 0;
-	foreach ( $this->get_standings_display_options() as $key => $label ) {
+	foreach ( Racketmanager_Util::get_standings_display_options() as $key => $label ) {
 		++$i;
 		?>
 		<div class="form-check">

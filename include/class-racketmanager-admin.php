@@ -5239,10 +5239,18 @@ class RacketManager_Admin extends RacketManager {
 	 */
 	public function printMessage() {
 		if ( ! empty( $this->message ) ) {
-			if ( $this->error ) {
-				$alert_class = 'danger';
-			} else {
-				$alert_class = 'success';
+			switch ( $this->error ) {
+				case 'error':
+					$alert_class = 'danger';
+					break;
+				case 'warning':
+					$alert_class = 'warning';
+					break;
+				case 'info':
+					$alert_class = 'info';
+					break;
+				default:
+					$alert_class = 'success';
 			}
 			ob_start();
 			?>

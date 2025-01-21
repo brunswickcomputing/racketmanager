@@ -3201,7 +3201,7 @@ class RacketManager_Admin extends RacketManager {
 					if ( $updates ) {
 						$this->set_message( __( 'Charges updated', 'racketmanager' ) );
 					} else {
-						$this->set_message( __( 'No updates', 'racketmanager' ), true );
+						$this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
 					}
 				} else {
 					$charges                 = new \stdClass();

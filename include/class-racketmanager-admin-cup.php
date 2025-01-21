@@ -775,7 +775,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 					$season_data->grade            = $season['grade'];
 					$this->edit_season( $season_data );
 				} else {
-					$racketmanager->set_message( __( 'No updates', 'racketmanager' ), true );
+					$racketmanager->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
 				}
 			} else {
 				$competition_season = $this->add_season_to_competition( $cup_season->name, $competition->id );

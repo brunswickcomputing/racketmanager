@@ -2360,7 +2360,15 @@ class RacketManager {
 	 * @param boolean $error triggers error message if true.
 	 */
 	public function set_message( $message, $error = false ) {
-		$this->error   = $error;
+		if ( true === $error ) {
+			$this->error = 'error';
+		} elseif ( 'warning' === $error ) {
+			$this->error = $error;
+		} elseif ( 'info' === $error ) {
+			$this->error = $error;
+		} else {
+			$this->error = false;
+		}
 		$this->message = $message;
 	}
 

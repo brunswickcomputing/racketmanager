@@ -35,7 +35,7 @@ use Racketmanager\Racketmanager_Util as util;
 <div class="form-floating mb-3 col-12 col-xl-2">
 	<select class="form-select" size="1" name="settings[sport]" id="sport">
 		<?php
-		foreach ( $this->get_league_types() as $i => $name ) {
+		foreach ( Racketmanager_Util::get_sports() as $i => $name ) {
 			?>
 			<option value="<?php echo esc_html( $i ); ?>"<?php selected( $i, $competition->sport ); ?>><?php echo esc_html( $name ); ?></option>
 		<?php } ?>

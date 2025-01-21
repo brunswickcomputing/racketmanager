@@ -548,7 +548,7 @@ final class Racketmanager_Tournament {
 			$racketmanager->set_message( __( 'Tournament updated', 'racketmanager' ) );
 			$update = true;
 		} else {
-			$racketmanager->set_message( __( 'No updates', 'racketmanager' ) );
+			$racketmanager->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
 		}
 		return $update;
 	}
@@ -608,7 +608,7 @@ final class Racketmanager_Tournament {
 			wp_cache_set( $this->id, $this, 'tournaments' );
 			$racketmanager->set_message( __( 'Tournament plan updated', 'racketmanager' ) );
 		} else {
-			$racketmanager->set_message( __( 'No updates', 'racketmanager' ) );
+			$racketmanager->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
 		}
 		return true;
 	}
@@ -664,7 +664,7 @@ final class Racketmanager_Tournament {
 		if ( $updates ) {
 			$racketmanager->set_message( __( 'Tournament plan reset', 'racketmanager' ) );
 		} else {
-			$racketmanager->set_message( __( 'No updates', 'racketmanager' ) );
+			$racketmanager->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
 		}
 		return $updates;
 	}

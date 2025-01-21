@@ -888,4 +888,53 @@ class Racketmanager_Util {
 			return $date;
 		}
 	}
+	/**
+	 * Get sports
+	 *
+	 * @return array
+	 */
+	public static function get_sports() {
+		$types = array();
+		/**
+		* Add custom league types
+		*
+		* @param array $types
+		* @return array
+		* @category wp-filter
+		*/
+		$types = apply_filters( 'racketmanager_sports', $types );
+		asort( $types );
+
+		return $types;
+	}
+	/**
+	 * Get ranking types function
+	 *
+	 * @return array
+	 */
+	public static function get_ranking_types() {
+		$ranking_types           = array();
+		$ranking_types['auto']   = __( 'Automatic', 'racketmanager' );
+		$ranking_types['manual'] = __( 'Manual', 'racketmanager' );
+		return $ranking_types;
+	}
+	/**
+	 * Get standings display options
+	 *
+	 * @return array
+	 */
+	public static function get_standings_display_options() {
+		$options = array(
+			'status'     => __( 'Team Status', 'racketmanager' ),
+			'pld'        => __( 'Played Games', 'racketmanager' ),
+			'won'        => __( 'Won Games', 'racketmanager' ),
+			'tie'        => __( 'Tie Games', 'racketmanager' ),
+			'lost'       => __( 'Lost Games', 'racketmanager' ),
+			'winPercent' => __( 'Win Percentage', 'racketmanager' ),
+			'last5'      => __( 'Last 5 Matches', 'racketmanager' ),
+			'sets'       => __( 'Sets', 'racketmanager' ),
+			'games'      => __( 'Games', 'racketmanager' ),
+		);
+		return $options;
+	}
 }

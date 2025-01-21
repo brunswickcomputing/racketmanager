@@ -329,7 +329,7 @@ final class Racketmanager_Club {
 		}
 
 		if ( 'error' === $type_name ) {
-			$racketmanager->set_message( __( 'Type not selected', 'racketmanager' ), 'error' );
+			$racketmanager->set_message( __( 'Type not selected', 'racketmanager' ), true );
 			return false;
 		}
 		$team_count = $this->has_teams( $type );

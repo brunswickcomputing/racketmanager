@@ -423,7 +423,7 @@ final class Racketmanager_Player {
 		}
 
 		if ( ! $update ) {
-			$racketmanager->set_message( __( 'No updates', 'racketmanager' ) );
+			$racketmanager->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
 			return;
 		}
 		wp_cache_set( $this->id, $this, 'players' );

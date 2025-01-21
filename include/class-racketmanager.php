@@ -1145,15 +1145,7 @@ class RacketManager {
 			'sets'       => __( 'Sets', 'racketmanager' ),
 			'games'      => __( 'Games', 'racketmanager' ),
 		);
-
-		/**
-		* Fires when standings options are generated
-		*
-		* @param array $options
-		* @return array
-		* @category wp-filter
-		*/
-		return apply_filters( 'racketmanager_competition_standings_options', $options );
+		return $options;
 	}
 
 	/**
@@ -2371,27 +2363,6 @@ class RacketManager {
 		}
 		$this->message = $message;
 	}
-
-	/**
-	 * Get league types
-	 *
-	 * @return array
-	 */
-	public function get_league_types() {
-		$types = array( 'default' => __( 'Default', 'racketmanager' ) );
-		/**
-		* Add custom league types
-		*
-		* @param array $types
-		* @return array
-		* @category wp-filter
-		*/
-		$types = apply_filters( 'racketmanager_sports', $types );
-		asort( $types );
-
-		return $types;
-	}
-
 	/**
 	 * Get seasons
 	 *

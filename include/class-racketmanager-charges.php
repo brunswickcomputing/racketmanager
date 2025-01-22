@@ -270,6 +270,7 @@ final class Racketmanager_Charges {
 				$this->id
 			)
 		);
+		wp_cache_delete( $this->id, 'charges' );
 	}
 
 	/**

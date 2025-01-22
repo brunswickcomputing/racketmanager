@@ -139,15 +139,15 @@ final class Racketmanager_Charges {
 	 */
 	public function set_status( $status ) {
 		global $wpdb;
-
-		$wpdb->query(
+		$this->status = $status;
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"UPDATE {$wpdb->racketmanager_charges} set `status` = %s WHERE `id` = %d",
 				$status,
 				$this->id
 			)
 		);  // db call ok.
-		wp_cache_delete( $this->id, 'charges' );
+		wp_cache_set( $this->id, $this, 'charges' );
 	}
 
 	/**
@@ -157,15 +157,15 @@ final class Racketmanager_Charges {
 	 */
 	public function set_club_fee( $fee_club ) {
 		global $wpdb;
-
-		$wpdb->query(
+		$this->fee_club = $fee_club;
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"UPDATE {$wpdb->racketmanager_charges} set `fee_club` = %d WHERE `id` = %d",
 				$fee_club,
 				$this->id
 			)
 		);  // db call ok.
-		wp_cache_delete( $this->id, 'charges' );
+		wp_cache_set( $this->id, $this, 'charges' );
 	}
 
 	/**
@@ -229,15 +229,15 @@ final class Racketmanager_Charges {
 	 */
 	public function set_season( $season ) {
 		global $wpdb;
-
-		$wpdb->query(
+		$this->season = $season;
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"UPDATE {$wpdb->racketmanager_charges} set `season` = %s WHERE `id` = %d",
 				$season,
 				$this->id
 			)
-		);  // db call ok.
-		wp_cache_delete( $this->id, 'charges' );
+		);
+		wp_cache_set( $this->id, $this, 'charges' );
 	}
 
 	/**
@@ -247,15 +247,15 @@ final class Racketmanager_Charges {
 	 */
 	public function set_date( $date ) {
 		global $wpdb;
-
-		$wpdb->query(
+		$this->date = $date;
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"UPDATE {$wpdb->racketmanager_charges} set `date` = %s WHERE `id` = %d",
 				$date,
 				$this->id
 			)
 		);  // db call ok.
-		wp_cache_delete( $this->id, 'charges' );
+		wp_cache_set( $this->id, $this, 'charges' );
 	}
 
 	/**

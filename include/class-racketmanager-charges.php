@@ -175,51 +175,15 @@ final class Racketmanager_Charges {
 	 */
 	public function set_team_fee( $fee_team ) {
 		global $wpdb;
-
-		$wpdb->query(
+		$this->fee_team = $fee_team;
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"UPDATE {$wpdb->racketmanager_charges} set `fee_team` = %d WHERE `id` = %d",
 				$fee_team,
 				$this->id
 			)
 		);  // db call ok.
-		wp_cache_delete( $this->id, 'charges' );
-	}
-
-	/**
-	 * Set charge type
-	 *
-	 * @param string $type charge type.
-	 */
-	public function set_type( $type ) {
-		global $wpdb;
-
-		$wpdb->query(
-			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_charges} set `type` = %s WHERE `id` = %d",
-				$type,
-				$this->id
-			)
-		);  // db call ok.
-		wp_cache_delete( $this->id, 'charges' );
-	}
-
-	/**
-	 * Set competition type
-	 *
-	 * @param string $type competition type.
-	 */
-	public function set_competition_type( $type ) {
-		global $wpdb;
-
-		$wpdb->query(
-			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_charges} set `competitionType` = %s WHERE `id` = %d",
-				$type,
-				$this->id
-			)
-		);  // db call ok.
-		wp_cache_delete( $this->id, 'charges' );
+		wp_cache_set( $this->id, $this, 'charges' );
 	}
 
 	/**

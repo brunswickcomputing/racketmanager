@@ -77,7 +77,7 @@ final class Racketmanager_Charges {
 		if ( ! $charges ) {
 			$charges = $wpdb->get_row(
 				$wpdb->prepare(
-					"SELECT `id`, `competition_id`, `season`, `status`, `date`, `feeClub` as `fee_club`, `feeTeam` as `fee_team` FROM {$wpdb->racketmanager_charges} WHERE `id` = %d LIMIT 1",
+					"SELECT `id`, `competition_id`, `season`, `status`, `date`, `fee_club`, `fee_team` FROM {$wpdb->racketmanager_charges} WHERE `id` = %d LIMIT 1",
 					$charges_id
 				)
 			);  // db call ok.
@@ -122,7 +122,7 @@ final class Racketmanager_Charges {
 		}
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"INSERT INTO {$wpdb->racketmanager_charges} (`season`, `competition_id`, `status`, `date`, `feeClub`, `feeTeam`) VALUES (%s, %d, %s, %s, %d, %d)",
+				"INSERT INTO {$wpdb->racketmanager_charges} (`season`, `competition_id`, `status`, `date`, `fee_club`, `fee_team`) VALUES (%s, %d, %s, %s, %d, %d)",
 				$this->season,
 				$this->competition_id,
 				$this->status,
@@ -187,7 +187,6 @@ final class Racketmanager_Charges {
 		);  // db call ok.
 		wp_cache_set( $this->id, $this, 'charges' );
 	}
-
 	/**
 	 * Set season
 	 *

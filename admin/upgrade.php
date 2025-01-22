@@ -1188,6 +1188,7 @@ function racketmanager_upgrade() {
 				$seasons[ $key ] = $season;
 			}
 			$competition->update_seasons( $seasons );
+		}
 		$events = $racketmanager->get_events();
 		foreach ( $events as $event ) {
 			$event   = Racketmanager\get_event( $event->id );
@@ -1239,7 +1240,27 @@ function racketmanager_upgrade() {
 			}
 			$event->update_seasons( $seasons );
 		}
+	}
+	if ( version_compare( $installed, '8.33.1', '<' ) ) {
+		echo esc_html__( 'starting 8.33.1 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager} ADD `sequence` VARCHAR( 3 ) NULL AFTER `seasons`" );
+		$leagues = $racketmanager->get_leagues( array( 'competition_type' => 'league' ) );
+		foreach ( $leagues as $league ) {
+			$league_details = explode( ' ', $league->title );
+			$sequence       = end( $league_details );
+			if ( is_numeric( $sequence ) ) {
+				$wpdb->query( "UPDATE {$wpdb->racketmanager} SET `sequence` = '" . $sequence . "' WHERE ID = " . $league->id );
+				$new_title = $league->event->name . ' ' . $sequence;
+				if ( $new_title != $league->title ) {
+					$wpdb->query( "UPDATE {$wpdb->racketmanager} SET `title` = '" . $new_title . "' WHERE ID = " . $league->id );
+				}
+			}
 		}
+	}
+	if ( version_compare( $installed, '8.33.2', '<' ) ) {
+		echo esc_html__( 'starting 8.33.2 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_charges} CHANGE `feeClub` `fee_club` DECIMAL(10,2) NULL DEFAULT NULL" );
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_charges} CHANGE `feeTeam` `fee_team` DECIMAL(10,2) NULL DEFAULT NULL" );
 	}
 	/*
 	* Update version and dbversion

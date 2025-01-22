@@ -208,9 +208,9 @@ $is_invalid = false;
 				<div class="col-md-6">
 					<div class="form-floating mb-3">
 						<?php
-						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'date_start', $racketmanager->error_fields, true ) ) ) {
+						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'dateStart', $racketmanager->error_fields, true ) ) ) {
 							$is_invalid = true;
-							$msg_id     = array_search( 'date_start', $racketmanager->error_fields, true );
+							$msg_id     = array_search( 'dateStart', $racketmanager->error_fields, true );
 							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
 						}
 						?>
@@ -230,9 +230,9 @@ $is_invalid = false;
 				<div class="col-md-6">
 					<div class="form-floating mb-3">
 						<?php
-						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'date_end', $racketmanager->error_fields, true ) ) ) {
+						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'dateEnd', $racketmanager->error_fields, true ) ) ) {
 							$is_invalid = true;
-							$msg_id     = array_search( 'date_end', $racketmanager->error_fields, true );
+							$msg_id     = array_search( 'dateEnd', $racketmanager->error_fields, true );
 							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
 						}
 						?>
@@ -254,9 +254,9 @@ $is_invalid = false;
 				<div class="col-md-4">
 					<div class="form-floating mb-3">
 						<?php
-						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'date_open', $racketmanager->error_fields, true ) ) ) {
+						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'dateOpen', $racketmanager->error_fields, true ) ) ) {
 							$is_invalid = true;
-							$msg_id     = array_search( 'date_open', $racketmanager->error_fields, true );
+							$msg_id     = array_search( 'dateOpen', $racketmanager->error_fields, true );
 							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
 						}
 						?>
@@ -276,9 +276,9 @@ $is_invalid = false;
 				<div class="col-md-4">
 					<div class="form-floating mb-3">
 						<?php
-						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'date_closing', $racketmanager->error_fields, true ) ) ) {
+						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'dateClose', $racketmanager->error_fields, true ) ) ) {
 							$is_invalid = true;
-							$msg_id     = array_search( 'date_closing', $racketmanager->error_fields, true );
+							$msg_id     = array_search( 'dateClose', $racketmanager->error_fields, true );
 							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
 						}
 						?>
@@ -298,13 +298,13 @@ $is_invalid = false;
 				<div class="col-md-4">
 					<div class="form-floating mb-3">
 						<?php
-						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'date_withdraw', $racketmanager->error_fields, true ) ) ) {
+						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'dateWithdraw', $racketmanager->error_fields, true ) ) ) {
 							$is_invalid = true;
-							$msg_id     = array_search( 'date_withdraw', $racketmanager->error_fields, true );
+							$msg_id     = array_search( 'dateWithdraw', $racketmanager->error_fields, true );
 							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
 						}
 						?>
-						<input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="date_withdraw" id="date_withdraw" value="<?php echo isset( $tournament->date_withdrawal ) ? esc_html( $tournament->date_withdrawal ) : null; ?>" readonly />
+						<input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateWithdraw" id="dateWithdraw" value="<?php echo isset( $tournament->date_withdrawal ) ? esc_html( $tournament->date_withdrawal ) : null; ?>" readonly />
 						<label for="dateClose" class="form-label"><?php esc_html_e( 'Withdrawal Date', 'racketmanager' ); ?></label>
 						<?php
 						if ( $is_invalid ) {

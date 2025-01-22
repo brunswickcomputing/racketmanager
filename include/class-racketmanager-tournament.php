@@ -472,43 +472,43 @@ final class Racketmanager_Tournament {
 		if ( empty( $tournament->date_open ) ) {
 			$valid     = false;
 			$err_msg[] = __( 'Opening date is required', 'racketmanager' );
-			$err_fld[] = 'date_open';
+			$err_fld[] = 'dateOpen';
 		}
 		if ( empty( $tournament->date_closing ) ) {
 			$valid     = false;
 			$err_msg[] = __( 'Closing date is required', 'racketmanager' );
-			$err_fld[] = 'date_closing';
+			$err_fld[] = 'dateClose';
 		} elseif ( ! empty( $tournament->date_open ) && $tournament->date_closing <= $tournament->date_open ) {
 			$valid     = false;
 			$err_msg[] = __( 'Closing date must be after open date', 'racketmanager' );
-			$err_fld[] = 'date_closing';
+			$err_fld[] = 'dateClose';
 		}
 		if ( empty( $tournament->date_withdrawal ) ) {
 			$valid     = false;
 			$err_msg[] = __( 'Withdrawal date is required', 'racketmanager' );
-			$err_fld[] = 'date_withdraw';
+			$err_fld[] = 'dateWithdraw';
 		} elseif ( ! empty( $tournament->date_closing ) && $tournament->date_withdrawal <= $tournament->date_closing ) {
 			$valid     = false;
 			$err_msg[] = __( 'Withdrawal date must be after closing date', 'racketmanager' );
-			$err_fld[] = 'date_closing';
+			$err_fld[] = 'dateClose';
 		}
 		if ( empty( $tournament->date_start ) ) {
 			$valid     = false;
 			$err_msg[] = __( 'Start date is required', 'racketmanager' );
-			$err_fld[] = 'date_start';
+			$err_fld[] = 'dateStart';
 		} elseif ( ! empty( $tournament->date_withdrawal ) && $tournament->date_start <= $tournament->date_withdrawal ) {
 			$valid     = false;
 			$err_msg[] = __( 'Start date must be after withdrawal date', 'racketmanager' );
-			$err_fld[] = 'date_start';
+			$err_fld[] = 'dateStart';
 		}
 		if ( empty( $tournament->date ) ) {
 			$valid     = false;
 			$err_msg[] = __( 'End date is required', 'racketmanager' );
-			$err_fld[] = 'date_end';
+			$err_fld[] = 'dateEnd';
 		} elseif ( ! empty( $tournament->date_start ) && $tournament->date <= $tournament->date_start ) {
 			$valid     = false;
 			$err_msg[] = __( 'End date must be after start date', 'racketmanager' );
-			$err_fld[] = 'date_end';
+			$err_fld[] = 'dateEnd';
 		}
 		if ( $valid ) {
 			$return->valid = true;

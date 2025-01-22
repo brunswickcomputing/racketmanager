@@ -117,7 +117,9 @@ final class Racketmanager_Charges {
 	 */
 	private function add() {
 		global $wpdb;
-
+		if ( empty( $this->status ) ) {
+			$this->status = 'draft';
+		}
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"INSERT INTO {$wpdb->racketmanager_charges} (`season`, `competition_id`, `status`, `date`, `feeClub`, `feeTeam`) VALUES (%s, %d, %s, %s, %d, %d)",

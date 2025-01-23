@@ -54,13 +54,13 @@ final class Racketmanager_Charges {
 	 *
 	 * @var string
 	 */
-	public $fee_club;
+	public $fee_competition;
 	/**
 	 * Team fee
 	 *
 	 * @var string
 	 */
-	public $fee_team;
+	public $fee_event;
 
 	/**
 	 * Get class instance
@@ -77,7 +77,7 @@ final class Racketmanager_Charges {
 		if ( ! $charges ) {
 			$charges = $wpdb->get_row(
 				$wpdb->prepare(
-					"SELECT `id`, `competition_id`, `season`, `status`, `date`, `fee_club`, `fee_team` FROM {$wpdb->racketmanager_charges} WHERE `id` = %d LIMIT 1",
+					"SELECT `id`, `competition_id`, `season`, `status`, `date`, `fee_competition`, `fee_event` FROM {$wpdb->racketmanager_charges} WHERE `id` = %d LIMIT 1",
 					$charges_id
 				)
 			);  // db call ok.
@@ -122,13 +122,13 @@ final class Racketmanager_Charges {
 		}
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"INSERT INTO {$wpdb->racketmanager_charges} (`season`, `competition_id`, `status`, `date`, `fee_club`, `fee_team`) VALUES (%s, %d, %s, %s, %d, %d)",
+				"INSERT INTO {$wpdb->racketmanager_charges} (`season`, `competition_id`, `status`, `date`, `fee_competition`, `fee_event`) VALUES (%s, %d, %s, %s, %d, %d)",
 				$this->season,
 				$this->competition_id,
 				$this->status,
 				$this->date,
-				$this->fee_club,
-				$this->fee_team
+				$this->fee_competition,
+				$this->fee_event
 			)
 		);
 		$this->id = $wpdb->insert_id;
@@ -155,15 +155,15 @@ final class Racketmanager_Charges {
 	/**
 	 * Set club fee
 	 *
-	 * @param string $fee_club club fee value.
+	 * @param string $fee_competition club fee value.
 	 */
-	public function set_club_fee( $fee_club ) {
+	public function set_club_fee( $fee_competition ) {
 		global $wpdb;
-		$this->fee_club = $fee_club;
+		$this->fee_competition = $fee_competition;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_charges} set `fee_club` = %d WHERE `id` = %d",
-				$fee_club,
+				"UPDATE {$wpdb->racketmanager_charges} set `fee_competition` = %d WHERE `id` = %d",
+				$fee_competition,
 				$this->id
 			)
 		);  // db call ok.
@@ -173,15 +173,15 @@ final class Racketmanager_Charges {
 	/**
 	 * Set team fee
 	 *
-	 * @param string $fee_team team fee value.
+	 * @param string $fee_event team fee value.
 	 */
-	public function set_team_fee( $fee_team ) {
+	public function set_team_fee( $fee_event ) {
 		global $wpdb;
-		$this->fee_team = $fee_team;
+		$this->fee_event = $fee_event;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_charges} set `fee_team` = %d WHERE `id` = %d",
-				$fee_team,
+				"UPDATE {$wpdb->racketmanager_charges} set `fee_event` = %d WHERE `id` = %d",
+				$fee_event,
 				$this->id
 			)
 		);  // db call ok.
@@ -251,18 +251,29 @@ final class Racketmanager_Charges {
 			)
 		);
 	}
-
+	/**
+	 * Get invoiecs
+	 */
+	public function get_invoices() {
+		global $wpdb;
+		$invoices = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"SELECT `id` FROM {$wpdb->racketmanager_invoices} WHERE `charge_id` = %d",
+				$this->id,
+			)
+		);
+		foreach ( $invoices as $i => $invoice ) {
+			$invoices[ $i ] = get_invoice( $invoice->id );
+		}
+		return $invoices;
+	}
 	/**
 	 * Get club enties for charges
 	 */
 	public function get_club_entries() {
 		global $racketmanager;
 		$club_entries = array();
-		$clubs        = $racketmanager->get_clubs(
-			array(
-				'type' => 'affiliated',
-			)
-		);
+		$clubs        = $racketmanager->get_clubs();
 		foreach ( $clubs as $club ) {
 			$club_entry = $this->get_club_entry( $club );
 			if ( $club_entry ) {
@@ -295,23 +306,63 @@ final class Racketmanager_Charges {
 				$club_event        = new \stdClass();
 				$club_event->type  = $event->type;
 				$club_event->count = $num_teams;
-				$club_event->fee   = $this->fee_team * $num_teams;
+				$club_event->fee   = $this->fee_event * $num_teams;
 				$club_events[]     = $club_event;
 			}
 			$club_teams += $num_teams;
 		}
 		if ( $club_teams > 0 ) {
-			$club_entry            = new \stdClass();
-			$club_entry->id        = $club->id;
-			$club_entry->name      = $club->name;
-			$club_entry->num_teams = $club_teams;
-			$club_entry->fee_club  = $this->fee_club;
-			$club_entry->fee_teams = $this->fee_team * $club_teams;
-			$club_entry->fee       = $club_entry->fee_club + $club_entry->fee_teams;
-			$club_entry->events    = $club_events;
+			$club_entry                  = new \stdClass();
+			$club_entry->id              = $club->id;
+			$club_entry->name            = $club->name;
+			$club_entry->num_teams       = $club_teams;
+			$club_entry->fee_competition = $this->fee_competition;
+			$club_entry->fee_events      = $this->fee_event * $club_teams;
+			$club_entry->fee             = $club_entry->fee_competition + $club_entry->fee_events;
+			$club_entry->events          = $club_events;
 			return $club_entry;
 		} else {
 			return false;
+		}
+	}
+	/**
+	 * Generate and send invoices
+	 */
+	public function send_invoices() {
+		global $racketmanager;
+		$charges_entries = $this->get_club_entries();
+		$billing         = $racketmanager->get_options( 'billing' );
+		$date_due        = new \DateTime( $this->date );
+		if ( isset( $billing['paymentTerms'] ) && intval( $billing['paymentTerms'] ) !== 0 ) {
+			$date_interval = intval( $billing['paymentTerms'] );
+			$date_interval = 'P' . $date_interval . 'D';
+			$date_due->add( new \DateInterval( $date_interval ) );
+		}
+		foreach ( $charges_entries as $entry ) {
+			$invoice                 = new \stdClass();
+			$invoice->charge_id      = $this->id;
+			$invoice->club_id        = $entry->id;
+			$invoice->invoice_number = $billing['invoiceNumber'];
+			$invoice->status         = 'new';
+			$invoice->date           = $this->date;
+			$invoice->date_due       = $date_due->format( 'Y-m-d' );
+			$invoice                 = new Racketmanager_Invoice( $invoice );
+			$invoice->set_amount( $entry->fee );
+			$sent = false;
+			$sent = $invoice->send();
+			if ( $sent ) {
+				$invoice->set_status( 'sent' );
+			}
+			$billing['invoiceNumber'] += 1;
+		}
+		if ( $sent ) {
+			$options                             = $racketmanager->get_options();
+			$options['billing']['invoiceNumber'] = $billing['invoiceNumber'];
+			update_option( 'racketmanager', $options );
+			$racketmanager->set_message( __( 'Invoices sent', 'racketmanager' ) );
+			$this->set_status( 'final' );
+		} else {
+			$racketmanager->set_message( __( 'No invoices sent', 'racketmanager' ), true );
 		}
 	}
 }

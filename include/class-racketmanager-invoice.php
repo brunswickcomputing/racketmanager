@@ -67,7 +67,12 @@ final class Racketmanager_Invoice {
 	 * @var string
 	 */
 	public $date_due;
-
+	/**
+	 * Amount
+	 *
+	 * @var string
+	 */
+	public $amount;
 	/**
 	 * Get class instance
 	 *
@@ -83,7 +88,7 @@ final class Racketmanager_Invoice {
 		if ( ! $invoice ) {
 			$invoice = $wpdb->get_row(
 				$wpdb->prepare(
-					"SELECT `id`, `charge_id`, `club_id`, `status`, `invoiceNumber` as `invoice_number`, `date`, `date_due` FROM {$wpdb->racketmanager_invoices} WHERE `id` = %d LIMIT 1",
+					"SELECT `id`, `charge_id`, `club_id`, `status`, `invoiceNumber` as `invoice_number`, `date`, `date_due`, `amount` FROM {$wpdb->racketmanager_invoices} WHERE `id` = %d LIMIT 1",
 					$invoice_id
 				)
 			);  // db call ok.
@@ -116,7 +121,7 @@ final class Racketmanager_Invoice {
 			}
 
 			$this->club   = get_club( $this->club_id );
-			$this->charge = get_charges( $this->charge_id );
+			$this->charge = get_charge( $this->charge_id );
 		}
 	}
 
@@ -139,7 +144,24 @@ final class Racketmanager_Invoice {
 		);
 		$this->id = $wpdb->insert_id;
 	}
-
+	/**
+	 * Set invoice amount
+	 *
+	 * @param string $amount amount value.
+	 */
+	public function set_amount( $amount ) {
+		global $wpdb;
+		$this->amount = $amount;
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"UPDATE {$wpdb->racketmanager_invoices} set `amount` = %d WHERE `id` = %d",
+				$this->amount,
+				$this->id
+			)
+		);  // db call ok.
+		wp_cache_set( $this->id, $this, 'invoice' );
+		return true;
+	}
 	/**
 	 * Set invoice status
 	 *
@@ -154,14 +176,15 @@ final class Racketmanager_Invoice {
 				return false;
 			}
 		}
-		$wpdb->query(
+		$this->status = $status;
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"UPDATE {$wpdb->racketmanager_invoices} set `status` = %s WHERE `id` = %d",
-				$status,
+				$this->status,
 				$this->id
 			)
 		);  // db call ok.
-		wp_cache_delete( $this->id, 'invoice' );
+		wp_cache_set( $this->id, $this, 'invoice' );
 		return true;
 	}
 
@@ -170,7 +193,7 @@ final class Racketmanager_Invoice {
 	 */
 	public function generate() {
 		global $racketmanager_shortcodes, $racketmanager;
-		$charge  = get_charges( $this->charge );
+		$charge  = get_charge( $this->charge );
 		$club    = get_club( $this->club );
 		$entry   = $charge->get_club_entry( $club );
 		$billing = $racketmanager->get_options( 'billing' );

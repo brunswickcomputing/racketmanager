@@ -1259,8 +1259,28 @@ function racketmanager_upgrade() {
 	}
 	if ( version_compare( $installed, '8.33.2', '<' ) ) {
 		echo esc_html__( 'starting 8.33.2 upgrade', 'racketmanager' ) . "<br />\n";
-		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_charges} CHANGE `feeClub` `fee_club` DECIMAL(10,2) NULL DEFAULT NULL" );
-		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_charges} CHANGE `feeTeam` `fee_team` DECIMAL(10,2) NULL DEFAULT NULL" );
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_charges} CHANGE `feeClub` `fee_competition` DECIMAL(10,2) NULL DEFAULT NULL" );
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_charges} CHANGE `feeTeam` `fee_event` DECIMAL(10,2) NULL DEFAULT NULL" );
+	}
+	if ( version_compare( $installed, '8.33.3', '<' ) ) {
+		echo esc_html__( 'starting 8.33.3 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_invoices} ADD `amount` DECIMAL(10,2) NULL AFTER `status`" );
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_charges} CHANGE `fee_competition` `fee_competition` DECIMAL(10,2) NULL DEFAULT NULL" );
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_charges} CHANGE `fee_event` `fee_event` DECIMAL(10,2) NULL DEFAULT NULL" );
+	}
+	if ( version_compare( $installed, '8.33.4', '<' ) ) {
+		echo esc_html__( 'starting 8.33.4 upgrade', 'racketmanager' ) . "<br />\n";
+		$charges = $racketmanager->get_charges();
+		foreach ( $charges as $charge ) {
+			$invoices = $charge->get_invoices();
+			foreach ( $invoices as $invoice ) {
+				$club_id        = $invoice->club_id;
+				$club           = Racketmanager\get_club( $club_id );
+				$club_entry     = $charge->get_club_entry( $club );
+				$invoice_amount = $club_entry->fee;
+				$invoice->set_amount( $invoice_amount );
+			}
+		}
 	}
 	/*
 	* Update version and dbversion

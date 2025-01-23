@@ -73,6 +73,18 @@ class RacketManager {
 	 */
 	public $seasons;
 	/**
+	 * Currency code
+	 *
+	 * @var string
+	 */
+	public $currency_code;
+	/**
+	 * Currency format
+	 *
+	 * @var string
+	 */
+	public $currency_fmt;
+	/**
 	 * Constructor
 	 *
 	 * @return void
@@ -86,6 +98,7 @@ class RacketManager {
 
 		add_action( 'widgets_init', array( &$this, 'register_widget' ) );
 		add_action( 'init', array( &$this, 'racketmanager_rewrites' ) );
+		add_action( 'init', array( &$this, 'racketmanager_locale' ) );
 		add_action( 'wp_enqueue_scripts', array( &$this, 'load_styles' ), 5 );
 		add_action( 'wp_enqueue_scripts', array( &$this, 'load_scripts' ) );
 		add_action( 'rm_resultPending', array( &$this, 'chase_pending_results' ), 1 );
@@ -103,6 +116,7 @@ class RacketManager {
 		add_action( 'rm_notify_team_entry_reminder', array( &$this, 'notify_team_entry_reminder' ), 10, 2 );
 		add_action( 'rm_notify_tournament_entry_open', array( &$this, 'notify_tournament_entry_open' ), 10, 1 );
 		add_action( 'rm_notify_tournament_entry_reminder', array( &$this, 'notify_tournament_entry_reminder' ), 10, 1 );
+		add_action( 'rm_send_invoices', array( &$this, 'send_invoices' ), 10, 1 );
 	}
 	/**
 	 * Set page title function
@@ -830,6 +844,20 @@ class RacketManager {
 			$tournament = get_tournament( $tournament_id );
 			if ( $tournament ) {
 				$tournament->notify_entry_reminder();
+			}
+		}
+	}
+	/**
+	 * Send invoices
+	 *
+	 * @param int $charge_id charge id.
+	 * @return void
+	 */
+	public function send_invoices( $charge_id ) {
+		if ( $charge_id ) {
+			$charge = get_charge( $charge_id );
+			if ( $charge ) {
+				$charge->send_invoices();
 			}
 		}
 	}
@@ -2156,6 +2184,17 @@ class RacketManager {
 			'index.php?pagename=tournaments%2F$matches[1]%2F$matches[2]-$matches[3]-$matches[4]',
 			'top'
 		);
+	}
+	/**
+	 * Set locale info function
+	 *
+	 * @return void
+	 */
+	public function racketmanager_locale() {
+		setlocale( LC_ALL, get_locale() );
+		$this->currency_fmt  = numfmt_create( get_locale(), \NumberFormatter::CURRENCY );
+		$locale_info         = localeconv();
+		$this->currency_code = isset( $locale_info['int_curr_symbol'] ) ? trim( $locale_info['int_curr_symbol'] ) : 'GBP';
 	}
 	/**
 	 * Add html content type to mail header

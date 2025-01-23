@@ -631,7 +631,16 @@ function get_match_template_type() {
 	global $league;
 	return $league->matches_template_type;
 }
-
+/**
+ * Get formatted currency function
+ *
+ * @param string $amount amount to be formatted.
+ * @return void
+ */
+function the_currency_amount( $amount ) {
+	global $racketmanager;
+	echo esc_html( numfmt_format_currency( $racketmanager->currency_fmt, $amount, $racketmanager->currency_code ) );
+}
 	/**
 	 * Print crosstable field
 	 *

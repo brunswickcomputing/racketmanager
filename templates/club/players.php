@@ -184,7 +184,7 @@ if ( empty( $club->player ) ) {
 		<?php
 	}
 } else {
-	$user_can_update = $user_can_manage->club;
+	$user_can_update = $user_can_manage->player;
 	$player          = $club->player;
 	require RACKETMANAGER_PATH . 'templates/club/player.php';
 }

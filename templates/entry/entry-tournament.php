@@ -22,7 +22,7 @@
 namespace Racketmanager;
 
 $entry_option = false;
-if ( get_current_user_id() !== $player->id && ! current_user_can( 'manage_racketmanager' ) ) {
+if ( get_current_user_id() !== intval( $player->id ) && ! current_user_can( 'manage_racketmanager' ) ) {
 	$changes_allowed = false;
 } elseif ( ! $tournament->is_open ) {
 	$changes_allowed = false;

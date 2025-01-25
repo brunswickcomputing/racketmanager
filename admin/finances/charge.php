@@ -18,53 +18,74 @@ $racketmanager_tab = 'charges';?>
 		<h1><?php echo esc_html( $form_title ); ?></h1>
 		<form method="post" enctype="multipart/form-data" name="charges_edit" class="form-control">
 			<?php wp_nonce_field( 'racketmanager_manage-charges', 'racketmanager_nonce' ); ?>
-			<div class="form-floating mb-3">
-				<?php $competitions = $racketmanager->get_competitions(); ?>
-				<select class="form-select" size="1" name="competition_id" id="competition_id" >
-					<option><?php esc_html_e( 'Select competition', 'racketmanager' ); ?></option>
-					<?php
-					foreach ( $competitions as $competition ) {
-						?>
-						<option value="<?php echo esc_attr( $competition->id ); ?>" <?php selected( $competition->id, $charges->competition_id ); ?>><?php echo esc_html( $competition->name ); ?></option>
-						<?php
-					}
-					?>
-				</select>
-				<label for="competition_id"><?php esc_html_e( 'Type', 'racketmanager' ); ?></label>
+			<div class="row gx-3 mb-3">
+				<legend><?php esc_html_e( 'Competition', 'racketmanager' ); ?></legend>
+				<div class="col-md-6 mb-3 mb-md-0">
+					<div class="form-floating">
+						<?php $competitions = $racketmanager->get_competitions(); ?>
+						<select class="form-select" size="1" name="competition_id" id="competition_id" >
+							<option><?php esc_html_e( 'Select competition', 'racketmanager' ); ?></option>
+							<?php
+							foreach ( $competitions as $competition ) {
+								?>
+								<option value="<?php echo esc_attr( $competition->id ); ?>" <?php selected( $competition->id, $charges->competition_id ); ?>><?php echo esc_html( $competition->name ); ?></option>
+								<?php
+							}
+							?>
+						</select>
+						<label for="competition_id"><?php esc_html_e( 'Type', 'racketmanager' ); ?></label>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-floating">
+						<select class="form-select" size="1" name="season" id="season" >
+							<option disabled><?php esc_html_e( 'Select season', 'racketmanager' ); ?></option>
+							<?php
+							$racketmanager_seasons = $racketmanager->get_seasons( 'DESC' );
+							foreach ( $racketmanager_seasons as $racketmanager_season ) {
+								?>
+								<option value="<?php echo esc_html( $racketmanager_season->name ); ?>" <?php selected( $racketmanager_season->name, isset( $charges->season ) ? $charges->season : '' ); ?>><?php echo esc_html( $racketmanager_season->name ); ?></option>
+								<?php
+							}
+							?>
+						</select>
+						<label for="type"><?php esc_html_e( 'Season', 'racketmanager' ); ?></label>
+					</div>
+				</div>
 			</div>
-			<div class="form-floating mb-3">
-				<select class="form-select" size="1" name="season" id="season" >
-					<option disabled><?php esc_html_e( 'Select season', 'racketmanager' ); ?></option>
-					<?php
-					$racketmanager_seasons = $racketmanager->get_seasons( 'DESC' );
-					foreach ( $racketmanager_seasons as $racketmanager_season ) {
-						?>
-						<option value="<?php echo esc_html( $racketmanager_season->name ); ?>" <?php selected( $racketmanager_season->name, isset( $charges->season ) ? $charges->season : '' ); ?>><?php echo esc_html( $racketmanager_season->name ); ?></option>
-						<?php
-					}
-					?>
-				</select>
-				<label for="type"><?php esc_html_e( 'Season', 'racketmanager' ); ?></label>
+			<div class="row gx-3 mb-3">
+				<legend><?php esc_html_e( 'Details', 'racketmanager' ); ?></legend>
+				<div class="col-md-6 mb-3 mb-md-0">
+					<div class="form-floating">
+						<select class="form-select" size="1" name="status" id="status" >
+							<option><?php esc_html_e( 'Select type', 'racketmanager' ); ?></option>
+							<option value="draft" <?php selected( 'draft', $charges->status ); ?>><?php esc_html_e( 'Draft', 'racketmanager' ); ?></option>
+							<option value="final" <?php selected( 'final', $charges->status ); ?>><?php esc_html_e( 'Final', 'racketmanager' ); ?></option>
+						</select>
+						<label for="status"><?php esc_html_e( 'Status', 'racketmanager' ); ?></label>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-floating">
+						<input type="date" class="form-control" name="date" id="date" value="<?php echo esc_html( $charges->date ); ?>" size="20" />
+						<label for="date"><?php esc_html_e( 'Date', 'racketmanager' ); ?></label>
+					</div>
+				</div>
 			</div>
-			<div class="form-floating mb-3">
-				<select class="form-select" size="1" name="status" id="status" >
-					<option><?php esc_html_e( 'Select type', 'racketmanager' ); ?></option>
-					<option value="draft" <?php selected( 'draft', $charges->status ); ?>><?php esc_html_e( 'Draft', 'racketmanager' ); ?></option>
-					<option value="final" <?php selected( 'final', $charges->status ); ?>><?php esc_html_e( 'Final', 'racketmanager' ); ?></option>
-				</select>
-				<label for="status"><?php esc_html_e( 'Status', 'racketmanager' ); ?></label>
-			</div>
-			<div class="form-floating mb-3">
-				<input type="date" class="form-control" name="date" id="date" value="<?php echo esc_html( $charges->date ); ?>" size="20" />
-				<label for="date"><?php esc_html_e( 'Date', 'racketmanager' ); ?></label>
-			</div>
-			<div class="form-floating mb-3">
-				<input type="number" class="form-control" name="feeClub" id="feeClub" value="<?php echo esc_html( $charges->fee_competition ); ?>" size="20" />
-				<label for="feeClub"><?php esc_html_e( 'Competition Fee', 'racketmanager' ); ?></label>
-			</div>
-			<div class="form-floating mb-3">
-				<input type="number" class="form-control" name="feeTeam" id="feeTeam" value="<?php echo esc_html( $charges->fee_event ); ?>" size="20" />
-				<label for="feeTeam"><?php esc_html_e( 'Event Fee', 'racketmanager' ); ?></label>
+			<div class="row gx-3 mb-3">
+				<legend><?php esc_html_e( 'Fees', 'racketmanager' ); ?></legend>
+				<div class="col-md-6 mb-3 mb-md-0">
+					<div class="form-floating">
+						<input type="number" class="form-control" name="feeClub" id="feeClub" value="<?php echo esc_html( $charges->fee_competition ); ?>" size="20" />
+						<label for="feeClub"><?php esc_html_e( 'Competition Fee', 'racketmanager' ); ?></label>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-floating">
+						<input type="number" class="form-control" name="feeTeam" id="feeTeam" value="<?php echo esc_html( $charges->fee_event ); ?>" size="20" />
+						<label for="feeTeam"><?php esc_html_e( 'Event Fee', 'racketmanager' ); ?></label>
+					</div>
+				</div>
 			</div>
 			<?php do_action( 'racketmanager_charges_edit_form', $charges ); ?>
 

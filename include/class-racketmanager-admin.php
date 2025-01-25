@@ -3382,12 +3382,12 @@ class RacketManager_Admin extends RacketManager {
 	 * @param string $season season.
 	 * @param int    $event_id event_id.
 	 * @param int    $num_match_days number of match days.
-	 * @param string $closing_date (optional) closing date.
+	 * @param string $date_closing (optional) closing date.
 	 * @param string $home_away (optional) match format.
 	 * @param array  $match_dates (optional) match dates.
 	 * @return boolean
 	 */
-	private function add_season_to_event( $season, $event_id, $num_match_days, $closing_date = null, $home_away = null, $match_dates = null ) {
+	private function add_season_to_event( $season, $event_id, $num_match_days, $date_closing = null, $home_away = null, $match_dates = null ) {
 		global $event;
 
 		$event = get_event( $event_id );

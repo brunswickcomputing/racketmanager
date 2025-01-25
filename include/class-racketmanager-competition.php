@@ -1886,20 +1886,7 @@ class Racketmanager_Competition {
 		if ( isset( $this->seasons[ $season ] ) ) {
 			$seasons = $this->seasons;
 			foreach ( $this->get_events() as $event ) {
-				foreach ( $event->get_leagues() as $league ) {
-					$league_id = $league->id;
-					$league    = get_league( $league->id );
-					// remove matches and rubbers.
-					$league->delete_season_matches( $season );
-					// remove tables.
-					$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-						$wpdb->prepare(
-							"DELETE FROM {$wpdb->racketmanager_table} WHERE `league_id` = %d AND `season` = %s",
-							$league_id,
-							$season
-						)
-					);
-				}
+				$event->delete_season( $season );
 			}
 			unset( $seasons[ $season ] );
 			$this->update_seasons( $seasons );

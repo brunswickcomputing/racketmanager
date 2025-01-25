@@ -1161,4 +1161,28 @@ final class Racketmanager_Tournament {
 		}
 		return $players;
 	}
+	/**
+	 * Get fees for tournament function
+	 *
+	 * @return object fees
+	 */
+	public function get_fees() {
+		global $racketmanager;
+		$args                = array();
+		$args['competition'] = $this->competition_id;
+		$args['season']      = $this->season;
+		$charges             = $racketmanager->get_charges( $args );
+		$competition_fee     = 0;
+		$event_fee           = 0;
+		if ( $charges ) {
+			foreach ( $charges as $charge ) {
+				$competition_fee += $charge->fee_competition;
+				$event_fee       += $charge->fee_event;
+			}
+		}
+		$fees              = new \stdClass();
+		$fees->competition = $competition_fee;
+		$fees->event       = $event_fee;
+		return $fees;
+	}
 }

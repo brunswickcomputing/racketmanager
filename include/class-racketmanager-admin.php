@@ -5244,16 +5244,17 @@ class RacketManager_Admin extends RacketManager {
 				error_log( __( 'Error scheduling team competition open emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			}
 		}
+		if ( $today < $season->date_closing ) {
 			$chase_date     = Racketmanager_Util::amend_date( $season->date_closing, 7, '-' );
-			$day            = intval( gmdate( 'd', $chase_date ) );
-			$month          = intval( gmdate( 'm', $chase_date ) );
-			$year           = intval( gmdate( 'Y', $chase_date ) );
+			$day            = substr( $chase_date, 8, 2 );
+			$month          = substr( $chase_date, 5, 2 );
+			$year           = substr( $chase_date, 0, 4 );
 			$schedule_start = mktime( 00, 00, 01, $month, $day, $year );
 			$schedule_name  = 'rm_notify_team_entry_reminder';
 			Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
 			$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
 			if ( ! $success ) {
-				$racketmanager->set_message( __( 'Error scheduling team competition emails', 'racketmanager' ), true );
+				error_log( __( 'Error scheduling team competition emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			}
 		}
 	}

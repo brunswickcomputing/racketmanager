@@ -1244,17 +1244,19 @@ class RacketManager {
 		);
 		wp_enqueue_script( 'password-strength-meter' );
 		wp_enqueue_script( 'password-strength-meter-mediator', RACKETMANAGER_URL . 'js/password-strength-meter-mediator.js', array( 'password-strength-meter' ), RACKETMANAGER_VERSION, array( 'in_footer' => true ) );
-		wp_localize_script(
+		wp_add_inline_script(
 			'password-strength-meter',
-			'pwsL10n',
-			array(
-				'empty'    => __( 'Strength indicator', 'racketmanager' ),
-				'short'    => __( 'Very weak', 'racketmanager' ),
-				'bad'      => __( 'Weak', 'racketmanager' ),
-				'good'     => __( 'Good', 'racketmanager' ),
-				'strong'   => __( 'Strong', 'racketmanager' ),
-				'mismatch' => __( 'Mismatch', 'racketmanager' ),
-			)
+			'const pwsL10n = ' . wp_json_encode(
+				array(
+					'empty'    => __( 'Strength indicator', 'racketmanager' ),
+					'short'    => __( 'Very weak', 'racketmanager' ),
+					'bad'      => __( 'Weak', 'racketmanager' ),
+					'good'     => __( 'Good', 'racketmanager' ),
+					'strong'   => __( 'Strong', 'racketmanager' ),
+					'mismatch' => __( 'Mismatch', 'racketmanager' ),
+				)
+			),
+			'before',
 		);
 		?>
 	<script type="text/javascript">

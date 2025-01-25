@@ -1949,4 +1949,31 @@ class Racketmanager_Event {
 		$this->update_seasons( $seasons );
 		$racketmanager->set_message( __( 'Season updated', 'racketmanager' ) );
 	}
+	/**
+	 * Delete season
+	 *
+	 * @param array $season season data.
+	 */
+	public function delete_season( $season ) {
+		global $wpdb;
+		if ( isset( $this->seasons[ $season ] ) ) {
+			$seasons = $this->seasons;
+			$leagues = $this->get_leagues();
+			foreach ( $leagues as $league ) {
+				$league = get_league( $league->id );
+				// remove matches and rubbers.
+				$league->delete_season_matches( $season );
+				// remove tables.
+				$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+					$wpdb->prepare(
+						"DELETE FROM {$wpdb->racketmanager_table} WHERE `league_id` = %d AND `season` = %s",
+						$league->id,
+						$season
+					)
+				);
+			}
+			unset( $seasons[ $season ] );
+			$this->update_seasons( $seasons );
+		}
+	}
 }

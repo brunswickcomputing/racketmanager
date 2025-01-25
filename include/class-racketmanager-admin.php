@@ -38,6 +38,7 @@ class RacketManager_Admin extends RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-ajax-admin.php';
 		$racketmanager_ajax_admin = new Racketmanager_Ajax_Admin();
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-finances.php';
+		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-competition.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-tournament.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-cup.php';
 

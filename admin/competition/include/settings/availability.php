@@ -24,19 +24,16 @@ namespace Racketmanager;
 				)
 			);
 			foreach ( $clubs as $key => $club ) {
-				if ( isset( $competition->num_courts_available[ $club->id ] ) ) {
-					$courts = $competition->num_courts_available[ $club->id ];
-				} else {
-					$courts = '';
-				}
 				?>
 				<tr>
 					<td><?php echo esc_html( $club->name ); ?></td>
 					<td>
-						<input type="number" step="1" min="0" class="small-text" name="settings[num_courts_available][<?php echo esc_html( $club->id ); ?>]" id="numCourtsAvailable[<?php echo esc_html( $club->id ); ?>]" value="<?php echo esc_html( $courts ); ?>" size="2" />
+						<input type="number" step="1" min="0" class="small-text" name="num_courts_available[<?php echo esc_html( $club->id ); ?>]" id="num_courts_available-[<?php echo esc_html( $club->id ); ?>]" value="<?php echo isset( $competition->config->num_courts_available[ $club->id ] ) ? esc_html( $competition->config->num_courts_available[ $club->id ] ) : null; ?>" />
 					</td>
 				</tr>
-			<?php } ?>
+				<?php
+			}
+			?>
 		</tbody>
 	</table>
 </div>

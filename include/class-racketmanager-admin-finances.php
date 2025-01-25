@@ -67,7 +67,7 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 					if ( isset( $_POST['charge'] ) ) {
 						foreach ( $_POST['charge'] as $charges_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 							$charge     = get_charge( $charges_id );
-							$charge_ref = ucfirst( $charge->type ) . ' ' . $charge->season;
+							$charge_ref = ucfirst( $charge->competition->name ) . ' ' . $charge->season;
 							if ( $charge->has_invoices() ) {
 								$messages[]    = $charge_ref . ' ' . __( 'not deleted - still has invoices attached', 'racketmanager' );
 								$message_error = true;

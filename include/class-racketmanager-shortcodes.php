@@ -1111,6 +1111,7 @@ class RacketManager_Shortcodes {
 		$player->surname   = get_user_meta( $player->ID, 'last_name', true );
 		$player->contactno = get_user_meta( $player->ID, 'contactno', true );
 		$player->gender    = get_user_meta( $player->ID, 'gender', true );
+		$tournament->fees  = $tournament->get_fees();
 
 		$events = $tournament->get_events();
 		$c      = 0;

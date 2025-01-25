@@ -1926,4 +1926,244 @@ class Racketmanager_Competition {
 		$this->update_seasons( $seasons );
 		$racketmanager->set_message( __( 'Season updated', 'racketmanager' ) );
 	}
+	/**
+	 * Set configuration function
+	 *
+	 * @param object $config config object.
+	 * @return boolean update indicator.
+	 */
+	public function set_config( $config ) {
+		global $racketmanager;
+		$updates = false;
+		if ( empty( $config->name ) ) {
+			$racketmanager->error_messages[] = __( 'Name must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'name';
+		}
+		if ( empty( $config->sport ) ) {
+			$racketmanager->error_messages[] = __( 'Sport must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'sport';
+		}
+		if ( empty( $config->type ) ) {
+			$racketmanager->error_messages[] = __( 'Type must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'type';
+		}
+		if ( empty( $config->entry_type ) ) {
+			$racketmanager->error_messages[] = __( 'Entry type must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'entry_type';
+		}
+		if ( empty( $config->competition_code ) ) {
+			$racketmanager->error_messages[] = __( 'Competition code must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'competition_code';
+		}
+		if ( empty( $config->grade ) ) {
+			$racketmanager->error_messages[] = __( 'Grade must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'grade';
+		}
+		if ( 'league' === $config->type ) {
+			if ( empty( $config->max_teams ) ) {
+				$racketmanager->error_messages[] = __( 'Maximum number of teams must be set', 'racketmanager' );
+				$racketmanager->error_fields[]   = 'max_teams';
+			}
+			if ( empty( $config->teams_per_club ) ) {
+				$racketmanager->error_messages[] = __( 'Number of teams per club must be set', 'racketmanager' );
+				$racketmanager->error_fields[]   = 'teams_per_club';
+			}
+			if ( empty( $config->teams_prom_relg ) ) {
+				$racketmanager->error_messages[] = __( 'Number of promoted/relegated teams must be set', 'racketmanager' );
+				$racketmanager->error_fields[]   = 'teams_prom_relg';
+			}
+			if ( $config->teams_prom_relg > $config->teams_per_club ) {
+				$racketmanager->error_messages[] = __( 'Number of promoted/relegated teams must be at most number of teams per club', 'racketmanager' );
+				$racketmanager->error_fields[]   = 'teams_prom_relg';
+			}
+			if ( empty( $config->lowest_promotion ) ) {
+				$racketmanager->error_messages[] = __( 'Lowest promotion position must be set', 'racketmanager' );
+				$racketmanager->error_fields[]   = 'lowest_promotion';
+			}
+		}
+		if ( empty( $config->team_ranking ) ) {
+			$racketmanager->error_messages[] = __( 'Ranking type must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'team_ranking';
+		}
+		if ( empty( $config->point_rule ) ) {
+			$racketmanager->error_messages[] = __( 'Point rule must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'point_rule';
+		}
+		if ( is_null( $config->fixed_match_dates ) ) {
+			$racketmanager->error_messages[] = __( 'Match date option must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'fixed_match_dates';
+		}
+		if ( is_null( $config->home_away ) ) {
+			$racketmanager->error_messages[] = __( 'Fixture types must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'home_away';
+		}
+		if ( empty( $config->round_length ) ) {
+			$racketmanager->error_messages[] = __( 'Round length must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'round_length';
+		}
+		if ( empty( $config->default_match_start_time ) ) {
+			$racketmanager->error_messages[] = __( 'Default match start time must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'default_match_start_time';
+		}
+		if ( empty( $config->point_format ) ) {
+			$racketmanager->error_messages[] = __( 'Point format must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'point_format';
+		}
+		if ( empty( $config->point_format2 ) ) {
+			$racketmanager->error_messages[] = __( 'Secondary point format must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'point_format2';
+		}
+		if ( empty( $config->num_matches_per_page ) ) {
+			$racketmanager->error_messages[] = __( 'Number of matches per page must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'num_matches_per_page';
+		}
+		if ( empty( $racketmanager->error_fields ) ) {
+			$upd_type = false;
+			$settings = new \stdClass();
+			if ( empty( $this->sport ) || $this->sport !== $config->sport ) {
+				$updates = true;
+			}
+			$settings->sport = $config->sport;
+			if ( $this->type !== $config->type ) {
+				$update_type    = true;
+				$settings->type = $config->type;
+				switch ( $config->type ) {
+					case 'league':
+						$settings->mode = 'default';
+						$updates        = true;
+						break;
+					case 'cup':
+						$settings->mode     = 'championship';
+						$config->entry_type = 'team';
+						$updates            = true;
+						break;
+					case 'tournament':
+						$settings->mode     = 'championship';
+						$config->entry_type = 'player';
+						$updates            = true;
+						break;
+					default:
+						break;
+				}
+			}
+			if ( empty( $this->entry_type ) || $this->entry_type !== $config->entry_type ) {
+				$updates = true;
+			}
+			$settings->entry_type = $config->entry_type;
+			if ( empty( $this->competition_code ) || $this->competition_code !== $config->competition_code ) {
+				$updates = true;
+			}
+			$settings->competition_code = $config->competition_code;
+			if ( empty( $this->grade ) || $this->grade !== $config->grade ) {
+				$updates = true;
+			}
+			$settings->grade = $config->grade;
+			if ( 'league' === $config->type ) {
+				if ( empty( $this->max_teams ) || $this->max_teams !== $config->max_teams ) {
+					$updates = true;
+				}
+				$settings->max_teams = $config->max_teams;
+				if ( empty( $this->teams_per_club ) || $this->teams_per_club !== $config->teams_per_club ) {
+					$updates = true;
+				}
+				$settings->teams_per_club = $config->teams_per_club;
+				if ( empty( $this->teams_prom_relg ) || $this->teams_prom_relg !== $config->teams_prom_relg ) {
+					$updates = true;
+				}
+				$settings->teams_prom_relg = $config->teams_prom_relg;
+				if ( empty( $this->lowest_promotion ) || $this->lowest_promotion !== $config->lowest_promotion ) {
+					$updates = true;
+				}
+				$settings->lowest_promotion = $config->lowest_promotion;
+			}
+			if ( empty( $this->team_ranking ) || $this->team_ranking !== $config->team_ranking ) {
+				$updates = true;
+			}
+			$settings->team_ranking = $config->team_ranking;
+			if ( empty( $this->point_rule ) || $this->point_rule !== $config->point_rule ) {
+				$updates = true;
+			}
+			$settings->point_rule = $config->point_rule;
+			if ( ! isset( $this->fixed_match_dates ) || $this->fixed_match_dates !== $config->fixed_match_dates ) {
+				$updates = true;
+			}
+			$settings->fixed_match_dates = $config->fixed_match_dates;
+			if ( ! isset( $this->home_away ) || $this->home_away !== $config->home_away ) {
+				$updates = true;
+			}
+			$settings->home_away = $config->home_away;
+			if ( empty( $this->round_length ) || $this->round_length !== $config->round_length ) {
+				$updates = true;
+			}
+			$settings->round_length = $config->round_length;
+			if ( ! isset( $this->match_day_restriction ) || $this->match_day_restriction !== $config->match_day_restriction ) {
+				$updates = true;
+			}
+			$settings->match_day_restriction = $config->match_day_restriction;
+			if ( ! isset( $this->match_day_weekends ) || $this->match_day_weekends !== $config->match_day_weekends ) {
+				$updates = true;
+			}
+			$settings->match_day_weekends     = $config->match_day_weekends;
+			$default_match_start_time         = explode( ':', $config->default_match_start_time );
+			$default_match_start_time_hour    = $default_match_start_time[0];
+			$default_match_start_time_minutes = $default_match_start_time[1];
+			if ( empty( $this->default_match_start_time['hour'] ) || $this->default_match_start_time['hour'] !== $default_match_start_time_hour ) {
+				$updates = true;
+			}
+			$settings->default_match_start_time['hour'] = $default_match_start_time_hour;
+			if ( empty( $this->default_match_start_time['minutes'] ) || $this->default_match_start_time['minutes'] !== $default_match_start_time_minutes ) {
+				$updates = true;
+			}
+			$settings->default_match_start_time['minutes'] = $default_match_start_time_minutes;
+			if ( empty( $this->point_format ) || $this->point_format !== $config->point_format ) {
+				$updates = true;
+			}
+			$settings->point_format = $config->point_format;
+			if ( empty( $this->point_format2 ) || $this->point_format2 !== $config->point_format2 ) {
+				$updates = true;
+			}
+			$settings->point_format2 = $config->point_format2;
+			if ( empty( $this->num_matches_per_page ) || $this->num_matches_per_page !== $config->num_matches_per_page ) {
+				$updates = true;
+			}
+			$settings->num_matches_per_page = $config->num_matches_per_page;
+			$standing_display_options       = Racketmanager_Util::get_standings_display_options();
+			foreach ( $standing_display_options as $display_option => $value ) {
+				$config->standings[ $display_option ] = isset( $config->standings[ $display_option ] ) ? 1 : 0;
+				if ( $this->standings[ $display_option ] !== $config->standings[ $display_option ] ) {
+					$updates = true;
+				}
+			}
+			$settings->standings = $config->standings;
+			if ( 'league' === $config->type ) {
+				if ( empty( $this->num_courts_available ) || $this->num_courts_available !== $config->num_courts_available ) {
+					$updates = true;
+				}
+				$settings->num_courts_available = $config->num_courts_available;
+			}
+			if ( $this->name !== $config->name || $upd_type || $updates ) {
+				$this->name     = $config->name;
+				$this->settings = (array) $settings;
+				$updates        = true;
+				$this->update_settings();
+			}
+		}
+		return $updates;
+	}
+	/**
+	 * Update settings function
+	 */
+	private function update_settings() {
+		global $wpdb;
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"UPDATE {$wpdb->racketmanager_competitions} SET `name` = %s, `type` = %s, `settings` = %s WHERE `id` = %d",
+				$this->name,
+				$this->type,
+				maybe_serialize( $this->settings ),
+				$this->id
+			)
+		);
+		wp_cache_set( $this->id, $this, 'competitions' );
+	}
 }

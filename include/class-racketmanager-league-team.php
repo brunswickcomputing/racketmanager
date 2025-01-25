@@ -723,4 +723,24 @@ final class Racketmanager_League_Team {
 			)
 		);
 	}
+	/**
+	 * Update constitution settings
+	 *
+	 * @param int    $league_id league id.
+	 * @param string $status status.
+	 */
+	public function update_constitution( $league_id, $status ) {
+		global $wpdb;
+		$this->league_id = $league_id;
+		$this->status    = $status;
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"UPDATE {$wpdb->racketmanager_table} SET `league_id` = %d, `status` = %s WHERE `id` = %d",
+				$league_id,
+				$this->status,
+				$this->table_id
+			)
+		);
+		wp_cache_set( $this->id, $this, 'leagueteam' );
+	}
 }

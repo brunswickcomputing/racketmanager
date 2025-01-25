@@ -571,7 +571,7 @@ function get_user( $user = null, $search_term = 'id' ) {
  * @param int|null $charges Racketmanager_Charges ID or charges object. Defaults to global $charges.
  * @return object charges|null
  */
-function get_charges( $charges = null ) {
+function get_charge( $charges = null ) {
 	if ( empty( $charges ) && isset( $GLOBALS['charges'] ) ) {
 		$charges = $GLOBALS['charges'];
 	}

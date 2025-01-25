@@ -390,6 +390,72 @@ class Racketmanager_Competition {
 	 */
 	public $is_active = false;
 	/**
+	 * Grade
+	 *
+	 * @var string
+	 */
+	public $grade;
+	/**
+	 * Max teams per league
+	 *
+	 * @var int
+	 */
+	public $max_teams;
+	/**
+	 * Max teams per club in a league
+	 *
+	 * @var int
+	 */
+	public $teams_per_club;
+	/**
+	 * Number of teams promoted and relegated
+	 *
+	 * @var int
+	 */
+	public $teams_prom_relg;
+	/**
+	 * Lowest team to be promoted
+	 *
+	 * @var int
+	 */
+	public $lowest_promotion;
+	/**
+	 * Default round length
+	 *
+	 * @var int
+	 */
+	public $round_length;
+	/**
+	 * Are there match day restrictions
+	 *
+	 * @var boolean
+	 */
+	public $match_day_restriction;
+	/**
+	 * Are weekend matches allowed
+	 *
+	 * @var boolean
+	 */
+	public $match_day_weekends;
+	/**
+	 * Are match dates fixed
+	 *
+	 * @var boolean
+	 */
+	public $fixed_match_dates;
+	/**
+	 * Are fixtures home and away
+	 *
+	 * @var boolean
+	 */
+	public $home_away;
+	/**
+	 * Number of courts available by club
+	 *
+	 * @var array
+	 */
+	public $num_courts_available;
+	/**
 	 * Retrieve competition instance
 	 *
 	 * @param int    $competition_id competition id.

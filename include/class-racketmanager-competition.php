@@ -742,6 +742,7 @@ class Racketmanager_Competition {
 			)
 		);
 		$this->name = $name;
+		wp_cache_set( $this->id, $this, 'competitions' );
 	}
 
 	/**
@@ -764,6 +765,8 @@ class Racketmanager_Competition {
 				$this->id
 			)
 		);
+		$this->settings = $settings;
+		wp_cache_set( $this->id, $this, 'competitions' );
 	}
 
 	/**
@@ -1714,6 +1717,7 @@ class Racketmanager_Competition {
 			);
 			wp_cache_delete( $this->id, 'competitions' );
 		}
+		wp_cache_set( $this->id, $this, 'competitions' );
 	}
 	/**
 	 * Save plan
@@ -1818,7 +1822,7 @@ class Racketmanager_Competition {
 					$racketmanager->set_message( __( 'Cup plan updated', 'racketmanager' ) );
 					$update = true;
 				} else {
-					$racketmanager->set_message( __( 'No updates', 'racketmanager' ) );
+					$racketmanager->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
 				}
 			} else {
 				$racketmanager->set_message( implode( '<br>', $err_msg ), true );
@@ -1869,7 +1873,7 @@ class Racketmanager_Competition {
 				$this->update_seasons( $seasons );
 				$racketmanager->set_message( __( 'Plan reset', 'racketmanager' ) );
 			} else {
-				$racketmanager->set_message( __( 'No updates', 'racketmanager' ) );
+				$racketmanager->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
 			}
 		}
 		return $updates;

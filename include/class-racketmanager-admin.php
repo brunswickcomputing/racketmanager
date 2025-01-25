@@ -5228,27 +5228,22 @@ class RacketManager_Admin extends RacketManager {
 	 */
 	protected function schedule_team_competition_emails( $competition_id, $season ) {
 		global $racketmanager;
-		if ( empty( $season->date_open ) ) {
-			$day            = intval( gmdate( 'd' ) );
-			$month          = intval( gmdate( 'm' ) );
-			$year           = intval( gmdate( 'Y' ) );
-			$hour           = intval( gmdate( 'H' ) );
-			$schedule_start = mktime( $hour, 0, 0, $month, $day, $year );
-		} else {
-			$schedule_date  = strtotime( $season->date_open );
-			$day            = intval( gmdate( 'd', $schedule_date ) );
-			$month          = intval( gmdate( 'm', $schedule_date ) );
-			$year           = intval( gmdate( 'Y', $schedule_date ) );
-			$schedule_start = mktime( 00, 00, 01, $month, $day, $year );
+		$today = gmdate( 'Y-m-d' );
+		if ( $today < $season->date_open ) {
+			$schedule_date   = strtotime( $season->date_open );
+			$day             = intval( gmdate( 'd', $schedule_date ) );
+			$month           = intval( gmdate( 'm', $schedule_date ) );
+			$year            = intval( gmdate( 'Y', $schedule_date ) );
+			$schedule_start  = mktime( 00, 00, 01, $month, $day, $year );
+			$schedule_name   = 'rm_notify_team_entry_open';
+			$schedule_args[] = intval( $competition_id );
+			$schedule_args[] = intval( $season->name );
+			Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+			$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
+			if ( ! $success ) {
+				error_log( __( 'Error scheduling team competition open emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			}
 		}
-		$schedule_name   = 'rm_notify_team_entry_open';
-		$schedule_args[] = intval( $competition_id );
-		$schedule_args[] = intval( $season->name );
-		Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
-		$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
-		if ( ! $success ) {
-			$racketmanager->set_message( __( 'Error scheduling team competition open emails', 'racketmanager' ), true );
-		} elseif ( ! empty( $season->date_closing ) ) {
 			$chase_date     = Racketmanager_Util::amend_date( $season->date_closing, 7, '-' );
 			$day            = intval( gmdate( 'd', $chase_date ) );
 			$month          = intval( gmdate( 'm', $chase_date ) );

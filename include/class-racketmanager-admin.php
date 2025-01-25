@@ -4513,7 +4513,7 @@ class RacketManager_Admin extends RacketManager {
 					/* translators: %s: event name */
 					$messages[] = sprintf( __( 'Events match dates not set for %s', 'racketmanager' ), $event->name );
 				}
-				$home_away = isset( $event->current_season['home_away'] ) ? $event->current_season['home_away'] : 'true';
+				$home_away = empty( $event->current_season['home_away'] ) ? false : $event->current_season['home_away'];
 				if ( $home_away ) {
 					$validation->num_rounds = $num_match_days / 2;
 				} else {
@@ -4529,7 +4529,7 @@ class RacketManager_Admin extends RacketManager {
 					/* translators: %s: event name */
 					$messages[] = sprintf( __( 'Events match dates not set for %s', 'racketmanager' ), $event->name );
 				}
-				$home_away_new = isset( $event->current_season['home_away'] ) ? $event->current_season['home_away'] : 'true';
+				$home_away_new = empty( $event->current_season['home_away'] ) ? false : $event->current_season['home_away'];
 				if ( $home_away_new !== $home_away ) {
 					$validation->success = false;
 					$messages[]          = __( 'Events have different home / away setting', 'racketmanager' );

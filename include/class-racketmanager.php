@@ -1231,13 +1231,16 @@ class RacketManager {
 	public function load_scripts() {
 		wp_register_script( 'racketmanager', RACKETMANAGER_URL . 'js/racketmanager.js', array( 'jquery', 'jquery-ui-core', 'jquery-ui-autocomplete', 'jquery-effects-core', 'jquery-effects-slide', 'thickbox' ), RACKETMANAGER_VERSION, array( 'in_footer' => true ) );
 		wp_enqueue_script( 'racketmanager' );
-		wp_localize_script(
+		wp_add_inline_script(
 			'racketmanager',
-			'ajax_var',
-			array(
-				'url'        => admin_url( 'admin-ajax.php' ),
-				'ajax_nonce' => wp_create_nonce( 'ajax-nonce' ),
-			)
+			'const ajax_var = ' . wp_json_encode(
+				array(
+					'url'        => admin_url( 'admin-ajax.php' ),
+					'ajax_nonce' => wp_create_nonce( 'ajax-nonce' ),
+				)
+			),
+			'before',
+		);
 		);
 		wp_enqueue_script( 'password-strength-meter' );
 		wp_enqueue_script( 'password-strength-meter-mediator', RACKETMANAGER_URL . 'js/password-strength-meter-mediator.js', array( 'password-strength-meter' ), RACKETMANAGER_VERSION, array( 'in_footer' => true ) );

@@ -33,8 +33,8 @@ function racketmanager_setup_plugin() {
 	global $racketmanager;
 
 	define( 'RACKETMANAGER', 'racketmanager' );
-	define( 'RACKETMANAGER_VERSION', '8.32.0' );
-	define( 'RACKETMANAGER_DBVERSION', '8.33.4' );
+	define( 'RACKETMANAGER_VERSION', '8.33.0' );
+	define( 'RACKETMANAGER_DBVERSION', '8.33.5' );
 	define( 'RACKETMANAGER_URL', esc_url( plugin_dir_url( __FILE__ ) ) );
 	define( 'RACKETMANAGER_PATH', plugin_dir_path( __FILE__ ) );
 	define( 'RACKETMANAGER_PLUGIN_FILE', __FILE__ );

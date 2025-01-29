@@ -331,21 +331,11 @@ final class Racketmanager_Charges {
 	public function send_invoices() {
 		global $racketmanager;
 		$charges_entries = $this->get_club_entries();
-		$billing         = $racketmanager->get_options( 'billing' );
-		$date_due        = new \DateTime( $this->date );
-		if ( isset( $billing['paymentTerms'] ) && intval( $billing['paymentTerms'] ) !== 0 ) {
-			$date_interval = intval( $billing['paymentTerms'] );
-			$date_interval = 'P' . $date_interval . 'D';
-			$date_due->add( new \DateInterval( $date_interval ) );
-		}
 		foreach ( $charges_entries as $entry ) {
 			$invoice                 = new \stdClass();
 			$invoice->charge_id      = $this->id;
 			$invoice->club_id        = $entry->id;
-			$invoice->invoice_number = $billing['invoiceNumber'];
-			$invoice->status         = 'new';
 			$invoice->date           = $this->date;
-			$invoice->date_due       = $date_due->format( 'Y-m-d' );
 			$invoice                 = new Racketmanager_Invoice( $invoice );
 			$invoice->set_amount( $entry->fee );
 			$sent = false;
@@ -353,12 +343,8 @@ final class Racketmanager_Charges {
 			if ( $sent ) {
 				$invoice->set_status( 'sent' );
 			}
-			$billing['invoiceNumber'] += 1;
 		}
 		if ( $sent ) {
-			$options                             = $racketmanager->get_options();
-			$options['billing']['invoiceNumber'] = $billing['invoiceNumber'];
-			update_option( 'racketmanager', $options );
 			$racketmanager->set_message( __( 'Invoices sent', 'racketmanager' ) );
 			$this->set_status( 'final' );
 		} else {

@@ -38,6 +38,18 @@ final class Racketmanager_Invoice {
 	 */
 	public $club_id;
 	/**
+	 * Player
+	 *
+	 * @var object
+	 */
+	public $player;
+	/**
+	 * Player id
+	 *
+	 * @var int
+	 */
+	public $player_id;
+	/**
 	 * Charge
 	 *
 	 * @var object
@@ -88,7 +100,7 @@ final class Racketmanager_Invoice {
 		if ( ! $invoice ) {
 			$invoice = $wpdb->get_row(
 				$wpdb->prepare(
-					"SELECT `id`, `charge_id`, `club_id`, `status`, `invoiceNumber` as `invoice_number`, `date`, `date_due`, `amount` FROM {$wpdb->racketmanager_invoices} WHERE `id` = %d LIMIT 1",
+					"SELECT `id`, `charge_id`, `club_id`, `player_id`, `status`, `invoiceNumber` as `invoice_number`, `date`, `date_due`, `amount` FROM {$wpdb->racketmanager_invoices} WHERE `id` = %d LIMIT 1",
 					$invoice_id
 				)
 			);  // db call ok.
@@ -116,11 +128,15 @@ final class Racketmanager_Invoice {
 				$this->$key = $value;
 			}
 
-			if ( ! isset( $this->id ) && isset( $this->invoice_number ) ) {
+			if ( ! isset( $this->id ) ) {
 				$this->add();
 			}
-
-			$this->club   = get_club( $this->club_id );
+			if ( !empty( $this->club_id ) ) {
+				$this->club   = get_club( $this->club_id );
+			}
+			if ( !empty( $this->player_id ) ) {
+				$this->player   = get_player( $this->player_id );
+			}
 			$this->charge = get_charge( $this->charge_id );
 		}
 	}
@@ -129,20 +145,51 @@ final class Racketmanager_Invoice {
 	 * Add new invoice
 	 */
 	private function add() {
-		global $wpdb;
-
-		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare(
-				"INSERT INTO {$wpdb->racketmanager_invoices} (`charge_id`, `club_id`, `status`, `invoiceNumber`, `date`, `date_due`) VALUES (%d, %d, %s, %d, %s, %s)",
-				$this->charge_id,
-				$this->club_id,
-				$this->status,
-				$this->invoice_number,
-				$this->date,
-				$this->date_due
-			)
-		);
-		$this->id = $wpdb->insert_id;
+		global $racketmanager, $wpdb;
+		$this->status = 'new';
+		$billing      = $racketmanager->get_options( 'billing' );
+		if ( $billing ) {
+			$date_due = new \DateTime( $this->date );
+			if ( isset( $billing['paymentTerms'] ) && intval( $billing['paymentTerms'] ) !== 0 ) {
+				$date_interval = intval( $billing['paymentTerms'] );
+				$date_interval = 'P' . $date_interval . 'D';
+				$date_due->add( new \DateInterval( $date_interval ) );
+			}
+			$this->date_due       = $date_due->format( 'Y-m-d' );
+			$this->invoice_number = $billing['invoiceNumber'];
+		}
+		if ( ! empty( $this->invoice_number ) ) {
+			if ( empty( $this->player_id ) ) {
+				$result = $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+					$wpdb->prepare(
+						"INSERT INTO {$wpdb->racketmanager_invoices} (`charge_id`, `club_id`, `status`, `invoiceNumber`, `date`, `date_due`) VALUES (%d, %d, %s, %d, %s, %s)",
+						$this->charge_id,
+						$this->club_id,
+						$this->status,
+						$this->invoice_number,
+						$this->date,
+						$this->date_due
+					)
+				);
+			} else {
+				$result = $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+					$wpdb->prepare(
+						"INSERT INTO {$wpdb->racketmanager_invoices} (`charge_id`, `player_id`, `status`, `invoiceNumber`, `date`, `date_due`) VALUES (%d, %d, %s, %d, %s, %s)",
+						$this->charge_id,
+						$this->player_id,
+						$this->status,
+						$this->invoice_number,
+						$this->date,
+						$this->date_due
+					)
+				);
+			}
+			if ( $result ) {
+				$this->id                            = $wpdb->insert_id;
+				$billing['invoiceNumber']           += 1;
+				$racketmanager->set_options( 'billing', $billing );
+			}
+		}
 	}
 	/**
 	 * Set invoice amount

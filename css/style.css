@@ -691,15 +691,20 @@ div.tm-team-content div.team {
 .form-check.form-checkboxes__item {
 	padding-left: 2.5em;
 }
-.form-check.form-check-lg {
-	font-size: 2rem;
+@media (min-width: 768px) {
+	.form-check.form-check-lg {
+		font-size: 2rem;
+
+	}
 }
 .form-check-lg .is-invalid~.invalid-feedback {
 	font-size: 0.875rem;
 }
 .is-loading .form-checkboxes,
-.is-loading .tab-content {
+.is-loading .tab-content,
+.is-loading .btn {
 	opacity: 0.1;
+	display: none;
 }
 .is-loading #splash {
 	display: block !important;
@@ -4101,7 +4106,15 @@ dt.list__label::after {
 		flex: 0 1 8rem;
 	}
 }
-
+.tournament-entry--row {
+	align-content: center;
+	align-items: center;
+}
+@media (min-width: 768px) {
+	.tournament-entry--row {
+		min-height: 3.5rem;
+	}
+}
 .individual-entry__panel,
 .club-entry__panel {
 	counter-increment: li;
@@ -5836,4 +5849,19 @@ svg.media__img-element--icon.winner, svg.media__img-element--icon.runner-up {
 .team-rating {
 	align-content: center;
 	text-align: end;
+}
+.event-price {
+	float: right;
+	text-align: end;
+}
+input[type="number"].event-price {
+	border: none;
+}
+.price-row {
+	display: flex;
+	justify-content: end;
+}
+.individual-entry__footer .price-cost {
+	font-size: 1.5rem;
+	font-weight: 700;
 }

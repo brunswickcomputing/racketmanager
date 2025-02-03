@@ -8,14 +8,14 @@
 
 namespace Racketmanager;
 
-$clubs           = $racketmanager->get_clubs();
+$clubs           = self::get_clubs();
 $args            = array();
 $args['status']  = 'final';
 $args['orderby'] = array(
 	'season'         => 'DESC',
 	'competition_id' => 'ASC',
 );
-$charges         = $racketmanager->get_charges( $args );
+$charges         = self::get_charges( $args );
 $invoices        = $finance_invoices;
 ?>
 <div class="container">
@@ -105,7 +105,15 @@ $invoices        = $finance_invoices;
 								<td class="check-column"><input type="checkbox" value="<?php echo esc_html( $invoice->id ); ?>" name="invoice[<?php echo esc_html( $invoice->id ); ?>]" /></td>
 								<td class="text-center"><a href="admin.php?page=racketmanager-finances&amp;view=invoice&amp;invoice=<?php echo esc_html( $invoice->id ); ?>"><?php echo esc_html( $invoice->invoice_number ); ?></a></td>
 								<td class=""><?php echo esc_html( ucfirst( $invoice->charge->competition->name ) . ' ' . $invoice->charge->season ); ?></td>
-								<td class=""><?php echo esc_html( $invoice->club->shortcode ); ?></td>
+								<td class="">
+									<?php
+									if ( empty( $invoice->player ) ) {
+										echo esc_html( $invoice->club->shortcode );
+									} else {
+										echo esc_html( $invoice->player->display_name );
+									}
+									?>
+								</td>
 								<td class="text-end"><?php the_currency_amount( $invoice->amount ); ?></td>
 								<td class="d-none d-lg-table-cell text-center"><?php echo esc_html( $invoice->status ); ?></td>
 								<td class="d-none d-lg-table-cell text-center"><?php echo esc_html( $invoice->date_due ); ?></td>

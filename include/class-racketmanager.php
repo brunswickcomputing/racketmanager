@@ -12,6 +12,7 @@ namespace Racketmanager;
  * Main class to implement RacketManager
  */
 class RacketManager {
+	protected static $instance     = null;
 	/**
 	 * The array of templates that this plugin tracks.
 	 *
@@ -91,32 +92,50 @@ class RacketManager {
 	 */
 	public function __construct() {
 		global $wpdb;
+		if ( empty( $this->options ) ) {
+			$wpdb->show_errors();
+			$this->load_options();
+			$this->load_libraries();
 
-		$wpdb->show_errors();
-		$this->load_options();
-		$this->load_libraries();
+			add_action( 'widgets_init', array( &$this, 'register_widget' ) );
+			add_action( 'init', array( &$this, 'racketmanager_rewrites' ) );
+			add_action( 'init', array( &$this, 'racketmanager_locale' ) );
+			add_action( 'wp_enqueue_scripts', array( &$this, 'load_styles' ), 5 );
+			add_action( 'wp_enqueue_scripts', array( &$this, 'load_scripts' ) );
+			add_action( 'rm_resultPending', array( &$this, 'chase_pending_results' ), 1 );
+			add_action( 'rm_confirmationPending', array( &$this, 'chase_pending_approvals' ), 1 );
+			add_action( 'wp_loaded', array( &$this, 'add_racketmanager_templates' ) );
+			add_action( 'template_redirect', array( &$this, 'redirect_to_login' ) );
+			add_filter( 'wp_privacy_personal_data_exporters', array( &$this, 'racketmanager_register_exporter' ) );
+			add_filter( 'wp_mail', array( &$this, 'racketmanager_mail' ) );
+			add_filter( 'email_change_email', array( &$this, 'racketmanager_change_email_address' ), 10, 3 );
+			add_filter( 'pre_get_document_title', array( &$this, 'set_page_title' ), 999, 1 );
+			add_action( 'rm_calculate_player_ratings', array( &$this, 'calculate_player_ratings' ), 1 );
+			add_action( 'rm_calculate_tournament_ratings', array( &$this, 'calculate_tournament_ratings' ), 1 );
+			add_action( 'rm_calculate_cup_ratings', array( &$this, 'calculate_cup_ratings' ), 10, 3 );
+			add_action( 'rm_notify_team_entry_open', array( &$this, 'notify_team_entry_open' ), 10, 2 );
+			add_action( 'rm_notify_team_entry_reminder', array( &$this, 'notify_team_entry_reminder' ), 10, 2 );
+			add_action( 'rm_notify_tournament_entry_open', array( &$this, 'notify_tournament_entry_open' ), 10, 1 );
+			add_action( 'rm_notify_tournament_entry_reminder', array( &$this, 'notify_tournament_entry_reminder' ), 10, 1 );
+			add_action( 'rm_send_invoices', array( &$this, 'send_invoices' ), 10, 1 );
+		}
+		self::$instance = $this;
+	}
+	/**
+	 * Return an instance of this class.
+	 *
+	 * @since     1.0.0
+	 *
+	 * @return    object    A single instance of this class.
+	 */
+	public static function get_instance() {
 
-		add_action( 'widgets_init', array( &$this, 'register_widget' ) );
-		add_action( 'init', array( &$this, 'racketmanager_rewrites' ) );
-		add_action( 'init', array( &$this, 'racketmanager_locale' ) );
-		add_action( 'wp_enqueue_scripts', array( &$this, 'load_styles' ), 5 );
-		add_action( 'wp_enqueue_scripts', array( &$this, 'load_scripts' ) );
-		add_action( 'rm_resultPending', array( &$this, 'chase_pending_results' ), 1 );
-		add_action( 'rm_confirmationPending', array( &$this, 'chase_pending_approvals' ), 1 );
-		add_action( 'wp_loaded', array( &$this, 'add_racketmanager_templates' ) );
-		add_action( 'template_redirect', array( &$this, 'redirect_to_login' ) );
-		add_filter( 'wp_privacy_personal_data_exporters', array( &$this, 'racketmanager_register_exporter' ) );
-		add_filter( 'wp_mail', array( &$this, 'racketmanager_mail' ) );
-		add_filter( 'email_change_email', array( &$this, 'racketmanager_change_email_address' ), 10, 3 );
-		add_filter( 'pre_get_document_title', array( &$this, 'set_page_title' ), 999, 1 );
-		add_action( 'rm_calculate_player_ratings', array( &$this, 'calculate_player_ratings' ), 1 );
-		add_action( 'rm_calculate_tournament_ratings', array( &$this, 'calculate_tournament_ratings' ), 1 );
-		add_action( 'rm_calculate_cup_ratings', array( &$this, 'calculate_cup_ratings' ), 10, 3 );
-		add_action( 'rm_notify_team_entry_open', array( &$this, 'notify_team_entry_open' ), 10, 2 );
-		add_action( 'rm_notify_team_entry_reminder', array( &$this, 'notify_team_entry_reminder' ), 10, 2 );
-		add_action( 'rm_notify_tournament_entry_open', array( &$this, 'notify_tournament_entry_open' ), 10, 1 );
-		add_action( 'rm_notify_tournament_entry_reminder', array( &$this, 'notify_tournament_entry_reminder' ), 10, 1 );
-		add_action( 'rm_send_invoices', array( &$this, 'send_invoices' ), 10, 1 );
+		// If the single instance hasn't been set, set it now.
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+
+		return self::$instance;
 	}
 	/**
 	 * Set page title function
@@ -820,7 +839,7 @@ class RacketManager {
 		}
 	}
 	/**
-	 * Notify tournament entry open
+	 * Notify tournament entry open and lock fees
 	 *
 	 * @param int $tournament_id tournament id.
 	 * @return void
@@ -830,6 +849,13 @@ class RacketManager {
 			$tournament = get_tournament( $tournament_id );
 			if ( $tournament ) {
 				$tournament->notify_entry_open();
+				$tournament->fees = $tournament->get_fees();
+				if ( ! empty( $tournament->fees->id ) ) {
+					$charge = get_charge( $tournament->fees->id );
+					if ( $charge ) {
+						$charge->set_status( 'final' );
+					}
+				}
 			}
 		}
 	}
@@ -1120,6 +1146,7 @@ class RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-rest-routes.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-message.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-user.php';
+		require_once RACKETMANAGER_PATH . 'vendor/autoload.php';
 
 		/*
 		* load sports libraries
@@ -1133,6 +1160,7 @@ class RacketManager {
 		}
 
 		// Global libraries.
+		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-stripe.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-ajax.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-ajax-frontend.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes.php';
@@ -1224,11 +1252,20 @@ class RacketManager {
 			return $this->options;
 		}
 	}
-
+	/**
+	 * Set options
+	 *
+	 * @param array $options.
+	 */
+	public function set_options( $type, $options ) {
+		$this->options[ $type ] = $options;
+		update_option( 'racketmanager', $this->options );
+	}
 	/**
 	 * Load Javascript
 	 */
 	public function load_scripts() {
+		$javascript_locale = str_replace( '_', '-', get_locale() );
 		wp_register_script( 'racketmanager', RACKETMANAGER_URL . 'js/racketmanager.js', array( 'jquery', 'jquery-ui-core', 'jquery-ui-autocomplete', 'jquery-effects-core', 'jquery-effects-slide', 'thickbox' ), RACKETMANAGER_VERSION, array( 'in_footer' => true ) );
 		wp_enqueue_script( 'racketmanager' );
 		wp_add_inline_script(
@@ -1241,23 +1278,26 @@ class RacketManager {
 			),
 			'before',
 		);
-		);
-		wp_enqueue_script( 'password-strength-meter' );
-		wp_enqueue_script( 'password-strength-meter-mediator', RACKETMANAGER_URL . 'js/password-strength-meter-mediator.js', array( 'password-strength-meter' ), RACKETMANAGER_VERSION, array( 'in_footer' => true ) );
 		wp_add_inline_script(
-			'password-strength-meter',
-			'const pwsL10n = ' . wp_json_encode(
+			'racketmanager',
+			'const locale_var = ' . wp_json_encode(
 				array(
-					'empty'    => __( 'Strength indicator', 'racketmanager' ),
-					'short'    => __( 'Very weak', 'racketmanager' ),
-					'bad'      => __( 'Weak', 'racketmanager' ),
-					'good'     => __( 'Good', 'racketmanager' ),
-					'strong'   => __( 'Strong', 'racketmanager' ),
-					'mismatch' => __( 'Mismatch', 'racketmanager' ),
+					'currency' => $this->currency_code,
+					'locale'   => $javascript_locale,
 				)
 			),
 			'before',
 		);
+		wp_enqueue_script( 'password-strength-meter' );
+		wp_localize_script( 'password-strength-meter', 'pwsL10n', array(
+			'empty'    => __( 'But... it\'s empty!', 'theme-domain' ),
+			'short'    => __( 'Too short!', 'theme-domain' ),
+			'bad'      => __( 'Not even close!', 'theme-domain' ),
+			'good'     => __( 'You are getting closer...', 'theme-domain' ),
+			'strong'   => __( 'Now, that\'s a password!', 'theme-domain' ),
+			'mismatch' => __( 'They are completely different, come on!', 'theme-domain' )
+		) );
+		wp_enqueue_script( 'password-strength-meter-mediator', RACKETMANAGER_URL . 'js/password-strength-meter-mediator.js', array( 'password-strength-meter' ), RACKETMANAGER_VERSION, array( 'in_footer' => true ) );
 		?>
 	<script type="text/javascript">
 	//<![CDATA[
@@ -1323,6 +1363,18 @@ class RacketManager {
 		add_rewrite_rule(
 			'tournaments/?$',
 			'index.php?pagename=competitions&type=tournament',
+			'top'
+		);
+		// tournament entry form - name - payment complete.
+		add_rewrite_rule(
+			'entry-form/(.+?)-tournament/payment-complete/?$',
+			'index.php?pagename=competition%2Fentry%2Fpayment-complete&tournament=$matches[1]&competition_type=tournament&club_name=$matches[2]',
+			'top'
+		);
+		// tournament entry form - name - payment.
+		add_rewrite_rule(
+			'entry-form/(.+?)-tournament/payment/?$',
+			'index.php?pagename=competition%2Fentry%2Fpayment&tournament=$matches[1]&competition_type=tournament&club_name=$matches[2]',
 			'top'
 		);
 		// tournament entry form - name - club.
@@ -2300,7 +2352,6 @@ class RacketManager {
 		}
 		if ( ! empty( $from ) ) {
 			$address_headers = compact( 'to', 'cc', 'bcc' );
-
 			foreach ( $address_headers as $address_header => $addresses ) {
 				if ( empty( $addresses ) ) {
 					continue;
@@ -2359,6 +2410,8 @@ class RacketManager {
 				case 'league-entry':
 				case 'cup-entry':
 				case 'entry':
+				case 'payment':
+				case 'payment-complete':
 					wp_safe_redirect( wp_login_url( $redirect_page ) );
 					exit;
 				case 'match':
@@ -3905,42 +3958,49 @@ class RacketManager {
 	 *
 	 * @param array $args query arguments.
 	 */
-	protected function get_invoices( $args = array() ) {
+	public function get_invoices( $args = array() ) {
 		global $wpdb;
 
 		$defaults  = array(
-			'club'   => false,
-			'status' => false,
-			'charge' => false,
+			'club'      => false,
+			'status'    => false,
+			'charge'    => false,
+			'player'    => false,
+			'reference' => false,
 		);
 		$args      = array_merge( $defaults, $args );
 		$club_id   = $args['club'];
 		$status    = $args['status'];
 		$charge_id = $args['charge'];
+		$player_id = $args['player'];
+		$reference = $args['reference'];
 
 		$search_terms = array();
 		if ( $club_id ) {
 			$search_terms[] = $wpdb->prepare( '`club_id` = %d', $club_id );
+		} elseif ( $player_id ) {
+			$search_terms[] = $wpdb->prepare( '`player_id` = %d', $player_id );
 		}
 		if ( $status ) {
-			if ( 'paid' === $status ) {
-				$search_terms[] = $wpdb->prepare( '`status` = %s', $status );
-			} elseif ( 'open' === $status ) {
+			if ( 'open' === $status ) {
 				$search_terms[] = "`status` != ('paid')";
 			} elseif ( 'overdue' === $status ) {
 				$search_terms[] = "(`status` != ('paid') AND `date_due` < CURDATE())";
+			} else {
+				$search_terms[] = $wpdb->prepare( '`status` = %s', $status );
 			}
 		}
 		if ( $charge_id ) {
 			$search_terms[] = $wpdb->prepare( '`charge_id` = %d', $charge_id );
 		}
-
+		if ( $reference ) {
+			$search_terms[] = $wpdb->prepare( '`payment_reference` = %s', $reference );
+		}
 		$search = '';
 		if ( ! empty( $search_terms ) ) {
 			$search  = ' AND ';
 			$search .= implode( ' AND ', $search_terms );
 		}
-
 		$invoices = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			"SELECT `id` FROM {$wpdb->racketmanager_invoices} WHERE 1 = 1 $search order by `invoiceNumber`"
@@ -3952,5 +4012,100 @@ class RacketManager {
 			$invoices[ $i ] = $invoice;
 		}
 		return $invoices;
+	}
+	/**
+	 * Get teams from database
+	 *
+	 * @param string $args search arguments.
+	 * @return array
+	 */
+	public function get_teams( $args = array() ) {
+		global $wpdb;
+
+		$defaults = array(
+			'offset'  => 0,
+			'limit'   => 99999999,
+			'orderby' => array(
+				'id' => 'ASC',
+			),
+			'count'   => false,
+			'player'  => false,
+			'partner' => false,
+		);
+		$args     = array_merge( $defaults, $args );
+		$offset   = $args['offset'];
+		$limit    = $args['limit'];
+		$orderby  = $args['orderby'];
+		$count    = $args['count'];
+		$player   = $args['player'];
+		$partner  = $args['partner'];
+
+		$search_terms   = array();
+		if ( $player ) {
+			$search_terms[] = $wpdb->prepare( "`id` IN (SELECT `team_id` FROM {$wpdb->racketmanager_team_players} WHERE `player_id` = %d )", $player );
+		}
+		if ( $partner ) {
+			$search_terms[] = $wpdb->prepare( "`id` IN (SELECT `team_id` FROM {$wpdb->racketmanager_team_players} WHERE `player_id` = %d )", $partner );
+		}
+		$search = '';
+		if ( ! empty( $search_terms ) ) {
+			$search  = ' AND ';
+			$search .= implode( ' AND ', $search_terms );
+		}
+
+		if ( $count ) {
+			$sql = 'SELECT COUNT(distinct(`id`))';
+		} else {
+			$sql = 'SELECT `id`';
+		}
+		$sql .= " FROM {$wpdb->racketmanager_teams} WHERE 1 =1 " . $search;
+
+		if ( $count ) {
+			$teams = wp_cache_get( md5( $sql ), 'teams' );
+			if ( ! $teams ) {
+				$teams = $wpdb->get_var(
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+					$sql
+				); // db call ok.
+				wp_cache_set( md5( $sql ), $teams, 'teams' );
+
+			}
+			return $teams;
+		}
+		$orderby_string = '';
+		$i              = 0;
+		foreach ( $orderby as $order => $direction ) {
+			if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
+				$direction = 'ASC';
+			}
+			$orderby_string .= '`' . $order . '` ' . $direction;
+			if ( $i < ( count( $orderby ) - 1 ) ) {
+				$orderby_string .= ',';
+			}
+			++$i;
+		}
+		$orderby = $orderby_string;
+		$sql    .= ' ORDER BY ' . $orderby;
+		$sql     = $wpdb->prepare(
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			$sql . ' LIMIT %d, %d',
+			intval( $offset ),
+			intval( $limit )
+		);
+		$teams = wp_cache_get( md5( $sql ), 'teams' );
+		if ( ! $teams ) {
+			$teams = $wpdb->get_results(
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			); // db call ok.
+			wp_cache_set( md5( $sql ), $teams, 'teams' );
+		}
+		foreach ( $teams as $i => $team ) {
+			$team = get_team( $team->id );
+			if ( $team ) {
+				$teams[ $i ] = $team;
+			}
+		}
+		return $teams;
 	}
 }

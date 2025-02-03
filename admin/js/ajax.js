@@ -781,12 +781,13 @@ Racketmanager.resetMatchScores = function (e, formId) {
 		.prop('selected', false);
 };
 Racketmanager.setTournamentOpenDate = function (e) {
-	let date_openField = "#date_open";
-	let dateCloseField = "#date_closing";
-	let dateWithdrawfield = "#date_withdraw";
+	let date_openField = "#dateOpen";
+	let dateStartField = "#dateStart";
+	let dateCloseField = "#dateClose";
+	let dateWithdrawfield = "#dateWithdraw";
 	let gradeField = '#grade';
 	let grade = jQuery(gradeField).val();
-	let date_start = jQuery('#date_start').val();
+	let date_start = jQuery(dateStartField).val();
 	let notifyField1 = "#alert-dates";
 	jQuery(notifyField1).hide();
 	jQuery(notifyField1).removeClass('alert--success alert--danger');
@@ -797,6 +798,7 @@ Racketmanager.setTournamentOpenDate = function (e) {
 		type: "POST",
 		data: {
 			"dateStart": date_start,
+			"grade": grade,
 			"action": "racketmanager_set_tournament_dates",
 			"security": ajax_var.ajax_nonce,
 		},
@@ -825,4 +827,92 @@ Racketmanager.setTournamentOpenDate = function (e) {
 			jQuery(notifyField1).show();
 		}
 	});
+};
+Racketmanager.setNumMatchDays = function (e) {
+	let homeAwayTrueField = "#homeAwayTrue";
+	let homeAwayFalseField = "#homeAwayFalseFalse";
+	let maxTeamsfield = "#max_teams";
+	let numMatchDaysField = '#num_match_days';
+	let maxTeams = jQuery(maxTeamsfield).val();
+	let homeAway = jQuery(homeAwayTrueField).is(':checked');
+	let numMatchDays = 0;
+	if (maxTeams) {
+		if (maxTeams % 2 != 0) {
+			maxTeams++;
+		}
+		numMatchDays = maxTeams - 1;
+		if (homeAway) {
+			numMatchDays = numMatchDays * 2;
+		}
+		jQuery(numMatchDaysField).val(numMatchDays);
+	}
+};
+Racketmanager.setEndDate = function (e) {
+	let competitionTypeField = "#competitionType";
+	let competitionType = jQuery(competitionTypeField).val();
+	if (competitionType === 'league') {
+		let dateStartField = "#dateStart";
+		let dateStart = jQuery(dateStartField).val();
+		let dateEndField = "#dateEnd";
+		let roundLengthField = "#round_length";
+		let fillerWeeksField = "#filler_weeks";
+		let homeAwayDiffField = "#home_away_diff";
+		let numMatchDaysField = '#num_match_days';
+		let roundLength = jQuery(roundLengthField).val();
+		let roundLengthWeeks = roundLength / 7;
+		let fillerWeeks = jQuery(fillerWeeksField).val();
+		if (fillerWeeks == '') {
+			fillerWeeks = 0;
+		}
+		let homeAwayDiff = jQuery(homeAwayDiffField).val();
+		if (homeAwayDiff == '') {
+			homeAwayDiff = 0;
+		}
+		let numMatchDays = jQuery(numMatchDaysField).val();
+		if (dateStart) {
+			if (roundLengthWeeks && numMatchDays) {
+				let endDateGapWeeks = ((+roundLengthWeeks * +numMatchDays) + +fillerWeeks + +homeAwayDiff);
+				let endDateGap = (endDateGapWeeks * 7) - 1;
+				let endDate = Racketmanager.amendDate(dateStart, endDateGap);
+				jQuery(dateEndField).val(endDate);
+			}
+		}
+	}
+};
+Racketmanager.amendDate = function (date, adjustment) {
+	let newDate = new Date(date);
+	newDate.setDate(newDate.getDate() + adjustment);
+	let year = newDate.toLocaleString("default", { year: "numeric" });
+	let month = newDate.toLocaleString("default", { month: "2-digit" });
+	let day = newDate.toLocaleString("default", { day: "2-digit" });
+	let returnDate = year + "-" + month + "-" + day;
+	return returnDate;
+};
+Racketmanager.setEventName = function (e) {
+	let eventNameField = "#event_name";
+	let eventName = jQuery(eventNameField).val();
+	if (eventName) {
+		return;
+	}
+	let typeField = "#type";
+	let type = jQuery(typeField).val();
+	if (type) {
+		let typeTextField = typeField + " option:selected";
+		let typeText = jQuery(typeTextField).text();
+		if (typeText) {
+			let ageLimitField = "#age_limit";
+			let ageLimit = jQuery(ageLimitField).val();
+			if (ageLimit) {
+				if (ageLimit === 'open') {
+					eventName = '';
+				} else if ( ageLimit <= 21) {
+					eventName = 'U' + ageLimit + ' ';
+				} else if ( ageLimit >= 30) {
+					eventName = ageLimit + '+ ';
+				}
+				eventName = eventName + typeText;
+				jQuery(eventNameField).val(eventName);
+			}
+		}
+	}
 };

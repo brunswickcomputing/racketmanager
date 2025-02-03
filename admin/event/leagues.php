@@ -87,7 +87,7 @@ namespace Racketmanager;
 							}
 							?>
 						</div>
-						<div class="d-none d-lg-block col-auto"><a href="admin.php?page=racketmanager&amp;subpage=show-event&amp;event_id=<?php echo esc_html( $event->id ); ?>&amp;editleague=<?php echo esc_html( $league->id ); ?>"><?php esc_html_e( 'Edit', 'racketmanager' ); ?></a></div>
+						<div class="d-none d-lg-block col-auto"><a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=event&amp;event_id=<?php echo esc_html( $event->id ); ?>&amp;editleague=<?php echo esc_html( $league->id ); ?>"><?php esc_html_e( 'Edit', 'racketmanager' ); ?></a></div>
 					</div>
 				<?php } ?>
 			<?php } ?>
@@ -104,16 +104,35 @@ namespace Racketmanager;
 				$form_action = __( 'Update League', 'racketmanager' );
 			}
 			?>
-
 		<h3><?php echo esc_html( $form_action ); ?></h3>
 		<form action="admin.php?page=racketmanager&subpage=show-event&event_id=<?php echo esc_html( $event_id ); ?>" method="post" class="form-control">
 			<?php wp_nonce_field( 'racketmanager_add-league', 'racketmanager_nonce' ); ?>
 			<input type="hidden" name="event_id" value="<?php echo esc_html( $event_id ); ?>" />
 			<input type="hidden" name="league_id" value="<?php echo esc_html( $league_id ); ?>" />
-			<div class="form-floating mb-3">
-				<input type="text" class="form-control" required="required" placeholder="<?php esc_html_e( 'Enter new league name', 'racketmanager' ); ?>"name="league_title" id="league_title" value="<?php echo esc_html( $league_title ); ?>" size="30" />
-				<label for="league_title"><?php esc_html_e( 'League name', 'racketmanager' ); ?></label>
-			</div>
+			<?php
+			if ( $event->competition->is_league ) {
+				if ( $league_id ) {
+					?>
+					<div class="form-floating mb-3">
+						<input type="text" class="form-control" required="required" placeholder="<?php esc_html_e( 'Enter new league name', 'racketmanager' ); ?>"name="sequence" id="sequence" value="<?php echo esc_html( $league_edit->sequence ); ?>" size="30" />
+						<label for="sequence"><?php esc_html_e( 'League sequence', 'racketmanager' ); ?></label>
+					</div>
+					<?php
+				} else {
+					?>
+					<?php
+				}
+				?>
+				<?php
+			} else {
+				?>
+				<div class="form-floating mb-3">
+					<input type="text" class="form-control" required="required" placeholder="<?php esc_html_e( 'Enter new league name', 'racketmanager' ); ?>"name="league_title" id="league_title" value="<?php echo esc_html( $league_title ); ?>" size="30" />
+					<label for="league_title"><?php esc_html_e( 'League name', 'racketmanager' ); ?></label>
+				</div>
+				<?php
+			}
+			?>
 			<div class="form-group mb-3">
 				<input type="submit" name="addLeague" value="<?php echo esc_html( $form_action ); ?>" class="btn btn-primary" />
 			</div>

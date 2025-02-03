@@ -1,0 +1,65 @@
+<?php
+/**
+ * Competition Settings events administration panel
+ *
+ * @package Racketmanager/Admin/Templates
+ */
+
+namespace Racketmanager;
+
+$tab_name = 'events';
+$events   = $competition->get_events();
+?>
+<div class="mb-3 form-control">
+	<form id='events-action' method='post' action='' class='form-control mb-3'>
+		<?php wp_nonce_field( 'racketmanager__events-bulk', 'racketmanager_event_nonce' ); ?>
+		<input type="hidden" name="competition_id" value="<?php echo esc_html( $competition_id ); ?>" />
+		<div class="row gx-3 mb-3 align-items-center">
+			<!-- Bulk Actions -->
+			<div class="col-auto">
+				<select class="form-select" name="action">
+					<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
+					<option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
+				</select>
+			</div>
+			<div class="col-auto">
+				<button name="doactionevent" id="doactionevent" class="btn btn-secondary"><?php esc_html_e( 'Apply', 'racketmanager' ); ?></button>
+			</div>
+		</div>
+		<table class="table table-striped table-borderless">
+			<thead class="table-dark">
+				<tr>
+					<th class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('events-action'));" /></th>
+					<th class=""><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
+					<th class=""><?php esc_html_e( 'Status', 'racketmanager' ); ?></th>
+					<th class=""><?php esc_html_e( 'Age', 'racketmanager' ); ?></th>
+				</tr>
+			</thead>
+			<?php
+			if ( $events ) {
+				?>
+				<tbody>
+				<?php
+				foreach( $events as $event ) {
+					?>
+					<tr>
+						<td class="check-column"><input type="checkbox" value="<?php echo esc_html( $event->id ); ?>" name="charge[<?php echo esc_html( $event->id ); ?>]" /></td>
+						<td class=""><a href="admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=event&amp;event_id=<?php echo esc_html( $event->id ); ?>&competition_id=<?php echo esc_attr( $competition->id ); ?><?php echo esc_attr( $add_link ); ?>"><?php echo esc_html( $event->name ); ?></a></td>
+						<td class=""><?php echo esc_html( Racketmanager_Util::get_event_type( $event->type ) ); ?></td>
+						<td class=""><?php echo esc_html( Racketmanager_Util::get_age_limit( $event->age_limit ) ); ?></td>
+						</td>
+					</tr>
+					<?php
+				}
+				?>
+				</tbody>
+				<?php
+			}
+			?>
+		</table>
+	</form>
+</div>
+<div class="mb-3">
+	<!-- Add New Event -->
+	<a href="admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=event&competition_id=<?php echo esc_attr( $competition->id ); ?><?php echo esc_attr( $add_link ); ?>" class="btn btn-primary submit"><?php esc_html_e( 'Add Event', 'racketmanager' ); ?></a>
+</div>

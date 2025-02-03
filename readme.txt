@@ -47,6 +47,17 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.33.0 =
+* BUGFIX: remove extra '<' character
+* BUGFIX: use passed season for competition tabs
+* BUGFIX: ensure withdrawn teams at bottom of ranking
+* BUGFIX: fix db field column
+* BUGFIX: allow tournament entry correctly
+* UPDATE: add competition grade
+* UPDATE: add tournament withdrawal dates
+* UPDATE: set tournament open/close/withdrawal dates based on start date and competition grade
+* UPDATE: improve tournament finances section
+
 = 8.32.0 =
 * BUGFIX: check $message set
 * UPDATE: set cup scheduled events only when not closed

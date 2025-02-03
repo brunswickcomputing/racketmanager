@@ -500,6 +500,7 @@ class Racketmanager_Event {
 			)
 		);
 		$this->name = $name;
+		wp_cache_set( $this->id, $this, 'events' );
 	}
 
 	/**
@@ -509,9 +510,9 @@ class Racketmanager_Event {
 	 */
 	public function set_settings( $settings ) {
 		global $wpdb, $racketmanager, $match;
-		$num_rubbers = $settings['num_rubbers'];
-		$num_sets    = $settings['num_sets'];
-		$type        = $settings['type'];
+		$num_rubbers = isset( $this->num_rubbers ) ? $this->num_rubbers : null;
+		$num_sets    = isset( $this->num_sets ) ? $this->num_sets : null;
+		$type        = $this->type;
 		if ( isset( $settings['reverse_rubbers'] ) && '1' === $settings['reverse_rubbers'] ) {
 			$match_args             = array();
 			$match_args['season']   = $this->current_season['name'];
@@ -1183,8 +1184,10 @@ class Racketmanager_Event {
 		}
 
 		foreach ( $constitutions as $i => $constitution ) {
-			$constitution->rank      = $constitution->old_rank;
-			$constitution->status    = '';
+			$constitution->rank = $constitution->old_rank;
+			if ( 'W' !== $constitution->status ) {
+				$constitution->status = '';
+			}
 			$constitution->profile   = '0';
 			$constitution->league_id = $constitution->old_league_id;
 
@@ -1317,6 +1320,7 @@ class Racketmanager_Event {
 			'count'   => false,
 			'name'    => false,
 			'player'  => false,
+			'partner' => false,
 		);
 		$args     = array_merge( $defaults, $args );
 		$offset   = $args['offset'];
@@ -1329,6 +1333,7 @@ class Racketmanager_Event {
 		$count    = $args['count'];
 		$name     = $args['name'];
 		$player   = $args['player'];
+		$partner  = $args['partner'];
 
 		$search_terms   = array();
 		$search_terms[] = $wpdb->prepare( '`event_id` = %d', $this->id );
@@ -1350,6 +1355,9 @@ class Racketmanager_Event {
 		}
 		if ( $player ) {
 			$search_terms[] = $wpdb->prepare( "t2.`id` IN (SELECT `team_id` FROM {$wpdb->racketmanager_team_players} WHERE `player_id` = %d )", $player );
+		}
+		if ( $partner ) {
+			$search_terms[] = $wpdb->prepare( "t2.`id` IN (SELECT `team_id` FROM {$wpdb->racketmanager_team_players} WHERE `player_id` = %d )", $partner );
 		}
 		$search = '';
 		if ( ! empty( $search_terms ) ) {
@@ -1934,6 +1942,25 @@ class Racketmanager_Event {
 		$seasons[ $season_name ] = $season;
 		$this->update_seasons( $seasons );
 		$racketmanager->set_message( __( 'Season added', 'racketmanager' ) );
+		if ( $this->competition->is_league ) {
+			$curr_season = end( $seasons );
+			$prev_season = prev( $seasons );
+			$teams       = $this->build_constitution( array( 'season' => $prev_season['name'] ) );
+			$status      = '';
+			$profile     = '0';
+			$rank        = 1;
+			$league_id   = null;
+			foreach ( $teams as $team ) {
+				if ( $team->old_league_id !== $league_id ) {
+					$league_id = $team->old_league_id;
+					$league    = get_league( $league_id );
+				}
+				if ( $league ) {
+					$league->add_team( $team->team_id, $curr_season['name'], $rank, $status, $profile );
+					++$rank;
+				}
+			}
+		}
 	}
 	/**
 	 * Update season
@@ -1975,5 +2002,293 @@ class Racketmanager_Event {
 			unset( $seasons[ $season ] );
 			$this->update_seasons( $seasons );
 		}
+	}
+	/**
+	 * Add league
+	 *
+	 * @param string $league_title league title.
+	 */
+	public function add_league( $league_title ) {
+		global $racketmanager;
+		if ( empty( $league_title ) ) {
+			$league_count = $this->has_leagues();
+			++$league_count;
+			$league           = new \stdClass();
+			$league->title    = $this->name . ' ' . $league_count;
+			$league->event_id = $this->id;
+			$league->sequence = $league_count;
+		} else {
+			$league           = new \stdClass();
+			$league->title    = $league_title;
+			$league->event_id = $this->id;
+		}
+		$league = new Racketmanager_League( $league );
+		if ( $league ) {
+			return $league->id;
+		} else {
+			return false;
+		}
+	}
+	/**
+	 * Does the event have leagues?
+	 *
+	 * @return int count number of leagues
+	 */
+	public function has_leagues() {
+		global $wpdb;
+
+		return $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"SELECT count(*) FROM {$wpdb->racketmanager} WHERE `event_id` = %d",
+				intval( $this->id )
+			)
+		);
+	}
+	/**
+	 * Promote and relegate teams
+	 *
+	 * @param array $teams array of teams.
+	 * @param int   $season season name.
+	 * @return boolean
+	 */
+	public function promote_and_relegate( $teams, $season ) {
+		$leagues            = $this->get_leagues( array( 'season' => $season ) );
+		$teams_prom_relg    = intval( $this->competition->seasons[ $season ]['teams_prom_relg'] );
+		$teams_per_club     = intval( $this->competition->seasons[ $season ]['teams_per_club'] );
+		$max_teams          = intval( $this->competition->seasons[ $season ]['max_teams'] );
+		$lowest_promotion   = intval( $this->competition->seasons[ $season ]['lowest_promotion'] );
+		$highest_relegation = $max_teams - $teams_prom_relg + 1;
+		if ( $leagues ) {
+			$curr_league_id = null;
+			$curr_league    = null;
+			$prev_league    = null;
+			$next_league    = null;
+			$num_entries    = count( $teams );
+			foreach ( $teams as $team_dtls ) {
+				$status    = null;
+				$team_id   = $team_dtls->team_id;
+				$league_id = $team_dtls->league_id;
+				if ( $league_id !== $curr_league_id ) {
+					if ( empty( $rank ) ) {
+						$prev_league = null;
+						$curr_league = current( $leagues );
+					} else {
+						$prev_league = prev( $leagues );
+						$curr_league = next( $leagues );
+						$team_count  = $prev_league->get_num_teams( 'active' );
+					}
+					$next_league    = next( $leagues );
+					$curr_league_id = $curr_league->id;
+					$curr_league_id = $league_id;
+					$num_promoted   = 0;
+					$num_relegated  = 0;
+					$count_club     = array();
+				}
+				$team     = get_team( $team_id );
+				$club_id  = intval( $team->club_id );
+				$old_rank = intval( $team_dtls->old_rank );
+				$rank     = intval( $team_dtls->rank );
+				$table_id = intval( $team_dtls->table_id );
+				if ( 'W' !== $team_dtls->status ) {
+					$club_teams_curr = $curr_league->get_league_teams(
+						array(
+							'club'   => $club_id,
+							'season' => $season,
+							'count'  => true,
+							'cache'  => false,
+						)
+					);
+					if ( empty( $count_club[ $club_id ] ) ) {
+						$count_club[ $club_id ] = 0;
+					}
+					$count_club[ $club_id ] += 1;
+					if ( $club_teams_curr > $teams_per_club ) {
+						if ( $count_club[ $club_id ] === $teams_per_club ) {
+							$new_league_id = $next_league->id;
+							$status        = 'RT';
+							++$num_relegated;
+						}
+					}
+					if ( $num_relegated < $teams_prom_relg && $old_rank >= $highest_relegation ) {
+						if ( $rank === $num_entries ) {
+							$new_league_id = $curr_league->id;
+							$status        = 'BT';
+						} elseif ( intval( $curr_league->num_teams_total ) === $max_teams ) {
+							$new_league_id = $next_league->id;
+							$status        = 'RB';
+							++$num_relegated;
+						} else {
+							$pos           = $max_teams - $old_rank + 1;
+							$new_league_id = $next_league->id;
+							$status        = 'R' . $pos;
+							++$num_relegated;
+						}
+					} elseif ( intval( $curr_league->num_teams_total ) === $old_rank ) {
+						$new_league_id = $curr_league->id;
+						$status        = 'BT';
+					} elseif ( 1 === $rank ) {
+						$status        = 'C';
+						$new_league_id = $curr_league->id;
+					} elseif ( $prev_league && $old_rank <= $lowest_promotion ) {
+						if ( intval( $team_count ) !== $max_teams ) {
+							$club_teams_prev = $prev_league->get_league_teams(
+								array(
+									'club'   => $club_id,
+									'season' => $season,
+									'count'  => true,
+									'cache'  => false,
+								)
+							);
+							if ( $club_teams_prev < $teams_per_club ) {
+								if ( ! empty( $prev_league->id ) ) {
+									$status        = 'P' . $old_rank;
+									$new_league_id = $prev_league->id;
+								}
+								++$team_count;
+								++$num_promoted;
+							} elseif ( 1 === $old_rank ) {
+								$status        = 'W' . $old_rank;
+								$new_league_id = $curr_league->id;
+							}
+						}
+					}
+				}
+				if ( $status ) {
+					$team        = get_team( $team_id );
+					$league_team = get_league_team( $table_id );
+					if ( $league_team ) {
+						$league_team->update_constitution( $new_league_id, $status );
+					}
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	public function set_config( $config ) {
+		global $racketmanager;
+		$updates   = false;
+		$updates_2 = false;
+		if ( empty( $config->name ) ) {
+			$racketmanager->error_messages[] = __( 'Name must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'name';
+		}
+		if ( empty( $config->type ) ) {
+			$racketmanager->error_messages[] = __( 'Type must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'type';
+		}
+		if ( empty( $config->age_limit ) ) {
+			$racketmanager->error_messages[] = __( 'Age limit must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'age_limit';
+		}
+		if ( empty( $config->age_offset ) ) {
+			$racketmanager->error_messages[] = __( 'Age offset must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'age_offset';
+		}
+		if ( empty( $config->scoring ) ) {
+			$racketmanager->error_messages[] = __( 'Scoring method must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'scoring';
+		}
+		if ( empty( $config->num_sets ) ) {
+			$racketmanager->error_messages[] = __( 'Number of sets must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'num_sets';
+		}
+		if ( $this->competition->is_team_entry ) {
+			if ( empty( $config->num_rubbers ) ) {
+				$racketmanager->error_messages[] = __( 'Number of rubbers must be set', 'racketmanager' );
+				$racketmanager->error_fields[]   = 'num_rubbers';
+			}
+		}
+		if ( ! $this->competition->is_tournament ) {
+			if ( is_null( $config->offset ) ) {
+				$racketmanager->error_messages[] = __( 'Offset must be set', 'racketmanager' );
+				$racketmanager->error_fields[]   = 'offset';
+			}
+		}
+		if ( $this->competition->is_championship ) {
+			if ( empty( $config->primary_league ) ) {
+				$racketmanager->error_messages[] = __( 'Primary league must be set', 'racketmanager' );
+				$racketmanager->error_fields[]   = 'primary_league';
+			}
+		}
+		if ( empty( $racketmanager->error_fields ) ) {
+			$settings = new \stdClass();
+			$settings->age_limit = $config->age_limit;
+			if ( empty( $this->age_limit ) || $this->age_limit !== $config->age_limit ) {
+				$updates = true;
+			}
+			$settings->age_limit = $config->age_limit;
+			if ( empty( $this->age_offset ) || $this->age_offset !== $config->age_offset ) {
+				$updates = true;
+			}
+			$settings->age_offset = $config->age_offset;
+			if ( empty( $this->scoring ) || $this->scoring !== $config->scoring ) {
+				$updates = true;
+			}
+			$settings->scoring = $config->scoring;
+			if ( ! $this->competition->is_tournament ) {
+				if ( empty( $this->offset ) || $this->offset !== $config->offset ) {
+					$updates = true;
+				}
+				$settings->offset = $config->offset;
+			}
+			if ( $this->competition->is_championship ) {
+				if ( empty( $this->primary_league ) || $this->primary_league !== $config->primary_league ) {
+					$updates = true;
+				}
+				$settings->primary_league = $config->primary_league;
+			}
+			if ( $this->competition->is_league ) {
+				$match_days = Racketmanager_Util::get_match_days();
+				foreach ( $match_days as $match_day => $value ) {
+					$config->match_days_allowed[ $match_day ] = isset( $config->match_days_allowed[ $match_day ] ) ? 1 : 0;
+					if ( $this->match_days_allowed[ $match_day ] !== $config->match_days_allowed[ $match_day ] ) {
+						$updates = true;
+					}
+				}
+				$settings->match_days_allowed = $config->match_days_allowed;
+			}
+			if ( $this->competition->is_team_entry ) {
+				if ( empty( $this->num_rubbers ) || $this->num_rubbers !== $config->num_rubbers ) {
+					$updates = true;
+				}
+				$this->num_rubbers = $config->num_rubbers;
+			}
+			if ( empty( $this->num_sets ) || $this->num_sets !== $config->num_sets ) {
+				$updates = true;
+			}
+			$this->num_sets = $config->num_sets;
+			if ( empty( $this->type ) || $this->type !== $config->type ) {
+				$updates = true;
+			}
+			$this->type = $config->type;
+			if ( $updates ) {
+				$this->settings = (array) $settings;
+				$this->update_settings();
+			}
+			if ( empty( $this->name ) || $this->name !== $config->name ) {
+				$this->set_name( $name );
+				$updates = true;
+			}
+		}
+		return $updates;
+	}
+	/**
+	 * Update settings
+	 */
+	private function update_settings() {
+		global $wpdb;
+
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"UPDATE {$wpdb->racketmanager_events} SET `settings` = %s, `num_rubbers` = %d, `num_sets` = %d, `type` = %s WHERE `id` = %d",
+				maybe_serialize( $this->settings ),
+				$this->num_rubbers,
+				$this->num_sets,
+				$this->type,
+				$this->id
+			)
+		);
+		wp_cache_set( $this->id, $this, 'events' );
 	}
 }

@@ -26,6 +26,19 @@ namespace Racketmanager;
 			<h1><?php echo esc_html( $competition->name ); ?></h1>
 		</div>
 	</div>
+	<div class="row mb-3">
+		<nav class="navbar navbar-expand-lg bg-body-tertiary">
+			<ul class="nav nav-pills">
+				<li class="nav-item">
+					<div class="nav-link active" href="#" role="tab"><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></div>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&view=config&competition_id=<?php echo esc_attr( $competition->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Configuration', 'racketmanager' ); ?></a>
+				</li>
+			</ul>
+		</nav>
+	</div>
+
 	<form id="seasons-filter" action="" method="post" class="form-control mb-3">
 		<?php wp_nonce_field( 'seasons-bulk', 'racketmanager_nonce' ); ?>
 

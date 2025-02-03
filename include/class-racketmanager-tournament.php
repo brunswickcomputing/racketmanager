@@ -213,6 +213,12 @@ final class Racketmanager_Tournament {
 	 */
 	public $grade;
 	/**
+	 * Fees
+	 *
+	 * @var object
+	 */
+	public $fees;
+	/**
 	 * Retrieve tournament instance
 	 *
 	 * @param int    $tournament_id tournament id.
@@ -512,6 +518,31 @@ final class Racketmanager_Tournament {
 		}
 		if ( $valid ) {
 			$return->valid = true;
+			$charge_create = false;
+			if ( ! empty( $tournament->fees->id ) ) {
+				$charge = get_charge( $tournament->fees->id );
+				if ( $charge ) {
+					if ( $charge->fee_competition !== $tournament->fees->competition ) {
+						$charge->set_club_fee( $tournament->fees->competition );
+					}
+					if ( $charge->fee_event !== $tournament->fees->event ) {
+						$charge->set_team_fee( $tournament->fees->event );
+					}
+				} elseif ( ! empty( $tournament->fees->competition ) || ! empty( $tournament->fees->event ) ) {
+					$charge_create = true;
+				}
+			} elseif ( ! empty( $tournament->fees->competition ) || ! empty( $tournament->fees->event ) ) {
+				$charge_create = true;
+			}
+			if ( $charge_create ) {
+				$charge                  = new \stdClass();
+				$charge->competition_id  = $this->competition_id;
+				$charge->season          = $this->season;
+				$charge->date            = $this->date_start;
+				$charge->fee_competition = $tournament->fees->competition;
+				$charge->fee_event       = $tournament->fees->event;
+				$charge                  = new Racketmanager_Charges( $charge );
+			}
 		} else {
 			$return->valid = false;
 			$return->msg   = $err_msg;
@@ -1172,17 +1203,300 @@ final class Racketmanager_Tournament {
 		$args['competition'] = $this->competition_id;
 		$args['season']      = $this->season;
 		$charges             = $racketmanager->get_charges( $args );
-		$competition_fee     = 0;
-		$event_fee           = 0;
+		$competition_fee     = null;
+		$event_fee           = null;
+		$fee_id              = null;
+		$fee_status          = null;
 		if ( $charges ) {
+			$competition_fee = 0;
+			$event_fee       = 0;
 			foreach ( $charges as $charge ) {
 				$competition_fee += $charge->fee_competition;
 				$event_fee       += $charge->fee_event;
+				$fee_id           = $charge->id;
+				$fee_status       = $charge->status;
 			}
 		}
 		$fees              = new \stdClass();
 		$fees->competition = $competition_fee;
 		$fees->event       = $event_fee;
-		return $fees;
+		$fees->id          = $fee_id;
+		$fees->status      = $fee_status;
+		$this->fees        = $fees;
+		return $this->fees;
+	}
+	/**
+	 * Set player entry function
+	 *
+	 * @param object $entry entry details.
+	 * @return boolean payment required indicator
+	 */
+	public function set_player_entry( $entry ) {
+		global $racketmanager;
+		$updates = false;
+		$player = get_player( $entry->player_id );
+		$player->update_btm( $entry->btm );
+		$player->update_contact( $entry->contactno, $entry->contactemail );
+		$player_name = $player->display_name;
+		$club        = get_club( $entry->club_id );
+		$fee_due     = 0;
+		$tournament_entries = array();
+		if ( empty( $entry->fee ) ) {
+			$status = 0;
+		} else {
+			$fee_due = $entry->fee - $entry->paid;
+			if ( empty( $fee_due ) ) {
+				$this->cancel_player_invoices( $entry->player_id );
+				$status = 0;
+			} else {
+				if ( $fee_due > 0 ) {
+					$status = 1;
+				} else {
+					$status = 2;
+				}
+				$this->create_player_invoice( $entry->player_id, $fee_due );
+			}
+		}
+		$this->set_tournament_entry( $player->id, $club->id, $fee_due );
+		foreach ( $entry->all_events as $event_id ) {
+			$event = get_event( $event_id );
+			if ( $event ) {
+				if ( ! empty( $event->primary_league ) ) {
+					$league = get_league( $event->primary_league );
+				} else {
+					$leagues = $event->get_leagues();
+					$league  = get_league( $leagues[0] );
+				}
+				$teams = $event->get_teams(
+					array(
+						'player' => $entry->player_id,
+						'season' => $this->season,
+					)
+				);
+				if ( isset( $entry->events[ $event_id ] ) ) {
+					$tournament_entry = array();
+					$partner          = '';
+					$partner_name     = '';
+					$partner_id       = '';
+					$new_team         = false;
+					$existing_entry   = false;
+					$new_entry        = false;
+					$team             = null;
+					$is_doubles       = false;
+					if ( 1 === count( $teams ) ) {
+						$existing_entry = true;
+						$entry_status   = 'existing';
+						$team           = $teams[0];
+					} elseif ( count( $teams ) > 1 ) {
+						$entry_status = 'multi';
+					} else {
+						$new_entry    = true;
+						$entry_status = 'new';
+					}
+					if ( substr( $event->type, 1, 1 ) === 'D' ) {
+						$is_doubles = true;
+						$partner_id = isset( $entry->partners[ $event->id ] ) ? $entry->partners[ $event->id ] : null;
+						if ( $partner_id ) {
+							$partner = get_player( $partner_id );
+							if ( $partner ) {
+								$partner_name                = $partner->fullname;
+								$tournament_entry['partner'] = $partner_name;
+							}
+						}
+						if ( $existing_entry ) {
+							$same_partner = false;
+							foreach ( $team->players as $team_player ) {
+								if ( $team_player->id === $partner_id ) {
+									$same_partner = true;
+									break;
+								}
+							}
+							if ( ! $same_partner ) {
+								$league->delete_team( $team->team_id, $this->season );
+								$new_entry    = true;
+								$entry_status = 'replace';
+							}
+						}
+					}
+					if ( $new_entry ) {
+						if ( $is_doubles ) {
+							$team_args            = array();
+							$team_args['player']  = $player->id;
+							$team_args['partner'] = $partner->id;
+							$teams                = $racketmanager->get_teams( $team_args );
+							if ( $teams ) {
+								$team = $teams[0];
+							} else {
+								$new_team  = true;
+								$team_name = $player->display_name . ' / ' . $partner_name;
+							}
+							$this->set_tournament_entry( $partner_id );
+						} else {
+							$team = get_team( $player->display_name );
+							if ( ! $team ) {
+								$new_team  = true;
+							}
+						}
+						if ( $new_team ) {
+							$team             = new \stdClass();
+							$team->player1    = $player->display_name;
+							$team->player1_id = $player->id;
+							$team->player2    = $partner_name;
+							$team->player2_id = $partner_id;
+							$team->type       = $league->type;
+							$team->team_type  = 'P';
+							$team->club_id    = $club->id;
+							$team             = new Racketmanager_Team( $team );
+						}
+						$team->set_event( $league->event_id, $player->id, $player->contactno, $player->email );
+						$league_entry_id = $league->add_team( $team->id, $this->season );
+						if ( $league_entry_id ) {
+							$league_entry = get_league_team( $league_entry_id );
+							if ( $league_entry ) {
+								$league_entry->set_player_rating( $team, $event );
+							}
+						}
+						$updates = true;
+					}
+					$tournament_entry['event_name'] = $event->name;
+					$tournament_entries[]           = $tournament_entry;
+				} else {
+					foreach ( $teams as $team ) {
+						$updates = true;
+						$league->delete_team( $team->team_id, $this->season );
+					}
+				}
+			}
+		}
+		if ( $updates ) {
+			$email_to                            = $player->display_name . ' <' . $player->email . '>';
+			$email_from                          = $racketmanager->get_confirmation_email( 'tournament' );
+			$email_subject                       = $racketmanager->site_name . ' - ' . $this->name . ' Tournament Entry';
+			$action_url                          = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
+			$tournament_link                     = '<a href="' . $racketmanager->site_url . ( $this->link ) . '/">' . $this->name . '</a>';
+			$headers                             = array();
+			$secretary_email                     = __( 'Tournament Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
+			$headers[]                           = 'From: ' . $secretary_email;
+			$headers[]                           = 'Cc: ' . $secretary_email;
+			$template                            = 'tournament-entry';
+			$template_args['tournament_name']    = $this->name;
+			$template_args['tournament_link']    = $tournament_link;
+			$template_args['action_url']         = $action_url;
+			$template_args['tournament_entries'] = $tournament_entries;
+			$template_args['organisation']       = $racketmanager->site_name;
+			$template_args['season']             = $this->season;
+			$template_args['contactno']          = $player->contactno;
+			$template_args['contactemail']       = $player->email;
+			$template_args['player']             = $player;
+			$template_args['club']               = $club->name;
+			$template_args['comments']           = $entry->comments;
+			$template_args['contact_email']      = $email_from;
+			$racketmanager->email_entry_form( $template, $template_args, $email_to, $email_subject, $headers );
+		} elseif ( empty( $status ) ) {
+			$status = 3;
+		}
+		return $status;
+	}
+	private function create_player_invoice( $player_id, $fee ) {
+		if ( empty( $player_id ) || empty( $fee ) ) {
+			return;
+		}
+		$charge_key = $this->competition_id . '_' . $this->season;
+		$charge = get_charge( $charge_key );
+		if ( $charge ) {
+			$args['player'] = $player_id;
+			$args['status'] = 'open';
+			$outstanding_payments = $this->get_payments( $args );
+			foreach ( $outstanding_payments as $payment ) {
+				$payment->delete();
+			}
+			$invoice                 = new \stdClass();
+			$invoice->charge_id      = $charge->id;
+			$invoice->player_id      = $player_id;
+			$invoice->date           = gmdate( 'Y-m-d' );
+			$invoice                 = new Racketmanager_Invoice( $invoice );
+			$invoice->set_amount( $fee );
+		}
+	}
+	private function cancel_player_invoices( $player_id ) {
+		if ( empty( $player_id ) ) {
+			return;
+		}
+		$charge_key = $this->competition_id . '_' . $this->season;
+		$charge = get_charge( $charge_key );
+		if ( $charge ) {
+			$args['player'] = $player_id;
+			$args['status'] = 'open';
+			$outstanding_payments = $this->get_payments( $args );
+			foreach ( $outstanding_payments as $payment ) {
+				$payment->delete();
+			}
+		}
+	}
+	/**
+	 * Set tournament entry function
+	 *
+	 * @param int    $player player id.
+	 * @param int    $club club id - false if partner entry.
+	 * @param string $payment_required payment required value.
+	 * @return void
+	 */
+	private function set_tournament_entry( $player, $club = false, $payment_required = false ) {
+		if ( $club ) {
+			if ( $payment_required ) {
+				$status = 2;
+			} else {
+				$status = 1;
+			}
+		} else {
+			$status = 0;
+		}
+		$search           = $this->id . '_' . $player;
+		$tournament_entry = get_tournament_entry( $search, 'key' );
+		if ( $tournament_entry ) {
+			if ( $club ) {
+				if ( $tournament_entry->status !== $status ) {
+					$tournament_entry->set_status( $status );
+					$tournament_entry->set_fee( $payment_required );
+				}
+			}
+		} else {
+			$tournament_entry                = new \stdClass();
+			$tournament_entry->status        = $status;
+			$tournament_entry->tournament_id = $this->id;
+			$tournament_entry->player_id     = $player;
+			$tournament_entry->fee           = $payment_required;
+			if ( $club ) {
+				$tournament_entry->club_id = $club;
+			}
+			$tournament_entry = new Racketmanager_Tournament_Entry( $tournament_entry );
+		}
+	}
+	/**
+	 * Function to get payments due for tournament
+	 *
+	 * @param array $args_input arguments to search invoices.
+	 * @return array payments or null
+	 */
+	public function get_payments( $args_input ) {
+		global $racketmanager;
+		$defaults = array(
+			'status' => array(),
+			'player' => false,
+		);
+		$args_input = array_merge( $defaults, $args_input );
+		$status     = $args_input['status'];
+		$player     = $args_input['player'];
+		$charge_key = $this->competition_id . '_' . $this->season;
+		$charge = get_charge( $charge_key );
+		if ( $charge ) {
+			$args['charge'] = $charge->id;
+			$args['player'] = $player;
+			$args['status'] = $status;
+			$payments = $racketmanager->get_invoices( $args );
+		} else {
+			$payments = null;
+		}
+		return $payments;
 	}
 }

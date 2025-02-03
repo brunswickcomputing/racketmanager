@@ -33,6 +33,8 @@ class RacketManager_Shortcodes {
 		add_shortcode( 'player', array( &$this, 'show_player' ) );
 
 		add_shortcode( 'competition-entry', array( &$this, 'show_competition_entry' ) );
+		add_shortcode( 'competition-entry-payment', array( &$this, 'show_competition_entry_payment' ) );
+		add_shortcode( 'competition-entry-payment-complete', array( &$this, 'show_competition_entry_payment_complete' ) );
 
 		add_shortcode( 'favourites', array( &$this, 'show_favourites' ) );
 		add_shortcode( 'invoice', array( &$this, 'show_invoice' ) );
@@ -892,6 +894,135 @@ class RacketManager_Shortcodes {
 		}
 	}
 	/**
+	 * Function to display competition payment Page
+	 *
+	 * @return string the content
+	 */
+	public function show_competition_entry_payment( $atts ) {
+		global $racketmanager;
+		$args     = shortcode_atts(
+			array(
+				'template'  => '',
+			),
+			$atts
+		);
+		$template = $args['template'];
+		$valid    = true;
+		$type     = get_query_var( 'competition_type' );
+		if ( $type ) {
+			if ( 'tournament' === $type ) {
+				$tournament_name = get_query_var( 'tournament' );
+				if ( $tournament_name ) {
+					$tournament_name = un_seo_url( $tournament_name );
+					$tournament      = get_tournament( $tournament_name, 'name' );
+					if ( $tournament ) {
+						$charge_key = $tournament->competition_id . '_' . $tournament->season;
+						$charge     = get_charge( $charge_key );
+						if ( $charge ) {
+							$player_id = wp_get_current_user()->ID;
+							$player    = get_player( $player_id );
+							if ( $player ) {
+								$args['charge']       = $charge->id;
+								$args['player']       = $player_id;
+								$args['status']       = 'open';
+								$outstanding_payments = $racketmanager->get_invoices( $args );
+								$total_due            = 0;
+								$invoice_id           = null;
+								foreach ( $outstanding_payments as $invoice ) {
+									$total_due += $invoice->amount;
+									$invoice_id = $invoice->id;
+								}
+								$search           = $tournament->id . '_' . $player->id;
+								$tournament_entry = get_tournament_entry( $search, 'key' );
+							} else {
+								$valid = false;
+								$msg   = __( 'Player not found', 'racketmanager' );
+							}
+						} else {
+							$valid = false;
+							$msg   = __( 'Charge not found', 'racketmanager' );
+						}
+					} else {
+						$valid = false;
+						$msg   = __( 'Tournament not found', 'racketmanager' );
+					}
+				} else {
+					$valid = false;
+					$msg   = __( 'No tournament name specified', 'racketmanager' );
+				}
+			}
+		}
+		if ( $valid ) {
+			$stripe_details = new Racketmanager_Stripe();
+			$filename       = ( ! empty( $template ) ) ? 'tournament-payment-' . $template : 'tournament-payment';
+
+			return $this->load_template(
+				$filename,
+				array(
+					'tournament'       => $tournament,
+					'player'           => $player,
+					'tournament_entry' => $tournament_entry,
+					'total_due'        => $total_due,
+					'invoice_id'       => $invoice_id,
+					'stripe'           => $stripe_details,
+				),
+				'entry'
+			);
+		} else {
+			return $this->return_error( $msg );
+		}
+	}
+	/**
+	 * Function to display competition payment completion Page
+	 *
+	 * @return string the content
+	 */
+	public function show_competition_entry_payment_complete() {
+		$valid = true;
+		$type = get_query_var( 'competition_type' );
+		if ( $type ) {
+			if ( 'tournament' === $type ) {
+				$tournament_name = get_query_var( 'tournament' );
+				if ( $tournament_name ) {
+					$tournament_name = un_seo_url( $tournament_name );
+					$tournament      = get_tournament( $tournament_name, 'name' );
+					if ( $tournament ) {
+						$player_id = wp_get_current_user()->ID;
+						$player    = get_player( $player_id );
+						if ( $player ) {
+							$search           = $tournament->id . '_' . $player->id;
+							$tournament_entry = get_tournament_entry( $search, 'key' );
+						} else {
+							$valid = false;
+							$msg   = __( 'Player not found', 'racketmanager' );
+						}
+					} else {
+						$valid = false;
+						$msg   = __( 'Tournament not found', 'racketmanager' );
+					}
+				} else {
+					$valid = false;
+					$msg   = __( 'No tournament name specified', 'racketmanager' );
+				}
+			}
+		}
+		if ( $valid ) {
+			$filename = ( ! empty( $template ) ) ? 'tournament-payment-complete-' . $template : 'tournament-payment-complete';
+
+			return $this->load_template(
+				$filename,
+				array(
+					'tournament'       => $tournament,
+					'player'           => $player,
+					'tournament_entry' => $tournament_entry,
+				),
+				'entry'
+			);
+		} else {
+			return $this->return_error( $msg );
+		}
+	}
+	/**
 	 * Function to display Cup Entry Page
 	 *
 	 * @param object $competition competition object.
@@ -1111,52 +1242,73 @@ class RacketManager_Shortcodes {
 		$player->surname   = get_user_meta( $player->ID, 'last_name', true );
 		$player->contactno = get_user_meta( $player->ID, 'contactno', true );
 		$player->gender    = get_user_meta( $player->ID, 'gender', true );
+		$player_age        = substr( $tournament->date, 0, 4 ) - intval( $player->year_of_birth );
 		$tournament->fees  = $tournament->get_fees();
+		$args['player']    = $player->id;
+		$args['status']    = 'paid';
+		$tournament->payments = $tournament->get_payments( $args );
 
 		$events = $tournament->get_events();
 		$c      = 0;
 		foreach ( $events as $event ) {
-			$event = get_event( $event );
-			if ( ( 'M' === $player->gender && substr( $event->type, 0, 1 ) !== 'W' ) || ( 'F' === $player->gender && substr( $event->type, 0, 1 ) !== 'M' ) ) {
+			$event       = get_event( $event );
+			$entry_valid = false;
+			if ( 'M' === $player->gender ) {
+				if ( substr( $event->type, 0, 1 ) !== 'W' && substr( $event->type, 0, 1 ) !== 'G' ) {
+					$entry_valid = true;
+				} else {
+					$entry_valid = false;
+				}
+			} elseif ( 'F' === $player->gender ) {
+				if ( substr( $event->type, 0, 1 ) !== 'M' && substr( $event->type, 0, 1 ) !== 'B' ) {
+					$entry_valid = true;
+				} else {
+					$entry_valid = false;
+				}
+			}
+			if ( $entry_valid ) {
 				if ( empty( $event->age_limit ) || 'open' === $event->age_limit ) {
 					$entry_valid = true;
-				} elseif ( empty( $player->age ) ) {
+				} elseif ( empty( $player_age ) ) {
 					$entry_valid = false;
-				} elseif ( $player->age < $event->age_limit ) {
+				} elseif ( $event->age_limit >= 30 ) {
+					$age_limit = $event->age_limit;
 					if ( 'F' === $player->gender && ! empty( $event->age_offset ) ) {
 						$age_limit = $event->age_limit - $event->age_offset;
-						if ( $player->age < $age_limit ) {
-							$entry_valid = false;
-						}
-					} else {
+					}
+					if ( $player_age < $age_limit ) {
 						$entry_valid = false;
+					} else {
+						$entry_valid = true;
 					}
-				}
-				if ( $entry_valid ) {
-					$player_entry = new \stdClass();
-					$teams        = $event->get_teams(
-						array(
-							'name'   => $player->display_name,
-							'season' => $tournament->season,
-						)
-					);
-					if ( $teams ) {
-						$team                  = $teams[0];
-						$player_entry->team_id = $team->id;
-						$p                     = 1;
-						foreach ( $team->players as $team_player ) {
-							if ( $team_player->id !== $player->ID ) {
-								$player_entry->partner    = $team_player;
-								$player_entry->partner_id = $team_player->id;
-								break;
-							}
-							++$p;
-						}
-						$player_entry->event         = $event->name;
-						$player->entry[ $event->id ] = $player_entry;
-					}
+				} elseif ( $player_age > $event->age_limit ) {
+					$entry_valid = false;
 				} else {
-					unset( $events[ $c ] );
+					$entry_valid = true;
+				}
+			}
+			if ( $entry_valid ) {
+				$player_entry = new \stdClass();
+				$teams        = $event->get_teams(
+					array(
+						'name'   => $player->display_name,
+						'season' => $tournament->season,
+					)
+				);
+				if ( $teams ) {
+					$team                  = $teams[0];
+					$player_entry->team_id = $team->id;
+					$p                     = 1;
+					foreach ( $team->players as $team_player ) {
+						if ( $team_player->id !== $player->ID ) {
+							$player_entry->partner    = $team_player;
+							$player_entry->partner_id = $team_player->id;
+							break;
+						}
+						++$p;
+					}
+					$player_entry->event         = $event->name;
+					$player->entry[ $event->id ] = $player_entry;
 				}
 			} else {
 				unset( $events[ $c ] );
@@ -1164,24 +1316,10 @@ class RacketManager_Shortcodes {
 			++$c;
 		}
 
-		$club_players    = $racketmanager->get_club_players(
+		$club_memberships = $racketmanager->get_club_players(
 			array(
 				'player' => $player->ID,
 				'active' => true,
-			)
-		);
-		$male_partners   = $racketmanager->get_club_players(
-			array(
-				'gender' => 'M',
-				'active' => true,
-				'type'   => true,
-			)
-		);
-		$female_partners = $racketmanager->get_club_players(
-			array(
-				'gender' => 'F',
-				'active' => true,
-				'type'   => true,
 			)
 		);
 
@@ -1190,13 +1328,11 @@ class RacketManager_Shortcodes {
 		return $this->load_template(
 			$filename,
 			array(
-				'tournament'      => $tournament,
-				'events'          => $events,
-				'player'          => $player,
-				'club_players'    => $club_players,
-				'season'          => $tournament->season,
-				'male_partners'   => $male_partners,
-				'female_partners' => $female_partners,
+				'tournament'       => $tournament,
+				'events'           => $events,
+				'player'           => $player,
+				'club_memberships' => $club_memberships,
+				'season'           => $tournament->season,
 			),
 			'entry'
 		);

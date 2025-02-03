@@ -65,33 +65,45 @@ final class Racketmanager_Charges {
 	/**
 	 * Get class instance
 	 *
-	 * @param int $charges_id id.
+	 * @param int $charge_id id.
 	 */
-	public static function get_instance( $charges_id ) {
+	public static function get_instance( $charge_id ) {
 		global $wpdb;
-		if ( ! $charges_id ) {
+		if ( ! $charge_id ) {
 			return false;
 		}
-		$charges = wp_cache_get( $charges_id, 'charges' );
+		if ( is_numeric( $charge_id ) ) {
+			$search = $wpdb->prepare(
+				'`id` = %d',
+				intval( $charge_id )
+			);
+		} else {
+			$search_terms   = explode( '_', $charge_id );
+			$competition_id = $search_terms[0];
+			$season         = $search_terms[1];
+			$search         = $wpdb->prepare(
+				'`competition_id` = %d AND `season` = %s',
+				intval( $competition_id ),
+				$season,
+			);
+		}
+		$charge = wp_cache_get( $charge_id, 'charges' );
 
-		if ( ! $charges ) {
-			$charges = $wpdb->get_row(
-				$wpdb->prepare(
-					"SELECT `id`, `competition_id`, `season`, `status`, `date`, `fee_competition`, `fee_event` FROM {$wpdb->racketmanager_charges} WHERE `id` = %d LIMIT 1",
-					$charges_id
-				)
+		if ( ! $charge ) {
+			$charge = $wpdb->get_row(
+				"SELECT `id`, `competition_id`, `season`, `status`, `date`, `fee_competition`, `fee_event` FROM {$wpdb->racketmanager_charges} WHERE $search LIMIT 1",
 			);  // db call ok.
 
-			if ( ! $charges ) {
+			if ( ! $charge ) {
 				return false;
 			}
 
-			$charges = new Racketmanager_Charges( $charges );
+			$charge = new Racketmanager_Charges( $charge );
 
-			wp_cache_set( $charges->id, $charges, 'charges' );
+			wp_cache_set( $charge->id, $charge, 'charges' );
 		}
 
-		return $charges;
+		return $charge;
 	}
 
 	/**
@@ -255,17 +267,8 @@ final class Racketmanager_Charges {
 	 * Get invoiecs
 	 */
 	public function get_invoices() {
-		global $wpdb;
-		$invoices = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare(
-				"SELECT `id` FROM {$wpdb->racketmanager_invoices} WHERE `charge_id` = %d",
-				$this->id,
-			)
-		);
-		foreach ( $invoices as $i => $invoice ) {
-			$invoices[ $i ] = get_invoice( $invoice->id );
-		}
-		return $invoices;
+		global $racketmanager;
+		return $racketmanager->get_invoices( array( 'charge' => $this->id ) );
 	}
 	/**
 	 * Get club enties for charges

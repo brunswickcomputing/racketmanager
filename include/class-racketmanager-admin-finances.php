@@ -116,7 +116,7 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 			if ( $charge_id ) {
 				$args['charge'] = $charge_id;
 			}
-			$finance_invoices = $racketmanager->get_invoices( $args );
+			$finance_invoices = $this->get_invoices( $args );
 			$args             = array();
 			if ( $competition_id ) {
 				$args['competition'] = $competition_id;
@@ -262,7 +262,7 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 			}
 			$tab          = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'racketmanager-invoices';
 			$invoice_view = '';
-			$billing      = $racketmanager->get_options( 'billing' );
+			$billing      = $this->get_options( 'billing' );
 			if ( isset( $invoice_id ) && $invoice_id ) {
 				$invoice = get_invoice( $invoice_id );
 			}

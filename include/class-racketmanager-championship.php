@@ -138,7 +138,7 @@ final class Racketmanager_Championship extends RacketManager {
 	public function __construct( $league, $settings ) {
 		$this->league_id      = $league->id;
 		$this->is_consolation = false;
-		if ( ! empty( $league->event->primary_league ) && $this->league_id !== $league->event->primary_league ) {
+		if ( ! empty( $league->event->primary_league ) && intval( $this->league_id ) !== intval( $league->event->primary_league ) ) {
 			$this->is_consolation = true;
 		}
 		if ( isset( $settings['groups'] ) && is_array( $settings['groups'] ) ) {
@@ -154,11 +154,29 @@ final class Racketmanager_Championship extends RacketManager {
 			$num_teams       = $league->num_teams_total;
 			$this->num_teams = $num_teams;
 			if ( $this->is_consolation ) {
-				$primary_league              = get_league( $league->event->primary_league );
-				$this->num_teams             = 0;
-				$this->num_rounds            = $primary_league->championship->num_rounds - 1;
-				$this->num_teams_first_round = pow( 2, $this->num_rounds );
-				$this->num_advance           = $this->num_teams_first_round;
+				$primary_league        = get_league( $league->event->primary_league );
+				$max_rounds            = $primary_league->championship->num_rounds - 1;
+				$max_teams_first_round = pow( 2, $max_rounds );
+				$first_round           = $primary_league->championship->get_final_keys( 1 );
+				$outstanding_matches   = $primary_league->get_matches(
+					array(
+						'pending'          => true,
+						'final'            => $first_round,
+						'count'            => true,
+						'season'           => $league->current_season['name'],
+						'reset_query_args' => true,
+					)
+				);
+				if ( $outstanding_matches || $num_teams > $max_teams_first_round ) {
+					$this->num_teams             = 0;
+					$this->num_rounds            = $max_rounds;
+					$this->num_teams_first_round = pow( 2, $this->num_rounds );
+					$this->num_advance           = $this->num_teams_first_round;
+				} else {
+					$this->num_rounds            = ceil( log( $num_teams, 2 ) );
+					$this->num_teams_first_round = pow( 2, $this->num_rounds );
+				}
+				$this->num_advance = $this->num_teams_first_round;
 			} else {
 				$completed_matches = $league->get_matches(
 					array(

@@ -95,28 +95,28 @@ namespace Racketmanager;
 			?>
 			<div class="form-floating mb-3">
 				<select name="homeAway" id="homeAway" class="form-select">
-					<option disabled <?php echo isset( $season_data['homeAway'] ) ? '' : 'selected'; ?>><?php esc_html_e( 'Choose format', 'racketmanager' ); ?></option>
-					<option value="false"<?php isset( $season_data['homeAway'] ) ? selected( false, $season_data['homeAway'] ) : ''; ?>><?php esc_html_e( 'Round Robin', 'racketmanager' ); ?></option>
-					<option value="true"<?php isset( $season_data['homeAway'] ) ? selected( true, $season_data['homeAway'] ) : ''; ?>><?php echo esc_html__( 'Round Robin', 'racketmanager' ) . ' - ' . esc_html__( 'Home and Away', 'racketmanager' ); ?></option>
+					<option disabled <?php echo isset( $season_data['home_away'] ) ? '' : 'selected'; ?>><?php esc_html_e( 'Choose format', 'racketmanager' ); ?></option>
+					<option value="false"<?php isset( $season_data['home_away'] ) ? selected( false, $season_data['home_away'] ) : ''; ?>><?php esc_html_e( 'Round Robin', 'racketmanager' ); ?></option>
+					<option value="true"<?php isset( $season_data['home_away'] ) ? selected( true, $season_data['home_away'] ) : ''; ?>><?php echo esc_html__( 'Round Robin', 'racketmanager' ) . ' - ' . esc_html__( 'Home and Away', 'racketmanager' ); ?></option>
 				</select>
 				<label for="homeAway"><?php esc_html_e( 'Format', 'racketmanager' ); ?></label>
 			</div>
 			<div class="row g-3">
 				<div class="col">
 					<div class="form-floating mb-3">
-						<input type="date" class="form-control" name="matchDate[0]" id="matchDate-0" value="<?php echo esc_html( $season_data['matchDates'][0] ); ?>"/>
+						<input type="date" class="form-control" name="matchDate[0]" id="matchDate-0" value="<?php echo esc_html( $season_data['match_dates'][0] ); ?>"/>
 						<label for="matchDate-0"><?php esc_html_e( 'Start Date', 'racketmanager' ); ?></label>
 					</div>
 				</div>
 				<div class="col">
 					<div class="form-floating mb-3">
-						<input type="date" class="form-control" name="matchDate[1]" id="matchDate-1" value="<?php echo esc_html( $season_data['matchDates'][1] ); ?>"/>
+						<input type="date" class="form-control" name="matchDate[1]" id="matchDate-1" value="<?php echo esc_html( $season_data['match_dates'][1] ); ?>"/>
 						<label for="matchDate-1"><?php esc_html_e( 'End Date', 'racketmanager' ); ?></label>
 					</div>
 				</div>
 			</div>
 			<div class="form-floating mb-3">
-				<input type="date" class="form-control" name="date_closing" id="date_closing" value="<?php echo esc_html( $season_data['closing_date'] ); ?>"/>
+				<input type="date" class="form-control" name="date_closing" id="date_closing" value="<?php echo esc_html( $season_data['date_closing'] ); ?>"/>
 				<label for="date_closing"><?php esc_html_e( 'Closing Date', 'racketmanager' ); ?></label>
 			</div>
 			<?php
@@ -128,15 +128,15 @@ namespace Racketmanager;
 				<div class="row g-3">
 					<div class="col">
 						<div class="form-floating mb-3">
-							<input type="date" class="form-control" name="date_open" id="date_open" value="<?php echo isset( $season_data['dateOpen'] ) ? esc_html( $season_data['dateOpen'] ) : ''; ?>" size="2" />
-							<label for="date_open">
+							<input type="date" class="form-control" name="dateOpen" id="dateOpen" value="<?php echo isset( $season_data['date_open'] ) ? esc_html( $season_data['date_open'] ) : ''; ?>" size="2" />
+							<label for="dateOpen">
 								<?php esc_html_e( 'Opening date', 'racketmanager' ); ?>
 							</label>
 						</div>
 					</div>
 					<div class="col">
 						<div class="form-floating mb-3">
-							<input type="date" class="form-control" name="date_closing" id="date_closing" value="<?php echo isset( $season_data['closing_date'] ) ? esc_html( $season_data['closing_date'] ) : ''; ?>" size="2" />
+							<input type="date" class="form-control" name="date_closing" id="date_closing" value="<?php echo isset( $season_data['date_closing'] ) ? esc_html( $season_data['date_closing'] ) : ''; ?>" size="2" />
 							<label for="date_closing">
 								<?php esc_html_e( 'Closing date', 'racketmanager' ); ?>
 							</label>
@@ -146,13 +146,13 @@ namespace Racketmanager;
 				<div class="row g-3">
 					<div class="col">
 						<div class="form-floating mb-3">
-							<input type="date" class="form-control" name="date_start" id="date_start-0" value="<?php echo isset( $season_data['dateStart'] ) ? esc_html( $season_data['dateStart'] ) : ''; ?>"/>
+							<input type="date" class="form-control" name="dateStart" id="dateStart-0" value="<?php echo isset( $season_data['date_start'] ) ? esc_html( $season_data['date_start'] ) : ''; ?>"/>
 							<label for="matchDate-0"><?php esc_html_e( 'Start Date', 'racketmanager' ); ?></label>
 						</div>
 					</div>
 					<div class="col">
 						<div class="form-floating mb-3">
-							<input type="date" class="form-control" name="date_end" id="date_end" value="<?php echo isset( $season_data['dateEnd'] ) ? esc_html( $season_data['dateEnd'] ) : ''; ?>"/>
+							<input type="date" class="form-control" name="dateEnd" id="dateEnd" value="<?php echo isset( $season_data['date_end'] ) ? esc_html( $season_data['date_end'] ) : ''; ?>"/>
 							<label for="matchDate-1"><?php esc_html_e( 'End Date', 'racketmanager' ); ?></label>
 						</div>
 					</div>
@@ -168,8 +168,8 @@ namespace Racketmanager;
 					<div class="form-check form-check-inline">
 						<input type="radio" class="form-check-input" name="fixedMatchDates" id="fixedMatchDatesTrue" value="true"
 						<?php
-						if ( isset( $season_data['fixedMatchDates'] ) ) {
-							echo ( true === $season_data['fixedMatchDates'] ) ? ' checked' : '';
+						if ( isset( $season_data['fixed_match_dates'] ) ) {
+							echo ( true === $season_data['fixed_match_dates'] ) ? ' checked' : '';
 						}
 						?>
 						/>
@@ -178,8 +178,8 @@ namespace Racketmanager;
 					<div class="form-check form-check-inline">
 						<input type="radio" class="form-check-input" name="fixedMatchDates" id="fixedMatchDatesFalse" value="false"
 						<?php
-						if ( isset( $season_data['fixedMatchDates'] ) ) {
-							echo ( false === $season_data['fixedMatchDates'] ) ? ' checked' : '';
+						if ( isset( $season_data['fixed_match_dates'] ) ) {
+							echo ( false === $season_data['fixed_match_dates'] ) ? ' checked' : '';
 						}
 						?>
 						/>
@@ -195,8 +195,8 @@ namespace Racketmanager;
 					<div class="form-check form-check-inline">
 						<input type="radio" class="form-check-input" name="homeAway" id="homeAwayTrue" value="true"
 						<?php
-						if ( isset( $season_data['homeAway'] ) ) {
-							echo ( true === $season_data['homeAway'] ) ? ' checked' : '';
+						if ( isset( $season_data['home_away'] ) ) {
+							echo ( true === $season_data['home_away'] ) ? ' checked' : '';
 						}
 						?>
 						/>
@@ -206,8 +206,8 @@ namespace Racketmanager;
 				<div class="form-check form-check-inline">
 					<input type="radio" class="form-check-input" name="homeAway" id="homeAwayFalse" value="false"
 					<?php
-					if ( isset( $season_data['homeAway'] ) ) {
-						echo ( false === $season_data['homeAway'] ) ? ' checked' : '';
+					if ( isset( $season_data['home_away'] ) ) {
+						echo ( false === $season_data['home_away'] ) ? ' checked' : '';
 					}
 					?>
 					/>
@@ -220,13 +220,13 @@ namespace Racketmanager;
 				<div class="form-floating mb-3">
 					<?php
 					$match_day = $i + 1;
-					if ( isset( $season_data['matchDates'][ $i ] ) ) {
+					if ( isset( $season_data['match_dates'][ $i ] ) ) {
 						$form_mode = 'update';
 					} else {
 						$form_mode = 'add';
 					}
 					?>
-					<input type="date" class="form-control" name="matchDate[<?php echo esc_html( $i ); ?>]" id="matchDate-<?php echo esc_html( $i ); ?>" value="<?php echo isset( $season_data['matchDates'][ $i ] ) ? esc_html( $season_data['matchDates'][ $i ] ) : ''; ?>" onChange="Racketmanager.setMatchDays(this.value, <?php echo esc_html( $i ); ?>, <?php echo esc_html( $season_data['num_match_days'] ); ?>, '<?php echo esc_html( $form_mode ); ?>');" />
+					<input type="date" class="form-control" name="matchDate[<?php echo esc_html( $i ); ?>]" id="matchDate-<?php echo esc_html( $i ); ?>" value="<?php echo isset( $season_data['match_dates'][ $i ] ) ? esc_html( $season_data['match_dates'][ $i ] ) : ''; ?>" onChange="Racketmanager.setMatchDays(this.value, <?php echo esc_html( $i ); ?>, <?php echo esc_html( $season_data['num_match_days'] ); ?>, '<?php echo esc_html( $form_mode ); ?>');" />
 					<label for="matchDate-<?php echo esc_html( $i ); ?>"><?php echo esc_html( __( 'Match Day', 'racketmanager' ) ) . ' ' . esc_html( $match_day ); ?></label>
 				</div>
 				<?php

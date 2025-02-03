@@ -316,6 +316,11 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 				$tournament->starttime        = isset( $_POST['starttime'] ) ? sanitize_text_field( wp_unslash( $_POST['starttime'] ) ) : null;
 				$tournament->competition_code = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
 				$tournament->grade            = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
+				$fees                         = new \stdClass();
+				$fees->competition            = isset( $_POST['feeCompetition'] ) ? floatval( $_POST['feeCompetition'] ) : null;
+				$fees->event                  = isset( $_POST['feeEvent'] ) ? floatval( $_POST['feeEvent'] ) : null;
+				$fees->id                     = isset( $_POST['feeId'] ) ? intval( $_POST['feeId'] ) : null;
+				$tournament->fees             = $fees;
 				$tournament                   = new Racketmanager_Tournament( $tournament );
 				if ( $racketmanager->error ) {
 					$racketmanager->printMessage();
@@ -347,6 +352,11 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 						$tournament->date_start       = isset( $_POST['dateStart'] ) ? sanitize_text_field( wp_unslash( $_POST['dateStart'] ) ) : null;
 						$tournament->competition_code = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
 						$tournament->grade            = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
+						$fees                         = new \stdClass();
+						$fees->competition            = isset( $_POST['feeCompetition'] ) ? floatval( $_POST['feeCompetition'] ) : null;
+						$fees->event                  = isset( $_POST['feeEvent'] ) ? floatval( $_POST['feeEvent'] ) : null;
+						$fees->id                     = isset( $_POST['feeId'] ) ? intval( $_POST['feeId'] ) : null;
+						$tournament->fees             = $fees;
 						$success                      = $tournament->update( $tournament );
 						if ( $success ) {
 							$this->set_competition_dates( $tournament );
@@ -361,6 +371,9 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 		} elseif ( isset( $_GET['tournament'] ) ) {
 			$tournament_id = intval( $_GET['tournament'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$tournament    = get_tournament( $tournament_id );
+			if ( $tournament ) {
+				$tournament->fees = $tournament->get_fees();
+			}
 		} else {
 			$tournament_id = null;
 			$tournament    = (object) array(

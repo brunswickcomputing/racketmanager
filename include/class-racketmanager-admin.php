@@ -21,6 +21,14 @@ namespace Racketmanager;
 class RacketManager_Admin extends RacketManager {
 
 	/**
+	 * Instance of this class.
+	 *
+	 * @since    1.0.0
+	 *
+	 * @var      object
+	 */
+	protected static $instance = null;
+	/**
 	 * League_id the id of the current league.
 	 *
 	 * @var $league_id
@@ -31,6 +39,8 @@ class RacketManager_Admin extends RacketManager {
 	 */
 	public function __construct() {
 		global $racketmanager_ajax_admin;
+		self::$instance = $this;
+
 		parent::__construct();
 
 		require_once ABSPATH . 'wp-admin/includes/template.php';
@@ -39,8 +49,10 @@ class RacketManager_Admin extends RacketManager {
 		$racketmanager_ajax_admin = new Racketmanager_Ajax_Admin();
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-finances.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-competition.php';
+		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-event.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-tournament.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-cup.php';
+		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-league.php';
 
 		add_action( 'admin_enqueue_scripts', array( &$this, 'loadScripts' ) );
 		add_action( 'admin_enqueue_scripts', array( &$this, 'loadStyles' ) );
@@ -60,7 +72,21 @@ class RacketManager_Admin extends RacketManager {
 		add_action( 'wp_ajax_racketmanager_get_event_dropdown', array( &$this, 'get_event_dropdown' ) );
 		add_action( 'wp_ajax_racketmanager_get_league_dropdown', array( &$this, 'get_league_dropdown' ) );
 	}
+	/**
+	 * Return an instance of this class.
+	 *
+	 * @since     1.0.0
+	 *
+	 * @return    object    A single instance of this class.
+	 */
+	public static function get_instance() {
+		// If the single instance hasn't been set, set it now.
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
 
+		return self::$instance;
+	}
 	/**
 	 * Adds menu to the admin interface
 	 */
@@ -399,20 +425,42 @@ class RacketManager_Admin extends RacketManager {
 				include_once RACKETMANAGER_PATH . '/admin/documentation.php';
 				break;
 			case 'racketmanager-leagues':
-				$this->display_leagues_page();
+				$racketmanager_admin_league = new RacketManager_Admin_League();
+				if ( 'seasons' === $view ) {
+					$racketmanager_admin_league->display_seasons_page();
+				} elseif ( 'overview' === $view ) {
+					$racketmanager_admin_league->display_overview_page();
+				} elseif ( 'setup' === $view ) {
+					$racketmanager_admin_league->display_setup_page();
+				} elseif ( 'modify' === $view ) {
+					$racketmanager_admin_competition = new RacketManager_Admin_Competition();
+					$racketmanager_admin_competition->display_season_modify_page();
+				} elseif ( 'event' === $view ) {
+					$racketmanager_admin_league->display_event_page();
+				} elseif ( 'constitution' === $view ) {
+					$racketmanager_admin_league->display_constitution_page();
+				} elseif ( 'plan' === $view ) {
+					$racketmanager_admin_league->display_schedule_page();
+				} elseif ( 'config' === $view ) {
+					$racketmanager_admin_competition = new RacketManager_Admin_Competition();
+					$racketmanager_admin_competition->display_config_page();
+				} else {
+					$racketmanager_admin_league->display_leagues_page();
+				}
 				break;
 			case 'racketmanager-cups':
 				$racketmanager_admin_cup = new RacketManager_Admin_Cup();
-				if ( 'modify' === $view ) {
-					$racketmanager_admin_cup->display_cup_page();
+				if ( 'seasons' === $view ) {
+					$racketmanager_admin_cup->display_cup_seasons_page();
+				} elseif ( 'modify' === $view ) {
+					$racketmanager_admin_competition = new RacketManager_Admin_Competition();
+					$racketmanager_admin_competition->display_season_modify_page();
 				} elseif ( 'overview' === $view ) {
 					$racketmanager_admin_cup->display_cup_overview_page();
 				} elseif ( 'setup' === $view ) {
 					$racketmanager_admin_cup->display_cup_setup_page();
 				} elseif ( 'setup-event' === $view ) {
 					$racketmanager_admin_cup->display_cup_setup_event_page();
-				} elseif ( 'seasons' === $view ) {
-					$racketmanager_admin_cup->display_cup_seasons_page();
 				} elseif ( 'draw' === $view ) {
 					$racketmanager_admin_cup->display_cup_draw_page();
 				} elseif ( 'matches' === $view ) {
@@ -421,6 +469,9 @@ class RacketManager_Admin extends RacketManager {
 					$racketmanager_admin_cup->display_cup_match_page();
 				} elseif ( 'plan' === $view ) {
 					$racketmanager_admin_cup->display_cup_plan_page();
+				} elseif ( 'config' === $view ) {
+					$racketmanager_admin_competition = new RacketManager_Admin_Competition();
+					$racketmanager_admin_competition->display_config_page();
 				} else {
 					$racketmanager_admin_cup->display_cups_page();
 				}
@@ -445,6 +496,12 @@ class RacketManager_Admin extends RacketManager {
 					$racketmanager_admin_tournament->display_tournament_match_page();
 				} elseif ( 'teams' === $view ) {
 					$racketmanager_admin_tournament->display_tournament_teams_page();
+				} elseif ( 'config' === $view ) {
+					$racketmanager_admin_competition = new RacketManager_Admin_Competition();
+					$racketmanager_admin_competition->display_config_page();
+				} elseif ( 'event' === $view ) {
+					$racketmanager_admin_event = new RacketManager_Admin_Event();
+					$racketmanager_admin_event->display_config_page();
 				} else {
 					$racketmanager_admin_tournament->display_tournaments_page();
 				}
@@ -927,19 +984,23 @@ class RacketManager_Admin extends RacketManager {
 		} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-league' ) ) {
 				$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( empty( $_POST['league_id'] ) ) {
-			if ( isset( $_POST['league_title'] ) && isset( $_POST['event_id'] ) ) {
-				$league           = new \stdClass();
-				$league->title    = sanitize_text_field( wp_unslash( $_POST['league_title'] ) );
-				$league->event_id = intval( $_POST['event_id'] );
-				$league           = new Racketmanager_League( $league );
+			if ( isset( $_POST['event_id'] ) ) {
+				$event_id = intval( $_POST['event_id'] );
+				$event    = get_event( $event_id );
+				if ( $event ) {
+					$league_title = isset( $_POST['league_title'] ) ? sanitize_text_field( wp_unslash( $_POST['league_title'] ) ) : null;
+					$event->add_league( $league_title );
+				}
 				$this->set_message( __( 'League added', 'racketmanager' ) );
 			}
 		} else {
 			$league = get_league( intval( $_POST['league_id'] ) );
 			if ( sanitize_text_field( wp_unslash( $_POST['league_title'] ) ) === $league->title ) {
-				$this->set_message( __( 'No updates', 'racketmanager' ), true );
+				$this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
 			} else {
-				$league->update( sanitize_text_field( wp_unslash( $_POST['league_title'] ) ) );
+				$league_title = isset( $_POST['league_title'] ) ? sanitize_text_field( wp_unslash( $_POST['league_title'] ) ) : null;
+				$sequence     = isset( $_POST['sequence'] ) ? sanitize_text_field( wp_unslash( $_POST['sequence'] ) ) : null;
+				$league->update( $league_title, $sequence );
 				$this->set_message( __( 'League Updated', 'racketmanager' ) );
 			}
 		}
@@ -958,15 +1019,15 @@ class RacketManager_Admin extends RacketManager {
 		} elseif ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] && isset( $_POST['del_season'] ) && isset( $competition ) ) {
 			$msg = array();
 			foreach ( $_POST['del_season'] as $season ) {  //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-				$update = $competition->delete_season( $season );
+				$update          = $competition->delete_season( $season );
+				$schedule_args[] = intval( $competition->id );
+				$schedule_args[] = intval( $season );
+				$schedule_name   = 'rm_notify_team_entry_open';
+				Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+				$schedule_name = 'rm_notify_team_entry_reminder';
+				Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
 				if ( $competition->is_cup ) {
-					$schedule_args[] = intval( $competition->id );
-					$schedule_args[] = intval( $season );
-					$schedule_name   = 'rm_calculate_cup_ratings';
-					Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
-					$schedule_name = 'notify_team_entry_open';
-					Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
-					$schedule_name = 'rm_notify_team_entry_reminder';
+					$schedule_name = 'rm_calculate_cup_ratings';
 					Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
 				}
 				if ( $update ) {
@@ -3738,6 +3799,9 @@ class RacketManager_Admin extends RacketManager {
 					$this->printMessage();
 					return;
 				}
+				// Set active tab.
+				$tab                                           = isset( $_POST['active-tab'] ) ? sanitize_text_field( wp_unslash( $_POST['active-tab'] ) ) : null;
+				$valid                                         = true;
 				$options['rosters']['btm']                     = isset( $_POST['btmRequired'] ) ? sanitize_text_field( wp_unslash( $_POST['btmRequired'] ) ) : null;
 				$options['rosters']['rosterEntry']             = isset( $_POST['clubPlayerEntry'] ) ? sanitize_text_field( wp_unslash( $_POST['clubPlayerEntry'] ) ) : null;
 				$options['rosters']['rosterConfirmation']      = isset( $_POST['confirmation'] ) ? sanitize_text_field( wp_unslash( $_POST['confirmation'] ) ) : null;
@@ -3761,46 +3825,62 @@ class RacketManager_Admin extends RacketManager {
 					$options[ $competition_type ]['confirmationTimeout']     = isset( $_POST[ $competition_type ]['confirmationTimeout'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['confirmationTimeout'] ) ) : null;
 					$this->scheduleResultChase( $competition_type, $options[ $competition_type ] );
 				}
-				$options['colors']['headers']                = isset( $_POST['color_headers'] ) ? sanitize_text_field( wp_unslash( $_POST['color_headers'] ) ) : null;
-				$options['colors']['rows']                   = array(
+				$options['colors']['headers']                   = isset( $_POST['color_headers'] ) ? sanitize_text_field( wp_unslash( $_POST['color_headers'] ) ) : null;
+				$options['colors']['rows']                      = array(
 					'alternate'  => isset( $_POST['color_rows_alt'] ) ? sanitize_text_field( wp_unslash( $_POST['color_rows_alt'] ) ) : null,
 					'main'       => isset( $_POST['color_rows'] ) ? sanitize_text_field( wp_unslash( $_POST['color_rows'] ) ) : null,
 					'ascend'     => isset( $_POST['color_rows_ascend'] ) ? sanitize_text_field( wp_unslash( $_POST['color_rows_ascend'] ) ) : null,
 					'descend'    => isset( $_POST['color_rows_descend'] ) ? sanitize_text_field( wp_unslash( $_POST['color_rows_descend'] ) ) : null,
 					'relegation' => isset( $_POST['color_rows_relegation'] ) ? sanitize_text_field( wp_unslash( $_POST['color_rows_relegation'] ) ) : null,
 				);
-				$options['colors']['boxheader']              = array( isset( $_POST['color_boxheader1'] ) ? sanitize_text_field( wp_unslash( $_POST['color_boxheader1'] ) ) : null, isset( $_POST['color_boxheader2'] ) ? sanitize_text_field( wp_unslash( $_POST['color_boxheader2'] ) ) : null );
-				$options['championship']['numRounds']        = isset( $_POST['numRounds'] ) ? sanitize_text_field( wp_unslash( $_POST['numRounds'] ) ) : null;
-				$options['billing']['billingEmail']          = isset( $_POST['billingEmail'] ) ? sanitize_text_field( wp_unslash( $_POST['billingEmail'] ) ) : null;
-				$options['billing']['billingAddress']        = isset( $_POST['billingAddress'] ) ? sanitize_text_field( wp_unslash( $_POST['billingAddress'] ) ) : null;
-				$options['billing']['billingTelephone']      = isset( $_POST['billingTelephone'] ) ? sanitize_text_field( wp_unslash( $_POST['billingTelephone'] ) ) : null;
-				$options['billing']['billingCurrency']       = isset( $_POST['billingCurrency'] ) ? sanitize_text_field( wp_unslash( $_POST['billingCurrency'] ) ) : null;
-				$options['billing']['bankName']              = isset( $_POST['bankName'] ) ? sanitize_text_field( wp_unslash( $_POST['bankName'] ) ) : null;
-				$options['billing']['sortCode']              = isset( $_POST['sortCode'] ) ? sanitize_text_field( wp_unslash( $_POST['sortCode'] ) ) : null;
-				$options['billing']['accountNumber']         = isset( $_POST['accountNumber'] ) ? intval( $_POST['accountNumber'] ) : null;
-				$options['billing']['invoiceNumber']         = isset( $_POST['invoiceNumber'] ) ? intval( $_POST['invoiceNumber'] ) : null;
-				$options['billing']['paymentTerms']          = isset( $_POST['paymentTerms'] ) ? intval( $_POST['paymentTerms'] ) : null;
-				$options['keys']['googleMapsKey']            = isset( $_POST['googleMapsKey'] ) ? sanitize_text_field( wp_unslash( $_POST['googleMapsKey'] ) ) : null;
-				$options['keys']['recaptchaSiteKey']         = isset( $_POST['recaptchaSiteKey'] ) ? sanitize_text_field( wp_unslash( $_POST['recaptchaSiteKey'] ) ) : null;
-				$options['keys']['recaptchaSecretKey']       = isset( $_POST['recaptchaSecretKey'] ) ? sanitize_text_field( wp_unslash( $_POST['recaptchaSecretKey'] ) ) : null;
-				$options['player']['walkover']['female']     = isset( $_POST['walkoverFemale'] ) ? intval( $_POST['walkoverFemale'] ) : null;
-				$options['player']['noplayer']['female']     = isset( $_POST['noplayerFemale'] ) ? intval( $_POST['noplayerFemale'] ) : null;
-				$options['player']['share']['female']        = isset( $_POST['shareFemale'] ) ? intval( $_POST['shareFemale'] ) : null;
-				$options['player']['unregistered']['female'] = isset( $_POST['unregisteredFemale'] ) ? intval( $_POST['unregisteredFemale'] ) : null;
-				$options['player']['walkover']['male']       = isset( $_POST['walkoverMale'] ) ? intval( $_POST['walkoverMale'] ) : null;
-				$options['player']['noplayer']['male']       = isset( $_POST['noplayerMale'] ) ? intval( $_POST['noplayerMale'] ) : null;
-				$options['player']['share']['male']          = isset( $_POST['shareMale'] ) ? intval( $_POST['shareMale'] ) : null;
-				$options['player']['unregistered']['male']   = isset( $_POST['unregisteredMale'] ) ? intval( $_POST['unregisteredMale'] ) : null;
-				$options['player']['walkover']['rubber']     = isset( $_POST['walkoverPointsRubber'] ) ? intval( $_POST['walkoverPointsRubber'] ) : null;
-				$options['player']['walkover']['match']      = isset( $_POST['walkoverPointsMatch'] ) ? intval( $_POST['walkoverPointsMatch'] ) : null;
-				$options['player']['share']['rubber']        = isset( $_POST['sharePoints'] ) ? intval( $_POST['sharePoints'] ) : null;
-
-				update_option( 'racketmanager', $options );
-				$this->set_message( __( 'Settings saved', 'racketmanager' ) );
+				$options['colors']['boxheader']                 = array( isset( $_POST['color_boxheader1'] ) ? sanitize_text_field( wp_unslash( $_POST['color_boxheader1'] ) ) : null, isset( $_POST['color_boxheader2'] ) ? sanitize_text_field( wp_unslash( $_POST['color_boxheader2'] ) ) : null );
+				$options['championship']['numRounds']           = isset( $_POST['numRounds'] ) ? intval( $_POST['numRounds'] ) : null;
+				$options['championship']['open_lead_time']      = isset( $_POST['openLeadtime'] ) ? intval( $_POST['openLeadtime'] ) : null;
+				$grades = Racketmanager_Util::get_event_grades();
+				foreach ( $grades as $grade => $grade_desc ) {
+					$options['championship']['date_closing'][ $grade ]    = isset( $_POST[ $grade ]['dateClose'] ) ? intval( $_POST[ $grade ]['dateClose'] ) : null;
+					$options['championship']['date_withdrawal'][ $grade ] = isset( $_POST[ $grade ]['dateWithdraw'] ) ? intval( $_POST[ $grade ]['dateWithdraw'] ) : null;
+				}
+				$options['billing']['billingEmail']             = isset( $_POST['billingEmail'] ) ? sanitize_text_field( wp_unslash( $_POST['billingEmail'] ) ) : null;
+				$options['billing']['billingAddress']           = isset( $_POST['billingAddress'] ) ? sanitize_text_field( wp_unslash( $_POST['billingAddress'] ) ) : null;
+				$options['billing']['billingTelephone']         = isset( $_POST['billingTelephone'] ) ? sanitize_text_field( wp_unslash( $_POST['billingTelephone'] ) ) : null;
+				$options['billing']['billingCurrency']          = isset( $_POST['billingCurrency'] ) ? sanitize_text_field( wp_unslash( $_POST['billingCurrency'] ) ) : null;
+				$options['billing']['bankName']                 = isset( $_POST['bankName'] ) ? sanitize_text_field( wp_unslash( $_POST['bankName'] ) ) : null;
+				$options['billing']['sortCode']                 = isset( $_POST['sortCode'] ) ? sanitize_text_field( wp_unslash( $_POST['sortCode'] ) ) : null;
+				$options['billing']['accountNumber']            = isset( $_POST['accountNumber'] ) ? intval( $_POST['accountNumber'] ) : null;
+				$options['billing']['invoiceNumber']            = isset( $_POST['invoiceNumber'] ) ? intval( $_POST['invoiceNumber'] ) : null;
+				$options['billing']['paymentTerms']             = isset( $_POST['paymentTerms'] ) ? intval( $_POST['paymentTerms'] ) : null;
+				$options['billing']['stripe_is_live']           = isset( $_POST['billingIsLive'] ) ? true : false;
+				$options['billing']['api_publishable_key_test'] = isset( $_POST['api_publishable_key_test'] ) ? sanitize_text_field( wp_unslash( $_POST['api_publishable_key_test'] ) ) : null;
+				$options['billing']['api_publishable_key_live'] = isset( $_POST['api_publishable_key_live'] ) ? sanitize_text_field( wp_unslash( $_POST['api_publishable_key_live'] ) ) : null;
+				$options['billing']['api_secret_key_test']      = isset( $_POST['api_secret_key_test'] ) ? sanitize_text_field( wp_unslash( $_POST['api_secret_key_test'] ) ) : null;
+				$options['billing']['api_secret_key_live']      = isset( $_POST['api_secret_key_live'] ) ? sanitize_text_field( wp_unslash( $_POST['api_secret_key_live'] ) ) : null;
+				$options['keys']['googleMapsKey']               = isset( $_POST['googleMapsKey'] ) ? sanitize_text_field( wp_unslash( $_POST['googleMapsKey'] ) ) : null;
+				$options['keys']['recaptchaSiteKey']            = isset( $_POST['recaptchaSiteKey'] ) ? sanitize_text_field( wp_unslash( $_POST['recaptchaSiteKey'] ) ) : null;
+				$options['keys']['recaptchaSecretKey']          = isset( $_POST['recaptchaSecretKey'] ) ? sanitize_text_field( wp_unslash( $_POST['recaptchaSecretKey'] ) ) : null;
+				$options['player']['walkover']['female']        = isset( $_POST['walkoverFemale'] ) ? intval( $_POST['walkoverFemale'] ) : null;
+				$options['player']['noplayer']['female']        = isset( $_POST['noplayerFemale'] ) ? intval( $_POST['noplayerFemale'] ) : null;
+				$options['player']['share']['female']           = isset( $_POST['shareFemale'] ) ? intval( $_POST['shareFemale'] ) : null;
+				$options['player']['unregistered']['female']    = isset( $_POST['unregisteredFemale'] ) ? intval( $_POST['unregisteredFemale'] ) : null;
+				$options['player']['walkover']['male']          = isset( $_POST['walkoverMale'] ) ? intval( $_POST['walkoverMale'] ) : null;
+				$options['player']['noplayer']['male']          = isset( $_POST['noplayerMale'] ) ? intval( $_POST['noplayerMale'] ) : null;
+				$options['player']['share']['male']             = isset( $_POST['shareMale'] ) ? intval( $_POST['shareMale'] ) : null;
+				$options['player']['unregistered']['male']      = isset( $_POST['unregisteredMale'] ) ? intval( $_POST['unregisteredMale'] ) : null;
+				$options['player']['walkover']['rubber']        = isset( $_POST['walkoverPointsRubber'] ) ? intval( $_POST['walkoverPointsRubber'] ) : null;
+				$options['player']['walkover']['match']         = isset( $_POST['walkoverPointsMatch'] ) ? intval( $_POST['walkoverPointsMatch'] ) : null;
+				$options['player']['share']['rubber']           = isset( $_POST['sharePoints'] ) ? intval( $_POST['sharePoints'] ) : null;
+				if ( $options['billing']['stripe_is_live'] ) {
+					if ( empty( $options['billing']['api_publishable_key_live'] ) || empty( $options['billing']['api_secret_key_live'] ) ) {
+						$this->set_message( __( 'Live mode requires live keys to be set', 'racketmanager' ), true );
+						$valid = false;
+						$tab   = 'billing';
+					}
+				}
+				if ( $valid ) {
+					update_option( 'racketmanager', $options );
+					$this->set_message( __( 'Settings saved', 'racketmanager' ) );
+				}
 				$this->printMessage();
-
-				// Set active tab.
-				$tab = isset( $_POST['active-tab'] ) ? sanitize_text_field( wp_unslash( $_POST['active-tab'] ) ) : null;
 			}
 
 			require_once RACKETMANAGER_PATH . '/admin/settings-global.php';

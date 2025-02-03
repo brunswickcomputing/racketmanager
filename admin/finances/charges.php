@@ -12,8 +12,8 @@ $args['orderby'] = array(
 	'type' => 'ASC',
 	'name' => 'ASC',
 );
-$competitions    = $racketmanager->get_competitions( $args );
-$seasons         = $racketmanager->get_seasons( 'DESC' );
+$competitions    = $this->get_competitions( $args );
+$seasons         = $this->get_seasons( 'DESC' );
 $charges         = $finance_charges;
 ?>
 <div class="container">
@@ -75,7 +75,7 @@ $charges         = $finance_charges;
 						<th class=""><?php esc_html_e( 'Status', 'racketmanager' ); ?></th>
 						<th class="text-end"><?php esc_html_e( 'Amount', 'racketmanager' ); ?></th>
 					</tr>
-				</div>
+				</thead>
 
 				<?php
 				if ( $charges ) {

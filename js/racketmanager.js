@@ -323,19 +323,28 @@ function checkToggle($target, event) {
 	// If a checkbox with aria-controls, handle click
 	let isCheckbox = $target.getAttribute('type') === 'checkbox';
 	let hasAriaControls = $target.getAttribute('aria-controls');
+	let inputIsChecked = $target.checked;
+	let eventId = $target.id.substring(6);
 	if (isCheckbox && hasAriaControls) {
-		let $target2 = $target.parentNode.parentNode.querySelector('#' + $target.getAttribute('aria-controls'));
-		if ($target2?.classList.contains('form-checkboxes__conditional')) {
-			let inputIsChecked = $target.checked;
-			$target2.setAttribute('aria-expanded', inputIsChecked);
+		let $target2 = jQuery('#' + hasAriaControls)[0];
+		if ($target2.classList.contains('is-doubles')) {
 			$target2.classList.toggle('form-checkboxes__conditional--hidden', !inputIsChecked);
-			let event_id = $target.id.substring(6);
 			if (inputIsChecked) {
-				Racketmanager.partnerModal(event, event_id);
+				Racketmanager.partnerModal(event, eventId);
 			} else {
+				let partnerIdLink = "#partnerId-" + eventId;
+				jQuery(partnerIdLink).val('');
+				let partnerNameLink = "#partnerName-" + eventId;
+				jQuery(partnerNameLink).html('');
+				Racketmanager.clearPrice(eventId);
 				jQuery('#liEventDetails').removeClass('is-loading');
 			}
 		} else {
+			if (inputIsChecked) {
+				Racketmanager.setEventPrice(eventId);
+			} else {
+				Racketmanager.clearPrice(eventId);
+			}
 			jQuery('#liEventDetails').removeClass('is-loading');
 		}
 	} else {
@@ -1019,7 +1028,7 @@ Racketmanager.updatePlayer = function (link) {
 Racketmanager.entryRequest = function (event, type) {
 	event.preventDefault();
 	let notifyField = '#entryAlert';
-	jQuery(notifyField).removeClass('alert--success alert--warning alert--danger');
+	jQuery(notifyField).removeClass('alert--success alert--warning alert--info alert--danger');
 	jQuery(notifyField).hide();
 	let alertTextField = '#entryAlertResponse';
 	jQuery(alertTextField).html("");
@@ -1037,8 +1046,22 @@ Racketmanager.entryRequest = function (event, type) {
 		type: "POST",
 		data: $form,
 		success: function (response) {
-			jQuery(notifyField).addClass('alert--success');
-			jQuery(alertTextField).html(response.data);
+			if (Array.isArray(response.data)) {
+				msg = response.data[0];
+				msgType = response.data[1];
+				if (response.data[2]) {
+					link = response.data[3];
+					if (link) {
+						window.location = link;
+					}
+				}
+			} else {
+				msg = response.data;
+				msgType = 'success';
+			}
+			let msgClass = 'alert--' + msgType;
+			jQuery(notifyField).addClass(msgClass);
+			jQuery(alertTextField).html(msg);
 		},
 		error: function (response) {
 			if (response.responseJSON) {
@@ -1885,6 +1908,8 @@ Racketmanager.partnerModal = function (event, event_id) {
 	let gender = jQuery(genderRef).val();
 	let seasonRef = "#season";
 	let season = jQuery(seasonRef).val();
+	let dateEndRef = "#tournamentDateEnd";
+	let dateEnd = jQuery(dateEndRef).val();
 	let notifyField = "#partnerModal";
 	let modal = 'partnerModal';
 	jQuery(notifyField).val("");
@@ -1899,6 +1924,7 @@ Racketmanager.partnerModal = function (event, event_id) {
 			"gender": gender,
 			"season": season,
 			"partnerId": partnerId,
+			"dateEnd": dateEnd,
 			"action": action,
 			"security": ajax_var.ajax_nonce,
 		},
@@ -1955,6 +1981,7 @@ Racketmanager.partnerSave = function (link) {
 			let partnerNameLink = "#partnerName-" + eventId;
 			jQuery(partnerNameLink).html(partnerName);
 			jQuery(modal).modal('hide')
+			Racketmanager.setEventPrice(eventId);
 		},
 		error: function (response) {
 			if (response.responseJSON) {
@@ -2079,6 +2106,59 @@ Racketmanager.tabDataLink = function (e, target, id, season = null, link = null,
 		}
 	);
 };
+Racketmanager.setEventPrice = function (eventId) {
+	let eventFeeFld = '#eventFee-' + eventId;
+	let eventPrice = jQuery(eventFeeFld).val();
+	if (eventPrice > 0) {
+		let eventPriceFmt = currencyFormat(eventPrice);
+		let eventPriceId = '#event-price-' + eventId;
+		jQuery(eventPriceId).val(eventPrice);
+		let eventPriceIdFmt = '#event-price-fmt-' + eventId;
+		jQuery(eventPriceIdFmt).html(eventPriceFmt);
+	}
+	Racketmanager.setTotalPrice();
+};
+Racketmanager.clearPrice = function (eventId) {
+	let eventPrice = '';
+	let eventPriceId = '#event-price-' + eventId;
+	jQuery(eventPriceId).val(eventPrice);
+	let eventPriceIdFmt = '#event-price-fmt-' + eventId;
+	jQuery(eventPriceIdFmt).html(eventPrice);
+	Racketmanager.setTotalPrice();
+};
+Racketmanager.setTotalPrice = function () {
+	let competitionFeeFld = '#competitionFee';
+	let competitionFee = jQuery(competitionFeeFld).val();
+	let eventPriceFld = '.event-price-amt';
+	let eventPrices = jQuery(eventPriceFld);
+	let totalPrice = 0 + +competitionFee;
+	for (i = 0; i < eventPrices.length; i++) {
+		eventPrice = eventPrices[i];
+		eventPrice = eventPrice.value;
+		totalPrice = +totalPrice + +eventPrice;
+	}
+	let totalPriceFmt = '';
+	if (totalPrice > 0) {
+		totalPriceFmt = 'Total: ' + currencyFormat(totalPrice);
+	}
+	let totalPriceFmtId = '#priceCostTotalFmt';
+	jQuery(totalPriceFmtId).html(totalPriceFmt);
+	let totalPriceId = '#priceCostTotal';
+	jQuery(totalPriceId).val(totalPrice);
+};
+Racketmanager.setPaymentStatus = function (payRef) {
+	let action = 'racketmanager_update_payment';
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: {
+			"paymentReference": payRef,
+			"action": action,
+			"security": ajax_var.ajax_nonce,
+		}
+	});
+};
+
 function activaTab(tab) {
 	jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');
 	jQuery('.nav-pills button[data-bs-target="#' + tab + '"]').tab('show');
@@ -2111,4 +2191,32 @@ function get_player_details(name, club = null, notifyField = null, partnerGender
 		}
 	});
 	return response;
+}
+function currencyFormat(amount) {
+	return totalPrice = new Intl.NumberFormat(locale_var.locale, { style: 'currency', currency: locale_var.currency }).format(amount);
+}
+function createPaymentRequest(tournamentEntry,invoiceId, callback) {
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: {
+			"tournament_entry": tournamentEntry,
+			"invoiceId" : invoiceId,
+			"action": "racketmanager_tournament_payment_create",
+			"security": ajax_var.ajax_nonce,
+		},
+		success: function (response) {
+			output = response.data;
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				output = response.responseJSON.data;
+			} else {
+				output = response.statusText;
+			}
+		},
+		complete: function () {
+			callback(output);
+		}
+	});
 }

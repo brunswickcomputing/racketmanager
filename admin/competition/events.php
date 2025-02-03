@@ -25,11 +25,11 @@ namespace Racketmanager;
 		<div class="container">
 			<div class="row table-header">
 				<div class="col-2 col-lg-1 check-column"><input type="checkbox" id="check-all-events" onclick="Racketmanager.checkAll(document.getElementById('events-filter'));" /></div>
-				<div class="d-none d-lg-1 col-1 column-num">ID</div>
+				<div class="d-none d-lg-block col-1 column-num">ID</div>
 				<div class="col-4"><?php esc_html_e( 'Event', 'racketmanager' ); ?></div>
 				<div class="col-3 col-lg-1 text-center"><?php esc_html_e( 'Number of sets', 'racketmanager' ); ?></div>
 				<div class="col-3 col-lg-1 text-center"><?php esc_html_e( 'Number of rubbers', 'racketmanager' ); ?></div>
-				<div class="d-none d-lg-1 col-3 centered"><?php esc_html_e( 'Type', 'racketmanager' ); ?></div>
+				<div class="d-none d-lg-block col-3 centered"><?php esc_html_e( 'Type', 'racketmanager' ); ?></div>
 			</div>
 
 			<?php
@@ -46,11 +46,11 @@ namespace Racketmanager;
 					?>
 					<div class="row table-row <?php echo esc_html( $class ); ?>">
 						<div class="col-2 col-lg-1 check-column"><input type="checkbox" value="<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" /></div>
-						<div class="d-none d-lg-1 col-1 column-num"><?php echo esc_html( $event->id ); ?></div>
+						<div class="d-none d-lg-block col-1 column-num"><?php echo esc_html( $event->id ); ?></div>
 						<div class="col-4"><a href="<?php echo esc_html( $event_link ); ?>"><?php echo esc_html( $event->name ); ?></a></div>
 						<div class="col-3 col-lg-1 text-center"><?php echo esc_html( $event->num_sets ); ?></div>
 						<div class="col-3 col-lg-1 text-center"><?php echo esc_html( $event->num_rubbers ); ?></div>
-						<div class="d-none d-lg-1 col-3 centered"><?php echo esc_html( Racketmanager_Util::get_event_type( $event->type ) ); ?>
+						<div class="d-none d-lg-block col-3 centered"><?php echo esc_html( Racketmanager_Util::get_event_type( $event->type ) ); ?>
 						</div>
 					</div>
 				<?php } ?>

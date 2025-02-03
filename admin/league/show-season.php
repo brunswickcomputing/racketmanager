@@ -1,6 +1,6 @@
 <?php
 /**
- * Cup season view administration panel
+ * Season view administration panel
  *
  * @package Racketmanager/Admin/Templates
  */
@@ -16,16 +16,16 @@ jQuery(document).ready(function(){
 <div class='container'>
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
-			<a href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s"><?php echo esc_html( ucfirst( $competition->type ) ); ?>s</a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&amp;view=cup&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <?php echo esc_html( $season ); ?>
+			<a href="admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s"><?php echo esc_html( ucfirst( $competition->type ) ); ?>s</a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <?php echo esc_html( $season ); ?>
 		</div>
 	</div>
 	<h1><?php echo esc_html( $competition->name ); ?> - <?php echo esc_html( $season ); ?></h1>
 	<div class="row mb-3">
 		<nav class="navbar navbar-expand-lg bg-body-tertiary">
-			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCup" aria-controls="navbarCup" aria-expanded="false" aria-label="Toggle navigation">
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar<?php echo esc_attr( $competition->type ); ?>" aria-controls="navbar<?php echo esc_attr( $competition->type ); ?>" aria-expanded="false" aria-label="Toggle navigation">
 				<span class="navbar-toggler-icon"></span>
 			</button>
-			<div class="collapse navbar-collapse" id="navbarCup">
+			<div class="collapse navbar-collapse" id="navbar<?php echo esc_attr( $competition->type ); ?>">
 				<ul class="nav nav-pills">
 					<li class="nav-item">
 						<button class="nav-link" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true"><?php esc_html_e( 'Overview', 'racketmanager' ); ?></button>
@@ -37,10 +37,10 @@ jQuery(document).ready(function(){
 						<button class="nav-link" id="entries-tab" data-bs-toggle="tab" data-bs-target="#entries" type="button" role="tab" aria-controls="entries" aria-selected="true"><?php esc_html_e( 'Entries', 'racketmanager' ); ?></button>
 					</li>
 					<?php
-					if ( $current_season->is_active ) {
+					if ( ! $current_season->is_active ) {
 						?>
 						<li class="nav-item">
-							<a class="nav-link" id="plan-tab" href="admin.php?page=racketmanager-cups&view=plan&competition_id=<?php echo esc_attr( $competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>" type="button" role="tab"><?php esc_html_e( 'Plan', 'racketmanager' ); ?></a>
+							<a class="nav-link" id="plan-tab" href="admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&view=plan&competition_id=<?php echo esc_attr( $competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>" type="button" role="tab"><?php esc_html_e( 'Schedule', 'racketmanager' ); ?></a>
 						</li>
 						<?php
 					}

@@ -86,6 +86,12 @@ final class Racketmanager_Invoice {
 	 */
 	public $amount;
 	/**
+	 * Payment ref
+	 *
+	 * @var string
+	 */
+	public $payment_reference;
+	/**
 	 * Get class instance
 	 *
 	 * @param int $invoice_id id.
@@ -100,7 +106,7 @@ final class Racketmanager_Invoice {
 		if ( ! $invoice ) {
 			$invoice = $wpdb->get_row(
 				$wpdb->prepare(
-					"SELECT `id`, `charge_id`, `club_id`, `player_id`, `status`, `invoiceNumber` as `invoice_number`, `date`, `date_due`, `amount` FROM {$wpdb->racketmanager_invoices} WHERE `id` = %d LIMIT 1",
+					"SELECT `id`, `charge_id`, `club_id`, `player_id`, `status`, `invoiceNumber` as `invoice_number`, `date`, `date_due`, `amount`, `payment_reference` FROM {$wpdb->racketmanager_invoices} WHERE `id` = %d LIMIT 1",
 					$invoice_id
 				)
 			);  // db call ok.
@@ -123,6 +129,7 @@ final class Racketmanager_Invoice {
 	 * @param object $invoice invoice object.
 	 */
 	public function __construct( $invoice = null ) {
+		$this->racketmanager = Racketmanager::get_instance();
 		if ( ! is_null( $invoice ) ) {
 			foreach ( get_object_vars( $invoice ) as $key => $value ) {
 				$this->$key = $value;
@@ -192,6 +199,19 @@ final class Racketmanager_Invoice {
 		}
 	}
 	/**
+	 * Delete invoice
+	 */
+	public function delete() {
+		global $wpdb;
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->racketmanager_invoices} WHERE `id` = %d",
+				$this->id
+			)
+		);
+		wp_cache_delete( $this->id, 'invoice' );
+	}
+	/**
 	 * Set invoice amount
 	 *
 	 * @param string $amount amount value.
@@ -234,7 +254,25 @@ final class Racketmanager_Invoice {
 		wp_cache_set( $this->id, $this, 'invoice' );
 		return true;
 	}
+	/**
+	 * Set payment reference status
+	 *
+	 * @param string $reference reference value.
+	 */
+	public function set_payment_reference( $reference ) {
+		global $wpdb;
 
+		$this->payment_reference = $reference;
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"UPDATE {$wpdb->racketmanager_invoices} set `payment_reference` = %s WHERE `id` = %d",
+				$this->payment_reference,
+				$this->id
+			)
+		);  // db call ok.
+		wp_cache_set( $this->id, $this, 'invoice' );
+		return true;
+	}
 	/**
 	 * Generate invoice
 	 */
@@ -243,11 +281,11 @@ final class Racketmanager_Invoice {
 		$charge  = get_charge( $this->charge );
 		$club    = get_club( $this->club );
 		$entry   = $charge->get_club_entry( $club );
-		$billing = $racketmanager->get_options( 'billing' );
+		$billing = $this->racketmanager->get_options( 'billing' );
 		return $racketmanager_shortcodes->load_template(
 			'invoice',
 			array(
-				'organisation_name' => $racketmanager->site_name,
+				'organisation_name' => $this->racketmanager->site_name,
 				'invoice'           => $this,
 				'entry'             => $entry,
 				'club'              => $club,

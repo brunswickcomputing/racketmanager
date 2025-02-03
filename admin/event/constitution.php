@@ -29,10 +29,14 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
 		$updateable = false;
 	}
 	$latest_event_season = $event->current_season['name'];
+	$stop_next           = false;
 	foreach ( array_reverse( $event->competition->seasons ) as $season ) {
-		if ( isset( $season['date_end'] ) && $season['date_end'] < $today ) {
+		if ( $stop_next ) {
 			$latest_event_season = $season['name'];
 			break;
+		}
+		if ( $latest_season === $season['name'] ) {
+			$stop_next = true;
 		}
 	}
 	$teams               = $event->get_constitution(
@@ -53,13 +57,26 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
 	?>
 	<h2 class="header"><?php esc_html_e( 'Constitution', 'racketmanager' ); ?> - <?php echo esc_html( $latest_season ); ?></h2>
 	<form id="teams-filter" method="post" action="">
-		<div>
-			<input type="submit" value="<?php esc_html_e( 'Save', 'racketmanager' ); ?>" name="saveconstitution" id="saveconstitution" class="btn btn-primary action" />
-			<a id="addTeams" class="btn btn-secondary" href="admin.php?page=racketmanager&amp;subpage=teams&amp;league_id=<?php echo esc_html( end( $leagues )->id ); ?>&amp;season=<?php echo esc_html( $latest_season ); ?>&amp;view=constitution"><?php esc_html_e( 'Add Teams', 'racketmanager' ); ?></a>
+		<div class="mb-3">
+			<?php
+			if ( $updateable ) {
+				?>
+				<input type="submit" value="<?php esc_html_e( 'Save', 'racketmanager' ); ?>" name="saveconstitution" id="saveconstitution" class="btn btn-primary action" />
+				<a id="addTeams" class="btn btn-secondary" href="admin.php?page=racketmanager&amp;subpage=teams&amp;league_id=<?php echo esc_html( end( $leagues )->id ); ?>&amp;season=<?php echo esc_html( $latest_season ); ?>&amp;view=constitution"><?php esc_html_e( 'Add Teams', 'racketmanager' ); ?></a>
+				<?php
+			}
+			?>
 			<?php
 			if ( $constitution_exists ) {
 				?>
-				<input type="submit" value="<?php esc_html_e( 'Generate Matches', 'racketmanager' ); ?>" name="generate_matches" id="generate_matches" class="btn btn-secondary action" />
+				<?php
+				if ( $updateable ) {
+					?>
+					<input type="submit" value="<?php esc_html_e( 'Promote/Relegate', 'racketmanager' ); ?>" name="promoteRelegate" id="promoteRelegate" class="btn btn-secondary action" />
+					<input type="submit" value="<?php esc_html_e( 'Generate Matches', 'racketmanager' ); ?>" name="generate_matches" id="generate_matches" class="btn btn-secondary action" />
+					<?php
+				}
+				?>
 				<button id="emailConstitution" class="btn btn-secondary" onclick="Racketmanager.emailConstitution(event, <?php echo esc_attr( $event->id ); ?> )"><?php esc_html_e( 'Email Constitution', 'racketmanager' ); ?></button>
 				<span class="notifymessage" id="notifyMessage-constitution"></span>
 				<?php
@@ -74,15 +91,20 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
 		<input type="hidden" name="event_id" value="<?php echo esc_html( $event_id ); ?>" />
 		<input type="hidden" name="latest_season" id="latest_season" value="<?php echo esc_html( $latest_season ); ?>" />
 		<input type="hidden" name="latest_event_season" value="<?php echo esc_html( $latest_event_season ); ?>" />
-		<div class="tablenav">
-			<!-- Bulk Actions -->
-			<select name="action" size="1">
-				<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
-				<option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
-			</select>
-			<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doactionconstitution" id="doactionconstitution" class="btn btn-secondary action" />
-		</div>
-
+		<?php
+		if ( $updateable ) {
+			?>
+			<div class="tablenav">
+				<!-- Bulk Actions -->
+				<select name="action" size="1">
+					<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
+					<option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
+				</select>
+				<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doactionconstitution" id="doactionconstitution" class="btn btn-secondary action" />
+			</div>
+			<?php
+		}
+		?>
 		<table class="widefat" title="RacketManager" aria-label="constitution table">
 			<thead>
 				<tr>
@@ -138,18 +160,18 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
 								</select>
 							</td>
 							<td class="column-num">
-								<?php echo esc_html( $team->old_rank ); ?>
+									<?php echo esc_html( $team->old_rank ); ?>
 								<input type="hidden" name="old_rank[<?php echo esc_html( $team->table_id ); ?>]" id="old_rank[<?php echo esc_html( $team->table_id ); ?>]" value=<?php echo esc_html( $team->old_rank ); ?> />
 							</td>
 							<td class="column-num">
 								<input type="text" size="2" class="rank-input" name="rank[<?php echo esc_html( $team->table_id ); ?>]" id="rank[<?php echo esc_html( $team->table_id ); ?>]" value=<?php echo esc_html( $team->rank ); ?> />
 							</td>
 							<td class="column-num" name="points[<?php echo esc_html( $team->table_id ); ?>]">
-								<?php echo esc_html( $team->points_plus + $team->add_points ); ?>
+									<?php echo esc_html( $team->points_plus + $team->add_points ); ?>
 								<input type="hidden" name="points_plus[<?php echo esc_html( $team->table_id ); ?>]" value=<?php echo esc_html( $team->points_plus ); ?> />
 							</td>
 							<td class="column-num">
-								<?php echo esc_html( $team->add_points ); ?>
+									<?php echo esc_html( $team->add_points ); ?>
 								<input type="hidden" name="add_points[<?php echo esc_html( $team->table_id ); ?>]" value=<?php echo esc_html( $team->add_points ); ?> />
 							</td>
 							<td>
@@ -161,8 +183,10 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
 								</select>
 							</td>
 						</tr>
-					<?php } ?>
-				<?php } ?>
+						<?php
+					}
+				}
+				?>
 			</tbody>
 		</table>
 	</form>

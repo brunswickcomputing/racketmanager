@@ -1286,6 +1286,19 @@ function racketmanager_upgrade() {
 		echo esc_html__( 'starting 8.33.5 upgrade', 'racketmanager' ) . "<br />\n";
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournament_entries} ADD `fee` DECIMAL(10,2) NULL AFTER `status`" );
 	}
+	if ( version_compare( $installed, '8.33.6', '<' ) ) {
+		echo esc_html__( 'starting 8.33.6 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_invoices} CHANGE `club_id` `club_id` INT NULL" );
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_invoices} ADD `player_id` INT NULL DEFAULT NULL AFTER `club_id`" );
+	}
+	if ( version_compare( $installed, '8.33.7', '<' ) ) {
+		echo esc_html__( 'starting 8.33.7 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_invoices} ADD `payment_reference` VARCHAR(50) NULL AFTER `date_due`" );
+	}
+	if ( version_compare( $installed, '8.33.8', '<' ) ) {
+		echo esc_html__( 'starting 8.33.8 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournament_entries} ADD `club_id` INT NULL AFTER `fee`" );
+	}
 	/*
 	* Update version and dbversion
 	*/

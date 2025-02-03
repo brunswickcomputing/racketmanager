@@ -41,6 +41,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_nopriv_racketmanager_league_entry', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_racketmanager_tournament_entry', array( &$this, 'tournament_entry_request' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_tournament_entry', array( &$this, 'logged_out' ) );
+		add_action( 'wp_ajax_racketmanager_tournament_payment_create', array( &$this, 'tournament_payment_create' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_tournament_payment_create', array( &$this, 'logged_out' ) );
+		add_action( 'wp_ajax_racketmanager_update_payment', array( &$this, 'update_payment' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_update_payment', array( &$this, 'logged_out' ) );
 
 		add_action( 'wp_ajax_racketmanager_matchcard', array( &$this, 'print_match_card' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_matchcard', array( &$this, 'print_match_card' ) );
@@ -435,7 +439,14 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$events            = isset( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : array();
 				$partners          = isset( $_POST['partnerId'] ) ? wp_unslash( $_POST['partnerId'] ) : array();
 				$tournament_events = isset( $_POST['tournamentEvents'] ) ? explode( ',', wp_unslash( $_POST['tournamentEvents'] ) ) : null;
+				$entry_fee         = isset( $_POST['priceCostTotal'] ) ? floatval( $_POST['priceCostTotal'] ) : null;
+				$paid_fee          = isset( $_POST['pricePaidTotal'] ) ? floatval( $_POST['pricePaidTotal'] ) : null;
 				// phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				$validator  = $validator->tournament( $tournament_id );
+				if ( $tournament_id ) {
+					$tournament = get_tournament( $tournament_id );
+					$validator  = $validator->tournament_open( $tournament->date_closing );
+				}
 				$validator = $validator->events_entry( $events );
 				foreach ( $events as $event ) {
 					$event = get_event( $event );
@@ -443,147 +454,53 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						$partner_id = isset( $partners[ $event->id ] ) ? $partners[ $event->id ] : 0;
 						$field_ref  = $event->id;
 						$field_name = $event->name;
-						$validator  = $validator->partner( $partner_id, $field_ref, $field_name, $event, $season, $player_id );
+						$validator  = $validator->partner( $partner_id, $field_ref, $field_name, $event, $season, $player_id, $tournament->date );
 					}
 				}
 				$acceptance = isset( $_POST['acceptance'] ) ? sanitize_text_field( wp_unslash( $_POST['acceptance'] ) ) : '';
 				$validator  = $validator->entry_acceptance( $acceptance );
-				$validator  = $validator->tournament( $tournament_id );
-				if ( $tournament_id ) {
-					$tournament = get_tournament( $tournament_id );
-					$validator  = $validator->tournament_open( $tournament->date_closing );
-				}
 			}
 		}
 		if ( ! $validator->error ) {
-			foreach ( $tournament_events as $tournament_event ) {
-				$event = get_event( $tournament_event );
-				if ( $event ) {
-					if ( ! empty( $event->primary_league ) ) {
-						$league = get_league( $event->primary_league );
-					} else {
-						$leagues = $event->get_leagues();
-						$league  = get_league( $leagues[0] );
-					}
-					$teams = $event->get_teams(
-						array(
-							'player' => $player_id,
-							'season' => $tournament->season,
-						)
-					);
-					foreach ( $teams as $team ) {
-						$league->delete_team( $team->team_id, $tournament->season );
-					}
-				}
+			$tournament_entry               = new \stdClass();
+			$tournament_entry->all_events   = $tournament_events;
+			$tournament_entry->events       = $events;
+			$tournament_entry->partners     = $partners;
+			$tournament_entry->player_id    = $player_id;
+			$tournament_entry->club_id      = $club_id;
+			$tournament_entry->btm          = $btm;
+			$tournament_entry->contactno    = $contactno;
+			$tournament_entry->contactemail = $contactemail;
+			$tournament_entry->comments     = $comments;
+			$tournament_entry->paid         = $paid_fee;
+			$tournament_entry->fee          = $entry_fee;
+			$entry_status                   = $tournament->set_player_entry( $tournament_entry );
+			switch ( $entry_status ) {
+				case 1:
+					$msg              = __( 'Tournament entered and payment outstanding', 'racketmanager' );
+					$return_link      = '/entry-form/' . seo_url( $tournament->name ) . '-tournament/payment/';
+					$payment_required = true;
+					$message_type     = 'success';
+					break;
+				case 2:
+					$msg              = __( 'Tournament entry complete and refund outstanding', 'racketmanager' );
+					$return_link      = null;
+					$payment_required = false;
+					$message_type     = 'warning';
+					break;
+				case 3:
+					$msg              = __( 'No updates to tournament entry', 'racketmanager' );
+					$return_link      = null;
+					$payment_required = false;
+					$message_type     = 'info';
+					break;
+				default:
+					$msg              = __( 'Tournament entry complete', 'racketmanager' );
+					$return_link      = null;
+					$payment_required = false;
+					$message_type     = 'success';
+					break;
 			}
-			$player = get_player( $player_id );
-			$player->update_btm( $btm );
-			$player->update_contact( $contactno, $contactemail );
-			$player_name        = $player->display_name;
-			$club               = get_club( $club_id );
-			$email_to           = $player->display_name . ' <' . $player->email . '>';
-			$email_from         = $racketmanager->get_confirmation_email( 'tournament' );
-			$email_subject      = $racketmanager->site_name . ' - ' . $tournament->name . ' Tournament Entry';
-			$tournament_entries = array();
-			$i                  = 0;
-			foreach ( $events as $i => $event_id ) {
-				$tournament_entry               = array();
-				$partner                        = '';
-				$partner_name                   = '';
-				$partner_id                     = '';
-				$new_team                       = false;
-				$event                          = get_event( $event_id );
-				$tournament_entry['event_name'] = $event->name;
-				if ( ! empty( $event->primary_league ) ) {
-					$league = get_league( $event->primary_league );
-				} else {
-					$leagues = $event->get_leagues();
-					$league  = get_league( $leagues[0] );
-				}
-				$team_name = $player_name;
-				if ( substr( $event->type, 1, 1 ) === 'D' ) {
-					$partner_id        = isset( $partners[ $event->id ] ) ? $partners[ $event->id ] : 0;
-					$partner           = get_player( $partner_id );
-					$partner_name      = $partner->fullname;
-					$partner_team_name = null;
-					$partner_teams     = $event->get_teams(
-						array(
-							'player' => $partner,
-							'season' => $season,
-						)
-					);
-					foreach ( $partner_teams as $partner_team ) {
-						if ( false !== array_search( (string) $player_id, $partner_team->player_id, true ) ) {
-							$partner_team_name = $partner_team->title;
-						}
-					}
-					if ( empty( $partner_team_name ) ) {
-						$team_name .= ' / ' . $partner_name;
-					} else {
-						$team_name = $partner_team_name;
-					}
-					$tournament_entry['partner'] = $partner_name;
-					$this->set_tournament_entry( $tournament->id, $partner_id, false );
-				}
-				$team = get_team( $team_name );
-				if ( ! $team ) {
-					if ( substr( $event->type, 1, 1 ) === 'D' ) {
-						if ( '' !== $partner_name ) {
-							$team_name2 = $partner_name . ' / ' . $player_name;
-							$team       = get_team( $team_name2 );
-							if ( ! $team ) {
-								$new_team = true;
-							}
-						} else {
-							$new_team = true;
-						}
-					} else {
-						$new_team = true;
-					}
-				}
-				if ( $new_team ) {
-					$team             = new \stdClass();
-					$team->player1    = $player_name;
-					$team->player1_id = isset( $_POST['playerId'] ) ? sanitize_text_field( wp_unslash( $_POST['playerId'] ) ) : 0;
-					$team->player2    = $partner_name;
-					$team->player2_id = $partner_id;
-					$team->type       = $league->type;
-					$team->team_type  = 'P';
-					$team->club_id    = $club_id;
-					$team             = new Racketmanager_Team( $team );
-				}
-				$team->set_event( $league->event_id, $player_id, $contactno, $contactemail );
-				$league_entry_id = $league->add_team( $team->id, $season );
-				if ( $league_entry_id ) {
-					$league_entry = get_league_team( $league_entry_id );
-					if ( $league_entry ) {
-						$league_entry->set_player_rating( $team, $event );
-					}
-				}
-				$tournament_entries[ $i ] = $tournament_entry;
-			}
-			$this->set_tournament_entry( $tournament->id, $player_id, true );
-			$action_url                          = $racketmanager->site_url . '/entry-form/' . seo_url( $tournament->name ) . '-tournament/';
-			$tournament_link                     = '<a href="' . $racketmanager->site_url . '/' . seo_url( $tournament->name ) . '-tournament/">' . $tournament->name . '</a>';
-			$headers                             = array();
-			$secretary_email                     = __( 'Tournament Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
-			$headers[]                           = 'From: ' . $secretary_email;
-			$headers[]                           = 'Cc: ' . $secretary_email;
-			$template                            = 'tournament-entry';
-			$template_args['tournament_name']    = $tournament->name;
-			$template_args['tournament_link']    = $tournament_link;
-			$template_args['action_url']         = $action_url;
-			$template_args['tournament_entries'] = $tournament_entries;
-			$template_args['organisation']       = $racketmanager->site_name;
-			$template_args['season']             = $season;
-			$template_args['contactno']          = $contactno;
-			$template_args['contactemail']       = $contactemail;
-			$template_args['player']             = $player;
-			$template_args['club']               = $club->name;
-			$template_args['comments']           = $comments;
-			$template_args['contact_email']      = $email_from;
-			$racketmanager->email_entry_form( $template, $template_args, $email_to, $email_subject, $headers );
-			$msg = __( 'Tournament entry complete', 'racketmanager' );
 		} else {
 			$msg = __( 'Errors in tournament entry form', 'racketmanager' );
 		}
@@ -592,33 +509,99 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			array_push( $return, $msg, $validator->error_msg, $validator->error_field );
 			wp_send_json_error( $return, '500' );
 		} else {
-			wp_send_json_success( $msg );
+			array_push( $return, $msg, $message_type, $payment_required, $return_link );
+			wp_send_json_success( $return );
 		}
 	}
 	/**
-	 * Set tournament entry function
-	 *
-	 * @param int     $tournament tournament id.
-	 * @param int     $player player id.
-	 * @param boolean $entrant indicator if player submitting entry.
-	 * @return void
+	 * Function to create payment intent onStripe
 	 */
-	private function set_tournament_entry( $tournament, $player, $entrant = false ) {
-		$search           = $tournament . '_' . $player;
-		$tournament_entry = get_tournament_entry( $search, 'key' );
-		if ( ! $tournament_entry ) {
-			if ( $entrant ) {
-				$status = 1;
-			} else {
-				$status = 0;
+	public function tournament_payment_create() {
+		global $racketmanager;
+		$valid               = true;
+		$tournament_entry_id = isset( $_POST['tournament_entry'] ) ? intval( $_POST['tournament_entry'] ) : null;
+		$invoice_id          = isset( $_POST['invoiceId'] ) ? intval( $_POST['invoiceId'] ) : null;
+		if ( $tournament_entry_id ) {
+			$tournament_entry = get_tournament_entry( $tournament_entry_id );
+			if ( ! $tournament_entry ) {
+				$valid = false;
+				$msg   = __( 'Tournament entry not found', 'racketmanager' );
 			}
-			$tournament_entry                = new \stdClass();
-			$tournament_entry->status        = $status;
-			$tournament_entry->tournament_id = $tournament;
-			$tournament_entry->player_id     = $player;
-			$tournament_entry                = new Racketmanager_Tournament_Entry( $tournament_entry );
-		} elseif ( $entrant && ! $tournament_entry->status ) {
-			$tournament_entry->confirm();
+		} else {
+			$valid = false;
+			$msg   = __( 'Tournament entry id not present', 'racketmanager' );
+		}
+		if ( $invoice_id ) {
+			$invoice = get_invoice( $invoice_id );
+			if ( ! $invoice ) {
+				$valid = false;
+				$msg   = __( 'Payment request not found', 'racketmanager' );
+			}
+		} else {
+			$valid = false;
+			$msg   = __( 'Payment request id not found', 'racketmanager' );
+		}
+		if ( ! $valid ) {
+			wp_send_json_error( $msg, '500' );
+		}
+		$args        = array();
+		$description = null;
+		$player = get_player( $tournament_entry->player_id );
+		if ( $player ) {
+			$description = $player->display_name;
+		}
+		$tournament = get_tournament( $tournament_entry->tournament_id );
+		if ( $tournament ) {
+			$description .= ' - ' . $tournament->name;
+		}
+		$args['description']                 = $description;
+		$args['amount']                      = $invoice->amount * 100;
+		$args['currency']                    = $racketmanager->currency_code;
+		$args['payment_method_types']        = array('card');
+		$args['statement_descriptor_suffix'] = $tournament->name;
+		$stripe_details                      = new Racketmanager_Stripe();
+		$stripe                              = new \Stripe\StripeClient( $stripe_details->api_secret_key );
+		try {
+			// Create a PaymentIntent with amount and currency
+			$paymentIntent = $stripe->paymentIntents->create( $args );
+			if ( $paymentIntent ) {
+				$reference = $paymentIntent->id;
+				if ( $invoice ) {
+					$invoice->set_payment_reference( $reference );
+				}
+			}
+			$client_secret = $paymentIntent->client_secret;
+			wp_send_json_success( $client_secret );
+		} catch (Error $e) {
+			wp_send_json_error( ['error' => $e->getMessage()], '500' );
+		}
+	}
+	/**
+	 * Update payemnt to complete
+	 */
+	public function update_payment() {
+		global $racketmanager;
+		$valid = 'true';
+		if ( isset( $_POST['security'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
+				$valid   = false;
+				$message = __( 'Security token invalid', 'racketmanager' );
+			}
+		} else {
+			$valid   = false;
+			$message = __( 'No security token found in request', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$payment_reference = isset( $_POST['paymentReference'] ) ? sanitize_text_field( wp_unslash( $_POST['paymentReference'] ) ) : null;
+			if ( $payment_reference ) {
+				$invoices = $racketmanager->get_invoices( array( 'reference' => $payment_reference ) );
+				if ( 1 === count( $invoices ) ) {
+					$invoice = $invoices[0];
+					if ( 'paid' !== $invoice->status ) {
+						$invoice->set_status( 'paid');
+					}
+				}
+			}
 		}
 	}
 	/**
@@ -2288,6 +2271,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
 			$gender   = isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : null;
 			$season   = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+			$date_end = isset( $_POST['dateEnd'] ) ? intval( $_POST['dateEnd'] ) : null;
 			$event    = get_event( $event_id );
 			if ( $event ) {
 				if ( 'M' === $gender ) {
@@ -2320,6 +2304,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						<form id="team-partner" class="" action="#" method="post" onsubmit="return checkSelect(this)">
 							<?php wp_nonce_field( 'team-partner', 'racketmanager_nonce' ); ?>
 							<input type="hidden" name="eventId" value="<?php echo esc_attr( $event->id ); ?>" />
+							<input type="hidden" name="dateEnd" value="<?php echo esc_attr( $date_end ); ?>" />
 							<input type="hidden" name="season" value="<?php echo esc_attr( $season ); ?>" />
 							<input type="hidden" name="modal" value="<?php echo esc_attr( $modal ); ?>" />
 							<div class="modal-header modal__header">
@@ -2399,12 +2384,13 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$player_id  = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
 			$partner_id = isset( $_POST['partnerId'] ) ? intval( $_POST['partnerId'] ) : null;
 			$season     = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+			$date_end   = isset( $_POST['dateEnd'] ) ? intval( $_POST['dateEnd'] ) : null;
 			$event      = get_event( $event_id );
 			if ( $event ) {
 				if ( $partner_id ) {
 					$partner = get_player( $partner_id );
 					if ( $partner ) {
-						$validator = $validator->partner( $partner_id, $event_id, null, $event, $season, $player_id );
+						$validator = $validator->partner( $partner_id, $event_id, null, $event, $season, $player_id, $date_end );
 						if ( ! $validator->error ) {
 							$partner_name = $partner->display_name;
 						} else {

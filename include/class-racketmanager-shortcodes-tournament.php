@@ -172,7 +172,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			if ( $event ) {
 				$primary_league_id = $event->primary_league;
 				if ( $primary_league_id ) {
-					$league = get_league( $primary_league_id );
+					$league = get_league( (string) $primary_league_id );
 					if ( $league ) {
 						$event->num_seeds = isset( $league->championship->num_seeds ) ? $league->championship->num_seeds : 0;
 					}

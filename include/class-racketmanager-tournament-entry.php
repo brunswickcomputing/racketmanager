@@ -38,6 +38,24 @@ final class Racketmanager_Tournament_Entry {
 	 */
 	public $status;
 	/**
+	 * Fee
+	 *
+	 * @var string
+	 */
+	public $fee;
+	/**
+	 * Club id
+	 *
+	 * @var int
+	 */
+	public $club_id;
+	/**
+	 * Club
+	 *
+	 * @var object
+	 */
+	public $club = null;
+	/**
 	 * Retrieve tournament entry instance
 	 *
 	 * @param int    $tournament_entry_id tournament entry id.
@@ -73,7 +91,7 @@ final class Racketmanager_Tournament_Entry {
 		if ( ! $tournament_entry ) {
 			$tournament_entry = $wpdb->get_row(
 				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				"SELECT `id`, `tournament_id`, `player_id`, `status` FROM {$wpdb->racketmanager_tournament_entries} WHERE $search"
+				"SELECT `id`, `tournament_id`, `player_id`, `status`, `fee`, `club_id` FROM {$wpdb->racketmanager_tournament_entries} WHERE $search"
 			); // db call ok.
 			if ( ! $tournament_entry ) {
 				return false;
@@ -93,9 +111,14 @@ final class Racketmanager_Tournament_Entry {
 			foreach ( $tournament_entry as $key => $value ) {
 				$this->$key = $value;
 			}
-
 			if ( ! isset( $this->id ) ) {
 				$this->id = $this->add();
+			}
+			if ( ! empty( $this->club_id ) ) {
+				$club = get_club( $this->club_id );
+				if ( $club ) {
+					$this->club = $club;
+				}
 			}
 		}
 	}
@@ -125,6 +148,12 @@ final class Racketmanager_Tournament_Entry {
 			);
 			$racketmanager->set_message( __( 'Tournament entry added', 'racketmanager' ) );
 			$this->id = $wpdb->insert_id;
+			if ( ! empty( $this->fee ) ) {
+				$this->set_fee( $this->fee );
+			}
+			if ( ! empty( $this->club_id ) ) {
+				$this->set_club( $this->club_id );
+			}
 			return $this->id;
 		} else {
 			$racketmanager->set_message( implode( '<br>', $err_msg ), true );
@@ -132,11 +161,14 @@ final class Racketmanager_Tournament_Entry {
 		}
 	}
 	/**
-	 * Confirm tournament entry
+	 * Set tournament entry status
+	 *
+	 * @param int    $status status.
+	 * @param string $fee tournament fee.
 	 */
-	public function confirm() {
+	public function set_status( $status, $fee = false ) {
 		global $wpdb;
-		$this->status = 1;
+		$this->status = $status;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"UPDATE {$wpdb->racketmanager_tournament_entries} SET `status` = %d WHERE `id` = %d",
@@ -144,6 +176,45 @@ final class Racketmanager_Tournament_Entry {
 				$this->id
 			)
 		);
+		if ( ! empty( $fee ) ) {
+			$this->set_fee( $fee );
+		}
+	}
+	/**
+	 * Set tournament entry fee
+	 *
+	 * @param string $fee tournament fee.
+	 */
+	public function set_fee( $fee ) {
+		global $wpdb;
+		if ( ! empty( $fee ) ) {
+			$this->fee = $fee;
+			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->prepare(
+					"UPDATE {$wpdb->racketmanager_tournament_entries} SET `fee` = %d WHERE `id` = %d",
+					$this->fee,
+					$this->id
+				)
+			);
+		}
+	}
+	/**
+	 * Set club
+	 *
+	 * @param int $club club id.
+	 */
+	public function set_club( $club ) {
+		global $wpdb;
+		if ( ! empty( $club ) ) {
+			$this->club_id = $club;
+			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->prepare(
+					"UPDATE {$wpdb->racketmanager_tournament_entries} SET `club_id` = %d WHERE `id` = %d",
+					$this->club_id,
+					$this->id
+				)
+			);
+		}
 	}
 	/**
 	 * Delete tournament entry

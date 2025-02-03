@@ -4,9 +4,7 @@
 /tests
 /my-tests
 *phpunit.*
-/vendor
 .*
 /bin/*
-composer*
 phpcs.xml
 .gitignore

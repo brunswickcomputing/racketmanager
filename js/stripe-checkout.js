@@ -1,5 +1,6 @@
 // This is your test publishable API key.
-const stripe = Stripe("pk_test_51MFKpGFWDRiopluGRjQmedz1Hgyswyo0rz82V7g1xGXyrgn9EhUWWVxpKttbLwRniIsTLeUxB4rQ9VHtX6jjV6wC00pPcD0I33");
+api_publishable_key = jQuery('#api_publishable_key').val();
+const stripe = Stripe(api_publishable_key);
 let elements;
 initialize();
 
@@ -10,9 +11,11 @@ document
 // Fetches a payment intent and captures the client secret
 async function initialize() {
 	let tournamentEntry = jQuery('#tournamentEntryId').val();
-	createPaymentRequest(tournamentEntry, createSecret);
+	let invoiceId = jQuery('#invoiceId').val();
+	createPaymentRequest(tournamentEntry, invoiceId, createPaymentBlock);
 }
-function createSecret(clientSecret) {
+function createPaymentBlock(clientSecret) {
+	let paymentForm = jQuery('#payment-form');
 	let playerName = jQuery('#playerName').val();
 	let playerEmail = jQuery('#playerEmail').val();
 	let playerContactNo = jQuery('#playerContactNo').val();
@@ -29,6 +32,7 @@ function createSecret(clientSecret) {
 	};
 	const paymentElement = elements.create("payment", paymentElementOptions);
 	paymentElement.mount("#payment-element");
+	jQuery(paymentForm).show();
 }
 
 async function handleSubmit(e) {
@@ -71,14 +75,10 @@ function showMessage(messageText) {
 
 // Show a spinner on payment submission
 function setLoading(isLoading) {
-  if (isLoading) {
-	// Disable the button and show a spinner
-	document.querySelector("#submit").disabled = true;
-	document.querySelector("#spinner").classList.remove("hidden");
-	document.querySelector("#button-text").classList.add("hidden");
-  } else {
-	document.querySelector("#submit").disabled = false;
-	document.querySelector("#spinner").classList.add("hidden");
-	document.querySelector("#button-text").classList.remove("hidden");
-  }
+	let paymentBlock = jQuery('#payment-block');
+	if (isLoading) {
+		jQuery(paymentBlock).addClass("is-loading");
+	} else {
+		jQuery(paymentBlock).removeClass("is-loading");
+	}
 }

@@ -34,7 +34,6 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 	 */
 	public function __construct( $league ) {
 		parent::__construct( $league );
-
 		add_filter( 'racketmanager_team_points_' . $this->sport, array( &$this, 'calculate_points' ), 10, 4 );
 	}
 

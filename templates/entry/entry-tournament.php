@@ -10,7 +10,7 @@
  *  $tournament: tournament object
  *  $events: events object
  *  $player: player object
- *  $club_players: club Players array
+ *  $club_memberships: club memberships array
  *  $season: season name
  *  $type: event type
  *  $malePartners: male partners object
@@ -42,9 +42,11 @@ if ( ! empty( $player->entry ) ) {
 	<form id="form-entry" action="" method="post">
 		<?php wp_nonce_field( 'tournament-entry' ); ?>
 		<input type="hidden" name="tournamentId" value="<?php echo esc_html( $tournament->id ); ?>" />
+		<input type="hidden" name="tournamentDateEnd" id="tournamentDateEnd" value="<?php echo esc_html( $tournament->date ); ?>" />
 		<input type="hidden" name="season" id="season" value="<?php echo esc_html( $tournament->season ); ?>" />
 		<input type="hidden" name="playerId" value="<?php echo esc_attr( $player->id ); ?>" />
 		<input type="hidden" id="playerGender" value="<?php echo esc_attr( $player->gender ); ?>" />
+		<input type="hidden" id="competitionFee" name="competitionFee" value="<?php echo esc_attr( $tournament->fees->competition ); ?>" />
 		<div class="module module--card">
 			<div class="module__content">
 				<div class="module-container">
@@ -203,11 +205,11 @@ if ( ! empty( $player->entry ) ) {
 														<dt class="list__label"><?php esc_html_e( 'Club', 'racketmanager' ); ?></dt>
 														<dd class="list__value">
 															<?php
-															switch ( count( $club_players ) ) {
+															switch ( count( $club_memberships ) ) {
 																case 1:
 																	?>
-																	<input type="text" class="form-control" id="clubName" name="clubName" value="<?php echo esc_html( get_club( $club_players[0]->club_id )->name ); ?>" disabled />
-																	<input type="hidden" id="clubId" name="clubId" value="<?php echo esc_html( $club_players[0]->club_id ); ?>" />
+																	<input type="text" class="form-control" id="clubName" name="clubName" value="<?php echo esc_html( get_club( $club_memberships[0]->club_id )->name ); ?>" disabled />
+																	<input type="hidden" id="clubId" name="clubId" value="<?php echo esc_html( $club_memberships[0]->club_id ); ?>" />
 																	<?php
 																	break;
 																case 0:
@@ -221,7 +223,7 @@ if ( ! empty( $player->entry ) ) {
 																	<select class="form-select" size="1" name="clubId" id="clubId" <?php echo $changes_allowed ? null : 'disabled'; ?>>
 																		<option value="0"><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>
 																		<?php
-																		foreach ( $club_players as $club_player ) {
+																		foreach ( $club_memberships as $club_player ) {
 																			$club = get_club( $club_player->club_id );
 																			?>
 																			<option value="<?php echo esc_html( $club->id ); ?>"><?php echo esc_html( $club->name ); ?></option>
@@ -268,63 +270,76 @@ if ( ! empty( $player->entry ) ) {
 									<div id="event-feedback" class="invalid-feedback"></div>
 								</div>
 								<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
-								<div class="form-checkboxes">
+								<div class="container form-checkboxes">
 									<?php
+									$fee_total         = 0;
+									$tournament_events = array();
 									foreach ( $events as $event ) {
 										$entered      = false;
 										$partner_id   = null;
 										$partner_name = null;
 										if ( isset( $player->entry[ $event->id ] ) ) {
 											$entered      = true;
+											$fee_total   += $tournament->fees->event;
 											$player_entry = $player->entry[ $event->id ];
 											$partner_id   = ! empty( $player_entry->partner->id ) ? $player_entry->partner->id : null;
 											$partner_name = ! empty( $player_entry->partner->display_name ) ? $player_entry->partner->display_name : null;
 										}
 										$format = substr( $event->type, 1, 1 );
 										?>
-										<div class="form-check form-check-lg">
-											<input class="form-check-input hasModal" id="event-<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" type="checkbox" value=<?php echo esc_html( $event->id ); ?> aria-controls="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $entered ? 'checked' : ''; ?> <?php echo $changes_allowed ? null : 'disabled'; ?> >
-											<label class="form-check-label" for="event-<?php echo esc_html( $event->id ); ?>"><?php echo esc_html( $event->name ); ?></label>
-											<div id="event-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
+										<div class="row">
+											<div class="col-8 col-lg-6 tournament-entry--row">
+												<div class="form-check form-check-lg">
+													<input type="hidden" name="eventFee[<?php echo esc_attr( $event->id ); ?>]" id="eventFee-<?php echo esc_attr( $event->id ); ?>" value="<?php echo esc_attr( $tournament->fees->event ); ?>" />
+													<input class="form-check-input hasModal" id="event-<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" type="checkbox" value=<?php echo esc_html( $event->id ); ?> aria-controls="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $entered ? 'checked' : ''; ?> <?php echo $changes_allowed ? null : 'disabled'; ?> >
+													<label class="form-check-label" for="event-<?php echo esc_html( $event->id ); ?>"><?php echo esc_html( $event->name ); ?></label>
+													<div id="event-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
+												</div>
+												<?php
+												$is_doubles = false;
+												if ( substr( $event->type, 1, 1 ) === 'D' ) {
+													$is_doubles = true;
+												}
+												?>
+											</div>
+											<div class="col-4 col-lg-6">
+												<div class="container">
+													<div class="row tournament-entry--row">
+														<div class="col-6 <?php echo $is_doubles ? 'is-doubles' : null; ?>" id="conditional-event-<?php echo esc_html( $event->id ); ?>">
+															<?php
+															if ( $is_doubles ) {
+																?>
+																<input type="hidden" name="partner[<?php echo esc_attr( $event->id ); ?>]" id="partner-<?php echo esc_html( $event->id ); ?>" value="<?php echo esc_html( $partner_id ); ?>" />
+																<?php
+																if ( $changes_allowed ) {
+																	?>
+																	<a href="/<?php echo esc_attr( seo_url( $event->name ) ); ?>-<?php echo esc_html( seo_url( __( 'set partner', 'racketmanager' ) ) ); ?>" onclick="Racketmanager.partnerModal(event, <?php echo esc_html( $event->id ); ?>)">
+																	<?php
+																}
+																?>
+																<span id="partnerName-<?php echo esc_html( $event->id ); ?>"><?php echo esc_html( $partner_name ); ?></span>
+																<input type="hidden" name="partnerId[<?php echo esc_attr( $event->id ); ?>]" id="partnerId-<?php echo esc_html( $event->id ); ?>" value="<?php echo esc_attr( $partner_id ); ?>" />
+																<?php
+																if ( $changes_allowed ) {
+																	?>
+																	</a>
+																	<?php
+																}
+																?>
+																<div id="partner-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
+																<?php
+															}
+															?>
+														</div>
+														<div class="col-6">
+															<span class="event-price" id="event-price-fmt-<?php echo esc_html( $event->id ); ?>"><?php $entered ? the_currency_amount( $tournament->fees->event ) : null; ?></span>
+															<input type="hidden" class="event-price-amt" name="event-price[<?php echo esc_html( $event->id ); ?>]" id="event-price-<?php echo esc_html( $event->id ); ?>" value="<?php echo $entered ? esc_html( $tournament->fees->event ) : null; ?>" />
+														</div>
+													</div>
+												</div>
+											</div>
 										</div>
 										<?php
-										if ( substr( $event->type, 1, 1 ) === 'D' ) {
-											if ( 'M' === $player->gender ) {
-												if ( substr( $event->type, 0, 1 ) === 'M' ) {
-													$partner_list = $male_partners;
-												} else {
-													$partner_list = $female_partners;
-												}
-											} elseif ( 'F' === $player->gender ) {
-												if ( substr( $event->type, 0, 1 ) === 'W' ) {
-													$partner_list = $female_partners;
-												} else {
-													$partner_list = $male_partners;
-												}
-											}
-											?>
-											<div class="form-checkboxes__conditional <?php echo $partner_id ? '' : 'form-checkboxes__conditional--hidden'; ?>" id="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $partner_id ? 'aria-expanded="true"' : ''; ?>>
-												<input type="hidden" name="partner[<?php echo esc_attr( $event->id ); ?>]" id="partner-<?php echo esc_html( $event->id ); ?>" value="<?php echo esc_html( $partner_id ); ?>" />
-												<?php
-												if ( $changes_allowed ) {
-													?>
-													<a href="/<?php echo esc_attr( seo_url( $event->name ) ); ?>-<?php echo esc_html( seo_url( __( 'set partner', 'racketmanager' ) ) ); ?>" onclick="Racketmanager.partnerModal(event, <?php echo esc_html( $event->id ); ?>)">
-													<?php
-												}
-												?>
-												<span id="partnerName-<?php echo esc_html( $event->id ); ?>"><?php echo esc_html( $partner_name ); ?></span>
-												<input type="hidden" name="partnerId[<?php echo esc_attr( $event->id ); ?>]" id="partnerId-<?php echo esc_html( $event->id ); ?>" value="<?php echo esc_attr( $partner_id ); ?>" />
-												<?php
-												if ( $changes_allowed ) {
-													?>
-													</a>
-													<?php
-												}
-												?>
-												<div id="partner-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
-											</div>
-											<?php
-										}
 										$tournament_events[] = $event->id;
 									}
 									?>
@@ -363,26 +378,44 @@ if ( ! empty( $player->entry ) ) {
 							</div>
 						</div>
 					</div>
-					<?php
-					if ( $changes_allowed ) {
-						?>
-						<div class="individual-entry__footer">
-							<div class="alert_rm" id="entryAlert" style="display:none;">
-								<div class="alert__body">
-									<div class="alert__body-inner" id="entryAlertResponse">
-									</div>
+					<div class="individual-entry__footer">
+						<div class="alert_rm" id="entryAlert" style="display:none;">
+							<div class="alert__body">
+								<div class="alert__body-inner" id="entryAlertResponse">
 								</div>
 							</div>
+						</div>
+							<div class="price-row">
+							<div class="price-cost" id="priceCostTotalFmt"><?php echo empty( $fee_total ) ? null : esc_html__( 'Total:', 'racketmanager' ) . ' '; ?><?php the_currency_amount( $fee_total ); ?></div>
+							<input type="hidden" name="priceCostTotal" id="priceCostTotal" value=<?php echo esc_attr( $fee_total ); ?> />
+						</div>
+						<?php
+						if ( ! empty( $tournament->payments) ) {
+							$total_pay = 0;
+							foreach ( $tournament->payments as $payment ) {
+								$total_pay += $payment->amount;
+							}
+							?>
+							<div class="price-row">
+								<div class="price-cost" id="pricePaidTotalFmt"><?php echo empty( $total_pay ) ? null : esc_html__( 'Paid:', 'racketmanager' ) . ' '; ?><?php the_currency_amount( $total_pay ); ?></div>
+								<input type="hidden" name="pricePaidTotal" id="pricePaidTotal" value=<?php echo esc_attr( $total_pay ); ?> />
+							</div>
+							<?php
+						}
+						?>
+						<?php
+						if ( $changes_allowed ) {
+							?>
 							<div class="btn__group">
 								<div class="individual-entry__submit">
 									<button type="submit" class="btn btn-primary" id="entrySubmit" name="entrySubmit" onclick="Racketmanager.entryRequest(event, 'tournament')"><?php esc_html_e( 'Enter', 'racketmanager' ); ?></button>
 								</div>
 								<a role="button" href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/" class="btn btn--cancel"><?php esc_html_e( 'Back', 'racketmanager' ); ?></a>
 							</div>
-						</div>
-						<?php
-					}
-					?>
+							<?php
+						}
+						?>
+					</div>
 				</div>
 			</div>
 		</div>

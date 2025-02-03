@@ -48,6 +48,9 @@ jQuery(document).ready(function(){
 					<li class="nav-item">
 						<a class="nav-link" href="admin.php?page=racketmanager-tournaments&view=setup&tournament=<?php echo esc_attr( $tournament->id ); ?>&season=<?php echo esc_attr( $tournament->season ); ?>" type="button" role="tab"><?php esc_html_e( 'Setup', 'racketmanager' ); ?></a>
 					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="admin.php?page=racketmanager-tournaments&view=config&competition_id=<?php echo esc_attr( $tournament->competition_id ); ?>&tournament=<?php echo esc_attr( $tournament->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Config', 'racketmanager' ); ?></a>
+					</li>
 				</ul>
 			</div>
 		</nav>

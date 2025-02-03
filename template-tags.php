@@ -638,8 +638,9 @@ function get_match_template_type() {
  * @return void
  */
 function the_currency_amount( $amount ) {
-	global $racketmanager;
-	echo esc_html( numfmt_format_currency( $racketmanager->currency_fmt, $amount, $racketmanager->currency_code ) );
+	$currency_fmt  = Racketmanager_Util::get_currency_format();
+	$currency_code = Racketmanager_Util::get_currency_code();
+	echo esc_html( numfmt_format_currency( $currency_fmt, $amount, $currency_code ) );
 }
 	/**
 	 * Print crosstable field

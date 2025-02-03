@@ -251,9 +251,10 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	 * @param object $event event object.
 	 * @param string $season season name.
 	 * @param int    $player_id player id.
+	 * @param string $date_end end date of competition.
 	 * @return object $validation updated validation object.
 	 */
-	public function partner( $partner, $field_ref, $field_name, $event, $season, $player_id ) {
+	public function partner( $partner, $field_ref, $field_name, $event, $season, $player_id, $date_end ) {
 		if ( empty( $field_name ) ) {
 			$error_field = 'partner';
 		} else {
@@ -282,28 +283,32 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 				$this->error_field[ $this->error_id ] = $error_field;
 				$this->error_msg[ $this->error_id ]   = __( 'Partner is in another team in this event', 'racketmanager' );
 				++$this->error_id;
-			}
-			if ( ! empty( $event->age_limit ) && 'open' !== $event->age_limit ) {
-				$partner = get_player( $partner );
-				if ( empty( $partner->age ) ) {
-					$this->error                          = true;
-					$this->error_field[ $this->error_id ] = $error_field;
-					$this->error_msg[ $this->error_id ]   = __( 'Partner has no age specified', 'racketmanager' );
-					++$this->error_id;
-				} elseif ( $partner->age < $event->age_limit ) {
-					$entry_invalid = false;
-					if ( 'F' === $partner->gender && ! empty( $event->age_offset ) ) {
-						$age_limit = $event->age_limit - $event->age_offset;
-						if ( $partner->age < $age_limit ) {
-							$entry_invalid = true;
-						}
-					} else {
-						$entry_invalid = true;
-					}
-					if ( $entry_invalid ) {
+			} else {
+				$entry_invalid = false;
+				if ( ! empty( $event->age_limit ) && 'open' !== $event->age_limit ) {
+					$partner     = get_player( $partner );
+					$partner_age = substr( $date_end, 0, 4 ) - intval( $partner->year_of_birth );
+					if ( empty( $partner->age ) ) {
 						$this->error                          = true;
 						$this->error_field[ $this->error_id ] = $error_field;
-						$this->error_msg[ $this->error_id ]   = __( 'Partner is not eligibile due to age', 'racketmanager' );
+						$this->error_msg[ $this->error_id ]   = __( 'Partner has no age specified', 'racketmanager' );
+						++$this->error_id;
+					} elseif ( $event->age_limit >= 30 ) {
+						if ( 'F' === $partner->gender && ! empty( $event->age_offset ) ) {
+							$age_limit = $event->age_limit - $event->age_offset;
+						}
+						if ( $partner_age < $event->age_limit ) {
+							$this->error                          = true;
+							$this->error_field[ $this->error_id ] = $error_field;
+							$this->error_msg[ $this->error_id ]   = __( 'Partner is too young', 'racketmanager' );
+							++$this->error_id;
+							$entry_invalid = true;
+						}
+					} elseif ( $partner_age > $event->age_limit) {
+						$entry_invalid = true;
+						$this->error                          = true;
+						$this->error_field[ $this->error_id ] = $error_field;
+						$this->error_msg[ $this->error_id ]   = __( 'Partner is too old', 'racketmanager' );
 						++$this->error_id;
 					}
 				}
@@ -311,6 +316,24 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 		}
 		return $this;
 	}
+	/*
+	 } elseif ( $event->age_limit >= 30 ) {
+		 $age_limit = $event->age_limit;
+		 if ( 'F' === $player->gender && ! empty( $event->age_offset ) ) {
+			 $age_limit = $event->age_limit - $event->age_offset;
+		 }
+		 if ( $player_age < $age_limit ) {
+			 $entry_valid = false;
+		 } else {
+			 $entry_valid = true;
+		 }
+	 } elseif ( $player_age > $event->age_limit ) {
+		 $entry_valid = false;
+	 } else {
+		 $entry_valid = true;
+	 }
+
+	 */
 	/**
 	 * Validate tournament open
 	 *

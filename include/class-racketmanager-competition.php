@@ -456,6 +456,24 @@ class Racketmanager_Competition {
 	 */
 	public $num_courts_available;
 	/**
+	 * Scoring default format
+	 *
+	 * @var string
+	 */
+	public $scoring;
+	/**
+	 * Number of sets default
+	 *
+	 * @var int
+	 */
+	public $num_sets;
+	/**
+	 * Number of rubbers default
+	 *
+	 * @var int
+	 */
+	public $num_rubbers;
+	/**
 	 * Retrieve competition instance
 	 *
 	 * @param int    $competition_id competition id.
@@ -1951,10 +1969,6 @@ class Racketmanager_Competition {
 			$racketmanager->error_messages[] = __( 'Entry type must be set', 'racketmanager' );
 			$racketmanager->error_fields[]   = 'entry_type';
 		}
-		if ( empty( $config->competition_code ) ) {
-			$racketmanager->error_messages[] = __( 'Competition code must be set', 'racketmanager' );
-			$racketmanager->error_fields[]   = 'competition_code';
-		}
 		if ( empty( $config->grade ) ) {
 			$racketmanager->error_messages[] = __( 'Grade must be set', 'racketmanager' );
 			$racketmanager->error_fields[]   = 'grade';
@@ -1988,6 +2002,20 @@ class Racketmanager_Competition {
 		if ( empty( $config->point_rule ) ) {
 			$racketmanager->error_messages[] = __( 'Point rule must be set', 'racketmanager' );
 			$racketmanager->error_fields[]   = 'point_rule';
+		}
+		if ( empty( $config->scoring ) ) {
+			$racketmanager->error_messages[] = __( 'Scoring method must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'scoring';
+		}
+		if ( empty( $config->num_sets ) ) {
+			$racketmanager->error_messages[] = __( 'Number of sets must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'num_sets';
+		}
+		if ( $this->is_team_entry ) {
+			if ( empty( $config->num_rubbers ) ) {
+				$racketmanager->error_messages[] = __( 'Number of rubbers must be set', 'racketmanager' );
+				$racketmanager->error_fields[]   = 'num_rubbers';
+			}
 		}
 		if ( is_null( $config->fixed_match_dates ) ) {
 			$racketmanager->error_messages[] = __( 'Match date option must be set', 'racketmanager' );
@@ -2029,16 +2057,16 @@ class Racketmanager_Competition {
 				$settings->type = $config->type;
 				switch ( $config->type ) {
 					case 'league':
-						$settings->mode = 'default';
-						$updates        = true;
+						$config->mode = 'default';
+						$updates      = true;
 						break;
 					case 'cup':
-						$settings->mode     = 'championship';
+						$config->mode       = 'championship';
 						$config->entry_type = 'team';
 						$updates            = true;
 						break;
 					case 'tournament':
-						$settings->mode     = 'championship';
+						$config->mode       = 'championship';
 						$config->entry_type = 'player';
 						$updates            = true;
 						break;
@@ -2050,6 +2078,10 @@ class Racketmanager_Competition {
 				$updates = true;
 			}
 			$settings->entry_type = $config->entry_type;
+			if ( empty( $this->mode ) || $this->mode !== $config->mode ) {
+				$updates = true;
+			}
+			$settings->mode = $config->mode;
 			if ( empty( $this->competition_code ) || $this->competition_code !== $config->competition_code ) {
 				$updates = true;
 			}
@@ -2084,6 +2116,20 @@ class Racketmanager_Competition {
 				$updates = true;
 			}
 			$settings->point_rule = $config->point_rule;
+			if ( empty( $this->scoring ) || $this->scoring !== $config->scoring ) {
+				$updates = true;
+			}
+			$settings->scoring = $config->scoring;
+			if ( empty( $this->num_sets ) || $this->num_sets !== $config->num_sets ) {
+				$updates = true;
+			}
+			$settings->num_sets = $config->num_sets;
+			if ( $this->is_team_entry ) {
+				if ( empty( $this->num_rubbers ) || $this->num_rubbers !== $config->num_rubbers ) {
+					$updates = true;
+				}
+				$settings->num_rubbers = $config->num_rubbers;
+			}
 			if ( ! isset( $this->fixed_match_dates ) || $this->fixed_match_dates !== $config->fixed_match_dates ) {
 				$updates = true;
 			}

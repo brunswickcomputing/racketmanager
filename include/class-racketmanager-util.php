@@ -870,7 +870,7 @@ class Racketmanager_Util {
 	 */
 	public static function get_age_limit( $age_limit ) {
 		$age_limits = self::get_age_limits();
-		return empty( $age_limits[ $age_limit ] ) ? __( 'Unknown', 'racketmanager' ) : $age_limits[ $age_limit ];
+		return empty( $age_limits[ $age_limit ] ) ? __( 'Open', 'racketmanager' ) : $age_limits[ $age_limit ];
 	}
 	/**
 	 * Amend date function
@@ -936,5 +936,13 @@ class Racketmanager_Util {
 			'games'      => __( 'Games', 'racketmanager' ),
 		);
 		return $options;
+	}
+	public static function get_currency_format() {
+		return numfmt_create( get_locale(), \NumberFormatter::CURRENCY );
+	}
+	public static function get_currency_code() {
+		setlocale( LC_ALL, get_locale() );
+		$locale_info         = localeconv();
+		return isset( $locale_info['int_curr_symbol'] ) ? trim( $locale_info['int_curr_symbol'] ) : 'GBP';
 	}
 }

@@ -626,33 +626,15 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 			$grade      = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : '';
 			$date_start = isset( $_POST['dateStart'] ) ? sanitize_text_field( wp_unslash( $_POST['dateStart'] ) ) : null;
 			if ( $date_start ) {
-				$entry_leadtime = 46;
-				$date_open      = Racketmanager_Util::amend_date( $date_start, $entry_leadtime, '-' );
-				switch ( $grade ) {
-					case '1':
-					case '2':
-						$closing_leadtime  = 21;
-						$withdraw_leadtime = 14;
-						break;
-					case '3':
-						$closing_leadtime  = 14;
-						$withdraw_leadtime = 12;
-						break;
-					case '4':
-						$closing_leadtime  = 10;
-						$withdraw_leadtime = 8;
-						break;
-					case '5':
-						$closing_leadtime  = 7;
-						$withdraw_leadtime = 5;
-						break;
-					default:
-						$closing_leadtime  = 7;
-						$withdraw_leadtime = 3;
-						break;
+				$parameters = $racketmanager->get_options( 'championship' );
+				if ( $parameters ) {
+					$date_open     = Racketmanager_Util::amend_date( $date_start, $parameters['open_lead_time'], '-' );
+					$date_closing  = Racketmanager_Util::amend_date( $date_start, $parameters['date_closing'][ $grade], '-' );
+					$date_withdraw = Racketmanager_Util::amend_date( $date_start, $parameters['date_withdrawal'][ $grade ], '-' );
+				} else {
+					$return->error = true;
+					$return->msg   = __( 'No lead time parameters set', 'racketmanager' );
 				}
-				$date_closing  = Racketmanager_Util::amend_date( $date_start, $closing_leadtime, '-' );
-				$date_withdraw = Racketmanager_Util::amend_date( $date_start, $withdraw_leadtime, '-' );
 			} else {
 				$return->error = true;
 				$return->msg   = __( 'No start date specified', 'racketmanager' );

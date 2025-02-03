@@ -20,7 +20,7 @@ $tab_name = 'general';
 				$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
 			}
 			?>
-			<input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="competition_title" id="competition_title" value="<?php echo esc_html( $competition->name ); ?>" />
+			<input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="competition_title" id="competition_title" value="<?php echo esc_html( $competition->name ); ?>" placeholder="<?php esc_html_e( 'Competition name', 'racketmanager' ); ?>" />
 			<label for="competition_title"><?php esc_html_e( 'Competition name', 'racketmanager' ); ?></label>
 			<?php
 			if ( $is_invalid ) {
@@ -46,7 +46,7 @@ $tab_name = 'general';
 				}
 				?>
 				<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="sport" id="sport" >
-					<option disabled <?php selected( null, empty( $competition->config->type ) ? null : $competition->config->type ); ?>><?php esc_html_e( 'Select sport', 'racketmanager' ); ?></option>
+					<option disabled <?php selected( null, empty( $competition->config->sport ) ? null : $competition->config->sport ); ?>><?php esc_html_e( 'Select sport', 'racketmanager' ); ?></option>
 					<?php
 					foreach ( $sports as $sport => $type_desc ) {
 						?>
@@ -145,7 +145,7 @@ $tab_name = 'general';
 					$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
 				}
 				?>
-				<input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="competition_code" id="competition_code" value="<?php echo esc_html( $competition->config->competition_code ); ?>" />
+				<input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="competition_code" id="competition_code" value="<?php echo isset( $competition->config->competition_code ) ? esc_html( $competition->config->competition_code ) : null; ?>" />
 				<label for="competition_code"><?php esc_html_e( 'Competition code', 'racketmanager' ); ?></label>
 				<?php
 				if ( $is_invalid ) {

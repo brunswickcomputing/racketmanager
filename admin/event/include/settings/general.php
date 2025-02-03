@@ -111,7 +111,7 @@ $tab_name = 'general';
 				}
 				?>
 				<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="age_offset" id="age_offset" >
-					<option value='none' <?php selected( 'none', empty( $event->config->age_offset ) ? null : $event->config->age_offset ); ?>><?php esc_html_e( 'None', 'racketmanager' ); ?></option>
+					<option value='0' <?php selected( '0', empty( $event->config->age_offset ) ? null : $event->config->age_offset ); ?>><?php esc_html_e( 'None', 'racketmanager' ); ?></option>
 					<option value='5' <?php selected( '5', empty( $event->config->age_offset ) ? null : $event->config->age_offset ); ?>><?php esc_html_e( '5 years for ladies', 'racketmanager' ); ?></option>
 				</select>
 				<label for="age_offset" class="form-label"><?php esc_html_e( 'Mixed age offset', 'racketmanager' ); ?></label>

@@ -2181,7 +2181,7 @@ class Racketmanager_Event {
 			$racketmanager->error_messages[] = __( 'Age limit must be set', 'racketmanager' );
 			$racketmanager->error_fields[]   = 'age_limit';
 		}
-		if ( empty( $config->age_offset ) ) {
+		if ( is_null( $config->age_offset ) ) {
 			$racketmanager->error_messages[] = __( 'Age offset must be set', 'racketmanager' );
 			$racketmanager->error_fields[]   = 'age_offset';
 		}

@@ -57,6 +57,10 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 * UPDATE: add tournament withdrawal dates
 * UPDATE: set tournament open/close/withdrawal dates based on start date and competition grade
 * UPDATE: improve tournament finances section
+* UPDATE: improve competition config settings
+* UPDATE: improve event config settings
+* UPDATE: add league admin secton
+* NEW:    enable payments with stripe
 
 = 8.32.0 =
 * BUGFIX: check $message set

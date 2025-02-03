@@ -1377,6 +1377,12 @@ class RacketManager {
 			'index.php?pagename=competition%2Fentry%2Fpayment&tournament=$matches[1]&competition_type=tournament&club_name=$matches[2]',
 			'top'
 		);
+		// tournament entry form - name - player.
+		add_rewrite_rule(
+			'entry-form/(.+?)-tournament/player/(.+?)/?$',
+			'index.php?pagename=competition%2Fentry&tournament=$matches[1]&player_id=$matches[2]&competition_type=tournament',
+			'top'
+		);
 		// tournament entry form - name - club.
 		add_rewrite_rule(
 			'entry-form/(.+?)-tournament/(.+?)/?$',
@@ -1387,12 +1393,6 @@ class RacketManager {
 		add_rewrite_rule(
 			'entry-form/(.+?)-tournament/?$',
 			'index.php?pagename=competition%2Fentry&tournament=$matches[1]&competition_type=tournament',
-			'top'
-		);
-		// tournament entry form - name - player.
-		add_rewrite_rule(
-			'entry-form/(.+?)-tournament/player/(.+?)/?$',
-			'index.php?pagename=competition%2Fentry&tournament=$matches[1]&player_id=$matches[2]&competition_type=tournament',
 			'top'
 		);
 		// entry form - competition - season - club.

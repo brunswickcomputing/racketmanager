@@ -46,7 +46,7 @@ final class Racketmanager_Stripe {
 		$billing = $racketmanager->get_options( 'billing' );
 		if ( $billing ) {
 			$this->currency = isset( $billing['billingCurrency'] ) ? $billing['billingCurrency'] : null;
-			$this->is_live  = isset( $billing['is_live'] ) ? $billing['is_live'] : false;
+			$this->is_live  = isset( $billing['stripe_is_live'] ) ? $billing['stripe_is_live'] : false;
 			if ( $this->is_live ) {
 				$this->api_publishable_key = isset( $billing['api_publishable_key_live'] ) ? $billing['api_publishable_key_live'] : null;
 				$this->api_secret_key      = isset( $billing['api_secret_key_live'] ) ? $billing['api_secret_key_live'] : null;

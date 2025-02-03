@@ -72,6 +72,20 @@ namespace Racketmanager;
 									<?php echo esc_html( $tournament->date_closing_display ); ?>
 								</div>
 							</li>
+							<?php
+							if ( ! empty( $tournament->date_withdrawal ) ) {
+								?>
+								<li class="list__item is-withdrawal-deadline <?php echo ( $tournament->is_withdrawal ) ? 'is-current is-warning' : null; ?>">
+									<div class="list__value">
+										<?php esc_html_e( 'Withdrawal deadline', 'racketmanager' ); ?>
+									</div>
+									<div class="list__meta">
+										<?php echo esc_html( $tournament->date_withdrawal_display ); ?>
+									</div>
+								</li>
+								<?php
+							}
+							?>
 							<li class="list__item is-started <?php echo ( $tournament->is_started ) ? ' is-current is-success' : null; ?>">
 								<div class="list__value">
 									<?php esc_html_e( 'Start tournament', 'racketmanager' ); ?>

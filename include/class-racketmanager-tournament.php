@@ -87,6 +87,12 @@ final class Racketmanager_Tournament {
 	 */
 	public $date_withdrawal;
 	/**
+	 * Date withdrawal display
+	 *
+	 * @var string
+	 */
+	public $date_withdrawal_display;
+	/**
 	 * Date open variable
 	 *
 	 * @var string
@@ -182,6 +188,12 @@ final class Racketmanager_Tournament {
 	 * @var boolean
 	 */
 	public $is_closed = false;
+	/**
+	 * Is withdrawal
+	 *
+	 * @var boolean
+	 */
+	public $is_withdrawal = false;
 	/**
 	 * Is open
 	 *
@@ -290,13 +302,14 @@ final class Racketmanager_Tournament {
 			if ( ! isset( $this->id ) ) {
 				$this->add();
 			}
-			$this->link                 = '/tournament/' . seo_url( $this->name ) . '/';
-			$this->date_display         = ( substr( $this->date, 0, 10 ) === '0000-00-00' ) ? 'TBC' : mysql2date( $racketmanager->date_format, $this->date );
-			$this->date_closing_display = ( substr( $this->date_closing, 0, 10 ) === '0000-00-00' ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_closing );
-			$this->date_open_display    = empty( $this->date_open ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_open );
-			$this->date_start_display   = empty( $this->date_start ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_start );
-			$today                      = gmdate( 'Y-m-d' );
-			$this->current_phase        = 'complete';
+			$this->link                    = '/tournament/' . seo_url( $this->name ) . '/';
+			$this->date_display            = ( substr( $this->date, 0, 10 ) === '0000-00-00' ) ? 'TBC' : mysql2date( $racketmanager->date_format, $this->date );
+			$this->date_closing_display    = ( substr( $this->date_closing, 0, 10 ) === '0000-00-00' ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_closing );
+			$this->date_withdrawal_display = ( substr( $this->date_closing, 0, 10 ) === '0000-00-00' ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_withdrawal );
+			$this->date_open_display       = empty( $this->date_open ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_open );
+			$this->date_start_display      = empty( $this->date_start ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_start );
+			$today                         = gmdate( 'Y-m-d' );
+			$this->current_phase           = 'complete';
 			if ( $today > $this->date ) {
 				$this->current_phase = 'end';
 				$this->is_complete   = true;
@@ -305,6 +318,9 @@ final class Racketmanager_Tournament {
 				if ( ! empty( $this->date_start ) && $today >= $this->date_start ) {
 					$this->current_phase = 'start';
 					$this->is_started    = true;
+				} elseif ( ! empty( $this->date_withdrawal ) && $today > $this->date_withdrawal ) {
+					$this->current_phase = 'withdraw';
+					$this->is_withdrawal = true;
 				} elseif ( ! empty( $this->date_closing ) && $today > $this->date_closing ) {
 					$this->current_phase = 'close';
 					$this->is_closed     = true;

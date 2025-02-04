@@ -340,18 +340,16 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	 * @param string $tournament_close tournament close date.
 	 * @return object $validation updated validation object.
 	 */
-	public function tournament_open( $tournament_close ) {
-		if ( empty( $tournament_close ) ) {
+	public function tournament_open( $tournament ) {
+		if ( empty( $tournament->date_closing ) ) {
 			$this->error                          = true;
-			$this->error_field[ $this->error_id ] = 'tournament';
+			$this->error_field[ $this->error_id ] = 'event';
 			$this->error_msg[ $this->error_id ]   = __( 'Tournament close date not set', 'racketmanager' );
 			++$this->error_id;
 		} else {
-			$today = new DateTime( 'now' );
-			$close = new DateTime( $tournament_close . ' 23:59:59' );
-			if ( $close < $today ) {
+			if ( ! $tournament->is_open && ! $tournament->is_closed ) {
 				$this->error                          = true;
-				$this->error_field[ $this->error_id ] = 'tournament';
+				$this->error_field[ $this->error_id ] = 'event';
 				$this->error_msg[ $this->error_id ]   = __( 'Tournament not open for entries', 'racketmanager' );
 				++$this->error_id;
 			}

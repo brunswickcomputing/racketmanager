@@ -2158,7 +2158,88 @@ Racketmanager.setPaymentStatus = function (payRef) {
 		}
 	});
 };
+Racketmanager.withdrawTournament = function (e) {
+	e.preventDefault();
+	jQuery('#liEventDetails').addClass('is-loading');
+	eventsEnteredRef = '#eventsEntered';
+	eventsEntered = jQuery(eventsEnteredRef).val();
+	tournamentRef = '#tournamentId';
+	tournamentId = jQuery(tournamentRef).val();
+	let notifyField = "#partnerModal";
+	let modal = 'partnerModal';
+	jQuery(notifyField).val("");
+	let action = 'racketmanager_tournament_withdrawal';
+	jQuery(notifyField).val("");
+	jQuery(notifyField).load(
+							 ajax_var.url,
+							 {
+								 "tournamentId": tournamentId,
+								 "eventsEntered": eventsEntered,
+								 "modal": modal,
+								 "action": action,
+								 "security": ajax_var.ajax_nonce,
+							 },
+							 function () {
+								 jQuery('#liEventDetails').removeClass('is-loading');
+								 jQuery(notifyField).show();
+								 jQuery(notifyField).modal('show');
+							 }
+							 );
+};
+	
+Racketmanager.confirmTournamentWithdraw = function () {
+	let modal = '#partnerModal';
+	let tournamentRef = '#tournamentId';
+	let tournamentId = jQuery(tournamentRef).val();
+	let playerRef = '#playerId';
+	let playerId = jQuery(playerRef).val();
+	let eventsEnteredRef = 'input:checked.form-check--event';
+	let eventsEntered = jQuery(eventsEnteredRef);
+	let alertField = "#entryAlert";
+	let alertResponseField = "#entryAlertResponse";
+	jQuery(alertField).hide();
+	jQuery(alertField).removeClass('alert--success alert--warning alert--danger');
+	jQuery(alertResponseField).val("");
+	let action = 'racketmanager_confirm_tournament_withdrawal';
 
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: {
+			"tournamentId": tournamentId,
+			"playerId": playerId,
+			"action": action,
+			"security": ajax_var.ajax_nonce,
+		},
+		success: function (response) {
+			for ( let event of eventsEntered) {
+				event.checked = false;
+				checkToggle(event, null);
+			}
+			jQuery(alertField).addClass('alert--success');
+			jQuery(alertResponseField).html(response.data);
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				if (response.status == '401') {
+					let output = response.responseJSON.data[1];
+					jQuery(alertResponseField).html(output);
+				} else {
+					let message = response.responseJSON.data;
+					jQuery(alertResponseField).html(message);
+				}
+			} else {
+				jQuery(alertResponseField).text(response.statusText);
+			}
+			jQuery(alertField).addClass('alert--danger');
+		},
+		complete: function () {
+			jQuery(modal).modal('hide');
+			jQuery(alertField).show();
+		}
+	});
+
+}
 function activaTab(tab) {
 	jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');
 	jQuery('.nav-pills button[data-bs-target="#' + tab + '"]').tab('show');

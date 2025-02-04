@@ -231,6 +231,12 @@ final class Racketmanager_Tournament {
 	 */
 	public $fees;
 	/**
+	 * Charge object
+	 *
+	 * @var object
+	 */
+	public $charge;
+	/**
 	 * Retrieve tournament instance
 	 *
 	 * @param int    $tournament_id tournament id.
@@ -364,6 +370,11 @@ final class Racketmanager_Tournament {
 			}
 			$this->finals = $finals;
 			$wp->set_query_var( 'season', $this->season );
+			$charge_key = $this->competition_id . '_' . $this->season;
+			$charge     = get_charge( $charge_key );
+			if ( $charge ) {
+				$this->charge = $charge;
+			}
 		}
 	}
 
@@ -557,7 +568,7 @@ final class Racketmanager_Tournament {
 				$charge->date            = $this->date_start;
 				$charge->fee_competition = $tournament->fees->competition;
 				$charge->fee_event       = $tournament->fees->event;
-				$charge                  = new Racketmanager_Charges( $charge );
+				$this->charge            = new Racketmanager_Charges( $charge );
 			}
 		} else {
 			$return->valid = false;
@@ -778,10 +789,12 @@ final class Racketmanager_Tournament {
 		$defaults = array(
 			'orderby' => array(),
 			'count'   => false,
+			'player'  => false,
 		);
 		$args     = array_merge( $defaults, $args );
 		$orderby  = $args['orderby'];
 		$count    = $args['count'];
+		$player   = $args['player'];
 
 		if ( $count ) {
 			$sql = 'SELECT COUNT(distinct(`player_id`))';
@@ -793,6 +806,10 @@ final class Racketmanager_Tournament {
 		$search_args   = array();
 		$search_args[] = $this->competition_id;
 		$search_args[] = $this->season;
+		if ( $player ) {
+			$search_terms[] = 'tp.`player_id` = %d';
+			$search_args[]  = $player;
+		}
 		$search        = '';
 		if ( ! empty( $search_terms ) ) {
 			$search  = ' AND ';
@@ -1417,34 +1434,38 @@ final class Racketmanager_Tournament {
 		}
 		return $status;
 	}
+	/**
+	 * Create invoice for player function
+	 *
+	 * @param int    $player player id.
+	 * @param string $fee payment required value.
+	 * @return void
+	 */
 	private function create_player_invoice( $player_id, $fee ) {
 		if ( empty( $player_id ) || empty( $fee ) ) {
 			return;
 		}
-		$charge_key = $this->competition_id . '_' . $this->season;
-		$charge = get_charge( $charge_key );
-		if ( $charge ) {
-			$args['player'] = $player_id;
-			$args['status'] = 'open';
-			$outstanding_payments = $this->get_payments( $args );
-			foreach ( $outstanding_payments as $payment ) {
-				$payment->delete();
-			}
+		if ( $this->charge ) {
+			$this->cancel_player_invoices( $player_id );
 			$invoice                 = new \stdClass();
-			$invoice->charge_id      = $charge->id;
+			$invoice->charge_id      = $this->charge->id;
 			$invoice->player_id      = $player_id;
 			$invoice->date           = gmdate( 'Y-m-d' );
 			$invoice                 = new Racketmanager_Invoice( $invoice );
 			$invoice->set_amount( $fee );
 		}
 	}
+	/**
+	 * Cancel outstanding invoices for player function
+	 *
+	 * @param int    $player player id.
+	 * @return void
+	 */
 	private function cancel_player_invoices( $player_id ) {
 		if ( empty( $player_id ) ) {
 			return;
 		}
-		$charge_key = $this->competition_id . '_' . $this->season;
-		$charge = get_charge( $charge_key );
-		if ( $charge ) {
+		if ( $this->charge ) {
 			$args['player'] = $player_id;
 			$args['status'] = 'open';
 			$outstanding_payments = $this->get_payments( $args );
@@ -1493,6 +1514,89 @@ final class Racketmanager_Tournament {
 		}
 	}
 	/**
+	 * Withdraw tournament entry
+	 *
+	 * @param int    $player player id.
+	 * @return string refund amount.
+	 */
+	public function withdraw_player_entry( $player_id ) {
+		global $racketmanager, $racketmanager_shortcodes;
+		$amount_refund = 0;
+		$updates       = false;
+		$player        = get_player( $player_id );
+		if ( $player ) {
+			$events = $this->competition->get_events();
+			foreach ( $events as $event ) {
+				$teams  = $event->get_teams(
+					array(
+						'player' => $player_id,
+						'season' => $this->season,
+					)
+				);
+				$league = get_league( $event->primary_league );
+				if ( $league ) {
+					foreach ( $teams as $team ) {
+						$updates = true;
+						$league->delete_team( $team->team_id, $this->season );
+					}
+				}
+			}
+		}
+		if ( $updates ) {
+			$amount_paid    = 0;
+			$args['player'] = $player_id;
+			$args['status'] = 'paid';
+			$payments = $this->get_payments( $args );
+			foreach ( $payments as $payment ) {
+				$amount_paid += $payment->amount;
+			}
+			if ( $amount_paid ) {
+				$amount_refund = 0 - $amount_paid;
+				$this->create_player_invoice( $player_id, $amount_refund );
+			} else {
+				$this->cancel_player_invoices( $player->id );
+			}
+			$this->set_tournament_entry_withdrawn( $player->id );
+			$email_to                         = $player->display_name . ' <' . $player->email . '>';
+			$email_from                       = $racketmanager->get_confirmation_email( 'tournament' );
+			$email_subject                    = $racketmanager->site_name . ' - ' . $this->name . ' Tournament Withdrawal';
+			$action_url                       = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
+			$tournament_link                  = '<a href="' . $racketmanager->site_url . ( $this->link ) . '/">' . $this->name . '</a>';
+			$headers                          = array();
+			$secretary_email                  = __( 'Tournament Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
+			$headers[]                        = 'From: ' . $secretary_email;
+			$headers[]                        = 'Cc: ' . $secretary_email;
+			$template                         = 'tournament-withdrawal';
+			$template_args['tournament']      = $this;
+			$template_args['tournament_name'] = $this->name;
+			$template_args['tournament_link'] = $tournament_link;
+			$template_args['action_url']      = $action_url;
+			$template_args['organisation']    = $racketmanager->site_name;
+			$template_args['player']          = $player;
+			$template_args['contact_email']   = $email_from;
+			$email_message                    = $racketmanager_shortcodes->load_template(
+				$template,
+				$template_args,
+				'email'
+			);
+			wp_mail( $email_to, $email_subject, $email_message, $headers );
+		}
+		return $amount_refund;
+	}
+	/**
+	 * Set tournament entry to withdrawn
+	 *
+	 * @param int    $player player id.
+	 * @return void
+	 */
+	private function set_tournament_entry_withdrawn( $player ) {
+		$search           = $this->id . '_' . $player;
+		$tournament_entry = get_tournament_entry( $search, 'key' );
+		if ( $tournament_entry ) {
+			$tournament_entry->set_status( 3 );
+		}
+	}
+	/**
 	 * Function to get payments due for tournament
 	 *
 	 * @param array $args_input arguments to search invoices.
@@ -1507,10 +1611,8 @@ final class Racketmanager_Tournament {
 		$args_input = array_merge( $defaults, $args_input );
 		$status     = $args_input['status'];
 		$player     = $args_input['player'];
-		$charge_key = $this->competition_id . '_' . $this->season;
-		$charge = get_charge( $charge_key );
-		if ( $charge ) {
-			$args['charge'] = $charge->id;
+		if ( $this->charge ) {
+			$args['charge'] = $this->charge->id;
 			$args['player'] = $player;
 			$args['status'] = $status;
 			$payments = $racketmanager->get_invoices( $args );

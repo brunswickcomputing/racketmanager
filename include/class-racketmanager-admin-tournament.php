@@ -89,12 +89,24 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 					)
 				);
 				$confirmed_entries   = RacketManager_Util::get_players_list( $entries_confirmed );
+				$entries_pay_due     = $tournament->get_entries(
+					array(
+						'status' => 'unpaid',
+					)
+				);
+				$pay_due_entries     = RacketManager_Util::get_players_list( $entries_pay_due );
 				$entries_pending     = $tournament->get_entries(
 					array(
 						'status' => 'pending',
 					)
 				);
 				$pending_entries     = RacketManager_Util::get_players_list( $entries_pending );
+				$entries_withdrawn   = $tournament->get_entries(
+					array(
+						'status' => 'withdrawn',
+					)
+				);
+				$withdrawn_entries   = RacketManager_Util::get_players_list( $entries_withdrawn );
 				require RACKETMANAGER_PATH . 'admin/show-tournament.php';
 			}
 		}

@@ -886,8 +886,12 @@ final class Racketmanager_Tournament {
 		if ( $status ) {
 			if ( 'pending' === $status ) {
 				$search_terms[] = '`status` = 0';
-			} elseif ( 'confirmed' === $status ) {
+			} elseif ( 'unpaid' === $status ) {
 				$search_terms[] = '`status` = 1';
+			} elseif ( 'confirmed' === $status ) {
+				$search_terms[] = '`status` = 2';
+			} elseif ( 'withdrawn' === $status ) {
+				$search_terms[] = '`status` = 3';
 			}
 		}
 		$search = '';

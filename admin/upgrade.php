@@ -1314,6 +1314,10 @@ function racketmanager_upgrade() {
 			}
 		}
 	}
+	if ( version_compare( $installed, '8.34.0', '<' ) ) {
+		echo esc_html__( 'starting 8.34.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "UPDATE {$wpdb->racketmanager_tournament_entries} SET `status` = 2 WHERE `status` = 1" );
+	}
 	/*
 	* Update version and dbversion
 	*/

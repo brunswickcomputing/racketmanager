@@ -47,6 +47,15 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.34.0 =
+* BUGFIX: use correct stripe is_live flag
+* BUGFIX: update invoice amounts correctly
+* BUGFIX: set correct valie for no offset
+* BUGFIX: ensure player tournament entry can be viewed
+* UPDATE: show withdrawal date for tournament
+* UPDATE: separate out tournament entries
+* UPDATE: allow withdrawals from tournaments
+
 = 8.33.0 =
 * BUGFIX: remove extra '<' character
 * BUGFIX: use passed season for competition tabs

@@ -19,14 +19,45 @@ use WP_Error;
  */
 class Racketmanager_Rest_Resources extends WP_REST_Controller {
 	/**
+	 * Version
+	 *
+	 * @var int
+	 */
+	public $version;
+	/**
+	 * Namespace
+	 *
+	 * @var string
+	 */
+	public $namespace;
+	/**
+	 * Constructor
+	 *
+	 * @return void
+	 */
+	public function __construct() {
+		$this->version   = '1';
+		$this->namespace = 'racketmanager/v' . $this->version;
+	}
+	/**
 	 * Register the routes for the objects of the controller.
 	 */
 	public function register_routes() {
-		$version   = '1';
-		$namespace = 'racketmanager/v' . $version;
+		$base      = 'stripe';
+		register_rest_route(
+			$this->namespace,
+			'/' . $base,
+			array(
+				array(
+					'methods'             => array( WP_REST_Server::CREATABLE, WP_REST_Server::READABLE),
+					'callback'            => array( $this, 'stripe_event' ),
+					'permission_callback' => '__return_true',
+				),
+			)
+		);
 		$base      = 'standings';
 		register_rest_route(
-			$namespace,
+			$this->namespace,
 			'/' . $base,
 			array(
 				array(
@@ -45,7 +76,7 @@ class Racketmanager_Rest_Resources extends WP_REST_Controller {
 		);
 		$base = 'fixtures';
 		register_rest_route(
-			$namespace,
+			$this->namespace,
 			'/' . $base,
 			array(
 				array(
@@ -64,7 +95,7 @@ class Racketmanager_Rest_Resources extends WP_REST_Controller {
 		);
 		$base = 'results';
 		register_rest_route(
-			$namespace,
+			$this->namespace,
 			'/' . $base,
 			array(
 				array(
@@ -83,7 +114,7 @@ class Racketmanager_Rest_Resources extends WP_REST_Controller {
 			)
 		);
 		register_rest_route(
-			$namespace,
+			$this->namespace,
 			'/' . $base . '/schema',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
@@ -491,7 +522,11 @@ class Racketmanager_Rest_Resources extends WP_REST_Controller {
 		global $racketmanager;
 		$leagues = $racketmanager->get_leagues();
 		foreach ( $leagues as $i => $league ) {
-			$leagues[ $i ] = seo_url( $league->title );
+			if ( gettype( $league ) === 'object' ) {
+				$leagues[ $i ] = seo_url( $league->title );
+			} else {
+				debug_to_console( gettype($league));
+			}
 		}
 		return $leagues;
 	}
@@ -507,5 +542,78 @@ class Racketmanager_Rest_Resources extends WP_REST_Controller {
 			$seasons[ $i ] = seo_url( $season->name );
 		}
 		return $seasons;
+		return new WP_REST_Response( $data, 200 );
+	}
+	/**
+	 * Process stripe callback
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_Error|WP_REST_Response
+	 */
+	public function stripe_event( $request ) {
+		$data           = null;
+		$status         = 200;
+		$stripe_details = new Racketmanager_Stripe();
+		if ( $stripe_details ) {
+			\Stripe\Stripe::setApiKey( $stripe_details->api_secret_key );
+			$payload = @file_get_contents('php://input');
+			$event   = null;
+			try {
+				$event = \Stripe\Event::constructFrom(
+													  json_decode($payload, true)
+													  );
+			} catch(\UnexpectedValueException $e) {
+				echo '⚠️  Webhook error while parsing basic request.';
+				$status = 400;
+				return new WP_REST_Response( $data, $status );
+			}
+			if ( $stripe_details->api_endpoint_key ) {
+				// Only verify the event if there is an endpoint secret defined
+				// Otherwise use the basic decoded event
+				$sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
+				try {
+					$event = \Stripe\Webhook::constructEvent(
+															 $payload, $sig_header, $stripe_details->api_endpoint_key
+															 );
+				} catch(\Stripe\Exception\SignatureVerificationException $e) {
+					// Invalid signature
+					echo '⚠️  Webhook error while validating signature.';
+					$status = 400;
+					return new WP_REST_Response( $data, $status );
+				}
+			}
+			// Handle the event
+			switch ($event->type) {
+				case 'payment_intent.succeeded':
+					$payment_intent = $event->data->object; // contains a \Stripe\PaymentIntent
+					$stripe_details->update_payment( $payment_intent->id, 'paid' );
+				// Then define and call a method to handle the successful payment intent.
+				// handlePaymentIntentSucceeded($payment_intent);
+					break;
+				case 'payment_intent.processing':
+					$payment_intent = $event->data->object; // contains a \Stripe\PaymentIntent
+					$stripe_details->update_payment( $payment_intent->id, 'pending' );
+					break;
+				case 'payment_intent.payment_failed':
+					$payment_intent = $event->data->object; // contains a \Stripe\PaymentIntent
+					$stripe_details->update_payment( $payment_intent->id, 'failed' );
+					break;
+				case 'payment_method.attached':
+					$paymentMethod = $event->data->object; // contains a \Stripe\PaymentMethod
+				// Then define and call a method to handle the successful attachment of a PaymentMethod.
+				// handlePaymentMethodAttached($paymentMethod);
+					break;
+				case 'payment_intent.created':
+				case 'charge.succeeded':
+				case 'charge.updated':
+					break;
+				default:
+				// Unexpected event type
+					error_log('Received unknown event type');
+					error_log( $event->type );
+					$status = 400;
+			}
+		}
+		return new WP_REST_Response( $data, $status );
 	}
 }

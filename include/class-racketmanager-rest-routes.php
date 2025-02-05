@@ -47,7 +47,6 @@ class Racketmanager_Rest_Routes {
 		$resources = array(
 			new Racketmanager_Rest_Resources(),
 		);
-
 		foreach ( $resources as $resource ) {
 			$resource->register_routes();
 		}

@@ -10,7 +10,6 @@ function setPaymentDetails(intent) {
 			case "succeeded":
 				statusText = "Payment succeeded";
 				className = 'alert--success';
-				Racketmanager.setPaymentStatus(intent.id);
 				break;
 			case "processing":
 				statusText = "Your payment is processing.";
@@ -21,6 +20,8 @@ function setPaymentDetails(intent) {
 				className = 'alert--danger';
 				break;
 			default:
+				statusText = "Unknown status - " + intent.status;
+				className = 'alert--danger';
 				break;
 		}
 	}

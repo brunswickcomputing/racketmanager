@@ -39,6 +39,12 @@ final class Racketmanager_Stripe {
 	 */
 	public $api_secret_key;
 	/**
+	 * Api endpoint secret
+	 *
+	 * @var string
+	 */
+	public $api_endpoint_key;
+	/**
 	 * Constructor
 	 */
 	public function __construct() {
@@ -50,9 +56,28 @@ final class Racketmanager_Stripe {
 			if ( $this->is_live ) {
 				$this->api_publishable_key = isset( $billing['api_publishable_key_live'] ) ? $billing['api_publishable_key_live'] : null;
 				$this->api_secret_key      = isset( $billing['api_secret_key_live'] ) ? $billing['api_secret_key_live'] : null;
+				$this->api_endpoint_key    = isset( $billing['api_endpoint_key_live'] ) ? $billing['api_endpoint_key_live'] : null;
 			} else {
 				$this->api_publishable_key = isset( $billing['api_publishable_key_test'] ) ? $billing['api_publishable_key_test'] : null;
 				$this->api_secret_key      = isset( $billing['api_secret_key_test'] ) ? $billing['api_secret_key_test'] : null;
+				$this->api_endpoint_key    = isset( $billing['api_endpoint_key_test'] ) ? $billing['api_endpoint_key_test'] : null;
+			}
+		}
+	}
+	/**
+	 * Update payment status
+	 *
+	 * @param string $payment ref paymentIntent id.
+	 * @param string $status payment status defaults to paid.
+	 * @return void
+	 */
+	public function update_payment( $payment_ref, $status = 'paid' ) {
+		global $racketmanager;
+		$invoices = $racketmanager->get_invoices( array( 'reference' => $payment_ref ) );
+		if ( 1 === count( $invoices ) ) {
+			$invoice = $invoices[0];
+			if ( $status !== $invoice->status ) {
+				$invoice->set_status( $status );
 			}
 		}
 	}

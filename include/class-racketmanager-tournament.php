@@ -904,9 +904,13 @@ final class Racketmanager_Tournament {
 			if ( 'pending' === $status ) {
 				$search_terms[] = '`status` = 0';
 			} elseif ( 'unpaid' === $status ) {
-				$search_terms[] = '`status` = 1';
+				$search_terms[] = '`status` = 2';
+				$search_terms[] = "`player_id` IN (SELECT `player_id` FROM {$wpdb->racketmanager_invoices} WHERE `charge_id` = %d AND `status` != 'paid')";
+				$search_args[]  = $this->charge->id;
 			} elseif ( 'confirmed' === $status ) {
 				$search_terms[] = '`status` = 2';
+				$search_terms[] = "`player_id` NOT IN (SELECT `player_id` FROM {$wpdb->racketmanager_invoices} WHERE `charge_id` = %d AND `status` != 'paid')";
+				$search_args[]  = $this->charge->id;
 			} elseif ( 'withdrawn' === $status ) {
 				$search_terms[] = '`status` = 3';
 			}

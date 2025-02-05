@@ -1484,11 +1484,7 @@ final class Racketmanager_Tournament {
 	 */
 	private function set_tournament_entry( $player, $club = false, $payment_required = false ) {
 		if ( $club ) {
-			if ( $payment_required ) {
-				$status = 2;
-			} else {
-				$status = 1;
-			}
+			$status = 2;
 		} else {
 			$status = 0;
 		}

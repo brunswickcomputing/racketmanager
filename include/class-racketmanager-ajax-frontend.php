@@ -597,13 +597,11 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		}
 		if ( $valid ) {
 			$payment_reference = isset( $_POST['paymentReference'] ) ? sanitize_text_field( wp_unslash( $_POST['paymentReference'] ) ) : null;
-			if ( $payment_reference ) {
-				$invoices = $racketmanager->get_invoices( array( 'reference' => $payment_reference ) );
-				if ( 1 === count( $invoices ) ) {
-					$invoice = $invoices[0];
-					if ( 'paid' !== $invoice->status ) {
-						$invoice->set_status( 'paid');
-					}
+			$payment_status    = isset( $_post['paymentStatus'] ) ? sanitize_text_field( wp_unslash( $_POST['paymentStatus'] ) ) : null;
+			$stripe = new Racketmanager_Stripe();
+			if ( $stripe ) {
+				if ( $payment_reference ) {
+					$stripe->update_payment( $payment_reference, $payment_status );
 				}
 			}
 		}

@@ -84,31 +84,43 @@ namespace Racketmanager;
 		</div>
 		<div class="row mb-3">
 			<legend><?php esc_html_e( 'Test keys', 'racketmanager' ); ?></legend>
-			<div class="col-md-6 mb-3 mb-md-0">
+			<div class="col-md-4 mb-3 mb-md-0">
 				<div class="form-floating">
 					<input type="text" class="form-control" name='api_publishable_key_test' id='api_publishable_key_test' value='<?php echo isset($options['billing']['api_publishable_key_test']) ? $options['billing']['api_publishable_key_test'] : '' ?>' />
 					<label for='api_publishable_key_test'><?php _e( 'API Publishable key', 'racketmanager' ) ?></label>
 				</div>
 			</div>
-			<div class="col-md-6">
+			<div class="col-md-4 mb-3 mb-md-0">
 				<div class="form-floating">
 					<input type="text" class="form-control" name='api_secret_key_test' id='api_secret_key_test' value='<?php echo isset($options['billing']['api_secret_key_test']) ? $options['billing']['api_secret_key_test'] : '' ?>' />
 					<label for='api_secret_key_test'><?php _e( 'API Secret key', 'racketmanager' ) ?></label>
 				</div>
 			</div>
+			<div class="col-md-4">
+				<div class="form-floating">
+					<input type="text" class="form-control" name='api_endpoint_key_test' id='api_endpoint_key_test' value='<?php echo isset($options['billing']['api_endpoint_key_test']) ? $options['billing']['api_endpoint_key_test'] : '' ?>' />
+					<label for='api_endpoint_key_test'><?php _e( 'API Endpoint secret key', 'racketmanager' ) ?></label>
+				</div>
+			</div>
 		</div>
 		<div class="row mb-3">
 			<legend><?php esc_html_e( 'Live keys', 'racketmanager' ); ?></legend>
-			<div class="col-md-6 mb-3 mb-md-0">
+			<div class="col-md-4 mb-3 mb-md-0">
 				<div class="form-floating">
 					<input type="text" class="form-control" name='api_publishable_key_live' id='api_publishable_key_live' value='<?php echo isset($options['billing']['api_publishable_key_live']) ? $options['billing']['api_publishable_key_live'] : '' ?>' />
 					<label for='api_publishable_key_live'><?php _e( 'API Publishable key', 'racketmanager' ) ?></label>
 				</div>
 			</div>
-			<div class="col-md-6">
+			<div class="col-md-4 mb-3 mb-md-0">
 				<div class="form-floating">
 					<input type="text" class="form-control" name='api_secret_key_live' id='api_secret_key_live' value='<?php echo isset($options['billing']['api_secret_key_live']) ? $options['billing']['api_secret_key_live'] : '' ?>' />
 					<label for='api_secret_key_live'><?php _e( 'API Secret key', 'racketmanager' ) ?></label>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="form-floating">
+					<input type="text" class="form-control" name='api_endpoint_key_live' id='api_endpoint_key_live' value='<?php echo isset($options['billing']['api_endpoint_key_live']) ? $options['billing']['api_endpoint_key_live'] : '' ?>' />
+					<label for='api_endpoint_key_live'><?php _e( 'API Endpoint secret key', 'racketmanager' ) ?></label>
 				</div>
 			</div>
 		</div>

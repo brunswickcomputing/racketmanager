@@ -3855,6 +3855,8 @@ class RacketManager_Admin extends RacketManager {
 				$options['billing']['api_publishable_key_live'] = isset( $_POST['api_publishable_key_live'] ) ? sanitize_text_field( wp_unslash( $_POST['api_publishable_key_live'] ) ) : null;
 				$options['billing']['api_secret_key_test']      = isset( $_POST['api_secret_key_test'] ) ? sanitize_text_field( wp_unslash( $_POST['api_secret_key_test'] ) ) : null;
 				$options['billing']['api_secret_key_live']      = isset( $_POST['api_secret_key_live'] ) ? sanitize_text_field( wp_unslash( $_POST['api_secret_key_live'] ) ) : null;
+				$options['billing']['api_endpoint_key_test']    = isset( $_POST['api_endpoint_key_test'] ) ? sanitize_text_field( wp_unslash( $_POST['api_endpoint_key_test'] ) ) : null;
+				$options['billing']['api_endpoint_key_live']    = isset( $_POST['api_endpoint_key_live'] ) ? sanitize_text_field( wp_unslash( $_POST['api_endpoint_key_live'] ) ) : null;
 				$options['keys']['googleMapsKey']               = isset( $_POST['googleMapsKey'] ) ? sanitize_text_field( wp_unslash( $_POST['googleMapsKey'] ) ) : null;
 				$options['keys']['recaptchaSiteKey']            = isset( $_POST['recaptchaSiteKey'] ) ? sanitize_text_field( wp_unslash( $_POST['recaptchaSiteKey'] ) ) : null;
 				$options['keys']['recaptchaSecretKey']          = isset( $_POST['recaptchaSecretKey'] ) ? sanitize_text_field( wp_unslash( $_POST['recaptchaSecretKey'] ) ) : null;

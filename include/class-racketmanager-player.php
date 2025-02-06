@@ -1368,7 +1368,7 @@ final class Racketmanager_Player {
 			$base_points = 42;
 			foreach ( $this->statistics as $league_ref => $rubbers ) {
 				$league_details = explode( '-', $league_ref );
-				$league_no      = $league_details[0];
+				$league_no      = is_numeric( $league_details[0] ) ? $league_details[0] : 1;
 				$num_rubbers    = $league_details[1];
 				$age_limit      = $league_details[2];
 				$rubber_order   = $league_details[3];

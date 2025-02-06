@@ -58,6 +58,24 @@ namespace Racketmanager;
 								</span>
 							</div>
 						</li>
+						<?php
+						if ( ! empty( $competition->num_players ) ) {
+							?>
+							<li class="tournament-meta__info_block">
+								<div class="text--low-opacity text--small">
+									<?php esc_html_e( 'Players', 'racketmanager' ); ?>
+								</div>
+								<div class="tournament-meta__title">
+									<span class="meta-link">
+										<span class="meta-link__value">
+											<?php echo esc_html( $competition->num_players ); ?>
+										</span>
+									</span>
+								</div>
+							</li>
+							<?php
+						}
+						?>
 					</ul>
 					<div class="tournament-meta__timeline">
 						<ol class="list--timeline-labelled list--timeline list has-custom-icon">

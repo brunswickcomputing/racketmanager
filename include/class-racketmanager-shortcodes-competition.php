@@ -1631,6 +1631,10 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 				'status' => 1,
 			)
 		);
+		$player_args              = array();
+		$player_args['season']    = $competition->current_season['name'];
+		$player_args['count']     = true;
+		$competition->num_players = $competition->get_players( $player_args );
 
 		$filename = ( ! empty( $template ) ) ? 'overview-' . $template : 'overview';
 

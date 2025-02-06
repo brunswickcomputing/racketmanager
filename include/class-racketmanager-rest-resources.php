@@ -522,11 +522,7 @@ class Racketmanager_Rest_Resources extends WP_REST_Controller {
 		global $racketmanager;
 		$leagues = $racketmanager->get_leagues();
 		foreach ( $leagues as $i => $league ) {
-			if ( gettype( $league ) === 'object' ) {
-				$leagues[ $i ] = seo_url( $league->title );
-			} else {
-				debug_to_console( gettype($league));
-			}
+			$leagues[ $i ] = seo_url( $league->title );
 		}
 		return $leagues;
 	}

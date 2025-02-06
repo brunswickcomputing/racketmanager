@@ -47,6 +47,13 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.35.0 =
+* BUGFIX: handle non-numeric league ref
+* UPDATE: enable stripe webhooks for stripe events
+* UPDATE: check tournament entries for outstanding payments against invoices
+* UPDATE: invoices handle previous payments
+* UPDATE: separate club and player invoices
+
 = 8.34.0 =
 * BUGFIX: use correct stripe is_live flag
 * BUGFIX: update invoice amounts correctly

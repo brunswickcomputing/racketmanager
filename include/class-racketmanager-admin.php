@@ -3829,17 +3829,9 @@ class RacketManager_Admin extends RacketManager {
 					$options[ $competition_type ]['resultPending']           = isset( $_POST[ $competition_type ]['resultPending'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['resultPending'] ) ) : null;
 					$options[ $competition_type ]['confirmationPending']     = isset( $_POST[ $competition_type ]['confirmationPending'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['confirmationPending'] ) ) : null;
 					$options[ $competition_type ]['confirmationTimeout']     = isset( $_POST[ $competition_type ]['confirmationTimeout'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['confirmationTimeout'] ) ) : null;
+					$options[ $competition_type ]['entry_level']             = isset( $_POST[ $competition_type ]['entryLevel'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['entryLevel'] ) ) : null;
 					$this->scheduleResultChase( $competition_type, $options[ $competition_type ] );
 				}
-				$options['colors']['headers']                   = isset( $_POST['color_headers'] ) ? sanitize_text_field( wp_unslash( $_POST['color_headers'] ) ) : null;
-				$options['colors']['rows']                      = array(
-					'alternate'  => isset( $_POST['color_rows_alt'] ) ? sanitize_text_field( wp_unslash( $_POST['color_rows_alt'] ) ) : null,
-					'main'       => isset( $_POST['color_rows'] ) ? sanitize_text_field( wp_unslash( $_POST['color_rows'] ) ) : null,
-					'ascend'     => isset( $_POST['color_rows_ascend'] ) ? sanitize_text_field( wp_unslash( $_POST['color_rows_ascend'] ) ) : null,
-					'descend'    => isset( $_POST['color_rows_descend'] ) ? sanitize_text_field( wp_unslash( $_POST['color_rows_descend'] ) ) : null,
-					'relegation' => isset( $_POST['color_rows_relegation'] ) ? sanitize_text_field( wp_unslash( $_POST['color_rows_relegation'] ) ) : null,
-				);
-				$options['colors']['boxheader']                 = array( isset( $_POST['color_boxheader1'] ) ? sanitize_text_field( wp_unslash( $_POST['color_boxheader1'] ) ) : null, isset( $_POST['color_boxheader2'] ) ? sanitize_text_field( wp_unslash( $_POST['color_boxheader2'] ) ) : null );
 				$options['championship']['numRounds']           = isset( $_POST['numRounds'] ) ? intval( $_POST['numRounds'] ) : null;
 				$options['championship']['open_lead_time']      = isset( $_POST['openLeadtime'] ) ? intval( $_POST['openLeadtime'] ) : null;
 				$grades = Racketmanager_Util::get_event_grades();

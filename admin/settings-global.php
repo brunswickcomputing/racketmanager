@@ -36,7 +36,7 @@ jQuery(document).ready(function(){
 						<button class="nav-link" id="matchresults-tab" data-bs-toggle="tab" data-bs-target="#matchresults" type="button" role="tab" aria-controls="matchresults" aria-selected="false"><?php esc_html_e( 'Match Results', 'racketmanager' ); ?></button>
 					</li>
 					<li class="nav-item" role="presentation">
-						<button class="nav-link" id="colors-tab" data-bs-toggle="tab" data-bs-target="#colors" type="button" role="tab" aria-controls="colors" aria-selected="false"><?php esc_html_e( 'Color Scheme', 'racketmanager' ); ?></button>
+						<button class="nav-link" id="entries-tab" data-bs-toggle="tab" data-bs-target="#entries" type="button" role="tab" aria-controls="entries" aria-selected="false"><?php esc_html_e( 'Entries', 'racketmanager' ); ?></button>
 					</li>
 					<li class="nav-item" role="presentation">
 						<button class="nav-link" id="championship-tab" data-bs-toggle="tab" data-bs-target="#championship" type="button" role="tab" aria-controls="championship" aria-selected="false"><?php esc_html_e( 'Championship', 'racketmanager' ); ?></button>
@@ -71,8 +71,8 @@ jQuery(document).ready(function(){
 				<div class="tab-pane fade" id="matchresults" role="tabpanel" aria-labelledby="matchresults-tab">
 					<?php require RACKETMANAGER_PATH . 'admin/includes/settings/results.php'; ?>
 				</div>
-				<div class="tab-pane fade" id="colors" role="tabpanel" aria-labelledby="colors-tab">
-					<?php require RACKETMANAGER_PATH . 'admin/includes/settings/colors.php'; ?>
+				<div class="tab-pane fade" id="entries" role="tabpanel" aria-labelledby="entries-tab">
+					<?php require RACKETMANAGER_PATH . 'admin/includes/settings/entries.php'; ?>
 				</div>
 				<div class="tab-pane fade" id="championship" role="tabpanel" aria-labelledby="championship-tab">
 					<?php require RACKETMANAGER_PATH . 'admin/includes/settings/championship.php'; ?>

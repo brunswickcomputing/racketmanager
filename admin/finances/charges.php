@@ -20,7 +20,8 @@ $charges         = $finance_charges;
 	<div class="row gx-3 align-items-center mb-3">
 		<form id="invoices-filter" method="get" action="" class="form-control">
 			<input type="hidden" name="page" value="<?php echo 'racketmanager-finances'; ?>" />
-			<input type="hidden" name="tab" value="<?php echo 'racketmanager-charges'; ?>" />
+			<input type="hidden" name="tab" value="<?php echo 'charges'; ?>" />
+			<input type="hidden" name="view" value="<?php echo 'charges'; ?>" />
 			<div class="row gx-3 align-items-center">
 				<div class="col-12 col-md-4 col-lg-auto mb-3 mb-md-0">
 					<select class="form-select" name="competition" id="competition">
@@ -96,7 +97,7 @@ $charges         = $finance_charges;
 							?>
 							<tr>
 								<td class="check-column"><input type="checkbox" value="<?php echo esc_html( $charge->id ); ?>" name="charge[<?php echo esc_html( $charge->id ); ?>]" /></td>
-								<td class=""><a href="admin.php?page=racketmanager-finances&amp;view=charges&amp;charges=<?php echo esc_html( $charge->id ); ?>"><?php echo esc_html( $charge->season ) . ' ' . esc_html( ucfirst( $charge->competition->name ) ); ?></a></td>
+								<td class=""><a href="admin.php?page=racketmanager-finances&amp;view=charge&amp;charges=<?php echo esc_html( $charge->id ); ?>"><?php echo esc_html( $charge->season ) . ' ' . esc_html( ucfirst( $charge->competition->name ) ); ?></a></td>
 								<td class=""><?php echo esc_html( $charge->status ); ?></td>
 								<td class="text-end">
 									<?php
@@ -127,7 +128,7 @@ $charges         = $finance_charges;
 	<div class="row gx-3 align-items-center mb-3">
 		<div class="mb-3">
 			<!-- Add New Charge -->
-			<a href="admin.php?page=racketmanager-finances&amp;view=charges" class="btn btn-primary submit"><?php esc_html_e( 'Add Charges', 'racketmanager' ); ?></a>
+			<a href="admin.php?page=racketmanager-finances&amp;view=charge" class="btn btn-primary submit"><?php esc_html_e( 'Add Charge', 'racketmanager' ); ?></a>
 		</div>
 	</div>
 </div>

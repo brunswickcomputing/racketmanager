@@ -8,8 +8,13 @@
 
 namespace Racketmanager;
 
-$clubs           = self::get_clubs();
-$args            = array();
+$args = array();
+if ( 'club-invoices' === $racketmanager_tab ) {
+	$clubs         = self::get_clubs();
+	$args['entry'] = 'team';
+} else {
+	$args['entry'] = 'player';
+}
 $args['status']  = 'final';
 $args['orderby'] = array(
 	'season'         => 'DESC',
@@ -21,8 +26,9 @@ $invoices        = $finance_invoices;
 <div class="container">
 	<div class="row gx-3 align-items-center mb-3">
 		<form id="invoices-filter" method="get" action="" class="form-control">
-			<input type="hidden" name="page" value="<?php echo 'racketmanager-finances'; ?>" />
-			<input type="hidden" name="tab" value="<?php echo 'racketmanager-invoices'; ?>" />
+			<input type="hidden" name="page" value="racketmanager-finances" />
+			<input type="hidden" name="view" value="<?php echo esc_attr( $racketmanager_tab ) ; ?>" />
+			<input type="hidden" name="tab" value="<?php echo esc_attr( $racketmanager_tab ) ; ?>" />
 			<div class="row gx-3 align-items-center">
 				<div class="col-12 col-md-4 col-lg-auto mb-3 mb-md-0">
 					<select class="form-select" name="charge" id="charge">
@@ -36,18 +42,24 @@ $invoices        = $finance_invoices;
 						?>
 					</select>
 				</div>
-				<div class="col-12 col-md-4 col-lg-auto mb-3 mb-md-0">
-					<select class="form-select" name="club" id="club">
-						<option value="" <?php selected( '', $club_id ); ?>><?php esc_html_e( 'All clubs', 'racketmanager' ); ?></option>
-						<?php
-						foreach ( $clubs as $club ) {
-							?>
-							<option value="<?php echo esc_html( $club->id ); ?>" <?php selected( $club->id, $club_id ); ?>><?php echo esc_html( $club->shortcode ); ?></option>
+				<?php
+				if ( 'club-invoices' === $racketmanager_tab ) {
+					?>
+					<div class="col-12 col-md-4 col-lg-auto mb-3 mb-md-0">
+						<select class="form-select" name="club" id="club">
+							<option value="" <?php selected( '', $club_id ); ?>><?php esc_html_e( 'All clubs', 'racketmanager' ); ?></option>
 							<?php
-						}
-						?>
-					</select>
-				</div>
+							foreach ( $clubs as $club ) {
+								?>
+								<option value="<?php echo esc_html( $club->id ); ?>" <?php selected( $club->id, $club_id ); ?>><?php echo esc_html( $club->shortcode ); ?></option>
+								<?php
+							}
+							?>
+						</select>
+					</div>
+					<?php
+				}
+				?>
 				<div class="col-6 col-md-2 col-lg-auto">
 					<select class="form-select" size="1" name="status" id="status">
 						<option value="" <?php echo esc_html( '' === $status ? 'selected' : '' ); ?>><?php esc_html_e( 'All', 'racketmanager' ); ?></option>

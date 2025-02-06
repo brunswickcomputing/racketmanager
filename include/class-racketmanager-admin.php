@@ -545,8 +545,14 @@ class RacketManager_Admin extends RacketManager {
 				$racketmanager_admin_finances = new RacketManager_Admin_Finances();
 				if ( 'charges' === $view ) {
 					$racketmanager_admin_finances->display_charges_page();
+				} elseif ( 'club-invoices' === $view ) {
+					$racketmanager_admin_finances->display_club_invoices_page();
+				} elseif ( 'player-invoices' === $view ) {
+					$racketmanager_admin_finances->display_player_invoices_page();
 				} elseif ( 'invoice' === $view ) {
 					$racketmanager_admin_finances->display_invoice_page();
+				} elseif ( 'charge' === $view ) {
+					$racketmanager_admin_finances->display_charge_page();
 				} else {
 					$racketmanager_admin_finances->display_finances_page();
 				}

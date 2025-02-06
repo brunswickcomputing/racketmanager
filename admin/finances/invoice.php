@@ -7,16 +7,25 @@
 
 namespace Racketmanager;
 
+if ( empty( $invoice->player_id ) ) {
+	$view       = 'club-invoices';
+	$breadcrumb = __( 'Club invoices', 'racketmanager' );
+	$inv_name   = $invoice->club->name;
+} else {
+	$view       = 'player-invoices';
+	$breadcrumb = __( 'Player invoices', 'racketmanager' );
+	$inv_name   = $invoice->player->display_name;
+}
 ?>
 <div class="container">
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
-			<a href="admin.php?page=racketmanager-finances"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <?php esc_html_e( 'View Invoice', 'racketmanager' ); ?>
+			<a href="admin.php?page=racketmanager-finances"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <a href="admin.php?page=racketmanager-finances&amp;view=<?php echo esc_attr( $view ); ?>"><?php echo esc_html( $breadcrumb ); ?></a> &raquo; <?php esc_html_e( 'View Invoice', 'racketmanager' ); ?>
 		</div>
 	</div>
 	<div class="row mb-3">
 		<h1><?php echo esc_html( __( 'Invoice', 'racketmanager' ) . ' ' . $invoice->invoice_number . ' (' . $invoice->status . ')' ); ?></h1>
-		<h2><?php echo esc_html( ucfirst( $invoice->charge->competition->name ) . ' ' . $invoice->charge->season . ' - ' . $invoice->club->name ); ?><h2>
+		<h2><?php echo esc_html( ucfirst( $invoice->charge->competition->name ) . ' ' . $invoice->charge->season . ' - ' . $inv_name ); ?><h2>
 	</div>
 	<form method="post" enctype="multipart/form-data" name="invoice_edit" class="form-control mb-3">
 		<?php wp_nonce_field( 'racketmanager_manage-invoice', 'racketmanager_nonce' ); ?>
@@ -44,6 +53,6 @@ namespace Racketmanager;
 		<?php echo $invoice_view; // phpcs:ignore WordPress.Security.EscapeOutput ?>
 	</div>
 	<div class="mb-3">
-		<a href="admin.php?page=racketmanager-finances&amp;tab=<?php echo esc_html( $tab ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Back to finances', 'racketmanager' ); ?></a>
+		<a href="admin.php?page=racketmanager-finances&amp;view=<?php echo esc_attr( $view ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Back to finances', 'racketmanager' ); ?></a>
 	</div>
 </div>

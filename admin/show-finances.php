@@ -16,19 +16,19 @@ jQuery(document).ready(function(){
 <div class="container">
 
 	<h1><?php esc_html_e( 'Racketmanager Finances', 'racketmanager' ); ?></h1>
-<div class="row">
-	<div class="container">
-		<!-- Nav tabs -->
-		<ul class="nav nav-tabs" id="myTab" role="tablist">
-			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="charges-tab" data-bs-toggle="tab" data-bs-target="#racketmanager-charges" type="button" role="tab" aria-controls="racketmanager-charges" aria-selected="true"><?php esc_html_e( 'Charges', 'racketmanager' ); ?></button>
-			</li>
-			<li class="nav-item" role="presentation">
-				<button class="nav-link" id="invoices-tab" data-bs-toggle="tab" data-bs-target="#racketmanager-invoices" type="button" role="tab" aria-controls="racketmanager-invoices" aria-selected="true"><?php esc_html_e( 'Invoices', 'racketmanager' ); ?></button>
-			</li>
-		</ul>
+	<div class="row">
+		<div class="container">
+			<!-- Nav tabs -->
+			<ul class="nav nav-tabs" id="myTab" role="tablist">
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" id="charges-tab" data-bs-toggle="tab" data-bs-target="#racketmanager-charges" type="button" role="tab" aria-controls="racketmanager-charges" aria-selected="true"><?php esc_html_e( 'Charges', 'racketmanager' ); ?></button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" id="invoices-tab" data-bs-toggle="tab" data-bs-target="#racketmanager-invoices" type="button" role="tab" aria-controls="racketmanager-invoices" aria-selected="true"><?php esc_html_e( 'Invoices', 'racketmanager' ); ?></button>
+				</li>
+			</ul>
+		</div>
 	</div>
-</div>
 	<div class="row">
 		<!-- Tab panes -->
 		<div class="tab-content">

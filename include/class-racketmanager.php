@@ -3907,6 +3907,7 @@ class RacketManager {
 			'competition' => false,
 			'season'      => false,
 			'status'      => false,
+			'entry'       => false,
 			'orderby'     => array(
 				'season'         => 'ASC',
 				'competition_id' => 'ASC',
@@ -3916,6 +3917,7 @@ class RacketManager {
 		$competition  = $args['competition'];
 		$season       = $args['season'];
 		$status       = $args['status'];
+		$entry        = $args['entry'];
 		$orderby      = $args['orderby'];
 		$search_terms = array();
 		if ( $competition ) {
@@ -3926,6 +3928,16 @@ class RacketManager {
 		}
 		if ( $status ) {
 			$search_terms[] = $wpdb->prepare( '`status` = %s', $status );
+		}
+		switch ( $entry ) {
+			case 'team':
+				$search_terms[] = "`competition_id` IN (SELECT `id` FROM {$wpdb->racketmanager_competitions} WHERE type IN ('league','cup'))";
+				break;
+			case 'player':
+				$search_terms[] = "`competition_id` IN (SELECT `id` FROM {$wpdb->racketmanager_competitions} WHERE type IN ('tournament'))";
+				break;
+			default:
+				break;
 		}
 		$search = '';
 		if ( ! empty( $search_terms ) ) {
@@ -3967,6 +3979,8 @@ class RacketManager {
 			'charge'    => false,
 			'player'    => false,
 			'reference' => false,
+			'type'      => false,
+			'before'    => false,
 		);
 		$args      = array_merge( $defaults, $args );
 		$club_id   = $args['club'];
@@ -3974,6 +3988,8 @@ class RacketManager {
 		$charge_id = $args['charge'];
 		$player_id = $args['player'];
 		$reference = $args['reference'];
+		$type      = $args['type'];
+		$before    = $args['before'];
 
 		$search_terms = array();
 		if ( $club_id ) {
@@ -3995,6 +4011,19 @@ class RacketManager {
 		}
 		if ( $reference ) {
 			$search_terms[] = $wpdb->prepare( '`payment_reference` = %s', $reference );
+		}
+		switch ( $type ) {
+			case 'club':
+				$search_terms[] = '`club_id` IS NOT NULL';
+				break;
+			case 'player':
+				$search_terms[] = '`player_id` IS NOT NULL';
+				break;
+			default:
+				break;
+		}
+		if ( $before ) {
+			$search_terms[] = $wpdb->prepare( '`id` < %d', $before );
 		}
 		$search = '';
 		if ( ! empty( $search_terms ) ) {

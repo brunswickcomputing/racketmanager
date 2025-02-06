@@ -279,8 +279,25 @@ final class Racketmanager_Invoice {
 	public function generate() {
 		global $racketmanager_shortcodes, $racketmanager;
 		$charge  = get_charge( $this->charge );
-		$club    = get_club( $this->club );
-		$entry   = $charge->get_club_entry( $club );
+		if ( empty( $this->club ) ) {
+			$target        = get_player( $this->player );
+			$target->name  = $this->player->display_name;
+			$entry         = $charge->get_player_entry( $target );
+			$args          = array();
+			$paid_amount   = 0;
+			$args['player'] = $target->id;
+			$args['charge'] = $charge->id;
+			$args['status'] = 'paid';
+			$args['before'] = $this->id;
+			$prev_invoices = $racketmanager->get_invoices( $args );
+			foreach ( $prev_invoices as $invoice ) {
+				$paid_amount += $invoice->amount;
+			}
+			$entry->paid = $paid_amount;
+		} else {
+			$target = get_club( $this->club );
+			$entry  = $charge->get_club_entry( $target );
+		}
 		$billing = $this->racketmanager->get_options( 'billing' );
 		return $racketmanager_shortcodes->load_template(
 			'invoice',
@@ -288,7 +305,7 @@ final class Racketmanager_Invoice {
 				'organisation_name' => $this->racketmanager->site_name,
 				'invoice'           => $this,
 				'entry'             => $entry,
-				'club'              => $club,
+				'target'              => $target,
 				'billing'           => $billing,
 				'invoice_number'    => $this->invoice_number,
 			)

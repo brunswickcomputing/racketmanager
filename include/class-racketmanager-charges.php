@@ -285,7 +285,6 @@ final class Racketmanager_Charges {
 		}
 		return $club_entries;
 	}
-
 	/**
 	 * Get club enties for charges
 	 *
@@ -324,6 +323,48 @@ final class Racketmanager_Charges {
 			$club_entry->fee             = $club_entry->fee_competition + $club_entry->fee_events;
 			$club_entry->events          = $club_events;
 			return $club_entry;
+		} else {
+			return false;
+		}
+	}
+	/**
+	 * Get player entries for charges
+	 *
+	 * @param object $player player.
+	 */
+	public function get_player_entry( $player ) {
+		$player_events = array();
+		$entered       = 0;
+		$competition   = get_competition( $this->competition_id );
+		$events        = $competition->get_events();
+		foreach ( $events as $event ) {
+			$event      = get_event( $event->id );
+			$is_entered = $event->get_teams(
+				array(
+					'player' => $player->id,
+					'season' => $this->season,
+					'count'  => true,
+				)
+			);
+			if ( $is_entered ) {
+				$player_event        = new \stdClass();
+				$player_event->type  = $event->type;
+				$player_event->count = $is_entered;
+				$player_event->fee   = $this->fee_event;
+				$player_events[]     = $player_event;
+				++$entered;
+			}
+		}
+		if ( ! empty( $player_events ) ) {
+			$entry                  = new \stdClass();
+			$entry->id              = $player->id;
+			$entry->name            = $player->display_name;
+			$entry->num_teams       = $entered;
+			$entry->fee_competition = $this->fee_competition;
+			$entry->fee_events      = $this->fee_event * $entered;
+			$entry->fee             = $entry->fee_competition + $entry->fee_events;
+			$entry->events          = $player_events;
+			return $entry;
 		} else {
 			return false;
 		}

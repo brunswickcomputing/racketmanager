@@ -1164,6 +1164,7 @@ class RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-ajax.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-ajax-frontend.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes.php';
+		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-club.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-competition.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-event.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-league.php';
@@ -1179,6 +1180,7 @@ class RacketManager {
 		$racketmanager_ajax_frontend = new RacketManager_Ajax_Frontend();
 
 		include_once ABSPATH . 'wp-admin/includes/plugin.php';
+		$racketmanager_shortcodes_club        = new Racketmanager_Shortcodes_Club();
 		$racketmanager_shortcodes_competition = new Racketmanager_Shortcodes_Competition();
 		$racketmanager_shortcodes_event       = new Racketmanager_Shortcodes_Event();
 		$racketmanager_shortcodes_league      = new Racketmanager_Shortcodes_League();
@@ -1537,6 +1539,18 @@ class RacketManager {
 		add_rewrite_rule(
 			'clubs/(.+?)/players/?$',
 			'index.php?pagename=club%2Fplayers&club_name=$matches[1]',
+			'top'
+		);
+		// club - invoices - invoice.
+		add_rewrite_rule(
+			'clubs/(.+?)/invoices/(.+?)/?$',
+			'index.php?pagename=club%2Finvoices&club_name=$matches[1]&invoice=$matches[2]',
+			'top'
+		);
+		// club - invoices.
+		add_rewrite_rule(
+			'clubs/(.+?)/invoices/?$',
+			'index.php?pagename=club%2Finvoices&club_name=$matches[1]',
 			'top'
 		);
 		// club - team - event.

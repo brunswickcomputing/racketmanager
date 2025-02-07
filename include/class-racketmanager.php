@@ -1337,13 +1337,6 @@ class RacketManager {
 
 		wp_enqueue_style( 'jquery-ui-structure' );
 		wp_enqueue_style( 'jquery-ui-theme' );
-
-		ob_start();
-		require_once RACKETMANAGER_PATH . 'css/colors.css.php';
-		$css = ob_get_contents();
-		ob_end_clean();
-
-		wp_add_inline_style( 'racketmanager', $css );
 	}
 	/**
 	 * Create formatted url
@@ -2635,11 +2628,14 @@ class RacketManager {
 	public function get_clubs( $args = array() ) {
 		global $wpdb;
 		$defaults     = array(
-			'offset'  => 0,
-			'limit'   => 99999999,
-			'type'    => false,
-			'name'    => false,
-			'count'   => false,
+			'offset'      => 0,
+			'limit'       => 99999999,
+			'type'        => false,
+			'name'        => false,
+			'count'       => false,
+			'player_type' => false,
+			'player'      => false,
+			'club'        => false,
 			'orderby' => 'asc',
 		);
 		$args         = array_merge( $defaults, $args );
@@ -2648,6 +2644,9 @@ class RacketManager {
 		$type         = $args['type'];
 		$count        = $args['count'];
 		$orderby      = $args['orderby'];
+		$player_type  = $args['player_type'];
+		$player       = $args['player'];
+		$club         = $args['club'];
 		$search_terms = array();
 		if ( $type && 'all' !== $type ) {
 			if ( 'current' === $type ) {
@@ -2657,6 +2656,33 @@ class RacketManager {
 					'`type` = %s',
 					$type
 				);
+			}
+		}
+		if ( $club ) {
+			$search_terms[] = $wpdb->prepare(
+				'`id` = %d',
+				$club
+			);
+		}
+		if ( $player ) {
+			switch ( $player_type ) {
+				case 'secretary':
+					$search_terms[] = $wpdb->prepare('`matchsecretary` = %d',
+													 $player,
+													 );
+					break;
+				case 'captain':
+					$search_terms[] = $wpdb->prepare("`id` IN (SELECT `club_id` FROM {$wpdb->racketmanager_team_events} te, {$wpdb->racketmanager_teams} t WHERE `captain` = %d AND te.`team_id` = t.`id`)",
+													 $player,
+													 );
+					break;
+				case 'player':
+					$search_terms[] = $wpdb->prepare("`id` IN (SELECT `club_id` FROM {$wpdb->racketmanager_club_players} cp WHERE `player_id` = %d AND `removed_date` IS NULL)",
+													 $player,
+													 );
+					break;
+				default:
+					break;
 			}
 		}
 		$search = '';

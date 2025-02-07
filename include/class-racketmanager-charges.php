@@ -382,6 +382,7 @@ final class Racketmanager_Charges {
 			$invoice->date           = $this->date;
 			$invoice                 = new Racketmanager_Invoice( $invoice );
 			$invoice->set_amount( $entry->fee );
+			$invoice->set_details( $entry );
 			$sent = false;
 			$sent = $invoice->send();
 			if ( $sent ) {

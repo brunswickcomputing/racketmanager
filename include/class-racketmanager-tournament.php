@@ -1452,17 +1452,33 @@ final class Racketmanager_Tournament {
 	 * @return void
 	 */
 	private function create_player_invoice( $player_id, $fee ) {
+		global $racketmanager;
 		if ( empty( $player_id ) || empty( $fee ) ) {
 			return;
 		}
 		if ( $this->charge ) {
 			$this->cancel_player_invoices( $player_id );
-			$invoice                 = new \stdClass();
-			$invoice->charge_id      = $this->charge->id;
-			$invoice->player_id      = $player_id;
-			$invoice->date           = gmdate( 'Y-m-d' );
-			$invoice                 = new Racketmanager_Invoice( $invoice );
+			$invoice            = new \stdClass();
+			$invoice->charge_id = $this->charge->id;
+			$invoice->player_id = $player_id;
+			$invoice->date      = gmdate( 'Y-m-d' );
+			$invoice            = new Racketmanager_Invoice( $invoice );
 			$invoice->set_amount( $fee );
+			$player         = get_player( $player_id );
+			$charge         = get_charge( $this->charge );
+			$details        = $charge->get_player_entry( $player );
+			$args           = array();
+			$paid_amount    = 0;
+			$args['player'] = $player_id;
+			$args['charge'] = $this->charge->id;
+			$args['status'] = 'paid';
+			$args['before'] = $invoice->id;
+			$prev_invoices  = $racketmanager->get_invoices( $args );
+			foreach ( $prev_invoices as $prev_invoice ) {
+				$paid_amount += $prev_invoice->amount;
+			}
+			$details->paid = $paid_amount;
+			$invoice->set_details( $details );
 		}
 	}
 	/**

@@ -199,6 +199,21 @@ if ( $standalone ) {
 <?php
 if ( $standalone ) {
 	?>
+	<?php
+	if ( $user_can_update_club ) {
+		?>
+		 <div class="module module--card">
+			 <div class="module__content">
+				 <div class="module-container">
+					 <a href="/clubs/<?php echo esc_attr( seo_url( $club->shortcode ) ); ?>/invoices/" role="button">
+						 <h3 class="module__title"><?php esc_html_e( 'Invoices', 'racketmanager' ); ?></h3>
+					 </a>
+				 </div>
+			 </div>
+		 </div>
+		<?php
+	}
+	?>
 	<div class="module module--card">
 		<div class="module__content">
 			<div class="module-container">

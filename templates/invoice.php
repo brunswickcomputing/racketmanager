@@ -155,6 +155,11 @@ if ( is_user_logged_in() ) {
 			} else {
 				echo esc_html( __( 'Payment Due', 'racketmanager' ) . ': ' . mysql2date( $racketmanager->date_format, $invoice->date_due ) );
 			}
+			if ( 'paid' === $invoice->status ) {
+				?>
+				<div class="text-end"><?php echo esc_html( strtoupper( $invoice->status ) ); ?></div>
+				<?php
+			}
 			?>
 			</div>
 		</div>
@@ -193,26 +198,30 @@ if ( is_user_logged_in() ) {
 					<?php
 				}
 				?>
-				<?php foreach ( $entry->events as $racketmanager_event ) { ?>
+				<?php
+				foreach ( $invoice->details->events as $racketmanager_event ) {
+					?>
 					<div id="invoice-item">
-						<div class="invoice-item-detail"><?php echo esc_html( Racketmanager_Util::get_event_type( $racketmanager_event->type ) ); ?></div>
-						<div class="invoice-item-quantity"><?php echo esc_html( $racketmanager_event->count ); ?></div>
-						<div class="invoice-item-unit-price"><?php the_currency_amount( $invoice->charge->fee_event ); ?></div>
-						<div class="invoice-item-net-price"><?php the_currency_amount( $racketmanager_event->fee ); ?></div>
+					<div class="invoice-item-detail"><?php echo esc_html( Racketmanager_Util::get_event_type( $racketmanager_event->type ) ); ?></div>
+					<div class="invoice-item-quantity"><?php echo esc_html( $racketmanager_event->count ); ?></div>
+					<div class="invoice-item-unit-price"><?php the_currency_amount( $invoice->charge->fee_event ); ?></div>
+					<div class="invoice-item-net-price"><?php the_currency_amount( $racketmanager_event->fee ); ?></div>
 					</div>
-				<?php } ?>
+					<?php
+				}
+				?>
 			</div>
 			<div id="invoice-totals">
 				<div class="invoice-total-desc">Total</div>
-				<div class="invoice-item-net-price"><?php the_currency_amount( $entry->fee ); ?></div>
+				<div class="invoice-item-net-price"><?php the_currency_amount( $invoice->details->fee ); ?></div>
 			</div>
 			<?php
-			if ( ! empty( $entry->paid ) ) {
-				$smount_due = $entry->fee - $entry->paid;
+			if ( ! empty( $invoice->details->paid ) ) {
+				$smount_due = $invoice->details->fee - $invoice->details->paid;
 				?>
 				<div id="invoice-totals">
 					<div class="invoice-total-desc">Paid</div>
-					<div class="invoice-item-net-price"><?php the_currency_amount( $entry->paid ); ?></div>
+					<div class="invoice-item-net-price"><?php the_currency_amount( $invoice->details->paid ); ?></div>
 				</div>
 				<div id="invoice-totals">
 				<div class="invoice-total-desc"><?php esc_html_e( 'Due', 'racketmanager' ); ?></div>

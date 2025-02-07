@@ -92,6 +92,12 @@ final class Racketmanager_Invoice {
 	 */
 	public $payment_reference;
 	/**
+	 * Details
+	 *
+	 * @var string
+	 */
+	public $details;
+	/**
 	 * Get class instance
 	 *
 	 * @param int $invoice_id id.
@@ -106,7 +112,7 @@ final class Racketmanager_Invoice {
 		if ( ! $invoice ) {
 			$invoice = $wpdb->get_row(
 				$wpdb->prepare(
-					"SELECT `id`, `charge_id`, `club_id`, `player_id`, `status`, `invoiceNumber` as `invoice_number`, `date`, `date_due`, `amount`, `payment_reference` FROM {$wpdb->racketmanager_invoices} WHERE `id` = %d LIMIT 1",
+					"SELECT `id`, `charge_id`, `club_id`, `player_id`, `status`, `invoiceNumber` as `invoice_number`, `date`, `date_due`, `amount`, `payment_reference`, `details` FROM {$wpdb->racketmanager_invoices} WHERE `id` = %d LIMIT 1",
 					$invoice_id
 				)
 			);  // db call ok.
@@ -131,6 +137,9 @@ final class Racketmanager_Invoice {
 	public function __construct( $invoice = null ) {
 		$this->racketmanager = Racketmanager::get_instance();
 		if ( ! is_null( $invoice ) ) {
+			if ( isset( $invoice->details ) ) {
+				$invoice->details = json_decode( $invoice->details );
+			}
 			foreach ( get_object_vars( $invoice ) as $key => $value ) {
 				$this->$key = $value;
 			}
@@ -274,6 +283,25 @@ final class Racketmanager_Invoice {
 		return true;
 	}
 	/**
+	 * Set details
+	 *
+	 * @param string $details invoice details.
+	 */
+	public function set_details( $details ) {
+		global $wpdb;
+
+		$this->details = $details;
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"UPDATE {$wpdb->racketmanager_invoices} set `details` = %s WHERE `id` = %d",
+				wp_json_encode( $this->details ),
+				$this->id
+			)
+		);  // db call ok.
+		wp_cache_set( $this->id, $this, 'invoice' );
+		return true;
+	}
+	/**
 	 * Generate invoice
 	 */
 	public function generate() {
@@ -282,21 +310,8 @@ final class Racketmanager_Invoice {
 		if ( empty( $this->club ) ) {
 			$target        = get_player( $this->player );
 			$target->name  = $this->player->display_name;
-			$entry         = $charge->get_player_entry( $target );
-			$args          = array();
-			$paid_amount   = 0;
-			$args['player'] = $target->id;
-			$args['charge'] = $charge->id;
-			$args['status'] = 'paid';
-			$args['before'] = $this->id;
-			$prev_invoices = $racketmanager->get_invoices( $args );
-			foreach ( $prev_invoices as $invoice ) {
-				$paid_amount += $invoice->amount;
-			}
-			$entry->paid = $paid_amount;
 		} else {
 			$target = get_club( $this->club );
-			$entry  = $charge->get_club_entry( $target );
 		}
 		$billing = $this->racketmanager->get_options( 'billing' );
 		return $racketmanager_shortcodes->load_template(
@@ -304,8 +319,7 @@ final class Racketmanager_Invoice {
 			array(
 				'organisation_name' => $this->racketmanager->site_name,
 				'invoice'           => $this,
-				'entry'             => $entry,
-				'target'              => $target,
+				'target'            => $target,
 				'billing'           => $billing,
 				'invoice_number'    => $this->invoice_number,
 			)

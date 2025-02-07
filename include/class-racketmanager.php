@@ -1165,6 +1165,8 @@ class RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-ajax-frontend.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-competition.php';
+		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-event.php';
+		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-league.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-email.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-tournament.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-login.php';
@@ -1178,6 +1180,8 @@ class RacketManager {
 
 		include_once ABSPATH . 'wp-admin/includes/plugin.php';
 		$racketmanager_shortcodes_competition = new Racketmanager_Shortcodes_Competition();
+		$racketmanager_shortcodes_event       = new Racketmanager_Shortcodes_Event();
+		$racketmanager_shortcodes_league      = new Racketmanager_Shortcodes_League();
 		$racketmanager_shortcodes_emails      = new Racketmanager_Shortcodes_Email();
 		$racketmanager_shortcodes_tournament  = new Racketmanager_Shortcodes_Tournament();
 		$racketmanager_shortcodes             = new Racketmanager_Shortcodes();

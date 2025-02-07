@@ -1107,4 +1107,13 @@ final class Racketmanager_Club {
 		$template_args['comments']         = $club_entry->comments;
 		$racketmanager->email_entry_form( $template, $template_args, $email_to, $email_subject, $headers );
 	}
+	/**
+	 * Get invoices for club
+	 *
+	 * @return array
+	 */
+	public function get_invoices() {
+		global $racketmanager;
+		return $racketmanager->get_invoices( array( 'club' => $this->id ) );
+	}
 }

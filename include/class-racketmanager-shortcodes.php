@@ -850,47 +850,141 @@ class RacketManager_Shortcodes {
 						$msg   = __( 'Player not found', 'racketmanager' );
 					}
 				} else {
-					$club_name = get_query_var( 'club_name' );
-					$club_name = un_seo_url( $club_name );
-					if ( $club_name ) {
-						$club = get_club( $club_name, 'shortcode' );
-						if ( $club ) {
-							$season = get_query_var( 'season' );
-							if ( ! $season ) {
-								$valid = false;
-								$msg   = __( 'No season specified', 'racketmanager' );
+					$season = get_query_var( 'season' );
+					if ( $season ) {
+						$competition_season = isset( $competition->seasons[ $season ] ) ? $competition->seasons[ $season ] : null;
+						if ( $competition_season ) {
+							if ( ! empty( $competition_season['venue'] ) ) {
+								$venue_club = get_club( $competition_season['venue'] );
+								if ( $venue_club ) {
+									$competition_season['venue_name'] = $venue_club->shortcode;
+								}
+							}
+							$club_name = get_query_var( 'club_name' );
+							if ( $club_name ) {
+								$club_name = un_seo_url( $club_name );
+								$club      = get_club( $club_name, 'shortcode' );
+								if ( $club ) {
+									//check user authorised for club
+									$can_enter = $this->club_selection_available( $competition, $club->id );
+									if ( ! $can_enter ) {
+										$valid = false;
+										$msg   = __( 'User not authorised for club entry for this competition', 'racketmanager' );
+									}
+								} else {
+									$valid = false;
+									$msg   = __( 'Club not found', 'racketmanager' );
+								}
+							} else {
+								$club_choice = $this->show_club_selection( $competition, $season, $competition_season );
+								if ( ! $club_choice ) {
+									$valid = false;
+									$msg   = __( 'No club specified', 'racketmanager' );
+								}
 							}
 						} else {
 							$valid = false;
-							$msg   = __( 'Club not found', 'racketmanager' );
+							$msg   = __( 'Season not found for competition', 'racketmanager' );
 						}
 					} else {
 						$valid = false;
-						$msg   = __( 'No club specified', 'racketmanager' );
+						$msg   = __( 'No season specified', 'racketmanager' );
 					}
-				}
+					}
 			} else {
 				$valid = false;
 				$msg   = __( 'Competition not found', 'racketmanager' );
 			}
 		}
 		if ( $valid ) {
-			switch ( $competition->type ) {
-				case 'league':
-					$output = $this->show_league_entry( $competition, $season, $club, $template );
-					break;
-				case 'cup':
-					$output = $this->show_cup_entry( $competition, $season, $club, $template );
-					break;
-				case 'tournament':
-					$output = $this->show_tournament_entry( $tournament, $player, $template );
-					break;
-				default:
-					$output = $this->return_error( __( 'Invalid competition type specified', 'racketmanager' ) );
+			if ( ! empty( $club_choice ) ) {
+				$output = $club_choice;
+			} else {
+				switch ( $competition->type ) {
+					case 'league':
+						$output = $this->show_league_entry( $competition, $season, $competition_season, $club, $template );
+						break;
+					case 'cup':
+						$output = $this->show_cup_entry( $competition, $season, $competition_season, $club, $template );
+						break;
+					case 'tournament':
+						$output = $this->show_tournament_entry( $tournament, $player, $template );
+						break;
+					default:
+						$output = $this->return_error( __( 'Invalid competition type specified', 'racketmanager' ) );
+				}
 			}
 			return $output;
 		} else {
 			return $this->return_error( $msg );
+		}
+	}
+	/**
+	 * Function to check if club selection is available
+	 *
+	 * @param object $competition competition object.
+	 * @param int    $club_id (optional) club id.
+	 * @return array||object||boolean||int array of clubs or individual club or indicator if club entry allowed or number of clubs
+	 */
+	protected function club_selection_available( $competition, $club_id = false ) {
+		global $racketmanager;
+		$clubs        = null;
+		$user         = wp_get_current_user();
+		$userid       = $user->ID;
+		$args['type'] = 'affiliated';
+		if ( $club_id ) {
+			$args['club']  = $club_id;
+			$args['count'] = true;
+		}
+		if ( current_user_can( 'manage_racketmanager' ) ) {
+			$clubs = $racketmanager->get_clubs( $args );
+		} else {
+			$competition_options = $racketmanager->get_options( $competition->type );
+			if ( $competition_options ) {
+				$entry_option = isset( $competition_options[ 'entry_level' ] ) ? $competition_options[ 'entry_level' ] : null;
+				if ( $entry_option ) {
+					$args[ 'player_type' ] = $entry_option;
+					$args[ 'player' ]      = $userid;
+					$clubs = $racketmanager->get_clubs( $args );
+				}
+			};
+		}
+		if ( $clubs ) {
+			if ( $club_id ) {
+				return $clubs;
+			} else {
+				if ( 1 === count( $clubs ) ) {
+					return $clubs[0];
+				} else {
+					return $clubs;
+				}
+			}
+		} else {
+			return false;
+		}
+	}
+	/**
+	 * Function to show club selection entry list
+	 *
+	 * @param object $competition competition object.
+	 * @param string $season season name.
+	 * @param array $competition_season competition season details.
+	 * @return string||boolean screen or no details
+	 */
+	private function show_club_selection( $competition, $season, $competition_season ) {
+		$clubs = $this->club_selection_available( $competition );
+		if ( $clubs ) {
+			return $this->load_template(
+				'entry-form-clubs-list',
+				array(
+					'competition'        => $competition,
+					'season'             => $season,
+					'competition_season' => $competition_season,
+					'clubs'              => $clubs,
+				)
+			);
+		} else {
+			return false;
 		}
 	}
 	/**
@@ -1027,29 +1121,21 @@ class RacketManager_Shortcodes {
 	 *
 	 * @param object $competition competition object.
 	 * @param string $season season.
+	 * @param array  $$competition_season competition season.
 	 * @param object $club club object.
 	 * @param string $template template name.
 	 * @return the content
 	 */
-	public function show_cup_entry( $competition, $season, $club, $template ) {
+	public function show_cup_entry( $competition, $season, $competition_season, $club, $template ) {
 		if ( ! is_user_logged_in() ) {
 			return '<p class="contact-login-msg">You need to <a href="' . wp_login_url() . '">login</a> to enter cups</p>';
 		}
 		$valid = true;
+		$user   = wp_get_current_user();
+		$userid = $user->ID;
 		if ( ! $club ) {
 			$valid = false;
 			$msg   = __( 'Club not found', 'racketmanager' );
-		} else {
-			$user                 = wp_get_current_user();
-			$userid               = $user->ID;
-			$user_can_update_club = false;
-			if ( current_user_can( 'manage_racketmanager' ) || ( null !== $club->matchsecretary && intval( $club->matchsecretary ) === $userid ) ) {
-				$user_can_update_club = true;
-			}
-			if ( ! $user_can_update_club ) {
-				$valid = false;
-				$msg   = __( 'User not authorised for club', 'racketmanager' );
-			}
 		}
 		if ( ! $competition ) {
 			$valid = false;
@@ -1089,14 +1175,15 @@ class RacketManager_Shortcodes {
 			return $this->load_template(
 				$filename,
 				array(
-					'club'         => $club,
-					'events'       => $events,
-					'ladies_teams' => $ladies_teams,
-					'mens_teams'   => $mens_teams,
-					'mixed_teams'  => $mixed_teams,
-					'season'       => $season,
-					'competition'  => $competition,
-					'weekdays'     => $weekdays,
+					'club'               => $club,
+					'events'             => $events,
+					'ladies_teams'       => $ladies_teams,
+					'mens_teams'         => $mens_teams,
+					'mixed_teams'        => $mixed_teams,
+					'season'             => $season,
+					'competition'        => $competition,
+					'competition_season' => $competition_season,
+					'weekdays'           => $weekdays,
 				),
 				'entry'
 			);
@@ -1109,11 +1196,12 @@ class RacketManager_Shortcodes {
 	 *
 	 * @param string $competition_name competition name.
 	 * @param string $season season.
+	 * @param array  $$competition_season competition season.
 	 * @param string $club_name club name.
 	 * @param string $template template name.
 	 * @return the content
 	 */
-	public function show_league_entry( $competition_name, $season, $club_name, $template ) {
+	public function show_league_entry( $competition_name, $season, $competition_season, $club_name, $template ) {
 		if ( ! is_user_logged_in() ) {
 			return '<p class="contact-login-msg">You need to <a href="' . wp_login_url() . '">login</a> to enter leagues</p>';
 		}
@@ -1123,24 +1211,6 @@ class RacketManager_Shortcodes {
 		if ( ! $club ) {
 			$valid = false;
 			$msg   = __( 'Club not found', 'racketmanager' );
-		} else {
-			$user                 = wp_get_current_user();
-			$userid               = $user->ID;
-			$user_can_update_club = false;
-			if ( current_user_can( 'manage_racketmanager' ) ) {
-				$user_can_update_club = true;
-			} elseif ( null !== $club->matchsecretary && intval( $club->matchsecretary ) === $userid ) {
-				$user_can_update_club = true;
-			} else {
-				$player = $club->get_player( $userid );
-				if ( $player ) {
-					$user_can_update_club = true;
-				}
-			}
-			if ( ! $user_can_update_club ) {
-				$valid = false;
-				$msg   = __( 'User not authorised for club', 'racketmanager' );
-			}
 		}
 		if ( ! $competition_name ) {
 			$valid = false;
@@ -1214,10 +1284,11 @@ class RacketManager_Shortcodes {
 			return $this->load_template(
 				$filename,
 				array(
-					'club'        => $club,
-					'competition' => $competition,
-					'events'      => $events,
-					'season'      => $season,
+					'club'               => $club,
+					'competition'        => $competition,
+					'events'             => $events,
+					'season'             => $season,
+					'competition_season' => $competition_season,
 				),
 				'entry'
 			);

@@ -15,7 +15,6 @@ $competition_types = Racketmanager_Util::get_competition_types();
 		<?php
 		$i = 0;
 		foreach ( $competition_types as $competition_type ) {
-			debug_to_console( $i );
 			?>
 			<li class="nav-item" role="presentation">
 			<button class="nav-link <?php echo ( 0 === $i ) ? 'active' : null; ?>" id="entries-<?php echo esc_attr( $competition_type ); ?>-tab" data-bs-toggle="tab" data-bs-target="#entries-<?php echo esc_attr( $competition_type ); ?>" type="button" role="tab" aria-controls="entries-<?php echo esc_attr( $competition_type ); ?>" aria-selected="<?php echo ( 0 === $i ) ? 'true' : 'false'; ?>"><?php echo esc_html( ucfirst( $competition_type ) ); ?></button>

@@ -18,6 +18,7 @@
 
 namespace Racketmanager;
 
+$no_entry_link = true;
 if ( $competition->is_open ) {
 	$changes_allowed = true;
 } else {
@@ -33,11 +34,6 @@ if ( ! empty( $club->entry ) ) {
 ?>
 <div class="container">
 	<?php
-	if ( empty( $competition->seasons[ $season ] ) ) {
-		$competition_season = null;
-	} else {
-		$competition_season = $competition->seasons[ $season ];
-	}
 	require RACKETMANAGER_PATH . 'templates/includes/competition-header.php';
 	?>
 	<form id="form-entry" action="" method="post">

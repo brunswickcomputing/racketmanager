@@ -2242,7 +2242,7 @@ class Racketmanager_Event {
 				$match_days = Racketmanager_Util::get_match_days();
 				foreach ( $match_days as $match_day => $value ) {
 					$config->match_days_allowed[ $match_day ] = isset( $config->match_days_allowed[ $match_day ] ) ? 1 : 0;
-					if ( $this->match_days_allowed[ $match_day ] !== $config->match_days_allowed[ $match_day ] ) {
+					if ( ! isset( $this->match_days_allowed[ $match_day ] ) || $this->match_days_allowed[ $match_day ] !== $config->match_days_allowed[ $match_day ] ) {
 						$updates = true;
 					}
 				}

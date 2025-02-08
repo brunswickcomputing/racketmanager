@@ -203,7 +203,7 @@ $tab_name = 'general';
 				<div class="form-floating">
 					<?php
 					$num_rubbers = empty( $event->config->num_rubbers ) ? null : $event->config->num_rubbers;
-					if ( empty( num_rubbers ) ) {
+					if ( empty( $num_rubbers ) ) {
 						$num_rubbers = isset( $competition->num_rubbers ) ? $competition->num_rubbers : null;
 					}
 					if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'num_rubbers', $racketmanager->error_fields, true ) ) ) {

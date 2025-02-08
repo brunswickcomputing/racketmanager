@@ -8,22 +8,6 @@
 namespace Racketmanager;
 
 ?>
-<?php
-if ( ! $league->event->competition->is_championship ) {
-	?>
-	<div class="alignright">
-		<form action="admin.php" method="get">
-			<input type="hidden" name="page" value="racketmanager" />
-			<input type="hidden" name="subpage" value="show-league" />
-			<input type="hidden" name="league_id" value="<?php echo esc_html( $league->id ); ?>" />
-			<input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />
-			<?php echo $league->get_standings_selection(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-			<input type="submit" class="btn btn-secondary" value="<?php esc_html_e( 'Show', 'racketmanager' ); ?>" />
-		</form>
-	</div>
-	<?php
-}
-?>
 <form id="teams-filter" action="" method="post" name="standings">
 	<input type="hidden" name="js-active" value="0" class="js-active" />
 	<input type="hidden" name="league-tab" value="preliminary" />
@@ -110,13 +94,7 @@ if ( ! $league->event->competition->is_championship ) {
 				?>
 			</tr>
 		</thead>
-		<tbody id="the-list-standings" class="lm-form-table standings-table
-			<?php
-			if ( 'manual' === $league->event->competition->team_ranking ) {
-				echo ' sortable';
-			}
-			?>
-		">
+		<tbody id="the-list-standings" class="lm-form-table standings-table <?php echo ( 'manual' === $league->event->competition->team_ranking ) ? 'sortable' : null ?>">
 			<?php
 			$class = '';
 			foreach ( $teams as $i => $team ) {

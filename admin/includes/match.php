@@ -7,26 +7,25 @@
 
 namespace Racketmanager;
 
-$form_action = 'admin.php?page=racketmanager';
+$form_action = 'admin.php?page=racketmanager-' . $league->event->competition->type . 's&amp;';
 ?>
 <div class="container">
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
 			<?php
 			if ( $league->event->competition->is_league ) {
-				$form_action .= '&amp;subpage=show-league&amp;league_id';
+				$form_action .= 'view=league&amp;league_id';
 				?>
-				<a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a> &raquo;
-				<a href="admin.php?page=racketmanager&amp;subpage=show-event&amp;event_id=<?php echo esc_html( $league->event->id ); ?>&amp;season=<?php echo esc_html( $league->current_season['name'] ); ?>"><?php echo esc_html( $league->event->name ); ?></a> &raquo;
-				<a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $league->current_season['name'] ); ?>"><?php echo esc_html( $league->title ); ?></a> &raquo;
+				<a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s"><?php echo esc_html( ucfirst( $league->event->competition->type ) ); ?>s</a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $league->event->competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $league->event->competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=event&amp;event_id=<?php echo esc_html( $league->event->id ); ?>&amp;season=<?php echo esc_attr( $league->current_season['name'] ); ?>"><?php echo esc_html( $league->event->name ); ?></a> &raquo;
+				<a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $league->current_season['name'] ); ?>"><?php echo esc_html( $league->title ); ?></a> &raquo;
 				<?php
 			} elseif ( $league->event->competition->is_tournament ) {
-				$form_action .= '-tournaments&amp;view=draw&amp;tournament=' . $tournament->id . '&amp;league';
+				$form_action .= 'view=draw&amp;tournament=' . $tournament->id . '&amp;league';
 				?>
 				<a href='admin.php?page=racketmanager-tournaments'><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href='admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>'><?php echo esc_html( $tournament->name ); ?></a>  &raquo; <a href='admin.php?page=racketmanager-tournaments&amp;view=draw&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>&amp;league=<?php echo esc_attr( $league->id ); ?>'><?php echo esc_html( $league->title ); ?></a> &raquo;
 				<?php
 			} elseif ( $league->event->competition->is_cup ) {
-				$form_action .= '-cups&amp;view=draw&amp;competition_id=' . $competition->id . '&amp;league';
+				$form_action .= 'view=draw&amp;competition_id=' . $competition->id . '&amp;league';
 				?>
 				<a href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s"><?php echo esc_html( ucfirst( $competition->type ) ); ?>s</a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&amp;view=cup&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&amp;view=season&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&amp;view=draw&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>&amp;league=<?php echo esc_attr( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a> &raquo;
 				<?php
@@ -35,7 +34,8 @@ $form_action = 'admin.php?page=racketmanager';
 			<?php echo esc_html( $form_title ); ?>
 		</div>
 	</div>
-	<h1><?php echo esc_html( $form_title ) . ' - ' . esc_html( $league->title ); ?></h1>
+	<h1><?php echo esc_html( $league->title ); ?></h1>
+	<h2><?php echo esc_html( $form_title ); ?></h2>
 	<?php
 	if ( $matches ) {
 		$form_action .= '=' . $league->id . '&amp;season=' . $season;

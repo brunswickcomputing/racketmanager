@@ -31,14 +31,17 @@ namespace Racketmanager;
 						$num_teams      = $event->get_teams( $args );
 						$args['status'] = 1;
 						$num_entries    = $event->get_clubs( $args );
-						$age_limit      = empty( $event->age_limit ) ? __( 'open', 'racketmanager' ) : $event->age_limit;
-						if ( isset( $event->age_offset ) ) {
-							$age_offset = is_numeric( $event->age_offset ) ? $age_limit - intval( $event->age_offset ) : null;
-						}
-						if ( empty( $age_offset ) ) {
-							$age_offset = null;
-						} else {
-							$age_offset = '(' . $age_offset . ')';
+						$age_limit      = empty( $event->age_limit ) ? 0 : $event->age_limit;
+						$age_offset     = null;
+						if ( is_numeric( $age_limit ) ) {
+							if ( isset( $event->age_offset ) ) {
+								$age_offset = is_numeric( $event->age_offset ) ? $age_limit - intval( $event->age_offset ) : null;
+							}
+							if ( empty( $age_offset ) ) {
+								$age_offset = null;
+							} else {
+								$age_offset = '(' . $age_offset . ')';
+							}
 						}
 						?>
 						<tr>

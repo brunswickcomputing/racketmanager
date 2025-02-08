@@ -73,7 +73,7 @@ namespace Racketmanager;
 					<div class="row table-row <?php echo esc_html( $class ); ?>">
 						<div class="col-2 col-lg-1 check-column"><input type="checkbox" value="<?php echo esc_html( $league->id ); ?>" name="league[<?php echo esc_html( $league->id ); ?>]" /></div>
 						<div class="d-none d-lg-block col-1 column-num"><?php echo esc_html( $league->id ); ?></div>
-						<div class="col-4"><a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>"><?php echo esc_html( $league->title ); ?></a></div>
+						<div class="col-4"><a href="admin.php?page=racketmanager-<?php echo esc_attr( $event->competition->type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>"><?php echo esc_html( $league->title ); ?></a></div>
 						<div class="col-3 col-lg-1 column-num">
 							<?php echo esc_html( $league->num_teams_total ); ?>
 						</div>
@@ -105,7 +105,7 @@ namespace Racketmanager;
 			}
 			?>
 		<h3><?php echo esc_html( $form_action ); ?></h3>
-		<form action="admin.php?page=racketmanager&subpage=show-event&event_id=<?php echo esc_html( $event_id ); ?>" method="post" class="form-control">
+		<form action="" method="post" class="form-control">
 			<?php wp_nonce_field( 'racketmanager_add-league', 'racketmanager_nonce' ); ?>
 			<input type="hidden" name="event_id" value="<?php echo esc_html( $event_id ); ?>" />
 			<input type="hidden" name="league_id" value="<?php echo esc_html( $league_id ); ?>" />

@@ -16,7 +16,7 @@ namespace Racketmanager;
 <div class="container">
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
-			<a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a> &raquo; <a href="admin.php?page=racketmanager&amp;subpage=show-event&amp;event_id=<?php echo esc_html( $league->event->id ); ?>&amp;season=<?php echo esc_attr( $league->current_season['name'] ); ?>"><?php echo esc_html( $league->event->name ); ?></a> &raquo; <?php echo esc_html( $league->title ); ?>
+			<a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s"><?php echo esc_html( ucfirst( $league->event->competition->type ) ); ?>s</a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $league->event->competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $league->event->competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=event&amp;event_id=<?php echo esc_html( $league->event->id ); ?>&amp;season=<?php echo esc_attr( $league->current_season['name'] ); ?>"><?php echo esc_html( $league->event->name ); ?></a> &raquo; <?php echo esc_html( $league->title ); ?>
 		</div>
 	</div>
 	<h1><?php echo esc_html( $league->title ); ?></h1>
@@ -30,33 +30,41 @@ namespace Racketmanager;
 					<?php } ?>
 				<?php } ?>
 			</div>
-			<?php if ( ! empty( $league->event->seasons ) ) { ?>
+			<?php
+			if ( ! empty( $league->event->seasons ) ) {
+				?>
 				<!-- Season Dropdown -->
 				<div class="col-auto">
 					<form action="admin.php" method="get" class="form-control">
-						<input type="hidden" name="page" value="racketmanager" />
-						<input type="hidden" name="subpage" value="show-league" />
+						<input type="hidden" name="page" value="racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s" />
+						<input type="hidden" name="view" value="league" />
 						<input type="hidden" name="league_id" value="<?php echo esc_html( $league->id ); ?>" />
 						<label for="season" style="vertical-align: middle;"><?php esc_html_e( 'Season', 'racketmanager' ); ?></label>
 						<select size="1" name="season" id="season">
-							<?php foreach ( $league->event->seasons as $season_entry ) { ?>
+							<?php
+							foreach ( $league->event->seasons as $season_entry ) {
+								?>
 								<option value="<?php echo esc_html( $season_entry['name'] ); ?>"
-									<?php
-									if ( strval( $season_entry['name'] ) === $season ) {
-										echo ' selected="selected"';
-									}
-									?>
+								<?php
+								if ( strval( $season_entry['name'] ) === $season ) {
+									echo ' selected="selected"';
+								}
+								?>
 								>
-									<?php echo esc_html( $season_entry['name'] ); ?>
+								<?php echo esc_html( $season_entry['name'] ); ?>
 								</option>
-							<?php } ?>
+								<?php
+							}
+							?>
 						</select>
 						<button class="btn btn-secondary" type="submit">
 							<?php echo esc_html_e( 'Show', 'racketmanager' ); ?>
 						</button>
 					</form>
 				</div>
-			<?php } ?>
+				<?php
+			}
+			?>
 		</div>
 	</div>
 
@@ -94,5 +102,7 @@ namespace Racketmanager;
 				</div>
 			</div>
 		</div>
-	<?php } ?>
+		<?php
+		}
+	?>
 </div>

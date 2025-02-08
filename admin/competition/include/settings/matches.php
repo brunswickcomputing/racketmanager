@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-$tab_name = 'fixtures';
+$tab_name = 'matches';
 ?>
 <div class="form-control">
 	<div class="row gx-3 mb-3">

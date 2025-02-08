@@ -50,6 +50,7 @@ final class RacketManager_Admin_Event extends RacketManager_Admin {
 				$racketmanager->printMessage();
 				return;
 			}
+			$season        = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
 			$tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
 			if ( $tournament_id ) {
 				$tournament = get_tournament( $tournament_id );

@@ -9,9 +9,9 @@ namespace Racketmanager;
 
 ?>
 <form id="matches-filter" method="get">
-	<input type="hidden" name="page" value="racketmanager" />
-	<input type="hidden" name="subpage" value="show-league" />
-	<input type="hidden" name="league_id" value="<?php echo esc_html( $league->id ); ?>" />
+	<input type="hidden" name="page" value="racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s" />
+	<input type="hidden" name="view" value="league" />
+	<input type="hidden" name="league_id" value="<?php echo esc_attr( $league->id ); ?>" />
 	<input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />
 	<?php
 	if ( ! empty( $league->current_season['num_match_days'] ) ) {
@@ -51,9 +51,9 @@ if ( ! empty( $league->current_season['num_match_days'] ) ) {
 	?>
 	<!-- Bulk Editing of Matches -->
 	<form action="admin.php" method="get" style="float: right;">
-		<input type="hidden" name="page" value="racketmanager" />
-		<input type="hidden" name="subpage" value="match" />
-		<input type="hidden" name="league_id" value="<?php echo esc_html( $league->id ); ?>" />
+		<input type="hidden" name="page" value="racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s" />
+		<input type="hidden" name="view" value="match" />
+		<input type="hidden" name="league_id" value="<?php echo esc_attr( $league->id ); ?>" />
 		<input type="hidden" name="season" value="<?php echo esc_html( $league->current_season['name'] ); ?>" />
 		<input type="hidden" name="group" value="<?php echo esc_html( $group ); ?>" />
 		<div class="tablenav">
@@ -78,7 +78,7 @@ if ( ! empty( $league->current_season['num_match_days'] ) ) {
 	<?php
 }
 ?>
-<form id="matches-action" action="admin.php?page=racketmanager&subpage=show-league&league_id=<?php echo esc_html( $league->id ); ?>&season=<?php echo esc_html( $season ); ?>" method="post">
+<form id="matches-action" action="" method="post">
 	<?php wp_nonce_field( 'racketmanager_matches-bulk', 'racketmanager_nonce' ); ?>
 
 	<input type="hidden" name="current_match_day" value="<?php echo esc_html( $match_day ); ?>" />

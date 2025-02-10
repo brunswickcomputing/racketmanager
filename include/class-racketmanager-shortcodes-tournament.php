@@ -28,6 +28,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		add_shortcode( 'tournament-matches', array( &$this, 'show_tournament_matches' ) );
 		add_shortcode( 'tournamentmatch', array( &$this, 'show_tournament_match' ) );
 		add_shortcode( 'orderofplay', array( &$this, 'show_order_of_play' ) );
+		add_shortcode( 'latest-tournament', array( &$this, 'show_latest_tournament' ) );
 	}
 	/**
 	 * Show tournament function
@@ -717,5 +718,39 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 				'order_of_play' => $order_of_play,
 			)
 		);
+	}
+	/**
+	 * Show latest tournament function
+	 *
+	 * @param array $atts function attributes.
+	 * @return string
+	 */
+	public function show_latest_tournament( $atts ) {
+		global $racketmanager, $wp;
+		$args      = shortcode_atts(
+			array(
+				'age_group'  => false,
+				'template'   => '',
+			),
+			$atts
+		);
+		$age_group = $args['age_group'];
+		$template  = $args['template'];
+		if ( isset( $wp->query_vars['age_group'] ) ) {
+			$age_group = get_query_var( 'age_group' );
+		}
+		$tournament_args['active']    = true;
+		$tournament_args['age_group'] = $age_group;
+		$active_tournaments           = $racketmanager->get_tournaments( $tournament_args );
+		if ( $active_tournaments ) {
+			$tournament = $active_tournaments[0];
+			$new_url    = '/tournament/' . seo_url( $tournament->name ) . '/';
+		} elseif ( $age_group ) {
+			$new_url = '/tournaments/' . $age_group . '/';
+		} else {
+			$new_url = '/tournaments/';
+		}
+		echo '<script>location.href = "' . esc_url( $new_url ) . '"</script>';
+		exit;
 	}
 }

@@ -155,6 +155,7 @@ function create_new_url_querystring() {
 	add_rewrite_tag( '%competition%', '(.+?)' );
 	add_rewrite_tag( '%btm%', '([0-9]+)' );
 	add_rewrite_tag( '%invoice%', '([0-9]+)' );
+	add_rewrite_tag( '%age_group%', '(.+?)' );
 }
 add_action( 'init', 'Racketmanager\create_new_url_querystring' );
 

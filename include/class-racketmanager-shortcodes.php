@@ -126,6 +126,7 @@ class RacketManager_Shortcodes {
 				'club'             => '',
 				'competition_id'   => '',
 				'header_level'     => 1,
+				'age_group'        => false,
 			),
 			$atts
 		);
@@ -135,6 +136,7 @@ class RacketManager_Shortcodes {
 		$club_id          = $args['club'];
 		$competition_id   = $args['competition_id'];
 		$header_level     = $args['header_level'];
+		$age_group        = $args['age_group'];
 		if ( isset( $wp->query_vars['club_name'] ) ) {
 			$club_name = str_replace( '-', ' ', get_query_var( 'club_name' ) );
 			$club      = get_club( $club_name, 'shortcode' );
@@ -153,6 +155,9 @@ class RacketManager_Shortcodes {
 				$competition_id = $competition->id;
 			}
 		}
+		if ( isset( $wp->query_vars['age_group'] ) ) {
+			$age_group = get_query_var( 'age_group' );
+		}
 		$matches      = false;
 		$time         = 'latest';
 		$matches      = $racketmanager->get_matches(
@@ -163,6 +168,7 @@ class RacketManager_Shortcodes {
 				'history'          => $days,
 				'club'             => $club_id,
 				'competition_id'   => $competition_id,
+				'age_group'        => $age_group,
 			)
 		);
 		$matches_list = array();
@@ -706,7 +712,6 @@ class RacketManager_Shortcodes {
 			$weekdays     = Racketmanager_Util::get_weekdays();
 
 			$filename = ( ! empty( $template ) ) ? 'entry-cup-' . $template : 'entry-cup';
-
 			return $this->load_template(
 				$filename,
 				array(

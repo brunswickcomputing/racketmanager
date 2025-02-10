@@ -474,6 +474,12 @@ class Racketmanager_Competition {
 	 */
 	public $num_rubbers;
 	/**
+	 * Age group
+	 *
+	 * @var string
+	 */
+	public $age_group;
+	/**
 	 * Retrieve competition instance
 	 *
 	 * @param int    $competition_id competition id.
@@ -504,7 +510,7 @@ class Racketmanager_Competition {
 		if ( ! $competition ) {
 			$competition = $wpdb->get_row(
 				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-				"SELECT `name`, `id`, `type`, `settings`, `seasons` FROM {$wpdb->racketmanager_competitions} WHERE " . $search . ' LIMIT 1'
+				"SELECT `name`, `id`, `type`, `settings`, `seasons`, `age_group` FROM {$wpdb->racketmanager_competitions} WHERE " . $search . ' LIMIT 1'
 			);
 			if ( ! $competition ) {
 				return false;
@@ -838,6 +844,7 @@ class Racketmanager_Competition {
 			$data = end( $this->seasons );
 		}
 		$count_matchdates = isset( $data['match_dates'] ) && is_array( $data['match_dates'] ) ? count( $data['match_dates'] ) : 0;
+		$this->is_complete = false;
 		if ( empty( $data['date_end'] ) && $count_matchdates >= 2 ) {
 			$data['date_end']               = end( $data['match_dates'] );
 			$this->seasons[ $data['name'] ] = $data;

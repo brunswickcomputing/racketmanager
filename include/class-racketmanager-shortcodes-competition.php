@@ -36,13 +36,15 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		global $wp, $racketmanager;
 		$args     = shortcode_atts(
 			array(
-				'type'     => false,
-				'template' => '',
+				'type'      => false,
+				'age_group' => false,
+				'template'  => '',
 			),
 			$atts
 		);
-		$type     = $args['type'];
-		$template = $args['template'];
+		$type      = $args['type'];
+		$age_group = $args['age_group'];
+		$template  = $args['template'];
 		if ( ! $type ) {
 			if ( isset( $_GET['competition_type'] ) && ! empty( $_GET['type'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$type = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['type'] ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -55,9 +57,15 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			$msg = __( 'Competition type not set', 'racketmanager' );
 			return $this->return_error( $msg );
 		}
-		$user_competitions = null;
+		if ( isset( $wp->query_vars['age_group'] ) ) {
+			$age_group = get_query_var( 'age_group' );
+		}
+		$user_competitions       = null;
+		$query_args['type']      = $type;
+		$query_args['age_group'] = $age_group;
+		$query_args['orderby']   = array( 'date' => 'DESC' );
 		if ( 'tournament' === $type ) {
-			$tournaments  = $racketmanager->get_tournaments( array( 'orderby' => array( 'date' => 'DESC' ) ) );
+			$tournaments  = $racketmanager->get_tournaments( $query_args );
 			$competitions = array();
 			foreach ( $tournaments as $tournament ) {
 				$tournament->type     = $type;
@@ -67,15 +75,15 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			if ( is_user_logged_in() ) {
 				$player = get_player( get_current_user_id() );
 				if ( $player ) {
-					$user_competitions = $player->get_tournaments( array( 'type' => $type ) );
+					$user_competitions = $player->get_tournaments( $query_args );
 				}
 			}
 		} else {
-			$competitions = $racketmanager->get_competitions( array( 'type' => $type ) );
+			$competitions = $racketmanager->get_competitions( $query_args );
 			if ( is_user_logged_in() ) {
 				$player = get_player( get_current_user_id() );
 				if ( $player ) {
-					$user_competitions = $player->get_competitions( array( 'type' => $type ) );
+					$user_competitions = $player->get_competitions( $query_args );
 				}
 			}
 		}
@@ -236,7 +244,6 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$player_args['count']     = true;
 		$competition->num_players = $competition->get_players( $player_args );
 		$filename = ( ! empty( $template ) ) ? 'overview-' . $template : 'overview';
-
 		return $this->load_template(
 			$filename,
 			array(

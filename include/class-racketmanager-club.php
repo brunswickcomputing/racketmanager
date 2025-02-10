@@ -1013,7 +1013,7 @@ final class Racketmanager_Club {
 		}
 		$email_to        = $this->match_secretary_name . ' <' . $this->match_secretary_email . '>';
 		$email_from      = $racketmanager->get_confirmation_email( 'cup' );
-		$email_subject   = $racketmanager->site_name . ' - ' . ucfirst( $club_entry->competition->name ) . ' ' . $club_entry->season . ' League Entry - ' . $this->shortcode;
+		$email_subject   = $racketmanager->site_name . ' - ' . ucfirst( $club_entry->competition->name ) . ' ' . $club_entry->season . ' ' . __('Entry', 'racketmanager' ) . ' - ' . $this->shortcode;
 		$headers         = array();
 		$secretary_email = __( 'Cup Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
 		$headers[]       = 'From: ' . $secretary_email;

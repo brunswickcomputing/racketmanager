@@ -680,48 +680,18 @@ class Racketmanager_Competition {
 			$mode       = 'championship';
 			$entry_type = 'player';
 		}
-		if ( 'championship' === $mode ) {
-			$ranking   = 'manual';
-			$standings = array(
-				'pld'  => 1,
-				'won'  => 1,
-				'tie'  => 1,
-				'lost' => 1,
-			);
-		} else {
-			$ranking   = 'auto';
-			$standings = array(
-				'pld'  => 0,
-				'won'  => 0,
-				'tie'  => 0,
-				'lost' => 0,
-			);
-		}
 		$settings = array(
-			'sport'                    => 'tennis',
-			'point_rule'               => 'tennis',
-			'point_format'             => '%s',
-			'point_format2'            => '%s',
-			'team_ranking'             => $ranking,
-			'mode'                     => $mode,
-			'entry_type'               => $entry_type,
-			'default_match_start_time' => array(
-				'hour'    => 19,
-				'minutes' => 30,
-			),
-			'standings'                => $standings,
-			'num_ascend'               => '',
-			'num_descend'              => '',
-			'num_relegation'           => '',
-			'num_matches_per_page'     => 10,
+			'mode'       => $mode,
+			'entry_type' => $entry_type,
 		);
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"INSERT INTO {$wpdb->racketmanager_competitions} (`name`, `type`, `settings` ) VALUES (%s, %s, %s)",
+				"INSERT INTO {$wpdb->racketmanager_competitions} (`name`, `type`, `settings`, `age_group` ) VALUES (%s, %s, %s, %s)",
 				$competition->name,
 				$competition->type,
 				maybe_serialize( $settings ),
+				$competition->age_group,
 			)
 		);
 		$competition->id = $wpdb->insert_id;

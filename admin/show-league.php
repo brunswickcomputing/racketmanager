@@ -24,11 +24,15 @@ namespace Racketmanager;
 	<div>
 		<div class="row justify-content-between">
 			<div class="col-auto">
-				<?php foreach ( $this->get_menu() as $key => $menu_item ) { ?>
-					<?php if ( isset( $menu_item['show'] ) && $menu_item['show'] ) { ?>
-						<a class="btn btn-secondary" href="admin.php?page=racketmanager&amp;subpage=<?php echo esc_html( $key ); ?>&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>&amp;group=<?php echo esc_html( $group ); ?>"><?php echo esc_html( $menu_item['title'] ); ?></a>
-					<?php } ?>
-				<?php } ?>
+				<?php
+				foreach ( $this->get_menu() as $key => $menu_item ) {
+					if ( isset( $menu_item['show'] ) && $menu_item['show'] ) {
+						?>
+						<a class="btn btn-secondary" href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=<?php echo esc_html( $key ); ?>&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>&amp;group=<?php echo esc_html( $group ); ?>"><?php echo esc_html( $menu_item['title'] ); ?></a>
+						<?php
+					}
+				}
+				?>
 			</div>
 			<?php
 			if ( ! empty( $league->event->seasons ) ) {

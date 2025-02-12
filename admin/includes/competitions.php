@@ -63,6 +63,11 @@ $page_name                      = isset( $_GET['page'] ) ? sanitize_text_field( 
 			<tbody>
 				<?php
 				foreach ( $competitions as $competition ) {
+					if ( 'tournament' === $competition->type ) {
+						$page_link = 'config';
+					} else {
+						$page_link = 'seasons';
+					}
 					?>
 					<tr>
 						<td class="check-column">
@@ -72,7 +77,7 @@ $page_name                      = isset( $_GET['page'] ) ? sanitize_text_field( 
 							<?php echo esc_html( $competition->id ); ?>
 						</td>
 						<td class="">
-							<a href="admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=config&amp;competition_id=<?php echo esc_html( $competition->id ); ?>">
+							<a href="admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=<?php echo esc_attr( $page_link ); ?>&amp;competition_id=<?php echo esc_html( $competition->id ); ?>">
 								<?php echo esc_html( $competition->name ); ?>
 							</a>
 						</td>

@@ -1586,7 +1586,7 @@ class Racketmanager_League {
 	 * @param string     $profile profile.
 	 * @return int $table_id
 	 */
-	public function add_team( $team_id, $season, $rank = null, $status = null, $profile = null ) {
+	public function add_team( $team_id, $season, $rank = null, $status = null, $profile = 1 ) {
 		global $wpdb, $racketmanager;
 		$error = false;
 		if ( ! is_numeric( $team_id ) ) {
@@ -1622,10 +1622,11 @@ class Racketmanager_League {
 				$result = $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 					$wpdb->prepare(
 						// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-						"INSERT INTO {$wpdb->racketmanager_table} (`team_id`, `season`, `league_id`) VALUES (%d, %s, %d)",
+						"INSERT INTO {$wpdb->racketmanager_table} (`team_id`, `season`, `league_id`, `profile`) VALUES (%d, %s, %d, %d)",
 						$team_id,
 						$season,
-						$this->id
+						$this->id,
+						$profile
 					)
 				);
 			} else {

@@ -116,7 +116,7 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
 					<th scope="col" class="column-num"><?php esc_html_e( 'Previous Rank', 'racketmanager' ); ?></th>
 					<th scope="col" class="column-num"><?php esc_html_e( 'Rank', 'racketmanager' ); ?></th>
 					<th scope="col" class="column-num"><?php esc_html_e( 'Points', 'racketmanager' ); ?></th>
-					<th scope="col" class="column-num"><?php esc_html_e( '+/- Points', 'racketmanager' ); ?></th>
+					<th scope="col" class="column-num"><?php esc_html_e( 'Rating', 'racketmanager' ); ?></th>
 					<th scope="col"><?php esc_html_e( 'Entered', 'racketmanager' ); ?></th>
 				</tr>
 			</thead>
@@ -171,8 +171,8 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
 								<input type="hidden" name="points_plus[<?php echo esc_html( $team->table_id ); ?>]" value=<?php echo esc_html( $team->points_plus ); ?> />
 							</td>
 							<td class="column-num">
-									<?php echo esc_html( $team->add_points ); ?>
-								<input type="hidden" name="add_points[<?php echo esc_html( $team->table_id ); ?>]" value=<?php echo esc_html( $team->add_points ); ?> />
+									<?php echo esc_html( $team->rating ); ?>
+								<input type="hidden" name="rating[<?php echo esc_html( $team->table_id ); ?>]" value=<?php echo esc_html( $team->rating ); ?> />
 							</td>
 							<td>
 								<select size=1 name="profile[<?php echo esc_html( $team->table_id ); ?>]">

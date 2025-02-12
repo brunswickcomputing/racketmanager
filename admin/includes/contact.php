@@ -18,14 +18,22 @@ jQuery(document).ready(function(){
 		<div class="col-auto racketmanager_breadcrumb">
 			<?php
 			if ( empty( $competition ) ) {
-				$entry_type = $league->event->competition->entry_type;
+				$entry_type   = $league->event->competition->entry_type;
+				$action_link  = 'admin.php?page=racketmanager-' . $league->event->competition->type . 's&amp;view=league&' . $object_name . '=' . $object_id . '&amp;season=' . $season;
+				$preview_link = 'admin.php?page=racketmanager-' . $league->event->competition->type . 's&amp;view=contact&' . $object_name . '=' . $object_id . '&amp;season=' . $season;
 				?>
-				<a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a> &raquo; <a href="admin.php?page=racketmanager&amp;subpage=show-event&amp;event_id=<?php echo esc_html( $league->event->id ); ?>"><?php echo esc_html( $league->event->name ); ?></a> &raquo; <a href="admin.php?page=racketmanager&amp;subpage=show-league&league_id=<?php echo esc_html( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a> &raquo; <?php esc_html_e( 'Contact', 'racketmanager' ); ?>
+				<a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s"><?php echo esc_html( ucfirst( $league->event->competition->type ) ); ?>s</a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a>
+				&raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $league->event->competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $league->event->competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a>
+				&raquo; <a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=event&amp;event_id=<?php echo esc_html( $league->event->id ); ?>&amp;season=<?php echo esc_attr( $league->current_season['name'] ); ?>"><?php echo esc_html( $league->event->name ); ?></a>
+				&raquo; <a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=league&league_id=<?php echo esc_html( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a>
+				&raquo; <?php esc_html_e( 'Contact', 'racketmanager' ); ?>
 				<?php
 			} else {
-				$entry_type = $competition->entry_type;
+				$entry_type   = $competition->entry_type;
+				$action_link  = 'admin.php?page=racketmanager-' . $competition->type . 's&amp;view=overview&' . $object_name . '=' . $object_id . '&amp;season=' . $season;
+				$preview_link = 'admin.php?page=racketmanager-' . $competition->type . 's&amp;view=contact&' . $object_name . '=' . $object_id . '&amp;season=' . $season;
 				?>
-				<a href="admin.php?page=racketmanager&amp;subpage=show-competition&amp;competition_id=<?php echo esc_html( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <?php esc_html_e( 'Contact', 'racketmanager' ); ?>
+				<a href="admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s"><?php echo esc_html( ucfirst( $competition->type ) ); ?>s</a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_html( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $lcompetition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <?php esc_html_e( 'Contact', 'racketmanager' ); ?>
 				<?php
 			}
 			?>
@@ -55,7 +63,7 @@ jQuery(document).ready(function(){
 	<!-- Tab panes -->
 	<div class="tab-content">
 		<div id="compose" class="tab-pane table-pane active show fade" role="tabpanel" aria-labelledby="compose">
-			<form class="g-3 mt-3 form-control" action="admin.php?page=racketmanager&amp;subpage=contact&<?php echo esc_attr( $object_name ); ?>=<?php echo esc_attr( $object_id ); ?>&amp;season=<?php echo esc_html( $season ); ?>" method="post" enctype="multipart/form-data" name="teams_contact">
+			<form class="g-3 mt-3 form-control" action="<?php echo esc_attr( $preview_link ); ?>" method="post" enctype="multipart/form-data" name="teams_contact">
 				<?php wp_nonce_field( 'racketmanager_contact-teams', 'racketmanager_nonce' ); ?>
 				<input type="hidden" name="<?php echo esc_attr( $object_name ); ?>" value="<?php echo esc_html( $object_id ); ?>" />
 				<input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />
@@ -87,7 +95,7 @@ jQuery(document).ready(function(){
 					<button class="btn btn-primary" name="contactTeamPreview">
 						<?php esc_html_e( 'Preview', 'racketmanager' ); ?>
 					</button>
-					<a href="admin.php?page=racketmanager&amp;subpage=show-<?php echo esc_attr( $object_type ); ?>&<?php echo esc_attr( $object_name ); ?>=<?php echo esc_attr( $object_id ); ?>&amp;season=<?php echo esc_html( $season ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></a>
+					<a href="<?php echo esc_attr( $preview_link ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></a>
 				</div>
 			</form>
 		</div>
@@ -102,12 +110,16 @@ jQuery(document).ready(function(){
 			if ( $email_message ) {
 				?>
 				<iframe id="iframeMsg" title="<?php esc_html_e( 'Email message', 'racketmanager' ); ?>" onload='setIframeHeight(this.id)' style="height:200px;width:100%;border:none;overflow:hidden;" srcdoc='<?php echo $email_message; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>'></iframe>
-			<?php } else { ?>
+				<?php
+			} else {
+				?>
 				<div class="mt-3 mb-3">
 					<?php esc_html_e( 'No message to preview', 'racketmanager' ); ?>
 				</div>
-			<?php } ?>
-			<form class="g-3 form-control" action="admin.php?page=racketmanager&amp;subpage=show-<?php echo esc_attr( $object_type ); ?>&<?php echo esc_attr( $object_name ); ?>=<?php echo esc_html( $object_id ); ?>&amp;season=<?php echo esc_html( $season ); ?>" method="post" enctype="multipart/form-data" name="teams_contact">
+				<?php
+			}
+			?>
+			<form class="g-3 form-control" action="<?php echo esc_attr( $action_link ); ?>" method="post" enctype="multipart/form-data" name="teams_contact">
 				<?php wp_nonce_field( 'racketmanager_contact-teams-preview', 'racketmanager_nonce' ); ?>
 				<input type="hidden" name="<?php echo esc_html( $object_name ); ?>" value="<?php echo esc_html( $object_id ); ?>" />
 				<input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />

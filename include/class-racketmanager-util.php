@@ -873,6 +873,18 @@ class Racketmanager_Util {
 		return empty( $age_limits[ $age_limit ] ) ? __( 'Open', 'racketmanager' ) : $age_limits[ $age_limit ];
 	}
 	/**
+	 * Get age groups function
+	 *
+	 * @return array
+	 */
+	public static function get_age_groups() {
+		$age_groups           = array();
+		$age_groups['open']   = __( 'Open', 'racketmanager' );
+		$age_groups['junior'] = __( 'Junior', 'racketmanager' );
+		$age_groups['senior'] = __( 'Senior', 'racketmanager' );
+		return $age_groups;
+	}
+	/**
 	 * Amend date function
 	 *
 	 * @param string $date date.

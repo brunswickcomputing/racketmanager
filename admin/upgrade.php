@@ -1340,8 +1340,8 @@ function racketmanager_upgrade() {
 			}
 		}
 	}
-	if ( version_compare( $installed, '8.35.1', '<' ) ) {
-		echo esc_html__( 'starting 8.35.1 upgrade', 'racketmanager' ) . "<br />\n";
+	if ( version_compare( $installed, '8.36.0', '<' ) ) {
+		echo esc_html__( 'starting 8.36.0 upgrade', 'racketmanager' ) . "<br />\n";
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_competitions} ADD `age_group` VARCHAR( 10 ) NULL AFTER `type`" );
 		$competitions = $racketmanager->get_competitions();
 		foreach ( $competitions as $competition ) {

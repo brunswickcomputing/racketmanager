@@ -93,7 +93,7 @@ $tab_name = 'display';
 					$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
 				}
 				?>
-				<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_matches_per_page" id="num_matches_per_page" value="<?php echo esc_html( $competition->config->num_matches_per_page ); ?>" />
+				<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_matches_per_page" id="num_matches_per_page" value="<?php echo isset( $competition->config->num_matches_per_page ) ? esc_html( $competition->config->num_matches_per_page ) : null; ?>" />
 				<label for="num_matches_per_page"><?php esc_html_e( 'Matches per page', 'racketmanager' ); ?></label>
 				<?php
 				if ( $is_invalid ) {

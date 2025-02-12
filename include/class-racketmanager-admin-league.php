@@ -106,56 +106,6 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 		}
 	}
 	/**
-	 * Display cup draw
-	 */
-	public function display_cup_draw_page() {
-		global $tab, $racketmanager;
-		//phpcs:disable WordPress.Security.NonceVerification.Recommended
-		$season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-		$competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$league_id      = isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null;
-		//phpcs:enable WordPress.Security.NonceVerification.Recommended
-		if ( $competition_id ) {
-			$competition = get_competition( $competition_id );
-			if ( $competition ) {
-				if ( $league_id ) {
-					$league = get_league( $league_id );
-					if ( $league ) {
-						$this->handle_league_teams_action( $league );
-						if ( isset( $_POST['updateLeague'] ) && 'match' === $_POST['updateLeague'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-							$this->manage_matches_in_league( $league );
-							$racketmanager->printMessage();
-							$tab = 'matches'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-						} elseif ( isset( $_POST['action'] ) && 'addTeamsToLeague' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-							$this->league_add_teams( $league );
-							if ( $league->is_championship ) {
-								$tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-							}
-							$racketmanager->printMessage();
-						} else {
-							$tab = $league->championship->handle_admin_page( $league, $season ); //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-							if ( isset( $_POST['saveRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-								$this->league_manual_rank_teams( $league );
-								$racketmanager->printMessage();
-								$tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-							} elseif ( isset( $_POST['randomRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-								$this->league_random_rank_teams( $league );
-								$racketmanager->printMessage();
-								$tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-							} elseif ( isset( $_POST['ratingPointsRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-								$this->league_rating_points_rank_teams( $league );
-								$tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-							} elseif ( empty( $tab ) ) {
-								$tab = 'finalresults'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-							}
-						}
-						require RACKETMANAGER_PATH . 'admin/cup/draw.php';
-					}
-				}
-			}
-		}
-	}
-	/**
 	 * Display setup
 	 */
 	public function display_setup_page() {
@@ -223,59 +173,142 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 		}
 	}
 	/**
-	 * Display cup event setup
+	 * Display league page
 	 */
-	public function display_cup_setup_event_page() {
-		global $racketmanager;
-		if ( ! current_user_can( 'edit_matches' ) ) {
-			$racketmanager->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
-			$racketmanager->printMessage();
+	public function display_league_page() {
+		global $league, $championship, $competition;
+
+		if ( ! current_user_can( 'view_leagues' ) ) {
+			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
+			$this->printMessage();
 		} else {
-			if ( isset( $_POST['action'] ) ) {
-				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add_championship-matches' ) ) {
-					$racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-					$racketmanager->printMessage();
-				} else {
-					$valid     = true;
-					$action    = isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) : null;
-					$league_id = isset( $_POST['league_id'] ) ? intval( $_POST['league_id'] ) : null;
-					$season    = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-					$rounds    = isset( $_POST['rounds'] ) ? $_POST['rounds'] : null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-					$league    = get_league( $league_id );
-					if ( $league ) {
-						$valid = $this->set_championship_matches( $league, $season, $rounds, $action );
-					}
+			$league_id = isset( $_GET['league_id'] ) ? intval( $_GET['league_id'] ) : null;
+			if ( $league_id ) {
+				$league = get_league( $league_id );
+				if ( $league ) {
+					
 				}
 			}
-			$season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-			$competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
-			$league_id      = isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null;
-			//phpcs:enable WordPress.Security.NonceVerification.Recommended
-			if ( $competition_id ) {
-				$competition = get_competition( $competition_id );
-				if ( $competition ) {
-					if ( $league_id ) {
-						$league = get_league( $league_id );
-						if ( $league ) {
-							$match_count = $league->get_matches(
-								array(
-									'count' => true,
-									'final' => 'all',
-								)
-							);
-							$tab         = 'matches';
-							if ( empty( $league->seasons[ $season ]['rounds'] ) ) {
-								$match_dates = empty( $league->event->seasons[ $season ]['match_dates'] ) ? $league->event->competition->seasons[ $season ]['match_dates'] : $league->event->seasons[ $season ]['match_dates'];
-							} else {
-								foreach ( array_reverse( $league->seasons[ $season ]['rounds'] ) as $round ) {
-									$match_dates[] = $round->date;
-								}
-							}
-							require RACKETMANAGER_PATH . 'admin/cup/setup.php';
-						}
-					}
+			$league    = get_league();
+			$league_id = $league->id;
+			$league->set_season();
+			$season      = $league->get_season();
+			$league_mode = ( isset( $league->event->competition->mode ) ? ( $league->event->competition->mode ) : '' );
+			$tab         = 'standings';
+			$match_day   = false;
+			// phpcs:disable WordPress.Security.NonceVerification.Missing
+			if ( isset( $_POST['doaction'] ) ) {
+				$this->handle_league_teams_action( $league );
+			} elseif ( isset( $_POST['delmatches'] ) ) {
+				$this->delete_matches_from_league();
+				$tab = 'matches';
+			} elseif ( isset( $_POST['updateLeague'] ) && 'team' === $_POST['updateLeague'] ) {
+				$this->league_manage_team( $league );
+				if ( $league->is_championship ) {
+					$tab = 'preliminary';
 				}
+			} elseif ( isset( $_POST['updateLeague'] ) && 'teamPlayer' === $_POST['updateLeague'] ) {
+				$this->add_player_team_to_league( $league );
+				if ( $league->is_championship ) {
+					$tab = 'preliminary';
+				}
+			} elseif ( isset( $_POST['updateLeague'] ) && 'match' === $_POST['updateLeague'] ) {
+				$this->manage_matches_in_league( $league );
+			} elseif ( isset( $_POST['updateLeague'] ) && 'results' === $_POST['updateLeague'] ) {
+				$this->update_results_in_league();
+				$tab = 'matches';
+			} elseif ( isset( $_POST['updateLeague'] ) && 'teams_manual' === $_POST['updateLeague'] ) {
+				$this->league_manual_rank( $league );
+			} elseif ( isset( $_POST['action'] ) && 'addTeamsToLeague' === $_POST['action'] ) {
+				$this->league_add_teams( $league );
+				if ( $league->is_championship ) {
+					$tab = 'preliminary';
+				}
+			} elseif ( isset( $_POST['contactTeam'] ) ) {
+				$this->league_contact_teams();
+				$tab = 'standings';
+			} elseif ( isset( $_POST['saveRanking'] ) ) {
+				$this->league_manual_rank_teams( $league );
+				$tab = 'standings';
+			} elseif ( isset( $_POST['randomRanking'] ) ) {
+				$this->league_random_rank_teams( $league );
+				$tab = 'standings';
+			} elseif ( isset( $_POST['ratingPointsRanking'] ) ) {
+				$this->league_rating_points_rank_teams( $league );
+				$tab = 'standings';
 			}
+			$this->printMessage();
+			// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+			// check if league is a cup championship.
+			$cup = ( 'championship' === $league_mode ) ? true : false;
+			// phpcs:disable WordPress.Security.NonceVerification.Recommended
+			$group     = isset( $_GET['group'] ) ? sanitize_text_field( wp_unslash( $_GET['group'] ) ) : '';
+			$team_id   = isset( $_GET['team_id'] ) ? intval( $_GET['team_id'] ) : false;
+			$match_day = false;
+			if ( isset( $_GET['match_day'] ) ) {
+				if ( -1 !== $_GET['match_day'] ) {
+					$match_day = intval( $_GET['match_day'] );
+					$league->set_match_day( $match_day );
+				}
+				$tab = 'matches';
+			} elseif ( 'current_match_day' === $league->match_display ) {
+					$league->set_match_day( 'current' );
+			} elseif ( 'all' === $league->match_display ) {
+				$league->set_match_day( -1 );
+			}
+			// phpcs:enable WordPress.Security.NonceVerification.Recommended
+			$options    = $this->options;
+			$match_args = array(
+				'final' => '',
+				'cache' => false,
+			);
+			if ( $season ) {
+				$match_args['season'] = $season;
+			}
+			if ( $group ) {
+				$match_args['group'] = $group;
+			}
+			if ( $team_id ) {
+				$match_args['team_id'] = $team_id;
+			}
+			if ( intval( $league->num_matches_per_page ) > 0 ) {
+				$match_args['limit'] = intval( $league->num_matches_per_page );
+			}
+			if ( empty( $league->event->seasons ) ) {
+				$this->set_message( __( 'You need to add at least one season for the competition', 'racketmanager' ), true );
+				$this->printMessage();
+			}
+			$teams = $league->get_league_teams(
+				array(
+					'season' => $season,
+					'cache'  => false,
+				)
+			);
+			if ( 'championship' !== $league_mode ) {
+				$match_args['reset_query_args'] = true;
+				$matches                        = $league->get_matches( $match_args );
+				$league->set_num_matches();
+			}
+			if ( isset( $_GET['match_paged'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$tab = 'matches';
+			}
+			if ( isset( $_GET['standingstable'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$get       = sanitize_text_field( wp_unslash( $_GET['standingstable'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$match_day = false;
+				$mode      = 'all';
+				if ( preg_match( '/match_day-\d/', $get, $hits ) ) {
+					$res       = explode( '-', $hits[0] );
+					$match_day = $res[1];
+				} elseif ( in_array( $get, array( 'home', 'away' ), true ) ) {
+					$mode = htmlspecialchars( $get );
+				}
+				$teams = $league->get_standings( $teams, $match_day, $mode );
+			}
+			if ( isset( $_GET['match_day'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$tab = 'matches';
+			}
+			include_once RACKETMANAGER_PATH . '/admin/show-league.php';
 		}
 	}
 	/**
@@ -363,6 +396,21 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 				$tab = 'constitution';
 				$this->generate_box_league_matches();
 				$this->printMessage();
+			} elseif ( isset( $_POST['rank'] ) ) {
+				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_calculate_ratings' ) ) {
+					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+					$this->printMessage();
+				} else {
+					$valid          = true;
+					$competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
+					$season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+					$competition    = get_competition( $competition_id );
+					if ( $competition && $season ) {
+						$racketmanager->calculate_cup_ratings( $competition->id, $season );
+					}
+					$this->set_message( __( 'League ratings set', 'racketmanager' ) );
+					$this->printMessage();
+				}
 			}
 			if ( ! isset( $season ) ) {
 				$event_season = isset( $event->current_season['name'] ) ? $event->current_season['name'] : '';
@@ -418,141 +466,6 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 				$season       = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $event_season );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			}
 			include_once RACKETMANAGER_PATH . 'admin/league/show-schedule.php';
-		}
-	}
-	/**
-	 * Display cup matches page
-	 */
-	public function display_cup_matches_page() {
-		global $competition;
-		if ( ! current_user_can( 'edit_matches' ) ) {
-			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
-			$this->printMessage();
-		} else {
-			//phpcs:disable WordPress.Security.NonceVerification.Recommended
-			$finalkey       = isset( $_GET['final'] ) ? intval( $_GET['final'] ) : null;
-			$season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-			$competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
-			$league_id      = isset( $_GET['league_id'] ) ? intval( $_GET['league_id'] ) : null;
-			$finalkey       = isset( $_GET['final'] ) ? sanitize_text_field( wp_unslash( $_GET['final'] ) ) : null;
-			//phpcs:enable WordPress.Security.NonceVerification.Recommended
-			if ( $competition_id ) {
-				$competition = get_competition( $competition_id );
-				if ( $competition ) {
-					if ( $league_id ) {
-						$league = get_league( $league_id );
-						if ( $league ) {
-							$is_finals       = false;
-							$single_cup_game = false;
-							$bulk            = false;
-							$matches         = array();
-							if ( $finalkey ) {
-								$is_finals = true;
-								$mode      = 'edit';
-								$edit      = true;
-
-								$final           = $league->championship->get_finals( $finalkey );
-								$num_first_round = $league->championship->num_teams_first_round;
-
-								$max_matches = $final['num_matches'];
-
-								/* translators: %s: round name */
-								$form_title = sprintf( __( 'Edit Matches - %s', 'racketmanager' ), $league->championship->get_final_name( $finalkey ) );
-								$match_args = array(
-									'final'   => $finalkey,
-									'orderby' => array(
-										'id' => 'ASC',
-									),
-								);
-								if ( 'final' !== $finalkey && ! empty( $league->current_season['home_away'] ) && 'true' === $league->current_season['home_away'] ) {
-									$match_args['leg'] = 1;
-								}
-								$matches      = $league->get_matches( $match_args );
-								$teams        = $league->championship->get_final_teams( $finalkey );
-								$submit_title = $form_title;
-							}
-							//phpcs:enable WordPress.Security.NonceVerification.Recommended
-							include_once RACKETMANAGER_PATH . '/admin/includes/match.php';
-						}
-					}
-				}
-			}
-		}
-	}
-	/**
-	 * Display cup match page
-	 */
-	public function display_cup_match_page() {
-		if ( ! current_user_can( 'edit_matches' ) ) {
-			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
-			$this->printMessage();
-		} else {
-			//phpcs:disable WordPress.Security.NonceVerification.Recommended
-			$finalkey       = isset( $_GET['final'] ) ? intval( $_GET['final'] ) : null;
-			$season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-			$competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
-			$league_id      = isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null;
-			$finalkey       = isset( $_GET['final'] ) ? sanitize_text_field( wp_unslash( $_GET['final'] ) ) : null;
-			$match_id       = isset( $_GET['edit'] ) ? intval( $_GET['edit'] ) : null;
-			//phpcs:enable WordPress.Security.NonceVerification.Recommended
-			if ( $competition_id ) {
-				$competition = get_competition( $competition_id );
-				if ( $competition ) {
-					$is_finals = true;
-					if ( $league_id ) {
-						$league = get_league( $league_id );
-						if ( $league ) {
-							if ( $match_id ) {
-								$match = get_match( $match_id );
-								if ( $match ) {
-									$single_cup_game = true;
-									$bulk            = false;
-									$mode            = 'edit';
-									$edit            = true;
-									$form_title      = __( 'Edit Match', 'racketmanager' );
-									$submit_title    = $form_title;
-									$matches[0]      = $match;
-									$match_day       = $match->match_day;
-									$max_matches     = 1;
-									$final           = $league->championship->get_finals( $finalkey );
-									$final_teams     = $league->championship->get_final_teams( $final['key'], 'ARRAY' );
-									if ( is_numeric( $match->home_team ) ) {
-										$home_team = get_team( $match->home_team );
-										if ( $home_team ) {
-											$home_title = $home_team->title;
-										} else {
-											$home_title = null;
-										}
-									} else {
-										$home_team = $final_teams[ $match->home_team ];
-										if ( $home_team ) {
-											$home_title = $home_team->title;
-										} else {
-											$home_title = null;
-										}
-									}
-									if ( is_numeric( $match->away_team ) ) {
-										$away_team = get_team( $match->away_team );
-										if ( $away_team ) {
-											$away_title = $away_team->title;
-										} else {
-											$away_title = null;
-										}
-									} else {
-										$away_team = $final_teams[ $match->away_team ];
-										if ( $away_team ) {
-											$away_title = $away_team->title;
-										} else {
-											$away_title = null;
-										}
-									}
-									include_once RACKETMANAGER_PATH . '/admin/includes/match.php';
-								}
-							}
-						}
-					}
-				}
-			}
 		}
 	}
 	/**

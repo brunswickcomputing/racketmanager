@@ -135,7 +135,40 @@ $tab_name = 'general';
 		</div>
 	</div>
 	<div class="row gx-3">
-		<div class="col-md-6 mb-3">
+		<div class="col-md-4 mb-3">
+			<div class="form-floating">
+				<?php
+				$age_groups = Racketmanager_Util::get_age_groups();
+				if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'age_group', $racketmanager->error_fields, true ) ) ) {
+					$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
+					$is_invalid = true;
+					$msg_id     = array_search( 'age_group', $racketmanager->error_fields, true );
+					$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+				}
+				?>
+				<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="age_group" id="age_group" >
+					<option disabled <?php selected( null, empty( $competition->config->age_group ) ? null : $competition->config->age_group ); ?>><?php esc_html_e( 'Select age group', 'racketmanager' ); ?></option>
+					<?php
+					foreach ( $age_groups as $age_group => $age_group_desc ) {
+						?>
+						<option value="<?php echo esc_html( $age_group ); ?>" <?php selected( $age_group, empty( $competition->config->age_group ) ? null : $competition->config->age_group ); ?>><?php echo esc_html( $age_group_desc ); ?></option>
+						<?php
+					}
+					?>
+				</select>
+				<label for="age_group"><?php esc_html_e( 'Age Group', 'racketmanager' ); ?></label>
+				<?php
+				if ( $is_invalid ) {
+					?>
+					<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+					<?php
+					$is_invalid = false;
+					$msg        = null;
+				}
+				?>
+			</div>	
+		</div>
+		<div class="col-md-4 mb-3">
 			<div class="form-floating">
 				<?php
 				if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'competition_code', $racketmanager->error_fields, true ) ) ) {
@@ -156,9 +189,9 @@ $tab_name = 'general';
 					$msg        = null;
 				}
 				?>
-			</div>	
+			</div>
 		</div>
-		<div class="col-md-6">
+		<div class="col-md-4">
 			<div class="form-floating">
 				<?php
 				$grades = Racketmanager_Util::get_event_grades();

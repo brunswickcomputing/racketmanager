@@ -45,6 +45,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 					$tournament = get_tournament( $tournament );
 				}
 				$competition->config = (object) $competition->settings;
+				$competition->config->age_group = $competition->age_group;
 				if ( isset( $_POST['updateCompetitionConfig'] ) ) {
 					if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-competition-config' ) ) {
 						$racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
@@ -60,6 +61,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 							$config->type                     = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : null;
 							$config->mode                     = isset( $_POST['mode'] ) ? sanitize_text_field( wp_unslash( $_POST['mode'] ) ) : null;
 							$config->entry_type               = isset( $_POST['entry_type'] ) ? sanitize_text_field( wp_unslash( $_POST['entry_type'] ) ) : null;
+							$config->age_group                = isset( $_POST['age_group'] ) ? sanitize_text_field( wp_unslash( $_POST['age_group'] ) ) : null;
 							$config->competition_code         = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
 							$config->grade                    = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
 							$config->max_teams                = isset( $_POST['max_teams'] ) ? intval( $_POST['max_teams'] ) : null;

@@ -515,9 +515,10 @@ class Racketmanager_Competition {
 			if ( ! $competition ) {
 				return false;
 			}
-			$competition->settings         = (array) maybe_unserialize( $competition->settings );
-			$competition->settings['type'] = $competition->type;
-			$competition                   = (object) ( $competition->settings + (array) $competition );
+			$competition->settings              = (array) maybe_unserialize( $competition->settings );
+			$competition->settings['type']      = $competition->type;
+			$competition->settings['age_group'] = $competition->age_group;
+			$competition                        = (object) ( $competition->settings + (array) $competition );
 			// check if specific sports class exists.
 			if ( ! isset( $competition->sport ) ) {
 				$competition->sport = '';
@@ -1976,6 +1977,10 @@ class Racketmanager_Competition {
 			$racketmanager->error_messages[] = __( 'Entry type must be set', 'racketmanager' );
 			$racketmanager->error_fields[]   = 'entry_type';
 		}
+		if ( empty( $config->age_group ) ) {
+			$racketmanager->error_messages[] = __( 'Age group must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'age_group';
+		}
 		if ( empty( $config->grade ) ) {
 			$racketmanager->error_messages[] = __( 'Grade must be set', 'racketmanager' );
 			$racketmanager->error_fields[]   = 'grade';
@@ -2089,10 +2094,14 @@ class Racketmanager_Competition {
 				$updates = true;
 			}
 			$settings->mode = $config->mode;
-			if ( empty( $this->competition_code ) || $this->competition_code !== $config->competition_code ) {
+			if ( empty( $this->grade ) || $this->grade !== $config->grade ) {
 				$updates = true;
 			}
-			$settings->competition_code = $config->competition_code;
+			$settings->grade = $config->grade;
+			if ( empty( $this->age_group ) || $this->age_group !== $config->age_group ) {
+				$updates = true;
+			}
+			$this->age_group = $config->age_group;
 			if ( empty( $this->grade ) || $this->grade !== $config->grade ) {
 				$updates = true;
 			}
@@ -2210,10 +2219,11 @@ class Racketmanager_Competition {
 		global $wpdb;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_competitions} SET `name` = %s, `type` = %s, `settings` = %s WHERE `id` = %d",
+				"UPDATE {$wpdb->racketmanager_competitions} SET `name` = %s, `type` = %s, `settings` = %s, `age_group` = %s WHERE `id` = %d",
 				$this->name,
 				$this->type,
 				maybe_serialize( $this->settings ),
+				$this->age_group,
 				$this->id
 			)
 		);

@@ -9,6 +9,7 @@ namespace Racketmanager;
 
 $seasons      = $this->get_seasons( 'DESC' );
 $competitions = $this->get_competitions( array( 'type' => 'tournament' ) );
+$age_groups   = Racketmanager_Util::get_age_groups();
 ?>
 <div class="container">
 	<h1><?php esc_html_e( 'Tournaments', 'racketmanager' ); ?></h1>
@@ -27,12 +28,22 @@ $competitions = $this->get_competitions( array( 'type' => 'tournament' ) );
 						}
 						?>
 					</select>
-					<select class="form-select-1" size="1" name="competition" id="competition">
+					<select class="form-select-1" name="competition" id="competition">
 						<option value=""><?php esc_html_e( 'All competitions', 'racketmanager' ); ?></option>
 						<?php
 						foreach ( $competitions as $competition ) {
 							?>
 							<option value="<?php echo esc_html( $competition->id ); ?>" <?php selected( $competition->id, $competition_select ); ?>><?php echo esc_html( $competition->name ); ?></option>
+							<?php
+						}
+						?>
+					</select>
+					<select class="form-select-1" name="age_group" id="age_group">
+						<option value=""><?php esc_html_e( 'All age groups', 'racketmanager' ); ?></option>
+						<?php
+						foreach ( $age_groups as $age_group => $age_group_desc ) {
+							?>
+							<option value="<?php echo esc_attr( $age_group ); ?>" <?php selected( $age_group, $age_group_select ); ?>><?php echo esc_html( $age_group_desc ); ?></option>
 							<?php
 						}
 						?>

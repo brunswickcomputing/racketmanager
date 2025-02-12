@@ -628,7 +628,7 @@ class RacketManager_Admin extends RacketManager {
 	 * Show RacketManager index page
 	 */
 	private function display_index_page() {
-		global $competition, $club;
+		global $racketmanager, $competition, $club;
 
 		if ( ! current_user_can( 'view_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
@@ -639,6 +639,7 @@ class RacketManager_Admin extends RacketManager {
 			if ( $club_id ) {
 				$club = get_club( $club_id );
 			}
+			$is_invalid = false;
 			if ( isset( $_POST['addCompetition'] ) ) {
 				if ( current_user_can( 'edit_leagues' ) ) {
 					if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-competition' ) ) {
@@ -646,22 +647,29 @@ class RacketManager_Admin extends RacketManager {
 						$this->printMessage();
 						return;
 					}
-					$competition         = new \stdClass();
-					$validation['error'] = false;
-					if ( isset( $_POST['competition_name'] ) ) {
-						$competition->name = sanitize_text_field( wp_unslash( $_POST['competition_name'] ) );
-					} else {
-						$validation['error'] = true;
+					$name      = isset( $_POST['competition_name'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_name'] ) ) : null;
+					$type      = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : null;
+					$age_group = isset( $_POST['age_group'] ) ? sanitize_text_field( wp_unslash( $_POST['age_group'] ) ) : null;
+					if ( empty( $name ) ) {
+						$racketmanager->error_fields[]   = 'competition_name';
+						$racketmanager->error_messages[] = __( 'Competition name must be set', 'racketmanager' );
 					}
-					if ( isset( $_POST['type'] ) ) {
-						$competition->type = sanitize_text_field( wp_unslash( $_POST['type'] ) );
-					} else {
-						$validation['error'] = true;
+					if ( empty( $type ) ) {
+						$racketmanager->error_fields[]   = 'type';
+						$racketmanager->error_messages[] = __( 'Type must be set', 'racketmanager' );
 					}
-					if ( $validation['error'] ) {
+					if ( empty( $age_group ) ) {
+						$racketmanager->error_fields[]   = 'age_group';
+						$racketmanager->error_messages[] = __( 'Age group must be set', 'racketmanager' );
+					}
+					if ( empty( $racketmanager->error_fields ) ) {
+						$competition            = new \stdClass();
+						$competition->name      = $name;
+						$competition->type      = $type;
+						$competition->age_group = $age_group;
+						$competition            = new Racketmanager_Competition( $competition );
+					} else {
 						$this->set_message( __( 'Error in competition creation', 'racketmanager' ), true );
-					} else {
-						$competition = new Racketmanager_Competition( $competition );
 					}
 				} else {
 					$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );

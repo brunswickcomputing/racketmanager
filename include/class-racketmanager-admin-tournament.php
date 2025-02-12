@@ -41,6 +41,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
 		} else {
+			$age_group_select   = isset( $_GET['age_group'] ) ? sanitize_text_field( wp_unslash( $_GET['age_group'] ) ) : '';
 			$season_select      = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : '';
 			$competition_select = isset( $_GET['competition'] ) ? intval( $_GET['competition'] ) : '';
 			if ( isset( $_POST['doTournamentDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
@@ -63,6 +64,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 				array(
 					'season'         => $season_select,
 					'competition_id' => $competition_select,
+					'age_group'      => $age_group_select,
 					'orderby'        => array(
 						'date' => 'desc',
 						'name' => 'asc',

@@ -1320,6 +1320,21 @@ function racketmanager_upgrade() {
 	}
 	if ( version_compare( $installed, '8.35.0', '<' ) ) {
 		echo esc_html__( 'starting 8.35.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_competitions} ADD `age_group` VARCHAR( 10 ) NULL AFTER `type`" );
+		$competitions = $racketmanager->get_competitions();
+		foreach ( $competitions as $competition ) {
+			if ( str_contains( strtolower( $competition->name ), 'junior' ) ) {
+				$age_group = 'junior';
+			} elseif ( str_contains( strtolower( $competition->name ), 'senior' ) ) {
+				$age_group = 'senior';
+			} else {
+				$age_group = 'open';
+			}
+			$wpdb->query( "UPDATE {$wpdb->racketmanager_competitions} SET `age_group` = '" . $age_group . "' WHERE ID = " . $competition->id );
+		}
+	}
+	if ( version_compare( $installed, '8.36.0', '<' ) ) {
+		echo esc_html__( 'starting 8.36.0 upgrade', 'racketmanager' ) . "<br />\n";
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_invoices} ADD `details` JSON NULL AFTER `payment_reference`" );
 		$charges = $racketmanager->get_charges();
 		foreach ( $charges as $charge ) {
@@ -1338,21 +1353,6 @@ function racketmanager_upgrade() {
 					$invoice->set_details( $entry );
 				}
 			}
-		}
-	}
-	if ( version_compare( $installed, '8.36.0', '<' ) ) {
-		echo esc_html__( 'starting 8.36.0 upgrade', 'racketmanager' ) . "<br />\n";
-		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_competitions} ADD `age_group` VARCHAR( 10 ) NULL AFTER `type`" );
-		$competitions = $racketmanager->get_competitions();
-		foreach ( $competitions as $competition ) {
-			if ( str_contains( strtolower( $competition->name ), 'junior' ) ) {
-				$age_group = 'junior';
-			} elseif ( str_contains( strtolower( $competition->name ), 'senior' ) ) {
-				$age_group = 'senior';
-			} else {
-				$age_group = 'open';
-			}
-			$wpdb->query( "UPDATE {$wpdb->racketmanager_competitions} SET `age_group` = '" . $age_group . "' WHERE ID = " . $competition->id );
 		}
 	}
 	/*

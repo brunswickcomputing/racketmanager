@@ -563,6 +563,7 @@ final class Racketmanager_Match {
 	 * Function to set match link
 	 */
 	private function set_link() {
+		$this->link = null;
 		if ( $this->league->is_championship ) {
 			$match_ref = $this->final_round;
 		} else {
@@ -574,7 +575,9 @@ final class Racketmanager_Match {
 			$tournament_code = $this->league->event->competition->id . ',' . $this->season;
 			$tournament      = get_tournament( $tournament_code, 'shortcode' );
 			if ( $tournament ) {
-				$this->link = '/tournament/' . seo_url( $tournament->name ) . '/match/' . seo_url( $this->league->title ) . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/' . $this->id . '/';
+				if ( ! empty( $this->teams['home']->title ) && ! empty( $this->teams['away']->title ) ) {
+					$this->link = '/tournament/' . seo_url( $tournament->name ) . '/match/' . seo_url( $this->league->title ) . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/' . $this->id . '/';
+				}
 			} else {
 				$this->link = '/league/' . seo_url( $this->league->title ) . '/match/' . $this->id . '/';
 			}

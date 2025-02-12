@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+$competitions = $this->get_competitions( $competition_query );
 ?>
 <div class="form-control" id="competitions">
 	<form id="competitions-filter" method="post" action="">
@@ -14,73 +15,56 @@ namespace Racketmanager;
 		<div class="tablenav">
 			<!-- Bulk Actions -->
 			<select name="action" size="1">
-				<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
+				<option value="-1" selected disabled><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
 				<option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
 			</select>
 			<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="docompdel" id="docompdel" class="btn btn-secondary action" />
 		</div>
-		<div class="container">
-			<div class="row table-header">
-				<div class="col-2 col-md-1 check-column"><input type="checkbox" id="check-all-competitions" onclick="Racketmanager.checkAll(document.getElementById('competitions-filter'));" /></div>
-				<div class="col-1 column-num">ID</div>
-				<div class="col-5 col-md-3"><?php esc_html_e( 'Competition', 'racketmanager' ); ?></div>
-				<div class="d-none d-md-block col-1 text-center"><?php esc_html_e( 'Number of Seasons', 'racketmanager' ); ?></div>
-				<div class="d-none d-md-block col-1 text-center"><?php esc_html_e( 'Events', 'racketmanager' ); ?></div>
-				<div class="col-3 centered"><?php esc_html_e( 'Type', 'racketmanager' ); ?></div>
-			</div>
-			<?php
-			$competitions = $this->get_competitions( $competition_query );
-			$class        = '';
-			foreach ( $competitions as $competition ) {
-				$competition = get_competition( $competition );
-				$class       = ( 'alternate' === $class ) ? '' : 'alternate';
-				$sub_page    = 'subpage=show-competition';
-				$page_ref    = 'racketmanager';
-				switch ( $competition->type ) {
-					case 'league':
-						if ( ! empty( $standalone ) ) {
-							$sub_page = 'view=seasons';
-							$page_ref = 'racketmanager-' . $competition->type . 's';
-						}
-						$competition_type = __( 'League', 'racketmanager' );
-						break;
-					case 'cup':
-						if ( ! empty( $standalone ) ) {
-							$sub_page = 'view=seasons';
-							$page_ref = 'racketmanager-' . $competition->type . 's';
-						}
-						$competition_type = __( 'Cup', 'racketmanager' );
-						break;
-					case 'tournament':
-						$competition_type = __( 'Tournament', 'racketmanager' );
-						break;
-					default:
-						$competition_type = __( 'Unknown', 'racketmanager' );
+		<table class="table table-striped">
+			<thead class="table-dark">
+				<tr>
+					<th class="check-column"><input type="checkbox" id="check-all-competitions" onclick="Racketmanager.checkAll(document.getElementById('competitions-filter'));" /></div>
+					<th class="d-none d-md-table-cell">ID</th>
+					<th class=""><?php esc_html_e( 'Competition', 'racketmanager' ); ?></th>
+					<th class="centered"><?php esc_html_e( 'Age Group', 'racketmanager' ); ?></th>
+					<th class="centered"><?php esc_html_e( 'Type', 'racketmanager' ); ?></th>
+					<th class="d-none d-md-table-cell text-center"><?php esc_html_e( 'Number of Seasons', 'racketmanager' ); ?></th>
+					<th class="d-none d-md-table-cell text-center"><?php esc_html_e( 'Events', 'racketmanager' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php
+				foreach ( $competitions as $competition ) {
+					?>
+					<tr>
+						<td class="check-column">
+							<input type="checkbox" value="<?php echo esc_html( $competition->id ); ?>" name="competition[<?php echo esc_html( $competition->id ); ?>]" />
+						</div>
+						<td class="d-none d-md-table-cell">
+							<?php echo esc_html( $competition->id ); ?>
+						</td>
+						<td class="">
+							<a href="admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=config&amp;competition_id=<?php echo esc_html( $competition->id ); ?>">
+								<?php echo esc_html( $competition->name ); ?>
+							</a>
+						</td>
+						<td class="centered">
+							<?php echo esc_html( ucfirst( $competition->age_group ) ); ?>
+						</td>
+						<td class="centered">
+							<?php echo esc_html( ucfirst( $competition->type ) ); ?>
+						</td>
+						<td class="d-none d-md-table-cell text-center">
+							<?php echo esc_html( $competition->num_seasons ); ?>
+						</td>
+						<td class="d-none d-md-table-cell text-center">
+							<?php echo esc_html( $competition->num_events ); ?>
+						</td>
+					</tr>
+					<?php
 				}
 				?>
-				<div class="row table-row <?php echo esc_html( $class ); ?>">
-					<div class="col-2 col-md-1 check-column">
-						<input type="checkbox" value="<?php echo esc_html( $competition->id ); ?>" name="competition[<?php echo esc_html( $competition->id ); ?>]" />
-					</div>
-					<div class="col-1 column-num">
-						<?php echo esc_html( $competition->id ); ?>
-					</div>
-					<div class="col-5 col-md-3">
-						<a href="admin.php?page=<?php echo esc_attr( $page_ref ); ?>&amp;<?php echo esc_attr( $sub_page ); ?>&amp;competition_id=<?php echo esc_html( $competition->id ); ?>">
-							<?php echo esc_html( $competition->name ); ?>
-						</a>
-					</div>
-					<div class="d-none d-md-block col-1 text-center">
-						<?php echo esc_html( $competition->num_seasons ); ?>
-					</div>
-					<div class="d-none d-md-block col-1 text-center">
-						<?php echo esc_html( $competition->num_events ); ?>
-					</div>
-					<div class="col-3 centered">
-						<?php echo esc_html( $competition_type ); ?>
-					</div>
-				</div>
-			<?php } ?>
-		</div>
+			</tbody>
+		</table>
 	</form>
 </div>

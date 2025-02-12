@@ -12,7 +12,7 @@ if ( 'constitution' === $view ) {
 	$page_title = __( 'Add Teams to Constitution', 'racketmanager' );
 	$page_link  = $league->event->name;
 	$breadcrumb = 'show-event&amp;event_id=' . $league->event_id;
-	$link_ref   = 'admin.php?page=racketmanager&subpage=show-event&amp;event_id=' . $league->event_id . '&amp;season=' . $season;
+	$link_ref   = 'admin.php?page=racketmanager-leagues&view=constitution&amp;event_id=' . $league->event_id . '&amp;season=' . $season;
 } else {
 	$page_title = __( 'Add Teams to League', 'racketmanager' );
 	$page_link  = $league->title;
@@ -26,7 +26,7 @@ if ( 'constitution' === $view ) {
 			$link_ref .= '&amp;tournament=' . $tournament_id . '&amp;view=draw&amp;league=' . $league->id;
 			break;
 		default:
-			$link_ref .= '&view=show-league&amp;league_id=' . $league->id;
+			$link_ref .= '&view=league&amp;league_id=' . $league->id;
 			break;
 	}
 }
@@ -49,7 +49,7 @@ $main_title = $page_link . ' - ' . $page_title;
 					break;
 				default:
 					?>
-					<a href="admin.php?page=racketmanager"><?php esc_html_e( 'RacketManager', 'racketmanager' ); ?></a> &raquo; <a href="admin.php?page=racketmanager&amp;subpage=<?php echo esc_html( $breadcrumb ); ?>"><?php echo esc_html( $page_link ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
+					<a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s"><?php echo esc_html( ucfirst( $league->event->competition->type ) ); ?>s</a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $league->event->competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $league->event->competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=constitution&amp;event_id=<?php echo esc_html( $league->event_id ); ?>"><?php echo esc_html( $league->event->name ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
 					<?php
 					break;
 			}

@@ -269,7 +269,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 						$racketmanager->set_message( __( 'Season not found for competition', 'racketmanager' ), true );
 					}
 				} else {
-					$racketmanager->set_message( __( 'Season not found', 'racketmanager' ), true );
+					$racketmanager->set_message( __( 'New season', 'racketmanager' ), 'info' );
 				}
 			} else {
 				$racketmanager->set_message( __( 'Competition not found', 'racketmanager' ), true );

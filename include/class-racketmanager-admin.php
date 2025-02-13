@@ -1055,10 +1055,8 @@ class RacketManager_Admin extends RacketManager {
 				Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
 				$schedule_name = 'rm_notify_team_entry_reminder';
 				Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
-				if ( $competition->is_cup ) {
-					$schedule_name = 'rm_calculate_cup_ratings';
-					Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
-				}
+				$schedule_name = 'rm_calculate_team_ratings';
+				Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
 				if ( $update ) {
 					/* translators: %s: season name */
 					$msg[] = sprintf( __( 'Season %s deleted', 'racketmanager' ), $season );
@@ -5208,45 +5206,6 @@ class RacketManager_Admin extends RacketManager {
 			$racketmanager->set_message( $message, true );
 		}
 		$racketmanager->printMessage();
-	}
-	/**
-	 * Schedule emails function
-	 *
-	 * @param int    $competition_id competition id.
-	 * @param object $season season name.
-	 * @return void
-	 */
-	protected function schedule_team_competition_emails( $competition_id, $season ) {
-		global $racketmanager;
-		$today = gmdate( 'Y-m-d' );
-		if ( $today < $season->date_open ) {
-			$schedule_date   = strtotime( $season->date_open );
-			$day             = intval( gmdate( 'd', $schedule_date ) );
-			$month           = intval( gmdate( 'm', $schedule_date ) );
-			$year            = intval( gmdate( 'Y', $schedule_date ) );
-			$schedule_start  = mktime( 00, 00, 01, $month, $day, $year );
-			$schedule_name   = 'rm_notify_team_entry_open';
-			$schedule_args[] = intval( $competition_id );
-			$schedule_args[] = intval( $season->name );
-			Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
-			$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
-			if ( ! $success ) {
-				error_log( __( 'Error scheduling team competition open emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-			}
-		}
-		if ( $today < $season->date_closing ) {
-			$chase_date     = Racketmanager_Util::amend_date( $season->date_closing, 7, '-' );
-			$day            = substr( $chase_date, 8, 2 );
-			$month          = substr( $chase_date, 5, 2 );
-			$year           = substr( $chase_date, 0, 4 );
-			$schedule_start = mktime( 00, 00, 01, $month, $day, $year );
-			$schedule_name  = 'rm_notify_team_entry_reminder';
-			Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
-			$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
-			if ( ! $success ) {
-				error_log( __( 'Error scheduling team competition emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-			}
-		}
 	}
 }
 ?>

@@ -571,12 +571,14 @@ class RacketManager {
 						$teams = $competition->get_teams( array( 'season' => $season ) );
 						foreach ( $teams as $team ) {
 							$team_points = 0;
+							$team_points = 0;
 							// set league ratings.
 							$prev_season      = $season - 1;
 							$league_standings = $this->get_league_standings(
 								array(
-									'season' => $prev_season,
-									'team'   => $team->team_id,
+									'season'    => $prev_season,
+									'team'      => $team->team_id,
+									'age_group' => $competition->age_group,
 								)
 							);
 							if ( $league_standings ) {
@@ -588,7 +590,8 @@ class RacketManager {
 									if ( ! $league->event->competition->is_league ) {
 										$position = 0;
 									} elseif ( is_numeric( $league_no ) ) {
-										$position = $league_no * $league_standing->rank;
+										$teams_per_league = isset( $league->event->competition->max_teams ) ? $league->event->competition->max_teams : 0;
+										$position         = ( $league_no * $teams_per_league ) + $league_standing->rank;
 									} else {
 										$position = $league_standing->rank;
 									}
@@ -607,12 +610,16 @@ class RacketManager {
 									} else {
 										$event_points = 1;
 									}
-									$position_points = array( 300, 240, 192, 180, 160, 140, 128, 120, 116, 112, 108, 104, 400, 96, 88, 80, 76, 72, 68, 64, 60, 65, 52, 48, 44, 40, 36, 32, 28, 24, 20 );
+									$position_points = array( 300, 240, 192, 180, 160, 140, 128, 120, 116, 112, 108, 104, 100, 96, 88, 80, 76, 72, 68, 64, 60, 65, 52, 48, 44, 40, 36, 32, 28, 24, 20 );
 									$base_points     = isset( $position_points[ $position - 1 ] ) ? $position_points[ $position - 1 ] : 0;
 									if ( ! empty( $base_points ) ) {
 										$points = ceil( $base_points * $event_points );
 									}
-									$team_points += $points;
+									$base_points_won = 42;
+									$points_div      = ( $league_no - 1 ) * ( $league->event->num_rubbers * 2 );
+									$points_won      = ( $base_points_won - round( $points_div * $event_points ) ) * $league_standing->won_matches;
+									$points         += $points_won;
+									$team_points    += $points;
 								}
 							}
 							// set cup rating.
@@ -625,13 +632,12 @@ class RacketManager {
 								)
 							);
 							foreach ( $matches as $match ) {
-								$team_points += Racketmanager_Util::calculate_championship_rating( $match, $team->team_id );
+								$points       = Racketmanager_Util::calculate_championship_rating( $match, $team->team_id );
+								$team_points += $points;
 							}
-							if ( $team_points ) {
-								$league_team = get_league_team( $team->table_id );
-								if ( $league_team ) {
-									$league_team->set_rating( $team_points );
-								}
+							$league_team = get_league_team( $team->table_id );
+							if ( $league_team ) {
+								$league_team->set_rating( $team_points );
 							}
 						}
 					}
@@ -896,13 +902,15 @@ class RacketManager {
 	private function get_league_standings( $args = array() ) {
 		global $wpdb;
 		$defaults = array(
-			'season' => false,
-			'team'   => false,
+			'season'     => false,
+			'team'       => false,
+			'age_group'  => false,
 		);
-		$args     = array_merge( $defaults, $args );
-		$season   = $args['season'];
-		$team_id  = $args['team'];
-		$sql      = "SELECT l.id, t.`rank` FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} t WHERE l.`id` = t.`league_id`";
+		$args      = array_merge( $defaults, $args );
+		$season    = $args['season'];
+		$team_id   = $args['team'];
+		$age_group = $args['age_group'];
+		$sql       = "SELECT l.id, t.`won_matches`,t.`rank` FROM {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} t WHERE l.`id` = t.`league_id` AND l.`id` IN (SELECT `id` FROM {$wpdb->racketmanager} WHERE `event_id` IN (SELECT e.`id` FROM {$wpdb->racketmanager_events} e, {$wpdb->racketmanager_competitions} c WHERE e.`competition_id` = c.`id` AND c.`type` = 'league'))";
 		if ( $season ) {
 			$sql .= $wpdb->prepare(
 				' AND t.`season` = %d',
@@ -914,6 +922,12 @@ class RacketManager {
 				' AND t.`team_id` = %d',
 				$team_id
 			);
+		}
+		if ( $age_group ) {
+			$sql .= $wpdb->prepare(
+								   " AND l.`id` IN (SELECT `id` FROM {$wpdb->racketmanager} WHERE `event_id` IN (SELECT e.`id` FROM {$wpdb->racketmanager_events} e, {$wpdb->racketmanager_competitions} c WHERE e.`competition_id` = c.`id` AND `age_group` = %s))",
+								   $age_group
+								   );
 		}
 		$sql             .= ' ORDER BY l.`id` ASC';
 		$league_standings = wp_cache_get( md5( $sql ), 'league_standings' );
@@ -2517,7 +2531,7 @@ class RacketManager {
 		if ( $count ) {
 			$sql = "SELECT COUNT(*) FROM {$wpdb->racketmanager_matches} WHERE 1 = 1";
 		} else {
-			$sql_fields = "SELECT m.`final` AS final_round, m.`group`, `home_team`, `away_team`, DATE_FORMAT(m.`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(m.`date`, '%e') AS day, DATE_FORMAT(m.`date`, '%c') AS month, DATE_FORMAT(m.`date`, '%Y') AS year, DATE_FORMAT(m.`date`, '%H') AS `hour`, DATE_FORMAT(m.`date`, '%i') AS `minutes`, `match_day`, `location`, l.`id` AS `league_id`, m.`home_points`, m.`away_points`, m.`winner_id`, m.`loser_id`, m.`post_id`, `season`, m.`id` AS `id`, m.`custom`, m.`confirmed`, m.`home_captain`, m.`away_captain`, m.`comments`, m.`updated`, `event_id`, m.`status`, `leg`";
+			$sql_fields = "SELECT m.`final` AS final_round, m.`group`, `home_team`, `away_team`, DATE_FORMAT(m.`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(m.`date`, '%e') AS day, DATE_FORMAT(m.`date`, '%c') AS month, DATE_FORMAT(m.`date`, '%Y') AS year, DATE_FORMAT(m.`date`, '%H') AS `hour`, DATE_FORMAT(m.`date`, '%i') AS `minutes`, `match_day`, `location`, l.`id` AS `league_id`, m.`home_points`, m.`away_points`, m.`winner_id`, m.`loser_id`, m.`post_id`, `season`, m.`id` AS `id`, m.`custom`, m.`confirmed`, m.`home_captain`, m.`away_captain`, m.`comments`, m.`updated`, `event_id`, m.`status`, `leg`, `winner_id_tie`, `loser_id_tie`";
 			$sql        = ' WHERE m.`league_id` = l.`id`';
 		}
 

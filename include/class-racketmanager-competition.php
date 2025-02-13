@@ -2064,6 +2064,10 @@ class Racketmanager_Competition {
 				$updates = true;
 			}
 			$settings->mode = $config->mode;
+			if ( empty( $this->competition_code ) || $this->competition_code !== $config->competition_code ) {
+				$updates = true;
+			}
+			$settings->competition_code = $config->competition_code;
 			if ( empty( $this->grade ) || $this->grade !== $config->grade ) {
 				$updates = true;
 			}

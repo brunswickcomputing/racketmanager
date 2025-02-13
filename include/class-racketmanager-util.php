@@ -738,79 +738,92 @@ class Racketmanager_Util {
 		} else {
 			$event_points = 1;
 		}
-		$base_points = 0;
-		switch ( $match->final_round ) {
-			case 'final':
-				if ( $match->winner_id === $team_id ) {
-					if ( $match->league->championship->is_consolation ) {
-						$base_points = 88;
-					} else {
-						$base_points = 300;
-					}
-				} elseif ( $match->loser_id === $team_id ) {
-					if ( $match->league->championship->is_consolation ) {
-						$base_points = 80;
-					} else {
-						$base_points = 240;
-					}
-				}
-				break;
-			case 'semi':
-				if ( $match->loser_id === $team_id ) {
-					if ( $match->league->championship->is_consolation ) {
-						$base_points = 72;
-					} else {
-						$base_points = 180;
-					}
-				}
-				break;
-			case 'quarter':
-				if ( $match->loser_id === $team_id ) {
-					if ( $match->league->championship->is_consolation ) {
-						$base_points = 56;
-					} else {
-						$base_points = 120;
-					}
-				}
-				break;
-			case 'last-16':
-				if ( $match->loser_id === $team_id ) {
-					if ( $match->league->championship->is_consolation ) {
-						$base_points = 24;
-					} else {
-						$base_points = 88;
-					}
-				}
-				break;
-			case 'last-32':
-				if ( $match->loser_id === $team_id ) {
-					if ( $match->league->championship->is_consolation ) {
-						$base_points = 24;
-					} else {
-						$base_points = 72;
-					}
-				}
-				break;
-			case 'last-64':
-				if ( $match->loser_id === $team_id ) {
-					if ( $match->league->championship->is_consolation ) {
-						$base_points = 0;
-					} else {
-						$base_points = 20;
-					}
-				}
-				break;
-			default:
-				$base_points = 0;
-				break;
-		}
-		if ( ! empty( $base_points ) ) {
-			$last_year    = gmdate( 'Y-m-d H:i:s', strtotime( '-1 year' ) );
-			$point_adjust = 1;
-			if ( $match->date < $last_year ) {
-				$point_adjust = 0.5;
+		if ( empty( $match->leg ) || 2 === $match->leg ) {
+			if ( empty( $match->leg ) ) {
+				$winner_id = $match->winner_id;
+				$loser_id  = $match->loser_id;
+			} else {
+				$winner_id = $match->winner_id_tie;
+				$loser_id  = $match->loser_id_tie;
 			}
-			$points = ceil( $base_points * $event_points * $point_adjust );
+			$first_round = $match->league->championship->get_final_keys( 1 );
+			$base_points = 0;
+			switch ( $match->final_round ) {
+				case 'final':
+					if ( $winner_id === $team_id ) {
+						if ( $match->league->championship->is_consolation ) {
+							$base_points = 88;
+						} else {
+							$base_points = 300;
+						}
+					} elseif ( $loser_id === $team_id ) {
+						if ( $match->league->championship->is_consolation ) {
+							$base_points = 80;
+						} else {
+							$base_points = 240;
+						}
+					}
+					break;
+				case 'semi':
+					if ( $loser_id === $team_id ) {
+						if ( $match->league->championship->is_consolation ) {
+							$base_points = 72;
+						} else {
+							$base_points = 180;
+						}
+					}
+					break;
+				case 'quarter':
+					if ( $loser_id === $team_id ) {
+						if ( $match->league->championship->is_consolation ) {
+							$base_points = 56;
+						} else {
+							$base_points = 120;
+						}
+					}
+					break;
+				case 'last-16':
+					if ( $loser_id === $team_id ) {
+						if ( $match->league->championship->is_consolation ) {
+							$base_points = 24;
+						} else {
+							$base_points = 88;
+						}
+					}
+					break;
+				case 'last-32':
+					if ( $loser_id === $team_id ) {
+						if ( $match->league->championship->is_consolation ) {
+							$base_points = 24;
+						} else {
+							$base_points = 72;
+						}
+					}
+					break;
+				case 'last-64':
+					if ( $loser_id === $team_id ) {
+						if ( $match->league->championship->is_consolation ) {
+							$base_points = 0;
+						} else {
+							$base_points = 20;
+						}
+					}
+					break;
+				default:
+					$base_points = 0;
+					break;
+			}
+			if ( $first_round === $match->final_round ) {
+				$base_points = 0;
+			}
+			if ( ! empty( $base_points ) ) {
+				$last_year    = gmdate( 'Y-m-d H:i:s', strtotime( '-1 year' ) );
+				$point_adjust = 1;
+				if ( $match->date < $last_year ) {
+					$point_adjust = 0.5;
+				}
+				$points = ceil( $base_points * $event_points * $point_adjust );
+			}
 		}
 		return $points;
 	}

@@ -227,7 +227,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 				} else {
 					$valid         = true;
 					$tournament_id = isset( $_POST['tournament_id'] ) ? intval( $_POST['tournament_id'] ) : null;
-					$this->calculate_team_ratings( $tournament_id );
+					$this->calculate_player_team_ratings( $tournament_id );
 					$this->set_message( __( 'Tournament ratings set', 'racketmanager' ) );
 					$this->printMessage();
 				}
@@ -276,7 +276,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 					$tournament_id = isset( $_POST['tournament_id'] ) ? intval( $_POST['tournament_id'] ) : null;
 					$league_id     = isset( $_POST['league_id'] ) ? intval( $_POST['league_id'] ) : null;
 					$season        = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-					$this->calculate_team_ratings( $tournament_id, $season, $league_id );
+					$this->calculate_player_team_ratings( $tournament_id, $season, $league_id );
 				}
 			}
 			$season        = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
@@ -700,7 +700,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 	 * @param int $tournament_id tournament id.
 	 * @return void
 	 */
-	private function calculate_team_ratings( $tournament_id ) {
+	private function calculate_player_team_ratings( $tournament_id ) {
 		$tournament = get_tournament( $tournament_id );
 		if ( ! $tournament ) {
 			return;

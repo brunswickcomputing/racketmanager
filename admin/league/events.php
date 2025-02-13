@@ -10,7 +10,7 @@ namespace Racketmanager;
 
 ?>
 	<div class="row">
-		<div class="col-12 col-md-6">
+		<div class="col-12">
 			<table class="table table-striped">
 				<thead class="table-dark">
 					<tr>
@@ -27,9 +27,9 @@ namespace Racketmanager;
 					foreach ( $competition->events as $event ) {
 						$args['count']  = true;
 						$args['season'] = $season;
+						$args['status'] = 1;
 						$num_leagues    = $event->get_leagues( $args );
 						$num_teams      = $event->get_teams( $args );
-						$args['status'] = 1;
 						$num_entries    = $event->get_clubs( $args );
 						$age_limit      = empty( $event->age_limit ) ? 0 : $event->age_limit;
 						$age_offset     = null;

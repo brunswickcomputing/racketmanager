@@ -164,9 +164,9 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 					$current_season->round_length      = isset( $_POST['round_length'] ) ? intval( $_POST['round_length'] ) : null;
 					$current_season->home_away_diff    = isset( $_POST['home_away_diff'] ) ? intval( $_POST['home_away_diff'] ) : 0;
 					$current_season->filler_weeks      = isset( $_POST['filler_weeks'] ) ? intval( $_POST['filler_weeks'] ) : 0;
-					$current_season->fee_competition   = isset( $_POST['feeClub'] ) ? floatval( $_POST['feeClub'] ) : 0;
-					$current_season->fee_event         = isset( $_POST['feeTeam'] ) ? floatval( $_POST['feeTeam'] ) : 0;
-					$current_season->fee_lead_time     = isset( $_POST['feeLeadTime'] ) ? intval( $_POST['feeLeadTime'] ) : 0;
+					$current_season->fee_competition   = isset( $_POST['feeClub'] ) ? floatval( $_POST['feeClub'] ) : null;
+					$current_season->fee_event         = isset( $_POST['feeTeam'] ) ? floatval( $_POST['feeTeam'] ) : null;
+					$current_season->fee_lead_time     = isset( $_POST['feeLeadTime'] ) ? intval( $_POST['feeLeadTime'] ) : null;
 					$current_season->fee_id            = isset( $_POST['feeId'] ) ? intval( $_POST['feeId'] ) : null;
 					$this->set_competition_dates( $current_season, $competition );
 					if ( $racketmanager->error ) {
@@ -212,9 +212,9 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 						$current_season->round_length      = isset( $_POST['round_length'] ) ? intval( $_POST['round_length'] ) : null;
 						$current_season->home_away_diff    = isset( $_POST['home_away_diff'] ) ? intval( $_POST['home_away_diff'] ) : 0;
 						$current_season->filler_weeks      = isset( $_POST['filler_weeks'] ) ? intval( $_POST['filler_weeks'] ) : 0;
-						$current_season->fee_competition   = isset( $_POST['feeClub'] ) ? floatval( $_POST['feeClub'] ) : 0;
-						$current_season->fee_event         = isset( $_POST['feeTeam'] ) ? floatval( $_POST['feeTeam'] ) : 0;
-						$current_season->fee_lead_time     = isset( $_POST['feeLeadTime'] ) ? intval( $_POST['feeLeadTime'] ) : 0;
+						$current_season->fee_competition   = isset( $_POST['feeClub'] ) ? floatval( $_POST['feeClub'] ) : null;
+						$current_season->fee_event         = isset( $_POST['feeTeam'] ) ? floatval( $_POST['feeTeam'] ) : null;
+						$current_season->fee_lead_time     = isset( $_POST['feeLeadTime'] ) ? intval( $_POST['feeLeadTime'] ) : null;
 						$current_season->fee_id            = isset( $_POST['feeId'] ) ? intval( $_POST['feeId'] ) : null;
 						$this->set_competition_dates( $current_season, $competition );
 						$this->schedule_open_activities( $competition->id, $current_season );
@@ -338,10 +338,6 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 				$racketmanager->error_messages[] = __( 'Number of match days must be set', 'racketmanager' );
 				$racketmanager->error_fields[]   = 'num_match_days';
 			}
-			if ( empty( $current_season->round_length ) ) {
-				$racketmanager->error_messages[] = __( 'Round length must be set', 'racketmanager' );
-				$racketmanager->error_fields[]   = 'round_length';
-			}
 			if ( is_null( $current_season->home_away_diff ) ) {
 				$racketmanager->error_messages[] = __( 'Difference between fixtures must be set', 'racketmanager' );
 				$racketmanager->error_fields[]   = 'home_away_diff';
@@ -353,6 +349,10 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 		} elseif ( empty( $current_season->venue ) ) {
 			$racketmanager->error_messages[] = __( 'Venue must be set', 'racketmanager' );
 			$racketmanager->error_fields[]   = 'venue';
+		}
+		if ( empty( $current_season->round_length ) ) {
+			$racketmanager->error_messages[] = __( 'Round length must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'round_length';
 		}
 		if ( is_null( $current_season->fixed_match_dates ) ) {
 			$racketmanager->error_messages[] = __( 'Match date option must be set', 'racketmanager' );
@@ -372,10 +372,13 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 				$racketmanager->error_fields[]   = 'feeLeadTime';
 			}
 		}
+		debug_to_console( $current_season );
 		if ( empty( $racketmanager->error_fields ) ) {
 			if ( ! empty( $current_season->fee_lead_time ) ) {
 				$fee_lead_time = $current_season->fee_lead_time * 7;
 				$fee_date      = Racketmanager_Util::amend_date( $current_season->date_start, $fee_lead_time, '-' );
+			} else {
+				$fee_date = $current_season->date_start;
 			}
 			if ( ! empty( $current_season->fee_id ) ) {
 				$charge = get_charge( $current_season->fee_id );
@@ -396,9 +399,15 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 						$this->schedule_invoice_send( $charge->id );
 					}
 				} elseif ( ! empty( $current_season->fee_competition ) || ! empty( $current_season->fee_event ) ) {
+					debug_to_console( 'create fee 1');
+					debug_to_console( $current_season->fee_competition);
+					debug_to_console( $current_season->fee_event);
 					$charge_create = true;
 				}
 			} elseif ( ! empty( $current_season->fee_competition ) || ! empty( $current_season->fee_event ) ) {
+				debug_to_console( 'create fee');
+				debug_to_console( $current_season->fee_competition);
+				debug_to_console( $current_season->fee_event);
 				$charge_create = true;
 			}
 			$season = isset( $competition->seasons[ $current_season->name ] ) ? $competition->seasons[ $current_season->name ] : null;
@@ -441,10 +450,6 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 						$updates                  = true;
 						$season['num_match_days'] = $current_season->num_match_days;
 					}
-					if ( empty( $season['round_length'] ) || $season['round_length'] !== $current_season->round_length ) {
-						$updates                = true;
-						$season['round_length'] = $current_season->round_length;
-					}
 					if ( empty( $season['home_away_diff'] ) || $season['home_away_diff'] !== $current_season->home_away_diff ) {
 						$updates                  = true;
 						$season['home_away_diff'] = $current_season->home_away_diff;
@@ -456,6 +461,10 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 				} elseif ( $season['venue'] !== $current_season->venue ) {
 					$updates         = true;
 					$season['venue'] = $current_season->venue;
+				}
+				if ( empty( $season['round_length'] ) || $season['round_length'] !== $current_season->round_length ) {
+					$updates                = true;
+					$season['round_length'] = $current_season->round_length;
 				}
 				if ( empty( $season['competition_code'] ) ) {
 					if ( ! empty( $current_season->competition_code ) ) {
@@ -515,7 +524,6 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 						$event->add_season( $season_event );
 					}
 				}
-				$charge_create = true;
 			}
 			if ( ! empty( $charge_create ) ) {
 				$charge                  = new \stdClass();
@@ -609,7 +617,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 			Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
 			$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
 			if ( ! $success ) {
-				error_log( __( 'Error scheduling team competition emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+				error_log( __( 'Error scheduling team competition reminder emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			}
 		}
 	}

@@ -2253,6 +2253,10 @@ class Racketmanager_Event {
 					$updates = true;
 				}
 				$this->num_rubbers = $config->num_rubbers;
+				if ( empty( $this->reverse_rubbers ) || $this->reverse_rubbers !== $config->reverse_rubbers ) {
+					$updates = true;
+				}
+				$settings->reverse_rubbers = $config->reverse_rubbers;
 			}
 			if ( empty( $this->num_sets ) || $this->num_sets !== $config->num_sets ) {
 				$updates = true;

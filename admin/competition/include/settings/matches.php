@@ -44,6 +44,8 @@ $tab_name = 'matches';
 				?>
 			</div>
 		</div>
+	</div>
+	<div class="row gx-3 mb-3">
 		<div class="col-md-4 mb-3 mb-md-0">
 			<div class="form-floating">
 				<?php
@@ -74,7 +76,7 @@ $tab_name = 'matches';
 			<?php
 		} else {
 			?>
-			<div class="col-md-4">
+			<div class="col-md-4 mb-3 mb-md-0">
 				<div class="form-floating">
 					<?php
 					if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'num_rubbers', $racketmanager->error_fields, true ) ) ) {
@@ -86,6 +88,29 @@ $tab_name = 'matches';
 					?>
 					<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_rubbers" id="num_rubbers" value="<?php echo isset( $competition->num_rubbers ) ? esc_html( $competition->num_rubbers ) : null; ?>"  placeholder="<?php esc_html_e( 'Number of sets', 'racketmanager' ); ?>" />
 					<label for="num_sets"><?php esc_html_e( 'Number of rubbers', 'racketmanager' ); ?></label>
+					<?php
+					if ( $is_invalid ) {
+						?>
+						<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+						<?php
+						$is_invalid = false;
+						$msg        = null;
+					}
+					?>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="form-check">
+					<?php
+					if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'reverse_rubbers', $racketmanager->error_fields, true ) ) ) {
+						$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
+						$is_invalid = true;
+						$msg_id     = array_search( 'reverse_rubbers', $racketmanager->error_fields, true );
+						$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					}
+					?>
+					<input type="checkbox" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="reverse_rubbers" id="reverse_rubbers" <?php checked( isset( $competition->reverse_rubbers ) ? $competition->reverse_rubbers : null , 1 ); ?> value="1" />
+					<label for="reverse_rubbers"><?php esc_html_e( 'Reverse rubbers', 'racketmanager' ); ?></label>
 					<?php
 					if ( $is_invalid ) {
 						?>

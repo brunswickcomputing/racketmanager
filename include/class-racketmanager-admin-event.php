@@ -57,9 +57,11 @@ final class RacketManager_Admin_Event extends RacketManager_Admin {
 			}
 			$event_id = isset( $_GET['event_id'] ) ? intval( $_GET['event_id'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( $event_id ) {
-				$event    = get_event( $event_id );
+				$event = get_event( $event_id );
 				if ( $event ) {
-					$event->config = (object) $event->settings;
+					$event->config              = (object) $event->settings;
+					$event->config->num_sets    = $event->num_sets;
+					$event->config->num_rubbers = $event->num_rubbers;
 					if ( isset( $_POST['updateEventConfig'] ) ) {
 						if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-event-config' ) ) {
 							$racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
@@ -79,6 +81,7 @@ final class RacketManager_Admin_Event extends RacketManager_Admin {
 								$config->scoring            = isset( $_POST['scoring'] ) ? sanitize_text_field( wp_unslash( $_POST['scoring'] ) ) : null;
 								$config->num_sets           = isset( $_POST['num_sets'] ) ? intval( $_POST['num_sets'] ) : null;
 								$config->num_rubbers        = isset( $_POST['num_rubbers'] ) ? intval( $_POST['num_rubbers'] ) : null;
+								$config->reverse_rubbers    = isset( $_POST['reverse_rubbers'] ) ? intval( $_POST['reverse_rubbers'] ) : null;
 								$config->match_days_allowed = isset( $_POST['match_days_allowed'] ) ? wp_unslash( $_POST['match_days_allowed'] ) : null;
 								$config->offset             = isset( $_POST['offset'] ) ? intval( $_POST['offset'] ) : null;
 								$config->primary_league     = isset( $_POST['primary_league'] ) ? intval( $_POST['primary_league'] ) : null;
@@ -116,6 +119,7 @@ final class RacketManager_Admin_Event extends RacketManager_Admin {
 						$config->age_offset         = isset( $_POST['age_offset'] ) ? sanitize_text_field( wp_unslash( $_POST['age_offset'] ) ) : null;
 						$config->scoring            = isset( $_POST['scoring'] ) ? sanitize_text_field( wp_unslash( $_POST['scoring'] ) ) : null;
 						$config->num_sets           = isset( $_POST['num_sets'] ) ? intval( $_POST['num_sets'] ) : null;
+						$config->reverse_rubbers    = isset( $_POST['reverse_rubbers'] ) ? intval( $_POST['reverse_rubbers'] ) : null;
 						$config->num_rubbers        = isset( $_POST['num_rubbers'] ) ? intval( $_POST['num_rubbers'] ) : null;
 						$config->match_days_allowed = isset( $_POST['match_days_allowed'] ) ? wp_unslash( $_POST['match_days_allowed'] ) : null;
 						$config->offset             = isset( $_POST['offset'] ) ? intval( $_POST['offset'] ) : null;

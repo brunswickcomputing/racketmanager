@@ -2119,6 +2119,10 @@ class Racketmanager_Competition {
 					$updates = true;
 				}
 				$settings->num_rubbers = $config->num_rubbers;
+				if ( empty( $this->reverse_rubbers ) || $this->reverse_rubbers !== $config->reverse_rubbers ) {
+					$updates = true;
+				}
+				$settings->reverse_rubbers = $config->reverse_rubbers;
 			}
 			if ( ! isset( $this->fixed_match_dates ) || $this->fixed_match_dates !== $config->fixed_match_dates ) {
 				$updates = true;

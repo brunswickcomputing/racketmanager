@@ -90,7 +90,6 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 						$competition->events          = $competition->get_events();
 						$tab                          = 'overview';
 						$current_season               = (object) $competition->seasons[ $season ];
-						$current_season->date_closing = isset( $current_season->date_closing ) ? $current_season->date_closing : $current_season->date_close;
 						if ( isset( $current_season->date_closing ) && $current_season->date_closing <= gmdate( 'Y-m-d' ) ) {
 							$current_season->is_active = true;
 						} else {

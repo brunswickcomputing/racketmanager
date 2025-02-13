@@ -73,6 +73,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 							$config->scoring                  = isset( $_POST['scoring'] ) ? sanitize_text_field( wp_unslash( $_POST['scoring'] ) ) : null;
 							$config->num_sets                 = isset( $_POST['num_sets'] ) ? intval( $_POST['num_sets'] ) : null;
 							$config->num_rubbers              = isset( $_POST['num_rubbers'] ) ? intval( $_POST['num_rubbers'] ) : null;
+							$config->reverse_rubbers          = isset( $_POST['reverse_rubbers'] ) ? intval( $_POST['reverse_rubbers'] ) : null;
 							$config->fixed_match_dates        = isset( $_POST['fixed_match_dates'] ) ? ( 'true' === $_POST['fixed_match_dates'] ? true : false ) : false;
 							$config->home_away                = isset( $_POST['home_away'] ) ? ( 'true' === $_POST['home_away'] ? true : false ) : false;
 							$config->round_length             = isset( $_POST['round_length'] ) ? intval( $_POST['round_length'] ) : null;
@@ -372,7 +373,6 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 				$racketmanager->error_fields[]   = 'feeLeadTime';
 			}
 		}
-		debug_to_console( $current_season );
 		if ( empty( $racketmanager->error_fields ) ) {
 			if ( ! empty( $current_season->fee_lead_time ) ) {
 				$fee_lead_time = $current_season->fee_lead_time * 7;
@@ -399,15 +399,9 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 						$this->schedule_invoice_send( $charge->id );
 					}
 				} elseif ( ! empty( $current_season->fee_competition ) || ! empty( $current_season->fee_event ) ) {
-					debug_to_console( 'create fee 1');
-					debug_to_console( $current_season->fee_competition);
-					debug_to_console( $current_season->fee_event);
 					$charge_create = true;
 				}
 			} elseif ( ! empty( $current_season->fee_competition ) || ! empty( $current_season->fee_event ) ) {
-				debug_to_console( 'create fee');
-				debug_to_console( $current_season->fee_competition);
-				debug_to_console( $current_season->fee_event);
 				$charge_create = true;
 			}
 			$season = isset( $competition->seasons[ $current_season->name ] ) ? $competition->seasons[ $current_season->name ] : null;

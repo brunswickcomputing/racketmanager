@@ -109,6 +109,7 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 	 * Display setup
 	 */
 	public function display_setup_page() {
+		global $racketmanager;
 		if ( ! current_user_can( 'edit_matches' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -159,6 +160,21 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 							}
 						}
 					}
+				}
+			} elseif ( isset( $_POST['rank'] ) ) {
+				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_calculate_ratings' ) ) {
+					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+					$this->printMessage();
+				} else {
+					$valid          = true;
+					$competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
+					$season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+					$competition    = get_competition( $competition_id );
+					if ( $competition && $season ) {
+						$racketmanager->calculate_team_ratings( $competition->id, $season );
+					}
+					$this->set_message( __( 'League ratings set', 'racketmanager' ) );
+					$this->printMessage();
 				}
 			}
 			$season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
@@ -396,21 +412,6 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 				$tab = 'constitution';
 				$this->generate_box_league_matches();
 				$this->printMessage();
-			} elseif ( isset( $_POST['rank'] ) ) {
-				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_calculate_ratings' ) ) {
-					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-					$this->printMessage();
-				} else {
-					$valid          = true;
-					$competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
-					$season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-					$competition    = get_competition( $competition_id );
-					if ( $competition && $season ) {
-						$racketmanager->calculate_cup_ratings( $competition->id, $season );
-					}
-					$this->set_message( __( 'League ratings set', 'racketmanager' ) );
-					$this->printMessage();
-				}
 			}
 			if ( ! isset( $season ) ) {
 				$event_season = isset( $event->current_season['name'] ) ? $event->current_season['name'] : '';

@@ -112,7 +112,7 @@ class RacketManager {
 			add_filter( 'pre_get_document_title', array( &$this, 'set_page_title' ), 999, 1 );
 			add_action( 'rm_calculate_player_ratings', array( &$this, 'calculate_player_ratings' ), 1 );
 			add_action( 'rm_calculate_tournament_ratings', array( &$this, 'calculate_tournament_ratings' ), 1 );
-			add_action( 'rm_calculate_cup_ratings', array( &$this, 'calculate_cup_ratings' ), 10, 3 );
+			add_action( 'rm_calculate_team_ratings', array( &$this, 'calculate_team_ratings' ), 10, 3 );
 			add_action( 'rm_notify_team_entry_open', array( &$this, 'notify_team_entry_open' ), 10, 2 );
 			add_action( 'rm_notify_team_entry_reminder', array( &$this, 'notify_team_entry_reminder' ), 10, 2 );
 			add_action( 'rm_notify_tournament_entry_open', array( &$this, 'notify_tournament_entry_open' ), 10, 1 );
@@ -556,13 +556,13 @@ class RacketManager {
 		}
 	}
 	/**
-	 * Calculate cup ratings
+	 * Calculate team ratings
 	 *
 	 * @param int $competition_id competition id.
 	 * @param int $season season name.
 	 * @return void
 	 */
-	public function calculate_cup_ratings( $competition_id, $season ) {
+	public function calculate_team_ratings( $competition_id, $season ) {
 		if ( $competition_id ) {
 			$competition = get_competition( $competition_id );
 			if ( $competition ) {
@@ -590,7 +590,7 @@ class RacketManager {
 									if ( ! $league->event->competition->is_league ) {
 										$position = 0;
 									} elseif ( is_numeric( $league_no ) ) {
-										$teams_per_league = isset( $league->event->competition->max_teams ) ? $league->event->competition->max_teams : 0;
+										$teams_per_league = isset( $league->event->competition->max_teams ) ? $league->event->competition->max_teams : 10;
 										$position         = ( $league_no * $teams_per_league ) + $league_standing->rank;
 									} else {
 										$position = $league_standing->rank;

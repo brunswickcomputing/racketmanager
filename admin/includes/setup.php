@@ -133,4 +133,17 @@ if ( empty( $league ) ) {
 		?>
 		<button class="btn btn-primary"><?php echo esc_html( $button_text ); ?></button>
 	</form>
+	<?php
+	if ( empty( $league ) ) {
+		?>
+		<form method="post" class="mb-3">
+			<?php wp_nonce_field( 'racketmanager_calculate_ratings', 'racketmanager_nonce' ); ?>
+			<input type="hidden" name="season" value="<?php echo esc_attr( $season ); ?>" />
+			<input type="hidden" name="competition_id" value="<?php echo esc_attr( $competition->id ); ?>" />
+			<input type="hidden" name="rank" value="calculate_ratings" />
+			<button class="btn btn-primary"><?php esc_html_e( 'Generate ratings', 'racketmanager' ); ?></button>
+		</form>
+		<?php
+	}
+	?>
 </div>

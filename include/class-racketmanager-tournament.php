@@ -1210,13 +1210,13 @@ final class Racketmanager_Tournament {
 	 */
 	private function get_not_entered_player_list() {
 		global $wpdb;
-		$limit   = 1;
+		$limit   = 2;
 		$sql     = $wpdb->prepare(
-			"SELECT DISTINCT(te.player_id) FROM {$wpdb->racketmanager_tournament_entries} te, {$wpdb->racketmanager_tournaments} t INNER JOIN (SELECT `id` FROM {$wpdb->racketmanager_tournaments} WHERE `competition_id` = %d AND `id` != %d ORDER BY `id` DESC LIMIT %d) t1 ON t.`id` = t1.`id` WHERE te.`tournament_id` = t.`id` AND t.`competition_id` = %d AND te.`player_id` IN (SELECT DISTINCT `player_id` FROM {$wpdb->racketmanager_club_players} WHERE `removed_date` IS NULL) AND te.`player_id` NOT IN (SELECT `player_id` FROM {$wpdb->racketmanager_tournament_entries} WHERE `tournament_id` = %d)",
-			$this->competition_id,
+			"SELECT DISTINCT(te.player_id) FROM {$wpdb->racketmanager_tournament_entries} te, {$wpdb->racketmanager_competitions} c, {$wpdb->racketmanager_tournaments} t INNER JOIN (SELECT t.`id` FROM {$wpdb->racketmanager_tournaments} t, {$wpdb->racketmanager_competitions} c WHERE t.`competition_id` = c.`id` AND c.`age_group` = %s AND t.`id` != %d ORDER BY t.`id` DESC LIMIT %d) t1 ON t.`id` = t1.`id` WHERE te.`tournament_id` = t.`id` AND c.`id` = t.`competition_id` AND c.`age_group` = %s AND te.`player_id` IN (SELECT DISTINCT `player_id` FROM {$wpdb->racketmanager_club_players} WHERE `removed_date` IS NULL) AND te.`player_id` NOT IN (SELECT `player_id` FROM {$wpdb->racketmanager_tournament_entries} WHERE `tournament_id` = %d)",
+			$this->competition->age_group,
 			$this->id,
 			$limit,
-			$this->competition_id,
+			$this->competition->age_group,
 			$this->id,
 		);
 		$players = wp_cache_get( md5( $sql ), 'tournament_players' );

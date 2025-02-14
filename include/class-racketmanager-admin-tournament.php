@@ -238,7 +238,23 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 			if ( $tournament_id ) {
 				$tournament = get_tournament( $tournament_id );
 				if ( $tournament ) {
-					$match_dates = $tournament->competition->seasons[ $season ]['match_dates'];
+					$match_dates = isset( $tournament->competition->seasons[ $season ]['match_dates'] ) ? $tournament->competition->seasons[ $season ]['match_dates'] : array();
+					if ( empty( $match_dates ) ) {
+						$round_length = isset( $tournament->competition->round_length ) ? $tournament->competition->round_length : 7;
+						$i = 0;
+						foreach( $tournament->finals as $final ) {
+							$r = $final['round'] - 1;
+							if ( 0 === $i ) {
+								$match_date = $tournament->date;
+							} elseif ( 1 === $i ) {
+								$match_date = RacketManager_Util::amend_date( $tournament->date, 7, '-' );
+							} else {
+								$match_date = RacketManager_Util::amend_date( $match_date, $round_length, '-' );
+							}
+							$match_dates[ $r ] = $match_date;
+							++$i;
+						}
+					}
 					require RACKETMANAGER_PATH . 'admin/tournament/setup.php';
 				}
 			}

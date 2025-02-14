@@ -1354,6 +1354,35 @@ function racketmanager_upgrade() {
 				}
 			}
 		}
+		$competitions = $racketmanager->get_competitions();
+		foreach ( $competitions as $competition ) {
+			$seasons = $competition->seasons;
+			foreach ( $seasons as $key => $season ) {
+				if ( ! isset( $season['match_dates'] ) ) {
+					if ( isset( $season['matchDates'] ) ) {
+						$season['match_dates'] = $season['matchDates'];
+						unset( $season['matchDates'] );
+					}
+				}
+				$seasons[ $key ] = $season;
+			}
+			$competition->update_seasons( $seasons );
+		}
+		$events = $racketmanager->get_events();
+		foreach ( $events as $event ) {
+			$event   = Racketmanager\get_event( $event->id );
+			$seasons = $event->seasons;
+			foreach ( $seasons as $key => $season ) {
+				if ( ! isset( $season['match_dates'] ) ) {
+					if ( isset( $season['matchDates'] ) ) {
+						$season['match_dates'] = $season['matchDates'];
+						unset( $season['matchDates'] );
+					}
+				}
+				$seasons[ $key ] = $season;
+			}
+			$event->update_seasons( $seasons );
+		}
 	}
 	/*
 	* Update version and dbversion

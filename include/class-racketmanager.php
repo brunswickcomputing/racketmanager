@@ -2641,7 +2641,7 @@ class RacketManager {
 			$search_terms[] = 'm.`winner_id` != 0';
 		}
 		if ( $age_group ) {
-			$sql .= " AND `league_id` in (select `id` from {$wpdb->racketmanager} WHERE `event_id` in (SELECT e.`id` FROM {$wpdb->racketmanager_events} e, {$wpdb->racketmanager_competitions} c WHERE c.`name` = '" . $competition_name . "' AND e.`competition_id` = c.`id` and `age_group` = '" . $age_group . "'))";
+			$sql .= " AND `league_id` in (select `id` from {$wpdb->racketmanager} WHERE `event_id` in (SELECT e.`id` FROM {$wpdb->racketmanager_events} e, {$wpdb->racketmanager_competitions} c WHERE e.`competition_id` = c.`id` and `age_group` = '" . $age_group . "'))";
 		}
 		if ( $count ) {
 			return intval(

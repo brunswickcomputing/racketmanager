@@ -47,6 +47,15 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.36.0 =
+* BUGFIX: set status(profile) to confirmed when team add to league
+* UPDATE: show number of players for competition
+* UPDATE: show invoices for clubs
+* UPDATE: allow competition entry from competition header
+* UPDATE: update league admin section
+* UPDATE: make specific latest tournament link
+* UPDATE: add age group to competitions
+
 = 8.35.0 =
 * BUGFIX: handle non-numeric league ref
 * UPDATE: enable stripe webhooks for stripe events

@@ -77,6 +77,8 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 							$config->fixed_match_dates        = isset( $_POST['fixed_match_dates'] ) ? ( 'true' === $_POST['fixed_match_dates'] ? true : false ) : false;
 							$config->home_away                = isset( $_POST['home_away'] ) ? ( 'true' === $_POST['home_away'] ? true : false ) : false;
 							$config->round_length             = isset( $_POST['round_length'] ) ? intval( $_POST['round_length'] ) : null;
+							$config->home_away_diff           = isset( $_POST['home_away_diff'] ) ? intval( $_POST['home_away_diff'] ) : null;
+							$config->filler_weeks             = isset( $_POST['filler_weeks'] ) ? intval( $_POST['filler_weeks'] ) : null;
 							$config->match_day_restriction    = isset( $_POST['match_day_restriction'] ) ? ( 'true' === $_POST['match_day_restriction'] ? true : false ) : false;
 							$config->match_day_weekends       = isset( $_POST['match_day_weekends'] ) ? ( 'true' === $_POST['match_day_weekends'] ? true : false ) : false;
 							$config->default_match_start_time = isset( $_POST['default_match_start_time'] ) ? sanitize_text_field( wp_unslash( $_POST['default_match_start_time'] ) ) : null;

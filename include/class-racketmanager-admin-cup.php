@@ -235,7 +235,34 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 			if ( $competition_id ) {
 				$competition = get_competition( $competition_id );
 				if ( $competition ) {
-					$match_dates = $competition->seasons[ $season ]['match_dates'];
+					$season_data = $competition->seasons[ $season ];
+					$match_dates = $season_data['match_dates'];
+					if ( empty( $match_dates ) ) {
+						$date_end     = date_create( $season_data['date_end'] );
+						$day_end      = date_format( $date_end, 'N' );
+						$day_adjust   = $day_end - 1;
+						$end_date     = RacketManager_Util::amend_date( $season_data['date_end'], $day_adjust, '-' );
+						$round_length = isset( $season_data['round_length'] ) ? $season_data['round_length'] : 7;
+						$i = 0;
+						foreach( $competition->finals as $final ) {
+							$r = $final['round'] - 1;
+							if ( 0 === $i ) {
+								$match_date = $season_data['date_end'];
+							} elseif ( 1 === $i ) {
+								if ( $competition->fixed_match_dates ) {
+									$match_date = RacketManager_Util::amend_date( $end_date, $round_length, '-' );
+								} else {
+									$match_date = RacketManager_Util::amend_date( $season_data['date_end'], 7, '+' );
+								}
+							} elseif ( 0 === $r && $competition->fixed_match_dates ) {
+								$match_date = $competition->date_start;
+							} else {
+								$match_date = RacketManager_Util::amend_date( $match_date, $round_length, '-' );
+							}
+							$match_dates[ $r ] = $match_date;
+							++$i;
+						}
+					}
 					require RACKETMANAGER_PATH . 'admin/cup/setup.php';
 				}
 			}
@@ -295,7 +322,24 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 							);
 							$tab         = 'matches';
 							if ( empty( $league->seasons[ $season ]['rounds'] ) ) {
-								$match_dates = empty( $league->event->seasons[ $season ]['match_dates'] ) ? $league->event->competition->seasons[ $season ]['match_dates'] : $league->event->seasons[ $season ]['match_dates'];
+								if ( empty( $league->event->seasons[ $season ]['match_dates'] ) ) {
+									if ( empty( $league->event->offset ) ) {
+										$match_dates = $league->event->competition->seasons[ $season ]['match_dates'];
+									} else {
+										$i = 0;
+										$num_match_dates = count( $league->event->competition->seasons[ $season ]['match_dates'] );
+										foreach( $league->event->competition->seasons[ $season ]['match_dates'] as $match_date ) {
+											if ( $i === $num_match_dates - 1 ) {
+												$match_dates[ $i ] = $match_date;
+											} else {
+												$match_dates[ $i ] = RacketManager_Util::amend_date( $match_date, $league->event->offset, '+', 'week' );
+											}
+											++$i;
+										}
+									}
+								} else {
+									$match_dates = $league->event->seasons[ $season ]['match_dates'];
+								}
 							} else {
 								foreach ( array_reverse( $league->seasons[ $season ]['rounds'] ) as $round ) {
 									$match_dates[] = $round->date;

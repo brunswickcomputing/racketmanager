@@ -51,7 +51,7 @@ $tab_name = 'fixtures';
 	?>
 	<div class="row gx-3 mb-3">
 		<div class="col-md-3 mb-3 mb-md-0">
-			<legend class="<?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Offset from main fixture date', 'racketmanager' ); ?></legend>
+			<legend class="<?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Main fixture date offset', 'racketmanager' ); ?></legend>
 			<div class="form-floating">
 				<?php
 				if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'offset', $racketmanager->error_fields, true ) ) ) {

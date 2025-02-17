@@ -443,18 +443,23 @@ $today       = gmdate( 'Y-m-d' );
 					</div>
 				</div>
 				<?php
-				if ( $competition->is_league ) {
+				if ( $competition->is_league || $competition->is_cup ) {
 					?>
 					<div class="col-md-4">
 						<div class="form-floating mb-3">
 							<?php
+							if ( isset( $current_season->home_away_diff ) ) {
+								$home_away_diff = $current_season->home_away_diff;
+							} else {
+								$home_away_diff = isset( $competition->home_away_diff ) ? $competition->home_away_diff : null;
+							}
 							if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'home_away_diff', $racketmanager->error_fields, true ) ) ) {
 								$is_invalid = true;
 								$msg_id     = array_search( 'home_away_diff', $racketmanager->error_fields, true );
 								$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
 							}
 							?>
-							<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="home_away_diff" id="home_away_diff" value="<?php echo isset( $current_season->home_away_diff ) ? esc_html( $current_season->home_away_diff ) : null; ?>" onchange="Racketmanager.setEndDate(event)"/>
+							<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="home_away_diff" id="home_away_diff" value="<?php echo isset( $home_away_diff ) ? esc_html( $home_away_diff ) : null; ?>" onchange="Racketmanager.setEndDate(event)"/>
 							<label for="home_away_diff" class="form-label"><?php esc_html_e( 'Fixture gap (weeks)', 'racketmanager' ); ?></label>
 							<?php
 							if ( $is_invalid ) {
@@ -470,13 +475,18 @@ $today       = gmdate( 'Y-m-d' );
 					<div class="col-md-4">
 						<div class="form-floating mb-3">
 							<?php
+							if ( isset( $current_season->filler_weeks ) ) {
+								$filler_weeks = $current_season->filler_weeks;
+							} else {
+								$filler_weeks = isset( $competition->filler_weeks ) ? $competition->filler_weeks : null;
+							}
 							if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'filler_weeks', $racketmanager->error_fields, true ) ) ) {
 								$is_invalid = true;
 								$msg_id     = array_search( 'filler_weeks', $racketmanager->error_fields, true );
 								$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
 							}
 							?>
-							<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="filler_weeks" id="filler_weeks" value="<?php echo isset( $current_season->filler_weeks ) ? esc_html( $current_season->filler_weeks ) : null; ?>" onchange="Racketmanager.setEndDate(event)" />
+							<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="filler_weeks" id="filler_weeks" value="<?php echo isset( $filler_weeks ) ? esc_html( $filler_weeks ) : null; ?>" onchange="Racketmanager.setEndDate(event)" />
 							<label for="filler_weeks" class="form-label"><?php esc_html_e( 'Filler weeks', 'racketmanager' ); ?></label>
 							<?php
 							if ( $is_invalid ) {

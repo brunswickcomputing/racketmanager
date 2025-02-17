@@ -2136,6 +2136,18 @@ class Racketmanager_Competition {
 				$updates = true;
 			}
 			$settings->round_length = $config->round_length;
+			if ( 'league' === $config->type || 'cup' === $config->type ) {
+				if ( empty( $this->home_away_diff ) || $this->home_away_diff !== $config->home_away_diff ) {
+					$updates = true;
+				}
+				$settings->home_away_diff = $config->home_away_diff;
+			}
+			if ( 'league' === $config->type ) {
+				if ( empty( $this->filler_weeks ) || $this->filler_weeks !== $config->filler_weeks ) {
+					$updates = true;
+				}
+				$settings->filler_weeks = $config->filler_weeks;
+			}
 			if ( ! isset( $this->match_day_restriction ) || $this->match_day_restriction !== $config->match_day_restriction ) {
 				$updates = true;
 			}

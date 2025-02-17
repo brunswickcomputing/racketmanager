@@ -485,6 +485,9 @@ class RacketManager_Admin extends RacketManager {
 				} elseif ( 'config' === $view ) {
 					$racketmanager_admin_competition = new RacketManager_Admin_Competition();
 					$racketmanager_admin_competition->display_config_page();
+				} elseif ( 'event' === $view || 'event-config' === $view ) {
+					$racketmanager_admin_event = new RacketManager_Admin_Event();
+					$racketmanager_admin_event->display_config_page();
 				} else {
 					$racketmanager_admin_cup->display_cups_page();
 				}

@@ -1384,6 +1384,27 @@ function racketmanager_upgrade() {
 			$event->update_seasons( $seasons );
 		}
 	}
+	if ( version_compare( $installed, '8.38.0', '<' ) ) {
+		echo esc_html__( 'starting 8.38.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$tournaments = $racketmanager->get_tournaments( array( 'orderby' => array( 'date' => 'ASC' ) ) );
+		foreach ( $tournaments as $tournament ) {
+			if ( 'junior' !== $tournament->competition->age_group ) {
+				echo esc_html__( 'processing', 'racketmanager' ) . ' ' . $tournament->name . "<br />\n";
+				$entries = $tournament->get_entries();
+				foreach ( $entries as $entry ) {
+					if ( empty( $entry->club_id ) ) {
+						$player = Racketmanager\get_player( $entry->id );
+						$player_clubs = $player->get_clubs();
+						if ( $player_clubs ) {
+							$player_club = end( $player_clubs );
+							$player_club_id = $player_club->id;
+							$wpdb->query( "UPDATE {$wpdb->racketmanager_tournament_entries} SET `club_id` = " . $player_club_id . " WHERE `id` = " . $entry->entry_id );
+						}
+					}
+				}
+			}
+		}
+	}
 	/*
 	* Update version and dbversion
 	*/

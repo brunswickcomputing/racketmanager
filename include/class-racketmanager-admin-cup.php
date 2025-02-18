@@ -325,7 +325,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 								if ( empty( $league->event->seasons[ $season ]['match_dates'] ) ) {
 									if ( empty( $league->event->offset ) ) {
 										$match_dates = $league->event->competition->seasons[ $season ]['match_dates'];
-									} else {
+									} elseif( isset( $league->event->competition->seasons[ $season ]['match_dates'] ) && is_array( $league->event->competition->seasons[ $season ]['match_dates'] ) ) {
 										$i = 0;
 										$num_match_dates = count( $league->event->competition->seasons[ $season ]['match_dates'] );
 										foreach( $league->event->competition->seasons[ $season ]['match_dates'] as $match_date ) {
@@ -336,6 +336,8 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 											}
 											++$i;
 										}
+									} else {
+										$match_dates = array();
 									}
 								} else {
 									$match_dates = $league->event->seasons[ $season ]['match_dates'];

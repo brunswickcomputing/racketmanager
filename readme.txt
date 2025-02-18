@@ -47,6 +47,12 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.37.1 =
+* BUGFIX: order only tournaments by date
+* BUGFIX: set home_away_diff for leagues and cups
+* BUGFIX: ensure competition match dates set
+* BUGFIX: set new match date for second leg correctly
+
 = 8.37.0 =
 * BUGFIX: remove erroneous competition name check
 * UPDATE: use last 2 tournaments with the same age group to target not entered players

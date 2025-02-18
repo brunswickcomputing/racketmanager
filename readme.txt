@@ -47,6 +47,9 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.38.0 =
+* UPDATE: get club from tournament entry
+
 = 8.37.1 =
 * BUGFIX: order only tournaments by date
 * BUGFIX: set home_away_diff for leagues and cups

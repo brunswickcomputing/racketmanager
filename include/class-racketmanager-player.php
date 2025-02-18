@@ -602,13 +602,16 @@ final class Racketmanager_Player {
 		if ( '' !== $search ) {
 			$sql .= " AND $search";
 		}
+		$sql = $wpdb->prepare($sql, $search_args );
+
+		$player_clubs = wp_cache_get( md5( $sql ), 'player_clubs' );
+		if ( ! $player_clubs ) {
+			$player_clubs = $wpdb->get_results( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			);
+			wp_cache_set( md5( $sql ), $player_clubs, 'player_clubs' );
+		}
 		$clubs        = array();
-		$player_clubs = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare(
-				$sql, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-				$search_args
-			)
-		);
 		foreach ( $player_clubs as $i => $player_club ) {
 			$club = get_club( $player_club->club_id );
 			if ( $club ) {

@@ -174,7 +174,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 			if ( ! $club_player ) {
 				return __( 'Player not found for club', 'racketmanager' );
 			}
-			$player->club_name         = $club->shortcode;
+			$player->club              = $club;
 			$player->created_date      = $club_player[0]->created_date;
 			$player->created_user      = $club_player[0]->created_user;
 			$player->created_user_name = $club_player[0]->created_user_name;

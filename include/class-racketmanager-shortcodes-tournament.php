@@ -326,7 +326,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 					$player = $this->get_player_info( $player, $tournament );
 				}
 			} else {
-				$players             = $tournament->get_players();
+				$players             = $tournament->get_entries();
 				$tournament->players = RacketManager_Util::get_players_list( $players );
 			}
 			$filename = ( ! empty( $template ) ) ? 'players-' . $template : 'players';
@@ -349,6 +349,13 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 	 */
 	public function get_player_info( $player, $tournament ) {
 		global $racketmanager;
+		$key = $tournament->id . '_' . $player->id;
+		$tournament_entry = get_tournament_entry( $key, 'key' );
+		if ( $tournament_entry ) {
+			if ( $tournament_entry->club ) {
+				$player->club = $tournament_entry->club;
+			}
+		}
 		$tournament->events = $tournament->get_events();
 		foreach ( $tournament->events as $event ) {
 			$event = get_event( $event );
@@ -370,9 +377,8 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 				$player->teams[] = $team;
 			}
 		}
-		if ( ! empty( $team ) ) {
-			$player->club      = $team->club_id;
-			$player->club_name = get_club( $player->club )->name;
+		if ( ! empty( $team ) && empty( $player->club ) ) {
+			$player->club      = $team->club;
 		}
 		$tournament->matches = $racketmanager->get_matches(
 			array(

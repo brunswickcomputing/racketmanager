@@ -45,15 +45,21 @@ namespace Racketmanager;
 													<span class="nav-link__value"><?php echo esc_html( $player->index ); ?></span>
 												</a>
 											</h5>
-											<div class="media__content-subinfo">
-												<div class="media__subheading-wrapper">
-													<small class="media__subheading">
-														<span class="nav--link">
-															<span class="nav-link__value"></span>
-														</span>
-													</small>
+											<?php
+											if ( ! empty( $player->club ) ) {
+												?>
+												<div class="media__content-subinfo">
+													<div class="media__subheading-wrapper">
+														<small class="media__subheading">
+															<span class="nav--link">
+																<span class="nav-link__value"><?php echo esc_html( $player->club->shortcode ); ?></span>
+															</span>
+														</small>
+													</div>
 												</div>
-											</div>
+												<?php
+											}
+											?>
 										</div>
 									</li>
 								<?php } ?>

@@ -894,7 +894,7 @@ final class Racketmanager_Tournament {
 		if ( $count ) {
 			$sql = 'SELECT COUNT(*)';
 		} else {
-			$sql = 'SELECT `player_id`, `status`';
+			$sql = 'SELECT `id`, `player_id`, `status`, `club_id`';
 		}
 		$sql          .= " FROM {$wpdb->racketmanager_tournament_entries} WHERE `tournament_id` = %d";
 		$search_terms  = array();
@@ -977,7 +977,15 @@ final class Racketmanager_Tournament {
 		foreach ( $tournament_entries as $tournament_entry ) {
 			$player = get_player( $tournament_entry->player_id );
 			if ( $player ) {
-				$player->status           = $tournament_entry->status;
+				$player->status   = $tournament_entry->status;
+				$player->entry_id = $tournament_entry->id;
+				$player->club     = null;
+				if ( $tournament_entry->club_id ) {
+					$club = get_club( $tournament_entry->club_id );
+					if ( $club ) {
+						$player->club = $club;
+					}
+				}
 				$tournament_entries[ $i ] = $player;
 			}
 			++$i;

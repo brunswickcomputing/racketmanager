@@ -3737,8 +3737,8 @@ class Racketmanager_League {
 		if ( $this->is_championship && $this->event->current_season['home_away'] && 'final' !== $match->final_round ) {
 			$match->leg              = 1;
 			$new_match               = clone $match;
-			$days_diff               = empty( $this->event->competition->seasons[ $match->season ]['home_away_diff'] ) ? 14 : $this->event->competition->seasons[ $match->season ]['home_away_diff'];
-			$new_match_date          = Racketmanager_Util::amend_date( $match->date, $days_diff );
+			$weeks_diff              = empty( $this->event->competition->seasons[ $match->season ]['home_away_diff'] ) ? 2 : $this->event->competition->seasons[ $match->season ]['home_away_diff'];
+			$new_match->date         = Racketmanager_Util::amend_date( $match->date, $weeks_diff, '+', 'weeks' );
 			$new_match->id           = null;
 			$new_match->linked_match = $match->id;
 			$new_match->leg          = $match->leg + 1;

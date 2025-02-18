@@ -446,10 +446,6 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 						$updates                  = true;
 						$season['num_match_days'] = $current_season->num_match_days;
 					}
-					if ( empty( $season['home_away_diff'] ) || $season['home_away_diff'] !== $current_season->home_away_diff ) {
-						$updates                  = true;
-						$season['home_away_diff'] = $current_season->home_away_diff;
-					}
 					if ( empty( $season['filler_weeks'] ) || $season['filler_weeks'] !== $current_season->filler_weeks ) {
 						$updates                = true;
 						$season['filler_weeks'] = $current_season->filler_weeks;
@@ -457,6 +453,12 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 				} elseif ( $season['venue'] !== $current_season->venue ) {
 					$updates         = true;
 					$season['venue'] = $current_season->venue;
+				}
+				if ( $competition->is_league || $competition->is_cup ) {
+					if ( empty( $season['home_away_diff'] ) || $season['home_away_diff'] !== $current_season->home_away_diff ) {
+						$updates                  = true;
+						$season['home_away_diff'] = $current_season->home_away_diff;
+					}
 				}
 				if ( empty( $season['round_length'] ) || $season['round_length'] !== $current_season->round_length ) {
 					$updates                = true;

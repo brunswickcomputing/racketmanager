@@ -63,10 +63,10 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$user_competitions       = null;
 		$query_args['type']      = $type;
 		$query_args['age_group'] = $age_group;
-		$query_args['orderby']   = array( 'date' => 'DESC' );
 		if ( 'tournament' === $type ) {
-			$tournaments  = $racketmanager->get_tournaments( $query_args );
-			$competitions = array();
+			$query_args['orderby'] = array( 'date' => 'DESC' );
+			$tournaments           = $racketmanager->get_tournaments( $query_args );
+			$competitions          = array();
 			foreach ( $tournaments as $tournament ) {
 				$tournament->type     = $type;
 				$tournament->date_end = $tournament->date;

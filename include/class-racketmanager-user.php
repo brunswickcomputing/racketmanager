@@ -216,11 +216,176 @@ final class Racketmanager_User {
 			$this->system_record = get_user_meta( $this->ID, 'leaguemanager_type', true );
 		}
 	}
-
+	/**
+	 * Update function
+	 *
+	 * @param object $user updated details.
+	 * @return object||false
+	 */
+	public function update( $user ) {
+		global $racketmanager;
+		$valid = true;
+		if ( empty( $user->email ) ) {
+			$valid = false;
+			$err_fld[] = 'username';
+			$err_msg[] = Racketmanager_Util::get_error_message( 'empty_username' );
+		}
+		if ( empty( $user->firstname ) ) {
+			$valid = false;
+			$err_fld[] = 'firstname';
+			$err_msg[] = Racketmanager_Util::get_error_message( 'firstname_field_empty' );
+		}
+		if ( empty( $user->surname ) ) {
+			$valid = false;
+			$err_fld[] = 'lastname';
+			$err_msg[] = Racketmanager_Util::get_error_message( 'lastname_field_empty' );
+		}
+		if ( empty( $user->gender ) ) {
+			$valid = false;
+			$err_fld[] = 'gender';
+			$err_msg[] = Racketmanager_Util::get_error_message( 'gender_field_empty' );
+		}
+		if ( empty( $user->btm ) ) {
+			$player_options = $racketmanager->get_options( 'rosters' );
+			if ( isset( $player_options['btm'] ) && '1' === $player_options['btm'] ) {
+				$valid = false;
+				$err_fld[] = 'btm';
+				$err_msg[] = Racketmanager_Util::get_error_message( 'btm_field_empty' );
+			}
+		}
+		if ( $user->password !== $user->re_password ) {
+			$valid = false;
+			$err_fld[] = 'password';
+			$err_msg[] = Racketmanager_Util::get_error_message( 'password_reset_mismatch' );
+		}
+		if ( $valid ) {
+			$updates = $this->set_details( $user );
+			if ( $updates ) {
+				$this->message = __( 'User updated', 'racketmanager' );
+				$this->update_result = 'success';
+			} else {
+				$this->message = __( 'No updates', 'racketmanager' );
+				$this->update_result = 'warning';
+			}
+		} else {
+			$this->err_flds = $err_fld;
+			$this->err_msgs = $err_msg;
+			$this->message = __( 'Errors found', 'racketmanager' );
+			$this->update_result = 'danger';
+		}
+		return $this;
+	}
+	/**
+	 * Set details function
+	 *
+	 * @param object $user updated details.
+	 * @return boolean
+	 */
+	private function set_details( $user ) {
+		$updates = false;
+		$updated = array();
+		$updated_user = array();
+		if ( $this->user_email !== $user->email ) {
+			$updates               = true;
+			$this->user_email      = $user->email;
+			$updated['user_email'] = $user->email;
+		}
+		if ( $this->firstname !== $user->firstname ) {
+			$updates               = true;
+			$this->firstname       = $user->firstname;
+			$updated['first_name'] = $user->firstname;
+		}
+		if ( $this->surname !== $user->surname ) {
+			$updates              = true;
+			$this->surname        = $user->surname;
+			$updated['last_name'] = $user->surname;
+		}
+		if ( $this->contactno !== $user->contactno ) {
+			$updates              = true;
+			$this->contactno      = $user->contactno;
+			$updated['contactno'] = $user->contactno;
+		}
+		if ( $this->gender !== $user->gender ) {
+			$updates           = true;
+			$this->gender      = $user->gender;
+			$updated['gender'] = $user->gender;
+		}
+		if ( empty( $this->btm ) ) {
+			if ( ! empty( $user->btm ) ) {
+				$updates        = true;
+				$this->btm      = $user->btm;
+				$updated['btm'] = $user->btm;
+			}
+		} elseif ( intval( $this->btm ) !== intval( $user->btm ) ) {
+			$updates        = true;
+			$this->btm      = $user->btm;
+			$updated['btm'] = $user->btm;
+		}
+		if ( intval( $this->year_of_birth ) !== intval( $user->year_of_birth ) ) {
+			$updates                  = true;
+			$this->year_of_birth      = $user->year_of_birth;
+			$updated['year_of_birth'] = $user->year_of_birth;
+		}
+		if ( ! empty( $user->password ) ) {
+			$updates             = true;
+			$this->password      = $user->password;
+			$updated['password'] = $user->password;
+		}
+		if ( ! $updates ) {
+			return false;
+		}
+		foreach ( $updated as $key => $value ) {
+			// http://codex.wordpress.org/Function_Reference/wp_update_user.
+			if ( 'contactno' === $key ) {
+				update_user_meta( $this->ID, $key, $value );
+			} elseif ( 'btm' === $key ) {
+				update_user_meta( $this->ID, $key, $value );
+			} elseif ( 'year_of_birth' === $key ) {
+				update_user_meta( $this->ID, $key, $value );
+			} elseif ( 'gender' === $key ) {
+				update_user_meta( $this->ID, $key, $value );
+			} elseif ( 'first_name' === $key ) {
+				update_user_meta( $this->ID, $key, $value );
+				$user_data[ $key ] = $value;
+				$display_name      = $value . ' ' . sanitize_text_field( $this->surname );
+				wp_update_user(
+					array(
+						'ID'           => $this->ID,
+						'display_name' => $display_name,
+					)
+				);
+				$this->display_name = $display_name;
+				$this->fullname     = $display_name;
+			} elseif ( 'last_name' === $key ) {
+				update_user_meta( $this->ID, $key, $value );
+				$user_data[ $key ] = $value;
+				$display_name      = sanitize_text_field( $this->firstname ) . ' ' . $value;
+				wp_update_user(
+					array(
+						'ID'           => $this->ID,
+						'display_name' => $display_name,
+					)
+				);
+				$this->display_name = $display_name;
+				$this->fullname     = $display_name;
+			} elseif ( 'password' === $key ) {
+				wp_set_password( $value, $this->ID );
+				wp_set_auth_cookie( $this->ID, 1, true );
+			} else {
+				wp_update_user(
+					array(
+						'ID' => $this->ID,
+						$key => $value,
+					)
+				);
+			}
+		}
+		return true;
+	}
 	/**
 	 * Get messages function
 	 *
-	 * @param array $args seartcy arguments.
+	 * @param array $args search arguments.
 	 * @return array||false
 	 */
 	public function get_messages( $args ) {

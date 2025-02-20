@@ -1405,6 +1405,24 @@ function racketmanager_upgrade() {
 			}
 		}
 	}
+	if ( version_compare( $installed, '8.39.0', '<' ) ) {
+		echo esc_html__( 'starting 8.39.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$tournaments = $racketmanager->get_tournaments( array( 'orderby' => array( 'date' => 'ASC' ) ) );
+		foreach ( $tournaments as $tournament ) {
+			echo esc_html__( 'processing', 'racketmanager' ) . ' ' . $tournament->name . "<br />\n";
+			$entries = $tournament->get_entries();
+			foreach ( $entries as $entry ) {
+				if ( ! empty( $entry->club->id ) ) {
+					$player = Racketmanager\get_player( $entry->id );
+					if ( $player ) {
+						if ( $player->email ) {
+							$player->set_opt_in( '1' );
+						}
+					}
+				}
+			}
+		}
+	}
 	/*
 	* Update version and dbversion
 	*/

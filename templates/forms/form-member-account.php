@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+$is_invalid   = false;
 ?>
 <div class="container">
 	<div class="module module--card">
@@ -16,6 +17,22 @@ namespace Racketmanager;
 		<div class="module__content">
 			<div class="module-container">
 				<?php
+				if ( ! empty( $user->message ) ) {
+					if ( empty( $user->update_result ) ) {
+						$alert_class = 'info';
+					} else {
+						$alert_class = $user->update_result;
+					}
+					?>
+					<div class="alert_rm mb-3 alert--<?php echo esc_attr( $alert_class ); ?>" id="userAlert">
+						<div class="alert__body">
+							<div class="alert__body-inner" id="userAlertResponse">
+								<?php echo esc_html( $user->message ); ?>
+							</div>
+						</div>
+					</div>
+					<?php
+				}
 				if ( isset( $user_data['message'] ) ) {
 					if ( isset( $user_data['error'] ) ) {
 						$class = 'login-error';
@@ -31,54 +48,105 @@ namespace Racketmanager;
 					<?php wp_nonce_field( 'member_account', 'racketmanager_nonce' ); ?>
 					<div class="form-control mb-3">
 						<legend><?php esc_html_e( 'Personal details', 'racketmanager' ); ?></legend>
-						<div class="row g-3">
-							<div class="form-floating col-md-6 mb-3" <?php echo ( isset( $user_data['first_name_error'] ) ) ? ' is-invalid' : ''; ?>">
-								<input type="text" autocomplete='given-name' placeholder="<?php esc_html_e( 'First Name', 'racketmanager' ); ?>" name="firstname" id="firstname" class="form-control" value="<?php echo esc_html( $user_data['first_name'] ); ?>" />
+						<div class="row gx-3">
+							<div class="form-floating col-md-6 mb-3">
+								<?php
+								if ( isset( $user->err_flds ) && is_numeric( array_search( 'firstname', $user->err_flds, true ) ) ) {
+									$is_invalid = true;
+									$msg_id     = array_search( 'firstname', $user->err_flds, true );
+									$msg        = isset( $user->err_msgs[ $msg_id ] ) ? $user->err_msgs[ $msg_id ] : null;
+								}
+								?>
+								<input type="text" autocomplete='given-name' placeholder="<?php esc_html_e( 'First Name', 'racketmanager' ); ?>" name="firstname" id="firstname" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" value="<?php echo esc_html( $user->firstname ); ?>" />
 								<label for="firstname"><?php esc_html_e( 'First Name', 'racketmanager' ); ?></label>
 								<?php
-								if ( isset( $user_data['first_name_error'] ) ) {
-									echo '<span class="form-error">' . esc_html( $user_data['first_name_error'] ) . '</span>';
+								if ( $is_invalid ) {
+									?>
+									<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+									<?php
+									$is_invalid = false;
+									$msg        = null;
 								}
 								?>
 							</div>
-							<div class="form-floating col-md-6 mb-3" <?php echo ( isset( $user_data['last_name_error'] ) ) ? ' is-invalid' : ''; ?>">
-								<input type="text" autocomplete='family-name' placeholder="<?php esc_html_e( 'Last Name', 'racketmanager' ); ?>" name="lastname" id="lastname" class="form-control <?php echo ( isset( $user_data['last_name_error'] ) ) ? ' is-invalid' : ''; ?>" value="<?php echo esc_html( $user_data['last_name'] ); ?>" />
+							<div class="form-floating col-md-6 mb-3">
+								<?php
+								if ( isset( $user->err_flds ) && is_numeric( array_search( 'lastname', $user->err_flds, true ) ) ) {
+									$is_invalid = true;
+									$msg_id     = array_search( 'lastname', $user->err_flds, true );
+									$msg        = isset( $user->err_msgs[ $msg_id ] ) ? $user->err_msgs[ $msg_id ] : null;
+								}
+								?>
+								<input type="text" autocomplete='family-name' placeholder="<?php esc_html_e( 'Last Name', 'racketmanager' ); ?>" name="lastname" id="lastname" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" value="<?php echo esc_html( $user->surname ); ?>" />
 								<label for="lastname"><?php esc_html_e( 'Last Name', 'racketmanager' ); ?></label>
 								<?php
-								if ( isset( $user_data['last_name_error'] ) ) {
-									echo '<span class="form-error">' . esc_html( $user_data['last_name_error'] ) . '</span>';
+								if ( $is_invalid ) {
+									?>
+									<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+									<?php
+									$is_invalid = false;
+									$msg        = null;
 								}
 								?>
 							</div>
 						</div>
 						<fieldset class="form-floating mb-3">
-							<legend><?php esc_html_e( 'Gender', 'racketmanager' ); ?></legend>
+							<?php
+							if ( isset( $user->err_flds ) && is_numeric( array_search( 'gender', $user->err_flds, true ) ) ) {
+								$is_invalid = true;
+								$msg_id     = array_search( 'gender', $user->err_flds, true );
+								$msg        = isset( $user->err_msgs[ $msg_id ] ) ? $user->err_msgs[ $msg_id ] : null;
+							}
+							?>
+							<legend class="<?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Gender', 'racketmanager' ); ?></legend>
 							<div class="form-check form-check-inline">
-								<input type="radio" class="form-check-input <?php echo ( isset( $user_data['gender_error'] ) ) ? ' is-invalid' : ''; ?>" id="genderMale" name="gender" value="M"<?php echo ( 'M' === $user_data['gender'] ) ? 'checked' : ''; ?> />
+								<input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" id="genderMale" name="gender" value="M" <?php checked( 'M', $user->gender ); ?> />
 								<label for="genderMale" class="form-check-label"><?php esc_html_e( 'Male', 'racketmanager' ); ?></label>
 							</div>
 							<div class="form-check form-check-inline">
-								<input type="radio" class="form-check-input <?php echo ( isset( $user_data['gender_error'] ) ) ? ' is-invalid' : ''; ?>" id="genderFemale" name="gender" value="F" <?php echo ( 'F' === $user_data['gender'] ) ? 'checked' : ''; ?> />
+								<input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" id="genderFemale" name="gender" value="F" <?php checked( 'F', $user->gender ); ?> />
 								<label for="genderFemale" class="form-check-label"><?php esc_html_e( 'Female', 'racketmanager' ); ?></label>
 							</div>
 							<?php
-							if ( isset( $user_data['gender_error'] ) ) {
-								echo '<span class="form-error">' . esc_html( $user_data['gender_error'] ) . '</span>';
+							if ( $is_invalid ) {
+								?>
+								<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+								<?php
+								$is_invalid = false;
+								$msg        = null;
 							}
 							?>
 						</fieldset>
-						<div class="row g-3">
+						<div class="row gx-3">
 							<div class="form-floating col-md-6 mb-3">
-								<input type="tel" placeholder="<?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?>" name="btm" id="btm" class="form-control <?php echo ( isset( $user_data['btm_error'] ) ) ? ' is-invalid' : ''; ?>" value="<?php echo esc_html( $user_data['btm'] ); ?>" />
+								<?php
+								if ( isset( $user->err_flds ) && is_numeric( array_search( 'btm', $user->err_flds, true ) ) ) {
+									$is_invalid = true;
+									$msg_id     = array_search( 'btm', $user->err_flds, true );
+									$msg        = isset( $user->err_msgs[ $msg_id ] ) ? $user->err_msgs[ $msg_id ] : null;
+								}
+								?>
+								<input type="tel" placeholder="<?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?>" name="btm" id="btm" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" value="<?php echo esc_html( $user->btm ); ?>" />
 								<label for="btm"><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></label>
 								<?php
-								if ( isset( $user_data['btm_error'] ) ) {
-									echo '<span class="form-error">' . esc_html( $user_data['btm_error'] ) . '</span>';
+								if ( $is_invalid ) {
+									?>
+									<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+									<?php
+									$is_invalid = false;
+									$msg        = null;
 								}
 								?>
 							</div>
 							<div class="form-floating col-md-6 mb-3">
-								<select class="form-select <?php echo ( isset( $user_data['year_of_birth_error'] ) ) ? ' is-invalid' : ''; ?>" name="year_of_birth" id="year_of_birth">
+								<?php
+								if ( isset( $user->err_flds ) && is_numeric( array_search( 'year_of_birth', $user->err_flds, true ) ) ) {
+									$is_invalid = true;
+									$msg_id     = array_search( 'year_of_birth', $user->err_flds, true );
+									$msg        = isset( $user->err_msgs[ $msg_id ] ) ? $user->err_msgs[ $msg_id ] : null;
+								}
+								?>
+								<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="year_of_birth" id="year_of_birth">
 									<option value=""><?php esc_html_e( 'Enter year of birth', 'racketmanager' ); ?></option>
 									<?php
 									$current_year = gmdate( 'Y' );
@@ -86,15 +154,19 @@ namespace Racketmanager;
 									$end_year     = $start_year - 100;
 									for ( $i = $start_year; $i > $end_year; $i-- ) {
 										?>
-										<option value="<?php echo esc_attr( $i ); ?>" <?php selected( $i, $user_data['year_of_birth'] ); ?>><?php echo esc_html( $i ); ?></option>
+										<option value="<?php echo esc_attr( $i ); ?>" <?php selected( $i, $user->year_of_birth ); ?>><?php echo esc_html( $i ); ?></option>
 										<?php
 									}
 									?>
 								</select>
 								<label for="year_of_birth"><?php esc_html_e( 'Year of birth', 'racketmanager' ); ?></label>
 								<?php
-								if ( isset( $user_data['year_of_birth_error'] ) ) {
-									echo '<span class="form-error">' . esc_html( $user_data['year_of_birth_error'] ) . '</span>';
+								if ( $is_invalid ) {
+									?>
+									<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+									<?php
+									$is_invalid = false;
+									$msg        = null;
 								}
 								?>
 							</div>
@@ -102,52 +174,107 @@ namespace Racketmanager;
 					</div>
 					<div class="form-control mb-3">
 						<legend><?php esc_html_e( 'Contact details', 'racketmanager' ); ?></legend>
-						<div class="row g-3">
+						<div class="row gx-3">
 							<div class="form-floating col-md-6 mb-3">
-								<input type="email" required="required" placeholder="<?php esc_html_e( 'Email Address', 'racketmanager' ); ?>" name="username" id="username" class="form-control <?php echo ( isset( $user_data['user_name_error'] ) ) ? ' is-invalid' : ''; ?>" value="<?php echo esc_html( $user_data['user_name'] ); ?>" />
+								<?php
+								if ( isset( $user->err_flds ) && is_numeric( array_search( 'username', $user->err_flds, true ) ) ) {
+									$is_invalid = true;
+									$msg_id     = array_search( 'username', $user->err_flds, true );
+									$msg        = isset( $user->err_msgs[ $msg_id ] ) ? $user->err_msgs[ $msg_id ] : null;
+								}
+								?>
+								<input type="email" placeholder="<?php esc_html_e( 'Email Address', 'racketmanager' ); ?>" name="username" id="username" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" value="<?php echo esc_html( $user->email ); ?>" />
 								<label for="username"><?php esc_html_e( 'Username', 'racketmanager' ); ?></label>
 								<?php
-								if ( isset( $user_data['user_name_error'] ) ) {
-									echo '<span class="form-error">' . esc_html( $user_data['user_name_error'] ) . '</span>';
+								if ( $is_invalid ) {
+									?>
+									<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+									<?php
+									$is_invalid = false;
+									$msg        = null;
 								}
 								?>
 							</div>
 							<div class="form-floating col-md-6 mb-3">
-								<input type="tel" autocomplete='tel' placeholder="<?php esc_html_e( 'Telephone Number', 'racketmanager' ); ?>" name="contactno" id="contactno" class="form-control <?php echo ( isset( $user_data['contactno_error'] ) ) ? ' is-invalid' : ''; ?>" value="<?php echo esc_html( $user_data['contactno'] ); ?>" />
+								<?php
+								if ( isset( $user->err_flds ) && is_numeric( array_search( 'contactno', $user->err_flds, true ) ) ) {
+									$is_invalid = true;
+									$msg_id     = array_search( 'contactno', $user->err_flds, true );
+									$msg        = isset( $user->err_msgs[ $msg_id ] ) ? $user->err_msgs[ $msg_id ] : null;
+								}
+								?>
+								<input type="tel" autocomplete='tel' placeholder="<?php esc_html_e( 'Telephone Number', 'racketmanager' ); ?>" name="contactno" id="contactno" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" value="<?php echo esc_html( $user->contactno ); ?>" />
 								<label for="contactno"><?php esc_html_e( 'Telephone Number', 'racketmanager' ); ?></label>
 								<?php
-								if ( isset( $user_data['contactno_error'] ) ) {
-									echo '<span class="form-error">' . esc_html( $user_data['contactno_error'] ) . '</span>';
+								if ( $is_invalid ) {
+									?>
+									<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+									<?php
+									$is_invalid = false;
+									$msg        = null;
 								}
 								?>
 							</div>
 						</div>
 					</div>
+					<?php
+					if ( isset( $user_data['contact_preferences'] ) ) {
+						?>
+						<div class="form-control mb-3">
+							<legend><?php esc_html_e( 'Contact preferences', 'racketmanager' ); ?></legend>
+							<div class="row gx-3">
+								<div class="form-floating col-md-6 mb-3">
+									<?php
+									foreach ( $user_data['contact_preference'] as $contact_preference ) {
+										?>
+										<div class="form-check">
+											<input type="checkbox" class="form-check-input" id="preference-<?php echo esc_attr( $contact_preference['ref'] ); ?>" name="preference[<?php echo esc_attr( $contact_preference['ref'] ); ?>]" value="1" <?php checked( '1', $contact_preference['ref'] ); ?> />
+											<label for="preference-<?php echo esc_attr( $contact_preference['ref'] ); ?>" class="form-check-label"><?php echo esc_html( $contact_preference['name'] ); ?></label>
+										</div>
+										<?php
+									}
+									?>
+								</div>
+							</div>
+						</div>
+						<?php
+					}
+					?>
 					<div class="form-control mb-3">
 						<legend><?php esc_html_e( 'Account', 'racketmanager' ); ?></legend>
 						<p class="info-msg"><?php esc_html_e( 'When both password fields are left empty, your password will not change', 'racketmanager' ); ?></p>
-						<div class="row g-3">
+						<div class="row gx-3">
 							<div class="form-floating col-md-6 mb-3">
-								<input type="password" placeholder="<?php esc_html_e( 'Password', 'racketmanager' ); ?>" name="password" id="password" class="form-control password <?php echo ( isset( $user_data['password_error'] ) ) ? ' is-invalid' : ''; ?>" size="20" value="" autocomplete="off" />
+								<?php
+								if ( isset( $user->err_flds ) && is_numeric( array_search( 'password', $user->err_flds, true ) ) ) {
+									$is_invalid = true;
+									$msg_id     = array_search( 'password', $user->err_flds, true );
+									$msg        = isset( $user->err_msgs[ $msg_id ] ) ? $user->err_msgs[ $msg_id ] : null;
+								}
+								?>
+								<input type="password" placeholder="<?php esc_html_e( 'Password', 'racketmanager' ); ?>" name="password" id="password" class="form-control password <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" size="20" value="" autocomplete="off" />
 								<i class="passwordShow racketmanager-svg-icon">
 								<?php racketmanager_the_svg( 'icon-eye' ); ?>
 								</i>
 								<label for="password"><?php esc_html_e( 'Password', 'racketmanager' ); ?></label>
 								<?php
-								if ( isset( $user_data['password_error'] ) ) {
-									echo '<span class="form-error">' . esc_html( $user_data['password_error'] ) . '</span>';
+								if ( $is_invalid ) {
+									?>
+									<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+									<?php
 								}
 								?>
 							</div>
 							<div class="form-floating col-md-6 mb-3">
-								<input type="password" placeholder="<?php esc_html_e( 'Re-enter password', 'racketmanager' ); ?>" name="rePassword" id="rePassword" class="form-control password <?php echo ( isset( $user_data['rePassword_error'] ) ) ? ' is-invalid' : ''; ?>" size="20" value="" autocomplete="off" />
+								<input type="password" placeholder="<?php esc_html_e( 'Re-enter password', 'racketmanager' ); ?>" name="rePassword" id="rePassword" class="form-control password <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" value="" autocomplete="off" />
 								<i class="passwordShow racketmanager-svg-icon">
 								<?php racketmanager_the_svg( 'icon-eye' ); ?>
 								</i>
 								<label for="rePassword"><?php esc_html_e( 'Confirm password', 'racketmanager' ); ?></label>
 								<?php
-								if ( isset( $user_data['rePassword_error'] ) ) {
-									echo '<span class="form-error">' . esc_html( $user_data['rePassword_error'] ) . '</span>';
+								if ( $is_invalid ) {
+									$is_invalid = false;
+									$msg        = null;
 								}
 								?>
 							</div>
@@ -156,7 +283,7 @@ namespace Racketmanager;
 							</div>
 						</div>
 					</div>
-					<div class="mb-3">
+					<div class="">
 						<button name="submit" id="memberaccount-button" class="btn btn-primary"><?php esc_html_e( 'Update Details', 'racketmanager' ); ?></button>
 						<input name="action" type="hidden" id="action" value="update-user" />
 					</div>

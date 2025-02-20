@@ -1711,9 +1711,11 @@ class Racketmanager_Competition {
 					$this->id
 				)
 			);
-			wp_cache_delete( $this->id, 'competitions' );
+			wp_cache_set( $this->id, $this, 'competitions' );
+			return true;
+		} else {
+			return false;
 		}
-		wp_cache_set( $this->id, $this, 'competitions' );
 	}
 	/**
 	 * Save plan

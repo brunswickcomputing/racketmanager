@@ -1928,6 +1928,10 @@ class Racketmanager_Event {
 					$this->id
 				)
 			);
+			wp_cache_set( $this->id, $this, 'events' );
+			return true;
+		} else {
+			return false;
 		}
 	}
 	/**

@@ -962,12 +962,97 @@ class Racketmanager_Util {
 		);
 		return $options;
 	}
+	/**
+	 * Get currency format
+	 *
+	 * @return object || null
+	 */
 	public static function get_currency_format() {
 		return numfmt_create( get_locale(), \NumberFormatter::CURRENCY );
 	}
+	/**
+	 * Get currency code
+	 *
+	 * @return string
+	 */
 	public static function get_currency_code() {
 		setlocale( LC_ALL, get_locale() );
 		$locale_info         = localeconv();
 		return isset( $locale_info['int_curr_symbol'] ) ? trim( $locale_info['int_curr_symbol'] ) : 'GBP';
+	}
+	/**
+	 * Finds and returns a matching error message for the given error code.
+	 *
+	 * @param string $error_code    The error code to look up.
+	 *
+	 * @return string               An error message.
+	 */
+	public static function get_error_message( $error_code ) {
+		switch ( $error_code ) {
+			case 'empty_password':
+				$message = __( 'You need to enter a password to login.', 'racketmanager' );
+				break;
+			case 'incorrect_password':
+				/* translators: %s: lost password url */
+				$err     = __( "The password you entered wasn't quite right. <a href='%s'>Did you forget your password</a>?", 'racketmanager' );
+				$message = sprintf( $err, wp_lostpassword_url() );
+				break;
+			case 'email':
+				$message = __( 'The email address you entered is not valid.', 'racketmanager' );
+				break;
+			case 'email_exists':
+				$message = __( 'An account exists with this email address.', 'racketmanager' );
+				break;
+			case 'closed':
+				$message = __( 'Registering new users is currently not allowed.', 'racketmanager' );
+				break;
+			case 'captcha':
+				$message = __( 'Google reCAPTCHA verification failed', 'racketmanager' );
+				break;
+			case 'empty_username':
+				$message = __( 'Email address must be entered.', 'racketmanager' );
+				break;
+			case 'invalid_email':
+			case 'invalidcombo':
+			case 'invalid_username':
+				$message = __( 'There are no users registered with this email address.', 'racketmanager' );
+				break;
+			case 'expiredkey':
+			case 'invalidkey':
+				$message = __( 'Password reset link has expired.', 'racketmanager' );
+				break;
+			case 'password_reset_mismatch':
+				$message = __( 'The two passwords you entered do not match.', 'racketmanager' );
+				break;
+			case 'password_reset_empty':
+				$message = __( "Password must be entered.", 'racketmanager' );
+				break;
+			case 'firstname_field_empty':
+			case 'first_name':
+				$message = __( 'First name must be entered', 'racketmanager' );
+				break;
+			case 'lastname_field_empty':
+			case 'last_name':
+				$message = __( 'Last name must be entered', 'racketmanager' );
+				break;
+			case 'gender_field_empty':
+				$message = __( 'Gender must be specified', 'racketmanager' );
+				break;
+			case 'no_updates':
+				$message = __( 'No updates to be made', 'racketmanager' );
+				break;
+			case 'form_has_timedout':
+				$message = __( 'The form has timed out.', 'racketmanager' );
+				break;
+			case 'btm_field_empty':
+				$message = __( 'LTA tennis number missing', 'racketmanager' );
+				break;
+			case 'security':
+				$message = __( 'Form has expired. Please refresh the page and resubmit.', 'racketmanager' );
+				break;
+			default:
+				$message = $error_code;
+		}
+		return $message;
 	}
 }

@@ -20,6 +20,8 @@
 																			echo ' font-weight: 900;';
 																		} elseif ( 'italic' === $paragraph_format ) {
 																			echo ' font-style: italic;';
+																		} elseif ( 'italic-small' === $paragraph_format ) {
+																			echo ' font-style: italic; font-size: 14px;';
 																		}
 																	}
 																	?>

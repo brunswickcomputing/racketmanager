@@ -1183,6 +1183,7 @@ class RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-competition.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-event.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-league.php';
+		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-login.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-email.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-tournament.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-login.php';
@@ -1199,6 +1200,7 @@ class RacketManager {
 		$racketmanager_shortcodes_competition = new Racketmanager_Shortcodes_Competition();
 		$racketmanager_shortcodes_event       = new Racketmanager_Shortcodes_Event();
 		$racketmanager_shortcodes_league      = new Racketmanager_Shortcodes_League();
+		$racketmanager_shortcodes_login       = new Racketmanager_Shortcodes_Login();
 		$racketmanager_shortcodes_emails      = new Racketmanager_Shortcodes_Email();
 		$racketmanager_shortcodes_tournament  = new Racketmanager_Shortcodes_Tournament();
 		$racketmanager_shortcodes             = new Racketmanager_Shortcodes();
@@ -1529,6 +1531,7 @@ class RacketManager {
 			$redirect_page = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$slug          = get_post_field( 'post_name' );
 			switch ( $slug ) {
+				case 'member-account':
 				case 'tournament-entry':
 				case 'league-entry':
 				case 'cup-entry':

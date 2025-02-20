@@ -194,6 +194,12 @@ final class Racketmanager_Player {
 	 */
 	public $rating_detail;
 	/**
+	 * Opt in detail.
+	 *
+	 * @var array
+	 */
+	public $opt_ins;
+	/**
 	 * Retrieve player instance
 	 *
 	 * @param int    $player_id player id.
@@ -306,6 +312,7 @@ final class Racketmanager_Player {
 				$this->rating_detail[ $match_type ]['team']   = get_user_meta( $this->ID, $rating_type, true );
 				$this->rating[ $match_type ]                  = array_sum( $this->rating_detail[ $match_type ] );
 			}
+			$this->opt_ins = get_user_meta( $this->ID, 'racketmanager_opt_in' );
 		}
 	}
 	/**
@@ -1415,5 +1422,20 @@ final class Racketmanager_Player {
 			}
 		}
 		return $new_player_points;
+	}
+	/**
+	 * Set opt in function
+	 *
+	 * @param string $type opt in type.
+	 * @return void.
+	 */
+	public function set_opt_in( $type ) {
+		$opt_in = Racketmanager_Util::get_email_opt_in_ref( $type );
+		if ( $opt_in ) {
+			$opt_in_found = in_array( strval( $opt_in ), $this->opt_ins, true );
+			if ( ! $opt_in_found ) {
+				add_user_meta( $this->ID, 'racketmanager_opt_in', $opt_in );
+			}
+		}
 	}
 }

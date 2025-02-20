@@ -18,53 +18,33 @@ namespace Racketmanager;
 	<?php wp_nonce_field( 'racketmanager_login', 'racketmanager_login_nonce' ); ?>
 	<div class="mt-3">
 		<div class="form-floating mb-3">
-			<input type="text" class="form-control
-				<?php
-				if ( $username_error ) {
-					echo ' is-invalid';
-				}
-				?>
-				" placeholder="<?php esc_html_e( 'Email', 'racketmanager' ); ?>" name="log" id="user_login" aria-describedby="usernameFeedback" >
+			<input type="text" class="form-control <?php echo empty( $username_error ) ? null : 'is-invalid'; ?>" placeholder="<?php esc_html_e( 'Email', 'racketmanager' ); ?>" name="log" id="user_login" aria-describedby="usernameFeedback" >
 			<label class="" for="user_login"><?php esc_html_e( 'Email', 'racketmanager' ); ?></label>
-			<div id="usernameFeedback" class="
-				<?php
-				if ( $password_error ) {
-					echo 'invalid-feedback';
-				}
+			<?php
+			if ( $username_error ) {
 				?>
-				">
+				<div id="usernameFeedback" class="<?php echo empty( $username_error ) ? null : 'invalid-feedback'; ?>">
+					<?php echo esc_html( $username_message ); ?>
+				</div>
 				<?php
-				if ( $username_error ) {
-					echo esc_html( $username_message );
-				}
-				?>
-			</div>
+			}
+			?>
 		</div>
 		<div class="form-floating mb-3">
-			<input type="password" class="form-control password
-				<?php
-				if ( $password_error ) {
-					echo ' is-invalid';
-				}
-				?>
-				" name="pwd" placeholder="<?php esc_html_e( 'Password', 'racketmanager' ); ?>" id="user_pass" aria-describedby="passwordFeedback" />
+			<input type="password" class="form-control password <?php echo empty( $password_error ) ? null : 'is-invalid'; ?>" name="pwd" placeholder="<?php esc_html_e( 'Password', 'racketmanager' ); ?>" id="user_pass" aria-describedby="passwordFeedback" />
 			<label class="" for="user_pass"><?php esc_html_e( 'Password', 'racketmanager' ); ?></label>
 			<i class="passwordShow racketmanager-svg-icon">
 				<?php racketmanager_the_svg( 'icon-eye' ); ?>
 			</i>
-			<div id="passwordFeedback" class="
-				<?php
-				if ( $password_error ) {
-					echo 'invalid-feedback';
-				}
+			<?php
+			if ( $username_error ) {
 				?>
-				">
+				<div id="passwordFeedback" class="<?php echo empty( $password_error ) ? null : 'invalid-feedback'; ?>">
+					<?php echo esc_html( $password_message ); ?>
+				</div>
 				<?php
-				if ( $password_error ) {
-					echo esc_html( $password_message );
-				}
-				?>
-			</div>
+			}
+			?>
 		</div>
 	</div>
 	<div class="row">
@@ -77,9 +57,13 @@ namespace Racketmanager;
 			<button type="submit" class="float-end">
 				<?php esc_html_e( 'Login', 'racketmanager' ); ?>
 			</button>
-			<?php if ( isset( $vars['redirect'] ) ) { ?>
+			<?php
+			if ( isset( $vars['redirect'] ) ) {
+				?>
 				<input type="hidden" name="redirect_to" value="<?php echo esc_url( $vars['redirect'] ); ?>" />
-			<?php } ?>
+				<?php
+			}
+			?>
 		</div>
 	</div>
 </form>
@@ -102,27 +86,17 @@ namespace Racketmanager;
 						</div>
 					</div>
 					<div class="form-floating mb-3">
-						<input type="email" class="form-control
-						<?php
-						if ( $email_error ) {
-							echo ' is-invalid';
-						}
-						?>
-						" placeholder="<?php esc_html_e( 'Email', 'racketmanager' ); ?>" name="user_login" id="user_login" aria-describedby="emailFeedback" />
+						<input type="email" class="form-control <?php echo empty( $email_error ) ? null : 'is-invalid'; ?>" placeholder="<?php esc_html_e( 'Email', 'racketmanager' ); ?>" name="user_login" id="user_login" aria-describedby="emailFeedback" />
 						<label class="" for="user_login"><?php esc_html_e( 'Email', 'racketmanager' ); ?></label>
-						<div id="emailFeedback" class="
 						<?php
 						if ( $email_error ) {
-							echo 'invalid-feedback';
+							?>
+							<div id="emailFeedback" class="<?php echo empty( $email_error ) ? null : 'invalid-feedback'; ?>">
+								<?php echo esc_html( $email_message ); ?>
+							</div>
+							<?php
 						}
 						?>
-						">
-							<?php
-							if ( $email_error ) {
-								echo esc_html( $email_message );
-							}
-							?>
-						</div>
 					</div>
 				</div>
 				<div class="modal-footer">

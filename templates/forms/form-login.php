@@ -61,45 +61,49 @@ jQuery(function() {
 			<?php
 			foreach ( $vars['error_codes'] as $error_code ) {
 				switch ( $error_code ) {
+					case 'invalid_username':
+						$username_error   = true;
+						$username_message = Racketmanager_Util::get_error_message( $error_code );
+						break;
 					case 'empty_username':
 						$username_error   = true;
-						$username_message = __( 'Username must be provided', 'racketmanager' );
+						$username_message = Racketmanager_Util::get_error_message( $error_code );
 						break;
 					case 'empty_password':
 						$password_error   = true;
-						$password_message = __( 'Password must be provided', 'racketmanager' );
+						$password_message = Racketmanager_Util::get_error_message( $error_code );
 						break;
 					case 'incorrect_password':
 						$password_error   = true;
-						$password_message = __( 'Password not correct', 'racketmanager' );
+						$password_message = Racketmanager_Util::get_error_message( $error_code );
 						break;
 					case 'email':
 						$email_error   = true;
-						$email_message = __( 'Email address must be specified', 'racketmanager' );
+						$email_message = Racketmanager_Util::get_error_message( $error_code );
 						break;
 					case 'email_exists':
 						$email_error   = true;
-						$email_message = __( 'An account exists with this email address', 'racketmanager' );
+						$email_message = Racketmanager_Util::get_error_message( $error_code );
 						break;
 					case 'captcha':
 						$recaptcha_error   = true;
-						$recaptcha_message = __( 'Google reCAPTCHA verification failed', 'racketmanager' );
+						$recaptcha_message = Racketmanager_Util::get_error_message( $error_code );
 						break;
 					case 'first_name':
 						$firstname_error   = true;
-						$firstname_message = __( 'First name must be specified', 'racketmanager' );
+						$firstname_message = Racketmanager_Util::get_error_message( $error_code );
 						break;
 					case 'last_name':
 						$surname_error   = true;
-						$surname_message = __( 'Last name must be specified', 'racketmanager' );
+						$surname_message = Racketmanager_Util::get_error_message( $error_code );
 						break;
 					case 'invalidkey':
 						$other_error   = true;
-						$error_message = __( 'Password reset link has expired', 'racketmanager' );
+						$error_message = Racketmanager_Util::get_error_message( $error_code );
 						break;
 					case 'security':
 						$other_error   = true;
-						$error_message = __( 'Form has expired. Please refresh the page and resubmit.', 'racketmanager' );
+						$error_message = Racketmanager_Util::get_error_message( $error_code );
 						break;
 					default:
 						break;

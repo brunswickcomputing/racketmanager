@@ -13,13 +13,6 @@ namespace Racketmanager;
  * Class for plugin login
  */
 class RacketManager_Login {
-
-	/**
-	 * Text to return if already signed in
-	 *
-	 * @var string
-	 */
-	private $already_signed_in = '';
 	/**
 	 * Url for registration
 	 *
@@ -34,12 +27,6 @@ class RacketManager_Login {
 	 */
 	public function __construct() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'do_enqueue_login_scripts' ) );
-
-		add_shortcode( 'custom-login-form', array( $this, 'render_login_form' ) );
-		add_shortcode( 'custom-password-lost-form', array( $this, 'render_password_lost_form' ) );
-		add_shortcode( 'custom-password-reset-form', array( $this, 'render_password_reset_form' ) );
-		add_shortcode( 'account-info', array( $this, 'render_member_account_form' ) );
-
 		add_action( 'login_form_login', array( $this, 'redirect_to_custom_login' ) );
 		add_action( 'wp_logout', array( $this, 'redirect_after_logout' ) );
 		add_action( 'login_form_register', array( $this, 'redirect_to_custom_register' ) );
@@ -52,8 +39,6 @@ class RacketManager_Login {
 		add_action( 'login_form_rp', array( $this, 'do_password_reset' ) );
 		add_action( 'login_form_resetpass', array( $this, 'do_password_reset' ) );
 		add_action( 'member_account_update', array( $this, 'do_member_account_update' ) );
-		add_action( 'init', array( $this, 'rp_load_translations' ) );
-
 		add_filter( 'authenticate', array( $this, 'maybe_redirect_at_authenticate' ), 101, 3 );
 		add_filter( 'login_redirect', array( $this, 'redirect_after_login' ), 10, 3 );
 		add_filter( 'retrieve_password_message', array( $this, 'racketmanager_retrieve_password_email' ), 10, 4 );
@@ -63,14 +48,6 @@ class RacketManager_Login {
 		add_filter( 'wp_new_user_notification_email_admin', array( $this, 'my_wp_new_user_notification_email_admin' ), 10, 3 );
 		add_filter( 'wp_new_user_notification_email', array( $this, 'my_wp_new_user_notification_email' ), 10, 3 );
 		add_filter( 'password_hint', array( $this, 'racketmanager_change_password_hint' ), 10, 1 );
-	}
-	/**
-	 * Load translations function
-	 *
-	 * @return void
-	 */
-	public function rp_load_translations() {
-		$this->already_signed_in = __( 'You are already signed in', 'racketmanager' );
 	}
 	/**
 	 * Function to enqueue login scripts
@@ -222,130 +199,6 @@ class RacketManager_Login {
 			}
 		}
 	}
-	/**
-	 * A shortcode for rendering the login form.
-	 *
-	 * @param  array $vars  Shortcode vars.
-	 *
-	 * @return string  The shortcode output
-	 */
-	public function render_login_form( $vars ) {
-		global $racketmanager;
-		if ( is_user_logged_in() ) {
-			$redirect_to = null;
-			if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'GET' === $_SERVER['REQUEST_METHOD'] ) {
-				$redirect_to = isset( $_REQUEST['redirect_to'] ) ? esc_url_raw( wp_unslash( $_REQUEST['redirect_to'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			}
-			?>
-			<div class="text-center">
-				<?php
-				if ( $redirect_to ) {
-					?>
-					<a href="<?php echo esc_url( $redirect_to ); ?>" class="btn btn-primary"><?php esc_html_e( 'Proceed', 'racketmanager' ); ?></a>
-					<?php
-				} else {
-					echo esc_html( $this->already_signed_in );
-				}
-				?>
-			</div>
-			<?php
-			return;
-		}
-
-		// Parse shortcode vars.
-		$default_vars      = array( 'show_title' => false );
-		$vars              = shortcode_atts( $default_vars, $vars );
-		$vars['site_name'] = $racketmanager->site_name;
-		$vars['site_url']  = $racketmanager->site_url;
-		// Retrieve recaptcha key.
-		$keys                       = $racketmanager->get_options( 'keys' );
-		$recaptcha_site_key         = isset( $keys['recaptchaSiteKey'] ) ? $keys['recaptchaSiteKey'] : '';
-		$vars['recaptcha_site_key'] = $recaptcha_site_key;
-		$action                     = isset( $_GET[ ( 'action' ) ] ) ? sanitize_text_field( wp_unslash( $_GET[ ( 'action' ) ] ) ) : ''; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( isset( $action ) && 'register' === $action ) {
-			return $this->form_register( $vars );
-		} else {
-			return $this->form_login( $vars );
-		}
-	}
-	/**
-	 * Function to display register form
-	 *
-	 * @param array $vars array of variables.
-	 * @return string
-	 */
-	public function form_register( $vars ) {
-		global $racketmanager_shortcodes;
-		// Retrieve possible errors from request parameters.
-		$errors      = array();
-		$error_codes = array();
-
-		if ( isset( $_REQUEST['register-errors'] ) ) {  //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$error_codes = explode( ',', sanitize_text_field( wp_unslash( $_REQUEST['register-errors'] ) ) );  //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-
-			foreach ( $error_codes as $code ) {
-				$errors[] = $this->get_error_message( $code );
-			}
-		}
-		$vars['errors']      = $errors;
-		$vars['error_codes'] = $error_codes;
-
-		if ( ! get_option( 'users_can_register' ) ) {
-			$return = __( 'Registering new users is currently not allowed', 'racketmanager' );
-		} else {
-			$return = $racketmanager_shortcodes->load_template( 'form-login', $vars, 'form' );
-		}
-		return $return;
-	}
-	/**
-	 * Function to display login form
-	 *
-	 * @param array $vars array of variables.
-	 * @return string
-	 */
-	public function form_login( $vars ) {
-		global $racketmanager_shortcodes, $racketmanager;
-		// Check if the user just registered.
-		$vars['registered'] = isset( $_REQUEST['registered'] );  //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		// Pass the redirect parameter to the WordPress login functionality: by default,
-		// don't specify a redirect, but if a valid redirect URL has been passed as
-		// request parameter, use it.
-		$vars['redirect'] = '';
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		if ( isset( $_REQUEST['redirect_to'] ) ) {
-			$vars['redirect'] = wp_validate_redirect( esc_url_raw( wp_unslash( $_REQUEST['redirect_to'] ) ), $vars['redirect'] );
-		} elseif ( wp_get_referer() ) {
-			if ( strpos( wp_get_referer(), 'member-login' ) > 0 ) {
-				$vars['redirect'] = '';
-			} elseif ( strpos( wp_get_referer(), $racketmanager->site_url ) === 0 ) {
-				$vars['redirect'] = wp_validate_redirect( wp_get_referer(), $vars['redirect'] );
-			}
-		}
-		// Error messages.
-		$errors      = array();
-		$error_codes = array();
-		if ( isset( $_REQUEST['login'] ) ) {
-			$error_codes = explode( ',', sanitize_text_field( wp_unslash( $_REQUEST['login'] ) ) );
-
-			foreach ( $error_codes as $code ) {
-				$errors [] = $this->get_error_message( $code );
-			}
-		}
-		$vars['errors']      = $errors;
-		$vars['error_codes'] = $error_codes;
-
-		// Check if the user just requested a new password.
-		$vars['lost_password_sent'] = isset( $_REQUEST['checkemail'] ) && 'confirm' === $_REQUEST['checkemail'];
-
-		// Check if user just updated password.
-		$vars['password_updated'] = isset( $_REQUEST['passwordUpdate'] ) && 'true' === $_REQUEST['passwordUpdate'];
-
-		// Check if user just logged out.
-		$vars['logged_out'] = isset( $_REQUEST['logged_out'] ) && 'true' === $_REQUEST['logged_out'];
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
-		// Render the login form using an external template.
-		return $racketmanager_shortcodes->load_template( 'form-login', $vars, 'form' );
-	}
 
 	/**
 	 * Redirect the user to the custom login page instead of wp-login.php.
@@ -412,78 +265,6 @@ class RacketManager_Login {
 
 		return $user;
 	}
-
-	/**
-	 * Finds and returns a matching error message for the given error code.
-	 *
-	 * @param string $error_code    The error code to look up.
-	 *
-	 * @return string               An error message.
-	 */
-	public function get_error_message( $error_code ) {
-		switch ( $error_code ) {
-			case 'empty_password':
-				$message = __( 'You need to enter a password to login.', 'racketmanager' );
-				break;
-			case 'incorrect_password':
-				/* translators: %s: lost password url */
-				$err     = __( "The password you entered wasn't quite right. <a href='%s'>Did you forget your password</a>?", 'racketmanager' );
-				$message = sprintf( $err, wp_lostpassword_url() );
-				break;
-			case 'email':
-				$message = __( 'The email address you entered is not valid.', 'racketmanager' );
-				break;
-			case 'email_exists':
-				$message = __( 'An account exists with this email address.', 'racketmanager' );
-				break;
-			case 'closed':
-				$message = __( 'Registering new users is currently not allowed.', 'racketmanager' );
-				break;
-			case 'captcha':
-				$message = __( 'The Google reCAPTCHA check failed. Are you a robot?', 'racketmanager' );
-				break;
-			case 'empty_username':
-				$message = __( 'You need to enter your email address to continue.', 'racketmanager' );
-				break;
-			case 'invalid_email':
-			case 'invalidcombo':
-			case 'invalid_username':
-				$message = __( 'There are no users registered with this email address.', 'racketmanager' );
-				break;
-			case 'expiredkey':
-			case 'invalidkey':
-				$message = __( 'The password reset link you used is not valid anymore.', 'racketmanager' );
-				break;
-			case 'password_reset_mismatch':
-				$message = __( "The two passwords you entered don't match.", 'racketmanager' );
-				break;
-			case 'password_reset_empty':
-				$message = __( "Sorry, we don't accept empty passwords.", 'racketmanager' );
-				break;
-			case 'firstname_field_empty':
-				$message = __( 'First name must be specified', 'racketmanager' );
-				break;
-			case 'lastname_field_empty':
-				$message = __( 'Last name must be specified', 'racketmanager' );
-				break;
-			case 'gender_field_empty':
-				$message = __( 'Gender must be specified', 'racketmanager' );
-				break;
-			case 'no_updates':
-				$message = __( 'No updates to be made', 'racketmanager' );
-				break;
-			case 'form_has_timedout':
-				$message = __( 'The form has timed out.', 'racketmanager' );
-				break;
-			case 'btm_field_empty':
-				$message = __( 'LTA tennis number missing', 'racketmanager' );
-				break;
-			default:
-				$message = $error_code;
-		}
-		return $message;
-	}
-
 	/**
 	 * Redirect to custom login page after the user has been logged out.
 	 */
@@ -557,12 +338,12 @@ class RacketManager_Login {
 		// Email address is used as both username and email. It is also the only
 		// parameter we need to validate.
 		if ( ! is_email( $email ) ) {
-			$errors->add( 'email', $this->get_error_message( 'email' ) );
+			$errors->add( 'email', Racketmanager_Util::get_error_message( 'email' ) );
 			return $errors;
 		}
 
 		if ( username_exists( $email ) || email_exists( $email ) ) {
-			$errors->add( 'email_exists', $this->get_error_message( 'email_exists' ) );
+			$errors->add( 'email_exists', Racketmanager_Util::get_error_message( 'email_exists' ) );
 			return $errors;
 		}
 
@@ -701,44 +482,6 @@ class RacketManager_Login {
 		}
 	}
 
-	/**
-	 * A shortcode for rendering the form used to initiate the password reset.
-	 *
-	 * @param  array $vars  Shortcode vars.
-	 *
-	 * @return string  The shortcode output
-	 */
-	public function render_password_lost_form( $vars ) {
-
-		global $racketmanager_shortcodes;
-
-		if ( is_user_logged_in() ) {
-			return $this->already_signed_in;
-		}
-
-		// Parse shortcode vars.
-		$default_vars = array( 'show_title' => true );
-		$vars         = shortcode_atts( $default_vars, $vars );
-
-		// Retrieve possible errors from request parameters.
-		$errors      = array();
-		$error_codes = array();
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		if ( isset( $_REQUEST['errors'] ) ) {
-			$error_codes = explode( ',', sanitize_text_field( wp_unslash( $_REQUEST['errors'] ) ) );
-
-			foreach ( $error_codes as $code ) {
-				$errors[] = $this->get_error_message( $code );
-			}
-		}
-		$vars['errors']      = $errors;
-		$vars['error_codes'] = $error_codes;
-		// Check if the user just requested a new password.
-		$vars['lost_password_sent'] = isset( $_REQUEST['checkemail'] ) && 'confirm' === $_REQUEST['checkemail'];
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
-
-		return $racketmanager_shortcodes->load_template( 'form-password-lost', $vars, 'form' );
-	}
 
 	/**
 	 * Initiates password reset.
@@ -790,45 +533,6 @@ class RacketManager_Login {
 		}
 	}
 
-	/**
-	 * A shortcode for rendering the form used to reset a user's password.
-	 *
-	 * @param  array $vars  Shortcode vars.
-	 *
-	 * @return string  The shortcode output
-	 */
-	public function render_password_reset_form( $vars ) {
-		global $racketmanager_shortcodes;
-
-		// Parse shortcode vars.
-		$default_vars = array( 'show_title' => false );
-		$vars         = shortcode_atts( $default_vars, $vars );
-
-		if ( is_user_logged_in() ) {
-			return $this->already_signed_in;
-		} elseif ( isset( $_REQUEST['login'] ) && isset( $_REQUEST['key'] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
-			$vars['login'] = sanitize_text_field( wp_unslash( $_REQUEST['login'] ) );
-			$vars['key']   = sanitize_text_field( wp_unslash( $_REQUEST['key'] ) );
-
-			// Error messages.
-			$errors      = array();
-			$error_codes = array();
-			if ( isset( $_REQUEST['error'] ) ) {
-				$error_codes = explode( ',', sanitize_text_field( wp_unslash( $_REQUEST['error'] ) ) );
-
-				foreach ( $error_codes as $code ) {
-					$errors [] = $this->get_error_message( $code );
-				}
-			}
-			$vars['errors']      = $errors;
-			$vars['error_codes'] = $error_codes;
-
-			return $racketmanager_shortcodes->load_template( 'form-password-reset', $vars, 'form' );
-		} else {
-			return __( 'Invalid password reset link.', 'racketmanager' );
-		}
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
-	}
 
 	/**
 	 * Resets the user's password if the password reset form was submitted.
@@ -892,218 +596,5 @@ class RacketManager_Login {
 				exit();
 			}
 		}
-	}
-
-	/**
-	 * A shortcode for rendering the form used to display a member account.
-	 *
-	 * @return string  The shortcode output
-	 */
-	public function render_member_account_form() {
-
-		return $this->generate_member_account_form();
-	}
-
-	/**
-	 * Generate the form used to display a member account.
-	 *
-	 * @return string  The output
-	 */
-	public function generate_member_account_form() {
-		global $racketmanager_shortcodes;
-
-		if ( ! is_user_logged_in() ) {
-			return __( 'You must be signed in to access this page', 'racketmanager' );
-		}
-
-		$current_user = wp_get_current_user();
-		if ( isset( $_SERVER['REQUEST_METHOD'] ) ) {
-			if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
-				if ( isset( $_POST['racketmanager_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'member_account' ) ) {
-					$user_data = array(
-						'user_name'     => isset( $_POST['username'] ) ? sanitize_email( wp_unslash( $_POST['username'] ) ) : '',
-						'first_name'    => isset( $_POST['firstname'] ) ? sanitize_text_field( wp_unslash( $_POST['firstname'] ) ) : '',
-						'last_name'     => isset( $_POST['lastname'] ) ? sanitize_text_field( wp_unslash( $_POST['lastname'] ) ) : '',
-						'password'      => isset( $_POST['password'] ) ? sanitize_text_field( wp_unslash( $_POST['password'] ) ) : '',
-						'rePassword'    => isset( $_POST['rePassword'] ) ? sanitize_text_field( wp_unslash( $_POST['rePassword'] ) ) : '',
-						'contactno'     => isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : '',
-						'gender'        => isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : '',
-						'btm'           => ! empty( $_POST['btm'] ) ? intval( $_POST['btm'] ) : '',
-						'year_of_birth' => ! empty( $_POST['year_of_birth'] ) ? intval( $_POST['year_of_birth'] ) : '',
-					);
-				} else {
-					return __( 'You are not authorised for this action', 'racketmanager' );
-				}
-				if ( ! empty( $_POST['action'] ) && 'update-user' === $_POST['action'] ) {
-					$user_data = $this->update_user_profile( $current_user, $user_data );
-				}
-			} elseif ( 'GET' === $_SERVER['REQUEST_METHOD'] ) {
-				$user_data = array(
-					'user_name'     => $current_user->user_email,
-					'first_name'    => get_user_meta( $current_user->ID, 'first_name', true ),
-					'last_name'     => get_user_meta( $current_user->ID, 'last_name', true ),
-					'contactno'     => get_user_meta( $current_user->ID, 'contactno', true ),
-					'gender'        => get_user_meta( $current_user->ID, 'gender', true ),
-					'btm'           => get_user_meta( $current_user->ID, 'btm', true ),
-					'year_of_birth' => get_user_meta( $current_user->ID, 'year_of_birth', true ),
-				);
-			}
-		}
-		return $racketmanager_shortcodes->load_template( 'form-member-account', array( 'user_data' => $user_data ), 'form' );
-	}
-
-	/**
-	 * Generate the form used to display a member account.
-	 *
-	 * @param object $current_user current user object.
-	 * @param array  $user_data    user data from form.
-	 * @return array $user_data    updated user data.
-	 */
-	private function update_user_profile( $current_user, $user_data ) {
-
-		$updates = false;
-
-		$user_data = $this->validate_user_profile( $user_data );
-
-		if ( isset( $user_data['error'] ) ) {
-			$user_data['message'] = __( 'Errors in form', 'racketmanager' );
-			return $user_data;
-		}
-		$updated_user = array();
-		if ( $current_user->user_email !== $user_data['user_name'] ) {
-			$updates                    = true;
-			$updated_user['user_email'] = $user_data['user_name'];
-		}
-		if ( get_user_meta( $current_user->ID, 'first_name', true ) !== $user_data['first_name'] ) {
-			$updates                    = true;
-			$updated_user['first_name'] = $user_data['first_name'];
-		}
-		if ( get_user_meta( $current_user->ID, 'last_name', true ) !== $user_data['last_name'] ) {
-			$updates                   = true;
-			$updated_user['last_name'] = $user_data['last_name'];
-		}
-		if ( empty( $user_data['contactno'] ) && ! empty( get_user_meta( $current_user->ID, 'contactno', true ) ) ) {
-			$updates                   = true;
-			$updated_user['contactno'] = $user_data['contactno'];
-		}
-		if ( get_user_meta( $current_user->ID, 'contactno', true ) !== $user_data['contactno'] ) {
-			$updates                   = true;
-			$updated_user['contactno'] = $user_data['contactno'];
-		}
-		if ( get_user_meta( $current_user->ID, 'gender', true ) !== $user_data['gender'] ) {
-			$updates                = true;
-			$updated_user['gender'] = $user_data['gender'];
-		}
-		if ( empty( $user_data['btm'] ) ) {
-			if ( ! empty( get_user_meta( $current_user->ID, 'btm', true ) ) ) {
-				$updates             = true;
-				$updated_user['btm'] = $user_data['btm'];
-			}
-		} elseif ( get_user_meta( $current_user->ID, 'btm', true ) !== $user_data['btm'] ) {
-			$updates             = true;
-			$updated_user['btm'] = $user_data['btm'];
-		}
-		if ( empty( $user_data['year_of_birth'] ) ) {
-			if ( ! empty( get_user_meta( $current_user->ID, 'year_of_birth', true ) ) ) {
-				$updates                       = true;
-				$updated_user['year_of_birth'] = $user_data['year_of_birth'];
-			}
-		} elseif ( intval( get_user_meta( $current_user->ID, 'year_of_birth', true ) ) !== $user_data['year_of_birth'] ) {
-			$updates                       = true;
-			$updated_user['year_of_birth'] = $user_data['year_of_birth'];
-		}
-		if ( ! empty( $user_data['password'] ) ) {
-			$updates                  = true;
-			$updated_user['password'] = $user_data['password'];
-		}
-		if ( ! $updates ) {
-			$user_data['message'] = $this->get_error_message( 'no_updates' );
-			return $user_data;
-		}
-		foreach ( $updated_user as $key => $value ) {
-			// http://codex.wordpress.org/Function_Reference/wp_update_user.
-			if ( 'contactno' === $key ) {
-				update_user_meta( $current_user->ID, $key, $value );
-			} elseif ( 'btm' === $key ) {
-				update_user_meta( $current_user->ID, $key, $value );
-			} elseif ( 'year_of_birth' === $key ) {
-				update_user_meta( $current_user->ID, $key, $value );
-			} elseif ( 'gender' === $key ) {
-				update_user_meta( $current_user->ID, $key, $value );
-			} elseif ( 'first_name' === $key ) {
-				if ( get_user_meta( $current_user->ID, 'first_name', true ) !== $updated_user['first_name'] ) {
-					update_user_meta( $current_user->ID, $key, $value );
-					$user_data[ $key ] = $value;
-					$display_name      = $value . ' ' . sanitize_text_field( $user_data['last_name'] );
-					wp_update_user(
-						array(
-							'ID'           => $current_user->ID,
-							'display_name' => $display_name,
-						)
-					);
-				}
-			} elseif ( 'last_name' === $key ) {
-				if ( get_user_meta( $current_user->ID, 'last_name', true ) !== $updated_user['last_name'] ) {
-					update_user_meta( $current_user->ID, $key, $value );
-					$user_data[ $key ] = $value;
-					$display_name      = sanitize_text_field( $user_data['first_name'] ) . ' ' . $value;
-					wp_update_user(
-						array(
-							'ID'           => $current_user->ID,
-							'display_name' => $display_name,
-						)
-					);
-				}
-			} elseif ( 'password' === $key ) {
-				wp_set_password( $value, $current_user->ID );
-				wp_set_auth_cookie( $current_user->ID, 1, true );
-			} else {
-				wp_update_user(
-					array(
-						'ID' => $current_user->ID,
-						$key => $value,
-					)
-				);
-			}
-		}
-		$user_data['message'] = __( 'Your profile has been successfully updated', 'racketmanager' );
-		return $user_data;
-	}
-	/**
-	 * Validate user profile data
-	 *
-	 * @param array $user_data user data array.
-	 * @return array updated user data.
-	 */
-	private function validate_user_profile( $user_data ) {
-		global $racketmanager;
-		if ( empty( $user_data['user_name'] ) ) {
-			$user_data['user_name_error'] = $this->get_error_message( 'empty_username' );
-			$user_data['error']           = true;
-		}
-		if ( empty( $user_data['first_name'] ) ) {
-			$user_data['first_name_error'] = $this->get_error_message( 'firstname_field_empty' );
-			$user_data['error']            = true;
-		}
-		if ( empty( $user_data['last_name'] ) ) {
-			$user_data['last_name_error'] = $this->get_error_message( 'lastname_field_empty' );
-			$user_data['error']           = true;
-		}
-		if ( empty( $user_data['gender'] ) ) {
-			$user_data['gender_error'] = $this->get_error_message( 'gender_field_empty' );
-			$user_data['error']        = true;
-		}
-		if ( empty( $user_data['btm'] ) ) {
-			$player_options = $racketmanager->get_options( 'rosters' );
-			if ( isset( $player_options['btm'] ) && '1' === $player_options['btm'] ) {
-				$user_data['btm_error'] = $this->get_error_message( 'btm_field_empty' );
-				$user_data['error']     = true;
-			}
-		}
-		if ( $user_data['password'] !== $user_data['rePassword'] ) {
-			$user_data['rePassword_error'] = $this->get_error_message( 'password_reset_mismatch' );
-			$user_data['error']            = true;
-		}
-		return $user_data;
 	}
 }

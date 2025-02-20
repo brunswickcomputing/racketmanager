@@ -235,8 +235,9 @@ class RacketManager_Shortcodes_Login extends RacketManager_Shortcodes {
 		if ( ! is_user_logged_in() ) {
 			return __( 'You must be signed in to access this page', 'racketmanager' );
 		}
-		$current_user = wp_get_current_user();
-		$user         = get_user( $current_user->ID );
+		$current_user   = wp_get_current_user();
+		$user           = get_user( $current_user->ID );
+		$opt_in_choices = Racketmanager_Util::get_email_opt_ins();
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) ) {
 			if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 				if ( isset( $_POST['racketmanager_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'member_account' ) ) {
@@ -250,6 +251,7 @@ class RacketManager_Shortcodes_Login extends RacketManager_Shortcodes {
 					$user_update->year_of_birth = empty( $_POST['year_of_birth'] ) ? "" : intval( $_POST['year_of_birth'] );
 					$user_update->password      = isset( $_POST['password'] ) ? sanitize_text_field( wp_unslash( $_POST['password'] ) ) : null;
 					$user_update->re_password   = isset( $_POST['rePassword'] ) ? sanitize_text_field( wp_unslash( $_POST['rePassword'] ) ) : null;
+					$user_update->opt_ins       = isset( $_POST['opt_in'] ) ? wp_unslash( $_POST['opt_in'] ) : array();
 				} else {
 					return __( 'You are not authorised for this action', 'racketmanager' );
 				}
@@ -258,6 +260,13 @@ class RacketManager_Shortcodes_Login extends RacketManager_Shortcodes {
 				}
 			}
 		}
-		return $this->load_template( 'form-member-account', array( 'user' => $user ), 'form' );
+		return $this->load_template(
+									'form-member-account',
+									array(
+										  'user'           => $user,
+										  'opt_in_choices' => $opt_in_choices
+										  ),
+									'form'
+									);
 	}
 }

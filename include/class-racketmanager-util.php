@@ -977,8 +977,8 @@ class Racketmanager_Util {
 	 */
 	public static function get_currency_code() {
 		setlocale( LC_ALL, get_locale() );
-		$locale_info         = localeconv();
-		return isset( $locale_info['int_curr_symbol'] ) ? trim( $locale_info['int_curr_symbol'] ) : 'GBP';
+		$locale_info = localeconv();
+		return empty( $locale_info['int_curr_symbol'] ) ? 'GBP' : trim( $locale_info['int_curr_symbol'] ) ;
 	}
 	/**
 	 * Finds and returns a matching error message for the given error code.
@@ -1054,5 +1054,36 @@ class Racketmanager_Util {
 				$message = $error_code;
 		}
 		return $message;
+	}
+	/**
+	 * Get email opt in choices  function
+	 *
+	 * @return array
+	 */
+	public static function get_email_opt_ins() {
+		$email_opt_ins      = array();
+		$email_opt_ins['1'] = __( 'Tournament notification', 'racketmanager' );
+		return $email_opt_ins;
+	}
+	/**
+	 * Get email opt in value function
+	 *
+	 * @param string $opt_in opt in.
+	 * @return string $opt_in text
+	 */
+	public static function get_email_opt_in( $opt_in ) {
+		$email_opt_ins = self::get_email_opt_ins();
+		return empty( $email_opt_ins[ $opt_in ] ) ? __( 'Unknown', 'racketmanager' ) : $email_opt_ins[ $opt_in ];
+	}
+	/**
+	 * Get opt in ref from name function
+	 *
+	 * @param string $opt_in_desc opt in name.
+	 * @return string opt in ref.
+	 */
+	public static function get_email_opt_in_ref( $opt_in_desc ) {
+		$email_opt_ins = self::get_email_opt_ins();
+		$opt_in        = array_search( $opt_in_desc, $email_opt_ins, true );
+		return $opt_in;
 	}
 }

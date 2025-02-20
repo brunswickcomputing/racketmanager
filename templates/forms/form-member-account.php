@@ -218,18 +218,18 @@ $is_invalid   = false;
 						</div>
 					</div>
 					<?php
-					if ( isset( $user_data['contact_preferences'] ) ) {
+					if ( ! empty( $opt_in_choices ) ) {
 						?>
 						<div class="form-control mb-3">
 							<legend><?php esc_html_e( 'Contact preferences', 'racketmanager' ); ?></legend>
 							<div class="row gx-3">
 								<div class="form-floating col-md-6 mb-3">
 									<?php
-									foreach ( $user_data['contact_preference'] as $contact_preference ) {
+									foreach ( $opt_in_choices as $opt_in_choice => $opt_in_desc ) {
 										?>
 										<div class="form-check">
-											<input type="checkbox" class="form-check-input" id="preference-<?php echo esc_attr( $contact_preference['ref'] ); ?>" name="preference[<?php echo esc_attr( $contact_preference['ref'] ); ?>]" value="1" <?php checked( '1', $contact_preference['ref'] ); ?> />
-											<label for="preference-<?php echo esc_attr( $contact_preference['ref'] ); ?>" class="form-check-label"><?php echo esc_html( $contact_preference['name'] ); ?></label>
+											<input type="checkbox" class="form-check-input" id="opt_in_<?php echo esc_attr( $opt_in_choice ); ?>" name="opt_in[<?php echo esc_attr( $opt_in_choice ); ?>]" value="1" <?php checked( true, in_array( strval( $opt_in_choice ), $user->opt_ins, true ) ); ?> />
+											<label for="opt_in_<?php echo esc_attr( $opt_in_choice ); ?>" class="form-check-label"><?php echo esc_html( $opt_in_desc ); ?></label>
 										</div>
 										<?php
 									}

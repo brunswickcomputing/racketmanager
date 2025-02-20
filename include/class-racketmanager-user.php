@@ -214,6 +214,7 @@ final class Racketmanager_User {
 				$this->locked_user_name = '';
 			}
 			$this->system_record = get_user_meta( $this->ID, 'leaguemanager_type', true );
+			$this->opt_ins       = get_user_meta( $this->ID, 'racketmanager_opt_in' );
 		}
 	}
 	/**
@@ -331,6 +332,24 @@ final class Racketmanager_User {
 			$this->password      = $user->password;
 			$updated['password'] = $user->password;
 		}
+		$opt_in_choices = Racketmanager_Util::get_email_opt_ins();
+		$opt_ins        = array();
+		foreach ( $opt_in_choices as $opt_in_choice => $opt_in_desc ) {
+			$user_opt_in[ $opt_in_choice ] = empty( $user->opt_ins[ $opt_in_choice ] ) ? false : true;
+			if ( in_array( strval( $opt_in_choice ), $this->opt_ins, true ) ) {
+				if ( empty( $user_opt_in[ $opt_in_choice ] ) ) {
+					$updates = true;
+					delete_user_meta( $this->id, 'racketmanager_opt_in', $opt_in_choice );
+				} else {
+					$opt_ins[] = strval( $opt_in_choice );
+				}
+			} elseif ( ! empty( $user_opt_in[ $opt_in_choice ] ) ) {
+				$updates   = true;
+				$opt_ins[] = strval( $opt_in_choice );
+				add_user_meta( $this->id, 'racketmanager_opt_in', $opt_in_choice );
+			}
+		}
+		$this->opt_ins = $opt_ins;
 		if ( ! $updates ) {
 			return false;
 		}

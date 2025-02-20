@@ -47,6 +47,10 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.39.0 =
+* UPDATE: email opt in for tournament notifications
+* UPDATE: set league event dates based on competition and offset week
+
 = 8.38.0 =
 * UPDATE: get club from tournament entry
 

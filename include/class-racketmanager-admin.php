@@ -432,6 +432,8 @@ class RacketManager_Admin extends RacketManager {
 					$racketmanager_admin_league->display_overview_page();
 				} elseif ( 'setup' === $view ) {
 					$racketmanager_admin_league->display_setup_page();
+				} elseif ( 'setup-event' === $view ) {
+					$racketmanager_admin_league->display_setup_event_page();
 				} elseif ( 'modify' === $view ) {
 					$racketmanager_admin_competition = new RacketManager_Admin_Competition();
 					$racketmanager_admin_competition->display_season_modify_page();
@@ -471,7 +473,7 @@ class RacketManager_Admin extends RacketManager {
 				} elseif ( 'setup' === $view ) {
 					$racketmanager_admin_cup->display_cup_setup_page();
 				} elseif ( 'setup-event' === $view ) {
-					$racketmanager_admin_cup->display_cup_setup_event_page();
+					$racketmanager_admin_cup->display_setup_event_page();
 				} elseif ( 'draw' === $view ) {
 					$racketmanager_admin_cup->display_cup_draw_page();
 				} elseif ( 'matches' === $view ) {
@@ -505,7 +507,7 @@ class RacketManager_Admin extends RacketManager {
 				} elseif ( 'setup' === $view ) {
 					$racketmanager_admin_tournament->display_tournament_setup_page();
 				} elseif ( 'setup-event' === $view ) {
-					$racketmanager_admin_tournament->display_tournament_setup_event_page();
+					$racketmanager_admin_tournament->display_setup_event_page();
 				} elseif ( 'matches' === $view ) {
 					$racketmanager_admin_tournament->display_tournament_matches_page();
 				} elseif ( 'match' === $view ) {

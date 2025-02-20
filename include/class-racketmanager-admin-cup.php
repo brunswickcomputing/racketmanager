@@ -269,9 +269,9 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 		}
 	}
 	/**
-	 * Display cup event setup
+	 * Display event setup
 	 */
-	public function display_cup_setup_event_page() {
+	public function display_setup_event_page() {
 		global $racketmanager;
 		if ( ! current_user_can( 'edit_matches' ) ) {
 			$racketmanager->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );

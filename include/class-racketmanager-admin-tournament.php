@@ -261,9 +261,9 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 		}
 	}
 	/**
-	 * Display tournament setup
+	 * Display event setup
 	 */
-	public function display_tournament_setup_event_page() {
+	public function display_setup_event_page() {
 		if ( ! current_user_can( 'edit_matches' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();

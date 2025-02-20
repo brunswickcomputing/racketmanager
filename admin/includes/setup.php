@@ -7,6 +7,11 @@
 
 namespace Racketmanager;
 
+if ( isset( $league ) ) {
+	$competition = $league->event->competition;
+} elseif ( isset( $event ) ) {
+	$competition = $event->competition;
+}
 $match_dates = $current_season['match_dates'];
 if ( $current_season['home_away'] ) {
 	$round_rows       = $current_season['num_match_days'] / 2;
@@ -38,7 +43,11 @@ if ( empty( $league ) ) {
 	<div class='row justify-content-end'>
 		<div class='col-auto racketmanager_breadcrumb'>
 			<?php
-			if ( empty( $league ) ) {
+			if ( ! empty( $event ) ) {
+				?>
+				<a href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s"><?php echo esc_html( ucfirst( $competition->type ) ); ?>s</a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&amp;view=event&amp;event_id=<?php echo esc_attr( $event->id );  ?>&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $event->name ); ?></a> &raquo; <?php esc_html_e( 'Setup', 'racketmanager' ); ?>
+				<?php
+			} elseif ( ! empty( $competition ) ) {
 				?>
 				<a href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s"><?php echo esc_html( ucfirst( $competition->type ) ); ?>s</a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <?php esc_html_e( 'Setup', 'racketmanager' ); ?>
 				<?php
@@ -52,7 +61,11 @@ if ( empty( $league ) ) {
 	</div>
 	<h1><?php esc_html_e( 'Setup', 'racketmanager' ); ?> - <?php echo esc_html( $competition->name ); ?> - <?php echo esc_html( $season ); ?></h1>
 	<?php
-	if ( ! empty( $league ) ) {
+	if ( ! empty( $event ) ) {
+		?>
+		<h2><?php echo esc_html( $event->name ); ?></h2>
+		<?php
+	} elseif ( ! empty( $league ) ) {
 		?>
 		<h2><?php echo esc_html( $league->title ); ?></h2>
 		<div class="row mb-3">
@@ -69,7 +82,11 @@ if ( empty( $league ) ) {
 	<form method="post" class="form-control mb-3">
 		<?php wp_nonce_field( 'racketmanager_add_championship-matches', 'racketmanager_nonce' ); ?>
 		<?php
-		if ( empty( $league ) ) {
+		if ( ! empty( $vent ) ) {
+			?>
+			<input type="hidden" name="event_id" value="<?php echo esc_attr( $event->id ); ?>" />
+			<?php
+		} elseif ( empty( $league ) ) {
 			?>
 			<input type="hidden" name="competition_id" value="<?php echo esc_attr( $competition->id ); ?>" />
 			<?php
@@ -134,7 +151,7 @@ if ( empty( $league ) ) {
 		<button class="btn btn-primary"><?php echo esc_html( $button_text ); ?></button>
 	</form>
 	<?php
-	if ( empty( $league ) ) {
+	if ( empty( $league ) && empty( $event ) ) {
 		?>
 		<form method="post" class="mb-3">
 			<?php wp_nonce_field( 'racketmanager_calculate_ratings', 'racketmanager_nonce' ); ?>

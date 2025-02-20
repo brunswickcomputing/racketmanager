@@ -149,8 +149,27 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 									}
 									$seasons            = $competition->seasons;
 									$seasons[ $season ] = $current_season;
-									$competition->update_seasons( $seasons );
-									$this->set_message( __( 'Match dates updated', 'racketmanager' ) );
+									$updates            = $competition->update_seasons( $seasons );
+									if ( $updates ) {
+										$this->set_message( __( 'Match dates updated', 'racketmanager' ) );
+										$events = $competition->get_events();
+										foreach ( $events as $competition_event ) {
+											$seasons = $competition_event->seasons;
+											if ( empty( $competition_event->offset ) ) {
+												$match_dates = $current_season['match_dates'];
+											} else {
+												$i = 0;
+												foreach( $current_season['match_dates'] as $match_date ) {
+													$match_dates[ $i ] = RacketManager_Util::amend_date( $match_date, $competition_event->offset, '+', 'week' );
+													++$i;
+												}
+											}
+											$seasons[ $season ]['match_dates'] = $match_dates;
+											$updates                           = $competition_event->update_seasons( $seasons );
+										}
+									} else {
+										$this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+									}
 								} else {
 									$message = implode( '<br>', $msg );
 									$this->set_message( $message, true );
@@ -182,6 +201,78 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 				$competition = get_competition( $competition_id );
 				if ( $competition ) {
 					$current_season = $competition->seasons[ $season ];
+					require RACKETMANAGER_PATH . 'admin/includes/setup.php';
+				}
+			}
+		}
+	}
+	/**
+	 * Display event setup
+	 */
+	public function display_setup_event_page() {
+		global $racketmanager;
+		if ( ! current_user_can( 'edit_matches' ) ) {
+			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
+			$this->printMessage();
+		} else {
+			if ( isset( $_POST['action'] ) ) {
+				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add_championship-matches' ) ) {
+					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+					$this->printMessage();
+				} else {
+					$valid          = true;
+					$event_id = isset( $_GET['event_id'] ) ? intval( $_GET['event_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					$season   = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+					if ( $event_id ) {
+						$event = get_event( $event_id );
+						if ( $event ) {
+							$current_season = $event->seasons[ $season ];
+							if ( isset( $_POST['rounds'] ) ) {
+								$rounds = array();
+								foreach ( $_POST['rounds'] as $round ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+									if ( empty( $round['match_date'] ) ) {
+										/* translators: $s: $round number */
+										$msg[] = sprintf( __( 'Match date missing for round %s', 'racketmanager' ), $round['round'] );
+										$valid = false;
+									} elseif ( ! empty( $next_round_date ) && $round['match_date'] <= $next_round_date ) {
+										/* translators: $s: $round number */
+										$msg[] = sprintf( __( 'Match date for round %s after next round date', 'racketmanager' ), $round['round'] );
+										$valid = false;
+									} else {
+										$round_date      = $round['match_date'];
+										$rounds[]        = $round_date;
+										$next_round_date = $round_date;
+									}
+								}
+								if ( $valid ) {
+									$current_season['match_dates'] = array();
+									foreach ( $rounds as $match_date ) {
+										$current_season['match_dates'][] = $match_date;
+									}
+									$seasons            = $event->seasons;
+									$seasons[ $season ] = $current_season;
+									$updates            = $event->update_seasons( $seasons );
+									if ( $updates ) {
+										$this->set_message( __( 'Match dates updated', 'racketmanager' ) );
+									} else {
+										$this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+									}
+								} else {
+									$message = implode( '<br>', $msg );
+									$this->set_message( $message, true );
+								}
+								$this->printMessage();
+							}
+						}
+					}
+				}
+			}
+			$season   = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
+			$event_id = isset( $_GET['event_id'] ) ? intval( $_GET['event_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( $event_id ) {
+				$event = get_event( $event_id );
+				if ( $event ) {
+					$current_season = $event->seasons[ $season ];
 					require RACKETMANAGER_PATH . 'admin/includes/setup.php';
 				}
 			}

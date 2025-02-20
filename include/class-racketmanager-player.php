@@ -1426,11 +1426,10 @@ final class Racketmanager_Player {
 	/**
 	 * Set opt in function
 	 *
-	 * @param string $type opt in type.
+	 * @param string $opt_in opt in type.
 	 * @return void.
 	 */
-	public function set_opt_in( $type ) {
-		$opt_in = Racketmanager_Util::get_email_opt_in_ref( $type );
+	public function set_opt_in( $opt_in ) {
 		if ( $opt_in ) {
 			$opt_in_found = in_array( strval( $opt_in ), $this->opt_ins, true );
 			if ( ! $opt_in_found ) {

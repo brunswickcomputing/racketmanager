@@ -1075,15 +1075,4 @@ class Racketmanager_Util {
 		$email_opt_ins = self::get_email_opt_ins();
 		return empty( $email_opt_ins[ $opt_in ] ) ? __( 'Unknown', 'racketmanager' ) : $email_opt_ins[ $opt_in ];
 	}
-	/**
-	 * Get opt in ref from name function
-	 *
-	 * @param string $opt_in_desc opt in name.
-	 * @return string opt in ref.
-	 */
-	public static function get_email_opt_in_ref( $opt_in_desc ) {
-		$email_opt_ins = self::get_email_opt_ins();
-		$opt_in        = array_search( $opt_in_desc, $email_opt_ins, true );
-		return $opt_in;
-	}
 }

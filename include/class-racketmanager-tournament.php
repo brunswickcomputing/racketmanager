@@ -1476,7 +1476,7 @@ final class Racketmanager_Tournament {
 			}
 		}
 		if ( $updates ) {
-			$player->set_opt_in ( 'tournament' );
+			$player->set_opt_in( '1' );
 			$email_to                            = $player->display_name . ' <' . $player->email . '>';
 			$email_from                          = $racketmanager->get_confirmation_email( 'tournament' );
 			$email_subject                       = $racketmanager->site_name . ' - ' . $this->name . ' Tournament Entry';

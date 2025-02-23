@@ -564,6 +564,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 					);
 					$headers       = array();
 					$headers[]     = 'From: ' . ucfirst( $event->competition->type ) . ' Secretary <' . $from_email . '>';
+					$headers[]     = 'cc: ' . ucfirst( $event->competition->type ) . ' Secretary <' . $from_email . '>';
 					$email_subject = $racketmanager->site_name . ' - ' . $league->title . ' - Season ' . $team->season . ' - Fixtures - ' . $team->title;
 					$email_to      = '';
 					if ( isset( $team->contactemail ) ) {

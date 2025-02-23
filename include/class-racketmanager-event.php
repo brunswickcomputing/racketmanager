@@ -1895,6 +1895,7 @@ class Racketmanager_Event {
 		$email_message                 = racketmanager_constitution_notification( $this->id, $message_args );
 		$headers                       = array();
 		$headers[]                     = 'From: ' . ucfirst( $this->competition->type ) . ' Secretary <' . $email_address . '>';
+		$headers[]                     = 'cc: ' . ucfirst( $this->competition->type ) . ' Secretary <' . $email_address . '>';
 		$clubs                         = $racketmanager->get_clubs(
 			array(
 				'type' => 'affiliated',

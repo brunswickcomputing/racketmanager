@@ -47,6 +47,11 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.40.0 =
+* UPDATE: only include registration form when registration allowed
+* UPDATE: login using ajax
+* UPDATE: ensure competition secretary copied on email
+
 = 8.39.0 =
 * UPDATE: email opt in for tournament notifications
 * UPDATE: set league event dates based on competition and offset week

@@ -20,15 +20,13 @@ namespace Racketmanager;
 		<div class="form-floating mb-3">
 			<input type="text" class="form-control <?php echo empty( $username_error ) ? null : 'is-invalid'; ?>" placeholder="<?php esc_html_e( 'Email', 'racketmanager' ); ?>" name="log" id="user_login" aria-describedby="usernameFeedback" >
 			<label class="" for="user_login"><?php esc_html_e( 'Email', 'racketmanager' ); ?></label>
-			<?php
-			if ( $username_error ) {
-				?>
-				<div id="usernameFeedback" class="<?php echo empty( $username_error ) ? null : 'invalid-feedback'; ?>">
-					<?php echo esc_html( $username_message ); ?>
-				</div>
+			<div id="user_loginFeedback" class="invalid-feedback">
 				<?php
-			}
-			?>
+				if ( $username_error ) {
+					echo esc_html( $username_message );
+				}
+				?>
+			</div>
 		</div>
 		<div class="form-floating mb-3">
 			<input type="password" class="form-control password <?php echo empty( $password_error ) ? null : 'is-invalid'; ?>" name="pwd" placeholder="<?php esc_html_e( 'Password', 'racketmanager' ); ?>" id="user_pass" aria-describedby="passwordFeedback" />
@@ -36,15 +34,13 @@ namespace Racketmanager;
 			<i class="passwordShow racketmanager-svg-icon">
 				<?php racketmanager_the_svg( 'icon-eye' ); ?>
 			</i>
-			<?php
-			if ( $username_error ) {
-				?>
-				<div id="passwordFeedback" class="<?php echo empty( $password_error ) ? null : 'invalid-feedback'; ?>">
-					<?php echo esc_html( $password_message ); ?>
-				</div>
+			<div id="user_passFeedback" class="invalid-feedback">
 				<?php
-			}
-			?>
+				if ( $password_error ) {
+					echo esc_html( $password_message );
+				}
+				?>
+			</div>
 		</div>
 	</div>
 	<div class="row">
@@ -54,13 +50,13 @@ namespace Racketmanager;
 			</a>
 		</div>
 		<div class="col-6">
-			<button type="submit" class="float-end">
+			<button type="submit" class="float-end" //onclick="Racketmanager.login(event)">
 				<?php esc_html_e( 'Login', 'racketmanager' ); ?>
 			</button>
 			<?php
 			if ( isset( $vars['redirect'] ) ) {
 				?>
-				<input type="hidden" name="redirect_to" value="<?php echo esc_url( $vars['redirect'] ); ?>" />
+				<input type="hidden" id="redirect_to" name="redirect_to" value="<?php echo esc_url( $vars['redirect'] ); ?>" />
 				<?php
 			}
 			?>

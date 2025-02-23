@@ -993,9 +993,7 @@ class Racketmanager_Util {
 				$message = __( 'You need to enter a password to login.', 'racketmanager' );
 				break;
 			case 'incorrect_password':
-				/* translators: %s: lost password url */
-				$err     = __( "The password you entered wasn't quite right. <a href='%s'>Did you forget your password</a>?", 'racketmanager' );
-				$message = sprintf( $err, wp_lostpassword_url() );
+				$message = __( 'Incorrect password.', 'racketmanager' );
 				break;
 			case 'email':
 				$message = __( 'The email address you entered is not valid.', 'racketmanager' );
@@ -1054,6 +1052,62 @@ class Racketmanager_Util {
 				$message = $error_code;
 		}
 		return $message;
+	}
+	/**
+	 * Finds and returns a matching field for the given error code.
+	 *
+	 * @param string $error_code    The error code to look up.
+	 *
+	 * @return string               A field.
+	 */
+	public static function get_error_field( $error_code ) {
+		switch ( $error_code ) {
+			case 'empty_password':
+			case 'incorrect_password':
+				$field = 'user_pass';
+				break;
+			case 'email':
+			case 'email_exists':
+			case 'closed':
+			case 'empty_username':
+			case 'invalid_email':
+			case 'invalidcombo':
+			case 'invalid_username':
+				$field = 'user_login';
+				break;
+			case 'captcha':
+				$field = 'captcha';
+				break;
+			case 'expiredkey':
+			case 'invalidkey':
+				$field = 'top';
+				break;
+			case 'password_reset_mismatch':
+			case 'password_reset_empty':
+				$field = 'password';
+				break;
+			case 'firstname_field_empty':
+			case 'first_name':
+				$field = 'firstname';
+				break;
+			case 'lastname_field_empty':
+			case 'last_name':
+				$field = 'lastname';
+				break;
+			case 'gender_field_empty':
+				$field = 'gender';
+				break;
+			case 'btm_field_empty':
+				$field = 'btm';
+				break;
+			case 'form_has_timedout':
+			case 'security':
+				$field = 'top';
+				break;
+			default:
+				$field = 'top';
+		}
+		return $field;
 	}
 	/**
 	 * Get email opt in choices  function

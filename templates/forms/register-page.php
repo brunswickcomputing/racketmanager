@@ -23,45 +23,39 @@ namespace Racketmanager;
 				<label class="" for="email">
 					<?php esc_html_e( 'Email', 'racketmanager' ); ?>
 				</label>
-				<?php
-				if ( $email_error ) {
-					?>
-					<div id="emailFeedback" class="invalid-feedback">
-							<?php echo esc_html( $email_message ); ?>
-					</div>
+				<div id="emailFeedback" class="invalid-feedback">
 					<?php
-				}
-				?>
+					if ( $email_error ) {
+						echo esc_html( $email_message );
+					}
+					?>
+				</div>
 			</div>
 			<div class="form-floating mb-3">
 				<input class="form-control <?php echo empty( $firstname_error ) ? null : 'is-invalid'; ?>" type="text" placeholder="<?php esc_html_e( 'First name', 'racketmanager' ); ?>" name="first_name" id="first_name" aria-describedby="firstnameFeedback" autocomplete="true" />
 				<label class="" for="first_name">
 					<?php esc_html_e( 'First name', 'racketmanager' ); ?>
 				</label>
-				<?php
-				if ( $firstname_error ) {
-					?>
-					<div id="firstnameFeedback" class="invalid-feedback">
-							<?php echo esc_html( $firstname_message ); ?>
-					</div>
+				<div id="first_nameFeedback" class="invalid-feedback">
 					<?php
-				}
-				?>
+					if ( $firstname_error ) {
+						echo esc_html( $firstname_message );
+					}
+					?>
+				</div>
 			</div>
 			<div class="form-floating mb-3">
 				<input class="form-control <?php echo empty( $surname_error ) ? null : 'is-invalid'; ?>" type="text" placeholder="<?php esc_html_e( 'Last name', 'racketmanager' ); ?>" name="last_name" id="last_name" aria-describedby="surnameFeedback" autocomplete="family-name" />
 				<label class="" for="last_name">
 					<?php esc_html_e( 'Last name', 'racketmanager' ); ?>
 				</label>
-				<?php
-				if ( $surname_error ) {
-					?>
-					<div id="surnameFeedback" class="invalid-feedback">
-							<?php echo esc_html( $surname_message ); ?>
-					</div>
+				<div id="surnameFeedback" class="invalid-feedback">
 					<?php
-				}
-				?>
+					if ( $surname_error ) {
+						echo esc_html( $surname_message );
+					}
+					?>
+				</div>
 			</div>
 		</div>
 		<div class="row">
@@ -71,15 +65,13 @@ namespace Racketmanager;
 				<div class="recaptcha-container col-6">
 					<div class="g-recaptcha  <?php echo empty( $recaptcha_error ) ? null : 'is-invalid'; ?>" data-sitekey="<?php echo esc_html( $vars['recaptcha_site_key'] ); ?>" data-size="invisible" aria-describedby="recaptchaFeedback" data-badge="inline" data-bind="recaptchaSubmit"	data-callback="submitForm">
 					</div>
-					<?php
-					if ( $surname_error ) {
-						?>
-						<div id="recaptchaFeedback" class="invalid-feedback">
-								<?php echo esc_html( $recaptcha_message ); ?>
-						</div>
+					<div id="recaptchaFeedback" class="invalid-feedback">
 						<?php
-					}
-					?>
+						if ( $recaptcha_error ) {
+							echo esc_html( $recaptcha_message );
+						}
+						?>
+					</div>
 				</div>
 				<?php
 			}

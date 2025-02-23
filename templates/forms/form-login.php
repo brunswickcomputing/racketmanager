@@ -18,10 +18,7 @@ if ( isset( $action ) && 'register' === $action ) {
 // phpcs:enable WordPress.WP.GlobalVariablesOverride.Prohibited
 ?>
 <script type='text/javascript'>
-var tab = '<?php echo esc_html( $tab ); ?>;'
-var hash = window.location.hash.substr(1);
-if (hash == 'teams') tab = 'teams';
-jQuery(function() {
+jQuery(document).ready(function(){
 	activaTab('<?php echo esc_html( $tab ); ?>');
 });
 </script>

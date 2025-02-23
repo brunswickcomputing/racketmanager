@@ -39,7 +39,6 @@ class RacketManager_Login {
 		add_action( 'login_form_rp', array( $this, 'do_password_reset' ) );
 		add_action( 'login_form_resetpass', array( $this, 'do_password_reset' ) );
 		add_action( 'member_account_update', array( $this, 'do_member_account_update' ) );
-		add_filter( 'authenticate', array( $this, 'maybe_redirect_at_authenticate' ), 101, 3 );
 		add_filter( 'login_redirect', array( $this, 'redirect_after_login' ), 10, 3 );
 		add_filter( 'retrieve_password_message', array( $this, 'racketmanager_retrieve_password_email' ), 10, 4 );
 		add_filter( 'password_change_email', array( $this, 'racketmanager_password_change_email' ), 10, 3 );
@@ -206,7 +205,6 @@ class RacketManager_Login {
 	public function redirect_to_custom_login() {
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'GET' === $_SERVER['REQUEST_METHOD'] ) {
 			$redirect_to = isset( $_REQUEST['redirect_to'] ) ? esc_url_raw( wp_unslash( $_REQUEST['redirect_to'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-
 			if ( is_user_logged_in() ) {
 				$this->redirect_logged_in_user( $redirect_to );
 				exit;
@@ -239,31 +237,6 @@ class RacketManager_Login {
 		} else {
 			wp_safe_redirect( home_url() );
 		}
-	}
-
-	/**
-	 * Redirect the user after authentication if there were any errors.
-	 *
-	 * @param Wp_User|Wp_Error $user       The signed in user, or the errors that have occurred during login.
-	 * @param string           $username   The user name used to log in.
-	 * @param string           $password   The password used to log in.
-	 *
-	 * @return Wp_User|Wp_Error The logged in user, or error information if there were errors.
-	 */
-	public function maybe_redirect_at_authenticate( $user, $username, $password ) {
-		// Check if the earlier authenticate filter (most likely,
-		// the default WordPress authentication) functions have found errors.
-		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] && is_wp_error( $user ) ) {
-			$error_codes = join( ',', $user->get_error_codes() );
-
-			$login_url = home_url( 'member-login' );
-			$login_url = add_query_arg( 'login', $error_codes, $login_url );
-
-			wp_safe_redirect( $login_url );
-			exit;
-		}
-
-		return $user;
 	}
 	/**
 	 * Redirect to custom login page after the user has been logged out.

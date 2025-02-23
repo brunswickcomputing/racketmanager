@@ -2186,7 +2186,61 @@ Racketmanager.withdrawTournament = function (e) {
 							 }
 							 );
 };
-	
+Racketmanager.login = function (e) {
+	e.preventDefault();
+	let	notifyField = "#login";
+	jQuery(notifyField).css('opacity', 0.25);
+	let alertResponseField = 'loginAlertResponse';
+	let alertField = '#loginAlert';
+	jQuery(alertField).hide();
+	jQuery(alertResponseField).html();
+	let userLogin = jQuery('#user_login').val();
+	let userPass = jQuery('#user_pass').val();
+	let redirecturl = jQuery('#redirect_to').val();
+	jQuery(".is-invalid").removeClass("is-invalid");
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: {
+			"action": "racketmanager_login",
+			"security": ajax_var.ajax_nonce,
+			"log": userLogin,
+			"pwd": userPass,
+			"redirect_to": redirecturl,
+		},
+		success: function (response) {
+			let redirecturl = response.data;
+			document.location.href = redirecturl;
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				if (response.status == '401') {
+					let message = response.responseJSON.data[0];
+					if (response.responseJSON.data[1]) {
+						let errorMsg = response.responseJSON.data[1];
+						let errorField = response.responseJSON.data[2];
+						for (let $i = 0; $i < errorField.length; $i++) {
+							let formfield = "#" + errorField[$i];
+							jQuery(formfield).addClass('is-invalid');
+							formfield = formfield + 'Feedback';
+							jQuery(formfield).html(errorMsg[$i]);
+						}
+					}
+					jQuery(alertResponseField).html(message);
+				} else {
+					let message = response.responseJSON.data;
+					jQuery(alertResponseField).html(message);
+				}
+			} else {
+				jQuery(alertResponseField).text(response.statusText);
+			}
+			jQuery(alertField).addClass('alert--danger');
+		},
+		complete: function () {
+			jQuery(notifyField).css('opacity', 1);
+		}
+	});
+};
 Racketmanager.confirmTournamentWithdraw = function () {
 	let modal = '#partnerModal';
 	let tournamentRef = '#tournamentId';

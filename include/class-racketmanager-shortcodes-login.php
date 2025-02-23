@@ -26,6 +26,7 @@ class RacketManager_Shortcodes_Login extends RacketManager_Shortcodes {
 	 */
 	public function __construct() {
 		add_shortcode( 'custom-login-form', array( $this, 'render_login_form' ) );
+		add_shortcode( 'login-form', array( $this, 'login_form' ) );
 		add_shortcode( 'custom-password-lost-form', array( $this, 'render_password_lost_form' ) );
 		add_shortcode( 'custom-password-reset-form', array( $this, 'render_password_reset_form' ) );
 		add_shortcode( 'account-info', array( $this, 'generate_member_account_form' ) );
@@ -52,23 +53,12 @@ class RacketManager_Shortcodes_Login extends RacketManager_Shortcodes {
 			$redirect_to = null;
 			if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'GET' === $_SERVER['REQUEST_METHOD'] ) {
 				$redirect_to = isset( $_REQUEST['redirect_to'] ) ? esc_url_raw( wp_unslash( $_REQUEST['redirect_to'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			} else {
+				$redirect_to = home_url();
 			}
-			?>
-			<div class="text-center">
-				<?php
-				if ( $redirect_to ) {
-					?>
-					<a href="<?php echo esc_url( $redirect_to ); ?>" class="btn btn-primary"><?php esc_html_e( 'Proceed', 'racketmanager' ); ?></a>
-					<?php
-				} else {
-					echo esc_html( $this->already_signed_in );
-				}
-				?>
-			</div>
-			<?php
-			return;
+			echo '<script>location.href = "' . esc_url( $redirect_to ) . '"</script>';
+			exit;
 		}
-
 		// Parse shortcode vars.
 		$default_vars      = array( 'show_title' => false );
 		$vars              = shortcode_atts( $default_vars, $vars );
@@ -109,7 +99,7 @@ class RacketManager_Shortcodes_Login extends RacketManager_Shortcodes {
 		if ( ! get_option( 'users_can_register' ) ) {
 			return __( 'Registering new users is currently not allowed', 'racketmanager' );
 		} else {
-			return $rthis->load_template( 'form-login', $vars, 'form' );
+			return $this->load_template( 'form-login', $vars, 'form' );
 		}
 	}
 	/**
@@ -201,7 +191,8 @@ class RacketManager_Shortcodes_Login extends RacketManager_Shortcodes {
 	 */
 	public function render_password_reset_form( $vars ) {
 		if ( is_user_logged_in() ) {
-			return $this->already_signed_in;
+//			echo '<script>location.href = "' . esc_url( home_url() ) . '"</script>';
+//			exit;
 		}
 		// Parse shortcode vars.
 		$default_vars = array( 'show_title' => false );

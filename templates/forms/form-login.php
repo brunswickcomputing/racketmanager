@@ -160,8 +160,14 @@ jQuery(function() {
 		<div class="tab-pane fade" id="login" role="tabpanel" aria-labelledby="login-tab">
 			<?php require 'login-page.php'; ?>
 		</div>
-		<div class="tab-pane fade" id="registration" role="tabpanel" aria-labelledby="registration-tab">
-			<?php require 'register-page.php'; ?>
-		</div>
+		<?php
+		if ( get_option( 'users_can_register' ) ) {
+			?>
+			<div class="tab-pane fade" id="registration" role="tabpanel" aria-labelledby="registration-tab">
+				<?php require 'register-page.php'; ?>
+			</div>
+			<?php
+		}
+		?>
 	</div>
 </div>

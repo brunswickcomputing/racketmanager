@@ -805,7 +805,8 @@ class Racketmanager_Competition {
 		$today = gmdate( 'Y-m-d' );
 		if ( empty( $data ) ) {
 			foreach ( array_reverse( $this->seasons ) as $season ) {
-				if ( empty( $season['date_start'] ) || $season['date_start'] <= $today ) {
+				$date_active = empty( $season['date_closing'] ) ? null : Racketmanager_Util::amend_date( $season['date_closing'], 7 );
+				if ( ! empty( $date_active ) && $date_active <= $today ) {
 					$data = $season;
 					break;
 				}

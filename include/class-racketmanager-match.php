@@ -925,7 +925,7 @@ final class Racketmanager_Match {
 	 */
 	public function set_time( $time_format = '' ) {
 		global $racketmanager;
-		if ( '' === $time_format ) {
+		if ( empty( $time_format ) ) {
 			$time_format = $racketmanager->time_format;
 		}
 		$this->start_time = mysql2date( $time_format, $this->date );

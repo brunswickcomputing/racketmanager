@@ -9,6 +9,7 @@ namespace Racketmanager;
 
 $competition_name = $competition;
 $match_date       = $match->match_date;
+$match_time       = mysql2date( $racketmanager->time_format, $match->date );
 $email_subject    = __( 'Match Details', 'racketmanager' ) . ' - ' . $round . ' - ' . $competition_name;
 ?>
 <?php require 'email-header.php'; ?>
@@ -49,7 +50,7 @@ $email_subject    = __( 'Match Details', 'racketmanager' ) . ' - ' . $round . ' 
 			require 'components/title.php';
 			?>
 			<?php
-			$paragraph_text = __( 'Match to be played on', 'racketmanager' ) . ' ' . $match_date . ' ' . __( 'at', 'racketmanager' ) . ' ' . $match->start_time . '.';
+			$paragraph_text = __( 'Match to be played on', 'racketmanager' ) . ' ' . $match_date . ' ' . __( 'at', 'racketmanager' ) . ' ' . $match_time . '.';
 			require 'components/paragraph.php';
 			?>
 			<?php

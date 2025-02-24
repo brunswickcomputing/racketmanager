@@ -129,7 +129,7 @@ jQuery(document).ready(function ($) {
 		}
 	});
 
-	jQuery('#matchSecretaryName').autocomplete({
+	jQuery('#matchSecretary').autocomplete({
 		minLength: 2,
 		source: function (request, response) {
 			let club = jQuery("#club_id").val();
@@ -140,7 +140,7 @@ jQuery(document).ready(function ($) {
 			if (ui.item.value == 'null') {
 				ui.item.value = '';
 			}
-			let player = "#matchSecretaryName";
+			let player = "#matchSecretary";
 			let playerId = "#matchSecretaryId";
 			let contactno = "#matchSecretaryContactNo";
 			let contactemail = "#matchSecretaryEmail";
@@ -150,7 +150,7 @@ jQuery(document).ready(function ($) {
 			jQuery(contactemail).val(ui.item.user_email);
 		},
 		change: function (event, ui) {
-			let player = "#matchSecretaryName";
+			let player = "#matchSecretary";
 			let playerId = "#matchSecretaryId";
 			let contactno = "#matchSecretaryContactNo";
 			let contactemail = "#matchSecretaryEmail";

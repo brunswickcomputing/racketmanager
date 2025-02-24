@@ -1753,14 +1753,8 @@ class Racketmanager_Competition {
 							$date     = $match->year . '-' . $month . '-' . $day . ' ' . gmdate( 'H:i', $time );
 							$location = $courts[ $i ];
 							if ( $date !== $match->date || $location !== $match->location ) {
-								$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-									$wpdb->prepare(
-										"UPDATE {$wpdb->racketmanager_matches} SET `date` = %s, `location` = %s WHERE `id` = %d",
-										$date,
-										$location,
-										$match_id
-									)
-								);
+								$match->set_match_date_in_db( $date );
+								$match->set_location( $location );
 							}
 						}
 					}
@@ -1852,14 +1846,8 @@ class Racketmanager_Competition {
 						$date     = $match->year . '-' . $month . '-' . $day . ' 00:00';
 						$location = '';
 						if ( $date !== $match->date || $location !== $match->location ) {
-							$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-								$wpdb->prepare(
-									"UPDATE {$wpdb->racketmanager_matches} SET `date` = %s, `location` = %s WHERE `id` = %d",
-									$date,
-									$location,
-									$match->id
-								)
-							);
+							$match->set_match_date_in_db( $date );
+							$match->set_location( $location );
 							$updates = true;
 						}
 					}

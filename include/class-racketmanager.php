@@ -1810,7 +1810,8 @@ class RacketManager {
 													 );
 					break;
 				case 'captain':
-					$search_terms[] = $wpdb->prepare("`id` IN (SELECT `club_id` FROM {$wpdb->racketmanager_team_events} te, {$wpdb->racketmanager_teams} t WHERE `captain` = %d AND te.`team_id` = t.`id`)",
+					$search_terms[] = $wpdb->prepare("(`id` IN (SELECT `club_id` FROM {$wpdb->racketmanager_team_events} te, {$wpdb->racketmanager_teams} t WHERE `captain` = %d AND te.`team_id` = t.`id`) OR `matchsecretary` = %d)",
+													 $player,
 													 $player,
 													 );
 					break;

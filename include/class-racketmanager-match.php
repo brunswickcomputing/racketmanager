@@ -762,6 +762,9 @@ final class Racketmanager_Match {
 				$this->id,
 			)
 		);
+		$this->leg = $leg;
+		$this->linked_match = $linked_match;
+		wp_cache_set( $this->id, $this, 'matches' );
 	}
 	/**
 	 * Update match
@@ -784,7 +787,7 @@ final class Racketmanager_Match {
 				$this->id
 			)
 		);
-		wp_cache_delete( $this->id, 'matches' );
+		wp_cache_set( $this->id, $this, 'matches' );
 		if ( 0 === $update_count ) {
 			$msg = __( 'No updates', 'racketmanager' );
 		} else {
@@ -808,6 +811,7 @@ final class Racketmanager_Match {
 			)
 		);
 		$this->sets = $sets;
+		wp_cache_set( $this->id, $this, 'matches' );
 	}
 	/**
 	 * Delete match
@@ -1299,7 +1303,7 @@ final class Racketmanager_Match {
 				$this->id
 			)
 		);
-		wp_cache_delete( $this->id, 'matches' );
+		wp_cache_set( $this->id, $this, 'matches' );
 		if ( 'Y' === $this->confirmed ) {
 			$report = $this->report_result();
 			if ( $report ) {
@@ -1611,7 +1615,7 @@ final class Racketmanager_Match {
 			if ( is_numeric( $this->home_team ) && '-1' !== $this->home_team ) {
 				$this_day  = isset( $this->teams['home']->match_day ) ? $this->teams['home']->match_day : null;
 				$this_time = isset( $this->teams['home']->match_time ) ? $this->teams['home']->match_time : null;
-				$this->set_match_date( $this->match_date, $this_day, $this_time );
+				$this->set_match_date( $this->date, $this_day, $this_time );
 				$location = isset( $this->teams['home']->club->shortcode ) ? $this->teams['home']->club->shortcode : null;
 				if ( $location ) {
 					$this->set_location( $location );
@@ -1621,7 +1625,7 @@ final class Racketmanager_Match {
 			if ( is_numeric( $this->away_team ) && '-1' !== $this->away_team ) {
 				$this_day  = isset( $this->teams['away']->match_day ) ? $this->teams['away']->match_day : null;
 				$this_time = isset( $this->teams['away']->match_time ) ? $this->teams['away']->match_time : null;
-				$this->set_match_date( $this->match_date, $this_day, $this_time );
+				$this->set_match_date( $this->date, $this_day, $this_time );
 				$location = isset( $this->teams['away']->club->shortcode ) ? $this->teams['away']->club->shortcode : null;
 				if ( $location ) {
 					$this->set_location( $location );
@@ -1640,6 +1644,9 @@ final class Racketmanager_Match {
 	 * @return void
 	 */
 	public function set_match_date( $start_date, $match_day, $match_time ) {
+		if ( strlen( $start_date ) > 10 ) {
+			$start_date = substr( $start_date, 0, 10 );
+		}
 		if ( ! empty( $match_day ) ) {
 			$day = Racketmanager_Util::get_match_day_number( $match_day );
 			if ( ! empty( $match_time ) ) {
@@ -1659,14 +1666,7 @@ final class Racketmanager_Match {
 	public function update_match_date( $match_date, $original_date = null ) {
 		global $wpdb;
 		if ( ! empty( $match_date ) ) {
-			$wpdb->query(
-				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_matches} SET `date` = %s WHERE `id` = %d",
-					$match_date,
-					$this->id
-				)
-			);
-			$this->date = $match_date;
+			$this->set_match_date_in_db( $match_date );
 			if ( ! empty( $original_date ) && empty( $this->date_original ) ) {
 				$wpdb->query(
 					$wpdb->prepare(
@@ -1677,7 +1677,7 @@ final class Racketmanager_Match {
 				);
 				$this->date_original = $original_date;
 			}
-			wp_cache_delete( $this->id, 'matches' );
+			wp_cache_set( $this->id, $this, 'matches' );
 			if ( $this->num_rubbers ) {
 				$rubbers = $this->get_rubbers();
 				foreach ( $rubbers as $rubber ) {
@@ -1691,6 +1691,24 @@ final class Racketmanager_Match {
 			}
 		}
 		return $this;
+	}
+	/**
+	 * Set match date in db function
+	 *
+	 * @param string $match_date match date.
+	 * @return object
+	 */
+	public function set_match_date_in_db( $match_date ) {
+		global $wpdb;
+		$this->date = $match_date;
+		$wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$wpdb->racketmanager_matches} SET `date` = %s WHERE `id` = %d",
+				$this->date,
+				$this->id
+			)
+		);
+		wp_cache_set( $this->id, $this, 'matches' );
 	}
 	/**
 	 * Set location function
@@ -1707,7 +1725,8 @@ final class Racketmanager_Match {
 				$this->id
 			)
 		);
-		wp_cache_delete( $this->id, 'matches' );
+		$this->location = $location;
+		wp_cache_set( $this->id, $this, 'matches' );
 	}
 	/**
 	 * Get previous round set score function
@@ -2084,6 +2103,8 @@ final class Racketmanager_Match {
 				$this->id
 			)
 		);
+		$this->comments = $comments;
+		wp_cache_set( $this->id, $this, 'matches' );
 	}
 	/**
 	 * Set match status
@@ -2099,6 +2120,8 @@ final class Racketmanager_Match {
 				$this->id
 			)
 		);
+		$this->status = $status;
+		wp_cache_set( $this->id, $this, 'matches' );
 	}
 	/**
 	 * Notify date change occurred

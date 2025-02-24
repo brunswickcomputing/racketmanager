@@ -43,7 +43,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 									<div class="form-floating">
 										<input type="text" class="form-control" id="matchSecretary" name="matchSecretary" value="<?php echo esc_html( $club->match_secretary_name ); ?>" <?php disabled( $user_can_update_club, false ); ?> />
 										<label for="matchSecretary"><?php esc_html_e( 'Name', 'racketmanager' ); ?></label>
-										<input type="hidden" id="matchSecretaryId1 name="matchSecretaryId" value="<?php echo esc_html( $club->matchsecretary ); ?>" />
+										<input type="hidden" id="matchSecretaryId" name="matchSecretaryId" value="<?php echo esc_html( $club->matchsecretary ); ?>" />
 										<div id="matchSecretary-feedback" class="invalid-tooltip"></div>
 									</div>
 								</div>

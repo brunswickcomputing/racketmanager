@@ -47,6 +47,12 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.41.0 =
+* BUGFIX: set correct match time
+* BUGFIX: enable match secretary lookup
+* BUGFIX: set correct match date for cups
+* UPDATE: make competition season active when 7 days after closing date
+
 = 8.40.0 =
 * UPDATE: only include registration form when registration allowed
 * UPDATE: login using ajax

@@ -103,6 +103,18 @@ namespace Racketmanager;
 									}
 									echo ' ' . esc_html( $rating_display );
 									?>
+									<?php
+									echo '<br>';
+									$wtn            = $player->wtn;
+									$wtn_display = '';
+									foreach ( $match_types as $match_type => $description ) {
+										if ( ! empty( $wtn_display ) ) {
+											$wtn_display .= ' - ';
+										}
+										$wtn_display .= '[' . $wtn[ $match_type ] . ']';
+									}
+									echo ' ' . esc_html( $wtn_display );
+									?>
 								</div>
 								<div class="col-2 col-md-1"><?php echo esc_html( $player->btm ); ?></div>
 							</div>

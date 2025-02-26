@@ -15,7 +15,7 @@ namespace Racketmanager;
 		<form id="teams-filter" method="post" action="">
 			<?php wp_nonce_field( 'clubs-bulk' ); ?>
 
-			<div class="tablenav">
+			<div class="tablenav mb-3">
 				<!-- Bulk Actions -->
 				<select name="action" size="1">
 					<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>

@@ -200,6 +200,12 @@ final class Racketmanager_Player {
 	 */
 	public $opt_ins;
 	/**
+	 * WTN.
+	 *
+	 * @var array
+	 */
+	public $wtn;
+	/**
 	 * Retrieve player instance
 	 *
 	 * @param int    $player_id player id.
@@ -311,6 +317,8 @@ final class Racketmanager_Player {
 				$rating_type                                  = 'rating_' . $match_type . '_team';
 				$this->rating_detail[ $match_type ]['team']   = get_user_meta( $this->ID, $rating_type, true );
 				$this->rating[ $match_type ]                  = array_sum( $this->rating_detail[ $match_type ] );
+				$wtn_type = 'wtn_' . $match_type;
+				$this->wtn[ $match_type ] = get_user_meta( $this->ID, $wtn_type, true );
 			}
 			$this->opt_ins = get_user_meta( $this->ID, 'racketmanager_opt_in' );
 		}
@@ -1246,6 +1254,30 @@ final class Racketmanager_Player {
 			wp_cache_set( md5( $sql ), $matches, 'player_stats_players' );
 		}
 		return $matches;
+	}
+	/**
+	 * Set player wtn function
+	 *
+	 * @param string $type match type.
+	 * @param string $wtn world tennis number.
+	 * @return void
+	 */
+	public function set_wtn( $wtn ) {
+		foreach( $wtn as $match_type => $value ) {
+			$this->set_wtn_type( $match_type, $value );
+		}
+		wp_cache_set( $this->id, $this, 'players' );
+	}
+	/**
+	 * Set player wtn function
+	 *
+	 * @param string $type match type.
+	 * @param string $wtn world tennis number.
+	 * @return void
+	 */
+	public function set_wtn_type( $match_type, $wtn ) {
+		$wtn_type = 'wtn_' . $match_type;
+		update_user_meta( $this->ID, $wtn_type, $wtn );
 	}
 	/**
 	 * Set player rating function

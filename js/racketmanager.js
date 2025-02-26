@@ -1880,6 +1880,7 @@ Racketmanager.playerSearch = function (event, link) {
 	let newURL = url.protocol + '//' + url.hostname + url.pathname;
 	let search_string = jQuery('#search_string').val();
 	if (search_string !== "") {
+		search_string = encodeURI( encodeURI );
 		var newUri = newURL + '?q=' + search_string;
 		let formId = '#'.concat(event.currentTarget.id);
 		let form = jQuery(formId).serialize();

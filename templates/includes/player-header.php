@@ -93,11 +93,18 @@ if ( empty( $is_page_header ) ) {
 					<div class="media__content-subinfo">
 						<ul class="list list--inline">
 							<?php
-							$rating      = $player->rating;
+							$display_opt = $racketmanager->get_options( 'display' );
+							if ( empty( $display_opt['wtn'] ) ) {
+								$rating    = $player->rating;
+								$help_text = __( 'L&WLTA Tennis Rating for', 'racketmanager');
+							} else {
+								$rating    = $player->wtn;
+								$help_text = __( 'World Tennis Number for', 'racketmanager');
+							}
 							$match_types = Racketmanager_Util::get_match_types();
 							foreach ( $match_types as $match_type => $description ) {
 								?>
-								<li class="list__item" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<?php /* translators: %s: rating type*/ printf( esc_html__( 'L&WLTA Tennis Rating for %s', 'racketmanager' ), esc_html( $description ) ); ?>">
+								<li class="list__item" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<?php printf( esc_html( $help_text . ' ' . $description ) ); ?>">
 									<span class="tag tag-pair" >
 										<span class="tag-pair__title"><?php echo esc_html( $description ); ?></span>
 										<span class="tag-pair__value"><?php echo esc_html( $rating[ $match_type ] ); ?></span>

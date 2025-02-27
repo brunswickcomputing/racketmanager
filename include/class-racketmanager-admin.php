@@ -2331,7 +2331,8 @@ class RacketManager_Admin extends RacketManager {
 						if ( $player_id && $btm ) {
 							$player = get_player( $player_id );
 							if ( $player ) {
-								$wtn = $this->get_wtn( $btm );
+								$player->btm = $btm;
+								$wtn         = $this->get_wtn( $player );
 								if ( $wtn ) {
 									$player->set_wtn( $wtn );
 									$this->set_message( __( 'WTN set', 'racketmanager' ) );
@@ -2373,14 +2374,14 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Get wtn from lta database
 	 *
-	 * @param string $btm LTA tennis number.
+	 * @param object $player player object.
 	 * @return array
 	 */
-	public function get_wtn( $btm ) {
+	private function get_wtn( $player ) {
 		$args = $this->set_wtn_env();
 		$wtn  = array();
 		if ( $args ) {
-			$wtn = $this->get_player_wtn( $args, $btm );
+			$wtn = $this->get_player_wtn( $args, $player );
 		}
 		return $wtn;
 	}

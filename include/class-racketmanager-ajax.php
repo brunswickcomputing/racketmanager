@@ -860,8 +860,26 @@ class Racketmanager_Ajax extends RacketManager {
 				$rubbers      = $match->get_rubbers();
 				$prev_ratings = array();
 				foreach ( $rubbers as $rubber ) {
-					$ratings = $rubber->check_players();
-					if ( isset( $check_options['ratingCheck'] ) && 'true' === $check_options['ratingCheck'] ) {
+					$check_results = $rubber->check_players();
+					if ( ! empty( $check_options['wtn_check'] ) ) {
+						$wtns = $check_results['wtns'];
+						if ( ! empty( $prev_wtns ) ) {
+							foreach ( $wtns as $opponent => $wtn ) {
+								if ( $wtn < $prev_wtns[ $opponent ] ) {
+									$team_err = $opponent . '_team';
+									$team     = $match->$team_err;
+									/* translators: %1$d: rubber number, %2$d: rubber team rating, %3$d: previous rubber rating*/
+									$message = sprintf( __( 'Players out of order. Rubber %1$d has wtn %2$.1f - previous rubber has wtn %3$.1f', 'racketmanager' ), $rubber->rubber_number, $wtn, $prev_wtns[ $opponent ] );
+									$players = $rubber->players[ $opponent ];
+									foreach ( $players as $player ) {
+										$match->add_result_check( $team, $player->id, $message, $rubber->id );
+									}
+								}
+							}
+						}
+						$prev_wtns = $wtns;
+					} elseif ( ! empty( $check_options['ratingCheck'] ) ) {
+						$ratings = $check_results['ratings'];
 						if ( ! empty( $prev_ratings ) ) {
 							foreach ( $ratings as $opponent => $rating ) {
 								if ( $rating > $prev_ratings[ $opponent ] ) {

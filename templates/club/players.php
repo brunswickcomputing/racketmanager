@@ -12,6 +12,7 @@
 
 namespace Racketmanager;
 
+$display_opt = $racketmanager->get_options( 'display' );
 if ( empty( $club->player ) ) {
 	$header_level = 1;
 	require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
@@ -133,7 +134,15 @@ if ( empty( $club->player ) ) {
 										</th>
 										<th scope="col"><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
 										<th scope="col" class="colspan"><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></th>
-										<th scope="col" class="colspan"><?php esc_html_e( 'Rating Points', 'racketmanager' ); ?></th>
+										<th scope="col" class="colspan">
+											<?php
+											if ( empty( $display_opt['wtn'] ) ) {
+												esc_html_e( 'Rating Points', 'racketmanager' );
+											} else {
+												esc_html_e( 'WTN', 'racketmanager' );
+											}
+											?>
+										</th>
 									</tr>
 								</thead>
 								<tbody id="Club <?php echo esc_html( $key ); ?> Players">
@@ -155,7 +164,11 @@ if ( empty( $club->player ) ) {
 												<td><?php echo esc_html( $club_player->btm ); ?></td>
 												<td>
 													<?php
-													$rating         = $club_player->rating;
+													if ( empty( $display_opt['wtn'] ) ) {
+														$rating = $club_player->rating;
+													} else {
+														$rating = $club_player->wtn;
+													}
 													$match_types    = Racketmanager_Util::get_match_types();
 													$rating_display = '';
 													foreach ( $match_types as $match_type => $description ) {

@@ -6,13 +6,15 @@
  * @package Racketmanager_admin
  */
 
+namespace Racketmanager;
+
 $is_invalid = false;
 ?>
 <form action="" method="post">
-	<?php wp_nonce_field( 'racketmanager_manage-player' ); ?>
+	<?php wp_nonce_field( 'racketmanager_manage-player', 'racketmanager_nonce' ); ?>
 	<div class="form-control mb-3">
 		<legend><?php esc_html_e( 'Personal details', 'racketmanager' ); ?></legend>
-		<div class="row g-3">
+		<div class="row gx-3">
 			<div class="col-md-6">
 				<div class="form-floating mb-3">
 					<?php
@@ -87,7 +89,7 @@ $is_invalid = false;
 				</div>
 			</div>
 		</div>
-		<div class="row g-3">
+		<div class="row gx-3">
 			<div class="col-md-6">
 				<div class="form-floating mb-3">
 					<?php
@@ -146,9 +148,53 @@ $is_invalid = false;
 			</div>
 		</div>
 	</div>
+	<?php
+	if ( isset( $player ) ) {
+		$match_types = Racketmanager_Util::get_match_types();
+		?>
+		<div class="form-control mb-3">
+			<legend><?php esc_html_e( 'Ratings', 'racketmanager' ); ?></legend>
+			<div class="row gx-3">
+				<div class="col-md-6">
+					<div class="form-floating mb-3">
+						<legend class="fs-6"><?php esc_html_e( 'L&W', 'racketmanager' ); ?></legend>
+						<?php
+						$rating         = isset( $player->rating ) ? $player->rating : null;
+						$rating_display = '';
+						foreach ( $match_types as $match_type => $description ) {
+							if ( ! empty( $rating_display ) ) {
+								$rating_display .= ' - ';
+							}
+							$rating_display .= '[' . $rating[ $match_type ] . ']';
+						}
+						echo ' ' . esc_html( $rating_display );
+						?>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-floating mb-3">
+						<legend class="fs-6"><?php esc_html_e( 'WTN', 'racketmanager' ); ?></legend>
+						<?php
+						$wtn            = $player->wtn;
+						$wtn_display = '';
+						foreach ( $match_types as $match_type => $description ) {
+							if ( ! empty( $wtn_display ) ) {
+								$wtn_display .= ' - ';
+							}
+							$wtn_display .= '[' . $wtn[ $match_type ] . ']';
+						}
+						echo ' ' . esc_html( $wtn_display );
+						?>
+					</div>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+	?>
 	<div class="form-control mb-3">
 		<legend><?php esc_html_e( 'Contact details', 'racketmanager' ); ?></legend>
-		<div class="row g-3">
+		<div class="row gx-3">
 			<div class="col-md-6">
 				<div class="form-floating mb-3">
 					<?php
@@ -200,7 +246,7 @@ $is_invalid = false;
 		?>
 		<div class="form-control mb-3">
 			<legend><?php esc_html_e( 'System details', 'racketmanager' ); ?></legend>
-			<div class="row g-3">
+			<div class="row gx-3">
 				<div class="col-md-6">
 					<div class="form-check">
 						<?php
@@ -237,6 +283,7 @@ $is_invalid = false;
 		?>
 		<input type="hidden" name="playerId" id="playerId" value="<?php echo esc_html( $player->id ); ?>" />
 		<input type="submit" name="updatePlayer" value="<?php esc_html_e( 'Update Player', 'racketmanager' ); ?>" class="btn btn-primary" />
+		<input type="submit" name="setWTN" value="<?php esc_html_e( 'Set WTN', 'racketmanager' ); ?>" class="btn btn-secondary" />
 		<?php
 	} else {
 		?>

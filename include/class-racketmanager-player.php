@@ -1278,6 +1278,7 @@ final class Racketmanager_Player {
 	public function set_wtn_type( $match_type, $wtn ) {
 		$wtn_type = 'wtn_' . $match_type;
 		update_user_meta( $this->ID, $wtn_type, $wtn );
+		$this->wtn[ $wtn_type ] = $wtn;
 	}
 	/**
 	 * Set player rating function

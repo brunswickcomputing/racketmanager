@@ -987,11 +987,12 @@ final class Racketmanager_Tournament {
 	 */
 	public function schedule_tournament_ratings() {
 		global $racketmanager;
-		$schedule_date  = strtotime( $this->date_open );
+		$date_schedule  = Racketmanager_Util::amend_date( $this->date_closing, 1 );
+		$schedule_date  = strtotime( $date_schedule );
 		$day            = intval( gmdate( 'd', $schedule_date ) );
 		$month          = intval( gmdate( 'm', $schedule_date ) );
 		$year           = intval( gmdate( 'Y', $schedule_date ) );
-		$schedule_start = mktime( 12, 0, 0, $month, $day, $year );
+		$schedule_start = mktime( 00, 00, 01, $month, $day, $year );
 		$schedule_name  = 'rm_calculate_tournament_ratings';
 		$schedule_args  = array( intval( $this->id ) );
 		Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
@@ -1691,5 +1692,43 @@ final class Racketmanager_Tournament {
 			$payments = null;
 		}
 		return $payments;
+	}
+	/**
+	 * Function to set team ratings for tournament
+	 */
+	public function calculate_player_team_ratings() {
+		global $racketmanager;
+		$players = $this->get_entries();
+		foreach ( $players as $player ) {
+			$player = get_player( $player );
+			if ( $player ) {
+				$player->set_tournament_rating();
+			}
+		}
+		$events = $this->get_events();
+		$display_opt = $racketmanager->get_options( 'display' );
+		foreach( $events as $event ) {
+			$type  = substr( $event->type, 1, 1 );
+			$teams = $event->get_teams();
+			foreach( $teams as $team ) {
+				$team_rating = 0;
+				if ( ! empty( $team->players ) ) {
+					foreach( $team->players as $player ) {
+						if ( empty( $display_opt['wtn'] ) ) {
+							$rating = $player->rating[ $type ];
+						} else {
+							$rating = floatval( $player->wtn[ $type ] );
+						}
+						if ( is_numeric( $rating ) ) {
+							$team_rating += $rating;
+						}
+					}
+					$league_team = get_league_team( $team->table_id );
+					if ( $league_team ) {
+						$league_team->set_rating( $team_rating );
+					}
+				}
+			}
+		}
 	}
 }

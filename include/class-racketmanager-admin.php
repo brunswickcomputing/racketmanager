@@ -1867,16 +1867,22 @@ class RacketManager_Admin extends RacketManager {
 	 * @param object $league league object.
 	 */
 	protected function league_rating_points_rank_teams( $league ) {
+		global $racketmanager;
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'update_results' ) ) {
 			$league     = get_league( $league );
 			$team_ranks = array();
 			if ( isset( $_POST['table_id'] ) ) {
-				$team_ids = array_values( $_POST['table_id'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				$display_opt = $racketmanager->get_options( 'display' );
+				$team_ids    = array_values( $_POST['table_id'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				if ( isset( $_POST['rating_points'] ) ) {
 					$rating_points = array_values( $_POST['rating_points'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-					array_multisort( $rating_points, SORT_DESC, $team_ids, SORT_ASC );
+					if ( empty( $display_opt['wtn'] ) ) {
+						array_multisort( $rating_points, SORT_DESC, $team_ids, SORT_ASC );
+					} else {
+						array_multisort( $rating_points, SORT_ASC, $team_ids, SORT_ASC );
+					}
 				}
 				foreach ( $team_ids as $key => $team_id ) {
 					$rank                    = $key + 1;
@@ -2254,6 +2260,8 @@ class RacketManager_Admin extends RacketManager {
 					$club_id = intval( $_POST['club_id'] );
 					$club    = get_club( $club_id );
 					if ( $club ) {
+						$racketmanager->calculate_player_ratings( $club->id );
+						/*
 						$players = $club->get_players(
 							array(
 								'active' => true,
@@ -2265,6 +2273,7 @@ class RacketManager_Admin extends RacketManager {
 							$player->set_team_rating();
 						}
 						$player = null;
+						 */
 						$this->set_message( __( 'Player ratings set', 'racketmanager' ) );
 					}
 				}
@@ -2296,21 +2305,46 @@ class RacketManager_Admin extends RacketManager {
 		} else {
 			$form_valid    = true;
 			$page_referrer = null;
-			if ( isset( $_POST['updatePlayer'] ) ) {
-				check_admin_referer( 'racketmanager_manage-player' );
-				$page_referrer = isset( $_POST['page_referrer'] ) ? $_POST['page_referrer'] : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-				$player_valid  = $this->validatePlayer();
-				if ( $player_valid[0] ) {
-					if ( isset( $_POST['playerId'] ) ) {
-						$player     = get_player( intval( $_POST['playerId'] ) );
-						$new_player = $player_valid[1];
-						$player->update( $new_player );
-					}
+			if ( ! empty( $_POST ) ) {
+				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-player' ) ) {
+					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+					$this->printMessage();
 				} else {
-					$form_valid     = false;
-					$error_fields   = $player_valid[1];
-					$error_messages = $player_valid[2];
-					$this->set_message( __( 'Error with player details', 'racketmanager' ), true );
+					$page_referrer = isset( $_POST['page_referrer'] ) ? $_POST['page_referrer'] : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+					if ( isset( $_POST['updatePlayer'] ) ) {
+						$player_valid  = $this->validatePlayer();
+						if ( $player_valid[0] ) {
+							if ( isset( $_POST['playerId'] ) ) {
+								$player     = get_player( intval( $_POST['playerId'] ) );
+								$new_player = $player_valid[1];
+								$player->update( $new_player );
+							}
+						} else {
+							$form_valid     = false;
+							$error_fields   = $player_valid[1];
+							$error_messages = $player_valid[2];
+							$this->set_message( __( 'Error with player details', 'racketmanager' ), true );
+						}
+					} elseif ( isset( $_POST['setWTN'] ) ) {
+						$player_id = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
+						$btm       = isset( $_POST['btm'] ) ? intval( $_POST['btm'] ) : null;
+						if ( $player_id && $btm ) {
+							$player = get_player( $player_id );
+							if ( $player ) {
+								$wtn = $this->get_wtn( $btm );
+								if ( $wtn ) {
+									$player->set_wtn( $wtn );
+									$this->set_message( __( 'WTN set', 'racketmanager' ) );
+								} else {
+									$this->set_message( __( 'Error setting WTN', 'racketmanager' ), true );
+								}
+							} else {
+								$this->set_message( __( 'Player not found', 'racketmanager' ), true );
+							}
+						} else {
+							$this->set_message( __( 'No LTA Tennis number set', 'racketmanager' ), true );
+						}
+					}
 				}
 			} else {
 				$page_referrer = wp_get_referer();
@@ -2318,6 +2352,9 @@ class RacketManager_Admin extends RacketManager {
 			$this->printMessage();
 			if ( isset( $_GET['club_id'] ) ) {
 				$club_id = intval( $_GET['club_id'] );
+				if ( $club_id ) {
+					$club = get_club( $club_id );
+				}
 			}
 			if ( isset( $_GET['player_id'] ) ) {
 				$player_id = intval( $_GET['player_id'] );
@@ -2333,7 +2370,20 @@ class RacketManager_Admin extends RacketManager {
 			include_once RACKETMANAGER_PATH . '/admin/players/show-player.php';
 		}
 	}
-
+	/**
+	 * Get wtn from lta database
+	 *
+	 * @param string $btm LTA tennis number.
+	 * @return array
+	 */
+	public function get_wtn( $btm ) {
+		$args = $this->set_wtn_env();
+		$wtn  = array();
+		if ( $args ) {
+			$wtn = $this->get_player_wtn( $args, $btm );
+		}
+		return $wtn;
+	}
 	/**
 	 * Validate player
 	 *
@@ -3839,9 +3889,11 @@ class RacketManager_Admin extends RacketManager {
 				$options['rosters']['rosterConfirmation']      = isset( $_POST['confirmation'] ) ? sanitize_text_field( wp_unslash( $_POST['confirmation'] ) ) : null;
 				$options['rosters']['rosterConfirmationEmail'] = isset( $_POST['confirmationEmail'] ) ? sanitize_text_field( wp_unslash( $_POST['confirmationEmail'] ) ) : null;
 				$options['rosters']['ageLimitCheck']           = isset( $_POST['clubPlayerAgeLimitCheck'] ) ? sanitize_text_field( wp_unslash( $_POST['clubPlayerAgeLimitCheck'] ) ) : null;
+				$options['display']['wtn']                     = isset( $_POST['wtnDisplay'] ) ? true : false;
 				$options['checks']['ageLimitCheck']            = isset( $_POST['ageLimitCheck'] ) ? sanitize_text_field( wp_unslash( $_POST['ageLimitCheck'] ) ) : null;
 				$options['checks']['leadTimeCheck']            = isset( $_POST['leadTimeCheck'] ) ? sanitize_text_field( wp_unslash( $_POST['leadTimeCheck'] ) ) : null;
-				$options['checks']['ratingCheck']              = isset( $_POST['ratingCheck'] ) ? sanitize_text_field( wp_unslash( $_POST['ratingCheck'] ) ) : null;
+				$options['checks']['ratingCheck']              = isset( $_POST['ratingCheck'] ) ? true : false;
+				$options['checks']['wtn_check']                = isset( $_POST['wtnCheck'] ) ? true : false;
 				$options['checks']['rosterLeadTime']           = isset( $_POST['playerLeadTime'] ) ? intval( $_POST['playerLeadTime'] ) : null;
 				$options['checks']['playedRounds']             = isset( $_POST['playedRounds'] ) ? intval( $_POST['playedRounds'] ) : null;
 				$options['checks']['playerLocked']             = isset( $_POST['playerLocked'] ) ? sanitize_text_field( wp_unslash( $_POST['playerLocked'] ) ) : null;
@@ -3895,6 +3947,11 @@ class RacketManager_Admin extends RacketManager {
 				$options['player']['walkover']['rubber']        = isset( $_POST['walkoverPointsRubber'] ) ? intval( $_POST['walkoverPointsRubber'] ) : null;
 				$options['player']['walkover']['match']         = isset( $_POST['walkoverPointsMatch'] ) ? intval( $_POST['walkoverPointsMatch'] ) : null;
 				$options['player']['share']['rubber']           = isset( $_POST['sharePoints'] ) ? intval( $_POST['sharePoints'] ) : null;
+				if ( $options['checks']['ratingCheck'] && $options['checks']['wtn_check'] ) {
+					$this->set_message( __( 'Only one check can be set for ratings and wtn', 'racketmanager' ), true );
+					$valid = false;
+					$tab   = 'players';
+				}
 				if ( $options['billing']['stripe_is_live'] ) {
 					if ( empty( $options['billing']['api_publishable_key_live'] ) || empty( $options['billing']['api_secret_key_live'] ) ) {
 						$this->set_message( __( 'Live mode requires live keys to be set', 'racketmanager' ), true );

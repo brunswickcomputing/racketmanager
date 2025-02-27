@@ -30,6 +30,9 @@ jQuery(document).ready(function(){
 						<button class="nav-link active" id="club-players-tab" data-bs-toggle="tab" data-bs-target="#club-players" type="button" role="tab" aria-controls="club-players" aria-selected="true"><?php esc_html_e( 'Club Players', 'racketmanager' ); ?></button>
 					</li>
 					<li class="nav-item" role="presentation">
+						<button class="nav-link" id="display-tab" data-bs-toggle="tab" data-bs-target="#display" type="button" role="tab" aria-controls="display" aria-selected="false"><?php esc_html_e( 'Display', 'racketmanager' ); ?></button>
+					</li>
+					<li class="nav-item" role="presentation">
 						<button class="nav-link" id="players-tab" data-bs-toggle="tab" data-bs-target="#players" type="button" role="tab" aria-controls="players" aria-selected="false"><?php esc_html_e( 'Player Checks', 'racketmanager' ); ?></button>
 					</li>
 					<li class="nav-item" role="presentation">
@@ -64,6 +67,9 @@ jQuery(document).ready(function(){
 			<div class="tab-content">
 				<div class="tab-pane active show fade" id="club-players" role="tabpanel" aria-labelledby="club-players-tab">
 					<?php require RACKETMANAGER_PATH . 'admin/includes/settings/rosters.php'; ?>
+				</div>
+				<div class="tab-pane fade" id="display" role="tabpanel" aria-labelledby="display-tab">
+					<?php require RACKETMANAGER_PATH . 'admin/includes/settings/display.php'; ?>
 				</div>
 				<div class="tab-pane fade" id="players" role="tabpanel" aria-labelledby="players-tab">
 					<?php require RACKETMANAGER_PATH . 'admin/includes/settings/players.php'; ?>

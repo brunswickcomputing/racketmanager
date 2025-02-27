@@ -58,24 +58,15 @@ namespace Racketmanager;
 	<div class="form-control mb-3">
 		<legend class="form-check-label"><?php esc_html_e( 'Player Rating Check', 'racketmanager' ); ?></legend>
 		<div class="form-check form-check-inline">
-			<input type="radio" class="form-check-input" name="ratingCheck" id="ratingCheckTrue" value="true"
-			<?php
-			if ( isset( $options['checks']['ratingCheck'] ) ) {
-				echo ( 'true' === $options['checks']['ratingCheck'] ) ? ' checked' : '';
-			}
-			?>
-			/>
+			<input type="checkbox" class="form-check-input" name="ratingCheck" id="ratingCheckTrue" value="true" <?php checked( true, empty( $options['checks']['ratingCheck'] ) ? false : true ); ?> />
 			<label class="form-check-label" for="ratingCheckTrue"><?php esc_html_e( 'True', 'racketmanager' ); ?></label>
 		</div>
+	</div>
+	<div class="form-control mb-3">
+		<legend class="form-check-label"><?php esc_html_e( 'Player WTN Check', 'racketmanager' ); ?></legend>
 		<div class="form-check form-check-inline">
-			<input type="radio" class="form-check-input" name="ratingCheck" id="ratingCheckFalse" value="false"
-			<?php
-			if ( isset( $options['checks']['ratingCheck'] ) ) {
-				echo ( 'false' === $options['checks']['ratingCheck'] ) ? ' checked' : '';
-			}
-			?>
-			/>
-			<label class="form-check-label" for="ratingCheckFalse"><?php esc_html_e( 'False', 'racketmanager' ); ?></label>
+			<input type="checkbox" class="form-check-input" name="wtnCheck" id="wtnCheckTrue" value="true" <?php checked( true, empty( $options['checks']['wtn_check'] ) ? false : true ); ?> />
+			<label class="form-check-label" for="wtnCheckTrue"><?php esc_html_e( 'True', 'racketmanager' ); ?></label>
 		</div>
 	</div>
 	<div class="form-floating mb-3">

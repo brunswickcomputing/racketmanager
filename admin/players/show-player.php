@@ -14,7 +14,7 @@ namespace Racketmanager;
 			<?php
 			if ( isset( $club_id ) ) {
 				?>
-				<a href="admin.php?page=racketmanager-clubs"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <?php esc_html_e( 'Players', 'racketmanager' ); ?>
+				<a href="admin.php?page=racketmanager-clubs"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <a href="admin.php?page=racketmanager-clubs&view=players&club_id=<?php echo esc_attr( $club_id ); ?>"><?php echo esc_html( $club->shortcode ); ?></a> &raquo; <?php esc_html_e( 'Players', 'racketmanager' ); ?>
 				<?php
 			} else {
 				?>

@@ -696,11 +696,17 @@ final class Racketmanager_League_Team {
 	 * @param object $event event object.
 	 */
 	public function set_player_rating( $team, $event ) {
+		global $racketmanager;
 		if ( ! empty( $team->players ) ) {
+			$display_opt = $racketmanager->get_options( 'display' );
 			$type        = substr( $event->type, 1, 1 );
 			$team_rating = 0;
 			foreach ( $team->players as $player ) {
-				$rating = $player->rating[ $type ];
+				if ( empty( $display_opt['wtn'] ) ) {
+					$rating = $player->rating[ $type ];
+				} else {
+					$rating = floatval( $player->wtn[ $type ] );
+				}
 				if ( is_numeric( $rating ) ) {
 					$team_rating += $rating;
 				}
@@ -711,13 +717,13 @@ final class Racketmanager_League_Team {
 	/**
 	 * Set rating
 	 *
-	 * @param int $rating rating.
+	 * @param float $rating rating.
 	 */
 	public function set_rating( $rating ) {
 		global $wpdb;
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_table} SET `rating` = %d WHERE `id` = %d",
+				"UPDATE {$wpdb->racketmanager_table} SET `rating` = %f WHERE `id` = %d",
 				$rating,
 				$this->table_id
 			)

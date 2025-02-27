@@ -1423,6 +1423,10 @@ function racketmanager_upgrade() {
 			}
 		}
 	}
+	if ( version_compare( $installed, '8.42.0', '<' ) ) {
+		echo esc_html__( 'starting 8.42.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_table} CHANGE `rating` `rating` FLOAT NULL" );
+	}
 	/*
 	* Update version and dbversion
 	*/

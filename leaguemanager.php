@@ -32,7 +32,7 @@ $site_url  = get_option( 'siteurl' );
 $site_url .=  '/';
 define( 'RACKETMANAGER', 'racketmanager' );
 define( 'RACKETMANAGER_VERSION', '8.41.0' );
-define( 'RACKETMANAGER_DBVERSION', '8.39.0' );
+define( 'RACKETMANAGER_DBVERSION', '8.42.0' );
 define( 'RACKETMANAGER_SITE', $site_url );
 define( 'RACKETMANAGER_URL', esc_url( plugin_dir_url( __FILE__ ) ) );
 define( 'RACKETMANAGER_PATH', plugin_dir_path( __FILE__ ) );

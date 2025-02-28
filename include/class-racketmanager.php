@@ -509,6 +509,7 @@ class RacketManager {
 	 * @return void
 	 */
 	public function calculate_player_ratings( $club_id = null ) {
+		$wtn_list = array();
 		if ( $club_id ) {
 			$club = get_club( $club_id );
 			if ( $club ) {
@@ -521,6 +522,9 @@ class RacketManager {
 				foreach ( $players as $club_player ) {
 					$player = get_player( $club_player->player_id );
 					$player->set_team_rating();
+					if ( ! empty( $player->btm ) ) {
+						$wtn_list[] = $player;
+					}
 				}
 			}
 		} else {
@@ -529,8 +533,14 @@ class RacketManager {
 				foreach ( $players as $player ) {
 					$player = get_player( $player->ID );
 					$player->set_team_rating();
+					if ( ! empty( $player->btm ) ) {
+						$wtn_list[] = $player;
+					}
 				}
 			}
+		}
+		if ( $wtn_list ) {
+			$this->wtn_update( $wtn_list, $club_id );
 		}
 	}
 	/**
@@ -543,15 +553,7 @@ class RacketManager {
 		if ( $tournament_id ) {
 			$tournament = get_tournament( $tournament_id );
 			if ( $tournament ) {
-				$players = $this->get_tournament_entries();
-				foreach ( $players as $player ) {
-					if ( isset( $player->id ) ) {
-						$player = get_player( $player->id );
-						if ( $player ) {
-							$player->set_tournament_rating();
-						}
-					}
-				}
+				$tournament->calculate_player_team_ratings();
 			}
 		}
 	}
@@ -1161,6 +1163,7 @@ class RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-message.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-user.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-rewrites.php';
+		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-player-error.php';
 		require_once RACKETMANAGER_PATH . 'vendor/autoload.php';
 
 		/*
@@ -3311,5 +3314,244 @@ class RacketManager {
 			}
 		}
 		return $teams;
+	}
+	/**
+	 * Run WTN update
+	 *
+	 * @param array $players list of players.
+	 * @param int   $club_id club id.
+	 * @return void
+	 */
+	public function wtn_update( $players, $club_id ) {
+		global $racketmanager_shortcodes, $racketmanager;
+		$messages = array();
+		$messages = $this->set_wtns( $players, $messages );
+		if ( $messages ) {
+			$this->handle_player_errors( $messages );
+		}
+		if ( $club_id ) {
+			$club = get_club( $club_id );
+		} else {
+			$club = null;
+		}
+		$headers          = array();
+		$headers[]         = 'From: ' . $racketmanager->admin_email;
+		$organisation_name = $this->site_name;
+		$email_subject     = $this->site_name . ' - ' . __( 'WTN Update', 'racketmanager' );
+		$email_to          = $racketmanager->admin_email;
+		$email_message     = $racketmanager_shortcodes->load_template( 'wtn-report',
+																  array(
+																		'messages'      => $messages,
+																		'club'          => $club,
+																		'players'       => $players,
+																		'email_subject' => $email_subject,
+																		'organisation'  => $organisation_name,
+																		),
+																  'email',
+		);
+		wp_mail( $email_to, $email_subject, $email_message, $headers );
+	}
+	/**
+	 * Set environment details for WTN retrieval
+	 *
+	 * @param array list of players.
+	 * @return array
+	 */
+	public function set_wtn_env( $players ) {
+		$this->delete_player_errors( $players );
+		$args = array();
+		$url = 'https://competitions.lta.org.uk/cookiewall/';
+		$player_lookup = wp_remote_get( $url, $args );
+		$headers = wp_remote_retrieve_headers( $player_lookup );
+		$code    = wp_remote_retrieve_response_code( $player_lookup );
+		if ( 200 === $code ) {
+			$cookies = wp_remote_retrieve_cookies( $player_lookup );
+			foreach( $cookies as $cookie ) {
+				if ( 'st' === $cookie->name ) {
+					$cookie->value .= "&c=1&cp=31";
+				}
+				$new_cookies[] = $cookie;
+			}
+			$args = [
+				'cookies'   => $new_cookies,
+				'timeout'   => 5,
+			];
+		}
+		return $args;
+	}
+	protected function delete_player_errors( $players) {
+		global $wpdb;
+		$player_ids = implode( ',', $players );
+		$wpdb->query( "DELETE FROM {$wpdb->racketmanager_player_errors} WHERE `player_id` IN ($player_ids)" );
+	}
+	/**
+	 * Set WTN for list of players
+	 *
+	 * @param array $players array of players.
+	 * @param array $messages array of messages.
+	 * @param int   $retry count indicating if this is a retry.
+	 * @return array
+	 */
+	public function set_wtns( $players, $messages, $retry = 4 ) {
+		global $racketmanager;
+		--$retry;
+		$player_list = array();
+		foreach( $players as $player ) {
+			$player_list[] = $player->ID;
+		}
+		$retry_wtn = array();
+		$args = $this->set_wtn_env( $player_list );
+		if ( $args ) {
+			$i = 1;
+			foreach( $players as $player ) {
+				$player = get_player( $player->ID );
+				if ( $player && ! empty( $player->btm ) ) {
+					$wtn_response = $this->get_player_wtn( $args, $player );
+					if ( $wtn_response->status ) {
+						$player->set_wtn( $wtn_response->value );
+					} elseif ( substr( $wtn_response->message, 0, 5 ) === 'ERROR' && $retry ) {
+						$retry_wtn[] = $player;
+					} else {
+						$feedback = new \stdClass();
+						$feedback->player = $player;
+						$feedback->message = $wtn_response->message;
+						$messages[] = $feedback;
+					}
+				}
+				++$i;
+			}
+		}
+		if ( $retry_wtn ) {
+			if ( $retry ) {
+				$this->set_wtns( $retry_wtn, $messages, $retry );
+			}
+		}
+		return $messages;
+	}
+	/**
+	 * Get WTN for player
+	 *
+	 * @param array   $args array of parameters for remote get.
+	 * @param object  $player player object.
+	 * @return object - status,  WTN (singles and doubles) || message
+	 */
+	public function get_player_wtn( $args, $player ) {
+		global $racketmanager;
+		$btm           = $player->btm;
+		$wtn           = array();
+		$valid         = true;
+		$url           = 'https://competitions.lta.org.uk/find/player/DoSearch?Query=' . $btm;
+		$player_lookup = wp_remote_get( $url, $args );
+		if ( is_wp_error( $player_lookup ) ) {
+			$err_msg = 'ERROR: - ' . __( 'search error', 'racketmanager' );
+			$valid   = false;
+		} else {
+			$headers = wp_remote_retrieve_headers( $player_lookup );
+			$code    = wp_remote_retrieve_response_code( $player_lookup );
+			if ( 200 === $code ) {
+				$body    = wp_remote_retrieve_body( $player_lookup );
+				$player_link_start = strpos( $body, '<h5 class="media__title">' );
+				if ( $player_link_start ) {
+					$player_link_end = strpos( $body, '</a>', $player_link_start );
+					$player_link = substr( $body, $player_link_start, $player_link_end - $player_link_start );
+					$player_url_start = strpos( $player_link, '<a href="' );
+					if ( $player_url_start ) {
+						$player_url_start += 9;
+						$player_url_end = strpos( $player_link, '"', $player_url_start );
+						$player_url_len = $player_url_end - $player_url_start;
+						$player_url = substr( $player_link, $player_url_start, $player_url_len );
+						$player_url = 'https://competitions.lta.org.uk' . $player_url;
+						$player_detail = wp_remote_get( $player_url, $args );
+						if ( is_wp_error( $player_detail ) ) {
+							$err_msg = 'ERROR: - ' . __( 'view error', 'racketmanager' );
+							$valid   = false;
+						} else {
+							$code = wp_remote_retrieve_response_code( $player_detail );
+							if ( 200 === $code ) {
+								$body = wp_remote_retrieve_body( $player_detail );
+								$wtn_text_found = strpos( $body, 'World Tennis Number' );
+								if ( $wtn_text_found ) {
+									$wtn_block_start = strpos( $body, '<ul class="list--inline list">' );
+									if ( $wtn_block_start ) {
+										$wtn_block_end   = strpos( $body, '</ul>', $wtn_block_start  );
+										$wtn_block_len   = $wtn_block_end - $wtn_block_start + 5;
+										$wtn_block       = substr( $body, $wtn_block_start, $wtn_block_len );
+										$num_wtns = substr_count( $wtn_block, '<li class="list__item">' );
+										if ( $num_wtns ) {
+											$start = 0;
+											for ( $i = 1; $i <= $num_wtns; $i++ ) {
+												$type_start = strpos( $wtn_block, 'tag-duo__title', $start );
+												$type_end   = strpos( $wtn_block, '</span>', $type_start );
+												$type_start += 16;
+												$type_len    = $type_end - $type_start;
+												$type        = substr( $wtn_block, $type_start, $type_len );
+												$wtn_key     = Racketmanager_Util::get_match_type_key( $type );
+												$wtn_start   = strpos( $wtn_block, '</svg>', $type_start );
+												$wtn_end     = strpos( $wtn_block, '</span>', $wtn_start );
+												$wtn_start  += 6;
+												$wtn_len     = $wtn_end - $wtn_start;
+												$wtn_value   = substr( $wtn_block, $wtn_start, $wtn_len );
+												$start       = $type_end;
+												if ( $wtn_key ) {
+													$wtn[ $wtn_key ] = trim( $wtn_value );
+												}
+											}
+											if ( empty( $wtn ) ) {
+												$err_msg = __( 'WTN values not set', 'racketmanager' );
+												$valid   = false;
+											}
+										} else {
+											$err_msg = __( 'No WTN entries found', 'racketmanager' );
+											$valid   = false;
+										}
+									} else {
+										$err_msg = __( 'No WTN list found', 'racketmanager' );
+										$valid   = false;
+									}
+								} else {
+									$err_msg = __( 'WTN not found', 'racketmanager' );
+									$valid   = false;
+								}
+							} else {
+								$err_msg = 'ERROR: - ' . __( 'Unable to retrieve player page', 'racketmanager' );
+								$valid   = false;
+							}
+						}
+					} else {
+						$err_msg = __( 'Player link not found', 'racketmanager' );
+						$valid   = false;
+					}
+				} else {
+					$err_msg = __( 'Player not found', 'racketmanager' );
+					$valid   = false;
+				}
+			} else {
+				$err_msg = __( 'LTA number not found', 'racketmanager' );
+				$valid   = false;
+			}
+		}
+		$response         = new \stdClass();
+		$response->status = $valid;
+		if ( $valid ) {
+			$response->value = $wtn;
+		} else {
+			$response->message = $err_msg;
+			$response->player  = $player;
+		}
+		return $response;
+	}
+	/**
+	 * Handle player errors
+	 *
+	 * @param array   $errors array of errors.
+	 */
+	protected function handle_player_errors( $errors ) {
+		foreach( $errors as $error ) {
+			$row = new \stdClass();
+			$row->player_id = $error->player->ID;
+			$row->message   = $error->message;
+			$player_error   = new Racketmanager_Player_Error( $row );
+		}
+
 	}
 }

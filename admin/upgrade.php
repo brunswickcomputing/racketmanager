@@ -1427,6 +1427,19 @@ function racketmanager_upgrade() {
 		echo esc_html__( 'starting 8.42.0 upgrade', 'racketmanager' ) . "<br />\n";
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_table} CHANGE `rating` `rating` FLOAT NULL" );
 	}
+	if ( version_compare( $installed, '8.42.1', '<' ) ) {
+		echo esc_html__( 'starting 8.42.1 upgrade', 'racketmanager' ) . "<br />\n";
+		$charset_collate = '';
+		if ( $wpdb->has_cap( 'collation' ) ) {
+			if ( ! empty( $wpdb->charset ) ) {
+				$charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
+			}
+			if ( ! empty( $wpdb->collate ) ) {
+				$charset_collate .= " COLLATE $wpdb->collate";
+			}
+		}
+		$wpdb->query( "CREATE TABLE {$wpdb->racketmanager_player_errors} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `player_id` int( 11 ) NULL, `message` varchar( 255 ) NULL, `status` int( 1 ) NULL, `created_date` datetime NULL, `updated_user` int( 11 ) NULL, `updated_date` datetime NULL, PRIMARY KEY ( `id` )) $charset_collate;" );
+	}
 	/*
 	* Update version and dbversion
 	*/

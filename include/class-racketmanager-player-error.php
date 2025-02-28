@@ -1,30 +1,24 @@
 <?php
 /**
- * Racketmanager_Tournament_Entry API: tournament class
+ * Racketmanager_Player_Error API: player error class
  *
  * @author Paul Moffat
  * @package RacketManager
- * @subpackage Tournament
+ * @subpackage Player
  */
 
 namespace Racketmanager;
 
 /**
- * Class to implement the Tournament Entry object
+ * Class to implement the Player Error object
  */
-final class Racketmanager_Tournament_Entry {
+final class Racketmanager_Player_Error {
 	/**
 	 * Id
 	 *
 	 * @var int
 	 */
 	public $id;
-	/**
-	 * Tournament id
-	 *
-	 * @var int
-	 */
-	public $tournament_id;
 	/**
 	 * Player id
 	 *
@@ -38,122 +32,109 @@ final class Racketmanager_Tournament_Entry {
 	 */
 	public $status;
 	/**
-	 * Fee
+	 * Message
 	 *
 	 * @var string
 	 */
-	public $fee;
+	public $message;
 	/**
-	 * Club id
+	 * Created date
 	 *
-	 * @var int
+	 * @var string
 	 */
-	public $club_id;
+	public $created_date;
 	/**
-	 * Club
+	 * Updated date
+	 *
+	 * @var string
+	 */
+	public $updated_date;
+	/**
+	 * Updated user
+	 *
+	 * @var string
+	 */
+	public $udated_user;
+	/**
+	 * Player
 	 *
 	 * @var object
 	 */
-	public $club = null;
+	public $player = null;
 	/**
-	 * Retrieve tournament entry instance
+	 * Retrieve player error instance
 	 *
-	 * @param int    $tournament_entry_id tournament entry id.
-	 * @param string $search_term search term - defaults to id.
+	 * @param int    $player_error_id player error id.
 	 * @return object
 	 */
-	public static function get_instance( $tournament_entry_id, $search_term = 'id' ) {
+	public static function get_instance( $player_error_id ) {
 		global $wpdb;
-		if ( ! $tournament_entry_id ) {
+		if ( ! $player_error_id ) {
 			return false;
 		}
-		switch ( $search_term ) {
-			case 'key':
-				$search_terms  = explode( '_', $tournament_entry_id );
-				$tournament_id = $search_terms[0];
-				$player_id     = $search_terms[1];
-				$search        = $wpdb->prepare(
-					'`tournament_id` = %d AND `player_id` = %d',
-					intval( $tournament_id ),
-					$player_id,
-				);
-				break;
-			case 'id':
-			default:
-				$tournament_entry_id = (int) $tournament_entry_id;
-				$search              = $wpdb->prepare(
-					'`id` = %d',
-					$tournament_entry_id
-				);
-				break;
-		}
-		$tournament_entry = wp_cache_get( $tournament_entry_id, 'tournament_entries' );
-		if ( ! $tournament_entry ) {
-			$tournament_entry = $wpdb->get_row(
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				"SELECT `id`, `tournament_id`, `player_id`, `status`, `fee`, `club_id` FROM {$wpdb->racketmanager_tournament_entries} WHERE $search"
-			); // db call ok.
-			if ( ! $tournament_entry ) {
+		$player_error = wp_cache_get( $player_error_id, 'player_errors' );
+		if ( ! $player_error ) {
+			$player_error = $wpdb->get_row(
+			   $wpdb->prepare(
+					"SELECT `id`, `player_id`, `status`, `created_date`, `updated_date`, `updated_user`, `message` FROM {$wpdb->racketmanager_player_errors} WHERE id = %d",
+					$player_error_id,
+				)
+			);
+			if ( ! $player_error ) {
 				return false;
 			}
-			$tournament_entry = new Racketmanager_Tournament_Entry( $tournament_entry );
-			wp_cache_set( $tournament_entry_id, $tournament_entry, 'tournament_entries' );
+			$player_error = new Racketmanager_Player_Error( $player_error );
+			wp_cache_set( $player_error_id, $player_error, 'player_errors' );
 		}
-		return $tournament_entry;
+		return $player_error;
 	}
 	/**
 	 * Constructor
 	 *
-	 * @param object $tournament_entry Tournament Entry object.
+	 * @param object $player_error Player Error object.
 	 */
-	public function __construct( $tournament_entry = null ) {
-		if ( ! is_null( $tournament_entry ) ) {
-			foreach ( $tournament_entry as $key => $value ) {
+	public function __construct( $player_error = null ) {
+		if ( ! is_null( $player_error ) ) {
+			foreach ( $player_error as $key => $value ) {
 				$this->$key = $value;
 			}
 			if ( ! isset( $this->id ) ) {
 				$this->id = $this->add();
 			}
-			if ( ! empty( $this->club_id ) ) {
-				$club = get_club( $this->club_id );
-				if ( $club ) {
-					$this->club = $club;
+			if ( ! empty( $this->player_id ) ) {
+				$player = get_player( $this->player_id );
+				if ( $player ) {
+					$this->player = $player;
 				}
 			}
 		}
 	}
 	/**
-	 * Add tournament entry
+	 * Add player error
 	 */
 	private function add() {
 		global $wpdb, $racketmanager;
 		$valid   = true;
 		$err_msg = array();
-		if ( empty( $this->tournament_id ) ) {
-			$valid     = false;
-			$err_msg[] = __( 'Tournament is required', 'racketmanager' );
-		}
 		if ( empty( $this->player_id ) ) {
 			$valid     = false;
 			$err_msg[] = __( 'Player is required', 'racketmanager' );
 		}
+		if ( empty( $this->message ) ) {
+			$valid     = false;
+			$err_msg[] = __( 'Message is required', 'racketmanager' );
+		}
 		if ( $valid ) {
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"INSERT INTO {$wpdb->racketmanager_tournament_entries} (`tournament_id`, `player_id`, `status`) VALUES (%d, %d, %d)",
-					$this->tournament_id,
+					"INSERT INTO {$wpdb->racketmanager_player_errors} (`player_id`, `message`, `status`, `created_date`) VALUES (%d, %s, %d, NOW())",
 					$this->player_id,
+					$this->message,
 					$this->status,
 				)
 			);
-			$racketmanager->set_message( __( 'Tournament entry added', 'racketmanager' ) );
+			$racketmanager->set_message( __( 'Player error added', 'racketmanager' ) );
 			$this->id = $wpdb->insert_id;
-			if ( ! empty( $this->fee ) ) {
-				$this->set_fee( $this->fee );
-			}
-			if ( ! empty( $this->club_id ) ) {
-				$this->set_club( $this->club_id );
-			}
 			return $this->id;
 		} else {
 			$racketmanager->set_message( implode( '<br>', $err_msg ), true );
@@ -161,74 +142,34 @@ final class Racketmanager_Tournament_Entry {
 		}
 	}
 	/**
-	 * Set tournament entry status
+	 * Set player error status
 	 *
 	 * @param int    $status status.
-	 * @param string $fee tournament fee.
 	 */
-	public function set_status( $status, $fee = false ) {
+	public function set_status( $status ) {
 		global $wpdb;
 		$this->status = $status;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_tournament_entries} SET `status` = %d WHERE `id` = %d",
+				"UPDATE {$wpdb->racketmanager_player_errors} SET `status` = %d WHERE `id` = %d",
 				$this->status,
 				$this->id
 			)
 		);
-		if ( ! empty( $fee ) ) {
-			$this->set_fee( $fee );
-		}
 	}
 	/**
-	 * Set tournament entry fee
-	 *
-	 * @param string $fee tournament fee.
-	 */
-	public function set_fee( $fee ) {
-		global $wpdb;
-		if ( ! empty( $fee ) ) {
-			$this->fee = $fee;
-			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_tournament_entries} SET `fee` = %d WHERE `id` = %d",
-					$this->fee,
-					$this->id
-				)
-			);
-		}
-	}
-	/**
-	 * Set club
-	 *
-	 * @param int $club club id.
-	 */
-	public function set_club( $club ) {
-		global $wpdb;
-		if ( ! empty( $club ) ) {
-			$this->club_id = $club;
-			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_tournament_entries} SET `club_id` = %d WHERE `id` = %d",
-					$this->club_id,
-					$this->id
-				)
-			);
-		}
-	}
-	/**
-	 * Delete tournament entry
+	 * Delete player error
 	 */
 	public function delete() {
 		global $wpdb, $racketmanager;
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_tournament_entries} WHERE `id` = %d",
+				"DELETE FROM {$wpdb->racketmanager_player_errors} WHERE `id` = %d",
 				$this->id
 			)
 		);
-		$racketmanager->set_message( __( 'Tournament Entry Deleted', 'racketmanager' ) );
-		wp_cache_flush_group( 'tournaments' );
+		$racketmanager->set_message( __( 'Player Error Deleted', 'racketmanager' ) );
+		wp_cache_flush_group( 'player_errors' );
 	}
 }

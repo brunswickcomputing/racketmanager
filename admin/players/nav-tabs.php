@@ -1,6 +1,6 @@
 <?php
 /**
- * Finances tabs administration panel
+ * Players tabs administration panel
  *
  * @package Racketmanager_admin
  */
@@ -10,7 +10,7 @@ namespace Racketmanager;
 ?>
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
-			<a href="admin.php?page=racketmanager-finances"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( ucwords( un_seo_url( $racketmanager_tab ) ) ); ?>
+			<a href="admin.php?page=racketmanager-players"><?php esc_html_e( 'RacketManager Players', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( ucwords( un_seo_url( $racketmanager_tab ) ) ); ?>
 		</div>
 	</div>
 	<h1><?php echo esc_html( ucwords( un_seo_url( $racketmanager_tab )) ); ?></h1>
@@ -20,39 +20,39 @@ namespace Racketmanager;
 			<ul class="nav nav-tabs" id="myTab" role="tablist">
 				<li class="nav-item" role="presentation">
 					<?php
-					if ( 'charges' === $racketmanager_tab ) {
+					if ( 'errors' === $racketmanager_tab ) {
 						?>
-						<button class="nav-link active" id="charges-tab" type="button" role="tab" aria-selected="true"><?php esc_html_e( 'Charges', 'racketmanager' ); ?></button>
+						<button class="nav-link active" id="errors-tab" type="button" role="tab" aria-selected="true"><?php esc_html_e( 'Errors', 'racketmanager' ); ?></button>
 						<?php
 					} else {
 						?>
-						<a href="admin.php?page=racketmanager-finances&amp;view=charges" class="nav-link" id="charges-tab" type="button" role="tab" aria-selected="false"><?php esc_html_e( 'Charges', 'racketmanager' ); ?></a>
+						<a href="admin.php?page=racketmanager-players&amp;view=errors" class="nav-link" id="errors-tab" type="button" role="tab" aria-selected="false"><?php esc_html_e( 'Errors', 'racketmanager' ); ?></a>
 						<?php
 					}
 					?>
 				</li>
 				<li class="nav-item" role="presentation">
 					<?php
-					if ( 'club-invoices' === $racketmanager_tab ) {
+					if ( 'requests' === $racketmanager_tab ) {
 						?>
-						<button class="nav-link active" id="invoices-tab" type="button" role="tab" aria-selected="true"><?php esc_html_e( 'Club Invoices', 'racketmanager' ); ?></button>
+						<button class="nav-link active" id="requests-tab" type="button" role="tab" aria-selected="true"><?php esc_html_e( 'Requests', 'racketmanager' ); ?></button>
 						<?php
 					} else {
 						?>
-						<a href="admin.php?page=racketmanager-finances&amp;view=club-invoices" class="nav-link" id="invoices-tab"  type="button" role="tab" aria-selected="false"><?php esc_html_e( 'Club Invoices', 'racketmanager' ); ?></a>
+						<a href="admin.php?page=racketmanager-players&amp;view=requests" class="nav-link" id="requests-tab"  type="button" role="tab" aria-selected="false"><?php esc_html_e( 'Requests', 'racketmanager' ); ?></a>
 						<?php
 					}
 					?>
 				</li>
 				<li class="nav-item" role="presentation">
 					<?php
-					if ( 'player-invoices' === $racketmanager_tab ) {
+					if ( 'players' === $racketmanager_tab ) {
 						?>
-						<button class="nav-link active" id="payments-tab" type="button" role="tab" aria-selected="true"><?php esc_html_e( 'Tournament Invoices', 'racketmanager' ); ?></button>
+						<button class="nav-link active" id="players-tab" type="button" role="tab" aria-selected="true"><?php esc_html_e( 'Players', 'racketmanager' ); ?></button>
 						<?php
 					} else {
 						?>
-						<a href="admin.php?page=racketmanager-finances&amp;view=player-invoices" class="nav-link" id="payments-tab"  type="button" role="tab" aria-selected="false"><?php esc_html_e( 'Tournament Invoices', 'racketmanager' ); ?></a>
+						<a href="admin.php?page=racketmanager-players&amp;view=players" class="nav-link" id="players-tab"  type="button" role="tab" aria-selected="false"><?php esc_html_e( 'Players', 'racketmanager' ); ?></a>
 						<?php
 					}
 					?>

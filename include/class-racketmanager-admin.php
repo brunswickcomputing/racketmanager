@@ -53,6 +53,7 @@ class RacketManager_Admin extends RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-tournament.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-cup.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-league.php';
+		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-players.php';
 
 		add_action( 'admin_enqueue_scripts', array( &$this, 'loadScripts' ) );
 		add_action( 'admin_enqueue_scripts', array( &$this, 'loadStyles' ) );
@@ -532,7 +533,8 @@ class RacketManager_Admin extends RacketManager {
 				} elseif ( 'players' === $view ) {
 					$this->display_club_players_page();
 				} elseif ( 'player' === $view ) {
-					$this->display_player_page();
+					$racketmanager_admin_players = new RacketManager_Admin_Players();
+					$racketmanager_admin_players->display_player_page();
 				} else {
 					$this->display_clubs_page();
 				}
@@ -548,17 +550,28 @@ class RacketManager_Admin extends RacketManager {
 			case 'racketmanager-admin':
 				if ( 'competitions' === $view ) {
 					$this->displayCompetitionsList();
-				} elseif ( 'player' === $view ) {
-					$this->display_player_page();
 				} else {
 					$this->display_admin_page();
 				}
 				break;
 			case 'racketmanager-players':
-				if ( 'player' === $view ) {
-					$this->display_player_page();
-				} else {
-					$this->displayPlayersPage();
+				$racketmanager_admin_players = new RacketManager_Admin_Players();
+				switch ( $view ) {
+					case 'player':
+						$racketmanager_admin_players->display_player_page();
+						break;
+					case 'errors':
+						$racketmanager_admin_players->display_errors_page();
+						break;
+					case 'requests':
+						$racketmanager_admin_players->display_requests_page();
+						break;
+					case 'players':
+						$racketmanager_admin_players->display_players_page();
+						break;
+					default:
+						$racketmanager_admin_players->display_players_section();
+						break;
 				}
 				break;
 			case 'racketmanager-finances':
@@ -2229,22 +2242,26 @@ class RacketManager_Admin extends RacketManager {
 			$this->printMessage();
 		} else {
 			if ( isset( $_POST['addPlayer'] ) ) {
-				check_admin_referer( 'racketmanager_manage-player' );
-				$player_valid = $this->validatePlayer();
-				if ( $player_valid[0] ) {
-					$new_player = $player_valid[1];
-					if ( isset( $_POST['club_Id'] ) ) {
-						$club = get_club( intval( $_POST['club_Id'] ) );
-						$club->register_player( $new_player );
-					}
+				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-player' ) ) {
+					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+					$this->printMessage();
 				} else {
-					$form_valid     = false;
-					$error_fields   = $player_valid[1];
-					$error_messages = $player_valid[2];
-					$message        = __( 'Error with player details', 'racketmanager' );
-					foreach ( $error_messages as $error_message ) {
-						$message .= '<br>' . $error_message;
-						$this->set_message( $message, true );
+					$player_valid = $this->validatePlayer();
+					if ( $player_valid[0] ) {
+						$new_player = $player_valid[1];
+						if ( isset( $_POST['club_Id'] ) ) {
+							$club = get_club( intval( $_POST['club_Id'] ) );
+							$club->register_player( $new_player );
+						}
+					} else {
+						$form_valid     = false;
+						$error_fields   = $player_valid[1];
+						$error_messages = $player_valid[2];
+						$message        = __( 'Error with player details', 'racketmanager' );
+						foreach ( $error_messages as $error_message ) {
+							$message .= '<br>' . $error_message;
+							$this->set_message( $message, true );
+						}
 					}
 				}
 			} elseif ( isset( $_POST['doClubPlayerdel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
@@ -2260,8 +2277,11 @@ class RacketManager_Admin extends RacketManager {
 					$club_id = intval( $_POST['club_id'] );
 					$club    = get_club( $club_id );
 					if ( $club ) {
-						$racketmanager->calculate_player_ratings( $club->id );
+						$schedule_name  = 'rm_calculate_player_ratings';
+						$schedule_args[]  = $club->id;
+						wp_schedule_single_event( time(), $schedule_name, $schedule_args );
 						/*
+						$racketmanager->calculate_player_ratings( $club->id );
 						$players = $club->get_players(
 							array(
 								'active' => true,
@@ -2293,97 +2313,6 @@ class RacketManager_Admin extends RacketManager {
 			);
 			include_once RACKETMANAGER_PATH . '/admin/club/show-club-players.php';
 		}
-	}
-
-	/**
-	 * Display player page
-	 */
-	private function display_player_page() {
-		if ( ! current_user_can( 'edit_teams' ) ) {
-			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
-			$this->printMessage();
-		} else {
-			$form_valid    = true;
-			$page_referrer = null;
-			if ( ! empty( $_POST ) ) {
-				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-player' ) ) {
-					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-					$this->printMessage();
-				} else {
-					$page_referrer = isset( $_POST['page_referrer'] ) ? $_POST['page_referrer'] : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-					if ( isset( $_POST['updatePlayer'] ) ) {
-						$player_valid  = $this->validatePlayer();
-						if ( $player_valid[0] ) {
-							if ( isset( $_POST['playerId'] ) ) {
-								$player     = get_player( intval( $_POST['playerId'] ) );
-								$new_player = $player_valid[1];
-								$player->update( $new_player );
-							}
-						} else {
-							$form_valid     = false;
-							$error_fields   = $player_valid[1];
-							$error_messages = $player_valid[2];
-							$this->set_message( __( 'Error with player details', 'racketmanager' ), true );
-						}
-					} elseif ( isset( $_POST['setWTN'] ) ) {
-						$player_id = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
-						$btm       = isset( $_POST['btm'] ) ? intval( $_POST['btm'] ) : null;
-						if ( $player_id && $btm ) {
-							$player = get_player( $player_id );
-							if ( $player ) {
-								$player->btm = $btm;
-								$wtn         = $this->get_wtn( $player );
-								if ( $wtn ) {
-									$player->set_wtn( $wtn );
-									$this->set_message( __( 'WTN set', 'racketmanager' ) );
-								} else {
-									$this->set_message( __( 'Error setting WTN', 'racketmanager' ), true );
-								}
-							} else {
-								$this->set_message( __( 'Player not found', 'racketmanager' ), true );
-							}
-						} else {
-							$this->set_message( __( 'No LTA Tennis number set', 'racketmanager' ), true );
-						}
-					}
-				}
-			} else {
-				$page_referrer = wp_get_referer();
-			}
-			$this->printMessage();
-			if ( isset( $_GET['club_id'] ) ) {
-				$club_id = intval( $_GET['club_id'] );
-				if ( $club_id ) {
-					$club = get_club( $club_id );
-				}
-			}
-			if ( isset( $_GET['player_id'] ) ) {
-				$player_id = intval( $_GET['player_id'] );
-			}
-			if ( ! $page_referrer ) {
-				if ( empty( $club_id ) ) {
-					$page_referrer = 'admin.php?page=racketmanager-players&amp;tab=players';
-				} else {
-					$page_referrer = 'admin.php?page=racketmanager-clubs&amp;view=players&amp;club_id=' . $club_id;
-				}
-			}
-			$player = get_player( $player_id );
-			include_once RACKETMANAGER_PATH . '/admin/players/show-player.php';
-		}
-	}
-	/**
-	 * Get wtn from lta database
-	 *
-	 * @param object $player player object.
-	 * @return array
-	 */
-	private function get_wtn( $player ) {
-		$args = $this->set_wtn_env();
-		$wtn  = array();
-		if ( $args ) {
-			$wtn = $this->get_player_wtn( $args, $player );
-		}
-		return $wtn;
 	}
 	/**
 	 * Validate player
@@ -2972,109 +2901,6 @@ class RacketManager_Admin extends RacketManager {
 			include_once RACKETMANAGER_PATH . '/admin/show-admin.php';
 		}
 	}
-
-	/**
-	 * Display players page
-	 */
-	private function displayPlayersPage() {
-		global $racketmanager;
-
-		$players = '';
-
-		if ( ! current_user_can( 'edit_leagues' ) ) {
-			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
-			$this->printMessage();
-		} else {
-			$club_id = isset( $_GET['club'] ) ? intval( $_GET['club'] ) : null;
-			$status  = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : null;
-			$tab     = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'playerrequest';
-			if ( isset( $_POST['addPlayer'] ) ) {
-				check_admin_referer( 'racketmanager_manage-player' );
-				$player_valid = $this->validatePlayer();
-				if ( $player_valid[0] ) {
-					$new_player = $player_valid[1];
-					$player     = get_player( $new_player->user_login, 'login' );  // get player by login.
-					if ( ! $player ) {
-						$player = new Racketmanager_Player( $new_player );
-						$this->set_message( __( 'Player added', 'racketmanager' ) );
-						$player = null;
-					} else {
-						$this->set_message( __( 'Player already exists', 'racketmanager' ), true );
-					}
-				}
-				$tab = 'players';
-			} elseif ( isset( $_POST['doPlayerDel'] ) ) {
-				if ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
-					if ( current_user_can( 'edit_teams' ) ) {
-						check_admin_referer( 'player-bulk' );
-						$messages      = array();
-						$message_error = false;
-						if ( isset( $_POST['player'] ) ) {
-							foreach ( $_POST['player'] as $player_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-								$player = get_player( $player_id );
-								$player->delete();
-								$messages[] = $player->fullname . ' ' . __( 'deleted', 'racketmanager' );
-							}
-							$message = implode( '<br>', $messages );
-							$this->set_message( $message, $message_error );
-						}
-					} else {
-						$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
-					}
-				}
-				$tab = 'players';
-			} elseif ( isset( $_GET['doPlayerSearch'] ) ) {
-				if ( ! empty( $_GET['name'] ) ) {
-					$players = $racketmanager->get_all_players( array( 'name' => sanitize_text_field( wp_unslash( $_GET['name'] ) ) ) );
-				} else {
-					$this->set_message( __( 'No search term specified', 'racketmanager' ), true );
-				}
-				$tab = 'players';
-			} elseif ( isset( $_POST['doplayerrequest'] ) ) {
-				if ( current_user_can( 'edit_teams' ) ) {
-					check_admin_referer( 'club-player-request-bulk' );
-					if ( isset( $_POST['playerRequest'] ) ) {
-						foreach ( $_POST['playerRequest'] as $i => $player_request_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-							if ( 'approve' === $_POST['action'] ) {
-								if ( ! current_user_can( 'edit_teams' ) ) {
-									$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
-								} elseif ( isset( $_POST['club_id'][ $i ] ) ) {
-										$club = get_club( intval( $_POST['club_id'][ $i ] ) );
-										$club->approve_player_request( intval( $player_request_id ) );
-								}
-							} elseif ( 'delete' === $_POST['action'] ) {
-								if ( ! current_user_can( 'edit_teams' ) ) {
-									$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
-								} else {
-									$this->delete_player_request( intval( $player_request_id ) );
-								}
-							}
-						}
-					}
-				} else {
-					$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
-				}
-				$tab = 'playerrequest';
-			} elseif ( isset( $_GET['view'] ) && 'playerRequest' === $_GET['view'] ) {
-				$tab = 'playerrequest';
-			} elseif ( isset( $_GET['tab'] ) && 'players' === $_GET['tab'] ) {
-				$tab = 'players';
-			}
-			$this->printMessage();
-			if ( ! $players ) {
-				$players = $racketmanager->get_all_players( array() );
-			}
-			$player_requests = Racketmanager_Util::get_player_requests(
-				array(
-					'club'   => $club_id,
-					'status' => $status,
-				)
-			);
-
-			include_once RACKETMANAGER_PATH . 'admin/show-players.php';
-		}
-	}
-
 	/**
 	 * Display import Page
 	 */

@@ -1,6 +1,6 @@
 <?php
 /**
- * Players errors administration panel
+ * Players administration panel
  *
  * @package Racketmanager_admin
  */
@@ -13,8 +13,8 @@ namespace Racketmanager;
 	<div class="row">
 		<!-- Tab panes -->
 		<div class="tab-content">
-			<div class="tab-pane active" id="errors" role="tabpanel">
-				<?php require 'errors.php'; ?>
+			<div class="tab-pane active" id="players" role="tabpanel">
+				<?php require 'players.php'; ?>
 			</div>
 		</div>
 	</div>

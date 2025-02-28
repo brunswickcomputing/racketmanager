@@ -736,3 +736,28 @@ function match_add_players( $match_players, $match ) {
 	}
 	return $match_players;
 }
+/**
+ * Get player errors object
+ *
+ * @param int|object|null $player_error ID or player_error object. Defaults to global $player_error.
+ * @return player_error|null
+ */
+function get_player_error( $player_error = null ) {
+	if ( empty( $player_error ) && isset( $GLOBALS['player_error'] ) ) {
+		$player_error = $GLOBALS['player_error'];
+	}
+
+	if ( $player_error instanceof Racketmanager_Player_Error ) {
+		$_player_error = $player_error;
+	} elseif ( is_object( $player_error ) ) {
+		$_player_error = new Racketmanager_Player_Error( $player_error );
+	} else {
+		$_player_error = Racketmanager_Player_Error::get_instance( $player_error );
+	}
+
+	if ( ! $_player_error ) {
+		return null;
+	}
+
+	return $_player_error;
+}

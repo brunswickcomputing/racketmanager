@@ -12,8 +12,8 @@ $clubs = $racketmanager->get_clubs();
 ?>
 <!-- Club Player Request Filter -->
 <form id="club-player-request-filter" method="get" action="" class="form-control mb-3">
-	<input type="hidden" name="page" value="<?php echo 'racketmanager-players'; ?>" />
-	<input type="hidden" name="tab" value="<?php echo 'playerrequest'; ?>" />
+	<input type="hidden" name="page" value="racketmanager-players" />
+	<input type="hidden" name="view" value="requests" />
 	<div class="col-auto">
 		<select class="select" name="club" id="club">
 			<option value="all"><?php esc_html_e( 'All clubs', 'racketmanager' ); ?></option>
@@ -45,42 +45,38 @@ $clubs = $racketmanager->get_clubs();
 		</select>
 		<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doplayerrequest" id="doplayerrequest" class="btn btn-secondary action" />
 	</div>
-
-	<div class="container">
-		<div class="row table-header">
-			<div class="col-1 check-column"><input type="checkbox" name="checkAll" onclick="Racketmanager.checkAll(document.getElementById('club-player-request-filter'));" /></div>
-			<div class="col-1 column-num">ID</div>
-			<div class="col-2"><?php esc_html_e( 'Club', 'racketmanager' ); ?></div>
-			<div class="col-1"><?php esc_html_e( 'First Name', 'racketmanager' ); ?></div>
-			<div class="col-1"><?php esc_html_e( 'Surame', 'racketmanager' ); ?></div>
-			<div class="col-1"><?php esc_html_e( 'Gender', 'racketmanager' ); ?></div>
-			<div class="col-1"><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></div>
-			<div class="col-auto"><?php esc_html_e( 'Requested', 'racketmanager' ); ?></div>
-			<div class="col-auto"><?php esc_html_e( 'Completed', 'racketmanager' ); ?></div>
-		</div>
-		<?php
-		foreach ( $player_requests as $player_request ) {
-			?>
-			<div class="row table-row <?php echo esc_html( $player_request->class ); ?>">
-				<div class="col-1 check-column">
-					<input type="checkbox" value="<?php echo esc_html( $player_request->id ); ?>" name="playerRequest[<?php echo esc_html( $player_request->id ); ?>]" />
-				</div>
-				<div class="col-1 column-num"><?php echo esc_html( $player_request->id ); ?><input type="hidden" id="club_id[<?php echo esc_html( $player_request->id ); ?>]" name="club_id[<?php echo esc_html( $player_request->id ); ?>]" value="<?php echo esc_html( $club->id ); ?>"/></div>
-				<div class="col-2"><?php echo esc_html( $player_request->club_name ); ?></div>
-				<div class="col-1"><?php echo esc_html( $player_request->first_name ); ?></div>
-				<div class="col-1"><?php echo esc_html( $player_request->surname ); ?></div>
-				<div class="col-1"><?php echo esc_html( $player_request->gender ); ?></div>
-				<div class="col-1"><?php echo esc_html( $player_request->btm ); ?></div>
-				<div class="col-auto" title="<?php echo esc_html( $player_request->requested_user ); ?>"><?php echo esc_html( $player_request->requested_date ); ?></div>
-				<div class="col-auto" 
-				<?php
-				if ( ! empty( $player_request->completed_user ) ) {
-					echo 'title="' . esc_html__( 'Created by', 'racketmanager' ) . ' ' . esc_html( $player_request->completed_user ) . '"';  }
-				?>
-				"><?php echo esc_html( $player_request->completed_date ); ?></div>
-			</div>
+	<table class="table table-striped">
+		<thead class="table-dark">
+			<tr>
+				<th class="check-column"><input type="checkbox" name="checkAll" onclick="Racketmanager.checkAll(document.getElementById('club-player-request-filter'));" /></th>
+				<th><?php esc_html_e( 'ID', 'racketmanager' ); ?></th>
+				<th><?php esc_html_e( 'Club', 'racketmanager' ); ?></th>
+				<th><?php esc_html_e( 'First Name', 'racketmanager' ); ?></th>
+				<th><?php esc_html_e( 'Surame', 'racketmanager' ); ?></th>
+				<th><?php esc_html_e( 'Gender', 'racketmanager' ); ?></th>
+				<th><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></th>
+				<th><?php esc_html_e( 'Requested', 'racketmanager' ); ?></th>
+				<th><?php esc_html_e( 'Completed', 'racketmanager' ); ?></th>
+			</tr>
+		</thead>
+		<tbody>
 			<?php
-		}
-		?>
-	</div>
+			foreach ( $player_requests as $request ) {
+				?>
+				<tr>
+					<td class="check-column"><input type="checkbox" value="<?php echo esc_html( $request->id ); ?>" name="playerRequest[<?php echo esc_html( $request->id ); ?>]" /></<td>
+					<td><input type="hidden" id="club_id[<?php echo esc_html( $request->id ); ?>]" name="club_id[<?php echo esc_html( $request->id ); ?>]" value="<?php echo esc_html( $club->id ); ?>"/></<td>
+					<td><?php echo esc_html( $request->club_name ); ?></<td>
+					<td><?php echo esc_html( $request->first_name ); ?></<td>
+					<td><?php echo esc_html( $request->surname ); ?></<td>
+					<td><?php echo esc_html( $request->gender ); ?></<td>
+					<td><?php echo esc_html( $request->btm ); ?></<td>
+					<td title="<?php echo esc_html( $request->requested_user ); ?>"><?php echo esc_html( $request->requested_date ); ?></<td>
+					<td <?php echo empty( $request->completed_user ) ? null : 'title="' . esc_html__( 'Created by', 'racketmanager' ) . ' ' . esc_html( $request->completed_user ) . '"'; ?>><?php echo esc_html( $request->completed_date ); ?></<td>
+				</tr>
+				<?php
+			}
+			?>
+		</tbody>
+	</table>
 </form>

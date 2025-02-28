@@ -54,14 +54,7 @@ $racketmanager_prev_league = 0;
 			$racketmanager_class = ( 'alternate' === $racketmanager_class ) ? '' : 'alternate';
 			?>
 
-			<div class="row table-row <?php echo esc_html( $racketmanager_class . ' ' . $racketmanager_overdue_class ); ?> align-items-center"
-				<?php
-				if ( $racketmanager_overdue ) {
-					/* translators: %d: days overdue  */
-					echo esc_html( ' title="' . sprintf( __( 'Confirmation racketmanager_overdue by %d days', 'racketmanager' ), intval( $racketmanager_match->overdue_time ) ) . '"' );
-				}
-				?>
-			>
+			<div class="row table-row <?php echo esc_html( $racketmanager_class . ' ' . $racketmanager_overdue_class ); ?> align-items-center" <?php echo ( $racketmanager_overdue ) ? ' title="' . esc_html( sprintf( __( 'Confirmation overdue by %d days', 'racketmanager' ), intval( ceil( $racketmanager_match->overdue_time ) ) ) ) . '"' : null; ?>>
 				<?php
 				if ( $racketmanager_prev_league !== $racketmanager_match->league_id ) {
 					$racketmanager_prev_league = $racketmanager_match->league_id;

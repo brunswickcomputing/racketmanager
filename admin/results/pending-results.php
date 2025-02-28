@@ -56,21 +56,17 @@ $racketmanager_prev_league = 0;
 				<?php
 				if ( $racketmanager_overdue ) {
 					/* translators: %d: days overdue  */
-					echo esc_html( ' title="' . sprintf( __( 'Result overdue by %d days', 'racketmanager' ), intval( ceil( $racketmanager_match->overdue_time ) ) ) . '"' );
+					echo ' title="' . esc_html( sprintf( __( 'Result overdue by %d days', 'racketmanager' ), intval( ceil( $racketmanager_match->overdue_time ) ) ) ) . '"';
 				}
 				?>
 			>
 				<div class="col-4 col-sm-2 col-xxl-1"><?php echo esc_html( mysql2date( 'Y-m-d', $racketmanager_match->date ) ); ?></div>
 				<div class="col-6 col-sm-5 col-lg-4 match-title">
-					<a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo esc_html( $racketmanager_match->league->id ); ?>&amp;season=<?php echo esc_html( $racketmanager_match->season ); ?>&amp;<?php echo esc_html( $racketmanager_match_link ); ?> "><?php echo esc_html( $racketmanager_match->match_title ); ?></a>
+					<a href="<?php echo esc_html( $racketmanager_match->link ); ?>?referrer=pendingresults; ?>"><?php echo esc_html( $racketmanager_match->match_title ); ?></a>
 				</div>
 				<div class="col-auto">
 					<a href="<?php echo esc_html( $racketmanager_match->link ); ?>result/?referrer=pendingresults" class="btn btn-primary"><?php esc_html_e( 'Enter result', 'racketmanager' ); ?></a>
 				</div>
-				<div class="col-auto">
-					<a class="btn btn-secondary" onclick="Racketmanager.chaseMatchResult('<?php echo esc_html( $racketmanager_match->id ); ?>');"><?php esc_html_e( 'Chase result', 'racketmanager' ); ?></a>
-				</div>
-				<div class="col-12 col-md-auto"><span id="notifyMessage-<?php echo esc_html( $racketmanager_match->id ); ?>"></span></div>
 			</div>
 			<?php
 		}

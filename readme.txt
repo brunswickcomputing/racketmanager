@@ -47,6 +47,10 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.42.0 =
+* UPDATE: add WTN get and view for players
+* UPDATE: improve player admin view
+
 = 8.41.0 =
 * BUGFIX: set correct match time
 * BUGFIX: enable match secretary lookup

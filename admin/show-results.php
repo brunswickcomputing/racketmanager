@@ -42,6 +42,9 @@ jQuery(document).ready(function(){
 						<li class="nav-item" role="presentation">
 							<button class="nav-link" id="postponed-tab" data-bs-toggle="tab" data-bs-target="#postponed" type="button" role="tab" aria-controls="postponed" aria-selected="true">Postponed</button>
 						</li>
+						<li class="nav-item" role="presentation">
+							<button class="nav-link" id="tournament-tab" data-bs-toggle="tab" data-bs-target="#tournament" type="button" role="tab" aria-controls="tournament" aria-selected="true"><?php esc_html_e( 'Tournament', 'racketmanager' ); ?></button>
+						</li>
 					</ul>
 				</div>
 
@@ -72,6 +75,10 @@ jQuery(document).ready(function(){
 			<div class="tab-pane fade" id="postponed" role="tabpanel" aria-labelledby="postponed-tab">
 				<h2 class="header"><?php esc_html_e( 'Postponed matches', 'racketmanager' ); ?></h2>
 				<?php require 'results/postponed.php'; ?>
+			</div>
+			<div class="tab-pane fade" id="tournament" role="tabpanel" aria-labelledby="tournament-tab">
+				<h2 class="header"><?php esc_html_e( 'Tournament matches not yet in', 'racketmanager' ); ?></h2>
+				<?php require 'results/tournament.php'; ?>
 			</div>
 		</div>
 	</div>

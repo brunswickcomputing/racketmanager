@@ -271,7 +271,7 @@ $is_invalid = false;
 				</div>
 			</div>
 		</div>
-		<input type="hidden" name="page_referrer" value="<?php echo esc_attr( $page_referrer ); ?>"
+		<input type="hidden" name="page_referrer" value="<?php echo esc_attr( $page_referrer ); ?>" />
 		<?php
 	}
 	if ( isset( $club_id ) ) {

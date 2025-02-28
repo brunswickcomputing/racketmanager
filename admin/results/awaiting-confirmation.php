@@ -79,16 +79,6 @@ $racketmanager_prev_league = 0;
 				<div class="col-auto">
 					<a href="<?php echo esc_html( $racketmanager_match->link ); ?>result/?referrer=awaitingconfirmation" class="btn btn-secondary"><?php esc_html_e( 'View result', 'racketmanager' ); ?></a>
 				</div>
-				<?php
-				if ( 'P' === $racketmanager_match->confirmed ) {
-					?>
-					<div class="col-auto">
-						<a class="btn btn-secondary" onclick="Racketmanager.chaseMatchApproval('<?php echo esc_html( $racketmanager_match->id ); ?>');"><?php esc_html_e( 'Chase approval', 'racketmanager' ); ?></a>
-					</div>
-					<div class="col-12 col-md-auto"><span id="notifyMessage-<?php echo esc_html( $racketmanager_match->id ); ?>"></span></div>
-					<?php
-				}
-				?>
 			</div>
 			<?php
 		}

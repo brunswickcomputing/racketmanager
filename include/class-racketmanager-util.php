@@ -706,12 +706,22 @@ class Racketmanager_Util {
 	 * Get match type key from name function
 	 *
 	 * @param string $match_type match type name.
-	 * @return int match day number
+	 * @return string $key match type key.
 	 */
 	public static function get_match_type_key( $match_type ) {
 		$match_types = self::get_match_types();
 		$key         = array_search( $match_type, $match_types, true );
 		return ( $key );
+	}
+	/**
+	 * Get match type function
+	 *
+	 * @param string $match_type match type name.
+	 * @return match type || false
+	 */
+	public static function get_match_type( $match_type ) {
+		$match_types = self::get_match_types();
+		return isset( $match_types[ $match_type ] ) ? $match_types[ $match_type ] : false;
 	}
 	/**
 	 * Clear scheduled event function

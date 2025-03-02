@@ -197,8 +197,8 @@ class RacketManager_Rewrites {
 			'index.php?pagename=players',
 			'top'
 		);
-		$this->rewrite_tournament();
 		$this->rewrite_competition();
+		$this->rewrite_tournament();
 		$this->rewrite_league();
 		$this->rewrite_cups();
 		// club - players - player + btm.

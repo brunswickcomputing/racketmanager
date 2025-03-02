@@ -3338,6 +3338,9 @@ class RacketManager {
 		$headers[]         = 'From: ' . $racketmanager->admin_email;
 		$organisation_name = $this->site_name;
 		$email_subject     = $this->site_name . ' - ' . __( 'WTN Update', 'racketmanager' );
+		if ( $club ) {
+			$email_subject .= ' - ' . $club->shortcode;
+		}
 		$email_to          = $racketmanager->admin_email;
 		$email_message     = $racketmanager_shortcodes->load_template( 'wtn-report',
 																  array(

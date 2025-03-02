@@ -1891,7 +1891,7 @@ class RacketManager_Admin extends RacketManager {
 				$team_ids    = array_values( $_POST['table_id'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				if ( isset( $_POST['rating_points'] ) ) {
 					$rating_points = array_values( $_POST['rating_points'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-					if ( empty( $display_opt['wtn'] ) ) {
+					if ( empty( $display_opt['wtn'] ) || $league->event->competition->is_team_entry ) {
 						array_multisort( $rating_points, SORT_DESC, $team_ids, SORT_ASC );
 					} else {
 						array_multisort( $rating_points, SORT_ASC, $team_ids, SORT_ASC );

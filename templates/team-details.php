@@ -15,11 +15,28 @@ namespace Racketmanager;
 
 if ( isset( $object->competition ) ) {
 	$object_competition = $object->competition;
+	$object_event       = $object;
 	$object_type        = 'event';
 } else {
 	$object_competition = $object->event->competition;
+	$object_event       = $object->event;
 	$object_type        = 'league';
 }
+$display_opt = $racketmanager->get_options( 'display' );
+if ( ! empty( $display_opt['wtn'] ) ) {
+	$help_text   = __( 'World Tennis Number', 'racketmanager');
+	$format      = substr( $object_event->type, 1, 1 );
+	$format_type = Racketmanager_Util::get_match_type( $format );
+	if ( $format_type ) {
+		$help_text = $format_type . ' ' . $help_text;
+	}
+	$show_wtn    = true;
+} else {
+	$help_text   = null;
+	$format_type = null;
+	$show_wtn    = false;
+}
+
 ?>
 	<div class="page-subhead">
 		<div class="media">
@@ -413,6 +430,19 @@ if ( isset( $object->competition ) ) {
 																		</span>
 																	</a>
 																</p>
+																<?php
+																if ( $show_wtn ) {
+																	?>
+																	<div class="media__content-subinfo">
+																		<small class="media__subheading">
+																			<span class="nav--link">
+																				<span class="nav-link__value" data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_attr( $help_text ); ?>"><?php echo esc_attr( $player->wtn['D'] ); ?></span>
+																			</span>
+																		</small>
+																	</div>
+																	<?php
+																}
+																?>
 															</div>
 															<div class="progress-bar-container">
 																<?php

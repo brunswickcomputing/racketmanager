@@ -47,8 +47,9 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
 		} else {
+			$status            = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : null;
 			$racketmanager_tab = 'errors';
-			$player_errors     = $this->get_player_errors();
+			$player_errors     = $this->get_player_errors( $status );
 			include_once RACKETMANAGER_PATH . 'admin/players/show-errors.php';
 		}
 	}
@@ -249,13 +250,28 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 	/**
 	 * Get player errors
 	 *
+	 * @param string $$message message (optional).
 	 * @return array
 	 */
-	private function get_player_errors() {
+	private function get_player_errors( $message ) {
 		global $wpdb;
+		$search = null;
+		switch( $message ) {
+			case 'noplayer':
+				$code = 'Player not found';
+				break;
+			case 'nowtn':
+				$code = 'WTN not found';
+				break;
+			default:
+				$code = null;
+		}
+		if ( $code ) {
+			$search = $wpdb->prepare( 'AND `message` = %s', $code );
+		}
 		$player_errors = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			"SELECT `id` FROM {$wpdb->racketmanager_player_errors} WHERE 1 = 1 order by `player_id`"
+			"SELECT `id` FROM {$wpdb->racketmanager_player_errors} WHERE 1 = 1 $search order by `player_id`"
 		);
 
 		$i = 0;

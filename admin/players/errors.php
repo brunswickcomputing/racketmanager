@@ -9,7 +9,20 @@
 namespace Racketmanager;
 
 ?>
-<form id="club-player-request-filter" method="post" action="" class="form-control">
+<!-- Club Player Request Filter -->
+<form method="get" action="" class="form-control mb-3">
+	<input type="hidden" name="page" value="racketmanager-players" />
+	<input type="hidden" name="view" value="errors" />
+	<div class="col-auto">
+		<select class="select" name="status">
+			<option value="all" <?php echo 'all' === $status ? 'selected' : ''; ?>><?php esc_html_e( 'All', 'racketmanager' ); ?></option>
+			<option value="noplayer" <?php echo 'noplayer' === $status ? 'selected' : ''; ?>><?php esc_html_e( 'No player', 'racketmanager' ); ?></option>
+			<option value="nowtn" <?php echo 'nowtn' === $status ? 'selected' : ''; ?>><?php esc_html_e( 'No WTN', 'racketmanager' ); ?></option>
+		</select>
+		<button class="btn btn-primary"><?php esc_html_e( 'Filter', 'racketmanager' ); ?></button>
+	</div>
+</form>
+<form id="player-error-filter" method="post" action="" class="form-control">
 	<?php wp_nonce_field( 'club-player-request-bulk' ); ?>
 
 	<div class="mb-3">
@@ -26,7 +39,7 @@ namespace Racketmanager;
 		<table class="table table-striped">
 			<thead class="table-dark">
 			<tr>
-				<th><input type="checkbox" name="checkAll" onclick="Racketmanager.checkAll(document.getElementById('club-player-request-filter'));" /></th>
+				<th><input type="checkbox" name="checkAll" onclick="Racketmanager.checkAll(document.getElementById('player-error-filter'));" /></th>
 				<th><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
 				<th><?php esc_html_e( 'LTA Tennis number', 'racketmanager' ); ?></th>
 				<th><?php esc_html_e( 'Message', 'racketmanager' ); ?></th>

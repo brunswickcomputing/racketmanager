@@ -2262,7 +2262,7 @@ class RacketManager {
 			);
 		}
 
-		$sql = "SELECT A.`id` as `roster_id`, B.`ID` as `player_id`, `display_name` as fullname, `club_id`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_club_players} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID`";
+		$sql = "SELECT A.`id` FROM {$wpdb->racketmanager_club_players} A INNER JOIN {$wpdb->users} B ON A.`player_id` = B.`ID`";
 		if ( '' !== $search ) {
 			$sql .= " WHERE $search";
 		}
@@ -2280,118 +2280,26 @@ class RacketManager {
 		}
 
 		$i     = 0;
-		$class = '';
 		foreach ( $club_players as $club_player ) {
-			$class                     = ( 'alternate' === $class ) ? '' : 'alternate';
-			$club_players[ $i ]->class = $class;
-
-			$club_players[ $i ] = (object) (array) $club_player;
-
-			$club_players[ $i ]->club_id     = $club_player->club_id;
-			$club_players[ $i ]->roster_id   = $club_player->roster_id;
-			$club_players[ $i ]->player_id   = $club_player->player_id;
-			$club_players[ $i ]->fullname    = $club_player->fullname;
-			$club_players[ $i ]->gender      = get_user_meta( $club_player->player_id, 'gender', true );
-			$club_players[ $i ]->type        = get_user_meta( $club_player->player_id, 'racketmanager_type', true );
-			$club_players[ $i ]->locked      = get_user_meta( $club_player->player_id, 'locked', true );
-			$club_players[ $i ]->locked_date = get_user_meta( $club_player->player_id, 'locked_date', true );
-			$club_players[ $i ]->locked_user = get_user_meta( $club_player->player_id, 'locked_user', true );
-			if ( $club_players[ $i ]->locked_user ) {
-				$club_players[ $i ]->locked_user_name = get_userdata( $club_players[ $i ]->locked_user )->display_name;
+			$club_player = get_club_player( $club_player->id );
+			if ( $club_player ) {
+				if ( $gender && $gender !== $club_player->player->gender ) {
+					$include = false;
+				} else {
+					$include = true;
+				}
 			} else {
-				$club_players[ $i ]->locked_user_name = '';
+				$include = false;
 			}
-			$club_players[ $i ]->removed_date = $club_player->removed_date;
-			$club_players[ $i ]->removed_user = $club_player->removed_user;
-			if ( $club_player->removed_user ) {
-				$club_players[ $i ]->removed_user_name = get_userdata( $club_player->removed_user )->display_name;
+			if ( $include ) {
+				$club_players[ $i ] = $club_player;
 			} else {
-				$club_players[ $i ]->removed_user_name = '';
-			}
-			$club_players[ $i ]->btm           = get_user_meta( $club_player->player_id, 'btm', true );
-			$club_players[ $i ]->year_of_birth = get_user_meta( $club_player->player_id, 'year_of_birth', true );
-			$club_players[ $i ]->created_date  = $club_player->created_date;
-			$club_players[ $i ]->created_user  = $club_player->created_user;
-			if ( $club_player->created_user ) {
-				$club_players[ $i ]->created_user_name = get_userdata( $club_player->created_user )->display_name;
-			} else {
-				$club_players[ $i ]->created_user_name = '';
-			}
-			if ( $gender && $gender !== $club_players[ $i ]->gender ) {
 				unset( $club_players[ $i ] );
 			}
-
 			++$i;
 		}
-
 		return $club_players;
 	}
-
-	/**
-	 * Gets single club player entry from database
-	 *
-	 * @param int     $club_player_id club player ref.
-	 * @param boolean $cache use cache flag.
-	 * @return object
-	 */
-	public function get_club_player( $club_player_id, $cache = true ) {
-		global $wpdb;
-
-		$sql = "SELECT A.`player_id` as `player_id`, A.`system_record`, `club_id`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM {$wpdb->racketmanager_club_players} A WHERE A.`id`= '" . intval( $club_player_id ) . "'";
-
-		$club_player = wp_cache_get( md5( $sql ), 'clubplayer' );
-		if ( ! $club_player || ! $cache ) {
-			$club_player = $wpdb->get_row( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-				$sql
-			);
-			wp_cache_set( md5( $sql ), $club_player, 'clubplayer' );
-		}
-		if ( $club_player ) {
-			$club_player->id            = $club_player_id;
-			$player                     = get_userdata( $club_player->player_id );
-			$club_player->fullname      = $player->display_name;
-			$club_player->email         = $player->user_email;
-			$player                     = get_user_meta( $club_player->player_id );
-			$club_player->firstname     = $player['first_name'][0];
-			$club_player->surname       = $player['last_name'][0];
-			$club_player->gender        = isset( $player['gender'] ) ? $player['gender'][0] : '';
-			$club_player->btm           = isset( $player['btm'] ) ? $player['btm'][0] : '';
-			$club_player->year_of_birth = isset( $player['year_of_birth'] ) ? $player['year_of_birth'][0] : '';
-			if ( $club_player->year_of_birth ) {
-				$club_player->age = gmdate( 'Y' ) - intval( $club_player->year_of_birth );
-			} else {
-				$club_player->age = 0;
-			}
-			$club_player->locked      = isset( $player['locked'] ) ? $player['locked'][0] : '';
-			$club_player->locked_date = isset( $player['locked_date'] ) ? $player['locked_date'][0] : '';
-			$club_player->locked_user = isset( $player['locked_user'] ) ? $player['locked_user'][0] : '';
-		}
-
-		return $club_player;
-	}
-
-	/**
-	 * Delete Club Player
-	 *
-	 * @param int $roster_id id of player to be removed from club.
-	 * @return boolean
-	 */
-	public function delete_club_player( $roster_id ) {
-		global $wpdb;
-		$userid = get_current_user_id();
-		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_club_players} SET `removed_date` = NOW(), `removed_user` = %d WHERE `id` = %d",
-				$userid,
-				$roster_id
-			)
-		);
-		$this->set_message( __( 'Player removed from club', 'racketmanager' ) );
-
-		return true;
-	}
-
 	/**
 	 * Get list of players
 	 *

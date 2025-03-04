@@ -73,9 +73,6 @@ final class Racketmanager_Club_Player {
 					$this->player = $player;
 				}
 			}
-			$this->match_secretary_name       = '';
-			$this->match_secretary_email      = '';
-			$this->match_secretary_contact_no = '';
 			if ( ! isset( $this->removed_user ) ) {
 				$removed_user_details = get_userdata( $this->removed_user );
 				if ( $removed_user_details ) {
@@ -116,49 +113,20 @@ final class Racketmanager_Club_Player {
 		);
 		$this->id = $wpdb->insert_id;
 	}
-
 	/**
-	 * Update club player
-	 *
-	 * @param object $club updated club information.
-	 * @param string $prev_shortcode previous short code.
+	 * Remove Club Player
 	 */
-	public function update( $club, $prev_shortcode = false ) {
+	public function remove() {
 		global $wpdb;
-
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_clubs} SET `name` = %s, `type` = %s, `shortcode` = %s,`matchsecretary` = %d, `contactno` = %s, `website` = %s, `founded`= %s, `facilities` = %s, `address` = %s, `latitude` = %s, `longitude` = %s WHERE `id` = %d",
-				$club->name,
-				$club->type,
-				$club->shortcode,
-				$club->matchsecretary,
-				$club->contactno,
-				$club->website,
-				$club->founded,
-				$club->facilities,
-				$club->address,
-				$club->latitude,
-				$club->longitude,
+				"UPDATE {$wpdb->racketmanager_club_players} SET `removed_date` = NOW(), `removed_user` = %d WHERE `id` = %d",
+				get_current_user_id(),
 				$this->id
 			)
 		);
-
-		if ( $prev_shortcode && $prev_shortcode !== $this->shortcode ) {
-			$teams = $this->get_teams();
-			foreach ( $teams as $team ) {
-				$team      = get_team( $team->id );
-				$team_ref  = substr( $team->title, strlen( $prev_shortcode ) + 1, strlen( $team->title ) );
-				$new_title = $club->shortcode . ' ' . $team_ref;
-				$team->update_title( $new_title );
-			}
-		}
-		if ( '' !== $club->matchsecretary ) {
-			$player = get_player( $club->matchsecretary );
-			$player->update_contact( $club->match_secretary_contact_no, $club->match_secretary_email );
-		}
+		wp_cache_set( $this->id, $this, 'club_players' );
 	}
-
 	/**
 	 * Delete Club Player
 	 */

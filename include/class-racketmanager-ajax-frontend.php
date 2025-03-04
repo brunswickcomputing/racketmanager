@@ -190,8 +190,11 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$club_players = $_POST['clubPlayer'];
 			$deleted      = 0;
 			foreach ( $club_players as $roster_id ) {
-				$racketmanager->delete_club_player( intval( $roster_id ) );
-				++$deleted;
+				$club_player = get_club_player( $club_player_id );
+				if ( $club_player ) {
+					$club_player->remove();
+					++$deleted;
+				}
 			}
 		}
 		if ( $error ) {

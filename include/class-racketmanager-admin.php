@@ -2267,8 +2267,11 @@ class RacketManager_Admin extends RacketManager {
 			} elseif ( isset( $_POST['doClubPlayerdel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
 				check_admin_referer( 'club-players-bulk' );
 				if ( isset( $_POST['clubPlayer'] ) ) {
-					foreach ( $_POST['clubPlayer'] as $roster_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-						$racketmanager->delete_club_player( intval( $roster_id ) );
+					foreach ( $_POST['clubPlayer'] as $club_player_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+						$club_player = get_club_player( $club_player_id );
+						if ( $club_player ) {
+							$club_player->remove();
+						}
 					}
 				}
 			} elseif ( isset( $_POST['doPlayerRatings'] ) ) {

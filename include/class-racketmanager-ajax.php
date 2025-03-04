@@ -731,10 +731,10 @@ class Racketmanager_Ajax extends RacketManager {
 								$error       = true;
 							} else {
 								$player_ref  = $team_players[ $player_number ];
-								$club_player = $racketmanager->get_club_player( $player_ref );
+								$club_player = get_club_player( $player_ref );
 								if ( ! $club_player->system_record ) {
-									$player_found = array_search( $player_ref, $match_players, true );
-									if ( false === $player_found ) {
+									$player_found = in_array( $player_ref, $match_players, true );
+									if ( ! $player_found ) {
 										if ( $playoff ) {
 											$err_field[] = 'players_' . $ix . '_' . $opponent . '_' . $player_number;
 											$err_msg[]   = __( 'Player for playoff must have played', 'racketmanager' );

@@ -761,3 +761,28 @@ function get_player_error( $player_error = null ) {
 
 	return $_player_error;
 }
+/**
+ * Get club player object
+ *
+ * @param int|object|null $club_player ID or player_error object. Defaults to global $club_player.
+ * @return club_player|null
+ */
+function get_club_player( $club_player = null ) {
+	if ( empty( $club_player ) && isset( $GLOBALS['club_player'] ) ) {
+		$club_player = $GLOBALS['club_player'];
+	}
+
+	if ( $club_player instanceof Racketmanager_Club_Player ) {
+		$_club_player = $club_player;
+	} elseif ( is_object( $club_player ) ) {
+		$_club_player = new Racketmanager_Club_Player( $club_player );
+	} else {
+		$_club_player = Racketmanager_Club_Player::get_instance( $club_player );
+	}
+
+	if ( ! $_club_player ) {
+		return null;
+	}
+
+	return $_club_player;
+}

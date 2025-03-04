@@ -1142,6 +1142,7 @@ class RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-charges.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-invoice.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-club.php';
+		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-club-player.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-championship.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-competition.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-event.php';
@@ -1982,16 +1983,20 @@ class RacketManager {
 			'offset'           => 0,
 			'limit'            => 99999999,
 			'competition_type' => false,
+			'entry_type'       => false,
 			'name'             => false,
 			'season'           => false,
+			'reverse_rubbers'  => false,
 			'orderby'          => array( 'name' => 'ASC' ),
 		);
 		$args             = array_merge( $defaults, $args );
 		$offset           = $args['offset'];
 		$limit            = $args['limit'];
 		$competition_type = $args['competition_type'];
+		$entry_type       = $args['entry_type'];
 		$name             = $args['name'];
 		$season           = $args['season'];
+		$reverse_rubbers  = $args['reverse_rubbers'];
 		$orderby          = $args['orderby'];
 		$search_terms     = array();
 		if ( $name ) {
@@ -2000,6 +2005,16 @@ class RacketManager {
 		}
 		if ( $competition_type ) {
 			$search_terms[] = $wpdb->prepare( "`competition_id` in (select `id` from {$wpdb->racketmanager_competitions} WHERE `type` = %s)", $competition_type );
+		}
+		switch ( $entry_type ) {
+			case 'team':
+				$search_terms[] = "`competition_id` in (select `id` from {$wpdb->racketmanager_competitions} WHERE `type` in ( 'league', 'cup' ) )";
+				break;
+			case 'player':
+				$search_terms[] = "`competition_id` in (select `id` from {$wpdb->racketmanager_competitions} WHERE `type` = 'tournament' )";
+				break;
+			default:
+				break;
 		}
 		$search = '';
 		if ( ! empty( $search_terms ) ) {
@@ -2036,20 +2051,31 @@ class RacketManager {
 
 		$i = 0;
 		foreach ( $events as $i => $event ) {
-			$event->name     = stripslashes( $event->name );
-			$event->seasons  = maybe_unserialize( $event->seasons );
-			$event->settings = maybe_unserialize( $event->settings );
-
-			$event = (object) array_merge( (array) $event, $event->settings );
-
-			if ( $season ) {
-				if ( array_search( $season, array_column( $event->seasons, 'name' ), false ) ) {
-					$events[ $i ] = $event;
+			$event = get_event( $event->id );
+			if ( $event ) {
+				if ( $season ) {
+					if ( array_search( $season, array_column( $event->seasons, 'name' ), false ) ) {
+						$show_event = true;
+					} else {
+						$show_event = false;
+					}
 				} else {
-					unset( $events[ $i ] );
+					$show_event = true;
+				}
+				if ( $reverse_rubbers ) {
+					if ( $event->reverse_rubbers ) {
+						$show_event = false;
+					} else {
+						$show_event = true;
+					}
 				}
 			} else {
+				$show_event = false;
+			}
+			if ( $show_event ) {
 				$events[ $i ] = $event;
+			} else {
+				unset( $events[ $i ] );
 			}
 		}
 		return $events;

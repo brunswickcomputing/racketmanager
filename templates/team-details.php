@@ -353,7 +353,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 									if ( ! empty( $object->team->club->match_secretary_email ) ) {
 										?>
 										<li class="list__item">
-											<a href="mailto:<?php echo esc_html( $object->team->club->match_secretary_email ); ?>" class="nav--link"">
+											<a href="mailto:<?php echo esc_html( $object->team->club->match_secretary_email ); ?>" class="nav--link">
 												<svg width="16" height="16" class="">
 													<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
 												</svg>
@@ -436,7 +436,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 																	<div class="media__content-subinfo">
 																		<small class="media__subheading">
 																			<span class="nav--link">
-																				<span class="nav-link__value" data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_attr( $help_text ); ?>"><?php echo esc_attr( $player->wtn['D'] ); ?></span>
+																				<span class="nav-link__value" data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_attr( $help_text ); ?>"><?php echo esc_attr( $player->wtn[ $format ] ); ?></span>
 																			</span>
 																		</small>
 																	</div>

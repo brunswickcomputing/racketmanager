@@ -2293,7 +2293,100 @@ Racketmanager.confirmTournamentWithdraw = function () {
 			jQuery(alertField).show();
 		}
 	});
-
+};
+Racketmanager.showTeamOrderPlayers = function (e, event_Id) {
+	e.preventDefault();
+	let eventId = jQuery('#event_id').val();
+	let clubId = jQuery('#club_id').val();
+	if (clubId && eventId) {
+		let notifyField = '#team-order-rubbers';
+		jQuery(notifyField).hide();
+		let loadingField = '#team-order-details';
+		jQuery(loadingField).addClass('is-loading');
+		let action = 'racketmanager_show_team_order_players';
+		jQuery(notifyField).val("");
+		jQuery(notifyField).load(
+								 ajax_var.url,
+								 {
+									 "eventId": eventId,
+									 "clubId": clubId,
+									 "action": action,
+									 "security": ajax_var.ajax_nonce,
+								 },
+								 function () {
+									 jQuery(notifyField).show();
+									 jQuery(loadingField).removeClass('is-loading');
+								 }
+								 );
+	}
+}
+Racketmanager.validateTeamOrder = function( e, link ) {
+	e.preventDefault();
+	let alertField = '';
+	let alertResponseField = '';
+	let loadingField = '#team-order-details';
+	jQuery(loadingField).addClass('is-loading');
+	let notifyField = '#team-order-rubbers';
+	jQuery(notifyField).hide();
+	jQuery('.winner').removeClass('winner');
+	jQuery('.loser').removeClass('loser');
+	jQuery(".is-invalid").removeClass("is-invalid");
+	let formId = '#'.concat(link.form.id);
+	let form = jQuery(formId).serialize();
+	form += "&action=racketmanager_validate_team_order";
+	form += "&security=";
+	form += ajax_var.ajax_nonce;
+	jQuery.ajax({
+		type: 'POST',
+		datatype: 'json',
+		url: ajax_var.url,
+		async: false,
+		data: form,
+		success: function (response) {
+			data = response.data;
+			let $updatedRubbers = data;
+			let rubberNo = 1;
+			for (let r in $updatedRubbers) {
+				let rubber = $updatedRubbers[r];
+				let status = rubber['status'];
+				let statusClass = rubber['status_class'];
+				let formfield = '#match-status-' + rubberNo;
+				jQuery(formfield).addClass(statusClass);
+				jQuery(formfield).val(status);
+				formfield = '#wtn_' + rubberNo;
+				jQuery(formfield).addClass(statusClass);
+				jQuery(formfield).val(rubber['wtn']);
+				rubberNo++;			}
+		},
+		error: function (response) {
+			if (response.responseJSON) {
+				if (response.status == '401') {
+					let message = response.responseJSON.data[0];
+					if (response.responseJSON.data[1]) {
+						let errorMsg = response.responseJSON.data[1];
+						let errorField = response.responseJSON.data[2];
+						for (let $i = 0; $i < errorField.length; $i++) {
+							let formfield = "#" + errorField[$i];
+							jQuery(formfield).addClass('is-invalid');
+							formfield = formfield + 'Feedback';
+							jQuery(formfield).html(errorMsg[$i]);
+						}
+					}
+					jQuery(alertResponseField).html(message);
+				} else {
+					let message = response.responseJSON.data;
+					jQuery(alertResponseField).html(message);
+				}
+			} else {
+				jQuery(alertResponseField).text(response.statusText);
+			}
+			jQuery(alertField).addClass('alert--danger');
+		},
+		complete: function () {
+			jQuery(notifyField).show();
+			jQuery(loadingField).removeClass('is-loading');
+		}
+	});
 }
 function activaTab(tab) {
 	jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');
@@ -2301,6 +2394,8 @@ function activaTab(tab) {
 }
 function get_player_details(name, club = null, notifyField = null, partnerGender = null) {
 	let response = '';
+	let alertField = '';
+	let alertResponseField = '';
 	jQuery.ajax({
 		type: 'POST',
 		datatype: 'json',

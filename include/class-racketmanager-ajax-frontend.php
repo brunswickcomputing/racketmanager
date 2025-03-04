@@ -84,6 +84,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_racketmanager_confirm_tournament_withdrawal', array( &$this, 'confirm_tournament_withdrawal' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_confirm_tournament_withdrawal', array( &$this, 'logged_out_modal' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_login', array( &$this, 'login' ) );
+		add_action( 'wp_ajax_racketmanager_show_team_order_players', array( &$this, 'show_team_order_players' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_show_team_order_players', array( &$this, 'show_team_order_players' ) );
+		add_action( 'wp_ajax_racketmanager_validate_team_order', array( &$this, 'validate_team_order' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_validate_team_order', array( &$this, 'validate_team_order' ) );
 	}
 	/**
 	 * Add item as favourite
@@ -2748,6 +2752,237 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		} else {
 			$msg = __( 'Login failed', 'racketmanager' );
 			array_push( $return, $msg, $err_msg, $err_field );
+			wp_send_json_error( $return, $status );
+		}
+	}
+	/**
+	 * Show team order players function
+	 *
+	 * @return void
+	 */
+	public function show_team_order_players() {
+		$valid = true;
+		if ( isset( $_POST['security'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
+				$valid   = false;
+				$message = __( 'Security token invalid', 'racketmanager' );
+			}
+		} else {
+			$valid   = false;
+			$message = __( 'No security token found in request', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$club_id  = isset( $_POST['clubId'] ) ? sanitize_text_field( wp_unslash( $_POST['clubId'] ) ) : null;
+			$event_id = isset( $_POST['eventId'] ) ? sanitize_text_field( wp_unslash( $_POST['eventId'] ) ) : null;
+			if ( $club_id ) {
+				$club = get_club( $club_id );
+				if ( ! $club ) {
+					$valid   = false;
+					$message = __( 'Club not found', 'racketmanager' );
+				}
+			} else {
+				$valid   = false;
+				$message = __( 'Club id not supplied', 'racketmanager' );
+			}
+			if ( $event_id ) {
+				$event = get_event( $event_id );
+				if ( ! $event ) {
+					$valid   = false;
+					$message = __( 'Event not found', 'racketmanager' );
+				}
+			} else {
+				$valid   = false;
+				$message = __( 'Event id not supplied', 'racketmanager' );
+			}
+		}
+		if ( $valid ) {
+			$age_limit  = isset( $event->age_limit ) ? sanitize_text_field( wp_unslash( $event->age_limit ) ) : null;
+			$age_offset = isset( $event->age_offset ) ? intval( $event->age_offset ) : null;
+			switch ( $event->type ) {
+				case 'BD':
+				case 'MD':
+					$club_players['m'] = $club->get_players(
+						array(
+							'gender'     => 'M',
+							'age_limit'  => $age_limit,
+							'age_offset' => $age_offset,
+						)
+					);
+					break;
+				case 'GD':
+				case 'WD':
+					$club_players['f'] = $club->get_players(
+						array(
+							'gender'     => 'F',
+							'age_limit'  => $age_limit,
+							'age_offset' => $age_offset,
+						)
+					);
+					break;
+				case 'XD':
+				case 'LD':
+					$club_players['m'] = $club->get_players(
+						array(
+							'gender'     => 'M',
+							'age_limit'  => $age_limit,
+							'age_offset' => $age_offset,
+						)
+					);
+					$club_players['f'] = $club->get_players(
+						array(
+							'gender'     => 'F',
+							'age_limit'  => $age_limit,
+							'age_offset' => $age_offset,
+						)
+					);
+					break;
+				default:
+					$club_players['m'] = array();
+					$club_players['f'] = array();
+			}
+			$template                      = 'team-players-list';
+			$template_args['event']        = $event;
+			$template_args['club']         = $club;
+			$template_args['club_players'] = $club_players;
+			$shortcode                     = new RacketManager_Shortcodes();
+			$output                        = $shortcode->load_template(
+				$template,
+				$template_args,
+			);
+		} else {
+			$shortcode = new RacketManager_Shortcodes();
+			$output    = $shortcode->return_error( $message );
+		}
+		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		wp_die();
+	}
+	/**
+	 * Validate team order
+	 *
+	 * @return void
+	 */
+	public function validate_team_order() {
+		$valid   = true;
+		$message = null;
+		$err_msg = array();
+		$err_fld = array();
+		$status  = 403;
+		if ( isset( $_POST['security'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
+				$valid     = false;
+				$err_msg[] = __( 'Security token invalid', 'racketmanager' );
+				$err_fld[] = 'club_id';
+			}
+		} else {
+			$valid     = false;
+			$err_msg[] = __( 'No security token found in request', 'racketmanager' );
+			$err_fld[] = 'club_id';
+		}
+		if ( $valid ) {
+			$status = 401;
+			$club_id  = isset( $_POST['clubId'] ) ? sanitize_text_field( wp_unslash( $_POST['clubId'] ) ) : null;
+			$event_id = isset( $_POST['eventId'] ) ? sanitize_text_field( wp_unslash( $_POST['eventId'] ) ) : null;
+			if ( $club_id ) {
+				$club = get_club( $club_id );
+				if ( ! $club ) {
+					$valid     = false;
+					$err_msg[] = __( 'Club not found', 'racketmanager' );
+					$err_fld[] = 'club_id';
+				}
+			} else {
+				$valid   = false;
+				$err_msg[] = __( 'Club id not supplied', 'racketmanager' );
+				$err_fld[] = 'club_id';
+			}
+			if ( $event_id ) {
+				$event = get_event( $event_id );
+				if ( ! $event ) {
+					$valid     = false;
+					$err_msg[] = __( 'Event not found', 'racketmanager' );
+					$err_fld[] = 'event_id';
+				}
+			} else {
+				$valid     = false;
+				$err_msg[] = __( 'Event id not supplied', 'racketmanager' );
+				$err_fld[] = 'event_id';
+			}
+		}
+		if ( $valid ) {
+			$rubber_nums = isset( $_POST['rubber_num'] ) ? wp_unslash( $_POST['rubber_num'] ) : null;
+			$players     = isset( $_POST['players'] ) ? wp_unslash( $_POST['players'] ) : null;
+			$wtns        = isset( $_POST['wtn'] ) ? wp_unslash( $_POST['wtn'] ) : null;
+			foreach ( $rubber_nums as $rubber_num ) {
+				$rubber                 = new \stdClass();
+				$rubber->num            = $rubber_num;
+				$rubber->players        = $players[ $rubber_num ];
+				$rubber->wtn            = $wtns[ $rubber_num ];
+				$rubbers[ $rubber_num ] = $rubber;
+			}
+			$match_type = substr( $event->type, 1, 1 );
+			if ( substr( $event->type, 1, 1 ) === 'D' ) {
+				$num_players = 2;
+			} else {
+				$num_players = 1;
+			}
+			$match_players = array();
+			foreach ( $rubbers as $rubber ) {
+				$team_wtn = 0;
+				foreach( $rubber->players as $player_ref => $player_id ) {
+					if ( $player_id ) {
+						$player = get_club_player( $player_id );
+						if ( $player ) {
+							$player_found = in_array( $player_id, $match_players, true );
+							if ( $player_found ) {
+								$valid     = false;
+								$err_fld[] = 'players_' . $rubber->num . '_' . $player_ref;
+								$err_msg[] = __( 'Player already selected', 'racketmanager' );
+							} else {
+								$team_wtn       += empty( $player->player->wtn[ $match_type ] ) ? 99 : $player->player->wtn[ $match_type ];
+								$match_players[] = $player_id;
+							}
+						} else {
+						}
+					} else {
+						$valid     = false;
+						$err_fld[] = 'players_' . $rubber->num . '_' . $player_ref;
+						$err_msg[] = __( 'Player not selected', 'racketmanager' );
+					}
+				}
+				$rubber->wtn = round( $team_wtn, 1 );
+			}
+			$rubbers[ $rubber->num ] = $rubber;
+		}
+		if ( $valid ) {
+			foreach( $rubbers as $rubber_num => $rubber ) {
+				if ( isset( $rubbers[ $rubber_num + 1 ] ) ) {
+					if ( $rubber->wtn <= $rubbers[ $rubber_num + 1 ]->wtn ) {
+						$rubber->status       = 'W';
+						$rubber->status_class = 'winner';
+					} else {
+						$rubber->status       = 'L';
+						$rubber->status_class = 'loser';
+					}
+				}
+				if ( isset( $rubbers[ $rubber_num - 1 ] ) ) {
+					if ( $rubber->wtn >= $rubbers[ $rubber_num - 1 ]->wtn ) {
+						if ( 'L' !== $rubber->status ) {
+							$rubber->status       = 'W';
+							$rubber->status_class = 'winner';
+						}
+					} else {
+						$rubber->status       = 'L';
+						$rubber->status_class = 'loser';
+					}
+				}
+			}
+			$rubbers[ $rubber->num ] = $rubber;
+		}
+		if ( $valid ) {
+			wp_send_json_success( $rubbers );
+		} else {
+			$msg    = __( 'Unable to validate match', 'racketmanager' );
+			$return = array();
+			array_push( $return, $msg, $err_msg, $err_fld );
 			wp_send_json_error( $return, $status );
 		}
 	}

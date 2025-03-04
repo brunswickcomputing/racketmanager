@@ -341,7 +341,7 @@ final class Racketmanager_Rubber {
 		global $racketmanager, $wpdb;
 		foreach ( $players as $player_team => $player_ref ) {
 			foreach ( $player_ref as $player_num => $player ) {
-				$club_player = $racketmanager->get_club_player( $player );
+				$club_player = get_club_player( $player );
 				if ( $club_player ) {
 					$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 						$wpdb->prepare(
@@ -349,11 +349,11 @@ final class Racketmanager_Rubber {
 							$this->id,
 							$player_num,
 							$player_team,
-							$club_player->player_id,
+							$club_player->player->id,
 							$club_player->id,
 						)
 					);
-					$player = get_player( $club_player->player_id );
+					$player = $club_player->player;
 					if ( $player ) {
 						$this->players[ $player_team ][ $player_num ]                 = $player;
 						$this->players[ $player_team ][ $player_num ]->club_player_id = $club_player->id;

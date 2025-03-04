@@ -3025,17 +3025,14 @@ ul.match-points {
 	transition: background-color .15s ease-in-out;
 	width: 12px
 }
-
-.match__status.winner, .score.winner {
+.match__status.winner, .score.winner, .wtn-rating .winner {
 	background-color: #4abf33 !important;
 	color: #fff;
 }
-
-.match__status.loser, .score.loser {
+.match__status.loser, .score.loser, .wtn-rating .loser {
 	background-color: #bd3b2a !important;
 	color: #fff;
 }
-
 .match__status.tie, .score.tie {
 	background-color: #ff9c00 !important;
 	color: #fff;
@@ -4670,9 +4667,12 @@ p.media__subheading {
 .match-points.set-points.tie-break {
     margin-left: -2.15rem;
 }
-.match.is-editable .set-points li.match-points__cell:first-of-type:after {
+.match.is-editable .set-points li.match-points__cell:first-of-type:not(:last-of-type):after {
 	content: "-";
 	position: relative;
+}
+.match.is-editable .set-points li.match-points__cell:first-of-type:last-of-type:after {
+	content: "";
 }
 #match-rubbers.team-match-result .match.is-editable .set-points li.match-points__cell:first-of-type:after {
     content: "";
@@ -5869,4 +5869,11 @@ input[type="number"].event-price {
 	color: red;
 	font-weight: 700;
 	text-transform: uppercase;
+}
+.wtn-rating {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
+	align-self: center;
+	width: 5rem;
 }

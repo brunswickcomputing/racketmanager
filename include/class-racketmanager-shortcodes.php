@@ -34,6 +34,7 @@ class RacketManager_Shortcodes {
 		add_shortcode( 'messages', array( &$this, 'show_messages' ) );
 		add_shortcode( 'memberships', array( &$this, 'show_memberships' ) );
 		add_shortcode( 'search-players', array( &$this, 'show_player_search' ) );
+		add_shortcode( 'team-order', array( &$this, 'show_team_order' ) );
 	}
 	/**
 	 * Display Daily Matches
@@ -1088,6 +1089,42 @@ class RacketManager_Shortcodes {
 		$filename      = ( ! empty( $template ) ) ? 'players-list-' . $template : 'players-list';
 
 		return $this->load_template( $filename, array( 'players' => $players ) );
+	}
+	/**
+	 * Function to show team order
+	 *
+	 *    [team-order]
+	 *
+	 * @param array $atts shortcode attributes.
+	 * @return the content
+	 */
+	public function show_team_order( $atts ) {
+		global $racketmanager;
+		$args     = shortcode_atts(
+			array(
+				'template' => '',
+			),
+			$atts
+		);
+		$template     = $args['template'];
+		$club_args         = array();
+		$club_args['type'] = 'affiliated';
+		$clubs        = $racketmanager->get_clubs( $club_args );
+		$event_args               = array();
+		$event_args['entry_type'] = 'team';
+		$event_args['reverse_rubbers'] = true;
+		$events       = $racketmanager->get_events( $event_args );
+		$event_types   = Racketmanager_Util::get_event_types();
+		$age_groups   = Racketmanager_Util::get_age_groups();
+		$filename     = ( ! empty( $template ) ) ? 'team-order-' . $template : 'team-order';
+
+		return $this->load_template( $filename, array(
+													  'clubs'  => $clubs,
+													  'events' => $events,
+													  'event_types' => $event_types,
+													  'age_groups'  => $age_groups,
+													  )
+									);
 	}
 	/**
 	 * Load template for user display. First the current theme directory is checked for a template

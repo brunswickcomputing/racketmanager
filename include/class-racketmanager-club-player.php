@@ -37,7 +37,7 @@ final class Racketmanager_Club_Player {
 		if ( ! $club_player ) {
 			$club_player = $wpdb->get_row(
 										  $wpdb->prepare(
-														 "SELECT `id`, `player_id`, `system_record`, `club_id`, `removed_date`, `removed_user`, `created_date`, `created_user`, `updated` FROM {$wpdb->racketmanager_club_players} WHERE `id` = %d LIMIT 1",
+														 "SELECT `id`, `player_id`, `system_record`, `club_id`, `removed_date`, `removed_user`, `created_date`, `created_user`, `updated`, `requested_date`, `requested_user` FROM {$wpdb->racketmanager_club_players} WHERE `id` = %d LIMIT 1",
 														 $club_player_id
 														 )
 			); // db call ok.
@@ -67,6 +67,12 @@ final class Racketmanager_Club_Player {
 				$this->add();
 			}
 			$this->club_player_id = $this->id;
+			if ( $this->club_id ) {
+				$club = get_club( $this->club_id );
+				if ( $club ) {
+					$this->club = $club;
+				}
+			}
 			if ( $this->player_id ) {
 				$player = get_player( $this->player_id );
 				if ( $player ) {
@@ -87,6 +93,13 @@ final class Racketmanager_Club_Player {
 					$this->created_user_email = $created_user_details->user_email;
 				}
 			}
+			if ( ! empty( $this->requested_user ) ) {
+				$requested_user_details = get_userdata( $this->requested_user );
+				if ( $created_user_details ) {
+					$this->requested_user_name  = $requested_user_details->display_name;
+					$this->requested_user_email = $requested_user_details->user_email;
+				}
+			}
 		}
 	}
 
@@ -97,13 +110,27 @@ final class Racketmanager_Club_Player {
 		global $wpdb;
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"INSERT INTO {$wpdb->racketmanager_club_players} (`club_id`, `player_id`, `created_date`, `created_user` ) VALUES (%d, %d, now(), %d)",
+				"INSERT INTO {$wpdb->racketmanager_club_players} (`club_id`, `player_id`, `requested_date`, `requested_user` ) VALUES (%d, %d, now(), %d)",
 				$this->club_id,
 				$this->player_id,
 				get_current_user_id()
 			)
 		);
 		$this->id = $wpdb->insert_id;
+	}
+	/**
+	 * Approve Club Player
+	 */
+	public function approve() {
+		global $wpdb;
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"UPDATE {$wpdb->racketmanager_club_players} SET `created_date` = NOW(), `created_user` = %d WHERE `id` = %d",
+				get_current_user_id(),
+				$this->id
+			)
+		);
+		wp_cache_set( $this->id, $this, 'club_players' );
 	}
 	/**
 	 * Remove Club Player

@@ -62,7 +62,7 @@ $age_groups   = Racketmanager_Util::get_age_groups();
 	<div class="form-control mb-3">
 		<form id="tournaments-filter" method="post" action="">
 			<?php wp_nonce_field( 'tournaments-bulk' ); ?>
-			<div class="tablenav">
+			<div class="mb-2">
 				<!-- Bulk Actions -->
 				<select name="action" size="1">
 					<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
@@ -70,37 +70,33 @@ $age_groups   = Racketmanager_Util::get_age_groups();
 				</select>
 				<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doTournamentDel" id="doTournamentDel" class="btn btn-secondary action" />
 			</div>
-			<div class="container">
-				<div class="row table-header">
-					<div class="col-1 col-md-auto check-column"><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('tournaments-filter'));" /></div>
-					<div class="col-6 col-md-2"><?php esc_html_e( 'Name', 'racketmanager' ); ?></div>
-					<div class="d-none d-md-block col-md-1"><?php esc_html_e( 'Season', 'racketmanager' ); ?></div>
-					<div class="col-5 col-md-2"><?php esc_html_e( 'Venue', 'racketmanager' ); ?></div>
-					<div class="d-none d-md-block col-md-1"><?php esc_html_e( 'Date', 'racketmanager' ); ?></div>
-				</div>
-				<?php
-				if ( $tournaments ) {
-					$class = '';
-					?>
+			<table class="table table-striped">
+				<thead class="table-dark">
+					<tr>
+						<th class="check-column"><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('tournaments-filter'));" /></th>
+						<th><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
+						<th class="d-none d-md-table-cell"><?php esc_html_e( 'Season', 'racketmanager' ); ?></th>
+						<th><?php esc_html_e( 'Venue', 'racketmanager' ); ?></th>
+						<th class="d-none d-md-table-cell"><?php esc_html_e( 'Date', 'racketmanager' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
 					<?php
 					foreach ( $tournaments as $tournament ) {
-						$class = ( 'alternate' === $class ) ? '' : 'alternate';
 						?>
-						<div class="row table-row <?php echo esc_html( $class ); ?>">
-							<div class="col-1 col-md-auto check-column">
-								<input type="checkbox" value="<?php echo esc_html( $tournament->id ); ?>" name="tournament[<?php echo esc_html( $tournament->id ); ?>]" />
-							</div>
-							<div class="col-6 col-md-2"><a href="admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_html( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?> "><?php echo esc_html( $tournament->name ); ?></a></div>
-							<div class="d-none d-md-block col-md-1"><?php echo esc_html( $tournament->season ); ?></div>
-							<div class="col-5 col-md-2"><?php echo esc_html( $tournament->venue_name ); ?></div>
-							<div class="d-none d-md-block col-md-1"><?php echo esc_html( $tournament->date ); ?></div>
-						</div>
+						<tr>
+							<td class="check-column"><input type="checkbox" value="<?php echo esc_html( $tournament->id ); ?>" name="tournament[<?php echo esc_html( $tournament->id ); ?>]" /></td>
+							<td><a href="admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_html( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?> "><?php echo esc_html( $tournament->name ); ?></a></td>
+							<td class="d-none d-md-table-cell"><?php echo esc_html( $tournament->season ); ?></td>
+							<td><?php echo esc_html( $tournament->venue_name ); ?></td>
+							<td class="d-none d-md-table-cell"><?php echo esc_html( $tournament->date ); ?></td>
+						</tr>
 						<?php
 					}
-				}
-				?>
-			</form>
-		</div>
+					?>
+				</tbody>
+			</table>
+		</form>
 	</div>
 	<div class="mb-3">
 		<!-- Add New Tournament -->

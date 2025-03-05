@@ -113,7 +113,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 				'cache'  => false,
 			)
 		);
-		$player_requests = Racketmanager_Util::get_player_requests(
+		$player_requests = $club->get_players(
 			array(
 				'club'   => $club->id,
 				'status' => 'outstanding',

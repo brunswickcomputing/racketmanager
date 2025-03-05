@@ -20,7 +20,7 @@ $clubs = $racketmanager->get_clubs();
 			<?php
 			foreach ( $clubs as $club ) {
 				?>
-				<option value="<?php echo esc_html( $club->id ); ?>" <?php echo $club->id === $club_id ? 'selected' : ''; ?>><?php echo esc_html( $club->shortcode ); ?></option>
+				<option value="<?php echo esc_html( $club->id ); ?>" <?php echo intval( $club->id ) === $club_id ? 'selected' : ''; ?>><?php echo esc_html( $club->shortcode ); ?></option>
 				<?php
 			}
 			?>
@@ -66,13 +66,13 @@ $clubs = $racketmanager->get_clubs();
 				<tr>
 					<td class="check-column"><input type="checkbox" value="<?php echo esc_html( $request->id ); ?>" name="playerRequest[<?php echo esc_html( $request->id ); ?>]" /></<td>
 					<td><input type="hidden" id="club_id[<?php echo esc_html( $request->id ); ?>]" name="club_id[<?php echo esc_html( $request->id ); ?>]" value="<?php echo esc_html( $club->id ); ?>"/></<td>
-					<td><?php echo esc_html( $request->club_name ); ?></<td>
-					<td><?php echo esc_html( $request->first_name ); ?></<td>
-					<td><?php echo esc_html( $request->surname ); ?></<td>
-					<td><?php echo esc_html( $request->gender ); ?></<td>
-					<td><?php echo esc_html( $request->btm ); ?></<td>
-					<td title="<?php echo esc_html( $request->requested_user ); ?>"><?php echo esc_html( $request->requested_date ); ?></<td>
-					<td <?php echo empty( $request->completed_user ) ? null : 'title="' . esc_html__( 'Created by', 'racketmanager' ) . ' ' . esc_html( $request->completed_user ) . '"'; ?>><?php echo esc_html( $request->completed_date ); ?></<td>
+					<td><?php echo esc_html( $request->club->shortcode ); ?></<td>
+					<td><?php echo esc_html( $request->player->firstname ); ?></<td>
+					<td><?php echo esc_html( $request->player->surname ); ?></<td>
+					<td><?php echo esc_html( $request->player->gender ); ?></<td>
+					<td><?php echo esc_html( $request->player->btm ); ?></<td>
+					<td <?php echo empty( $request->requested_user ) ? null : 'title="' . esc_html__( 'Requested by', 'racketmanager' ) . ' ' . esc_html( $request->requested_user_name ) . '"'; ?>><?php echo esc_html( $request->requested_date ); ?></<td>
+					<td <?php echo empty( $request->created_user ) ? null : 'title="' . esc_html__( 'Created by', 'racketmanager' ) . ' ' . esc_html( $request->created_user_name ) . '"'; ?>><?php echo esc_html( $request->created_date ); ?></<td>
 				</tr>
 				<?php
 			}

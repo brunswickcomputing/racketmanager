@@ -503,7 +503,10 @@ final class Racketmanager_Club {
 		global $wpdb, $racketmanager;
 		$player_request = $this->get_player_request( $player_request_id );
 		if ( empty( $player_request->completed_date ) ) {
-			$this->add_club_player( $player_request->player_id, false );
+			$club_player = new \stdClass();
+			$club_player->club_id = $this->id;
+			$club_player->player_id = $player_request->player_id;
+			$club_player = new Racketmanager_Club_player( $club_player );
 			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
 					"UPDATE {$wpdb->racketmanager_club_player_requests} SET `completed_date` = now(), `completed_user` = %d WHERE `id` = %d ",

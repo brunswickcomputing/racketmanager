@@ -73,14 +73,14 @@ final class Racketmanager_Club_Player {
 					$this->player = $player;
 				}
 			}
-			if ( ! isset( $this->removed_user ) ) {
+			if ( ! empty( $this->removed_user ) ) {
 				$removed_user_details = get_userdata( $this->removed_user );
 				if ( $removed_user_details ) {
 					$this->removed_user_name  = $removed_user_details->display_name;
 					$this->removed_user_email = $removed_user_details->user_email;
 				}
 			}
-			if ( ! isset( $this->created_user ) ) {
+			if ( ! empty( $this->created_user ) ) {
 				$created_user_details = get_userdata( $this->created_user );
 				if ( $created_user_details ) {
 					$this->created_user_name  = $created_user_details->display_name;
@@ -95,20 +95,12 @@ final class Racketmanager_Club_Player {
 	 */
 	private function add() {
 		global $wpdb;
-
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"INSERT INTO {$wpdb->racketmanager_club_players} (`name`, `type`, `shortcode`, `contactno`, `website`, `founded`, `facilities`, `address`, `latitude`, `longitude`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,%s )",
-				$this->name,
-				$this->type,
-				$this->shortcode,
-				$this->contactno,
-				$this->website,
-				$this->founded,
-				$this->facilities,
-				$this->address,
-				$this->latitude,
-				$this->longitude
+				"INSERT INTO {$wpdb->racketmanager_club_players} (`club_id`, `player_id`, `created_date`, `created_user` ) VALUES (%d, %d, now(), %d)",
+				$this->club_id,
+				$this->player_id,
+				get_current_user_id()
 			)
 		);
 		$this->id = $wpdb->insert_id;

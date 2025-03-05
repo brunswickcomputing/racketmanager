@@ -3907,27 +3907,6 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 *   CLUB PLAYERS SECTION
 	 */
-
-	/**
-	 * Delete Club Player Request
-	 *
-	 * @param int $player_request_id player request id.
-	 * @return boolean
-	 */
-	private function delete_player_request( $player_request_id ) {
-		global $wpdb;
-
-		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_club_player_requests} WHERE `id` = %d",
-				$player_request_id
-			)
-		);
-		$this->set_message( __( 'Club Player request deleted', 'racketmanager' ) );
-
-		return true;
-	}
-
 	/**
 	 * Import data from CSV file
 	 *

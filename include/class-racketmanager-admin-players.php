@@ -63,7 +63,7 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 			$this->printMessage();
 		} else {
 			$club_id = isset( $_GET['club'] ) ? intval( $_GET['club'] ) : null;
-			$status  = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : null;
+			$status  = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : 'outstanding';
 			if ( isset( $_POST['doplayerrequest'] ) ) {
 				if ( current_user_can( 'edit_teams' ) ) {
 					check_admin_referer( 'club-player-request-bulk' );
@@ -90,10 +90,17 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 				}
 			}
 			$racketmanager_tab = 'requests';
-			$player_requests = Racketmanager_Util::get_player_requests(
+			$player_requests = $racketmanager->get_club_players(
 				array(
 					'club'   => $club_id,
 					'status' => $status,
+					'type'   => 'player',
+					'orderby' => array(
+									   'requested_date' => 'DESC',
+									   'created_date'   => 'DESC',
+									   'club_id'        => 'ASC',
+									   'player_id'      => 'ASC',
+									   )
 				)
 			);
 			include_once RACKETMANAGER_PATH . 'admin/players/show-requests.php';

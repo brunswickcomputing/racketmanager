@@ -65,6 +65,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 							$config->competition_code         = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
 							$config->grade                    = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
 							$config->max_teams                = isset( $_POST['max_teams'] ) ? intval( $_POST['max_teams'] ) : null;
+							$config->num_entries              = isset( $_POST['num_entries'] ) ? intval( $_POST['num_entries'] ) : null;
 							$config->teams_per_club           = isset( $_POST['teams_per_club'] ) ? intval( $_POST['teams_per_club'] ) : null;
 							$config->teams_prom_relg          = isset( $_POST['teams_prom_relg'] ) ? intval( $_POST['teams_prom_relg'] ) : null;
 							$config->lowest_promotion         = isset( $_POST['lowest_promotion'] ) ? intval( $_POST['lowest_promotion'] ) : null;

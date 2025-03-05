@@ -1967,6 +1967,11 @@ class Racketmanager_Competition {
 				$racketmanager->error_messages[] = __( 'Lowest promotion position must be set', 'racketmanager' );
 				$racketmanager->error_fields[]   = 'lowest_promotion';
 			}
+		} elseif ( 'tournament' === $config->type ) {
+			if ( empty( $config->num_entries ) ) {
+				$racketmanager->error_messages[] = __( 'Maximum number of entries must be set', 'racketmanager' );
+				$racketmanager->error_fields[]   = 'num_entries';
+			}
 		}
 		if ( empty( $config->team_ranking ) ) {
 			$racketmanager->error_messages[] = __( 'Ranking type must be set', 'racketmanager' );
@@ -2088,6 +2093,11 @@ class Racketmanager_Competition {
 					$updates = true;
 				}
 				$settings->lowest_promotion = $config->lowest_promotion;
+			} elseif ( 'tournament' === $config->type ) {
+				if ( empty( $this->num_entries ) || $this->num_entries !== $config->num_entries ) {
+					$updates = true;
+				}
+				$settings->num_entries = $config->num_entries;
 			}
 			if ( empty( $this->team_ranking ) || $this->team_ranking !== $config->team_ranking ) {
 				$updates = true;

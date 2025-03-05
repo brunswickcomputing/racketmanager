@@ -63,6 +63,35 @@ $tab_name = 'constitution';
 			</div>
 		</div>
 		<?php
+	} elseif ( 'tournament' === $competition->type ) {
+		?>
+		<div class="row gx-3 mb-3">
+			<legend class=""><?php esc_html_e( 'Size limits', 'racketmanager' ); ?></legend>
+			<div class="col-md-6 mb-3 mb-md-0">
+				<div class="form-floating">
+					<?php
+					if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'num_entries', $racketmanager->error_fields, true ) ) ) {
+						$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
+						$is_invalid = true;
+						$msg_id     = array_search( 'num_entries', $racketmanager->error_fields, true );
+						$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					}
+					?>
+					<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_entries" id="num_entries" placeholder="<?php esc_html_e( 'Max number of entries', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->num_entries ) ? esc_html( $competition->config->num_entries ) : null; ?>" />
+					<label for="num_entries" class="form-label"><?php esc_html_e( 'Max entries', 'racketmanager' ); ?></label>
+					<?php
+					if ( $is_invalid ) {
+						?>
+						<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+						<?php
+						$is_invalid = false;
+						$msg        = null;
+					}
+					?>
+				</div>
+			</div>
+		</div>
+		<?php
 	}
 	?>
 	<?php

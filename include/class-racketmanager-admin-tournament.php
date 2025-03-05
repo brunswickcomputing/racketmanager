@@ -340,6 +340,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 				$fees->event                  = isset( $_POST['feeEvent'] ) ? floatval( $_POST['feeEvent'] ) : null;
 				$fees->id                     = isset( $_POST['feeId'] ) ? intval( $_POST['feeId'] ) : null;
 				$tournament->fees             = $fees;
+				$tournament->num_entries      = isset( $_POST['num_entries'] ) ? intval( $_POST['num_entries'] ) : null;
 				$tournament                   = new Racketmanager_Tournament( $tournament );
 				if ( $racketmanager->error ) {
 					$racketmanager->printMessage();
@@ -376,6 +377,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 						$fees->event                  = isset( $_POST['feeEvent'] ) ? floatval( $_POST['feeEvent'] ) : null;
 						$fees->id                     = isset( $_POST['feeId'] ) ? intval( $_POST['feeId'] ) : null;
 						$tournament->fees             = $fees;
+						$tournament->num_entries      = isset( $_POST['num_entries'] ) ? intval( $_POST['num_entries'] ) : null;
 						$success                      = $tournament->update( $tournament );
 						if ( $success ) {
 							$this->set_competition_dates( $tournament );

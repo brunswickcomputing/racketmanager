@@ -253,6 +253,34 @@ $is_invalid = false;
 			</div>
 		</div>
 		<div class="form-control mb-3">
+			<legend><?php esc_html_e( 'Entries', 'racketmanager' ); ?></legend>
+			<div class="row mb-3 g-3">
+				<div class="col-md-4 mb-3 mb-md-0">
+					<div class="form-floating">
+						<?php
+						$num_entries = empty( $tournament->num_entries ) ? empty( $tournament->competition->num_entries ) ? null : $tournament->competition->num_entries : $tournament->num_entries;
+						if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'num_entries', $racketmanager->error_fields, true ) ) ) {
+							$is_invalid = true;
+							$msg_id     = array_search( 'num_entries', $racketmanager->error_fields, true );
+							$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						}
+						?>
+						<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_entries" id="num_entries" value="<?php echo isset( $num_entries ) ? esc_html( $num_entries ) : null; ?>" />
+						<label for="num_entries"><?php esc_html_e( 'Maximum number of entries', 'racketmanager' ); ?></label>
+						<?php
+						if ( $is_invalid ) {
+							?>
+							<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+							<?php
+							$is_invalid = false;
+							$msg        = null;
+						}
+						?>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="form-control mb-3">
 			<legend><?php esc_html_e( 'Dates', 'racketmanager' ); ?></legend>
 			<div class="row g-3">
 				<div class="col-md-6">

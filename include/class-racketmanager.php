@@ -2199,6 +2199,7 @@ class RacketManager {
 			'gender'  => false,
 			'active'  => false,
 			'type'    => false,
+			'status'  => false,
 			'orderby' => array( 'display_name' => 'ASC' ),
 		);
 		$args     = array_merge( $defaults, (array) $args );
@@ -2209,6 +2210,7 @@ class RacketManager {
 		$player   = $args['player'];
 		$gender   = $args['gender'];
 		$active   = $args['active'];
+		$status   = $args['status'];
 		$orderby  = $args['orderby'];
 
 		$search_terms = array();
@@ -2231,7 +2233,14 @@ class RacketManager {
 		if ( $active ) {
 			$search_terms[] = '`removed_date` IS NULL';
 		}
-
+		switch( $status ) {
+			case 'outstanding':
+				$search_terms[] = '`created_date` IS NULL';
+				break;
+			case 'all':
+			default:
+				break;
+		}
 		$search = '';
 		if ( ! empty( $search_terms ) ) {
 			$search = implode( ' AND ', $search_terms );

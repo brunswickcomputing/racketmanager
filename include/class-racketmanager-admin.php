@@ -3435,8 +3435,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param object $season_data season data.
 	 */
 	protected function edit_season( $season_data ) {
-		global $racketmanager;
-		global $competition;
+		global $racketmanager, $competition;
 		$error = false;
 		if ( false !== $season_data->match_dates ) {
 			if ( empty( $season_data->match_dates ) ) {

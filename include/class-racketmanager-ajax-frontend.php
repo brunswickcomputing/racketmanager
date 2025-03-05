@@ -459,7 +459,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					$tournament = get_tournament( $tournament_id );
 					$validator  = $validator->tournament_open( $tournament );
 				}
-				$validator = $validator->events_entry( $events );
+				$validator = $validator->events_entry( $events, $tournament->num_entries );
 				foreach ( $events as $event ) {
 					$event = get_event( $event );
 					if ( substr( $event->type, 1, 1 ) === 'D' ) {

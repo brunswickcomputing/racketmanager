@@ -271,6 +271,16 @@ if ( ! empty( $player->entry ) ) {
 								<div id="entryDetails">
 									<div class="hgroup" id="event">
 										<h4 class="hgroup__heading"><?php esc_html_e( 'Events', 'racketmanager' ); ?></h4>
+										<?php
+										if ( ! empty( $tournament->num_entries ) ) {
+											/* Translators: %1$s: gender %2$s age. */
+											?>
+											<p class="hgroup__subheading">
+												<?php echo esc_html( sprintf( __( 'You may enter a maximum of %d events.', 'racketmanager' ), $tournament->num_entries ) ); ?>
+											</p>
+											<?php
+										}
+										?>
 										<p class="hgroup__subheading">
 											<?php
 											if ( empty( $player->age ) ) {

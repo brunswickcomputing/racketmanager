@@ -64,12 +64,19 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	 * @param array $events array of events.
 	 * @return object $validation updated validation object.
 	 */
-	public function events_entry( $events ) {
+	public function events_entry( $events, $max_entries = null ) {
 		if ( empty( $events ) ) {
 			$this->error                          = true;
 			$this->error_field[ $this->error_id ] = 'event';
 			$this->error_msg[ $this->error_id ]   = __( 'You must select a event to enter', 'racketmanager' );
 			++$this->error_id;
+		} elseif( ! empty( $max_entries ) ) {
+			if ( count( $events ) > $max_entries ) {
+				$this->error                          = true;
+				$this->error_field[ $this->error_id ] = 'event';
+				$this->error_msg[ $this->error_id ]   = __( 'You have entered too many events', 'racketmanager' );
+				++$this->error_id;
+			}
 		}
 		return $this;
 	}

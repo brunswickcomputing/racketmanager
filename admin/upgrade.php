@@ -1440,6 +1440,13 @@ function racketmanager_upgrade() {
 		}
 		$wpdb->query( "CREATE TABLE {$wpdb->racketmanager_player_errors} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `player_id` int( 11 ) NULL, `message` varchar( 255 ) NULL, `status` int( 1 ) NULL, `created_date` datetime NULL, `updated_user` int( 11 ) NULL, `updated_date` datetime NULL, PRIMARY KEY ( `id` )) $charset_collate;" );
 	}
+	if ( version_compare( $installed, '8.43.0', '<' ) ) {
+		echo esc_html__( 'starting 8.43.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_club_players} ADD `requested_date` DATE NULL AFTER `system_record`" );
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_club_players} ADD `requested_user` INT( 11 ) AFTER `requested_date`" );
+		$wpdb->query( "UPDATE {$wpdb->racketmanager_club_players} SET `requested_date` = `created_date`, `requested_user` = `created_user`");
+		$wpdb->query( "UPDATE {$wpdb->racketmanager_club_players} SET `created_date` = '2022-05-01' WHERE `created_date` IS NULL");
+	}
 	/*
 	* Update version and dbversion
 	*/

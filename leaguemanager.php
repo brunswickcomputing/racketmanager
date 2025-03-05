@@ -32,7 +32,7 @@ $site_url  = get_option( 'siteurl' );
 $site_url .=  '/';
 define( 'RACKETMANAGER', 'racketmanager' );
 define( 'RACKETMANAGER_VERSION', '8.42.0' );
-define( 'RACKETMANAGER_DBVERSION', '8.42.1' );
+define( 'RACKETMANAGER_DBVERSION', '8.43.0' );
 define( 'RACKETMANAGER_SITE', $site_url );
 define( 'RACKETMANAGER_URL', esc_url( plugin_dir_url( __FILE__ ) ) );
 define( 'RACKETMANAGER_PATH', plugin_dir_path( __FILE__ ) );
@@ -79,7 +79,6 @@ class RacketmanagerMain {
 		$wpdb->racketmanager_club_players         = $wpdb->prefix . 'racketmanager_club_players';
 		$wpdb->racketmanager_competitions         = $wpdb->prefix . 'racketmanager_competitions';
 		$wpdb->racketmanager_team_events          = $wpdb->prefix . 'racketmanager_team_events';
-		$wpdb->racketmanager_club_player_requests = $wpdb->prefix . 'racketmanager_club_player_requests';
 		$wpdb->racketmanager_clubs                = $wpdb->prefix . 'racketmanager_clubs';
 		$wpdb->racketmanager_seasons              = $wpdb->prefix . 'racketmanager_seasons';
 		$wpdb->racketmanager_competitions_seasons = $wpdb->prefix . 'racketmanager_competitions_seasons';

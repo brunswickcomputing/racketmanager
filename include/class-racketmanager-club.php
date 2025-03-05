@@ -278,13 +278,6 @@ final class Racketmanager_Club {
 	 */
 	public function delete() {
 		global $wpdb;
-
-		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_club_player_requests} WHERE `club_id` = %d",
-				$this->id
-			)
-		);
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"DELETE FROM {$wpdb->racketmanager_club_players} WHERE `club_id` = %d",
@@ -471,56 +464,6 @@ final class Racketmanager_Club {
 		return $competitions;
 	}
 	/**
-	 * Get single player request
-	 *
-	 * @param int $player_request_id player request id.
-	 * @return object
-	 */
-	private function get_player_request( $player_request_id ) {
-		global $wpdb;
-
-		$player_request = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare(
-				"SELECT `first_name`, `surname`, `gender`, `btm`, `email`, `player_id`, `requested_date`, `requested_user`, `completed_date`, `completed_user` FROM {$wpdb->racketmanager_club_player_requests} WHERE `id` = %d",
-				intval( $player_request_id )
-			)
-		);
-
-		if ( ! $player_request ) {
-			return false;
-		}
-
-		return $player_request;
-	}
-
-	/**
-	 * Approve Club Player Request
-	 *
-	 * @param int $player_request_id player request id.
-	 * @return boolean
-	 */
-	public function approve_player_request( $player_request_id ) {
-		global $wpdb, $racketmanager;
-		$player_request = $this->get_player_request( $player_request_id );
-		if ( empty( $player_request->completed_date ) ) {
-			$club_player = new \stdClass();
-			$club_player->club_id = $this->id;
-			$club_player->player_id = $player_request->player_id;
-			$club_player = new Racketmanager_Club_player( $club_player );
-			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_club_player_requests} SET `completed_date` = now(), `completed_user` = %d WHERE `id` = %d ",
-					get_current_user_id(),
-					$player_request_id
-				)
-			);
-			$racketmanager->set_message( __( 'Player added to club', 'racketmanager' ) );
-		}
-
-		return true;
-	}
-
-	/**
 	 * Register player for Club
 	 *
 	 * @param object $new_player player details.
@@ -605,10 +548,13 @@ final class Racketmanager_Club {
 				if ( $player_pending ) {
 					$racketmanager->set_message( __( 'Player registration already pending', 'racketmanager' ), true );
 				} else {
-					$player_request_id = $this->add_player_request( $player->id );
-					$options           = $racketmanager->get_options( 'rosters' );
+					$club_player            = new \stdClass();
+					$club_player->club_id   = $this->id;
+					$club_player->player_id = $player->id;
+					$club_player            = new Racketmanager_Club_Player( $club_player );
+					$options                = $racketmanager->get_options( 'rosters' );
 					if ( 'auto' === $options['rosterConfirmation'] || current_user_can( 'edit_teams' ) ) {
-						$this->approve_player_request( $player_request_id );
+						$club_player->approve();
 						$action = 'add';
 						$msg    = __( 'Player added to club', 'racketmanager' );
 					} else {
@@ -670,60 +616,12 @@ final class Racketmanager_Club {
 		global $wpdb;
 		return $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT count(*) FROM {$wpdb->racketmanager_club_player_requests} WHERE `club_id` = %d AND `player_id` = %d AND `completed_date` IS NULL",
+				"SELECT count(*) FROM {$wpdb->racketmanager_club_players} WHERE `club_id` = %d AND `player_id` = %d AND `created_date` IS NULL",
 				intval( $this->id ),
 				intval( $player )
 			)
 		);
 	}
-
-	/**
-	 * Add new club player
-	 *
-	 * @param int $player_id player id.
-	 * @return int | false
-	 */
-	private function add_club_player( $player_id ) {
-		global $wpdb, $racketmanager;
-		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare(
-				"INSERT INTO {$wpdb->racketmanager_club_players} (`club_id`, `player_id`, `created_date`, `created_user` ) VALUES (%d, %d, now(), %d)",
-				$this->id,
-				$player_id,
-				get_current_user_id()
-			)
-		);
-		$racketmanager->set_message( __( 'Club Player added', 'racketmanager' ) );
-		return $wpdb->insert_id;
-	}
-
-	/**
-	 * Add new player request
-	 *
-	 * @param int $player id.
-	 * @return int player request id.
-	 */
-	private function add_player_request( $player ) {
-		global $wpdb, $racketmanager;
-
-		$userid = get_current_user_id();
-		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare(
-				"INSERT INTO {$wpdb->racketmanager_club_player_requests} (`club_id`, `first_name`, `surname`, `gender`, `player_id`, `requested_date`, `requested_user`) values (%d, %s, %s, %s, %d, now(), %d)",
-				$this->id,
-				'',
-				'',
-				'',
-				$player,
-				$userid
-			)
-		);
-
-		$racketmanager->set_message( __( 'Player request added', 'racketmanager' ) );
-
-		return $wpdb->insert_id;
-	}
-
 	/**
 	 * Gets club players from database
 	 *

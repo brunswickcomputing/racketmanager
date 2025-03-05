@@ -2276,7 +2276,7 @@ class Racketmanager_Event {
 				$this->update_settings();
 			}
 			if ( empty( $this->name ) || $this->name !== $config->name ) {
-				$this->set_name( $name );
+				$this->set_name( $config->name );
 				$updates = true;
 			}
 		}

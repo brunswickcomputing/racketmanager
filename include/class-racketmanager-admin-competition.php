@@ -100,6 +100,21 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 							$racketmanager->printMessage();
 						}
 					}
+				} elseif ( isset( $_POST['doactionevent'] ) ) {
+					if ( ! isset( $_POST['racketmanager_event_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_event_nonce'] ) ), 'racketmanager__events-bulk' ) ) {
+						$racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+						$racketmanager->printMessage();
+					} elseif ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
+						$events = isset( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : null;
+						if ( $events ) {
+							foreach ( $events as $event_id ) {
+								$event = get_event( $event_id );
+								if ( $event ) {
+									$event->delete();
+								}
+							}
+						}
+					}
 				}
 				if ( empty( $tab ) ) {
 					$tab = 'general';

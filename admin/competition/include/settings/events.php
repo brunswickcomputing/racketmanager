@@ -43,7 +43,7 @@ $events   = $competition->get_events();
 				foreach( $events as $event ) {
 					?>
 					<tr>
-						<td class="check-column"><input type="checkbox" value="<?php echo esc_html( $event->id ); ?>" name="charge[<?php echo esc_html( $event->id ); ?>]" /></td>
+						<td class="check-column"><input type="checkbox" value="<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" /></td>
 						<td class=""><a href="admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=event&amp;event_id=<?php echo esc_html( $event->id ); ?>&competition_id=<?php echo esc_attr( $competition->id ); ?><?php echo esc_attr( $add_link ); ?>"><?php echo esc_html( $event->name ); ?></a></td>
 						<td class=""><?php echo esc_html( Racketmanager_Util::get_event_type( $event->type ) ); ?></td>
 						<td class=""><?php echo esc_html( Racketmanager_Util::get_age_limit( $event->age_limit ) ); ?></td>

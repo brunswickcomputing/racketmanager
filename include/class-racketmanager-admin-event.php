@@ -126,11 +126,11 @@ final class RacketManager_Admin_Event extends RacketManager_Admin {
 						$config->primary_league     = isset( $_POST['primary_league'] ) ? intval( $_POST['primary_league'] ) : null;
 						if ( ! empty( $config->name ) ) {
 							$event = new \stdClass();
-							$event->name = $config->name;
+							$event->name           = $config->name;
 							$event->competition_id = $competition->id;
-							$event->num_sets       = null;
-							$event->num_rubbers    = null;
-							$event->type           = null;
+							$event->num_sets       = $config->num_sets;
+							$event->num_rubbers    = $config->num_rubbers;
+							$event->type           = $config->type;
 							$event                 = new RacketManager_Event( $event );
 							if ( $event ) {
 								?>

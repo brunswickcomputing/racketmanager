@@ -33,6 +33,9 @@ foreach ( $competition_list as $key => $competition ) {
 		$competition_link .= $competition->season . '/';
 		$competition_name  = $competition->name . ' ' . $competition->season;
 	}
+	if ( ! empty( $player ) ) {
+		$competition_link .= 'player/' . seo_url( $player->display_name ) . '/';
+	}
 	?>
 	<li class="list__item col-12 <?php echo empty( $full_width ) ? 'col-sm-6' : null; ?>">
 		<div class="media">

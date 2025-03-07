@@ -23,8 +23,6 @@ final class RacketManager_Admin_Event extends RacketManager_Admin {
 	 * Constructor
 	 */
 	public function __construct() {
-		global $racketmanager_ajax_admin;
-		parent::__construct();
 	}
 	/**
 	 * Handle config page function

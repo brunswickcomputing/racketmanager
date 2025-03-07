@@ -23,8 +23,6 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 	 * Constructor
 	 */
 	public function __construct() {
-		global $racketmanager_ajax_admin;
-		parent::__construct();
 	}
 	/**
 	 * Display finances page

@@ -29,8 +29,6 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 	 * Constructor
 	 */
 	public function __construct() {
-		global $racketmanager_ajax_admin;
-		parent::__construct();
 	}
 	/**
 	 * Display leagues page

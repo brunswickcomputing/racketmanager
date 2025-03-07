@@ -29,8 +29,6 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 	 * Constructor
 	 */
 	public function __construct() {
-		global $racketmanager_ajax_admin;
-		parent::__construct();
 	}
 	/**
 	 * Display tournaments page

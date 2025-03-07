@@ -62,7 +62,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_nopriv_racketmanager_delete_message', array( &$this, 'logged_out' ) );
 		add_action( 'wp_ajax_racketmanager_delete_messages', array( &$this, 'delete_messages' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_deletes_message', array( &$this, 'logged_out' ) );
-		add_action( 'wp_ajax_racketmanager_match_option', array( &$this, 'match_option' ) );
+		add_action( 'wp_ajax_racketmanager_match_option', array( &$this, 'show_match_option' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_match_option', array( &$this, 'logged_out_modal' ) );
 		add_action( 'wp_ajax_racketmanager_set_match_date', array( &$this, 'set_match_date' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_set_match_date', array( &$this, 'logged_out' ) );
@@ -88,6 +88,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_nopriv_racketmanager_show_team_order_players', array( &$this, 'show_team_order_players' ) );
 		add_action( 'wp_ajax_racketmanager_validate_team_order', array( &$this, 'validate_team_order' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_validate_team_order', array( &$this, 'validate_team_order' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_team_edit_modal', array( &$this, 'logged_out_modal' ) );
+		add_action( 'wp_ajax_racketmanager_team_edit_modal', array( &$this, 'show_team_edit_modal' ) );
 	}
 	/**
 	 * Add item as favourite
@@ -221,14 +223,16 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$error_field[] = 'team';
 			$error_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
 		} else {
-			if ( ! empty( $_POST['event_id'] ) ) {
+			$event_id = empty( $_POST['event_id'] ) ? null : intval( $_POST['event_id'] );
+			$team_id  = empty( $_POST['team_id'] ) ? null : intval( $_POST['team_id'] );
+			if ( $event_id ) {
 				$event_id = intval( $_POST['event_id'] );
 			} else {
 				$error         = true;
 				$error_field[] = 'team';
 				$error_msg[]   = __( 'Event not selected', 'racketmanager' );
 			}
-			if ( ! empty( $_POST['team_id'] ) ) {
+			if ( $team_id ) {
 				$team_id = intval( $_POST['team_id'] );
 			} else {
 				$error         = true;
@@ -1851,7 +1855,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	/**
 	 * Build screen to to show selected match option
 	 */
-	public function match_option() {
+	public function show_match_option() {
 		$valid   = true;
 		$message = null;
 		if ( isset( $_POST['security'] ) ) {
@@ -2988,5 +2992,158 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			array_push( $return, $msg, $err_msg, $err_fld );
 			wp_send_json_error( $return, $status );
 		}
+	}
+	/**
+	 * Build screen to to show team edit
+	 */
+	public function show_team_edit_modal() {
+		$valid   = true;
+		$message = null;
+		if ( isset( $_POST['security'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
+				$valid   = false;
+				$message = __( 'Security token invalid', 'racketmanager' );
+				$status  = 403;
+			}
+		} else {
+			$valid   = false;
+			$message = __( 'No security token found in request', 'racketmanager' );
+			$status  = 403;
+		}
+		if ( $valid ) {
+			$team_id  = isset( $_POST['teamId'] ) ? intval( $_POST['teamId'] ) : null;
+			$event_id = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : null;
+			$modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+			if ( $team_id ) {
+				$team = get_team( $team_id );
+				if ( $team ) {
+					if ( $event_id ) {
+						$event = get_event( $event_id );
+						if ( $event ) {
+							$event_team = $event->get_team_info( $team_id );
+							if ( ! $event_team ) {
+								$valid   = false;
+								$message = __( 'Event team not found', 'racketmanager' );
+								$status  = 404;
+							}
+						} else {
+							$valid   = false;
+							$message = __( 'Event not found', 'racketmanager' );
+							$status  = 404;
+						}
+					} else {
+						$valid   = false;
+						$message = __( 'Event id not found', 'racketmanager' );
+						$status  = 404;
+					}
+				} else {
+					$valid   = false;
+					$message = __( 'Team not found', 'racketmanager' );
+					$status  = 404;
+				}
+			} else {
+				$valid   = false;
+				$message = __( 'Team id not found', 'racketmanager' );
+				$status  = 404;
+			}
+		}
+		if ( $valid ) {
+			$matchdays = Racketmanager_Util::get_weekdays();
+			ob_start();
+			?>
+			<div class="modal-dialog modal-dialog-centered modal-lg">
+				<div class="modal-content">
+					<form id="team-update" class="" action="#" method="post">
+						<?php wp_nonce_field( 'team-update', 'racketmanager_nonce' ); ?>
+						<input type="hidden" name="team_id" value="<?php echo esc_attr( $team->id ); ?>" />
+						<input type="hidden" name="event_id" value="<?php echo esc_attr( $event->id ); ?>" />
+						<input type="hidden" name="modal" value="<?php echo esc_attr( $modal ); ?>" />
+						<input type="hidden" name="club" id="club" value="<?php echo esc_attr( $team->club_id ); ?>" />
+						<div class="modal-header modal__header">
+							<h4 class="modal-title"><?php esc_html_e( 'Edit team', 'racketmanager' ) ; ?></h4>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+						</div>
+						<div class="modal-body ui-front">
+							<div class="container-fluid">
+								<div id="teamUpdateResponse-<?php echo esc_attr( $event->id ); ?>-<?php echo esc_attr( $team->id ); ?>" class="alert_rm alert--danger" style="display: none;">
+									<div class="alert__body">
+										<div class="alert__body-inner">
+											<span id="teamUpdateResponseText-<?php echo esc_attr( $event->id ); ?>-<?php echo esc_attr( $team->id ); ?>"></span>
+										</div>
+									</div>
+								</div>
+							<div class="form-control mb-3">
+								<legend><?php esc_html_e( 'Captain', 'racketmanager' ); ?></legend>
+								<div class="row">
+									<div class="form-floating mb-3">
+										<input type="text" class="teamcaptain form-control" id="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" name="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" value="<?php echo esc_html( $event_team->captain ); ?>" />
+										<input type="hidden" id="captainId-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" name="captainId-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" value="<?php echo esc_html( $event_team->captain_id ); ?>" />
+										<label for="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>"><?php esc_html_e( 'Captain', 'racketmanager' ); ?></label>
+										<div id="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>-feedback" class="invalid-feedback"></div>
+									</div>
+								</div>
+								<div class="row g-3">
+									<div class="col-sm-6 mb-3">
+										<div class="form-floating">
+											<input type="tel" class="form-control" id="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" name="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" value="<?php echo esc_html( $event_team->contactno ); ?>" />
+											<label for="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>"><?php esc_html_e( 'Contact Number', 'racketmanager' ); ?></label>
+											<div id="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>-feedback" class="invalid-feedback"></div>
+										</div>
+									</div>
+									<div class="col-sm-6 mb-3">
+										<div class="form-floating">
+											<input type="email" class="form-control" id="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" name="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" value="<?php echo esc_html( $event_team->contactemail ); ?>" size="30" />
+											<label for="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>"><?php esc_html_e( 'Contact Email', 'racketmanager' ); ?></label>
+											<div id="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>-feedback" class="invalid-feedback"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="form-control mb-3">
+								<legend><?php esc_html_e( 'Match times', 'racketmanager' ); ?></legend>
+								<div class="row g-3">
+									<div class="col-sm-6 mb-3">
+										<div class="form-floating">
+											<select class="form-select" size="1" name="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" id="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" >
+												<option><?php esc_html_e( 'Select match day', 'racketmanager' ); ?></option>
+												<?php
+												foreach ( $matchdays as $key => $matchday ) {
+													?>
+													<option value="<?php echo esc_html( $key ); ?>" <?php selected( $matchday, empty( $event_team->match_day ) ? null : $event_team->match_day ); ?>><?php echo esc_html( $matchday ); ?></option>
+													<?php
+												}
+												?>
+											</select>
+											<div id="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>-feedback" class="invalid-feedback"></div>
+											<label for="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>"><?php esc_html_e( 'Match Day', 'racketmanager' ); ?></label>
+										</div>
+									</div>
+									<div class="col-sm-6 mb-3">
+										<div class="form-floating">
+											<input type="time" class="form-control" id="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" name="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" value="<?php echo esc_html( $event_team->match_time ); ?>" size="30" />
+											<label for="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>"><?php esc_html_e( 'Match Time', 'racketmanager' ); ?></label>
+											<div id="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>-feedback" class="invalid-feedback"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="modal-footer">
+						<button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
+						<button class="btn btn-primary" type="button" id="teamUpdateSubmit-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" name="teamUpdateSubmit-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" onclick="Racketmanager.updateTeam(this)">
+								<?php esc_html_e( 'Update details', 'racketmanager' ); ?>
+						</button>
+					</form>
+				</div>
+			</div>
+			<?php
+			$output = ob_get_contents();
+			ob_end_clean();
+		} else {
+			$output = $this->modal_error( $message );
+			status_header( $status );
+		}
+		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		wp_die();
 	}
 }

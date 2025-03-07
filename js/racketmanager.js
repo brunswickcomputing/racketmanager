@@ -83,51 +83,7 @@ jQuery(document).ready(function ($) {
 		return false;  // Prevent default button behaviour
 	});
 	TournamentDateChange();
-	jQuery('.teamcaptain').autocomplete({
-		minLength: 2,
-		source: function (request, response) {
-			let club = jQuery("#club").val();
-			let fieldref = this.element[0].id;
-			let ref = fieldref.substr(7);
-			let notifyField = '#updateTeamResponse'.concat(ref);
-			response(get_player_details(request.term, club, notifyField));
-		},
-		select: function (event, ui) {
-			if (ui.item.value == 'null') {
-				ui.item.value = '';
-			}
-			let captaininput = this.id;
-			let ref = captaininput.substr(7);
-			let player = "#".concat(captaininput);
-			let playerId = "#captainId".concat(ref);
-			let contactno = "#contactno".concat(ref);
-			let contactemail = "#contactemail".concat(ref);
-			jQuery(player).val(ui.item.value);
-			jQuery(playerId).val(ui.item.playerId);
-			jQuery(contactno).val(ui.item.contactno);
-			jQuery(contactemail).val(ui.item.user_email);
-		},
-		change: function (event, ui) {
-			let captaininput = this.id;
-			let ref = captaininput.substr(7);
-			let player = "#".concat(captaininput);
-			let playerId = "#captainid".concat(ref);
-			let contactno = "#contactno".concat(ref);
-			let contactemail = "#contactemail".concat(ref);
-			if (ui.item === null) {
-				jQuery(this).val('');
-				jQuery(player).val('');
-				jQuery(playerId).val('');
-				jQuery(contactno).val('');
-				jQuery(contactemail).val('');
-			} else {
-				jQuery(player).val(ui.item.value);
-				jQuery(playerId).val(ui.item.playerId);
-				jQuery(contactno).val(ui.item.contactno);
-				jQuery(contactemail).val(ui.item.user_email);
-			}
-		}
-	});
+	CaptainLookup();
 
 	jQuery('#matchSecretary').autocomplete({
 		minLength: 2,
@@ -263,7 +219,55 @@ jQuery(document).ajaxComplete(function () {
 	TournamentDateChange();
 	PopstateHandler();
 	MatchDayChange();
+	CaptainLookup();
 });
+function CaptainLookup() {
+	jQuery('.teamcaptain').autocomplete({
+		minLength: 2,
+		source: function (request, response) {
+			let club = jQuery("#club").val();
+			let fieldref = this.element[0].id;
+			let ref = fieldref.substr(7);
+			let notifyField = '#updateTeamResponse'.concat(ref);
+			response(get_player_details(request.term, club, notifyField));
+		},
+		select: function (event, ui) {
+			if (ui.item.value == 'null') {
+				ui.item.value = '';
+			}
+			let captaininput = this.id;
+			let ref = captaininput.substr(7);
+			let player = "#".concat(captaininput);
+			let playerId = "#captainId".concat(ref);
+			let contactno = "#contactno".concat(ref);
+			let contactemail = "#contactemail".concat(ref);
+			jQuery(player).val(ui.item.value);
+			jQuery(playerId).val(ui.item.playerId);
+			jQuery(contactno).val(ui.item.contactno);
+			jQuery(contactemail).val(ui.item.user_email);
+		},
+		change: function (event, ui) {
+			let captaininput = this.id;
+			let ref = captaininput.substr(7);
+			let player = "#".concat(captaininput);
+			let playerId = "#captainid".concat(ref);
+			let contactno = "#contactno".concat(ref);
+			let contactemail = "#contactemail".concat(ref);
+			if (ui.item === null) {
+				jQuery(this).val('');
+				jQuery(player).val('');
+				jQuery(playerId).val('');
+				jQuery(contactno).val('');
+				jQuery(contactemail).val('');
+			} else {
+				jQuery(player).val(ui.item.value);
+				jQuery(playerId).val(ui.item.playerId);
+				jQuery(contactno).val(ui.item.contactno);
+				jQuery(contactemail).val(ui.item.user_email);
+			}
+		}
+	});
+}
 function PopstateHandler() {
 	// Handle forward/back buttons
 	window.addEventListener("popstate", (event) => {
@@ -897,6 +901,24 @@ Racketmanager.updateTeam = function (link) {
 		async: false,
 		data: $form,
 		success: function (response) {
+			let captainNameField = '#captain-'.concat(event, "-", team);
+			let captainName = jQuery(captainNameField).val();
+			if (captainName) {
+				let teamCaptainNameField = '#captain-name';
+				jQuery(teamCaptainNameField).html(captainName);
+			}
+			let captainContactNoField = '#contactno-'.concat(event, "-", team);
+			let captainContactNo = jQuery(captainContactNoField).val();
+			if (captainContactNo) {
+				let teamContactNoField = '#captain-contact-no';
+				jQuery(teamContactNoField).html(captainContactNo);
+			}
+			let captainContactEmailField = '#contactemail-'.concat(event, "-", team);
+			let captainContactEmail = jQuery(captainContactEmailField).val();
+			if (captainContactEmail) {
+				let teamContactEmailField = '#captain-contact-email';
+				jQuery(teamContactEmailField).html(captainContactEmail);
+			}
 			jQuery(notifyField).addClass('alert--success');
 			jQuery(alertTextField).html(response.data);
 		},
@@ -2388,6 +2410,26 @@ Racketmanager.validateTeamOrder = function( e, link ) {
 		}
 	});
 }
+Racketmanager.teamEditModal = function (event, teamId, eventId) {
+	event.preventDefault();
+	let notifyField = "#teamModal";
+	let modal = 'teamModal';
+	jQuery(notifyField).val("");
+	jQuery(notifyField).load(
+		ajax_var.url,
+		{
+			"teamId": teamId,
+			"eventId": eventId,
+			"modal": modal,
+			"action": "racketmanager_team_edit_modal",
+			"security": ajax_var.ajax_nonce,
+		},
+		function () {
+			jQuery(notifyField).show();
+			jQuery(notifyField).modal('show');
+		}
+	);
+};
 function activaTab(tab) {
 	jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');
 	jQuery('.nav-pills button[data-bs-target="#' + tab + '"]').tab('show');

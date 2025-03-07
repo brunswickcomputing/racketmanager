@@ -121,7 +121,7 @@ $user_can_update = $is_update_allowed->user_can_update;
 										if ( ! empty( $match->teams[ $opponent ]->club->match_secretary_email ) ) {
 											?>
 											<li class="list__item">
-												<a href="mailto:<?php echo esc_html( $match->teams[ $opponent ]->club->match_secretary_email ); ?>" class="nav--link"">
+												<a href="mailto:<?php echo esc_html( $match->teams[ $opponent ]->club->match_secretary_email ); ?>" class="nav--link">
 													<svg width="16" height="16" class="icon ">
 														<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
 													</svg>
@@ -205,7 +205,7 @@ $user_can_update = $is_update_allowed->user_can_update;
 											if ( ! empty( $match->teams[ $opponent ]->contactemail ) ) {
 												?>
 												<li class="list__item">
-													<a href="mailto:<?php echo esc_html( $match->teams[ $opponent ]->contactemail ); ?>" class="nav--link"">
+													<a href="mailto:<?php echo esc_html( $match->teams[ $opponent ]->contactemail ); ?>" class="nav--link">
 														<svg width="16" height="16" class="icon ">
 															<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
 														</svg>

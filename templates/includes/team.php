@@ -126,7 +126,7 @@ if ( isset( $team->info ) ) {
 					if ( ! empty( $team_player->email ) ) {
 						?>
 						<li class="list__item">
-							<a href="mailto:<?php echo esc_html( $team_player->email ); ?>" class="nav--link"">
+							<a href="mailto:<?php echo esc_html( $team_player->email ); ?>" class="nav--link">
 								<svg width="16" height="16" class="">
 									<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
 								</svg>
@@ -160,7 +160,7 @@ if ( isset( $team->info ) ) {
 				if ( ! empty( $team->contactemail ) ) {
 					?>
 					<li class="list__item">
-						<a href="mailto:<?php echo esc_html( $team->contactemail ); ?>" class="nav--link"">
+						<a href="mailto:<?php echo esc_html( $team->contactemail ); ?>" class="nav--link">
 							<svg width="16" height="16" class="">
 								<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
 							</svg>

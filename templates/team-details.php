@@ -211,7 +211,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 										if ( ! empty( $team_player->email ) ) {
 											?>
 											<li class="list__item">
-												<a href="mailto:<?php echo esc_html( $team_player->email ); ?>" class="nav--link"">
+												<a href="mailto:<?php echo esc_html( $team_player->email ); ?>" class="nav--link">
 													<svg width="16" height="16" class="">
 														<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
 													</svg>
@@ -247,7 +247,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 									if ( ! empty( $object->team->info->contactemail ) ) {
 										?>
 										<li class="list__item">
-											<a href="mailto:<?php echo esc_html( $object->team->info->contactemail ); ?>" class="nav--link"">
+											<a href="mailto:<?php echo esc_html( $object->team->info->contactemail ); ?>" class="nav--link">
 												<svg width="16" height="16" class="">
 													<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
 												</svg>

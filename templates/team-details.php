@@ -282,7 +282,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 											<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#clock-fill' ); ?>"></use>
 										</svg>
 										<span class="nav-link__value">
-											<?php echo esc_html( $object->team->info->match_time ); ?>
+											<?php echo esc_html( mysql2date( $racketmanager->time_format, $object->team->info->match_time ) ); ?>
 										</span>
 									</span>
 								</li>

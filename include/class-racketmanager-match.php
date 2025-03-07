@@ -1850,7 +1850,7 @@ final class Racketmanager_Match {
 			$result->organiser        = '';
 			$result->venue            = '';
 			$result->event_name       = $this->league->event->name;
-			$result->grade            = '6';
+			$result->grade            = isset( $this->league->event->seasons[ $this->season ]['grade'] ) ? $this->league->event->seasons[ $this->season ]['grade'] : $this->league->event->competition->grade;
 			$result->event_end_date   = $this->league->event->competition->date_end;
 			$result->event_start_date = $this->league->event->competition->date_start;
 			switch ( $this->league->event->age_limit ) {

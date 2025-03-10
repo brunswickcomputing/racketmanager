@@ -13,7 +13,6 @@
 
 namespace Racketmanager;
 
-debug_to_console( $object->team );
 $user_can_edit_team = false;
 if ( is_user_logged_in() ) {
 	if ( current_user_can( 'manage_racketmanager' ) ) {

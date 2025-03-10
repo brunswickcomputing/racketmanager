@@ -47,6 +47,15 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.43.0 =
+* BUGFIX: ensure latest reults works
+* BUGFIX: use correct field for name in event config
+* BUGFIX: get tournament event/draw by name correctly
+* UPDATE: show player WTN on team view
+* UPDATE: restrict number of entries by player for a tournament
+* UPDATE: add link to player details page from player overview
+* UPDATE: set results grade correctly in results report
+
 = 8.42.0 =
 * UPDATE: add WTN get and view for players
 * UPDATE: improve player admin view

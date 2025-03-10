@@ -168,7 +168,11 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			if ( is_numeric( $event_id ) ) {
 				$event = get_event( $event_id );
 			} else {
-				$event = get_event( $event_id, 'name' );
+				$event = $tournament->get_events( $event_id );
+				if ( is_array( $event ) ) {
+					$msg = __( 'Event not found for tournament', 'racketmanager' );
+					return $this->return_error( $msg );
+				}
 			}
 			if ( $event ) {
 				$primary_league_id = $event->primary_league;
@@ -240,7 +244,11 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			if ( is_numeric( $draw_id ) ) {
 				$draw = get_event( $draw_id );
 			} else {
-				$draw = get_event( $draw_id, 'name' );
+				$draw = $tournament->get_events( $draw_id );
+				if ( is_array( $draw ) ) {
+					$msg = __( 'Draw not found for tournament', 'racketmanager' );
+					return $this->return_error( $msg );
+				}
 			}
 			if ( $draw ) {
 				$draw->leagues = $this->get_draw( $draw, $tournament->season );

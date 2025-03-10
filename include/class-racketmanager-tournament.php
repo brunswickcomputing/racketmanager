@@ -753,9 +753,10 @@ final class Racketmanager_Tournament {
 	/**
 	 * Get events function
 	 *
+	 * @param string $name name of event (optional).
 	 * @return array
 	 */
-	public function get_events() {
+	public function get_events( $name = false ) {
 		$competition = get_competition( $this->competition_id );
 		if ( $competition ) {
 			$players      = array();
@@ -763,18 +764,24 @@ final class Racketmanager_Tournament {
 			$this->events = array();
 			foreach ( $events as $event ) {
 				$event               = get_event( $event );
-				$event->team_count   = $event->get_teams(
-					array(
-						'season' => $this->season,
-						'count'  => true,
-					)
-				);
-				$event->player_count = $event->get_players(
-					array(
-						'season' => $this->season,
-						'count'  => true,
-					)
-				);
+				if ( $name ) {
+					if ( $event->name === ucwords( $name ) ) {
+						return $event;
+					}
+				} else {
+					$event->team_count   = $event->get_teams(
+						array(
+							'season' => $this->season,
+							'count'  => true,
+						)
+					);
+					$event->player_count = $event->get_players(
+						array(
+							'season' => $this->season,
+							'count'  => true,
+						)
+					);
+				}
 				$this->events[]      = $event;
 			}
 		}

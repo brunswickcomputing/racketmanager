@@ -258,7 +258,7 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 	 * @param string $$message message (optional).
 	 * @return array
 	 */
-	private function get_player_errors( $message ) {
+	private function get_player_errors( $message = null ) {
 		global $wpdb;
 		$search = null;
 		switch( $message ) {

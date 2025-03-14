@@ -29,6 +29,11 @@ namespace Racketmanager;
 				<tbody>
 					<?php
 					foreach ( $tournament->events as $event ) {
+						?>
+						<tr>
+							<td colspan=3><?php echo esc_html( $event->name ); ?></td>
+						</tr>
+						<?php
 						$leagues = $event->get_leagues( array( 'season' => $tournament->season ) );
 						foreach ( $event->leagues as $league ) {
 							$league = get_league( $league );

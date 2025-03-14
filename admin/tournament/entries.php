@@ -21,25 +21,9 @@ if ( ! empty( $entries_withdrawn ) ) {
 				</thead>
 				<tbody>
 					<?php
-					foreach ( $withdrawn_entries as $key => $players ) {
-						foreach ( $players as $player ) {
-							?>
-							<tr>
-								<td>
-									<?php
-									$rating         = $player->rating;
-									$match_types    = Racketmanager_Util::get_match_types();
-									$rating_display = '';
-									foreach ( $match_types as $match_type => $description ) {
-										$rating_display .= '[' . $match_type . ' - ' . $rating[ $match_type ] . ']';
-									}
-									echo esc_html( $player->display_name ) . ' ' . esc_html( $rating_display );
-									?>
-								</td>
-							</tr>
-							<?php
-						}
-					}
+					$player_list = $withdrawn_entries;
+					$entered     = true;
+					require 'player-list.php';
 					?>
 				</tbody>
 			</table>
@@ -59,25 +43,9 @@ if ( ! empty( $entries_pay_due ) ) {
 				</thead>
 				<tbody>
 					<?php
-					foreach ( $pay_due_entries as $key => $players ) {
-						foreach ( $players as $player ) {
-							?>
-							<tr>
-								<td>
-									<?php
-									$rating         = $player->rating;
-									$match_types    = Racketmanager_Util::get_match_types();
-									$rating_display = '';
-									foreach ( $match_types as $match_type => $description ) {
-										$rating_display .= '[' . $match_type . ' - ' . $rating[ $match_type ] . ']';
-									}
-									echo esc_html( $player->display_name ) . ' ' . esc_html( $rating_display );
-									?>
-								</td>
-							</tr>
-							<?php
-						}
-					}
+					$player_list = $pay_due_entries;
+					$entered     = true;
+					require 'player-list.php';
 					?>
 				</tbody>
 			</table>
@@ -96,40 +64,9 @@ if ( ! empty( $entries_pay_due ) ) {
 			</thead>
 			<tbody>
 				<?php
-				foreach ( $pending_entries as $key => $players ) {
-					foreach ( $players as $player ) {
-						?>
-						<tr>
-							<td>
-								<?php
-								if ( ! empty( $player->email ) ) {
-									?>
-									<a href="#">
-									<?php
-								}
-								if ( isset( $player->display_name ) ) {
-									echo esc_html( $player->display_name );
-								}
-								if ( ! empty( $player->email ) ) {
-									?>
-									</a>
-									<?php
-								}
-								?>
-								<?php
-								$rating         = $player->rating;
-								$match_types    = Racketmanager_Util::get_match_types();
-								$rating_display = '';
-								foreach ( $match_types as $match_type => $description ) {
-									$rating_display .= '[' . $match_type . ' - ' . $rating[ $match_type ] . ']';
-								}
-								echo ' ' . esc_html( $rating_display );
-								?>
-							</td>
-						</tr>
-						<?php
-					}
-				}
+				$player_list = $pending_entries;
+				$entered     = false;
+				require 'player-list.php';
 				?>
 			</tbody>
 		</table>
@@ -143,25 +80,9 @@ if ( ! empty( $entries_pay_due ) ) {
 			</thead>
 			<tbody>
 				<?php
-				foreach ( $confirmed_entries as $key => $players ) {
-					foreach ( $players as $player ) {
-						?>
-						<tr>
-							<td>
-								<?php
-								$rating         = $player->rating;
-								$match_types    = Racketmanager_Util::get_match_types();
-								$rating_display = '';
-								foreach ( $match_types as $match_type => $description ) {
-									$rating_display .= '[' . $match_type . ' - ' . $rating[ $match_type ] . ']';
-								}
-								echo esc_html( $player->display_name ) . ' ' . esc_html( $rating_display );
-								?>
-							</td>
-						</tr>
-						<?php
-					}
-				}
+				$player_list = $confirmed_entries;
+				$entered     = true;
+				require 'player-list.php';
 				?>
 			</tbody>
 		</table>

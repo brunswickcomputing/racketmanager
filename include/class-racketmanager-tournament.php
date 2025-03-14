@@ -763,7 +763,7 @@ final class Racketmanager_Tournament {
 			$events       = $competition->get_events();
 			$this->events = array();
 			foreach ( $events as $event ) {
-				$event               = get_event( $event );
+				$event = get_event( $event );
 				if ( $name ) {
 					if ( $event->name === ucwords( $name ) ) {
 						return $event;
@@ -782,7 +782,7 @@ final class Racketmanager_Tournament {
 						)
 					);
 				}
-				$this->events[]      = $event;
+				$this->events[] = $event;
 			}
 		}
 		return $this->events;

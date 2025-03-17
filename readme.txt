@@ -47,6 +47,12 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.44.0 =
+* BUGFIX: ignore byes correctly
+* BUGFIX: handle no parameter passed
+* BUGFIX: get global racketmanager object
+* UPDATE: allow team set or just validation of player order
+
 = 8.43.0 =
 * BUGFIX: ensure latest reults works
 * BUGFIX: use correct field for name in event config

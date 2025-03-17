@@ -171,7 +171,7 @@ $tab_name = 'fixtures';
 			}
 			?>
 			<div class="form-check">
-				<input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="match_day_restriction" id="match_day_restriction" value="true" <?php echo empty( $competition->config->match_day_restriction ) ? null : ' checked'; ?> />
+				<input type="checkbox" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="match_day_restriction" id="match_day_restriction" value="true" <?php echo empty( $competition->config->match_day_restriction ) ? null : ' checked'; ?> />
 				<label class="form-check-label" for="match_day_restriction"><?php esc_html_e( 'Match day restriction', 'racketmanager' ); ?></label>
 			</div>
 			<?php
@@ -192,7 +192,7 @@ $tab_name = 'fixtures';
 			}
 			?>
 			<div class="form-check">
-				<input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="match_day_weekends" id="match_day_weekends" value="true" <?php echo empty( $competition->config->match_day_weekends ) ? null : ' checked'; ?> />
+				<input type="checkbox" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="match_day_weekends" id="match_day_weekends" value="true" <?php echo empty( $competition->config->match_day_weekends ) ? null : ' checked'; ?> />
 				<label class="form-check-label" for="match_day_weekends"><?php esc_html_e( 'Weekend match days', 'racketmanager' ); ?></label>
 			</div>
 			<?php

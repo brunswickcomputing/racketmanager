@@ -16,6 +16,22 @@ namespace Racketmanager;
 
 ?>
 <form id="team-order-validate">
+	<div class="row gx-3 mb-3 align-items-center">
+		<div class="form-floating col-auto">
+			<select class="form-select" size="1" name="teamId" id="teamId" onChange="Racketmanager.get_event_team_match_dropdown(this.value)">
+				<option value="" disabled selected><?php esc_html_e( 'Select team', 'racketmanager' ); ?></option>
+				<?php
+				foreach ( $teams as $team ) {
+					?>
+					<option value="<?php echo esc_attr( $team->team_id ); ?>"><?php echo esc_html( $team->title ); ?></option>
+					<?php
+				}
+				?>
+			</select>
+			<label for="team_id"><?php esc_html_e( 'Team', 'racketmanager' ); ?></label>
+		</div>
+		<div class="form-floating col-auto" id="matches" stype="display:none;"></div>
+	</div>
 	<ul class="match-group" id="match">
 	<?php
 	for ( $i = 1; $i <= $event->num_rubbers; $i++ ) {
@@ -116,9 +132,10 @@ namespace Racketmanager;
 	<input type="hidden" name="clubId" value="<?php echo esc_attr( $club->id ); ?>" />
 	<input type="hidden" name="eventId" value="<?php echo esc_attr( $event->id ); ?>" />
 	<div class="match__buttons">
-		<a href="" onclick="Racketmanager.resetMatchScores(event, 'match')">
+		<a class="me-auto" href="" onclick="Racketmanager.resetMatchScores(event, 'match')">
 			<?php echo esc_html_e( 'Reset', 'racketmanager' ); ?>
 		</a>
+		<button class="btn btn-secondary me-3" onclick="Racketmanager.validateTeamOrder(event,this, true)" style="display:none;" id="setTeamButton"><?php esc_html_e( 'Set players', 'racketmanager' ); ?></button>
 		<button class="btn btn-primary" onclick="Racketmanager.validateTeamOrder(event,this)"><?php esc_html_e( 'Validate players', 'racketmanager' ); ?></button>
 	</div>
 </form>

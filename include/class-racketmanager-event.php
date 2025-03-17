@@ -1710,6 +1710,7 @@ class Racketmanager_Event {
 		$confirmation_pending = $match_args['confirmationPending'];
 		$result_pending       = $match_args['resultPending'];
 		$status               = $match_args['status'];
+		$pending              = $match_args['pending'];
 		$sql_from             = " FROM {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager} AS l, {$wpdb->racketmanager_rubbers} AS r";
 		if ( $count ) {
 			$sql_fields = 'SELECT COUNT(*)';
@@ -1796,6 +1797,9 @@ class Racketmanager_Event {
 		if ( $match_day && intval( $match_day ) > 0 ) {
 			$sql .= ' AND `match_day` = ' . $match_day . ' ';
 		}
+		if ( $pending ) {
+			$sql .= ' AND m.`winner_id` = 0';
+		}
 		$sql = $sql_fields . $sql_from . $sql;
 		if ( $count ) {
 			$matches = intval(
@@ -1868,6 +1872,7 @@ class Racketmanager_Event {
 		'confirmationPending' => false,
 		'resultPending'       => false,
 		'status'              => false,
+		'pending'             => false,
 	);
 	/**
 	 * Generate box league schedule

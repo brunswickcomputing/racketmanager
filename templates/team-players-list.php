@@ -16,22 +16,28 @@ namespace Racketmanager;
 
 ?>
 <form id="team-order-validate">
-	<div class="row gx-3 mb-3 align-items-center">
-		<div class="form-floating col-auto">
-			<select class="form-select" size="1" name="teamId" id="teamId" onChange="Racketmanager.get_event_team_match_dropdown(this.value)">
-				<option value="" disabled selected><?php esc_html_e( 'Select team', 'racketmanager' ); ?></option>
-				<?php
-				foreach ( $teams as $team ) {
-					?>
-					<option value="<?php echo esc_attr( $team->team_id ); ?>"><?php echo esc_html( $team->title ); ?></option>
+	<?php
+	if ( $can_update ) {
+		?>
+		<div class="row gx-3 mb-3 align-items-center">
+			<div class="form-floating col-auto">
+				<select class="form-select" size="1" name="teamId" id="teamId" onChange="Racketmanager.get_event_team_match_dropdown(this.value)">
+					<option value="" disabled selected><?php esc_html_e( 'Select team', 'racketmanager' ); ?></option>
 					<?php
-				}
-				?>
-			</select>
-			<label for="team_id"><?php esc_html_e( 'Team', 'racketmanager' ); ?></label>
+					foreach ( $teams as $team ) {
+						?>
+						<option value="<?php echo esc_attr( $team->team_id ); ?>"><?php echo esc_html( $team->title ); ?></option>
+						<?php
+					}
+					?>
+				</select>
+				<label for="team_id"><?php esc_html_e( 'Team', 'racketmanager' ); ?></label>
+			</div>
+			<div class="form-floating col-auto" id="matches" stype="display:none;"></div>
 		</div>
-		<div class="form-floating col-auto" id="matches" stype="display:none;"></div>
-	</div>
+		<?php
+	}
+	?>
 	<ul class="match-group" id="match">
 	<?php
 	for ( $i = 1; $i <= $event->num_rubbers; $i++ ) {

@@ -1992,7 +1992,7 @@ final class Racketmanager_Match {
 				}
 			} else {
 				$result_match = new \stdClass();
-				if ( ! $this->is_walkover && '-1' !== $this->home_team && '-1' !== $this->away_team ) {
+				if ( ! $this->is_walkover && -1 !== $this->home_team && -1 !== $this->away_team ) {
 					$result_match->match = $this->id;
 					if ( $this->winner_id === $this->home_team ) {
 						$winning_team   = 'home';

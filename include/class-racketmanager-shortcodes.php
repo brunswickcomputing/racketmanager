@@ -1106,14 +1106,20 @@ class RacketManager_Shortcodes {
 			),
 			$atts
 		);
-		$template     = $args['template'];
+		$template          = $args['template'];
 		$club_args         = array();
 		$club_args['type'] = 'affiliated';
-		$clubs        = $racketmanager->get_clubs( $club_args );
-		$event_args               = array();
-		$event_args['entry_type'] = 'team';
+		$clubs             = $racketmanager->get_clubs( $club_args );
+		if ( ! $clubs ) {
+			return $this->return_error( __( 'No clubs found', 'racketmanager' ) );
+		}
+		$event_args                    = array();
+		$event_args['entry_type']      = 'team';
 		$event_args['reverse_rubbers'] = true;
-		$events       = $racketmanager->get_events( $event_args );
+		$events                        = $racketmanager->get_events( $event_args );
+		if ( ! $events ) {
+			return $this->return_error( __( 'No events found', 'racketmanager' ) );
+		}
 		$event_types   = Racketmanager_Util::get_event_types();
 		$age_groups   = Racketmanager_Util::get_age_groups();
 		$filename     = ( ! empty( $template ) ) ? 'team-order-' . $template : 'team-order';

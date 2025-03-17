@@ -2342,10 +2342,8 @@ Racketmanager.showTeamOrderPlayers = function (e, event_Id) {
 								 );
 	}
 }
-Racketmanager.validateTeamOrder = function( e, link ) {
+Racketmanager.validateTeamOrder = function( e, link, setTeam=false ) {
 	e.preventDefault();
-	let alertField = '';
-	let alertResponseField = '';
 	let loadingField = '#team-order-details';
 	jQuery(loadingField).addClass('is-loading');
 	let notifyField = '#team-order-rubbers';
@@ -2353,11 +2351,18 @@ Racketmanager.validateTeamOrder = function( e, link ) {
 	jQuery('.winner').removeClass('winner');
 	jQuery('.loser').removeClass('loser');
 	jQuery(".is-invalid").removeClass("is-invalid");
+	let alertField = "#teamOrderAlert";
+	let alertResponseField = "#teamOrderAlertResponse";
+	jQuery(alertField).hide();
+	jQuery(alertField).removeClass('alert--success alert--warning alert--danger');
+	jQuery(alertResponseField).val("");
 	let formId = '#'.concat(link.form.id);
 	let form = jQuery(formId).serialize();
 	form += "&action=racketmanager_validate_team_order";
 	form += "&security=";
 	form += ajax_var.ajax_nonce;
+	form += "&setTeam=";
+	form += setTeam;
 	jQuery.ajax({
 		type: 'POST',
 		datatype: 'json',
@@ -2366,10 +2371,10 @@ Racketmanager.validateTeamOrder = function( e, link ) {
 		data: form,
 		success: function (response) {
 			data = response.data;
-			let $updatedRubbers = data;
+			let updatedRubbers = data[0];
 			let rubberNo = 1;
-			for (let r in $updatedRubbers) {
-				let rubber = $updatedRubbers[r];
+			for (let r in updatedRubbers) {
+				let rubber = updatedRubbers[r];
 				let status = rubber['status'];
 				let statusClass = rubber['status_class'];
 				let formfield = '#match-status-' + rubberNo;
@@ -2378,7 +2383,19 @@ Racketmanager.validateTeamOrder = function( e, link ) {
 				formfield = '#wtn_' + rubberNo;
 				jQuery(formfield).addClass(statusClass);
 				jQuery(formfield).val(rubber['wtn']);
-				rubberNo++;			}
+				rubberNo++;
+			}
+			let msg = data[1];
+			jQuery(alertResponseField).html(msg);
+			jQuery(alertField).show();
+			let valid = data[2];
+			let alertClass = '';
+			if (valid) {
+				alertClass = 'alert--success';
+			} else {
+				alertClass = 'alert--danger';
+			}
+			jQuery(alertField).addClass(alertClass);
 		},
 		error: function (response) {
 			if (response.responseJSON) {
@@ -2410,6 +2427,28 @@ Racketmanager.validateTeamOrder = function( e, link ) {
 		}
 	});
 }
+Racketmanager.get_event_team_match_dropdown = function (teamId) {
+	let eventId = jQuery('#event_id').val();
+	if (eventId) {
+		let notifyField = '#matches';
+		jQuery(notifyField).hide();
+		jQuery("#setTeamButton").hide();
+		let action = 'racketmanager_get_event_team_match_dropdown';
+		jQuery(notifyField).html("");
+		jQuery(notifyField).load(
+								 ajax_var.url,
+								 {
+									 "eventId": eventId,
+									 "teamId": teamId,
+									 "action": action,
+									 "security": ajax_var.ajax_nonce,
+								 },
+								 function () {
+									 jQuery(notifyField).show();
+								 }
+								 );
+	}
+}
 Racketmanager.teamEditModal = function (event, teamId, eventId) {
 	event.preventDefault();
 	let notifyField = "#teamModal";
@@ -2429,6 +2468,9 @@ Racketmanager.teamEditModal = function (event, teamId, eventId) {
 			jQuery(notifyField).modal('show');
 		}
 	);
+};
+Racketmanager.show_set_team_button = function () {
+	jQuery("#setTeamButton").show();
 };
 function activaTab(tab) {
 	jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');

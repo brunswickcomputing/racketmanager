@@ -49,8 +49,12 @@ namespace Racketmanager;
 				</div>
 				<div id="team-order-details">
 					<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
-					<div class="" id="team-order-rubbers">
-				</div>
+					<div class="" id="team-order-rubbers"></div>
+					<div class="alert_rm mt-3" id="teamOrderAlert" style="display:none;">
+						<div class="alert__body">
+							<div class="alert__body-inner" id="teamOrderAlertResponse"></div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

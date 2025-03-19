@@ -606,7 +606,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 		$today           = gmdate( 'Y-m-d' );
 		$schedule_args[] = intval( $competition_id );
 		$schedule_args[] = intval( $season->name );
-		if ( $today < $season->date_open ) {
+		if ( $today <= $season->date_open ) {
 			$schedule_date   = strtotime( $season->date_open );
 			$day             = intval( gmdate( 'd', $schedule_date ) );
 			$month           = intval( gmdate( 'm', $schedule_date ) );
@@ -619,7 +619,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 				error_log( __( 'Error scheduling team competition open emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			}
 		}
-		if ( $today < $season->date_closing ) {
+		if ( $today <= $season->date_closing ) {
 			$chase_date     = Racketmanager_Util::amend_date( $season->date_closing, 7, '-' );
 			$day            = substr( $chase_date, 8, 2 );
 			$month          = substr( $chase_date, 5, 2 );

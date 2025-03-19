@@ -323,24 +323,6 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 		}
 		return $this;
 	}
-	/*
-	 } elseif ( $event->age_limit >= 30 ) {
-		 $age_limit = $event->age_limit;
-		 if ( 'F' === $player->gender && ! empty( $event->age_offset ) ) {
-			 $age_limit = $event->age_limit - $event->age_offset;
-		 }
-		 if ( $player_age < $age_limit ) {
-			 $entry_valid = false;
-		 } else {
-			 $entry_valid = true;
-		 }
-	 } elseif ( $player_age > $event->age_limit ) {
-		 $entry_valid = false;
-	 } else {
-		 $entry_valid = true;
-	 }
-
-	 */
 	/**
 	 * Validate tournament open
 	 *

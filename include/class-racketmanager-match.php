@@ -463,34 +463,7 @@ final class Racketmanager_Match {
 			$this->sets        = ! empty( $match->custom['sets'] ) ? $match->custom['sets'] : array();
 			$this->is_walkover = false;
 			$this->set_score();
-			$this->is_walkover  = false;
-			$this->is_shared    = false;
-			$this->is_retired   = false;
-			$this->is_abandoned = false;
-			$this->is_cancelled = false;
-			$this->is_withdrawn = false;
-			switch ( $this->status ) {
-				case 1:
-					$this->is_walkover = true;
-					break;
-				case 2:
-					$this->is_retired = true;
-					break;
-				case 3:
-					$this->is_shared = true;
-					break;
-				case 6:
-					$this->is_abandoned = true;
-					break;
-				case 7:
-					$this->is_withdrawn = true;
-					break;
-				case 8:
-					$this->is_cancelled = true;
-					break;
-				default:
-					break;
-			}
+			$this->set_status_flags();
 			if ( 'Y' === $this->confirmed ) {
 				$this->confirmed_display = __( 'Complete', 'racketmanager' );
 			} elseif ( 'A' === $this->confirmed ) {
@@ -557,6 +530,39 @@ final class Racketmanager_Match {
 					$this->prev_away_match = $this->get_prev_round_matches( $this->away_team, $this->season, $this->league );
 				}
 			}
+		}
+	}
+	/**
+	 * Function to set status flags
+	 */
+	private function set_status_flags {
+		$this->is_walkover  = false;
+		$this->is_shared    = false;
+		$this->is_retired   = false;
+		$this->is_abandoned = false;
+		$this->is_cancelled = false;
+		$this->is_withdrawn = false;
+		switch ( $this->status ) {
+			case 1:
+				$this->is_walkover = true;
+				break;
+			case 2:
+				$this->is_retired = true;
+				break;
+			case 3:
+				$this->is_shared = true;
+				break;
+			case 6:
+				$this->is_abandoned = true;
+				break;
+			case 7:
+				$this->is_withdrawn = true;
+				break;
+			case 8:
+				$this->is_cancelled = true;
+				break;
+			default:
+				break;
 		}
 	}
 	/**
@@ -1303,6 +1309,7 @@ final class Racketmanager_Match {
 				$this->id
 			)
 		);
+		$this->set_status_flags();
 		wp_cache_set( $this->id, $this, 'matches' );
 		if ( 'Y' === $this->confirmed ) {
 			$report = $this->report_result();
@@ -2098,7 +2105,7 @@ final class Racketmanager_Match {
 		global $wpdb;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_matches} SET `comments` =%s WHERE `id` = %d",
+				"UPDATE {$wpdb->racketmanager_matches} SET `comments` = %s WHERE `id` = %d",
 				maybe_serialize( $comments ),
 				$this->id
 			)
@@ -2115,7 +2122,7 @@ final class Racketmanager_Match {
 		global $wpdb;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_matches} SET `status` =%s WHERE `id` = %d",
+				"UPDATE {$wpdb->racketmanager_matches} SET `status` = %s WHERE `id` = %d",
 				$status,
 				$this->id
 			)

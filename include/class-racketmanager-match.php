@@ -535,7 +535,7 @@ final class Racketmanager_Match {
 	/**
 	 * Function to set status flags
 	 */
-	private function set_status_flags {
+	private function set_status_flags() {
 		$this->is_walkover  = false;
 		$this->is_shared    = false;
 		$this->is_retired   = false;

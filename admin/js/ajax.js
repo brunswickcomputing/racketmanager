@@ -908,7 +908,7 @@ Racketmanager.setEventName = function (e) {
 				} else if ( ageLimit <= 21) {
 					eventName = 'U' + ageLimit + ' ';
 				} else if ( ageLimit >= 30) {
-					eventName = ageLimit + '+ ';
+					eventName = 'O' + ageLimit + ' ';
 				}
 				eventName = eventName + typeText;
 				jQuery(eventNameField).val(eventName);

@@ -668,7 +668,7 @@ final class Racketmanager_Championship extends RacketManager {
 				}
 				if ( $update ) {
 					$this->set_teams( $match, $home_team, $away_team );
-					if ( isset( $league->event->primary_league ) && $league->event->primary_league === $league->id ) {
+					if ( isset( $league->event->primary_league ) && intval( $league->event->primary_league ) === intval( $league->id ) ) {
 						if ( $round < 3 ) {
 							if ( ! empty( $prev_home ) ) {
 								$this->set_consolation_team( $prev_home, $current, $league );

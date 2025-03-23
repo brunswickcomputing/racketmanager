@@ -4573,9 +4573,9 @@ class RacketManager_Admin extends RacketManager {
 	 * Setup teams from the same club in a division.
 	 * These teams will play each other in the first round
 	 * Options are:
-	 *  1 - 6
-	 *  2 - 5
-	 *  3 - 4
+	 *  1 - 6, 2 - 5, 3 - 4
+	 *  1 - 8, 2 - 7, 3 - 6, 4 - 5
+	 *  1 - 10, 2 - 9, 3 - 8, 4 - 7, 3 - 6, 4 - 5
 	 *
 	 * @param array  $events array of events to schedule.
 	 * @param string $season season.
@@ -4587,23 +4587,33 @@ class RacketManager_Admin extends RacketManager {
 		global $wpdb;
 		$event_ids = implode( ',', $events );
 		/* set refs for those teams in the same division so they play first */
-		$club_leagues = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-			$wpdb->prepare(
-				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-				"SELECT `t`.`club_id`, tbl.`league_id` FROM {$wpdb->racketmanager_team_events} tc, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} tbl WHERE tc.`team_id` = t.`id` AND tc.`event_id` = l.`event_id` AND l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND tc.`event_id` in (" . $event_ids . ') AND tbl.`season` = %s GROUP BY t.`club_id`, tbl.`league_id` HAVING COUNT(*) > 1',
-				$season
-			)
+		$sql = $wpdb->prepare(
+			"SELECT `t`.`club_id`, tbl.`league_id` FROM {$wpdb->racketmanager_team_events} tc, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} tbl WHERE tc.`team_id` = t.`id` AND tc.`event_id` = l.`event_id` AND l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND tc.`event_id` in (" . $event_ids . ') AND tbl.`season` = %s GROUP BY t.`club_id`, tbl.`league_id` HAVING COUNT(*) > 1',
+			$season
 		);
+		$club_leagues = wp_cache_get( md5( $sql ), 'club_leagues' );
+		if ( ! $club_leagues ) {
+			$club_leagues = $wpdb->get_results(
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$sql
+			); // db call ok.
+			wp_cache_set( md5( $sql ), $club_leagues, 'club_leagues' );
+		}
 		foreach ( $club_leagues as $club_league ) {
-			$teams = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-				$wpdb->prepare(
-					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-					"SELECT tbl.`id`, tbl.`team_id`, tbl.`league_id` FROM {$wpdb->racketmanager_team_events} tc, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} tbl WHERE tc.`team_id` = t.`id` AND tc.`event_id` = l.`event_id` AND l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND tc.`event_id` in (" . $event_ids . ') AND tbl.`season` = %s AND t.`club_id` = %d AND tbl.`league_id` = %d ORDER BY tbl.`team_id`',
-					$season,
-					$club_league->club_id,
-					$club_league->league_id
-				)
+			$sql = $wpdb->prepare(
+				"SELECT tbl.`id`, tbl.`team_id`, tbl.`league_id` FROM {$wpdb->racketmanager_team_events} tc, {$wpdb->racketmanager_teams} t, {$wpdb->racketmanager} l, {$wpdb->racketmanager_table} tbl WHERE tc.`team_id` = t.`id` AND tc.`event_id` = l.`event_id` AND l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND tc.`event_id` in (" . $event_ids . ') AND tbl.`season` = %s AND t.`club_id` = %d AND tbl.`league_id` = %d ORDER BY tbl.`team_id`',
+				$season,
+				$club_league->club_id,
+				$club_league->league_id
 			);
+			$teams = wp_cache_get( md5( $sql ), 'club_leagues' );
+			if ( ! $teams ) {
+				$teams = $wpdb->get_results(
+					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+					$sql
+				);
+				wp_cache_set( md5( $sql ), $teams, 'club_leagues' );
+			}
 			$counter  = 1;
 			$alt_refs = array();
 			$refs     = array();
@@ -4617,7 +4627,7 @@ class RacketManager_Admin extends RacketManager {
 					$league1  = $team->league_id;
 					$refs     = $default_refs;
 					$alt_refs = $refs;
-					$groups   = $this->getTableGroups( $league1, $season );
+					$groups   = $this->get_table_groups( $league1, $season );
 					if ( $groups ) {
 						foreach ( $groups as $group ) {
 							$ref = array_search( intval( $group->value ), $refs, true );
@@ -4628,7 +4638,7 @@ class RacketManager_Admin extends RacketManager {
 					$team2   = $team->team_id;
 					$table2  = $team->id;
 					$league2 = $team->league_id;
-					$groups  = $this->getTableGroups( $league2, $season );
+					$groups  = $this->get_table_groups( $league2, $season );
 					if ( $groups ) {
 						foreach ( $groups as $group ) {
 							$ref = array_search( intval( $group->value ), $alt_refs, true );
@@ -4639,8 +4649,8 @@ class RacketManager_Admin extends RacketManager {
 						$i              = 0;
 						$ref_free       = false;
 						$alt_found      = false;
-						$ref_option     = array( 2, 3, 1 );
-						$alt_ref_option = array( 5, 4, 6 );
+						$ref_option     = array( 2, 1, 3 );
+						$alt_ref_option = array( 5, 6, 4 );
 						for ( $i = 0; $i < 3; $i++ ) {
 							$ref_free = array_search( intval( $ref_option[ $i ] ), $refs, true );
 							$ref      = $ref_option[ $i ];
@@ -4653,8 +4663,8 @@ class RacketManager_Admin extends RacketManager {
 							}
 						}
 						if ( false !== $alt_found ) {
-							$this->setTableGroup( $ref, $table1 );
-							$this->setTableGroup( $alt_ref, $table2 );
+							$this->set_table_group( $ref, $table1 );
+							$this->set_table_group( $alt_ref, $table2 );
 						} else {
 							$validation->success = false;
 							/* translators: %1$d: league %2$d team 1 %2$d team 2 */
@@ -4676,9 +4686,10 @@ class RacketManager_Admin extends RacketManager {
 	 * Setup teams from same club with same match time.
 	 * These teams will always play alternate home matches.
 	 * Options are:
-	 *  1 - 4
-	 *  2 - 5
-	 *  3 - 6
+	 *  1 - 3, 2 - 4
+	 *  1 - 4, 2 - 5, 3 - 6
+	 *  1 - 5, 2 - 6, 3 - 7, 4 - 8
+	 *  1 - 6, 2 - 7, 3 - 8, 4 - 9, 5 - 10
 	 *
 	 * @param array  $events array of events to schedule.
 	 * @param string $season season.
@@ -4726,7 +4737,7 @@ class RacketManager_Admin extends RacketManager {
 					$group1   = $team->group;
 					$refs     = $default_refs;
 					$alt_refs = $refs;
-					$groups   = $this->getTableGroups( $league1, $season );
+					$groups   = $this->get_table_groups( $league1, $season );
 					if ( $groups ) {
 						foreach ( $groups as $group ) {
 							$ref = array_search( intval( $group->value ), $refs, true );
@@ -4738,7 +4749,7 @@ class RacketManager_Admin extends RacketManager {
 					$table2  = $team->id;
 					$league2 = $team->league_id;
 					$group2  = $team->group;
-					$groups  = $this->getTableGroups( $league2, $season );
+					$groups  = $this->get_table_groups( $league2, $season );
 					if ( $groups ) {
 						foreach ( $groups as $group ) {
 							$ref = array_search( intval( $group->value ), $alt_refs, true );
@@ -4759,8 +4770,8 @@ class RacketManager_Admin extends RacketManager {
 								$alt_found = array_search( intval( $ref ), $refs, true );
 							}
 							if ( false !== $alt_found ) {
-								$this->setTableGroup( $ref, $table1 );
-								$this->setTableGroup( $alt_ref, $table2 );
+								$this->set_table_group( $ref, $table1 );
+								$this->set_table_group( $alt_ref, $table2 );
 							} else {
 								$validation->success = false;
 								$league              = get_league( $league1 );
@@ -4779,8 +4790,8 @@ class RacketManager_Admin extends RacketManager {
 								$alt_found = array_search( intval( $ref ), $refs, true );
 								if ( false !== $alt_found ) {
 									$ref_set = true;
-									$this->setTableGroup( $ref, $table1 );
-									$this->setTableGroup( $alt_ref, $table2 );
+									$this->set_table_group( $ref, $table1 );
+									$this->set_table_group( $alt_ref, $table2 );
 								} else {
 									$validation->success = false;
 									$league              = get_league( $league1 );
@@ -4799,8 +4810,8 @@ class RacketManager_Admin extends RacketManager {
 									$alt_found = array_search( intval( $alt_ref ), $alt_refs, true );
 									if ( false !== $alt_found ) {
 										$ref_set = true;
-										$this->setTableGroup( $ref, $table1 );
-										$this->setTableGroup( $alt_ref, $table2 );
+										$this->set_table_group( $ref, $table1 );
+										$this->set_table_group( $alt_ref, $table2 );
 										break;
 									}
 								}
@@ -4833,7 +4844,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param string  $group group.
 	 * @param integer $id id.
 	 */
-	public function setTableGroup( $group, $id ) {
+	public function set_table_group( $group, $id ) {
 		global $wpdb;
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -4852,7 +4863,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param integer $season season.
 	 * @return array $groups table groups.
 	 */
-	private function getTableGroups( $league, $season ) {
+	private function get_table_groups( $league, $season ) {
 		global $wpdb;
 
 		return $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching

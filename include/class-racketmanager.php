@@ -787,6 +787,7 @@ class RacketManager {
 								'club_id' => $club->id,
 								'count'   => true,
 								'season'  => $season,
+								'status'  => 1,
 							)
 						);
 						if ( $entry_found ) {

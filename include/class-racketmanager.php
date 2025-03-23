@@ -1165,6 +1165,7 @@ class RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-user.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-rewrites.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-player-error.php';
+		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-schedule-round-robin.php';
 		require_once RACKETMANAGER_PATH . 'vendor/autoload.php';
 
 		/*

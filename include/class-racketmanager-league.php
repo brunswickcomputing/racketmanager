@@ -3506,7 +3506,7 @@ class Racketmanager_League {
 		foreach ( $schedule_teams as $team ) {
 			if ( ! $team->group ) {
 				$group = $refs[0];
-				$racketmanager->setTableGroup( $group, $team->table_id );
+				$racketmanager->set_table_group( $group, $team->table_id );
 				array_splice( $refs, 0, 1 );
 			}
 		}
@@ -3557,130 +3557,10 @@ class Racketmanager_League {
 		if ( $num_teams & 1 ) {
 			++$num_teams;
 		}
-		$num_fixtures_per_round = $num_teams / 2;
-		$rounds                 = array();
-		for ( $i = 0; $i < $num_rounds; $i++ ) {
-			$rounds[ $i ] = array( 'fixtures' => array() );
-			for ( $x = 0; $x < $num_fixtures_per_round; $x++ ) {
-				$rounds[ $i ]['fixtures'][ $x ] = array();
-			}
-		}
-		$rounds = $this->make_first_row( $rounds, $num_teams, $num_rounds, $num_fixtures_per_round, $home_away );
-		$rounds = $this->make_other_rows( $rounds, $num_teams, $num_rounds, $num_fixtures_per_round, $home_away );
+		$Racketmanager_Schedule_Round_Robin = new Racketmanager_Schedule_Round_Robin();
+		$rounds                             = $Racketmanager_Schedule_Round_Robin->generate( $num_teams, $num_rounds, $home_away );
 		$this->create_match_schedule( $rounds, $teams, $match_dates, $season, $this->event->is_box );
 	}
-
-	/**
-	 * Make the first row of the schedule.
-	 *
-	 * @param array   $rounds array of rounds.
-	 * @param int     $num_teams number of teams.
-	 * @param int     $num_rounds number of rounds.
-	 * @param int     $num_fixtures_per_round numer of fixtures per round.
-	 * @param boolean $home_away home and away indicator.
-	 */
-	public function make_first_row( $rounds, $num_teams, $num_rounds, $num_fixtures_per_round, $home_away ) {
-		$counter_first_half  = 0;
-		$counter_second_half = 1;
-
-		for ( $i = 1; $i <= $num_rounds; $i++ ) {
-			if ( $i <= $num_fixtures_per_round ) {
-				$rounds[ $counter_first_half ]['fixtures'][0]['home'] = $i;
-				$rounds[ $counter_first_half ]['fixtures'][0]['away'] = $num_teams;
-				if ( $home_away ) {
-					$rounds[ $counter_first_half + $num_rounds ]['fixtures'][0]['home'] = $num_teams;
-					$rounds[ $counter_first_half + $num_rounds ]['fixtures'][0]['away'] = $i;
-				}
-				$counter_first_half += 2;
-			} elseif ( $i > $num_fixtures_per_round && $i !== $num_teams ) {
-				$rounds[ $counter_second_half ]['fixtures'][0]['home'] = $num_teams;
-				$rounds[ $counter_second_half ]['fixtures'][0]['away'] = $i;
-				if ( $home_away ) {
-					$rounds[ $counter_second_half + $num_rounds ]['fixtures'][0]['home'] = $i;
-					$rounds[ $counter_second_half + $num_rounds ]['fixtures'][0]['away'] = $num_teams;
-				}
-				$counter_second_half += 2;
-			}
-		}
-		return $rounds;
-	}
-
-	/**
-	 * Make other rows of the schedule.
-	 *
-	 * @param array   $rounds array of rounds.
-	 * @param int     $num_teams number of teams.
-	 * @param int     $num_rounds number of rounds.
-	 * @param int     $num_fixtures_per_round numer of fixtures per round.
-	 * @param boolean $home_away home and away indicator.
-	 */
-	public function make_other_rows( $rounds, $num_teams, $num_rounds, $num_fixtures_per_round, $home_away ) {
-		$left  = 2;
-		$right = $num_rounds;
-
-		for ( $c = 0; $c < $num_rounds; $c++ ) {
-			for ( $r = 1; $r < $num_fixtures_per_round; $r++ ) {
-				$rounds[ $c ]['fixtures'][ $r ]['home'] = $left;
-				$rounds[ $c ]['fixtures'][ $r ]['away'] = $right;
-				if ( $home_away ) {
-					$rounds[ $c + $num_rounds ]['fixtures'][ $r ]['home'] = $right;
-					$rounds[ $c + $num_rounds ]['fixtures'][ $r ]['away'] = $left;
-				}
-				$right = $this->right_decrement( $right, $num_rounds );
-				if ( $r < $num_fixtures_per_round - 1 ) {
-					$left = $this->left_decrement( $left, $num_rounds );
-				} elseif ( $r === $num_fixtures_per_round - 1 ) {
-					$left = $this->left_decrement_for_last_column( $left, $num_teams );
-				}
-			}
-		}
-		return $rounds;
-	}
-
-	/**
-	 * Decrement the left number
-	 *
-	 * @param int $col column.
-	 * @param int $num_rounds number of rounds.
-	 */
-	public function left_decrement( $col, $num_rounds ) {
-		if ( $col < $num_rounds ) {
-			return $col + 1;
-		} elseif ( $col === $num_rounds ) {
-			return 1;
-		}
-	}
-
-	/**
-	 * Decrement the right number
-	 *
-	 * @param int $col column.
-	 * @param int $num_rounds number of rounds.
-	 */
-	public function right_decrement( $col, $num_rounds ) {
-		if ( $col > 1 ) {
-			return $col - 1;
-		} elseif ( 1 === $col ) {
-			return $num_rounds;
-		}
-	}
-
-	/**
-	 * Decrement the left number for the last column.
-	 *
-	 * @param int $col column.
-	 * @param int $num_teams number of teams.
-	 */
-	public function left_decrement_for_last_column( $col, $num_teams ) {
-		if ( $col <= $num_teams - 3 ) {
-			return $col + 2;
-		} elseif ( $col === $num_teams - 2 ) {
-			return 1;
-		} elseif ( $col === $num_teams - 1 ) {
-			return 2;
-		}
-	}
-
 	/**
 	 * Create match schedule with teams
 	 *

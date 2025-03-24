@@ -2007,9 +2007,59 @@ class Racketmanager_Competition {
 			$racketmanager->error_messages[] = __( 'Round length must be set', 'racketmanager' );
 			$racketmanager->error_fields[]   = 'round_length';
 		}
-		if ( empty( $config->default_match_start_time ) ) {
-			$racketmanager->error_messages[] = __( 'Default match start time must be set', 'racketmanager' );
-			$racketmanager->error_fields[]   = 'default_match_start_time';
+		if ( 'tournament' !== $config->type ) {
+			if ( ! empty( $config->match_day_restriction ) && empty( $config->match_days_allowed ) ) {
+				$racketmanager->error_messages[] = __( 'Match days allowed must be set', 'racketmanager' );
+				$racketmanager->error_fields[]   = 'match_day_restriction';
+			}
+			if ( empty( $config->default_match_start_time ) ) {
+				$racketmanager->error_messages[] = __( 'Default match start time must be set', 'racketmanager' );
+				$racketmanager->error_fields[]   = 'default_match_start_time';
+			}
+			$validate_weekday_times = false;
+			$validate_weekend_times = false;
+			if ( empty( $config->match_day_restriction ) ) {
+				$validate_weekday_times = true;
+				$validate_weekend_times = true;
+			} elseif ( ! empty( $config->match_days_allowed ) ) {
+				foreach ( $config->match_days_allowed as $day_allowed => $value ) {
+					if ( $day_allowed <= 5 ) {
+						$validate_weekday_times = true;
+					} else {
+						$validate_weekend_times = true;
+					}
+				}
+			}
+			if ( $validate_weekday_times ) {
+				if ( empty( $config->min_start_time_weekday ) ) {
+					$racketmanager->error_messages[] = __( 'Minimum weekday start time must be set', 'racketmanager' );
+					$racketmanager->error_fields[]   = 'min_start_time_weekday';
+				}
+				if ( empty( $config->max_start_time_weekday ) ) {
+					$racketmanager->error_messages[] = __( 'Maximum weekday start time must be set', 'racketmanager' );
+					$racketmanager->error_fields[]   = 'max_start_time_weekday';
+				} elseif ( ! empty( $config->min_start_time_weekday ) ) {
+					if ( $config->max_start_time_weekday < $config->min_start_time_weekday ) {
+						$racketmanager->error_messages[] = __( 'Maximum weekday start time must be greater than minimum', 'racketmanager' );
+						$racketmanager->error_fields[]   = 'max_start_time_weekday';
+					}
+				}
+			}
+			if ( $validate_weekend_times ) {
+				if ( empty( $config->min_start_time_weekend ) ) {
+					$racketmanager->error_messages[] = __( 'Minimum weekend start time must be set', 'racketmanager' );
+					$racketmanager->error_fields[]   = 'min_start_time_weekend';
+				}
+				if ( empty( $config->max_start_time_weekend ) ) {
+					$racketmanager->error_messages[] = __( 'Maximum weekend start time must be set', 'racketmanager' );
+					$racketmanager->error_fields[]   = 'max_start_time_weekend';
+				} elseif ( ! empty( $config->min_start_time_weekend ) ) {
+					if ( $config->max_start_time_weekend < $config->min_start_time_weekend ) {
+						$racketmanager->error_messages[] = __( 'Maximum weekend start time must be greater than minimum', 'racketmanager' );
+						$racketmanager->error_fields[]   = 'max_start_time_weekend';
+					}
+				}
+			}
 		}
 		if ( empty( $config->point_format ) ) {
 			$racketmanager->error_messages[] = __( 'Point format must be set', 'racketmanager' );
@@ -2149,25 +2199,51 @@ class Racketmanager_Competition {
 				}
 				$settings->filler_weeks = $config->filler_weeks;
 			}
-			if ( ! isset( $this->match_day_restriction ) || $this->match_day_restriction !== $config->match_day_restriction ) {
-				$updates = true;
+			if ( 'tournament' !== $config->type ) {
+				$match_days = Racketmanager_Util::get_match_days();
+				foreach ( $match_days as $match_day => $value ) {
+					$config->match_days_allowed[ $match_day ] = isset( $config->match_days_allowed[ $match_day ] ) ? 1 : 0;
+					if ( ! isset( $this->match_days_allowed[ $match_day ] ) || $this->match_days_allowed[ $match_day ] !== $config->match_days_allowed[ $match_day ] ) {
+						$updates = true;
+					}
+				}
+				$settings->match_days_allowed = $config->match_days_allowed;
+				if ( ! isset( $this->match_day_restriction ) || $this->match_day_restriction !== $config->match_day_restriction ) {
+					$updates = true;
+				}
+				$settings->match_day_restriction = $config->match_day_restriction;
+				if ( ! isset( $this->match_day_weekends ) || $this->match_day_weekends !== $config->match_day_weekends ) {
+					$updates = true;
+				}
+				$settings->match_day_weekends     = $config->match_day_weekends;
+				$default_match_start_time         = explode( ':', $config->default_match_start_time );
+				$default_match_start_time_hour    = $default_match_start_time[0];
+				$default_match_start_time_minutes = $default_match_start_time[1];
+				if ( empty( $this->default_match_start_time['hour'] ) || $this->default_match_start_time['hour'] !== $default_match_start_time_hour ) {
+					$updates = true;
+				}
+				$settings->default_match_start_time['hour'] = $default_match_start_time_hour;
+				if ( empty( $this->default_match_start_time['minutes'] ) || $this->default_match_start_time['minutes'] !== $default_match_start_time_minutes ) {
+					$updates = true;
+				}
+				$settings->min_start_time_weekday = $default_match_start_time_minutes;
+				if ( empty( $this->min_start_time_weekday ) || $this->min_start_time_weekday !== $config->min_start_time_weekday ) {
+					$updates = true;
+				}
+				$settings->min_start_time_weekday = $config->min_start_time_weekday;
+				if ( empty( $this->max_start_time_weekday ) || $this->max_start_time_weekday !== $config->max_start_time_weekday ) {
+					$updates = true;
+				}
+				$settings->max_start_time_weekday = $config->max_start_time_weekday;
+				if ( empty( $this->min_start_time_weekend ) || $this->min_start_time_weekend !== $config->min_start_time_weekend ) {
+					$updates = true;
+				}
+				$settings->min_start_time_weekend = $config->min_start_time_weekend;
+				if ( empty( $this->max_start_time_weekend ) || $this->max_start_time_weekend !== $config->max_start_time_weekend ) {
+					$updates = true;
+				}
+				$settings->max_start_time_weekend = $config->max_start_time_weekend;
 			}
-			$settings->match_day_restriction = $config->match_day_restriction;
-			if ( ! isset( $this->match_day_weekends ) || $this->match_day_weekends !== $config->match_day_weekends ) {
-				$updates = true;
-			}
-			$settings->match_day_weekends     = $config->match_day_weekends;
-			$default_match_start_time         = explode( ':', $config->default_match_start_time );
-			$default_match_start_time_hour    = $default_match_start_time[0];
-			$default_match_start_time_minutes = $default_match_start_time[1];
-			if ( empty( $this->default_match_start_time['hour'] ) || $this->default_match_start_time['hour'] !== $default_match_start_time_hour ) {
-				$updates = true;
-			}
-			$settings->default_match_start_time['hour'] = $default_match_start_time_hour;
-			if ( empty( $this->default_match_start_time['minutes'] ) || $this->default_match_start_time['minutes'] !== $default_match_start_time_minutes ) {
-				$updates = true;
-			}
-			$settings->default_match_start_time['minutes'] = $default_match_start_time_minutes;
 			if ( empty( $this->point_format ) || $this->point_format !== $config->point_format ) {
 				$updates = true;
 			}

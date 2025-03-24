@@ -80,7 +80,12 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 							$config->filler_weeks             = isset( $_POST['filler_weeks'] ) ? intval( $_POST['filler_weeks'] ) : null;
 							$config->match_day_restriction    = isset( $_POST['match_day_restriction'] ) ? ( 'true' === $_POST['match_day_restriction'] ? true : false ) : false;
 							$config->match_day_weekends       = isset( $_POST['match_day_weekends'] ) ? ( 'true' === $_POST['match_day_weekends'] ? true : false ) : false;
+							$config->match_days_allowed       = isset( $_POST['match_days_allowed'] ) ? wp_unslash( $_POST['match_days_allowed'] ) : null;
 							$config->default_match_start_time = isset( $_POST['default_match_start_time'] ) ? sanitize_text_field( wp_unslash( $_POST['default_match_start_time'] ) ) : null;
+							$config->min_start_time_weekday   = isset( $_POST['min_start_time_weekday'] ) ? sanitize_text_field( wp_unslash( $_POST['min_start_time_weekday'] ) ) : null;
+							$config->max_start_time_weekday   = isset( $_POST['max_start_time_weekday'] ) ? sanitize_text_field( wp_unslash( $_POST['max_start_time_weekday'] ) ) : null;
+							$config->min_start_time_weekend   = isset( $_POST['min_start_time_weekend'] ) ? sanitize_text_field( wp_unslash( $_POST['min_start_time_weekend'] ) ) : null;
+							$config->max_start_time_weekend   = isset( $_POST['max_start_time_weekend'] ) ? sanitize_text_field( wp_unslash( $_POST['max_start_time_weekend'] ) ) : null;
 							$config->point_format             = isset( $_POST['point_format'] ) ? sanitize_text_field( wp_unslash( $_POST['point_format'] ) ) : null;
 							$config->point_format2            = isset( $_POST['point_format2'] ) ? sanitize_text_field( wp_unslash( $_POST['point_format2'] ) ) : null;
 							$config->num_matches_per_page     = isset( $_POST['num_matches_per_page'] ) ? intval( $_POST['num_matches_per_page'] ) : null;

@@ -192,15 +192,13 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 		if ( empty( $match_day ) && '0' !== $match_day ) {
 			$this->error                          = true;
 			$this->error_field[ $this->error_id ] = 'matchday-' . $field_ref;
-			/* translators: %s: competition name */
-			$this->error_msg[ $this->error_id ] = sprintf( __( 'Match day not selected for %s', 'racketmanager' ), $field_name );
+			$this->error_msg[ $this->error_id ]   =  __( 'Match day not selected', 'racketmanager' );
 			++$this->error_id;
 		} elseif ( $match_day_restriction ) {
 			if ( ! empty( $match_days_allowed ) && empty( $match_days_allowed[ $match_day ] ) ) {
 				$this->error                          = true;
 				$this->error_field[ $this->error_id ] = 'matchday-' . $field_ref;
-				/* translators: %s: competition name */
-				$this->error_msg[ $this->error_id ] = __( 'Match day not valid for event', 'racketmanager' );
+				$this->error_msg[ $this->error_id ]   = __( 'Match day not valid for event', 'racketmanager' );
 				++$this->error_id;
 			}
 		}
@@ -213,15 +211,36 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	 * @param string $match_time match time.
 	 * @param string $field_ref field reference.
 	 * @param string $field_name field name.
+	 * @param string  $match_day match day.
+	 * @param array   $start_times min/max start times.
 	 * @return object $validation updated validation object.
 	 */
-	public function match_time( $match_time, $field_ref, $field_name ) {
+	public function match_time( $match_time, $field_ref, $field_name, $match_day, $start_times ) {
 		if ( empty( $match_time ) ) {
 			$this->error                          = true;
 			$this->error_field[ $this->error_id ] = 'matchtime-' . $field_ref;
-			/* translators: %s: competition name */
-			$this->error_msg[ $this->error_id ] = sprintf( __( 'Match time not selected for %s', 'racketmanager' ), $field_name );
+			$this->error_msg[ $this->error_id ]   =  __( 'Match time not selected', 'racketmanager' );
 			++$this->error_id;
+		} elseif ( $match_day >= 0 ) {
+			$match_time = substr( $match_time, 0, 5 );
+			if ( $match_day <= 5 ) {
+				$index = 'weekday';
+			} else {
+				$index = 'weekend';
+			}
+			if ( isset( $start_times[ $index ] ) ) {
+				if ( $match_time < $start_times[ $index ]['min'] ) {
+					$this->error                          = true;
+					$this->error_field[ $this->error_id ] = 'matchtime-' . $field_ref;
+					$this->error_msg[ $this->error_id ]   = __( 'Match time less than earliest start', 'racketmanager' );
+					++$this->error_id;
+				} elseif ( $match_time > $start_times[ $index ]['max'] ) {
+					$this->error                          = true;
+					$this->error_field[ $this->error_id ] = 'matchtime-' . $field_ref;
+					$this->error_msg[ $this->error_id ]   = __( 'Match time greater than latest start', 'racketmanager' );
+					++$this->error_id;
+				}
+			}
 		}
 		return $this;
 	}
@@ -243,8 +262,7 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 		if ( $current_match_time > $start_time && $current_match_time < $end_time ) {
 			$this->error                          = true;
 			$this->error_field[ $this->error_id ] = 'matchtime-' . $field_ref;
-			/* translators: %s: team name */
-			$this->error_msg[ $this->error_id ] = sprintf( __( 'Match overlap for %s', 'racketmanager' ), $field_name );
+			$this->error_msg[ $this->error_id ]   = __( 'Match overlap', 'racketmanager' );
 			++$this->error_id;
 		}
 		return $this;

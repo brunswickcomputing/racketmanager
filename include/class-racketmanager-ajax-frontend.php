@@ -799,12 +799,25 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				if ( ! $competition ) {
 					$validator = $validator->competition( $competition );
 				}
-				if ( ! empty( $competition->match_day_restriction ) ) {
-					$match_day_restriction = true;
+				if ( empty( $competition->match_day_restriction ) ) {
+					$match_day_restriction  = false;
 				} else {
-					$match_day_restriction = false;
+					$match_day_restriction = true;
 				}
-				$weekend_allowed         = isset( $competition->match_day_weekends ) ? true : false;
+				$weekend_allowed        = isset( $competition->match_day_weekends ) ? true : false;
+				$validate_weekday_times = false;
+				$validate_weekend_times = false;
+				$start_times            = array();
+				if ( ! empty( $competition->min_start_time_weekday ) && ! empty( $competition->max_start_time_weekday ) ) {
+					$validate_weekday_times        = true;
+					$start_times['weekday']['min'] = $competition->min_start_time_weekday;
+					$start_times['weekday']['max'] = $competition->max_start_time_weekday;
+				}
+				if ( ! empty( $competition->min_start_time_weekend ) && ! empty( $competition->max_start_time_weekend ) ) {
+					$validate_weekend_times        = true;
+					$start_times['weekend']['min'] = $competition->min_start_time_weekend;
+					$start_times['weekend']['max'] = $competition->max_start_time_weekend;
+				}
 				$club_entry->competition = $competition;
 				$competition_days        = array();
 				for ( $i = 0; $i < 7; ++$i ) {
@@ -862,7 +875,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						$field_ref        = $event->id . '-' . $team_id;
 						$field_name       = $team_event_title;
 						$validator        = $validator->match_day( $match_day, $field_ref, $field_name, $match_day_restriction, $event_days );
-						$validator        = $validator->match_time( $match_time, $field_ref, $field_name );
+						$validator        = $validator->match_time( $match_time, $field_ref, $field_name, $match_day, $start_times );
 						$validator        = $validator->captain( $captain, $contactno, $contactemail, $field_ref, $field_name );
 						if ( $match_day_restriction && $weekend_allowed && ( '5' === $match_day || '6' === $match_day ) ) {
 							if ( empty( $weekend_matches[ $event->type ] ) ) {

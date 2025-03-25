@@ -711,7 +711,6 @@ class RacketManager {
 							$headers[]         = 'cc: ' . ucfirst( $competition->type ) . 'Secretary <' . $from_email . '>';
 							$organisation_name = $this->site_name;
 							$messages_sent     = 0;
-
 							foreach ( $clubs as $club ) {
 								$email_subject = $this->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Open', 'racketmanager' ) . ' - ' . $club->name;
 								$email_to      = $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
@@ -770,10 +769,12 @@ class RacketManager {
 	 *
 	 * @param int $competition_id competition id.
 	 * @param int $season season name.
-	 * @return void
+	 * @return object
 	 */
 	public function notify_team_entry_reminder( $competition_id, $season ) {
 		global $racketmanager, $racketmanager_shortcodes;
+		$return        = new \stdClass();
+		$messages_sent = 0;
 		if ( $competition_id ) {
 			$competition = get_competition( $competition_id );
 			if ( $competition ) {
@@ -842,12 +843,42 @@ class RacketManager {
 									'email'
 								);
 								wp_mail( $email_to, $email_subject, $email_message, $headers );
+								++$messages_sent;
 							}
+							if ( $messages_sent ) {
+								/* translation: %d number of messages sent */
+								$return->msg = sprintf( __( '%d match secretaries notified', 'racketmanager' ), $messages_sent );
+							} else {
+								$return->error = true;
+								$msg[]         = __( 'No notification', 'racketmanager' );
+							}
+						} else {
+							$return->error = true;
+							$msg[]         = __( 'No secretary email', 'racketmanager' );
 						}
+					} else {
+						$return->error = true;
+						$msg[]         = __( 'No clubs with outstanding entries', 'racketmanager' );
 					}
+				} else {
+					$return->error = true;
+					$msg[]         = __( 'Competition season not found', 'racketmanager' );
 				}
+			} else {
+				$return->error = true;
+				$msg[]         = __( 'Competition not found', 'racketmanager' );
+			}
+		} else {
+			$return->error = true;
+			$msg[]         = __( 'Competition id not found', 'racketmanager' );
+		}
+		if ( ! empty( $return->error ) ) {
+			$return->msg = __( 'Notification error', 'racketmanager' );
+			foreach ( $msg as $error ) {
+				$return->msg .= '<br>' . $error;
 			}
 		}
+		return $return;
 	}
 	/**
 	 * Notify tournament entry open and lock fees

@@ -738,9 +738,12 @@ Racketmanager.reInit = function() {
 	tb_init('a.thickbox, area.thickbox, input.thickbox');
 }
 Racketmanager.sendFixtures = function(eventId) {
+	let notifyField1 = "#alert-season";
+	jQuery(notifyField1).hide();
+	jQuery(notifyField1).removeClass('alert--success alert--danger');
+	let notifyField2 = "#alert-season-response";
+	jQuery(notifyField2).html('');
 	let notifyField = "#notifyMessage-" + eventId;
-	jQuery(notifyField).removeClass();
-	jQuery(notifyField).text('');
 	jQuery.ajax({
 		url: ajaxurl,
 		type: "POST",
@@ -751,21 +754,20 @@ Racketmanager.sendFixtures = function(eventId) {
 		},
 		success: function (response) {
 			let message = response.data.msg;
-			jQuery(notifyField).text(message);
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-success');
-			jQuery(notifyField).delay(10000).fadeOut('slow');
+			jQuery(notifyField2).text(message);
+			jQuery(notifyField1).addClass('alert--success');
 		},
 		error: function (response) {
 			if (response.responseJSON) {
 				let message = response.responseJSON.data;
-				jQuery(notifyField).show();
-				jQuery(notifyField).html(message);
+				jQuery(notifyField2).html(message);
 			} else {
-				jQuery(notifyField).text(response.statusText);
+				jQuery(notifyField2).text(response.statusText);
 			}
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-error');
+			jQuery(notifyField1).addClass('alert--danger');
+		},
+		complete: function() {
+			jQuery(notifyField1).show();
 		}
 	});
 };

@@ -12,47 +12,15 @@ namespace Racketmanager;
 	<div class="form-control mb-3">
 		<legend class="form-check-label"><?php esc_html_e( 'Age Limit Check', 'racketmanager' ); ?></legend>
 		<div class="form-check form-check-inline">
-			<input type="radio" class="form-check-input" name="ageLimitCheck" id="ageLimitCheckTrue" value="true"
-			<?php
-			if ( isset( $options['checks']['ageLimitCheck'] ) ) {
-				echo ( 'true' === $options['checks']['ageLimitCheck'] ) ? ' checked' : '';
-			}
-			?>
-			/>
-			<label class="form-check-label" for="ageLimitCheckTrue"><?php esc_html_e( 'True', 'racketmanager' ); ?></label>
-		</div>
-		<div class="form-check form-check-inline">
-			<input type="radio" class="form-check-input" name="ageLimitCheck" id="ageLimitCheckFalse" value="false"
-			<?php
-			if ( isset( $options['checks']['ageLimitCheck'] ) ) {
-				echo ( 'false' === $options['checks']['ageLimitCheck'] ) ? ' checked' : '';
-			}
-			?>
-			/>
-			<label class="form-check-label" for="ageLimitCheckFalse"><?php esc_html_e( 'False', 'racketmanager' ); ?></label>
+			<input type="checkbox" class="form-check-input" name="ageLimitCheck" id="ageLimitCheck" value="true" <?php echo empty( $options['checks']['ageLimitCheck'] ) ? null : 'checked'; ?> />
+			<label class="form-check-label" for="ageLimitCheck"><?php esc_html_e( 'True', 'racketmanager' ); ?></label>
 		</div>
 	</div>
 	<div class="form-control mb-3">
 		<legend class="form-check-label"><?php esc_html_e( 'Lead Time Check', 'racketmanager' ); ?></legend>
 		<div class="form-check form-check-inline">
-			<input type="radio" class="form-check-input" name="leadTimeCheck" id="leadTimeCheckTrue" value="true"
-			<?php
-			if ( isset( $options['checks']['leadTimeCheck'] ) ) {
-				echo ( 'true' === $options['checks']['leadTimeCheck'] ) ? ' checked' : '';
-			}
-			?>
-			/>
-			<label class="form-check-label" for="leadTimeCheckTrue"><?php esc_html_e( 'True', 'racketmanager' ); ?></label>
-		</div>
-		<div class="form-check form-check-inline">
-			<input type="radio" class="form-check-input" name="leadTimeCheck" id="leadTimeCheckFalse" value="false"
-			<?php
-			if ( isset( $options['checks']['leadTimeCheck'] ) ) {
-				echo ( 'false' === $options['checks']['leadTimeCheck'] ) ? ' checked' : '';
-			}
-			?>
-			/>
-			<label class="form-check-label" for="leadTimeCheckFalse"><?php esc_html_e( 'False', 'racketmanager' ); ?></label>
+			<input type="checkbox" class="form-check-input" name="leadTimeCheck" id="leadTimeCheck" value="true" <?php echo empty( $options['checks']['leadTimeCheck'] ) ? null : 'checked'; ?> />
+			<label class="form-check-label" for="leadTimeCheck"><?php esc_html_e( 'True', 'racketmanager' ); ?></label>
 		</div>
 	</div>
 	<div class="form-control mb-3">

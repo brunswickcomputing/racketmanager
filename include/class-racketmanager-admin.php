@@ -3720,8 +3720,8 @@ class RacketManager_Admin extends RacketManager {
 				$options['rosters']['rosterConfirmationEmail'] = isset( $_POST['confirmationEmail'] ) ? sanitize_text_field( wp_unslash( $_POST['confirmationEmail'] ) ) : null;
 				$options['rosters']['ageLimitCheck']           = isset( $_POST['clubPlayerAgeLimitCheck'] ) ? sanitize_text_field( wp_unslash( $_POST['clubPlayerAgeLimitCheck'] ) ) : null;
 				$options['display']['wtn']                     = isset( $_POST['wtnDisplay'] ) ? true : false;
-				$options['checks']['ageLimitCheck']            = isset( $_POST['ageLimitCheck'] ) ? sanitize_text_field( wp_unslash( $_POST['ageLimitCheck'] ) ) : null;
-				$options['checks']['leadTimeCheck']            = isset( $_POST['leadTimeCheck'] ) ? sanitize_text_field( wp_unslash( $_POST['leadTimeCheck'] ) ) : null;
+				$options['checks']['ageLimitCheck']            = isset( $_POST['ageLimitCheck'] ) ? true : false;
+				$options['checks']['leadTimeCheck']            = isset( $_POST['leadTimeCheck'] ) ? true : false;
 				$options['checks']['ratingCheck']              = isset( $_POST['ratingCheck'] ) ? true : false;
 				$options['checks']['wtn_check']                = isset( $_POST['wtnCheck'] ) ? true : false;
 				$options['checks']['rosterLeadTime']           = isset( $_POST['playerLeadTime'] ) ? intval( $_POST['playerLeadTime'] ) : null;

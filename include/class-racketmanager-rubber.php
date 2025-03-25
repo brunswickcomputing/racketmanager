@@ -576,7 +576,7 @@ final class Racketmanager_Rubber {
 							$error = __( 'locked', 'racketmanager' );
 							$match->add_result_check( $team->id, $player->id, $error, $this->id );
 						}
-						if ( isset( $options['leadTimecheck'] ) && 'true' === $options['leadTimecheck'] && isset( $options['rosterLeadTime'] ) && isset( $player->created_date ) ) {
+						if ( ! empty( $options['leadTimecheck'] ) && isset( $options['rosterLeadTime'] ) && isset( $player->created_date ) ) {
 							$match_date  = new \DateTime( $match->date );
 							$roster_date = new \DateTime( $player->created_date );
 							$date_diff   = $roster_date->diff( $match_date );
@@ -592,7 +592,7 @@ final class Racketmanager_Rubber {
 								$match->add_result_check( $team->id, $player->id, $error, $this->id );
 							}
 						}
-						if ( isset( $options['ageLimitCheck'] ) && 'true' === $options['ageLimitCheck'] && ! empty( $match->league->event->age_limit ) && 'open' !== $match->league->event->age_limit ) {
+						if ( ! empty( $options['ageLimitCheck'] ) && ! empty( $match->league->event->age_limit ) && 'open' !== $match->league->event->age_limit ) {
 							if ( empty( $player->age ) ) {
 								$error = __( 'no age provided', 'racketmanager' );
 								$match->add_result_check( $team->id, $player->id, $error, $this->id );

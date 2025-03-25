@@ -297,7 +297,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 		}
 	}
 	/**
-	 * Notify match secretaries of competition entries open
+	 * Send match secretaries constitution
 	 *
 	 * @see templates/email/competition-entry-open.php
 	 */
@@ -370,7 +370,18 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 						$return->msg   = __( 'Competition not found', 'racketmanager' );
 					} elseif ( isset( $competition->seasons[ $season ] ) ) {
 						if ( 'team' === $competition->entry_type ) {
-							$return = $racketmanager->notify_team_entry_open( $competition->id, $season );
+							$entry_found = $competition->get_clubs(
+								array(
+									'count'   => true,
+									'season'  => $season,
+									'status'  => 1,
+								)
+							);
+							if ( $entry_found ) {
+								$return = $racketmanager->notify_team_entry_reminder( $competition->id, $season );
+							} else {
+								$return = $racketmanager->notify_team_entry_open( $competition->id, $season );
+							}
 						} else {
 							$return->error = true;
 							$return->msg   = __( 'Invalid competition entry type', 'racketmanager' );

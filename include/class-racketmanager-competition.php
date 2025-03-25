@@ -2226,7 +2226,7 @@ class Racketmanager_Competition {
 				if ( empty( $this->default_match_start_time['minutes'] ) || $this->default_match_start_time['minutes'] !== $default_match_start_time_minutes ) {
 					$updates = true;
 				}
-				$settings->min_start_time_weekday = $default_match_start_time_minutes;
+				$settings->default_match_start_time['minutes'] = $default_match_start_time_minutes;
 				if ( empty( $this->min_start_time_weekday ) || $this->min_start_time_weekday !== $config->min_start_time_weekday ) {
 					$updates = true;
 				}
@@ -2264,6 +2264,14 @@ class Racketmanager_Competition {
 				}
 			}
 			$settings->standings = $config->standings;
+			$rules_options       = $racketmanager->get_options( 'checks' );
+			foreach ( $rules_options as $rules_option => $value ) {
+				$config->rules[ $rules_option ] = isset( $config->rules[ $rules_option ] ) ? 1 : 0;
+				if ( ! isset( $this->rules[ $rules_option ] ) || $this->rules[ $rules_option ] !== $config->rules[ $rules_option ] ) {
+					$updates = true;
+				}
+			}
+			$settings->rules = $config->rules;
 			if ( 'league' === $config->type ) {
 				if ( empty( $this->num_courts_available ) || $this->num_courts_available !== $config->num_courts_available ) {
 					$updates = true;

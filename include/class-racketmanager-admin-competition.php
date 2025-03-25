@@ -89,6 +89,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 							$config->point_format             = isset( $_POST['point_format'] ) ? sanitize_text_field( wp_unslash( $_POST['point_format'] ) ) : null;
 							$config->point_format2            = isset( $_POST['point_format2'] ) ? sanitize_text_field( wp_unslash( $_POST['point_format2'] ) ) : null;
 							$config->num_matches_per_page     = isset( $_POST['num_matches_per_page'] ) ? intval( $_POST['num_matches_per_page'] ) : null;
+							$config->rules                    = isset( $_POST['rules'] ) ? wp_unslash( $_POST['rules'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 							$config->standings                = isset( $_POST['standings'] ) ? wp_unslash( $_POST['standings'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 							$config->num_courts_available     = isset( $_POST['num_courts_available'] ) ? wp_unslash( $_POST['num_courts_available'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 							$competition->config              = $config;
@@ -136,7 +137,8 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 					$forloss_overtime        = $competition->point_rule['forloss_overtime'];
 					$competition->point_rule = 'user';
 				}
-				$is_invalid = false;
+				$is_invalid    = false;
+				$rules_options = $racketmanager->get_options( 'checks' );
 				require RACKETMANAGER_PATH . 'admin/includes/competition-config.php';
 			} else {
 				$racketmanager->set_message( __( 'Competition not found', 'racketmanager' ), true );

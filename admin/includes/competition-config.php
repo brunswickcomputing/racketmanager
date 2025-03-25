@@ -62,6 +62,9 @@ if ( empty( $tournament ) ) {
 								<li class="nav-item">
 									<button class="nav-link" id="events-tab" data-bs-toggle="tab" data-bs-target="#events" type="button" role="tab" aria-controls="events" aria-selected="true"><?php esc_html_e( 'Events', 'racketmanager' ); ?></button>
 								</li>
+								<li class="nav-item" role="presentation">
+									<button class="nav-link" id="rules-tab" data-bs-toggle="tab" data-bs-target="#rules" type="button" role="tab" aria-controls="rules" aria-selected="false"><?php esc_html_e( 'Rules', 'racketmanager' ); ?></button>
+								</li>
 								<?php
 								if ( 'league' === $competition->type ) {
 									?>
@@ -103,6 +106,10 @@ if ( empty( $tournament ) ) {
 					<div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="events-tab">
 						<h2><?php esc_html_e( 'Events', 'racketmanager' ); ?></h2>
 						<?php require RACKETMANAGER_PATH . 'admin/competition/include/settings/events.php'; ?>
+					</div>
+					<div class="tab-pane fade" id="rules" role="tabpanel" aria-labelledby="rules-tab">
+						<h2><?php esc_html_e( 'Rules', 'racketmanager' ); ?></h2>
+						<?php require RACKETMANAGER_PATH . 'admin/competition/include/settings/rules.php'; ?>
 					</div>
 					<?php
 					if ( 'league' === $competition->type ) {

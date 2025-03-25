@@ -861,7 +861,7 @@ class Racketmanager_Ajax extends RacketManager {
 				$prev_ratings = array();
 				foreach ( $rubbers as $rubber ) {
 					$check_results = $rubber->check_players();
-					if ( ! empty( $check_options['wtn_check'] ) ) {
+					if ( ! empty( $match->league->event->competition->rules['leadTimecheck'] ) && ! empty( $check_options['wtn_check'] ) ) {
 						$wtns = $check_results['wtns'];
 						if ( ! empty( $prev_wtns ) ) {
 							foreach ( $wtns as $opponent => $wtn ) {
@@ -878,7 +878,7 @@ class Racketmanager_Ajax extends RacketManager {
 							}
 						}
 						$prev_wtns = $wtns;
-					} elseif ( ! empty( $check_options['ratingCheck'] ) ) {
+					} elseif ( ! empty( $match->league->event->competition->rules['ratingCheck'] ) && ! empty( $check_options['ratingCheck'] ) ) {
 						$ratings = $check_results['ratings'];
 						if ( ! empty( $prev_ratings ) ) {
 							foreach ( $ratings as $opponent => $rating ) {

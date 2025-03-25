@@ -710,6 +710,7 @@ class RacketManager {
 							$headers[]         = 'From: ' . ucfirst( $competition->type ) . 'Secretary <' . $from_email . '>';
 							$headers[]         = 'cc: ' . ucfirst( $competition->type ) . 'Secretary <' . $from_email . '>';
 							$organisation_name = $this->site_name;
+							$messages_sent     = 0;
 
 							foreach ( $clubs as $club ) {
 								$email_subject = $this->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Open', 'racketmanager' ) . ' - ' . $club->name;
@@ -730,10 +731,11 @@ class RacketManager {
 									'email'
 								);
 								wp_mail( $email_to, $email_subject, $email_message, $headers );
-								$message_sent = true;
+								++$messages_sent;
 							}
-							if ( $message_sent ) {
-								$return->msg = __( 'Match secretaries notified', 'racketmanager' );
+							if ( $messages_sent ) {
+								/* translation: %d number of messages sent */
+								$return->msg = sprintf( __( '%d match secretaries notified', 'racketmanager' ), $messages_sent );
 							} else {
 								$return->error = true;
 								$msg[]         = __( 'No notification', 'racketmanager' );

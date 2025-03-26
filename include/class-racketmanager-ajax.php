@@ -551,6 +551,9 @@ class Racketmanager_Ajax extends RacketManager {
 		$updated_rubbers                      = array();
 
 		$match        = get_match( $match );
+		if ( empty( $match->date_result_entered ) ) {
+			$match->set_result_entered();
+		}
 		$is_withdrawn = false;
 		if ( $match->teams['home']->is_withdrawn || $match->teams['away']->is_withdrawn ) {
 			$is_withdrawn     = true;

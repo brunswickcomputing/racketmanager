@@ -395,6 +395,18 @@ final class Racketmanager_Match {
 	 */
 	public $prev_away_match;
 	/**
+	 * Date updated
+	 *
+	 * @var string
+	 */
+	public $updated;
+	/**
+	 * Date result entered
+	 *
+	 * @var string
+	 */
+	public $date_result_entered;
+	/**
 	 * Retrieve match instance
 	 *
 	 * @param int $match_id match id.
@@ -411,7 +423,7 @@ final class Racketmanager_Match {
 		if ( ! $match ) {
 			$match = $wpdb->get_row(
 				$wpdb->prepare(
-					"SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date_original`, '%%Y-%%m-%%d %%H:%%i') AS date_original, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `updated`, `updated_user`, `confirmed`, `home_captain`, `away_captain`, `comments`, `status`, `host`, `linked_match`, `leg`, `winner_id_tie`, `loser_id_tie`, `home_points_tie`, `away_points_tie` FROM {$wpdb->racketmanager_matches} WHERE `id` = %d LIMIT 1",
+					"SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date_original`, '%%Y-%%m-%%d %%H:%%i') AS date_original, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `updated`, `updated_user`, `confirmed`, `home_captain`, `away_captain`, `comments`, `status`, `host`, `linked_match`, `leg`, `winner_id_tie`, `loser_id_tie`, `home_points_tie`, `away_points_tie`, `updated`, `date_result_entered` FROM {$wpdb->racketmanager_matches} WHERE `id` = %d LIMIT 1",
 					$match_id
 				)
 			);
@@ -2529,5 +2541,20 @@ final class Racketmanager_Match {
 			}
 		}
 		return $updated;
+	}
+	/**
+	 * Set date result entered
+	 */
+	public function set_result_entered() {
+		global $wpdb;
+		$this->date_result_entered = date( 'Y-m-d H:i:s' );
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"UPDATE {$wpdb->racketmanager_matches} SET `date_result_entered` = %s WHERE `id` = %d",
+				$this->date_result_entered,
+				$this->id
+			)
+		);
+		wp_cache_set( $this->id, $this, 'matches' );
 	}
 }

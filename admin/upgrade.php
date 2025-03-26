@@ -1451,6 +1451,10 @@ function racketmanager_upgrade() {
 		echo esc_html__( 'starting 8.43.1 upgrade', 'racketmanager' ) . "<br />\n";
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} ADD `num_entries` INT NULL AFTER `grade`" );
 	}
+	if ( version_compare( $installed, '8.45.0', '<' ) ) {
+		echo esc_html__( 'starting 8.45.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_matches} ADD `date_result_entered` datetime NULL AFTER `updated`" );
+	}
 	/*
 	* Update version and dbversion
 	*/

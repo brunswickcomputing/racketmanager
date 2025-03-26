@@ -3735,8 +3735,12 @@ class RacketManager_Admin extends RacketManager {
 					$options[ $competition_type ]['resultConfirmationEmail'] = isset( $_POST[ $competition_type ]['resultConfirmationEmail'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['resultConfirmationEmail'] ) ) : null;
 					$options[ $competition_type ]['resultNotification']      = isset( $_POST[ $competition_type ]['resultNotification'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['resultNotification'] ) ) : null;
 					$options[ $competition_type ]['resultPending']           = isset( $_POST[ $competition_type ]['resultPending'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['resultPending'] ) ) : null;
+					$options[ $competition_type ]['resultTimeout']           = isset( $_POST[ $competition_type ]['resultTimeout'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['resultTimeout'] ) ) : null;
+					$options[ $competition_type ]['resultPenalty']           = isset( $_POST[ $competition_type ]['resultPenalty'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['resultPenalty'] ) ) : null;
 					$options[ $competition_type ]['confirmationPending']     = isset( $_POST[ $competition_type ]['confirmationPending'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['confirmationPending'] ) ) : null;
 					$options[ $competition_type ]['confirmationTimeout']     = isset( $_POST[ $competition_type ]['confirmationTimeout'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['confirmationTimeout'] ) ) : null;
+					$options[ $competition_type ]['confirmationPenalty']     = isset( $_POST[ $competition_type ]['confirmationPenalty'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['confirmationPenalty'] ) ) : null;
+					$options[ $competition_type ]['confirmationRequired']    = isset( $_POST[ $competition_type ]['confirmationRequired'] ) ? true : false;
 					$options[ $competition_type ]['entry_level']             = isset( $_POST[ $competition_type ]['entryLevel'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['entryLevel'] ) ) : null;
 					$this->scheduleResultChase( $competition_type, $options[ $competition_type ] );
 				}

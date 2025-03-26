@@ -204,67 +204,67 @@ class RacketManager_Rewrites {
 		// club - players - player + btm.
 		add_rewrite_rule(
 			'clubs/(.+?)/players/(.+?)/([0-9]+)/?$',
-			'index.php?pagename=club%2Fplayers&club_name=$matches[1]&player_id=$matches[2]&btm=$matches[3]',
+			'index.php?pagename=clubs%2Fclub%2Fplayers&club_name=$matches[1]&player_id=$matches[2]&btm=$matches[3]',
 			'top'
 		);
 		// club - players - player.
 		add_rewrite_rule(
 			'clubs/(.+?)/players/(.+?)/?$',
-			'index.php?pagename=club%2Fplayers&club_name=$matches[1]&player_id=$matches[2]',
+			'index.php?pagename=clubs%2Fclub%2Fplayers&club_name=$matches[1]&player_id=$matches[2]',
 			'top'
 		);
 		// club - players.
 		add_rewrite_rule(
 			'clubs/(.+?)/players/?$',
-			'index.php?pagename=club%2Fplayers&club_name=$matches[1]',
+			'index.php?pagename=clubs%2Fclub%2Fplayers&club_name=$matches[1]',
 			'top'
 		);
 		// club - invoices - invoice.
 		add_rewrite_rule(
 			'clubs/(.+?)/invoices/(.+?)/?$',
-			'index.php?pagename=club%2Finvoices&club_name=$matches[1]&invoice=$matches[2]',
+			'index.php?pagename=clubs%2Fclub%2Finvoices&club_name=$matches[1]&invoice=$matches[2]',
 			'top'
 		);
 		// club - invoices.
 		add_rewrite_rule(
 			'clubs/(.+?)/invoices/?$',
-			'index.php?pagename=club%2Finvoices&club_name=$matches[1]',
+			'index.php?pagename=clubs%2Fclub%2Finvoices&club_name=$matches[1]',
 			'top'
 		);
 		// club - team - event.
 		add_rewrite_rule(
 			'clubs/(.+?)/team/(.+?)/(.+?)?$',
-			'index.php?pagename=club%2Fteam&club_name=$matches[1]&team=$matches[2]&event=$matches[3]',
+			'index.php?pagename=clubs%2Fclub%2Fteam&club_name=$matches[1]&team=$matches[2]&event=$matches[3]',
 			'top'
 		);
 		// club - event - season.
 		add_rewrite_rule(
 			'clubs/(.+?)/event/(.+?)/([0-9]{4})?$',
-			'index.php?pagename=club%2Fevent&club_name=$matches[1]&event=$matches[2]&season=$matches[3]',
+			'index.php?pagename=clubs%2Fclub%2Fevent&club_name=$matches[1]&event=$matches[2]&season=$matches[3]',
 			'top'
 		);
 		// club - event.
 		add_rewrite_rule(
 			'clubs/(.+?)/event/(.+?)/?$',
-			'index.php?pagename=club%2Fevent&club_name=$matches[1]&event=$matches[2]',
+			'index.php?pagename=clubs%2Fclub%2Fevent&club_name=$matches[1]&event=$matches[2]',
 			'top'
 		);
 		// club - competitions.
 		add_rewrite_rule(
 			'clubs/(.+?)/competitions/?$',
-			'index.php?pagename=club%2Fcompetitions&club_name=$matches[1]',
+			'index.php?pagename=clubs%2Fclub%2Fcompetitions&club_name=$matches[1]',
 			'top'
 		);
 		// club player.
 		add_rewrite_rule(
 			'clubs/(.+?)/(.+?)/?$',
-			'index.php?pagename=club%2Fplayer&club_name=$matches[1]&player_id=$matches[2]',
+			'index.php?pagename=clubs%2Fclub%2Fplayer&club_name=$matches[1]&player_id=$matches[2]',
 			'top'
 		);
 		// club.
 		add_rewrite_rule(
 			'clubs\/(.+?)\/?$',
-			'index.php?pagename=club&club_name=$matches[1]',
+			'index.php?pagename=clubs%2Fclub&club_name=$matches[1]',
 			'top'
 		);
 		// invoice.

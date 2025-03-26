@@ -3796,7 +3796,7 @@ class RacketManager_Admin extends RacketManager {
 				$this->printMessage();
 			}
 
-			require_once RACKETMANAGER_PATH . '/admin/settings-global.php';
+			require_once RACKETMANAGER_PATH . '/admin/show-settings.php';
 		}
 	}
 

@@ -324,13 +324,13 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 		global $racketmanager;
 
 		if ( ! current_user_can( 'edit_teams' ) ) {
-			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
-			$this->printMessage();
+			$racketmanager->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
+			$racketmanager->printMessage();
 		} else {
 			if ( isset( $_POST['saveInvoice'] ) ) {
 				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-invoice' ) ) {
-					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-					$this->printMessage();
+					$racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+					$racketmanager->printMessage();
 					return;
 				}
 				if ( isset( $_POST['invoice_id'] ) ) {
@@ -346,7 +346,7 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 					}
 				}
 			}
-			$this->printMessage();
+			$racketmanager->printMessage();
 			if ( isset( $_GET['charge'] ) && isset( $_GET['club'] ) ) {
 				$invoice_id = $this->get_invoice( intval( $_GET['charge'] ), intval( $_GET['club'] ) );
 			} elseif ( isset( $_GET['invoice'] ) ) {
@@ -354,7 +354,7 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 			}
 			$tab          = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'racketmanager-invoices';
 			$invoice_view = '';
-			$billing      = $this->get_options( 'billing' );
+			$billing      = $racketmanager->get_options( 'billing' );
 			if ( isset( $invoice_id ) && $invoice_id ) {
 				$invoice = get_invoice( $invoice_id );
 			}
@@ -362,8 +362,8 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 				$invoice_view = $invoice->generate();
 				include_once RACKETMANAGER_PATH . '/admin/finances/invoice.php';
 			} else {
-				$this->set_message( __( 'Invoice not found', 'racketmanager' ), true );
-				$this->printMessage();
+				$racketmanager->set_message( __( 'Invoice not found', 'racketmanager' ), true );
+				$racketmanager->printMessage();
 			}
 		}
 	}

@@ -595,68 +595,6 @@ Racketmanager.notifyTournamentEntryOpen = function(e, tournamentId) {
 		}
 	});
 };
-Racketmanager.chaseMatchResult = function(matchId) {
-	let notifyField = "#notifyMessage-" + matchId;
-
-	jQuery.ajax({
-		url: ajaxurl,
-		type: "POST",
-		data: {
-			"matchId": matchId,
-			"action": "racketmanager_chase_match_result",
-			"security": ajax_var.ajax_nonce,
-		},
-		success: function (response) {
-			let message = response.data.msg;
-			jQuery(notifyField).text(message);
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-success');
-			jQuery(notifyField).delay(10000).fadeOut('slow');
-		},
-		error: function (response) {
-			if (response.responseJSON) {
-				let message = response.responseJSON.data;
-				jQuery(notifyField).show();
-				jQuery(notifyField).html(message);
-			} else {
-				jQuery(notifyField).text(response.statusText);
-			}
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-error');
-		}
-	});
-};
-Racketmanager.chaseMatchApproval = function(matchId) {
-	let notifyField = "#notifyMessage-" + matchId;
-
-	jQuery.ajax({
-		url: ajaxurl,
-		type: "POST",
-		data: {
-			"matchId": matchId,
-			"action": "racketmanager_chase_match_approval",
-			"security": ajax_var.ajax_nonce,
-		},
-		success: function (response) {
-			let message = response.data.msg;
-			jQuery(notifyField).text(message);
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-success');
-			jQuery(notifyField).delay(10000).fadeOut('slow');
-		},
-		error: function (response) {
-			if (response.responseJSON) {
-				let message = response.responseJSON.data;
-				jQuery(notifyField).show();
-				jQuery(notifyField).html(message);
-			} else {
-				jQuery(notifyField).text(response.statusText);
-			}
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-error');
-		}
-	});
-};
 Racketmanager.getImportOption = function(option) {
 	let selectedOption = option;
 	if (selectedOption == 'table' || selectedOption == 'fixtures') {

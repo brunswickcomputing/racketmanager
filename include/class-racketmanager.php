@@ -339,54 +339,10 @@ class RacketManager {
 		$match_args['timeOffset']       = $result_pending;
 		$matches                        = $this->get_matches( $match_args );
 		foreach ( $matches as $match ) {
-			$this->chase_match_result( $match->id, $result_pending );
+			$match->chase_match_result( $result_pending );
 		}
 	}
 
-	/**
-	 * Chase match results
-	 *
-	 * @param int $match_id Match id.
-	 * @param int $time_period time Period that result is overdue.
-	 * @return boolean $message_sent Indicator to show if message was sent.
-	 */
-	public function chase_match_result( $match_id, $time_period = false ) {
-		$match                       = get_match( $match_id );
-		$message_sent                = false;
-		$headers                     = array();
-		$from_email                  = $this->get_confirmation_email( $match->league->event->competition->type );
-		$headers[]                   = 'From: ' . ucfirst( $match->league->event->competition->type ) . ' Secretary <' . $from_email . '>';
-		$headers[]                   = 'cc: ' . ucfirst( $match->league->event->competition->type ) . ' Secretary <' . $from_email . '>';
-		$message_args                = array();
-		$message_args['time_period'] = $time_period;
-		$message_args['from_email']  = $from_email;
-
-		$email_subject = __( 'Match result pending', 'racketmanager' ) . ' - ' . $match->get_title() . ' - ' . $match->league->title;
-		$email_to      = array();
-		if ( $match->league->event->competition->is_tournament ) {
-			$opponents = array( 'home', 'away' );
-			foreach ( $opponents as $opponent ) {
-				$players = isset( $match->teams[ $opponent ]->players ) ? $match->teams[ $opponent ]->players : array();
-				foreach ( $players as $player ) {
-					if ( ! empty( $player->email ) ) {
-						$email_to[] = $player->fullname . '<' . $player->email . '>';
-					}
-				}
-			}
-		} else {
-			$email_to[] = $match->teams['home']->captain . ' <' . $match->teams['home']->contactemail . '>';
-			$club       = get_club( $match->teams['home']->club_id );
-			if ( isset( $club->match_secretary_email ) ) {
-				$headers[] = 'cc: ' . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
-			}
-		}
-		if ( $email_to ) {
-			$email_message = racketmanager_result_outstanding_notification( $match->id, $message_args );
-			wp_mail( $email_to, $email_subject, $email_message, $headers );
-			$message_sent = true;
-		}
-		return $message_sent;
-	}
 
 	/**
 	 * Chase pending approvals
@@ -406,7 +362,7 @@ class RacketManager {
 		$match_args['timeOffset']       = $confirmation_timeout;
 		$matches                        = $this->get_matches( $match_args );
 		foreach ( $matches as $match ) {
-			$this->complete_match_result( $match, $confirmation_timeout );
+			$match->complete_result( $confirmation_timeout );
 		}
 		$confirmation_pending           = $this->get_options( $competition )['confirmationPending'];
 		$match_args                     = array();
@@ -419,88 +375,8 @@ class RacketManager {
 		$match_args['timeOffset']       = $confirmation_pending;
 		$matches                        = $this->get_matches( $match_args );
 		foreach ( $matches as $match ) {
-			$this->chase_match_approval( $match->id, $confirmation_pending );
+			$match->chase_match_approval( $confirmation_pending );
 		}
-	}
-
-	/**
-	 * Complete match result
-	 *
-	 * @param object $match Match id.
-	 * @param int    $confirmation_timeout time Period that match result confirmation is overdue.
-	 * @return int number of matches completed.
-	 */
-	public function complete_match_result( $match, $confirmation_timeout ) {
-		$this->chase_match_approval( $match->id, $confirmation_timeout, 'override' );
-		$league = get_league( $match->league_id );
-		$final  = false;
-		$league->set_finals( $final );
-		$result_matches               = array();
-		$home_points                  = array();
-		$away_points                  = array();
-		$home_team                    = array();
-		$away_team                    = array();
-		$custom                       = array();
-		$result_matches[ $match->id ] = $match->id;
-		$home_points[ $match->id ]    = $match->home_points;
-		$away_points[ $match->id ]    = $match->away_points;
-		$home_team[ $match->id ]      = $match->home_team;
-		$away_team[ $match->id ]      = $match->away_team;
-		$custom[ $match->id ]         = $match->custom;
-		$season                       = $match->season;
-		return $league->update_match_results( $result_matches, $home_points, $away_points, $custom, $season, $final );
-	}
-
-	/**
-	 * Chase match approval
-	 *
-	 * @param object  $match_id Match id.
-	 * @param int     $time_period time Period that match result confirmation is overdue.
-	 * @param boolean $override Override indicator.
-	 * @return boolean $message_sent Indicator to show if message was sent.
-	 */
-	public function chase_match_approval( $match_id, $time_period = false, $override = false ) {
-		global $racketmanager;
-		$match                       = get_match( $match_id );
-		$message_sent                = false;
-		$headers                     = array();
-		$from_email                  = $this->get_confirmation_email( $match->league->event->competition->type );
-		$headers[]                   = 'From: ' . ucfirst( $match->league->event->competition->type ) . ' Secretary <' . $from_email . '>';
-		$headers[]                   = 'cc: ' . ucfirst( $match->league->event->competition->type ) . ' Secretary <' . $from_email . '>';
-		$message_args                = array();
-		$message_args['outstanding'] = true;
-		$message_args['time_period'] = $time_period;
-		$message_args['override']    = $override;
-		$message_args['from_email']  = $from_email;
-		$msg_end                     = 'approval pending';
-		if ( $override ) {
-			$msg_end = 'complete';
-		}
-		$email_subject = $racketmanager->site_name . ' - ' . $match->league->title . ' - ' . $match->get_title() . ' ' . $msg_end;
-		$email_to      = '';
-		if ( isset( $match->home_captain ) ) {
-			if ( isset( $match->teams['away']->contactemail ) ) {
-				$email_to = $match->teams['away']->captain . ' <' . $match->teams['away']->contactemail . '>';
-				$club     = get_club( $match->teams['away']->club_id );
-				if ( isset( $club->match_secretary_email ) ) {
-					$headers[] = 'cc: ' . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
-				}
-			}
-		} elseif ( isset( $match->away_captain ) ) {
-			if ( isset( $match->teams['home']->contactemail ) ) {
-				$email_to = $match->teams['home']->captain . ' <' . $match->teams['home']->contactemail . '>';
-				$club     = get_club( $match->teams['home']->club_id );
-				if ( isset( $club->match_secretary_email ) ) {
-					$headers[] = 'cc: ' . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
-				}
-			}
-		}
-		if ( ! empty( $email_to ) ) {
-			$email_message = racketmanager_captain_result_notification( $match->id, $message_args );
-			wp_mail( $email_to, $email_subject, $email_message, $headers );
-			$message_sent = true;
-		}
-		return $message_sent;
 	}
 	/**
 	 * Calculate player ratings

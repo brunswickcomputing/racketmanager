@@ -294,10 +294,10 @@ class Racketmanager_Ajax extends RacketManager {
 					$msg              = $update->msg;
 					if ( ! current_user_can( 'manage_racketmanager' ) ) {
 						$match_confirmed = 'Y';
-						$this->result_notification( $match_confirmed, $match_message, $match );
+						$match->result_notification( $match_confirmed, $match_message );
 					}
 				} else {
-					$this->result_notification( $match_confirmed, $match_message, $match );
+					$match->result_notification( $match_confirmed, $match_message );
 				}
 			} else {
 				$msg = __( 'No result to save', 'racketmanager' );
@@ -448,7 +448,7 @@ class Racketmanager_Ajax extends RacketManager {
 				}
 				$msg = $match_message;
 				if ( 'D' === $match_confirmed ) {
-					$this->result_notification( $match_confirmed, $match_message, $match, $match_updated_by );
+					$match->result_notification( $match_confirmed, $match_message, $match_updated_by );
 				} elseif ( ( 'A' === $match_confirmed && 'auto' === $result_confirmation ) || ( 'admin' === $user_type ) ) {
 					$match->confirmed = 'Y';
 					$update           = $match->update_league_with_result( $match );
@@ -457,14 +457,14 @@ class Racketmanager_Ajax extends RacketManager {
 						if ( $update->updated || 'Y' === $match->updated ) {
 							$match_confirmed = 'Y';
 						}
-						$this->result_notification( $match_confirmed, $match_message, $match, $match_updated_by );
+						$match->result_notification( $match_confirmed, $match_message, $match_updated_by );
 					}
 				} elseif ( 'A' === $match_confirmed ) {
-					$this->result_notification( $match_confirmed, $match_message, $match, $match_updated_by );
+					$match->result_notification( $match_confirmed, $match_message, $match_updated_by );
 				} elseif ( 'C' === $match_confirmed ) {
-					$this->result_notification( $match_confirmed, $match_message, $match, $match_updated_by );
+					$match->result_notification( $match_confirmed, $match_message, $match_updated_by );
 				} elseif ( ! current_user_can( 'manage_racketmanager' ) && 'P' === $match_confirmed ) {
-					$this->result_notification( $match_confirmed, $match_message, $match, $match_updated_by );
+					$match->result_notification( $match_confirmed, $match_message, $match_updated_by );
 				}
 			} elseif ( ! $msg ) {
 				$msg = __( 'No results to save', 'racketmanager' );
@@ -1304,72 +1304,6 @@ class Racketmanager_Ajax extends RacketManager {
 		$return_data->completed_set = $completed_set;
 		return $return_data;
 	}
-	/**
-	 * Result notification
-	 *
-	 * @param string $match_status match status.
-	 * @param string $match_message match message.
-	 * @param object $match match object.
-	 * @param string $match_updated_by match updated by value.
-	 */
-	public function result_notification( $match_status, $match_message, $match, $match_updated_by = false ) {
-		global $racketmanager;
-		$admin_email         = $racketmanager->get_confirmation_email( $match->league->event->competition->type );
-		$rm_options          = $racketmanager->get_options();
-		$result_notification = $rm_options[ $match->league->event->competition->type ]['resultNotification'];
-
-		if ( $admin_email > '' ) {
-			$message_args               = array();
-			$message_args['email_from'] = $admin_email;
-			$message_args['league']     = $match->league->id;
-			if ( $match->league->is_championship ) {
-				$message_args['round'] = $match->final_round;
-			} else {
-				$message_args['matchday'] = $match->match_day;
-			}
-			$headers            = array();
-			$confirmation_email = '';
-			if ( 'P' === $match_status ) {
-				if ( 'home' === $match_updated_by ) {
-					if ( 'captain' === $result_notification ) {
-						$confirmation_email = $match->teams['away']->contactemail;
-					} elseif ( 'secretary' === $result_notification ) {
-						$club               = get_club( $match->teams['away']->club_id );
-						$confirmation_email = isset( $club->match_secretary_email ) ? $club->match_secretary_email : '';
-					}
-				} elseif ( 'captain' === $result_notification ) {
-					$confirmation_email = $match->teams['home']->contactemail;
-				} elseif ( 'secretary' === $result_notification ) {
-					$club               = get_club( $match->teams['away']->club_id );
-					$confirmation_email = isset( $club->match_secretary_email ) ? $club->match_secretary_email : '';
-				}
-			}
-			if ( $confirmation_email ) {
-				$email_to  = $confirmation_email;
-				$headers[] = $racketmanager->get_from_user_email();
-				$headers[] = 'cc: ' . ucfirst( $match->league->event->competition->type ) . ' Secretary <' . $admin_email . '>';
-				$subject   = $racketmanager->site_name . ' - ' . $match->league->title . ' - ' . $match->match_title . ' - Result confirmation required';
-				$message   = racketmanager_captain_result_notification( $match->id, $message_args );
-			} else {
-				$email_to  = $admin_email;
-				$headers[] = $racketmanager->get_from_user_email();
-				$subject   = $racketmanager->site_name . ' - ' . $match->league->title . ' - ' . $match->match_title . ' - ' . $match_message;
-				if ( 'Y' === $match_status ) {
-					$match = get_match( $match->id );
-					if ( $match->has_result_check() ) {
-						$message_args['errors'] = true;
-						$subject               .= ' - ' . __( 'Check results', 'racketmanager' );
-					} else {
-						$message_args['complete'] = true;
-						$subject                 .= ' - ' . __( 'Match complete', 'racketmanager' );
-					}
-				}
-				$message = racketmanager_result_notification( $match->id, $message_args );
-			}
-			wp_mail( $email_to, $subject, $message, $headers );
-		}
-	}
-
 	/**
 	 * Confirm results of rubbers
 	 *

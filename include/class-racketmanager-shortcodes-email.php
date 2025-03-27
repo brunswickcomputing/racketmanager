@@ -239,24 +239,25 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 
 		$args        = shortcode_atts(
 			array(
-				'match'       => '',
-				'template'    => '',
-				'outstanding' => false,
-				'time_period' => false,
-				'override'    => false,
-				'from_email'  => false,
+				'match'                 => '',
+				'template'              => '',
+				'outstanding'           => false,
+				'time_period'           => false,
+				'override'              => false,
+				'from_email'            => false,
+				'confirmation_required' => false,
 			),
 			$atts
 		);
-		$match       = $args['match'];
-		$template    = $args['template'];
-		$outstanding = $args['outstanding'];
-		$time_period = $args['time_period'];
-		$override    = $args['override'];
-		$from_email  = $args['from_email'];
-		$match       = get_match( $match );
-
-		$action_url = $racketmanager->site_url;
+		$match_id              = $args['match'];
+		$template              = $args['template'];
+		$outstanding           = $args['outstanding'];
+		$time_period           = $args['time_period'];
+		$override              = $args['override'];
+		$from_email            = $args['from_email'];
+		$confirmation_required = $args['confirmation_required'];
+		$match                 = get_match( $match_id );
+		$action_url            = $racketmanager->site_url;
 		if ( $match->league->event->competition->is_championship ) {
 			$action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ) . '/' . $match->league->current_season['name'] . '/' . $match->final_round . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title ) . '/';
 			if ( ! empty( $match->leg ) ) {
@@ -271,13 +272,14 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 		return $this->load_template(
 			$filename,
 			array(
-				'match'        => $match,
-				'organisation' => $racketmanager->site_name,
-				'action_url'   => $action_url,
-				'outstanding'  => $outstanding,
-				'time_period'  => $time_period,
-				'override'     => $override,
-				'from_email'   => $from_email,
+				'match'                 => $match,
+				'organisation'          => $racketmanager->site_name,
+				'action_url'            => $action_url,
+				'outstanding'           => $outstanding,
+				'time_period'           => $time_period,
+				'override'              => $override,
+				'from_email'            => $from_email,
+				'confirmation_required' => $confirmation_required,
 			),
 			'email'
 		);

@@ -38,11 +38,6 @@ $email_subject    = __( 'Match Result Pending', 'racketmanager' ) . ' - ' . $com
 																	?>
 																	<p><?php echo esc_html( $message_detail ); ?></p>
 																	<p>Please provide the result as soon as possible.</p>
-																	<?php
-																	if ( $time_period ) {
-																		echo '<p>Failure to do so may result in a point deduction.</p>';
-																	}
-																	?>
 																</div>
 															</td>
 														</tr>

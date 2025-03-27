@@ -29,7 +29,7 @@ $email_subject    = __( 'Match Result', 'racketmanager' ) . ' - ' . $competition
 															<td style="min-width: 5px; font-weight: 400;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
 																<div style="font-size: 16px; color: #000; background-color: transparent; margin: 10px;">
 																	<?php
-																	if ( isset( $override ) && $override ) {
+																	if ( ! empty( $override ) ) {
 																		$message_detail = 'The approval of this result was outstanding';
 																		?>
 																		<?php
@@ -41,14 +41,7 @@ $email_subject    = __( 'Match Result', 'racketmanager' ) . ' - ' . $competition
 																		<p><?php echo esc_html( $message_detail ); ?></p>
 																		<p>The entered result of this match has therefore been confirmed.</p>
 																		<?php
-																		if ( $time_period ) {
-																			?>
-																			<p>Failure to approve or challenge future results within <?php echo esc_html( $time_period ); ?> hours of the result being entered may result in a point deduction.</p>
-																			<?php
-																		}
-																		?>
-																		<?php
-																	} elseif ( isset( $outstanding ) && $outstanding ) {
+																	} elseif ( ! empty( $outstanding ) ) {
 																		$message_detail = 'The approval of this result is outstanding';
 																		?>
 																		<?php
@@ -59,11 +52,6 @@ $email_subject    = __( 'Match Result', 'racketmanager' ) . ' - ' . $competition
 																		?>
 																		<p><?php echo esc_html( $message_detail ); ?></p>
 																		<p>Please either approval or challenge the result as soon as possible.</p>
-																		<?php
-																		if ( $time_period ) {
-																			echo '<p>Failure to do so may result in a point deduction.</p>';
-																		}
-																		?>
 																		<?php
 																	} elseif ( isset( $errors ) && $errors ) {
 																		?>
@@ -76,8 +64,13 @@ $email_subject    = __( 'Match Result', 'racketmanager' ) . ' - ' . $competition
 																		<p>There is no further action required.</p>
 																		<?php
 																	} else {
+																		$message_detail = 'The result of this match has been entered';
+																		if ( $confirmation_required ) {
+																			$message_detail .= ' and requires action';
+																		}
+																		$message_detail .= '.';
 																		?>
-																		<p>The result of this match has been entered and requires action.</p>
+																		<p><?php echo esc_html( $message_detail ); ?></p>
 																		<?php
 																	}
 																	?>

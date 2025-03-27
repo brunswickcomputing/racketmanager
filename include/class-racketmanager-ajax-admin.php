@@ -33,8 +33,6 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_racketmanager_notify_tournament_entries_open', array( &$this, 'notify_tournament_entries_open' ) );
 
 		add_action( 'wp_ajax_racketmanager_notify_teams', array( &$this, 'notify_teams_fixture' ) );
-		add_action( 'wp_ajax_racketmanager_chase_match_result', array( &$this, 'chase_match_result_email' ) );
-		add_action( 'wp_ajax_racketmanager_chase_match_approval', array( &$this, 'chase_match_approval_email' ) );
 		add_action( 'wp_ajax_racketmanager_set_tournament_dates', array( &$this, 'set_tournament_dates' ) );
 		add_action( 'wp_ajax_racketmanager_send_fixtures', array( &$this, 'send_fixtures' ) );
 	}
@@ -466,75 +464,6 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 			wp_send_json_success( array( 'message' => $message ) );
 		} else {
 			wp_send_json_error( $message, '500' );
-		}
-	}
-	/**
-	 * Contact captain for match result
-	 *
-	 * @see templates/email/match-result-pending.php
-	 */
-	public function chase_match_result_email() {
-		global $racketmanager;
-		$return = new \stdClass();
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$return->error = true;
-				$return->msg   = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$return->error = true;
-			$return->msg   = __( 'No security token found in request', 'racketmanager' );
-		}
-		if ( ! isset( $return->error ) ) {
-			$match_id     = isset( $_POST['matchId'] ) ? intval( $_POST['matchId'] ) : '';
-			$message_sent = false;
-			$message_sent = $racketmanager->chase_match_result( $match_id );
-			if ( $message_sent ) {
-				$return->msg = __( 'Captain emailed', 'racketmanager' );
-			} else {
-				$return->error = true;
-				$return->msg   = __( 'No notification', 'racketmanager' );
-			}
-		}
-		if ( isset( $return->error ) ) {
-			wp_send_json_error( $return->msg, 500 );
-		} else {
-			wp_send_json_success( $return );
-		}
-	}
-	/**
-	 * Contact captain for match approval
-	 *
-	 * @see templates/email/match-approval-pending.php
-	 */
-	public function chase_match_approval_email() {
-		global $racketmanager;
-		$return = new \stdClass();
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$return->error = true;
-				$return->msg   = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$return->error = true;
-			$return->msg   = __( 'No security token found in request', 'racketmanager' );
-		}
-		if ( ! isset( $return->error ) ) {
-			$match_id     = isset( $_POST['matchId'] ) ? intval( $_POST['matchId'] ) : '';
-			$message_sent = false;
-			$return       = array();
-			$message_sent = $racketmanager->chase_match_approval( $match_id );
-			if ( $message_sent ) {
-				$return['msg'] = __( 'Captain emailed', 'racketmanager' );
-			} else {
-				$return['error'] = true;
-				$return['msg']   = __( 'No notification', 'racketmanager' );
-			}
-		}
-		if ( isset( $return->error ) ) {
-			wp_send_json_error( $return->msg, 500 );
-		} else {
-			wp_send_json_success( $return );
 		}
 	}
 	/**

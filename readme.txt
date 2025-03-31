@@ -47,6 +47,13 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 8.45.0 =
+* BUGFIX: check league ids correctly
+* BUGFIX: check for confirmed entries
+* BUGFIX: use correct link for options
+* UPDATE: Handle late result submission
+* UPDATE: schedule emails is date is <= rather than just =
+
 = 8.44.0 =
 * BUGFIX: ignore byes correctly
 * BUGFIX: handle no parameter passed

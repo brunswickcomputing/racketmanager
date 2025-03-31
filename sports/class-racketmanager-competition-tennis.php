@@ -73,6 +73,8 @@ class Racketmanager_Competition_Tennis extends Racketmanager_Competition {
 			'match_result'       => null,
 			'forwalkover_rubber' => 1,
 			'forwalkover_match'  => 1,
+			'result_late'        => 1,
+			'confirmation_late'  => 1,
 		);
 		$rules['tennisNoPenalty']       = array(
 			'forwin'             => 1,
@@ -113,6 +115,8 @@ class Racketmanager_Competition_Tennis extends Racketmanager_Competition {
 			'matches_draw'       => 1.5,
 			'forwalkover_rubber' => 1,
 			'forwalkover_match'  => 1,
+			'result_late'        => 1,
+			'confirmation_late'  => 1,
 		);
 		$rules['tennisSummerNoPenalty'] = array(
 			'forwin'             => 1,

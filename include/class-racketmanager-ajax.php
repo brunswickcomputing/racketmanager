@@ -470,11 +470,13 @@ class Racketmanager_Ajax extends RacketManager {
 			}
 			$player_warnings = null;
 			if ( $match->has_result_check() ) {
-				$msg            .= '<br>' . __( 'Match has player warnings', 'racketmanager' );
+				$warning_player  = false;
+				$warning_match   = array();
 				$result_status   = 'warning';
 				$result_warnings = $racketmanager->get_result_warnings( array( 'match' => $match->id ) );
 				foreach ( $result_warnings as $player_warning ) {
 					if ( $player_warning->rubber_id ) {
+						$warning_player = true;
 						$rubber = get_rubber( $player_warning->rubber_id );
 						if ( $rubber ) {
 							if ( $player_warning->team_id === $match->home_team ) {
@@ -490,7 +492,15 @@ class Racketmanager_Ajax extends RacketManager {
 							$player_ref                     = 'players_' . $rubber->rubber_number . '_' . $team . '_' . $player_number;
 							$player_warnings[ $player_ref ] = $player_warning->description;
 						}
+					} else {
+						$warning_match[] = $player_warning->description;
 					}
+				}
+				if ( $warning_player ) {
+					$msg .= '<br>' . __( 'Match has player warnings', 'racketmanager' );
+				}
+				foreach ( $warning_match as $warning ) {
+					$msg .= '<br>' . $warning;
 				}
 			} else {
 				$result_status = 'success';
@@ -920,7 +930,7 @@ class Racketmanager_Ajax extends RacketManager {
 							$result_late = true;
 							$time_diff_hours = $time_diff / 60;
 							/* translators: %d: number of hours */
-							$reason = sprintf( __( 'result entered %d hours after match', 'racketmanager' ), $time_diff_hours );
+							$reason = sprintf( __( 'Result entered %d hours after match', 'racketmanager' ), $time_diff_hours );
 							$match->add_match_result_check( $match->home_team, $reason );
 						}
 					}

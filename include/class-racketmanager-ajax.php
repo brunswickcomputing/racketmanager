@@ -437,33 +437,32 @@ class Racketmanager_Ajax extends RacketManager {
 				} else {
 					$match_updated_by = $match->update_match_result_status( $match_confirmed, null, null, null, null );
 				}
-				if ( 'A' === $match_confirmed ) {
-					$match_message = __( 'Result Approved', 'racketmanager' );
+				$match_message = null;
+				if ( 'D' === $match_confirmed ) {
+					$match_message = __( 'Match Postponed', 'racketmanager' );
+					$msg           = $match_message;
+				} elseif ( 'A' === $match_confirmed ) {
+					if ( 'auto' === $result_confirmation || 'admin' === $user_type  ) {
+						$match->confirmed = 'Y';
+						$update           = $match->update_league_with_result( $match );
+						$msg              = $update->msg;
+						if ( 'admin' !== $user_type ) {
+							$match_message = __( 'Result Approved', 'racketmanager' );
+							if ( $update->updated || 'Y' === $match->updated ) {
+								$match_confirmed = 'Y';
+							}
+						}
+					}
 				} elseif ( 'C' === $match_confirmed ) {
 					$match_message = __( 'Result Challenged', 'racketmanager' );
+					$msg           = $match_message;
 				} elseif ( 'P' === $match_confirmed ) {
-					$match_message = __( 'Result Saved', 'racketmanager' );
-				} else {
-					$match_confirmed = '';
-				}
-				$msg = $match_message;
-				if ( 'D' === $match_confirmed ) {
-					$match->result_notification( $match_confirmed, $match_message, $match_updated_by );
-				} elseif ( ( 'A' === $match_confirmed && 'auto' === $result_confirmation ) || ( 'admin' === $user_type ) ) {
-					$match->confirmed = 'Y';
-					$update           = $match->update_league_with_result( $match );
-					$msg              = $update->msg;
-					if ( 'admin' !== $user_type ) {
-						if ( $update->updated || 'Y' === $match->updated ) {
-							$match_confirmed = 'Y';
-						}
-						$match->result_notification( $match_confirmed, $match_message, $match_updated_by );
+					$msg = __( 'Result Saved', 'racketmanager' );
+					if ( ! current_user_can( 'manage_racketmanager' ) ) {
+						$match_message = $msg;
 					}
-				} elseif ( 'A' === $match_confirmed ) {
-					$match->result_notification( $match_confirmed, $match_message, $match_updated_by );
-				} elseif ( 'C' === $match_confirmed ) {
-					$match->result_notification( $match_confirmed, $match_message, $match_updated_by );
-				} elseif ( ! current_user_can( 'manage_racketmanager' ) && 'P' === $match_confirmed ) {
+				}
+				if ( $match_message ) {
 					$match->result_notification( $match_confirmed, $match_message, $match_updated_by );
 				}
 			} elseif ( ! $msg ) {
@@ -875,7 +874,7 @@ class Racketmanager_Ajax extends RacketManager {
 									$message = sprintf( __( 'Players out of order. Rubber %1$d has wtn %2$.1f - previous rubber has wtn %3$.1f', 'racketmanager' ), $rubber->rubber_number, $wtn, $prev_wtns[ $opponent ] );
 									$players = $rubber->players[ $opponent ];
 									foreach ( $players as $player ) {
-										$match->add_result_check( $team, $player->id, $message, $rubber->id );
+										$match->add_player_result_check( $team, $player->id, $message, $rubber->id );
 									}
 								}
 							}
@@ -892,7 +891,7 @@ class Racketmanager_Ajax extends RacketManager {
 									$message = sprintf( __( 'Players out of order. Rubber %1$d has rating %2$d - previous rubber has rating %3$d', 'racketmanager' ), $rubber->rubber_number, $rating, $prev_ratings[ $opponent ] );
 									$players = $rubber->players[ $opponent ];
 									foreach ( $players as $player ) {
-										$match->add_result_check( $team, $player->id, $message, $rubber->id );
+										$match->add_player_result_check( $team, $player->id, $message, $rubber->id );
 									}
 								}
 							}
@@ -904,6 +903,29 @@ class Racketmanager_Ajax extends RacketManager {
 			$match_custom['stats'] = $stats;
 			$status                = Racketmanager_Util::get_match_status_code( $new_match_status );
 			$match->update_result( $home_team_score, $away_team_score, $match_custom, $match_confirmed, $status );
+			$result_late = false;
+			$competition_options = $racketmanager->get_options( $match->league->event->competition->type );
+			$result_timeout      = isset( $competition_options['resultTimeout'] ) ? $competition_options['resultTimeout'] : null;
+			if ( $result_timeout ) {
+				if ( ! empty( $match->date_result_entered ) ) {
+					$date_result_entered = date_create( $match->date_result_entered );
+					$match_date          = date_create( $match->date );
+					$diff                = date_diff( $date_result_entered, $match_date );
+					if ( $diff->invert ) {
+						$time_diff  = $diff->days * 24 * 60;
+						$time_diff += $diff->h * 60;
+						$time_diff += $diff->i;
+						$timeout    = $result_timeout * 60;
+						if ( $time_diff > $timeout ) {
+							$result_late = true;
+							$time_diff_hours = $time_diff / 60;
+							/* translators: %d: number of hours */
+							$reason = sprintf( __( 'result entered %d hours after match', 'racketmanager' ), $time_diff_hours );
+							$match->add_match_result_check( $match->home_team, $reason );
+						}
+					}
+				}
+			}
 		}
 		array_push( $return, $error, $match_confirmed, $err_msg, $err_field, $updated_rubbers );
 		return $return;

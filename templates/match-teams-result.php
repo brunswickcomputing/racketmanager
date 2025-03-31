@@ -163,12 +163,12 @@ if ( $match->is_walkover ) {
 										}
 										?>
 										<?php
-										if ( 'admin' === $user_type || ( empty( $match->home_captain ) && empty( $match->away_captain ) ) ) {
+										if ( ! empty( $match->comments['result'] ) ) {
 											?>
 											<div class="row mt-3 mb-3">
 												<div>
 													<div class="form-floating">
-														<textarea class="form-control result-comments" tabindex="490" placeholder="Leave a comment here" name="matchComments[result]" id="matchComments"><?php echo esc_html( $match->comments['result'] ); ?></textarea>
+														<textarea class="form-control result-comments" <?php echo 'admin' === $user_type ? null : 'readonly'; ?> tabindex="490" placeholder="Leave a comment here" name="matchComments[result]" id="matchComments"><?php echo esc_html( $match->comments['result'] ); ?></textarea>
 														<label for="matchComments"><?php esc_html_e( 'Match Comments', 'racketmanager' ); ?></label>
 													</div>
 												</div>
@@ -232,7 +232,7 @@ if ( $match->is_walkover ) {
 																		if ( $match_update && 'admin' !== $user_type ) {
 																			?>
 																			<div class="match-comments form-floating">
-																				<textarea class="form-control result-comments" placeholder="Leave a comment here" name="matchComments[result]" id="matchComments"><?php echo esc_html( $match->comments['result'] ); ?></textarea>
+																				<textarea class="form-control result-comments" placeholder="Leave a comment here" name="matchComments[<?php echo esc_attr( $opponent ); ?>]" id="matchComments"><?php echo esc_html( $match->comments[ $opponent ] ); ?></textarea>
 																				<label for="matchComments"><?php esc_html_e( 'Comments', 'racketmanager' ); ?></label>
 																			</div>
 																			<?php

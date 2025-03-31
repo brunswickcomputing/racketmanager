@@ -1040,6 +1040,7 @@ final class Racketmanager_Match {
 	 * @return boolean
 	 */
 	public function update_result( $home_points_input, $away_points_input, $custom, $confirmed = 'Y', $match_status = '' ) {
+		global $racketmanager;
 		$bye            = false;
 		$updated        = false;
 		$home_win       = 0;
@@ -1146,14 +1147,14 @@ final class Racketmanager_Match {
 					$custom['cancelled'] = true;
 					$this->status        = 8;
 				}
-				$point_rule         = $this->league->get_point_rule();
-				$rubber_win         = ! empty( $point_rule['rubber_win'] ) ? $point_rule['rubber_win'] : 0;
-				$rubber_draw        = ! empty( $point_rule['rubber_draw'] ) ? $point_rule['rubber_draw'] : 0;
-				$matches_win        = ! empty( $point_rule['matches_win'] ) ? $point_rule['matches_win'] : 0;
-				$matches_draw       = ! empty( $point_rule['matches_draw'] ) ? $point_rule['matches_draw'] : 0;
-				$shared_match       = ! empty( $point_rule['shared_match'] ) ? $point_rule['shared_match'] : 0;
-				$forwalkover_rubber = empty( $point_rule['forwalkover_rubber'] ) ? 0 : $point_rule['forwalkover_rubber'];
-				$walkover_penalty   = empty( $point_rule['forwalkover_match'] ) ? 0 : $point_rule['forwalkover_match'];
+				$point_rule          = $this->league->get_point_rule();
+				$rubber_win          = ! empty( $point_rule['rubber_win'] ) ? $point_rule['rubber_win'] : 0;
+				$rubber_draw         = ! empty( $point_rule['rubber_draw'] ) ? $point_rule['rubber_draw'] : 0;
+				$matches_win         = ! empty( $point_rule['matches_win'] ) ? $point_rule['matches_win'] : 0;
+				$matches_draw        = ! empty( $point_rule['matches_draw'] ) ? $point_rule['matches_draw'] : 0;
+				$shared_match        = ! empty( $point_rule['shared_match'] ) ? $point_rule['shared_match'] : 0;
+				$forwalkover_rubber  = empty( $point_rule['forwalkover_rubber'] ) ? 0 : $point_rule['forwalkover_rubber'];
+				$walkover_penalty    = empty( $point_rule['forwalkover_match'] ) ? 0 : $point_rule['forwalkover_match'];
 				if ( ! empty( $point_rule['match_result'] ) && 'rubber_count' === $point_rule['match_result'] ) {
 					if ( 1 === $this->status ) {
 						$home_points = $home_win * $rubber_win - $forwalkover_rubber * $home_walkover - $walkover_penalty * $home_walkover;
@@ -1240,6 +1241,30 @@ final class Racketmanager_Match {
 			}
 		}
 		return $updated;
+	}
+	/**
+	 * Update result with penalty
+	 *
+	 * @param string $team_ref team to apply penalty.
+	 * @param int  $penalty penalty points.
+	 */
+	public function update_result_with_penalty( $team_ref, $penalty ) {
+		global $racketmanager;
+		if ( 'home' === $team_ref ) {
+			$this->home_points -= $penalty;
+		} elseif ( 'away' === $team_ref ) {
+			$this->away_points -= $penalty;
+		}
+		$this->get_result( $this->home_points, $this->away_points );
+		$this->update_result_database();
+		$updated = true;
+		if ( ! empty( $this->leg ) && '2' === $this->leg ) {
+			$this->update_result_tie();
+		}
+		$this->set_score();
+		if ( '-1' !== $this->home_team && '-1' !== $this->away_team ) {
+			$this->notify_favourites();
+		}
 	}
 	/**
 	 * Notify favourites
@@ -1375,7 +1400,7 @@ final class Racketmanager_Match {
 		}
 		if ( 'P' === $match_confirmed ) {
 			if ( 'home' === $actioned_by || 'away' === $actioned_by ) {
-				$this->comments[ $actioned_by ] = isset( $comments['result'] ) ? $comments['result'] : null;
+				$this->comments[ $actioned_by ] = isset( $comments[ $actioned_by ] ) ? $comments[ $actioned_by ] : null;
 			} else {
 				$this->comments['result'] = isset( $comments['result'] ) ? $comments['result'] : null;
 			}
@@ -1558,14 +1583,14 @@ final class Racketmanager_Match {
 	}
 
 	/**
-	 * Add entry to results checker for errors on match result
+	 * Add entry to results checker for player errors on match result
 	 *
 	 * @param int    $team team.
 	 * @param int    $player player.
 	 * @param string $error error.
 	 * @param int    $rubber_id rubber id.
 	 */
-	public function add_result_check( $team, $player, $error, $rubber_id ) {
+	public function add_player_result_check( $team, $player, $error, $rubber_id ) {
 		$result_check              = new stdClass();
 		$result_check->league_id   = $this->league_id;
 		$result_check->match_id    = $this->id;
@@ -1575,7 +1600,21 @@ final class Racketmanager_Match {
 		$result_check->description = $error;
 		new Racketmanager_Results_Checker( $result_check );
 	}
-
+	/**
+	 * Add entry to results checker for errors on match result
+	 *
+	 * @param int    $team team.
+	 * @param string $error error.
+	 * @param int    $rubber_id rubber id.
+	 */
+	public function add_match_result_check( $team, $error ) {
+		$result_check              = new stdClass();
+		$result_check->league_id   = $this->league_id;
+		$result_check->match_id    = $this->id;
+		$result_check->team_id     = $team;
+		$result_check->description = $error;
+		new Racketmanager_Results_Checker( $result_check );
+	}
 	/**
 	 * Are there result checker entries for match
 	 */
@@ -2409,15 +2448,9 @@ final class Racketmanager_Match {
 				$return->updated = false;
 			}
 		} else {
-			$match_count = $league->update_match_results( $matches, $home_points, $away_points, array(), $this->season, $this->final_round, $this->confirmed );
-			if ( $match_count > 0 ) {
-				/* translators: %s: match count */
-				$return->msg     = __( 'Result saved', 'racketmanager' );
-				$return->updated = true;
-			} else {
-				$return->msg     = __( 'No result to save', 'racketmanager' );
-				$return->updated = false;
-			}
+			$match_count = $league->update_standings( $this->season );
+			$return->msg     = __( 'Result saved', 'racketmanager' );
+			$return->updated = true;
 		}
 		return $return;
 	}

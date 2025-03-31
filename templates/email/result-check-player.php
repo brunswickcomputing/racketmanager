@@ -1,6 +1,6 @@
 <?php
 /**
- * Tournament entry email body
+ * Result check player email body
  *
  * @package Racketmanager/Templates/Email
  */

@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
 ?>
 <form id="matches-filter" method="get">
 	<input type="hidden" name="page" value="racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s" />
@@ -145,7 +146,7 @@ if ( ! empty( $league->current_season['num_match_days'] ) ) {
 							<input type="checkbox" value="<?php echo esc_html( $match->id ); ?>" name="match[<?php echo esc_html( $match->id ); ?>]" />
 						</th>
 						<td><?php echo esc_html( $match->id ); ?></td>
-						<td><?php echo esc_html( ( substr( $match->date, 0, 10 ) === '0000-00-00' ) ? 'N/A' : mysql2date( $this->date_format, $match->date ) ); ?></td>
+						<td><?php echo esc_html( ( substr( $match->date, 0, 10 ) === '0000-00-00' ) ? 'N/A' : mysql2date( $racketmanager->date_format, $match->date ) ); ?></td>
 						<?php
 						if ( ! empty( $league->groups ) && $league->event->competition->is_championship ) {
 							?>
@@ -161,7 +162,7 @@ if ( ! empty( $league->current_season['num_match_days'] ) ) {
 							?>
 						"><?php echo esc_html( $match->match_title ); ?></a></td>
 						<td><?php echo esc_html( ( empty( $match->location ) ) ? 'N/A' : $match->location ); ?></td>
-						<td><?php echo esc_html( ( '00:00' === $match->hour . ':' . $match->minutes ) ? 'N/A' : mysql2date( $this->time_format, $match->date ) ); ?></td>
+						<td><?php echo esc_html( ( '00:00' === $match->hour . ':' . $match->minutes ) ? 'N/A' : mysql2date( $racketmanager->time_format, $match->date ) ); ?></td>
 						<?php
 						if ( ! empty( $league->num_rubbers ) ) {
 							if ( is_numeric( $match->home_team ) && is_numeric( $match->away_team ) ) {

@@ -36,15 +36,9 @@ jQuery(document).ready(function(){
 					<li class="nav-item">
 						<button class="nav-link" id="entries-tab" data-bs-toggle="tab" data-bs-target="#entries" type="button" role="tab" aria-controls="entries" aria-selected="true"><?php esc_html_e( 'Entries', 'racketmanager' ); ?></button>
 					</li>
-					<?php
-					if ( ! $current_season->is_active ) {
-						?>
-						<li class="nav-item">
-							<a class="nav-link" id="plan-tab" href="admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&view=plan&competition_id=<?php echo esc_attr( $competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>" type="button" role="tab"><?php esc_html_e( 'Schedule', 'racketmanager' ); ?></a>
-						</li>
-						<?php
-					}
-					?>
+					<li class="nav-item">
+						<a class="nav-link" id="plan-tab" href="admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&view=plan&competition_id=<?php echo esc_attr( $competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>" type="button" role="tab"><?php esc_html_e( 'Schedule', 'racketmanager' ); ?></a>
+					</li>
 					<li class="nav-item">
 						<a class="nav-link" href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&view=setup&competition_id=<?php echo esc_attr( $competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>" type="button" role="tab"><?php esc_html_e( 'Setup', 'racketmanager' ); ?></a>
 					</li>

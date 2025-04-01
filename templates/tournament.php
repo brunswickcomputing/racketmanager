@@ -61,9 +61,9 @@ $menu_options['players']     = array(
 	'available'   => true,
 	'description' => __( 'Players', 'racketmanager' ),
 );
-$menu_options['orderofplay'] = array(
-	'name'        => 'orderofplay',
-	'selected'    => 'orderofplay' === $tab ? true : false,
+$menu_options['order_of_play'] = array(
+	'name'        => 'order_of_play',
+	'selected'    => 'order_of_play' === $tab ? true : false,
 	'available'   => ( ! empty( $tournament->date ) && gmdate( 'Y-m-d' ) <= $tournament->date && ! empty( $tournament->orderofplay ) ) ? true : false,
 	'description' => __( 'Order of play', 'racketmanager' ),
 );

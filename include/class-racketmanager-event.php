@@ -315,6 +315,24 @@ class Racketmanager_Event {
 	 */
 	public $reverse_rubbers;
 	/**
+	 * Scoring
+	 *
+	 * @var string
+	 */
+	public $scoring;
+	/**
+	 * Offset
+	 *
+	 * @var int
+	 */
+	public $offset;
+	/**
+	 * Match days allowed
+	 *
+	 * @var array
+	 */
+	public $match_days_allowed;
+	/**
 	 * Retrieve event instance
 	 *
 	 * @param int    $event_id event id.

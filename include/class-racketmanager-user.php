@@ -164,6 +164,48 @@ final class Racketmanager_User {
 	 */
 	public $statistics = array();
 	/**
+	 * User password.
+	 *
+	 * @var string
+	 */
+	public $user_pass;
+	/**
+	 * User nicename.
+	 *
+	 * @var string
+	 */
+	public $user_nicename;
+	/**
+	 * User url.
+	 *
+	 * @var url
+	 */
+	public $user_url;
+	/**
+	 * User activation_key.
+	 *
+	 * @var string
+	 */
+	public $user_activation_key;
+	/**
+	 * User login.
+	 *
+	 * @var string
+	 */
+	public $user_login;
+	/**
+	 * User status.
+	 *
+	 * @var string
+	 */
+	public $user_status;
+	/**
+	 * User optins.
+	 *
+	 * @var array
+	 */
+	public $opt_ins;
+	/**
 	 * Retrieve user instance
 	 *
 	 * @param int $user_id user id.

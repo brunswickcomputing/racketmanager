@@ -243,6 +243,42 @@ final class Racketmanager_Tournament {
 	 */
 	public $num_entries;
 	/**
+	 * Type
+	 *
+	 * @var string
+	 */
+	public $type;
+	/**
+	 * Date end
+	 *
+	 * @var string
+	 */
+	public $date_end;
+	/**
+	 * Matches
+	 *
+	 * @var array
+	 */
+	public $matches;
+	/**
+	 * Payments
+	 *
+	 * @var array
+	 */
+	public $payments;
+	/**
+	 * Entries
+	 *
+	 * @var array
+	 */
+	public $entries;
+	/**
+	 * Match dates
+	 *
+	 * @var array
+	 */
+	public $match_dates;
+	/**
 	 * Retrieve tournament instance
 	 *
 	 * @param int    $tournament_id tournament id.

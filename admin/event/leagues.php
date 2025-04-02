@@ -7,90 +7,97 @@
 
 namespace Racketmanager;
 
+$leagues = $event->get_leagues();
 ?>
 <div class>
-
-	<form id='leagues-filter' method='post' action='' class='form-control mb-3'>
-		<?php wp_nonce_field( 'leagues-bulk', 'racketmanager_nonce' ); ?>
-
-		<input type="hidden" name="event_id" value="<?php echo esc_html( $event_id ); ?>" />
-		<?php
-		if ( empty( $tournament ) ) {
-			?>
-			<div class="tablenav">
+	<div class="row gx-3 align-items-center mb-3">
+		<form id="leagues-filter" method="post" action="" class="form-control">
+			<?php wp_nonce_field( 'leagues-bulk', 'racketmanager_nonce' ); ?>
+			<div class="row gx-3 mb-3 align-items-center">
 				<!-- Bulk Actions -->
-				<select name="action" size="1">
-					<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
-					<option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
-				</select>
-				<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doactionleague" id="doactionleague" class="btn btn-secondary action" />
-			</div>
-			<?php
-		}
-		?>
-
-		<div class="container">
-			<div class="row table-header">
-				<div class="col-2 col-lg-1 check-column"><input type="checkbox" id="check-all-leagues" onclick="Racketmanager.checkAll(document.getElementById('leagues-filter'));" /></div>
-				<div class="d-none d-lg-block col-1 column-num">ID</div>
-				<div class="col-4">
-					<?php
-					if ( $event->is_championship ) {
-						esc_html_e( 'Draw', 'racketmanager' );
-					} else {
-						esc_html_e( 'League', 'racketmanager' );
-					}
-					?>
+				<div class="col-auto">
+					<select class="form-select" name="action">
+						<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
+						<option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
+					</select>
 				</div>
-				<div class="col-3 col-lg-1 column-num">
-					<?php
-					if ( $event->is_championship ) {
-						esc_html_e( 'Entries', 'racketmanager' );
-					} else {
-						esc_html_e( 'Teams', 'racketmanager' );
-					}
-					?>
-				</div>
-				<div class="col-3 col-lg-1 column-num">
-					<?php
-					if ( $event->is_championship ) {
-						esc_html_e( 'Draw Size', 'racketmanager' );
-					} else {
-						esc_html_e( 'Matches', 'racketmanager' );
-					}
-					?>
+				<div class="col-auto">
+					<button name="doactionleague" id="doactionleague" class="btn btn-secondary"><?php esc_html_e( 'Apply', 'racketmanager' ); ?></button>
 				</div>
 			</div>
-
-			<?php
-			$leagues = $event->get_leagues();
-			if ( $leagues ) {
-				$class = '';
-				foreach ( $leagues as $league ) {
-					$league = get_league( $league );
-					$class  = ( 'alternate' === $class ) ? '' : 'alternate';
-					?>
-					<div class="row table-row <?php echo esc_html( $class ); ?>">
-						<div class="col-2 col-lg-1 check-column"><input type="checkbox" value="<?php echo esc_html( $league->id ); ?>" name="league[<?php echo esc_html( $league->id ); ?>]" /></div>
-						<div class="d-none d-lg-block col-1 column-num"><?php echo esc_html( $league->id ); ?></div>
-						<div class="col-4"><a href="admin.php?page=racketmanager-<?php echo esc_attr( $event->competition->type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>"><?php echo esc_html( $league->title ); ?></a></div>
-						<div class="col-3 col-lg-1 column-num">
-							<?php echo esc_html( $league->num_teams_total ); ?>
-						</div>
-						<div class="col-3 col-lg-1 column-num">
+			<table class="table table-striped">
+				<thead class="table-dark">
+					<tr>
+						<th class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('leagues-filter'));" /></th>
+						<th class="">
 							<?php
-							if ( $league->is_championship ) {
-								echo esc_html( $league->championship->num_teams_first_round );
+							if ( $event->is_championship ) {
+								esc_html_e( 'Draw', 'racketmanager' );
 							} else {
-								$league->set_num_matches( true );
-								echo esc_html( $league->num_matches_total );
+								esc_html_e( 'League', 'racketmanager' );
 							}
 							?>
-						</div>
-						<div class="d-none d-lg-block col-auto"><a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=event&amp;event_id=<?php echo esc_html( $event->id ); ?>&amp;editleague=<?php echo esc_html( $league->id ); ?>"><?php esc_html_e( 'Edit', 'racketmanager' ); ?></a></div>
-					</div>
-				<?php } ?>
-			<?php } ?>
+						</th>
+						<th class="">
+							<?php
+							if ( $event->is_championship ) {
+								esc_html_e( 'Entries', 'racketmanager' );
+							} else {
+								esc_html_e( 'Teams', 'racketmanager' );
+							}
+							?>
+						</th>
+						<th class="">
+							<?php
+							if ( $event->is_championship ) {
+								esc_html_e( 'Draw Size', 'racketmanager' );
+							} else {
+								esc_html_e( 'Matches', 'racketmanager' );
+							}
+							?>
+						</th>
+						<th></th>
+					</tr>
+				</thead>
+				<?php
+				if ( $leagues ) {
+					?>
+					<tbody>
+						<?php
+						foreach ( $leagues as $league ) {
+							?>
+							<tr>
+								<td class="check-column">
+									<input type="checkbox" value="<?php echo esc_html( $league->id ); ?>" name="league[<?php echo esc_html( $league->id ); ?>]" />
+								</td>
+								<td class="">
+									<a href="admin.php?page=racketmanager-<?php echo esc_attr( $event->competition->type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>"><?php echo esc_html( $league->title ); ?></a>
+								</td>
+								<td class="">
+									<?php echo esc_html( $league->num_teams_total ); ?>
+								</td>
+								<td class="">
+									<?php
+									if ( $league->is_championship ) {
+										echo esc_html( $league->championship->num_teams_first_round );
+									} else {
+										$league->set_num_matches( true );
+										echo esc_html( $league->num_matches_total );
+									}
+									?>
+								</td>
+								<td class="">
+									<a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=event&amp;event_id=<?php echo esc_html( $event->id ); ?>&amp;editleague=<?php echo esc_html( $league->id ); ?>"><?php esc_html_e( 'Edit', 'racketmanager' ); ?></a>
+								</td>
+							</tr>
+							<?php
+						}
+						?>
+					</tbody>
+					<?php
+				}
+				?>
+			</table>
 		</form>
 	</div>
 	<?php

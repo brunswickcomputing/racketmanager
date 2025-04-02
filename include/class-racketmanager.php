@@ -505,7 +505,7 @@ class RacketManager {
 								array(
 									'team'     => $team->team_id,
 									'final'    => 'all',
-									'time'     => 730,
+									'time'     => 365,
 									'complete' => true,
 								)
 							);

@@ -480,6 +480,126 @@ class Racketmanager_Competition {
 	 */
 	public $age_group;
 	/**
+	 * Reverse rubbers
+	 *
+	 * @var boolean
+	 */
+	public $reverse_rubbers;
+	/**
+	 * Home away difference
+	 *
+	 * @var int
+	 */
+	public $home_away_diff;
+	/**
+	 * Filler weeks
+	 *
+	 * @var int
+	 */
+	public $filler_weeks;
+	/**
+	 * Match days allowed array
+	 *
+	 * @var array
+	 */
+	public $match_days_allowed;
+	/**
+	 * Earliest weekday start time
+	 *
+	 * @var string
+	 */
+	public $min_start_time_weekday;
+	/**
+	 * Lateest weekday start time
+	 *
+	 * @var string
+	 */
+	public $max_start_time_weekday;
+	/**
+	 * Earliest weekend start time
+	 *
+	 * @var string
+	 */
+	public $min_start_time_weekend;
+	/**
+	 * Lateest weekend start time
+	 *
+	 * @var string
+	 */
+	public $max_start_time_weekend;
+	/**
+	 * Rules
+	 *
+	 * @var array
+	 */
+	public $rules;
+	/**
+	 * Entries
+	 *
+	 * @var int
+	 */
+	public $entries;
+	/**
+	 * Number of players
+	 *
+	 * @var int
+	 */
+	public $num_players;
+	/**
+	 * Winners
+	 *
+	 * @var array
+	 */
+	public $winners;
+	/**
+	 * Season
+	 *
+	 * @var int
+	 */
+	public $season;
+	/**
+	 * Number of entries
+	 *
+	 * @var int
+	 */
+	public $num_entries;
+	/**
+	 * Primary league
+	 *
+	 * @var int
+	 */
+	public $primary_league;
+	/**
+	 * Offset
+	 *
+	 * @var int
+	 */
+	public $offset;
+	/**
+	 * Competition type
+	 *
+	 * @var string
+	 */
+	public $competition_type;
+	/**
+	 * Player
+	 *
+	 * @var object
+	 */
+	public $player;
+	/**
+	 * Entry link
+	 *
+	 * @var url
+	 */
+	public $entry_link;
+	/**
+	 * Config
+	 *
+	 * @var array
+	 */
+	public $config;
+	/**
 	 * Retrieve competition instance
 	 *
 	 * @param int    $competition_id competition id.

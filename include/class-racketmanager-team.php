@@ -175,7 +175,24 @@ final class Racketmanager_Team {
 	 * @var string
 	 */
 	private $player_not_found_error = 'Player not found';
-
+	/**
+	 * Info variable
+	 *
+	 * @var object
+	 */
+	public $info;
+	/**
+	 * Standings variable
+	 *
+	 * @var array
+	 */
+	public $standings;
+	/**
+	 * Matches variable
+	 *
+	 * @var array
+	 */
+	public $matches;
 	/**
 	 * Retrieve team instance
 	 *

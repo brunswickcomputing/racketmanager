@@ -14,6 +14,7 @@ use stdClass;
 /**
  * Class to implement the Racketmanager_Match object
  */
+#[\AllowDynamicProperties]
 final class Racketmanager_Match {
 
 	/**
@@ -407,6 +408,96 @@ final class Racketmanager_Match {
 	 */
 	public $date_result_entered;
 	/**
+	 * Day
+	 *
+	 * @var int
+	 */
+	public $day;
+	/**
+	 * Month
+	 *
+	 * @var int
+	 */
+	public $month;
+	/**
+	 * Year
+	 *
+	 * @var int
+	 */
+	public $year;
+	/**
+	 * Stats
+	 *
+	 * @var array
+	 */
+	public $stats;
+	/**
+	 * Rubbers
+	 *
+	 * @var array
+	 */
+	public $rubbers;
+	/**
+	 * Updated user
+	 *
+	 * @var string
+	 */
+	public $updated_user;
+	/**
+	 * Class
+	 *
+	 * @var string
+	 */
+	public $class;
+	/**
+	 * Player
+	 *
+	 * @var object
+	 */
+	public $player;
+	/**
+	 * Type
+	 *
+	 * @var string
+	 */
+	public $type;
+	/**
+	 * Event id
+	 *
+	 * @var int
+	 */
+	public $event_id;
+	/**
+	 * Withdrawn
+	 *
+	 * @var boolean
+	 */
+	public $withdrawn;
+	/**
+	 * Confirmation overdue date
+	 *
+	 * @var string
+	 */
+	public $confirmation_overdue_date;
+	/**
+	 * Result overdue date
+	 *
+	 * @var string
+	 */
+	public $result_overdue_date;
+	/**
+	 * Overdue time
+	 *
+	 * @var string
+	 */
+	public $overdue_time;
+	/**
+	 * Walkover
+	 *
+	 * @var boolean
+	 */
+	public $walkover;
+	/**
 	 * Retrieve match instance
 	 *
 	 * @param int $match_id match id.
@@ -447,11 +538,10 @@ final class Racketmanager_Match {
 	public function __construct( $match = null ) {
 		global $wp;
 		if ( ! is_null( $match ) ) {
-			if ( isset( $match->custom ) ) {
+			if ( ! empty( $match->custom ) ) {
 				$match->custom = stripslashes_deep( (array) maybe_unserialize( $match->custom ) );
 				$match         = (object) array_merge( (array) $match, (array) $match->custom );
 			}
-
 			foreach ( get_object_vars( $match ) as $key => $value ) {
 				$this->$key = $value;
 			}
@@ -470,7 +560,7 @@ final class Racketmanager_Match {
 			} else {
 				$this->num_rubbers = $this->get_rubbers( false, true );
 			}
-			$this->location    = '' !== $this->location ? stripslashes( $this->location ) : '';
+			$this->location    = empty( $this->location ) ? '' : stripslashes( $this->location );
 			$this->report      = ( $this->post_id ) ? '<a href="' . get_permalink( $this->post_id ) . '">' . __( 'Report', 'racketmanager' ) . '</a>' : '';
 			$this->sets        = ! empty( $match->custom['sets'] ) ? $match->custom['sets'] : array();
 			$this->is_walkover = false;
@@ -508,7 +598,7 @@ final class Racketmanager_Match {
 			}
 			$this->comments = maybe_unserialize( $this->comments );
 			if ( ! is_array( $this->comments ) ) {
-				$comments       = $this->comments;
+				$comments       = empty( $this->comments ) ? '' : $this->comments;
 				$this->comments = array();
 				$away_comment   = strpos( $comments, __( 'Away:', 'racketmanager' ) );
 				if ( $away_comment ) {
@@ -2740,7 +2830,7 @@ final class Racketmanager_Match {
 		} elseif ( isset( $this->away_captain ) ) {
 			if ( isset( $this->teams['home']->contactemail ) ) {
 				$email_to = $this->teams['home']->captain . ' <' . $this->teams['home']->contactemail . '>';
-				$club     = get_club( $match->teams['home']->club_id );
+				$club     = get_club( $this->teams['home']->club_id );
 				if ( isset( $club->match_secretary_email ) ) {
 					$headers[] = 'cc: ' . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
 				}

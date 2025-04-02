@@ -12,6 +12,7 @@ namespace Racketmanager;
 /**
  * Class to implement the League_Team object
  */
+#[\AllowDynamicProperties]
 final class Racketmanager_League_Team {
 
 
@@ -327,6 +328,84 @@ final class Racketmanager_League_Team {
 	 */
 	public $players = array();
 	/**
+	 * Group variable
+	 *
+	 * @var string
+	 */
+	public $group;
+	/**
+	 * Rank variable
+	 *
+	 * @var string
+	 */
+	public $rank;
+	/**
+	 * Rating variable
+	 *
+	 * @var string
+	 */
+	public $rating;
+	/**
+	 * Straight set variable
+	 *
+	 * @var string
+	 */
+	public $straight_set;
+	/**
+	 * Split set variable
+	 *
+	 * @var string
+	 */
+	public $split_set;
+	/**
+	 * Sets shared variable
+	 *
+	 * @var string
+	 */
+	public $sets_shared;
+	/**
+	 * No team variable
+	 *
+	 * @var string
+	 */
+	public $no_team;
+	/**
+	 * No player variable
+	 *
+	 * @var string
+	 */
+	public $no_player;
+	/**
+	 * Rubbers won variable
+	 *
+	 * @var int
+	 */
+	public $rubbers_won;
+	/**
+	 * Rubbers shared variable
+	 *
+	 * @var int
+	 */
+	public $rubbers_shared;
+	/**
+	 * Matches won variable
+	 *
+	 * @var int
+	 */
+	public $matches_won;
+	/**
+	 * Matches shared variable
+	 *
+	 * @var int
+	 */
+	public $matches_shared;
+	/**
+	 * Info variable
+	 *
+	 * @var object
+	 */
+	public $info;
+	/**
 	 * Get instance function
 	 *
 	 * @param int $league_team_id league team id.
@@ -367,16 +446,14 @@ final class Racketmanager_League_Team {
 	 */
 	public function __construct( $league_team = null ) {
 		if ( ! is_null( $league_team ) ) {
-			if ( isset( $league_team->custom ) ) {
+			if ( ! empty( $league_team->custom ) ) {
 				$league_team->custom = stripslashes_deep( (array) maybe_unserialize( $league_team->custom ) );
 				$league_team         = (object) array_merge( (array) $league_team, (array) $league_team->custom );
 			}
-
 			foreach ( get_object_vars( $league_team ) as $key => $value ) {
 				$key        = trim( $key );
 				$this->$key = $value;
 			}
-
 			$this->title   = htmlspecialchars( stripslashes( $this->title ), ENT_QUOTES );
 			$this->stadium = stripslashes( $this->stadium );
 

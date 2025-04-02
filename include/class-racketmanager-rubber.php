@@ -182,6 +182,72 @@ final class Racketmanager_Rubber {
 	 */
 	public $reverse_rubber;
 	/**
+	 * Day
+	 *
+	 * @var int
+	 */
+	public $day;
+	/**
+	 * Month
+	 *
+	 * @var int
+	 */
+	public $month;
+	/**
+	 * Year
+	 *
+	 * @var int
+	 */
+	public $year;
+	/**
+	 * Stats
+	 *
+	 * @var array
+	 */
+	public $stats;
+	/**
+	 * Class
+	 *
+	 * @var string
+	 */
+	public $class;
+	/**
+	 * Group
+	 *
+	 * @var string
+	 */
+	public $group;
+	/**
+	 * Post id
+	 *
+	 * @var int
+	 */
+	public $post_id;
+	/**
+	 * Walkover
+	 *
+	 * @var string
+	 */
+	public $walkover;
+	/**
+	 * Invalid
+	 *
+	 * @var string
+	 */
+	public $invalid;
+	/**
+	 * Abandoned
+	 *
+	 * @var string
+	 */
+	public $abandoned;
+	/**
+	 * Share
+	 *
+	 * @var string
+	 */
+	public $share;
+	/**
 	 * Get rubber instance function
 	 *
 	 * @param int $rubber_id rubber id.

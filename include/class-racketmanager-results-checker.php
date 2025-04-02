@@ -68,6 +68,12 @@ final class Racketmanager_Results_Checker {
 	 */
 	public $description;
 	/**
+	 * Updated date
+	 *
+	 * @var string
+	 */
+	public $updated_date;
+	/**
 	 * Updated user Id
 	 *
 	 * @var int
@@ -253,6 +259,7 @@ final class Racketmanager_Results_Checker {
 	 * Handle entry
 	 */
 	public function handle() {
+		global $racketmanager;
 		if ( ! empty( $this->updated_date ) ) {
 			return;
 		}

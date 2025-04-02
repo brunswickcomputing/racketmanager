@@ -648,6 +648,24 @@ class Racketmanager_League {
 	 */
 	public $sequence;
 	/**
+	 * Team
+	 *
+	 * @var object
+	 */
+	public $team;
+	/**
+	 * Player
+	 *
+	 * @var object
+	 */
+	public $player;
+	/**
+	 * Finals
+	 *
+	 * @var array
+	 */
+	public $finals;
+	/**
 	 * Retrieve league instance
 	 *
 	 * @param int $league_id league id.
@@ -744,7 +762,7 @@ class Racketmanager_League {
 		$this->num_seasons = count( $this->event->seasons );
 		// set season to latest.
 		$this->set_season();
-		$this->groups          = trim( $this->groups );
+		$this->groups          = trim( $this->groups ?? '' );
 		$this->mode            = $event->competition->mode;
 		$this->num_sets        = $event->num_sets;
 		$this->num_sets_to_win = floor( $this->num_sets / 2 ) + 1;
@@ -1513,7 +1531,7 @@ class Racketmanager_League {
 			$class      = '';
 			$team_index = array();
 			foreach ( $teams as $i => $team ) {
-				$team    = get_league_team( $team );
+				$team    = get_league_team( $team->table_id );
 				$class   = array();
 				$class[] = ( 'alternate' === $class ) ? '' : 'alternate';
 				// Add class for home team.

@@ -26,6 +26,12 @@ final class Racketmanager_Player {
 	 */
 	public $id;
 	/**
+	 * Club player id.
+	 *
+	 * @var int
+	 */
+	public $club_player_id;
+	/**
 	 * Email address.
 	 *
 	 * @var string
@@ -122,6 +128,18 @@ final class Racketmanager_Player {
 	 */
 	public $removed_user;
 	/**
+	 * Created user.
+	 *
+	 * @var int
+	 */
+	public $created_user;
+	/**
+	 * Created user name.
+	 *
+	 * @var string
+	 */
+	public $created_user_name;
+	/**
 	 * Locked indicator.
 	 *
 	 * @var boolean
@@ -205,6 +223,144 @@ final class Racketmanager_Player {
 	 * @var array
 	 */
 	public $wtn;
+	/**
+	 * User password.
+	 *
+	 * @var string
+	 */
+	public $user_pass;
+	/**
+	 * User nicename.
+	 *
+	 * @var string
+	 */
+	public $user_nicename;
+	/**
+	 * User url.
+	 *
+	 * @var url
+	 */
+	public $user_url;
+	/**
+	 * User activation_key.
+	 *
+	 * @var string
+	 */
+	public $user_activation_key;
+	/**
+	 * User login.
+	 *
+	 * @var string
+	 */
+	public $user_login;
+	/**
+	 * User status.
+	 *
+	 * @var string
+	 */
+	public $user_status;
+	/**
+	 * Index.
+	 *
+	 * @var string
+	 */
+	public $index;
+	/**
+	 * Stats
+	 *
+	 * @var array
+	 */
+	public $stats;
+	/**
+	 * Class
+	 *
+	 * @var string
+	 */
+	public $class;
+	/**
+	 * Matches won variable
+	 *
+	 * @var int
+	 */
+	public $matches_won;
+	/**
+	 * Matches lost variable
+	 *
+	 * @var int
+	 */
+	public $matches_lost;
+	/**
+	 * Win pct variable
+	 *
+	 * @var float
+	 */
+	public $win_pct;
+	/**
+	 * Played variable
+	 *
+	 * @var int
+	 */
+	public $played;
+	/**
+	 * Error description variable
+	 *
+	 * @var string
+	 */
+	public $description;
+	/**
+	 * Competitions variable
+	 *
+	 * @var array
+	 */
+	public $competitions;
+	/**
+	 * Cup variable
+	 *
+	 * @var array
+	 */
+	public $cup;
+	/**
+	 * League variable
+	 *
+	 * @var array
+	 */
+	public $league;
+	/**
+	 * Tournament variable
+	 *
+	 * @var array
+	 */
+	public $tournament;
+	/**
+	 * Teams variable
+	 *
+	 * @var array
+	 */
+	public $teams;
+	/**
+	 * Club variable
+	 *
+	 * @var object
+	 */
+	public $club;
+	/**
+	 * Team
+	 *
+	 * @var object
+	 */
+	public $team;
+	/**
+	 * Status
+	 *
+	 * @var string
+	 */
+	public $status;
+	/**
+	 * Entry id
+	 *
+	 * @var int
+	 */
+	public $entry_id;
 	/**
 	 * Retrieve player instance
 	 *

@@ -333,6 +333,90 @@ class Racketmanager_Event {
 	 */
 	public $match_days_allowed;
 	/**
+	 * Entries
+	 *
+	 * @var array
+	 */
+	public $entries;
+	/**
+	 * Teams
+	 *
+	 * @var array
+	 */
+	public $teams;
+	/**
+	 * Player
+	 *
+	 * @var object
+	 */
+	public $player;
+	/**
+	 * Primary league
+	 *
+	 * @var int
+	 */
+	public $primary_league;
+	/**
+	 * Team count
+	 *
+	 * @var int
+	 */
+	public $team_count;
+	/**
+	 * Player count
+	 *
+	 * @var int
+	 */
+	public $player_count;
+	/**
+	 * Number of seeds
+	 *
+	 * @var int
+	 */
+	public $num_seeds;
+	/**
+	 * Team
+	 *
+	 * @var object
+	 */
+	public $team;
+	/**
+	 * Team ranking
+	 *
+	 * @var string
+	 */
+	public $team_ranking;
+	/**
+	 * Competition type
+	 *
+	 * @var string
+	 */
+	public $competition_type;
+	/**
+	 * Number of courts available
+	 *
+	 * @var array
+	 */
+	public $num_courts_available;
+	/**
+	 * Status
+	 *
+	 * @var string
+	 */
+	public $status;
+	/**
+	 * Draw size
+	 *
+	 * @var int
+	 */
+	public $draw_size;
+	/**
+	 * Config
+	 *
+	 * @var array
+	 */
+	public $config;
+	/**
 	 * Retrieve event instance
 	 *
 	 * @param int    $event_id event id.

@@ -61,7 +61,12 @@ final class Racketmanager_Charges {
 	 * @var string
 	 */
 	public $fee_event;
-
+	/**
+	 * Total
+	 *
+	 * @var float
+	 */
+	public $total;
 	/**
 	 * Get class instance
 	 *

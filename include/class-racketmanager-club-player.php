@@ -20,6 +20,120 @@ final class Racketmanager_Club_Player {
 	 */
 	public $id;
 	/**
+	 * Player Id
+	 *
+	 * @var int
+	 */
+	public $player_id;
+	/**
+	 * Club Id
+	 *
+	 * @var int
+	 */
+	public $club_id;
+	/**
+	 * Club Player Id
+	 *
+	 * @var int
+	 */
+	public $club_player_id;
+	/**
+	 * Removed date
+	 *
+	 * @var string
+	 */
+	public $removed_date;
+	/**
+	 * Removed user
+	 *
+	 * @var int
+	 */
+	public $removed_user;
+	/**
+	 * Removed user name
+	 *
+	 * @var string
+	 */
+	public $removed_user_name;
+	/**
+	 * Removed user email
+	 *
+	 * @var string
+	 */
+	public $removed_user_email;
+	/**
+	 * Created date
+	 *
+	 * @var string
+	 */
+	public $created_date;
+	/**
+	 * Created user
+	 *
+	 * @var int
+	 */
+	public $created_user;
+	/**
+	 * Requested date
+	 *
+	 * @var string
+	 */
+	public $requested_date;
+	/**
+	 * Created user name
+	 *
+	 * @var string
+	 */
+	public $created_user_name;
+	/**
+	 * Created user email
+	 *
+	 * @var string
+	 */
+	public $created_user_email;
+	/**
+	 * Requested user
+	 *
+	 * @var int
+	 */
+	public $requested_user;
+	/**
+	 * Requested user name
+	 *
+	 * @var string
+	 */
+	public $requested_user_name;
+	/**
+	 * Requested user email
+	 *
+	 * @var string
+	 */
+	public $requested_user_email;
+	/**
+	 * Club
+	 *
+	 * @var object
+	 */
+	public $club;
+	/**
+	 * Player
+	 *
+	 * @var object
+	 */
+	public $player;
+	/**
+	 * System record
+	 *
+	 * @var boolean
+	 */
+	public $system_record;
+	/**
+	 * Updated
+	 *
+	 * @var string
+	 */
+	public $updated;
+	/**
 	 * Retrieve club_player instance
 	 *
 	 * @param int    $club_player_id club player id or name.

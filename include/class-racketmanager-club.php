@@ -122,6 +122,60 @@ final class Racketmanager_Club {
 	 */
 	public $link;
 	/**
+	 * Team count
+	 *
+	 * @var int
+	 */
+	public $team_count;
+	/**
+	 * Player count
+	 *
+	 * @var int
+	 */
+	public $player_count;
+	/**
+	 * Players variable
+	 *
+	 * @var array
+	 */
+	public $players;
+	/**
+	 * Teams variable
+	 *
+	 * @var array
+	 */
+	public $teams;
+	/**
+	 * Matches variable
+	 *
+	 * @var array
+	 */
+	public $matches;
+	/**
+	 * Results variable
+	 *
+	 * @var array
+	 */
+	public $results;
+	/**
+	 * Created date variable
+	 *
+	 * @var string
+	 */
+	public $created_date;
+	/**
+	 * Removed date variable
+	 *
+	 * @var string
+	 */
+	public $removed_date;
+	/**
+	 * Player variable
+	 *
+	 * @var object
+	 */
+	public $player;
+	/**
 	 * Retrieve club instance
 	 *
 	 * @param int    $club_id club id or name.

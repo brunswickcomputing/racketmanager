@@ -18,7 +18,7 @@ jQuery(document).ready(function(){
 
 <div class="container">
 	<?php
-	if ( isset( $league->groups ) && ! empty( $league->groups ) ) {
+	if ( ! empty( $league->groups ) ) {
 		?>
 		<div class="alignright" style="margin-right: 1em;">
 			<form action="admin.php" method="get" style="display: inline;">

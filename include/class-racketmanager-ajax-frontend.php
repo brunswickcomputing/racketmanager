@@ -193,7 +193,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			//phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 			$club_players = $_POST['clubPlayer'];
 			$deleted      = 0;
-			foreach ( $club_players as $roster_id ) {
+			foreach ( $club_players as $club_player_id ) {
 				$club_player = get_club_player( $club_player_id );
 				if ( $club_player ) {
 					$club_player->remove();

@@ -1273,7 +1273,7 @@ class RacketManager_Shortcodes {
 	 * @param string $msg mesage to display.
 	 * @return string output html modal
 	 */
-	protected function return_error( $msg ) {
+	public function return_error($msg ) {
 		ob_start();
 		?>
 		<div>

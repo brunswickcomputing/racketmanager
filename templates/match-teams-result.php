@@ -166,11 +166,9 @@ if ( $match->is_walkover ) {
 										if ( ! empty( $match->comments['result'] ) ) {
 											?>
 											<div class="row mt-3 mb-3">
-												<div>
-													<div class="form-floating">
-														<textarea class="form-control result-comments" <?php echo 'admin' === $user_type ? null : 'readonly'; ?> tabindex="490" placeholder="Leave a comment here" name="matchComments[result]" id="matchComments"><?php echo esc_html( $match->comments['result'] ); ?></textarea>
-														<label for="matchComments"><?php esc_html_e( 'Match Comments', 'racketmanager' ); ?></label>
-													</div>
+												<div class="form-floating">
+													<textarea class="form-control result-comments" <?php echo 'admin' === $user_type ? null : 'readonly'; ?> tabindex="490" placeholder="Leave a comment here" name="matchComments[result]" id="matchComments"><?php echo esc_html( $match->comments['result'] ); ?></textarea>
+													<label for="matchComments"><?php esc_html_e( 'Match Comments', 'racketmanager' ); ?></label>
 												</div>
 											</div>
 											<?php

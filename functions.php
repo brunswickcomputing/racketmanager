@@ -199,6 +199,9 @@ function racketmanager_the_svg( $svg_name ) {
  * @param string $svg_name The name of the icon.
  */
 function racketmanager_get_svg( $svg_name ) {
+	if ( empty( $svg_name ) ) {
+		return false;
+	}
 
 	// Make sure that only our allowed tags and attributes are included.
 	$svg = wp_kses(

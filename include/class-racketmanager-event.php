@@ -311,9 +311,9 @@ class Racketmanager_Event {
 	/**
 	 * Reverse rubbers
 	 *
-	 * @var string|boolean
+	 * @var string|boolean|null
 	 */
-	public string|bool $reverse_rubbers;
+	public string|bool|null $reverse_rubbers;
 	/**
 	 * Scoring
 	 *
@@ -1392,9 +1392,9 @@ class Racketmanager_Event {
 	 * Get teams from database
 	 *
 	 * @param array|string $args search arguments.
-	 * @return array
+	 * @return array|int
 	 */
-	public function get_teams(array|string $args = array() ): array {
+	public function get_teams(array|string $args = array() ): array|int {
 		global $wpdb;
 
 		$defaults = array(

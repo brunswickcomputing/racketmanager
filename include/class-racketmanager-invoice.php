@@ -18,91 +18,97 @@ final class Racketmanager_Invoice {
 	 *
 	 * @var int
 	 */
-	public $id;
+	public int $id;
 	/**
 	 * Invoice number
 	 *
 	 * @var int
 	 */
-	public $invoice_number;
+	public int $invoice_number;
 	/**
 	 * Club
 	 *
 	 * @var object
 	 */
-	public $club;
+	public object $club;
 	/**
 	 * Club id
 	 *
 	 * @var int
 	 */
-	public $club_id;
+	public int $club_id;
 	/**
 	 * Player
 	 *
 	 * @var object
 	 */
-	public $player;
+	public object $player;
 	/**
 	 * Player id
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public $player_id;
+	public int|null $player_id;
 	/**
 	 * Charge
 	 *
 	 * @var object
 	 */
-	public $charge;
+	public object $charge;
 	/**
 	 * Charge id
 	 *
 	 * @var int
 	 */
-	public $charge_id;
+	public int $charge_id;
 	/**
 	 * Status
 	 *
 	 * @var string
 	 */
-	public $status;
+	public string $status;
 	/**
 	 * Invoice date
 	 *
 	 * @var string
 	 */
-	public $date;
+	public string $date;
 	/**
 	 * Date due
 	 *
 	 * @var string
 	 */
-	public $date_due;
+	public string $date_due;
 	/**
 	 * Amount
 	 *
 	 * @var string
 	 */
-	public $amount;
+	public string $amount;
 	/**
 	 * Payment ref
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $payment_reference;
+	public string|null $payment_reference;
 	/**
 	 * Details
 	 *
-	 * @var string
+	 * @var object|null
 	 */
-	public $details;
+	public object|null $details;
+	/**
+	 * Racketmanager
+	 *
+	 * @var object
+	 */
+	public object $racketmanager;
 	/**
 	 * Get class instance
 	 *
 	 * @param int $invoice_id id.
 	 */
-	public static function get_instance( $invoice_id ) {
+	public static function get_instance(int $invoice_id ) {
 		global $wpdb;
 		if ( ! $invoice_id ) {
 			return false;
@@ -112,7 +118,7 @@ final class Racketmanager_Invoice {
 		if ( ! $invoice ) {
 			$invoice = $wpdb->get_row(
 				$wpdb->prepare(
-					"SELECT `id`, `charge_id`, `club_id`, `player_id`, `status`, `invoiceNumber` as `invoice_number`, `date`, `date_due`, `amount`, `payment_reference`, `details` FROM {$wpdb->racketmanager_invoices} WHERE `id` = %d LIMIT 1",
+					"SELECT `id`, `charge_id`, `club_id`, `player_id`, `status`, `invoiceNumber` as `invoice_number`, `date`, `date_due`, `amount`, `payment_reference`, `details` FROM $wpdb->racketmanager_invoices WHERE `id` = %d LIMIT 1",
 					$invoice_id
 				)
 			);  // db call ok.
@@ -132,9 +138,9 @@ final class Racketmanager_Invoice {
 	/**
 	 * Construct class instance
 	 *
-	 * @param object $invoice invoice object.
+	 * @param object|null $invoice invoice object.
 	 */
-	public function __construct( $invoice = null ) {
+	public function __construct(object $invoice = null ) {
 		$this->racketmanager = Racketmanager::get_instance();
 		if ( ! is_null( $invoice ) ) {
 			if ( isset( $invoice->details ) ) {
@@ -160,16 +166,24 @@ final class Racketmanager_Invoice {
 	/**
 	 * Add new invoice
 	 */
-	private function add() {
+	private function add(): void {
 		global $racketmanager, $wpdb;
 		$this->status = 'new';
 		$billing      = $racketmanager->get_options( 'billing' );
 		if ( $billing ) {
-			$date_due = new \DateTime( $this->date );
+			try {
+				$date_due = new \DateTime($this->date);
+			} catch (\DateMalformedStringException) {
+				$date_due = null;
+			}
 			if ( isset( $billing['paymentTerms'] ) && intval( $billing['paymentTerms'] ) !== 0 ) {
 				$date_interval = intval( $billing['paymentTerms'] );
 				$date_interval = 'P' . $date_interval . 'D';
-				$date_due->add( new \DateInterval( $date_interval ) );
+				try {
+					$date_due->add(new \DateInterval($date_interval));
+				} catch (\DateMalformedIntervalStringException) {
+					$date_due = null;
+				}
 			}
 			$this->date_due       = $date_due->format( 'Y-m-d' );
 			$this->invoice_number = $billing['invoiceNumber'];
@@ -178,7 +192,7 @@ final class Racketmanager_Invoice {
 			if ( empty( $this->player_id ) ) {
 				$result = $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 					$wpdb->prepare(
-						"INSERT INTO {$wpdb->racketmanager_invoices} (`charge_id`, `club_id`, `status`, `invoiceNumber`, `date`, `date_due`) VALUES (%d, %d, %s, %d, %s, %s)",
+						"INSERT INTO $wpdb->racketmanager_invoices (`charge_id`, `club_id`, `status`, `invoiceNumber`, `date`, `date_due`) VALUES (%d, %d, %s, %d, %s, %s)",
 						$this->charge_id,
 						$this->club_id,
 						$this->status,
@@ -190,7 +204,7 @@ final class Racketmanager_Invoice {
 			} else {
 				$result = $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 					$wpdb->prepare(
-						"INSERT INTO {$wpdb->racketmanager_invoices} (`charge_id`, `player_id`, `status`, `invoiceNumber`, `date`, `date_due`) VALUES (%d, %d, %s, %d, %s, %s)",
+						"INSERT INTO $wpdb->racketmanager_invoices (`charge_id`, `player_id`, `status`, `invoiceNumber`, `date`, `date_due`) VALUES (%d, %d, %s, %d, %s, %s)",
 						$this->charge_id,
 						$this->player_id,
 						$this->status,
@@ -210,11 +224,11 @@ final class Racketmanager_Invoice {
 	/**
 	 * Delete invoice
 	 */
-	public function delete() {
+	public function delete(): void {
 		global $wpdb;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_invoices} WHERE `id` = %d",
+				"DELETE FROM $wpdb->racketmanager_invoices WHERE `id` = %d",
 				$this->id
 			)
 		);
@@ -225,12 +239,12 @@ final class Racketmanager_Invoice {
 	 *
 	 * @param string $amount amount value.
 	 */
-	public function set_amount( $amount ) {
+	public function set_amount(string $amount ):  bool {
 		global $wpdb;
 		$this->amount = $amount;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_invoices} set `amount` = %d WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_invoices set `amount` = %d WHERE `id` = %d",
 				$this->amount,
 				$this->id
 			)
@@ -243,7 +257,7 @@ final class Racketmanager_Invoice {
 	 *
 	 * @param string $status status value.
 	 */
-	public function set_status( $status ) {
+	public function set_status(string $status ): bool {
 		global $wpdb;
 
 		if ( 'resent' === $status ) {
@@ -255,7 +269,7 @@ final class Racketmanager_Invoice {
 		$this->status = $status;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_invoices} set `status` = %s WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_invoices set `status` = %s WHERE `id` = %d",
 				$this->status,
 				$this->id
 			)
@@ -268,13 +282,13 @@ final class Racketmanager_Invoice {
 	 *
 	 * @param string $reference reference value.
 	 */
-	public function set_payment_reference( $reference ) {
+	public function set_payment_reference(string $reference ): bool {
 		global $wpdb;
 
 		$this->payment_reference = $reference;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_invoices} set `payment_reference` = %s WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_invoices set `payment_reference` = %s WHERE `id` = %d",
 				$this->payment_reference,
 				$this->id
 			)
@@ -285,15 +299,15 @@ final class Racketmanager_Invoice {
 	/**
 	 * Set details
 	 *
-	 * @param string $details invoice details.
+	 * @param object $details invoice details.
 	 */
-	public function set_details( $details ) {
+	public function set_details(object $details ): bool {
 		global $wpdb;
 
 		$this->details = $details;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_invoices} set `details` = %s WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_invoices set `details` = %s WHERE `id` = %d",
 				wp_json_encode( $this->details ),
 				$this->id
 			)
@@ -305,8 +319,7 @@ final class Racketmanager_Invoice {
 	 * Generate invoice
 	 */
 	public function generate() {
-		global $racketmanager_shortcodes, $racketmanager;
-		$charge  = get_charge( $this->charge );
+		global $racketmanager_shortcodes;
 		if ( empty( $this->club ) ) {
 			$target        = get_player( $this->player );
 			$target->name  = $this->player->display_name;
@@ -330,8 +343,9 @@ final class Racketmanager_Invoice {
 	 * Send invoice
 	 *
 	 * @param boolean $resend resend indicator.
+	 * return boolean
 	 */
-	public function send( $resend = false ) {
+	public function send(bool $resend = false ): bool {
 		global $racketmanager_shortcodes, $racketmanager;
 
 		$billing    = $racketmanager->get_options( 'billing' );

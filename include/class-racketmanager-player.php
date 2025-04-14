@@ -398,9 +398,6 @@ final class Racketmanager_Player {
 							$player_id = substr_replace( $player_id, '.', $pos, strlen( ' ' ) );
 						}
 					}
-					if ( false !== strpos( $player_id, '-' ) ) {
-						$player_id = str_replace( '-', ' ', $player_id );
-					}
 					$player = get_user_by( 'login', strtolower( $player_id ) );
 					break;
 				case 'name':

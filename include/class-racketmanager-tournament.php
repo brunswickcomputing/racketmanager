@@ -19,273 +19,274 @@ final class Racketmanager_Tournament {
 	 *
 	 * @var int
 	 */
-	public $id;
+	public int $id;
 	/**
 	 * Tournament name
 	 *
 	 * @var string
 	 */
-	public $name;
+	public string $name;
 	/**
 	 * Competition id
 	 *
 	 * @var int
 	 */
-	public $competition_id;
+	public int $competition_id;
 	/**
 	 * Competition
 	 *
-	 * @var object
+	 * @var object|null
 	 */
-	public $competition;
+	public null|object $competition;
 	/**
 	 * Tournament season
 	 *
 	 * @var string
 	 */
-	public $season;
+	public string $season;
 	/**
 	 * Number of courts available for matches
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public $num_courts;
+	public ?int $num_courts;
 	/**
 	 * Start time
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $starttime;
+	public ?string $start_time;
 	/**
 	 * Date
 	 *
 	 * @var string
 	 */
-	public $date;
+	public string $date;
 	/**
 	 * Date display
 	 *
-	 * @var string
+	 * @var string|int|false
 	 */
-	public $date_display;
+	public string|int|false $date_display;
 	/**
 	 * Closing Date
 	 *
 	 * @var string
 	 */
-	public $date_closing;
+	public string $date_closing;
 	/**
 	 * Closing Date display
 	 *
-	 * @var string
+	 * @var string|false
 	 */
-	public $date_closing_display;
+	public string|false $date_closing_display;
 	/**
 	 * Date withdrawal variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $date_withdrawal;
+	public ?string $date_withdrawal;
 	/**
 	 * Date withdrawal display
 	 *
-	 * @var string
+	 * @var string|false
 	 */
-	public $date_withdrawal_display;
+	public string|false $date_withdrawal_display;
 	/**
 	 * Date open variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $date_open;
+	public ?string $date_open;
 	/**
 	 * Date open display variable
 	 *
-	 * @var string
+	 * @var string|false
 	 */
-	public $date_open_display;
+	public string|false $date_open_display;
 	/**
 	 * Date start variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $date_start;
+	public ?string $date_start;
 	/**
 	 * Date start display variable
 	 *
-	 * @var string
+	 * @var string|false
 	 */
-	public $date_start_display;
+	public string|false $date_start_display;
 	/**
 	 * Venue
 	 *
-	 * @var id
+	 * @var int/null
 	 */
-	public $venue;
+	public int $venue;
 	/**
 	 * Venue name
 	 *
 	 * @var string
 	 */
-	public $venue_name;
+	public string $venue_name;
 	/**
 	 * Is tournament active
 	 *
 	 * @var boolean
 	 */
-	public $is_active;
+	public bool $is_active;
 	/**
 	 * Order of play
 	 *
-	 * @var string
+	 * @var string|array|null
 	 */
-	public $orderofplay;
+	public string|array|null $order_of_play;
 	/**
 	 * Time increment for finals day matches
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $time_increment;
+	public ?string $time_increment;
 	/**
 	 * Competitions variable
 	 *
 	 * @var array
 	 */
-	public $competitions;
+	public array $competitions;
 	/**
 	 * Events variable
 	 *
 	 * @var array
 	 */
-	public $events = array();
+	public array $events = array();
 	/**
 	 * Players variable
 	 *
 	 * @var array
 	 */
-	public $players = array();
+	public array $players = array();
 	/**
 	 * Current phase variable
 	 *
 	 * @var string
 	 */
-	public $current_phase;
+	public string $current_phase;
 	/**
 	 * Is complete
 	 *
 	 * @var boolean
 	 */
-	public $is_complete = false;
+	public bool $is_complete = false;
 	/**
 	 * Is started
 	 *
 	 * @var boolean
 	 */
-	public $is_started = false;
+	public bool $is_started = false;
 	/**
 	 * Is closed
 	 *
 	 * @var boolean
 	 */
-	public $is_closed = false;
+	public bool $is_closed = false;
 	/**
 	 * Is withdrawal
 	 *
 	 * @var boolean
 	 */
-	public $is_withdrawal = false;
+	public bool $is_withdrawal = false;
 	/**
 	 * Is open
 	 *
 	 * @var boolean
 	 */
-	public $is_open = false;
+	public bool $is_open = false;
 	/**
 	 * Link variable
 	 *
 	 * @var string
 	 */
-	public $link;
+	public string $link;
 	/**
 	 * Competition code variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $competition_code;
+	public ?string $competition_code;
 	/**
 	 * Finals variable
 	 *
 	 * @var array
 	 */
-	public $finals;
+	public array $finals;
 	/**
 	 * Grade variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $grade;
+	public ?string $grade;
 	/**
 	 * Fees
 	 *
 	 * @var object
 	 */
-	public $fees;
+	public object $fees;
 	/**
 	 * Charge object
 	 *
 	 * @var object
 	 */
-	public $charge;
+	public object $charge;
 	/**
 	 * Number of entries
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public $num_entries;
+	public ?int $num_entries;
 	/**
 	 * Type
 	 *
 	 * @var string
 	 */
-	public $type;
+	public string $type;
 	/**
 	 * Date end
 	 *
 	 * @var string
 	 */
-	public $date_end;
+	public string $date_end;
 	/**
 	 * Matches
 	 *
 	 * @var array
 	 */
-	public $matches;
+	public array $matches;
 	/**
 	 * Payments
 	 *
 	 * @var array
 	 */
-	public $payments;
+	public array $payments;
 	/**
 	 * Entries
 	 *
 	 * @var array
 	 */
-	public $entries;
+	public array $entries;
 	/**
 	 * Match dates
 	 *
 	 * @var array
 	 */
-	public $match_dates;
+	public array $match_dates;
+
 	/**
 	 * Retrieve tournament instance
 	 *
-	 * @param int    $tournament_id tournament id.
+	 * @param int|string $tournament_id tournament id.
 	 * @param string $search_term search term - defaults to id.
-	 * @return object
+	 * @return object|boolean /boolean
 	 */
-	public static function get_instance( $tournament_id, $search_term = 'id' ) {
+	public static function get_instance(int|string $tournament_id, string $search_term = 'id' ): object|bool {
 		global $wpdb;
 		if ( ! $tournament_id ) {
 			return false;
@@ -322,7 +323,7 @@ final class Racketmanager_Tournament {
 			$tournament = $wpdb->get_row(
 				$wpdb->prepare(
 				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					"SELECT `id`, `name`, `competition_id`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`date_closing`, '%%Y-%%m-%%d') AS `date_closing`, `date_start`, `date_open`, `date_withdrawal`, `grade`, `num_entries`, `numcourts` AS `num_courts`, `starttime`, `timeincrement` AS `time_increment`, `orderofplay`, `competition_code` FROM {$wpdb->racketmanager_tournaments} WHERE $search"
+					"SELECT `id`, `name`, `competition_id`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`date_closing`, '%%Y-%%m-%%d') AS `date_closing`, `date_start`, `date_open`, `date_withdrawal`, `grade`, `num_entries`, `numcourts` AS `num_courts`, `starttime` as `start_time`, `timeincrement` AS `time_increment`, `orderofplay` as `order_of_play`, `competition_code` FROM $wpdb->racketmanager_tournaments WHERE $search"
 				)
 			); // db call ok.
 			if ( ! $tournament ) {
@@ -338,9 +339,9 @@ final class Racketmanager_Tournament {
 	/**
 	 * Constructor
 	 *
-	 * @param object $tournament Tournament object.
+	 * @param object|null $tournament Tournament object.
 	 */
-	public function __construct( $tournament = null ) {
+	public function __construct( object $tournament = null ) {
 		global $racketmanager, $wp;
 		if ( ! is_null( $tournament ) ) {
 			foreach ( $tournament as $key => $value ) {
@@ -351,13 +352,12 @@ final class Racketmanager_Tournament {
 				$this->add();
 			}
 			$this->link                    = '/tournament/' . seo_url( $this->name ) . '/';
-			$this->date_display            = ( substr( $this->date, 0, 10 ) === '0000-00-00' ) ? 'TBC' : mysql2date( $racketmanager->date_format, $this->date );
-			$this->date_closing_display    = ( substr( $this->date_closing, 0, 10 ) === '0000-00-00' ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_closing );
-			$this->date_withdrawal_display = ( substr( $this->date_closing, 0, 10 ) === '0000-00-00' ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_withdrawal );
+			$this->date_display            = ( str_starts_with( $this->date, '0000-00-00') ) ? 'TBC' : mysql2date( $racketmanager->date_format, $this->date );
+			$this->date_closing_display    = ( str_starts_with( $this->date_closing, '0000-00-00' ) ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_closing );
+			$this->date_withdrawal_display = ( str_starts_with( $this->date_closing, '0000-00-00' ) ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_withdrawal );
 			$this->date_open_display       = empty( $this->date_open ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_open );
 			$this->date_start_display      = empty( $this->date_start ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_start );
 			$today                         = gmdate( 'Y-m-d' );
-			$this->current_phase           = 'complete';
 			if ( $today > $this->date ) {
 				$this->current_phase = 'end';
 				$this->is_complete   = true;
@@ -388,12 +388,11 @@ final class Racketmanager_Tournament {
 			} else {
 				$this->is_active = false;
 			}
-			$this->orderofplay = (array) maybe_unserialize( $this->orderofplay );
+			$this->order_of_play = (array) maybe_unserialize( $this->order_of_play );
 			if ( $this->competition_id ) {
 				$this->competition = get_competition( $this->competition_id );
 			}
 			$finals     = array();
-			$num_teams  = 64;
 			$max_rounds = 6;
 			$r          = $max_rounds;
 			for ( $round = 1; $round <= $max_rounds; ++$round ) {
@@ -423,13 +422,13 @@ final class Racketmanager_Tournament {
 	/**
 	 * Add tournament
 	 */
-	private function add() {
+	private function add(): void {
 		global $wpdb, $racketmanager;
 		$validate = $this->validate( $this );
 		if ( $validate->valid ) {
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"INSERT INTO {$wpdb->racketmanager_tournaments} (`name`, `competition_id`, `season`, `venue`, `date_open`, `date_closing`, `date_withdrawal`, `date_start`, `date`, `competition_code`, `grade`, `num_entries` ) VALUES (%s, %s, %d, %d, %s, %s, %s, %s, %s, %s, %s, %d )",
+					"INSERT INTO $wpdb->racketmanager_tournaments (`name`, `competition_id`, `season`, `venue`, `date_open`, `date_closing`, `date_withdrawal`, `date_start`, `date`, `competition_code`, `grade`, `num_entries` ) VALUES (%s, %s, %d, %d, %s, %s, %s, %s, %s, %s, %s, %d )",
 					$this->name,
 					$this->competition_id,
 					$this->season,
@@ -446,15 +445,13 @@ final class Racketmanager_Tournament {
 			);
 			$racketmanager->set_message( __( 'Tournament added', 'racketmanager' ) );
 			$this->id                      = $wpdb->insert_id;
-			$this->orderofplay             = '';
+			$this->order_of_play             = '';
 			$racketmanager->error_fields   = null;
 			$racketmanager->error_messages = null;
-			return true;
 		} else {
 			$racketmanager->error_fields   = $validate->fld;
 			$racketmanager->error_messages = $validate->msg;
 			$racketmanager->set_message( __( 'Error creating tournament', 'racketmanager' ), true );
-			return false;
 		}
 	}
 
@@ -464,7 +461,7 @@ final class Racketmanager_Tournament {
 	 * @param object $updated updated tournament values.
 	 * @return boolean
 	 */
-	public function update( $updated ) {
+	public function update(object $updated ): bool {
 		global $wpdb, $racketmanager;
 		$validate = $this->validate( $updated );
 		if ( $validate->valid ) {
@@ -477,13 +474,13 @@ final class Racketmanager_Tournament {
 			$this->date_withdrawal  = $updated->date_withdrawal;
 			$this->date_start       = $updated->date_start;
 			$this->date             = $updated->date;
-			$this->starttime        = $updated->starttime;
+			$this->start_time       = $updated->start_time;
 			$this->competition_code = $updated->competition_code;
 			$this->grade            = $updated->grade;
 			$this->num_entries      = $updated->num_entries;
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_tournaments} SET `name` = %s, `competition_id` = %d, `season` = %s, `venue` = %d, `date_open` = %s, `date_closing` = %s, `date_withdrawal` = %s, `date_start` = %s, `date` = %s, `starttime` = %s, `competition_code` = %s, `grade` = %s, `num_entries` = %d WHERE `id` = %d",
+					"UPDATE $wpdb->racketmanager_tournaments SET `name` = %s, `competition_id` = %d, `season` = %s, `venue` = %d, `date_open` = %s, `date_closing` = %s, `date_withdrawal` = %s, `date_start` = %s, `date` = %s, `starttime` = %s, `competition_code` = %s, `grade` = %s, `num_entries` = %d WHERE `id` = %d",
 					$updated->name,
 					$updated->competition_id,
 					$updated->season,
@@ -493,7 +490,7 @@ final class Racketmanager_Tournament {
 					$updated->date_withdrawal,
 					$updated->date_start,
 					$updated->date,
-					$updated->starttime,
+					$updated->start_time,
 					$updated->competition_code,
 					$this->grade,
 					$this->num_entries,
@@ -513,12 +510,12 @@ final class Racketmanager_Tournament {
 		}
 	}
 	/**
-	 * Fucntion to validate new or updated tournament
+	 * Function to validate new or updated tournament
 	 *
 	 * @param object $tournament tournament details.
 	 * @return object
 	 */
-	private function validate( $tournament ) {
+	private function validate(object $tournament ): object {
 		$return  = new \stdClass();
 		$valid   = true;
 		$err_msg = array();
@@ -631,23 +628,23 @@ final class Racketmanager_Tournament {
 	/**
 	 * Update tournament plan
 	 *
-	 * @param text $starttime start time.
-	 * @param int  $num_courts number of courts.
-	 * @param text $time_increment time increment for matches.
+	 * @param string $start_time start time.
+	 * @param int    $num_courts number of courts.
+	 * @param string $time_increment time increment for matches.
 	 * @return boolean updates performed
 	 */
-	public function update_plan( $starttime, $num_courts, $time_increment ) {
+	public function update_plan(string $start_time, int $num_courts, string $time_increment ): bool {
 		global $wpdb, $racketmanager;
 
 		$update = false;
-		if ( $starttime !== $this->starttime || $num_courts !== $this->num_courts || $time_increment !== $this->time_increment ) {
-			$this->starttime      = $starttime;
+		if ( $start_time !== $this->start_time || $num_courts !== $this->num_courts || $time_increment !== $this->time_increment ) {
+			$this->start_time      = $start_time;
 			$this->num_courts     = $num_courts;
 			$this->time_increment = $time_increment;
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_tournaments} SET `starttime` = %s, `numcourts` = %d, `timeincrement` = %s WHERE `id` = %d",
-					$starttime,
+					"UPDATE $wpdb->racketmanager_tournaments SET `starttime` = %s, `numcourts` = %d, `timeincrement` = %s WHERE `id` = %d",
+					$start_time,
 					$num_courts,
 					$time_increment,
 					$this->id
@@ -671,15 +668,15 @@ final class Racketmanager_Tournament {
 	 * @param array $match_times match times.
 	 * @return boolean updates performed
 	 */
-	public function save_plan( $courts, $start_times, $matches, $match_times ) {
+	public function save_plan(array $courts, array $start_times, array $matches, array $match_times ): bool {
 		global $wpdb, $racketmanager;
-		$orderofplay = array();
-		$num_courts  = count( $courts );
+		$order_of_play = array();
+		$num_courts    = count( $courts );
 		for ( $i = 0; $i < $num_courts; $i++ ) {
-			$orderofplay[ $i ]['court']     = $courts[ $i ];
-			$orderofplay[ $i ]['starttime'] = $start_times[ $i ];
-			$orderofplay[ $i ]['matches']   = $matches[ $i ];
-			$num_matches                    = count( $matches[ $i ] );
+			$order_of_play[ $i ]['court']      = $courts[ $i ];
+			$order_of_play[ $i ]['start_time'] = $start_times[ $i ];
+			$order_of_play[ $i ]['matches']    = $matches[ $i ];
+			$num_matches                       = count( $matches[ $i ] );
 			for ( $m = 0; $m < $num_matches; $m++ ) {
 				$match_id = trim( $matches[ $i ][ $m ] );
 				if ( ! empty( $match_id ) ) {
@@ -698,13 +695,13 @@ final class Racketmanager_Tournament {
 				}
 			}
 		}
-		if ( $orderofplay !== $this->orderofplay ) {
-			$this->orderofplay = $orderofplay;
-			$orderofplay       = maybe_serialize( $orderofplay );
+		if ( $order_of_play !== $this->order_of_play ) {
+			$this->order_of_play = $order_of_play;
+			$order_of_play       = maybe_serialize( $order_of_play );
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_tournaments} SET `orderofplay` = %s WHERE `id` = %d",
-					$orderofplay,
+					"UPDATE $wpdb->racketmanager_tournaments SET `orderofplay` = %s WHERE `id` = %d",
+					$order_of_play,
 					$this->id
 				)
 			);
@@ -721,11 +718,11 @@ final class Racketmanager_Tournament {
 	 *
 	 * @return boolean updates performed
 	 */
-	public function reset_plan() {
+	public function reset_plan(): bool {
 		global $wpdb, $racketmanager;
 
-		$updates       = true;
-		$orderofplay   = array();
+		$updates       = false;
+		$order_of_play = array();
 		$final_matches = $racketmanager->get_matches(
 			array(
 				'season'         => $this->season,
@@ -745,13 +742,13 @@ final class Racketmanager_Tournament {
 				$updates = true;
 			}
 		}
-		if ( $orderofplay !== $this->orderofplay ) {
-			$this->orderofplay = $orderofplay;
-			$orderofplay       = maybe_serialize( $orderofplay );
+		if ( $order_of_play !== $this->order_of_play ) {
+			$this->order_of_play = $order_of_play;
+			$order_of_play     = maybe_serialize( $order_of_play );
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_tournaments} SET `orderofplay` = %s WHERE `id` = %d",
-					$orderofplay,
+					"UPDATE $wpdb->racketmanager_tournaments SET `orderofplay` = %s WHERE `id` = %d",
+					$order_of_play,
 					$this->id
 				)
 			);
@@ -768,10 +765,10 @@ final class Racketmanager_Tournament {
 	/**
 	 * Delete tournament
 	 */
-	public function delete() {
+	public function delete(): void {
 		global $wpdb, $racketmanager;
 		$schedule_name = 'rm_calculate_tournament_ratings';
-		$schedule_args = array( intval( $this->id ) );
+		$schedule_args = array( $this->id );
 		Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
 		$schedule_name = 'rm_notify_tournament_entry_open';
 		Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
@@ -779,7 +776,7 @@ final class Racketmanager_Tournament {
 		Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_tournaments} WHERE `id` = %d",
+				"DELETE FROM $wpdb->racketmanager_tournaments WHERE `id` = %d",
 				$this->id
 			)
 		);
@@ -789,13 +786,12 @@ final class Racketmanager_Tournament {
 	/**
 	 * Get events function
 	 *
-	 * @param string $name name of event (optional).
-	 * @return array
+	 * @param false|string $name name of event (optional).
+	 * @return array|object
 	 */
-	public function get_events( $name = false ) {
+	public function get_events(false|string $name = false ): object|array {
 		$competition = get_competition( $this->competition_id );
 		if ( $competition ) {
-			$players      = array();
 			$events       = $competition->get_events();
 			$this->events = array();
 			foreach ( $events as $event ) {
@@ -829,7 +825,7 @@ final class Racketmanager_Tournament {
 	 * @param array $args optional arguments.
 	 * @return array
 	 */
-	public function get_players( $args = array() ) {
+	public function get_players(array $args = array() ): array {
 		global $wpdb;
 
 		$defaults = array(
@@ -847,7 +843,7 @@ final class Racketmanager_Tournament {
 		} else {
 			$sql = 'SELECT DISTINCT `player_id`';
 		}
-		$sql          .= " FROM {$wpdb->racketmanager_team_players} tp, {$wpdb->racketmanager_table} t, {$wpdb->racketmanager} l, {$wpdb->racketmanager_events} e  WHERE tp.`team_id` = t.`team_id` AND t.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = %d AND t.`season` = %d";
+		$sql          .= " FROM $wpdb->racketmanager_team_players tp, $wpdb->racketmanager_table t, $wpdb->racketmanager l, $wpdb->racketmanager_events e  WHERE tp.`team_id` = t.`team_id` AND t.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = %d AND t.`season` = %d";
 		$search_terms  = array();
 		$search_args   = array();
 		$search_args[] = $this->competition_id;
@@ -923,9 +919,9 @@ final class Racketmanager_Tournament {
 	 * Get Tournament Entries function
 	 *
 	 * @param array $args optional arguments.
-	 * @return array
+	 * @return array|int
 	 */
-	public function get_entries( $args = array() ) {
+	public function get_entries(array $args = array() ): array|int {
 		global $wpdb;
 
 		$defaults = array(
@@ -942,7 +938,7 @@ final class Racketmanager_Tournament {
 		} else {
 			$sql = 'SELECT `id`, `player_id`, `status`, `club_id`';
 		}
-		$sql          .= " FROM {$wpdb->racketmanager_tournament_entries} WHERE `tournament_id` = %d";
+		$sql          .= " FROM $wpdb->racketmanager_tournament_entries WHERE `tournament_id` = %d";
 		$search_terms  = array();
 		$search_args   = array();
 		$search_args[] = $this->id;
@@ -952,7 +948,7 @@ final class Racketmanager_Tournament {
 			} elseif ( 'unpaid' === $status ) {
 				if ( ! empty( $this->charge ) ) {
 					$search_terms[] = '`status` = 2';
-					$search_terms[] = "`player_id` IN (SELECT `player_id` FROM {$wpdb->racketmanager_invoices} WHERE `charge_id` = %d AND `status` != 'paid')";
+					$search_terms[] = "`player_id` IN (SELECT `player_id` FROM $wpdb->racketmanager_invoices WHERE `charge_id` = %d AND `status` != 'paid')";
 					$search_args[]  = $this->charge->id;
 				} else {
 					$search_terms[] = '`status` = 99';
@@ -960,7 +956,7 @@ final class Racketmanager_Tournament {
 			} elseif ( 'confirmed' === $status ) {
 				$search_terms[] = '`status` = 2';
 				if ( ! empty( $this->charge ) ) {
-					$search_terms[] = "`player_id` NOT IN (SELECT `player_id` FROM {$wpdb->racketmanager_invoices} WHERE `charge_id` = %d AND `status` != 'paid')";
+					$search_terms[] = "`player_id` NOT IN (SELECT `player_id` FROM $wpdb->racketmanager_invoices WHERE `charge_id` = %d AND `status` != 'paid')";
 					$search_args[]  = $this->charge->id;
 				}
 			} elseif ( 'withdrawn' === $status ) {
@@ -1043,7 +1039,7 @@ final class Racketmanager_Tournament {
 	 *
 	 * @return void
 	 */
-	public function schedule_tournament_ratings() {
+	public function schedule_tournament_ratings(): void {
 		global $racketmanager;
 		$date_schedule  = Racketmanager_Util::amend_date( $this->date_closing, 1 );
 		$schedule_date  = strtotime( $date_schedule );
@@ -1052,7 +1048,7 @@ final class Racketmanager_Tournament {
 		$year           = intval( gmdate( 'Y', $schedule_date ) );
 		$schedule_start = mktime( 00, 00, 01, $month, $day, $year );
 		$schedule_name  = 'rm_calculate_tournament_ratings';
-		$schedule_args  = array( intval( $this->id ) );
+		$schedule_args  = array( $this->id );
 		Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
 		$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
 		if ( ! $success ) {
@@ -1064,24 +1060,23 @@ final class Racketmanager_Tournament {
 	 *
 	 * @return array
 	 */
-	public function get_match_dates() {
+	public function get_match_dates(): array {
 		global $wpdb;
-		$matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+		return $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT distinct DATE_FORMAT(m.`date`, %s) AS `date` FROM {$wpdb->racketmanager_matches} AS m, {$wpdb->racketmanager} AS l, {$wpdb->racketmanager_events} e WHERE m.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = %d AND m.`season` = %d ORDER BY 1 ASC",
+				"SELECT distinct DATE_FORMAT(m.`date`, %s) AS `date` FROM $wpdb->racketmanager_matches AS m, $wpdb->racketmanager AS l, $wpdb->racketmanager_events e WHERE m.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = %d AND m.`season` = %d ORDER BY 1 ASC",
 				'%Y-%m-%d',
 				$this->competition_id,
 				$this->season,
 			)
 		);
-		return $matches;
 	}
 	/**
 	 * Schedule tournament activities function
 	 *
 	 * @return void
 	 */
-	public function schedule_activities() {
+	public function schedule_activities(): void {
 		if ( ! $this->is_closed && ! $this->is_active ) {
 			$this->schedule_tournament_ratings();
 			$this->schedule_emails();
@@ -1092,8 +1087,8 @@ final class Racketmanager_Tournament {
 	 *
 	 * @return void
 	 */
-	private function schedule_emails() {
-		global $racketmanager;
+	private function schedule_emails(): void {
+		$schedule_args = array();
 		if ( ! empty( $this->date_open ) ) {
 			$schedule_date   = strtotime( $this->date_open );
 			$day             = intval( gmdate( 'd', $schedule_date ) );
@@ -1101,7 +1096,7 @@ final class Racketmanager_Tournament {
 			$year            = intval( gmdate( 'Y', $schedule_date ) );
 			$schedule_start  = mktime( 00, 00, 01, $month, $day, $year );
 			$schedule_name   = 'rm_notify_tournament_entry_open';
-			$schedule_args[] = intval( $this->id );
+			$schedule_args[] = $this->id;
 			Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
 			$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
 			if ( ! $success ) {
@@ -1127,17 +1122,12 @@ final class Racketmanager_Tournament {
 	 *
 	 * @return object notification status
 	 */
-	public function notify_entry_open() {
+	public function notify_entry_open(): object {
 		global $racketmanager_shortcodes, $racketmanager;
-
 		$return           = new \stdClass();
 		$msg              = array();
-		$date_closing     = $this->date_closing_display;
-		$date_start       = $this->date_open_display;
-		$date_end         = $this->date_display;
 		$url              = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
 		$competition_name = $this->name . ' ' . __( 'Tournament', 'racketmanager' );
-		$is_championship  = true;
 		if ( empty( $return->error ) ) {
 			$clubs = $racketmanager->get_clubs(
 				array(
@@ -1152,6 +1142,7 @@ final class Racketmanager_Tournament {
 			$headers    = array();
 			$from_email = $racketmanager->get_confirmation_email( 'tournament' );
 			if ( $from_email ) {
+				$message_sent      = false;
 				$headers[]         = 'From: Tournament Secretary <' . $from_email . '>';
 				$headers[]         = 'cc: Tournament Secretary <' . $from_email . '>';
 				$organisation_name = $racketmanager->site_name;
@@ -1222,17 +1213,12 @@ final class Racketmanager_Tournament {
 	 *
 	 * @return object notification status
 	 */
-	public function notify_entry_reminder() {
+	public function notify_entry_reminder(): object {
 		global $racketmanager_shortcodes, $racketmanager;
-
 		$return           = new \stdClass();
 		$msg              = array();
-		$date_closing     = $this->date_closing_display;
-		$date_start       = $this->date_open_display;
-		$date_end         = $this->date_display;
 		$url              = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
 		$competition_name = $this->name . ' ' . __( 'Tournament', 'racketmanager' );
-		$is_championship  = true;
 		$date_closing     = date_create( $this->date_closing );
 		$now              = date_create();
 		$remaining_time   = date_diff( $now, $date_closing );
@@ -1245,6 +1231,7 @@ final class Racketmanager_Tournament {
 			$headers    = array();
 			$from_email = $racketmanager->get_confirmation_email( 'tournament' );
 			if ( $from_email ) {
+				$message_sent      = false;
 				$headers[]         = 'From: Tournament Secretary <' . $from_email . '>';
 				$headers[]         = 'cc: Tournament Secretary <' . $from_email . '>';
 				$organisation_name = $racketmanager->site_name;
@@ -1296,7 +1283,7 @@ final class Racketmanager_Tournament {
 	 * @param array $args argument array.
 	 * @return array array of player objects
 	 */
-	private function get_player_list( $args ) {
+	private function get_player_list(array $args ): array {
 		global $wpdb;
 		$defaults = array(
 			'limit'   => 1,
@@ -1312,7 +1299,7 @@ final class Racketmanager_Tournament {
 		$search_args[] = $limit;
 		$search_args[] = $this->competition->age_group;
 		if ( ! $entered ) {
-			$search_terms[] = "te.`player_id` NOT IN (SELECT `player_id` FROM {$wpdb->racketmanager_tournament_entries} WHERE `tournament_id` = %d)";
+			$search_terms[] = "te.`player_id` NOT IN (SELECT `player_id` FROM $wpdb->racketmanager_tournament_entries WHERE `tournament_id` = %d)";
 			$search_args[]  = $this->id;
 		}
 		$search        = '';
@@ -1321,7 +1308,7 @@ final class Racketmanager_Tournament {
 			$search .= implode( ' AND ', $search_terms );
 		}
 		$sql     = $wpdb->prepare(
-			"SELECT DISTINCT(te.player_id) FROM {$wpdb->racketmanager_tournament_entries} te, {$wpdb->racketmanager_competitions} c, {$wpdb->racketmanager_tournaments} t INNER JOIN (SELECT t.`id` FROM {$wpdb->racketmanager_tournaments} t, {$wpdb->racketmanager_competitions} c WHERE t.`competition_id` = c.`id` AND c.`age_group` = %s AND t.`id` != %d ORDER BY t.`id` DESC LIMIT %d) t1 ON t.`id` = t1.`id` WHERE te.`tournament_id` = t.`id` AND c.`id` = t.`competition_id` AND c.`age_group` = %s AND te.`player_id` IN (SELECT DISTINCT `player_id` FROM {$wpdb->racketmanager_club_players} WHERE `removed_date` IS NULL) " . $search,
+			"SELECT DISTINCT(te.player_id) FROM $wpdb->racketmanager_tournament_entries te, $wpdb->racketmanager_competitions c, $wpdb->racketmanager_tournaments t INNER JOIN (SELECT t.`id` FROM $wpdb->racketmanager_tournaments t, $wpdb->racketmanager_competitions c WHERE t.`competition_id` = c.`id` AND c.`age_group` = %s AND t.`id` != %d ORDER BY t.`id` DESC LIMIT %d) t1 ON t.`id` = t1.`id` WHERE te.`tournament_id` = t.`id` AND c.`id` = t.`competition_id` AND c.`age_group` = %s AND te.`player_id` IN (SELECT DISTINCT `player_id` FROM $wpdb->racketmanager_club_players WHERE `removed_date` IS NULL) " . $search,
 				$search_args
 		);
 		$players = wp_cache_get( md5( $sql ), 'tournament_players' );
@@ -1351,7 +1338,7 @@ final class Racketmanager_Tournament {
 	 *
 	 * @return object fees
 	 */
-	public function get_fees() {
+	public function get_fees(): object {
 		global $racketmanager;
 		$args                = array();
 		$args['competition'] = $this->competition_id;
@@ -1379,21 +1366,21 @@ final class Racketmanager_Tournament {
 		$this->fees        = $fees;
 		return $this->fees;
 	}
+
 	/**
 	 * Set player entry function
 	 *
 	 * @param object $entry entry details.
-	 * @return boolean payment required indicator
+	 * @return bool|int payment required indicator
 	 */
-	public function set_player_entry( $entry ) {
+	public function set_player_entry(object $entry ): bool|int {
 		global $racketmanager;
 		$updates = false;
 		$player = get_player( $entry->player_id );
 		$player->update_btm( $entry->btm );
 		$player->update_contact( $entry->contactno, $entry->contactemail );
-		$player_name = $player->display_name;
-		$club        = get_club( $entry->club_id );
-		$fee_due     = 0;
+		$club               = get_club( $entry->club_id );
+		$fee_due            = 0;
 		$tournament_entries = array();
 		if ( empty( $entry->fee ) ) {
 			$status = 0;
@@ -1437,19 +1424,15 @@ final class Racketmanager_Tournament {
 					$new_entry        = false;
 					$team             = null;
 					$is_doubles       = false;
-					if ( 1 === count( $teams ) ) {
+					if ( count( $teams ) ) {
 						$existing_entry = true;
-						$entry_status   = 'existing';
 						$team           = $teams[0];
-					} elseif ( count( $teams ) > 1 ) {
-						$entry_status = 'multi';
 					} else {
 						$new_entry    = true;
-						$entry_status = 'new';
 					}
 					if ( substr( $event->type, 1, 1 ) === 'D' ) {
 						$is_doubles = true;
-						$partner_id = isset( $entry->partners[ $event->id ] ) ? $entry->partners[ $event->id ] : null;
+						$partner_id = $entry->partners[$event->id] ?? null;
 						if ( $partner_id ) {
 							$partner = get_player( $partner_id );
 							if ( $partner ) {
@@ -1468,7 +1451,6 @@ final class Racketmanager_Tournament {
 							if ( ! $same_partner ) {
 								$league->delete_team( $team->team_id, $this->season );
 								$new_entry    = true;
-								$entry_status = 'replace';
 							}
 						}
 					}
@@ -1482,7 +1464,6 @@ final class Racketmanager_Tournament {
 								$team = $teams[0];
 							} else {
 								$new_team  = true;
-								$team_name = $player->display_name . ' / ' . $partner_name;
 							}
 							$this->set_tournament_entry( $partner_id );
 						} else {
@@ -1506,9 +1487,7 @@ final class Racketmanager_Tournament {
 						$league_entry_id = $league->add_team( $team->id, $this->season );
 						if ( $league_entry_id ) {
 							$league_entry = get_league_team( $league_entry_id );
-							if ( $league_entry ) {
-								$league_entry->set_player_rating( $team, $event );
-							}
+							$league_entry?->set_player_rating($team, $event);
 						}
 						$updates = true;
 					}
@@ -1555,11 +1534,11 @@ final class Racketmanager_Tournament {
 	/**
 	 * Create invoice for player function
 	 *
-	 * @param int    $player player id.
+	 * @param int $player_id player id.
 	 * @param string $fee payment required value.
 	 * @return void
 	 */
-	private function create_player_invoice( $player_id, $fee ) {
+	private function create_player_invoice(int $player_id, string $fee ): void {
 		global $racketmanager;
 		if ( empty( $player_id ) || empty( $fee ) ) {
 			return;
@@ -1592,10 +1571,10 @@ final class Racketmanager_Tournament {
 	/**
 	 * Cancel outstanding invoices for player function
 	 *
-	 * @param int    $player player id.
+	 * @param int $player_id player id.
 	 * @return void
 	 */
-	private function cancel_player_invoices( $player_id ) {
+	private function cancel_player_invoices( int $player_id ): void {
 		if ( empty( $player_id ) ) {
 			return;
 		}
@@ -1611,12 +1590,12 @@ final class Racketmanager_Tournament {
 	/**
 	 * Set tournament entry function
 	 *
-	 * @param int    $player player id.
-	 * @param int    $club club id - false if partner entry.
-	 * @param string $payment_required payment required value.
+	 * @param int $player player id.
+	 * @param false|int $club club id - false if partner entry.
+	 * @param false|string $payment_required payment required value.
 	 * @return void
 	 */
-	private function set_tournament_entry( $player, $club = false, $payment_required = false ) {
+	private function set_tournament_entry(int $player, false|int $club = false, false|string $payment_required = false ): void {
 		if ( $club ) {
 			$status = 2;
 		} else {
@@ -1640,16 +1619,17 @@ final class Racketmanager_Tournament {
 			if ( $club ) {
 				$tournament_entry->club_id = $club;
 			}
-			$tournament_entry = new Racketmanager_Tournament_Entry( $tournament_entry );
+			new Racketmanager_Tournament_Entry( $tournament_entry );
 		}
 	}
+
 	/**
 	 * Withdraw tournament entry
 	 *
-	 * @param int    $player player id.
-	 * @return string refund amount.
+	 * @param $player_id
+	 * @return int|string refund amount.
 	 */
-	public function withdraw_player_entry( $player_id ) {
+	public function withdraw_player_entry( $player_id ): int|string {
 		global $racketmanager, $racketmanager_shortcodes;
 		$amount_refund = 0;
 		$updates       = false;
@@ -1716,23 +1696,21 @@ final class Racketmanager_Tournament {
 	/**
 	 * Set tournament entry to withdrawn
 	 *
-	 * @param int    $player player id.
+	 * @param int $player player id.
 	 * @return void
 	 */
-	private function set_tournament_entry_withdrawn( $player ) {
+	private function set_tournament_entry_withdrawn( int $player ): void {
 		$search           = $this->id . '_' . $player;
 		$tournament_entry = get_tournament_entry( $search, 'key' );
-		if ( $tournament_entry ) {
-			$tournament_entry->set_status( 3 );
-		}
+		$tournament_entry?->set_status(3);
 	}
 	/**
 	 * Function to get payments due for tournament
 	 *
 	 * @param array $args_input arguments to search invoices.
-	 * @return array payments or null
+	 * @return array|null payments or null
 	 */
-	public function get_payments( $args_input ) {
+	public function get_payments( array $args_input ): ?array {
 		global $racketmanager;
 		$defaults = array(
 			'status' => array(),
@@ -1754,14 +1732,12 @@ final class Racketmanager_Tournament {
 	/**
 	 * Function to set team ratings for tournament
 	 */
-	public function calculate_player_team_ratings() {
+	public function calculate_player_team_ratings(): void {
 		global $racketmanager;
 		$players = $this->get_entries();
 		foreach ( $players as $player ) {
 			$player = get_player( $player );
-			if ( $player ) {
-				$player->set_tournament_rating();
-			}
+			$player?->set_tournament_rating();
 		}
 		$events = $this->get_events();
 		$display_opt = $racketmanager->get_options( 'display' );
@@ -1782,9 +1758,7 @@ final class Racketmanager_Tournament {
 						}
 					}
 					$league_team = get_league_team( $team->table_id );
-					if ( $league_team ) {
-						$league_team->set_rating( $team_rating );
-					}
+					$league_team?->set_rating($team_rating);
 				}
 			}
 		}

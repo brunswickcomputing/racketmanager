@@ -120,7 +120,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 			)
 		);
 		$keys            = $racketmanager->get_options( 'keys' );
-		$google_maps_key = isset( $keys['googleMapsKey'] ) ? $keys['googleMapsKey'] : '';
+		$google_maps_key = $keys['googleMapsKey'] ?? '';
 
 		$club->single = true;
 

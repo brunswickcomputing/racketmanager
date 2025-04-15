@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection PhpMissingParentConstructorInspection */
+
 /**
  * Racketmanager_Shortcodes_Tournament API: Shortcodes_Tournament class
  *
@@ -8,8 +9,6 @@
  */
 
 namespace Racketmanager;
-
-use stdClass;
 
 /**
  * Class to implement the Racketmanager_Shortcodes_Tournament object
@@ -36,7 +35,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 	 * @param array $atts function attributes.
 	 * @return string
 	 */
-	public function show_tournament( $atts ) {
+	public function show_tournament( array $atts ): string {
 		global $racketmanager, $wp;
 		$args        = shortcode_atts(
 			array(
@@ -58,7 +57,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			)
 		);
 		if ( ! $tournament ) {
-			if ( isset( $_GET['tournament'] ) && ! empty( $_GET['tournament'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( ! empty( $_GET['tournament'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$tournament = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['tournament'] ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			} elseif ( isset( $wp->query_vars['tournament'] ) ) {
 				$tournament = get_query_var( 'tournament' );
@@ -83,7 +82,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			return $this->return_error( $msg );
 		}
 		if ( ! $tab ) {
-			if ( isset( $_GET['tab'] ) && ! empty( $_GET['tab'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( ! empty( $_GET['tab'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$tab = wp_strip_all_tags( wp_unslash( $_GET['tab'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			} elseif ( isset( $wp->query_vars['tab'] ) ) {
 				$tab = get_query_var( 'tab' );
@@ -106,7 +105,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 	 * @param array $atts function attributes.
 	 * @return string
 	 */
-	public function show_tournament_overview( $atts ) {
+	public function show_tournament_overview( array $atts ): string {
 		$args          = shortcode_atts(
 			array(
 				'id'       => false,
@@ -121,8 +120,8 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			$msg = __( 'Tournament not found', 'racketmanager' );
 			return $this->return_error( $msg );
 		}
-		$tournament->events  = $tournament->get_events();
-		$tournament->entries = $tournament->get_entries( array( 'count' => true ) );
+		$tournament->events      = $tournament->get_events();
+		$tournament->num_entries = $tournament->get_entries( array( 'count' => true ) );
 
 		$filename = ( ! empty( $template ) ) ? 'overview-' . $template : 'overview';
 
@@ -140,7 +139,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 	 * @param array $atts function attributes.
 	 * @return string
 	 */
-	public function show_events( $atts ) {
+	public function show_events( array $atts ): string {
 		global $wp;
 		$args               = shortcode_atts(
 			array(
@@ -157,7 +156,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		$tournament         = get_tournament( $tournament_id );
 		$tournament->events = $tournament->get_events();
 		if ( ! $event_id ) {
-			if ( isset( $_GET['event'] ) && ! empty( $_GET['event'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( ! empty( $_GET['event'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$event_id = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['event'] ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			} elseif ( isset( $wp->query_vars['event'] ) ) {
 				$event_id = get_query_var( 'event' );
@@ -179,7 +178,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 				if ( $primary_league_id ) {
 					$league = get_league( (string) $primary_league_id );
 					if ( $league ) {
-						$event->num_seeds = isset( $league->championship->num_seeds ) ? $league->championship->num_seeds : 0;
+						$event->num_seeds = $league->championship->num_seeds ?? 0;
 					}
 				}
 				$teams = $event->get_teams(
@@ -217,7 +216,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 	 * @param array $atts function attributes.
 	 * @return string
 	 */
-	public function show_draws( $atts ) {
+	public function show_draws( array $atts ): string {
 		global $racketmanager, $league, $wp;
 		$args          = shortcode_atts(
 			array(
@@ -233,7 +232,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		$draw          = null;
 		$tournament    = get_tournament( $tournament_id );
 		if ( ! $draw_id ) {
-			if ( isset( $_GET['draw'] ) && ! empty( $_GET['draw'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( ! empty( $_GET['draw'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$draw_id = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['draw'] ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			} elseif ( isset( $wp->query_vars['draw'] ) ) {
 				$draw_id = get_query_var( 'draw' );
@@ -300,7 +299,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 	 * @param array $atts function attributes.
 	 * @return string
 	 */
-	public function show_tournament_players( $atts ) {
+	public function show_tournament_players(array $atts ): string {
 		global $wp;
 		$args          = shortcode_atts(
 			array(
@@ -317,7 +316,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		$tournament    = get_tournament( $tournament_id );
 		if ( $tournament ) {
 			if ( ! $player_id ) {
-				if ( isset( $_GET['player'] ) && ! empty( $_GET['player'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				if ( ! empty( $_GET['player'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					$player_id = un_seo_url( htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['player'] ) ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				} elseif ( isset( $wp->query_vars['player'] ) ) {
 					$player_id = un_seo_url( get_query_var( 'player' ) );
@@ -346,6 +345,9 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 				),
 				'tournament'
 			);
+		} else {
+			$msg = __( 'Tournament not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 	}
 	/**
@@ -355,7 +357,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 	 * @param object $tournament tournament object.
 	 * @return object
 	 */
-	public function get_player_info( $player, $tournament ) {
+	public function get_player_info(object $player, object $tournament ): object {
 		global $racketmanager;
 		$key = $tournament->id . '_' . $player->id;
 		$tournament_entry = get_tournament_entry( $key, 'key' );
@@ -485,7 +487,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 	 * @param array $atts function attributes.
 	 * @return string
 	 */
-	public function show_tournament_winners( $atts ) {
+	public function show_tournament_winners(array $atts ): string {
 		global $racketmanager;
 		$args          = shortcode_atts(
 			array(
@@ -520,7 +522,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 	 * @param array $atts function attributes.
 	 * @return string
 	 */
-	public function show_tournament_matches( $atts ) {
+	public function show_tournament_matches(array $atts ): string {
 		global $racketmanager, $wp;
 		$args          = shortcode_atts(
 			array(
@@ -539,9 +541,8 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			return $this->return_error( $msg );
 		}
 		$order_of_play = array();
-		$matches       = array();
 		if ( ! $match_date ) {
-			if ( isset( $_GET['match_date'] ) && ! empty( $_GET['match_date'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( ! empty( $_GET['match_date'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$match_date = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['match_date'] ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			} elseif ( isset( $wp->query_vars['match_date'] ) ) {
 				$match_date = get_query_var( 'match_date' );
@@ -607,11 +608,11 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 	 * - id is the ID of the match to display
 	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "match-template.php" (optional)
 	 *
-	 * @param array $atts shorcode attributes.
+	 * @param array $atts shortcode attributes.
 	 * @return string
 	 */
-	public function show_tournament_match( $atts ) {
-		global $racketmanager, $wp;
+	public function show_tournament_match( array $atts ): string {
+		global $wp;
 		$args       = shortcode_atts(
 			array(
 				'tournament' => false,
@@ -627,7 +628,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		$template   = $args['template'];
 
 		if ( ! $tournament ) {
-			if ( isset( $_GET['tournament'] ) && ! empty( $_GET['tournament'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( ! empty( $_GET['tournament'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$tournament = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['tournament'] ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			} elseif ( isset( $wp->query_vars['tournament'] ) ) {
 				$tournament = get_query_var( 'tournament' );
@@ -667,23 +668,10 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 					'message'           => $message,
 				)
 			);
+		} else {
+			$msg = __( 'Match not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
-	}
-	/**
-	 * Get tournaments function
-	 *
-	 * @return array
-	 */
-	private function get_tournaments() {
-		global $racketmanager;
-		return $racketmanager->get_tournaments(
-			array(
-				'orderby' => array(
-					'season'         => 'DESC',
-					'competition_id' => 'DESC',
-				),
-			)
-		);
 	}
 	/**
 	 * Function to display Tournament finals order of play
@@ -691,10 +679,9 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 	 *    [orderofplay id=ID template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string the content
 	 */
-	public function show_order_of_play( $atts ) {
-		global $racketmanager, $wp;
+	public function show_order_of_play( array $atts ): string {
 		wp_verify_nonce( 'order-of-play' );
 		$args          = shortcode_atts(
 			array(
@@ -713,7 +700,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 		$order_of_play           = array();
 		$order_of_play['times']  = array();
 		$order_of_play['courts'] = array();
-		foreach ( $tournament->orderofplay as $courts ) {
+		foreach ($tournament->order_of_play as $courts ) {
 			$order_of_play['courts'][ $courts['court'] ] = array();
 			foreach ( $courts['matches'] as $match_id ) {
 				$final_match = new \stdClass();
@@ -750,7 +737,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 	 * @param array $atts function attributes.
 	 * @return string
 	 */
-	public function show_latest_tournament( $atts ) {
+	public function show_latest_tournament( array $atts ): string {
 		global $racketmanager, $wp;
 		$args      = shortcode_atts(
 			array(
@@ -760,7 +747,6 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			$atts
 		);
 		$age_group = $args['age_group'];
-		$template  = $args['template'];
 		if ( isset( $wp->query_vars['age_group'] ) ) {
 			$age_group = get_query_var( 'age_group' );
 		}

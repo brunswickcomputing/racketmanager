@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection PhpMissingParentConstructorInspection */
+
 /**
  * Racketmanager_Shortcodes_Competition API: Shortcodes_Competition class
  *
@@ -29,10 +30,10 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 	/**
 	 * Show competitions function
 	 *
-	 * @param array $atts atrributes.
+	 * @param array $atts attributes.
 	 * @return string display output
 	 */
-	public function show_competitions( $atts ) {
+	public function show_competitions( array $atts ): string {
 		global $wp, $racketmanager;
 		$args     = shortcode_atts(
 			array(
@@ -74,33 +75,21 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			}
 			if ( is_user_logged_in() ) {
 				$player = get_player( get_current_user_id() );
-				if ( $player ) {
-					$user_competitions = $player->get_tournaments( $query_args );
-				}
+				$user_competitions = $player?->get_tournaments($query_args);
 			}
 		} else {
 			$competitions = $racketmanager->get_competitions( $query_args );
 			if ( is_user_logged_in() ) {
 				$player = get_player( get_current_user_id() );
-				if ( $player ) {
-					$user_competitions = $player->get_competitions( $query_args );
-				}
+				$user_competitions = $player?->get_competitions($query_args);
 			}
 		}
-		switch ( $type ) {
-			case 'league':
-				$competition_type = __( 'Leagues', 'racketmanager' );
-				break;
-			case 'cup':
-				$competition_type = __( 'Cups', 'racketmanager' );
-				break;
-			case 'tournament':
-				$competition_type = __( 'Tournaments', 'racketmanager' );
-				break;
-			default:
-				$competition_type = __( 'Competitions', 'racketmanager' );
-				break;
-		}
+		$competition_type = match ($type) {
+			'league'     => __('Leagues', 'racketmanager'),
+			'cup'        => __('Cups', 'racketmanager'),
+			'tournament' => __('Tournaments', 'racketmanager'),
+			default      => __('Competitions', 'racketmanager'),
+		};
 		$filename = ( ! empty( $template ) ) ? 'competitions-' . $template : 'competitions';
 
 		return $this->load_template(
@@ -115,10 +104,10 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 	/**
 	 * Show competition function
 	 *
-	 * @param array $atts atrributes.
+	 * @param array $atts attributes.
 	 * @return string display output
 	 */
-	public function show_competition( $atts ) {
+	public function show_competition( array $atts ): string {
 		global $wp;
 		$args        = shortcode_atts(
 			array(
@@ -134,7 +123,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$season      = $args['season'];
 		$template    = $args['template'];
 		if ( ! $competition ) {
-			if ( isset( $_GET['competition'] ) && ! empty( $_GET['competition'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if (! empty( $_GET['competition'] )) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$competition = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['competition'] ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			} elseif ( isset( $wp->query_vars['competition'] ) ) {
 				$competition = get_query_var( 'competition' );
@@ -149,14 +138,14 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			return $this->return_error( $msg );
 		}
 		if ( ! $season ) {
-			if ( isset( $_GET['season'] ) && ! empty( $_GET['season'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if (! empty( $_GET['season'] )) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$season = wp_strip_all_tags( wp_unslash( $_GET['season'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			} elseif ( isset( $wp->query_vars['season'] ) ) {
 				$season = get_query_var( 'season' );
 			}
 		}
 		if ( $season ) {
-			$competition_season = isset( $competition->seasons[ $season ] ) ? $competition->seasons[ $season ] : null;
+			$competition_season = $competition->seasons[$season] ?? null;
 			if ( $competition_season ) {
 				if ( ! empty( $competition_season['venue'] ) ) {
 					$venue_club = get_club( $competition_season['venue'] );
@@ -176,7 +165,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 			$season             = $competition_season['name'];
 		}
 		if ( ! $tab ) {
-			if ( isset( $_GET['tab'] ) && ! empty( $_GET['tab'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if (! empty( $_GET['tab'] )) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$tab = wp_strip_all_tags( wp_unslash( $_GET['tab'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			} elseif ( isset( $wp->query_vars['tab'] ) ) {
 				$tab = get_query_var( 'tab' );
@@ -209,7 +198,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 	 * @param array $atts function attributes.
 	 * @return string
 	 */
-	public function show_competition_overview( $atts ) {
+	public function show_competition_overview( array $atts ): string {
 		$args           = shortcode_atts(
 			array(
 				'id'       => false,
@@ -259,7 +248,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 	 * @param array $atts function attributes.
 	 * @return string
 	 */
-	public function show_competition_events( $atts ) {
+	public function show_competition_events( array $atts ): string {
 		$args           = shortcode_atts(
 			array(
 				'id'       => false,
@@ -284,7 +273,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		$competition->events = $competition->get_events();
 		$i                   = 0;
 		foreach ( $competition->events as $event ) {
-			$event->entries            = $event->get_teams(
+			$event->num_entries        = $event->get_teams(
 				array(
 					'count'  => true,
 					'season' => $season,
@@ -313,7 +302,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 	 * @param array $atts function attributes.
 	 * @return string
 	 */
-	public function show_competition_teams( $atts ) {
+	public function show_competition_teams( array $atts ): string {
 		$args           = shortcode_atts(
 			array(
 				'id'       => false,
@@ -359,9 +348,9 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 	 * Function to display competition Clubs
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string the content
 	 */
-	public function show_competition_clubs( $atts ) {
+	public function show_competition_clubs( array $atts ): string {
 		global $wp;
 		$args           = shortcode_atts(
 			array(
@@ -388,7 +377,6 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		}
 		$competition->clubs = $competition->get_clubs( array( 'status' => 1 ) );
 		$competition_club   = null;
-		$club               = null;
 		if ( ! $club_id ) {
 			if ( isset( $wp->query_vars['club_name'] ) ) {
 				$club_id = get_query_var( 'club_name' );
@@ -473,9 +461,9 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 	 * Function to display competition Players
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string the content
 	 */
-	public function show_competition_players( $atts ) {
+	public function show_competition_players( array $atts ): string {
 		global $wp;
 		$args           = shortcode_atts(
 			array(
@@ -497,10 +485,7 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		}
 		if ( $season ) {
 			$competition->set_season( $season );
-		} else {
-			$season = $competition->current_season['name'];
 		}
-		$player               = null;
 		$competition->players = array();
 		if ( ! $player_id ) {
 			if ( isset( $wp->query_vars['player_id'] ) ) {
@@ -538,9 +523,9 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 	 * Function to display competition winners
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string the content
 	 */
-	public function show_competition_winners( $atts ) {
+	public function show_competition_winners( array $atts ): string {
 		$args           = shortcode_atts(
 			array(
 				'id'       => 0,
@@ -559,8 +544,6 @@ class Racketmanager_Shortcodes_Competition extends Racketmanager_Shortcodes {
 		}
 		if ( $season ) {
 			$competition->set_season( $season );
-		} else {
-			$season = $competition->current_season['name'];
 		}
 		$competition->winners = $competition->get_winners( true );
 		$filename             = ( ! empty( $template ) ) ? 'winners-' . $template : 'winners';

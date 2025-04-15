@@ -89,6 +89,7 @@ class Racketmanager_Rest_Resources extends WP_REST_Controller {
 						'event'       => $this->get_arg( 'event' ),
 						'league'      => $this->get_arg( 'league' ),
 						'season'      => $this->get_arg( 'season' ),
+						'home'        => $this->get_arg( 'home' ),
 					),
 				),
 			)
@@ -233,11 +234,15 @@ class Racketmanager_Rest_Resources extends WP_REST_Controller {
 		$match_args = array();
 		$season     = isset( $request['season'] ) ? $request['season'] : null;
 		$club       = isset( $request['club'] ) ? $request['club'] : null;
+		$home       = isset( $request['home'] ) ? $request['home'] : null;
 		if ( $club ) {
 			$club_name = un_seo_url( $request['club'] );
 			$club      = get_club( $club_name, 'shortcode' );
 			if ( $club ) {
 				$match_args['club'] = $club->id;
+				if ( $home ) {
+					$match_args['home_club'] = $club->id;
+				}
 			}
 		}
 		$match_args['season'] = $season;

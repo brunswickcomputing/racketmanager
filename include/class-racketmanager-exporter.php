@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use JetBrains\PhpStorm\NoReturn;
+
 /**
  * Class to implement the Racketmanager_Exporter object
  */
@@ -16,7 +18,7 @@ class Racketmanager_Exporter {
 	/**
 	 * Calendar export function
 	 */
-	public function calendar() {
+	public function calendar(): void {
 		global $racketmanager;
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['league_id'] ) && isset( $_GET['season'] ) ) {
@@ -67,7 +69,7 @@ class Racketmanager_Exporter {
 	 *  days - defaults to 7
 	 *  competition
 	 */
-	public function results() {
+	#[NoReturn] public function results(): void {
 		global $racketmanager;
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['club'] ) ) {
@@ -91,6 +93,8 @@ class Racketmanager_Exporter {
 		}
 		if ( isset( $_GET['competition'] ) ) {
 			$competition = un_seo_url( sanitize_text_field( wp_unslash( $_GET['competition'] ) ) );
+		} else {
+			$competition = null;
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		$time    = 'latest';
@@ -115,9 +119,11 @@ class Racketmanager_Exporter {
 	 *  club
 	 *  days - defaults to 7
 	 */
-	public function fixtures() {
+	#[NoReturn] public function fixtures(): void {
 		global $racketmanager;
-		$validator = new Racketmanager_Validator();
+		$validator   = new Racketmanager_Validator();
+		$competition = null;
+		$season      = null;
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['club'] ) ) {
 			if ( is_numeric( $_GET['club'] ) ) {
@@ -174,8 +180,10 @@ class Racketmanager_Exporter {
 	 *  club
 	 *  days - defaults to 7
 	 */
-	public function standings() {
+	#[NoReturn] public function standings(): void {
 		$validator = new Racketmanager_Validator();
+		$event     = null;
+		$season    = null;
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['club'] ) ) {
 			if ( is_numeric( $_GET['club'] ) ) {
@@ -200,9 +208,6 @@ class Racketmanager_Exporter {
 			} else {
 				$competition_name = un_seo_url( sanitize_text_field( wp_unslash( $_GET['competition'] ) ) );
 				$competition      = get_competition( $competition_name, 'name' );
-				if ( $competition ) {
-					$competition_id = $competition->id;
-				}
 			}
 			if ( ! $competition ) {
 				$validator = $validator->competition( $competition );
@@ -222,47 +227,7 @@ class Racketmanager_Exporter {
 			$validator = $validator->season( null );
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
-		if ( ! $validator->error ) {
-			if ( ! empty( $competition ) ) {
-				$events = $competition->get_events();
-			} else {
-				$events[] = $event;
-			}
-			$x        = 0;
-			$contents = '[';
-			foreach ( $events as $event ) {
-				$event = get_event( $event );
-				if ( $event ) {
-					$leagues = $event->get_leagues();
-					foreach ( $leagues as $league ) {
-						$league = get_league( $league->id );
-						$teams  = $league->get_league_teams(
-							array(
-								'season' => $season,
-								'club'   => $club_id,
-							)
-						);
-						$i      = 0;
-						foreach ( $teams as $team ) {
-							$team->league = $league->title;
-							$teams[ $i ]  = $team;
-							++$i;
-						}
-						if ( $teams ) {
-							if ( $x ) {
-								$contents .= ',';
-							}
-							$contents .= $this->standings_output( $club, $teams, $contents );
-							++$x;
-						}
-					}
-				}
-			}
-			$contents .= ']';
-			header( 'Content-Type: application/json; charset=utf-8' );
-			echo $contents; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			exit();
-		} else {
+		if ( $validator->error ) {
 			$message = __( 'Error with export', 'racketmanager' );
 			foreach ( $validator->error_msg as $err_msg ) {
 				$message .= '<br />' . $err_msg;
@@ -270,14 +235,53 @@ class Racketmanager_Exporter {
 			echo wp_kses( $message, array( 'br' => array() ) );
 			exit();
 		}
+		if ( ! empty( $competition ) ) {
+			$events = $competition->get_events();
+		} else {
+			$events[] = $event;
+		}
+		$x        = 0;
+		$contents = '[';
+		foreach ( $events as $event ) {
+			$event = get_event( $event );
+			if ( $event ) {
+				$leagues = $event->get_leagues();
+				foreach ( $leagues as $league ) {
+					$league = get_league( $league->id );
+					$teams  = $league->get_league_teams(
+						array(
+							'season' => $season,
+							'club'   => $club_id,
+						)
+					);
+					$i      = 0;
+					foreach ( $teams as $team ) {
+						$team->league = $league->title;
+						$teams[ $i ]  = $team;
+						++$i;
+					}
+					if ( $teams ) {
+						if ( $x ) {
+							$contents .= ',';
+						}
+						$contents .= $this->standings_output( $club, $teams );
+						++$x;
+					}
+				}
+			}
+		}
+		$contents .= ']';
+		header( 'Content-Type: application/json; charset=utf-8' );
+		echo $contents; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		exit();
 	}
 	/**
 	 * Produce calendar download file
 	 *
-	 * @param array  $matches array of matches to download.
+	 * @param array $matches array of matches to download.
 	 * @param string $filename filename to be created.
 	 */
-	private function output_calendar( $matches, $filename ) {
+	#[NoReturn] private function output_calendar(array $matches, string $filename ): void {
 		$contents  = "BEGIN:VCALENDAR\n";
 		$contents .= "VERSION:2.0\n";
 		$contents .= "PRODID:-//TENNIS CALENDAR//NONSGML Events //EN\n";
@@ -304,9 +308,9 @@ class Racketmanager_Exporter {
 	 * Produce match output data
 	 *
 	 * @param object $club club object.
-	 * @param array  $matches array of matches to download.
+	 * @param array $matches array of matches to download.
 	 */
-	private function match_output( $club, $matches ) {
+	#[NoReturn] private function match_output( object $club, array $matches ): void {
 		$contents = '[';
 		$i        = 0;
 		foreach ( $matches as $match ) {
@@ -336,10 +340,10 @@ class Racketmanager_Exporter {
 	 * Produce league standings output data
 	 *
 	 * @param object $club club object.
-	 * @param array  $teams array of standings to download.
+	 * @param array $teams array of standings to download.
 	 * @return string $contents updated contents.
 	 */
-	private function standings_output( $club, $teams ) {
+	private function standings_output( object $club, array $teams ): string {
 		$contents = '';
 		$i        = 0;
 		foreach ( $teams as $team ) {
@@ -369,7 +373,7 @@ class Racketmanager_Exporter {
 	/**
 	 * Report results
 	 */
-	public function report_results() {
+	#[NoReturn] public function report_results(): void {
 		global $racketmanager, $wpdb;
 		$contents  = 'Tournament';
 		$contents .= ',"Code"';
@@ -421,14 +425,14 @@ class Racketmanager_Exporter {
 		$event_id         = isset( $_GET['event_id'] ) ? intval( $_GET['event_id'] ) : null;
 		$season           = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
 		$match_day        = isset( $_GET['match_day'] ) ? intval( $_GET['match_day'] ) : null;
-		$latest           = isset( $_GET['latest'] ) ? true : false;
+		$latest           = isset( $_GET['latest'] );
 		$competition_code = isset( $_GET['competition_code'] ) ? sanitize_text_field( wp_unslash( $_GET['competition_code'] ) ) : null;
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		$filename = 'report-results';
 		if ( $latest ) {
 			$filename      .= '-latest';
 			$latest_results = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-				"SELECT `id` FROM {$wpdb->racketmanager_results_report} ORDER BY `id`"
+				"SELECT `id` FROM $wpdb->racketmanager_results_report ORDER BY `id`"
 			);
 			foreach ( $latest_results as $result ) {
 				$result_report = get_results_report( $result->id );
@@ -480,7 +484,7 @@ class Racketmanager_Exporter {
 	 * @param object $results result data.
 	 * @return string
 	 */
-	private function result_data( $results ) {
+	private function result_data(object $results ): string {
 		$contents         = '';
 		$common_contents  = $results->tournament;
 		$common_contents .= ',' . $results->code;

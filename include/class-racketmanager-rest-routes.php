@@ -30,7 +30,7 @@ class Racketmanager_Rest_Routes {
 	 *
 	 * @return Racketmanager_Rest_Routes
 	 */
-	public static function single() {
+	public static function single(): Racketmanager_Rest_Routes {
 		static $single;
 
 		if ( empty( $single ) ) {
@@ -43,7 +43,7 @@ class Racketmanager_Rest_Routes {
 	/**
 	 * Register all our REST resources.
 	 */
-	public function register_rest_routes() {
+	public function register_rest_routes(): void {
 		$resources = array(
 			new Racketmanager_Rest_Resources(),
 		);

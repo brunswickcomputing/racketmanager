@@ -9,8 +9,6 @@
 
 namespace Racketmanager;
 
-use JetBrains\PhpStorm\NoReturn;
-
 /**
  * Class to implement the Racketmanager_Exporter object
  */
@@ -69,7 +67,7 @@ class Racketmanager_Exporter {
 	 *  days - defaults to 7
 	 *  competition
 	 */
-	#[NoReturn] public function results(): void {
+	public function results(): void {
 		global $racketmanager;
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['club'] ) ) {
@@ -119,7 +117,7 @@ class Racketmanager_Exporter {
 	 *  club
 	 *  days - defaults to 7
 	 */
-	#[NoReturn] public function fixtures(): void {
+	public function fixtures(): void {
 		global $racketmanager;
 		$validator   = new Racketmanager_Validator();
 		$competition = null;
@@ -180,7 +178,7 @@ class Racketmanager_Exporter {
 	 *  club
 	 *  days - defaults to 7
 	 */
-	#[NoReturn] public function standings(): void {
+	public function standings(): void {
 		$validator = new Racketmanager_Validator();
 		$event     = null;
 		$season    = null;
@@ -281,7 +279,7 @@ class Racketmanager_Exporter {
 	 * @param array $matches array of matches to download.
 	 * @param string $filename filename to be created.
 	 */
-	#[NoReturn] private function output_calendar(array $matches, string $filename ): void {
+	private function output_calendar(array $matches, string $filename ): void {
 		$contents  = "BEGIN:VCALENDAR\n";
 		$contents .= "VERSION:2.0\n";
 		$contents .= "PRODID:-//TENNIS CALENDAR//NONSGML Events //EN\n";
@@ -310,7 +308,7 @@ class Racketmanager_Exporter {
 	 * @param object $club club object.
 	 * @param array $matches array of matches to download.
 	 */
-	#[NoReturn] private function match_output( object $club, array $matches ): void {
+	private function match_output( object $club, array $matches ): void {
 		$contents = '[';
 		$i        = 0;
 		foreach ( $matches as $match ) {
@@ -373,7 +371,7 @@ class Racketmanager_Exporter {
 	/**
 	 * Report results
 	 */
-	#[NoReturn] public function report_results(): void {
+	public function report_results(): void {
 		global $racketmanager, $wpdb;
 		$contents  = 'Tournament';
 		$contents .= ',"Code"';

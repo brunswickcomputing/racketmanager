@@ -291,7 +291,7 @@ if ( ! empty( $match->winner_id ) ) {
 						?>
 					</li>
 					<?php
-					if ( empty( $match_complete ) && ! empty( $tournament ) ) {
+					if ( empty( $match_complete ) && ! empty( $tournament ) && empty( $match_display ) ) {
 						?>
 						<li class="match__header-title-item">
 							<?php

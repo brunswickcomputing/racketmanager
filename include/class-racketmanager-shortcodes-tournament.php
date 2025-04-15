@@ -566,13 +566,24 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 					'match_date'     => $match_date,
 					'final'          => 'all',
 					'orderby'        => array(
-						'event_id'  => 'ASC',
-						'league_id' => 'DESC',
-						'date'      => 'DESC',
+						'date'      => 'ASC',
+						'location'  => 'ASC',
 					),
 				)
 			);
+			$tournament_matches = array();
+			foreach ( $matches as $match ) {
+				$key = substr( $match->date, 11, 5 );
+				if ( '00:00' === $key) {
+					$key = '99:99';
+				}
+				if ( false === array_key_exists( $key, $tournament_matches ) ) {
+					$tournament_matches[ $key ] = array();
+				}
+				$tournament_matches[ $key ][] = $match;
+			}
 		}
+		ksort( $tournament_matches );
 		$tab      = 'matches';
 		$filename = ( ! empty( $template ) ) ? 'matches-' . $template : 'matches';
 
@@ -581,7 +592,7 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			array(
 				'tournament'         => $tournament,
 				'order_of_play'      => $order_of_play,
-				'tournament_matches' => $matches,
+				'tournament_matches' => $tournament_matches,
 				'current_match_date' => $match_date,
 				'tab'                => $tab,
 			),

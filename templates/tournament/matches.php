@@ -65,17 +65,27 @@ namespace Racketmanager;
 				<?php
 				if ( ! empty( $tournament_matches ) ) {
 					?>
-					<h3 class="header"><?php echo esc_html_e( 'Match Schedule', 'racketmanager' ); ?></h3>
+					<h3 class="header"><?php esc_html_e( 'Match Schedule', 'racketmanager' ); ?></h3>
 					<?php require RACKETMANAGER_PATH . 'templates/includes/nav-pills.php'; ?>
 					<ul class="match-group">
 						<?php
-						foreach ( $tournament_matches as $match ) {
+						foreach ( $tournament_matches as $key => $matches ) {
+                            if ( '99:99' === $key ) {
+                                $key = __( 'Unscheduled', 'racketmanager' );
+							}
 							?>
 							<li class="match-group__item">
-								<?php
-								$match_display = 'list';
-								require RACKETMANAGER_PATH . 'templates/tournament/match.php';
-								?>
+                                <div class="match-group__wrapper">
+                                    <h5 class="match-group__header"><?php echo esc_html( $key ); ?></h5>
+                                    <ul class="match-group">
+										<?php
+										foreach ( $matches as $match ) {
+											$match_display = 'list';
+											require RACKETMANAGER_PATH . 'templates/tournament/match.php';
+										}
+										?>
+                                    </ul>
+                                </div>
 							</li>
 							<?php
 						}

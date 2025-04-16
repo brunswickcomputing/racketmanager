@@ -5801,6 +5801,12 @@ svg.media__img-element--icon.winner, svg.media__img-element--icon.runner-up {
 .list.list--inline .list__item {
 	margin-right: 0.2rem;
 }
+.list.list--inline.player-atts .list__item {
+	margin-right: 0;
+}.list.list--inline.player-atts .list__item:not(:last-child):after {
+	content: "•";
+	margin: 0 0.14em
+}
 .tag {
 	align-self: center;
 	background-color: #BCD4ED;

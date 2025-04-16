@@ -854,10 +854,14 @@ class RacketManager_Shortcodes {
 		$player->surname   = get_user_meta( $player->ID, 'last_name', true );
 		$player->contactno = get_user_meta( $player->ID, 'contactno', true );
 		$player->gender    = get_user_meta( $player->ID, 'gender', true );
-		$player_age        = substr( $tournament->date, 0, 4 ) - intval( $player->year_of_birth );
-		$tournament->fees  = $tournament->get_fees();
-		$args['player']    = $player->id;
-		$args['status']    = 'paid';
+        if ( empty( $player->year_of_birth ) ) {
+            $player_age = 0;
+        } else {
+			$player_age = substr( $tournament->date, 0, 4 ) - intval( $player->year_of_birth );
+        }
+		$tournament->fees     = $tournament->get_fees();
+		$args['player']       = $player->id;
+		$args['status']       = 'paid';
 		$tournament->payments = $tournament->get_payments( $args );
 
 		$events = $tournament->get_events();

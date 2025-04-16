@@ -137,15 +137,10 @@ if ( ! empty( $player->entry ) ) {
 														$gender = '';
 												}
 												?>
-												<ul class="list list--inline">
-													<li class="list__item"><span><?php echo esc_html( $gender ); ?></span></li>
-													<?php
-													if ( ! empty( $player->age ) ) {
-														?>
-														<li class="list__item"><span><?php echo esc_html( $player->age ); ?></span></li>
-														<?php
-													}
-													?>
+												<ul class="list list--inline player-atts">
+													<li class="list__item" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="<?php esc_html_e( 'Gender', 'racketmanager' ); ?>"><span><?php echo esc_html( $gender ); ?></span></li>
+													<?php $player_age = empty( $player->age ) ? __( 'Unknown', 'racketmanager' ) : $player->age; ?>
+													<li class="list__item" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="<?php esc_html_e( 'Playing age for tournament', 'racketmanager' ); ?>"><span><?php echo esc_html( $player_age ); ?></span></li>
 												</ul>
 											</span>
 										</div>
@@ -403,12 +398,12 @@ if ( ! empty( $player->entry ) ) {
 									<div class="hgroup">
 										<h4 class="hgroup__heading"><?php esc_html_e( 'Additional information', 'racketmanager' ); ?></h4>
 										<p class="hgroup__subheading">
-											<?php echo esc_html_e( 'Please leave any additional information for the Tournament Organiser including medical conditions here', 'racketmanager' ); ?>
+											<?php esc_html_e( 'Please leave any additional information for the Tournament Organiser including medical conditions here', 'racketmanager' ); ?>
 										</p>
 									</div>
 									<div class="col-12 col-md-8">
 										<div class="form-floating">
-											<textarea class="form-control" placeholder="<?php echo esc_attr_e( 'Additional information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails" <?php echo $changes_allowed ? null : 'readonly'; ?>></textarea>
+											<textarea class="form-control" placeholder="<?php esc_attr_e( 'Additional information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails" <?php echo $changes_allowed ? null : 'readonly'; ?>></textarea>
 											<label for="commentDetails"><?php esc_attr_e( 'Additional information', 'racketmanager' ); ?></label>
 											<div id="commentDetails-feedback" class="invalid-feedback"></div>
 										</div>

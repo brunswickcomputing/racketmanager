@@ -7,24 +7,24 @@ namespace Racketmanager;
 $grades = Racketmanager_Util::get_event_grades();
 ?>
 <div class="form-control">
-	<div class="row gx-3 mb-3">
+	<fieldset class="row gx-3 mb-3">
 		<legend><?php esc_html_e( 'Rounds', 'racketmanager' ); ?></legend>
 		<div class="col-md-4">
 			<div class="form-floating">
-				<input type="number" class="form-control" name='numRounds' id='numRounds' value='<?php echo isset( $options['championship']['numRounds'] ) ? $options['championship']['numRounds'] : ''; ?>' />
+				<input type="number" class="form-control" name='numRounds' id='numRounds' value='<?php echo $options['championship']['numRounds'] ?? ''; ?>' />
 				<label for='numRounds'><?php _e( 'Default number of rounds', 'racketmanager' ) ?></label>
 			</div>
 		</div>
-	</div>
-	<div class="row gx-3 mb-3">
+	</fieldset>
+	<fieldset class="row gx-3 mb-3">
 		<legend><?php echo esc_html__( 'Tournament Timescales', 'racketmanager' ) . ' (' . esc_html__( 'days before the start of the competition', 'racketmanager' ) . ')'; ?></legend>
 		<div class="col-md-4 mb-3">
 			<div class="form-floating">
-				<input type="number" class="form-control" name='openLeadtime' id='openLeadtime' value='<?php echo isset( $options['championship']['open_lead_time'] ) ? $options['championship']['open_lead_time'] : ''; ?>' />
+				<input type="number" class="form-control" name='openLeadtime' id='openLeadtime' value='<?php echo $options['championship']['open_lead_time'] ?? ''; ?>' />
 				<label for='openLeadtime'><?php _e( 'Online entries accept date', 'racketmanager' ) ?></label>
 			</div>
 		</div>
-		<div class="row gx-3 mb-3">
+		<fieldset class="row gx-3 mb-3">
 			<legend><?php esc_html_e( 'Closing dates', 'racketmanager' ); ?></legend>
 			<?php
 			foreach ( $grades as $grade => $grade_desc ) {
@@ -38,8 +38,8 @@ $grades = Racketmanager_Util::get_event_grades();
 				<?php
 			}
 			?>
-		</div>
-		<div class="row gx-3 mb-3">
+        </fieldset>
+		<fieldset class="row gx-3 mb-3">
 			<legend><?php esc_html_e( 'Withdrawal deadline', 'racketmanager' ); ?></legend>
 			<?php
 			foreach ( $grades as $grade => $grade_desc ) {
@@ -53,6 +53,6 @@ $grades = Racketmanager_Util::get_event_grades();
 				<?php
 			}
 			?>
-		</div>
-	</div>
+		</fieldset>
+	</fieldset>
 </div>

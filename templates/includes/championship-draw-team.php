@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var object $team */
+/** @var object $match */
 if ( -1 === $team->id && $match->league->event->competition->is_player_entry ) {
 	echo '&nbsp;<br/>' . esc_html( $team->title );
 } elseif ( empty( $team->player ) ) {
@@ -15,20 +17,12 @@ if ( -1 === $team->id && $match->league->event->competition->is_player_entry ) {
 			<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/players/<?php echo esc_html( seo_url( $team->title ) ); ?>">
 			<?php
 	}
-	switch ( substr( $match->league->event->type, 0, 1 ) ) {
-		case 'M':
-			$team_name = str_replace( 'Mens ', '', $team->title );
-			break;
-		case 'W':
-			$team_name = str_replace( 'Ladies ', '', $team->title );
-			break;
-		case 'X':
-			$team_name = str_replace( 'Mixed ', '', $team->title );
-			break;
-		default:
-			$team_name = $team->title;
-			break;
-	}
+	$team_name = match ( substr( $match->league->event->type, 0, 1 ) ) {
+		'M' => str_replace('Mens ', '', $team->title),
+		'W' => str_replace('Ladies ', '', $team->title),
+		'X' => str_replace('Mixed ', '', $team->title),
+		default => $team->title,
+	};
 	echo esc_html( $team_name );
 	if ( ! empty( $tournament ) && -1 !== $team->id ) {
 		?>

@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var boolean $is_invalid */
+/** @var string $msg */
 $tab_name = 'display';
 ?>
 <div class="form-control">
@@ -25,7 +27,7 @@ $tab_name = 'display';
 								$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 								$is_invalid = true;
 								$msg_id     = array_search( 'point_format', $racketmanager->error_fields, true );
-								$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+								$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 							}
 							?>
 							<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="point_format" id="point_format" >
@@ -57,10 +59,10 @@ $tab_name = 'display';
 								$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 								$is_invalid = true;
 								$msg_id     = array_search( 'point_format2', $racketmanager->error_fields, true );
-								$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+								$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 							}
 							?>
-							<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="point_format2" id="point_format2" >
+                            <label for="point_format2"></label><select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="point_format2" id="point_format2" >
 								<option disabled <?php selected( null, empty( $competition->config->point_format2 ) ? null : $competition->config->point_format2 ); ?>><?php esc_html_e( 'Select point format 2', 'racketmanager' ); ?></option>
 								<?php
 								foreach ( $point_formats as $point_format => $desc ) {
@@ -90,7 +92,7 @@ $tab_name = 'display';
 					$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 					$is_invalid = true;
 					$msg_id     = array_search( 'num_matches_per_page', $racketmanager->error_fields, true );
-					$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 				}
 				?>
 				<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_matches_per_page" id="num_matches_per_page" value="<?php echo isset( $competition->config->num_matches_per_page ) ? esc_html( $competition->config->num_matches_per_page ) : null; ?>" />
@@ -113,7 +115,7 @@ $tab_name = 'display';
 				$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 				$is_invalid = true;
 				$msg_id     = array_search( 'standings_option', $racketmanager->error_fields, true );
-				$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+				$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 			}
 			?>
 			<legend class="<?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Standings', 'racketmanager' ); ?></legend>
@@ -122,7 +124,7 @@ $tab_name = 'display';
 				foreach ( $standings_options as $standings_option => $type_desc ) {
 					?>
 					<div class="form-check">
-						<input type="checkbox" class="form-check-input" name="standings[<?php echo esc_html( $standings_option ); ?>]" id="standings-<?php echo esc_html( $standings_option ); ?>" value="1" <?php empty( $competition->config->standings[ $standings_option ] ) ? null : checked( 1, $competition->config->standings[ $standings_option ] ); ?> />
+						<input type="checkbox" class="form-check-input" name="standings[<?php echo esc_html( $standings_option ); ?>]" id="standings-<?php echo esc_html( $standings_option ); ?>" value="1" <?php checked( 1, empty( $competition->config->standings[ $standings_option ] ) ? null : $competition->config->standings[ $standings_option ] ); ?> />
 						<label class="form-check-label" for="standings-<?php echo esc_html( $standings_option ); ?>"><?php echo esc_html( ucfirst( $type_desc ) ); ?></label>
 					</div>
 					<?php

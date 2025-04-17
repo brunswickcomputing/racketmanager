@@ -18,18 +18,12 @@ namespace Racketmanager;
  * @subpackage RacketManagerAdmin
  */
 final class RacketManager_Admin_Competition extends RacketManager_Admin {
-
-	/**
-	 * Constructor
-	 */
-	public function __construct() {
-	}
 	/**
 	 * Handle config page function
 	 *
 	 * @return void
 	 */
-	public function display_config_page() {
+	public function display_config_page(): void {
 		global $racketmanager;
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$racketmanager->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
@@ -51,7 +45,6 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 					} elseif ( isset( $_POST['competition_id'] ) ) {
 						if ( intval( $_POST['competition_id'] ) !== $competition_id ) {
 							$racketmanager->set_message( __( 'Competition id differs', 'racketmanager' ), true );
-							$racketmanager->printMessage();
 						} else {
 							$config                           = new \stdClass();
 							$config->name                     = isset( $_POST['competition_title'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_title'] ) ) : null;
@@ -73,13 +66,13 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 							$config->num_sets                 = isset( $_POST['num_sets'] ) ? intval( $_POST['num_sets'] ) : null;
 							$config->num_rubbers              = isset( $_POST['num_rubbers'] ) ? intval( $_POST['num_rubbers'] ) : null;
 							$config->reverse_rubbers          = isset( $_POST['reverse_rubbers'] ) ? intval( $_POST['reverse_rubbers'] ) : null;
-							$config->fixed_match_dates        = isset( $_POST['fixed_match_dates'] ) ? ( 'true' === $_POST['fixed_match_dates'] ? true : false ) : false;
-							$config->home_away                = isset( $_POST['home_away'] ) ? ( 'true' === $_POST['home_away'] ? true : false ) : false;
+							$config->fixed_match_dates        = isset( $_POST['fixed_match_dates'] ) && 'true' === $_POST['fixed_match_dates'];
+							$config->home_away                = isset( $_POST['home_away'] ) && 'true' === $_POST['home_away'];
 							$config->round_length             = isset( $_POST['round_length'] ) ? intval( $_POST['round_length'] ) : null;
 							$config->home_away_diff           = isset( $_POST['home_away_diff'] ) ? intval( $_POST['home_away_diff'] ) : null;
 							$config->filler_weeks             = isset( $_POST['filler_weeks'] ) ? intval( $_POST['filler_weeks'] ) : null;
-							$config->match_day_restriction    = isset( $_POST['match_day_restriction'] ) ? ( 'true' === $_POST['match_day_restriction'] ? true : false ) : false;
-							$config->match_day_weekends       = isset( $_POST['match_day_weekends'] ) ? ( 'true' === $_POST['match_day_weekends'] ? true : false ) : false;
+							$config->match_day_restriction    = isset($_POST['match_day_restriction']) && 'true' === $_POST['match_day_restriction'];
+							$config->match_day_weekends       = isset($_POST['match_day_weekends']) && 'true' === $_POST['match_day_weekends'];
 							$config->match_days_allowed       = isset( $_POST['match_days_allowed'] ) ? wp_unslash( $_POST['match_days_allowed'] ) : null;
 							$config->default_match_start_time = isset( $_POST['default_match_start_time'] ) ? sanitize_text_field( wp_unslash( $_POST['default_match_start_time'] ) ) : null;
 							$config->min_start_time_weekday   = isset( $_POST['min_start_time_weekday'] ) ? sanitize_text_field( wp_unslash( $_POST['min_start_time_weekday'] ) ) : null;
@@ -101,10 +94,10 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 							} else {
 								$racketmanager->set_message( __( 'Errors found', 'racketmanager' ), true );
 							}
-							$racketmanager->printMessage();
 						}
+						$racketmanager->printMessage();
 					}
-				} elseif ( isset( $_POST['doactionevent'] ) ) {
+				} elseif ( isset( $_POST['doActionEvent'] ) ) {
 					if ( ! isset( $_POST['racketmanager_event_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_event_nonce'] ) ), 'racketmanager__events-bulk' ) ) {
 						$racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 						$racketmanager->printMessage();
@@ -113,9 +106,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 						if ( $events ) {
 							foreach ( $events as $event_id ) {
 								$event = get_event( $event_id );
-								if ( $event ) {
-									$event->delete();
-								}
+								$event?->delete();
 							}
 						}
 					}
@@ -150,7 +141,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 	 *
 	 * Display create/edit season page
 	 */
-	public function display_season_modify_page() {
+	public function display_season_modify_page(): void {
 		global $racketmanager;
 		$racketmanager->error_fields   = array();
 		$racketmanager->error_messages = array();
@@ -177,8 +168,8 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 					$current_season->date_start        = isset( $_POST['dateStart'] ) ? sanitize_text_field( wp_unslash( $_POST['dateStart'] ) ) : null;
 					$current_season->date_start        = $current_season->date_start;
 					$current_season->competition_code  = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
-					$current_season->fixed_match_dates = isset( $_POST['fixedMatchDates'] ) ? ( 'true' === $_POST['fixedMatchDates'] ? true : false ) : false;
-					$current_season->home_away         = isset( $_POST['homeAway'] ) ? ( 'true' === $_POST['homeAway'] ? true : false ) : false;
+					$current_season->fixed_match_dates = isset( $_POST['fixedMatchDates']) && 'true' === $_POST['fixedMatchDates'];
+					$current_season->home_away         = isset( $_POST['homeAway']) && 'true' === $_POST['homeAway'];
 					$current_season->grade             = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
 					$current_season->max_teams         = isset( $_POST['max_teams'] ) ? intval( $_POST['max_teams'] ) : null;
 					$current_season->teams_per_club    = isset( $_POST['teams_per_club'] ) ? intval( $_POST['teams_per_club'] ) : null;
@@ -225,8 +216,8 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 						$current_season->date_start        = isset( $_POST['dateStart'] ) ? sanitize_text_field( wp_unslash( $_POST['dateStart'] ) ) : null;
 						$current_season->date_start        = $current_season->date_start;
 						$current_season->competition_code  = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
-						$current_season->fixed_match_dates = isset( $_POST['fixedMatchDates'] ) ? ( 'true' === $_POST['fixedMatchDates'] ? true : false ) : false;
-						$current_season->home_away         = isset( $_POST['homeAway'] ) ? ( 'true' === $_POST['homeAway'] ? true : false ) : false;
+						$current_season->fixed_match_dates = isset($_POST['fixedMatchDates']) && 'true' === $_POST['fixedMatchDates'];
+						$current_season->home_away         = isset($_POST['homeAway']) && 'true' === $_POST['homeAway'];
 						$current_season->grade             = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
 						$current_season->max_teams         = isset( $_POST['max_teams'] ) ? intval( $_POST['max_teams'] ) : null;
 						$current_season->teams_per_club    = isset( $_POST['teams_per_club'] ) ? intval( $_POST['teams_per_club'] ) : null;
@@ -314,7 +305,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 	 * @param object $competition competition details.
 	 * @return void
 	 */
-	private function set_competition_dates( $current_season, $competition ) {
+	private function set_competition_dates( object $current_season, object $competition ): void {
 		global $racketmanager;
 		$updates = false;
 		if ( empty( $current_season->name ) ) {
@@ -391,7 +382,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 			$racketmanager->error_fields[]   = 'grade';
 		}
 		if ( empty( $current_season->fee_lead_time ) ) {
-			if ( ! empty( $current_season->fee_event ) || ! empty( $current_season->fee_event ) ) {
+			if ( ! empty( $current_season->fee_competition ) || ! empty( $current_season->fee_event ) ) {
 				$racketmanager->error_messages[] = __( 'Fee lead time must be set', 'racketmanager' );
 				$racketmanager->error_fields[]   = 'feeLeadTime';
 			}
@@ -406,6 +397,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 			if ( ! empty( $current_season->fee_id ) ) {
 				$charge = get_charge( $current_season->fee_id );
 				if ( $charge ) {
+					$charge_update = false;
 					if ( $charge->fee_competition !== $current_season->fee_competition ) {
 						$charge->set_club_fee( $current_season->fee_competition );
 						$charge_update = true;
@@ -427,7 +419,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 			} elseif ( ! empty( $current_season->fee_competition ) || ! empty( $current_season->fee_event ) ) {
 				$charge_create = true;
 			}
-			$season = isset( $competition->seasons[ $current_season->name ] ) ? $competition->seasons[ $current_season->name ] : null;
+			$season = $competition->seasons[$current_season->name] ?? null;
 			if ( $season ) {
 				if ( empty( $season['date_open'] ) || $season['date_open'] !== $current_season->date_open ) {
 					$updates             = true;
@@ -564,7 +556,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 	 * @param object $season season details.
 	 * @return array of match dates.
 	 */
-	private function set_match_dates( $season ) {
+	private function set_match_dates( object $season ): array {
 		$match_dates  = array();
 		$date_start   = $season->date_start;
 		$round_length = $season->round_length;
@@ -588,11 +580,11 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 	/**
 	 * Schedule opening activities function
 	 *
-	 * @param int    $competition_id competition id.
+	 * @param int $competition_id competition id.
 	 * @param object $season season name.
 	 * @return void
 	 */
-	private function schedule_open_activities( $competition_id, $season ) {
+	private function schedule_open_activities( int $competition_id, object $season ): void {
 		$competition = get_competition( $competition_id );
 		if ( $competition ) {
 			$this->schedule_team_competition_emails( $competition_id, $season );
@@ -604,14 +596,13 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 	/**
 	 * Schedule emails function
 	 *
-	 * @param int    $competition_id competition id.
+	 * @param int $competition_id competition id.
 	 * @param object $season season name.
 	 * @return void
 	 */
-	private function schedule_team_competition_emails( $competition_id, $season ) {
-		global $racketmanager;
+	private function schedule_team_competition_emails( int $competition_id, object $season ): void {
 		$today           = gmdate( 'Y-m-d' );
-		$schedule_args[] = intval( $competition_id );
+		$schedule_args[] = $competition_id;
 		$schedule_args[] = intval( $season->name );
 		if ( $today <= $season->date_open ) {
 			$schedule_date   = strtotime( $season->date_open );
@@ -643,11 +634,11 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 	/**
 	 * Schedule team ratings setting function
 	 *
-	 * @param int    $competition_id competition id.
+	 * @param int $competition_id competition id.
 	 * @param object $season season name.
 	 * @return void
 	 */
-	private function schedule_team_ratings( $competition_id, $season ) {
+	private function schedule_team_ratings( int $competition_id, object $season ): void {
 		global $racketmanager;
 		if ( empty( $season->date_closing ) ) {
 			$day            = intval( gmdate( 'd' ) );
@@ -663,7 +654,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 			$schedule_start = mktime( 23, 59, 0, $month, $day, $year );
 		}
 		$schedule_name   = 'rm_calculate_team_ratings';
-		$schedule_args[] = intval( $competition_id );
+		$schedule_args[] = $competition_id;
 		$schedule_args[] = intval( $season->name );
 		Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
 		$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
@@ -677,7 +668,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 	 * @param int $charge_id charge id.
 	 * @return void
 	 */
-	private function schedule_invoice_send( $charge_id ) {
+	private function schedule_invoice_send( int $charge_id ): void {
 		$charge = get_charge( $charge_id );
 		if ( $charge ) {
 			$today = gmdate( 'Y-m-d' );
@@ -688,7 +679,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 				$year            = intval( gmdate( 'Y', $schedule_date ) );
 				$schedule_start  = mktime( 00, 00, 01, $month, $day, $year );
 				$schedule_name   = 'rm_send_invoices';
-				$schedule_args[] = intval( $charge_id );
+				$schedule_args[] = $charge_id;
 				Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
 				$success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
 				if ( ! $success ) {

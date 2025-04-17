@@ -433,6 +433,9 @@ if ( ! empty( $player->entry ) ) {
 							</div>
 						</div>
 						<div class="price-row">
+                            <?php
+                            $fee_total      += $tournament->fees->competition;
+                            ?>
 							<div class="price-cost" id="priceCostTotalFmt"><?php echo empty( $fee_total ) ? null : esc_html__( 'Total:', 'racketmanager' ) . ' '; ?><?php the_currency_amount( $fee_total ); ?></div>
 							<input type="hidden" name="priceCostTotal" id="priceCostTotal" value=<?php echo esc_attr( $fee_total ); ?> />
 						</div>

@@ -21,6 +21,10 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
+/** @var object $player */
+/** @var object $tournament */
+/** @var array $club_memberships */
 $withdrawal_allowed = false;
 $entry_option = false;
 if ( get_current_user_id() !== intval( $player->id ) && ! current_user_can( 'manage_racketmanager' ) ) {
@@ -126,16 +130,11 @@ if ( ! empty( $player->entry ) ) {
 										<div class="media__content-subinfo">
 											<span class="media__subheading">
 												<?php
-												switch ( $player->gender ) {
-													case 'M':
-														$gender = __( 'Male', 'racketmanager' );
-														break;
-													case 'F':
-														$gender = __( 'Female', 'racketmanager' );
-														break;
-													default:
-														$gender = '';
-												}
+												$gender = match ($player->gender) {
+													'M'     => __('Male', 'racketmanager'),
+													'F'     => __('Female', 'racketmanager'),
+													default => '',
+												};
 												?>
 												<ul class="list list--inline player-atts">
 													<li class="list__item" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="<?php esc_html_e( 'Gender', 'racketmanager' ); ?>"><span><?php echo esc_html( $gender ); ?></span></li>
@@ -192,16 +191,16 @@ if ( ! empty( $player->entry ) ) {
 												<h5 class="subheading"><?php esc_html_e( 'Contact', 'racketmanager' ); ?></h5>
 												<dl class="list list--flex">
 													<div class="list__item">
-														<dt class="list__label"><?php esc_html_e( 'Phone', 'racketmanager' ); ?></dt>
+                                                        <dt class="list__label"><?php esc_html_e( 'Phone', 'racketmanager' ); ?></dt>
 														<dd class="list__value">
-															<input type="tel" class="form-control" id="contactno" name="contactno" value="<?php echo esc_html( $player->contactno ); ?>" <?php echo $changes_allowed ? null : 'readonly'; ?> />
-															<div id="contactno-feedback" class="invalid-feedback"></div>
+                                                            <label for="contactno"></label><input type="tel" class="form-control" id="contactno" name="contactno" value="<?php echo esc_html( $player->contactno ); ?>" <?php echo $changes_allowed ? null : 'readonly'; ?> />
+                                                            <div id="contactno-feedback" class="invalid-feedback"></div>
 														</dd>
 													</div>
 													<div class="list__item">
 														<dt class="list__label"><?php esc_html_e( 'Email', 'racketmanager' ); ?></dt>
 														<dd class="list__value">
-															<input type="email" class="form-control" id="contactemail" name="contactemail" value="<?php echo esc_html( $player->user_email ); ?>" <?php echo $changes_allowed ? null : 'readonly'; ?> />
+                                                            <label for="contactemail"></label><input type="email" class="form-control" id="contactemail" name="contactemail" value="<?php echo esc_html( $player->user_email ); ?>" <?php echo $changes_allowed ? null : 'readonly'; ?> />
 															<div id="contactemail-feedback" class="invalid-feedback"></div>
 														</dd>
 													</div>
@@ -219,7 +218,7 @@ if ( ! empty( $player->entry ) ) {
 															switch ( count( $club_memberships ) ) {
 																case 1:
 																	?>
-																	<input type="text" class="form-control" id="clubName" name="clubName" value="<?php echo esc_html( get_club( $club_memberships[0]->club_id )->name ); ?>" disabled />
+                                                                    <label for="clubName"></label><input type="text" class="form-control" id="clubName" name="clubName" value="<?php echo esc_html( get_club( $club_memberships[0]->club_id )->name ); ?>" disabled />
 																	<input type="hidden" id="clubId" name="clubId" value="<?php echo esc_html( $club_memberships[0]->club_id ); ?>" />
 																	<?php
 																	break;
@@ -231,7 +230,7 @@ if ( ! empty( $player->entry ) ) {
 																	break;
 																default:
 																	?>
-																	<select class="form-select" size="1" name="clubId" id="clubId" <?php echo $changes_allowed ? null : 'readonly'; ?>>
+                                                                    <label for="clubId"></label><select class="form-select" size="1" name="clubId" id="clubId" <?php echo $changes_allowed ? null : 'readonly'; ?>>
 																		<option value="0"><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>
 																		<?php
 																		foreach ( $club_memberships as $club_player ) {
@@ -252,7 +251,7 @@ if ( ! empty( $player->entry ) ) {
 													<div class="list__item">
 														<dt class="list__label"><?php esc_html_e( 'LTA Number', 'racketmanager' ); ?></dt>
 														<dd class="list__value">
-															<input type="number" class="form-control" id="btm" name="btm" value="<?php echo esc_html( $player->btm ); ?>" <?php echo $changes_allowed ? null : 'readonly'; ?> />
+                                                            <label for="btm"></label><input type="number" class="form-control" id="btm" name="btm" value="<?php echo esc_html( $player->btm ); ?>" <?php echo $changes_allowed ? null : 'readonly'; ?> />
 															<div id="btm-feedback" class="invalid-feedback"></div>
 														</dd>
 													</div>
@@ -330,7 +329,6 @@ if ( ! empty( $player->entry ) ) {
 												$partner_id      = ! empty( $player_entry->partner->id ) ? $player_entry->partner->id : null;
 												$partner_name    = ! empty( $player_entry->partner->display_name ) ? $player_entry->partner->display_name : null;
 											}
-											$format   = substr( $event->type, 1, 1 );
 											?>
 											<div class="row">
 												<div class="col-8 col-lg-6 tournament-entry--row">
@@ -377,7 +375,8 @@ if ( ! empty( $player->entry ) ) {
 																?>
 															</div>
 															<div class="col-6">
-																<span class="event-price" id="event-price-fmt-<?php echo esc_html( $event->id ); ?>"><?php $entered ? the_currency_amount( $tournament->fees->event ) : null; ?></span>
+																<span class="event-price" id="event-price-fmt-<?php echo esc_html( $event->id ); ?>"><?php /** @noinspection PhpExpressionResultUnusedInspection */
+																	$entered ? the_currency_amount( $tournament->fees->event ) : null; ?></span>
 																<input type="hidden" class="event-price-amt" name="event-price[<?php echo esc_html( $event->id ); ?>]" id="event-price-<?php echo esc_html( $event->id ); ?>" value="<?php echo $entered ? esc_html( $tournament->fees->event ) : null; ?>" />
 															</div>
 														</div>

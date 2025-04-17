@@ -17,6 +17,7 @@ namespace Racketmanager;
 
 global $wp_query, $wp;
 $post_id   = $wp_query->post->ID; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+/** @var object $league */
 $pagename  = '/' . $league->event->competition->type . '/' . seo_url( $league->title ) . '/';
 $archive   = true;
 $match_day = \get_query_var( 'match_day' );
@@ -42,32 +43,32 @@ if ( $match_day ) {
 $menu_options               = array();
 $menu_options['standings']  = array(
 	'name'        => 'standings',
-	'selected'    => 'standings' === $tab ? true : false,
+	'selected'    => 'standings' === $tab,
 	'available'   => true,
 	'description' => __( 'Standings', 'racketmanager' ),
 );
 $menu_options['crosstable'] = array(
 	'name'        => 'crosstable',
-	'selected'    => 'crosstable' === $tab ? true : false,
+	'selected'    => 'crosstable' === $tab,
 	'available'   => true,
 	'description' => __( 'Crosstable', 'racketmanager' ),
 );
 $menu_options['matches']    = array(
 	'name'        => 'matches',
-	'selected'    => 'matches' === $tab ? true : false,
+	'selected'    => 'matches' === $tab,
 	'available'   => true,
 	'description' => __( 'Matches', 'racketmanager' ),
 );
 $menu_options['teams']      = array(
 	'name'        => 'teams',
-	'selected'    => 'teams' === $tab ? true : false,
+	'selected'    => 'teams' === $tab,
 	'available'   => true,
 	'description' => __( 'Teams', 'racketmanager' ),
 );
 if ( $league->event->competition->is_team_entry ) {
 	$menu_options['players'] = array(
 		'name'        => 'players',
-		'selected'    => 'players' === $tab ? true : false,
+		'selected'    => 'players' === $tab,
 		'available'   => true,
 		'description' => __( 'Players', 'racketmanager' ),
 	);
@@ -79,20 +80,12 @@ if ( $league->event->is_box ) {
 	$season_title     = __( 'Season', 'racketmanager' );
 	$season_selection = __( 'Seasons', 'racketmanager' );
 }
-switch ( $league->event->competition->type ) {
-	case 'league':
-		$image = 'images/bootstrap-icons.svg#table';
-		break;
-	case 'cup':
-		$image = 'images/bootstrap-icons.svg#trophy-fill';
-		break;
-	case 'tournament':
-		$image = 'images/lta-icons.svg#icon-bracket';
-		break;
-	default:
-		$image = null;
-		break;
-}
+$image = match ($league->event->competition->type) {
+	'league'     => 'images/bootstrap-icons.svg#table',
+	'cup'        => 'images/bootstrap-icons.svg#trophy-fill',
+	'tournament' => 'images/lta-icons.svg#icon-bracket',
+	default      => null,
+};
 ?>
 <div id="archive-<?php echo esc_html( $league->id ); ?>" class="archive">
 	<div class="page-subhead competition">
@@ -146,13 +139,14 @@ switch ( $league->event->competition->type ) {
 					</div>
 				</div>
 				<div class="media__aside">
-					<form method="get" action="<?php echo esc_html( get_permalink( $post_id ) ); ?>" id="racketmanager_competititon_archive" class="season-select">
+					<form method="get" action="<?php echo esc_html( get_permalink( $post_id ) ); ?>" id="racketmanager_competition_archive" class="season-select">
 						<input type="hidden" name="page_id" value="<?php echo esc_html( $post_id ); ?>" />
 						<input type="hidden" name="pagename" id="pagename" value="<?php echo esc_html( $pagename ); ?>" />
 						<div class="row g-1 align-items-center">
 							<div class="form-floating">
 								<select class="form-select" size="1" name="season" id="season">
 									<?php
+									/** @var array $seasons */
 									foreach ( array_reverse( $seasons ) as $key => $season ) {
 										if ( $league->event->is_box ) {
 											$option_name = $season_title . ' - ';

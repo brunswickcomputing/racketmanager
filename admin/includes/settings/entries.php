@@ -34,10 +34,10 @@ $competition_types = Racketmanager_Util::get_competition_types();
 			<div class="form-control">
 				<div class="form-floating mb-3">
 					<select class="form-select" id="<?php echo esc_html( $competition_type ); ?>-entryLevel" name="<?php echo esc_html( $competition_type ); ?>[entryLevel]">
-						<option value="" disabled <?php selected( null, isset( $options[ $competition_type ]['entry_level'] ) ? $options[ $competition_type ]['entry_level'] : null ); ?>><?php esc_html_e( 'Choose level', 'racketmanager' ); ?></option>
-						<option value="secretary" <?php selected( 'secretary', isset( $options[ $competition_type ]['entry_level'] ) ? $options[ $competition_type ]['entry_level'] : null ); ?>><?php esc_html_e( 'Match secretary', 'racketmanager' ); ?></option>
-						<option value="captain" <?php selected( 'captain', isset( $options[ $competition_type ]['entry_level'] ) ? $options[ $competition_type ]['entry_level'] : null ); ?>><?php esc_html_e( 'Captain', 'racketmanager' ); ?></option>
-						<option value="player" <?php selected( 'player', isset( $options[ $competition_type ]['entry_level'] ) ? $options[ $competition_type ]['entry_level'] : null ); ?>><?php esc_html_e( 'Player', 'racketmanager' ); ?></option>
+						<option value="" disabled <?php selected( null, $options[$competition_type]['entry_level'] ?? null); ?>><?php esc_html_e( 'Choose level', 'racketmanager' ); ?></option>
+						<option value="secretary" <?php selected( 'secretary', $options[$competition_type]['entry_level'] ?? null); ?>><?php esc_html_e( 'Match secretary', 'racketmanager' ); ?></option>
+						<option value="captain" <?php selected( 'captain', $options[$competition_type]['entry_level'] ?? null); ?>><?php esc_html_e( 'Captain', 'racketmanager' ); ?></option>
+						<option value="player" <?php selected( 'player', $options[$competition_type]['entry_level'] ?? null); ?>><?php esc_html_e( 'Player', 'racketmanager' ); ?></option>
 					</select>
 					<label for="<?php echo esc_html( $competition_type ); ?>-entryLevel"><?php esc_html_e( 'Entry level', 'racketmanager' ); ?></label>
 				</div>

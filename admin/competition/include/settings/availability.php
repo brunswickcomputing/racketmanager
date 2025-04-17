@@ -23,12 +23,12 @@ namespace Racketmanager;
 					'type' => 'affiliated',
 				)
 			);
-			foreach ( $clubs as $key => $club ) {
+			foreach ( $clubs as $club ) {
 				?>
 				<tr>
 					<td><?php echo esc_html( $club->name ); ?></td>
 					<td>
-						<input type="number" step="1" min="0" class="small-text" name="num_courts_available[<?php echo esc_html( $club->id ); ?>]" id="num_courts_available-[<?php echo esc_html( $club->id ); ?>]" value="<?php echo isset( $competition->config->num_courts_available[ $club->id ] ) ? esc_html( $competition->config->num_courts_available[ $club->id ] ) : null; ?>" />
+                        <label for="num_courts_available-[<?php echo esc_html( $club->id ); ?>]"></label><input type="number" step="1" min="0" class="small-text" name="num_courts_available[<?php echo esc_html( $club->id ); ?>]" id="num_courts_available-[<?php echo esc_html( $club->id ); ?>]" value="<?php echo isset( $competition->config->num_courts_available[ $club->id ] ) ? esc_html( $competition->config->num_courts_available[ $club->id ] ) : null; ?>" />
 					</td>
 				</tr>
 				<?php

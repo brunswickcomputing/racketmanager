@@ -7,6 +7,15 @@
 
 namespace Racketmanager;
 
+/** @var string $tab */
+/** @var object $league */
+/** @var string $object_name */
+/** @var int    $object_id */
+/** @var string $season */
+/** @var string $email_title */
+/** @var string $email_intro */
+/** @var string $email_close */
+/** @var string $email_message */
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){
@@ -22,10 +31,10 @@ jQuery(document).ready(function(){
 				$action_link  = 'admin.php?page=racketmanager-' . $league->event->competition->type . 's&amp;view=league&' . $object_name . '=' . $object_id . '&amp;season=' . $season;
 				$preview_link = 'admin.php?page=racketmanager-' . $league->event->competition->type . 's&amp;view=contact&' . $object_name . '=' . $object_id . '&amp;season=' . $season;
 				?>
-				<a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s"><?php echo esc_html( ucfirst( $league->event->competition->type ) ); ?>s</a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a>
-				&raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $league->event->competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $league->event->competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a>
-				&raquo; <a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=event&amp;event_id=<?php echo esc_html( $league->event->id ); ?>&amp;season=<?php echo esc_attr( $league->current_season['name'] ); ?>"><?php echo esc_html( $league->event->name ); ?></a>
-				&raquo; <a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=league&league_id=<?php echo esc_html( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a>
+				<a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s"><?php echo esc_html( ucfirst( $league->event->competition->type ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a>
+				&raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $league->event->competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $league->event->competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a>
+				&raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=event&amp;event_id=<?php echo esc_html( $league->event->id ); ?>&amp;season=<?php echo esc_attr( $league->current_season['name'] ); ?>"><?php echo esc_html( $league->event->name ); ?></a>
+				&raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=league&league_id=<?php echo esc_html( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a>
 				&raquo; <?php esc_html_e( 'Contact', 'racketmanager' ); ?>
 				<?php
 			} else {
@@ -33,7 +42,7 @@ jQuery(document).ready(function(){
 				$action_link  = 'admin.php?page=racketmanager-' . $competition->type . 's&amp;view=overview&' . $object_name . '=' . $object_id . '&amp;season=' . $season;
 				$preview_link = 'admin.php?page=racketmanager-' . $competition->type . 's&amp;view=contact&' . $object_name . '=' . $object_id . '&amp;season=' . $season;
 				?>
-				<a href="admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s"><?php echo esc_html( ucfirst( $competition->type ) ); ?>s</a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_html( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $lcompetition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <?php esc_html_e( 'Contact', 'racketmanager' ); ?>
+				<a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s"><?php echo esc_html( ucfirst( $competition->type ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_html( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <?php esc_html_e( 'Contact', 'racketmanager' ); ?>
 				<?php
 			}
 			?>
@@ -71,25 +80,23 @@ jQuery(document).ready(function(){
 					<input type="text" class="form-control" name="contactTitle" id="contactTitle" placeholder="Enter title" value="<?php echo esc_html( $email_title ); ?>" />
 					<label for="contactTitle"><?php esc_html_e( 'Email title', 'racketmanager' ); ?></label>
 				</div>
-				<div class="col-12 form-floating mb-3">
-					<input type="textarea" class="form-control contactText" name="contactIntro" id="contactIntro" placeholder="Enter intro" value="<?php echo esc_html( $email_intro ); ?>" />
-					<label for="contactIntro"><?php esc_html_e( 'Email introduction', 'racketmanager' ); ?></label>
+				<div class="col-12 mb-3">
+                    <label for="contactIntro"><?php esc_html_e( 'Email introduction', 'racketmanager' ); ?></label>
+					<textarea class="form-control contactText" rows="3" name="contactIntro" id="contactIntro" placeholder="Enter intro"><?php echo esc_html( $email_intro ); ?></textarea>
 				</div>
-				<?php for ( $i = 1; $i <= 5; $i++ ) { ?>
-					<div class="col-12 form-floating mb-3">
-						<input type="textarea" class="form-control contactBody" rows=20 name="contactBody[<?php echo esc_html( $i ); ?>]" id="contactBody-<?php echo esc_html( $i ); ?>" placeholder="Enter email text"
-							<?php
-							if ( isset( $email_body[ $i ] ) ) {
-								echo ' value="' . esc_html( $email_body[ $i ] ) . '"';
-							}
-							?>
-						/>
-						<label for="contactBody-<?php echo esc_html( $i ); ?>"><?php esc_html_e( 'Paragraph', 'racketmanager' ); ?> <?php echo esc_html( $i ); ?></label>
+				<?php
+                for ( $i = 1; $i <= 5; $i++ ) {
+                    ?>
+					<div class="col-12 mb-3">
+                        <label for="contactBody-<?php echo esc_html( $i ); ?>"><?php esc_html_e( 'Paragraph', 'racketmanager' ); ?> <?php echo esc_html( $i ); ?></label>
+						<textarea class="form-control contactBody" rows="3" name="contactBody[<?php echo esc_html( $i ); ?>]" id="contactBody-<?php echo esc_html( $i ); ?>" placeholder="Enter email text"><?php echo empty( $email_body[ $i ] ) ? null : esc_html( $email_body[ $i ] ); ?></textarea>
 					</div>
-				<?php } ?>
-				<div class="col-12 form-floating mb-3">
-					<input type="textarea" class="form-control contactText" name="contactClose" id="contactClose" placeholder="Enter closing" value="<?php echo esc_html( $email_close ); ?>" />
-					<label for="contactClose"><?php esc_html_e( 'Email closing', 'racketmanager' ); ?></label>
+				    <?php
+                }
+                ?>
+				<div class="col-12 mb-3">
+                    <label for="contactClose"><?php esc_html_e( 'Email closing', 'racketmanager' ); ?></label>
+                    <textarea class="form-control contactText" rows="3" name="contactClose" id="contactClose" placeholder="<?php esc_html_e('Closing text', 'racketmanager' ); ?>"><?php echo esc_html( $email_close ); ?></textarea>
 				</div>
 				<div class="col-12">
 					<button class="btn btn-primary" name="contactTeamPreview">

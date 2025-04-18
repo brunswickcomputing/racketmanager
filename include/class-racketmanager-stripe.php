@@ -17,33 +17,33 @@ final class Racketmanager_Stripe {
 	/**
 	 * Currency
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $currency;
+	public ?string $currency;
 	/**
 	 * Is live indicator
 	 *
 	 * @var boolean
 	 */
-	public $is_live = false;
+	public bool $is_live = false;
 	/**
 	 * Api_publishable_key
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $api_publishable_key;
+	public ?string $api_publishable_key;
 	/**
-	 * Api_psecret_key
+	 * Api_secret_key
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $api_secret_key;
+	public ?string $api_secret_key;
 	/**
 	 * Api endpoint secret
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $api_endpoint_key;
+	public ?string $api_endpoint_key;
 	/**
 	 * Constructor
 	 */
@@ -51,27 +51,27 @@ final class Racketmanager_Stripe {
 		global $racketmanager;
 		$billing = $racketmanager->get_options( 'billing' );
 		if ( $billing ) {
-			$this->currency = isset( $billing['billingCurrency'] ) ? $billing['billingCurrency'] : null;
-			$this->is_live  = isset( $billing['stripe_is_live'] ) ? $billing['stripe_is_live'] : false;
+			$this->currency = $billing['billingCurrency'] ?? null;
+			$this->is_live  = $billing['stripe_is_live'] ?? false;
 			if ( $this->is_live ) {
-				$this->api_publishable_key = isset( $billing['api_publishable_key_live'] ) ? $billing['api_publishable_key_live'] : null;
-				$this->api_secret_key      = isset( $billing['api_secret_key_live'] ) ? $billing['api_secret_key_live'] : null;
-				$this->api_endpoint_key    = isset( $billing['api_endpoint_key_live'] ) ? $billing['api_endpoint_key_live'] : null;
+				$this->api_publishable_key = $billing['api_publishable_key_live'] ?? null;
+				$this->api_secret_key      = $billing['api_secret_key_live'] ?? null;
+				$this->api_endpoint_key    = $billing['api_endpoint_key_live'] ?? null;
 			} else {
-				$this->api_publishable_key = isset( $billing['api_publishable_key_test'] ) ? $billing['api_publishable_key_test'] : null;
-				$this->api_secret_key      = isset( $billing['api_secret_key_test'] ) ? $billing['api_secret_key_test'] : null;
-				$this->api_endpoint_key    = isset( $billing['api_endpoint_key_test'] ) ? $billing['api_endpoint_key_test'] : null;
+				$this->api_publishable_key = $billing['api_publishable_key_test'] ?? null;
+				$this->api_secret_key      = $billing['api_secret_key_test'] ?? null;
+				$this->api_endpoint_key    = $billing['api_endpoint_key_test'] ?? null;
 			}
 		}
 	}
 	/**
 	 * Update payment status
 	 *
-	 * @param string $payment ref paymentIntent id.
+	 * @param string $payment_ref paymentIntent id.
 	 * @param string $status payment status defaults to paid.
 	 * @return void
 	 */
-	public function update_payment( $payment_ref, $status = 'paid' ) {
+	public function update_payment(string $payment_ref, string $status = 'paid' ): void {
 		global $racketmanager;
 		$invoices = $racketmanager->get_invoices( array( 'reference' => $payment_ref ) );
 		if ( 1 === count( $invoices ) ) {

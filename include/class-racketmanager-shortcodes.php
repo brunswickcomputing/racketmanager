@@ -9,8 +9,6 @@
 
 namespace Racketmanager;
 
-use stdClass;
-
 /**
  * Class to implement shortcode functions
  */
@@ -46,10 +44,10 @@ class RacketManager_Shortcodes {
 	 * - season: display specific season (optional)
 	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
 	 *
-	 * @param array $atts shorcode attributes.
+	 * @param array $atts shortcode attributes.
 	 * @return string
 	 */
-	public function show_daily_matches( $atts ) {
+	public function show_daily_matches( array $atts ): string {
 		global $racketmanager, $wp;
 		wp_verify_nonce( 'matches-daily' );
 		$args             = shortcode_atts(
@@ -63,9 +61,6 @@ class RacketManager_Shortcodes {
 		$competition_type = $args['competition_type'];
 		$template         = $args['template'];
 		$match_date       = $args['match_date'];
-
-		$matches = false;
-
 		if ( ! $match_date ) {
 			$match_date = get_query_var( 'match_date' );
 			if ( '' === $match_date && isset( $_GET['match_date'] ) ) {
@@ -113,10 +108,10 @@ class RacketManager_Shortcodes {
 	 * - season: display specific season (optional)
 	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
 	 *
-	 * @param array $atts shorcode attributes.
+	 * @param array $atts shortcode attributes.
 	 * @return string
 	 */
-	public function show_latest_results( $atts ) {
+	public function show_latest_results( array $atts ): string {
 		global $racketmanager, $wp;
 
 		$args             = shortcode_atts(
@@ -159,7 +154,6 @@ class RacketManager_Shortcodes {
 		if ( isset( $wp->query_vars['age_group'] ) ) {
 			$age_group = get_query_var( 'age_group' );
 		}
-		$matches      = false;
 		$time         = 'latest';
 		$matches      = $racketmanager->get_matches(
 			array(
@@ -201,9 +195,9 @@ class RacketManager_Shortcodes {
 	 *  [[players] template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string content
 	 */
-	public function show_players( $atts ) {
+	public function show_players( array $atts ): string {
 		$args           = shortcode_atts(
 			array(
 				'template' => '',
@@ -238,10 +232,9 @@ class RacketManager_Shortcodes {
 	 *  [[player] template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string content
 	 */
-	public function show_player( $atts ) {
-		global $racketmanager;
+	public function show_player( array $atts ): string {
 		$args     = shortcode_atts(
 			array(
 				'template' => '',
@@ -282,67 +275,37 @@ class RacketManager_Shortcodes {
 		);
 	}
 	/**
-	 * Get match score
-	 *
-	 * @param object $match match details.
-	 * @return the score
-	 */
-	public function get_match_score( $match ) {
-		if ( null !== $match->home_points && null !== $match->away_points ) {
-			if ( isset( $match->league->num_rubbers ) && $match->league->num_rubbers > 0 ) {
-				$score = sprintf( '%s - %s', $match->home_points, $match->away_points );
-			} else {
-				$score = '';
-				$sets  = $match->custom['sets'];
-				foreach ( $sets as $set ) {
-					if ( null !== $set['player1'] && null !== $set['player2'] ) {
-						$score .= $set['player1'] . '-' . $set['player2'] . ' ';
-					}
-				}
-				if ( '' === $score ) {
-					$score = __( 'Walkover', 'racketmanager' );
-				}
-			}
-		} elseif ( 0 !== $match->winner_id ) {
-			if ( -1 === $match->home_team || -1 === $match->away_team ) {
-				$score = '';
-			} else {
-				$score = __( 'Walkover', 'racketmanager' );
-			}
-		} else {
-			$score = '';
-		}
-		return $score;
-	}
-	/**
 	 * Function to display Competition Entry Page
 	 *
 	 *    [competition-entry id=ID template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string content
 	 */
-	public function show_competition_entry( $atts ) {
+	public function show_competition_entry( array $atts ): string {
 		$args             = shortcode_atts(
 			array(
-				'player_id' => false,
-				'template'  => '',
+				'template' => '',
 			),
 			$atts
 		);
-		$player_id        = $args['player_id'];
-		$template         = $args['template'];
-		$valid            = true;
-		$is_tournament    = false;
-		$competition_name = get_query_var( 'competition_name' );
-		$competition_name = un_seo_url( $competition_name );
+		$template           = $args['template'];
+		$valid              = true;
+		$is_tournament      = false;
+		$competition_name   = get_query_var( 'competition_name' );
+		$competition_name   = un_seo_url( $competition_name );
+        $tournament_name    = null;
+        $season             = null;
+        $competition_season = null;
+        $club               = null;
+        $tournament         = null;
+        $player             = null;
+        $msg                = null;
 		if ( $competition_name ) {
 			$type = get_query_var( 'competition_type' );
-			if ( $type ) {
-				if ( 'tournament' === $type ) {
-					$is_tournament   = true;
-					$tournament_name = $competition_name;
-				}
+			if ( 'tournament' === $type ) {
+				$is_tournament   = true;
+				$tournament_name = $competition_name;
 			}
 		} else {
 			$tournament_name = get_query_var( 'tournament' );
@@ -374,7 +337,6 @@ class RacketManager_Shortcodes {
 			$competition = get_competition( $competition_ref, $competition_lookup );
 			if ( $competition ) {
 				if ( $competition->is_tournament ) {
-					$player    = null;
 					$player_id = get_query_var( 'player_id' );
 					if ( $player_id ) {
 						$player_id = un_seo_url( $player_id );
@@ -394,7 +356,7 @@ class RacketManager_Shortcodes {
 				} else {
 					$season = get_query_var( 'season' );
 					if ( $season ) {
-						$competition_season = isset( $competition->seasons[ $season ] ) ? $competition->seasons[ $season ] : null;
+						$competition_season = $competition->seasons[$season] ?? null;
 						if ( $competition_season ) {
 							if ( ! empty( $competition_season['venue'] ) ) {
 								$venue_club = get_club( $competition_season['venue'] );
@@ -442,19 +404,12 @@ class RacketManager_Shortcodes {
 			if ( ! empty( $club_choice ) ) {
 				$output = $club_choice;
 			} else {
-				switch ( $competition->type ) {
-					case 'league':
-						$output = $this->show_league_entry( $competition, $season, $competition_season, $club, $template );
-						break;
-					case 'cup':
-						$output = $this->show_cup_entry( $competition, $season, $competition_season, $club, $template );
-						break;
-					case 'tournament':
-						$output = $this->show_tournament_entry( $tournament, $player, $template );
-						break;
-					default:
-						$output = $this->return_error( __( 'Invalid competition type specified', 'racketmanager' ) );
-				}
+				$output = match ( $competition->type ) {
+					'league'     => $this->show_league_entry( $competition, $season, $competition_season, $club, $template ),
+					'cup'        => $this->show_cup_entry( $competition, $season, $competition_season, $club, $template ),
+					'tournament' => $this->show_tournament_entry( $tournament, $player, $template ),
+					default      => $this->return_error( __('Invalid competition type specified', 'racketmanager') ),
+				};
 			}
 			return $output;
 		} else {
@@ -465,10 +420,10 @@ class RacketManager_Shortcodes {
 	 * Function to check if club selection is available
 	 *
 	 * @param object $competition competition object.
-	 * @param int    $club_id (optional) club id.
-	 * @return array||object||boolean||int array of clubs or individual club or indicator if club entry allowed or number of clubs
+	 * @param false|int $club_id (optional) club id.
+	 * @return false|object|boolean|int|array of clubs or individual club or indicator if club entry allowed or number of clubs
 	 */
-	protected function club_selection_available( $competition, $club_id = false ) {
+	protected function club_selection_available( object $competition, false|int $club_id = false ): object|int|bool|array {
 		global $racketmanager;
 		$clubs        = null;
 		$user         = wp_get_current_user();
@@ -483,13 +438,13 @@ class RacketManager_Shortcodes {
 		} else {
 			$competition_options = $racketmanager->get_options( $competition->type );
 			if ( $competition_options ) {
-				$entry_option = isset( $competition_options[ 'entry_level' ] ) ? $competition_options[ 'entry_level' ] : null;
+				$entry_option = $competition_options['entry_level'] ?? null;
 				if ( $entry_option ) {
 					$args[ 'player_type' ] = $entry_option;
 					$args[ 'player' ]      = $userid;
 					$clubs = $racketmanager->get_clubs( $args );
 				}
-			};
+			}
 		}
 		if ( $clubs ) {
 			if ( $club_id ) {
@@ -511,9 +466,9 @@ class RacketManager_Shortcodes {
 	 * @param object $competition competition object.
 	 * @param string $season season name.
 	 * @param array $competition_season competition season details.
-	 * @return string||boolean screen or no details
+	 * @return string|boolean screen or no details
 	 */
-	private function show_club_selection( $competition, $season, $competition_season ) {
+	private function show_club_selection( object $competition, string $season, array $competition_season ): false|string {
 		$clubs = $this->club_selection_available( $competition );
 		if ( $clubs ) {
 			return $this->load_template(
@@ -532,9 +487,10 @@ class RacketManager_Shortcodes {
 	/**
 	 * Function to display competition payment Page
 	 *
+	 * @param array $atts shortcode attributes.
 	 * @return string the content
 	 */
-	public function show_competition_entry_payment( $atts ) {
+	public function show_competition_entry_payment( array $atts ): string {
 		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
@@ -543,49 +499,52 @@ class RacketManager_Shortcodes {
 			$atts
 		);
 		$template = $args['template'];
-		$valid    = true;
-		$type     = get_query_var( 'competition_type' );
-		if ( $type ) {
-			if ( 'tournament' === $type ) {
-				$tournament_name = get_query_var( 'tournament' );
-				if ( $tournament_name ) {
-					$tournament_name = un_seo_url( $tournament_name );
-					$tournament      = get_tournament( $tournament_name, 'name' );
-					if ( $tournament ) {
-						$charge_key = $tournament->competition_id . '_' . $tournament->season;
-						$charge     = get_charge( $charge_key );
-						if ( $charge ) {
-							$player_id = wp_get_current_user()->ID;
-							$player    = get_player( $player_id );
-							if ( $player ) {
-								$args['charge']       = $charge->id;
-								$args['player']       = $player_id;
-								$args['status']       = 'open';
-								$outstanding_payments = $racketmanager->get_invoices( $args );
-								$total_due            = 0;
-								$invoice_id           = null;
-								foreach ( $outstanding_payments as $invoice ) {
-									$total_due += $invoice->amount;
-									$invoice_id = $invoice->id;
-								}
-								$search           = $tournament->id . '_' . $player->id;
-								$tournament_entry = get_tournament_entry( $search, 'key' );
-							} else {
-								$valid = false;
-								$msg   = __( 'Player not found', 'racketmanager' );
+		$valid            = true;
+        $msg              = null;
+        $invoice_id       = null;
+        $total_due        = null;
+        $tournament_entry = null;
+        $tournament       = null;
+        $player           = null;
+		$type             = get_query_var( 'competition_type' );
+		if ( 'tournament' === $type ) {
+			$tournament_name = get_query_var( 'tournament' );
+			if ( $tournament_name ) {
+				$tournament_name = un_seo_url( $tournament_name );
+				$tournament      = get_tournament( $tournament_name, 'name' );
+				if ( $tournament ) {
+					$charge_key = $tournament->competition_id . '_' . $tournament->season;
+					$charge     = get_charge( $charge_key );
+					if ( $charge ) {
+						$player_id = wp_get_current_user()->ID;
+						$player    = get_player( $player_id );
+						if ( $player ) {
+							$args['charge']       = $charge->id;
+							$args['player']       = $player_id;
+							$args['status']       = 'open';
+							$outstanding_payments = $racketmanager->get_invoices( $args );
+							$total_due            = 0;
+							foreach ( $outstanding_payments as $invoice ) {
+								$total_due += $invoice->amount;
+								$invoice_id = $invoice->id;
 							}
+							$search           = $tournament->id . '_' . $player->id;
+							$tournament_entry = get_tournament_entry( $search, 'key' );
 						} else {
 							$valid = false;
-							$msg   = __( 'Charge not found', 'racketmanager' );
+							$msg   = __( 'Player not found', 'racketmanager' );
 						}
 					} else {
 						$valid = false;
-						$msg   = __( 'Tournament not found', 'racketmanager' );
+						$msg   = __( 'Charge not found', 'racketmanager' );
 					}
 				} else {
 					$valid = false;
-					$msg   = __( 'No tournament name specified', 'racketmanager' );
+					$msg   = __( 'Tournament not found', 'racketmanager' );
 				}
+			} else {
+				$valid = false;
+				$msg   = __( 'No tournament name specified', 'racketmanager' );
 			}
 		}
 		if ( $valid ) {
@@ -613,33 +572,35 @@ class RacketManager_Shortcodes {
 	 *
 	 * @return string the content
 	 */
-	public function show_competition_entry_payment_complete() {
-		$valid = true;
-		$type = get_query_var( 'competition_type' );
-		if ( $type ) {
-			if ( 'tournament' === $type ) {
-				$tournament_name = get_query_var( 'tournament' );
-				if ( $tournament_name ) {
-					$tournament_name = un_seo_url( $tournament_name );
-					$tournament      = get_tournament( $tournament_name, 'name' );
-					if ( $tournament ) {
-						$player_id = wp_get_current_user()->ID;
-						$player    = get_player( $player_id );
-						if ( $player ) {
-							$search           = $tournament->id . '_' . $player->id;
-							$tournament_entry = get_tournament_entry( $search, 'key' );
-						} else {
-							$valid = false;
-							$msg   = __( 'Player not found', 'racketmanager' );
-						}
+	public function show_competition_entry_payment_complete(): string {
+		$valid            = true;
+        $msg              = null;
+        $tournament       = null;
+        $tournament_entry = null;
+        $player           = null;
+		$type             = get_query_var( 'competition_type' );
+		if ( 'tournament' === $type ) {
+			$tournament_name = get_query_var( 'tournament' );
+			if ( $tournament_name ) {
+				$tournament_name = un_seo_url( $tournament_name );
+				$tournament      = get_tournament( $tournament_name, 'name' );
+				if ( $tournament ) {
+					$player_id = wp_get_current_user()->ID;
+					$player    = get_player( $player_id );
+					if ( $player ) {
+						$search           = $tournament->id . '_' . $player->id;
+						$tournament_entry = get_tournament_entry( $search, 'key' );
 					} else {
 						$valid = false;
-						$msg   = __( 'Tournament not found', 'racketmanager' );
+						$msg   = __( 'Player not found', 'racketmanager' );
 					}
 				} else {
 					$valid = false;
-					$msg   = __( 'No tournament name specified', 'racketmanager' );
+					$msg   = __( 'Tournament not found', 'racketmanager' );
 				}
+			} else {
+				$valid = false;
+				$msg   = __( 'No tournament name specified', 'racketmanager' );
 			}
 		}
 		if ( $valid ) {
@@ -663,18 +624,17 @@ class RacketManager_Shortcodes {
 	 *
 	 * @param object $competition competition object.
 	 * @param string $season season.
-	 * @param array  $$competition_season competition season.
+	 * @param array $competition_season competition season.
 	 * @param object $club club object.
 	 * @param string $template template name.
-	 * @return the content
+	 * @return string the content
 	 */
-	public function show_cup_entry( $competition, $season, $competition_season, $club, $template ) {
+	public function show_cup_entry( object $competition, string $season, array $competition_season, object $club, string $template ): string {
 		if ( ! is_user_logged_in() ) {
-			return '<p class="contact-login-msg">You need to <a href="' . wp_login_url() . '">login</a> to enter cups</p>';
+			return '<p class="contact-login-msg">You need to <a href="' . wp_login_url() . '">log in</a> to enter cups</p>';
 		}
 		$valid = true;
-		$user   = wp_get_current_user();
-		$userid = $user->ID;
+        $msg   = null;
 		if ( ! $club ) {
 			$valid = false;
 			$msg   = __( 'Club not found', 'racketmanager' );
@@ -737,16 +697,17 @@ class RacketManager_Shortcodes {
 	 *
 	 * @param string $competition_name competition name.
 	 * @param string $season season.
-	 * @param array  $$competition_season competition season.
+	 * @param array $competition_season competition season.
 	 * @param string $club_name club name.
 	 * @param string $template template name.
-	 * @return the content
+	 * @return string content
 	 */
-	public function show_league_entry( $competition_name, $season, $competition_season, $club_name, $template ) {
+	public function show_league_entry( string $competition_name, string $season, array $competition_season, string $club_name, string $template ): string {
 		if ( ! is_user_logged_in() ) {
-			return '<p class="contact-login-msg">You need to <a href="' . wp_login_url() . '">login</a> to enter leagues</p>';
+			return '<p class="contact-login-msg">You need to <a href="' . wp_login_url() . '">log in</a> to enter leagues</p>';
 		}
 		$valid = true;
+        $msg   = null;
 		$club  = get_club( $club_name, 'shortcode' );
 
 		if ( ! $club ) {
@@ -797,7 +758,7 @@ class RacketManager_Shortcodes {
 				}
 				$key = 0;
 				foreach ( $event->teams as $team ) {
-					$found = array_search( $team->id, array_column( $event->event_teams, 'team_id' ), true );
+					$found = in_array( $team->id, array_column( $event->event_teams, 'team_id' ), true );
 					if ( false !== $found ) {
 						unset( $event->teams[ $key ] );
 					} else {
@@ -841,11 +802,11 @@ class RacketManager_Shortcodes {
 	 * Function to display Tournament Entry Page
 	 *
 	 * @param object $tournament tournament object.
-	 * @param object $player player object.
-	 * @param string $template template name.
-	 * @return the content
+	 * @param object|null $player player object.
+	 * @param string|null $template template name.
+	 * @return string content
 	 */
-	public function show_tournament_entry( $tournament, $player = null, $template = null ) {
+	public function show_tournament_entry( object $tournament, object $player = null, string $template = null ): string {
 		global $racketmanager;
 		if ( ! $tournament ) {
 			return $this->return_error( __( 'Tournament not found', 'racketmanager' ) );
@@ -870,16 +831,12 @@ class RacketManager_Shortcodes {
 			$event       = get_event( $event );
 			$entry_valid = false;
 			if ( 'M' === $player->gender ) {
-				if ( substr( $event->type, 0, 1 ) !== 'W' && substr( $event->type, 0, 1 ) !== 'G' ) {
+				if ( ! str_starts_with( $event->type, 'W' ) && ! str_starts_with( $event->type, 'G' ) ) {
 					$entry_valid = true;
-				} else {
-					$entry_valid = false;
 				}
 			} elseif ( 'F' === $player->gender ) {
-				if ( substr( $event->type, 0, 1 ) !== 'M' && substr( $event->type, 0, 1 ) !== 'B' ) {
+				if ( ! str_starts_with( $event->type, 'M' ) && ! str_starts_with( $event->type, 'B' ) ) {
 					$entry_valid = true;
-				} else {
-					$entry_valid = false;
 				}
 			}
 			if ( $entry_valid ) {
@@ -959,9 +916,9 @@ class RacketManager_Shortcodes {
 	 *    [favourites template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string content
 	 */
-	public function show_favourites( $atts ) {
+	public function show_favourites( array $atts ): string {
 		$args = shortcode_atts(
 			array(
 				'template' => '',
@@ -983,9 +940,9 @@ class RacketManager_Shortcodes {
 	 *    [invoice template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string content
 	 */
-	public function show_invoice( $atts ) {
+	public function show_invoice( array $atts ): string {
 		$args = shortcode_atts(
 			array(
 				'id' => '',
@@ -1010,9 +967,9 @@ class RacketManager_Shortcodes {
 	 *    [messages template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string content
 	 */
-	public function show_messages( $atts ) {
+	public function show_messages( array $atts ): string {
 		$args = shortcode_atts(
 			array(
 				'template' => '',
@@ -1046,9 +1003,9 @@ class RacketManager_Shortcodes {
 	 *    [memberships template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string content
 	 */
-	public function show_memberships( $atts ) {
+	public function show_memberships( array $atts ): string {
 		$args = shortcode_atts(
 			array(
 				'template' => '',
@@ -1076,9 +1033,9 @@ class RacketManager_Shortcodes {
 	 *    [messages template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string content
 	 */
-	public function show_player_search( $atts ) {
+	public function show_player_search( array $atts ): string {
 		global $racketmanager;
 		$args          = shortcode_atts(
 			array(
@@ -1100,9 +1057,9 @@ class RacketManager_Shortcodes {
 	 *    [team-order]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string content
 	 */
-	public function show_team_order( $atts ) {
+	public function show_team_order( array $atts ): string {
 		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
@@ -1141,52 +1098,28 @@ class RacketManager_Shortcodes {
 	 * before defaulting to the plugin
 	 *
 	 * @param string $template Name of the template file (without extension).
-	 * @param array  $vars Array of variables name=>value available to display code (optional).
-	 * @param string $template_type Type of content template (email, page).
-	 * @return the content
+	 * @param array $vars Array of variables name=>value available to display code (optional).
+	 * @param false|string $template_type Type of content template (email, page).
+	 * @return string the content
 	 */
-	public function load_template( $template, $vars = array(), $template_type = false ) {
+	public function load_template( string $template, array $vars = array(), false|string $template_type = false ): string {
 		global $league, $team, $match, $racketmanager;
 
 		if ( $template_type ) {
-			switch ( $template_type ) {
-				case 'competition':
-					$template_dir = 'templates/competition';
-					break;
-				case 'event':
-					$template_dir = 'templates/event';
-					break;
-				case 'email':
-					$template_dir = 'templates/email';
-					break;
-				case 'entry':
-					$template_dir = 'templates/entry';
-					break;
-				case 'form':
-					$template_dir = 'templates/forms';
-					break;
-				case 'includes':
-					$template_dir = 'templates/includes';
-					break;
-				case 'page':
-					$template_dir = 'templates/page';
-					break;
-				case 'tournament':
-					$template_dir = 'templates/tournament';
-					break;
-				case 'account':
-					$template_dir = 'templates/account';
-					break;
-				case 'league':
-					$template_dir = 'templates/league';
-					break;
-				case 'club':
-					$template_dir = 'templates/club';
-					break;
-				default:
-					$template_dir = 'templates';
-					break;
-			}
+			$template_dir = match ($template_type) {
+				'competition' => 'templates/competition',
+				'event'       => 'templates/event',
+				'email'       => 'templates/email',
+				'entry'       => 'templates/entry',
+				'form'        => 'templates/forms',
+				'includes'    => 'templates/includes',
+				'page'        => 'templates/page',
+				'tournament'  => 'templates/tournament',
+				'account'     => 'templates/account',
+				'league'      => 'templates/league',
+				'club'        => 'templates/club',
+				default       => 'templates',
+			};
 		} else {
 			$template_dir = 'templates';
 		}
@@ -1211,10 +1144,10 @@ class RacketManager_Shortcodes {
 	 * Check if template exists
 	 *
 	 * @param string $template template name.
-	 * @param string $directory optional directory name.
+	 * @param string|null $directory optional directory name.
 	 * @return boolean
 	 */
-	public function check_template( $template, $directory = null ) {
+	public function check_template( string $template, string $directory = null ): bool {
 		$template_dir = 'templates/';
 		if ( $directory ) {
 			$template_dir .= $directory . '/';
@@ -1225,15 +1158,15 @@ class RacketManager_Shortcodes {
 	 * Get league
 	 *
 	 * @param int $league_id league id.
-	 * @return null|League
+	 * @return object
 	 */
-	public function get_league( $league_id ) {
+	public function get_league( int $league_id ): object {
 		global $league;
 
 		if ( 0 === $league_id ) {
 			$league = get_league();
 		} else {
-			$league = get_league( intval( $league_id ) );
+			$league = get_league( $league_id );
 		}
 		return $league;
 	}
@@ -1244,7 +1177,7 @@ class RacketManager_Shortcodes {
 	 * @param string $season season.
 	 * @return array of leagues with draws.
 	 */
-	public function get_draw( $event, $season ) {
+	public function get_draw( object $event, string $season ): array {
 		$leagues = $event->get_leagues();
 		foreach ( $leagues as $l => $league ) {
 			$league = get_league( $league->id );
@@ -1274,10 +1207,10 @@ class RacketManager_Shortcodes {
 	/**
 	 * Return error function
 	 *
-	 * @param string $msg mesage to display.
+	 * @param string $msg message to display.
 	 * @return string output html modal
 	 */
-	public function return_error($msg ) {
+	public function return_error(string $msg ): string {
 		ob_start();
 		?>
 		<div>

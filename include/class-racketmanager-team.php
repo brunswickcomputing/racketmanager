@@ -18,188 +18,188 @@ final class Racketmanager_Team {
 	 *
 	 * @var int
 	 */
-	public $id;
+	public int $id;
 	/**
 	 * Title variable
 	 *
 	 * @var string
 	 */
-	public $title;
+	public string $title;
 	/**
 	 * Stadium variable
 	 *
 	 * @var string
 	 */
-	public $stadium;
+	public string $stadium;
 	/**
 	 * Roster variable
 	 *
 	 * @var array
 	 */
-	public $roster;
+	public mixed $roster;
 	/**
 	 * Profile variable
 	 *
-	 * @var string
+	 * @var string|int
 	 */
-	public $profile;
+	public string|int $profile;
 	/**
 	 * Club id variable
 	 *
 	 * @var int
 	 */
-	public $club_id;
+	public int $club_id;
 	/**
 	 * Club object variable
 	 *
-	 * @var object
+	 * @var object|null
 	 */
-	public $club;
+	public null|object $club;
 	/**
 	 * Status variable
 	 *
 	 * @var string
 	 */
-	public $status;
+	public string $status;
 	/**
 	 * Player variable
 	 *
 	 * @var string
 	 */
-	public $player;
+	public string $player;
 	/**
 	 * Player 1 name variable
 	 *
 	 * @var string
 	 */
-	public $player1;
+	public string $player1;
 	/**
 	 * Player2 name variable
 	 *
 	 * @var string
 	 */
-	public $player2;
+	public string $player2;
 	/**
 	 * Player 1 id variable
 	 *
 	 * @var int
 	 */
-	public $player1_id;
+	public int $player1_id;
 	/**
 	 * Player 2 ID variable
 	 *
 	 * @var int
 	 */
-	public $player2_id;
+	public int $player2_id;
 	/**
 	 * Team type variable
 	 *
 	 * @var string
 	 */
-	public $type;
+	public string $type;
 	/**
 	 * Team type variable
 	 *
 	 * @var string
 	 */
-	public $team_type;
+	public string $team_type;
 	/**
 	 * Home variable
 	 *
 	 * @var string
 	 */
-	public $home;
+	public string $home;
 	/**
 	 * Player id variable
 	 *
-	 * @var int
+	 * @var array
 	 */
-	public $player_id;
+	public array $player_ids;
 	/**
 	 * Players variable
 	 *
 	 * @var array
 	 */
-	public $players = array();
+	public array $players = array();
 	/**
 	 * Team ref variable
 	 *
 	 * @var string
 	 */
-	public $team_ref;
+	public string $team_ref;
 	/**
 	 * Team updated variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	private $msg_team_updated = 'Team updated';
+	private ? string $msg_team_updated;
 	/**
 	 * Team added variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	private $msg_team_added = 'Team added';
+	private ? string $msg_team_added;
 	/**
 	 * Team update error variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	private $msg_team_update_error = 'Team update error';
+	private ? string $msg_team_update_error;
 	/**
 	 * Team add error variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	private $msg_team_add_error = 'Team add error';
+	private ? string $msg_team_add_error;
 	/**
 	 * No updates variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	private $msg_no_update = 'No updates';
+	private ? string $msg_no_update;
 	/**
 	 * Team details missing message variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	private $msg_details_missing = 'Team details missing';
+	private ? string $msg_details_missing;
 	/**
 	 * Error updating team contact variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	private $msg_team_contact_error = 'Error updating team contact';
+	private ? string $msg_team_contact_error;
 	/**
 	 * Player not found error message variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	private $player_not_found_error = 'Player not found';
+	private ? string $player_not_found_error;
 	/**
 	 * Info variable
 	 *
 	 * @var object
 	 */
-	public $info;
+	public object $info;
 	/**
 	 * Standings variable
 	 *
 	 * @var array
 	 */
-	public $standings;
+	public array $standings;
 	/**
 	 * Matches variable
 	 *
 	 * @var array
 	 */
-	public $matches;
+	public array $matches;
 	/**
 	 * Retrieve team instance
 	 *
-	 * @param int $team_id team id.
+	 * @param int|string $team_id team id.
 	 * @return object|boolean
 	 */
-	public static function get_instance( $team_id ) {
+	public static function get_instance( int|string $team_id ): object|bool {
 		global $wpdb;
 		if ( is_numeric( $team_id ) ) {
 			$search = $wpdb->prepare(
@@ -227,7 +227,7 @@ final class Racketmanager_Team {
 			} else {
 				$team = $wpdb->get_row(
 					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-					"SELECT `id`, `title`, `stadium`, `home`, `roster`, `profile`, `status`, `club_id`, `type`, `team_type` FROM {$wpdb->racketmanager_teams} WHERE " . $search . ' LIMIT 1',
+					"SELECT `id`, `title`, `stadium`, `home`, `roster`, `profile`, `status`, `club_id`, `type`, `team_type` FROM $wpdb->racketmanager_teams WHERE " . $search . ' LIMIT 1',
 				); // db call ok.
 			}
 			if ( ! $team ) {
@@ -243,9 +243,9 @@ final class Racketmanager_Team {
 	/**
 	 * Constructor
 	 *
-	 * @param object $team Team object.
+	 * @param object|null $team Team object.
 	 */
-	public function __construct( $team = null ) {
+	public function __construct( object $team = null ) {
 		$this->msg_team_updated       = __( 'Team updated', 'racketmanager' );
 		$this->msg_team_added         = __( 'Team added', 'racketmanager' );
 		$this->msg_team_update_error  = __( 'Team update error', 'racketmanager' );
@@ -273,12 +273,12 @@ final class Racketmanager_Team {
 				$players = $this->get_players();
 				$i       = 1;
 				foreach ( $players as $player ) {
-					$this->player[ $i ]    = $player->fullname;
-					$this->player_id[ $i ] = $player->id;
+					$this->players[ $i ]    = $player->fullname;
+					$this->player_ids[ $i ] = $player->id;
 					++$i;
 				}
 			}
-			if ( strpos( $this->title, '_' ) !== false ) {
+			if ( str_contains( $this->title, '_' ) ) {
 				$team_name  = null;
 				$name_array = explode( '_', $this->title );
 				if ( '1' === $name_array[0] ) {
@@ -303,7 +303,7 @@ final class Racketmanager_Team {
 	/**
 	 * Add new Team
 	 */
-	private function add() {
+	private function add(): void {
 		global $wpdb, $racketmanager;
 		if ( isset( $this->team_type ) && 'P' === $this->team_type ) {
 			if ( 'LD' === $this->type ) {
@@ -323,7 +323,7 @@ final class Racketmanager_Team {
 			$this->profile = '';
 			$result        = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"INSERT INTO {$wpdb->racketmanager_teams} (`title`, `club_id`, `roster`, `status`, `type`, `team_type` ) VALUES (%s, %d, %s, %s, %s, %s)",
+					"INSERT INTO $wpdb->racketmanager_teams (`title`, `club_id`, `roster`, `status`, `type`, `team_type` ) VALUES (%s, %d, %s, %s, %s, %s)",
 					$this->title,
 					$this->club_id,
 					maybe_serialize( $players ),
@@ -345,7 +345,7 @@ final class Racketmanager_Team {
 			$this->status  = '';
 			$result        = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"INSERT INTO {$wpdb->racketmanager_teams} (`title`, `stadium`, `club_id`, `type`, `team_type`) VALUES (%s, %s, %d, %s, %s)",
+					"INSERT INTO $wpdb->racketmanager_teams (`title`, `stadium`, `club_id`, `type`, `team_type`) VALUES (%s, %s, %d, %s, %s)",
 					$this->title,
 					$this->stadium,
 					$this->club_id,
@@ -368,10 +368,10 @@ final class Racketmanager_Team {
 	 * Update team
 	 *
 	 * @param string $title team name.
-	 * @param int    $club_id affiliated club id.
+	 * @param int $club_id affiliated club id.
 	 * @param string $type team type (mens/ladies/mixed/singles/doubles).
 	 */
-	public function update( $title, $club_id, $type ) {
+	public function update( string $title, int $club_id, string $type ): void {
 		global $wpdb, $racketmanager;
 
 		$club    = get_club( $club_id );
@@ -379,7 +379,7 @@ final class Racketmanager_Team {
 		if ( $this->title !== $title || $this->club_id !== $club_id || $this->type !== $type || $this->stadium !== $stadium ) {
 			$result = $wpdb->query(
 				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_teams} SET `title` = %s, `club_id` = %d, `stadium` = %s, `type` = %s WHERE `id` = %d",
+					"UPDATE $wpdb->racketmanager_teams SET `title` = %s, `club_id` = %d, `stadium` = %s, `type` = %s WHERE `id` = %d",
 					$title,
 					$club_id,
 					$stadium,
@@ -404,12 +404,12 @@ final class Racketmanager_Team {
 	 * Update team for players
 	 *
 	 * @param string $player1 player 1 name.
-	 * @param int    $player1_id player 1 id.
+	 * @param int $player1_id player 1 id.
 	 * @param string $player2 player 2 name.
-	 * @param int    $player2_id player 2 id.
-	 * @param int    $club_id affiliated club id.
+	 * @param int $player2_id player 2 id.
+	 * @param int $club_id affiliated club id.
 	 */
-	public function update_player( $player1, $player1_id, $player2, $player2_id, $club_id ) {
+	public function update_player( string $player1, int $player1_id, string $player2, int $player2_id, int $club_id ): void {
 		global $wpdb, $racketmanager;
 
 		$players   = array();
@@ -425,7 +425,7 @@ final class Racketmanager_Team {
 		if ( $this->title !== $title || $this->club_id !== $club_id || $this->roster !== $players || $this->stadium !== $stadium ) {
 			$result = $wpdb->query(
 				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_teams} SET `title` = %s, `club_id` = %d, `stadium` = %s, `roster` = %s WHERE `id` = %d",
+					"UPDATE $wpdb->racketmanager_teams SET `title` = %s, `club_id` = %d, `stadium` = %s, `roster` = %s WHERE `id` = %d",
 					$title,
 					$club_id,
 					$stadium,
@@ -436,9 +436,9 @@ final class Racketmanager_Team {
 			if ( $result ) {
 				wp_cache_delete( $this->id, 'teams' );
 				$racketmanager->set_message( $this->msg_team_updated );
-				$result = $wpdb->query(
+				$wpdb->query(
 					$wpdb->prepare(
-						"DELETE FROM {$wpdb->racketmanager_team_players} WHERE `id` = %d",
+						"DELETE FROM $wpdb->racketmanager_team_players WHERE `id` = %d",
 						$this->id
 					)
 				); // db call ok, no cache ok.
@@ -458,20 +458,20 @@ final class Racketmanager_Team {
 	/**
 	 * Set event
 	 *
-	 * @param int    $event_id event id.
-	 * @param string $captain optional captain id.
-	 * @param string $contact_no optional contact number.
-	 * @param string $contact_email optional contact email.
-	 * @param int    $match_day optional match day.
-	 * @param int    $match_time optional match time.
+	 * @param int $event_id event id.
+	 * @param string|null $captain optional captain id.
+	 * @param string|null $contact_no optional contact number.
+	 * @param string|null $contact_email optional contact email.
+	 * @param int|null $match_day optional match day.
+	 * @param int|null $match_time optional match time.
 	 * @return boolean
 	 */
-	public function set_event( $event_id, $captain = null, $contact_no = null, $contact_email = null, $match_day = null, $match_time = null ) {
+	public function set_event( int $event_id, string $captain = null, string $contact_no = null, string $contact_email = null, int $match_day = null, int $match_time = null ): bool {
 		global $wpdb, $racketmanager;
 
 		$count = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$wpdb->racketmanager_team_events} WHERE `team_id` = %d AND `event_id` = %d",
+				"SELECT COUNT(*) FROM $wpdb->racketmanager_team_events WHERE `team_id` = %d AND `event_id` = %d",
 				$this->id,
 				$event_id
 			)
@@ -490,23 +490,24 @@ final class Racketmanager_Team {
 
 		return true;
 	}
+
 	/**
 	 * Add team to event
 	 *
-	 * @param int    $event_id event id.
-	 * @param string $captain captain id.
-	 * @param string $contactno optional contact number.
-	 * @param string $contactemail optional contact email.
-	 * @param int    $matchday optional match day.
-	 * @param int    $matchtime optional match time.
-	 * @return $team_event_id
+	 * @param int $event_id event id.
+	 * @param string|null $captain captain id.
+	 * @param string|null $contactno optional contact number.
+	 * @param string|null $contactemail optional contact email.
+	 * @param int|string $matchday optional match day.
+	 * @param string|null $matchtime optional match time.
+	 * @return int $team_event_id
 	 */
-	public function add_event( $event_id, $captain = null, $contactno = null, $contactemail = null, $matchday = '', $matchtime = null ) {
+	public function add_event( int $event_id, string $captain = null, string $contactno = null, string $contactemail = null, int|string $matchday = '', string $matchtime = null ): int {
 		global $wpdb;
 
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"INSERT INTO {$wpdb->racketmanager_team_events} (`team_id`, `event_id`, `captain`, `match_day`, `match_time`) VALUES (%d, %d, %d, %s, %s)",
+				"INSERT INTO $wpdb->racketmanager_team_events (`team_id`, `event_id`, `captain`, `match_day`, `match_time`) VALUES (%d, %d, %d, %s, %s)",
 				$this->id,
 				$event_id,
 				$captain,
@@ -525,15 +526,15 @@ final class Racketmanager_Team {
 	/**
 	 * Update event details
 	 *
-	 * @param int    $event_id event id.
+	 * @param int $event_id event id.
 	 * @param string $captain captain id.
 	 * @param string $contactno optional contact number.
 	 * @param string $contactemail optional contact email.
-	 * @param int    $matchday optional match day.
-	 * @param int    $matchtime optional match time.
-	 * @return $team_event_id
+	 * @param int $matchday optional match day.
+	 * @param int $matchtime optional match time.
+	 * @return false|string|null $team_event_id
 	 */
-	public function update_event( $event_id, $captain, $contactno, $contactemail, $matchday, $matchtime ) {
+	public function update_event( int $event_id, string $captain, string $contactno, string $contactemail, int $matchday, int $matchtime ): false|string|null {
 		global $wpdb;
 		$updates = false;
 		$msg     = false;
@@ -543,7 +544,7 @@ final class Racketmanager_Team {
 			if ( $captain && ( ( $event->competition->is_team_entry && $matchday && $matchtime ) || $event->competition->is_player_entry ) ) {
 				$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 					$wpdb->prepare(
-						"UPDATE {$wpdb->racketmanager_team_events} SET `captain` = %s, `match_day` = %s, `match_time` = %s WHERE `team_id` = %d AND `event_id` = %d",
+						"UPDATE $wpdb->racketmanager_team_events SET `captain` = %s, `match_day` = %s, `match_time` = %s WHERE `team_id` = %d AND `event_id` = %d",
 						$captain,
 						$matchday,
 						$matchtime,
@@ -579,7 +580,7 @@ final class Racketmanager_Team {
 	/**
 	 * Delete team
 	 */
-	public function delete() {
+	public function delete(): void {
 		global $wpdb, $racketmanager;
 
 		// remove matches and rubbers.
@@ -591,21 +592,21 @@ final class Racketmanager_Team {
 		// remove tables.
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_table} WHERE `team_id` = %d",
+				"DELETE FROM $wpdb->racketmanager_table WHERE `team_id` = %d",
 				$this->id
 			)
 		);
 		// remove team event.
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_team_events} WHERE `team_id` = %d",
+				"DELETE FROM $wpdb->racketmanager_team_events WHERE `team_id` = %d",
 				$this->id
 			)
 		);
 		// remove team.
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_teams} WHERE `id` = %d",
+				"DELETE FROM $wpdb->racketmanager_teams WHERE `id` = %d",
 				$this->id
 			)
 		);
@@ -616,11 +617,11 @@ final class Racketmanager_Team {
 	 *
 	 * @param string $title title.
 	 */
-	public function update_title( $title ) {
+	public function update_title( string $title ): void {
 		global $wpdb;
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_teams} SET `title` = %s WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_teams SET `title` = %s WHERE `id` = %d",
 				$title,
 				$this->id
 			)
@@ -631,11 +632,11 @@ final class Racketmanager_Team {
 	 *
 	 * @param int $player player id.
 	 */
-	public function add_team_player( $player ) {
+	public function add_team_player( int $player ): void {
 		global $wpdb;
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"INSERT INTO {$wpdb->racketmanager_team_players} ( `team_id`, `player_id` ) VALUES ( %d, %d )",
+				"INSERT INTO $wpdb->racketmanager_team_players ( `team_id`, `player_id` ) VALUES ( %d, %d )",
 				$this->id,
 				$player,
 			)
@@ -646,11 +647,11 @@ final class Racketmanager_Team {
 	 *
 	 * @return array
 	 */
-	public function get_players() {
+	public function get_players(): array {
 		global $wpdb;
 		$players = $wpdb->get_results(  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT `player_id` FROM {$wpdb->racketmanager_team_players} WHERE `team_id` = %d",
+				"SELECT `player_id` FROM $wpdb->racketmanager_team_players WHERE `team_id` = %d",
 				$this->id,
 			)
 		);

@@ -17,8 +17,8 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 	 * Initialize shortcodes
 	 */
 	public function __construct() {
-		add_shortcode( 'championship', array( &$this, 'showChampionship' ) );
-		add_shortcode( 'leaguearchive', array( &$this, 'showArchive' ) );
+		add_shortcode( 'championship', array( &$this, 'show_championship' ) );
+		add_shortcode( 'leaguearchive', array( &$this, 'show_archive' ) );
 		add_shortcode( 'standings', array( &$this, 'showStandings' ) );
 		add_shortcode( 'crosstable', array( &$this, 'showCrosstable' ) );
 		add_shortcode( 'matches', array( &$this, 'show_matches' ) );
@@ -27,6 +27,7 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 		add_shortcode( 'team', array( &$this, 'show_team' ) );
 		add_shortcode( 'league-players', array( &$this, 'show_league_players' ) );
 	}
+
 	/**
 	 * Display Championship
 	 *
@@ -36,10 +37,10 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 	 * - season: display specific season (optional)
 	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
 	 *
-	 * @param array $atts shorcode attributes.
-	 * @return string
+	 * @param array $atts shortcode attributes.
+	 * @return false|string
 	 */
-	public function showChampionship( $atts ) {
+	public function show_championship( array $atts ): false|string {
 		global $league;
 
 		$args      = shortcode_atts(
@@ -60,13 +61,11 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 		$league->set_template( 'championship', $template );
 		if ( ! $season ) {
 			$season = $league->get_season();
-			$season = $season['name'];
 		}
 		$league->season = $season;
 		$finals         = array();
 		foreach ( array_reverse( $league->championship->get_finals() ) as $f => $final ) {
 			$data              = new \stdClass();
-			$class             = 'alternate';
 			$data->key         = $final['key'];
 			$data->name        = $final['name'];
 			$data->num_matches = $final['num_matches'];
@@ -84,16 +83,14 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 			$i       = 1;
 			foreach ( $matches_raw as $match ) {
 				$match             = get_match( $match );
-				$class             = ( ! isset( $class ) || 'alternate' === $class ) ? '' : 'alternate';
-				$match->class      = $class;
 				$home_title        = $match->teams['home']->title;
 				$away_title        = $match->teams['away']->title;
 				$match->title      = sprintf( '%s - %s', $home_title, $away_title );
 				$match->home_title = $home_title;
 				$match->away_title = $away_title;
 
-				$match->num_rubbers = ( isset( $league->num_rubbers ) ? $league->num_rubbers : null );
-				$match->num_sets    = ( isset( $league->num_sets ) ? $league->num_sets : null );
+				$match->num_rubbers = ($league->num_rubbers ?? null);
+				$match->num_sets    = ($league->num_sets ?? null);
 
 				if ( isset( $match->num_rubbers ) && $match->num_rubbers > 0 ) {
 					$rubbers = $match->get_rubbers();
@@ -132,12 +129,13 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 			)
 		);
 	}
+
 	/**
 	 * Display Archive
 	 *
 	 *    [leaguearchive template=X]
 	 *
-	 * - template: teamplate to use
+	 * - template: template to use
 	 * - standings: template for standings table
 	 * - crosstable: template for crosstable
 	 * - matches: template for matches
@@ -145,15 +143,13 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 	 * - matches_template_type: type of match template
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return string
+	 * @return false|string
 	 */
-	public function showArchive( $atts ) {
+	public function show_archive( array $atts ): false|string {
 		global $league, $wp;
 
 		$args                  = shortcode_atts(
 			array(
-				'league_id'             => false,
-				'competition_id'        => false,
 				'league_name'           => '',
 				'standings'             => 'last5',
 				'crosstable'            => '',
@@ -165,8 +161,6 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 			),
 			$atts
 		);
-		$league_id             = $args['league_id'];
-		$competition_id        = $args['competition_id'];
 		$league_name           = $args['league_name'];
 		$standings             = $args['standings'];
 		$crosstable            = $args['crosstable'];
@@ -176,7 +170,7 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 		$tab                   = $args['tab'];
 		$matches_template_type = $args['matches_template_type'];
 		if ( ! $tab ) {
-			if ( isset( $_GET['tab'] ) && ! empty( $_GET['tab'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( ! empty( $_GET['tab'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$tab = wp_strip_all_tags( wp_unslash( $_GET['tab'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			} elseif ( isset( $wp->query_vars['tab'] ) ) {
 				$tab = get_query_var( 'tab' );
@@ -225,8 +219,12 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 					'tab'     => $tab,
 				)
 			);
+		} else {
+			$msg = __( 'League not found', 'racketmanager' );
+			return $this->return_error( $msg );
 		}
 	}
+
 	/**
 	 * Display League Standings
 	 *
@@ -237,11 +235,11 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "standings-template.php" (optional)
 	 * - group: optional group
 	 *
-	 * @param array   $atts shortcode attributes.
+	 * @param array $atts shortcode attributes.
 	 * @param boolean $widget widget indicator.
-	 * @return string
+	 * @return false|string
 	 */
-	public function showStandings( $atts, $widget = false ) {
+	public function showStandings( array $atts, bool $widget = false ): false|string {
 		global $league;
 		$args = shortcode_atts(
 			array(
@@ -289,6 +287,7 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 			)
 		);
 	}
+
 	/**
 	 * Display Crosstable
 	 *
@@ -301,9 +300,9 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 	 * - group: show crosstable for specific group
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return string
+	 * @return false|string
 	 */
-	public function showCrosstable( $atts ) {
+	public function showCrosstable( array $atts ): false|string {
 		global $league;
 		$args      = shortcode_atts(
 			array(
@@ -354,17 +353,17 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 	 *
 	 * - league_id is the ID of league
 	 * - league_name: get league by name and not ID (optional)
-	 * - mode can be either "all" or "home". For racing it must be "racing". If it is not specified the matches are displayed on a weekly basis
+	 * - mode can be either "all" or "home". If it is not specified the matches are displayed on a weekly basis
 	 * - season: display specific season (optional)
 	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
 	 * - roster is the ID of individual team member (currently only works with racing)
 	 * - match_day: specific match day (integer)
 	 *
-	 * @param array $atts shorcode attributes.
+	 * @param array $atts shortcode attributes.
 	 * @return string
 	 */
-	public function show_matches( $atts ) {
-		global $league, $racketmanager;
+	public function show_matches( array $atts ): string {
+		global $league;
 		wp_verify_nonce( 'matches' );
 		$args          = shortcode_atts(
 			array(
@@ -398,29 +397,23 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 		$league->set_template( 'matches', $template );
 
 		// Always disable match day in template to show matches by matchday.
-		if ( in_array( $template, array( 'by_matchday' ), true ) || ! empty( $time ) ) {
+		if ( $template === 'by_matchday' || ! empty( $time ) ) {
 			$match_day = -1;
 		}
 		if ( empty( $match_day ) ) {
 			$match_day = -1;
 		}
-
 		$league->set_season( $season );
 		$league->set_match_day( $match_day );
 		$league->matches_template_type = $template_type;
-
-		$matches    = false;
 		$match_args = array( 'final' => '' );
-
 		if ( 'false' === $limit ) {
 			$match_args['limit'] = false;
 		} elseif ( $limit && is_numeric( $limit ) ) {
 			$match_args['limit'] = intval( $limit );
 		}
-
 		$match_args['time']      = $time;
 		$match_args['home_only'] = false;
-
 		// Get matches.
 		$matches = $league->get_matches( $match_args );
 		$league->set_num_matches();
@@ -441,8 +434,7 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 			array(
 				'season'  => $season,
 				'orderby' => array( 'title' => 'ASC' ),
-			),
-			'ARRAY'
+			)
 		);
 
 		if ( empty( $template ) && $this->check_template( 'matches-' . $league->sport ) ) {
@@ -471,10 +463,10 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 	 * - id is the ID of the match to display
 	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "match-template.php" (optional)
 	 *
-	 * @param array $atts shorcode attributes.
+	 * @param array $atts shortcode attributes.
 	 * @return string
 	 */
-	public function show_match( $atts ) {
+	public function show_match( array $atts ): string {
 		global $racketmanager, $match;
 		$args        = shortcode_atts(
 			array(
@@ -489,6 +481,13 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 		$template    = $args['template'];
 		$action      = get_query_var( 'action' );
 		$num_matches = null;
+		$home_team_name = null;
+		$away_team_name = null;
+		$league         = null;
+		$match_day      = null;
+		$round          = null;
+		$season         = null;
+		$matches        = array();
 		// Get Match ID from shortcode or $_GET.
 		if ( ! $match_id ) {
 			$match_id = get_query_var( 'match_id' );
@@ -496,7 +495,7 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 		if ( ! $match_id ) {
 			$league_name = un_seo_url( get_query_var( 'league_name' ) );
 			if ( $league_name ) {
-				$league = get_league( $league_name, 'name' );
+				$league = get_league( $league_name );
 				if ( $league ) {
 					$home_team_name = un_seo_url( get_query_var( 'teamHome' ) );
 					$away_team_name = un_seo_url( get_query_var( 'teamAway' ) );
@@ -690,7 +689,7 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 	 * @param string $team_name team name.
 	 * @return string team name.
 	 */
-	private function get_player_team_name( $team_name ) {
+	private function get_player_team_name( string $team_name ): string {
 		$team_names = explode( ' ', $team_name );
 		if ( count( $team_names ) === 4 ) {
 			$team_name = $team_names[0] . ' ' . $team_names[1] . ' / ' . $team_names[2] . ' ' . $team_names[3];
@@ -712,7 +711,7 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 	 * @param array $atts shortcode attributes.
 	 * @return string
 	 */
-	public function show_teams( $atts ) {
+	public function show_teams( array $atts ): string {
 		global $league, $wp;
 		$args      = shortcode_atts(
 			array(
@@ -800,7 +799,7 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 	 * @param array $atts shortcode attributes.
 	 * @return string
 	 */
-	public function show_team( $atts ) {
+	public function show_team( array $atts ): string {
 		global $league;
 		$args     = shortcode_atts(
 			array(
@@ -831,15 +830,16 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 			'league'
 		);
 	}
+
 	/**
 	 * Function to display league Players
 	 *
 	 *  [teams league_id=ID template=X season=x]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return false|string content
 	 */
-	public function show_league_players( $atts ) {
+	public function show_league_players( array $atts ): false|string {
 		global $league, $wp;
 		$args      = shortcode_atts(
 			array(
@@ -860,9 +860,6 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 			return false;
 		}
 		$league->set_season( $season );
-		$matches = array();
-		$player  = null;
-		$player  = null;
 		if ( ! $player_id ) {
 			if ( isset( $wp->query_vars['player_id'] ) ) {
 				$player_id = un_seo_url( get_query_var( 'player_id' ) );

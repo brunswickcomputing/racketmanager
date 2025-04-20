@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var object $competition */
+/** @var string $season */
 ?>
 	<div class="row">
 		<div class="col-12 col-md-6">
@@ -34,7 +36,7 @@ namespace Racketmanager;
 							$league = get_league( $league );
 							?>
 							<tr>
-								<td><a href="admin.php?page=racketmanager-cups&view=draw&competition_id=<?php echo esc_attr( $competition->id ); ?>&league=<?php echo esc_attr( $league->id ); ?>&season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $league->title ); ?></div></a></td>
+								<td><a href="/wp-admin/admin.php?page=racketmanager-cups&view=draw&competition_id=<?php echo esc_attr( $competition->id ); ?>&league=<?php echo esc_attr( $league->id ); ?>&season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $league->title ); ?></a></td>
 								<td><?php echo esc_html( $league->num_teams_total ); ?></td>
 								<td>
 									<?php

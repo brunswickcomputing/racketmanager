@@ -100,9 +100,9 @@ final class Racketmanager_Team {
 	/**
 	 * Team type variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public string $team_type;
+	public ? string $team_type;
 	/**
 	 * Home variable
 	 *

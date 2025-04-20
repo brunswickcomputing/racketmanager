@@ -4,20 +4,21 @@
  * Template page to display a cup entry form
  *
  * @package Racketmanager/Templates
- * The following variables are usable:
- *  $events: events object
- *  $season: season name
- *  $type: competition type
- *  $mens_teams: male teams object
- *  $ladies_teams: female teams object
- *  $mixed_teams: mixed teams object
- *  $weekdays: days of week array
  *
  * You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
  */
 
 namespace Racketmanager;
 
+/** @var object $club */
+/** @var object $competition */
+/** @var object $events */
+/** @var array  $mens_teams */
+/** @var array  $ladies_teams */
+/** @var array  $mixed_teams */
+/** @var array  $weekdays */
+/** @var string $season */
+global $racketmanager;
 $no_entry_link = true;
 if ( $competition->is_open ) {
 	$changes_allowed = true;
@@ -151,6 +152,8 @@ if ( ! empty( $club->entry ) ) {
 												$team_list = $ladies_teams;
 											} elseif ( 'XD' === $event->type ) {
 												$team_list = $mixed_teams;
+											} else {
+                                                $team_list = array();
 											}
 											?>
 											<div class="form-checkboxes__conditional <?php echo $event->status ? '' : 'form-checkboxes__conditional--hidden'; ?>" id="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $event->status ? 'aria-expanded="true"' : ''; ?>>
@@ -178,7 +181,7 @@ if ( ! empty( $club->entry ) ) {
 												</div>
 												<div class="mb-3" id="team-dtls-<?php echo esc_html( $event->id ); ?>">
 													<div class="row">
-														<div class="col-md-6">
+														<fieldset class="col-md-6">
 															<legend><?php esc_html_e( 'Captain', 'racketmanager' ); ?></legend>
 															<div id="captain-dtls-<?php echo esc_html( $event->id ); ?>">
 																<div class="row">
@@ -200,8 +203,8 @@ if ( ! empty( $club->entry ) ) {
 																	</div>
 																</div>
 															</div>
-														</div>
-														<div class="col-md-6">
+														</fieldset>
+														<fieldset class="col-md-6">
 															<legend><?php esc_html_e( 'Fixtures', 'racketmanager' ); ?></legend>
 															<div class="row">
 																<div class="col-md-6 form-floating mb-3 form-group match-time">
@@ -223,7 +226,7 @@ if ( ! empty( $club->entry ) ) {
 																	<div id="matchtime-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
 																</div>
 															</div>
-														</div>
+														</fieldset>
 													</div>
 												</div>
 											</div>
@@ -236,12 +239,12 @@ if ( ! empty( $club->entry ) ) {
 									<div class="hgroup">
 										<h4 class="hgroup__heading"><?php esc_html_e( 'Additional information', 'racketmanager' ); ?></h4>
 										<p class="hgroup__subheading">
-											<?php echo esc_html_e( 'Please leave any additional information for the Organiser here', 'racketmanager' ); ?>
+											<?php esc_html_e( 'Please leave any additional information for the Organiser here', 'racketmanager' ); ?>
 										</p>
 									</div>
 									<div class="col-12 col-md-8">
 										<div class="form-floating">
-											<textarea class="form-control" placeholder="<?php echo esc_attr_e( 'Additional information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails" <?php echo $changes_allowed ? null : 'disabled'; ?>></textarea>
+											<textarea class="form-control" placeholder="<?php esc_attr_e( 'Additional information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails" <?php echo $changes_allowed ? null : 'disabled'; ?>></textarea>
 											<label for="commentDetails"><?php esc_attr_e( 'Additional information', 'racketmanager' ); ?></label>
 											<div id="commentDetails-feedback" class="invalid-feedback"></div>
 										</div>

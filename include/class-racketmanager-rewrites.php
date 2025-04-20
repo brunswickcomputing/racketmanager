@@ -12,7 +12,7 @@ namespace Racketmanager;
  * Main class to implement RacketManager Rewrites
  */
 class RacketManager_Rewrites {
-	protected static $instance     = null;
+	protected static ? RacketManager_Rewrites $instance = null;
 	/**
 	 * Constructor
 	 *
@@ -25,7 +25,7 @@ class RacketManager_Rewrites {
 	/**
 	 * Create formatted url
 	 */
-	public function racketmanager_rewrites() {
+	public function racketmanager_rewrites(): void {
 		// competition list.
 		add_rewrite_rule(
 			'leagues/?$',
@@ -279,7 +279,7 @@ class RacketManager_Rewrites {
 	 *
 	 * @return void
 	 */
-	private function rewrite_competition() {
+	private function rewrite_competition(): void {
 		// latest results - age range.
 		add_rewrite_rule(
 			'leagues/latest-results/(.+?)/?$',
@@ -460,7 +460,7 @@ class RacketManager_Rewrites {
 	 *
 	 * @return void
 	 */
-	private function rewrite_league() {
+	private function rewrite_league(): void {
 		$this->rewrite_league_events();
 		// league - season - matchday - team.
 		add_rewrite_rule(
@@ -607,7 +607,7 @@ class RacketManager_Rewrites {
 	 *
 	 * @return void
 	 */
-	private function rewrite_league_events() {
+	private function rewrite_league_events(): void {
 		// league event - season.
 		add_rewrite_rule(
 			'leagues/(.+?)/([0-9]{4})/?$',
@@ -674,7 +674,7 @@ class RacketManager_Rewrites {
 	 *
 	 * @return void
 	 */
-	private function rewrite_cups() {
+	private function rewrite_cups(): void {
 		$this->rewrite_cup_events();
 		// cup - season - teams.
 		add_rewrite_rule(
@@ -718,7 +718,7 @@ class RacketManager_Rewrites {
 	 *
 	 * @return void
 	 */
-	private function rewrite_cup_events() {
+	private function rewrite_cup_events(): void {
 		// cup event - season.
 		add_rewrite_rule(
 			'cups/(.+?)/([0-9]{4})/?$',
@@ -791,7 +791,7 @@ class RacketManager_Rewrites {
 	 *
 	 * @return void
 	 */
-	private function rewrite_tournament() {
+	private function rewrite_tournament(): void {
 		// tournament - latest - age group.
 		add_rewrite_rule(
 			'tournaments/latest-(.+?)-tournament/?$',
@@ -808,6 +808,12 @@ class RacketManager_Rewrites {
 		add_rewrite_rule(
 			'tournaments/(.+?)/?$',
 			'index.php?pagename=competitions&type=tournament&age_group=$matches[1]',
+			'top'
+		);
+		// tournament - order of play.
+		add_rewrite_rule(
+			'tournament/(.+?)/order_of_play/?$',
+			'index.php?pagename=tournaments%2Ftournament&tournament=$matches[1]&tab=orderofplay',
 			'top'
 		);
 		// tournament - order of play.

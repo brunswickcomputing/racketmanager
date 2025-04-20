@@ -31,7 +31,6 @@ namespace Racketmanager;
 				<tbody>
 					<?php
 					foreach ( $competition->events as $event ) {
-						$leagues = $event->get_leagues( array( 'season' => $season ) );
 						foreach ( $event->leagues as $league ) {
 							$league = get_league( $league );
 							?>

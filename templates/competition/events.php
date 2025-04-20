@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var object $competition */
 ?>
 <div class="module module--card">
 	<div class="module__banner">
@@ -25,7 +26,7 @@ namespace Racketmanager;
 					</div>
 				</div>
 				<?php
-				foreach ( $competition->events as $event ) {
+				foreach ($competition->events as $event ) {
 					?>
 					<div class="row mb-2 row-list">
 						<div class="col-1" name="<?php esc_html_e( 'Favourite', 'racketmanager' ); ?>">
@@ -43,8 +44,8 @@ namespace Racketmanager;
 						</div>
 						<div class="col-3" name="<?php esc_html_e( 'Entries', 'racketmanager' ); ?>">
 							<?php
-							if ( ! empty( $event->entries ) ) {
-								echo esc_html( $event->entries );
+							if ( ! empty( $event->num_entries ) ) {
+								echo esc_html( $event->num_entries );
 							}
 							?>
 						</div>

@@ -7,24 +7,34 @@
 
 namespace Racketmanager;
 
+/** @var int    $competition_id */
+/** @var object $competition */
+/** @var string $season */
+/** @var int    $event_id */
+/** @var string $event_title */
 ?>
 <div>
 	<form id='events-filter' method='post' action='' class='form-control mb-3'>
 		<?php wp_nonce_field( 'racketmanager__events-bulk', 'racketmanager_nonce' ); ?>
 
 		<input type="hidden" name="competition_id" value="<?php echo esc_html( $competition_id ); ?>" />
-		<div class="tablenav">
-			<!-- Bulk Actions -->
-			<select name="action" size="1">
-				<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
-				<option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
-			</select>
-			<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doactionevent" id="doactionevent" class="btn btn-secondary action" />
+        <div class="row gx-3 mb-3 align-items-center">
+            <div class="col-auto">
+                <label>
+                    <select name="action" size="1">
+                        <option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
+                        <option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
+                    </select>
+                </label>
+            </div>
+            <div class="col-auto">
+    			<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doActionEvent" id="doActionEvent" class="btn btn-secondary action" />
+            </div>
 		</div>
 
 		<div class="container">
 			<div class="row table-header">
-				<div class="col-2 col-lg-1 check-column"><input type="checkbox" id="check-all-events" onclick="Racketmanager.checkAll(document.getElementById('events-filter'));" /></div>
+				<div class="col-2 col-lg-1 check-column"><label for="check-all-events"></label><input type="checkbox" id="check-all-events" onclick="Racketmanager.checkAll(document.getElementById('events-filter'));" /></div>
 				<div class="d-none d-lg-block col-1 column-num">ID</div>
 				<div class="col-4"><?php esc_html_e( 'Event', 'racketmanager' ); ?></div>
 				<div class="col-3 col-lg-1 text-center"><?php esc_html_e( 'Number of sets', 'racketmanager' ); ?></div>
@@ -45,7 +55,7 @@ namespace Racketmanager;
 					}
 					?>
 					<div class="row table-row <?php echo esc_html( $class ); ?>">
-						<div class="col-2 col-lg-1 check-column"><input type="checkbox" value="<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" /></div>
+						<div class="col-2 col-lg-1 check-column"><label for="event-<?php echo esc_html( $event->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" id="event-<?php echo esc_html( $event->id ); ?>" /></div>
 						<div class="d-none d-lg-block col-1 column-num"><?php echo esc_html( $event->id ); ?></div>
 						<div class="col-4"><a href="<?php echo esc_html( $event_link ); ?>"><?php echo esc_html( $event->name ); ?></a></div>
 						<div class="col-3 col-lg-1 text-center"><?php echo esc_html( $event->num_sets ); ?></div>
@@ -53,10 +63,12 @@ namespace Racketmanager;
 						<div class="d-none d-lg-block col-3 centered"><?php echo esc_html( Racketmanager_Util::get_event_type( $event->type ) ); ?>
 						</div>
 					</div>
-				<?php } ?>
-			<?php } ?>
-		</form>
-	</div>
+				    <?php
+                }
+            }
+            ?>
+        </div>
+	</form>
 
 	<?php
 	if ( empty( $tournament ) ) {
@@ -71,12 +83,12 @@ namespace Racketmanager;
 		?>
 
 		<h3><?php echo esc_html( $form_action ); ?></h3>
-		<form action="admin.php?page=racketmanager&subpage=show-competition&competition_id=<?php echo esc_html( $competition_id ); ?>" method="post" class="form-control">
+		<form action="/wp-admin/admin.php?page=racketmanager&subpage=show-competition&competition_id=<?php echo esc_html( $competition_id ); ?>" method="post" class="form-control">
 			<?php wp_nonce_field( 'racketmanager_add-event', 'racketmanager_nonce' ); ?>
 			<input type="hidden" name="competition_id" value="<?php echo esc_html( $competition_id ); ?>" />
 			<input type="hidden" name="event_id" value="<?php echo esc_html( $event_id ); ?>" />
 			<div class="form-floating mb-3">
-				<input type="text" class="form-control" required="required" placeholder="<?php esc_html_e( 'Enter new event name', 'racketmanager' ); ?>"name="event_title" id="event_title" value="<?php echo esc_html( $event_title ); ?>" size="30" />
+				<input type="text" class="form-control" required="required" placeholder="<?php esc_html_e( 'Enter new event name', 'racketmanager' ); ?>" name="event_title" id="event_title" value="<?php echo esc_html( $event_title ); ?>" size="30" />
 				<label for="event_title"><?php esc_html_e( 'Event name', 'racketmanager' ); ?></label>
 			</div>
 			<div class="row g-1">

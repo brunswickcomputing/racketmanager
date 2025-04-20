@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var array $vars */
 $organisation  = $vars['site_name'];
 $sitename      = $vars['site_name'];
 $siteurl       = $vars['site_url'];

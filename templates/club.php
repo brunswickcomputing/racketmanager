@@ -15,6 +15,9 @@
 
 namespace Racketmanager;
 
+/** @var boolean $standalone */
+/** @var object $club */
+/** @var boolean $user_can_update_club */
 require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 ?>
 <div class="module module--card">
@@ -92,7 +95,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 						}
 						?>
 					</div>
-					<div class="form-control mb-3">
+					<fieldset class="form-control mb-3">
 						<legend><?php esc_html_e( 'Contact details', 'racketmanager' ); ?></legend>
 						<div class="row g-3">
 							<div class="col-md-6 mb-3">
@@ -137,8 +140,8 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 								?>
 							</div>
 						</div>
-					</div>
-					<div class="form-control mb-3">
+					</fieldset>
+					<fieldset class="form-control mb-3">
 						<legend><?php esc_html_e( 'Information', 'racketmanager' ); ?></legend>
 						<div class="row g-3">
 							<div class="col-md-6 mb-3">
@@ -168,7 +171,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 								?>
 							</div>
 						</div>
-					</div>
+					</fieldset>
 					<div id="club"></div>
 					<div id="club-feedback" class="invalid-tooltip"></div>
 					<?php
@@ -244,10 +247,10 @@ if ( $standalone && ! empty( $club->address ) && ! empty( $google_maps_key ) ) {
 		</div>
 		<div class="module__content">
 			<div class="module-container">
-				<div class="club-address">
+				<fieldset class="club-address">
 					<legend class="d-none"><?php esc_html_e( 'Map', 'racketmanager' ); ?></legend>
-					<iframe title="<?php esc_html_e( 'Club map', 'racketmanager' ); ?> class="sp-google-map" width="100%" height="320" id="clubMap" name="clubMap" src="https://www.google.com/maps/embed/v1/search?key=<?php echo esc_html( $google_maps_key ); ?>&amp;zoom=15&amp;maptype=roadmap&amp;q=<?php echo esc_html( $club->address ); ?>" allowfullscreen></iframe>
-				</div>
+					<iframe title="<?php esc_html_e( 'Club map', 'racketmanager' ); ?>" width="100%" height="320" id="clubMap" name="clubMap" src="https://www.google.com/maps/embed/v1/search?key=<?php echo esc_html( $google_maps_key ); ?>&amp;zoom=15&amp;maptype=roadmap&amp;q=<?php echo esc_html( $club->address ); ?>" allowfullscreen></iframe>
+				</fieldset>
 			</div>
 		</div>
 	</div>

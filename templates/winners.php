@@ -14,8 +14,12 @@
 
 namespace Racketmanager;
 
-global $wp_query, $racketmanager_shortcodes;
-$post_id = isset( $wp_query->post->ID ) ? $wp_query->post->ID : ''; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+/** @var string $curr_entry */
+/** @var string $season */
+/** @var string $competitiontype */
+/** @var array $selections */
+global $wp_query;
+$post_id = $wp_query->post->ID ?? ''; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 ?>
 <div id="winners">
 	<h1><?php echo esc_html( sprintf( '%s %s', $curr_entry, __( 'Winners', 'racketmanager' ) ) ); ?></h1>
@@ -24,7 +28,7 @@ $post_id = isset( $wp_query->post->ID ) ? $wp_query->post->ID : ''; //phpcs:igno
 			<input type="hidden" name="page_id" value="<?php echo esc_html( $post_id ); ?>" />
 			<input type="hidden" name="competitionSeason" id="competitionSeason" value="<?php echo esc_html( $season ); ?>" />
 			<input type="hidden" name="competitionType" id="competitionType" value="<?php echo esc_html( $competitiontype ); ?>" />
-			<select size="1" name="selection" id="selection">
+            <label for="selection"></label><select size="1" name="selection" id="selection">
 				<option value=""><?php esc_html_e( 'Season', 'racketmanager' ); ?></option>
 				<?php foreach ( $selections as $selection ) { ?>
 					<option value="<?php echo esc_html( $selection->name ); ?>"

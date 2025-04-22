@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var object $league */
+/** @var object $team */
 ?>
 <div class="module module--card">
 	<div class="module__banner">
@@ -22,7 +24,7 @@ namespace Racketmanager;
 						<thead class="">
 							<tr>
 								<th class="num" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_attr_e( 'Position', 'racketmanager' ); ?>">
-									<?php echo esc_html_e( 'Pos', 'racketmanager' ); ?>
+									<?php esc_html_e( 'Pos', 'racketmanager' ); ?>
 								</th>
 								<?php
 								if ( show_standings( 'status' ) ) {

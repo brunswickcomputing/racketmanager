@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var string $title_text */
+/** @var string $align */
 ?><!-- title -->
 			<div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
 				<table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">
@@ -38,19 +40,12 @@ namespace Racketmanager;
 																	if ( empty( $title_level ) ) {
 																		$title_level = 1;
 																	}
-																	switch ( $title_level ) {
-																		case '1':
-																			$title_style = 'font-size: 24px; font-weight: 900;';
-																			break;
-																		case '2':
-																			$title_style = 'font-size: 21px; font-weight: 700;';
-																			break;
-																		case '3':
-																			$title_style = 'font-size: 18px; font-weight: 600;';
-																			break;
-																		default:
-																			$title_style = 'font-size: 16px;';
-																	}
+																	$title_style = match ($title_level) {
+																		'1' => 'font-size: 24px; font-weight: 900;',
+																		'2' => 'font-size: 21px; font-weight: 700;',
+																		'3' => 'font-size: 18px; font-weight: 600;',
+																		default => 'font-size: 16px;',
+																	};
 																	?>
 																	<h<?php echo esc_attr( $title_level ); ?> style="<?php esc_attr( $title_style ); ?> line-height: 1.25; margin: 0;" align="<?php echo esc_attr( $align ); ?>">
 																		<?php echo ' ' . esc_html( $title_text ); ?>

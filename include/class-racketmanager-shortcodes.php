@@ -864,7 +864,7 @@ class RacketManager_Shortcodes {
 				$player_entry = new \stdClass();
 				$teams        = $event->get_teams(
 					array(
-						'name'   => $player->display_name,
+						'player' => $player->ID,
 						'season' => $tournament->season,
 					)
 				);

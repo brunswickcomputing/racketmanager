@@ -1,6 +1,6 @@
 <?php
 /**
- * Template page to display team playersfor validation
+ * Template page to display team players for validation
  *
  * @package Racketmanager/Templates
  *
@@ -14,6 +14,11 @@
 
 namespace Racketmanager;
 
+/** @var boolean $can_update */
+/** @var array $teams */
+/** @var object $event */
+/** @var array $club_players */
+/** @var object $club */
 ?>
 <form id="team-order-validate">
 	<?php
@@ -31,9 +36,9 @@ namespace Racketmanager;
 					}
 					?>
 				</select>
-				<label for="team_id"><?php esc_html_e( 'Team', 'racketmanager' ); ?></label>
+				<label for="teamId"><?php esc_html_e( 'Team', 'racketmanager' ); ?></label>
 			</div>
-			<div class="form-floating col-auto" id="matches" stype="display:none;"></div>
+			<div class="form-floating col-auto" id="matches" style="display:none;"></div>
 		</div>
 		<?php
 	}
@@ -47,20 +52,18 @@ namespace Racketmanager;
 				'1' => array(),
 				'2' => array(),
 			);
-			$doubles        = true;
 		} else {
 			$rubber_players = array( '1' => array() );
-			$doubles        = false;
 		}
-		if ( 'M' === substr( $event->type, 0, 1 ) || 'B' === substr( $event->type, 0, 1 ) ) {
+		if ( str_starts_with( $event->type, 'M' ) || str_starts_with( $event->type, 'B' ) ) {
 			foreach ( $rubber_players as $p => $player ) {
 				$rubber_players[ $p ]['gender'] = 'm';
 			}
-		} elseif ( 'W' === substr( $event->type, 0, 1 ) || 'G' === substr( $event->type, 0, 1 ) ) {
+		} elseif ( str_starts_with( $event->type, 'W' ) || str_starts_with( $event->type, 'G' ) ) {
 			foreach ( $rubber_players as $p => $player ) {
 				$rubber_players[ $p ]['gender'] = 'f';
 			}
-		} elseif ( 'X' === substr( $event->type, 0, 1 ) ) {
+		} elseif ( str_starts_with( $event->type, 'X' ) ) {
 			$rubber_players['1']['gender'] = 'm';
 			$rubber_players['2']['gender'] = 'f';
 		}
@@ -72,7 +75,7 @@ namespace Racketmanager;
 						<li class="match__header-title-item">
 							<span title="<?php echo esc_attr( $rubber_title ); ?>" class="nav--link">
 								<span class="nav-link__value"><?php echo esc_html( $rubber_title ); ?></span>
-								<input type="hidden" name="rubber_num[ <?php echo esc_attr( $i ); ?> ]" value="<?php echo esc_attr( $i ); ?>" value="<?php echo esc_attr( $i ); ?>" />
+								<input type="hidden" name="rubber_num[ <?php echo esc_attr( $i ); ?> ]" id="rubber_num-<?php echo esc_attr( $i ); ?>" value="<?php echo esc_attr( $i ); ?>" />
 							</span>
 						</li>
 					</ul>
@@ -90,7 +93,8 @@ namespace Racketmanager;
 												<?php
 												$player_id_link = 'players_' . $i . '_' . $player_number;
 												?>
-												<select class="form-select" name="players[<?php echo esc_attr( $i ); ?>][<?php echo esc_attr( $player_number ); ?>]" id="<?php echo esc_attr( $player_id_link ); ?>">
+												<label for="<?php echo esc_attr( $player_id_link ); ?>"></label>
+                                                <select class="form-select" name="players[<?php echo esc_attr( $i ); ?>][<?php echo esc_attr( $player_number ); ?>]" id="<?php echo esc_attr( $player_id_link ); ?>">
 													<option value="0">&nbsp;</option>
 													<?php
 													foreach ( $club_players[ $player['gender'] ] as $player_option ) {
@@ -125,7 +129,7 @@ namespace Racketmanager;
 					</div>
 					<div class="match__result">
 						<div class="wtn-rating">
-							<input class="form-control" type="text" readonly id="wtn_<?php echo esc_html( $i ); ?>" name="wtn[<?php echo esc_html( $i ); ?>]" value="" />
+                            <label for="wtn_<?php echo esc_html( $i ); ?>"></label><input class="form-control" type="text" readonly id="wtn_<?php echo esc_html( $i ); ?>" name="wtn[<?php echo esc_html( $i ); ?>]" value="" />
 						</div>
 					</div>
 				</div>
@@ -139,7 +143,7 @@ namespace Racketmanager;
 	<input type="hidden" name="eventId" value="<?php echo esc_attr( $event->id ); ?>" />
 	<div class="match__buttons">
 		<a class="me-auto" href="" onclick="Racketmanager.resetMatchScores(event, 'match')">
-			<?php echo esc_html_e( 'Reset', 'racketmanager' ); ?>
+			<?php esc_html_e( 'Reset', 'racketmanager' ); ?>
 		</a>
 		<button class="btn btn-secondary me-3" onclick="Racketmanager.validateTeamOrder(event,this, true)" style="display:none;" id="setTeamButton"><?php esc_html_e( 'Set players', 'racketmanager' ); ?></button>
 		<button class="btn btn-primary" onclick="Racketmanager.validateTeamOrder(event,this)"><?php esc_html_e( 'Validate players', 'racketmanager' ); ?></button>

@@ -1,13 +1,14 @@
 <?php
 /**
  *
- * Template page for a player titles
+ * Template page for a player statistics
  *
  * @package Racketmanager/Templates
  */
 
 namespace Racketmanager;
 
+/** @var object $player */
 ?>
 <div class="module module--card">
 	<div class="module__content">
@@ -18,8 +19,8 @@ namespace Racketmanager;
 			<div class="module player-stats">
 				<div class="row stats-header">
 					<div class="col-2"></div>
-					<div class="col-1 text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_html_e( 'Played', 'racketmanager' ); ?>"><?php esc_html_e( 'P', 'racketmanager' ); ?></div>
-					<div class="col-4 text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_html_e( 'Win-loss-tie', 'racketmanager' ); ?>"><?php esc_html_e( 'W', 'racketmanager' ); ?></div>
+					<div class="col-1 text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Played', 'racketmanager' ); ?>"><?php esc_html_e( 'P', 'racketmanager' ); ?></div>
+					<div class="col-4 text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Win-loss-tie', 'racketmanager' ); ?>"><?php esc_html_e( 'W', 'racketmanager' ); ?></div>
 					<div class="col-4"></div>
 					<div class="col-1"></div>
 				</div>

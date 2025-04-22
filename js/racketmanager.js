@@ -90,7 +90,7 @@ jQuery(document).ready(function ($) {
 		source: function (request, response) {
 			let club = jQuery("#club_id").val();
 			let notifyField = '#match-secretary-feedback';
-			response(get_player_details(request.term, club, notifyField));
+			response(get_player_details('name', request.term, club, notifyField));
 		},
 		select: function (event, ui) {
 			if (ui.item.value == 'null') {
@@ -229,7 +229,7 @@ function CaptainLookup() {
 			let fieldref = this.element[0].id;
 			let ref = fieldref.substr(7);
 			let notifyField = '#updateTeamResponse'.concat(ref);
-			response(get_player_details(request.term, club, notifyField));
+			response(get_player_details('name', request.term, club, notifyField));
 		},
 		select: function (event, ui) {
 			if (ui.item.value == 'null') {
@@ -271,7 +271,7 @@ function CaptainLookup() {
 function PopstateHandler() {
 	// Handle forward/back buttons
 	window.addEventListener("popstate", (event) => {
-		// If a state has been provided, we have a "simulated" page
+		// If a state has been provided, we have a "simulated" page,
 		// and we update the current page.
 		if (event.state) {
 			// Simulate the loading of the previous page
@@ -362,21 +362,21 @@ function PartnerLookup() {
 			let partnerGender = jQuery("#partnerGender").val();
 			let club = null;
 			let notifyField = '#partner-feedback';
-			response(get_player_details(request.term, club, notifyField, partnerGender));
+			response(get_player_details('name', request.term, club, notifyField, partnerGender));
 		},
 		select: function (event, ui) {
 			if (ui.item.value == 'null') {
 				ui.item.value = '';
 			}
-			let player = "#partnerName";
+			let player = "#partner";
 			let playerId = "#partnerId";
 			let playerBTM = "#partnerBTM";
-			jQuery(player).val(ui.item.value);
+			jQuery(player).val(ui.item.name);
 			jQuery(playerId).val(ui.item.playerId);
 			jQuery(playerBTM).val(ui.item.btm);
 		},
 		change: function (event, ui) {
-			let player = "#partnerName";
+			let player = "#partner";
 			let playerId = "#partnerId";
 			let playerBTM = "#partnerBTM";
 			if (ui.item === null) {
@@ -385,7 +385,7 @@ function PartnerLookup() {
 				jQuery(playerId).val('');
 				jQuery(playerBTM).val('');
 			} else {
-				jQuery(player).val(ui.item.value);
+				jQuery(player).val(ui.item.name);
 				jQuery(playerId).val(ui.item.playerId);
 				jQuery(playerBTM).val(ui.item.btm);
 			}
@@ -395,22 +395,23 @@ function PartnerLookup() {
 		minLength: 2,
 		source: function (request, response) {
 			let club = null;
+			let partnerGender = jQuery("#partnerGender").val();
 			let notifyField = '#partnerBTM-feedback';
-			response(get_player_details(request.term, club, notifyField));
+			response(get_player_details('btm', request.term, club, notifyField, partnerGender));
 		},
 		select: function (event, ui) {
 			if (ui.item.value == 'null') {
 				ui.item.value = '';
 			}
-			let player = "#partnerName";
+			let player = "#partner";
 			let playerId = "#partnerId";
 			let playerBTM = "#partnerBTM";
-			jQuery(player).val(ui.item.value);
+			jQuery(player).val(ui.item.name);
 			jQuery(playerId).val(ui.item.playerId);
 			jQuery(playerBTM).val(ui.item.btm);
 		},
 		change: function (event, ui) {
-			let player = "#partnerName";
+			let player = "#partner";
 			let playerId = "#partnerId";
 			let playerBTM = "#partnerBTM";
 			if (ui.item === null) {
@@ -419,7 +420,7 @@ function PartnerLookup() {
 				jQuery(playerId).val('');
 				jQuery(playerBTM).val('');
 			} else {
-				jQuery(player).val(ui.item.value);
+				jQuery(player).val(ui.item.name);
 				jQuery(playerId).val(ui.item.playerId);
 				jQuery(playerBTM).val(ui.item.btm);
 			}
@@ -2476,7 +2477,7 @@ function activaTab(tab) {
 	jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');
 	jQuery('.nav-pills button[data-bs-target="#' + tab + '"]').tab('show');
 }
-function get_player_details(name, club = null, notifyField = null, partnerGender = null) {
+function get_player_details(type, name, club = null, notifyField = null, partnerGender = null) {
 	let response = '';
 	let alertField = '';
 	let alertResponseField = '';
@@ -2487,6 +2488,7 @@ function get_player_details(name, club = null, notifyField = null, partnerGender
 		async: false,
 		data: {
 			"name": name,
+			"type": type,
 			"club": club,
 			"partnerGender": partnerGender,
 			"action": "racketmanager_get_player_details",

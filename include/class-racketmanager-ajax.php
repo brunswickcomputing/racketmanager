@@ -57,29 +57,48 @@ class Racketmanager_Ajax extends RacketManager {
 			$message = __( 'No security token found in request', 'racketmanager' );
 		}
 		if ( $valid ) {
-			$name = isset( $_POST['name'] ) ? stripslashes( sanitize_text_field( wp_unslash( $_POST['name'] ) ) ) : '';
-			$name = $wpdb->esc_like( $name ) . '%';
-			if ( ! empty( $_POST['club'] ) ) {
-				$affiliated_club = sanitize_text_field( wp_unslash( $_POST['club'] ) );
-				$search_term     = $wpdb->prepare(
-					' AND C.`id` = %s',
-					$affiliated_club
-				);
-			}
+			$type    = isset( $_POST['type'] ) ? stripslashes( sanitize_text_field( wp_unslash( $_POST['type'] ) ) ) : '';
+			$name    = isset( $_POST['name'] ) ? stripslashes( sanitize_text_field( wp_unslash( $_POST['name'] ) ) ) : '';
 			$gender  = empty( $_POST['partnerGender'] ) ? null : sanitize_text_field( wp_unslash( $_POST['partnerGender'] ) );
-			$results = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-				$wpdb->prepare(
-					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					"SELECT  P.`display_name` AS `fullname`, C.`name` as club, R.`id` as roster_id, C.`id` as club_id, P.`id` as player_id, P.`user_email` FROM $wpdb->racketmanager_club_players R, $wpdb->users P, $wpdb->racketmanager_clubs C WHERE R.`player_id` = P.`ID` AND R.`removed_date` IS NULL AND C.`id` = R.`club_id` $search_term AND `display_name` like %s ORDER BY 1,2,3",
-					$name
-				)
-			);
+            $club_id = empty( $POST['club'] ) ? null : sanitize_text_field( wp_unslash( $POST['club'] ) );
+			$results = array();
+            if ( 'btm' === $type ) {
+                $player  = get_player( $name, 'btm' );
+                if ( $player ) {
+                    $result = new \stdClass();
+                    $result->fullname   = $player->display_name;
+                    $result->user_email = $player->user_email;
+	                $result->club       = null;
+	                $result->club_id    = null;
+	                $result->roster_id  = null;
+	                $result->player_id  = $player->ID;
+                    $results[]          = $result;
+                }
+            } elseif ( 'name' === $type ) {
+	            $name = $wpdb->esc_like( $name ) . '%';
+	            if ( $club_id ) {
+		            $search_term = $wpdb->prepare(
+                            ' AND C.`id` = %s',
+                            $club_id
+		            );
+	            }
+	            $results = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+		            $wpdb->prepare(
+		            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			            "SELECT  P.`display_name` AS `fullname`, C.`name` as club, R.`id` as roster_id, C.`id` as club_id, P.`id` as player_id, P.`user_email` FROM $wpdb->racketmanager_club_players R, $wpdb->users P, $wpdb->racketmanager_clubs C WHERE R.`player_id` = P.`ID` AND R.`removed_date` IS NULL AND C.`id` = R.`club_id` $search_term AND `display_name` like %s ORDER BY 1,2,3",
+			            $name
+		            )
+	            );
+            }
 			$players = array();
 			$player  = array();
 			if ( $results ) {
 				foreach ( $results as $r ) {
-					$player['label']      = addslashes( $r->fullname ) . ' - ' . $r->club;
-					$player['value']      = addslashes( $r->fullname );
+					$player['label'] = addslashes( $r->fullname );
+                    if ( $r->club ) {
+                        $player['label'] .= ' - ' . $r->club;
+                    }
+					$player['name']       = addslashes( $r->fullname );
 					$player['id']         = $r->roster_id;
 					$player['club_id']    = $r->club_id;
 					$player['club']       = $r->club;
@@ -87,13 +106,18 @@ class Racketmanager_Ajax extends RacketManager {
 					$player['user_email'] = $r->user_email;
 					$player['contactno']  = get_user_meta( $r->player_id, 'contactno', true );
 					$player['btm']        = get_user_meta( $r->player_id, 'btm', true );
+                    if ( 'btm' === $type ) {
+	                    $player['value'] = $player['btm'];
+                    } else {
+	                    $player['value'] = $player['name'];
+                    }
 					if ( $gender ) {
 						$player['gender'] = get_user_meta( $r->player_id, 'gender', true );
 						if ( $gender !== $player['gender'] ) {
 							continue;
 						}
 					}
-					array_push( $players, $player );
+					$players[] = $player;
 				}
 			} else {
 				$players[] = array(

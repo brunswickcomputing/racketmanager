@@ -273,7 +273,6 @@ final class Racketmanager_Team {
 				$players = $this->get_players();
 				$i       = 1;
 				foreach ( $players as $player ) {
-					$this->players[ $i ]    = $player->fullname;
 					$this->player_ids[ $i ] = $player->id;
 					++$i;
 				}
@@ -466,7 +465,7 @@ final class Racketmanager_Team {
 	 * @param int|null $match_time optional match time.
 	 * @return boolean
 	 */
-	public function set_event( int $event_id, string $captain = null, string $contact_no = null, string $contact_email = null, int $match_day = null, int $match_time = null ): bool {
+	public function set_event( int $event_id, string $captain = null, string $contact_no = null, string $contact_email = null, int|null $match_day = null, int|null $match_time = null ): bool {
 		global $wpdb, $racketmanager;
 
 		$count = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -498,11 +497,11 @@ final class Racketmanager_Team {
 	 * @param string|null $captain captain id.
 	 * @param string|null $contactno optional contact number.
 	 * @param string|null $contactemail optional contact email.
-	 * @param int|string $matchday optional match day.
+	 * @param int|string|null $matchday optional match day.
 	 * @param string|null $matchtime optional match time.
 	 * @return int $team_event_id
 	 */
-	public function add_event( int $event_id, string $captain = null, string $contactno = null, string $contactemail = null, int|string $matchday = '', string $matchtime = null ): int {
+	public function add_event( int $event_id, string $captain = null, string $contactno = null, string $contactemail = null, int|string|null $matchday = '', string|null $matchtime = null ): int {
 		global $wpdb;
 
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -530,11 +529,11 @@ final class Racketmanager_Team {
 	 * @param string $captain captain id.
 	 * @param string $contactno optional contact number.
 	 * @param string $contactemail optional contact email.
-	 * @param int $matchday optional match day.
-	 * @param int $matchtime optional match time.
+	 * @param int|null $matchday optional match day.
+	 * @param int|null $matchtime optional match time.
 	 * @return false|string|null $team_event_id
 	 */
-	public function update_event( int $event_id, string $captain, string $contactno, string $contactemail, int $matchday, int $matchtime ): false|string|null {
+	public function update_event( int $event_id, string $captain, string $contactno, string $contactemail, ?int $matchday, ?int $matchtime ): false|string|null {
 		global $wpdb;
 		$updates = false;
 		$msg     = false;

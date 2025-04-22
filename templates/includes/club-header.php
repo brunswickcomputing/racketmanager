@@ -15,6 +15,7 @@
 
 namespace Racketmanager;
 
+/** @var object $club */
 if ( empty( $standalone ) ) {
 	$standalone = false;
 }
@@ -51,9 +52,7 @@ if ( ! empty( $header_level ) ) {
 						<a href="/clubs/<?php echo esc_html( sanitize_title( $club->shortcode ) ); ?>/">
 						<?php
 					}
-					?>
-						<?php echo esc_html( $club->name ); ?>
-					<?php
+                    echo esc_html( $club->name );
 					if ( ! $standalone ) {
 						?>
 						</a>
@@ -61,16 +60,16 @@ if ( ! empty( $header_level ) ) {
 					}
 					?>
 				</<?php echo esc_html( $heading_type ); ?>>
-			</div>
-		</div>
-		<ul class="media__icons">
-			<li class="media__icons-item">
-				<?php
-				$favourite_type = 'club';
-				$favourite_id   = $club->id;
-				require RACKETMANAGER_PATH . '/templates/includes/favourite-button.php';
-				?>
-			</li>
-		</ul>
-	</div>
+            </div>
+        </div>
+        <ul class="media__icons">
+            <li class="media__icons-item">
+                <?php
+                $favourite_type = 'club';
+                $favourite_id   = $club->id;
+                require RACKETMANAGER_PATH . '/templates/includes/favourite-button.php';
+                ?>
+            </li>
+        </ul>
+    </div>
 </div>

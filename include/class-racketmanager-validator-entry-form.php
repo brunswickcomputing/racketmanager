@@ -9,8 +9,6 @@
 
 namespace Racketmanager;
 
-use DateTime;
-
 /**
  * Class to implement the Entry form Validator object
  */
@@ -21,24 +19,25 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	 * @param string $nonce_key nonce key.
 	 * @return object $validation updated validation object.
 	 */
-	public function nonce( $nonce_key ) {
-		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), $nonce_key ) ) {
-			$this->error                          = true;
-			$this->error_field[ $this->error_id ] = '';
-			$this->error_msg[ $this->error_id ]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
+	public function nonce( string $nonce_key ): object {
+		if ( !isset( $_POST['_wpnonce'] ) || !wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), $nonce_key ) ) {
+			$this->error = true;
+			$this->error_field[$this->error_id] = '';
+			$this->error_msg[$this->error_id] = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
 			++$this->error_id;
 		}
 		return $this;
 	}
+
 	/**
 	 * Validate if user logged in
 	 *
 	 * @return object updated validation object.
 	 */
-	public function logged_in_entry() {
-		$this->error                          = true;
-		$this->error_field[ $this->error_id ] = 'clubId';
-		$this->error_msg[ $this->error_id ]   = __( 'You must be logged in to submit an entry', 'racketmanager' );
+	public function logged_in_entry(): object {
+		$this->error = true;
+		$this->error_field[$this->error_id] = 'clubId';
+		$this->error_msg[$this->error_id] = __( 'You must be logged in to submit an entry', 'racketmanager' );
 		++$this->error_id;
 		return $this;
 	}
@@ -49,104 +48,110 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	 * @param string $club club.
 	 * @return object $validation updated validation object.
 	 */
-	public function club( $club ) {
-		if ( ! $club ) {
-			$this->error                          = true;
-			$this->error_field[ $this->error_id ] = 'clubId';
-			$this->error_msg[ $this->error_id ]   = __( 'Select the club you are a member of', 'racketmanager' );
+	public function club( $club ): object {
+		if ( !$club ) {
+			$this->error = true;
+			$this->error_field[$this->error_id] = 'clubId';
+			$this->error_msg[$this->error_id] = __( 'Select the club you are a member of', 'racketmanager' );
 			++$this->error_id;
 		}
 		return $this;
 	}
+
 	/**
 	 * Validate events
 	 *
-	 * @param array $events array of events.
+	 * @param array    $events array of events.
+	 * @param int|null $max_entries maximum number of entries.
 	 * @return object $validation updated validation object.
 	 */
-	public function events_entry( $events, $max_entries = null ) {
+	public function events_entry( array $events, int $max_entries = null ): object {
 		if ( empty( $events ) ) {
-			$this->error                          = true;
-			$this->error_field[ $this->error_id ] = 'event';
-			$this->error_msg[ $this->error_id ]   = __( 'You must select a event to enter', 'racketmanager' );
+			$this->error = true;
+			$this->error_field[$this->error_id] = 'event';
+			$this->error_msg[$this->error_id] = __( 'You must select a event to enter', 'racketmanager' );
 			++$this->error_id;
-		} elseif( ! empty( $max_entries ) ) {
+		} elseif ( ! empty( $max_entries ) ) {
 			if ( count( $events ) > $max_entries ) {
-				$this->error                          = true;
-				$this->error_field[ $this->error_id ] = 'event';
-				$this->error_msg[ $this->error_id ]   = __( 'You have entered too many events', 'racketmanager' );
+				$this->error = true;
+				$this->error_field[$this->error_id] = 'event';
+				$this->error_msg[$this->error_id] = __( 'You have entered too many events', 'racketmanager' );
 				++$this->error_id;
 			}
 		}
 		return $this;
 	}
+
 	/**
 	 * Validate teams
 	 *
-	 * @param array  $teams array of teams.
+	 * @param array $teams array of teams.
 	 * @param string $field_ref field reference.
 	 * @param string $field_name field name.
 	 * @return object $validation updated validation object.
 	 */
-	public function teams( $teams, $field_ref, $field_name ) {
+	public function teams( array $teams, string $field_ref, string $field_name ): object {
 		if ( empty( $teams ) ) {
-			$this->error                          = true;
-			$this->error_field[ $this->error_id ] = 'event-' . $field_ref;
+			$this->error = true;
+			$this->error_field[$this->error_id] = 'event-' . $field_ref;
 			/* translators: %s: competition name */
-			$this->error_msg[ $this->error_id ] = sprintf( __( 'No teams selected for %s', 'racketmanager' ), $field_name );
+			$this->error_msg[$this->error_id] = sprintf( __( 'No teams selected for %s', 'racketmanager' ), $field_name );
 			++$this->error_id;
 		}
 		return $this;
 	}
+
 	/**
 	 * Validate number of courts available
 	 *
 	 * @param int $num_courts_available number of courts available.
 	 * @return object $validation updated validation object.
 	 */
-	public function num_courts_available( $num_courts_available ) {
+	public function num_courts_available( int $num_courts_available ): object {
 		if ( empty( $num_courts_available ) ) {
-			$this->error                          = true;
-			$this->error_field[ $this->error_id ] = 'numCourtsAvailable';
+			$this->error = true;
+			$this->error_field[$this->error_id] = 'numCourtsAvailable';
 			/* translators: %s: competition name */
-			$this->error_msg[ $this->error_id ] = __( 'You must specify the number of courts available', 'racketmanager' );
+			$this->error_msg[$this->error_id] = __( 'You must specify the number of courts available', 'racketmanager' );
 			++$this->error_id;
 		}
 		return $this;
 	}
+
 	/**
 	 * Validate number of courts available
 	 *
-	 * @param int    $num_courts_available number of courts available.
-	 * @param array  $court_data courts and teams.
+	 * @param int $num_courts_available number of courts available.
+	 * @param array $court_data courts and teams.
 	 * @param string $match_day match day.
 	 * @param string $match_time match time.
 	 * @return object $validation updated validation object.
 	 */
-	public function court_needs( $num_courts_available, $court_data, $match_day, $match_time ) {
-		$court_needs        = $court_data['courts'] / $court_data['teams'];
+	public function court_needs( int $num_courts_available, array $court_data, string $match_day, string $match_time ): object {
+		$court_needs = $court_data['courts'] / $court_data['teams'];
 		$court_needs_by_day = $court_needs * ceil( $court_data['teams'] / 2 );
-		$match_day_name     = Racketmanager_Util::get_match_day( $match_day );
+		$match_day_name = Racketmanager_Util::get_match_day( $match_day );
 		if ( $court_needs_by_day > $num_courts_available ) {
-			$this->error                          = true;
-			$this->error_field[ $this->error_id ] = 'numCourtsAvailable';
+			$this->error = true;
+			$this->error_field[$this->error_id] = 'numCourtsAvailable';
 			/* translators: %1$s: match day,  %2$s: match time, %3$s: courts needed */
-			$this->error_msg[ $this->error_id ] = sprintf( __( 'There are not enough courts available for %1$s at %2$s. You need %3$s courts.', 'racketmanager' ), $match_day_name, $match_time, $court_needs_by_day );
+			$this->error_msg[$this->error_id] = sprintf( __( 'There are not enough courts available for %1$s at %2$s. You need %3$s courts.', 'racketmanager' ), $match_day_name, $match_time, $court_needs_by_day );
 			++$this->error_id;
 		}
 		return $this;
 	}
+
 	/**
 	 * Validate entry acceptance
 	 *
 	 * @param string $acceptance acceptance indicator.
 	 * @return object $validation updated validation object.
 	 */
-	public function entry_acceptance( $acceptance ) {
+	public function entry_acceptance( string $acceptance ): object {
 		if ( empty( $acceptance ) ) {
-			$this->error                          = true;
-			$this->error_field[ $this->error_id ] = 'acceptance';
-			$this->error_msg[ $this->error_id ]   = __( 'You must agree to the rules', 'racketmanager' );
+			$this->error = true;
+			$this->error_field[$this->error_id] = 'acceptance';
+			$this->error_msg[$this->error_id] = __( 'You must agree to the rules', 'racketmanager' );
 			++$this->error_id;
 		}
 		return $this;
@@ -155,50 +160,51 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	/**
 	 * Validate captain details
 	 *
-	 * @param int    $captain captain id.
+	 * @param int $captain captain id.
 	 * @param string $contactno contact number.
 	 * @param string $contactemail email.
 	 * @param string $field_ref field reference.
 	 * @param string $field_name field name.
 	 * @return object $validation updated validation object.
 	 */
-	public function captain( $captain, $contactno, $contactemail, $field_ref, $field_name ) {
+	public function captain( int $captain, string $contactno, string $contactemail, string $field_ref, string $field_name ): object {
 		if ( empty( $captain ) ) {
-			$this->error                          = true;
-			$this->error_field[ $this->error_id ] = 'captain-' . $field_ref;
+			$this->error = true;
+			$this->error_field[$this->error_id] = 'captain-' . $field_ref;
 			/* translators: %s: competition name */
-			$this->error_msg[ $this->error_id ] = sprintf( __( 'Captain not selected for %s', 'racketmanager' ), $field_name );
+			$this->error_msg[$this->error_id] = sprintf( __( 'Captain not selected for %s', 'racketmanager' ), $field_name );
 			++$this->error_id;
 		} elseif ( empty( $contactno ) || empty( $contactemail ) ) {
-				$this->error                          = true;
-				$this->error_field[ $this->error_id ] = 'captain-' . $field_ref;
-				/* translators: %s: competition name */
-				$this->error_msg[ $this->error_id ] = sprintf( __( 'Captain contact details missing for %s', 'racketmanager' ), $field_name );
-				++$this->error_id;
+			$this->error = true;
+			$this->error_field[$this->error_id] = 'captain-' . $field_ref;
+			/* translators: %s: competition name */
+			$this->error_msg[$this->error_id] = sprintf( __( 'Captain contact details missing for %s', 'racketmanager' ), $field_name );
+			++$this->error_id;
 		}
 		return $this;
 	}
+
 	/**
 	 * Validate match day details
 	 *
-	 * @param string  $match_day match day.
-	 * @param string  $field_ref field reference.
-	 * @param string  $field_name field name.
+	 * @param string $match_day match day.
+	 * @param string $field_ref field reference.
+	 * @param string $field_name field name.
 	 * @param boolean $match_day_restriction match day restriction indicator.
-	 * @param array   $match_days_allowed array of match days allowed.
+	 * @param array $match_days_allowed array of match days allowed.
 	 * @return object $validation updated validation object.
 	 */
-	public function match_day( $match_day, $field_ref, $field_name, $match_day_restriction = false, $match_days_allowed = array() ) {
+	public function match_day( string $match_day, string $field_ref, string $field_name, bool $match_day_restriction = false, array $match_days_allowed = array() ): object {
 		if ( empty( $match_day ) && '0' !== $match_day ) {
-			$this->error                          = true;
-			$this->error_field[ $this->error_id ] = 'matchday-' . $field_ref;
-			$this->error_msg[ $this->error_id ]   =  __( 'Match day not selected', 'racketmanager' );
+			$this->error = true;
+			$this->error_field[$this->error_id] = 'matchday-' . $field_ref;
+			$this->error_msg[$this->error_id] = __( 'Match day not selected', 'racketmanager' );
 			++$this->error_id;
 		} elseif ( $match_day_restriction ) {
-			if ( ! empty( $match_days_allowed ) && empty( $match_days_allowed[ $match_day ] ) ) {
-				$this->error                          = true;
-				$this->error_field[ $this->error_id ] = 'matchday-' . $field_ref;
-				$this->error_msg[ $this->error_id ]   = __( 'Match day not valid for event', 'racketmanager' );
+			if ( !empty( $match_days_allowed ) && empty( $match_days_allowed[$match_day] ) ) {
+				$this->error = true;
+				$this->error_field[$this->error_id] = 'matchday-' . $field_ref;
+				$this->error_msg[$this->error_id] = __( 'Match day not valid for event', 'racketmanager' );
 				++$this->error_id;
 			}
 		}
@@ -211,15 +217,15 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	 * @param string $match_time match time.
 	 * @param string $field_ref field reference.
 	 * @param string $field_name field name.
-	 * @param string  $match_day match day.
-	 * @param array   $start_times min/max start times.
+	 * @param string $match_day match day.
+	 * @param array $start_times min/max start times.
 	 * @return object $validation updated validation object.
 	 */
-	public function match_time( $match_time, $field_ref, $field_name, $match_day, $start_times ) {
+	public function match_time( string $match_time, string $field_ref, string $field_name, string $match_day, array $start_times ): object {
 		if ( empty( $match_time ) ) {
-			$this->error                          = true;
-			$this->error_field[ $this->error_id ] = 'matchtime-' . $field_ref;
-			$this->error_msg[ $this->error_id ]   =  __( 'Match time not selected', 'racketmanager' );
+			$this->error = true;
+			$this->error_field[$this->error_id] = 'matchtime-' . $field_ref;
+			$this->error_msg[$this->error_id] = __( 'Match time not selected', 'racketmanager' );
 			++$this->error_id;
 		} elseif ( $match_day >= 0 ) {
 			$match_time = substr( $match_time, 0, 5 );
@@ -228,22 +234,23 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 			} else {
 				$index = 'weekend';
 			}
-			if ( isset( $start_times[ $index ] ) ) {
-				if ( $match_time < $start_times[ $index ]['min'] ) {
-					$this->error                          = true;
-					$this->error_field[ $this->error_id ] = 'matchtime-' . $field_ref;
-					$this->error_msg[ $this->error_id ]   = __( 'Match time less than earliest start', 'racketmanager' );
+			if ( isset( $start_times[$index] ) ) {
+				if ( $match_time < $start_times[$index]['min'] ) {
+					$this->error = true;
+					$this->error_field[$this->error_id] = 'matchtime-' . $field_ref;
+					$this->error_msg[$this->error_id] = __( 'Match time less than earliest start', 'racketmanager' );
 					++$this->error_id;
-				} elseif ( $match_time > $start_times[ $index ]['max'] ) {
-					$this->error                          = true;
-					$this->error_field[ $this->error_id ] = 'matchtime-' . $field_ref;
-					$this->error_msg[ $this->error_id ]   = __( 'Match time greater than latest start', 'racketmanager' );
+				} elseif ( $match_time > $start_times[$index]['max'] ) {
+					$this->error = true;
+					$this->error_field[$this->error_id] = 'matchtime-' . $field_ref;
+					$this->error_msg[$this->error_id] = __( 'Match time greater than latest start', 'racketmanager' );
 					++$this->error_id;
 				}
 			}
 		}
 		return $this;
 	}
+
 	/**
 	 * Validate match time for overlap
 	 *
@@ -252,43 +259,45 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	 * @param string $field_ref field reference.
 	 * @param string $field_name field name.
 	 * @return object $validation updated validation object.
+	 * @throws \DateMalformedStringException
 	 */
-	public function match_overlap( $match_time, $schedule_time, $field_ref, $field_name ) {
+	public function match_overlap( string $match_time, string $schedule_time, string $field_ref, string $field_name ): object {
 		$start_time = \DateTime::createFromFormat( '!H:i:s', $match_time );
 		$start_time->modify( '-2 hours' );
 		$end_time = \DateTime::createFromFormat( '!H:i:s', $match_time );
 		$end_time->modify( '+2 hours' );
 		$current_match_time = \DateTime::createFromFormat( '!H:i:s', $schedule_time );
 		if ( $current_match_time > $start_time && $current_match_time < $end_time ) {
-			$this->error                          = true;
-			$this->error_field[ $this->error_id ] = 'matchtime-' . $field_ref;
-			$this->error_msg[ $this->error_id ]   = __( 'Match overlap', 'racketmanager' );
+			$this->error = true;
+			$this->error_field[$this->error_id] = 'matchtime-' . $field_ref;
+			$this->error_msg[$this->error_id] = __( 'Match overlap', 'racketmanager' );
 			++$this->error_id;
 		}
 		return $this;
 	}
+
 	/**
 	 * Validate partner details
 	 *
-	 * @param int    $partner partner.
+	 * @param int $partner partner.
 	 * @param string $field_ref field reference.
 	 * @param string $field_name field name.
 	 * @param object $event event object.
 	 * @param string $season season name.
-	 * @param int    $player_id player id.
+	 * @param int $player_id player id.
 	 * @param string $date_end end date of competition.
 	 * @return object $validation updated validation object.
 	 */
-	public function partner( $partner, $field_ref, $field_name, $event, $season, $player_id, $date_end ) {
+	public function partner( int $partner, string $field_ref, string $field_name, object $event, string $season, int $player_id, string $date_end ): object {
 		if ( empty( $field_name ) ) {
 			$error_field = 'partner';
 		} else {
 			$error_field = 'partner-' . $field_ref;
 		}
 		if ( empty( $partner ) ) {
-			$this->error                          = true;
-			$this->error_field[ $this->error_id ] = $error_field;
-			$this->error_msg[ $this->error_id ]   = __( 'Partner not selected', 'racketmanager' );
+			$this->error = true;
+			$this->error_field[$this->error_id] = $error_field;
+			$this->error_msg[$this->error_id] = __( 'Partner not selected', 'racketmanager' );
 			++$this->error_id;
 		} else {
 			$partner_found = false;
@@ -299,41 +308,38 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 				)
 			);
 			foreach ( $partner_teams as $partner_team ) {
-				if ( false === array_search( (string) $player_id, $partner_team->player_id, true ) ) {
+				if ( ! in_array( (string)$player_id, $partner_team->player_id, true ) ) {
 					$partner_found = true;
 				}
 			}
 			if ( $partner_found ) {
-				$this->error                          = true;
-				$this->error_field[ $this->error_id ] = $error_field;
-				$this->error_msg[ $this->error_id ]   = __( 'Partner is in another team in this event', 'racketmanager' );
+				$this->error = true;
+				$this->error_field[$this->error_id] = $error_field;
+				$this->error_msg[$this->error_id] = __( 'Partner is in another team in this event', 'racketmanager' );
 				++$this->error_id;
 			} else {
-				$entry_invalid = false;
-				if ( ! empty( $event->age_limit ) && 'open' !== $event->age_limit ) {
-					$partner     = get_player( $partner );
+				if ( !empty( $event->age_limit ) && 'open' !== $event->age_limit ) {
+					$partner = get_player( $partner );
 					$partner_age = substr( $date_end, 0, 4 ) - intval( $partner->year_of_birth );
 					if ( empty( $partner->age ) ) {
-						$this->error                          = true;
-						$this->error_field[ $this->error_id ] = $error_field;
-						$this->error_msg[ $this->error_id ]   = __( 'Partner has no age specified', 'racketmanager' );
+						$this->error = true;
+						$this->error_field[$this->error_id] = $error_field;
+						$this->error_msg[$this->error_id] = __( 'Partner has no age specified', 'racketmanager' );
 						++$this->error_id;
 					} elseif ( $event->age_limit >= 30 ) {
-						if ( 'F' === $partner->gender && ! empty( $event->age_offset ) ) {
+						if ( 'F' === $partner->gender && !empty( $event->age_offset ) ) {
 							$age_limit = $event->age_limit - $event->age_offset;
 						}
 						if ( $partner_age < $event->age_limit ) {
-							$this->error                          = true;
-							$this->error_field[ $this->error_id ] = $error_field;
-							$this->error_msg[ $this->error_id ]   = __( 'Partner is too young', 'racketmanager' );
+							$this->error = true;
+							$this->error_field[$this->error_id] = $error_field;
+							$this->error_msg[$this->error_id] = __( 'Partner is too young', 'racketmanager' );
 							++$this->error_id;
-							$entry_invalid = true;
 						}
-					} elseif ( $partner_age > $event->age_limit) {
-						$entry_invalid = true;
-						$this->error                          = true;
-						$this->error_field[ $this->error_id ] = $error_field;
-						$this->error_msg[ $this->error_id ]   = __( 'Partner is too old', 'racketmanager' );
+					} elseif ( $partner_age > $event->age_limit ) {
+						$this->error = true;
+						$this->error_field[$this->error_id] = $error_field;
+						$this->error_msg[$this->error_id] = __( 'Partner is too old', 'racketmanager' );
 						++$this->error_id;
 					}
 				}
@@ -341,51 +347,54 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 		}
 		return $this;
 	}
+
 	/**
 	 * Validate tournament open
 	 *
-	 * @param string $tournament_close tournament close date.
+	 * @param object $tournament tournament object.
 	 * @return object $validation updated validation object.
 	 */
-	public function tournament_open( $tournament ) {
+	public function tournament_open( object $tournament ): object {
 		if ( empty( $tournament->date_closing ) ) {
-			$this->error                          = true;
-			$this->error_field[ $this->error_id ] = 'event';
-			$this->error_msg[ $this->error_id ]   = __( 'Tournament close date not set', 'racketmanager' );
+			$this->error = true;
+			$this->error_field[$this->error_id] = 'event';
+			$this->error_msg[$this->error_id] = __( 'Tournament close date not set', 'racketmanager' );
 			++$this->error_id;
 		} else {
-			if ( ! $tournament->is_open && ! $tournament->is_closed ) {
-				$this->error                          = true;
-				$this->error_field[ $this->error_id ] = 'event';
-				$this->error_msg[ $this->error_id ]   = __( 'Tournament not open for entries', 'racketmanager' );
+			if ( !$tournament->is_open && !$tournament->is_closed ) {
+				$this->error = true;
+				$this->error_field[$this->error_id] = 'event';
+				$this->error_msg[$this->error_id] = __( 'Tournament not open for entries', 'racketmanager' );
 				++$this->error_id;
 			}
 		}
 		return $this;
 	}
+
 	/**
 	 * Validate weekend match
 	 *
 	 * @param string $field_ref field reference.
 	 * @return object $validation updated validation object.
 	 */
-	public function weekend_match( $field_ref ) {
-		$this->error                          = true;
-		$this->error_field[ $this->error_id ] = 'matchday-' . $field_ref;
-		$this->error_msg[ $this->error_id ]   = __( 'A higher ranked team is already playing at the weekend', 'racketmanager' );
+	public function weekend_match( string $field_ref ): object {
+		$this->error = true;
+		$this->error_field[$this->error_id] = 'matchday-' . $field_ref;
+		$this->error_msg[$this->error_id] = __( 'A higher ranked team is already playing at the weekend', 'racketmanager' );
 		++$this->error_id;
 		return $this;
 	}
+
 	/**
 	 * Validate free slots
 	 *
 	 * @param string $slots slots available.
 	 * @return object $validation updated validation object.
 	 */
-	public function free_slots( $slots ) {
+	public function free_slots( string $slots ): object {
 		if ( $slots < 1 ) {
-			$this->error                        = true;
-			$this->error_msg[ $this->error_id ] = __( 'Weekend games not allowed when free weekday slots', 'racketmanager' );
+			$this->error = true;
+			$this->error_msg[$this->error_id] = __( 'Weekend games not allowed when free weekday slots', 'racketmanager' );
 			++$this->error_id;
 		}
 		return $this;

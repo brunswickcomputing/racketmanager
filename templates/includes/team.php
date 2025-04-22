@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var object $club */
+/** @var object $team */
 if ( isset( $league ) ) {
 	$is_team_entry   = $league->event->competition->is_team_entry;
 	$is_player_entry = $league->event->competition->is_player_entry;
@@ -17,6 +19,11 @@ if ( isset( $league ) ) {
 	$is_player_entry = $event->competition->is_player_entry;
 	$object          = $event;
 	$object_type     = 'event';
+} else {
+    $object          = null;
+    $object_type     = null;
+    $is_team_entry   = null;
+    $is_player_entry = null;
 }
 if ( empty( $item_link ) ) {
 	$team_link = '/clubs/' . seo_url( $club->shortcode ) . '/team/' . seo_url( $team->title ) . '/' . seo_url( $object->name ) . '/';
@@ -26,11 +33,11 @@ if ( empty( $item_link ) ) {
 	$onclick   = 'onclick=Racketmanager.' . $object_type . 'TabDataLink(event,' . $object->id . ',' . $object->current_season['name'] . ",'" . $team_link . "'," . $team->id . ",'teams')";
 }
 if ( isset( $team->info ) ) {
-	$team->contactno    = isset( $team->info->contactno ) ? $team->info->contactno : null;
-	$team->contactemail = isset( $team->info->contactemail ) ? $team->info->contactemail : null;
-	$team->match_time   = isset( $team->info->match_time ) ? $team->info->match_time : null;
-	$team->match_day    = isset( $team->info->match_day ) ? $team->info->match_day : null;
-	$team->captain      = isset( $team->info->captain ) ? $team->info->captain : null;
+	$team->contactno    = $team->info->contactno ?? null;
+	$team->contactemail = $team->info->contactemail ?? null;
+	$team->match_time   = $team->info->match_time ?? null;
+	$team->match_day    = $team->info->match_day ?? null;
+	$team->captain      = $team->info->captain ?? null;
 }
 ?>
 <div class="">

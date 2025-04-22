@@ -15,8 +15,10 @@ namespace Racketmanager;
 				<?php
 				if ( $league ) {
 					?>
-					&raquo; <a href="admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo esc_html( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a>
-				<?php } ?>
+					&raquo; <a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a>
+				    <?php
+                }
+                ?>
 				&raquo; <?php echo esc_html( $form_title ); ?>
 		</div>
 	</div>
@@ -27,7 +29,7 @@ namespace Racketmanager;
 		<?php
 	}
 	if ( $league ) {
-		$action_form = 'index.php?page=racketmanager&amp;subpage=show-league&amp;league_id=' . $league_id . '&amp;season=' . $season;
+		$action_form = 'admin.php?page=racketmanager-' . $league->event->competition->type . 's&amp;view=league&amp;league_id=' . $league_id . '&amp;season=' . $season;
 	} else {
 		$action_form = 'admin.php?page=racketmanager-clubs&amp;view=teams';
 		if ( $club_id ) {

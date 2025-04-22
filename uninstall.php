@@ -18,14 +18,12 @@ racketmanager_uninstall_plugin();
  *
  * @return void
  */
-function racketmanager_uninstall_plugin() {
-	global $wpdb;
-
+function racketmanager_uninstall_plugin(): void {
 	global $wpdb;
 	$table_prefix = $wpdb->prefix . 'racketmanager%';
 	$tables       = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->prepare(
-			"show tables from {$wpdb->dbname} like %s",
+			"show tables from $wpdb->dbname like %s",
 			$table_prefix
 		)
 	);

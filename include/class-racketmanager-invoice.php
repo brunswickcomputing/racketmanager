@@ -34,9 +34,9 @@ final class Racketmanager_Invoice {
 	/**
 	 * Club id
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public int $club_id;
+	public ? int $club_id;
 	/**
 	 * Player
 	 *
@@ -94,9 +94,9 @@ final class Racketmanager_Invoice {
 	/**
 	 * Details
 	 *
-	 * @var object|null
+	 * @var object|string|null
 	 */
-	public object|null $details;
+	public object|string|null $details;
 	/**
 	 * Racketmanager
 	 *
@@ -301,7 +301,7 @@ final class Racketmanager_Invoice {
 	 *
 	 * @param object $details invoice details.
 	 */
-	public function set_details(object $details ): bool {
+	public function set_details( object $details ): bool {
 		global $wpdb;
 
 		$this->details = $details;

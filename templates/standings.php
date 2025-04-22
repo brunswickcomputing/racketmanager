@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var object $league */
+/** @var object $team */
 if ( count( $league->teams ) ) {
 	?>
 	<div class="table-responsive">
@@ -14,7 +16,7 @@ if ( count( $league->teams ) ) {
 			<thead class="">
 				<tr>
 					<th class="num">
-						<?php echo esc_html_e( 'Pos', 'racketmanager' ); ?>
+						<?php esc_html_e( 'Pos', 'racketmanager' ); ?>
 					</th>
 					<?php
 					if ( show_standings( 'status' ) ) {

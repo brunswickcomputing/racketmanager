@@ -13,7 +13,7 @@ namespace Racketmanager;
 	<input type="hidden" name="league-tab" value="preliminary" />
 	<input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />
 	<?php wp_nonce_field( 'racketmanager_teams-bulk', 'racketmanager_nonce' ); ?>
-	<?php $sport = ( isset( $league->sport ) ? $league->sport : '' ); ?>
+	<?php $sport = ($league->sport ?? ''); ?>
 	<div class="tablenav">
 		<!-- Bulk Actions -->
 		<select name="action" size="1">
@@ -29,66 +29,66 @@ namespace Racketmanager;
 				<th scope="col" class="check-column">
 					<input type="checkbox" id="check-all-teams" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" />
 				</th>
-				<th class="column-num" scope="column"><?php esc_html_e( 'Rank', 'racketmanager' ); ?></th>
+				<th class="column-num" scope="col"><?php esc_html_e( 'Rank', 'racketmanager' ); ?></th>
 				<?php
 				if ( ! $league->event->competition->is_championship ) {
 					?>
-					<th class="column-num" scope="column">&#160;</th><?php } ?>
-				<th scope="column"><?php esc_html_e( 'Team', 'racketmanager' ); ?></th>
+					<th class="column-num" scope="col">&#160;</th><?php } ?>
+				<th scope="col"><?php esc_html_e( 'Team', 'racketmanager' ); ?></th>
 				<?php
 				if ( $league->event->competition->is_championship ) {
 					?>
-					<th scope="column"><?php esc_html_e( 'Rating', 'racketmanager' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'Rating', 'racketmanager' ); ?></th>
 					<?php
 				} else {
 					if ( ! empty( $league->groups ) ) {
 						?>
-						<th class="column-num" scope="column"><?php esc_html_e( 'Group', 'racketmanager' ); ?></th>
+						<th class="column-num" scope="col"><?php esc_html_e( 'Group', 'racketmanager' ); ?></th>
 						<?php
 					}
 					if ( isset( $league->standings['pld'] ) && 1 === $league->standings['pld'] ) {
 						?>
-						<th class="column-num" scope="column"><?php esc_html_e( 'Pld', 'racketmanager' ); ?></th>
+						<th class="column-num" scope="col"><?php esc_html_e( 'Pld', 'racketmanager' ); ?></th>
 						<?php
 					}
 					if ( isset( $league->standings['won'] ) && 1 === $league->standings['won'] ) {
 						?>
-						<th class="column-num" scope="column"><?php esc_html_e( 'W', 'racketmanager' ); ?></th>
+						<th class="column-num" scope="col"><?php esc_html_e( 'W', 'racketmanager' ); ?></th>
 						<?php
 					}
 					if ( isset( $league->standings['tie'] ) && 1 === $league->standings['tie'] ) {
 						?>
-						<th class="column-num" scope="column"><?php esc_html_e( 'T', 'racketmanager' ); ?></th>
+						<th class="column-num" scope="col"><?php esc_html_e( 'T', 'racketmanager' ); ?></th>
 						<?php
 					}
 					if ( isset( $league->standings['lost'] ) && 1 === $league->standings['lost'] ) {
 						?>
-						<th class="column-num" scope="column"><?php esc_html_e( 'L', 'racketmanager' ); ?></th>
+						<th class="column-num" scope="col"><?php esc_html_e( 'L', 'racketmanager' ); ?></th>
 						<?php
 					}
 					if ( isset( $league->standings['winPercent'] ) && 1 === $league->standings['winPercent'] ) {
 						?>
-						<th class="column-num" scope="column"><?php esc_html_e( 'PCT', 'racketmanager' ); ?></th>
+						<th class="column-num" scope="col"><?php esc_html_e( 'PCT', 'racketmanager' ); ?></th>
 						<?php
 					}
 					if ( ! empty( $league->standings['sets'] ) ) {
 						?>
-						<th class="column-num" scope="column">
+						<th class="column-num" scope="col">
 							<?php esc_html_e( 'Sets', 'racketmanager' ); ?>
 						</th>
 						<?php
 					}
 					if ( ! empty( $league->standings['games'] ) ) {
 						?>
-						<th class="column-num" scope="column">
+						<th class="column-num" scope="col">
 							<?php esc_html_e( 'Games', 'racketmanager' ); ?>
 						</th>
 						<?php
 					}
 					?>
-					<th class="column-num" scope="column"><?php esc_html_e( 'Pts', 'racketmanager' ); ?></th>
-					<th class="column-num" scope="column"><?php esc_html_e( '+/- Points', 'racketmanager' ); ?></th>
-					<th class="column-num" scope="column"><?php esc_html_e( 'ID', 'racketmanager' ); ?></th>
+					<th class="column-num" scope="col"><?php esc_html_e( 'Pts', 'racketmanager' ); ?></th>
+					<th class="column-num" scope="col"><?php esc_html_e( '+/- Points', 'racketmanager' ); ?></th>
+					<th class="column-num" scope="col"><?php esc_html_e( 'ID', 'racketmanager' ); ?></th>
 					<?php
 				}
 				?>
@@ -129,7 +129,7 @@ namespace Racketmanager;
 						</td>
 					<?php } ?>
 					<td>
-						<a href="admin.php?page=racketmanager&amp;subpage=team&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;edit=<?php echo esc_html( $team->id ); ?>">
+						<a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=team&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;edit=<?php echo esc_html( $team->id ); ?>">
 							<?php
 							if ( $team->is_withdrawn ) {
 								$title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );

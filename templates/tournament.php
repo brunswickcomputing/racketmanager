@@ -14,7 +14,7 @@
 
 namespace Racketmanager;
 
-global $wp_query, $wp;
+global $wp_query;
 $post_id   = $wp_query->post->ID; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 $match_day = \get_query_var( 'match_day' );
 if ( isset( $_GET['match_day'] ) || isset( $_GET['team_id'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -33,44 +33,44 @@ if ( empty( $tab ) ) {
 $menu_options                = array();
 $menu_options['overview']    = array(
 	'name'        => 'overview',
-	'selected'    => 'overview' === $tab ? true : false,
+	'selected'    => 'overview' === $tab,
 	'available'   => true,
 	'description' => __( 'Overview', 'racketmanager' ),
 );
 $menu_options['events']      = array(
 	'name'        => 'events',
-	'selected'    => 'events' === $tab ? true : false,
+	'selected'    => 'events' === $tab,
 	'available'   => true,
 	'description' => __( 'Events', 'racketmanager' ),
 );
 $menu_options['draws']       = array(
 	'name'        => 'draws',
-	'selected'    => 'draws' === $tab ? true : false,
+	'selected'    => 'draws' === $tab,
 	'available'   => true,
 	'description' => __( 'Draws', 'racketmanager' ),
 );
 $menu_options['matches']     = array(
 	'name'        => 'matches',
-	'selected'    => 'matches' === $tab ? true : false,
+	'selected'    => 'matches' === $tab,
 	'available'   => true,
 	'description' => __( 'Matches', 'racketmanager' ),
 );
 $menu_options['players']     = array(
 	'name'        => 'players',
-	'selected'    => 'players' === $tab ? true : false,
+	'selected'    => 'players' === $tab,
 	'available'   => true,
 	'description' => __( 'Players', 'racketmanager' ),
 );
 $menu_options['order_of_play'] = array(
 	'name'        => 'order_of_play',
-	'selected'    => 'order_of_play' === $tab ? true : false,
-	'available'   => ( ! empty( $tournament->date ) && gmdate( 'Y-m-d' ) <= $tournament->date && ! empty( $tournament->orderofplay ) ) ? true : false,
+	'selected'    => 'order_of_play' === $tab,
+	'available'   => ! empty( $tournament->date ) && gmdate( 'Y-m-d' ) <= $tournament->date && ! empty( $tournament->order_of_play ),
 	'description' => __( 'Order of play', 'racketmanager' ),
 );
 $menu_options['winners']     = array(
 	'name'        => 'winners',
-	'selected'    => 'winners' === $tab ? true : false,
-	'available'   => ( ! empty( $tournament->date ) && gmdate( 'Y-m-d' ) >= $tournament->date ) ? true : false,
+	'selected'    => 'winners' === $tab,
+	'available'   => ! empty( $tournament->date ) && gmdate( 'Y-m-d' ) >= $tournament->date,
 	'description' => __( 'Winners', 'racketmanager' ),
 );
 ?>

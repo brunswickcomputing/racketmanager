@@ -8,8 +8,9 @@
 
 namespace Racketmanager;
 
+/** @var object $competition */
 global $wp_query, $wp;
-$post_id     = isset( $wp_query->post->ID ) ? $wp_query->post->ID : ''; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+$post_id     = $wp_query->post->ID ?? ''; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 $pagename    = seo_url( $competition->name );
 $is_singular = false;
 if ( empty( $tab ) ) {
@@ -29,38 +30,38 @@ if ( empty( $tab ) ) {
 $menu_options             = array();
 $menu_options['overview'] = array(
 	'name'        => 'overview',
-	'selected'    => 'overview' === $tab ? true : false,
+	'selected'    => 'overview' === $tab,
 	'available'   => true,
 	'description' => __( 'Overview', 'racketmanager' ),
 );
 $menu_options['events']   = array(
 	'name'        => 'events',
-	'selected'    => 'events' === $tab ? true : false,
+	'selected'    => 'events' === $tab,
 	'available'   => true,
 	'description' => __( 'Events', 'racketmanager' ),
 );
 $menu_options['clubs']    = array(
 	'name'        => 'clubs',
-	'selected'    => 'clubs' === $tab ? true : false,
+	'selected'    => 'clubs' === $tab,
 	'available'   => true,
 	'description' => __( 'Clubs', 'racketmanager' ),
 );
 $menu_options['teams']    = array(
 	'name'        => 'teams',
-	'selected'    => 'teams' === $tab ? true : false,
+	'selected'    => 'teams' === $tab,
 	'available'   => true,
 	'description' => __( 'Teams', 'racketmanager' ),
 );
 $menu_options['players']  = array(
 	'name'        => 'players',
-	'selected'    => 'players' === $tab ? true : false,
+	'selected'    => 'players' === $tab,
 	'available'   => true,
 	'description' => __( 'Players', 'racketmanager' ),
 );
 $menu_options['winners']  = array(
 	'name'        => 'winners',
-	'selected'    => 'winners' === $tab ? true : false,
-	'available'   => ( empty( $competition_season['date_end'] ) || gmdate( 'Y-m-d' ) >= $competition_season['date_end'] ) ? true : false,
+	'selected'    => 'winners' === $tab,
+	'available'   => empty( $competition_season['date_end'] ) || gmdate( 'Y-m-d' ) >= $competition_season['date_end'],
 	'description' => __( 'Winners', 'racketmanager' ),
 );
 ?>

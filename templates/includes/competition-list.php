@@ -7,19 +7,14 @@
 
 namespace Racketmanager;
 
-foreach ( $competition_list as $key => $competition ) {
-	switch ( $competition->type ) {
-		case 'league':
-			$image = 'images/bootstrap-icons.svg#table';
-			break;
-		case 'tournament':
-		case 'cup':
-			$image = 'images/lta-icons.svg#icon-bracket';
-			break;
-		default:
-			$image = null;
-			break;
-	}
+/** @var array $competition_list */
+foreach ($competition_list as $competition ) {
+	$image = match ($competition->type) {
+		'league'     => 'images/bootstrap-icons.svg#table',
+		'tournament',
+        'cup'        => 'images/lta-icons.svg#icon-bracket',
+		default      => null,
+	};
 	if ( 'tournament' === $competition->type ) {
 		$competition_link = '/tournament/' . seo_url( $competition->name ) . '/';
 	} else {
@@ -84,8 +79,12 @@ foreach ( $competition_list as $key => $competition ) {
 				<div class="media__aside">
 					<?php
 					if ( $competition->is_open ) {
+                        $open_link = '/' . seo_url( $competition->type ) . '/entry-form/' . seo_url( $competition_name ) . '/';
+                        if ( 'tournament' !== $competition->type ) {
+						    $open_link .= $competition->current_season['name'] . '/';
+						}
 						?>
-						<a href="/entry-form/<?php echo esc_attr( seo_url( $competition->name ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/" class="btn btn-primary">
+						<a href="<?php echo esc_attr( $open_link ); ?>" class="btn btn-primary">
 							<i class="racketmanager-svg-icon">
 								<?php racketmanager_the_svg( 'icon-pencil' ); ?>
 							</i>

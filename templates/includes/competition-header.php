@@ -8,20 +8,17 @@
 
 namespace Racketmanager;
 
-switch ( $competition->type ) {
-	case 'league':
-		$image = 'images/bootstrap-icons.svg#table';
-		break;
-	case 'cup':
-		$image = 'images/bootstrap-icons.svg#trophy-fill';
-		break;
-	case 'tournament':
-		$image = 'images/lta-icons.svg#icon-bracket';
-		break;
-	default:
-		$image = null;
-		break;
-}
+global $racketmanager;
+/** @var object $competition */
+/** @var string $post_id */
+/** @var string $pagename */
+/** @var array $competition_season */
+$image = match ($competition->type) {
+	'league' => 'images/bootstrap-icons.svg#table',
+	'cup' => 'images/bootstrap-icons.svg#trophy-fill',
+	'tournament' => 'images/lta-icons.svg#icon-bracket',
+	default => null,
+};
 ?>
 <div class="page-subhead competition">
 	<div class="media competition-head">
@@ -77,7 +74,7 @@ switch ( $competition->type ) {
 				}
 				if ( empty( $season ) ) {
 					?>
-					<form method="get" action="<?php echo esc_html( get_permalink( $post_id ) ); ?>" id="racketmanager_competititon_archive" class="season-select">
+					<form method="get" action="<?php echo esc_html( get_permalink( $post_id ) ); ?>" id="racketmanager_competition_archive" class="season-select">
 						<input type="hidden" name="page_id" value="<?php echo esc_html( $post_id ); ?>" />
 						<input type="hidden" name="pagename" id="pagename" value="<?php echo esc_html( $pagename ); ?>" />
 						<div class="row g-1 align-items-center">
@@ -85,7 +82,7 @@ switch ( $competition->type ) {
 								<div class="form-floating">
 									<select class="form-select" size="1" name="season" id="season">
 										<?php
-										foreach ( array_reverse( $competition->seasons ) as $key => $season ) {
+										foreach ( array_reverse( $competition->seasons ) as $season ) {
 											$option_name = $season['name'];
 											?>
 											<option value="<?php echo esc_html( $season['name'] ); ?>" <?php selected( $season['name'], $competition_season['name'] ); ?>>

@@ -16,6 +16,7 @@
 namespace Racketmanager;
 
 global $racketmanager;
+/** @var object $league */
 $racketmanager_season   = end( $league->event->seasons )['name'];
 $racketmanager_teaminfo = $league->get_team_dtls( get_team_id() );
 ?>

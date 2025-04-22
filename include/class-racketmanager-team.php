@@ -184,9 +184,9 @@ final class Racketmanager_Team {
 	/**
 	 * Standings variable
 	 *
-	 * @var array
+	 * @var array|object
 	 */
-	public array $standings;
+	public array|object $standings;
 	/**
 	 * Matches variable
 	 *

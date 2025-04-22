@@ -18,17 +18,11 @@ if ( 'constitution' === $view ) {
 	$page_link  = $league->title;
 	$breadcrumb = 'show-league&amp;league_id=' . $league->id;
 	$link_ref   = 'admin.php?page=racketmanager-' . $league->event->competition->type . 's&amp;season=' . $season;
-	switch ( $league->event->competition->type ) {
-		case 'cup':
-			$link_ref .= '&amp;competition_id=' . $league->event->competition->id . '&amp;view=draw&amp;league=' . $league->id;
-			break;
-		case 'tournament':
-			$link_ref .= '&amp;tournament=' . $tournament_id . '&amp;view=draw&amp;league=' . $league->id;
-			break;
-		default:
-			$link_ref .= '&view=league&amp;league_id=' . $league->id;
-			break;
-	}
+	$link_ref .= match ($league->event->competition->type) {
+		'cup' => '&amp;competition_id=' . $league->event->competition->id . '&amp;view=draw&amp;league=' . $league->id,
+		'tournament' => '&amp;tournament=' . $tournament_id . '&amp;view=draw&amp;league=' . $league->id,
+		default => '&view=league&amp;league_id=' . $league->id,
+	};
 }
 $main_title = $page_link . ' - ' . $page_title;
 ?>
@@ -82,7 +76,7 @@ $main_title = $page_link . ' - ' . $page_title;
 			if ( $teams ) {
 				$class = '';
 				foreach ( $teams as $team ) {
-					$club_name = isset( $team->club->shortcode ) ? $team->club->shortcode : null;
+					$club_name = $team->club->shortcode ?? null;
 					?>
 					<?php $class = ( 'alternate' === $class ) ? '' : 'alternate'; ?>
 					<div class="row table-row <?php echo esc_html( $class ); ?>">

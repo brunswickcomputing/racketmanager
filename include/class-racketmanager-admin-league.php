@@ -20,12 +20,6 @@ namespace Racketmanager;
 final class RacketManager_Admin_League extends RacketManager_Admin {
 
 	/**
-	 * League_id the id of the current league.
-	 *
-	 * @var $league_id
-	 */
-	private $league_id;
-	/**
 	 * Constructor
 	 */
 	public function __construct() {
@@ -33,7 +27,7 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 	/**
 	 * Display leagues page
 	 */
-	public function display_leagues_page() {
+	public function display_leagues_page(): void {
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -50,9 +44,10 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 	/**
 	 * Display season list
 	 */
-	public function display_seasons_page() {
+	public function display_seasons_page(): void {
 		global $racketmanager;
-		if ( isset( $_POST['doactionseason'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$competition = null;
+		if ( isset( $_POST['doActionSeason'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			if ( $competition_id ) {
 				$competition = get_competition( $competition_id );
@@ -77,7 +72,7 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 	/**
 	 * Display season overview
 	 */
-	public function display_overview_page() {
+	public function display_overview_page(): void {
 		if ( isset( $_GET['competition_id'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$competition_id = intval( $_GET['competition_id'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$competition    = get_competition( $competition_id );
@@ -105,7 +100,7 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 	/**
 	 * Display setup
 	 */
-	public function display_setup_page() {
+	public function display_setup_page(): void {
 		global $racketmanager;
 		if ( ! current_user_can( 'edit_matches' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
@@ -116,6 +111,7 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 					$this->printMessage();
 				} else {
+					$msg            = array();
 					$valid          = true;
 					$competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					$season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
@@ -149,6 +145,7 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 									$seasons[ $season ] = $current_season;
 									$updates            = $competition->update_seasons( $seasons );
 									if ( $updates ) {
+										$match_dates = array();
 										$this->set_message( __( 'Match dates updated', 'racketmanager' ) );
 										$events = $competition->get_events();
 										foreach ( $events as $competition_event ) {
@@ -180,7 +177,6 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 			} elseif ( isset( $_POST['rank'] ) ) {
 				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_calculate_ratings' ) ) {
 					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-					$this->printMessage();
 				} else {
 					$valid          = true;
 					$competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
@@ -190,8 +186,8 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 						$racketmanager->calculate_team_ratings( $competition->id, $season );
 					}
 					$this->set_message( __( 'League ratings set', 'racketmanager' ) );
-					$this->printMessage();
 				}
+				$this->printMessage();
 			}
 			$season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
 			$competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -207,8 +203,7 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 	/**
 	 * Display event setup
 	 */
-	public function display_setup_event_page() {
-		global $racketmanager;
+	public function display_setup_event_page(): void {
 		if ( ! current_user_can( 'edit_matches' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -218,7 +213,8 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 					$this->printMessage();
 				} else {
-					$valid          = true;
+					$msg      = array();
+					$valid    = true;
 					$event_id = isset( $_GET['event_id'] ) ? intval( $_GET['event_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					$season   = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
 					if ( $event_id ) {
@@ -279,19 +275,16 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 	/**
 	 * Display league page
 	 */
-	public function display_league_page() {
-		global $league, $championship, $competition;
+	public function display_league_page(): void {
+		global $league, $racketmanager;
 
 		if ( ! current_user_can( 'view_leagues' ) ) {
-			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
-			$this->printMessage();
+			$racketmanager->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
+			$racketmanager->printMessage();
 		} else {
 			$league_id = isset( $_GET['league_id'] ) ? intval( $_GET['league_id'] ) : null;
 			if ( $league_id ) {
 				$league = get_league( $league_id );
-				if ( $league ) {
-					
-				}
 			}
 			$league    = get_league();
 			$league_id = $league->id;
@@ -301,9 +294,9 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 			$tab         = 'standings';
 			$match_day   = false;
 			// phpcs:disable WordPress.Security.NonceVerification.Missing
-			if ( isset( $_POST['doaction'] ) ) {
+			if ( isset( $_POST['doAction'] ) ) {
 				$this->handle_league_teams_action( $league );
-			} elseif ( isset( $_POST['delmatches'] ) ) {
+			} elseif ( isset( $_POST['delMatches'] ) ) {
 				$this->delete_matches_from_league();
 				$tab = 'matches';
 			} elseif ( isset( $_POST['updateLeague'] ) && 'team' === $_POST['updateLeague'] ) {
@@ -330,26 +323,21 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 				}
 			} elseif ( isset( $_POST['contactTeam'] ) ) {
 				$this->league_contact_teams();
-				$tab = 'standings';
 			} elseif ( isset( $_POST['saveRanking'] ) ) {
 				$this->league_manual_rank_teams( $league );
-				$tab = 'standings';
 			} elseif ( isset( $_POST['randomRanking'] ) ) {
 				$this->league_random_rank_teams( $league );
-				$tab = 'standings';
 			} elseif ( isset( $_POST['ratingPointsRanking'] ) ) {
 				$this->league_rating_points_rank_teams( $league );
-				$tab = 'standings';
 			}
-			$this->printMessage();
+			$racketmanager->printMessage();
 			// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 			// check if league is a cup championship.
-			$cup = ( 'championship' === $league_mode ) ? true : false;
+			$cup = 'championship' === $league_mode;
 			// phpcs:disable WordPress.Security.NonceVerification.Recommended
 			$group     = isset( $_GET['group'] ) ? sanitize_text_field( wp_unslash( $_GET['group'] ) ) : '';
 			$team_id   = isset( $_GET['team_id'] ) ? intval( $_GET['team_id'] ) : false;
-			$match_day = false;
 			if ( isset( $_GET['match_day'] ) ) {
 				if ( -1 !== $_GET['match_day'] ) {
 					$match_day = intval( $_GET['match_day'] );
@@ -376,8 +364,8 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 			if ( $team_id ) {
 				$match_args['team_id'] = $team_id;
 			}
-			if ( intval( $league->num_matches_per_page ) > 0 ) {
-				$match_args['limit'] = intval( $league->num_matches_per_page );
+			if ( $league->num_matches_per_page > 0 ) {
+				$match_args['limit'] = $league->num_matches_per_page;
 			}
 			if ( empty( $league->event->seasons ) ) {
 				$this->set_message( __( 'You need to add at least one season for the competition', 'racketmanager' ), true );
@@ -418,7 +406,7 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 	/**
 	 * Display event page
 	 */
-	public function display_event_page() {
+	public function display_event_page(): void {
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -439,11 +427,11 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 				if ( isset( $_POST['addLeague'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 					$this->add_league_to_event();
 					$this->printMessage();
-				} elseif ( isset( $_GET['editleague'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-					$league_id    = intval( $_GET['editleague'] );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				} elseif ( isset( $_GET['edit_league'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					$league_id    = intval( $_GET['edit_league'] );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					$league_edit  = get_league( $league_id );
 					$league_title = $league_edit->title;
-				} elseif ( isset( $_POST['doactionleague'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				} elseif ( isset( $_POST['doActionLeague'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 					$this->delete_leagues_from_event();
 					$this->printMessage();
 				} elseif ( isset( $_POST['updateSettings'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -452,7 +440,7 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 					$this->printMessage();
 				}
 				if ( ! isset( $season ) ) {
-					$event_season = isset( $event->current_season['name'] ) ? $event->current_season['name'] : '';
+					$event_season = $event->current_season['name'] ?? '';
 					$season       = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $event_season );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				}
 				include_once RACKETMANAGER_PATH . 'admin/league/show-event.php';
@@ -463,7 +451,7 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 	/**
 	 * Display constitution page
 	 */
-	public function display_constitution_page() {
+	public function display_constitution_page(): void {
 		global $racketmanager;
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
@@ -480,11 +468,11 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 				'homeAndAway'    => '',
 			);
 			$club_id      = 0;
-			if ( isset( $_POST['doactionconstitution'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( isset( $_POST['doActionConstitution'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				$tab = 'constitution';
 				$this->delete_constitution_teams();
 				$this->printMessage();
-			} elseif ( isset( $_POST['saveconstitution'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			} elseif ( isset( $_POST['saveConstitution'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				$tab = 'constitution';
 				$this->save_constitution();
 				$this->printMessage();
@@ -502,7 +490,7 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 				$this->printMessage();
 			}
 			if ( ! isset( $season ) ) {
-				$event_season = isset( $event->current_season['name'] ) ? $event->current_season['name'] : '';
+				$event_season = $event->current_season['name'] ?? '';
 				$season       = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $event_season );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			}
 			include_once RACKETMANAGER_PATH . 'admin/league/show-constitution.php';
@@ -511,7 +499,7 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 	/**
 	 * Display schedule page
 	 */
-	public function display_schedule_page() {
+	public function display_schedule_page(): void {
 		global $racketmanager;
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$racketmanager->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
@@ -551,7 +539,7 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 			);
 			$club_id        = 0;
 			if ( ! isset( $season ) ) {
-				$event_season = isset( $event->current_season['name'] ) ? $event->current_season['name'] : '';
+				$event_season = $event->current_season['name'] ?? '';
 				$season       = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $event_season );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			}
 			include_once RACKETMANAGER_PATH . 'admin/league/show-schedule.php';
@@ -562,17 +550,18 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 	 *
 	 * @return void
 	 */
-	private function action_promotion_relegation() {
+	private function action_promotion_relegation(): void {
 		global $racketmanager;
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 		} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'constitution-bulk' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} else {
+			$teams = array();
 			$valid = true;
 			$js    = false;
 			if ( isset( $_POST['js-active'] ) ) {
-				$js = ( 1 === intval( $_POST['js-active'] ) ) ? true : false;
+				$js = 1 === intval( $_POST['js-active'] );
 			}
 			$rank = 0;
 			if ( isset( $_POST['table_id'] ) ) {
@@ -582,20 +571,19 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 				if ( $event_id ) {
 					$event = get_event( $event_id );
 					if ( $event ) {
-						$teams = array();
 						foreach ( $_POST['table_id'] as $table_id ) {
-							$status = isset( $_POST['status'][ $table_id ] ) ? $_POST['status'][ $table_id ] : null;
+							$status = $_POST['status'][$table_id] ?? null;
 							if ( empty( $rank ) && $status ) {
 								$valid = false;
 							}
-							$team_id   = isset( $_POST['team_id'][ $table_id ] ) ? $_POST['team_id'][ $table_id ] : null;
-							$league_id = isset( $_POST['league_id'][ $table_id ] ) ? $_POST['league_id'][ $table_id ] : null;
-							$old_rank  = isset( $_POST['old_rank'][ $table_id ] ) ? $_POST['old_rank'][ $table_id ] : null;
-							$status    = isset( $_POST['status'][ $table_id ] ) ? $_POST['status'][ $table_id ] : null;
+							$team_id   = $_POST['team_id'][$table_id] ?? null;
+							$league_id = $_POST['league_id'][$table_id] ?? null;
+							$old_rank  = $_POST['old_rank'][$table_id] ?? null;
+							$status    = $_POST['status'][$table_id] ?? null;
 							if ( $js ) {
 								++$rank;
 							} else {
-								$rank = isset( $_POST['rank'][ $table_id ] ) ? $_POST['rank'][ $table_id ] : '';
+								$rank = $_POST['rank'][$table_id] ?? '';
 							}
 							$team            = new \stdClass();
 							$team->team_id   = $team_id;
@@ -613,11 +601,11 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 							if ( $result ) {
 								$racketmanager->set_message( __( 'Promotion and relegation actioned', 'racketmanager' ) );
 							} else {
-								$racketmanager->set_message( __( 'Error with promotion and relagation', 'racketmanager' ), true );
+								$racketmanager->set_message( __( 'Error with promotion and relegation', 'racketmanager' ), true );
 							}
 						}
 					} else {
-						$racketmanager->set_message( __( 'Promotion and relagation has already occurred', 'racketmanager' ), true );
+						$racketmanager->set_message( __( 'Promotion and relegation has already occurred', 'racketmanager' ), true );
 					}
 				}
 				// phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash

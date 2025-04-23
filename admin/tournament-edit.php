@@ -14,6 +14,7 @@ namespace Racketmanager;
 /** @var string  $form_action */
 /** @var object  $tournament */
 $is_invalid = false;
+$msg        = null;
 ?>
 <div class='container'>
 	<div class='row justify-content-end'>
@@ -415,7 +416,7 @@ $is_invalid = false;
 		</fieldset>
 		<?php do_action( 'racketmanager_tournament_edit_form', $tournament ); ?>
 
-		<input type="hidden" name="tournament_id" id="tournament_id" value="<?php echo esc_html( $tournament->id ); ?>" />
+		<input type="hidden" name="tournament_id" id="tournament_id" value="<?php echo empty( $tournament->id ) ? null : esc_html( $tournament->id ); ?>" />
 		<input type="hidden" name="updateLeague" value="tournament" />
 
 		<?php

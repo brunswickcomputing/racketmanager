@@ -7,6 +7,10 @@
 
 namespace Racketmanager;
 
+/** @var array  $order_of_play */
+/** @var array  $final_matches */
+/** @var object $tournament */
+/** @var string $tab */
 $num_matches = count( $final_matches );
 if ( 0 === intval( $tournament->num_courts ) ) {
 	$num_courts    = 1;
@@ -20,14 +24,14 @@ if ( '01:00:00' === $tournament->time_increment ) {
 }
 $column_width = floor( 12 / $num_courts );
 $match_length = strtotime( $tournament->time_increment );
-if ( ! is_array( $tournament->orderofplay ) || count( $tournament->orderofplay ) !== intval( $tournament->num_courts ) ) {
+if ( ! is_array( $tournament->order_of_play ) || count( $tournament->order_of_play ) !== intval( $tournament->num_courts ) ) {
 	for ( $i = 0; $i < $tournament->num_courts; $i++ ) {
-		$orderofplay[ $i ]['court']     = 'Court ' . ( $i + 1 );
-		$orderofplay[ $i ]['starttime'] = $tournament->starttime;
-		$orderofplay[ $i ]['matches']   = array();
+		$order_of_play[ $i ]['court']      = 'Court ' . ( $i + 1 );
+		$order_of_play[ $i ]['start_time'] = $tournament->start_time;
+		$order_of_play[ $i ]['matches']    = array();
 	}
 } else {
-	$orderofplay = $tournament->orderofplay;
+	$order_of_play = $tournament->order_of_play;
 }
 ?>
 <script type='text/javascript'>
@@ -38,7 +42,7 @@ jQuery(document).ready(function(){
 <div class="container">
 	<div class='row justify-content-end'>
 		<div class='col-auto racketmanager_breadcrumb'>
-			<a href='admin.php?page=racketmanager-tournaments'><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href='admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>'><?php echo esc_html( $tournament->name ); ?></a> &raquo; <?php esc_html_e( 'Tournament Planner', 'racketmanager' ); ?>
+			<a href="/wp-admin/admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>"><?php echo esc_html( $tournament->name ); ?></a> &raquo; <?php esc_html_e( 'Tournament Planner', 'racketmanager' ); ?>
 		</div>
 	</div>
 	<h1><?php echo esc_html( $tournament->name ); ?> - <?php esc_html_e( 'Plan', 'racketmanager' ); ?></h1>
@@ -78,22 +82,22 @@ jQuery(document).ready(function(){
 				<div class="row g-3">
 					<div class="col">
 						<div class="form-floating mb-3">
-							<input type="time" class="form-control" name="starttime" id="starttime" value="<?php echo esc_html( $tournament->starttime ); ?>" size="20" />
-							<label for="starttime"><?php esc_html_e( 'Start Time', 'racketmanager' ); ?></label>
+							<input type="time" class="form-control" name="startTime" id="startTime" value="<?php echo esc_html( $tournament->start_time ); ?>" />
+							<label for="startTime"><?php esc_html_e( 'Start Time', 'racketmanager' ); ?></label>
 						</div>
 					</div>
 					<div class="col">
 						<div class="form-floating mb-3">
-							<input type="time" class="form-control" name="timeincrement" id="timeincrement" value="<?php echo esc_html( $tournament->time_increment ); ?>" size="20" />
-							<label for="timeincrement"><?php esc_html_e( 'Time Increment', 'racketmanager' ); ?></label>
+							<input type="time" class="form-control" name="timeIncrement" id="timeIncrement" value="<?php echo esc_html( $tournament->time_increment ); ?>" />
+							<label for="timeIncrement"><?php esc_html_e( 'Time Increment', 'racketmanager' ); ?></label>
 						</div>
 					</div>
 				</div>
 				<div class="row g-3">
 					<div class="col-12 col-md-6">
 						<div class="form-floating mb-3">
-							<input type="number" class="form-control" name="numcourts" id="numcourts" value="<?php echo esc_html( $tournament->num_courts ); ?>" />
-							<label for="numcourts"><?php esc_html_e( 'Number of courts', 'racketmanager' ); ?></label>
+							<input type="number" class="form-control" name="numCourts" id="numCourts" value="<?php echo esc_html( $tournament->num_courts ); ?>" />
+							<label for="numCourts"><?php esc_html_e( 'Number of courts', 'racketmanager' ); ?></label>
 						</div>
 					</div>
 				</div>
@@ -168,7 +172,7 @@ jQuery(document).ready(function(){
 					<?php wp_nonce_field( 'racketmanager_tournament-planner' ); ?>
 					<input type="hidden" name="numFinals" value=<?php echo esc_html( $num_matches ); ?> />
 					<input type="hidden" name="numCourts" value=<?php echo esc_html( $tournament->num_courts ); ?> />
-					<input type="hidden" name="startTime" value=<?php echo esc_html( $tournament->starttime ); ?> />
+					<input type="hidden" name="startTime" value=<?php echo esc_html( $tournament->start_time ); ?> />
 					<input type="hidden" name="tournamentId" value=<?php echo esc_html( $tournament->id ); ?> />
 					<div class="row text-center mb-3">
 						<div class="col-2 col-sm-1"><?php esc_html_e( 'Time', 'racketmanager' ); ?></div>
@@ -179,10 +183,10 @@ jQuery(document).ready(function(){
 									?>
 									<div class="col-<?php echo esc_html( $column_width ); ?>">
 										<div class="form-group mb-2">
-											<input type="text" class="form-control" name="court[<?php echo esc_html( $i ); ?>]" value="<?php echo esc_html( $orderofplay[ $i ]['court'] ); ?>" />
+                                            <label for="court-<?php echo esc_html( $i ); ?>"></label><input type="text" class="form-control" name="court[<?php echo esc_html( $i ); ?>]" id="court-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $order_of_play[ $i ]['court'] ); ?>" />
 										</div>
 										<div class="form-group">
-											<input type="time" class="form-control" name="starttime[<?php echo esc_html( $i ); ?>]" value="<?php echo esc_html( $orderofplay[ $i ]['starttime'] ); ?>" />
+                                            <label for="startTime-<?php echo esc_html( $i ); ?>"></label><input type="time" class="form-control" name="startTime[<?php echo esc_html( $i ); ?>]" id="startTime-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $order_of_play[ $i ]['start_time'] ); ?>" />
 										</div>
 									</div>
 									<?php
@@ -193,8 +197,7 @@ jQuery(document).ready(function(){
 					</div>
 					<div class="mb-3">
 						<?php
-						$teams       = array( 'home', 'away' );
-						$start_time  = strtotime( $tournament->starttime );
+						$start_time  = strtotime( $tournament->start_time );
 						$time_offset = 0;
 						for ( $i = 0; $i < $max_schedules; $i++ ) {
 							$scheduled_players = array();
@@ -208,9 +211,9 @@ jQuery(document).ready(function(){
 									<div class="row">
 										<?php
 										for ( $c = 0; $c < $tournament->num_courts; $c++ ) {
-											if ( isset( $orderofplay[ $c ]['matches'][ $i ] ) ) {
+											if ( isset( $order_of_play[ $c ]['matches'][ $i ] ) ) {
 												$match_players = array();
-												$match_id      = ( $orderofplay[ $c ]['matches'][ $i ] );
+												$match_id      = ( $order_of_play[ $c ]['matches'][ $i ] );
 												$match         = get_match( $match_id );
 												if ( $match ) {
 													$match_players = match_add_players( $match_players, $match );
@@ -227,7 +230,7 @@ jQuery(document).ready(function(){
 														}
 													}
 													foreach ( $match_players as $player_id ) {
-														$player_found = array_search( $player_id, $scheduled_players, true );
+														$player_found = in_array( $player_id, $scheduled_players, true );
 														if ( false !== $player_found ) {
 															$player = get_player( $player_id );
 															if ( $player ) {

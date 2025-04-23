@@ -8,14 +8,18 @@
 
 namespace Racketmanager;
 
-$clubs = $racketmanager->get_clubs();
+/** @var array $clubs */
+/** @var int $club_id */
+/** @var string $status */
+/** @var array $player_requests */
 ?>
 <!-- Club Player Request Filter -->
 <form id="club-player-request-filter" method="get" action="" class="form-control mb-3">
 	<input type="hidden" name="page" value="racketmanager-players" />
 	<input type="hidden" name="view" value="requests" />
 	<div class="col-auto">
-		<select class="select" name="club" id="club">
+        <label for="club"></label>
+        <select class="select" name="club" id="club">
 			<option value="all"><?php esc_html_e( 'All clubs', 'racketmanager' ); ?></option>
 			<?php
 			foreach ( $clubs as $club ) {
@@ -25,7 +29,7 @@ $clubs = $racketmanager->get_clubs();
 			}
 			?>
 		</select>
-		<select class="select" name="status">
+        <label for="status"></label><select class="select" name="status" id="status">
 			<option value="all" <?php echo 'all' === $status ? 'selected' : ''; ?>><?php esc_html_e( 'All', 'racketmanager' ); ?></option>
 			<option value="outstanding" <?php echo 'outstanding' === $status ? 'selected' : ''; ?>><?php esc_html_e( 'Outstanding', 'racketmanager' ); ?></option>
 		</select>
@@ -38,25 +42,28 @@ $clubs = $racketmanager->get_clubs();
 
 	<div class="mb-3">
 		<!-- Bulk Actions -->
-		<select name="action" size="1">
-			<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
-			<option value="approve"><?php esc_html_e( 'Approve', 'racketmanager' ); ?></option>
-			<option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
-		</select>
-		<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doplayerrequest" id="doplayerrequest" class="btn btn-secondary action" />
+        <label>
+            <select name="action" id="action" class="form-control">
+                <option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
+                <option value="approve"><?php esc_html_e( 'Approve', 'racketmanager' ); ?></option>
+                <option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
+            </select>
+        </label>
+		<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doPlayerRequest" id="doPlayerRequest" class="btn btn-secondary action" />
 	</div>
 	<table class="table table-striped">
 		<thead class="table-dark">
 			<tr>
-				<th class="check-column"><input type="checkbox" name="checkAll" onclick="Racketmanager.checkAll(document.getElementById('club-player-request-filter'));" /></th>
+				<th class="check-column"><label for="checkALL"></label><input type="checkbox" name="checkAll" id="checkALL" onclick="Racketmanager.checkAll(document.getElementById('club-player-request-filter'));" /></th>
 				<th><?php esc_html_e( 'ID', 'racketmanager' ); ?></th>
 				<th><?php esc_html_e( 'Club', 'racketmanager' ); ?></th>
 				<th><?php esc_html_e( 'First Name', 'racketmanager' ); ?></th>
-				<th><?php esc_html_e( 'Surame', 'racketmanager' ); ?></th>
+				<th><?php esc_html_e( 'Surname', 'racketmanager' ); ?></th>
 				<th><?php esc_html_e( 'Gender', 'racketmanager' ); ?></th>
 				<th><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></th>
 				<th><?php esc_html_e( 'Requested', 'racketmanager' ); ?></th>
 				<th><?php esc_html_e( 'Completed', 'racketmanager' ); ?></th>
+                <th><?php esc_html_e( 'Removed', 'racketmanager' ); ?></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -64,8 +71,8 @@ $clubs = $racketmanager->get_clubs();
 			foreach ( $player_requests as $request ) {
 				?>
 				<tr>
-					<td class="check-column"><input type="checkbox" value="<?php echo esc_html( $request->id ); ?>" name="playerRequest[<?php echo esc_html( $request->id ); ?>]" /></<td>
-					<td><input type="hidden" id="club_id[<?php echo esc_html( $request->id ); ?>]" name="club_id[<?php echo esc_html( $request->id ); ?>]" value="<?php echo esc_html( $club->id ); ?>"/></<td>
+					<td class="check-column"><label for="playerRequest-<?php echo esc_html( $request->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $request->id ); ?>" name="playerRequest[<?php echo esc_html( $request->id ); ?>]" id="playerRequest-<?php echo esc_html( $request->id ); ?>" /></<td>
+                    <td><?php echo esc_html( $request->id ); ?></<td>
 					<td><?php echo esc_html( $request->club->shortcode ); ?></<td>
 					<td><?php echo esc_html( $request->player->firstname ); ?></<td>
 					<td><?php echo esc_html( $request->player->surname ); ?></<td>
@@ -73,6 +80,7 @@ $clubs = $racketmanager->get_clubs();
 					<td><?php echo esc_html( $request->player->btm ); ?></<td>
 					<td <?php echo empty( $request->requested_user ) ? null : 'title="' . esc_html__( 'Requested by', 'racketmanager' ) . ' ' . esc_html( $request->requested_user_name ) . '"'; ?>><?php echo esc_html( $request->requested_date ); ?></<td>
 					<td <?php echo empty( $request->created_user ) ? null : 'title="' . esc_html__( 'Created by', 'racketmanager' ) . ' ' . esc_html( $request->created_user_name ) . '"'; ?>><?php echo esc_html( $request->created_date ); ?></<td>
+                    <td <?php echo empty( $request->removed_user ) ? null : 'title="' . esc_html__( 'Removed by', 'racketmanager' ) . ' ' . esc_html( $request->removed_user_name ) . '"'; ?>><?php echo esc_html( $request->removed_date ); ?></<td>
 				</tr>
 				<?php
 			}

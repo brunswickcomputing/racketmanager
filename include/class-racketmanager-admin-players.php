@@ -27,8 +27,7 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 	/**
 	 * Display players page
 	 */
-	public function display_players_section() {
-		global $racketmanager;
+	public function display_players_section(): void {
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -39,8 +38,7 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 	/**
 	 * Display player errors page
 	 */
-	public function display_errors_page() {
-		global $racketmanager;
+	public function display_errors_page(): void {
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -54,7 +52,7 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 	/**
 	 * Display player requests page
 	 */
-	public function display_requests_page() {
+	public function display_requests_page(): void {
 		global $racketmanager;
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
@@ -62,43 +60,51 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 		} else {
 			$club_id = isset( $_GET['club'] ) ? intval( $_GET['club'] ) : null;
 			$status  = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : 'outstanding';
-			if ( isset( $_POST['doplayerrequest'] ) ) {
+			if ( isset( $_POST['doPlayerRequest'] ) ) {
 				if ( current_user_can( 'edit_teams' ) ) {
 					check_admin_referer( 'club-player-request-bulk' );
 					if ( isset( $_POST['playerRequest'] ) ) {
+						$msg = array();
 						foreach ( $_POST['playerRequest'] as $i => $player_request_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 							if ( 'approve' === $_POST['action'] ) {
 								if ( ! current_user_can( 'edit_teams' ) ) {
 									$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
-								} elseif ( isset( $_POST['club_id'][ $i ] ) ) {
-										$club = get_club( intval( $_POST['club_id'][ $i ] ) );
-										$club->approve_player_request( intval( $player_request_id ) );
+								} else {
+									$club_player = get_club_player( $player_request_id );
+									$club_player?->approve();
+									$msg[] = sprintf( __( 'Player %s has been approved for %s.', 'racketmanager' ), $club_player->player->display_name, $club_player->club->shortcode );
 								}
 							} elseif ( 'delete' === $_POST['action'] ) {
 								if ( ! current_user_can( 'edit_teams' ) ) {
 									$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 								} else {
-									$this->delete_player_request( intval( $player_request_id ) );
+									$club_player = get_club_player( $player_request_id );
+									$club_player?->remove();
+									$msg[] = sprintf( __( 'Player %s has been removed from %s.', 'racketmanager' ), $club_player->player->display_name, $club_player->club->shortcode );
 								}
 							}
 						}
+						$message = implode( '<br>', $msg );
+						$this->set_message( $message );
+						$this->printMessage();
 					}
 				} else {
 					$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 				}
 			}
 			$racketmanager_tab = 'requests';
-			$player_requests = $racketmanager->get_club_players(
+			$clubs             = $racketmanager->get_clubs();
+			$player_requests   = $racketmanager->get_club_players(
 				array(
 					'club'   => $club_id,
 					'status' => $status,
 					'type'   => 'player',
 					'orderby' => array(
-									   'requested_date' => 'DESC',
-									   'created_date'   => 'DESC',
-									   'club_id'        => 'ASC',
-									   'player_id'      => 'ASC',
-									   )
+						'requested_date' => 'DESC',
+						'created_date'   => 'DESC',
+						'club_id'        => 'ASC',
+						'player_id'      => 'ASC',
+						)
 				)
 			);
 			include_once RACKETMANAGER_PATH . 'admin/players/show-requests.php';
@@ -107,7 +113,7 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 	/**
 	 * Display players page
 	 */
-	public function display_players_page() {
+	public function display_players_page(): void {
 		global $racketmanager;
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
@@ -144,8 +150,7 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 				if ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
 					if ( current_user_can( 'edit_teams' ) ) {
 						check_admin_referer( 'player-bulk' );
-						$messages      = array();
-						$message_error = false;
+						$messages = array();
 						if ( isset( $_POST['player'] ) ) {
 							foreach ( $_POST['player'] as $player_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 								$player = get_player( $player_id );
@@ -153,7 +158,7 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 								$messages[] = $player->fullname . ' ' . __( 'deleted', 'racketmanager' );
 							}
 							$message = implode( '<br>', $messages );
-							$this->set_message( $message, $message_error );
+							$this->set_message( $message );
 						}
 					} else {
 						$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
@@ -178,12 +183,12 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 	/**
 	 * Display player page
 	 */
-	public function display_player_page() {
-		global $racketmanager;
+	public function display_player_page(): void {
 		if ( ! current_user_can( 'edit_teams' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
 		} else {
+			$player_id     = null;
 			$form_valid    = true;
 			$page_referrer = null;
 			if ( ! empty( $_POST ) ) {
@@ -191,7 +196,7 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 					$this->printMessage();
 				} else {
-					$page_referrer = isset( $_POST['page_referrer'] ) ? $_POST['page_referrer'] : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+					$page_referrer = $_POST['page_referrer'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					if ( isset( $_POST['updatePlayer'] ) ) {
 						$player_valid  = $this->validatePlayer();
 						if ( $player_valid[0] ) {
@@ -218,7 +223,7 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 									$player->set_wtn( $wtn );
 									$this->set_message( __( 'WTN set', 'racketmanager' ) );
 								} else {
-									$this->set_message( __( 'Error setting WTN', 'racketmanager' ), true );
+									$this->set_message( __( 'WTN not found', 'racketmanager' ), true );
 								}
 							} else {
 								$this->set_message( __( 'Player not found', 'racketmanager' ), true );
@@ -255,31 +260,24 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 	/**
 	 * Get player errors
 	 *
-	 * @param string $$message message (optional).
+	 * @param string|null $message message (optional).
 	 * @return array
 	 */
-	private function get_player_errors( $message = null ) {
+	private function get_player_errors( string $message = null ): array {
 		global $wpdb;
 		$search = null;
-		switch( $message ) {
-			case 'noplayer':
-				$code = 'Player not found';
-				break;
-			case 'nowtn':
-				$code = 'WTN not found';
-				break;
-			default:
-				$code = null;
-		}
+		$code = match ($message) {
+			'no_player' => 'Player not found',
+			'no_wtn'    => 'WTN not found',
+			default     => null,
+		};
 		if ( $code ) {
 			$search = $wpdb->prepare( 'AND `message` = %s', $code );
 		}
 		$player_errors = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			"SELECT `id` FROM {$wpdb->racketmanager_player_errors} WHERE 1 = 1 $search order by `player_id`"
+			"SELECT `id` FROM $wpdb->racketmanager_player_errors WHERE 1 = 1 $search order by `player_id`"
 		);
-
-		$i = 0;
 		foreach ( $player_errors as $i => $player_error ) {
 			$player_error        = get_player_error( $player_error->id );
 			$player_errors[ $i ] = $player_error;
@@ -292,7 +290,7 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 	 * @param object $player player object.
 	 * @return array
 	 */
-	private function get_wtn( $player ) {
+	private function get_wtn( object $player ): array {
 		$player_list = array( $player->ID );
 		$args = $this->set_wtn_env( $player_list );
 		$wtn  = array();

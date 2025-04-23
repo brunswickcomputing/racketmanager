@@ -7,7 +7,9 @@
 
 namespace Racketmanager;
 
-?><!-- Add Player -->
+/** @var array $players */
+?>
+<!-- Add Player -->
 <div class="mb-3">
 	<?php require_once RACKETMANAGER_PATH . '/admin/includes/player.php'; ?>
 </div>
@@ -47,7 +49,7 @@ namespace Racketmanager;
 		<div class="container">
 			<div id="notifyMessage"></div>
 			<div class="row table-header">
-				<div class="col-2 col-md-1 check-column"><input type="checkbox" name="checkAll" onclick="Racketmanager.checkAll(document.getElementById('player-action'));" /></div>
+				<div class="col-2 col-md-1 check-column"><label for="checkAll"></label><input type="checkbox" name="checkAll" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('player-action'));" /></div>
 				<div class="col-2 col-md-1 column-num">ID</div>
 				<div class="col-4 col-md-2"><?php esc_html_e( 'Name', 'racketmanager' ); ?></div>
 				<div class="col-2 col-md-1"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></div>
@@ -65,11 +67,11 @@ namespace Racketmanager;
 					<div class="row table-row <?php echo esc_html( $class ); ?>">
 						<div class="col-2 col-md-1 check-column">
 							<?php if ( empty( $player->removed_date ) ) { ?>
-								<input type="checkbox" value="<?php echo esc_html( $player->id ); ?>" name="player[<?php echo esc_html( $player->id ); ?>]" />
+                                <label for="player-<?php echo esc_html( $player->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $player->id ); ?>" name="player[<?php echo esc_html( $player->id ); ?>]" id="player-<?php echo esc_html( $player->id ); ?>" />
 							<?php } ?>
 						</div>
 						<div class="col-2 col-md-1 column-num"><?php echo esc_html( $player->id ); ?></div>
-						<div class="col-4 col-md-2"><a href="admin.php?page=racketmanager-players&amp;view=player&amp;player_id=<?php echo esc_html( $player->id ); ?>"><?php echo esc_html( $player->fullname ); ?></a></div>
+						<div class="col-4 col-md-2"><a href="/wp-admin/admin.php?page=racketmanager-players&amp;view=player&amp;player_id=<?php echo esc_html( $player->id ); ?>"><?php echo esc_html( $player->fullname ); ?></a></div>
 						<div class="col-2 col-md-1">
 							<button type="button" class="btn btn-secondary player-clubs" id="linkedClubs_<?php echo esc_html( $player->id ); ?>" data-bs-toggle="popover" data-bs-placement="left" data-bs-html="true">
 								<i class="passwordShow racketmanager-svg-icon">

@@ -20,12 +20,6 @@ namespace Racketmanager;
 final class RacketManager_Admin_Cup extends RacketManager_Admin {
 
 	/**
-	 * League_id the id of the current league.
-	 *
-	 * @var $league_id
-	 */
-	private $league_id;
-	/**
 	 * Constructor
 	 */
 	public function __construct() {
@@ -33,7 +27,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 	/**
 	 * Display cups page
 	 */
-	public function display_cups_page() {
+	public function display_cups_page(): void {
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -50,9 +44,10 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 	/**
 	 * Display cup season list
 	 */
-	public function display_cup_seasons_page() {
+	public function display_cup_seasons_page(): void {
 		global $racketmanager;
-		if ( isset( $_POST['doactionseason'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$competition = null;
+		if ( isset( $_POST['doActionSeason'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			if ( $competition_id ) {
 				$competition = get_competition( $competition_id );
@@ -77,7 +72,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 	/**
 	 * Display cup season overview
 	 */
-	public function display_cup_overview_page() {
+	public function display_cup_overview_page(): void {
 		if ( isset( $_GET['competition_id'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$competition_id = intval( $_GET['competition_id'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$competition    = get_competition( $competition_id );
@@ -112,7 +107,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 	/**
 	 * Display cup draw
 	 */
-	public function display_cup_draw_page() {
+	public function display_cup_draw_page(): void {
 		global $tab, $racketmanager;
 		//phpcs:disable WordPress.Security.NonceVerification.Recommended
 		$season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
@@ -137,7 +132,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 							}
 							$racketmanager->printMessage();
 						} else {
-							$tab = $league->championship->handle_admin_page( $league, $season ); //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+							$tab = $league->championship->handle_admin_page( $league ); //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 							if ( isset( $_POST['saveRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 								$this->league_manual_rank_teams( $league );
 								$racketmanager->printMessage();
@@ -150,7 +145,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 								$this->league_rating_points_rank_teams( $league );
 								$tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 							} elseif ( empty( $tab ) ) {
-								$tab = 'finalresults'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+								$tab = 'finalResults'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 							}
 						}
 						require RACKETMANAGER_PATH . 'admin/cup/draw.php';
@@ -162,7 +157,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 	/**
 	 * Display cup setup
 	 */
-	public function display_cup_setup_page() {
+	public function display_cup_setup_page(): void {
 		if ( ! current_user_can( 'edit_matches' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -180,6 +175,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 						if ( $competition ) {
 							$cup_season = $competition->seasons[ $season ];
 							if ( isset( $_POST['rounds'] ) ) {
+								$msg    = array();
 								$rounds = array();
 								foreach ( $_POST['rounds'] as $round ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 									if ( empty( $round['match_date'] ) ) {
@@ -218,15 +214,14 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 			} elseif ( isset( $_POST['rank'] ) ) {
 				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_calculate_ratings' ) ) {
 					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-					$this->printMessage();
 				} else {
 					$valid          = true;
 					$competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
 					$season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
 					$this->calculate_team_ratings( $competition_id, $season );
 					$this->set_message( __( 'Cup ratings set', 'racketmanager' ) );
-					$this->printMessage();
 				}
+				$this->printMessage();
 			}
 			$season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
 			$competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -240,7 +235,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 						$day_end      = date_format( $date_end, 'N' );
 						$day_adjust   = $day_end - 1;
 						$end_date     = RacketManager_Util::amend_date( $season_data['date_end'], $day_adjust, '-' );
-						$round_length = isset( $season_data['round_length'] ) ? $season_data['round_length'] : 7;
+						$round_length = $season_data['round_length'] ?? 7;
 						$i = 0;
 						foreach( $competition->finals as $final ) {
 							$r = $final['round'] - 1;
@@ -250,7 +245,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 								if ( $competition->fixed_match_dates ) {
 									$match_date = RacketManager_Util::amend_date( $end_date, $round_length, '-' );
 								} else {
-									$match_date = RacketManager_Util::amend_date( $season_data['date_end'], 7, '+' );
+									$match_date = RacketManager_Util::amend_date( $season_data['date_end'], 7 );
 								}
 							} elseif ( 0 === $r && $competition->fixed_match_dates ) {
 								$match_date = $competition->date_start;
@@ -269,7 +264,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 	/**
 	 * Display event setup
 	 */
-	public function display_setup_event_page() {
+	public function display_setup_event_page(): void {
 		global $racketmanager;
 		if ( ! current_user_can( 'edit_matches' ) ) {
 			$racketmanager->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
@@ -281,13 +276,13 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 					$racketmanager->printMessage();
 				} else {
 					$valid     = true;
-					$action    = isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) : null;
+					$action    = sanitize_text_field( wp_unslash( $_POST['action'] ) );
 					$league_id = isset( $_POST['league_id'] ) ? intval( $_POST['league_id'] ) : null;
 					$season    = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-					$rounds    = isset( $_POST['rounds'] ) ? $_POST['rounds'] : null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+					$rounds    = $_POST['rounds'] ?? null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					$league    = get_league( $league_id );
 					if ( $league ) {
-						$valid = $this->set_championship_matches( $league, $season, $rounds, $action );
+						$this->set_championship_matches( $league, $season, $rounds, $action );
 					}
 				}
 			} elseif ( isset( $_POST['rank'] ) ) {
@@ -299,7 +294,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 					$competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
 					$league_id      = isset( $_POST['league_id'] ) ? intval( $_POST['league_id'] ) : null;
 					$season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-					$this->calculate_team_ratings( $competition_id, $season, $league_id );
+					$this->calculate_team_ratings( $competition_id, $season );
 				}
 			}
 			$season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
@@ -355,12 +350,14 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 	/**
 	 * Display cup plan page
 	 */
-	public function display_cup_plan_page() {
+	public function display_cup_plan_page(): void {
 		global $racketmanager;
 		if ( ! current_user_can( 'edit_teams' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
 		} else {
+			$competition = null;
+			$season      = null;
 			if ( isset( $_POST['savePlan'] ) ) {
 				check_admin_referer( 'racketmanager_cup-planner' );
 				if ( isset( $_POST['competition_id'] ) ) {
@@ -369,10 +366,10 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 					if ( $competition ) {
 						$season = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
 						if ( $season ) {
-							$courts     = isset( $_POST['court'] ) ? $_POST['court'] : null;
-							$start_time = isset( $_POST['starttime'] ) ? $_POST['starttime'] : null;
-							$matches    = isset( $_POST['match'] ) ? $_POST['match'] : null;
-							$match_time = isset( $_POST['matchtime'] ) ? $_POST['matchtime'] : null;
+							$courts     = $_POST['court'] ?? null;
+							$start_time = $_POST['startTime'] ?? null;
+							$matches    = $_POST['match'] ?? null;
+							$match_time = $_POST['matchtime'] ?? null;
 							// phpcs:enable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 							$competition->save_plan( $season, $courts, $start_time, $matches, $match_time );
 						} else {
@@ -391,7 +388,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 					if ( $competition ) {
 						$season = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
 						if ( $season ) {
-							$matches = isset( $_POST['match'] ) ? $_POST['match'] : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+							$matches = $_POST['match'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 							$competition->reset_plan( $season, $matches );
 						}
 					}
@@ -406,9 +403,9 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 					if ( $competition ) {
 						$season = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
 						if ( $season ) {
-							$start_time     = isset( $_POST['starttime'] ) ? sanitize_text_field( wp_unslash( $_POST['starttime'] ) ) : null;
-							$num_courts     = isset( $_POST['numcourts'] ) ? intval( $_POST['numcourts'] ) : null;
-							$time_increment = isset( $_POST['timeincrement'] ) ? sanitize_text_field( wp_unslash( $_POST['timeincrement'] ) ) : null;
+							$start_time     = isset( $_POST['startTime'] ) ? sanitize_text_field( wp_unslash( $_POST['startTime'] ) ) : null;
+							$num_courts     = isset( $_POST['numCourts'] ) ? intval( $_POST['numCourts'] ) : null;
+							$time_increment = isset( $_POST['timeIncrement'] ) ? sanitize_text_field( wp_unslash( $_POST['timeIncrement'] ) ) : null;
 							$competition->update_plan( $season, $start_time, $num_courts, $time_increment );
 						} else {
 							$racketmanager->set_message( __( 'Season not specified', 'racketmanager' ), true );
@@ -471,18 +468,18 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 	/**
 	 * Display cup matches page
 	 */
-	public function display_cup_matches_page() {
+	public function display_cup_matches_page(): void {
 		global $competition;
 		if ( ! current_user_can( 'edit_matches' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
 		} else {
 			//phpcs:disable WordPress.Security.NonceVerification.Recommended
-			$finalkey       = isset( $_GET['final'] ) ? intval( $_GET['final'] ) : null;
+			$final_key       = isset( $_GET['final'] ) ? intval( $_GET['final'] ) : null;
 			$season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
 			$competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
 			$league_id      = isset( $_GET['league_id'] ) ? intval( $_GET['league_id'] ) : null;
-			$finalkey       = isset( $_GET['final'] ) ? sanitize_text_field( wp_unslash( $_GET['final'] ) ) : null;
+			$final_key       = isset( $_GET['final'] ) ? sanitize_text_field( wp_unslash( $_GET['final'] ) ) : null;
 			//phpcs:enable WordPress.Security.NonceVerification.Recommended
 			if ( $competition_id ) {
 				$competition = get_competition( $competition_id );
@@ -494,29 +491,29 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 							$single_cup_game = false;
 							$bulk            = false;
 							$matches         = array();
-							if ( $finalkey ) {
+							if ( $final_key ) {
 								$is_finals = true;
 								$mode      = 'edit';
 								$edit      = true;
 
-								$final           = $league->championship->get_finals( $finalkey );
+								$final           = $league->championship->get_finals( $final_key );
 								$num_first_round = $league->championship->num_teams_first_round;
 
 								$max_matches = $final['num_matches'];
 
 								/* translators: %s: round name */
-								$form_title = sprintf( __( 'Edit Matches - %s', 'racketmanager' ), $league->championship->get_final_name( $finalkey ) );
+								$form_title = sprintf( __( 'Edit Matches - %s', 'racketmanager' ), $league->championship->get_final_name( $final_key ) );
 								$match_args = array(
-									'final'   => $finalkey,
+									'final'   => $final_key,
 									'orderby' => array(
 										'id' => 'ASC',
 									),
 								);
-								if ( 'final' !== $finalkey && ! empty( $league->current_season['home_away'] ) && 'true' === $league->current_season['home_away'] ) {
+								if ( 'final' !== $final_key && ! empty( $league->current_season['home_away'] ) && 'true' === $league->current_season['home_away'] ) {
 									$match_args['leg'] = 1;
 								}
 								$matches      = $league->get_matches( $match_args );
-								$teams        = $league->championship->get_final_teams( $finalkey );
+								$teams        = $league->championship->get_final_teams( $final_key );
 								$submit_title = $form_title;
 							}
 							//phpcs:enable WordPress.Security.NonceVerification.Recommended
@@ -530,17 +527,17 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 	/**
 	 * Display cup match page
 	 */
-	public function display_cup_match_page() {
+	public function display_cup_match_page(): void {
 		if ( ! current_user_can( 'edit_matches' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
 		} else {
 			//phpcs:disable WordPress.Security.NonceVerification.Recommended
-			$finalkey       = isset( $_GET['final'] ) ? intval( $_GET['final'] ) : null;
+			$final_key       = isset( $_GET['final'] ) ? intval( $_GET['final'] ) : null;
 			$season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
 			$competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
 			$league_id      = isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null;
-			$finalkey       = isset( $_GET['final'] ) ? sanitize_text_field( wp_unslash( $_GET['final'] ) ) : null;
+			$final_key       = isset( $_GET['final'] ) ? sanitize_text_field( wp_unslash( $_GET['final'] ) ) : null;
 			$match_id       = isset( $_GET['edit'] ) ? intval( $_GET['edit'] ) : null;
 			//phpcs:enable WordPress.Security.NonceVerification.Recommended
 			if ( $competition_id ) {
@@ -562,15 +559,11 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 									$matches[0]      = $match;
 									$match_day       = $match->match_day;
 									$max_matches     = 1;
-									$final           = $league->championship->get_finals( $finalkey );
-									$final_teams     = $league->championship->get_final_teams( $final['key'], 'ARRAY' );
+									$final           = $league->championship->get_finals( $final_key );
+									$final_teams     = $league->championship->get_final_teams( $final['key'] );
 									if ( is_numeric( $match->home_team ) ) {
 										$home_team = get_team( $match->home_team );
-										if ( $home_team ) {
-											$home_title = $home_team->title;
-										} else {
-											$home_title = null;
-										}
+										$home_title = $home_team?->title;
 									} else {
 										$home_team = $final_teams[ $match->home_team ];
 										if ( $home_team ) {
@@ -581,11 +574,7 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 									}
 									if ( is_numeric( $match->away_team ) ) {
 										$away_team = get_team( $match->away_team );
-										if ( $away_team ) {
-											$away_title = $away_team->title;
-										} else {
-											$away_title = null;
-										}
+										$away_title = $away_team?->title;
 									} else {
 										$away_team = $final_teams[ $match->away_team ];
 										if ( $away_team ) {

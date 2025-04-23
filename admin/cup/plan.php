@@ -7,8 +7,14 @@
 
 namespace Racketmanager;
 
+/** @var array $final_matches */
+/** @var object $competition */
+/** @var object $cup_season */
+/** @var string $tab */
+/** @var string $season */
+/** @var array $order_of_play */
 $num_matches = count( $final_matches );
-if ( 0 === intval( count( $competition->events ) ) ) {
+if ( 0 === count( $competition->events ) ) {
 	$num_courts    = 1;
 	$max_schedules = 0;
 } else {
@@ -19,15 +25,15 @@ if ( '01:00:00' === $cup_season->time_increment ) {
 	$max_schedules = $max_schedules * 2;
 }
 $column_width = floor( 12 / $num_courts );
-$match_length = strtotime( $cup_season->time_increment );
+$match_length = empty( $cup_season->time_increment ) ? 0 : strtotime( $cup_season->time_increment );
 if ( ! is_array( $cup_season->orderofplay ) || count( $cup_season->orderofplay ) !== intval( $cup_season->num_courts ) ) {
 	for ( $i = 0; $i < $cup_season->num_courts; $i++ ) {
-		$orderofplay[ $i ]['court']     = 'Court ' . ( $i + 1 );
-		$orderofplay[ $i ]['starttime'] = $cup_season->starttime;
-		$orderofplay[ $i ]['matches']   = array();
+		$order_of_play[ $i ]['court']     = 'Court ' . ( $i + 1 );
+		$order_of_play[ $i ]['starttime'] = $cup_season->starttime;
+		$order_of_play[ $i ]['matches']   = array();
 	}
 } else {
-	$orderofplay = $cup_season->orderofplay;
+	$order_of_play = $cup_season->orderofplay;
 }
 ?>
 <script type='text/javascript'>
@@ -38,7 +44,7 @@ jQuery(document).ready(function(){
 <div class="container">
 	<div class='row justify-content-end'>
 		<div class='col-auto racketmanager_breadcrumb'>
-			<a href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s"><?php echo esc_html( ucfirst( $competition->type ) ); ?>s</a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&amp;view=cup&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <?php echo esc_html( $season ); ?>
+            <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s"><?php echo esc_html( ucfirst( $competition->type ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <?php esc_html_e( 'Plan', 'racketmanager' ); ?>
 		</div>
 	</div>
 	<h1><?php echo esc_html( $competition->name ); ?> <?php echo esc_html( $season ); ?> - <?php esc_html_e( 'Plan', 'racketmanager' ); ?></h1>
@@ -79,22 +85,22 @@ jQuery(document).ready(function(){
 				<div class="row g-3">
 					<div class="col">
 						<div class="form-floating mb-3">
-							<input type="time" class="form-control" name="starttime" id="starttime" value="<?php echo esc_html( $cup_season->starttime ); ?>" size="20" />
-							<label for="starttime"><?php esc_html_e( 'Start Time', 'racketmanager' ); ?></label>
+							<input type="time" class="form-control" name="startTime" id="startTime" value="<?php echo esc_html( $cup_season->starttime ); ?>" size="20" />
+							<label for="startTime"><?php esc_html_e( 'Start Time', 'racketmanager' ); ?></label>
 						</div>
 					</div>
 					<div class="col">
 						<div class="form-floating mb-3">
-							<input type="time" class="form-control" name="timeincrement" id="timeincrement" value="<?php echo esc_html( $cup_season->time_increment ); ?>" size="20" />
-							<label for="timeincrement"><?php esc_html_e( 'Time Increment', 'racketmanager' ); ?></label>
+							<input type="time" class="form-control" name="timeIncrement" id="timeIncrement" value="<?php echo esc_html( $cup_season->time_increment ); ?>" size="20" />
+							<label for="timeIncrement"><?php esc_html_e( 'Time Increment', 'racketmanager' ); ?></label>
 						</div>
 					</div>
 				</div>
 				<div class="row g-3">
 					<div class="col-12 col-md-6">
 						<div class="form-floating mb-3">
-							<input type="number" class="form-control" name="numcourts" id="numcourts" value="<?php echo esc_html( $cup_season->num_courts ); ?>" />
-							<label for="numcourts"><?php esc_html_e( 'Number of courts', 'racketmanager' ); ?></label>
+							<input type="number" class="form-control" name="numCourts" id="numCourts" value="<?php echo esc_html( $cup_season->num_courts ); ?>" />
+							<label for="numCourts"><?php esc_html_e( 'Number of courts', 'racketmanager' ); ?></label>
 						</div>
 					</div>
 				</div>
@@ -181,10 +187,10 @@ jQuery(document).ready(function(){
 									?>
 									<div class="col-<?php echo esc_html( $column_width ); ?>">
 										<div class="form-group mb-2">
-											<input type="text" class="form-control" name="court[<?php echo esc_html( $i ); ?>]" value="<?php echo esc_html( $orderofplay[ $i ]['court'] ); ?>" />
+                                            <label for="court-<?php echo esc_html( $i ); ?>"></label><input type="text" class="form-control" name="court[<?php echo esc_html( $i ); ?>]" id="court-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $order_of_play[ $i ]['court'] ); ?>" />
 										</div>
 										<div class="form-group">
-											<input type="time" class="form-control" name="starttime[<?php echo esc_html( $i ); ?>]" value="<?php echo esc_html( $orderofplay[ $i ]['starttime'] ); ?>" />
+                                            <label for="startTime-<?php echo esc_html( $i ); ?>"></label><input type="time" class="form-control" name="startTime[<?php echo esc_html( $i ); ?>]" id="startTime-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $order_of_play[ $i ]['starttime'] ); ?>" />
 										</div>
 									</div>
 									<?php
@@ -195,8 +201,7 @@ jQuery(document).ready(function(){
 					</div>
 					<div class="mb-3">
 						<?php
-						$teams       = array( 'home', 'away' );
-						$start_time  = strtotime( $cup_season->starttime );
+						$start_time  = empty( $cup_season->starttime ) ? 0 : strtotime( $cup_season->starttime );
 						$time_offset = 0;
 						for ( $i = 0; $i < $max_schedules; $i++ ) {
 							$scheduled_players = array();
@@ -210,9 +215,9 @@ jQuery(document).ready(function(){
 									<div class="row">
 										<?php
 										for ( $c = 0; $c < $cup_season->num_courts; $c++ ) {
-											if ( isset( $orderofplay[ $c ]['matches'][ $i ] ) ) {
+											if ( isset( $order_of_play[ $c ]['matches'][ $i ] ) ) {
 												$match_players = array();
-												$match_id      = ( $orderofplay[ $c ]['matches'][ $i ] );
+												$match_id      = ( $order_of_play[ $c ]['matches'][ $i ] );
 												$match         = get_match( $match_id );
 												if ( $match ) {
 													$match_players = match_add_players( $match_players, $match );
@@ -229,7 +234,7 @@ jQuery(document).ready(function(){
 														}
 													}
 													foreach ( $match_players as $player_id ) {
-														$player_found = array_search( $player_id, $scheduled_players, true );
+														$player_found = in_array($player_id, $scheduled_players, true);
 														if ( false !== $player_found ) {
 															$player = get_player( $player_id );
 															if ( $player ) {

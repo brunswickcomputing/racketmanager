@@ -11,7 +11,7 @@
 
 namespace Racketmanager;
 
-require_once 'includes/member-account-update.php';
+require_once RACKETMANAGER_PATH . 'templates/includes/member-account-update.php';
 
 get_header();
 ?>

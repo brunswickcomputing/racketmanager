@@ -18,213 +18,219 @@ final class Racketmanager_User {
 	 *
 	 * @var int
 	 */
-	public $ID;
+	public int $ID = 0;
 	/**
 	 * ID.
 	 *
 	 * @var int
 	 */
-	public $id;
+	public int $id;
 	/**
 	 * Email address.
 	 *
 	 * @var string
 	 */
-	public $email;
+	public string $email = '';
 	/**
 	 * User Email address.
 	 *
 	 * @var string
 	 */
-	public $user_email;
+	public string $user_email = '';
 	/**
 	 * Fullname - join of first name and surname.
 	 *
 	 * @var string
 	 */
-	public $fullname;
+	public string $fullname;
 	/**
 	 * Display name.
 	 *
 	 * @var string
 	 */
-	public $display_name;
+	public string $display_name = '';
 	/**
 	 * Date player created.
 	 *
 	 * @var string
 	 */
-	public $created_date;
+	public string $created_date;
 	/**
 	 * Date player created.
 	 *
 	 * @var string
 	 */
-	public $user_registered;
+	public string $user_registered = '';
 	/**
 	 * First name.
 	 *
 	 * @var string
 	 */
-	public $firstname;
+	public mixed $firstname;
 	/**
 	 * Surname.
 	 *
 	 * @var string
 	 */
-	public $surname;
+	public mixed $surname;
 	/**
 	 * Gender.
 	 *
 	 * @var string
 	 */
-	public $gender;
+	public mixed $gender;
 	/**
 	 * Type.
 	 *
 	 * @var string
 	 */
-	public $type;
+	public mixed $type;
 	/**
 	 * LTA Membership Number.
 	 *
 	 * @var int
 	 */
-	public $btm;
+	public mixed $btm;
 	/**
 	 * Year of birth.
 	 *
 	 * @var int
 	 */
-	public $year_of_birth;
+	public mixed $year_of_birth;
 	/**
 	 * Age.
 	 *
-	 * @var int
+	 * @var string|int
 	 */
-	public $age;
+	public string|int $age;
 	/**
 	 * Contact Number.
 	 *
 	 * @var string
 	 */
-	public $contactno;
+	public mixed $contactno;
 	/**
 	 * Removed date.
 	 *
 	 * @var string
 	 */
-	public $removed_date;
+	public mixed $removed_date;
 	/**
 	 * Removed user.
 	 *
 	 * @var int
 	 */
-	public $removed_user;
+	public mixed $removed_user;
 	/**
 	 * Locked indicator.
 	 *
 	 * @var boolean
 	 */
-	public $locked;
+	public mixed $locked;
 	/**
 	 * Locked date.
 	 *
 	 * @var string
 	 */
-	public $locked_date;
+	public mixed $locked_date;
 	/**
 	 * Locked user.
 	 *
 	 * @var int
 	 */
-	public $locked_user;
+	public mixed $locked_user;
 	/**
-	 * Locked user name.
+	 * Locked username.
 	 *
 	 * @var string
 	 */
-	public $locked_user_name;
+	public string $locked_user_name;
 	/**
 	 * System record.
 	 *
 	 * @var string
 	 */
-	public $system_record;
+	public mixed $system_record;
 	/**
 	 * Matches.
 	 *
 	 * @var array
 	 */
-	public $matches = array();
+	public array $matches = array();
 	/**
 	 * Statistics.
 	 *
 	 * @var array
 	 */
-	public $statistics = array();
+	public array $statistics = array();
 	/**
 	 * User password.
 	 *
 	 * @var string
 	 */
-	public $user_pass;
+	public string $user_pass;
 	/**
 	 * User nicename.
 	 *
 	 * @var string
 	 */
-	public $user_nicename;
+	public string $user_nicename;
 	/**
 	 * User url.
 	 *
-	 * @var url
+	 * @var string
 	 */
-	public $user_url;
+	public string $user_url;
 	/**
 	 * User activation_key.
 	 *
 	 * @var string
 	 */
-	public $user_activation_key;
+	public string $user_activation_key;
 	/**
 	 * User login.
 	 *
 	 * @var string
 	 */
-	public $user_login;
+	public string $user_login;
 	/**
 	 * User status.
 	 *
 	 * @var string
 	 */
-	public $user_status;
+	public string $user_status;
 	/**
 	 * User optins.
 	 *
 	 * @var array
 	 */
-	public $opt_ins;
+	public mixed $opt_ins;
+	public ?string $message;
+	public string $update_result;
+	public array $err_flds;
+	public array $err_msgs;
+	public string $password;
+	public string $re_password;
+
 	/**
 	 * Retrieve user instance
 	 *
 	 * @param int $user_id user id.
 	 */
-	public static function get_instance( $user_id ) {
+	public static function get_instance( int $user_id ): false|object {
 		if ( ! $user_id ) {
 			return false;
 		}
 		$user = wp_cache_get( $user_id, 'users' );
-		$user = new Racketmanager_User( $user );
-		return $user;
+		return new Racketmanager_User( $user );
 	}
 
 	/**
 	 * Constructor
 	 *
-	 * @param object $user User object.
+	 * @param object|null $user User object.
 	 */
-	public function __construct( $user = null ) {
+	public function __construct( object $user = null ) {
 		if ( ! is_null( $user ) ) {
 			foreach ( $user as $key => $value ) {
 				$this->$key = $value;
@@ -265,9 +271,11 @@ final class Racketmanager_User {
 	 * @param object $user updated details.
 	 * @return object||false
 	 */
-	public function update( $user ) {
+	public function update( object $user ): object {
 		global $racketmanager;
-		$valid = true;
+		$valid   = true;
+		$err_fld = null;
+		$err_msg = null;
 		if ( empty( $user->email ) ) {
 			$valid = false;
 			$err_fld[] = 'username';
@@ -324,10 +332,9 @@ final class Racketmanager_User {
 	 * @param object $user updated details.
 	 * @return boolean
 	 */
-	private function set_details( $user ) {
+	private function set_details( object $user ): bool {
 		$updates = false;
 		$updated = array();
-		$updated_user = array();
 		if ( $this->user_email !== $user->email ) {
 			$updates               = true;
 			$this->user_email      = $user->email;
@@ -377,7 +384,7 @@ final class Racketmanager_User {
 		$opt_in_choices = Racketmanager_Util::get_email_opt_ins();
 		$opt_ins        = array();
 		foreach ( $opt_in_choices as $opt_in_choice => $opt_in_desc ) {
-			$user_opt_in[ $opt_in_choice ] = empty( $user->opt_ins[ $opt_in_choice ] ) ? false : true;
+			$user_opt_in[ $opt_in_choice ] = !empty($user->opt_ins[$opt_in_choice]);
 			if ( in_array( strval( $opt_in_choice ), $this->opt_ins, true ) ) {
 				if ( empty( $user_opt_in[ $opt_in_choice ] ) ) {
 					$updates = true;
@@ -407,8 +414,7 @@ final class Racketmanager_User {
 				update_user_meta( $this->ID, $key, $value );
 			} elseif ( 'first_name' === $key ) {
 				update_user_meta( $this->ID, $key, $value );
-				$user_data[ $key ] = $value;
-				$display_name      = $value . ' ' . sanitize_text_field( $this->surname );
+				$display_name = $value . ' ' . sanitize_text_field( $this->surname );
 				wp_update_user(
 					array(
 						'ID'           => $this->ID,
@@ -419,8 +425,7 @@ final class Racketmanager_User {
 				$this->fullname     = $display_name;
 			} elseif ( 'last_name' === $key ) {
 				update_user_meta( $this->ID, $key, $value );
-				$user_data[ $key ] = $value;
-				$display_name      = sanitize_text_field( $this->firstname ) . ' ' . $value;
+				$display_name = sanitize_text_field( $this->firstname ) . ' ' . $value;
 				wp_update_user(
 					array(
 						'ID'           => $this->ID,
@@ -447,9 +452,9 @@ final class Racketmanager_User {
 	 * Get messages function
 	 *
 	 * @param array $args search arguments.
-	 * @return array||false
+	 * @return array|int
 	 */
-	public function get_messages( $args ) {
+	public function get_messages( array $args ): array|int {
 		global $wpdb;
 
 		$defaults = array(
@@ -457,7 +462,7 @@ final class Racketmanager_User {
 			'status'  => false,
 			'orderby' => array( 'date' => 'DESC' ),
 		);
-		$args     = array_merge( $defaults, (array) $args );
+		$args     = array_merge( $defaults, $args );
 		$count    = $args['count'];
 		$status   = $args['status'];
 		$orderby  = $args['orderby'];
@@ -496,7 +501,7 @@ final class Racketmanager_User {
 		$order = $orderby_string;
 
 		if ( $count ) {
-			$sql = "SELECT COUNT(ID) FROM {$wpdb->racketmanager_messages} WHERE `userid` = $this->ID";
+			$sql = "SELECT COUNT(ID) FROM $wpdb->racketmanager_messages WHERE `userid` = $this->ID";
 			if ( '' !== $search ) {
 				$sql .= " AND $search";
 			}
@@ -506,7 +511,7 @@ final class Racketmanager_User {
 			);
 		}
 
-		$sql = "SELECT `id` FROM {$wpdb->racketmanager_messages} WHERE `userid` = $this->ID";
+		$sql = "SELECT `id` FROM $wpdb->racketmanager_messages WHERE `userid` = $this->ID";
 		if ( '' !== $search ) {
 			$sql .= " AND $search";
 		}
@@ -536,7 +541,7 @@ final class Racketmanager_User {
 	 * @param string $type type of messages to delete.
 	 * @return int||error object
 	 */
-	public function delete_messages( $type ) {
+	public function delete_messages( string $type ): int {
 		global $wpdb;
 		return $wpdb->delete( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->racketmanager_messages,
@@ -547,15 +552,14 @@ final class Racketmanager_User {
 	/**
 	 * Get favourites function
 	 *
-	 * @param array $favourites_type optional favourites search criteria.
+	 * @param array|null $favourites_type optional favourites search criteria.
 	 * @return array
 	 */
-	public function get_favourites( $favourites_type = null ) {
+	public function get_favourites( array $favourites_type = null ): array {
 		$favourites_types = array( 'competition', 'league', 'club', 'team', 'player' );
+		$favourites       = array();
 		if ( $favourites_type ) {
-			if ( false === array_search( $favourites_type, $favourites_types, true ) ) {
-				return null;
-			} else {
+			if ( in_array( $favourites_type, $favourites_types, true ) ) {
 				$favourites = $this->get_favourites_for_type( $favourites_type );
 			}
 		} else {
@@ -574,7 +578,7 @@ final class Racketmanager_User {
 	 * @param string $favourites_type type of favourite.
 	 * @return array
 	 */
-	private function get_favourites_for_type( $favourites_type ) {
+	private function get_favourites_for_type( string $favourites_type ): array {
 		$userid          = $this->ID;
 		$meta_key        = 'favourite-' . $favourites_type;
 		$meta_favourites = get_user_meta( $userid, $meta_key );

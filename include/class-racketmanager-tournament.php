@@ -29,9 +29,9 @@ final class Racketmanager_Tournament {
 	/**
 	 * Competition id
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public int $competition_id;
+	public ? int $competition_id;
 	/**
 	 * Competition
 	 *
@@ -41,9 +41,9 @@ final class Racketmanager_Tournament {
 	/**
 	 * Tournament season
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public string $season;
+	public ? string $season;
 	/**
 	 * Number of courts available for matches
 	 *
@@ -119,9 +119,9 @@ final class Racketmanager_Tournament {
 	/**
 	 * Venue
 	 *
-	 * @var int/null
+	 * @var int|null
 	 */
-	public int $venue;
+	public ? int $venue;
 	/**
 	 * Venue name
 	 *
@@ -139,7 +139,7 @@ final class Racketmanager_Tournament {
 	 *
 	 * @var string|array|null
 	 */
-	public string|array|null $order_of_play;
+	public string|array|null $order_of_play = array();
 	/**
 	 * Time increment for finals day matches
 	 *
@@ -378,7 +378,7 @@ final class Racketmanager_Tournament {
 				}
 			}
 			if ( empty( $this->venue ) ) {
-				$this->venue      = '';
+				$this->venue      = null;
 				$this->venue_name = 'TBC';
 			} else {
 				$this->venue_name = get_club( $tournament->venue )->shortcode;

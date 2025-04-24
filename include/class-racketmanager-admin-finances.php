@@ -27,8 +27,7 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 	/**
 	 * Display finances page
 	 */
-	public function display_finances_page() {
-		global $racketmanager;
+	public function display_finances_page(): void {
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -39,11 +38,8 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 	/**
 	 * Display club invoices page
 	 */
-	public function display_club_invoices_page() {
-		global $racketmanager;
-
+	public function display_club_invoices_page(): void {
 		$players = '';
-
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -61,12 +57,11 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 					$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 				} else {
 					$messages      = array();
-					$message_error = false;
 					if ( isset( $_POST['invoice'] ) ) {
 						foreach ( $_POST['invoice'] as $invoice_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 							$invoice = get_invoice( $invoice_id );
 							if ( $invoice->status !== $_POST['action'] ) {
-								$status = isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) : null;
+								$status = sanitize_text_field( wp_unslash( $_POST['action'] ) );
 								if ( $status ) {
 									$invoice->set_status( $status );
 									$messages[] = __( 'Invoice', 'racketmanager' ) . ' ' . $invoice->invoice_number . ' ' . __( 'updated', 'racketmanager' );
@@ -74,7 +69,7 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 							}
 						}
 						$message = implode( '<br>', $messages );
-						$this->set_message( $message, $message_error );
+						$this->set_message( $message );
 					}
 				}
 			}
@@ -98,11 +93,8 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 	/**
 	 * Display player invoices page
 	 */
-	public function display_player_invoices_page() {
-		global $racketmanager;
-
+	public function display_player_invoices_page(): void {
 		$players = '';
-
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -120,12 +112,11 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 					$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 				} else {
 					$messages      = array();
-					$message_error = false;
 					if ( isset( $_POST['invoice'] ) ) {
 						foreach ( $_POST['invoice'] as $invoice_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 							$invoice = get_invoice( $invoice_id );
 							if ( $invoice->status !== $_POST['action'] ) {
-								$status = isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) : null;
+								$status = sanitize_text_field( wp_unslash( $_POST['action'] ) );
 								if ( $status ) {
 									$invoice->set_status( $status );
 									$messages[] = __( 'Invoice', 'racketmanager' ) . ' ' . $invoice->invoice_number . ' ' . __( 'updated', 'racketmanager' );
@@ -133,7 +124,7 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 							}
 						}
 						$message = implode( '<br>', $messages );
-						$this->set_message( $message, $message_error );
+						$this->set_message( $message );
 					}
 				}
 			}
@@ -157,11 +148,8 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 	/**
 	 * Display charges page
 	 */
-	public function display_charges_page() {
-		global $racketmanager;
-
+	public function display_charges_page(): void {
 		$players = '';
-
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -179,9 +167,9 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 					$charge    = get_charge( $charge_id );
 					if ( $charge ) {
 						$schedule_name   = 'rm_send_invoices';
-						$schedule_args[] = intval( $charge_id );
+						$schedule_args[] = $charge_id;
 						Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
-						$charge->send_invoices( $charge_id );
+						$charge->send_invoices();
 					}
 				}
 			} elseif ( isset( $_POST['doChargesDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
@@ -226,13 +214,12 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 	/**
 	 * Display charges page
 	 */
-	public function display_charge_page() {
-		global $racketmanager, $racketmanager_shortcodes;
-
+	public function display_charge_page(): void {
 		if ( ! current_user_can( 'edit_teams' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
 		} else {
+			$charges = null;
 			if ( isset( $_POST['saveCharges'] ) ) {
 				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-charges' ) ) {
 					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
@@ -289,7 +276,7 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 			}
 			$this->printMessage();
 			$edit = false;
-			if ( isset( $_GET['charges'] ) || ( isset( $charges->id ) && '' !== $charges->id ) ) {
+			if ( isset( $_GET['charges'] ) || ! empty( $charges->id ) ) {
 				if ( isset( $_GET['charges'] ) ) {
 					$charges_id = intval( $_GET['charges'] );
 				} else {
@@ -320,9 +307,8 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 	/**
 	 * Display invoice page
 	 */
-	public function display_invoice_page() {
+	public function display_invoice_page(): void {
 		global $racketmanager;
-
 		if ( ! current_user_can( 'edit_teams' ) ) {
 			$racketmanager->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$racketmanager->printMessage();
@@ -371,15 +357,15 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 	 * Get Invoice
 	 *
 	 * @param int $charge charge used by invoice.
-	 * @param int $club club for who invocie is created.
+	 * @param int $club club for whom invoice is created.
 	 * @return int $invoice_id
 	 */
-	private function get_invoice( $charge, $club ) {
+	private function get_invoice( int $charge, int $club ): int {
 		global $wpdb;
 
 		return $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT `id` FROM {$wpdb->racketmanager_invoices} WHERE `charge_id` = %d AND `club_id` = %d LIMIT 1",
+				"SELECT `id` FROM $wpdb->racketmanager_invoices WHERE `charge_id` = %d AND `club_id` = %d LIMIT 1",
 				$charge,
 				$club
 			)

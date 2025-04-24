@@ -53,18 +53,18 @@ function drop(ev) {
   const inputId = targetId.replace('schedule','match');
   const input = document.getElementById(inputId);
   input.value=id.replace('match-','');
-  const sourceinputId = sourceId.replace('schedule','match');
-  if (sourceinputId != '') {
-    const sourceinput = document.getElementById(sourceinputId);
-    sourceinput.value='';
+  const sourceInputId = sourceId.replace('schedule','match');
+  if (sourceInputId !== '') {
+    const sourceInput = document.getElementById(sourceInputId);
+    sourceInput.value='';
   }
 }
 const inputs = document.querySelectorAll('.matchId');
 inputs.forEach(input => {
-	if (input.value != '') {
+	if (input.value !== '') {
 		let match='match-' + input.value;
-		let matchschedule=document.getElementById(input.parentElement.id);
+		let matchSchedule=document.getElementById(input.parentElement.id);
 		let draggable = document.getElementById(match);
-		matchschedule.appendChild(draggable);
+		matchSchedule.appendChild(draggable);
 	}
 });

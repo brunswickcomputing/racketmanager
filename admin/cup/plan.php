@@ -133,7 +133,7 @@ jQuery(document).ready(function(){
 						}
 						?>
 						<div class="col-3 mb-3">
-							<div class="btn btn-<?php echo esc_attr( $btn_type ); ?> final-match" name="match-<?php echo esc_html( $match->id ); ?>" id="match-<?php echo esc_html( $match->id ); ?>" draggable="true">
+							<div class="btn btn-<?php echo esc_attr( $btn_type ); ?> finals-match" name="match-<?php echo esc_html( $match->id ); ?>" id="match-<?php echo esc_html( $match->id ); ?>" draggable="true">
 								<div class="fw-bold">
 									<?php echo esc_html( $match->league->title ); ?>
 								</div>

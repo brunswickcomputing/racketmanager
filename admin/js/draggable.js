@@ -1,4 +1,4 @@
-const matches = document.querySelectorAll('.final-match');
+const matches = document.querySelectorAll('.finals-match');
 matches.forEach(match => {
   match.addEventListener('dragstart', dragStart);
   match.addEventListener('dragend', dragEnd);
@@ -24,14 +24,14 @@ function dragEnd(ev) {
 }
 function dragEnter(ev) {
   ev.preventDefault();
-  if (jQuery(this).children('.final-match').length) {
+  if (jQuery(this).children('.finals-match').length) {
     return;
   }
   ev.target.classList.add('drag-over');
 }
 function dragOver(ev) {
   ev.preventDefault();
-  if (jQuery(this).children('.final-match').length) {
+  if (jQuery(this).children('.finals-match').length) {
     return;
   }
   ev.target.classList.add('drag-over');
@@ -46,7 +46,7 @@ function drop(ev) {
   const draggable = document.getElementById(id);
   const sourceId = draggable.parentElement.id;
   draggable.classList.remove('hide');
-  if (jQuery(this).children('.final-match').length) {
+  if (jQuery(this).children('.finals-match').length) {
     return;
   }
   ev.target.appendChild(draggable);

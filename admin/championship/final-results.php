@@ -7,20 +7,21 @@
 
 namespace Racketmanager;
 
+/** @var object $league */
 ?>
 <div class="championship-block">
 	<div class="container draw">
 		<div class="row">
 			<?php
 			$class = null;
-			foreach ( $league->championship->get_finals() as $key => $final ) {
+			foreach ( $league->championship->get_finals() as $final ) {
 				$class = ( 'alternate' === $class ) ? '' : 'alternate';
 				?>
-				<div class="finalround <?php echo esc_html( $class ); ?>">
+				<div class="final-round <?php echo esc_html( $class ); ?>">
 					<div class="roundName">
 						<?php echo esc_html( $final['name'] ); ?>
 					</div>
-					<div class="container roundmatches">
+					<div class="container round-matches">
 						<?php
 						if ( $final['num_matches'] < 4 ) {
 							$sm_size = $final['num_matches'];
@@ -31,7 +32,7 @@ namespace Racketmanager;
 						}
 
 						?>
-						<div class="row row-cols-1 row-cols-sm-<?php echo esc_html( $sm_size ); ?> row-cols-lg-<?php echo esc_html( $lg_size ); ?> finalmatches justify-content-center">
+						<div class="row row-cols-1 row-cols-sm-<?php echo esc_html( $sm_size ); ?> row-cols-lg-<?php echo esc_html( $lg_size ); ?> final-matches justify-content-center">
 							<?php
 							$matches = $league->get_matches(
 								array(
@@ -39,9 +40,9 @@ namespace Racketmanager;
 									'orderby' => array( 'id' => 'ASC' ),
 								)
 							);
-							foreach ( $matches as $i => $match ) {
+							foreach ( $matches as $match ) {
 								?>
-								<div class="finalmatch">
+								<div class="final-match">
 									<div class="row">
 										<?php
 										if ( isset( $match ) ) {
@@ -73,24 +74,34 @@ namespace Racketmanager;
 											<div class="col-2 col-sm-2 score">
 												<?php
 												if ( null !== $match->home_points && null !== $match->away_points ) {
-													$match->score = sprintf( '%d:%d', $match->home_points, $match->away_points );
+													$match->score = sprintf( '%d-%d', $match->home_points, $match->away_points );
 													?>
 													<strong><?php echo esc_html( $match->score ); ?></strong>
-												<?php } else { ?>
+												    <?php
+                                                } else {
+                                                    ?>
 													-
-												<?php } ?>
+												    <?php
+                                                }
+                                                ?>
 											</div>
 											<div title="<?php echo esc_html( $away_tip ); ?>" class="col-5 col-sm-5 team team-right <?php echo esc_html( $away_class ); ?>">
 												<?php echo esc_html( $away_team ); ?>
 											</div>
 										</div>
-									<?php } ?>
+									    <?php
+                                        }
+                                        ?>
 								</div>
-							<?php } ?>
+							    <?php
+                            }
+                            ?>
 						</div>
 					</div>
 				</div>
-			<?php } ?>
+			    <?php
+            }
+            ?>
 		</div>
 	</div>
 </div>

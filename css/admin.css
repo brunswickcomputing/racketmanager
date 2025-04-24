@@ -587,12 +587,12 @@ span.error {
     opacity: .4;
     pointer-events: none;
 }
-.finalmatch {
+.final-match {
   float: left;
   min-height: 100px;
   font-size: 0.8em;
 }
-.roundmatches {
+.round-matches {
   display: inline-block;
 }
 .winner {
@@ -607,7 +607,7 @@ span.error {
 .team-right {
   text-align: left;
 }
-.finalround {
+.final-round {
   border: solid;
   margin: 5px;
 }

@@ -799,13 +799,13 @@ final class Racketmanager_Player {
 	 * Get matches for player
 	 *
 	 * @param object|null $grouping source of matches.
-	 * @param string $season season for matches.
+	 * @param string|null $season season for matches.
 	 * @param string $match_source source of matches - either 'league' / 'event' / 'competition'.
 	 * @param int|null $period optional time period for matches.
 	 * @param string|null $type match type.
 	 * @return array of matches.
 	 */
-	public function get_matches(?object $grouping, string $season, string $match_source, int $period = null, string $type = null ): array {
+	public function get_matches( ?object $grouping, ?string $season, string $match_source, int $period = null, string $type = null ): array {
 		global $racketmanager;
 		$statistics = array();
 		if ( 'league' === $match_source ) {

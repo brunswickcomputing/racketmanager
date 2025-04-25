@@ -16,58 +16,59 @@ final class Racketmanager_Player_Error {
 	/**
 	 * Id
 	 *
-	 * @var int
+	 * @var int|false
 	 */
-	public $id;
+	public int|false $id;
 	/**
 	 * Player id
 	 *
 	 * @var int
 	 */
-	public $player_id;
+	public int $player_id;
 	/**
 	 * Status
 	 *
 	 * @var int
 	 */
-	public $status;
+	public int $status;
 	/**
 	 * Message
 	 *
 	 * @var string
 	 */
-	public $message;
+	public string $message;
 	/**
 	 * Created date
 	 *
 	 * @var string
 	 */
-	public $created_date;
+	public string $created_date;
 	/**
 	 * Updated date
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $updated_date;
+	public ?string $updated_date;
 	/**
 	 * Updated user
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $udated_user;
+	public ?string $updated_user;
 	/**
 	 * Player
 	 *
-	 * @var object
+	 * @var object|null
 	 */
-	public $player = null;
+	public null|object $player = null;
+
 	/**
 	 * Retrieve player error instance
 	 *
-	 * @param int    $player_error_id player error id.
-	 * @return object
+	 * @param int $player_error_id player error id.
+	 * @return object|false
 	 */
-	public static function get_instance( $player_error_id ) {
+	public static function get_instance( int $player_error_id ): object|false {
 		global $wpdb;
 		if ( ! $player_error_id ) {
 			return false;
@@ -76,7 +77,7 @@ final class Racketmanager_Player_Error {
 		if ( ! $player_error ) {
 			$player_error = $wpdb->get_row(
 			   $wpdb->prepare(
-					"SELECT `id`, `player_id`, `status`, `created_date`, `updated_date`, `updated_user`, `message` FROM {$wpdb->racketmanager_player_errors} WHERE id = %d",
+					"SELECT `id`, `player_id`, `status`, `created_date`, `updated_date`, `updated_user`, `message` FROM $wpdb->racketmanager_player_errors WHERE id = %d",
 					$player_error_id,
 				)
 			);
@@ -91,9 +92,9 @@ final class Racketmanager_Player_Error {
 	/**
 	 * Constructor
 	 *
-	 * @param object $player_error Player Error object.
+	 * @param object|null $player_error Player Error object.
 	 */
-	public function __construct( $player_error = null ) {
+	public function __construct( object $player_error = null ) {
 		if ( ! is_null( $player_error ) ) {
 			foreach ( $player_error as $key => $value ) {
 				$this->$key = $value;
@@ -112,7 +113,7 @@ final class Racketmanager_Player_Error {
 	/**
 	 * Add player error
 	 */
-	private function add() {
+	private function add(): false|int {
 		global $wpdb, $racketmanager;
 		$valid   = true;
 		$err_msg = array();
@@ -125,9 +126,12 @@ final class Racketmanager_Player_Error {
 			$err_msg[] = __( 'Message is required', 'racketmanager' );
 		}
 		if ( $valid ) {
+			if ( empty( $this->status ) ) {
+				$this->status = 0;
+			}
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"INSERT INTO {$wpdb->racketmanager_player_errors} (`player_id`, `message`, `status`, `created_date`) VALUES (%d, %s, %d, NOW())",
+					"INSERT INTO $wpdb->racketmanager_player_errors (`player_id`, `message`, `status`, `created_date`) VALUES (%d, %s, %d, NOW())",
 					$this->player_id,
 					$this->message,
 					$this->status,
@@ -144,14 +148,14 @@ final class Racketmanager_Player_Error {
 	/**
 	 * Set player error status
 	 *
-	 * @param int    $status status.
+	 * @param int $status status.
 	 */
-	public function set_status( $status ) {
+	public function set_status( int $status ): void {
 		global $wpdb;
 		$this->status = $status;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_player_errors} SET `status` = %d WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_player_errors SET `status` = %d WHERE `id` = %d",
 				$this->status,
 				$this->id
 			)
@@ -160,12 +164,12 @@ final class Racketmanager_Player_Error {
 	/**
 	 * Delete player error
 	 */
-	public function delete() {
+	public function delete(): void {
 		global $wpdb, $racketmanager;
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_player_errors} WHERE `id` = %d",
+				"DELETE FROM $wpdb->racketmanager_player_errors WHERE `id` = %d",
 				$this->id
 			)
 		);

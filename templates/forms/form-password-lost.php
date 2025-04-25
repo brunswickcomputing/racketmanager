@@ -10,6 +10,7 @@ namespace Racketmanager;
 $email_error   = false;
 $email_message = '';
 $valid         = true;
+/** @var array $vars */
 if ( count( $vars['errors'] ) > 0 ) {
 	$valid = false;
 	foreach ( $vars['error_codes'] as $error_code ) {
@@ -35,7 +36,7 @@ if ( count( $vars['errors'] ) > 0 ) {
 ?>
 <div class="row justify-content-center">
 	<div class="col-12">
-		<h1><?php echo esc_html_e( 'Reset Password', 'racketmanager' ); ?></h1>
+		<h1><?php esc_html_e( 'Reset Password', 'racketmanager' ); ?></h1>
 		<?php
 		if ( ! $valid ) {
 			?>
@@ -59,7 +60,7 @@ if ( count( $vars['errors'] ) > 0 ) {
 		} else {
 			?>
 			<div class="form-info"><?php esc_html_e( "Enter your email address and click 'Send'. You will receive a link to create a new password", 'racketmanager' ); ?></div>
-			<form id="lostpasswordform" action="<?php echo esc_url( wp_lostpassword_url() ); ?>" method="post">
+			<form id="lostPasswordForm" action="<?php echo esc_url( wp_lostpassword_url() ); ?>" method="post">
 				<div class="form-floating mb-3">
 					<input type="email" class="form-control
 					<?php
@@ -83,7 +84,7 @@ if ( count( $vars['errors'] ) > 0 ) {
 						?>
 					</div>
 				</div>
-				<div class="resetpass-submit">
+				<div class="reset-pass-submit">
 					<button type="submit" class="btn btn-primary"><?php esc_html_e( 'Send', 'racketmanager' ); ?></button>
 				</div>
 			</form>

@@ -1227,15 +1227,15 @@ label.hidden {
 		font-weight: 400;
 }
 input#resetpassButton:disabled,
-input#memberaccount-button:disabled {
+input#memberAccountButton:disabled {
 	cursor: not-allowed;
 }
 input#resetpassButton:hover:disabled,
-input#memberaccount-button:hover:disabled {
+input#memberAccountButton:hover:disabled {
 	color: white;
 	background-color: var(--e-global-color-global_color_1);
 }
-.resetpass-submit {
+.reset-pass-submit {
 	display: flex;
 	justify-content: flex-end;
 }

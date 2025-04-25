@@ -10,8 +10,9 @@ namespace Racketmanager;
 $password_error     = false;
 $password_2_error   = false;
 $password_message   = '';
-$password_2_message = '';
 $error_found        = false;
+/** @var string $login_error_msg */
+/** @var array $vars */
 if ( count( $vars['errors'] ) > 0 ) {
 	$error_found     = true;
 	$login_error_msg = __( 'Error in password reset', 'racketmanager' );
@@ -35,7 +36,7 @@ if ( count( $vars['errors'] ) > 0 ) {
 <div class="row justify-content-center">
 	<div id="tabs-login" class="col-12">
 		<h1><?php esc_html_e( 'Reset Password', 'racketmanager' ); ?></h1>
-		<form name="resetpassform" id="resetpassform" action="<?php echo esc_url( site_url( 'wp-login.php?action=resetpass' ) ); ?>" method="post" autocomplete="off">
+		<form name="reset-pass-form" id="reset-pass-form" action="<?php echo esc_url( site_url( 'wp-login.php?action=resetpass' ) ); ?>" method="post" autocomplete="off">
 			<?php wp_nonce_field( 'racketmanager_reset-password', 'racketmanager_nonce' ); ?>
 			<input type="hidden" id="user_login" name="rp_login" value="<?php echo esc_attr( $vars['login'] ); ?>" />
 			<input type="hidden" name="rp_key" value="<?php echo esc_attr( $vars['key'] ); ?>" />
@@ -98,14 +99,9 @@ if ( count( $vars['errors'] ) > 0 ) {
 					}
 					?>
 					">
-					<?php
-					if ( $password_2_message ) {
-						echo esc_html( $password_2_message );
-					}
-					?>
 				</div>
 			</div>
-			<div class="resetpass-submit">
+			<div class="reset-pass-submit">
 				<button id="resetpassButton" class="btn btn-primary"><?php esc_html_e( 'Reset Password', 'racketmanager' ); ?></button>
 			</div>
 			<div class="form-group mt-3">

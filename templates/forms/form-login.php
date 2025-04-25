@@ -58,27 +58,18 @@ jQuery(document).ready(function(){
 			<?php
 			foreach ( $vars['error_codes'] as $error_code ) {
 				switch ( $error_code ) {
+					case 'empty_username':
 					case 'invalid_username':
 						$username_error   = true;
 						$username_message = Racketmanager_Util::get_error_message( $error_code );
 						break;
-					case 'empty_username':
-						$username_error   = true;
-						$username_message = Racketmanager_Util::get_error_message( $error_code );
-						break;
+					case 'incorrect_password':
 					case 'empty_password':
 						$password_error   = true;
 						$password_message = Racketmanager_Util::get_error_message( $error_code );
 						break;
-					case 'incorrect_password':
-						$password_error   = true;
-						$password_message = Racketmanager_Util::get_error_message( $error_code );
-						break;
-					case 'email':
-						$email_error   = true;
-						$email_message = Racketmanager_Util::get_error_message( $error_code );
-						break;
 					case 'email_exists':
+					case 'email':
 						$email_error   = true;
 						$email_message = Racketmanager_Util::get_error_message( $error_code );
 						break;
@@ -94,11 +85,8 @@ jQuery(document).ready(function(){
 						$surname_error   = true;
 						$surname_message = Racketmanager_Util::get_error_message( $error_code );
 						break;
-					case 'invalidkey':
-						$other_error   = true;
-						$error_message = Racketmanager_Util::get_error_message( $error_code );
-						break;
 					case 'security':
+					case 'invalidkey':
 						$other_error   = true;
 						$error_message = Racketmanager_Util::get_error_message( $error_code );
 						break;

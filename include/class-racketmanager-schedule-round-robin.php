@@ -19,31 +19,11 @@ final class Racketmanager_Schedule_Round_Robin {
 	 *
 	 * @var string
 	 */
-	public $currency;
-	/**
-	 * Is live indicator
-	 *
-	 * @var boolean
-	 */
-	public $is_live = false;
-	/**
-	 * Api_publishable_key
-	 *
-	 * @var string
-	 */
-	public $api_publishable_key;
-	/**
-	 * Api_psecret_key
-	 *
-	 * @var string
-	 */
-	public $api_secret_key;
-	/**
-	 * Api endpoint secret
-	 *
-	 * @var string
-	 */
-	public $api_endpoint_key;
+	public string $currency;
+	private int $num_teams;
+	private array $teams;
+	private int $half;
+
 	/**
 	 * Constructor
 	 */
@@ -52,17 +32,15 @@ final class Racketmanager_Schedule_Round_Robin {
 	/**
 	 * Generate
 	 *
-	 * @param int     $num_teams number of teams.
-	 * @param int     $num_rounds numer of rounds.
+	 * @param int $num_teams number of teams.
+	 * @param int     $num_rounds number of rounds.
 	 * @param boolean $home_away home away indicator.
 	 * @return array of rounds
 	 */
-	public function generate( $num_teams, $num_rounds, $home_away ) {
+	public function generate(int $num_teams, int $num_rounds, bool $home_away ): array {
 		if ( $num_teams % 2 !== 0 ) {
 			++$num_teams;
 		}
-		$this->num_rounds = $num_rounds;
-		$this->home_away  = $home_away;
 		$this->num_teams  = $num_teams;
 		$this->teams      = range( 1, $num_teams );
 		$this->half       = (int)($this->num_teams / 2);
@@ -72,7 +50,7 @@ final class Racketmanager_Schedule_Round_Robin {
 		// Generate the 1st Round
 		$round = $this->generate_round( $round_num, $indexes );
 		$rounds[ $round_num - 1 ] = array( 'fixtures' => $round );
-		if ( $this->home_away ) {
+		if ( $home_away ) {
 			$rounds[ $round_num + $num_rounds - 1 ] = array( 'fixtures' => $this->set_reverse_round( $round ) );
 		}
 		// Generate the remaining rounds
@@ -87,7 +65,7 @@ final class Racketmanager_Schedule_Round_Robin {
 			// Generate the round
 			$round = $this->generate_round( $round_num, $indexes );
 			$rounds[ $round_num - 1 ] = array( 'fixtures' => $round );
-			if ( $this->home_away ) {
+			if ( $home_away ) {
 				$rounds[ $round_num + $num_rounds - 1 ] = array( 'fixtures' => $this->set_reverse_round( $round ) );
 			}
 		}
@@ -96,11 +74,11 @@ final class Racketmanager_Schedule_Round_Robin {
 	/**
 	 * Generate Individual round
 	 *
-	 * @param int   $round round number.
+	 * @param int $round round number.
 	 * @param array $indexes index of teams.
 	 * @return array of fixtures
 	 */
-	private function generate_round( $round, $indexes ) {
+	private function generate_round(int $round, array $indexes ): array {
 		$fixtures    = [];
 		$start       = 0;
 		$fixture_num = 1;
@@ -127,10 +105,10 @@ final class Racketmanager_Schedule_Round_Robin {
 	/**
 	 * set reverse round
 	 *
-	 * @param array $round round detils.
+	 * @param array $round round details.
 	 * @return array of fixtures
 	 */
-	private function set_reverse_round( $round ) {
+	private function set_reverse_round( array $round ): array {
 		$reverse_fixtures = array();
 		foreach ( $round as $fixture_num => $fixture ) {
 			$home = $fixture['home'];

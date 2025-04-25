@@ -28,9 +28,9 @@ $column_width = floor( 12 / $num_courts );
 $match_length = empty( $cup_season->time_increment ) ? 0 : strtotime( $cup_season->time_increment );
 if ( ! is_array( $cup_season->orderofplay ) || count( $cup_season->orderofplay ) !== intval( $cup_season->num_courts ) ) {
 	for ( $i = 0; $i < $cup_season->num_courts; $i++ ) {
-		$order_of_play[ $i ]['court']     = 'Court ' . ( $i + 1 );
-		$order_of_play[ $i ]['starttime'] = $cup_season->starttime;
-		$order_of_play[ $i ]['matches']   = array();
+		$order_of_play[ $i ]['court']      = 'Court ' . ( $i + 1 );
+		$order_of_play[ $i ]['start_time'] = $cup_season->starttime;
+		$order_of_play[ $i ]['matches']    = array();
 	}
 } else {
 	$order_of_play = $cup_season->orderofplay;
@@ -190,7 +190,7 @@ jQuery(document).ready(function(){
                                             <label for="court-<?php echo esc_html( $i ); ?>"></label><input type="text" class="form-control" name="court[<?php echo esc_html( $i ); ?>]" id="court-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $order_of_play[ $i ]['court'] ); ?>" />
 										</div>
 										<div class="form-group">
-                                            <label for="startTime-<?php echo esc_html( $i ); ?>"></label><input type="time" class="form-control" name="startTime[<?php echo esc_html( $i ); ?>]" id="startTime-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $order_of_play[ $i ]['starttime'] ); ?>" />
+                                            <label for="startTime-<?php echo esc_html( $i ); ?>"></label><input type="time" class="form-control" name="startTime[<?php echo esc_html( $i ); ?>]" id="startTime-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $order_of_play[ $i ]['start_time'] ); ?>" />
 										</div>
 									</div>
 									<?php

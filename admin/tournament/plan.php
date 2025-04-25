@@ -27,7 +27,7 @@ $match_length = strtotime( $tournament->time_increment );
 if ( ! is_array( $tournament->order_of_play ) || count( $tournament->order_of_play ) !== intval( $tournament->num_courts ) ) {
 	for ( $i = 0; $i < $tournament->num_courts; $i++ ) {
 		$order_of_play[ $i ]['court']      = 'Court ' . ( $i + 1 );
-		$order_of_play[ $i ]['start_time'] = $tournament->start_time;
+		$order_of_play[ $i ]['start_time'] = $tournament->starttime;
 		$order_of_play[ $i ]['matches']    = array();
 	}
 } else {

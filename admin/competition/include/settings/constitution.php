@@ -7,13 +7,16 @@
 
 namespace Racketmanager;
 
-$tab_name = 'constitution';
+/** @var object $competition */
+$tab_name   = 'constitution';
+$is_invalid = false;
+$msg        = null;
 ?>
 <div class="form-control">
 	<?php
 	if ( 'league' === $competition->type ) {
 		?>
-		<div class="row gx-3 mb-3">
+		<fieldset class="row gx-3 mb-3">
 			<legend class=""><?php esc_html_e( 'Size limits', 'racketmanager' ); ?></legend>
 			<div class="col-md-6 mb-3 mb-md-0">
 				<div class="form-floating">
@@ -22,7 +25,7 @@ $tab_name = 'constitution';
 						$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 						$is_invalid = true;
 						$msg_id     = array_search( 'max_teams', $racketmanager->error_fields, true );
-						$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 					}
 					?>
 					<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="max_teams" id="max_teams" placeholder="<?php esc_html_e( 'Max teams', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->max_teams ) ? esc_html( $competition->config->max_teams ) : null; ?>" />
@@ -45,7 +48,7 @@ $tab_name = 'constitution';
 						$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 						$is_invalid = true;
 						$msg_id     = array_search( 'teams_per_club', $racketmanager->error_fields, true );
-						$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 					}
 					?>
 					<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="teams_per_club" id="teams_per_club" placeholder="<?php esc_html_e( 'Club teams', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->teams_per_club ) ? esc_html( $competition->config->teams_per_club ) : null; ?>" />
@@ -61,11 +64,11 @@ $tab_name = 'constitution';
 					?>
 				</div>
 			</div>
-		</div>
+		</fieldset>
 		<?php
 	} elseif ( 'tournament' === $competition->type ) {
 		?>
-		<div class="row gx-3 mb-3">
+		<fieldset class="row gx-3 mb-3">
 			<legend class=""><?php esc_html_e( 'Size limits', 'racketmanager' ); ?></legend>
 			<div class="col-md-6 mb-3 mb-md-0">
 				<div class="form-floating">
@@ -74,7 +77,7 @@ $tab_name = 'constitution';
 						$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 						$is_invalid = true;
 						$msg_id     = array_search( 'num_entries', $racketmanager->error_fields, true );
-						$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 					}
 					?>
 					<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_entries" id="num_entries" placeholder="<?php esc_html_e( 'Max number of entries', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->num_entries ) ? esc_html( $competition->config->num_entries ) : null; ?>" />
@@ -90,14 +93,14 @@ $tab_name = 'constitution';
 					?>
 				</div>
 			</div>
-		</div>
+		</fieldset>
 		<?php
 	}
 	?>
 	<?php
 	if ( 'league' === $competition->type ) {
 		?>
-		<div class="row gx-3 mb-3">
+		<fieldset class="row gx-3 mb-3">
 			<legend class=""><?php esc_html_e( 'Promotion/relegation', 'racketmanager' ); ?></legend>
 			<div class="col-md-6 mb-3 mb-md-0">
 				<div class="form-floating">
@@ -106,7 +109,7 @@ $tab_name = 'constitution';
 						$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 						$is_invalid = true;
 						$msg_id     = array_search( 'teams_prom_relg', $racketmanager->error_fields, true );
-						$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 					}
 					?>
 					<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="teams_prom_relg" id="teams_prom_relg" placeholder="<?php esc_html_e( 'Promoted/Relegated teams', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->teams_prom_relg ) ? esc_html( $competition->config->teams_prom_relg ) : null; ?>" />
@@ -129,7 +132,7 @@ $tab_name = 'constitution';
 						$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 						$is_invalid = true;
 						$msg_id     = array_search( 'lowest_promotion', $racketmanager->error_fields, true );
-						$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 					}
 					?>
 					<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="lowest_promotion" id="lowest_promotion" placeholder="<?php esc_html_e( 'Lowest promotion', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->lowest_promotion ) ? esc_html( $competition->config->lowest_promotion ) : null; ?>" />
@@ -145,11 +148,11 @@ $tab_name = 'constitution';
 					?>
 				</div>
 			</div>
-		</div>
+		</fieldset>
 		<?php
 	}
 	?>
-	<div class="row gx-3 mb-3">
+	<fieldset class="row gx-3 mb-3">
 		<legend class=""><?php esc_html_e( 'Ranking', 'racketmanager' ); ?></legend>
 		<div class="col-md-6 mb-3 mb-md-0">
 			<div class="form-floating">
@@ -159,7 +162,7 @@ $tab_name = 'constitution';
 					$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 					$is_invalid = true;
 					$msg_id     = array_search( 'team_ranking', $racketmanager->error_fields, true );
-					$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 				}
 				?>
 				<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="team_ranking" id="team_ranking" >
@@ -184,8 +187,8 @@ $tab_name = 'constitution';
 				?>
 			</div>
 		</div>
-	</div>
-	<div class="row gx-3 mb-3">
+	</fieldset>
+	<fieldset class="row gx-3 mb-3">
 		<legend class=""><?php esc_html_e( 'Points', 'racketmanager' ); ?></legend>
 		<div class="col-md-6">
 			<div class="form-floating">
@@ -195,7 +198,7 @@ $tab_name = 'constitution';
 					$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 					$is_invalid = true;
 					$msg_id     = array_search( 'point_rule', $racketmanager->error_fields, true );
-					$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 				}
 				?>
 				<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="point_rule" id="point_rule" >
@@ -220,5 +223,5 @@ $tab_name = 'constitution';
 				?>
 			</div>	
 		</div>
-	</div>
+	</fieldset>
 </div>

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Racketmanager
  * Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
- * Description: Manage and present racketsports league and tournament results.
+ * Description: Manage and present racket sports league and tournament results.
  * Version: 8.45.0
  * Author: Paul Moffat
  * Text Domain: racketmanager
@@ -52,8 +52,8 @@ class RacketmanagerMain {
 
 		load_plugin_textdomain( 'racketmanager', false, 'racketmanager/languages' );
 
-		register_activation_hook( __FILE__, array( 'Racketmanager_Activator', 'activate' ) );
-		register_deactivation_hook( __FILE__, array( 'Racketmanager_Activator', 'deactivate' ) );
+		register_activation_hook( __FILE__, array( 'RacketManager\Racketmanager_Activator', 'activate' ) );
+		register_deactivation_hook( __FILE__, array( 'RacketManager\Racketmanager_Activator', 'deactivate' ) );
 		add_action( 'plugins_loaded', array( 'RacketManager\RacketManager', 'get_instance' ) );
 
 		if ( is_admin() ) {
@@ -69,7 +69,7 @@ class RacketmanagerMain {
 			ob_start();
 		}
 	}
-	private function define_tables() {
+	private function define_tables(): void {
 		global $wpdb;
 		$wpdb->racketmanager                      = $wpdb->prefix . 'racketmanager_leagues';
 		$wpdb->racketmanager_table                = $wpdb->prefix . 'racketmanager_table';

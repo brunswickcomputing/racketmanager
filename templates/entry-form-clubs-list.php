@@ -12,6 +12,7 @@
 
 namespace Racketmanager;
 
+/** @var array $clubs */
 ?>
 <div class="container">
 	<?php
@@ -35,7 +36,7 @@ namespace Racketmanager;
 						?>
 						<div class="row mb-2 row-list">
 							<div class="col-3 col-md-1">
-								<a href="<?php echo esc_attr( seo_url( $club->shortcode ) ); ?>/" class="btn btn-primary" role="button"><?php echo esc_html_e( 'Enter', 'racketmanager' ); ?></a>
+								<a href="<?php echo esc_attr( seo_url( $club->shortcode ) ); ?>/" class="btn btn-primary" role="button"><?php esc_html_e( 'Enter', 'racketmanager' ); ?></a>
 							</div>
 							<div class="col-6">
 								<span class=""><?php echo esc_html( $club->shortcode ); ?></span>

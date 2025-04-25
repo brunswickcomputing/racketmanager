@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var array $order_of_play */
 $num_courts = count( $order_of_play['courts'] );
 if ( $num_courts ) {
 	$col_width = floor( 12 / $num_courts );
@@ -86,13 +87,13 @@ if ( 2 === intval( $col_width ) ) {
 									?>
 								</div>
 								<div class="col-10">
-									<div class="carousel" id="orderofplay-carousel" data-bs-wrap="false">
+									<div class="carousel" id="order-of-play-carousel" data-bs-wrap="false">
 										<div class="court-navigation">
-											<button class="carousel-control-prev" type="button" data-bs-target="#orderofplay-carousel" data-bs-slide="prev">
+											<button class="carousel-control-prev" type="button" data-bs-target="#order-of-play-carousel" data-bs-slide="prev">
 												<span class="carousel-control-prev-icon" aria-hidden="true"></span>
 												<span class="visually-hidden">Previous</span>
 											</button>
-											<button class="carousel-control-next" type="button" data-bs-target="#orderofplay-carousel" data-bs-slide="next">
+											<button class="carousel-control-next" type="button" data-bs-target="#order-of-play-carousel" data-bs-slide="next">
 												<span class="carousel-control-next-icon" aria-hidden="true"></span>
 												<span class="visually-hidden">Next</span>
 											</button>

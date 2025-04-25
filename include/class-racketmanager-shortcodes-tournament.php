@@ -698,29 +698,42 @@ class Racketmanager_Shortcodes_Tournament extends Racketmanager_Shortcodes {
 			return $this->return_error( $msg );
 		}
 		$order_of_play           = array();
-		$order_of_play['times']  = array();
-		$order_of_play['courts'] = array();
-		foreach ($tournament->order_of_play as $courts ) {
-			$order_of_play['courts'][ $courts['court'] ] = array();
-			foreach ( $courts['matches'] as $match_id ) {
-				$final_match = new \stdClass();
+		$times  = array();
+		$courts = array();
+		foreach ($tournament->order_of_play as $final_courts ) {
+			$court = $final_courts['court'];
+			$courts[ $court ] = array();
+			foreach ( $final_courts['matches'] as $match_id ) {
 				if ( $match_id ) {
-					$match                 = get_match( $match_id );
-					$final_match->id       = $match_id;
-					$final_match->time     = $match->hour . ':' . $match->minutes;
-					$final_match->league   = $match->league->title;
-					$final_match->location = $match->location;
-					$final_match->winner   = $match->winner_id;
-
-					$time = $final_match->time;
-					if ( ! in_array( $time, $order_of_play['times'], true ) ) {
-						$order_of_play['times'][] = $time;
+					$match = get_match( $match_id );
+					if ( $match ) {
+						$final_match           = new \stdClass();
+						$final_match->id       = $match_id;
+						$final_match->time     = $match->hour . ':' . $match->minutes;
+						$final_match->league   = $match->league->title;
+						$final_match->location = $match->location;
+						$final_match->winner   = $match->winner_id;
+						$time                  = $final_match->time;
+						if ( ! in_array( $time, $times, true ) ) {
+							$times[] = $time;
+						}
+						$order_of_play['match_time'][ $time ][ $court ] = $final_match;
+						// now just add the row data.
+						$courts[ $court ][ $time ][] = $final_match;
 					}
-					// now just add the row data.
-					$order_of_play['courts'][ $courts['court'] ][ $time ][] = $final_match;
 				}
 			}
 		}
+		foreach ( $times as $time ) {
+			foreach ( $courts as $court => $court_matches ) {
+				if ( ! isset( $court_matches[ $time ] ) ) {
+					$courts[ $court ][ $time ] = array();
+				}
+				ksort( $courts[ $court ] );
+			}
+		}
+		$order_of_play['courts'] = $courts;
+		$order_of_play['times']  = $times;
 		$filename = ( ! empty( $template ) ) ? 'orderofplay-' . $template : 'orderofplay';
 
 		return $this->load_template(

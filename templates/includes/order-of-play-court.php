@@ -7,11 +7,14 @@
 
 namespace Racketmanager;
 
-foreach ( $court_times as $court_time => $matches ) {
+/** @var array $court_times */
+foreach ( $court_times as $matches ) {
+    ?>
+    <div class="match-group__item-wrapper<?php echo empty( $is_expanded ) ? null : ' is-expanded'; ?>">
+    <?php
 	foreach ( $matches as $final_match ) {
 		$match = get_match( $final_match->id );
 		?>
-		<div class="match-group__item-wrapper<?php echo empty( $is_expanded ) ? null : ' is-expanded'; ?>">
 			<div class="match-group__item">
 				<div class="match__header-title">
 					<span><?php echo esc_html( $match->league->title ); ?></span>
@@ -36,8 +39,10 @@ foreach ( $court_times as $court_time => $matches ) {
 					<?php echo esc_html( $away_match_title ); ?>
 				</div>
 			</div>
-		</div>
 		<?php
 	}
+    ?>
+    </div>
+<?php
 }
 

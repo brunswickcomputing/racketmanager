@@ -342,7 +342,6 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 				$fees->id                     = isset( $_POST['feeId'] ) ? intval( $_POST['feeId'] ) : null;
 				$tournament->fees             = $fees;
 				$tournament->num_entries      = isset( $_POST['num_entries'] ) ? intval( $_POST['num_entries'] ) : null;
-				debug_to_console( $tournament );
 				$tournament                   = new Racketmanager_Tournament( $tournament );
 				if ( $racketmanager->error ) {
 					$racketmanager->printMessage();
@@ -431,9 +430,10 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 	 * Display tournament plan page
 	 */
 	public function displayTournamentPlanPage(): void {
+		global $racketmanager;
 		if ( ! current_user_can( 'edit_teams' ) ) {
-			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
-			$this->printMessage();
+			$racketmanager->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
+			$racketmanager->printMessage();
 		} else {
 			if ( isset( $_POST['saveTournamentPlan'] ) ) {
 				check_admin_referer( 'racketmanager_tournament-planner' );
@@ -446,7 +446,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 					$match_time = $_POST['matchtime'] ?? null;
 					// phpcs:enable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					$tournament->save_plan( $courts, $start_time, $matches, $match_time );
-					$this->printMessage();
+					$racketmanager->printMessage();
 				}
 				$tab = 'matches';
 			} elseif ( isset( $_POST['resetTournamentPlan'] ) ) {
@@ -454,7 +454,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 				if ( isset( $_POST['tournamentId'] ) ) {
 					$tournament = get_tournament( intval( $_POST['tournamentId'] ) );
 					$tournament->reset_plan();
-					$this->printMessage();
+					$racketmanager->printMessage();
 				}
 				$tab = 'matches';
 			} elseif ( isset( $_POST['saveTournament'] ) ) {
@@ -465,7 +465,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 					$num_courts     = isset( $_POST['numCourts'] ) ? intval( $_POST['numCourts'] ) : null;
 					$time_increment = isset( $_POST['timeIncrement'] ) ? sanitize_text_field( wp_unslash( $_POST['timeIncrement'] ) ) : null;
 					$tournament->update_plan( $start_time, $num_courts, $time_increment );
-					$this->printMessage();
+					$racketmanager->printMessage();
 				}
 				$tab = 'config';
 			}

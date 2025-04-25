@@ -7,6 +7,10 @@
 
 namespace Racketmanager;
 
+/** @var array  $billing */
+/** @var object $invoice */
+/** @var string $organisation_name */
+/** @var object $target */
 global $racketmanager;
 if ( ! isset( $invoice_number ) ) {
 	$invoice_number = $billing['invoiceNumber']; // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
@@ -98,7 +102,7 @@ if ( is_user_logged_in() ) {
 		border-left: 60px solid #006800;
 		padding: 0 1cm 1cm;
 	}
-	.pagestyle {
+	.page-style {
 		background-color: #fff;
 		border: solid 1px #b4bcc1;
 		box-shadow: 0 1px 2px 0 rgb(0 0 0 / 20%);
@@ -131,14 +135,14 @@ if ( is_user_logged_in() ) {
 	}
 	</style>
 	<!-- START MAIN CONTENT AREA -->
-	<div id="invoice" class="pagestyle">
+	<div id="invoice" class="page-style">
 		<div id="invoice-header">
 			<div id="company-address">
 				<div class="org"><h2><?php echo esc_html( $organisation_name ); ?></h2></div>
 				<div class="address">
 					<div class="street-address"><?php echo str_replace( ',', '<br />', $billing['billingAddress'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
 					<div class="email"><?php echo esc_html( $billing['billingEmail'] ); ?></div>
-					<div class="url"><?php echo esc_html( trim( str_replace( array( 'http://', 'https://' ), '', $racketmanager->site_url ), '/' ) ); ?></div>
+					<div class="url"><?php echo esc_html( trim( str_replace( array( 'https://' ), '', $racketmanager->site_url ), '/' ) ); ?></div>
 					<div class="tel"><?php echo esc_html( $billing['billingTelephone'] ); ?></div>
 				</div>
 			</div>
@@ -217,7 +221,7 @@ if ( is_user_logged_in() ) {
 			</div>
 			<?php
 			if ( ! empty( $invoice->details->paid ) ) {
-				$smount_due = $invoice->details->fee - $invoice->details->paid;
+				$amount_due = $invoice->details->fee - $invoice->details->paid;
 				?>
 				<div id="invoice-totals">
 					<div class="invoice-total-desc">Paid</div>
@@ -225,7 +229,7 @@ if ( is_user_logged_in() ) {
 				</div>
 				<div id="invoice-totals">
 				<div class="invoice-total-desc"><?php esc_html_e( 'Due', 'racketmanager' ); ?></div>
-					<div class="invoice-item-net-price"><?php the_currency_amount( $smount_due ); ?></div>
+					<div class="invoice-item-net-price"><?php the_currency_amount( $amount_due ); ?></div>
 				</div>
 				<?php
 			}

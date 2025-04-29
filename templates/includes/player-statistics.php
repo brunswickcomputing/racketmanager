@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var object $player */
+/** @var array  $player_statistics */
 $statistics    = $player->statistics['total'];
 $stat_title    = __( 'Summary', 'racketmanager' );
 $matches_won   = ! empty( $statistics->matches_won ) ? ( $statistics->matches_won ) : 0;
@@ -32,7 +34,7 @@ if ( $games_won || $games_lost ) {
 } else {
 	$win_pct_games = 0;
 }
-$is_walkover    = isset( $walkover_allowed ) ? true : false;
+$is_walkover    = isset( $walkover_allowed );
 $total_walkover = isset( $player->statistics['walkover'] ) ? array_sum( $player->statistics['walkover'] ) : '';
 $walkover       = ! empty( $statistics->walkover ) ? ( $statistics->walkover ) : 0;
 ?>
@@ -45,14 +47,14 @@ $walkover       = ! empty( $statistics->walkover ) ? ( $statistics->walkover ) :
 			<div class="module player-stats">
 				<div class="row stats-header">
 					<div class="col-<?php echo empty( $is_walkover ) ? 4 : 3; ?>"></div>
-					<div class="col-1 text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_html_e( 'Played', 'racketmanager' ); ?>"><?php esc_html_e( 'P', 'racketmanager' ); ?></div>
-					<div class="col-2 text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_html_e( 'Won', 'racketmanager' ); ?>"><?php esc_html_e( 'W', 'racketmanager' ); ?></div>
-					<div class="col-2 text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_html_e( 'Sets', 'racketmanager' ); ?>"><?php esc_html_e( 'S', 'racketmanager' ); ?></div>
-					<div class="col-2 text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_html_e( 'Games', 'racketmanager' ); ?>"><?php esc_html_e( 'G', 'racketmanager' ); ?></div>
+					<div class="col-1 text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Played', 'racketmanager' ); ?>"><?php esc_html_e( 'P', 'racketmanager' ); ?></div>
+					<div class="col-2 text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Won', 'racketmanager' ); ?>"><?php esc_html_e( 'W', 'racketmanager' ); ?></div>
+					<div class="col-2 text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Sets', 'racketmanager' ); ?>"><?php esc_html_e( 'S', 'racketmanager' ); ?></div>
+					<div class="col-2 text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Games', 'racketmanager' ); ?>"><?php esc_html_e( 'G', 'racketmanager' ); ?></div>
 					<?php
 					if ( ! empty( $is_walkover ) ) {
 						?>
-						<div class="col-1 text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_html_e( 'Walkover', 'racketmanager' ); ?>"><?php esc_html_e( 'W/O', 'racketmanager' ); ?></div>
+						<div class="col-1 text-center" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Walkover', 'racketmanager' ); ?>"><?php esc_html_e( 'W/O', 'racketmanager' ); ?></div>
 						<?php
 					}
 					?>

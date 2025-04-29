@@ -32,13 +32,13 @@ if ( $event->is_championship ) {
 	}
 } else {
 	$heading  = __( 'Match Day', 'racketmanager' );
-	$num_cols = isset( $season['num_match_days'] ) ? $season['num_match_days'] : 0;
+	$num_cols = $season['num_match_days'] ?? 0;
 }
 ?>
 <div class="module module--card">
 	<div class="module__banner">
 		<h3 class="media__title">
-			<span><?php echo esc_html_e( 'Player Matches', 'racketmanager' ); ?></span>
+			<span><?php esc_html_e( 'Player Matches', 'racketmanager' ); ?></span>
 		</h3>
 	</div>
 	<div class="module__content">

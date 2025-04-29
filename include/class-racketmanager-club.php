@@ -200,6 +200,24 @@ final class Racketmanager_Club {
 	 */
 	public array $entry;
 	/**
+	 * Competitions variable
+	 *
+	 * @var array
+	 */
+	public array $competitions;
+	/**
+	 * Event variable
+	 *
+	 * @var object
+	 */
+	public object $event;
+	/**
+	 * Player stats variable
+	 *
+	 * @var array
+	 */
+	public array $player_stats;
+	/**
 	 * Retrieve club instance
 	 *
 	 * @param int|string $club_id club id or name.

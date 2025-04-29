@@ -7,27 +7,35 @@
 
 namespace Racketmanager;
 
+/** @var object $league */
+/** @var string $season */
+/** @var array $teams */
 ?>
 <form id="teams-filter" action="" method="post" name="standings">
 	<input type="hidden" name="js-active" value="0" class="js-active" />
 	<input type="hidden" name="league-tab" value="preliminary" />
 	<input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />
 	<?php wp_nonce_field( 'racketmanager_teams-bulk', 'racketmanager_nonce' ); ?>
-	<?php $sport = ($league->sport ?? ''); ?>
-	<div class="tablenav">
-		<!-- Bulk Actions -->
-		<select name="action" size="1">
-			<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
-			<option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
-			<option value="withdraw"><?php esc_html_e( 'Withdraw', 'racketmanager' ); ?></option>
-		</select>
-		<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doaction" id="doaction" class="btn btn-secondary action" />
-	</div>
+    <div class="row gx-3 mb-3 align-items-center">
+        <!-- Bulk Actions -->
+        <div class="col-auto">
+            <label>
+                <select class="form-select" name="action">
+                    <option value="-1" selected><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
+                    <option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
+                    <option value="withdraw"><?php esc_html_e( 'Withdraw', 'racketmanager' ); ?></option>
+                </select>
+            </label>
+        </div>
+        <div class="col-auto">
+            <button name="doAction" id="doAction" class="btn btn-secondary"><?php esc_html_e( 'Apply', 'racketmanager' ); ?></button>
+        </div>
+    </div>
 	<table id="standings" class="table table-striped table-borderless" aria-describedby="<?php esc_html_e( 'Standings table', 'racketmanager' ); ?>">
 		<thead>
 			<tr>
 				<th scope="col" class="check-column">
-					<input type="checkbox" id="check-all-teams" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" />
+                    <label for="check-all-teams"></label><input type="checkbox" id="check-all-teams" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" />
 				</th>
 				<th class="column-num" scope="col"><?php esc_html_e( 'Rank', 'racketmanager' ); ?></th>
 				<?php
@@ -96,7 +104,6 @@ namespace Racketmanager;
 		</thead>
 		<tbody id="the-list-standings" class="lm-form-table standings-table <?php echo ( 'manual' === $league->event->competition->team_ranking ) ? 'sortable' : null ?>">
 			<?php
-			$class = '';
 			foreach ( $teams as $i => $team ) {
 				$class = null;
 				if ( $league->is_championship && $i < $league->championship->num_seeds ) {
@@ -106,18 +113,16 @@ namespace Racketmanager;
 				<tr class="<?php echo esc_html( $class ); ?>" id="team_<?php echo esc_html( $team->id ); ?>">
 					<th scope="row" class="check-column">
 						<input type="hidden" name="team_id[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->id ); ?>" />
-						<input type="checkbox" value="<?php echo esc_html( $team->id ); ?>" name="team[<?php echo esc_html( $team->id ); ?>]" />
-					</th>
+                        <label for="team-<?php echo esc_html( $team->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $team->id ); ?>" name="team[<?php echo esc_html( $team->id ); ?>]" id="team-<?php echo esc_html( $team->id ); ?>" />
+                    </th>
 					<td class="column-num">
 						<?php
 						if ( 'manual' === $league->event->competition->team_ranking ) {
 							?>
-							<input type="text" name="rank[<?php echo esc_html( $team->id ); ?>]" size="2" id="rank_<?php echo esc_html( $team->id ); ?>" class="rank-input" value="<?php echo esc_html( $team->rank ); ?>" /><input type="hidden" name="table_id[<?php echo esc_html( $team->table_id ); ?>]" value="<?php echo esc_html( $team->table_id ); ?>" />
+                            <label for="rank_<?php echo esc_html( $team->id ); ?>"></label><input type="text" name="rank[<?php echo esc_html( $team->id ); ?>]" size="2" id="rank_<?php echo esc_html( $team->id ); ?>" class="rank-input" value="<?php echo esc_html( $team->rank ); ?>" /><input type="hidden" name="table_id[<?php echo esc_html( $team->table_id ); ?>]" value="<?php echo esc_html( $team->table_id ); ?>" />
 							<?php
 						} else {
-							?>
-							<?php echo esc_html( $i + 1 );// team rank. ?>
-							<?php
+							echo esc_html( $i + 1 );// team rank.
 						}
 						?>
 					</td>
@@ -127,9 +132,11 @@ namespace Racketmanager;
 						<td class="column-num">
 							<?php echo esc_html( $team->status ); ?>
 						</td>
-					<?php } ?>
+					    <?php
+                    }
+                    ?>
 					<td>
-						<a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=team&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;edit=<?php echo esc_html( $team->id ); ?>">
+						<a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=team&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;edit=<?php echo esc_html( $team->id ); ?>">
 							<?php
 							if ( $team->is_withdrawn ) {
 								$title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );
@@ -197,16 +204,24 @@ namespace Racketmanager;
 								<?php
 								if ( 1 === $league->standings['pld'] ) {
 									?>
-									<input type="text" size="2" name="num_done_matches[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->done_matches ); ?>" />
-								<?php } else { ?>
+                                    <label>
+                                        <input type="text" size="2" name="num_done_matches[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->done_matches ); ?>" />
+                                    </label>
+								    <?php
+                                } else {
+                                    ?>
 									<input type="hidden" name="num_done_matches[<?php echo esc_html( $team->id ); ?>]" value="0" />
-								<?php } ?>
+								    <?php
+                                }
+                                ?>
 							</td>
 							<td class="column-num">
 								<?php
 								if ( 1 === $league->standings['won'] ) {
 									?>
-									<input type="text" size="2" name="num_won_matches[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->won_matches ); ?>" />
+                                    <label>
+                                        <input type="text" size="2" name="num_won_matches[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->won_matches ); ?>" />
+                                    </label>
 								<?php } else { ?>
 									<input type="hidden" name="num_won_matches[<?php echo esc_html( $team->id ); ?>]" value="0" />
 								<?php } ?>
@@ -215,19 +230,31 @@ namespace Racketmanager;
 								<?php
 								if ( 1 === $league->standings['tie'] ) {
 									?>
-									<input type="text" size="2" name="num_draw_matches[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->draw_matches ); ?>" />
-								<?php } else { ?>
+                                    <label>
+                                        <input type="text" size="2" name="num_draw_matches[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->draw_matches ); ?>" />
+                                    </label>
+								    <?php
+                                } else {
+                                    ?>
 									<input type="hidden" name="num_draw_matches[<?php echo esc_html( $team->id ); ?>]" value="0" />
-								<?php } ?>
+								    <?php
+                                }
+                                ?>
 							</td>
 							<td class="column-num">
 								<?php
 								if ( 1 === $league->standings['lost'] ) {
 									?>
-									<input type="text" size="2" name="num_lost_matches[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->lost_matches ); ?>" />
-								<?php } else { ?>
+                                    <label>
+                                        <input type="text" size="2" name="num_lost_matches[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->lost_matches ); ?>" />
+                                    </label>
+								    <?php
+                                } else {
+                                    ?>
 									<input type="hidden" name="num_lost_matches[<?php echo esc_html( $team->id ); ?>]" value="0" />
-								<?php } ?>
+								    <?php
+                                }
+                                ?>
 							</td>
 							<?php
 						}
@@ -256,13 +283,17 @@ namespace Racketmanager;
 								<?php
 							} else {
 								?>
-								<input type="text" size="2" name="points_plus[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->points_plus ); ?>" /> : <input type="text" size="2" name="points_minus[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->points_minus ); ?>" />
+                                <label>
+                                    <input type="text" size="2" name="points_plus[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->points_plus ); ?>" />
+                                </label> : <label>
+                                    <input type="text" size="2" name="points_minus[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->points_minus ); ?>" />
+                                </label>
 								<?php
 							}
 							?>
 						</td>
 						<td class="column-num">
-							<input type="text" size="3" style="text-align: center;" id="add_points_<?php echo esc_html( $team->id ); ?>" name="add_points[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->add_points ); ?>" onblur="Racketmanager.saveAddPoints(this.value, <?php echo esc_html( $team->id ); ?>, <?php echo esc_html( $league->id ); ?>, <?php echo esc_html( $season ); ?> )" />
+                            <label for="add_points_<?php echo esc_html( $team->id ); ?>"></label><input type="text" size="3" style="text-align: center;" id="add_points_<?php echo esc_html( $team->id ); ?>" name="add_points[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->add_points ); ?>" onblur="Racketmanager.saveAddPoints(this.value, <?php echo esc_html( $team->id ); ?>, <?php echo esc_html( $league->id ); ?>, <?php echo esc_html( $season ); ?> )" />
 							<span class="loading" id="loading_<?php echo esc_html( $team->id ); ?>"></span>
 							<span id="feedback_<?php echo esc_html( $team->id ); ?>"></span>
 						</td>

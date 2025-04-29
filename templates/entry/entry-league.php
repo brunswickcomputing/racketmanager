@@ -16,6 +16,11 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
+/** @var object $competition */
+/** @var string $season */
+/** @var array  $events */
+/** @var object $club */
 $match_days = Racketmanager_Util::get_match_days();
 if ( $competition->is_open ) {
 	$changes_allowed = true;
@@ -131,7 +136,7 @@ if ( ! empty( $club->entry ) ) {
 													<div class="list__item">
 														<dt class="list__label"><?php esc_html_e( 'Number available', 'racketmanager' ); ?></dt>
 														<dd class="list__value">
-															<input type="number" class="form-control" id="numCourtsAvailable" name="numCourtsAvailable" value="<?php echo empty( $competition->num_courts_available[ $club->id ] ) ? null : esc_html( $competition->num_courts_available[ $club->id ] ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
+                                                            <label for="numCourtsAvailable"></label><input type="number" class="form-control" id="numCourtsAvailable" name="numCourtsAvailable" value="<?php echo empty( $competition->num_courts_available[ $club->id ] ) ? null : esc_html( $competition->num_courts_available[ $club->id ] ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 															<div id="numCourtsAvailable-feedback" class="invalid-feedback"></div>
 														</dd>
 													</div>
@@ -190,26 +195,18 @@ if ( ! empty( $club->entry ) ) {
 													</div>
 													<div class="form-checkboxes__conditional <?php echo $event_team->status ? '' : 'form-checkboxes__conditional--hidden'; ?>" id="conditional-team-event-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" <?php echo $event_team->status ? 'aria-expanded="true"' : ''; ?>>
 														<div class="row">
-															<div class="col-md-6">
+															<fieldset class="col-md-6">
 																<legend><?php esc_html_e( 'Captain', 'racketmanager' ); ?></legend>
 																<div class="row">
 																	<div class="form-floating mb-3">
 																		<?php
-																		if ( isset( $event_team->team_info->captain ) ) {
-																			$captain = $event_team->team_info->captain;
-																		} else {
-																			$captain = '';
-																		}
+																		$captain = $event_team->team_info->captain ?? '';
 																		?>
 																		<input type="text" class="form-control teamcaptain" name="captain[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" id="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" value="<?php echo esc_html( $captain ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 																		<label class="form-label" for="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>"><?php esc_html_e( 'Name', 'racketmanager' ); ?></label>
 																		<div id="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>-feedback" class="invalid-feedback"></div>
 																		<?php
-																		if ( isset( $event_team->team_info->captain_id ) ) {
-																			$captain_id = $event_team->team_info->captain_id;
-																		} else {
-																			$captain_id = '';
-																		}
+																		$captain_id = $event_team->team_info->captain_id ?? '';
 																		?>
 																		<input type="hidden" name="captainId[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" id="captainId-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" value="<?php echo esc_html( $captain_id ); ?>" />
 																	</div>
@@ -217,11 +214,7 @@ if ( ! empty( $club->entry ) ) {
 																<div class="row">
 																	<div class="col-md-6 form-floating mb-3">
 																		<?php
-																		if ( isset( $event_team->team_info->contactno ) ) {
-																			$contact_no = $event_team->team_info->contactno;
-																		} else {
-																			$contact_no = '';
-																		}
+																		$contact_no = $event_team->team_info->contactno ?? '';
 																		?>
 																		<input type="tel" class="form-control" name="contactno[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" id="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" value="<?php echo esc_html( $contact_no ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 																		<label class="form-label" for="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>"><?php esc_html_e( 'Telephone', 'racketmanager' ); ?></label>
@@ -229,19 +222,15 @@ if ( ! empty( $club->entry ) ) {
 																	</div>
 																	<div class="col-md-6 form-floating mb-3">
 																		<?php
-																		if ( isset( $event_team->team_info->contactemail ) ) {
-																			$contact_email = $event_team->team_info->contactemail;
-																		} else {
-																			$contact_email = '';
-																		}
+																		$contact_email = $event_team->team_info->contactemail ?? '';
 																		?>
 																		<input type="email" class="form-control" name="contactemail[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" id="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" value="<?php echo esc_html( $contact_email ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 																		<label class="form-label" for="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>"><?php esc_html_e( 'Email', 'racketmanager' ); ?></label>
 																		<div id="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>-feedback" class="invalid-feedback"></div>
 																	</div>
 																</div>
-															</div>
-															<div class="col-md-6">
+															</fieldset>
+															<fieldset class="col-md-6">
 																<legend><?php esc_html_e( 'Fixtures', 'racketmanager' ); ?></legend>
 																<div class="row">
 																	<div class="col-md-6 form-floating mb-3">
@@ -265,18 +254,14 @@ if ( ! empty( $club->entry ) ) {
 																	</div>
 																	<div class="col-md-6 form-floating mb-3 match-time">
 																		<?php
-																		if ( isset( $event_team->team_info->match_time ) ) {
-																			$match_time = $event_team->team_info->match_time;
-																		} else {
-																			$match_time = '';
-																		}
+																		$match_time = $event_team->team_info->match_time ?? '';
 																		?>
 																		<input type="time" class="form-control" name="matchtime[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" id="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" value="<?php echo esc_html( $match_time ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 																		<label class="form-label" for="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>"><?php esc_html_e( 'Match Time', 'racketmanager' ); ?></label>
 																		<div id="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>-feedback" class="invalid-feedback"></div>
 																	</div>
 																</div>
-															</div>
+															</fieldset>
 														</div>
 													</div>
 												<?php } ?>
@@ -292,12 +277,12 @@ if ( ! empty( $club->entry ) ) {
 									<div class="hgroup">
 										<h4 class="hgroup__heading"><?php esc_html_e( 'Additional information', 'racketmanager' ); ?></h4>
 										<p class="hgroup__subheading">
-											<?php echo esc_html_e( 'Please leave any additional information for the League Organiser here', 'racketmanager' ); ?>
+											<?php esc_html_e( 'Please leave any additional information for the League Organiser here', 'racketmanager' ); ?>
 										</p>
 									</div>
 									<div class="col-12 col-md-8">
 										<div class="form-floating">
-											<textarea class="form-control" placeholder="<?php echo esc_attr_e( 'Additional information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails" <?php echo $changes_allowed ? null : 'disabled'; ?>></textarea>
+											<textarea class="form-control" placeholder="<?php esc_attr_e( 'Additional information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails" <?php echo $changes_allowed ? null : 'disabled'; ?>></textarea>
 											<label for="commentDetails"><?php esc_attr_e( 'Additional information', 'racketmanager' ); ?></label>
 											<div id="commentDetails-feedback" class="invalid-feedback"></div>
 										</div>

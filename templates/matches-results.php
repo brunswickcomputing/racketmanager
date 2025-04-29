@@ -13,6 +13,8 @@
 
 namespace Racketmanager;
 
+/** @var string $header_level */
+/** @var array  $matches_list */
 ?>
 <div class="module module--card">
 	<div class="module__banner">
@@ -31,7 +33,7 @@ namespace Racketmanager;
 					<?php
 				} else {
 					?>
-					<p><?php echo esc_html_e( 'No recent results', 'racketmanager' ); ?></p>
+					<p><?php esc_html_e( 'No recent results', 'racketmanager' ); ?></p>
 					<?php
 				}
 				?>

@@ -14,12 +14,12 @@
     form#racketmanager_archive { display: none; }
 	table.racketmanager td, table.racketmanager th {
 		vertical-align: middle;
-		padding: 0px;
+		padding: 0;
 		margin: 0;
 	}
-	#standings-archive h4 { margin: 5px 0px; }
-	#leaguetables h1 { margin: 5px 0px; }
-	th.tennishdr { width: 11%;	}
+	#standings-archive h4 { margin: 5px 0; }
+	#league-tables h1 { margin: 5px 0; }
+	th.tennis-hdr { width: 11%;	}
 	th.num { width: 4%; }
 	a.go-top { display:none;}
 	a[href]:after {

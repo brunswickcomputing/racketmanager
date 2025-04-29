@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
+/** @var object $competition */
 ?>
 	<div class="module module--card">
 		<div class="module__banner">
@@ -127,7 +129,7 @@ namespace Racketmanager;
 								<?php
 							}
 							?>
-						</ul>
+						</ol>
 					</div>
 				</div>
 			</div>

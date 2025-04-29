@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-?>
+/** @var object $tournament */?>
 <div class="container">
 	<div class="module module--card">
 		<div class="module__banner">
@@ -48,7 +48,7 @@ namespace Racketmanager;
 							<div class="tournament-meta__title">
 								<span class="meta-link">
 									<span class="meta-link__value">
-										<?php echo esc_html( $tournament->entries ); ?>
+										<?php echo esc_html( $tournament->num_entries ); ?>
 									</span>
 								</span>
 							</div>
@@ -102,7 +102,7 @@ namespace Racketmanager;
 									<?php echo esc_html( $tournament->date_display ); ?>
 								</div>
 							</li>
-						</ul>
+						</ol>
 					</div>
 				</div>
 			</div>

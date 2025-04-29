@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var object $tournament */
 ?>
 	<div class="row mb-3">
 		<div class="col-12 col-md-6">
@@ -22,7 +23,7 @@ namespace Racketmanager;
 					</tr>
 					<tr>
 						<td class="col-6 col-md-3"><?php esc_html_e( 'Entries', 'racketmanager' ); ?></td>
-						<td class="col-auto"><?php echo esc_html( $tournament->entries ); ?></td>
+						<td class="col-auto"><?php echo esc_html( $tournament->num_entries ); ?></td>
 					</tr>
 					<tr>
 						<td class="col-6 col-md-3"><?php esc_html_e( 'Code', 'racketmanager' ); ?></td>
@@ -56,7 +57,7 @@ namespace Racketmanager;
 	</div>
 	<div class="row mb-3">
 		<div class="col-auto">
-			<a role="button" class="btn btn-primary" href="admin.php?page=racketmanager-tournaments&amp;view=modify&amp;tournament=<?php echo esc_html( $tournament->id ); ?> "><?php esc_html_e( 'Edit tournament', 'racketmanager' ); ?></a>
+			<a role="button" class="btn btn-primary" href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=modify&amp;tournament=<?php echo esc_html( $tournament->id ); ?> "><?php esc_html_e( 'Edit tournament', 'racketmanager' ); ?></a>
 			<?php
 			if ( $tournament->is_open ) {
 				?>

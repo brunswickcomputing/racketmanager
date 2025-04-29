@@ -7,34 +7,30 @@
 
 namespace Racketmanager;
 
+/** @var object $final */
+/** @var int    $f */
+/** @var string $player_class */
 foreach ( $final->matches as $match ) {
 	if ( empty( $match->leg ) || '2' === $match->leg ) {
 		$winner = null;
-		$loser  = null;
 		$is_tie = false;
 		if ( empty( $match->leg ) ) {
 			if ( ! empty( $match->winner_id ) ) {
-				$match_complete = true;
 				if ( $match->winner_id === $match->teams['home']->id ) {
 					$winner = 'home';
-					$loser  = 'away';
 				} elseif ( $match->winner_id === $match->teams['away']->id ) {
 					$winner = 'away';
-					$loser  = 'home';
 				} elseif ( '-1' === $match->winner_id ) {
 					$is_tie = true;
-				}
-			}
+                }
+            }
 		} elseif ( ! empty( $match->winner_id_tie ) ) {
-				$match_complete = true;
 			if ( $match->winner_id_tie === $match->teams['home']->id ) {
 				$winner = 'home';
-				$loser  = 'away';
 			} elseif ( $match->winner_id_tie === $match->teams['away']->id ) {
 				$winner = 'away';
-				$loser  = 'home';
-			}
-		}
+            }
+        }
 		?>
 		<div class="score-row draws-score-row round-<?php echo esc_attr( $f ); ?> carousel-index-<?php echo esc_attr( $f ); ?> <?php echo empty( $last_round ) ? '' : 'last-round'; ?> ">
 			<div class="score-row__wrapper" aria-label="<?php esc_html_e( 'Match Link', 'racketmanager' ); ?>" onclick="Racketmanager.viewMatch(event)">
@@ -59,20 +55,12 @@ foreach ( $final->matches as $match ) {
 						} else {
 							$winner_class = null;
 						}
-						switch ( substr( $match->league->event->type, 0, 1 ) ) {
-							case 'M':
-								$team_name = str_replace( 'Mens ', '', $team->title );
-								break;
-							case 'W':
-								$team_name = str_replace( 'Ladies ', '', $team->title );
-								break;
-							case 'X':
-								$team_name = str_replace( 'Mixed ', '', $team->title );
-								break;
-							default:
-								$team_name = $team->title;
-								break;
-						}
+						$team_name = match (substr($match->league->event->type, 0, 1)) {
+							'M' => str_replace('Mens ', '', $team->title),
+							'W' => str_replace('Ladies ', '', $team->title),
+							'X' => str_replace('Mixed ', '', $team->title),
+							default => $team->title,
+						};
 						?>
 						<div class="player-row">
 							<div class="player-row__team-wrapper <?php echo esc_html( $winner_class ); ?>">
@@ -239,7 +227,7 @@ foreach ( $final->matches as $match ) {
 												$set_ref     = 'player2';
 												$set_ref_alt = 'player1';
 											}
-											$sets = isset( $rubber->custom['sets'] ) ? $rubber->custom['sets'] : array();
+											$sets = $rubber->custom['sets'] ?? array();
 											foreach ( $sets as $set ) {
 												if ( isset( $set[ $set_ref ] ) && '' !== $set[ $set_ref ] ) {
 													if ( $set[ $set_ref ] > $set [ $set_ref_alt ] ) {

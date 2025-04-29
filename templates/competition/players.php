@@ -7,10 +7,12 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
+/** @var object $competition */
 if ( empty( $competition->player ) ) {
-		$player_list = $competition->players;
-		$player_link = '/' . seo_url( $competition->name ) . '/' . $competition->current_season['name'] . '/player/';
-		require RACKETMANAGER_PATH . 'templates/includes/player-list-names.php';
+	$player_list     = $competition->players;
+    $player_link = '/' . seo_url( $competition->name ) . '/' . $competition->current_season['name'] . '/player/';
+    require RACKETMANAGER_PATH . 'templates/includes/player-list-names.php';
 } else {
 	$player = $competition->player;
 	require RACKETMANAGER_PATH . 'templates/includes/player-header.php';

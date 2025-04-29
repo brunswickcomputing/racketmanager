@@ -12,12 +12,14 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
+/** @var object $club */
+/** @var object $user_can_manage */
 $display_opt = $racketmanager->get_options( 'display' );
 if ( empty( $club->player ) ) {
 	$header_level = 1;
 	require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 	$club_players           = $club->players;
-	$player_requests        = isset( $club->player_requests ) ? $club->player_requests : array();
 	$user_can_update_club   = $user_can_manage->club;
 	$user_can_update_player = $user_can_manage->player;
 	if ( $user_can_update_player ) {
@@ -30,16 +32,16 @@ if ( empty( $club->player ) ) {
 			</div>
 			<div class="module__content collapse" id="addPlayer">
 				<div class="module-container">
-					<form id="playerRequestFrm" action="" method="post" onsubmit="return checkSelect(this)">
+					<form id="playerRequestFrm" action="" method="post">
 						<?php wp_nonce_field( 'club-player-request' ); ?>
 						<input type="hidden" name="club" id="club" value="<?php echo esc_html( $club->id ); ?>" />
 						<div class="form-floating mb-3">
-							<input required="required" type="text" class="form-control" id="firstname" name="firstname" size="30" class="form-control" placeholder="First name" aria-describedby="firstnameFeedback" />
+							<input required="required" type="text" class="form-control" id="firstname" name="firstname" size="30" placeholder="First name" aria-describedby="firstnameFeedback" />
 							<label for="firstname"><?php esc_html_e( 'First name', 'racketmanager' ); ?></label>
 							<div id="firstnameFeedback" class="invalid-feedback"></div>
 						</div>
 						<div class="form-floating mb-3">
-							<input required="required" type="text" class="form-control" id="surname" name="surname" size="30" class="form-control" placeholder="Surname" aria-describedby="surnameFeedback" />
+							<input required="required" type="text" class="form-control" id="surname" name="surname" size="30" placeholder="Surname" aria-describedby="surnameFeedback" />
 							<label for="surname"><?php esc_html_e( 'Surname', 'racketmanager' ); ?></label>
 							<div id="surnameFeedback" class="invalid-feedback"></div>
 						</div>
@@ -58,7 +60,7 @@ if ( empty( $club->player ) ) {
 							</fieldset>
 						</div>
 						<div class="form-floating mb-3">
-							<input type="number" class="form-control" placeholder="<?php esc_html_e( 'Enter LTA Tennis Number', 'racketmanager' ); ?>" name="btm" id="btm" size="11" class="form-control" aria-describedby="btmFeedback" />
+							<input type="number" class="form-control" placeholder="<?php esc_html_e( 'Enter LTA Tennis Number', 'racketmanager' ); ?>" name="btm" id="btm" aria-describedby="btmFeedback" />
 							<label for="btm"><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></label>
 							<div id="btmFeedback" class="invalid-feedback"></div>
 						</div>
@@ -80,11 +82,11 @@ if ( empty( $club->player ) ) {
 							<div id="year_of_birthFeedback" class="invalid-feedback"></div>
 						</div>
 						<div class="form-floating mb-3">
-							<input type="email" class="form-control" placeholder="<?php esc_html_e( 'Enter email address', 'racketmanager' ); ?>" name="email" id="email" class="form-control" aria-describedby="emailFeedback" autocomplete="off" />
+							<input type="email" class="form-control" placeholder="<?php esc_html_e( 'Enter email address', 'racketmanager' ); ?>" name="email" id="email" aria-describedby="emailFeedback" autocomplete="off" />
 							<label for="email"><?php esc_html_e( 'Email address', 'racketmanager' ); ?></label>
 							<div id="emailFeedback" class="invalid-feedback"></div>
 						</div>
-						<button class="btn mb-3" type="button" cid="clubPlayerUpdateSubmit" onclick="Racketmanager.club_player_request(this)"><?php esc_html_e( 'Add player', 'racketmanager' ); ?></button>
+						<button class="btn mb-3" type="button" id="clubPlayerUpdateSubmit" onclick="Racketmanager.club_player_request(this)"><?php esc_html_e( 'Add player', 'racketmanager' ); ?></button>
 						<div id="playerAddResponse" class="alert_rm" style="display: none;">
 							<div class="alert__body">
 								<div class="alert__body-inner">
@@ -130,7 +132,9 @@ if ( empty( $club->player ) ) {
 												<button class="btn" type="button" id="clubPlayerRemoveSubmit" onclick="Racketmanager.clubPlayerRemove('#club-player-<?php echo esc_html( $gender ); ?>-remove','<?php echo esc_html( $gender ); ?>')">
 													<?php esc_html_e( 'Remove', 'racketmanager' ); ?>
 												</button>
-											<?php } ?>
+											    <?php
+                                            }
+                                            ?>
 										</th>
 										<th scope="col"><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
 										<th scope="col" class="colspan"><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></th>
@@ -157,8 +161,12 @@ if ( empty( $club->player ) ) {
 													<?php
 													if ( $user_can_update_club ) {
 														?>
-														<input type="checkbox" class="checkbox" value="<?php echo esc_html( $club_player->roster_id ); ?>" name="clubPlayer[<?php echo esc_html( $club_player->roster_id ); ?>]" />
-													<?php } ?>
+                                                        <label>
+                                                            <input type="checkbox" class="checkbox" value="<?php echo esc_html( $club_player->roster_id ); ?>" name="clubPlayer[<?php echo esc_html( $club_player->roster_id ); ?>]" />
+                                                        </label>
+														<?php
+                                                    }
+                                                    ?>
 												</th>
 												<td><a href="<?php echo esc_html( seo_url( $club_player->fullname ) ); ?>/"><?php echo esc_html( $club_player->fullname ); ?></a></td>
 												<td><?php echo esc_html( $club_player->btm ); ?></td>

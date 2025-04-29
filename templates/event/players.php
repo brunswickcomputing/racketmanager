@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
+/** @var object $event */
 if ( empty( $event->player ) ) {
 	$player_list = $event->players;
 	$player_link = '/' . $event->competition->type . 's/' . seo_url( $event->name ) . '/' . $event->current_season['name'] . '/player/';

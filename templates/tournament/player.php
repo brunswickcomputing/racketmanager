@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var object $tournament_player */
+/** @var object $tournament */
 $player = $tournament_player;
 require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
 ?>
@@ -147,6 +149,5 @@ require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
 				require RACKETMANAGER_PATH . 'templates/includes/player-statistics.php';
 			}
 			?>
-			</div>
-		</div>
-	</div>
+        </div>
+    </div>

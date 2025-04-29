@@ -695,39 +695,30 @@ class RacketManager_Shortcodes {
 	/**
 	 * Function to display league Entry Page
 	 *
-	 * @param string $competition_name competition name.
+	 * @param object $competition competition.
 	 * @param string $season season.
-	 * @param array $competition_season competition season.
-	 * @param string $club_name club name.
+	 * @param array  $competition_season competition season.
+	 * @param object $club club.
 	 * @param string $template template name.
 	 * @return string content
 	 */
-	public function show_league_entry( string $competition_name, string $season, array $competition_season, string $club_name, string $template ): string {
+	public function show_league_entry( object $competition, string $season, array $competition_season, object $club, string $template ): string {
 		if ( ! is_user_logged_in() ) {
 			return '<p class="contact-login-msg">You need to <a href="' . wp_login_url() . '">log in</a> to enter leagues</p>';
 		}
 		$valid = true;
         $msg   = null;
-		$club  = get_club( $club_name, 'shortcode' );
-
 		if ( ! $club ) {
 			$valid = false;
 			$msg   = __( 'Club not found', 'racketmanager' );
 		}
-		if ( ! $competition_name ) {
+		if ( ! $competition ) {
 			$valid = false;
 			$msg   = __( 'League not found', 'racketmanager' );
 		}
 		if ( ! $season ) {
 			$valid = false;
 			$msg   = __( 'Season not found', 'racketmanager' );
-		}
-		if ( $valid ) {
-			$competition = get_competition( $competition_name, 'name' );
-			if ( ! $competition ) {
-				$valid = false;
-				$msg   = __( 'Competition not found', 'racketmanager' );
-			}
 		}
 		if ( $valid ) {
 			$events = $competition->get_events();
@@ -758,7 +749,7 @@ class RacketManager_Shortcodes {
 				}
 				$key = 0;
 				foreach ( $event->teams as $team ) {
-					$found = in_array( $team->id, array_column( $event->event_teams, 'team_id' ), true );
+					$found = in_array( $team->id, array_column( $event->event_teams, 'team_id' ) );
 					if ( false !== $found ) {
 						unset( $event->teams[ $key ] );
 					} else {

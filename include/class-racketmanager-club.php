@@ -194,6 +194,12 @@ final class Racketmanager_Club {
 	 */
 	public object $invoice;
 	/**
+	 * Entry
+	 *
+	 * @var array
+	 */
+	public array $entry;
+	/**
 	 * Retrieve club instance
 	 *
 	 * @param int|string $club_id club id or name.
@@ -993,9 +999,9 @@ final class Racketmanager_Club {
 				}
 				$team_info = $event->get_team_info( $team->id );
 				if ( ! $team_info ) {
-					$team->add_event( $event_entry->id, $team_entry->captain_id, $team_entry->telephone, $team_entry->email, $match_day, $team_entry->match_time );
+					$team->add_event( $event_entry->id, $team_entry->captain_id, $team_entry->telephone, $team_entry->email, $team_entry->match_day, $team_entry->match_time );
 				} else {
-					$team->update_event( $event_entry->id, $team_entry->captain_id, $team_entry->telephone, $team_entry->email, $match_day, $team_entry->match_time );
+					$team->update_event( $event_entry->id, $team_entry->captain_id, $team_entry->telephone, $team_entry->email, $team_entry->match_day, $team_entry->match_time );
 				}
 				if ( $team_entry->existing ) {
 					$event->mark_teams_entered( $team->id, $club_entry->season );

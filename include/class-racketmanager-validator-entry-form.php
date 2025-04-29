@@ -160,14 +160,14 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	/**
 	 * Validate captain details
 	 *
-	 * @param int $captain captain id.
+	 * @param string $captain captain id.
 	 * @param string $contactno contact number.
 	 * @param string $contactemail email.
 	 * @param string $field_ref field reference.
 	 * @param string $field_name field name.
 	 * @return object $validation updated validation object.
 	 */
-	public function captain( int $captain, string $contactno, string $contactemail, string $field_ref, string $field_name ): object {
+	public function captain( string $captain, string $contactno, string $contactemail, string $field_ref, string $field_name ): object {
 		if ( empty( $captain ) ) {
 			$this->error = true;
 			$this->error_field[$this->error_id] = 'captain-' . $field_ref;
@@ -187,15 +187,15 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	/**
 	 * Validate match day details
 	 *
-	 * @param string $match_day match day.
+	 * @param int    $match_day match day.
 	 * @param string $field_ref field reference.
 	 * @param string $field_name field name.
 	 * @param boolean $match_day_restriction match day restriction indicator.
 	 * @param array $match_days_allowed array of match days allowed.
 	 * @return object $validation updated validation object.
 	 */
-	public function match_day( string $match_day, string $field_ref, string $field_name, bool $match_day_restriction = false, array $match_days_allowed = array() ): object {
-		if ( empty( $match_day ) && '0' !== $match_day ) {
+	public function match_day( int $match_day, string $field_ref, string $field_name, bool $match_day_restriction = false, array $match_days_allowed = array() ): object {
+		if ( empty( $match_day ) && 0 !== $match_day ) {
 			$this->error = true;
 			$this->error_field[$this->error_id] = 'matchday-' . $field_ref;
 			$this->error_msg[$this->error_id] = __( 'Match day not selected', 'racketmanager' );

@@ -503,7 +503,11 @@ final class Racketmanager_Team {
 	 */
 	public function add_event( int $event_id, string $captain = null, string $contactno = null, string $contactemail = null, int|null $matchday = null, string $matchtime = null ): int {
 		global $wpdb;
-		$match_day = Racketmanager_Util::get_match_day( $matchday );
+		if ( is_null( $matchday) ) {
+			$match_day = '';
+		} else {
+			$match_day = Racketmanager_Util::get_match_day( $matchday );
+		}
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"INSERT INTO $wpdb->racketmanager_team_events (`team_id`, `event_id`, `captain`, `match_day`, `match_time`) VALUES (%d, %d, %d, %s, %s)",
@@ -535,11 +539,15 @@ final class Racketmanager_Team {
 	 */
 	public function update_event( int $event_id, string $captain, string $contactno, string $contactemail, ?int $matchday, ?string $matchtime ): false|string|null {
 		global $wpdb;
-		$updates   = false;
-		$msg       = false;
-		$match_day = Racketmanager_Util::get_match_day( $matchday );
-		$event     = get_event( $event_id );
-		$current   = $event->get_team_info( $this->id );
+		$updates = false;
+		$msg     = false;
+		if ( is_null( $matchday) ) {
+			$match_day = '';
+		} else {
+			$match_day = Racketmanager_Util::get_match_day( $matchday );
+		}
+		$event   = get_event( $event_id );
+		$current = $event->get_team_info( $this->id );
 		if ( $current->captain_id !== $captain || $current->match_day !== $match_day || $current->match_time !== $matchtime ) {
 			if ( $captain && ( ( $event->competition->is_team_entry && $matchday && $matchtime ) || $event->competition->is_player_entry ) ) {
 				$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching

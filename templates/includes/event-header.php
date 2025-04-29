@@ -8,38 +8,29 @@
 
 namespace Racketmanager;
 
+/** @var object $club */
+/** @var object $event */
+/** @var string $curr_season */
 global $wp_query, $racketmanager;
-$post_id = isset( $wp_query->post->ID ) ? $wp_query->post->ID : ''; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+$post_id = $wp_query->post->ID ?? ''; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 if ( isset( $wp_query->query['pagename'] ) && 'club/event' === $wp_query->query['pagename'] ) {
 	$pagename = '/clubs/' . seo_url( $club->shortcode ) . '/event/' . seo_url( $event->name ) . '/';
 } elseif ( 'tournament' === $event->competition->type ) {
-	$pagename = isset( $wp_query->query['pagename'] ) ? $wp_query->query['pagename'] : '';
+	$pagename = $wp_query->query['pagename'] ?? '';
 } else {
 	$pagename = '/' . $event->competition->type . 's/' . seo_url( $event->name ) . '/';
 }
 if ( $event->is_box ) {
-	$event_title      = $event->name . ' - ' . __( 'Round', 'racketmanager' ) . ' ' . $curr_season;
-	$season_label     = __( 'Round', 'racketmanager' );
-	$season_selection = __( 'Rounds', 'racketmanager' );
+	$season_label = __( 'Round', 'racketmanager' );
 } else {
-	$event_title      = $event->name;
-	$season_label     = __( 'Season', 'racketmanager' );
-	$season_selection = __( 'Seasons', 'racketmanager' );
+	$season_label = __( 'Season', 'racketmanager' );
 }
-switch ( $event->competition->type ) {
-	case 'league':
-		$image = 'images/bootstrap-icons.svg#table';
-		break;
-	case 'cup':
-		$image = 'images/bootstrap-icons.svg#trophy-fill';
-		break;
-	case 'tournament':
-		$image = 'images/lta-icons.svg#icon-bracket';
-		break;
-	default:
-		$image = null;
-		break;
-}
+$image = match ($event->competition->type) {
+	'league' => 'images/bootstrap-icons.svg#table',
+	'cup' => 'images/bootstrap-icons.svg#trophy-fill',
+	'tournament' => 'images/lta-icons.svg#icon-bracket',
+	default => null,
+};
 $seasons     = $event->seasons;
 $curr_season = $event->current_season['name'];
 if ( empty( $header_level ) ) {
@@ -92,7 +83,7 @@ if ( empty( $header_level ) ) {
 			if ( empty( $standings_template ) || 'constitution' !== $standings_template ) {
 				?>
 				<div class="media__aside">
-					<form method="get" action="<?php echo esc_html( get_permalink( $post_id ) ); ?>" id="racketmanager_competititon_archive" class="season-select">
+					<form method="get" action="<?php echo esc_html( get_permalink( $post_id ) ); ?>" id="racketmanager_competition_archive" class="season-select">
 						<input type="hidden" name="page_id" value="<?php echo esc_html( $post_id ); ?>" />
 						<input type="hidden" name="pagename" id="pagename" value="<?php echo esc_html( $pagename ); ?>" />
 						<div class="row g-1 align-items-center">
@@ -100,7 +91,7 @@ if ( empty( $header_level ) ) {
 								<div class="form-floating">
 									<select class="form-select" size="1" name="season" id="season">
 										<?php
-										foreach ( array_reverse( $seasons ) as $key => $season ) {
+										foreach ( array_reverse( $seasons ) as $season ) {
 											$option_name = $season['name'];
 											?>
 											<option value="<?php echo esc_html( $season['name'] ); ?>" <?php selected( $season['name'], $curr_season ); ?>>
@@ -110,7 +101,7 @@ if ( empty( $header_level ) ) {
 										}
 										?>
 									</select>
-									<label for="season"><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></label>
+									<label for="season"><?php echo esc_html( $season_label ); ?></label>
 								</div>
 							</div>
 						</div>

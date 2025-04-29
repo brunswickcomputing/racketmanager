@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var string $player_link */
+$alphabet_key = array();
 ?>
 <div class="module module--card">
 	<div class="module__banner">
@@ -72,20 +74,19 @@ namespace Racketmanager;
 				<div class="alphabet__wrapper">
 					<ul class="alphabet">
 						<?php
-						$alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-						for ( $i = 0; $i < 26; ++$i ) {
-							$alphabet_char = substr( $alphabet, $i, 1 );
-							if ( false === array_search( $alphabet_char, $alphabet_key, true ) ) {
-								$alphabet_class = 'is-disabled';
-							} else {
-								$alphabet_class = null;
-							}
-							?>
-							<li class="alphabet__char">
-								<a href="#<?php echo esc_attr( $alphabet_char ); ?>" class="alphabet__char-href <?php echo esc_attr( $alphabet_class ); ?>"><?php echo esc_attr( $alphabet_char ); ?></a>
-							</li>
-							<?php
-						}
+						$alphabet = range('A', 'Z');
+                        foreach ( $alphabet as $alphabet_char ) {
+	                        if ( ! in_array( $alphabet_char, $alphabet_key, true ) ) {
+		                        $alphabet_class = 'is-disabled';
+	                        } else {
+		                        $alphabet_class = null;
+	                        }
+	                        ?>
+                            <li class="alphabet__char">
+                                <a href="#<?php echo esc_attr( $alphabet_char ); ?>" class="alphabet__char-href <?php echo esc_attr( $alphabet_class ); ?>"><?php echo esc_attr( $alphabet_char ); ?></a>
+                            </li>
+	                        <?php
+                        }
 						?>
 					</ul>
 				</div>

@@ -264,7 +264,7 @@ div.match h4 {
 }
 
 div.match p.score,
-div.match p.matchdate {
+div.match p.matchDate {
 	font-weight: bold;
 	font-size: 1.2em;
 	text-align: center;

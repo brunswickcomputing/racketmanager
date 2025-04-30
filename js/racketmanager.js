@@ -29,7 +29,7 @@ jQuery(document).ready(function ($) {
 	});
 
 	/* Friendly URL rewrite */
-	jQuery('#racketmanager_competititon_archive #season').on('change', function () {
+	jQuery('#racketmanager_competition_archive #season').on('change', function () {
 		let pagename = jQuery('#pagename').val();
 		let season = jQuery('#season').val();
 

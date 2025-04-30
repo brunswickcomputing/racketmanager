@@ -77,21 +77,21 @@
     100% { transform: rotate(360deg); }
 }
 
-div#matchheader {
+div#matchHeader {
     font-size: 1.1em;
     font-weight: 600;
 }
-div#matchheader .leaguetitle {
+div#matchHeader .leagueTitle {
     float: left;
 }
-div#matchheader .matchdate {
+div#matchHeader .matchDate {
     float: right;
 }
-div#matchheader .matchday {
+div#matchHeader .matchday {
     float: none;
     text-align: center;
 }
-div#matchheader .matchtitle {
+div#matchHeader .matchTitle {
     text-align: center;
 }
 .widefat td.rtd.centered {
@@ -113,11 +113,11 @@ td input.player {
     border: none;
     border-right: 1px solid #333;
 }
-#matchrubbers select {
+#matchRubbers select {
     width:    100%;
 }
 
-#matchrubbers .centered {
+#matchRubbers .centered {
     text-align: center;
     vertical-align: middle
 }

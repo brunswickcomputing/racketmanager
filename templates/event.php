@@ -16,7 +16,8 @@
 
 namespace Racketmanager;
 
-global $racketmanager_shortcodes, $racketmanager, $wp;
+/** @var object $event */
+global $wp;
 
 $is_singular = false;
 if ( empty( $tab ) ) {
@@ -39,7 +40,7 @@ $menu_options = array();
 if ( $event->competition->is_championship ) {
 	$menu_options['draw'] = array(
 		'name'        => 'draw',
-		'selected'    => 'draw' === $tab ? true : false,
+		'selected'    => 'draw' === $tab,
 		'available'   => true,
 		'template'    => null,
 		'description' => __( 'Draw', 'racketmanager' ),
@@ -47,7 +48,7 @@ if ( $event->competition->is_championship ) {
 } else {
 	$menu_options['standings'] = array(
 		'name'        => 'standings',
-		'selected'    => 'standings' === $tab ? true : false,
+		'selected'    => 'standings' === $tab,
 		'available'   => true,
 		'template'    => null,
 		'description' => __( 'Standings', 'racketmanager' ),
@@ -56,7 +57,7 @@ if ( $event->competition->is_championship ) {
 if ( $event->competition->is_championship ) {
 	$menu_options['matches'] = array(
 		'name'        => 'matches',
-		'selected'    => 'matches' === $tab ? true : false,
+		'selected'    => 'matches' === $tab,
 		'available'   => true,
 		'template'    => null,
 		'description' => __( 'Matches', 'racketmanager' ),
@@ -64,7 +65,7 @@ if ( $event->competition->is_championship ) {
 } elseif ( ! $event->is_box ) {
 	$menu_options['clubs'] = array(
 		'name'        => 'clubs',
-		'selected'    => 'clubs' === $tab ? true : false,
+		'selected'    => 'clubs' === $tab,
 		'available'   => true,
 		'template'    => null,
 		'description' => __( 'Clubs', 'racketmanager' ),
@@ -72,7 +73,7 @@ if ( $event->competition->is_championship ) {
 }
 $menu_options['teams'] = array(
 	'name'        => 'teams',
-	'selected'    => 'teams' === $tab ? true : false,
+	'selected'    => 'teams' === $tab,
 	'available'   => true,
 	'template'    => $event->competition->is_championship ? 'list' : null,
 	'description' => __( 'Teams', 'racketmanager' ),
@@ -80,7 +81,7 @@ $menu_options['teams'] = array(
 if ( ! $event->is_box ) {
 	$menu_options['players'] = array(
 		'name'        => 'players',
-		'selected'    => 'players' === $tab ? true : false,
+		'selected'    => 'players' === $tab,
 		'available'   => true,
 		'template'    => null,
 		'description' => __( 'Players', 'racketmanager' ),
@@ -88,7 +89,7 @@ if ( ! $event->is_box ) {
 }
 
 ?>
-<div id="leaguetables">
+<div id="league-tables">
 	<?php
 	require RACKETMANAGER_PATH . 'templates/includes/event-header.php';
 	?>

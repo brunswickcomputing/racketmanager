@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var object $match */
 global $racketmanager;
 if ( $match->is_pending ) {
 	$score_class = 'is-not-played';
@@ -26,24 +27,26 @@ $match_approval_mode      = $is_update_allowed->match_approval_mode;
 $allow_schedule_match     = false;
 $allow_switch_match       = false;
 $allow_amend_score        = false;
-$allow_reset_match_result = true;
+$allow_reset_match_result = false;
 $show_menu                = false;
 if ( $match->is_pending ) {
-	if ( $user_can_update && ! $edit_mode ) {
-		if ( ( 'admin' === $user_type || 'matchsecretary' === $user_type || 'captain' === $user_type ) && ( 'admin' === $user_type || 'both' === $user_team || 'home' === $user_team ) ) {
-			$allow_schedule_match = true;
-			$show_menu            = true;
-		}
-		if ( ( 'admin' === $user_type || ( 'matchsecretary' === $user_type && ( 'both' === $user_team || 'home' === $user_team ) ) ) && ( $match->league->event->seasons[ $match->season ]['home_away'] ) ) {
-			$allow_switch_match = true;
-			$show_menu          = true;
-		}
+	if ( ! $edit_mode ) {
+        if ( $user_can_update ) {
+	        $allow_amend_score = true;
+	        $show_menu         = true;
+            if ( ( 'admin' === $user_type || 'matchsecretary' === $user_type || 'captain' === $user_type ) && ( 'admin' === $user_type || 'both' === $user_team || 'home' === $user_team ) ) {
+		        $allow_schedule_match = true;
+	        }
+	        if ( ( 'admin' === $user_type || ( 'matchsecretary' === $user_type && ( 'both' === $user_team || 'home' === $user_team ) ) ) && ( $match->league->event->seasons[ $match->season ]['home_away'] ) ) {
+		        $allow_switch_match = true;
+	        }
+        }
 	}
 } elseif ( 'admin' === $user_type ) {
 	if ( ! $edit_mode ) {
-		$allow_amend_score = true;
+		$allow_amend_score        = true;
+		$allow_reset_match_result = true;
 	}
-	$allow_reset_match_result = true;
 	$show_menu                = true;
 } elseif ( 'P' === $match->confirmed && ! $edit_mode ) {
 	if ( $user_can_update && ! $match_approval_mode ) {
@@ -68,12 +71,6 @@ if ( $match->is_pending ) {
 							$info_msg = $match_status . ' - ' . $team->title . ' ' . __( 'did not show', 'racketmanager' );
 						}
 					}
-					break;
-				case 2:
-					break;
-				case 3:
-					break;
-				case 4:
 					break;
 				case 5:
 					if ( ! empty( $match->date_original ) ) {
@@ -121,7 +118,7 @@ if ( $match->is_pending ) {
 					<?php
 				}
 				?>
-				<span><time datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, the_match_date() ) ); ?></time></span>
+				<span><time datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, $match->date ) ); ?></time></span>
 			</div>
 			<?php
 			if ( ! empty( $match->date_original ) ) {
@@ -159,7 +156,7 @@ if ( $match->is_pending ) {
 							if ( $allow_schedule_match ) {
 								?>
 								<li>
-									<a class="dropdown-item" href="#schedule" onclick="Racketmanager.matchOptions(event, '<?php echo esc_attr( $match->id ); ?>', 'schedule_match')">
+									<a class="dropdown-item" href="/schedule" onclick="Racketmanager.matchOptions(event, '<?php echo esc_attr( $match->id ); ?>', 'schedule_match')">
 										<?php esc_html_e( '(Re)schedule match', 'racketmanager' ); ?>
 									</a>
 								</li>
@@ -170,7 +167,7 @@ if ( $match->is_pending ) {
 							if ( $allow_switch_match ) {
 								?>
 								<li>
-									<a class="dropdown-item" href="#switch" onclick="Racketmanager.matchOptions(event, '<?php echo esc_attr( $match->id ); ?>', 'switch_home')">
+									<a class="dropdown-item" href="/switch" onclick="Racketmanager.matchOptions(event, '<?php echo esc_attr( $match->id ); ?>', 'switch_home')">
 										<?php esc_html_e( 'Switch home and away', 'racketmanager' ); ?>
 									</a>
 								</li>
@@ -293,7 +290,7 @@ if ( $match->is_pending ) {
 		if ( $edit_mode && $user_can_update && ! $match_approval_mode ) {
 			?>
 			<div class="text-center mt-2">
-				<a href="#status" class="nav__link btn btn-outline" id="matchStatusButton" onclick="Racketmanager.matchStatusModal(event, '<?php echo esc_attr( $match->id ); ?>')">
+				<a href="/status" class="nav__link btn btn-outline" id="matchStatusButton" onclick="Racketmanager.matchStatusModal(event, '<?php echo esc_attr( $match->id ); ?>')">
 					<svg width="16" height="16" class="icon-plus nav-link__prefix">
 						<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#plus-lg' ); ?>"></use>
 					</svg>
@@ -316,7 +313,7 @@ if ( $match->is_pending ) {
 			$match_stat = '0 - 0';
 		}
 		?>
-		<span class="module__foooter-item-value"><?php echo esc_html( $match_stat ); ?></span>
+		<span class="module__footer-item-value"><?php echo esc_html( $match_stat ); ?></span>
 	</span>
 	<span class="module__footer-item">
 		<strong class="module__footer-item-title"><?php esc_html_e( 'Sets', 'racketmanager' ); ?>: </strong>
@@ -327,7 +324,7 @@ if ( $match->is_pending ) {
 			$match_stat = '0 - 0';
 		}
 		?>
-		<span class="module__foooter-item-value"><?php echo esc_html( $match_stat ); ?></span>
+		<span class="module__footer-item-value"><?php echo esc_html( $match_stat ); ?></span>
 	</span>
 	<span class="module__footer-item">
 		<strong class="module__footer-item-title"><?php esc_html_e( 'Games', 'racketmanager' ); ?>: </strong>
@@ -338,6 +335,6 @@ if ( $match->is_pending ) {
 			$match_stat = '0 - 0';
 		}
 		?>
-		<span class="module__foooter-item-value"><?php echo esc_html( $match_stat ); ?></span>
+		<span class="module__footer-item-value"><?php echo esc_html( $match_stat ); ?></span>
 	</span>
 </div>

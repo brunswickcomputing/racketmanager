@@ -1147,47 +1147,6 @@ Racketmanager.resetMatchScores = function (e, formRef) {
 	jQuery(selector)
 		.removeClass('tie');
 };
-Racketmanager.matchMode = function (e, match_id, mode, message) {
-	e.preventDefault();
-	let notifyField;
-	let tournament;
-	if (mode === 'tournament') {
-		notifyField = ".elementor-shortcode";
-		tournament = jQuery('#tournamentName').val();
-	} else {
-		notifyField = "#showMatchRubbers";
-	}
-	jQuery(notifyField).val("");
-	jQuery(notifyField).hide();
-	jQuery("#splash").css('opacity', 1);
-	jQuery("#splash").removeClass("d-none");
-	jQuery("#splash").show();
-	jQuery(".match-print").hide();
-	jQuery(".match-mode").hide();
-	jQuery(".match-mode").removeClass("d-none");
-	jQuery(notifyField).load(
-		ajax_var.url,
-		{
-			"match_id": match_id,
-			"mode": mode,
-			"tournament": tournament,
-			"action": "racketmanager_match_mode",
-			"security": ajax_var.ajax_nonce,
-			"message": message,
-		},
-		function () {
-			jQuery("#splash").css('opacity', 0);
-			jQuery("#splash").hide();
-			if ('view' === mode) {
-				jQuery(".match-print").show();
-			}
-			jQuery(".match-mode").show();
-			let hidefield = '#' + mode + 'MatchMode';
-			jQuery(hidefield).hide();
-			jQuery(notifyField).show();
-		}
-	);
-};
 Racketmanager.matchHeader = function (match_id, edit_mode = false) {
 	let notifyField = "#match-header";
 	jQuery(notifyField).val("");

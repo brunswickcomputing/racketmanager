@@ -263,9 +263,3 @@ global $racketmanager;
 		?>
 	</div>
 </form>
-<?php
-/**
- * Include match modal file.
- */
-require_once 'match-modal.php';
-?>

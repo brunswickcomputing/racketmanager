@@ -23,10 +23,10 @@ class Racketmanager_Util {
 	/**
 	 * Get upload directory
 	 *
-	 * @param string|false $file file name.
+	 * @param false|string $file file name.
 	 * @return string upload path
 	 */
-	public static function get_file_path( $file = false ) {
+	public static function get_file_path( false|string $file = false ): string {
 		$base = WP_CONTENT_DIR . '/uploads/leagues';
 
 		if ( $file ) {
@@ -41,7 +41,7 @@ class Racketmanager_Util {
 	 *
 	 * @param array $page_definitions page definition array.
 	 */
-	public static function add_racketmanager_page( $page_definitions ) {
+	public static function add_racketmanager_page( array $page_definitions ): void {
 		foreach ( $page_definitions as $slug => $page ) {
 
 			// Check that the page doesn't exist already.
@@ -73,7 +73,7 @@ class Racketmanager_Util {
 	 *
 	 * @return array event types.
 	 */
-	public static function get_event_types() {
+	public static function get_event_types(): array {
 		$event_types       = array();
 		$event_types['BS'] = __( 'Boys Singles', 'racketmanager' );
 		$event_types['GS'] = __( 'Girls Singles', 'racketmanager' );
@@ -95,7 +95,7 @@ class Racketmanager_Util {
 	 * @param string $type event.
 	 * @return string event description.
 	 */
-	public static function get_event_type( $type ) {
+	public static function get_event_type( string $type ): string {
 		$event_types = self::get_event_types();
 		if ( empty( $event_types[ $type ] ) ) {
 			return __( 'Unknown', 'racketmanager' );
@@ -109,7 +109,7 @@ class Racketmanager_Util {
 	 *
 	 * @return array
 	 */
-	public static function get_weekdays() {
+	public static function get_weekdays(): array {
 		$weekdays              = array();
 		$weekdays['Monday']    = __( 'Monday', 'racketmanager' );
 		$weekdays['Tuesday']   = __( 'Tuesday', 'racketmanager' );
@@ -124,10 +124,10 @@ class Racketmanager_Util {
 	/**
 	 * Get available league standing status
 	 *
-	 * @param string $status status value.
-	 * @return array||string
+	 * @param string|null $status status value.
+	 * @return array|string|null
 	 */
-	public static function get_standing_status( $status = null ) {
+	public static function get_standing_status( string $status = null ): array|string|null {
 		$standing_status       = array();
 		$standing_status['C']  = __( 'Champions', 'racketmanager' );
 		$standing_status['P1'] = __( 'Promoted in first place', 'racketmanager' );
@@ -163,7 +163,7 @@ class Racketmanager_Util {
 	 *
 	 * @return array
 	 */
-	public static function get_competition_types() {
+	public static function get_competition_types(): array {
 		$competition_types               = array();
 		$competition_types['cup']        = __( 'cup', 'racketmanager' );
 		$competition_types['league']     = __( 'league', 'racketmanager' );
@@ -176,7 +176,7 @@ class Racketmanager_Util {
 	 *
 	 * @return array
 	 */
-	public static function get_modes() {
+	public static function get_modes(): array {
 		$modes                 = array();
 		$modes['default']      = __( 'Default', 'racketmanager' );
 		$modes['championship'] = __( 'Championship', 'racketmanager' );
@@ -187,8 +187,7 @@ class Racketmanager_Util {
 		 * @return array
 		 * @category wp-filter
 		 */
-		$modes = apply_filters( 'racketmanager_modes', $modes );
-		return $modes;
+		return apply_filters( 'racketmanager_modes', $modes );
 	}
 
 	/**
@@ -196,7 +195,7 @@ class Racketmanager_Util {
 	 *
 	 * @return array
 	 */
-	public static function get_entry_types() {
+	public static function get_entry_types(): array {
 		$entry_types           = array();
 		$entry_types['team']   = __( 'Team', 'racketmanager' );
 		$entry_types['player'] = __( 'Player', 'racketmanager' );
@@ -207,7 +206,7 @@ class Racketmanager_Util {
 	 *
 	 * @return array
 	 */
-	public static function get_scoring_types() {
+	public static function get_scoring_types(): array {
 		$scoring_types        = array();
 		$scoring_types['F4']  = __( 'Fast 4', 'racketmanager' );
 		$scoring_types['FM']  = __( 'Fast 4 with match tie break', 'racketmanager' );
@@ -225,7 +224,7 @@ class Racketmanager_Util {
 	 *
 	 * @return array
 	 */
-	public static function get_point_rules() {
+	public static function get_point_rules(): array {
 		$rules           = array();
 		$rules['manual'] = __( 'Update Standings Manually', 'racketmanager' );
 		$rules['one']    = __( 'One-Point-Rule', 'racketmanager' );
@@ -233,7 +232,6 @@ class Racketmanager_Util {
 		$rules['three']  = __( 'Three-Point-Rule', 'racketmanager' );
 		$rules['score']  = __( 'Score', 'racketmanager' );
 		$rules['user']   = __( 'User defined', 'racketmanager' );
-
 		/**
 		 * Fired when league point rules are built
 		 *
@@ -243,16 +241,14 @@ class Racketmanager_Util {
 		 */
 		$rules = apply_filters( 'racketmanager_point_rules_list', $rules );
 		asort( $rules );
-
 		return $rules;
 	}
-
 	/**
 	 * Get available point formats
 	 *
 	 * @return array
 	 */
-	public static function get_point_formats() {
+	public static function get_point_formats(): array {
 		$point_formats                = array();
 		$point_formats['%s:%s']       = '%s:%s';
 		$point_formats['%s']          = '%s';
@@ -269,8 +265,7 @@ class Racketmanager_Util {
 		 * @return array
 		 * @category wp-filter
 		 */
-		$point_formats = apply_filters( 'racketmanager_point_formats', $point_formats );
-		return $point_formats;
+		return apply_filters( 'racketmanager_point_formats', $point_formats );
 	}
 	/**
 	 * Get list of players by initial function
@@ -278,7 +273,7 @@ class Racketmanager_Util {
 	 * @param array $players list of players.
 	 * @return array list of players by initial
 	 */
-	public static function get_players_list( $players ) {
+	public static function get_players_list( array $players ): array {
 		$player_list = array();
 		$firstname   = array_column( $players, 'firstname' );
 		$surname     = array_column( $players, 'surname' );
@@ -297,20 +292,20 @@ class Racketmanager_Util {
 	 * Get set type function
 	 *
 	 * @param string $scoring scoring format.
-	 * @param string $round round.
-	 * @param int    $num_sets number of sets.
-	 * @param int    $set set number.
-	 * @param int    $rubber_number rubber number.
-	 * @param int    $num_rubbers number of rubbers.
-	 * @param int    $leg leg number.
+	 * @param string|null $round round.
+	 * @param int $num_sets number of sets.
+	 * @param int $set set number.
+	 * @param int|null $rubber_number rubber number.
+	 * @param int|null $num_rubbers number of rubbers.
+	 * @param int|null $leg leg number.
 	 * @return string set type.
 	 */
-	public static function get_set_type( $scoring, $round = null, $num_sets = 99, $set = 1, $rubber_number = null, $num_rubbers = null, $leg = null ) {
+	public static function get_set_type( string $scoring, string $round = null, int $num_sets = 99, int $set = 1, int $rubber_number = null, int $num_rubbers = null, int $leg = null ): string {
 		if ( 'TB' === $scoring ) {
 			$set_type = 'TB';
 		} elseif ( 'TBM' === $scoring ) {
 			if ( 'final' === $round ) {
-				if ( intval( $num_sets ) === $set ) {
+				if ( $num_sets === $set ) {
 					$set_type = 'MTB';
 				} else {
 					$set_type = 'TB';
@@ -319,7 +314,7 @@ class Racketmanager_Util {
 				$set_type = 'TB';
 			}
 		} elseif ( 'TM' === $scoring ) {
-			if ( intval( $num_sets ) === $set ) {
+			if ( $num_sets === $set ) {
 				$set_type = 'MTB';
 			} else {
 				$set_type = 'TB';
@@ -327,7 +322,7 @@ class Racketmanager_Util {
 		} elseif ( 'F4' === $scoring ) {
 			$set_type = 'fast4';
 		} elseif ( 'FM' === $scoring ) {
-			if ( intval( $num_sets ) === $set ) {
+			if ( $num_sets === $set ) {
 				$set_type = 'MTB';
 			} else {
 				$set_type = 'fast4';
@@ -340,7 +335,7 @@ class Racketmanager_Util {
 				$set_type = 'null';
 			}
 		} elseif ( 'MP' === $scoring ) {
-			if ( intval( $num_sets ) === $set ) {
+			if ( $num_sets === $set ) {
 				$set_type = 'MTB';
 			} else {
 				$set_type = 'TB';
@@ -352,17 +347,19 @@ class Racketmanager_Util {
 				}
 			}
 		} elseif ( 'MPL' === $scoring ) {
-			if ( intval( $num_sets ) === $set ) {
+			if ( $num_sets === $set ) {
 				$set_type = 'MTB';
 			} else {
 				$set_type = 'TB';
 			}
-			if ( ( '2' === $leg || 'final' === $round ) && $rubber_number && intval( $num_rubbers ) === $rubber_number ) {
+			if ( ( 2 === $leg || 'final' === $round ) && $rubber_number && intval( $num_rubbers ) === $rubber_number ) {
 				$set_type = 'MTB';
 				if ( 1 !== $set ) {
 					$set_type = 'null';
 				}
 			}
+		} else {
+			$set_type = 'null';
 		}
 		return $set_type;
 	}
@@ -372,14 +369,12 @@ class Racketmanager_Util {
 	 * @param string $set_type set type.
 	 * @return object set information.
 	 */
-	public static function get_set_info( $set_type ) {
+	public static function get_set_info( string $set_type ): object {
 		$tiebreak_allowed  = false;
-		$tiebreak_required = false;
 		$tiebreak_set      = 6;
 		if ( 'TB' === $set_type ) {
 			$max_win          = 7;
 			$min_win          = 6;
-			$tiebreak_set     = 6;
 			$max_loss         = $max_win - 2;
 			$min_loss         = $min_win - 2;
 			$tiebreak_allowed = true;
@@ -406,7 +401,7 @@ class Racketmanager_Util {
 			$max_loss     = $max_win - 2;
 			$min_loss     = $min_win - 2;
 			$tiebreak_set = 7;
-		} elseif ( 'null' === $set_type ) {
+		} else {
 			$max_win  = 0;
 			$min_win  = 0;
 			$max_loss = 0;
@@ -420,7 +415,7 @@ class Racketmanager_Util {
 		$set_info->min_loss          = $min_loss;
 		$set_info->tiebreak_set      = $tiebreak_set;
 		$set_info->tiebreak_allowed  = $tiebreak_allowed;
-		$set_info->tiebreak_required = $tiebreak_required;
+		$set_info->tiebreak_required = false;
 		return $set_info;
 	}
 	/**
@@ -428,7 +423,7 @@ class Racketmanager_Util {
 	 *
 	 * @return array
 	 */
-	private static function get_match_statuses() {
+	private static function get_match_statuses(): array {
 		$match_status      = array();
 		$match_status['0'] = __( 'Complete', 'racketmanager' );
 		$match_status['1'] = __( 'Not played', 'racketmanager' );
@@ -447,17 +442,17 @@ class Racketmanager_Util {
 	 * @param int $status status.
 	 * @return string status text
 	 */
-	public static function get_match_status( $status ) {
+	public static function get_match_status( int $status ): string {
 		$match_statuses = self::get_match_statuses();
-		return empty( $match_statuses[ intval( $status ) ] ) ? __( 'Unknown', 'racketmanager' ) : $match_statuses[ intval( $status ) ];
+		return empty( $match_statuses[ $status ] ) ? __( 'Unknown', 'racketmanager' ) : $match_statuses[ $status ];
 	}
 	/**
 	 * Get match status code function
 	 *
-	 * @param int $status_value status description.
+	 * @param mixed $status_value status description.
 	 * @return int
 	 */
-	public static function get_match_status_code( $status_value ) {
+	public static function get_match_status_code( mixed $status_value ): int {
 		$match_statuses = self::get_match_statuses();
 		$status         = array_search( ucwords( $status_value ), $match_statuses, true );
 		if ( false === $status ) {
@@ -470,7 +465,7 @@ class Racketmanager_Util {
 	 *
 	 * @return array of match days
 	 */
-	public static function get_match_days() {
+	public static function get_match_days(): array {
 		$match_days      = array();
 		$match_days['0'] = __( 'Monday', 'racketmanager' );
 		$match_days['1'] = __( 'Tuesday', 'racketmanager' );
@@ -487,7 +482,7 @@ class Racketmanager_Util {
 	 * @param string $match_day match day name.
 	 * @return int match day number
 	 */
-	public static function get_match_day_number( $match_day ) {
+	public static function get_match_day_number( string $match_day ): int {
 		$match_days = self::get_match_days();
 		$day        = array_search( $match_day, $match_days, true );
 		if ( false === $day ) {
@@ -501,7 +496,7 @@ class Racketmanager_Util {
 	 * @param string $match_day_num match day number.
 	 * @return string match day name
 	 */
-	public static function get_match_day( $match_day_num ) {
+	public static function get_match_day( string $match_day_num ): string {
 		$match_days = self::get_match_days();
 		return empty( $match_days[ intval( $match_day_num ) ] ) ? __( 'Unknown', 'racketmanager' ) : $match_days[ $match_day_num ];
 	}
@@ -512,7 +507,7 @@ class Racketmanager_Util {
 	 * @param string $key key of favourite.
 	 * @return array list of users
 	 */
-	public static function get_users_for_favourite( $type, $key ) {
+	public static function get_users_for_favourite( string $type, string $key ): array {
 		return get_users(
 			array(
 				'meta_key'   => 'favourite-' . $type, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
@@ -527,18 +522,12 @@ class Racketmanager_Util {
 	 * @param int $status status.
 	 * @return string status text
 	 */
-	public static function get_message_type( $status ) {
-		switch ( $status ) {
-			case '0':
-				$status_value = __( 'read', 'racketmanager' );
-				break;
-			case '1':
-				$status_value = __( 'unread', 'racketmanager' );
-				break;
-			default:
-				$status_value = __( 'Unknown', 'racketmanager' );
-		}
-		return $status_value;
+	public static function get_message_type( int $status ): string {
+		return match ($status) {
+			0 => __('read', 'racketmanager'),
+			1 => __('unread', 'racketmanager'),
+			default => __('Unknown', 'racketmanager'),
+		};
 	}
 	/**
 	 * Get key of final depending on number of teams
@@ -546,7 +535,7 @@ class Racketmanager_Util {
 	 * @param int $num_teams number of teams in round.
 	 * @return string key
 	 */
-	public static function get_final_key( $num_teams ) {
+	public static function get_final_key( int $num_teams ): string {
 		if ( 2 === $num_teams ) {
 			$key = 'final';
 		} elseif ( 4 === $num_teams ) {
@@ -561,10 +550,10 @@ class Racketmanager_Util {
 	/**
 	 * Get name of final depending on number of teams
 	 *
-	 * @param string $key final key.
-	 * @return the name of the round
+	 * @param false|string $key final key.
+	 * @return string|boolean name of the round
 	 */
-	public static function get_final_name( $key = false ) {
+	public static function get_final_name( false|string $key = false ): bool|string {
 		if ( ! empty( $key ) ) {
 			if ( 'final' === $key ) {
 				$round = __( 'Final', 'racketmanager' );
@@ -580,6 +569,8 @@ class Racketmanager_Util {
 				$round = sprintf( __( 'Round of %d', 'racketmanager' ), $tmp[1] );
 			}
 			return $round;
+		} else {
+			return false;
 		}
 	}
 	/**
@@ -587,7 +578,7 @@ class Racketmanager_Util {
 	 *
 	 * @return array of match types
 	 */
-	public static function get_match_types() {
+	public static function get_match_types(): array {
 		$match_types      = array();
 		$match_types['S'] = __( 'Singles', 'racketmanager' );
 		$match_types['D'] = __( 'Doubles', 'racketmanager' );
@@ -599,29 +590,30 @@ class Racketmanager_Util {
 	 * @param string $match_type match type name.
 	 * @return string $key match type key.
 	 */
-	public static function get_match_type_key( $match_type ) {
+	public static function get_match_type_key( string $match_type ): string {
 		$match_types = self::get_match_types();
 		$key         = array_search( $match_type, $match_types, true );
 		return ( $key );
 	}
+
 	/**
 	 * Get match type function
 	 *
 	 * @param string $match_type match type name.
-	 * @return match type || false
+	 * @return false|string
 	 */
-	public static function get_match_type( $match_type ) {
+	public static function get_match_type( string $match_type ): false|string {
 		$match_types = self::get_match_types();
-		return isset( $match_types[ $match_type ] ) ? $match_types[ $match_type ] : false;
+		return $match_types[ $match_type ] ?? false;
 	}
 	/**
 	 * Clear scheduled event function
 	 *
 	 * @param string $name name of scheduled event.
-	 * @param array  $args array of event arguments.
+	 * @param array $args array of event arguments.
 	 * @return void
 	 */
-	public static function clear_scheduled_event( $name, $args ) {
+	public static function clear_scheduled_event( string $name, array $args ): void {
 		if ( wp_next_scheduled( $name, $args ) ) {
 			wp_clear_scheduled_hook( $name, $args );
 		}
@@ -630,15 +622,13 @@ class Racketmanager_Util {
 	 * Calculate championship rating function
 	 *
 	 * @param object $match match object.
-	 * @param int    $team_id team id.
+	 * @param int $team_id team id.
 	 * @return int
 	 */
-	public static function calculate_championship_rating( $match, $team_id ) {
+	public static function calculate_championship_rating( object $match, int $team_id ): int {
 		$points = 0;
 		if ( isset( $match->league->event->age_limit ) ) {
-			if ( 'open' === $match->league->event->age_limit ) {
-				$event_points = 1;
-			} elseif ( $match->league->event->age_limit >= 30 ) {
+			if ( $match->league->event->age_limit >= 30 ) {
 				$event_points = 0.25;
 			} elseif ( 16 === $match->league->event->age_limit ) {
 				$event_points = 0.4;
@@ -646,6 +636,8 @@ class Racketmanager_Util {
 				$event_points = 0.25;
 			} elseif ( 12 === $match->league->event->age_limit ) {
 				$event_points = 0.15;
+			} else {
+				$event_points = 1;
 			}
 		} else {
 			$event_points = 1;
@@ -659,7 +651,6 @@ class Racketmanager_Util {
 				$loser_id  = $match->loser_id_tie;
 			}
 			$first_round = $match->league->championship->get_final_keys( 1 );
-			$base_points = 0;
 			switch ( $match->final_round ) {
 				case 'final':
 					if ( $winner_id === $team_id ) {
@@ -744,15 +735,15 @@ class Racketmanager_Util {
 	 *
 	 * @return array of event grades
 	 */
-	public static function get_event_grades() {
+	public static function get_event_grades(): array {
 		$event_grades      = array();
 		$event_grades['1'] = __( 'National', 'racketmanager' );
 		$event_grades['2'] = __( 'National', 'racketmanager' );
 		$event_grades['3'] = __( 'Regional', 'racketmanager' );
 		$event_grades['4'] = __( 'County', 'racketmanager' );
 		$event_grades['5'] = __( 'Local', 'racketmanager' );
-		$event_grades['6'] = __( 'Matchplays', 'racketmanager' );
-		$event_grades['7'] = __( 'Interal', 'racketmanager' );
+		$event_grades['6'] = __( 'Match plays', 'racketmanager' );
+		$event_grades['7'] = __( 'Internal', 'racketmanager' );
 		$event_grades['U'] = __( 'Ungraded', 'racketmanager' );
 		return $event_grades;
 	}
@@ -761,7 +752,7 @@ class Racketmanager_Util {
 	 *
 	 * @return array
 	 */
-	public static function get_age_limits() {
+	public static function get_age_limits(): array {
 		$age_limits         = array();
 		$age_limits['open'] = __( 'Open', 'racketmanager' );
 		$age_limits['30']   = __( 'Over 30', 'racketmanager' );
@@ -790,10 +781,10 @@ class Racketmanager_Util {
 	/**
 	 * Get match status value function
 	 *
-	 * @param string $age_limit age limit.
+	 * @param string|null $age_limit age limit.
 	 * @return string age_limit text
 	 */
-	public static function get_age_limit( $age_limit ) {
+	public static function get_age_limit( ?string $age_limit ): string {
 		$age_limits = self::get_age_limits();
 		return empty( $age_limits[ $age_limit ] ) ? __( 'Open', 'racketmanager' ) : $age_limits[ $age_limit ];
 	}
@@ -802,7 +793,7 @@ class Racketmanager_Util {
 	 *
 	 * @return array
 	 */
-	public static function get_age_groups() {
+	public static function get_age_groups(): array {
 		$age_groups           = array();
 		$age_groups['open']   = __( 'Open', 'racketmanager' );
 		$age_groups['junior'] = __( 'Junior', 'racketmanager' );
@@ -813,12 +804,12 @@ class Racketmanager_Util {
 	 * Amend date function
 	 *
 	 * @param string $date date.
-	 * @param int    $adjustment_value adjustment value.
+	 * @param int $adjustment_value adjustment value.
 	 * @param string $adjustment_type adjustment type default to '+'.
 	 * @param string $adjustment_period adjustment period default to 'day'.
 	 * @return string new date.
 	 */
-	public static function amend_date( $date, $adjustment_value, $adjustment_type = '+', $adjustment_period = 'day' ) {
+	public static function amend_date( string $date, int $adjustment_value, string $adjustment_type = '+', string $adjustment_period = 'day' ): string {
 		if ( $date && $adjustment_value ) {
 			return gmdate( 'Y-m-d', strtotime( $date . ' ' . $adjustment_type . $adjustment_value . $adjustment_period ) );
 		} else {
@@ -830,7 +821,7 @@ class Racketmanager_Util {
 	 *
 	 * @return array
 	 */
-	public static function get_sports() {
+	public static function get_sports(): array {
 		$types = array();
 		/**
 		* Add custom league types
@@ -849,7 +840,7 @@ class Racketmanager_Util {
 	 *
 	 * @return array
 	 */
-	public static function get_ranking_types() {
+	public static function get_ranking_types(): array {
 		$ranking_types           = array();
 		$ranking_types['auto']   = __( 'Automatic', 'racketmanager' );
 		$ranking_types['manual'] = __( 'Manual', 'racketmanager' );
@@ -860,8 +851,8 @@ class Racketmanager_Util {
 	 *
 	 * @return array
 	 */
-	public static function get_standings_display_options() {
-		$options = array(
+	public static function get_standings_display_options(): array {
+		return array(
 			'status'     => __( 'Team Status', 'racketmanager' ),
 			'pld'        => __( 'Played Games', 'racketmanager' ),
 			'won'        => __( 'Won Games', 'racketmanager' ),
@@ -872,14 +863,13 @@ class Racketmanager_Util {
 			'sets'       => __( 'Sets', 'racketmanager' ),
 			'games'      => __( 'Games', 'racketmanager' ),
 		);
-		return $options;
 	}
 	/**
 	 * Get currency format
 	 *
 	 * @return object || null
 	 */
-	public static function get_currency_format() {
+	public static function get_currency_format(): object {
 		return numfmt_create( get_locale(), \NumberFormatter::CURRENCY );
 	}
 	/**
@@ -887,7 +877,7 @@ class Racketmanager_Util {
 	 *
 	 * @return string
 	 */
-	public static function get_currency_code() {
+	public static function get_currency_code(): string {
 		setlocale( LC_ALL, get_locale() );
 		$locale_info = localeconv();
 		return empty( $locale_info['int_curr_symbol'] ) ? 'GBP' : trim( $locale_info['int_curr_symbol'] ) ;
@@ -899,71 +889,28 @@ class Racketmanager_Util {
 	 *
 	 * @return string               An error message.
 	 */
-	public static function get_error_message( $error_code ) {
-		switch ( $error_code ) {
-			case 'empty_password':
-				$message = __( 'You need to enter a password to login.', 'racketmanager' );
-				break;
-			case 'incorrect_password':
-				$message = __( 'Incorrect password.', 'racketmanager' );
-				break;
-			case 'email':
-				$message = __( 'The email address you entered is not valid.', 'racketmanager' );
-				break;
-			case 'email_exists':
-				$message = __( 'An account exists with this email address.', 'racketmanager' );
-				break;
-			case 'closed':
-				$message = __( 'Registering new users is currently not allowed.', 'racketmanager' );
-				break;
-			case 'captcha':
-				$message = __( 'Google reCAPTCHA verification failed', 'racketmanager' );
-				break;
-			case 'empty_username':
-				$message = __( 'Email address must be entered.', 'racketmanager' );
-				break;
-			case 'invalid_email':
-			case 'invalidcombo':
-			case 'invalid_username':
-				$message = __( 'There are no users registered with this email address.', 'racketmanager' );
-				break;
-			case 'expiredkey':
-			case 'invalidkey':
-				$message = __( 'Password reset link has expired.', 'racketmanager' );
-				break;
-			case 'password_reset_mismatch':
-				$message = __( 'The two passwords you entered do not match.', 'racketmanager' );
-				break;
-			case 'password_reset_empty':
-				$message = __( "Password must be entered.", 'racketmanager' );
-				break;
-			case 'firstname_field_empty':
-			case 'first_name':
-				$message = __( 'First name must be entered', 'racketmanager' );
-				break;
-			case 'lastname_field_empty':
-			case 'last_name':
-				$message = __( 'Last name must be entered', 'racketmanager' );
-				break;
-			case 'gender_field_empty':
-				$message = __( 'Gender must be specified', 'racketmanager' );
-				break;
-			case 'no_updates':
-				$message = __( 'No updates to be made', 'racketmanager' );
-				break;
-			case 'form_has_timedout':
-				$message = __( 'The form has timed out.', 'racketmanager' );
-				break;
-			case 'btm_field_empty':
-				$message = __( 'LTA tennis number missing', 'racketmanager' );
-				break;
-			case 'security':
-				$message = __( 'Form has expired. Please refresh the page and resubmit.', 'racketmanager' );
-				break;
-			default:
-				$message = $error_code;
-		}
-		return $message;
+	public static function get_error_message( string $error_code ): string {
+		return match ($error_code) {
+			'empty_password' => __('You need to enter a password to login.', 'racketmanager'),
+			'incorrect_password' => __('Incorrect password.', 'racketmanager'),
+			'email' => __('The email address you entered is not valid.', 'racketmanager'),
+			'email_exists' => __('An account exists with this email address.', 'racketmanager'),
+			'closed' => __('Registering new users is currently not allowed.', 'racketmanager'),
+			'captcha' => __('Google reCAPTCHA verification failed', 'racketmanager'),
+			'empty_username' => __('Email address must be entered.', 'racketmanager'),
+			'invalid_email', 'invalidcombo', 'invalid_username' => __('There are no users registered with this email address.', 'racketmanager'),
+			'expiredkey', 'invalidkey' => __('Password reset link has expired.', 'racketmanager'),
+			'password_reset_mismatch' => __('The two passwords you entered do not match.', 'racketmanager'),
+			'password_reset_empty' => __("Password must be entered.", 'racketmanager'),
+			'firstname_field_empty', 'first_name' => __('First name must be entered', 'racketmanager'),
+			'lastname_field_empty', 'last_name' => __('Last name must be entered', 'racketmanager'),
+			'gender_field_empty' => __('Gender must be specified', 'racketmanager'),
+			'no_updates' => __('No updates to be made', 'racketmanager'),
+			'form_has_timedout' => __('The form has timed out.', 'racketmanager'),
+			'btm_field_empty' => __('LTA tennis number missing', 'racketmanager'),
+			'security' => __('Form has expired. Please refresh the page and resubmit.', 'racketmanager'),
+			default => $error_code,
+		};
 	}
 	/**
 	 * Finds and returns a matching field for the given error code.
@@ -972,61 +919,25 @@ class Racketmanager_Util {
 	 *
 	 * @return string               A field.
 	 */
-	public static function get_error_field( $error_code ) {
-		switch ( $error_code ) {
-			case 'empty_password':
-			case 'incorrect_password':
-				$field = 'user_pass';
-				break;
-			case 'email':
-			case 'email_exists':
-			case 'closed':
-			case 'empty_username':
-			case 'invalid_email':
-			case 'invalidcombo':
-			case 'invalid_username':
-				$field = 'user_login';
-				break;
-			case 'captcha':
-				$field = 'captcha';
-				break;
-			case 'expiredkey':
-			case 'invalidkey':
-				$field = 'top';
-				break;
-			case 'password_reset_mismatch':
-			case 'password_reset_empty':
-				$field = 'password';
-				break;
-			case 'firstname_field_empty':
-			case 'first_name':
-				$field = 'firstname';
-				break;
-			case 'lastname_field_empty':
-			case 'last_name':
-				$field = 'lastname';
-				break;
-			case 'gender_field_empty':
-				$field = 'gender';
-				break;
-			case 'btm_field_empty':
-				$field = 'btm';
-				break;
-			case 'form_has_timedout':
-			case 'security':
-				$field = 'top';
-				break;
-			default:
-				$field = 'top';
-		}
-		return $field;
+	public static function get_error_field( string $error_code ): string {
+		return match ($error_code) {
+			'empty_password', 'incorrect_password' => 'user_pass',
+			'email', 'email_exists', 'closed', 'empty_username', 'invalid_email', 'invalidcombo', 'invalid_username' => 'user_login',
+			'captcha' => 'captcha',
+			'password_reset_mismatch', 'password_reset_empty' => 'password',
+			'firstname_field_empty', 'first_name' => 'firstname',
+			'lastname_field_empty', 'last_name' => 'lastname',
+			'gender_field_empty' => 'gender',
+			'btm_field_empty' => 'btm',
+			default => 'top',
+		};
 	}
 	/**
 	 * Get email opt in choices  function
 	 *
 	 * @return array
 	 */
-	public static function get_email_opt_ins() {
+	public static function get_email_opt_ins(): array {
 		$email_opt_ins      = array();
 		$email_opt_ins['1'] = __( 'Tournament notification', 'racketmanager' );
 		return $email_opt_ins;
@@ -1037,7 +948,7 @@ class Racketmanager_Util {
 	 * @param string $opt_in opt in.
 	 * @return string $opt_in text
 	 */
-	public static function get_email_opt_in( $opt_in ) {
+	public static function get_email_opt_in( string $opt_in ): string {
 		$email_opt_ins = self::get_email_opt_ins();
 		return empty( $email_opt_ins[ $opt_in ] ) ? __( 'Unknown', 'racketmanager' ) : $email_opt_ins[ $opt_in ];
 	}

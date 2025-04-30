@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var array $clubs */
+/** @var array $events */
 ?>
 <div class="container">
 	<div class="module module--card">
@@ -42,7 +44,7 @@ namespace Racketmanager;
 									}
 									?>
 								</select>
-								<label for="event_ide"><?php esc_html_e( 'Event', 'racketmanager' ); ?></label>
+								<label for="event_id"><?php esc_html_e( 'Event', 'racketmanager' ); ?></label>
 							</div>
 						</div>
 					</form>

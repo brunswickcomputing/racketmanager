@@ -121,7 +121,6 @@ if ( ! empty( $match->winner_id ) ) {
 					$team_status = null;
 				}
 			}
-            debug_to_console( $winner );
 			$rubber_title = $rubber->type . $rubber->rubber_number;
 			if ( 'D' === substr( $rubber->type, 1, 1 ) ) {
 				$rubber_players = array(
@@ -194,57 +193,57 @@ if ( ! empty( $match->winner_id ) ) {
                                         <div class="match__row-title-header">
 											<?php
 											if ( $team->is_withdrawn ) {
-											$title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );
+											    $title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );
+											    ?>
+                                                <s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="<?php echo esc_attr( $title_text ); ?>">
+												<?php
+                                            }
 											?>
-                                            <s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="<?php echo esc_attr( $title_text ); ?>">
-												<?php
-												}
+											<?php echo esc_html( $team->title ); ?>
+											<?php
+											if ( $team->is_withdrawn ) {
 												?>
-												<?php echo esc_html( $team->title ); ?>
-												<?php
-												if ( $team->is_withdrawn ) {
-												?>
-                                            </s>
-										<?php
-										}
-										?>
+                                                </s>
+										        <?php
+										    }
+										    ?>
                                         </div>
 										<?php
 										foreach ( $rubber_players as $player_number => $rubber_player ) {
 											?>
                                             <div class="match__row-title-value">
-											<span class="match__row-title-value-content">
-												<span class="nav-link__value <?php echo esc_html( $winner_class ); ?>">
-													<?php
-													if ( ! empty( $rubber->players[ $opponent ][ $player_number ] ) ) {
-														$player_detail = $rubber->players[ $opponent ][ $player_number ];
-														if ( empty( $player_detail->system_record ) ) {
-															?>
-                                                            <a href="/<?php echo esc_attr( $match->league->event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $match->league->event->name ) ); ?>/<?php echo esc_attr( $match->season ); ?>/player/<?php echo esc_attr( seo_url( $player_detail->fullname ) ); ?>/">
-															<?php
-														}
-														?>
-                                                        <span class="<?php echo esc_attr( $player_detail->class ); ?>"
-														<?php
-														if ( ! empty( $player_detail->class ) ) {
-															?>
-                                                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="<?php echo esc_attr( $player_detail->description ); ?>"
-															<?php
-														}
-														?>
-														><?php echo esc_html( $player_detail->fullname ); ?></span>
-														<?php
-														if ( empty( $player_detail->system_record ) ) {
-															?>
-                                                            </a>
-															<?php
-														}
-														?>
-														<?php
-													}
-													?>
-												</span>
-											</span>
+                                                <span class="match__row-title-value-content">
+                                                    <span class="nav-link__value <?php echo esc_html( $winner_class ); ?>">
+                                                        <?php
+                                                        if ( ! empty( $rubber->players[ $opponent ][ $player_number ] ) ) {
+                                                            $player_detail = $rubber->players[ $opponent ][ $player_number ];
+                                                            if ( empty( $player_detail->system_record ) ) {
+                                                                ?>
+                                                                <a href="/<?php echo esc_attr( $match->league->event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $match->league->event->name ) ); ?>/<?php echo esc_attr( $match->season ); ?>/player/<?php echo esc_attr( seo_url( $player_detail->fullname ) ); ?>/">
+                                                                <?php
+                                                            }
+                                                            ?>
+                                                            <span class="<?php echo esc_attr( $player_detail->class ); ?>"
+                                                            <?php
+                                                            if ( ! empty( $player_detail->class ) ) {
+                                                                ?>
+                                                                data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="<?php echo esc_attr( $player_detail->description ); ?>"
+                                                                <?php
+                                                            }
+                                                            ?>
+                                                            ><?php echo esc_html( $player_detail->fullname ); ?></span>
+                                                            <?php
+                                                            if ( empty( $player_detail->system_record ) ) {
+                                                                ?>
+                                                                </a>
+                                                                <?php
+                                                            }
+                                                            ?>
+                                                            <?php
+                                                        }
+                                                        ?>
+                                                    </span>
+                                                </span>
                                             </div>
 											<?php
 										}

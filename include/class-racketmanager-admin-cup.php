@@ -81,6 +81,15 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 				if ( $season ) {
 					if ( isset( $competition->seasons[ $season ] ) ) {
 						$competition->events = $competition->get_events();
+						$i                   = 0;
+						foreach ( $competition->events as $event ) {
+							$leagues = $event->get_leagues();
+							if ( $leagues ) {
+								$competition->events[ $i ]->leagues = $leagues;
+							}
+							++$i;
+							$leagues = $event->get_leagues();
+						}
 						$tab                 = 'overview';
 						$cup_season          = (object) $competition->seasons[ $season ];
 						if ( isset( $cup_season->date_closing ) && $cup_season->date_closing <= gmdate( 'Y-m-d' ) ) {
@@ -236,7 +245,8 @@ final class RacketManager_Admin_Cup extends RacketManager_Admin {
 						$day_adjust   = $day_end - 1;
 						$end_date     = RacketManager_Util::amend_date( $season_data['date_end'], $day_adjust, '-' );
 						$round_length = $season_data['round_length'] ?? 7;
-						$i = 0;
+						$match_date   = null;
+						$i            = 0;
 						foreach( $competition->finals as $final ) {
 							$r = $final['round'] - 1;
 							if ( 0 === $i ) {

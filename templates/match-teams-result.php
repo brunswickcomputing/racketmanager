@@ -275,10 +275,10 @@ if ( $match->is_walkover ) {
 												$loser  = null;
 												$is_tie = false;
 												if ( ! empty( $rubber->winner_id ) ) {
-													if ( $rubber->winner_id === $match->home_team ) {
+													if ( $rubber->winner_id === intval( $match->home_team ) ) {
 														$winner = 'home';
 														$loser  = 'away';
-													} elseif ( $rubber->winner_id === $match->away_team ) {
+													} elseif ( $rubber->winner_id === intval( $match->away_team ) ) {
 														$winner = 'away';
 														$loser  = 'home';
 													} elseif ( '-1' === $rubber->winner_id ) {
@@ -327,7 +327,7 @@ if ( $match->is_walkover ) {
 																?>
 																<div class="match__header-aside text-uppercase">
 																	<div class="match__header-aside-block">
-																		<a class="nav__link" onclick="Racketmanager.scoreStatusModal(event, '<?php echo esc_attr( $rubber->id ); ?>', '<?php echo esc_attr( $rubber->rubber_number ); ?>')">
+																		<a href="" class="nav__link" onclick="Racketmanager.scoreStatusModal(event, '<?php echo esc_attr( $rubber->id ); ?>', '<?php echo esc_attr( $rubber->rubber_number ); ?>')">
 																			<svg width="16" height="16" class="icon-plus nav-link__prefix">
 																				<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#plus-lg' ); ?>"></use>
 																			</svg>

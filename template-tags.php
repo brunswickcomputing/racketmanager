@@ -823,7 +823,7 @@ function racketmanager_tournament_match( $match_id, $args = array() ) {
 	$args             = array_merge( $defaults, $args );
 	$args['match_id'] = $match_id;
 
-	$shortcode = '[tournamentmatch';
+	$shortcode = '[tournament-match';
 	foreach ( $args as $key => $value ) {
 		$shortcode .= ' ' . $key . "='" . $value . "'";
 	}

@@ -7,14 +7,18 @@
 
 namespace Racketmanager;
 
+/** @var object $match */
+/** @var string $match_type */
+/** @var object $is_update_allowed */
+global $racketmanager;
 $user_can_update = $is_update_allowed->user_can_update;
 $user_message    = $is_update_allowed->message;
-$tabbase         = 0;
+$tab_base        = 0;
 ?>
-	<div id="matchrubbers">
-		<div id="matchheader">
+	<div id="matchRubbers">
+		<div id="matchHeader">
 			<div class="row justify-content-between" id="match-header-1">
-				<div class="col-auto leaguetitle"><?php echo esc_html( $match->league->title ); ?></div>
+				<div class="col-auto leagueTitle"><?php echo esc_html( $match->league->title ); ?></div>
 				<div class="col-auto matchday">
 				<?php
 				if ( $match->league->is_championship ) {
@@ -24,17 +28,16 @@ $tabbase         = 0;
 				}
 				?>
 				</div>
-				<div class="col-auto matchdate"><?php echo esc_html( substr( $match->date, 0, 10 ) ); ?></div>
+				<div class="col-auto matchDate"><?php echo esc_html( substr( $match->date, 0, 10 ) ); ?></div>
 			</div>
 			<div class="row justify-content-center" id="match-header-2">
 				<?php if ( ! $match->league->is_championship ) { ?>
-				<div class="col-auto matchtitle"><?php echo esc_html( $match->match_title ); ?></div>
+				<div class="col-auto matchTitle"><?php echo esc_html( $match->match_title ); ?></div>
 				<?php } ?>
 			</div>
 		</div>
-		<form id="match-view" action="#" method="post" onsubmit="return checkSelect(this)">
+		<form id="match-view" method="post">
 			<?php wp_nonce_field( 'scores-match', 'racketmanager_nonce' ); ?>
-
 			<input type="hidden" name="current_league_id" id="current_league_id" value="<?php echo esc_html( $match->league_id ); ?>" />
 			<input type="hidden" name="current_match_id" id="current_match_id" value="<?php echo esc_html( $match->id ); ?>" />
 			<input type="hidden" name="current_season" id="current_season" value="<?php echo esc_html( $match->season ); ?>" />
@@ -42,7 +45,6 @@ $tabbase         = 0;
 			<input type="hidden" name="away_team" value="<?php echo esc_html( $match->away_team ); ?>" />
 			<input type="hidden" name="match_type" value="<?php echo esc_html( $match->type ); ?>" />
 			<input type="hidden" name="match_round" value="<?php echo esc_html( $match->round ); ?>" />
-
 			<div class="row mb-3">
 				<div class="col-4 text-center"><strong><?php esc_html_e( 'Team', 'racketmanager' ); ?></strong></div>
 				<div class="col-4 text-center"><strong><?php esc_html_e( 'Sets', 'racketmanager' ); ?></strong></div>
@@ -63,13 +65,13 @@ $tabbase         = 0;
 								);
 							}
 							$colspan  = 12 / $match->league->num_sets;
-							$tabindex = $tabbase + 10 + $i;
+							$tabindex = $tab_base + 10 + $i;
 							?>
 							<div class="col-<?php echo esc_html( $colspan ); ?> col-sm-12 col-lg-<?php echo esc_html( $colspan ); ?>">
-								<input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points" type="text" size="2" id="set_<?php echo esc_html( $i ); ?>_player1" name="custom[sets][<?php echo esc_html( $i ); ?>][player1]" value="<?php echo esc_html( $match->sets[ $i ]['player1'] ); ?>" />
+                                <label for="set_<?php echo esc_html( $i ); ?>_player1"></label><input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points" type="text" size="2" id="set_<?php echo esc_html( $i ); ?>_player1" name="custom[sets][<?php echo esc_html( $i ); ?>][player1]" value="<?php echo esc_html( $match->sets[ $i ]['player1'] ); ?>" />
 								-
-								<?php $tabindex = $tabbase + 11 + $i; ?>
-								<input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points" type="text" size="2" id="set_<?php echo esc_html( $i ); ?>_player2" name="custom[sets][<?php echo esc_html( $i ); ?>][player2]" value="<?php echo esc_html( $match->sets[ $i ]['player2'] ); ?>" />
+								<?php $tabindex = $tab_base + 11 + $i; ?>
+                                <label for="set_<?php echo esc_html( $i ); ?>_player2"></label><input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points" type="text" size="2" id="set_<?php echo esc_html( $i ); ?>_player2" name="custom[sets][<?php echo esc_html( $i ); ?>][player2]" value="<?php echo esc_html( $match->sets[ $i ]['player2'] ); ?>" />
 							</div>
 							<?php
 						}
@@ -82,8 +84,8 @@ $tabbase         = 0;
 			</div>
 			<div class="row text-center mb-3">
 				<div class="col-12">
-					<input class="points" type="text" size="2" readonly id="home_points" name="home_points" value="<?php echo esc_html( isset( $match->home_points ) ? $match->home_points : '' ); ?>" />
-					<input class="points" type="text" size="2" readonly id="away_points" name="away_points" value="<?php echo esc_html( isset( $match->away_points ) ? $match->away_points : '' ); ?>" />
+                    <label for="home_points"></label><input class="points" type="text" size="2" readonly id="home_points" name="home_points" value="<?php echo esc_html( $match->home_points ?? ''); ?>" />
+                    <label for="away_points"></label><input class="points" type="text" size="2" readonly id="away_points" name="away_points" value="<?php echo esc_html( $match->away_points ?? ''); ?>" />
 				</div>
 			</div>
 			<div class="form-floating">
@@ -126,8 +128,8 @@ $tabbase         = 0;
 					?>
 					<div class="row mb-3">
 						<div class="col-12">
-						<input type="hidden" name="updateMatch" id="updateMatch" value="results" />
-						<button tabindex="500" class="button button-primary" type="button" id="updateMatchResults" onclick="Racketmanager.updateMatchResults(this)">Update Result</button>
+                            <input type="hidden" name="updateMatch" id="updateMatch" value="results" />
+                            <button tabindex="500" class="button button-primary" type="button" id="updateMatchResults" onclick="Racketmanager.updateMatchResults(this)">Update Result</button>
 						</div>
 					</div>
 					<div class="row mb-3">
@@ -147,8 +149,10 @@ $tabbase         = 0;
 				?>
 				<div class="row mb-3 justify-content-center">
 					<div class="col-auto">
-						<?php if ( 'notLoggedIn' === $user_message ) { ?>
-						You need to <a href="<?php echo esc_html( wp_login_url( wp_get_current_url() ) ); ?>">login</a> to update the result.
+						<?php
+                        if ( 'notLoggedIn' === $user_message ) {
+                            ?>
+                            You need to <a href="<?php echo esc_html( wp_login_url( wp_get_current_url() ) ); ?>">login</a> to update the result.
 							<?php
 						} else {
 							esc_html_e( 'User not allowed to update result', 'racketmanager' );

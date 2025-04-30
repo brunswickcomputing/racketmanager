@@ -201,7 +201,7 @@ global $racketmanager;
 						if ( ! empty( $league->num_rubbers ) ) {
 							if ( is_numeric( $match->home_team ) && is_numeric( $match->away_team ) ) {
 								?>
-								<td><button type="button" class="btn btn-secondary" id="<?php echo esc_html( $match->id ); ?>" onclick="Racketmanager.showRubbers(this)"><?php echo esc_html__( 'View Rubbers', 'racketmanager' ); ?></button></td>
+                                <td><a class="btn btn-secondary" href="<?php echo esc_html( $match->link ) . 'result/'; ?>"><?php echo esc_html__( 'View Rubbers', 'racketmanager' ); ?></a></td>
 								<?php
 							}
 						} else {

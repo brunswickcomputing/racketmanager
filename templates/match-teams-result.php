@@ -7,6 +7,10 @@
 
 namespace Racketmanager;
 
+/** @var object $match */
+/** @var string $match_type */
+/** @var object $is_update_allowed */
+global $racketmanager;
 $user_can_update     = $is_update_allowed->user_can_update;
 $user_type           = $is_update_allowed->user_type;
 $user_team           = $is_update_allowed->user_team;
@@ -108,8 +112,8 @@ if ( $match->is_walkover ) {
 						<div id="viewMatchRubbers">
 							<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
 							<div id="showMatchRubbers">
-								<div id="matchrubbers">
-									<form id="match-rubbers" class="team-match-result" action="#" method="post" onsubmit="return checkSelect(this)">
+								<div id="matchRubbers">
+									<form id="match-rubbers" class="team-match-result" method="post">
 										<?php wp_nonce_field( 'rubbers-match', 'racketmanager_nonce' ); ?>
 										<input type="hidden" name="updated_form" value="new" />
 										<input type="hidden" name="current_match_id" id="current_match_id" value="<?php echo esc_html( $match->id ); ?>" />
@@ -143,7 +147,7 @@ if ( $match->is_walkover ) {
 											<div class="row mb-3">
 												<div class="col-12 match__buttons">
 													<input type="hidden" name="updateRubber" id="updateRubber" value="<?php echo esc_html( esc_html( $update_rubber ) ); ?>" />
-													<a tabindex="999" class="btn btn-plain" type="button" id="cancelResults" href="<?php echo esc_html( $page_referrer ); ?>"><?php echo esc_html_e( 'Cancel', 'racketmanager' ); ?></a>
+													<a tabindex="999" class="btn btn-plain" type="button" id="cancelResults" href="<?php echo esc_html( $page_referrer ); ?>"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></a>
 													<button tabindex="500" class="btn btn-primary" type="button" id="updateRubberResults" onclick="Racketmanager.updateResults(this)"><?php echo esc_html( $action_text ); ?></button>
 												</div>
 											</div>
@@ -209,11 +213,11 @@ if ( $match->is_walkover ) {
 																					<div class="approval-check">
 																						<div class="form-check">
 																							<input type="hidden" name="result_<?php echo esc_attr( $opponent ); ?>" />
-																							<input class="form-check-input" type="radio" name="resultConfirm" id="resultConfirm" value="confirm" required />
+                                                                                            <label for="resultConfirm"></label><input class="form-check-input" type="radio" name="resultConfirm" id="resultConfirm" value="confirm" required />
 																							<label class="form-check-label"><?php esc_html_e( 'Confirm', 'racketmanager' ); ?></label>
 																						</div>
 																						<div class="form-check">
-																							<input class="form-check-input" type="radio" name="resultConfirm" id="resultChallenge" value="challenge" required />
+                                                                                            <label for="resultChallenge"></label><input class="form-check-input" type="radio" name="resultConfirm" id="resultChallenge" value="challenge" required />
 																							<label class="form-check-label"><?php esc_html_e( 'Challenge', 'racketmanager' ); ?></label>
 																						</div>
 																					</div>
@@ -265,7 +269,7 @@ if ( $match->is_walkover ) {
 										?>
 										<ul class="match-group">
 											<?php
-											$tabbase = 0;
+											$tab_base = 0;
 											foreach ( $rubbers as $rubber ) {
 												$winner = null;
 												$loser  = null;
@@ -280,8 +284,6 @@ if ( $match->is_walkover ) {
 													} elseif ( '-1' === $rubber->winner_id ) {
 														$is_tie = true;
 													}
-												} else {
-													$winner = null;
 												}
 												$r            = $rubber->rubber_number;
 												$rubber_title = $rubber->type . $rubber->rubber_number;
@@ -295,21 +297,21 @@ if ( $match->is_walkover ) {
 													$rubber_players = array( '1' => array() );
 													$doubles        = false;
 												}
-												if ( 'M' === substr( $rubber->type, 0, 1 ) || 'B' === substr( $rubber->type, 0, 1 ) ) {
+												if ( str_starts_with($rubber->type, 'M') || str_starts_with($rubber->type, 'B')) {
 													foreach ( $rubber_players as $p => $player ) {
 														$rubber_players[ $p ]['gender'] = 'm';
 													}
-												} elseif ( 'W' === substr( $rubber->type, 0, 1 ) || 'G' === substr( $rubber->type, 0, 1 ) ) {
+												} elseif ( str_starts_with($rubber->type, 'W') || str_starts_with($rubber->type, 'G')) {
 													foreach ( $rubber_players as $p => $player ) {
 														$rubber_players[ $p ]['gender'] = 'f';
 													}
-												} elseif ( 'X' === substr( $rubber->type, 0, 1 ) ) {
+												} elseif (str_starts_with($rubber->type, 'X')) {
 													$rubber_players['1']['gender'] = 'm';
 													$rubber_players['2']['gender'] = 'f';
 												}
 												?>
-												<input type="hidden" name="id[<?php echo esc_attr( $rubber->rubber_number ); ?>]" value="<?php echo esc_html( $rubber->id ); ?>" </>
-												<input type="hidden" name="type[<?php echo esc_attr( $rubber->rubber_number ); ?>]" value="<?php echo esc_html( $rubber->type ); ?>" </>
+												<input type="hidden" name="id[<?php echo esc_attr( $rubber->rubber_number ); ?>]" value="<?php echo esc_html( $rubber->id ); ?>" />
+												<input type="hidden" name="type[<?php echo esc_attr( $rubber->rubber_number ); ?>]" value="<?php echo esc_html( $rubber->type ); ?>" />
 												<li class="match-group__item">
 													<div class="match <?php echo esc_attr( $match_editable ); ?>" id="rubber-<?php echo esc_attr( $rubber->id ); ?>">
 														<div class="match__header">
@@ -325,7 +327,7 @@ if ( $match->is_walkover ) {
 																?>
 																<div class="match__header-aside text-uppercase">
 																	<div class="match__header-aside-block">
-																		<a href="" class="nav__link" onclick="Racketmanager.scoreStatusModal(event, '<?php echo esc_attr( $rubber->id ); ?>', '<?php echo esc_attr( $rubber->rubber_number ); ?>')">
+																		<a class="nav__link" onclick="Racketmanager.scoreStatusModal(event, '<?php echo esc_attr( $rubber->id ); ?>', '<?php echo esc_attr( $rubber->rubber_number ); ?>')">
 																			<svg width="16" height="16" class="icon-plus nav-link__prefix">
 																				<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#plus-lg' ); ?>"></use>
 																			</svg>
@@ -361,7 +363,7 @@ if ( $match->is_walkover ) {
 																			</div>
 																			<?php
 																			foreach ( $rubber_players as $player_number => $player ) {
-																				$tabindex   = $tabbase + 1;
+																				$tabindex   = $tab_base + 1;
 																				$player_ref = $opponent . '_player' . $player_number;
 																				?>
 																				<div class="match__row-title-value">
@@ -371,27 +373,28 @@ if ( $match->is_walkover ) {
 																							if ( $match_editable ) {
 																								$player_id_link = 'players_' . $rubber->rubber_number . '_' . $opponent . '_' . $player_number;
 																								?>
-																								<select class="form-select <?php echo empty( $rubber->players[ $opponent ][ $player_number ]->class ) ? null : 'is-invalid'; ?>" tabindex="<?php echo esc_html( $tabindex ); ?>" name="players[<?php echo esc_attr( $rubber->rubber_number ); ?>][<?php echo esc_attr( $opponent ); ?>][<?php echo esc_attr( $player_number ); ?>]" id="<?php echo esc_attr( $player_id_link ); ?>">
-																									<option value="0">&nbsp;</option>
-																									<?php
-																									foreach ( $club_players[ $opponent ][ $player['gender'] ] as $player_option ) {
-																										if ( ! empty( $player_option->removed_date ) ) {
-																											$disabled = 'disabled';
-																										} else {
-																											$disabled = '';
-																										}
-																										$player_display = $player_option->fullname;
-																										if ( ! empty( $player_option->btm ) ) {
-																											$player_display .= ' - ' . $player_option->btm;
-																										}
-																										?>
-																										<option value="<?php echo esc_attr( $player_option->roster_id ); ?>" <?php selected( $player_option->roster_id, isset( $rubber->players[ $opponent ][ $player_number ]->club_player_id ) ? $rubber->players[ $opponent ][ $player_number ]->club_player_id : null ); ?> <?php echo esc_html( $disabled ); ?>>
-																											<?php echo esc_html( $player_display ); ?>
-																										</option>
-																										<?php
-																									}
-																									?>
-																								</select>
+                                                                                                <select class="form-select <?php echo empty( $rubber->players[ $opponent ][ $player_number ]->class ) ? null : 'is-invalid'; ?>" tabindex="<?php echo esc_html( $tabindex ); ?>" name="players[<?php echo esc_attr( $rubber->rubber_number ); ?>][<?php echo esc_attr( $opponent ); ?>][<?php echo esc_attr( $player_number ); ?>]" id="<?php echo esc_attr( $player_id_link ); ?>">
+                                                                                                    <option value="0">&nbsp;</option>
+                                                                                                    <?php
+                                                                                                    foreach ( $club_players[ $opponent ][ $player['gender'] ] as $player_option ) {
+                                                                                                        if ( ! empty( $player_option->removed_date ) ) {
+                                                                                                            $disabled = 'disabled';
+                                                                                                        } else {
+                                                                                                            $disabled = '';
+                                                                                                        }
+                                                                                                        $player_display = $player_option->fullname;
+                                                                                                        if ( ! empty( $player_option->btm ) ) {
+                                                                                                            $player_display .= ' - ' . $player_option->btm;
+                                                                                                        }
+                                                                                                        ?>
+                                                                                                        <option value="<?php echo esc_attr( $player_option->roster_id ); ?>" <?php selected( $player_option->roster_id, $rubber->players[$opponent][$player_number]->club_player_id ?? null); ?> <?php echo esc_html( $disabled ); ?>>
+                                                                                                            <?php echo esc_html( $player_display ); ?>
+                                                                                                        </option>
+                                                                                                        <?php
+                                                                                                    }
+                                                                                                    ?>
+                                                                                                </select>
+                                                                                                <label class="visually-hidden" for="<?php echo esc_attr( $player_id_link ); ?>"></label>
 																								<div id="<?php echo esc_attr( $player_id_link ); ?>Feedback" class="invalid-feedback"><?php echo empty( $rubber->players[ $opponent ][ $player_number ]->description ) ? null : esc_html( $rubber->players[ $opponent ][ $player_number ]->description ); ?></div>
 																								<?php
 																							} elseif ( ! empty( $rubber->players[ $opponent ][ $player_number ] ) ) {
@@ -446,9 +449,6 @@ if ( $match->is_walkover ) {
 																			if ( $rubber->is_walkover ) {
 																				$match_message_class = 'match-warning';
 																				$match_message_text  = __( 'Walkover', 'racketmanager' );
-																				if ( empty( $match_status_class ) ) {
-																					$match_status_class = 'd-none';
-																				}
 																			} elseif ( $rubber->is_retired ) {
 																				$match_message_class = 'match-warning';
 																				$match_message_text  = __( 'Retired', 'racketmanager' );
@@ -521,11 +521,11 @@ if ( $match->is_walkover ) {
 																	}
 																}
 																?>
-																<input type="text" class="d-none" id="match_status_<?php echo esc_attr( $rubber->rubber_number ); ?>" name="match_status[<?php echo esc_attr( $rubber->rubber_number ); ?>]" value="<?php echo esc_html( $rubber_status ); ?>" />
+                                                                <label for="match_status_<?php echo esc_attr( $rubber->rubber_number ); ?>"></label><input type="text" class="d-none" id="match_status_<?php echo esc_attr( $rubber->rubber_number ); ?>" name="match_status[<?php echo esc_attr( $rubber->rubber_number ); ?>]" value="<?php echo esc_html( $rubber_status ); ?>" />
 															</div>
 															<div class="match__result">
 																<?php
-																$sets = isset( $rubber->sets ) ? $rubber->sets : array();
+																$sets = $rubber->sets ?? array();
 																for ( $i = 1; $i <= $match->league->num_sets; $i++ ) {
 																	if ( ! isset( $rubber->sets[ $i ] ) ) {
 																		$rubber->sets[ $i ] = array(
@@ -542,7 +542,7 @@ if ( $match->is_walkover ) {
 																	} else {
 																		$winner_set = null;
 																	}
-																	$tabindex = $tabbase + 10 + ( $i * 10 );
+																	$tabindex = $tab_base + 10 + ( $i * 10 );
 																	$set_type = Racketmanager_Util::get_set_type( $match->league->scoring, $match->final_round, $match->league->num_sets, $i, $r, $match->num_rubbers, $match->leg );
 																	$set_info = Racketmanager_Util::get_set_info( $set_type );
 																	?>
@@ -559,13 +559,7 @@ if ( $match->is_walkover ) {
 																				<?php
 																				if ( $match_editable ) {
 																					?>
-																					<input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points match-points__cell-input <?php echo esc_html( $winner_class ); ?>" type="number"
-																						<?php
-																						if ( ! $match_editable ) {
-																							echo esc_html( ' readonly' );
-																						}
-																						?>
-																						size="2" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_<?php echo esc_attr( $opponent ); ?>" name="sets[<?php echo esc_html( $r ); ?>][<?php echo esc_html( $i ); ?>][<?php echo esc_attr( $opponent ); ?>]" value="<?php echo esc_html( $rubber->sets[ $i ][ $opponent ] ); ?>" onblur="SetCalculator(this)" />
+                                                                                    <label for="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_<?php echo esc_attr( $opponent ); ?>"></label><input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points match-points__cell-input <?php echo esc_html( $winner_class ); ?>" type="number" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_<?php echo esc_attr( $opponent ); ?>" name="sets[<?php echo esc_html( $r ); ?>][<?php echo esc_html( $i ); ?>][<?php echo esc_attr( $opponent ); ?>]" value="<?php echo esc_html( $rubber->sets[ $i ][ $opponent ] ); ?>" onblur="SetCalculator(this)" />
 																					<?php
 																				} else {
 																					echo esc_html( $rubber->sets[ $i ][ $opponent ] );
@@ -592,13 +586,7 @@ if ( $match->is_walkover ) {
 																			?>
 																			>
 																			<?php ++$tabindex; ?>
-																			<input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points match-points__cell-input" type="number" min="0"
-																				<?php
-																				if ( ! $match_editable ) {
-																					echo esc_html( ' readonly' );
-																				}
-																				?>
-																				size="2" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" name="sets[<?php echo esc_html( $r ); ?>][<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo isset( $rubber->sets[ $i ]['tiebreak'] ) ? esc_html( $rubber->sets[ $i ]['tiebreak'] ) : ''; ?>"  onblur="SetCalculatorTieBreak(this)"/>
+                                                                            <label for="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_tiebreak"> </label><input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points match-points__cell-input" type="number" min="0" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" name="sets[<?php echo esc_html( $r ); ?>][<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo isset( $rubber->sets[ $i ]['tiebreak'] ) ? esc_html( $rubber->sets[ $i ]['tiebreak'] ) : ''; ?>" onblur="SetCalculatorTieBreak(this)"/>
 																		</div>
 																		<?php
 																	}
@@ -616,16 +604,17 @@ if ( $match->is_walkover ) {
 																</ul>
 																<div class="match__footer-aside text-uppercase">
 																	<a href="" onclick="Racketmanager.resetMatchScores(event, 'rubber-<?php echo esc_attr( $rubber->id ); ?>')">
-																		<?php echo esc_html_e( 'Reset scores', 'racketmanager' ); ?>
+																		<?php esc_html_e( 'Reset scores', 'racketmanager' ); ?>
 																	</a>
 																</div>
 															</div>
 															<?php
 														}
 														?>
+                                                    </div>
 												</li>
 												<?php
-												$tabbase += 100;
+												$tab_base += 100;
 												++$r;
 											}
 											?>
@@ -634,14 +623,13 @@ if ( $match->is_walkover ) {
 								</div>
 							</div>
 						</div>
-
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 	<script>
-		<?php require RACKETMANAGER_PATH . 'js/setcalculator.js'; ?>
+		<?php require RACKETMANAGER_PATH . 'js/set-calculator.js'; ?>
 	</script>
 	<?php require RACKETMANAGER_PATH . 'templates/includes/modal-score.php'; ?>
 	<?php require 'includes/match-modal.php'; ?>

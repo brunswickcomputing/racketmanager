@@ -11,7 +11,9 @@
 
 namespace Racketmanager;
 
-global $wp_query;
+/** @var object $is_update_allowed */
+/** @var object $match */
+global $racketmanager;
 $tournament_link    = empty( $tournament ) ? null : '/tournament/' . seo_url( $tournament->name ) . '/';
 $winner             = null;
 $winner_set         = null;
@@ -19,31 +21,23 @@ $loser              = null;
 $is_tie             = false;
 $user_can_update    = $is_update_allowed->user_can_update;
 $tournament_head    = empty( $tournament ) ? null : $tournament->name . ' ';
-$tournament_head   .= __( 'Tournament', 'racketmanager' );
+$tournament_head    .= __( 'Tournament', 'racketmanager' );
 $player_team        = null;
 $player_team_status = null;
 $match_editable     = false;
-$is_edit_mode       = isset( $is_edit_mode ) ? $is_edit_mode : false;
+$is_edit_mode       = $is_edit_mode ?? false;
 if ( $user_can_update ) {
 	$match_editable = 'is-editable';
 }
 $allow_schedule_match     = false;
 $allow_reset_match_result = false;
 $show_menu                = false;
-switch ( $match->league->event->competition->type ) {
-	case 'league':
-		$image = 'images/bootstrap-icons.svg#table';
-		break;
-	case 'cup':
-		$image = 'images/bootstrap-icons.svg#trophy-fill';
-		break;
-	case 'tournament':
-		$image = 'images/lta-icons.svg#icon-bracket';
-		break;
-	default:
-		$image = null;
-		break;
-}
+$image = match ( $match->league->event->competition->type ) {
+	'league'     => 'images/bootstrap-icons.svg#table',
+	'cup'        => 'images/bootstrap-icons.svg#trophy-fill',
+	'tournament' => 'images/lta-icons.svg#icon-bracket',
+	default => null,
+};
 if ( $match ) {
 	$match_status = null;
 	if ( ! empty( $match->winner_id ) ) {
@@ -98,7 +92,7 @@ if ( $match ) {
 					<div class="media__content">
 						<h1 class="media__title"><?php esc_html_e( 'Match details', 'racketmanager' ); ?></h1>
 						<div class="media__content-subinfo">
-							<small class="media__subheading">
+							<div class="media__subheading">
 								<ul class="match__header-title">
 									<?php
 									if ( ! empty( $tournament ) ) {
@@ -123,7 +117,7 @@ if ( $match ) {
 									}
 									?>
 								</ul>
-							</small>
+							</div>
 							<?php
 							if ( ! empty( $tournament->date_start ) && ! empty( $tournament->date ) ) {
 								?>
@@ -292,7 +286,7 @@ if ( $match ) {
 		</div>
 		<div class="wrapper--padding-medium">
 			<?php $form_id = 'match-view'; ?>
-			<form id="<?php echo esc_html( $form_id ); ?>" action="" method="post" onsubmit="return checkSelect(this)">
+			<form id="<?php echo esc_html( $form_id ); ?>" method="post">
 				<?php wp_nonce_field( 'scores-match', 'racketmanager_nonce' ); ?>
 				<input type="hidden" name="current_league_id" id="current_league_id" value="<?php echo esc_html( $match->league_id ); ?>" />
 				<input type="hidden" name="current_match_id" id="current_match_id" value="<?php echo esc_html( $match->id ); ?>" />
@@ -515,7 +509,7 @@ if ( $match ) {
 													<?php
 													if ( $match_editable ) {
 														?>
-														<input type="text" class="points match-points__cell-input <?php echo esc_html( $winner_point_class ); ?>" id="set_<?php echo esc_html( $i ); ?>_<?php echo esc_html( $opponent ); ?>" name="sets[<?php echo esc_html( $i ); ?>][<?php echo esc_html( $opponent ); ?>]" value="<?php echo isset( $set[ $opponent ] ) ? esc_html( $set[ $opponent ] ) : ''; ?>" onblur="SetCalculator(this)" />
+                                                        <label for="set_<?php echo esc_html( $i ); ?>_<?php echo esc_html( $opponent ); ?>"></label><input type="text" class="points match-points__cell-input <?php echo esc_html( $winner_point_class ); ?>" id="set_<?php echo esc_html( $i ); ?>_<?php echo esc_html( $opponent ); ?>" name="sets[<?php echo esc_html( $i ); ?>][<?php echo esc_html( $opponent ); ?>]" value="<?php echo isset( $set[ $opponent ] ) ? esc_html( $set[ $opponent ] ) : ''; ?>" onblur="SetCalculator(this)" />
 														<?php
 													} else {
 														?>
@@ -546,7 +540,7 @@ if ( $match ) {
 											?>
 											>
 												<li class="match-points__cell">
-													<input type="text" class="points match-points__cell-input" id="set_<?php echo esc_html( $i ); ?>_tiebreak" name="sets[<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo isset( $set['tiebreak'] ) ? esc_html( $set['tiebreak'] ) : ''; ?>" onblur="SetCalculatorTieBreak(this)" />
+													<label for="set_<?php echo esc_html( $i ); ?>_tiebreak"></label><input type="text" class="points match-points__cell-input" id="set_<?php echo esc_html( $i ); ?>_tiebreak" name="sets[<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo isset( $set['tiebreak'] ) ? esc_html( $set['tiebreak'] ) : ''; ?>" onblur="SetCalculatorTieBreak(this)" />
 												</li>
 											</ul>
 											<?php
@@ -569,7 +563,7 @@ if ( $match ) {
 							?>
 							<div class="match__footer-aside text-uppercase">
 								<a href="" onclick="Racketmanager.resetMatchScores(event, '<?php echo esc_html( $form_id ); ?>')">
-									<?php echo esc_html_e( 'Reset scores', 'racketmanager' ); ?>
+									<?php esc_html_e( 'Reset scores', 'racketmanager' ); ?>
 								</a>
 							</div>
 							<?php
@@ -581,7 +575,7 @@ if ( $match ) {
 		</div>
 	</div>
 	<script>
-		<?php require RACKETMANAGER_PATH . 'js/setcalculator.js'; ?>
+		<?php require RACKETMANAGER_PATH . 'js/set-calculator.js'; ?>
 	</script>
 	<?php require RACKETMANAGER_PATH . 'templates/includes/modal-score.php'; ?>
 	<?php require RACKETMANAGER_PATH . 'templates/includes/match-modal.php'; ?>

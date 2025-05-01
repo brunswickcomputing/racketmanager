@@ -7,6 +7,9 @@
 
 namespace Racketmanager;
 
+/** @var bool   $is_invalid */
+/** @var string $msg */
+/** @var object $competition */
 $tab_name = 'fixtures';
 ?>
 <div class="form-control">
@@ -21,7 +24,7 @@ $tab_name = 'fixtures';
 					$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 					$is_invalid = true;
 					$msg_id     = array_search( 'fixed_match_dates', $racketmanager->error_fields, true );
-					$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 				}
 				?>
 				<legend class="<?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Match days allowed', 'racketmanager' ); ?></legend>
@@ -29,7 +32,7 @@ $tab_name = 'fixtures';
 				foreach ( $match_days as $key => $label ) {
 					?>
 					<div class="form-check">
-						<input type="checkbox" class="form-check-input" name="match_days_allowed[<?php echo esc_html( $key ); ?>]" id="match_days_allowed_<?php echo esc_html( $key ); ?>" value="1" <?php isset( $event->config->match_days_allowed[ $key ] ) ? checked( 1, $event->config->match_days_allowed[ $key ] ) : null; ?> />
+						<input type="checkbox" class="form-check-input" name="match_days_allowed[<?php echo esc_html( $key ); ?>]" id="match_days_allowed_<?php echo esc_html( $key ); ?>" value="1" <?php checked( 1, $event->config->match_days_allowed[ $key ] ?? null ); ?> />
 						<label for="match_days_allowed_<?php echo esc_html( $key ); ?>" class="form-check-label"><?php echo esc_html( $label ); ?></label>
 					</div>
 					<?php
@@ -50,7 +53,7 @@ $tab_name = 'fixtures';
 	}
 	?>
 	<div class="row gx-3 mb-3">
-		<div class="col-md-3 mb-3 mb-md-0">
+		<fieldset class="col-md-3 mb-3 mb-md-0">
 			<legend class="<?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Main fixture date offset', 'racketmanager' ); ?></legend>
 			<div class="form-floating">
 				<?php
@@ -58,13 +61,13 @@ $tab_name = 'fixtures';
 					$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 					$is_invalid = true;
 					$msg_id     = array_search( 'offset', $racketmanager->error_fields, true );
-					$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 				}
 				?>
 				<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name='offset' id='offset'>
-					<option value='0' <?php selected( isset( $event->config->offset ) ? $event->config->offset : null, '0' ); ?>><?php esc_html_e( 'Week 0', 'racketmanager' ); ?></option>
-					<option value='1' <?php selected( isset( $event->config->offset ) ? $event->config->offset : null, '1' ); ?>><?php esc_html_e( 'Week 1', 'racketmanager' ); ?></option>
-					<option value='2' <?php selected( isset( $event->config->offset ) ? $event->config->offset : null, '2' ); ?>><?php esc_html_e( 'Week 2', 'racketmanager' ); ?></option>
+					<option value='0' <?php selected( $event->config->offset ?? null, '0' ); ?>><?php esc_html_e( 'Week 0', 'racketmanager' ); ?></option>
+					<option value='1' <?php selected( $event->config->offset ?? null, '1' ); ?>><?php esc_html_e( 'Week 1', 'racketmanager' ); ?></option>
+					<option value='2' <?php selected( $event->config->offset ?? null, '2' ); ?>><?php esc_html_e( 'Week 2', 'racketmanager' ); ?></option>
 				</select>
 				<label for='offset'><?php esc_html_e( 'Offset week', 'racketmanager' ); ?></label>
 				<?php
@@ -77,6 +80,6 @@ $tab_name = 'fixtures';
 				}
 				?>
 			</div>
-		</div>
+		</fieldset>
 	</div>
 </div>

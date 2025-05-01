@@ -7,6 +7,9 @@
 
 namespace Racketmanager;
 
+/** @var bool   $is_invalid */
+/** @var string $msg */
+/** @var object $competition */
 $tab_name = 'fixtures';
 ?>
 <div class="form-control">
@@ -17,7 +20,7 @@ $tab_name = 'fixtures';
 				$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 				$is_invalid = true;
 				$msg_id     = array_search( 'fixed_match_dates', $racketmanager->error_fields, true );
-				$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+				$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 			}
 			?>
 			<legend class="<?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Fixed match dates', 'racketmanager' ); ?></legend>
@@ -52,7 +55,7 @@ $tab_name = 'fixtures';
 				$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 				$is_invalid = true;
 				$msg_id     = array_search( 'home_away', $racketmanager->error_fields, true );
-				$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+				$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 			}
 			?>
 			<legend class="<?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Fixture type', 'racketmanager' ); ?></legend>
@@ -76,7 +79,7 @@ $tab_name = 'fixtures';
 		</div>
 	</div>
 	<div class="row gx-3 mb-3">
-		<div class="col-md-3 mb-3 mb-md-0">
+		<fieldset class="col-md-3 mb-3 mb-md-0">
 			<legend class=""><?php esc_html_e( 'Round length', 'racketmanager' ); ?></legend>
 			<div class="form-floating">
 				<?php
@@ -84,7 +87,7 @@ $tab_name = 'fixtures';
 					$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 					$is_invalid = true;
 					$msg_id     = array_search( 'round_length', $racketmanager->error_fields, true );
-					$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 				}
 				?>
 				<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="round_length" id="round_length" placeholder="<?php esc_html_e( 'Round length', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->round_length ) ? esc_html( $competition->config->round_length ) : null; ?>" />
@@ -99,18 +102,18 @@ $tab_name = 'fixtures';
 				}
 				?>
 			</div>	
-		</div>
+		</fieldset>
 		<?php
 		if ( $competition->is_league || $competition->is_cup ) {
 			?>
-			<div class="col-md-3 mb-3 mb-md-0">
+			<fieldset class="col-md-3 mb-3 mb-md-0">
 				<legend class=""><?php esc_html_e( 'Reverse fixture gap', 'racketmanager' ); ?></legend>
 				<div class="form-floating mb-3">
 					<?php
 					if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'home_away_diff', $racketmanager->error_fields, true ) ) ) {
 						$is_invalid = true;
 						$msg_id     = array_search( 'home_away_diff', $racketmanager->error_fields, true );
-						$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 					}
 					?>
 					<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="home_away_diff" id="home_away_diff" value="<?php echo isset( $competition->config->home_away_diff ) ? esc_html( $competition->config->home_away_diff ) : null; ?>" onchange="Racketmanager.setEndDate(event)"/>
@@ -125,21 +128,21 @@ $tab_name = 'fixtures';
 					}
 					?>
 				</div>
-			</div>
+			</fieldset>
 			<?php
 		}
 		?>
 		<?php
 		if ( $competition->is_league ) {
 			?>
-			<div class="col-md-3">
-			<legend class=""><?php esc_html_e( 'Filler', 'racketmanager' ); ?></legend>
+			<fieldset class="col-md-3">
+			    <legend class=""><?php esc_html_e( 'Filler', 'racketmanager' ); ?></legend>
 				<div class="form-floating mb-3">
 					<?php
 					if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'filler_weeks', $racketmanager->error_fields, true ) ) ) {
 						$is_invalid = true;
 						$msg_id     = array_search( 'filler_weeks', $racketmanager->error_fields, true );
-						$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 					}
 					?>
 					<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="filler_weeks" id="filler_weeks" value="<?php echo isset( $competition->config->filler_weeks ) ? esc_html( $competition->config->filler_weeks ) : null; ?>" onchange="Racketmanager.setEndDate(event)" />
@@ -154,7 +157,7 @@ $tab_name = 'fixtures';
 					}
 					?>
 				</div>
-			</div>
+			</fieldset>
 			<?php
 		}
 		?>
@@ -162,7 +165,7 @@ $tab_name = 'fixtures';
 	<?php
 	if ( $competition->is_league || $competition->is_cup ) {
 		?>
-		<div class="row gx-3 mb-3">
+		<fieldset class="row gx-3 mb-3">
 			<div class="col-md-3 mb-3 mb-md-0">
 				<legend class=""><?php esc_html_e( 'Match days', 'racketmanager' ); ?></legend>
 				<?php
@@ -170,7 +173,7 @@ $tab_name = 'fixtures';
 					$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 					$is_invalid = true;
 					$msg_id     = array_search( 'match_day_restriction', $racketmanager->error_fields, true );
-					$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 				}
 				?>
 				<div class="form-check">
@@ -191,7 +194,7 @@ $tab_name = 'fixtures';
 					$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 					$is_invalid = true;
 					$msg_id     = array_search( 'match_day_weekends', $racketmanager->error_fields, true );
-					$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 				}
 				?>
 				<div class="form-check">
@@ -215,7 +218,7 @@ $tab_name = 'fixtures';
 					$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 					$is_invalid = true;
 					$msg_id     = array_search( 'fixed_match_dates', $racketmanager->error_fields, true );
-					$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 				}
 				?>
 				<legend class="<?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Match days allowed', 'racketmanager' ); ?></legend>
@@ -223,7 +226,7 @@ $tab_name = 'fixtures';
 				foreach ( $match_days as $key => $label ) {
 					?>
 					<div class="form-check">
-						<input type="checkbox" class="form-check-input" name="match_days_allowed[<?php echo esc_html( $key ); ?>]" id="match_days_allowed_<?php echo esc_html( $key ); ?>" value="1" <?php isset( $competition->config->match_days_allowed[ $key ] ) ? checked( 1, $competition->config->match_days_allowed[ $key ] ) : null; ?> />
+						<input type="checkbox" class="form-check-input" name="match_days_allowed[<?php echo esc_html( $key ); ?>]" id="match_days_allowed_<?php echo esc_html( $key ); ?>" value="1" <?php checked( 1, $competition->config->match_days_allowed[ $key ] ?? null ); ?> />
 						<label for="match_days_allowed_<?php echo esc_html( $key ); ?>" class="form-check-label"><?php echo esc_html( $label ); ?></label>
 					</div>
 					<?php
@@ -239,14 +242,14 @@ $tab_name = 'fixtures';
 				}
 				?>
 			</div>
-		</div>
+		</fieldset>
 		<?php
 		}
 	?>
 	<?php
 	if ( $competition->is_league || $competition->is_cup ) {
 		?>
-		<div class="row gx-3 mb-3">
+		<fieldset class="row gx-3 mb-3">
 			<legend class=""><?php esc_html_e( 'Start times', 'racketmanager' ); ?></legend>
 			<div class="col-md-3 mb-3 mb-md-0">
 				<div class="form-floating">
@@ -264,7 +267,7 @@ $tab_name = 'fixtures';
 						$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 						$is_invalid = true;
 						$msg_id     = array_search( 'default_match_start_time', $racketmanager->error_fields, true );
-						$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 					}
 					?>
 					<input type="time" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="default_match_start_time" id="default_match_start_time" placeholder="<?php esc_html_e( 'Default start time', 'racketmanager' ); ?>" value="<?php echo esc_html( $default_start_time ); ?>" />
@@ -280,7 +283,7 @@ $tab_name = 'fixtures';
 					?>
 				</div>
 			</div>
-		</div>
+		</fieldset>
 		<div class="row gx-3 mb-3">
 			<div class="col-md-3 mb-3 mb-md-0">
 				<div class="form-floating">
@@ -289,7 +292,7 @@ $tab_name = 'fixtures';
 						$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 						$is_invalid = true;
 						$msg_id     = array_search( 'min_start_time_weekday', $racketmanager->error_fields, true );
-						$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 					}
 					?>
 					<input type="time" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="min_start_time_weekday" id="min_start_time_weekday" placeholder="<?php esc_html_e( 'Min weekday start time', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->min_start_time_weekday ) ? esc_html( $competition->config->min_start_time_weekday ) : null; ?>" />
@@ -312,7 +315,7 @@ $tab_name = 'fixtures';
 						$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 						$is_invalid = true;
 						$msg_id     = array_search( 'max_start_time_weekday', $racketmanager->error_fields, true );
-						$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 					}
 					?>
 					<input type="time" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="max_start_time_weekday" id="max_start_time_weekday" placeholder="<?php esc_html_e( 'Max weekday start time', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->max_start_time_weekday ) ? esc_html( $competition->config->max_start_time_weekday ) : null; ?>" />
@@ -337,7 +340,7 @@ $tab_name = 'fixtures';
 						$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 						$is_invalid = true;
 						$msg_id     = array_search( 'min_start_time_weekend', $racketmanager->error_fields, true );
-						$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 					}
 					?>
 					<input type="time" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="min_start_time_weekend" id="min_start_time_weekend" placeholder="<?php esc_html_e( 'Min weekend start time', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->min_start_time_weekend ) ? esc_html( $competition->config->min_start_time_weekend ) : null; ?>" />
@@ -360,7 +363,7 @@ $tab_name = 'fixtures';
 						$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 						$is_invalid = true;
 						$msg_id     = array_search( 'max_start_time_weekend', $racketmanager->error_fields, true );
-						$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+						$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 					}
 					?>
 					<input type="time" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="max_start_time_weekend" id="max_start_time_weekend" placeholder="<?php esc_html_e( 'Max weekend start time', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->max_start_time_weekend ) ? esc_html( $competition->config->max_start_time_weekend ) : null; ?>" />

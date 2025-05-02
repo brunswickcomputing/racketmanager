@@ -36,7 +36,7 @@ final class Racketmanager_Rubber {
 	 *
 	 * @var array
 	 */
-	public mixed $custom;
+	public mixed $custom = array();
 	/**
 	 * Sets variable
 	 *
@@ -78,13 +78,13 @@ final class Racketmanager_Rubber {
 	 *
 	 * @var float|null
 	 */
-	public ?float $home_points;
+	public ?float $home_points = null;
 	/**
 	 * Away points variable
 	 *
 	 * @var float|null
 	 */
-	public ?float $away_points;
+	public ?float $away_points = null;
 	/**
 	 * Score variable
 	 *
@@ -248,6 +248,13 @@ final class Racketmanager_Rubber {
 	 */
 	public string $retired;
 	/**
+	 * Time
+	 *
+	 * @var string
+	 */
+	private string $time;
+
+	/**
 	 * Get rubber instance function
 	 *
 	 * @param int|null $rubber_id rubber id.
@@ -263,7 +270,7 @@ final class Racketmanager_Rubber {
 		if ( ! $rubber ) {
 			$rubber = $wpdb->get_row(
 				$wpdb->prepare(
-					"SELECT `match_id`, `group`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `id`, `type`, `custom`, `rubber_number`, `status` FROM $wpdb->racketmanager_rubbers WHERE `id` =  %d",
+					"SELECT `id`, `match_id`, `group`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `type`, `custom`, `rubber_number`, `status` FROM $wpdb->racketmanager_rubbers WHERE `id` =  %d",
 					$rubber_id,
 				)
 			);
@@ -283,9 +290,9 @@ final class Racketmanager_Rubber {
 	public function __construct(object $rubber = null ) {
 		global $racketmanager;
 		if ( ! is_null( $rubber ) ) {
-			if ( isset( $rubber->custom ) ) {
-				$rubber->custom = stripslashes_deep( (array) maybe_unserialize( $rubber->custom ) );
-				$rubber         = (object) array_merge( (array) $rubber, (array) $rubber->custom );
+			if ( ! empty( $rubber->custom ) ) {
+				$custom = stripslashes_deep( (array) maybe_unserialize( $rubber->custom ) );
+				$rubber = (object) array_merge( (array) $rubber, (array) $custom );
 			}
 
 			foreach ( get_object_vars( $rubber ) as $key => $value ) {
@@ -298,8 +305,14 @@ final class Racketmanager_Rubber {
 			$this->sets   = $this->custom['sets'] ?? array();
 			$rubber       = (object) array_merge( (array) $this, (array) $this->custom );
 
-			$this->start_time  = ( '00:00' === $this->hour . ':' . $this->minutes ) ? '' : mysql2date( $racketmanager->time_format, $this->date );
 			$this->rubber_date = ( str_starts_with( $this->date, '0000-00-00' ) ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date );
+			$this->year        = substr( $this->date, 0, 4 );
+			$this->month       = substr( $this->date, 5, 2 );
+			$this->day         = substr( $this->date, 8, 2 );
+			$this->time        = substr( $this->date, 11, 5);
+			$this->hour        = substr( $this->time, 0, 2 );
+			$this->minutes     = substr( $this->time, 3, 2 );
+			$this->start_time  = ( '00:00' === $this->time ) ? '' : mysql2date( $racketmanager->time_format, $this->date );
 
 			if ( null !== $this->home_points && null !== $this->away_points ) {
 				$home_score  = $this->home_points;

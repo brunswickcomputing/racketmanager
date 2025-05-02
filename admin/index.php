@@ -60,19 +60,17 @@ use Racketmanager\Racketmanager_Util as util;
 							$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 						}
 						?>
-                        <label>
-                            <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="type" id="type">
-                                <option disabled selected><?php esc_html_e( 'Select type', 'racketmanager' ); ?></option>
-		                        <?php
-		                        foreach ( Util::get_competition_types() as $competition_type => $competition_type_desc ) {
-			                        ?>
-                                    <option value="<?php echo esc_html( $competition_type ); ?>"><?php echo esc_html( ucfirst( $competition_type_desc ) ); ?></option>
-			                        <?php
-		                        }
-		                        ?>
-                            </select>
-                        </label>
-						<label for="competition_type"><?php esc_html_e( 'Type', 'racketmanager' ); ?></label>
+                        <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="type" id="type">
+                            <option disabled selected><?php esc_html_e( 'Select type', 'racketmanager' ); ?></option>
+                            <?php
+                            foreach ( Util::get_competition_types() as $competition_type => $competition_type_desc ) {
+                                ?>
+                                <option value="<?php echo esc_html( $competition_type ); ?>"><?php echo esc_html( ucfirst( $competition_type_desc ) ); ?></option>
+                                <?php
+                            }
+                            ?>
+                        </select>
+						<label for="type"><?php esc_html_e( 'Type', 'racketmanager' ); ?></label>
 						<?php
 						if ( ! empty( $is_invalid ) ) {
 							?>

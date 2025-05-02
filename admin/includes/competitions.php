@@ -8,7 +8,7 @@
 namespace Racketmanager;
 
 $age_group_select               = isset( $_GET['age_group'] ) ? sanitize_text_field( wp_unslash( $_GET['age_group'] ) ) : '';
-$competition_query['age_group'] = isset( $age_group_select ) ? $age_group_select : null;
+$competition_query['age_group'] = $age_group_select ?? null;
 $orderby['age_group']           = 'ASC';
 $orderby['type']                = 'ASC';
 $orderby['name']                = 'ASC';
@@ -22,16 +22,18 @@ $page_name                      = isset( $_GET['page'] ) ? sanitize_text_field( 
 		<form id="competitions-list-filter" method="get" action="" class="form-control">
 			<input type="hidden" name="page" value="<?php echo esc_attr( $page_name ); ?>" />
 			<div class="col-auto">
-				<select class="form-select-1" name="age_group" id="age_group">
-					<option value=""><?php esc_html_e( 'All age groups', 'racketmanager' ); ?></option>
-					<?php
-					foreach ( $age_groups as $age_group => $age_group_desc ) {
-						?>
-						<option value="<?php echo esc_attr( $age_group ); ?>" <?php selected( $age_group, $age_group_select ); ?>><?php echo esc_html( $age_group_desc ); ?></option>
-						<?php
-					}
-					?>
-				</select>
+                <label>
+                    <select class="form-select-1" name="age_group" id="age_group">
+                        <option value=""><?php esc_html_e( 'All age groups', 'racketmanager' ); ?></option>
+		                <?php
+		                foreach ( $age_groups as $age_group => $age_group_desc ) {
+			                ?>
+                            <option value="<?php echo esc_attr( $age_group ); ?>" <?php selected( $age_group, $age_group_select ); ?>><?php echo esc_html( $age_group_desc ); ?></option>
+			                <?php
+		                }
+		                ?>
+                    </select>
+                </label>
 				<button class="btn btn-primary"><?php esc_html_e( 'Filter', 'racketmanager' ); ?></button>
 			</div>
 		</form>
@@ -40,18 +42,24 @@ $page_name                      = isset( $_GET['page'] ) ? sanitize_text_field( 
 <div class="form-control" id="competitions">
 	<form id="competitions-filter" method="post" action="">
 		<?php wp_nonce_field( 'competitions-bulk' ); ?>
-		<div class="tablenav">
-			<!-- Bulk Actions -->
-			<select name="action" size="1">
-				<option value="-1" selected disabled><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
-				<option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
-			</select>
-			<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="docompdel" id="docompdel" class="btn btn-secondary action" />
-		</div>
+        <div class="row gx-3 mb-3 align-items-center">
+            <!-- Bulk Actions -->
+            <div class="col-auto">
+                <label>
+                    <select class="form-select" name="action" id="action">
+                        <option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
+                        <option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
+                    </select>
+                </label>
+            </div>
+            <div class="col-auto">
+                <button name="doCompDel" id="doCompDel" class="btn btn-secondary"><?php esc_html_e( 'Apply', 'racketmanager' ); ?></button>
+            </div>
+        </div>
 		<table class="table table-striped">
 			<thead class="table-dark">
 				<tr>
-					<th class="check-column"><input type="checkbox" id="check-all-competitions" onclick="Racketmanager.checkAll(document.getElementById('competitions-filter'));" /></div>
+					<th class="check-column"><label for="check-all-competitions"></label><input type="checkbox" id="check-all-competitions" onclick="Racketmanager.checkAll(document.getElementById('competitions-filter'));" /></th>
 					<th class="d-none d-md-table-cell">ID</th>
 					<th class=""><?php esc_html_e( 'Competition', 'racketmanager' ); ?></th>
 					<th class="centered"><?php esc_html_e( 'Age Group', 'racketmanager' ); ?></th>
@@ -71,13 +79,13 @@ $page_name                      = isset( $_GET['page'] ) ? sanitize_text_field( 
 					?>
 					<tr>
 						<td class="check-column">
-							<input type="checkbox" value="<?php echo esc_html( $competition->id ); ?>" name="competition[<?php echo esc_html( $competition->id ); ?>]" />
-						</div>
+                            <label for="competition-<?php echo esc_html( $competition->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $competition->id ); ?>" name="competition[<?php echo esc_html( $competition->id ); ?>]" id="competition-<?php echo esc_html( $competition->id ); ?>" />
+						</td>
 						<td class="d-none d-md-table-cell">
 							<?php echo esc_html( $competition->id ); ?>
 						</td>
 						<td class="">
-							<a href="admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=<?php echo esc_attr( $page_link ); ?>&amp;competition_id=<?php echo esc_html( $competition->id ); ?>">
+							<a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=<?php echo esc_attr( $page_link ); ?>&amp;competition_id=<?php echo esc_html( $competition->id ); ?>">
 								<?php echo esc_html( $competition->name ); ?>
 							</a>
 						</td>

@@ -883,9 +883,9 @@ final class Racketmanager_Club {
 	 * Gets player for club from database
 	 *
 	 * @param int $player_id player id.
-	 * @return object
+	 * @return object|null
 	 */
-	public function get_player( int $player_id ): object {
+	public function get_player( int $player_id ): ?object {
 		global $wpdb;
 
 		$sql = $wpdb->prepare(

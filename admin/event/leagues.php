@@ -7,6 +7,12 @@
 
 namespace Racketmanager;
 
+/** @var object $event */
+/** @var string $season */
+/** @var int    $league_id */
+/** @var int    $event_id */
+/** @var object $league_edit */
+/** @var string $league_title */
 $leagues = $event->get_leagues();
 ?>
 <div class>
@@ -16,19 +22,21 @@ $leagues = $event->get_leagues();
 			<div class="row gx-3 mb-3 align-items-center">
 				<!-- Bulk Actions -->
 				<div class="col-auto">
-					<select class="form-select" name="action">
-						<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
-						<option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
-					</select>
-				</div>
+                    <label>
+                        <select class="form-select" name="action">
+                            <option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
+                            <option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
+                        </select>
+                    </label>
+                </div>
 				<div class="col-auto">
-					<button name="doactionleague" id="doactionleague" class="btn btn-secondary"><?php esc_html_e( 'Apply', 'racketmanager' ); ?></button>
+					<button name="doActionLeague" id="doActionLeague" class="btn btn-secondary"><?php esc_html_e( 'Apply', 'racketmanager' ); ?></button>
 				</div>
 			</div>
 			<table class="table table-striped">
 				<thead class="table-dark">
 					<tr>
-						<th class="check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('leagues-filter'));" /></th>
+						<th class="check-column"><label for="checkAll"></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('leagues-filter'));" /></th>
 						<th class="">
 							<?php
 							if ( $event->is_championship ) {
@@ -68,10 +76,10 @@ $leagues = $event->get_leagues();
 							?>
 							<tr>
 								<td class="check-column">
-									<input type="checkbox" value="<?php echo esc_html( $league->id ); ?>" name="league[<?php echo esc_html( $league->id ); ?>]" />
-								</td>
+                                    <label for="league-<?php echo esc_html( $league->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $league->id ); ?>" name="league[<?php echo esc_html( $league->id ); ?>]" id="league-<?php echo esc_html( $league->id ); ?>" />
+                                </td>
 								<td class="">
-									<a href="admin.php?page=racketmanager-<?php echo esc_attr( $event->competition->type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>"><?php echo esc_html( $league->title ); ?></a>
+									<a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $event->competition->type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>"><?php echo esc_html( $league->title ); ?></a>
 								</td>
 								<td class="">
 									<?php echo esc_html( $league->num_teams_total ); ?>
@@ -87,7 +95,7 @@ $leagues = $event->get_leagues();
 									?>
 								</td>
 								<td class="">
-									<a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=event&amp;event_id=<?php echo esc_html( $event->id ); ?>&amp;editleague=<?php echo esc_html( $league->id ); ?>"><?php esc_html_e( 'Edit', 'racketmanager' ); ?></a>
+									<a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=event&amp;event_id=<?php echo esc_html( $event->id ); ?>&amp;edit_league=<?php echo esc_html( $league->id ); ?>"><?php esc_html_e( 'Edit', 'racketmanager' ); ?></a>
 								</td>
 							</tr>
 							<?php
@@ -105,7 +113,7 @@ $leagues = $event->get_leagues();
 		?>
 		<!-- Add New League -->
 			<?php
-			if ( ! $league_id ) {
+		if ( ! $league_id ) {
 				$form_action = __( 'Add League', 'racketmanager' );
 			} else {
 				$form_action = __( 'Update League', 'racketmanager' );
@@ -121,7 +129,7 @@ $leagues = $event->get_leagues();
 				if ( $league_id ) {
 					?>
 					<div class="form-floating mb-3">
-						<input type="text" class="form-control" required="required" placeholder="<?php esc_html_e( 'Enter new league name', 'racketmanager' ); ?>"name="sequence" id="sequence" value="<?php echo esc_html( $league_edit->sequence ); ?>" size="30" />
+						<input type="text" class="form-control" required="required" placeholder="<?php esc_html_e( 'Enter new league name', 'racketmanager' ); ?>" name="sequence" id="sequence" value="<?php echo esc_html( $league_edit->sequence ); ?>" size="30" />
 						<label for="sequence"><?php esc_html_e( 'League sequence', 'racketmanager' ); ?></label>
 					</div>
 					<?php
@@ -134,13 +142,13 @@ $leagues = $event->get_leagues();
 			} else {
 				?>
 				<div class="form-floating mb-3">
-					<input type="text" class="form-control" required="required" placeholder="<?php esc_html_e( 'Enter new league name', 'racketmanager' ); ?>"name="league_title" id="league_title" value="<?php echo esc_html( $league_title ); ?>" size="30" />
+					<input type="text" class="form-control" required="required" placeholder="<?php esc_html_e( 'Enter new league name', 'racketmanager' ); ?>" name="league_title" id="league_title" value="<?php echo esc_html( $league_title ); ?>" size="30" />
 					<label for="league_title"><?php esc_html_e( 'League name', 'racketmanager' ); ?></label>
 				</div>
 				<?php
 			}
 			?>
-			<div class="form-group mb-3">
+			<div class="">
 				<input type="submit" name="addLeague" value="<?php echo esc_html( $form_action ); ?>" class="btn btn-primary" />
 			</div>
 		</form>

@@ -11,9 +11,9 @@ namespace Racketmanager;
 /**
  * Send debug code to the Javascript console
  *
- * @param string $data Optional message that will be sent the the error_log before the backtrace.
+ * @param object|array|string $data Optional message that will be sent the error_log before the backtrace.
  */
-function debug_to_console( $data ) {
+function debug_to_console( object|array|string $data ): void {
 	if ( is_array( $data ) || is_object( $data ) ) {
 		if ( is_array( $data ) ) {
 			error_log( 'PHP: array' ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
@@ -35,9 +35,9 @@ function debug_to_console( $data ) {
 /**
  * Send the output from a backtrace to the error_log
  *
- * @param string $message Optional message that will be sent the the error_log before the backtrace.
+ * @param string $message Optional message that will be sent the error_log before the backtrace.
  */
-function log_trace( $message = '' ) {
+function log_trace( string $message = '' ): void {
 	$trace = debug_backtrace(); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace
 	if ( $message ) {
 		error_log( $message ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
@@ -46,8 +46,8 @@ function log_trace( $message = '' ) {
 	$function_name = $caller['function'];
 	error_log( sprintf( '%s: Called from %s:%s', $function_name, $caller['file'], $caller['line'] ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 	foreach ( $trace as $entry_id => $entry ) {
-		$entry['file'] = isset( $entry['file'] ) ? $entry['file'] : '-';
-		$entry['line'] = isset( $entry['line'] ) ? $entry['line'] : '-';
+		$entry['file'] = $entry['file'] ?? '-';
+		$entry['line'] = $entry['line'] ?? '-';
 		if ( empty( $entry['class'] ) ) {
 			error_log( sprintf( '%s %3s. %s() %s:%s', $function_name, $entry_id + 1, $entry['function'], $entry['file'], $entry['line'] ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		} else {
@@ -55,79 +55,40 @@ function log_trace( $message = '' ) {
 		}
 	}
 }
-
-/**
- * Sort multi array
- *
- * @param array $array_field array to be sorted.
- * @param array $cols columns to sort by.
- */
-function array_msort( $array_field, $cols ) {
-	$colarr = array();
-	foreach ( $cols as $col => $order ) {
-		$colarr[ $col ] = array();
-		foreach ( $array_field as $k => $row ) {
-			$colarr[ $col ][ '_' . $k ] = strtolower( $row[ $col ] );
-		}
-	}
-
-	$eval = 'array_multisort(';
-
-	foreach ( $cols as $col => $order ) {
-		$eval .= '$colarr[\'' . $col . '\'],' . $order . ',';
-	}
-
-	$eval = substr( $eval, 0, -1 ) . ');';
-	eval( $eval ); //phpcs:ignore Squiz.PHP.Eval.Discouraged
-	$ret = array();
-	foreach ( $colarr as $col => $arr ) {
-		foreach ( $arr as $k => $v ) {
-			$k = substr( $k, 1 );
-			if ( ! isset( $ret[ $k ] ) ) {
-				$ret[ $k ] = $array_field[ $k ];
-			}
-			$ret[ $k ][ $col ] = $array_field[ $k ][ $col ];
-		}
-	}
-	return $ret;
-}
-
 /**
  * Create SEO friendly string
  *
  * @param string $string_field query string.
  */
-function seo_url( $string_field ) {
+function seo_url( string $string_field ): string {
 	// Lower case everything.
 	$string_field = strtolower( $string_field );
 	// Make alphanumeric (removes all other characters).
 	$string_field = preg_replace( '/[^a-z0-9_\s-]/', '', $string_field );
 	// Clean up multiple whitespaces.
-	$string_field = preg_replace( '/[\s]+/', ' ', $string_field );
+	$string_field = preg_replace( '/\s+/', ' ', $string_field );
 	// Convert dash to underscore.
 	$string_field = str_replace( '-', '_', $string_field );
 	// Convert whitespaces to dash.
-	$string_field = preg_replace( '/\s/', '-', $string_field );
-	return $string_field;
+	return preg_replace( '/\s/', '-', $string_field );
 }
 /**
  * Reverses SEO friendly string
  *
  * @param string $string_field query string.
  */
-function un_seo_url( $string_field ) {
+function un_seo_url( string $string_field ): string {
 	// Convert dash to whitespaces.
 	$string_field = str_replace( '-', ' ', $string_field );
 	// Convert underscore to dash.
 	$string_field = str_replace( '_', '-', $string_field );
 	// Lower case everything.
-	$string_field = strtolower( $string_field );
-	return $string_field;
+	return strtolower( $string_field );
 }
 /**
  * Create formatted url
  */
-function create_new_url_querystring() {
+function create_new_url_querystring(): void {
 	add_rewrite_tag( '%competition_name%', '(.+?)' );
 	add_rewrite_tag( '%competition_type%', '(.+?)' );
 	add_rewrite_tag( '%round%', '(.+?)' );
@@ -162,7 +123,7 @@ add_action( 'init', 'Racketmanager\create_new_url_querystring' );
 /**
  * Create calendar download
  */
-function racketmanager_download() {
+function racketmanager_download(): void {
 	if ( isset( $_GET['racketmanager_export'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$exporter = new Racketmanager_Exporter();
 		if ( 'calendar' === $_GET['racketmanager_export'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -176,7 +137,7 @@ function racketmanager_download() {
 		} elseif ( 'report_results' === $_GET['racketmanager_export'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$exporter->report_results();
 		} else {
-			echo esc_html_e( 'Export function not found', 'racketmanager' );
+			esc_html_e( 'Export function not found', 'racketmanager' );
 			exit();
 		}
 	}
@@ -189,7 +150,7 @@ add_action( 'init', 'Racketmanager\racketmanager_download' );
  *
  * @param string $svg_name The name of the icon.
  */
-function racketmanager_the_svg( $svg_name ) {
+function racketmanager_the_svg( string $svg_name ): void {
 	echo racketmanager_get_svg( $svg_name ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 }
 
@@ -198,7 +159,7 @@ function racketmanager_the_svg( $svg_name ) {
  *
  * @param string $svg_name The name of the icon.
  */
-function racketmanager_get_svg( $svg_name ) {
+function racketmanager_get_svg( string $svg_name ): false|string {
 	if ( empty( $svg_name ) ) {
 		return false;
 	}
@@ -238,50 +199,26 @@ function racketmanager_get_svg( $svg_name ) {
 	}
 	return $svg;
 }
-
-/**
- * Generate match title.
- *
- * @param object $match match object.
- * @return string match title.
- */
-function get_match_title( $match ) {
-	if ( 0 === $match->winner_id ) {
-		$match_title = $match->match_title;
-	} else {
-		if ( $match->winner_id === $match->home_team ) {
-			$home_team = "<span class='winner'>" . $match->teams['home']->title . '</span>';
-		} else {
-			$home_team = $match->teams['home']->title;
-		}
-		if ( $match->winner_id === $match->away_team ) {
-			$away_team = "<span class='winner'>" . $match->teams['away']->title . '</span>';
-		} else {
-			$away_team = $match->teams['away']->title;
-		}
-		$match_title = $home_team . ' - ' . $away_team;
-	}
-	return $match_title;
-}
-
 /**
  * Get current page url
  */
-function wp_get_current_url() {
+function wp_get_current_url(): ?string {
 	if ( isset( $_SERVER['REQUEST_URI'] ) ) {
 		return home_url( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
 	} else {
 		return null;
 	}
 }
+
 /**
  * Get Club object
  *
- * @param int|object|string $club Club ID or club object. Defaults to global $club.
- * @param string            $search_term type of search.
- * @return object club|null
+ * @param object|int|string|null $club Club ID or club object. Defaults to global $club.
+ * @param string $search_term type of search.
+ *
+ * @return Racketmanager_Club|null club|null
  */
-function get_club( $club = null, $search_term = 'id' ) {
+function get_club( object|int|string $club = null, string $search_term = 'id' ): Racketmanager_Club|null {
 	if ( empty( $club ) && isset( $GLOBALS['club'] ) ) {
 		$club = $GLOBALS['club'];
 	}
@@ -298,14 +235,16 @@ function get_club( $club = null, $search_term = 'id' ) {
 		return $_club;
 	}
 }
+
 /**
  * Get Competition object
  *
- * @param int|Competition|null $competition Competition ID or competition object. Defaults to global $competition.
- * @param string               $search_term type of search.
- * @return object competition|null
+ * @param Racketmanager_Competition|int|string|null $competition Competition ID or competition object. Defaults to global $competition.
+ * @param string $search_term type of search.
+ *
+ * @return Racketmanager_Competition|null competition|null
  */
-function get_competition( $competition = null, $search_term = 'id' ) {
+function get_competition( Racketmanager_Competition|int|string $competition = null, string $search_term = 'id' ): Racketmanager_Competition|null {
 	if ( empty( $competition ) && isset( $GLOBALS['competition'] ) ) {
 		$competition = $GLOBALS['competition'];
 	}
@@ -333,14 +272,16 @@ function get_competition( $competition = null, $search_term = 'id' ) {
 
 	return $_competition;
 }
+
 /**
  * Get Event object
  *
- * @param int|Event|null $event Event ID or event object. Defaults to global $event.
- * @param string         $search_term type of search.
- * @return object event|null
+ * @param int|string|Racketmanager_Event|null $event Event ID or event object. Defaults to global $event.
+ * @param string $search_term type of search.
+ *
+ * @return Racketmanager_Event|null event|null
  */
-function get_event( $event = null, $search_term = 'id' ) {
+function get_event( int|string|Racketmanager_Event $event = null, string $search_term = 'id' ): Racketmanager_Event|null {
 	if ( empty( $event ) && isset( $GLOBALS['event'] ) ) {
 		$event = $GLOBALS['event'];
 	}
@@ -349,10 +290,10 @@ function get_event( $event = null, $search_term = 'id' ) {
 		$_event = $event;
 	} elseif ( is_object( $event ) ) {
 		// check if specific sports class exists.
-		if ( ! isset( $event->sport ) ) {
-			$event->sport = '';
+		if ( ! isset( $event->competition->sport ) ) {
+			$event->competition->sport = '';
 		}
-		$instance = 'Racketmanager\Racketmanager_Event_' . ucfirst( $event->sport );
+		$instance = 'Racketmanager\Racketmanager_Event_' . ucfirst( $event->competition->sport );
 		if ( class_exists( $instance ) ) {
 			$_event = new $instance( $event );
 		} else {
@@ -368,13 +309,15 @@ function get_event( $event = null, $search_term = 'id' ) {
 
 	return $_event;
 }
+
 /**
  * Get League object
  *
- * @param int|object|null $league League ID or league object. Defaults to global $league.
- * @return object League|null
+ * @param object|int|string|null $league League ID or league object. Defaults to global $league.
+ *
+ * @return Racketmanager_League|null League|null
  */
-function get_league( $league = null ) {
+function get_league( object|int|string $league = null ): ?Racketmanager_League {
 	if ( empty( $league ) && isset( $GLOBALS['league'] ) ) {
 		$league = $GLOBALS['league'];
 	}
@@ -399,13 +342,15 @@ function get_league( $league = null ) {
 	}
 	return $_league;
 }
+
 /**
  * Get Racketmanager_Match object
  *
- * @param int|null $match Match ID or match object. Defaults to global $match.
- * @return object Racketmanager_Match|null
+ * @param object|int|null $match Match ID or match object. Defaults to global $match.
+ *
+ * @return Racketmanager_Match|null Racketmanager_Match|null
  */
-function get_match( $match = null ) {
+function get_match( object|int $match = null ): Racketmanager_Match|null {
 	if ( empty( $match ) && isset( $GLOBALS['match'] ) ) {
 		$match = $GLOBALS['match'];
 	}
@@ -424,13 +369,15 @@ function get_match( $match = null ) {
 
 	return $_match;
 }
+
 /**
  * Get Racketmanager_Rubber object
  *
- * @param int|null $rubber Rubber ID or rubber object. Defaults to global $rubber.
- * @return object Racketmanager_Rubber|null
+ * @param object|int|null $rubber Rubber ID or rubber object. Defaults to global $rubber.
+ *
+ * @return Racketmanager_Rubber|null Racketmanager_Rubber|null
  */
-function get_rubber( $rubber = null ) {
+function get_rubber( object|int $rubber = null ): Racketmanager_Rubber|null {
 	if ( empty( $rubber ) && isset( $GLOBALS['rubber'] ) ) {
 		$rubber = $GLOBALS['rubber'];
 	}
@@ -449,14 +396,16 @@ function get_rubber( $rubber = null ) {
 
 	return $_rubber;
 }
+
 /**
  * Get Tournament object
  *
- * @param int    $tournament Tournament ID or tournament object. Defaults to global $tournament.
+ * @param object|int|string|null $tournament Tournament ID or tournament object. Defaults to global $tournament.
  * @param string $search_term search term - defaults to id.
- * @return object tournament|null
+ *
+ * @return Racketmanager_Tournament|null tournament|null
  */
-function get_tournament( $tournament = null, $search_term = 'id' ) {
+function get_tournament( object|int|string $tournament = null, string $search_term = 'id' ): Racketmanager_Tournament|null {
 	if ( empty( $tournament ) && isset( $GLOBALS['tournament'] ) ) {
 		$tournament = $GLOBALS['tournament'];
 	}
@@ -478,11 +427,12 @@ function get_tournament( $tournament = null, $search_term = 'id' ) {
 /**
  * Get Tournament Entry object
  *
- * @param int    $tournament_entry tournament entry ID or tournament entry object. Defaults to global $tournament.
+ * @param object|int|string|null $tournament_entry tournament entry ID or tournament entry object. Defaults to global $tournament.
  * @param string $search_term search term - defaults to id.
- * @return object tournament|null
+ *
+ * @return object|null tournament|null
  */
-function get_tournament_entry( $tournament_entry = null, $search_term = 'id' ) {
+function get_tournament_entry( object|int|string $tournament_entry = null, string $search_term = 'id' ): Racketmanager_Tournament_Entry|null {
 	if ( empty( $tournament_entry ) && isset( $GLOBALS['tournament_entry'] ) ) {
 		$tournament_entry = $GLOBALS['tournament_entry'];
 	}
@@ -501,10 +451,11 @@ function get_tournament_entry( $tournament_entry = null, $search_term = 'id' ) {
 /**
  * Get Team object
  *
- * @param int|object|null $team Team ID or team object. Defaults to global $team.
- * @return object Team|null
+ * @param object|int|null $team Team ID or team object. Defaults to global $team.
+ *
+ * @return object|null Team|null
  */
-function get_team( $team = null ) {
+function get_team( object|int $team = null ): Racketmanager_Team|null {
 	if ( empty( $team ) && isset( $GLOBALS['team'] ) ) {
 		$team = $GLOBALS['team'];
 	}
@@ -523,14 +474,16 @@ function get_team( $team = null ) {
 
 	return $_team;
 }
+
 /**
  * Get Player object
  *
- * @param int    $player Player ID or player object. Defaults to global $player.
+ * @param object|int|string|null $player Player ID or player object. Defaults to global $player.
  * @param string $search_term search type term (defaults to id).
- * @return object player|null
+ *
+ * @return object|null player|null
  */
-function get_player( $player = null, $search_term = 'id' ) {
+function get_player( object|int|string $player = null, string $search_term = 'id' ): ?object {
 	if ( empty( $player ) && isset( $GLOBALS['player'] ) ) {
 		$player = $GLOBALS['player'];
 	}
@@ -546,14 +499,15 @@ function get_player( $player = null, $search_term = 'id' ) {
 	}
 	return $_player;
 }
+
 /**
  * Get User object
  *
- * @param int    $user User ID or user object. Defaults to global $user.
- * @param string $search_term search type term (defaults to id).
- * @return object user|null
+ * @param object|int|string|null $user User ID or user object. Defaults to global $user.
+ *
+ * @return object|null user|null
  */
-function get_user( $user = null, $search_term = 'id' ) {
+function get_user( object|int|string $user = null ): ?object {
 	if ( empty( $user ) && isset( $GLOBALS['user'] ) ) {
 		$user = $GLOBALS['user'];
 	}
@@ -562,7 +516,7 @@ function get_user( $user = null, $search_term = 'id' ) {
 	} elseif ( is_object( $user ) ) {
 		$_user = new Racketmanager_User( $user );
 	} else {
-		$_user = Racketmanager_User::get_instance( $user, $search_term );
+		$_user = Racketmanager_User::get_instance( $user );
 	}
 	if ( ! $_user ) {
 		return null;
@@ -573,10 +527,11 @@ function get_user( $user = null, $search_term = 'id' ) {
 /**
  * Get Racketmanager_Charges object
  *
- * @param int|null $charges Racketmanager_Charges ID or charges object. Defaults to global $charges.
- * @return object charges|null
+ * @param object|int|string|null $charges Racketmanager_Charges ID or charges object. Defaults to global $charges.
+ *
+ * @return object|null charges|null
  */
-function get_charge( $charges = null ) {
+function get_charge( object|int|string $charges = null ): ?object {
 	if ( empty( $charges ) && isset( $GLOBALS['charges'] ) ) {
 		$charges = $GLOBALS['charges'];
 	}
@@ -599,9 +554,10 @@ function get_charge( $charges = null ) {
  * Get invoice object
  *
  * @param int|null $invoice invoice ID or invoice object. Defaults to global $invoice.
- * @return object invoice|null
+ *
+ * @return object|null invoice|null
  */
-function get_invoice( $invoice = null ) {
+function get_invoice( int $invoice = null ): Racketmanager_Invoice|null {
 	if ( empty( $invoice ) && isset( $GLOBALS['invoice'] ) ) {
 		$invoice = $GLOBALS['invoice'];
 	}
@@ -623,10 +579,10 @@ function get_invoice( $invoice = null ) {
 /**
  * Get LeagueTeam object
  *
- * @param int|object|null $league_team LeagueTeam ID or leagueteam object. Defaults to global $league_team.
- * @return league_team|null
+ * @param object|int|null $league_team LeagueTeam ID or LeagueTeam object. Defaults to global $league_team.
+ * @return object|null
  */
-function get_league_team( $league_team = null ) {
+function get_league_team( object|int $league_team = null ): Racketmanager_League_Team|null {
 	if ( empty( $league_team ) && isset( $GLOBALS['league_team'] ) ) {
 		$league_team = $GLOBALS['league_team'];
 	}
@@ -648,10 +604,11 @@ function get_league_team( $league_team = null ) {
 /**
  * Get results report object
  *
- * @param int|null $results_report results_report ID or results_report object. Defaults to global $results_report.
- * @return object results_report|null
+ * @param object|int|null $results_report results_report ID or results_report object. Defaults to global $results_report.
+ *
+ * @return object|null results_report|null
  */
-function get_results_report( $results_report = null ) {
+function get_results_report( object|int $results_report = null ): Racketmanager_Results_Report|null {
 	if ( empty( $results_report ) && isset( $GLOBALS['results_report'] ) ) {
 		$results_report = $GLOBALS['results_report'];
 	}
@@ -673,10 +630,10 @@ function get_results_report( $results_report = null ) {
 /**
  * Get results check object
  *
- * @param int|null $results_check results_check ID or results_check object. Defaults to global $results_check.
- * @return object results_represults_checkort|null
+ * @param int|null|object $results_check results_check ID or results_check object. Defaults to global $results_check.
+ * @return object|null results_check|null
  */
-function get_result_check( $results_check = null ) {
+function get_result_check( object|int $results_check = null ): ?object {
 	if ( empty( $results_check ) && isset( $GLOBALS['results_check'] ) ) {
 		$results_check = $GLOBALS['results_check'];
 	}
@@ -695,13 +652,14 @@ function get_result_check( $results_check = null ) {
 
 	return $_results_check;
 }
+
 /**
  * Get message object
  *
  * @param int|null $message message ID or message object. Defaults to global $message.
- * @return object message|null
+ * @return Racketmanager_Message|null message|null
  */
-function get_message( $message = null ) {
+function get_message( int $message = null ): Racketmanager_Message|null {
 	if ( empty( $message ) && isset( $GLOBALS['message'] ) ) {
 		$message = $GLOBALS['message'];
 	}
@@ -723,11 +681,12 @@ function get_message( $message = null ) {
 /**
  * Undocumented function
  *
- * @param array  $match_players array of players.
+ * @param array $match_players array of players.
  * @param object $match match details.
+ *
  * @return array
  */
-function match_add_players( $match_players, $match ) {
+function match_add_players( array $match_players, object $match ): array {
 	$teams = array( 'home', 'away' );
 	foreach ( $teams as $team ) {
 		$team = $match->teams[ $team ];
@@ -742,10 +701,11 @@ function match_add_players( $match_players, $match ) {
 /**
  * Get player errors object
  *
- * @param int|object|null $player_error ID or player_error object. Defaults to global $player_error.
- * @return player_error|null
+ * @param object|int|null $player_error ID or player_error object. Defaults to global $player_error.
+ *
+ * @return object|null
  */
-function get_player_error( $player_error = null ) {
+function get_player_error( object|int $player_error = null ): Racketmanager_Player_Error|null {
 	if ( empty( $player_error ) && isset( $GLOBALS['player_error'] ) ) {
 		$player_error = $GLOBALS['player_error'];
 	}
@@ -767,14 +727,13 @@ function get_player_error( $player_error = null ) {
 /**
  * Get club player object
  *
- * @param int|object|null $club_player ID or player_error object. Defaults to global $club_player.
- * @return club_player|null
+ * @param object|int|null $club_player ID or player_error object. Defaults to global $club_player.
+ * @return Racketmanager_club_player|null
  */
-function get_club_player( $club_player = null ) {
+function get_club_player( object|int $club_player = null ): ?Racketmanager_club_player {
 	if ( empty( $club_player ) && isset( $GLOBALS['club_player'] ) ) {
 		$club_player = $GLOBALS['club_player'];
 	}
-
 	if ( $club_player instanceof Racketmanager_Club_Player ) {
 		$_club_player = $club_player;
 	} elseif ( is_object( $club_player ) ) {
@@ -786,6 +745,5 @@ function get_club_player( $club_player = null ) {
 	if ( ! $_club_player ) {
 		return null;
 	}
-
 	return $_club_player;
 }

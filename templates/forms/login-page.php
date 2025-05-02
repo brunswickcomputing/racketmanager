@@ -7,6 +7,12 @@
 
 namespace Racketmanager;
 
+/** @var boolean $username_error */
+/** @var string  $username_message */
+/** @var boolean $password_error */
+/** @var string  $password_message */
+/** @var boolean $email_error */
+/** @var string  $email_message */
 ?>
 <div class="alert_rm mt-3" id="loginAlert" style="display:none;">
 	<div class="alert__body">
@@ -50,7 +56,7 @@ namespace Racketmanager;
 			</a>
 		</div>
 		<div class="col-6">
-			<button type="submit" class="float-end" //onclick="Racketmanager.login(event)">
+			<button type="submit" class="float-end">
 				<?php esc_html_e( 'Login', 'racketmanager' ); ?>
 			</button>
 			<?php
@@ -67,7 +73,7 @@ namespace Racketmanager;
 <div class="modal fade" id="resetPasswordModal" aria-hidden="true">
 	<div class="modal-dialog">
 		<div class="modal-content">
-			<form id="lostpasswordform" action="<?php echo esc_url( wp_lostpassword_url() ); ?>" method="post">
+			<form id="lostPasswordForm" action="<?php echo esc_url( wp_lostpassword_url() ); ?>" method="post">
 				<?php wp_nonce_field( 'reset_password', 'racketmanager_nonce' ); ?>
 				<div class="modal-header modal__header">
 					<h2 class="modal-title"><?php esc_html_e( 'Reset password', 'racketmanager' ); ?></h2>

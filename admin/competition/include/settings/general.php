@@ -7,6 +7,9 @@
 
 namespace Racketmanager;
 
+/** @var object $competition */
+/** @var bool   $is_invalid */
+/** @var string $msg */
 $tab_name = 'general';
 ?>
 <div class="form-control">
@@ -17,7 +20,7 @@ $tab_name = 'general';
 				$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 				$is_invalid = true;
 				$msg_id     = array_search( 'name', $racketmanager->error_fields, true );
-				$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+				$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 			}
 			?>
 			<input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="competition_title" id="competition_title" value="<?php echo esc_html( $competition->name ); ?>" placeholder="<?php esc_html_e( 'Competition name', 'racketmanager' ); ?>" />
@@ -42,7 +45,7 @@ $tab_name = 'general';
 					$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 					$is_invalid = true;
 					$msg_id     = array_search( 'sport', $racketmanager->error_fields, true );
-					$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 				}
 				?>
 				<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="sport" id="sport" >
@@ -75,7 +78,7 @@ $tab_name = 'general';
 					$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 					$is_invalid = true;
 					$msg_id     = array_search( 'type', $racketmanager->error_fields, true );
-					$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 				}
 				?>
 				<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="type" id="type" >
@@ -108,7 +111,7 @@ $tab_name = 'general';
 					$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 					$is_invalid = true;
 					$msg_id     = array_search( 'entry_type', $racketmanager->error_fields, true );
-					$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 				}
 				?>
 				<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="entry_type" id="entry_type" >
@@ -135,7 +138,7 @@ $tab_name = 'general';
 		</div>
 	</div>
 	<div class="row gx-3">
-		<div class="col-md-4 mb-3">
+		<div class="col-md-4">
 			<div class="form-floating">
 				<?php
 				$age_groups = Racketmanager_Util::get_age_groups();
@@ -143,7 +146,7 @@ $tab_name = 'general';
 					$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 					$is_invalid = true;
 					$msg_id     = array_search( 'age_group', $racketmanager->error_fields, true );
-					$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 				}
 				?>
 				<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="age_group" id="age_group" >
@@ -168,14 +171,14 @@ $tab_name = 'general';
 				?>
 			</div>	
 		</div>
-		<div class="col-md-4 mb-3">
+		<div class="col-md-4">
 			<div class="form-floating">
 				<?php
 				if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'competition_code', $racketmanager->error_fields, true ) ) ) {
 					$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 					$is_invalid = true;
 					$msg_id     = array_search( 'competition_code', $racketmanager->error_fields, true );
-					$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 				}
 				?>
 				<input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="competition_code" id="competition_code" value="<?php echo isset( $competition->config->competition_code ) ? esc_html( $competition->config->competition_code ) : null; ?>" />
@@ -199,7 +202,7 @@ $tab_name = 'general';
 					$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 					$is_invalid = true;
 					$msg_id     = array_search( 'grade', $racketmanager->error_fields, true );
-					$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+					$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 				}
 				?>
 				<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="grade" id="grade" >

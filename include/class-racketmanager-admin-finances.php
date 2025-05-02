@@ -50,42 +50,8 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 			$charge_id         = isset( $_GET['charge'] ) ? intval( $_GET['charge'] ) : null;
 			$status            = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : 'open';
 			$racketmanager_tab = 'club-invoices';
-			if ( isset( $_POST['doActionInvoices'] ) && isset( $_POST['action'] ) && -1 !== $_POST['action'] ) {
-				$racketmanager_tab = 'racketmanager-invoices';
-				check_admin_referer( 'invoices-bulk' );
-				if ( ! current_user_can( 'del_teams' ) ) {
-					$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
-				} else {
-					$messages      = array();
-					if ( isset( $_POST['invoice'] ) ) {
-						foreach ( $_POST['invoice'] as $invoice_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-							$invoice = get_invoice( $invoice_id );
-							if ( $invoice->status !== $_POST['action'] ) {
-								$status = sanitize_text_field( wp_unslash( $_POST['action'] ) );
-								if ( $status ) {
-									$invoice->set_status( $status );
-									$messages[] = __( 'Invoice', 'racketmanager' ) . ' ' . $invoice->invoice_number . ' ' . __( 'updated', 'racketmanager' );
-								}
-							}
-						}
-						$message = implode( '<br>', $messages );
-						$this->set_message( $message );
-					}
-				}
-			}
-
-			$this->printMessage();
-			$args = array();
-			if ( $club_id ) {
-				$args['club'] = $club_id;
-			}
-			if ( $status ) {
-				$args['status'] = $status;
-			}
-			if ( $charge_id ) {
-				$args['charge'] = $charge_id;
-			}
-			$args['type'] = 'club';
+			$args              = $this->get_invoice_actions( $status, $club_id, $charge_id );
+			$args['type']      = 'club';
 			$finance_invoices = $this->get_invoices( $args );
 			include_once RACKETMANAGER_PATH . '/admin/finances/show-invoices.php';
 		}
@@ -105,41 +71,7 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 			$charge_id         = isset( $_GET['charge'] ) ? intval( $_GET['charge'] ) : null;
 			$status            = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : 'open';
 			$racketmanager_tab = 'player-invoices';
-			if ( isset( $_POST['doActionInvoices'] ) && isset( $_POST['action'] ) && -1 !== $_POST['action'] ) {
-				$racketmanager_tab = 'racketmanager-invoices';
-				check_admin_referer( 'invoices-bulk' );
-				if ( ! current_user_can( 'del_teams' ) ) {
-					$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
-				} else {
-					$messages      = array();
-					if ( isset( $_POST['invoice'] ) ) {
-						foreach ( $_POST['invoice'] as $invoice_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-							$invoice = get_invoice( $invoice_id );
-							if ( $invoice->status !== $_POST['action'] ) {
-								$status = sanitize_text_field( wp_unslash( $_POST['action'] ) );
-								if ( $status ) {
-									$invoice->set_status( $status );
-									$messages[] = __( 'Invoice', 'racketmanager' ) . ' ' . $invoice->invoice_number . ' ' . __( 'updated', 'racketmanager' );
-								}
-							}
-						}
-						$message = implode( '<br>', $messages );
-						$this->set_message( $message );
-					}
-				}
-			}
-
-			$this->printMessage();
-			$args = array();
-			if ( $club_id ) {
-				$args['club'] = $club_id;
-			}
-			if ( $status ) {
-				$args['status'] = $status;
-			}
-			if ( $charge_id ) {
-				$args['charge'] = $charge_id;
-			}
+			$args              = $this->get_invoice_actions( $status, $club_id, $charge_id );
 			$args['type'] = 'player';
 			$finance_invoices = $this->get_invoices( $args );
 			include_once RACKETMANAGER_PATH . '/admin/finances/show-invoices.php';
@@ -370,5 +302,53 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 				$club
 			)
 		);
+	}
+
+	/**
+	 * Get invoice actions from screen
+	 *
+	 * @param string $status
+	 * @param int|null $club_id
+	 * @param int|null $charge_id
+	 *
+	 * @return array
+	 */
+	public function get_invoice_actions( string $status, ?int $club_id, ?int $charge_id ): array {
+		if ( isset( $_POST['doActionInvoices'] ) && isset( $_POST['action'] ) && - 1 !== $_POST['action'] ) {
+			$racketmanager_tab = 'racketmanager-invoices';
+			check_admin_referer( 'invoices-bulk' );
+			if ( ! current_user_can( 'del_teams' ) ) {
+				$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
+			} else {
+				$messages = array();
+				if ( isset( $_POST['invoice'] ) ) {
+					foreach ( $_POST['invoice'] as $invoice_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+						$invoice = get_invoice( $invoice_id );
+						if ( $invoice->status !== $_POST['action'] ) {
+							$new_status = sanitize_text_field( wp_unslash( $_POST['action'] ) );
+							if ( $new_status ) {
+								$invoice->set_status( $new_status );
+								$messages[] = __( 'Invoice', 'racketmanager' ) . ' ' . $invoice->invoice_number . ' ' . __( 'updated', 'racketmanager' );
+							}
+						}
+					}
+					$message = implode( '<br>', $messages );
+					$this->set_message( $message );
+				}
+			}
+		}
+		$this->printMessage();
+		$args = array();
+		if ( $club_id ) {
+			$args['club'] = $club_id;
+		}
+		if ( $status ) {
+			$args['status'] = $status;
+		}
+		if ( $charge_id ) {
+			$args['charge'] = $charge_id;
+		}
+
+		return $args;
 	}
 }

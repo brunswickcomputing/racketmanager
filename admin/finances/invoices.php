@@ -8,9 +8,14 @@
 
 namespace Racketmanager;
 
+/** @var string $racketmanager_tab */
+/** @var array  $finance_invoices */
+/** @var int    $club_id */
+/** @var int    $charge_id */
+/** @var string $status */
 $args = array();
 if ( 'club-invoices' === $racketmanager_tab ) {
-	$clubs         = self::get_clubs();
+	$clubs         = $this->get_clubs();
 	$args['entry'] = 'team';
 } else {
 	$args['entry'] = 'player';
@@ -20,8 +25,8 @@ $args['orderby'] = array(
 	'season'         => 'DESC',
 	'competition_id' => 'ASC',
 );
-$charges         = self::get_charges( $args );
-$invoices        = $finance_invoices;
+$charges         = $this->get_charges( $args );
+$invoices = $finance_invoices;
 ?>
 <div class="container">
 	<div class="row gx-3 align-items-center mb-3">
@@ -31,42 +36,48 @@ $invoices        = $finance_invoices;
 			<input type="hidden" name="tab" value="<?php echo esc_attr( $racketmanager_tab ) ; ?>" />
 			<div class="row gx-3 align-items-center">
 				<div class="col-12 col-md-4 col-lg-auto mb-3 mb-md-0">
-					<select class="form-select" name="charge" id="charge">
-						<option value="" <?php selected( '', $club_id ); ?>><?php esc_html_e( 'All charges', 'racketmanager' ); ?></option>
-						<?php
-						foreach ( $charges as $charge ) {
-							?>
-							<option value="<?php echo esc_html( $charge->id ); ?>" <?php selected( $charge->id, $charge_id ); ?>><?php echo esc_html( $charge->season ) . ' ' . esc_html( ucfirst( $charge->competition->name ) ); ?></option>
-							<?php
-						}
-						?>
-					</select>
+                    <label>
+                        <select class="form-select" name="charge" id="charge">
+                            <option value="" <?php selected( '', $club_id ); ?>><?php esc_html_e( 'All charges', 'racketmanager' ); ?></option>
+                            <?php
+                            foreach ( $charges as $charge ) {
+                                ?>
+                                <option value="<?php echo esc_html( $charge->id ); ?>" <?php selected( $charge->id, $charge_id ); ?>><?php echo esc_html( $charge->season ) . ' ' . esc_html( ucfirst( $charge->competition->name ) ); ?></option>
+                                <?php
+                            }
+                            ?>
+                        </select>
+                    </label>
 				</div>
 				<?php
 				if ( 'club-invoices' === $racketmanager_tab ) {
 					?>
 					<div class="col-12 col-md-4 col-lg-auto mb-3 mb-md-0">
-						<select class="form-select" name="club" id="club">
-							<option value="" <?php selected( '', $club_id ); ?>><?php esc_html_e( 'All clubs', 'racketmanager' ); ?></option>
-							<?php
-							foreach ( $clubs as $club ) {
-								?>
-								<option value="<?php echo esc_html( $club->id ); ?>" <?php selected( $club->id, $club_id ); ?>><?php echo esc_html( $club->shortcode ); ?></option>
-								<?php
-							}
-							?>
-						</select>
+                        <label>
+                            <select class="form-select" name="club" id="club">
+                                <option value="" <?php selected( '', $club_id ); ?>><?php esc_html_e( 'All clubs', 'racketmanager' ); ?></option>
+                                <?php
+                                foreach ( $clubs as $club ) {
+                                    ?>
+                                    <option value="<?php echo esc_html( $club->id ); ?>" <?php selected( $club->id, $club_id ); ?>><?php echo esc_html( $club->shortcode ); ?></option>
+                                    <?php
+                                }
+                                ?>
+                            </select>
+                        </label>
 					</div>
 					<?php
 				}
 				?>
 				<div class="col-6 col-md-2 col-lg-auto">
-					<select class="form-select" size="1" name="status" id="status">
-						<option value="" <?php echo esc_html( '' === $status ? 'selected' : '' ); ?>><?php esc_html_e( 'All', 'racketmanager' ); ?></option>
-						<option value="open" <?php echo esc_html( 'open' === $status ? 'selected' : '' ); ?>><?php esc_html_e( 'Open', 'racketmanager' ); ?></option>
-						<option value="overdue" <?php echo esc_html( 'overdue' === $status ? 'selected' : '' ); ?>><?php esc_html_e( 'Overdue', 'racketmanager' ); ?></option>
-						<option value="paid" <?php echo esc_html( 'paid' === $status ? 'selected' : '' ); ?>><?php esc_html_e( 'Paid', 'racketmanager' ); ?></option>
-					</select>
+                    <label>
+                        <select class="form-select" size="1" name="status" id="status">
+                            <option value="" <?php echo esc_html( '' === $status ? 'selected' : '' ); ?>><?php esc_html_e( 'All', 'racketmanager' ); ?></option>
+                            <option value="open" <?php echo esc_html( 'open' === $status ? 'selected' : '' ); ?>><?php esc_html_e( 'Open', 'racketmanager' ); ?></option>
+                            <option value="overdue" <?php echo esc_html( 'overdue' === $status ? 'selected' : '' ); ?>><?php esc_html_e( 'Overdue', 'racketmanager' ); ?></option>
+                            <option value="paid" <?php echo esc_html( 'paid' === $status ? 'selected' : '' ); ?>><?php esc_html_e( 'Paid', 'racketmanager' ); ?></option>
+                        </select>
+                    </label>
 				</div>
 				<div class="col-auto">
 					<button class="btn btn-primary"><?php esc_html_e( 'Filter', 'racketmanager' ); ?></button>
@@ -84,11 +95,13 @@ $invoices        = $finance_invoices;
 				<div class="row gx-3 mb-3 align-items-center">
 					<!-- Bulk Actions -->
 					<div class="col-auto">
-						<select class="form-select" name="action">
-							<option value="-1" selected="selected"><?php esc_html_e( 'Change Status', 'racketmanager' ); ?></option>
-							<option value="paid"><?php esc_html_e( 'Paid', 'racketmanager' ); ?></option>
-						</select>
-					</div>
+                        <label>
+                            <select class="form-select" name="action">
+                                <option value="-1" selected="selected"><?php esc_html_e( 'Change Status', 'racketmanager' ); ?></option>
+                                <option value="paid"><?php esc_html_e( 'Paid', 'racketmanager' ); ?></option>
+                            </select>
+                        </label>
+                    </div>
 					<div class="col-auto">
 						<button name="doActionInvoices" id="doActionInvoices" class="btn btn-secondary"><?php esc_html_e( 'Apply', 'racketmanager' ); ?></button>
 					</div>
@@ -97,7 +110,7 @@ $invoices        = $finance_invoices;
 					<thead class="table-dark">
 						<tr>
 							<th class="check-column">
-								<input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('invoices-action'));" />
+                                <label for="checkAllInvoices"></label><input type="checkbox" id="checkAllInvoices" onclick="Racketmanager.checkAll(document.getElementById('invoices-action'));" />
 							</th>
 							<th class="d-none d-lg-table-cell text-center"><?php esc_html_e( 'Invoice', 'racketmanager' ); ?></th>
 							<th class="d-table-cell d-lg-none text-center"><?php esc_html_e( 'Inv', 'racketmanager' ); ?></th>
@@ -113,9 +126,9 @@ $invoices        = $finance_invoices;
 						foreach ( $invoices as $invoice ) {
 							$invoices_total += $invoice->amount;
 							?>
-							<tr class="table-row">
-								<td class="check-column"><input type="checkbox" value="<?php echo esc_html( $invoice->id ); ?>" name="invoice[<?php echo esc_html( $invoice->id ); ?>]" /></td>
-								<td class="text-center"><a href="admin.php?page=racketmanager-finances&amp;view=invoice&amp;invoice=<?php echo esc_html( $invoice->id ); ?>"><?php echo esc_html( $invoice->invoice_number ); ?></a></td>
+							<tr>
+								<td class="check-column"><label for="invoice-<?php echo esc_html( $invoice->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $invoice->id ); ?>" name="invoice[<?php echo esc_html( $invoice->id ); ?>]" id="invoice-<?php echo esc_html( $invoice->id ); ?>" /></td>
+								<td class="text-center"><a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=invoice&amp;invoice=<?php echo esc_html( $invoice->id ); ?>"><?php echo esc_html( $invoice->invoice_number ); ?></a></td>
 								<td class=""><?php echo esc_html( ucfirst( $invoice->charge->competition->name ) . ' ' . $invoice->charge->season ); ?></td>
 								<td class="">
 									<?php

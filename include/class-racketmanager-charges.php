@@ -18,61 +18,61 @@ final class Racketmanager_Charges {
 	 *
 	 * @var int
 	 */
-	public $id;
+	public int $id;
 	/**
 	 * Season
 	 *
 	 * @var string
 	 */
-	public $season;
+	public string $season;
 	/**
 	 * Competition id
 	 *
 	 * @var int
 	 */
-	public $competition_id;
+	public int $competition_id;
 	/**
 	 * Competition
 	 *
-	 * @var object
+	 * @var Racketmanager_Competition|null
 	 */
-	public $competition;
+	public null|Racketmanager_Competition $competition;
 	/**
 	 * Status
 	 *
 	 * @var string
 	 */
-	public $status;
+	public string $status;
 	/**
 	 * Date
 	 *
 	 * @var string
 	 */
-	public $date;
+	public string $date;
 	/**
 	 * Club fee
 	 *
-	 * @var string
+	 * @var string|float
 	 */
-	public $fee_competition;
+	public string|float $fee_competition;
 	/**
 	 * Team fee
 	 *
-	 * @var string
+	 * @var string|float
 	 */
-	public $fee_event;
+	public string|float $fee_event;
 	/**
 	 * Total
 	 *
 	 * @var float
 	 */
-	public $total;
+	public float $total;
 	/**
 	 * Get class instance
 	 *
-	 * @param int $charge_id id.
+	 * @param int|string $charge_id id.
 	 */
-	public static function get_instance( $charge_id ) {
+	public static function get_instance( int|string $charge_id ) {
 		global $wpdb;
 		if ( ! $charge_id ) {
 			return false;
@@ -96,7 +96,7 @@ final class Racketmanager_Charges {
 
 		if ( ! $charge ) {
 			$charge = $wpdb->get_row(
-				"SELECT `id`, `competition_id`, `season`, `status`, `date`, `fee_competition`, `fee_event` FROM {$wpdb->racketmanager_charges} WHERE $search LIMIT 1",
+				"SELECT `id`, `competition_id`, `season`, `status`, `date`, `fee_competition`, `fee_event` FROM $wpdb->racketmanager_charges WHERE $search LIMIT 1",
 			);  // db call ok.
 
 			if ( ! $charge ) {
@@ -114,9 +114,9 @@ final class Racketmanager_Charges {
 	/**
 	 * Construct class instance
 	 *
-	 * @param object $charges charges object.
+	 * @param object|null $charges charges object.
 	 */
-	public function __construct( $charges = null ) {
+	public function __construct( object $charges = null ) {
 		if ( ! is_null( $charges ) ) {
 			foreach ( get_object_vars( $charges ) as $key => $value ) {
 				$this->$key = $value;
@@ -132,14 +132,14 @@ final class Racketmanager_Charges {
 	/**
 	 * Add new charge
 	 */
-	private function add() {
+	private function add(): void {
 		global $wpdb;
 		if ( empty( $this->status ) ) {
 			$this->status = 'draft';
 		}
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"INSERT INTO {$wpdb->racketmanager_charges} (`season`, `competition_id`, `status`, `date`, `fee_competition`, `fee_event`) VALUES (%s, %d, %s, %s, %d, %d)",
+				"INSERT INTO $wpdb->racketmanager_charges (`season`, `competition_id`, `status`, `date`, `fee_competition`, `fee_event`) VALUES (%s, %d, %s, %s, %d, %d)",
 				$this->season,
 				$this->competition_id,
 				$this->status,
@@ -156,12 +156,12 @@ final class Racketmanager_Charges {
 	 *
 	 * @param string $status status value.
 	 */
-	public function set_status( $status ) {
+	public function set_status( string $status ): void {
 		global $wpdb;
 		$this->status = $status;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_charges} set `status` = %s WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_charges set `status` = %s WHERE `id` = %d",
 				$status,
 				$this->id
 			)
@@ -172,14 +172,14 @@ final class Racketmanager_Charges {
 	/**
 	 * Set club fee
 	 *
-	 * @param string $fee_competition club fee value.
+	 * @param float|string $fee_competition club fee value.
 	 */
-	public function set_club_fee( $fee_competition ) {
+	public function set_club_fee( float|string $fee_competition ): void {
 		global $wpdb;
 		$this->fee_competition = $fee_competition;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_charges} set `fee_competition` = %d WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_charges set `fee_competition` = %d WHERE `id` = %d",
 				$fee_competition,
 				$this->id
 			)
@@ -190,14 +190,14 @@ final class Racketmanager_Charges {
 	/**
 	 * Set team fee
 	 *
-	 * @param string $fee_event team fee value.
+	 * @param float|string $fee_event team fee value.
 	 */
-	public function set_team_fee( $fee_event ) {
+	public function set_team_fee( float|string $fee_event ): void {
 		global $wpdb;
 		$this->fee_event = $fee_event;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_charges} set `fee_event` = %d WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_charges set `fee_event` = %d WHERE `id` = %d",
 				$fee_event,
 				$this->id
 			)
@@ -209,12 +209,12 @@ final class Racketmanager_Charges {
 	 *
 	 * @param string $season season.
 	 */
-	public function set_season( $season ) {
+	public function set_season( string $season ): void {
 		global $wpdb;
 		$this->season = $season;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_charges} set `season` = %s WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_charges set `season` = %s WHERE `id` = %d",
 				$season,
 				$this->id
 			)
@@ -227,12 +227,12 @@ final class Racketmanager_Charges {
 	 *
 	 * @param string $date date.
 	 */
-	public function set_date( $date ) {
+	public function set_date( string $date ): void {
 		global $wpdb;
 		$this->date = $date;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_charges} set `date` = %s WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_charges set `date` = %s WHERE `id` = %d",
 				$date,
 				$this->id
 			)
@@ -243,12 +243,12 @@ final class Racketmanager_Charges {
 	/**
 	 * Delete charge
 	 */
-	public function delete() {
+	public function delete(): void {
 		global $wpdb;
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_charges} WHERE `id` = %d",
+				"DELETE FROM $wpdb->racketmanager_charges WHERE `id` = %d",
 				$this->id
 			)
 		);
@@ -256,29 +256,29 @@ final class Racketmanager_Charges {
 	}
 
 	/**
-	 * Does the charge have invoiecs
+	 * Does the charge have invoices
 	 */
-	public function has_invoices() {
+	public function has_invoices(): ?int {
 		global $wpdb;
 
 		return $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT count(*) FROM {$wpdb->racketmanager_invoices} WHERE `charge_id` = %d",
+				"SELECT count(*) FROM $wpdb->racketmanager_invoices WHERE `charge_id` = %d",
 				$this->id
 			)
 		);
 	}
 	/**
-	 * Get invoiecs
+	 * Get invoices
 	 */
 	public function get_invoices() {
 		global $racketmanager;
 		return $racketmanager->get_invoices( array( 'charge' => $this->id ) );
 	}
 	/**
-	 * Get club enties for charges
+	 * Get club entries for charges
 	 */
-	public function get_club_entries() {
+	public function get_club_entries(): array {
 		global $racketmanager;
 		$club_entries = array();
 		$clubs        = $racketmanager->get_clubs();
@@ -291,13 +291,13 @@ final class Racketmanager_Charges {
 		return $club_entries;
 	}
 	/**
-	 * Get club enties for charges
+	 * Get club entries for charges
 	 *
 	 * @param object $club club.
 	 */
-	public function get_club_entry( $club ) {
+	public function get_club_entry( object $club ): false|object {
 		$club_teams  = 0;
-		$club_event  = array();
+		$club_events = array();
 		$competition = get_competition( $this->competition_id );
 		if ( $competition ) {
 			$events      = $competition->get_events();
@@ -340,8 +340,9 @@ final class Racketmanager_Charges {
 	 * Get player entries for charges
 	 *
 	 * @param object $player player.
+	 * @return object|null player entry or false
 	 */
-	public function get_player_entry( $player ) {
+	public function get_player_entry( object $player ): object|false {
 		$player_events = array();
 		$entered       = 0;
 		$competition   = get_competition( $this->competition_id );
@@ -385,8 +386,9 @@ final class Racketmanager_Charges {
 	/**
 	 * Generate and send invoices
 	 */
-	public function send_invoices() {
+	public function send_invoices(): void {
 		global $racketmanager;
+		$sent            = false;
 		$charges_entries = $this->get_club_entries();
 		foreach ( $charges_entries as $entry ) {
 			$invoice                 = new \stdClass();
@@ -396,7 +398,6 @@ final class Racketmanager_Charges {
 			$invoice                 = new Racketmanager_Invoice( $invoice );
 			$invoice->set_amount( $entry->fee );
 			$invoice->set_details( $entry );
-			$sent = false;
 			$sent = $invoice->send();
 			if ( $sent ) {
 				$invoice->set_status( 'sent' );

@@ -195,15 +195,20 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 						$this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
 					}
 				} else {
-					$charges                  = new \stdClass();
-					$charges->competition_id  = isset( $_POST['competition_id'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_id'] ) ) : null;
-					$charges->season          = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
-					$charges->status          = isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : null;
-					$charges->date            = isset( $_POST['date'] ) ? sanitize_text_field( wp_unslash( $_POST['date'] ) ) : null;
-					$charges->fee_competition = isset( $_POST['feeClub'] ) ? floatval( $_POST['feeClub'] ) : null;
-					$charges->fee_event       = isset( $_POST['feeTeam'] ) ? floatval( $_POST['feeTeam'] ) : null;
-					$charges                  = new Racketmanager_Charges( $charges );
-					$this->set_message( __( 'Charges added', 'racketmanager' ) );
+					$charge                  = new \stdClass();
+					$charge->competition_id  = empty( $_POST['competition_id'] ) ? null : intval( $_POST['competition_id'] );
+					$charge->season          = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
+					$charge->status          = isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : null;
+					$charge->date            = isset( $_POST['date'] ) ? sanitize_text_field( wp_unslash( $_POST['date'] ) ) : null;
+					$charge->fee_competition = isset( $_POST['feeClub'] ) ? floatval( $_POST['feeClub'] ) : null;
+					$charge->fee_event       = isset( $_POST['feeTeam'] ) ? floatval( $_POST['feeTeam'] ) : null;
+					$valid                   = $this->validate_charge( $charge );
+					if ( $valid ) {
+						$charge = new Racketmanager_Charges( $charge );
+						$this->set_message( __( 'Charges added', 'racketmanager' ) );
+					} else {
+						$this->set_message( __( 'Error with charge creation', 'racketmanager' ), 'error' );
+					}
 				}
 			}
 			$this->printMessage();
@@ -223,14 +228,6 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 				$charges_id               = '';
 				$form_title               = __( 'Add Charge', 'racketmanager' );
 				$form_action              = __( 'Add', 'racketmanager' );
-				$charges                  = new \stdclass();
-				$charges->competition_id  = '';
-				$charges->id              = '';
-				$charges->season          = '';
-				$charges->date            = '';
-				$charges->status          = '';
-				$charges->fee_competition = '';
-				$charges->fee_event       = '';
 			}
 
 			include_once RACKETMANAGER_PATH . '/admin/finances/charge.php';
@@ -350,5 +347,38 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 		}
 
 		return $args;
+	}
+
+	/**
+	 * Validate charge
+	 *
+	 * @param object $charge charge object
+	 *
+	 * @return bool
+	 *
+	 */
+	private function validate_charge( object $charge ): bool {
+		global $racketmanager;
+		if ( empty ( $charge->competition_id ) ) {
+			$racketmanager->error_messages[] = __( 'Competition must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'competition_id';
+		}
+		if ( empty( $charge->season ) ) {
+			$racketmanager->error_messages[] = __( 'Season must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'season';
+		}
+		if ( empty( $charge->status ) ) {
+			$racketmanager->error_messages[] = __( 'Status must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'status';
+		}
+		if ( empty( $charge->date ) ) {
+			$racketmanager->error_messages[] = __( 'Date must be set', 'racketmanager' );
+			$racketmanager->error_fields[]   = 'date';
+		}
+		if ( empty( $racketmanager->error_fields ) ) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

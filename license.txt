@@ -122,7 +122,7 @@ this Lesser General Public License (also called "this License").
 Each licensee is addressed as "you".
 
   A "library" means a collection of software functions and/or data
-prepared so as to be conveniently linked with application programs
+prepared to be conveniently linked with application programs
 (which use some of those functions and data) to form executables.
 
   The "Library", below, refers to any such software library or work
@@ -258,7 +258,7 @@ threshold for this to be true is not precisely defined by law.
 
   If such an object file uses only numerical parameters, data
 structure layouts and accessors, and small macros and small inline
-functions (ten lines or less in length), then the use of the object
+functions (ten lines or fewer), then the use of the object
 file is unrestricted, regardless of whether it is legally a derivative
 work.  (Executables containing this object code plus portions of the
 Library will still fall under Section 6.)
@@ -376,7 +376,7 @@ infringement or for any other reason (not limited to patent issues),
 conditions are imposed on you (whether by court order, agreement or
 otherwise) that contradict the conditions of this License, they do not
 excuse you from the conditions of this License.  If you cannot
-distribute so as to satisfy simultaneously your obligations under this
+distribute to satisfy simultaneously your obligations under this
 License and any other pertinent obligations, then as a consequence you
 may not distribute the Library at all.  For example, if a patent
 license would not permit royalty-free redistribution of the Library by

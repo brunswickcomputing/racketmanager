@@ -813,13 +813,13 @@ class RacketManager_Rewrites {
 		// tournament - order of play.
 		add_rewrite_rule(
 			'tournament/(.+?)/order_of_play/?$',
-			'index.php?pagename=tournaments%2Ftournament&tournament=$matches[1]&tab=orderofplay',
+			'index.php?pagename=tournaments%2Ftournament&tournament=$matches[1]&tab=order_of_play',
 			'top'
 		);
 		// tournament - order of play.
 		add_rewrite_rule(
 			'tournament/(.+?)/order-of-play/?$',
-			'index.php?pagename=tournaments%2Ftournament&tournament=$matches[1]&tab=orderofplay',
+			'index.php?pagename=tournaments%2Ftournament&tournament=$matches[1]&tab=order_of_play',
 			'top'
 		);
 		// tournament - match.

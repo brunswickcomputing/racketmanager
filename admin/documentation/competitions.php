@@ -1,6 +1,6 @@
 <div class="container">
   <a href="#top" class="alignright top-link"><?php _e( 'Top', 'racketmanager' ) ?></a>
-  <p>The main page of Racketmanager shows an overview of the competitions in the database together with a few statistics on the number of seasons, leagues and format. At the beginning it is necessary to add at least one season for which the number of match days is also specified. Furthermore the competition preferences need to be set. You can chose the sport type and point rules.</p>
+  <p>The main page of Racketmanager shows an overview of the competitions in the database together with a few statistics on the number of seasons, leagues and format. At the beginning it is necessary to add at least one season for which the number of match days is also specified. Furthermore, the competition preferences need to be set. You can choose the sport type and point rules.</p>
   <h3 id="Types"><?php _e( 'Competition Types', 'racketmanager' ) ?></h3>
   <p>There are three types of competitions available.</p>
   <h4 id="Cups"><?php _e( 'Cups', 'racketmanager' ) ?></h4>
@@ -27,7 +27,7 @@
   <h4 id="Final Results"><?php _e( 'Final Results', 'racketmanager' ) ?></h4>
   <p>This tab shows the matches for each round along with scores.</p>
   <h4 id="Final"><?php _e( 'Final', 'racketmanager' ) ?></h4>
-  <p>This tab is where the matches are created. Each round show be created starting with the first and ending with the final. The first round matches will consist of "Team Rank x" names along with "Bye". The "Team Rank" refers to the teams in the "Prelimary Rounds" tab.</p>
+  <p>This tab is where the matches are created. Each round show be created starting with the first and ending with the final. The first round matches will consist of "Team Rank x" names along with "Bye". The "Team Rank" refers to the teams in the "Preliminary Rounds" tab.</p>
   <p>For subsequent rounds the teams will be "Winner of <em>round</em> x".</p>
   <h5>Match Results</h5>
   <p>If the competition has rubbers then the "View Rubbers" button should be pressed to enter the rubber players and scores. However, it is possible to just enter the match scores for these matches.</p>
@@ -38,7 +38,7 @@
   <p>Pressing the "Save Results" button will update the matches and automatically advance the winner team to the next round.</p>
   <p>Once matches have both teams advanced, clicking on the match name will allow the "Location" to be updated to indicate the "Home" team</p>
   <h4 id="Preliminary"><?php _e( 'Preliminary Rounds', 'racketmanager' ) ?></h4>
-  <p>This tab is where the teams are entered. For <em>existing</em> teams, the "Add Teams" button should be used to enable multiple teams to be selected and added to the league. For "Tournaments" only, the "Add Team" button should be used to create a <em>new</em> team. Once the teams have been added to the league, they can arranged manually using "drag and drop" and clicking "Save Ranking" or automatically by clicking "Random Ranking".</p>
+  <p>This tab is where the teams are entered. For <em>existing</em> teams, the "Add Teams" button should be used to enable multiple teams to be selected and added to the league. For "Tournaments" only, the "Add Team" button should be used to create a <em>new</em> team. Once the teams have been added to the league, they can arrange manually using "drag and drop" and clicking "Save Ranking" or automatically by clicking "Random Ranking".</p>
   <p>Once the matches have been created and the administrator is happy with the ranking, the "Proceed to Final Rounds" button should be pressed. On the first round matches, this will replace "Team Ranking x" with the name of the team in that position in the ranking.</p>
-  <p>Further changes to rankings after "Proceed to Final Rounds" has been pressed will have no affect on the matches. If changes are required the matches will need to be updated to have "Team Ranking x" before proceeding again.</p>
+  <p>Further changes to rankings after "Proceed to Final Rounds" has been pressed will have no effect on the matches. If changes are required the matches will need to be updated to have "Team Ranking x" before proceeding again.</p>
 </div>

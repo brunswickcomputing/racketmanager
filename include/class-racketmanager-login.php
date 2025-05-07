@@ -18,7 +18,7 @@ class RacketManager_Login {
 	 *
 	 * @var string
 	 */
-	private $register_link = 'member-login?action=register';
+	private string $register_link = 'member-login?action=register';
 
 	/**
 	 * Initialize shortcodes
@@ -46,33 +46,35 @@ class RacketManager_Login {
 		add_filter( 'user_request_action_email_content', array( $this, 'racketmanager_user_request_action_email' ), 10, 2 );
 		add_filter( 'wp_new_user_notification_email_admin', array( $this, 'my_wp_new_user_notification_email_admin' ), 10, 3 );
 		add_filter( 'wp_new_user_notification_email', array( $this, 'my_wp_new_user_notification_email' ), 10, 3 );
-		add_filter( 'password_hint', array( $this, 'racketmanager_change_password_hint' ), 10, 1 );
+		add_filter( 'password_hint', array( $this, 'racketmanager_change_password_hint' ) );
 	}
 	/**
 	 * Function to enqueue login scripts
 	 *   */
-	public function do_enqueue_login_scripts() {
+	public function do_enqueue_login_scripts(): void {
 		wp_enqueue_script( 'recaptcha', 'https://www.google.com/recaptcha/api.js', array(), RACKETMANAGER_VERSION, array( 'in_footer' => true ) );
 	}
 	/**
 	 * Function to return password hint message
 	 *
 	 * @param string $hint_text original hint text.
+	 *
 	 * @return string password hint text.
 	 */
-	public function racketmanager_change_password_hint( $hint_text ) {
+	public function racketmanager_change_password_hint( string $hint_text ): string {
 		return 'Please use a strong password. Passwords that consist of special characters (&#%!@), upper case/lower case characters and numbers are considered strong.';
 	}
 
 	/**
-	 * Function to return new user notifcation email details for administrator
+	 * Function to return new user notification email details for administrator
 	 *
-	 * @param array  $wp_new_user_notification_email array of email details.
+	 * @param array $wp_new_user_notification_email array of email details.
 	 * @param object $user user object.
 	 * @param string $blogname site name.
+	 *
 	 * @return array new user notication email details.
 	 */
-	public function my_wp_new_user_notification_email_admin( $wp_new_user_notification_email, $user, $blogname ) {
+	public function my_wp_new_user_notification_email_admin( array $wp_new_user_notification_email, object $user, string $blogname ): array {
 
 		$user_count = count_users();
 
@@ -84,12 +86,13 @@ class RacketManager_Login {
 	/**
 	 * Function to return new user notifcation email details
 	 *
-	 * @param array  $wp_new_user_notification_email array of email details.
-	 * @param object $user user object.
+	 * @param array $wp_new_user_notification_email array of email details.
+	 * @param \WP_User $user user object.
 	 * @param string $blogname site name.
+	 *
 	 * @return array
 	 */
-	public function my_wp_new_user_notification_email( $wp_new_user_notification_email, $user, $blogname ) {
+	public function my_wp_new_user_notification_email( array $wp_new_user_notification_email, \WP_User $user, string $blogname ): array {
 		global $racketmanager_shortcodes, $racketmanager;
 
 		$key                                       = get_password_reset_key( $user );
@@ -110,7 +113,7 @@ class RacketManager_Login {
 	 *
 	 * @return string
 	 */
-	public function racketmanager_wp_email_content_type() {
+	public function racketmanager_wp_email_content_type(): string {
 		return 'text/html';
 	}
 
@@ -121,9 +124,10 @@ class RacketManager_Login {
 	 * @param string $key security key.
 	 * @param string $user_login user login.
 	 * @param object $user_data user data.
+	 *
 	 * @return string email details.
 	 */
-	public function racketmanager_retrieve_password_email( $message, $key, $user_login, $user_data ) {
+	public function racketmanager_retrieve_password_email( $message, string $key, string $user_login, object $user_data ): string {
 		global $racketmanager_shortcodes, $racketmanager;
 
 		add_filter( 'wp_mail_content_type', array( $this, 'racketmanager_wp_email_content_type' ) );
@@ -140,9 +144,10 @@ class RacketManager_Login {
 	 * @param array $password_change_message message.
 	 * @param array $user_data array of user data.
 	 * @param array $user_data_new array of old user data.
+	 *
 	 * @return array
 	 */
-	public function racketmanager_password_change_email( $password_change_message, $user_data, $user_data_new ) {
+	public function racketmanager_password_change_email( array $password_change_message, array $user_data, array $user_data_new ): array {
 		global $racketmanager_shortcodes, $racketmanager;
 
 		add_filter( 'wp_mail_content_type', array( $this, 'racketmanager_wp_email_content_type' ) );
@@ -161,9 +166,10 @@ class RacketManager_Login {
 	 * @param string $message original email message.
 	 * @param string $request request.
 	 * @param string $email_data email data.
+	 *
 	 * @return string email message.
 	 */
-	public function racketmanager_privacy_personal_data_email( $message, $request, $email_data ) {
+	public function racketmanager_privacy_personal_data_email( string $message, string $request, string $email_data ): string {
 		global $racketmanager_shortcodes, $racketmanager;
 
 		add_filter( 'wp_mail_content_type', array( $this, 'racketmanager_wp_email_content_type' ) );
@@ -175,10 +181,11 @@ class RacketManager_Login {
 	 * Function to set email message for user action
 	 *
 	 * @param string $message orginal email message.
-	 * @param array  $email_data email data.
+	 * @param array $email_data email data.
+	 *
 	 * @return string email message.
 	 */
-	public function racketmanager_user_request_action_email( $message, $email_data ) {
+	public function racketmanager_user_request_action_email( string $message, array $email_data ): string {
 		global $racketmanager_shortcodes, $racketmanager;
 
 		add_filter( 'wp_mail_content_type', array( $this, 'racketmanager_wp_email_content_type' ) );
@@ -189,7 +196,7 @@ class RacketManager_Login {
 	/**
 	 * Function to disable dashboard
 	 */
-	public function disable_dashboard() {
+	public function disable_dashboard(): void {
 		if ( is_user_logged_in() ) {
 			$user = wp_get_current_user();
 			if ( $user->has_cap( 'subscriber' ) && is_admin() && ! wp_doing_ajax() ) {
@@ -202,7 +209,7 @@ class RacketManager_Login {
 	/**
 	 * Redirect the user to the custom login page instead of wp-login.php.
 	 */
-	public function redirect_to_custom_login() {
+	public function redirect_to_custom_login(): void {
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'GET' === $_SERVER['REQUEST_METHOD'] ) {
 			$redirect_to = isset( $_REQUEST['redirect_to'] ) ? esc_url_raw( wp_unslash( $_REQUEST['redirect_to'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( is_user_logged_in() ) {
@@ -215,7 +222,6 @@ class RacketManager_Login {
 			if ( ! empty( $redirect_to ) ) {
 				$login_url = add_query_arg( 'redirect_to', $redirect_to, $login_url );
 			}
-
 			wp_safe_redirect( $login_url );
 			exit;
 		}
@@ -224,9 +230,9 @@ class RacketManager_Login {
 	/**
 	 * Redirects the user to the correct page depending on whether admin or not.
 	 *
-	 * @param string $redirect_to   An optional redirect_to URL for admin users.
+	 * @param string|null $redirect_to   An optional redirect_to URL for admin users.
 	 */
-	public function redirect_logged_in_user( $redirect_to = null ) {
+	public function redirect_logged_in_user( string $redirect_to = null ): void {
 		$user = wp_get_current_user();
 		if ( user_can( $user, 'manage_options' ) ) {
 			if ( $redirect_to ) {
@@ -241,7 +247,7 @@ class RacketManager_Login {
 	/**
 	 * Redirect to custom login page after the user has been logged out.
 	 */
-	public function redirect_after_logout() {
+	public function redirect_after_logout(): void {
 		$redirect_url = home_url();
 		wp_safe_redirect( $redirect_url );
 		exit;
@@ -250,13 +256,13 @@ class RacketManager_Login {
 	/**
 	 * Returns the URL to which the user should be redirected after the (successful) login.
 	 *
-	 * @param string           $redirect_to           The redirect destination URL.
-	 * @param string           $requested_redirect_to The requested redirect destination URL passed as a parameter.
-	 * @param WP_User|WP_Error $user                  WP_User object if login was successful, WP_Error object otherwise.
+	 * @param string $redirect_to           The redirect destination URL.
+	 * @param string $requested_redirect_to The requested redirect destination URL passed as a parameter.
+	 * @param \WP_Error|\WP_User $user                  WP_User object if login was successful, WP_Error object otherwise.
 	 *
 	 * @return string Redirect URL
 	 */
-	public function redirect_after_login( $redirect_to, $requested_redirect_to, $user ) {
+	public function redirect_after_login( string $redirect_to, string $requested_redirect_to, \WP_Error|\WP_User $user ): string {
 		if ( strpos( $redirect_to, 'password-reset' ) ) {
 			$redirect_to = '';
 		}
@@ -285,7 +291,7 @@ class RacketManager_Login {
 	 * Redirects the user to the custom registration page instead
 	 * of thedefault.
 	 */
-	public function redirect_to_custom_register() {
+	public function redirect_to_custom_register(): void {
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'GET' === $_SERVER['REQUEST_METHOD'] ) {
 			if ( is_user_logged_in() ) {
 				$this->redirect_logged_in_user();
@@ -303,9 +309,9 @@ class RacketManager_Login {
 	 * @param string $firstname    The new user's first name.
 	 * @param string $last_name     The new user's last name.
 	 *
-	 * @return int|WP_Error         The id of the user that was created, or error if failed.
+	 * @return int|\WP_Error         The id of the user that was created, or error if failed.
 	 */
-	public function register_user( $email, $firstname, $last_name ) {
+	public function register_user( string $email, string $firstname, string $last_name ): \WP_Error|int {
 		$errors = new \WP_Error();
 
 		// Email address is used as both username and email. It is also the only
@@ -344,7 +350,7 @@ class RacketManager_Login {
 	 * Used through the action hook "login_form_register" activated on wp-login.php
 	 * when accessed through the registration action.
 	 */
-	public function do_register_user() {
+	public function do_register_user(): void {
 		$redirect_url = home_url( $this->register_link );
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' !== $_SERVER['REQUEST_METHOD'] ) {
 			wp_safe_redirect( $redirect_url );
@@ -406,7 +412,7 @@ class RacketManager_Login {
 	 *
 	 * @return bool True if the CAPTCHA is OK, otherwise false.
 	 */
-	private function verify_recaptcha() {
+	private function verify_recaptcha(): bool {
 		global $racketmanager;
 		// This field is set by the recaptcha widget if check is successful.
 		if ( isset( $_POST['g-recaptcha-response'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -416,7 +422,7 @@ class RacketManager_Login {
 		}
 
 		$keys                 = $racketmanager->get_options( 'keys' );
-		$recaptcha_secret_key = isset( $keys['recaptchaSecretKey'] ) ? $keys['recaptchaSecretKey'] : '';
+		$recaptcha_secret_key = $keys['recaptchaSecretKey'] ?? '';
 		if ( ! $recaptcha_secret_key ) {
 			return false;
 		}
@@ -443,7 +449,7 @@ class RacketManager_Login {
 	 * Redirects the user to the custom "Forgot your password?" page instead of
 	 * wp-login.php?action=lostpassword.
 	 */
-	public function redirect_to_custom_lostpassword() {
+	public function redirect_to_custom_lostpassword(): void {
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'GET' === $_SERVER['REQUEST_METHOD'] ) {
 			if ( is_user_logged_in() ) {
 				$this->redirect_logged_in_user();
@@ -459,7 +465,7 @@ class RacketManager_Login {
 	/**
 	 * Initiates password reset.
 	 */
-	public function do_password_lost() {
+	public function do_password_lost(): void {
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 			$redirect_url = home_url( 'member-password-lost' );
 			$errors       = retrieve_password();
@@ -479,7 +485,7 @@ class RacketManager_Login {
 	 * Redirects to the custom password reset page, or the login page
 	 * if there are errors.
 	 */
-	public function redirect_to_custom_password_reset() {
+	public function redirect_to_custom_password_reset(): void {
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'GET' === $_SERVER['REQUEST_METHOD'] ) {
 			// phpcs:disable WordPress.Security.NonceVerification.Recommended
 			// Verify key / login combo.
@@ -510,7 +516,7 @@ class RacketManager_Login {
 	/**
 	 * Resets the user's password if the password reset form was submitted.
 	 */
-	public function do_password_reset() {
+	public function do_password_reset(): void {
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 			if ( isset( $_POST['racketmanager_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_reset-password' ) ) {
 				$rp_key   = isset( $_POST['rp_key'] ) ? sanitize_text_field( wp_unslash( $_POST['rp_key'] ) ) : null;

@@ -148,15 +148,15 @@ final class Racketmanager_Rubber {
 	/**
 	 * Winner id variable
 	 *
-	 * @var int
+	 * @var string
 	 */
-	public int $winner_id;
+	public string $winner_id;
 	/**
 	 * Loser id variable
 	 *
-	 * @var int
+	 * @var string
 	 */
-	public int $loser_id;
+	public string $loser_id;
 	/**
 	 * Reverse rubbers variable
 	 *

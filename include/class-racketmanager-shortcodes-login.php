@@ -9,8 +9,6 @@
 
 namespace Racketmanager;
 
-use stdClass;
-
 /**
  * Class to implement shortcode functions
  */
@@ -20,7 +18,7 @@ class RacketManager_Shortcodes_Login extends RacketManager_Shortcodes {
 	 *
 	 * @var string
 	 */
-	private $already_signed_in = '';
+	private string $already_signed_in = '';
 	/**
 	 * Initialize shortcodes
 	 */
@@ -37,20 +35,19 @@ class RacketManager_Shortcodes_Login extends RacketManager_Shortcodes {
 	 *
 	 * @return void
 	 */
-	public function load_translations() {
+	public function load_translations(): void {
 		$this->already_signed_in = __( 'You are already signed in', 'racketmanager' );
 	}
 	/**
 	 * A shortcode for rendering the login form.
 	 *
-	 * @param  array $vars  Shortcode vars.
+	 * @param array $vars  Shortcode vars.
 	 *
 	 * @return string  The shortcode output
 	 */
-	public function render_login_form( $vars ) {
+	public function render_login_form( array $vars ): string {
 		global $racketmanager;
 		if ( is_user_logged_in() ) {
-			$redirect_to = null;
 			if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'GET' === $_SERVER['REQUEST_METHOD'] ) {
 				$redirect_to = isset( $_REQUEST['redirect_to'] ) ? esc_url_raw( wp_unslash( $_REQUEST['redirect_to'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			} else {
@@ -66,7 +63,7 @@ class RacketManager_Shortcodes_Login extends RacketManager_Shortcodes {
 		$vars['site_url']  = $racketmanager->site_url;
 		// Retrieve recaptcha key.
 		$keys                       = $racketmanager->get_options( 'keys' );
-		$recaptcha_site_key         = isset( $keys['recaptchaSiteKey'] ) ? $keys['recaptchaSiteKey'] : '';
+		$recaptcha_site_key         = $keys['recaptchaSiteKey'] ?? '';
 		$vars['recaptcha_site_key'] = $recaptcha_site_key;
 		$action                     = isset( $_GET[ ( 'action' ) ] ) ? sanitize_text_field( wp_unslash( $_GET[ ( 'action' ) ] ) ) : ''; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $action ) && 'register' === $action ) {
@@ -79,9 +76,10 @@ class RacketManager_Shortcodes_Login extends RacketManager_Shortcodes {
 	 * Function to display register form
 	 *
 	 * @param array $vars array of variables.
+	 *
 	 * @return string
 	 */
-	public function form_register( $vars ) {
+	public function form_register( array $vars ): string {
 		// Retrieve possible errors from request parameters.
 		$errors      = array();
 		$error_codes = array();
@@ -106,9 +104,10 @@ class RacketManager_Shortcodes_Login extends RacketManager_Shortcodes {
 	 * Function to display login form
 	 *
 	 * @param array $vars array of variables.
+	 *
 	 * @return string
 	 */
-	public function form_login( $vars ) {
+	public function form_login( array $vars ): string {
 		global $racketmanager;
 		// Check if the user just registered.
 		$vars['registered'] = isset( $_REQUEST['registered'] );  //phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -122,7 +121,7 @@ class RacketManager_Shortcodes_Login extends RacketManager_Shortcodes {
 		} elseif ( wp_get_referer() ) {
 			if ( strpos( wp_get_referer(), 'member-login' ) > 0 ) {
 				$vars['redirect'] = '';
-			} elseif ( strpos( wp_get_referer(), $racketmanager->site_url ) === 0 ) {
+			} elseif (str_starts_with(wp_get_referer(), $racketmanager->site_url)) {
 				$vars['redirect'] = wp_validate_redirect( wp_get_referer(), $vars['redirect'] );
 			}
 		}
@@ -154,11 +153,11 @@ class RacketManager_Shortcodes_Login extends RacketManager_Shortcodes {
 	/**
 	 * A shortcode for rendering the form used to initiate the password reset.
 	 *
-	 * @param  array $vars  Shortcode vars.
+	 * @param array $vars  Shortcode vars.
 	 *
 	 * @return string  The shortcode output
 	 */
-	public function render_password_lost_form( $vars ) {
+	public function render_password_lost_form( array $vars ): string {
 		if ( is_user_logged_in() ) {
 			return $this->already_signed_in;
 		}
@@ -185,15 +184,11 @@ class RacketManager_Shortcodes_Login extends RacketManager_Shortcodes {
 	/**
 	 * A shortcode for rendering the form used to reset a user's password.
 	 *
-	 * @param  array $vars  Shortcode vars.
+	 * @param array $vars  Shortcode vars.
 	 *
 	 * @return string  The shortcode output
 	 */
-	public function render_password_reset_form( $vars ) {
-		if ( is_user_logged_in() ) {
-//			echo '<script>location.href = "' . esc_url( home_url() ) . '"</script>';
-//			exit;
-		}
+	public function render_password_reset_form( array $vars ): string {
 		// Parse shortcode vars.
 		$default_vars = array( 'show_title' => false );
 		$vars         = shortcode_atts( $default_vars, $vars );
@@ -222,7 +217,7 @@ class RacketManager_Shortcodes_Login extends RacketManager_Shortcodes {
 	 *
 	 * @return string  The output
 	 */
-	public function generate_member_account_form() {
+	public function generate_member_account_form(): string {
 		if ( ! is_user_logged_in() ) {
 			return __( 'You must be signed in to access this page', 'racketmanager' );
 		}

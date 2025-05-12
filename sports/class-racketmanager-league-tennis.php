@@ -34,19 +34,20 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 	 */
 	public function __construct( $league ) {
 		parent::__construct( $league );
-		add_filter( 'racketmanager_team_points_' . $this->sport, array( &$this, 'calculate_points' ), 10, 4 );
+		add_filter( 'racketmanager_team_points_' . $this->sport, array( &$this, 'calculate_team_points' ), 10, 4 );
 	}
 
 	/**
 	 * Calculate Points: add match score
 	 *
 	 * @param array $points points.
-	 * @param int   $team_id team.
+	 * @param int $team_id team.
 	 * @param array $point_rule rule.
 	 * @param array $matches matches.
+	 *
 	 * @return array
 	 */
-	public function calculate_points( $points, $team_id, $point_rule, $matches ) {
+	public function calculate_team_points( array $points, int $team_id, array $point_rule, array $matches ): array {
 		if ( $matches ) {
 			$points_for     = 0;
 			$points_against = 0;
@@ -63,8 +64,6 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 			$points['minus'] = $points_against;
 		} else {
 			$forwin             = empty( $point_rule['forwin'] ) ? 0 : $point_rule['forwin'];
-			$fordraw            = empty( $point_rule['fordraw'] ) ? 0 : $point_rule['fordraw'];
-			$forloss            = empty( $point_rule['forloss'] ) ? 0 : $point_rule['forloss'];
 			$forwin_split       = empty( $point_rule['forwin_split'] ) ? 0 : $point_rule['forwin_split'];
 			$forloss_split      = empty( $point_rule['forloss_split'] ) ? 0 : $point_rule['forloss_split'];
 			$forshare           = empty( $point_rule['forshare'] ) ? 0 : $point_rule['forshare'];
@@ -96,18 +95,18 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 	 * @param array $teams team array.
 	 * @return array of teams
 	 */
-	protected function rank_teams( $teams ) {
+	protected function rank_teams( $teams ): array {
 		foreach ( $teams as $key => $team ) {
-			$team_sets_won     = isset( $team->sets_won ) ? $team->sets_won : 0;
-			$team_sets_allowed = isset( $team->sets_allowed ) ? $team->sets_allowed : 0;
+			$team_sets_won     = $team->sets_won ?? 0;
+			$team_sets_allowed = $team->sets_allowed ?? 0;
 			if ( ! is_numeric( $team_sets_won ) ) {
 				$team_sets_won = 0;
 			}
 			if ( ! is_numeric( $team_sets_allowed ) ) {
 				$team_sets_allowed = 0;
 			}
-			$team_games_won     = isset( $team->games_won ) ? $team->games_won : 0;
-			$team_games_allowed = isset( $team->games_allowed ) ? $team->games_allowed : 0;
+			$team_games_won     = $team->games_won ?? 0;
+			$team_games_allowed = $team->games_allowed ?? 0;
 			if ( ! is_numeric( $team_games_won ) ) {
 				$team_games_won = 0;
 			}
@@ -139,9 +138,9 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 	 * @param int   $team_id team.
 	 * @param array $data data.
 	 * @param array $matches matches.
-	 * @return array number of runs for and against as assoziative array
+	 * @return array number of runs for and against as associative array
 	 */
-	protected function get_standings_data( $team_id, $data = array(), $matches = false ) {
+	protected function get_standings_data( $team_id, $data = array(), $matches = false ): array {
 		global $league;
 
 		$data['straight_set']   = array(
@@ -188,7 +187,6 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 					$rubbers_lost   = 0;
 					$rubbers_shared = 0;
 					$rubbers        = $match->get_rubbers();
-					$walkovers      = array();
 					$walkovers      = 0;
 					foreach ( $rubbers as $rubber ) {
 						if ( ! $rubber->is_walkover && ! $rubber->is_shared ) {
@@ -220,8 +218,6 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 										if ( $set_retired === $j ) {
 											$set_winner = 'abandoned';
 										}
-									} elseif ( $rubber->is_walkover ) {
-										$set_winner = 'walkover';
 									}
 									if ( is_numeric( trim( $set[ $player_ref_alt ] ) ) ) {
 										if ( 'MTB' === $set_type ) {
@@ -346,10 +342,11 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 	 * Get matches for standings function
 	 *
 	 * @param string $season season.
-	 * @param int    $team team id.
+	 * @param int $team team id.
+	 *
 	 * @return array of matches.
 	 */
-	private function get_matches_for_standings( $season, $team ) {
+	private function get_matches_for_standings( string $season, int $team ): array {
 		global $league;
 		return $league->get_matches(
 			array(
@@ -369,14 +366,14 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 	/**
 	 * Update match results and automatically calculate score
 	 *
-	 * @param object $match_object match details.
+	 * @param object $match match details.
 	 * @return object $match
 	 */
-	protected function update_results( $match_object ) {
-		$match = get_match( $match_object );
+	protected function update_results( $match ): object {
+		$match = get_match( $match );
 
 		// exit if only one team is set.
-		if ( -1 === $match->home_team || -1 === $match->away_team ) {
+		if ( '-1' === $match->home_team || '-1' === $match->away_team ) {
 			return $match;
 		}
 
@@ -426,7 +423,7 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 	 * @param Racketmanager_League_Team $team2 second team.
 	 * @return boolean
 	 */
-	protected function is_tie( $team1, $team2 ) {
+	protected function is_tie( $team1, $team2 ): bool {
 		// initialize results array.
 
 		$res = array(

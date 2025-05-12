@@ -9,8 +9,6 @@
 
 namespace Racketmanager;
 
-use stdClass;
-
 /**
  * Class to implement the Racketmanager_Match object
  */
@@ -20,501 +18,498 @@ final class Racketmanager_Match {
 	/**
 	 * Final round indicator
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $final_round = '';
+	public ?string $final_round = '';
 	/**
 	 * Id
 	 *
 	 * @var int
 	 */
-	public $id;
+	public int $id;
 	/**
 	 * Group
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $group;
+	public ?string $group;
 	/**
 	 * Date
 	 *
 	 * @var string
 	 */
-	public $date;
+	public string $date;
 	/**
-	 * Orginal date
+	 * Original date
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $date_original;
+	public ?string $date_original;
 	/**
 	 * Home team
 	 *
 	 * @var string
 	 */
-	public $home_team;
+	public string $home_team;
 	/**
 	 * Away team
 	 *
 	 * @var string
 	 */
-	public $away_team;
+	public string $away_team;
 	/**
 	 * Match day
 	 *
 	 * @var int
 	 */
-	public $match_day;
+	public int $match_day;
 	/**
 	 * Location
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $location;
+	public ?string $location;
 	/**
 	 * League  id
 	 *
 	 * @var int
 	 */
-	public $league_id;
+	public int $league_id;
 	/**
 	 * Season
 	 *
 	 * @var string
 	 */
-	public $season;
+	public string $season;
 	/**
 	 * Home points
 	 *
-	 * @var float
+	 * @var float|null
 	 */
-	public $home_points;
+	public ?float $home_points = null;
 	/**
 	 * Away points
 	 *
-	 * @var float
+	 * @var float|null
 	 */
-	public $away_points;
+	public ?float $away_points = null;
 	/**
 	 * Winning team id
 	 *
-	 * @var int
+	 * @var string
 	 */
-	public $winner_id;
+	public string $winner_id;
 	/**
 	 * Losing team id
 	 *
-	 * @var int
+	 * @var string
 	 */
-	public $loser_id;
+	public string $loser_id;
 	/**
 	 * Post id for match report
 	 *
 	 * @var int
 	 */
-	public $post_id;
+	public int $post_id;
 	/**
 	 * Round for championship
 	 *
 	 * @var string
 	 */
-	public $final;
+	public string $final;
 	/**
 	 * Custom
 	 *
-	 * @var array
+	 * @var string|array|null
 	 */
-	public $custom;
+	public string|array|null $custom = array();
 	/**
 	 * Match confirmed value
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $confirmed;
+	public ?string $confirmed;
 	/**
 	 * Home team score
 	 *
-	 * @var float
+	 * @var float|null
 	 */
-	public $home_score;
+	public ?float $home_score;
 	/**
 	 * Away team score
 	 *
-	 * @var float
+	 * @var float|null
 	 */
-	public $away_score;
+	public ?float $away_score;
 	/**
 	 * Match score
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $score;
+	public ?string $score;
 	/**
 	 * Match set score
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $set_score;
+	public ?string $set_score;
 	/**
 	 * Previous round set score for home team
 	 *
 	 * @var string
 	 */
-	public $home_prev_round_set_score;
+	public string $home_prev_round_set_score;
 	/**
 	 * Previous round set score for away team
 	 *
 	 * @var string
 	 */
-	public $away_prev_round_set_score;
+	public string $away_prev_round_set_score;
 	/**
 	 * Confirmed status display value
 	 *
-	 * @var int
+	 * @var string|int|null
 	 */
-	public $confirmed_display;
+	public string|int|null $confirmed_display;
 	/**
 	 * Page url
 	 *
 	 * @var string
 	 */
-	public $page_url;
+	public string $page_url;
 	/**
 	 * Selected flag
 	 *
 	 * @var boolean
 	 */
-	public $is_selected;
+	public bool $is_selected;
 	/**
 	 * Match title
 	 *
 	 * @var string
 	 */
-	public $match_title;
+	public string $match_title;
 	/**
 	 * Teams array
 	 *
 	 * @var array
 	 */
-	public $teams;
+	public array $teams;
 	/**
 	 * Match title
 	 *
 	 * @var string
 	 */
-	public $title;
+	public string $title;
 	/**
 	 * Match date
 	 *
 	 * @var string
 	 */
-	public $match_date;
+	public string $match_date;
 	/**
 	 * Match start time
 	 *
 	 * @var string
 	 */
-	public $start_time;
+	public string $start_time;
 	/**
 	 * Match start hour
 	 *
 	 * @var string
 	 */
-	public $hour;
+	public string $hour;
 	/**
 	 * Match start minutes
 	 *
 	 * @var string
 	 */
-	public $minutes;
+	public string $minutes;
 	/**
 	 * Tooltip title
 	 *
 	 * @var string
 	 */
-	public $tooltip_title;
+	public string $tooltip_title;
 	/**
 	 * Match report
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $report;
+	public ?string $report;
 	/**
 	 * League object
 	 *
-	 * @var object
+	 * @var object|null
 	 */
-	public $league;
+	public null|object $league;
 	/**
 	 * Is walkover variable
 	 *
 	 * @var boolean
 	 */
-	public $is_walkover = false;
+	public bool $is_walkover = false;
 	/**
 	 * Is retired variable
 	 *
 	 * @var boolean
 	 */
-	public $is_retired = false;
+	public bool $is_retired = false;
 	/**
 	 * Is shared variable
 	 *
 	 * @var boolean
 	 */
-	public $is_shared = false;
+	public bool $is_shared = false;
 	/**
 	 * Is withdrawn variable
 	 *
 	 * @var boolean
 	 */
-	public $is_withdrawn = false;
+	public bool $is_withdrawn = false;
 	/**
 	 * Is abandoned variable
 	 *
 	 * @var boolean
 	 */
-	public $is_abandoned = false;
+	public bool $is_abandoned = false;
 	/**
 	 * Sets variable
 	 *
 	 * @var array
 	 */
-	public $sets = false;
+	public mixed $sets = false;
 	/**
 	 * Round variable
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public $round;
+	public ?int $round;
 	/**
 	 * Comments variable
 	 *
 	 * @var array
 	 */
-	public $comments;
+	public mixed $comments = array();
 	/**
 	 * Leg variable
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public $leg;
+	public ?int $leg;
 	/**
 	 * Status variable
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public $status;
+	public ?int $status;
 	/**
 	 * Linked match variable
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public $linked_match;
+	public ?int $linked_match;
 	/**
 	 * Host variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $host;
+	public ?string $host;
 	/**
 	 * Match Link variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $link;
+	public ?string $link;
 	/**
 	 * Number of rubbers variable
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public $num_rubbers;
+	public int|null $num_rubbers;
 	/**
 	 * Home points for match tie variable
 	 *
-	 * @var float
+	 * @var float|null
 	 */
-	public $home_points_tie;
+	public ?float $home_points_tie;
 	/**
 	 * Away points for match tie variable
 	 *
-	 * @var float
+	 * @var float|null
 	 */
-	public $away_points_tie;
+	public ?float $away_points_tie;
 	/**
 	 * Winner id for match tie variable
 	 *
-	 * @var float
+	 * @var string|null
 	 */
-	public $winner_id_tie;
+	public ?string $winner_id_tie;
 	/**
 	 * Loser id for match tie variable
 	 *
-	 * @var float
+	 * @var string|null
 	 */
-	public $loser_id_tie;
+	public ?string $loser_id_tie;
 	/**
 	 * Match tie Link variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $link_tie;
+	public ?string $link_tie;
 	/**
 	 * Home captain variable
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public $home_captain;
+	public ?int $home_captain;
 	/**
 	 * Away captain variable
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public $away_captain;
+	public ?int $away_captain;
 	/**
 	 * Pending status variable
 	 *
 	 * @var boolean
 	 */
-	public $is_pending;
+	public bool $is_pending;
 	/**
 	 * Cancelled status variable
 	 *
 	 * @var boolean
 	 */
-	public $is_cancelled;
+	public bool $is_cancelled;
 	/**
 	 * Previous home match object
 	 *
-	 * @var object
+	 * @var object|null
 	 */
-	public $prev_home_match;
+	public mixed $prev_home_match;
 	/**
 	 * Previous away match object
 	 *
-	 * @var object
+	 * @var object|null
 	 */
-	public $prev_away_match;
+	public mixed $prev_away_match;
 	/**
 	 * Date updated
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $updated;
+	public ?string $updated;
 	/**
 	 * Date result entered
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $date_result_entered;
+	public ?string $date_result_entered;
 	/**
 	 * Day
 	 *
 	 * @var int
 	 */
-	public $day;
+	public int $day;
 	/**
 	 * Month
 	 *
 	 * @var int
 	 */
-	public $month;
+	public int $month;
 	/**
 	 * Year
 	 *
 	 * @var int
 	 */
-	public $year;
+	public int $year;
 	/**
 	 * Stats
 	 *
 	 * @var array
 	 */
-	public $stats;
+	public array $stats;
 	/**
 	 * Rubbers
 	 *
 	 * @var array
 	 */
-	public $rubbers;
+	public array $rubbers;
 	/**
 	 * Updated user
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $updated_user;
+	public ?string $updated_user;
 	/**
 	 * Class
 	 *
 	 * @var string
 	 */
-	public $class;
+	public string $class;
 	/**
 	 * Player
 	 *
 	 * @var object
 	 */
-	public $player;
+	public object $player;
 	/**
 	 * Type
 	 *
 	 * @var string
 	 */
-	public $type;
+	public string $type;
 	/**
 	 * Event id
 	 *
 	 * @var int
 	 */
-	public $event_id;
+	public int $event_id;
 	/**
 	 * Withdrawn
 	 *
 	 * @var boolean
 	 */
-	public $withdrawn;
+	public bool $withdrawn;
 	/**
 	 * Confirmation overdue date
 	 *
 	 * @var string
 	 */
-	public $confirmation_overdue_date;
+	public string $confirmation_overdue_date;
 	/**
 	 * Result overdue date
 	 *
 	 * @var string
 	 */
-	public $result_overdue_date;
+	public string $result_overdue_date;
 	/**
 	 * Overdue time
 	 *
 	 * @var string
 	 */
-	public $overdue_time;
+	public string $overdue_time;
 	/**
 	 * Walkover
 	 *
 	 * @var boolean
 	 */
-	public $walkover;
+	public bool $walkover;
 	/**
 	 * Retrieve match instance
 	 *
 	 * @param int $match_id match id.
 	 */
-	public static function get_instance( $match_id ) {
+	public static function get_instance( int $match_id ) {
 		global $wpdb;
-
-		$match_id = (int) $match_id;
 		if ( ! $match_id ) {
 			return false;
 		}
-
 		$match = wp_cache_get( $match_id, 'matches' );
 		if ( ! $match ) {
 			$match = $wpdb->get_row(
 				$wpdb->prepare(
-					"SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date_original`, '%%Y-%%m-%%d %%H:%%i') AS date_original, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `updated`, `updated_user`, `confirmed`, `home_captain`, `away_captain`, `comments`, `status`, `host`, `linked_match`, `leg`, `winner_id_tie`, `loser_id_tie`, `home_points_tie`, `away_points_tie`, `updated`, `date_result_entered` FROM {$wpdb->racketmanager_matches} WHERE `id` = %d LIMIT 1",
+					"SELECT `final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%%Y-%%m-%%d %%H:%%i') AS date, DATE_FORMAT(`date_original`, '%%Y-%%m-%%d %%H:%%i') AS date_original, DATE_FORMAT(`date`, '%%e') AS day, DATE_FORMAT(`date`, '%%c') AS month, DATE_FORMAT(`date`, '%%Y') AS year, DATE_FORMAT(`date`, '%%H') AS `hour`, DATE_FORMAT(`date`, '%%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `updated`, `updated_user`, `confirmed`, `home_captain`, `away_captain`, `comments`, `status`, `host`, `linked_match`, `leg`, `winner_id_tie`, `loser_id_tie`, `home_points_tie`, `away_points_tie`, `updated`, `date_result_entered` FROM $wpdb->racketmanager_matches WHERE `id` = %d LIMIT 1",
 					$match_id
 				)
 			);
@@ -533,9 +528,9 @@ final class Racketmanager_Match {
 	/**
 	 * Constructor
 	 *
-	 * @param object $match Racketmanager_Match object.
+	 * @param object|null $match Racketmanager_Match object.
 	 */
-	public function __construct( $match = null ) {
+	public function __construct( object $match = null ) {
 		global $wp;
 		if ( ! is_null( $match ) ) {
 			if ( ! empty( $match->custom ) ) {
@@ -545,11 +540,13 @@ final class Racketmanager_Match {
 			foreach ( get_object_vars( $match ) as $key => $value ) {
 				$this->$key = $value;
 			}
-			$wp->set_query_var( 'season', $this->season );
+			if ( isset( $this->season ) ) {
+				$wp->set_query_var( 'season', $this->season );
+			}
 
 			// get League Object.
 			$this->league = get_league();
-			if ( is_null( $this->league ) || ( ! is_null( $this->league ) && $this->league->id !== $this->league_id ) ) {
+			if ( is_null( $this->league ) || ( $this->league->id !== $this->league_id ) ) {
 				$this->league = get_league( $this->league_id );
 			}
 			if ( ! isset( $this->id ) ) {
@@ -560,22 +557,20 @@ final class Racketmanager_Match {
 			} else {
 				$this->num_rubbers = $this->get_rubbers( false, true );
 			}
-			$this->location    = empty( $this->location ) ? '' : stripslashes( $this->location );
-			$this->report      = ( $this->post_id ) ? '<a href="' . get_permalink( $this->post_id ) . '">' . __( 'Report', 'racketmanager' ) . '</a>' : '';
+			$this->location    = empty( $this->location ) ? null : stripslashes( $this->location );
+			$this->report      = empty( $this->post_id ) ? null : '<a href="' . get_permalink( $this->post_id ) . '">' . __( 'Report', 'racketmanager' ) . '</a>';
 			$this->sets        = ! empty( $match->custom['sets'] ) ? $match->custom['sets'] : array();
 			$this->is_walkover = false;
 			$this->set_score();
 			$this->set_status_flags();
-			if ( 'Y' === $this->confirmed ) {
-				$this->confirmed_display = __( 'Complete', 'racketmanager' );
-			} elseif ( 'A' === $this->confirmed ) {
-				$this->confirmed_display = __( 'Approved', 'racketmanager' );
-			} elseif ( 'C' === $this->confirmed ) {
-				$this->confirmed_display = __( 'Challenged', 'racketmanager' );
-			} elseif ( 'P' === $this->confirmed ) {
-				$this->confirmed_display = __( 'Pending', 'racketmanager' );
-			} else {
-				$this->confirmed_display = $this->confirmed;
+			if ( ! empty( $this->confirmed ) ) {
+				$this->confirmed_display = match ( $this->confirmed ) {
+					'Y' => __( 'Complete', 'racketmanager' ),
+					'A' => __( 'Approved', 'racketmanager' ),
+					'C' => __( 'Challenged', 'racketmanager' ),
+					'P' => __( 'Pending', 'racketmanager' ),
+					default => $this->confirmed,
+				};
 			}
 			if ( is_admin() ) {
 				$url = '';
@@ -637,14 +632,14 @@ final class Racketmanager_Match {
 	/**
 	 * Function to set status flags
 	 */
-	private function set_status_flags() {
+	private function set_status_flags(): void {
 		$this->is_walkover  = false;
 		$this->is_shared    = false;
 		$this->is_retired   = false;
 		$this->is_abandoned = false;
 		$this->is_cancelled = false;
 		$this->is_withdrawn = false;
-		switch ( $this->status ) {
+		switch ( ! empty( $this->status ) ) {
 			case 1:
 				$this->is_walkover = true;
 				break;
@@ -670,7 +665,7 @@ final class Racketmanager_Match {
 	/**
 	 * Function to set match link
 	 */
-	private function set_link() {
+	private function set_link(): void {
 		$this->link = null;
 		if ( $this->league->is_championship ) {
 			$match_ref = $this->final_round;
@@ -704,7 +699,7 @@ final class Racketmanager_Match {
 	 *
 	 * @return void
 	 */
-	private function set_score() {
+	private function set_score(): void {
 		if ( null !== $this->home_points && null !== $this->away_points ) {
 			$this->home_score = $this->home_points;
 			$this->away_score = $this->away_points;
@@ -716,7 +711,6 @@ final class Racketmanager_Match {
 				} else {
 					$set_score = $this->score;
 				}
-				$this->set_score = $set_score;
 			} else {
 				$set_score  = '';
 				$this->sets = ! empty( $this->custom['sets'] ) ? $this->custom['sets'] : array();
@@ -741,14 +735,13 @@ final class Racketmanager_Match {
 				if ( ! empty( $this->custom['retired'] ) ) {
 					$this->is_retired = true;
 				}
-				$this->set_score = $set_score;
 			}
 		} else {
-			$this->home_score = '';
-			$this->away_score = '';
-			$this->score      = '';
-			$set_score        = '';
-			if ( $this->winner_id ) {
+			$this->home_score = null;
+			$this->away_score = null;
+			$this->score      = null;
+			$set_score        = null;
+			if ( isset( $this->winner_id ) ) {
 				if ( '-1' === $this->home_team || '-1' === $this->away_team ) {
 					$set_score = $this->score;
 				} else {
@@ -756,22 +749,23 @@ final class Racketmanager_Match {
 					$set_score         = __( 'Walkover', 'racketmanager' );
 				}
 			}
-			$this->set_score = $set_score;
 		}
+		$this->set_score = $set_score;
 	}
 	/**
 	 * Get details of previous round match
 	 *
 	 * @param string $team_ref round and team position.
 	 * @param string $season season.
-	 * @param string $league_id league.
-	 * @return array $prev_match previous match.
+	 * @param object $league league.
+	 *
+	 * @return object|null $prev_match previous match.
 	 */
-	private function get_prev_round_matches( $team_ref, $season, $league_id ) {
+	private function get_prev_round_matches( string $team_ref, string $season, object $league ): ?object {
 		$team  = explode( '_', $team_ref );
-		$final = isset( $team[1] ) ? $team[1] : null;
+		$final = $team[1] ?? null;
 		if ( ! empty( $final ) ) {
-			$league = get_league( $league_id );
+			$league = get_league( $league );
 			if ( $league ) {
 				$args['final']   = $final;
 				$args['season']  = $season;
@@ -781,32 +775,32 @@ final class Racketmanager_Match {
 					$match_ref = $team[2] - 1;
 					return $prev_matches[ $match_ref ];
 				} else {
-					return false;
+					return null;
 				}
 			} else {
-				return false;
+				return null;
 			}
 		} else {
-			return false;
+			return null;
 		}
 	}
 
 	/**
 	 * Add match
 	 */
-	public function add() {
+	public function add(): int {
 		global $wpdb;
 		$max_rubbers = 0;
 		if ( ! empty( $this->league->num_rubbers ) ) {
 			$max_rubbers = $this->league->num_rubbers;
-			if ( $this->league->is_championship && ! empty( $this->league->current_season['home_away'] && 'true' === $this->league->current_season['home_away'] ) && ! empty( $this->leg ) && 2 === $this->leg && 'MPL' === $this->league->event->scoring ) {
+			if ( $this->league->is_championship && ! empty( $this->league->current_season['home_away'] ) && ! empty( $this->leg ) && 2 === $this->leg && 'MPL' === $this->league->event->scoring ) {
 				++$max_rubbers;
 			} elseif ( '1' === $this->league->event->reverse_rubbers ) {
 				$max_rubbers = $max_rubbers * 2;
 			}
 		}
 		$sql = $wpdb->prepare(
-			"INSERT INTO {$wpdb->racketmanager_matches} (date, home_team, away_team, match_day, location, league_id, season, final, custom, `group`, `host`) VALUES (%s, %s, %s, %d, %s, %d, %s, %s, %s, %s, %s)",
+			"INSERT INTO $wpdb->racketmanager_matches (date, home_team, away_team, match_day, location, league_id, season, final, custom, `group`, `host`) VALUES (%s, %s, %s, %d, %s, %d, %s, %s, %s, %s, %s)",
 			$this->date,
 			$this->home_team,
 			$this->away_team,
@@ -848,7 +842,7 @@ final class Racketmanager_Match {
 				$rubber->rubber_number = $ix;
 				$rubber->date          = $this->date;
 				$rubber->match_id      = $this->id;
-				$rubber                = new Racketmanager_rubber( $rubber );
+				new Racketmanager_rubber( $rubber );
 			}
 		}
 		return $this->id;
@@ -858,13 +852,14 @@ final class Racketmanager_Match {
 	 *
 	 * @param int $leg leg number.
 	 * @param int $linked_match linked match id.
+	 *
 	 * @return void
 	 */
-	public function update_legs( $leg, $linked_match ) {
+	public function update_legs( int $leg, int $linked_match ): void {
 		global $wpdb;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_matches} SET `leg` = %d, `linked_match` = %d WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_matches SET `leg` = %d, `linked_match` = %d WHERE `id` = %d",
 				$leg,
 				$linked_match,
 				$this->id,
@@ -877,11 +872,11 @@ final class Racketmanager_Match {
 	/**
 	 * Update match
 	 */
-	public function update() {
+	public function update(): ?string {
 		global $wpdb;
 		$update_count = $wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_matches} SET `date` = %s, `home_team` = %s, `away_team` = %s, `match_day` = %d, `location` = %s, `league_id` = %d, `group` = %s, `final` = %s, `custom` = %s, `host` = %s WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_matches SET `date` = %s, `home_team` = %s, `away_team` = %s, `match_day` = %d, `location` = %s, `league_id` = %d, `group` = %s, `final` = %s, `custom` = %s, `host` = %s WHERE `id` = %d",
 				$this->date,
 				$this->home_team,
 				$this->away_team,
@@ -908,12 +903,12 @@ final class Racketmanager_Match {
 	 *
 	 * @param array $sets array of sets.
 	 */
-	public function update_sets( $sets ) {
+	public function update_sets( array $sets ): void {
 		global $wpdb;
 		$this->custom['sets'] = $sets;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_matches} SET `custom` = %s WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_matches SET `custom` = %s WHERE `id` = %d",
 				maybe_serialize( $this->custom ),
 				$this->id
 			)
@@ -924,7 +919,7 @@ final class Racketmanager_Match {
 	/**
 	 * Delete match
 	 */
-	public function delete() {
+	public function delete(): true {
 		global $wpdb;
 		$rubbers = $this->get_rubbers();
 		foreach ( $rubbers as $rubber ) {
@@ -932,7 +927,7 @@ final class Racketmanager_Match {
 		}
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_matches} WHERE `id` = %d",
+				"DELETE FROM $wpdb->racketmanager_matches WHERE `id` = %d",
 				$this->id
 			)
 		);
@@ -944,7 +939,7 @@ final class Racketmanager_Match {
 	 *
 	 * @param string $team indicator for which team details to get.
 	 */
-	private function set_teams_details( $team = 'both' ) {
+	private function set_teams_details( string $team = 'both' ): void {
 		// get championship final rounds teams.
 		if ( $this->league->championship instanceof Racketmanager_Championship && $this->final_round ) {
 			$teams = $this->league->championship->get_final_teams( $this->final_round );
@@ -968,7 +963,7 @@ final class Racketmanager_Match {
 					}
 				}
 			} else {
-				$this->teams['home'] = isset( $teams[ $this->home_team ] ) ? $teams[ $this->home_team ] : null;
+				$this->teams['home'] = $teams[$this->home_team] ?? null;
 			}
 		}
 		if ( 'both' === $team || 'away' === $team ) {
@@ -990,7 +985,7 @@ final class Racketmanager_Match {
 					}
 				}
 			} else {
-				$this->teams['away'] = isset( $teams[ $this->away_team ] ) ? $teams[ $this->away_team ] : null;
+				$this->teams['away'] = $teams[$this->away_team] ?? null;
 			}
 		}
 	}
@@ -1000,15 +995,15 @@ final class Racketmanager_Match {
 	 *
 	 * @return string
 	 */
-	public function get_title() {
+	public function get_title(): string {
 		$home_team = $this->teams['home'];
 		$away_team = $this->teams['away'];
 
 		if ( isset( $this->title ) && ( ! $home_team || ! $away_team || $this->home_team === $this->away_team ) ) {
 			$title = stripslashes( $this->title );
 		} else {
-			$home_team_name = isset( $home_team->title ) ? $home_team->title : __( 'Unknown', 'racketmanager' );
-			$away_team_name = isset( $away_team->title ) ? $away_team->title : __( 'Unknown', 'racketmanager' );
+			$home_team_name = $home_team->title ?? __('Unknown', 'racketmanager');
+			$away_team_name = $away_team->title ?? __('Unknown', 'racketmanager');
 
 			$title = sprintf( '%s - %s', $home_team_name, $away_team_name );
 		}
@@ -1021,12 +1016,12 @@ final class Racketmanager_Match {
 	 *
 	 * @param string $date_format date format.
 	 */
-	public function set_date( $date_format = '' ) {
+	public function set_date( string $date_format = '' ): void {
 		global $racketmanager;
 		if ( '' === $date_format ) {
 			$date_format = $racketmanager->date_format;
 		}
-		$this->match_date = ( substr( $this->date, 0, 10 ) === '0000-00-00' ) ? 'N/A' : mysql2date( $date_format, $this->date );
+		$this->match_date = (str_starts_with($this->date, '0000-00-00')) ? 'N/A' : mysql2date( $date_format, $this->date );
 		$this->set_tooltip_title();
 	}
 
@@ -1035,7 +1030,7 @@ final class Racketmanager_Match {
 	 *
 	 * @param string $time_format time format.
 	 */
-	public function set_time( $time_format = '' ) {
+	public function set_time( string $time_format = '' ): void {
 		global $racketmanager;
 		if ( empty( $time_format ) ) {
 			$time_format = $racketmanager->time_format;
@@ -1049,11 +1044,11 @@ final class Racketmanager_Match {
 	/**
 	 * Set tooltip title
 	 */
-	private function set_tooltip_title() {
-		$home_title = isset( $this->teams['home']->title ) ? $this->teams['home']->title : null;
-		$away_title = isset( $this->teams['away']->title ) ? $this->teams['away']->title : null;
+	private function set_tooltip_title(): void {
+		$home_title = $this->teams['home']->title ?? null;
+		$away_title = $this->teams['away']->title ?? null;
 		// make tooltip title for last-5 standings.
-		if ( '' === $this->home_points && '' === $this->away_points ) {
+		if ( empty( $this->home_points ) && empty( $this->away_points ) ) {
 			$tooltip_title = 'Next Match: ' . $home_title . ' - ' . $away_title . ' [' . $this->match_date . ']';
 		} elseif ( isset( $this->title ) ) {
 			$tooltip_title = stripslashes( $this->title ) . ' [' . $this->match_date . ']';
@@ -1065,14 +1060,15 @@ final class Racketmanager_Match {
 	/**
 	 * Set tie points for multi legged match function
 	 *
-	 * @param int $home_points_tie home poinst for tie.
-	 * @param int $away_points_tie away points for tie.
+	 * @param int|null $home_points_tie home points for tie.
+	 * @param int|null $away_points_tie away points for tie.
+	 *
 	 * @return void
 	 */
-	public function update_result_tie( $home_points_tie = null, $away_points_tie = null ) {
+	public function update_result_tie( int $home_points_tie = null, int $away_points_tie = null ): void {
 		global $wpdb;
 		$update = true;
-		if ( '2' === $this->leg ) {
+		if ( 2 === $this->leg ) {
 			if ( is_null( $home_points_tie ) ) {
 				$home_points_tie = $this->home_points;
 				$away_points_tie = $this->away_points;
@@ -1108,7 +1104,7 @@ final class Racketmanager_Match {
 			$this->loser_id_tie    = $loser_id_tie;
 			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_matches} SET `home_points_tie` = %f, `away_points_tie` = %f, `winner_id_tie` = %d, `loser_id_tie` = %d WHERE `id` = %d",
+					"UPDATE $wpdb->racketmanager_matches SET `home_points_tie` = %f, `away_points_tie` = %f, `winner_id_tie` = %d, `loser_id_tie` = %d WHERE `id` = %d",
 					$home_points_tie,
 					$away_points_tie,
 					$winner_id_tie,
@@ -1122,19 +1118,17 @@ final class Racketmanager_Match {
 	/**
 	 * Update result
 	 *
-	 * @param float  $home_points_input home points.
-	 * @param float  $away_points_input away points.
-	 * @param string $custom custom.
+	 * @param float $home_points_input home points.
+	 * @param float $away_points_input away points.
+	 * @param array $custom custom.
 	 * @param string $confirmed match status field.
 	 * @param string $match_status match status.
+	 *
 	 * @return boolean
 	 */
-	public function update_result( $home_points_input, $away_points_input, $custom, $confirmed = 'Y', $match_status = '' ) {
-		global $racketmanager;
+	public function update_result( float $home_points_input, float $away_points_input, array $custom, string $confirmed = 'Y', string $match_status = '' ): bool {
 		$bye            = false;
 		$updated        = false;
-		$home_win       = 0;
-		$away_win       = 0;
 		$winning_points = $this->league->num_sets_to_win;
 		if ( empty( $home_points_input ) && -1 === intval( $this->home_team ) ) {
 			$home_points_input = 0;
@@ -1154,7 +1148,6 @@ final class Racketmanager_Match {
 		$away_points      = 0;
 		$home_walkover    = 0;
 		$away_walkover    = 0;
-		$walkover_penalty = 0;
 		if ( ! empty( $this->num_rubbers ) ) {
 			$stats                    = array();
 			$stats['rubbers']['home'] = 0;
@@ -1220,14 +1213,14 @@ final class Racketmanager_Match {
 				} elseif ( $home_walkover === $this->num_rubbers || $away_walkover === $this->num_rubbers ) {
 					if ( $home_walkover === $this->num_rubbers ) {
 						$custom['walkover'] = 'away';
-					} elseif ( $away_walkover === $this->num_rubbers ) {
+					} else {
 						$custom['walkover'] = 'home';
 					}
-					$this->custom = array_merge( (array) $this->custom, (array) $custom );
+					$this->custom = array_merge( (array) $this->custom, $custom );
 					$this->status = 1;
 				} elseif ( $shared === $this->num_rubbers ) {
 					$custom['share'] = 'true';
-					$this->custom    = array_merge( (array) $this->custom, (array) $custom );
+					$this->custom    = array_merge( (array) $this->custom, $custom );
 					$this->status    = 3;
 				} elseif ( 6 === intval( $match_status ) ) {
 					$custom['abandoned'] = true;
@@ -1312,14 +1305,14 @@ final class Racketmanager_Match {
 			if ( $prev_winner !== $this->winner_id || floatval( $home_points ) !== $this->home_points || floatval( $away_points ) !== $this->away_points || $custom !== $this->custom || $confirmed !== $this->confirmed ) {
 				$this->home_points = $home_points;
 				$this->away_points = $away_points;
-				$this->custom      = array_merge( (array) $this->custom, (array) $custom );
+				$this->custom      = array_merge( (array) $this->custom, $custom );
 				$this->confirmed   = $confirmed;
 				foreach ( $this->custom as $key => $value ) {
 					$this->{$key} = $value;
 				}
 				$this->update_result_database();
 				$updated = true;
-				if ( ! empty( $this->leg ) && '2' === $this->leg ) {
+				if ( ! empty( $this->leg ) && 2 === $this->leg ) {
 					$this->update_result_tie();
 				}
 				$this->set_score();
@@ -1336,10 +1329,9 @@ final class Racketmanager_Match {
 	 * Update result with penalty
 	 *
 	 * @param string $team_ref team to apply penalty.
-	 * @param int  $penalty penalty points.
+	 * @param int $penalty penalty points.
 	 */
-	public function update_result_with_penalty( $team_ref, $penalty ) {
-		global $racketmanager;
+	public function update_result_with_penalty( string $team_ref, int $penalty ): void {
 		if ( 'home' === $team_ref ) {
 			$this->home_points -= $penalty;
 		} elseif ( 'away' === $team_ref ) {
@@ -1347,8 +1339,7 @@ final class Racketmanager_Match {
 		}
 		$this->get_result( $this->home_points, $this->away_points );
 		$this->update_result_database();
-		$updated = true;
-		if ( ! empty( $this->leg ) && '2' === $this->leg ) {
+		if ( ! empty( $this->leg ) && 2 === $this->leg ) {
 			$this->update_result_tie();
 		}
 		$this->set_score();
@@ -1359,7 +1350,7 @@ final class Racketmanager_Match {
 	/**
 	 * Notify favourites
 	 */
-	private function notify_favourites() {
+	private function notify_favourites(): void {
 		global $racketmanager, $racketmanager_shortcodes;
 		$favourited_users = array();
 		$users            = Racketmanager_Util::get_users_for_favourite( 'league', $this->league->id );
@@ -1393,7 +1384,6 @@ final class Racketmanager_Match {
 			$organisation_name = $racketmanager->site_name;
 			$email_subject     = $racketmanager->site_name . ' - ' . $this->league->title . ' Result Notification';
 			$favourite_url     = $racketmanager->site_url . '/member-account/favourites';
-			$match_url         = $racketmanager->site_url . '/' . $this->league->event->competition->type . '/' . seo_url( $this->league->title ) . '/' . $this->league->current_season['name'] . '/';
 			$match_url         = $racketmanager->site_url . $this->link;
 			foreach ( $favourited_users as $user ) {
 				$user_details  = get_userdata( $user );
@@ -1420,15 +1410,15 @@ final class Racketmanager_Match {
 	 *
 	 * @return void
 	 */
-	private function update_result_database() {
+	private function update_result_database(): void {
 		global $wpdb;
 		$wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_matches} SET `home_points` = %f, `away_points` = %f, `winner_id` = %d, `loser_id` = %d, `custom` = %s, `updated_user` = %d, `updated` = now(), `confirmed` = %s, `status` = %d WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_matches SET `home_points` = %f, `away_points` = %f, `winner_id` = %d, `loser_id` = %d, `custom` = %s, `updated_user` = %d, `updated` = now(), `confirmed` = %s, `status` = %d WHERE `id` = %d",
 				$this->home_points,
 				$this->away_points,
-				intval( $this->winner_id ),
-				intval( $this->loser_id ),
+				$this->winner_id,
+				$this->loser_id,
 				maybe_serialize( $this->custom ),
 				get_current_user_id(),
 				$this->confirmed,
@@ -1445,7 +1435,7 @@ final class Racketmanager_Match {
 				$results_report           = new \stdClass();
 				$results_report->match_id = $this->id;
 				$results_report->data     = $report;
-				$results_report           = new Racketmanager_Results_Report( $results_report );
+				new Racketmanager_Results_Report( $results_report );
 			}
 		}
 	}
@@ -1454,11 +1444,11 @@ final class Racketmanager_Match {
 	 *
 	 * @return void
 	 */
-	private function delete_results_report() {
+	private function delete_results_report(): void {
 		global $wpdb;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_results_report} WHERE `match_id` = %d",
+				"DELETE FROM $wpdb->racketmanager_results_report WHERE `match_id` = %d",
 				$this->id,
 			)
 		);
@@ -1467,12 +1457,12 @@ final class Racketmanager_Match {
 	 * Update match result status
 	 *
 	 * @param string $match_confirmed match confirmed status.
-	 * @param string $comments match comments.
+	 * @param array|null $comments match comments.
 	 * @param string $confirm_comments result confirm comments.
 	 * @param string $user_team team of user.
 	 * @param string $actioned_by actioned by team.
 	 */
-	public function update_match_result_status( $match_confirmed, $comments, $confirm_comments, $user_team, $actioned_by ) {
+	public function update_match_result_status( string $match_confirmed, ?array $comments, string $confirm_comments, string $user_team, string $actioned_by ): string {
 		global $wpdb;
 		$userid = get_current_user_id();
 		if ( ! empty( $actioned_by ) && 'home' === $actioned_by ) {
@@ -1490,21 +1480,21 @@ final class Racketmanager_Match {
 		}
 		if ( 'P' === $match_confirmed ) {
 			if ( 'home' === $actioned_by || 'away' === $actioned_by ) {
-				$this->comments[ $actioned_by ] = isset( $comments[ $actioned_by ] ) ? $comments[ $actioned_by ] : null;
+				$this->comments[ $actioned_by ] = $comments[$actioned_by] ?? null;
 			} else {
-				$this->comments['result'] = isset( $comments['result'] ) ? $comments['result'] : null;
+				$this->comments['result'] = $comments['result'] ?? null;
 			}
 		} elseif ( 'A' === $match_confirmed || 'C' === $match_confirmed ) {
 			if ( 'home' === $actioned_by || 'away' === $actioned_by ) {
 				$this->comments[ $actioned_by ] = $confirm_comments;
 			} else {
-				$this->comments['result'] = isset( $comments['result'] ) ? $comments['result'] : null;
+				$this->comments['result'] = $comments['result'] ?? null;
 			}
 		}
 		if ( 'home' === $captain ) { // Home captain.
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = %s, `home_captain` = %d, `comments` = %s WHERE `id` = %d",
+					"UPDATE $wpdb->racketmanager_matches SET `updated_user` = %d, `updated` = now(), `confirmed` = %s, `home_captain` = %d, `comments` = %s WHERE `id` = %d",
 					$userid,
 					$match_confirmed,
 					$userid,
@@ -1516,7 +1506,7 @@ final class Racketmanager_Match {
 		} elseif ( 'away' === $captain ) { // Away captain.
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = %s, `away_captain` = %d, `comments` = %s WHERE `id` = %d",
+					"UPDATE $wpdb->racketmanager_matches SET `updated_user` = %d, `updated` = now(), `confirmed` = %s, `away_captain` = %d, `comments` = %s WHERE `id` = %d",
 					$userid,
 					$match_confirmed,
 					$userid,
@@ -1527,11 +1517,11 @@ final class Racketmanager_Match {
 			return 'away';
 		} else {
 			if ( 'D' !== $match_confirmed ) {
-				$match_confirmed = 'A'; // Admin user.
+				$match_confirmed = 'Y'; // Admin user.
 			}
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_matches} SET `updated_user` = %d, `updated` = now(), `confirmed` = %s, `comments` =%s WHERE `id` = %d",
+					"UPDATE $wpdb->racketmanager_matches SET `updated_user` = %d, `updated` = now(), `confirmed` = %s, `comments` =%s WHERE `id` = %d",
 					get_current_user_id(),
 					$match_confirmed,
 					maybe_serialize( $this->comments ),
@@ -1545,10 +1535,10 @@ final class Racketmanager_Match {
 	/**
 	 * Determine match result
 	 *
-	 * @param float $home_points home points.
-	 * @param float $away_points away_points.
+	 * @param float|null $home_points home points.
+	 * @param float|null$away_points away_points.
 	 */
-	public function get_result( $home_points, $away_points ) {
+	public function get_result( ?float $home_points, ?float $away_points ): void {
 		$match = array();
 		if ( 7 === $this->status ) {
 			$match['winner'] = -1;
@@ -1575,25 +1565,25 @@ final class Racketmanager_Match {
 			$match['winner'] = -1;
 			$match['loser']  = -1;
 			$this->status    = 3;
-		} elseif ( ! empty( $this->custom['withdrawn'] ) || 7 === $this->status ) {
+		} elseif ( ! empty( $this->custom['withdrawn'] ) ) {
 			$match['winner'] = -1;
 			$match['loser']  = -1;
 			$this->status    = 7;
-		} elseif ( $home_points > $away_points ) {
-			$match['winner'] = $this->home_team;
-			$match['loser']  = $this->away_team;
 		} elseif ( '-1' === $this->home_team ) {
 			$match['winner'] = $this->away_team;
 			$match['loser']  = 0;
 		} elseif ( '-1' === $this->away_team ) {
 			$match['winner'] = $this->home_team;
 			$match['loser']  = 0;
+		} elseif ( is_null( $home_points ) && is_null( $away_points ) ) {
+			$match['winner'] = 0;
+			$match['loser']  = 0;
+		} elseif ( $home_points > $away_points ) {
+			$match['winner'] = $this->home_team;
+			$match['loser']  = $this->away_team;
 		} elseif ( $home_points < $away_points ) {
 			$match['winner'] = $this->away_team;
 			$match['loser']  = $this->home_team;
-		} elseif ( 'NULL' === $home_points && 'NULL' === $away_points ) {
-			$match['winner'] = 0;
-			$match['loser']  = 0;
 		} else {
 			$match['winner'] = -1;
 			$match['loser']  = -1;
@@ -1604,17 +1594,18 @@ final class Racketmanager_Match {
 	/**
 	 * Gets rubbers from database
 	 *
-	 * @param int     $player player_id (optional).
+	 * @param false|int $player player_id (optional).
 	 * @param boolean $count count number of rubbers.
-	 * @return array
+	 *
+	 * @return array|int
 	 */
-	public function get_rubbers( $player = false, $count = false ) {
+	public function get_rubbers( false|int $player = false, bool $count = false ): array|int {
 		global $wpdb;
 
 		if ( $count ) {
 			$args[] = $this->id;
 			$sql    = $wpdb->prepare(
-				"SELECT count(*) FROM {$wpdb->racketmanager_rubbers} WHERE `match_id` = %d",
+				"SELECT count(*) FROM $wpdb->racketmanager_rubbers WHERE `match_id` = %d",
 				$args
 			);
 			// Use WordPress cache for counting rubbers.
@@ -1630,10 +1621,10 @@ final class Racketmanager_Match {
 			}
 			return $rubbers;
 		}
-		$sql_start = "SELECT r.`id` FROM {$wpdb->racketmanager_rubbers} r";
+		$sql_start = "SELECT r.`id` FROM $wpdb->racketmanager_rubbers r";
 		$sql       = ' WHERE `match_id` = ' . $this->id;
 		if ( $player ) {
-			$sql_start .= ", {$wpdb->racketmanager_rubber_players} rp";
+			$sql_start .= ", $wpdb->racketmanager_rubber_players rp";
 			$sql       .= " AND r.`id` = rp.`rubber_id` AND `player_id` = '$player'";
 		}
 		$sql  = $sql_start . $sql;
@@ -1662,11 +1653,11 @@ final class Racketmanager_Match {
 	/**
 	 * Delete result checker entries for match
 	 */
-	public function delete_result_check() {
+	public function delete_result_check(): void {
 		global $wpdb;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_results_checker} WHERE `match_id` = %d",
+				"DELETE FROM $wpdb->racketmanager_results_checker WHERE `match_id` = %d",
 				$this->id
 			)
 		);
@@ -1675,13 +1666,13 @@ final class Racketmanager_Match {
 	/**
 	 * Add entry to results checker for player errors on match result
 	 *
-	 * @param int    $team team.
-	 * @param int    $player player.
+	 * @param int $team team.
+	 * @param int $player player.
 	 * @param string $error error.
-	 * @param int    $rubber_id rubber id.
+	 * @param int $rubber_id rubber id.
 	 */
-	public function add_player_result_check( $team, $player, $error, $rubber_id ) {
-		$result_check              = new stdClass();
+	public function add_player_result_check( int $team, int $player, string $error, int $rubber_id ): void {
+		$result_check              = new \stdClass();
 		$result_check->league_id   = $this->league_id;
 		$result_check->match_id    = $this->id;
 		$result_check->team_id     = $team;
@@ -1693,12 +1684,11 @@ final class Racketmanager_Match {
 	/**
 	 * Add entry to results checker for errors on match result
 	 *
-	 * @param int    $team team.
+	 * @param int $team team.
 	 * @param string $error error.
-	 * @param int    $rubber_id rubber id.
 	 */
-	public function add_match_result_check( $team, $error ) {
-		$result_check              = new stdClass();
+	public function add_match_result_check( int $team, string $error ): void {
+		$result_check              = new \stdClass();
 		$result_check->league_id   = $this->league_id;
 		$result_check->match_id    = $this->id;
 		$result_check->team_id     = $team;
@@ -1708,11 +1698,11 @@ final class Racketmanager_Match {
 	/**
 	 * Are there result checker entries for match
 	 */
-	public function has_result_check() {
+	public function has_result_check(): ?string {
 		global $wpdb;
 		return $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"select count(*) FROM {$wpdb->racketmanager_results_checker} WHERE `match_id` = %d",
+				"select count(*) FROM $wpdb->racketmanager_results_checker WHERE `match_id` = %d",
 				$this->id
 			)
 		);
@@ -1722,9 +1712,10 @@ final class Racketmanager_Match {
 	 *
 	 * @param int $home home team id.
 	 * @param int $away away team id.
+	 *
 	 * @return object
 	 */
-	public function set_teams( $home, $away ) {
+	public function set_teams( int $home, int $away ): object {
 		global $wpdb;
 		if ( empty( $home ) ) {
 			$home = $this->home_team;
@@ -1740,7 +1731,7 @@ final class Racketmanager_Match {
 		}
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_matches} SET `home_team` = %s, `away_team` = %s WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_matches SET `home_team` = %s, `away_team` = %s WHERE `id` = %d",
 				$home,
 				$away,
 				$this->id
@@ -1758,23 +1749,23 @@ final class Racketmanager_Match {
 	 *
 	 * @return void
 	 */
-	public function set_date_and_location() {
+	public function set_date_and_location(): void {
 		if ( empty( $this->host ) || 'home' === $this->host ) {
 			if ( is_numeric( $this->home_team ) && '-1' !== $this->home_team ) {
-				$this_day  = isset( $this->teams['home']->match_day ) ? $this->teams['home']->match_day : null;
-				$this_time = isset( $this->teams['home']->match_time ) ? $this->teams['home']->match_time : null;
+				$this_day  = $this->teams['home']->match_day ?? null;
+				$this_time = $this->teams['home']->match_time ?? null;
 				$this->set_match_date( $this->date, $this_day, $this_time );
-				$location = isset( $this->teams['home']->club->shortcode ) ? $this->teams['home']->club->shortcode : null;
+				$location = $this->teams['home']->club->shortcode ?? null;
 				if ( $location ) {
 					$this->set_location( $location );
 				}
 			}
 		} elseif ( 'away' === $this->host ) {
 			if ( is_numeric( $this->away_team ) && '-1' !== $this->away_team ) {
-				$this_day  = isset( $this->teams['away']->match_day ) ? $this->teams['away']->match_day : null;
-				$this_time = isset( $this->teams['away']->match_time ) ? $this->teams['away']->match_time : null;
+				$this_day  = $this->teams['away']->match_day ?? null;
+				$this_time = $this->teams['away']->match_time ?? null;
 				$this->set_match_date( $this->date, $this_day, $this_time );
-				$location = isset( $this->teams['away']->club->shortcode ) ? $this->teams['away']->club->shortcode : null;
+				$location = $this->teams['away']->club->shortcode ?? null;
 				if ( $location ) {
 					$this->set_location( $location );
 				}
@@ -1789,9 +1780,10 @@ final class Racketmanager_Match {
 	 * @param string $start_date original match date.
 	 * @param string $match_day match day.
 	 * @param string $match_time match time.
+	 *
 	 * @return void
 	 */
-	public function set_match_date( $start_date, $match_day, $match_time ) {
+	public function set_match_date( string $start_date, string $match_day, string $match_time ): void {
 		if ( strlen( $start_date ) > 10 ) {
 			$start_date = substr( $start_date, 0, 10 );
 		}
@@ -1808,17 +1800,18 @@ final class Racketmanager_Match {
 	 * Update match date function
 	 *
 	 * @param string $match_date original match date.
-	 * @param string $original_date original match date (optional).
+	 * @param string|null $original_date original match date (optional).
+	 *
 	 * @return object
 	 */
-	public function update_match_date( $match_date, $original_date = null ) {
+	public function update_match_date( string $match_date, string $original_date = null ): object {
 		global $wpdb;
 		if ( ! empty( $match_date ) ) {
 			$this->set_match_date_in_db( $match_date );
 			if ( ! empty( $original_date ) && empty( $this->date_original ) ) {
 				$wpdb->query(
 					$wpdb->prepare(
-						"UPDATE {$wpdb->racketmanager_matches} SET `date_original` = %s WHERE `id` = %d",
+						"UPDATE $wpdb->racketmanager_matches SET `date_original` = %s WHERE `id` = %d",
 						$original_date,
 						$this->id
 					)
@@ -1844,14 +1837,13 @@ final class Racketmanager_Match {
 	 * Set match date in db function
 	 *
 	 * @param string $match_date match date.
-	 * @return object
 	 */
-	public function set_match_date_in_db( $match_date ) {
+	public function set_match_date_in_db( string $match_date ): void {
 		global $wpdb;
 		$this->date = $match_date;
 		$wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_matches} SET `date` = %s WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_matches SET `date` = %s WHERE `id` = %d",
 				$this->date,
 				$this->id
 			)
@@ -1862,13 +1854,14 @@ final class Racketmanager_Match {
 	 * Set location function
 	 *
 	 * @param string $location match location.
+	 *
 	 * @return void
 	 */
-	public function set_location( $location ) {
+	public function set_location( string $location ): void {
 		global $wpdb;
 		$wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_matches} SET `location` = %s WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_matches SET `location` = %s WHERE `id` = %d",
 				$location,
 				$this->id
 			)
@@ -1880,9 +1873,10 @@ final class Racketmanager_Match {
 	 * Get previous round set score function
 	 *
 	 * @param string $team home or away team.
-	 * @return string previous round set score.
+	 *
+	 * @return string|null previous round set score.
 	 */
-	public function get_prev_round_set_score( $team ) {
+	public function get_prev_round_set_score( string $team ): ?string {
 		$prev_round_set_score = null;
 		if ( $this->league->is_championship ) {
 			$current_round = $this->league->championship->get_finals( $this->final_round );
@@ -1915,7 +1909,7 @@ final class Racketmanager_Match {
 	 *
 	 * @return array
 	 */
-	public function get_email_to() {
+	public function get_email_to(): array {
 		$to        = array();
 		$opponents = array( 'home', 'away' );
 		foreach ( $opponents as $opponent ) {
@@ -1939,7 +1933,7 @@ final class Racketmanager_Match {
 	 *
 	 * @return boolean
 	 */
-	public function notify_next_match_teams() {
+	public function notify_next_match_teams(): bool {
 		global $racketmanager;
 
 		if ( ( ( -1 === $this->teams['home']->id || -1 === $this->teams['away']->id ) || ( ! isset( $this->host ) ) ) || ( 'S' === $this->teams['home']->team_type || 'S' === $this->teams['away']->team_type ) ) {
@@ -1982,13 +1976,15 @@ final class Racketmanager_Match {
 	/**
 	 * Report result
 	 *
-	 * @param string $competition_code competition code (optional).
-	 * @return object || null
+	 * @param string|null $competition_code competition code (optional).
+	 *
+	 * @return object|null
 	 */
-	public function report_result( $competition_code = null ) {
+	public function report_result( string $competition_code = null ): object|null {
 		global $racketmanager;
+		$result = null;
 		if ( empty( $competition_code ) ) {
-			$competition_season = isset( $this->league->event->competition->seasons[ $this->season ] ) ? $this->league->event->competition->seasons[ $this->season ] : null;
+			$competition_season = $this->league->event->competition->seasons[$this->season] ?? null;
 			$competition_code   = empty( $competition_season['competition_code'] ) ? $this->league->event->competition->competition_code : $competition_season['competition_code'];
 		}
 		if ( ! empty( $competition_code ) ) {
@@ -1998,47 +1994,22 @@ final class Racketmanager_Match {
 			$result->organiser        = '';
 			$result->venue            = '';
 			$result->event_name       = $this->league->event->name;
-			$result->grade            = isset( $this->league->event->seasons[ $this->season ]['grade'] ) ? $this->league->event->seasons[ $this->season ]['grade'] : $this->league->event->competition->grade;
+			$result->grade            = $this->league->event->seasons[$this->season]['grade'] ?? $this->league->event->competition->grade;
 			$result->event_end_date   = $this->league->event->competition->date_end;
 			$result->event_start_date = $this->league->event->competition->date_start;
-			switch ( $this->league->event->age_limit ) {
-				case 8:
-				case 9:
-				case 10:
-				case 11:
-				case 12:
-				case 14:
-				case 16:
-				case 18:
-				case 21:
-					$age_group = $this->league->event->age_limit . ' & Under';
-					break;
-				case 30:
-				case 35:
-				case 40:
-				case 45:
-				case 50:
-				case 55:
-				case 60:
-				case 65:
-				case 70:
-				case 75:
-				case 80:
-				case 85:
-					$age_group = $this->league->event->age_limit . ' & Over';
-					break;
-				default:
-					$age_group = 'Open';
-					break;
-			}
+			$age_group = match ($this->league->event->age_limit) {
+				8, 9, 10, 11, 12, 14, 16, 18, 21               => $this->league->event->age_limit . ' & Under',
+				30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85 => $this->league->event->age_limit . ' & Over',
+				default                                        => 'Open',
+			};
 			$result->age_group  = $age_group;
 			$result->event_type = 'Singles';
 			if ( 'D' === substr( $this->league->event->type, 1, 1 ) ) {
 				$result->event_type = 'Doubles';
 			}
-			if ( 'M' === substr( $this->league->event->type, 0, 1 ) ) {
+			if (str_starts_with($this->league->event->type, 'M')) {
 				$result->gender = 'Male';
-			} elseif ( 'W' === substr( $this->league->event->type, 0, 1 ) ) {
+			} elseif (str_starts_with($this->league->event->type, 'W')) {
 				$result->gender = 'Female';
 			} else {
 				$result->gender = 'Mixed';
@@ -2057,28 +2028,15 @@ final class Racketmanager_Match {
 					$result->draw_stage = 'CD - Consolation draw';
 				}
 				$result->draw_size = $this->league->championship->num_teams_first_round;
-				switch ( $this->final_round ) {
-					case 'final':
-						$result->round = 'F';
-						break;
-					case 'semi':
-						$result->round = 'SF';
-						break;
-					case 'quarter':
-						$result->round = 'QF';
-						break;
-					case 'last-16':
-						$result->round = 'R16';
-						break;
-					case 'last-32':
-						$result->round = 'R32';
-						break;
-					case 'last-64':
-						$result->round = 'R64';
-						break;
-					default:
-						$result->round = 'RR1';
-				}
+				$result->round = match ($this->final_round) {
+					'final'   => 'F',
+					'semi'    => 'SF',
+					'quarter' => 'QF',
+					'last-16' => 'R16',
+					'last-32' => 'R32',
+					'last-64' => 'R64',
+					default => 'RR1',
+				};
 			}
 			$result->matches = array();
 			if ( $this->league->num_rubbers ) {
@@ -2100,6 +2058,8 @@ final class Racketmanager_Match {
 									$winner_id = $this->home_team;
 								} elseif ( $score_away > $score_home ) {
 									$winner_id = $this->away_team;
+								} else {
+									$winner_id = null;
 								}
 							} else {
 								$winner_id = $rubber->winner_id;
@@ -2140,7 +2100,7 @@ final class Racketmanager_Match {
 				}
 			} else {
 				$result_match = new \stdClass();
-				if ( ! $this->is_walkover && -1 !== $this->home_team && -1 !== $this->away_team ) {
+				if ( ! $this->is_walkover && '-1' !== $this->home_team && '-1' !== $this->away_team ) {
 					$result_match->match = $this->id;
 					if ( $this->winner_id === $this->home_team ) {
 						$winning_team   = 'home';
@@ -2181,21 +2141,20 @@ final class Racketmanager_Match {
 					$result->matches[] = $result_match;
 				}
 			}
-			if ( count( $result->matches ) ) {
-				return $result;
-			}
 		}
+		return $result;
 	}
 	/**
 	 * Produce scores for reporting results
 	 *
 	 * @param object $result_match match result object.
-	 * @param array  $sets sets.
+	 * @param array $sets sets.
 	 * @param string $winning_player winning player reference.
 	 * @param string $losing_player losing player reference.
+	 *
 	 * @return object updated result_match object.
 	 */
-	private function report_result_scores( $result_match, $sets, $winning_player, $losing_player ) {
+	private function report_result_scores( object $result_match, array $sets, string $winning_player, string $losing_player ): object {
 		for ( $s = 1; $s <= 5; $s++ ) {
 			$team1set = 'set' . $s . 'team1';
 			$team2set = 'set' . $s . 'team2';
@@ -2240,13 +2199,13 @@ final class Racketmanager_Match {
 	/**
 	 * Set match comments
 	 *
-	 * @param string $comments match comments.
+	 * @param array $comments match comments.
 	 */
-	public function set_comments( $comments ) {
+	public function set_comments( array $comments ): void {
 		global $wpdb;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_matches} SET `comments` = %s WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_matches SET `comments` = %s WHERE `id` = %d",
 				maybe_serialize( $comments ),
 				$this->id
 			)
@@ -2259,11 +2218,11 @@ final class Racketmanager_Match {
 	 *
 	 * @param int $status match status.
 	 */
-	public function set_status( $status ) {
+	public function set_status( int $status ): void {
 		global $wpdb;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_matches} SET `status` = %s WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_matches SET `status` = %s WHERE `id` = %d",
 				$status,
 				$this->id
 			)
@@ -2276,7 +2235,7 @@ final class Racketmanager_Match {
 	 *
 	 * @return boolean
 	 */
-	public function notify_date_change() {
+	public function notify_date_change(): bool {
 		global $racketmanager;
 
 		if ( -1 === $this->teams['home']->id || -1 === $this->teams['away']->id ) {
@@ -2341,7 +2300,7 @@ final class Racketmanager_Match {
 	 *
 	 * @return object
 	 */
-	public function is_update_allowed() {
+	public function is_update_allowed(): object {
 		global $racketmanager;
 		$home_team           = $this->teams['home'];
 		$away_team           = $this->teams['away'];
@@ -2403,10 +2362,10 @@ final class Racketmanager_Match {
 						}
 					} elseif ( 'player' === $match_capability ) {
 						if ( 'captain' === $user_type || 'matchsecretary' === $user_type ) {
-							if ( 'home' === $user_team || ( 'away' === $user_team && 'home' === $result_entry ) || 'either' === $result_entry ) {
+							if ( 'either' === $result_entry || 'home' === $user_team || ( 'away' === $user_team && 'home' === $result_entry ) ) {
 								if ( 'P' === $result_status ) {
 									$user_can_update = true;
-									if ( 'home' === $user_team || 'both' === $user_team ) {
+									if ( 'home' === $user_team ) {
 										if ( empty( $this->away_captain ) ) {
 											$match_update = true;
 										} elseif ( empty( $this->home_captain ) ) {
@@ -2456,8 +2415,7 @@ final class Racketmanager_Match {
 								if ( 'home' === $result_entry ) {
 									if ( $this->is_pending ) {
 										if ( 'home' === $user_team || 'both' === $user_team ) {
-											$user_can_update     = true;
-											$match_approval_mode = false;
+											$user_can_update = true;
 										}
 									} elseif ( 'P' === $result_status ) {
 										if ( 'away' === $user_team || 'both' === $user_team ) {
@@ -2466,30 +2424,24 @@ final class Racketmanager_Match {
 										}
 									}
 								} elseif ( 'either' === $result_entry ) {
-									if ( $user_team ) {
-										if ( 'P' === $result_status ) {
-											if ( 'home' === $user_team || 'both' === $user_team ) {
-												if ( empty( $this->home_captain ) ) {
-													$user_can_update     = true;
-													$match_approval_mode = true;
-												} elseif ( intval( $this->home_captain ) === $userid ) {
-													$user_can_update = true;
-												} else {
-													$user_can_update = false;
-												}
-											} elseif ( 'away' === $user_team ) {
-												if ( empty( $this->away_captain ) ) {
-													$user_can_update     = true;
-													$match_approval_mode = true;
-												} elseif ( intval( $this->away_captain ) === $userid ) {
-													$user_can_update = true;
-												} else {
-													$user_can_update = false;
-												}
+									if ( 'P' === $result_status ) {
+										if ( 'home' === $user_team || 'both' === $user_team ) {
+											if ( empty( $this->home_captain ) ) {
+												$user_can_update     = true;
+												$match_approval_mode = true;
+											} elseif ( $this->home_captain === $userid ) {
+												$user_can_update = true;
 											}
-										} elseif ( $this->is_pending ) {
-											$user_can_update = true;
+										} elseif ( 'away' === $user_team ) {
+											if ( empty( $this->away_captain ) ) {
+												$user_can_update     = true;
+												$match_approval_mode = true;
+											} elseif ( $this->away_captain === $userid ) {
+												$user_can_update = true;
+											}
 										}
+									} elseif ( $this->is_pending ) {
+										$user_can_update = true;
 									}
 								}
 							} else {
@@ -2518,14 +2470,12 @@ final class Racketmanager_Match {
 	 *
 	 * @return object
 	 */
-	public function update_league_with_result() {
+	public function update_league_with_result(): object {
 		$return                   = new \stdClass();
 		$league                   = get_league( $this->league_id );
 		$matches[ $this->id ]     = $this->id;
 		$home_points[ $this->id ] = $this->home_points;
 		$away_points[ $this->id ] = $this->away_points;
-		$home_team[ $this->id ]   = $this->home_team;
-		$away_team[ $this->id ]   = $this->away_team;
 		if ( $league->is_championship ) {
 			if ( ! empty( $this->final_round ) ) {
 				$round_data = $league->championship->get_finals( $this->final_round );
@@ -2538,7 +2488,7 @@ final class Racketmanager_Match {
 				$return->updated = false;
 			}
 		} else {
-			$match_count = $league->update_standings( $this->season );
+			$league->update_standings( $this->season );
 			$return->msg     = __( 'Result saved', 'racketmanager' );
 			$return->updated = true;
 		}
@@ -2546,12 +2496,9 @@ final class Racketmanager_Match {
 	}
 	/**
 	 * Reset match result function
-	 *
-	 * @return boolean
 	 */
-	public function reset_result() {
-		global $wpdb, $racketmanager;
-		$updated = false;
+	public function reset_result(): void {
+		global $wpdb;
 		if ( ! empty( $this->num_rubbers ) ) {
 			$rubbers = $this->get_rubbers();
 			foreach ( $rubbers as $rubber ) {
@@ -2562,9 +2509,8 @@ final class Racketmanager_Match {
 		}
 		$this->home_points  = null;
 		$this->away_points  = null;
-		$this->confirmed    = null;
-		$this->winner_id    = 0;
-		$this->loser_id     = 0;
+		$this->winner_id    = '0';
+		$this->loser_id     = '0';
 		$this->status       = null;
 		$this->custom       = array();
 		$this->confirmed    = null;
@@ -2572,15 +2518,15 @@ final class Racketmanager_Match {
 		$this->away_captain = null;
 		$wpdb->query(  //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_matches} SET `home_points` = null, `away_points` = null, `winner_id` = %d, `loser_id` = %d, `custom` = %s, `updated_user` = %d, `updated` = now(), `confirmed` = null, `status` = null, `home_captain` = null, `away_captain` = null, `home_points_tie` = null, `away_points_tie` = null, `winner_id_tie` = null, `loser_id_tie` = null WHERE `id` = %d",
-				intval( $this->winner_id ),
-				intval( $this->loser_id ),
+				"UPDATE $wpdb->racketmanager_matches SET `home_points` = null, `away_points` = null, `winner_id` = %d, `loser_id` = %d, `custom` = %s, `updated_user` = %d, `updated` = now(), `confirmed` = null, `status` = null, `home_captain` = null, `away_captain` = null, `home_points_tie` = null, `away_points_tie` = null, `winner_id_tie` = null, `loser_id_tie` = null WHERE `id` = %d",
+				$this->winner_id,
+				$this->loser_id,
 				maybe_serialize( $this->custom ),
 				get_current_user_id(),
 				$this->id
 			)
 		);
-		if ( ! empty( $this->leg ) && '2' === $this->leg ) {
+		if ( ! empty( $this->leg ) && 2 === $this->leg ) {
 			$this->home_points_tie = null;
 			$this->away_points_tie = null;
 			$this->winner_id_tie   = null;
@@ -2607,7 +2553,7 @@ final class Racketmanager_Match {
 			$next_round            = $this->league->championship->get_final_keys( $next_round_no );
 			$match_args['final']   = $this->final_round;
 			$match_args['orderby'] = array( 'id' => 'ASC' );
-			if ( empty( $this->leg ) || '2' === $this->leg ) {
+			if ( empty( $this->leg ) || 2 === $this->leg ) {
 				if ( ! empty( $this->leg ) ) {
 					$match_args['leg'] = $this->leg;
 				}
@@ -2627,7 +2573,7 @@ final class Racketmanager_Match {
 					if ( ! empty( $this->leg ) ) {
 						$match_args['leg'] = 1;
 					}
-					$next_round_details = isset( $this->league->seasons[ $this->season ]['rounds'][ $next_round ] ) ? $this->league->seasons[ $this->season ]['rounds'][ $next_round ] : null;
+					$next_round_details = $this->league->seasons[$this->season]['rounds'][$next_round] ?? null;
 					$next_round_matches = $this->league->get_matches( $match_args );
 					if ( $next_round_matches ) {
 						$next_round_match = $next_round_matches[ $next_round_match_no ];
@@ -2663,17 +2609,16 @@ final class Racketmanager_Match {
 				}
 			}
 		}
-		return $updated;
 	}
 	/**
 	 * Set date result entered
 	 */
-	public function set_result_entered() {
+	public function set_result_entered(): void {
 		global $wpdb;
 		$this->date_result_entered = date( 'Y-m-d H:i:s' );
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_matches} SET `date_result_entered` = %s WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_matches SET `date_result_entered` = %s WHERE `id` = %d",
 				$this->date_result_entered,
 				$this->id
 			)
@@ -2685,9 +2630,9 @@ final class Racketmanager_Match {
 	 *
 	 * @param string $match_status match status.
 	 * @param string $match_message match message.
-	 * @param string $match_updated_by match updated by value.
+	 * @param false|string $match_updated_by match updated by value.
 	 */
-	public function result_notification( $match_status, $match_message, $match_updated_by = false ) {
+	public function result_notification( string $match_status, string $match_message, false|string $match_updated_by = false ): void {
 		global $racketmanager;
 		$admin_email           = $racketmanager->get_confirmation_email( $this->league->event->competition->type );
 		$rm_options            = $racketmanager->get_options();
@@ -2710,13 +2655,13 @@ final class Racketmanager_Match {
 						$confirmation_email = $this->teams['away']->contactemail;
 					} elseif ( 'secretary' === $result_notification ) {
 						$club               = get_club( $this->teams['away']->club_id );
-						$confirmation_email = isset( $club->match_secretary_email ) ? $club->match_secretary_email : '';
+						$confirmation_email = $club->match_secretary_email ?? '';
 					}
 				} elseif ( 'captain' === $result_notification ) {
 					$confirmation_email = $this->teams['home']->contactemail;
 				} elseif ( 'secretary' === $result_notification ) {
 					$club               = get_club( $this->teams['away']->club_id );
-					$confirmation_email = isset( $club->match_secretary_email ) ? $club->match_secretary_email : '';
+					$confirmation_email = $club->match_secretary_email ?? '';
 				}
 			}
 			$subject = $racketmanager->site_name . ' - ' . $this->league->title . ' - ' . $this->match_title . ' - ' . $match_message;
@@ -2733,7 +2678,6 @@ final class Racketmanager_Match {
 				$email_to  = $admin_email;
 				$headers[] = $racketmanager->get_from_user_email();
 				if ( 'Y' === $match_status ) {
-					$match = get_match( $this->id );
 					if ( $this->has_result_check() ) {
 						$message_args['errors'] = true;
 						$subject               .= ' - ' . __( 'Check results', 'racketmanager' );
@@ -2750,10 +2694,11 @@ final class Racketmanager_Match {
 	/**
 	 * Chase match results
 	 *
-	 * @param int $time_period time Period that result is overdue.
+	 * @param false|int $time_period time Period that result is overdue.
+	 *
 	 * @return boolean $message_sent Indicator to show if message was sent.
 	 */
-	public function chase_match_result( $time_period = false ) {
+	public function chase_match_result( false|int $time_period = false ): bool {
 		global $racketmanager;
 		$message_sent                = false;
 		$headers                     = array();
@@ -2769,7 +2714,7 @@ final class Racketmanager_Match {
 		if ( $this->league->event->competition->is_tournament ) {
 			$opponents = array( 'home', 'away' );
 			foreach ( $opponents as $opponent ) {
-				$players = isset( $this->teams[ $opponent ]->players ) ? $this->teams[ $opponent ]->players : array();
+				$players = $this->teams[$opponent]->players ?? array();
 				foreach ( $players as $player ) {
 					if ( ! empty( $player->email ) ) {
 						$email_to[] = $player->fullname . '<' . $player->email . '>';
@@ -2793,11 +2738,12 @@ final class Racketmanager_Match {
 	/**
 	 * Chase match approval
 	 *
-	 * @param int     $time_period time Period that match result confirmation is overdue.
+	 * @param false|int $time_period time Period that match result confirmation is overdue.
 	 * @param boolean $override Override indicator.
+	 *
 	 * @return boolean $message_sent Indicator to show if message was sent.
 	 */
-	public function chase_match_approval( $time_period = false, $override = false ) {
+	public function chase_match_approval( false|int $time_period = false, bool $override = false ): bool {
 		global $racketmanager;
 		$rm_options                            = $racketmanager->get_options();
 		$confirmation_required                 = $rm_options[ $this->league->event->competition->type ]['confirmationRequired'];
@@ -2845,26 +2791,22 @@ final class Racketmanager_Match {
 	/**
 	 * Complete match result
 	 *
-	 * @param int    $confirmation_timeout time Period that match result confirmation is overdue.
+	 * @param int $confirmation_timeout time Period that match result confirmation is overdue.
+	 *
 	 * @return int number of matches completed.
 	 */
-	public function complete_result( $confirmation_timeout ) {
+	public function complete_result( int $confirmation_timeout ): int {
 		$this->chase_match_approval( $confirmation_timeout, 'override' );
 		$league = get_league( $this->league_id );
-		$final  = false;
-		$league->set_finals( $final );
+		$league->set_finals( false );
 		$result_matches               = array();
 		$home_points                  = array();
 		$away_points                  = array();
-		$home_team                    = array();
-		$away_team                    = array();
 		$custom                       = array();
 		$result_matches[ $this->id ] = $this->id;
 		$home_points[ $this->id ]    = $this->home_points;
 		$away_points[ $this->id ]    = $this->away_points;
-		$home_team[ $this->id ]      = $this->home_team;
-		$away_team[ $this->id ]      = $this->away_team;
 		$custom[ $this->id ]         = $this->custom;
-		return $league->update_match_results( $result_matches, $home_points, $away_points, $custom, $this->season, $final );
+		return $league->update_match_results( $result_matches, $home_points, $away_points, $custom, $this->season );
 	}
 }

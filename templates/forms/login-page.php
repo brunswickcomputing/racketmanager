@@ -115,4 +115,5 @@ namespace Racketmanager;
     })
     document.getElementById('resetPasswordButton').addEventListener('click', function () {
         Racketmanager.resetPassword(this)
-    })</script>
+    })
+</script>

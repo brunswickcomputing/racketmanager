@@ -586,7 +586,7 @@ if ( $match->is_walkover ) {
 																			?>
 																			>
 																			<?php ++$tabindex; ?>
-                                                                            <label for="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_tiebreak"> </label><input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points match-points__cell-input" type="number" min="0" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" name="sets[<?php echo esc_html( $r ); ?>][<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo isset( $rubber->sets[ $i ]['tiebreak'] ) ? esc_html( $rubber->sets[ $i ]['tiebreak'] ) : ''; ?>" onblur="SetCalculatorTieBreak(this)"/>
+                                                                            <label><input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points match-points__cell-input" type="number" min="0" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" name="sets[<?php echo esc_html( $r ); ?>][<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo isset( $rubber->sets[ $i ]['tiebreak'] ) ? esc_html( $rubber->sets[ $i ]['tiebreak'] ) : ''; ?>" onblur="SetCalculatorTieBreak(this)"/></label>
 																		</div>
 																		<?php
 																	}

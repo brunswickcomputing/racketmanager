@@ -54,7 +54,7 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
 		$constitution_exists = false;
 	}
 	$leagues         = $event->get_leagues();
-	$standing_status = Racketmanager_Util::get_standing_status();
+	$standing_status = Racketmanager_Util::get_standing_statuses();
 	?>
 	<h2 class="header"><?php esc_html_e( 'Constitution', 'racketmanager' ); ?> - <?php echo esc_html( $latest_season ); ?></h2>
 	<form id="teams-filter" method="post" action="">

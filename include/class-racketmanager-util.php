@@ -124,10 +124,9 @@ class Racketmanager_Util {
 	/**
 	 * Get available league standing status
 	 *
-	 * @param string|null $status status value.
-	 * @return array|string|null
+	 * @return array
 	 */
-	public static function get_standing_status( string $status = null ): array|string|null {
+	public static function get_standing_statuses(): array {
 		$standing_status       = array();
 		$standing_status['C']  = __( 'Champions', 'racketmanager' );
 		$standing_status['P1'] = __( 'Promoted in first place', 'racketmanager' );
@@ -147,17 +146,20 @@ class Racketmanager_Util {
 		$standing_status['+']  = __( 'Move up', 'racketmanager' );
 		$standing_status['-']  = __( 'Move down', 'racketmanager' );
 		$standing_status['=']  = __( 'No movement', 'racketmanager' );
-		if ( ! is_null( $status ) ) {
-			if ( ! empty( $standing_status[ $status ] ) ) {
-				return $standing_status[ $status ];
-			} else {
-				return null;
-			}
-		} else {
-			return $standing_status;
-		}
+		return $standing_status;
 	}
 
+	/**
+	 * Get available league standing status
+	 *
+	 * @param string|null $status status value.
+	 *
+	 * @return string
+	 */
+	public static function get_standing_status( string $status = null ): string {
+		$standing_statuses = self::get_standing_statuses();
+		return empty( $standing_statuses[ $status ] ) ? __( 'Unknown', 'racketmanager' ) : $standing_statuses[ $status ];
+	}
 	/**
 	 * Get available competition types
 	 *

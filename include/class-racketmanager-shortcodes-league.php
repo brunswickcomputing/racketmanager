@@ -377,7 +377,6 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 				'home_only'                => 'false',
 				'group'                    => false,
 				'time'                     => '',
-				'show_team_selection'      => false,
 				'show_match_day_selection' => '',
 			),
 			$atts

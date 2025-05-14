@@ -443,11 +443,11 @@ final class Racketmanager_League_Team {
 	 */
 	public function __construct( object $league_team = null ) {
 		if ( ! is_null( $league_team ) ) {
-			if ( ! empty( $league_team->custom ) ) {
+			if ( empty( $league_team->custom ) ) {
+				$league_team->custom = array();
+			} else {
 				$league_team->custom = stripslashes_deep( (array) maybe_unserialize( $league_team->custom ) );
 				$league_team         = (object) array_merge( (array) $league_team, (array) $league_team->custom );
-			} else {
-                $league_team->custom = array();
             }
 			foreach ( get_object_vars( $league_team ) as $key => $value ) {
 				$key        = trim( $key );
@@ -619,10 +619,7 @@ final class Racketmanager_League_Team {
 	 * @return int
 	 */
 	public function get_num_done_matches(): int {
-		$league = get_league();
-		if ( is_null( $league ) ) {
-			$league = get_league( $this->league_id );
-		}
+		$league = get_league( $this->league_id );
 		$num_matches = $league->get_matches(
 			array(
 				'count'            => true,
@@ -656,10 +653,7 @@ final class Racketmanager_League_Team {
 	 * @return int
 	 */
 	public function get_num_won_matches(): int {
-		$league = get_league();
-		if ( is_null( $league ) ) {
-			$league = get_league( $this->league_id );
-		}
+		$league = get_league( $this->league_id );
 		$num_won = $league->get_matches(
 			array(
 				'count'            => true,
@@ -691,10 +685,7 @@ final class Racketmanager_League_Team {
 	 * @return int
 	 */
 	public function get_num_draw_matches(): int {
-		$league = get_league();
-		if ( is_null( $league ) ) {
-			$league = get_league( $this->league_id );
-		}
+		$league = get_league( $this->league_id );
 		$num_draw = $league->get_matches(
 			array(
 				'count'            => true,
@@ -728,10 +719,7 @@ final class Racketmanager_League_Team {
 	 * @return int
 	 */
 	public function get_num_lost_matches(): int {
-		$league = get_league();
-		if ( is_null( $league ) ) {
-			$league = get_league( $this->league_id );
-		}
+		$league = get_league( $this->league_id );
 		$num_lost = $league->get_matches(
 			array(
 				'count'            => true,

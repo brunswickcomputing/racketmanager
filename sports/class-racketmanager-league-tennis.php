@@ -53,10 +53,10 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 			$points_for     = 0;
 			$points_against = 0;
 			foreach ( $matches as $match ) {
-				if ( $match->home_team === $team_id ) {
+				if ( $match->home_team === strval( $team_id ) ) {
 					$points_for     += $match->home_points;
 					$points_against += $match->away_points;
-				} elseif ( $match->away_team === $team_id ) {
+				} elseif ( $match->away_team === strval( $team_id ) ) {
 					$points_for     += $match->away_points;
 					$points_against += $match->home_points;
 				}
@@ -70,11 +70,11 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 			$forshare           = empty( $point_rule['forshare'] ) ? 0 : $point_rule['forshare'];
 			$forwalkover_rubber = empty( $point_rule['forwalkover_rubber'] ) ? 0 : $point_rule['forwalkover_rubber'];
 			$walkover_penalty   = empty( $point_rule['forwalkover_match'] ) ? 0 : $point_rule['forwalkover_match'];
-			$rubber_win         = ! empty( $point_rule['rubber_win'] ) ? $point_rule['rubber_win'] : 0;
-			$rubber_draw        = ! empty( $point_rule['rubber_draw'] ) ? $point_rule['rubber_draw'] : 0;
-			$matches_win        = ! empty( $point_rule['matches_win'] ) ? $point_rule['matches_win'] : 0;
-			$matches_draw       = ! empty( $point_rule['matches_draw'] ) ? $point_rule['matches_draw'] : 0;
-			$shared_match       = ! empty( $point_rule['shared_match'] ) ? $point_rule['shared_match'] : 0;
+			$rubber_win         = empty( $point_rule['rubber_win'] ) ? 0 : $point_rule['rubber_win'];
+			$rubber_draw        = empty( $point_rule['rubber_draw'] ) ? 0 : $point_rule['rubber_draw'];
+			$matches_win        = empty( $point_rule['matches_win'] ) ? 0 : $point_rule['matches_win'];
+			$matches_draw       = empty( $point_rule['matches_draw'] ) ? 0 : $point_rule['matches_draw'];
+			$shared_match       = empty( $point_rule['shared_match'] ) ? 0 : $point_rule['shared_match'];
 			$data               = $this->get_standings_data( $team_id, array(), $matches );
 			if ( ! empty( $point_rule['match_result'] ) ) {
 				if ( 'rubber_count' === $point_rule['match_result'] ) {
@@ -176,10 +176,10 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 			$matches = $this->get_matches_for_standings( $season, $team_id );
 		}
 		foreach ( $matches as $match ) {
-			$team_ref       = $team_id === $match->home_team ? 'home' : 'away';
+			$team_ref       = strval( $team_id ) === $match->home_team ? 'home' : 'away';
 			$team_ref_alt   = 'home' === $team_ref ? 'away' : 'home';
-			$player_ref     = ( $team_id === $match->home_team ) ? 'player1' : 'player2';
-			$player_ref_alt = ( 'player1' === $player_ref ) ? 'player2' : 'player1';
+			$player_ref     = strval( $team_id ) === $match->home_team ? 'player1' : 'player2';
+			$player_ref_alt = 'player1' === $player_ref ? 'player2' : 'player1';
 			$match          = get_match( $match );
 			if ( ! empty( $match->winner_id ) && ! empty( $match->loser_id ) && 'W' !== $match->teams['home']->status && 'W' !== $match->teams['away']->status && ! $match->is_cancelled ) {
 				if ( ! empty( $match->status ) && 3 === $match->status ) {
@@ -224,7 +224,7 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 									}
 									if ( is_numeric( trim( $set[ $player_ref_alt ] ) ) ) {
 										if ( 'MTB' === $set_type ) {
-											if ( $rubber->loser_id === $team_id ) {
+											if ( $rubber->loser_id === strval( $team_id ) ) {
 												++$data['games_allowed'];
 											}
 										} else {
@@ -233,7 +233,7 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 									}
 									if ( is_numeric( trim( $set[ $player_ref ] ) ) ) {
 										if ( 'MTB' === $set_type ) {
-											if ( $rubber->winner_id === $team_id ) {
+											if ( $rubber->winner_id === strval( $team_id ) ) {
 												++$data['games_won'];
 											}
 										} else {
@@ -254,8 +254,8 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 							++$data['rubbers_shared'];
 							++$rubbers_shared;
 						}
-						if ( $rubber->winner_id === $team_id || -1 === intval( $rubber->winner_id ) ) { // winning team.
-							if ( $rubber->winner_id === $team_id ) {
+						if ( $rubber->winner_id === strval( $team_id ) || '-1' === $rubber->winner_id ) { // winning team.
+							if ( $rubber->winner_id === strval( $team_id ) ) {
 								++$data['rubbers_won'];
 								++$rubbers_won;
 							}
@@ -278,7 +278,7 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 							} elseif ( $data['sets_won'] > '0' ) {                                  // home team straight set win.
 								$data['straight_set']['win'] += 1;
 							}
-						} elseif ( $rubber->loser_id === $team_id ) { // losing team.
+						} elseif ( $rubber->loser_id === strval( $team_id ) ) { // losing team.
 							++$rubbers_lost;
 							if ( $rubber->is_walkover ) {
 								$data['sets_allowed']         += $walkover_sets;

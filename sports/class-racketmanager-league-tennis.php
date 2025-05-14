@@ -17,22 +17,23 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 	 *
 	 * @var string
 	 */
-	public $sport = 'tennis';
+	public string $sport = 'tennis';
 
 	/**
 	 * Default number of sets
 	 *
 	 * @var int
 	 */
-	public $num_sets = 3;
+	public int $num_sets = 3;
 
 	/**
 	 * Create class instance
 	 *
 	 * @param object $league league object.
+	 *
 	 * @return void
 	 */
-	public function __construct( $league ) {
+	public function __construct( object $league ) {
 		parent::__construct( $league );
 		add_filter( 'racketmanager_team_points_' . $this->sport, array( &$this, 'calculate_team_points' ), 10, 4 );
 	}
@@ -93,9 +94,10 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 	 * Rank Teams
 	 *
 	 * @param array $teams team array.
+	 *
 	 * @return array of teams
 	 */
-	protected function rank_teams( $teams ): array {
+	protected function rank_teams( array $teams ): array {
 		foreach ( $teams as $key => $team ) {
 			$team_sets_won     = $team->sets_won ?? 0;
 			$team_sets_allowed = $team->sets_allowed ?? 0;
@@ -138,9 +140,10 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 	 * @param int   $team_id team.
 	 * @param array $data data.
 	 * @param array $matches matches.
+	 *
 	 * @return array number of runs for and against as associative array
 	 */
-	protected function get_standings_data( $team_id, $data = array(), $matches = false ): array {
+	protected function get_standings_data( int $team_id, array $data, array $matches = array() ): array {
 		global $league;
 
 		$data['straight_set']   = array(
@@ -260,7 +263,7 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 								$data['sets_won']            += $walkover_sets;
 								$data['games_won']           += $walkover_games;
 								$data['straight_set']['win'] += 1;
-							} elseif ( $match->home_team === $team_id ) {   // home team.
+							} elseif ( $match->home_team === strval( $team_id ) ) {   // home team.
 								if ( $data['sets_won'] > '0' ) {
 									if ( $rubber->away_points > '0' ) {
 										$data['split_set']['win'] += 1;
@@ -283,7 +286,7 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 								$data['no_player']            += 1;
 								$data['straight_set']['lost'] += 1;
 								++$walkovers;
-							} elseif ( $match->home_team === $team_id ) {   // team loss.
+							} elseif ( $match->home_team === strval( $team_id ) ) {   // team loss.
 								if ( $rubber->home_points > '0' ) {
 									$data['split_set']['lost'] += 1;
 								} else {
@@ -323,14 +326,14 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 						$data['games_won']     += $match->sets[ $j ][ $player_ref ];
 					}
 					if ( $league->num_sets > 1 && '' !== $match->sets[ $league->num_sets ]['player1'] && '' !== $match->sets[ $league->num_sets ]['player2'] ) {
-						if ( $match->winner_id === $team_id ) {
+						if ( $match->winner_id === strval( $team_id ) ) {
 							$data['split_set']['win'] += 1;
-						} elseif ( $match->loser_id === $team_id ) {
+						} elseif ( $match->loser_id === strval( $team_id ) ) {
 							$data['split_set']['lost'] += 1;
 						}
-					} elseif ( $match->winner_id === $team_id ) {
+					} elseif ( $match->winner_id === strval( $team_id ) ) {
 						$data['straight_set']['win'] += 1;
-					} elseif ( $match->loser_id === $team_id ) {
+					} elseif ( $match->loser_id === strval( $team_id ) ) {
 						$data['straight_set']['lost'] += 1;
 					}
 				}
@@ -367,9 +370,10 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 	 * Update match results and automatically calculate score
 	 *
 	 * @param object $match match details.
+	 *
 	 * @return object $match
 	 */
-	protected function update_results( $match ): object {
+	protected function update_results( object $match ): object {
 		$match = get_match( $match );
 
 		// exit if only one team is set.
@@ -419,11 +423,12 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
 	 * 3) games difference
 	 * 4) sets won
 	 *
-	 * @param Racketmanager_League_Team $team1 first team.
-	 * @param Racketmanager_League_Team $team2 second team.
+	 * @param object $team1 first team.
+	 * @param object $team2 second team.
+	 *
 	 * @return boolean
 	 */
-	protected function is_tie( $team1, $team2 ): bool {
+	protected function is_tie( object $team1, object $team2 ): bool {
 		// initialize results array.
 
 		$res = array(

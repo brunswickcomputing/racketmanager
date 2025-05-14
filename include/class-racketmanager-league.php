@@ -1742,7 +1742,7 @@ class Racketmanager_League {
 		if ( $count ) {
 			$sql_start = "SELECT COUNT(*) FROM $wpdb->racketmanager_matches m";
 		} else {
-			$sql_start = "SELECT  DISTINCT m.`id` FROM $wpdb->racketmanager_matches m";
+			$sql_start = "SELECT  DISTINCT m.`id`, m.`date` FROM $wpdb->racketmanager_matches m";
 		}
 		$sql = ' WHERE m.`league_id` = %d';
 
@@ -2097,11 +2097,11 @@ class Racketmanager_League {
 	/**
 	 * Get point rule depending on selection.
 	 *
-	 * @param false|int $rule rule.
+	 * @param string|false $rule rule.
 	 *
 	 * @return array of points
 	 */
-	public function get_point_rule( false|int $rule = false ): array {
+	public function get_point_rule( false|string $rule = false ): array {
 		if ( ! $rule ) {
 			$rule = $this->point_rule;
 		}
@@ -2764,9 +2764,9 @@ class Racketmanager_League {
 	/**
 	 * Update points for given team
 	 *
-	 * @param int $league_team team.
+	 * @param object $league_team team.
 	 */
-	private function save_standings( int $league_team ): void {
+	private function save_standings( object $league_team ): void {
 		global $wpdb;
 
 		if ( 'manual' !== $this->point_rule ) {
@@ -2789,7 +2789,6 @@ class Racketmanager_League {
 			}
 			// get custom team standings data.
 			$league_team->custom = $this->get_standings_data( $league_team->id, $league_team->custom );
-
 			$wpdb->query(
 				$wpdb->prepare(
 					"UPDATE $wpdb->racketmanager_table SET `points_plus` = %f, `points_minus` = %f, `points2_plus` = %d, `points2_minus` = %d, `done_matches` = %d, `won_matches` = %d, `draw_matches` = %d, `lost_matches` = %d, `diff` = %d, `custom` = %s WHERE `team_id` = %d AND `league_id` = %d AND `season` = %s",

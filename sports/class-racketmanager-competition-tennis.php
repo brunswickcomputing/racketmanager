@@ -34,16 +34,17 @@ class Racketmanager_Competition_Tennis extends Racketmanager_Competition {
 	 */
 	public function __construct( $competition ) {
 		parent::__construct( $competition );
-		add_filter( 'racketmanager_point_rules_list', array( &$this, 'getPointRuleList' ) );
+		add_filter( 'racketmanager_point_rules_list', array( &$this, 'get_point_rule_list' ) );
 		add_filter( 'racketmanager_point_rules', array( &$this, 'get_point_rules' ) );
 	}
 	/**
 	 * Get Point Rule list
 	 *
 	 * @param array $rules rules.
+	 *
 	 * @return array
 	 */
-	public function getPointRuleList( $rules ) {
+	public function get_point_rule_list( array $rules ): array {
 		$rules['tennis']                = __( 'Tennis', 'racketmanager' );
 		$rules['tennisNoPenalty']       = __( 'Tennis No Penalty', 'racketmanager' );
 		$rules['tennisSummer']          = __( 'Tennis Summer', 'racketmanager' );
@@ -57,9 +58,10 @@ class Racketmanager_Competition_Tennis extends Racketmanager_Competition {
 	 * Get Point rules
 	 *
 	 * @param array $rules rules.
+	 *
 	 * @return array
 	 */
-	public function get_point_rules( $rules ) {
+	public function get_point_rules( array $rules ): array {
 		$rules['tennis']                = array(
 			'forwin'             => 1,
 			'fordraw'            => 0,

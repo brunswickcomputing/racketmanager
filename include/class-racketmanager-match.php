@@ -545,10 +545,7 @@ final class Racketmanager_Match {
 			}
 
 			// get League Object.
-			$this->league = get_league();
-			if ( is_null( $this->league ) || ( $this->league->id !== $this->league_id ) ) {
-				$this->league = get_league( $this->league_id );
-			}
+			$this->league = get_league( $this->league_id );
 			if ( ! isset( $this->id ) ) {
 				$this->id = $this->add();
 			}
@@ -2481,7 +2478,7 @@ final class Racketmanager_Match {
 				$round_data = $league->championship->get_finals( $this->final_round );
 				$round      = $round_data['round'];
 				$league->championship->update_final_results( $matches, $home_points, $away_points, array(), $round, $this->season );
-				$return->msg     = __( 'Match saved', 'racketmanager' );
+				$return->msg     = __( 'Match saved and draw updated', 'racketmanager' );
 				$return->updated = true;
 			} else {
 				$return->msg     = __( 'No round specified', 'racketmanager' );
@@ -2489,7 +2486,7 @@ final class Racketmanager_Match {
 			}
 		} else {
 			$league->update_standings( $this->season );
-			$return->msg     = __( 'Result saved', 'racketmanager' );
+			$return->msg     = __( 'Result saved and league updated', 'racketmanager' );
 			$return->updated = true;
 		}
 		return $return;

@@ -32,7 +32,7 @@ final class Racketmanager_Match {
 	 *
 	 * @var string|null
 	 */
-	public ?string $group;
+	public ?string $group = null;
 	/**
 	 * Date
 	 *
@@ -60,9 +60,9 @@ final class Racketmanager_Match {
 	/**
 	 * Match day
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public int $match_day;
+	public ?int $match_day;
 	/**
 	 * Location
 	 *
@@ -282,9 +282,9 @@ final class Racketmanager_Match {
 	/**
 	 * Round variable
 	 *
-	 * @var int|null
+	 * @var string|null
 	 */
-	public ?int $round;
+	public ?string $round;
 	/**
 	 * Comments variable
 	 *
@@ -314,7 +314,7 @@ final class Racketmanager_Match {
 	 *
 	 * @var string|null
 	 */
-	public ?string $host;
+	public ?string $host = null;
 	/**
 	 * Match Link variable
 	 *
@@ -1115,24 +1115,24 @@ final class Racketmanager_Match {
 	/**
 	 * Update result
 	 *
-	 * @param float $home_points_input home points.
-	 * @param float $away_points_input away points.
+	 * @param float|null $home_points_input home points.
+	 * @param float|null $away_points_input away points.
 	 * @param array $custom custom.
 	 * @param string $confirmed match status field.
-	 * @param string $match_status match status.
+	 * @param string|null $match_status match status.
 	 *
 	 * @return boolean
 	 */
-	public function update_result( float $home_points_input, float $away_points_input, array $custom, string $confirmed = 'Y', string $match_status = '' ): bool {
+	public function update_result( ?float $home_points_input, ?float $away_points_input, array $custom, string $confirmed = 'Y', ?string $match_status = '' ): bool {
 		$bye            = false;
 		$updated        = false;
 		$winning_points = $this->league->num_sets_to_win;
-		if ( empty( $home_points_input ) && -1 === intval( $this->home_team ) ) {
+		if ( empty( $home_points_input ) && '-1' === $this->home_team ) {
 			$home_points_input = 0;
 			$away_points_input = $winning_points;
 			$bye               = true;
 		}
-		if ( empty( $away_points_input ) && -1 === intval( $this->away_team ) ) {
+		if ( empty( $away_points_input ) && '-1' === $this->away_team ) {
 			$home_points_input = $winning_points;
 			$away_points_input = 0;
 			$bye               = true;
@@ -1707,12 +1707,12 @@ final class Racketmanager_Match {
 	/**
 	 * Set home / away team function
 	 *
-	 * @param int $home home team id.
-	 * @param int $away away team id.
+	 * @param string|null $home home team id.
+	 * @param string|null $away away team id.
 	 *
 	 * @return object
 	 */
-	public function set_teams( int $home, int $away ): object {
+	public function set_teams( ?string $home, ?string $away ): object {
 		global $wpdb;
 		if ( empty( $home ) ) {
 			$home = $this->home_team;

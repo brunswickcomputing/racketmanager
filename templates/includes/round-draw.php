@@ -11,7 +11,7 @@ namespace Racketmanager;
 /** @var int    $f */
 /** @var string $player_class */
 foreach ( $final->matches as $match ) {
-	if ( empty( $match->leg ) || '2' === $match->leg ) {
+	if ( empty( $match->leg ) || 2 === $match->leg ) {
 		$winner = null;
 		$is_tie = false;
 		if ( empty( $match->leg ) ) {

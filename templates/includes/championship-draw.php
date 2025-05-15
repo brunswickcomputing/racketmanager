@@ -7,9 +7,10 @@
 
 namespace Racketmanager;
 
-if ( ! $finals ) {
+/** @var array $finals */
+/** @var object $league */
+if ( ! $finals )
 	return;
-}
 $num_rounds = count( $finals );
 if ( ! empty( $num_rounds ) ) {
 	$cols = floor( 12 / $num_rounds );
@@ -100,3 +101,9 @@ if ( $league->event->competition->is_player_entry && isset( $league->event->type
 		</div>
 	</div>
 </div>
+<script type="text/javascript">
+    const matchLinks = document.querySelectorAll('.score-row__wrapper');
+    matchLinks.forEach(el => el.addEventListener('click', function (e) {
+        Racketmanager.viewMatch(e)
+    }));
+</script>

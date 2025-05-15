@@ -33,7 +33,7 @@ foreach ( $final->matches as $match ) {
         }
 		?>
 		<div class="score-row draws-score-row round-<?php echo esc_attr( $f ); ?> carousel-index-<?php echo esc_attr( $f ); ?> <?php echo empty( $last_round ) ? '' : 'last-round'; ?> ">
-			<div class="score-row__wrapper" aria-label="<?php esc_html_e( 'Match Link', 'racketmanager' ); ?>" onclick="Racketmanager.viewMatch(event)">
+			<div class="score-row__wrapper" aria-label="<?php esc_html_e( 'Match Link', 'racketmanager' ); ?>">
 				<?php
 				if ( is_numeric( $match->home_team ) && $match->home_team >= 1 && is_numeric( $match->away_team ) && $match->away_team >= 1 ) {
 					if ( empty( $tournament ) ) {

@@ -580,7 +580,7 @@ if ( $match ) {
         optionLinks.forEach(el => el.addEventListener('click', function (e) {
             let matchId = this.dataset.matchId;
             let matchOption = this.dataset.matchOption;
-            Racketmanager.matchOptions(e, matchId, matchOption)
+            Racketmanager.matchOptions(e, matchId, matchOption);
         }));
         const statusLinks = document.querySelectorAll('.statusLink');
         statusLinks.forEach(el => el.addEventListener('click', function (e) {

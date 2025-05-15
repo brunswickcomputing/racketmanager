@@ -523,7 +523,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 								$max_matches = $final['num_matches'];
 
 								/* translators: %s: round name */
-								$form_title = sprintf( __( 'Edit Matches - %s', 'racketmanager' ), $league->championship->get_final_name( $final_key ) );
+								$form_title = sprintf( __( 'Edit Matches - %s', 'racketmanager' ), Racketmanager_Util::get_final_name( $final_key ) );
 								$match_args = array(
 									'final'   => $final_key,
 									'orderby' => array(

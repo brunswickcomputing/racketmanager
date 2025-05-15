@@ -557,9 +557,9 @@ class Racketmanager_League {
 	/**
 	 * Sequence
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public string $sequence;
+	public ?string $sequence;
 	/**
 	 * Team
 	 *
@@ -2730,10 +2730,10 @@ class Racketmanager_League {
 				$c             = $custom[$match_id] ?? array();
 				$points_home   = $home_points[$match_id] ?? null;
 				$points_away   = $away_points[$match_id] ?? null;
-				$match_updated = $match->update_result( $points_home, $points_away, $c, $confirmed, $match->status );
-				if ( $match_updated ) {
-					++$num_matches;
-				}
+                $match_updated = $match->update_result( $points_home, $points_away, $c, $confirmed, $match->status );
+                if ( $match_updated ) {
+                    ++$num_matches;
+                }
 			}
 		}
 
@@ -3299,12 +3299,12 @@ class Racketmanager_League {
 			$new_match               = clone $match;
 			$weeks_diff              = empty( $this->event->competition->seasons[ $match->season ]['home_away_diff'] ) ? 2 : $this->event->competition->seasons[ $match->season ]['home_away_diff'];
 			$new_match->date         = Racketmanager_Util::amend_date( $match->date, $weeks_diff, '+', 'weeks' );
-			$new_match->id           = 0;
 			$new_match->linked_match = $match->id;
 			$new_match->leg          = $match->leg + 1;
 			if ( ! empty( $match->host ) ) {
 				$new_match->host = 'home' === $match->host ? 'away' : 'home';
 			}
+			unset( $new_match->id );
 			$new_match = new Racketmanager_Match( $new_match );
 			$new_match->update_legs( $new_match->leg, $match->id );
 			$match->update_legs( $match->leg, $new_match->id );

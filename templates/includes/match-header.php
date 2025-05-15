@@ -156,7 +156,7 @@ if ( $match->is_pending ) {
 							if ( $allow_schedule_match ) {
 								?>
 								<li>
-									<a class="dropdown-item" href="/schedule" onclick="Racketmanager.matchOptions(event, '<?php echo esc_attr( $match->id ); ?>', 'schedule_match')">
+									<a class="dropdown-item matchOptionLink" href="/schedule" data-match-id="<?php echo esc_attr( $match->id ); ?>" data-match-option="schedule_match">
 										<?php esc_html_e( '(Re)schedule match', 'racketmanager' ); ?>
 									</a>
 								</li>
@@ -167,7 +167,7 @@ if ( $match->is_pending ) {
 							if ( $allow_switch_match ) {
 								?>
 								<li>
-									<a class="dropdown-item" href="/switch" onclick="Racketmanager.matchOptions(event, '<?php echo esc_attr( $match->id ); ?>', 'switch_home')">
+									<a class="dropdown-item matchOptionLink" href="/switch" data-match-id="<?php echo esc_attr( $match->id ); ?>" data-match-option="switch_home">
 										<?php esc_html_e( 'Switch home and away', 'racketmanager' ); ?>
 									</a>
 								</li>
@@ -178,7 +178,7 @@ if ( $match->is_pending ) {
 							if ( $allow_reset_match_result ) {
 								?>
 								<li>
-									<a class="dropdown-item" href="" onclick="Racketmanager.matchOptions(event, '<?php echo esc_attr( $match->id ); ?>', 'reset_match_result')">
+									<a class="dropdown-item matchOptionLink" href="" data-match-id="<?php echo esc_attr( $match->id ); ?>" data-match-option="reset_match_result">
 										<?php esc_html_e( 'Reset match result', 'racketmanager' ); ?>
 									</a>
 								</li>
@@ -290,7 +290,7 @@ if ( $match->is_pending ) {
 		if ( $edit_mode && $user_can_update && ! $match_approval_mode ) {
 			?>
 			<div class="text-center mt-2">
-				<a href="/status" class="nav__link btn btn-outline" id="matchStatusButton" onclick="Racketmanager.matchStatusModal(event, '<?php echo esc_attr( $match->id ); ?>')">
+				<a href="/status" class="nav__link btn btn-outline statusLink" data-match-id="<?php echo esc_attr( $match->id ); ?>" id="matchStatusButton">
 					<svg width="16" height="16" class="icon-plus nav-link__prefix">
 						<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#plus-lg' ); ?>"></use>
 					</svg>
@@ -338,3 +338,16 @@ if ( $match->is_pending ) {
 		<span class="module__footer-item-value"><?php echo esc_html( $match_stat ); ?></span>
 	</span>
 </div>
+<script>
+    const optionLinks = document.querySelectorAll('.matchOptionLink');
+    optionLinks.forEach(el => el.addEventListener('click', function (e) {
+        let matchId = this.dataset.matchId;
+        let matchOption = this.dataset.matchOption;
+        Racketmanager.matchOptions(e, matchId, matchOption);
+    }));
+    const statusLinks = document.querySelectorAll('.statusLink');
+    statusLinks.forEach(el => el.addEventListener('click', function (e) {
+        let matchId = this.dataset.matchId;
+        Racketmanager.statusModal(e, matchId);
+    }));
+</script>

@@ -338,7 +338,7 @@ if ( $match ) {
 							if ( $match->league->is_championship ) {
 								?>
 								<li class="match__header-title-item">
-									<?php echo esc_html( $match->league->championship->get_final_name( $match->final_round ) ); ?>
+									<?php echo esc_html( Racketmanager_Util::get_final_name( $match->final_round ) ); ?>
 								</li>
 								<?php
 							}

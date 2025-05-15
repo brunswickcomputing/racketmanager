@@ -22,7 +22,7 @@ $tab_base        = 0;
 				<div class="col-auto matchday">
 				<?php
 				if ( $match->league->is_championship ) {
-					echo esc_html( $match->league->championship->get_final_name( $match->final_round ) );
+					echo esc_html( Racketmanager_Util::get_final_name( $match->final_round ) );
 				} else {
 					echo esc_html( 'Week' . $match->match_day );
 				}

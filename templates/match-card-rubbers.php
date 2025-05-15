@@ -18,7 +18,7 @@ $points_span = 2 + intval( $match->league->num_sets );
 				<div class="matchday">
 					<?php
 					if ( $match->league->event->competition->is_championship ) {
-						echo esc_html( $match->league->championship->get_final_name( $match->final_round ) );
+						echo esc_html( Racketmanger_Util::get_final_name( $match->final_round ) );
 					} else {
 						echo 'Week' . esc_html( $match->match_day );
 					}

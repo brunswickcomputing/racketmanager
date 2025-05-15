@@ -105,7 +105,7 @@ if ( $match->is_pending ) {
 				<?php
 				if ( ! empty( $match->final_round ) ) {
 					?>
-					<span><?php echo esc_html( $match->league->championship->get_final_name( $match->final_round ) ); ?>&nbsp;&#8226</span>
+					<span><?php echo esc_html( Racketmanager_Util::get_final_name( $match->final_round ) ); ?>&nbsp;&#8226</span>
 					<?php
 				} elseif ( ! empty( $match->match_day ) ) {
 					?>

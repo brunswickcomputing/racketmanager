@@ -55,7 +55,7 @@ if ( ! empty( $match->winner_id ) ) {
 							<?php
 							if ( ! empty( $match->final_round ) ) {
 								?>
-                                <span><?php echo esc_html( $match->league->championship->get_final_name( $match->final_round ) ); ?>&nbsp;&#8226;&nbsp;</span>
+                                <span><?php echo esc_html( Racketmanager_Util::get_final_name( $match->final_round ) ); ?>&nbsp;&#8226;&nbsp;</span>
 								<?php
 							} elseif ( ! empty( $match->match_day ) ) {
 								?>
@@ -104,10 +104,10 @@ if ( ! empty( $match->winner_id ) ) {
 			$loser              = null;
 			$is_tie             = false;
 			if ( ! empty( $rubber->winner_id ) ) {
-				if ( $rubber->winner_id === intval( $match->home_team ) ) {
+				if ( $rubber->winner_id === $match->home_team ) {
 					$winner = 'home';
 					$loser  = 'away';
-				} elseif ( $rubber->winner_id === intval( $match->away_team ) ) {
+				} elseif ( $rubber->winner_id === $match->away_team ) {
 					$winner = 'away';
 					$loser  = 'home';
 				} elseif ( '-1' == $rubber->winner_id ) {

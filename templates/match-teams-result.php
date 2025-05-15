@@ -165,18 +165,14 @@ if ( $match->is_walkover ) {
 											</div>
 											<?php
 										}
-										?>
-										<?php
-										if ( ! empty( $match->comments['result'] ) ) {
-											?>
-											<div class="row mt-3 mb-3">
-												<div class="form-floating">
-													<textarea class="form-control result-comments" <?php echo 'admin' === $user_type ? null : 'readonly'; ?> tabindex="490" placeholder="Leave a comment here" name="matchComments[result]" id="matchComments"><?php echo esc_html( $match->comments['result'] ); ?></textarea>
-													<label for="matchComments"><?php esc_html_e( 'Match Comments', 'racketmanager' ); ?></label>
-												</div>
-											</div>
-											<?php
-										}
+                                        ?>
+                                        <div class="row mt-3 mb-3">
+                                            <div class="form-floating">
+                                                <textarea class="form-control result-comments" <?php echo 'admin' === $user_type ? null : 'readonly'; ?> tabindex="490" placeholder="Leave a comment here" name="matchComments[result]" id="matchComments"><?php echo isset( $match->comments['result'] ) ? esc_html( $match->comments['result'] ) : null; ?></textarea>
+                                                <label for="matchComments"><?php esc_html_e( 'Match Comments', 'racketmanager' ); ?></label>
+                                            </div>
+                                        </div>
+                                        <?php
 										if ( ! empty( $match->home_captain ) || ! empty( $match->away_captain ) ) {
 											?>
 											<div class="mt-3" id="approvals">
@@ -275,10 +271,10 @@ if ( $match->is_walkover ) {
 												$loser  = null;
 												$is_tie = false;
 												if ( ! empty( $rubber->winner_id ) ) {
-													if ( $rubber->winner_id === intval( $match->home_team ) ) {
+													if ( $rubber->winner_id === $match->home_team ) {
 														$winner = 'home';
 														$loser  = 'away';
-													} elseif ( $rubber->winner_id === intval( $match->away_team ) ) {
+													} elseif ( $rubber->winner_id === $match->away_team ) {
 														$winner = 'away';
 														$loser  = 'home';
 													} elseif ( '-1' === $rubber->winner_id ) {
@@ -327,7 +323,7 @@ if ( $match->is_walkover ) {
 																?>
 																<div class="match__header-aside text-uppercase">
 																	<div class="match__header-aside-block">
-																		<a href="" class="nav__link" onclick="Racketmanager.scoreStatusModal(event, '<?php echo esc_attr( $rubber->id ); ?>', '<?php echo esc_attr( $rubber->rubber_number ); ?>')">
+																		<a href="" class="nav__link scoreStatusLink" data-rubber-id="<?php echo esc_attr( $rubber->id ); ?>" data-rubber-number="<?php echo esc_attr( $rubber->rubber_number ); ?>">
 																			<svg width="16" height="16" class="icon-plus nav-link__prefix">
 																				<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#plus-lg' ); ?>"></use>
 																			</svg>
@@ -603,7 +599,7 @@ if ( $match->is_walkover ) {
 																<ul class="match__footer-title">
 																</ul>
 																<div class="match__footer-aside text-uppercase">
-																	<a href="" onclick="Racketmanager.resetMatchScores(event, 'rubber-<?php echo esc_attr( $rubber->id ); ?>')">
+																	<a href="" class="scoreResetLink" data-rubber-id="<?php echo esc_attr( $rubber->id ); ?>">
 																		<?php esc_html_e( 'Reset scores', 'racketmanager' ); ?>
 																	</a>
 																</div>
@@ -630,6 +626,18 @@ if ( $match->is_walkover ) {
 	</div>
 	<script>
 		<?php require RACKETMANAGER_PATH . 'js/set-calculator.js'; ?>
+        const scoreStatusLinks = document.querySelectorAll('.scoreStatusLink');
+        scoreStatusLinks.forEach(el => el.addEventListener('click', function (e) {
+            let rubberId = this.dataset.rubberId;
+            let rubberNumber = this.dataset.rubberNumber;
+            Racketmanager.scoreStatusModal(e, rubberId, rubberNumber);
+        }));
+        const scoreResetLinks = document.querySelectorAll('.scoreResetLink');
+        scoreResetLinks.forEach(el => el.addEventListener('click', function (e) {
+            let rubberId = this.dataset.rubberId;
+            let matchRef = 'rubber-' + rubberId;
+            Racketmanager.resetMatchScores(e, matchRef);
+        }));
 	</script>
 	<?php require RACKETMANAGER_PATH . 'templates/includes/modal-score.php'; ?>
 	<?php require 'includes/match-modal.php'; ?>

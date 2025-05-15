@@ -150,7 +150,7 @@ if ( $match ) {
 										if ( $allow_schedule_match ) {
 											?>
 											<li>
-												<a class="dropdown-item" href="" onclick="Racketmanager.matchOptions(event, '<?php echo esc_attr( $match->id ); ?>', 'schedule_match')">
+												<a class="dropdown-item matchOptionLink" href="" data-match-id="<?php echo esc_attr( $match->id ); ?>" data-match-option="schedule_match">
 													<?php esc_html_e( '(Re)schedule match', 'racketmanager' ); ?>
 												</a>
 											</li>
@@ -161,7 +161,7 @@ if ( $match ) {
 										if ( $allow_reset_match_result ) {
 											?>
 											<li>
-												<a class="dropdown-item" href="" onclick="Racketmanager.matchOptions(event, '<?php echo esc_attr( $match->id ); ?>', 'reset_match_result')">
+												<a class="dropdown-item matchOptionLink" href="" data-match-id="<?php echo esc_attr( $match->id ); ?>" data-match-option="reset_match_result">
 													<?php esc_html_e( 'Reset match result', 'racketmanager' ); ?>
 												</a>
 											</li>
@@ -352,7 +352,7 @@ if ( $match ) {
 							?>
 							<div class="match__header-aside text-uppercase">
 								<div class="match__header-aside-block">
-									<a href="" class="nav__link" onclick="Racketmanager.statusModal(event, '<?php echo esc_attr( $match->id ); ?>')">
+									<a href="" class="nav__link statusLink" data-match-id="<?php echo esc_attr( $match->id ); ?>">
 										<svg width="16" height="16" class="icon-plus nav-link__prefix">
 											<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#plus-lg' ); ?>"></use>
 										</svg>
@@ -562,7 +562,7 @@ if ( $match ) {
 						if ( $match_editable ) {
 							?>
 							<div class="match__footer-aside text-uppercase">
-								<a href="" onclick="Racketmanager.resetMatchScores(event, '<?php echo esc_html( $form_id ); ?>')">
+								<a href="" class="scoreResetLink" data-form-id="<?php echo esc_attr( $form_id ); ?>">
 									<?php esc_html_e( 'Reset scores', 'racketmanager' ); ?>
 								</a>
 							</div>
@@ -576,6 +576,22 @@ if ( $match ) {
 	</div>
 	<script>
 		<?php require RACKETMANAGER_PATH . 'js/set-calculator.js'; ?>
+        const optionLinks = document.querySelectorAll('.matchOptionLink');
+        optionLinks.forEach(el => el.addEventListener('click', function (e) {
+            let matchId = this.dataset.matchId;
+            let matchOption = this.dataset.matchOption;
+            Racketmanager.matchOptions(e, matchId, matchOption)
+        }));
+        const statusLinks = document.querySelectorAll('.statusLink');
+        statusLinks.forEach(el => el.addEventListener('click', function (e) {
+            let matchId = this.dataset.matchId;
+            Racketmanager.statusModal(e, matchId);
+        }));
+        const scoreResetLinks = document.querySelectorAll('.scoreResetLink');
+        scoreResetLinks.forEach(el => el.addEventListener('click', function (e) {
+            let formId = this.dataset.formId;
+            Racketmanager.resetMatchScores(e, formId);
+        }));
 	</script>
 	<?php require RACKETMANAGER_PATH . 'templates/includes/modal-score.php'; ?>
 	<?php require RACKETMANAGER_PATH . 'templates/includes/match-modal.php'; ?>

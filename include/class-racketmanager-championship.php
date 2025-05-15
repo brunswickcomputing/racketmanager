@@ -15,127 +15,127 @@ namespace Racketmanager;
 * @package  RacketManager
 * @subpackage Racketmanager_Championship
 */
-final class Racketmanager_Championship extends RacketManager {
+final class Racketmanager_Championship {
 	/**
 	 * League ID
 	 *
 	 * @var int
 	 */
-	public $league_id = 0;
+	public int $league_id = 0;
 
 	/**
 	 * Preliminary groups
 	 *
 	 * @var array
 	 */
-	public $groups = array();
+	public array $groups = array();
 
 	/**
 	 * Number of preliminary groups
 	 *
 	 * @var int
 	 */
-	public $num_group = 0;
+	public int $num_group = 0;
 
 	/**
 	 * Number of teams per group
 	 *
 	 * @var int
 	 */
-	public $team_per_group = 0;
+	public int $team_per_group = 0;
 
 	/**
 	 * Number of teams to advance to final rounds
 	 *
 	 * @var int
 	 */
-	public $num_advance = 0;
+	public mixed $num_advance = 0;
 
 	/**
 	 * Number of final rounds
 	 *
 	 * @var int
 	 */
-	public $num_rounds = 0;
+	public mixed $num_rounds = 0;
 
 	/**
 	 * Number of teams in first round
 	 *
 	 * @var int
 	 */
-	public $num_teams_first_round = 0;
+	public int $num_teams_first_round = 0;
 
 	/**
 	 * Final keys indexed by round
 	 *
 	 * @var array
 	 */
-	private $keys = array();
+	private array $keys = array();
 
 	/**
 	 * Finals indexed by key
 	 *
 	 * @var array
 	 */
-	public $finals = array();
+	public array $finals = array();
 
 	/**
 	 * Current final key
 	 *
-	 * @var array
+	 * @var string
 	 */
-	public $current_final = '';
+	public string $current_final = '';
 
 	/**
 	 * Array of final team names
 	 *
 	 * @var array
 	 */
-	public $final_teams = array();
+	public array $final_teams = array();
 
 	/**
 	 * Image of cup icon
 	 *
 	 * @var string
 	 */
-	public $cup_icon = '';
+	public string $cup_icon = '';
 	/**
 	 * Number of teams per group
 	 *
 	 * @var int
 	 */
-	public $teams_per_group;
+	public int $teams_per_group;
 	/**
 	 * Number of groups
 	 *
 	 * @var int
 	 */
-	public $num_groups;
+	public int $num_groups;
 	/**
 	 * Number of teams
 	 *
 	 * @var int
 	 */
-	public $num_teams;
+	public int $num_teams;
 	/**
 	 * Is consolation
 	 *
 	 * @var boolean
 	 */
-	public $is_consolation;
+	public bool $is_consolation;
 	/**
 	 * Number of seeds
 	 *
 	 * @var int
 	 */
-	public $num_seeds;
+	public int $num_seeds;
 	/**
 	 * Initialize Championship Mode
 	 *
 	 * @param object $league league object.
-	 * @param array  $settings array of settings.
+	 * @param array $settings array of settings.
 	 */
-	public function __construct( $league, $settings ) {
+	public function __construct( object $league, array $settings ) {
 		$this->league_id      = $league->id;
 		$this->is_consolation = false;
 		if ( ! empty( $league->event->primary_league ) && intval( $this->league_id ) !== intval( $league->event->primary_league ) ) {
@@ -147,7 +147,7 @@ final class Racketmanager_Championship extends RacketManager {
 		$this->teams_per_group = isset( $settings['teams_per_group'] ) ? intval( $settings['teams_per_group'] ) : 4;
 		$this->num_groups      = count( $this->groups );
 		if ( $this->num_groups > 0 ) {
-			$this->num_advance           = isset( $settings['num_advance'] ) ? $settings['num_advance'] : 0;
+			$this->num_advance           = $settings['num_advance'] ?? 0;
 			$this->num_teams_first_round = $this->num_groups * $this->num_advance;
 			$this->num_rounds            = log( $this->num_teams_first_round, 2 );
 		} else {
@@ -168,24 +168,14 @@ final class Racketmanager_Championship extends RacketManager {
 					)
 				);
 				if ( $outstanding_matches || $num_teams > $max_teams_first_round ) {
-					$this->num_teams             = 0;
-					$this->num_rounds            = $max_rounds;
-					$this->num_teams_first_round = pow( 2, $this->num_rounds );
-					$this->num_advance           = $this->num_teams_first_round;
+					$this->num_teams  = 0;
+					$this->num_rounds = $max_rounds;
 				} else {
-					$this->num_rounds            = ceil( log( $num_teams, 2 ) );
-					$this->num_teams_first_round = pow( 2, $this->num_rounds );
+					$this->num_rounds = ceil( log( $num_teams, 2 ) );
 				}
-				$this->num_advance = $this->num_teams_first_round;
+				$this->num_teams_first_round = pow( 2, $this->num_rounds );
+				$this->num_advance           = $this->num_teams_first_round;
 			} else {
-				$completed_matches = $league->get_matches(
-					array(
-						'final'            => true,
-						'count'            => true,
-						'season'           => $league->current_season['name'],
-						'reset_query_args' => true,
-					)
-				);
 				$this->num_advance = pow( 2, $league->current_season['num_match_days'] );
 				if ( $league->event->competition->is_active || $league->event->competition->is_complete ) {
 					$use_teams = true;
@@ -223,11 +213,11 @@ final class Racketmanager_Championship extends RacketManager {
 		while ( $num_teams <= $this->num_teams_first_round ) {
 			$finalkey                  = $this->get_final_key( $num_teams );
 			$num_matches               = $num_teams / 2;
-			$is_final                  = ( 'final' === $finalkey ) ? true : false;
+			$is_final                  = 'final' === $finalkey;
 			$this->finals[ $finalkey ] = array(
 				'key'         => $finalkey,
 				'is_final'    => $is_final,
-				'name'        => $this->get_final_name( $finalkey ),
+				'name'        => Racketmanager_Util::get_final_name( $finalkey ),
 				'num_matches' => $num_matches,
 				'num_teams'   => $num_teams,
 				'colspan'     => ( $this->num_teams_first_round / 2 >= 4 ) ? ceil( 4 / $num_matches ) : ceil( ( $this->num_teams_first_round / 2 ) / $num_matches ),
@@ -239,7 +229,7 @@ final class Racketmanager_Championship extends RacketManager {
 				$finalkey                  = 'third';
 				$this->finals[ $finalkey ] = array(
 					'key'         => $finalkey,
-					'name'        => $this->get_final_name( $finalkey ),
+					'name'        => Racketmanager_Util::get_final_name( $finalkey ),
 					'num_matches' => $num_matches,
 					'num_teams'   => $num_teams,
 					'colspan'     => ( $this->num_teams_first_round / 2 >= 4 ) ? ceil( 4 / $num_matches ) : ceil( ( $this->num_teams_first_round / 2 ) / $num_matches ),
@@ -262,23 +252,20 @@ final class Racketmanager_Championship extends RacketManager {
 	 *
 	 * @return array
 	 */
-	public function get_groups() {
+	public function get_groups(): array {
 		return $this->groups;
 	}
 
 	/**
 	 * Get final key
 	 *
-	 * @param int $round round name.
-	 * @return string
+	 * @param false|int $round round name.
+	 *
+	 * @return false|array|string
 	 */
-	public function get_final_keys( $round = false ) {
+	public function get_final_keys( false|int $round = false ): false|array|string {
 		if ( $round ) {
-			if ( isset( $this->keys[ $round ] ) ) {
-				return $this->keys[ $round ];
-			} else {
-				return false;
-			}
+			return $this->keys[$round] ?? false;
 		} else {
 			return $this->keys;
 		}
@@ -287,10 +274,11 @@ final class Racketmanager_Championship extends RacketManager {
 	/**
 	 * Get final data
 	 *
-	 * @param int $key final key.
+	 * @param false|int|string $key final key.
+	 *
 	 * @return mixed
 	 */
-	public function get_finals( $key = false ) {
+	public function get_finals( false|int|string $key = false ): mixed {
 		if ( 'current' === $key ) {
 			$key = $this->current_final;
 		}
@@ -300,42 +288,14 @@ final class Racketmanager_Championship extends RacketManager {
 			return $this->finals;
 		}
 	}
-
-	/**
-	 * Get name of final depending on number of teams
-	 *
-	 * @param string $key final key.
-	 * @return the name of the round
-	 */
-	public function get_final_name( $key = false ) {
-		if ( empty( $key ) ) {
-			$key = $this->current_final;
-		}
-		if ( ! empty( $key ) ) {
-			if ( 'final' === $key ) {
-				$round = __( 'Final', 'racketmanager' );
-			} elseif ( 'third' === $key ) {
-				$round = __( 'Third Place', 'racketmanager' );
-			} elseif ( 'semi' === $key ) {
-				$round = __( 'Semi Final', 'racketmanager' );
-			} elseif ( 'quarter' === $key ) {
-				$round = __( 'Quarter Final', 'racketmanager' );
-			} else {
-				$tmp = explode( '-', $key );
-				/* translators: %d: round number of teams in round */
-				$round = sprintf( __( 'Round of %d', 'racketmanager' ), $tmp[1] );
-			}
-			return $round;
-		}
-	}
-
 	/**
 	 * Get key of final depending on number of teams
 	 *
 	 * @param int $num_teams number of teams in round.
+	 *
 	 * @return string key
 	 */
-	private function get_final_key( $num_teams ) {
+	private function get_final_key( int $num_teams ): string {
 		if ( 2 === $num_teams ) {
 			$key = 'final';
 		} elseif ( 4 === $num_teams ) {
@@ -350,14 +310,10 @@ final class Racketmanager_Championship extends RacketManager {
 
 	/**
 	 * Set current final key
-	 *
-	 * @param string $final_round final reference.
 	 */
-	private function set_current_final( $final_round = false ) {
+	private function set_current_final(): void {
 		if ( isset( $_GET['final'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$key = sanitize_text_field( wp_unslash( $_GET['final'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		} elseif ( $final_round ) {
-			$key = htmlspecialchars( $final_round );
 		} else {
 			$key = $this->get_final_keys( 1 );
 		}
@@ -367,16 +323,16 @@ final class Racketmanager_Championship extends RacketManager {
 	/**
 	 * Get current final key
 	 *
-	 * @return string
+	 * @return array|string
 	 */
-	public function get_current_final_key() {
+	public function get_current_final_key(): array|string {
 		return $this->current_final;
 	}
 
 	/**
 	 * Set general names for final rounds
 	 */
-	private function set_final_teams() {
+	private function set_final_teams(): void {
 		// Final Rounds.
 		foreach ( $this->get_finals() as $k => $data ) {
 			$this->final_teams[ $k ] = array();
@@ -432,31 +388,28 @@ final class Racketmanager_Championship extends RacketManager {
 	 * Get final team names
 	 *
 	 * @param string $final_round final reference.
-	 * @return array
+	 *
+	 * @return array|null
 	 */
-	public function get_final_teams( $final_round ) {
-		if ( isset( $this->final_teams[ $final_round ] ) ) {
-			return $this->final_teams[ $final_round ];
-		} else {
-			return null;
-		}
+	public function get_final_teams( string $final_round ): ?array {
+		return $this->final_teams[$final_round] ?? null;
 	}
 
 	/**
 	 * Update final rounds results
 	 *
-	 * @param array  $matches array of matches.
-	 * @param array  $home_points home points.
-	 * @param array  $away_points away points.
-	 * @param array  $custom custom.
-	 * @param int    $round round.
+	 * @param array $matches array of matches.
+	 * @param array $home_points home points.
+	 * @param array $away_points away points.
+	 * @param array $custom custom.
+	 * @param int $round round.
 	 * @param string $season season.
 	 */
-	public function update_final_results( $matches, $home_points, $away_points, $custom, $round, $season ) {
+	public function update_final_results( array $matches, array $home_points, array $away_points, array $custom, int $round, string $season ): void {
 		global $racketmanager;
 
 		$league = get_league( $this->league_id );
-		$league->set_finals( true );
+		$league->set_finals();
 		$num_matches = $league->update_match_results( $matches, $home_points, $away_points, $custom, $season, $round );
 
 		if ( $round < $this->num_rounds ) {
@@ -469,7 +422,7 @@ final class Racketmanager_Championship extends RacketManager {
 	/**
 	 * Start final rounds
 	 */
-	private function start_final_rounds() {
+	private function start_final_rounds(): bool {
 		$updates = false;
 		if ( is_admin() && current_user_can( 'update_results' ) ) {
 			$league        = get_league( $this->league_id );
@@ -482,7 +435,7 @@ final class Racketmanager_Championship extends RacketManager {
 				'reset_query_args' => true,
 			);
 			// get first round matches.
-			if ( ! empty( $league->current_season['home_away'] ) && ( 'true' === $league->current_season['home_away'] || true === $league->current_season['home_away'] ) ) {
+			if ( $league->event->current_season['home_away'] ) {
 				$multiple_legs     = true;
 				$match_args['leg'] = 1;
 			}
@@ -493,11 +446,11 @@ final class Racketmanager_Championship extends RacketManager {
 				if ( '-1' === $match->home_team ) {
 					$home['team'] = -1;
 					$home_team    = array( 'id' => -1 );
-				} elseif ( strpos( $match->home_team, '_' ) !== false ) {
+				} elseif ( str_contains( $match->home_team, '_' ) ) {
 					$home      = explode( '_', $match->home_team );
 					$home      = array(
 						'rank'  => $home[0],
-						'group' => isset( $home[1] ) ? $home[1] : '',
+						'group' => $home[1] ?? '',
 					);
 					$home_team = $league->get_league_teams(
 						array(
@@ -520,11 +473,11 @@ final class Racketmanager_Championship extends RacketManager {
 				if ( '-1' === $match->away_team ) {
 					$away['team'] = -1;
 					$away_team    = array( 'id' => -1 );
-				} elseif ( strpos( $match->away_team, '_' ) !== false ) {
+				} elseif ( str_contains( $match->away_team, '_' ) ) {
 					$away      = explode( '_', $match->away_team );
 					$away      = array(
 						'rank'  => $away[0],
-						'group' => isset( $away[1] ) ? $away[1] : '',
+						'group' => $away[1] ?? '',
 					);
 					$away_team = $league->get_league_teams(
 						array(
@@ -560,7 +513,7 @@ final class Racketmanager_Championship extends RacketManager {
 						}
 					}
 				}
-				$this->update_final_results( $matches_list, array(), array(), array(), 1, $league->current_season );
+				$this->update_final_results( $matches_list, array(), array(), array(), 1, $league->current_season['name'] );
 			}
 		}
 		return $updates;
@@ -569,19 +522,20 @@ final class Racketmanager_Championship extends RacketManager {
 	 * Set teams for match function
 	 *
 	 * @param object $match match object.
-	 * @param object $home home team array.
-	 * @param object $away away team array.
+	 * @param string|null $home_id home team.
+	 * @param string|null $away_id away team.
+	 *
 	 * @return void
 	 */
-	private function set_teams( $match, $home, $away ) {
+	private function set_teams( object $match, ?string $home_id, ?string $away_id ): void {
 		$match = get_match( $match );
-		$match = $match->set_teams( $home, $away );
+		$match = $match->set_teams( $home_id, $away_id );
 		if ( is_numeric( $match->home_team ) && is_numeric( $match->away_team ) ) {
 			$match->notify_next_match_teams();
 		}
 		if ( ! empty( $match->linked_match ) ) {
 			$linked_match = get_match( $match->linked_match );
-			$linked_match = $linked_match->set_teams( $home, $away );
+			$linked_match = $linked_match->set_teams( $home_id, $away_id );
 			if ( is_numeric( $linked_match->home_team ) && is_numeric( $linked_match->away_team ) ) {
 				$linked_match->notify_next_match_teams();
 			}
@@ -592,10 +546,11 @@ final class Racketmanager_Championship extends RacketManager {
 	 *
 	 * @param string $current current round name.
 	 * @param string $next next round name.
-	 * @param int    $round round number.
+	 * @param int $round round number.
+	 *
 	 * @return void
 	 */
-	private function proceed( $current, $next, $round ) {
+	private function proceed( string $current, string $next, int $round ): void {
 		$legs       = false;
 		$league     = get_league( $this->league_id );
 		$match_args = array(
@@ -668,7 +623,7 @@ final class Racketmanager_Championship extends RacketManager {
 				}
 				if ( $update ) {
 					$this->set_teams( $match, $home_team, $away_team );
-					if ( isset( $league->event->primary_league ) && intval( $league->event->primary_league ) === intval( $league->id ) ) {
+					if ( ! empty( $league->event->primary_league ) && $league->event->primary_league === $league->id ) {
 						if ( $round < 3 ) {
 							if ( ! empty( $prev_home ) ) {
 								$this->set_consolation_team( $prev_home, $current, $league );
@@ -704,9 +659,10 @@ final class Racketmanager_Championship extends RacketManager {
 	 * @param object $match match.
 	 * @param string $round round name.
 	 * @param object $league league.
+	 *
 	 * @return void
 	 */
-	private function set_consolation_team( $match, $round, $league ) {
+	private function set_consolation_team( object $match, string $round, object $league ): void {
 		if ( empty( $match->loser_id ) ) {
 			return;
 		}
@@ -779,24 +735,23 @@ final class Racketmanager_Championship extends RacketManager {
 	/**
 	 * Handle administration panel
 	 *
-	 * @param object $league league object.
+	 * @param object|null $league league object.
 	 */
-	public function handle_admin_page( $league = null ) {
+	public function handle_admin_page( object $league = null ): string {
 		global $racketmanager, $tab;
 		$league = get_league( $league );
-		$season = $league->get_season();
 		if ( isset( $_POST['action'] ) ) {
 			$action = sanitize_text_field( wp_unslash( $_POST['action'] ) );
 			if ( 'startFinals' === $action ) {
 				if ( isset( $_POST['racketmanager_proceed_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_proceed_nonce'] ) ), 'racketmanager_championship_proceed' ) ) {
 					if ( current_user_can( 'update_results' ) ) {
-						$updates = $this->start_final_rounds( $league->id );
+						$updates = $this->start_final_rounds();
 						if ( $updates ) {
 							$racketmanager->set_message( __( 'First round started', 'racketmanager' ) );
 						} else {
 							$racketmanager->set_message( __( 'First round not started', 'racketmanager' ), true );
 						}
-						$tab = 'finalresults'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+						$tab = 'finalResults'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 					} else {
 						$racketmanager->set_message( __( 'You do not have sufficient permissions to access this page.', 'racketmanager' ), true );
 					}
@@ -807,10 +762,10 @@ final class Racketmanager_Championship extends RacketManager {
 			} elseif ( 'updateFinalResults' === $action ) {
 				if ( isset( $_POST['racketmanager_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_update-finals' ) ) {
 					if ( current_user_can( 'update_results' ) ) {
-						$custom      = isset( $_POST['custom'] ) ? $_POST['custom'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-						$matches     = isset( $_POST['matches'] ) ? $_POST['matches'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-						$home_points = isset( $_POST['home_points'] ) ? $_POST['home_points'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-						$away_points = isset( $_POST['away_points'] ) ? $_POST['away_points'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+						$custom      = $_POST['custom'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+						$matches     = $_POST['matches'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+						$home_points = $_POST['home_points'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+						$away_points = $_POST['away_points'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 						$round       = isset( $_POST['round'] ) ? intval( $_POST['round'] ) : null;
 						$season      = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
 						$this->update_final_results( $matches, $home_points, $away_points, $custom, $round, $season );
@@ -823,25 +778,17 @@ final class Racketmanager_Championship extends RacketManager {
 			}
 			$racketmanager->printMessage();
 		}
-		$class = 'alternate';
 		if ( count( $this->groups ) > 0 ) {
 			$league->set_group( $this->groups[0] );
 		}
 
-		$tab = 'finalresults'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		if ( empty( $tab ) && isset( $_REQUEST['league-tab'] ) ) {
-			$tab = sanitize_text_field( wp_unslash( $_REQUEST['league-tab'] ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-		}
-		if ( isset( $_REQUEST['final'] ) ) {
-			$final = sanitize_text_field( wp_unslash( $_REQUEST['final'] ) );
-		}
+		$tab = 'finalResults'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		return $tab;
 	}
 	/**
 	 * Display administration panel
 	 */
-	public function display_admin_page() {
+	public function display_admin_page(): void {
 		global $racketmanager, $league, $season, $tab;
 
 		if ( ! is_admin() || ! current_user_can( 'view_leagues' ) ) {

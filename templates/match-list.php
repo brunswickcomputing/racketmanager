@@ -7,7 +7,12 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
+/** @var object $league */
+/** @var string $season */
+/** @var string $home_team */
+/** @var string $away_team */
+/** @var array $matches */
+/** @var string $action */
 ?>
 	<div id="match-header" class="team-match-header module module--dark module--card row">
 		<div class="module__content">
@@ -20,7 +25,7 @@ global $racketmanager;
 						<?php
 						if ( ! empty( $round ) ) {
 							?>
-							<span><?php echo esc_html( $league->championship->get_final_name( $round ) ); ?></span>
+							<span><?php echo esc_html( Racketmanager_Util::get_final_name( $round ) ); ?></span>
 							<?php
 						} elseif ( ! empty( $match_day ) ) {
 							?>
@@ -79,7 +84,7 @@ global $racketmanager;
 					}
 					?>
 					<div class="match-row row justify-content-center">
-						<div class="col-6 col-md-2"><time datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, the_match_date() ) ); ?></time></div>
+						<div class="col-6 col-md-2"><time datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( get_match_date() ); ?></time></div>
 						<?php
 						if ( ! empty( $match->leg ) ) {
 							?>
@@ -98,4 +103,3 @@ global $racketmanager;
 			</div>
 		</div>
 	</div>
-</div>

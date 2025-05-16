@@ -44,7 +44,7 @@ namespace Racketmanager;
 			<?php require RACKETMANAGER_PATH . 'admin/championship/final-results.php'; ?>
 		</div>
 		<div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
-			<h2><?php echo esc_html( $league->championship->get_final_name() ); ?></h2>
+			<h2><?php echo esc_html( Racketmanager_Util::get_final_name() ); ?></h2>
 			<?php require RACKETMANAGER_PATH . 'admin/championship/finals.php'; ?>
 		</div>
 		<div class="tab-pane fade" id="preliminary" role="tabpanel" aria-labelledby="preliminary-tab">

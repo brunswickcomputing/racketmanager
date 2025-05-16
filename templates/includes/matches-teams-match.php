@@ -7,6 +7,10 @@
 
 namespace RacketManager;
 
+/** @var object $match */
+/** @var string $match_status_class */
+/** @var string $match_status_text */
+/** @var string $match_link */
 global $racketmanager;
 $match_pending = false;
 if ( empty( $match->winner_id ) ) {
@@ -20,16 +24,12 @@ if ( empty( $match->winner_id ) ) {
 		<div class="match__header match__header--up">
 			<div class="match__header-title">
 				<div class="match__header-title-main">
-					<span>
-						<?php echo esc_html( $match->league->title ); ?>
-					</span>
+					<span><?php echo esc_html( $match->league->title ); ?></span>
 				</div>
 			</div>
 		</div>
 		<?php
 	}
-	?>
-	<?php
 	if ( is_numeric( $match->home_team ) && $match->home_team >= 1 && is_numeric( $match->away_team ) && $match->away_team >= 1 && ! empty( $match_link ) ) {
 		?>
 		<a class="team-match__wrapper" href="<?php echo esc_html( $match_link ); ?>">
@@ -45,7 +45,7 @@ if ( empty( $match->winner_id ) ) {
 			<?php
 			if ( ! empty( $match->final_round ) ) {
 				?>
-				<span><?php echo esc_html( $match->league->championship->get_final_name( $match->final_round ) ); ?></span>
+				<span><?php echo esc_html( Racketmanager_Util::get_final_name( $match->final_round ) ); ?></span>
 				<?php
 			} elseif ( ! empty( $match->match_day ) ) {
 				?>
@@ -57,8 +57,6 @@ if ( empty( $match->winner_id ) ) {
 				<span>&nbsp;&#8226&nbsp;<?php echo esc_html__( 'Leg', 'racketmanager' ) . ' ' . esc_html( $match->leg ); ?></span>
 				<?php
 			}
-			?>
-			<?php
 			if ( empty( $by_date ) ) {
 				?>
 				&nbsp;&#8226;&nbsp;
@@ -77,8 +75,6 @@ if ( empty( $match->winner_id ) ) {
 			<span class="match__message match-warning"><?php echo esc_html( $match_message ); ?></span>
 			<?php
 		}
-		?>
-		<?php
 		if ( ! $match_pending && ! empty( $highlight_match ) ) {
 			?>
 			<span class="match__status <?php echo esc_attr( $match_status_class ); ?>"><?php echo esc_attr( $match_status_text ); ?></span>
@@ -98,9 +94,7 @@ if ( empty( $match->winner_id ) ) {
 							<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="<?php echo esc_attr( $title_text ); ?>">
 							<?php
 						}
-						?>
-						<?php echo esc_html( $match->teams['home']->title ); ?>
-						<?php
+						echo esc_html( $match->teams['home']->title );
 						if ( ! empty( $match->teams['home']->is_withdrawn ) ) {
 							?>
 							</s>
@@ -140,10 +134,8 @@ if ( empty( $match->winner_id ) ) {
 							<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
 							<?php
 						}
-						?>
-						<?php echo esc_html( $match->teams['away']->title ); ?>
-						<?php
-						if ( ! empty( $match->teams['away']->is_withdrawn ) ) {
+						echo esc_html( $match->teams['away']->title );
+                        if ( ! empty( $match->teams['away']->is_withdrawn ) ) {
 							?>
 							</s>
 							<?php
@@ -164,8 +156,6 @@ if ( empty( $match->winner_id ) ) {
 		</div>
 		<?php
 	}
-	?>
-	<?php
 	if ( is_numeric( $match->home_team ) && $match->home_team >= 1 && is_numeric( $match->away_team ) && $match->away_team >= 1 && ! empty( $user_can_update ) ) {
 		$match_link_result = $match_link . 'result/';
 		?>

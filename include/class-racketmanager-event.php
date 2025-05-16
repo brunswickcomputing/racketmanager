@@ -164,9 +164,9 @@ class Racketmanager_Event {
 	/**
 	 * Num_rubbers
 	 *
-	 * @var string|int
+	 * @var int|null
 	 */
-	public string|int $num_rubbers = '';
+	public ?int $num_rubbers = 0;
 
 	/**
 	 * Num_sets
@@ -206,9 +206,9 @@ class Racketmanager_Event {
 	/**
 	 * Leagues
 	 *
-	 * @var string|array
+	 * @var array|string
 	 */
-	public string|array $leagues = '';
+	public array|string $leagues = array();
 
 	/**
 	 * Settings keys
@@ -239,21 +239,21 @@ class Racketmanager_Event {
 	/**
 	 * Groups
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public string $groups;
+	public ?string $groups = null;
 	/**
 	 * Teams per group
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public int $teams_per_group;
+	public ?int $teams_per_group = null;
 	/**
 	 * Number to advance
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public int $num_advance;
+	public ?int $num_advance = null;
 	/**
 	 * Match place 3
 	 *
@@ -299,21 +299,21 @@ class Racketmanager_Event {
 	/**
 	 * Age limit
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public string $age_limit;
+	public ?string $age_limit = null;
 	/**
 	 * Age offset
 	 *
-	 * @var int
+	 * @var string|null
 	 */
-	public int $age_offset;
+	public ?string $age_offset = null;
 	/**
 	 * Reverse rubbers
 	 *
 	 * @var string|boolean|null
 	 */
-	public string|bool|null $reverse_rubbers;
+	public string|bool|null $reverse_rubbers = false;
 	/**
 	 * Scoring
 	 *
@@ -325,7 +325,7 @@ class Racketmanager_Event {
 	 *
 	 * @var int
 	 */
-	public int $offset;
+	public int $offset = 0;
 	/**
 	 * Match days allowed
 	 *
@@ -338,6 +338,12 @@ class Racketmanager_Event {
 	 * @var array
 	 */
 	public array $entries;
+	/**
+	 * Num entries
+	 *
+	 * @var int
+	 */
+	public int $num_entries;
 	/**
 	 * Teams
 	 *
@@ -413,16 +419,16 @@ class Racketmanager_Event {
 	/**
 	 * Config
 	 *
-	 * @var array
+	 * @var object
 	 */
-	public array $config;
+	public object $config;
 	/**
 	 * Retrieve event instance
 	 *
-	 * @param int $event_id event id.
+	 * @param int|string $event_id event id.
 	 * @param string $search_term search.
 	 */
-	public static function get_instance(int $event_id, string $search_term = 'id' ) {
+	public static function get_instance(int|string $event_id, string $search_term = 'id' ) {
 		global $wpdb;
 		$search = match ($search_term) {
 			'name' => $wpdb->prepare(
@@ -449,17 +455,7 @@ class Racketmanager_Event {
 			}
 			$event->settings = (array) maybe_unserialize( $event->settings );
 			$event           = (object) ( $event->settings + (array) $event );
-			// check if specific sports class exists.
-			if ( ! isset( $event->sport ) ) {
-				$event->sport = '';
-			}
-			$instance = 'Racketmanager\Racketmanager_Event_' . ucfirst( $event->sport );
-			if ( class_exists( $instance ) ) {
-				$event = new $instance( $event );
-			} else {
-				$event = new Racketmanager_Event( $event );
-			}
-
+			$event           = new Racketmanager_Event( $event );
 			wp_cache_set( $event->id, $event, 'events' );
 		}
 
@@ -485,6 +481,20 @@ class Racketmanager_Event {
 			if ( 'standings' === $key ) {
 				$this->$key = array_merge( $this->$key, $value );
 			} else {
+				if ( empty( $value ) ) {
+					$type = gettype( $this->$key );
+					switch( $type ) {
+						case 'integer':
+							$value = 0;
+							break;
+						case 'NULL':
+						case 'string':
+							$value = null;
+							break;
+						default:
+							break;
+					}
+				}
 				$this->$key = $value;
 			}
 		}
@@ -648,10 +658,10 @@ class Racketmanager_Event {
 	/**
 	 * Set current season
 	 *
-	 * @param false|mixed $season season.
+	 * @param string|null $season season.
 	 * @param boolean $force_overwrite force overwrite.
 	 */
-	public function set_season(false|string $season = false, bool $force_overwrite = false ): void {
+	public function set_season( string $season = null, bool $force_overwrite = false ): void {
 		global $wp;
 		if ( ! empty( $season ) && true === $force_overwrite ) {
 			$data = $this->seasons[ $season ];
@@ -769,7 +779,7 @@ class Racketmanager_Event {
 	 * @param array $args search arguments.
 	 * @return array|int
 	 */
-	public function get_leagues(array $args = array() ): array|int {
+	public function get_leagues( array $args = array() ): array|int {
 		global $wpdb;
 
 		$defaults    = array(
@@ -1061,9 +1071,9 @@ class Racketmanager_Event {
 	 * Get specific team details from database
 	 *
 	 * @param int $team_id team id.
-	 * @return array database results
+	 * @return object|null database results
 	 */
-	public function get_team_info(int $team_id ): array {
+	public function get_team_info(int $team_id ): ?object {
 		global $wpdb;
 
 		$sql = "SELECT `captain`, `match_day`, `match_time` FROM $wpdb->racketmanager_team_events WHERE `event_id` = " . $this->id . ' AND `team_id` = ' . $team_id;
@@ -1391,10 +1401,10 @@ class Racketmanager_Event {
 	/**
 	 * Get teams from database
 	 *
-	 * @param array|string $args search arguments.
+	 * @param array $args search arguments.
 	 * @return array|int
 	 */
-	public function get_teams(array|string $args = array() ): array|int {
+	public function get_teams( array $args = array() ): array|int {
 		global $wpdb;
 
 		$defaults = array(
@@ -1506,7 +1516,7 @@ class Racketmanager_Event {
 		foreach ( $event_teams as $i => $event_team ) {
 			$event_team->roster = maybe_unserialize( $event_team->roster );
 			$event_team->club   = get_club( $event_team->club_id );
-			if (str_contains($event_team->name, '_')) {
+			if ( str_contains( $event_team->name, '_' ) ) {
 				$team_name  = null;
 				$name_array = explode( '_', $event_team->name );
 				if ( '1' === $name_array[0] ) {
@@ -1530,9 +1540,9 @@ class Racketmanager_Event {
 				$team                = get_team( $event_team->team_id );
 				$event_team->players = $team->players;
 				$p                   = 1;
-				foreach ( $event_team->players as $player ) {
-					$event_team->player[ $p ]    = $player->fullname;
-					$event_team->player_id[ $p ] = $player->id;
+				foreach ( $team->players as $team_player ) {
+					$event_team->player[ $p ]    = $team_player->fullname;
+					$event_team->player_id[ $p ] = $team_player->id;
 					++$p;
 				}
 			} elseif ( $event_team->club ) {
@@ -1558,9 +1568,9 @@ class Racketmanager_Event {
 	 * Get players for event
 	 *
 	 * @param array|string $args search arguments.
-	 * @return array
+	 * @return array|int
 	 */
-	public function get_players(array|string $args = array() ): array {
+	public function get_players(array|string $args = array() ): array|int {
 		global $wpdb;
 
 		$defaults = array(
@@ -1980,7 +1990,7 @@ class Racketmanager_Event {
 	 *
 	 * @param array $season season data.
 	 */
-	public function send_constitution(array $season ): void {
+	public function send_constitution( array $season ): void {
 		global $racketmanager;
 		$email_address                 = $racketmanager->get_confirmation_email( $this->competition->type );
 		$organisation                  = $racketmanager->site_name;
@@ -1999,14 +2009,10 @@ class Racketmanager_Event {
 			)
 		);
 		$subject                       = $organisation . ' - ' . $this->name . ' ' . $season['name'] . ' - Constitution';
-		if ( 'live' === $season['status'] ) {
-			foreach ( $clubs as $club ) {
-				if ( ! empty( $club->match_secretary_email ) ) {
-					$headers[] = 'bcc: ' . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
-				}
+		foreach ( $clubs as $club ) {
+			if ( ! empty( $club->match_secretary_email ) ) {
+				$headers[] = 'bcc: ' . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
 			}
-		} else {
-			$subject .= ' - ' . __( 'Draft', 'racketmanager' );
 		}
 		wp_mail( $email_address, $subject, $email_message, $headers );
 	}
@@ -2106,12 +2112,15 @@ class Racketmanager_Event {
 			$this->update_seasons( $seasons );
 		}
 	}
+
 	/**
 	 * Add league
 	 *
-	 * @param string $league_title league title.
+	 * @param string|null $league_title league title.
+	 *
+	 * @return false|int
 	 */
-	public function add_league(string $league_title ): false|int {
+	public function add_league( string $league_title = null ): false|int {
 		if ( empty( $league_title ) ) {
 			$league_count = $this->has_leagues();
 			++$league_count;

@@ -120,7 +120,7 @@ global $racketmanager;
     <div class="row gx-3 mb-3 align-items-center">
         <div class="col-auto">
             <label>
-                <select name="action" size="1">
+                <select name="delMatchOption" size="1">
                     <option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
                     <option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
                 </select>

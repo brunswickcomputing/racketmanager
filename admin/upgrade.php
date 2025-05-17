@@ -1459,6 +1459,16 @@ function racketmanager_upgrade() {
 		echo esc_html__( 'starting 8.46.0 upgrade', 'racketmanager' ) . "<br />\n";
 		$wpdb->query( "ALTER TABLE {$wpdb->racketmanager_matches} CHANGE `comments` `comments` LONGTEXT NULL " );
 	}
+	if ( version_compare( $installed, '8.47.0', '<' ) ) {
+		echo esc_html__( 'starting 8.47.0 upgrade', 'racketmanager' ) . "<br />\n";
+		$tables = $wpdb->get_results( "SELECT `id`, `custom` FROM {$wpdb->racketmanager_table} WHERE `custom` LIKE '%i:0;s:0:\"\";%'");
+		foreach ( $tables as $table ) {
+            $custom = unserialize( $table->custom );
+            unset( $custom[0] );
+            $table->custom = serialize( $custom );
+			$wpdb->query( "UPDATE {$wpdb->racketmanager_table} SET `custom` = '" . $table->custom . "' WHERE `id` = " . $table->id );
+		}
+	}
 	/*
 	* Update version and dbversion
 	*/
@@ -1481,16 +1491,16 @@ function racketmanager_upgrade_page() {
 
 	if ( isset( $_GET['upgrade'] ) && 'now' === $_GET['upgrade'] ) {
 		racketmanager_do_upgrade( $filepath );
-		return;
-	}
-	?>
-	<div class="wrap">
-		<h2><?php _e( 'Upgrade RacketManager', 'racketmanager' ); ?></h2>
-		<p><?php _e( 'Your database for RacketManager is out-of-date, and must be upgraded before you can continue.', 'racketmanager' ); ?>
-		<p><?php _e( 'The upgrade process may take a while, so please be patient.', 'racketmanager' ); ?></p>
-		<h3><a class="button" href="<?php echo $filepath; ?>&amp;upgrade=now"><?php _e( 'Start upgrade now', 'racketmanager' ); ?>...</a></h3>
-	</div>
-	<?php
+	} else {
+		?>
+        <div class="wrap">
+            <h2><?php _e( 'Upgrade RacketManager', 'racketmanager' ); ?></h2>
+            <p><?php _e( 'Your database for RacketManager is out-of-date, and must be upgraded before you can continue.', 'racketmanager' ); ?>
+            <p><?php _e( 'The upgrade process may take a while, so please be patient.', 'racketmanager' ); ?></p>
+            <h3><a class="button" href="<?php echo $filepath; ?>&amp;upgrade=now"><?php _e( 'Start upgrade now', 'racketmanager' ); ?>...</a></h3>
+        </div>
+		<?php
+    }
 }
 
 /**

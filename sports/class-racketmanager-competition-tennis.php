@@ -17,22 +17,23 @@ class Racketmanager_Competition_Tennis extends Racketmanager_Competition {
 	 *
 	 * @var string
 	 */
-	public $sport = 'tennis';
+	public string $sport = 'tennis';
 
 	/**
 	 * Default scoring
 	 *
-	 * @var int
+	 * @var string|null
 	 */
-	public $scoring = 'TB';
+	public ?string $scoring = 'TB';
 
 	/**
 	 * Load specific settings
 	 *
 	 * @param object $competition competition.
+	 *
 	 * @return void
 	 */
-	public function __construct( $competition ) {
+	public function __construct( object $competition ) {
 		parent::__construct( $competition );
 		add_filter( 'racketmanager_point_rules_list', array( &$this, 'get_point_rule_list' ) );
 		add_filter( 'racketmanager_point_rules', array( &$this, 'get_point_rules' ) );

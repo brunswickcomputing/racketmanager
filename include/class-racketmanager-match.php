@@ -154,18 +154,6 @@ final class Racketmanager_Match {
 	 */
 	public ?string $set_score;
 	/**
-	 * Previous round set score for home team
-	 *
-	 * @var string
-	 */
-	public string $home_prev_round_set_score;
-	/**
-	 * Previous round set score for away team
-	 *
-	 * @var string
-	 */
-	public string $away_prev_round_set_score;
-	/**
 	 * Confirmed status display value
 	 *
 	 * @var string|int|null
@@ -302,7 +290,7 @@ final class Racketmanager_Match {
 	 *
 	 * @var int|null
 	 */
-	public ?int $status;
+	public ?int $status = null;
 	/**
 	 * Linked match variable
 	 *
@@ -1867,41 +1855,6 @@ final class Racketmanager_Match {
 		wp_cache_set( $this->id, $this, 'matches' );
 	}
 	/**
-	 * Get previous round set score function
-	 *
-	 * @param string $team home or away team.
-	 *
-	 * @return string|null previous round set score.
-	 */
-	public function get_prev_round_set_score( string $team ): ?string {
-		$prev_round_set_score = null;
-		if ( $this->league->is_championship ) {
-			$current_round = $this->league->championship->get_finals( $this->final_round );
-			$this->round   = $current_round;
-			$prev_round    = $current_round['round'] - 1;
-			if ( $prev_round ) {
-				$prev_round_name = $this->league->championship->get_final_keys( $prev_round );
-				$team_id         = $this->teams[ $team ]->id;
-				if ( '-1' !== $team_id ) {
-					$prev_matches = $this->league->get_matches(
-						array(
-							'season'           => $this->season,
-							'team_id'          => $team_id,
-							'final'            => $prev_round_name,
-							'winner_id'        => $team_id,
-							'reset_query_args' => true,
-						)
-					);
-					if ( $prev_matches ) {
-						$prev_round_set_score = $prev_matches[0]->set_score;
-					}
-				}
-			}
-		}
-
-		return $prev_round_set_score;
-	}
-	/**
 	 * Get to email addresses function
 	 *
 	 * @return array
@@ -1957,12 +1910,12 @@ final class Racketmanager_Match {
 		} elseif ( 'cup' === $this->league->event->competition->type ) {
 			$message_args['competition'] = $this->league->event->competition->name;
 		}
-		$round_name                      = $this->league->championship->finals[ $this->final_round ]['name'];
-		$message_args['round']           = $round_name;
-		$message_args['competitiontype'] = $this->league->event->competition->type;
-		$message_args['emailfrom']       = $email_from;
-		$email_message                   = racketmanager_match_notification( $this->id, $message_args );
-		$subject                         = __( 'Match Details', 'racketmanager' ) . ' - ' . $round_name;
+		$round_name                       = $this->league->championship->finals[ $this->final_round ]['name'];
+		$message_args['round']            = $round_name;
+		$message_args['competition_type'] = $this->league->event->competition->type;
+		$message_args['emailfrom']        = $email_from;
+		$email_message                    = racketmanager_match_notification( $this->id, $message_args );
+		$subject                          = __( 'Match Details', 'racketmanager' ) . ' - ' . $round_name;
 		if ( ! empty( $this->leg ) ) {
 			$subject .= ' - ' . __( 'Leg', 'racketmanager' ) . ' ' . $this->leg;
 		}
@@ -2267,11 +2220,11 @@ final class Racketmanager_Match {
 		} else {
 			$round_name = null;
 		}
-		$message_args['round']           = $round_name;
-		$message_args['new_date']        = $this->date;
-		$message_args['original_date']   = $this->date_original;
-		$message_args['competitiontype'] = $this->league->event->competition->type;
-		$message_args['emailfrom']       = $email_from;
+		$message_args['round']            = $round_name;
+		$message_args['new_date']         = $this->date;
+		$message_args['original_date']    = $this->date_original;
+		$message_args['competition_type'] = $this->league->event->competition->type;
+		$message_args['emailfrom']        = $email_from;
 		if ( $this->league->event->competition->is_tournament && $this->date > $this->date_original ) {
 			$message_args['delay'] = true;
 			$delay                 = true;

@@ -9,8 +9,6 @@
 
 namespace Racketmanager;
 
-use stdClass;
-
 /**
  * Class to implement shortcode functions for emails
  */
@@ -19,11 +17,11 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 	 * Initialize shortcodes
 	 */
 	public function __construct() {
-		add_shortcode( 'matchnotification', array( &$this, 'showMatchNotification' ) );
-		add_shortcode( 'resultnotification', array( &$this, 'showResultNotification' ) );
-		add_shortcode( 'resultnotificationcaptain', array( &$this, 'showCaptainResultNotification' ) );
-		add_shortcode( 'resultoutstandingnotification', array( &$this, 'show_result_outstanding_notification' ) );
-		add_shortcode( 'clubplayernotification', array( &$this, 'showClubPlayerNotification' ) );
+		add_shortcode( 'match-notification', array( &$this, 'show_match_notification' ) );
+		add_shortcode( 'result-notification', array( &$this, 'show_result_notification' ) );
+		add_shortcode( 'result-notification-captain', array( &$this, 'show_captain_result_notification' ) );
+		add_shortcode( 'result-outstanding-notification', array( &$this, 'show_result_outstanding_notification' ) );
+		add_shortcode( 'club-player-notification', array( &$this, 'show_club_player_notification' ) );
 		add_shortcode( 'match_date_change_notification', array( &$this, 'show_match_date_change_notification' ) );
 		add_shortcode( 'withdrawn-team', array( &$this, 'show_team_withdrawn' ) );
 		add_shortcode( 'event-constitution', array( &$this, 'show_event_constitution' ) );
@@ -31,12 +29,13 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 	/**
 	 * Function to show match notification
 	 *
-	 *    [matchnotification id=ID template=X]
+	 *    [match-notification id=ID template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 *
+	 * @return string content
 	 */
-	public function showMatchNotification( $atts ) {
+	public function show_match_notification( array $atts ): string {
 		global $racketmanager;
 		$args            = shortcode_atts(
 			array(
@@ -46,19 +45,19 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 				'competition'     => '',
 				'emailfrom'       => '',
 				'round'           => '',
-				'competitiontype' => '',
+				'competition_type' => '',
 			),
 			$atts
 		);
-		$match           = $args['match'];
-		$template        = $args['template'];
-		$tournament      = $args['tournament'];
-		$competition     = $args['competition'];
-		$email_from      = $args['emailfrom'];
-		$round           = $args['round'];
-		$competitiontype = $args['competitiontype'];
-		$organisation    = $racketmanager->site_name;
-		$match           = get_match( $match );
+		$match            = $args['match'];
+		$template         = $args['template'];
+		$tournament       = $args['tournament'];
+		$competition      = $args['competition'];
+		$email_from       = $args['emailfrom'];
+		$round            = $args['round'];
+		$competition_type = $args['competition_type'];
+		$organisation     = $racketmanager->site_name;
+		$match            = get_match( $match );
 
 		$teams = array(
 			'home' => new \stdClass(),
@@ -70,8 +69,8 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 		$match_link = '';
 		$cup_link   = '';
 		$draw_link  = '';
-		$rules_link = $racketmanager->site_url . '/rules/' . $competitiontype . '-rules/';
-		if ( 'tournament' === $competitiontype ) {
+		$rules_link = $racketmanager->site_url . '/rules/' . $competition_type . '-rules/';
+		if ( 'tournament' === $competition_type ) {
 			$tournament       = get_tournament( $tournament );
 			$tournament->link = '<a href="' . $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/">' . $tournament->name . '</a>';
 			$draw_link        = '<a href="' . $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $match->league->event->name ) . '/">' . $match->league->event->name . '</a>';
@@ -87,7 +86,7 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 				$home_dtls['title']   = 'Home Player';
 				$away_dtls['title']   = 'Away Player';
 			}
-		} elseif ( 'cup' === $competitiontype ) {
+		} elseif ( 'cup' === $competition_type ) {
 			$cup_link   = '<a href="' . $racketmanager->site_url . '/cups/' . seo_url( $match->league->title ) . '/' . $match->season . '/">' . $match->league->title . '</a>';
 			$match_link = $racketmanager->site_url . $match->link;
 			if ( ! empty( $match->leg ) ) {
@@ -102,16 +101,14 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 		if ( 'home' === $match->host ) {
 			$team_1     = 'home';
 			$opponent_1 = 'away';
-			$team_2     = 'home';
-			$opponent_2 = 'away';
 		} else {
 			$team_1     = 'away';
 			$opponent_1 = 'home';
-			$team_2     = 'home';
-			$opponent_2 = 'away';
 		}
-			$teams[ $team_1 ]->name     = $match->teams[ $team_2 ]->title;
-			$teams[ $opponent_1 ]->name = $match->teams[ $opponent_2 ]->title;
+		$team_2                     = 'home';
+		$opponent_2                 = 'away';
+		$teams[ $team_1 ]->name     = $match->teams[ $team_2 ]->title;
+		$teams[ $opponent_1 ]->name = $match->teams[ $opponent_2 ]->title;
 		if ( ! empty( $match->teams[ $team_2 ]->club->shortcode ) ) {
 			$teams[ $team_1 ]->club = $match->teams[ $team_2 ]->club->shortcode;
 		} else {
@@ -168,12 +165,13 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 	/**
 	 * Function to show result notification
 	 *
-	 *    [resultnotification id=ID template=X]
+	 *    [result-notification id=ID template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 *
+	 * @return string content
 	 */
-	public function showResultNotification( $atts ) {
+	public function show_result_notification( array $atts ): string {
 		global $racketmanager;
 		$args       = shortcode_atts(
 			array(
@@ -181,7 +179,6 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 				'template'         => '',
 				'league'           => false,
 				'round'            => false,
-				'organisationname' => false,
 				'complete'         => false,
 				'errors'           => false,
 				'match_day'        => '',
@@ -229,12 +226,13 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 	/**
 	 * Function to show result notification
 	 *
-	 *    [resultnotificationcaptain id=ID template=X]
+	 *    [result-notification-captain id=ID template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 *
+	 * @return string content
 	 */
-	public function showCaptainResultNotification( $atts ) {
+	public function show_captain_result_notification( array $atts ): string {
 		global $racketmanager;
 
 		$args        = shortcode_atts(
@@ -288,12 +286,13 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 	/**
 	 * Function to show result outstanding notification
 	 *
-	 *    [resultoutstandingnotification id=ID template=X]
+	 *    [result-outstanding-notification id=ID template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 *
+	 * @return string content
 	 */
-	public function show_result_outstanding_notification( $atts ) {
+	public function show_result_outstanding_notification( array $atts ): string {
 		global $racketmanager;
 
 		$args        = shortcode_atts(
@@ -345,12 +344,13 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 	/**
 	 * Function to show club player notification
 	 *
-	 *    [clubplayernotification club=club template=X]
+	 *    [club-player-notification club=club template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 *
+	 * @return string content
 	 */
-	public function showClubPlayerNotification( $atts ) {
+	public function show_club_player_notification( array $atts ): string {
 		global $racketmanager;
 
 		$args       = shortcode_atts(
@@ -392,12 +392,13 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 	/**
 	 * Function to show match date change notification
 	 *
-	 *    [matchnotification id=ID template=X]
+	 *    [match-notification id=ID template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 *
+	 * @return string content
 	 */
-	public function show_match_date_change_notification( $atts ) {
+	public function show_match_date_change_notification( array $atts ): string {
 		global $racketmanager;
 		$args            = shortcode_atts(
 			array(
@@ -407,7 +408,7 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 				'competition'     => '',
 				'emailfrom'       => '',
 				'round'           => '',
-				'competitiontype' => '',
+				'competition_type' => '',
 				'original_date'   => '',
 				'new_date'        => '',
 				'delay'           => false,
@@ -415,36 +416,35 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 			),
 			$atts
 		);
-		$match           = $args['match'];
-		$template        = $args['template'];
-		$tournament      = $args['tournament'];
-		$competition     = $args['competition'];
-		$email_from      = $args['emailfrom'];
-		$round           = $args['round'];
-		$competitiontype = $args['competitiontype'];
-		$original_date   = $args['original_date'];
-		$new_date        = $args['new_date'];
-		$delay           = $args['delay'];
-		$email_subject   = $args['email_subject'];
-		$organisation    = $racketmanager->site_name;
-		$match           = get_match( $match );
-
+		$match            = $args['match'];
+		$template         = $args['template'];
+		$tournament       = $args['tournament'];
+		$competition      = $args['competition'];
+		$email_from       = $args['emailfrom'];
+		$round            = $args['round'];
+		$competition_type = $args['competition_type'];
+		$original_date    = $args['original_date'];
+		$new_date         = $args['new_date'];
+		$delay            = $args['delay'];
+		$email_subject    = $args['email_subject'];
+		$organisation     = $racketmanager->site_name;
+		$match            = get_match( $match );
 		$match_link       = '';
 		$competition_link = '';
 		$draw_link        = '';
-		$rules_link       = $racketmanager->site_url . '/rules/' . $competitiontype . '-rules/';
-		if ( 'tournament' === $competitiontype ) {
+		$rules_link       = $racketmanager->site_url . '/rules/' . $competition_type . '-rules/';
+		if ( 'tournament' === $competition_type ) {
 			$tournament       = get_tournament( $tournament );
 			$tournament->link = '<a href="' . $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/">' . $tournament->name . '</a>';
 			$draw_link        = '<a href="' . $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $match->league->event->name ) . '/">' . $match->league->event->name . '</a>';
 			$match_link       = $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/match/' . seo_url( $match->league->title ) . '/' . seo_url( $match->teams['home']->title ) . '-vs-' . seo_url( $match->teams['away']->title ) . '/' . $match->id . '/';
-		} elseif ( 'cup' === $competitiontype ) {
+		} elseif ( 'cup' === $competition_type ) {
 			$competition_link = '<a href="' . $racketmanager->site_url . '/cups/' . seo_url( $match->league->title ) . '/' . $match->season . '/">' . $match->league->title . '</a>';
 			$match_link       = $racketmanager->site_url . $match->link;
 			if ( ! empty( $match->leg ) ) {
 				$match_link .= 'leg-' . $match->leg . '/';
 			}
-		} elseif ( 'league' === $competitiontype ) {
+		} elseif ( 'league' === $competition_type ) {
 			$competition_link = '<a href="' . $racketmanager->site_url . '/leagues/' . seo_url( $match->league->event->name ) . '/' . $match->season . '/">' . $match->league->title . '</a>';
 			$match_link       = $racketmanager->site_url . $match->link;
 		}
@@ -478,9 +478,10 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 	 *    [team-withdrawn]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 *
+	 * @return string content
 	 */
-	public function show_team_withdrawn( $atts ) {
+	public function show_team_withdrawn( array $atts ): string {
 		global $racketmanager;
 
 		$args      = shortcode_atts(
@@ -554,9 +555,10 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 	 *    [event-constitution]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 *
+	 * @return string content
 	 */
-	public function show_event_constitution( $atts ) {
+	public function show_event_constitution( array $atts ): string {
 		global $racketmanager;
 		$args     = shortcode_atts(
 			array(

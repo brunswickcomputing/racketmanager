@@ -183,8 +183,6 @@ function have_teams() {
 		// End of Loop.
 		$league->current_team = -1;
 	}
-
-	$league->in_the_team_loop = false;
 	return false;
 }
 	/**
@@ -192,9 +190,6 @@ function have_teams() {
 	 */
 function the_team() {
 	global $league, $team;
-
-	$league->in_the_team_loop = true;
-
 	// Increment team count.
 	++$league->current_team;
 	$team = $league->teams[ $league->current_team ];
@@ -456,8 +451,6 @@ function have_matches() {
 		// End of Loop.
 		$league->current_match = -1;
 	}
-
-	$league->in_the_match_loop = false;
 	return false;
 }
 	/**
@@ -465,8 +458,6 @@ function have_matches() {
 	 */
 function the_match() {
 	global $league, $match;
-
-	$league->in_the_match_loop = true;
 	// Increment dataset count.
 	++$league->current_match;
 	$match = $league->matches[ $league->current_match ];
@@ -537,21 +528,28 @@ function get_match_day() {
 function the_match_day() {
 	echo get_match_day();
 }
-
+	/**
+	 * Get Match date
+	 *
+	 * @return string
+	 * @category template-tags
+	 */
+	function get_match_date( $format = '' ) {
+		global $match;
+		if ( $format ) {
+			return mysql2date( $format, $match->date );
+		} else {
+			return $match->match_date;
+		}
+	}
 	/**
 	 * Print Match date
 	 *
 	 * @param string $format format.
 	 * @category template-tags
 	 */
-function the_match_date( $format = '' ) {
-	global $match;
-
-	if ( $format ) {
-		echo mysql2date( $format, $match->date );
-	} else {
-		echo $match->match_date;
-	}
+function the_match_date( $format = '' ): void {
+	echo get_match_date( $format );
 }
 
 	/**
@@ -772,7 +770,6 @@ function racketmanager_league_matches( $league_id, $args = array() ) {
 		'group'                    => false,
 		'order'                    => false,
 		'show_match_day_selection' => '',
-		'show_team_selection'      => '',
 		'time'                     => '',
 		'team'                     => 0,
 		'home_only'                => 'false',
@@ -950,7 +947,7 @@ function racketmanager_results( $club_id, $args = array() ) {
 function racketmanager_match_notification( $match_id, $args = array() ) {
 	$args['match'] = $match_id;
 
-	$shortcode = '[matchnotification';
+	$shortcode = '[match-notification';
 	foreach ( $args as $key => $value ) {
 		$shortcode .= ' ' . $key . "='" . $value . "'";
 	}
@@ -970,7 +967,7 @@ function racketmanager_result_notification( $match_id, $args = array() ) {
 
 	$args['match'] = $match_id;
 
-	$shortcode = '[resultnotification';
+	$shortcode = '[result-notification';
 	foreach ( $args as $key => $value ) {
 		$shortcode .= ' ' . $key . "='" . $value . "'";
 	}
@@ -1006,7 +1003,7 @@ function racketmanager_captain_result_notification( $match_id, $args = array() )
 
 	$args['match'] = $match_id;
 
-	$shortcode = '[resultnotificationcaptain';
+	$shortcode = '[result-notification-captain';
 	foreach ( $args as $key => $value ) {
 		$shortcode .= ' ' . $key . "='" . $value . "'";
 	}
@@ -1026,7 +1023,7 @@ function racketmanager_result_outstanding_notification( $match_id, $args = array
 
 	$args['match'] = $match_id;
 
-	$shortcode = '[resultoutstandingnotification';
+	$shortcode = '[result-outstanding-notification';
 	foreach ( $args as $key => $value ) {
 		$shortcode .= ' ' . $key . "='" . $value . "'";
 	}
@@ -1043,7 +1040,7 @@ function racketmanager_result_outstanding_notification( $match_id, $args = array
 function racketmanager_club_players_notification( $args = array() ) {
 	global $racketmanager;
 
-	$shortcode = '[clubplayernotification';
+	$shortcode = '[club-player-notification';
 	foreach ( $args as $key => $value ) {
 		$shortcode .= ' ' . $key . "='" . $value . "'";
 	}

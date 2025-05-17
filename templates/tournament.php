@@ -14,6 +14,7 @@
 
 namespace Racketmanager;
 
+/** @var object $tournament */
 global $wp_query;
 $post_id   = $wp_query->post->ID; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 $match_day = \get_query_var( 'match_day' );
@@ -95,7 +96,7 @@ $menu_options['winners']     = array(
 								if ( $option['available'] ) {
 									?>
 									<li class="nav-item" role="presentation">
-										<button class="nav-link <?php echo $option['selected'] ? 'active' : null; ?>" id="<?php echo esc_attr( $option['name'] ); ?>-tab" data-bs-toggle="pill" data-bs-target="#<?php echo esc_attr( $option['name'] ); ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $option['name'] ); ?>" aria-selected="<?php echo esc_attr( $option['selected'] ); ?>" onclick="Racketmanager.tabData(event,'tournament',<?php echo esc_attr( $tournament->id ); ?>,'','<?php echo esc_attr( seo_url( $tournament->name ) ); ?>','')"><?php echo esc_attr( $option['description'] ); ?></button>
+										<button class="nav-link tabData <?php echo $option['selected'] ? 'active' : null; ?>" id="<?php echo esc_attr( $option['name'] ); ?>-tab" data-bs-toggle="pill" data-bs-target="#<?php echo esc_attr( $option['name'] ); ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $option['name'] ); ?>" aria-selected="<?php echo esc_attr( $option['selected'] ); ?>" data-type="tournament" data-type-id="<?php echo esc_attr( $tournament->id ); ?>" data-season="" data-name="<?php echo esc_attr( seo_url( $tournament->name ) ); ?>" data-competition-type=""><?php echo esc_attr( $option['description'] ); ?></button>
 									</li>
 									<?php
 								}
@@ -133,3 +134,6 @@ $menu_options['winners']     = array(
 		</div>
 	</div>
 </div>
+<script type="text/javascript">
+	<?php require RACKETMANAGER_PATH . 'js/tab-data.js'; ?>
+</script>

@@ -201,7 +201,7 @@ $image = match ($league->event->competition->type) {
 								if ( $option['available'] ) {
 									?>
 									<li class="nav-item" role="presentation">
-										<button class="nav-link <?php echo $option['selected'] ? 'active' : null; ?>" id="<?php echo esc_attr( $option['name'] ); ?>-tab" data-bs-toggle="pill" data-bs-target="#<?php echo esc_attr( $option['name'] ); ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $option['name'] ); ?>" aria-selected="<?php echo esc_attr( $option['selected'] ); ?>" onclick="Racketmanager.tabData(event,'league',<?php echo esc_attr( $league->id ); ?>,'<?php echo esc_attr( $league->current_season['name'] ); ?>','<?php echo esc_attr( seo_url( $league->title ) ); ?>','<?php echo esc_attr( $league->event->competition->type ); ?>')"><?php echo esc_attr( $option['description'] ); ?></button>
+										<button class="nav-link tabData <?php echo $option['selected'] ? 'active' : null; ?>" id="<?php echo esc_attr( $option['name'] ); ?>-tab" data-bs-toggle="pill" data-bs-target="#<?php echo esc_attr( $option['name'] ); ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $option['name'] ); ?>" aria-selected="<?php echo esc_attr( $option['selected'] ); ?>" data-type="league" data-type-id="<?php echo esc_attr( $league->id ); ?>" data-season="<?php echo esc_attr( $league->current_season['name'] ); ?>" data-name="<?php echo esc_attr( seo_url( $league->title ) ); ?>" data-competition-type="<?php echo esc_attr( $league->event->competition->type ); ?>"><?php echo esc_attr( $option['description'] ); ?></button>
 									</li>
 									<?php
 								}
@@ -244,3 +244,6 @@ $image = match ($league->event->competition->type) {
 	}
 	?>
 </div>
+<script type="text/javascript">
+	<?php require RACKETMANAGER_PATH . 'js/tab-data.js'; ?>
+</script>

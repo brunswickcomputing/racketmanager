@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var object $tournament */
 ?>
 <div class="container">
 <?php
@@ -42,7 +43,7 @@ if ( empty( $event ) ) {
 								?>
 							</div>
 							<div class="col-8" name="<?php esc_html_e( 'Event', 'racketmanager' ); ?>">
-								<a href="<?php echo esc_url( $url_link ); ?>" onclick="Racketmanager.tabDataLink(event,'tournament',<?php echo esc_attr( $tournament->id ); ?>,'','<?php echo esc_attr( $url_link ); ?>',<?php echo esc_attr( $event->id ); ?>,'events')">
+								<a href="<?php echo esc_url( $url_link ); ?>" class="tabDataLink" data-type="tournament" data-type-id="<?php echo esc_attr( $tournament->id ); ?>" data-season="" data-link="<?php echo esc_attr( $url_link ); ?>" data-link-id="<?php echo esc_attr( $event->id ); ?>" data-link-type="events">
 									<?php echo esc_html( $event->name ); ?>
 								</a>
 							</div>
@@ -80,7 +81,7 @@ if ( empty( $event ) ) {
 				<dl>
 					<dt><?php esc_html_e( 'Draw', 'racketmanager' ); ?></dt>
 					<dd>
-						<a href="<?php echo esc_html( $draw_link ); ?>" onclick="Racketmanager.tabDataLink(event,'tournament',<?php echo esc_attr( $tournament->id ); ?>,'','<?php echo esc_attr( $draw_link ); ?>',<?php echo esc_attr( $event->id ); ?>,'draws')">
+						<a href="<?php echo esc_html( $draw_link ); ?>" class="tabDataLink" data-type="tournament" data-type-id="<?php echo esc_attr( $tournament->id ); ?>" data-season="" data-link="<?php echo esc_attr( $draw_link ); ?>" data-link-id="<?php echo esc_attr( $event->id ); ?>" data-link-type="draws">
 							<?php echo esc_html( $event->name ); ?>
 						</a>
 					</dd>
@@ -132,7 +133,7 @@ if ( empty( $event ) ) {
 										$player_link = '/tournament/' . seo_url( $tournament->name ) . '/players/' . seo_url( $player->display_name ) . '/';
 										?>
 										<div class="team-player">
-											<a href="<?php echo esc_attr( $player_link ); ?>" onclick="Racketmanager.tabDataLink(event,'tournament',<?php echo esc_attr( $tournament->id ); ?>,'','<?php echo esc_attr( $player_link ); ?>','<?php echo esc_attr( $player->id ); ?>','players')">
+											<a href="<?php echo esc_attr( $player_link ); ?>" class="tabDataLink" data-type="tournament" data-type-id="<?php echo esc_attr( $tournament->id ); ?>" data-season="" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( $player->id ); ?>" data-link-type="players">
 												<?php echo esc_html( wp_unslash( $player->display_name ) ); ?>
 											</a>
 										</div>

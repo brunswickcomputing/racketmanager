@@ -101,9 +101,4 @@ if ( $league->event->competition->is_player_entry && isset( $league->event->type
 		</div>
 	</div>
 </div>
-<script type="text/javascript">
-    const matchLinks = document.querySelectorAll('.score-row__wrapper');
-    matchLinks.forEach(el => el.addEventListener('click', function (e) {
-        Racketmanager.viewMatch(e)
-    }));
-</script>
+

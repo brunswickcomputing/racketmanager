@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var array $winners */
 if ( ! $winners ) {
 	esc_html_e( 'No winners', 'racketmanager' );
 } else {
@@ -27,13 +28,21 @@ if ( ! $winners ) {
 									<?php
 									if ( empty( $tournament ) ) {
 										$link_ref = '/' . seo_url( $winner->competition_type ) . 's/' . seo_url( $winner->event_name ) . '/' . seo_url( $winner->season ) . '/';
-										$onclick  = null;
+                                        $data_season    = null;
+                                        $data_type      = null;
+                                        $data_type_id   = null;
+                                        $data_type_type = null;
+										$link_class     = null;
 									} else {
-										$link_ref = '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $winner->event_name ) . '/';
-										$onclick  = "onclick=Racketmanager.tabDataLink(event,'tournament'," . $tournament->id . ",'','" . $link_ref . "'," . $winner->event_id . ",'draws')";
+										$link_ref     = '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $winner->event_name ) . '/';
+                                        $data_season  = null;
+                                        $data_type    = 'tournament';
+                                        $data_type_id = $tournament->id;
+                                        $data_type_type = 'draws';
+										$link_class     = 'tabDataLink';
 									}
 									?>
-									<a href="<?php echo esc_html( $link_ref ); ?>" <?php echo esc_attr( $onclick ); ?>>
+									<a href="<?php echo esc_html( $link_ref ); ?>" class="<?php echo esc_attr( $link_class ); ?>" data-type="<?php echo esc_attr( $data_type ); ?>" data-type-id="<?php echo esc_attr( $data_type_id ); ?>" data-season="<?php echo esc_attr( $data_season ); ?>" data-link="<?php echo esc_attr( $link_ref ); ?>" data-link-id="<?php echo esc_attr( $winner->event_id ); ?>" data-link-type="<?php echo esc_attr( $data_type_type ); ?>">
 										<span class="header">
 											<?php echo esc_html( $winner->league ); ?>
 										</span>

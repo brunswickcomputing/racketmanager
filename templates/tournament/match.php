@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var object $match */
 if ( ! empty( $match_display ) ) {
 	$match_display = 'match--list';
 } else {
@@ -16,14 +17,8 @@ if ( empty( $location_in_header ) ) {
 	$location_in_header = false;
 }
 if ( isset( $match->teams['home'] ) && isset( $match->teams['away'] ) ) {
-	if ( $match->league->is_championship ) {
-		$match_ref = $match->final_round;
-	} else {
-		$match_ref = 'day' . $match->match_day;
-	}
 	if ( empty( $tournament ) ) {
 		$match_link = $match->link;
-
 	} else {
 		$match_link = '/tournament/' . seo_url( $tournament->name ) . '/match/' . seo_url( $match->league->title ) . '/' . seo_url( $match->teams['home']->title ) . '-vs-' . seo_url( $match->teams['away']->title ) . '/' . $match->id . '/';
 	}
@@ -31,21 +26,18 @@ if ( isset( $match->teams['home'] ) && isset( $match->teams['away'] ) ) {
 	$user_can_update   = $is_update_allowed->user_can_update;
 } else {
 	$user_can_update = false;
+	$match_link      = null;
 }
-$match_type         = strtolower( substr( $match->league->type, 1, 1 ) );
 $winner             = null;
 $loser              = null;
 $is_tie             = null;
-$winner_set         = null;
 $player_team        = null;
 $player_team_status = null;
 if ( ! empty( $tournament_player ) ) {
 	if ( isset( $match->teams['home']->player ) && array_search( $tournament_player->display_name, $match->teams['home']->player, true ) ) {
 		$player_team = 'home';
-		$player_ref  = 'player1';
 	} elseif ( isset( $match->teams['away']->player ) && array_search( $tournament_player->display_name, $match->teams['away']->player, true ) ) {
 		$player_team = 'away';
-		$player_ref  = 'player2';
 	}
 }
 $match_selected = false;
@@ -61,11 +53,9 @@ if ( ! empty( $match->winner_id ) ) {
 	if ( $match->winner_id === $match->teams['home']->id ) {
 		$winner     = 'home';
 		$loser      = 'away';
-		$winner_set = 'player1';
 	} elseif ( $match->winner_id === $match->teams['away']->id ) {
 		$winner     = 'away';
 		$loser      = 'home';
-		$winner_set = 'player2';
 	} elseif ( '-1' === $match->winner_id ) {
 		$is_tie = true;
 	}
@@ -80,7 +70,7 @@ if ( ! empty( $match->winner_id ) ) {
 			<div class="match__header">
 				<ul class="match__header-title">
 					<li class="match__header-title-item">
-						<?php echo esc_html( Racketmanager_Util::get_final_name( $match->final_round ) ); ?>
+						echo esc_html( Racketmanager_Util::get_final_name( $match->final_round ) ); ?>
 					</li>
 					<?php
 					if ( ! empty( $tournament ) ) {
@@ -169,7 +159,7 @@ if ( ! empty( $match->winner_id ) ) {
 											if ( ! empty( $tournament ) ) {
 												$player_link = '/tournament/' . seo_url( $tournament->name ) . '/players/' . seo_url( trim( $team_player->display_name ) ) . '/';
 												?>
-												<a href="<?php echo esc_attr( $player_link ); ?>" onclick="Racketmanager.tabDataLink(event,'tournament',<?php echo esc_attr( $tournament->id ); ?>,'','<?php echo esc_attr( $player_link ); ?>',<?php echo esc_attr( $team_player->id ); ?>,'players')">
+												<a href="<?php echo esc_attr( $player_link ); ?>" class="tabDataLink" data-type="tournament" data-type-id="<?php echo esc_attr( $tournament->id ); ?>" data-season="" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( $team_player->id ); ?>" data-link-type="players">
 												<?php
 											}
 											?>

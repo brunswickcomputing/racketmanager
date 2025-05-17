@@ -115,7 +115,7 @@ require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
 											?>
 										</div>
 										<div class="col-6" name="<?php esc_html_e( 'Event', 'racketmanager' ); ?>">
-											<a href="<?php echo esc_attr( $event_link ); ?>" onclick="Racketmanager.tabDataLink(event,'tournament',<?php echo esc_attr( $tournament->id ); ?>,'','<?php echo esc_attr( $event_link ); ?>',<?php echo esc_attr( $entry->event_id ); ?>,'events')">
+											<a href="<?php echo esc_attr( $event_link ); ?>" class="tabDataLink" data-type="tournament" data-type-id="<?php echo esc_attr( $tournament->id ); ?>" data-season="" data-link="<?php echo esc_attr( $event_link ); ?>" data-link-id="<?php echo esc_attr( $entry->event_id ); ?>" data-link-type="events">
 												<?php echo esc_html( $entry->event ); ?>
 											</a>
 										</div>
@@ -124,7 +124,7 @@ require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
 											if ( ! empty( $entry->partner ) ) {
 												$player_link = '/tournament/' . seo_url( $tournament->name ) . '/players/' . seo_url( $entry->partner->display_name ) . '/';
 												?>
-												<a href="<?php echo esc_attr( $player_link ); ?>" onclick="Racketmanager.tabDataLink(event,'tournament',<?php echo esc_attr( $tournament->id ); ?>,'','<?php echo esc_attr( $player_link ); ?>','<?php echo esc_attr( $entry->partner->id ); ?>','players')">
+												<a href="<?php echo esc_attr( $player_link ); ?>" class="tabDataLink" data-type="tournament" data-type-id="<?php echo esc_attr( $tournament->id ); ?>" data-season="" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( $entry->partner->id ); ?>" data-link-type="players">
 													<?php echo esc_html( wp_unslash( $entry->partner->display_name ) ); ?>
 												</a>
 												<?php

@@ -13,6 +13,8 @@
 
 namespace Racketmanager;
 
+/** @var object $object */
+global $racketmanager;
 $user_can_edit_team = false;
 if ( is_user_logged_in() ) {
 	if ( current_user_can( 'manage_racketmanager' ) ) {
@@ -44,6 +46,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 	}
 	$show_wtn    = true;
 } else {
+    $format      = null;
 	$help_text   = null;
 	$format_type = null;
 	$show_wtn    = false;
@@ -89,7 +92,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 					<div class="module__banner">
 						<h3 class="module__title"><?php esc_html_e( 'Standings', 'racketmanager' ); ?></h3>
 						<div class="module__aside">
-							<a role="button" class="btn btn--link" href="<?php echo esc_attr( $standings_link ); ?>" onclick="Racketmanager.tabDataLink(event,'league',<?php echo esc_attr( $object->id ); ?>,<?php echo esc_attr( $object->current_season['name'] ); ?>,'<?php echo esc_attr( $standings_link ); ?>','','standings')"data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'View standings', 'racketmanager' ); ?>">
+							<a href="<?php echo esc_attr( $standings_link ); ?>" role="button" class="btn btn--link tabDataLink" data-type="league" data-type-id="<?php echo esc_attr( $object->id ); ?>" data-season="<?php echo esc_attr( $object->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $standings_link ); ?>" data-link-id="" data-link-type="standings" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'View standings', 'racketmanager' ); ?>">
 								<i class="racketmanager-svg-icon">
 									<?php racketmanager_the_svg( 'icon-table' ); ?>
 								</i>
@@ -185,7 +188,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 					if ( $user_can_edit_team ) {
 						?>
 						<div class="module__aside">
-							<a role="button" class="btn btn--link" href="" onclick="Racketmanager.teamEditModal(event,<?php echo esc_attr( $object->team->id ); ?>,<?php echo esc_attr( $object_event->id ); ?>)"data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit team', 'racketmanager' ); ?>">
+							<a role="button" class="btn btn--link" href="" id="teamEditLink" data-team-id="<?php echo esc_attr( $object->team->id ); ?>" data-event-id="<?php echo esc_attr( $object_event->id ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit team', 'racketmanager' ); ?>">
 								<svg width="16" height="16" class="icon ">
 									<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
 								</svg>
@@ -429,7 +432,6 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 											$selected_player = true;
 										}
 										$player_link = '/' . $object_competition->type . '/' . seo_url( $object->name ) . '/' . $object->current_season['name'] . '/player/' . seo_url( $player->fullname ) . '/';
-										$onclick     = 'onclick=Racketmanager.' . $object_type . 'TabDataLink(event,' . $object->id . ',' . $object->current_season['name'] . ",'" . $player_link . "'," . $player->id . ",'players')";
 										?>
 										<li class="list__item <?php echo empty( $selected_player ) ? null : 'is-selected'; ?>">
 											<div class="media">
@@ -448,7 +450,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 														<div class="flex-container">
 															<div class="flex-item flex-item--grow">
 																<p class="media__title">
-																	<a href="<?php echo esc_attr( $player_link ); ?>" class="nav--link" <?php echo esc_attr( $onclick ); ?>>
+																	<a href="<?php echo esc_attr( $player_link ); ?>" class="nav--link tabDataLink" data-type="<?php echo esc_attr( $object_type ); ?>" data-type-id="<?php echo esc_attr( $object->id ); ?>" data-season="<?php echo esc_attr( $object->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( $player->id ); ?>" data-link-type="players">
 																		<span class="nav-link__value">
 																			<?php echo esc_html( $player->fullname ); ?>
 																		</span>
@@ -502,4 +504,12 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 		</div>
 	</div>
 	<div class="modal" id="teamModal"></div>
+    <script type="text/javascript">
+        document.getElementById('teamEditLink').addEventListener('click', function (e) {
+            let teamId = this.dataset.teamId;
+            let eventId = this.dataset.eventId;
+            Racketmanager.teamEditModal(e,teamId,eventId);
+        })
+    </script>
 	<?php
+

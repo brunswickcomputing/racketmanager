@@ -31,19 +31,31 @@ $alphabet_key = array();
 								foreach ( $players as $player ) {
 									$url_link = $player_link . seo_url( $player->display_name ) . '/';
 									if ( ! empty( $tournament ) ) {
-										$onclick = "onclick=Racketmanager.tabDataLink(event,'tournament'," . $tournament->id . ",'','" . $url_link . "'," . $player->id . ",'players')";
+										$data_season    = null;
+										$data_type      = 'tournament';
+										$data_type_id   = $tournament->id;
+										$link_class     = 'tabDataLink';
 									} elseif ( ! empty( $competition ) ) {
-										$onclick = "onclick=Racketmanager.tabDataLink(event,'competition'," . $competition->id . ',' . $competition->current_season['name'] . ",'" . $url_link . "'," . $player->id . ",'players')";
+										$data_season    = $competition->current_season['name'];
+										$data_type      = 'competition';
+										$data_type_id   = $competition->id;
+										$link_class     = 'tabDataLink';
 									} elseif ( ! empty( $event ) ) {
-										$onclick = "onclick=Racketmanager.tabDataLink(event,'event'," . $event->id . ',' . $event->current_season['name'] . ",'" . $url_link . "'," . $player->id . ",'players')";
+										$data_season    = $event->current_season['name'];
+										$data_type      = 'event';
+										$data_type_id   = $event->id;
+										$link_class     = 'tabDataLink';
 									} else {
-										$onclick = null;
+										$data_season    = null;
+										$data_type      = null;
+										$data_type_id   = null;
+										$link_class     = null;
 									}
 									?>
 									<li class="alphabet-list-item col-12 col-sm-6 col-md-4">
 										<div class="media__content">
 											<h5 class="media__title">
-												<a class="nav--link media__link" href="<?php echo esc_attr( $url_link ); ?>" <?php echo esc_attr( $onclick ); ?>>
+												<a class="nav--link media__link <?php echo esc_attr( $link_class ); ?>" href="<?php echo esc_attr( $url_link ); ?>" data-type="<?php echo esc_attr( $data_type ); ?>" data-type-id="<?php echo esc_attr( $data_type_id ); ?>" data-season="<?php echo esc_attr( $data_season ); ?>" data-link="<?php echo esc_attr( $url_link ); ?>" data-link-id="<?php echo esc_attr( $player->id ); ?>" data-link-type="players">
 													<span class="nav-link__value"><?php echo esc_html( $player->index ); ?></span>
 												</a>
 											</h5>

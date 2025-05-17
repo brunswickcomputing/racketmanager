@@ -82,7 +82,7 @@ $menu_options['winners']  = array(
 								$singular_class = $option['selected'] && $is_singular ? 'is-singular' : null;
 								?>
 								<li class="nav-item" role="presentation">
-									<button class="nav-link <?php echo $option['selected'] ? 'active' : null; ?> <?php echo esc_attr( $singular_class ); ?>" id="<?php echo esc_attr( $option['name'] ); ?>-tab" data-bs-toggle="pill" data-bs-target="#<?php echo esc_attr( $option['name'] ); ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $option['name'] ); ?>" aria-selected="<?php echo esc_attr( $option['selected'] ); ?>" onclick="Racketmanager.tabData(event,'competition',<?php echo esc_attr( $competition->id ); ?>,'<?php echo esc_attr( $competition->current_season['name'] ); ?>','<?php echo esc_attr( seo_url( $competition->name ) ); ?>','')"><?php echo esc_attr( $option['description'] ); ?></button>
+									<button class="nav-link tabData <?php echo $option['selected'] ? 'active' : null; ?> <?php echo esc_attr( $singular_class ); ?>" id="<?php echo esc_attr( $option['name'] ); ?>-tab" data-bs-toggle="pill" data-bs-target="#<?php echo esc_attr( $option['name'] ); ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $option['name'] ); ?>" aria-selected="<?php echo esc_attr( $option['selected'] ); ?>" data-type="competition" data-type-id="<?php echo esc_attr( $competition->id ); ?>" data-season="<?php echo esc_attr( $competition->current_season['name'] ); ?>" data-name="<?php echo esc_attr( seo_url( $competition->name ) ); ?>" data-competition-type=""><?php echo esc_attr( $option['description'] ); ?></button>
 								</li>
 								<?php
 							}
@@ -118,3 +118,7 @@ $menu_options['winners']  = array(
 		</div>
 	</div>
 </div>
+<script type="text/javascript">
+	<?php require RACKETMANAGER_PATH . 'js/tab-data.js'; ?>
+</script>
+

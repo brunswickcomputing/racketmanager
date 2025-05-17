@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var object $tournament */
 if ( empty( $draw ) ) {
 	?>
 	<div class="container">
@@ -32,7 +33,7 @@ if ( empty( $draw ) ) {
 							<div class="row mb-2 row-list">
 								<div class="col-1" name="<?php esc_html_e( 'Favourite', 'racketmanager' ); ?>">
 									<?php
-									$url_link       = '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $event->name ) . '/';
+									$draw_link      = '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $event->name ) . '/';
 									$hidden         = true;
 									$favourite_type = 'competition';
 									$favourite_id   = $event->id;
@@ -40,7 +41,7 @@ if ( empty( $draw ) ) {
 									?>
 								</div>
 								<div class="col-8" name="<?php esc_html_e( 'Draw', 'racketmanager' ); ?>">
-									<a href="<?php echo esc_url( $url_link ); ?>" onclick="Racketmanager.tabDataLink(event,'tournament',<?php echo esc_attr( $tournament->id ); ?>,'','<?php echo esc_attr( $url_link ); ?>',<?php echo esc_attr( $event->id ); ?>,'draws')">
+									<a href="<?php echo esc_url( $draw_link ); ?>" class="tabDataLink" data-type="tournament" data-type-id="<?php echo esc_attr( $tournament->id ); ?>" data-season="" data-link="<?php echo esc_attr( $draw_link ); ?>" data-link-id="<?php echo esc_attr( $event->id ); ?>" data-link-type="draws">
 										<?php echo esc_html( $event->name ); ?>
 									</a>
 								</div>

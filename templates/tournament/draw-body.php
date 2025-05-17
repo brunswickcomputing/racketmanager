@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var object $draw */
+/** @var array $matches */
 ?>
 <div class="module__content">
 			<div class="module-container">
@@ -53,3 +55,9 @@ namespace Racketmanager;
 				</div>
 			</div>
 		</div>
+<script type="text/javascript">
+    const matchLinks = document.querySelectorAll('.score-row__wrapper');
+    matchLinks.forEach(el => el.addEventListener('click', function (e) {
+        Racketmanager.viewMatch(e)
+    }));
+</script>

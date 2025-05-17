@@ -14,8 +14,10 @@
 
 namespace Racketmanager;
 
+/** @var object $match */
 ?>
-<?php if ( $match ) { ?>
+<?php
+if ( $match ) { ?>
 	<div class="match" id="match-<?php echo esc_html( $match->id ); ?>">
 		<h3 class="header"><?php esc_html_e( 'Match', 'racketmanager' ); ?></h3>
 		<div class="match-content">
@@ -23,7 +25,7 @@ namespace Racketmanager;
 			<?php
 			if ( '0:0' === $match->score ) {
 				?>
-				<p class="matchdate"><?php echo esc_html( $match->date ) . ' ' . esc_html( $match->start_time ) . ' ' . esc_html( $match->location ); ?></p>
+				<p class="matchDate"><?php echo esc_html( $match->date ) . ' ' . esc_html( $match->start_time ) . ' ' . esc_html( $match->location ); ?></p>
 			<?php } else { ?>
 				<p class="score">
 					<?php echo esc_html( $match->score ); ?>

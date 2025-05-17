@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var object $tournament */
+/** @var string $current_match_date */
 ?>
 <script>
 	jQuery(document).ready(function() {
@@ -42,7 +44,7 @@ namespace Racketmanager;
 								$matches_link = '/tournament/' . seo_url( $tournament->name ) . '/matches/' . $match_date . '/';
 								?>
 								<li class="nav-item nav-link <?php echo esc_html( $selected_class ); ?>" role="presentation">
-									<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/matches/<?php echo esc_html( $match_date ); ?>/" data-value="<?php echo esc_html( $match_date ); ?>" onclick="Racketmanager.tabDataLink(event,'tournament',<?php echo esc_attr( $tournament->id ); ?>,'','<?php echo esc_attr( $matches_link ); ?>','<?php echo esc_attr( $match_date ); ?>','matches')" class="nav-link__value">
+									<a href="<?php echo esc_attr( $matches_link ); ?>" data-value="<?php echo esc_html( $match_date ); ?>" class="nav-link__value tabDataLink" data-type="tournament" data-type-id="<?php echo esc_attr( $tournament->id ); ?>" data-season="" data-link="<?php echo esc_attr( $matches_link ); ?>" data-link-id="<?php echo esc_attr( $match_date ); ?>" data-link-type="matches">
 										<span class="date__weekday">
 											<?php echo esc_html( mysql2date( 'D', $match_date ) ); ?>
 										</span>

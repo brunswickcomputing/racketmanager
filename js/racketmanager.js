@@ -492,7 +492,7 @@ Racketmanager.printScoreCard = function (e, link) {
 		type: "POST",
 		data: {
 			"matchId": matchId,
-			"action": "racketmanager_matchcard",
+			"action": "racketmanager_match_card",
 			"security": ajax_var.ajax_nonce,
 		},
 		success: function (response) {
@@ -1536,7 +1536,7 @@ Racketmanager.resetMatchResult = function (e, link, is_tournament) {
 	let alert_id_2 = jQuery('#resetMatchAlert');
 	jQuery(alert_id_2).hide();
 	jQuery(alert_id_2).removeClass('alert--success alert--warning alert--danger');
-	let alert_response_2 = '#alertresetMatchResponse';
+	let alert_response_2 = '#alertResetMatchResponse';
 	jQuery(".is-invalid").removeClass("is-invalid");
 	jQuery(notifyField).val("");
 	jQuery(notifyField).hide();

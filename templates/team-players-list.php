@@ -93,7 +93,6 @@ namespace Racketmanager;
 												<?php
 												$player_id_link = 'players_' . $i . '_' . $player_number;
 												?>
-												<label for="<?php echo esc_attr( $player_id_link ); ?>"></label>
                                                 <select class="form-select" name="players[<?php echo esc_attr( $i ); ?>][<?php echo esc_attr( $player_number ); ?>]" id="<?php echo esc_attr( $player_id_link ); ?>">
 													<option value="0">&nbsp;</option>
 													<?php
@@ -115,6 +114,7 @@ namespace Racketmanager;
 													}
 													?>
 												</select>
+                                                <label class="visually-hidden" for="<?php echo esc_attr( $player_id_link ); ?>"></label>
 												<div id="<?php echo esc_attr( $player_id_link ); ?>Feedback" class="invalid-feedback"></div>
 											</span>
 										</span>
@@ -142,10 +142,24 @@ namespace Racketmanager;
 	<input type="hidden" name="clubId" value="<?php echo esc_attr( $club->id ); ?>" />
 	<input type="hidden" name="eventId" value="<?php echo esc_attr( $event->id ); ?>" />
 	<div class="match__buttons">
-		<a class="me-auto" href="" onclick="Racketmanager.resetMatchScores(event, 'match')">
+		<a class="me-auto" href="" id="resetMatchScore">
 			<?php esc_html_e( 'Reset', 'racketmanager' ); ?>
 		</a>
-		<button class="btn btn-secondary me-3" onclick="Racketmanager.validateTeamOrder(event,this, true)" style="display:none;" id="setTeamButton"><?php esc_html_e( 'Set players', 'racketmanager' ); ?></button>
-		<button class="btn btn-primary" onclick="Racketmanager.validateTeamOrder(event,this)"><?php esc_html_e( 'Validate players', 'racketmanager' ); ?></button>
+		<button class="btn btn-secondary me-3 validateTeamOrder" data-set-team="true" style="display:none;" id="setTeamButton"><?php esc_html_e( 'Set players', 'racketmanager' ); ?></button>
+		<button class="btn btn-primary validateTeamOrder"><?php esc_html_e( 'Validate players', 'racketmanager' ); ?></button>
 	</div>
 </form>
+<script type="text/javascript">
+    document.getElementById('resetMatchScore').addEventListener('click', function (e) {
+        Racketmanager.resetMatchScores(e, 'match');
+    });
+    const validateTeamOrder = document.querySelectorAll('.validateTeamOrder');
+    validateTeamOrder.forEach(el => el.addEventListener('click', function (e) {
+        let setTeam = this.dataset.setTeam;
+        if ('true' !== setTeam) {
+            setTeam = false;
+        }
+        Racketmanager.validateTeamOrder(e, this, setTeam)
+    }));
+</script>
+

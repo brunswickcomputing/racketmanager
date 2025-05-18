@@ -12,7 +12,7 @@ function racketmanager_upgrade() {
 	global $wpdb, $racketmanager;
 
 	$options   = $racketmanager->options;
-	$installed = isset( $options['dbversion'] ) ? $options['dbversion'] : null;
+	$installed = $options['dbversion'] ?? null;
 
 	echo esc_html__( 'Upgrade database structure...', 'racketmanager' ) . "<br />\n";
 	$wpdb->show_errors();
@@ -1107,9 +1107,7 @@ function racketmanager_upgrade() {
 				$teams = $league->get_league_teams();
 				foreach ( $teams as $team ) {
 					$table_entry = Racketmanager\get_league_team( $team->table_id );
-					if ( $table_entry ) {
-						$table_entry->set_rating( $team, $event );
-					}
+					$table_entry?->set_rating($team, $event);
 				}
 			}
 		}
@@ -1467,6 +1465,28 @@ function racketmanager_upgrade() {
             unset( $custom[0] );
             $table->custom = serialize( $custom );
 			$wpdb->query( "UPDATE {$wpdb->racketmanager_table} SET `custom` = '" . $table->custom . "' WHERE `id` = " . $table->id );
+		}
+		$matches = $wpdb->get_results( "SELECT `id`, `custom` FROM {$wpdb->racketmanager_matches} WHERE `custom` LIKE '%i:0;s:0:\"\";%'");
+		foreach ( $matches as $match ) {
+			$custom = unserialize( $match->custom );
+			unset( $custom[0] );
+			$match->custom = serialize( $custom );
+			$wpdb->query( "UPDATE {$wpdb->racketmanager_matches} SET `custom` = '" . $match->custom . "' WHERE `id` = " . $match->id );
+		}
+	}
+	if ( version_compare( $installed, '8.47.1', '<' ) ) {
+		echo esc_html__( 'starting 8.47.1 upgrade', 'racketmanager' ) . "<br />\n";
+		$competitions = $wpdb->get_results( "SELECT `id`, `settings` FROM {$wpdb->racketmanager_competitions}");
+		foreach ( $competitions as $competition ) {
+            $settings = unserialize( $competition->settings );
+            $removed_fields = array( 'num_ascend', 'num_descend', 'num_relegation', 'groups', 'teams_per_group', 'num_advance' );
+            foreach ( $removed_fields as $removed_field ) {
+				if ( isset( $settings[ $removed_field ] ) ) {
+					unset( $settings[ $removed_field ] );
+				}
+            }
+			$competition->settings = serialize( $settings );
+			$wpdb->query( "UPDATE {$wpdb->racketmanager_competitions} SET `settings` = '" . $competition->settings . "' WHERE `id` = " . $competition->id );
 		}
 	}
 	/*

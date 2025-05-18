@@ -153,13 +153,21 @@ namespace Racketmanager;
     document.getElementById('resetMatchScore').addEventListener('click', function (e) {
         Racketmanager.resetMatchScores(e, 'match');
     });
-    const validateTeamOrder = document.querySelectorAll('.validateTeamOrder');
-    validateTeamOrder.forEach(el => el.addEventListener('click', function (e) {
-        let setTeam = this.dataset.setTeam;
-        if ('true' !== setTeam) {
-            setTeam = false;
-        }
-        Racketmanager.validateTeamOrder(e, this, setTeam)
-    }));
+    jQuery(document).ready(function () {
+        validateTeamOrder();
+    });
+    jQuery(document).ajaxComplete(function () {
+        validateTeamOrder();
+    });
+    function validateTeamOrder () {
+        const validateTeamOrder = document.querySelectorAll('.validateTeamOrder');
+        validateTeamOrder.forEach(el => el.addEventListener('click', function (e) {
+            let setTeam = this.dataset.setTeam;
+            if ('true' !== setTeam) {
+                setTeam = false;
+            }
+            Racketmanager.validateTeamOrder(e, this, setTeam)
+        }));
+    }
 </script>
 

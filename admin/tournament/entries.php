@@ -7,6 +7,10 @@
 
 namespace Racketmanager;
 
+/** @var array $withdrawn_entries */
+/** @var array $pay_due_entries */
+/** @var array $pending_entries */
+/** @var array $confirmed_entries */
 ?>
 <?php
 if ( ! empty( $entries_withdrawn ) ) {
@@ -16,7 +20,7 @@ if ( ! empty( $entries_withdrawn ) ) {
 			<table class="table table-striped">
 				<thead class="table-dark">
 					<tr>
-						<th><?php esc_html_e( 'Withdrawn Entries', 'racketmanager' ); ?> <?php echo empty( $entries_withdrawn ) ? null : '(' . count( $entries_withdrawn ) . ')'; ?></th>
+						<th><?php esc_html_e( 'Withdrawn Entries', 'racketmanager' ); ?> <?php echo '(' . count( $entries_withdrawn ) . ')'; ?></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -38,7 +42,7 @@ if ( ! empty( $entries_pay_due ) ) {
 			<table class="table table-striped">
 				<thead class="table-dark">
 					<tr>
-						<th><?php esc_html_e( 'Unpaid Entries', 'racketmanager' ); ?> <?php echo empty( $entries_pay_due ) ? null : '(' . count( $entries_pay_due ) . ')'; ?></th>
+						<th><?php esc_html_e( 'Unpaid Entries', 'racketmanager' ); ?> <?php echo '(' . count( $entries_pay_due ) . ')'; ?></th>
 					</tr>
 				</thead>
 				<tbody>

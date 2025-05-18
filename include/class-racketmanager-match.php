@@ -12,7 +12,6 @@ namespace Racketmanager;
 /**
  * Class to implement the Racketmanager_Match object
  */
-#[\AllowDynamicProperties]
 final class Racketmanager_Match {
 
 	/**
@@ -480,9 +479,15 @@ final class Racketmanager_Match {
 	/**
 	 * Walkover
 	 *
-	 * @var boolean
+	 * @var string
 	 */
-	public bool $walkover;
+	public string $walkover;
+	/**
+	 * Retired
+	 *
+	 * @var string
+	 */
+	public string $retired;
 	/**
 	 * Retrieve match instance
 	 *

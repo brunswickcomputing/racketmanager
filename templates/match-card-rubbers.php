@@ -8,7 +8,7 @@
 namespace Racketmanager;
 
 /** @var object $match */
-/** @var string $sponsorhtml */
+/** @var string $sponsor_html */
 $points_span = 2 + intval( $match->league->num_sets );
 ?>
 		<div id="matchRubbers" class="rubber-block">
@@ -103,5 +103,5 @@ $points_span = 2 + intval( $match->league->num_sets );
 					</tbody>
 				</table>
 			</form>
-			<?php echo $sponsorhtml; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			<?php echo $sponsor_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</div>

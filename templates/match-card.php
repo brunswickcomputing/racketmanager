@@ -8,7 +8,7 @@
 namespace Racketmanager;
 
 /** @var object $match */
-/** @var object $sponsorhtml */
+/** @var object $sponsor_html */
 ?>
 <div id="matchRubbers" class="rubber-block">
 	<div id="matchHeader">
@@ -78,5 +78,5 @@ namespace Racketmanager;
 			</tbody>
 		</table>
 	</form>
-	<?php echo $sponsorhtml; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+	<?php echo $sponsor_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 </div>

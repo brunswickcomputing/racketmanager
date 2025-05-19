@@ -111,27 +111,26 @@ Racketmanager.getMatchDropdown = function(league_id, season) {
 	});
 };
 
-Racketmanager.saveAddPoints = function(points, team_id, league_id, season) {
-	let notifyField = "#feedback_" + team_id;
+Racketmanager.saveAddPoints = function(points, table_id) {
+	let notifyField = "#feedback_" + table_id;
 	jQuery(notifyField).removeClass('message-error');
 	jQuery(notifyField).css("display", "none");
 	jQuery(notifyField).text('');
-	jQuery('#loading_' + team_id).css("display", "inline");
-	jQuery('#loading_' + team_id).html("<img src='" + RacketManagerAjaxL10n.pluginUrl + "/images/loading.gif' />");
+	let loadingTeam = jQuery('#loading_' + table_id);
+	loadingTeam.css("display", "inline");
+	loadingTeam.html("<img src='" + RacketManagerAjaxL10n.pluginUrl + "/images/loading.gif' />");
 	jQuery.ajax({
 		url: ajaxurl,
 		type: "POST",
 		data: {
 			"action": "racketmanager_save_add_points",
 			"security": ajax_var.ajax_nonce,
-			"team_id": team_id,
-			"league_id": league_id,
-			"season": season,
+			"table_id": table_id,
 			"points": points,
 		},
 		success: function () {
-			jQuery('#loading_' + team_id).fadeOut('fast');
-			window.location.reload(true);
+			jQuery('#loading_' + table_id).fadeOut('fast');
+			window.location.reload();
 			return true;
 		},
 		error: function (response) {
@@ -145,7 +144,7 @@ Racketmanager.saveAddPoints = function(points, team_id, league_id, season) {
 			jQuery(notifyField).css("display", "inline-block");
 		},
 		complete: function () {
-			jQuery('#loading_' + team_id).css("display", "none");
+			jQuery('#loading_' + table_id).css("display", "none");
 		}
 	})
 };

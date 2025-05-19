@@ -32,7 +32,7 @@ namespace Racketmanager;
         </div>
     </div>
 	<table id="standings" class="table table-striped table-borderless" aria-describedby="<?php esc_html_e( 'Standings table', 'racketmanager' ); ?>">
-		<thead>
+		<thead class="table-dark">
 			<tr>
 				<th scope="col" class="check-column">
                     <label for="check-all-teams"></label><input type="checkbox" id="check-all-teams" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" />
@@ -293,9 +293,9 @@ namespace Racketmanager;
 							?>
 						</td>
 						<td class="column-num">
-                            <label for="add_points_<?php echo esc_html( $team->id ); ?>"></label><input type="text" size="3" style="text-align: center;" id="add_points_<?php echo esc_html( $team->id ); ?>" name="add_points[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->add_points ); ?>" onblur="Racketmanager.saveAddPoints(this.value, <?php echo esc_html( $team->id ); ?>, <?php echo esc_html( $league->id ); ?>, <?php echo esc_html( $season ); ?> )" />
-							<span class="loading" id="loading_<?php echo esc_html( $team->id ); ?>"></span>
-							<span id="feedback_<?php echo esc_html( $team->id ); ?>"></span>
+                            <label for="add_points_<?php echo esc_html( $team->id ); ?>"></label><input type="text" size="3" style="text-align: center;" id="add_points_<?php echo esc_html( $team->id ); ?>" name="add_points[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->add_points ); ?>" onblur="Racketmanager.saveAddPoints(this.value, <?php echo esc_html( $team->table_id ); ?> )" />
+							<span class="loading" id="loading_<?php echo esc_html( $team->table_id ); ?>"></span>
+							<span id="feedback_<?php echo esc_html( $team->table_id ); ?>"></span>
 						</td>
 						<td class="column-num">
 							<?php echo esc_html( $team->id ); ?>

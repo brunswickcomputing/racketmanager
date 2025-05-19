@@ -26,7 +26,6 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_racketmanager_check_team_exists', array( &$this, 'check_team_exists' ) );
 		add_action( 'wp_ajax_racketmanager_get_player_clubs', array( &$this, 'get_player_clubs' ) );
 		add_action( 'wp_ajax_racketmanager_show_match_header', array( &$this, 'show_admin_match_header' ) );
-		add_action( 'wp_ajax_racketmanager_show_rubbers', array( &$this, 'show_rubbers' ) );
 
 		add_action( 'wp_ajax_racketmanager_email_constitution', array( &$this, 'email_constitution' ) );
 		add_action( 'wp_ajax_racketmanager_notify_competition_entries_open', array( &$this, 'notify_competition_entries_open' ) );
@@ -42,48 +41,25 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 	 *
 	 * @see admin/standings.php
 	 */
-	public function save_add_points() {
-		global $wpdb;
-		$valid   = true;
-		$message = null;
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$valid   = false;
-				$message = __( 'Security token invalid', 'racketmanager' );
+	public function save_add_points(): void {
+		$return = $this->check_security_token();
+		if ( ! isset( $return->error ) ) {
+			$table_id = isset( $_POST['table_id'] ) ? intval( $_POST['table_id'] ) : null;
+			if ( $table_id ) {
+				$league_entry = get_league_team( $table_id );
+				if ( $league_entry ) {
+                    $add_points = isset( $_POST['points'] ) ? intval( $_POST['points'] ) : 0;
+                    $league_entry->amend_points( $add_points );
+				} else {
+					$return->error = true;
+					$return->msg   = __( 'League entry not found', 'racketmanager' );
+                }
 			}
+		}
+		if ( isset( $return->error ) ) {
+			wp_send_json_error( $return->msg, '500' );
 		} else {
-			$valid   = false;
-			$message = __( 'No security token found in request', 'racketmanager' );
-		}
-		if ( $valid ) {
-			$league_id = isset( $_POST['league_id'] ) ? intval( $_POST['league_id'] ) : null;
-			if ( $league_id ) {
-				$league = get_league( $league_id );
-				if ( $league ) {
-					$team_id = isset( $_POST['team_id'] ) ? intval( $_POST['team_id'] ) : null;
-					if ( $team_id ) {
-						$season = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
-						if ( $season ) {
-							$add_points = isset( $_POST['points'] ) ? intval( $_POST['points'] ) : 0;
-							$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-								$wpdb->prepare(
-									"UPDATE {$wpdb->racketmanager_table} SET `add_points` = %s WHERE `team_id` = %d AND `league_id` = %d AND `season` = %s",
-									$add_points,
-									$team_id,
-									$league->id,
-									$season
-								)
-							);
-							$league->set_teams_rank( $season );
-						}
-					}
-				}
-			}
-		}
-		if ( $valid ) {
 			wp_send_json_success();
-		} else {
-			wp_send_json_error( $message, '500' );
 		}
 	}
 	/**
@@ -91,20 +67,10 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 	 *
 	 * @see admin/match.php
 	 */
-	public function insert_home_stadium() {
-		$valid   = true;
-		$message = null;
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$valid   = false;
-				$message = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$valid   = false;
-			$message = __( 'No security token found in request', 'racketmanager' );
-		}
-		if ( $valid ) {
-			$stadium = '';
+	public function insert_home_stadium(): void {
+		$stadium = null;
+		$return  = $this->check_security_token();
+		if ( ! isset( $return->error ) ) {
 			if ( isset( $_POST['team_id'] ) ) {
 				$team_id = get_team( intval( $_POST['team_id'] ) );
 				$team    = get_team( $team_id );
@@ -113,61 +79,44 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 				}
 			}
 		}
-		if ( $valid ) {
-			wp_send_json_success( $stadium );
+		if ( isset( $return->error ) ) {
+			wp_send_json_error( $return->msg, '500' );
 		} else {
-			wp_send_json_error( $message, '500' );
+			wp_send_json_success( $stadium );
 		}
 	}
 	/**
-	 * Set season dropdown for post metabox for match report
+	 * Set season dropdown for post meta-box for match report
 	 *
 	 * @see admin/admin.php
 	 */
-	public function set_season_dropdown() {
-		$valid   = true;
-		$message = null;
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$valid   = false;
-				$message = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$valid   = false;
-			$message = __( 'No security token found in request', 'racketmanager' );
-		}
-		if ( $valid ) {
+	public function set_season_dropdown(): void {
+		$output = null;
+		$return = $this->check_security_token();
+		if ( ! isset( $return->error ) ) {
 			if ( isset( $_POST['league_id'] ) ) {
 				$league = get_league( intval( $_POST['league_id'] ) );
 				$output = $league->get_season_dropdown( true );
 			} else {
-				$message = __( 'League not selected', 'racketmanager' );
+				$return->error = true;
+				$return->msg   = __( 'League not selected', 'racketmanager' );
 			}
 		}
-		if ( $valid ) {
-			wp_send_json_success( $output );
+		if ( isset( $return->error ) ) {
+			wp_send_json_error( $return->msg, '500' );
 		} else {
-			wp_send_json_error( $message, '500' );
+			wp_send_json_success( $output );
 		}
 	}
 	/**
-	 * Set matches dropdown for post metabox for match report
+	 * Set matches dropdown for post meta-box for match report
 	 *
 	 * @see admin/admin.php
 	 */
-	public function set_match_dropdown() {
-		$valid   = true;
-		$message = null;
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$valid   = false;
-				$message = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$valid   = false;
-			$message = __( 'No security token found in request', 'racketmanager' );
-		}
-		if ( $valid ) {
+	public function set_match_dropdown(): void {
+        $output = null;
+		$return = $this->check_security_token();
+		if ( ! isset( $return->error ) ) {
 			if ( isset( $_POST['league_id'] ) ) {
 				$league = get_league( intval( $_POST['league_id'] ) );
 				if ( isset( $_POST['season'] ) ) {
@@ -175,32 +124,24 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 					$output = $league->get_match_dropdown();
 				}
 			} else {
-				$message = __( 'Season not selected', 'racketmanager' );
+				$return->error = true;
+				$return->msg   = __( 'Season not selected', 'racketmanager' );
 			}
 		}
-		if ( $valid ) {
-			wp_send_json_success( $output );
+		if ( isset( $return->error ) ) {
+			wp_send_json_error( $return->msg, '500' );
 		} else {
-			wp_send_json_error( $message, '500' );
+			wp_send_json_success( $output );
 		}
 	}
 	/**
 	 * Ajax Response to get check if Team Exists
 	 */
-	public function check_team_exists() {
-		global $racketmanager;
-		$valid   = true;
-		$message = null;
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$valid   = false;
-				$message = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$valid   = false;
-			$message = __( 'No security token found in request', 'racketmanager' );
-		}
-		if ( $valid ) {
+	public function check_team_exists(): void {
+        global $racketmanager;
+        $found  = null;
+		$return = $this->check_security_token();
+		if ( ! isset( $return->error ) ) {
 			$found = false;
 			if ( isset( $_POST['name'] ) ) {
 				$name = stripslashes( sanitize_text_field( wp_unslash( $_POST['name'] ) ) );
@@ -210,37 +151,29 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 				}
 			}
 		}
-		if ( $valid ) {
-			wp_send_json_success( $found );
+		if ( isset( $return->error ) ) {
+			wp_send_json_error( $return->msg, '500' );
 		} else {
-			wp_send_json_error( $message, '500' );
+			wp_send_json_success( $found );
 		}
 	}
 	/**
 	 * Get clubs for player
 	 */
-	public function get_player_clubs() {
-		$return = new \stdClass();
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$return->error = true;
-				$return->msg   = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$return->error = true;
-			$return->msg   = __( 'No security token found in request', 'racketmanager' );
-		}
+	public function get_player_clubs(): void {
+        $player_clubs = array();
+		$return = $this->check_security_token();
 		if ( ! isset( $return->error ) ) {
 			$player_id = isset( $_POST['player'] ) ? intval( $_POST['player'] ) : null;
 			if ( $player_id ) {
 				$player = get_player( $player_id );
 				if ( $player ) {
 					$player_clubs = $player->get_clubs();
+					$return->msg = __( 'Captains emailed', 'racketmanager' );
 				} else {
 					$return->error = true;
 					$return->msg   = __( 'Player not found', 'racketmanager' );
 				}
-				$return->msg = __( 'Captains emailed', 'racketmanager' );
 			} else {
 				$return->error = true;
 				$return->msg   = __( 'No player passed', 'racketmanager' );
@@ -255,21 +188,21 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 	/**
 	 * Build screen to show match header
 	 */
-	public function show_admin_match_header() {
+	public function show_admin_match_header(): void {
 		$match_id = isset( $_GET['matchId'] ) ? intval( $_GET['matchId'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$match    = get_match( $match_id );
 		if ( $match ) {
 			ob_start();
 			?>
 			<div class="row justify-content-between" id="match-header-1">
-				<div class="col-auto leaguetitle"><?php echo esc_html( $match->league->title ); ?></div>
+				<div class="col-auto leagueTitle"><?php echo esc_html( $match->league->title ); ?></div>
 				<?php if ( isset( $match->match_day ) && $match->match_day > 0 ) { ?>
 					<div class="col-auto matchday">Week <?php echo esc_html( $match->match_day ); ?></div>
 				<?php } ?>
-				<div class="col-auto matchdate"><?php echo esc_html( substr( $match->date, 0, 10 ) ); ?></div>
+				<div class="col-auto matchDate"><?php echo esc_html( substr( $match->date, 0, 10 ) ); ?></div>
 			</div>
 			<div class="row justify-content-center" id="match-header-2">
-				<div class="col-auto matchtitle"><?php echo esc_html( $match->match_title ); ?></div>
+				<div class="col-auto matchTitle"><?php echo esc_html( $match->match_title ); ?></div>
 			</div>
 			<?php
 			$output = ob_get_contents();
@@ -280,37 +213,12 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 		}
 	}
 	/**
-	 * Build screen to allow input of match rubber scores
-	 */
-	public function show_rubbers() {
-		global $racketmanager;
-
-		$match_id = isset( $_GET['matchId'] ) ? intval( $_GET['matchId'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$match    = get_match( $match_id );
-		if ( $match ) {
-			$output = $racketmanager->show_match_screen( $match, true );
-			wp_send_json_success( $output );
-		} else {
-			wp_send_json_error( __( 'Match not found', 'racketmanager' ), 500 );
-		}
-	}
-	/**
 	 * Send match secretaries constitution
 	 *
 	 * @see templates/email/competition-entry-open.php
 	 */
-	public function email_constitution() {
-		global $racketmanager;
-		$return = new \stdClass();
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$return->error = true;
-				$return->msg   = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$return->error = true;
-			$return->msg   = __( 'No security token found in request', 'racketmanager' );
-		}
+	public function email_constitution(): void {
+		$return = $this->check_security_token();
 		if ( ! isset( $return->error ) ) {
 			$event_id = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : null;
 			if ( ! $event_id ) {
@@ -339,18 +247,9 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 	 *
 	 * @see templates/email/competition-entry-open.php
 	 */
-	public function notify_competition_entries_open() {
+	public function notify_competition_entries_open(): void {
 		global $racketmanager;
-		$return = new \stdClass();
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$return->error = true;
-				$return->msg   = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$return->error = true;
-			$return->msg   = __( 'No security token found in request', 'racketmanager' );
-		}
+		$return = $this->check_security_token();
 		if ( ! isset( $return->error ) ) {
 			$competition_id = isset( $_POST['competitionId'] ) ? intval( $_POST['competitionId'] ) : null;
 			if ( ! $competition_id ) {
@@ -402,18 +301,8 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 	 *
 	 * @see templates/email/competition-entry-open.php
 	 */
-	public function notify_tournament_entries_open() {
-		global $racketmanager;
-		$return = new \stdClass();
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$return->error = true;
-				$return->msg   = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$return->error = true;
-			$return->msg   = __( 'No security token found in request', 'racketmanager' );
-		}
+	public function notify_tournament_entries_open(): void {
+		$return = $this->check_security_token();
 		if ( ! isset( $return->error ) ) {
 			$tournament_id = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : '';
 			$tournament    = get_tournament( $tournament_id );
@@ -435,35 +324,26 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 	 *
 	 * @see templates/email/match-notification.php
 	 */
-	public function notify_teams_fixture() {
-		global $match, $racketmanager;
-		$valid = 'true';
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$valid   = false;
-				$message = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$valid   = false;
-			$message = __( 'No security token found in request', 'racketmanager' );
-		}
-		if ( $valid ) {
+	public function notify_teams_fixture(): void {
+		global $match;
+		$return = $this->check_security_token();
+		if ( ! isset( $return->error ) ) {
 			$message_sent = false;
 			if ( isset( $_POST['matchId'] ) ) {
 				$match        = get_match( sanitize_text_field( wp_unslash( $_POST['matchId'] ) ) );
 				$message_sent = $match->notify_next_match_teams();
 			}
 			if ( $message_sent ) {
-				$message = __( 'Teams notified', 'racketmanager' );
+				$return->msg = __( 'Teams notified', 'racketmanager' );
 			} else {
-				$valid   = false;
-				$message = __( 'No notification', 'racketmanager' );
+				$return->error = false;
+				$return->msg   = __( 'No notification', 'racketmanager' );
 			}
 		}
-		if ( $valid ) {
-			wp_send_json_success( array( 'message' => $message ) );
+		if ( isset( $return->error ) ) {
+			wp_send_json_error( $return->msg, '500' );
 		} else {
-			wp_send_json_error( $message, '500' );
+			wp_send_json_success( array( 'message' => $return->msg ) );
 		}
 	}
 	/**
@@ -471,18 +351,9 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 	 *
 	 * @see templates/email/send_fixtures.php
 	 */
-	public function send_fixtures() {
+	public function send_fixtures(): void {
 		global $racketmanager, $racketmanager_shortcodes, $event;
-		$return = new \stdClass();
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$return->error = true;
-				$return->msg   = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$return->error = true;
-			$return->msg   = __( 'No security token found in request', 'racketmanager' );
-		}
+		$return = $this->check_security_token();
 		if ( ! isset( $return->error ) ) {
 			$event_id          = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : null;
 			$event             = get_event( $event_id );
@@ -491,7 +362,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 			$return            = array();
 			$from_email        = $this->get_confirmation_email( $event->competition->type );
 			$organisation_name = $racketmanager->site_name;
-			$leagues           = $event->get_leagues( array() );
+			$leagues           = $event->get_leagues();
 			foreach ( $leagues as $league ) {
 				$league = get_league( $league->id );
 				$teams  = $league->get_league_teams( array( 'get_details' => true ) );
@@ -506,7 +377,6 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 					$headers[]     = 'From: ' . ucfirst( $event->competition->type ) . ' Secretary <' . $from_email . '>';
 					$headers[]     = 'cc: ' . ucfirst( $event->competition->type ) . ' Secretary <' . $from_email . '>';
 					$email_subject = $racketmanager->site_name . ' - ' . $league->title . ' - Season ' . $team->season . ' - Fixtures - ' . $team->title;
-					$email_to      = '';
 					if ( isset( $team->contactemail ) ) {
 						$email_to = $team->captain . ' <' . $team->contactemail . '>';
 						$club     = get_club( $team->club_id );
@@ -551,18 +421,12 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 	 *
 	 * @see templates/email/match-approval-pending.php
 	 */
-	public function set_tournament_dates() {
+	public function set_tournament_dates(): void {
 		global $racketmanager;
-		$return = new \stdClass();
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$return->error = true;
-				$return->msg   = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$return->error = true;
-			$return->msg   = __( 'No security token found in request', 'racketmanager' );
-		}
+        $date_open     = null;
+        $date_closing  = null;
+        $date_withdraw = null;
+		$return        = $this->check_security_token();
 		if ( ! isset( $return->error ) ) {
 			$grade      = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : '';
 			$date_start = isset( $_POST['dateStart'] ) ? sanitize_text_field( wp_unslash( $_POST['dateStart'] ) ) : null;
@@ -590,5 +454,23 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 			$return->date_withdraw = $date_withdraw;
 			wp_send_json_success( $return );
 		}
+	}
+
+	/**
+	 * @return \stdClass
+	 */
+	public function check_security_token(): \stdClass {
+		$return = new \stdClass();
+		if ( isset( $_POST['security'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
+				$return->error = true;
+				$return->msg   = __( 'Security token invalid', 'racketmanager' );
+			}
+		} else {
+			$return->error = true;
+			$return->msg   = __( 'No security token found in request', 'racketmanager' );
+		}
+
+		return $return;
 	}
 }

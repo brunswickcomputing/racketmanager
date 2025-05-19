@@ -804,4 +804,23 @@ final class Racketmanager_League_Team {
 		);
 		wp_cache_set( $this->id, $this, 'league-teams' );
 	}
+	/**
+	 * Add/remove points
+	 *
+	 * @param float $points points to add/remove.
+	 */
+	public function amend_points( float $points ): void {
+		global $wpdb;
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"UPDATE $wpdb->racketmanager_table SET `add_points` = %s WHERE `id` = %d",
+				$points,
+				$this->table_id,
+			)
+		);
+        $this->add_points = $points;
+		$league = get_league( $this->league_id );
+		$league?->set_teams_rank( $this->season );
+		wp_cache_set( $this->id, $this, 'league-teams' );
+	}
 }

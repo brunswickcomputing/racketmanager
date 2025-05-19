@@ -1695,14 +1695,15 @@ class Racketmanager_League {
 		}
 		return $team;
 	}
+
 	/**
 	 * Gets matches from database
 	 *
 	 * @param array $query_args query arguments.
 	 *
-	 * @return array|int of matches
+	 * @return array|int|object of matches
 	 */
-	public function get_matches( array $query_args ): array|int {
+	public function get_matches( array $query_args ): array|int|object {
 		global $wpdb;
 		$old_query_args = $this->match_query_args;
 		// set query args.

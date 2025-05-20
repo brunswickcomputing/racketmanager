@@ -823,9 +823,9 @@ final class Racketmanager_Tournament {
 	 * Get players function
 	 *
 	 * @param array $args optional arguments.
-	 * @return array
+	 * @return array|int
 	 */
-	public function get_players(array $args = array() ): array {
+	public function get_players(array $args = array() ): array|int {
 		global $wpdb;
 
 		$defaults = array(

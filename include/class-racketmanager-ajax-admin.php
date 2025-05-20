@@ -455,22 +455,4 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 			wp_send_json_success( $return );
 		}
 	}
-
-	/**
-	 * @return \stdClass
-	 */
-	public function check_security_token(): \stdClass {
-		$return = new \stdClass();
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$return->error = true;
-				$return->msg   = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$return->error = true;
-			$return->msg   = __( 'No security token found in request', 'racketmanager' );
-		}
-
-		return $return;
-	}
 }

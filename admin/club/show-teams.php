@@ -27,7 +27,7 @@ namespace Racketmanager;
 					<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
 					<option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
 				</select>
-				<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doteamdel" id="doteamdel" class="btn btn-secondary action" />
+				<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doTeamDel" id="doTeamDel" class="btn btn-secondary action" />
 			</div>
 
 			<div class="container">

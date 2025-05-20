@@ -73,7 +73,7 @@ if ( isset( $_GET['tournament'] ) ) { //phpcs:ignore WordPress.Security.NonceVer
 			<select name="action" size="1">
 				<option value="addCompetitionsToSeason"><?php esc_html_e( 'Add', 'racketmanager' ); ?></option>
 			</select>
-			<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doaddCompetitionsToSeason" id="doaddCompetitionsToSeason" class="btn btn-primary action" />
+			<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doAddCompetitionsToSeason" id="doAddCompetitionsToSeason" class="btn btn-primary action" />
 			</div>
 			<div class="container">
 			<div class="row table-header">

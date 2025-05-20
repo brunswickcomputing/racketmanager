@@ -483,6 +483,12 @@ final class Racketmanager_Match {
 	 */
 	public string $walkover;
 	/**
+	 * Share
+	 *
+	 * @var string
+	 */
+	public string $share;
+	/**
 	 * Retired
 	 *
 	 * @var string

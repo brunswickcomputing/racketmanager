@@ -2655,11 +2655,11 @@ final class Racketmanager_Match {
 	/**
 	 * Chase match results
 	 *
-	 * @param false|int $time_period time Period that result is overdue.
+	 * @param false|string $time_period time Period that result is overdue.
 	 *
 	 * @return boolean $message_sent Indicator to show if message was sent.
 	 */
-	public function chase_match_result( false|int $time_period = false ): bool {
+	public function chase_match_result( false|string $time_period = false ): bool {
 		global $racketmanager;
 		$message_sent                = false;
 		$headers                     = array();
@@ -2699,12 +2699,12 @@ final class Racketmanager_Match {
 	/**
 	 * Chase match approval
 	 *
-	 * @param false|int $time_period time Period that match result confirmation is overdue.
+	 * @param false|string $time_period time Period that match result confirmation is overdue.
 	 * @param boolean $override Override indicator.
 	 *
 	 * @return boolean $message_sent Indicator to show if message was sent.
 	 */
-	public function chase_match_approval( false|int $time_period = false, bool $override = false ): bool {
+	public function chase_match_approval( false|string $time_period = false, bool $override = false ): bool {
 		global $racketmanager;
 		$rm_options                            = $racketmanager->get_options();
 		$confirmation_required                 = $rm_options[ $this->league->event->competition->type ]['confirmationRequired'];

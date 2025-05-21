@@ -53,7 +53,7 @@ if ( ! empty( $player->entry ) ) {
 		<input type="hidden" name="tournamentId" id="tournamentId" value="<?php echo esc_html( $tournament->id ); ?>" />
 		<input type="hidden" name="tournamentDateEnd" id="tournamentDateEnd" value="<?php echo esc_html( $tournament->date ); ?>" />
 		<input type="hidden" name="season" id="season" value="<?php echo esc_html( $tournament->season ); ?>" />
-		<input type="hidden" name="playerId" value="<?php echo esc_attr( $player->id ); ?>" />
+		<input type="hidden" name="playerId" id="playerId" value="<?php echo esc_attr( $player->id ); ?>" />
 		<input type="hidden" id="playerGender" value="<?php echo esc_attr( $player->gender ); ?>" />
 		<input type="hidden" id="competitionFee" name="competitionFee" value="<?php echo esc_attr( $tournament->fees->competition ); ?>" />
 		<div class="module module--card">

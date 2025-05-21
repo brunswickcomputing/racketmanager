@@ -584,10 +584,10 @@ final class Racketmanager_League_Team {
 		<ul class="list--inline list">
 			<?php
 			foreach ( $matches as $match ) {
-				if ( $this->id === $match->winner_id ) {
+				if ( $this->id === intval( $match->winner_id ) ) {
 					$match_status_class = 'winner';
 					$match_status_text  = 'W';
-				} elseif ( $this->id === $match->loser_id ) {
+				} elseif ( $this->id === intval( $match->loser_id ) ) {
 					$match_status_class = 'loser';
 					$match_status_text  = 'L';
 				} elseif ( '-1' === $match->winner_id && '-1' === $match->loser_id ) {

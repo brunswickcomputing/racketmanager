@@ -215,7 +215,7 @@ $msg         = null;
 								$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 							}
 							?>
-							<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="max_teams" id="max_teams" placeholder="<?php esc_html_e( 'Max teams', 'racketmanager' ); ?>" onchange="Racketmanager.setNumMatchDays(event)" value="<?php echo isset( $max_teams ) ? esc_html( $max_teams ) : null; ?>" />
+							<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="max_teams" id="max_teams" placeholder="<?php esc_html_e( 'Max teams', 'racketmanager' ); ?>" onchange="Racketmanager.setNumMatchDays()" value="<?php echo isset( $max_teams ) ? esc_html( $max_teams ) : null; ?>" />
 							<label for="max_teams" class="form-label"><?php esc_html_e( 'Max teams per league', 'racketmanager' ); ?></label>
 							<?php
 							if ( $is_invalid ) {
@@ -365,11 +365,11 @@ $msg         = null;
 					?>
 					<legend class="form-check-label <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Fixtures', 'racketmanager' ); ?></legend>
 					<div class="form-check form-check-inline">
-						<input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="homeAway" id="homeAwayTrue" onclick="Racketmanager.setNumMatchDays(event)" value="true" <?php echo empty( $home_away ) ? null : ' checked'; ?> />
+						<input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="homeAway" id="homeAwayTrue" onclick="Racketmanager.setNumMatchDays()" value="true" <?php echo empty( $home_away ) ? null : ' checked'; ?> />
 						<label class="form-check-label" for="homeAwayTrue"><?php echo esc_html( $home_away_desc_true ); ?></label>
 					</div>
 					<div class="form-check form-check-inline">
-						<input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="homeAway" id="homeAwayFalse" onclick="Racketmanager.setNumMatchDays(event)" value="false"<?php echo empty( $home_away ) ? ' checked' : null; ?> />
+						<input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="homeAway" id="homeAwayFalse" onclick="Racketmanager.setNumMatchDays()" value="false"<?php echo empty( $home_away ) ? ' checked' : null; ?> />
 						<label class="form-check-label" for="homeAwayFalse"><?php echo esc_html( $home_away_desc_false ); ?></label>
 					</div>
 					<?php
@@ -417,7 +417,7 @@ $msg         = null;
 							$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 						}
 						?>
-						<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="round_length" id="round_length" value="<?php echo isset( $round_length ) ? esc_html( $round_length ) : null; ?>" onchange="Racketmanager.setEndDate(event)" />
+						<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="round_length" id="round_length" value="<?php echo isset( $round_length ) ? esc_html( $round_length ) : null; ?>" onchange="Racketmanager.setEndDate()" />
 						<label for="round_length" class="form-label"><?php esc_html_e( 'Round length (days)', 'racketmanager' ); ?></label>
 						<?php
 						if ( $is_invalid ) {
@@ -443,7 +443,7 @@ $msg         = null;
 								$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 							}
 							?>
-							<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="home_away_diff" id="home_away_diff" value="<?php echo isset( $home_away_diff ) ? esc_html( $home_away_diff ) : null; ?>" onchange="Racketmanager.setEndDate(event)"/>
+							<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="home_away_diff" id="home_away_diff" value="<?php echo isset( $home_away_diff ) ? esc_html( $home_away_diff ) : null; ?>" onchange="Racketmanager.setEndDate()"/>
 							<label for="home_away_diff" class="form-label"><?php esc_html_e( 'Fixture gap (weeks)', 'racketmanager' ); ?></label>
 							<?php
 							if ( $is_invalid ) {
@@ -466,7 +466,7 @@ $msg         = null;
 								$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 							}
 							?>
-							<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="filler_weeks" id="filler_weeks" value="<?php echo isset( $filler_weeks ) ? esc_html( $filler_weeks ) : null; ?>" onchange="Racketmanager.setEndDate(event)" />
+							<input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="filler_weeks" id="filler_weeks" value="<?php echo isset( $filler_weeks ) ? esc_html( $filler_weeks ) : null; ?>" onchange="Racketmanager.setEndDate()" />
 							<label for="filler_weeks" class="form-label"><?php esc_html_e( 'Filler weeks', 'racketmanager' ); ?></label>
 							<?php
 							if ( $is_invalid ) {
@@ -614,7 +614,7 @@ $msg         = null;
 							$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 						}
 						?>
-						<input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateStart" id="dateStart" value="<?php echo isset( $current_season->date_start ) ? esc_html( $current_season->date_start ) : null; ?>" onchange="Racketmanager.setEndDate(event)" />
+						<input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateStart" id="dateStart" value="<?php echo isset( $current_season->date_start ) ? esc_html( $current_season->date_start ) : null; ?>" onchange="Racketmanager.setEndDate()" />
 						<label for="dateStart" class="form-label"><?php esc_html_e( 'Start Date', 'racketmanager' ); ?></label>
 						<?php
 						if ( $is_invalid ) {

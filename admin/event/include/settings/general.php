@@ -48,7 +48,7 @@ $tab_name = 'general';
 					$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 				}
 				?>
-				<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="type" id="type" onchange="Racketmanager.setEventName(event)">
+				<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="type" id="type" onchange="Racketmanager.setEventName()">
 					<option disabled <?php selected( null, empty( $event->type ) ? null : $event->type ); ?>><?php esc_html_e( 'Select type', 'racketmanager' ); ?></option>
 					<?php
 					foreach ( $types as $event_type => $type_desc ) {
@@ -81,7 +81,7 @@ $tab_name = 'general';
 					$msg        = $racketmanager->error_messages[$msg_id] ?? null;
 				}
 				?>
-				<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name='age_limit' id='age_limit' onchange="Racketmanager.setEventName(event)">
+				<select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name='age_limit' id='age_limit' onchange="Racketmanager.setEventName()">
 					<option disabled <?php selected( null, empty( $event->config->age_limit ) ? null : $event->config->age_limit ); ?>><?php esc_html_e( 'Select age limit', 'racketmanager' ); ?></option>
 					<?php
 					foreach ( $age_limits as $key => $label ) {

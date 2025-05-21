@@ -1,4 +1,4 @@
-let Racketmanager = new Object();
+let Racketmanager = {};
 Racketmanager.getEventDropdown = function (competition_id) {
 	let notifyField = "#events";
 	jQuery('#leagues').hide();
@@ -118,7 +118,7 @@ Racketmanager.saveAddPoints = function(points, table_id) {
 	jQuery(notifyField).text('');
 	let loadingTeam = jQuery('#loading_' + table_id);
 	loadingTeam.css("display", "inline");
-	loadingTeam.html("<img src='" + RacketManagerAjaxL10n.pluginUrl + "/images/loading.gif' />");
+	loadingTeam.html("<img alt=\"loading\" src='" + RacketManagerAjaxL10n.pluginUrl + "/images/loading.gif' />");
 	jQuery.ajax({
 		url: ajaxurl,
 		type: "POST",
@@ -151,7 +151,7 @@ Racketmanager.saveAddPoints = function(points, table_id) {
 
 Racketmanager.isLoading = function(id) {
   document.getElementById(id).style.display = 'inline';
-  document.getElementById(id).innerHTML="<img src='"+RacketManagerAjaxL10n.pluginUrl+"/images/loading.gif' />";
+  document.getElementById(id).innerHTML="<img alt=\"loading\" src='"+RacketManagerAjaxL10n.pluginUrl+"/images/loading.gif' />";
 };
 
 Racketmanager.doneLoading = function(id) {
@@ -159,28 +159,28 @@ Racketmanager.doneLoading = function(id) {
 };
 
 Racketmanager.setMatchDayPopUp = function (match_day, i, max_matches, mode) {
-	if (i == 0 && mode == 'add') {
+	if (i === 0 && mode === 'add') {
 		for (let xx = 1; xx < max_matches; xx++) {
-			let formfield = "#match_day_" + xx;
-			jQuery(formfield).val(match_day);
+			let formField = "#match_day_" + xx;
+			jQuery(formField).val(match_day);
 		}
 	}
 };
 
 Racketmanager.setMatchDate = function (match_date, i, max_matches, mode) {
-	if (i == 0 && mode == 'add') {
+	if (i === 0 && mode === 'add') {
 		for (let xx = 1; xx < max_matches; xx++) {
-			let formfield = "#mydatepicker\\[" + xx + "\\]";
-			jQuery(formfield).val(match_date);
+			let formField = "#myDatePicker\\[" + xx + "\\]";
+			jQuery(formField).val(match_date);
 		}
 	}
 };
 
 Racketmanager.setMatchDays = function (match_date, i, max_rounds, mode) {
-	if (mode == 'add') {
+	if (mode === 'add') {
 		for (let xx = i; xx < max_rounds; xx++) {
-			let formfield = "#matchDate-" + xx;
-			jQuery(formfield).val(match_date);
+			let formField = "#matchDate-" + xx;
+			jQuery(formField).val(match_date);
 		}
 	}
 };
@@ -201,7 +201,7 @@ Racketmanager.insertHomeStadium = function(team_id, i) {
 		},
 		success: function (response) {
 			let stadium = response.data;
-			if (jQuery(notifyField).val() == '') {
+			if (jQuery(notifyField).val() === '') {
 				jQuery(notifyField).val(stadium);
 			}
 		},
@@ -246,48 +246,6 @@ Racketmanager.adminMatchHeader = function (matchId) {
 		}
 	});
 };
-Racketmanager.showRubbers = function(link) {
-	let matchId = jQuery(link).attr('id');
-	let myModal = new bootstrap.Modal(document.getElementById('modalMatch'), {
-		keyboard: true, backdrop: true, focus: true
-	})
-	Racketmanager.adminMatchHeader(matchId);
-	let notifyField = "#showMatchRubbers";
-	jQuery(notifyField).removeClass("message-error");
-	jQuery(notifyField).empty();
-	myModal.show()
-	jQuery("#viewMatchRubbers").show();
-	jQuery("#splash").css('opacity', 1);
-	jQuery("#splash").show();
-	jQuery.ajax({
-		url: ajaxurl,
-		type: "GET",
-		data: {
-			"matchId": matchId,
-			"action": "racketmanager_show_rubbers"
-		},
-		success: function (response) {
-			jQuery(notifyField).empty();
-			jQuery(notifyField).html(response.data);
-		},
-		error: function (response) {
-			if (response.responseJSON) {
-				let message = response.responseJSON.data;
-				jQuery(notifyField).show();
-				jQuery(notifyField).html(message);
-			} else {
-				jQuery(notifyField).text(response.statusText);
-			}
-			jQuery(notifyField).show();
-			jQuery(notifyField).addClass('message-error');
-		},
-		complete: function () {
-			jQuery("#splash").css('opacity', 0);
-			jQuery("#splash").hide();
-		}
-	});
-
-};
 Racketmanager.updateResults = function(link) {
 
 	let $match = document.getElementById('current_match_id');
@@ -296,8 +254,7 @@ Racketmanager.updateResults = function(link) {
 	let $form = jQuery('#match-rubbers').serialize();
 	$form += "&action=racketmanager_update_rubbers";
 	jQuery(".is-invalid").removeClass("is-invalid");
-	jQuery("#updateResponse").removeClass("message-success");
-	jQuery("#updateResponse").removeClass("message-error");
+	jQuery("#updateResponse").removeClass("message-success message-error");
 	jQuery("#showMatchRubbers").hide();
 	jQuery("#splash").css('opacity', 1);
 	jQuery("#splash").show();
@@ -315,50 +272,48 @@ Racketmanager.updateResults = function(link) {
 			jQuery("#updateResponse").delay(10000).fadeOut('slow');
 			let $homepoints = $response[1];
 			let $awaypoints = $response[2];
-			let $matchhome = 0;
-			let $matchaway = 0;
-			let $formfield = '';
+			let matchHome = 0;
+			let matchAway = 0;
+			let $formField = '';
 			for (let i in $homepoints) {
-				$formfield = "#home_points-" + i;
-				let $fieldval = $homepoints[i];
-				jQuery($formfield).val($fieldval);
-				$matchhome = +$matchhome + +$homepoints[i];
+				$formField = "#home_points-" + i;
+				let fieldVal = $homepoints[i];
+				jQuery($formField).val(fieldVal);
+				matchHome = +matchHome + +$homepoints[i];
 			}
 			for (let i in $awaypoints) {
-				$formfield = "#away_points-" + i;
-				let $fieldval = $awaypoints[i];
-				jQuery($formfield).val($fieldval);
-				$matchaway = +$matchaway + +$awaypoints[i];
+				$formField = "#away_points-" + i;
+				let fieldVal = $awaypoints[i];
+				jQuery($formField).val(fieldVal);
+				matchAway = +matchAway + +$awaypoints[i];
 			}
 			let $updatedRubbers = $response[3];
 			let rubberNo = 1;
 			for (let r in $updatedRubbers) {
-				let $rubber = $updatedRubbers[r];
-				for (let t in $rubber['players']) {
-					let $team = $rubber['players'][t];
-					for (let p = 0; p < $team.length; p++) {
-						let $player = $team[p];
+				let rubber = $updatedRubbers[r];
+				for (let t in rubber['players']) {
+					let team = rubber['players'][t];
+					for (let p = 0; p < team.length; p++) {
+						let player = team[p];
 						let id = p + 1;
-						let formfield = '#' + t + 'player' + id + '_' + rubberNo;
-						let fieldval = $player;
-						jQuery(formfield).val(fieldval);
+						let formField = '#' + t + 'player' + id + '_' + rubberNo;
+						jQuery(formField).val(player);
 					}
 				}
-				for (let s in $rubber['sets']) {
-					let team = $rubber['sets'][s];
+				for (let s in rubber['sets']) {
+					let team = rubber['sets'][s];
 					for (let p in team) {
 						let score = team[p];
-						let formfield = '#' + 'set_' + rubberNo + '_' + s + '_' + p;
-						let fieldval = score;
-						jQuery(formfield).val(fieldval);
+						let formField = '#' + 'set_' + rubberNo + '_' + s + '_' + p;
+						jQuery(formField).val(score);
 					}
 				}
 				rubberNo++;
 			}
-			$formfield = "#home_points-" + $matchId;
-			jQuery($formfield).val($matchhome);
-			$formfield = "#away_points-" + $matchId;
-			jQuery($formfield).val($matchaway);
+			$formField = "#home_points-" + $matchId;
+			jQuery($formField).val(matchHome);
+			$formField = "#away_points-" + $matchId;
+			jQuery($formField).val(matchAway);
 		},
 		error: function (response) {
 			if (response.responseJSON) {
@@ -416,18 +371,18 @@ Racketmanager.updateMatchResults = function(link) {
 				jQuery("#updateResponse").addClass('message-error');
 				let $errFields = $response[4];
 				$errFields.array.forEach($errField => {
-					let $formfield = "#" + $errField[i];
-          			jQuery($formfield).addClass('is-invalid');
+					let $formField = "#" + $errField[i];
+          			jQuery($formField).addClass('is-invalid');
 				});
     		} else {
 				let $homepoints = $response[1];
-				let $formfield = "#home_points";
-				let $fieldval = $homepoints;
-  				jQuery($formfield).val($fieldval);
+				let $formField = "#home_points";
+				let fieldVal = $homepoints;
+  				jQuery($formField).val(fieldVal);
 				let $awaypoints = $response[2];
-				$formfield = "#away_points";
-				$fieldval = $awaypoints;
-  				jQuery($formfield).val($fieldval);
+				$formField = "#away_points";
+				fieldVal = $awaypoints;
+  				jQuery($formField).val(fieldVal);
     		}
 			jQuery("#splash").css('opacity', 0);
 			jQuery("#splash").hide();
@@ -596,19 +551,19 @@ Racketmanager.notifyTournamentEntryOpen = function(e, tournamentId) {
 };
 Racketmanager.getImportOption = function(option) {
 	let selectedOption = option;
-	if (selectedOption == 'table' || selectedOption == 'fixtures') {
+	if (selectedOption === 'table' || selectedOption === 'fixtures') {
 		jQuery("#competitions").show();
 		jQuery("#events").show();
 		jQuery("#leagues").show();
 		jQuery("#seasons").show();
 		jQuery("#clubs").hide();
-	} else if (selectedOption == 'clubplayers') {
+	} else if (selectedOption === 'clubplayers') {
 		jQuery("#clubs").show();
 		jQuery("#competitions").hide();
 		jQuery("#events").hide();
 		jQuery("#leagues").hide();
 		jQuery("#seasons").hide();
-	} else if (selectedOption == 'players') {
+	} else if (selectedOption === 'players') {
 		jQuery("#clubs").hide();
 		jQuery("#competitions").hide();
 		jQuery("#events").hide();
@@ -618,11 +573,8 @@ Racketmanager.getImportOption = function(option) {
 };
 Racketmanager.checkAll = function(form) {
 	for (let i = 0, n = form.elements.length; i < n; i++) {
-		if(form.elements[i].type == "checkbox" && !(form.elements[i].getAttribute('onclick',2))) {
-			if (form.elements[i].checked && form.elements[i].checked != "0")
-			form.elements[i].checked = false;
-			else
-			form.elements[i].checked = true;
+		if(form.elements[i].type === "checkbox" && !(form.elements[i].getAttribute('onclick',2))) {
+			form.elements[i].checked = !(form.elements[i].checked && form.elements[i].checked !== 0);
 		}
 	}
 };
@@ -630,7 +582,7 @@ Racketmanager.checkAll = function(form) {
 Racketmanager.checkPointRule = function (rule) {
 
 	// manual rule selected
-	if ( rule == 'user' ) {
+	if ( rule === 'user' ) {
 		let new_element_contents = "";
 		new_element_contents += "<input type='text' name='forwin' id='forwin' value=" + forwin + " size='2' />";
 		new_element_contents += "<input type='text' name='forwin_overtime' id='forwin_overtime' value=" + forwin_overtime + " size='2' />";
@@ -658,8 +610,7 @@ Racketmanager.checkPointRule = function (rule) {
 
 Racketmanager.insertPlayer = function(id, target) {
 	tb_remove();
-	let player = document.getElementById(id).value;
-	document.getElementById(target).value = player;
+	document.getElementById(target).value = document.getElementById(id).value;
 }
 
 Racketmanager.removeField = function(id, parent_id) {
@@ -680,7 +631,6 @@ Racketmanager.sendFixtures = function(eventId) {
 	jQuery(notifyField1).removeClass('alert--success alert--danger');
 	let notifyField2 = "#alert-season-response";
 	jQuery(notifyField2).html('');
-	let notifyField = "#notifyMessage-" + eventId;
 	jQuery.ajax({
 		url: ajaxurl,
 		type: "POST",
@@ -719,11 +669,11 @@ Racketmanager.resetMatchScores = function (e, formId) {
 		.prop('checked', false)
 		.prop('selected', false);
 };
-Racketmanager.setTournamentOpenDate = function (e) {
+Racketmanager.setTournamentOpenDate = function () {
 	let date_openField = "#dateOpen";
 	let dateStartField = "#dateStart";
 	let dateCloseField = "#dateClose";
-	let dateWithdrawfield = "#dateWithdraw";
+	let dateWithdrawField = "#dateWithdraw";
 	let gradeField = '#grade';
 	let grade = jQuery(gradeField).val();
 	let date_start = jQuery(dateStartField).val();
@@ -749,7 +699,7 @@ Racketmanager.setTournamentOpenDate = function (e) {
 			let dateClose = response.data.date_closing;
 			jQuery(dateCloseField).val(dateClose);
 			let dateWithdraw = response.data.date_withdraw;
-			jQuery(dateWithdrawfield).val(dateWithdraw);
+			jQuery(dateWithdrawField).val(dateWithdraw);
 			jQuery(notifyField1).addClass('alert--success');
 			jQuery(notifyField1).delay(10000).fadeOut('slow');
 		},
@@ -767,16 +717,15 @@ Racketmanager.setTournamentOpenDate = function (e) {
 		}
 	});
 };
-Racketmanager.setNumMatchDays = function (e) {
+Racketmanager.setNumMatchDays = function () {
 	let homeAwayTrueField = "#homeAwayTrue";
-	let homeAwayFalseField = "#homeAwayFalseFalse";
-	let maxTeamsfield = "#max_teams";
+	let maxTeamsField = "#max_teams";
 	let numMatchDaysField = '#num_match_days';
-	let maxTeams = jQuery(maxTeamsfield).val();
+	let maxTeams = jQuery(maxTeamsField).val();
 	let homeAway = jQuery(homeAwayTrueField).is(':checked');
 	let numMatchDays = 0;
 	if (maxTeams) {
-		if (maxTeams % 2 != 0) {
+		if (maxTeams % 2 !== 0) {
 			maxTeams++;
 		}
 		numMatchDays = maxTeams - 1;
@@ -786,7 +735,7 @@ Racketmanager.setNumMatchDays = function (e) {
 		jQuery(numMatchDaysField).val(numMatchDays);
 	}
 };
-Racketmanager.setEndDate = function (e) {
+Racketmanager.setEndDate = function () {
 	let competitionTypeField = "#competitionType";
 	let competitionType = jQuery(competitionTypeField).val();
 	if (competitionType === 'league') {
@@ -800,11 +749,11 @@ Racketmanager.setEndDate = function (e) {
 		let roundLength = jQuery(roundLengthField).val();
 		let roundLengthWeeks = roundLength / 7;
 		let fillerWeeks = jQuery(fillerWeeksField).val();
-		if (fillerWeeks == '') {
+		if (fillerWeeks === '') {
 			fillerWeeks = 0;
 		}
 		let homeAwayDiff = jQuery(homeAwayDiffField).val();
-		if (homeAwayDiff == '') {
+		if (homeAwayDiff === '') {
 			homeAwayDiff = 0;
 		}
 		let numMatchDays = jQuery(numMatchDaysField).val();
@@ -824,10 +773,9 @@ Racketmanager.amendDate = function (date, adjustment) {
 	let year = newDate.toLocaleString("default", { year: "numeric" });
 	let month = newDate.toLocaleString("default", { month: "2-digit" });
 	let day = newDate.toLocaleString("default", { day: "2-digit" });
-	let returnDate = year + "-" + month + "-" + day;
-	return returnDate;
+	return year + "-" + month + "-" + day;
 };
-Racketmanager.setEventName = function (e) {
+Racketmanager.setEventName = function () {
 	let eventNameField = "#event_name";
 	let eventName = jQuery(eventNameField).val();
 	if (eventName) {

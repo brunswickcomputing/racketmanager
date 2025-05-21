@@ -145,7 +145,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 			$found = false;
 			if ( isset( $_POST['name'] ) ) {
 				$name = stripslashes( sanitize_text_field( wp_unslash( $_POST['name'] ) ) );
-				$team = $racketmanager->getteam_id( $name );
+				$team = $racketmanager->get_team_id( $name );
 				if ( $team ) {
 					$found = true;
 				}

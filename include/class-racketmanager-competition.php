@@ -810,7 +810,7 @@ class Racketmanager_Competition {
 	 */
 	public function set_settings( array $settings ): void {
 		global $wpdb, $racketmanager;
-		foreach ( $racketmanager->get_standings_display_options() as $key => $value ) {
+		foreach ( Racketmanager_Util::get_standings_display_options() as $key => $value ) {
 			$settings['standings'][ $key ] = isset( $settings['standings'][ $key ] ) ? 1 : 0;
 		}
 		$type = $settings['type'];

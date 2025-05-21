@@ -27,7 +27,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @var      object
 	 */
-	protected static $instance = null;
+	protected static ?RacketManager $instance = null;
 	/**
 	 * Error messages.
 	 *

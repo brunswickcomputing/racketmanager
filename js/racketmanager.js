@@ -2148,6 +2148,8 @@ Racketmanager.withdrawTournament = function (e) {
 	eventsEntered = jQuery(eventsEnteredRef).val();
 	tournamentRef = '#tournamentId';
 	tournamentId = jQuery(tournamentRef).val();
+	playerRef = '#playerId';
+	playerId = jQuery(playerRef).val();
 	let notifyField = "#partnerModal";
 	let modal = 'partnerModal';
 	jQuery(notifyField).val("");
@@ -2157,15 +2159,20 @@ Racketmanager.withdrawTournament = function (e) {
 							 ajax_var.url,
 							 {
 								 "tournamentId": tournamentId,
+								 "playerId": playerId,
 								 "eventsEntered": eventsEntered,
 								 "modal": modal,
 								 "action": action,
 								 "security": ajax_var.ajax_nonce,
 							 },
-							 function () {
-								 jQuery('#liEventDetails').removeClass('is-loading');
-								 jQuery(notifyField).show();
-								 jQuery(notifyField).modal('show');
+							 function ( response, status, xhr) {
+								 if ( 'error' === status ) {
+									 var msg = "Sorry but there was an error: ";
+								 } else {
+									 jQuery('#liEventDetails').removeClass('is-loading');
+									 jQuery(notifyField).show();
+									 jQuery(notifyField).modal('show');
+								 }
 							 }
 							 );
 };
@@ -2255,6 +2262,7 @@ Racketmanager.confirmTournamentWithdraw = function () {
 			}
 			jQuery(alertField).addClass('alert--success');
 			jQuery(alertResponseField).html(response.data);
+			Racketmanager.setTotalPrice();
 		},
 		error: function (response) {
 			if (response.responseJSON) {

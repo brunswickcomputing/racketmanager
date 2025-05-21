@@ -46,7 +46,7 @@ if ( empty( $event->player ) ) {
 								</h4>
 								<?php
 								foreach ( $player_matches['matches'] as $match ) {
-									echo $racketmanager->show_match_screen( $match, false, $event->player ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+									echo $racketmanager->show_match_screen( $match, $event->player ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								}
 							}
 							?>

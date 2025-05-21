@@ -2487,12 +2487,12 @@ class RacketManager {
 	/**
 	 * Show match screen
 	 *
-	 * @param object  $match match object.
-	 * @param boolean $is_edit_mode flag to indicate screen should be editable.
-	 * @param string  $player optional indicator.
+	 * @param object $match match object.
+	 * @param false|string $player optional indicator.
+	 *
 	 * @return string
 	 */
-	public function show_match_screen( $match, $is_edit_mode = true, $player = false ) {
+	public function show_match_screen( object $match, false|string $player = false ): string {
 		global $racketmanager_shortcodes;
 		if ( '' === $match->final_round ) {
 			$match->round = '';

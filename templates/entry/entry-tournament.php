@@ -356,7 +356,7 @@ if ( ! empty( $player->entry ) ) {
 																	<?php
 																	if ( $changes_allowed ) {
 																		?>
-																		<a href="/<?php echo esc_attr( seo_url( $event->name ) ); ?>-<?php echo esc_html( seo_url( __( 'set partner', 'racketmanager' ) ) ); ?>" onclick="Racketmanager.partnerModal(event, <?php echo esc_html( $event->id ); ?>)">
+																		<a href="/<?php echo esc_attr( seo_url( $event->name ) ); ?>-<?php echo esc_html( seo_url( __( 'set partner', 'racketmanager' ) ) ); ?>" class="tournamentEventEntry" data-event-id="<?php echo esc_attr( $event->id ); ?>">
 																		<?php
 																	}
 																	?>
@@ -457,7 +457,7 @@ if ( ! empty( $player->entry ) ) {
 							if ( $changes_allowed || $withdrawal_allowed ) {
 								?>
 								<div class="individual-entry__submit">
-									<button type="submit" class="btn btn-primary" id="entrySubmit" name="entrySubmit" onclick="Racketmanager.entryRequest(event, 'tournament')"><?php esc_html_e( 'Enter', 'racketmanager' ); ?></button>
+									<button type="submit" class="btn btn-primary" id="entrySubmit" name="entrySubmit" data-type="tournament"><?php esc_html_e( 'Enter', 'racketmanager' ); ?></button>
 								</div>
 								<?php
 							}
@@ -466,7 +466,7 @@ if ( ! empty( $player->entry ) ) {
 							<?php
 							if ( $withdrawal_allowed ) {
 								?>
-								<a role="button" onclick="Racketmanager.withdrawTournament(event)" class="btn btn--withdraw"><?php esc_html_e( 'Withdraw', 'racketmanager' ); ?></a>
+								<a role="button" class="btn btn--withdraw" id="tournamentWithdraw"><?php esc_html_e( 'Withdraw', 'racketmanager' ); ?></a>
 								<?php
 							}
 							?>
@@ -477,4 +477,18 @@ if ( ! empty( $player->entry ) ) {
 		</div>
 	</form>
 </div>
+<script type="text/javascript">
+    const eventLinks = document.querySelectorAll('.tournamentEventEntry');
+    eventLinks.forEach(el => el.addEventListener('click', function (e) {
+        let eventId = this.dataset.eventId;
+        Racketmanager.partnerModal(e, eventId);
+    }));
+    document.getElementById('entrySubmit').addEventListener('click', function (e) {
+        let type = this.dataset.type;
+        Racketmanager.entryRequest(e, type);
+    });
+    document.getElementById('tournamentWithdraw').addEventListener('click', function (e) {
+        Racketmanager.withdrawTournament(e);
+    });
+</script>
 <div class="modal" id="partnerModal" tabindex="-1"></div>

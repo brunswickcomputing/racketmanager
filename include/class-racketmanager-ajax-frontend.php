@@ -2252,12 +2252,13 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
         $partner_gender = null;
 		$return         = $this->check_security_token();
 		if ( ! isset( $return->error ) ) {
-			$event_id = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : 0;
-			$modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-			$gender   = isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : null;
-			$season   = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-			$date_end = isset( $_POST['dateEnd'] ) ? intval( $_POST['dateEnd'] ) : null;
-			$event    = get_event( $event_id );
+			$event_id  = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : 0;
+			$player_id = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
+			$modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+			$gender    = isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : null;
+			$season    = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+			$date_end  = isset( $_POST['dateEnd'] ) ? intval( $_POST['dateEnd'] ) : null;
+			$event     = get_event( $event_id );
 			if ( $event ) {
 				if ( 'M' === $gender ) {
 					if ( str_starts_with($event->type, 'M') || str_starts_with($event->type, 'B')) {
@@ -2288,6 +2289,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					<div class="modal-content">
 						<form id="team-partner" class="" action="#" method="post">
 							<?php wp_nonce_field( 'team-partner', 'racketmanager_nonce' ); ?>
+                            <input type="hidden" name="playerId" value="<?php echo esc_attr( $player_id ); ?>" />
 							<input type="hidden" name="eventId" value="<?php echo esc_attr( $event->id ); ?>" />
 							<input type="hidden" name="dateEnd" value="<?php echo esc_attr( $date_end ); ?>" />
 							<input type="hidden" name="season" value="<?php echo esc_attr( $season ); ?>" />
@@ -2543,70 +2545,75 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			if ( $tournament_id ) {
 				$tournament = get_tournament( $tournament_id );
 				if ( $tournament ) {
-					$player_id      = get_current_user_id();
-					$player         = get_player( $player_id );
-					$events_entered = $tournament->get_players(
-						array(
-							'count' => true,
-							'player' => $player_id,
-						)
-					);
-					if ( ! $events_entered ) {
-						$msg = __( 'You are not currently entered into any event.', 'racketmanager' );
-					} else {
-						$msg = null;
-					}
-					ob_start();
-					?>
-					<div class="modal-dialog modal-dialog-centered modal-lg">
-						<div class="modal-content">
-							<form id="tournament-withdrawal" class="" action="#" method="post">
-								<?php wp_nonce_field( 'team-partner', 'racketmanager_nonce' ); ?>
-								<input type="hidden" name="tournamentId" value="<?php echo esc_attr( $tournament->id ); ?>" />
-								<input type="hidden" name="playerId" value="<?php echo esc_attr( $player->id ); ?>" />
-								<input type="hidden" name="modal" value="<?php echo esc_attr( $modal ); ?>" />
-								<div class="modal-header modal__header">
-									<h4 class="modal-title"><?php esc_html_e( 'Withdraw', 'racketmanager' ) ; ?></h4>
-									<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-								</div>
-								<div class="modal-body ui-front">
-									<div class="container-fluid">
-										<div id="withdrawResponse" class="alert_rm alert--danger" <?php echo $events_entered ? 'style="display: none;"' : null; ?>>
-											<div class="alert__body">
-												<div class="alert__body-inner">
-													<span id="withdrawResponseText"><?php echo esc_html( $msg ); ?></span>
-												</div>
-											</div>
-										</div>
+					$player_id      = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
+                    if ( $player_id ) {
+						$player         = get_player( $player_id );
+						$events_entered = $tournament->get_players(
+							array(
+								'count' => true,
+								'player' => $player_id,
+							)
+						);
+						if ( ! $events_entered ) {
+							$msg = __( 'You are not currently entered into any event.', 'racketmanager' );
+						} else {
+							$msg = null;
+						}
+						ob_start();
+						?>
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content">
+                                <form id="tournament-withdrawal" class="" action="#" method="post">
+									<?php wp_nonce_field( 'team-partner', 'racketmanager_nonce' ); ?>
+                                    <input type="hidden" name="tournamentId" value="<?php echo esc_attr( $tournament->id ); ?>" />
+                                    <input type="hidden" name="playerId" value="<?php echo esc_attr( $player->id ); ?>" />
+                                    <input type="hidden" name="modal" value="<?php echo esc_attr( $modal ); ?>" />
+                                    <div class="modal-header modal__header">
+                                        <h4 class="modal-title"><?php esc_html_e( 'Withdraw', 'racketmanager' ) ; ?></h4>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body ui-front">
+                                        <div class="container-fluid">
+                                            <div id="withdrawResponse" class="alert_rm alert--danger" <?php echo $events_entered ? 'style="display: none;"' : null; ?>>
+                                                <div class="alert__body">
+                                                    <div class="alert__body-inner">
+                                                        <span id="withdrawResponseText"><?php echo esc_html( $msg ); ?></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+											<?php
+											if ( $events_entered ) {
+												?>
+                                                <div class="row">
+                                                    <div class="">
+                                                        <p><?php esc_html_e( 'You will be withdrawn from all events if you proceed.', 'racketmanager' ); ?></p>
+                                                    </div>
+                                                </div>
+												<?php
+											}
+											?>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
 										<?php
 										if ( $events_entered ) {
 											?>
-											<div class="row">
-												<div class="">
-													<p><?php esc_html_e( 'You will be withdrawn from all events if you proceed.', 'racketmanager' ); ?></p>
-												</div>
-											</div>
+                                            <button type="button" class="btn btn-primary" onclick="Racketmanager.confirmTournamentWithdraw(this)"><?php esc_html_e( 'Withdraw', 'racketmanager' ); ?></button>
 											<?php
 										}
 										?>
-									</div>
-								</div>
-								<div class="modal-footer">
-									<button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
-									<?php
-									if ( $events_entered ) {
-										?>
-										<button type="button" class="btn btn-primary" onclick="Racketmanager.confirmTournamentWithdraw(this)"><?php esc_html_e( 'Withdraw', 'racketmanager' ); ?></button>
-										<?php
-									}
-									?>
-								</div>
-							</form>
-						</div>
-					</div>
-					<?php
-					$output = ob_get_contents();
-					ob_end_clean();
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+						<?php
+						$output = ob_get_contents();
+						ob_end_clean();
+                    } else {
+						$return->error = true;
+						$return->msg   = __( 'Player id not found', 'racketmanager' );
+					}
 				} else {
 					$return->error = true;
 					$return->msg   = __( 'Tournament not found', 'racketmanager' );
@@ -2617,10 +2624,9 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			}
 		}
 		if ( isset( $return->error ) ) {
-			echo esc_html( $return->msg );
-		} else {
-			echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			$output = $return->msg;
 		}
+		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		wp_die();
 	}
 	/**
@@ -2636,12 +2642,17 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			if ( $tournament_id ) {
 				$tournament = get_tournament( $tournament_id );
 				if ( $tournament ) {
-					$player_id      = get_current_user_id();
-					$refund_amount  = $tournament->withdraw_player_entry( $player_id );
-					if ( $refund_amount ) {
-						$output = __( 'Tournament withdrawal successful and refund will be issued when tournament starts', 'racketmanager' );
+					$player_id      = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
+                    if ( $player_id ) {
+						$refund_amount  = $tournament->withdraw_player_entry( $player_id );
+						if ( $refund_amount ) {
+							$output = __( 'Tournament withdrawal successful and refund will be issued when tournament starts', 'racketmanager' );
+						} else {
+							$output = __( 'Tournament withdrawal successful', 'racketmanager' );
+						}
 					} else {
-						$output = __( 'Tournament withdrawal successful', 'racketmanager' );
+						$return->error = true;
+						$return->msg   = __( 'Player id not found', 'racketmanager' );
 					}
 				} else {
 					$return->error = true;

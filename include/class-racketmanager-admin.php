@@ -3948,7 +3948,7 @@ class RacketManager_Admin extends RacketManager {
 			// ignore header and empty lines.
 			if ( $i > 0 && count( $line ) > 1 ) {
 				$team    = $line[0];
-				$team_id = $this->getteam_id( $team );
+				$team_id = $this->get_team_id( $team );
 				if ( 0 !== $team_id ) {
 					$table_id = $league->add_team( $team_id, $season );
 					if ( $table_id ) {
@@ -4023,8 +4023,8 @@ class RacketManager_Admin extends RacketManager {
 				$match->match_day = $line[1] ?? '';
 				$match->date      = trim( $date );
 				$match->season    = $season;
-				$match->home_team = $this->getteam_id( $line[2] );
-				$match->away_team = $this->getteam_id( $line[3] );
+				$match->home_team = $this->get_team_id( $line[2] );
+				$match->away_team = $this->get_team_id( $line[3] );
 				if ( 0 !== $match->home_team && 0 !== $match->away_team ) {
 					$match->location          = $line[4] ?? '';
 					$match->group             = $line[5] ?? '';

@@ -507,14 +507,14 @@ class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
 						if ( $league->event->competition->is_player_entry ) {
 							$home_team_name = $this->get_player_team_name( $home_team_name );
 						}
-						$home_team               = $racketmanager->getteam_id( $home_team_name );
+						$home_team               = $racketmanager->get_team_id( $home_team_name );
 						$match_args['home_team'] = $home_team;
 					}
 					if ( $away_team_name ) {
 						if ( $league->event->competition->is_player_entry ) {
 							$away_team_name = $this->get_player_team_name( $away_team_name );
 						}
-						$away_team               = $racketmanager->getteam_id( $away_team_name );
+						$away_team               = $racketmanager->get_team_id( $away_team_name );
 						$match_args['away_team'] = $away_team;
 					}
 					if ( $match_day ) {

@@ -1904,7 +1904,7 @@ class RacketManager {
 	 * @param string $title title.
 	 * @return int
 	 */
-	public function getteam_id( $title ) {
+	public function get_team_id( string $title ): int {
 		global $wpdb;
 
 		$team = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching

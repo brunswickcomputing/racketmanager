@@ -792,76 +792,10 @@ class RacketManager {
 	public function racketmanager_register_exporter( $exporters_array ) {
 		$exporters_array['racketmanager_exporter'] = array(
 			'exporter_friendly_name' => 'Racketmanager exporter',
-			'callback'               => array( &$this, 'racketmanager_privacy_exporter' ),
+			'callback'               => array( 'Racketmanager\Racketmanager_Privacy_Exporters', 'user_data_exporter' ),
 		);
 		return $exporters_array;
 	}
-
-	/**
-	 * Run privacy exporter
-	 *
-	 * @param string $email_address email address to send report.
-	 * @param int    $page how many pages.
-	 */
-	public function racketmanager_privacy_exporter( $email_address, $page = 1 ) {
-		$page = (int) $page;
-
-		$data_to_export = array();
-
-		$user = get_user_by( 'email', $email_address );
-		if ( ! $user ) {
-			return array(
-				'data' => array(),
-				'done' => true,
-			);
-		}
-
-		$user_meta = get_user_meta( $user->ID );
-
-		$user_prop_to_export = array(
-			'gender'        => __( 'Gender', 'racketmanager' ),
-			'year_of_birth' => __( 'Year of birth', 'racketmanager' ),
-			'btm'           => __( 'LTA Tennis Number', 'racketmanager' ),
-			'remove_date'   => __( 'User Removed Date', 'racketmanager' ),
-			'contactno'     => __( 'Telephone Number', 'racketmanager' ),
-		);
-
-		$user_data_to_export = array();
-
-		foreach ( $user_prop_to_export as $key => $name ) {
-			switch ( $key ) {
-				case 'gender':
-				case 'btm':
-				case 'year_of_birth':
-				case 'remove_date':
-				case 'contactno':
-					$value = isset( $user_meta[ $key ][0] ) ? $user_meta[ $key ][0] : '';
-					break;
-				default:
-					$value = '';
-			}
-
-			if ( ! empty( $value ) ) {
-				$user_data_to_export[] = array(
-					'name'  => $name,
-					'value' => $value,
-				);
-			}
-		}
-
-		$data_to_export[] = array(
-			'group_id'    => 'user',
-			'group_label' => __( 'User', 'racketmanager' ),
-			'item_id'     => "user-{$user->ID}",
-			'data'        => $user_data_to_export,
-		);
-
-		return array(
-			'data' => $data_to_export,
-			'done' => true,
-		);
-	}
-
 	/**
 	 * Register Widget
 	 */

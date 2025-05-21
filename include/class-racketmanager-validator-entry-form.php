@@ -281,14 +281,14 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	 *
 	 * @param int $partner partner.
 	 * @param string $field_ref field reference.
-	 * @param string $field_name field name.
+	 * @param string|null $field_name field name.
 	 * @param object $event event object.
 	 * @param string $season season name.
 	 * @param int $player_id player id.
 	 * @param string $date_end end date of competition.
 	 * @return object $validation updated validation object.
 	 */
-	public function partner( int $partner, string $field_ref, string $field_name, object $event, string $season, int $player_id, string $date_end ): object {
+	public function partner( int $partner, string $field_ref, ?string $field_name, object $event, string $season, int $player_id, string $date_end ): object {
 		if ( empty( $field_name ) ) {
 			$error_field = 'partner';
 		} else {
@@ -307,8 +307,9 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 					'season' => $season,
 				)
 			);
+			$player_team = false;
 			foreach ( $partner_teams as $partner_team ) {
-				if ( ! in_array( (string)$player_id, $partner_team->player_id, true ) ) {
+				if ( ! in_array( $player_id, $partner_team->player_id, true ) ) {
 					$partner_found = true;
 				}
 			}

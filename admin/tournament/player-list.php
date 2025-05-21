@@ -7,15 +7,18 @@
 
 namespace Racketmanager;
 
-foreach ( $player_list as $key => $players ) {
+/** @var array  $player_list */
+/** @var bool   $entered */
+/** @var object $tournament */
+foreach ( $player_list as $players ) {
 	foreach ( $players as $player ) {
 		?>
 		<tr>
 			<td>
 				<?php
-				if ( $entered ) {
+				if ( $entered || ! empty( $player->user_email ) ) {
 					?>
-					<a href="/tournament/entry-form/<?php echo esc_attr( seo_url( $tournament->name ) ); ?>/player/<?php echo esc_attr( seo_url( $player->display_name ) ); ?>/">
+				<a href="/tournament/entry-form/<?php echo esc_attr( seo_url( $tournament->name ) ); ?>/player/<?php echo esc_attr( seo_url( $player->display_name ) ); ?>/">
 					<?php
 				}
 				?>

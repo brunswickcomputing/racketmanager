@@ -546,9 +546,9 @@ class Racketmanager_Competition {
 	 * Retrieve competition instance
 	 *
 	 * @param int|string $competition_id competition id.
-	 * @param string $search_term search.
+	 * @param string|null $search_term search.
 	 */
-	public static function get_instance( int|string $competition_id, string $search_term = 'id' ) {
+	public static function get_instance( int|string $competition_id, ?string $search_term = 'id' ) {
 		global $wpdb;
 		switch ( $search_term ) {
 			case 'name':

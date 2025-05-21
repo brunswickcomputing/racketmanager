@@ -11,9 +11,9 @@ namespace Racketmanager;
 /**
  * Send debug code to the Javascript console
  *
- * @param object|array|string $data Optional message that will be sent the error_log before the backtrace.
+ * @param object|array|string|null $data Optional message that will be sent the error_log before the backtrace.
  */
-function debug_to_console( object|array|string $data ): void {
+function debug_to_console( object|array|string|null $data ): void {
 	if ( is_array( $data ) || is_object( $data ) ) {
 		if ( is_array( $data ) ) {
 			error_log( 'PHP: array' ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
@@ -240,11 +240,11 @@ function get_club( object|int|string $club = null, string $search_term = 'id' ):
  * Get Competition object
  *
  * @param Racketmanager_Competition|int|string|null $competition Competition ID or competition object. Defaults to global $competition.
- * @param string $search_term type of search.
+ * @param string|null $search_term type of search.
  *
  * @return Racketmanager_Competition|null competition|null
  */
-function get_competition( Racketmanager_Competition|int|string $competition = null, string $search_term = 'id' ): Racketmanager_Competition|null {
+function get_competition( Racketmanager_Competition|int|string $competition = null, ?string $search_term = 'id' ): ?Racketmanager_Competition {
 	if ( empty( $competition ) && isset( $GLOBALS['competition'] ) ) {
 		$competition = $GLOBALS['competition'];
 	}
@@ -451,11 +451,11 @@ function get_tournament_entry( object|int|string $tournament_entry = null, strin
 /**
  * Get Team object
  *
- * @param object|int|null $team Team ID or team object. Defaults to global $team.
+ * @param object|int|null|string $team Team ID or team object. Defaults to global $team.
  *
  * @return object|null Team|null
  */
-function get_team( object|int $team = null ): Racketmanager_Team|null {
+function get_team( object|int|string $team = null ): ?object {
 	if ( empty( $team ) && isset( $GLOBALS['team'] ) ) {
 		$team = $GLOBALS['team'];
 	}

@@ -347,6 +347,9 @@ final class Racketmanager_Charges {
 		$entered       = 0;
 		$competition   = get_competition( $this->competition_id );
 		if ( $competition ) {
+			$entry         = new \stdClass();
+			$entry->id     = $player->id;
+			$entry->name   = $player->display_name;
 			$events        = $competition->get_events();
 			foreach ( $events as $event ) {
 				$event      = get_event( $event->id );
@@ -366,19 +369,13 @@ final class Racketmanager_Charges {
 					++$entered;
 				}
 			}
-			if ( ! empty( $player_events ) ) {
-				$entry                  = new \stdClass();
-				$entry->id              = $player->id;
-				$entry->name            = $player->display_name;
-				$entry->num_teams       = $entered;
-				$entry->fee_competition = $this->fee_competition;
-				$entry->fee_events      = $this->fee_event * $entered;
-				$entry->fee             = $entry->fee_competition + $entry->fee_events;
-				$entry->events          = $player_events;
-				return $entry;
-			} else {
-				return false;
-			}
+			$entry->num_teams       = $entered;
+			$entry->fee_competition = $this->fee_competition;
+			$entry->fee_events      = $this->fee_event * $entered;
+			$entry->fee             = $entry->fee_competition + $entry->fee_events;
+			$entry->events          = $player_events;
+			$entry->paid            = 0;
+			return $entry;
 		} else {
 			return false;
 		}

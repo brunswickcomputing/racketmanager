@@ -9,6 +9,11 @@
 
 namespace Racketmanager;
 
+/** @var object $tournament_entry */
+/** @var float  $total_due */
+/** @var object $tournament */
+/** @var object $player */
+/** @var object $stripe */
 $msgs = array();
 $payment_required = false;
 if ( $tournament_entry ) {
@@ -22,7 +27,6 @@ if ( $tournament_entry ) {
 		} else {
 			$msgs[] = __( 'You are due a refund which will be processed when entries close.', 'racketmanager' );
 			$alert_type = 'warning';
-			$payment_required = false;
 		}
 	} else {
 		$msgs[] = __( 'There are no outstanding entry fees.', 'racketmanager' );

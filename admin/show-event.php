@@ -89,47 +89,6 @@ jQuery(document).ready(function(){
 								<?php
 							}
 							?>
-							<li class="nav-item" role="presentation">
-								<?php
-								if ( $event->is_box ) {
-									$season_title = __( 'Rounds', 'racketmanager' );
-									if ( ! empty( $event->seasons ) ) {
-										$prev_round       = end( $event->seasons );
-										$prev_round_num   = $prev_round['name'];
-										$prev_round_end   = $prev_round['match_dates'][1];
-										$next_round_start = Racketmanager_Util::amend_date( $prev_round_end, 1 );
-										$event_duration   = $event->duration - 1;
-										$next_round_end   = Racketmanager_Util::amend_date( $next_round_start, $event_duration );
-									} else {
-										$prev_round_num   = 0;
-										$next_round_start = null;
-										$next_round_end   = null;
-									}
-									$next_round_num = $prev_round_num + 1;
-								} else {
-									$season_title = __( 'Seasons', 'racketmanager' );
-								}
-								?>
-								<button class="nav-link" id="seasons-tab" data-bs-toggle="tab" data-bs-target="#seasons" type="button" role="tab" aria-controls="seasons" aria-selected="false"><?php echo esc_html( $season_title ); ?></button>
-							</li>
-							<?php
-							if ( current_user_can( 'manage_racketmanager' ) ) {
-								?>
-								<li class="nav-item" role="presentation">
-									<button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false"><?php esc_html_e( 'Settings', 'racketmanager' ); ?></button>
-								</li>
-								<?php
-							}
-							?>
-							<?php
-							if ( 'league' === $event->competition->type ) {
-								?>
-								<li class="nav-item" role="presentation">
-									<button class="nav-link" id="constitution-tab" data-bs-toggle="tab" data-bs-target="#constitution" type="button" role="tab" aria-controls="constitution" aria-selected="false"><?php esc_html_e( 'Constitution', 'racketmanager' ); ?></button>
-								</li>
-								<?php
-							}
-							?>
 							<?php
 							if ( 'league' === $event->competition->type ) {
 								?>
@@ -161,40 +120,6 @@ jQuery(document).ready(function(){
 				<div class="tab-pane fade" id="playerstats" role="tabpanel" aria-labelledby="playerstats-tab">
 					<h2><?php esc_html_e( 'Player Statistics', 'racketmanager' ); ?></h2>
 					<?php include_once 'event/player-stats.php'; ?>
-				</div>
-				<?php
-			}
-			?>
-			<div class="tab-pane fade" id="seasons" role="tabpanel" aria-labelledby="seasons-tab">
-				<?php
-				if ( $event->is_box ) {
-					?>
-					<h2><?php esc_html_e( 'Rounds', 'racketmanager' ); ?></h2>
-					<?php
-				} else {
-					?>
-					<h2><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></h2>
-					<?php
-				}
-				?>
-				<?php require_once 'event/seasons.php'; ?>
-			</div>
-			<?php
-			if ( current_user_can( 'manage_racketmanager' ) ) {
-				?>
-				<div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
-					<?php include_once 'event/settings.php'; ?>
-				</div>
-				<?php
-			}
-			?>
-			<?php
-			if ( 'league' === $event->competition->type ) {
-				?>
-				<div class="tab-pane fade" id="constitution" role="tabpanel" aria-labelledby="constitution-tab">
-					<div id="constitution" class="league-block-container">
-						<?php include_once 'event/constitution.php'; ?>
-					</div>
 				</div>
 				<?php
 			}

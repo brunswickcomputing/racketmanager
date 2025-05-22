@@ -8,6 +8,8 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
+/** @var object $tournament */
 ?>
 	<div class="page-subhead competition">
 		<div class="media tournament-head">

@@ -7,6 +7,9 @@
 
 namespace Racketmanager;
 
+/** @var object $club */
+/** @var array $players */
+/** @var array $messages */
 require 'email-header.php';
 $paragraph_text = __( 'A WTN update process has completed.', 'racketmanager' );
 require 'components/paragraph.php';
@@ -23,7 +26,4 @@ $paragraph_text = sprintf( __( 'There were %s errors.', 'racketmanager' ), count
 require 'components/paragraph.php';
 require 'components/closing.php';
 ?>
-<!-- END MAIN CONTENT AREA -->
-</table>
-<!-- END CENTERED WHITE CONTAINER -->
 <?php require 'email-footer.php'; ?>

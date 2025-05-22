@@ -2757,11 +2757,11 @@ class RacketManager {
 	 * Run WTN update
 	 *
 	 * @param array $players list of players.
-	 * @param int $club_id club id.
+	 * @param int|null $club_id club id.
 	 *
 	 * @return void
 	 */
-	public function wtn_update( array $players, int $club_id ): void {
+	public function wtn_update( array $players, ?int $club_id ): void {
 		global $racketmanager_shortcodes, $racketmanager;
 		$messages = array();
 		$messages = $this->set_wtns( $players, $messages );

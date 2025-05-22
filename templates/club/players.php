@@ -86,7 +86,7 @@ if ( empty( $club->player ) ) {
 							<label for="email"><?php esc_html_e( 'Email address', 'racketmanager' ); ?></label>
 							<div id="emailFeedback" class="invalid-feedback"></div>
 						</div>
-						<button class="btn mb-3" type="button" id="clubPlayerUpdateSubmit" onclick="Racketmanager.club_player_request(this)"><?php esc_html_e( 'Add player', 'racketmanager' ); ?></button>
+						<button class="btn mb-3" type="button" id="clubPlayerUpdateSubmit" onclick="Racketmanager.club_player_request()"><?php esc_html_e( 'Add player', 'racketmanager' ); ?></button>
 						<div id="playerAddResponse" class="alert_rm" style="display: none;">
 							<div class="alert__body">
 								<div class="alert__body-inner">

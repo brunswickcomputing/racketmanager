@@ -513,6 +513,24 @@ final class Racketmanager_Match {
 	 */
 	public string $retired;
 	/**
+	 * Home title
+	 *
+	 * @var string|null
+	 */
+	public ?string $home_title;
+	/**
+	 * Away title
+	 *
+	 * @var string|null
+	 */
+	public ?string $away_title;
+	/**
+	 * Number of sets
+	 *
+	 * @var int|null
+	 */
+	public ?int $num_sets;
+	/**
 	 * Retrieve match instance
 	 *
 	 * @param int $match_id match id.

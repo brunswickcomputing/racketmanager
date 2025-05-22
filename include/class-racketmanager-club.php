@@ -206,6 +206,18 @@ final class Racketmanager_Club {
 	 */
 	public array $competitions;
 	/**
+	 * Competition variable
+	 *
+	 * @var object
+	 */
+	public object $competition;
+	/**
+	 * Team variable
+	 *
+	 * @var object
+	 */
+	public object $team;
+	/**
 	 * Event variable
 	 *
 	 * @var object

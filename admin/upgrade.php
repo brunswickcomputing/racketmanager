@@ -1179,7 +1179,6 @@ function racketmanager_upgrade() {
 				}
 				if ( ! isset( $season['match_dates'] ) ) {
 					if ( isset( $season['match_dates'] ) ) {
-						$season['match_dates'] = $season['match_dates'];
 						unset( $season['match_dates'] );
 					}
 				}
@@ -1230,7 +1229,6 @@ function racketmanager_upgrade() {
 				}
 				if ( ! isset( $season['match_dates'] ) ) {
 					if ( isset( $season['match_dates'] ) ) {
-						$season['match_dates'] = $season['match_dates'];
 						unset( $season['match_dates'] );
 					}
 				}
@@ -1512,7 +1510,7 @@ function racketmanager_upgrade() {
 /**
  * racketmanager_upgrade_page() - This page showsup , when the database version doesn't fit to the script RACKETMANAGER_DBVERSION constant.
  *
- * @return Upgrade Message
+ * @return void Upgrade Message
  */
 function racketmanager_upgrade_page() {
 	$filepath = admin_url() . 'admin.php?page=' . htmlspecialchars( $_GET['page'] );

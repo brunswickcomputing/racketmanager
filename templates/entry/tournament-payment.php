@@ -9,9 +9,15 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
-$msgs = array();
-$payment_required = false;
+/** @var object $tournament_entry */
+/** @var float  $total_due */
+/** @var object $tournament */
+/** @var object $player */
+/** @var int    $invoice_id */
+/** @var object $stripe */
+$msgs                 = array();
+$payment_required     = false;
+$payment_complete_url = null;
 if ( $tournament_entry ) {
 	$msgs[] = __( 'You have been entered into the tournament.', 'racketmanager' );
 	if ( $total_due ) {
@@ -23,7 +29,6 @@ if ( $tournament_entry ) {
 		} else {
 			$msgs[] = __( 'You are due a refund which will be processed when entries close.', 'racketmanager' );
 			$alert_type = 'warning';
-			$payment_required = false;
 		}
 	} else {
 		$msgs[] = __( 'There are no outstanding entry fees.', 'racketmanager' );

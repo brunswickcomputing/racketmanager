@@ -1,8 +1,8 @@
-jQuery(document).ready(function ($) {
+jQuery(document).ready(function () {
 	jQuery('[data-bs-toggle="tooltip"]').tooltip();
 	jQuery("#acceptance").prop("checked", false)
 	jQuery("#entrySubmit").hide();
-	jQuery('#acceptance').change(function (e) {
+	jQuery('#acceptance').change(function () {
 		if (this.checked) {
 			jQuery("#entrySubmit").show();
 		} else {
@@ -13,7 +13,7 @@ jQuery(document).ready(function ($) {
 	jQuery("tr.match-rubber-row").slideToggle('fast', 'linear');
 	jQuery("i", "td.angle-dir", "tr.match-row").toggleClass("angle-right angle-down");
 
-	jQuery("tr.match-row").click(function (e) {
+	jQuery("tr.match-row").click(function () {
 		jQuery(this).next("tr.match-rubber-row").slideToggle('0', 'linear');
 		jQuery(this).find("i.angledir").toggleClass("angle-right angle-down");
 	});
@@ -22,8 +22,7 @@ jQuery(document).ready(function ($) {
 		let league = jQuery('#league_id').val(); //
 		let season = jQuery('#season').val();
 
-		let cleanUrl = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/league/' + league.toLowerCase() + '/' + season + '/';
-		window.location = cleanUrl;
+		window.location = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/league/' + league.toLowerCase() + '/' + season + '/';
 
 		return false;  // Prevent default button behaviour
 	});
@@ -33,8 +32,7 @@ jQuery(document).ready(function ($) {
 		let pagename = jQuery('#pagename').val();
 		let season = jQuery('#season').val();
 
-		let cleanUrl = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/' + pagename.toLowerCase() + '/' + season + '/';
-		window.location = cleanUrl;
+		window.location = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/' + pagename.toLowerCase() + '/' + season + '/';
 
 		return false;  // Prevent default button behaviour
 	});
@@ -48,8 +46,7 @@ jQuery(document).ready(function ($) {
 		let competitionSeason = jQuery(`#competitionSeason`).val();
 		let competitionType = jQuery(`#competitionType`).val();
 
-		let cleanUrl = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/' + competitionType + 's/' + competitionSeason + '/winners/' + selection.toLowerCase() + '/';
-		window.location = cleanUrl;
+		window.location = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/' + competitionType + 's/' + competitionSeason + '/winners/' + selection.toLowerCase() + '/';
 
 		return false;  // Prevent default button behaviour
 	});
@@ -60,8 +57,7 @@ jQuery(document).ready(function ($) {
 		tournament = tournament.replace(/\s/g, "-"); // Replace space with a '-' symbol */
 		let season = jQuery(`#season`).val();
 
-		let cleanUrl = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/tournaments/' + season + '/order-of-play/' + tournament.toLowerCase() + '/';
-		window.location = cleanUrl;
+		window.location = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/tournaments/' + season + '/order-of-play/' + tournament.toLowerCase() + '/';
 
 		return false;  // Prevent default button behaviour
 	});
@@ -70,15 +66,13 @@ jQuery(document).ready(function ($) {
 		tournament = tournament.replace(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
 		tournament = tournament.replace("-", "_"); // Replace space with a '_' symbol */
 		tournament = tournament.replace(/\s/g, "-"); // Replace space with a '_' symbol */
-		let cleanUrl = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/tournament/' + tournament.toLowerCase() + '/';
-		window.location = cleanUrl;
+		window.location = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/tournament/' + tournament.toLowerCase() + '/';
 
 		return false;  // Prevent default button behaviour
 	});
 	jQuery('#racketmanager_daily_matches #match_date').on('change', function () {
 		let matchDate = jQuery(`#match_date`).val();
-		let cleanUrl = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/leagues/daily-matches/' + encodeURIComponent(matchDate) + '/';
-		window.location = cleanUrl;
+		window.location = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/leagues/daily-matches/' + encodeURIComponent(matchDate) + '/';
 
 		return false;  // Prevent default button behaviour
 	});
@@ -93,7 +87,7 @@ jQuery(document).ready(function ($) {
 			response(get_player_details('name', request.term, club, notifyField));
 		},
 		select: function (event, ui) {
-			if (ui.item.value == 'null') {
+			if (ui.item.value === 'null') {
 				ui.item.value = '';
 			}
 			let player = "#matchSecretary";
@@ -151,12 +145,11 @@ jQuery(document).ready(function ($) {
 	});
 	jQuery(".hasModal:checkbox").click(function (event) {
 		jQuery('#liEventDetails').addClass('is-loading');
-		eventRef = '#' + this.id;
-		let $target = event.target;
-		checkToggle($target, event);
+		let target = event.target;
+		checkToggle(target, event);
 	});
 
-	jQuery('select.cupteam').on('change', function (e) {
+	jQuery('select.cupteam').on('change', function () {
 		let team = this.value;
 		let event = this.name;
 		event = event.substring(5, event.length - 1);
@@ -181,9 +174,9 @@ jQuery(document).ready(function ($) {
 			},
 			success: function (response) {
 				let team_info = response.data;
-				let captaininput = "captain-".concat(event);
-				let ref = captaininput.substring(7);
-				let captain = "#".concat(captaininput);
+				let captainInput = "captain-".concat(event);
+				let ref = captainInput.substring(7);
+				let captain = "#".concat(captainInput);
 				let captainId = "#captainId".concat(ref);
 				let contactno = "#contactno".concat(ref);
 				let contactemail = "#contactemail".concat(ref);
@@ -226,18 +219,18 @@ function CaptainLookup() {
 		minLength: 2,
 		source: function (request, response) {
 			let club = jQuery("#club").val();
-			let fieldref = this.element[0].id;
-			let ref = fieldref.substr(7);
+			let fieldRef = this.element[0].id;
+			let ref = fieldRef.substr(7);
 			let notifyField = '#updateTeamResponse'.concat(ref);
 			response(get_player_details('name', request.term, club, notifyField));
 		},
 		select: function (event, ui) {
-			if (ui.item.value == 'null') {
+			if (ui.item.value === 'null') {
 				ui.item.value = '';
 			}
-			let captaininput = this.id;
-			let ref = captaininput.substr(7);
-			let player = "#".concat(captaininput);
+			let captainInput = this.id;
+			let ref = captainInput.substr(7);
+			let player = "#".concat(captainInput);
 			let playerId = "#captainId".concat(ref);
 			let contactno = "#contactno".concat(ref);
 			let contactemail = "#contactemail".concat(ref);
@@ -247,9 +240,9 @@ function CaptainLookup() {
 			jQuery(contactemail).val(ui.item.user_email);
 		},
 		change: function (event, ui) {
-			let captaininput = this.id;
-			let ref = captaininput.substr(7);
-			let player = "#".concat(captaininput);
+			let captainInput = this.id;
+			let ref = captainInput.substr(7);
+			let player = "#".concat(captainInput);
 			let playerId = "#captainid".concat(ref);
 			let contactno = "#contactno".concat(ref);
 			let contactemail = "#contactemail".concat(ref);
@@ -282,11 +275,11 @@ function PopstateHandler() {
 function FavouriteInit() {
 	jQuery('[data-js=add-favourite]').click(function (e) {
 		e.preventDefault();
-		let favouriteid = jQuery(this).data('favourite');
-		let favouritetype = jQuery(this).data('type');
+		let favouriteId = jQuery(this).data('favourite');
+		let favouriteType = jQuery(this).data('type');
 		let favouriteStatus = jQuery(this).data('status');
 		let favourite_field = "#".concat(e.currentTarget.id);
-		let notifyField = "#fav-msg-".concat(favouriteid);
+		let notifyField = "#fav-msg-".concat(favouriteId);
 		if (favouriteStatus === 1) {
 			jQuery(favourite_field).attr("data-status", 0);
 			jQuery(favourite_field).attr("data-bs-original-title", "Add favourite");
@@ -303,8 +296,8 @@ function FavouriteInit() {
 			url: ajax_var.url,
 			type: "POST",
 			data: {
-				"type": favouritetype,
-				"id": favouriteid,
+				"type": favouriteType,
+				"id": favouriteId,
 				"action": "racketmanager_add_favourite",
 				"security": ajax_var.ajax_nonce,
 			},
@@ -323,7 +316,8 @@ function FavouriteInit() {
 	});
 }
 function checkToggle($target, event) {
-	jQuery('#liEventDetails').addClass('is-loading');
+	let liEventDetails = jQuery('#liEventDetails');
+	liEventDetails.addClass('is-loading');
 	// If a checkbox with aria-controls, handle click
 	let isCheckbox = $target.getAttribute('type') === 'checkbox';
 	let hasAriaControls = $target.getAttribute('aria-controls');
@@ -341,7 +335,7 @@ function checkToggle($target, event) {
 				let partnerNameLink = "#partnerName-" + eventId;
 				jQuery(partnerNameLink).html('');
 				Racketmanager.clearPrice(eventId);
-				jQuery('#liEventDetails').removeClass('is-loading');
+				liEventDetails.removeClass('is-loading');
 			}
 		} else {
 			if (inputIsChecked) {
@@ -349,12 +343,12 @@ function checkToggle($target, event) {
 			} else {
 				Racketmanager.clearPrice(eventId);
 			}
-			jQuery('#liEventDetails').removeClass('is-loading');
+			liEventDetails.removeClass('is-loading');
 		}
 	} else {
-		jQuery('#liEventDetails').removeClass('is-loading');
+		liEventDetails.removeClass('is-loading');
 	}
-};
+}
 function PartnerLookup() {
 	jQuery('.partner-name').autocomplete({
 		minLength: 2,
@@ -365,7 +359,7 @@ function PartnerLookup() {
 			response(get_player_details('name', request.term, club, notifyField, partnerGender));
 		},
 		select: function (event, ui) {
-			if (ui.item.value == 'null') {
+			if (ui.item.value === 'null') {
 				ui.item.value = '';
 			}
 			let player = "#partner";
@@ -400,7 +394,7 @@ function PartnerLookup() {
 			response(get_player_details('btm', request.term, club, notifyField, partnerGender));
 		},
 		select: function (event, ui) {
-			if (ui.item.value == 'null') {
+			if (ui.item.value === 'null') {
 				ui.item.value = '';
 			}
 			let player = "#partner";
@@ -448,7 +442,7 @@ function MatchDayChange() {
 		league = league.replace(/\s/g, "-"); // Replace space with a '-' symbol */
 		let season = jQuery('#season').val();
 		let matchday = jQuery('#match_day').val();
-		if (matchday == -1) matchday = 0;
+		if (matchday === -1) matchday = 0;
 		let leagueLink = '/league/' + league.toLowerCase() + '/' + season + '/matches/day' + matchday + '/'
 		let leagueId = jQuery('#leagueId').val();
 		Racketmanager.tabDataLink(e, 'league', leagueId, season, leagueLink, matchday, 'matches');
@@ -470,7 +464,7 @@ function TournamentDateChange() {
 		return false;  // Prevent default button behaviour
 	});
 }
-let Racketmanager = new Object();
+let Racketmanager = {};
 
 Racketmanager.printScoreCard = function (e, link) {
 	e.preventDefault();
@@ -480,10 +474,10 @@ Racketmanager.printScoreCard = function (e, link) {
 	jQuery(notifyField).hide();
 	jQuery(notifyField).removeClass('message-success message-error');
 	let styleSheetList = document.styleSheets;
-	let head = '<html><head><title>Match Card</title>';
+	let head = '<html lang=""><head><title>Match Card</title>';
 	for (let item of styleSheetList) {
-		if (item.url != 'null') head += '<link rel="stylesheet" type="text/css" href="' + item.href + '" media="all">';
-	};
+		if (item.url !== null) head += '<link rel="stylesheet" type="text/css" href="' + item.href + '" media="all">';
+	}
 	head += '</head>';
 	let foot = '</body></html>';
 
@@ -531,11 +525,7 @@ Racketmanager.updateMatchResults = function (link) {
 	let splash = '#splash';
 	let alert_id = jQuery('#matchAlert');
 	let use_alert = false;
-	if (alert_id.length == 0) {
-		use_alert = false;
-	} else {
-		use_alert = true;
-	}
+	use_alert = alert_id.length !== 0;
 	if (use_alert) {
 		jQuery(alert_id).hide();
 		jQuery(alert_id).removeClass('alert--success alert--warning alert--danger');
@@ -547,8 +537,9 @@ Racketmanager.updateMatchResults = function (link) {
 		jQuery(notifyField).hide();
 	}
 	jQuery(".is-invalid").removeClass("is-invalid");
-	jQuery(".winner").val("");
-	jQuery(".winner").removeClass("winner");
+	winner = jQuery(".winner");
+	winner.val("");
+	winner.removeClass("winner");
 	jQuery(notifyField).removeClass("message-success");
 	jQuery(notifyField).removeClass("message-error");
 	jQuery(notifyField).val("");
@@ -569,36 +560,37 @@ Racketmanager.updateMatchResults = function (link) {
 				jQuery(alert_id).addClass('alert--success');
 				jQuery(alert_response).html($message);
 			} else {
-				jQuery("#updateResponse").show();
-				jQuery("#updateResponse").addClass('message-success');
-				jQuery("#updateResponse").html($message);
-				jQuery("#updateResponse").delay(10000).fadeOut('slow');
+				let updateResponse = jQuery("#updateResponse");
+				updateResponse.show();
+				updateResponse.addClass('message-success');
+				updateResponse.html($message);
+				updateResponse.delay(10000).fadeOut('slow');
 			}
 			let homepoints = $response[1];
-			let formfield = "#home_points";
-			let fieldval = homepoints;
-			jQuery(formfield).val(fieldval);
+			let formField = "#home_points";
+			let fieldVal = homepoints;
+			jQuery(formField).val(fieldVal);
 			let awaypoints = $response[2];
-			formfield = "#away_points";
-			fieldval = awaypoints;
-			jQuery(formfield).val(fieldval);
+			formField = "#away_points";
+			fieldVal = awaypoints;
+			jQuery(formField).val(fieldVal);
 			let winner = $response[3];
-			formfield = '#match-status-' + winner;
-			jQuery(formfield).addClass('winner');
-			jQuery(formfield).val('W');
+			formField = '#match-status-' + winner;
+			jQuery(formField).addClass('winner');
+			jQuery(formField).val('W');
 			let sets = Object.entries($response[4]);
 			for (let set of sets) {
-				let setno = set[0];
+				let setNo = set[0];
 				let teams = Object.entries(set[1]);
 				for (let team of teams) {
-					formfield = '#set_' + setno + '_' + team[0];
-					fieldval = team[1];
-					jQuery(formfield).val(fieldval);
+					formField = '#set_' + setNo + '_' + team[0];
+					fieldVal = team[1];
+					jQuery(formField).val(fieldVal);
 				}
 			}
 		},
 		error: function (response) {
-			let feedback = '';
+			let feedback;
 			if (response.responseJSON) {
 				let data = response.responseJSON.data;
 				let $message = data[0];
@@ -628,8 +620,9 @@ Racketmanager.updateMatchResults = function (link) {
 			jQuery(splash).css('opacity', 0);
 			jQuery(splash).hide();
 			jQuery(".match__body").show();
-			jQuery("#updateRubberResults").removeProp("disabled");
-			jQuery("#updateRubberResults").removeClass("disabled");
+			let updateRubberResults = jQuery("#updateRubberResults");
+			updateRubberResults.removeProp("disabled");
+			updateRubberResults.removeClass("disabled");
 		}
 	});
 };
@@ -640,20 +633,12 @@ Racketmanager.updateResults = function (link) {
 	let match_id = jQuery('#current_match_id').val();
 	let match_status_link_id = jQuery('#matchStatusButton');
 	let match_edit = false;
-	if (match_status_link_id.length === 0) {
-		match_edit = false;
-	} else {
-		match_edit = true;
-	}
+	match_edit = match_status_link_id.length !== 0;
 	let alert_id = jQuery('#matchAlert');
 	let use_alert = false;
 	let notifyField = '';
 	let alert_response = '';
-	if (alert_id.length == 0) {
-		use_alert = false;
-	} else {
-		use_alert = true;
-	}
+	use_alert = alert_id.length !== 0;
 	if (use_alert) {
 		jQuery(alert_id).hide();
 		jQuery(alert_id).removeClass('alert--success alert--warning alert--danger');
@@ -665,9 +650,10 @@ Racketmanager.updateResults = function (link) {
 		jQuery(notifyField).hide();
 	}
 	jQuery(".is-invalid").removeClass("is-invalid");
-	jQuery("#splash").css('opacity', 1);
-	jQuery("#splash").removeClass("d-none");
-	jQuery("#splash").show();
+	let splash = jQuery("#splash");
+	splash.css('opacity', 1);
+	splash.removeClass("d-none");
+	splash.show();
 	jQuery("#showMatchRubbers").hide();
 
 	jQuery.ajax({
@@ -684,55 +670,55 @@ Racketmanager.updateResults = function (link) {
 				jQuery(alert_response).html($message);
 			} else {
 				let alertClass = 'message-' + $response[4];
-				jQuery("#updateResponse").show();
-				jQuery("#updateResponse").addClass(alertClass);
-				jQuery("#updateResponse").html($message);
-				jQuery("#updateResponse").delay(10000).fadeOut('slow');
+				let updateResponse = jQuery("#updateResponse");
+				updateResponse.show();
+				updateResponse.addClass(alertClass);
+				updateResponse.html($message);
+				updateResponse.delay(10000).fadeOut('slow');
 			}
-			let $homepoints = $response[1];
-			let $matchhome = 0;
-			let $matchaway = 0;
-			for (let i in $homepoints) {
-				let $formfield = "#home_points-" + i;
-				let $fieldval = $homepoints[i];
-				jQuery($formfield).val($fieldval);
-				$matchhome = +$matchhome + +$homepoints[i];
+			let homePoints = $response[1];
+			let matchHome = 0;
+			let matchAway = 0;
+			for (let i in homePoints) {
+				let formField = "#home_points-" + i;
+				let fieldVal = homePoints[i];
+				jQuery(formField).val(fieldVal);
+				matchHome = +matchHome + +homePoints[i];
 			}
-			let $awaypoints = $response[2];
-			for (let j in $awaypoints) {
-				let $awayformfield = "#away_points-" + j;
-				let $awayfieldval = $awaypoints[j];
-				jQuery($awayformfield).val($awayfieldval);
-				$matchaway = +$matchaway + +$awaypoints[j];
+			let awayPoints = $response[2];
+			for (let j in awayPoints) {
+				let awayFormField = "#away_points-" + j;
+				let awayFieldVal = awayPoints[j];
+				jQuery(awayFormField).val(awayFieldVal);
+				matchAway = +matchAway + +awayPoints[j];
 			}
 			let $updatedRubbers = $response[3];
 			let rubberNo = 1;
 			for (let r in $updatedRubbers) {
 				let $rubber = $updatedRubbers[r];
 				let winner = $rubber['winner'];
-				let formfield = '#match-status-' + rubberNo + '-' + winner;
-				jQuery(formfield).addClass('winner');
-				jQuery(formfield).val('W');
+				let formField = '#match-status-' + rubberNo + '-' + winner;
+				jQuery(formField).addClass('winner');
+				jQuery(formField).val('W');
 				for (let t in $rubber['players']) { // home or away
 					let $team = $rubber['players'][t];
 					for (let p = 0; p < $team.length; p++) {
 						let $player = $team[p];
 						let id = p + 1;
-						let formfield = '#' + t + 'player' + id + '_' + rubberNo;
-						let fieldval = $player;
-						jQuery(formfield).val(fieldval);
-						formfield = '#' + 'players_' + rubberNo + '_' + t + '_' + id;
-						fieldval = $player;
-						jQuery(formfield).val(fieldval);
+						let formField = '#' + t + 'player' + id + '_' + rubberNo;
+						let fieldVal = $player;
+						jQuery(formField).val(fieldVal);
+						formField = '#' + 'players_' + rubberNo + '_' + t + '_' + id;
+						fieldVal = $player;
+						jQuery(formField).val(fieldVal);
 					}
 				}
 				for (let s in $rubber['sets']) {
 					let team = $rubber['sets'][s];
 					for (let p in team) {
 						let score = team[p];
-						let formfield = '#' + 'set_' + rubberNo + '_' + s + '_' + p;
-						let fieldval = score;
-						jQuery(formfield).val(fieldval);
+						let formField = '#' + 'set_' + rubberNo + '_' + s + '_' + p;
+						jQuery(formField).val(score);
 					}
 				}
 				rubberNo++;
@@ -749,7 +735,7 @@ Racketmanager.updateResults = function (link) {
 			Racketmanager.matchHeader(match_id, match_edit);
 		},
 		error: function (response) {
-			let feedback = '';
+			let feedback;
 			if (response.responseJSON) {
 				let data = response.responseJSON.data;
 				let $message = data[0];
@@ -776,20 +762,22 @@ Racketmanager.updateResults = function (link) {
 			}
 		},
 		complete: function () {
-			jQuery("#splash").css('opacity', 0);
-			jQuery("#splash").hide();
+			let splash = jQuery('#splash');
+			splash.css('opacity', 0);
+			splash.hide();
 			jQuery("#showMatchRubbers").show();
-			jQuery("#updateRubberResults").removeProp("disabled");
-			jQuery("#updateRubberResults").removeClass("disabled");
+			let updateRubberResults = jQuery('#updateRubberResults');
+			updateRubberResults.removeProp("disabled");
+			updateRubberResults.removeClass("disabled");
 		}
 	});
 };
-Racketmanager.club_player_request = function (link) {
-
+Racketmanager.club_player_request = function () {
 	let $form = jQuery('#playerRequestFrm').serialize();
 	$form += "&action=racketmanager_club_player_request";
-	jQuery("#clubPlayerUpdateSubmit").hide();
-	jQuery("#clubPlayerUpdateSubmit").addClass("disabled");
+	let clubPlayerUpdateSubmit = jQuery("#clubPlayerUpdateSubmit");
+	clubPlayerUpdateSubmit.hide();
+	clubPlayerUpdateSubmit.addClass("disabled");
 	let notifyField = '#playerAddResponse';
 	jQuery(notifyField).removeClass('alert--success alert--warning alert--danger');
 	jQuery(notifyField).hide();
@@ -833,8 +821,9 @@ Racketmanager.club_player_request = function (link) {
 			jQuery(notifyField).addClass('alert--danger');
 		},
 		complete: function () {
-			jQuery("#clubPlayerUpdateSubmit").removeClass("disabled");
-			jQuery("#clubPlayerUpdateSubmit").show();
+			let clubPlayerUpdateSubmit = jQuery("#clubPlayerUpdateSubmit");
+			clubPlayerUpdateSubmit.removeClass("disabled");
+			clubPlayerUpdateSubmit.show();
 			jQuery(notifyField).show();
 		}
 	});
@@ -931,10 +920,10 @@ Racketmanager.updateTeam = function (link) {
 					let $errorField = response.responseJSON.data[2];
 					jQuery(notifyField).addClass('message-error');
 					for (let $i = 0; $i < $errorField.length; $i++) {
-						let $formfield = "#" + $errorField[$i];
-						jQuery($formfield).addClass('is-invalid');
-						$formfield = $formfield + '-feedback';
-						jQuery($formfield).html($errorMsg[$i]);
+						let formField = "#" + $errorField[$i];
+						jQuery(formField).addClass('is-invalid');
+						formField = formField + '-feedback';
+						jQuery(formField).html($errorMsg[$i]);
 					}
 				}
 				jQuery(alertTextField).html($message);
@@ -981,10 +970,10 @@ Racketmanager.updateClub = function (link) {
 					let $errorMsg = response.responseJSON.data[1];
 					let $errorField = response.responseJSON.data[2];
 					for (let $i = 0; $i < $errorField.length; $i++) {
-						let $formfield = "#" + $errorField[$i];
-						jQuery($formfield).addClass('is-invalid');
-						$formfield = $formfield + '-tooltip';
-						jQuery($formfield).html($errorMsg[$i]);
+						let formField = "#" + $errorField[$i];
+						jQuery(formField).addClass('is-invalid');
+						formField = formField + '-tooltip';
+						jQuery(formField).html($errorMsg[$i]);
 					}
 				}
 				jQuery(alertTextField).html($message);
@@ -1030,10 +1019,10 @@ Racketmanager.updatePlayer = function (link) {
 					let $errorMsg = response.responseJSON.data[1];
 					let $errorField = response.responseJSON.data[2];
 					for (let $i = 0; $i < $errorField.length; $i++) {
-						let $formfield = "#" + $errorField[$i];
-						jQuery($formfield).addClass('is-invalid');
-						$formfield = $formfield + 'Feedback';
-						jQuery($formfield).html($errorMsg[$i]);
+						let formField = "#" + $errorField[$i];
+						jQuery(formField).addClass('is-invalid');
+						formField = formField + 'Feedback';
+						jQuery(formField).html($errorMsg[$i]);
 					}
 				}
 				jQuery(alertTextField).html($message);
@@ -1092,10 +1081,10 @@ Racketmanager.entryRequest = function (event, type) {
 				let errorMsg = response.responseJSON.data[1];
 				let errorField = response.responseJSON.data[2];
 				for (let i = 0; i < errorField.length; i++) {
-					let $formfield = '#' + errorField[i];
-					jQuery($formfield).addClass('is-invalid');
-					$formfield = $formfield + '-feedback';
-					jQuery($formfield).html(errorMsg[i]);
+					let formField = '#' + errorField[i];
+					jQuery(formField).addClass('is-invalid');
+					formField = formField + '-feedback';
+					jQuery(formField).html(errorMsg[i]);
 				}
 				jQuery(alertTextField).html(message);
 			} else {
@@ -1298,10 +1287,10 @@ Racketmanager.setMatchStatus = function (link) {
 				let errorMsg = data[1];
 				let errorField = data[2];
 				for (let i = 0; i < errorField.length; i++) {
-					let formfield = "#" + errorField[i];
-					jQuery(formfield).addClass('is-invalid');
-					formfield = formfield + 'Feedback';
-					jQuery($ = formfield).html(errorMsg[i]);
+					let formField = "#" + errorField[i];
+					jQuery(formField).addClass('is-invalid');
+					formField = formField + 'Feedback';
+					jQuery($ = formField).html(errorMsg[i]);
 				}
 				jQuery(alertTextField).html($message);
 			} else {
@@ -1390,10 +1379,10 @@ Racketmanager.setMatchRubberStatus = function (link) {
 				let errorMsg = data[1];
 				let errorField = data[2];
 				for (let i = 0; i < errorField.length; i++) {
-					let formfield = "#" + errorField[i];
-					jQuery(formfield).addClass('is-invalid');
-					formfield = formfield + 'Feedback';
-					jQuery($=formfield).html(errorMsg[i]);
+					let formField = "#" + errorField[i];
+					jQuery(formField).addClass('is-invalid');
+					formField = formField + 'Feedback';
+					jQuery($=formField).html(errorMsg[i]);
 				}
 				jQuery(alertTextField).html($message);
 			} else {
@@ -1615,9 +1604,8 @@ Racketmanager.switchHomeAway = function (e, link) {
 			let url = new URL(window.location.href);
 			let newURL = url.protocol + '//' + url.hostname + newPath;
 			if (newPath !== "") {
-				var newUri = newURL;
 				if (history.replaceState) {
-					history.replaceState('', document.title, newUri.toString());
+					history.replaceState('', document.title, newURL.toString());
 				}
 			}
 		},
@@ -1646,19 +1634,23 @@ Racketmanager.switchHomeAway = function (e, link) {
 }
 Racketmanager.switchTab = function (elem) {
 	let selectedTab = jQuery(elem).data('tabid').toLowerCase();
+	let matchGroup = jQuery('.match-group');
+	let match = jQuery('.match');
+	let tabList = jquery('.tab-list');
+	let tabGrid = jquery('.tab-grid');
 	switch (selectedTab) {
 		case 'tab-grid':
-			jQuery('.match-group').addClass('match-group--grid');
-			jQuery('.match').removeClass('match--list');
+			matchGroup.addClass('match-group--grid');
+			match.removeClass('match--list');
 			jQuery('.match .match--list').removeClass('match--list');
-			jQuery('#tab-list').removeClass('active');
-			jQuery('#tab-grid').addClass('active');
+			tabList.removeClass('active');
+			tabGrid.addClass('active');
 			break;
 		case 'tab-list':
-			jQuery('.match-group').removeClass('match-group--grid');
-			jQuery('.match').addClass("match--list");
-			jQuery('#tab-list').addClass('active');
-			jQuery('#tab-grid').removeClass('active');
+			matchGroup.removeClass('match-group--grid');
+			match.addClass("match--list");
+			tabList.addClass('active');
+			tabGrid.removeClass('active');
 			break;
 	}
 };
@@ -1687,7 +1679,7 @@ Racketmanager.getMessage = function (event, message_id) {
 		success: function (response) {
 			jQuery(notifyField).empty();
 			jQuery(notifyField).html(response.data.output);
-			if (response.data.status == '1') {
+			if (response.data.status === '1') {
 				let readMessagesRef = '#read-messages';
 				let readMessages = jQuery(readMessagesRef).html();
 				readMessages++;
@@ -1716,7 +1708,7 @@ Racketmanager.deleteMessage = function (event, message_id) {
 	event.preventDefault();
 	if (confirm('Are you sure you want to delete this message?') !== true) {
 		return;
-	};
+	}
 	jQuery('.selected').removeClass('selected');
 	let message_ref = '#message-summary-' + message_id;
 	jQuery(message_ref).addClass('deleted');
@@ -1761,7 +1753,7 @@ Racketmanager.deleteMessages = function (event, link) {
 	event.preventDefault();
 	if (confirm('Are you sure you want to delete these messages?') !== true) {
 		return;
-	};
+	}
 	let formId = '#'.concat(link.form.id);
 	let form = jQuery(formId).serialize();
 	form += "&action=racketmanager_delete_messages";
@@ -1854,7 +1846,7 @@ Racketmanager.resetPassword = function (link) {
 		}
 	});
 };
-Racketmanager.playerSearch = function (event, link) {
+Racketmanager.playerSearch = function (event) {
 	event.preventDefault();
 	let notifyBlock = "#searchResultsContainer";
 	jQuery(notifyBlock).empty();
@@ -1864,9 +1856,6 @@ Racketmanager.playerSearch = function (event, link) {
 	if (search_string !== "") {
 		search_string = encodeURI( search_string );
 		var newUri = newURL + '?q=' + search_string;
-		let formId = '#'.concat(event.currentTarget.id);
-		let form = jQuery(formId).serialize();
-		form += "&action=racketmanager_search_players";
 		let loadingArea = '#playerSearchContent';
 		jQuery(loadingArea).addClass('is-loading');
 		let ajaxURL = ajax_var.url + '?search_string=' + search_string + '&action=racketmanager_search_players&security=' + ajax_var.ajax_nonce;
@@ -1917,7 +1906,7 @@ Racketmanager.partnerModal = function (event, event_id) {
 		},
 		error: function (response) {
 			if (response.responseJSON) {
-				if (response.status == '401') {
+				if (response.status === '401') {
 					let output = response.responseJSON.data[1];
 					jQuery(notifyField).html(output);
 				} else {
@@ -1973,10 +1962,10 @@ Racketmanager.partnerSave = function (link) {
 					let errorMsg = response.responseJSON.data[1];
 					let errorField = response.responseJSON.data[2];
 					for (let $i = 0; $i < errorField.length; $i++) {
-						let formfield = "#" + errorField[$i];
-						jQuery(formfield).addClass('is-invalid');
-						formfield = formfield + 'Feedback';
-						jQuery(formfield).html(errorMsg[$i]);
+						let formField = "#" + errorField[$i];
+						jQuery(formField).addClass('is-invalid');
+						formField = formField + 'Feedback';
+						jQuery(formField).html(errorMsg[$i]);
 					}
 				}
 				jQuery(alert_response).html(message);
@@ -1989,29 +1978,6 @@ Racketmanager.partnerSave = function (link) {
 		}
 	});
 };
-Racketmanager.updateTournamentEvent = function (event, type) {
-	jQuery('#liEventDetails').addClass('is-loading');
-	let $target = event.target;
-	jQuery('#liEventDetails').addClass('is-loading');
-	// If a checkbox with aria-controls, handle click
-	let isCheckbox = $target.getAttribute('type') === 'checkbox';
-	let hasAriaControls = $target.getAttribute('aria-controls');
-	if (isCheckbox && hasAriaControls) {
-		let $target2 = $target.parentNode.parentNode.querySelector('#' + $target.getAttribute('aria-controls'));
-		if ($target2?.classList.contains('form-checkboxes__conditional')) {
-			let inputIsChecked = $target.checked;
-			$target2.setAttribute('aria-expanded', inputIsChecked);
-			$target2.classList.toggle('form-checkboxes__conditional--hidden', !inputIsChecked);
-			let event_id = $target.id.substring(6);
-			if (inputIsChecked) {
-				Racketmanager.partnerModal(event, event_id);
-			} else {
-				jQuery('#liEventDetails').removeClass('is-loading');
-			}
-		}
-	}
-	jQuery('#liEventDetails').removeClass('is-loading');
-};
 Racketmanager.tabData = function (e, target, id, season, name, competitionType) {
 	e.preventDefault();
 	let tabContent = '#' + target + 'TabContent';
@@ -2019,13 +1985,13 @@ Racketmanager.tabData = function (e, target, id, season, name, competitionType) 
 	let $target = e.target;
 	let tab = $target.getAttribute('aria-controls');
 	let newPath = '';
-	if (target == 'tournament') {
+	if (target === 'tournament') {
 		newPath = '/tournament/' + name + '/';
-	} else if (target == 'event') {
+	} else if (target === 'event') {
 		newPath = '/' + competitionType + 's/' + name + '/' + season + '/';
-	} else if (target == 'competition') {
+	} else if (target === 'competition') {
 		newPath = '/' + name + '/' + season + '/';
-	} else if (target == 'league') {
+	} else if (target === 'league') {
 		newPath = '/' + competitionType + '/' + name + '/' + season + '/';
 	}
 	if (newPath !== "") {
@@ -2114,7 +2080,7 @@ Racketmanager.setTotalPrice = function () {
 	let competitionFee = jQuery(competitionFeeFld).val();
 	let eventPriceFld = '.event-price-amt';
 	let eventPrices = jQuery(eventPriceFld);
-	let totalPrice = 0 + +competitionFee;
+	let totalPrice = +competitionFee;
 	for (i = 0; i < eventPrices.length; i++) {
 		eventPrice = eventPrices[i];
 		eventPrice = eventPrice.value;
@@ -2165,10 +2131,8 @@ Racketmanager.withdrawTournament = function (e) {
 								 "action": action,
 								 "security": ajax_var.ajax_nonce,
 							 },
-							 function ( response, status, xhr) {
-								 if ( 'error' === status ) {
-									 var msg = "Sorry but there was an error: ";
-								 } else {
+							 function ( response, status) {
+								 if ( 'error' !== status ) {
 									 jQuery('#liEventDetails').removeClass('is-loading');
 									 jQuery(notifyField).show();
 									 jQuery(notifyField).modal('show');
@@ -2186,7 +2150,7 @@ Racketmanager.login = function (e) {
 	jQuery(alertResponseField).html();
 	let userLogin = jQuery('#user_login').val();
 	let userPass = jQuery('#user_pass').val();
-	let redirecturl = jQuery('#redirect_to').val();
+	let redirectURL = jQuery('#redirect_to').val();
 	jQuery(".is-invalid").removeClass("is-invalid");
 	jQuery.ajax({
 		url: ajax_var.url,
@@ -2196,24 +2160,23 @@ Racketmanager.login = function (e) {
 			"security": ajax_var.ajax_nonce,
 			"log": userLogin,
 			"pwd": userPass,
-			"redirect_to": redirecturl,
+			"redirect_to": redirectURL,
 		},
 		success: function (response) {
-			let redirecturl = response.data;
-			document.location.href = redirecturl;
+			document.location.href = response.data;
 		},
 		error: function (response) {
 			if (response.responseJSON) {
-				if (response.status == '401') {
+				if (response.status === '401') {
 					let message = response.responseJSON.data[0];
 					if (response.responseJSON.data[1]) {
 						let errorMsg = response.responseJSON.data[1];
 						let errorField = response.responseJSON.data[2];
 						for (let $i = 0; $i < errorField.length; $i++) {
-							let formfield = "#" + errorField[$i];
-							jQuery(formfield).addClass('is-invalid');
-							formfield = formfield + 'Feedback';
-							jQuery(formfield).html(errorMsg[$i]);
+							let formField = "#" + errorField[$i];
+							jQuery(formField).addClass('is-invalid');
+							formField = formField + 'Feedback';
+							jQuery(formField).html(errorMsg[$i]);
 						}
 					}
 					jQuery(alertResponseField).html(message);
@@ -2266,7 +2229,7 @@ Racketmanager.confirmTournamentWithdraw = function () {
 		},
 		error: function (response) {
 			if (response.responseJSON) {
-				if (response.status == '401') {
+				if (response.status === '401') {
 					let output = response.responseJSON.data[1];
 					jQuery(alertResponseField).html(output);
 				} else {
@@ -2284,7 +2247,7 @@ Racketmanager.confirmTournamentWithdraw = function () {
 		}
 	});
 };
-Racketmanager.showTeamOrderPlayers = function (e, event_Id) {
+Racketmanager.showTeamOrderPlayers = function (e) {
 	e.preventDefault();
 	let eventId = jQuery('#event_id').val();
 	let clubId = jQuery('#club_id').val();
@@ -2345,19 +2308,19 @@ Racketmanager.validateTeamOrder = function( e, link, setTeam=false ) {
 				let rubber = updatedRubbers[r];
 				let status = rubber['status'];
 				let statusClass = rubber['status_class'];
-				let formfield = '#match-status-' + rubberNo;
-				jQuery(formfield).addClass(statusClass);
-				jQuery(formfield).val(status);
-				formfield = '#wtn_' + rubberNo;
-				jQuery(formfield).addClass(statusClass);
-				jQuery(formfield).val(rubber['wtn']);
+				let formField = '#match-status-' + rubberNo;
+				jQuery(formField).addClass(statusClass);
+				jQuery(formField).val(status);
+				formField = '#wtn_' + rubberNo;
+				jQuery(formField).addClass(statusClass);
+				jQuery(formField).val(rubber['wtn']);
 				rubberNo++;
 			}
 			let msg = data[1];
 			jQuery(alertResponseField).html(msg);
 			jQuery(alertField).show();
 			let valid = data[2];
-			let alertClass = '';
+			let alertClass;
 			if (valid) {
 				alertClass = 'alert--success';
 			} else {
@@ -2367,16 +2330,16 @@ Racketmanager.validateTeamOrder = function( e, link, setTeam=false ) {
 		},
 		error: function (response) {
 			if (response.responseJSON) {
-				if (response.status == '401') {
+				if (response.status === '401') {
 					let message = response.responseJSON.data[0];
 					if (response.responseJSON.data[1]) {
 						let errorMsg = response.responseJSON.data[1];
 						let errorField = response.responseJSON.data[2];
 						for (let $i = 0; $i < errorField.length; $i++) {
-							let formfield = "#" + errorField[$i];
-							jQuery(formfield).addClass('is-invalid');
-							formfield = formfield + 'Feedback';
-							jQuery(formfield).html(errorMsg[$i]);
+							let formField = "#" + errorField[$i];
+							jQuery(formField).addClass('is-invalid');
+							formField = formField + 'Feedback';
+							jQuery(formField).html(errorMsg[$i]);
 						}
 					}
 					jQuery(alertResponseField).html(message);
@@ -2446,8 +2409,6 @@ function activaTab(tab) {
 }
 function get_player_details(type, name, club = null, notifyField = null, partnerGender = null) {
 	let response = '';
-	let alertField = '';
-	let alertResponseField = '';
 	jQuery.ajax({
 		type: 'POST',
 		datatype: 'json',

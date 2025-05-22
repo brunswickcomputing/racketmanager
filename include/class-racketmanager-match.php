@@ -489,6 +489,24 @@ final class Racketmanager_Match {
 	 */
 	public string $share;
 	/**
+	 * Abandoned
+	 *
+	 * @var string
+	 */
+	public string $abandoned;
+	/**
+	 * Cancelled
+	 *
+	 * @var string
+	 */
+	public string $cancelled;
+	/**
+	 * Shared
+	 *
+	 * @var string
+	 */
+	public string $shared;
+	/**
 	 * Retired
 	 *
 	 * @var string

@@ -7,6 +7,10 @@
 
 namespace Racketmanager;
 
+/** @var string $addressee */
+/** @var string $type */
+/** @var object $tournament */
+/** @var string $account_link */
 require 'email-header.php';
 $salutation_link = $addressee;
 require 'components/salutation.php';
@@ -19,14 +23,13 @@ if ( 'club' === $type ) {
 if ( empty( $days_remaining ) ) {
 	/* translators: %1$s: tournament name %2$s: closing date */
 	$paragraph_text = sprintf( __( 'The entry form for the %1$s Tournament is now available. The closing date for entries is %2$s.', 'racketmanager' ), ucfirst( $tournament->name ), $tournament->date_closing_display );
-	require 'components/paragraph.php';
 } else {
 	/* translators: %1$s: days remaining %2$s: competition name %3$s: closing date */
 	$paragraph_text = sprintf( __( 'There are now less than %1$s days left before the %2$s Tournament closes on %3$s.', 'racketmanager' ), $days_remaining, ucfirst( $tournament->name ), $tournament->date_closing_display );
 	require 'components/paragraph.php';
 	$paragraph_text = __( 'You have played in a previous tournament but you have not yet entered this one.', 'racketmanager' );
-	require 'components/paragraph.php';
 }
+require 'components/paragraph.php';
 if ( ! empty( $tournament->date_start_display ) && ! empty( $tournament->date_display ) ) {
 	/* translators: %1$s: start date %2$s: end date */
 	$paragraph_text = sprintf( __( 'The tournament will run from %1$s to %2$s.', 'racketmanager' ), $tournament->date_start_display, $tournament->date_display );
@@ -49,7 +52,7 @@ require 'components/closing.php';
 switch ( $type ) {
 	case 'player':
 	case 'reminder':
-		$paragraph_text = sprintf(
+	$paragraph_text       = sprintf(
 			/* translators: %1$s: account link */
 			__( 'You have been sent this email as you have played in a previous tournament. If you prefer to no longer receive tournament notifications, please update your preferences using this %1$s.', 'racketmanager' ),
 			$account_link,

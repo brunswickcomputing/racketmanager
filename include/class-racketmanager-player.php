@@ -477,9 +477,9 @@ final class Racketmanager_Player {
 			$match_types = Racketmanager_Util::get_match_types();
 			foreach ( $match_types as $match_type => $description ) {
 				$rating_type                                  = 'rating_' . $match_type;
-				$this->rating_detail[ $match_type ]['player'] = get_user_meta( $this->ID, $rating_type, true );
+				$this->rating_detail[ $match_type ]['player'] = (int) get_user_meta( $this->ID, $rating_type, true );
 				$rating_type                                  = 'rating_' . $match_type . '_team';
-				$this->rating_detail[ $match_type ]['team']   = get_user_meta( $this->ID, $rating_type, true );
+				$this->rating_detail[ $match_type ]['team']   = (int) get_user_meta( $this->ID, $rating_type, true );
 				$this->rating[ $match_type ]                  = array_sum( $this->rating_detail[ $match_type ] );
 				$wtn_type = 'wtn_' . $match_type;
 				$this->wtn[ $match_type ] = get_user_meta( $this->ID, $wtn_type, true );

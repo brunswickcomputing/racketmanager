@@ -7,13 +7,14 @@
 
 namespace Racketmanager;
 
+/** @var object $tournament */
+/** @var string $current_match_date */
 ?>
-
 <div class="form-wrapper">
 	<div class="col-12">
 		<form id="tournament-match-date-form" action="">
 			<input type="hidden" name="tournament_id" id="tournament_id" value="<?php echo esc_html( $tournament->name ); ?>" />
-			<select class="form-select" name="match_date" id="match_date">
+            <label class="visually-hidden" for="match_date"></label><select class="form-select" name="match_date" id="match_date">
 				<?php
 				foreach ( $tournament->match_dates as $match_date ) {
 					?>

@@ -93,11 +93,11 @@ class Racketmanager_Ajax extends RacketManager {
 			$player  = array();
 			if ( $results ) {
 				foreach ( $results as $r ) {
-					$player['label'] = addslashes( $r->fullname );
+					$player['label'] = $r->fullname;
                     if ( $r->club ) {
                         $player['label'] .= ' - ' . $r->club;
                     }
-					$player['name']       = addslashes( $r->fullname );
+					$player['name']       = $r->fullname;
 					$player['id']         = $r->roster_id;
 					$player['club_id']    = $r->club_id;
 					$player['club']       = $r->club;

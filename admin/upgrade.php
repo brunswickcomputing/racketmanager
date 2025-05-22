@@ -1466,13 +1466,21 @@ function racketmanager_upgrade() {
             $table->custom = serialize( $custom );
 			$wpdb->query( "UPDATE {$wpdb->racketmanager_table} SET `custom` = '" . $table->custom . "' WHERE `id` = " . $table->id );
 		}
-		$matches = $wpdb->get_results( "SELECT `id`, `custom` FROM {$wpdb->racketmanager_matches} WHERE `custom` LIKE '%i:0;s:0:\"\";%'");
-		foreach ( $matches as $match ) {
-			$custom = unserialize( $match->custom );
-			unset( $custom[0] );
-			$match->custom = serialize( $custom );
-			$wpdb->query( "UPDATE {$wpdb->racketmanager_matches} SET `custom` = '" . $match->custom . "' WHERE `id` = " . $match->id );
-		}
+        $invalid_items = range( 20, 0 );
+        foreach ( $invalid_items as $item ) {
+			$matches = $wpdb->get_results( "SELECT `id`, `custom` FROM {$wpdb->racketmanager_matches} WHERE `custom` LIKE '%i:" . $item . ";s:0:\"\";%'");
+			foreach ( $matches as $match ) {
+				$custom = unserialize( $match->custom );
+                $item_range = range( 0, $item );
+                foreach ( $item_range as $range ) {
+					if ( isset( $custom[ $range ] ) ) {
+						unset( $custom[ $range ] );
+					}
+                }
+				$match->custom = serialize( $custom );
+				$wpdb->query( "UPDATE {$wpdb->racketmanager_matches} SET `custom` = '" . $match->custom . "' WHERE `id` = " . $match->id );
+			}
+        }
 	}
 	if ( version_compare( $installed, '8.47.1', '<' ) ) {
 		echo esc_html__( 'starting 8.47.1 upgrade', 'racketmanager' ) . "<br />\n";

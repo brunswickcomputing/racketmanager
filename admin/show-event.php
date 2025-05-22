@@ -7,6 +7,9 @@
 
 namespace Racketmanager;
 
+/** @var string $tab */
+/** @var object $event */
+/** @var string $season */
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){
@@ -19,11 +22,11 @@ jQuery(document).ready(function(){
 			<?php
 			if ( empty( $tournament ) ) {
 				?>
-				<a href="admin.php?page=racketmanager-<?php echo esc_html( $event->competition->type ); ?>s"><?php echo esc_html( ucfirst( $event->competition->type ) ); ?>s</a> &raquo; <a href="admin.php?page=racketmanager&subpage=show-competition&competition_id=<?php echo esc_attr( $event->competition->id ); ?>"><?php echo esc_html( $event->competition->name ); ?></a> &raquo; <?php echo esc_html( $event->name ); ?>
+				<a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $event->competition->type ); ?>s"><?php echo esc_html( ucfirst( $event->competition->type ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager&subpage=show-competition&competition_id=<?php echo esc_attr( $event->competition->id ); ?>"><?php echo esc_html( $event->competition->name ); ?></a> &raquo; <?php echo esc_html( $event->name ); ?>
 				<?php
 			} else {
 				?>
-				<a href="admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="admin.php?page=racketmanager&subpage=show-competition&competition_id=<?php echo esc_attr( $event->competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>&tournament=<?php echo esc_attr( $tournament->id ); ?>"><?php echo esc_html( $tournament->name ); ?></a> &raquo; <?php echo esc_html( $event->name ); ?>
+				<a href="/wp-admin/admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager&subpage=show-competition&competition_id=<?php echo esc_attr( $event->competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>&tournament=<?php echo esc_attr( $tournament->id ); ?>"><?php echo esc_html( $tournament->name ); ?></a> &raquo; <?php echo esc_html( $event->name ); ?>
 				<?php
 			}
 			?>
@@ -38,7 +41,7 @@ jQuery(document).ready(function(){
 		?>
 		<!-- Season Dropdown -->
 		<div class="col-auto mb-3">
-			<form action="admin.php" method="get" class="form-control">
+			<form action="/wp-admin/admin.php" method="get" class="form-control">
 				<input type="hidden" name="page" value="racketmanager" />
 				<input type="hidden" name="subpage" value="show-event" />
 				<input type="hidden" name="event_id" value="<?php echo esc_html( $event->id ); ?>" />

@@ -34,9 +34,9 @@ final class Racketmanager_Results_Checker {
 	/**
 	 * Player id
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public int $player_id;
+	public ?int $player_id;
 	/**
 	 * League Id
 	 *
@@ -46,9 +46,9 @@ final class Racketmanager_Results_Checker {
 	/**
 	 * Rubber Id
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public int $rubber_id;
+	public ?int $rubber_id;
 	/**
 	 * Status
 	 *
@@ -94,9 +94,9 @@ final class Racketmanager_Results_Checker {
 	/**
 	 * Player
 	 *
-	 * @var object
+	 * @var object|null
 	 */
-	public mixed $player;
+	public mixed $player = null;
 	/**
 	 * Team
 	 *
@@ -163,11 +163,11 @@ final class Racketmanager_Results_Checker {
 					$this->team = $this->match->teams['away'];
 				}
 			}
-			$player = get_player( $this->player_id );
-			if ( $player ) {
-				$this->player = $player;
-			} else {
-				$this->player = '';
+			if ( ! empty( $player_id ) ) {
+				$player = get_player( $this->player_id );
+				if ( $player ) {
+					$this->player = $player;
+				}
 			}
 			$this->updated_user_name = '';
 			if ( ! empty( $this->updated_user ) ) {

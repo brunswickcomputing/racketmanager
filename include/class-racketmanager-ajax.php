@@ -1314,12 +1314,14 @@ class Racketmanager_Ajax extends RacketManager {
 		return $output;
 	}
 	/**
+     * Check security token
+     *
 	 * @return \stdClass
 	 */
 	protected function check_security_token(): \stdClass {
 		$return = new \stdClass();
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
+		if ( isset( $_REQUEST['security'] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['security'] ) ), 'ajax-nonce' ) ) {
 				$return->error  = true;
 				$return->msg    = __( 'Security token invalid', 'racketmanager' );
                 $return->status = 403;

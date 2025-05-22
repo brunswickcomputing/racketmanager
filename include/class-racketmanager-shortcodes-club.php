@@ -9,8 +9,6 @@
 
 namespace Racketmanager;
 
-use stdClass;
-
 /**
  * Class to implement shortcode functions
  */
@@ -34,7 +32,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 *    [clubs template=X]
 	 *
 	 * @param array $atts attributes.
-	 * @return the content
+	 * @return string - the content
 	 */
 	public function show_clubs( $atts ) {
 		global $racketmanager;
@@ -71,7 +69,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 *    [club id=ID template=X]
 	 *
 	 * @param array $atts attributes.
-	 * @return the content
+	 * @return string - the content
 	 */
 	public function show_club( $atts ) {
 		global $racketmanager;
@@ -144,7 +142,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 *  [club-players player_id=ID template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string - the content
 	 */
 	public function show_club_players( $atts ) {
 		global $racketmanager;
@@ -222,7 +220,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 *  [club-competitions club= competition_name= template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string - the content
 	 */
 	public function show_club_competitions( $atts ) {
 		global $racketmanager;
@@ -301,7 +299,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 *  [club-team club= team= template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string - the content
 	 */
 	public function show_club_team( $atts ) {
 		global $racketmanager;
@@ -368,7 +366,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 *  [club-event club= event= template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string - the content
 	 */
 	public function show_club_event( $atts ) {
 		global $racketmanager;
@@ -428,7 +426,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 *  [[player] player_id=ID template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string - the content
 	 */
 	public function show_club_player( $atts ) {
 		global $racketmanager;
@@ -492,7 +490,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 *  [club-invoices invoice_id=ID template=X]
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string - the content
 	 */
 	public function show_club_invoices( $atts ) {
 		global $racketmanager;

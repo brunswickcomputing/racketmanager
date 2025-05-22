@@ -112,7 +112,7 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * Function to display event standings
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string - the content
 	 */
 	public function show_event_standings( $atts ) {
 		$args     = shortcode_atts(
@@ -146,7 +146,7 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * Function to display event draw
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string - the content
 	 */
 	public function show_event_draw( $atts ) {
 		$args     = shortcode_atts(
@@ -184,7 +184,7 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * Function to display event matches
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string - the content
 	 */
 	public function show_event_matches( $atts ) {
 		$args     = shortcode_atts(
@@ -222,7 +222,7 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * Function to display event Clubs
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string - the content
 	 */
 	public function show_event_clubs( $atts ) {
 		global $wp;
@@ -332,7 +332,7 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * Function to display event teams
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string - the content
 	 */
 	public function show_event_teams( $atts ) {
 		global $wp;
@@ -409,7 +409,7 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * Function to display event Players
 	 *
 	 * @param array $atts shortcode attributes.
-	 * @return the content
+	 * @return string - the content
 	 */
 	public function show_event_players( $atts ) {
 		global $wp;

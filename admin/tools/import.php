@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
 ?>
 <div class="container">
 	<h1><?php esc_html_e( 'RacketManager Import', 'racketmanager' ); ?></h1>
@@ -36,7 +37,7 @@ namespace Racketmanager;
 		</div>
 		<div id="competitions" class="form-floating mb-3" style="display:none">
 			<?php
-			$competitions = parent::get_competitions(
+			$competitions = $racketmanager::get_competitions(
 				array(
 					'orderby' => array(
 						'type' => 'ASC',
@@ -63,7 +64,7 @@ namespace Racketmanager;
 		</div>
 		<div id="clubs" class="form-floating mb-3" style="display:none">
 			<?php
-			$clubs = parent::get_clubs(
+			$clubs = $racketmanager::get_clubs(
 				array(
 					'type' => 'affiliated',
 				)

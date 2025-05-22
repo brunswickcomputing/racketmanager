@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var string $search_string */
 ?>
 <div class="container">
 	<div id="pageContentTab">
@@ -16,7 +17,7 @@ namespace Racketmanager;
 					<div class="media__content">
 						<h1 class="media__title"><?php esc_html_e( 'Players', 'racketmanager' ); ?></h1>
 						<div class="media__content-subinfo">
-							<form id="playerSearch" action="" onsubmit="Racketmanager.playerSearch(event, this)">
+							<form id="playerSearch" action="">
 								<div class="search-box">
 									<div class="input-group">
 										<span class="input-group-text">
@@ -24,7 +25,7 @@ namespace Racketmanager;
 												<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#search' ); ?>"></use>
 											</svg>
 										</span>
-										<input type="search" name="search_string" id="search_string" class="form-control search-box__field" value="<?php echo esc_attr( $search_string ); ?>" />
+                                        <label for="search_string"></label><input type="search" name="search_string" id="search_string" class="form-control search-box__field" value="<?php echo esc_attr( $search_string ); ?>" />
 									</div>
 								</div>
 							</form>
@@ -58,3 +59,8 @@ namespace Racketmanager;
 		</div>
 	</div>
 </div>
+<script type="text/javascript">
+    document.getElementById('playerSearch').addEventListener('submit', function (e) {
+        Racketmanager.playerSearch(e);
+    });
+</script>

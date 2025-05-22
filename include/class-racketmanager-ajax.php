@@ -59,7 +59,7 @@ class Racketmanager_Ajax extends RacketManager {
 			$type    = isset( $_POST['type'] ) ? stripslashes( sanitize_text_field( wp_unslash( $_POST['type'] ) ) ) : '';
 			$name    = isset( $_POST['name'] ) ? stripslashes( sanitize_text_field( wp_unslash( $_POST['name'] ) ) ) : '';
 			$gender  = empty( $_POST['partnerGender'] ) ? null : sanitize_text_field( wp_unslash( $_POST['partnerGender'] ) );
-            $club_id = empty( $POST['club'] ) ? null : sanitize_text_field( wp_unslash( $POST['club'] ) );
+            $club_id = empty( $_POST['club'] ) ? null : intval( $_POST['club'] );
 			$results = array();
             if ( 'btm' === $type ) {
                 $player  = get_player( $name, 'btm' );

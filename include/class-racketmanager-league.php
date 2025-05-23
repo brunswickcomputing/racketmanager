@@ -2284,11 +2284,11 @@ class Racketmanager_League {
 				$out = "<span class='unplayedMatch'>&nbsp;</span>";
 			}
 			// match at home.
-		} elseif ( $team_id === $match->home_team ) {
+		} elseif ( strval( $team_id ) === $match->home_team ) {
 			$score_team_1 = $match->home_points;
 			$score_team_2 = $match->away_points;
 			// match away.
-		} elseif ( $opponent_id === $match->home_team ) {
+		} elseif ( strval( $opponent_id ) === $match->home_team ) {
 			$score_team_1 = $match->away_points;
 			$score_team_2 = $match->home_points;
 		} else {
@@ -2296,9 +2296,9 @@ class Racketmanager_League {
             $score_team_2 = null;
         }
 		if ( isset( $score_team_1 ) ) {
-			if ( $team_id === $match->winner_id ) {
+			if ( strval( $team_id ) === $match->winner_id ) {
 				$score_class = 'winner';
-			} elseif ( $team_id === $match->loser_id ) {
+			} elseif ( strval( $team_id ) === $match->loser_id ) {
 				$score_class = 'loser';
 			} elseif ( '-1' === $match->winner_id ) {
 				$score_class = 'tie';

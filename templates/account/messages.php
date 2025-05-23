@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var array $messages */
 ?>
 <div class="module module--card">
 	<div class="module__banner">
@@ -30,7 +31,7 @@ namespace Racketmanager;
 								<input class="form-check-input" type="radio" name="message_type" id="message_type_unread" value="1">
 								<label class="form-check-label" for="message_type_unread"><?php echo esc_html__( 'Unread', 'racketmanager' ) . ' (<span id="unread-messages">' . esc_html( $messages['unread'] ) . '</span>)'; ?></label>
 							</div>
-							<button class="btn btn-primary" onclick="Racketmanager.deleteMessages(event, this)"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></button>
+							<button class="btn btn-primary" id="deleteMessages"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></button>
 						</form>
 					</div>
 				</div>
@@ -39,7 +40,7 @@ namespace Racketmanager;
 						<?php
 						foreach ( $messages['detail'] as $message ) {
 							?>
-							<a id="message-summary-<?php echo esc_attr( $message->id ); ?>" class="message-summary<?php echo '1' === $message->status ? ' unread' : ' read'; ?>" onclick="Racketmanager.getMessage(event, '<?php echo esc_attr( $message->id ); ?>')">
+							<a id="message-summary-<?php echo esc_attr( $message->id ); ?>" class="message-summary <?php echo '1' === $message->status ? 'unread' : 'read'; ?>" data-message-id="<?php echo esc_attr( $message->id ); ?>">
 								<div class="description_wrapper">
 									<div class="sender">
 										<?php
@@ -81,3 +82,13 @@ namespace Racketmanager;
 		</div>
 	</div>
 </div>
+<script type="text/javascript">
+    const messages = document.querySelectorAll('.message-summary');
+    messages.forEach(el => el.addEventListener('click', function (e) {
+        let messageId = this.dataset.messageId;
+        Racketmanager.getMessage(e, messageId)
+    }));
+    document.getElementById('deleteMessages').addEventListener('click', function (e) {
+        Racketmanager.deleteMessages(e, this);
+    });
+</script>

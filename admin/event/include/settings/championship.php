@@ -1,12 +1,16 @@
 <?php
 /**
- * Event Settings chmapionship administration panel
+ * Event Settings championship administration panel
  *
  * @package Racketmanager/Admin/Templates
  */
 
 namespace Racketmanager;
 
+/** @var object $event */
+/** @var string $error_tab */
+/** @var bool   $is_invalid */
+/** @var string $msg */
 $tab_name = 'championship';
 if ( ! isset( $event->config->primary_league ) ) {
 	$event->config->primary_league = null;
@@ -21,7 +25,7 @@ $leagues = $event->get_leagues();
 				$error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
 				$is_invalid = true;
 				$msg_id     = array_search( 'primary_league', $racketmanager->error_fields, true );
-				$msg        = isset( $racketmanager->error_messages[ $msg_id ] ) ? $racketmanager->error_messages[ $msg_id ] : null;
+				$msg        = $racketmanager->error_messages[ $msg_id ] ?? null;
 			}
 			?>
 			<div class="form-floating mb-3">

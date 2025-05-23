@@ -81,7 +81,9 @@ namespace Racketmanager;
 						if ( $action ) {
 							$match_link .= $action . '/';
 						}
-					}
+					} else {
+                        $match_link = null;
+                    }
 					?>
 					<div class="match-row row justify-content-center">
 						<div class="col-6 col-md-2"><time datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( get_match_date() ); ?></time></div>

@@ -7,12 +7,16 @@
 
 namespace Racketmanager;
 
+/** @var string $favourite_type */
+/** @var int    $favourite_id */
+global $racketmanager;
 if ( is_user_logged_in() ) {
 	if ( ! empty( $hidden ) ) {
 		$visible = 'hidden-svg';
 	} else {
 		$visible = '';
 	}
+
 	$is_favourite = $racketmanager->is_user_favourite( $favourite_type, $favourite_id );
 	if ( $is_favourite ) {
 		$tooltip_title = __( 'Remove favourite', 'racketmanager' );
@@ -21,7 +25,7 @@ if ( is_user_logged_in() ) {
 	}
 	?>
 	<span type="button" class="btn btn-sm btn-favourite <?php echo $is_favourite ? ' is-favourite' : ''; ?>" data-bs-toggle="tooltip" data-bs-placement="top"  title="<?php echo esc_html( $tooltip_title ); ?>" id="fav-<?php echo esc_attr( $favourite_id ); ?>" data-js="add-favourite" data-type="<?php echo esc_attr( $favourite_type ); ?>" data-favourite="<?php echo esc_html( $favourite_id ); ?>" data-status="<?php echo esc_attr( $is_favourite ); ?>">
-		<div class="fav-icon">
+		<span class="fav-icon">
 			<a href="" >
 				<i class="fav-icon-svg <?php echo esc_html( $visible ); ?> racketmanager-svg-icon <?php echo $is_favourite ? ' fav-icon-svg-selected' : ''; ?>
 				">
@@ -31,8 +35,8 @@ if ( is_user_logged_in() ) {
 				</i>
 				<span class="nav-link__value" id=""><?php esc_html_e( 'favourite', 'racketmanager' ); ?></span>
 			</a>
-			<div class="fav-msg" id="fav-msg-<?php echo esc_html( $favourite_id ); ?>"></div>
-		</div>
+			<span class="fav-msg" id="fav-msg-<?php echo esc_html( $favourite_id ); ?>"></span>
+		</span>
 	</span>
 	<?php
-} ?>
+}

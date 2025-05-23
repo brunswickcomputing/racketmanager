@@ -133,7 +133,7 @@ $is_invalid = false;
 						$end_year     = $start_year - 100;
 						for ( $i = $start_year; $i > $end_year; $i-- ) {
 							?>
-							<option value="<?php echo esc_attr( $i ); ?>" <?php isset( $player->year_of_birth ) ? selected( $i, $player->year_of_birth ) : null; ?>><?php echo esc_html( $i ); ?></option>
+							<option value="<?php echo esc_attr( $i ); ?>" <?php selected( $i, $player->year_of_birth ?? null ); ?>><?php echo esc_html( $i ); ?></option>
 							<?php
 						}
 						?>
@@ -267,8 +267,6 @@ $is_invalid = false;
 							?>
 							<div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
 							<?php
-							$is_invalid = false;
-							$msg        = null;
 						}
 						?>
 					</div>

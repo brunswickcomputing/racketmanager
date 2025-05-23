@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
+/** @var object $player */
 if ( empty( $is_page_header ) ) {
 	$is_page_header = false;
 	$header_level   = 3;

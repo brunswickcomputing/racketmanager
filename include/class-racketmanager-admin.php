@@ -981,7 +981,7 @@ class RacketManager_Admin extends RacketManager {
 					$league_id    = intval( $_GET['edit_league'] );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					$league       = get_league( $league_id );
 					$league_title = $league->title;
-				} elseif ( isset( $_GET['statsseason'] ) && 'Show' === $_GET['statsseason'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				} elseif ( isset( $_GET['statsSeason'] ) && 'Show' === $_GET['statsSeason'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					if ( isset( $_GET['club_id'] ) ) {  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 						$club_id = intval( $_GET['club_id'] );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					}

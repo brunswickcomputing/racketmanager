@@ -8,6 +8,7 @@
 
 namespace Racketmanager;
 
+/** @var object $player */
 ?>
 <div class="container">
 	<?php

@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
 ?>
 <div class="container">
 	<div class="module module--card">

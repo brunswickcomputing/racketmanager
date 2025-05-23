@@ -5,15 +5,18 @@ Template page for the players
 The following variables are usable:
 
 $league: contains data of current league
-$playerss: contains all players for current league
+$players: contains all players for current league
 $season: current season
 
 You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
  */
-?>
 
-	<?php if ( $league->players ) { ?>
-		<table class='racketmanager player stats table' summary='' title='<?php echo __( 'Player Stats', 'racketmanager' ) . ' ' . $league->title; ?>'>
+namespace Racketmanager;
+
+/** @var object $league */
+	if ( $league->players ) {
+        ?>
+		<table class='racketmanager player stats table' title='<?php echo __( 'Player Stats', 'racketmanager' ) . ' ' . $league->title; ?>'>
 			<thead>
 				<tr>
 					<th class='player' scope="col"><?php _e( 'Player', 'racketmanager' ); ?></th>
@@ -23,17 +26,21 @@ You can check the content of a variable when you insert the tag <?php var_dump($
 				</tr>
 			</thead>
 			<tbody>
-				<?php foreach ( $league->players as $player ) { ?>
-
+				<?php
+                foreach ( $league->players as $player ) {
+                    ?>
 					<tr>
-						<td><?php echo $player['playername']; ?></td>
+						<td><?php echo $player['player-name']; ?></td>
 						<td><?php echo $player['team']; ?></td>
 						<td><?php echo $player['won']; ?></td>
 						<td><?php echo $player['lost']; ?></td>
 					</tr>
-
-				<?php } ?>
+				    <?php
+                }
+                ?>
 			</tbody>
 		</table>
 
-	<?php } ?>
+	    <?php
+    }
+    ?>

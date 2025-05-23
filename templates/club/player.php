@@ -14,6 +14,9 @@
 
 namespace Racketmanager;
 
+/** @var object $club */
+/** @var object $player */
+/** @var bool $user_can_update */
 $page_referrer = wp_get_referer();
 if ( ! $page_referrer ) {
 	$page_referrer = '/clubs/' . seo_url( $club->shortcode ) . '/players/';
@@ -125,7 +128,7 @@ if ( ! $page_referrer ) {
 					<?php
 					if ( is_user_logged_in() ) {
 						?>
-						<div class="form-control mb-3">
+						<fieldset class="form-control mb-3">
 							<legend><?php esc_html_e( 'Contact details', 'racketmanager' ); ?></legend>
 							<div class="row g-3">
 								<?php
@@ -151,14 +154,14 @@ if ( ! $page_referrer ) {
 								}
 								?>
 							</div>
-						</div>
+						</fieldset>
 						<?php
 					}
 					?>
 					<?php
 					if ( ! empty( $player->created_date ) || ! empty( $player_created_user_name ) ) {
 						?>
-						<div class="form-control mb-3">
+						<fieldset class="form-control mb-3">
 							<legend><?php esc_html_e( 'System details', 'racketmanager' ); ?></legend>
 							<div class="row g-3">
 								<?php
@@ -182,13 +185,13 @@ if ( ! $page_referrer ) {
 								}
 								?>
 							</div>
-						</div>
+						</fieldset>
 						<?php
 					}
 					?>
 					<div class="row mb-3">
 						<div class="match__buttons">
-							<a href="<?php echo esc_attr( $page_referrer ); ?>" class="btn btn-secondary text-uppercase" type="button" id="updatePlayerSubmit" name="updatePlayerSubmit"><?php esc_html_e( 'Return', 'racketmanager' ); ?></a>
+							<a href="<?php echo esc_attr( $page_referrer ); ?>" class="btn btn-secondary text-uppercase" type="button" id="updatePlayerSubmit"><?php esc_html_e( 'Return', 'racketmanager' ); ?></a>
 							<?php
 							if ( $user_can_update ) {
 								?>

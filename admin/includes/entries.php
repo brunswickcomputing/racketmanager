@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var object $competition */
+/** @var string $season */
 ?>
 <div class="row">
 	<div class="col-12">

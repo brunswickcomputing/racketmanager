@@ -466,10 +466,9 @@ function TournamentDateChange() {
 }
 let Racketmanager = {};
 
-Racketmanager.printScoreCard = function (e, link) {
+Racketmanager.printScoreCard = function (e, matchId) {
 	e.preventDefault();
 	let $matchCardWindow;
-	let matchId = jQuery(link).attr('id');
 	let notifyField = '#feedback-' + matchId;
 	jQuery(notifyField).hide();
 	jQuery(notifyField).removeClass('message-success message-error');

@@ -7,7 +7,9 @@
 
 namespace Racketmanager;
 
-global $wp;
+global $wp, $racketmanager;
+/** @var object $is_update_allowed */
+/** @var object $match */
 $user_can_update = $is_update_allowed->user_can_update;
 ?>
 	<div id="match-header" class="team-match-header module module--dark module--card">
@@ -30,7 +32,7 @@ $user_can_update = $is_update_allowed->user_can_update;
 						<?php
 						if ( ! $match->winner_id ) {
 							?>
-							<a role="button" class="btn btn--link match-print" id="<?php echo esc_html( $match->id ); ?>" onclick="Racketmanager.printScoreCard(event, this)" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Print matchcard', 'racketmanager' ); ?>">
+							<a role="button" class="btn btn--link match-print" id="printMatchCard" data-match-id="<?php echo esc_attr( $match->id ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Print match card', 'racketmanager' ); ?>">
 								<svg width="16" height="16" class="icon ">
 									<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#printer-fill' ); ?>"></use>
 								</svg>
@@ -232,3 +234,9 @@ $user_can_update = $is_update_allowed->user_can_update;
 		</div>
 	</div>
 	<?php require 'includes/match-modal.php'; ?>
+<script type="text/javascript">
+    document.getElementById('printMatchCard').addEventListener('click', function (e) {
+        let matchId = this.dataset.matchId;
+        Racketmanager.printScoreCard(e, matchId);
+    });
+</script>

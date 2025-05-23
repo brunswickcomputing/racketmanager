@@ -7,8 +7,9 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
-
+/** @var object $user */
+/** @var string $match_url */
+/** @var object $match */
 $email_subject = __( 'Match Result - Favourite Notification', 'racketmanager' );
 require 'email-header.php';
 ?>
@@ -18,7 +19,7 @@ require 'email-header.php';
 			require 'components/title.php';
 			?>
 			<?php
-			$salutation_link = $user->first_name;
+            $salutation_link = $user->first_name;
 			?>
 			<?php require 'components/salutation.php'; ?>
 			<!-- introduction -->
@@ -36,7 +37,7 @@ require 'email-header.php';
 														<tr>
 															<td style="min-width: 5px; font-weight: 400;" role="presentation" cellspacing="0" cellpadding="0" align="center" bgcolor="#fff" valign="top">
 																<div style="font-size: 16px; color: #000; background-color: transparent; margin: 10px;">
-																	<p style="line-height: 1.25; mso-line-height-rule: at-least; margin: 0 0 20px; padding: 0;">
+																	<div style="line-height: 1.25; mso-line-height-rule: at-least; margin: 0 0 20px; padding: 0;">
 																		<table class="body-action" aria-describedby="<?php esc_html_e( 'outside url wrapping action', 'racketmanager' ); ?>">
 																			<tr>
 																				<td class="align-right team"><a style="text-decoration: none; color: #006800;" href="<?php echo esc_html( $match_url ); ?>"><?php echo esc_html( $match->teams['home']->title ); ?></a></td>
@@ -44,7 +45,7 @@ require 'email-header.php';
 																				<td class="align-left team"><a style="text-decoration: none; color: #006800;" href="<?php echo esc_html( $match_url ); ?>"><?php echo esc_html( $match->teams['away']->title ); ?></a></td>
 																			</tr>
 																		</table>
-																	</p>
+																	</div>
 																</div>
 															</td>
 														</tr>

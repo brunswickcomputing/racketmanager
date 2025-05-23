@@ -103,7 +103,7 @@ jQuery(document).ready(function ($) {
 	$('#captain').autocomplete({
 		minLength: 2,
 		source: function (request, response) {
-			club = $("#affiliatedclub").val();
+			club = $("#clubId").val();
 			response(get_player_details(request.term, club));
 		},
 		select: function (event, ui) {
@@ -279,6 +279,7 @@ function get_player_details(name, club = null) {
 		url: ajaxurl,
 		async: false,
 		data: {
+			"type": 'name',
 			"name": name,
 			"club": club,
 			"security": ajax_var.ajax_nonce,

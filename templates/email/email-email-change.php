@@ -7,13 +7,14 @@
 
 namespace Racketmanager;
 
+/** @var array $vars */
 $organisation  = $vars['site_name'];
 $sitename      = $vars['site_name'];
 $siteurl       = $vars['site_url'];
 $userlogin     = $vars['user_login'];
 $username      = $vars['display_name'];
 $email_subject = __( 'Email Change', 'racketmanager' );
-$emaillink     = $vars['email_link'];
+$email_link    = $vars['email_link'];
 require 'email-header.php';
 ?>
 			<?php $salutation_link = $username; ?>

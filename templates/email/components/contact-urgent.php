@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-/** @var string $emaillink */
+/** @var string $email_link */
 ?>
 <!-- closing -->
 			<div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
@@ -25,7 +25,7 @@ namespace Racketmanager;
 															<td style="min-width: 5px; font-weight: 400;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
 																<div style="font-size: 16px; color: #000; background-color: transparent; margin: 10px;">
 																	<p style="line-height: 1.25; mso-line-height-rule: at-least; margin: 0 0 20px; padding: 0;">
-																		If you did not initiate this, please <a href="mailto:<?php echo esc_url( $emaillink ); ?>" style="text-decoration: none; color: #006800;">contact the team</a>.
+																		If you did not initiate this, please <a href="mailto:<?php echo esc_url( $email_link ); ?>" style="text-decoration: none; color: #006800;">contact the team</a>.
 																	</p>
 																</div>
 															</td>

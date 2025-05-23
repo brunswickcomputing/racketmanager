@@ -7,10 +7,12 @@
 
 namespace Racketmanager;
 
+/** @var string $organisation */
+/** @var int    $time_period */
 global $match;
 $competition_name = $match->league->title;
 $match_date       = $match->match_date;
-$email_subject    = __( 'Match Result Pending', 'racketmanager' ) . ' - ' . $competition_name . ' - ' . $organisation;
+$email_subject = __( 'Match Result Pending', 'racketmanager' ) . ' - ' . $competition_name . ' - ' . $organisation;
 if ( $time_period ) {
 	$days_period = $time_period / 24;
 } else {

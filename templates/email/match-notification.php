@@ -7,6 +7,12 @@
 
 namespace Racketmanager;
 
+/** @var object $match */
+/** @var object $tournament */
+/** @var string $round */
+/** @var string $draw_link */
+/** @var array  $teams */
+/** @var string $rules_link */
 $competition_name = $match->league->title;
 $tournament_name  = $tournament->name;
 $tournament_date  = $tournament->date;
@@ -16,7 +22,7 @@ $email_subject    = __( 'Next match confirmation', 'racketmanager' ) . ' - ' . u
 ?>
 <?php require 'email-header.php'; ?>
 			<?php
-			$title_text = sprintf(
+            $title_text = sprintf(
 				/* translators: %1$s: league name %2$s: round name */
 				__( '%1$s %2$s Match Confirmation', 'racketmanager' ),
 				$match->league->title,

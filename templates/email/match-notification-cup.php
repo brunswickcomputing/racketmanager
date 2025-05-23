@@ -7,10 +7,17 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
+/** @var string $competition */
+/** @var object $match */
+/** @var string $round */
+/** @var string $cup_link */
+/** @var array  $teams */
+/** @var string $rules_link */
 $competition_name = $competition;
-$match_date       = $match->match_date;
-$match_time       = mysql2date( $racketmanager->time_format, $match->date );
-$email_subject    = __( 'Match Details', 'racketmanager' ) . ' - ' . $round . ' - ' . $competition_name;
+$match_date    = $match->match_date;
+$match_time    = mysql2date( $racketmanager->time_format, $match->date );
+$email_subject = __( 'Match Details', 'racketmanager' ) . ' - ' . $round . ' - ' . $competition_name;
 ?>
 <?php require 'email-header.php'; ?>
 			<?php
@@ -26,7 +33,7 @@ $email_subject    = __( 'Match Details', 'racketmanager' ) . ' - ' . $round . ' 
 			$title_align = '';
 			?>
 			<?php
-			$paragraph_text = sprintf(
+            $paragraph_text = sprintf(
 				/* translators: $s: cup link */
 				__( 'Please find below details of your next match in the %s.', 'racketmanager' ),
 				$cup_link,
@@ -105,7 +112,7 @@ $email_subject    = __( 'Match Details', 'racketmanager' ) . ' - ' . $round . ' 
 			require 'components/title.php';
 			?>
 			<?php
-			$paragraph_text  = __( 'The rules for the cup can be found', 'racketmanager' ) . ' <a href="' . $rules_link . '">' . __( 'here', 'racketmanager' ) . '</a>.';
+            $paragraph_text  = __( 'The rules for the cup can be found', 'racketmanager' ) . ' <a href="' . $rules_link . '">' . __( 'here', 'racketmanager' ) . '</a>.';
 			$paragraph_imbed = true;
 			require 'components/paragraph.php';
 			$paragraph_imbed = false;

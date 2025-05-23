@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var string $organisation */
+/** @var int    $time_period */
 global $match;
 $competition_name = $match->league->title;
 $match_date       = $match->match_date;

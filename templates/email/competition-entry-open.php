@@ -7,6 +7,11 @@
 
 namespace Racketmanager;
 
+/** @var string $addressee */
+/** @var string $competition */
+/** @var object $season_dtls */
+/** @var bool   $is_championship */
+global $racketmanager;
 require 'email-header.php';
 $salutation_link = $addressee;
 require 'components/salutation.php';
@@ -28,6 +33,7 @@ if ( ! empty( $season_dtls->date_start ) ) {
 	$paragraph_text .= '.';
 	require 'components/paragraph.php';
 }
+
 if ( ! empty( $season_dtls->venue_name ) && $is_championship ) {
 	/* translators: $s: venue name */
 	$paragraph_text = ' ' . sprintf( __( 'Finals day will held at %s. ', 'racketmanager' ), $season_dtls->venue_name );

@@ -7,6 +7,11 @@
 
 namespace Racketmanager;
 
+/** @var string $season_select */
+/** @var string $competition_select */
+/** @var string $event_select */
+/** @var string $results_check_filter */
+/** @var array  $results_checkers */
 $seasons      = $this->get_seasons( 'DESC' );
 $competitions = $this->get_competitions( array( 'type' => 'league' ) );
 $events       = array();
@@ -28,17 +33,17 @@ foreach ( $competitions as $competition ) {
 			<input type="hidden" name="page" value="<?php echo esc_html( 'racketmanager-results' ); ?>" />
 			<input type="hidden" name="tab" value="<?php echo esc_html( 'resultschecker' ); ?>" />
 			<div class="col-auto">
-				<select class="form-select-1" size="1" name="season" id="season">
+                <label for="season"></label><select class="form-select-1" size="1" name="season" id="season">
 					<option value="all"><?php esc_html_e( 'All seasons', 'racketmanager' ); ?></option>
 					<?php
 					foreach ( $seasons as $season ) {
 						?>
-						<option value="<?php echo esc_html( $season->name ); ?>" <?php echo esc_html( $season->name === $season_select ? 'selected' : '' ); ?>><?php echo esc_html( $season->name ); ?></option>
+						<option value="<?php echo esc_html( $season->name ); ?>" <?php selected( $season->name, $season_select ); ?>><?php echo esc_html( $season->name ); ?></option>
 						<?php
 					}
 					?>
 				</select>
-				<select class="form-select-1" size="1" name="competition" id="competition">
+                <label for="competition"></label><select class="form-select-1" size="1" name="competition" id="competition">
 					<option value="all"><?php esc_html_e( 'All competitions', 'racketmanager' ); ?></option>
 					<?php
 					foreach ( $competitions as $competition ) {
@@ -48,7 +53,7 @@ foreach ( $competitions as $competition ) {
 					}
 					?>
 				</select>
-				<select class="form-select-1" size="1" name="event" id="event">
+                <label for="event"></label><select class="form-select-1" size="1" name="event" id="event">
 					<option value="all"><?php esc_html_e( 'All events', 'racketmanager' ); ?></option>
 					<?php
 					foreach ( $events as $event ) {
@@ -58,59 +63,67 @@ foreach ( $competitions as $competition ) {
 					}
 					?>
 				</select>
-				<select name="filterResultsChecker" size="1">
-					<option value="-1" selected="selected"><?php esc_html_e( 'Filter results', 'racketmanager' ); ?></option>
-					<option value="all"
-					<?php
-					if ( 'all' === $results_check_filter ) {
-						echo esc_html( ' selected' );
-					}
-					?>
-					><?php esc_html_e( 'All', 'racketmanager' ); ?></option>
-					<option value="outstanding"
-					<?php
-					if ( 'outstanding' === $results_check_filter ) {
-						echo esc_html( ' selected' );
-					}
-					?>
-					><?php esc_html_e( 'Outstanding', 'racketmanager' ); ?></option>
-					<option value="1"
-					<?php
-					if ( '1' === $results_check_filter ) {
-						echo esc_html( ' selected' );
-					}
-					?>
-					><?php esc_html_e( 'Approved', 'racketmanager' ); ?></option>
-					<option value="2"
-					<?php
-					if ( '2' === $results_check_filter ) {
-						echo esc_html( ' selected' );
-					}
-					?>
-					><?php esc_html_e( 'Handled', 'racketmanager' ); ?></option>
-				</select>
-				<button class="btn btn-primary"><?php esc_html_e( 'Filter', 'racketmanager' ); ?></button>
+                <label>
+                    <select name="filterResultsChecker" size="1">
+                        <option value="-1" selected="selected"><?php esc_html_e( 'Filter results', 'racketmanager' ); ?></option>
+                        <option value="all"
+                        <?php
+                        if ( 'all' === $results_check_filter ) {
+                            echo esc_html( ' selected' );
+                        }
+                        ?>
+                        ><?php esc_html_e( 'All', 'racketmanager' ); ?></option>
+                        <option value="outstanding"
+                        <?php
+                        if ( 'outstanding' === $results_check_filter ) {
+                            echo esc_html( ' selected' );
+                        }
+                        ?>
+                        ><?php esc_html_e( 'Outstanding', 'racketmanager' ); ?></option>
+                        <option value="1"
+                        <?php
+                        if ( '1' === $results_check_filter ) {
+                            echo esc_html( ' selected' );
+                        }
+                        ?>
+                        ><?php esc_html_e( 'Approved', 'racketmanager' ); ?></option>
+                        <option value="2"
+                        <?php
+                        if ( '2' === $results_check_filter ) {
+                            echo esc_html( ' selected' );
+                        }
+                        ?>
+                        ><?php esc_html_e( 'Handled', 'racketmanager' ); ?></option>
+                    </select>
+                </label>
+                <button class="btn btn-primary"><?php esc_html_e( 'Filter', 'racketmanager' ); ?></button>
 			</div>
 		</form>
 	</div>
 	<div class="row">
 		<form id="results-checker-action" method="post" action="" class="form-control">
 			<?php wp_nonce_field( 'results-checker-bulk' ); ?>
-
-			<div class="tablenav">
-				<!-- Bulk Actions -->
-				<select name="action" size="1">
-					<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
-					<option value="approve"><?php esc_html_e( 'Approve', 'racketmanager' ); ?></option>
-					<option value="handle"><?php esc_html_e( 'Handle', 'racketmanager' ); ?></option>
-					<option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
-				</select>
-				<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doResultsChecker" id="doResultsChecker" class="btn btn-secondary action" />
-			</div>
-
+            <div class="row gx-3 mb-3 align-items-center">
+                <!-- Bulk Actions -->
+                <div class="col-auto">
+                    <label>
+                        <select class="form-select" name="action">
+                            <option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
+                            <option value="approve"><?php esc_html_e( 'Approve', 'racketmanager' ); ?></option>
+                            <option value="handle"><?php esc_html_e( 'Handle', 'racketmanager' ); ?></option>
+                            <option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
+                        </select>
+                    </label>
+                </div>
+                <div class="col-auto">
+                    <button name="doResultsChecker" id="doResultsChecker" class="btn btn-secondary"><?php esc_html_e( 'Apply', 'racketmanager' ); ?></button>
+                </div>
+            </div>
 			<div class="container">
 				<div class="row table-header">
-					<div class="col-2 col-md-auto check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('results-checker-action'));" /></div>
+					<div class="col-2 col-md-auto check-column">
+                        <label class="visually-hidden" for="checkAll"></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('results-checker-action'));" />
+                    </div>
 					<div class="col-5 col-sm-2 col-lg-1"><?php esc_html_e( 'Date', 'racketmanager' ); ?></div>
 					<div class="col-12 col-sm-2 col-lg-3"><?php esc_html_e( 'Match', 'racketmanager' ); ?></div>
 					<div class="col-6 col-md-2"><?php esc_html_e( 'Team', 'racketmanager' ); ?></div>
@@ -136,8 +149,8 @@ foreach ( $competitions as $competition ) {
 						?>
 						<div class="row table-row <?php echo esc_html( $class ); ?>">
 							<div class="col-2 col-md-auto check-column">
-								<input type="checkbox" value="<?php echo esc_html( $results_checker->id ); ?>" name="resultsChecker[<?php echo esc_html( $results_checker->id ); ?>]" />
-							</div>
+                                <label class="visually-hidden" for="resultsChecker-<?php echo esc_html( $results_checker->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $results_checker->id ); ?>" name="resultsChecker[<?php echo esc_html( $results_checker->id ); ?>]" id="resultsChecker-<?php echo esc_html( $results_checker->id ); ?>" />
+                            </div>
 							<div class="col-5 col-sm-2 col-lg-1"><?php echo esc_html( mysql2date( 'Y-m-d', $results_checker->match->date ) ); ?></div>
 							<div class="col-12 col-md-2 col-lg-3">
 								<a href="<?php echo esc_html( $results_checker->match->link ); ?>result/">

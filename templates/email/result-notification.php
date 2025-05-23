@@ -7,6 +7,9 @@
 
 namespace Racketmanager;
 
+/** @var object $match */
+/** @var string $time_period */
+/** @var bool   $confirmation_required */
 $competition_name = $match->league->title;
 $match_date       = $match->match_date;
 $email_subject    = __( 'Match Result', 'racketmanager' ) . ' - ' . $competition_name;

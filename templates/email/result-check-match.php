@@ -1,16 +1,19 @@
 <?php
 /**
- * Result check matchemail body
+ * Result check match email body
  *
  * @package Racketmanager/Templates/Email
  */
 
 namespace Racketmanager;
 
+/** @var string $captain */
+/** @var string $reason */
+/** @var string $penalty */
 require 'email-header.php';
 ?>
 			<?php
-			$salutation_link = $captain;
+            $salutation_link = $captain;
 			require 'components/salutation.php';
 			?>
 			<?php
@@ -47,7 +50,7 @@ require 'email-header.php';
 				</table>
 			</div>
 			<?php
-			if ( $penalty ) {
+            if ( $penalty ) {
 				/* translators: %s: penalty */
 				$paragraph_text = sprintf( __( 'You have been deducted %s point.', 'racketmanager' ), $penalty );
 				require 'components/paragraph.php';

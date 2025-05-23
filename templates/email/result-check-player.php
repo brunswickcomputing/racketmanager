@@ -7,10 +7,15 @@
 
 namespace Racketmanager;
 
+/** @var string $captain */
+/** @var string $player */
+/** @var string $reason */
+/** @var string $opponent */
+/** @var string $penalty */
 require 'email-header.php';
 ?>
 			<?php
-			$salutation_link = $captain;
+            $salutation_link = $captain;
 			require 'components/salutation.php';
 			?>
 			<?php
@@ -48,7 +53,7 @@ require 'email-header.php';
 			</div>
 			<?php
 			/* translators: %s: opponent */
-			$paragraph_text = sprintf( __( 'As such, the rubber will be awarded to %s.', 'racketmanager' ), $opponent );
+            $paragraph_text = sprintf( __( 'As such, the rubber will be awarded to %s.', 'racketmanager' ), $opponent );
 			require 'components/paragraph.php';
 			?>
 			<?php

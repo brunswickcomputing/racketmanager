@@ -1243,9 +1243,9 @@ class RacketManager {
 	 *
 	 * @param array $args query arguments.
 	 *
-	 * @return array|false
+	 * @return object|false
 	 */
-	public function get_season( array $args = array() ): false|array {
+	public function get_season( array $args = array() ): false|object {
 		global $wpdb;
 
 		$defaults = array(

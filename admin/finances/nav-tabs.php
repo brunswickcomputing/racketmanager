@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var string $racketmanager_tab */
 ?>
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">

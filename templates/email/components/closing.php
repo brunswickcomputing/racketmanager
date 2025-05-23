@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var string $organisation */
 ?>
 <!-- closing -->
 			<div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">

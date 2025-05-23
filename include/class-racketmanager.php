@@ -34,9 +34,9 @@ class RacketManager {
 	/**
 	 * Error.
 	 *
-	 * @var bool $error
+	 * @var string|bool $error
 	 */
-	public bool $error = false;
+	public bool|string $error = false;
 	/**
 	 * Options.
 	 *
@@ -1199,13 +1199,13 @@ class RacketManager {
 		if ( true === $error ) {
 			$this->error = 'error';
 		} elseif ( 'warning' === $error ) {
-			$this->error = $error;
+			$this->error = 'warning';
 		} elseif ( 'info' === $error ) {
-			$this->error = $error;
+			$this->error = 'info';
 		} elseif ( 'error' === $error ) {
-			$this->error = $error;
+			$this->error = 'error';
 		} elseif ( 'danger' === $error ) {
-			$this->error = $error;
+			$this->error = 'danger';
 		} else {
 			$this->error = false;
 		}

@@ -2104,8 +2104,16 @@ class RacketManager_Admin extends RacketManager {
 					$club->address    = isset( $_POST['address'] ) ? sanitize_text_field( wp_unslash( $_POST['address'] ) ) : null;
 					$club->latitude   = isset( $_POST['latitude'] ) ? sanitize_text_field( wp_unslash( $_POST['latitude'] ) ) : null;
 					$club->longitude  = isset( $_POST['longitude'] ) ? sanitize_text_field( wp_unslash( $_POST['longitude'] ) ) : null;
-					$club             = new Racketmanager_Club( $club );
-					$this->set_message( __( 'Club added', 'racketmanager' ) );
+                    if ( empty( $club->name ) ) {
+						$this->set_message( __( 'Name required', 'racketmanager' ), true );
+					} elseif ( empty( $club->shortcode ) ) {
+						$this->set_message( __( 'Shortcode required', 'racketmanager' ), 'error' );
+					} elseif ( empty( $club->address ) ) {
+						$this->set_message( __( 'Address required', 'racketmanager' ), 'error' );
+					} else {
+						$club             = new Racketmanager_Club( $club );
+						$this->set_message( __( 'Club added', 'racketmanager' ) );
+					}
 				}
 				$this->printMessage();
 			} elseif ( isset( $_POST['editClub'] ) ) {
@@ -2113,25 +2121,25 @@ class RacketManager_Admin extends RacketManager {
 				if ( ! current_user_can( 'edit_teams' ) ) {
 					$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 				} elseif ( isset( $_POST['club_id'] ) ) {
-						$club          = get_club( intval( $_POST['club_id'] ) );
-						$club->name    = isset( $_POST['club'] ) ? sanitize_text_field( wp_unslash( $_POST['club'] ) ) : null;
-						$club->type    = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : null;
-						$old_shortcode = $club->shortcode;
+                    $club          = get_club( intval( $_POST['club_id'] ) );
+                    $club->name    = isset( $_POST['club'] ) ? sanitize_text_field( wp_unslash( $_POST['club'] ) ) : null;
+                    $club->type    = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : null;
+                    $old_shortcode = $club->shortcode;
 					if ( $club->shortcode !== $_POST['shortcode'] ) {
 						$club->shortcode = isset( $_POST['shortcode'] ) ? sanitize_text_field( wp_unslash( $_POST['shortcode'] ) ) : null;
 					}
-						$club->matchsecretary             = isset( $_POST['match_secretary'] ) ? intval( $_POST['match_secretary'] ) : null;
-						$club->match_secretary_contact_no = isset( $_POST['match_secretary_contact_no'] ) ? sanitize_text_field( wp_unslash( $_POST['match_secretary_contact_no'] ) ) : null;
-						$club->match_secretary_email      = isset( $_POST['match_secretary_email'] ) ? sanitize_text_field( wp_unslash( $_POST['match_secretary_email'] ) ) : null;
-						$club->contactno                  = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
-						$club->website                    = isset( $_POST['website'] ) ? sanitize_text_field( wp_unslash( $_POST['website'] ) ) : null;
-						$club->founded                    = isset( $_POST['founded'] ) ? intval( $_POST['founded'] ) : null;
-						$club->facilities                 = isset( $_POST['facilities'] ) ? sanitize_text_field( wp_unslash( $_POST['facilities'] ) ) : null;
-						$club->address                    = isset( $_POST['address'] ) ? sanitize_text_field( wp_unslash( $_POST['address'] ) ) : null;
-						$club->latitude                   = isset( $_POST['latitude'] ) ? sanitize_text_field( wp_unslash( $_POST['latitude'] ) ) : null;
-						$club->longitude                  = isset( $_POST['longitude'] ) ? sanitize_text_field( wp_unslash( $_POST['longitude'] ) ) : null;
-						$club->update( $club, $old_shortcode );
-						$this->set_message( __( 'Club updated', 'racketmanager' ) );
+                    $club->matchsecretary             = isset( $_POST['match_secretary'] ) ? intval( $_POST['match_secretary'] ) : null;
+                    $club->match_secretary_contact_no = isset( $_POST['match_secretary_contact_no'] ) ? sanitize_text_field( wp_unslash( $_POST['match_secretary_contact_no'] ) ) : null;
+                    $club->match_secretary_email      = isset( $_POST['match_secretary_email'] ) ? sanitize_text_field( wp_unslash( $_POST['match_secretary_email'] ) ) : null;
+                    $club->contactno                  = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
+                    $club->website                    = isset( $_POST['website'] ) ? sanitize_text_field( wp_unslash( $_POST['website'] ) ) : null;
+                    $club->founded                    = isset( $_POST['founded'] ) ? intval( $_POST['founded'] ) : null;
+                    $club->facilities                 = isset( $_POST['facilities'] ) ? sanitize_text_field( wp_unslash( $_POST['facilities'] ) ) : null;
+                    $club->address                    = isset( $_POST['address'] ) ? sanitize_text_field( wp_unslash( $_POST['address'] ) ) : null;
+                    $club->latitude                   = isset( $_POST['latitude'] ) ? sanitize_text_field( wp_unslash( $_POST['latitude'] ) ) : null;
+                    $club->longitude                  = isset( $_POST['longitude'] ) ? sanitize_text_field( wp_unslash( $_POST['longitude'] ) ) : null;
+                    $club->update( $club, $old_shortcode );
+                    $this->set_message( __( 'Club updated', 'racketmanager' ) );
 				}
 				$this->printMessage();
 			} elseif ( isset( $_POST['doClubDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {

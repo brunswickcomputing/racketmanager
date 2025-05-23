@@ -2918,7 +2918,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 								$err_fld[] = 'players_' . $rubber->num . '_' . $player_ref;
 								$err_msg[] = __( 'Player already selected', 'racketmanager' );
 							} else {
-								$team_wtn       += empty( $player->player->wtn[ $match_type ] ) ? 99 : $player->player->wtn[ $match_type ];
+								$team_wtn       += empty( $player->player->wtn[ $match_type ] ) ? 40.9 : $player->player->wtn[ $match_type ];
 								$match_players[] = $player_id;
 							}
 						}

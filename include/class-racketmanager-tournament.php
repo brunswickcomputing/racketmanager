@@ -1751,7 +1751,7 @@ final class Racketmanager_Tournament {
 						if ( empty( $display_opt['wtn'] ) ) {
 							$rating = $player->rating[ $type ];
 						} else {
-							$rating = floatval( $player->wtn[ $type ] );
+							$rating = empty( $player->wtn[ $type ] ) ? 40.9 : floatval( $player->wtn[ $type ] );
 						}
 						if ( is_numeric( $rating ) ) {
 							$team_rating += $rating;

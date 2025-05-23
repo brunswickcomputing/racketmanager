@@ -508,9 +508,9 @@ class Racketmanager_Competition {
 	/**
 	 * Config
 	 *
-	 * @var array
+	 * @var object
 	 */
-	public array $config;
+	public object $config;
 	/**
 	 * Match query arguments
 	 *

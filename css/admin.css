@@ -300,11 +300,11 @@ div.racketmanager_widget_control select {
 	padding: 5px;
 	text-align: center;
 }
-.playername {
+.player-name {
     width: 20%;
 }
 
-.playerstats .playername {
+.playerstats .player-name {
     width: 10%;
 }
 

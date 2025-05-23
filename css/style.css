@@ -731,12 +731,12 @@ input[type="time"]:disabled {
 	border: 0;
 }
 
-.playerstats th.playername {
+.playerstats th.player-name {
 	text-align: left;
 	width: 20%;
 }
 
-.playerlist td.playername {
+.playerlist td.player-name {
 	text-align: left;
 }
 

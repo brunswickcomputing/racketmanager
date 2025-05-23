@@ -124,27 +124,27 @@ final class Racketmanager_Player {
 	/**
 	 * Removed date.
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public mixed $removed_date;
+	public ?string $removed_date;
 	/**
 	 * Removed user.
 	 *
-	 * @var int
+	 * @var string|null
 	 */
-	public mixed $removed_user;
+	public ?string $removed_user;
 	/**
 	 * Created user.
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public int $created_user;
+	public ?int $created_user;
 	/**
 	 * Created username.
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public string $created_user_name;
+	public ?string $created_user_name;
 	/**
 	 * Locked indicator.
 	 *
@@ -154,21 +154,21 @@ final class Racketmanager_Player {
 	/**
 	 * Locked date.
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public mixed $locked_date;
+	public ?string $locked_date;
 	/**
 	 * Locked user.
 	 *
-	 * @var int
+	 * @var string|null
 	 */
-	public mixed $locked_user;
+	public ?string $locked_user;
 	/**
 	 * Locked username.
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public string $locked_user_name;
+	public ?string $locked_user_name;
 	/**
 	 * System record.
 	 *

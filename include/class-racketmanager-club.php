@@ -160,15 +160,15 @@ final class Racketmanager_Club {
 	/**
 	 * Created date variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public string $created_date;
+	public ?string $created_date;
 	/**
 	 * Removed date variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public string $removed_date;
+	public ?string $removed_date;
 	/**
 	 * Player variable
 	 *

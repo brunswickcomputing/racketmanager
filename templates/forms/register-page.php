@@ -7,13 +7,23 @@
 
 namespace Racketmanager;
 
+/** @var array  $vars */
+/** @var bool   $email_error */
+/** @var string $email_message */
+/** @var bool   $firstname_error */
+/** @var string $firstname_message */
+/** @var bool   $surname_error */
+/** @var string $surname_message */
+/** @var bool   $recaptcha_error */
+/** @var string $recaptcha_message */
+?>
 ?>
 <div>
 	<form id="signupForm" method="post" action="<?php echo esc_url( wp_registration_url() ); ?>">
 		<?php wp_nonce_field( 'racketmanager_register', 'racketmanager_register_nonce' ); ?>
 		<script>
 			function submitForm() {
-				var signupForm = document.getElementById("signupForm");
+				let signupForm = document.getElementById("signupForm");
 				signupForm.submit();
 			}
 		</script>

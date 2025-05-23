@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var bool $delay */
 global $match, $racketmanager;
 $competition_name = $match->league->title;
 if ( empty( $match->start_time ) ) {

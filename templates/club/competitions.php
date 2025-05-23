@@ -12,6 +12,7 @@
 
 namespace Racketmanager;
 
+/** @var object $club */
 $matchdays = Racketmanager_Util::get_weekdays();
 require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 

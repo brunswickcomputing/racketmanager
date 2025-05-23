@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var object $league */
+/** @var array $finals */
 ?>
 <!-- Nav tabs -->
 <ul class="nav nav-tabs frontend" id="myTab-<?php echo esc_html( $league->id ); ?>" role="tablist">

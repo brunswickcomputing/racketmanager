@@ -27,7 +27,6 @@ namespace Racketmanager;
 			<div class="col-12 col-md-1 check-column"><input type="checkbox" id="check-all-seasons" onclick="Racketmanager.checkAll(document.getElementById('seasons-filter'));" /></div>
 			<div class="col-12 col-md-1 column-num">ID</div>
 			<div class="col-12 col-md-2"><?php esc_html_e( 'Name', 'racketmanager' ); ?></div>
-			<div class="col-12 col-md-3"><?php esc_html_e( 'Action', 'racketmanager' ); ?></div>
 		</div>
 		<?php
 		$seasons = $this->get_seasons();
@@ -42,7 +41,6 @@ namespace Racketmanager;
 					</div>
 					<div class="col-12 col-md-1 column-num"><?php echo esc_html( $season->id ); ?></div>
 					<div class="col-12 col-md-2"><?php echo esc_html( $season->name ); ?></div>
-					<div class="col-12 col-md-3"><a class="btn btn-secondary" href="admin.php?page=racketmanager-admin&amp;view=competitions&amp;season=<?php echo esc_html( $season->name ); ?>">Add Competitions</a></div>
 				</div>
 			<?php } ?>
 		<?php } ?>

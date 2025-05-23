@@ -8,6 +8,7 @@
 
 namespace Racketmanager;
 
+/** @var object $player */
 ?>
 			<div class="module module--card">
 				<div class="module__content">
@@ -52,11 +53,11 @@ namespace Racketmanager;
 															</svg>
 														</div>
 														<div class="media__content">
-															<h7 class="media__title">
+															<span class="media__title">
 																<a class="nav--link media__link" href="<?php echo '/tournament/' . esc_attr( seo_url( $match->tournament ) ) . '/draw/' . esc_attr( seo_url( $match->draw ) ) . '/'; ?>">
 																	<span class="nav-link__value"><?php echo esc_html( $match->title ); ?></span>
 																</a>
-															</h7>
+															</span>
 														</div>
 													</div>
 												</div>

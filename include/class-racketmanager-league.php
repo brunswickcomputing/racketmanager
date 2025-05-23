@@ -2273,7 +2273,9 @@ class Racketmanager_League {
 	 * @return string
 	 */
 	public function get_score( int $team_id, int $opponent_id, object $match, string $home_away ): string {
-        $out = '';
+        $out          = '';
+        $score_team_1 = null;
+        $score_team_2 = null;
 		// unplayed match.
 		if ( ! $match || ( null === $match->home_points && null === $match->away_points ) ) {
 			$date      = (str_starts_with($match->date, '0000-00-00')) ? 'N/A' : mysql2date( 'D d/m/Y', $match->date );

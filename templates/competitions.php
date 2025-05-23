@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var string $type */
 ?>
 <div class="container">
 	<div class="module module--card">

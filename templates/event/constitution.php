@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
+/** @var object $event */
 $email_subject = $event->name;
 require RACKETMANAGER_PATH . 'templates/email/email-header.php';
 require RACKETMANAGER_PATH . 'templates/email/div-top.php';

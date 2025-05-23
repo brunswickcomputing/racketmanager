@@ -7,8 +7,8 @@
 
 namespace Racketmanager;
 
-$team_count = count( $teams );
-
+/** @var array  $teams */
+/** @var object $league */
 ?>
 <div class="container">
 	<div class="table-responsive">

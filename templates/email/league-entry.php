@@ -7,6 +7,10 @@
 
 namespace Racketmanager;
 
+/** @var string $competition_name */
+/** @var string $season */
+/** @var string $club */
+/** @var array $event_entries */
 $email_subject = __( 'League Entry', 'racketmanager' ) . ' - ' . ucfirst( $competition_name ) . ' - ' . $season;
 require 'email-header.php';
 ?>
@@ -16,7 +20,7 @@ require 'email-header.php';
 			require 'components/title.php';
 			?>
 			<?php
-			$salutation_link = $club;
+            $salutation_link = $club;
 			require 'components/salutation.php';
 			?>
 			<?php

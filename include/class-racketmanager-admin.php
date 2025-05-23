@@ -2381,7 +2381,7 @@ class RacketManager_Admin extends RacketManager {
 				}
 			}
 		}
-		if ( ! isset( $_POST['contactno'] ) || '' === intval( $_POST['contactno'] ) ) {
+		if ( empty( $_POST['contactno'] ) ) {
 			$contactno = '';
 		} else {
 			$contactno = sanitize_text_field( wp_unslash( $_POST['contactno'] ) );

@@ -556,11 +556,7 @@ class RacketManager_Admin extends RacketManager {
 				$this->display_results_page();
 				break;
 			case 'racketmanager-admin':
-				if ( 'competitions' === $view ) {
-					$this->displayCompetitionsList();
-				} else {
-					$this->display_admin_page();
-				}
+				$this->display_admin_page();
 				break;
 			case 'racketmanager-players':
 				$racketmanager_admin_players = new RacketManager_Admin_Players();
@@ -2441,30 +2437,6 @@ class RacketManager_Admin extends RacketManager {
 		}
 		return $return;
 	}
-
-	/**
-	 * Display competitions list page
-	 */
-	private function displayCompetitionsList() {
-		global $racketmanager;
-
-		if ( ! current_user_can( 'edit_teams' ) ) {
-			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
-			$this->printMessage();
-		} else {
-			// phpcs:disable WordPress.Security.NonceVerification.Recommended
-			if ( isset( $_GET['season'] ) ) {
-				$season = sanitize_text_field( wp_unslash( $_GET['season'] ) );
-				$season = $racketmanager->get_season( array( 'name' => $season ) );
-			}
-			if ( isset( $_GET['tournament'] ) ) {
-				$tournament = get_tournament( intval( $_GET['tournament'] ) );
-			}
-			// phpcs:enable WordPress.Security.NonceVerification.Recommended
-			include_once RACKETMANAGER_PATH . '/admin/includes/competitions-list.php';
-		}
-	}
-
 	/**
 	 * Display teams page
 	 */

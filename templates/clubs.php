@@ -12,9 +12,7 @@
 
 namespace Racketmanager;
 
-?>
-
-<?php
+/** @var array $clubs */
 $club_list = true;
 foreach ( $clubs as $club ) {
 	?>

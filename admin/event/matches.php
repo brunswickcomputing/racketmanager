@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var object $event */
 ?>
 <div class="container">
 	<div class="row table-header">
@@ -31,7 +32,6 @@ namespace Racketmanager;
 			)
 		);
 		if ( $matches ) {
-			$class     = '';
 			$match_day = '';
 			foreach ( $matches as $match ) {
 				if ( $match->match_day !== $match_day ) {

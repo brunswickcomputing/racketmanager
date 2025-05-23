@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var array $matches_list */
 global $racketmanager;
 if ( empty( $matches_key ) ) {
 	$matches_key = null;

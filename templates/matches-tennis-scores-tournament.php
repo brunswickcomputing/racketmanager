@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var array $matches */
 global $racketmanager;
 ?>
 <div class="tournament-matches">

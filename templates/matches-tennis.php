@@ -7,7 +7,7 @@
  * The following variables are usable:
  *  $league: contains data of current league
  *  $matches: contains all matches for current league
- *  $teams: contains teams of current league in an assosiative array
+ *  $teams: contains teams of current league in an associative array
  *  $season: current season
  *
  * You can check the content of a variable when you insert the tag <?php var_dump($variable)
@@ -15,6 +15,8 @@
 
 namespace Racketmanager;
 
+/** @var object $league */
+/** @var array  $matches */
 ?>
 <div class="module module--card">
 	<div class="module__banner">

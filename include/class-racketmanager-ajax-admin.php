@@ -275,9 +275,9 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 								)
 							);
 							if ( $entry_found ) {
-								$return = $racketmanager->notify_team_entry_reminder( $competition->id, $season );
+								$return = $competition->notify_team_entry_reminder( $season );
 							} else {
-								$return = $racketmanager->notify_team_entry_open( $competition->id, $season );
+								$return = $competition->notify_team_entry_open( $season );
 							}
 						} else {
 							$return->error = true;

@@ -1,3 +1,13 @@
+<?php
+/**
+ * Email paragraph section
+ *
+ * @package Racketmanager/Templates/Email
+ */
+namespace Racketmanager;
+
+/** @var string $paragraph_text */
+?>
 <!-- introduction -->
 			<div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
 				<table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">

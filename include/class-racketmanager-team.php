@@ -462,10 +462,10 @@ final class Racketmanager_Team {
 	 * @param string|null $contact_no optional contact number.
 	 * @param string|null $contact_email optional contact email.
 	 * @param int|null $match_day optional match day.
-	 * @param int|null $match_time optional match time.
+	 * @param string|null $match_time optional match time.
 	 * @return boolean
 	 */
-	public function set_event( int $event_id, string $captain = null, string $contact_no = null, string $contact_email = null, int|null $match_day = null, int|null $match_time = null ): bool {
+	public function set_event( int $event_id, string $captain = null, string $contact_no = null, string $contact_email = null, int|null $match_day = null, string|null $match_time = null ): bool {
 		global $wpdb, $racketmanager;
 
 		$count = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching

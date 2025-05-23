@@ -498,6 +498,8 @@ class RacketManager_Admin extends RacketManager {
 					$racketmanager_admin_cup->display_cup_plan_page();
 				} elseif ( 'teams' === $view ) {
 					$racketmanager_admin_cup->display_teams_list();
+				} elseif ( 'team' === $view ) {
+					$racketmanager_admin_cup->display_team_page();
 				} elseif ( 'config' === $view ) {
 					$racketmanager_admin_competition = new RacketManager_Admin_Competition();
 					$racketmanager_admin_competition->display_config_page();
@@ -536,6 +538,8 @@ class RacketManager_Admin extends RacketManager {
 					$racketmanager_admin_event->display_config_page();
 				} elseif ( 'teams' === $view ) {
 					$racketmanager_admin_tournament->display_teams_list();
+				} elseif ( 'team' === $view ) {
+					$racketmanager_admin_tournament->display_team_page();
 				} else {
 					$racketmanager_admin_tournament->display_tournaments_page();
 				}
@@ -1454,10 +1458,15 @@ class RacketManager_Admin extends RacketManager {
 					$contactno    = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
 					$contactemail = isset( $_POST['contactemail'] ) ? sanitize_text_field( wp_unslash( $_POST['contactemail'] ) ) : null;
 					$matchday     = isset( $_POST['matchday'] ) ? sanitize_text_field( wp_unslash( $_POST['matchday'] ) ) : null;
+                    if ( $matchday ) {
+                        $match_day = Racketmanager_Util::get_match_day_number( $matchday );
+					} else {
+                        $match_day = null;
+					}
 					$matchtime    = isset( $_POST['matchtime'] ) ? sanitize_text_field( wp_unslash( $_POST['matchtime'] ) ) : null;
-					$team->set_event( $league->event->id, $captain, $contactno, $contactemail, $matchday, $matchtime );
-				} elseif ( isset( $_POST['team'] ) && isset( $_POST['affiliatedclub'] ) && isset( $_POST['team_type'] ) ) {
-                    $team->update( sanitize_text_field( wp_unslash( $_POST['team'] ) ), intval( $_POST['affiliatedclub'] ), sanitize_text_field( wp_unslash( $_POST['team_type'] ) ) );
+					$team->set_event( $league->event->id, $captain, $contactno, $contactemail, $match_day, $matchtime );
+				} elseif ( isset( $_POST['team'] ) && isset( $_POST['clubId'] ) && isset( $_POST['team_type'] ) ) {
+                    $team->update( sanitize_text_field( wp_unslash( $_POST['team'] ) ), intval( $_POST['clubId'] ), sanitize_text_field( wp_unslash( $_POST['team_type'] ) ) );
 				}
 			}
 		} else {

@@ -7,10 +7,12 @@
 
 namespace Racketmanager;
 
+/** @var object $invoice */
+/** @var string $invoice_view */
 if ( empty( $invoice->player_id ) ) {
 	$view       = 'club-invoices';
 	$breadcrumb = __( 'Club invoices', 'racketmanager' );
-	$inv_name   = $invoice->club->name;
+	$inv_name = $invoice->club->name;
 } else {
 	$view       = 'player-invoices';
 	$breadcrumb = __( 'Player invoices', 'racketmanager' );
@@ -20,7 +22,7 @@ if ( empty( $invoice->player_id ) ) {
 <div class="container">
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
-			<a href="admin.php?page=racketmanager-finances"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <a href="admin.php?page=racketmanager-finances&amp;view=<?php echo esc_attr( $view ); ?>"><?php echo esc_html( $breadcrumb ); ?></a> &raquo; <?php esc_html_e( 'View Invoice', 'racketmanager' ); ?>
+			<a href="/wp-admin/admin.php?page=racketmanager-finances"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=<?php echo esc_attr( $view ); ?>"><?php echo esc_html( $breadcrumb ); ?></a> &raquo; <?php esc_html_e( 'View Invoice', 'racketmanager' ); ?>
 		</div>
 	</div>
 	<div class="row mb-3">
@@ -32,7 +34,7 @@ if ( empty( $invoice->player_id ) ) {
 		<div class="row justify-content-start align-items-center mb-3">
 			<h2><?php esc_html_e( 'Change status', 'racketmanager' ); ?></h2>
 			<div class="form-floating col-4">
-				<select class="form-select" size="1" name="status" id="type" >
+                <label for="type"></label><select class="form-select" size="1" name="status" id="type" >
 					<option><?php esc_html_e( 'Select type', 'racketmanager' ); ?></option>
 					<option value="draft" <?php selected( 'draft', $invoice->status ); ?>><?php esc_html_e( 'Draft', 'racketmanager' ); ?></option>
 					<option value="new" <?php selected( 'new', $invoice->status ); ?>><?php esc_html_e( 'New', 'racketmanager' ); ?></option>
@@ -53,6 +55,6 @@ if ( empty( $invoice->player_id ) ) {
 		<?php echo $invoice_view; // phpcs:ignore WordPress.Security.EscapeOutput ?>
 	</div>
 	<div class="mb-3">
-		<a href="admin.php?page=racketmanager-finances&amp;view=<?php echo esc_attr( $view ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Back to finances', 'racketmanager' ); ?></a>
+		<a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=<?php echo esc_attr( $view ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Back to finances', 'racketmanager' ); ?></a>
 	</div>
 </div>

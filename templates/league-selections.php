@@ -7,6 +7,9 @@
 
 namespace Racketmanager;
 
+/** @var int    $post_id */
+/** @var array  $leagues */
+/** @var object $league */
 ?>
 <div id="racketmanager_archive_selections" class="mt-3">
 	<form method="get" action="<?php echo esc_url( get_permalink( $post_id ) ); ?>" id="racketmanager_archive">

@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var array $favourite_types */
 ?>
 <div class="container">
 	<div class="module module--card">

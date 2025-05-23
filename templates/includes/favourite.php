@@ -7,6 +7,9 @@
 
 namespace Racketmanager;
 
+/** @var string $favourite_type */
+/** @var int    $favourite_id */
+global $racketmanager;
 if ( is_user_logged_in() ) {
 	if ( ! empty( $hidden ) ) {
 		$visible = 'hidden-svg';

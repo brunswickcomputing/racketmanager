@@ -7,24 +7,38 @@
 
 namespace Racketmanager;
 
+/** @var object $league */
+/** @var string $form_title */
+/** @var int    $league_id */
+/** @var int    $club_id */
+/** @var string $season */
+/** @var object $team */
+/** @var array  $clubs */
+/** @var string $form_action */
+/** @var string $edit */
+/** @var array  $matchdays */
 ?>
 <div class="container league-block">
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
-			<a href="admin.php?page=racketmanager"><?php esc_html_e( 'RacketManager', 'racketmanager' ); ?></a>
+			<a href="/wp-admin/admin.php?page=racketmanager"><?php esc_html_e( 'RacketManager', 'racketmanager' ); ?></a>
 				<?php
 				if ( $league ) {
 					?>
-					&raquo; <a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a>
+					&raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a>
 				    <?php
                 }
                 ?>
 				&raquo; <?php echo esc_html( $form_title ); ?>
 		</div>
 	</div>
-	<?php if ( $league ) { ?>
+	<?php
+    if ( $league ) {
+        ?>
 		<h1><?php echo esc_html( $league->title ) . ' - ' . esc_html( $form_title ); ?></h1>
-	<?php } else { ?>
+	    <?php
+    } else {
+        ?>
 		<h1><?php echo esc_html( $form_title ); ?></h1>
 		<?php
 	}
@@ -46,10 +60,14 @@ namespace Racketmanager;
 			</div>
 		</div>
 		<div class="form-group">
-			<label for="affiliatedclub"><?php esc_html_e( 'Affiliated Club', 'racketmanager' ); ?></label>
-			<?php if ( $league && $edit ) { ?>
-				<input type="hidden" name="affiliatedclub" value="<?php echo esc_html( $team->club_id ); ?>" />
-			<?php } ?>
+			<label for="clubId"><?php esc_html_e( 'Affiliated Club', 'racketmanager' ); ?></label>
+			<?php
+            if ( $league && $edit ) {
+                ?>
+				<input type="hidden" name="clubId" value="<?php echo esc_html( $team->club_id ); ?>" />
+			    <?php
+            }
+            ?>
 			<div class="input">
 				<select size="1"
 				<?php
@@ -57,16 +75,10 @@ namespace Racketmanager;
 					echo ' disabled ';
 				}
 				?>
-				name="affiliatedclub" id="affiliatedclub" >
+				name="clubId" id="clubId" >
 					<option><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>
 					<?php foreach ( $clubs as $club ) { ?>
-						<option value="<?php echo esc_html( $club->id ); ?>"
-						<?php
-						if ( isset( $team->club_id ) ) {
-							selected( $team->club_id, $club->id );
-						}
-						?>
-						>
+						<option value="<?php echo esc_html( $club->id ); ?>" <?php selected( $club->id, $team->club_id ?? null ); ?>>
 							<?php echo esc_html( $club->name ); ?>
 						</option>
 					<?php } ?>

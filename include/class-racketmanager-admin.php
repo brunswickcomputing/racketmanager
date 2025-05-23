@@ -1487,7 +1487,7 @@ class RacketManager_Admin extends RacketManager {
 			$team_player_1_id = isset( $_POST['teamPlayerId1'] ) ? intval( $_POST['teamPlayerId1'] ) : 0;
 			$team_player_2    = isset( $_POST['teamPlayer2'] ) ? sanitize_text_field( wp_unslash( $_POST['teamPlayer2'] ) ) : '';
 			$team_player_2_id = isset( $_POST['teamPlayerId2'] ) ? intval( $_POST['teamPlayerId2'] ) : 0;
-			$club             = isset( $_POST['affiliatedclub'] ) ? intval( $_POST['affiliatedclub'] ) : '';
+			$club             = isset( $_POST['clubId'] ) ? intval( $_POST['clubId'] ) : '';
 			$captain          = isset( $_POST['captainId'] ) ? intval( $_POST['captainId'] ) : null;
 			$contactno        = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
 			$contactemail     = isset( $_POST['contactemail'] ) ? sanitize_text_field( wp_unslash( $_POST['contactemail'] ) ) : null;
@@ -2466,8 +2466,8 @@ class RacketManager_Admin extends RacketManager {
 					$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 				} elseif ( isset( $_POST['team_id'] ) ) {
 						$team = get_team( intval( $_POST['team_id'] ) );
-					if ( isset( $_POST['team'] ) && isset( $_POST['affiliatedclub'] ) && isset( $_POST['team_type'] ) ) {
-						$team->update( sanitize_text_field( wp_unslash( $_POST['team'] ) ), intval( $_POST['affiliatedclub'] ), sanitize_text_field( wp_unslash( $_POST['team_type'] ) ) );
+					if ( isset( $_POST['team'] ) && isset( $_POST['clubId'] ) && isset( $_POST['team_type'] ) ) {
+						$team->update( sanitize_text_field( wp_unslash( $_POST['team'] ) ), intval( $_POST['clubId'] ), sanitize_text_field( wp_unslash( $_POST['team_type'] ) ) );
 					}
 				}
 			} elseif ( isset( $_POST['doTeamDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {

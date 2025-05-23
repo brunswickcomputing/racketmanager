@@ -12,6 +12,7 @@
 
 namespace Racketmanager;
 
+/** @var object $club */
 $header_level = 1;
 require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 if ( empty( $club->invoice ) ) {

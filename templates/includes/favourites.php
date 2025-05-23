@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var string $favourite_name */
+global$racketmanager;
 ?>
 <ul class="list list--grid list--bordered">
 	<?php
@@ -48,6 +50,8 @@ namespace Racketmanager;
 					$image    = 'images/bootstrap-icons.svg#person-fill';
 					break;
 				default:
+                    $image    = null;
+                    $fav_link = null;
 					break;
 			}
 			?>

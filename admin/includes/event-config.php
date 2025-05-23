@@ -7,16 +7,20 @@
 
 namespace Racketmanager;
 
+/** @var object $competition */
+/** @var object $event */
+/** @var string $season */
+/** @var string $tab */
 if ( empty( $event ) ) {
 	$page_title = __( 'New event config', 'racketmanager' );
 } else {
 	$page_title = $event->name . ' - ' . __( 'config', 'racketmanager' );
 }
 if ( empty( $tournament ) ) {
-	$breadcrumb_link = '<a href="admin.php?page=racketmanager-' . $competition->type . 's&amp;view=seasons&amp;competition_id=' . $competition->id . '">' . $competition->name . '</a> &raquo; <a href="admin.php?page=racketmanager-' . $competition->type . 's&amp;view=event&amp;competition_id=' . $competition->id . '&amp;event_id=' . $event->id . '&amp;season=' . $season . '">' . $event->name . '</a>';
+	$breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $competition->type . 's&amp;view=seasons&amp;competition_id=' . $competition->id . '">' . $competition->name . '</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-' . $competition->type . 's&amp;view=event&amp;competition_id=' . $competition->id . '&amp;event_id=' . $event->id . '&amp;season=' . $season . '">' . $event->name . '</a>';
 	$add_link        = '';
 } else {
-	$breadcrumb_link = '<a href="admin.php?page=racketmanager-' . $competition->type . 's&amp;view=config&amp;competition_id=' . $competition->id . '&amp;tab=events&amp;tournament=' . $tournament->id . '">' . $tournament->name . '</a>';
+	$breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $competition->type . 's&amp;view=config&amp;competition_id=' . $competition->id . '&amp;tab=events&amp;tournament=' . $tournament->id . '">' . $tournament->name . '</a>';
 	$add_link        = '&amp;tournament=' . $tournament->id;
 }
 ?>
@@ -30,7 +34,7 @@ if ( empty( $tournament ) ) {
 <div class="container">
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
-			<a href="admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s"><?php echo esc_html( ucfirst( $competition->type ) ); ?>s</a> &raquo; <?php echo ( $breadcrumb_link ); ?> &raquo; <?php esc_html_e( 'Configuration', 'racketmanager' ); ?>
+			<a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s"><?php echo esc_html( ucfirst( $competition->type ) ); ?>s</a> &raquo; <?php echo ( $breadcrumb_link ); ?> &raquo; <?php esc_html_e( 'Configuration', 'racketmanager' ); ?>
 		</div>
 	</div>
 	<div class="row justify-content-between">
@@ -40,7 +44,7 @@ if ( empty( $tournament ) ) {
 		<div class="">
 			<form action="" method="post" class="">
 				<?php wp_nonce_field( 'racketmanager_manage-event-config', 'racketmanager_nonce' ); ?>
-				<input type="hidden" class="active-tab" name="active-tab" value="<?php echo esc_html( $tab ); ?>" ?>
+				<input type="hidden" class="active-tab" name="active-tab" value="<?php echo esc_html( $tab ); ?>" />
 				<div class="mb-3">
 					<nav class="navbar navbar-expand-lg bg-body-tertiary">
 						<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-event-config" aria-controls="navbar-event-config" aria-expanded="false" aria-label="Toggle navigation">

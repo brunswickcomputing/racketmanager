@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var array $vars */
 global $wp_query;
 // phpcs:disable WordPress.WP.GlobalVariablesOverride.Prohibited
 $post_id = $wp_query->post->ID;
@@ -53,6 +54,7 @@ jQuery(document).ready(function(){
 		$firstname_message = '';
 		$surname_message   = '';
 		$recaptcha_message = '';
+		$error_message = null;
 		if ( count( $vars['errors'] ) > 0 ) {
 			?>
 			<?php

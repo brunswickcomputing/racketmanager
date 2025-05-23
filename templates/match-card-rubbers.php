@@ -44,11 +44,11 @@ $points_span = 2 + intval( $match->league->num_sets );
 						$match->rubbers = $match->get_rubbers();
 						$r              = 0;
 
-						foreach ( $match->rubbers as $match->rubber ) {
+						foreach ( $match->rubbers as $rubber ) {
 							?>
 							<tr class="rtr">
 								<td rowspan="3" class="rtd centered">
-									<?php echo isset( $match->rubber->rubber_number ) ? esc_html( $match->rubber->rubber_number ) : ''; ?>
+									<?php echo isset( $rubber->rubber_number ) ? esc_html( $rubber->rubber_number ) : ''; ?>
 								</td>
 								<td class="rtd">
                                     <label for="home_player_1_<?php echo esc_html( $r ); ?>"></label><input class="player" name="home_player_1[<?php echo esc_html( $r ); ?>]" id="home_player_1_<?php echo esc_html( $r ); ?>" />

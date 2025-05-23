@@ -40,9 +40,9 @@ final class Racketmanager_Club {
 	/**
 	 * Match secretary ID
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public int $matchsecretary;
+	public ?int $matchsecretary;
 	/**
 	 * Description
 	 *

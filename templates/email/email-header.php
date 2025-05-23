@@ -7,18 +7,21 @@
 
 namespace Racketmanager;
 
+/** @var string $email_subject */
+/** @var string $organisation */
+global $racketmanager;
 $site_url = $racketmanager->site_url;
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns="http://www.w3.org/1999/xhtml" lang="en-gb" xml:lang="en-gb">
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta name="x-apple-disable-message-reformatting" />
+		<meta name="x-apple-disable-message-reformatting"  content=""/>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<meta name="color-scheme" content="light dark" />
 		<meta name="supported-color-schemes" content="light dark" />
 		<title><?php echo esc_html( $email_subject ); ?></title>
-	<style>
+	<style type="text/css">
 body#email-body {
 font-size: 16px; font-family:Arial,Helvetica,sans-serif; color: #1d8057ed; background-color: #e6e6e6;
 }
@@ -199,7 +202,7 @@ a[x-apple-data-detectors] {
 </style>
 </head>
 	<body id="email-body" style="font-size: 16px; color: #1d8057ed; margin: 0; padding: 0;" bgcolor="#e6e6e6">
-		<div style="display: none; max-height: 0px; overflow: hidden; font-size: 16px; color: #1d8057ed; background-color: #e6e6e6;">
+		<div style="display: none; max-height: 0; overflow: hidden; font-size: 16px; color: #1d8057ed; background-color: #e6e6e6;">
 		</div>
 		<div style="font-size: 16px; color: #006800; background-color: #e6e6e6; max-width: 600px; margin: auto;">
 			<!-- header hero -->

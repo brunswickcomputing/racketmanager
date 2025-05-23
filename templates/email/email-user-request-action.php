@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var array $vars */
 $organisation  = $vars['site_name'];
 $email_subject = __( 'Request Action Confirmation', 'racketmanager' );
 $action_url    = '###CONFIRM_URL###';

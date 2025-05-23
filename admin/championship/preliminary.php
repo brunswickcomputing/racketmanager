@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var object $league */
+/** @var string $season */
 ?>
 <div class="championship-block">
 	<form action="" method="post" class="form-control mb-3">

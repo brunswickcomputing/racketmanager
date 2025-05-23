@@ -7,9 +7,14 @@
 
 namespace Racketmanager;
 
+/** @var string $requestor */
+/** @var string $action */
+/** @var string $club */
+/** @var string $player */
+/** @var string $btm */
 require 'email-header.php';
 ?>
-			<?php $salutation_link = $requestor; ?>
+	<?php $salutation_link = $requestor; ?>
 			<?php require 'components/salutation.php'; ?>
 			<!-- introduction -->
 			<div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">

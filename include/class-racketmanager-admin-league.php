@@ -349,7 +349,7 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 						$league->set_match_day( -1 );
 					}
 					// phpcs:enable WordPress.Security.NonceVerification.Recommended
-					$options    = $this->options;
+					$options    = $racketmanager->options;
 					$match_args = array(
 						'final' => '',
 						'cache' => false,

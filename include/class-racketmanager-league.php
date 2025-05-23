@@ -3021,7 +3021,7 @@ class Racketmanager_League {
 	public function display_standings_header(): void {
 		if ( count( $this->fields_team ) > 0 ) {
 			foreach ( $this->fields_team as $key => $data ) {
-				if ( show_standings( $key ) || ( is_admin() && 'manual' === get_league_pointrule() ) ) {
+				if ( show_standings( $key ) || ( is_admin() && 'manual' === get_league_point_rule() ) ) {
 					echo '<th class="manage-column column-' . esc_html( $key ) . ' column-num d-none d-md-table-cell">' . esc_html( $data['label'] ) . '</th>';
 				}
 			}

@@ -134,7 +134,7 @@ function show_standings( $key ) {
 	 * @return string
 	 * @category template-tags
 	 */
-function get_league_pointrule() {
+function get_league_point_rule(): string {
 	global $league;
 	return $league->point_rule;
 }
@@ -166,7 +166,7 @@ function the_standings_header() {
 	 */
 function the_standings_columns() {
 	global $league, $team;
-	$league->display_standings_columns( $team, get_league_pointrule() );
+	$league->display_standings_columns( $team, get_league_point_rule() );
 }
 
 	/**

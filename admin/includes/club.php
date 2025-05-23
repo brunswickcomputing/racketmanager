@@ -8,25 +8,27 @@
 
 namespace Racketmanager;
 
+/** @var string $form_title */
+/** @var object $club */
+/** @var int    $club_id */
+/** @var bool   $edit */
+/** @var string $form_action */
 ?>
 <div class="container league-block">
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
-			<a href="admin.php?page=racketmanager-clubs"><?php esc_html_e( 'RacketManager', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $form_title ); ?>
+			<a href="/wp-admin/admin.php?page=racketmanager-clubs"><?php esc_html_e( 'RacketManager', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $form_title ); ?>
 		</div>
 	</div>
 	<h1><?php echo esc_html( $form_title ); ?></h1>
-	<form action="admin.php?page=racketmanager-clubs
-	<?php
-	if ( '' !== $club_id ) {
-		?>
-		&amp;club_id=<?php echo esc_html( $club_id ); ?>
-		<?php } ?>" method="post" enctype="multipart/form-data" name="club_edit" class="form-control">
-		<?php if ( $edit ) { ?>
-			<?php wp_nonce_field( 'racketmanager_manage-club' ); ?>
-		<?php } else { ?>
-			<?php wp_nonce_field( 'racketmanager_add-club' ); ?>
-		<?php } ?>
+	<form action="/wp-admin/admin.php?page=racketmanager-clubs<?php echo( empty( $club_id ) ? null : '&amp;club_id' . esc_html( $club_id ) ); ?>" method="post" enctype="multipart/form-data" name="club_edit" class="form-control">
+		<?php
+        if ( $edit ) {
+           wp_nonce_field( 'racketmanager_manage-club' );
+        } else {
+            wp_nonce_field( 'racketmanager_add-club' );
+        }
+        ?>
 
 		<div class="form-floating mb-3">
 			<input type="text" class="form-control" id="club" name="club" value="<?php echo esc_html( $club->name ); ?>" size="30" placeholder="<?php esc_html_e( 'Add Club', 'racketmanager' ); ?>" />
@@ -45,7 +47,9 @@ namespace Racketmanager;
 				<input type="text" class="form-control" name="shortcode" id="shortcode"  value="<?php echo esc_html( $club->shortcode ); ?>" size="20" placeholder="<?php esc_html_e( 'Enter shortcode', 'racketmanager' ); ?>" />
 				<label for="shortcode"><?php esc_html_e( 'Shortcode', 'racketmanager' ); ?></label>
 		</div>
-		<?php if ( $edit ) { ?>
+		<?php
+        if ( $edit ) {
+            ?>
 			<div class="form-floating mb-3">
 				<input type="text" class="form-control" name="match_secretary_name" id="match_secretary_name" autocomplete="name off" value="<?php echo esc_html( $club->match_secretary_name ); ?>" size="40" /><input type="hidden" name="match_secretary" id="match_secretary" value="<?php echo esc_html( $club->matchsecretary ); ?>" />
 				<label for="match_secretary_name"><?php esc_html_e( 'Match secretary', 'racketmanager' ); ?></label>
@@ -59,7 +63,9 @@ namespace Racketmanager;
 				<input type="email" class="form-control" name="match_secretary_email" id="match_secretary_email" autocomplete="email" value="<?php echo esc_html( $club->match_secretary_email ); ?>" size="60" placeholder="<?php esc_html_e( 'Enter contact email', 'racketmanager' ); ?>" />
 				<label for="match_secretary_email"><?php esc_html_e( 'Match secretary email', 'racketmanager' ); ?></label>
 			</div>
-		<?php } ?>
+		    <?php
+        }
+        ?>
 		<div class="form-floating mb-3">
 			<input type="tel" class="form-control" name="contactno" id="contactno" autocomplete="tel" value="<?php echo esc_html( $club->contactno ); ?>" size="20" placeholder="<?php esc_html_e( 'Enter contact number', 'racketmanager' ); ?>" />
 			<label for="contactno"><?php esc_html_e( 'Contact Number', 'racketmanager' ); ?></label>
@@ -86,13 +92,18 @@ namespace Racketmanager;
 
 		<input type="hidden" name="club_id" id="club_id" value="<?php echo esc_html( $club->id ); ?>" />
 
-		<?php if ( $edit ) { ?>
+		<?php
+        if ( $edit ) {
+            ?>
 			<input type="hidden" name="editClub" value="club" />
-		<?php } else { ?>
+		    <?php
+        } else {
+            ?>
 			<input type="hidden" name="addClub" value="club" />
-		<?php } ?>
-
-		<p class="submit"><input type="submit" name="action" value="<?php echo esc_html( $form_action ); ?>" class="btn btn-primary" /></p>
+		    <?php
+        }
+        ?>
+		<button type="submit" name="action" class="btn btn-primary"><?php echo esc_html( $form_action ); ?></button>
 	</form>
 
 </div>

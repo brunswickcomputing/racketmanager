@@ -2372,11 +2372,11 @@ class RacketManager {
 	 * Show match screen
 	 *
 	 * @param object $match match object.
-	 * @param false|string $player optional indicator.
+	 * @param false|object $player optional indicator.
 	 *
 	 * @return string
 	 */
-	public function show_match_screen( object $match, false|string $player = false ): string {
+	public function show_match_screen( object $match, false|object $player = false ): string {
 		global $racketmanager_shortcodes;
 		if ( '' === $match->final_round ) {
 			$match->round = '';

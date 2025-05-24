@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var bool   $resend */
+/** @var object $invoice */
 require 'email-header.php';
 ?>
 			<?php $salutation_link = __( 'Match Secretary', 'racketmanager' ); ?>

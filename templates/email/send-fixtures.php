@@ -7,10 +7,16 @@
 
 namespace Racketmanager;
 
+/** @var string $captain */
+/** @var string $competition */
+/** @var string $season */
+/** @var array  $matches */
+/** @var object $team */
 $email_subject = __( 'Fixtures', 'racketmanager' );
 require 'email-header.php';
 ?>
-			<?php $salutation_link = $captain; ?>
+	<?php
+            $salutation_link = $captain; ?>
 			<?php require 'components/salutation.php'; ?>
 			<!-- introduction -->
 			<div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">

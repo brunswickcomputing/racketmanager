@@ -1,9 +1,18 @@
 <?php
+/**
+ * Players main page administration panel
+ *
+ * @package Racketmanager/Admin/Templates
+ */
+
+namespace Racketmanager;
+
+/** @var string $tab */
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){
-					   activaTab('<?php echo $tab ?>');
-					   });
+	activaTab('<?php echo $tab ?>');
+});
 </script>
 <div class="container">
 

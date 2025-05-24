@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var string $racketmanager_tab */
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){

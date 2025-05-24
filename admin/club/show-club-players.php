@@ -7,11 +7,16 @@
 
 namespace Racketmanager;
 
+/** @var object $club */
+/** @var string $active */
+/** @var string $gender */
+/** @var int    $club_id */
+/** @var array  $players */
 ?>
 <div class="container">
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
-			<a href="admin.php?page=racketmanager-clubs"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $club->shortcode ); ?>  &raquo;  <?php esc_html_e( 'Players', 'racketmanager' ); ?>
+			<a href="/wp-admin/admin.php?page=racketmanager-clubs"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $club->shortcode ); ?>  &raquo;  <?php esc_html_e( 'Players', 'racketmanager' ); ?>
 		</div>
 	</div>
 	<h1><?php esc_html_e( 'Players', 'racketmanager' ); ?> - <?php echo esc_html( $club->name ); ?></h1>
@@ -29,34 +34,38 @@ namespace Racketmanager;
 			<input type="hidden" name="page" value="<?php echo esc_html( 'racketmanager-clubs' ); ?>" />
 			<input type="hidden" name="view" value="<?php echo esc_html( 'players' ); ?>" />
 			<input type="hidden" name="club_id" value="<?php echo esc_html( $club->id ); ?>" />
-			<select class="" name="active" id="active">
-				<option value="" <?php echo ( '' === $active ) ? 'selected' : ''; ?>><?php esc_html_e( 'All players', 'racketmanager' ); ?></option>
-				<option value="true" <?php echo ( 'true' === $active ) ? 'selected' : ''; ?>><?php esc_html_e( 'Active', 'racketmanager' ); ?></option>
+            <label for="active"></label><select class="" name="active" id="active">
+				<option value="" <?php selected ( '', $active ); ?>><?php esc_html_e( 'All players', 'racketmanager' ); ?></option>
+				<option value="true" <?php selected ( 'true', $active ); ?>><?php esc_html_e( 'Active', 'racketmanager' ); ?></option>
 			</select>
-			<select class="" name="gender" id="gender">
-				<option value="" <?php echo ( '' === $gender ) ? 'selected' : ''; ?>><?php esc_html_e( 'All genders', 'racketmanager' ); ?></option>
-				<option value="F" <?php echo ( 'F' === $gender ) ? 'selected' : ''; ?>><?php esc_html_e( 'Female', 'racketmanager' ); ?></option>
-				<option value="M" <?php echo ( 'M' === $gender ) ? 'selected' : ''; ?>><?php esc_html_e( 'Male', 'racketmanager' ); ?></option>
+            <label for="gender"></label><select class="" name="gender" id="gender">
+				<option value="" <?php selected ( '', $gender ); ?>><?php esc_html_e( 'All genders', 'racketmanager' ); ?></option>
+				<option value="F" <?php selected ( 'F', $gender ); ?>><?php esc_html_e( 'Female', 'racketmanager' ); ?></option>
+				<option value="M" <?php selected ( 'M', $gender ); ?>><?php esc_html_e( 'Male', 'racketmanager' ); ?></option>
 			</select>
 			<button class="btn btn-secondary"><?php esc_html_e( 'Filter', 'racketmanager' ); ?></button>
 		</form>
 		<form id="players-action" method="post" action="" class="form-control">
 			<?php wp_nonce_field( 'club-players-bulk' ); ?>
-
-			<div class="tablenav">
-				<!-- Bulk Actions -->
-				<select name="action" size="1">
-					<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
-					<option value="delete"><?php esc_html_e( 'Remove', 'racketmanager' ); ?></option>
-				</select>
-				<input type="hidden" name="club_id" value="<?php echo esc_html( $club->id ); ?>" />
-				<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doClubPlayerdel" id="doClubPlayerdel" class="btn btn-primary action" />
-				<input type="submit" value="<?php esc_html_e( 'Player Ratings', 'racketmanager' ); ?>" name="doPlayerRatings" id="doPlayerRatings" class="btn btn-primary action" />
-			</div>
-
+            <div class="row gx-3 mb-3 align-items-center">
+                <!-- Bulk Actions -->
+                <div class="col-auto">
+                    <label>
+                        <select class="form-select" name="action">
+                            <option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
+                            <option value="delete"><?php esc_html_e( 'Remove', 'racketmanager' ); ?></option>
+                        </select>
+                    </label>
+                </div>
+                <div class="col-auto">
+                    <input type="hidden" name="club_id" value="<?php echo esc_html( $club->id ); ?>" />
+                    <button name="doClubPlayerDel" id="doClubPlayerDel" class="btn btn-primary"><?php esc_html_e( 'Apply', 'racketmanager' ); ?></button>
+                    <button name="doPlayerRatings" id="doPlayerRatings" class="btn btn-secondary"><?php esc_html_e( 'Player Ratings', 'racketmanager' ); ?></button>
+                </div>
+            </div>
 			<div class="container">
 				<div class="row table-header">
-					<div class="col-1 col-md-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('players-action'));" /></div>
+					<div class="col-1 col-md-1 check-column"><label for="checkAll"></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('players-action'));" /></div>
 					<div class="col-4 col-md-2"><?php esc_html_e( 'Name', 'racketmanager' ); ?></div>
 					<div class="col-4 col-md-2"><?php esc_html_e( 'Rating', 'racketmanager' ); ?></div>
 					<div class="col-2 col-md-1"><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></div>
@@ -74,7 +83,7 @@ namespace Racketmanager;
 									<?php
 									if ( ! isset( $player->removed_date ) ) {
 										?>
-										<input type="checkbox" value="<?php echo esc_html( $player->roster_id ); ?>" name="clubPlayer[<?php echo esc_html( $player->roster_id ); ?>]" />
+                                        <label for="clubPlayer-<?php echo esc_html( $player->roster_id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $player->roster_id ); ?>" name="clubPlayer[<?php echo esc_html( $player->roster_id ); ?>]" id="clubPlayer-<?php echo esc_html( $player->roster_id ); ?>" />
 										<?php
 									}
 									?>
@@ -82,7 +91,7 @@ namespace Racketmanager;
 								<div class="col-4 col-md-2">
 									<?php
 									if ( ! isset( $player->removed_date ) ) {
-										echo '<a href="admin.php?page=racketmanager-clubs&amp;view=player&amp;club_id=' . esc_html( $club->id ) . '&amp;player_id=' . esc_html( $player->player_id ) . '">';
+										echo '<a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=player&amp;club_id=' . esc_html( $club->id ) . '&amp;player_id=' . esc_html( $player->player_id ) . '">';
 									}
 									echo esc_html( $player->fullname );
 									if ( ! isset( $player->removed_date ) ) {

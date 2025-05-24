@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var string $tab */
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){
@@ -28,13 +29,13 @@ jQuery(document).ready(function(){
 							<button class="nav-link" id="resultschecker-tab" data-bs-toggle="tab" data-bs-target="#resultschecker" type="button" role="tab" aria-controls="resultschecker" aria-selected="false">Results Checker</button>
 						</li>
 						<li class="nav-item" role="presentation">
-							<button class="nav-link" id="pendingresults-tab" data-bs-toggle="tab" data-bs-target="#pendingresults" type="button" role="tab" aria-controls="pendingresults" aria-selected="true">Pending Results</button>
+							<button class="nav-link" id="pending-results-tab" data-bs-toggle="tab" data-bs-target="#pending-results" type="button" role="tab" aria-controls="pending-results" aria-selected="true">Pending Results</button>
 						</li>
 						<li class="nav-item" role="presentation">
-							<button class="nav-link" id="awaitingconfirmation-tab" data-bs-toggle="tab" data-bs-target="#awaitingconfirmation" type="button" role="tab" aria-controls="awaitingconfirmation" aria-selected="true">Awaiting confirmation</button>
+							<button class="nav-link" id="awaiting-confirmation-tab" data-bs-toggle="tab" data-bs-target="#awaiting-confirmation" type="button" role="tab" aria-controls="awaiting-confirmation" aria-selected="true">Awaiting confirmation</button>
 						</li>
 						<li class="nav-item" role="presentation">
-							<button class="nav-link" id="challangeresults-tab" data-bs-toggle="tab" data-bs-target="#challangeresults" type="button" role="tab" aria-controls="challangeresults" aria-selected="true">Challenged Results</button>
+							<button class="nav-link" id="challenge-results-tab" data-bs-toggle="tab" data-bs-target="#challenge-results" type="button" role="tab" aria-controls="challenge-results" aria-selected="true">Challenged Results</button>
 						</li>
 						<li class="nav-item" role="presentation">
 							<button class="nav-link" id="results-tab" data-bs-toggle="tab" data-bs-target="#results" type="button" role="tab" aria-controls="results" aria-selected="true">Results</button>
@@ -56,15 +57,15 @@ jQuery(document).ready(function(){
 				<h2 class="header"><?php esc_html_e( 'Results Checker', 'racketmanager' ); ?></h2>
 				<?php require 'results/results-checker.php'; ?>
 			</div>
-			<div class="tab-pane fade" id="pendingresults" role="tabpanel" aria-labelledby="pendingresults-tab">
+			<div class="tab-pane fade" id="pending-results" role="tabpanel" aria-labelledby="pending-results-tab">
 				<h2 class="header"><?php esc_html_e( 'Results not yet in', 'racketmanager' ); ?></h2>
 				<?php require 'results/pending-results.php'; ?>
 			</div>
-			<div class="tab-pane fade" id="awaitingconfirmation" role="tabpanel" aria-labelledby="awaitingconfirmation-tab">
+			<div class="tab-pane fade" id="awaiting-confirmation" role="tabpanel" aria-labelledby="awaiting-confirmation-tab">
 				<h2 class="header"><?php esc_html_e( 'Results awaiting confirmation', 'racketmanager' ); ?></h2>
 				<?php require 'results/awaiting-confirmation.php'; ?>
 			</div>
-			<div class="tab-pane fade" id="challangeresults" role="tabpanel" aria-labelledby="challangeresults-tab">
+			<div class="tab-pane fade" id="challenge-results" role="tabpanel" aria-labelledby="challenge-results-tab">
 				<h2 class="header"><?php esc_html_e( 'Challenged results', 'racketmanager' ); ?></h2>
 				<?php require 'results/challenged-results.php'; ?>
 			</div>

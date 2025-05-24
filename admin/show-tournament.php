@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var string $tab */
+/** @var object $tournament */
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){
@@ -16,7 +18,7 @@ jQuery(document).ready(function(){
 <div class='container'>
 	<div class='row justify-content-end'>
 		<div class='col-auto racketmanager_breadcrumb'>
-			<a href='admin.php?page=racketmanager-tournaments'><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $tournament->name ); ?>
+			<a href="/wp-admin/admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $tournament->name ); ?>
 		</div>
 	</div>
 	<h1><?php echo esc_html( $tournament->name ); ?></h1>
@@ -40,16 +42,16 @@ jQuery(document).ready(function(){
 					if ( $tournament->is_active ) {
 						?>
 						<li class="nav-item">
-							<a class="nav-link" id="plan-tab" href="admin.php?page=racketmanager-tournaments&view=plan&tournament=<?php echo esc_attr( $tournament->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Plan', 'racketmanager' ); ?></a>
+							<a class="nav-link" id="plan-tab" href="/wp-admin/admin.php?page=racketmanager-tournaments&view=plan&tournament=<?php echo esc_attr( $tournament->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Plan', 'racketmanager' ); ?></a>
 						</li>
 						<?php
 					}
 					?>
 					<li class="nav-item">
-						<a class="nav-link" href="admin.php?page=racketmanager-tournaments&view=setup&tournament=<?php echo esc_attr( $tournament->id ); ?>&season=<?php echo esc_attr( $tournament->season ); ?>" type="button" role="tab"><?php esc_html_e( 'Setup', 'racketmanager' ); ?></a>
+						<a class="nav-link" href="/wp-admin/admin.php?page=racketmanager-tournaments&view=setup&tournament=<?php echo esc_attr( $tournament->id ); ?>&season=<?php echo esc_attr( $tournament->season ); ?>" type="button" role="tab"><?php esc_html_e( 'Setup', 'racketmanager' ); ?></a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link" href="admin.php?page=racketmanager-tournaments&view=config&competition_id=<?php echo esc_attr( $tournament->competition_id ); ?>&tournament=<?php echo esc_attr( $tournament->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Config', 'racketmanager' ); ?></a>
+						<a class="nav-link" href="/wp-admin/admin.php?page=racketmanager-tournaments&view=config&competition_id=<?php echo esc_attr( $tournament->competition_id ); ?>&tournament=<?php echo esc_attr( $tournament->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Config', 'racketmanager' ); ?></a>
 					</li>
 				</ul>
 			</div>

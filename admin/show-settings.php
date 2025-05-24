@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var string $tab */
 $menu_page_url = admin_url( 'options-general.php?page=racketmanager-settings' );
 ?>
 <script type='text/javascript'>
@@ -20,7 +21,7 @@ jQuery(document).ready(function(){
 	<form action='' method='post' name='settings'>
 		<?php wp_nonce_field( 'racketmanager_manage-global-league-options', 'racketmanager_nonce' ); ?>
 
-		<input type="hidden" class="active-tab" name="active-tab" value="<?php echo esc_html( $tab ); ?>" ?>
+		<input type="hidden" class="active-tab" name="active-tab" value="<?php echo esc_html( $tab ); ?>" />
 
 		<div class="row mb-3">
 			<div class=col-12">
@@ -36,7 +37,7 @@ jQuery(document).ready(function(){
 						<button class="nav-link" id="players-tab" data-bs-toggle="tab" data-bs-target="#players" type="button" role="tab" aria-controls="players" aria-selected="false"><?php esc_html_e( 'Player Checks', 'racketmanager' ); ?></button>
 					</li>
 					<li class="nav-item" role="presentation">
-						<button class="nav-link" id="matchresults-tab" data-bs-toggle="tab" data-bs-target="#matchresults" type="button" role="tab" aria-controls="matchresults" aria-selected="false"><?php esc_html_e( 'Match Results', 'racketmanager' ); ?></button>
+						<button class="nav-link" id="match-results-tab" data-bs-toggle="tab" data-bs-target="#match-results" type="button" role="tab" aria-controls="match-results" aria-selected="false"><?php esc_html_e( 'Match Results', 'racketmanager' ); ?></button>
 					</li>
 					<li class="nav-item" role="presentation">
 						<button class="nav-link" id="entries-tab" data-bs-toggle="tab" data-bs-target="#entries" type="button" role="tab" aria-controls="entries" aria-selected="false"><?php esc_html_e( 'Entries', 'racketmanager' ); ?></button>
@@ -74,7 +75,7 @@ jQuery(document).ready(function(){
 				<div class="tab-pane fade" id="players" role="tabpanel" aria-labelledby="players-tab">
 					<?php require RACKETMANAGER_PATH . 'admin/includes/settings/players.php'; ?>
 				</div>
-				<div class="tab-pane fade" id="matchresults" role="tabpanel" aria-labelledby="matchresults-tab">
+				<div class="tab-pane fade" id="match-results" role="tabpanel" aria-labelledby="match-results-tab">
 					<?php require RACKETMANAGER_PATH . 'admin/includes/settings/results.php'; ?>
 				</div>
 				<div class="tab-pane fade" id="entries" role="tabpanel" aria-labelledby="entries-tab">

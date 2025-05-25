@@ -7,14 +7,15 @@
 
 namespace Racketmanager;
 
-?>
-<?php
+/** @var object $team */
 if ( have_teams() ) {
 	?>
 	<table class="racketmanager standingstable" aria-describedby="<?php esc_html_e( 'Standing table', 'racketmanager' ); ?>" title="<?php esc_html_e( 'Standings', 'racketmanager' ) . ' ' . get_league_title(); ?>">
 		<thead>
-			<th><?php esc_html_e( 'Team', 'racketmanager' ); ?></th>
-			<th><?php esc_html_e( 'Status', 'racketmanager' ); ?></th>
+        <tr>
+            <th><?php esc_html_e( 'Team', 'racketmanager' ); ?></th>
+            <th><?php esc_html_e( 'Status', 'racketmanager' ); ?></th>
+        </tr>
 		</thead>
 		<tbody>
 			<?php

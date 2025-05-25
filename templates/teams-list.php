@@ -13,6 +13,8 @@
 
 namespace Racketmanager;
 
+/** @var string $curr_season */
+/** @var object $object */
 if ( ! empty( $event ) ) {
 	$object    = $event;
 	$item_link = '/' . $event->competition->type . '/' . seo_url( $event->name ) . '/' . $curr_season;

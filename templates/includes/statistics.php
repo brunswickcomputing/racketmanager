@@ -7,6 +7,18 @@
 
 namespace Racketmanager;
 
+/** @var string $stat_title */
+/** @var string $played */
+/** @var string $matches_won */
+/** @var string $matches_lost */
+/** @var string $sets_won */
+/** @var string $sets_lost */
+/** @var string $games_won */
+/** @var string $games_lost */
+/** @var string $win_pct */
+/** @var string $win_pct_sets */
+/** @var string $win_pct_games */
+/** @var string $walkover */
 ?>
 <div class="col-<?php echo empty( $is_walkover ) ? 4 : 3; ?> stats-title">
 	<?php

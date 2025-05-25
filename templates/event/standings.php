@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var object $event */
 ?>
 <div class="module module--card">
 	<div class="module__banner">

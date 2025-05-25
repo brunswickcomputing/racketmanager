@@ -8,6 +8,8 @@
 
 namespace Racketmanager;
 
+/** @var object $club */
+/** @var bool   $user_can_update */
 $matchdays    = Racketmanager_Util::get_weekdays();
 $header_level = 1;
 require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
@@ -75,7 +77,7 @@ $event = $club->event;
 							?>
 						</div>
 					</div>
-					<div class="form-control mb-3">
+					<fieldset class="form-control mb-3">
 						<legend><?php esc_html_e( 'Match times', 'racketmanager' ); ?></legend>
 						<div class="row g-3">
 							<div class="col-sm-6 mb-3">
@@ -89,13 +91,7 @@ $event = $club->event;
 											<select class="form-select" size="1" name="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" id="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" >
 												<option><?php esc_html_e( 'Select match day', 'racketmanager' ); ?></option>
 												<?php foreach ( $matchdays as $key => $matchday ) { ?>
-													<option value="<?php echo esc_html( $key ); ?>"
-													<?php
-													if ( isset( $team->match_day ) ) {
-														selected( $matchday, $team->match_day );
-													}
-													?>
-													<?php disabled( $user_can_update, false ); ?>><?php echo esc_html( $matchday ); ?></option>
+													<option value="<?php echo esc_html( $key ); ?>" <?php selected( $matchday, $team->match_day ); ?> <?php disabled( $user_can_update, false ); ?>><?php echo esc_html( $matchday ); ?></option>
 												<?php } ?>
 											</select>
 											<div id="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>-feedback" class="invalid-feedback"></div>
@@ -126,7 +122,7 @@ $event = $club->event;
 								?>
 							</div>
 						</div>
-					</div>
+					</fieldset>
 					<div class="row mb-3">
 						<div class="match__buttons">
 							<a href="/clubs/<?php echo esc_html( sanitize_title( $club->shortcode ) ); ?>/competitions/" class="btn btn-secondary text-uppercase" type="button"><?php esc_html_e( 'Return to competitions', 'racketmanager' ); ?></a>

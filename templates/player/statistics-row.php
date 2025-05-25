@@ -8,6 +8,8 @@
 
 namespace Racketmanager;
 
+/** @var string $stat_title */
+/** @var string $stats_type */
 ?>
 <div class="col-2 stats-title">
 	<?php

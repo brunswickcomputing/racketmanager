@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+/** @var object $team */
+/** @var object $league */
 require 'email-header.php';
 ?>
 			<?php

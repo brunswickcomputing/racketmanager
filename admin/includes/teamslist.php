@@ -7,12 +7,18 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
+/** @var string $view */
+/** @var object $league */
+/** @var int $league_id */
+/** @var string $season */
+/** @var int $tournament_id */
+/** @var object $tournament */
+/** @var array $teams */
 if ( 'constitution' === $view ) {
 	$page_title = __( 'Add Teams to Constitution', 'racketmanager' );
 	$page_link  = $league->event->name;
 	$breadcrumb = 'show-event&amp;event_id=' . $league->event_id;
-	$link_ref   = 'admin.php?page=racketmanager-leagues&view=constitution&amp;event_id=' . $league->event_id . '&amp;season=' . $season;
+	$link_ref = 'admin.php?page=racketmanager-leagues&view=constitution&amp;event_id=' . $league->event_id . '&amp;season=' . $season;
 } else {
 	$page_title = __( 'Add Teams to League', 'racketmanager' );
 	$page_link  = $league->title;
@@ -33,17 +39,17 @@ $main_title = $page_link . ' - ' . $page_title;
 			switch ( $league->event->competition->type ) {
 				case 'cup':
 					?>
-					<a href="admin.php?page=racketmanager-"><?php esc_html_e( 'RacketManager', 'racketmanager' ); ?></a> &raquo; <a href="admin.php?page=racketmanager&amp;subpage=<?php echo esc_html( $breadcrumb ); ?>"><?php echo esc_html( $page_link ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
+					<a href="/wp-admin/admin.php?page=racketmanager-"><?php esc_html_e( 'RacketManager', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager&amp;subpage=<?php echo esc_html( $breadcrumb ); ?>"><?php echo esc_html( $page_link ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
 					<?php
 					break;
 				case 'tournament':
 					?>
-					<a href='admin.php?page=racketmanager-tournaments'><?php esc_html_e( 'Tournaments', 'racketmanager' ); ?></a> &raquo; <a href='admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>'><?php echo esc_html( $tournament->name ); ?></a> &raquo; <a href='admin.php?page=racketmanager-tournaments&amp;view=draw&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>&amp;league=<?php echo esc_attr( $league->id ); ?>'><?php echo esc_html( $league->title ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
+					<a href="/wp-admin/admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'Tournaments', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>"><?php echo esc_html( $tournament->name ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=draw&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>&amp;league=<?php echo esc_attr( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
 					<?php
 					break;
-				default:
+                default:
 					?>
-					<a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s"><?php echo esc_html( ucfirst( $league->event->competition->type ) ); ?>s</a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_html( $league->event->competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $league->event->competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <a href="admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=constitution&amp;event_id=<?php echo esc_html( $league->event_id ); ?>"><?php echo esc_html( $league->event->name ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
+					<a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s"><?php echo esc_html( ucfirst( $league->event->competition->type ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $league->event->competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $league->event->competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=constitution&amp;event_id=<?php echo esc_html( $league->event_id ); ?>"><?php echo esc_html( $league->event->name ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
 					<?php
 					break;
 			}
@@ -57,16 +63,22 @@ $main_title = $page_link . ' - ' . $page_title;
 		<input type="hidden" name="league_id" value="<?php echo esc_html( $league_id ); ?>" />
 		<input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />
 		<legend><?php esc_html_e( 'Select Teams to Add', 'racketmanager' ); ?></legend>
-		<div class="tablenav">
-			<!-- Bulk Actions -->
-			<select name="action" size="1">
-				<option value="addTeamsToLeague"><?php esc_html_e( 'Add', 'racketmanager' ); ?></option>
-			</select>
-			<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doAddTeamToLeague" id="doAddTeamToLeague" class="button action" />
-		</div>
+        <div class="row gx-3 mb-3 align-items-center">
+            <!-- Bulk Actions -->
+            <div class="col-auto">
+                <label>
+                    <select class="form-select" name="action">
+                        <option value="addTeamsToLeague"><?php esc_html_e( 'Add', 'racketmanager' ); ?></option>
+                    </select>
+                </label>
+            </div>
+            <div class="col-auto">
+                <button name="doAddTeamToLeague" id="doAddTeamToLeague" class="btn btn-primary"><?php esc_html_e( 'Apply', 'racketmanager' ); ?></button>
+            </div>
+        </div>
 		<div class="container">
 			<div class="row table-header">
-				<div class="col-1 check-column"><input type="checkbox" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" /></div>
+				<div class="col-1 check-column"><label for="checkAll"></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" /></div>
 				<div class="col-1 column-num">ID</div>
 				<div class="col-3"><?php esc_html_e( 'Title', 'racketmanager' ); ?></div>
 				<div class="col-3"><?php esc_html_e( 'Affiliated Club', 'racketmanager' ); ?></div>
@@ -81,7 +93,7 @@ $main_title = $page_link . ' - ' . $page_title;
 					<?php $class = ( 'alternate' === $class ) ? '' : 'alternate'; ?>
 					<div class="row table-row <?php echo esc_html( $class ); ?>">
 						<div class="col-1 check-column">
-							<input type="checkbox" value="<?php echo esc_html( $team->id ); ?>" name="team[<?php echo esc_html( $team->id ); ?>]" />
+                            <label for="team-<?php echo esc_html( $team->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $team->id ); ?>" name="team[<?php echo esc_html( $team->id ); ?>]" id="team-<?php echo esc_html( $team->id ); ?>" />
 						</div>
 						<div class="col-1 column-num"><?php echo esc_html( $team->id ); ?></div>
 						<div class="col-3"><?php echo esc_html( $team->title ); ?></div>
@@ -92,6 +104,6 @@ $main_title = $page_link . ' - ' . $page_title;
 				}
 			}
 			?>
-		</form>
-	</div>
+        </div>
+	</form>
 </div>

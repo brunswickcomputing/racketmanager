@@ -8,6 +8,7 @@
 
 namespace Racketmanager;
 
+/** @var string $stats_type */
 ?>
 <a href="#" class="stats-link collapsed" data-bs-toggle="collapse" data-bs-target="#player-stats-detail-<?php echo esc_attr( $stats_type ); ?>" aria-expanded="false" aria-controls="player-stats-detail-<?php echo esc_attr( $stats_type ); ?>">
 	<div class="row stats-summary">

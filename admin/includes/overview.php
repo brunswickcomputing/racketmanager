@@ -72,11 +72,11 @@ $current_season = empty( $cup_season ) ? $current_season : $cup_season;
 		<div class="col-auto">
 			<a role="button" class="btn btn-primary" href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=modify&amp;competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $season ); ?>"><?php esc_html_e( 'Edit season', 'racketmanager' ); ?></a>
 			<?php
-//			if ( $current_season->is_open ) {
+			if ( $current_season->is_open ) {
 				?>
 				<button class="btn btn-secondary" id="notifyOpen" data-competition-id="<?php echo esc_attr( $competition->id ); ?>" data-season="<?php echo esc_attr( $season ); ?>"><?php esc_html_e( 'Notify open', 'racketmanager' ); ?></button>
 				<?php
-//			}
+			}
 			if ( ! empty( $competition->competition_code ) && $competition->is_complete ) {
 				?>
 				<a href="/index.php?competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $season ); ?>&racketmanager_export=report_results" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Report results', 'racketmanager' ); ?>" >

@@ -8,7 +8,7 @@
 /**
  * Racketmanager_upgrade() - update routine for older version
  */
-function racketmanager_upgrade() {
+function racketmanager_upgrade(): void {
 	global $wpdb, $racketmanager;
 
 	$options   = $racketmanager->options;
@@ -1516,7 +1516,7 @@ function racketmanager_upgrade() {
  *
  * @return void Upgrade Message
  */
-function racketmanager_upgrade_page() {
+function racketmanager_upgrade_page(): void {
 	$filepath = admin_url() . 'admin.php?page=' . htmlspecialchars( $_GET['page'] );
 
 	if ( isset( $_GET['upgrade'] ) && 'now' === $_GET['upgrade'] ) {
@@ -1539,7 +1539,7 @@ function racketmanager_upgrade_page() {
  * @param mixed $filepath
  * @return void
  */
-function racketmanager_do_upgrade( $filepath ) {
+function racketmanager_do_upgrade( mixed $filepath ): void {
 	global $wpdb;
 	?>
 <div class="wrap">

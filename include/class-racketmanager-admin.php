@@ -25,7 +25,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @since    1.0.0
 	 *
-	 * @var      object
+	 * @var      RacketManager|null
 	 */
 	protected static ?RacketManager $instance = null;
 	/**
@@ -333,7 +333,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param int $user_id user_id.
 	 */
-	public function update_extra_profile_fields( $user_id ) {
+	public function update_extra_profile_fields( $user_id ): void {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		if ( current_user_can( 'edit_user', $user_id ) ) {
 			if ( isset( $_POST['gender'] ) ) {
@@ -358,7 +358,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Adds the required Metaboxes
 	 */
-	public function metaboxes() {
+	public function metaboxes(): void {
 		add_meta_box( 'racketmanager', __( 'Match-Report', 'racketmanager' ), array( &$this, 'add_meta_box' ), 'post' );
 	}
 
@@ -367,7 +367,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @return array
 	 */
-	protected function get_menu() {
+	protected function get_menu(): array {
 		$league = get_league();
 		$season = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $league->current_season ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$sport  = ( isset( $league->sport ) ? ( $league->sport ) : '' );
@@ -411,7 +411,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * ShowMenu() - show admin menu
 	 */
-	public function display() {
+	public function display(): void {
 		global $league;
 
 		$options = $this->options;
@@ -639,7 +639,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Show RacketManager index page
 	 */
-	private function display_index_page() {
+	private function display_index_page(): void {
 		global $racketmanager, $competition, $club;
 
 		if ( ! current_user_can( 'view_leagues' ) ) {
@@ -717,7 +717,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Show RacketManager results page
 	 */
-	private function display_results_page() {
+	private function display_results_page(): void {
 		if ( ! current_user_can( 'view_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -769,7 +769,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Add league to event via admin
 	 */
-	protected function add_league_to_event() {
+	protected function add_league_to_event(): void {
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 		} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-league' ) ) {
@@ -801,7 +801,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $competition competition object.
 	 */
-	protected function delete_seasons_from_competition( $competition ) {
+	protected function delete_seasons_from_competition( $competition ): void {
 		global $racketmanager;
 		if ( ! current_user_can( 'del_seasons' ) ) {
 			$racketmanager->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
@@ -833,7 +833,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Delete season(s) from event via admin
 	 */
-	private function delete_seasons_from_event() {
+	private function delete_seasons_from_event(): void {
 		if ( ! current_user_can( 'del_seasons' ) ) {
 			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 		} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'seasons-bulk' ) ) {
@@ -847,7 +847,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Delete league(s) from event via admin
 	 */
-	protected function delete_leagues_from_event() {
+	protected function delete_leagues_from_event(): void {
 		if ( ! current_user_can( 'del_leagues' ) ) {
 			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 		} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'leagues-bulk' ) ) {
@@ -870,7 +870,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Save constitution for event via admin
 	 */
-	protected function save_constitution() {
+	protected function save_constitution(): void {
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 		} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'constitution-bulk' ) ) {
@@ -912,7 +912,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Add teams(s) to constitution via admin
 	 */
-	protected function add_teams_to_constitution() {
+	protected function add_teams_to_constitution(): void {
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 		} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-teams-bulk' ) ) {
@@ -933,7 +933,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Delete teams(s) from constitution via admin
 	 */
-	protected function delete_constitution_teams() {
+	protected function delete_constitution_teams(): void {
 		if ( current_user_can( 'del_leagues' ) ) {
 			if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'constitution-bulk' ) ) {
 				$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
@@ -959,7 +959,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Generate matches
 	 */
-	protected function generate_box_league_matches() {
+	protected function generate_box_league_matches(): void {
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 		} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'constitution-bulk' ) ) {
@@ -985,7 +985,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $competition competition object.
 	 */
-	private function update_competition_settings( $competition ) {
+	private function update_competition_settings( $competition ): void {
 		$competition = get_competition( $competition );
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-competition-options' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
@@ -1007,7 +1007,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $event event object.
 	 */
-	protected function update_event_settings( $event ) {
+	protected function update_event_settings( $event ): void {
 		$event = get_event( $event );
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-event-options' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
@@ -1027,7 +1027,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display league overview page
 	 */
-	private function displayLeaguePage() {
+	private function displayLeaguePage(): void {
 		global $league, $championship, $competition, $racketmanager;
 
 		if ( ! current_user_can( 'view_leagues' ) ) {
@@ -1162,7 +1162,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param object $league league object.
 	 * @return void
 	 */
-	protected function handle_league_teams_action( $league ) {
+	protected function handle_league_teams_action( $league ): void {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		if ( isset( $_POST['action'] ) ) {
 			if ( 'delete' === $_POST['action'] ) {
@@ -1183,7 +1183,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	protected function league_add_teams( $league ) {
+	protected function league_add_teams( $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-teams-bulk' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'edit_teams' ) ) {
@@ -1207,7 +1207,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	protected function league_manage_team( $league ) {
+	protected function league_manage_team( $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-teams' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'edit_teams' ) ) {
@@ -1242,7 +1242,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	protected function add_player_team_to_league($league ) {
+	protected function add_player_team_to_league($league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-teams' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'edit_teams' ) ) {
@@ -1289,7 +1289,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	private function delete_teams_from_league( $league ) {
+	private function delete_teams_from_league( $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
@@ -1316,7 +1316,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	private function withdraw_teams_from_league( $league ) {
+	private function withdraw_teams_from_league( $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( isset( $_POST['action'] ) && 'withdraw' === $_POST['action'] ) {
@@ -1344,7 +1344,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	protected function manage_matches_in_league( $league ) {
+	protected function manage_matches_in_league( $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-matches' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'edit_matches' ) ) {
@@ -1364,7 +1364,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param object $league league object.
 	 * @param string $group group details.
 	 */
-	protected function add_matches_to_league( $league, $group = null ) {
+	protected function add_matches_to_league( $league, $group = null ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-matches' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( isset( $_POST['match'] ) ) {
@@ -1428,7 +1428,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	protected function edit_matches_in_league( $league ) {
+	protected function edit_matches_in_league( $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-matches' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( isset( $_POST['match'] ) ) {
@@ -1474,7 +1474,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Delete matches from league in admin screen
 	 */
-	protected function delete_matches_from_league() {
+	protected function delete_matches_from_league(): void {
         global $racketmanager;
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_matches-bulk' ) ) {
 			$racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
@@ -1500,7 +1500,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Update results in league in admin screen
 	 */
-	protected function update_results_in_league() {
+	protected function update_results_in_league(): void {
 		global $league;
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_matches-bulk' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
@@ -1533,7 +1533,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	protected function league_manual_rank( $league ) {
+	protected function league_manual_rank( $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'update_results' ) ) {
@@ -1565,7 +1565,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	protected function league_manual_rank_teams( $league ) {
+	protected function league_manual_rank_teams( $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'update_results' ) ) {
@@ -1602,7 +1602,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	protected function league_random_rank_teams( $league ) {
+	protected function league_random_rank_teams( $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'update_results' ) ) {
@@ -1629,7 +1629,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	protected function league_rating_points_rank_teams( $league ) {
+	protected function league_rating_points_rank_teams( $league ): void {
 		global $racketmanager;
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
@@ -1664,7 +1664,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Contact teams in league in admin screen
 	 */
-	protected function league_contact_teams() {
+	protected function league_contact_teams(): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_contact-teams-preview' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'edit_teams' ) ) {
@@ -1679,7 +1679,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display teams list page
 	 */
-	protected function display_teams_list() {
+	protected function display_teams_list(): void {
 		global $racketmanager;
 		//phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if ( ! current_user_can( 'edit_teams' ) ) {
@@ -1814,7 +1814,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display leagues page
 	 */
-	private function display_leagues_page() {
+	private function display_leagues_page(): void {
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -1832,7 +1832,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display cups page
 	 */
-	private function displayCupsPage() {
+	private function displayCupsPage(): void {
 		if ( ! current_user_can( 'edit_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -1849,7 +1849,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display clubs page
 	 */
-	private function display_clubs_page() {
+	private function display_clubs_page(): void {
 		global $club;
 
 		if ( ! current_user_can( 'edit_leagues' ) ) {
@@ -1949,7 +1949,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display club page
 	 */
-	private function display_club_page() {
+	private function display_club_page(): void {
 		if ( ! current_user_can( 'edit_teams' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -1992,7 +1992,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display club players page
 	 */
-	private function display_club_players_page() {
+	private function display_club_players_page(): void {
 		global $racketmanager;
 
 		if ( ! current_user_can( 'edit_teams' ) ) {
@@ -2078,7 +2078,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @return array
 	 */
-	public function validatePlayer() {
+	public function validatePlayer(): array {
 		global $racketmanager;
 		$options = $racketmanager->get_options( 'rosters' );
 		if ( isset( $options['btm'] ) && '1' === $options['btm'] ) {
@@ -2212,7 +2212,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display teams page
 	 */
-	private function display_teams_page() {
+	private function display_teams_page(): void {
 		if ( ! current_user_can( 'edit_teams' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -2263,7 +2263,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display team page
 	 */
-	protected function display_team_page() {
+	protected function display_team_page(): void {
 		global $racketmanager;
 		if ( ! current_user_can( 'edit_teams' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
@@ -2324,7 +2324,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display match editing page
 	 */
-	private function display_match_page() {
+	private function display_match_page(): void {
 		global $wpdb, $competition;
 
 		if ( ! current_user_can( 'edit_matches' ) ) {
@@ -2568,7 +2568,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display admin page
 	 */
-	private function display_admin_page() {
+	private function display_admin_page(): void {
 		$players = '';
 
 		if ( ! current_user_can( 'edit_leagues' ) ) {
@@ -2614,7 +2614,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display import Page
 	 */
-	private function displayImportPage() {
+	private function displayImportPage(): void {
 		if ( ! current_user_can( 'import_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -2641,7 +2641,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display contact page
 	 */
-	private function display_contact_page() {
+	private function display_contact_page(): void {
 		global $racketmanager, $racketmanager_shortcodes;
 
 		if ( ! current_user_can( 'edit_teams' ) ) {
@@ -2725,7 +2725,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param array $links array of action links.
 	 * @return array
 	 */
-	public function pluginActions( $links ) {
+	public function pluginActions( $links ): array {
 		if ( is_array( $links ) ) {
 			$links['settings']      = '<a href="/wp-admin/admin.php?page=racketmanager-settings">' . __( 'Settings', 'racketmanager' ) . '</a>';
 			$links['documentation'] = '<a href="/wp-admin/admin.php?page=racketmanager-doc">' . __( 'Documentation', 'racketmanager' ) . '</a>';
@@ -2736,7 +2736,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Load Javascript
 	 */
-	public function loadScripts() {
+	public function loadScripts(): void {
 		wp_register_script( 'racketmanager-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js', array(), RACKETMANAGER_VERSION, false );
 		wp_enqueue_script( 'racketmanager-bootstrap' );
 		wp_register_script( 'racketmanager-functions', plugins_url( '/admin/js/functions.js', __DIR__ ), array( 'thickbox', 'jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'jquery-ui-sortable', 'jquery-ui-tooltip', 'jquery-effects-core', 'jquery-effects-slide', 'jquery-effects-explode', 'jquery-ui-autocomplete', 'iris' ), RACKETMANAGER_VERSION, false );
@@ -2787,7 +2787,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Load CSS styles
 	 */
-	public function loadStyles() {
+	public function loadStyles(): void {
 		wp_enqueue_style( 'racketmanager-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css', false, RACKETMANAGER_VERSION, 'screen' );
 		wp_enqueue_style( 'racketmanager', plugins_url( '/css/admin.css', __DIR__ ), false, RACKETMANAGER_VERSION, 'screen' );
 		wp_enqueue_style( 'racketmanager-modal', plugins_url( '/css/modal.css', __DIR__ ), false, RACKETMANAGER_VERSION, 'screen' );
@@ -2813,7 +2813,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param string $competition_name competition name.
 	 */
-	private function delete_competition_pages( $competition_name ) {
+	private function delete_competition_pages( $competition_name ): void {
 		$title     = $competition_name . ' ' . __( 'Tables', 'racketmanager' );
 		$page_name = sanitize_title_with_dashes( $title );
 		$this->delete_racketmanager_page( $page_name );
@@ -2829,7 +2829,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param int $event event to be deleted.
 	 * @return boolean $success
 	 */
-	protected function delete_event_matches( $event ) {
+	protected function delete_event_matches( $event ): bool {
 		global $wpdb, $racketmanager;
 
 		$success     = true;
@@ -2870,7 +2870,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param string $status status.
 	 * @param string $profile profile.
 	 */
-	private function updateTable( $table_id, $league_id, $rank, $status, $profile ) {
+	private function updateTable( $table_id, $league_id, $rank, $status, $profile ): void {
 		global $wpdb;
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -2892,7 +2892,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param string $name name of season.
 	 * @return boolean
 	 */
-	private function add_season( $name ) {
+	private function add_season( $name ): bool {
 		global $wpdb;
 
 		if ( ! current_user_can( 'edit_seasons' ) ) {
@@ -2915,7 +2915,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param int $season_id season id to be deleted.
 	 * @return boolean
 	 */
-	private function delete_season( $season_id ) {
+	private function delete_season( $season_id ): bool {
 		global $wpdb;
 
 		if ( ! current_user_can( 'del_seasons' ) ) {
@@ -2941,7 +2941,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param int    $num_match_days number of match days.
 	 * @return array|boolean
 	 */
-	protected function add_season_to_competition( $season, $competition_id, $num_match_days = null ) {
+	protected function add_season_to_competition( $season, $competition_id, $num_match_days = null ): bool|array {
 		global $competition;
 
 		$competition = get_competition( $competition_id );
@@ -2983,7 +2983,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param array  $match_dates (optional) match dates.
 	 * @return boolean
 	 */
-	private function add_season_to_event( $season, $event_id, $num_match_days, $date_closing = null, $home_away = null, $match_dates = null ) {
+	private function add_season_to_event( $season, $event_id, $num_match_days, $date_closing = null, $home_away = null, $match_dates = null ): bool {
 		global $event;
 
 		$event = get_event( $event_id );
@@ -3026,7 +3026,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param string $type competition type.
 	 * @return int default number of match days.
 	 */
-	private function get_default_match_days( $type ) {
+	private function get_default_match_days( $type ): int {
 		global $racketmanager;
 		$options                = $racketmanager->get_options();
 		$rm_options             = $options['championship'];
@@ -3056,7 +3056,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $season_data season data.
 	 */
-	protected function edit_season( $season_data ) {
+	protected function edit_season( $season_data ): void {
 		global $racketmanager, $competition;
 		$error = false;
 		if ( false !== $season_data->match_dates ) {
@@ -3204,7 +3204,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param int   $competition_id competition id.
 	 * @return boolean
 	 */
-	private function delete_competition_season( $seasons, $competition_id ) {
+	private function delete_competition_season( $seasons, $competition_id ): bool {
 		global $wpdb, $competition;
 
 		$competition = get_competition( $competition_id );
@@ -3244,7 +3244,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param int   $competition_id competition id.
 	 * @return boolean
 	 */
-	private function save_competition_seasons( $seasons, $competition_id ) {
+	private function save_competition_seasons( $seasons, $competition_id ): bool {
 		global $wpdb, $racketmanager;
 		$wpdb->query(
 			$wpdb->prepare(
@@ -3264,7 +3264,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param int   $event_id event id.
 	 * @return boolean
 	 */
-	private function delete_event_season( $seasons, $event_id ) {
+	private function delete_event_season( $seasons, $event_id ): bool {
 		global $wpdb, $event;
 
 		$event = get_event( $event_id );
@@ -3301,7 +3301,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param int   $event_id event id.
 	 * @return boolean
 	 */
-	private function save_event_seasons( $seasons, $event_id ) {
+	private function save_event_seasons( $seasons, $event_id ): bool {
 		global $wpdb;
 		$wpdb->query(
 			$wpdb->prepare(
@@ -3317,7 +3317,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display global settings page (e.g. color scheme options)
 	 */
-	public function display_options_page() {
+	public function display_options_page(): void {
 		if ( ! current_user_can( 'manage_racketmanager' ) ) {
 			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 			$this->printMessage();
@@ -3428,7 +3428,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $post post details.
 	 */
-	public function add_meta_box( $post ) {
+	public function add_meta_box( $post ): void {
 		global $wpdb, $post;
 		$leagues = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			"SELECT `title`, `id` FROM {$wpdb->racketmanager} ORDER BY id ASC"
@@ -3497,7 +3497,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Update post id for match report
 	 */
-	public function edit_match_report() {
+	public function edit_match_report(): void {
 		global $wpdb;
 		//phpcs:disable WordPress.Security.NonceVerification.Missing
 		if ( isset( $_POST['post_ID'] ) ) {
@@ -3540,7 +3540,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param string $mode 'teams' | 'matches' | 'fixtures' | 'players' | 'clubplayers'.
 	 * @param int    $club - optional.
 	 */
-	private function import( $league_id, $season, $file, $delimiter, $mode, $club = false ) {
+	private function import( $league_id, $season, $file, $delimiter, $mode, $club = false ): void {
 		if ( empty( $file['name'] ) ) {
 			$this->set_message( __( 'No file specified for upload', 'racketmanager' ), true );
 		} elseif ( 0 === $file['size'] ) {
@@ -3601,7 +3601,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param int    $league_id league.
 	 * @param string $season season.
 	 */
-	private function importTable( $contents, $delimiter, $league_id, $season ) {
+	private function importTable( $contents, $delimiter, $league_id, $season ): void {
 		$league       = get_league( $league_id );
 		$teams        = array();
 		$points_plus  = array();
@@ -3671,7 +3671,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param int    $league_id league.
 	 * @param string $season season.
 	 */
-	private function importFixtures( $contents, $delimiter, $league_id, $season ) {
+	private function importFixtures( $contents, $delimiter, $league_id, $season ): void {
 		$league  = get_league( $league_id );
 		$rubbers = $league->num_rubbers;
 		if ( is_null( $rubbers ) ) {
@@ -3723,7 +3723,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param array  $contents array of file contents.
 	 * @param string $delimiter delimiter.
 	 */
-	private function importPlayers( $contents, $delimiter ) {
+	private function importPlayers( $contents, $delimiter ): void {
 		$error_messages = array();
 		$i              = 0;
 		$x              = 0;
@@ -3775,7 +3775,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param string $delimiter delimiter.
 	 * @param int    $club club.
 	 */
-	private function importClubPlayers( $contents, $delimiter, $club ) {
+	private function importClubPlayers( $contents, $delimiter, $club ): void {
 		$club           = get_club( $club );
 		$i              = 0;
 		$x              = 0;
@@ -3821,7 +3821,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param array $arr array.
 	 */
-	public function htmlspecialchars_array( $arr = array() ) {
+	public function htmlspecialchars_array( $arr = array() ): array {
 		$rs = array();
 		foreach ( $arr as $key => $val ) {
 			if ( is_array( $val ) ) {
@@ -3838,7 +3838,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param int $competition_id competition details.
 	 */
-	public function get_event_dropdown( $competition_id = false ) {
+	public function get_event_dropdown( $competition_id = false ): void {
 		$return = new \stdClass();
 		if ( isset( $_POST['security'] ) ) {
 			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
@@ -3885,7 +3885,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param int $event_id event details.
 	 */
-	public function get_league_dropdown( $event_id = false ) {
+	public function get_league_dropdown( $event_id = false ): void {
 		$return = new \stdClass();
 		if ( isset( $_POST['security'] ) ) {
 			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
@@ -3935,7 +3935,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param string $email_message message.
 	 * @return boolean
 	 */
-	private function contactLeagueTeams( $league, $season, $email_message ) {
+	private function contactLeagueTeams( $league, $season, $email_message ): bool {
 		$league        = get_league( $league );
 		$teams         = $league->get_league_teams( array( 'season' => $season ) );
 		$email_message = str_replace( '\"', '"', $email_message );
@@ -3971,7 +3971,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param string $email_message message.
 	 * @return boolean
 	 */
-	private function contact_competition_teams( $competition, $season, $email_message ) {
+	private function contact_competition_teams( $competition, $season, $email_message ): bool {
 		$competition = get_competition( $competition );
 		if ( $competition ) {
 			$email_message = str_replace( '\"', '"', $email_message );
@@ -4030,7 +4030,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @return int
 	 */
-	public function getLatestSeason() {
+	public function getLatestSeason(): int {
 		global $wpdb;
 
 		return $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -4044,7 +4044,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param array $events array of events to schedule matches for.
 	 * @return void
 	 */
-	protected function scheduleLeagueMatches( $events ) {
+	protected function scheduleLeagueMatches( $events ): void {
 		$validation = $this->validate_schedule( $events );
 		if ( $validation->success ) {
 			$max_teams    = $validation->num_rounds + 1;
@@ -4078,7 +4078,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param array $events array of events to validate schedule.
 	 * @return object $validation
 	 */
-	private function validate_schedule( $events ) {
+	private function validate_schedule( $events ): object {
 		global $wpdb;
 
 		$validation          = new \stdClass();
@@ -4206,7 +4206,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param array  $default_refs default keys to use for scheduling.
 	 * @return object $validation
 	 */
-	private function handle_teams_in_same_division( $events, $season, $validation, $default_refs ) {
+	private function handle_teams_in_same_division( $events, $season, $validation, $default_refs ): object {
 		global $wpdb;
 		$event_ids = implode( ',', $events );
 		/* set refs for those teams in the same division so they play first */
@@ -4321,7 +4321,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param array  $default_refs default keys to use for scheduling.
 	 * @return object $validation
 	 */
-	private function handle_teams_with_same_match_time( $events, $season, $max_teams, $validation, $default_refs ) {
+	private function handle_teams_with_same_match_time( $events, $season, $max_teams, $validation, $default_refs ): object {
 		global $wpdb;
 		$event_ids = implode( ',', $events );
 		/* find all clubs with multiple matches at the same time */

@@ -94,7 +94,7 @@ final class Racketmanager_Results_Report {
 	/**
 	 * Add new results report
 	 */
-	private function add() {
+	private function add(): void {
 		global $wpdb;
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -109,7 +109,7 @@ final class Racketmanager_Results_Report {
 	/**
 	 * Delete results report
 	 */
-	public function delete() {
+	public function delete(): void {
 		global $wpdb;
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching

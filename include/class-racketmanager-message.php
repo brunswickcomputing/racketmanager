@@ -136,7 +136,7 @@ final class Racketmanager_Message {
 	/**
 	 * Add new message
 	 */
-	private function add() {
+	private function add(): void {
 		global $wpdb;
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -156,7 +156,7 @@ final class Racketmanager_Message {
 	/**
 	 * Delete message
 	 */
-	public function delete() {
+	public function delete(): \mysqli_result|bool|int|null {
 		global $wpdb;
 		return $wpdb->delete( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->racketmanager_messages,
@@ -169,7 +169,7 @@ final class Racketmanager_Message {
 	 *
 	 * @param string $status status value.
 	 */
-	public function set_status( $status ) {
+	public function set_status( $status ): true {
 		global $wpdb;
 		$wpdb->query(
 			$wpdb->prepare(

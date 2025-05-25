@@ -33,7 +33,7 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * @param array $atts shortcode attributes.
 	 * @return string
 	 */
-	public function show_event( $atts ) {
+	public function show_event( $atts ): string {
 		global $wp;
 		$args     = shortcode_atts(
 			array(
@@ -114,7 +114,7 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * @param array $atts shortcode attributes.
 	 * @return string - the content
 	 */
-	public function show_event_standings( $atts ) {
+	public function show_event_standings( $atts ): string {
 		$args     = shortcode_atts(
 			array(
 				'id'       => 0,
@@ -148,7 +148,7 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * @param array $atts shortcode attributes.
 	 * @return string - the content
 	 */
-	public function show_event_draw( $atts ) {
+	public function show_event_draw( $atts ): string {
 		$args     = shortcode_atts(
 			array(
 				'id'       => 0,
@@ -186,7 +186,7 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * @param array $atts shortcode attributes.
 	 * @return string - the content
 	 */
-	public function show_event_matches( $atts ) {
+	public function show_event_matches( $atts ): string {
 		$args     = shortcode_atts(
 			array(
 				'id'       => 0,
@@ -224,7 +224,7 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * @param array $atts shortcode attributes.
 	 * @return string - the content
 	 */
-	public function show_event_clubs( $atts ) {
+	public function show_event_clubs( $atts ): string {
 		global $wp;
 		$args     = shortcode_atts(
 			array(
@@ -334,7 +334,7 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * @param array $atts shortcode attributes.
 	 * @return string - the content
 	 */
-	public function show_event_teams( $atts ) {
+	public function show_event_teams( $atts ): string {
 		global $wp;
 		$args     = shortcode_atts(
 			array(
@@ -411,7 +411,7 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * @param array $atts shortcode attributes.
 	 * @return string - the content
 	 */
-	public function show_event_players( $atts ) {
+	public function show_event_players( $atts ): string {
 		global $wp;
 		$args      = shortcode_atts(
 			array(

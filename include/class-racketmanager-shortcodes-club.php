@@ -34,7 +34,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 * @param array $atts attributes.
 	 * @return string - the content
 	 */
-	public function show_clubs( $atts ) {
+	public function show_clubs( $atts ): string {
 		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
@@ -71,7 +71,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 * @param array $atts attributes.
 	 * @return string - the content
 	 */
-	public function show_club( $atts ) {
+	public function show_club( $atts ): false|string {
 		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
@@ -144,7 +144,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 * @param array $atts shortcode attributes.
 	 * @return string - the content
 	 */
-	public function show_club_players( $atts ) {
+	public function show_club_players( $atts ): string {
 		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
@@ -222,7 +222,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 * @param array $atts shortcode attributes.
 	 * @return string - the content
 	 */
-	public function show_club_competitions( $atts ) {
+	public function show_club_competitions( $atts ): string {
 		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
@@ -301,7 +301,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 * @param array $atts shortcode attributes.
 	 * @return string - the content
 	 */
-	public function show_club_team( $atts ) {
+	public function show_club_team( $atts ): string {
 		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
@@ -368,7 +368,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 * @param array $atts shortcode attributes.
 	 * @return string - the content
 	 */
-	public function show_club_event( $atts ) {
+	public function show_club_event( $atts ): string {
 		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
@@ -428,7 +428,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 * @param array $atts shortcode attributes.
 	 * @return string - the content
 	 */
-	public function show_club_player( $atts ) {
+	public function show_club_player( $atts ): false|string {
 		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
@@ -492,7 +492,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 * @param array $atts shortcode attributes.
 	 * @return string - the content
 	 */
-	public function show_club_invoices( $atts ) {
+	public function show_club_invoices( $atts ): string {
 		global $racketmanager;
 		$args     = shortcode_atts(
 			array(

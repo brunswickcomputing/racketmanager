@@ -168,7 +168,7 @@ final class Racketmanager_Tournament_Entry {
 	 * @param int    $status status.
 	 * @param string $fee tournament fee.
 	 */
-	public function set_status( $status, $fee = false ) {
+	public function set_status( $status, $fee = false ): void {
 		global $wpdb;
 		$this->status = $status;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -187,7 +187,7 @@ final class Racketmanager_Tournament_Entry {
 	 *
 	 * @param string $fee tournament fee.
 	 */
-	public function set_fee( $fee ) {
+	public function set_fee( $fee ): void {
 		global $wpdb;
 		if ( ! empty( $fee ) ) {
 			$this->fee = $fee;
@@ -205,7 +205,7 @@ final class Racketmanager_Tournament_Entry {
 	 *
 	 * @param int $club club id.
 	 */
-	public function set_club( $club ) {
+	public function set_club( $club ): void {
 		global $wpdb;
 		if ( ! empty( $club ) ) {
 			$this->club_id = $club;
@@ -221,7 +221,7 @@ final class Racketmanager_Tournament_Entry {
 	/**
 	 * Delete tournament entry
 	 */
-	public function delete() {
+	public function delete(): void {
 		global $wpdb, $racketmanager;
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching

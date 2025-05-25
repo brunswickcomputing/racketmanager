@@ -33,7 +33,7 @@ class RacketManager_Widget extends \WP_Widget {
 	 * @param array $args arguments.
 	 * @param array $instance instance.
 	 */
-	public function widget( $args, $instance ) {
+	public function widget( $args, $instance ): void {
 		global $racketmanager;
 		$cache = array();
 		if ( ! $this->is_preview() ) {
@@ -140,7 +140,7 @@ class RacketManager_Widget extends \WP_Widget {
 	 * @param array $old_instance old instance of settings.
 	 * @return array
 	 */
-	public function update( $new_instance, $old_instance ) {
+	public function update( $new_instance, $old_instance ): array {
 		return $new_instance;
 	}
 
@@ -149,7 +149,7 @@ class RacketManager_Widget extends \WP_Widget {
 	 *
 	 * @param int|array $instance widget arguments.
 	 */
-	public function form( $instance ) {
+	public function form( $instance ): void {
 		$title          = isset( $instance['title'] ) ? esc_attr( $instance['title'] ) : '';
 		$clubname       = isset( $instance['clubname'] ) ? esc_attr( $instance['clubname'] ) : '';
 		$clublink       = isset( $instance['clublink'] ) ? esc_attr( $instance['clublink'] ) : '';

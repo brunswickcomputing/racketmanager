@@ -46,9 +46,10 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	 * Validate club
 	 *
 	 * @param string $club club.
+	 *
 	 * @return object $validation updated validation object.
 	 */
-	public function club( $club ): object {
+	public function club( string $club ): object {
 		if ( !$club ) {
 			$this->error = true;
 			$this->error_field[$this->error_id] = 'clubId';

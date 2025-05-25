@@ -127,7 +127,7 @@ class RacketManager_Login {
 	 *
 	 * @return string email details.
 	 */
-	public function racketmanager_retrieve_password_email( $message, string $key, string $user_login, object $user_data ): string {
+	public function racketmanager_retrieve_password_email( string $message, string $key, string $user_login, object $user_data ): string {
 		global $racketmanager_shortcodes, $racketmanager;
 
 		add_filter( 'wp_mail_content_type', array( $this, 'racketmanager_wp_email_content_type' ) );

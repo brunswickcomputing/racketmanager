@@ -14,9 +14,10 @@ add_filter( 'racketmanager_sports', 'Racketmanager\\racketmanager_sports_tennis'
  * Add tennis to list
  *
  * @param array $sports sports array.
+ *
  * @return array
  */
-function racketmanager_sports_tennis( $sports ): array {
+function racketmanager_sports_tennis( array $sports ): array {
 	$sports['tennis'] = __( 'Tennis', 'racketmanager' );
 	return $sports;
 }

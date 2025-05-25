@@ -333,7 +333,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param int $user_id user_id.
 	 */
-	public function update_extra_profile_fields( $user_id ): void {
+	public function update_extra_profile_fields( int $user_id ): void {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		if ( current_user_can( 'edit_user', $user_id ) ) {
 			if ( isset( $_POST['gender'] ) ) {
@@ -801,7 +801,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $competition competition object.
 	 */
-	protected function delete_seasons_from_competition( $competition ): void {
+	protected function delete_seasons_from_competition( object $competition ): void {
 		global $racketmanager;
 		if ( ! current_user_can( 'del_seasons' ) ) {
 			$racketmanager->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
@@ -985,7 +985,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $competition competition object.
 	 */
-	private function update_competition_settings( $competition ): void {
+	private function update_competition_settings( object $competition ): void {
 		$competition = get_competition( $competition );
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-competition-options' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
@@ -1007,7 +1007,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $event event object.
 	 */
-	protected function update_event_settings( $event ): void {
+	protected function update_event_settings( object $event ): void {
 		$event = get_event( $event );
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-event-options' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
@@ -1160,9 +1160,10 @@ class RacketManager_Admin extends RacketManager {
 	 * Handle league teams action function
 	 *
 	 * @param object $league league object.
+	 *
 	 * @return void
 	 */
-	protected function handle_league_teams_action( $league ): void {
+	protected function handle_league_teams_action( object $league ): void {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		if ( isset( $_POST['action'] ) ) {
 			if ( 'delete' === $_POST['action'] ) {
@@ -1183,7 +1184,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	protected function league_add_teams( $league ): void {
+	protected function league_add_teams( object $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-teams-bulk' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'edit_teams' ) ) {
@@ -1207,7 +1208,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	protected function league_manage_team( $league ): void {
+	protected function league_manage_team( object $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-teams' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'edit_teams' ) ) {
@@ -1242,7 +1243,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	protected function add_player_team_to_league($league ): void {
+	protected function add_player_team_to_league( object $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-teams' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'edit_teams' ) ) {
@@ -1289,7 +1290,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	private function delete_teams_from_league( $league ): void {
+	private function delete_teams_from_league( object $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
@@ -1316,7 +1317,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	private function withdraw_teams_from_league( $league ): void {
+	private function withdraw_teams_from_league( object $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( isset( $_POST['action'] ) && 'withdraw' === $_POST['action'] ) {
@@ -1344,7 +1345,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	protected function manage_matches_in_league( $league ): void {
+	protected function manage_matches_in_league( object $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-matches' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'edit_matches' ) ) {
@@ -1362,9 +1363,9 @@ class RacketManager_Admin extends RacketManager {
 	 * Add matches to league in admin screen
 	 *
 	 * @param object $league league object.
-	 * @param string $group group details.
+	 * @param string|null $group group details.
 	 */
-	protected function add_matches_to_league( $league, $group = null ): void {
+	protected function add_matches_to_league( object $league, string $group = null ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-matches' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( isset( $_POST['match'] ) ) {
@@ -1428,7 +1429,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	protected function edit_matches_in_league( $league ): void {
+	protected function edit_matches_in_league( object $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-matches' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( isset( $_POST['match'] ) ) {
@@ -1533,7 +1534,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	protected function league_manual_rank( $league ): void {
+	protected function league_manual_rank( object $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'update_results' ) ) {
@@ -1565,7 +1566,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	protected function league_manual_rank_teams( $league ): void {
+	protected function league_manual_rank_teams( object $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'update_results' ) ) {
@@ -1602,7 +1603,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	protected function league_random_rank_teams( $league ): void {
+	protected function league_random_rank_teams( object $league ): void {
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'update_results' ) ) {
@@ -1629,7 +1630,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $league league object.
 	 */
-	protected function league_rating_points_rank_teams( $league ): void {
+	protected function league_rating_points_rank_teams( object $league ): void {
 		global $racketmanager;
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
@@ -2723,9 +2724,10 @@ class RacketManager_Admin extends RacketManager {
 	 * Display link to settings page in plugin table
 	 *
 	 * @param array $links array of action links.
+	 *
 	 * @return array
 	 */
-	public function pluginActions( $links ): array {
+	public function pluginActions( array $links ): array {
 		if ( is_array( $links ) ) {
 			$links['settings']      = '<a href="/wp-admin/admin.php?page=racketmanager-settings">' . __( 'Settings', 'racketmanager' ) . '</a>';
 			$links['documentation'] = '<a href="/wp-admin/admin.php?page=racketmanager-doc">' . __( 'Documentation', 'racketmanager' ) . '</a>';
@@ -2813,7 +2815,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param string $competition_name competition name.
 	 */
-	private function delete_competition_pages( $competition_name ): void {
+	private function delete_competition_pages( string $competition_name ): void {
 		$title     = $competition_name . ' ' . __( 'Tables', 'racketmanager' );
 		$page_name = sanitize_title_with_dashes( $title );
 		$this->delete_racketmanager_page( $page_name );
@@ -2827,9 +2829,10 @@ class RacketManager_Admin extends RacketManager {
 	 * Delete matches for event
 	 *
 	 * @param int $event event to be deleted.
+	 *
 	 * @return boolean $success
 	 */
-	protected function delete_event_matches( $event ): bool {
+	protected function delete_event_matches( int $event ): bool {
 		global $wpdb, $racketmanager;
 
 		$success     = true;
@@ -2864,13 +2867,13 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Update Table
 	 *
-	 * @param int    $table_id table id.
-	 * @param int    $league_id league id.
-	 * @param int    $rank rank.
+	 * @param int $table_id table id.
+	 * @param int $league_id league id.
+	 * @param int $rank rank.
 	 * @param string $status status.
 	 * @param string $profile profile.
 	 */
-	private function updateTable( $table_id, $league_id, $rank, $status, $profile ): void {
+	private function updateTable( int $table_id, int $league_id, int $rank, string $status, string $profile ): void {
 		global $wpdb;
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -2890,9 +2893,10 @@ class RacketManager_Admin extends RacketManager {
 	 * Add new Season
 	 *
 	 * @param string $name name of season.
+	 *
 	 * @return boolean
 	 */
-	private function add_season( $name ): bool {
+	private function add_season( string $name ): bool {
 		global $wpdb;
 
 		if ( ! current_user_can( 'edit_seasons' ) ) {
@@ -2913,9 +2917,10 @@ class RacketManager_Admin extends RacketManager {
 	 * Delete season
 	 *
 	 * @param int $season_id season id to be deleted.
+	 *
 	 * @return boolean
 	 */
-	private function delete_season( $season_id ): bool {
+	private function delete_season( int $season_id ): bool {
 		global $wpdb;
 
 		if ( ! current_user_can( 'del_seasons' ) ) {
@@ -2937,11 +2942,12 @@ class RacketManager_Admin extends RacketManager {
 	 * Add new season to competition
 	 *
 	 * @param string $season season.
-	 * @param int    $competition_id competition id.
-	 * @param int    $num_match_days number of match days.
+	 * @param int $competition_id competition id.
+	 * @param int|null $num_match_days number of match days.
+	 *
 	 * @return array|boolean
 	 */
-	protected function add_season_to_competition( $season, $competition_id, $num_match_days = null ): bool|array {
+	protected function add_season_to_competition( string $season, int $competition_id, int $num_match_days = null ): bool|array {
 		global $competition;
 
 		$competition = get_competition( $competition_id );
@@ -2976,14 +2982,15 @@ class RacketManager_Admin extends RacketManager {
 	 * Add new season to event
 	 *
 	 * @param string $season season.
-	 * @param int    $event_id event_id.
+	 * @param int $event_id event_id.
 	 * @param int|null $num_match_days number of match days.
-	 * @param string $date_closing (optional) closing date.
-	 * @param string $home_away (optional) match format.
-	 * @param array  $match_dates (optional) match dates.
+	 * @param string|null $date_closing (optional) closing date.
+	 * @param string|null $home_away (optional) match format.
+	 * @param array|null $match_dates (optional) match dates.
+	 *
 	 * @return boolean
 	 */
-	private function add_season_to_event( $season, $event_id, $num_match_days, $date_closing = null, $home_away = null, $match_dates = null ): bool {
+	private function add_season_to_event( string $season, int $event_id, ?int $num_match_days, string $date_closing = null, string $home_away = null, array $match_dates = null ): bool {
 		global $event;
 
 		$event = get_event( $event_id );
@@ -3024,9 +3031,10 @@ class RacketManager_Admin extends RacketManager {
 	 * Get default number of match days
 	 *
 	 * @param string $type competition type.
+	 *
 	 * @return int default number of match days.
 	 */
-	private function get_default_match_days( $type ): int {
+	private function get_default_match_days( string $type ): int {
 		global $racketmanager;
 		$options                = $racketmanager->get_options();
 		$rm_options             = $options['championship'];
@@ -3056,7 +3064,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $season_data season data.
 	 */
-	protected function edit_season( $season_data ): void {
+	protected function edit_season( object $season_data ): void {
 		global $racketmanager, $competition;
 		$error = false;
 		if ( false !== $season_data->match_dates ) {
@@ -3201,10 +3209,11 @@ class RacketManager_Admin extends RacketManager {
 	 * Delete season of competition
 	 *
 	 * @param array $seasons seasons.
-	 * @param int   $competition_id competition id.
+	 * @param int $competition_id competition id.
+	 *
 	 * @return boolean
 	 */
-	private function delete_competition_season( $seasons, $competition_id ): bool {
+	private function delete_competition_season( array $seasons, int $competition_id ): bool {
 		global $wpdb, $competition;
 
 		$competition = get_competition( $competition_id );
@@ -3241,10 +3250,11 @@ class RacketManager_Admin extends RacketManager {
 	 * Save seasons array to database
 	 *
 	 * @param array $seasons seasons.
-	 * @param int   $competition_id competition id.
+	 * @param int $competition_id competition id.
+	 *
 	 * @return boolean
 	 */
-	private function save_competition_seasons( $seasons, $competition_id ): bool {
+	private function save_competition_seasons( array $seasons, int $competition_id ): bool {
 		global $wpdb, $racketmanager;
 		$wpdb->query(
 			$wpdb->prepare(
@@ -3261,10 +3271,11 @@ class RacketManager_Admin extends RacketManager {
 	 * Delete season of event
 	 *
 	 * @param array $seasons seasons.
-	 * @param int   $event_id event id.
+	 * @param int $event_id event id.
+	 *
 	 * @return boolean
 	 */
-	private function delete_event_season( $seasons, $event_id ): bool {
+	private function delete_event_season( array $seasons, int $event_id ): bool {
 		global $wpdb, $event;
 
 		$event = get_event( $event_id );
@@ -3298,10 +3309,11 @@ class RacketManager_Admin extends RacketManager {
 	 * Save seasons array to database
 	 *
 	 * @param array $seasons seasons.
-	 * @param int   $event_id event id.
+	 * @param int $event_id event id.
+	 *
 	 * @return boolean
 	 */
-	private function save_event_seasons( $seasons, $event_id ): bool {
+	private function save_event_seasons( array $seasons, int $event_id ): bool {
 		global $wpdb;
 		$wpdb->query(
 			$wpdb->prepare(
@@ -3428,7 +3440,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param object $post post details.
 	 */
-	public function add_meta_box( $post ): void {
+	public function add_meta_box( object $post ): void {
 		global $wpdb, $post;
 		$leagues = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			"SELECT `title`, `id` FROM {$wpdb->racketmanager} ORDER BY id ASC"
@@ -3533,14 +3545,14 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Import data from CSV file
 	 *
-	 * @param int    $league_id league.
+	 * @param int $league_id league.
 	 * @param string $season season.
-	 * @param array  $file CSV file.
+	 * @param array $file CSV file.
 	 * @param string $delimiter delimiter.
 	 * @param string $mode 'teams' | 'matches' | 'fixtures' | 'players' | 'clubplayers'.
-	 * @param int    $club - optional.
+	 * @param false|int $club - optional.
 	 */
-	private function import( $league_id, $season, $file, $delimiter, $mode, $club = false ): void {
+	private function import( int $league_id, string $season, array $file, string $delimiter, string $mode, false|int $club = false ): void {
 		if ( empty( $file['name'] ) ) {
 			$this->set_message( __( 'No file specified for upload', 'racketmanager' ), true );
 		} elseif ( 0 === $file['size'] ) {
@@ -3596,12 +3608,12 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Import table from CSV file
 	 *
-	 * @param array  $contents array of file contents.
+	 * @param array $contents array of file contents.
 	 * @param string $delimiter delimiter.
-	 * @param int    $league_id league.
+	 * @param int $league_id league.
 	 * @param string $season season.
 	 */
-	private function importTable( $contents, $delimiter, $league_id, $season ): void {
+	private function importTable( array $contents, string $delimiter, int $league_id, string $season ): void {
 		$league       = get_league( $league_id );
 		$teams        = array();
 		$points_plus  = array();
@@ -3666,12 +3678,12 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Import fixtures from file
 	 *
-	 * @param array  $contents array of file contents.
+	 * @param array $contents array of file contents.
 	 * @param string $delimiter delimiter.
-	 * @param int    $league_id league.
+	 * @param int $league_id league.
 	 * @param string $season season.
 	 */
-	private function importFixtures( $contents, $delimiter, $league_id, $season ): void {
+	private function importFixtures( array $contents, string $delimiter, int $league_id, string $season ): void {
 		$league  = get_league( $league_id );
 		$rubbers = $league->num_rubbers;
 		if ( is_null( $rubbers ) ) {
@@ -3720,10 +3732,10 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Import players from file
 	 *
-	 * @param array  $contents array of file contents.
+	 * @param array $contents array of file contents.
 	 * @param string $delimiter delimiter.
 	 */
-	private function importPlayers( $contents, $delimiter ): void {
+	private function importPlayers( array $contents, string $delimiter ): void {
 		$error_messages = array();
 		$i              = 0;
 		$x              = 0;
@@ -3771,11 +3783,11 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Import club players from file
 	 *
-	 * @param array  $contents array of file contents.
+	 * @param array $contents array of file contents.
 	 * @param string $delimiter delimiter.
-	 * @param int    $club club.
+	 * @param int $club club.
 	 */
-	private function importClubPlayers( $contents, $delimiter, $club ): void {
+	private function importClubPlayers( array $contents, string $delimiter, int $club ): void {
 		$club           = get_club( $club );
 		$i              = 0;
 		$x              = 0;
@@ -3821,7 +3833,7 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param array $arr array.
 	 */
-	public function htmlspecialchars_array( $arr = array() ): array {
+	public function htmlspecialchars_array( array $arr = array() ): array {
 		$rs = array();
 		foreach ( $arr as $key => $val ) {
 			if ( is_array( $val ) ) {
@@ -3836,9 +3848,9 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display event dropdown
 	 *
-	 * @param int $competition_id competition details.
+	 * @param false|int $competition_id competition details.
 	 */
-	public function get_event_dropdown( $competition_id = false ): void {
+	public function get_event_dropdown( false|int $competition_id = false ): void {
 		$return = new \stdClass();
 		if ( isset( $_POST['security'] ) ) {
 			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
@@ -3883,9 +3895,9 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display league dropdown
 	 *
-	 * @param int $event_id event details.
+	 * @param false|int $event_id event details.
 	 */
-	public function get_league_dropdown( $event_id = false ): void {
+	public function get_league_dropdown( false|int $event_id = false ): void {
 		$return = new \stdClass();
 		if ( isset( $_POST['security'] ) ) {
 			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
@@ -3930,12 +3942,13 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Contact League Teams
 	 *
-	 * @param int    $league league.
+	 * @param int $league league.
 	 * @param string $season season.
 	 * @param string $email_message message.
+	 *
 	 * @return boolean
 	 */
-	private function contactLeagueTeams( $league, $season, $email_message ): bool {
+	private function contactLeagueTeams( int $league, string $season, string $email_message ): bool {
 		$league        = get_league( $league );
 		$teams         = $league->get_league_teams( array( 'season' => $season ) );
 		$email_message = str_replace( '\"', '"', $email_message );
@@ -3966,12 +3979,13 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Contact Competition Teams
 	 *
-	 * @param int    $competition competition.
+	 * @param int $competition competition.
 	 * @param string $season season.
 	 * @param string $email_message message.
+	 *
 	 * @return boolean
 	 */
-	private function contact_competition_teams( $competition, $season, $email_message ): bool {
+	private function contact_competition_teams( int $competition, string $season, string $email_message ): bool {
 		$competition = get_competition( $competition );
 		if ( $competition ) {
 			$email_message = str_replace( '\"', '"', $email_message );
@@ -4042,9 +4056,10 @@ class RacketManager_Admin extends RacketManager {
 	 * Schedule league matches
 	 *
 	 * @param array $events array of events to schedule matches for.
+	 *
 	 * @return void
 	 */
-	protected function scheduleLeagueMatches( $events ): void {
+	protected function scheduleLeagueMatches( array $events ): void {
 		$validation = $this->validate_schedule( $events );
 		if ( $validation->success ) {
 			$max_teams    = $validation->num_rounds + 1;
@@ -4076,9 +4091,10 @@ class RacketManager_Admin extends RacketManager {
 	 * Validate schedule by team
 	 *
 	 * @param array $events array of events to validate schedule.
+	 *
 	 * @return object $validation
 	 */
-	private function validate_schedule( $events ): object {
+	private function validate_schedule( array $events ): object {
 		global $wpdb;
 
 		$validation          = new \stdClass();
@@ -4200,13 +4216,14 @@ class RacketManager_Admin extends RacketManager {
 	 *  1 - 8, 2 - 7, 3 - 6, 4 - 5
 	 *  1 - 10, 2 - 9, 3 - 8, 4 - 7, 3 - 6, 4 - 5
 	 *
-	 * @param array  $events array of events to schedule.
+	 * @param array $events array of events to schedule.
 	 * @param string $season season.
 	 * @param object $validation details of validation.
-	 * @param array  $default_refs default keys to use for scheduling.
+	 * @param array $default_refs default keys to use for scheduling.
+	 *
 	 * @return object $validation
 	 */
-	private function handle_teams_in_same_division( $events, $season, $validation, $default_refs ): object {
+	private function handle_teams_in_same_division( array $events, string $season, object $validation, array $default_refs ): object {
 		global $wpdb;
 		$event_ids = implode( ',', $events );
 		/* set refs for those teams in the same division so they play first */
@@ -4314,14 +4331,15 @@ class RacketManager_Admin extends RacketManager {
 	 *  1 - 5, 2 - 6, 3 - 7, 4 - 8
 	 *  1 - 6, 2 - 7, 3 - 8, 4 - 9, 5 - 10
 	 *
-	 * @param array  $events array of events to schedule.
+	 * @param array $events array of events to schedule.
 	 * @param string $season season.
-	 * @param int    $max_teams maximum number of teams in division.
+	 * @param int $max_teams maximum number of teams in division.
 	 * @param object $validation details of validation.
-	 * @param array  $default_refs default keys to use for scheduling.
+	 * @param array $default_refs default keys to use for scheduling.
+	 *
 	 * @return object $validation
 	 */
-	private function handle_teams_with_same_match_time( $events, $season, $max_teams, $validation, $default_refs ): object {
+	private function handle_teams_with_same_match_time( array $events, string $season, int $max_teams, object $validation, array $default_refs ): object {
 		global $wpdb;
 		$event_ids = implode( ',', $events );
 		/* find all clubs with multiple matches at the same time */

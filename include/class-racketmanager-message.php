@@ -73,7 +73,7 @@ final class Racketmanager_Message {
 	 *
 	 * @param int $message_id id.
 	 */
-	public static function get_instance( $message_id ) {
+	public static function get_instance( int $message_id ) {
 		global $wpdb;
 		if ( ! $message_id ) {
 			return false;
@@ -103,9 +103,9 @@ final class Racketmanager_Message {
 	/**
 	 * Construct class instance
 	 *
-	 * @param object $message message object.
+	 * @param object|null $message message object.
 	 */
-	public function __construct( $message = null ) {
+	public function __construct( object $message = null ) {
 		if ( ! is_null( $message ) ) {
 			foreach ( get_object_vars( $message ) as $key => $value ) {
 				$this->$key = $value;
@@ -169,7 +169,7 @@ final class Racketmanager_Message {
 	 *
 	 * @param string $status status value.
 	 */
-	public function set_status( $status ): true {
+	public function set_status( string $status ): true {
 		global $wpdb;
 		$wpdb->query(
 			$wpdb->prepare(

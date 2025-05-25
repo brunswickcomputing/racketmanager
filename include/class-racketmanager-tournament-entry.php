@@ -18,7 +18,7 @@ final class Racketmanager_Tournament_Entry {
 	 *
 	 * @var int
 	 */
-	public int $id;
+	public int|false $id;
 	/**
 	 * Tournament id
 	 *
@@ -54,7 +54,7 @@ final class Racketmanager_Tournament_Entry {
 	 *
 	 * @var object|null
 	 */
-	public ?object $club = null;
+	public Racketmanager_Club|null|object $club = null;
 
 	/**
 	 * Retrieve tournament entry instance
@@ -64,7 +64,7 @@ final class Racketmanager_Tournament_Entry {
 	 *
 	 * @return object|false
 	 */
-	public static function get_instance( $tournament_entry_id, $search_term = 'id' ): object|false {
+	public static function get_instance( int $tournament_entry_id, string $search_term = 'id' ): object|false {
 		global $wpdb;
 		if ( ! $tournament_entry_id ) {
 			return false;
@@ -106,9 +106,9 @@ final class Racketmanager_Tournament_Entry {
 	/**
 	 * Constructor
 	 *
-	 * @param object $tournament_entry Tournament Entry object.
+	 * @param object|null $tournament_entry Tournament Entry object.
 	 */
-	public function __construct( $tournament_entry = null ) {
+	public function __construct( object $tournament_entry = null ) {
 		if ( ! is_null( $tournament_entry ) ) {
 			foreach ( $tournament_entry as $key => $value ) {
 				$this->$key = $value;
@@ -165,10 +165,10 @@ final class Racketmanager_Tournament_Entry {
 	/**
 	 * Set tournament entry status
 	 *
-	 * @param int    $status status.
-	 * @param string $fee tournament fee.
+	 * @param int $status status.
+	 * @param false|string $fee tournament fee.
 	 */
-	public function set_status( $status, $fee = false ): void {
+	public function set_status( int $status, false|string $fee = false ): void {
 		global $wpdb;
 		$this->status = $status;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -187,7 +187,7 @@ final class Racketmanager_Tournament_Entry {
 	 *
 	 * @param string $fee tournament fee.
 	 */
-	public function set_fee( $fee ): void {
+	public function set_fee( string $fee ): void {
 		global $wpdb;
 		if ( ! empty( $fee ) ) {
 			$this->fee = $fee;
@@ -205,7 +205,7 @@ final class Racketmanager_Tournament_Entry {
 	 *
 	 * @param int $club club id.
 	 */
-	public function set_club( $club ): void {
+	public function set_club( int $club ): void {
 		global $wpdb;
 		if ( ! empty( $club ) ) {
 			$this->club_id = $club;

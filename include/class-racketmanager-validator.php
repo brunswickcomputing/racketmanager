@@ -50,9 +50,10 @@ class Racketmanager_Validator {
 	 * Validate player
 	 *
 	 * @param int $player_id player id.
+	 *
 	 * @return object $validation updated validation object.
 	 */
-	public function player( $player_id ): object {
+	public function player( int $player_id ): object {
 		if ( empty( $player_id ) ) {
 			$this->error                          = true;
 			$this->error_field[ $this->error_id ] = 'contactno';
@@ -73,9 +74,10 @@ class Racketmanager_Validator {
 	 * Validate telephone
 	 *
 	 * @param string $telephone telephone number.
+	 *
 	 * @return object $validation updated validation object.
 	 */
-	public function telephone( $telephone ): object {
+	public function telephone( string $telephone ): object {
 		if ( empty( $telephone ) ) {
 			$this->error                          = true;
 			$this->error_field[ $this->error_id ] = 'contactno';
@@ -88,10 +90,11 @@ class Racketmanager_Validator {
 	 * Validate email
 	 *
 	 * @param string $email email address.
-	 * @param int    $player_id player id.
+	 * @param int $player_id player id.
+	 *
 	 * @return object $validation updated validation object.
 	 */
-	public function email( $email, $player_id ): object {
+	public function email( string $email, int $player_id ): object {
 		if ( empty( $email ) ) {
 			$this->error                          = true;
 			$this->error_field[ $this->error_id ] = 'contactemail';
@@ -115,9 +118,10 @@ class Racketmanager_Validator {
 	 *
 	 * @param int $btm lta tennis number.
 	 * @param int $player_id player id.
+	 *
 	 * @return object $validation updated validation object.
 	 */
-	public function btm( $btm, $player_id ): object {
+	public function btm( int $btm, int $player_id ): object {
 		if ( empty( $btm ) ) {
 			$this->error                          = true;
 			$this->error_field[ $this->error_id ] = 'btm';
@@ -140,9 +144,10 @@ class Racketmanager_Validator {
 	 * Validate season
 	 *
 	 * @param string $season season.
+	 *
 	 * @return object $validation updated validation object.
 	 */
-	public function season( $season ): object {
+	public function season( string $season ): object {
 		if ( empty( $season ) ) {
 			$this->error                          = true;
 			$this->error_field[ $this->error_id ] = 'season';
@@ -155,9 +160,10 @@ class Racketmanager_Validator {
 	 * Validate club
 	 *
 	 * @param string $club club.
+	 *
 	 * @return object $validation updated validation object.
 	 */
-	public function club( $club ): object {
+	public function club( string $club ): object {
 		if ( empty( $club ) ) {
 			$this->error                          = true;
 			$this->error_field[ $this->error_id ] = 'club';
@@ -170,9 +176,10 @@ class Racketmanager_Validator {
 	 * Validate competition
 	 *
 	 * @param string $competition competition.
+	 *
 	 * @return object $validation updated validation object.
 	 */
-	public function competition( $competition ): object {
+	public function competition( string $competition ): object {
 		if ( empty( $competition ) ) {
 			$this->error                          = true;
 			$this->error_field[ $this->error_id ] = 'competition';
@@ -201,9 +208,10 @@ class Racketmanager_Validator {
 	 * Validate tournament
 	 *
 	 * @param string $tournament tournament.
+	 *
 	 * @return object $validation updated validation object.
 	 */
-	public function tournament( $tournament ): object {
+	public function tournament( string $tournament ): object {
 		if ( empty( $tournament ) ) {
 			$this->error                          = true;
 			$this->error_field[ $this->error_id ] = 'tournament';

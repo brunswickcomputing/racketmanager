@@ -31,9 +31,10 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * [event_id=ID season=X template=X]
 	 *
 	 * @param array $atts shortcode attributes.
+	 *
 	 * @return string
 	 */
-	public function show_event( $atts ): string {
+	public function show_event( array $atts ): string {
 		global $wp;
 		$args     = shortcode_atts(
 			array(
@@ -112,9 +113,10 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * Function to display event standings
 	 *
 	 * @param array $atts shortcode attributes.
+	 *
 	 * @return string - the content
 	 */
-	public function show_event_standings( $atts ): string {
+	public function show_event_standings( array $atts ): string {
 		$args     = shortcode_atts(
 			array(
 				'id'       => 0,
@@ -146,9 +148,10 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * Function to display event draw
 	 *
 	 * @param array $atts shortcode attributes.
+	 *
 	 * @return string - the content
 	 */
-	public function show_event_draw( $atts ): string {
+	public function show_event_draw( array $atts ): string {
 		$args     = shortcode_atts(
 			array(
 				'id'       => 0,
@@ -184,9 +187,10 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * Function to display event matches
 	 *
 	 * @param array $atts shortcode attributes.
+	 *
 	 * @return string - the content
 	 */
-	public function show_event_matches( $atts ): string {
+	public function show_event_matches( array $atts ): string {
 		$args     = shortcode_atts(
 			array(
 				'id'       => 0,
@@ -222,9 +226,10 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * Function to display event Clubs
 	 *
 	 * @param array $atts shortcode attributes.
+	 *
 	 * @return string - the content
 	 */
-	public function show_event_clubs( $atts ): string {
+	public function show_event_clubs( array $atts ): string {
 		global $wp;
 		$args     = shortcode_atts(
 			array(
@@ -332,9 +337,10 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * Function to display event teams
 	 *
 	 * @param array $atts shortcode attributes.
+	 *
 	 * @return string - the content
 	 */
-	public function show_event_teams( $atts ): string {
+	public function show_event_teams( array $atts ): string {
 		global $wp;
 		$args     = shortcode_atts(
 			array(
@@ -409,9 +415,10 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 	 * Function to display event Players
 	 *
 	 * @param array $atts shortcode attributes.
+	 *
 	 * @return string - the content
 	 */
-	public function show_event_players( $atts ): string {
+	public function show_event_players( array $atts ): string {
 		global $wp;
 		$args      = shortcode_atts(
 			array(

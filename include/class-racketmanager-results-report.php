@@ -30,7 +30,7 @@ final class Racketmanager_Results_Report {
 	 *
 	 * @var string
 	 */
-	public string $result_object;
+	public string|false $result_object;
 	/**
 	 * Results report object
 	 *
@@ -42,7 +42,7 @@ final class Racketmanager_Results_Report {
 	 *
 	 * @param int $results_report_id id.
 	 */
-	public static function get_instance( $results_report_id ) {
+	public static function get_instance( int $results_report_id ) {
 		global $wpdb;
 		if ( ! $results_report_id ) {
 			return false;
@@ -72,9 +72,9 @@ final class Racketmanager_Results_Report {
 	/**
 	 * Construct class instance
 	 *
-	 * @param object $results_report results_report object.
+	 * @param object|null $results_report results_report object.
 	 */
-	public function __construct( $results_report = null ) {
+	public function __construct( object $results_report = null ) {
 		if ( ! is_null( $results_report ) ) {
 			foreach ( get_object_vars( $results_report ) as $key => $value ) {
 				$this->$key = $value;

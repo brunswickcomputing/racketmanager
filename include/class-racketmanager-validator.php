@@ -184,10 +184,11 @@ class Racketmanager_Validator {
 	/**
 	 * Validate event
 	 *
-	 * @param string $event event.
+	 * @param object|null $event event.
+	 *
 	 * @return object $validation updated validation object.
 	 */
-	public function event( $event ) {
+	public function event( ?object $event ): object {
 		if ( empty( $event ) ) {
 			$this->error                          = true;
 			$this->error_field[ $this->error_id ] = 'event';

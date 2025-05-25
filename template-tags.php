@@ -13,7 +13,7 @@ namespace Racketmanager;
 	 * @return int
 	 * @category template-tags
 	 */
-function get_league_id() {
+function get_league_id(): int {
 	global $league;
 	return $league->id;
 }
@@ -22,7 +22,7 @@ function get_league_id() {
 	 *
 	 * @category template-tags
 	 */
-function the_league_id() {
+function the_league_id(): void {
 	echo get_league_id();
 }
 
@@ -32,7 +32,7 @@ function the_league_id() {
 	 * @return string
 	 * @category template-tags
 	 */
-function get_league_title() {
+function get_league_title(): string {
 	global $league;
 	return $league->title;
 }
@@ -42,7 +42,7 @@ function get_league_title() {
 	 *
 	 * @category template-tags
 	 */
-function the_league_title() {
+function the_league_title(): void {
 	echo get_league_title();
 }
 
@@ -52,7 +52,7 @@ function the_league_title() {
 	 * @return string
 	 * @category template-tags
 	 */
-function get_current_season() {
+function get_current_season(): string {
 	global $league;
 	return $league->current_season['name'];
 }
@@ -61,7 +61,7 @@ function get_current_season() {
 	 *
 	 * @category template-tags
 	 */
-function the_current_season() {
+function the_current_season(): void {
 	echo get_current_season();
 }
 
@@ -71,7 +71,7 @@ function the_current_season() {
 	 * @return int
 	 * @category template-tags
 	 */
-function get_current_match_day() {
+function get_current_match_day(): int {
 	global $league;
 	return $league->match_day;
 }
@@ -82,7 +82,7 @@ function get_current_match_day() {
 	 * @return int
 	 * @category template-tags
 	 */
-function get_num_match_days() {
+function get_num_match_days(): int {
 	global $league;
 	return $league->num_match_days;
 }
@@ -94,7 +94,7 @@ function get_num_match_days() {
 	 * @return string
 	 * @category template-tags
 	 */
-function get_league_template( $template = '' ) {
+function get_league_template( $template = '' ): string {
 	global $league;
 
 	if ( ! empty( $template ) && isset( $league->templates[ $template ] ) ) {
@@ -108,7 +108,7 @@ function get_league_template( $template = '' ) {
 	 *
 	 * @category template-tags
 	 */
-function the_current_match_day() {
+function the_current_match_day(): void {
 	echo get_current_match_day();
 }
 
@@ -119,7 +119,7 @@ function the_current_match_day() {
 	 * @return boolean
 	 * @category template-tags
 	 */
-function show_standings( $key ) {
+function show_standings( $key ): bool {
 	global $league;
 
 	if ( isset( $league->standings[ $key ] ) && 1 === $league->standings[ $key ] ) {
@@ -145,7 +145,7 @@ function get_league_point_rule(): string {
 	 * @return int
 	 * @category template-tags
 	 */
-function get_num_teams_total() {
+function get_num_teams_total(): int {
 	global $league;
 	return $league->num_teams_total;
 }
@@ -155,7 +155,7 @@ function get_num_teams_total() {
 	 *
 	 * @category template-tags
 	 */
-function the_standings_header() {
+function the_standings_header(): void {
 	global $league;
 	$league->display_standings_header();
 }
@@ -164,7 +164,7 @@ function the_standings_header() {
 	 *
 	 * @category template-tags
 	 */
-function the_standings_columns() {
+function the_standings_columns(): void {
 	global $league, $team;
 	$league->display_standings_columns( $team, get_league_point_rule() );
 }
@@ -174,7 +174,7 @@ function the_standings_columns() {
 	 *
 	 * @return boolean
 	 */
-function have_teams() {
+function have_teams(): bool {
 	global $league;
 
 	if ( $league->current_team + 1 < count( $league->teams ) ) {
@@ -188,7 +188,7 @@ function have_teams() {
 	/**
 	 * Loop through teams
 	 */
-function the_team() {
+function the_team(): void {
 	global $league, $team;
 	// Increment team count.
 	++$league->current_team;
@@ -201,7 +201,7 @@ function the_team() {
 	 * @return int
 	 * @category template-tags
 	 */
-function get_team_id() {
+function get_team_id(): int {
 	global $team;
 	return $team->id;
 }
@@ -210,7 +210,7 @@ function get_team_id() {
 	 *
 	 * @category template-tags
 	 */
-function the_team_id() {
+function the_team_id(): void {
 	echo get_team_id();
 }
 
@@ -220,7 +220,7 @@ function the_team_id() {
 	 * @return string
 	 * @category template-tags
 	 */
-function get_team_name() {
+function get_team_name(): string {
 	global $team;
 	return $team->title;
 }
@@ -229,7 +229,7 @@ function get_team_name() {
 	 *
 	 * @category template-tags
 	 */
-function the_team_name() {
+function the_team_name(): void {
 	echo get_team_name();
 }
 
@@ -238,7 +238,7 @@ function the_team_name() {
 	 *
 	 * @category template-tags
 	 */
-function the_team_class() {
+function the_team_class(): void {
 	global $team;
 
 	echo $team->class;
@@ -250,7 +250,7 @@ function the_team_class() {
 	 * @return int
 	 * @category template-tags
 	 */
-function get_team_rank() {
+function get_team_rank(): int {
 	global $team;
 	return $team->rank;
 }
@@ -260,7 +260,7 @@ function get_team_rank() {
 	 *
 	 * @category template-tags
 	 */
-function the_team_rank() {
+function the_team_rank(): void {
 	echo get_team_rank();
 }
 
@@ -269,7 +269,7 @@ function the_team_rank() {
 	 *
 	 * @category template-tags
 	 */
-function the_team_status() {
+function the_team_status(): void {
 	global $team;
 	echo esc_html( $team->status );
 }
@@ -278,7 +278,7 @@ function the_team_status() {
 	 *
 	 * @category template-tags
 	 */
-function the_team_status_text() {
+function the_team_status_text(): void {
 	global $team;
 	echo esc_html( $team->status_text );
 }
@@ -299,7 +299,7 @@ function the_team_status_icon() {
 	 * @param string $ind index.
 	 * @category template-tags
 	 */
-function the_team_points( $ind = 'primary' ) {
+function the_team_points( $ind = 'primary' ): void {
 	global $team;
 	echo $team->points_formatted[ $ind ];
 }
@@ -309,7 +309,7 @@ function the_team_points( $ind = 'primary' ) {
 	 *
 	 * @category template-tags
 	 */
-function the_team_points_adjust() {
+function the_team_points_adjust(): void {
 	global $team;
 	echo $team->add_points;
 }
@@ -319,7 +319,7 @@ function the_team_points_adjust() {
 	 *
 	 * @category template-tags
 	 */
-function num_done_matches() {
+function num_done_matches(): void {
 	global $team;
 	echo $team->done_matches;
 }
@@ -328,7 +328,7 @@ function num_done_matches() {
 	 *
 	 * @category template-tags
 	 */
-function num_sets() {
+function num_sets(): void {
 	global $team;
 	echo esc_html( $team->sets_won . '-' . $team->sets_allowed );
 }
@@ -337,7 +337,7 @@ function num_sets() {
 	 *
 	 * @category template-tags
 	 */
-function num_games() {
+function num_games(): void {
 	global $team;
 	echo esc_html( $team->games_won . '-' . $team->games_allowed );
 }
@@ -346,7 +346,7 @@ function num_games() {
 	 *
 	 * @category template-tags
 	 */
-function num_won_matches() {
+function num_won_matches(): void {
 	global $team;
 	echo $team->won_matches;
 }
@@ -355,7 +355,7 @@ function num_won_matches() {
 	 *
 	 * @category template-tags
 	 */
-function num_lost_matches() {
+function num_lost_matches(): void {
 	global $team;
 	echo $team->lost_matches;
 }
@@ -364,7 +364,7 @@ function num_lost_matches() {
 	 *
 	 * @category template-tags
 	 */
-function num_draw_matches() {
+function num_draw_matches(): void {
 	global $team;
 	echo $team->draw_matches;
 }
@@ -373,7 +373,7 @@ function num_draw_matches() {
 	 *
 	 * @category template-tags
 	 */
-function win_percentage() {
+function win_percentage(): void {
 	global $team;
 	echo $team->win_percent;
 }
@@ -384,7 +384,7 @@ function win_percentage() {
 	 * @return boolean
 	 * @category template-tags
 	 */
-function has_next_match() {
+function has_next_match(): bool {
 	global $team, $match;
 
 	$match = $team->get_next_match();
@@ -400,7 +400,7 @@ function has_next_match() {
 	 * @return boolean
 	 * @category template-tags
 	 */
-function has_prev_match() {
+function has_prev_match(): bool {
 	global $team, $match;
 
 	$match = $team->get_prev_match();
@@ -417,7 +417,7 @@ function has_prev_match() {
 	 * @param boolean $url url.
 	 * @category template-tags
 	 */
-function the_last5_matches( $url = true ) {
+function the_last5_matches( $url = true ): void {
 	global $team;
 
 	echo $team->last5( $url );
@@ -429,7 +429,7 @@ function the_last5_matches( $url = true ) {
 	 * @return boolean
 	 * @category template-tags
 	 */
-function is_single_match() {
+function is_single_match(): bool {
 	global $league;
 	return $league->is_selected_match;
 }
@@ -439,7 +439,7 @@ function is_single_match() {
 	 *
 	 * @return boolean
 	 */
-function have_matches() {
+function have_matches(): bool {
 	global $league;
 
 	if ( ! isset( $league->matches ) ) {
@@ -456,7 +456,7 @@ function have_matches() {
 	/**
 	 * Loop through matches
 	 */
-function the_match() {
+function the_match(): void {
 	global $league, $match;
 	// Increment dataset count.
 	++$league->current_match;
@@ -468,7 +468,7 @@ function the_match() {
 	 *
 	 * @param string $template template.
 	 */
-function the_single_match( $template = '' ) {
+function the_single_match( $template = '' ): void {
 	global $league;
 	echo do_shortcode( "[match id='" . $league->current_match . "' template='" . $template . "']" );
 }
@@ -480,7 +480,7 @@ function the_single_match( $template = '' ) {
 	 * @param string $end_el end text.
 	 * @category template-tags
 	 */
-function the_matches_pagination( $start_el = "<p class='racketmanager-pagination page-numbers'>", $end_el = '</p>' ) {
+function the_matches_pagination( $start_el = "<p class='racketmanager-pagination page-numbers'>", $end_el = '</p>' ): void {
 	global $league;
 
 	if ( ! empty( $league->pagination_matches ) ) {
@@ -493,30 +493,39 @@ function the_matches_pagination( $start_el = "<p class='racketmanager-pagination
 	 *
 	 * @category template-tags
 	 */
-function the_match_class() {
+function the_match_class(): void {
 	global $match;
 	echo $match->class;
 }
 
 	/**
+	 * Get Match title
+	 *
+	 * @param boolean $show_logo show logo indicator.
+	 * @return string
+	 *
+	 * @category template-tags
+	 */
+	function get_match_title( bool $show_logo = true ): string {
+		global $match;
+		return $match->get_title( $show_logo );
+	}	/**
 	 * Print Match title
 	 *
 	 * @param boolean $show_logo show logo indicator.
+	 *
 	 * @category template-tags
 	 */
-function the_match_title( $show_logo = true ) {
-	global $match;
-
-	echo $match->get_title( $show_logo );
+function the_match_title( bool $show_logo = true ): void {
+	echo get_match_title( $show_logo );
 }
-
 	/**
 	 * Get Match day
 	 *
 	 * @return int
 	 * @category template-tags
 	 */
-function get_match_day() {
+function get_match_day(): int {
 	global $match;
 	return $match->match_day;
 }
@@ -525,7 +534,7 @@ function get_match_day() {
 	 *
 	 * @category template-tags
 	 */
-function the_match_day() {
+function the_match_day(): void {
 	echo get_match_day();
 }
 	/**
@@ -534,7 +543,7 @@ function the_match_day() {
 	 * @return string
 	 * @category template-tags
 	 */
-	function get_match_date( $format = '' ) {
+	function get_match_date( $format = '' ): string {
 		global $match;
 		if ( $format ) {
 			return mysql2date( $format, $match->date );
@@ -557,7 +566,7 @@ function the_match_date( $format = '' ): void {
 	 *
 	 * @category template-tags
 	 */
-function the_match_time() {
+function the_match_time(): void {
 	global $match;
 	if ( '00:00' === $match->start_time ) {
 		echo '';
@@ -571,7 +580,7 @@ function the_match_time() {
 	 *
 	 * @category template-tags
 	 */
-function the_match_location() {
+function the_match_location(): void {
 	global $match;
 	echo $match->location;
 }
@@ -582,7 +591,7 @@ function the_match_location() {
 	 * @return string
 	 * @category template-tags
 	 */
-function get_match_score() {
+function get_match_score(): string {
 	global $match;
 	return $match->score;
 }
@@ -591,7 +600,7 @@ function get_match_score() {
 	 *
 	 * @category template-tags
 	 */
-function the_match_score() {
+function the_match_score(): void {
 	echo get_match_score();
 }
 
@@ -601,7 +610,7 @@ function the_match_score() {
 	 * @return boolean
 	 * @category template-tags
 	 */
-function match_has_report() {
+function match_has_report(): bool {
 	global $match;
 
 	if ( 0 !== $match->post_id ) {
@@ -614,7 +623,7 @@ function match_has_report() {
 	 *
 	 * @category template-tags
 	 */
-function the_match_report() {
+function the_match_report(): void {
 	global $match;
 	echo $match->report;
 }
@@ -625,7 +634,7 @@ function the_match_report() {
 	 * @return string
 	 * @category template-tags
 	 */
-function get_match_template_type() {
+function get_match_template_type(): string {
 	global $league;
 	return $league->matches_template_type;
 }
@@ -650,7 +659,7 @@ function the_currency_amount( ?string $amount ): void {
 	 * @param int $i index.
 	 * @category template-tags
 	 */
-function the_crosstable_field( $i ) {
+function the_crosstable_field( $i ): void {
 	global $league, $team;
 
 	echo $league->get_crosstable_field( $team->id, $league->teams[ $i - 1 ]->id );
@@ -667,7 +676,7 @@ function the_crosstable_field( $i ) {
 	 * @param array $args additional arguments as associative array (optional).
 	 * @category template-tags
 	 */
-function racketmanager_club( $club_id, $args = array() ) {
+function racketmanager_club( $club_id, $args = array() ): void {
 	$defaults        = array( 'template' => '' );
 	$args            = array_merge( $defaults, $args );
 	$args['club_id'] = intval( $club_id );
@@ -687,7 +696,7 @@ function racketmanager_club( $club_id, $args = array() ) {
  * @param array      $args additional arguments as associative array (optional).
  * @category template-tags
  */
-function racketmanager_league_players( $league_id, $args = array() ) {
+function racketmanager_league_players( $league_id, $args = array() ): void {
 	$defaults          = array(
 		'season'   => false,
 		'template' => '',
@@ -710,7 +719,7 @@ function racketmanager_league_players( $league_id, $args = array() ) {
 	 * @param array $args associative array of parameters, see default values (optional).
 	 * @category template-tags
 	 */
-function racketmanager_league_standings( $league_id, $args = array() ) {
+function racketmanager_league_standings( $league_id, $args = array() ): void {
 	$defaults          = array(
 		'season'   => false,
 		'template' => 'last5',
@@ -731,13 +740,12 @@ function racketmanager_league_standings( $league_id, $args = array() ) {
 	/**
 	 * Display crosstable table
 	 *
-	 * @param int   $league_id league.
+	 * @param int $league_id league.
 	 * @param array $args associative array of parameters, see default values (optional).
+	 *
 	 * @category template-tags
 	 */
-function racketmanager_league_crosstable( $league_id, $args = array() ) {
-	global $league;
-
+function racketmanager_league_crosstable( int $league_id, array $args = array() ): void {
 	$defaults          = array(
 		'season'   => false,
 		'group'    => '',
@@ -758,13 +766,12 @@ function racketmanager_league_crosstable( $league_id, $args = array() ) {
 	/**
 	 * Display matches table
 	 *
-	 * @param int   $league_id league.
+	 * @param int $league_id league.
 	 * @param array $args associative array of parameters, see default values (optional).
+	 *
 	 * @category template-tags
 	 */
-function racketmanager_league_matches( $league_id, $args = array() ) {
-	global $league;
-
+function racketmanager_league_matches( int $league_id, array $args = array() ): void {
 	$defaults          = array(
 		'season'                   => '',
 		'template'                 => '',
@@ -779,7 +786,6 @@ function racketmanager_league_matches( $league_id, $args = array() ) {
 		'home_only'                => 'false',
 		'match_date'               => false,
 		'dateformat'               => '',
-		'timeformat'               => '',
 	);
 	$args              = array_merge( $defaults, $args );
 	$args['league_id'] = $league_id;
@@ -800,7 +806,7 @@ function racketmanager_league_matches( $league_id, $args = array() ) {
 	 * @param array $args additional arguments as associative array (optional).
 	 * @category template-tags
 	 */
-function racketmanager_match( $match_id, $args = array() ) {
+function racketmanager_match( $match_id, $args = array() ): void {
 	$defaults         = array( 'template' => '' );
 	$args             = array_merge( $defaults, $args );
 	$args['match_id'] = $match_id;
@@ -819,7 +825,7 @@ function racketmanager_match( $match_id, $args = array() ) {
 	 * @param array $args additional arguments as associative array (optional).
 	 * @category template-tags
 	 */
-function racketmanager_tournament_match( $match_id, $args = array() ) {
+function racketmanager_tournament_match( $match_id, $args = array() ): void {
 	$defaults         = array( 'template' => '' );
 	$args             = array_merge( $defaults, $args );
 	$args['match_id'] = $match_id;
@@ -835,13 +841,12 @@ function racketmanager_tournament_match( $match_id, $args = array() ) {
 	/**
 	 * Display team list
 	 *
-	 * @param int|string $league_id league.
-	 * @param array      $args additional arguments as associative array (optional).
+	 * @param int $league_id league.
+	 * @param array $args additional arguments as associative array (optional).
+	 *
 	 * @category template-tags
 	 */
-function racketmanager_league_teams( $league_id, $args = array() ) {
-	global $league;
-
+function racketmanager_league_teams( int $league_id, array $args = array() ): void {
 	$defaults          = array(
 		'season'   => false,
 		'template' => '',
@@ -865,7 +870,7 @@ function racketmanager_league_teams( $league_id, $args = array() ) {
 	 * @param array $args additional arguments as associative array (optional).
 	 * @return void
 	 */
-function racketmanager_team( $team_id, $args = array() ) {
+function racketmanager_team( $team_id, $args = array() ): void {
 	$defaults   = array( 'template' => '' );
 	$args       = array_merge( $defaults, $args );
 	$args['id'] = $team_id;
@@ -881,13 +886,12 @@ function racketmanager_team( $team_id, $args = array() ) {
 	/**
 	 * Display championship manually
 	 *
-	 * @param int   $league_id league.
+	 * @param int $league_id league.
 	 * @param array $args additional arguments as associative array (optional).
+	 *
 	 * @return void
 	 */
-function racketmanager_championship( $league_id, $args = array() ) {
-	global $league;
-
+function racketmanager_championship( int $league_id, array $args = array() ): void {
 	$defaults          = array(
 		'template' => '',
 		'season'   => false,
@@ -906,11 +910,12 @@ function racketmanager_championship( $league_id, $args = array() ) {
 	/**
 	 * Display championship manually
 	 *
-	 * @param int   $league_id league.
+	 * @param int $league_id league.
 	 * @param array $args additional arguments as associative array (optional).
+	 *
 	 * @return void
 	 */
-function racketmanager_archive( $league_id, $args = array() ) {
+function racketmanager_archive( int $league_id, array $args = array() ): void {
 	$defaults          = array( 'template' => '' );
 	$args              = array_merge( $defaults, $args );
 	$args['league_id'] = $league_id;
@@ -926,11 +931,12 @@ function racketmanager_archive( $league_id, $args = array() ) {
 	/**
 	 * Display results table
 	 *
-	 * @param int   $club_id affilated Club id club.
+	 * @param int $club_id affiliated Club id club.
 	 * @param array $args associative array of parameters, see default values (optional).
+	 *
 	 * @category template-tags
 	 */
-function racketmanager_results( $club_id, $args = array() ) {
+function racketmanager_results( int $club_id, array $args = array() ): void {
 	$args['club'] = $club_id;
 	$args['days'] = 3;
 
@@ -944,11 +950,12 @@ function racketmanager_results( $club_id, $args = array() ) {
 	/**
 	 * Display match email
 	 *
-	 * @param int   $match_id match id match.
+	 * @param int $match_id match id match.
 	 * @param array $args associative array of parameters, see default values (optional).
+	 *
 	 * @category template-tags
 	 */
-function racketmanager_match_notification( $match_id, $args = array() ) {
+function racketmanager_match_notification( int $match_id, $args = array() ): string {
 	$args['match'] = $match_id;
 
 	$shortcode = '[match-notification';
@@ -962,13 +969,12 @@ function racketmanager_match_notification( $match_id, $args = array() ) {
 	/**
 	 * Display result email
 	 *
-	 * @param int   $match_id match id match.
+	 * @param int $match_id match id match.
 	 * @param array $args associative array of parameters, see default values (optional).
+	 *
 	 * @category template-tags
 	 */
-function racketmanager_result_notification( $match_id, $args = array() ) {
-	global $racketmanager;
-
+function racketmanager_result_notification( int $match_id, array $args = array() ): string {
 	$args['match'] = $match_id;
 
 	$shortcode = '[result-notification';
@@ -981,11 +987,12 @@ function racketmanager_result_notification( $match_id, $args = array() ) {
 /**
  * Match date change notification function
  *
- * @param int   $match_id match id.
+ * @param int $match_id match id.
  * @param array $args array of arguments.
+ *
  * @return string
  */
-function racketmanager_match_date_change_notification( $match_id, $args = array() ) {
+function racketmanager_match_date_change_notification( int $match_id, array $args = array() ): string {
 	$args['match'] = $match_id;
 
 	$shortcode = '[match_date_change_notification';
@@ -998,13 +1005,12 @@ function racketmanager_match_date_change_notification( $match_id, $args = array(
 	/**
 	 * Display result email for captain
 	 *
-	 * @param int   $match_id match id match.
+	 * @param int $match_id match id match.
 	 * @param array $args associative array of parameters, see default values (optional).
+	 *
 	 * @category template-tags
 	 */
-function racketmanager_captain_result_notification( $match_id, $args = array() ) {
-	global $racketmanager;
-
+function racketmanager_captain_result_notification( int $match_id, array $args = array() ): string {
 	$args['match'] = $match_id;
 
 	$shortcode = '[result-notification-captain';
@@ -1018,13 +1024,12 @@ function racketmanager_captain_result_notification( $match_id, $args = array() )
 	/**
 	 * Display result outstanding email for captain
 	 *
-	 * @param int   $match_id match id match.
+	 * @param int $match_id match id match.
 	 * @param array $args associative array of parameters, see default values (optional).
+	 *
 	 * @category template-tags
 	 */
-function racketmanager_result_outstanding_notification( $match_id, $args = array() ) {
-	global $racketmanager;
-
+function racketmanager_result_outstanding_notification( int $match_id, array $args = array() ): string {
 	$args['match'] = $match_id;
 
 	$shortcode = '[result-outstanding-notification';
@@ -1039,11 +1044,10 @@ function racketmanager_result_outstanding_notification( $match_id, $args = array
 	 * Display club player request email
 	 *
 	 * @param array $args array of arguments.
+	 *
 	 * @category template-tags
 	 */
-function racketmanager_club_players_notification( $args = array() ) {
-	global $racketmanager;
-
+function racketmanager_club_players_notification( array $args = array() ): string {
 	$shortcode = '[club-player-notification';
 	foreach ( $args as $key => $value ) {
 		$shortcode .= ' ' . $key . "='" . $value . "'";
@@ -1059,7 +1063,7 @@ function racketmanager_club_players_notification( $args = array() ) {
 	 * @param array $args associative array of parameters, see default values (optional).
 	 * @category template-tags
 	 */
-function racketmanager_constitution_notification( $event_id, $args = array() ) {
+function racketmanager_constitution_notification( $event_id, $args = array() ): string {
 	$args['id']        = $event_id;
 	$args['standings'] = 'constitution';
 
@@ -1076,7 +1080,7 @@ function racketmanager_constitution_notification( $event_id, $args = array() ) {
  * @param int   $tournament_id tournament.
  * @param array $args array of arguments.
  */
-function racketmanager_tournament_overview( $tournament_id, $args = array() ) {
+function racketmanager_tournament_overview( $tournament_id, $args = array() ): void {
 	$args['id'] = $tournament_id;
 	$shortcode  = '[tournament-overview';
 	foreach ( $args as $key => $value ) {
@@ -1091,7 +1095,7 @@ function racketmanager_tournament_overview( $tournament_id, $args = array() ) {
  * @param int   $tournament_id tournament.
  * @param array $args array of arguments.
  */
-function racketmanager_tournament_events( $tournament_id, $args = array() ) {
+function racketmanager_tournament_events( $tournament_id, $args = array() ): void {
 	$args['id'] = $tournament_id;
 	$shortcode  = '[tournament-events';
 	foreach ( $args as $key => $value ) {
@@ -1106,7 +1110,7 @@ function racketmanager_tournament_events( $tournament_id, $args = array() ) {
  * @param int   $tournament_id tournament.
  * @param array $args array of arguments.
  */
-function racketmanager_tournament_draws( $tournament_id, $args = array() ) {
+function racketmanager_tournament_draws( $tournament_id, $args = array() ): void {
 	$args['id'] = $tournament_id;
 	$shortcode  = '[tournament-draws';
 	foreach ( $args as $key => $value ) {
@@ -1121,7 +1125,7 @@ function racketmanager_tournament_draws( $tournament_id, $args = array() ) {
  * @param int   $tournament_id tournament.
  * @param array $args array of arguments.
  */
-function racketmanager_tournament_players( $tournament_id, $args = array() ) {
+function racketmanager_tournament_players( $tournament_id, $args = array() ): void {
 	$args['id'] = $tournament_id;
 	$shortcode  = '[tournament-players';
 	foreach ( $args as $key => $value ) {
@@ -1136,7 +1140,7 @@ function racketmanager_tournament_players( $tournament_id, $args = array() ) {
  * @param int   $tournament_id tournament.
  * @param array $args array of arguments.
  */
-function racketmanager_tournament_matches( $tournament_id, $args = array() ) {
+function racketmanager_tournament_matches( $tournament_id, $args = array() ): void {
 	$args['id'] = $tournament_id;
 	$shortcode  = '[tournament-matches';
 	foreach ( $args as $key => $value ) {
@@ -1154,7 +1158,7 @@ function racketmanager_tournament_matches( $tournament_id, $args = array() ) {
  * @param int   $tournament_id tournament.
  * @param array $args array of arguments.
  */
-function racketmanager_tournament_order_of_play( $tournament_id, $args = array() ) {
+function racketmanager_tournament_order_of_play( $tournament_id, $args = array() ): void {
 	$args['id'] = $tournament_id;
 	$shortcode  = '[orderofplay';
 	foreach ( $args as $key => $value ) {
@@ -1169,7 +1173,7 @@ function racketmanager_tournament_order_of_play( $tournament_id, $args = array()
  * @param int   $tournament_id tournament.
  * @param array $args array of arguments.
  */
-function racketmanager_tournament_winners( $tournament_id, $args = array() ) {
+function racketmanager_tournament_winners( $tournament_id, $args = array() ): void {
 	$args['id'] = $tournament_id;
 	$shortcode  = '[tournament-winners';
 	foreach ( $args as $key => $value ) {
@@ -1184,7 +1188,7 @@ function racketmanager_tournament_winners( $tournament_id, $args = array() ) {
  * @param int   $competition_id competition.
  * @param array $args array of arguments.
  */
-function racketmanager_competition_overview( $competition_id, $args = array() ) {
+function racketmanager_competition_overview( $competition_id, $args = array() ): void {
 	$args['id'] = $competition_id;
 	$shortcode  = '[competition-overview';
 	foreach ( $args as $key => $value ) {
@@ -1199,7 +1203,7 @@ function racketmanager_competition_overview( $competition_id, $args = array() ) 
  * @param int   $competition_id competition.
  * @param array $args array of arguments.
  */
-function racketmanager_competition_events( $competition_id, $args = array() ) {
+function racketmanager_competition_events( $competition_id, $args = array() ): void {
 	$args['id'] = $competition_id;
 	$shortcode  = '[competition-events';
 	foreach ( $args as $key => $value ) {
@@ -1214,7 +1218,7 @@ function racketmanager_competition_events( $competition_id, $args = array() ) {
  * @param int   $competition_id competition.
  * @param array $args array of arguments.
  */
-function racketmanager_competition_clubs( $competition_id, $args = array() ) {
+function racketmanager_competition_clubs( $competition_id, $args = array() ): void {
 	$args['id'] = $competition_id;
 	$shortcode  = '[competition-clubs';
 	foreach ( $args as $key => $value ) {
@@ -1229,7 +1233,7 @@ function racketmanager_competition_clubs( $competition_id, $args = array() ) {
  * @param int   $competition_id competition.
  * @param array $args array of arguments.
  */
-function racketmanager_competition_teams( $competition_id, $args = array() ) {
+function racketmanager_competition_teams( $competition_id, $args = array() ): void {
 	$args['id'] = $competition_id;
 	$shortcode  = '[competition-teams';
 	foreach ( $args as $key => $value ) {
@@ -1244,7 +1248,7 @@ function racketmanager_competition_teams( $competition_id, $args = array() ) {
  * @param int   $competition_id competition.
  * @param array $args array of arguments.
  */
-function racketmanager_competition_players( $competition_id, $args = array() ) {
+function racketmanager_competition_players( $competition_id, $args = array() ): void {
 	$args['id'] = $competition_id;
 	$shortcode  = '[competition-players';
 	foreach ( $args as $key => $value ) {
@@ -1259,7 +1263,7 @@ function racketmanager_competition_players( $competition_id, $args = array() ) {
  * @param int   $event_id event.
  * @param array $args array of arguments.
  */
-function racketmanager_event_standings( $event_id, $args = array() ) {
+function racketmanager_event_standings( $event_id, $args = array() ): void {
 	$args['id'] = $event_id;
 	$shortcode  = '[event-standings';
 	foreach ( $args as $key => $value ) {
@@ -1274,7 +1278,7 @@ function racketmanager_event_standings( $event_id, $args = array() ) {
  * @param int   $event_id event.
  * @param array $args array of arguments.
  */
-function racketmanager_event_draw( $event_id, $args = array() ) {
+function racketmanager_event_draw( $event_id, $args = array() ): void {
 	$args['id'] = $event_id;
 	$shortcode  = '[event-draw';
 	foreach ( $args as $key => $value ) {
@@ -1289,7 +1293,7 @@ function racketmanager_event_draw( $event_id, $args = array() ) {
  * @param int   $event_id event.
  * @param array $args array of arguments.
  */
-function racketmanager_event_matches( $event_id, $args = array() ) {
+function racketmanager_event_matches( $event_id, $args = array() ): void {
 	$args['id'] = $event_id;
 	$shortcode  = '[event-matches';
 	foreach ( $args as $key => $value ) {
@@ -1304,7 +1308,7 @@ function racketmanager_event_matches( $event_id, $args = array() ) {
  * @param int   $event_id event.
  * @param array $args array of arguments.
  */
-function racketmanager_event_clubs( $event_id, $args = array() ) {
+function racketmanager_event_clubs( $event_id, $args = array() ): void {
 	$args['id'] = $event_id;
 	$shortcode  = '[event-clubs';
 	foreach ( $args as $key => $value ) {
@@ -1319,7 +1323,7 @@ function racketmanager_event_clubs( $event_id, $args = array() ) {
  * @param int   $event_id event.
  * @param array $args array of arguments.
  */
-function racketmanager_event_teams( $event_id, $args = array() ) {
+function racketmanager_event_teams( $event_id, $args = array() ): void {
 	$args['id'] = $event_id;
 	$shortcode  = '[event-teams';
 	foreach ( $args as $key => $value ) {
@@ -1334,7 +1338,7 @@ function racketmanager_event_teams( $event_id, $args = array() ) {
  * @param int   $event_id event.
  * @param array $args array of arguments.
  */
-function racketmanager_event_players( $event_id, $args = array() ) {
+function racketmanager_event_players( $event_id, $args = array() ): void {
 	$args['id'] = $event_id;
 	$shortcode  = '[event-players';
 	foreach ( $args as $key => $value ) {
@@ -1349,7 +1353,7 @@ function racketmanager_event_players( $event_id, $args = array() ) {
  * @param int   $competition_id competition.
  * @param array $args array of arguments.
  */
-function racketmanager_competition_matches( $competition_id, $args = array() ) {
+function racketmanager_competition_matches( $competition_id, $args = array() ): void {
 	$args['id'] = $competition_id;
 	$shortcode  = '[competition-matches';
 	foreach ( $args as $key => $value ) {
@@ -1364,7 +1368,7 @@ function racketmanager_competition_matches( $competition_id, $args = array() ) {
  * @param int   $competition_id competition.
  * @param array $args array of arguments.
  */
-function racketmanager_competition_winners( $competition_id, $args = array() ) {
+function racketmanager_competition_winners( $competition_id, $args = array() ): void {
 	$args['id'] = $competition_id;
 	$shortcode  = '[competition-winners';
 	foreach ( $args as $key => $value ) {
@@ -1379,7 +1383,7 @@ function racketmanager_competition_winners( $competition_id, $args = array() ) {
  * @param string $search_string search string.
  * @param array  $args array of arguments.
  */
-function racketmanager_player_search( $search_string, $args = array() ) {
+function racketmanager_player_search( $search_string, $args = array() ): string {
 	$args['search'] = $search_string;
 	$shortcode      = '[search-players';
 	foreach ( $args as $key => $value ) {
@@ -1393,7 +1397,7 @@ function racketmanager_player_search( $search_string, $args = array() ) {
  *
  * @param array $args array of arguments.
  */
-function racketmanager_withdrawn_team( $args = array() ) {
+function racketmanager_withdrawn_team( $args = array() ): string {
 	$shortcode = '[withdrawn-team';
 	foreach ( $args as $key => $value ) {
 		$shortcode .= ' ' . $key . "='" . $value . "'";

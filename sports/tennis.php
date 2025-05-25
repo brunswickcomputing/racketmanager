@@ -16,7 +16,7 @@ add_filter( 'racketmanager_sports', 'Racketmanager\\racketmanager_sports_tennis'
  * @param array $sports sports array.
  * @return array
  */
-function racketmanager_sports_tennis( $sports ) {
+function racketmanager_sports_tennis( $sports ): array {
 	$sports['tennis'] = __( 'Tennis', 'racketmanager' );
 	return $sports;
 }

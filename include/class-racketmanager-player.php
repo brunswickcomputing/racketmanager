@@ -194,6 +194,12 @@ final class Racketmanager_Player {
 	 */
 	public array $clubs = array();
 	/**
+	 * Clubs archive.
+	 *
+	 * @var array
+	 */
+	public array $clubs_archive = array();
+	/**
 	 * Titles.
 	 *
 	 * @var array

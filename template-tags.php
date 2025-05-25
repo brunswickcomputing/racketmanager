@@ -632,10 +632,14 @@ function get_match_template_type() {
 /**
  * Get formatted currency function
  *
- * @param string $amount amount to be formatted.
+ * @param string|null $amount amount to be formatted.
+ *
  * @return void
  */
-function the_currency_amount( $amount ) {
+function the_currency_amount( ?string $amount ): void {
+	if ( is_null( $amount ) ) {
+		$amount = 0;
+	}
 	$currency_fmt  = Racketmanager_Util::get_currency_format();
 	$currency_code = Racketmanager_Util::get_currency_code();
 	echo esc_html( numfmt_format_currency( $currency_fmt, $amount, $currency_code ) );

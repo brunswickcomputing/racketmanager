@@ -18,25 +18,25 @@ class Racketmanager_Validator {
 	 *
 	 * @var boolean
 	 */
-	public $error;
+	public bool $error;
 	/**
 	 * Error field
 	 *
 	 * @var array
 	 */
-	public $error_field;
+	public array $error_field;
 	/**
 	 * Error message
 	 *
 	 * @var array
 	 */
-	public $error_msg;
+	public array $error_msg;
 	/**
 	 * Error id
 	 *
 	 * @var int
 	 */
-	public $error_id;
+	public int $error_id;
 	/**
 	 * Constructor
 	 */

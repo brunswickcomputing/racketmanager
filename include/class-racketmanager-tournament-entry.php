@@ -18,43 +18,43 @@ final class Racketmanager_Tournament_Entry {
 	 *
 	 * @var int
 	 */
-	public $id;
+	public int $id;
 	/**
 	 * Tournament id
 	 *
 	 * @var int
 	 */
-	public $tournament_id;
+	public int $tournament_id;
 	/**
 	 * Player id
 	 *
 	 * @var int
 	 */
-	public $player_id;
+	public int $player_id;
 	/**
 	 * Status
 	 *
 	 * @var int
 	 */
-	public $status;
+	public int $status;
 	/**
 	 * Fee
 	 *
 	 * @var string
 	 */
-	public $fee;
+	public string $fee;
 	/**
 	 * Club id
 	 *
 	 * @var int
 	 */
-	public $club_id;
+	public int $club_id;
 	/**
 	 * Club
 	 *
-	 * @var object
+	 * @var object|null
 	 */
-	public $club = null;
+	public ?object $club = null;
 
 	/**
 	 * Retrieve tournament entry instance

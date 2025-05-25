@@ -18,55 +18,55 @@ final class Racketmanager_Message {
 	 *
 	 * @var int
 	 */
-	public $id;
+	public int $id;
 	/**
 	 * Subject
 	 *
 	 * @var string
 	 */
-	public $subject;
+	public string $subject;
 	/**
 	 * Userid
 	 *
 	 * @var int
 	 */
-	public $userid;
+	public int $userid;
 	/**
 	 * Status
 	 *
 	 * @var string
 	 */
-	public $status;
+	public string $status;
 	/**
 	 * Date
 	 *
 	 * @var string
 	 */
-	public $date;
+	public string $date;
 	/**
 	 * Sender
 	 *
 	 * @var string
 	 */
-	public $sender;
+	public string $sender;
 	/**
 	 * From name
 	 *
 	 * @var string
 	 */
-	public $from_name;
+	public string $from_name;
 	/**
 	 * From email
 	 *
 	 * @var string
 	 */
-	public $from_email;
+	public string $from_email;
 	/**
 	 * Message detail stored in database
 	 *
 	 * @var string
 	 */
-	public $message_object;
+	public string $message_object;
 
 	/**
 	 * Get class instance

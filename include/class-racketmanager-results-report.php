@@ -18,25 +18,25 @@ final class Racketmanager_Results_Report {
 	 *
 	 * @var int
 	 */
-	public $id;
+	public int $id;
 	/**
 	 * Season
 	 *
 	 * @var int
 	 */
-	public $match_id;
+	public int $match_id;
 	/**
 	 * Results report object stored in database as string
 	 *
 	 * @var string
 	 */
-	public $result_object;
+	public string $result_object;
 	/**
 	 * Results report object
 	 *
 	 * @var object
 	 */
-	public $data;
+	public mixed $data;
 	/**
 	 * Get class instance
 	 *

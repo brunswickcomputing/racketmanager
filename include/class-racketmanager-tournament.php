@@ -263,9 +263,9 @@ final class Racketmanager_Tournament {
 	/**
 	 * Payments
 	 *
-	 * @var array
+	 * @var array|null
 	 */
-	public array $payments;
+	public ?array $payments;
 	/**
 	 * Entries
 	 *
@@ -1719,7 +1719,7 @@ final class Racketmanager_Tournament {
 		$args_input = array_merge( $defaults, $args_input );
 		$status     = $args_input['status'];
 		$player     = $args_input['player'];
-		if ( $this->charge ) {
+		if ( ! empty( $this->charge ) ) {
 			$args['charge'] = $this->charge->id;
 			$args['player'] = $player;
 			$args['status'] = $status;

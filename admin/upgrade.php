@@ -42,6 +42,7 @@ function racketmanager_upgrade() {
 	}
 	if ( version_compare( $installed, '5.3.0', '<' ) ) {
 		echo esc_html__( 'starting 5.3.0 upgrade', 'racketmanager' ) . "<br />\n";
+        $user_id        = null;
 		$prev_player_id = 0;
 		$rosters        = $wpdb->get_results( " SELECT `id`, `player_id`, `affiliatedclub`, `removed_date` FROM {$wpdb->leaguemanager_roster} ORDER BY `player_id`;" );
 		foreach ( $rosters as $roster ) {
@@ -80,6 +81,7 @@ function racketmanager_upgrade() {
 	if ( version_compare( $installed, '5.3.1', '<' ) ) {
 		echo esc_html__( 'starting 5.3.1 upgrade', 'racketmanager' ) . "<br />\n";
 		echo esc_html__( 'updating captains', 'racketmanager' ) . "<br />\n";
+        $user         = null;
 		$prev_captain = '';
 		$captains     = $wpdb->get_results( " SELECT `id`, `captain`, `contactno`, `contactemail` FROM {$wpdb->leaguemanager_team_competition} WHERE `captain` != '' ORDER BY `captain`;" );
 		foreach ( $captains as $captain ) {
@@ -844,6 +846,8 @@ function racketmanager_upgrade() {
 	}
 	if ( version_compare( $installed, '8.1.3', '<' ) ) {
 		echo esc_html__( 'starting 8.1.3 upgrade', 'racketmanager' ) . "<br />\n";
+        $host    = null;
+        $match   = null;
 		$matches = $wpdb->get_results( "SELECT `id`, `custom` FROM {$wpdb->racketmanager_matches}" );
 		foreach ( $matches as $match ) {
 			$update = false;

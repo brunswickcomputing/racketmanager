@@ -238,13 +238,17 @@ table.crosstable img {
 
 
 /*--- Archive ---*/
+/*noinspection CssUnresolvedCustomProperty*/
 .nav-pills button.nav-link {
 	color: var(--e-global-color-global_color_1);
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .nav-tabs button.nav-link {
 	color: var(--e-global-color-global_color_1);
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .nav-pills.frontend .nav-link.active,
 .nav-pills .show>.nav-link {
 	color: #fff;
@@ -495,12 +499,14 @@ div.tm-team-content .team-projectmanager {
 	position: relative;
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .frontend.accordion-button:not(.collapsed),
 .frontend.accordion-button.collapsed:hover {
 	color: #FFFFFF;
 	background-color: var(--e-global-color-global_color_1);
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .frontend.accordion-button.collapsed {
 	color: var(--e-global-color-global_color_1);
 	background-color: #FFFFFF;
@@ -576,7 +582,6 @@ div.tm-team-content div.team {
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
 		font-weight: 400;
-		font-size: 16px;
 		font-size: 1rem;
 		line-height: 1.25;
 		display: block;
@@ -684,6 +689,7 @@ div.tm-team-content div.team {
 	box-shadow: 0 0 0 .25rem rgba(00, 110, 00, .25)
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .form-check-input.switch:checked {
 	background-color: var(--e-global-color-global_color_1);
 		border-color: var(--e-global-color-global_color_1);
@@ -1069,6 +1075,8 @@ summary>* {
 	vertical-align: text-bottom;
 	line-height: 1;
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .btn--link svg,
 .calendar-add svg {
 	fill: var(--e-global-color-global_color_1);
@@ -1078,6 +1086,7 @@ summary>* {
 	fill: #00964b;
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .passwordShow svg {
 	fill: var(--e-global-color-global_color_1);
 }
@@ -1230,6 +1239,8 @@ input#resetpassButton:disabled,
 input#memberAccountButton:disabled {
 	cursor: not-allowed;
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 input#resetpassButton:hover:disabled,
 input#memberAccountButton:hover:disabled {
 	color: white;
@@ -1298,6 +1309,8 @@ h4.header {
 .fav-icon-svg:hover {
 	fill: gold;
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .btn-favourite .fav-icon-svg {
     stroke: var(--e-global-color-global_color_1);
 }
@@ -1336,6 +1349,8 @@ h4.header {
 .btn-favourite:not(.is-favourite) .fav-icon-svg:hover {
 	opacity: 1;
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .btn-favourite:not(.is-favourite):hover svg,
 .page-subhead .btn-favourite:not(.is-favourite) .fav-icon-svg:hover,
 .module--dark .btn-favourite:not(.is-favourite) .fav-icon-svg:hover,
@@ -1358,10 +1373,14 @@ h4.header {
 	vertical-align: middle;
 	font-size: 0.8rem;
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .btn.btn-favourite {
     border: 1px solid var(--e-global-color-global_color_1);
     text-transform: uppercase;
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .btn-favourite .nav-link__value {
     color: var(--e-global-color-global_color_1);
 }
@@ -1790,7 +1809,6 @@ ul.list-winners {
 
 .list--timeline>.list__item.is-completed-locked:before,
 .message-page .message-page__modal .message-page__removal-tips ul .list--timeline>li.is-completed-locked:before {
-	background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 1342 1024'%3E%3Cpath fill='%23FFF' d='m532.798 894.694 642.013-639.576-126.234-126.27-563.518 561.434-208.755-208.755-109.321 109.286 304.34 304.34 1.306-1.306h59.321z'/%3E%3C/svg%3E") #4abf33 50% no-repeat;
 	background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FFF' viewBox='0 0 1024 1024'%3E%3Cpath d='M910.524 485.819c-13.58-13.577-30.058-20.36-49.46-20.36h-23.259V325.815c0-89.211-31.991-165.81-95.994-229.81C677.813 32.002 601.222.001 511.998.001c-89.221 0-165.828 32.001-229.82 96.002-64.003 64.003-95.994 140.599-95.994 229.813V465.46h-23.269c-19.387 0-35.876 6.783-49.453 20.36-13.577 13.567-20.363 30.055-20.363 49.46v418.905c0 19.387 6.788 35.881 20.363 49.46 13.577 13.564 30.066 20.355 49.453 20.355h698.168c19.403 0 35.878-6.783 49.46-20.355 13.564-13.58 20.363-30.073 20.363-49.46V535.273c.01-19.39-6.799-35.876-20.381-49.453zm-212.349-20.36H325.819V325.815c0-51.391 18.185-95.273 54.547-131.631 36.367-36.362 80.242-54.54 131.638-54.54 51.401 0 95.266 18.175 131.636 54.54 36.352 36.355 54.535 80.239 54.535 131.631v139.644z'/%3E%3C/svg%3E") #4abf33 50% no-repeat;
 	background-size: 9px;
 	border: 2px solid #4abf33;
@@ -1873,7 +1891,6 @@ ul.list-winners {
 .message-page .message-page__modal .message-page__removal-tips ul .list--timeline-labelled li.is-current:before {
 	background-color: #fff !important;
 	border: 2px solid #a6aab5;
-	box-shadow: 0 0 0 2px #d0d2d8;
 	box-shadow: 0 0 0 2px #fff;
 	height: 14px;
 	width: 14px
@@ -2067,7 +2084,6 @@ ul.list-winners {
 .list--timeline-wizard>.list__item.is-completed,
 .message-page .message-page__modal .message-page__removal-tips ul .list--timeline-wizard>li.is-completed {
 	border-color: #4abf33;
-	-o-border-image: none;
 	border-image: none;
 	color: #4abf33
 }
@@ -2079,7 +2095,6 @@ ul.list-winners {
 
 .list--timeline-wizard>.list__item.is-completed.last-completed,
 .message-page .message-page__modal .message-page__removal-tips ul .list--timeline-wizard>li.is-completed.last-completed {
-	-o-border-image: linear-gradient(90deg, #4abf33 50%, #d0d2d8) 1;
 	border-image: linear-gradient(90deg, #4abf33 50%, #d0d2d8) 1
 }
 
@@ -2092,12 +2107,15 @@ ul.list-winners {
 	fill: #FFFFFF;
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .reverse .racketmanager-svg-icon {
 	fill: var(--e-global-color-global_color_1);
 }
 .racketmanager-svg-icon {
 	fill: #FFF;
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .tournament-head .reverse svg, .competition-head .reverse svg {
 	fill: var(--e-global-color-global_color_1);
 }
@@ -2336,6 +2354,7 @@ ul.module {
 	border-radius: .5rem;
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .match__header-aside .match__header-aside-block {
 	border-radius: 3px;
 	box-shadow: none;
@@ -2361,6 +2380,7 @@ ul.module {
 	box-shadow: none
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .match__header-aside .match__header-aside-block--primary {
 	align-items: center;
 	background-color: var(--e-global-color-global_color_1);
@@ -2372,6 +2392,7 @@ ul.module {
 	margin-right: 0.25rem
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .match__header-aside .match__header-aside-block--primary:focus,
 .match__header-aside .match__header-aside-block--primary:hover {
 	background-color: var(--e-global-color-global_color_1);
@@ -3056,6 +3077,7 @@ ul.match-points {
 	color: #cc7d00;
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .btn.match__btn {
 	background: var(--e-global-color-global_color_1);
 	display: flex;
@@ -3071,6 +3093,8 @@ ul.match-points {
 .match__btn svg {
 	fill: white;
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .btn.match__btn:hover, .btn.match__btn:focus-visible, .btn.match__btn:active {
     background-color: var(--e-global-color-global_color_1);
 }
@@ -3246,6 +3270,8 @@ span.header {
 	margin-bottom: 1.4em;
 	position: relative
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .match.is-selected {
     box-shadow: 0 0 0 2px var(--e-global-color-global_color_1);
 }
@@ -3314,10 +3340,13 @@ span.date__month {
 .nav-item button.nav-link {
     background: transparent;
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .nav-tabs .nav-item.is_selected {
 	background-color: var(--e-global-color-global_color_1);
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .nav-tabs.match-date-list .nav-item.nav-link {
 	border: 0;
 	border-top: 1px solid var(--e-global-color-global_color_1);
@@ -3326,12 +3355,14 @@ span.date__month {
 	border-top-right-radius: 0;
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .nav-tabs.match-date-list .nav-link:first-child {
 	border-top-left-radius: 0.25rem;
 	border-bottom-left-radius: 0.25rem;
 	border-left: 1px solid var(--e-global-color-global_color_1);
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .nav-tabs.match-date-list .nav-link:last-child {
 	border-top-right-radius: 0.25em;
 	border-bottom-right-radius: 0.25rem;
@@ -3353,17 +3384,25 @@ span.date__month {
 .module .nav-pills {
 	cursor: pointer;
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .module .nav-pills .nav-link {
 	border: 1px solid var(--e-global-color-global_color_1);
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .module .nav-pills .nav-link.active, .nav-pills .show>.nav-link {
     color: #FFF;
     background-color: var(--e-global-color-global_color_1);
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .module .nav-pills .nav-link:focus, .module .nav-pills .nav-link:hover {
     border: var(--e-global-color-global_color_1) 1px solid;
 	color: var(--e-global-color-global_color_1)
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .module .nav-pills .nav-link.active:focus, .module .nav-pills .nav-link.active:hover {
     border: var(--e-global-color-global_color_1) 1px solid;
 	color: #FFF
@@ -3427,6 +3466,7 @@ span.match_time {
 	padding: 1.0rem 15px !important
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .walkover {
 	align-self: center;
 	background-color: rgba(36, 126, 0, .2);
@@ -3577,11 +3617,14 @@ span.module__aside {
 	padding: 0;
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .btn.btn-primary.reverse {
 	color: var(--e-global-color-global_color_1) !important;
 	background-color: #FFF;
 	border-color: #FFF;
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 button.btn.btn-plain {
     background: #FFF;
     border: none;
@@ -3694,13 +3737,18 @@ ul.list.list--naked {
 	color: #fff;
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .module--dark.module--card {
 	background-color: var(--e-global-color-global_color_1);
 	color: #FFF;
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .module--dark a.dropdown-item, .tournament-head a.dropdown-item, .competition-head a.dropdown-item {
 	color: var(--e-global-color-global_color_1) !important;
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .module--dark a.dropdown-item:hover,
 .tournament-head a.dropdown-item:hover,
 .competition-head a.dropdown-item:hover {
@@ -3860,6 +3908,7 @@ h2.team-match__name {
 	}
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .score {
 	background-color: var(--e-global-color-global_color_1);
 	border-radius: 0.3rem;
@@ -3872,12 +3921,14 @@ h2.team-match__name {
 	text-align: center;
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .score.is-not-played {
 	background-color: transparent;
 	border: 2px solid var(--e-global-color-global_color_1);
 	color: var(--e-global-color-global_color_1);
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .team-match-header .score {
 	background-color: #fff;
 	color: var(--e-global-color-global_color_1);
@@ -3928,6 +3979,8 @@ h2.team-match__name {
 .competition-head a:hover {
 	color: #fff !important;
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .module--dark a.btn.btn-outline {
     color: var(--e-global-color-global_color_1) !important;
     background: #FFF;
@@ -4153,6 +4206,7 @@ dt.list__label::after {
 	width: 100%;
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .profile-icon__abbr {
 	background-color: var(--e-global-color-global_color_1);
 	color: #fff;
@@ -4291,6 +4345,8 @@ h5.media__title {
 	margin-bottom: 1rem;
 	padding: 1rem;
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .page-subhead.competition {
 	background-color: var(--e-global-color-global_color_1);
 }
@@ -4534,6 +4590,7 @@ p.media__subheading {
 	display: block;
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .score-row:hover {
 	border: 3px solid var(--e-global-color-global_color_1);
 }
@@ -4694,9 +4751,13 @@ p.media__subheading {
 .nav-link__value {
 	word-wrap: break-word;
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 a:hover .nav-link__value, a:focus .nav-link__value {
 	color: var(--e-global-color-global_color_1);
 }
+
+/*noinspection CssUnresolvedCustomProperty*/
 .module--dark a.btn:hover .nav-link__value, .module--dark a.btn:focus .nav-link__value {
 	color: var(--e-global-color-global_color_1);
 }
@@ -5021,7 +5082,10 @@ ul.list--inline {
 	ul.list.list--inline {
 		display: flex;
 	}
-}.media__img-element--icon {
+}
+
+/*noinspection CssUnresolvedCustomProperty*/
+.media__img-element--icon {
     background-color: transparent;
     border: 0;
     color: var(--e-global-color-global_color_1);
@@ -5053,6 +5117,7 @@ svg[class*=icon] {
     position: relative
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .module:not(.module--card) .alert_rm {
     box-shadow: var(--box-shadow);
 }
@@ -5190,9 +5255,9 @@ svg[class*=icon] {
     }
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .alert__body-inner.collapse[aria-expanded=false] {
     display: block;
-    max-height: none;
     max-height: var(--alert-col-height);
     overflow: hidden
 }
@@ -5245,7 +5310,6 @@ svg[class*=icon] {
     -webkit-transform: translateY(-25%);
     transform: translateY(-25%);
     transition: -webkit-transform .3s ease-out;
-    transition: transform .3s ease-out;
     transition: transform .3s ease-out,-webkit-transform .3s ease-out
 }
 
@@ -5268,7 +5332,6 @@ svg[class*=icon] {
 .modal-content {
     background-clip: padding-box;
     background-color: #fff;
-    border: 1px solid #999;
     border: 1px solid rgba(0,0,0,.2);
     border-radius: 6px;
     box-shadow: 0 3px 9px rgba(0,0,0,.5);
@@ -5307,6 +5370,7 @@ h4.modal-title {
     }
 }
 
+/*noinspection CssUnresolvedCustomProperty*/
 .modal-content .modal__header {
     background-color: var(--e-global-color-global_color_1);
     border-top-left-radius: .3rem;
@@ -5830,9 +5894,7 @@ svg.media__img-element--icon.winner, svg.media__img-element--icon.runner-up {
 	color: #2a2c32;
 }
 .tag-pair__value {
-	background-color: #fff;
 	border-radius: 0 2px 2px 0;
-	color: #2a2c32;
 	font-weight: 400;
 	padding: 0 0.5rem;
 	background-color: transparent;

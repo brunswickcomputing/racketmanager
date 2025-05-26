@@ -424,6 +424,8 @@ final class Racketmanager_Championship {
 	 */
 	private function start_final_rounds(): bool {
 		$updates = false;
+		$home    = null;
+		$away    = null;
 		if ( is_admin() && current_user_can( 'update_results' ) ) {
 			$league        = get_league( $this->league_id );
 			$multiple_legs = false;
@@ -552,6 +554,8 @@ final class Racketmanager_Championship {
 	 */
 	private function proceed( string $current, string $next, int $round ): void {
 		$legs       = false;
+		$prev_home  = null;
+		$prev_away  = null;
 		$league     = get_league( $this->league_id );
 		$match_args = array(
 			'final' => $next,

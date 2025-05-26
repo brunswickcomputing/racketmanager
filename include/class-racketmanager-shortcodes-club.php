@@ -242,6 +242,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 		if ( ! $club ) {
 			return __( 'Club not found', 'racketmanager' );
 		}
+		$club_competitions = array();
 		// Get competition by Name.
 		$competition_name = get_query_var( 'competition_name' );
 		if ( $competition_name ) {
@@ -253,7 +254,6 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 			$club->competition = $competition;
 		} else {
 			$competitions_types = array( 'cup', 'league' );
-			$club_competitions  = array();
 			foreach ( $competitions_types as $competition_type ) {
 				$c            = 0;
 				$competitions = $racketmanager->get_competitions( array( 'type' => $competition_type ) );

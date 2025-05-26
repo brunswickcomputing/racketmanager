@@ -1,8 +1,14 @@
+<?php
+
+namespace Racketmanager;
+
+/** @var array $options */
+?>
 <div class="form-control">
   <div class="form-floating mb-3">
     <input type='text' class="form-control" name='color_headers' id='color_headers' value='<?php echo ( isset($options['colors']['headers']) ? ($options['colors']['headers']) : '' ) ?>' size='7' class="racketmanager-colorpicker color" />
     <label for='color_headers'><?php _e( 'Table Headers', 'racketmanager' ) ?></label>
-    <span class="colorbox" style="background-color: <?php echo $options['colors']['headers'] ?>"></span>
+	  <span class="colorbox" style="background-color: <?php echo $options['colors']['headers'] ?>"></span>
   </div>
   <div class="form-control mb-3">
     <label for='color_rows'><?php _e( 'Table Rows', 'racketmanager' ) ?></label>

@@ -483,7 +483,6 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 	 */
 	public function show_team_withdrawn( array $atts ): string {
 		global $racketmanager;
-
 		$args      = shortcode_atts(
 			array(
 				'team'     => false,
@@ -502,7 +501,9 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 		$from      = $args['from'];
 		$template  = $args['template'];
 		$valid     = true;
-
+		$team      = null;
+		$league    = null;
+		$msg       = null;
 		if ( $team_id ) {
 			$team = get_team( $team_id );
 			if ( $team ) {

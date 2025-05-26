@@ -1995,7 +1995,7 @@ class RacketManager_Admin extends RacketManager {
 	 */
 	private function display_club_players_page(): void {
 		global $racketmanager;
-
+        $club_id = null;
 		if ( ! current_user_can( 'edit_teams' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -2093,6 +2093,10 @@ class RacketManager_Admin extends RacketManager {
 		$error_field   = array();
 		$error_message = array();
 		$error_id      = 0;
+        $firstname     = null;
+        $surname       = null;
+        $btm           = null;
+        $gender        = null;
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		if ( isset( $_POST['firstname'] ) && '' === sanitize_text_field( wp_unslash( $_POST['firstname'] ) ) ) {
 			$valid                      = false;
@@ -2214,6 +2218,7 @@ class RacketManager_Admin extends RacketManager {
 	 * Display teams page
 	 */
 	private function display_teams_page(): void {
+        $club_id = null;
 		if ( ! current_user_can( 'edit_teams' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -2327,7 +2332,15 @@ class RacketManager_Admin extends RacketManager {
 	 */
 	private function display_match_page(): void {
 		global $wpdb, $competition;
-
+        $league      = null;
+        $max_matches = null;
+        $match       = null;
+        $final       = null;
+        $team_array  = array();
+        $num_first_round = null;
+        $prev_round_name = null;
+        $home_team       = null;
+        $away_team       = null;
 		if ( ! current_user_can( 'edit_matches' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -2644,7 +2657,10 @@ class RacketManager_Admin extends RacketManager {
 	 */
 	private function display_contact_page(): void {
 		global $racketmanager, $racketmanager_shortcodes;
-
+        $title = null;
+        $season = null;
+        $object_type = null;
+        $object = null;
 		if ( ! current_user_can( 'edit_teams' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -3851,6 +3867,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param false|int $competition_id competition details.
 	 */
 	public function get_event_dropdown( false|int $competition_id = false ): void {
+        $output = null;
 		$return = new \stdClass();
 		if ( isset( $_POST['security'] ) ) {
 			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
@@ -3898,6 +3915,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param false|int $event_id event details.
 	 */
 	public function get_league_dropdown( false|int $event_id = false ): void {
+        $output = null;
 		$return = new \stdClass();
 		if ( isset( $_POST['security'] ) ) {
 			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
@@ -3949,6 +3967,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @return boolean
 	 */
 	private function contactLeagueTeams( int $league, string $season, string $email_message ): bool {
+        $message_sent  = false;
 		$league        = get_league( $league );
 		$teams         = $league->get_league_teams( array( 'season' => $season ) );
 		$email_message = str_replace( '\"', '"', $email_message );
@@ -4225,6 +4244,7 @@ class RacketManager_Admin extends RacketManager {
 	 */
 	private function handle_teams_in_same_division( array $events, string $season, object $validation, array $default_refs ): object {
 		global $wpdb;
+        $alt_ref   = null;
 		$event_ids = implode( ',', $events );
 		/* set refs for those teams in the same division so they play first */
 		$sql = $wpdb->prepare(
@@ -4601,10 +4621,16 @@ class RacketManager_Admin extends RacketManager {
 	 */
 	protected function set_championship_matches( object $league, int $season, array $input_rounds, string $action ): void {
 		global $racketmanager;
-		$valid           = true;
+		$team_array      = array();
+		$prev_round_name = null;
+		$home_team       = null;
+		$away_team       = null;
+        $matches         = array();
+        $valid           = true;
 		$event_season    = $league->event->seasons[ $season ];
 		$num_first_round = $league->championship->num_teams_first_round;
 		$rounds          = array();
+        $msg             = null;
 		foreach ( $input_rounds as $round ) {
 			if ( empty( $round['match_date'] ) ) {
 				/* translators: $s: $round number */

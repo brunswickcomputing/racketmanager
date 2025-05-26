@@ -53,9 +53,6 @@ ul.posttype-tabs, ul.outer-border {
     height: 25%;
     width: 75%;
 }
-#matchDays {
-    padding: 1em;
-}
 .captain {
   font-weight: bold;
 }
@@ -106,9 +103,6 @@ legend.form-check-label {
 	padding-left: 0.75rem;
 	padding-right: 2.25rem;
 }
-#club-location-picker {
-    height: 320px;
-}
 .check-column {
     vertical-align: middle;
 }
@@ -135,15 +129,6 @@ legend.form-check-label {
 .subsubsub {
     margin-bottom: 1.5em;
 }
-.league-blocks {
-    clear: both;
-}
-.league-blocks h2.header {
-    margin-bottom: 0;
-}
-.championship-blocks {
-    clear: both;
-}
 span.winner, .host {
   font-weight: 700;
 }
@@ -158,6 +143,7 @@ tbody.sortable tr:hover td {
     border-top: 1px solid #585858;
     border-bottom: 1px solid #585858;
 }
+/* seeded is used in a variable setting for the class */
 .seeded {
 	background-color: rgba(36, 126, 0, .15);
 }
@@ -238,24 +224,9 @@ p.match_info {
     margin: 0;
     padding: 0;
     }
-p.table_rows {
-    float: left;
-    padding: 0;
-    margin: 0 2em 0 0;
-    }
-
 p.info { margin: 0; padding: 0; float: right; }
 span.loading { margin-left: 5px; }
 span.loading img { vertical-align: middle; }
-
-.racketmanager_thickbox {
-    text-align: center;
-    }
-.racketmanager_thickbox select {
-    display: block;
-    margin: 0.5em auto;
-    }
-
 div.racketmanager_widget_control label {
     padding: 0 0.5em 0.5em 0.5em;
     float: left;
@@ -284,22 +255,6 @@ div.racketmanager_widget_control select {
     margin-left: 0.5em;
     vertical-align: middle;
 }
-.xtooltip-outline {
-	position: relative;
-	display: inline-block;
-}
-
-.xtooltip-text {
-	display: block;
-	top: -5px;
-	left: -10px;
-	position: absolute;
-	background: #000;
-	color: #FFF;
-	width: 200px;
-	padding: 5px;
-	text-align: center;
-}
 .player-name {
     width: 20%;
 }
@@ -324,7 +279,7 @@ div.racketmanager_widget_control select {
 .playerstats thead th.colspan {
     border: none;
 }
-
+/* matchday play* options are used as variables */
 .matchday.playup {
     background-color: greenyellow;
     color: white;
@@ -583,10 +538,6 @@ span.error {
     margin-left: 0;
     color: red;
 }
-.disabledButton {
-    opacity: .4;
-    pointer-events: none;
-}
 .final-match {
   float: left;
   min-height: 100px;
@@ -688,10 +639,6 @@ input.points {
 form .table-responsive {
     overflow-x: inherit;
 }
-.match__result-wrapper {
-	display: flex;
-}
-
 .match__result {
 	display: flex;
 	padding: 24px 0 0;
@@ -762,7 +709,7 @@ ul.match__header-title {
 a.score {
 	text-decoration: none;
 }
-
+/* UnplayedMatch used as generated code class */
 .fixture .unplayedMatch {
 	font-size: .8rem;
 }
@@ -852,18 +799,6 @@ a.score {
 .alert_rm ul {
 	margin-left: 2rem
 }
-
-.alert__title {
-	font-size: 1.6rem;
-	font-weight: 600;
-	margin-bottom: .5rem;
-	margin-top: 0
-}
-
-[class*=alert--] .alert__title {
-	color: #fff
-}
-
 .alert__body {
 	flex-grow: 1;
 	flex-shrink: 1;

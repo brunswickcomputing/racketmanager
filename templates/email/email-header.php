@@ -207,18 +207,18 @@ a[x-apple-data-detectors] {
 		<div style="font-size: 16px; color: #006800; background-color: #e6e6e6; max-width: 600px; margin: auto;">
 			<!-- header hero -->
 			<div style="font-size: 16px; color: #fff; background-color: #006800;">
-				<table align="center" style="border-collapse: collapse; display: block;" role="presentation" cellspacing="0" cellpadding="0">
+				<table align="center" style="border-collapse: collapse; display: block;" cellspacing="0" cellpadding="0">
 					<tbody>
 						<tr>
-							<td role="presentation" cellspacing="0" cellpadding="0" bgcolor="#006800">
-								<table style="width: 100%; border-collapse: collapse;" role="presentation" cellspacing="0" cellpadding="0">
+							<td cellspacing="0" cellpadding="0" bgcolor="#006800">
+								<table style="width: 100%; border-collapse: collapse;" cellspacing="0" cellpadding="0">
 									<tbody>
 										<tr>
-											<td style="font-weight: 400; min-width: 5px; width: 600px; height: 0;" role="presentation" cellspacing="0" cellpadding="0" align="left" valign="top">
-												<table width="100%" style="height: 100%;" role="presentation" cellspacing="0" cellpadding="0">
+											<td style="font-weight: 400; min-width: 5px; width: 600px; height: 0;" cellspacing="0" cellpadding="0" align="left" valign="top">
+												<table width="100%" style="height: 100%;" cellspacing="0" cellpadding="0">
 													<tbody>
 														<tr>
-															<td style="min-width: 5px; word-wrap: break-word; word-break: break-word; font-weight: 400;" role="presentation" cellspacing="0" cellpadding="0" align="left" valign="top">
+															<td style="min-width: 5px; word-wrap: break-word; word-break: break-word; font-weight: 400;" cellspacing="0" cellpadding="0" align="left" valign="top">
 																<div style="font-size: 32px; font-weight: 600; color: #fff; background-color: transparent; padding: 10px 0;">
 																	<div align="center" style="font-size: 32px; color: #fff; background-color: transparent;">
 																		<span class="title">

@@ -48,7 +48,7 @@ namespace Racketmanager;
 </form>
 </div>
 <!-- Add New Season -->
-<div clas="container">
+<div class="container">
 	<h2><?php esc_html_e( 'Add Season', 'racketmanager' ); ?></h2>
 	<form action="" method="post" class="form-control">
 		<?php wp_nonce_field( 'racketmanager_add-season' ); ?>

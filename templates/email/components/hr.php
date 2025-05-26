@@ -21,7 +21,7 @@ namespace Racketmanager;
 													<tbody>
 														<tr>
 															<td style="min-width: 5px; font-weight: 400;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
-																<hr style="Margin:26px 0;border:none;border-top:1px solid #707585;height:1px;margin:26px 0">
+																<hr style="border-top:1px solid #707585;height:1px;margin:26px 0">
 															</td>
 														</tr>
 													</tbody>

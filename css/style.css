@@ -1303,7 +1303,7 @@ h4.header {
 }
 .page-subhead .btn-favourite .fav-icon-svg,
 .module--dark .btn-favourite .fav-icon-svg,
-.media competition-head .btn-favourite .fav-icon-svg {
+.media .competition-head .btn-favourite .fav-icon-svg {
     stroke: #FFF;
 }
 .btn-favourite .fav-icon-svg-selected {
@@ -2008,9 +2008,9 @@ ul.list-winners {
 	padding-top: 1rem
 }
 
-.message-page .message-page__modal .message-page__removal-tips ul tc-modal .list--timeline-wizard>li,
-tc-modal .list--timeline-wizard>.list__item,
-tc-modal .message-page .message-page__modal .message-page__removal-tips ul .list--timeline-wizard>li {
+.message-page .message-page__modal .message-page__removal-tips ul .tc-modal .list--timeline-wizard>li,
+.tc-modal .list--timeline-wizard>.list__item,
+.tc-modal .message-page .message-page__modal .message-page__removal-tips ul .list--timeline-wizard>li {
 	padding-top: 0
 }
 
@@ -2570,7 +2570,7 @@ ul.module {
 	white-space: nowrap
 }
 
-.match__row-title tc-media .nav-link {
+.match__row-title .tc-media .nav-link {
 	display: inline-flex
 }
 
@@ -3688,7 +3688,7 @@ ul.list.list--naked {
 	position: relative;
 }
 
-module--dark .mail-media,
+.module--dark .mail-media,
 .module--dark .media,
 .module--dark .module-divider {
 	color: #fff;
@@ -4132,7 +4132,7 @@ dt.list__label::after {
 }
 
 #entry-acceptance .form-check-reverse label.form-check-label {
-	float: inline-start;
+	float: none;
 }
 
 .profile-icon {
@@ -5440,8 +5440,6 @@ h4.modal-title {
 }
 
 .block.has-error:before {
-    background-image: get-colored-image(url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' xml:space='preserve' viewBox='0 0 32 32'%3E%3Cpath fill='%23FFF' d='M15.957.265C7.287.265.265 7.287.265 15.957s7.022 15.692 15.692 15.692 15.692-7.029 15.692-15.692S24.62.265 15.957.265m-2.058 8.074c0-1.251 1.019-2.27 2.27-2.27s2.27 1.019 2.27 2.27v9.08a2.269 2.269 0 1 1-4.54 0zm2.27 13.588c1.251 0 2.27 1.019 2.27 2.27s-1.019 2.27-2.27 2.27-2.27-1.019-2.27-2.27a2.265 2.265 0 0 1 2.27-2.27' class='path1'/%3E%3C/svg%3E"),#bd3b2a);
-    background-repeat: no-repeat;
     content: "";
     height: 20px;
     position: absolute;

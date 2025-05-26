@@ -41,9 +41,9 @@ namespace Racketmanager;
 																		$title_level = 1;
 																	}
 																	$title_style = match ($title_level) {
-																		'1' => 'font-size: 24px; font-weight: 900;',
-																		'2' => 'font-size: 21px; font-weight: 700;',
-																		'3' => 'font-size: 18px; font-weight: 600;',
+																		1 => 'font-size: 24px; font-weight: 900;',
+																		2 => 'font-size: 21px; font-weight: 700;',
+																		3 => 'font-size: 18px; font-weight: 600;',
 																		default => 'font-size: 16px;',
 																	};
 																	?>

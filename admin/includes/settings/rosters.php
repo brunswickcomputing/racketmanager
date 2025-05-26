@@ -9,7 +9,7 @@ namespace Racketmanager;
 
 ?>
 <div class="form-control">
-	<div class="form-control mb-3">
+	<fieldset class="form-control mb-3">
 		<legend class="form-check-label"><?php esc_html_e( 'Age Limit Check', 'racketmanager' ); ?></legend>
 		<div class="form-check form-check-inline">
 			<input type="radio" class="form-check-input" name="clubPlayerAgeLimitCheck" id="clubPlayerAgeLimitCheckTrue" value="true"
@@ -31,8 +31,8 @@ namespace Racketmanager;
 			/>
 			<label class="form-check-label" for="clubPlayerAgeLimitCheckFalse"><?php esc_html_e( 'False', 'racketmanager' ); ?></label>
 		</div>
-	</div>
-	<div class="form-control mb-3">
+	</fieldset>
+	<fieldset class="form-control mb-3">
 		<legend class="form-check-label"><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></legend>
 		<div class="form-check form-check-inline">
 			<input class="form-check-input" type="radio" id="btmRequired" name="btmRequired" value="1"
@@ -54,7 +54,7 @@ namespace Racketmanager;
 			/>
 			<label for='btmOptional'><?php esc_html_e( 'Optional', 'racketmanager' ); ?></label>
 		</div>
-	</div>
+	</fieldset>
 	<div class="form-floating mb-3">
 		<select class="form-select" id="clubPlayerEntry" name="clubPlayerEntry">
 			<option value="secretary"

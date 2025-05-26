@@ -6,7 +6,7 @@ namespace Racketmanager;
 
 ?>
 <div class="form-control">
-	<div class="row gx-3 mb-3">
+	<fieldset class="row gx-3 mb-3">
 		<legend><?php esc_html_e( 'Invoice settings', 'racketmanager' ); ?></legend>
 		<div class="col-md-4 mb-3 mb-md-0">
 			<div class="form-floating">
@@ -29,8 +29,8 @@ namespace Racketmanager;
 				<label for='paymentTerms'><?php _e( 'Payment Terms (days)', 'racketmanager' ) ?></label>
 			</div>
 		</div>
-	</div>
-	<div class="row gx-3 mb-3">
+	</fieldset>
+	<fieldset class="row gx-3 mb-3">
 		<legend><?php esc_html_e( 'Bank Account', 'racketmanager' ); ?></legend>
 		<div class="col-md-4 mb-3 mb-md-0">
 			<div class="form-floating">
@@ -50,8 +50,8 @@ namespace Racketmanager;
 				<label for='accountNumber'><?php _e( 'Account Number', 'racketmanager' ) ?></label>
 			</div>
 		</div>
-	</div>
-	<div class="row gx-3 mb-3">
+	</fieldset>
+	<fieldset class="row gx-3 mb-3">
 		<legend><?php esc_html_e( 'Billing Contact', 'racketmanager' ); ?></legend>
 		<div class="col-md-4 mb-3 mb-md-0">
 			<div class="form-floating">
@@ -71,8 +71,8 @@ namespace Racketmanager;
 				<label for='billingAddress'><?php _e( 'Billing Address', 'racketmanager' ) ?></label>
 			</div>
 		</div>
-	</div>
-	<div class="row gx-3 mb-3">
+	</fieldset>
+	<fieldset class="row gx-3 mb-3">
 		<legend><?php esc_html_e( 'Stripe gateway', 'racketmanager' ); ?></legend>
 		<div class="row">
 			<div class="col-12">
@@ -82,7 +82,7 @@ namespace Racketmanager;
 				</div>
 			</div>
 		</div>
-		<div class="row mb-3">
+		<fieldset class="row mb-3">
 			<legend><?php esc_html_e( 'Test keys', 'racketmanager' ); ?></legend>
 			<div class="col-md-4 mb-3 mb-md-0">
 				<div class="form-floating">
@@ -102,8 +102,8 @@ namespace Racketmanager;
 					<label for='api_endpoint_key_test'><?php _e( 'API Endpoint secret key', 'racketmanager' ) ?></label>
 				</div>
 			</div>
-		</div>
-		<div class="row mb-3">
+		</fieldset>
+		<fieldset class="row mb-3">
 			<legend><?php esc_html_e( 'Live keys', 'racketmanager' ); ?></legend>
 			<div class="col-md-4 mb-3 mb-md-0">
 				<div class="form-floating">
@@ -123,6 +123,6 @@ namespace Racketmanager;
 					<label for='api_endpoint_key_live'><?php _e( 'API Endpoint secret key', 'racketmanager' ) ?></label>
 				</div>
 			</div>
-		</div>
-	</div>
+		</fieldset>
+	</fieldset>
 </div>

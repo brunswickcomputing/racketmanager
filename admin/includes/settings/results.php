@@ -114,7 +114,7 @@ namespace Racketmanager;
 							</div>
 						</div>
 					</div>
-					<div class="row gx-3 mb-3">
+					<fieldset class="row gx-3 mb-3">
 						<legend class=""><?php esc_html_e( 'Result notification', 'racketmanager' ); ?></legend>
 						<div class="col-md-3 mb-3 mb-md-0">
 							<div class="form-floating">
@@ -150,8 +150,8 @@ namespace Racketmanager;
 								<label for="<?php echo esc_html( $competition_type ); ?>[resultNotification]"><?php esc_html_e( 'Result Notification User', 'racketmanager' ); ?></label>
 							</div>
 						</div>
-					</div>
-					<div class="row gx-3 mb-3">
+					</fieldset>
+					<fieldset class="row gx-3 mb-3">
 						<legend class=""><?php esc_html_e( 'Result entry', 'racketmanager' ); ?></legend>
 						<div class="col-md-3 mb-3 mb-md-0">
 							<div class="form-floating">
@@ -171,8 +171,8 @@ namespace Racketmanager;
 								<label for='resultPenalty'><?php esc_html_e( 'Result penalty', 'racketmanager' ); ?></label>
 							</div>
 						</div>
-					</div>
-					<div class="row gx-3 mb-3">
+					</fieldset>
+					<fieldset class="row gx-3 mb-3">
 						<legend class=""><?php esc_html_e( 'Result confirmation', 'racketmanager' ); ?></legend>
 						<div class="col-md-3 mb-3 mb-md-0">
 							<div class="form-floating">
@@ -198,7 +198,7 @@ namespace Racketmanager;
 								<label class="form-check-label" for="<?php echo esc_html( $competition_type ); ?>-confirmationRequired"><?php esc_html_e( 'Confirmation required', 'racketmanager' ); ?></label>
 							</div>
 						</div>
-					</div>
+					</fieldset>
 				</div>
 			</div>
 			<?php

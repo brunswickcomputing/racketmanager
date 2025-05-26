@@ -572,98 +572,6 @@ div.tm-team-content div.team {
 .width-one-half {
 	width: 50%;
 }
-
-.form-checkboxes__item {
-	font-family: "GDS Transport", arial, sans-serif;
-		-webkit-font-smoothing: antialiased;
-		-moz-osx-font-smoothing: grayscale;
-		font-weight: 400;
-		font-size: 1rem;
-		line-height: 1.25;
-		display: block;
-		position: relative;
-		min-height: 40px;
-		margin-bottom: 10px;
-		padding-left: 40px;
-		clear: left
-}
-
-.form-checkboxes__input {
-	cursor: pointer;
-		position: absolute;
-		z-index: 1;
-		top: -2px;
-		left: -2px;
-		width: 44px;
-		height: 44px;
-		margin: 0;
-		opacity: 0;
-}
-
-.form-checkboxes__label {
-	display: inline-block;
-		margin-bottom: 0;
-		padding: 8px 15px 5px;
-		cursor: pointer;
-		-ms-touch-action: manipulation;
-		touch-action: manipulation
-}
-
-.form-checkboxes__label:before {
-	content: "";
-		-webkit-box-sizing: border-box;
-		box-sizing: border-box;
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 40px;
-		height: 40px;
-		border: 2px solid currentColor;
-		background: transparent
-}
-
-.form-checkboxes__label:after {
-	content: "";
-		-webkit-box-sizing: border-box;
-		box-sizing: border-box;
-		position: absolute;
-		top: 11px;
-		left: 9px;
-		width: 23px;
-		height: 12px;
-		-webkit-transform: rotate(-45deg);
-		-ms-transform: rotate(-45deg);
-		transform: rotate(-45deg);
-		border: solid;
-		border-width: 0 0 5px 5px;
-		border-top-color: transparent;
-		opacity: 0;
-		background: transparent
-}
-
-.form-checkboxes__input:focus+.form-checkboxes__label:before {
-	border-width: 4px;
-		-webkit-box-shadow: 0 0 0 3px #fd0;
-		box-shadow: 0 0 0 3px #fd0
-}
-
-.form-checkboxes__input:checked+.form-checkboxes__label:after {
-	opacity: 1
-}
-
-.form-checkboxes__input:disabled,
-.form-checkboxes__input:disabled+.form-checkboxes__label {
-	cursor: default
-}
-
-.form-checkboxes__input:disabled+.form-checkboxes__label {
-	opacity: .5
-}
-
-.form-label.form-checkboxes__label {
-	font-size: 1.5rem;
-}
-
 .form-label {
 	display: block;
 		font-size: .85em;
@@ -689,9 +597,6 @@ div.tm-team-content div.team {
 .form-check-input.switch:checked {
 	background-color: var(--e-global-color-global_color_1);
 		border-color: var(--e-global-color-global_color_1);
-}
-.form-check.form-checkboxes__item {
-	padding-left: 2.5em;
 }
 @media (min-width: 768px) {
 	.form-check.form-check-lg {

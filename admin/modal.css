@@ -81,10 +81,6 @@ div#matchHeader .matchday {
 div#matchHeader .matchTitle {
     text-align: center;
 }
-.widefat td.rtd.centered {
-    padding-left: 5px;
-    padding-right: 5px;
-}
 td input.points {
     padding: 3px;
     text-align: center;
@@ -114,9 +110,6 @@ td input.player {
 @media only screen and (max-width: 1770px) {
     .modal-content {
         width: 60%;
-    }
-    .playerselect {
-        width: 25%;
     }
 }
 

@@ -64,6 +64,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 			)
 		);
 	}
+
 	/**
 	 * Function to display Club Info Page
 	 *
@@ -71,7 +72,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 *
 	 * @param array $atts attributes.
 	 *
-	 * @return string - the content
+	 * @return false|string - the content
 	 */
 	public function show_club( array $atts ): false|string {
 		global $racketmanager;
@@ -426,6 +427,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 			'club'
 		);
 	}
+
 	/**
 	 * Function to display Player
 	 *
@@ -433,7 +435,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 *
 	 * @param array $atts shortcode attributes.
 	 *
-	 * @return string - the content
+	 * @return false|string - the content
 	 */
 	public function show_club_player( array $atts ): false|string {
 		global $racketmanager;

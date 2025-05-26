@@ -28,7 +28,7 @@ final class Racketmanager_Results_Report {
 	/**
 	 * Results report object stored in database as string
 	 *
-	 * @var string
+	 * @var string|false
 	 */
 	public string|false $result_object;
 	/**

@@ -16,7 +16,7 @@ final class Racketmanager_Tournament_Entry {
 	/**
 	 * Id
 	 *
-	 * @var int
+	 * @var int|false
 	 */
 	public int|false $id;
 	/**

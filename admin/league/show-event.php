@@ -7,6 +7,9 @@
 
 namespace Racketmanager;
 
+/** @var string $tab */
+/** @var object $event */
+/** @var string $season */
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){

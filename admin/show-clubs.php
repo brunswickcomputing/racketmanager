@@ -44,10 +44,10 @@ namespace Racketmanager;
 							<input type="checkbox" value="<?php echo esc_html( $club->id ); ?>" name="club[<?php echo esc_html( $club->id ); ?>]" />
 						</div>
 						<div class="d-none d-md-inline col-1 col-md-1 column-num"><?php echo esc_html( $club->id ); ?></div>
-						<div class="col-11 col-md-3 clubname"><a href="admin.php?page=racketmanager&amp;subpage=club&amp;club_id=<?php echo esc_html( $club->id ); ?> "><?php echo esc_html( $club->name ); ?></a></div>
+						<div class="col-11 col-md-3 clubname"><a href="/wp-admin/admin.php?page=racketmanager&amp;subpage=club&amp;club_id=<?php echo esc_html( $club->id ); ?> "><?php echo esc_html( $club->name ); ?></a></div>
 						<div class="d-none d-md-inline col-12 col-md-3"><?php echo esc_html( $club->match_secretary_name ); ?></div>
-						<div class="col-auto"><a href="admin.php?page=racketmanager-clubs&amp;view=players&amp;club_id=<?php echo esc_html( $club->id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Players', 'racketmanager' ); ?></a></div>
-						<div class="col-auto"><a href="admin.php?page=racketmanager-clubs&amp;view=teams&amp;club_id=<?php echo esc_html( $club->id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></a></div>
+						<div class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=players&amp;club_id=<?php echo esc_html( $club->id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Players', 'racketmanager' ); ?></a></div>
+						<div class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=teams&amp;club_id=<?php echo esc_html( $club->id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></a></div>
 					</div>
 				<?php } ?>
     		</div>
@@ -55,6 +55,6 @@ namespace Racketmanager;
 	</div>
 	<div class="mb-3">
 		<!-- Add New Club -->
-		<a href="admin.php?page=racketmanager&amp;subpage=club" class="btn btn-primary submit"><?php esc_html_e( 'Add Club', 'racketmanager' ); ?></a>
+		<a href="/wp-admin/admin.php?page=racketmanager&amp;subpage=club" class="btn btn-primary submit"><?php esc_html_e( 'Add Club', 'racketmanager' ); ?></a>
 	</div>
 </div>

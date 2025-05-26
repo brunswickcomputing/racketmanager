@@ -545,7 +545,8 @@ function the_match_day(): void {
 	/**
 	 * Get Match date
 	 *
-	 * @return string
+	 * @param string $format
+	 *
 	 * @category template-tags
 	 */
 	function get_match_date( $format = '' ): string {

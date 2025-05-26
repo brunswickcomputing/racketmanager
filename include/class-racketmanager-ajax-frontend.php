@@ -759,6 +759,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	/**
 	 * League entry request
 	 *
+	 * @throws \DateMalformedStringException
 	 * @see templates/leagueentry.php
 	 */
 	public function league_entry_request(): void {

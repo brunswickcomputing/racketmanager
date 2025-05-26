@@ -720,8 +720,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						$contactemail = $contact_emails[$event->id] ?? '';
 						$match_day    = $matchdays[$event->id] ?? '';
 						$matchtime    = $match_times[$event->id] ?? '';
-						$validator    = $validator->match_day( $match_day, $field_ref, $field_name );
-						$validator    = $validator->match_time( $matchtime, $field_ref, $field_name, $match_day, $start_times );
+						$validator    = $validator->match_day( $match_day, $field_ref );
+						$validator    = $validator->match_time( $matchtime, $field_ref, $match_day, $start_times );
 						$validator    = $validator->captain( $captain, $contactno, $contactemail, $field_ref, $field_name );
 
 						$event_entry             = new \stdClass();
@@ -875,8 +875,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						$league_id        = $team_event_league[ $event->id ][ $team_id ] ?? null;
 						$field_ref        = $event->id . '-' . $team_id;
 						$field_name       = $team_event_title;
-						$validator        = $validator->match_day( $match_day, $field_ref, $field_name, $match_day_restriction, $event_days );
-						$validator        = $validator->match_time( $match_time, $field_ref, $field_name, $match_day, $start_times );
+						$validator        = $validator->match_day( $match_day, $field_ref, $match_day_restriction, $event_days );
+						$validator        = $validator->match_time( $match_time, $field_ref, $match_day, $start_times );
 						$validator        = $validator->captain( $captain, $contactno, $contactemail, $field_ref, $field_name );
 						if ( $match_day_restriction && $weekend_allowed && ( '5' === $match_day || '6' === $match_day ) ) {
 							if ( empty( $weekend_matches[ $event->type ] ) ) {
@@ -897,7 +897,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 								$courts_needed[ $week ][ $match_day ] = array();
 							} elseif ( ! isset( $courts_needed[ $week ][ $match_day ][ $match_time ] ) ) {
 								foreach ( $courts_needed[ $week ][ $match_day ] as $schedule_time => $value ) {
-									$validator = $validator->match_overlap( $match_time, $schedule_time, $field_ref, $field_name );
+									$validator = $validator->match_overlap( $match_time, $schedule_time, $field_ref );
 								}
 							}
 							if ( isset( $courts_needed[ $week ][ $match_day ][ $match_time ] ) ) {

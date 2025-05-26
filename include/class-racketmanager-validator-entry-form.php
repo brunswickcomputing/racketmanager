@@ -190,12 +190,11 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	 *
 	 * @param int    $match_day match day.
 	 * @param string $field_ref field reference.
-	 * @param string $field_name field name.
 	 * @param boolean $match_day_restriction match day restriction indicator.
 	 * @param array $match_days_allowed array of match days allowed.
 	 * @return object $validation updated validation object.
 	 */
-	public function match_day( int $match_day, string $field_ref, string $field_name, bool $match_day_restriction = false, array $match_days_allowed = array() ): object {
+	public function match_day( int $match_day, string $field_ref, bool $match_day_restriction = false, array $match_days_allowed = array() ): object {
 		if ( empty( $match_day ) && 0 !== $match_day ) {
 			$this->error = true;
 			$this->error_field[$this->error_id] = 'matchday-' . $field_ref;
@@ -217,12 +216,11 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	 *
 	 * @param string $match_time match time.
 	 * @param string $field_ref field reference.
-	 * @param string $field_name field name.
 	 * @param string $match_day match day.
 	 * @param array $start_times min/max start times.
 	 * @return object $validation updated validation object.
 	 */
-	public function match_time( string $match_time, string $field_ref, string $field_name, string $match_day, array $start_times ): object {
+	public function match_time( string $match_time, string $field_ref, string $match_day, array $start_times ): object {
 		if ( empty( $match_time ) ) {
 			$this->error = true;
 			$this->error_field[$this->error_id] = 'matchtime-' . $field_ref;
@@ -258,11 +256,10 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	 * @param string $match_time match time.
 	 * @param string $schedule_time current scheduled match time.
 	 * @param string $field_ref field reference.
-	 * @param string $field_name field name.
 	 * @return object $validation updated validation object.
 	 * @throws \DateMalformedStringException
 	 */
-	public function match_overlap( string $match_time, string $schedule_time, string $field_ref, string $field_name ): object {
+	public function match_overlap( string $match_time, string $schedule_time, string $field_ref ): object {
 		$start_time = \DateTime::createFromFormat( '!H:i:s', $match_time );
 		$start_time->modify( '-2 hours' );
 		$end_time = \DateTime::createFromFormat( '!H:i:s', $match_time );

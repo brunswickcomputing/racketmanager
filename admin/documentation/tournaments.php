@@ -28,10 +28,10 @@
     </div>
     <div class="tab-pane fade" id="tournamentadd" role="tabpanel" aria-labelledby="tournamentadd-tab">
       <h3 class="header"><?php _e( 'Add Tournament', 'racketmanager' ) ?></h3>
-      <p>Clicking the "Add Tournament" button takes the user to a screen where the new tournament details can be entered. The required fields are <ul><li>Name</li><li>Type (Summer or Winter)</li><li>Season</li><li>Closing date for entries</li><li>Tournament secretary</li></ul></p>
-      <p>Typing in the tournament secretary name will automatically populate a list of user.</p<p>Clicking on the name will automatically populate the tournament secretary name along with any contact number and email address associated.</p>
-      <p>Entering or amending these details will update the associated player record when the <button class="btn btn-primary">Update</button> button is pressed.</p>
-      <p>Additionally, the following information may be entered<ul><li>Host Club</li><li>Finals Date</li><li>Start time</li><li>Number of courts</li></ul></p>
+      <div>Clicking the "Add Tournament" button takes the user to a screen where the new tournament details can be entered. The required fields are <ul><li>Name</li><li>Type (Summer or Winter)</li><li>Season</li><li>Closing date for entries</li><li>Tournament secretary</li></ul></div>
+      <div>Typing in the tournament secretary name will automatically populate a list of user.</div<p>Clicking on the name will automatically populate the tournament secretary name along with any contact number and email address associated.</p>
+      <div>Entering or amending these details will update the associated player record when the <button class="btn btn-primary">Update</button> button is pressed.</div>
+      <div>Additionally, the following information may be entered<ul><li>Host Club</li><li>Finals Date</li><li>Start time</li><li>Number of courts</li></ul></div>
     </div>
     <div class="tab-pane fade" id="tournamentcompetitions" role="tabpanel" aria-labelledby="tournamentcompetitions-tab">
       <h3 class="header"><?php _e( 'Tournament Competitions', 'racketmanager' ) ?></h3>

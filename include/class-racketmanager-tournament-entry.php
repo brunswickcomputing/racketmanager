@@ -54,7 +54,7 @@ final class Racketmanager_Tournament_Entry {
 	 *
 	 * @var object|null
 	 */
-	public Racketmanager_Club|null|object $club = null;
+	public null|object $club = null;
 
 	/**
 	 * Retrieve tournament entry instance

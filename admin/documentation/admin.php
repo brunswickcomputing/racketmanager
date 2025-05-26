@@ -32,10 +32,10 @@
     </div>
     <div class="tab-pane fade" id="players" role="tabpanel" aria-labelledby="players-tab">
       <h3 class="header"><?php _e( 'Players', 'racketmanager' ) ?></h3>
-      <p>The player page of Racketmanager allows a new player to be added to the system. Required fields are <ul><li>First name</li><li>Surname</li><li>Gender</li></ul></p>
-      <p>Optionally, the LTA Tennis Number can be provided.</p>
-      <p>Optionally, the a player's email address can be provided.</p>
-      <p>The page also lists all existing players registered.</p>
+      <div>The player page of Racketmanager allows a new player to be added to the system. Required fields are <ul><li>First name</li><li>Surname</li><li>Gender</li></ul></div>
+      <div>Optionally, the LTA Tennis Number can be provided.</div>
+      <div>Optionally, the player's email address can be provided.</div>
+      <div>The page also lists all existing players registered.</div>
     </div>
     <div class="tab-pane fade" id="seasons" role="tabpanel" aria-labelledby="seasons-tab">
       <h3 class="header"><?php _e( 'Seasons', 'racketmanager' ) ?></h3>

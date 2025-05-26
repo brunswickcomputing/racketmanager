@@ -50,8 +50,8 @@ namespace Racketmanager;
 						<div class="col-auto"><a href="admin.php?page=racketmanager-clubs&amp;view=teams&amp;club_id=<?php echo esc_html( $club->id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></a></div>
 					</div>
 				<?php } ?>
-			</form>
-		</div>
+    		</div>
+        </form>
 	</div>
 	<div class="mb-3">
 		<!-- Add New Club -->

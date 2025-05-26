@@ -1,5 +1,7 @@
 {
     "require": {
-        "stripe/stripe-php": "^16.4"
+        "stripe/stripe-php": "^16.4",
+      "ext-intl": "*",
+      "ext-mysqli": "*"
     }
 }

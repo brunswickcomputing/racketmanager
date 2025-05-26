@@ -831,20 +831,6 @@ class RacketManager_Admin extends RacketManager {
 		}
 	}
 	/**
-	 * Delete season(s) from event via admin
-	 */
-	private function delete_seasons_from_event(): void {
-		if ( ! current_user_can( 'del_seasons' ) ) {
-			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
-		} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'seasons-bulk' ) ) {
-				$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-		} elseif ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] && isset( $_POST['del_season'] ) && isset( $_POST['event_id'] ) ) {
-				$this->delete_event_season( $_POST['del_season'], intval( $_POST['event_id'] ) ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-
-		}
-	}
-
-	/**
 	 * Delete league(s) from event via admin
 	 */
 	protected function delete_leagues_from_event(): void {
@@ -981,28 +967,6 @@ class RacketManager_Admin extends RacketManager {
 		}
 	}
 	/**
-	 * Update competition settings via admin
-	 *
-	 * @param object $competition competition object.
-	 */
-	private function update_competition_settings( object $competition ): void {
-		$competition = get_competition( $competition );
-		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-competition-options' ) ) {
-			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-		} elseif ( ! current_user_can( 'edit_league_settings' ) ) {
-				$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
-		} elseif ( isset( $_POST['settings'] ) && isset( $_POST['competition_title'] ) ) {
-				$settings = $_POST['settings']; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			if ( sanitize_text_field( wp_unslash( $_POST['competition_title'] ) ) !== $competition->name ) {
-				$competition->set_name( sanitize_text_field( wp_unslash( $_POST['competition_title'] ) ) );
-			}
-			$competition->set_settings( $settings );
-			$competition->reload_settings();
-			$competition = get_competition( $competition );
-			$this->set_message( __( 'Settings saved', 'racketmanager' ) );
-		}
-	}
-	/**
 	 * Update event settings via admin
 	 *
 	 * @param object $event event object.
@@ -1022,138 +986,6 @@ class RacketManager_Admin extends RacketManager {
 				$event->reload_settings();
 				$event = get_event( $event );
 				$this->set_message( __( 'Settings saved', 'racketmanager' ) );
-		}
-	}
-	/**
-	 * Display league overview page
-	 */
-	private function displayLeaguePage(): void {
-		global $league, $championship, $competition, $racketmanager;
-
-		if ( ! current_user_can( 'view_leagues' ) ) {
-			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
-			$this->printMessage();
-		} else {
-			$league    = get_league();
-			$league_id = $league->id;
-			$league->set_season();
-			$season      = $league->get_season();
-			$league_mode = ( isset( $league->event->competition->mode ) ? ( $league->event->competition->mode ) : '' );
-			$tab         = 'standings';
-			$match_day   = false;
-			// phpcs:disable WordPress.Security.NonceVerification.Missing
-			if ( isset( $_POST['doAction'] ) ) {
-				$this->handle_league_teams_action( $league );
-			} elseif ( isset( $_POST['delMatches'] ) ) {
-				$this->delete_matches_from_league();
-				$tab = 'matches';
-			} elseif ( isset( $_POST['updateLeague'] ) && 'team' === $_POST['updateLeague'] ) {
-				$this->league_manage_team( $league );
-				if ( $league->is_championship ) {
-					$tab = 'preliminary';
-				}
-			} elseif ( isset( $_POST['updateLeague'] ) && 'teamPlayer' === $_POST['updateLeague'] ) {
-				$this->add_player_team_to_league( $league );
-				if ( $league->is_championship ) {
-					$tab = 'preliminary';
-				}
-			} elseif ( isset( $_POST['updateLeague'] ) && 'match' === $_POST['updateLeague'] ) {
-				$this->manage_matches_in_league( $league );
-			} elseif ( isset( $_POST['updateLeague'] ) && 'results' === $_POST['updateLeague'] ) {
-				$this->update_results_in_league();
-				$tab = 'matches';
-			} elseif ( isset( $_POST['updateLeague'] ) && 'teams_manual' === $_POST['updateLeague'] ) {
-				$this->league_manual_rank( $league );
-			} elseif ( isset( $_POST['action'] ) && 'addTeamsToLeague' === $_POST['action'] ) {
-				$this->league_add_teams( $league );
-				if ( $league->is_championship ) {
-					$tab = 'preliminary';
-				}
-			} elseif ( isset( $_POST['contactTeam'] ) ) {
-				$this->league_contact_teams();
-				$tab = 'standings';
-			} elseif ( isset( $_POST['saveRanking'] ) ) {
-				$this->league_manual_rank_teams( $league );
-				$tab = 'standings';
-			} elseif ( isset( $_POST['randomRanking'] ) ) {
-				$this->league_random_rank_teams( $league );
-				$tab = 'standings';
-			} elseif ( isset( $_POST['ratingPointsRanking'] ) ) {
-				$this->league_rating_points_rank_teams( $league );
-				$tab = 'standings';
-			}
- 			$racketmanager->printMessage();
-			// phpcs:enable WordPress.Security.NonceVerification.Missing
-
-			// check if league is a cup championship.
-			$cup = 'championship' === $league_mode;
-			// phpcs:disable WordPress.Security.NonceVerification.Recommended
-			$group     = isset( $_GET['group'] ) ? sanitize_text_field( wp_unslash( $_GET['group'] ) ) : '';
-			$team_id   = isset( $_GET['team_id'] ) ? intval( $_GET['team_id'] ) : false;
-			$match_day = false;
-			if ( isset( $_GET['match_day'] ) ) {
-				if ( -1 !== $_GET['match_day'] ) {
-					$match_day = intval( $_GET['match_day'] );
-					$league->set_match_day( $match_day );
-				}
-				$tab = 'matches';
-			} elseif ( 'current_match_day' === $league->match_display ) {
-					$league->set_match_day( 'current' );
-			} elseif ( 'all' === $league->match_display ) {
-				$league->set_match_day( -1 );
-			}
-			// phpcs:enable WordPress.Security.NonceVerification.Recommended
-			$options    = $this->options;
-			$match_args = array(
-				'final' => '',
-				'cache' => false,
-			);
-			if ( $season ) {
-				$match_args['season'] = $season;
-			}
-			if ( $group ) {
-				$match_args['group'] = $group;
-			}
-			if ( $team_id ) {
-				$match_args['team_id'] = $team_id;
-			}
-			if ( intval( $league->num_matches_per_page ) > 0 ) {
-				$match_args['limit'] = intval( $league->num_matches_per_page );
-			}
-			if ( empty( $league->event->seasons ) ) {
-				$this->set_message( __( 'You need to add at least one season for the competition', 'racketmanager' ), true );
-				$this->printMessage();
-			}
-			$teams = $league->get_league_teams(
-				array(
-					'season' => $season,
-					'cache'  => false,
-				)
-			);
-			if ( 'championship' !== $league_mode ) {
-				$match_args['reset_query_args'] = true;
-				$matches                        = $league->get_matches( $match_args );
-				$league->set_num_matches();
-			}
-			if ( isset( $_GET['match_paged'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$tab = 'matches';
-			}
-			if ( isset( $_GET['standingstable'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$get       = sanitize_text_field( wp_unslash( $_GET['standingstable'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$match_day = false;
-				$mode      = 'all';
-				if ( preg_match( '/match_day-\d/', $get, $hits ) ) {
-					$res       = explode( '-', $hits[0] );
-					$match_day = $res[1];
-				} elseif ( in_array( $get, array( 'home', 'away' ), true ) ) {
-					$mode = htmlspecialchars( $get );
-				}
-				$teams = $league->get_standings( $teams, $match_day, $mode );
-			}
-			if ( isset( $_GET['match_day'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$tab = 'matches';
-			}
-			include_once RACKETMANAGER_PATH . '/admin/show-league.php';
 		}
 	}
 	/**
@@ -1830,23 +1662,6 @@ class RacketManager_Admin extends RacketManager {
 		}
 	}
 
-	/**
-	 * Display cups page
-	 */
-	private function displayCupsPage(): void {
-		if ( ! current_user_can( 'edit_leagues' ) ) {
-			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
-			$this->printMessage();
-		} else {
-			$competition_type  = 'cup';
-			$type              = '';
-			$season            = '';
-			$standalone        = true;
-			$competition_query = array( 'type' => $competition_type );
-			$page_title        = ucfirst( $competition_type ) . ' ' . __( 'Competitions', 'racketmanager' );
-			include_once RACKETMANAGER_PATH . '/admin/show-competitions.php';
-		}
-	}
 	/**
 	 * Display clubs page
 	 */
@@ -3220,48 +3035,6 @@ class RacketManager_Admin extends RacketManager {
 			}
 		}
 	}
-
-	/**
-	 * Delete season of competition
-	 *
-	 * @param array $seasons seasons.
-	 * @param int $competition_id competition id.
-	 *
-	 * @return boolean
-	 */
-	private function delete_competition_season( array $seasons, int $competition_id ): bool {
-		global $wpdb, $competition;
-
-		$competition = get_competition( $competition_id );
-
-		foreach ( $seasons as $season ) {
-			foreach ( $competition->get_events() as $event ) {
-				foreach ( $event->get_leagues() as $league ) {
-					$league_id = $league->id;
-					$league    = get_league( $league->id );
-					// remove tables.
-					$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-						$wpdb->prepare(
-							"DELETE FROM {$wpdb->racketmanager_table} WHERE `league_id` = %d AND `season` = %s",
-							$league_id,
-							$season
-						)
-					);
-					// remove matches and rubbers.
-					$matches = $league->get_matches( array( 'season' => $season ) );
-					foreach ( $matches as $match ) {
-						$match = get_match( $match->id );
-						$match->delete();
-					}
-				}
-			}
-			unset( $competition->seasons[ $season ] );
-		}
-		$this->save_competition_seasons( $competition->seasons, $competition->id );
-
-		return true;
-	}
-
 	/**
 	 * Save seasons array to database
 	 *

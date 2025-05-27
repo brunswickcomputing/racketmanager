@@ -536,8 +536,6 @@ class RacketManager_Admin extends RacketManager {
 				} elseif ( 'event' === $view ) {
 					$racketmanager_admin_event = new RacketManager_Admin_Event();
 					$racketmanager_admin_event->display_config_page();
-				} elseif ( 'teams' === $view ) {
-					$racketmanager_admin_tournament->display_teams_list();
 				} elseif ( 'team' === $view ) {
 					$racketmanager_admin_tournament->display_team_page();
 				} else {
@@ -690,8 +688,7 @@ class RacketManager_Admin extends RacketManager {
 			} elseif ( isset( $_POST['doCompDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
 				if ( current_user_can( 'del_leagues' ) ) {
 					check_admin_referer( 'competitions-bulk' );
-					$messages      = array();
-					$message_error = false;
+					$messages = array();
 					if ( isset( $_POST['competition'] ) ) {
 						// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 						foreach ( $_POST['competition'] as $competition_id ) {
@@ -701,7 +698,7 @@ class RacketManager_Admin extends RacketManager {
 							$messages[] = $competition->name . ' ' . __( 'deleted', 'racketmanager' );
 						}
 						$message = implode( '<br>', $messages );
-						$this->set_message( $message, $message_error );
+						$this->set_message( $message );
 					} else {
 						$this->set_message( __( 'No deletions flagged', 'racketmanager' ), true );
 					}
@@ -807,7 +804,7 @@ class RacketManager_Admin extends RacketManager {
 			$racketmanager->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 		} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'seasons-bulk' ) ) {
 			$racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-		} elseif ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] && isset( $_POST['del_season'] ) && isset( $competition ) ) {
+		} elseif ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] && isset( $_POST['del_season'] ) ) {
 			$msg = array();
 			foreach ( $_POST['del_season'] as $season ) {  //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 				$update          = $competition->delete_season( $season );
@@ -839,8 +836,7 @@ class RacketManager_Admin extends RacketManager {
 		} elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'leagues-bulk' ) ) {
 				$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} else {
-			$messages      = array();
-			$message_error = false;
+			$messages = array();
 			if ( isset( $_POST['league'] ) ) {
 				foreach ( $_POST['league'] as $league_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 					$league = get_league( $league_id );
@@ -848,7 +844,7 @@ class RacketManager_Admin extends RacketManager {
 					$messages[] = $league->title . ' ' . __( 'deleted', 'racketmanager' );
 				}
 				$message = implode( '<br>', $messages );
-				$this->set_message( $message, $message_error );
+				$this->set_message( $message );
 			}
 		}
 	}
@@ -1130,14 +1126,13 @@ class RacketManager_Admin extends RacketManager {
 				$league        = get_league( $league );
 				$season        = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
 				$messages      = array();
-				$message_error = false;
 				if ( isset( $_POST['team'] ) ) {
 					foreach ( $_POST['team'] as $team_id ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 						$league->delete_team( intval( $team_id ), $season );
 						$messages[] = $team_id . ' ' . __( 'deleted', 'racketmanager' );
 					}
 					$message = implode( '<br>', $messages );
-					$this->set_message( $message, $message_error );
+					$this->set_message( $message );
 				}
 			} else {
 				$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
@@ -1157,7 +1152,6 @@ class RacketManager_Admin extends RacketManager {
 				$league        = get_league( $league );
 				$season        = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
 				$messages      = array();
-				$message_error = false;
 				if ( isset( $_POST['team'] ) ) {
 					foreach ( $_POST['team'] as $team_id ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 						$team = get_team( $team_id );
@@ -1165,7 +1159,7 @@ class RacketManager_Admin extends RacketManager {
 						$messages[] = $team->title . ' ' . __( 'withdrawn', 'racketmanager' );
 					}
 					$message = implode( '<br>', $messages );
-					$this->set_message( $message, $message_error );
+					$this->set_message( $message );
 				}
 			} else {
 				$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
@@ -1272,8 +1266,7 @@ class RacketManager_Admin extends RacketManager {
 				$begin_hour    = isset( $_POST['begin_hour'][ $i ] ) ? intval( $_POST['begin_hour'][ $i ] ) : '00';
 				$begin_minutes = isset( $_POST['begin_minutes'][ $i ] ) ? intval( $_POST['begin_minutes'][ $i ] ) : '00';
 				if ( isset( $_POST['myDatePicker'][ $i ] ) ) {
-					$index = ( isset( $_POST['myDatePicker'][ $i ] ) ) ? $i : 0;
-					$date  = isset( $_POST['myDatePicker'][ $index ] ) ? sanitize_text_field( wp_unslash( $_POST['myDatePicker'][ $index ] ) ) : null;
+					$date  = sanitize_text_field( wp_unslash( $_POST['myDatePicker'][ $i ] ) );
 					$date  = $date . ' ' . $begin_hour . ':' . $begin_minutes . ':00';
 				} else {
 					$index = ( isset( $_POST['year'][ $i ] ) && isset( $_POST['month'][ $i ] ) && isset( $_POST['day'][ $i ] ) ) ? $i : 0;
@@ -1289,7 +1282,7 @@ class RacketManager_Admin extends RacketManager {
 					if ( is_array( $_POST['match_day'] ) ) {
 						$match->match_day = isset( $_POST['match_day'][ $i ] ) ? intval( $_POST['match_day'][ $i ] ) : null;
 					} elseif ( ! empty( $_POST['match_day'] ) ) {
-						$match->match_day = isset( $_POST['match_day'] ) ? intval( $_POST['match_day'] ) : null;
+						$match->match_day = intval( $_POST['match_day'] );
 					}
 				}
 				$match->host        = isset( $_POST['host'][ $i ] ) ? sanitize_text_field( wp_unslash( $_POST['host'][ $i ] ) ) : null;
@@ -1569,7 +1562,6 @@ class RacketManager_Admin extends RacketManager {
 							$matches              = $primary_league->get_matches( $match_array );
 							if ( $matches ) {
 								$first_match = $matches[0];
-								$last_match  = null;
 								if ( '-1' !== $first_match->home_team && '-1' !== $first_match->away_team ) { // first match not a bye.
 									unset( $teams[ $t ] );
 								} else {
@@ -2060,7 +2052,6 @@ class RacketManager_Admin extends RacketManager {
 				} else {
 					check_admin_referer( 'teams-bulk' );
 					$messages      = array();
-					$message_error = false;
 					if ( isset( $_POST['team'] ) ) {
 						foreach ( $_POST['team'] as $team_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 							$team = get_team( $team_id );
@@ -2068,7 +2059,7 @@ class RacketManager_Admin extends RacketManager {
 							$messages[] = $team->title . ' ' . __( 'deleted', 'racketmanager' );
 						}
 						$message = implode( '<br>', $messages );
-						$this->set_message( $message, $message_error );
+						$this->set_message( $message );
 					}
 				}
 			}
@@ -2177,7 +2168,7 @@ class RacketManager_Admin extends RacketManager {
 			$season = $league->current_season['name'];
 
 			// select first group if none is selected and league is cup championship.
-			if ( $cup && empty( $group ) && ! $is_finals ) {
+			if ( $cup && empty( $group ) ) {
 				$groups = ($league->groups ?? '');
 				if ( ! is_array( $groups ) ) {
 					$groups = explode( ';', $groups );
@@ -2231,8 +2222,6 @@ class RacketManager_Admin extends RacketManager {
 				$max_matches = count( $matches );
 			} elseif ( isset( $_GET['final'] ) ) {
 				$is_finals = true;
-				$bulk      = false;
-				$order     = false;
 				$final_key  = $league->championship->get_current_final_key();
 				$mode      = isset( $_GET['mode'] ) ? sanitize_text_field( wp_unslash( $_GET['mode'] ) ) : null;
 				$edit      = 'edit' === $mode;
@@ -2291,21 +2280,18 @@ class RacketManager_Admin extends RacketManager {
 						$group
 					);
 				}
-				if ( ! isset( $_GET['final'] ) ) {
-					$submit_title = __( 'Add Matches', 'racketmanager' );
-					if ( $cup ) {
-						/* translators: %s: group name */
-						$form_title  = sprintf( __( 'Add Matches - Group %s', 'racketmanager' ), $group );
-						$max_matches = ceil( ( $league->num_teams / 2 ) * $season['num_match_days'] ); // set number of matches to add to half the number of teams per match day.
-					} else {
-						$form_title  = $submit_title;
-						$max_matches = ceil( $league->num_teams_total ); // set number of matches to add to half the number of teams per match day.
-					}
-					$match_day        = 1;
-					$matches[]        = new \stdClass();
-					$matches[0]->year = ( isset( $_GET['season'] ) && is_numeric( $_GET['season'] ) ) ? intval( $_GET['season'] ) : gmdate( 'Y' );
-				}
-
+                $submit_title = __( 'Add Matches', 'racketmanager' );
+                if ( $cup ) {
+                    /* translators: %s: group name */
+                    $form_title  = sprintf( __( 'Add Matches - Group %s', 'racketmanager' ), $group );
+                    $max_matches = ceil( ( $league->num_teams / 2 ) * $season['num_match_days'] ); // set number of matches to add to half the number of teams per match day.
+                } else {
+                    $form_title  = $submit_title;
+                    $max_matches = ceil( $league->num_teams_total ); // set number of matches to add to half the number of teams per match day.
+                }
+                $match_day        = 1;
+                $matches[]        = new \stdClass();
+                $matches[0]->year = ( isset( $_GET['season'] ) && is_numeric( $_GET['season'] ) ) ? intval( $_GET['season'] ) : gmdate( 'Y' );
 				for ( $i = 0; $i < $max_matches; $i++ ) {
 					$matches[]              = new \stdClass();
 					$matches[ $i ]->hour    = $league->event->competition->default_match_start_time['hour'];
@@ -2410,7 +2396,6 @@ class RacketManager_Admin extends RacketManager {
 				if ( isset( $_POST['seasonName'] ) ) {
 					$this->add_season( sanitize_text_field( wp_unslash( $_POST['seasonName'] ) ) );
 				}
-				$tab = 'seasons';
 			} elseif ( isset( $_POST['doSeasonDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
 				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'seasons-bulk' ) ) {
 					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
@@ -2422,7 +2407,6 @@ class RacketManager_Admin extends RacketManager {
 						$this->delete_season( intval( $season_id ) );
 					}
 				}
-				$tab = 'seasons';
 			} elseif ( isset( $_POST['doAddCompetitionsToSeason'] ) && isset( $_POST['action'] ) && 'addCompetitionsToSeason' === $_POST['action'] ) {
 				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-seasons-competitions-bulk' ) ) {
 					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
@@ -2433,7 +2417,6 @@ class RacketManager_Admin extends RacketManager {
 						}
 					}
 				}
-				$tab = 'seasons';
 			}
 			$this->printMessage();
 
@@ -2558,10 +2541,8 @@ class RacketManager_Admin extends RacketManager {
 	 * @return array
 	 */
 	public function pluginActions( array $links ): array {
-		if ( is_array( $links ) ) {
-			$links['settings']      = '<a href="/wp-admin/admin.php?page=racketmanager-settings">' . __( 'Settings', 'racketmanager' ) . '</a>';
-			$links['documentation'] = '<a href="/wp-admin/admin.php?page=racketmanager-doc">' . __( 'Documentation', 'racketmanager' ) . '</a>';
-		}
+        $links['settings']      = '<a href="/wp-admin/admin.php?page=racketmanager-settings">' . __( 'Settings', 'racketmanager' ) . '</a>';
+        $links['documentation'] = '<a href="/wp-admin/admin.php?page=racketmanager-doc">' . __( 'Documentation', 'racketmanager' ) . '</a>';
 		return $links;
 	}
 
@@ -3505,10 +3486,8 @@ class RacketManager_Admin extends RacketManager {
 					$new_player = $player_valid[1];
 					$player     = get_player( $new_player->user_login, 'login' );  // get player by login.
 					if ( ! $player ) {
-						$player = new Racketmanager_Player( $new_player );
-						if ( $player ) {
-							++$x;
-						}
+						new Racketmanager_Player( $new_player );
+						++$x;
 					}
 				} else {
 					$error_messages = $player_valid[2];
@@ -3977,8 +3956,6 @@ class RacketManager_Admin extends RacketManager {
 						}
 					}
 					if ( $refs ) {
-						$i              = 0;
-						$ref_free       = false;
 						$alt_found      = false;
 						$ref_option     = array( 2, 1, 3 );
 						$alt_ref_option = array( 5, 6, 4 );

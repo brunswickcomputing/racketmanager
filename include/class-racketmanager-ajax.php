@@ -983,7 +983,7 @@ class Racketmanager_Ajax extends RacketManager {
 							$home_score = $set_player_1;
 							$away_score = $set_player_2;
 						}
-					} elseif ( ( $set_player_1 < $set_player_2 && ( empty( $set_status ) || ( 'abandoned' === $set_status && $set_completed ) ) ) || ( 'retired_player1' ) === $set_status || ( 'invalid_player1' ) === $set_status || ( 'invalid_players' ) === $set_status ) {
+					} elseif ( ( $set_player_1 < $set_player_2 && ( empty( $set_status ) || ( 'abandoned' === $set_status && $set_completed ) ) ) || ( 'retired_player1' ) === $set_status || ( 'invalid_player1' ) === $set_status ) {
 						if ( empty( $points_format ) ) {
 							++$points['away']['sets'];
 							++$stats['sets']['away'];
@@ -1107,8 +1107,6 @@ class Racketmanager_Ajax extends RacketManager {
 		$return         = array();
 		$completed_set  = false;
 		$set_type       = $set_info->set_type;
-		$set['player1'] = strtoupper( $set['player1'] );
-		$set['player2'] = strtoupper( $set['player2'] );
 		if ( 'walkover_player1' === $match_status || 'walkover_player2' === $match_status ) {
 			if ( 'null' === $set_type ) {
 				$set['player1'] = '';
@@ -1124,7 +1122,8 @@ class Racketmanager_Ajax extends RacketManager {
 				$set['player2']  = '';
 				$set['tiebreak'] = '';
 			}
-		} elseif ( null !== $set['player1'] && null !== $set['player2'] ) {
+		}
+        if ( ! is_null( $set['player1'] ) || ! is_null( $set['player2'] ) ) {
 			if ( 'null' === $set_type ) {
 				if ( '' !== $set['player1'] ) {
 					$err_msg[]   = __( 'Set score should be empty', 'racketmanager' );

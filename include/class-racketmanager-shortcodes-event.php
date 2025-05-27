@@ -59,7 +59,7 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 			}
 		}
 		if ( ! $tab ) {
-			if ( isset( $_GET['tab'] ) && ! empty( $_GET['tab'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( ! empty( $_GET['tab'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$tab = wp_strip_all_tags( wp_unslash( $_GET['tab'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			} elseif ( isset( $wp->query_vars['tab'] ) ) {
 				$tab = get_query_var( 'tab' );
@@ -72,7 +72,7 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 		}
 		if ( ! $season ) {
 			// phpcs:disable WordPress.Security.NonceVerification.Recommended
-			if ( isset( $_GET['season'] ) && ! empty( $_GET['season'] ) ) {
+			if ( ! empty( $_GET['season'] ) ) {
 				$season = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['season'] ) ) );
 			} elseif ( isset( $_GET['season'] ) ) {
 				$season = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['season'] ) ) );

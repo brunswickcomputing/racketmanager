@@ -2451,7 +2451,6 @@ class RacketManager_Admin extends RacketManager {
 			if ( isset( $_POST['import'] ) ) {
 				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_import-datasets' ) ) {
 					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-					$this->printMessage();
 				} else {
 					$league_id = isset( $_POST['league_id'] ) ? intval( $_POST['league_id'] ) : null;
 					$season    = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
@@ -2460,8 +2459,8 @@ class RacketManager_Admin extends RacketManager {
 					$delimiter = $_POST['delimiter'] ?? null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					$mode      = isset( $_POST['mode'] ) ? sanitize_text_field( wp_unslash( $_POST['mode'] ) ) : null;
 					$this->import( $league_id, $season, $files, $delimiter, $mode, $club );
-					$this->printMessage();
 				}
+				$this->printMessage();
 			}
 			include_once RACKETMANAGER_PATH . '/admin/tools/import.php';
 		}

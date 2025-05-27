@@ -1181,11 +1181,6 @@ function racketmanager_upgrade(): void {
 						unset( $season['homeAway'] );
 					}
 				}
-				if ( ! isset( $season['match_dates'] ) ) {
-					if ( isset( $season['match_dates'] ) ) {
-						unset( $season['match_dates'] );
-					}
-				}
 				$seasons[ $key ] = $season;
 			}
 			$competition->update_seasons( $seasons );
@@ -1229,11 +1224,6 @@ function racketmanager_upgrade(): void {
 					if ( isset( $season['homeAway'] ) ) {
 						$season['home_away'] = $season['homeAway'];
 						unset( $season['homeAway'] );
-					}
-				}
-				if ( ! isset( $season['match_dates'] ) ) {
-					if ( isset( $season['match_dates'] ) ) {
-						unset( $season['match_dates'] );
 					}
 				}
 				$seasons[ $key ] = $season;

@@ -3057,44 +3057,6 @@ class RacketManager_Admin extends RacketManager {
 		return true;
 	}
 	/**
-	 * Delete season of event
-	 *
-	 * @param array $seasons seasons.
-	 * @param int $event_id event id.
-	 *
-	 * @return boolean
-	 */
-	private function delete_event_season( array $seasons, int $event_id ): bool {
-		global $wpdb, $event;
-
-		$event = get_event( $event_id );
-
-		foreach ( $seasons as $season ) {
-			foreach ( $event->get_leagues() as $league ) {
-				$league_id = $league->id;
-				$league    = get_league( $league->id );
-				// remove tables.
-				$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-					$wpdb->prepare(
-						"DELETE FROM {$wpdb->racketmanager_table} WHERE `league_id` = %d AND `season` = %s",
-						$league_id,
-						$season
-					)
-				);
-				// remove matches and rubbers.
-				$matches = $league->get_matches( array( 'season' => $season ) );
-				foreach ( $matches as $match ) {
-					$match = get_match( $match->id );
-					$match->delete();
-				}
-			}
-			unset( $event->seasons[ $season ] );
-		}
-		$this->save_event_seasons( $event->seasons, $event->id );
-
-		return true;
-	}
-	/**
 	 * Save seasons array to database
 	 *
 	 * @param array $seasons seasons.
@@ -3765,69 +3727,6 @@ class RacketManager_Admin extends RacketManager {
 		if ( $message_sent ) {
 			wp_mail( $email_to, $email_subject, $email_message, $headers );
 			$this->set_message( __( 'Email sent to captains', 'racketmanager' ) );
-		}
-		return true;
-	}
-	/**
-	 * Contact Competition Teams
-	 *
-	 * @param int $competition competition.
-	 * @param string $season season.
-	 * @param string $email_message message.
-	 *
-	 * @return boolean
-	 */
-	private function contact_competition_teams( int $competition, string $season, string $email_message ): bool {
-		$competition = get_competition( $competition );
-		if ( $competition ) {
-			$email_message = str_replace( '\"', '"', $email_message );
-			$headers       = array();
-			$email_from    = $this->get_confirmation_email( $competition->type );
-			$headers[]     = 'From: ' . ucfirst( $competition->type ) . ' Secretary <' . $email_from . '>';
-			$headers[]     = 'cc: ' . ucfirst( $competition->type ) . ' Secretary <' . $email_from . '>';
-			$email_subject = $this->site_name . ' - ' . $competition->name . ' ' . $season . ' - Important Message';
-			$email_to      = array();
-			if ( $competition->is_player_entry ) {
-				if ( $competition->is_tournament ) {
-					$tournament_key = $competition->id . ',' . $competition->current_season['name'];
-					$tournament     = get_tournament( $tournament_key, 'shortcode' );
-					if ( $tournament ) {
-						$players = $tournament->get_players();
-						foreach ( $players as $player_name ) {
-							$player = get_player( $player_name, 'name' );
-							if ( $player && ! empty( $player->email ) ) {
-								$headers[] = 'bcc: ' . $player->display_name . ' <' . $player->email . '>';
-							}
-						}
-					}
-				}
-			} else {
-				$teams  = array();
-				$events = $competition->get_events();
-				foreach ( $events as $event ) {
-					$event = get_event( $event );
-					if ( $event ) {
-						$event_teams = $event->get_teams( array( 'season' => $event->current_season['name'] ) );
-						if ( $event_teams ) {
-							$teams = array_merge( $teams, $event_teams );
-						}
-					}
-				}
-				foreach ( $teams as $team ) {
-					$league = get_league( $team->league_id );
-					if ( $league ) {
-						$team_dtls = $league->get_team_dtls( $team->team_id );
-						if ( ! empty( $team_dtls->contactemail ) ) {
-							$headers[] = 'bcc: ' . ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
-						}
-						if ( ! empty( $team_dtls->club->match_secretary_email ) ) {
-							$headers[] = 'bcc: ' . ucwords( $team_dtls->club->match_secretary_name ) . ' <' . $team_dtls->club->match_secretary_email . '>';
-						}
-					}
-				}
-			}
-			wp_mail( $email_to, $email_subject, $email_message, $headers );
-			$this->set_message( __( 'Message sent', 'racketmanager' ) );
 		}
 		return true;
 	}

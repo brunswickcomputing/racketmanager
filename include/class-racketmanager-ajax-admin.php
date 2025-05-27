@@ -248,7 +248,6 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 	 * @see templates/email/competition-entry-open.php
 	 */
 	public function notify_competition_entries_open(): void {
-		global $racketmanager;
 		$return = $this->check_security_token();
 		if ( ! isset( $return->error ) ) {
 			$competition_id = isset( $_POST['competitionId'] ) ? intval( $_POST['competitionId'] ) : null;

@@ -809,7 +809,7 @@ class Racketmanager_Competition {
 	 * @param array $settings settings array.
 	 */
 	public function set_settings( array $settings ): void {
-		global $wpdb, $racketmanager;
+		global $wpdb;
 		foreach ( Racketmanager_Util::get_standings_display_options() as $key => $value ) {
 			$settings['standings'][ $key ] = isset( $settings['standings'][ $key ] ) ? 1 : 0;
 		}

@@ -1094,8 +1094,6 @@ class RacketManager_Shortcodes {
 	 * @return string the content
 	 */
 	public function load_template( string $template, array $vars = array(), false|string $template_type = false ): string {
-		global $league, $team, $match, $racketmanager;
-
 		if ( $template_type ) {
 			$template_dir = match ($template_type) {
 				'competition' => 'templates/competition',

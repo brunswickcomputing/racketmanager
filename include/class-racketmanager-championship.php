@@ -793,7 +793,7 @@ final class Racketmanager_Championship {
 	 * Display administration panel
 	 */
 	public function display_admin_page(): void {
-		global $racketmanager, $league, $season, $tab;
+		global $racketmanager, $league;
 
 		if ( ! is_admin() || ! current_user_can( 'view_leagues' ) ) {
 			$racketmanager->set_message( __( 'You do not have sufficient permissions to access this page.', 'racketmanager' ), true );

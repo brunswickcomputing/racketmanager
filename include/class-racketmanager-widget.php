@@ -34,6 +34,8 @@ class RacketManager_Widget extends \WP_Widget {
 	 * @param array $instance instance.
 	 */
 	public function widget( $args, $instance ): void {
+        debug_to_console( $args );
+        debug_to_console( $instance );
 		global $racketmanager;
 		$cache = array();
 		if ( ! $this->is_preview() ) {
@@ -54,25 +56,22 @@ class RacketManager_Widget extends \WP_Widget {
 		}
 
 		ob_start();
-		$widget_id     = $args['widget_id'];
 		$before_widget = $args['before_widget'];
-		$after_widget  = $args['after_widget'];
 		$before_title  = $args['before_title'];
 		$after_title   = $args['after_title'];
 		wp_enqueue_script( 'racketmanager_widget_js', '/wp-content/plugins/leaguemanager/js/widget.js', array(), RACKETMANAGER_VERSION, array( 'in_footer' => true ) );
 
-		$title          = ( ! empty( $instance['title'] ) ) ? $instance['title'] : '';
-		$title          = apply_filters( 'widget_title', $instance['title'] );
-		$clubname       = isset( $instance['clubname'] ) ? esc_html( $instance['clubname'] ) : '';
-		$clublink       = isset( $instance['clublink'] ) ? esc_html( $instance['clublink'] ) : '';
-		$itemstodisplay = ( ! empty( $instance['itemstodisplay'] ) ) ? intval( $instance['itemstodisplay'] ) : -1;
-		$club_type      = $instance['club_type'];
-		$orderby        = $instance['orderby'];
+		$title     = apply_filters( 'widget_title', $instance['title'] );
+		$club_name = isset( $instance['club_name'] ) ? esc_html( $instance['club_name'] ) : '';
+		$club_link = isset( $instance['club_link'] ) ? esc_html( $instance['club_link'] ) : '';
+		$num_items = ( ! empty( $instance['num_items'] ) ) ? intval( $instance['num_items'] ) : -1;
+		$club_type = $instance['club_type'];
+		$orderby   = $instance['orderby'];
 
 		$clubs = $racketmanager->get_clubs(
 			array(
 				'type'    => $club_type,
-				'limit'   => $itemstodisplay,
+				'limit'   => $num_items,
 				'orderby' => $orderby,
 			)
 		);
@@ -89,40 +88,38 @@ class RacketManager_Widget extends \WP_Widget {
 			<div id="clubs" class="roll-club" data-autoplay="5000">
 				<?php
 				foreach ( $clubs as $club ) {
-					$title          = $club->name;
-					$cluburl        = $club->website;
-					$clubfacilities = $club->facilities;
-					$clubaddress    = $club->address;
-					$clubinfolink   = '/clubs/' . sanitize_title( $club->shortcode ) . '/';
 					?>
 					<div class="club-item">
-						<div class="club-inner">
-						</div>
 						<div class="club-content">
-							<?php if ( '1' === $clubname ) { ?>
-								<div class="clubdtls">
-									<h4 class="wp_clubname"><a href="<?php echo esc_html( $clubinfolink ); ?>"><?php echo esc_html( $title ); ?></a></h4>
-									<p><?php echo esc_html( $clubfacilities ); ?></p>
-									<p><?php echo esc_html( $clubaddress ); ?></p>
-									<?php if ( '1' === $clublink ) { ?>
-										<?php if ( null !== $cluburl ) { ?>
-											<p><a href="<?php echo esc_url( $cluburl ); ?>" target="_blank"><?php echo esc_html( $cluburl ); ?></a></p>
-										<?php } ?>
-									<?php } ?>
+							<?php if ( '1' === $club_name ) { ?>
+								<div class="">
+									<h4 class=""><a href="<?php echo esc_html( '/clubs/' . sanitize_title( $club->shortcode ) . '/' ); ?>"><?php echo esc_html( $club->name ); ?></a></h4>
+									<p><?php echo esc_html( $club->facilities ); ?></p>
+									<p><?php echo esc_html( $club->address ); ?></p>
+									<?php
+                                    if ( '1' === $club_link ) {
+                                        if ( null !== $club->website ) {
+                                            ?>
+											<p><a href="<?php echo esc_url( $club->website ); ?>" target="_blank"><?php echo esc_html( $club->website ); ?></a></p>
+										    <?php
+                                        }
+                                    }
+                                    ?>
 								</div>
 								<?php
 							}
 							?>
 						</div>
 					</div>
-				<?php } ?>
+				    <?php
+                }
+                ?>
 			</div>
-
 			<a href="/clubs" class="roll-button more-button">
 				<?php esc_html_e( 'See all our clubs', 'racketmanager' ); ?>
 			</a>
-		<?php } ?>
-		<?php
+		    <?php
+        }
 		wp_reset_postdata();
 		echo esc_html( $args['after_widget'] );
 		if ( ! $this->is_preview() ) {
@@ -150,84 +147,47 @@ class RacketManager_Widget extends \WP_Widget {
 	 * @param int|array $instance widget arguments.
 	 */
 	public function form( $instance ): void {
-		$title          = isset( $instance['title'] ) ? esc_attr( $instance['title'] ) : '';
-		$clubname       = isset( $instance['clubname'] ) ? esc_attr( $instance['clubname'] ) : '';
-		$clublink       = isset( $instance['clublink'] ) ? esc_attr( $instance['clublink'] ) : '';
-		$orderby        = isset( $instance['orderby'] ) ? esc_attr( $instance['orderby'] ) : '';
-		$itemstodisplay = isset( $instance['itemstodisplay'] ) ? esc_attr( $instance['itemstodisplay'] ) : -1;
-		$club_type      = isset( $instance['club_type'] ) ? esc_attr( $instance['club_type'] ) : '';
+		$title     = isset( $instance['title'] ) ? esc_attr( $instance['title'] ) : '';
+		$club_name = isset( $instance['club_name'] ) ? esc_attr( $instance['club_name'] ) : '';
+		$club_link = isset( $instance['club_link'] ) ? esc_attr( $instance['club_link'] ) : '';
+		$orderby   = isset( $instance['orderby'] ) ? esc_attr( $instance['orderby'] ) : '';
+		$num_items = isset( $instance['num_items '] ) ? esc_attr( $instance['num_items '] ) : -1;
+		$club_type = isset( $instance['club_type'] ) ? esc_attr( $instance['club_type'] ) : '';
 		?>
-		<p>
+		<div>
 			<label for="<?php echo esc_html( $this->get_field_id( 'title' ) ); ?>"><?php esc_html_e( 'Title', 'racketmanager' ); ?></label>
 			<input id="<?php echo esc_html( $this->get_field_id( 'title' ) ); ?>" name="<?php echo esc_html( $this->get_field_name( 'title' ) ); ?>" type="text" value="<?php echo esc_html( $title ); ?>" style="float:right; width:56%;" />
-		</p>
-		<p>
+		</div>
+		<div>
 			<label for="<?php echo esc_html( $this->get_field_id( 'orderby' ) ); ?>"><?php esc_html_e( 'Sorting Method', 'racketmanager' ); ?></label>
 			<select id="<?php echo esc_html( $this->get_field_id( 'orderby' ) ); ?>" name="<?php echo esc_html( $this->get_field_name( 'orderby' ) ); ?>"  style="float:right; width:56%;">
 				<option selected="selected" value="none"><?php esc_html_e( 'Select One', 'racketmanager' ); ?></option>
-				<option value="asc"
-				<?php
-				if ( 'asc' === $orderby ) {
-					echo ' selected="selected"';
-				}
-				?>
-				value="asc"><?php esc_html_e( 'Asc', 'racketmanager' ); ?></option>
-				<option value="desc"
-				<?php
-				if ( 'desc' === $orderby ) {
-					echo ' selected="selected"';
-				}
-				?>
-				><?php esc_html_e( 'Desc', 'racketmanager' ); ?></option>
-				<option value="rand"
-				<?php
-				if ( 'rand' === $orderby ) {
-					echo ' selected="selected"';
-				}
-				?>
-				><?php esc_html_e( 'Random', 'racketmanager' ); ?></option>
-				<option value="menu_order"
-				<?php
-				if ( 'menu_order' === $orderby ) {
-					echo ' selected="selected"';
-				}
-				?>
-				><?php esc_html_e( 'Page Attributes "Order"', 'racketmanager' ); ?></option>
+				<option value="asc" <?php selected( 'asc', $orderby ); ?>><?php esc_html_e( 'Ascending', 'racketmanager' ); ?></option>
+				<option value="desc" <?php selected( 'desc', $orderby ); ?>><?php esc_html_e( 'Descending', 'racketmanager' ); ?></option>
+				<option value="rand" <?php selected( 'rand', $orderby ); ?>><?php esc_html_e( 'Random', 'racketmanager' ); ?></option>
+				<option value="menu_order" <?php selected( 'menu_order', $orderby ); ?>><?php esc_html_e( 'Menu Order', 'racketmanager' ); ?></option>
 			</select>
-		</p>
-		<p>
-			<label for="<?php echo esc_html( $this->get_field_id( 'itemstodisplay' ) ); ?>"><?php esc_html_e( 'How many to show?', 'racketmanager' ); ?></label>
-			<input id="<?php echo esc_html( $this->get_field_id( 'itemstodisplay' ) ); ?>" name="<?php echo esc_html( $this->get_field_name( 'itemstodisplay' ) ); ?>" type="text" value="<?php echo esc_html( $itemstodisplay ); ?>" style="float:right; width:56%;" />
-		</p>
-		<p>
-			<label for="<?php echo esc_html( $this->get_field_id( 'clubname' ) ); ?>"><?php esc_html_e( 'Show club name?', 'racketmanager' ); ?></label>
-			<input id="<?php echo esc_html( $this->get_field_id( 'clubname' ) ); ?>" name="<?php echo esc_html( $this->get_field_name( 'clubname' ) ); ?>" type="checkbox" value="1" <?php checked( '1', $clubname ); ?> style="float:right; margin-right:6px;" />
-		</p>
-		<p>
-			<label for="<?php echo esc_html( $this->get_field_id( 'clublink' ) ); ?>"><?php esc_html_e( 'Link club name?', 'racketmanager' ); ?></label>
-			<input id="<?php echo esc_html( $this->get_field_id( 'clublink' ) ); ?>" name="<?php echo esc_html( $this->get_field_name( 'clublink' ) ); ?>" type="checkbox" value="1" <?php checked( '1', $clublink ); ?> style="float:right; margin-right:6px;" />
-		</p>
-		<p>
+		</div>
+		<div>
+			<label for="<?php echo esc_html( $this->get_field_id( 'num_items ' ) ); ?>"><?php esc_html_e( 'How many to show?', 'racketmanager' ); ?></label>
+			<input id="<?php echo esc_html( $this->get_field_id( 'num_items ' ) ); ?>" name="<?php echo esc_html( $this->get_field_name( 'num_items ' ) ); ?>" type="text" value="<?php echo esc_html( $num_items  ); ?>" style="float:right; width:56%;" />
+		</div>
+		<div>
+			<label for="<?php echo esc_html( $this->get_field_id( 'club_name' ) ); ?>"><?php esc_html_e( 'Show club name?', 'racketmanager' ); ?></label>
+			<input id="<?php echo esc_html( $this->get_field_id( 'club_name' ) ); ?>" name="<?php echo esc_html( $this->get_field_name( 'club_name' ) ); ?>" type="checkbox" value="1" <?php checked( '1', $club_name ); ?> style="float:right; margin-right:6px;" />
+		</div>
+		<div>
+			<label for="<?php echo esc_html( $this->get_field_id( 'club_link' ) ); ?>"><?php esc_html_e( 'Link club name?', 'racketmanager' ); ?></label>
+			<input id="<?php echo esc_html( $this->get_field_id( 'club_link' ) ); ?>" name="<?php echo esc_html( $this->get_field_name( 'club_link' ) ); ?>" type="checkbox" value="1" <?php checked( '1', $club_link ); ?> style="float:right; margin-right:6px;" />
+		</div>
+		<div>
 			<label for="<?php echo esc_html( $this->get_field_id( 'club_type' ) ); ?>"><?php esc_html_e( 'Club Type', 'racketmanager' ); ?></label>
 			<select id="<?php echo esc_html( $this->get_field_id( 'club_type' ) ); ?>" name="<?php echo esc_html( $this->get_field_name( 'club_type' ) ); ?>"  style="float:right; width:56%;" >
 				<option selected="selected" value="none"><?php esc_html_e( 'Select One', 'racketmanager' ); ?></option>
-				<?php $terms = get_terms( 'club_type' ); ?>
-				<option value="all"
-				<?php
-				if ( 'all' === $club_type ) {
-					echo ' selected="selected"';
-				}
-				?>
-				><?php esc_html_e( 'All', 'racketmanager' ); ?></option>
-				<option value="affiliated"
-				<?php
-				if ( 'affiliated' === $club_type ) {
-					echo ' selected="selected"';
-				}
-				?>
-				><?php esc_html_e( 'Affiliated', 'racketmanager' ); ?></option>
+				<option value="all" <?php selected( 'all', $club_type ); ?>><?php esc_html_e( 'All', 'racketmanager' ); ?></option>
+                <option value="affiliated" <?php selected( 'affiliated', $club_type ); ?>><?php esc_html_e( 'Affiliated', 'racketmanager' ); ?></option>
 			</select>
-		</p>
+		</div>
 		<?php
 	}
 }

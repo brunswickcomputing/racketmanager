@@ -17,7 +17,6 @@ namespace Racketmanager;
 			<?php
 			if ( have_teams() ) {
 				?>
-				<?php $rank = 0; ?>
 				<div class="table-responsive">
 					<table class='table table-striped table-borderless align-middle' aria-describedby='<?php esc_html_e( 'Crosstable', 'racketmanager' ); ?> <?php the_league_title(); ?>'>
 						<thead class="">

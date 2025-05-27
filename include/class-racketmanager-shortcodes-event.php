@@ -249,7 +249,6 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 			$msg = __( 'Event not found', 'racketmanager' );
 			return $this->return_error( $msg );
 		}
-		$club       = null;
 		$event_club = null;
 		$event->set_season( $season );
 		if ( ! $club_id ) {
@@ -436,7 +435,6 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 		$event     = get_event( $event_id );
 		if ( $event ) {
 			$event->set_season( $season );
-			$player         = null;
 			$event->players = array();
 			if ( ! $player_id ) {
 				if ( isset( $wp->query_vars['player_id'] ) ) {

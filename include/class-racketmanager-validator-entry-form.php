@@ -305,7 +305,6 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 					'season' => $season,
 				)
 			);
-			$player_team = false;
 			foreach ( $partner_teams as $partner_team ) {
 				if ( ! in_array( $player_id, $partner_team->player_id, true ) ) {
 					$partner_found = true;
@@ -326,10 +325,12 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 						$this->error_msg[$this->error_id] = __( 'Partner has no age specified', 'racketmanager' );
 						++$this->error_id;
 					} elseif ( $event->age_limit >= 30 ) {
-						if ( 'F' === $partner->gender && !empty( $event->age_offset ) ) {
+						if ( 'F' === $partner->gender && ! empty( $event->age_offset ) ) {
 							$age_limit = $event->age_limit - $event->age_offset;
+						} else {
+							$age_limit = $event->age_limit;
 						}
-						if ( $partner_age < $event->age_limit ) {
+						if ( $partner_age < $age_limit ) {
 							$this->error = true;
 							$this->error_field[$this->error_id] = $error_field;
 							$this->error_msg[$this->error_id] = __( 'Partner is too young', 'racketmanager' );

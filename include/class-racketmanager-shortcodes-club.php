@@ -308,7 +308,6 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 * @return string - the content
 	 */
 	public function show_club_team( array $atts ): string {
-		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
 				'template' => '',
@@ -376,7 +375,6 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 * @return string - the content
 	 */
 	public function show_club_event( array $atts ): string {
-		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
 				'template' => '',
@@ -403,9 +401,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 		}
 		$season = get_query_var( 'season' );
 		if ( ! $season ) {
-			if ( isset( $event->current_season['name'] ) ) {
-				$season = $event->current_season['name'];
-			} else {
+			if ( ! isset( $event->current_season['name'] ) ) {
 				return __( 'No seasons for event', 'racketmanager' );
 			}
 		}
@@ -503,7 +499,6 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 	 * @return string - the content
 	 */
 	public function show_club_invoices( array $atts ): string {
-		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
 				'template' => '',

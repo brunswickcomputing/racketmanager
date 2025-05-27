@@ -2293,9 +2293,6 @@ class Racketmanager_League {
 		} elseif ( strval( $opponent_id ) === $match->home_team ) {
 			$score_team_1 = $match->away_points;
 			$score_team_2 = $match->home_points;
-		} else {
-            $score_team_1 = null;
-            $score_team_2 = null;
         }
 		if ( isset( $score_team_1 ) ) {
 			if ( strval( $team_id ) === $match->winner_id ) {

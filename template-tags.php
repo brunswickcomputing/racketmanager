@@ -549,7 +549,7 @@ function the_match_day(): void {
 	 *
 	 * @category template-tags
 	 */
-	function get_match_date( $format = '' ): string {
+	function get_match_date( string $format = '' ): string {
 		global $match;
 		if ( $format ) {
 			return mysql2date( $format, $match->date );

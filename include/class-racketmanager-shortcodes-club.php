@@ -49,17 +49,13 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 				'type' => 'current',
 			)
 		);
-
-		$user_can_update_club   = false;
-		$user_can_update_player = false;
-		$filename               = ( ! empty( $template ) ) ? 'clubs-' . $template : 'clubs';
-
+		$filename = ( ! empty( $template ) ) ? 'clubs-' . $template : 'clubs';
 		return $this->load_template(
 			$filename,
 			array(
 				'clubs'                  => $clubs,
-				'user_can_update_club'   => $user_can_update_club,
-				'user_can_update_player' => $user_can_update_player,
+				'user_can_update_club'   => false,
+				'user_can_update_player' => false,
 				'standalone'             => false,
 			)
 		);

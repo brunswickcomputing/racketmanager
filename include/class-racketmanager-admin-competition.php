@@ -119,17 +119,8 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 				$forloss          = 0;
 				$forwin_overtime  = 0;
 				$forloss_overtime = 0;
-				// Manual point rule.
-				if ( is_array( $competition->point_rule ) ) {
-					$forwin                  = $competition->point_rule['forwin'];
-					$forwin_overtime         = $competition->point_rule['forwin_overtime'];
-					$fordraw                 = $competition->point_rule['fordraw'];
-					$forloss                 = $competition->point_rule['forloss'];
-					$forloss_overtime        = $competition->point_rule['forloss_overtime'];
-					$competition->point_rule = 'user';
-				}
-				$is_invalid    = false;
-				$rules_options = $racketmanager->get_options( 'checks' );
+				$is_invalid       = false;
+				$rules_options    = $racketmanager->get_options( 'checks' );
 				require RACKETMANAGER_PATH . 'admin/includes/competition-config.php';
 			} else {
 				$racketmanager->set_message( __( 'Competition not found', 'racketmanager' ), true );

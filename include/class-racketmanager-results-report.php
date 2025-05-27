@@ -79,10 +79,10 @@ final class Racketmanager_Results_Report {
 			foreach ( get_object_vars( $results_report ) as $key => $value ) {
 				$this->$key = $value;
 			}
-			if ( ! $this->data ) {
+			if ( ! isset( $this->data ) && isset( $this->result_object ) ) {
 				$this->data = json_decode( $this->result_object );
 			}
-			if ( ! $this->result_object ) {
+			if ( ! isset( $this->result_object ) && isset( $this->data )) {
 				$this->result_object = wp_json_encode( $this->data );
 			}
 			if ( ! isset( $this->id ) ) {

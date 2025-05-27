@@ -8,7 +8,7 @@
 namespace Racketmanager;
 
 /** @var object $league */
-/** @var object $team */
+/** @var array $teams */
 if ( count( $league->teams ) ) {
 	?>
 	<div class="table-responsive">
@@ -100,114 +100,118 @@ if ( count( $league->teams ) ) {
 			</thead>
 			<tbody>
 				<?php
-				while ( have_teams() ) {
-					the_team();
+				foreach ( $teams as $team ) {
 					?>
-					<tr class="">
-						<td class='num'><span class="rank"><?php the_team_rank(); ?></span></td>
+                    <tr class="">
+                        <td class='num'>
+                            <span class="rank">
+                                <?php echo esc_html( $team->rank ); ?>
+                            </span>
+                        </td>
 						<?php
 						if ( show_standings( 'status' ) ) {
 							?>
-							<td class="num d-none d-md-table-cell" title="<?php the_team_status_text(); ?>">
-								<i class="racketmanager-svg-icon">
-									<?php racketmanager_the_svg( the_team_status_icon() ); ?>
-								</i>
-							</td>
+                            <td class="num d-none d-md-table-cell" title="<?php echo esc_html( $team->status_text ); ?>">
+                                <i class="racketmanager-svg-icon">
+									<?php racketmanager_the_svg( $team->status_icon ); ?>
+                                </i>
+                            </td>
 							<?php
 						}
 						?>
-						<td>
+                        <td>
 							<?php
 							if ( $team->is_withdrawn ) {
-								$title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );
-								?>
-								<s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo esc_attr( $title_text ); ?>">
+							$title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );
+							?>
+                                <s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_attr( $title_text ); ?>">
 								<?php
 							}
-							if ( $league->event->is_box ) {
-								$season_link = __( 'round', 'racketmanager' ) . '-' . $league->current_season['name'];
-							} else {
-								$season_link = $league->current_season['name'];
-							}
-							?>
-							<a href="/<?php echo esc_attr( $league->event->competition->type ); ?>/<?php echo esc_html( seo_url( $league->title ) ); ?>/<?php echo esc_attr( $season_link ); ?>/team/<?php echo esc_attr( seo_url( $team->title ) ); ?>/">
-								<?php the_team_name(); ?>
-							</a>
-							<?php
-							if ( $team->is_withdrawn ) {
-								?>
-								</s> 
-								<?php
-							}
-							?>
-						</td>
+                            if ( $league->event->is_box ) {
+                                $season_link = __( 'round', 'racketmanager' ) . '-' . $league->current_season['name'];
+                            } else {
+                                $season_link = $league->current_season['name'];
+                            }
+                            $team_link = '/' . $league->event->competition->type . '/' . seo_url( $league->title ) . '/' . $season_link . '/team/' . seo_url( $team->title ) . '/';
+                            ?>
+                            <a href="<?php echo esc_attr( $team_link ); ?>" class="tabDataLink" data-type="league" data-type-id="<?php echo esc_attr( $league->id ); ?>" data-season="<?php echo esc_attr( $league->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $team_link ); ?>" data-link-id="<?php echo esc_attr( $team->id ); ?>" data-link-type="teams">
+                                <?php echo esc_html( $team->title ); ?>
+                            </a>
+                            <?php
+                            if ( $team->is_withdrawn ) {
+                                ?>
+                                </s>
+                                <?php
+                            }
+                            ?>
+                        </td>
 						<?php
 						if ( show_standings( 'pld' ) ) {
 							?>
-							<td class='num'>
-								<?php num_done_matches(); ?>
-							</td>
+                            <td class='num'>
+								<?php echo esc_html( $team->done_matches ); ?>
+                            </td>
 							<?php
 						}
 						?>
 						<?php
 						if ( show_standings( 'won' ) ) {
 							?>
-							<td class='num d-none d-md-table-cell'>
-								<?php num_won_matches(); ?>
-							</td>
+                            <td class='num d-none d-md-table-cell'>
+								<?php echo esc_html( $team->won_matches ); ?>
+                            </td>
 							<?php
 						}
 						?>
 						<?php
 						if ( show_standings( 'tie' ) ) {
 							?>
-							<td class='num d-none d-md-table-cell'>
-								<?php num_draw_matches(); ?>
-							</td>
+                            <td class='num d-none d-md-table-cell'>
+								<?php echo esc_html( $team->draw_matches ); ?>
+                            </td>
 							<?php
 						}
 						?>
 						<?php
 						if ( show_standings( 'lost' ) ) {
 							?>
-							<td class='num d-none d-md-table-cell'>
-								<?php num_lost_matches(); ?>
-							</td>
+                            <td class='num d-none d-md-table-cell'>
+								<?php echo esc_html( $team->lost_matches ) ?>
+                            </td>
 							<?php
 						}
 						?>
 						<?php
 						if ( show_standings( 'winPercent' ) ) {
 							?>
-							<td class="num d-none d-md-table-cell">
-								<?php win_percentage(); ?>
-							</td>
+                            <td class="num d-none d-md-table-cell">
+								<?php echo esc_html( $team->win_percent ); ?>
+                            </td>
 							<?php
 						}
 						?>
 						<?php
 						if ( show_standings( 'sets' ) ) {
 							?>
-							<td class='num'>
-								<?php num_sets(); ?>
-							</td>
+                            <td class='num'>
+								<?php echo esc_html( $team->sets_won . '-' . $team->sets_allowed ); ?>
+                            </td>
 							<?php
 						}
 						?>
 						<?php
 						if ( show_standings( 'games' ) ) {
 							?>
-							<td class='num'>
-								<?php num_games(); ?>
-							</td>
+                            <td class='num'>
+								<?php echo esc_html( $team->games_won . '-' . $team->games_allowed ); ?>
+                            </td>
 							<?php
 						}
 						?>
-						<td class='num'>
-							<?php the_team_points(); ?>
-						</td>
-					</tr>
+                        <td class='num'>
+							<?php echo esc_html( $team->points_formatted['primary'] ); ?>
+                        </td>
+                    </tr>
 					<?php
 				}
 				?>

@@ -7,11 +7,12 @@
 
 namespace Racketmanager;
 
-/** @var object $team */
+/** @var object $league */
+/** @var array  $teams */
 if ( have_teams() ) {
 	?>
-	<table class="racketmanager standingstable" aria-describedby="<?php esc_html_e( 'Standing table', 'racketmanager' ); ?>" title="<?php esc_html_e( 'Standings', 'racketmanager' ) . ' ' . get_league_title(); ?>">
-		<thead>
+	<table class="table table-striped table-borderless" aria-describedby="<?php esc_html_e( 'Standing table', 'racketmanager' ); ?>" title="<?php esc_html_e( 'Standings', 'racketmanager' ) . ' ' . $league->title; ?>">
+		<thead class="">
         <tr>
             <th><?php esc_html_e( 'Team', 'racketmanager' ); ?></th>
             <th><?php esc_html_e( 'Status', 'racketmanager' ); ?></th>
@@ -19,33 +20,32 @@ if ( have_teams() ) {
 		</thead>
 		<tbody>
 			<?php
-			while ( have_teams() ) {
-				the_team();
-				?>
-				<tr class='<?php the_team_class(); ?>'>
-					<td>
+            foreach ( $teams as $team ) {
+                ?>
+                <tr class="table-dark">
+                    <td>
 						<?php
 						if ( $team->is_withdrawn ) {
-							?>
-							<s>
+    						?>
+                            <s>
 							<?php
 						}
-						?>
-						<?php the_team_name(); ?>
-						<?php
-						if ( $team->is_withdrawn ) {
+                        ?>
+                        <?php echo esc_html( $team->title ); ?>
+                        <?php
+                        if ( $team->is_withdrawn ) {
 							?>
-							</s> 
-							<?php
-						}
-						?>
-					</td>
-					<td class="num">
-						<?php the_team_status_text(); ?>
-					</td>
-				</tr>
-				<?php
-			}
+                            </s>
+	        				<?php
+			    		}
+				    	?>
+                    </td>
+                    <td class="num">
+						<?php echo esc_html( $team->status_text ); ?>
+                    </td>
+                </tr>
+                <?php
+            }
 			?>
 		</tbody>
 	</table>

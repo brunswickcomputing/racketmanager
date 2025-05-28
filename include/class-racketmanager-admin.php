@@ -2955,6 +2955,7 @@ class RacketManager_Admin extends RacketManager {
 			$error = true;
 		}
 		if ( ! $error ) {
+            $object = null;
 			if ( 'competition' === $season_data->type ) {
 				$competition = get_competition( $season_data->object_id );
 				$object      = $competition;

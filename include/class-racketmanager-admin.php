@@ -1495,7 +1495,11 @@ class RacketManager_Admin extends RacketManager {
 			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'edit_teams' ) ) {
 			if ( isset( $_POST['league_id'] ) && isset( $_POST['season'] ) && isset( $_POST['emailMessage'] ) ) {
-				$this->contactLeagueTeams( intval( $_POST['league_id'] ), sanitize_text_field( wp_unslash( $_POST['season'] ) ), htmlspecialchars_decode( $_POST['emailMessage'] ) ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                $league = get_league( $_POST['league_id'] );
+				$sent = $league->contact_teams( sanitize_text_field( wp_unslash( $_POST['season'] ) ), htmlspecialchars_decode( $_POST['emailMessage'] ) ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				if ( $sent ) {
+					$this->set_message( __( 'Email sent to captains', 'racketmanager' ) );
+				}
 			}
 		} else {
 			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
@@ -3667,44 +3671,6 @@ class RacketManager_Admin extends RacketManager {
 		}
 	}
 
-	/**
-	 * Contact League Teams
-	 *
-	 * @param int $league league.
-	 * @param string $season season.
-	 * @param string $email_message message.
-	 *
-	 * @return boolean
-	 */
-	private function contactLeagueTeams( int $league, string $season, string $email_message ): bool {
-        $message_sent  = false;
-		$league        = get_league( $league );
-		$teams         = $league->get_league_teams( array( 'season' => $season ) );
-		$email_message = str_replace( '\"', '"', $email_message );
-		$headers       = array();
-		$email_from    = $this->get_confirmation_email( $league->event->competition->type );
-		$headers[]     = 'From: ' . ucfirst( $league->event->competition->type ) . ' Secretary <' . $email_from . '>';
-		$headers[]     = 'cc: ' . ucfirst( $league->event->competition->type ) . ' Secretary <' . $email_from . '>';
-		$email_subject = $this->site_name . ' - ' . $league->title . ' ' . $season . ' - Important Message';
-		$email_to      = array();
-		foreach ( $teams as $team ) {
-			$team_dtls = $league->get_team_dtls( $team->id );
-			if ( ! empty( $team_dtls->contactemail ) ) {
-				$email_to[]   = ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
-				$message_sent = true;
-			}
-			if ( ! empty( $team_dtls->club->match_secretary_email ) ) {
-				$headers[]    = 'cc: ' . ucwords( $team_dtls->club->match_secretary_name ) . ' <' . $team_dtls->club->match_secretary_email . '>';
-				$message_sent = true;
-			}
-		}
-
-		if ( $message_sent ) {
-			wp_mail( $email_to, $email_subject, $email_message, $headers );
-			$this->set_message( __( 'Email sent to captains', 'racketmanager' ) );
-		}
-		return true;
-	}
 	/**
 	 * Get latest season
 	 *

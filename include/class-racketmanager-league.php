@@ -3571,4 +3571,39 @@ class Racketmanager_League {
 		);
 		wp_cache_set( $this->id, $this, 'leagues' );
 	}
+	/**
+	 * Contact League Teams
+	 *
+	 * @param string $season season.
+	 * @param string $email_message message.
+	 *
+	 * @return boolean
+	 */
+	public function contact_teams( string $season, string $email_message ): bool {
+        global $racketmanager;
+		$message_sent  = false;
+		$teams         = $this->get_league_teams( array( 'season' => $season ) );
+		$email_message = str_replace( '\"', '"', $email_message );
+		$headers       = array();
+		$email_from    = $racketmanager->get_confirmation_email( $this->event->competition->type );
+		$headers[]     = 'From: ' . ucfirst( $this->event->competition->type ) . ' Secretary <' . $email_from . '>';
+		$headers[]     = 'cc: ' . ucfirst( $this->event->competition->type ) . ' Secretary <' . $email_from . '>';
+		$email_subject = $racketmanager->site_name . ' - ' . $this->title . ' ' . $season . ' - Important Message';
+		$email_to      = array();
+		foreach ( $teams as $team ) {
+			$team_dtls = $this->get_team_dtls( $team->id );
+			if ( ! empty( $team_dtls->contactemail ) ) {
+				$email_to[]   = ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
+				$message_sent = true;
+			}
+			if ( ! empty( $team_dtls->club->match_secretary_email ) ) {
+				$headers[]    = 'cc: ' . ucwords( $team_dtls->club->match_secretary_name ) . ' <' . $team_dtls->club->match_secretary_email . '>';
+				$message_sent = true;
+			}
+		}
+        if ( $message_sent ) {
+			wp_mail( $email_to, $email_subject, $email_message, $headers );
+		}
+		return $message_sent;
+	}
 }

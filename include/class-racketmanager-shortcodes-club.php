@@ -465,7 +465,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 				$user_can_update = true;
 			} elseif ( null !== $club->matchsecretary && intval( $club->matchsecretary ) === $userid ) {
 				$user_can_update = true;
-			} elseif ( null !== $player->ID && intval( $player->ID ) === $userid ) {
+			} elseif ( null !== $player->ID && $player->ID === $userid ) {
 				$user_can_update = true;
 			} else {
 				$options = $racketmanager->get_options( 'rosters' );

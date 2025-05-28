@@ -103,7 +103,7 @@ class Racketmanager_Validator {
 		} else {
 			$player = get_player( $email, 'email' );
 			if ( $player ) {
-				if ( intval( $player_id ) !== intval( $player->ID ) ) {
+				if ( $player_id !== $player->ID ) {
 					$this->error                          = true;
 					$this->error_field[ $this->error_id ] = 'contactemail';
 					$this->error_msg[ $this->error_id ]   = __( 'Email address already used', 'racketmanager' );
@@ -130,7 +130,7 @@ class Racketmanager_Validator {
 		} else {
 			$player = get_player( $btm, 'btm' );
 			if ( $player ) {
-				if ( intval( $player_id ) !== intval( $player->ID ) ) {
+				if ( $player_id !== $player->ID ) {
 					$this->error                          = true;
 					$this->error_field[ $this->error_id ] = 'btm';
 					$this->error_msg[ $this->error_id ]   = __( 'LTA Tennis Number already used', 'racketmanager' );

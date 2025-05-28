@@ -1943,7 +1943,7 @@ class RacketManager_Admin extends RacketManager {
 			$player = get_player( $btm, 'btm' );
 			if ( $player ) {
 				if ( isset( $_POST['playerId'] ) ) {
-					if ( intval( $_POST['playerId'] ) !== intval( $player->ID ) ) {
+					if ( intval( $_POST['playerId'] ) !== $player->ID ) {
 						$btm_error = true;
 					} else {
 						$btm_error = false;
@@ -1973,7 +1973,7 @@ class RacketManager_Admin extends RacketManager {
 			$player = get_player( $email, 'email' );
 			if ( $player ) {
 				if ( isset( $_POST['playerId'] ) ) {
-					if ( intval( $_POST['playerId'] ) !== intval( $player->ID ) ) {
+					if ( intval( $_POST['playerId'] ) !== $player->ID ) {
 						$email_error = true;
 					} else {
 						$email_error = false;
@@ -2163,7 +2163,7 @@ class RacketManager_Admin extends RacketManager {
 				$league_id = intval( $_GET['league_id'] );
 				$league    = get_league( $league_id );
 				// check if league is a cup championship.
-				$cup = (bool)$league->event->competition->is_championship;
+				$cup = $league->event->competition->is_championship;
 			}
 			$season = $league->current_season['name'];
 
@@ -2265,7 +2265,7 @@ class RacketManager_Admin extends RacketManager {
 			} else {
 				$mode = 'add';
 				$edit = false;
-				$bulk = (bool)$cup;
+				$bulk = $cup;
 				global $wpdb;
 
 				// Get max match day.
@@ -3304,7 +3304,7 @@ class RacketManager_Admin extends RacketManager {
 					if ( $wp_filesystem->copy( $file['tmp_name'], $new_file ) ) {
 						$contents = $wp_filesystem->get_contents_array( $new_file );
 						if ( $contents ) {
-							$league_id = intval( $league_id );
+							$league_id = $league_id;
 							$club      = isset( $club ) ? intval( $club ) : 0;
 							if ( 'TAB' === $delimiter ) {
 								$delimiter = "\t"; // correct tabular delimiter.
@@ -3961,7 +3961,7 @@ class RacketManager_Admin extends RacketManager {
 						$ref_option     = array( 2, 1, 3 );
 						$alt_ref_option = array( 5, 6, 4 );
 						for ( $i = 0; $i < 3; $i++ ) {
-							$ref_free = array_search( intval( $ref_option[ $i ] ), $refs, true );
+							$ref_free = array_search( $ref_option[ $i ], $refs, true );
 							$ref      = $ref_option[ $i ];
 							if ( $ref_free ) {
 								$alt_ref   = $alt_ref_option[ $i ];

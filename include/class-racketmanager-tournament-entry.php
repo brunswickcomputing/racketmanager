@@ -82,7 +82,7 @@ final class Racketmanager_Tournament_Entry {
 				break;
 			case 'id':
 			default:
-				$tournament_entry_id = (int) $tournament_entry_id;
+				$tournament_entry_id = $tournament_entry_id;
 				$search              = $wpdb->prepare(
 					'`id` = %d',
 					$tournament_entry_id

@@ -248,13 +248,6 @@ final class Racketmanager_Rubber {
 	 */
 	public string $retired;
 	/**
-	 * Time
-	 *
-	 * @var string
-	 */
-	private string $time;
-
-	/**
 	 * Get rubber instance function
 	 *
 	 * @param int|null $rubber_id rubber id.
@@ -309,10 +302,10 @@ final class Racketmanager_Rubber {
 			$this->year        = substr( $this->date, 0, 4 );
 			$this->month       = substr( $this->date, 5, 2 );
 			$this->day         = substr( $this->date, 8, 2 );
-			$this->time        = substr( $this->date, 11, 5);
-			$this->hour        = substr( $this->time, 0, 2 );
-			$this->minutes     = substr( $this->time, 3, 2 );
-			$this->start_time  = ( '00:00' === $this->time ) ? '' : mysql2date( $racketmanager->time_format, $this->date );
+			$time              = substr( $this->date, 11, 5);
+			$this->hour        = substr( $time, 0, 2 );
+			$this->minutes     = substr( $time, 3, 2 );
+			$this->start_time  = ( '00:00' === $time ) ? '' : mysql2date( $racketmanager->time_format, $this->date );
 
 			if ( null !== $this->home_points && null !== $this->away_points ) {
 				$home_score  = $this->home_points;

@@ -542,11 +542,13 @@ function get_match_day(): int {
 function the_match_day(): void {
 	echo get_match_day();
 }
+
 	/**
 	 * Get Match date
 	 *
 	 * @param string $format
 	 *
+	 * @return string
 	 * @category template-tags
 	 */
 	function get_match_date( string $format = '' ): string {

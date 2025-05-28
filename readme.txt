@@ -1245,7 +1245,7 @@ This is release contains major restructuring on the technical level to improve p
 * NEW: added hebrew translation by Bar Shai
 * BUGFIX: fixed match_day option in [matches] shortcode when using multiple shortcodes on same page
 * BUGFIX: fixed calculation of apparatus points for gymnastics
-* BUGFIX: improved page loading times by caching MySQL query results and prevent unneccessary queries
+* BUGFIX: improved page loading times by caching MySQL query results and prevent unnecessary queries
 * BUGFIX: fix in matches pagination
 * BUGFIX: several small fixes
 
@@ -1268,7 +1268,7 @@ This is release contains major restructuring on the technical level to improve p
 * BUGFIX: some small fixed to prevent notices in championship mode
 
 = 4.0.6 =
-* NEW: new shortcode [league id=ID] to display all contents of a league, i.e. standings, crosstable, matchlist and teamlist with fancy jQuery UI Tabs
+* NEW: new shortcode [league id=ID] to display all contents of a league, i.e. standings, crosstable, match-list and team-list with fancy jQuery UI Tabs
 * BUGFIX: several fixes for championship mode
 * UPDATE: updated some german translations for championship mode
 
@@ -1281,7 +1281,7 @@ This is release contains major restructuring on the technical level to improve p
 * BUGFIX: only automatically calculated final results scores if none are provided by the user
 * BUGFIX: fixed problem with Yoast SEO due to loading scriptaculous drag&drop
 * BUGFIX: fixed some issues with matches shortcode
-* BUGFIF: some style fixes
+* BUGFIX: some style fixes
 
 = 4.0.3 =
 * BUGFIX: fixed some issues in matches shortcode
@@ -1401,7 +1401,7 @@ This is release contains major restructuring on the technical level to improve p
 * NEW: new template to display matches separated by match day. Use "template=by_matchday" in the shortcode to load template matches-by_matchday.php
 * NEW: show logo in matches tables
 * NEW: show home team in standings table and home team matches in bold in admin interface
-* NEW: added paramters $match->homeScore and $match->awayScore holding the match score depending if game has been finished after regular time, overtime or penalty. This can be used in the templates loaded by the [matches] or [match] shortcodes
+* NEW: added parameters $match->homeScore and $match->awayScore holding the match score depending if game has been finished after regular time, overtime or penalty. This can be used in the templates loaded by the [matches] or [match] shortcodes
 * NEW: don't show match day selection if specific match day is selected. Using "next", "last", "current" or "latest" will still show match day selection dropdown
 * NEW: new shortcode options for [matches] shortcode: "show_match_day_selection" and "show_team_selection" to force showing or hiding match day or team selection dropdown menus, respectively
 * BUGFIX: fixed problem with zeros in matches with empty scores
@@ -1440,7 +1440,7 @@ This is release contains major restructuring on the technical level to improve p
 = 3.8.9 =
 * UPDATE: Numerous files have been worked on to remove PHP Strict Mode warnings. These warnings didn't affect RacketManager use, but if your WordPress installation had debugging mode turned on there were many, many warnings being thrown at you. There are no doubt more that will need to be fixed, but a conservative guess is that over 100 fixes have been applied.
 * BUGFIX: Fixed the error with the Widget not changing
-* BUGFIX: Permissions error on documenation page
+* BUGFIX: Permissions error on documentation page
 * UPDATE: Added completed games to soccer ranking
 * UPDATE: Numerous areas with deprecated code
 * UPDATE: Started to get into the sport files to get a consistent look to the output, centering headings over input fields, centering input fields in the space allocated and centering the text in the input fields.
@@ -1673,7 +1673,7 @@ http://wordpress.org/support/topic/racketmanager-385-changes-info
 * BUGFIX: widget match JQuery Navigation
 
 = 3.1.7 =
-* I hate bugfixing
+* I hate bug fixing
 
 = 3.1.6 =
 * BUGFIX: team logos
@@ -1686,7 +1686,7 @@ http://wordpress.org/support/topic/racketmanager-385-changes-info
 
 = 3.1.3 =
 * BUGFIX: add teams from previous season with season as string
-* BUGIFIX: export matches
+* BUGFIX: export matches
 * BUGFIX: create new thumbnails upon upgrade
 
 = 3.1.2 =
@@ -1738,7 +1738,7 @@ http://wordpress.org/support/topic/racketmanager-385-changes-info
 
 = 2.9.1 =
 * NEW: added games behind for baseball
-* NEW: TinyMCE Button for Teamlist and Team page
+* NEW: TinyMCE Button for Team-list and Team page
 * NEW: AJAX adding team from database
 * BUGFIX: display of goals, ap etc.
 * BUGFIX: added hidden fields to team edit page where necessary to avoid loss of data
@@ -1802,7 +1802,7 @@ http://wordpress.org/support/topic/racketmanager-385-changes-info
 
 = 2.6.1 =
 * BUGFIX: TinyMCE Button
-* BUGFIG: PHP4 compatibility
+* BUGFIX: PHP4 compatibility
 * CHANGED: don't show match day drop-down if number of match days is 0
 * CHANGED: warning message if number of match days is 0
 

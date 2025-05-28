@@ -83,7 +83,7 @@ final class Racketmanager_Message {
 		if ( ! $message ) {
 			$message = $wpdb->get_row(
 				$wpdb->prepare(
-					"SELECT `id`, `userid`, `date`, `status`, `subject`, `sender`, `message_object` FROM {$wpdb->racketmanager_messages} WHERE `id` = %d LIMIT 1",
+					"SELECT `id`, `userid`, `date`, `status`, `subject`, `sender`, `message_object` FROM $wpdb->racketmanager_messages WHERE `id` = %d LIMIT 1",
 					$message_id
 				)
 			);  // db call ok.
@@ -141,7 +141,7 @@ final class Racketmanager_Message {
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"INSERT INTO {$wpdb->racketmanager_messages} (`userid`, `date`, `status`, `subject`, `sender`, `message_object`) VALUES (%d, %s, %s, %s, %s, %s)",
+				"INSERT INTO $wpdb->racketmanager_messages (`userid`, `date`, `status`, `subject`, `sender`, `message_object`) VALUES (%d, %s, %s, %s, %s, %s)",
 				$this->userid,
 				$this->date,
 				$this->status,
@@ -173,7 +173,7 @@ final class Racketmanager_Message {
 		global $wpdb;
 		$wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_messages} set `status` = %s WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_messages set `status` = %s WHERE `id` = %d",
 				$status,
 				$this->id
 			)

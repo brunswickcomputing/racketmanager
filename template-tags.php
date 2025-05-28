@@ -690,7 +690,7 @@ function the_crosstable_field( int $i ): void {
 function racketmanager_club( int $club_id, array $args = array() ): void {
 	$defaults        = array( 'template' => '' );
 	$args            = array_merge( $defaults, $args );
-	$args['club_id'] = intval( $club_id );
+	$args['club_id'] = $club_id;
 
 	$shortcode = '[club';
 	foreach ( $args as $key => $value ) {
@@ -868,7 +868,7 @@ function racketmanager_league_teams( int $league_id, array $args = array() ): vo
 		'group'    => false,
 	);
 	$args              = array_merge( $defaults, $args );
-	$args['league_id'] = intval( $league_id );
+	$args['league_id'] = $league_id;
 
 	$shortcode = '[teams';
 	foreach ( $args as $key => $value ) {

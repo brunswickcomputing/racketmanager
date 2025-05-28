@@ -2795,13 +2795,10 @@ class RacketManager_Admin extends RacketManager {
 	 * @param string $season season.
 	 * @param int $event_id event_id.
 	 * @param int|null $num_match_days number of match days.
-	 * @param string|null $date_closing (optional) closing date.
-	 * @param string|null $home_away (optional) match format.
-	 * @param array|null $match_dates (optional) match dates.
 	 *
 	 * @return boolean
 	 */
-	private function add_season_to_event( string $season, int $event_id, ?int $num_match_days, string $date_closing = null, string $home_away = null, array $match_dates = null ): bool {
+	private function add_season_to_event( string $season, int $event_id, ?int $num_match_days ): bool {
 		global $event;
 
 		$event = get_event( $event_id );
@@ -2811,9 +2808,6 @@ class RacketManager_Admin extends RacketManager {
 		if ( $event->is_box ) {
 			$event->seasons[ $season ] = array(
 				'name'           => $season,
-				'date_closing'   => $date_closing,
-				'match_dates'    => $match_dates,
-				'home_away'      => $home_away,
 				'num_match_days' => 0,
 				'status'         => 'draft',
 			);

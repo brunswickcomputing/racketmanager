@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnnecessaryCurlyVarSyntaxInspection */
 /**
  * Upgrade routine for database and settings
  *

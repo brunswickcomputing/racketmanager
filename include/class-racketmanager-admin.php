@@ -2394,7 +2394,12 @@ class RacketManager_Admin extends RacketManager {
 			if ( isset( $_POST['addSeason'] ) ) {
 				check_admin_referer( 'racketmanager_add-season' );
 				if ( isset( $_POST['seasonName'] ) ) {
-					$this->add_season( sanitize_text_field( wp_unslash( $_POST['seasonName'] ) ) );
+					$added = $this->add_season( sanitize_text_field( wp_unslash( $_POST['seasonName'] ) ) );
+                    if ( $added ) {
+						$this->set_message( __( 'Season added', 'racketmanager' ) );
+					} else {
+						$this->set_message( __( 'Season not added', 'racketmanager' ), true );
+					}
 				}
 			} elseif ( isset( $_POST['doSeasonDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
 				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'seasons-bulk' ) ) {
@@ -2720,7 +2725,6 @@ class RacketManager_Admin extends RacketManager {
 				$name
 			)
 		);
-		$this->set_message( __( 'Season added', 'racketmanager' ) );
 		return true;
 	}
 
@@ -2729,14 +2733,15 @@ class RacketManager_Admin extends RacketManager {
 	 *
 	 * @param int $season_id season id to be deleted.
 	 *
-	 * @return boolean
+	 * @return void
 	 */
-	private function delete_season( int $season_id ): bool {
+	private function delete_season( int $season_id ): void {
 		global $wpdb;
 
 		if ( ! current_user_can( 'del_seasons' ) ) {
 			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
-			return false;
+
+			return;
 		}
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -2747,7 +2752,6 @@ class RacketManager_Admin extends RacketManager {
 		);
 		$this->set_message( __( 'Season deleted', 'racketmanager' ) );
 
-		return true;
 	}
 	/**
 	 * Add new season to competition
@@ -3016,9 +3020,9 @@ class RacketManager_Admin extends RacketManager {
 	 * @param array $seasons seasons.
 	 * @param int $competition_id competition id.
 	 *
-	 * @return boolean
+	 * @return void
 	 */
-	private function save_competition_seasons( array $seasons, int $competition_id ): bool {
+	private function save_competition_seasons( array $seasons, int $competition_id ): void {
 		global $wpdb, $racketmanager;
 		$wpdb->query(
 			$wpdb->prepare(
@@ -3029,7 +3033,6 @@ class RacketManager_Admin extends RacketManager {
 		); // db call ok, no cache ok.
 		wp_cache_delete( $competition_id, 'competitions' );
 		$racketmanager->set_message( 'Season deleted', 'racketmanager' );
-		return true;
 	}
 	/**
 	 * Save seasons array to database
@@ -3037,9 +3040,9 @@ class RacketManager_Admin extends RacketManager {
 	 * @param array $seasons seasons.
 	 * @param int $event_id event id.
 	 *
-	 * @return boolean
+	 * @return void
 	 */
-	private function save_event_seasons( array $seasons, int $event_id ): bool {
+	private function save_event_seasons( array $seasons, int $event_id ): void {
 		global $wpdb;
 		$wpdb->query(
 			$wpdb->prepare(
@@ -3049,7 +3052,6 @@ class RacketManager_Admin extends RacketManager {
 			)
 		); // db call ok, no cache ok.
 		wp_cache_delete( $event_id, 'events' );
-		return true;
 	}
 
 	/**

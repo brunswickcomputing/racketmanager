@@ -93,7 +93,7 @@ final class Racketmanager_Tournament_Entry {
 		if ( ! $tournament_entry ) {
 			$tournament_entry = $wpdb->get_row(
 				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				"SELECT `id`, `tournament_id`, `player_id`, `status`, `fee`, `club_id` FROM {$wpdb->racketmanager_tournament_entries} WHERE $search"
+				"SELECT `id`, `tournament_id`, `player_id`, `status`, `fee`, `club_id` FROM $wpdb->racketmanager_tournament_entries WHERE $search"
 			); // db call ok.
 			if ( ! $tournament_entry ) {
 				return false;
@@ -142,7 +142,7 @@ final class Racketmanager_Tournament_Entry {
 		if ( $valid ) {
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"INSERT INTO {$wpdb->racketmanager_tournament_entries} (`tournament_id`, `player_id`, `status`) VALUES (%d, %d, %d)",
+					"INSERT INTO $wpdb->racketmanager_tournament_entries (`tournament_id`, `player_id`, `status`) VALUES (%d, %d, %d)",
 					$this->tournament_id,
 					$this->player_id,
 					$this->status,
@@ -173,7 +173,7 @@ final class Racketmanager_Tournament_Entry {
 		$this->status = $status;
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"UPDATE {$wpdb->racketmanager_tournament_entries} SET `status` = %d WHERE `id` = %d",
+				"UPDATE $wpdb->racketmanager_tournament_entries SET `status` = %d WHERE `id` = %d",
 				$this->status,
 				$this->id
 			)
@@ -193,7 +193,7 @@ final class Racketmanager_Tournament_Entry {
 			$this->fee = $fee;
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_tournament_entries} SET `fee` = %d WHERE `id` = %d",
+					"UPDATE $wpdb->racketmanager_tournament_entries SET `fee` = %d WHERE `id` = %d",
 					$this->fee,
 					$this->id
 				)
@@ -211,7 +211,7 @@ final class Racketmanager_Tournament_Entry {
 			$this->club_id = $club;
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
-					"UPDATE {$wpdb->racketmanager_tournament_entries} SET `club_id` = %d WHERE `id` = %d",
+					"UPDATE $wpdb->racketmanager_tournament_entries SET `club_id` = %d WHERE `id` = %d",
 					$this->club_id,
 					$this->id
 				)
@@ -226,7 +226,7 @@ final class Racketmanager_Tournament_Entry {
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_tournament_entries} WHERE `id` = %d",
+				"DELETE FROM $wpdb->racketmanager_tournament_entries WHERE `id` = %d",
 				$this->id
 			)
 		);

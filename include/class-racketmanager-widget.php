@@ -59,7 +59,7 @@ class RacketManager_Widget extends \WP_Widget {
 		$before_widget = $args['before_widget'];
 		$before_title  = $args['before_title'];
 		$after_title   = $args['after_title'];
-		wp_enqueue_script( 'racketmanager_widget_js', '/wp-content/plugins/leaguemanager/js/widget.js', array(), RACKETMANAGER_VERSION, array( 'in_footer' => true ) );
+		wp_enqueue_script( 'racketmanager_widget_js', plugins_url( '/js/widget.js', __DIR__ ), array(), RACKETMANAGER_VERSION, array( 'in_footer' => true ) );
 
 		$title     = apply_filters( 'widget_title', $instance['title'] );
 		$club_name = isset( $instance['club_name'] ) ? esc_html( $instance['club_name'] ) : '';

@@ -10,7 +10,7 @@
  * @package plugin Racketmanager
  *
  * Copyright 2025  Paul Moffat (email: paul@brunswickcomputing.co,uk)
- * Based initially on leaguemanager plugin.
+ * Based initially on racketmanager plugin.
  */
 
 namespace Racketmanager;

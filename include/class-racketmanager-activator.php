@@ -25,7 +25,7 @@ class Racketmanager_Activator {
 	/**
 	 * Activate plugin
 	 */
-	public function activate(): void {
+	public static function activate(): void {
 		$options = get_option( 'racketmanager' );
 		if ( ! $options ) {
 			$color_white                  = '#FFFFFF';
@@ -77,23 +77,15 @@ class Racketmanager_Activator {
 		$role = get_role( 'editor' );
 		$role?->add_cap('racket_manager');
 
-		$this->add_pages();
+		static::create_login_pages();
+		static::create_basic_pages();
 
-		$this->install();
+		static::install();
 	}
-
-	/**
-	 * Add pages
-	 */
-	public function add_pages(): void {
-		$this->create_login_pages();
-		$this->create_basic_pages();
-	}
-
 	/**
 	 * Create login pages
 	 */
-	public function create_login_pages(): void {
+	public static function create_login_pages(): void {
 		// Information needed for creating the plugin's login/account pages.
 		$no_title         = 'No title';
 		$page_definitions = array(
@@ -124,7 +116,7 @@ class Racketmanager_Activator {
 	/**
 	 * Create basic pages
 	 */
-	public function create_basic_pages(): void {
+	public static function create_basic_pages(): void {
 		// Information needed for creating the plugin's basic pages.
 		$no_title         = 'No title';
 		$page_definitions = array(
@@ -161,7 +153,7 @@ class Racketmanager_Activator {
 	/**
 	 * Install plugin
 	 */
-	public function install(): void {
+	public static function install(): void {
 		global $wpdb;
 		include_once ABSPATH . '/wp-admin/includes/upgrade.php';
 
@@ -174,8 +166,8 @@ class Racketmanager_Activator {
 				$charset_collate .= " COLLATE $wpdb->collate";
 			}
 		}
-
-		$create_leagues_sql = "CREATE TABLE $wpdb->racketmanager ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `settings` longtext NOT NULL, `seasons` longtext NOT NULL, `competition_id` int( 11) NOT null default 0, PRIMARY KEY ( `id` )) $charset_collate;";
+/*
+		$create_leagues_sql = "CREATE TABLE $wpdb->racketmanager ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `settings` longtext NOT NULL, `seasons` longtext NOT NULL, `sequence` varchar(3) DEFAULT NULL, `event_id` int( 11) default NULL, PRIMARY KEY ( `id` ) INDEX `event_id` ( `event_id` ) ) $charset_collate;";
 		maybe_create_table( $wpdb->racketmanager, $create_leagues_sql );
 
 		$create_matches_sql = "CREATE TABLE $wpdb->racketmanager_matches ( `id` int( 11 ) NOT NULL AUTO_INCREMENT , `group` varchar( 30 ) NOT NULL default '', `date` datetime NOT NULL, `home_team` varchar( 255 ) NOT NULL default 0, `away_team` varchar( 255 ) NOT NULL default 0, `match_day` tinyint( 4 ) NOT NULL default '0', `location` varchar( 100 ) NOT NULL default '', `league_id` int( 11 ) NOT NULL default '0', `season` varchar( 255 ) NOT NULL default '', `home_points` varchar( 30 ) NULL default NULL, `away_points` varchar( 30 ) NULL default NULL, `winner_id` int( 11 ) NOT NULL default '0', `loser_id` int( 11 ) NOT NULL default '0', `post_id` int( 11 ) NOT NULL default '0', `final` varchar( 150 ) NOT NULL default '', `custom` longtext NOT NULL, `updated_user` int( 11 ) NULL, `updated` datetime NULL, `confirmed` varchar( 1 ) NULL, `home_captain` int( 11 ) NULL, `away_captain` int( 11 ) NULL, `comments` varchar( 500 ) NULL, PRIMARY KEY ( `id` ), INDEX( `league_id` )) $charset_collate;";
@@ -219,11 +211,12 @@ class Racketmanager_Activator {
 
 		$create_invoices_sql = "CREATE TABLE $wpdb->racketmanager_invoices ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `charge_id` int( 11 ) NOT NULL, `club_id` int( 11 ) NOT NULL, `invoiceNumber` int( 11 ) NOT NULL, `status` varchar( 50 ) NOT NULL, `date` date, `date_due` date, PRIMARY KEY ( `id` )) $charset_collate;";
 		maybe_create_table( $wpdb->racketmanager_invoices, $create_invoices_sql );
+*/
 	}
 
 	/**
 	 * Deactivate plugin
 	 */
-	public function deactivate() {
+	public static function deactivate() {
 	}
 }

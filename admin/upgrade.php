@@ -17,7 +17,7 @@ function racketmanager_upgrade(): void {
 	echo esc_html__( 'Upgrade database structure...', 'racketmanager' ) . "<br />\n";
 	$wpdb->show_errors();
 	if ( ! $installed ) {
-		$old_options = get_option( 'leaguemanager' );
+		$old_options = get_option( 'racketmanager' );
 		if ( $old_options ) {
 			$options   = $old_options;
 			$installed = $options['dbversion'];

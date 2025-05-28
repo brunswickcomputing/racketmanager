@@ -2448,4 +2448,65 @@ class Racketmanager_Competition {
 		}
 		return $return;
 	}
+
+	/**
+	 * Contact Competition Teams
+	 *
+	 * @param string $season season.
+	 * @param string $email_message message.
+	 *
+	 * @return boolean
+	 */
+	private function contact_teams( string $season, string $email_message ): bool {
+		global $racketmanager;
+		$email_message = str_replace( '\"', '"', $email_message );
+		$headers       = array();
+		$email_from    = $racketmanager->get_confirmation_email( $this->type );
+		$headers[]     = 'From: ' . ucfirst( $this->type ) . ' Secretary <' . $email_from . '>';
+		$headers[]     = 'cc: ' . ucfirst( $this->type ) . ' Secretary <' . $email_from . '>';
+		$email_subject = $racketmanager->site_name . ' - ' . $this->name . ' ' . $season . ' - Important Message';
+		$email_to      = array();
+		if ( $this->is_player_entry ) {
+			if ( $this->is_tournament ) {
+				$tournament_key = $this->id . ',' . $this->current_season['name'];
+				$tournament     = get_tournament( $tournament_key, 'shortcode' );
+				if ( $tournament ) {
+					$players = $tournament->get_players();
+					foreach ( $players as $player_name ) {
+						$player = get_player( $player_name, 'name' );
+						if ( $player && ! empty( $player->email ) ) {
+							$headers[] = 'bcc: ' . $player->display_name . ' <' . $player->email . '>';
+						}
+					}
+				}
+			}
+		} else {
+			$teams  = array();
+			$events = $this->get_events();
+			foreach ( $events as $event ) {
+				$event = get_event( $event );
+				if ( $event ) {
+					$event_teams = $event->get_teams( array( 'season' => $event->current_season['name'] ) );
+					if ( $event_teams ) {
+						$teams = array_merge( $teams, $event_teams );
+					}
+				}
+			}
+			foreach ( $teams as $team ) {
+				$league = get_league( $team->league_id );
+				if ( $league ) {
+					$team_dtls = $league->get_team_dtls( $team->team_id );
+					if ( ! empty( $team_dtls->contactemail ) ) {
+						$headers[] = 'bcc: ' . ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
+					}
+					if ( ! empty( $team_dtls->club->match_secretary_email ) ) {
+						$headers[] = 'bcc: ' . ucwords( $team_dtls->club->match_secretary_name ) . ' <' . $team_dtls->club->match_secretary_email . '>';
+					}
+				}
+			}
+		}
+		wp_mail( $email_to, $email_subject, $email_message, $headers );
+		$racketmanager->set_message( __( 'Message sent', 'racketmanager' ) );
+		return true;
+	}
 }

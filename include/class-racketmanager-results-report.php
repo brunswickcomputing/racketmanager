@@ -52,7 +52,7 @@ final class Racketmanager_Results_Report {
 		if ( ! $results_report ) {
 			$results_report = $wpdb->get_row(
 				$wpdb->prepare(
-					"SELECT `id`, `match_id`, `result_object` FROM {$wpdb->racketmanager_results_report} WHERE `id` = %d LIMIT 1",
+					"SELECT `id`, `match_id`, `result_object` FROM $wpdb->racketmanager_results_report WHERE `id` = %d LIMIT 1",
 					$results_report_id
 				)
 			);  // db call ok.
@@ -99,7 +99,7 @@ final class Racketmanager_Results_Report {
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"INSERT INTO {$wpdb->racketmanager_results_report} (`match_id`, `result_object`) VALUES (%d, %s)",
+				"INSERT INTO $wpdb->racketmanager_results_report (`match_id`, `result_object`) VALUES (%d, %s)",
 				$this->match_id,
 				$this->result_object,
 			)
@@ -114,7 +114,7 @@ final class Racketmanager_Results_Report {
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->racketmanager_results_report} WHERE `id` = %d",
+				"DELETE FROM $wpdb->racketmanager_results_report WHERE `id` = %d",
 				$this->id
 			)
 		);

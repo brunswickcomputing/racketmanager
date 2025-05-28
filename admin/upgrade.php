@@ -1111,7 +1111,7 @@ function racketmanager_upgrade(): void {
 				$teams = $league->get_league_teams();
 				foreach ( $teams as $team ) {
 					$table_entry = Racketmanager\get_league_team( $team->table_id );
-					$table_entry?->set_rating($team, $event);
+					$table_entry?->set_rating($team);
 				}
 			}
 		}

@@ -322,7 +322,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 		$team_name = get_query_var( 'team' );
 		if ( $team_name ) {
 			$team_name = un_seo_url( $team_name );
-			$team      = get_team( $team_name, 'name' );
+			$team      = get_team( $team_name );
 			if ( ! $team ) {
 				return __( 'Team not found', 'racketmanager' );
 			}

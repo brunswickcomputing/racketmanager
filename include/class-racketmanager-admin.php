@@ -952,7 +952,7 @@ class RacketManager_Admin extends RacketManager {
 			if ( $event_id ) {
 				if ( $season ) {
 					$event = get_event( $event_id );
-					$event->generate_box_league_matches( $season );
+					$event->generate_box_league_matches();
 					$this->set_message( __( 'Matches generated', 'racketmanager' ) );
 				} else {
 					$this->set_message( __( 'No season set', 'racketmanager' ), true );
@@ -2301,7 +2301,7 @@ class RacketManager_Admin extends RacketManager {
 
 			if ( $single_cup_game ) {
 				$final       = $league->championship->get_finals( $final_key );
-				$final_teams = $league->championship->get_final_teams( $final['key'], 'ARRAY' );
+				$final_teams = $league->championship->get_final_teams( $final['key'] );
 				if ( is_numeric( $match->home_team ) ) {
 					$home_team = get_team( $match->home_team );
 					$home_title = $home_team?->title;
@@ -2766,7 +2766,7 @@ class RacketManager_Admin extends RacketManager {
 			$num_match_days = $this->get_default_match_days( $competition->type );
 		}
 		if ( ! $num_match_days ) {
-			$this->set_message( 'Number of match days not specified', 'racketmanager', 'error' );
+			$this->set_message( __( 'Number of match days not specified', 'racketmanager' ), 'error' );
 			return false;
 		}
 		$seasons            = empty( $competition->seasons ) ? array() : $competition->seasons;
@@ -2822,7 +2822,7 @@ class RacketManager_Admin extends RacketManager {
 				$num_match_days = $this->get_default_match_days( $event->competition->type );
 			}
 			if ( ! $num_match_days ) {
-				$this->set_message( 'Number of match days not specified', 'racketmanager', 'error' );
+				$this->set_message( __( 'Number of match days not specified', 'racketmanager' ), 'error' );
 				return false;
 			}
 			$event->seasons[ $season ] = array(

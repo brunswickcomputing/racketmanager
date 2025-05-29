@@ -1729,19 +1729,23 @@ class RacketManager_Admin extends RacketManager {
 				} else {
 					$messages      = array();
 					$message_error = false;
-					foreach ( $_POST['club'] as $club_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-						$club = get_club( $club_id );
-						if ( $club->has_teams() ) {
-							$messages[]    = $club->name . ' ' . __( 'not deleted - still has teams attached', 'racketmanager' );
-							$message_error = true;
-						} else {
-							$club->delete();
-							$messages[] = $club->name . ' ' . __( 'deleted', 'racketmanager' );
+                    if ( empty( $_POST['club'] ) ) {
+						$this->set_message( __( 'No clubs selected', 'racketmanager' ), true );
+					} else {
+						foreach ( $_POST['club'] as $club_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+							$club = get_club( $club_id );
+							if ( $club->has_teams() ) {
+								$messages[]    = $club->name . ' ' . __( 'not deleted - still has teams attached', 'racketmanager' );
+								$message_error = true;
+							} else {
+								$club->delete();
+								$messages[] = $club->name . ' ' . __( 'deleted', 'racketmanager' );
+							}
 						}
+						$message = implode( '<br>', $messages );
+						$this->set_message( $message, $message_error );
+						$club_id = 0;
 					}
-					$message = implode( '<br>', $messages );
-					$this->set_message( $message, $message_error );
-					$club_id = 0;
 				}
 
 				$this->printMessage();

@@ -59,7 +59,7 @@ if ( $match->is_pending ) {
 	<div class="module-container">
 		<?php
 		if ( ! empty( $match->status ) ) {
-			$match_status = RacketManager_Util::get_match_status( $match->status );
+			$match_status = Racketmanager_Util::get_match_status( $match->status );
 			$info_msg     = $match_status;
 			switch ( $match->status ) {
 				case 1:

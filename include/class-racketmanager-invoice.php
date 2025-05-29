@@ -141,7 +141,7 @@ final class Racketmanager_Invoice {
 	 * @param object|null $invoice invoice object.
 	 */
 	public function __construct(object $invoice = null ) {
-		$this->racketmanager = Racketmanager::get_instance();
+		$this->racketmanager = RacketManager::get_instance();
 		if ( ! is_null( $invoice ) ) {
 			if ( isset( $invoice->details ) ) {
 				$invoice->details = json_decode( $invoice->details );

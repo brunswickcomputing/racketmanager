@@ -730,7 +730,7 @@ function get_player_error( object|int $player_error = null ): Racketmanager_Play
  * @param object|int|null $club_player ID or player_error object. Defaults to global $club_player.
  * @return Racketmanager_club_player|null
  */
-function get_club_player( object|int $club_player = null ): ?Racketmanager_club_player {
+function get_club_player( object|int $club_player = null ): ?Racketmanager_Club_Player {
 	if ( empty( $club_player ) && isset( $GLOBALS['club_player'] ) ) {
 		$club_player = $GLOBALS['club_player'];
 	}

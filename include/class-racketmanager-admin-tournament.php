@@ -90,25 +90,25 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 						'status' => 'confirmed',
 					)
 				);
-				$confirmed_entries       = RacketManager_Util::get_players_list( $entries_confirmed );
+				$confirmed_entries       = Racketmanager_Util::get_players_list( $entries_confirmed );
 				$entries_pay_due         = $tournament->get_entries(
 					array(
 						'status' => 'unpaid',
 					)
 				);
-				$pay_due_entries         = RacketManager_Util::get_players_list( $entries_pay_due );
+				$pay_due_entries         = Racketmanager_Util::get_players_list( $entries_pay_due );
 				$entries_pending         = $tournament->get_entries(
 					array(
 						'status' => 'pending',
 					)
 				);
-				$pending_entries         = RacketManager_Util::get_players_list( $entries_pending );
+				$pending_entries         = Racketmanager_Util::get_players_list( $entries_pending );
 				$entries_withdrawn       = $tournament->get_entries(
 					array(
 						'status' => 'withdrawn',
 					)
 				);
-				$withdrawn_entries       = RacketManager_Util::get_players_list( $entries_withdrawn );
+				$withdrawn_entries       = Racketmanager_Util::get_players_list( $entries_withdrawn );
 				require RACKETMANAGER_PATH . 'admin/show-tournament.php';
 			}
 		}
@@ -248,9 +248,9 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 							if ( 0 === $i ) {
 								$match_date = $tournament->date;
 							} elseif ( 1 === $i ) {
-								$match_date = RacketManager_Util::amend_date( $tournament->date, 7, '-' );
+								$match_date = Racketmanager_Util::amend_date( $tournament->date, 7, '-' );
 							} else {
-								$match_date = RacketManager_Util::amend_date( $match_date, $round_length, '-' );
+								$match_date = Racketmanager_Util::amend_date( $match_date, $round_length, '-' );
 							}
 							$match_dates[ $r ] = $match_date;
 							++$i;
@@ -651,7 +651,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 					$season['competition_code'] = $tournament->competition_code;
 				}
 				if ( $updates ) {
-					$season_data                   = new \stdclass();
+					$season_data                   = new \stdClass();
 					$season_data->season           = $season['name'];
 					$season_data->num_match_days   = $season['num_match_days'];
 					$season_data->object_id        = $competition->id;
@@ -671,7 +671,7 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 			} else {
 				$competition_season = $this->add_season_to_competition( $tournament->season, $tournament->competition_id );
 				if ( $competition_season ) {
-					$season_data                   = new \stdclass();
+					$season_data                   = new \stdClass();
 					$season_data->season           = $competition_season['name'];
 					$season_data->num_match_days   = $competition_season['num_match_days'];
 					$season_data->object_id        = $competition->id;

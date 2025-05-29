@@ -12,7 +12,7 @@ namespace Racketmanager;
 /**
  * Class to implement the Racketmanager_Shortcodes_Event object
  */
-class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
+class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
 	/**
 	 * Initialize shortcodes
 	 */
@@ -457,7 +457,7 @@ class Racketmanager_Shortcodes_Event extends Racketmanager_Shortcodes {
 				}
 			} else {
 				$players        = $event->get_players( array( 'season' => $event->current_season['name'] ) );
-				$event->players = RacketManager_Util::get_players_list( $players );
+				$event->players = Racketmanager_Util::get_players_list( $players );
 			}
 			$filename = ( ! empty( $template ) ) ? 'players-' . $template : 'players';
 			return $this->load_template(

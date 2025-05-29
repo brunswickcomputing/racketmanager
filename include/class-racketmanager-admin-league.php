@@ -155,7 +155,7 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 											} else {
 												$i = 0;
 												foreach( $current_season['match_dates'] as $match_date ) {
-													$match_dates[ $i ] = RacketManager_Util::amend_date( $match_date, $competition_event->offset, '+', 'week' );
+													$match_dates[ $i ] = Racketmanager_Util::amend_date( $match_date, $competition_event->offset, '+', 'week' );
 													++$i;
 												}
 											}

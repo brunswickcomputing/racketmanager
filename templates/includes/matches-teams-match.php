@@ -70,7 +70,7 @@ if ( empty( $match->winner_id ) ) {
 		</span>
 		<?php
 		if ( $match->status ) {
-			$match_message = RacketManager_Util::get_match_status( $match->status );
+			$match_message = Racketmanager_Util::get_match_status( $match->status );
 			?>
 			<span class="match__message match-warning"><?php echo esc_html( $match_message ); ?></span>
 			<?php

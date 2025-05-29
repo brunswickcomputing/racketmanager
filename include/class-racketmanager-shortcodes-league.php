@@ -12,7 +12,7 @@ namespace Racketmanager;
 /**
  * Class to implement the Racketmanager_Shortcodes_League object
  */
-class Racketmanager_Shortcodes_League extends Racketmanager_Shortcodes {
+class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 	/**
 	 * Initialize shortcodes
 	 */

@@ -1,10 +1,10 @@
 <div class="container">
   <a href="#top" class="alignright top-link"><?php _e( 'Top', 'racketmanager' ) ?></a>
-  <p>The adminstrations page of Racketmanager allows general administration functions to be performed.</p>
+  <p>The administrations page of Racketmanager allows general administration functions to be performed.</p>
   <!-- Nav tabs -->
   <ul class="nav nav-pills" id="myTab" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active show" id="playerrequest-tab" data-bs-toggle="pill" data-bs-target="#playerrequest" type="button" role="tab" aria-controls="playerrequest" aria-selected="true"><?php _e( 'Player Requests', 'racketmanager' ) ?></button>
+      <button class="nav-link active show" id="player-request-tab" data-bs-toggle="pill" data-bs-target="#player-request" type="button" role="tab" aria-controls="player-request" aria-selected="true"><?php _e( 'Player Requests', 'racketmanager' ) ?></button>
     </li>
     <li class="nav-item" role="presentation">
       <button class="nav-link" id="players-tab" data-bs-toggle="pill" data-bs-target="#players" type="button" role="tab" aria-controls="players" aria-selected="false"><?php _e( 'Players', 'racketmanager' ) ?></button>
@@ -15,7 +15,7 @@
   </ul>
   <!-- Tab panes -->
   <div class="container tab-content">
-    <div class="tab-pane active show fade" id="playerrequest" role="tabpanel" aria-labelledby="playerrequest-tab">
+    <div class="tab-pane active show fade" id="player-request" role="tabpanel" aria-labelledby="player-request-tab">
       <h3 class="header"><?php _e( 'Player Requests', 'racketmanager' ) ?></h3>
       <p>The player request page shows requests to register players for clubs.</p>
       <p>These requests are generated from the website club screen by match secretaries.</p>
@@ -42,7 +42,7 @@
       <p>The seasons page of Racketmanager lists all current seasons and allows new seasons to be defined.</p>
       <p>To add a new season, all the is required is the season name.</p>
       <h4 id="Existing Season"><?php _e( 'Existing Seasons', 'racketmanager' ) ?></h4>
-      <p>For each season, it is possible to add this season to multiple competitions in one easy way. Clicking on the "Add Competitions" button dispays a list of competitions (grouped into "Cups", "Leagues" and "Tournaments"). Firstly, the number of matchdays must be entered at the top of the screen. Clicking on the "checkbox" next to the competition name and pressing "Apply" will add the selected season to each competition. If the checkbox is not present, then the selected season is already added to the competition.</p>
+      <p>For each season, it is possible to add this season to multiple competitions in one easy way. Clicking on the "Add Competitions" button displays a list of competitions (grouped into "Cups", "Leagues" and "Tournaments"). Firstly, the number of matchdays must be entered at the top of the screen. Clicking on the "checkbox" next to the competition name and pressing "Apply" will add the selected season to each competition. If the checkbox is not present, then the selected season is already added to the competition.</p>
     </div>
   </div>
 </div>

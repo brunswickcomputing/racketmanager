@@ -63,7 +63,7 @@ $charges         = $finance_charges;
 	<div class="row gx-3 align-items-center mb-3">
 		<form id="charges-action" method="post" action="" class="form-control mb-3">
 			<?php wp_nonce_field( 'charges-bulk' ); ?>
-			<div class="row gx-3 mb-3 align-items-center">
+			<div class="row g-3 mb-3 align-items-center">
 				<!-- Bulk Actions -->
 				<div class="col-auto">
                     <label>

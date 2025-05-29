@@ -12,19 +12,23 @@ namespace Racketmanager;
 <div class="mb-3">
 <form id="seasons-filter" method="post" action="" class="form-control">
 	<?php wp_nonce_field( 'seasons-bulk', 'racketmanager_nonce' ); ?>
-
-	<div class="tablenav">
-		<!-- Bulk Actions -->
-		<select name="action" size="1">
-			<option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
-			<option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
-		</select>
-		<input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doSeasonDel" id="doSeasonDel" class="btn btn-secondary action" />
-	</div>
-
+    <div class="row g-3 mb-3 align-items-center">
+        <!-- Bulk Actions -->
+        <div class="col-auto">
+            <label>
+                <select class="form-select" name="action">
+                    <option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
+                    <option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
+                </select>
+            </label>
+        </div>
+        <div class="col-auto">
+            <button name="doSeasonDel" id="doSeasonDel" class="btn btn-secondary"><?php esc_html_e( 'Apply', 'racketmanager' ); ?></button>
+        </div>
+    </div>
 	<div class="container">
 		<div class="row table-header">
-			<div class="col-12 col-md-1 check-column"><input type="checkbox" id="check-all-seasons" onclick="Racketmanager.checkAll(document.getElementById('seasons-filter'));" /></div>
+			<div class="col-12 col-md-1 check-column"><label for="check-all-seasons"></label><input type="checkbox" id="check-all-seasons" onclick="Racketmanager.checkAll(document.getElementById('seasons-filter'));" /></div>
 			<div class="col-12 col-md-1 column-num">ID</div>
 			<div class="col-12 col-md-2"><?php esc_html_e( 'Name', 'racketmanager' ); ?></div>
 		</div>
@@ -37,13 +41,15 @@ namespace Racketmanager;
 				<?php $class = ( 'alternate' === $class ) ? '' : 'alternate'; ?>
 				<div class="row table-row <?php echo esc_html( $class ); ?>">
 					<div class="col-12 col-md-1 check-column">
-						<input type="checkbox" value="<?php echo esc_html( $season->id ); ?>" name="season[<?php echo esc_html( $season->id ); ?>]" />
+                        <label for="season-<?php echo esc_html( $season->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $season->id ); ?>" name="season[<?php echo esc_html( $season->id ); ?>]" id="season-<?php echo esc_html( $season->id ); ?>" />
 					</div>
 					<div class="col-12 col-md-1 column-num"><?php echo esc_html( $season->id ); ?></div>
 					<div class="col-12 col-md-2"><?php echo esc_html( $season->name ); ?></div>
 				</div>
-			<?php } ?>
-		<?php } ?>
+			    <?php
+            }
+        }
+        ?>
 	</div>
 </form>
 </div>

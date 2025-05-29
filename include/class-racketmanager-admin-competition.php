@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * RacketManager administration functions
  * Class to implement RacketManager Administration Competition panel
@@ -46,7 +48,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 						if ( intval( $_POST['competition_id'] ) !== $competition_id ) {
 							$racketmanager->set_message( __( 'Competition id differs', 'racketmanager' ), true );
 						} else {
-							$config                           = new \stdClass();
+							$config                           = new stdClass();
 							$config->name                     = isset( $_POST['competition_title'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_title'] ) ) : null;
 							$config->sport                    = isset( $_POST['sport'] ) ? sanitize_text_field( wp_unslash( $_POST['sport'] ) ) : null;
 							$config->type                     = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : null;
@@ -148,7 +150,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 				$competition    = get_competition( $competition_id );
 				if ( $competition ) {
 					$season                            = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-					$current_season                    = new \stdClass();
+					$current_season                    = new stdClass();
 					$current_season->name              = $season;
 					$current_season->venue             = isset( $_POST['venue'] ) ? intval( $_POST['venue'] ) : null;
 					$current_season->date_end          = isset( $_POST['dateEnd'] ) ? sanitize_text_field( wp_unslash( $_POST['dateEnd'] ) ) : null;
@@ -196,7 +198,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 				if ( $competition ) {
 					$season = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
 					if ( $season ) {
-						$current_season                    = new \stdClass();
+						$current_season                    = new stdClass();
 						$current_season->name              = $season;
 						$current_season->venue             = isset( $_POST['venue'] ) ? intval( $_POST['venue'] ) : null;
 						$current_season->date_end          = isset( $_POST['dateEnd'] ) ? sanitize_text_field( wp_unslash( $_POST['dateEnd'] ) ) : null;
@@ -516,7 +518,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 				$competition->add_season( $season );
 				$events = $competition->get_events();
 				if ( $events ) {
-					$event_season                 = new \stdClass();
+					$event_season                 = new stdClass();
 					$event_season->name           = $current_season->name;
 					$event_season->home_away      = $current_season->home_away;
 					$event_season->num_match_days = $current_season->num_match_days;
@@ -528,7 +530,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 				}
 			}
 			if ( ! empty( $charge_create ) ) {
-				$charge                  = new \stdClass();
+				$charge                  = new stdClass();
 				$charge->competition_id  = $competition->id;
 				$charge->season          = $current_season->name;
 				$charge->date            = $fee_date;

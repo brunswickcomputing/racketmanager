@@ -14,10 +14,12 @@
 
 namespace Racketmanager;
 
+use function get_query_var;
+
 /** @var object $tournament */
 global $wp_query;
 $post_id   = $wp_query->post->ID; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-$match_day = \get_query_var( 'match_day' );
+$match_day = get_query_var( 'match_day' );
 if ( isset( $_GET['match_day'] ) || isset( $_GET['team_id'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	$tab = 'matches'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 }

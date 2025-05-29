@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * RacketManager finances administration functions
  * Class to implement RacketManager Administration Finances panel
@@ -195,7 +197,7 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 						$this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
 					}
 				} else {
-					$charge                  = new \stdClass();
+					$charge                  = new stdClass();
 					$charge->competition_id  = empty( $_POST['competition_id'] ) ? null : intval( $_POST['competition_id'] );
 					$charge->season          = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
 					$charge->status          = isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : null;

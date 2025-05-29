@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * Class to implement the Tournament object
  */
@@ -516,7 +518,7 @@ final class Racketmanager_Tournament {
 	 * @return object
 	 */
 	private function validate(object $tournament ): object {
-		$return  = new \stdClass();
+		$return  = new stdClass();
 		$valid   = true;
 		$err_msg = array();
 		$err_fld = array();
@@ -610,7 +612,7 @@ final class Racketmanager_Tournament {
 				$charge_create = true;
 			}
 			if ( $charge_create ) {
-				$charge                  = new \stdClass();
+				$charge                  = new stdClass();
 				$charge->competition_id  = $this->competition_id;
 				$charge->season          = $this->season;
 				$charge->date            = $this->date_start;
@@ -1124,7 +1126,7 @@ final class Racketmanager_Tournament {
 	 */
 	public function notify_entry_open(): object {
 		global $racketmanager_shortcodes, $racketmanager;
-		$return           = new \stdClass();
+		$return           = new stdClass();
 		$msg              = array();
 		$url              = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
 		$competition_name = $this->name . ' ' . __( 'Tournament', 'racketmanager' );
@@ -1215,7 +1217,7 @@ final class Racketmanager_Tournament {
 	 */
 	public function notify_entry_reminder(): object {
 		global $racketmanager_shortcodes, $racketmanager;
-		$return           = new \stdClass();
+		$return           = new stdClass();
 		$msg              = array();
 		$url              = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
 		$competition_name = $this->name . ' ' . __( 'Tournament', 'racketmanager' );
@@ -1358,7 +1360,7 @@ final class Racketmanager_Tournament {
 				$fee_status       = $charge->status;
 			}
 		}
-		$fees              = new \stdClass();
+		$fees              = new stdClass();
 		$fees->competition = $competition_fee;
 		$fees->event       = $event_fee;
 		$fees->id          = $fee_id;
@@ -1457,7 +1459,7 @@ final class Racketmanager_Tournament {
 							}
 						}
 						if ( $new_team ) {
-							$team             = new \stdClass();
+							$team             = new stdClass();
 							$team->player1    = $player->display_name;
 							$team->player1_id = $player->id;
 							$team->player2    = $partner_name;
@@ -1545,7 +1547,7 @@ final class Racketmanager_Tournament {
 		}
 		if ( $this->charge ) {
 			$this->cancel_player_invoices( $player_id );
-			$invoice            = new \stdClass();
+			$invoice            = new stdClass();
 			$invoice->charge_id = $this->charge->id;
 			$invoice->player_id = $player_id;
 			$invoice->date      = gmdate( 'Y-m-d' );
@@ -1611,7 +1613,7 @@ final class Racketmanager_Tournament {
 				}
 			}
 		} else {
-			$tournament_entry                = new \stdClass();
+			$tournament_entry                = new stdClass();
 			$tournament_entry->status        = $status;
 			$tournament_entry->tournament_id = $this->id;
 			$tournament_entry->player_id     = $player;

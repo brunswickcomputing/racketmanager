@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * RacketManager administration functions
  * Class to implement RacketManager Administration Event panel
@@ -71,7 +73,7 @@ final class RacketManager_Admin_Event extends RacketManager_Admin {
 								$racketmanager->printMessage();
 								return;
 							} else {
-								$config                     = new \stdClass();
+								$config                     = new stdClass();
 								$config->name               = isset( $_POST['event_name'] ) ? sanitize_text_field( wp_unslash( $_POST['event_name'] ) ) : null;
 								$config->type               = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : null;
 								$config->age_limit          = isset( $_POST['age_limit'] ) ? sanitize_text_field( wp_unslash( $_POST['age_limit'] ) ) : null;
@@ -108,7 +110,7 @@ final class RacketManager_Admin_Event extends RacketManager_Admin {
 					} elseif ( ! empty( $_POST['event_id'] ) ) {
 						$racketmanager->set_message( __( 'Event id invalid for new event', 'racketmanager' ), true );
 					} else {
-						$config                     = new \stdClass();
+						$config                     = new stdClass();
 						$config->name               = isset( $_POST['event_name'] ) ? sanitize_text_field( wp_unslash( $_POST['event_name'] ) ) : null;
 						$config->type               = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : null;
 						$config->age_limit          = isset( $_POST['age_limit'] ) ? sanitize_text_field( wp_unslash( $_POST['age_limit'] ) ) : null;
@@ -121,7 +123,7 @@ final class RacketManager_Admin_Event extends RacketManager_Admin {
 						$config->offset             = isset( $_POST['offset'] ) ? intval( $_POST['offset'] ) : null;
 						$config->primary_league     = isset( $_POST['primary_league'] ) ? intval( $_POST['primary_league'] ) : null;
 						if ( ! empty( $config->name ) ) {
-							$event = new \stdClass();
+							$event = new stdClass();
 							$event->name           = $config->name;
 							$event->competition_id = $competition->id;
 							$event->num_sets       = $config->num_sets;

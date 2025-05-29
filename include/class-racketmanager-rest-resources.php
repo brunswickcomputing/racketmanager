@@ -14,6 +14,7 @@ use Stripe\Event;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Stripe;
 use Stripe\Webhook;
+use UnexpectedValueException;
 use WP_REST_Server;
 use WP_REST_Controller;
 use WP_REST_Response;
@@ -552,7 +553,7 @@ class Racketmanager_Rest_Resources extends WP_REST_Controller {
 			$event = Event::constructFrom(
 				json_decode($payload, true)
 			);
-		} catch( \UnexpectedValueException ) {
+		} catch( UnexpectedValueException ) {
 			echo '⚠️  Webhook error while parsing basic request.';
 			$status = 400;
 			return new WP_REST_Response( $data, $status );

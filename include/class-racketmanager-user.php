@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * Class to implement the User object
  */
@@ -584,7 +586,7 @@ final class Racketmanager_User {
 		$meta_favourites = get_user_meta( $userid, $meta_key );
 		$favourites      = array();
 		foreach ( $meta_favourites as $i => $favourite ) {
-			$favourite_item = new \stdClass();
+			$favourite_item = new stdClass();
 			if ( 'league' === $favourites_type ) {
 				$league                 = get_league( $favourite );
 				$favourite_item->name   = $league->title;

@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * Class to implement the Competition object
  */
@@ -2010,7 +2012,7 @@ class Racketmanager_Competition {
 			$racketmanager->error_fields[]   = 'num_matches_per_page';
 		}
 		if ( empty( $racketmanager->error_fields ) ) {
-			$settings = new \stdClass();
+			$settings = new stdClass();
 			if ( empty( $this->sport ) || $this->sport !== $config->sport ) {
 				$updates = true;
 			}
@@ -2244,7 +2246,7 @@ class Racketmanager_Competition {
 	public function notify_team_entry_open( int $season ): object {
 		global $racketmanager, $racketmanager_shortcodes;
 		$msg             = null;
-		$return          = new \stdClass();
+		$return          = new stdClass();
 		$is_championship = null;
 		if ( isset( $this->seasons[ $season ] ) ) {
 			$season_dtls = (object) $this->seasons[ $season ];
@@ -2352,7 +2354,7 @@ class Racketmanager_Competition {
 	public function notify_team_entry_reminder( int $season ): object {
 		global $racketmanager, $racketmanager_shortcodes;
 		$msg           = null;
-		$return        = new \stdClass();
+		$return        = new stdClass();
 		$messages_sent = 0;
 		if ( isset( $this->seasons[ $season ] ) ) {
 			$clubs = $racketmanager->get_clubs(

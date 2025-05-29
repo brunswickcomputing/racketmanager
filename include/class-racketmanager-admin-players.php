@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * RacketManager players administration functions
  * Class to implement RacketManager Administration Players panel
@@ -299,7 +301,7 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 			if ( $wtn_response->status ) {
 				$wtn = $wtn_response->value;
 			} else {
-				$feedback          = new \stdClass();
+				$feedback          = new stdClass();
 				$feedback->player  = $player;
 				$feedback->message = $wtn_response->message;
 				$errors[]          = $feedback;

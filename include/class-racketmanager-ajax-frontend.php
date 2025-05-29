@@ -8,6 +8,8 @@
 
 namespace Racketmanager;
 
+use DateMalformedStringException;
+use stdClass;
 use Stripe\Exception\ApiErrorException;
 use Stripe\StripeClient;
 
@@ -100,7 +102,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * Add item as favourite
 	 */
 	public function add_favourite(): void {
-		$return = new \stdClass();
+		$return = new stdClass();
 		if ( isset( $_POST['security'] ) ) {
 			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
 				$return->error = true;
@@ -504,7 +506,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			}
 		}
 		if ( ! $validator->error ) {
-			$tournament_entry               = new \stdClass();
+			$tournament_entry               = new stdClass();
 			$tournament_entry->all_events   = $tournament_events;
 			$tournament_entry->events       = $events;
 			$tournament_entry->partners     = $partners;
@@ -631,7 +633,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
         $team_info = null;
 		$return    = $this->check_security_token();
 		if ( ! isset( $return->error ) ) {
-			$team_info = new \stdClass();
+			$team_info = new stdClass();
 			$team_id   = isset( $_POST['team'] ) ? sanitize_text_field( wp_unslash( $_POST['team'] ) ) : '';
 			$event_id  = isset( $_POST['event'] ) ? sanitize_text_field( wp_unslash( $_POST['event'] ) ) : '';
 
@@ -684,7 +686,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$match_times    = isset( $_POST['matchtime'] ) ? wp_unslash( $_POST['matchtime'] ) : array();
 				//phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				$comments             = isset( $_POST['commentDetails'] ) ? sanitize_textarea_field( wp_unslash( $_POST['commentDetails'] ) ) : '';
-				$club_entry           = new \stdClass();
+				$club_entry           = new stdClass();
 				$club_entry->club     = $club_id;
 				$club_entry->season   = $season;
 				$club_entry->comments = $comments;
@@ -724,7 +726,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						$validator    = $validator->match_time( $matchtime, $field_ref, $match_day, $start_times );
 						$validator    = $validator->captain( $captain, $contactno, $contactemail, $field_ref, $field_name );
 
-						$event_entry             = new \stdClass();
+						$event_entry             = new stdClass();
 						$event_entry->id         = $event->id;
 						$event_entry->name       = $event->name;
 						$event_entry->team_id    = $team;
@@ -759,7 +761,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	/**
 	 * League entry request
 	 *
-	 * @throws \DateMalformedStringException
+	 * @throws DateMalformedStringException
 	 * @see templates/leagueentry.php
 	 */
 	public function league_entry_request(): void {
@@ -798,7 +800,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$num_courts_available = isset( $_POST['numCourtsAvailable'] ) ? intval( $_POST['numCourtsAvailable'] ) : '';
 			$validator            = $validator->num_courts_available( $num_courts_available );
 
-			$club_entry           = new \stdClass();
+			$club_entry           = new stdClass();
 			$club_entry->club     = $club_id;
 			$club_entry->season   = $season;
 			$club_entry->comments = $comments;
@@ -849,7 +851,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						}
 					}
 				}
-				$event_entry       = new \stdClass();
+				$event_entry       = new stdClass();
 				$event_entry->id   = $event->id;
 				$event_entry->name = $event->name;
 
@@ -908,7 +910,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 								$courts_needed[ $week ][ $match_day ][ $match_time ]['teams']  = 1;
 								$courts_needed[ $week ][ $match_day ][ $match_time ]['courts'] = $event->num_rubbers;
 							}
-							$team_entry             = new \stdClass();
+							$team_entry             = new stdClass();
 							$team_entry->id         = $team_id;
 							$team_entry->match_day  = $match_day;
 							$team_entry->match_time = $match_time;
@@ -1047,50 +1049,50 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$home_name      = $match->teams['home']->title;
 				$away_name      = $match->teams['away']->title;
 				$select         = array();
-				$option         = new \stdClass();
+				$option         = new stdClass();
 				$option->value  = 'walkover_player2';
 				$option->select = 'walkover_player2';
 				/* translators: %s: Home team name */
 				$option->desc   = sprintf( __( 'Match not played - %s did not show', 'racketmanager' ), $home_name );
 				$select[]       = $option;
-				$option         = new \stdClass();
+				$option         = new stdClass();
 				$option->value  = 'walkover_player1';
 				$option->select = 'walkover_player1';
 				/* translators: %s: Away team name */
 				$option->desc = sprintf( __( 'Match not played - %s did not show', 'racketmanager' ), $away_name );
 				$select[]     = $option;
 				if ( $match->league->event->competition->is_player_entry ) {
-					$option         = new \stdClass();
+					$option         = new stdClass();
 					$option->value  = 'retired_player1';
 					$option->select = 'retired_player1';
 					/* translators: %s: Home team name */
 					$option->desc   = sprintf( __( 'Retired - %s', 'racketmanager' ), $home_name );
 					$select[]       = $option;
-					$option         = new \stdClass();
+					$option         = new stdClass();
 					$option->value  = 'retired_player2';
 					$option->select = 'retired_player2';
 					/* translators: %s: Away team name */
 					$option->desc = sprintf( __( 'Retired - %s', 'racketmanager' ), $away_name );
 					$select[]     = $option;
 				}
-				$option         = new \stdClass();
+				$option         = new stdClass();
 				$option->value  = 'cancelled';
 				$option->select = 'cancelled';
 				$option->desc   = __( 'Cancelled', 'racketmanager' );
 				$select[]       = $option;
-				$option         = new \stdClass();
+				$option         = new stdClass();
 				$option->value  = 'share';
 				$option->select = 'share';
 				$option->desc   = __( 'Not played', 'racketmanager' );
 				$select[]       = $option;
 				if ( $match->league->event->competition->is_team_entry ) {
-					$option         = new \stdClass();
+					$option         = new stdClass();
 					$option->value  = 'abandoned';
 					$option->select = 'abandoned';
 					$option->desc   = __( 'Abandoned', 'racketmanager' );
 					$select[]       = $option;
 				}
-				$option         = new \stdClass();
+				$option         = new stdClass();
 				$option->value  = 'none';
 				$option->select = 'None';
 				$option->desc   = __( 'Reset', 'racketmanager' );
@@ -1308,58 +1310,58 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$home_name      = $match->teams['home']->title;
 				$away_name      = $match->teams['away']->title;
 				$select         = array();
-				$option         = new \stdClass();
+				$option         = new stdClass();
 				$option->value  = 'walkover_player2';
 				$option->select = 'walkover_player2';
 				/* translators: %s: Home team name */
 				$option->desc   = sprintf( __( 'Match not played - %s did not show', 'racketmanager' ), $home_name );
 				$select[]       = $option;
-				$option         = new \stdClass();
+				$option         = new stdClass();
 				$option->value  = 'walkover_player1';
 				$option->select = 'walkover_player1';
 				/* translators: %s: Away team name */
 				$option->desc   = sprintf( __( 'Match not played - %s did not show', 'racketmanager' ), $away_name );
 				$select[]       = $option;
-				$option         = new \stdClass();
+				$option         = new stdClass();
 				$option->value  = 'retired_player1';
 				$option->select = 'retired_player1';
 				/* translators: %s: Home team name */
 				$option->desc   = sprintf( __( 'Retired - %s', 'racketmanager' ), $home_name );
 				$select[]       = $option;
-				$option         = new \stdClass();
+				$option         = new stdClass();
 				$option->value  = 'retired_player2';
 				$option->select = 'retired_player2';
 				/* translators: %s: Away team name */
 				$option->desc   = sprintf( __( 'Retired - %s', 'racketmanager' ), $away_name );
 				$select[]       = $option;
-				$option         = new \stdClass();
+				$option         = new stdClass();
 				$option->value  = 'abandoned';
 				$option->select = 'abandoned';
 				$option->desc   = __( 'Abandoned', 'racketmanager' );
 				$select[]       = $option;
-				$option         = new \stdClass();
+				$option         = new stdClass();
 				$option->value  = 'share';
 				$option->select = 'share';
 				$option->desc   = __( 'Not played', 'racketmanager' );
 				$select[]       = $option;
-				$option         = new \stdClass();
+				$option         = new stdClass();
 				$option->value  = 'none';
 				$option->select = 'None';
 				$option->desc   = __( 'Reset', 'racketmanager' );
 				$select[]       = $option;
-				$option         = new \stdClass();
+				$option         = new stdClass();
 				$option->value  = 'invalid_player1';
 				$option->select = 'invalid_player1';
 				/* translators: %s: Home team name */
 				$option->desc   = sprintf( __( 'Invalid player - %s', 'racketmanager' ), $home_name );
 				$select[]       = $option;
-				$option         = new \stdClass();
+				$option         = new stdClass();
 				$option->value  = 'invalid_player2';
 				$option->select = 'invalid_player2';
 				/* translators: %s: Away team name */
 				$option->desc   = sprintf( __( 'Invalid player - %s', 'racketmanager' ), $away_name );
 				$select[]       = $option;
-				$option         = new \stdClass();
+				$option         = new stdClass();
 				$option->value  = 'invalid_players';
 				$option->select = 'invalid_players';
 				$option->desc   = __( 'Invalid player on both teams', 'racketmanager' );
@@ -1633,7 +1635,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$status_class[ $home_team ]   = '';
 			$status_class[ $away_team ]   = '';
 		}
-		$status_dtls          = new \stdClass();
+		$status_dtls          = new stdClass();
 		$status_dtls->message = $status_message;
 		$status_dtls->class   = $status_class;
 		$status_dtls->status  = $status;
@@ -2898,7 +2900,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$wtns        = isset( $_POST['wtn'] ) ? wp_unslash( $_POST['wtn'] ) : null;
             $rubbers     = array();
 			foreach ( $rubber_nums as $rubber_num ) {
-				$new_rubber             = new \stdClass();
+				$new_rubber             = new stdClass();
 				$new_rubber->num        = $rubber_num;
 				$new_rubber->players    = $players[ $rubber_num ];
 				$new_rubber->wtn        = $wtns[ $rubber_num ];

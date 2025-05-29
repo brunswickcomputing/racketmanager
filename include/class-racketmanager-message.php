@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use mysqli_result;
+
 /**
  * Class to implement the message object
  */
@@ -156,7 +158,7 @@ final class Racketmanager_Message {
 	/**
 	 * Delete message
 	 */
-	public function delete(): \mysqli_result|bool|int|null {
+	public function delete(): mysqli_result|bool|int|null {
 		global $wpdb;
 		return $wpdb->delete( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->racketmanager_messages,

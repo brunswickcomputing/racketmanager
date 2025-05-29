@@ -16,14 +16,18 @@
 namespace Racketmanager;
 
 global $wp_query, $wp;
-$post_id   = $wp_query->post->ID; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+use function get_query_var;
+use function set_query_var;
+
+$post_id = $wp_query->post->ID; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 /** @var object $league */
 $pagename  = '/' . $league->event->competition->type . '/' . seo_url( $league->title ) . '/';
 $archive   = true;
-$match_day = \get_query_var( 'match_day' );
+$match_day = get_query_var( 'match_day' );
 if ( '0' === $match_day ) {
 	$match_day = '-1';
-	\set_query_var( 'match_day', '-1' );
+	set_query_var( 'match_day', '-1' );
 }
 if ( empty( $tab ) ) {
 	if ( isset( $wp->query_vars['player_id'] ) ) {

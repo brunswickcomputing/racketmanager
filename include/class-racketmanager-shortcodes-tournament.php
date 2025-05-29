@@ -10,6 +10,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * Class to implement the Racketmanager_Shortcodes_Tournament object
  */
@@ -707,7 +709,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 				if ( $match_id ) {
 					$match = get_match( $match_id );
 					if ( $match ) {
-						$final_match           = new \stdClass();
+						$final_match           = new stdClass();
 						$final_match->id       = $match_id;
 						$final_match->time     = $match->hour . ':' . $match->minutes;
 						$final_match->league   = $match->league->title;

@@ -8,6 +8,9 @@
 
 namespace Racketmanager;
 
+use NumberFormatter;
+use stdClass;
+
 /**
  * Main class to implement RacketManager
  */
@@ -82,9 +85,9 @@ class RacketManager {
 	/**
 	 * Currency format
 	 *
-	 * @var \NumberFormatter|null
+	 * @var NumberFormatter|null
 	 */
-	public ?\NumberFormatter $currency_fmt;
+	public ?NumberFormatter $currency_fmt;
 	/**
 	 * Constructor
 	 *
@@ -535,7 +538,7 @@ class RacketManager {
 	 * @return object
 	 */
 	public function notify_team_entry_open( int $competition_id, int $season ): object {
-		$return = new \stdClass();
+		$return = new stdClass();
         $msg    = array();
 		if ( $competition_id ) {
 			$competition = get_competition( $competition_id );
@@ -566,7 +569,7 @@ class RacketManager {
 	 * @return object
 	 */
 	public function notify_team_entry_reminder( int $competition_id, int $season ): object {
-		$return = new \stdClass();
+		$return = new stdClass();
         $msg    = array();
 		if ( $competition_id ) {
 			$competition = get_competition( $competition_id );
@@ -1032,7 +1035,7 @@ class RacketManager {
 	 */
 	public function racketmanager_locale(): void {
 		setlocale( LC_ALL, get_locale() );
-		$this->currency_fmt  = numfmt_create( get_locale(), \NumberFormatter::CURRENCY );
+		$this->currency_fmt  = numfmt_create( get_locale(), NumberFormatter::CURRENCY );
 		$locale_info         = localeconv();
 		$this->currency_code = isset( $locale_info['int_curr_symbol'] ) ? trim( $locale_info['int_curr_symbol'] ) : 'GBP';
 	}
@@ -1109,7 +1112,7 @@ class RacketManager {
 					}
 					$user = get_user_by( 'email', $address );
 					if ( $user ) {
-						$message_object                 = new \stdClass();
+						$message_object                 = new stdClass();
 						$message_object->subject        = $subject;
 						$message_object->userid         = $user->ID;
 						$message_object->date           = current_time( 'mysql', false );
@@ -2861,7 +2864,7 @@ class RacketManager {
 					} elseif ( str_starts_with($wtn_response->message, 'ERROR') && $retry ) {
 						$retry_wtn[] = $player;
 					} else {
-						$feedback = new \stdClass();
+						$feedback = new stdClass();
 						$feedback->player = $player;
 						$feedback->message = $wtn_response->message;
 						$messages[] = $feedback;
@@ -2979,7 +2982,7 @@ class RacketManager {
 				$valid   = false;
 			}
 		}
-		$response         = new \stdClass();
+		$response         = new stdClass();
 		$response->status = $valid;
 		if ( $valid ) {
 			$response->value = $wtn;
@@ -2996,7 +2999,7 @@ class RacketManager {
 	 */
 	protected function handle_player_errors( array $errors ): void {
 		foreach( $errors as $error ) {
-			$row = new \stdClass();
+			$row = new stdClass();
 			$row->player_id = $error->player->ID;
 			$row->message   = $error->message;
 			new Racketmanager_Player_Error( $row );

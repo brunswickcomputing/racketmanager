@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * Class to implement the Club object
  */
@@ -416,7 +418,7 @@ final class Racketmanager_Club {
 		}
 		$team_count = $this->has_teams( $type );
 		++$team_count;
-		$team          = new \stdClass();
+		$team          = new stdClass();
 		$team->title   = $this->shortcode . ' ' . $type_name . ' ' . $team_count;
 		$team->stadium = $this->name;
 		$team->club_id = $this->id;
@@ -634,7 +636,7 @@ final class Racketmanager_Club {
 				if ( $player_pending ) {
 					$racketmanager->set_message( __( 'Player registration already pending', 'racketmanager' ), true );
 				} else {
-					$club_player            = new \stdClass();
+					$club_player            = new stdClass();
 					$club_player->club_id   = $this->id;
 					$club_player->player_id = $player->id;
 					$club_player            = new Racketmanager_Club_Player( $club_player );

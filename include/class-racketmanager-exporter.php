@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * Class to implement the Racketmanager_Exporter object
  */
@@ -312,7 +314,7 @@ class Racketmanager_Exporter {
 		$contents = '[';
 		$i        = 0;
 		foreach ( $matches as $match ) {
-			$json_result = new \stdClass();
+			$json_result = new stdClass();
 			if ( ! empty( $club ) ) {
 				$json_result->club = str_replace( '"', '', $club->shortcode );
 			}
@@ -345,7 +347,7 @@ class Racketmanager_Exporter {
 		$contents = '';
 		$i        = 0;
 		foreach ( $teams as $team ) {
-			$json_result = new \stdClass();
+			$json_result = new stdClass();
 			if ( ! empty( $club ) ) {
 				$json_result->club = str_replace( '"', '', $club->shortcode );
 			}

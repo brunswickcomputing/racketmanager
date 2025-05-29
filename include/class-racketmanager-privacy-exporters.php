@@ -8,6 +8,8 @@
 
 namespace Racketmanager;
 
+use WP_User;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -24,7 +26,7 @@ class Racketmanager_Privacy_Exporters {
 	public static function user_data_exporter( string $email_address ): array {
 		$user           = get_user_by( 'email', $email_address ); // Check if user has an ID in the DB to load stored personal data.
 		$data_to_export = array();
-		if ( $user instanceof \WP_User ) {
+		if ( $user instanceof WP_User ) {
 			$user_personal_data = self::get_user_personal_data( $user );
 			if ( ! empty( $user_personal_data ) ) {
 				$data_to_export[] = array(
@@ -44,12 +46,12 @@ class Racketmanager_Privacy_Exporters {
 	/**
 	 * Get personal data (key/value pairs) for a user object.
 	 *
-	 * @param \WP_User $user user object.
+	 * @param WP_User $user user object.
 	 *
 	 * @return array
 	 *@since 3.4.0
 	 */
-	protected static function get_user_personal_data( \WP_User $user ): array {
+	protected static function get_user_personal_data( WP_User $user ): array {
 		$personal_data   = array();
 		$user_meta       = get_user_meta( $user->ID );
 		$props_to_export = array(

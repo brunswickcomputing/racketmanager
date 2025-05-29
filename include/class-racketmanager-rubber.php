@@ -9,6 +9,10 @@
 
 namespace Racketmanager;
 
+use DateMalformedStringException;
+use DateTime;
+use stdClass;
+
 /**
  * Class to implement the Racketmanager_Rubber object
  */
@@ -545,7 +549,7 @@ final class Racketmanager_Rubber {
 			$winner = -1;
 			$loser  = -1;
 		}
-		$return         = new \stdClass();
+		$return         = new stdClass();
 		$return->home   = $home_points;
 		$return->away   = $away_points;
 		$return->winner = $winner;
@@ -642,13 +646,13 @@ final class Racketmanager_Rubber {
 						if ( ! empty( $match->league->event->competition->rules['leadTimecheck'] ) ) {
 							if ( ! empty( $options['leadTimecheck'] ) && isset( $options['rosterLeadTime'] ) && isset( $player->created_date ) ) {
 								try {
-									$match_date = new \DateTime($match->date);
-								} catch (\DateMalformedStringException) {
+									$match_date = new DateTime($match->date);
+								} catch ( DateMalformedStringException) {
 									$match_date = null;
 								}
 								try {
-									$roster_date = new \DateTime($player->created_date);
-								} catch (\DateMalformedStringException) {
+									$roster_date = new DateTime($player->created_date);
+								} catch ( DateMalformedStringException) {
 									$roster_date = null;
 								}
 								if ( $roster_date && $match_date ) {

@@ -9,6 +9,9 @@
 
 namespace Racketmanager;
 
+use NumberFormatter;
+use stdClass;
+
 defined( 'ABSPATH' ) || die( 'Access denied !' );
 /**
  * Helper and Util functions
@@ -409,7 +412,7 @@ class Racketmanager_Util {
 			$max_loss = 0;
 			$min_loss = 0;
 		}
-		$set_info                    = new \stdClass();
+		$set_info                    = new stdClass();
 		$set_info->set_type          = $set_type;
 		$set_info->max_win           = $max_win;
 		$set_info->min_win           = $min_win;
@@ -872,7 +875,7 @@ class Racketmanager_Util {
 	 * @return object || null
 	 */
 	public static function get_currency_format(): object {
-		return numfmt_create( get_locale(), \NumberFormatter::CURRENCY );
+		return numfmt_create( get_locale(), NumberFormatter::CURRENCY );
 	}
 	/**
 	 * Get currency code

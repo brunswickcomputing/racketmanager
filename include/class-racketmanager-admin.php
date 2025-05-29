@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * RacketManager administration functions
  * Class to implement RacketManager Administration panel
@@ -673,7 +675,7 @@ class RacketManager_Admin extends RacketManager {
 						$racketmanager->error_messages[] = __( 'Age group must be set', 'racketmanager' );
 					}
 					if ( empty( $racketmanager->error_fields ) ) {
-						$competition            = new \stdClass();
+						$competition            = new stdClass();
 						$competition->name      = $name;
 						$competition->type      = $type;
 						$competition->age_group = $age_group;
@@ -1086,7 +1088,7 @@ class RacketManager_Admin extends RacketManager {
 			if ( isset( $_POST['action'] ) ) {
 				$league = get_league( $league );
 				if ( $league ) {
-					$team             = new \stdClass();
+					$team             = new stdClass();
 					$team->player1    = $team_player_1;
 					$team->player1_id = $team_player_1_id;
 					$team->player2    = $team_player_2;
@@ -1213,7 +1215,7 @@ class RacketManager_Admin extends RacketManager {
 			}
 			$num_matches = count( $_POST['match'] );
 			foreach ( $_POST['match'] as $i => $match_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-				$match = new \stdClass();
+				$match = new stdClass();
 				if ( isset( $_POST['away_team'][ $i ] ) && isset( $_POST['home_team'][ $i ] ) && $_POST['away_team'][ $i ] !== $_POST['home_team'][ $i ] ) {
 					$index = ( isset( $_POST['myDatePicker'][ $i ] ) ) ? $i : 0;
 					if ( ! isset( $_POST['begin_hour'][ $i ] ) ) {
@@ -1591,7 +1593,7 @@ class RacketManager_Admin extends RacketManager {
 				$matches                         = $primary_league->get_matches( $match_array );
 				if ( $matches ) {
 					foreach ( $matches as $match ) {
-						$team          = new \stdClass();
+						$team          = new stdClass();
 						$team->id      = '2_' . $final_name . '_' . $match->id;
 						$team->title   = __( 'Loser of ', 'racketmanager' ) . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;
 						$team->stadium = '';
@@ -1620,7 +1622,7 @@ class RacketManager_Admin extends RacketManager {
 							}
 						}
 						if ( $possible ) {
-							$team          = new \stdClass();
+							$team          = new stdClass();
 							$team->id      = '2_' . $final_name . '_' . $match->id;
 							$team->title   = __( 'Loser of ', 'racketmanager' ) . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;
 							$team->stadium = '';
@@ -1673,7 +1675,7 @@ class RacketManager_Admin extends RacketManager {
 				if ( ! current_user_can( 'edit_teams' ) ) {
 					$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 				} else {
-					$club             = new \stdClass();
+					$club             = new stdClass();
 					$club->name       = isset( $_POST['club'] ) ? sanitize_text_field( wp_unslash( $_POST['club'] ) ) : null;
 					$club->type       = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : null;
 					$club->shortcode  = isset( $_POST['shortcode'] ) ? sanitize_text_field( wp_unslash( $_POST['shortcode'] ) ) : null;
@@ -2011,7 +2013,7 @@ class RacketManager_Admin extends RacketManager {
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 		if ( $valid ) {
-			$player                = new \stdClass();
+			$player                = new stdClass();
 			$player->data          = array();
 			$player->firstname     = $firstname;
 			$player->surname       = $surname;
@@ -2126,7 +2128,7 @@ class RacketManager_Admin extends RacketManager {
 			} else {
 				$form_title         = __( 'Add Team', 'racketmanager' );
 				$form_action        = __( 'Add', 'racketmanager' );
-				$team               = new \stdClass();
+				$team               = new stdClass();
 				$team->id           = '';
 				$team->title        = '';
 				$team->captain      = '';
@@ -2243,7 +2245,7 @@ class RacketManager_Admin extends RacketManager {
 					/* translators: %s: round name */
 					$form_title = sprintf( __( 'Add Matches - %s', 'racketmanager' ), Racketmanager_Util::get_final_name( $final_key ) );
 					for ( $h = 0; $h < $max_matches; $h++ ) {
-						$matches[ $h ] = new \stdClass();
+						$matches[ $h ] = new stdClass();
 						if ( 'final' !== $final_key ) {
 							$round = $final['round'];
 							if ( $round & 1 ) {
@@ -2298,10 +2300,10 @@ class RacketManager_Admin extends RacketManager {
                     $max_matches = ceil( $league->num_teams_total ); // set number of matches to add to half the number of teams per match day.
                 }
                 $match_day        = 1;
-                $matches[]        = new \stdClass();
+                $matches[]        = new stdClass();
                 $matches[0]->year = ( isset( $_GET['season'] ) && is_numeric( $_GET['season'] ) ) ? intval( $_GET['season'] ) : gmdate( 'Y' );
 				for ( $i = 0; $i < $max_matches; $i++ ) {
-					$matches[]              = new \stdClass();
+					$matches[]              = new stdClass();
 					$matches[ $i ]->hour    = $league->event->competition->default_match_start_time['hour'];
 					$matches[ $i ]->minutes = $league->event->competition->default_match_start_time['minutes'];
 				}
@@ -2997,7 +2999,7 @@ class RacketManager_Admin extends RacketManager {
 			if ( 'competition' === $season_data->type ) {
 				$events = $competition->get_events();
 				foreach ( $events as $event ) {
-					$event_season                 = new \stdClass();
+					$event_season                 = new stdClass();
 					$event_season->object_id      = $event->id;
 					$event_season->type           = 'event';
 					$event_season->season         = $season_data->season;
@@ -3437,7 +3439,7 @@ class RacketManager_Admin extends RacketManager {
 			$line = explode( $delimiter, $record );
 			// ignore header and empty lines.
 			if ( $i > 0 && count( $line ) > 1 ) {
-				$match            = new \stdClass();
+				$match            = new stdClass();
 				$date             = ( ! empty( $line[6] ) ) ? $line[0] . ' ' . $line[6] : $line[0] . ' 00:00';
 				$match->match_day = $line[1] ?? '';
 				$match->date      = trim( $date );
@@ -3586,7 +3588,7 @@ class RacketManager_Admin extends RacketManager {
 	 */
 	public function get_event_dropdown( false|int $competition_id = false ): void {
         $output = null;
-		$return = new \stdClass();
+		$return = new stdClass();
 		if ( isset( $_POST['security'] ) ) {
 			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
 				$return->error = true;
@@ -3634,7 +3636,7 @@ class RacketManager_Admin extends RacketManager {
 	 */
 	public function get_league_dropdown( false|int $event_id = false ): void {
         $output = null;
-		$return = new \stdClass();
+		$return = new stdClass();
 		if ( isset( $_POST['security'] ) ) {
 			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
 				$return->error = true;
@@ -3733,7 +3735,7 @@ class RacketManager_Admin extends RacketManager {
 	private function validate_schedule( array $events ): object {
 		global $wpdb;
 
-		$validation          = new \stdClass();
+		$validation          = new stdClass();
 		$validation->success = true;
 		$messages            = array();
 		$c                   = 0;
@@ -3822,7 +3824,7 @@ class RacketManager_Admin extends RacketManager {
 	 */
 	private function setup_teams_in_schedule(array $events, int $max_teams, array $default_refs ): bool {
 		global $wpdb;
-		$validation           = new \stdClass();
+		$validation           = new stdClass();
 		$validation->success  = true;
 		$validation->messages = array();
 		$season               = $this->getLatestSeason();
@@ -4278,7 +4280,7 @@ class RacketManager_Admin extends RacketManager {
 				}
 				$matches[ $round_date ] = array();
 				for ( $i = 0; $i < $round['num_matches']; ++$i ) {
-					$match            = new \stdClass();
+					$match            = new stdClass();
 					$match->date      = $round_date . ' 00:00:00';
 					$match->match_day = null;
 					if ( 'final' !== $round['key'] ) {
@@ -4314,7 +4316,7 @@ class RacketManager_Admin extends RacketManager {
 					$matches[ $round_date ][] = $match;
 				}
 				$next_round_date               = $round['match_date'];
-				$rounds[ $round['key'] ]       = new \stdClass();
+				$rounds[ $round['key'] ]       = new stdClass();
 				$rounds[ $round['key'] ]->name = $round['key'];
 				$rounds[ $round['key'] ]->num  = $round['round'];
 				$rounds[ $round['key'] ]->date = $round['match_date'];

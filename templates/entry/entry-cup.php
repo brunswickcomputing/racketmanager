@@ -10,6 +10,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /** @var object $club */
 /** @var object $competition */
 /** @var object $events */
@@ -135,7 +137,7 @@ if ( ! empty( $club->entry ) ) {
 										<?php
 										foreach ( $events as $event ) {
 											if ( empty( $event->team ) ) {
-												$event->team = new \stdClass();
+												$event->team = new stdClass();
 											}
 											?>
 											<div class="form-check form-check-lg">

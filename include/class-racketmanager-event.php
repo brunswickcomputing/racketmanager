@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * Class to implement the Event object
  */
@@ -631,7 +633,7 @@ class Racketmanager_Event {
 					$total_rubbers = $rubber_count * 2;
 					if ( intval( $rubber_count ) === intval( $match->league->num_rubbers ) ) {
 						for ( $ix = $rubber_count + 1; $ix <= $total_rubbers; $ix++ ) {
-							$rubber                = new \stdClass();
+							$rubber                = new stdClass();
 							$rubber->type          = $this->type;
 							$rubber->rubber_number = $ix;
 							$rubber->date          = $match->date;
@@ -2124,12 +2126,12 @@ class Racketmanager_Event {
 		if ( empty( $league_title ) ) {
 			$league_count = $this->has_leagues();
 			++$league_count;
-			$league           = new \stdClass();
+			$league           = new stdClass();
 			$league->title    = $this->name . ' ' . $league_count;
 			$league->event_id = $this->id;
 			$league->sequence = $league_count;
 		} else {
-			$league           = new \stdClass();
+			$league           = new stdClass();
 			$league->title    = $league_title;
 			$league->event_id = $this->id;
 		}
@@ -2325,7 +2327,7 @@ class Racketmanager_Event {
 			}
 		}
 		if ( empty( $racketmanager->error_fields ) ) {
-			$settings = new \stdClass();
+			$settings = new stdClass();
 			if ( empty( $this->age_limit ) || $this->age_limit !== $config->age_limit ) {
 				$updates = true;
 			}

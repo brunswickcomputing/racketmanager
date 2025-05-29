@@ -8,6 +8,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * Implement AJAX responses for calls from both front end and admin.
  *
@@ -64,7 +66,7 @@ class Racketmanager_Ajax extends RacketManager {
             if ( 'btm' === $type ) {
                 $player  = get_player( $name, 'btm' );
                 if ( $player ) {
-                    $result = new \stdClass();
+                    $result = new stdClass();
                     $result->fullname   = $player->display_name;
                     $result->user_email = $player->user_email;
 	                $result->club       = null;
@@ -1163,7 +1165,7 @@ class Racketmanager_Ajax extends RacketManager {
 					$err_field[] = $set_prefix . 'player2';
 				}
 			} elseif ( $set['player1'] > $set['player2'] ) {
-				$set_data        = new \stdClass();
+				$set_data        = new stdClass();
 				$set_data->msg   = $err_msg;
 				$set_data->field = $err_field;
 				$set_data        = $this->validate_set_score( $set, $set_prefix, 'player1', 'player2', $set_data, $set_info, $match_status );
@@ -1171,7 +1173,7 @@ class Racketmanager_Ajax extends RacketManager {
 				$err_field       = $set_data->field;
 				$completed_set   = $set_data->completed_set;
 			} elseif ( $set['player1'] < $set['player2'] ) {
-				$set_data        = new \stdClass();
+				$set_data        = new stdClass();
 				$set_data->msg   = $err_msg;
 				$set_data->field = $err_field;
 				$set_data        = $this->validate_set_score( $set, $set_prefix, 'player2', 'player1', $set_data, $set_info, $match_status );
@@ -1315,10 +1317,10 @@ class Racketmanager_Ajax extends RacketManager {
 	/**
      * Check security token
      *
-	 * @return \stdClass
+	 * @return stdClass
 	 */
-	protected function check_security_token(): \stdClass {
-		$return = new \stdClass();
+	protected function check_security_token(): stdClass {
+		$return = new stdClass();
 		if ( isset( $_REQUEST['security'] ) ) {
 			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['security'] ) ), 'ajax-nonce' ) ) {
 				$return->error  = true;

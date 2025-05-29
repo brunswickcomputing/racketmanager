@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * Class to implement shortcode functions
  */
@@ -753,7 +755,7 @@ class RacketManager_Shortcodes {
 					if ( false !== $found ) {
 						unset( $event->teams[ $key ] );
 					} else {
-						$event_team            = new \stdClass();
+						$event_team            = new stdClass();
 						$event_team->team_id   = $team->id;
 						$event_team->name      = $team->title;
 						$event_team->league_id = 0;
@@ -762,7 +764,7 @@ class RacketManager_Shortcodes {
 					}
 					++$key;
 				}
-				$event_team            = new \stdClass();
+				$event_team            = new stdClass();
 				$event_team->team_id   = 0;
 				$event_team->name      = __( 'New team', 'racketmanager' );
 				$event_team->league_id = 0;
@@ -852,7 +854,7 @@ class RacketManager_Shortcodes {
 				}
 			}
 			if ( $entry_valid ) {
-				$player_entry = new \stdClass();
+				$player_entry = new stdClass();
 				$teams        = $event->get_teams(
 					array(
 						'player' => $player->ID,

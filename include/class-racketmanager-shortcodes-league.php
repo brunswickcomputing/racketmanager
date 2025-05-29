@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * Class to implement the Racketmanager_Shortcodes_League object
  */
@@ -65,7 +67,7 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 		$league->season = $season;
 		$finals         = array();
 		foreach ( array_reverse( $league->championship->get_finals() ) as $f => $final ) {
-			$data              = new \stdClass();
+			$data              = new stdClass();
 			$data->key         = $final['key'];
 			$data->name        = $final['name'];
 			$data->num_matches = $final['num_matches'];

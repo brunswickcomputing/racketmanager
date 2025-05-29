@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * Class to implement the Racketmanager_Match object
  */
@@ -853,7 +855,7 @@ final class Racketmanager_Match {
 		$this->id = $wpdb->insert_id;
 		if ( $this->league->num_rubbers ) {
 			for ( $ix = 1; $ix <= $max_rubbers; $ix++ ) {
-				$rubber = new \stdClass();
+				$rubber = new stdClass();
 				$type   = $this->league->type;
 				if ( 'MD' === $this->league->type ) {
 					$type = 'MD';
@@ -1464,7 +1466,7 @@ final class Racketmanager_Match {
 			$report = $this->report_result();
 			if ( $report ) {
 				$this->delete_results_report();
-				$results_report           = new \stdClass();
+				$results_report           = new stdClass();
 				$results_report->match_id = $this->id;
 				$results_report->data     = $report;
 				new Racketmanager_Results_Report( $results_report );
@@ -1704,7 +1706,7 @@ final class Racketmanager_Match {
 	 * @param int $rubber_id rubber id.
 	 */
 	public function add_player_result_check( int $team, int $player, string $error, int $rubber_id ): void {
-		$result_check              = new \stdClass();
+		$result_check              = new stdClass();
 		$result_check->league_id   = $this->league_id;
 		$result_check->match_id    = $this->id;
 		$result_check->team_id     = $team;
@@ -1720,7 +1722,7 @@ final class Racketmanager_Match {
 	 * @param string $error error.
 	 */
 	public function add_match_result_check( int $team, string $error ): void {
-		$result_check              = new \stdClass();
+		$result_check              = new stdClass();
 		$result_check->league_id   = $this->league_id;
 		$result_check->match_id    = $this->id;
 		$result_check->team_id     = $team;
@@ -1985,7 +1987,7 @@ final class Racketmanager_Match {
 			$competition_code   = empty( $competition_season['competition_code'] ) ? $this->league->event->competition->competition_code : $competition_season['competition_code'];
 		}
 		if ( ! empty( $competition_code ) ) {
-			$result                   = new \stdClass();
+			$result                   = new stdClass();
 			$result->tournament       = $racketmanager->site_name . ' ' . $this->league->event->competition->name;
 			$result->code             = $competition_code;
 			$result->organiser        = '';
@@ -2061,7 +2063,7 @@ final class Racketmanager_Match {
 							} else {
 								$winner_id = $rubber->winner_id;
 							}
-							$result_match        = new \stdClass();
+							$result_match        = new stdClass();
 							$result_match->match = $rubber->id;
 							if ( $winner_id === $this->home_team ) {
 								$winning_team   = 'home';
@@ -2096,7 +2098,7 @@ final class Racketmanager_Match {
 					}
 				}
 			} else {
-				$result_match = new \stdClass();
+				$result_match = new stdClass();
 				if ( ! $this->is_walkover && '-1' !== $this->home_team && '-1' !== $this->away_team ) {
 					$result_match->match = $this->id;
 					if ( $this->winner_id === $this->home_team ) {
@@ -2453,7 +2455,7 @@ final class Racketmanager_Match {
 		} else {
 			$message = 'notLoggedIn';
 		}
-		$return                      = new \stdClass();
+		$return                      = new stdClass();
 		$return->user_can_update     = $user_can_update;
 		$return->user_type           = $user_type;
 		$return->user_team           = $user_team;
@@ -2468,7 +2470,7 @@ final class Racketmanager_Match {
 	 * @return object
 	 */
 	public function update_league_with_result(): object {
-		$return                   = new \stdClass();
+		$return                   = new stdClass();
 		$league                   = get_league( $this->league_id );
 		$matches[ $this->id ]     = $this->id;
 		$home_points[ $this->id ] = $this->home_points;

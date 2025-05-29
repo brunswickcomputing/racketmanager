@@ -9,10 +9,12 @@
 
 namespace Racketmanager;
 
+use WP_Widget;
+
 /**
  * Class to implement the widget
  */
-class RacketManager_Widget extends \WP_Widget {
+class RacketManager_Widget extends WP_Widget {
 	/**
 	 * Initialize
 	 *

@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * Class to implement shortcode functions for emails
  */
@@ -60,8 +62,8 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 		$match            = get_match( $match );
 
 		$teams = array(
-			'home' => new \stdClass(),
-			'away' => new \stdClass(),
+			'home' => new stdClass(),
+			'away' => new stdClass(),
 		);
 
 		$home_dtls  = array();

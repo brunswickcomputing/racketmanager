@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * Class to implement the Player object
  */
@@ -1032,7 +1034,7 @@ final class Racketmanager_Player {
 				$total_stats_walkover += $statistics['walkover'];
 			}
 		}
-		$this->statistics['total']               = new \stdClass();
+		$this->statistics['total']               = new stdClass();
 		$this->statistics['total']->matches_won  = $total_stats['winner'];
 		$this->statistics['total']->matches_lost = $total_stats['loser'];
 		$this->statistics['total']->matches_tie  = $total_stats['draw'];

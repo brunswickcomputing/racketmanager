@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * Class to implement shortcode functions
  */
@@ -186,7 +188,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 				)
 			);
 		}
-		$user_can_update         = new \stdClass();
+		$user_can_update         = new stdClass();
 		$user_can_update->club   = false;
 		$user_can_update->player = false;
 		if ( is_user_logged_in() ) {
@@ -521,7 +523,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 		} else {
 			$club->invoices = $club->get_invoices();
 		}
-		$user_can_update         = new \stdClass();
+		$user_can_update         = new stdClass();
 		$user_can_update->club   = false;
 		$user_can_update->player = false;
 		if ( is_user_logged_in() ) {

@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * RacketManager administration functions
  * Class to implement RacketManager Administration League panel
@@ -592,7 +594,7 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 							} else {
 								$rank = $_POST['rank'][$table_id] ?? '';
 							}
-							$team            = new \stdClass();
+							$team            = new stdClass();
 							$team->team_id   = $team_id;
 							$team->league_id = $league_id;
 							$team->table_id  = $table_id;

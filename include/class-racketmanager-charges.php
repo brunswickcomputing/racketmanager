@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * Class to implement the charges object
  */
@@ -311,7 +313,7 @@ final class Racketmanager_Charges {
 					)
 				);
 				if ( $num_teams > 0 ) {
-					$club_event        = new \stdClass();
+					$club_event        = new stdClass();
 					$club_event->type  = $event->type;
 					$club_event->count = $num_teams;
 					$club_event->fee   = $this->fee_event * $num_teams;
@@ -320,7 +322,7 @@ final class Racketmanager_Charges {
 				$club_teams += $num_teams;
 			}
 			if ( $club_teams > 0 ) {
-				$club_entry                  = new \stdClass();
+				$club_entry                  = new stdClass();
 				$club_entry->id              = $club->id;
 				$club_entry->name            = $club->name;
 				$club_entry->num_teams       = $club_teams;
@@ -347,7 +349,7 @@ final class Racketmanager_Charges {
 		$entered       = 0;
 		$competition   = get_competition( $this->competition_id );
 		if ( $competition ) {
-			$entry         = new \stdClass();
+			$entry         = new stdClass();
 			$entry->id     = $player->id;
 			$entry->name   = $player->display_name;
 			$events        = $competition->get_events();
@@ -361,7 +363,7 @@ final class Racketmanager_Charges {
 					)
 				);
 				if ( $is_entered ) {
-					$player_event        = new \stdClass();
+					$player_event        = new stdClass();
 					$player_event->type  = $event->type;
 					$player_event->count = $is_entered;
 					$player_event->fee   = $this->fee_event;
@@ -388,7 +390,7 @@ final class Racketmanager_Charges {
 		$sent            = false;
 		$charges_entries = $this->get_club_entries();
 		foreach ( $charges_entries as $entry ) {
-			$invoice                 = new \stdClass();
+			$invoice                 = new stdClass();
 			$invoice->charge_id      = $this->id;
 			$invoice->club_id        = $entry->id;
 			$invoice->date           = $this->date;

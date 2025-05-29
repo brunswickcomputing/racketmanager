@@ -9,6 +9,9 @@
 
 namespace Racketmanager;
 
+use stdClass;
+use function get_query_var;
+
 /**
  * Class to implement the League object
  */
@@ -1131,7 +1134,7 @@ class Racketmanager_League {
 		} elseif ( isset( $_POST['match_day'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$match_day = intval( $_POST['match_day'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		} elseif ( isset( $wp->query_vars['match_day'] ) ) {
-			$match_day = \get_query_var( 'match_day' );
+			$match_day = get_query_var( 'match_day' );
 		} elseif ( is_numeric( $_match_day ) && 0 !== $_match_day ) {
 			$match_day = intval( $_match_day );
 		} elseif ( 'last' === $_match_day ) {
@@ -1505,7 +1508,7 @@ class Racketmanager_League {
 		if ( ! is_numeric( $team_id ) ) {
 			$team = get_team( $team_id );
 			if ( ! $team ) {
-				$team        = new \stdClass();
+				$team        = new stdClass();
 				$team->title = $team_id;
 				$team->type  = $this->type;
 				if ( $this->event->competition->is_tournament ) {
@@ -3262,7 +3265,7 @@ class Racketmanager_League {
 				$home_team_dtls = $teams[ $fixture['home'] - 1 ];
 				$away_team_dtls = $teams[ $fixture['away'] - 1 ];
 				if ( -1 !== $home_team_dtls->id && -1 !== $away_team_dtls->id ) {
-					$match            = new \stdClass();
+					$match            = new stdClass();
 					$match->season    = $season;
 					$match->league_id = $this->id;
 					$match->home_team = $home_team_dtls->id;

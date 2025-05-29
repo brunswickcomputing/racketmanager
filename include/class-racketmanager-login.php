@@ -9,6 +9,9 @@
 
 namespace Racketmanager;
 
+use WP_Error;
+use WP_User;
+
 /**
  * Class for plugin login
  */
@@ -87,12 +90,12 @@ class RacketManager_Login {
 	 * Function to return new user notifcation email details
 	 *
 	 * @param array $wp_new_user_notification_email array of email details.
-	 * @param \WP_User $user user object.
+	 * @param WP_User $user user object.
 	 * @param string $blogname site name.
 	 *
 	 * @return array
 	 */
-	public function my_wp_new_user_notification_email( array $wp_new_user_notification_email, \WP_User $user, string $blogname ): array {
+	public function my_wp_new_user_notification_email( array $wp_new_user_notification_email, WP_User $user, string $blogname ): array {
 		global $racketmanager_shortcodes, $racketmanager;
 
 		$key                                       = get_password_reset_key( $user );
@@ -258,11 +261,11 @@ class RacketManager_Login {
 	 *
 	 * @param string $redirect_to           The redirect destination URL.
 	 * @param string $requested_redirect_to The requested redirect destination URL passed as a parameter.
-	 * @param \WP_Error|\WP_User $user                  WP_User object if login was successful, WP_Error object otherwise.
+	 * @param WP_Error|WP_User $user                  WP_User object if login was successful, WP_Error object otherwise.
 	 *
 	 * @return string Redirect URL
 	 */
-	public function redirect_after_login( string $redirect_to, string $requested_redirect_to, \WP_Error|\WP_User $user ): string {
+	public function redirect_after_login( string $redirect_to, string $requested_redirect_to, WP_Error|WP_User $user ): string {
 		if ( strpos( $redirect_to, 'password-reset' ) ) {
 			$redirect_to = '';
 		}
@@ -309,10 +312,10 @@ class RacketManager_Login {
 	 * @param string $firstname    The new user's first name.
 	 * @param string $last_name     The new user's last name.
 	 *
-	 * @return int|\WP_Error         The id of the user that was created, or error if failed.
+	 * @return int|WP_Error         The id of the user that was created, or error if failed.
 	 */
-	public function register_user( string $email, string $firstname, string $last_name ): \WP_Error|int {
-		$errors = new \WP_Error();
+	public function register_user( string $email, string $firstname, string $last_name ): WP_Error|int {
+		$errors = new WP_Error();
 
 		// Email address is used as both username and email. It is also the only
 		// parameter we need to validate.

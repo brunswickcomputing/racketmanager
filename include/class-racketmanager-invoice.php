@@ -9,6 +9,11 @@
 
 namespace Racketmanager;
 
+use DateInterval;
+use DateMalformedIntervalStringException;
+use DateMalformedStringException;
+use DateTime;
+
 /**
  * Class to implement the invoice object
  */
@@ -172,16 +177,16 @@ final class Racketmanager_Invoice {
 		$billing      = $racketmanager->get_options( 'billing' );
 		if ( $billing ) {
 			try {
-				$date_due = new \DateTime($this->date);
-			} catch (\DateMalformedStringException) {
+				$date_due = new DateTime($this->date);
+			} catch ( DateMalformedStringException) {
 				$date_due = null;
 			}
 			if ( isset( $billing['paymentTerms'] ) && intval( $billing['paymentTerms'] ) !== 0 ) {
 				$date_interval = intval( $billing['paymentTerms'] );
 				$date_interval = 'P' . $date_interval . 'D';
 				try {
-					$date_due->add(new \DateInterval($date_interval));
-				} catch (\DateMalformedIntervalStringException) {
+					$date_due->add(new DateInterval($date_interval));
+				} catch ( DateMalformedIntervalStringException) {
 					$date_due = null;
 				}
 			}

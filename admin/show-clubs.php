@@ -14,7 +14,7 @@ namespace Racketmanager;
 	<div class="form-control mb-3">
 		<form id="teams-filter" method="post" action="">
 			<?php wp_nonce_field( 'clubs-bulk' ); ?>
-            <div class="row gx-3 mb-3 align-items-center">
+            <div class="row g-3 mb-3 align-items-center">
                 <!-- Bulk Actions -->
                 <div class="col-auto">
                     <label>
@@ -29,34 +29,40 @@ namespace Racketmanager;
                     <button name="doSchedulePlayerRatings" id="doSchedulePlayerRatings" class="btn btn-primary action"><?php esc_html_e( 'Schedule Player Ratings', 'racketmanager' ); ?></button>
                 </div>
             </div>
-			<div class="container">
-				<div class="row table-header">
-					<div class="col-1 col-md-1 check-column"><label for="checkAll"></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('clubs-filter'));" /></div>
-					<div class="d-none d-md-inline col-md-1 column-num">ID</div>
-					<div class="col-11 col-md-3"><?php esc_html_e( 'Name', 'racketmanager' ); ?></div>
-					<div class="col-12 col-md-3"><?php esc_html_e( 'Match Secretary', 'racketmanager' ); ?></div>
-				</div>
-				<?php
-				$clubs = $this->get_clubs();
-				$class = '';
-				foreach ( $clubs as $club ) {
-					$club  = get_club( $club );
-					$class = ( 'alternate' === $class ) ? '' : 'alternate';
-					?>
-					<div class="row table-row <?php echo esc_html( $class ); ?>">
-						<div class="col-1 col-md-1 check-column">
-                            <label for="club-<?php echo esc_html( $club->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $club->id ); ?>" name="club[<?php echo esc_html( $club->id ); ?>]" id="club-<?php echo esc_html( $club->id ); ?>" />
-						</div>
-						<div class="d-none d-md-inline col-1 col-md-1 column-num"><?php echo esc_html( $club->id ); ?></div>
-						<div class="col-11 col-md-3 club-name"><a href="/wp-admin/admin.php?page=racketmanager&amp;subpage=club&amp;club_id=<?php echo esc_html( $club->id ); ?> "><?php echo esc_html( $club->name ); ?></a></div>
-						<div class="d-none d-md-inline col-12 col-md-3"><?php echo esc_html( $club->match_secretary_name ); ?></div>
-						<div class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=players&amp;club_id=<?php echo esc_html( $club->id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Players', 'racketmanager' ); ?></a></div>
-						<div class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=teams&amp;club_id=<?php echo esc_html( $club->id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></a></div>
-					</div>
-				    <?php
-                }
-                ?>
-    		</div>
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <td class="check-column"><label for="checkAll"></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('clubs-filter'));" /></td>
+                        <td class="d-none d-md-table-cell column-num">ID</td>
+                        <td class=""><?php esc_html_e( 'Name', 'racketmanager' ); ?></td>
+                        <td class="d-none d-md-table-cell"><?php esc_html_e( 'Match Secretary', 'racketmanager' ); ?></td>
+                        <td class="col-auto"></td>
+                        <td class="col-auto"></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $clubs = $this->get_clubs();
+                    $class = '';
+                    foreach ( $clubs as $club ) {
+                        $club  = get_club( $club );
+                        $class = ( 'alternate' === $class ) ? '' : 'alternate';
+                        ?>
+                        <tr class="">
+                            <td class="check-column">
+                                <label for="club-<?php echo esc_html( $club->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $club->id ); ?>" name="club[<?php echo esc_html( $club->id ); ?>]" id="club-<?php echo esc_html( $club->id ); ?>" />
+                            </td>
+                            <td class="d-none d-md-table-cell column-num"><?php echo esc_html( $club->id ); ?></td>
+                            <td class="club-name"><a href="/wp-admin/admin.php?page=racketmanager&amp;subpage=club&amp;club_id=<?php echo esc_html( $club->id ); ?> "><?php echo esc_html( $club->name ); ?></a></td>
+                            <td class="d-none d-md-table-cell"><?php echo esc_html( $club->match_secretary_name ); ?></td>
+                            <td class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=players&amp;club_id=<?php echo esc_html( $club->id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Players', 'racketmanager' ); ?></a></td>
+                            <td class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=teams&amp;club_id=<?php echo esc_html( $club->id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></a></td>
+                        </tr>
+                        <?php
+                    }
+                    ?>
+                </tbody>
+    		</table>
         </form>
 	</div>
 	<div class="mb-3">

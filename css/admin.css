@@ -401,7 +401,7 @@ div.racketmanager_widget_control select {
 #seasons-table a, #clubs-table a, #results-table a, #tournament-table a, #teams-table a, #constitution a {
     color: #ffffff;
 }
-#teams-table .team-name a, #clubs-table .clubname a, #results-table .match-title a, #tournament-table .tournamentname a {
+#teams-table .team-name a, #results-table .match-title a {
     color: #222222;
 }
 .tablenav a.button-secondary {

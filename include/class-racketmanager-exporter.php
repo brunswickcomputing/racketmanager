@@ -9,6 +9,7 @@
 
 namespace Racketmanager;
 
+use JetBrains\PhpStorm\NoReturn;
 use stdClass;
 
 /**
@@ -180,7 +181,7 @@ class Racketmanager_Exporter {
 	 *  club
 	 *  days - defaults to 7
 	 */
-	public function standings(): void {
+	#[NoReturn] public function standings(): void {
 		$validator = new Racketmanager_Validator();
 		$event     = null;
 		$season    = null;
@@ -281,7 +282,7 @@ class Racketmanager_Exporter {
 	 * @param array $matches array of matches to download.
 	 * @param string $filename filename to be created.
 	 */
-	private function output_calendar(array $matches, string $filename ): void {
+	#[NoReturn] private function output_calendar(array $matches, string $filename ): void {
 		$contents  = "BEGIN:VCALENDAR\n";
 		$contents .= "VERSION:2.0\n";
 		$contents .= "PRODID:-//TENNIS CALENDAR//NONSGML Events //EN\n";
@@ -310,7 +311,7 @@ class Racketmanager_Exporter {
 	 * @param object $club club object.
 	 * @param array $matches array of matches to download.
 	 */
-	private function match_output( object $club, array $matches ): void {
+	#[NoReturn] private function match_output( object $club, array $matches ): void {
 		$contents = '[';
 		$i        = 0;
 		foreach ( $matches as $match ) {
@@ -373,7 +374,7 @@ class Racketmanager_Exporter {
 	/**
 	 * Report results
 	 */
-	public function report_results(): void {
+	#[NoReturn] public function report_results(): void {
 		global $racketmanager, $wpdb;
 		$contents  = 'Tournament';
 		$contents .= ',"Code"';

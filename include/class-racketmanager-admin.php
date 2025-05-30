@@ -2111,35 +2111,26 @@ class RacketManager_Admin extends RacketManager {
 					$club_id = '';
 				}
 			}
-
-			if ( isset( $_GET['edit'] ) ) {
+            $team_id = isset( $_GET['edit'] ) ? intval( $_GET['edit'] ) : null;
+            if ( $team_id ) {
 				$edit = true;
 				if ( $league ) {
-					$team = $league->get_team_dtls( intval( $_GET['edit'] ) );
+					$team = $league->get_team_dtls( $team_id );
 				} else {
-					$team = get_team( intval( $_GET['edit'] ) );
+					$team = get_team( $team_id );
 				}
 				if ( ! isset( $team->roster ) ) {
 					$team->roster = array();
 				}
 				$form_title  = __( 'Edit Team', 'racketmanager' );
 				$form_action = __( 'Update', 'racketmanager' );
+	            $clubs = $racketmanager->get_clubs();
+	            //phpcs:enable WordPress.Security.NonceVerification.Recommended
+	            require_once RACKETMANAGER_PATH . '/admin/includes/teams/' . $file;
 			} else {
-				$form_title         = __( 'Add Team', 'racketmanager' );
-				$form_action        = __( 'Add', 'racketmanager' );
-				$team               = new stdClass();
-				$team->id           = '';
-				$team->title        = '';
-				$team->captain      = '';
-				$team->captain_id   = '';
-				$team->contactno    = '';
-				$team->contactemail = '';
-				$team->match_day    = '';
-				$team->match_time   = '';
+	            $this->set_message( __( 'Team not specified', 'racketmanager' ), true );
+	            $this->printMessage();
 			}
-			$clubs = $racketmanager->get_clubs();
-			//phpcs:enable WordPress.Security.NonceVerification.Recommended
-			require_once RACKETMANAGER_PATH . '/admin/includes/teams/' . $file;
 		}
 	}
 	/**

@@ -980,10 +980,9 @@ class RacketManager_Admin extends RacketManager {
 			if ( sanitize_text_field( wp_unslash( $_POST['event_title'] ) ) !== $event->name ) {
 				$event->set_name( sanitize_text_field( wp_unslash( $_POST['event_title'] ) ) );
 			}
-				$event->set_settings( $settings );
-				$event->reload_settings();
-				$event = get_event( $event );
-				$this->set_message( __( 'Settings saved', 'racketmanager' ) );
+            $event->set_settings( $settings );
+            $event->reload_settings();
+            $this->set_message( __( 'Settings saved', 'racketmanager' ) );
 		}
 	}
 	/**

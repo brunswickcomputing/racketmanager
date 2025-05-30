@@ -823,4 +823,23 @@ final class Racketmanager_League_Team {
 		$league?->set_teams_rank( $this->season );
 		wp_cache_set( $this->id, $this, 'league-teams' );
 	}
+    public function update(): void {
+	    global $wpdb;
+	    $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+		    $wpdb->prepare(
+			    "UPDATE $wpdb->racketmanager_table SET `done_matches` = %d, `won_matches` = %d, `lost_matches` = %d, `draw_matches` = %d, `points_plus` = %f, `points_minus` = %f, `points2_plus` = %d, `points2_minus` = %d, `add_points` = %d, `custom` = %s WHERE `id` = %d",
+			    $this->done_matches,
+			    $this->won_matches,
+			    $this->lost_matches,
+			    $this->draw_matches,
+			    $this->points_plus,
+			    $this->points_minus,
+			    $this->points2_plus,
+			    $this->points2_minus,
+			    $this->add_points,
+			    maybe_serialize( $this->custom ),
+			    $this->table_id,
+		    )
+	    );
+    }
 }

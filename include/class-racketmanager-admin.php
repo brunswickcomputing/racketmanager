@@ -3307,10 +3307,9 @@ class RacketManager_Admin extends RacketManager {
 				} else {
 					global $wp_filesystem;
 					$new_file = Racketmanager_Util::get_file_path( $file['name'] );
-					if ( $wp_filesystem->copy( $file['tmp_name'], $new_file ) ) {
+					if ( $wp_filesystem->copy( $file['tmp_name'], $new_file, true ) ) {
 						$contents = $wp_filesystem->get_contents_array( $new_file );
 						if ( $contents ) {
-							$league_id = $league_id;
 							$club      = isset( $club ) ? intval( $club ) : 0;
 							if ( 'TAB' === $delimiter ) {
 								$delimiter = "\t"; // correct tabular delimiter.
@@ -3334,7 +3333,7 @@ class RacketManager_Admin extends RacketManager {
 						}
 					} else {
 						/* translators: %s: location of file */
-						$this->set_message( sprintf( __( 'The uploaded file could not be moved to %s.', 'racketmanager' ), ABSPATH . 'wp-content/uploads' ) );
+						$this->set_message( sprintf( __( 'The uploaded file could not be moved to %s.', 'racketmanager' ), ABSPATH . 'wp-content/uploads' ), true );
 					}
 				}
 			} else {
@@ -3353,15 +3352,6 @@ class RacketManager_Admin extends RacketManager {
 	 */
 	private function importTable( array $contents, string $delimiter, int $league_id, string $season ): void {
 		$league       = get_league( $league_id );
-		$teams        = array();
-		$points_plus  = array();
-		$points_minus = array();
-		$pld          = array();
-		$won          = array();
-		$draw         = array();
-		$lost         = array();
-		$custom       = array();
-		$add_points   = array();
 		$i            = 0;
 		$x            = 0;
 		foreach ( $contents as $record ) {
@@ -3370,45 +3360,54 @@ class RacketManager_Admin extends RacketManager {
 			if ( $i > 0 && count( $line ) > 1 ) {
 				$team    = $line[0];
 				$team_id = $this->get_team_id( $team );
-				if ( 0 !== $team_id ) {
+				if ( ! empty( $team_id ) ) {
 					$table_id = $league->add_team( $team_id, $season );
 					if ( $table_id ) {
-						$teams[ $team_id ] = $team_id;
-						$pld[ $team_id ]   = $line[1] ?? 0;
-						$won[ $team_id ]   = $line[2] ?? 0;
-						$draw[ $team_id ]  = $line[3] ?? 0;
-						$lost[ $team_id ]  = $line[4] ?? 0;
-						if ( isset( $line[5] ) ) {
-							if (str_contains($line[5], ':')) {
-								$points2 = explode( ':', $line[5] );
-							} else {
-								$points2 = array( $line[5], 0 );
-							}
-						} else {
-							$points2 = array( 0, 0 );
-						}
-						if ( isset( $line[6] ) ) {
-							if (str_contains($line[6], ':')) {
-								$points = explode( ':', $line[6] );
-							} else {
-								$points = array( $line[6], 0 );
-							}
-						} else {
-							$points = array( 0, 0 );
-						}
-						$points_plus[ $team_id ]       = $points[0];
-						$points_minus[ $team_id ]      = $points[1];
-						$custom[ $team_id ]['points2'] = array(
-							'plus'  => $points2[0],
-							'minus' => $points2[1],
-						);
-						$add_points[ $team_id ]        = 0;
-						++$x;
+                        $league_team = get_league_team( $table_id );
+                        if ( $league_team ) {
+	                        $league_team->done_matches = $line[1] ?? 0;
+	                        $league_team->won_matches  = $line[2] ?? 0;
+	                        $league_team->draw_matches = $line[3] ?? 0;
+	                        $league_team->lost_matches = $line[4] ?? 0;
+	                        if ( isset( $line[5] ) ) {
+		                        if (str_contains($line[5], ':')) {
+			                        $points2 = explode( ':', $line[5] );
+		                        } else {
+			                        $points2 = array( $line[5], 0 );
+		                        }
+	                        } else {
+		                        $points2 = array( 0, 0 );
+	                        }
+	                        $league_team->points2_plus  = intval( $points2[0] );
+	                        $league_team->points2_minus = intval( $points2[1] );
+	                        if ( isset( $line[6] ) ) {
+		                        if (str_contains($line[6], ':')) {
+			                        $points = explode( ':', $line[6] );
+		                        } else {
+			                        $points = array( $line[6], 0 );
+		                        }
+	                        } else {
+		                        $points = array( 0, 0 );
+	                        }
+	                        $league_team->points_plus  = floatval( $points[0] );
+	                        $league_team->points_minus = floatval( $points[1] );
+	                        $league_team->add_points   = intval( $line[7] ?? 0 );
+	                        $custom['sets_won']        = intval( $line[8] ?? 0 );
+	                        $custom['sets_allowed']    = intval( $line[9] ?? 0 );
+	                        $custom['games_won']       = intval( $line[10] ?? 0 );
+	                        $custom['games_allowed']   = intval( $line[11] ?? 0 );
+                            $league_team->custom       = $custom;
+                            $league_team->update();
+	                        ++$x;
+                        }
 					}
 				}
 			}
 			++$i;
 		}
+        if ( ! empty( $i ) ) {
+            $league->set_teams_rank( $season );
+        }
 		/* translators: %d: number of table entries imported */
 		$this->set_message( sprintf( __( '%d Table Entries imported', 'racketmanager' ), $x ) );
 	}
@@ -3584,9 +3583,8 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display event dropdown
 	 *
-	 * @param false|int $competition_id competition details.
 	 */
-	public function get_event_dropdown( false|int $competition_id = false ): void {
+	public function get_event_dropdown(): void {
         $output = null;
 		$return = new stdClass();
 		if ( isset( $_POST['security'] ) ) {
@@ -3599,9 +3597,7 @@ class RacketManager_Admin extends RacketManager {
 			$return->msg   = __( 'No security token found in request', 'racketmanager' );
 		}
 		if ( ! isset( $return->error ) ) {
-			if ( ! $competition_id && isset( $_POST['competition_id'] ) ) {
-				$competition_id = intval( $_POST['competition_id'] );
-			}
+			$competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
 			if ( $competition_id ) {
 				$competition = get_competition( $competition_id );
 				$events      = $competition->get_events();
@@ -3632,9 +3628,8 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display league dropdown
 	 *
-	 * @param false|int $event_id event details.
 	 */
-	public function get_league_dropdown( false|int $event_id = false ): void {
+	public function get_league_dropdown(): void {
         $output = null;
 		$return = new stdClass();
 		if ( isset( $_POST['security'] ) ) {
@@ -3647,9 +3642,7 @@ class RacketManager_Admin extends RacketManager {
 			$return->msg   = __( 'No security token found in request', 'racketmanager' );
 		}
 		if ( ! isset( $return->error ) ) {
-			if ( ! $event_id && isset( $_POST['event_id'] ) ) {
-				$event_id = intval( $_POST['event_id'] );
-			}
+			$event_id = isset( $_POST['event_id'] ) ? intval( $_POST['event_id'] ) : null;
 			if ( $event_id ) {
 				$event   = get_event( $event_id );
 				$leagues = $event->get_leagues();

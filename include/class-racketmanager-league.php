@@ -1504,7 +1504,7 @@ class Racketmanager_League {
 	 */
 	public function add_team( int|string $team_id, string $season, string $rank = null, string $status = null, int|string $profile = 1 ): bool|int {
 		global $wpdb, $racketmanager;
-		$error = false;
+		$valid = true;
 		if ( ! is_numeric( $team_id ) ) {
 			$team = get_team( $team_id );
 			if ( ! $team ) {
@@ -1528,7 +1528,7 @@ class Racketmanager_League {
 		);
 		if ( $table_id ) {
 			$message_text = __( 'Team already in table', 'racketmanager' );
-			$error        = true;
+			$valid        = false;
 		} else {
 			if ( ! $rank ) {
 				$result = $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -1559,17 +1559,22 @@ class Racketmanager_League {
 				$message_text = __( 'Table entry added', 'racketmanager' );
 			} else {
 				$message_text = __( 'Error adding team to table', 'racketmanager' );
-				$error        = true;
+				$valid        = false;
 				error_log( $message_text ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 				error_log( $wpdb->last_error ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			}
 		}
+        if ( $valid ) {
+            $error = false;
+        } else {
+            $error = true;
+        }
 		$racketmanager->set_message( $message_text, $error );
 
-		if ( $error ) {
-			return $error;
-		} else {
+		if ( $valid ) {
 			return $table_id;
+		} else {
+			return false;
 		}
 	}
 

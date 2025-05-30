@@ -3411,19 +3411,9 @@ class RacketManager_Admin extends RacketManager {
 	 * @param string $season season.
 	 */
 	private function importFixtures( array $contents, string $delimiter, int $league_id, string $season ): void {
-		$league  = get_league( $league_id );
-		$rubbers = $league->num_rubbers;
-		if ( is_null( $rubbers ) ) {
-			$rubbers = 1;
-		}
-		$matches     = array();
-		$home_points = array();
-		$away_points = array();
-		$home_teams  = array();
-		$away_teams  = array();
-		$custom      = array();
-		$i           = 0;
-		$x           = 0;
+		$league = get_league( $league_id );
+		$i      = 0;
+		$x      = 0;
 		foreach ( $contents as $record ) {
 			$line = explode( $delimiter, $record );
 			// ignore header and empty lines.
@@ -3435,18 +3425,10 @@ class RacketManager_Admin extends RacketManager {
 				$match->season    = $season;
 				$match->home_team = $this->get_team_id( $line[2] );
 				$match->away_team = $this->get_team_id( $line[3] );
-				if ( 0 !== $match->home_team && 0 !== $match->away_team ) {
-					$match->location          = $line[4] ?? '';
-					$match->group             = $line[5] ?? '';
-					$match                    = new Racketmanager_Match( $match );
-					$match_id                 = $match->id;
-					$matches[ $match_id ]     = $match_id;
-					$home_teams[ $match_id ]  = $match->home_team;
-					$away_teams[ $match_id ]  = $match->away_team;
-					$home_points[ $match_id ] = '';
-					$away_points[ $match_id ] = '';
-
-					$custom = apply_filters( 'racketmanager_import_fixtures_' . $league->sport, $custom, $match_id );
+				if ( ! empty( $match->home_team )  && ! empty( $match->away_team ) ) {
+					$match->location = $line[4] ?? '';
+					$match->group    = $line[5] ?? '';
+					new Racketmanager_Match( $match );
 				}
 				++$x;
 			}

@@ -26,7 +26,6 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 		add_shortcode( 'matches', array( &$this, 'show_matches' ) );
 		add_shortcode( 'match', array( &$this, 'show_match' ) );
 		add_shortcode( 'teams', array( &$this, 'show_teams' ) );
-		add_shortcode( 'team', array( &$this, 'show_team' ) );
 		add_shortcode( 'league-players', array( &$this, 'show_league_players' ) );
 	}
 
@@ -789,49 +788,6 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 			)
 		);
 	}
-	/**
-	 * Display Team Info Page
-	 *
-	 *    [team id=ID template=X]
-	 *
-	 * - id: the team ID
-	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "team-template.php" (optional)
-	 *
-	 * @param array $atts shortcode attributes.
-	 * @return string
-	 */
-	public function show_team( array $atts ): string {
-		global $league;
-		$args     = shortcode_atts(
-			array(
-				'id'       => 0,
-				'template' => '',
-			),
-			$atts
-		);
-		$id       = $args['id'];
-		$template = $args['template'];
-		$league   = get_league();
-		if ( ! is_null( $league ) ) {
-			$team = $league->get_league_team( intval( $id ) );
-		} else {
-			$team = get_league_team( intval( $id ) );
-		}
-		if ( empty( $template ) && $this->check_template( 'team-' . $league->sport ) ) {
-			$filename = 'team-' . $league->sport;
-		} else {
-			$filename = ( ! empty( $template ) ) ? 'team-' . $template : 'team';
-		}
-		return $this->load_template(
-			$filename,
-			array(
-				'league' => $league,
-				'team'   => $team,
-			),
-			'league'
-		);
-	}
-
 	/**
 	 * Function to display league Players
 	 *

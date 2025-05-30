@@ -877,28 +877,6 @@ function racketmanager_league_teams( int $league_id, array $args = array() ): vo
 	$shortcode .= ']';
 	echo do_shortcode( $shortcode );
 }
-
-	/**
-	 * Display one team manually
-	 *
-	 * @param int $team_id team.
-	 * @param array $args additional arguments as associative array (optional).
-	 *
-	 * @return void
-	 */
-function racketmanager_team( int $team_id, array $args = array() ): void {
-	$defaults   = array( 'template' => '' );
-	$args       = array_merge( $defaults, $args );
-	$args['id'] = $team_id;
-
-	$shortcode = '[team';
-	foreach ( $args as $key => $value ) {
-		$shortcode .= ' ' . $key . "='" . $value . "'";
-	}
-	$shortcode .= ']';
-	echo do_shortcode( $shortcode );
-}
-
 	/**
 	 * Display championship manually
 	 *

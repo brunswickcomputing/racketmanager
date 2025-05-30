@@ -1,7 +1,21 @@
 {
-    "require": {
-        "stripe/stripe-php": "^16.4",
-      "ext-intl": "*",
-      "ext-mysqli": "*"
+  "name": "brunswickcomputing/racketmanager",
+  "description": "Racket sports administration and viewing for leagues/cups/tournaments",
+  "type": "wordpress-plugin",
+  "authors": [
+    {
+      "name": "Paul Moffat",
+      "homepage": "https://brunswickcomputing.co.uk/"
     }
+  ],
+  "require": {
+      "stripe/stripe-php": "^16.4",
+    "ext-intl": "*",
+    "ext-mysqli": "*"
+  },
+  "autoload": {
+    "classmap": [
+      "include"
+    ]
+  }
 }

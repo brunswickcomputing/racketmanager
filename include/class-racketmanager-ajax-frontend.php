@@ -9,6 +9,7 @@
 namespace Racketmanager;
 
 use DateMalformedStringException;
+use JetBrains\PhpStorm\NoReturn;
 use stdClass;
 use Stripe\Exception\ApiErrorException;
 use Stripe\StripeClient;
@@ -1018,7 +1019,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	/**
 	 * Build screen to allow match status to be captured
 	 */
-	public function match_status(): void {
+	#[NoReturn] public function match_status(): void {
         $output = null;
 		$return = $this->check_security_token();
 		if ( ! isset( $return->error ) ) {
@@ -1297,7 +1298,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	/**
 	 * Build screen to match rubber status to be captured
 	 */
-	public function match_rubber_status(): void {
+	#[NoReturn] public function match_rubber_status(): void {
         $output = null;
 		$return = $this->check_security_token();
 		if ( ! isset( $return->error ) ) {
@@ -1836,7 +1837,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	/**
 	 * Build screen to show selected match option
 	 */
-	public function show_match_option(): void {
+	#[NoReturn] public function show_match_option(): void {
 		$valid   = true;
 		$message = null;
         $status  = null;
@@ -2216,7 +2217,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 *
 	 * @return void
 	 */
-	public function search_players(): void {
+	#[NoReturn] public function search_players(): void {
         $search_results = null;
 		$return         = $this->check_security_token();
 		if ( ! isset( $return->error ) ) {
@@ -2417,7 +2418,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 *
 	 * @return void
 	 */
-	public function tab_data(): void {
+	#[NoReturn] public function tab_data(): void {
         $target = null;
         $output = null;
 		$return = $this->check_security_token();
@@ -2539,7 +2540,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 *
 	 * @return void
 	 */
-	public function tournament_withdrawal(): void {
+	#[NoReturn] public function tournament_withdrawal(): void {
         $output = null;
 		$return = $this->check_security_token();
 		if ( ! isset( $return->error ) ) {
@@ -2723,7 +2724,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 *
 	 * @return void
 	 */
-	public function show_team_order_players(): void {
+	#[NoReturn] public function show_team_order_players(): void {
         $club   = null;
         $event  = null;
         $teams  = null;
@@ -3014,7 +3015,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	/**
 	 * Build screen to show team edit
 	 */
-	public function show_team_edit_modal(): void {
+	#[NoReturn] public function show_team_edit_modal(): void {
         $event_team = null;
         $event      = null;
         $team       = null;
@@ -3164,7 +3165,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 *
 	 * @return void
 	 */
-	public function get_event_team_match_dropdown(): void {
+	#[NoReturn] public function get_event_team_match_dropdown(): void {
         $team    = null;
         $event   = null;
 		$return  = $this->check_security_token();

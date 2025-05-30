@@ -10,6 +10,7 @@
 
 namespace Racketmanager;
 
+use JetBrains\PhpStorm\NoReturn;
 use stdClass;
 
 /**
@@ -752,7 +753,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 	 * @param array $atts function attributes.
 	 * @return string
 	 */
-	public function show_latest_tournament( array $atts ): string {
+	#[NoReturn] public function show_latest_tournament( array $atts ): string {
 		global $racketmanager, $wp;
 		$args      = shortcode_atts(
 			array(

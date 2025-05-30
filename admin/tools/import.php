@@ -86,7 +86,7 @@ global $racketmanager;
 	</form>
 	<p>
 		<?php
-		/* translators: %s: link to doucmentation*/
+		/* translators: %s: link to documentation*/
 		sprintf( __( "The required structure of the file to import is described in the <a href='%s'>Documentation</a>", 'racketmanager' ), 'admin.php?page=racketmanager-doc' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		?>
 	</p>

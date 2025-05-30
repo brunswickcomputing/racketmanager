@@ -47,7 +47,7 @@ Go to top button
 * @section: Backend
 */
 ul.posttype-tabs, ul.outer-border {
-  padding-left: 0px;
+  padding-left: 0;
 }
 #matchPreloader .preloader {
     height: 25%;
@@ -807,6 +807,6 @@ a.score {
 
 @media (min-width: 768px) {
 	.alert__body {
-		flex-basis: 0px
-	}
+		flex-basis: 0
+    }
 }

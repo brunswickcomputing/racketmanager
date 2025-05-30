@@ -1077,13 +1077,13 @@ label.hidden {
 #tabs-login .ui-tabs-nav li {
 	display: inline-block;
 		float: none;
-		top: 0px;
-	margin: 0em 0em -5px;
-	padding-bottom: 0px;
+		top: 0;
+	margin: 0 0 -5px;
+	padding-bottom: 0;
 }
 
 #tabs-login.ui-tabs .ui-tabs-nav .ui-tabs-anchor {
-	padding-top: 0em;
+	padding-top: 0;
 }
 
 .label-radio {
@@ -4543,7 +4543,7 @@ p.media__subheading {
 .player-row__tie-break {
 	position: absolute;
 	left: 0.75rem;
-	top: 0px;
+	top: 0;
 	letter-spacing: -0.2em;
 	font-size: 0.625rem;
 	line-height: 0.75rem;
@@ -5131,8 +5131,8 @@ svg[class*=icon] {
 
 @media (min-width: 768px) {
     .alert__body {
-        flex-basis:0px
-    }
+        flex-basis:0
+	}
 }
 
 .alert__aside {
@@ -5703,7 +5703,7 @@ svg.media__img-element--icon.winner, svg.media__img-element--icon.runner-up {
 	margin: 0.5rem 0;
 }
 .module-container.titles .module-container {
-	padding-top: 0rem;
+	padding-top: 0;
 	padding-bottom: 0;
 }
 .media__subheading-info-item a,

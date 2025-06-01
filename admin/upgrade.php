@@ -1493,6 +1493,10 @@ function racketmanager_upgrade(): void {
 		echo esc_html__( 'starting 8.47.2 upgrade', 'racketmanager' ) . "<br />\n";
 		$wpdb->query( "ALTER TABLE $wpdb->racketmanager_club_players DROP `updated` " );
 	}
+	if ( version_compare( $installed, '8.47.3', '<' ) ) {
+		echo esc_html__( 'starting 8.47.3 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE $wpdb->racketmanager_competitions CHANGE `seasons` `seasons` LONGTEXT NULL " );
+	}
 	/*
 	* Update version and dbversion
 	*/

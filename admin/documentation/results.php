@@ -29,7 +29,8 @@
     </div>
     <div class="tab-pane fade" id="resultsview" role="tabpanel" aria-labelledby="resultsview-tab">
       <h3 class="header"><?php _e( 'Results', 'racketmanager' ) ?></h3>
-      <a href="#top" class="alignright top-link"><?php _e( 'Top', 'racketmanager' ) ?></a>
+      <!--suppress HtmlUnknownAnchorTarget -->
+        <a href="#top" class="alignright top-link"><?php _e( 'Top', 'racketmanager' ) ?></a>
       <p>The results page of Racketmanager shows any results that have been entered by users that need administration approval.</p>
       <p>The ability for users to enter match results themselves is controlled by the <a href="<?php echo get_admin_url() ?>admin.php?page=racketmanager-settings">settings</a> on the "Match Results" tab.</p>
       <p>If an email address is set on this screen, an email notification will be sent to this address whenever a match result is entered by users.</p>

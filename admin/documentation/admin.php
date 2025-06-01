@@ -1,5 +1,6 @@
 <div class="container">
-  <a href="#top" class="alignright top-link"><?php _e( 'Top', 'racketmanager' ) ?></a>
+  <!--suppress HtmlUnknownAnchorTarget, HtmlUnknownAnchorTarget -->
+    <a href="#top" class="alignright top-link"><?php _e( 'Top', 'racketmanager' ) ?></a>
   <p>The administrations page of Racketmanager allows general administration functions to be performed.</p>
   <!-- Nav tabs -->
   <ul class="nav nav-pills" id="myTab" role="tablist">

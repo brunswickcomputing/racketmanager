@@ -1,5 +1,6 @@
 <div class="container">
-  <a href="#top" class="alignright top-link"><?php _e( 'Top', 'racketmanager' ) ?></a>
+  <!--suppress HtmlUnknownAnchorTarget -->
+    <a href="#top" class="alignright top-link"><?php _e( 'Top', 'racketmanager' ) ?></a>
   <p>The cups page shows all the cup competitions that have been created.</p>
   <p>Clicking on cup name takes the user to the cup competition page.</p>
   <h3 id="notifyCups"><?php _e( 'Notify Entry Open', 'racketmanager' ) ?></h3>

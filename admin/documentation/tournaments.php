@@ -1,5 +1,6 @@
 <div class="container">
-  <a href="#top" class="alignright top-link"><?php _e( 'Top', 'racketmanager' ) ?></a>
+  <!--suppress HtmlUnknownAnchorTarget -->
+    <a href="#top" class="alignright top-link"><?php _e( 'Top', 'racketmanager' ) ?></a>
   <!-- Nav tabs -->
   <ul class="nav nav-pills" id="myTab" role="tablist">
     <li class="nav-item" role="presentation">

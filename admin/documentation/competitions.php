@@ -1,5 +1,6 @@
 <div class="container">
-  <a href="#top" class="alignright top-link"><?php _e( 'Top', 'racketmanager' ) ?></a>
+  <!--suppress HtmlUnknownAnchorTarget -->
+    <a href="#top" class="alignright top-link"><?php _e( 'Top', 'racketmanager' ) ?></a>
   <p>The main page of Racketmanager shows an overview of the competitions in the database together with a few statistics on the number of seasons, leagues and format. At the beginning it is necessary to add at least one season for which the number of match days is also specified. Furthermore, the competition preferences need to be set. You can choose the sport type and point rules.</p>
   <h3 id="Types"><?php _e( 'Competition Types', 'racketmanager' ) ?></h3>
   <p>There are three types of competitions available.</p>

@@ -1,5 +1,6 @@
 <div class="container">
-  <a href="#top" class="alignright top-link"><?php _e( 'Top', 'racketmanager' ) ?></a>
+  <!--suppress HtmlUnknownAnchorTarget -->
+    <a href="#top" class="alignright top-link"><?php _e( 'Top', 'racketmanager' ) ?></a>
   <p>The import page allows data to be imported to the website from uploaded files. The types of data allowed are:</p>
   <dl>
     <dt>Table</dt>

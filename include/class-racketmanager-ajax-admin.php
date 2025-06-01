@@ -359,7 +359,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 			$season            = $event->current_season['name'];
 			$message_sent      = false;
 			$return            = array();
-			$from_email        = $this->get_confirmation_email( $event->competition->type );
+			$from_email        = $racketmanager->get_confirmation_email( $event->competition->type );
 			$organisation_name = $racketmanager->site_name;
 			$leagues           = $event->get_leagues();
 			foreach ( $leagues as $league ) {

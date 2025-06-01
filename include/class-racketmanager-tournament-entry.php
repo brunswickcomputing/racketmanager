@@ -123,8 +123,11 @@ final class Racketmanager_Tournament_Entry {
 			}
 		}
 	}
+
 	/**
 	 * Add tournament entry
+	 *
+	 * @return false|int|mixed
 	 */
 	private function add() {
 		global $wpdb, $racketmanager;

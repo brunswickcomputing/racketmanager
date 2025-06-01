@@ -281,14 +281,6 @@ div.match .away_logo img {
 	vertical-align: middle;
 }
 
-div.match span.home_logo {
-	margin-right: 1em;
-}
-
-div.match span.away_logo {
-	margin-left: 1em;
-}
-
 div.match table {
 	width: 100%;
 	margin-top: 1.5em;
@@ -334,9 +326,6 @@ div.match .match-stats {
 	font-size: 1rem;
 	font-weight: bold;
 }
-div.matchlist {
-	margin-bottom: 1em;
-}
 
 .matchlist .match {
 	margin-bottom: 1em;
@@ -352,26 +341,9 @@ div.matchlist table.racketmanager th {
 }
 
 /*--- Team Page ---*/
-div.teampage,
-div.teamlist {
-	position: relative;
-	clear: both;
-	margin-bottom: 1em;
-}
 
 div.teamlist h3.header {
 	cursor: pointer;
-}
-
-div.tm-team-content .prev_match,
-div.tm-team-content .next_match {
-	margin-bottom: 1em;
-}
-
-div.tm-team-content:after {
-	content: " ";
-	display: block;
-	clear: both;
 }
 
 div.teampage h3.header,
@@ -400,36 +372,6 @@ div.tm-team-content .next_match .header {
 div.tm-team-content .prev_match .header,
 div.tm-team-content .next_match .header {
 	font-size: 1em;
-}
-
-div.tm-team-content,
-div.match .match-content,
-div.tm-team-content .prev_match .content,
-div.tm-team-content .next_match .content {
-	position: relative;
-	padding: 0.5em;
-	-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 1);
-		-moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 1);
-		-ms-box-shadow: 0 1px 1px rgba(0, 0, 0, 1);
-		-o-box-shadow: 0 1px 1px rgba(0, 0, 0, 1);
-		box-shadow: 0 1px 1px rgba(0, 0, 0, 1);
-	margin: 0 0 2px 0;
-	border: 1px solid;
-}
-
-div.entry-content .tm-team-content {
-	border: none;
-	box-shadow: none;
-}
-
-div.tm-team-content {
-	padding: 0.5em !important;
-}
-
-div.tm-team-content .teamlogo:after {
-	content: " ";
-	clear: both;
-	display: table;
 }
 
 div.tm-team-content .teamlogo img {
@@ -469,14 +411,6 @@ div.tm-team-content .matches-container {
 	float: left;
 }
 
-div.tm-team-content .next_match {
-	margin-right: 0.5em;
-}
-
-div.tm-team-content .prev_match {
-	margin-left: 0.5em;
-}
-
 div.tm-team-content .prev_match p,
 div.tm-team-content .next_match p {
 	margin: 0;
@@ -488,11 +422,6 @@ div.tm-team-content .next_match .score {
 	font-size: 1.3em;
 	text-align: center;
 	font-weight: bold;
-}
-
-div.tm-team-content .team-projectmanager {
-	clear: both;
-	position: relative;
 }
 
 /*noinspection CssUnresolvedCustomProperty*/
@@ -696,13 +625,6 @@ input[type="time"]:disabled {
 	height: auto !important;
 }
 
-.racketmanager_widget .match_box .home_logo {
-	margin-right: 0.5em;
-}
-
-.racketmanager_widget .match_box .away_logo {
-	margin-left: 0.5em;
-}
 .racketmanager_widget .match_box .match_day,
 .racketmanager_widget .match_box .date,
 .racketmanager_widget .match_box .location {
@@ -762,10 +684,6 @@ input[type="checkbox"].checkbox.is-invalid {
 	margin: 0 2px 0 8px;
 }
 
-td.angledir {
-	width: 5%;
-}
-
 span.host {
 	font-weight: 700;
 }
@@ -773,10 +691,6 @@ span.host {
 span.unplayedMatch {
 	color: grey;
 	font-size: 80%;
-}
-
-th.numstat {
-	width: 8%;
 }
 
 th.player {
@@ -793,10 +707,6 @@ th.team {
 
 div.teampage h3.header {
 	color: #500B73;
-}
-
-.cr3_sponsorwrapper {
-	text-align: center
 }
 
 /*
@@ -858,14 +768,6 @@ li.game-bottom {
 .doubles.game-bottom {
 	min-height: 47px;
 }
-.tournament-match-box {
-	border: solid 1px;
-	padding: 5px;
-}
-
-.matchLater {
-	margin-top: 4rem;
-}
 
 /*---------------------Club Style-------------------------- */
 
@@ -901,10 +803,6 @@ h2.teams-header {
 
 #club-teams li {
 	list-style-type: none;
-}
-
-#clubdesc {
-	padding: 10px;
 }
 
 h2.results-header {

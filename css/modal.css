@@ -25,10 +25,7 @@ div#matchHeader .matchday {
 div#matchHeader .matchTitle {
     text-align: center;
 }
-.widefat td.rtd.centered {
-    padding-left: 5px;
-    padding-right: 5px;
-}
+
 td input.points {
     padding: 3px;
     text-align: center;

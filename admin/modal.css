@@ -89,13 +89,6 @@ td input.player {
     width: 200px;
 }
 
-.playerselect {
-    width: 30%;
-}
-#content .playerselect {
-    border: none;
-    border-right: 1px solid #333;
-}
 #matchRubbers select {
     width:    100%;
 }

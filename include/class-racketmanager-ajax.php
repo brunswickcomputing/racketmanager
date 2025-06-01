@@ -15,7 +15,7 @@ use stdClass;
  *
  * @author Paul Moffat
  */
-class Racketmanager_Ajax extends RacketManager {
+class Racketmanager_Ajax {
 	/**
 	 * Register ajax actions.
 	 */

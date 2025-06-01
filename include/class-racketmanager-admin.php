@@ -1487,18 +1487,19 @@ class RacketManager_Admin extends RacketManager {
 	 * Contact teams in league in admin screen
 	 */
 	protected function league_contact_teams(): void {
+        global $racketmanager;
 		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_contact-teams-preview' ) ) {
-			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+			$racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 		} elseif ( current_user_can( 'edit_teams' ) ) {
 			if ( isset( $_POST['league_id'] ) && isset( $_POST['season'] ) && isset( $_POST['emailMessage'] ) ) {
                 $league = get_league( $_POST['league_id'] );
 				$sent = $league->contact_teams( sanitize_text_field( wp_unslash( $_POST['season'] ) ), htmlspecialchars_decode( $_POST['emailMessage'] ) ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				if ( $sent ) {
-					$this->set_message( __( 'Email sent to captains', 'racketmanager' ) );
+					$racketmanager->set_message( __( 'Email sent to captains', 'racketmanager' ) );
 				}
 			}
 		} else {
-			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
+			$racketmanager->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 		}
 	}
 
@@ -2487,7 +2488,7 @@ class RacketManager_Admin extends RacketManager {
 				$email_intro   = isset( $_POST['contactIntro'] ) ? sanitize_textarea_field( wp_unslash( $_POST['contactIntro'] ) ) : null;
 				$email_body    = $_POST['contactBody'] ?? null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				$email_close   = isset( $_POST['contactClose'] ) ? sanitize_textarea_field( wp_unslash( $_POST['contactClose'] ) ) : null;
-				$email_subject = $this->site_name . ' - ' . $title . ' ' . $season . ' - Important Message';
+				$email_subject = $racketmanager->site_name . ' - ' . $title . ' ' . $season . ' - Important Message';
 
 				$email_message = $racketmanager_shortcodes->load_template(
 					'contact-teams',

@@ -70,7 +70,7 @@ class Racketmanager_Exporter {
 	 *  days - defaults to 7
 	 *  competition
 	 */
-	#[NoReturn] #[NoReturn] public function results(): void {
+	#[NoReturn] public function results(): void {
 		global $racketmanager;
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['club'] ) ) {

@@ -128,12 +128,6 @@ final class Racketmanager_Club_Player {
 	 */
 	public bool|null $system_record;
 	/**
-	 * Updated
-	 *
-	 * @var string
-	 */
-	public string $updated;
-	/**
 	 * Retrieve club_player instance
 	 *
 	 * @param int $club_player_id club player id or name.
@@ -147,7 +141,7 @@ final class Racketmanager_Club_Player {
 		if ( ! $club_player ) {
 			$club_player = $wpdb->get_row(
 				$wpdb->prepare(
-					"SELECT `id`, `player_id`, `system_record`, `club_id`, `removed_date`, `removed_user`, `created_date`, `created_user`, `updated`, `requested_date`, `requested_user` FROM $wpdb->racketmanager_club_players WHERE `id` = %d LIMIT 1",
+					"SELECT `id`, `player_id`, `system_record`, `club_id`, `removed_date`, `removed_user`, `created_date`, `created_user`, `requested_date`, `requested_user` FROM $wpdb->racketmanager_club_players WHERE `id` = %d LIMIT 1",
 					$club_player_id
 				)
 			); // db call ok.

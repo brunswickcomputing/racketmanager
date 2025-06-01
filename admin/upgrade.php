@@ -1489,6 +1489,10 @@ function racketmanager_upgrade(): void {
 			$wpdb->query( "UPDATE {$wpdb->racketmanager_competitions} SET `settings` = '" . $competition->settings . "' WHERE `id` = " . $competition->id );
 		}
 	}
+	if ( version_compare( $installed, '8.47.2', '<' ) ) {
+		echo esc_html__( 'starting 8.47.2 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE $wpdb->racketmanager_club_players DROP `updated` " );
+	}
 	/*
 	* Update version and dbversion
 	*/

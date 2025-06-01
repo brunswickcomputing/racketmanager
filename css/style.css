@@ -5583,6 +5583,7 @@ h4.modal-title {
 .alphabet__char-href {
 	align-items: center;
 	border-radius: .3rem;
+	/*noinspection CssUnresolvedCustomProperty*/
 	color: var(--e-global-color-global_color_1);
 	display: flex;
 	font-size: .9rem;

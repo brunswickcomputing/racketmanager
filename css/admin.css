@@ -741,7 +741,8 @@ a.score {
 }
 
 .module:not(.module--card) .alert_rm {
-	box-shadow: var(--box-shadow);
+    /*noinspection CssUnresolvedCustomProperty*/
+    box-shadow: var(--box-shadow);
 }
 
 @media (min-width: 768px) {

@@ -314,7 +314,6 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 	 */
 	public function get_invoice_actions( string $status, ?int $club_id, ?int $charge_id ): array {
 		if ( isset( $_POST['doActionInvoices'] ) && isset( $_POST['action'] ) && - 1 !== $_POST['action'] ) {
-			$racketmanager_tab = 'racketmanager-invoices';
 			check_admin_referer( 'invoices-bulk' );
 			if ( ! current_user_can( 'del_teams' ) ) {
 				$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );

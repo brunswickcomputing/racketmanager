@@ -129,7 +129,7 @@ final class Racketmanager_Tournament_Entry {
 	 *
 	 * @return false|int|mixed
 	 */
-	private function add() {
+	private function add(): mixed {
 		global $wpdb, $racketmanager;
 		$valid   = true;
 		$err_msg = array();

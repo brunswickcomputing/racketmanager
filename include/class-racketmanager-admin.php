@@ -101,6 +101,7 @@ class RacketManager_Admin extends RacketManager {
 	 * Adds menu to the admin interface
 	 */
 	public function menu(): void {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 412.425 412.425" style="fill:white" xml:space="preserve"><path d="M412.425,108.933c0-30.529-10.941-58.18-30.808-77.86C361.776,11.418,333.91,0.593,303.153,0.593 c-41.3,0-83.913,18.749-116.913,51.438c-30.319,30.034-48.754,68.115-51.573,105.858c-0.845,5.398-1.634,11.13-2.462,17.188	c-4.744,34.686-10.603,77.415-34.049,104.503c-2.06,0.333-3.981,1.295-5.476,2.789L7.603,367.447 c-10.137,10.138-10.137,26.632,0,36.77c4.911,4.911,11.44,7.615,18.385,7.615s13.474-2.705,18.386-7.617l85.06-85.095 c1.535-1.536,2.457-3.448,2.784-5.438c27.087-23.461,69.829-29.322,104.524-34.068c6.549-0.896,12.734-1.741,18.508-2.666 c1.434-0.23,2.743-0.76,3.885-1.507c36.253-4.047,72.464-21.972,101.325-50.562C393.485,192.166,412.425,149.905,412.425,108.933z M145.476,218.349c4.984,10.244,11.564,19.521,19.608,27.49c8.514,8.434,18.51,15.237,29.576,20.262 c-25.846,5.238-52.769,13.823-73.415,30.692l-6.216-6.216C131.639,270.246,140.217,243.831,145.476,218.349z M30.23,390.075	c-1.133,1.133-2.64,1.757-4.242,1.757c-1.603,0-3.109-0.624-4.243-1.757c-2.339-2.339-2.339-6.146,0-8.485l78.006-78.007 l8.469,8.469L30.23,390.075z M243.559,256.318c-0.002,0-0.008,0-0.011,0c-25.822-0.003-48.087-8.54-64.389-24.688 c-16.279-16.126-24.883-38.136-24.883-63.652c0-2.596,0.1-5.201,0.276-7.808c0.023-0.143,0.045-0.295,0.068-0.438 c0.11-0.685,0.147-1.364,0.117-2.031c2.87-32.422,19.121-65.253,45.579-91.461c29.284-29.009,66.767-45.646,102.837-45.646 c25.819,0,48.085,8.537,64.389,24.689c16.279,16.126,24.883,38.136,24.883,63.651c-0.001,35.672-16.781,72.755-46.04,101.739 C317.1,239.682,279.624,256.319,243.559,256.318z"/></svg>';
 		// keep capabilities here for next update.
 		$page = add_menu_page(
 			__( 'RacketManager', 'racketmanager' ),
@@ -108,7 +109,7 @@ class RacketManager_Admin extends RacketManager {
 			'racket_manager',
 			'racketmanager',
 			array( &$this, 'display' ),
-			'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pg0KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDE3LjEuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPg0KPCFET0NUWVBFIHN2ZyBQVUJMSUMgIi0vL1czQy8vRFREIFNWRyAxLjEvL0VOIiAiaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkIj4NCjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iQ2FwYV8xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4PSIwcHgiIHk9IjBweCINCgkgdmlld0JveD0iMCAwIDQxMi40MjUgNDEyLjQyNSIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgNDEyLjQyNSA0MTIuNDI1OyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+DQo8cGF0aCBkPSJNNDEyLjQyNSwxMDguOTMzYzAtMzAuNTI5LTEwLjk0MS01OC4xOC0zMC44MDgtNzcuODZDMzYxLjc3NiwxMS40MTgsMzMzLjkxLDAuNTkzLDMwMy4xNTMsMC41OTMNCgljLTQxLjMsMC04My45MTMsMTguNzQ5LTExNi45MTMsNTEuNDM4Yy0zMC4zMTksMzAuMDM0LTQ4Ljc1NCw2OC4xMTUtNTEuNTczLDEwNS44NThjLTAuODQ1LDUuMzk4LTEuNjM0LDExLjEzLTIuNDYyLDE3LjE4OA0KCWMtNC43NDQsMzQuNjg2LTEwLjYwMyw3Ny40MTUtMzQuMDQ5LDEwNC41MDNjLTIuMDYsMC4zMzMtMy45ODEsMS4yOTUtNS40NzYsMi43ODlMNy42MDMsMzY3LjQ0Nw0KCWMtMTAuMTM3LDEwLjEzOC0xMC4xMzcsMjYuNjMyLDAsMzYuNzdjNC45MTEsNC45MTEsMTEuNDQsNy42MTUsMTguMzg1LDcuNjE1czEzLjQ3NC0yLjcwNSwxOC4zODYtNy42MTdsODUuMDYtODUuMDk1DQoJYzEuNTM1LTEuNTM2LDIuNDU3LTMuNDQ4LDIuNzg0LTUuNDM4YzI3LjA4Ny0yMy40NjEsNjkuODI5LTI5LjMyMiwxMDQuNTI0LTM0LjA2OGM2LjU0OS0wLjg5NiwxMi43MzQtMS43NDEsMTguNTA4LTIuNjY2DQoJYzEuNDM0LTAuMjMsMi43NDMtMC43NiwzLjg4NS0xLjUwN2MzNi4yNTMtNC4wNDcsNzIuNDY0LTIxLjk3MiwxMDEuMzI1LTUwLjU2MkMzOTMuNDg1LDE5Mi4xNjYsNDEyLjQyNSwxNDkuOTA1LDQxMi40MjUsMTA4LjkzM3oNCgkgTTE0NS40NzYsMjE4LjM0OWM0Ljk4NCwxMC4yNDQsMTEuNTY0LDE5LjUyMSwxOS42MDgsMjcuNDljOC41MTQsOC40MzQsMTguNTEsMTUuMjM3LDI5LjU3NiwyMC4yNjINCgljLTI1Ljg0Niw1LjIzOC01Mi43NjksMTMuODIzLTczLjQxNSwzMC42OTJsLTYuMjE2LTYuMjE2QzEzMS42MzksMjcwLjI0NiwxNDAuMjE3LDI0My44MzEsMTQ1LjQ3NiwyMTguMzQ5eiBNMzAuMjMsMzkwLjA3NQ0KCWMtMS4xMzMsMS4xMzMtMi42NCwxLjc1Ny00LjI0MiwxLjc1N2MtMS42MDMsMC0zLjEwOS0wLjYyNC00LjI0My0xLjc1N2MtMi4zMzktMi4zMzktMi4zMzktNi4xNDYsMC04LjQ4NWw3OC4wMDYtNzguMDA3DQoJbDguNDY5LDguNDY5TDMwLjIzLDM5MC4wNzV6IE0yNDMuNTU5LDI1Ni4zMThjLTAuMDAyLDAtMC4wMDgsMC0wLjAxMSwwYy0yNS44MjItMC4wMDMtNDguMDg3LTguNTQtNjQuMzg5LTI0LjY4OA0KCWMtMTYuMjc5LTE2LjEyNi0yNC44ODMtMzguMTM2LTI0Ljg4My02My42NTJjMC0yLjU5NiwwLjEtNS4yMDEsMC4yNzYtNy44MDhjMC4wMjMtMC4xNDMsMC4wNDUtMC4yOTUsMC4wNjgtMC40MzgNCgljMC4xMS0wLjY4NSwwLjE0Ny0xLjM2NCwwLjExNy0yLjAzMWMyLjg3LTMyLjQyMiwxOS4xMjEtNjUuMjUzLDQ1LjU3OS05MS40NjFjMjkuMjg0LTI5LjAwOSw2Ni43NjctNDUuNjQ2LDEwMi44MzctNDUuNjQ2DQoJYzI1LjgxOSwwLDQ4LjA4NSw4LjUzNyw2NC4zODksMjQuNjg5YzE2LjI3OSwxNi4xMjYsMjQuODgzLDM4LjEzNiwyNC44ODMsNjMuNjUxYy0wLjAwMSwzNS42NzItMTYuNzgxLDcyLjc1NS00Ni4wNCwxMDEuNzM5DQoJQzMxNy4xLDIzOS42ODIsMjc5LjYyNCwyNTYuMzE5LDI0My41NTksMjU2LjMxOHoiLz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjwvc3ZnPg0K',
+			'data:image/svg+xml;base64,' . base64_encode( $svg ),
 			2
 		);
 		add_action( "admin_print_scripts-$page", array( &$this, 'loadScripts' ) );
@@ -646,7 +647,6 @@ class RacketManager_Admin extends RacketManager {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
 		} else {
-			$tab     = 'competitionsleague';
 			$club_id = isset( $_GET['club_id'] ) ? sanitize_text_field( wp_unslash( $_GET['club_id'] ) ) : 0;
 			if ( $club_id ) {
 				$club = get_club( $club_id );
@@ -1003,10 +1003,6 @@ class RacketManager_Admin extends RacketManager {
 				$this->set_message( __( 'No action selected', 'racketmanager' ), true );
 			}
 		}
-		// phpcs:enable WordPress.Security.NonceVerification.Missing
-		if ( $league->is_championship ) {
-			$tab = 'preliminary';
-		}
 	}
 	/**
 	 * Add teams to league in admin screen
@@ -1019,7 +1015,7 @@ class RacketManager_Admin extends RacketManager {
 		} elseif ( current_user_can( 'edit_teams' ) ) {
 			if ( isset( $_POST['team'] ) && isset( $_POST['event_id'] ) && isset( $_POST['season'] ) ) {
 				$league = get_league( $league );
-				foreach ( $_POST['team'] as $i => $team_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				foreach ( $_POST['team'] as $team_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					$league->add_team( $team_id, sanitize_text_field( wp_unslash( $_POST['season'] ) ) );
 					if ( is_numeric( $team_id ) ) {
 						$team = get_team( $team_id );
@@ -1349,7 +1345,6 @@ class RacketManager_Admin extends RacketManager {
 					$this->set_message( sprintf( __( 'Updated Results of %d matches', 'racketmanager' ), $num_matches ) );
 				}
 			}
-				$match_day = isset( $_POST['current_match_day'] ) ? intval( $_POST['current_match_day'] ) : null;
 		} else {
 			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 		}
@@ -1637,7 +1632,7 @@ class RacketManager_Admin extends RacketManager {
 				$tournament = get_tournament( $tournament_id );
 			}
 			//phpcs:enable WordPress.Security.NonceVerification.Recommended
-			include_once RACKETMANAGER_PATH . '/admin/includes/teamslist.php';
+			require_once RACKETMANAGER_PATH . '/admin/includes/teams-list.php';
 		}
 	}
 
@@ -1655,7 +1650,7 @@ class RacketManager_Admin extends RacketManager {
 			$standalone        = true;
 			$competition_query = array( 'type' => $competition_type );
 			$page_title        = ucfirst( $competition_type ) . ' ' . __( 'Competitions', 'racketmanager' );
-			include_once RACKETMANAGER_PATH . '/admin/show-competitions.php';
+			require_once RACKETMANAGER_PATH . '/admin/show-competitions.php';
 		}
 	}
 
@@ -1810,7 +1805,6 @@ class RacketManager_Admin extends RacketManager {
 	 * Display club players page
 	 */
 	private function display_club_players_page(): void {
-		global $racketmanager;
         $club_id = null;
 		if ( ! current_user_can( 'edit_teams' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
@@ -1996,7 +1990,6 @@ class RacketManager_Admin extends RacketManager {
 					$valid                      = false;
 					$error_field[ $error_id ]   = 'email';
 					$error_message[ $error_id ] = __( 'Email address already used', 'racketmanager' );
-					++$error_id;
 				}
 			}
 		}
@@ -2137,7 +2130,6 @@ class RacketManager_Admin extends RacketManager {
 	 * Display match editing page
 	 */
 	private function display_match_page(): void {
-		global $wpdb, $competition;
         $league      = null;
         $max_matches = null;
         $match       = null;
@@ -2649,8 +2641,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @return boolean $success
 	 */
 	protected function delete_event_matches( int $event ): bool {
-		global $wpdb, $racketmanager;
-
+		global $racketmanager;
 		$success     = true;
 		$event       = get_event( $event );
 		$season      = $event->get_season();
@@ -2663,7 +2654,7 @@ class RacketManager_Admin extends RacketManager {
 			)
 		);
 
-		if ( 0 !== $match_count ) {
+		if ( $match_count ) {
 			$this->set_message( __( 'Event has completed matches', 'racketmanager' ), true );
 			$success = false;
 		} else {
@@ -2785,7 +2776,7 @@ class RacketManager_Admin extends RacketManager {
 		foreach ( $events as $event ) {
 			$event = get_event( $event );
 			if ( ! isset( $event->seasons[ $season ] ) ) {
-				$event_season = $this->add_season_to_event( $season, $event->id, $num_match_days );
+				$this->add_season_to_event( $season, $event->id, $num_match_days );
 			}
 		}
 		/* translators: %s: season name */
@@ -2800,9 +2791,9 @@ class RacketManager_Admin extends RacketManager {
 	 * @param int $event_id event_id.
 	 * @param int|null $num_match_days number of match days.
 	 *
-	 * @return boolean
+	 * @return void
 	 */
-	private function add_season_to_event( string $season, int $event_id, ?int $num_match_days ): bool {
+	private function add_season_to_event( string $season, int $event_id, ?int $num_match_days ): void {
 		global $event;
 
 		$event = get_event( $event_id );
@@ -2821,7 +2812,8 @@ class RacketManager_Admin extends RacketManager {
 			}
 			if ( ! $num_match_days ) {
 				$this->set_message( __( 'Number of match days not specified', 'racketmanager' ), 'error' );
-				return false;
+
+				return;
 			}
 			$event->seasons[ $season ] = array(
 				'name'           => $season,
@@ -2834,7 +2826,6 @@ class RacketManager_Admin extends RacketManager {
 		/* translators: %s: season name */
 		$this->set_message( sprintf( __( 'Season %s added', 'racketmanager' ), $season ) );
 
-		return true;
 	}
 	/**
 	 * Get default number of match days
@@ -3171,7 +3162,7 @@ class RacketManager_Admin extends RacketManager {
 	public function add_meta_box( object $post ): void {
 		global $wpdb, $post;
 		$leagues = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-			"SELECT `title`, `id` FROM $wpdb->racketmanager ORDER BY id ASC"
+			"SELECT `title`, `id` FROM $wpdb->racketmanager ORDER BY id "
 		);
 		if ( $leagues ) {
 			$league_id   = 0;
@@ -3419,6 +3410,7 @@ class RacketManager_Admin extends RacketManager {
 			// ignore header and empty lines.
 			if ( $i > 0 && count( $line ) > 1 ) {
 				$match            = new stdClass();
+                $match->league_id = $league->id;
 				$date             = ( ! empty( $line[6] ) ) ? $line[0] . ' ' . $line[6] : $line[0] . ' 00:00';
 				$match->match_day = $line[1] ?? '';
 				$match->date      = trim( $date );
@@ -4032,7 +4024,6 @@ class RacketManager_Admin extends RacketManager {
 								}
 								$alt_found = in_array(intval($ref), $refs, true);
 								if ( false !== $alt_found ) {
-									$ref_set = true;
 									$this->set_table_group( $ref, $table1 );
 									$this->set_table_group( $alt_ref, $table2 );
 								} else {

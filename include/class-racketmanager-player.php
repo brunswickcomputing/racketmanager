@@ -1480,7 +1480,7 @@ final class Racketmanager_Player {
 		if ( ! empty( $search_terms ) ) {
 			$search = ' AND ' . implode( ' AND ', $search_terms );
 		}
-		$sql          = "SELECT tp.`team_id`, m.`id` FROM $wpdb->racketmanager_matches m, $wpdb->racketmanager_teams t, $wpdb->racketmanager_team_players tp WHERE t.`id` = tp.`team_id` AND (m.`home_team` = t.`id` OR m.`away_team` = t.`id`) AND tp.`player_id` = %d" . $search . ' ORDER BY m.`league_id` ASC, m.`date` ASC';
+		$sql          = "SELECT tp.`team_id`, m.`id` FROM $wpdb->racketmanager_matches m, $wpdb->racketmanager_teams t, $wpdb->racketmanager_team_players tp WHERE t.`id` = tp.`team_id` AND (m.`home_team` = t.`id` OR m.`away_team` = t.`id`) AND tp.`player_id` = %d" . $search . ' ORDER BY m.`league_id`, m.`date`';
 		$sql_prepared = $wpdb->prepare(
 			$sql, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			$search_args,

@@ -1066,7 +1066,7 @@ final class Racketmanager_Tournament {
 		global $wpdb;
 		return $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT distinct DATE_FORMAT(m.`date`, %s) AS `date` FROM $wpdb->racketmanager_matches AS m, $wpdb->racketmanager AS l, $wpdb->racketmanager_events e WHERE m.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = %d AND m.`season` = %d ORDER BY 1 ASC",
+				"SELECT distinct DATE_FORMAT(m.`date`, %s) AS `date` FROM $wpdb->racketmanager_matches AS m, $wpdb->racketmanager AS l, $wpdb->racketmanager_events e WHERE m.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = %d AND m.`season` = %d ORDER BY 1 ",
 				'%Y-%m-%d',
 				$this->competition_id,
 				$this->season,

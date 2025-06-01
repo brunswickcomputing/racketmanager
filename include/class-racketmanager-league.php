@@ -1142,7 +1142,7 @@ class Racketmanager_League {
 			if ( ! $match_day ) {
 				$match = $wpdb->get_row(
 					$wpdb->prepare(
-						"SELECT `match_day`, DATEDIFF(NOW(), `date`) AS datediff FROM $wpdb->racketmanager_matches WHERE `league_id` = %d AND `season` = %s AND DATEDIFF(NOW(), `date`) > 0 ORDER BY datediff ASC LIMIT 1",
+						"SELECT `match_day`, DATEDIFF(NOW(), `date`) AS datediff FROM $wpdb->racketmanager_matches WHERE `league_id` = %d AND `season` = %s AND DATEDIFF(NOW(), `date`) > 0 ORDER BY datediff LIMIT 1",
 						$this->id,
 						$this->current_season['name']
 					)
@@ -1176,7 +1176,7 @@ class Racketmanager_League {
 			if ( ! $match_day ) {
 				$match = $wpdb->get_row(
 					$wpdb->prepare(
-						"SELECT `id`, `match_day`, ABS(DATEDIFF(NOW(), `date`)) AS datediff FROM $wpdb->racketmanager_matches WHERE `league_id` = %d AND `season` = %s ORDER BY datediff ASC LIMIT 1",
+						"SELECT `id`, `match_day`, ABS(DATEDIFF(NOW(), `date`)) AS datediff FROM $wpdb->racketmanager_matches WHERE `league_id` = %d AND `season` = %s ORDER BY datediff LIMIT 1",
 						$this->id,
 						$this->current_season['name']
 					)

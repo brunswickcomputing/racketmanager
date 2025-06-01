@@ -1501,6 +1501,12 @@ function racketmanager_upgrade(): void {
 		echo esc_html__( 'starting 8.47.4 upgrade', 'racketmanager' ) . "<br />\n";
 		$wpdb->query( "ALTER TABLE $wpdb->racketmanager_table CHANGE `custom` `custom` LONGTEXT NULL " );
 	}
+	if ( version_compare( $installed, '8.47.5', '<' ) ) {
+		echo esc_html__( 'starting 8.47.5 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "ALTER TABLE $wpdb->racketmanager_rubbers CHANGE `custom` `custom` LONGTEXT NULL " );
+		$wpdb->query( "ALTER TABLE $wpdb->racketmanager_teams CHANGE `custom` `custom` LONGTEXT NULL " );
+		$wpdb->query( "ALTER TABLE $wpdb->racketmanager_teams CHANGE `roster` `roster` LONGTEXT NULL " );
+	}
 	/*
 	* Update version and dbversion
 	*/

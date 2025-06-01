@@ -36,8 +36,6 @@ class RacketManager_Widget extends WP_Widget {
 	 * @param array $instance instance.
 	 */
 	public function widget( $args, $instance ): void {
-        debug_to_console( $args );
-        debug_to_console( $instance );
 		global $racketmanager;
 		$cache = array();
 		if ( ! $this->is_preview() ) {

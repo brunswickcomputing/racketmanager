@@ -226,8 +226,7 @@ function getDocHeight(doc) {
 	doc = doc || document;
 	// stackoverflow.com/questions/1145850/
 	let body = doc.body, html = doc.documentElement;
-	let height = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
-	return height;
+	return Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
 }
 function showPlayerClubs(link) {
 	let id = link.id;

@@ -20,20 +20,20 @@ function SetCalculator(inputdata) {
 	} else {
 		teamRefAlt = 1;
 	}
-	let teamScore = '';
+	let teamScore;
 	if (inputdata.value !== '') {
 		teamScore = parseInt(inputdata.value);
 	}
 	let teamAlt = "#" + setRef + "_player" + teamRefAlt;
 	let teamDataAlt = jQuery(teamAlt)[0];
-	let teamScoreAlt = '';
+	let teamScoreAlt;
 	if (teamDataAlt.value !== '') {
 		teamScoreAlt = parseInt(teamDataAlt.value);
 	}
 	let tieBreak = "#" + setRef + "_tiebreak";
 	let tieBreakWrapper = tieBreak + '_wrapper';
 	let tieBreakData = jQuery(tieBreak)[0];
-	let tieBreakScore = '';
+	let tieBreakScore;
 	if (tieBreakData.value !== '') {
 		tieBreakScore = parseInt(tieBreakData.value);
 	}
@@ -55,7 +55,7 @@ function SetCalculator(inputdata) {
 			jQuery(tieBreakWrapper).show();
 			jQuery(tieBreak).focus();
 		} else {
-			tieBreakScore = '';
+			tieBreakScore = null;
 			jQuery(tieBreakWrapper).hide();
 		}
 	}
@@ -67,7 +67,7 @@ function SetCalculator(inputdata) {
 	} else if (teamScore < teamScoreAlt) {
 		SetValidator(teamAlt, team, teamScoreAlt, teamScore, tieBreak, tieBreakScore, maxLoss, maxWin, minLoss, minWin);
 	} else if (teamScore === teamScoreAlt) {
-		if (!isNaN(teamScore) && '' !== teamScore) {
+		if (!isNaN(teamScore)) {
 			jQuery(team).addClass(classes.inputError);
 			jQuery(teamAlt).addClass(classes.inputError)
 		}

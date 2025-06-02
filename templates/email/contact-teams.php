@@ -10,10 +10,15 @@ namespace Racketmanager;
 /** @var string $intro */
 /** @var array  $body */
 /** @var string $closing */
+/** @var string $object_type */
 require 'email-header.php';
 $title_align = 'center';
 require 'components/title.php';
-$paragraph_text = __( 'Dear Captain', 'racketmanager' );
+if ( isset( $tournament ) ) {
+	$paragraph_text = __( 'Dear player', 'racketmanager' );
+} else {
+	$paragraph_text = __( 'Dear captain', 'racketmanager' );
+}
 require 'components/paragraph.php';
 if ( $intro ) {
 	$paragraph_text = $intro;

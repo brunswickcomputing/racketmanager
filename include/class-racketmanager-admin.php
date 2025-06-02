@@ -541,6 +541,8 @@ class RacketManager_Admin extends RacketManager {
 					$racketmanager_admin_event->display_config_page();
 				} elseif ( 'team' === $view ) {
 					$racketmanager_admin_tournament->display_team_page();
+				} elseif ( 'contact' === $view ) {
+					$racketmanager_admin_tournament->display_contact_page();
 				} else {
 					$racketmanager_admin_tournament->display_tournaments_page();
 				}
@@ -2480,6 +2482,13 @@ class RacketManager_Admin extends RacketManager {
 					$object      = $competition;
 					$object_name = 'competition_id';
 					$object_id   = $competition->id;
+				} elseif ( isset( $_POST['tournament_id'] ) ) {
+					$tournament = get_tournament( intval( $_POST['tournament_id'] ) );
+					$title       = $tournament->name;
+					$object_type = 'tournament';
+					$object      = $tournament;
+					$object_name = 'tournament_id';
+					$object_id   = $tournament->id;
 				}
 				if ( isset( $_POST['season'] ) ) {
 					$season = sanitize_text_field( wp_unslash( $_POST['season'] ) );
@@ -2516,6 +2525,11 @@ class RacketManager_Admin extends RacketManager {
 					$object_type = 'competition';
 					$object_name = 'competition_id';
 					$object_id   = $competition->id;
+				} elseif ( isset( $_GET['tournament_id'] ) ) {
+					$tournament = get_tournament( intval( $_GET['tournament_id'] ) );
+					$object_type = 'tournament';
+					$object_name = 'tournament_id';
+					$object_id   = $tournament->id;
 				}
 				if ( isset( $_GET['season'] ) ) {
 					$season = sanitize_text_field( wp_unslash( $_GET['season'] ) );

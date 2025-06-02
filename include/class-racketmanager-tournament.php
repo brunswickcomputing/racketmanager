@@ -834,11 +834,13 @@ final class Racketmanager_Tournament {
 			'orderby' => array(),
 			'count'   => false,
 			'player'  => false,
+			'active'  => false,
 		);
 		$args     = array_merge( $defaults, $args );
 		$orderby  = $args['orderby'];
 		$count    = $args['count'];
 		$player   = $args['player'];
+		$active   = $args['active'];
 
 		if ( $count ) {
 			$sql = 'SELECT COUNT(distinct(`player_id`))';
@@ -853,6 +855,9 @@ final class Racketmanager_Tournament {
 		if ( $player ) {
 			$search_terms[] = 'tp.`player_id` = %d';
 			$search_args[]  = $player;
+		}
+		if ( $active ) {
+			$search_terms[] = "( t.team_id in (SELECT `home_team` FROM $wpdb->racketmanager_matches m WHERE t.league_id = m.league_id AND t.season = m.season AND m.winner_id = 0) or t.team_id in (SELECT `away_team` FROM $wpdb->racketmanager_matches m WHERE t.league_id = m.league_id AND t.season = m.season AND m.winner_id = 0) )";
 		}
 		$search        = '';
 		if ( ! empty( $search_terms ) ) {
@@ -1764,5 +1769,33 @@ final class Racketmanager_Tournament {
 				}
 			}
 		}
+	}
+	/**
+	 * Contact Competition Teams
+	 *
+	 * @param string $email_message message.
+	 * @param bool   $active active only indicator.
+	 *
+	 * @return boolean
+	 */
+	public function contact_teams( string $email_message, bool $active = false ): bool {
+		global $racketmanager;
+		$email_message = str_replace( '\"', '"', $email_message );
+		$headers       = array();
+		$email_from    = $racketmanager->get_confirmation_email( $this->competition->type );
+		$headers[]     = 'From: ' . ucfirst( $this->competition->type ) . ' Secretary <' . $email_from . '>';
+		$headers[]     = 'cc: ' . ucfirst( $this->competition->type ) . ' Secretary <' . $email_from . '>';
+		$email_subject = $racketmanager->site_name . ' - ' . $this->name . ' - Important Message';
+		$email_to      = array();
+		$players       = $this->get_players( array( 'active' => $active ) );
+		foreach ( $players as $player_name ) {
+			$player = get_player( $player_name, 'name' );
+			if ( $player && ! empty( $player->email ) ) {
+				$headers[] = 'bcc: ' . $player->display_name . ' <' . $player->email . '>';
+			}
+		}
+		wp_mail( $email_to, $email_subject, $email_message, $headers );
+		$racketmanager->set_message( __( 'Message sent', 'racketmanager' ) );
+		return true;
 	}
 }

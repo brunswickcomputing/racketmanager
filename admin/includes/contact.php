@@ -9,6 +9,8 @@ namespace Racketmanager;
 
 /** @var string $tab */
 /** @var object $league */
+/** @var object $competition */
+/** @var object $tournament */
 /** @var string $object_name */
 /** @var int    $object_id */
 /** @var string $season */
@@ -26,7 +28,7 @@ jQuery(document).ready(function(){
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
 			<?php
-			if ( empty( $competition ) ) {
+			if ( ! empty( $league ) ) {
 				$entry_type   = $league->event->competition->entry_type;
 				$action_link  = 'admin.php?page=racketmanager-' . $league->event->competition->type . 's&amp;view=league&' . $object_name . '=' . $object_id . '&amp;season=' . $season;
 				$preview_link = 'admin.php?page=racketmanager-' . $league->event->competition->type . 's&amp;view=contact&' . $object_name . '=' . $object_id . '&amp;season=' . $season;
@@ -37,6 +39,13 @@ jQuery(document).ready(function(){
 				&raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=league&league_id=<?php echo esc_html( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a>
 				&raquo; <?php esc_html_e( 'Contact', 'racketmanager' ); ?>
 				<?php
+            } elseif( ! empty( $tournament ) ) {
+                $entry_type   = $tournament->competition->entry_type;
+                $action_link  = 'admin.php?page=racketmanager-' . $tournament->competition->type . 's&amp;view=tournament&tournament=' . $object_id;
+                $preview_link = 'admin.php?page=racketmanager-' . $tournament->competition->type . 's&amp;view=contact&' . $object_name . '=' . $object_id;
+                ?>
+                <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $tournament->competition->type ); ?>s"><?php echo esc_html( ucfirst( $tournament->competition->type ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $tournament->competition->type ); ?>s&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>"><?php echo esc_html( $tournament->name ); ?></a> &raquo; <?php esc_html_e( 'Contact', 'racketmanager' ); ?>
+                <?php
 			} else {
 				$entry_type   = $competition->entry_type;
 				$action_link  = 'admin.php?page=racketmanager-' . $competition->type . 's&amp;view=overview&' . $object_name . '=' . $object_id . '&amp;season=' . $season;
@@ -133,6 +142,13 @@ jQuery(document).ready(function(){
 				<input type="hidden" name="emailMessage" value='<?php echo htmlspecialchars( $email_message ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>' />
 				<div class="col-12">
 					<button class="btn btn-primary" name="contactTeam"><?php esc_html_e( 'Send', 'racketmanager' ); ?></button>
+                    <?php
+                    if ( ! empty( $tournament ) ) {
+                        ?>
+                        <button class="btn btn-primary" name="contactTeamActive"><?php esc_html_e( 'Send active', 'racketmanager' ); ?></button>
+                        <?php
+                    }
+                    ?>
 					<button class="btn btn-secondary"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
 				</div>
 			</form>

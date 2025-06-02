@@ -97,10 +97,9 @@ namespace Racketmanager;
 								}
 							} elseif ( ! empty( $season['date_closing'] ) && $today <= $season['date_closing'] && ! empty( $season['date_open'] ) && $today >= $season['date_open'] ) {
 								?>
-								<button class="btn btn-info btn-sm text-uppercase" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Notify open', 'racketmanager' ); ?>" onclick="Racketmanager.notify_open(event, <?php echo esc_html( $competition->id ) . ',' . esc_html( $key ); ?> )">
+								<button class="btn btn-info btn-sm text-uppercase notifyOpen" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Notify open', 'racketmanager' ); ?>" data-competition-id="<?php echo esc_attr( $competition->id ); ?>" data-season="<?php echo esc_attr( $key ); ?>">
 									<?php esc_html_e( 'Notify open', 'racketmanager' ); ?>
 								</button>
-								<span class="notify-message" id="notifyMessage-<?php echo esc_html( $key ); ?>"></span>
 								<?php
 							}
 							?>
@@ -117,3 +116,11 @@ namespace Racketmanager;
 		<a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=modify&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>" class="btn btn-primary submit"><?php esc_html_e( 'Add Season', 'racketmanager' ); ?></a>
 	</div>
 </div>
+<script type="text/javascript">
+    const notifyOpen = document.querySelectorAll('.notifyOpen');
+    notifyOpen.forEach(el => el.addEventListener('click', function (e) {
+        let competitionId = this.dataset.competitionId;
+        let season = this.dataset.season;
+        Racketmanager.notify_open(e, competitionId, season)
+    }));
+</script>

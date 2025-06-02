@@ -180,7 +180,7 @@ jQuery(document).ready(function ($) {
 						$msg += 'Team already exists\n';
 					}
 				},
-				error: function (data) {
+				error: function () {
 					$error = true;
 					$msg += 'Error with team name check\n';
 				}
@@ -291,8 +291,8 @@ function get_player_details(name, club = null) {
 		success: function (data) {
 			response = (JSON.parse(data.data));
 		},
-		error: function (response) {
-			alert("Ajax error on getting leagues");
+		error: function () {
+			alert("Ajax error on getting player");
 		}
 	});
 	return response;

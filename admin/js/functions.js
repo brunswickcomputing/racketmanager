@@ -43,7 +43,7 @@ jQuery(document).ready(function ($) {
 		},
 		select: function (event, ui) {
 			$("#teamPlayerId1").val(ui.item.playerId);
-			$("#affiliatedclub").val(ui.item.club_id);
+			$("#clubId").val(ui.item.club_id);
 			$("#captain").val(ui.item.value);
 			$("#captainId").val(ui.item.playerId);
 			$("#contactno").val(ui.item.contactno);
@@ -53,7 +53,7 @@ jQuery(document).ready(function ($) {
 			if (ui.item === null) {
 				$(this).val('');
 				$("#teamPlayerId1").val('');
-				$("#affiliatedclub").val('');
+				$("#clubId").val('');
 				$("#captain").val('');
 				$("#captainId").val('');
 				$("#contactno").val('');
@@ -63,7 +63,7 @@ jQuery(document).ready(function ($) {
 				$("#teamPlayerId1").val(ui.item.playerId);
 				$("#captain").val(ui.item.value);
 				$("#captainId").val(ui.item.playerId);
-				$("#affiliatedclub").val(ui.item.club_id);
+				$("#clubId").val(ui.item.club_id);
 				$("#contactno").val(ui.item.contactno);
 				$("#contactemail").val(ui.item.user_email);
 				let $team1 = $("#teamPlayer1").val();

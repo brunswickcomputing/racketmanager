@@ -1197,7 +1197,7 @@ final class Racketmanager_Tournament {
 					$message_sent = true;
 				}
 				if ( $message_sent ) {
-					$msg[] = __( 'Match secretaries notified', 'racketmanager' );
+					$return->msg = __( 'Players notified', 'racketmanager' );
 				} else {
 					$return->error = true;
 					$msg[]         = __( 'No notification', 'racketmanager' );

@@ -256,8 +256,9 @@ Racketmanager.updateResults = function(link) {
 	jQuery(".is-invalid").removeClass("is-invalid");
 	jQuery("#updateResponse").removeClass("message-success message-error");
 	jQuery("#showMatchRubbers").hide();
-	jQuery("#splash").css('opacity', 1);
-	jQuery("#splash").show();
+	let splash = jQuery("#splash");
+	splash.css('opacity', 1);
+	splash.show();
 
 	jQuery.ajax({
 		url: ajaxurl,
@@ -266,10 +267,11 @@ Racketmanager.updateResults = function(link) {
 		success: function (response) {
 			let $response = response.data;
 			let $message = $response[0];
-			jQuery("#updateResponse").show();
-			jQuery("#updateResponse").addClass('message-success');
-			jQuery("#updateResponse").html($message);
-			jQuery("#updateResponse").delay(10000).fadeOut('slow');
+			let updateResponse = jQuery("#updateResponse");
+			updateResponse.show();
+			updateResponse.addClass('message-success');
+			updateResponse.html($message);
+			updateResponse.delay(10000).fadeOut('slow');
 			let $homepoints = $response[1];
 			let $awaypoints = $response[2];
 			let matchHome = 0;
@@ -336,11 +338,12 @@ Racketmanager.updateResults = function(link) {
 			jQuery(notifyField).addClass('message-error');
 		},
 		complete: function () {
-			jQuery("#splash").css('opacity', 0);
-			jQuery("#splash").hide();
+			splash.css('opacity', 0);
+			splash.hide();
 			jQuery("#showMatchRubbers").show();
-			jQuery("#updateRubberResults").removeProp("disabled");
-			jQuery("#updateRubberResults").removeClass("disabled");
+			let updateRubberResults = jQuery("#updateRubberResults");
+			updateRubberResults.removeProp("disabled");
+			updateRubberResults.removeClass("disabled");
 		}
   }) ;
 };
@@ -349,12 +352,15 @@ Racketmanager.updateMatchResults = function(link) {
 	let $form = jQuery('#match-view').serialize();
 	$form += "&action=racketmanager_update_match";
 	jQuery(".is-invalid").removeClass("is-invalid");
-	jQuery("#updateResponse").removeClass("message-success");
-	jQuery("#updateResponse").removeClass("message-error");
-	jQuery("#updateRubberResults").prop("disabled", "true");
-	jQuery("#updateRubberResults").addClass("disabled");
-	jQuery("#splash").css('opacity', 1);
-	jQuery("#splash").show();
+	let updateResponse = jQuery("#updateResponse");
+	updateResponse.removeClass("message-success");
+	updateResponse.removeClass("message-error");
+	let updateRubberResults = jQuery("#updateRubberResults");
+	updateRubberResults.prop("disabled", "true");
+	updateRubberResults.addClass("disabled");
+	let splash = jQuery("#splash");
+	splash.css('opacity', 1);
+	splash.show();
 	jQuery("#showMatchRubbers").hide();
 
 	jQuery.ajax({
@@ -364,11 +370,12 @@ Racketmanager.updateMatchResults = function(link) {
 		success: function(response) {
 			let $response = response.data;
 			let $message = $response[0];
-			jQuery("#updateResponse").show();
-			jQuery("#updateResponse").html($message);
+			let updateResponse = jQuery("#updateResponse");
+			updateResponse.show();
+			updateResponse.html($message);
 			let $error = $response[3];
       		if ($error === true) {
-				jQuery("#updateResponse").addClass('message-error');
+				updateResponse.addClass('message-error');
 				let $errFields = $response[4];
 				$errFields.array.forEach($errField => {
 					let $formField = "#" + $errField[i];
@@ -384,16 +391,16 @@ Racketmanager.updateMatchResults = function(link) {
 				fieldVal = $awaypoints;
   				jQuery($formField).val(fieldVal);
     		}
-			jQuery("#splash").css('opacity', 0);
-			jQuery("#splash").hide();
+			splash.css('opacity', 0);
+			splash.hide();
 			jQuery("#showMatchRubbers").show();
 		},
 		error: function() {
 			alert("Ajax error on updating match");
 		},
 		complete: function () {
-			jQuery("#updateRubberResults").removeProp("disabled");
-			jQuery("#updateRubberResults").removeClass("disabled");
+			updateRubberResults.removeProp("disabled");
+			updateRubberResults.removeClass("disabled");
 		}
 	});
 };

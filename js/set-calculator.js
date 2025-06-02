@@ -81,7 +81,7 @@ function SetCalculator(inputdata) {
 	if (!isNaN(tieBreakScore)) {
 		jQuery(tieBreak).val(tieBreakScore);
 	}
-};
+}
 function CalculateAltScore(teamScore, maxWin, maxLoss, minWin) {
 	let teamScoreAlt = '';
 	if (teamScore == minWin) {
@@ -100,7 +100,7 @@ function CalculateAltScore(teamScore, maxWin, maxLoss, minWin) {
 		}
 	}
 	return teamScoreAlt
-};
+}
 function SetValidator(team1, team2, team1Score, team2Score, tieBreak, tieBreakScore, maxLoss, maxWin, minLoss, minWin) {
 	let classes = {
 		inputError: 'input-validation-error',
@@ -130,7 +130,7 @@ function SetValidator(team1, team2, team1Score, team2Score, tieBreak, tieBreakSc
 	} else {
 		jQuery(team1).addClass(classes.won);
 	}
-};
+}
 function SetCalculatorTieBreak(inputdata) {
 	let classes = {
 		inputError: 'input-validation-error'
@@ -144,4 +144,4 @@ function SetCalculatorTieBreak(inputdata) {
 		jQuery(tieBreak).removeClass(classes.inputError);
 		jQuery(tieBreak).removeClass('is-invalid');
 	}
-};
+}

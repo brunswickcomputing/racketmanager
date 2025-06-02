@@ -69,7 +69,7 @@ jQuery(document).ready(function ($) {
 				let $team1 = $("#teamPlayer1").val();
 				let $team;
 				let teamPlayer2 = $("#teamPlayer2");
-				if (teamPlayer2.val() == '') {
+				if (teamPlayer2.val() !== '') {
 					let $team2 = teamPlayer2.val();
 					$team = $team1 + ' / ' + $team2;
 				} else {
@@ -160,10 +160,11 @@ jQuery(document).ready(function ($) {
 		let $error = false;
 		let $msg = '';
 		let team = $("#team");
-		if (team.val() == '') {
+		let teamId = $("#team_id");
+		if (team.val() === '') {
 			$error = true;
 			$msg += 'Team name not set\n';
-		} else if ($("#team_id").val() == '') {
+		} else if (teamId.val() === '') {
 			$.ajax({
 				type: 'POST',
 				datatype: 'json',
@@ -186,18 +187,20 @@ jQuery(document).ready(function ($) {
 				}
 			});
 		}
-		if ($("#teamPlayerId1").val() == '') {
+		let teamPlayerId1 = $("#teamPlayer1");
+		if (teamPlayerId1.val() === '') {
 			$error = true;
 			$msg += 'Player 1 not set\n';
 		}
 		let teamPlayerId2 = $("#teamPlayerId2");
 		if (teamPlayerId2.length) {
-			if (teamPlayerId2.val() == '') {
+			if (teamPlayerId2.val() === '') {
 				$error = true;
 				$msg += 'Player 2 not set\n';
 			}
 		}
-		if ($("#affiliatedclub").val() == '') {
+		let clubId = $("#clubId");
+		if (clubId.val() === '0' || clubId.val() === null) {
 			$error = true;
 			$msg += 'Club not set\n';
 		}
@@ -276,6 +279,7 @@ function showPlayerClubs(link) {
 	return msg;
 }
 function get_player_details(name, club = null) {
+	let response;
 	jQuery.ajax({
 		type: 'POST',
 		datatype: 'json',
@@ -289,7 +293,7 @@ function get_player_details(name, club = null) {
 			"action": "racketmanager_get_player_details",
 		},
 		success: function (data) {
-			let response = (JSON.parse(data.data));
+			response = (JSON.parse(data.data));
 		},
 		error: function () {
 			alert("Ajax error on getting player");

@@ -68,8 +68,9 @@ jQuery(document).ready(function ($) {
 				$("#contactemail").val(ui.item.user_email);
 				let $team1 = $("#teamPlayer1").val();
 				let $team = '';
-				if ($("#teamPlayer2").val() == '') {
-					let $team2 = $("#teamPlayer2").val();
+				let teamPlayer2 = $("#teamPlayer2");
+				if (teamPlayer2.val() == '') {
+					let $team2 = teamPlayer2.val();
 					$team = $team1 + ' / ' + $team2;
 				} else {
 					$team = $team1;
@@ -158,7 +159,8 @@ jQuery(document).ready(function ($) {
 	$("#teamPlayerFrm").submit(function (event) {
 		let $error = false;
 		let $msg = '';
-		if ($("#team").val() == '') {
+		let team = $("#team");
+		if (team.val() == '') {
 			$error = true;
 			$msg += 'Team name not set\n';
 		} else if ($("#team_id").val() == '') {
@@ -168,7 +170,7 @@ jQuery(document).ready(function ($) {
 				url: ajaxurl,
 				async: false,
 				data: {
-					"name": $("#team").val(),
+					"name": team.val(),
 					"action": "racketmanager_check_team_exists",
 					"security": ajax_var.ajax_nonce,
 				},
@@ -188,8 +190,9 @@ jQuery(document).ready(function ($) {
 			$error = true;
 			$msg += 'Player 1 not set\n';
 		}
-		if ($("#teamPlayerId2").length) {
-			if ($("#teamPlayerId2").val() == '') {
+		let teamPlayerId2 = $("#teamPlayerId2");
+		if (teamPlayerId2.length) {
+			if (teamPlayerId2.val() == '') {
 				$error = true;
 				$msg += 'Player 2 not set\n';
 			}
@@ -199,8 +202,9 @@ jQuery(document).ready(function ($) {
 			$msg += 'Club not set\n';
 		}
 		if ($error) {
-			$("#errorMsg").show();
-			$("#errorMsg").text($msg);
+			let errorMsg = $("#errorMsg");
+			errorMsg.show();
+			errorMsg.text($msg);
 			event.preventDefault();
 		}
 	});

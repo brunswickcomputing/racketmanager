@@ -1854,7 +1854,7 @@ Racketmanager.playerSearch = function (event) {
 	let search_string = jQuery('#search_string').val();
 	if (search_string !== "") {
 		search_string = encodeURI( search_string );
-		var newUri = newURL + '?q=' + search_string;
+		let newUri = newURL + '?q=' + search_string;
 		let loadingArea = '#playerSearchContent';
 		jQuery(loadingArea).addClass('is-loading');
 		let ajaxURL = ajax_var.url + '?search_string=' + search_string + '&action=racketmanager_search_players&security=' + ajax_var.ajax_nonce;

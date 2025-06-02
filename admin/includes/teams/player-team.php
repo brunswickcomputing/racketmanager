@@ -60,7 +60,7 @@ $action_url = '/wp-admin/admin.php?page=racketmanager-' . $league->event->compet
 			<label for="clubId"><?php esc_html_e( 'Club', 'racketmanager' ); ?></label>
 			<div class="input">
 				<select size="1" name="clubId" id="clubId" >
-					<option disabled <?php selected( empty( $team->club_id ) ); ?>><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>
+					<option value="0" disabled <?php selected( empty( $team->club_id ) ); ?>><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>
 					<?php
 					foreach ( $clubs as $club ) {
                         ?>

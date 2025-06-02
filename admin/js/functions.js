@@ -104,7 +104,7 @@ jQuery(document).ready(function ($) {
 	$('#captain').autocomplete({
 		minLength: 2,
 		source: function (request, response) {
-			club = $("#clubId").val();
+			let club = $("#clubId").val();
 			response(get_player_details(request.term, club));
 		},
 		select: function (event, ui) {
@@ -131,7 +131,7 @@ jQuery(document).ready(function ($) {
 	$('#match_secretary_name').autocomplete({
 		minLength: 2,
 		source: function (request, response) {
-			club = $("#club_id").val();
+			let club = $("#club_id").val();
 			response(get_player_details(request.term, club));
 		},
 		select: function (event, ui) {
@@ -289,7 +289,7 @@ function get_player_details(name, club = null) {
 			"action": "racketmanager_get_player_details",
 		},
 		success: function (data) {
-			response = (JSON.parse(data.data));
+			let response = (JSON.parse(data.data));
 		},
 		error: function () {
 			alert("Ajax error on getting player");

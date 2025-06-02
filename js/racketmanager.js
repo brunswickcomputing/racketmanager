@@ -426,7 +426,7 @@ function PartnerLookup() {
 			let partnerRef = '#partnerId-' + eventId;
 			let partnerId = jQuery(partnerRef).val();
 			if (!partnerId) {
-				eventRef = '#event-' + eventId;
+				let eventRef = '#event-' + eventId;
 				jQuery(eventRef).prop('checked', false);
 				let target = jQuery(eventRef)[0];
 				checkToggle(target, e);
@@ -536,7 +536,7 @@ Racketmanager.updateMatchResults = function (link) {
 		jQuery(notifyField).hide();
 	}
 	jQuery(".is-invalid").removeClass("is-invalid");
-	winner = jQuery(".winner");
+	let winner = jQuery(".winner");
 	winner.val("");
 	winner.removeClass("winner");
 	jQuery(notifyField).removeClass("message-success");
@@ -1057,11 +1057,13 @@ Racketmanager.entryRequest = function (event, type) {
 		type: "POST",
 		data: $form,
 		success: function (response) {
+			let msg;
+			let msgType;
 			if (Array.isArray(response.data)) {
 				msg = response.data[0];
 				msgType = response.data[1];
 				if (response.data[2]) {
-					link = response.data[3];
+					let link = response.data[3];
 					if (link) {
 						window.location = link;
 					}
@@ -2080,8 +2082,8 @@ Racketmanager.setTotalPrice = function () {
 	let eventPriceFld = '.event-price-amt';
 	let eventPrices = jQuery(eventPriceFld);
 	let totalPrice = +competitionFee;
-	for (i = 0; i < eventPrices.length; i++) {
-		eventPrice = eventPrices[i];
+	for (let i = 0; i < eventPrices.length; i++) {
+		let eventPrice = eventPrices[i];
 		eventPrice = eventPrice.value;
 		totalPrice = +totalPrice + +eventPrice;
 	}
@@ -2109,12 +2111,12 @@ Racketmanager.setPaymentStatus = function (payRef) {
 Racketmanager.withdrawTournament = function (e) {
 	e.preventDefault();
 	jQuery('#liEventDetails').addClass('is-loading');
-	eventsEnteredRef = '#eventsEntered';
-	eventsEntered = jQuery(eventsEnteredRef).val();
-	tournamentRef = '#tournamentId';
-	tournamentId = jQuery(tournamentRef).val();
-	playerRef = '#playerId';
-	playerId = jQuery(playerRef).val();
+	let eventsEnteredRef = '#eventsEntered';
+	let eventsEntered = jQuery(eventsEnteredRef).val();
+	let tournamentRef = '#tournamentId';
+	let tournamentId = jQuery(tournamentRef).val();
+	let playerRef = '#playerId';
+	let playerId = jQuery(playerRef).val();
 	let notifyField = "#partnerModal";
 	let modal = 'partnerModal';
 	jQuery(notifyField).val("");
@@ -2300,7 +2302,7 @@ Racketmanager.validateTeamOrder = function( e, link, setTeam=false ) {
 		async: false,
 		data: form,
 		success: function (response) {
-			data = response.data;
+			let data = response.data;
 			let updatedRubbers = data[0];
 			let rubberNo = 1;
 			for (let r in updatedRubbers) {
@@ -2437,9 +2439,14 @@ function get_player_details(type, name, club = null, notifyField = null, partner
 	return response;
 }
 function currencyFormat(amount) {
-	return totalPrice = new Intl.NumberFormat(locale_var.locale, { style: 'currency', currency: locale_var.currency }).format(amount);
+	let totalPrice;
+	return totalPrice = new Intl.NumberFormat(locale_var.locale, {
+		style: 'currency',
+		currency: locale_var.currency
+	}).format(amount);
 }
 function createPaymentRequest(tournamentEntry,invoiceId, callback) {
+	let output;
 	jQuery.ajax({
 		url: ajax_var.url,
 		type: "POST",

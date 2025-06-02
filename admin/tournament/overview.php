@@ -59,11 +59,11 @@ namespace Racketmanager;
 		<div class="col-auto">
 			<a role="button" class="btn btn-primary" href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=modify&amp;tournament=<?php echo esc_html( $tournament->id ); ?> "><?php esc_html_e( 'Edit tournament', 'racketmanager' ); ?></a>
 			<?php
-//			if ( $tournament->is_open ) {
+			if ( $tournament->is_open ) {
 				?>
 				<button class="btn btn-secondary" id="notifyOpen" data-tournament-id="<?php echo esc_html( $tournament->id ); ?>"><?php esc_html_e( 'Notify open', 'racketmanager' ); ?></button>
 				<?php
-//			}
+			}
 			if ( ! empty( $tournament->competition_code ) && $tournament->is_complete ) {
 				?>
 				<a href="/index.php?tournament_id=<?php echo esc_html( $tournament->id ); ?>&season=<?php echo esc_html( $tournament->season ); ?>&competition_code=<?php echo esc_html( $tournament->competition_code ); ?>&racketmanager_export=report_results" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Report results', 'racketmanager' ); ?>" >

@@ -1,6 +1,6 @@
 jQuery( document ).ready( function( $ ) {
   // trigger the wdmChkPwdStrength
-  $( 'body' ).on( 'keyup', 'input[name=password], input[name=rePassword]', function( event ) {
+  $( 'body' ).on( 'keyup', 'input[name=password], input[name=rePassword]', function() {
     wdmChkPwdStrength(
       // password field
       $('#password'),

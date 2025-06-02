@@ -7,7 +7,7 @@ function PopupWindow_setSize(width,height) {
 }
 
 function syncColor(id, inputID, color) {
-	var link = document.getElementById(id);
+	const link = document.getElementById(id);
 	if (color == '')
 		color='white';
 		
@@ -23,4 +23,5 @@ function pickColor(color) {
 	ColorPicker_targetInput.value = color;
 	syncColor("pick_" + ColorPicker_targetInput.id, ColorPicker_targetInput.id, color);
 }
-var cp = new ColorPicker('window'); // Popup window
+
+const cp = new ColorPicker('window'); // Popup window

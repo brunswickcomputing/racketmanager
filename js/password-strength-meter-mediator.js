@@ -16,8 +16,8 @@ jQuery( document ).ready( function( $ ) {
   });
 });
 function wdmChkPwdStrength( $pwd,  $confirmPwd, $strengthStatus, $submitBtn, blacklistedWords ) {
-  var pwd = $pwd.val();
-  var confirmPwd = $confirmPwd.val();
+  const pwd = $pwd.val();
+  const confirmPwd = $confirmPwd.val();
 
   // extend the blacklisted words array with those from the site data
   blacklistedWords = blacklistedWords.concat( wp.passwordStrength.userInputDisallowedList() )
@@ -34,7 +34,7 @@ function wdmChkPwdStrength( $pwd,  $confirmPwd, $strengthStatus, $submitBtn, bla
   		}
 
   // calculate the password strength
-  var pwdStrength = wp.passwordStrength.meter( pwd, blacklistedWords, confirmPwd );
+  const pwdStrength = wp.passwordStrength.meter(pwd, blacklistedWords, confirmPwd);
 
   // check the password strength
   switch ( pwdStrength ) {

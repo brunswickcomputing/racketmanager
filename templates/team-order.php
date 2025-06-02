@@ -21,7 +21,7 @@ namespace Racketmanager;
 					<form method="get" action="" id="team_selection_club">
 						<div class="row gx-3 mb-3 align-items-center">
 							<div class="form-floating col-auto">
-								<select class="form-select" size="1" name="club_id" id="club_id" onchange="Racketmanager.showTeamOrderPlayers(event)">
+								<select class="form-select" size="1" name="club_id" id="club_id">
 									<option value="" disabled selected><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>
 									<?php
 									foreach ( $clubs as $club ) {
@@ -34,7 +34,7 @@ namespace Racketmanager;
 								<label for="club_id"><?php esc_html_e( 'Club', 'racketmanager' ); ?></label>
 							</div>
 							<div class="form-floating col-auto">
-								<select class="form-select" size="1" name="event_id" id="event_id" onchange="Racketmanager.showTeamOrderPlayers(event)">
+								<select class="form-select" size="1" name="event_id" id="event_id">
 									<option value="" disabled selected><?php esc_html_e( 'Select event', 'racketmanager' ); ?></option>
 									<?php
 									foreach ( $events as $event ) {
@@ -62,3 +62,19 @@ namespace Racketmanager;
 		</div>
 	</div>
 </div>
+<script type="text/javascript">
+    jQuery(document).ready(function () {
+        showTeamPlayers();
+    });
+    jQuery(document).ajaxComplete(function () {
+        showTeamPlayers();
+    });
+    function showTeamPlayers () {
+        document.getElementById('club_id').addEventListener('change', function (e) {
+            Racketmanager.showTeamOrderPlayers(e);
+        });
+        document.getElementById('event_id').addEventListener('change', function (e) {
+            Racketmanager.showTeamOrderPlayers(e);
+        });
+    }
+</script>

@@ -7,7 +7,7 @@ function SetCalculator(inputdata) {
 	let team = "#" + fieldRef;
 	let fieldSplit = fieldRef.split('_');
 	let setLength;
-	if (fieldSplit.length == 4) {
+	if (fieldSplit.length === 4) {
 		setLength = 7;
 	} else {
 		setLength = 5;
@@ -15,26 +15,26 @@ function SetCalculator(inputdata) {
 	let setRef = fieldRef.substring(0, setLength);
 	let teamRefAlt;
 	let teamRef = fieldRef.substr(fieldRef.length - 1, 1);
-	if (teamRef == 1) {
+	if (teamRef === 1) {
 		teamRefAlt = 2;
 	} else {
 		teamRefAlt = 1;
 	}
 	let teamScore = '';
-	if (inputdata.value != '') {
+	if (inputdata.value !== '') {
 		teamScore = parseInt(inputdata.value);
 	}
 	let teamAlt = "#" + setRef + "_player" + teamRefAlt;
 	let teamDataAlt = jQuery(teamAlt)[0];
 	let teamScoreAlt = '';
-	if (teamDataAlt.value != '') {
+	if (teamDataAlt.value !== '') {
 		teamScoreAlt = parseInt(teamDataAlt.value);
 	}
 	let tieBreak = "#" + setRef + "_tiebreak";
 	let tieBreakWrapper = tieBreak + '_wrapper';
 	let tieBreakData = jQuery(tieBreak)[0];
 	let tieBreakScore = '';
-	if (tieBreakData.value != '') {
+	if (tieBreakData.value !== '') {
 		tieBreakScore = parseInt(tieBreakData.value);
 	}
 	let setGroup = '#' + setRef;
@@ -43,15 +43,15 @@ function SetCalculator(inputdata) {
 	let maxLoss = jQuery(setGroup).data('maxloss');
 	let minLoss = jQuery(setGroup).data('minloss');
 	let tiebreakSet = jQuery(setGroup).data('tiebreakset');
-	if (teamRef == 1) {
+	if (teamRef === 1) {
 		if (teamScoreAlt === '') {
 			teamScoreAlt = CalculateAltScore(teamScore, maxWin, maxLoss, minWin);
 		}
-	} else if (teamRef == 2) {
+	} else if (teamRef === 2) {
 		if (teamScoreAlt === '') {
 			teamScoreAlt = CalculateAltScore(teamScore, maxWin, maxLoss, minWin);
 		}
-		if ((teamScore == maxWin && teamScoreAlt == tiebreakSet) || (teamScoreAlt == maxWin && teamScore == tiebreakSet)) {
+		if ((teamScore === maxWin && teamScoreAlt === tiebreakSet) || (teamScoreAlt === maxWin && teamScore === tiebreakSet)) {
 			jQuery(tieBreakWrapper).show();
 			jQuery(tieBreak).focus();
 		} else {
@@ -67,7 +67,7 @@ function SetCalculator(inputdata) {
 	} else if (teamScore < teamScoreAlt) {
 		SetValidator(teamAlt, team, teamScoreAlt, teamScore, tieBreak, tieBreakScore, maxLoss, maxWin, minLoss, minWin);
 	} else if (teamScore === teamScoreAlt) {
-		if (!isNaN(teamScore) && '' != teamScore) {
+		if (!isNaN(teamScore) && '' !== teamScore) {
 			jQuery(team).addClass(classes.inputError);
 			jQuery(teamAlt).addClass(classes.inputError)
 		}
@@ -84,13 +84,13 @@ function SetCalculator(inputdata) {
 }
 function CalculateAltScore(teamScore, maxWin, maxLoss, minWin) {
 	let teamScoreAlt = '';
-	if (teamScore == minWin) {
+	if (teamScore === minWin) {
 		if ((teamScore + 2) < maxWin) {
 			teamScoreAlt = teamScore + 2;
 		} else {
 			teamScoreAlt = maxWin;
 		}
-	} else if (teamScore == maxWin) {
+	} else if (teamScore === maxWin) {
 		teamScoreAlt = minWin;
 	} else if ('' !== teamScore) {
 		if (teamScore === maxLoss) {
@@ -108,11 +108,11 @@ function SetValidator(team1, team2, team1Score, team2Score, tieBreak, tieBreakSc
 	}
 	if (team1Score > maxWin) {
 		jQuery(team1).addClass(classes.inputError);
-	} else if (team1Score == minWin && team2Score > minLoss && maxWin != minWin) {
+	} else if (team1Score === minWin && team2Score > minLoss && maxWin !== minWin) {
 		jQuery(team1).addClass(classes.inputError);
 		jQuery(team2).addClass(classes.inputError);
 	} else if (team1Score === maxWin) {
-		if (team2Score < maxLoss && maxWin != minWin) {
+		if (team2Score < maxLoss && maxWin !== minWin) {
 			jQuery(team1).addClass(classes.inputError);
 			jQuery(team2).addClass(classes.inputError);
 		} else if (team2Score > maxLoss) {
@@ -125,7 +125,7 @@ function SetValidator(team1, team2, team1Score, team2Score, tieBreak, tieBreakSc
 		}
 	} else if (team1Score > minWin && team2Score < minLoss) {
 		jQuery(team1).addClass(classes.inputError);
-	} else if (team1Score > minWin && team2Score > minLoss && team2Score != (team1Score - 2)) {
+	} else if (team1Score > minWin && team2Score > minLoss && team2Score !== (team1Score - 2)) {
 		jQuery(team1).addClass(classes.inputError);
 	} else {
 		jQuery(team1).addClass(classes.won);

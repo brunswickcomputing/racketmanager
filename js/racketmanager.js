@@ -2439,8 +2439,7 @@ function get_player_details(type, name, club = null, notifyField = null, partner
 	return response;
 }
 function currencyFormat(amount) {
-	let totalPrice;
-	return totalPrice = new Intl.NumberFormat(locale_var.locale, {
+	return new Intl.NumberFormat(locale_var.locale, {
 		style: 'currency',
 		currency: locale_var.currency
 	}).format(amount);

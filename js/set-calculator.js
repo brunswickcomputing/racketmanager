@@ -6,14 +6,14 @@ function SetCalculator(inputdata) {
 	let fieldRef = inputdata.id;
 	let team = "#" + fieldRef;
 	let fieldSplit = fieldRef.split('_');
-	let setLength = 0;
+	let setLength;
 	if (fieldSplit.length == 4) {
 		setLength = 7;
 	} else {
 		setLength = 5;
 	}
 	let setRef = fieldRef.substring(0, setLength);
-	let teamRefAlt = '';
+	let teamRefAlt;
 	let teamRef = fieldRef.substr(fieldRef.length - 1, 1);
 	if (teamRef == 1) {
 		teamRefAlt = 2;

@@ -67,7 +67,7 @@ jQuery(document).ready(function ($) {
 				$("#contactno").val(ui.item.contactno);
 				$("#contactemail").val(ui.item.user_email);
 				let $team1 = $("#teamPlayer1").val();
-				let $team = '';
+				let $team;
 				let teamPlayer2 = $("#teamPlayer2");
 				if (teamPlayer2.val() == '') {
 					let $team2 = teamPlayer2.val();
@@ -248,7 +248,7 @@ function showPlayerClubs(link) {
 			"security": ajax_var.ajax_nonce,
 		},
 		success: function (response) {
-			let message = '';
+			let message;
 			message = 'Player not linked to clubs';
 			if (response.data) {
 				if (response.data.length > 0) {

@@ -2107,8 +2107,16 @@ class RacketManager_Admin extends RacketManager {
 					$club_id = '';
 				}
 			}
-            $team_id = isset( $_GET['edit'] ) ? intval( $_GET['edit'] ) : null;
+            $team_id       = isset( $_GET['edit'] ) ? intval( $_GET['edit'] ) : null;
+            $tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
             if ( $team_id ) {
+                if ( $tournament_id ) {
+                    $tournament = get_tournament( $tournament_id );
+                    if ( ! $tournament ) {
+	                    $this->set_message( __( 'Tournament not found', 'racketmanager' ), true );
+	                    $this->printMessage();
+                    }
+                }
 				$edit = true;
 				if ( $league ) {
 					$team = $league->get_team_dtls( $team_id );

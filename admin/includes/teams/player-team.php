@@ -8,29 +8,26 @@
 namespace Racketmanager;
 
 /** @var object $league */
+/** @var object $tournament */
 /** @var string $form_title */
 /** @var int    $league_id */
 /** @var string $season */
 /** @var object $team */
 /** @var array  $clubs */
 /** @var string $form_action */
+$action_url = '/wp-admin/admin.php?page=racketmanager-' . $league->event->competition->type .'s&amp;view=draw&amp;tournament=' . $tournament->id . '&amp;league=' . $league_id . '&amp;season=' . $season . '/';
 ?>
-<div class="wrap league-block">
+<div class="container league-block">
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
-			<a href="/wp-admin/admin.php?page=racketmanager"><?php esc_html_e( 'RacketManager', 'racketmanager' ); ?></a>
-				<?php
-				if ( $league ) {
-					?>
-				    &raquo; <a href="/wp-admin/admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo esc_html( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a>
-				    <?php
-                }
-                ?>
+            <a href="/wp-admin/admin.php?page=racketmanager-tournaments"><?php esc_html_e( 'RacketManager Tournaments', 'racketmanager' ); ?></a> 
+            &raquo; <a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_attr( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?>"><?php echo esc_html( $tournament->name ); ?></a> 
+            &raquo; <a href="<?php echo esc_url( $action_url ); ?>"><?php echo esc_html( $league->title ); ?></a>
 			&raquo; <?php echo esc_html( $form_title ); ?>
 		</div>
 	</div>
 	<h1><?php printf( '%s - %s', esc_html( $league->title ), esc_html( $form_title ) ); ?></h1>
-	<form action="/wp-admin/admin.php?page=racketmanager&amp;subpage=show-league&amp;league_id=<?php echo esc_html( $league_id ); ?>&amp;season=<?php echo esc_html( $season ); ?>" method="post" enctype="multipart/form-data" name="team_edit" id="teamPlayerFrm" >
+	<form action="<?php echo esc_url( $action_url ); ?>" class="form-control" method="post" enctype="multipart/form-data" name="team_edit" id="teamPlayerFrm" >
 		<?php wp_nonce_field( 'racketmanager_manage-teams', 'racketmanager_nonce' ); ?>
 
 		<div class="form-group">
@@ -42,7 +39,8 @@ namespace Racketmanager;
 		<div class="form-group">
 			<label for="teamPlayer1"><?php esc_html_e( 'Player 1', 'racketmanager' ); ?></label>
 			<div class="input">
-				<input type="text" name="teamPlayer1" id="teamPlayer1" value="<?php echo isset( $team->player['1'] ) ? esc_html( $team->player['1'] ) : ''; ?>" size="50" /><input type="hidden" name="teamPlayerId1" id="teamPlayerId1" value="<?php echo isset( $team->player_id['1'] ) ? esc_html( $team->player_id['1'] ) : ''; ?>" />
+				<input type="text" name="teamPlayer1" id="teamPlayer1" value="<?php echo isset( $team->player['1'] ) ? esc_html( $team->player['1'] ) : ''; ?>" size="50" />
+                <input type="hidden" name="teamPlayerId1" id="teamPlayerId1" value="<?php echo isset( $team->player_id['1'] ) ? esc_html( $team->player_id['1'] ) : ''; ?>" />
 			</div>
 		</div>
 		<?php
@@ -51,17 +49,18 @@ namespace Racketmanager;
             <div class="form-group">
                 <label for="teamPlayer2"><?php esc_html_e( 'Player 2', 'racketmanager' ); ?></label>
                 <div class="input">
-                    <input type="text" name="teamPlayer2" id="teamPlayer2" value="<?php echo isset( $team->player['2'] ) ? esc_html( $team->player['2'] ) : ''; ?>" size="50" /><input type="hidden" name="teamPlayerId2" id="teamPlayerId2" value="<?php echo isset( $team->player_id['2'] ) ? esc_html( $team->player_id['2'] ) : ''; ?>" />
+                    <input type="text" name="teamPlayer2" id="teamPlayer2" value="<?php echo isset( $team->player['2'] ) ? esc_html( $team->player['2'] ) : ''; ?>" size="50" />
+                    <input type="hidden" name="teamPlayerId2" id="teamPlayerId2" value="<?php echo isset( $team->player_id['2'] ) ? esc_html( $team->player_id['2'] ) : ''; ?>" />
                 </div>
             </div>
             <?php
         }
         ?>
 		<div class="form-group">
-			<label for="clubId"><?php esc_html_e( 'Affiliated Club', 'racketmanager' ); ?></label>
+			<label for="clubId"><?php esc_html_e( 'Club', 'racketmanager' ); ?></label>
 			<div class="input">
 				<select size="1" name="clubId" id="clubId" >
-					<option value=""><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>
+					<option disabled <?php selected( empty( $team->club_id ) ); ?>><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>
 					<?php
 					foreach ( $clubs as $club ) {
                         ?>
@@ -75,7 +74,8 @@ namespace Racketmanager;
 		<div class="form-group">
 			<label for="captain"><?php esc_html_e( 'Captain', 'racketmanager' ); ?></label>
 			<div class="input">
-				<input type="text" name="captain" id="captain" autocomplete="name off" value="<?php echo esc_html( $team->captain ); ?>" size="40" disabled /><input type="hidden" name="captainId" id="captainId" value="<?php echo esc_html( $team->captain_id ); ?>" />
+				<input type="text" name="captain" id="captain" autocomplete="name off" value="<?php echo esc_html( $team->captain ); ?>" disabled />
+                <input type="hidden" name="captainId" id="captainId" value="<?php echo esc_html( $team->captain_id ); ?>" />
 			</div>
 		</div>
 		<div class="form-group">
@@ -94,11 +94,18 @@ namespace Racketmanager;
 		<?php do_action( 'racketmanager_team_edit_form', $team ); ?>
 		<?php do_action( 'racketmanager_team_edit_form_' . ( isset( $league->sport ) ? ( $league->sport ) : '' ), $team ); ?>
 
-		<input type="hidden" name="team_id" id="team_id" value="<?php echo esc_html( $team->id ); ?>" />
-		<input type="hidden" name="league_id" value="<?php echo esc_html( $league_id ); ?>" />
+		<input type="hidden" name="team_id" id="team_id" value="<?php echo esc_attr( $team->id ); ?>" />
+		<input type="hidden" name="league_id" value="<?php echo esc_attr( $league_id ); ?>" />
 		<input type="hidden" name="updateLeague" value="teamPlayer" />
 		<input type="hidden" name="league-tab" value="preliminary" />
-		<input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />
+		<input type="hidden" name="season" value="<?php echo esc_attr( $season ); ?>" />
+        <?php
+        if ( isset( $tournament ) ) {
+            ?>
+            <input type="hidden" name="tournament_id" value="<?php echo esc_attr( $tournament->id ); ?>" />
+            <?php
+        }
+        ?>
 
 		<button class="btn btn-primary" type="submit" id="actionPlayerTeam" name="action">
 			<?php echo esc_html( $form_action ); ?>

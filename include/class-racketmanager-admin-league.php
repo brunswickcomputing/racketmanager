@@ -305,11 +305,6 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 						if ( $league->is_championship ) {
 							$tab = 'preliminary';
 						}
-					} elseif ( isset( $_POST['updateLeague'] ) && 'teamPlayer' === $_POST['updateLeague'] ) {
-						$this->add_player_team_to_league( $league );
-						if ( $league->is_championship ) {
-							$tab = 'preliminary';
-						}
 					} elseif ( isset( $_POST['updateLeague'] ) && 'match' === $_POST['updateLeague'] ) {
 						$this->manage_matches_in_league( $league );
 					} elseif ( isset( $_POST['updateLeague'] ) && 'results' === $_POST['updateLeague'] ) {

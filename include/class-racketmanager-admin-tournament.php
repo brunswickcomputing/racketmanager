@@ -146,10 +146,11 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 							$tab = 'matches'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 						} elseif ( isset( $_POST['action'] ) && 'addTeamsToLeague' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 							$this->league_add_teams( $league );
-							if ( $league->is_championship ) {
-								$tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-							}
+							$tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 							$racketmanager->printMessage();
+						} elseif ( isset( $_POST['updateLeague'] ) && 'teamPlayer' === $_POST['updateLeague'] ) {
+							$this->edit_player_team( $league );
+							$tab = 'preliminary';
 						} else {
 							$tab = $league->championship->handle_admin_page( $league ); //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 							if ( isset( $_POST['saveRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -758,5 +759,15 @@ final class RacketManager_Admin_Tournament extends RacketManager_Admin {
 		} else {
 			$racketmanager->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
 		}
+	}
+	/**
+	 * Calculate team ratings function
+	 *
+	 * @param object $league league object.
+	 *
+	 * @return void
+	 */
+	private function edit_player_team( object $league ): void {
+
 	}
 }

@@ -8,6 +8,7 @@
 namespace Racketmanager;
 
 /** @var object $league */
+/** @var object $tournament */
 /** @var string $season */
 /** @var array $teams */
 ?>
@@ -106,9 +107,15 @@ namespace Racketmanager;
 			<?php
 			foreach ( $teams as $i => $team ) {
 				$class = null;
-				if ( $league->is_championship && $i < $league->championship->num_seeds ) {
-					$class = 'seeded';
-				}
+				$team_link = '/wp-admin/admin.php?page=racketmanager-' . $league->event->competition->type . 's&amp;view=team&amp;league_id=' . $league->id . '&amp;edit=' . $team->id;
+				if ( $league->is_championship ) {
+				   if ( $i < $league->championship->num_seeds ) {
+                       $class = 'seeded';
+				   }
+                   if ( $league->event->competition->is_player_entry ) {
+	                   $team_link .= '&amp;tournament=' . $tournament->id;
+                   }
+               }
 				?>
 				<tr class="<?php echo esc_html( $class ); ?>" id="team_<?php echo esc_html( $team->id ); ?>">
 					<th scope="row" class="check-column">
@@ -136,7 +143,7 @@ namespace Racketmanager;
                     }
                     ?>
 					<td>
-						<a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=team&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;edit=<?php echo esc_html( $team->id ); ?>">
+						<a href="<?php echo esc_url( $team_link ); ?>">
 							<?php
 							if ( $team->is_withdrawn ) {
 								$title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );

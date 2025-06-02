@@ -60,7 +60,7 @@ namespace Racketmanager;
 			</div>
 		</div>
 		<div class="form-group">
-			<label for="clubId"><?php esc_html_e( 'Affiliated Club', 'racketmanager' ); ?></label>
+			<label for="clubId"><?php esc_html_e( 'Club', 'racketmanager' ); ?></label>
 			<?php
             if ( $league && $edit ) {
                 ?>

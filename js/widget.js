@@ -1,25 +1,5 @@
 jQuery(function($) {
-
     const clubCarousel = function () {
-        if ($().owlCarouselFork) {
-            $("#clubs").owlCarouselFork({
-                navigation: false,
-                pagination: true,
-                responsive: true,
-                items: 3,
-                itemsDesktopSmall: [1400, 3],
-                itemsTablet: [970, 2],
-                itemsTabletSmall: [600, 1],
-                itemsMobile: [360, 1],
-                touchDrag: true,
-                mouseDrag: true,
-                autoHeight: false,
-                autoPlay: false,
-            }); // end owlCarousel
-        } // end if
-    };
-
-    const club2Carousel = function () {
         if ($().owlCarouselFork) {
             $("#clubs.roll-club").owlCarouselFork({
                 navigation: false,
@@ -38,9 +18,7 @@ jQuery(function($) {
             });
         }
     };
-
     $(document).ready(function() {
-//                         clubCarousel();
-                         club2Carousel();
+                         clubCarousel();
                          });
 });

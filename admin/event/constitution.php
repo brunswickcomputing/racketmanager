@@ -78,7 +78,7 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
 					<?php
 				}
 				?>
-				<button id="emailConstitution" class="btn btn-secondary" onclick="Racketmanager.emailConstitution(event, <?php echo esc_attr( $event->id ); ?> )"><?php esc_html_e( 'Email Constitution', 'racketmanager' ); ?></button>
+				<button id="emailConstitution" class="btn btn-secondary" data-event-id="<?php echo esc_attr( $event->id ); ?>"><?php esc_html_e( 'Email Constitution', 'racketmanager' ); ?></button>
 				<span class="notify-message" id="notifyMessage-constitution"></span>
 				<?php
 			}
@@ -206,3 +206,9 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
 	<?php
 }
 ?>
+<script type="text/javascript">
+    document.getElementById('emailConstitution').addEventListener('click', function (e) {
+        let eventId = this.dataset.eventId;
+        Racketmanager.emailConstitution(e, eventId)
+    });
+</script>

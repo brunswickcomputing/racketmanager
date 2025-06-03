@@ -37,7 +37,7 @@ if ( empty( $event_club ) ) {
 							?>
 							<div class="row mb-2 row-list">
 								<div class="col-6" name="<?php esc_html_e( 'Club', 'racketmanager' ); ?>">
-									<a href="<?php echo esc_attr( $club_link ); ?>" class="tabDataLink" data-type="competition" data-type-id="<?php echo esc_attr( $event->id ); ?>" data-season="<?php echo esc_attr( $event->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $club_link ); ?>" data-link-id="<?php echo esc_attr( $club->id ); ?>" data-link-type="clubs">
+									<a href="<?php echo esc_attr( $club_link ); ?>" class="tabDataLink" data-type="event" data-type-id="<?php echo esc_attr( $event->id ); ?>" data-season="<?php echo esc_attr( $event->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $club_link ); ?>" data-link-id="<?php echo esc_attr( $club->id ); ?>" data-link-type="clubs">
 										<?php echo esc_html( $club->name ); ?>
 									</a>
 								</div>

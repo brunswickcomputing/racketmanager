@@ -47,6 +47,12 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.0.0 =
+* UPDATE: rename plugin from leaguemanager to racketmanager
+* UPDATE: support for PHP 8.3
+* UPDATE: fix code inspection errors
+* UPDATE: ellow tournament player contact
+
 = 8.45.0 =
 * BUGFIX: check league ids correctly
 * BUGFIX: check for confirmed entries

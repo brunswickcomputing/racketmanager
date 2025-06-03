@@ -1103,9 +1103,9 @@ class Racketmanager_Ajax {
 	 * @param array $err_msg error messages.
 	 * @param array $err_field error fields.
 	 * @param object $set_info type of set.
-	 * @param string $match_status match_status setting.
+	 * @param string|null $match_status match_status setting.
 	 */
-	public function validate_set( array $set, string $set_prefix, array $err_msg, array $err_field, object $set_info, string $match_status ): array {
+	public function validate_set( array $set, string $set_prefix, array $err_msg, array $err_field, object $set_info, ?string $match_status ): array {
 		$return         = array();
 		$completed_set  = false;
 		$set_type       = $set_info->set_type;

@@ -15,20 +15,24 @@ function SetCalculator(inputdata) {
 	let setRef = fieldRef.substring(0, setLength);
 	let teamRefAlt;
 	let teamRef = fieldRef.substr(fieldRef.length - 1, 1);
-	if (teamRef === 1) {
-		teamRefAlt = 2;
+	if (teamRef === "1") {
+		teamRefAlt = "2";
 	} else {
-		teamRefAlt = 1;
+		teamRefAlt = "1";
 	}
 	let teamScore;
 	if (inputdata.value !== '') {
 		teamScore = parseInt(inputdata.value);
+	} else {
+		teamScore = null;
 	}
 	let teamAlt = "#" + setRef + "_player" + teamRefAlt;
 	let teamDataAlt = jQuery(teamAlt)[0];
 	let teamScoreAlt;
 	if (teamDataAlt.value !== '') {
 		teamScoreAlt = parseInt(teamDataAlt.value);
+	} else {
+		teamScoreAlt = null;
 	}
 	let tieBreak = "#" + setRef + "_tiebreak";
 	let tieBreakWrapper = tieBreak + '_wrapper';
@@ -43,12 +47,12 @@ function SetCalculator(inputdata) {
 	let maxLoss = jQuery(setGroup).data('maxloss');
 	let minLoss = jQuery(setGroup).data('minloss');
 	let tiebreakSet = jQuery(setGroup).data('tiebreakset');
-	if (teamRef === 1) {
-		if (teamScoreAlt === '') {
+	if (teamRef === "1") {
+		if (teamScoreAlt === null) {
 			teamScoreAlt = CalculateAltScore(teamScore, maxWin, maxLoss, minWin);
 		}
-	} else if (teamRef === 2) {
-		if (teamScoreAlt === '') {
+	} else if (teamRef === "2") {
+		if (teamScoreAlt === null) {
 			teamScoreAlt = CalculateAltScore(teamScore, maxWin, maxLoss, minWin);
 		}
 		if ((teamScore === maxWin && teamScoreAlt === tiebreakSet) || (teamScoreAlt === maxWin && teamScore === tiebreakSet)) {
@@ -92,7 +96,7 @@ function CalculateAltScore(teamScore, maxWin, maxLoss, minWin) {
 		}
 	} else if (teamScore === maxWin) {
 		teamScoreAlt = minWin;
-	} else if ('' !== teamScore) {
+	} else if (null !== teamScore) {
 		if (teamScore === maxLoss) {
 			teamScoreAlt = maxWin;
 		} else if (teamScore < minWin) {

@@ -232,7 +232,7 @@ if ( $match->is_pending ) {
 				<?php
 				if ( $match->is_pending ) {
 					?>
-					<time datetime="<?php echo esc_attr( $match->date ); ?>"><?php the_match_time(); ?></time>
+					<time datetime="<?php echo esc_attr( $match->date ); ?>"><?php the_match_time( $match->start_time ); ?></time>
 					<?php
 				} else {
 					?>
@@ -283,7 +283,7 @@ if ( $match->is_pending ) {
 		if ( ! $match->is_pending ) {
 			?>
 			<div class="text-center">
-				<?php esc_html_e( 'Start', 'racketmanager' ); ?>: <time datetime="<?php echo esc_attr( $match->date ); ?>"><?php the_match_time(); ?></time>
+				<?php esc_html_e( 'Start', 'racketmanager' ); ?>: <time datetime="<?php echo esc_attr( $match->date ); ?>"><?php the_match_time( $match->start_time ); ?></time>
 			</div>
 			<?php
 		}

@@ -29,7 +29,7 @@ namespace Racketmanager;
 						the_match();
 						?>
 						<tr class='<?php the_match_class(); ?>'>
-							<td class='match'><?php the_match_date(); ?> <?php the_match_time(); ?> <?php the_match_location(); ?><br /><?php the_match_title(); ?> <?php the_match_report(); ?></td>
+							<td class='match'><?php the_match_date(); ?> <?php the_match_time( $match->start_time ); ?> <?php echo esc_html( $match->location ); ?><br /><?php the_match_title(); ?> <?php the_match_report(); ?></td>
 							<td class='score'><?php the_match_score(); ?></td>
 						</tr>
 						<?php

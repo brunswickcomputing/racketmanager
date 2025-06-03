@@ -575,25 +575,13 @@ function the_match_date( string $format = '' ): void {
 	 *
 	 * @category template-tags
 	 */
-function the_match_time(): void {
-	global $match;
-	if ( '00:00' === $match->start_time ) {
+function the_match_time( $start_time ): void {
+	if ( '00:00' === $start_time ) {
 		echo '';
 	} else {
-		echo $match->start_time;
+		echo $start_time;
 	}
 }
-
-	/**
-	 * Print Match location
-	 *
-	 * @category template-tags
-	 */
-function the_match_location(): void {
-	global $match;
-	echo $match->location;
-}
-
 	/**
 	 * Get Match score
 	 *

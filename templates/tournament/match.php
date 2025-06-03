@@ -93,7 +93,7 @@ if ( ! empty( $match->winner_id ) ) {
 							<?php
 							if ( ! empty( $match->start_time ) ) {
 								echo ' ' . esc_html_e( 'at', 'racketmanager' );
-								the_match_time();
+								the_match_time( $match->start_time );
 							}
 							?>
 						</li>
@@ -102,9 +102,7 @@ if ( ! empty( $match->winner_id ) ) {
 					if ( $location_in_header && ! empty( $match->location ) ) {
 						?>
 						<li class="match__header-title-item match__location">
-							<?php
-							the_match_location();
-							?>
+							<?php echo esc_html( $match->location ); ?>
 						</li>
 						<?php
 					}
@@ -276,7 +274,7 @@ if ( ! empty( $match->winner_id ) ) {
 								}
 							}
 						} else {
-							the_match_location();
+							echo esc_html( $match->location );
 						}
 						?>
 					</li>
@@ -293,7 +291,7 @@ if ( ! empty( $match->winner_id ) ) {
 							<?php
 							if ( ! empty( $match->start_time ) ) {
 								echo ' ' . esc_html_e( 'at', 'racketmanager' );
-								the_match_time();
+								the_match_time( $match->start_time );
 							}
 							?>
 						</li>

@@ -35,7 +35,7 @@ if ( $match ) { ?>
 				<?php /* translators: %d: Match day */ ?>
 				<p class='match_day'><?php echo esc_html( esc_html( sprintf( __( 'Match Day %d', 'racketmanager' ), $match->match_day ) ) ); ?></p>
 			<?php } ?>
-			<p class='date'><?php the_match_date(); ?>, <span class='time'><?php the_match_time(); ?></span></p>
+			<p class='date'><?php the_match_date(); ?>, <span class='time'><?php the_match_time( $match->start_time ); ?></span></p>
 			<p class='location'><?php echo esc_html( $match->location ); ?></p>
 			<?php
 			if ( 0 !== $match->post_id ) {

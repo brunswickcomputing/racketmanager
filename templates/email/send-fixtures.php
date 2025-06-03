@@ -59,7 +59,7 @@ require 'email-header.php';
 																					?>
 																				</td>
 																				<td><?php the_match_date( 'D' ); ?></td>
-																				<td><?php the_match_time(); ?></td>
+																				<td><?php the_match_time( $match->start_time ); ?></td>
 																				<td class="align-right
 																				<?php
 																				if ( $match->home_team === $team->id ) {

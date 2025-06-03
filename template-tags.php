@@ -542,34 +542,6 @@ function get_match_day(): int {
 function the_match_day(): void {
 	echo get_match_day();
 }
-
-	/**
-	 * Get Match date
-	 *
-	 * @param string $format
-	 *
-	 * @return string
-	 * @category template-tags
-	 */
-	function get_match_date( string $format = '' ): string {
-		global $match;
-		if ( $format ) {
-			return mysql2date( $format, $match->date );
-		} else {
-			return $match->match_date;
-		}
-	}
-	/**
-	 * Print Match date
-	 *
-	 * @param string $format format.
-	 *
-	 * @category template-tags
-	 */
-function the_match_date( string $format = '' ): void {
-	echo get_match_date( $format );
-}
-
 	/**
 	 * Print Match time
 	 *

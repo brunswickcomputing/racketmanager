@@ -1257,8 +1257,10 @@ class Racketmanager_Ajax {
 			$err_field[] = $set_prefix . $team_1;
 			$err_field[] = $set_prefix . $team_2;
 		} elseif ( $set[ $team_1 ] > $min_win && $set[ $team_2 ] > $min_loss && ( $set[ $team_1 ] - 2 ) !== intval( $set[ $team_2 ] ) ) {
-			$err_msg[]   = __( 'Games difference incorrect', 'racketmanager' );
-			$err_field[] = $set_prefix . $team_2;
+            if ( ! str_starts_with( $match_status, 'retired_player' ) ) {
+	            $err_msg[]   = __( 'Games difference incorrect', 'racketmanager' );
+	            $err_field[] = $set_prefix . $team_2;
+            }
 		} elseif ( $set['tiebreak'] > '' ) {
 			if ( ! $tiebreak_required ) {
 				$err_msg[]   = __( 'Tie break score should be empty', 'racketmanager' );

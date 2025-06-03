@@ -2211,18 +2211,14 @@ ul.module {
 	display: flex;
 }
 
-#match-rubbers .match__body {
-	display: block;
-}
-
 .match.match--team-match .match__body {
 	border: 0;
 	display: block
 }
-#match-rubbers.team-match-result .match__body {
+.team-match-result .match__body {
     display: flex;
 }
-#match-rubbers.team-match-result .match-points.set-points {
+.team-match-result .match-points.set-points {
     flex-direction: column;
 }
 .match--opponent .match__body {
@@ -4522,7 +4518,7 @@ p.media__subheading {
 .match.is-editable .set-points li.match-points__cell:first-of-type:last-of-type:after {
 	content: "";
 }
-#match-rubbers.team-match-result .match.is-editable .set-points li.match-points__cell:first-of-type:after {
+.team-match-result .match.is-editable .set-points li.match-points__cell:first-of-type:after {
     content: "";
 }
 @media (max-width: 767px) {

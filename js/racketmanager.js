@@ -592,16 +592,20 @@ Racketmanager.updateMatchResults = function (link) {
 			let feedback;
 			if (response.responseJSON) {
 				let data = response.responseJSON.data;
-				let $message = data[0];
-				for (let errorMsg of data[1]) {
-					$message += '<br />' + errorMsg;
+				let message = data[0];
+				if (message) {
+					for (let errorMsg of data[1]) {
+						message += '<br />' + errorMsg;
+					}
+					let errorFields = data[2];
+					for (let errorField of errorFields) {
+						let id = '#'.concat(errorField);
+						jQuery(id).addClass("is-invalid");
+					}
+					feedback = message;
+				} else {
+					feedback = data.message + ' ' + data.file + ' ' + data.line;
 				}
-				let $errorFields = data[2];
-				for (let $errorField of $errorFields) {
-					let $id = '#'.concat($errorField);
-					jQuery($id).addClass("is-invalid");
-				}
-				feedback = $message;
 			} else {
 				feedback = response.statusText;
 			}
@@ -1511,16 +1515,8 @@ Racketmanager.resetMatchResult = function (e, link, is_tournament) {
 	let notifyField = '#updateStatusResponse';
 	let alert_id_1;
 	let alert_response_1 = '';
-	let mode;
-	if (is_tournament) {
-		alert_id_1 = jQuery('#matchAlert');
-		alert_response_1 = '#alertResponse';
-		mode = 'tournament';
-	} else {
-		alert_id_1 = jQuery('#matchOptionsAlert');
-		alert_response_1 = '#alertMatchOptionsResponse';
-		mode = 'view';
-	}
+	alert_id_1 = jQuery('#matchAlert');
+	alert_response_1 = '#alertResponse';
 	jQuery(alert_id_1).hide();
 	jQuery(alert_id_1).removeClass('alert--success alert--warning alert--danger');
 	let alert_id_2 = jQuery('#resetMatchAlert');
@@ -1539,7 +1535,8 @@ Racketmanager.resetMatchResult = function (e, link, is_tournament) {
 			let message = response.data[0];
 			let modal = '#' + response.data[1];
 			let match_id = response.data[2];
-			Racketmanager.matchMode(e, match_id, mode, message);
+			let matchForm = 'form-match-' + match_id;
+			Racketmanager.resetMatchScores(e, matchForm);
 			if (!is_tournament) {
 				Racketmanager.matchHeader(match_id);
 			}

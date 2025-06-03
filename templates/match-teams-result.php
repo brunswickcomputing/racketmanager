@@ -113,7 +113,7 @@ if ( $match->is_walkover ) {
 							<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
 							<div id="showMatchRubbers">
 								<div id="matchRubbers">
-									<form id="match-rubbers" class="team-match-result" method="post">
+									<form id="form-match-<?php echo esc_attr( $match->id ); ?>" class="team-match-result" method="post">
 										<?php wp_nonce_field( 'rubbers-match', 'racketmanager_nonce' ); ?>
 										<input type="hidden" name="updated_form" value="new" />
 										<input type="hidden" name="current_match_id" id="current_match_id" value="<?php echo esc_html( $match->id ); ?>" />

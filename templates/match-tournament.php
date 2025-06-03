@@ -285,7 +285,7 @@ if ( $match ) {
 			</div>
 		</div>
 		<div class="wrapper--padding-medium">
-			<?php $form_id = 'match-view'; ?>
+			<?php $form_id = 'form-match-' . $match->id; ?>
 			<form id="<?php echo esc_html( $form_id ); ?>" method="post">
 				<?php wp_nonce_field( 'scores-match', 'racketmanager_nonce' ); ?>
 				<input type="hidden" name="current_league_id" id="current_league_id" value="<?php echo esc_html( $match->league_id ); ?>" />

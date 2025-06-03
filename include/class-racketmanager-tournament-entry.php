@@ -59,12 +59,12 @@ final class Racketmanager_Tournament_Entry {
 	/**
 	 * Retrieve tournament entry instance
 	 *
-	 * @param int $tournament_entry_id tournament entry id.
+	 * @param int|string $tournament_entry_id tournament entry id.
 	 * @param string $search_term search term - defaults to id.
 	 *
 	 * @return object|false
 	 */
-	public static function get_instance( int $tournament_entry_id, string $search_term = 'id' ): object|false {
+	public static function get_instance( int|string $tournament_entry_id, string $search_term = 'id' ): object|false {
 		global $wpdb;
 		if ( ! $tournament_entry_id ) {
 			return false;

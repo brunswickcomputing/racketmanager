@@ -214,7 +214,7 @@ if ( empty( $event_club ) ) {
 												<div class="flex-container">
 													<div class="flex-item flex-item--grow">
 														<p class="media__title">
-															<a href="<?php echo esc_attr( $player_link ); ?>" class="nav--link tabDataLink" data-type="competition" data-type-id="<?php echo esc_attr( $event->id ); ?>" data-season="<?php echo esc_attr( $event->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( $player->id ); ?>" data-link-type="players">
+															<a href="<?php echo esc_attr( $player_link ); ?>" class="nav--link tabDataLink" data-type="event" data-type-id="<?php echo esc_attr( $event->id ); ?>" data-season="<?php echo esc_attr( $event->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( $player->id ); ?>" data-link-type="players">
 																<span class="nav-link__value">
 																	<?php echo esc_html( $player->fullname ); ?>
 																</span>

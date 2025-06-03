@@ -42,17 +42,19 @@ if ( $match->is_pending ) {
 	        }
         }
 	}
-} elseif ( 'admin' === $user_type ) {
-	if ( ! $edit_mode ) {
-		$allow_amend_score        = true;
-		$allow_reset_match_result = true;
+} elseif ( ! $edit_mode ) {
+    if ( 'admin' === $user_type ) {
+		$allow_amend_score  = true;
+		$show_menu          = true;
+    } elseif ( 'P' === $match->confirmed ) {
+        if ( $user_can_update && ! $match_approval_mode ) {
+	        $allow_amend_score = true;
+	        $show_menu         = true;
+        }
 	}
+} elseif( 'admin' === $user_type ) {
+	$allow_reset_match_result = true;
 	$show_menu                = true;
-} elseif ( 'P' === $match->confirmed && ! $edit_mode ) {
-	if ( $user_can_update && ! $match_approval_mode ) {
-		$allow_amend_score = true;
-		$show_menu         = true;
-	}
 }
 ?>
 <div class="module__content">
@@ -146,7 +148,13 @@ if ( $match->is_pending ) {
 								?>
 								<li>
 									<a class="dropdown-item" href="<?php echo esc_url( $match_link ); ?>">
-										<?php esc_html_e( 'Adjust team score', 'racketmanager' ); ?>
+                                        <?php
+                                        if ( $match->is_pending ) {
+    										esc_html_e( 'Enter result', 'racketmanager' );
+                                        } else {
+	                                        esc_html_e( 'Adjust team score', 'racketmanager' );
+                                        }
+                                        ?>
 									</a>
 								</li>
 								<?php
@@ -338,16 +346,24 @@ if ( $match->is_pending ) {
 		<span class="module__footer-item-value"><?php echo esc_html( $match_stat ); ?></span>
 	</span>
 </div>
-<script>
-    const optionLinks = document.querySelectorAll('.matchOptionLink');
-    optionLinks.forEach(el => el.addEventListener('click', function (e) {
-        let matchId = this.dataset.matchId;
-        let matchOption = this.dataset.matchOption;
-        Racketmanager.matchOptions(e, matchId, matchOption);
-    }));
-    const statusLinks = document.querySelectorAll('.statusLink');
-    statusLinks.forEach(el => el.addEventListener('click', function (e) {
-        let matchId = this.dataset.matchId;
-        Racketmanager.statusModal(e, matchId);
-    }));
+<script type="text/javascript">
+    jQuery(document).ready(function () {
+        matchHeaderListener();
+    });
+    jQuery(document).ajaxComplete(function () {
+        matchHeaderListener();
+    });
+    function matchHeaderListener () {
+        const optionLinks = document.querySelectorAll('.matchOptionLink');
+        optionLinks.forEach(el => el.addEventListener('click', function (e) {
+            let matchId = this.dataset.matchId;
+            let matchOption = this.dataset.matchOption;
+            Racketmanager.matchOptions(e, matchId, matchOption);
+        }));
+        const statusLinks = document.querySelectorAll('.statusLink');
+        statusLinks.forEach(el => el.addEventListener('click', function (e) {
+            let matchId = this.dataset.matchId;
+            Racketmanager.statusModal(e, matchId);
+        }));
+    }
 </script>

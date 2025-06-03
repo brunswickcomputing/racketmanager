@@ -1632,23 +1632,24 @@ Racketmanager.switchHomeAway = function (e, link) {
 }
 Racketmanager.switchTab = function (elem) {
 	let selectedTab = jQuery(elem).data('tabid').toLowerCase();
+	let matches = jQuery('.match');
 	let matchGroup = jQuery('.match-group');
-	let match = jQuery('.match');
-	let tabList = jquery('.tab-list');
-	let tabGrid = jquery('.tab-grid');
+	let matchList = jQuery('.match--list');
+	let tabList = jQuery('#tab-list');
+	let tabGrid = jQuery('#tab-grid');
 	switch (selectedTab) {
 		case 'tab-grid':
 			matchGroup.addClass('match-group--grid');
-			match.removeClass('match--list');
-			jQuery('.match .match--list').removeClass('match--list');
+			matches.removeClass('match--list');
 			tabList.removeClass('active');
+			matchList.removeClass('match--list');
 			tabGrid.addClass('active');
 			break;
 		case 'tab-list':
 			matchGroup.removeClass('match-group--grid');
-			match.addClass("match--list");
-			tabList.addClass('active');
 			tabGrid.removeClass('active');
+			matches.addClass("match--list");
+			tabList.addClass('active');
 			break;
 	}
 };

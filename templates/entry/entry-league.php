@@ -314,7 +314,7 @@ if ( ! empty( $club->entry ) ) {
 						<div class="btn__group">
 							<div class="club-entry__submit">
 								<input type="hidden" name="competition_events" id="competition_events" value="<?php echo esc_html( implode( ',', $competition_events ) ); ?>" />
-								<button type="submit" class="btn btn-primary" id="entrySubmit" name="entrySubmit" onclick="Racketmanager.entryRequest(event, 'league')"><?php esc_html_e( 'Enter', 'racketmanager' ); ?></button>
+								<button type="submit" class="btn btn-primary" id="entrySubmit" name="entrySubmit" data-type="league"><?php esc_html_e( 'Enter', 'racketmanager' ); ?></button>
 							</div>
 							<a role="button" href="/clubs/<?php echo esc_html( seo_url( $club->shortcode ) ); ?>/" class="btn btn--cancel"><?php esc_html_e( 'Back', 'racketmanager' ); ?></a>
 						</div>
@@ -324,3 +324,6 @@ if ( ! empty( $club->entry ) ) {
 		</div>
 	</form>
 </div>
+<script type="text/javascript">
+	<?php require RACKETMANAGER_PATH . 'js/entry-link.js'; ?>
+</script>

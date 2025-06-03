@@ -400,8 +400,9 @@ class Racketmanager_Ajax {
 					if ( 'A' === $match_confirmed ) {
 						if ( 'auto' === $result_confirmation || 'admin' === $user_type  ) {
 							$match->confirmed = 'Y';
-							$update           = $match->update_league_with_result();
-							$msg              = $update->msg;
+                            $match->set_confirmed();
+							$update = $match->update_league_with_result();
+							$msg    = $update->msg;
 							if ( 'admin' !== $user_type ) {
 								$match_message = __( 'Result Approved', 'racketmanager' );
 								if ( $update->updated || 'Y' === $match->updated ) {

@@ -2808,4 +2808,18 @@ final class Racketmanager_Match {
 		$custom[ $this->id ]         = $this->custom;
 		return $league->update_match_results( $result_matches, $home_points, $away_points, $custom, $this->season );
 	}
+	/**
+	 * Set confirmed status
+	 */
+	public function set_confirmed(): void {
+		global $wpdb;
+		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"UPDATE $wpdb->racketmanager_matches SET `confirmed` = %s WHERE `id` = %d",
+				$this->confirmed,
+				$this->id
+			)
+		);
+		wp_cache_set( $this->id, $this, 'matches' );
+	}
 }

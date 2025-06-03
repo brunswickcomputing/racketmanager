@@ -1687,13 +1687,19 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						</div>
 						<div class="suffix_wrapper">
 							<div class="time"><?php echo esc_html( mysql2date( 'd-m-Y G:i:s', $message_dtl->date ) ); ?></div>
-							<div class="message-button"><a onclick="Racketmanager.deleteMessage(event, '<?php echo esc_attr( $message_dtl->id ); ?>')" class="btn btn-primary"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></a></div>
+							<div class="message-button"><a id="deleteMessage" data-msg-id="<?php echo esc_attr( $message_dtl->id ); ?>" class="btn btn-primary"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></a></div>
 						</div>
 					</div>
 					<div class="message_body ratio" style="--bs-aspect-ratio: 100%;">
 						<?php $frame_source = $message_dtl->message_object; ?>
 						<iframe title="<?php esc_html_e( 'Message details', 'racketmanager' ); ?>" srcdoc='<?php echo $frame_source; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>'></iframe>
 					</div>
+                    <script type="text/javascript">
+                        document.getElementById('deleteMessage').addEventListener('click', function (e) {
+                            let msgId = this.dataset.msgId;
+                            Racketmanager.deleteMessage(e, msgId);
+                        });
+                    </script>
 					<?php
 					$output = ob_get_contents();
 					ob_end_clean();
@@ -1960,7 +1966,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 								<?php
 								if ( ! empty( $button ) ) {
 									?>
-									<button type="button" class="btn btn-primary" onclick="Racketmanager.<?php echo esc_attr( $action ); ?>(event, this, <?php echo esc_attr( $match->league->event->competition->is_tournament ); ?>)"><?php echo esc_html( $button ); ?></button>
+									<button type="button" class="btn btn-primary" id="actionButton" data-action="<?php echo esc_attr( $action ); ?>" data-is-tournament="<?php echo esc_attr( $match->league->event->competition->is_tournament ); ?>"><?php echo esc_html( $button ); ?></button>
 									<?php
 								}
 								?>
@@ -1968,6 +1974,19 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						</form>
 					</div>
 				</div>
+                <script type="text/javascript">
+                    document.getElementById('actionButton').addEventListener('click', function (e) {
+                        let action = this.dataset.action;
+                        let isTournament = this.dataset.isTournament;
+                        if (action === 'setMatchDate') {
+                            Racketmanager.setMatchDate(e, this, isTournament);
+                        } else if (action === 'switchHomeAway' ) {
+                            Racketmanager.switchHomeAway(e, this, isTournament);
+                        } else if (action === 'resetMatchResult' ) {
+                            Racketmanager.resetMatchResult(e, this, isTournament);
+                        }
+                    });
+                </script>
 				<?php
 				$output = ob_get_contents();
 				ob_end_clean();

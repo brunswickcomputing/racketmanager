@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
 /** @var object $match */
 if ( ! empty( $match_display ) ) {
 	$match_display = 'match--list';
@@ -89,7 +90,7 @@ if ( ! empty( $match->winner_id ) ) {
 								echo esc_html_e( 'Play by', 'racketmanager' ) . ' ';
 							}
 							?>
-							<?php the_match_date(); ?>
+							<?php echo esc_html( mysql2date( $racketmanager->date_format, $match->date ) ); ?>
 							<?php
 							if ( ! empty( $match->start_time ) ) {
 								echo ' ' . esc_html_e( 'at', 'racketmanager' );
@@ -287,7 +288,7 @@ if ( ! empty( $match->winner_id ) ) {
 								echo esc_html_e( 'Play by', 'racketmanager' ) . ' ';
 							}
 							?>
-							<?php the_match_date(); ?>
+							<?php echo esc_html( mysql2date( $racketmanager->date_format, $match->date ) ); ?>
 							<?php
 							if ( ! empty( $match->start_time ) ) {
 								echo ' ' . esc_html_e( 'at', 'racketmanager' );

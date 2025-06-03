@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
 /** @var object $league */
 /** @var string $season */
 /** @var string $home_team */
@@ -86,7 +87,7 @@ namespace Racketmanager;
                     }
 					?>
 					<div class="match-row row justify-content-center">
-						<div class="col-6 col-md-2"><time datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( get_match_date() ); ?></time></div>
+						<div class="col-6 col-md-2"><time datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, $match->date ) ); ?></time></div>
 						<?php
 						if ( ! empty( $match->leg ) ) {
 							?>

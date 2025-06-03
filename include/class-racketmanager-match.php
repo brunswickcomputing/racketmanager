@@ -2531,8 +2531,8 @@ final class Racketmanager_Match {
 			$this->winner_id_tie   = null;
 			$this->loser_id_tie    = null;
 		}
-		$this->home_score   = '';
-		$this->away_score   = '';
+		$this->home_score   = null;
+		$this->away_score   = null;
 		$this->score        = '';
 		$this->is_walkover  = false;
 		$this->is_shared    = false;

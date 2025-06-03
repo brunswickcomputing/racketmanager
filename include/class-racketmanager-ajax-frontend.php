@@ -798,7 +798,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$matchdays            = isset( $_POST['matchday'] ) ? wp_unslash( $_POST['matchday'] ) : array();
 			$match_times           = isset( $_POST['matchtime'] ) ? wp_unslash( $_POST['matchtime'] ) : array();
 			$comments             = isset( $_POST['commentDetails'] ) ? sanitize_textarea_field( wp_unslash( $_POST['commentDetails'] ) ) : '';
-			$num_courts_available = isset( $_POST['numCourtsAvailable'] ) ? intval( $_POST['numCourtsAvailable'] ) : '';
+			$num_courts_available = isset( $_POST['numCourtsAvailable'] ) ? intval( $_POST['numCourtsAvailable'] ) : 0;
 			$validator            = $validator->num_courts_available( $num_courts_available );
 
 			$club_entry           = new stdClass();

@@ -484,10 +484,6 @@ if ( ! empty( $player->entry ) ) {
         Racketmanager.partnerModal(e, eventId);
     }));
     <?php require RACKETMANAGER_PATH . 'js/entry-link.js'; ?>
-    document.getElementById('entrySubmit').addEventListener('click', function (e) {
-        let type = this.dataset.type;
-        Racketmanager.entryRequest(e, type);
-    });
     document.getElementById('tournamentWithdraw').addEventListener('click', function (e) {
         Racketmanager.withdrawTournament(e);
     });

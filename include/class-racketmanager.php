@@ -811,7 +811,7 @@ class RacketManager {
 	 * Load libraries
 	 */
 	private function load_libraries(): void {
-		global $racketmanager_shortcodes, $racketmanager_login, $racketmanager_ajax_frontend;
+		global $racketmanager_shortcodes, $racketmanager_login;
 
 		// Objects.
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-charges.php';
@@ -874,7 +874,7 @@ class RacketManager {
 		require_once RACKETMANAGER_PATH . '/template-tags.php';
 		require_once RACKETMANAGER_PATH . '/functions.php';
 
-		$racketmanager_ajax_frontend = new RacketManager_Ajax_Frontend();
+		new RacketManager_Ajax_Frontend();
 
 		include_once ABSPATH . 'wp-admin/includes/plugin.php';
 		new Racketmanager_Shortcodes_Club();

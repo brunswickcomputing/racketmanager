@@ -596,6 +596,7 @@ final class Racketmanager_Match {
 			$this->sets        = ! empty( $match->custom['sets'] ) ? $match->custom['sets'] : array();
 			$this->is_walkover = false;
 			$this->set_score();
+			$this->is_walkover = false;
 			$this->set_status_flags();
 			if ( ! empty( $this->confirmed ) ) {
 				$this->confirmed_display = match ( $this->confirmed ) {
@@ -673,27 +674,29 @@ final class Racketmanager_Match {
 		$this->is_abandoned = false;
 		$this->is_cancelled = false;
 		$this->is_withdrawn = false;
-		switch ( ! empty( $this->status ) ) {
-			case 1:
-				$this->is_walkover = true;
-				break;
-			case 2:
-				$this->is_retired = true;
-				break;
-			case 3:
-				$this->is_shared = true;
-				break;
-			case 6:
-				$this->is_abandoned = true;
-				break;
-			case 7:
-				$this->is_withdrawn = true;
-				break;
-			case 8:
-				$this->is_cancelled = true;
-				break;
-			default:
-				break;
+		if ( ! empty( $this->status ) ) {
+			switch ( $this->status ) {
+				case 1:
+					$this->is_walkover = true;
+					break;
+				case 2:
+					$this->is_retired = true;
+					break;
+				case 3:
+					$this->is_shared = true;
+					break;
+				case 6:
+					$this->is_abandoned = true;
+					break;
+				case 7:
+					$this->is_withdrawn = true;
+					break;
+				case 8:
+					$this->is_cancelled = true;
+					break;
+				default:
+					break;
+			}
 		}
 	}
 	/**
@@ -739,7 +742,7 @@ final class Racketmanager_Match {
 			$this->away_score = $this->away_points;
 			$this->score      = sprintf( '%g - %g', $this->home_score, $this->away_score );
 			if ( ! empty( $this->league->num_rubbers ) ) {
-				if ( -1 === intval( $this->home_team ) || -1 === intval( $this->away_team ) ) {
+				if ( '-1' === $this->home_team || '-1' === $this->away_team ) {
 					$this->is_walkover = true;
 					$set_score         = __( 'Walkover', 'racketmanager' );
 				} else {

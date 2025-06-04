@@ -1443,7 +1443,7 @@ class Racketmanager_League {
 				$team->title   = htmlspecialchars( stripslashes( $team->title ), ENT_QUOTES );
 				$team->stadium = stripslashes( $team->stadium );
 				$team->class   = implode( ' ', $class );
-    				$team->points_formatted = array(
+                $team->points_formatted = array(
 					'primary'   => sprintf( $this->point_format, $team->points_plus, $team->points_minus ),
 					'secondary' => sprintf( $this->point_format2, $team->points2_plus, $team->points2_minus ),
 				);
@@ -2067,20 +2067,14 @@ class Racketmanager_League {
 					$team->draw_matches += 1;
 				}
 			}
-
-			$team->points       = $this->calculate_points( $team, $matches );
-			$team->points_plus  = $team->points['plus'];
-			$team->points_minus = $team->points['minus'];
-
-			$team->points2           = $this->calculate_secondary_points( $team, $matches );
-			$team->custom['points2'] = $team->points2;
-			$team->points2_plus      = $team->points2['plus'];
-			$team->points2_minus     = $team->points2['minus'];
-
+			$team->points         = $this->calculate_points( $team, $matches );
+			$team->points_plus    = $team->points['plus'];
+			$team->points_minus   = $team->points['minus'];
+			$team->points2_plus   = 0;
+			$team->points2_minus  = 0;
 			$team->diff           = $team->points2_plus - $team->points2_minus;
 			$team->custom['diff'] = $team->diff;
 			$team->win_percent();
-
 			$custom = $this->get_standings_data( $team->id, $team->custom, $matches );
 			foreach ( $custom as $key => $value ) {
 				$team->{$key} = $value;
@@ -2680,15 +2674,9 @@ class Racketmanager_League {
 		$season = $this->current_season['name'];
 
 		foreach ( array_keys( $teams ) as $id ) {
-			$points2_plus  = $custom[$id]['points2']['plus'] ?? 0;
-			$points2_minus = $custom[$id]['points2']['minus'] ?? 0;
-			if ( ! is_numeric( $points2_plus ) ) {
-				$points2_plus = 0;
-			}
-			if ( ! is_numeric( $points2_minus ) ) {
-				$points2_minus = 0;
-			}
-			$diff = $points2_plus - $points2_minus;
+			$points2_plus  = 0;
+			$points2_minus = 0;
+			$diff          = 0;
 
 			$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
@@ -2784,17 +2772,12 @@ class Racketmanager_League {
 			$league_team->get_num_draw_matches();
 			$league_team->get_num_lost_matches();
 
-			$league_team->points            = $this->calculate_points( $league_team );
-			$league_team->points2           = $this->calculate_secondary_points( $league_team );
-			$league_team->custom['points2'] = $league_team->points2;
-			$league_team->diff              = $league_team->points2['plus'] - $league_team->points2['minus'];
-
-			if ( ! isset( $league_team->points2['plus'] ) && ! isset( $league_team->points2['minus'] ) ) {
-				$league_team->points2 = array(
-					'plus'  => 0,
-					'minus' => 0,
-				);
-			}
+			$league_team->points  = $this->calculate_points( $league_team );
+			$league_team->diff    = 0;
+			$league_team->points2 = array(
+				'plus'  => 0,
+				'minus' => 0,
+			);
 			// get custom team standings data.
 			$league_team->custom = $this->get_standings_data( $league_team->id, $league_team->custom );
 			$wpdb->query(
@@ -2965,51 +2948,6 @@ class Racketmanager_League {
 	protected function update_results( object $match ): object {
 		return $match;
 	}
-
-	/**
-	 * Calculate secondary points
-	 *
-	 * @param object $team team.
-	 * @param false|array $matches (optional).
-	 */
-	protected function calculate_secondary_points( object $team, false|array $matches = false ): array {
-		$points = array(
-			'plus'  => 0,
-			'minus' => 0,
-		);
-
-		// general secondary points calculated from sum of primary points, e.g. soccer, handball, basketball.
-		if ( isset( $this->fields_team['points2'] ) ) {
-			if ( ! $matches ) {
-				$matches = $this->get_matches(
-					array(
-						'team_id'          => $team->id,
-						'match_day'        => -1,
-						'limit'            => false,
-						'cache'            => false,
-						'reset_query_args' => true,
-					)
-				);
-			}
-			if ( $matches ) {
-				foreach ( $matches as $match ) {
-					$home_goals = $match->home_points;
-					$away_goals = $match->away_points;
-
-					if ( $match->home_team === $team->id ) {
-						$points['plus']  += $home_goals;
-						$points['minus'] += $away_goals;
-					} else {
-						$points['plus']  += $away_goals;
-						$points['minus'] += $home_goals;
-					}
-				}
-			}
-		}
-
-		return $points;
-	}
-
 	/**
 	 * Get custom standings data
 	 *

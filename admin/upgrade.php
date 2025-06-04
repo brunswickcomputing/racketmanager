@@ -1507,6 +1507,43 @@ function racketmanager_upgrade(): void {
 		$wpdb->query( "ALTER TABLE $wpdb->racketmanager_teams CHANGE `custom` `custom` LONGTEXT NULL " );
 		$wpdb->query( "ALTER TABLE $wpdb->racketmanager_teams CHANGE `roster` `roster` LONGTEXT NULL " );
 	}
+	if ( version_compare( $installed, '9.0.1', '<' ) ) {
+		echo esc_html__( 'starting 9.0.1 upgrade', 'racketmanager' ) . "<br />\n";
+		$wpdb->query( "UPDATE $wpdb->racketmanager_teams SET `roster` = NULL, `custom` = NULL WHERE `roster` LIKE '%cat_id%'");
+		$tournaments = $racketmanager->get_tournaments( array( 'orderby' => array( 'date' => 'ASC' ) ) );
+		foreach ( $tournaments as $tournament ) {
+			if ( 'junior' !== $tournament->competition->age_group ) {
+				echo esc_html__( 'processing', 'racketmanager' ) . ' ' . $tournament->name . "<br />\n";
+				$entries = $tournament->get_entries();
+				foreach ( $entries as $entry ) {
+					if ( empty( $entry->club_id ) ) {
+						$player = Racketmanager\get_player( $entry->id );
+						$player_clubs = $player->get_clubs();
+						if ( $player_clubs ) {
+							$player_club = end( $player_clubs );
+							$player_club_id = $player_club->id;
+							$wpdb->query( "UPDATE $wpdb->racketmanager_tournament_entries SET `club_id` = " . $player_club_id . " WHERE `id` = " . $entry->entry_id );
+						}
+					}
+				}
+			}
+		}
+		$invalid_items = range( 115, 0 );
+		foreach ( $invalid_items as $item ) {
+			$tables = $wpdb->get_results( "SELECT `id`, `custom` FROM {$wpdb->racketmanager_table} WHERE `custom` LIKE '%i:" . $item . ";a:1:{s:7:\"points2\"%'");
+			foreach ( $tables as $table ) {
+				$custom = unserialize( $table->custom );
+				$item_range = range( 0, $item );
+				foreach ( $item_range as $range ) {
+					if ( isset( $custom[ $range ] ) ) {
+						unset( $custom[ $range ] );
+					}
+				}
+				$table->custom = serialize( $custom );
+				$wpdb->query( "UPDATE {$wpdb->racketmanager_table} SET `custom` = '" . $table->custom . "' WHERE `id` = " . $table->id );
+			}
+		}
+	}
 	/*
 	* Update version and dbversion
 	*/

@@ -1082,14 +1082,19 @@ Racketmanager.entryRequest = function (event, type) {
 		},
 		error: function (response) {
 			if (response.responseJSON) {
-				let message = response.responseJSON.data[0];
-				let errorMsg = response.responseJSON.data[1];
-				let errorField = response.responseJSON.data[2];
-				for (let i = 0; i < errorField.length; i++) {
-					let formField = '#' + errorField[i];
-					jQuery(formField).addClass('is-invalid');
-					formField = formField + '-feedback';
-					jQuery(formField).html(errorMsg[i]);
+				let data = response.responseJSON.data;
+				let message = data[0];
+				if (message) {
+					let errorMsg = data[1];
+					let errorField = data[2];
+					for (let i = 0; i < errorField.length; i++) {
+						let formField = '#' + errorField[i];
+						jQuery(formField).addClass('is-invalid');
+						formField = formField + '-feedback';
+						jQuery(formField).html(errorMsg[i]);
+					}
+				} else {
+					message = data.message + ' ' + data.file + ' ' + data.line;
 				}
 				jQuery(alertTextField).html(message);
 			} else {

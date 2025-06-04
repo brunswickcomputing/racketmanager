@@ -51,7 +51,7 @@ require 'email-header.php';
 																		<tbody>
 																			<?php foreach ( $matches as $match ) { ?>
 																			<tr class="align-center">
-																				<td><?php the_match_day(); ?></td>
+																				<td><?php echo esc_html( $match->match_day ); ?></td>
 																				<td><?php echo esc_html( mysql2date( 'd M y', $match->date ) ); ?></td>
 																				<td><?php echo esc_html( mysql2date( 'D', $match->date ) ); ?></td>
 																				<td><?php the_match_time( $match->start_time ); ?></td>

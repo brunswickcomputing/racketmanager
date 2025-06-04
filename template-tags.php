@@ -8,25 +8,6 @@
 namespace Racketmanager;
 
 	/**
-	 * Get league ID
-	 *
-	 * @return int
-	 * @category template-tags
-	 */
-function get_league_id(): int {
-	global $league;
-	return $league->id;
-}
-	/**
-	 * Print league ID
-	 *
-	 * @category template-tags
-	 */
-function the_league_id(): void {
-	echo get_league_id();
-}
-
-	/**
 	 * Get league title
 	 *
 	 * @return string
@@ -45,26 +26,6 @@ function get_league_title(): string {
 function the_league_title(): void {
 	echo get_league_title();
 }
-
-	/**
-	 * Get current season
-	 *
-	 * @return string
-	 * @category template-tags
-	 */
-function get_current_season(): string {
-	global $league;
-	return $league->current_season['name'];
-}
-	/**
-	 * Print current season
-	 *
-	 * @category template-tags
-	 */
-function the_current_season(): void {
-	echo get_current_season();
-}
-
 	/**
 	 * Get current match day
 	 *
@@ -75,18 +36,6 @@ function get_current_match_day(): int {
 	global $league;
 	return $league->match_day;
 }
-
-	/**
-	 * Get number of match days
-	 *
-	 * @return int
-	 * @category template-tags
-	 */
-function get_num_match_days(): int {
-	global $league;
-	return $league->num_match_days;
-}
-
 	/**
 	 * Get specific template
 	 *
@@ -103,16 +52,6 @@ function get_league_template( string $template = '' ): string {
 	}
 	return '';
 }
-
-	/**
-	 * Print current match day
-	 *
-	 * @category template-tags
-	 */
-function the_current_match_day(): void {
-	echo get_current_match_day();
-}
-
 	/**
 	 * Check if a specific standings columns is activated for display
 	 *
@@ -151,26 +90,6 @@ function get_num_teams_total(): int {
 	global $league;
 	return $league->num_teams_total;
 }
-
-	/**
-	 * Display standings header
-	 *
-	 * @category template-tags
-	 */
-function the_standings_header(): void {
-	global $league;
-	$league->display_standings_header();
-}
-	/**
-	 * Display standings columns
-	 *
-	 * @category template-tags
-	 */
-function the_standings_columns(): void {
-	global $league, $team;
-	$league->display_standings_columns( $team, get_league_point_rule() );
-}
-
 	/**
 	 * Test whether league has teams or we are in the loop
 	 *
@@ -196,26 +115,6 @@ function the_team(): void {
 	++$league->current_team;
 	$team = $league->teams[ $league->current_team ];
 }
-
-	/**
-	 * Get team ID
-	 *
-	 * @return int
-	 * @category template-tags
-	 */
-function get_team_id(): int {
-	global $team;
-	return $team->id;
-}
-	/**
-	 * Print team ID
-	 *
-	 * @category template-tags
-	 */
-function the_team_id(): void {
-	echo get_team_id();
-}
-
 	/**
 	 * Get team name
 	 *
@@ -234,18 +133,6 @@ function get_team_name(): string {
 function the_team_name(): void {
 	echo get_team_name();
 }
-
-	/**
-	 * Print team CSS class
-	 *
-	 * @category template-tags
-	 */
-function the_team_class(): void {
-	global $team;
-
-	echo $team->class;
-}
-
 	/**
 	 * Get team rank
 	 *
@@ -265,67 +152,6 @@ function get_team_rank(): int {
 function the_team_rank(): void {
 	echo get_team_rank();
 }
-
-	/**
-	 * Print team status
-	 *
-	 * @category template-tags
-	 */
-function the_team_status(): void {
-	global $team;
-	echo esc_html( $team->status );
-}
-	/**
-	 * Print team status text
-	 *
-	 * @category template-tags
-	 */
-function the_team_status_text(): void {
-	global $team;
-	echo esc_html( $team->status_text );
-}
-
-	/**
-	 * Print team status icon
-	 *
-	 * @category template-tags
-	 */
-function the_team_status_icon() {
-	global $team;
-	return $team->status_icon;
-}
-
-	/**
-	 * Print formatted team points
-	 *
-	 * @param string $ind index.
-	 *
-	 * @category template-tags
-	 */
-function the_team_points( string $ind = 'primary' ): void {
-	global $team;
-	echo $team->points_formatted[ $ind ];
-}
-
-	/**
-	 * Print adjusted team points
-	 *
-	 * @category template-tags
-	 */
-function the_team_points_adjust(): void {
-	global $team;
-	echo $team->add_points;
-}
-
-	/**
-	 * Print number of done matches of team
-	 *
-	 * @category template-tags
-	 */
-function num_done_matches(): void {
-	global $team;
-	echo $team->done_matches;
-}
 	/**
 	 * Print number of sets of team
 	 *
@@ -334,213 +160,6 @@ function num_done_matches(): void {
 function num_sets(): void {
 	global $team;
 	echo esc_html( $team->sets_won . '-' . $team->sets_allowed );
-}
-	/**
-	 * Print number of games of team
-	 *
-	 * @category template-tags
-	 */
-function num_games(): void {
-	global $team;
-	echo esc_html( $team->games_won . '-' . $team->games_allowed );
-}
-	/**
-	 * Print number of won matches of team
-	 *
-	 * @category template-tags
-	 */
-function num_won_matches(): void {
-	global $team;
-	echo $team->won_matches;
-}
-	/**
-	 * Print number of lost matches of team
-	 *
-	 * @category template-tags
-	 */
-function num_lost_matches(): void {
-	global $team;
-	echo $team->lost_matches;
-}
-	/**
-	 * Print number of draw matches of team
-	 *
-	 * @category template-tags
-	 */
-function num_draw_matches(): void {
-	global $team;
-	echo $team->draw_matches;
-}
-	/**
-	 * Print win percentage
-	 *
-	 * @category template-tags
-	 */
-function win_percentage(): void {
-	global $team;
-	echo $team->win_percent;
-}
-
-	/**
-	 * Check if team has a next match
-	 *
-	 * @return boolean
-	 * @category template-tags
-	 */
-function has_next_match(): bool {
-	global $team, $match;
-
-	$match = $team->get_next_match();
-
-	if ( $match ) {
-		return true;
-	}
-	return false;
-}
-	/**
-	 * Check if team has a previous match
-	 *
-	 * @return boolean
-	 * @category template-tags
-	 */
-function has_prev_match(): bool {
-	global $team, $match;
-
-	$match = $team->get_prev_match();
-
-	if ( $match ) {
-		return true;
-	}
-	return false;
-}
-
-	/**
-	 * Print last5 matches column for team
-	 *
-	 * @param boolean $url url.
-	 *
-	 * @category template-tags
-	 */
-function the_last5_matches( bool $url = true ): void {
-	global $team;
-
-	echo $team->last5( $url );
-}
-
-	/**
-	 * Check if match is selected
-	 *
-	 * @return boolean
-	 * @category template-tags
-	 */
-function is_single_match(): bool {
-	global $league;
-	return $league->is_selected_match;
-}
-
-	/**
-	 * Test whether league has matches or we are in the loop
-	 *
-	 * @return boolean
-	 */
-function have_matches(): bool {
-	global $league;
-
-	if ( ! isset( $league->matches ) ) {
-		return false;
-	}
-	if ( $league->current_match + 1 < count( $league->matches ) ) {
-		return true;
-	} elseif ( count( $league->matches ) - 1 === $league->current_match && count( $league->matches ) > 0 ) {
-		// End of Loop.
-		$league->current_match = -1;
-	}
-	return false;
-}
-	/**
-	 * Loop through matches
-	 */
-function the_match(): void {
-	global $league, $match;
-	// Increment dataset count.
-	++$league->current_match;
-	$match = $league->matches[ $league->current_match ];
-}
-
-	/**
-	 * Display single match
-	 *
-	 * @param string $template template.
-	 */
-function the_single_match( string $template = '' ): void {
-	global $league;
-	echo do_shortcode( "[match id='" . $league->current_match . "' template='" . $template . "']" );
-}
-
-	/**
-	 * Print matches pagination
-	 *
-	 * @param string $start_el start text.
-	 * @param string $end_el end text.
-	 *
-	 * @category template-tags
-	 */
-function the_matches_pagination( string $start_el = "<p class='racketmanager-pagination page-numbers'>", string $end_el = '</p>' ): void {
-	global $league;
-
-	if ( ! empty( $league->pagination_matches ) ) {
-		echo $start_el . $league->pagination_matches . $end_el;
-	}
-}
-
-	/**
-	 * Print Match CSS class
-	 *
-	 * @category template-tags
-	 */
-function the_match_class(): void {
-	global $match;
-	echo $match->class;
-}
-
-	/**
-	 * Get Match title
-	 *
-	 * @param boolean $show_logo show logo indicator.
-	 * @return string
-	 *
-	 * @category template-tags
-	 */
-	function get_match_title( bool $show_logo = true ): string {
-		global $match;
-		return $match->get_title( $show_logo );
-	}	/**
-	 * Print Match title
-	 *
-	 * @param boolean $show_logo show logo indicator.
-	 *
-	 * @category template-tags
-	 */
-function the_match_title( bool $show_logo = true ): void {
-	echo get_match_title( $show_logo );
-}
-	/**
-	 * Get Match day
-	 *
-	 * @return int
-	 * @category template-tags
-	 */
-function get_match_day(): int {
-	global $match;
-	return $match->match_day;
-}
-	/**
-	 * Print Match day
-	 *
-	 * @category template-tags
-	 */
-function the_match_day(): void {
-	echo get_match_day();
 }
 	/**
 	 * Print Match time
@@ -553,59 +172,6 @@ function the_match_time( $start_time ): void {
 	} else {
 		echo $start_time;
 	}
-}
-	/**
-	 * Get Match score
-	 *
-	 * @return string
-	 * @category template-tags
-	 */
-function get_match_score(): string {
-	global $match;
-	return $match->score;
-}
-	/**
-	 * Print Match score
-	 *
-	 * @category template-tags
-	 */
-function the_match_score(): void {
-	echo get_match_score();
-}
-
-	/**
-	 * Check if match has report
-	 *
-	 * @return boolean
-	 * @category template-tags
-	 */
-function match_has_report(): bool {
-	global $match;
-
-	if ( 0 !== $match->post_id ) {
-		return true;
-	}
-	return false;
-}
-	/**
-	 * Print Match report link
-	 *
-	 * @category template-tags
-	 */
-function the_match_report(): void {
-	global $match;
-	echo $match->report;
-}
-
-	/**
-	 * Get match template type
-	 *
-	 * @return string
-	 * @category template-tags
-	 */
-function get_match_template_type(): string {
-	global $league;
-	return $league->matches_template_type;
 }
 /**
  * Get formatted currency function

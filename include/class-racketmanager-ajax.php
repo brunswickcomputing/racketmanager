@@ -1286,10 +1286,10 @@ class Racketmanager_Ajax {
 	/**
 	 * Confirm results of rubbers
 	 *
-	 * @param string $result_confirm result confirmation.
+	 * @param string|null $result_confirm result confirmation.
 	 */
-	public function confirm_rubber_results( string $result_confirm ): string {
-		return match ($result_confirm) {
+	public function confirm_rubber_results( ?string $result_confirm ): string {
+		return match ( $result_confirm ) {
 			'confirm'   => 'A',
 			'challenge' => 'C',
 			default     => '',

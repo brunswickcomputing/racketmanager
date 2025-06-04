@@ -233,6 +233,6 @@ final class Racketmanager_Tournament_Entry {
 			)
 		);
 		$racketmanager->set_message( __( 'Tournament Entry Deleted', 'racketmanager' ) );
-		wp_cache_flush_group( 'tournaments' );
+		wp_cache_delete( $this->id, 'tournament_entries' );
 	}
 }

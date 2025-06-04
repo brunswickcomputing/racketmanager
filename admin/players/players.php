@@ -16,6 +16,7 @@ namespace Racketmanager;
 <div class="mb-3">
 	<form id="player-filter" method="get">
 		<input type="hidden" name="page" value="racketmanager-players" />
+        <input type="hidden" name="view" value="players" />
 		<div class="row g-3 mb-3 align-items-center">
 			<div class="col-auto">
 				<div class="form-floating">

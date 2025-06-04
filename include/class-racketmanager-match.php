@@ -2272,6 +2272,7 @@ final class Racketmanager_Match {
 		} else {
 			$round_name = null;
 		}
+		$message_args['match']            = $this->id;
 		$message_args['round']            = $round_name;
 		$message_args['new_date']         = $this->date;
 		$message_args['original_date']    = $this->date_original;

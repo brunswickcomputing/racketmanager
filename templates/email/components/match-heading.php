@@ -8,6 +8,7 @@
 namespace Racketmanager;
 
 /** @var string $competition_name */
+/** @var object $match */
 ?><!-- match heading -->
 			<div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
 				<table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">
@@ -27,7 +28,7 @@ namespace Racketmanager;
 																		<?php echo esc_html( $competition_name ); ?>
 																	</h1>
 																	<h2 style="font-size: 20px; font-weight: 700; line-height: 1.25; margin: 0;" align="center">
-																		<?php echo esc_html( get_match_title() ); ?>
+																		echo esc_html( $match->get_title() ); ?>
 																	</h2>
 																</div>
 															</td>

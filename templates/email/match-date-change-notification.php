@@ -7,8 +7,9 @@
 
 namespace Racketmanager;
 
-/** @var bool $delay */
-global $match, $racketmanager;
+global $racketmanager;
+/** @var object $match */
+/** @var bool   $delay */
 $competition_name = $match->league->title;
 if ( empty( $match->start_time ) ) {
 	$match_date    = mysql2date( $racketmanager->date_format, $match->date );

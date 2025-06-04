@@ -47,6 +47,26 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.1.0 =
+* BUGFIX: use correct data type
+* BUGFIX: tournament entry key can be int or string
+* BUGFIX: use formated date
+* BUGFIX: set flags correctly
+* BUGFIX: use correct field name
+* BUGFIX: show player message correctly
+* BUGFIX: handle no year of birth specified
+* BUGFIX: show correct page for player search results
+* BUGFIX: handle error in ajax
+* BUGFIX: use correct match parameters to set match date for notification email
+* BUGFIX: allow null as input for result confirmation
+* UPDATE: set rule application for lateness at competition config level
+* UPDATE: PHP Unused symbols Unused declaration inspection error
+* UPDATE: remove Points2 calculations
+* UPDATE: set missing tournament entry club id
+* UPDATE: set club for tournament entry
+* UPDATE: PHP Unused symbols Unused local variable inspection error
+* UPDATE: convert display to table
+
 = 9.0.0 =
 * UPDATE: rename plugin from leaguemanager to racketmanager
 * UPDATE: support for PHP 8.3
